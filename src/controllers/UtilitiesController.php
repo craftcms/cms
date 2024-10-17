@@ -10,11 +10,16 @@ namespace craft\controllers;
 use Craft;
 use craft\base\UtilityInterface;
 use craft\errors\MigrationException;
+use craft\filters\UtilityAccess;
 use craft\helpers\Cp;
 use craft\helpers\FileHelper;
 use craft\helpers\Queue;
 use craft\queue\jobs\FindAndReplace;
 use craft\utilities\ClearCaches;
+use craft\utilities\DbBackup;
+use craft\utilities\DeprecationErrors;
+use craft\utilities\FindAndReplace as FindAndReplaceUtility;
+use craft\utilities\Migrations;
 use craft\utilities\Updates;
 use craft\utilities\Upgrade;
 use craft\web\assets\utilities\UtilitiesAsset;
@@ -29,6 +34,40 @@ use yii\web\Response;
 
 class UtilitiesController extends Controller
 {
+    /**
+     * @inheritdoc
+     */
+    public function behaviors(): array
+    {
+        return array_merge(parent::behaviors(), [
+            [
+                'class' => UtilityAccess::class,
+                'utility' => DeprecationErrors::class,
+                'only' => ['get-deprecation-error-traces-modal', 'delete-all-deprecation-errors', 'delete-deprecation-error'],
+            ],
+            [
+                'class' => UtilityAccess::class,
+                'utility' => ClearCaches::class,
+                'only' => ['clear-caches-perform-action', 'invalidate-tags'],
+            ],
+            [
+                'class' => UtilityAccess::class,
+                'utility' => DbBackup::class,
+                'only' => ['db-backup-perform-action'],
+            ],
+            [
+                'class' => UtilityAccess::class,
+                'utility' => FindAndReplaceUtility::class,
+                'only' => ['find-and-replace-perform-action'],
+            ],
+            [
+                'class' => UtilityAccess::class,
+                'utility' => Migrations::class,
+                'only' => ['apply-new-migrations'],
+            ],
+        ]);
+    }
+
     /**
      * Index
      *
@@ -101,7 +140,6 @@ class UtilitiesController extends Controller
      */
     public function actionGetDeprecationErrorTracesModal(): Response
     {
-        $this->requirePermission('utility:deprecation-errors');
         $this->requirePostRequest();
         $this->requireAcceptsJson();
 
@@ -123,7 +161,6 @@ class UtilitiesController extends Controller
      */
     public function actionDeleteAllDeprecationErrors(): Response
     {
-        $this->requirePermission('utility:deprecation-errors');
         $this->requirePostRequest();
         $this->requireAcceptsJson();
 
@@ -140,7 +177,6 @@ class UtilitiesController extends Controller
      */
     public function actionDeleteDeprecationError(): Response
     {
-        $this->requirePermission('utility:deprecation-errors');
         $this->requirePostRequest();
         $this->requireAcceptsJson();
 
@@ -159,8 +195,6 @@ class UtilitiesController extends Controller
      */
     public function actionClearCachesPerformAction(): Response
     {
-        $this->requirePermission('utility:clear-caches');
-
         $caches = $this->request->getRequiredBodyParam('caches');
 
         foreach (ClearCaches::cacheOptions() as $cacheOption) {
@@ -198,8 +232,6 @@ class UtilitiesController extends Controller
      */
     public function actionInvalidateTags(): Response
     {
-        $this->requirePermission('utility:clear-caches');
-
         $tags = $this->request->getRequiredBodyParam('tags');
         $cache = Craft::$app->getCache();
 
@@ -219,8 +251,6 @@ class UtilitiesController extends Controller
      */
     public function actionDbBackupPerformAction(): ?Response
     {
-        $this->requirePermission('utility:db-backup');
-
         try {
             $backupPath = Craft::$app->getDb()->backup();
         } catch (Throwable $e) {
@@ -252,8 +282,6 @@ class UtilitiesController extends Controller
      */
     public function actionFindAndReplacePerformAction(): Response
     {
-        $this->requirePermission('utility:find-replace');
-
         $params = $this->request->getRequiredBodyParam('params');
 
         if (!empty($params['find']) && !empty($params['replace'])) {
@@ -274,8 +302,6 @@ class UtilitiesController extends Controller
      */
     public function actionApplyNewMigrations(): Response
     {
-        $this->requirePermission('utility:migrations');
-
         $migrator = Craft::$app->getContentMigrator();
 
         try {

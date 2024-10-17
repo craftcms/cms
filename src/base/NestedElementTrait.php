@@ -9,7 +9,10 @@
 namespace craft\base;
 
 use Craft;
+use craft\db\Query;
+use craft\db\Table;
 use craft\elements\db\EagerLoadPlan;
+use craft\helpers\Db;
 use yii\base\InvalidConfigException;
 
 /**
@@ -292,6 +295,76 @@ trait NestedElementTrait
                 break;
             default:
                 parent::setEagerLoadedElements($handle, $elements, $plan);
+        }
+    }
+
+    /**
+     * Saves the element’s ownership data, if it belongs to a field + owner element
+     */
+    private function saveOwnership(bool $isNew, string $elementTable, string $fieldIdColumn = 'fieldId'): void
+    {
+        if (!$this->saveOwnership || !isset($this->fieldId)) {
+            return;
+        }
+        
+        $ownerId = $this->getOwnerId();
+        if (!$ownerId) {
+            return;
+        }
+
+        if (!isset($this->sortOrder) && (!$isNew || $this->duplicateOf)) {
+            // figure out if we should proceed this way
+            // if we're dealing with an element that's being duplicated, and it has a draftId
+            // it means we're creating a draft of something
+            // if we're duplicating element via duplicate action - draftId would be empty
+            $elementId = null;
+
+            if ($this->duplicateOf) {
+                if ($this->draftId) {
+                    $elementId = $this->duplicateOf->id;
+                }
+            } else {
+                // if we're not duplicating, use this element's id
+                $elementId = $this->id;
+            }
+
+            if ($elementId) {
+                $this->sortOrder = (new Query())
+                    ->select('sortOrder')
+                    ->from(Table::ELEMENTS_OWNERS)
+                    ->where([
+                        'elementId' => $elementId,
+                        'ownerId' => $ownerId,
+                    ])
+                    ->scalar() ?: null;
+            }
+        }
+
+        if (!isset($this->sortOrder)) {
+            $max = (new Query())
+                ->from(['eo' => Table::ELEMENTS_OWNERS])
+                ->innerJoin(['e' => $elementTable], '[[e.id]] = [[eo.elementId]]')
+                ->where([
+                    'eo.ownerId' => $ownerId,
+                    "e.$fieldIdColumn" => $this->fieldId,
+                ])
+                ->max('[[eo.sortOrder]]');
+            $this->sortOrder = $max ? $max + 1 : 1;
+        }
+
+        if ($isNew) {
+            Db::insert(Table::ELEMENTS_OWNERS, [
+                'elementId' => $this->id,
+                'ownerId' => $ownerId,
+                'sortOrder' => $this->sortOrder,
+            ]);
+        } else {
+            Db::update(Table::ELEMENTS_OWNERS, [
+                'sortOrder' => $this->sortOrder,
+            ], [
+                'elementId' => $this->id,
+                'ownerId' => $ownerId,
+            ]);
         }
     }
 }
