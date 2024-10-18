@@ -8,6 +8,7 @@
 - Fixed errors that occurred when working with nested entries for a newly-added site. ([#15898](https://github.com/craftcms/cms/pull/15898))
 - Fixed a bug where it wasn’t possible to scroll the section select modal when moving entries to a different section. ([#15900](https://github.com/craftcms/cms/issues/15900))
 - Fixed a bug where query params in the format of `'<operator> <values>'` weren’t being parsed correctly.
+- Fixed a bug there `craft\services\Entries::saveSection()` wasn’t respecting predefined UUID values on new sections.
 
 ## 5.4.8 - 2024-10-15
 
