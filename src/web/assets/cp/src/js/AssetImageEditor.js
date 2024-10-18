@@ -2460,7 +2460,12 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
      * Handle mouse being released.
      */
     _handleMouseUp: function (ev) {
-      if (!this.draggingFocal && this.clickToMoveFocal) {
+      if (
+        !this.draggingCropper &&
+        !this.scalingCropper &&
+        !this.draggingFocal &&
+        this.clickToMoveFocal
+      ) {
         this._handleFocalClickToMove(ev);
       }
 
