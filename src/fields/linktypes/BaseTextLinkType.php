@@ -13,6 +13,8 @@ use craft\helpers\ArrayHelper;
 use craft\helpers\Cp;
 use craft\helpers\Html;
 use craft\helpers\StringHelper;
+use League\Uri\Uri;
+use League\Uri\UriString;
 
 /**
  * Base text link type.
@@ -136,6 +138,7 @@ JS, [
     public function validateValue(string $value, ?string &$error = null): bool
     {
         $pattern = sprintf('/%s/i', $this->pattern());
+        $value = Uri::fromComponents(UriString::parse($value))->toString();
         return (bool)preg_match($pattern, $value);
     }
 
