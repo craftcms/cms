@@ -26,6 +26,7 @@
 ### Development
 - Added the `encodeUrl()` Twig function. ([#15838](https://github.com/craftcms/cms/issues/15838))
 - Added support for passing aliased field handles into element queries’ `select()`/`addSelect()` methods. ([#15827](https://github.com/craftcms/cms/issues/15827))
+- Added support for appending subpaths to environment variable names in environmental settings (e.g. `$PRIMARY_SITE_URL/uploads`).
 
 ### Extensibility
 - Added `craft\base\NestedElementTrait::saveOwnership()`. ([#15894](https://github.com/craftcms/cms/pull/15894))

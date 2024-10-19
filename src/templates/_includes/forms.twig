@@ -273,8 +273,8 @@
     {% if (config.includeEnvVars ?? false) and config.tip is not defined and (config.value ?? '')[0:1] != '$' %}
         {% set config = config|merge({
             tip: (config.allowedEnvValues is not defined)
-            ? 'This can be set to an environment variable matching one of the option values.'|t('app')
-            : 'This can be set to an environment variable.'|t('app'),
+            ? 'This can begin with an environment variable or alias.'|t('app')
+            : 'This can begin with an environment variable.'|t('app'),
         }) %}
     {% endif %}
     {{ _self.field(config, 'template:_includes/forms/selectize') }}
@@ -378,8 +378,8 @@
         {% if config.tip is not defined and value[0:1] not in ['$', '@'] %}
             {% set config = config|merge({
                 tip: ((config.suggestAliases ?? false)
-                ? 'This can be set to an environment variable, or begin with an alias.'|t('app')
-                : 'This can be set to an environment variable.'|t('app')) ~ ' ' ~ tag('a', {
+                ? 'This can begin with an environment variable or alias.'|t('app')
+                : 'This can begin with an environment variable.'|t('app')) ~ ' ' ~ tag('a', {
                     href: 'https://craftcms.com/docs/5.x/configure.html#control-panel-settings',
                     class: 'go',
                     text: 'Learn more'|t('app'),
