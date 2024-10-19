@@ -3241,6 +3241,30 @@ table {
         border-block-start-color: var(--gray-300);
       }
     }
+
+    &.vuetable {
+      th.sortable {
+        &:hover {
+          color: var(--text-color);
+          background-color: var(--gray-100);
+        }
+
+        &.ordered {
+          background-color: var(--light-sel-color);
+
+          .sort-icon {
+            @include mixins.angle(up);
+            inset-inline-end: var(--m);
+            inset-block-start: calc(7rem / 16);
+          }
+
+          &.desc .sort-icon {
+            transform: rotate(45deg);
+            inset-block-start: calc((7rem / 16) - (2rem / 16));
+          }
+        }
+      }
+    }
   }
 
   // collapsable data tables for small screens
@@ -9371,7 +9395,6 @@ body.sitepicker {
   width: var(--width) !important;
   min-width: 0 !important;
   max-width: calc(100% - 20px) !important;
-  max-height: 200px;
 
   .header {
     padding-block: calc(var(--m));
@@ -9379,10 +9402,20 @@ body.sitepicker {
   }
 
   .body {
+    height: 83%;
+    position: relative;
+
     .entry-mover-modal--list {
-      flex: 1;
+      height: calc(100% + 20px);
       position: relative;
-      overflow: hidden;
+
+      fieldset {
+        box-sizing: border-box;
+        height: 100%;
+        overflow: auto;
+        padding-block-end: 20px;
+        position: relative;
+      }
     }
   }
 

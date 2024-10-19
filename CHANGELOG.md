@@ -3,8 +3,13 @@
 ## Unreleased
 
 - Added `craft\elements\db\NestedElementQueryInterface`.
+- Added `craft\services\Gc::$silent`.
+- Fixed a bug where admin table header cells weren’t indicating when they were sorted. ([#15897](https://github.com/craftcms/cms/issues/15897))
 - Fixed a bug where uninstalled/missing plugins weren’t getting status indicators on the Plugins index page.
 - Fixed errors that occurred when working with nested entries for a newly-added site. ([#15898](https://github.com/craftcms/cms/pull/15898))
+- Fixed a bug where it wasn’t possible to scroll the section select modal when moving entries to a different section. ([#15900](https://github.com/craftcms/cms/issues/15900))
+- Fixed a bug where query params in the format of `'<operator> <values>'` weren’t being parsed correctly.
+- Fixed a bug `craft\services\Entries::saveSection()` and `craft\services\Volumes::saveVolume()` weren’t respecting predefined UUID values on new models.
 
 ## 5.4.8 - 2024-10-15
 

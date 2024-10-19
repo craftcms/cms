@@ -116,7 +116,7 @@ class ElementsController extends Controller
         $this->_elementUid = $this->_param('elementUid');
         $this->_draftId = $this->_param('draftId');
         $this->_revisionId = $this->_param('revisionId');
-        $this->_ownerId = $this->_param('ownerId');
+        $this->_ownerId = $this->_param('ownerId') ?: null;
         $this->_siteId = $this->_param('siteId');
         $this->_enabled = $this->_param('enabled', $this->_param('setEnabled', true) ? true : null);
         $this->_enabledForSite = $this->_param('enabledForSite');

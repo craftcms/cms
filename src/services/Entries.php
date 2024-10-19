@@ -572,7 +572,9 @@ class Entries extends Component
         }
 
         if ($isNewSection) {
-            $section->uid = StringHelper::UUID();
+            if (!$section->uid) {
+                $section->uid = StringHelper::UUID();
+            }
         } elseif (!$section->uid) {
             $section->uid = Db::uidById(Table::SECTIONS, $section->id);
         }
