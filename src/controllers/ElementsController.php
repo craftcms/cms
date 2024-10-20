@@ -2239,8 +2239,11 @@ JS, [
 
         /** @var ElementInterface $element */
         $element = $this->element = Craft::createObject($this->_elementType);
-        if ($this->_siteId && $element::isLocalized()) {
+        if (isset($this->_siteId) && $element::isLocalized()) {
             $element->siteId = $this->_siteId;
+        }
+        if (isset($this->_ownerId) && $element instanceof NestedElementInterface) {
+            $element->setOwnerId($this->_ownerId);
         }
         $element->setAttributesFromRequest($this->_attributes);
 
