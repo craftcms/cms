@@ -2453,6 +2453,7 @@ $.extend(Craft, {
           key: i,
           type: $element.data('type'),
           id: elementId,
+          ownerId: $element.data('owner-id'),
           siteId,
           instances: [],
         };

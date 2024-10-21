@@ -110,6 +110,12 @@ Craft.ElementEditorSlideout = Craft.CpScreenSlideout.extend(
         params.revisionId = this.$element.data('revision-id');
       }
 
+      if (this.settings.ownerId) {
+        params.ownerId = this.settings.ownerId;
+      } else if (this.$element?.data('owner-id')) {
+        params.ownerId = this.$element.data('owner-id');
+      }
+
       if (this.settings.siteId) {
         params.siteId = this.settings.siteId;
       } else if (this.$element?.data('site-id')) {
@@ -173,6 +179,7 @@ Craft.ElementEditorSlideout = Craft.CpScreenSlideout.extend(
       elementId: null,
       draftId: null,
       revisionId: null,
+      ownerId: null,
       elementType: null,
       siteId: null,
       prevalidate: false,

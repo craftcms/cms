@@ -1503,7 +1503,7 @@ return [
     'Source' => 'منبع',
     'Sources' => 'منبع ها',
     'Square SVG file recommended. The logo will be displayed at {size} by {size}.' => 'فایل SVG مربع شکل پیشنهاد می گردد. لوگو {size} در {size} نمایش داده خواهد شد.',
-    'Square' => 'Square',
+    'Square' => 'مربع',
     'Stack Trace' => 'ردگیری پشته',
     'State' => 'ایالت',
     'Static Rows' => 'ردیف‌های ایستا',
