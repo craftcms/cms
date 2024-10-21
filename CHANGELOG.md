@@ -3,6 +3,7 @@
 ## Unreleased
 
 - Fixed a bug where admin table header cells weren’t indicating when they were sorted. ([#15897](https://github.com/craftcms/cms/issues/15897))
+- Fixed an error that occurred when creating a database backup, if the System Name contained any quote-like characters. ([#15933](https://github.com/craftcms/cms/issues/15933))
 
 ## 4.12.7 - 2024-10-15
 
