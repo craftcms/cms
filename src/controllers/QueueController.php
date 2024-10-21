@@ -8,6 +8,7 @@
 namespace craft\controllers;
 
 use Craft;
+use craft\filters\UtilityAccess;
 use craft\helpers\App;
 use craft\helpers\Json;
 use craft\queue\QueueInterface;
@@ -37,6 +38,20 @@ class QueueController extends Controller
     protected array|bool|int $allowAnonymous = ['run'];
 
     private QueueInterface $queue;
+
+    /**
+     * @inheritdoc
+     */
+    public function behaviors(): array
+    {
+        return array_merge(parent::behaviors(), [
+            [
+                'class' => UtilityAccess::class,
+                'utility' => QueueManager::class,
+                'only' => ['retry', 'retry-all', 'release', 'release-all', 'get-job-details'],
+            ],
+        ]);
+    }
 
     /**
      * @inheritdoc
@@ -97,10 +112,6 @@ class QueueController extends Controller
         $this->requireAcceptsJson();
         $this->requirePostRequest();
 
-        if (!Craft::$app->getUtilities()->checkAuthorization(QueueManager::class)) {
-            throw new ForbiddenHttpException('User is not authorized to perform this action.');
-        }
-
         $id = $this->request->getRequiredBodyParam('id');
         $this->queue->retry($id);
 
@@ -117,10 +128,6 @@ class QueueController extends Controller
     {
         $this->requireAcceptsJson();
         $this->requirePostRequest();
-
-        if (!Craft::$app->getUtilities()->checkAuthorization(QueueManager::class)) {
-            throw new ForbiddenHttpException('User is not authorized to perform this action.');
-        }
 
         $id = $this->request->getRequiredBodyParam('id');
         $this->queue->release($id);
@@ -142,10 +149,6 @@ class QueueController extends Controller
         $this->requireAcceptsJson();
         $this->requirePostRequest();
 
-        if (!Craft::$app->getUtilities()->checkAuthorization(QueueManager::class)) {
-            throw new ForbiddenHttpException('User is not authorized to perform this action.');
-        }
-
         $this->queue->releaseAll();
 
         return $this->asSuccess();
@@ -163,10 +166,6 @@ class QueueController extends Controller
     {
         $this->requireAcceptsJson();
         $this->requirePostRequest();
-
-        if (!Craft::$app->getUtilities()->checkAuthorization(QueueManager::class)) {
-            throw new ForbiddenHttpException('User is not authorized to perform this action.');
-        }
 
         $this->queue->retryAll();
 
@@ -202,10 +201,6 @@ class QueueController extends Controller
     public function actionGetJobDetails(): Response
     {
         $this->requireAcceptsJson();
-
-        if (!Craft::$app->getUtilities()->checkAuthorization(QueueManager::class)) {
-            throw new ForbiddenHttpException('User is not authorized to perform this action.');
-        }
 
         $jobId = $this->request->getRequiredParam('id');
         $details = [

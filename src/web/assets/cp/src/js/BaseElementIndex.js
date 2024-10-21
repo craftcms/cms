@@ -81,6 +81,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
     $actionsContainer: null,
     $actionMenuBtn: null,
     page: 1,
+    prevPage: null,
     resultSet: null,
     totalResults: null,
     totalUnfilteredResults: null,
@@ -1637,6 +1638,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
         }
 
         if (preservePagination !== true) {
+          this.prevPage = null;
           this.setPage(1);
         }
 
@@ -3199,6 +3201,18 @@ Craft.BaseElementIndex = Garnish.Base.extend(
                 title: Craft.t('app', 'Next Page'),
               }).appendTo($paginationNav);
 
+              // Choose pagination button to focus based on user behavior
+              if (this.prevPage) {
+                let $btnToFocus =
+                  this.prevPage > this.page ? $prevBtn : $nextBtn;
+
+                if ($btnToFocus.attr('disabled') === 'disabled') {
+                  $btnToFocus = Garnish.firstFocusableElement($paginationNav);
+                }
+
+                $btnToFocus.focus();
+              }
+
               $('<div/>', {
                 class: 'page-info',
                 text: countLabel,
@@ -3208,6 +3222,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
                 this.addListener($prevBtn, 'click', function () {
                   this.removeListener($prevBtn, 'click');
                   this.removeListener($nextBtn, 'click');
+                  this.prevPage = this.page;
                   this.setPage(this.page - 1);
                   this.updateElements(true);
                 });
@@ -3217,6 +3232,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
                 this.addListener($nextBtn, 'click', function () {
                   this.removeListener($prevBtn, 'click');
                   this.removeListener($nextBtn, 'click');
+                  this.prevPage = this.page;
                   this.setPage(this.page + 1);
                   this.updateElements(true);
                 });

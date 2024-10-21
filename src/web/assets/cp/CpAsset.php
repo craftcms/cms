@@ -305,6 +305,7 @@ JS;
             'Reorder',
             'Replace it',
             'Replace the folder (all existing files will be deleted)',
+            'Replace',
             'Required',
             'Rotate',
             'Row could not be added. Maximum number of rows reached.',

@@ -201,7 +201,7 @@ class App
             return null;
         }
 
-        if (preg_match('/^\$(\w+)$/', $value, $matches)) {
+        if (preg_match('/^\$(\w+)(\/.*)?/', $value, $matches)) {
             $env = static::env($matches[1]);
 
             if ($env === null) {
@@ -209,7 +209,7 @@ class App
                 return null;
             }
 
-            $value = $env;
+            $value = $env . ($matches[2] ?? '');
         }
 
         if (is_string($value) && str_starts_with($value, '@')) {

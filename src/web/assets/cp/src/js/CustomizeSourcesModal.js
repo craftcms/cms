@@ -347,11 +347,13 @@ Craft.CustomizeSourcesModal = Garnish.Modal.extend({
     const $item = $('<div class="customize-sources-item"/>').appendTo(
       this.$sourcesContainer
     );
-    const $itemLabel = $('<div class="label customize-sources-item__btn"/>')
+    const $itemButton = $('<div class="customize-sources-item__btn"/>')
       .attr({
         tabindex: '0',
         role: 'button',
       })
+      .append($('<div class="label"/>'))
+      .append($('<div class="handle"/>'))
       .appendTo($item);
     const $itemInput = $('<input type="hidden"/>').appendTo($item);
     $(
@@ -369,7 +371,7 @@ Craft.CustomizeSourcesModal = Garnish.Modal.extend({
       source = new Craft.CustomizeSourcesModal.Heading(
         this,
         $item,
-        $itemLabel,
+        $itemButton,
         $itemInput,
         sourceData,
         isNew
@@ -381,7 +383,7 @@ Craft.CustomizeSourcesModal = Garnish.Modal.extend({
         source = new Craft.CustomizeSourcesModal.Source(
           this,
           $item,
-          $itemLabel,
+          $itemButton,
           $itemInput,
           sourceData,
           isNew
@@ -390,13 +392,16 @@ Craft.CustomizeSourcesModal = Garnish.Modal.extend({
         source = new Craft.CustomizeSourcesModal.CustomSource(
           this,
           $item,
-          $itemLabel,
+          $itemButton,
           $itemInput,
           sourceData,
           isNew
         );
       }
       source.updateItemLabel(sourceData.label);
+      if (sourceData.data?.handle) {
+        source.updateItemHandle(sourceData.data.handle);
+      }
 
       // Select this by default?
       if (sourceData.key === this.elementIndex.rootSourceKey) {
@@ -500,24 +505,24 @@ Craft.CustomizeSourcesModal.BaseSource = Garnish.Base.extend({
   modal: null,
 
   $item: null,
-  $itemLabel: null,
+  $itemButton: null,
   $itemInput: null,
   $settingsContainer: null,
 
   sourceData: null,
   isNew: null,
 
-  init: function (modal, $item, $itemLabel, $itemInput, sourceData, isNew) {
+  init: function (modal, $item, $itemButton, $itemInput, sourceData, isNew) {
     this.modal = modal;
     this.$item = $item;
-    this.$itemLabel = $itemLabel;
+    this.$itemButton = $itemButton;
     this.$itemInput = $itemInput;
     this.sourceData = sourceData;
     this.isNew = isNew;
 
     this.$item.data('source', this);
 
-    this.addListener(this.$itemLabel, 'activate', this.select);
+    this.addListener(this.$itemButton, 'activate', this.select);
   },
 
   isHeading: function () {
@@ -542,7 +547,7 @@ Craft.CustomizeSourcesModal.BaseSource = Garnish.Base.extend({
     }
 
     this.$item.addClass('sel');
-    this.$itemLabel.attr({
+    this.$itemButton.attr({
       'aria-current': 'true',
     });
     this.modal.selectedSource = this;
@@ -566,7 +571,7 @@ Craft.CustomizeSourcesModal.BaseSource = Garnish.Base.extend({
 
   deselect: function () {
     this.$item.removeClass('sel');
-    this.$itemLabel.attr({
+    this.$itemButton.attr({
       'aria-current': 'false',
     });
     this.modal.selectedSource = null;
@@ -575,9 +580,17 @@ Craft.CustomizeSourcesModal.BaseSource = Garnish.Base.extend({
 
   updateItemLabel: function (val) {
     if (val) {
-      this.$itemLabel.text(val);
+      this.$itemButton.find('.label').text(val);
     } else {
-      this.$itemLabel.html('&nbsp;');
+      this.$itemButton.find('.label').html('&nbsp;');
+    }
+  },
+
+  updateItemHandle: function (val) {
+    if (val) {
+      this.$itemButton.find('.handle').text(val);
+    } else {
+      this.$itemButton.find('.handle').empty();
     }
   },
 
@@ -988,11 +1001,13 @@ Craft.CustomizeSourcesModal.Heading =
     },
 
     updateItemLabel: function (val) {
-      this.$itemLabel.html(
-        (val
-          ? Craft.escapeHtml(val)
-          : `<em>${Craft.t('app', '(blank)')}</em>`) + '&nbsp;'
-      );
+      this.$itemButton
+        .find('.label')
+        .html(
+          (val
+            ? Craft.escapeHtml(val)
+            : `<em>${Craft.t('app', '(blank)')}</em>`) + '&nbsp;'
+        );
       this.$itemInput.val(val);
     },
 

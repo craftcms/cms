@@ -3379,13 +3379,13 @@ class ElementQuery extends Query implements ElementQueryInterface
             if ($alias === '**') {
                 $includeDefaults = true;
             } else {
-                // Is this a mapped column name (without a custom alias)?
-                if ($alias === $column && isset($this->_columnMap[$alias])) {
-                    $column = $this->_columnMap[$alias];
+                // Is this a mapped column name?
+                if (is_string($column) && isset($this->_columnMap[$column])) {
+                    $column = $this->_columnMap[$column];
 
                     // Completely ditch the mapped name if instantiated elements are going to be returned
-                    if (!$this->asArray && is_string($this->_columnMap[$alias])) {
-                        $alias = $this->_columnMap[$alias];
+                    if (!$this->asArray && is_string($column)) {
+                        $alias = $column;
                     }
                 }
 

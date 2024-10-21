@@ -18,6 +18,7 @@ use craft\enums\LicenseKeyStatus;
 use craft\errors\BusyResourceException;
 use craft\errors\InvalidPluginException;
 use craft\errors\StaleResourceException;
+use craft\filters\UtilityAccess;
 use craft\helpers\Api;
 use craft\helpers\App;
 use craft\helpers\ArrayHelper;
@@ -66,6 +67,21 @@ class AppController extends Controller
         'health-check' => self::ALLOW_ANONYMOUS_LIVE,
         'resource-js' => self::ALLOW_ANONYMOUS_LIVE | self::ALLOW_ANONYMOUS_OFFLINE,
     ];
+
+    /**
+     * @inheritdoc
+     */
+    public function behaviors(): array
+    {
+        return array_merge(parent::behaviors(), [
+            [
+                'class' => UtilityAccess::class,
+                'utility' => UpdatesUtility::class,
+                'only' => ['check-for-updates', 'cache-updates'],
+                'when' => fn() => !Craft::$app->getUser()->checkPermission('performUpdates'),
+            ],
+        ]);
+    }
 
     /**
      * @inheritdoc
@@ -156,14 +172,6 @@ class AppController extends Controller
     {
         $this->requireAcceptsJson();
 
-        // Require either the 'performUpdates' permission or access to the Updates utility
-        if (
-            !Craft::$app->getUser()->checkPermission('performUpdates') &&
-            !Craft::$app->getUtilities()->checkAuthorization(UpdatesUtility::class)
-        ) {
-            throw new ForbiddenHttpException('User is not permitted to perform this action');
-        }
-
         $updatesService = Craft::$app->getUpdates();
 
         if ($this->request->getParam('onlyIfCached') && !$updatesService->getIsUpdateInfoCached()) {
@@ -187,14 +195,6 @@ class AppController extends Controller
     public function actionCacheUpdates(): Response
     {
         $this->requireAcceptsJson();
-
-        // Require either the 'performUpdates' permission or access to the Updates utility
-        if (
-            !Craft::$app->getUser()->checkPermission('performUpdates') &&
-            !Craft::$app->getUtilities()->checkAuthorization(UpdatesUtility::class)
-        ) {
-            throw new ForbiddenHttpException('User is not permitted to perform this action');
-        }
 
         $updateData = $this->request->getBodyParam('updates');
         $updatesService = Craft::$app->getUpdates();

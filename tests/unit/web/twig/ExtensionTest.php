@@ -984,6 +984,14 @@ class ExtensionTest extends TestCase
         self::assertStringStartsWith('data:application/x-yaml;base64,', $dataUrl);
     }
 
+    public function testEncodeUrlFunction(): void
+    {
+        $this->testRenderResult(
+            'https://domain/fr/offices/gen%C3%AAve',
+            '{{ encodeUrl("https://domain/fr/offices/genêve") }}',
+        );
+    }
+
     public function testExpressionFunction(): void
     {
         $this->testRenderResult(

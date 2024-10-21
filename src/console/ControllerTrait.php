@@ -301,7 +301,7 @@ MD
      */
     public function warning(string $message): void
     {
-        $this->note($message, '⚠️ ');
+        $this->note($message, '⚠️');
     }
 
     /**

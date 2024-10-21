@@ -1207,7 +1207,7 @@ input.checkbox + label.smalltext {
   margin-inline: 5px 0;
   margin-block: -2px 0;
   font-size: 12px;
-  color: var(--rose-500);
+  color: var(--rose-600);
 }
 
 .scrollpane {
@@ -1586,6 +1586,15 @@ td.right {
     flex: 1;
   }
 
+  .handle {
+    @include mixins.fixed-width-font;
+    font-size: 0.8em !important;
+  }
+
+  &:not(.sel) .handle {
+    color: var(--medium-text-color);
+  }
+
   &.heading {
     .label {
       text-transform: uppercase;
@@ -1603,7 +1612,7 @@ td.right {
 .customize-sources-item__move {
   position: absolute;
   inset-block-start: 50%;
-  inset-inline-end: 0;
+  inset-inline-end: 3px;
   transform: translate(-50%, -50%);
   justify-content: center;
   align-items: center;
@@ -1615,10 +1624,10 @@ td.right {
 }
 
 .customize-sources-item__btn {
-  padding-block: 8px;
-  padding-inline: 14px;
+  flex: 1;
+  padding-block: 6px;
+  padding-inline: var(--xl);
   padding-inline-end: 30px;
-  margin: 3px;
 }
 
 .checkbox-select-item {
@@ -3633,7 +3642,6 @@ table {
     ) !important;
 
     & > .thumb {
-      background-color: var(--dark-sel-color) !important;
       filter: brightness(0.85);
     }
 
@@ -3657,35 +3665,12 @@ table {
   }
 
   & > .thumb {
-    position: relative;
     display: flex;
-    align-items: stretch;
-    margin: calc(var(--m) * -1);
-    margin-inline-end: 0;
+    flex: 0 0 128px;
     width: 128px;
-    min-width: 128px; // needed for flex
-    min-height: calc(var(--m) * 2 + var(--lh) * 3 + var(--xs));
-    background-color: var(--gray-100);
     overflow: hidden;
-
-    &::after {
-      display: block;
-      content: '';
-      font-size: 0;
-      position: absolute;
-      inset-block: 0;
-      @include mixins.shadow;
-      width: 10px;
-      inset-inline-end: -10px;
-    }
-
-    &,
-    &::after {
-      border-start-start-radius: var(--large-border-radius);
-      border-start-end-radius: 0;
-      border-end-end-radius: 0;
-      border-end-start-radius: var(--large-border-radius);
-    }
+    align-self: start;
+    border-radius: var(--small-border-radius);
 
     img,
     svg {
@@ -4463,6 +4448,7 @@ table.editable {
 
   td.action {
     padding-inline: var(--xs) !important;
+    vertical-align: middle;
 
     &:has(+ td.action) {
       padding-inline-end: 0 !important;
@@ -4537,7 +4523,6 @@ table.editable {
 
       td {
         vertical-align: top;
-        text-align: center;
         background-color: var(--white);
         padding-block: 4px;
         padding-inline: 10px;

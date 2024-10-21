@@ -13,6 +13,8 @@ use craft\base\ElementInterface;
  * NestedElementQueryInterface defines the common interface to be implemented by element query classes
  * which can query for nested elements.
  *
+ * An implementation of this interface is provided by [[NestedElementQueryTrait]].
+ *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 5.4.9
  */

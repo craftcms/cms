@@ -157,9 +157,16 @@ class View extends \yii\web\View
     private array $_twigOptions;
 
     /**
-     * @var ExtensionInterface[] List of Twig extensions registered with [[registerTwigExtension()]]
+     * @var array<class-string<ExtensionInterface>,ExtensionInterface>
+     * @see registerCpTwigExtension()
      */
-    private array $_twigExtensions = [];
+    private array $_cpTwigExtensions = [];
+
+    /**
+     * @var array<class-string<ExtensionInterface>,ExtensionInterface>
+     * @see registerSiteTwigExtension()
+     */
+    private array $_siteTwigExtensions = [];
 
     /**
      * @var string[]
@@ -403,7 +410,10 @@ class View extends \yii\web\View
         }
 
         // Add plugin-supplied extensions
-        foreach ($this->_twigExtensions as $extension) {
+        $registeredExtensions = $this->_templateMode === self::TEMPLATE_MODE_CP
+            ? $this->_cpTwigExtensions
+            : $this->_siteTwigExtensions;
+        foreach ($registeredExtensions as $extension) {
             $twig->addExtension($extension);
         }
 
@@ -424,19 +434,31 @@ class View extends \yii\web\View
     }
 
     /**
-     * Registers a new Twig extension, which will be added on existing environments and queued up for future environments.
+     * Registers a new Twig extension both CP and site templates.
      *
      * @param ExtensionInterface $extension
      */
     public function registerTwigExtension(ExtensionInterface $extension): void
     {
+        $this->registerCpTwigExtension($extension);
+        $this->registerSiteTwigExtension($extension);
+    }
+
+    /**
+     * Registers a new Twig extension for CP templates.
+     *
+     * @param ExtensionInterface $extension
+     * @since 5.5.0
+     */
+    public function registerCpTwigExtension(ExtensionInterface $extension): void
+    {
         // Make sure this extension isn't already registered
         $class = get_class($extension);
-        if (isset($this->_twigExtensions[$class])) {
+        if (isset($this->_cpTwigExtensions[$class])) {
             return;
         }
 
-        $this->_twigExtensions[$class] = $extension;
+        $this->_cpTwigExtensions[$class] = $extension;
 
         if (isset($this->_cpTwig)) {
             try {
@@ -445,6 +467,23 @@ class View extends \yii\web\View
                 $this->_cpTwig = null;
             }
         }
+    }
+
+    /**
+     * Registers a new Twig extension for site templates.
+     *
+     * @param ExtensionInterface $extension
+     * @since 5.5.0
+     */
+    public function registerSiteTwigExtension(ExtensionInterface $extension): void
+    {
+        // Make sure this extension isn't already registered
+        $class = get_class($extension);
+        if (isset($this->_siteTwigExtensions[$class])) {
+            return;
+        }
+
+        $this->_siteTwigExtensions[$class] = $extension;
 
         if (isset($this->_siteTwig)) {
             try {
