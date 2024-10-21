@@ -12,9 +12,7 @@
 {% set decimalSeparator = decimalSeparator ?? craft.app.formattingLocale.getNumberSymbol(constant('craft\\i18n\\Locale::SYMBOL_DECIMAL_SEPARATOR')) -%}
 {% set groupSeparator = groupSeparator ?? craft.app.formattingLocale.getNumberSymbol(constant('craft\\i18n\\Locale::SYMBOL_GROUPING_SEPARATOR')) -%}
 {% set currencyLabel = currencyLabel ?? null  %}
-{% set showClear = showClear ?? true %}
-{# If the input is disabled there is no need to show the clear button #}
-{% set showClear = disabled ? false : showClear %}
+{% set showClear = (showClear ?? true) and not disabled %}
 
 {% set inputAttributes = {
   name: "#{name}[value]",
