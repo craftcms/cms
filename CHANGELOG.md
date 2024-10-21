@@ -11,6 +11,10 @@
 - Fixed a bug where query params in the format of `'<operator> <values>'` weren’t being parsed correctly.
 - Fixed a bug `craft\services\Entries::saveSection()` and `craft\services\Volumes::saveVolume()` weren’t respecting predefined UUID values on new models.
 - Fixed a bug where Addresses fields in element index view weren’t showing newly-created addresses. ([#15911](https://github.com/craftcms/cms/pull/15911)) 
+- Fixed a bug where disabled Money fields were showing the clear button.
+- Fixed a bug where element slideouts had a “Save” button when viewing a revision. ([#15930](https://github.com/craftcms/cms/pull/15930))
+- Fixed a bug where element edit pages had a “Revert content from this revision” button for elements that didn’t support revisions. ([#15930](https://github.com/craftcms/cms/pull/15930))
+- Fixed an error that occurred when loading a soft-deleted nested entry from a revision. ([#15930](https://github.com/craftcms/cms/pull/15930))
 
 ## 5.4.8 - 2024-10-15
 
