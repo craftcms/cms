@@ -438,6 +438,7 @@ class ElementsController extends Controller
                         'visibleLayoutElements' => $form ? $form->getVisibleElements() : [],
                         'updatedTimestamp' => $element->dateUpdated?->getTimestamp(),
                         'canonicalUpdatedTimestamp' => $canonical->dateUpdated?->getTimestamp(),
+                        'isStatic' => $isRevision,
                     ]
                 )
             );
