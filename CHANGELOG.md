@@ -11,6 +11,7 @@
 - Fixed a bug where query params in the format of `'<operator> <values>'` weren’t being parsed correctly.
 - Fixed a bug `craft\services\Entries::saveSection()` and `craft\services\Volumes::saveVolume()` weren’t respecting predefined UUID values on new models.
 - Fixed a bug where Addresses fields in element index view weren’t showing newly-created addresses. ([#15911](https://github.com/craftcms/cms/pull/15911)) 
+- Fixed a bug where disabled Money fields were showing the clear button.
 
 ## 5.4.8 - 2024-10-15
 
