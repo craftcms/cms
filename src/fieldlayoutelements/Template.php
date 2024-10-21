@@ -28,7 +28,8 @@ class Template extends BaseUiElement
     public string $template = '';
 
     /**
-     * @var string The template render mode
+     * @var string The template mode to use when loading the template.
+     * @since 5.5.0
      */
     public string $templateMode = View::TEMPLATE_MODE_SITE;
 
