@@ -1942,7 +1942,7 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
                 return $section ? Html::encode(Craft::t('site', $section->name)) : '';
             case 'type':
                 try {
-                    return Html::encode(Craft::t('site', $this->getType()->name));
+                    return Cp::chipHtml($this->getType());
                 } catch (InvalidConfigException) {
                     return Craft::t('app', 'Unknown');
                 }

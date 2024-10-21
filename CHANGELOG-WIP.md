@@ -3,6 +3,7 @@
 ### Content Management
 - Improved the styling of element cards with thumbnails. ([#15692](https://github.com/craftcms/cms/pull/15692), [#15673](https://github.com/craftcms/cms/issues/15673))
 - Elements within element selection inputs now have “Replace” actions.
+- Entry types listed within entry indexes now show their icon and color. ([#15922](https://github.com/craftcms/cms/discussions/15922))
 - Address index tables can now include “Country” columns.
 - Action button cells within editable tables are now center-aligned vertically.
 - Dropdown cells within editable tables are no longer center-aligned. ([#15742](https://github.com/craftcms/cms/issues/15742))
