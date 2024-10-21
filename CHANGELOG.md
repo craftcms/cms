@@ -10,6 +10,7 @@
 - Fixed a bug where it wasn’t possible to scroll the section select modal when moving entries to a different section. ([#15900](https://github.com/craftcms/cms/issues/15900))
 - Fixed a bug where query params in the format of `'<operator> <values>'` weren’t being parsed correctly.
 - Fixed a bug `craft\services\Entries::saveSection()` and `craft\services\Volumes::saveVolume()` weren’t respecting predefined UUID values on new models.
+- Fixed a bug where Money fields’ were incorrectly showing the clear button when disabled. 
 
 ## 5.4.8 - 2024-10-15
 
