@@ -46,6 +46,14 @@ Craft.ElementEditorSlideout = Craft.CpScreenSlideout.extend(
             this.$container.data('elementEditorSettings')
           )
         );
+
+        // if it's supposed to be static, e.g. it's a revision,
+        // don't show the save button and change wording on the cancel one
+        if (this.elementEditor.settings.isStatic) {
+          this.$saveBtn.remove();
+          this.$cancelBtn[0].innerText = Craft.t('app', 'Close');
+        }
+
         this.elementEditor.on('beforeSubmit', () => {
           Object.keys(this.settings.saveParams).forEach((name) => {
             $('<input/>', {
@@ -187,6 +195,7 @@ Craft.ElementEditorSlideout = Craft.CpScreenSlideout.extend(
       onSaveElement: null,
       validators: [],
       expandData: [],
+      isStatic: false,
     },
   }
 );
