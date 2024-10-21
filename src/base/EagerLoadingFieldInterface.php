@@ -13,7 +13,7 @@ namespace craft\base;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
  */
-interface EagerLoadingFieldInterface
+interface EagerLoadingFieldInterface extends FieldInterface
 {
     /**
      * Returns an array that maps source-to-target element IDs based on this custom field.
