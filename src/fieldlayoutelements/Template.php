@@ -28,6 +28,12 @@ class Template extends BaseUiElement
     public string $template = '';
 
     /**
+     * @var string The template mode to use when loading the template.
+     * @since 5.5.0
+     */
+    public string $templateMode = View::TEMPLATE_MODE_SITE;
+
+    /**
      * @inheritdoc
      */
     protected function selectorLabel(): string
@@ -100,7 +106,7 @@ class Template extends BaseUiElement
             $content = trim(Craft::$app->getView()->renderTemplate($this->template, [
                 'element' => $element,
                 'static' => $static,
-            ], View::TEMPLATE_MODE_SITE));
+            ], $this->templateMode));
         } catch (Throwable $e) {
             return $this->_error($e->getMessage(), 'error');
         }
