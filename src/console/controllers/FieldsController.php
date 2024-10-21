@@ -139,7 +139,6 @@ EOD,
                         ]);
                     } finally {
                         Console::outdent();
-                        $this->stdout(Console::indentStr() . ' ');
                     }
                 });
             }
@@ -277,7 +276,6 @@ MD);
                                 ]);
                             } finally {
                                 Console::outdent();
-                                $this->stdout(Console::indentStr() . ' ');
                             }
                         },
                     );

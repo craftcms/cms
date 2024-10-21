@@ -383,7 +383,6 @@ class ResaveController extends Controller
                         $this->runAction($id, $params);
                     } finally {
                         Console::outdent();
-                        $this->stdout(Console::indentStr() . ' ');
                     }
                 });
             } catch (Exception) {

@@ -239,6 +239,20 @@ class Controller extends YiiController
     /**
      * @inheritdoc
      */
+    public function stdout($string)
+    {
+        if ($this->isColorEnabled()) {
+            $args = func_get_args();
+            array_shift($args);
+            $string = Console::ansiFormat($string, $args);
+        }
+
+        return Console::stdout($string);
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function getActionHelpSummary($action): string
     {
         if (isset($this->_actions[$action->id])) {
@@ -465,19 +479,32 @@ class Controller extends YiiController
         $this->stdout(Console::indentStr() . ' → ', Console::FG_GREY);
         $this->stdout($this->markdownToAnsi($description));
         $this->stdout(' … ', Console::FG_GREY);
+        Console::$prependNewline = true;
 
         if ($withDuration) {
             $time = microtime(true);
         }
 
+        // keep track of whether anything else was output
+        $outputCount = Console::$outputCount;
+
         try {
             $action();
         } catch (Throwable $e) {
+            if (Console::$outputCount !== $outputCount) {
+                $this->stdout(Console::indentStr() . ' ');
+            }
             $this->stdout("error: {$e->getMessage()}" . PHP_EOL, Console::FG_RED);
             throw $e;
+        } finally {
+            Console::$prependNewline = false;
         }
 
-        $this->stdout('✓', Console::FG_GREEN, Console::BOLD);
+        if (Console::$outputCount !== $outputCount) {
+            $this->stdout(Console::indentStr() . ' ');
+        }
+        $this->stdout('✓ ', Console::FG_GREEN, Console::BOLD);
+        $this->stdout('done', Console::FG_GREEN);
         if ($withDuration) {
             $this->stdout(sprintf(' (time: %.3fs)', microtime(true) - $time), Console::FG_GREY);
         }
