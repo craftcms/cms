@@ -17,6 +17,8 @@
 ### Administration
 - All relation fields can now be selected as field layouts’ thumbnail providers. ([#15651](https://github.com/craftcms/cms/discussions/15651))
 - Added the “Markdown” field layout UI element type. ([#15674](https://github.com/craftcms/cms/pull/15674), [#15664](https://github.com/craftcms/cms/discussions/15664))
+- Sections are no longer required to have unique names. ([#9829](https://github.com/craftcms/cms/discussions/9829))
+- Customize Sources modals now display native sources’ handles, when known.
 - Added `pc/*` commands as an alias of `project-config/*`.
 - Added the `resave/all` command.
 - Added the `--except`, `--minor-only`, and `--patch-only` options to the `update` command. ([#15829](https://github.com/craftcms/cms/pull/15829))

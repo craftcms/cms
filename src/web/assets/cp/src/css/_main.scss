@@ -1586,6 +1586,15 @@ td.right {
     flex: 1;
   }
 
+  .handle {
+    @include mixins.fixed-width-font;
+    font-size: 0.8em !important;
+  }
+
+  &:not(.sel) .handle {
+    color: var(--medium-text-color);
+  }
+
   &.heading {
     .label {
       text-transform: uppercase;
@@ -1603,7 +1612,7 @@ td.right {
 .customize-sources-item__move {
   position: absolute;
   inset-block-start: 50%;
-  inset-inline-end: 0;
+  inset-inline-end: 3px;
   transform: translate(-50%, -50%);
   justify-content: center;
   align-items: center;
@@ -1615,10 +1624,10 @@ td.right {
 }
 
 .customize-sources-item__btn {
-  padding-block: 8px;
-  padding-inline: 14px;
+  flex: 1;
+  padding-block: 6px;
+  padding-inline: var(--xl);
   padding-inline-end: 30px;
-  margin: 3px;
 }
 
 .checkbox-select-item {
