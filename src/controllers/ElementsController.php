@@ -2111,15 +2111,20 @@ JS, [
 
         // Loading an existing element?
         if ($this->_draftId || $this->_revisionId) {
-            $element = $this->_elementQuery($elementType)
+            $query = $this->_elementQuery($elementType)
                 ->draftId($this->_draftId)
                 ->revisionId($this->_revisionId)
                 ->provisionalDrafts($this->_provisional)
                 ->siteId($siteId)
                 ->preferSites($preferSites)
                 ->unique()
-                ->status(null)
-                ->one();
+                ->status(null);
+
+            if ($this->_revisionId) {
+                $query->trashed(null);
+            }
+
+            $element = $query->one();
 
             if (!$element) {
                 // check for the canonical element as a fallback
