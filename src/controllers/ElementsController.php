@@ -899,7 +899,7 @@ class ElementsController extends Controller
         }
 
         // Revert content from this revision
-        if ($isRevision && $canSaveCanonical) {
+        if ($isRevision && $canSaveCanonical && $element->hasRevisions()) {
             $components[] = Html::beginForm() .
                 Html::actionInput('elements/revert') .
                 Html::redirectInput('{cpEditUrl}') .
