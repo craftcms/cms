@@ -222,9 +222,10 @@ class Connection extends \yii\db\Connection
     public function getBackupFilePath(): string
     {
         // Determine the backup file path
-        $systemName = mb_strtolower(FileHelper::sanitizeFilename(Craft::$app->getSystemName(), [
+        $systemName = FileHelper::sanitizeFilename(Craft::$app->getSystemName(), [
             'asciiOnly' => true,
-        ]));
+        ]);
+        $systemName = str_replace(['\'', '"'], '', strtolower($systemName));
         $version = Craft::$app->getInfo()->version ?? Craft::$app->getVersion();
         $filename = ($systemName ? "$systemName--" : '') . gmdate('Y-m-d-His') . "--v$version";
         $backupPath = Craft::$app->getPath()->getDbBackupPath();

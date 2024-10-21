@@ -28,6 +28,7 @@ use craft\elements\conditions\ElementConditionInterface;
 use craft\elements\db\EagerLoadPlan;
 use craft\elements\db\ElementQuery;
 use craft\elements\db\ElementQueryInterface;
+use craft\elements\db\NestedElementQueryInterface;
 use craft\elements\ElementCollection;
 use craft\elements\exporters\Expanded;
 use craft\elements\exporters\Raw;
@@ -2881,16 +2882,21 @@ abstract class Element extends Component implements ElementInterface
         $prop = $anySite ? '_canonicalAnySite' : '_canonical';
 
         if (!isset($this->$prop)) {
-            $this->$prop = static::find()
-                    ->id($this->_canonicalId)
-                    ->siteId($anySite ? '*' : $this->siteId)
-                    ->preferSites([$this->siteId])
-                    ->structureId($this->structureId)
-                    ->unique()
-                    ->status(null)
-                    ->trashed(null)
-                    ->ignorePlaceholders()
-                    ->one() ?? false;
+            $query = static::find()
+                ->id($this->_canonicalId)
+                ->siteId($anySite ? '*' : $this->siteId)
+                ->preferSites([$this->siteId])
+                ->structureId($this->structureId)
+                ->unique()
+                ->status(null)
+                ->trashed(null)
+                ->ignorePlaceholders();
+
+            if ($this instanceof NestedElementInterface && $query instanceof NestedElementQueryInterface) {
+                $query->ownerId($this->getOwnerId());
+            }
+
+            $this->$prop = $query->one();
         }
 
         return $this->$prop ?: $this;
@@ -3205,7 +3211,7 @@ abstract class Element extends Component implements ElementInterface
     public function getCrumbs(): array
     {
         if ($this instanceof NestedElementInterface) {
-            $owner = $this->getPrimaryOwner();
+            $owner = $this->getOwner();
             if ($owner) {
                 return [
                     ...$owner->getCrumbs(),
@@ -3626,6 +3632,7 @@ JS, [
                     'draftId' => $this->isProvisionalDraft ? null : $this->draftId,
                     'revisionId' => $this->revisionId,
                     'siteId' => $this->siteId,
+                    'ownerId' => $this instanceof NestedElementInterface ? $this->getOwnerId() : null,
                 ],
             ]);
         }
@@ -5030,6 +5037,14 @@ JS, [
      */
     public function hasEagerLoadedElements(string $handle): bool
     {
+        if (!isset($this->_eagerLoadedElements[$handle])) {
+            // See if we have it stored with the field layout provider’s handle
+            $providerHandle = $this->providerHandle();
+            if ($providerHandle !== null && isset($this->_eagerLoadedElements["$providerHandle:$handle"])) {
+                $handle = "$providerHandle:$handle";
+            }
+        }
+
         return isset($this->_eagerLoadedElements[$handle]);
     }
 
@@ -5039,7 +5054,13 @@ JS, [
     public function getEagerLoadedElements(string $handle): ?ElementCollection
     {
         if (!isset($this->_eagerLoadedElements[$handle])) {
-            return null;
+            // See if we have it stored with the field layout provider’s handle
+            $providerHandle = $this->providerHandle();
+            if ($providerHandle !== null && isset($this->_eagerLoadedElements["$providerHandle:$handle"])) {
+                $handle = "$providerHandle:$handle";
+            } else {
+                return null;
+            }
         }
 
         $elements = $this->_eagerLoadedElements[$handle];
@@ -5106,6 +5127,14 @@ JS, [
      */
     public function getEagerLoadedElementCount(string $handle): ?int
     {
+        if (!isset($this->_eagerLoadedElementCounts[$handle])) {
+            // See if we have it stored with the field layout provider’s handle
+            $providerHandle = $this->providerHandle();
+            if ($providerHandle !== null && isset($this->_eagerLoadedElements["$providerHandle:$handle"])) {
+                $handle = "$providerHandle:$handle";
+            }
+        }
+
         return $this->_eagerLoadedElementCounts[$handle] ?? null;
     }
 
@@ -5115,6 +5144,15 @@ JS, [
     public function setEagerLoadedElementCount(string $handle, int $count): void
     {
         $this->_eagerLoadedElementCounts[$handle] = $count;
+    }
+
+    private function providerHandle(): ?string
+    {
+        try {
+            return $this->getFieldLayout()?->provider?->getHandle();
+        } catch (InvalidConfigException) {
+            return null;
+        }
     }
 
     /**

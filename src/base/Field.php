@@ -830,6 +830,12 @@ JS, [
             $orderBy = "CAST($orderBy AS CHAR(255))";
         }
 
+        // for pgsql, we have to make sure decimals column type is cast to decimal, otherwise it won't be sorted correctly
+        // see https://github.com/craftcms/cms/issues/15828
+        if ($db->getIsPgsql() && is_string($dbType) && Db::parseColumnType($dbType) === Schema::TYPE_DECIMAL) {
+            $orderBy = "CAST($orderBy AS DECIMAL)";
+        }
+
         // The attribute name should match the table attribute name,
         // per ElementSources::getTableAttributesForFieldLayouts()
         return [

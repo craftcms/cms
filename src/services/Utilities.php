@@ -142,9 +142,22 @@ class Utilities extends Component
         /** @var string|UtilityInterface $class */
         /** @phpstan-var class-string<UtilityInterface>|UtilityInterface $class */
         $utilityId = $class::id();
-        $user = Craft::$app->getUser();
 
-        return $utilityId === ProjectConfigUtility::id() ? $user->getIsAdmin() : $user->checkPermission('utility:' . $utilityId);
+        // The Project Config utility is for admins only!
+        if ($class === ProjectConfigUtility::class) {
+            if (!Craft::$app->getUser()->getIsAdmin()) {
+                return false;
+            }
+        } elseif (!Craft::$app->getUser()->checkPermission("utility:$utilityId")) {
+            return false;
+        }
+
+        // Make sure the utility isn't disabled
+        if (in_array($utilityId, Craft::$app->getConfig()->getGeneral()->disabledUtilities)) {
+            return false;
+        }
+
+        return true;
     }
 
     /**

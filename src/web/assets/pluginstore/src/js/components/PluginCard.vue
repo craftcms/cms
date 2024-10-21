@@ -34,6 +34,17 @@
         <div>{{ plugin.shortDescription }}</div>
       </div>
 
+      <template
+        v-if="
+          plugin.totalReviews && plugin.totalReviews > 0 && plugin.ratingAvg
+        "
+      >
+        <div class="tw-flex tw-items-center tw-gap-1 tw-text-sm tw-mt-2 light">
+          <RatingStars :rating="plugin.ratingAvg" size="sm" />
+          ({{ plugin.totalReviews }})
+        </div>
+      </template>
+
       <template v-if="plugin.abandoned">
         <div class="error">{{ 'Abandoned' | t('app') }}</div>
       </template>
@@ -57,11 +68,13 @@
 
   import {mapGetters} from 'vuex';
   import EditionBadge from './EditionBadge';
+  import RatingStars from '../components/RatingStars.vue';
 
   export default {
     props: ['plugin', 'trialMode'],
 
     components: {
+      RatingStars,
       EditionBadge,
     },
 
@@ -148,6 +161,11 @@
         @apply tw-ml-2;
       }
     }
+  }
+
+  .plugin-rating {
+    display: flex;
+    align-items: center;
   }
 
   a.plugin-card {
