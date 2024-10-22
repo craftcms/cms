@@ -82,7 +82,7 @@ class Section extends Model implements Chippable, CpEditable, Iconic
     public ?string $handle = null;
 
     /**
-     * @var string|null Type
+     * @var self::TYPE_*|null Type
      */
     public ?string $type = null;
 
