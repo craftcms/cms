@@ -980,7 +980,6 @@ class ExtensionTest extends TestCase
      */
     public function testDataUrlFunction(): void
     {
-        Craft::setAlias('@root', dirname(__DIR__, 4));
         $path = '@root/.github/workflows/ci.yml';
         $dataUrl = $this->view->renderString('{{ dataUrl(path) }}', compact('path'));
         self::assertStringStartsWith('data:application/x-yaml;base64,', $dataUrl);

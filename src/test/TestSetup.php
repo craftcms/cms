@@ -323,6 +323,7 @@ class TestSetup
 
         $configPath = realpath(CRAFT_CONFIG_PATH);
         $contentMigrationsPath = realpath(CRAFT_MIGRATIONS_PATH);
+        $rootPath = realpath(CRAFT_ROOT_PATH);
         $storagePath = realpath(CRAFT_STORAGE_PATH);
         $templatesPath = realpath(CRAFT_TEMPLATES_PATH);
         $testsPath = realpath(CRAFT_TESTS_PATH);
@@ -355,6 +356,7 @@ class TestSetup
         Craft::setAlias('@appicons', $srcPath . DIRECTORY_SEPARATOR . 'icons');
         Craft::setAlias('@config', $configPath);
         Craft::setAlias('@contentMigrations', $contentMigrationsPath);
+        Craft::setAlias('@root', $rootPath);
         Craft::setAlias('@storage', $storagePath);
         Craft::setAlias('@templates', $templatesPath);
         Craft::setAlias('@tests', $testsPath);
