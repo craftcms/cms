@@ -306,7 +306,10 @@ class Section extends Model implements Chippable, CpEditable, Iconic
      */
     public function setSiteSettings(array $siteSettings): void
     {
-        $this->_siteSettings = ArrayHelper::index($siteSettings, 'siteId');
+        $this->_siteSettings = ArrayHelper::index(
+            $siteSettings,
+            fn(Section_SiteSettings $siteSettings) => $siteSettings->siteId,
+        );
 
         foreach ($this->_siteSettings as $settings) {
             $settings->setSection($this);
