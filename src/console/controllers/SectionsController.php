@@ -279,14 +279,19 @@ class SectionsController extends Controller
         } elseif ($this->interactive) {
             /** @var EntryType[] $allEntryTypes */
             $allEntryTypes = ArrayHelper::index($entriesService->getAllEntryTypes(), 'handle');
-            if (!empty($allEntryTypes) && $this->confirm('Have you already created an entry type for this section?')) {
+            if (
+                !$this->fromCategoryGroup &&
+                !$this->fromTagGroup &&
+                !$this->fromGlobalSet &&
+                !empty($allEntryTypes) &&
+                $this->confirm('Have you already created an entry type for this section?')
+            ) {
                 $entryTypeHandle = $this->select("Which entry type should be used?", array_map(
                     fn(EntryType $entryType) => $entryType->name,
                     $allEntryTypes,
                 ));
                 $entryType = $allEntryTypes[$entryTypeHandle];
             } else {
-                $this->stdout("Let’s create one now, then.\n", Console::FG_YELLOW);
                 $entryType = new EntryType();
                 $entryType->name = $this->prompt('Entry type name:', [
                     'default' => Inflector::singularize($section->name),
@@ -306,12 +311,6 @@ class SectionsController extends Controller
                 $this->do('Saving the entry type', function() use ($entryType, $sourceFieldLayout, $entriesService) {
                     if ($sourceFieldLayout) {
                         $fieldLayout = FieldLayout::createFromConfig($sourceFieldLayout->getConfig() ?? []);
-                        foreach ($fieldLayout->getTabs() as $tab) {
-                            $tab->uid = StringHelper::UUID();
-                            foreach ($tab->getElements() as $element) {
-                                $element->uid = StringHelper::UUID();
-                            }
-                        }
                         $entryType->setFieldLayout($fieldLayout);
                     }
 
