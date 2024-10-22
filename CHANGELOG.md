@@ -1,8 +1,13 @@
 # Release Notes for Craft CMS 4
 
-## Unreleased
+## 4.12.8 - 2024-10-22
 
+- The `install` command now runs through database connection setup, if Craft can’t yet connect to the database. ([#15943](https://github.com/craftcms/cms/issues/15943))
 - Fixed a bug where admin table header cells weren’t indicating when they were sorted. ([#15897](https://github.com/craftcms/cms/issues/15897))
+- Fixed an error that occurred when creating a database backup, if the System Name contained any quote-like characters. ([#15933](https://github.com/craftcms/cms/issues/15933))
+- Fixed a bug where buttons could bleed out of their containers. ([#15931](https://github.com/craftcms/cms/issues/15931), [#15946](https://github.com/craftcms/cms/pull/15946))
+- Fixed a PHP error. ([#15915](https://github.com/craftcms/cms/issues/15915))
+- Fixed an information disclosure vulnerability.
 
 ## 4.12.7 - 2024-10-15
 
