@@ -274,7 +274,7 @@ class Categories extends Component
             return false;
         }
 
-        if ($isNewCategoryGroup) {
+        if ($isNewCategoryGroup && !$group->uid) {
             $group->uid = StringHelper::UUID();
         }
 
