@@ -18,6 +18,7 @@
 ### Administration
 - All relation fields can now be selected as field layouts’ thumbnail providers. ([#15651](https://github.com/craftcms/cms/discussions/15651))
 - Added the “Markdown” field layout UI element type. ([#15674](https://github.com/craftcms/cms/pull/15674), [#15664](https://github.com/craftcms/cms/discussions/15664))
+- The Sections index table can now be sorted by Name, Handle, and Type. ([#15936](https://github.com/craftcms/cms/pull/15936))
 - Sections are no longer required to have unique names. ([#9829](https://github.com/craftcms/cms/discussions/9829))
 - Customize Sources modals now display native sources’ handles, when known.
 - Removed the “Show the Title field” entry type setting. The “Title” element can now be removed from the field layout instead. ([#15942](https://github.com/craftcms/cms/pull/15942))
