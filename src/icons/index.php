@@ -913,6 +913,12 @@ return array(
     'terms' => ' camera cinema director film movie movie camera theater video ',
     'pro' => true,
   ),
+  'camera-retro' =>
+  array(
+    'name' => ' camera retro ',
+    'terms' => ' camera image img lens photo picture record shutter video ',
+    'pro' => false,
+  ),
   'campfire' =>
   array(
     'name' => ' campfire ',
@@ -1169,6 +1175,54 @@ return array(
   array(
     'name' => ' chestnut ',
     'terms' => ' nut plant ',
+    'pro' => true,
+  ),
+  'chevron-down' =>
+  array(
+    'name' => ' chevron down ',
+    'terms' => ' arrow download expand insert ',
+    'pro' => false,
+  ),
+  'chevron-left' =>
+  array(
+    'name' => ' chevron left ',
+    'terms' => ' left pointing angle bracket arrow back bracket previous ',
+    'pro' => false,
+  ),
+  'chevron-right' =>
+  array(
+    'name' => ' chevron right ',
+    'terms' => ' right pointing angle bracket arrow bracket forward next ',
+    'pro' => false,
+  ),
+  'chevron-up' =>
+  array(
+    'name' => ' chevron up ',
+    'terms' => ' arrow collapse upgrade upload ',
+    'pro' => false,
+  ),
+  'chevrons-down' =>
+  array(
+    'name' => ' chevrons down ',
+    'terms' => ' arrow download expand ',
+    'pro' => true,
+  ),
+  'chevrons-left' =>
+  array(
+    'name' => ' chevrons left ',
+    'terms' => ' arrow back bracket previous ',
+    'pro' => true,
+  ),
+  'chevrons-right' =>
+  array(
+    'name' => ' chevrons right ',
+    'terms' => ' arrow bracket forward next ',
+    'pro' => true,
+  ),
+  'chevrons-up' =>
+  array(
+    'name' => ' chevrons up ',
+    'terms' => ' arrow collapse upgrade upload ',
     'pro' => true,
   ),
   'child' =>
@@ -3673,11 +3727,23 @@ return array(
     'terms' => ' album img landscape photo picture ',
     'pro' => false,
   ),
+  'image-landscape' =>
+  array(
+    'name' => ' image landscape ',
+    'terms' => ' image img mountain photo ',
+    'pro' => true,
+  ),
   'image-polaroid' =>
   array(
     'name' => ' image polaroid ',
     'terms' => ' capture film img instant camera lens photo photography retro snapshot vintage ',
     'pro' => true,
+  ),
+  'image-portrait' =>
+  array(
+    'name' => ' image portrait ',
+    'terms' => ' id image img photo picture selfie uer username ',
+    'pro' => false,
   ),
   'image-slash' =>
   array(
@@ -4675,6 +4741,12 @@ return array(
     'terms' => ' breakfast crepe flapjack hotcake pancake stack syrup ',
     'pro' => true,
   ),
+  'panorama' =>
+  array(
+    'name' => ' panorama ',
+    'terms' => ' image img landscape photo wide ',
+    'pro' => false,
+  ),
   'paper-plane' =>
   array(
     'name' => ' paper plane ',
@@ -4789,6 +4861,42 @@ return array(
     'terms' => ' draw edit modify pencil write ',
     'pro' => true,
   ),
+  'pen-clip' =>
+  array(
+    'name' => ' pen clip ',
+    'terms' => ' design edit modify update write ',
+    'pro' => false,
+  ),
+  'pen-fancy' =>
+  array(
+    'name' => ' pen fancy ',
+    'terms' => ' black nib design edit fountain fountain pen modify nib pen update write ',
+    'pro' => false,
+  ),
+  'pen-field' =>
+  array(
+    'name' => ' pen field ',
+    'terms' => ' imput modify signature username ',
+    'pro' => true,
+  ),
+  'pen-line' =>
+  array(
+    'name' => ' pen line ',
+    'terms' => ' draw modify write ',
+    'pro' => true,
+  ),
+  'pen-nib' =>
+  array(
+    'name' => ' pen nib ',
+    'terms' => ' design edit fountain pen modify update write ',
+    'pro' => false,
+  ),
+  'pen-paintbrush' =>
+  array(
+    'name' => ' pen paintbrush ',
+    'terms' => ' art design modify paint pencil write ',
+    'pro' => true,
+  ),
   'pen-to-square' =>
   array(
     'name' => ' pen to square ',
@@ -4800,6 +4908,12 @@ return array(
     'name' => ' pencil ',
     'terms' => ' lower left pencil design draw edit lead maintenance modify pencil update write ',
     'pro' => false,
+  ),
+  'pencil-mechanical' =>
+  array(
+    'name' => ' pencil mechanical ',
+    'terms' => ' draw edit eraser graphite lead pencil stylus write ',
+    'pro' => true,
   ),
   'people' =>
   array(
@@ -4991,6 +5105,18 @@ return array(
   array(
     'name' => ' phone rotary ',
     'terms' => ' call earphone number phone retro support telephone vintage voice ',
+    'pro' => true,
+  ),
+  'photo-film' =>
+  array(
+    'name' => ' photo film ',
+    'terms' => ' av film image library media ',
+    'pro' => false,
+  ),
+  'photo-film-music' =>
+  array(
+    'name' => ' photo film music ',
+    'terms' => ' img media ',
     'pro' => true,
   ),
   'pi' =>

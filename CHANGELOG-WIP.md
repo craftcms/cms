@@ -24,6 +24,7 @@
 - Removed the “Show the Title field” entry type setting. The “Title” element can now be removed from the field layout instead. ([#15942](https://github.com/craftcms/cms/pull/15942))
 - Entry types can now specify a Default Title Format, which will be used even if the Title field is included in the field layout, to generate a default Title value if the field is blank. ([#15942](https://github.com/craftcms/cms/pull/15942))
 - It’s now possible to control whether entry types’ Title fields are required. ([#15942](https://github.com/craftcms/cms/pull/15942))
+- Added the `camera-retro`, `chevron-down`, `chevron-left`, `chevron-right`, `chevron-up`, `chevrons-down`, `chevrons-left`, `chevrons-right`, `chevrons-up`, `image-landscape`, `image-portrait`, `panorama`, `pen-clip`, `pen-fancy`, `pen-field`, `pen-line`, `pen-nib`, `pen-paintbrush`, `pencil-mechanical`, `photo-film-music`, and `photo-film` icons.
 - Added `pc/*` commands as an alias of `project-config/*`.
 - Added the `resave/all` command.
 - Added the `--except`, `--minor-only`, and `--patch-only` options to the `update` command. ([#15829](https://github.com/craftcms/cms/pull/15829))
