@@ -109,11 +109,7 @@ class EntrifyController extends Controller
         $projectConfigChanged = false;
         $sectionCreated = false;
 
-        if (
-            !isset($this->section) &&
-            !$this->confirm("Have you already created a section to replace the “{$categoryGroup->name}” category group?")
-        ) {
-            $this->stdout("Let’s create one now, then.\n", Console::FG_YELLOW);
+        if (!isset($this->section)) {
             // Capture the new section handle
             Event::once(EntriesService::class, EntriesService::EVENT_AFTER_SAVE_SECTION, function(SectionEvent $event) {
                 $this->section = $event->section->handle;
@@ -316,13 +312,9 @@ class EntrifyController extends Controller
         $projectConfigService = Craft::$app->getProjectConfig();
         $projectConfigChanged = false;
 
-        if (
-            !isset($this->section) &&
-            !$this->confirm("Have you already created a section to replace the “{$tagGroup->name}” tag group?")
-        ) {
-            $this->stdout("Let’s create one now, then.\n", Console::FG_YELLOW);
+        if (!isset($this->section)) {
             // Capture the new section handle
-            Event::once(Entries::class, EntriesService::EVENT_AFTER_SAVE_SECTION, function(SectionEvent $event) {
+            Event::once(EntriesService::class, EntriesService::EVENT_AFTER_SAVE_SECTION, function(SectionEvent $event) {
                 $this->section = $event->section->handle;
             });
             $this->run('sections/create', [
@@ -463,13 +455,9 @@ class EntrifyController extends Controller
         $projectConfigChanged = false;
         $sectionCreated = false;
 
-        if (
-            !isset($this->section) &&
-            !$this->confirm("Have you already created a section to replace the “{$globalSet->name}” global set")
-        ) {
-            $this->stdout("Let’s create one now, then.\n", Console::FG_YELLOW);
+        if (!isset($this->section)) {
             // Capture the new section handle
-            Event::once(Entries::class, EntriesService::EVENT_AFTER_SAVE_SECTION, function(SectionEvent $event) {
+            Event::once(EntriesService::class, EntriesService::EVENT_AFTER_SAVE_SECTION, function(SectionEvent $event) {
                 $this->section = $event->section->handle;
             });
             $this->run('sections/create', [
@@ -561,38 +549,22 @@ class EntrifyController extends Controller
     private function _section(): Section
     {
         if (!isset($this->_section)) {
-            if ($this->section) {
-                $section = Craft::$app->getEntries()->getSectionByHandle($this->section);
-                if (!$section) {
-                    throw new InvalidConfigException("Invalid section handle: $this->section");
-                }
-                if ($this->_forSingle) {
-                    if ($section->type !== Section::TYPE_SINGLE) {
-                        throw new InvalidConfigException("“{$section->name}” isn’t a Single section. You must specify a Single section.", Console::FG_RED);
-                    }
-                } elseif ($section->type === Section::TYPE_SINGLE) {
-                    throw new InvalidConfigException("“{$section->name}” is a Single section. You must specify a Structure or Channel section.", Console::FG_RED);
-                }
-                $this->_section = $section;
-            } else {
-                if (!$this->interactive) {
-                    throw new InvalidConfigException('The --section option is required when this command is run non-interactively.');
-                }
-                $allSections = ArrayHelper::index(Craft::$app->getEntries()->getAllSections(), 'handle');
-                if ($this->_forSingle) {
-                    $allSections = array_filter($allSections, fn(Section $section) => $section->type === Section::TYPE_SINGLE);
-                } else {
-                    $allSections = array_filter($allSections, fn(Section $section) => $section->type !== Section::TYPE_SINGLE);
-                }
-                if (empty($allSections)) {
-                    throw new InvalidConfigException(sprintf('No %s sections exist yet.', $this->_forSingle ? 'Single' : 'Channel/Structure'));
-                }
-                $sectionHandle = $this->select("Which section should entries be saved to?", array_map(
-                    fn(Section $section) => $section->name,
-                    $allSections,
-                ));
-                $this->_section = $allSections[$sectionHandle];
+            if (!$this->section) {
+                throw new InvalidConfigException('The --section option is required when this command is run non-interactively.');
             }
+
+            $section = Craft::$app->getEntries()->getSectionByHandle($this->section);
+            if (!$section) {
+                throw new InvalidConfigException("Invalid section handle: $this->section");
+            }
+            if ($this->_forSingle) {
+                if ($section->type !== Section::TYPE_SINGLE) {
+                    throw new InvalidConfigException("“{$section->name}” isn’t a Single section. You must specify a Single section.", Console::FG_RED);
+                }
+            } elseif ($section->type === Section::TYPE_SINGLE) {
+                throw new InvalidConfigException("“{$section->name}” is a Single section. You must specify a Structure or Channel section.", Console::FG_RED);
+            }
+            $this->_section = $section;
         }
 
         return $this->_section;

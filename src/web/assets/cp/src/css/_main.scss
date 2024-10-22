@@ -1913,7 +1913,6 @@ ul.icons {
   padding-inline: 10px;
   border: none;
   text-align: center;
-  white-space: nowrap;
   user-select: none;
   box-sizing: border-box;
   appearance: none;
@@ -2073,7 +2072,10 @@ ul.icons {
   }
 }
 
-.btn,
+.btn {
+  min-height: var(--ui-control-height);
+}
+
 .spinner {
   height: var(--ui-control-height);
 }
@@ -2345,7 +2347,7 @@ ul.icons {
 .btngroup.small input.btn,
 .btn.small,
 .btn.small + .spinner {
-  height: 22px;
+  min-height: 22px;
 }
 
 /* big buttons */
@@ -2367,7 +2369,7 @@ ul.icons {
 .btngroup.big input.btn,
 .btn.big,
 .btn.big + .spinner {
-  height: 36px;
+  min-height: 36px;
 }
 
 /* huge buttons */
@@ -7847,7 +7849,7 @@ fieldset {
 .expand-status-btn {
   margin-inline-start: 5px;
   width: 30px;
-  height: 17px;
+  min-height: 17px;
   padding: 0;
   line-height: 16px;
   border-radius: var(--small-border-radius);
