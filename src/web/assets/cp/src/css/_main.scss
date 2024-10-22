@@ -1608,9 +1608,11 @@ ul.icons {
   }
 }
 
-.btn,
-.spinner {
+.btn {
   min-height: var(--ui-control-height);
+}
+.spinner {
+  height: var(--ui-control-height);
 }
 
 .btn[data-icon-after]:not(:empty):not(.btn-empty):after,
@@ -1900,7 +1902,7 @@ ul.icons {
 .btngroup.small input.btn,
 .btn.small,
 .btn.small + .spinner {
-  height: 22px;
+  min-height: 22px;
 }
 
 /* big buttons */
@@ -1921,7 +1923,7 @@ ul.icons {
 .btngroup.big input.btn,
 .btn.big,
 .btn.big + .spinner {
-  height: 36px;
+  min-height: 36px;
 }
 
 /* special buttons */
