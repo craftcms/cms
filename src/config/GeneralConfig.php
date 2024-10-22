@@ -15,6 +15,7 @@ use craft\helpers\Localization;
 use craft\helpers\StringHelper;
 use craft\services\Config;
 use DateInterval;
+use enshrined\svgSanitize\Sanitizer;
 use yii\base\InvalidArgumentException;
 use yii\base\InvalidConfigException;
 use yii\base\UnknownPropertyException;
@@ -2622,7 +2623,7 @@ class GeneralConfig extends BaseConfig
     public ?string $sameSiteCookieValue = null;
 
     /**
-     * @var bool Whether Craft should sanitize uploaded SVG files and strip out potential malicious-looking content.
+     * @var bool|Closure Whether Craft should sanitize uploaded SVG files and strip out potential malicious-looking content.
      *
      * This should definitely be enabled if you are accepting SVG uploads from untrusted sources.
      *
@@ -2635,9 +2636,19 @@ class GeneralConfig extends BaseConfig
      * ```
      * :::
      *
+     * Alternatively, this maybe set to a closure that accepts a [[\enshrined\svgSanitize\Sanitizer]] instance and returns
+     * a [[\enshrined\svgSanitize\Sanitizer]] instance further customization.
+     *
+     * ```php
+     * ->sanitizeSvgUploads(function(\enshrined\svgSanitize\Sanitizer $sanitizer): \enshrined\svgSanitize\Sanitizer {
+     *     $sanitizer->removeRemoteReferences(true);
+     *     return $sanitizer;
+     * })
+     * ```
+     *
      * @group Security
      */
-    public bool $sanitizeSvgUploads = true;
+    public bool|Closure $sanitizeSvgUploads = true;
 
     /**
      * @var string A private, random, cryptographically-secure key that is used for hashing and encrypting data in [[\craft\services\Security]].
@@ -6150,12 +6161,12 @@ class GeneralConfig extends BaseConfig
      * ```
      *
      * @group Security
-     * @param bool $value
+     * @param bool|Closure(Sanitizer):Sanitizer $value
      * @return self
      * @see $sanitizeSvgUploads
      * @since 4.2.0
      */
-    public function sanitizeSvgUploads(bool $value = true): self
+    public function sanitizeSvgUploads(bool|Closure $value = true): self
     {
         $this->sanitizeSvgUploads = $value;
         return $this;
