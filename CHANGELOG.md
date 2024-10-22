@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- `authorId`, `authorIds`, `authors`, and `sectionId` are now reserved field handles for entry types. ([#15923](https://github.com/craftcms/cms/issues/15923))
 - Added `craft\elements\db\NestedElementQueryInterface`.
 - Added `craft\services\Gc::$silent`.
 - Fixed a bug where admin table header cells weren’t indicating when they were sorted. ([#15897](https://github.com/craftcms/cms/issues/15897))
