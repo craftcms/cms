@@ -322,7 +322,7 @@ class EntrifyController extends Controller
         ) {
             $this->stdout("Let’s create one now, then.\n", Console::FG_YELLOW);
             // Capture the new section handle
-            Event::once(Entries::class, EntriesService::EVENT_AFTER_SAVE_SECTION, function(SectionEvent $event) {
+            Event::once(EntriesService::class, EntriesService::EVENT_AFTER_SAVE_SECTION, function(SectionEvent $event) {
                 $this->section = $event->section->handle;
             });
             $this->run('sections/create', [
@@ -469,7 +469,7 @@ class EntrifyController extends Controller
         ) {
             $this->stdout("Let’s create one now, then.\n", Console::FG_YELLOW);
             // Capture the new section handle
-            Event::once(Entries::class, EntriesService::EVENT_AFTER_SAVE_SECTION, function(SectionEvent $event) {
+            Event::once(EntriesService::class, EntriesService::EVENT_AFTER_SAVE_SECTION, function(SectionEvent $event) {
                 $this->section = $event->section->handle;
             });
             $this->run('sections/create', [

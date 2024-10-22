@@ -20,6 +20,7 @@
 - Fixed a bug where element slideouts had a “Save” button when viewing a revision. ([#15930](https://github.com/craftcms/cms/pull/15930))
 - Fixed a bug where element edit pages had a “Revert content from this revision” button for elements that didn’t support revisions. ([#15930](https://github.com/craftcms/cms/pull/15930))
 - Fixed an error that occurred when loading a soft-deleted nested entry from a revision. ([#15930](https://github.com/craftcms/cms/pull/15930))
+- Fixed a bug where the `entrify/tags` and `entrify/global-set` commands would prompt for the target section after one had just been created.
 - Fixed an information disclosure vulnerability.
 
 ## 5.4.8 - 2024-10-15
