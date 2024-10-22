@@ -64,6 +64,7 @@ use DateTime;
 use Illuminate\Support\Collection;
 use Throwable;
 use yii\base\Exception;
+use yii\base\InvalidArgumentException;
 use yii\base\InvalidConfigException;
 use yii\db\Expression;
 
@@ -905,8 +906,12 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
         if (!$entryType->hasTitleField) {
             return false;
         }
-        /** @var EntryTitleField $titleField */
-        $titleField = $entryType->getFieldLayout()->getField('title');
+        try {
+            /** @var EntryTitleField $titleField */
+            $titleField = $entryType->getFieldLayout()->getField('title');
+        } catch (InvalidArgumentException) {
+            return true;
+        }
         return $titleField->required;
     }
 
