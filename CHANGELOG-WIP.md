@@ -20,6 +20,9 @@
 - Added the “Markdown” field layout UI element type. ([#15674](https://github.com/craftcms/cms/pull/15674), [#15664](https://github.com/craftcms/cms/discussions/15664))
 - Sections are no longer required to have unique names. ([#9829](https://github.com/craftcms/cms/discussions/9829))
 - Customize Sources modals now display native sources’ handles, when known.
+- Removed the “Show the Title field” entry type setting. The “Title” element can now be removed from the fieldl layout instead.
+- Entry types can now specify a Default Title Format, which will be used even if the Title field is included in the field layout, to generate a default Title value if the field is blank.
+- It’s now possible to control whether entry types’ Title fields are required.
 - Added `pc/*` commands as an alias of `project-config/*`.
 - Added the `resave/all` command.
 - Added the `--except`, `--minor-only`, and `--patch-only` options to the `update` command. ([#15829](https://github.com/craftcms/cms/pull/15829))
@@ -56,6 +59,7 @@
 - Added `craft\helpers\Console::$outputCount`.
 - Added `craft\helpers\Console::$prependNewline`.
 - Added `craft\fieldlayoutelements\Template::$templateMode`. ([#15932](https://github.com/craftcms/cms/pull/15932))
+- Added `craft\models\FieldLayout::prependElements()`.
 - `craft\helpers\Console::output()` now prepends an indent to each line of the passed-in string, if `indent()` had been called prior.
 - Deprecated the `enableBasicHttpAuth` config setting. `craft\filters\BasicHttpAuthLogin` should be used instead. ([#15720](https://github.com/craftcms/cms/pull/15720))
 - Added the `serializeForm` event to `Craft.ElementEditor`. ([#15794](https://github.com/craftcms/cms/discussions/15794))

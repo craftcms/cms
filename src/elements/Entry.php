@@ -41,6 +41,7 @@ use craft\enums\Color;
 use craft\enums\PropagationMethod;
 use craft\events\DefineEntryTypesEvent;
 use craft\events\ElementCriteriaEvent;
+use craft\fieldlayoutelements\entries\EntryTitleField;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Cp;
 use craft\helpers\DateTimeHelper;
@@ -900,7 +901,13 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
      */
     protected function shouldValidateTitle(): bool
     {
-        return $this->getType()->hasTitleField;
+        $entryType = $this->getType();
+        if (!$entryType->hasTitleField) {
+            return false;
+        }
+        /** @var EntryTitleField $titleField */
+        $titleField = $entryType->getFieldLayout()->getField('title');
+        return $titleField->required;
     }
 
     /**
@@ -2337,7 +2344,7 @@ JS;
     {
         $entryType = $this->getType();
 
-        if ($entryType->hasTitleField) {
+        if ($entryType->hasTitleField && trim($this->title ?? '') !== '') {
             return;
         }
 

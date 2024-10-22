@@ -11,9 +11,8 @@ use craft\base\ElementInterface;
 use craft\base\Field;
 use craft\elements\Entry;
 use craft\fieldlayoutelements\TitleField;
-use craft\helpers\Cp;
+use craft\helpers\ArrayHelper;
 use craft\helpers\ElementHelper;
-use craft\helpers\Html;
 use yii\base\InvalidArgumentException;
 
 /**
@@ -27,18 +26,32 @@ class EntryTitleField extends TitleField
     /**
      * @inheritdoc
      */
-    public bool $required = false;
+    public bool $mandatory = false;
 
     /**
      * @inheritdoc
      */
-    protected function selectorInnerHtml(): string
+    public bool $requirable = true;
+
+    /**
+     * @inheritdoc
+     */
+    public function __construct($config = [])
     {
-        return
-            Html::tag('div', Cp::iconSvg('shuteye'), [
-                'class' => ['cp-icon', 'medium', 'gray', 'fld-title-field-icon', 'fld-field-hidden', 'hidden'],
-            ]) .
-            parent::selectorInnerHtml();
+        $this->required = ArrayHelper::remove($config, 'required', $this->required);
+        unset($config['requirable']);
+        parent::__construct($config);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function fields(): array
+    {
+        $fields = parent::fields();
+        unset($fields['requirable']);
+        $fields['required'] = 'required';
+        return $fields;
     }
 
     /**
@@ -77,8 +90,6 @@ class EntryTitleField extends TitleField
         if (!$element->getType()->hasTitleField) {
             return null;
         }
-
-        $this->required = true;
 
         return parent::inputHtml($element, $static);
     }
