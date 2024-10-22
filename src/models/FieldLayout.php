@@ -359,21 +359,7 @@ class FieldLayout extends Model
         }
 
         if (!empty($missingFields)) {
-            // Make sure there's at least one tab
-            $tab = reset($this->_tabs);
-            if (!$tab) {
-                $this->_tabs[] = $tab = new FieldLayoutTab([
-                    'layout' => $this,
-                    'layoutId' => $this->id,
-                    'name' => Craft::t('app', 'Content'),
-                    'sortOrder' => 1,
-                    'elements' => [],
-                ]);
-            }
-
-            $layoutElements = $tab->getElements();
-            array_unshift($layoutElements, ...array_values($missingFields));
-            $tab->setElements($layoutElements);
+            $this->prependElements(array_values($missingFields));
         }
 
         // Clear caches
@@ -661,6 +647,31 @@ class FieldLayout extends Model
     {
         $filter = fn(FieldLayoutElement $layoutElement) => $layoutElement instanceof CustomField;
         return iterator_to_array($this->_elements($filter, $element));
+    }
+
+    /**
+     * Prepends elements to the first tab.
+     *
+     * @param FieldLayoutElement[] $elements
+     * @since 5.5.0
+     */
+    public function prependElements(array $elements): void
+    {
+        // Make sure there's at least one tab
+        $tab = reset($this->_tabs);
+        if (!$tab) {
+            $this->_tabs[] = $tab = new FieldLayoutTab([
+                'layout' => $this,
+                'layoutId' => $this->id,
+                'name' => Craft::t('app', 'Content'),
+                'sortOrder' => 1,
+                'elements' => [],
+            ]);
+        }
+
+        $layoutElements = $tab->getElements();
+        array_unshift($layoutElements, ...$elements);
+        $tab->setElements($layoutElements);
     }
 
     /**
