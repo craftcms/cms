@@ -1238,7 +1238,12 @@ SQL)->execute();
                 'name' => $label,
                 'url' => $section->getCpEditUrl(),
                 'handle' => $section->handle,
-                'type' => $section->type,
+                'type' => match ($section->type) {
+                    Section::TYPE_SINGLE => Craft::t('app', 'Single'),
+                    Section::TYPE_CHANNEL => Craft::t('app', 'Channel'),
+                    Section::TYPE_STRUCTURE => Craft::t('app', 'Structure'),
+                    null => null,
+                },
             ];
         }
 
