@@ -1913,7 +1913,6 @@ ul.icons {
   padding-inline: 10px;
   border: none;
   text-align: center;
-  white-space: nowrap;
   user-select: none;
   box-sizing: border-box;
   appearance: none;
@@ -2075,7 +2074,7 @@ ul.icons {
 
 .btn,
 .spinner {
-  height: var(--ui-control-height);
+  min-height: var(--ui-control-height);
 }
 
 .btn[data-icon-after]:not(:empty, .btn-empty)::after,
@@ -7847,7 +7846,7 @@ fieldset {
 .expand-status-btn {
   margin-inline-start: 5px;
   width: 30px;
-  height: 17px;
+  min-height: 17px;
   padding: 0;
   line-height: 16px;
   border-radius: var(--small-border-radius);
