@@ -64,6 +64,7 @@ use craft\records\StructureElement as StructureElementRecord;
 use craft\validators\HandleValidator;
 use craft\validators\SlugValidator;
 use DateTime;
+use Illuminate\Support\Collection;
 use Throwable;
 use UnitEnum;
 use yii\base\Behavior;
@@ -2452,7 +2453,7 @@ class Elements extends Component
             ->indexBy('id')
             ->all();
 
-        $activity = [];
+        $activity = Collection::make();
         /** @var ElementActivity[] $activityByUserId */
         $activityByUserId = [];
         $elements = [];
@@ -2468,7 +2469,7 @@ class Elements extends Component
                     $newerRecord->type === ElementActivity::TYPE_VIEW &&
                     $result['type'] !== ElementActivity::TYPE_VIEW
                 ) {
-                    array_splice($activity, array_search($newerRecord, $activity), 1);
+                    $activity = $activity->filter(fn(ElementActivity $record) => $record !== $newerRecord);
                     unset($activityByUserId[$result['userId']]);
                 } else {
                     continue;
@@ -2501,15 +2502,16 @@ class Elements extends Component
                 $elements[$elementKey][$result['siteId']] = $resultElement;
             }
 
-            $activity[] = $activityByUserId[$result['userId']] = new ElementActivity(
+            $record = $activityByUserId[$result['userId']] = new ElementActivity(
                 $users[$result['userId']],
                 $elements[$elementKey][$result['siteId']],
                 $result['type'],
                 DateTimeHelper::toDateTime($result['timestamp']),
             );
+            $activity->push($record);
         }
 
-        return $activity;
+        return $activity->values()->all();
     }
 
     /**
