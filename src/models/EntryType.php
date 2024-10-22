@@ -286,7 +286,11 @@ JS, [
         $fieldLayout = $this->getFieldLayout();
         $fieldLayout->reservedFieldHandles = [
             'author',
+            'authorId',
+            'authorIds',
+            'authors',
             'section',
+            'sectionId',
             'type',
         ];
 
