@@ -1480,6 +1480,8 @@ SQL)->execute();
             ]));
         }
 
+        $entryType->hasTitleField = $entryType->getFieldLayout()->isFieldIncluded('title');
+
         if ($runValidation && !$entryType->validate()) {
             Craft::info('Entry type not saved due to validation error.', __METHOD__);
             return false;

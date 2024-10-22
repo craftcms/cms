@@ -2606,12 +2606,7 @@ abstract class Element extends Component implements ElementInterface
         $rules[] = [['dateCreated', 'dateUpdated'], DateTimeValidator::class, 'on' => [self::SCENARIO_DEFAULT, self::SCENARIO_LIVE]];
         $rules[] = [['isFresh'], BooleanValidator::class];
 
-        $rules[] = [
-            ['title'],
-            'trim',
-            'on' => [self::SCENARIO_DEFAULT, self::SCENARIO_LIVE],
-            'when' => fn() => $this->shouldValidateTitle(),
-        ];
+        $rules[] = [['title'], 'trim'];
         $rules[] = [
             ['title'],
             StringValidator::class,
