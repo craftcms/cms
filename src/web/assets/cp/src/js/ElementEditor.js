@@ -2067,6 +2067,10 @@ Craft.ElementEditor = Garnish.Base.extend(
         } finally {
           this.submittingForm = false;
           this.trigger('afterSubmit');
+
+          // after fully saving the element in a slideout, trigger checkForm but without creating a draft
+          // see https://github.com/craftcms/cms/issues/15938
+          this.checkForm(false, false);
         }
 
         if (this.settings.isUnpublishedDraft) {
