@@ -6,8 +6,25 @@ require dirname(__DIR__) . '/vendor/autoload.php';
 $app = require(dirname(__DIR__) . '/bootstrap/console.php');
 
 $icons = [
+    'brands/codepen.svg',
+    'brands/discord.svg',
+    'brands/dribbble.svg',
+    'brands/facebook.svg',
     'brands/github.svg',
+    'brands/instagram.svg',
+    'brands/kickstarter.svg',
+    'brands/linkedin.svg',
     'brands/markdown.svg',
+    'brands/pinterest.svg',
+    'brands/product-hunt.svg',
+    'brands/rebel.svg',
+    'brands/shopify.svg',
+    'brands/threads.svg',
+    'brands/tiktok.svg',
+    'brands/vimeo.svg',
+    'brands/whatsapp.svg',
+    'brands/x-twitter.svg',
+    'brands/youtube.svg',
     'custom-icons/asterisk-slash.svg',
     'custom-icons/diamond-slash.svg',
     'custom-icons/element-card-slash.svg',
@@ -1348,7 +1365,7 @@ foreach ($icons as $icon) {
     echo "done\n";
     $wrote++;
 
-    if (str_starts_with($icon, 'regular/') || str_starts_with($icon, 'solid/')) {
+    if (preg_match('/^(brands|regular|solid)\//', $icon)) {
         $name = pathinfo($icon, PATHINFO_FILENAME);
         if (isset($meta[$name])) {
             $terms = $meta[$name]['search']['terms'] ?? [];

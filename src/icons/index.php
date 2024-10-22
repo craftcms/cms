@@ -1417,6 +1417,12 @@ return array(
     'terms' => ' brackets code development html mysql sql ',
     'pro' => false,
   ),
+  'codepen' =>
+  array(
+    'name' => ' codepen ',
+    'terms' => '  ',
+    'pro' => false,
+  ),
   'coffee-pot' =>
   array(
     'name' => ' coffee pot ',
@@ -1741,6 +1747,12 @@ return array(
     'terms' => ' blu ray cd cd rom computer dvd load music optical drive peripheral tray video ',
     'pro' => true,
   ),
+  'discord' =>
+  array(
+    'name' => ' discord ',
+    'terms' => '  ',
+    'pro' => false,
+  ),
   'disease' =>
   array(
     'name' => ' disease ',
@@ -1836,6 +1848,12 @@ return array(
     'name' => ' dreidel ',
     'terms' => ' clay hanukkah holiday jewish judaism toy ',
     'pro' => true,
+  ),
+  'dribbble' =>
+  array(
+    'name' => ' dribbble ',
+    'terms' => '  ',
+    'pro' => false,
   ),
   'drone' =>
   array(
@@ -2713,6 +2731,12 @@ return array(
     'terms' => ' face lips mouth quiet sealed secret zipper zipper mouth face ',
     'pro' => true,
   ),
+  'facebook' =>
+  array(
+    'name' => ' facebook ',
+    'terms' => ' fabook facebook official fb social network ',
+    'pro' => false,
+  ),
   'falafel' =>
   array(
     'name' => ' falafel ',
@@ -3162,6 +3186,12 @@ return array(
     'name' => ' gingerbread man ',
     'terms' => ' cookie decoration frosting holiday ',
     'pro' => true,
+  ),
+  'github' =>
+  array(
+    'name' => ' github ',
+    'terms' => ' octocat ',
+    'pro' => false,
   ),
   'glass' =>
   array(
@@ -3793,6 +3823,12 @@ return array(
     'terms' => ' field input name ',
     'pro' => true,
   ),
+  'instagram' =>
+  array(
+    'name' => ' instagram ',
+    'terms' => '  ',
+    'pro' => false,
+  ),
   'interrobang' =>
   array(
     'name' => ' interrobang ',
@@ -3882,6 +3918,12 @@ return array(
     'name' => ' keynote ',
     'terms' => ' lecture panel seminar speak speaker talk ',
     'pro' => true,
+  ),
+  'kickstarter' =>
+  array(
+    'name' => ' kickstarter ',
+    'terms' => '  ',
+    'pro' => false,
   ),
   'kidneys' =>
   array(
@@ -4075,6 +4117,12 @@ return array(
     'terms' => ' attach attachment chain connect lin link ',
     'pro' => false,
   ),
+  'linkedin' =>
+  array(
+    'name' => ' linkedin ',
+    'terms' => ' linkedin square linkin ',
+    'pro' => false,
+  ),
   'lips' =>
   array(
     'name' => ' lips ',
@@ -4247,6 +4295,12 @@ return array(
   array(
     'name' => ' map pin ',
     'terms' => ' address agree coordinates destination gps localize location map marker navigation pin place position pushpin round pushpin travel ',
+    'pro' => false,
+  ),
+  'markdown' =>
+  array(
+    'name' => ' markdown ',
+    'terms' => '  ',
     'pro' => false,
   ),
   'marker' =>
@@ -5185,6 +5239,12 @@ return array(
     'terms' => ' ananas fruit pineapple tropical ',
     'pro' => true,
   ),
+  'pinterest' =>
+  array(
+    'name' => ' pinterest ',
+    'terms' => '  ',
+    'pro' => false,
+  ),
   'pipe-smoking' =>
   array(
     'name' => ' pipe smoking ',
@@ -5335,6 +5395,12 @@ return array(
     'terms' => ' print screen symbol printer icon business computer copy document office paper printer ',
     'pro' => false,
   ),
+  'product-hunt' =>
+  array(
+    'name' => ' product hunt ',
+    'terms' => '  ',
+    'pro' => false,
+  ),
   'projector' =>
   array(
     'name' => ' projector ',
@@ -5436,6 +5502,12 @@ return array(
     'name' => ' raygun ',
     'terms' => ' flash gordon laser pew pew phaser space stun ',
     'pro' => true,
+  ),
+  'rebel' =>
+  array(
+    'name' => ' rebel ',
+    'terms' => '  ',
+    'pro' => false,
   ),
   'receipt' =>
   array(
@@ -5903,6 +5975,12 @@ return array(
   array(
     'name' => ' shop ',
     'terms' => ' bodega building buy market purchase shopping store ',
+    'pro' => false,
+  ),
+  'shopify' =>
+  array(
+    'name' => ' shopify ',
+    'terms' => '  ',
     'pro' => false,
   ),
   'shovel' =>
@@ -6715,6 +6793,12 @@ return array(
     'terms' => ' right thought bubble balloon bubble comic dream idea imagination think thought thought balloon ',
     'pro' => true,
   ),
+  'threads' =>
+  array(
+    'name' => ' threads ',
+    'terms' => '  ',
+    'pro' => false,
+  ),
   'thumbs-down' =>
   array(
     'name' => ' thumbs down ',
@@ -6744,6 +6828,12 @@ return array(
     'name' => ' ticket airline ',
     'terms' => ' airplane arrival boarding pass departure ticket travel ',
     'pro' => true,
+  ),
+  'tiktok' =>
+  array(
+    'name' => ' tiktok ',
+    'terms' => '  ',
+    'pro' => false,
   ),
   'tilde' =>
   array(
@@ -7411,6 +7501,12 @@ return array(
     'terms' => ' buddhism buddhist building monastery ',
     'pro' => false,
   ),
+  'vimeo' =>
+  array(
+    'name' => ' vimeo ',
+    'terms' => '  ',
+    'pro' => false,
+  ),
   'violin' =>
   array(
     'name' => ' violin ',
@@ -7585,6 +7681,12 @@ return array(
     'terms' => ' fauna mammal swimming whal whale ',
     'pro' => true,
   ),
+  'whatsapp' =>
+  array(
+    'name' => ' whatsapp ',
+    'terms' => '  ',
+    'pro' => false,
+  ),
   'wheat' =>
   array(
     'name' => ' wheat ',
@@ -7687,6 +7789,12 @@ return array(
     'terms' => ' health medical radiological images radiology skeleton ',
     'pro' => false,
   ),
+  'x-twitter' =>
+  array(
+    'name' => ' x twitter ',
+    'terms' => ' elon twitter x ',
+    'pro' => false,
+  ),
   'xmark' =>
   array(
     'name' => ' xmark ',
@@ -7697,6 +7805,12 @@ return array(
   array(
     'name' => ' yin yang ',
     'terms' => ' daoism opposites religion tao taoism taoist yang yin yin yang ',
+    'pro' => false,
+  ),
+  'youtube' =>
+  array(
+    'name' => ' youtube ',
+    'terms' => ' film video youtube play youtube square ',
     'pro' => false,
   ),
 );
