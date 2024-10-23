@@ -29,7 +29,10 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
     canvas: null,
     image: null,
     viewport: null,
+    editModeBorder: null,
     focalPoint: null,
+    focalPointInnerCircle: null,
+    focalPointOuterCircle: null,
     grid: null,
     croppingCanvas: null,
     clipper: null,
@@ -37,6 +40,9 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
     cropperHandles: null,
     cropperGrid: null,
     croppingShade: null,
+
+    // Styles
+    editingActiveColor: 'rgba(255, 0, 255, 1)',
 
     // Image state attributes
     imageStraightenAngle: 0,
@@ -54,6 +60,9 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
     draggingCropper: false,
     scalingCropper: false,
     draggingFocal: false,
+    focalPickedUp: false,
+    focalClicked: false,
+    cropperClicked: false,
     clickToMoveFocal: false,
     previousMouseX: 0,
     previousMouseY: 0,
@@ -554,29 +563,30 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
           deltaY / (sizeFactor * this.zoomRatio * this.scaleFactor);
       }
 
+      this.focalPointInnerCircle = new fabric.Circle({
+        radius: 8,
+        fill: 'rgba(0,0,0,0.5)',
+        strokeWidth: 2,
+        stroke: 'rgba(255,255,255,0.8)',
+        left: 0,
+        top: 0,
+        originX: 'center',
+        originY: 'center',
+      });
+
+      this.focalPointOuterCircle = new fabric.Circle({
+        radius: 1,
+        fill: 'rgba(255,255,255,0)',
+        strokeWidth: 2,
+        stroke: 'rgba(255,255,255,0.8)',
+        left: 0,
+        top: 0,
+        originX: 'center',
+        originY: 'center',
+      });
+
       this.focalPoint = new fabric.Group(
-        [
-          new fabric.Circle({
-            radius: 8,
-            fill: 'rgba(0,0,0,0.5)',
-            strokeWidth: 2,
-            stroke: 'rgba(255,255,255,0.8)',
-            left: 0,
-            top: 0,
-            originX: 'center',
-            originY: 'center',
-          }),
-          new fabric.Circle({
-            radius: 1,
-            fill: 'rgba(255,255,255,0)',
-            strokeWidth: 2,
-            stroke: 'rgba(255,255,255,0.8)',
-            left: 0,
-            top: 0,
-            originX: 'center',
-            originY: 'center',
-          }),
-        ],
+        [this.focalPointInnerCircle, this.focalPointOuterCircle],
         {
           originX: 'center',
           originY: 'center',
@@ -2402,17 +2412,33 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
         this.previousMouseY = ev.pageY;
 
         if (focal) {
-          this.draggingFocal = true;
+          this.focalClicked = true;
         } else if (handle) {
           this.scalingCropper = handle;
         } else if (move) {
           this.draggingCropper = true;
         }
-      } else {
-        if (this.focalPoint) {
-          this.clickToMoveFocal = true;
-        }
       }
+    },
+
+    _toggleFocalModeStyles: function () {
+      let strokeColor;
+
+      if (this.focalPickedUp) {
+        strokeColor = this.editingActiveColor;
+      } else {
+        strokeColor = 'rgba(255,255,255,0.8)';
+      }
+
+      this.focalPointOuterCircle.set({
+        stroke: strokeColor,
+      });
+
+      this.focalPointInnerCircle.set({
+        stroke: strokeColor,
+      });
+
+      this.canvas.renderAll();
     },
 
     /**
@@ -2432,7 +2458,8 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
         return;
       }
 
-      if (this.focalPoint && this.draggingFocal) {
+      if (this.focalPoint && this.focalClicked) {
+        this.draggingFocal = true;
         this._handleFocalDrag(this.mouseMoveEvent);
         this.storeFocalPointState();
         this.renderImage();
@@ -2461,18 +2488,21 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
      * Handle mouse being released.
      */
     _handleMouseUp: function (ev) {
-      if (
-        !this.draggingCropper &&
-        !this.scalingCropper &&
-        !this.draggingFocal &&
-        this.clickToMoveFocal
-      ) {
-        this._handleFocalClickToMove(ev);
+      if (this.focalClicked) {
+        if (!this.draggingFocal) {
+          this.focalPickedUp = !this.focalPickedUp;
+          this._toggleFocalModeStyles();
+        }
+      } else {
+        if (this.focalPickedUp && !this.draggingFocal) {
+          this._handleFocalClickToMove(ev);
+        }
       }
 
       this.draggingCropper = false;
       this.scalingCropper = false;
       this.draggingFocal = false;
+      this.focalClicked = false;
     },
 
     /**
