@@ -22,6 +22,8 @@ use yii\web\ForbiddenHttpException;
  */
 class UtilityAccess extends ActionFilter
 {
+    use ConditionalFilterTrait;
+
     /**
      * @var string The utility class
      * @phpstan-var class-string<UtilityInterface>
@@ -29,19 +31,10 @@ class UtilityAccess extends ActionFilter
     public string $utility;
 
     /**
-     * @var callable|null A PHP callable that determines when this filter should be applied.
-     */
-    public mixed $when = null;
-
-    /**
      * @inheritdoc
      */
     public function beforeAction($action): bool
     {
-        if (isset($this->when) && !call_user_func($this->when, $action)) {
-            return true;
-        }
-
         if (!Craft::$app->getUtilities()->checkAuthorization($this->utility)) {
             throw new ForbiddenHttpException('User is not authorized to perform this action.');
         }
