@@ -448,4 +448,16 @@ class CustomField extends BaseField
 
         return false;
     }
+
+    /**
+     * @inheritdoc
+     */
+    public function isNested(?ElementInterface $element = null, bool $static = false): bool
+    {
+        if ($static) {
+            return false;
+        }
+
+        return $this->_field->getIsNested($element);
+    }
 }

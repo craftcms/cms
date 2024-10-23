@@ -1494,6 +1494,7 @@ JS, [
                     'element-id' => $config['element-id'] ?? null,
                     'namespace' => $namespace,
                     'field-handle' => $attribute,
+                    'nested' => $config['nested'] ?? null,
                 ],
             ]);
         }

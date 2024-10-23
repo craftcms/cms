@@ -638,6 +638,15 @@ JS, [
     }
 
     /**
+     * Returns whether field contains nested elements, and uses the nested element manager.
+     * @since 5.5.0
+     */
+    public function getIsNested(?ElementInterface $element = null): bool
+    {
+        return $this instanceof ElementContainerFieldInterface;
+    }
+
+    /**
      * @inheritdoc
      */
     public function getStatus(ElementInterface $element): ?array

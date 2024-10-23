@@ -397,6 +397,7 @@ abstract class BaseField extends FieldLayoutElement
             'translatable' => $this->translatable($element, $static),
             'translationDescription' => $this->translationDescription($element, $static),
             'copyable' => $this->isCopyable($element, $static),
+            'nested' => $this->isNested($element, $static),
             'element-id' => $element->getCanonicalId(),
             'errors' => !$static ? $this->errors($element) : [],
         ]);
@@ -788,6 +789,18 @@ abstract class BaseField extends FieldLayoutElement
      * @return bool
      */
     public function isCopyable(?ElementInterface $element = null, bool $static = false): bool
+    {
+        return false;
+    }
+
+    /**
+     * Returns whether field contains nested elements, and uses the nested element manager.
+     *
+     * @param ElementInterface|null $element
+     * @param bool $static
+     * @return bool
+     */
+    public function isNested(?ElementInterface $element = null, bool $static = false): bool
     {
         return false;
     }

@@ -1631,4 +1631,12 @@ JS;
 
         return false;
     }
+
+    /**
+     * @inheritdoc
+     */
+    public function getIsNested(?ElementInterface $element = null): bool
+    {
+        return $this->viewMode !== self::VIEW_MODE_BLOCKS;
+    }
 }

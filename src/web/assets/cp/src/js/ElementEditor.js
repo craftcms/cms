@@ -767,15 +767,13 @@ Craft.ElementEditor = Garnish.Base.extend(
     },
 
     createDraftBeforeCopying: function () {
+      // if we're copying a single field (so we have the hud, not the modal)
       if (this.copyHud) {
-        const namespace = this.copyHud.$trigger.data('namespace');
-
-        if (namespace?.indexOf('[') > 0) {
-          return false;
-        }
+        // check if the field is classed as nested
+        return Garnish.hasAttr(this.copyHud.$trigger, 'data-nested');
       }
 
-      return true;
+      return false;
     },
 
     copyValuesFromSite: async function (ev) {
@@ -788,16 +786,15 @@ Craft.ElementEditor = Garnish.Base.extend(
 
       const data = new FormData(ev.target);
       data.append('isFullPage', this.settings.isFullPage || false);
+      data.set('provisional', this.settings.isProvisionalDraft || false);
 
-      // in the majority of cases, we should ensure the draft exists straight away;
-      // the exception are fields that use the blocks view mode
-      // (that's matrix and super table when configured so, and neo all the time)
+      // when copying a field that uses nested elements, we need to ensure there's a provisional draft first,
+      // so that we can copy the ownership correctly
       if (this.createDraftBeforeCopying()) {
         await this.ensureIsDraftOrRevision(false);
         data.set('elementId', this.settings.elementId);
         data.set('draftId', this.settings.draftId || null);
       }
-      data.set('provisional', this.settings.isProvisionalDraft || false);
 
       try {
         const response = await Craft.sendActionRequest(
