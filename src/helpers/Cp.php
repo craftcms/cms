@@ -1431,6 +1431,7 @@ JS, [
         $instructionsPosition = $config['instructionsPosition'] ?? 'before';
         $orientation = $config['orientation'] ?? ($site ? $site->getLocale() : Craft::$app->getLocale())->getOrientation();
         $translatable = Craft::$app->getIsMultiSite() ? ($config['translatable'] ?? ($site !== null)) : false;
+        $copyable = (bool)($config['copyable'] ?? false);
 
         $fieldClass = array_merge(array_filter([
             'field',
@@ -1453,6 +1454,52 @@ JS, [
             ])
             : '';
 
+
+        $translationIconHtml = Html::tag('span', '', [
+            'class' => ['t9n-indicator'],
+            'data' => [
+                'icon' => 'language',
+            ],
+            'role' => 'img',
+        ]);
+
+        $translationDescription = $config['translationDescription'] ?? Craft::t('app', 'This field is translatable.');
+        $translationIconHtml = Html::tag('craft-tooltip', $translationIconHtml, [
+            'placement' => 'bottom',
+            'max-width' => '200px',
+            'self-managed' => 'true',
+            'text' => $translationDescription,
+            'delay' => '1000',
+        ]);
+
+        // If this is a copyable field, make the translation icon a button
+        if ($copyable) {
+            // prepare namespace for the purpose of copying
+            $namespace = Craft::$app->getView()->getNamespace();
+            if (!empty($namespace)) {
+                if ($namespace === 'fields') {
+                    $namespace = null;
+                }
+                // remove the last [fields] segment
+                if (str_ends_with($namespace, '[fields]')) {
+                    $namespace = substr($namespace, 0, -8);
+                }
+            }
+
+            $translationIconHtml = Html::button($translationIconHtml, [
+                'class' => 'copyable',
+                'data' => [
+                    'copyable' => 'copyable',
+                    'description' => $translationDescription,
+                    'element-id' => $config['element-id'] ?? null,
+                    'namespace' => $namespace,
+                    'field-handle' => $attribute,
+                    'nested' => $config['nested'] ?? null,
+                ],
+            ]);
+        }
+
+
         if ($label) {
             $labelHtml = $label . (
                     ($required
@@ -1466,19 +1513,7 @@ JS, [
                             ],
                         ])
                         : '') .
-                    ($translatable
-                        ? Html::tag('span', '', [
-                            'class' => ['t9n-indicator'],
-                            'title' => $config['translationDescription'] ?? Craft::t('app', 'This field is translatable.'),
-                            'data' => [
-                                'icon' => 'language',
-                            ],
-                            'aria' => [
-                                'label' => $config['translationDescription'] ?? Craft::t('app', 'This field is translatable.'),
-                            ],
-                            'role' => 'img',
-                        ])
-                        : '')
+                    ($translatable ? $translationIconHtml : '')
                 );
         } else {
             $labelHtml = '';
@@ -1492,8 +1527,8 @@ JS, [
                     'class' => $fieldClass,
                     'id' => $fieldId,
                     'data' => [
-                        'attribute' => $attribute,
-                    ] + $data,
+                            'attribute' => $attribute,
+                        ] + $data,
                 ],
                 $config['fieldAttributes'] ?? []
             )) .
@@ -2816,7 +2851,7 @@ JS;
      * - `liAttributes` – Any HTML attributes that should be set on the item’s `<li>` tag
      *
      * @param array $config
-     * @param string $menuId,
+     * @param string $menuId ,
      * @return string
      * @since 5.0.0
      */
@@ -3026,7 +3061,7 @@ JS;
                 $path = match ($icon) {
                     'asterisk-slash', 'diamond-slash', 'element-card', 'element-card-slash', 'element-cards', 'graphql',
                     'grip-dots', 'image-slash', 'list-flip', 'list-tree-flip', 'share-flip' =>
-                        Craft::getAlias("@app/icons/custom-icons/$icon.svg"),
+                    Craft::getAlias("@app/icons/custom-icons/$icon.svg"),
                     default => Craft::getAlias("@appicons/$icon.svg"),
                 };
                 if (!file_exists($path)) {

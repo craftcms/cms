@@ -426,6 +426,19 @@ class ElementHelper
     }
 
     /**
+     * Returns whether given element supports having its field values copied from another site.
+     *
+     * @param ElementInterface|null $element
+     * @return bool
+     */
+    public static function supportsFieldCopying(?ElementInterface $element = null): bool
+    {
+        return !(!Craft::$app->getIsMultiSite() ||
+            $element === null ||
+            count(static::editableSiteIdsForElement($element)) < 2);
+    }
+
+    /**
      * Returns the editable site IDs for a given element, taking user permissions into account.
      *
      * @param ElementInterface $element

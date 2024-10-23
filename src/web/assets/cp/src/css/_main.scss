@@ -1913,6 +1913,7 @@ ul.icons {
 }
 
 .btn {
+  isolation: isolate;
   position: relative;
   display: inline-flex;
   align-items: center;
@@ -2174,46 +2175,25 @@ ul.icons {
   }
 }
 
-.copytextbtn {
-  display: inline-flex;
-  flex-wrap: nowrap;
-  align-items: center;
+craft-copy-attribute {
+  @include mixins.fixed-width-font(calc(11rem / 16));
   border: 1px solid var(--hairline-color);
+  padding-block: 0;
+  padding-inline: 5px;
   border-radius: var(--small-border-radius);
-  padding-block: var(--xs);
-  padding-inline: calc(var(--xs) + 1px);
-  cursor: pointer;
   color: var(--medium-text-color);
-  gap: var(--xs);
-  line-height: 1;
 
-  .copytextbtn__icon {
-    font-size: calc(12rem / 16);
+  button {
+    gap: 5px;
     display: inline-flex;
-    justify-content: center;
-    padding: 0;
-    width: 13px;
-    height: 13px;
-    background: none;
-    color: var(--light-text-color);
-  }
+    flex-wrap: nowrap;
+    align-items: center;
+    cursor: pointer;
 
-  &:hover,
-  &:focus {
-    border-color: var(--medium-hairline-color);
-    color: var(--text-color);
-
-    .copytextbtn__value {
+    &:hover,
+    &:focus {
+      border-color: var(--medium-hairline-color);
       color: var(--text-color);
-    }
-  }
-
-  &.small {
-    padding-block: 2px;
-    padding-inline: var(--xs);
-
-    .copytextbtn__value {
-      font-size: calc(11rem / 16);
     }
   }
 }
@@ -6362,7 +6342,7 @@ $min2ColWidth: 400px;
 
 .modal .body,
 .hud .main {
-  padding: 24px;
+  padding: var(--l);
   overflow: hidden;
   box-sizing: border-box;
 }
@@ -7765,6 +7745,10 @@ fieldset {
       inset-block-start: calc(-1rem / 16);
       margin-inline-start: 7px;
       color: var(--light-text-color);
+
+      &.copyable {
+        cursor: pointer;
+      }
     }
 
     & + .instructions {
@@ -7828,6 +7812,24 @@ fieldset {
 
   li + li {
     margin-block-start: 0.25em;
+  }
+}
+
+.copy-translation-dialogue {
+  max-width: 380px;
+
+  .copy-sites-menu-btn {
+    margin-block: 0;
+    margin-inline: 0.75em;
+    min-width: 8.7em;
+  }
+
+  hr {
+    margin-block: var(--m);
+  }
+
+  .smalltext {
+    color: var(--medium-text-color);
   }
 }
 

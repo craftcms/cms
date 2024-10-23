@@ -8,6 +8,7 @@
 namespace craft\fields;
 
 use Craft;
+use craft\base\CopyableFieldInterface;
 use craft\base\ElementInterface;
 use craft\base\Field;
 use craft\base\MergeableFieldInterface;
@@ -33,7 +34,7 @@ use yii\db\Schema;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
  */
-abstract class BaseOptionsField extends Field implements PreviewableFieldInterface, MergeableFieldInterface
+abstract class BaseOptionsField extends Field implements PreviewableFieldInterface, MergeableFieldInterface, CopyableFieldInterface
 {
     /**
      * @event DefineInputOptionsEvent Event triggered when defining the options for the field's input.

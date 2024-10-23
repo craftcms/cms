@@ -527,6 +527,110 @@ class ElementsController extends Controller
     }
 
     /**
+     * Returns result of copying field value from another site
+     *
+     * @return Response
+     * @throws BadRequestHttpException
+     * @throws ForbiddenHttpException
+     * @throws ServerErrorHttpException
+     * @throws Throwable
+     * @throws \craft\errors\ElementNotFoundException
+     * @throws \craft\errors\InvalidFieldException
+     * @throws \craft\errors\MissingComponentException
+     * @throws \yii\base\Exception
+     * @throws \yii\db\Exception
+     * @since 5.5.0
+     */
+    public function actionCopyFieldValuesFromSite(): Response
+    {
+        $this->requireCpRequest();
+
+        /** @var Element|Response|null $element */
+        $element = $this->_element(checkForProvisionalDraft: true);
+
+        if ($element instanceof Response) {
+            return $element;
+        }
+
+        if (!$element || $element->getIsRevision()) {
+            throw new BadRequestHttpException('No element was identified by the request.');
+        }
+
+        // if $fieldHandle is null, we're copying all element fields
+        $fieldHandle = $this->request->getBodyParam('fieldHandle', null);
+        $copyFromSiteId = $this->request->getRequiredBodyParam('copyFromSiteId');
+        $namespace = $this->request->getBodyParam('namespace');
+
+        if ($fieldHandle === '' || empty($copyFromSiteId)) {
+            throw new BadRequestHttpException("Request missing required param");
+        }
+
+        $elementsService = Craft::$app->getElements();
+
+        // check if this entry exists for other sites
+        if (empty($siteIdsForElement = $elementsService->getEnabledSiteIdsForElement($element->id))) {
+            $errorMsg = Craft::t('app', 'Couldn’t find this {type} on other sites.', [
+                'type' => $element::lowerDisplayName(),
+            ]);
+
+            return $this->_asFailure($element, $errorMsg);
+        }
+
+        // Check if the site id requested exists for the element
+        if (!in_array($copyFromSiteId, $siteIdsForElement, false)) {
+            $errorMsg = Craft::t('app', 'Couldn’t find this {type} on the site you selected.', [
+                'type' => $element::lowerDisplayName(),
+            ]);
+
+            return $this->_asFailure($element, $errorMsg);
+        }
+
+        // Now we can actually copy things
+        $updates = $elementsService->copyFieldValuesFromSite($element, $fieldHandle, $copyFromSiteId);
+        if (count(array_keys($updates)) === 0) {
+            return $this->_asSuccess(Craft::t('app', 'Nothing to copy.'), $element, [
+                'fragments' => [],
+            ]);
+        }
+
+        $fragments = [];
+        $view = Craft::$app->getView();
+        $layout = $element->getFieldLayout();
+
+        // Loop over each of the updated fields and gather the HTML of the field
+        foreach ($layout->getTabs() as $tab) {
+            foreach ($tab->getElements() as $layoutElement) {
+                if ($layoutElement instanceof BaseField) {
+                    $attribute = $layoutElement->attribute();
+
+                    // Only return attributes that were updated
+                    if (in_array($attribute, array_keys($updates))) {
+                        $html = $view->namespaceInputs(function() use ($element, $layoutElement) {
+                            return $layoutElement->formHtml($element);
+                        }, $namespace); // you have to pass the $namespace here or some attrs won't get properly namespaced (e.g. title)
+
+                        if ($html) {
+                            $html = Html::modifyTagAttributes($html, [
+                                'data' => [
+                                    'layout-element' => $layoutElement->uid,
+                                ],
+                            ]);
+                        }
+
+                        $fragments[$layoutElement->uid] = $html;
+                    }
+                }
+            }
+        }
+
+        return $this->_asSuccess('Content copied.', $element, [
+            'headHtml' => $view->getHeadHtml(),
+            'bodyHtml' => $view->getBodyHtml(),
+            'fragments' => $fragments,
+        ]);
+    }
+
+    /**
      * Returns an element revisions index screen.
      *
      * @param int $elementId

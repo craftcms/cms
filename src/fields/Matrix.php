@@ -8,6 +8,7 @@
 namespace craft\fields;
 
 use Craft;
+use craft\base\CopyableFieldInterface;
 use craft\base\EagerLoadingFieldInterface;
 use craft\base\Element;
 use craft\base\ElementContainerFieldInterface;
@@ -71,7 +72,8 @@ class Matrix extends Field implements
     ElementContainerFieldInterface,
     EagerLoadingFieldInterface,
     MergeableFieldInterface,
-    GqlInlineFragmentFieldInterface
+    GqlInlineFragmentFieldInterface,
+    CopyableFieldInterface
 {
     /**
      * @event DefineEntryTypesForFieldEvent The event that is triggered when defining the available entry types.
@@ -1596,5 +1598,45 @@ JS;
 
         /** @var Entry[] $entries */
         return $entries;
+    }
+
+    /**
+     * @see CopyableFieldInterface::copyValueBetweenSites()
+     * @since 5.5.0
+     */
+    public function copyValueBetweenSites(ElementInterface $from, ElementInterface $to): bool
+    {
+        if ($this->viewMode === self::VIEW_MODE_BLOCKS) {
+            return parent::copyValueBetweenSites($from, $to);
+        }
+
+        // get fromValue - if it's not empty, proceed
+        $fromValue = $from->getFieldValue($this->handle)->collect();
+
+        $fromIds = !$fromValue->isEmpty() ? $fromValue->pluck('id')->all() : [];
+        $toIds = $to->getFieldValue($this->handle)->collect()->pluck('id')->all();
+
+        if ($fromIds != $toIds) {
+            $to->duplicateOf = $from;
+            $to->copying = true;
+
+            $this->entryManager()->maintainNestedElements($to, false);
+
+            $to->duplicateOf = null;
+            $to->copying = false;
+            $to->setDirtyFields([$this->handle]);
+
+            return true;
+        }
+
+        return false;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getIsNested(?ElementInterface $element = null): bool
+    {
+        return $this->viewMode !== self::VIEW_MODE_BLOCKS;
     }
 }

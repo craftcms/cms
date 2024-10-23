@@ -190,10 +190,10 @@ $menuBorderRadius: $mediumBorderRadius;
     sans-serif;
 }
 
-@mixin fixed-width-font {
+@mixin fixed-width-font($size: 0.9em) {
   font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, Courier,
     monospace;
-  font-size: 0.9em !important;
+  font-size: $size !important;
 }
 
 @function toRem($values...) {

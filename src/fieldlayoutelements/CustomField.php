@@ -8,6 +8,7 @@
 namespace craft\fieldlayoutelements;
 
 use Craft;
+use craft\base\CopyableFieldInterface;
 use craft\base\ElementInterface;
 use craft\base\FieldInterface;
 use craft\base\PreviewableFieldInterface;
@@ -430,5 +431,33 @@ class CustomField extends BaseField
     protected function translationDescription(?ElementInterface $element = null, bool $static = false): ?string
     {
         return $this->_field->getTranslationDescription($element);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function isCopyable(?ElementInterface $element = null, bool $static = false): bool
+    {
+        if ($static) {
+            return false;
+        }
+
+        if ($this->_field instanceof CopyableFieldInterface) {
+            return $this->_field->getIsCopyable($element);
+        }
+
+        return false;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function isNested(?ElementInterface $element = null, bool $static = false): bool
+    {
+        if ($static) {
+            return false;
+        }
+
+        return $this->_field->getIsNested($element);
     }
 }

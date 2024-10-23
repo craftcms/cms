@@ -9,6 +9,7 @@ namespace craft\fields;
 
 use Craft;
 use craft\base\conditions\ConditionInterface;
+use craft\base\CopyableFieldInterface;
 use craft\base\EagerLoadingFieldInterface;
 use craft\base\Element;
 use craft\base\ElementInterface;
@@ -63,7 +64,8 @@ abstract class BaseRelationField extends Field implements
     EagerLoadingFieldInterface,
     RelationalFieldInterface,
     ThumbableFieldInterface,
-    MergeableFieldInterface
+    MergeableFieldInterface,
+    CopyableFieldInterface
 {
     /**
      * @event ElementCriteriaEvent The event that is triggered when defining the selection criteria for this field.
