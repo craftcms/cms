@@ -1,5 +1,9 @@
 # Release Notes for Craft CMS 4
 
+## Unreleased
+
+- Fixed a styling bug.
+
 ## 4.12.8 - 2024-10-22
 
 - The `install` command now runs through database connection setup, if Craft can’t yet connect to the database. ([#15943](https://github.com/craftcms/cms/issues/15943))
