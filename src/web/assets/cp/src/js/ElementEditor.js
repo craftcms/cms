@@ -154,7 +154,7 @@ Craft.ElementEditor = Garnish.Base.extend(
 
         this.addListener(
           this.$copyAllFromSiteBtn,
-          'click',
+          'activate',
           'showElementCopyModal'
         );
 
@@ -665,8 +665,12 @@ Craft.ElementEditor = Garnish.Base.extend(
     },
 
     showElementCopyModal: function (ev) {
+      const headingId =
+        'elementCopyModalHeading-' + Math.floor(Math.random() * 1000000);
+
       const $hudContent = $('<div/>', {
         class: 'modal fitted copy-translation-dialogue',
+        'aria-labelledby': headingId,
       });
       const $body = $('<div/>', {
         class: 'body',
@@ -682,9 +686,16 @@ Craft.ElementEditor = Garnish.Base.extend(
       );
 
       $body.append(this._getCopyBetweenSitesForm());
+      $hudContent.append($(`<div class="visually-hidden"><h1 id="${headingId}">${Craft.t('app', 'Copy content from site')}</h1></div>`));
       $hudContent.append($body);
 
       this.copyModal = new Garnish.Modal($hudContent);
+
+      this.copyModal.on('hide', function() {
+        // return focus to the actions btn
+        const actionMenu = $('#action-menu').disclosureMenu().data('disclosureMenu');
+        actionMenu.$trigger.focus();
+      })
 
       this.addListener($('.copyBetweenSites'), 'submit', 'copyValuesFromSite');
     },
@@ -764,6 +775,7 @@ Craft.ElementEditor = Garnish.Base.extend(
       const $form = $(ev.target);
       const $submitBtn = $form.find('[type=submit]');
       $submitBtn.addClass('loading');
+      Craft.cp.announce(Craft.t('app', 'Loading'));
 
       const data = new FormData(ev.target);
       data.append('isFullPage', this.settings.isFullPage || false);
@@ -834,6 +846,7 @@ Craft.ElementEditor = Garnish.Base.extend(
 
         // Cleanup after ourselves
         $submitBtn.removeClass('loading');
+        Craft.cp.announce(Craft.t('app', 'Loading complete'));
       }
     },
 
