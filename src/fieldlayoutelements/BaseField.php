@@ -206,7 +206,7 @@ abstract class BaseField extends FieldLayoutElement
 
         if ($indicatorHtml) {
             $innerHtml .= Html::tag('div', $indicatorHtml, [
-                'class' => ['flex', 'flex-nowrap', 'gap-xs'],
+                'class' => ['fld-field-indicators', 'flex', 'flex-nowrap', 'gap-xs'],
             ]);
         }
 

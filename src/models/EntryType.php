@@ -244,7 +244,7 @@ JS, [
         return [
             'handle' => Craft::t('app', 'Handle'),
             'name' => Craft::t('app', 'Name'),
-            'titleFormat' => Craft::t('app', 'Title Format'),
+            'titleFormat' => Craft::t('app', 'Default Title Format'),
             'showStatusField' => Craft::t('app', 'Show the Status field'),
             'showSlugField' => Craft::t('app', 'Show the Slug field'),
         ];
@@ -286,7 +286,11 @@ JS, [
         $fieldLayout = $this->getFieldLayout();
         $fieldLayout->reservedFieldHandles = [
             'author',
+            'authorId',
+            'authorIds',
+            'authors',
             'section',
+            'sectionId',
             'type',
         ];
 

@@ -41,6 +41,7 @@ use craft\enums\Color;
 use craft\enums\PropagationMethod;
 use craft\events\DefineEntryTypesEvent;
 use craft\events\ElementCriteriaEvent;
+use craft\fieldlayoutelements\entries\EntryTitleField;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Cp;
 use craft\helpers\DateTimeHelper;
@@ -63,6 +64,7 @@ use DateTime;
 use Illuminate\Support\Collection;
 use Throwable;
 use yii\base\Exception;
+use yii\base\InvalidArgumentException;
 use yii\base\InvalidConfigException;
 use yii\db\Expression;
 
@@ -900,7 +902,17 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
      */
     protected function shouldValidateTitle(): bool
     {
-        return $this->getType()->hasTitleField;
+        $entryType = $this->getType();
+        if (!$entryType->hasTitleField) {
+            return false;
+        }
+        try {
+            /** @var EntryTitleField $titleField */
+            $titleField = $entryType->getFieldLayout()->getField('title');
+        } catch (InvalidArgumentException) {
+            return true;
+        }
+        return $titleField->required;
     }
 
     /**
@@ -1633,7 +1645,7 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
             'sectionId' => $this->sectionId,
             'fieldId' => $this->fieldId,
             'primaryOwnerId' => $this->getPrimaryOwnerId(),
-            'ownerId' => $this->getPrimaryOwnerId(),
+            'ownerId' => $this->getOwnerId(),
             'sortOrder' => null,
             'typeId' => $this->typeId,
             'siteId' => $this->siteId,
@@ -1942,7 +1954,7 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
                 return $section ? Html::encode(Craft::t('site', $section->name)) : '';
             case 'type':
                 try {
-                    return Html::encode(Craft::t('site', $this->getType()->name));
+                    return Cp::chipHtml($this->getType());
                 } catch (InvalidConfigException) {
                     return Craft::t('app', 'Unknown');
                 }
@@ -2337,7 +2349,7 @@ JS;
     {
         $entryType = $this->getType();
 
-        if ($entryType->hasTitleField) {
+        if ($entryType->hasTitleField && trim($this->title ?? '') !== '') {
             return;
         }
 

@@ -979,7 +979,7 @@ class ExtensionTest extends TestCase
      */
     public function testDataUrlFunction(): void
     {
-        $path = dirname(__DIR__, 4) . '/.github/workflows/ci.yml';
+        $path = '@root/.github/workflows/ci.yml';
         $dataUrl = $this->view->renderString('{{ dataUrl(path) }}', compact('path'));
         self::assertStringStartsWith('data:application/x-yaml;base64,', $dataUrl);
     }

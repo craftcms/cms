@@ -50,7 +50,7 @@ use yii\base\InvalidConfigException;
  * @replace {myElement} myEntry
  * @replace {element-class} \craft\elements\Entry
  */
-class EntryQuery extends ElementQuery
+class EntryQuery extends ElementQuery implements NestedElementQueryInterface
 {
     use NestedElementQueryTrait {
         __set as nestedTraitSet;

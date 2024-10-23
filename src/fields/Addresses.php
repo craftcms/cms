@@ -659,6 +659,9 @@ class Addresses extends Field implements
         $config += [
             'allowedViewModes' => [ElementIndexViewMode::Cards],
             'pageSize' => $this->pageSize ?? 50,
+            // addresses don't have drafts, but in this particular context we need to allow drafts,
+            // so that addresses show while adding them via slideout in the element index view mode
+            'canHaveDrafts' => true,
         ];
 
         return $this->addressManager()->getIndexHtml($owner, $config);

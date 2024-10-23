@@ -1586,6 +1586,15 @@ td.right {
     flex: 1;
   }
 
+  .handle {
+    @include mixins.fixed-width-font;
+    font-size: 0.8em !important;
+  }
+
+  &:not(.sel) .handle {
+    color: var(--medium-text-color);
+  }
+
   &.heading {
     .label {
       text-transform: uppercase;
@@ -1603,7 +1612,7 @@ td.right {
 .customize-sources-item__move {
   position: absolute;
   inset-block-start: 50%;
-  inset-inline-end: 0;
+  inset-inline-end: 3px;
   transform: translate(-50%, -50%);
   justify-content: center;
   align-items: center;
@@ -1615,10 +1624,10 @@ td.right {
 }
 
 .customize-sources-item__btn {
-  padding-block: 8px;
-  padding-inline: 14px;
+  flex: 1;
+  padding-block: 6px;
+  padding-inline: var(--xl);
   padding-inline-end: 30px;
-  margin: 3px;
 }
 
 .checkbox-select-item {
@@ -1914,7 +1923,6 @@ ul.icons {
   padding-inline: 10px;
   border: none;
   text-align: center;
-  white-space: nowrap;
   user-select: none;
   box-sizing: border-box;
   appearance: none;
@@ -2074,7 +2082,10 @@ ul.icons {
   }
 }
 
-.btn,
+.btn {
+  min-height: var(--ui-control-height);
+}
+
 .spinner {
   height: var(--ui-control-height);
 }
@@ -2325,7 +2336,7 @@ craft-copy-attribute {
 .btngroup.small input.btn,
 .btn.small,
 .btn.small + .spinner {
-  height: 22px;
+  min-height: 22px;
 }
 
 /* big buttons */
@@ -2347,7 +2358,7 @@ craft-copy-attribute {
 .btngroup.big input.btn,
 .btn.big,
 .btn.big + .spinner {
-  height: 36px;
+  min-height: 36px;
 }
 
 /* huge buttons */
@@ -3219,6 +3230,30 @@ table {
       th,
       td {
         border-block-start-color: var(--gray-300);
+      }
+    }
+
+    &.vuetable {
+      th.sortable {
+        &:hover {
+          color: var(--text-color);
+          background-color: var(--gray-100);
+        }
+
+        &.ordered {
+          background-color: var(--light-sel-color);
+
+          .sort-icon {
+            @include mixins.angle(up);
+            inset-inline-end: var(--m);
+            inset-block-start: calc(7rem / 16);
+          }
+
+          &.desc .sort-icon {
+            transform: rotate(45deg);
+            inset-block-start: calc((7rem / 16) - (2rem / 16));
+          }
+        }
       }
     }
   }
@@ -7801,7 +7836,7 @@ fieldset {
 .expand-status-btn {
   margin-inline-start: 5px;
   width: 30px;
-  height: 17px;
+  min-height: 17px;
   padding: 0;
   line-height: 16px;
   border-radius: var(--small-border-radius);
@@ -9373,7 +9408,6 @@ body.sitepicker {
   width: var(--width) !important;
   min-width: 0 !important;
   max-width: calc(100% - 20px) !important;
-  max-height: 200px;
 
   .header {
     padding-block: calc(var(--m));
@@ -9381,10 +9415,20 @@ body.sitepicker {
   }
 
   .body {
+    height: 83%;
+    position: relative;
+
     .entry-mover-modal--list {
-      flex: 1;
+      height: calc(100% + 20px);
       position: relative;
-      overflow: hidden;
+
+      fieldset {
+        box-sizing: border-box;
+        height: 100%;
+        overflow: auto;
+        padding-block-end: 20px;
+        position: relative;
+      }
     }
   }
 

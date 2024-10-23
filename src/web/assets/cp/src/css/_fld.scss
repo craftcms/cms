@@ -102,6 +102,10 @@ $gridColor: var(--gray-100);
         margin-block-start: var(--s);
       }
     }
+
+    .fld-field-indicators {
+      display: none;
+    }
   }
 
   .fld-ui-library > *:not(:first-child) {

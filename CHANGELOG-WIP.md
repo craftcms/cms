@@ -3,6 +3,7 @@
 ### Content Management
 - Improved the styling of element cards with thumbnails. ([#15692](https://github.com/craftcms/cms/pull/15692), [#15673](https://github.com/craftcms/cms/issues/15673))
 - Elements within element selection inputs now have “Replace” actions.
+- Entry types listed within entry indexes now show their icon and color. ([#15922](https://github.com/craftcms/cms/discussions/15922))
 - Address index tables can now include “Country” columns.
 - Action button cells within editable tables are now center-aligned vertically.
 - Dropdown cells within editable tables are no longer center-aligned. ([#15742](https://github.com/craftcms/cms/issues/15742))
@@ -17,6 +18,13 @@
 ### Administration
 - All relation fields can now be selected as field layouts’ thumbnail providers. ([#15651](https://github.com/craftcms/cms/discussions/15651))
 - Added the “Markdown” field layout UI element type. ([#15674](https://github.com/craftcms/cms/pull/15674), [#15664](https://github.com/craftcms/cms/discussions/15664))
+- The Sections index table can now be sorted by Name, Handle, and Type. ([#15936](https://github.com/craftcms/cms/pull/15936))
+- Sections are no longer required to have unique names. ([#9829](https://github.com/craftcms/cms/discussions/9829))
+- Customize Sources modals now display native sources’ handles, when known.
+- Removed the “Show the Title field” entry type setting. The “Title” element can now be removed from the field layout instead. ([#15942](https://github.com/craftcms/cms/pull/15942))
+- Entry types can now specify a Default Title Format, which will be used even if the Title field is included in the field layout, to generate a default Title value if the field is blank. ([#15942](https://github.com/craftcms/cms/pull/15942))
+- It’s now possible to control whether entry types’ Title fields are required. ([#15942](https://github.com/craftcms/cms/pull/15942))
+- Added the `camera-retro`, `chevron-down`, `chevron-left`, `chevron-right`, `chevron-up`, `chevrons-down`, `chevrons-left`, `chevrons-right`, `chevrons-up`, `codepen`, `discord`, `dribbble`, `facebook`, `image-landscape`, `image-portrait`, `instagram`, `kickstarter`, `linkedin`, `panorama`, `pen-clip`, `pen-fancy`, `pen-field`, `pen-line`, `pen-nib`, `pen-paintbrush`, `pencil-mechanical`, `photo-film-music`, `photo-film`, `pinterest`, `product-hunt`, `rebel`, `shopify`, `threads`, `tiktok`, `vimeo`, `whatsapp`, `x-twitter`, and `youtube` icons.
 - Added `pc/*` commands as an alias of `project-config/*`.
 - Added the `resave/all` command.
 - Added the `--except`, `--minor-only`, and `--patch-only` options to the `update` command. ([#15829](https://github.com/craftcms/cms/pull/15829))
@@ -26,6 +34,7 @@
 ### Development
 - Added the `encodeUrl()` Twig function. ([#15838](https://github.com/craftcms/cms/issues/15838))
 - Added support for passing aliased field handles into element queries’ `select()`/`addSelect()` methods. ([#15827](https://github.com/craftcms/cms/issues/15827))
+- Added support for appending subpaths to environment variable names in environmental settings (e.g. `$PRIMARY_SITE_URL/uploads`).
 
 ### Extensibility
 - Added `craft\base\NestedElementTrait::saveOwnership()`. ([#15894](https://github.com/craftcms/cms/pull/15894))
@@ -49,6 +58,10 @@
 - Added `craft\services\Fields::EVENT_BEFORE_APPLY_FIELD_SAVE`. ([#15872](https://github.com/craftcms/cms/discussions/15872))
 - Added `craft\web\View::registerCpTwigExtension()`.
 - Added `craft\web\View::registerSiteTwigExtension()`.
+- Added `craft\helpers\Console::$outputCount`.
+- Added `craft\helpers\Console::$prependNewline`.
+- Added `craft\fieldlayoutelements\Template::$templateMode`. ([#15932](https://github.com/craftcms/cms/pull/15932))
+- Added `craft\models\FieldLayout::prependElements()`.
 - `craft\helpers\Console::output()` now prepends an indent to each line of the passed-in string, if `indent()` had been called prior.
 - Deprecated the `enableBasicHttpAuth` config setting. `craft\filters\BasicHttpAuthLogin` should be used instead. ([#15720](https://github.com/craftcms/cms/pull/15720))
 - Added the `serializeForm` event to `Craft.ElementEditor`. ([#15794](https://github.com/craftcms/cms/discussions/15794))

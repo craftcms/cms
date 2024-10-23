@@ -572,7 +572,9 @@ class Entries extends Component
         }
 
         if ($isNewSection) {
-            $section->uid = StringHelper::UUID();
+            if (!$section->uid) {
+                $section->uid = StringHelper::UUID();
+            }
         } elseif (!$section->uid) {
             $section->uid = Db::uidById(Table::SECTIONS, $section->id);
         }
@@ -1201,6 +1203,100 @@ SQL)->execute();
     {
     }
 
+    /**
+     * Returns data for the Sections index page in the control panel.
+     *
+     * @param int $page
+     * @param int $limit
+     * @param string|null $searchTerm
+     * @param string $orderBy
+     * @param int $sortDir
+     * @return array
+     * @since 5.5.0
+     */
+    public function getSectionTableData(
+        int $page,
+        int $limit,
+        ?string $searchTerm,
+        string $orderBy = 'name',
+        int $sortDir = SORT_ASC,
+    ): array {
+        [$results, $total] = $this->prepTableData($this->_createSectionQuery(), $page, $limit, $searchTerm, $orderBy, $sortDir);
+
+        /** @var Section[] $sections */
+        $sections = array_values(array_filter(
+            array_map(fn(array $result) => $this->_sections()->firstWhere('id', $result['id']), $results)
+        ));
+
+        $tableData = [];
+
+        foreach ($sections as $section) {
+            $label = $section->getUiLabel();
+            $tableData[] = [
+                'id' => $section->id,
+                'title' => $label,
+                'name' => $label,
+                'url' => $section->getCpEditUrl(),
+                'handle' => $section->handle,
+                'type' => match ($section->type) {
+                    Section::TYPE_SINGLE => Craft::t('app', 'Single'),
+                    Section::TYPE_CHANNEL => Craft::t('app', 'Channel'),
+                    Section::TYPE_STRUCTURE => Craft::t('app', 'Structure'),
+                    null => null,
+                },
+            ];
+        }
+
+        $pagination = AdminTable::paginationLinks($page, $total, $limit);
+
+        return [$pagination, $tableData];
+    }
+
+    /**
+     * Returns query results needed for the VueAdminTable accounting for the pagination, search terms and sorting options.
+     *
+     * @param Query $query
+     * @param int $page
+     * @param int $limit
+     * @param string|null $searchTerm
+     * @param string $orderBy
+     * @param int $sortDir
+     * @return array
+     * @since 5.5.0
+     */
+    private function prepTableData(
+        Query $query,
+        int $page,
+        int $limit,
+        ?string $searchTerm,
+        string $orderBy = 'name',
+        int $sortDir = SORT_ASC,
+    ): array {
+        $searchTerm = $searchTerm ? trim($searchTerm) : $searchTerm;
+
+        $offset = ($page - 1) * $limit;
+        $query = $query
+            ->orderBy([$orderBy => $sortDir]);
+
+        if ($orderBy === 'name') {
+            $query->addOrderBy(['name' => $sortDir]);
+        }
+
+        if ($searchTerm !== null && $searchTerm !== '') {
+            $searchParams = $this->_getSearchParams($searchTerm);
+            if (!empty($searchParams)) {
+                $query->where(['or', ...$searchParams]);
+            }
+        }
+
+        $total = $query->count();
+
+        $query->limit($limit);
+        $query->offset($offset);
+
+        return [$query->all(), $total];
+    }
+
     // Entry Types
     // -------------------------------------------------------------------------
 
@@ -1388,6 +1484,8 @@ SQL)->execute();
                 'isNew' => $isNewEntryType,
             ]));
         }
+
+        $entryType->hasTitleField = $entryType->getFieldLayout()->isFieldIncluded('title');
 
         if ($runValidation && !$entryType->validate()) {
             Craft::info('Entry type not saved due to validation error.', __METHOD__);
@@ -1718,29 +1816,7 @@ SQL)->execute();
         string $orderBy = 'name',
         int $sortDir = SORT_ASC,
     ): array {
-        $searchTerm = $searchTerm ? trim($searchTerm) : $searchTerm;
-
-        $offset = ($page - 1) * $limit;
-        $query = $this->_createEntryTypeQuery()
-            ->orderBy([$orderBy => $sortDir]);
-
-        if ($orderBy === 'name') {
-            $query->addOrderBy(['name' => $sortDir]);
-        }
-
-        if ($searchTerm !== null && $searchTerm !== '') {
-            $searchParams = $this->_getSearchParams($searchTerm);
-            if (!empty($searchParams)) {
-                $query->where(['or', ...$searchParams]);
-            }
-        }
-
-        $total = $query->count();
-
-        $query->limit($limit);
-        $query->offset($offset);
-
-        $results = $query->all();
+        [$results, $total] = $this->prepTableData($this->_createEntryTypeQuery(), $page, $limit, $searchTerm, $orderBy, $sortDir);
 
         /** @var EntryType[] $entryTypes */
         $entryTypes = array_values(array_filter(

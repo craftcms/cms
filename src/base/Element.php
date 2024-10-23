@@ -28,6 +28,7 @@ use craft\elements\conditions\ElementConditionInterface;
 use craft\elements\db\EagerLoadPlan;
 use craft\elements\db\ElementQuery;
 use craft\elements\db\ElementQueryInterface;
+use craft\elements\db\NestedElementQueryInterface;
 use craft\elements\ElementCollection;
 use craft\elements\exporters\Expanded;
 use craft\elements\exporters\Raw;
@@ -2606,12 +2607,7 @@ abstract class Element extends Component implements ElementInterface
         $rules[] = [['dateCreated', 'dateUpdated'], DateTimeValidator::class, 'on' => [self::SCENARIO_DEFAULT, self::SCENARIO_LIVE]];
         $rules[] = [['isFresh'], BooleanValidator::class];
 
-        $rules[] = [
-            ['title'],
-            'trim',
-            'on' => [self::SCENARIO_DEFAULT, self::SCENARIO_LIVE],
-            'when' => fn() => $this->shouldValidateTitle(),
-        ];
+        $rules[] = [['title'], 'trim'];
         $rules[] = [
             ['title'],
             StringValidator::class,
@@ -2882,16 +2878,21 @@ abstract class Element extends Component implements ElementInterface
         $prop = $anySite ? '_canonicalAnySite' : '_canonical';
 
         if (!isset($this->$prop)) {
-            $this->$prop = static::find()
-                    ->id($this->_canonicalId)
-                    ->siteId($anySite ? '*' : $this->siteId)
-                    ->preferSites([$this->siteId])
-                    ->structureId($this->structureId)
-                    ->unique()
-                    ->status(null)
-                    ->trashed(null)
-                    ->ignorePlaceholders()
-                    ->one() ?? false;
+            $query = static::find()
+                ->id($this->_canonicalId)
+                ->siteId($anySite ? '*' : $this->siteId)
+                ->preferSites([$this->siteId])
+                ->structureId($this->structureId)
+                ->unique()
+                ->status(null)
+                ->trashed(null)
+                ->ignorePlaceholders();
+
+            if ($this instanceof NestedElementInterface && $query instanceof NestedElementQueryInterface) {
+                $query->ownerId($this->getOwnerId());
+            }
+
+            $this->$prop = $query->one();
         }
 
         return $this->$prop ?: $this;
@@ -3206,7 +3207,7 @@ abstract class Element extends Component implements ElementInterface
     public function getCrumbs(): array
     {
         if ($this instanceof NestedElementInterface) {
-            $owner = $this->getPrimaryOwner();
+            $owner = $this->getOwner();
             if ($owner) {
                 return [
                     ...$owner->getCrumbs(),
@@ -3652,6 +3653,7 @@ JS, [
                     'draftId' => $this->isProvisionalDraft ? null : $this->draftId,
                     'revisionId' => $this->revisionId,
                     'siteId' => $this->siteId,
+                    'ownerId' => $this instanceof NestedElementInterface ? $this->getOwnerId() : null,
                 ],
             ]);
         }

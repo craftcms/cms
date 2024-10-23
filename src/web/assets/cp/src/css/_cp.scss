@@ -335,7 +335,7 @@ a#system-info {
       margin-block: 0;
       margin-inline: 2px;
       color: var(--error-color);
-      height: calc(30rem / 16);
+      min-height: calc(30rem / 16);
 
       .flex & {
         margin: 0;
@@ -373,7 +373,7 @@ li.crumb .btn.menubtn,
 .btn.action-btn {
   padding: 0;
   width: var(--touch-target-size);
-  height: var(--touch-target-size);
+  min-height: var(--touch-target-size);
 
   &:not(:hover, :active, [aria-expanded='true']) {
     background-color: transparent;
@@ -1692,7 +1692,7 @@ li.breadcrumb-toggle-wrapper {
 
         .badge {
           margin-inline: 10px -4px;
-          margin-block: 0 0;
+          margin-block: 0;
           flex-shrink: 1;
           padding-block: 0;
           padding-inline: 6px;
