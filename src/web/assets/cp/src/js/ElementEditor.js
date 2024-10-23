@@ -686,16 +686,25 @@ Craft.ElementEditor = Garnish.Base.extend(
       );
 
       $body.append(this._getCopyBetweenSitesForm());
-      $hudContent.append($(`<div class="visually-hidden"><h1 id="${headingId}">${Craft.t('app', 'Copy content from site')}</h1></div>`));
+      $hudContent.append(
+        $(
+          `<div class="visually-hidden"><h1 id="${headingId}">${Craft.t(
+            'app',
+            'Copy content from site'
+          )}</h1></div>`
+        )
+      );
       $hudContent.append($body);
 
       this.copyModal = new Garnish.Modal($hudContent);
 
-      this.copyModal.on('hide', function() {
+      this.copyModal.on('hide', function () {
         // return focus to the actions btn
-        const actionMenu = $('#action-menu').disclosureMenu().data('disclosureMenu');
+        const actionMenu = $('#action-menu')
+          .disclosureMenu()
+          .data('disclosureMenu');
         actionMenu.$trigger.focus();
-      })
+      });
 
       this.addListener($('.copyBetweenSites'), 'submit', 'copyValuesFromSite');
     },

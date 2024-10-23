@@ -4531,7 +4531,7 @@ const FilterHud = Garnish.HUD.extend({
         $('<div/>', {
           text: Craft.t('app', 'Loading'),
           class: 'visually-hidden',
-          'role': 'alert',
+          role: 'alert',
         })
       );
 
