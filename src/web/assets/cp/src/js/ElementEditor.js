@@ -160,7 +160,7 @@ Craft.ElementEditor = Garnish.Base.extend(
 
         // Use event delegation so we don't have to reinitialize when markup is replaced
         this.$container.on(
-          'mousedown',
+          'click',
           '[data-copyable]',
           this.showFieldCopyDialogue.bind(this)
         );
