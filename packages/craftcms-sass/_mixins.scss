@@ -533,7 +533,7 @@ $radioSize: 16px;
 
 @mixin header-btn {
   width: 30px;
-  height: 30px;
+  min-height: 30px;
   padding-left: 0;
   padding-right: 0;
 
