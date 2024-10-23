@@ -3,6 +3,7 @@
 
 /**
  * Asset image editor class
+ * @property {Object} imageVerticeCoords - The corner coordinates of the image being edited
  */
 
 Craft.AssetImageEditor = Garnish.Modal.extend(
@@ -2507,6 +2508,7 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
       this._handleFocalClickToMove._.newX = ev.pageX - canvasOffsetX;
       this._handleFocalClickToMove._.newY = ev.pageY - canvasOffsetY;
 
+      // Just make sure that the focal point stays inside the image
       if (this.currentView === 'crop') {
         if (
           !this.arePointsInsideRectangle(
