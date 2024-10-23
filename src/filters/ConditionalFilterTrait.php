@@ -7,8 +7,6 @@
 
 namespace craft\filters;
 
-use Closure;
-
 /**
  * Filter for ensuring the user should be able to access the configured utility.
  *
@@ -18,9 +16,9 @@ use Closure;
 trait ConditionalFilterTrait
 {
     /**
-     * @var Closure|null A PHP callable that determines when this filter should be applied.
+     * @var callable|null A PHP callable that determines when this filter should be applied.
      */
-    public ?Closure $when = null;
+    public mixed $when = null;
 
     /**
      * @inheritdoc
