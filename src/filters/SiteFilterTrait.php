@@ -21,21 +21,19 @@ use yii\base\InvalidArgumentException;
  */
 trait SiteFilterTrait
 {
-    /**
-     * @var bool Whether the filter should be enabled.
-     * @since 4.13.0
-     */
-    public bool $enabled = true;
+    use ConditionalFilterTrait {
+        isActive as conditionalFilterTraitIsActive;
+    }
 
     private null|array $siteIds = null;
 
     protected function isActive(mixed $action): bool
     {
-        if (!parent::isActive($action)) {
+        if (!$this->conditionalFilterTraitIsActive($action)) {
             return false;
         }
 
-        return $this->enabled && $this->isCurrentSiteActive();
+        return $this->isCurrentSiteActive();
     }
 
     protected function setSite(null|array|int|string|Site $value): void
