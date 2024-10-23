@@ -23,6 +23,7 @@ use craft\elements\db\CategoryQuery;
 use craft\elements\db\ElementQuery;
 use craft\helpers\Cp;
 use craft\helpers\Db;
+use craft\helpers\Html;
 use craft\helpers\UrlHelper;
 use craft\models\CategoryGroup;
 use craft\models\FieldLayout;
@@ -338,6 +339,34 @@ class Category extends Element
             'status',
             'link',
         ];
+    }
+
+    /**
+     * @inheritdoc
+     */
+    protected static function defineCardAttributes(): array
+    {
+        return array_merge(parent::defineCardAttributes(), [
+            'parent' => [
+                'label' => Craft::t('app', 'Parent'),
+                'placeholder' => Html::tag(
+                    'span',
+                    Craft::t('app', 'Parent {type} Title', ['type' => self::displayName()]),
+                    ['class' => 'card-placeholder'],
+                ),
+            ],
+        ]);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public static function attributePreviewHtml(array $attribute): mixed
+    {
+        return match ($attribute['value']) {
+            'parent' => $attribute['placeholder'],
+            default => parent::attributePreviewHtml($attribute),
+        };
     }
 
     /**

@@ -24,6 +24,8 @@ Craft.FieldLayoutDesigner = Garnish.Base.extend(
     tabGrid: null,
     elementDrag: null,
 
+    $cvd: null,
+
     _config: null,
     _$selectedFields: null,
 
@@ -133,6 +135,14 @@ Craft.FieldLayoutDesigner = Garnish.Base.extend(
       this.addListener(this.$createFieldBtn, 'activate', async () => {
         this.createField();
       });
+
+      // initiate Card View Designer
+      if (this.settings.withCardViewDesigner) {
+        this.$cvd = this.$container
+          .parents('.fld-cvd')
+          .find('.card-view-designer');
+        this.initCvd();
+      }
     },
 
     updateFieldSearchResults() {
@@ -163,6 +173,10 @@ Craft.FieldLayoutDesigner = Garnish.Base.extend(
           $group.addClass('filtered');
         }
       }
+    },
+
+    initCvd: function () {
+      new Craft.FieldLayoutDesigner.CardViewDesigner(this, this.$cvd);
     },
 
     initTab: function ($tab) {
@@ -339,6 +353,7 @@ Craft.FieldLayoutDesigner = Garnish.Base.extend(
       elementType: null,
       customizableTabs: true,
       customizableUi: true,
+      withCardViewDesigner: false,
     },
 
     async createSlideout(data, js) {
@@ -1128,6 +1143,12 @@ Craft.FieldLayoutDesigner.Element = Garnish.Base.extend({
     await this.applyConfig((config) => {
       config.providesThumbs = true;
       return config;
+    }).then(() => {
+      if (this.tab.designer.settings.withCardViewDesigner) {
+        let cvd = this.tab.designer.$cvd.data('cvd');
+        cvd.showThumb = true;
+        cvd.updatePreview();
+      }
     });
   },
 
@@ -1135,6 +1156,12 @@ Craft.FieldLayoutDesigner.Element = Garnish.Base.extend({
     await this.applyConfig((config) => {
       config.providesThumbs = false;
       return config;
+    }).then(() => {
+      if (this.tab.designer.settings.withCardViewDesigner) {
+        let cvd = this.tab.designer.$cvd.data('cvd');
+        cvd.showThumb = false;
+        cvd.updatePreview();
+      }
     });
   },
 
@@ -1142,6 +1169,10 @@ Craft.FieldLayoutDesigner.Element = Garnish.Base.extend({
     await this.applyConfig((config) => {
       config.includeInCards = true;
       return config;
+    }).then(() => {
+      if (this.tab.designer.settings.withCardViewDesigner) {
+        this.tab.designer.$cvd.data('cvd').addCheckbox(this);
+      }
     });
   },
 
@@ -1149,6 +1180,10 @@ Craft.FieldLayoutDesigner.Element = Garnish.Base.extend({
     await this.applyConfig((config) => {
       config.includeInCards = false;
       return config;
+    }).then(() => {
+      if (this.tab.designer.settings.withCardViewDesigner) {
+        this.tab.designer.$cvd.data('cvd').removeCheckbox(this);
+      }
     });
   },
 
@@ -1223,6 +1258,10 @@ Craft.FieldLayoutDesigner.Element = Garnish.Base.extend({
     this.$container.replaceWith($newContainer);
     this.$container = $newContainer;
     this.initUi();
+
+    if (this.tab.designer.settings.withCardViewDesigner) {
+      this.tab.designer.$cvd.data('cvd').updateLabel(this.$container);
+    }
 
     const designer = this.tab.designer;
     designer.refreshSelectedFields();
@@ -1338,6 +1377,8 @@ Craft.FieldLayoutDesigner.Element = Garnish.Base.extend({
         );
       }
     }
+
+    this.tab.designer.$cvd.data('cvd').removeCheckbox(this);
 
     this.base();
   },
@@ -1810,3 +1851,174 @@ Craft.FieldLayoutDesigner.ElementDrag =
       }
     },
   });
+
+Craft.FieldLayoutDesigner.CardViewDesigner = Garnish.Base.extend({
+  designer: null,
+  $container: null,
+  $previewContainer: null,
+  $libraryContainer: null,
+  showThumb: null,
+
+  init: function (designer, container) {
+    this.designer = designer;
+    this.$container = $(container);
+    this.$container.data('cvd', this);
+
+    this.$previewContainer = this.$container.find('.cvd-preview');
+    this.$libraryContainer = this.$container.find('.cvd-library');
+
+    // trigger preview update when items are checked/unchecked
+    this.$libraryContainer.on('change', function (ev) {
+      if ($(ev.target).parents('.cvd-field.disabled').length > 0) {
+        $(ev.target).prop('checked', true);
+      } else {
+        let cvd = $(this).parents('.card-view-designer').data('cvd');
+        cvd.updatePreview();
+      }
+    });
+
+    this.initDrag(this.$container);
+    this.disablePreviewLinks();
+  },
+
+  initDrag: function ($container) {
+    const sortItems = $container.find('.draggable');
+    if (sortItems.length) {
+      let dragSort = new Garnish.DragSort(sortItems, {
+        axis: Garnish.Y_AXIS,
+        handle: '.draggable-handle',
+      });
+
+      // trigger preview update when items are dragged into new position
+      dragSort.on('dragStop', function () {
+        $container.data('cvd').updatePreview();
+      });
+    }
+  },
+
+  updatePreview: function () {
+    this.$previewContainer.addClass('loading');
+    Craft.cp.announce(Craft.t('app', 'Loading'));
+
+    let cardElements = this.getCardElements();
+
+    Craft.sendActionRequest('POST', 'fields/render-card-preview', {
+      data: {
+        fieldLayoutConfig: this.designer.config,
+        cardElements: cardElements,
+        showThumb: this.showThumb,
+      },
+    })
+      .then(({data}) => {
+        this.$previewContainer.html(data.previewHtml);
+        this.disablePreviewLinks();
+      })
+      .catch((e) => {
+        Craft.cp.displayError(e?.response?.data?.message);
+        throw e;
+      })
+      .finally(() => {
+        this.$previewContainer.removeClass('loading');
+        Craft.cp.announce(Craft.t('app', 'Loading complete'));
+      });
+  },
+
+  disablePreviewLinks: function () {
+    // add aria-disabled to the preview links
+    this.$previewContainer.find('a').each((key, anchor) => {
+      $(anchor).attr('aria-disabled', true);
+    });
+
+    // prevent the preview links from being clickable
+    this.$previewContainer.find('a').on('click', (ev) => {
+      ev.preventDefault();
+    });
+  },
+
+  getCardElements: function () {
+    let checkedItems = this.$libraryContainer.find(
+      'input[name*="cardView"]:checked'
+    );
+    let cardElements = [];
+
+    for (let i = 0; i < checkedItems.length; i++) {
+      let element = {
+        value: $(checkedItems[i]).val(),
+        fieldId: $(checkedItems[i]).data('fieldId') ?? null,
+      };
+
+      cardElements.push(element);
+    }
+
+    return cardElements;
+  },
+
+  addCheckbox: function (element) {
+    if (this.$libraryContainer.length == 0) {
+      return null;
+    }
+
+    let $draggable = $('<div class="draggable"/>');
+    let $moveIcon = $('<a class="move icon draggable-handle"/>').appendTo(
+      $draggable
+    );
+    let $checkboxContainer = Craft.ui
+      .createCheckboxField({
+        name: 'cardView[]',
+        value: 'layoutElement:' + element.uid,
+        label: this.getCheckboxLabel(element.$container),
+        checked: true,
+        fieldClass: ['disabled', 'cvd-field'],
+        data: {
+          'field-id': element.fieldId,
+        },
+        aria: {
+          disabled: true,
+        },
+      })
+      .appendTo($draggable);
+
+    $draggable.appendTo(this.$libraryContainer);
+
+    // re-init dragging
+    this.initDrag(this.$container);
+
+    // and now make a call to update the card preview
+    this.updatePreview();
+  },
+
+  removeCheckbox: function (element) {
+    let $draggable = this.findCheckboxByUid(element.uid);
+    if ($draggable !== null) {
+      $draggable.remove();
+    }
+
+    // and now make a call to update the card preview
+    this.updatePreview();
+  },
+
+  getCheckboxLabel: function ($container) {
+    return $container.find('.fld-element-label').text() ?? this.attribute;
+  },
+
+  findCheckboxByUid: function (uid) {
+    if (this.$libraryContainer.length == 0) {
+      return null;
+    }
+
+    return this.$libraryContainer
+      .find('input[value="layoutElement:' + uid + '"]')
+      .parents('.draggable');
+  },
+
+  updateLabel: function ($container) {
+    let $draggable = this.findCheckboxByUid($container.data('uid'));
+
+    if ($draggable === null) {
+      return null;
+    }
+
+    let label = this.getCheckboxLabel($container);
+    $draggable.find('label').text(label);
+  },
+});

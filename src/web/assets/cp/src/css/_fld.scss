@@ -383,7 +383,7 @@ $gridColor: var(--gray-100);
 
   & > .spinner {
     margin-inline: 0 var(--neg-padding);
-    margin-block: 0 0;
+    margin-block: 0;
   }
 }
 
@@ -407,4 +407,46 @@ $gridColor: var(--gray-100);
       }
     }
   }
+}
+
+// card view designer
+.card-view-designer {
+  .cvd-container {
+    display: flex;
+    align-items: stretch;
+    position: relative;
+    overflow: hidden;
+    box-shadow: none;
+
+    .cvd-library {
+      flex-grow: 1;
+    }
+
+    .cvd-preview {
+      flex-grow: 2;
+      padding-inline: $base 0;
+      padding-block: 0 $base;
+
+      &:not(.loading) .spinner {
+        display: none;
+      }
+    }
+  }
+
+  .draggable {
+    display: flex;
+  }
+
+  .card-placeholder {
+    display: inline-block;
+    border: 1px dashed mixins.$grey300;
+    border-radius: var(--small-border-radius);
+    padding-block: 0.1em;
+    padding-inline: 0.5em;
+  }
+}
+
+.field.cvd-field {
+  margin-block-start: 0.2em !important;
+  margin-inline-start: 0.5em;
 }

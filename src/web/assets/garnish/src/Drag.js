@@ -326,6 +326,7 @@ export default BaseDrag.extend(
         top: helperPos.top,
         left: helperPos.left,
         zIndex: this.settings.helperBaseZindex + this.$draggee.length - index,
+        display: this.draggeeDisplay,
       });
 
       if (this.settings.helperOpacity != 1) {
