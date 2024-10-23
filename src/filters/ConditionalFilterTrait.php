@@ -1,0 +1,41 @@
+<?php
+/**
+ * @link https://craftcms.com/
+ * @copyright Copyright (c) Pixel & Tonic, Inc.
+ * @license https://craftcms.github.io/license/
+ */
+
+namespace craft\filters;
+
+use Closure;
+
+/**
+ * Filter for ensuring the user should be able to access the configured utility.
+ *
+ * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
+ * @since 4.13.0
+ */
+trait ConditionalFilterTrait
+{
+    /**
+     * @var Closure|null A PHP callable that determines when this filter should be applied.
+     */
+    public ?Closure $when = null;
+
+    /**
+     * @inheritdoc
+     */
+    protected function isActive(mixed $action): bool
+    {
+        // Retain only/except logic
+        if (!parent::isActive($action)) {
+            return false;
+        }
+
+        if (isset($this->when) && !call_user_func($this->when, $action)) {
+            return false;
+        }
+
+        return true;
+    }
+}
