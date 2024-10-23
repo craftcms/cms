@@ -10,7 +10,7 @@ use craft\helpers\ArrayHelper;
 use craft\i18n\Locale;
 
 /**
- * Site condition rule.
+ * Language condition rule.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 5.5.0
