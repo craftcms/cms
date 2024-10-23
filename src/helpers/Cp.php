@@ -1460,9 +1460,7 @@ JS, [
             'data' => [
                 'icon' => 'language',
             ],
-            'aria' => [
-                'role' => 'img',
-            ],
+            'role' => 'img',
         ]);
 
         $translationDescription = $config['translationDescription'] ?? Craft::t('app', 'This field is translatable.');
