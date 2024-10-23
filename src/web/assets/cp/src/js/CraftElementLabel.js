@@ -12,9 +12,21 @@
  * @example <craft-element-label><a href="#" class="label-link">Label</a></craft-element-label>
  */
 class CraftElementLabel extends HTMLElement {
-  connectedCallback() {
-    this.labelLink = this.querySelector('.label-link');
+  constructor() {
+    super();
     this.tooltip = null;
+    this.$tabs = null;
+    this.disabled = false;
+  }
+
+  get labelLink() {
+    return this.querySelector('.label-link');
+  }
+
+  connectedCallback() {
+    if (this.hasAttribute('disabled')) {
+      return;
+    }
 
     if (!this.labelLink) {
       console.warn('No label link found in craft-element-label.');
@@ -82,7 +94,9 @@ class CraftElementLabel extends HTMLElement {
 
   disconnectedCallback() {
     this.tooltip?.remove();
-    this.$tabs.data('tabs')?.off('selectTab');
+    if (this.$tabs?.length) {
+      this.$tabs.data('tabs')?.off('selectTab');
+    }
   }
 
   calculateWidth(text) {

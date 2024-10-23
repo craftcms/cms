@@ -8,8 +8,6 @@
 namespace craft\elements\db;
 
 use Craft;
-use craft\base\ElementContainerFieldInterface;
-use craft\base\ElementInterface;
 use craft\db\Query;
 use craft\db\QueryAbortedException;
 use craft\db\Table;
@@ -23,7 +21,6 @@ use craft\models\Section;
 use craft\models\UserGroup;
 use DateTime;
 use Illuminate\Support\Collection;
-use yii\base\InvalidArgumentException;
 use yii\base\InvalidConfigException;
 
 /**
@@ -53,8 +50,13 @@ use yii\base\InvalidConfigException;
  * @replace {myElement} myEntry
  * @replace {element-class} \craft\elements\Entry
  */
-class EntryQuery extends ElementQuery
+class EntryQuery extends ElementQuery implements NestedElementQueryInterface
 {
+    use NestedElementQueryTrait {
+        __set as nestedTraitSet;
+        cacheTags as nestedTraitCacheTags;
+    }
+
     // General parameters
     // -------------------------------------------------------------------------
 
@@ -90,43 +92,6 @@ class EntryQuery extends ElementQuery
      * @used-by sectionId()
      */
     public mixed $sectionId = null;
-
-    /**
-     * @var mixed The field ID(s) that the resulting entries must belong to.
-     * @used-by fieldId()
-     * @since 5.0.0
-     */
-    public mixed $fieldId = null;
-
-    /**
-     * @var mixed The primary owner element ID(s) that the resulting entries must belong to.
-     * @used-by primaryOwner()
-     * @used-by primaryOwnerId()
-     * @since 5.0.0
-     */
-    public mixed $primaryOwnerId = null;
-
-    /**
-     * @var mixed The owner element ID(s) that the resulting entries must belong to.
-     * @used-by owner()
-     * @used-by ownerId()
-     * @since 5.0.0
-     */
-    public mixed $ownerId = null;
-
-    /**
-     * @var bool|null Whether the owner elements can be drafts.
-     * @used-by allowOwnerDrafts()
-     * @since 5.0.0
-     */
-    public ?bool $allowOwnerDrafts = null;
-
-    /**
-     * @var bool|null Whether the owner elements can be revisions.
-     * @used-by allowOwnerRevisions()
-     * @since 5.0.0
-     */
-    public ?bool $allowOwnerRevisions = null;
 
     /**
      * @var mixed The entry type ID(s) that the resulting entries must have.
@@ -271,15 +236,6 @@ class EntryQuery extends ElementQuery
             case 'section':
                 $this->section($value);
                 break;
-            case 'field':
-                $this->field($value);
-                break;
-            case 'owner':
-                $this->owner($value);
-                break;
-            case 'primaryOwner':
-                $this->primaryOwner($value);
-                break;
             case 'type':
                 $this->type($value);
                 break;
@@ -287,7 +243,7 @@ class EntryQuery extends ElementQuery
                 $this->authorGroup($value);
                 break;
             default:
-                parent::__set($name, $value);
+                $this->nestedTraitSet($name, $value);
         }
     }
 
@@ -434,271 +390,6 @@ class EntryQuery extends ElementQuery
     public function sectionId(mixed $value): static
     {
         $this->sectionId = $value;
-        return $this;
-    }
-
-    /**
-     * Narrows the query results based on the field the entries are contained by.
-     *
-     * Possible values include:
-     *
-     * | Value | Fetches {elements}…
-     * | - | -
-     * | `'foo'` | in a field with a handle of `foo`.
-     * | `['foo', 'bar']` | in a field with a handle of `foo` or `bar`.
-     * | a [[craft\fields\Matrix]] object | in a field represented by the object.
-     *
-     * ---
-     *
-     * ```twig
-     * {# Fetch {elements} in the Foo field #}
-     * {% set {elements-var} = {twig-method}
-     *   .field('foo')
-     *   .all() %}
-     * ```
-     *
-     * ```php
-     * // Fetch {elements} in the Foo field
-     * ${elements-var} = {php-method}
-     *     ->field('foo')
-     *     ->all();
-     * ```
-     *
-     * @param mixed $value The property value
-     * @return static self reference
-     * @uses $fieldId
-     * @since 5.0.0
-     */
-    public function field(mixed $value): static
-    {
-        if (Db::normalizeParam($value, function($item) {
-            if (is_string($item)) {
-                $item = Craft::$app->getFields()->getFieldByHandle($item);
-            }
-            return $item instanceof ElementContainerFieldInterface ? $item->id : null;
-        })) {
-            $this->fieldId = $value;
-        } else {
-            $this->fieldId = false;
-        }
-
-        return $this;
-    }
-
-    /**
-     * Narrows the query results based on the field the entries are contained by, per the fields’ IDs.
-     *
-     * Possible values include:
-     *
-     * | Value | Fetches entries…
-     * | - | -
-     * | `1` | in a field with an ID of 1.
-     * | `'not 1'` | not in a field with an ID of 1.
-     * | `[1, 2]` | in a field with an ID of 1 or 2.
-     * | `['not', 1, 2]` | not in a field with an ID of 1 or 2.
-     *
-     * ---
-     *
-     * ```twig
-     * {# Fetch entries in the field with an ID of 1 #}
-     * {% set {elements-var} = {twig-method}
-     *   .fieldId(1)
-     *   .all() %}
-     * ```
-     *
-     * ```php
-     * // Fetch entries in the field with an ID of 1
-     * ${elements-var} = {php-method}
-     *     ->fieldId(1)
-     *     ->all();
-     * ```
-     *
-     * @param mixed $value The property value
-     * @return static self reference
-     * @uses $fieldId
-     * @since 5.0.0
-     */
-    public function fieldId(mixed $value): static
-    {
-        $this->fieldId = $value;
-        return $this;
-    }
-
-    /**
-     * Narrows the query results based on the primary owner element of the entries, per the owners’ IDs.
-     *
-     * Possible values include:
-     *
-     * | Value | Fetches entries…
-     * | - | -
-     * | `1` | created for an element with an ID of 1.
-     * | `[1, 2]` | created for an element with an ID of 1 or 2.
-     *
-     * ---
-     *
-     * ```twig
-     * {# Fetch entries created for an element with an ID of 1 #}
-     * {% set {elements-var} = {twig-method}
-     *   .primaryOwnerId(1)
-     *   .all() %}
-     * ```
-     *
-     * ```php
-     * // Fetch entries created for an element with an ID of 1
-     * ${elements-var} = {php-method}
-     *     ->primaryOwnerId(1)
-     *     ->all();
-     * ```
-     *
-     * @param mixed $value The property value
-     * @return static self reference
-     * @uses $primaryOwnerId
-     * @since 5.0.0
-     */
-    public function primaryOwnerId(mixed $value): static
-    {
-        $this->primaryOwnerId = $value;
-        return $this;
-    }
-
-    /**
-     * Sets the [[primaryOwnerId()]] and [[siteId()]] parameters based on a given element.
-     *
-     * ---
-     *
-     * ```twig
-     * {# Fetch entries created for this entry #}
-     * {% set {elements-var} = {twig-method}
-     *   .primaryOwner(myEntry)
-     *   .all() %}
-     * ```
-     *
-     * ```php
-     * // Fetch entries created for this entry
-     * ${elements-var} = {php-method}
-     *     ->primaryOwner($myEntry)
-     *     ->all();
-     * ```
-     *
-     * @param ElementInterface $primaryOwner The primary owner element
-     * @return static self reference
-     * @uses $primaryOwnerId
-     * @since 5.0.0
-     */
-    public function primaryOwner(ElementInterface $primaryOwner): static
-    {
-        $this->primaryOwnerId = [$primaryOwner->id];
-        $this->siteId = $primaryOwner->siteId;
-        return $this;
-    }
-
-    /**
-     * Narrows the query results based on the owner element of the entries, per the owners’ IDs.
-     *
-     * Possible values include:
-     *
-     * | Value | Fetches entries…
-     * | - | -
-     * | `1` | created for an element with an ID of 1.
-     * | `[1, 2]` | created for an element with an ID of 1 or 2.
-     *
-     * ---
-     *
-     * ```twig
-     * {# Fetch entries created for an element with an ID of 1 #}
-     * {% set {elements-var} = {twig-method}
-     *   .ownerId(1)
-     *   .all() %}
-     * ```
-     *
-     * ```php
-     * // Fetch entries created for an element with an ID of 1
-     * ${elements-var} = {php-method}
-     *     ->ownerId(1)
-     *     ->all();
-     * ```
-     *
-     * @param mixed $value The property value
-     * @return static self reference
-     * @uses $ownerId
-     * @since 5.0.0
-     */
-    public function ownerId(mixed $value): static
-    {
-        $this->ownerId = $value;
-        return $this;
-    }
-
-    /**
-     * Sets the [[ownerId()]] and [[siteId()]] parameters based on a given element.
-     *
-     * ---
-     *
-     * ```twig
-     * {# Fetch entries created for this entry #}
-     * {% set {elements-var} = {twig-method}
-     *   .owner(myEntry)
-     *   .all() %}
-     * ```
-     *
-     * ```php
-     * // Fetch entries created for this entry
-     * ${elements-var} = {php-method}
-     *     ->owner($myEntry)
-     *     ->all();
-     * ```
-     *
-     * @param ElementInterface $owner The owner element
-     * @return static self reference
-     * @uses $ownerId
-     * @since 5.0.0
-     */
-    public function owner(ElementInterface $owner): static
-    {
-        $this->ownerId = [$owner->id];
-        $this->siteId = $owner->siteId;
-        return $this;
-    }
-
-    /**
-     * Narrows the query results based on whether the entries’ owners are drafts.
-     *
-     * Possible values include:
-     *
-     * | Value | Fetches entries…
-     * | - | -
-     * | `true` | which can belong to a draft.
-     * | `false` | which cannot belong to a draft.
-     *
-     * @param bool|null $value The property value
-     * @return static self reference
-     * @uses $allowOwnerDrafts
-     * @since 5.0.0
-     */
-    public function allowOwnerDrafts(?bool $value = true): static
-    {
-        $this->allowOwnerDrafts = $value;
-        return $this;
-    }
-
-    /**
-     * Narrows the query results based on whether the entries’ owners are revisions.
-     *
-     * Possible values include:
-     *
-     * | Value | Fetches entries…
-     * | - | -
-     * | `true` | which can belong to a revision.
-     * | `false` | which cannot belong to a revision.
-     *
-     * @param bool|null $value The property value
-     * @return static self reference
-     * @uses $allowOwnerRevisions
-     * @since 5.0.0
-     */
-    public function allowOwnerRevisions(?bool $value = true): static
-    {
-        $this->allowOwnerRevisions = $value;
         return $this;
     }
 
@@ -1149,29 +840,12 @@ class EntryQuery extends ElementQuery
             return false;
         }
 
-        if ($this->fieldId === false) {
-            throw new QueryAbortedException();
-        }
-
         $this->_normalizeSectionId();
-        $this->_normalizeFieldId();
         $this->_normalizeTypeId();
 
         // See if 'section', 'type', or 'authorGroup' were set to invalid handles
         if ($this->sectionId === [] || $this->typeId === [] || $this->authorGroupId === []) {
             return false;
-        }
-
-        try {
-            $this->primaryOwnerId = $this->_normalizeOwnerId($this->primaryOwnerId);
-        } catch (InvalidArgumentException) {
-            throw new InvalidConfigException('Invalid primaryOwnerId param value');
-        }
-
-        try {
-            $this->ownerId = $this->_normalizeOwnerId($this->ownerId);
-        } catch (InvalidArgumentException) {
-            throw new InvalidConfigException('Invalid ownerId param value');
         }
 
         $this->joinElementTable(Table::ENTRIES);
@@ -1185,53 +859,8 @@ class EntryQuery extends ElementQuery
             'entries.expiryDate',
         ]);
 
-        if (!empty($this->fieldId) || !empty($this->ownerId) || !empty($this->primaryOwnerId)) {
-            // Join in the elements_owners table
-            $ownersCondition = [
-                'and',
-                '[[elements_owners.elementId]] = [[elements.id]]',
-                $this->ownerId ? ['elements_owners.ownerId' => $this->ownerId] : '[[elements_owners.ownerId]] = [[entries.primaryOwnerId]]',
-            ];
-
-            $this->query
-                ->addSelect([
-                    'elements_owners.ownerId',
-                    'elements_owners.sortOrder',
-                ])
-                ->innerJoin(['elements_owners' => Table::ELEMENTS_OWNERS], $ownersCondition);
-            $this->subQuery->innerJoin(['elements_owners' => Table::ELEMENTS_OWNERS], $ownersCondition);
-
-            if ($this->fieldId) {
-                $this->subQuery->andWhere(['entries.fieldId' => $this->fieldId]);
-            }
-
-            if ($this->primaryOwnerId) {
-                $this->subQuery->andWhere(['entries.primaryOwnerId' => $this->primaryOwnerId]);
-            }
-
-            // Ignore revision/draft blocks by default
-            $allowOwnerDrafts = $this->allowOwnerDrafts ?? ($this->id || $this->primaryOwnerId || $this->ownerId);
-            $allowOwnerRevisions = $this->allowOwnerRevisions ?? ($this->id || $this->primaryOwnerId || $this->ownerId);
-
-            if (!$allowOwnerDrafts || !$allowOwnerRevisions) {
-                $this->subQuery->innerJoin(
-                    ['owners' => Table::ELEMENTS],
-                    $this->ownerId ? '[[owners.id]] = [[elements_owners.ownerId]]' : '[[owners.id]] = [[entries.primaryOwnerId]]'
-                );
-
-                if (!$allowOwnerDrafts) {
-                    $this->subQuery->andWhere(['owners.draftId' => null]);
-                }
-
-                if (!$allowOwnerRevisions) {
-                    $this->subQuery->andWhere(['owners.revisionId' => null]);
-                }
-            }
-
-            $this->defaultOrderBy = ['elements_owners.sortOrder' => SORT_ASC];
-        } else {
-            $this->_applySectionIdParam();
-        }
+        $this->_applySectionIdParam();
+        $this->applyNestedElementParams('entries.fieldId', 'entries.primaryOwnerId');
 
         if ($this->postDate) {
             $this->subQuery->andWhere(Db::parseDateParam('entries.postDate', $this->postDate));
@@ -1547,45 +1176,6 @@ class EntryQuery extends ElementQuery
     }
 
     /**
-     * Normalizes the fieldId param to an array of IDs or null
-     */
-    private function _normalizeFieldId(): void
-    {
-        if (empty($this->fieldId)) {
-            $this->fieldId = is_array($this->fieldId) ? [] : null;
-        } elseif (is_numeric($this->fieldId)) {
-            $this->fieldId = [$this->fieldId];
-        } elseif (!is_array($this->fieldId) || !ArrayHelper::isNumeric($this->fieldId)) {
-            $this->fieldId = (new Query())
-                ->select(['id'])
-                ->from([Table::FIELDS])
-                ->where(Db::parseNumericParam('id', $this->fieldId))
-                ->column();
-        }
-    }
-
-    /**
-     * Normalizes the primaryOwnerId param to an array of IDs or null
-     *
-     * @param mixed $value
-     * @return int[]|null
-     * @throws InvalidArgumentException
-     */
-    private function _normalizeOwnerId(mixed $value): ?array
-    {
-        if (empty($value)) {
-            return null;
-        }
-        if (is_numeric($value)) {
-            return [$value];
-        }
-        if (!is_array($value) || !ArrayHelper::isNumeric($value)) {
-            throw new InvalidArgumentException();
-        }
-        return $value;
-    }
-
-    /**
      * Applies the 'ref' param to the query being prepared.
      */
     private function _applyRefParam(): void
@@ -1633,6 +1223,7 @@ class EntryQuery extends ElementQuery
     protected function cacheTags(): array
     {
         $tags = [];
+
         // If the type is set, go with that instead of the section
         if ($this->typeId) {
             foreach ($this->typeId as $typeId) {
@@ -1642,23 +1233,10 @@ class EntryQuery extends ElementQuery
             foreach ($this->sectionId as $sectionId) {
                 $tags[] = "section:$sectionId";
             }
-        } elseif ($this->fieldId) {
-            foreach ($this->fieldId as $fieldId) {
-                $tags[] = "field:$fieldId";
-            }
         }
 
-        if ($this->primaryOwnerId) {
-            foreach ($this->primaryOwnerId as $ownerId) {
-                $tags[] = "element::$ownerId";
-            }
-        }
+        array_push($tags, ...$this->nestedTraitCacheTags());
 
-        if ($this->ownerId) {
-            foreach ($this->ownerId as $ownerId) {
-                $tags[] = "element::$ownerId";
-            }
-        }
         return $tags;
     }
 

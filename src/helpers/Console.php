@@ -23,6 +23,74 @@ use const STDOUT;
 class Console extends \yii\helpers\Console
 {
     /**
+     * @var int The number of times [[output()]] has been called.
+     * @since 5.5.0
+     */
+    public static int $outputCount = 0;
+
+    /**
+     * @var bool Whether a newline should be prepended to the next output.
+     * @since 5.5.0
+     */
+    public static bool $prependNewline = false;
+
+    private static int $indent = 0;
+
+    /**
+     * Increases the indent prepended to [[output()]] strings.
+     *
+     * @since 5.5.0
+     */
+    public static function indent(): void
+    {
+        self::$indent++;
+    }
+
+    /**
+     * Decreases the indent prepended to [[output()]] strings.
+     *
+     * @since 5.5.0
+     */
+    public static function outdent(): void
+    {
+        self::$indent = max(0, self::$indent - 1);
+    }
+
+    /**
+     * Returns the indent string that should be appended to output lines.
+     *
+     * @return string
+     * @since 5.5.0
+     */
+    public static function indentStr(): string
+    {
+        return str_repeat('   ', self::$indent);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public static function output($string = null): int|bool
+    {
+        self::$outputCount++;
+
+        if ($string !== null) {
+            if (self::$prependNewline) {
+                $string = "\n$string";
+                self::$prependNewline = false;
+            }
+
+            if (self::$indent !== 0) {
+                $lines = StringHelper::lines($string);
+                $lines = array_map(fn(string $line) => static::indentStr() . $line, $lines);
+                $string = implode("\n", $lines);
+            }
+        }
+
+        return parent::output($string);
+    }
+
+    /**
      * Prints a string to STDOUT.
      *
      * You may optionally format the string with ANSI codes by
@@ -38,6 +106,13 @@ class Console extends \yii\helpers\Console
      */
     public static function stdout($string): int|false
     {
+        self::$outputCount++;
+
+        if (self::$prependNewline) {
+            $string = "\n$string";
+            self::$prependNewline = false;
+        }
+
         if (static::streamSupportsAnsiColors(STDOUT)) {
             $args = func_get_args();
             array_shift($args);

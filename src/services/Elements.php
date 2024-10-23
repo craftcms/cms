@@ -73,6 +73,7 @@ use craft\records\StructureElement as StructureElementRecord;
 use craft\validators\HandleValidator;
 use craft\validators\SlugValidator;
 use DateTime;
+use Illuminate\Support\Collection;
 use Throwable;
 use UnitEnum;
 use yii\base\Behavior;
@@ -2698,7 +2699,7 @@ class Elements extends Component
             ->indexBy('id')
             ->all();
 
-        $activity = [];
+        $activity = Collection::make();
         /** @var ElementActivity[] $activityByUserId */
         $activityByUserId = [];
         $elements = [];
@@ -2714,7 +2715,7 @@ class Elements extends Component
                     $newerRecord->type === ElementActivity::TYPE_VIEW &&
                     $result['type'] !== ElementActivity::TYPE_VIEW
                 ) {
-                    array_splice($activity, array_search($newerRecord, $activity), 1);
+                    $activity = $activity->filter(fn(ElementActivity $record) => $record !== $newerRecord);
                     unset($activityByUserId[$result['userId']]);
                 } else {
                     continue;
@@ -2747,15 +2748,16 @@ class Elements extends Component
                 $elements[$elementKey][$result['siteId']] = $resultElement;
             }
 
-            $activity[] = $activityByUserId[$result['userId']] = new ElementActivity(
+            $record = $activityByUserId[$result['userId']] = new ElementActivity(
                 $users[$result['userId']],
                 $elements[$elementKey][$result['siteId']],
                 $result['type'],
                 DateTimeHelper::toDateTime($result['timestamp']),
             );
+            $activity->push($record);
         }
 
-        return $activity;
+        return $activity->values()->all();
     }
 
     /**
@@ -3212,12 +3214,6 @@ class Elements extends Component
             }
 
             foreach ($with as $plan) {
-                // Get the plan handle, without a provider prefix
-                $planHandle = $plan->alias;
-                if (str_contains($planHandle, ':')) {
-                    $planHandle = explode(':', $planHandle, 2)[1];
-                }
-
                 // Filter out any elements that the plan doesn't like
                 if ($plan->when !== null) {
                     $filteredElements = array_values(array_filter($elements, $plan->when));
@@ -3310,7 +3306,7 @@ class Elements extends Component
                                 }
                             }
                         }
-                        $sourceElement->setEagerLoadedElementCount($planHandle, $count);
+                        $sourceElement->setEagerLoadedElementCount($plan->alias, $count);
                     }
 
                     continue;
@@ -3381,11 +3377,11 @@ class Elements extends Component
                         }
                     }
 
-                    $sourceElement->setEagerLoadedElements($planHandle, $targetElementsForSource, $plan);
-                    $sourceElement->setLazyEagerLoadedElements($planHandle, $plan->lazy);
+                    $sourceElement->setEagerLoadedElements($plan->alias, $targetElementsForSource, $plan);
+                    $sourceElement->setLazyEagerLoadedElements($plan->alias, $plan->lazy);
 
                     if ($plan->count) {
-                        $sourceElement->setEagerLoadedElementCount($planHandle, count($targetElementsForSource));
+                        $sourceElement->setEagerLoadedElementCount($plan->alias, count($targetElementsForSource));
                     }
                 }
 
@@ -4109,8 +4105,11 @@ class Elements extends Component
                     foreach ($fieldLayout->getCustomFields() as $field) {
                         // Has this field changed, and does it produce the same translation key as it did for the initial element?
                         if (
-                            $element->isFieldDirty($field->handle) &&
-                            $field->getTranslationKey($siteElement) === $field->getTranslationKey($element)
+                            $element->propagateAll ||
+                            (
+                                $element->isFieldDirty($field->handle) &&
+                                $field->getTranslationKey($siteElement) === $field->getTranslationKey($element)
+                            )
                         ) {
                             // Copy the initial element’s value over
                             $siteElement->setFieldValue($field->handle, $element->getFieldValue($field->handle));

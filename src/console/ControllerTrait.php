@@ -12,7 +12,6 @@ use craft\base\Model;
 use craft\helpers\App;
 use craft\helpers\Console;
 use craft\mutex\Mutex as CraftMutex;
-use Symfony\Component\Process\Process;
 use yii\base\Action;
 use yii\base\InvalidRouteException;
 use yii\console\Exception;
@@ -171,7 +170,7 @@ MD
     protected function checkTty(): void
     {
         // Don't treat this as interactive if it doesn't appear to be a TTY shell
-        if ($this->interactive && !Process::isTtySupported()) {
+        if ($this->interactive && !App::isTty()) {
             $this->interactive = false;
         }
     }
@@ -302,7 +301,7 @@ MD
      */
     public function warning(string $message): void
     {
-        $this->note($message, '⚠️ ');
+        $this->note($message, '⚠️');
     }
 
     /**

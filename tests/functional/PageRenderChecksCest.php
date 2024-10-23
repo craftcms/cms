@@ -119,7 +119,7 @@ class PageRenderChecksCest
             [
                 'url' => '/settings/email', 'title' => 'Email Settings', 'extraContent' => [
                 ['rendered' => 'System Email Address'],
-                ['rendered' => 'This can be set to an environment variable. Learn more'],
+                ['rendered' => 'This can begin with an environment variable. Learn more'],
                 ['rendered' => 'Sender Name'],
                 ['rendered' => 'HTML Email Template'],
                 ['rendered' => 'Transport Type'],

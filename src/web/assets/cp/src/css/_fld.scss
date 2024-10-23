@@ -75,6 +75,7 @@ $gridColor: var(--gray-100);
 
 .fld-library-menu {
   width: $tabWidth;
+  min-height: 200px;
   margin-inline-start: $tabPadding * -1;
   padding: $tabPadding;
 }
@@ -100,6 +101,10 @@ $gridColor: var(--gray-100);
       & > *:not(:first-child) {
         margin-block-start: var(--s);
       }
+    }
+
+    .fld-field-indicators {
+      display: none;
     }
   }
 

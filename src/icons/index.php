@@ -913,6 +913,12 @@ return array(
     'terms' => ' camera cinema director film movie movie camera theater video ',
     'pro' => true,
   ),
+  'camera-retro' =>
+  array(
+    'name' => ' camera retro ',
+    'terms' => ' camera image img lens photo picture record shutter video ',
+    'pro' => false,
+  ),
   'campfire' =>
   array(
     'name' => ' campfire ',
@@ -1171,6 +1177,54 @@ return array(
     'terms' => ' nut plant ',
     'pro' => true,
   ),
+  'chevron-down' =>
+  array(
+    'name' => ' chevron down ',
+    'terms' => ' arrow download expand insert ',
+    'pro' => false,
+  ),
+  'chevron-left' =>
+  array(
+    'name' => ' chevron left ',
+    'terms' => ' left pointing angle bracket arrow back bracket previous ',
+    'pro' => false,
+  ),
+  'chevron-right' =>
+  array(
+    'name' => ' chevron right ',
+    'terms' => ' right pointing angle bracket arrow bracket forward next ',
+    'pro' => false,
+  ),
+  'chevron-up' =>
+  array(
+    'name' => ' chevron up ',
+    'terms' => ' arrow collapse upgrade upload ',
+    'pro' => false,
+  ),
+  'chevrons-down' =>
+  array(
+    'name' => ' chevrons down ',
+    'terms' => ' arrow download expand ',
+    'pro' => true,
+  ),
+  'chevrons-left' =>
+  array(
+    'name' => ' chevrons left ',
+    'terms' => ' arrow back bracket previous ',
+    'pro' => true,
+  ),
+  'chevrons-right' =>
+  array(
+    'name' => ' chevrons right ',
+    'terms' => ' arrow bracket forward next ',
+    'pro' => true,
+  ),
+  'chevrons-up' =>
+  array(
+    'name' => ' chevrons up ',
+    'terms' => ' arrow collapse upgrade upload ',
+    'pro' => true,
+  ),
   'child' =>
   array(
     'name' => ' child ',
@@ -1361,6 +1415,12 @@ return array(
   array(
     'name' => ' code ',
     'terms' => ' brackets code development html mysql sql ',
+    'pro' => false,
+  ),
+  'codepen' =>
+  array(
+    'name' => ' codepen ',
+    'terms' => '  ',
     'pro' => false,
   ),
   'coffee-pot' =>
@@ -1687,6 +1747,12 @@ return array(
     'terms' => ' blu ray cd cd rom computer dvd load music optical drive peripheral tray video ',
     'pro' => true,
   ),
+  'discord' =>
+  array(
+    'name' => ' discord ',
+    'terms' => '  ',
+    'pro' => false,
+  ),
   'disease' =>
   array(
     'name' => ' disease ',
@@ -1782,6 +1848,12 @@ return array(
     'name' => ' dreidel ',
     'terms' => ' clay hanukkah holiday jewish judaism toy ',
     'pro' => true,
+  ),
+  'dribbble' =>
+  array(
+    'name' => ' dribbble ',
+    'terms' => '  ',
+    'pro' => false,
   ),
   'drone' =>
   array(
@@ -2659,6 +2731,12 @@ return array(
     'terms' => ' face lips mouth quiet sealed secret zipper zipper mouth face ',
     'pro' => true,
   ),
+  'facebook' =>
+  array(
+    'name' => ' facebook ',
+    'terms' => ' fabook facebook official fb social network ',
+    'pro' => false,
+  ),
   'falafel' =>
   array(
     'name' => ' falafel ',
@@ -3108,6 +3186,12 @@ return array(
     'name' => ' gingerbread man ',
     'terms' => ' cookie decoration frosting holiday ',
     'pro' => true,
+  ),
+  'github' =>
+  array(
+    'name' => ' github ',
+    'terms' => ' octocat ',
+    'pro' => false,
   ),
   'glass' =>
   array(
@@ -3673,11 +3757,23 @@ return array(
     'terms' => ' album img landscape photo picture ',
     'pro' => false,
   ),
+  'image-landscape' =>
+  array(
+    'name' => ' image landscape ',
+    'terms' => ' image img mountain photo ',
+    'pro' => true,
+  ),
   'image-polaroid' =>
   array(
     'name' => ' image polaroid ',
     'terms' => ' capture film img instant camera lens photo photography retro snapshot vintage ',
     'pro' => true,
+  ),
+  'image-portrait' =>
+  array(
+    'name' => ' image portrait ',
+    'terms' => ' id image img photo picture selfie uer username ',
+    'pro' => false,
   ),
   'image-slash' =>
   array(
@@ -3726,6 +3822,12 @@ return array(
     'name' => ' input text ',
     'terms' => ' field input name ',
     'pro' => true,
+  ),
+  'instagram' =>
+  array(
+    'name' => ' instagram ',
+    'terms' => '  ',
+    'pro' => false,
   ),
   'interrobang' =>
   array(
@@ -3816,6 +3918,12 @@ return array(
     'name' => ' keynote ',
     'terms' => ' lecture panel seminar speak speaker talk ',
     'pro' => true,
+  ),
+  'kickstarter' =>
+  array(
+    'name' => ' kickstarter ',
+    'terms' => '  ',
+    'pro' => false,
   ),
   'kidneys' =>
   array(
@@ -4009,6 +4117,12 @@ return array(
     'terms' => ' attach attachment chain connect lin link ',
     'pro' => false,
   ),
+  'linkedin' =>
+  array(
+    'name' => ' linkedin ',
+    'terms' => ' linkedin square linkin ',
+    'pro' => false,
+  ),
   'lips' =>
   array(
     'name' => ' lips ',
@@ -4181,6 +4295,12 @@ return array(
   array(
     'name' => ' map pin ',
     'terms' => ' address agree coordinates destination gps localize location map marker navigation pin place position pushpin round pushpin travel ',
+    'pro' => false,
+  ),
+  'markdown' =>
+  array(
+    'name' => ' markdown ',
+    'terms' => '  ',
     'pro' => false,
   ),
   'marker' =>
@@ -4675,6 +4795,12 @@ return array(
     'terms' => ' breakfast crepe flapjack hotcake pancake stack syrup ',
     'pro' => true,
   ),
+  'panorama' =>
+  array(
+    'name' => ' panorama ',
+    'terms' => ' image img landscape photo wide ',
+    'pro' => false,
+  ),
   'paper-plane' =>
   array(
     'name' => ' paper plane ',
@@ -4789,6 +4915,42 @@ return array(
     'terms' => ' draw edit modify pencil write ',
     'pro' => true,
   ),
+  'pen-clip' =>
+  array(
+    'name' => ' pen clip ',
+    'terms' => ' design edit modify update write ',
+    'pro' => false,
+  ),
+  'pen-fancy' =>
+  array(
+    'name' => ' pen fancy ',
+    'terms' => ' black nib design edit fountain fountain pen modify nib pen update write ',
+    'pro' => false,
+  ),
+  'pen-field' =>
+  array(
+    'name' => ' pen field ',
+    'terms' => ' imput modify signature username ',
+    'pro' => true,
+  ),
+  'pen-line' =>
+  array(
+    'name' => ' pen line ',
+    'terms' => ' draw modify write ',
+    'pro' => true,
+  ),
+  'pen-nib' =>
+  array(
+    'name' => ' pen nib ',
+    'terms' => ' design edit fountain pen modify update write ',
+    'pro' => false,
+  ),
+  'pen-paintbrush' =>
+  array(
+    'name' => ' pen paintbrush ',
+    'terms' => ' art design modify paint pencil write ',
+    'pro' => true,
+  ),
   'pen-to-square' =>
   array(
     'name' => ' pen to square ',
@@ -4800,6 +4962,12 @@ return array(
     'name' => ' pencil ',
     'terms' => ' lower left pencil design draw edit lead maintenance modify pencil update write ',
     'pro' => false,
+  ),
+  'pencil-mechanical' =>
+  array(
+    'name' => ' pencil mechanical ',
+    'terms' => ' draw edit eraser graphite lead pencil stylus write ',
+    'pro' => true,
   ),
   'people' =>
   array(
@@ -4993,6 +5161,18 @@ return array(
     'terms' => ' call earphone number phone retro support telephone vintage voice ',
     'pro' => true,
   ),
+  'photo-film' =>
+  array(
+    'name' => ' photo film ',
+    'terms' => ' av film image library media ',
+    'pro' => false,
+  ),
+  'photo-film-music' =>
+  array(
+    'name' => ' photo film music ',
+    'terms' => ' img media ',
+    'pro' => true,
+  ),
   'pi' =>
   array(
     'name' => ' pi ',
@@ -5058,6 +5238,12 @@ return array(
     'name' => ' pineapple ',
     'terms' => ' ananas fruit pineapple tropical ',
     'pro' => true,
+  ),
+  'pinterest' =>
+  array(
+    'name' => ' pinterest ',
+    'terms' => '  ',
+    'pro' => false,
   ),
   'pipe-smoking' =>
   array(
@@ -5209,6 +5395,12 @@ return array(
     'terms' => ' print screen symbol printer icon business computer copy document office paper printer ',
     'pro' => false,
   ),
+  'product-hunt' =>
+  array(
+    'name' => ' product hunt ',
+    'terms' => '  ',
+    'pro' => false,
+  ),
   'projector' =>
   array(
     'name' => ' projector ',
@@ -5310,6 +5502,12 @@ return array(
     'name' => ' raygun ',
     'terms' => ' flash gordon laser pew pew phaser space stun ',
     'pro' => true,
+  ),
+  'rebel' =>
+  array(
+    'name' => ' rebel ',
+    'terms' => '  ',
+    'pro' => false,
   ),
   'receipt' =>
   array(
@@ -5777,6 +5975,12 @@ return array(
   array(
     'name' => ' shop ',
     'terms' => ' bodega building buy market purchase shopping store ',
+    'pro' => false,
+  ),
+  'shopify' =>
+  array(
+    'name' => ' shopify ',
+    'terms' => '  ',
     'pro' => false,
   ),
   'shovel' =>
@@ -6589,6 +6793,12 @@ return array(
     'terms' => ' right thought bubble balloon bubble comic dream idea imagination think thought thought balloon ',
     'pro' => true,
   ),
+  'threads' =>
+  array(
+    'name' => ' threads ',
+    'terms' => '  ',
+    'pro' => false,
+  ),
   'thumbs-down' =>
   array(
     'name' => ' thumbs down ',
@@ -6618,6 +6828,12 @@ return array(
     'name' => ' ticket airline ',
     'terms' => ' airplane arrival boarding pass departure ticket travel ',
     'pro' => true,
+  ),
+  'tiktok' =>
+  array(
+    'name' => ' tiktok ',
+    'terms' => '  ',
+    'pro' => false,
   ),
   'tilde' =>
   array(
@@ -7285,6 +7501,12 @@ return array(
     'terms' => ' buddhism buddhist building monastery ',
     'pro' => false,
   ),
+  'vimeo' =>
+  array(
+    'name' => ' vimeo ',
+    'terms' => '  ',
+    'pro' => false,
+  ),
   'violin' =>
   array(
     'name' => ' violin ',
@@ -7459,6 +7681,12 @@ return array(
     'terms' => ' fauna mammal swimming whal whale ',
     'pro' => true,
   ),
+  'whatsapp' =>
+  array(
+    'name' => ' whatsapp ',
+    'terms' => '  ',
+    'pro' => false,
+  ),
   'wheat' =>
   array(
     'name' => ' wheat ',
@@ -7561,6 +7789,12 @@ return array(
     'terms' => ' health medical radiological images radiology skeleton ',
     'pro' => false,
   ),
+  'x-twitter' =>
+  array(
+    'name' => ' x twitter ',
+    'terms' => ' elon twitter x ',
+    'pro' => false,
+  ),
   'xmark' =>
   array(
     'name' => ' xmark ',
@@ -7571,6 +7805,12 @@ return array(
   array(
     'name' => ' yin yang ',
     'terms' => ' daoism opposites religion tao taoism taoist yang yin yin yang ',
+    'pro' => false,
+  ),
+  'youtube' =>
+  array(
+    'name' => ' youtube ',
+    'terms' => ' film video youtube play youtube square ',
     'pro' => false,
   ),
 );

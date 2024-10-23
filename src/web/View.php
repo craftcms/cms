@@ -33,9 +33,9 @@ use Twig\Error\LoaderError as TwigLoaderError;
 use Twig\Error\RuntimeError as TwigRuntimeError;
 use Twig\Error\SyntaxError as TwigSyntaxError;
 use Twig\Extension\CoreExtension;
-use Twig\Extension\EscaperExtension;
 use Twig\Extension\ExtensionInterface;
 use Twig\Extension\StringLoaderExtension;
+use Twig\Runtime\EscaperRuntime;
 use Twig\Template as TwigTemplate;
 use Twig\TemplateWrapper;
 use yii\base\Arrayable;
@@ -393,8 +393,7 @@ class View extends \yii\web\View
         $twig = new Environment(new TemplateLoader($this), $this->_getTwigOptions());
 
         // Mark SafeHtml as a safe interface
-        $escaper = $twig->getExtension(EscaperExtension::class);
-        $escaper->addSafeClass(SafeHtml::class, ['html']);
+        $twig->getRuntime(EscaperRuntime::class)->addSafeClass(SafeHtml::class, ['html']);
 
         $twig->addExtension(new StringLoaderExtension());
         $twig->addExtension(new Extension($this, $twig));

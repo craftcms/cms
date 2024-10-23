@@ -73,6 +73,12 @@ class Gc extends Component
     public string|array|Connection $db = 'db';
 
     /**
+     * @var bool Whether CLI output should be muted.
+     * @since 5.4.9
+     */
+    public bool $silent = false;
+
+    /**
      * @var GeneralConfig
      */
     private GeneralConfig $_generalConfig;
@@ -301,7 +307,7 @@ class Gc extends Component
     public function deletePartialElements(string $elementType, string $table, string $fk): void
     {
         /** @var string|ElementInterface $elementType */
-        $this->_stdout(sprintf('    > deleting partial %s data in the `%s` table ... ', $elementType::lowerDisplayName(), $table));
+        $this->_stdout(sprintf('    > deleting partial %s data ... ', $elementType::lowerDisplayName()));
 
         $ids = (new Query())
             ->select('e.id')
@@ -715,7 +721,7 @@ SQL;
 
     private function _stdout(string $string, ...$format): void
     {
-        if (Craft::$app instanceof ConsoleApplication) {
+        if (!$this->silent && Craft::$app instanceof ConsoleApplication) {
             Console::stdout($string, ...$format);
         }
     }

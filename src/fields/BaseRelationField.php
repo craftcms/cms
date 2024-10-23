@@ -759,12 +759,12 @@ JS, [
                     }
                 },
             ]));
-
-            // Prepare the query for lazy eager loading
-            $query->prepForEagerLoading($this->handle, $element);
         } else {
             $query->id(false);
         }
+
+        // Prepare the query for lazy eager loading
+        $query->prepForEagerLoading($this->handle, $element);
 
         if ($this->allowLimit && $this->maxRelations) {
             $query->limit($this->maxRelations);
@@ -929,6 +929,13 @@ JS, [
         /** @var ElementQueryInterface|ElementCollection $value */
         if ($value instanceof ElementQueryInterface) {
             $value = $this->_all($value, $element)->collect();
+        } else {
+            // todo: come up with a way to get the normalized field value ignoring the eager-loaded value
+            $rawValue = $element->getBehavior('customFields')->{$this->handle} ?? null;
+            if (is_array($rawValue)) {
+                $ids = array_flip($rawValue);
+                $value = $value->filter(fn(ElementInterface $element) => isset($ids[$element->id]));
+            }
         }
 
         return $this->previewHtml($value);
@@ -978,27 +985,46 @@ JS, [
     {
         $sourceSiteId = $sourceElements[0]->siteId;
 
-        // Get the source element IDs
-        $sourceElementIds = array_map(fn(ElementInterface $element) => $element->id, $sourceElements);
+        $map = [];
+        $missingSourceElementIds = [];
 
-        // Return any relation data on these elements, defined with this field
-        $map = (new Query())
-            ->select(['sourceId as source', 'targetId as target'])
-            ->from([DbTable::RELATIONS])
-            ->where([
-                'and',
-                [
-                    'fieldId' => $this->id,
-                    'sourceId' => $sourceElementIds,
-                ],
-                [
-                    'or',
-                    ['sourceSiteId' => $sourceSiteId],
-                    ['sourceSiteId' => null],
-                ],
-            ])
-            ->orderBy(['sortOrder' => SORT_ASC])
-            ->all();
+        foreach ($sourceElements as $sourceElement) {
+            $rawValue = $sourceElement->getBehavior('customFields')->{$this->handle} ?? null;
+            if ($rawValue instanceof ElementQueryInterface) {
+                $rawValue = $rawValue->where['elements.id'] ?? null;
+            }
+            if (is_array($rawValue)) {
+                foreach ($rawValue as $targetElementId) {
+                    $map[] = ['source' => $sourceElement->id, 'target' => $targetElementId];
+                }
+            } elseif ($this->isFirstInstance($sourceElement)) {
+                // The relation IDs aren't hardcoded yet and this is the first
+                // instance of this field in the field layout, so fetch the relations
+                // via the DB table
+                $missingSourceElementIds[] = $sourceElement->id;
+            }
+        }
+
+        // Are there any source elements that don't have hardcoded relation IDs yet?
+        if (!empty($missingSourceElementIds)) {
+            $missingMappingsQuery = (new Query())
+                ->select(['sourceId as source', 'targetId as target'])
+                ->from([DbTable::RELATIONS])
+                ->where([
+                    'and',
+                    [
+                        'fieldId' => $this->id,
+                        'sourceId' => $missingSourceElementIds,
+                    ],
+                    [
+                        'or',
+                        ['sourceSiteId' => $sourceSiteId],
+                        ['sourceSiteId' => null],
+                    ],
+                ])
+                ->orderBy(['sortOrder' => SORT_ASC]);
+            array_push($map, ...$missingMappingsQuery->all());
+        }
 
         $criteria = [];
 

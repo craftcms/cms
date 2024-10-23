@@ -82,7 +82,7 @@ class Section extends Model implements Chippable, CpEditable, Iconic
     public ?string $handle = null;
 
     /**
-     * @var string|null Type
+     * @var self::TYPE_*|null Type
      */
     public ?string $type = null;
 
@@ -210,7 +210,7 @@ class Section extends Model implements Chippable, CpEditable, Iconic
                 self::TYPE_STRUCTURE,
             ],
         ];
-        $rules[] = [['name', 'handle'], UniqueValidator::class, 'targetClass' => SectionRecord::class];
+        $rules[] = [['handle'], UniqueValidator::class, 'targetClass' => SectionRecord::class];
         $rules[] = [['name', 'handle', 'type', 'entryTypes', 'propagationMethod', 'siteSettings'], 'required'];
         $rules[] = [['name', 'handle'], 'string', 'max' => 255];
         $rules[] = [['siteSettings'], 'validateSiteSettings'];

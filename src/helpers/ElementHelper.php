@@ -1074,6 +1074,11 @@ class ElementHelper
                     $draft->level = $element->level;
                 }
 
+                // retain the canonical element's ownerId
+                if ($element instanceof NestedElementInterface && $draft instanceof NestedElementInterface) {
+                    $draft->setOwnerId($element->getOwnerId());
+                }
+
                 $elements[$i] = $draft;
             }
         }

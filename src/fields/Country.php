@@ -83,7 +83,7 @@ class Country extends Field implements InlineEditableFieldInterface, MergeableFi
      */
     protected function inputHtml(mixed $value, ?ElementInterface $element, bool $inline): string
     {
-        $options = Craft::$app->getAddresses()->getCountryRepository()->getList(Craft::$app->language);
+        $options = Craft::$app->getAddresses()->getCountryList(Craft::$app->language);
         array_unshift($options, ['label' => ' ', 'value' => '__blank__']);
 
         return Cp::selectizeHtml([

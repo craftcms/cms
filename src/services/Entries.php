@@ -51,6 +51,7 @@ use Illuminate\Support\Collection;
 use Throwable;
 use yii\base\Component;
 use yii\base\Exception;
+use yii\base\InvalidConfigException;
 use yii\caching\TagDependency;
 
 /**
@@ -571,7 +572,9 @@ class Entries extends Component
         }
 
         if ($isNewSection) {
-            $section->uid = StringHelper::UUID();
+            if (!$section->uid) {
+                $section->uid = StringHelper::UUID();
+            }
         } elseif (!$section->uid) {
             $section->uid = Db::uidById(Table::SECTIONS, $section->id);
         }
@@ -681,7 +684,8 @@ class Entries extends Component
                 $sectionRecord->structureId != $sectionRecord->getOldAttribute('structureId')
             );
 
-            if ($sectionRecord->dateDeleted) {
+            $wasTrashed = $sectionRecord->dateDeleted;
+            if ($wasTrashed) {
                 $sectionRecord->restore();
                 $resaveEntries = true;
             } else {
@@ -828,6 +832,32 @@ class Entries extends Component
 
         // Clear caches
         $this->_sections = null;
+
+        if ($wasTrashed) {
+            /** @var Entry[] $entries */
+            $entries = Entry::find()
+                ->sectionId($sectionRecord->id)
+                ->drafts(null)
+                ->draftOf(false)
+                ->status(null)
+                ->trashed()
+                ->site('*')
+                ->unique()
+                ->andWhere(['entries.deletedWithSection' => true])
+                ->all();
+            /** @var Entry[][] $entriesByType */
+            $entriesByType = ArrayHelper::index($entries, null, ['typeId']);
+            foreach ($entriesByType as $typeEntries) {
+                try {
+                    array_walk($typeEntries, function(Entry $entry) {
+                        $entry->deletedWithSection = false;
+                    });
+                    Craft::$app->getElements()->restoreElements($typeEntries);
+                } catch (InvalidConfigException) {
+                    // the entry type probably wasn't restored
+                }
+            }
+        }
 
         /** @var Section $section */
         $section = $this->getSectionById($sectionRecord->id);
@@ -1061,8 +1091,7 @@ class Entries extends Component
 
         $transaction = Craft::$app->getDb()->beginTransaction();
         try {
-            // All entries *should* be deleted by now via their entry types, but loop through all the sites in case
-            // there are any lingering entries from unsupported sites
+            // Delete the entries
             $elementsTable = Table::ELEMENTS;
             $entriesTable = Table::ENTRIES;
             $now = Db::prepareDateForDb(new DateTime());
@@ -1080,15 +1109,23 @@ SQL;
                 $db->createCommand(<<<SQL
 UPDATE $elementsTable [[elements]]
 INNER JOIN $entriesTable [[entries]] ON [[entries.id]] = [[elements.id]]
-SET [[elements.dateDeleted]] = '$now'
+SET [[elements.dateDeleted]] = '$now',
+  [[entries.deletedWithSection]] = 1
 WHERE $conditionSql
 SQL)->execute();
             } else {
+                // Not possible to update two tables simultaneously with Postgres
+                $db->createCommand(<<<SQL
+UPDATE $entriesTable [[entries]]
+SET [[deletedWithSection]] = TRUE
+FROM $elementsTable [[elements]]
+WHERE $conditionSql
+SQL)->execute();
                 $db->createCommand(<<<SQL
 UPDATE $elementsTable [[elements]]
 SET [[dateDeleted]] = '$now'
 FROM $entriesTable [[entries]]
-WHERE [[entries.id]] = [[elements.id]] AND $conditionSql
+WHERE $conditionSql
 SQL)->execute();
             }
 
@@ -1164,6 +1201,100 @@ SQL)->execute();
      */
     public function pruneDeletedField(): void
     {
+    }
+
+    /**
+     * Returns data for the Sections index page in the control panel.
+     *
+     * @param int $page
+     * @param int $limit
+     * @param string|null $searchTerm
+     * @param string $orderBy
+     * @param int $sortDir
+     * @return array
+     * @since 5.5.0
+     */
+    public function getSectionTableData(
+        int $page,
+        int $limit,
+        ?string $searchTerm,
+        string $orderBy = 'name',
+        int $sortDir = SORT_ASC,
+    ): array {
+        [$results, $total] = $this->prepTableData($this->_createSectionQuery(), $page, $limit, $searchTerm, $orderBy, $sortDir);
+
+        /** @var Section[] $sections */
+        $sections = array_values(array_filter(
+            array_map(fn(array $result) => $this->_sections()->firstWhere('id', $result['id']), $results)
+        ));
+
+        $tableData = [];
+
+        foreach ($sections as $section) {
+            $label = $section->getUiLabel();
+            $tableData[] = [
+                'id' => $section->id,
+                'title' => $label,
+                'name' => $label,
+                'url' => $section->getCpEditUrl(),
+                'handle' => $section->handle,
+                'type' => match ($section->type) {
+                    Section::TYPE_SINGLE => Craft::t('app', 'Single'),
+                    Section::TYPE_CHANNEL => Craft::t('app', 'Channel'),
+                    Section::TYPE_STRUCTURE => Craft::t('app', 'Structure'),
+                    null => null,
+                },
+            ];
+        }
+
+        $pagination = AdminTable::paginationLinks($page, $total, $limit);
+
+        return [$pagination, $tableData];
+    }
+
+    /**
+     * Returns query results needed for the VueAdminTable accounting for the pagination, search terms and sorting options.
+     *
+     * @param Query $query
+     * @param int $page
+     * @param int $limit
+     * @param string|null $searchTerm
+     * @param string $orderBy
+     * @param int $sortDir
+     * @return array
+     * @since 5.5.0
+     */
+    private function prepTableData(
+        Query $query,
+        int $page,
+        int $limit,
+        ?string $searchTerm,
+        string $orderBy = 'name',
+        int $sortDir = SORT_ASC,
+    ): array {
+        $searchTerm = $searchTerm ? trim($searchTerm) : $searchTerm;
+
+        $offset = ($page - 1) * $limit;
+        $query = $query
+            ->orderBy([$orderBy => $sortDir]);
+
+        if ($orderBy === 'name') {
+            $query->addOrderBy(['name' => $sortDir]);
+        }
+
+        if ($searchTerm !== null && $searchTerm !== '') {
+            $searchParams = $this->_getSearchParams($searchTerm);
+            if (!empty($searchParams)) {
+                $query->where(['or', ...$searchParams]);
+            }
+        }
+
+        $total = $query->count();
+
+        $query->limit($limit);
+        $query->offset($offset);
+
+        return [$query->all(), $total];
     }
 
     // Entry Types
@@ -1354,6 +1485,8 @@ SQL)->execute();
             ]));
         }
 
+        $entryType->hasTitleField = $entryType->getFieldLayout()->isFieldIncluded('title');
+
         if ($runValidation && !$entryType->validate()) {
             Craft::info('Entry type not saved due to validation error.', __METHOD__);
             return false;
@@ -1432,7 +1565,8 @@ SQL)->execute();
             );
 
             // Save the entry type
-            if ($wasTrashed = (bool)$entryTypeRecord->dateDeleted) {
+            $wasTrashed = (bool)$entryTypeRecord->dateDeleted;
+            if ($wasTrashed) {
                 $entryTypeRecord->restore();
                 $resaveEntries = true;
             } else {
@@ -1449,19 +1583,30 @@ SQL)->execute();
         $this->_entryTypes = null;
 
         if ($wasTrashed) {
-            // Restore the entries that were deleted with the entry type
-            /** @var Entry[] $entries */
-            $entries = Entry::find()
-                ->typeId($entryTypeRecord->id)
-                ->drafts(null)
-                ->draftOf(false)
-                ->status(null)
-                ->trashed()
-                ->site('*')
-                ->unique()
-                ->andWhere(['entries.deletedWithEntryType' => true])
-                ->all();
-            Craft::$app->getElements()->restoreElements($entries);
+            // Restore the entries at the end of the request in case the section isn't restored yet
+            // (see https://github.com/craftcms/cms/issues/15787)
+            Craft::$app->onAfterRequest(function() use ($entryTypeRecord) {
+                /** @var Entry[] $entries */
+                $entries = Entry::find()
+                    ->typeId($entryTypeRecord->id)
+                    ->drafts(null)
+                    ->draftOf(false)
+                    ->status(null)
+                    ->trashed()
+                    ->site('*')
+                    ->unique()
+                    ->andWhere(['entries.deletedWithEntryType' => true])
+                    ->all();
+                /** @var Entry[][] $entriesBySection */
+                $entriesBySection = ArrayHelper::index($entries, null, ['sectionId']);
+                foreach ($entriesBySection as $sectionEntries) {
+                    try {
+                        Craft::$app->getElements()->restoreElements($sectionEntries);
+                    } catch (InvalidConfigException) {
+                        // the section probably wasn't restored
+                    }
+                }
+            });
         }
 
         /** @var EntryType $entryType */
@@ -1671,29 +1816,7 @@ SQL)->execute();
         string $orderBy = 'name',
         int $sortDir = SORT_ASC,
     ): array {
-        $searchTerm = $searchTerm ? trim($searchTerm) : $searchTerm;
-
-        $offset = ($page - 1) * $limit;
-        $query = $this->_createEntryTypeQuery()
-            ->orderBy([$orderBy => $sortDir]);
-
-        if ($orderBy === 'name') {
-            $query->addOrderBy(['name' => $sortDir]);
-        }
-
-        if ($searchTerm !== null && $searchTerm !== '') {
-            $searchParams = $this->_getSearchParams($searchTerm);
-            if (!empty($searchParams)) {
-                $query->where(['or', ...$searchParams]);
-            }
-        }
-
-        $total = $query->count();
-
-        $query->limit($limit);
-        $query->offset($offset);
-
-        $results = $query->all();
+        [$results, $total] = $this->prepTableData($this->_createEntryTypeQuery(), $page, $limit, $searchTerm, $orderBy, $sortDir);
 
         /** @var EntryType[] $entryTypes */
         $entryTypes = array_values(array_filter(

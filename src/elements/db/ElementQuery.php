@@ -1852,14 +1852,7 @@ class ElementQuery extends Query implements ElementQueryInterface
             return null;
         }
 
-        if (isset($this->eagerLoadAlias)) {
-            $alias = $this->eagerLoadAlias;
-        } else {
-            $alias = $this->eagerLoadHandle;
-            if (str_contains($alias, ':')) {
-                $alias = explode(':', $alias, 2)[1];
-            }
-        }
+        $alias = $this->eagerLoadAlias ?? "eagerly:$this->eagerLoadHandle";
 
         // see if it was already eager-loaded
         $eagerLoaded = match ($count) {
@@ -2254,10 +2247,10 @@ class ElementQuery extends Query implements ElementQueryInterface
         $vars = array_keys(Craft::getObjectVars($this));
         $behavior = $this->getBehavior('customFields');
         $behaviorVars = array_keys(Craft::getObjectVars($behavior));
-        $fields = array_merge(
-            array_combine($vars, $vars),
-            array_combine($behaviorVars, array_map(fn(string $var) => fn() => $behavior->$var, $behaviorVars))
-        );
+        // if using an array_merge here, reverse the order so that the $behaviorVars go before $vars;
+        // the properties ($var) have to take priority over custom fields ($behaviorVars);
+        $fields = array_combine($vars, $vars) +
+            array_combine($behaviorVars, array_map(fn(string $var) => fn() => $behavior->$var, $behaviorVars));
         unset($fields['query'], $fields['subQuery'], $fields['owner']);
         return $fields;
     }
@@ -3386,13 +3379,13 @@ class ElementQuery extends Query implements ElementQueryInterface
             if ($alias === '**') {
                 $includeDefaults = true;
             } else {
-                // Is this a mapped column name (without a custom alias)?
-                if ($alias === $column && isset($this->_columnMap[$alias])) {
-                    $column = $this->_columnMap[$alias];
+                // Is this a mapped column name?
+                if (is_string($column) && isset($this->_columnMap[$column])) {
+                    $column = $this->_columnMap[$column];
 
                     // Completely ditch the mapped name if instantiated elements are going to be returned
-                    if (!$this->asArray && is_string($this->_columnMap[$alias])) {
-                        $alias = $this->_columnMap[$alias];
+                    if (!$this->asArray && is_string($column)) {
+                        $alias = $column;
                     }
                 }
 
