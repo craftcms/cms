@@ -1,6 +1,7 @@
 # Release Notes for Craft CMS 4.13 (WIP)
 
 ### Administration
+- Added the “Language” element condition rule. ([#15952](https://github.com/craftcms/cms/discussions/15952))
 - Added `pc/*` commands as an alias of `project-config/*`.
 - Added the `--except`, `--minor-only`, and `--patch-only` options to the `update` command. ([#15829](https://github.com/craftcms/cms/pull/15829))
 
