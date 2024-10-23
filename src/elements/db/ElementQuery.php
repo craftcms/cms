@@ -132,6 +132,7 @@ class ElementQuery extends Query implements ElementQueryInterface
 
     /**
      * @var FieldInterface[]|null The fields that may be involved in this query.
+     * @todo make this private in v6
      */
     public ?array $customFields = null;
 
@@ -1436,6 +1437,19 @@ class ElementQuery extends Query implements ElementQueryInterface
 
     // Query preparation/execution
     // -------------------------------------------------------------------------
+
+    /**
+     * Returns the custom fields that may be involved in this query.
+     *
+     * @since 5.5.0
+     */
+    public function getCustomFields(): array
+    {
+        if (!isset($this->customFields)) {
+            $this->customFields = $this->customFields();
+        }
+        return $this->customFields;
+    }
 
     /**
      * @inheritdoc
