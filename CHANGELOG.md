@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Fixed a styling bug.
 - Fixed a bug `craft\services\Categories::saveGroup()` and `craft\services\Tags::saveTagGroup()` weren’t respecting predefined UUID values on new models.
 
 ## 5.4.9 - 2024-10-22
