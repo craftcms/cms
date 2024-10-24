@@ -351,6 +351,7 @@ return [
     'Copy the impersonation URL, and open it in a new private window.' => 'Copy the impersonation URL, and open it in a new private window.',
     'Copy the reference tag' => 'Copy the reference tag',
     'Copy to clipboard' => 'Copy to clipboard',
+    'Copy value of field {attribute} from another site' => 'Copy value of field {attribute} from another site',
     'Could not create a preview token.' => 'Could not create a preview token.',
     'Could not create the group:' => 'Could not create the group:',
     'Could not duplicate all elements due to validation errors.' => 'Could not duplicate all elements due to validation errors.',

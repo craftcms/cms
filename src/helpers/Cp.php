@@ -1490,6 +1490,9 @@ JS, [
                 [
                     'class' => 'copyable btn icon small hairline btn-empty',
                     'aria-expanded' => 'false',
+                    'aria-label' => Craft::t('app', 'Copy value of field {attribute} from another site', [
+                        'attribute' => $attribute,
+                    ]),
                     'data' => [
                         'copyable' => 'copyable',
                         'element-id' => $config['element-id'] ?? null,
