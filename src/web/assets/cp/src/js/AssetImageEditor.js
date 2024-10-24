@@ -2426,8 +2426,10 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 
       if (this.focalPickedUp) {
         strokeColor = this.editingActiveColor;
+        $('.body').css('cursor', 'grabbing');
       } else {
         strokeColor = 'rgba(255,255,255,0.8)';
+        $('.body').css('cursor', 'pointer');
       }
 
       this.focalPointOuterCircle.set({
@@ -3182,8 +3184,14 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
       this._setMouseCursor._.cursor = 'default';
       this._setMouseCursor._.handle =
         this.croppingCanvas && this._cropperHandleHitTest(ev);
-      if (this.focalPoint && this._isMouseOver(ev, this.focalPoint)) {
+      if (
+        this.focalPoint &&
+        this._isMouseOver(ev, this.focalPoint) &&
+        !this.focalPickedUp
+      ) {
         this._setMouseCursor._.cursor = 'pointer';
+      } else if (this.focalPoint && this.focalPickedUp) {
+        this._setMouseCursor._.cursor = 'grabbing';
       } else if (this._setMouseCursor._.handle) {
         if (
           this._setMouseCursor._.handle === 't' ||
