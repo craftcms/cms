@@ -78,6 +78,7 @@ Craft.TableElementIndexView = Craft.BaseElementIndexView.extend({
 
     if (
       this.elementIndex.isAdministrative &&
+      !this.elementIndex.settings.static &&
       this.elementIndex.settings.inlineEditable !== false &&
       this.$elementContainer.has('> tr[data-id] > th .element[data-editable]')
     ) {

@@ -518,7 +518,7 @@ class NestedElementManager extends Component
                     'static' => $config['static'],
                 ];
 
-                if ($config['sortable']) {
+                if (!$config['static'] && $config['sortable']) {
                     $view->startJsBuffer();
                     $actionConfig = ElementHelper::actionConfig(new ChangeSortOrder($owner, $attribute));
                     $actionConfig['bodyHtml'] = $view->clearJsBuffer();

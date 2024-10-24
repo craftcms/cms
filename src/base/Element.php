@@ -28,7 +28,6 @@ use craft\elements\conditions\ElementConditionInterface;
 use craft\elements\db\EagerLoadPlan;
 use craft\elements\db\ElementQuery;
 use craft\elements\db\ElementQueryInterface;
-use craft\elements\db\NestedElementQueryInterface;
 use craft\elements\ElementCollection;
 use craft\elements\exporters\Expanded;
 use craft\elements\exporters\Raw;
@@ -1184,13 +1183,14 @@ abstract class Element extends Component implements ElementInterface
         bool $sortable,
     ): string {
         $request = Craft::$app->getRequest();
+        $static = $viewState['static'] ?? false;
         $variables = [
             'viewMode' => $viewState['mode'],
             'context' => $context,
             'disabledElementIds' => $disabledElementIds,
             'collapsedElementIds' => $request->getParam('collapsedElementIds'),
-            'selectable' => $selectable,
-            'sortable' => $sortable,
+            'selectable' => !$static && $selectable,
+            'sortable' => !$static && $sortable,
             'showHeaderColumn' => $viewState['showHeaderColumn'] ?? false,
             'inlineEditing' => $viewState['inlineEditing'] ?? false,
             'nestedInputNamespace' => $viewState['nestedInputNamespace'] ?? null,
@@ -2891,10 +2891,6 @@ abstract class Element extends Component implements ElementInterface
                 ->status(null)
                 ->trashed(null)
                 ->ignorePlaceholders();
-
-            if ($this instanceof NestedElementInterface && $query instanceof NestedElementQueryInterface) {
-                $query->ownerId($this->getOwnerId());
-            }
 
             $this->$prop = $query->one();
         }
