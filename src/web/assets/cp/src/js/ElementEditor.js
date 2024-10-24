@@ -676,6 +676,8 @@ Craft.ElementEditor = Garnish.Base.extend(
         class: 'body',
       });
 
+      $body.append(`<h3 class="h2">${Craft.t('app', 'Copy content from site')}</h3>`)
+
       $body.append(
         $(
           `<p>${Craft.t(
@@ -718,15 +720,12 @@ Craft.ElementEditor = Garnish.Base.extend(
         class: 'copy-translation-dialogue',
       });
 
-      $(`<span>${$btn.attr('data-description')}</span>`).appendTo($hudContent);
-
       // only allow the copy field value of a copyable field
       // only if this element exists on other sites too
       if (
         $btn.attr('data-copyable') &&
         this._getSitesForCopyFieldAction().length > 0
       ) {
-        $hudContent.append('<hr/>');
         $hudContent.append(
           this._getCopyBetweenSitesForm({
             fieldHandle: $btn.data('field-handle'),

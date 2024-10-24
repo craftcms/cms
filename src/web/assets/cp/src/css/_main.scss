@@ -2052,6 +2052,14 @@ ul.icons {
     margin-block-start: 2px;
   }
 
+  &.copyable {
+    color: var(--medium-text-color);
+
+    [data-icon] {
+      margin-inline: 0;
+    }
+  }
+
   [data-icon] {
     margin-block-start: -3px;
     margin-inline-end: 5px;

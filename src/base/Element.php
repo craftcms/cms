@@ -3614,7 +3614,7 @@ abstract class Element extends Component implements ElementInterface
             $copyContentId = sprintf('action-copy-content-%s', mt_rand());
             $items[] = [
                 'id' => $copyContentId,
-                'icon' => 'language',
+                'icon' => 'clone',
                 'label' => Craft::t('app', 'Copy content from site'),
                 'type' => MenuItemType::Button,
                 'showInChips' => false,

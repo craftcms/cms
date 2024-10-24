@@ -1,11 +1,4 @@
-import {
-  arrow,
-  autoUpdate,
-  computePosition,
-  flip,
-  offset,
-  shift,
-} from '@floating-ui/dom';
+import {arrow, autoUpdate, computePosition, flip, offset, shift} from '@floating-ui/dom';
 
 /**
  * Tooltip
@@ -37,9 +30,11 @@ class CraftTooltip extends HTMLElement {
       return this;
     }
 
-    const selector =
-      this.getAttribute('trigger') || 'a, button, [role="button"]';
-    return this.closest(selector);
+    if (this.getAttribute('trigger')) {
+      return this.closest(this.getAttribute('trigger'));
+    }
+
+    return this.querySelector('a,button,[role="button"]');
   }
 
   connectedCallback() {
@@ -67,9 +62,10 @@ class CraftTooltip extends HTMLElement {
 
     this.listeners = [
       ['mouseenter', this.show, this.delay],
-      ['focus', this.show, 0],
-      ['mouseleave', this.hide, 0],
-      ['blur', this.hide, 0],
+      ['click', this.show],
+      ['focus', this.show],
+      ['mouseleave', this.hide],
+      ['blur', this.hide],
     ];
 
     if (!this.triggerElement) {
@@ -80,8 +76,8 @@ class CraftTooltip extends HTMLElement {
     // Make sure the trigger accepts pointer events
     this.triggerElement.style.pointerEvents = 'auto';
 
-    this.listeners.forEach(([event, handler, delay]) => {
-      this.triggerElement?.addEventListener(event, () => handler(delay));
+    this.listeners.forEach(([event, handler, delay = 0]) => {
+      this.triggerElement.addEventListener(event, () => handler(delay));
     });
 
     // Update & hide to make sure everything is where it needs to be
@@ -117,12 +113,11 @@ class CraftTooltip extends HTMLElement {
     }
   }
 
-  handleKeyUp(e) {
+  handleKeyUp = (e) => {
     if (e.key === 'Escape') {
-      console.log('hiding');
       this.hide();
     }
-  }
+  };
 
   renderTooltip() {
     this.tooltip = document.createElement('span');
@@ -150,7 +145,7 @@ class CraftTooltip extends HTMLElement {
     this.inner.appendChild(this.arrowElement);
   }
 
-  show = (delay) => {
+  show = (delay = 0) => {
     this.delayTimeout = setTimeout(() => {
       Object.assign(this.tooltip.style, {
         opacity: 1,

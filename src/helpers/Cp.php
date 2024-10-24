@@ -1445,7 +1445,7 @@ JS, [
             $showAttribute = false;
         }
 
-        $showLabelExtra = $showAttribute || isset($config['labelExtra']);
+        $showLabelExtra = $showAttribute || isset($config['labelExtra']) || $copyable;
 
         $instructionsHtml = $instructions
             ? Html::tag('div', preg_replace('/&amp;(\w+);/', '&$1;', Markdown::process(Html::encodeInvalidTags($instructions), 'gfm-comment')), [
@@ -1455,7 +1455,7 @@ JS, [
             : '';
 
 
-        $translationIconHtml = Html::tag('span', '', [
+        $translationIconHtml = Html::button('', [
             'class' => ['t9n-indicator'],
             'data' => [
                 'icon' => 'language',
@@ -1467,7 +1467,7 @@ JS, [
         $translationIconHtml = Html::tag('craft-tooltip', $translationIconHtml, [
             'placement' => 'bottom',
             'max-width' => '200px',
-            'self-managed' => 'true',
+            // 'self-managed' => 'true',
             'text' => $translationDescription,
             'delay' => '1000',
         ]);
@@ -1486,17 +1486,18 @@ JS, [
                 }
             }
 
-            $translationIconHtml = Html::button($translationIconHtml, [
-                'class' => 'copyable',
-                'data' => [
-                    'copyable' => 'copyable',
-                    'description' => $translationDescription,
-                    'element-id' => $config['element-id'] ?? null,
-                    'namespace' => $namespace,
-                    'field-handle' => $attribute,
-                    'nested' => $config['nested'] ?? null,
-                ],
-            ]);
+            $copyBtn = Html::button(
+                Html::tag('span', self::iconSvg('clone'), ['class' => ['cp-icon', 'puny']]),
+                [
+                    'class' => 'copyable btn icon small hairline btn-empty',
+                    'data' => [
+                        'copyable' => 'copyable',
+                        'element-id' => $config['element-id'] ?? null,
+                        'namespace' => $namespace,
+                        'field-handle' => $attribute,
+                        'nested' => $config['nested'] ?? null,
+                    ],
+                ]);
         }
 
 
@@ -1569,12 +1570,15 @@ JS, [
                         ? Html::tag('div', '', [
                             'class' => ['flex-grow'],
                         ]) .
+                        Html::beginTag('div', ['class' => ['flex', 'flex-gap-xs']]) .
                         ($showAttribute ? static::renderTemplate('_includes/forms/copytextbtn.twig', [
                             'id' => "$id-attribute",
                             'class' => ['code', 'small', 'light'],
                             'value' => $config['attribute'],
                         ]) : '') .
-                        ($config['labelExtra'] ?? '')
+                        ($config['labelExtra'] ?? '') .
+                        ($copyBtn ?? '') .
+                        Html::endTag('div')
                         : '') .
                     ($config['headingSuffix'] ?? '') .
                     Html::endTag('div')

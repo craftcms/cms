@@ -157,6 +157,7 @@ JS;
             'Copied to clipboard.',
             'Copy',
             'Copy the URL',
+            'Copy content from site',
             'Copy the reference tag',
             'Copy to clipboard',
             'Could not save due to validation errors.',
