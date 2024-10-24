@@ -49,11 +49,15 @@ jobs:
 
       - name: 'Initialize Craft 4 starter project'
         if: ${{ startsWith(github.event.client_payload.version, '4.') }}
-        run: 'composer create-project craftcms/craft:^4 ${{ env.PROJECT_DIRECTORY }}'
+        run: 'composer create-project craftcms/craft:^4 --no-scripts ${{ env.PROJECT_DIRECTORY }}'
 
       - name: 'Initialize Craft 5 starter project'
         if: ${{ startsWith(github.event.client_payload.version, '5.') }}
-        run: 'composer create-project craftcms/craft:^5 ${{ env.PROJECT_DIRECTORY }}'
+        run: 'composer create-project craftcms/craft:^5 --no-scripts ${{ env.PROJECT_DIRECTORY }}'
+
+      - name: 'Replace composer.json with composer.json.default'
+        working-directory: ${{ env.PROJECT_DIRECTORY }}
+        run: 'rm composer.json && mv composer.json.default composer.json'
 
       - name: 'Install specific Craft version'
         working-directory: ${{ env.PROJECT_DIRECTORY }}
@@ -65,20 +69,6 @@ jobs:
         run: |
           sed -i 's/SECURITY_KEY=.*/SECURITY_KEY=/g' .env
           sed -i 's/APP_ID=.*/APP_ID=/g' .env
-
-      - name: 'Update Craft 4 .env'
-        if: ${{ startsWith(github.event.client_payload.version, '4.') }}
-        working-directory: ${{ env.PROJECT_DIRECTORY }}
-        run: |
-          sed -i 's/CRAFT_SECURITY_KEY=.*/CRAFT_SECURITY_KEY=/g' .env
-          sed -i 's/CRAFT_APP_ID=.*/CRAFT_APP_ID=/g' .env
-
-      - name: 'Update Craft 5 .env'
-        if: ${{ startsWith(github.event.client_payload.version, '5.') }}
-        working-directory: ${{ env.PROJECT_DIRECTORY }}
-        run: |
-          sed -i 's/CRAFT_SECURITY_KEY=.*/CRAFT_SECURITY_KEY=/g' .env
-          sed -i 's/CRAFT_APP_ID=.*/CRAFT_APP_ID=/g' .env
 
       - name: 'Create zip'
         working-directory: ${{ env.PROJECT_DIRECTORY }}

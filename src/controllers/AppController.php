@@ -12,6 +12,7 @@ use craft\base\Chippable;
 use craft\base\ElementInterface;
 use craft\base\Iconic;
 use craft\base\UtilityInterface;
+use craft\elements\db\NestedElementQueryInterface;
 use craft\enums\CmsEdition;
 use craft\enums\LicenseKeyStatus;
 use craft\errors\BusyResourceException;
@@ -31,6 +32,7 @@ use craft\helpers\Update as UpdateHelper;
 use craft\helpers\UrlHelper;
 use craft\models\Update;
 use craft\models\Updates;
+use craft\utilities\Updates as UpdatesUtility;
 use craft\web\Controller;
 use craft\web\ServiceUnavailableHttpException;
 use DateInterval;
@@ -154,9 +156,11 @@ class AppController extends Controller
     {
         $this->requireAcceptsJson();
 
-        // Require either the 'performUpdates' or 'utility:updates' permission
-        $userSession = Craft::$app->getUser();
-        if (!$userSession->checkPermission('performUpdates') && !$userSession->checkPermission('utility:updates')) {
+        // Require either the 'performUpdates' permission or access to the Updates utility
+        if (
+            !Craft::$app->getUser()->checkPermission('performUpdates') &&
+            !Craft::$app->getUtilities()->checkAuthorization(UpdatesUtility::class)
+        ) {
             throw new ForbiddenHttpException('User is not permitted to perform this action');
         }
 
@@ -184,9 +188,11 @@ class AppController extends Controller
     {
         $this->requireAcceptsJson();
 
-        // Require either the 'performUpdates' or 'utility:updates' permission
-        $userSession = Craft::$app->getUser();
-        if (!$userSession->checkPermission('performUpdates') && !$userSession->checkPermission('utility:updates')) {
+        // Require either the 'performUpdates' permission or access to the Updates utility
+        if (
+            !Craft::$app->getUser()->checkPermission('performUpdates') &&
+            !Craft::$app->getUtilities()->checkAuthorization(UpdatesUtility::class)
+        ) {
             throw new ForbiddenHttpException('User is not permitted to perform this action');
         }
 
@@ -756,6 +762,7 @@ class AppController extends Controller
             /** @var string|ElementInterface $elementType */
             $elementType = $criterion['type'];
             $id = $criterion['id'];
+            $ownerId = $criterion['ownerId'] ?? null;
             $siteId = $criterion['siteId'];
             $instances = $criterion['instances'];
 
@@ -763,14 +770,19 @@ class AppController extends Controller
                 throw new BadRequestHttpException('Invalid element ID');
             }
 
-            $elements = $elementType::find()
+            $query = $elementType::find()
                 ->id($id)
                 ->fixedOrder()
                 ->drafts(null)
                 ->revisions(null)
                 ->siteId($siteId)
-                ->status(null)
-                ->all();
+                ->status(null);
+
+            if ($query instanceof NestedElementQueryInterface) {
+                $query->ownerId($ownerId);
+            }
+
+            $elements = $query->all();
 
             // See if there are any provisional drafts we should swap these out with
             ElementHelper::swapInProvisionalDrafts($elements);

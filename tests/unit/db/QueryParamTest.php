@@ -42,6 +42,9 @@ class QueryParamTest extends TestCase
             [['foo', 'bar', 'baz'], 'foo,bar,baz'],
             [['foo', 'bar', 'baz'], 'foo, bar, baz'],
             [['foo', 'bar', 'baz'], 'foo,,bar,,baz'],
+            [['not', 'foo', 'bar', 'baz'], 'not foo,bar,baz'],
+            [['and', 'foo', 'bar', 'baz'], 'and foo, bar, baz'],
+            [['or', 'foo', 'bar', 'baz'], 'or foo,,bar,,baz'],
             [['foo', 'bar', 'baz'], ['foo', 'bar', 'baz']],
             [['foo,bar,baz'], 'foo\,bar\,baz'],
         ];

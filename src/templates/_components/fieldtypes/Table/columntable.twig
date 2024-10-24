@@ -16,7 +16,7 @@
             {% if colId == 'type' %}
                 <div class="flex flex-nowrap">
                     {{ parent() }}
-                    <a class="settings light{% if value != 'select' %} invisible{% endif %}" role="button" data-icon="settings"></a>
+                    <button class="settings light{% if value != 'select' %} invisible{% endif %}" type="button" data-icon="settings"></button>
                 </div>
             {% else %}
                 {{ parent() }}

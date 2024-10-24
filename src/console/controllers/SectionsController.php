@@ -144,18 +144,18 @@ class SectionsController extends Controller
             'previewTargets' => [],
         ]);
 
-        $validateAttribute = function($attributes, ?string &$error = null): bool {
-            $section = new Section($attributes);
+        $validateAttribute = function($attributes, ?string &$error = null, string $class = Section::class): bool {
+            $model = new $class($attributes);
             $attributeNames = array_keys($attributes);
-            if (!$section->validate($attributeNames)) {
-                $error = $section->getFirstError($attributeNames[0]);
+            if (!$model->validate($attributeNames)) {
+                $error = $model->getFirstError($attributeNames[0]);
                 return false;
             }
             return true;
         };
 
-        $getDefaultAttribute = function(string $attribute, string $value) use ($validateAttribute): ?string {
-            if ($validateAttribute([$attribute => $value])) {
+        $getDefaultAttribute = function(string $attribute, string $value, string $class = Section::class) use ($validateAttribute): ?string {
+            if ($validateAttribute([$attribute => $value], class: $class)) {
                 return $value;
             }
             return null;
@@ -279,20 +279,26 @@ class SectionsController extends Controller
         } elseif ($this->interactive) {
             /** @var EntryType[] $allEntryTypes */
             $allEntryTypes = ArrayHelper::index($entriesService->getAllEntryTypes(), 'handle');
-            if (!empty($allEntryTypes) && $this->confirm('Have you already created an entry type for this section?')) {
+            if (
+                !$this->fromCategoryGroup &&
+                !$this->fromTagGroup &&
+                !$this->fromGlobalSet &&
+                !empty($allEntryTypes) &&
+                $this->confirm('Have you already created an entry type for this section?')
+            ) {
                 $entryTypeHandle = $this->select("Which entry type should be used?", array_map(
                     fn(EntryType $entryType) => $entryType->name,
                     $allEntryTypes,
                 ));
                 $entryType = $allEntryTypes[$entryTypeHandle];
             } else {
-                $this->stdout("Let’s create one now, then.\n", Console::FG_YELLOW);
                 $entryType = new EntryType();
                 $entryType->name = $this->prompt('Entry type name:', [
                     'default' => Inflector::singularize($section->name),
                 ]);
                 $entryType->handle = $this->prompt('Entry type handle:', [
-                    'default' => StringHelper::toHandle($entryType->name),
+                    'validator' => fn(string $handle, ?string & $error = null) => $validateAttribute(compact('handle'), $error, EntryType::class),
+                    'default' => $getDefaultAttribute('handle', StringHelper::toHandle($entryType->name), EntryType::class),
                 ]);
                 $saveEntryType = true;
             }
@@ -305,12 +311,6 @@ class SectionsController extends Controller
                 $this->do('Saving the entry type', function() use ($entryType, $sourceFieldLayout, $entriesService) {
                     if ($sourceFieldLayout) {
                         $fieldLayout = FieldLayout::createFromConfig($sourceFieldLayout->getConfig() ?? []);
-                        foreach ($fieldLayout->getTabs() as $tab) {
-                            $tab->uid = StringHelper::UUID();
-                            foreach ($tab->getElements() as $element) {
-                                $element->uid = StringHelper::UUID();
-                            }
-                        }
                         $entryType->setFieldLayout($fieldLayout);
                     }
 

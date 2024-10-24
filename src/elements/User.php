@@ -29,6 +29,7 @@ use craft\enums\MenuItemType;
 use craft\enums\PropagationMethod;
 use craft\events\AuthenticateUserEvent;
 use craft\events\DefineValueEvent;
+use craft\fieldlayoutelements\users\FullNameField;
 use craft\helpers\App;
 use craft\helpers\ArrayHelper;
 use craft\helpers\DateTimeHelper;
@@ -60,6 +61,7 @@ use yii\base\InvalidArgumentException;
 use yii\base\InvalidConfigException;
 use yii\base\NotSupportedException;
 use yii\validators\InlineValidator;
+use yii\validators\RequiredValidator;
 use yii\validators\Validator;
 use yii\web\BadRequestHttpException;
 use yii\web\IdentityInterface;
@@ -885,6 +887,27 @@ class User extends Element implements IdentityInterface
     /**
      * @inheritdoc
      */
+    public function afterValidate(): void
+    {
+        $scenario = $this->getScenario();
+
+        if ($scenario === self::SCENARIO_LIVE) {
+            $fullNameElement = $this->getFieldLayout()->getFirstVisibleElementByType(FullNameField::class, $this);
+            if ($fullNameElement && $fullNameElement->required) {
+                if (Craft::$app->getConfig()->getGeneral()->showFirstAndLastNameFields) {
+                    (new RequiredValidator(['attributes' => ['firstName', 'lastName']]))->validateAttributes($this, ['firstName', 'lastName']);
+                } else {
+                    (new RequiredValidator())->validateAttribute($this, 'fullName');
+                }
+            }
+        }
+
+        parent::afterValidate();
+    }
+
+    /**
+     * @inheritdoc
+     */
     protected function defineRules(): array
     {
         $rules = parent::defineRules();
@@ -910,13 +933,24 @@ class User extends Element implements IdentityInterface
 
         if (Craft::$app->getIsInstalled()) {
             $rules[] = [
-                ['username', 'email'],
+                ['email'],
                 UniqueValidator::class,
                 'targetClass' => UserRecord::class,
                 'caseInsensitive' => true,
                 'filter' => ['or', ['active' => true], ['pending' => true]],
                 'when' => $treatAsActive,
             ];
+
+            if (!Craft::$app->getConfig()->getGeneral()->useEmailAsUsername) {
+                $rules[] = [
+                    ['username'],
+                    UniqueValidator::class,
+                    'targetClass' => UserRecord::class,
+                    'caseInsensitive' => true,
+                    'filter' => ['or', ['active' => true], ['pending' => true]],
+                    'when' => $treatAsActive,
+                ];
+            }
 
             $rules[] = [['unverifiedEmail'], 'validateUnverifiedEmail'];
         }
@@ -2287,6 +2321,10 @@ JS, [
     {
         if ($isNew && !Craft::$app->getUsers()->canCreateUsers()) {
             return false;
+        }
+
+        if (Craft::$app->getConfig()->getGeneral()->useEmailAsUsername) {
+            $this->username = $this->email;
         }
 
         return parent::beforeSave($isNew);

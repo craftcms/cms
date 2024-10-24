@@ -1567,6 +1567,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
       params.viewState.showHeaderColumn = this.settings.showHeaderColumn;
       params.viewState.inlineEditing = this.inlineEditing;
       params.viewState.nestedInputNamespace = this.nestedInputNamespace;
+      params.viewState.static = this.settings.static;
 
       // override viewState.mode in case it's different from what's stored
       params.viewState.mode = this.viewMode;
@@ -3762,6 +3763,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
       referenceElementSiteId: null,
       allowedViewModes: null,
       showHeaderColumn: true,
+      static: false,
       criteria: null,
       batchSize: 100,
       disabledElementIds: [],
@@ -3860,8 +3862,8 @@ const SourceNav = Garnish.Base.extend(
 
       if (
         (keyCode === Garnish.RETURN_KEY || keyCode === Garnish.SPACE_KEY) &&
-        !ev.shiftKey &&
-        !Garnish.isCtrlKeyPressed(ev)
+        !event.shiftKey &&
+        !Garnish.isCtrlKeyPressed(event)
       ) {
         event.preventDefault();
         this.selectItem(event.target);

@@ -41,7 +41,7 @@ class Utilities extends Component
      *
      * Utilities must implement [[UtilityInterface]]. [[\craft\base\Utility]] provides a base implementation.
      *
-     * Read more about creating utilities in the [documentation](https://craftcms.com/docs/4.x/extend/utilities.html).
+     * Read more about creating utilities in the [documentation](https://craftcms.com/docs/5.x/extend/utilities.html).
      * ---
      * ```php
      * use craft\events\RegisterComponentTypesEvent;
@@ -142,9 +142,22 @@ class Utilities extends Component
         /** @var string|UtilityInterface $class */
         /** @phpstan-var class-string<UtilityInterface>|UtilityInterface $class */
         $utilityId = $class::id();
-        $user = Craft::$app->getUser();
 
-        return $utilityId === ProjectConfigUtility::id() ? $user->getIsAdmin() : $user->checkPermission('utility:' . $utilityId);
+        // The Project Config utility is for admins only!
+        if ($class === ProjectConfigUtility::class) {
+            if (!Craft::$app->getUser()->getIsAdmin()) {
+                return false;
+            }
+        } elseif (!Craft::$app->getUser()->checkPermission("utility:$utilityId")) {
+            return false;
+        }
+
+        // Make sure the utility isn't disabled
+        if (in_array($utilityId, Craft::$app->getConfig()->getGeneral()->disabledUtilities)) {
+            return false;
+        }
+
+        return true;
     }
 
     /**
