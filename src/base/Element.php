@@ -1183,13 +1183,14 @@ abstract class Element extends Component implements ElementInterface
         bool $sortable,
     ): string {
         $request = Craft::$app->getRequest();
+        $static = $viewState['static'] ?? false;
         $variables = [
             'viewMode' => $viewState['mode'],
             'context' => $context,
             'disabledElementIds' => $disabledElementIds,
             'collapsedElementIds' => $request->getParam('collapsedElementIds'),
-            'selectable' => $selectable,
-            'sortable' => $sortable,
+            'selectable' => !$static && $selectable,
+            'sortable' => !$static && $sortable,
             'showHeaderColumn' => $viewState['showHeaderColumn'] ?? false,
             'inlineEditing' => $viewState['inlineEditing'] ?? false,
             'nestedInputNamespace' => $viewState['nestedInputNamespace'] ?? null,
