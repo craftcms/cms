@@ -41,6 +41,8 @@ export default Base.extend(
       this.on('hide', this.settings.onHide);
       this.on('submit', this.settings.onSubmit);
 
+      this.$trigger.attr('aria-expanded', 'false');
+
       if (typeof Garnish.HUD.activeHUDs === 'undefined') {
         Garnish.HUD.activeHUDs = {};
       }
@@ -221,6 +223,7 @@ export default Base.extend(
       }
 
       this.$hud.appendTo(Garnish.$bod);
+      this.$trigger.attr('aria-expanded', 'true');
       this.showContainer();
 
       this.showing = true;
@@ -586,6 +589,7 @@ export default Base.extend(
       }
 
       this.disable();
+      this.$trigger.attr('aria-expanded', 'false');
       this.hideContainer();
 
       if (this.settings.withShade) {

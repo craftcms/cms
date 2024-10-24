@@ -1490,6 +1490,7 @@ JS, [
                 Html::tag('span', self::iconSvg('clone'), ['class' => ['cp-icon', 'puny']]),
                 [
                     'class' => 'copyable btn icon small hairline btn-empty',
+                    'aria-expanded' => 'false',
                     'data' => [
                         'copyable' => 'copyable',
                         'element-id' => $config['element-id'] ?? null,
