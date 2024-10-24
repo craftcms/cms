@@ -488,16 +488,20 @@ class Controller extends YiiController
         // keep track of whether anything else was output
         $outputCount = Console::$outputCount;
 
+        $e = null;
         try {
             $action();
         } catch (Throwable $e) {
+        }
+
+        Console::$prependNewline = false;
+
+        if ($e !== null) {
             if (Console::$outputCount !== $outputCount) {
                 $this->stdout(Console::indentStr() . ' ');
             }
             $this->stdout("error: {$e->getMessage()}" . PHP_EOL, Console::FG_RED);
             throw $e;
-        } finally {
-            Console::$prependNewline = false;
         }
 
         if (Console::$outputCount !== $outputCount) {
