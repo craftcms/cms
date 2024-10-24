@@ -52,6 +52,7 @@ class CraftTooltip extends HTMLElement {
     this.delayTimeout = null;
     this.maxWidth = this.getAttribute('max-width') || '220px';
     this.text = this.getAttribute('text') || this.innerText;
+    this.showing = false;
 
     this.renderTooltip();
     this.renderInner();
@@ -62,7 +63,7 @@ class CraftTooltip extends HTMLElement {
 
     this.listeners = [
       ['mouseenter', this.show, this.delay],
-      ['click', this.show],
+      ['click', this.toggle],
       ['focus', this.show],
       ['mouseleave', this.hide],
       ['blur', this.hide],
@@ -76,7 +77,7 @@ class CraftTooltip extends HTMLElement {
     // Make sure the trigger accepts pointer events
     this.triggerElement.style.pointerEvents = 'auto';
 
-    this.listeners.forEach(([event, handler, delay = 0]) => {
+    this.listeners.forEach(([event, handler, delay]) => {
       this.triggerElement.addEventListener(event, () => handler(delay));
     });
 
@@ -145,7 +146,19 @@ class CraftTooltip extends HTMLElement {
     this.inner.appendChild(this.arrowElement);
   }
 
+  toggle = () => {
+    if (this.showing) {
+      this.hide();
+    } else {
+      this.show();
+    }
+  };
+
   show = (delay = 0) => {
+    if (this.delayTimeout) {
+      clearTimeout(this.delayTimeout);
+    }
+
     this.delayTimeout = setTimeout(() => {
       Object.assign(this.tooltip.style, {
         opacity: 1,
@@ -156,6 +169,7 @@ class CraftTooltip extends HTMLElement {
         pointerEvents: 'auto',
       });
 
+      this.showing = true;
       autoUpdate(this.triggerElement, this.tooltip, this.update);
 
       // Close on ESC
@@ -173,6 +187,8 @@ class CraftTooltip extends HTMLElement {
       transform: this.getInitialTransform(),
       pointerEvents: 'none',
     });
+
+    this.showing = false;
   };
 
   getInitialTransform() {
