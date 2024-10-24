@@ -29,10 +29,10 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
     canvas: null,
     image: null,
     viewport: null,
-    editModeBorder: null,
     focalPoint: null,
     focalPointInnerCircle: null,
     focalPointOuterCircle: null,
+    focalPointPickedIndicator: null,
     grid: null,
     croppingCanvas: null,
     clipper: null,
@@ -40,9 +40,6 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
     cropperHandles: null,
     cropperGrid: null,
     croppingShade: null,
-
-    // Styles
-    editingActiveColor: 'rgba(255, 0, 255, 1)',
 
     // Image state attributes
     imageStraightenAngle: 0,
@@ -64,7 +61,6 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
     focalPickedUp: false,
     focalClicked: false,
     cropperClicked: false,
-    clickToMoveFocal: false,
     previousMouseX: 0,
     previousMouseY: 0,
     shiftKeyHeld: false,
@@ -564,7 +560,7 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
           deltaY / (sizeFactor * this.zoomRatio * this.scaleFactor);
       }
 
-      this.focalPointInnerCircle = new fabric.Circle({
+      this.focalPointOuterCircle = new fabric.Circle({
         radius: 8,
         fill: 'rgba(0,0,0,0.5)',
         strokeWidth: 2,
@@ -575,7 +571,7 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
         originY: 'center',
       });
 
-      this.focalPointOuterCircle = new fabric.Circle({
+      this.focalPointInnerCircle = new fabric.Circle({
         radius: 1,
         fill: 'rgba(255,255,255,0)',
         strokeWidth: 2,
@@ -586,8 +582,22 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
         originY: 'center',
       });
 
+      this.focalPointPickedIndicator = new fabric.Circle({
+        radius: 12,
+        strokeWidth: 0,
+        stroke: 'rgba(255,255,255,0.8)',
+        left: 0,
+        top: 0,
+        originX: 'center',
+        originY: 'center',
+      });
+
       this.focalPoint = new fabric.Group(
-        [this.focalPointInnerCircle, this.focalPointOuterCircle],
+        [
+          this.focalPointPickedIndicator,
+          this.focalPointOuterCircle,
+          this.focalPointInnerCircle,
+        ],
         {
           originX: 'center',
           originY: 'center',
@@ -2423,22 +2433,22 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
     },
 
     _toggleFocalModeStyles: function () {
-      let strokeColor;
+      let indicatorStrokeWidth;
+      let indicatorFill;
 
       if (this.focalPickedUp) {
-        strokeColor = this.editingActiveColor;
+        indicatorStrokeWidth = 2;
+        indicatorFill = 'rgba(0,0,0,0.5)';
         $('.body').css('cursor', 'grabbing');
       } else {
-        strokeColor = 'rgba(255,255,255,0.8)';
+        indicatorStrokeWidth = 0;
+        indicatorFill = 'rgba(0,0,0,0)';
         $('.body').css('cursor', 'pointer');
       }
 
-      this.focalPointOuterCircle.set({
-        stroke: strokeColor,
-      });
-
-      this.focalPointInnerCircle.set({
-        stroke: strokeColor,
+      this.focalPointPickedIndicator.set({
+        strokeWidth: indicatorStrokeWidth,
+        fill: indicatorFill,
       });
 
       this.canvas.renderAll();
@@ -3199,14 +3209,8 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
       this._setMouseCursor._.cursor = 'default';
       this._setMouseCursor._.handle =
         this.croppingCanvas && this._cropperHandleHitTest(ev);
-      if (
-        this.focalPoint &&
-        this._isMouseOver(ev, this.focalPoint) &&
-        !this.focalPickedUp
-      ) {
+      if (this.focalPoint && this._isMouseOver(ev, this.focalPoint)) {
         this._setMouseCursor._.cursor = 'pointer';
-      } else if (this.focalPoint && this.focalPickedUp) {
-        this._setMouseCursor._.cursor = 'grabbing';
       } else if (this._setMouseCursor._.handle) {
         if (
           this._setMouseCursor._.handle === 't' ||
@@ -3231,6 +3235,8 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
         }
       } else if (this.croppingCanvas && this._isMouseOver(ev, this.clipper)) {
         this._setMouseCursor._.cursor = 'move';
+      } else if (this.focalPickedUp) {
+        this._setMouseCursor._.cursor = 'grabbing';
       }
 
       $('.body').css('cursor', this._setMouseCursor._.cursor);
