@@ -28,7 +28,6 @@ use craft\elements\conditions\ElementConditionInterface;
 use craft\elements\db\EagerLoadPlan;
 use craft\elements\db\ElementQuery;
 use craft\elements\db\ElementQueryInterface;
-use craft\elements\db\NestedElementQueryInterface;
 use craft\elements\ElementCollection;
 use craft\elements\exporters\Expanded;
 use craft\elements\exporters\Raw;
@@ -2891,10 +2890,6 @@ abstract class Element extends Component implements ElementInterface
                 ->status(null)
                 ->trashed(null)
                 ->ignorePlaceholders();
-
-            if ($this instanceof NestedElementInterface && $query instanceof NestedElementQueryInterface) {
-                $query->ownerId($this->getOwnerId());
-            }
 
             $this->$prop = $query->one();
         }
