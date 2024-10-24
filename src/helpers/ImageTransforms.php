@@ -121,6 +121,7 @@ class ImageTransforms
                 'quality',
                 'interlace',
                 'transformer',
+                'extraOptions',
             ];
 
             $nullables = [
@@ -304,6 +305,7 @@ class ImageTransforms
                 'upscale',
                 'quality',
                 'interlace',
+                'extraOptions',
             ]);
         }
 

@@ -1898,6 +1898,7 @@ JS,[
                 'quality',
                 'width',
                 'fill',
+                'extraOptions',
             ]) : [];
 
             if ($unit === 'w') {

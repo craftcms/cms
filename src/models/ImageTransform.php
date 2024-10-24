@@ -108,6 +108,12 @@ class ImageTransform extends Model
     public ?bool $upscale = null;
 
     /**
+     * @var array|null Extra options
+     * @since 4.4.0
+     */
+    public ?array $extraOptions = null;
+
+    /**
      * @var string The image transformer to use.
      * @phpstan-var class-string<ImageTransformerInterface>
      */
@@ -325,6 +331,7 @@ class ImageTransform extends Model
             'quality' => $this->quality,
             'upscale' => $this->upscale ?? Craft::$app->getConfig()->getGeneral()->upscaleImages,
             'width' => $this->width,
+            'extraOptions' => $this->extraOptions,
         ];
     }
 }
