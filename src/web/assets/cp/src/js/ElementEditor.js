@@ -676,7 +676,9 @@ Craft.ElementEditor = Garnish.Base.extend(
         class: 'body',
       });
 
-      $body.append(`<h3 class="h2">${Craft.t('app', 'Copy content from site')}</h3>`)
+      $body.append(
+        `<h3 class="h2">${Craft.t('app', 'Copy content from site')}</h3>`
+      );
 
       $body.append(
         $(
