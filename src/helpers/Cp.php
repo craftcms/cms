@@ -1467,7 +1467,6 @@ JS, [
         $translationIconHtml = Html::tag('craft-tooltip', $translationIconHtml, [
             'placement' => 'bottom',
             'max-width' => '200px',
-            // 'self-managed' => 'true',
             'text' => $translationDescription,
             'delay' => '1000',
         ]);
