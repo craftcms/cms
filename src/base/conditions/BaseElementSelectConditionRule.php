@@ -152,6 +152,7 @@ abstract class BaseElementSelectConditionRule extends BaseConditionRule
         /** @phpstan-var class-string<ElementInterface>|ElementInterface $elementType */
         $elementType = $this->elementType();
         return $elementType::find()
+            ->site('*')
             ->id($elementId)
             ->status(null)
             ->one();
