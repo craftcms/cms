@@ -692,4 +692,14 @@ JS;
         }
         return $targetIds;
     }
+
+    /**
+     * @inheritdoc
+     */
+    protected static function adjustValueSql(array $instances, string $valueSql): null|string
+    {
+        $oldValueSql = static::valueSql($instances, 'value', false);
+
+        return sprintf('COALESCE(%s, %s)', $valueSql, $oldValueSql);
+    }
 }

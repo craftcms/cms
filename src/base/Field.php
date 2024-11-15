@@ -235,6 +235,8 @@ abstract class Field extends SavableComponent implements FieldInterface, Iconic,
             return false;
         }
 
+        $valueSql = static::adjustValueSql($instances, $valueSql);
+
         if (is_array($value) && isset($value['value'])) {
             $caseInsensitive = $value['caseInsensitive'] ?? false;
             $value = $value['value'];
@@ -250,13 +252,14 @@ abstract class Field extends SavableComponent implements FieldInterface, Iconic,
      *
      * @param static[] $instances
      * @param string|null $key The data key to fetch, if this field stores multiple values
+     * @param bool $includeJsonPath
      * @return string|null
      * @since 5.0.0
      */
-    protected static function valueSql(array $instances, string $key = null): ?string
+    protected static function valueSql(array $instances, string $key = null, bool $includeJsonPath = true): ?string
     {
         $valuesSql = array_filter(
-            array_map(fn(self $field) => $field->getValueSql($key), $instances),
+            array_map(fn(self $field) => $field->getValueSql($key, $includeJsonPath), $instances),
             fn(?string $valueSql) => $valueSql !== null,
         );
 
@@ -269,6 +272,18 @@ abstract class Field extends SavableComponent implements FieldInterface, Iconic,
         }
 
         return sprintf('COALESCE(%s)', implode(',', $valuesSql));
+    }
+
+    /**
+     * Gives fields a chance to adjust the value SQL.
+     *
+     * @param array $instances
+     * @param string $valueSql
+     * @return string|null
+     */
+    protected static function adjustValueSql(array $instances, string $valueSql): null|string
+    {
+        return $valueSql;
     }
 
     /**
@@ -954,18 +969,18 @@ JS, [
     /**
      * @inheritdoc
      */
-    public function getValueSql(?string $key = null): ?string
+    public function getValueSql(?string $key = null, bool $includeJsonPath = true): ?string
     {
         if (!isset($this->layoutElement)) {
             return null;
         }
 
         $cacheKey = $key ?? '*';
-        $this->_valueSql[$cacheKey] ??= $this->_valueSql($key) ?? false;
+        $this->_valueSql[$cacheKey] ??= $this->_valueSql($key, $includeJsonPath) ?? false;
         return $this->_valueSql[$cacheKey] ?: null;
     }
 
-    private function _valueSql(?string $key): ?string
+    private function _valueSql(?string $key, bool $includeJsonPath = true): ?string
     {
         $dbType = static::dbType();
 
@@ -982,7 +997,9 @@ JS, [
         if (is_array($dbType)) {
             // Get the primary value by default
             $key ??= array_key_first($dbType);
-            $jsonPath[] = $key;
+            if ($includeJsonPath) {
+                $jsonPath[] = $key;
+            }
             $dbType = $dbType[$key];
         }
 

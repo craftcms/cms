@@ -452,10 +452,11 @@ interface FieldInterface extends SavableComponentInterface, Chippable, Grippable
      * Returns a SQL expression which extracts the field’s value from the `elements_sites.content` column.
      *
      * @param string|null $key The data key to fetch, if this field stores multiple values
+     * @param bool $includeJsonPath
      * @return string|null
      * @since 5.0.0
      */
-    public function getValueSql(?string $key = null): ?string;
+    public function getValueSql(?string $key = null, bool $includeJsonPath = true): ?string;
 
     /**
      * Modifies an element index query.
