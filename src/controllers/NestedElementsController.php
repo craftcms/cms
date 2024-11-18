@@ -84,6 +84,7 @@ class NestedElementsController extends Controller
         if ($this->nestedElements instanceof ElementQueryInterface) {
             $oldSortOrders = (clone $this->nestedElements)
                 ->status(null)
+                ->drafts(null)
                 ->asArray()
                 ->select(['id', 'sortOrder'])
                 ->pairs();
