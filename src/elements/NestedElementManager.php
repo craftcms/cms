@@ -770,7 +770,8 @@ JS, [
                         }
                     } elseif (
                         $element->getIsUnpublishedDraft() &&
-                        $element->getPrimaryOwnerId() === $owner->id
+                        $element->getPrimaryOwnerId() === $owner->id &&
+                        !$owner->getIsDraft()
                     ) {
                         Craft::$app->getDrafts()->removeDraftData($element);
                     }
