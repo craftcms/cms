@@ -30,6 +30,12 @@ use yii\base\InvalidConfigException;
 trait NestedElementTrait
 {
     /**
+     * @var string|null The owner element type. Used if the nested element is only every owner by one type of element.
+     * @since 5.6.0
+     */
+    public ?string $ownerElementType = null;
+
+    /**
      * @inheritdoc
      */
     public static function eagerLoadingMap(array $sourceElements, string $handle): array|null|false
@@ -154,7 +160,7 @@ trait NestedElementTrait
                 return null;
             }
 
-            $this->_primaryOwner = Craft::$app->getElements()->getElementById($primaryOwnerId, null, $this->siteId, [
+            $this->_primaryOwner = Craft::$app->getElements()->getElementById($primaryOwnerId, $this->ownerElementType, $this->siteId, [
                 'trashed' => null,
             ]) ?? false;
             if (!$this->_primaryOwner) {
@@ -206,7 +212,7 @@ trait NestedElementTrait
                 return $this->getPrimaryOwner();
             }
 
-            $this->_owner = Craft::$app->getElements()->getElementById($ownerId, null, $this->siteId, [
+            $this->_owner = Craft::$app->getElements()->getElementById($ownerId, $this->ownerElementType, $this->siteId, [
                 'trashed' => null,
             ]) ?? false;
             if (!$this->_owner) {
@@ -306,7 +312,7 @@ trait NestedElementTrait
         if (!$this->saveOwnership || !isset($this->fieldId)) {
             return;
         }
-        
+
         $ownerId = $this->getOwnerId();
         if (!$ownerId) {
             return;
