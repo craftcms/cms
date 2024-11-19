@@ -314,7 +314,7 @@ class Assets extends Component
             $folder = $this->getFolderById((int)$folderId);
             $folders[] = $folder;
 
-            if ($folder && $deleteDir) {
+            if ($folder?->path && $deleteDir) {
                 $volume = $folder->getVolume();
                 try {
                     $volume->deleteDirectory($folder->path);
