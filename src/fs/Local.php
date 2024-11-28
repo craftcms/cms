@@ -377,10 +377,10 @@ class Local extends Fs implements LocalFsInterface
             throw new FsObjectNotFoundException('No folder exists at path: ' . $path);
         }
 
-        $components = explode("/", $this->prefixPath($path));
+        $components = explode(DIRECTORY_SEPARATOR, $this->prefixPath($path));
         array_pop($components);
         $components[] = $newName;
-        $newPath = implode("/", $components);
+        $newPath = implode(DIRECTORY_SEPARATOR, $components);
 
         @rename($this->prefixPath($path), $newPath);
     }
