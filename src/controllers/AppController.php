@@ -103,6 +103,7 @@ class AppController extends Controller
     public function actionHealthCheck(): Response
     {
         // All that matters is the 200 response
+        $this->response->setNoCacheHeaders();
         $this->response->format = Response::FORMAT_RAW;
         $this->response->data = '';
         return $this->response;
