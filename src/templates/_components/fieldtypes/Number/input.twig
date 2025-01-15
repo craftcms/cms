@@ -30,10 +30,12 @@
     {% endif %}
     <div>
         {{ text({
+            type: field.step ? 'number' : 'text',
             id: id,
             name: formatNumber ? "#{field.handle}[value]" : field.handle,
             value: value,
             inputmode: field.decimals ? 'decimal' : 'numeric',
+            step: field.step,
             size: field.size,
             describedBy: [describedBy ?? null, hasPrefix or hasSuffix ? descriptionId : null]|filter|join(' ') ?: false,
         }) }}

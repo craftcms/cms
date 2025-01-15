@@ -10,6 +10,7 @@ namespace craft\console\controllers;
 use Craft;
 use craft\console\Controller;
 use craft\elements\User;
+use craft\errors\DbConnectException;
 use craft\errors\MigrationException;
 use craft\errors\OperationAbortedException;
 use craft\helpers\Console;
@@ -99,13 +100,19 @@ class InstallController extends Controller
     /**
      * Runs the install migration.
      *
-     * @return int
+     * @return mixed
      */
-    public function actionCraft(): int
+    public function actionCraft(): mixed
     {
         if (Craft::$app->getIsInstalled(true)) {
             $this->stdout('Craft is already installed!' . PHP_EOL, Console::FG_YELLOW);
             return ExitCode::OK;
+        }
+
+        try {
+            Craft::$app->getDb()->open();
+        } catch (DbConnectException $e) {
+            return $this->run('setup/welcome');
         }
 
         $this->run('setup/keys');

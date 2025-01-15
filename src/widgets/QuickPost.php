@@ -12,6 +12,7 @@ use craft\base\Widget;
 use craft\elements\Entry;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Html;
+use craft\helpers\StringHelper;
 use craft\models\EntryType;
 use craft\models\Section;
 
@@ -218,9 +219,9 @@ JS, [
         return $view->renderTemplate('_includes/forms/button.twig', [
             'id' => $buttonId,
             'class' => ['huge', 'icon', 'add', 'dashed', 'fullwidth'],
-            'label' => Craft::t('app', 'Create {type}', [
+            'label' => StringHelper::upperCaseFirst(Craft::t('app', 'Create {type}', [
                 'type' => Entry::lowerDisplayName(),
-            ]),
+            ])),
             'spinner' => true,
         ]);
     }

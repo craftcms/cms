@@ -155,6 +155,10 @@ class Structures extends Component
         $prevElement = null;
         $patchedElements = [];
 
+        // https://github.com/craftcms/cms/issues/16085
+        // don't assume that elements are in the top to bottom order
+        usort($elements, fn(ElementInterface $a, ElementInterface $b) => $a->lft <=> $b->lft);
+
         foreach ($elements as $i => $element) {
             // Did we just skip any elements?
             if (

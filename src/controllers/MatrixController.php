@@ -119,9 +119,9 @@ class MatrixController extends Controller
 
         $entry->setScenario(Element::SCENARIO_ESSENTIALS);
         if (!Craft::$app->getDrafts()->saveElementAsDraft($entry, $user->id, markAsSaved: false)) {
-            return $this->asFailure(Craft::t('app', 'Couldn’t create {type}.', [
+            return $this->asFailure(StringHelper::upperCaseFirst(Craft::t('app', 'Couldn’t create {type}.', [
                 'type' => Entry::lowerDisplayName(),
-            ]));
+            ])));
         }
 
         /** @var EntryQuery|ElementCollection $value */

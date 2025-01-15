@@ -8,6 +8,7 @@
 namespace craft\fields;
 
 use Craft;
+use craft\base\ElementInterface;
 use craft\elements\conditions\ElementCondition;
 use craft\elements\db\EntryQuery;
 use craft\elements\ElementCollection;
@@ -15,6 +16,7 @@ use craft\elements\Entry;
 use craft\gql\arguments\elements\Entry as EntryArguments;
 use craft\gql\interfaces\elements\Entry as EntryInterface;
 use craft\gql\resolvers\elements\Entry as EntryResolver;
+use craft\helpers\Cp;
 use craft\helpers\Gql;
 use craft\helpers\Gql as GqlHelper;
 use craft\models\EntryType;
@@ -133,5 +135,28 @@ class Entries extends BaseRelationField
         $condition = Entry::createCondition();
         $condition->queryParams = ['section', 'sectionId'];
         return $condition;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function previewPlaceholderHtml(mixed $value, ?ElementInterface $element): string
+    {
+        $mockup = new Entry();
+        $mockup->title = Craft::t('app', 'Related {type} Title', ['type' => $mockup->displayName()]);
+        if ($this->sources == '*') {
+            $section = Craft::$app->getEntries()->getAllSections()[0];
+        } else {
+            $section = Craft::$app->getEntries()->getSectionByUid(str_replace('section:', '', $this->sources[0]));
+        }
+
+        if (!$section) {
+            // if we don't have a section, let's return a string, cause chipHtml will complain about not being able to get a type
+            return $mockup->title . ' - ' . Craft::t('app', 'placeholder');
+        }
+
+        $mockup->sectionId = $section->id;
+
+        return Cp::chipHtml($mockup);
     }
 }

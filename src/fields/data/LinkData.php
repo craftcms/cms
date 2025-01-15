@@ -29,7 +29,14 @@ use yii\base\BaseObject;
  */
 class LinkData extends BaseObject implements Serializable
 {
+    /**
+     * @var string|null The link’s `target` attribute.
+     * @since 5.5.0
+     */
+    public ?string $target = null;
+
     private string $renderedValue;
+    private ?string $label = null;
 
     public function __construct(
         private readonly string $value,
@@ -68,26 +75,44 @@ class LinkData extends BaseObject implements Serializable
     /**
      * Returns the link label.
      *
-     * @return string
+     * @param bool|null $custom Whether to return the custom label
+     * @return string|null
      */
-    public function getLabel(): string
+    public function getLabel(?bool $custom = null): ?string
     {
+        if ($custom || (isset($this->label) && $custom === null)) {
+            return $this->label;
+        }
+
         return $this->linkType->linkLabel($this->value);
+    }
+
+    /**
+     * Sets the link label.
+     *
+     * @param string|null $label
+     * @since 5.5.0
+     */
+    public function setLabel(?string $label): void
+    {
+        $this->label = $label;
     }
 
     /**
      * Returns an anchor tag for this link.
      *
-     * @return Markup|null
+     * @return Markup
      */
-    public function getLink(): ?Markup
+    public function getLink(): Markup
     {
         $url = $this->getValue();
         if ($url === '') {
             $html = '';
         } else {
             $label = $this->getLabel();
-            $html = Html::a(Html::encode($label !== '' ? $label : $url), $url);
+            $html = Html::a(Html::encode($label !== '' ? $label : $url), $url, [
+                'target' => $this->target,
+            ]);
         }
 
         return Template::raw($html);
@@ -108,6 +133,11 @@ class LinkData extends BaseObject implements Serializable
 
     public function serialize(): mixed
     {
-        return $this->value;
+        return [
+            'value' => $this->value,
+            'type' => $this->getType(),
+            'label' => $this->label,
+            'target' => $this->target,
+        ];
     }
 }

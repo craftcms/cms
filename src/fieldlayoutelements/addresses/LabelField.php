@@ -22,6 +22,11 @@ class LabelField extends TitleField
     /**
      * @inheritdoc
      */
+    public bool $translatable = false;
+
+    /**
+     * @inheritdoc
+     */
     public function defaultLabel(?ElementInterface $element = null, bool $static = false): ?string
     {
         return Craft::t('app', 'Label');

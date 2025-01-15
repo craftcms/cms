@@ -219,6 +219,38 @@ class Controller extends YiiController
     }
 
     /**
+     * Prints text to STDOUT appended with a carriage return (PHP_EOL).
+     *
+     * @param string|null $string The text to print
+     * @return int|false The number of bytes printed or false on error
+     * @since 5.5.0
+     */
+    public function output(string $string = null): int|false
+    {
+        if ($string !== null && $this->isColorEnabled()) {
+            $args = func_get_args();
+            array_shift($args);
+            $string = Console::ansiFormat($string, $args);
+        }
+
+        return Console::output($string);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function stdout($string)
+    {
+        if ($this->isColorEnabled()) {
+            $args = func_get_args();
+            array_shift($args);
+            $string = Console::ansiFormat($string, $args);
+        }
+
+        return Console::stdout($string);
+    }
+
+    /**
      * @inheritdoc
      */
     public function getActionHelpSummary($action): string
@@ -394,7 +426,7 @@ class Controller extends YiiController
         $input = CliPrompt::hiddenPrompt(true);
 
         if ($options['required'] && $input === '') {
-            $this->stdout($options['error'] . PHP_EOL);
+            $this->output($options['error']);
             goto top;
         }
 
@@ -402,14 +434,14 @@ class Controller extends YiiController
 
         if ($options['validator'] && !$options['validator']($input, $error)) {
             /** @var string|null $error */
-            $this->stdout(($error ?? $options['error']) . PHP_EOL);
+            $this->output(($error ?? $options['error']));
             goto top;
         }
 
         if ($options['confirm']) {
             $this->stdout('Confirm: ');
             if ($input !== CliPrompt::hiddenPrompt(true)) {
-                $this->stdout('Passwords didn\'t match, try again.' . PHP_EOL, Console::FG_RED);
+                $this->output('Passwords didn\'t match, try again.', Console::FG_RED);
                 goto top;
             }
         }
@@ -444,27 +476,43 @@ class Controller extends YiiController
      */
     public function do(string $description, callable $action, bool $withDuration = false): void
     {
-        $this->stdout(' → ', Console::FG_GREY);
+        $this->stdout(Console::indentStr() . ' → ', Console::FG_GREY);
         $this->stdout($this->markdownToAnsi($description));
         $this->stdout(' … ', Console::FG_GREY);
+        Console::$prependNewline = true;
 
         if ($withDuration) {
             $time = microtime(true);
         }
 
+        // keep track of whether anything else was output
+        $outputCount = Console::$outputCount;
+
+        $e = null;
         try {
             $action();
         } catch (Throwable $e) {
-            $this->stdout('✕' . PHP_EOL, Console::FG_RED, Console::BOLD);
-            $this->stdout("   Error: {$e->getMessage()}" . PHP_EOL, Console::FG_RED);
+        }
+
+        Console::$prependNewline = false;
+
+        if ($e !== null) {
+            if (Console::$outputCount !== $outputCount) {
+                $this->stdout(Console::indentStr() . ' ');
+            }
+            $this->stdout("error: {$e->getMessage()}" . PHP_EOL, Console::FG_RED);
             throw $e;
         }
 
-        $this->stdout('✓', Console::FG_GREEN, Console::BOLD);
+        if (Console::$outputCount !== $outputCount) {
+            $this->stdout(Console::indentStr() . ' ');
+        }
+        $this->stdout('✓ ', Console::FG_GREEN, Console::BOLD);
+        $this->stdout('done', Console::FG_GREEN);
         if ($withDuration) {
             $this->stdout(sprintf(' (time: %.3fs)', microtime(true) - $time), Console::FG_GREY);
         }
-        $this->stdout(PHP_EOL);
+        $this->output();
     }
 
     /**

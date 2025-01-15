@@ -54,6 +54,11 @@
       document.write({{ formHtml|json_encode|raw }});
     } else {
       document.write({{ noCookiesHtml|json_encode|raw }});
+      setTimeout(() => {
+        if (document.activeElement !== document.body) {
+          $(document.activeElement).blur();
+        }
+      }, 50);
     }
   </script>
 {% endblock %}

@@ -13,6 +13,7 @@ use craft\base\Field;
 use craft\base\InlineEditableFieldInterface;
 use craft\base\MergeableFieldInterface;
 use craft\base\SortableFieldInterface;
+use craft\elements\Entry;
 use craft\fields\conditions\MoneyFieldConditionRule;
 use craft\gql\types\Money as MoneyType;
 use craft\helpers\Cp;
@@ -366,6 +367,18 @@ class Money extends Field implements InlineEditableFieldInterface, SortableField
     public function getPreviewHtml(mixed $value, ElementInterface $element): string
     {
         return MoneyHelper::toString($value) ?: '';
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function previewPlaceholderHtml(mixed $value, ?ElementInterface $element): string
+    {
+        if (!$value) {
+            $value = new MoneyLibrary(1234, new Currency($this->currency));
+        }
+
+        return $this->getPreviewHtml($value, $element ?? new Entry());
     }
 
     /**

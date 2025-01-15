@@ -13,6 +13,7 @@ use craft\db\Table;
 use craft\errors\MutexException;
 use craft\helpers\App;
 use craft\helpers\ArrayHelper;
+use craft\helpers\DateTimeHelper;
 use craft\helpers\Db;
 use craft\helpers\Json;
 use craft\helpers\Queue as QueueHelper;
@@ -381,7 +382,7 @@ class Queue extends \yii\queue\cli\Queue implements QueueInterface
         $this->_lock(function() use ($progress, $label) {
             $data = [
                 'progress' => $progress,
-                'timeUpdated' => time(),
+                'timeUpdated' => DateTimeHelper::currentTimeStamp(),
             ];
 
             if ($label !== null) {
@@ -546,7 +547,9 @@ class Queue extends \yii\queue\cli\Queue implements QueueInterface
             // then running first
             ->addOrderBy(new Expression("CASE WHEN $runningSql THEN 1 ELSE 0 END DESC"))
             // then earliest start time (now or timePushed + delay)
-            ->addOrderBy(new Expression('GREATEST(:time, [[timePushed]] + [[delay]]) ASC', [':time' => time()]))
+            ->addOrderBy(new Expression('GREATEST(:time, [[timePushed]] + [[delay]]) ASC', [
+                ':time' => DateTimeHelper::currentTimeStamp(),
+            ]))
             // then priority and ID
             ->addOrderBy(['priority' => SORT_ASC, 'id' => SORT_ASC])
             ->limit($limit);
@@ -661,7 +664,7 @@ EOD;
             'channel' => $this->channel(),
             'job' => $message,
             'description' => $this->_jobDescription,
-            'timePushed' => time(),
+            'timePushed' => DateTimeHelper::currentTimeStamp(),
             'ttr' => $ttr,
             'delay' => $delay,
             'priority' => $priority ?: 1024,
@@ -733,7 +736,9 @@ EOD;
             $payload = $this->db->usePrimary(function() use ($id) {
                 $query = $this->_createJobQuery()
                     ->andWhere(['fail' => false, 'timeUpdated' => null])
-                    ->andWhere('[[timePushed]] + [[delay]] <= :time', ['time' => time()])
+                    ->andWhere('[[timePushed]] + [[delay]] <= :time', [
+                        'time' => DateTimeHelper::currentTimeStamp(),
+                    ])
                     ->orderBy(['priority' => SORT_ASC, 'id' => SORT_ASC])
                     ->limit(1);
 
@@ -793,8 +798,9 @@ EOD;
      */
     private function _moveExpired(): void
     {
-        if ($this->_reserveTime !== time()) {
-            $this->_reserveTime = time();
+        $timestamp = DateTimeHelper::currentTimeStamp();
+        if ($this->_reserveTime !== $timestamp) {
+            $this->_reserveTime = $timestamp;
 
             $expiredIds = $this->db->usePrimary(function() {
                 return (new Query())
@@ -856,7 +862,9 @@ EOD;
     {
         return $this->_createJobQuery()
             ->andWhere(['fail' => false, 'timeUpdated' => null])
-            ->andWhere('[[timePushed]] + [[delay]] <= :time', ['time' => time()]);
+            ->andWhere('[[timePushed]] + [[delay]] <= :time', [
+                'time' => DateTimeHelper::currentTimeStamp(),
+            ]);
     }
 
     /**
@@ -868,7 +876,9 @@ EOD;
     {
         return $this->_createJobQuery()
             ->andWhere(['fail' => false, 'timeUpdated' => null])
-            ->andWhere('[[timePushed]] + [[delay]] > :time', ['time' => time()]);
+            ->andWhere('[[timePushed]] + [[delay]] > :time', [
+                'time' => DateTimeHelper::currentTimeStamp(),
+            ]);
     }
 
     /**

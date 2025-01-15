@@ -4,6 +4,7 @@ namespace craft\log;
 
 use Craft;
 use craft\helpers\App;
+use craft\helpers\ArrayHelper;
 use DateTimeZone;
 use Illuminate\Support\Collection;
 use Monolog\Formatter\FormatterInterface;
@@ -81,12 +82,12 @@ class MonologTarget extends PsrTarget
      */
     protected ?ProcessorInterface $processor = null;
 
-    /**
-     * @inheritdoc
-     */
-    public function init(): void
+    public function __construct($config = [])
     {
-        parent::init();
+        // Store and unset logger, so we can create it with a closure
+        $logger = ArrayHelper::remove($config, 'logger');
+
+        parent::__construct($config);
 
         $this->formatter = $this->formatter ?? new LineFormatter(
             format: "%datetime% [%channel%.%level_name%] [%extra.yii_category%] %message% %context% %extra%\n",
@@ -94,7 +95,12 @@ class MonologTarget extends PsrTarget
             allowInlineLineBreaks: $this->allowLineBreaks,
             ignoreEmptyContextAndExtra: true,
         );
-        $this->logger = $this->_createLogger($this->name);
+
+        $this->logger = match (true) {
+            $logger instanceof Logger => $logger,
+            is_callable($logger) => $logger($this),
+            default => $this->_createDefaultLogger(),
+        };
     }
 
     /**
@@ -103,7 +109,7 @@ class MonologTarget extends PsrTarget
     public function getLogger(): Logger
     {
         /** @var Logger */
-        return $this->logger;
+        return $this->logger ?? $this->_createDefaultLogger();
     }
 
     /**
@@ -173,10 +179,9 @@ class MonologTarget extends PsrTarget
         return $messages->all();
     }
 
-    private function _createLogger(string $name): Logger
+    private function _createDefaultLogger(): Logger
     {
-        $generalConfig = Craft::$app->getConfig()->getGeneral();
-        $logger = (new Logger($name))->useMicrosecondTimestamps($this->useMicrosecondTimestamps);
+        $logger = (new Logger($this->name))->useMicrosecondTimestamps($this->useMicrosecondTimestamps);
 
         if ($this->processor) {
             $logger->pushProcessor($this->processor);
@@ -192,7 +197,6 @@ class MonologTarget extends PsrTarget
                 Logger::WARNING,
                 bubble: false,
             ))->setFormatter($this->formatter));
-
             $logger->pushHandler((new StreamHandler(
                 'php://stdout',
                 $this->level,
@@ -200,10 +204,10 @@ class MonologTarget extends PsrTarget
             ))->setFormatter($this->formatter));
         } else {
             $logger->pushHandler((new RotatingFileHandler(
-                App::parseEnv(sprintf('@storage/logs/%s.log', $name)),
+                App::parseEnv(sprintf('@storage/logs/%s.log', $this->name)),
                 $this->maxFiles,
                 $this->level,
-                filePermission: $generalConfig->defaultFileMode,
+                filePermission: Craft::$app->getConfig()->getGeneral()->defaultFileMode,
             ))->setFormatter($this->formatter));
         }
 
@@ -220,6 +224,19 @@ class MonologTarget extends PsrTarget
     }
 
     /**
+     * Returns the log target’s name.
+     *
+     * @return string
+     * @since 5.5.0
+     */
+    public function getName(): string
+    {
+        return $this->name;
+    }
+
+    /**
+     * Sets whether the log target should allow line breaks.
+     *
      * @param bool $allowLineBreaks
      * @throws InvalidConfigException
      */
@@ -229,6 +246,19 @@ class MonologTarget extends PsrTarget
     }
 
     /**
+     * Returns whether the log target should allow line breaks.
+     *
+     * @return bool
+     * @since 5.5.0
+     */
+    public function getAllowLineBreaks(): bool
+    {
+        return $this->allowLineBreaks;
+    }
+
+    /**
+     * Sets the log level.
+     *
      * @param string|null $level
      * @throws InvalidConfigException
      */
@@ -238,6 +268,19 @@ class MonologTarget extends PsrTarget
     }
 
     /**
+     * Returns the log level.
+     *
+     * @return string
+     * @since 5.5.0
+     */
+    public function getLevel(): string
+    {
+        return $this->level;
+    }
+
+    /**
+     * Sets the maximum number of log files to store.
+     *
      * @param int $maxFiles
      * @throws InvalidConfigException
      */
@@ -247,6 +290,19 @@ class MonologTarget extends PsrTarget
     }
 
     /**
+     * Returns the maximum number of log files to store.
+     *
+     * @return int
+     * @since 5.5.0
+     */
+    public function getMaxFiles(): int
+    {
+        return $this->maxFiles;
+    }
+
+    /**
+     * Sets whether logs should show microseconds in timestamps.
+     *
      * @param bool $useMicrosecondTimestamps
      * @throws InvalidConfigException
      */
@@ -256,6 +312,19 @@ class MonologTarget extends PsrTarget
     }
 
     /**
+     * Returns whether logs should show microseconds in timestamps.
+     *
+     * @return bool
+     * @since 5.5.0
+     */
+    public function getUseMicrosecondTimestamps(): bool
+    {
+        return $this->useMicrosecondTimestamps;
+    }
+
+    /**
+     * Sets the log formatter.
+     *
      * @param FormatterInterface|null $formatter
      * @throws InvalidConfigException
      */
@@ -265,12 +334,36 @@ class MonologTarget extends PsrTarget
     }
 
     /**
+     * Returns the log formatter.
+     *
+     * @return FormatterInterface|null
+     * @since 5.5.0
+     */
+    public function getFormatter(): ?FormatterInterface
+    {
+        return $this->formatter;
+    }
+
+    /**
+     * Sets the log processor.
+     *
      * @param ProcessorInterface|null $processor
      * @throws InvalidConfigException
      */
     public function setProcessor(?ProcessorInterface $processor): void
     {
         $this->_setLoggerProperty('processor', $processor);
+    }
+
+    /**
+     * Returns the log processor.
+     *
+     * @return ProcessorInterface|null
+     * @since 5.5.0
+     */
+    public function getProcessor(): ?ProcessorInterface
+    {
+        return $this->processor;
     }
 
     /**

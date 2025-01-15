@@ -429,7 +429,12 @@ class DateTimeHelperTest extends TestCase
      */
     public function testRelativeTimeToSeconds(int $expected, int $number, string $unit): void
     {
-        self::assertSame($expected, DateTimeHelper::relativeTimeToSeconds($number, $unit));
+        // account for DST changes
+        self::assertContains(DateTimeHelper::relativeTimeToSeconds($number, $unit), [
+            $expected,
+            $expected + (60 * 60),
+            $expected - (60 * 60),
+        ]);
     }
 
     /**
@@ -566,7 +571,11 @@ class DateTimeHelperTest extends TestCase
     public function testIntervalToSeconds(int $expected, string $duration): void
     {
         $dateInterval = new DateInterval($duration);
-        self::assertSame($expected, DateTimeHelper::intervalToSeconds($dateInterval));
+        self::assertContains(DateTimeHelper::intervalToSeconds($dateInterval), [
+            $expected,
+            $expected + (60 * 60),
+            $expected - (60 * 60),
+        ]);
     }
 
     /**
@@ -687,10 +696,6 @@ class DateTimeHelperTest extends TestCase
             [true, '1 year'],
             [true, '1 month'],
             [true, '1 minutes'],
-
-            [false, ''],
-            [false, 'random string'],
-
         ];
     }
 

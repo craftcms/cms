@@ -215,6 +215,21 @@
                 <div id="default-table-columns-input"></div>
             {% endblock %}
         {% endembed %}
+
+        {% set options = [] %}
+        {% for viewMode in indexViewModes %}
+            {% set options = options|merge([{
+                label: viewMode.title,
+                value: viewMode.mode,
+            }]) %}
+        {% endfor %}
+        {{ forms.selectField({
+            label: 'Default View Mode'|t('app'),
+            id: 'default-view-mode',
+            name: 'defaultIndexViewMode',
+            options: options,
+            value: field.defaultIndexViewMode
+        }) }}
     {% endtag %}
 
     {{ forms.selectField({

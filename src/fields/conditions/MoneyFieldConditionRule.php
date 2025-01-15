@@ -11,6 +11,7 @@ use craft\helpers\Html;
 use craft\helpers\MoneyHelper;
 use Money\Currency;
 use Money\Money as MoneyLibrary;
+use yii\base\InvalidConfigException;
 
 /**
  * Money field condition rule.
@@ -40,8 +41,10 @@ class MoneyFieldConditionRule extends BaseNumberConditionRule implements FieldCo
 
         parent::setAttributes($values, $safeOnly);
 
-        /** @var Money $field */
         $field = $this->field();
+        if (!$field instanceof Money) {
+            throw new InvalidConfigException();
+        }
 
         if (isset($value) && isset($this->_fieldUid)) {
             if (!isset($value['currency'])) {
@@ -63,14 +66,17 @@ class MoneyFieldConditionRule extends BaseNumberConditionRule implements FieldCo
      */
     protected function inputHtml(): string
     {
+        $field = $this->field();
+        if (!$field instanceof Money) {
+            throw new InvalidConfigException();
+        }
+
         // don't show the value input if the condition checks for empty/notempty
         if ($this->operator === self::OPERATOR_EMPTY || $this->operator === self::OPERATOR_NOT_EMPTY) {
             return '';
         }
 
         if ($this->operator === self::OPERATOR_BETWEEN) {
-            /** @var Money $field */
-            $field = $this->field();
             $maxValue = is_numeric($this->maxValue) ? MoneyHelper::toNumber(MoneyHelper::toMoney(['value' => $this->maxValue, 'currency' => $field->currency])) : $this->maxValue;
 
             return Html::tag('div',
@@ -128,6 +134,10 @@ class MoneyFieldConditionRule extends BaseNumberConditionRule implements FieldCo
      */
     protected function elementQueryParam(): ?string
     {
+        if (!$this->field() instanceof Money) {
+            return null;
+        }
+
         return $this->paramValue();
     }
 
@@ -136,6 +146,10 @@ class MoneyFieldConditionRule extends BaseNumberConditionRule implements FieldCo
      */
     protected function matchFieldValue($value): bool
     {
+        if (!$this->field() instanceof Money) {
+            return true;
+        }
+
         /** @var int|float|null $value */
         return $this->matchValue($value);
     }

@@ -20,6 +20,7 @@ use craft\helpers\ArrayHelper;
 use craft\helpers\Component as ComponentHelper;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\Json;
+use craft\helpers\Session as SessionHelper;
 use craft\models\UserGroup;
 use craft\records\WebAuthn as WebAuthnRecord;
 use craft\web\Session;
@@ -197,6 +198,13 @@ class Auth extends Component
         // success!
         if ($user) {
             $this->setUser(null);
+
+            // if we're impersonating, pass the user we're impersonating to the complete the login
+            if (SessionHelper::get(User::IMPERSONATE_KEY) !== null) {
+                /** @var User $user */
+                $user = Craft::$app->getUser()->getIdentity();
+            }
+
             Craft::$app->getUser()->login($user, $sessionDuration);
         }
 

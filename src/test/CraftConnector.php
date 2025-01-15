@@ -107,11 +107,8 @@ class CraftConnector extends Yii2
                 $module = new $moduleClass($moduleId, Craft::$app);
             }
 
-            /** @var string|Module $moduleClass */
-            /** @phpstan-var class-string<Module>|Module $moduleClass */
-            $moduleClass::setInstance(
-                $module
-            );
+            /** @var class-string<Module> $moduleClass */
+            $moduleClass::setInstance($module);
             Craft::$app->setModule($moduleId, $module);
         }
     }
@@ -135,7 +132,7 @@ class CraftConnector extends Yii2
      *
      * @inheritDoc
      */
-    public function startApp(\yii\log\Logger $logger = null)
+    public function startApp(\yii\log\Logger $logger = null): void
     {
         parent::startApp($logger);
 

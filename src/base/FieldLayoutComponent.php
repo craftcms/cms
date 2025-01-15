@@ -56,14 +56,12 @@ abstract class FieldLayoutComponent extends Model
     }
 
     /**
-     * @param string $elementType
-     * @phpstan-param class-string<ElementInterface> $elementType
+     * @param class-string<ElementInterface> $elementType
      * @return ElementConditionInterface
      */
     private static function defaultElementCondition(string $elementType): ElementConditionInterface
     {
         if (!isset(self::$defaultElementConditions[$elementType])) {
-            /** @var string|ElementInterface $elementType */
             self::$defaultElementConditions[$elementType] = $elementType::createCondition();
         }
         return self::$defaultElementConditions[$elementType];
@@ -88,7 +86,7 @@ abstract class FieldLayoutComponent extends Model
     private FieldLayout $_layout;
 
     /**
-     * @var UserCondition|string|array|null
+     * @var UserCondition|class-string<UserCondition>|array|null
      * @phpstan-var UserCondition|class-string<UserCondition>|array{class:class-string<UserCondition>}|null
      * @see getUserCondition()
      * @see setUserCondition()
@@ -96,7 +94,7 @@ abstract class FieldLayoutComponent extends Model
     private mixed $_userCondition = null;
 
     /**
-     * @var ElementConditionInterface|string|array|null
+     * @var ElementConditionInterface|class-string<ElementConditionInterface>|array|null
      * @phpstan-var ElementConditionInterface|class-string<ElementConditionInterface>|array{class:class-string<ElementConditionInterface>}|null
      * @see getElementCondition()
      * @see setElementCondition()
@@ -160,7 +158,7 @@ abstract class FieldLayoutComponent extends Model
     /**
      * Sets the user condition for this layout element.
      *
-     * @param UserCondition|string|array|null $userCondition
+     * @param UserCondition|class-string<UserCondition>|array|null $userCondition
      * @phpstan-param UserCondition|class-string<UserCondition>|array{class:class-string<UserCondition>}|null $userCondition
      */
     public function setUserCondition(mixed $userCondition): void
@@ -192,7 +190,7 @@ abstract class FieldLayoutComponent extends Model
     /**
      * Sets the element condition for this layout element.
      *
-     * @param ElementConditionInterface|string|array|null $elementCondition
+     * @param ElementConditionInterface|class-string<ElementConditionInterface>|array|null $elementCondition
      * @phpstan-param ElementConditionInterface|class-string<ElementConditionInterface>|array{class:class-string<ElementConditionInterface>}|null $elementCondition
      */
     public function setElementCondition(mixed $elementCondition): void
@@ -204,7 +202,7 @@ abstract class FieldLayoutComponent extends Model
      * Normalizes a condition.
      *
      * @template T of ConditionInterface
-     * @param T|string|array|null $condition
+     * @param T|class-string<T>|array|null $condition
      * @phpstan-param T|class-string<T>|array{class:class-string<T>}|null $condition
      * @return T|null
      */

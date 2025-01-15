@@ -203,9 +203,9 @@ class AssetsController extends Controller
         if (!Craft::$app->getElements()->saveElement($asset)) {
             return $this->asModelFailure(
                 $asset,
-                Craft::t('app', 'Couldn’t save {type}.', [
+                StringHelper::upperCaseFirst(Craft::t('app', 'Couldn’t save {type}.', [
                     'type' => Asset::lowerDisplayName(),
-                ]),
+                ])),
                 $assetVariable
             );
         }
@@ -733,7 +733,7 @@ class AssetsController extends Controller
             $existingFolder = $targetVolume->directoryExists(rtrim($destinationFolder->path, '/') . '/' . $folderToMove->name);
         }
 
-        // If this a conflict and no force or merge flags were passed in then STOP RIGHT THERE!
+        // If there's a conflict and `force`/`merge` flags weren't passed in, then STOP RIGHT THERE!
         if ($existingFolder && !$force && !$merge) {
             // Throw a prompt
             return $this->asJson([
@@ -785,7 +785,7 @@ class AssetsController extends Controller
                 $targetVolume->deleteDirectory(rtrim($destinationFolder->path, '/') . '/' . $folderToMove->name);
             }
 
-            // Mirror the structure, passing along the exsting folder map
+            // Mirror the structure, passing along the existing folder map
             $folderIdChanges = Assets::mirrorFolderStructure($folderToMove, $destinationFolder, $targetTreeMap);
 
             // Get file transfer list for the progress bar

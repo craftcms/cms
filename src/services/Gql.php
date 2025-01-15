@@ -110,7 +110,7 @@ class Gql extends Component
      * @event RegisterGqlTypesEvent The event that is triggered when registering GraphQL types.
      *
      * Plugins get a chance to add their own GraphQL types.
-     * See [GraphQL API](https://craftcms.com/docs/4.x/graphql.html) for documentation on adding GraphQL support.
+     * See [GraphQL API](https://craftcms.com/docs/5.x/extend/graphql.html) for documentation on adding GraphQL support.
      *
      * ---
      * ```php
@@ -130,7 +130,7 @@ class Gql extends Component
      * @event RegisterGqlQueriesEvent The event that is triggered when registering GraphQL queries.
      *
      * Plugins get a chance to add their own GraphQL queries.
-     * See [GraphQL API](https://craftcms.com/docs/4.x/graphql.html) for documentation on adding GraphQL support.
+     * See [GraphQL API](https://craftcms.com/docs/5.x/extend/graphql.html) for documentation on adding GraphQL support.
      *
      * ---
      * ```php
@@ -156,7 +156,7 @@ class Gql extends Component
      * @event RegisterGqlMutationsEvent The event that is triggered when registering GraphQL mutations.
      *
      * Plugins get a chance to add their own GraphQL mutations.
-     * See [GraphQL API](https://craftcms.com/docs/4.x/graphql.html) for documentation on adding GraphQL support.
+     * See [GraphQL API](https://craftcms.com/docs/5.x/extend/graphql.html) for documentation on adding GraphQL support.
      *
      * ---
      * ```php
@@ -181,7 +181,7 @@ class Gql extends Component
      * @event RegisterGqlDirectivesEvent The event that is triggered when registering GraphQL directives.
      *
      * Plugins get a chance to add their own GraphQL directives.
-     * See [GraphQL API](https://craftcms.com/docs/4.x/graphql.html) for documentation on adding GraphQL support.
+     * See [GraphQL API](https://craftcms.com/docs/5.x/extend/graphql.html) for documentation on adding GraphQL support.
      *
      * ---
      * ```php
@@ -1154,8 +1154,7 @@ class Gql extends Component
     /**
      * Returns the content arguments
      *
-     * @param string $elementType
-     * @phpstorm-param class-string<BaseElementInterface> $elementType
+     * @param class-string<BaseElementInterface> $elementType
      * @param callable $setter
      * @phpstan-param callable():array $setter
      * @return array
@@ -1172,8 +1171,7 @@ class Gql extends Component
     /**
      * Returns the content arguments for a given element type and field layouts.
      *
-     * @param string $elementType
-     * @phpstorm-param class-string<BaseElementInterface> $elementType
+     * @param class-string<BaseElementInterface> $elementType
      * @param FieldLayout[] $fieldLayouts
      * @return array
      * @since 5.0.0
@@ -1201,8 +1199,7 @@ class Gql extends Component
     /**
      * Returns the content arguments for a given element type and custom fields.
      *
-     * @param string $elementType
-     * @phpstorm-param class-string<BaseElementInterface> $elementType
+     * @param class-string<BaseElementInterface> $elementType
      * @param FieldInterface[] $fields
      * @return array
      * @since 5.0.0
@@ -1229,14 +1226,12 @@ class Gql extends Component
      * Returns the content arguments for an element class based on the given contexts.
      *
      * @param array $contexts
-     * @param string $elementType
-     * @phpstan-param class-string<BaseElementInterface> $elementType
+     * @param class-string<BaseElementInterface> $elementType
      * @return array
      */
     public function getContentArguments(array $contexts, string $elementType): array
     {
         /** @var FieldLayoutBehavior[] $contexts */
-        /** @var string|BaseElementInterface $elementType */
         return $this->getOrSetContentArguments($elementType, function() use ($contexts, $elementType): array {
             $fields = [];
             foreach ($contexts as $context) {
@@ -1391,8 +1386,7 @@ class Gql extends Component
         }
 
         foreach ($types as $type) {
-            /** @var string|SingularTypeInterface $type */
-            /** @phpstan-var class-string<SingularTypeInterface>|SingularTypeInterface $type */
+            /** @var class-string<SingularTypeInterface> $type */
             TypeLoader::registerType($type::getName(), "$type::getType");
         }
 
@@ -1468,6 +1462,7 @@ class Gql extends Component
      */
     private function _loadGqlDirectives(): array
     {
+        /** @var class-string<Directive>[] $directiveClasses */
         $directiveClasses = [
             // Directives
             FormatDateTime::class,
@@ -1492,7 +1487,7 @@ class Gql extends Component
         $directives = GraphQL::getStandardDirectives();
 
         foreach ($directiveClasses as $class) {
-            /** @var Directive|string $class */
+            /** @var class-string<Directive> $class */
             $directives[] = $class::create();
         }
 

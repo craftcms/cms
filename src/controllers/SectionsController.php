@@ -213,4 +213,37 @@ class SectionsController extends Controller
 
         return $this->asSuccess();
     }
+
+    /**
+     * Returns data formatted for AdminTable vue component
+     *
+     * @return Response
+     * @throws BadRequestHttpException
+     */
+    public function actionTableData(): Response
+    {
+        $this->requireAcceptsJson();
+
+        $entriesService = Craft::$app->getEntries();
+
+        $page = (int)$this->request->getParam('page', 1);
+        $limit = (int)$this->request->getParam('per_page', 100);
+        $searchTerm = $this->request->getParam('search');
+        $orderBy = match ($this->request->getParam('sort.0.field')) {
+            '__slot:handle' => 'handle',
+            'type' => 'type',
+            default => 'name',
+        };
+        $sortDir = match ($this->request->getParam('sort.0.direction')) {
+            'desc' => SORT_DESC,
+            default => SORT_ASC,
+        };
+
+        [$pagination, $tableData] = $entriesService->getSectionTableData($page, $limit, $searchTerm, $orderBy, $sortDir);
+
+        return $this->asSuccess(data: [
+            'pagination' => $pagination,
+            'data' => $tableData,
+        ]);
+    }
 }

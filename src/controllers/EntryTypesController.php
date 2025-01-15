@@ -10,8 +10,10 @@ namespace craft\controllers;
 use Craft;
 use craft\base\ElementContainerFieldInterface;
 use craft\base\FieldInterface;
+use craft\base\FieldLayoutElement;
 use craft\elements\Entry;
 use craft\enums\Color;
+use craft\fieldlayoutelements\entries\EntryTitleField;
 use craft\helpers\Cp;
 use craft\helpers\Html;
 use craft\models\EntryType;
@@ -68,6 +70,20 @@ class EntryTypesController extends Controller
             }
 
             $title = Craft::t('app', 'Create a new entry type');
+        }
+
+        $fieldLayout = $entryType->getFieldLayout();
+        if ($entryType->hasTitleField) {
+            // Ensure the Title field is present
+            if (!$fieldLayout->isFieldIncluded('title')) {
+                $fieldLayout->prependElements([new EntryTitleField()]);
+            }
+        } else {
+            // Remove the title field
+            foreach ($fieldLayout->getTabs() as $tab) {
+                $elements = array_filter($tab->getElements(), fn(FieldLayoutElement $element) => !$element instanceof EntryTitleField);
+                $tab->setElements($elements);
+            }
         }
 
         $response = $this->asCpScreen()
@@ -159,7 +175,6 @@ class EntryTypesController extends Controller
         $entryType->icon = $this->request->getBodyParam('icon', $entryType->icon);
         $color = $this->request->getBodyParam('color', $entryType->color?->value);
         $entryType->color = $color && $color !== '__blank__' ? Color::from($color) : null;
-        $entryType->hasTitleField = (bool)$this->request->getBodyParam('hasTitleField', $entryType->hasTitleField);
         $entryType->titleTranslationMethod = $this->request->getBodyParam('titleTranslationMethod', $entryType->titleTranslationMethod);
         $entryType->titleTranslationKeyFormat = $this->request->getBodyParam('titleTranslationKeyFormat', $entryType->titleTranslationKeyFormat);
         $entryType->titleFormat = $this->request->getBodyParam('titleFormat', $entryType->titleFormat);

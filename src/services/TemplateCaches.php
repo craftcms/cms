@@ -245,7 +245,7 @@ class TemplateCaches extends Component
             $expiration = (new DateTime($duration));
         }
         if ($expiration !== null) {
-            $duration = DateTimeHelper::toDateTime($expiration)->getTimestamp() - time();
+            $duration = DateTimeHelper::toDateTime($expiration)->getTimestamp() - DateTimeHelper::currentTimeStamp();
         }
 
         if ($duration <= 0) {

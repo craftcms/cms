@@ -171,8 +171,7 @@ class SessionBehavior extends Behavior
      * Asset bundles that were queued with this method can be registered using [[getAssetBundleFlashes()]] or
      * [[\craft\web\View::getBodyHtml()]].
      *
-     * @param string $name the class name of the asset bundle
-     * @phpstan-param class-string<AssetBundle> $name
+     * @param class-string<AssetBundle> $name the class name of the asset bundle
      * @param int|null $position if set, this forces a minimum position for javascript files.
      * @throws Exception if $name isn't an asset bundle class name
      * @see getAssetBundleFlashes()

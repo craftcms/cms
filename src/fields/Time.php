@@ -13,6 +13,7 @@ use craft\base\Field;
 use craft\base\InlineEditableFieldInterface;
 use craft\base\MergeableFieldInterface;
 use craft\base\SortableFieldInterface;
+use craft\elements\Entry;
 use craft\fields\conditions\EmptyFieldConditionRule;
 use craft\gql\types\DateTime as DateTimeType;
 use craft\helpers\DateTimeHelper;
@@ -186,6 +187,17 @@ class Time extends Field implements InlineEditableFieldInterface, SortableFieldI
         }
 
         return Craft::$app->getFormatter()->asTime($value, Locale::LENGTH_SHORT);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function previewPlaceholderHtml(mixed $value, ?ElementInterface $element): string
+    {
+        if (!$value) {
+            $value = new DateTime();
+        }
+        return $this->getPreviewHtml($value, $element ?? new Entry());
     }
 
     /**

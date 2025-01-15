@@ -49,7 +49,7 @@ class SearchHelperTest extends TestCase
             ['', '&#11aa;'],
             ['test test', 'TEST TEST'],
             ['', ['♠', '♣', '♥', '♦']],
-            ['♠ ♣ ♥ ♦', ['♠', '♣', '♥', '♦'], [], false],
+            ['', ['♠', '♣', '♥', '♦'], [], false],
             ['test', 'test                       '],
             ['', 'test', ['test']],
             ['test', 'test👍'],

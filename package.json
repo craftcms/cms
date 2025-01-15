@@ -44,7 +44,7 @@
     "@simplewebauthn/browser": "^7.1.0",
     "@types/jquery": "^3.5.7",
     "accounting": "^0.4.1",
-    "axios": "^1.6.5",
+    "axios": "^1.6.8",
     "blueimp-file-upload": "^10.31.0",
     "d3": "^7.8.5",
     "fabric": "^1.7.19",

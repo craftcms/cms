@@ -44,8 +44,7 @@ class MailSettings extends Model
     public ?string $template = null;
 
     /**
-     * @var string|null The transport type that should be used
-     * @phpstan-var class-string<TransportAdapterInterface>|null
+     * @var class-string<TransportAdapterInterface>|null The transport type that should be used
      */
     public ?string $transportType = Sendmail::class;
 

@@ -435,6 +435,18 @@ Craft.ui = {
       $input.addClass(config.class);
     }
 
+    if (config.data) {
+      Object.entries(config.data).forEach((item) => {
+        $input.attr('data-' + item[0], item[1]);
+      });
+    }
+
+    if (config.aria) {
+      Object.entries(config.aria).forEach((item) => {
+        $input.attr('aria-' + item[0], item[1]);
+      });
+    }
+
     if (config.toggle || config.reverseToggle) {
       $input.addClass('fieldtoggle');
       new Craft.FieldToggle($input);
@@ -469,7 +481,11 @@ Craft.ui = {
       config.id = 'checkbox' + Math.floor(Math.random() * 1000000000);
     }
 
-    var $field = $('<div class="field checkboxfield"/>', {
+    var fieldClass = ['field', 'checkboxfield'];
+    if (config.fieldClass.length > 0) {
+      fieldClass = fieldClass.concat(config.fieldClass);
+    }
+    var $field = $('<div class="' + fieldClass.join(' ') + '"/>', {
       id: `${config.id}-field`,
     });
 

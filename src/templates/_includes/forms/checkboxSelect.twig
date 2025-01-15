@@ -1,5 +1,7 @@
+{%- set id = id ?? "checkbox-select-#{random()}" %}
 {%- set options = options ?? [] %}
-{%- set values = values ?? [] -%}
+{%- set values = values ?? [] %}
+{%- set sortable = sortable ?? false %}
 
 {%- set showAllOption = showAllOption ?? false %}
 {%- if showAllOption %}
@@ -9,6 +11,7 @@
 {%- endif %}
 
 {% set containerAttributes = {
+    id,
     class: ['checkbox-select']|merge((class ?? [])|explodeClass),
 }|merge(containerAttributes ?? [], recursive=true) %}
 
@@ -21,7 +24,7 @@
         <div>
             {% include "_includes/forms/checkbox" with {
                 describedBy: describedBy ?? false,
-                class: 'all',
+                class: ['checkbox-select-item', 'all'],
                 label: raw("<b>#{allLabel}</b>"),
                 name: name ?? null,
                 value: allValue,
@@ -38,10 +41,21 @@
             {%- set option = {label: option, value: key} %}
         {%- endif %}
         {% if not showAllOption or option.value is not defined or option.value != allValue %}
-            <div>
+            <div class="checkbox-select-item">
+                {% set selected = (showAllOption and allChecked) or (option.value is defined and option.value in values) %}
+                {% if sortable %}
+                    {{ tag('a', {
+                        class: {
+                            move: true,
+                            icon: true,
+                            'draggable-handle': true,
+                            disabled: not selected,
+                        }|filter|keys,
+                    }) }}
+                {% endif %}
                 {% include "_includes/forms/checkbox" with {
                     name: (name ?? false) ? "#{name}[]" : null,
-                    checked: ((showAllOption and allChecked) or (option.value is defined and option.value in values)),
+                    checked: selected,
                     disabled: (showAllOption and allChecked),
                     targetPrefix: targetPrefix ?? null,
                 }|merge(option) only %}
@@ -49,3 +63,9 @@
         {% endif %}
     {% endfor %}
 {% endtag %}
+
+{% if sortable %}
+    {% js %}
+        new Craft.SortableCheckboxSelect($('#{{ id|namespaceInputId }}'));
+    {% endjs %}
+{% endif %}

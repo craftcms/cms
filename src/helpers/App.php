@@ -143,8 +143,7 @@ class App
      * For example, if an object has a `fooBar` property, and `X`/`X_` is passed as the prefix, the resulting array
      * may contain a `fooBar` key set to an `X_FOO_BAR` environment variable value, if it exists.
      *
-     * @param string $class The class name
-     * @phpstan-param class-string $class
+     * @param class-string $class The class name
      * @param string|null $envPrefix The environment variable name prefix
      * @return array
      * @phpstan-return array<string, mixed>
@@ -201,7 +200,7 @@ class App
             return null;
         }
 
-        if (preg_match('/^\$(\w+)$/', $value, $matches)) {
+        if (preg_match('/^\$(\w+)(\/.*)?/', $value, $matches)) {
             $env = static::env($matches[1]);
 
             if ($env === null) {
@@ -209,7 +208,7 @@ class App
                 return null;
             }
 
-            $value = $env;
+            $value = $env . ($matches[2] ?? '');
         }
 
         if (is_string($value) && str_starts_with($value, '@')) {
@@ -720,8 +719,7 @@ class App
     /**
      * Returns a humanized class name.
      *
-     * @param string $class
-     * @phpstan-param class-string $class
+     * @param class-string $class
      * @return string
      */
     public static function humanizeClass(string $class): string
@@ -865,6 +863,45 @@ class App
     public static function isStreamLog(): bool
     {
         return self::parseBooleanEnv('$CRAFT_STREAM_LOG') === true;
+    }
+
+    /**
+     * Returns whether Craft is being run from a TTY terminal.
+     *
+     * This is copied verbatim from `Composer\Util\Platform::isTty()`. Full credit to Nils Adermann and Jordi Boggiano.
+     *
+     * @param resource|null $fd Open file descriptor or `null`. Defaults to `STDOUT`.
+     * @since 5.4.8
+     */
+    public static function isTty($fd = null): bool
+    {
+        if ($fd === null) {
+            $fd = defined('STDOUT') ? STDOUT : fopen('php://stdout', 'w');
+            if ($fd === false) {
+                return false;
+            }
+        }
+
+        // detect msysgit/mingw and assume this is a tty because detection
+        // does not work correctly, see https://github.com/composer/composer/issues/9690
+        if (in_array(strtoupper(self::env('MSYSTEM') ?: ''), ['MINGW32', 'MINGW64'], true)) {
+            return true;
+        }
+
+        // modern cross-platform function, includes the fstat
+        // fallback so if it is present we trust it
+        if (function_exists('stream_isatty')) {
+            return stream_isatty($fd);
+        }
+
+        // only trusting this if it is positive, otherwise prefer fstat fallback
+        if (function_exists('posix_isatty') && posix_isatty($fd)) {
+            return true;
+        }
+
+        $stat = @fstat($fd);
+        // Check if formatted mode is S_IFCHR
+        return $stat ? 0020000 === ($stat['mode'] & 0170000) : false;
     }
 
     // App component configs
@@ -1259,6 +1296,21 @@ class App
     }
 
     /**
+     * Returns the cache key that licensing info should be stored with.
+     *
+     * @return string
+     * @internal
+     */
+    public static function licenseInfoCacheKey(): string
+    {
+        $request = Craft::$app->getRequest();
+        if ($request->getIsConsoleRequest()) {
+            return 'licenseInfo';
+        }
+        return sprintf('licenseInfo@%s', $request->getHostName());
+    }
+
+    /**
      * Returns all known licensing issues.
      *
      * @param bool $withUnresolvables
@@ -1275,7 +1327,8 @@ class App
 
         $updatesService = Craft::$app->getUpdates();
         $cache = Craft::$app->getCache();
-        $isInfoCached = $cache->exists('licenseInfo') && $updatesService->getIsUpdateInfoCached();
+        $licenseInfoCacheKey = static::licenseInfoCacheKey();
+        $isInfoCached = $cache->exists($licenseInfoCacheKey) && $updatesService->getIsUpdateInfoCached();
 
         if (!$isInfoCached) {
             if (!$fetch) {
@@ -1287,7 +1340,7 @@ class App
 
         $issues = [];
 
-        $allLicenseInfo = $cache->get('licenseInfo') ?: [];
+        $allLicenseInfo = $cache->get($licenseInfoCacheKey) ?: [];
         $pluginsService = Craft::$app->getPlugins();
         $generalConfig = Craft::$app->getConfig()->getGeneral();
         $consoleUrl = rtrim(Craft::$app->getPluginStore()->craftIdEndpoint, '/');

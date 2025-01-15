@@ -219,7 +219,7 @@ class Fs extends Component
      * Creates a filesystem from a given config.
      *
      * @template T as FsInterface
-     * @param string|array $config The filesystem’s class name, or its config, with a `type` value and optionally a `settings` value
+     * @param class-string<T>|array $config The filesystem’s class name, or its config, with a `type` value and optionally a `settings` value
      * @phpstan-param class-string<T>|array{type:class-string<T>} $config
      * @return T The filesystem
      */

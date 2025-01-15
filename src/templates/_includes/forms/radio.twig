@@ -1,3 +1,5 @@
+{% from '_includes/forms' import text %}
+
 {% set id = id ?? "radio#{random()}" %}
 {% set label = radioLabel ?? label ?? null %}
 
@@ -26,5 +28,24 @@
 {{ tag('input', inputAttributes) }}
 
 {% tag 'label' with containerAttributes %}
-    {{ label|raw }}
+    {% if custom ?? false %}
+        {% set textId = "#{id}-text" %}
+        {{ text({
+            id: textId,
+            value: value ?? null,
+            class: 'small',
+        }) }}
+
+        {% js %}
+            (() => {
+                const $radio = $('#{{ id|namespaceInputId }}');
+                const $text = $('#{{ textId|namespaceInputId }}');
+                $text.on('input', () => {
+                    $radio.val($text.val());
+                });
+            })();
+        {% endjs %}
+    {% else %}
+        {{ label|raw }}
+    {% endif %}
 {% endtag %}

@@ -15,6 +15,7 @@ use craft\console\Application as ConsoleApplication;
 use craft\db\Connection;
 use craft\db\Query;
 use craft\db\Table;
+use craft\elements\Address;
 use craft\elements\Asset;
 use craft\elements\Category;
 use craft\elements\Entry;
@@ -72,6 +73,12 @@ class Gc extends Component
     public string|array|Connection $db = 'db';
 
     /**
+     * @var bool Whether CLI output should be muted.
+     * @since 5.4.9
+     */
+    public bool $silent = false;
+
+    /**
      * @var GeneralConfig
      */
     private GeneralConfig $_generalConfig;
@@ -111,10 +118,12 @@ class Gc extends Component
         $this->hardDelete([
             Table::CATEGORYGROUPS,
             Table::ENTRYTYPES,
+            Table::FIELDS,
             Table::SECTIONS,
             Table::TAGGROUPS,
         ]);
 
+        $this->deletePartialElements(Address::class, Table::ADDRESSES, 'id');
         $this->deletePartialElements(Asset::class, Table::ASSETS, 'id');
         $this->deletePartialElements(Category::class, Table::CATEGORIES, 'id');
         $this->deletePartialElements(Entry::class, Table::ENTRIES, 'id');
@@ -122,8 +131,15 @@ class Gc extends Component
         $this->deletePartialElements(Tag::class, Table::TAGS, 'id');
         $this->deletePartialElements(User::class, Table::USERS, 'id');
 
+        $this->deleteOrphanedFieldLayouts(Asset::class, Table::VOLUMES);
+        $this->deleteOrphanedFieldLayouts(Category::class, Table::CATEGORYGROUPS);
+        $this->deleteOrphanedFieldLayouts(Entry::class, Table::ENTRYTYPES);
+        $this->deleteOrphanedFieldLayouts(GlobalSet::class, Table::GLOBALSETS);
+        $this->deleteOrphanedFieldLayouts(Tag::class, Table::TAGGROUPS);
+
         $this->_deleteUnsupportedSiteEntries();
-        $this->_deleteOrphanedNestedEntries();
+        $this->deleteOrphanedNestedElements(Address::class, Table::ADDRESSES);
+        $this->deleteOrphanedNestedElements(Entry::class, Table::ENTRIES);
 
         // Fire a 'run' event
         // Note this should get fired *before* orphaned drafts & revisions are deleted
@@ -141,7 +157,6 @@ class Gc extends Component
 
         $this->hardDelete([
             Table::FIELDLAYOUTS,
-            Table::FIELDS,
             Table::SITES,
         ]);
 
@@ -220,70 +235,43 @@ class Gc extends Component
         }
 
         if (!empty($nestedElementTypes)) {
-            $elementsTable = Table::ELEMENTS;
-            $revisionsTable = Table::REVISIONS;
-            $elementsOwnersTable = Table::ELEMENTS_OWNERS;
+            // first get nested elements which are not nested (owned) and that don't have any revisions
+            $ids1 = (new Query())
+                ->select('e.id')
+                ->from(['e' => Table::ELEMENTS])
+                ->leftJoin(['r' => Table::REVISIONS], '[[r.canonicalId]] = [[e.id]]')
+                ->leftJoin(['eo' => Table::ELEMENTS_OWNERS], '[[eo.elementId]] = COALESCE([[e.canonicalId]], [[e.id]])')
+                ->where([
+                    'and',
+                    $this->_hardDeleteCondition('e'),
+                    [
+                        'e.type' => $nestedElementTypes,
+                        'r.id' => null,
+                        'eo.elementId' => null,
+                    ],
+                ])
+                ->column();
 
-            // first hard-delete nested elements which are not nested (owned) and that don't have any revisions
-            $params = [];
-            $conditionSql = $this->db->getQueryBuilder()->buildCondition([
-                'and',
-                $this->_hardDeleteCondition('e'),
-                [
-                    'e.type' => $nestedElementTypes,
-                    'r.id' => null,
-                    'eo.elementId' => null,
-                ],
-            ], $params);
+            // then get any nested elements that don't have any revisions, including nested ones
+            $ids2 = (new Query())
+                ->select('e.id')
+                ->from(['e' => Table::ELEMENTS])
+                ->leftJoin(['r' => Table::REVISIONS], '[[r.canonicalId]] = COALESCE([[e.canonicalId]], [[e.id]])')
+                ->where([
+                    'and',
+                    $this->_hardDeleteCondition('e'),
+                    [
+                        'e.type' => $nestedElementTypes,
+                        'r.id' => null,
+                    ],
+                ])
+                ->column();
 
-            if ($this->db->getIsMysql()) {
-                $sql = <<<SQL
-DELETE [[e]].* FROM $elementsTable [[e]]
-LEFT JOIN $revisionsTable [[r]] ON [[r.canonicalId]] = [[e.id]]
-LEFT JOIN $elementsOwnersTable [[eo]] ON [[eo.elementId]] = COALESCE([[e.canonicalId]], [[e.id]])
-WHERE $conditionSql
-SQL;
-            } else {
-                $sql = <<<SQL
-DELETE FROM $elementsTable
-USING $elementsTable [[e]]
-LEFT JOIN $revisionsTable [[r]] ON [[r.canonicalId]] = [[e.id]]
-LEFT JOIN $elementsOwnersTable [[eo]] ON [[eo.elementId]] = COALESCE([[e.canonicalId]], [[e.id]])
-WHERE
-  $elementsTable.[[id]] = [[e.id]] AND $conditionSql
-SQL;
+            $ids = array_unique(array_merge($ids1, $ids2));
+
+            if (!empty($ids)) {
+                Db::delete(Table::ELEMENTS, ['id' => $ids]);
             }
-
-            $this->db->createCommand($sql, $params)->execute();
-
-            // then hard-delete any nested elements that don't have any revisions, including nested ones
-            $params = [];
-            $conditionSql = $this->db->getQueryBuilder()->buildCondition([
-                'and',
-                $this->_hardDeleteCondition('e'),
-                [
-                    'e.type' => $nestedElementTypes,
-                    'r.id' => null,
-                ],
-            ], $params);
-
-            if ($this->db->getIsMysql()) {
-                $sql = <<<SQL
-DELETE [[e]].* FROM $elementsTable [[e]]
-LEFT JOIN $revisionsTable [[r]] ON [[r.canonicalId]] = COALESCE([[e.canonicalId]], [[e.id]])
-WHERE $conditionSql
-SQL;
-            } else {
-                $sql = <<<SQL
-DELETE FROM $elementsTable
-USING $elementsTable [[e]]
-LEFT JOIN $revisionsTable [[r]] ON [[r.canonicalId]] = COALESCE([[e.canonicalId]], [[e.id]])
-WHERE
-  $elementsTable.[[id]] = [[e.id]] AND $conditionSql
-SQL;
-            }
-
-            $this->db->createCommand($sql, $params)->execute();
         }
 
         $this->_stdout("done\n", Console::FG_GREEN);
@@ -316,40 +304,29 @@ SQL;
     /**
      * Deletes elements that are missing data in the given element extension table.
      *
-     * @param string $elementType The element type
-     * @phpstan-param class-string<ElementInterface> $elementType
+     * @param class-string<ElementInterface> $elementType The element type
      * @param string $table The extension table name
      * @param string $fk The column name that contains the foreign key to `elements.id`
      * @since 3.6.6
      */
     public function deletePartialElements(string $elementType, string $table, string $fk): void
     {
-        /** @var string|ElementInterface $elementType */
-        $this->_stdout(sprintf('    > deleting partial %s data in the `%s` table ... ', $elementType::lowerDisplayName(), $table));
+        $this->_stdout(sprintf('    > deleting partial %s data ... ', $elementType::lowerDisplayName()));
 
-        $elementsTable = Table::ELEMENTS;
+        $ids = (new Query())
+            ->select('e.id')
+            ->from(['e' => Table::ELEMENTS])
+            ->leftJoin(['t' => $table], "[[t.$fk]] = [[e.id]]")
+            ->where([
+                'e.type' => $elementType,
+                "t.$fk" => null,
+            ])
+            ->column();
 
-        if ($this->db->getIsMysql()) {
-            $sql = <<<SQL
-DELETE [[e]].* FROM $elementsTable [[e]]
-LEFT JOIN $table [[t]] ON [[t.$fk]] = [[e.id]]
-WHERE
-  [[e.type]] = :type AND
-  [[t.$fk]] IS NULL
-SQL;
-        } else {
-            $sql = <<<SQL
-DELETE FROM $elementsTable
-USING $elementsTable [[e]]
-LEFT JOIN $table [[t]] ON [[t.$fk]] = [[e.id]]
-WHERE
-  $elementsTable.[[id]] = [[e.id]] AND
-  [[e.type]] = :type AND
-  [[t.$fk]] IS NULL
-SQL;
+        if (!empty($ids)) {
+            Db::delete(Table::ELEMENTS, ['id' => $ids]);
         }
 
-        $this->db->createCommand($sql, ['type' => $elementType])->execute();
         $this->_stdout("done\n", Console::FG_GREEN);
     }
 
@@ -479,81 +456,78 @@ SQL;
     {
         $this->_stdout('    > deleting entries in unsupported sites ... ');
 
-        $sectionsToCheck = [];
         $siteIds = Craft::$app->getSites()->getAllSiteIds(true);
+        $deleteIds = [];
 
         // get sections that are not enabled for given site
         foreach (Craft::$app->getEntries()->getAllSections() as $section) {
             $sectionSettings = $section->getSiteSettings();
             foreach ($siteIds as $siteId) {
                 if (!isset($sectionSettings[$siteId])) {
-                    $sectionsToCheck[] = [
-                        'siteId' => $siteId,
-                        'sectionId' => $section->id,
-                    ];
+                    $ids = (new Query())
+                        ->select('es.id')
+                        ->from(['es' => Table::ELEMENTS_SITES])
+                        ->leftJoin(['en' => Table::ENTRIES], '[[en.id]] = [[es.elementId]]')
+                        ->where([
+                            'en.sectionId' => $section->id,
+                            'es.siteId' => $siteId,
+                        ])
+                        ->column();
+
+                    $deleteIds = array_merge($deleteIds, $ids);
                 }
             }
         }
 
-        if (!empty($sectionsToCheck)) {
-            $elementsSitesTable = Table::ELEMENTS_SITES;
-            $entriesTable = Table::ENTRIES;
-
-            if ($this->db->getIsMysql()) {
-                $sql = <<<SQL
-    DELETE [[es]].* FROM $elementsSitesTable [[es]]
-    LEFT JOIN $entriesTable [[en]] ON [[en.id]] = [[es.elementId]]
-    WHERE [[en.sectionId]] = :sectionId AND [[es.siteId]] = :siteId
-    SQL;
-            } else {
-                $sql = <<<SQL
-    DELETE FROM $elementsSitesTable
-    USING $elementsSitesTable [[es]]
-    LEFT JOIN $entriesTable [[en]] ON [[en.id]] = [[es.elementId]]
-    WHERE
-      $elementsSitesTable.[[id]] = [[es.id]] AND
-      [[en.sectionId]] = :sectionId AND [[es.siteId]] = :siteId
-    SQL;
-            }
-
-            foreach ($sectionsToCheck as $params) {
-                $this->db->createCommand($sql, $params)->execute();
-            }
+        if (!empty($deleteIds)) {
+            Db::delete(Table::ELEMENTS_SITES, ['id' => $deleteIds]);
         }
 
         $this->_stdout("done\n", Console::FG_GREEN);
     }
 
     /**
-     * Deletes any orphaned nested entries.
+     * Deletes elements which have a `fieldId` value, but it’s set to an invalid field ID,
+     * or they're missing a row in the `elements_owners` table.
+     *
+     * @param class-string<ElementInterface> $elementType The element type
+     * @param string $table The extension table name
+     * @param string $fieldFk The column name that contains the foreign key to `fields.id`
+     * @since 5.4.2
      */
-    private function _deleteOrphanedNestedEntries(): void
+    public function deleteOrphanedNestedElements(string $elementType, string $table, string $fieldFk = 'fieldId'): void
     {
-        $this->_stdout('    > deleting orphaned nested entries ... ');
+        $this->_stdout(sprintf('    > deleting orphaned nested %s ... ', $elementType::pluralLowerDisplayName()));
 
-        $now = Db::prepareDateForDb(new DateTime());
-        $elementsTable = Table::ELEMENTS;
-        $entriesTable = Table::ENTRIES;
-        $elementsOwnersTable = Table::ELEMENTS_OWNERS;
+        $ids1 = (new Query())
+            ->select('el.id')
+            ->from(['el' => Table::ELEMENTS])
+            ->innerJoin(['t' => $table], '[[t.id]] = [[el.id]]')
+            ->leftJoin(['eo' => Table::ELEMENTS_OWNERS], '[[eo.elementId]] = [[el.id]]')
+            ->where([
+                'and',
+                ['not', ["t.$fieldFk" => null]],
+                ['eo.elementId' => null],
+            ])
+            ->column();
 
-        if ($this->db->getIsMysql()) {
-            $sql = <<<SQL
-DELETE [[el]].* FROM $elementsTable [[el]]
-INNER JOIN $entriesTable [[en]] ON [[en.id]] = [[el.id]]
-LEFT JOIN $elementsOwnersTable [[eo]] ON [[eo.elementId]] = [[el.id]]
-WHERE [[en.fieldId]] IS NOT NULL AND [[eo.elementId]] IS NULL
-SQL;
-        } else {
-            $sql = <<<SQL
-DELETE FROM $elementsTable
-USING $elementsTable [[el]]
-INNER JOIN $entriesTable [[en]] ON [[en.id]] = [[el.id]]
-LEFT JOIN $elementsOwnersTable [[eo]] ON [[eo.elementId]] = [[el.id]]
-WHERE [[en.fieldId]] IS NOT NULL AND [[eo.elementId]] IS NULL
-SQL;
+        $ids2 = (new Query())
+            ->select('el.id')
+            ->from(['el' => Table::ELEMENTS])
+            ->innerJoin(['t' => $table], '[[t.id]] = [[el.id]]')
+            ->leftJoin(['f' => Table::FIELDS], "[[f.id]] = [[t.$fieldFk]]")
+            ->where([
+                'and',
+                ['not', ["t.$fieldFk" => null]],
+                ['f.id' => null],
+            ])
+            ->column();
+
+        $ids = array_unique(array_merge($ids1, $ids2));
+
+        if (!empty($ids)) {
+            Db::delete(Table::ELEMENTS, ['id' => $ids]);
         }
-
-        $this->db->createCommand($sql)->execute();
 
         $this->_stdout("done\n", Console::FG_GREEN);
     }
@@ -565,27 +539,17 @@ SQL;
     {
         $this->_stdout('    > deleting orphaned drafts and revisions ... ');
 
-        $elementsTable = Table::ELEMENTS;
-
         foreach (['draftId' => Table::DRAFTS, 'revisionId' => Table::REVISIONS] as $fk => $table) {
-            if ($this->db->getIsMysql()) {
-                $sql = <<<SQL
-DELETE [[t]].* FROM $table [[t]]
-LEFT JOIN $elementsTable [[e]] ON [[e.$fk]] = [[t.id]]
-WHERE [[e.id]] IS NULL
-SQL;
-            } else {
-                $sql = <<<SQL
-DELETE FROM $table
-USING $table [[t]]
-LEFT JOIN $elementsTable [[e]] ON [[e.$fk]] = [[t.id]]
-WHERE
-  $table.[[id]] = [[t.id]] AND
-  [[e.id]] IS NULL
-SQL;
-            }
+            $ids = (new Query())
+                ->select('t.id')
+                ->from(['t' => $table])
+                ->leftJoin(['e' => Table::ELEMENTS], "[[e.$fk]] = [[t.id]]")
+                ->where(['e.id' => null])
+                ->column();
 
-            $this->db->createCommand($sql)->execute();
+            if (!empty($ids)) {
+                Db::delete($table, ['id' => $ids]);
+            }
         }
 
         $this->_stdout("done\n", Console::FG_GREEN);
@@ -601,55 +565,66 @@ SQL;
     private function _deleteOrphanedRelations(): void
     {
         $this->_stdout('    > deleting orphaned relations ... ');
-        $relationsTable = Table::RELATIONS;
-        $elementsTable = Table::ELEMENTS;
 
-        if ($this->db->getIsMysql()) {
-            $sql = <<<SQL
-DELETE [[r]].* FROM $relationsTable [[r]]
-LEFT JOIN $elementsTable [[e]] ON [[e.id]] = [[r.targetId]]
-WHERE [[e.id]] IS NULL
-SQL;
-        } else {
-            $sql = <<<SQL
-DELETE FROM $relationsTable
-USING $relationsTable [[r]]
-LEFT JOIN $elementsTable [[e]] ON [[e.id]] = [[r.targetId]]
-WHERE
-  $relationsTable.[[id]] = [[r.id]] AND
-  [[e.id]] IS NULL
-SQL;
+        $ids = (new Query())
+            ->select('r.id')
+            ->from(['r' => Table::RELATIONS])
+            ->leftJoin(['e' => Table::ELEMENTS], '[[e.id]] = [[r.targetId]]')
+            ->where(['e.id' => null])
+            ->column();
+
+        if (!empty($ids)) {
+            Db::delete(Table::RELATIONS, ['id' => $ids]);
         }
 
-        $this->db->createCommand($sql)->execute();
         $this->_stdout("done\n", Console::FG_GREEN);
     }
 
     private function _deleteOrphanedStructureElements(): void
     {
         $this->_stdout('    > deleting orphaned structure elements ... ');
-        $structureElementsTable = Table::STRUCTUREELEMENTS;
-        $elementsTable = Table::ELEMENTS;
 
-        if ($this->db->getIsMysql()) {
-            $sql = <<<SQL
-DELETE [[se]].* FROM $structureElementsTable [[se]]
-LEFT JOIN $elementsTable [[e]] ON [[e.id]] = [[se.elementId]]
-WHERE [[se.elementId]] IS NOT NULL AND [[e.id]] IS NULL
-SQL;
-        } else {
-            $sql = <<<SQL
-DELETE FROM $structureElementsTable
-USING $structureElementsTable [[se]]
-LEFT JOIN $elementsTable [[e]] ON [[e.id]] = [[se.elementId]]
-WHERE
-  $structureElementsTable.[[id]] = [[se.id]] AND
-  [[se.elementId]] IS NOT NULL AND
-  [[e.id]] IS NULL
-SQL;
+        $ids = (new Query())
+            ->select('se.id')
+            ->from(['se' => Table::STRUCTUREELEMENTS])
+            ->leftJoin(['e' => Table::ELEMENTS], '[[e.id]] = [[se.elementId]]')
+            ->where([
+                'and',
+                ['not', ['se.elementId' => null]],
+                ['e.id' => null],
+            ])
+            ->column();
+
+        if (!empty($ids)) {
+            Db::delete(Table::STRUCTUREELEMENTS, ['id' => $ids]);
         }
 
-        $this->db->createCommand($sql)->execute();
+        $this->_stdout("done\n", Console::FG_GREEN);
+    }
+
+    /**
+     * Deletes field layouts that are no longer used.
+     *
+     * @param class-string<ElementInterface> $elementType The element type
+     * @param string $table The  table name that contains a foreign key to `fieldlayouts.id`
+     * @param string $fk The column name that contains the foreign key to `fieldlayouts.id`
+     * @since 5.5.0
+     */
+    public function deleteOrphanedFieldLayouts(string $elementType, string $table, string $fk = 'fieldLayoutId'): void
+    {
+        $this->_stdout(sprintf('    > deleting orphaned %s field layouts ... ', $elementType::lowerDisplayName()));
+
+        $ids = (new Query())
+            ->select('fl.id')
+            ->from(['fl' => Table::FIELDLAYOUTS])
+            ->leftJoin(['t' => $table], "[[t.$fk]] = [[fl.id]]")
+            ->where(['fl.type' => $elementType, "t.$fk" => null])
+            ->column();
+
+        if (!empty($ids)) {
+            Db::delete(Table::FIELDLAYOUTS, ['id' => $ids]);
+        }
+
         $this->_stdout("done\n", Console::FG_GREEN);
     }
 
@@ -680,6 +655,7 @@ SQL;
             ->leftJoin(['r' => $revisionsTable], '[[r.canonicalId]] = coalesce([[e.canonicalId]],[[e.id]])')
             ->where([
                 'and',
+                ['not', ['se.elementId' => null]],
                 $this->_hardDeleteCondition('s'),
                 [
                     'r.canonicalId' => null,
@@ -695,7 +671,7 @@ SQL;
             if ($this->db->getIsMysql()) {
                 $sql = <<<SQL
 DELETE [[s]].* FROM $structuresTable [[s]]
-WHERE [[s.id]] NOT IN ($ids)
+WHERE [[s.id]] IN ($ids)
 AND $conditionSql
 SQL;
             } else {
@@ -704,7 +680,7 @@ DELETE FROM $structuresTable
 USING $structuresTable [[s]]
 WHERE 
     $structuresTable.[[id]] = [[s.id]] AND 
-    [[s.id]] NOT IN ($ids) AND
+    [[s.id]] IN ($ids) AND
     $conditionSql
 SQL;
             }
@@ -773,7 +749,7 @@ SQL;
 
     private function _stdout(string $string, ...$format): void
     {
-        if (Craft::$app instanceof ConsoleApplication) {
+        if (!$this->silent && Craft::$app instanceof ConsoleApplication) {
             Console::stdout($string, ...$format);
         }
     }

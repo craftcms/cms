@@ -16,16 +16,6 @@
 {% endmacro %}
 
 {{ _self.numberField({
-    label: "Default Value"|t('app'),
-    id: 'defaultValue',
-    name: 'defaultValue',
-    value: field.defaultValue,
-    size: 5,
-    errors: field.getErrors('defaultValue'),
-    data: {'error-key': 'defaultValue'},
-}, decimals) }}
-
-{{ _self.numberField({
     label: "Min Value"|t('app'),
     id: 'min',
     name: 'min',
@@ -45,12 +35,22 @@
     data: {'error-key': 'max'},
 }, decimals) }}
 
+{{ _self.numberField({
+    label: 'Step Size'|t('app'),
+    id: 'step',
+    name: 'step',
+    value: field.step,
+    size: 5,
+    errors: field.getErrors('step'),
+    data: {'error-key': 'step'},
+}, null) }}
+
 {{ forms.textField({
     label: "Decimal Points"|t('app'),
     id: 'decimals',
     name: 'decimals',
     value: field.decimals,
-    size: 1,
+    size: 5,
     errors: field.getErrors('decimals'),
     data: {'error-key': 'decimals'},
 }) }}
@@ -60,9 +60,19 @@
     id: 'size',
     name: 'size',
     value: field.size,
-    size: 2,
+    size: 5,
     errors: field.getErrors('size')
 }) }}
+
+{{ _self.numberField({
+    label: "Default Value"|t('app'),
+    id: 'defaultValue',
+    name: 'defaultValue',
+    value: field.defaultValue,
+    size: 5,
+    errors: field.getErrors('defaultValue'),
+    data: {'error-key': 'defaultValue'},
+}, decimals) }}
 
 {{ forms.textField({
     label: "Prefix Text"|t('app'),

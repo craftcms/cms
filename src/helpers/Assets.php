@@ -260,9 +260,9 @@ class Assets
     }
 
     /**
-     * Mirrors a folder structure on a volume.
+     * Mirrors a folder structure within a volume.
      *
-     * @param VolumeFolder $sourceParentFolder Folder who's children folder structure should be mirrored.
+     * @param VolumeFolder $sourceParentFolder Folder whose nested folder structure should be mirrored.
      * @param VolumeFolder $destinationFolder The destination folder
      * @param array $targetTreeMap map of relative path => existing folder ID
      * @return array map of original folder ID => new folder ID

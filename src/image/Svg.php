@@ -162,9 +162,9 @@ class Svg extends Image
      */
     public function scaleAndCrop(?int $targetWidth, ?int $targetHeight, bool $scaleIfSmaller = true, array|string $cropPosition = 'center-center'): self
     {
-        // TODO If we encounter a focal point, rasterize and crop with focal.
+        // SVGs don’t support focal points yet
         if (is_array($cropPosition)) {
-            throw new ImageException(Craft::t('app', 'Currently SVG images do not support focal point.'));
+            $cropPosition = 'center-center';
         }
 
         $this->normalizeDimensions($targetWidth, $targetHeight);

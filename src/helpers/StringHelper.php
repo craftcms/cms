@@ -919,6 +919,18 @@ class StringHelper extends \yii\helpers\StringHelper
     }
 
     /**
+     * Returns the first line of a string.
+     *
+     * @param string $str
+     * @return string
+     * @since 5.5.0
+     */
+    public static function firstLine(string $str): string
+    {
+        return (string)BaseStringy::create($str)->lines()[0];
+    }
+
+    /**
      * Converts the first character of the supplied string to lower case.
      *
      * @param string $str The string to modify.
@@ -1815,6 +1827,9 @@ class StringHelper extends \yii\helpers\StringHelper
 
         // Handle must start with a letter
         $handle = preg_replace('/^[^a-z]+/', '', $handle);
+
+        // Replace any remaining non-alphanumeric or underscore characters with spaces
+        $handle = preg_replace('/[^a-z0-9_]/', ' ', $handle);
 
         return static::toCamelCase($handle);
     }

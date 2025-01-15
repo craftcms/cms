@@ -332,8 +332,7 @@ class Plugins extends Component
      *
      * The plugin may not actually be installed.
      *
-     * @param string $class
-     * @phpstan-param class-string $class
+     * @param class-string $class
      * @return string|null The plugin handle, or null if it can’t be determined
      */
     public function getPluginHandleByClass(string $class): ?string
@@ -685,8 +684,7 @@ class Plugins extends Component
     {
         $info = $this->getPluginInfo($handle);
 
-        /** @var string|PluginInterface $class */
-        /** @phpstan-var class-string<PluginInterface>|PluginInterface $class */
+        /** @var class-string<PluginInterface> $class */
         $class = $info['class'];
 
         if (!in_array($edition, $class::editions(), true)) {
@@ -905,8 +903,7 @@ class Plugins extends Component
             unset($config['aliases']);
         }
 
-        /** @var string|PluginInterface $class */
-        /** @phpstan-var class-string<PluginInterface>|PluginInterface $class */
+        /** @var class-string<PluginInterface> $class */
         $class = $config['class'];
 
         // Make sure the class exists and it implements PluginInterface
@@ -1016,7 +1013,7 @@ class Plugins extends Component
         $info['hasCpSettings'] = ($plugin !== null && $plugin->hasCpSettings);
         $info['licenseKey'] = $pluginInfo['licenseKey'] ?? null;
 
-        $licenseInfo = Craft::$app->getCache()->get('licenseInfo') ?? [];
+        $licenseInfo = Craft::$app->getCache()->get(App::licenseInfoCacheKey()) ?? [];
         $pluginCacheKey = StringHelper::ensureLeft($handle, 'plugin-');
         $info['licenseId'] = $licenseInfo[$pluginCacheKey]['id'] ?? null;
         $info['licensedEdition'] = $licenseInfo[$pluginCacheKey]['edition'] ?? null;
@@ -1198,10 +1195,11 @@ class Plugins extends Component
 
         // Clear the plugin's cached license key status
         $cache = Craft::$app->getCache();
-        $licenseInfo = $cache->get('licenseInfo') ?? [];
+        $cacheKey = App::licenseInfoCacheKey();
+        $licenseInfo = $cache->get($cacheKey) ?? [];
         if (isset($licenseInfo[$handle])) {
             unset($licenseInfo[$handle]);
-            $cache->set('licenseInfo', $licenseInfo);
+            $cache->set($cacheKey, $licenseInfo);
         }
 
         return true;

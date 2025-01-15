@@ -122,6 +122,9 @@ class LatLongField extends BaseNativeField
                 'name' => 'latitude',
                 'value' => $element->latitude,
                 'required' => $this->required,
+                'data' => [
+                    'error-key' => 'latitude',
+                ],
             ]) .
             Cp::textFieldHtml([
                 'fieldClass' => 'width-50',
@@ -130,6 +133,9 @@ class LatLongField extends BaseNativeField
                 'name' => 'longitude',
                 'value' => $element->longitude,
                 'required' => $this->required,
+                'data' => [
+                    'error-key' => 'longitude',
+                ],
             ]) .
             Html::endTag('div');
     }

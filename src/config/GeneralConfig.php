@@ -1072,6 +1072,7 @@ class GeneralConfig extends BaseConfig
      *
      * @group Security
      * @since 3.5.0
+     * @deprecated in 4.13.0. [[\craft\filters\BasicHttpAuthLogin]] should be used instead.
      */
     public bool $enableBasicHttpAuth = false;
 
@@ -1667,6 +1668,17 @@ class GeneralConfig extends BaseConfig
      * - `id`: The alias locale ID
      * - `aliasOf`: The original locale ID
      * - `displayName`: The locale alias’s display name _(optional)_
+     *
+     *  ::: code
+     *  ```php Static Config
+     *  ->localeAliases([
+     *     'smj' => [
+     *         'aliasOf' => 'sv',
+     *         'displayName' => 'Lule Sámi',
+     *     ],
+     * ])
+     *  ```
+     *  :::
      *
      * @since 5.0.0
      * @group System
@@ -2329,7 +2341,7 @@ class GeneralConfig extends BaseConfig
      * See [[ConfigHelper::durationInSeconds()]] for a list of supported value types.
      *
      * ::: tip
-     * Users will only be purged when [garbage collection](https://craftcms.com/docs/4.x/gc.html) is run.
+     * Users will only be purged when [garbage collection](https://craftcms.com/docs/5.x/system/gc.html) is run.
      * :::
      *
      * ::: code
@@ -2686,12 +2698,23 @@ class GeneralConfig extends BaseConfig
     /**
      * @var string A private, random, cryptographically-secure key that is used for hashing and encrypting data in [[\craft\services\Security]].
      *
-     * This value should be the same across all environments. If this key ever changes, any data that was encrypted with it will be inaccessible.
+     * ::: warning
+     * **Do not** share this key publicly. If exposed, it could lead to a compromised system.
+     * :::
+     *
+     * In the event that the key is compromised, a new secure key can be generated with the command:
+     *
+     * ```sh
+     * php craft setup/security-key
+     * ```
+     *
+     * Note that if the key changes, any data that is encrypted with it (e.g. user session cookies) will be inaccessible.
      *
      * ```php Static Config
      * ->securityKey('2cf24dba5...')
      * ```
      *
+     * @see https://craftcms.com/knowledge-base/securing-craft
      * @group Security
      */
     public string $securityKey = '';
@@ -3133,7 +3156,7 @@ class GeneralConfig extends BaseConfig
      * than the iframe document itself. This can lead to some unexpected CSS issues, however, because the previewed viewport height will be taller
      * than the visible portion of the iframe.
      *
-     * If you have a [decoupled front end](https://craftcms.com/docs/4.x/entries.html#previewing-decoupled-front-ends), you will need to include
+     * If you have a [decoupled front end](https://craftcms.com/docs/5.x/reference/element-types/entries.html#previewing-decoupled-front-ends), you will need to include
      * [iframeResizer.contentWindow.min.js](https://raw.github.com/davidjbradshaw/iframe-resizer/master/js/iframeResizer.contentWindow.min.js) on your
      * page as well for this to work. You can conditionally include it for only Live Preview requests by checking if the requested URL contains a
      * `x-craft-live-preview` query string parameter.
@@ -4027,6 +4050,10 @@ class GeneralConfig extends BaseConfig
      */
     public function defaultCountryCode(string $value): self
     {
+        if (empty($value)) {
+            throw new InvalidConfigException('`defaultCountryCode` cannot be empty', 0);
+        }
+
         $this->defaultCountryCode = $value;
         return $this;
     }
@@ -5868,7 +5895,7 @@ class GeneralConfig extends BaseConfig
      * See [[ConfigHelper::durationInSeconds()]] for a list of supported value types.
      *
      * ::: tip
-     * Users will only be purged when [garbage collection](https://craftcms.com/docs/4.x/gc.html) is run.
+     * Users will only be purged when [garbage collection](https://craftcms.com/docs/5.x/system/gc.html) is run.
      * :::
      *
      * ```php
@@ -6280,7 +6307,17 @@ class GeneralConfig extends BaseConfig
     /**
      * A private, random, cryptographically-secure key that is used for hashing and encrypting data in [[\craft\services\Security]].
      *
-     * This value should be the same across all environments. If this key ever changes, any data that was encrypted with it will be inaccessible.
+     * ::: warning
+     * **Do not** share this key publicly. If exposed, it could lead to a compromised system.
+     * :::
+     *
+     * In the event that the key is compromised, a new secure key can be generated with the command:
+     *
+     * ```sh
+     * php craft setup/security-key
+     * ```
+     *
+     * Note that if the key changes, any data that is encrypted with it (e.g. user session cookies) will be inaccessible.
      *
      * ```php
      * ->securityKey('2cf24dba5...')
@@ -6290,6 +6327,7 @@ class GeneralConfig extends BaseConfig
      * @param string $value
      * @return self
      * @see $securityKey
+     * @see https://craftcms.com/knowledge-base/securing-craft
      * @since 4.2.0
      */
     public function securityKey(string $value): self
@@ -6793,7 +6831,7 @@ class GeneralConfig extends BaseConfig
      * than the iframe document itself. This can lead to some unexpected CSS issues, however, because the previewed viewport height will be taller
      * than the visible portion of the iframe.
      *
-     * If you have a [decoupled front end](https://craftcms.com/docs/4.x/entries.html#previewing-decoupled-front-ends), you will need to include
+     * If you have a [decoupled front end](https://craftcms.com/docs/5.x/reference/element-types/entries.html#previewing-decoupled-front-ends), you will need to include
      * [iframeResizer.contentWindow.min.js](https://raw.github.com/davidjbradshaw/iframe-resizer/master/js/iframeResizer.contentWindow.min.js) on your
      * page as well for this to work. You can conditionally include it for only Live Preview requests by checking if the requested URL contains a
      * `x-craft-live-preview` query string parameter.

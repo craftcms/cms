@@ -21,11 +21,15 @@ use yii\base\InvalidArgumentException;
  */
 trait SiteFilterTrait
 {
+    use ConditionalFilterTrait {
+        isActive as conditionalFilterTraitIsActive;
+    }
+
     private null|array $siteIds = null;
 
     protected function isActive(mixed $action): bool
     {
-        if (!parent::isActive($action)) {
+        if (!$this->conditionalFilterTraitIsActive($action)) {
             return false;
         }
 

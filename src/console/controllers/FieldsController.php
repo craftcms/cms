@@ -8,11 +8,11 @@
 namespace craft\console\controllers;
 
 use Craft;
-use craft\base\ElementInterface;
 use craft\base\FieldInterface;
 use craft\base\MergeableFieldInterface;
 use craft\console\Controller;
 use craft\db\Table;
+use craft\fields\BaseRelationField;
 use craft\helpers\Console;
 use craft\helpers\Db;
 use craft\helpers\FileHelper;
@@ -74,14 +74,13 @@ class FieldsController extends Controller
         // Make sure all the layouts either have an ID or UUID; otherwise we wouldn't know what to do with it
         $unsavableLayouts = $layouts->filter(fn(FieldLayout $layout) => !$layout->id && !$layout->uid);
         if ($unsavableLayouts->isNotEmpty()) {
-            $this->stdout(<<<EOD
+            $this->output(<<<EOD
 These fields can’t be merged because one or both are used in a field layout(s)
 that doesn’t have an `id` or `uid`:
-
-
 EOD, Console::FG_RED);
+            $this->output();
             foreach ($unsavableLayouts as $layout) {
-                $this->stdout(sprintf(" - %s\n", $this->layoutDescriptor($layout)), Console::FG_RED);
+                $this->output(sprintf(" - %s", $this->layoutDescriptor($layout)), Console::FG_RED);
             }
             return ExitCode::UNSPECIFIED_ERROR;
         }
@@ -98,7 +97,7 @@ EOD, Console::FG_RED);
                         !$fieldA::isMultiInstance() ? sprintf('%s (%s)', $fieldA->name, $fieldA::displayName()) : null,
                         !$fieldB::isMultiInstance() ? sprintf('%s (%s)', $fieldB->name, $fieldB::displayName()) : null,
                     ]);
-                    $this->stdout($this->markdownToAnsi(sprintf(<<<EOD
+                    $this->output($this->markdownToAnsi(sprintf(<<<EOD
 These fields can’t be merged because %s %s support multiple instances,
 and both fields are already in use by %s.
 EOD,
@@ -126,6 +125,24 @@ EOD,
             return ExitCode::UNSPECIFIED_ERROR;
         }
 
+        $mergingRelationFields = $fieldA instanceof BaseRelationField;
+        if ($mergingRelationFields) {
+            $this->warning('Merging relation fields should only be done after all elements using them have been resaved.');
+            if ($this->confirm('Resave them now?', true)) {
+                $this->do("Running `resave/all --with-fields=$handleA,$handleB`", function() use ($handleA, $handleB) {
+                    $this->output();
+                    Console::indent();
+                    try {
+                        $this->run('resave/all', [
+                            'withFields' => [$handleA, $handleB],
+                        ]);
+                    } finally {
+                        Console::outdent();
+                    }
+                });
+            }
+        }
+
         [$persistingField, $outgoingField, $outgoingLayouts] = $this->choosePersistingField(
             $fieldA,
             $fieldB,
@@ -135,7 +152,7 @@ EOD,
             $canMergeIntoFieldB,
         );
 
-        $this->stdout("\n");
+        $this->output();
         $this->mergeFields($persistingField, $outgoingField, $outgoingLayouts, $migrationPath);
 
         $this->success(sprintf(<<<EOD
@@ -145,6 +162,16 @@ for the changes to take effect.
 EOD,
             FileHelper::relativePath($migrationPath)
         ));
+
+        if ($mergingRelationFields) {
+            $this->warning(<<<MD
+Be sure to run this command on other environments **before** deploying these changes:
+
+```
+php craft resave/all --with-fields=$handleA,$handleB
+```
+MD);
+        }
 
         return ExitCode::OK;
     }
@@ -194,18 +221,19 @@ EOD,
         }
 
         $migrationPaths = [];
+        $relationFieldHandles = [];
 
         foreach ($groups as $group) {
             /** @var Collection<FieldInterface> $group */
             /** @var FieldInterface $first */
             $first = $group->first();
 
-            $this->stdout($this->markdownToAnsi(sprintf(
+            $this->output($this->markdownToAnsi(sprintf(
                 '**Found %s %s fields with identical settings:**',
                 $group->count(),
                 $first::displayName(),
             )));
-            $this->stdout("\n\n");
+            $this->output();
             $usagesByField = [];
             $group = $group
                 ->each(function(FieldInterface $field) use ($fieldsService, &$usagesByField) {
@@ -215,21 +243,45 @@ EOD,
                 ->sortBy(fn(FieldInterface $field) => count($usagesByField[$field->id]), SORT_NUMERIC, true)
                 ->keyBy(fn(FieldInterface $field) => $field->handle)
                 ->each(function(FieldInterface $field) use (&$usagesByField) {
-                    $this->stdout($this->markdownToAnsi(sprintf(
+                    $this->output($this->markdownToAnsi(sprintf(
                         " - `%s` (%s)",
                         $field->handle,
                         $this->usagesDescriptor($usagesByField[$field->id]),
                     )));
-                    $this->stdout("\n");
                 });
 
-            $this->stdout("\n");
+            $this->output();
 
             if (!$this->confirm('Merge these fields?')) {
                 continue;
             }
 
-            $this->stdout("\n" . $this->markdownToAnsi('**Which one should persist?**') . "\n");
+            $this->output();
+
+            $mergingRelationFields = $group->first() instanceof BaseRelationField;
+            if ($mergingRelationFields) {
+                $handles = $group->map(fn(FieldInterface $field) => $field->handle)->values()->all();
+                array_push($relationFieldHandles, ...$handles);
+                $this->warning('Merging relation fields should only be done after all elements using them have been resaved.');
+                if ($this->confirm('Resave them now?', true)) {
+                    $this->do(
+                        sprintf('Running `resave/all --with-fields=%s`', implode(',', $handles)),
+                        function() use ($handles) {
+                            $this->output();
+                            Console::indent();
+                            try {
+                                $this->run('resave/all', [
+                                    'withFields' => $handles,
+                                ]);
+                            } finally {
+                                Console::outdent();
+                            }
+                        },
+                    );
+                }
+            }
+
+            $this->output($this->markdownToAnsi('**Which one should persist?**'));
 
             $choice = $this->select(
                 'Choose:',
@@ -240,17 +292,17 @@ EOD,
                 $group->first()->handle,
             );
 
-            $this->stdout("\n");
+            $this->output();
             /** @var FieldInterface $persistentField */
             $persistentField = $group->get($choice);
 
             $group
                 ->except($choice)
                 ->each(function(FieldInterface $outgoingField) use ($persistentField, $usagesByField, &$migrationPaths) {
-                    $this->stdout($this->markdownToAnsi("Merging `{$outgoingField->handle}` → `{$persistentField->handle}`") . "\n");
+                    $this->output($this->markdownToAnsi("Merging `{$outgoingField->handle}` → `{$persistentField->handle}`"));
                     $this->mergeFields($persistentField, $outgoingField, $usagesByField[$outgoingField->id], $migrationPath);
                     $migrationPaths[] = $migrationPath;
-                    $this->stdout("\n");
+                    $this->output();
                 });
         }
 
@@ -259,6 +311,16 @@ EOD,
 Fields merged. Commit the new content migrations and your project config changes,
 and run `craft up` on other environments for the changes to take effect.
 EOD);
+
+            if (!empty($relationFieldHandles)) {
+                $this->warning(sprintf(<<<MD
+Be sure to run this command on other environments **before** deploying these changes:
+
+```
+php craft resave/all --with-fields=%s
+```
+MD, implode(',', $relationFieldHandles)));
+            }
         } else {
             $this->failure('No fields merged.');
         }
@@ -287,12 +349,14 @@ EOD);
             $infoA = $this->usagesDescriptor($layoutsA);
             $infoB = $this->usagesDescriptor($layoutsB);
 
-            $this->stdout("\n" . $this->markdownToAnsi(<<<MD
+            $this->output();
+            $this->output($this->markdownToAnsi(<<<MD
 **Which field should persist?**
 
  - `$fieldA->handle` ($infoA)
  - `$fieldB->handle` ($infoB)
-MD) . "\n\n");
+MD));
+            $this->output();
 
             $choice = $this->select('Choose:', [
                 $fieldA->handle => $fieldA->name,
@@ -316,9 +380,7 @@ MD) . "\n\n");
 
     private function layoutDescriptor(FieldLayout $layout): string
     {
-        /** @var string|ElementInterface $elementType */
-        $elementType = $layout->type;
-        $elementDisplayName = $elementType::lowerDisplayName();
+        $elementDisplayName = $layout->type::lowerDisplayName();
         $providerHandle = $layout->provider?->getHandle();
         return $providerHandle
             ? "the `$providerHandle` $elementDisplayName layout"
@@ -409,7 +471,7 @@ MD) . "\n\n");
             FileHelper::writeToFile($migrationPath, $content);
         });
 
-        $this->stdout(" → Running content migration …\n");
+        $this->output(" → Running content migration …");
         Craft::$app->getContentMigrator()->migrateUp($migrationName);
     }
 

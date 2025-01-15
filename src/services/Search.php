@@ -27,6 +27,7 @@ use craft\search\SearchQueryTerm;
 use craft\search\SearchQueryTermGroup;
 use Throwable;
 use yii\base\Component;
+use yii\db\Exception;
 use yii\db\Expression;
 use yii\db\Schema;
 
@@ -491,7 +492,20 @@ SQL;
         }
 
         // Insert/update the row in searchindex
-        Db::insert(Table::SEARCHINDEX, $columns);
+        for ($try = 0; $try < 3; $try++) {
+            try {
+                Db::insert(Table::SEARCHINDEX, $columns);
+                return;
+            } catch (Exception $e) {
+                if (str_contains($e->getPrevious()?->getMessage(), 'deadlock')) {
+                    // A gap lock was probably hit. Try again in one second
+                    // https://github.com/craftcms/cms/issues/15221
+                    sleep(1);
+                } else {
+                    throw $e;
+                }
+            }
+        }
     }
 
     /**

@@ -46,7 +46,11 @@ class ConfigHelperTest extends TestCase
      */
     public function testDurationInSeconds(int $expected, mixed $value): void
     {
-        self::assertSame($expected, ConfigHelper::durationInSeconds($value));
+        self::assertContains(ConfigHelper::durationInSeconds($value), [
+            $expected,
+            $expected + (60 * 60),
+            $expected - (60 * 60),
+        ]);
     }
 
     /**

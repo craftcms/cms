@@ -82,7 +82,7 @@ class PruneProvisionalDraftsController extends Controller
                 continue;
             }
 
-            /** @var ElementInterface|string $elementType */
+            /** @var class-string<ElementInterface> $elementType */
             $elementType = $element['type'];
             $deleteCount = $element['count'] - 1;
 

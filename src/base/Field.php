@@ -410,6 +410,7 @@ abstract class Field extends SavableComponent implements FieldInterface, Iconic,
                 'firstSave',
                 'hardDelete',
                 'hasMethods',
+                'icon',
                 'id',
                 'isNewForSite',
                 'isProvisionalDraft',
@@ -811,6 +812,27 @@ JS, [
     }
 
     /**
+     * @see PreviewableFieldInterface::previewPlaceholderHtml()
+     * @since 5.5.0
+     */
+    public function previewPlaceholderHtml(mixed $value, ?ElementInterface $element): string
+    {
+        if (!$this instanceof PreviewableFieldInterface) {
+            return '';
+        }
+
+        if ($value !== null) {
+            return $value;
+        }
+
+        if ($element !== null) {
+            return $element->getFieldValue($this->handle);
+        }
+
+        return $this->getUiLabel();
+    }
+
+    /**
      * @see SortableFieldInterface::getSortOption()
      * @since 3.2.0
      */
@@ -955,19 +977,21 @@ JS, [
             throw new InvalidArgumentException(sprintf('%s doesn’t store values under the key “%s”.', __CLASS__, $key));
         }
 
-        $jsonPath = [$this->layoutElement->uid];
+        $db = Craft::$app->getDb();
+        $qb = $db->getQueryBuilder();
+        $sql = $qb->jsonExtract('elements_sites.content', [$this->layoutElement->uid]);
 
         if (is_array($dbType)) {
             // Get the primary value by default
             $key ??= array_key_first($dbType);
-            $jsonPath[] = $key;
             $dbType = $dbType[$key];
+            $sql = sprintf('COALESCE(%s, %s)', $qb->jsonExtract(
+                'elements_sites.content',
+                [$this->layoutElement->uid, $key],
+            ), $sql);
         }
 
-        $db = Craft::$app->getDb();
-        $qb = $db->getQueryBuilder();
-        $sql = $qb->jsonExtract('elements_sites.content', $jsonPath);
-
+        $castType = null;
         if ($db->getIsMysql()) {
             // If the field uses an optimized DB type, cast it so its values can be indexed
             // (see "Functional Key Parts" on https://dev.mysql.com/doc/refman/8.0/en/create-index.html)
@@ -989,20 +1013,30 @@ JS, [
                 SCHEMA::TYPE_TIME => 'TIME',
                 default => null,
             };
-            if ($castType !== null) {
-                // if a length was specified, replace the default with that
-                $length = Db::parseColumnLength($dbType);
-                if ($length) {
-                    $castType = preg_replace('/\(\d+\)/', "($length)", $castType);
-                } elseif ($castType === 'DECIMAL') {
-                    [$precision, $scale] = Db::parseColumnPrecisionAndScale($dbType) ?? [null, null];
-                    if ($precision && $scale) {
-                        $castType .= "($precision,$scale)";
-                    }
-                }
+        }
 
-                $sql = "CAST($sql AS $castType)";
+        // for pgsql, we have to make sure decimals column type is cast to decimal, otherwise they won't be sorted correctly
+        // see https://github.com/craftcms/cms/issues/15828, https://github.com/craftcms/cms/issues/15973
+        if ($db->getIsPgsql()) {
+            $castType = match (Db::parseColumnType($dbType)) {
+                Schema::TYPE_DECIMAL => 'DECIMAL',
+                default => null,
+            };
+        }
+
+        if ($castType !== null) {
+            // if a length was specified, replace the default with that
+            $length = Db::parseColumnLength($dbType);
+            if ($length) {
+                $castType = preg_replace('/\(\d+\)/', "($length)", $castType);
+            } elseif ($castType === 'DECIMAL') {
+                [$precision, $scale] = Db::parseColumnPrecisionAndScale($dbType) ?? [null, null];
+                if ($precision && $scale) {
+                    $castType .= "($precision,$scale)";
+                }
             }
+
+            $sql = "CAST($sql AS $castType)";
         }
 
         return $sql;

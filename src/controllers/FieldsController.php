@@ -241,7 +241,7 @@ JS, [
                         // re-fetch as many of these as we can from the element types,
                         // so they have a chance to supply the layout providers
                         foreach ($layoutsByType as $type => &$typeLayouts) {
-                            /** @var string|ElementInterface $type */
+                            /** @var class-string<ElementInterface> $type */
                             /** @phpstan-ignore-next-line */
                             foreach ($type::fieldLayouts(null) as $layout) {
                                 if (isset($typeLayouts[$layout->uid]) && $layout->provider instanceof Chippable) {
@@ -289,7 +289,7 @@ JS, [
                         foreach ($layoutsByType as $type => $typeLayouts) {
                             // any remaining layouts for this type?
                             if (!empty($typeLayouts)) {
-                                /** @var string|ElementInterface $type */
+                                /** @var class-string<ElementInterface> $type */
                                 $items[] = Craft::t('app', '{total, number} {type} {total, plural, =1{field layout} other{field layouts}}', [
                                     'total' => count($typeLayouts),
                                     'type' => $type::lowerDisplayName(),
@@ -478,14 +478,22 @@ JS, [
     public function actionApplyLayoutElementSettings(): Response
     {
         /** @var FieldLayoutElement $element */
-        $element = $this->_fldComponent();
+        $element = $this->_fldComponent($settings);
 
-        if ($element instanceof CustomField) {
+        if (!empty($settings)) {
+            $validateAttributes = array_intersect(
+                array_keys(array_filter($settings)),
+                ['name', 'handle', 'instructions'],
+            );
+        }
+
+        if (!empty($validateAttributes) && $element instanceof CustomField) {
             $field = $element->getField();
             if ($field instanceof Field) {
                 $field->validateHandleUniqueness = false;
             }
-            if (!$field->validate(['name', 'handle', 'instructions'])) {
+
+            if (!$field->validate($validateAttributes)) {
                 if ($field->hasErrors('name')) {
                     $field->addErrors(['label' => $field->getErrors('name')]);
                     $field->clearErrors('name');
@@ -536,11 +544,48 @@ JS, [
     }
 
     /**
+     * Returns card preview HTML data.
+     *
+     * @return Response
+     * @throws BadRequestHttpException
+     * @throws \Throwable
+     */
+    public function actionRenderCardPreview()
+    {
+        $this->requireCpRequest();
+        $this->requireAcceptsJson();
+
+        $fieldLayoutConfig = $this->request->getRequiredBodyParam('fieldLayoutConfig');
+        $cardElements = $this->request->getRequiredBodyParam('cardElements');
+        $showThumb = $this->request->getBodyParam('showThumb', false);
+
+        if (!isset($fieldLayoutConfig['id'])) {
+            $fieldLayout = Craft::createObject(FieldLayout::class, $fieldLayoutConfig);
+            $fieldLayout->type = $fieldLayoutConfig['type'];
+        } else {
+            $fieldLayout = Craft::$app->getFields()->getLayoutById($fieldLayoutConfig['id']);
+        }
+
+        if (!$fieldLayout) {
+            throw new BadRequestHttpException("Invalid field layout");
+        }
+
+        $fieldLayout->setCardView(
+            array_column($cardElements, 'value')
+        ); // this fully takes care of attributes, but not fields
+
+        return $this->asJson([
+            'previewHtml' => Cp::cardPreviewHtml($fieldLayout, $cardElements, $showThumb),
+        ]);
+    }
+
+    /**
      * Returns the field layout component being edited, populated with the posted config/settings.
      *
+     * @param array|null $settings The `settings` array that might have been posted
      * @return FieldLayoutComponent
      */
-    private function _fldComponent(): FieldLayoutComponent
+    private function _fldComponent(?array &$settings = null): FieldLayoutComponent
     {
         $uid = $this->request->getRequiredBodyParam('uid');
         $elementType = $this->request->getRequiredBodyParam('elementType');
@@ -557,9 +602,10 @@ JS, [
         $settingsStr = $this->request->getBodyParam('settings');
 
         if ($settingsStr !== null) {
-            parse_str($settingsStr, $settings);
+            parse_str($settingsStr, $postedSettings);
             $settingsNamespace = $this->request->getRequiredBodyParam('settingsNamespace');
-            $componentConfig = array_merge($componentConfig, ArrayHelper::getValue($settings, $settingsNamespace, []));
+            $settings = ArrayHelper::getValue($postedSettings, $settingsNamespace, []);
+            $componentConfig = array_merge($componentConfig, $settings);
         }
 
         $isTab = false;

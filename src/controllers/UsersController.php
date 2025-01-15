@@ -33,6 +33,7 @@ use craft\helpers\Html;
 use craft\helpers\Image;
 use craft\helpers\Json;
 use craft\helpers\Session;
+use craft\helpers\StringHelper;
 use craft\helpers\UrlHelper;
 use craft\helpers\User as UserHelper;
 use craft\i18n\Locale;
@@ -98,6 +99,7 @@ class UsersController extends Controller
      *             ->one();
      *     }
      * );
+     * ```
      *
      * @since 4.2.0
      */
@@ -182,9 +184,6 @@ class UsersController extends Controller
      */
     public function beforeAction($action): bool
     {
-        if ($action->id === 'login-modal') {
-//            sleep(1);
-        }
         // Don't enable CSRF validation for login requests if the user is already logged-in.
         // (Guards against double-clicking a Login button.)
         if ($action->id === 'login' && !Craft::$app->getUser()->getIsGuest()) {
@@ -245,6 +244,11 @@ class UsersController extends Controller
             return $this->runAction('auth-form');
         }
 
+        // if we're impersonating, pass the user we're impersonating to the complete method
+        if (Session::get(User::IMPERSONATE_KEY) !== null) {
+            $user = Craft::$app->getUser()->getIdentity() ?? $user;
+        }
+
         return $this->_completeLogin($user, $duration);
     }
 
@@ -277,6 +281,11 @@ class UsersController extends Controller
 
         if (!$user->authenticateWithPasskey($requestOptions, $response)) {
             return $this->_handleLoginFailure($user->authError, $user);
+        }
+
+        // if we're impersonating, pass the user we're impersonating to the complete method
+        if (Session::get(User::IMPERSONATE_KEY) !== null) {
+            $user = Craft::$app->getUser()->getIdentity();
         }
 
         return $this->_completeLogin($user, $duration);
@@ -342,6 +351,7 @@ class UsersController extends Controller
     public function actionImpersonate(): ?Response
     {
         $this->requirePostRequest();
+        $this->requireElevatedSession();
 
         $userSession = Craft::$app->getUser();
         $userId = $this->request->getRequiredBodyParam('userId');
@@ -380,6 +390,7 @@ class UsersController extends Controller
     public function actionGetImpersonationUrl(): Response
     {
         $this->requirePostRequest();
+        $this->requireElevatedSession();
 
         $userId = $this->request->getBodyParam('userId');
         $user = Craft::$app->getUsers()->getUserById($userId);
@@ -506,10 +517,23 @@ class UsersController extends Controller
         $this->requirePostRequest();
         $this->requireCpRequest();
 
+        $forElevatedSession = (bool)$this->request->getBodyParam('forElevatedSession');
+
+        // If the current user is being impersonated get the "original" user instead
+        if ($forElevatedSession && $previousUserId = Session::get(User::IMPERSONATE_KEY)) {
+            /** @var User $user */
+            $user = User::find()
+                ->id($previousUserId)
+                ->one();
+            $staticEmail = $user->email;
+        } else {
+            $staticEmail = $this->request->getRequiredBodyParam('email');
+        }
+
         $view = $this->getView();
         $html = $view->renderTemplate('_special/login-modal.twig', [
-            'staticEmail' => $this->request->getRequiredBodyParam('email'),
-            'forElevatedSession' => (bool)$this->request->getBodyParam('forElevatedSession'),
+            'staticEmail' => $staticEmail,
+            'forElevatedSession' => $forElevatedSession,
         ]);
 
         return $this->asJson([
@@ -705,9 +729,9 @@ class UsersController extends Controller
         $user->passwordResetRequired = true;
 
         if (!Craft::$app->getElements()->saveElement($user, false)) {
-            return $this->asFailure(Craft::t('app', 'Couldn’t save {type}.', [
+            return $this->asFailure(StringHelper::upperCaseFirst(Craft::t('app', 'Couldn’t save {type}.', [
                 'type' => User::lowerDisplayName(),
-            ]));
+            ])));
         }
 
         return $this->asSuccess(Craft::t('app', '{type} saved.', [
@@ -735,9 +759,9 @@ class UsersController extends Controller
         $user->passwordResetRequired = false;
 
         if (!Craft::$app->getElements()->saveElement($user, false)) {
-            return $this->asFailure(Craft::t('app', 'Couldn’t save {type}.', [
+            return $this->asFailure(StringHelper::upperCaseFirst(Craft::t('app', 'Couldn’t save {type}.', [
                 'type' => User::lowerDisplayName(),
-            ]));
+            ])));
         }
 
         return $this->asSuccess(Craft::t('app', '{type} saved.', [
@@ -912,9 +936,9 @@ class UsersController extends Controller
         $user->archived = false;
 
         if (!$elementsService->saveElement($user, false)) {
-            return $this->asFailure(Craft::t('app', 'Couldn’t save {type}.', [
+            return $this->asFailure(StringHelper::upperCaseFirst(Craft::t('app', 'Couldn’t save {type}.', [
                 'type' => User::lowerDisplayName(),
-            ]));
+            ])));
         }
 
         return $this->asSuccess(Craft::t('app', '{type} saved.', [
@@ -971,9 +995,9 @@ class UsersController extends Controller
         $this->requirePermission('editUsers');
         return $this->renderTemplate('users/_index.twig', [
             'title' => Craft::t('app', 'Users'),
-            'buttonLabel' => Craft::t('app', 'New {type}', [
+            'buttonLabel' => StringHelper::upperCaseFirst(Craft::t('app', 'New {type}', [
                 'type' => User::lowerDisplayName(),
-            ]),
+            ])),
             'source' => $source,
         ]);
     }
@@ -997,9 +1021,9 @@ class UsersController extends Controller
 
         $user->setScenario(Element::SCENARIO_ESSENTIALS);
         if (!Craft::$app->getDrafts()->saveElementAsDraft($user, Craft::$app->getUser()->getId(), null, null, false)) {
-            return $this->asModelFailure($user, Craft::t('app', 'Couldn’t create {type}.', [
+            return $this->asModelFailure($user, StringHelper::upperCaseFirst(Craft::t('app', 'Couldn’t create {type}.', [
                 'type' => User::lowerDisplayName(),
-            ]), 'user');
+            ])), 'user');
         }
 
         $editUrl = $user->getCpEditUrl();
@@ -1611,9 +1635,9 @@ JS);
 
             return $this->asModelFailure(
                 $user,
-                Craft::t('app', 'Couldn’t save {type}.', [
+                StringHelper::upperCaseFirst(Craft::t('app', 'Couldn’t save {type}.', [
                     'type' => User::lowerDisplayName(),
-                ]),
+                ])),
                 $userVariable
             );
         }
@@ -2164,9 +2188,11 @@ JS);
         // All safe attributes
         $safeAttributes = [];
         foreach ($address->safeAttributes() as $name) {
-            $value = $this->request->getBodyParam($name);
-            if ($value !== null) {
-                $safeAttributes[$name] = $value;
+            if (!in_array($name, ['id', 'uid', 'ownerId'])) {
+                $value = $this->request->getBodyParam($name);
+                if ($value !== null) {
+                    $safeAttributes[$name] = $value;
+                }
             }
         }
         $address->setAttributes($safeAttributes);
@@ -2176,9 +2202,9 @@ JS);
         $address->setFieldValuesFromRequest($fieldsLocation);
 
         if (!$elementsService->saveElement($address)) {
-            return $this->asModelFailure($address, Craft::t('app', 'Couldn’t save {type}.', [
+            return $this->asModelFailure($address, StringHelper::upperCaseFirst(Craft::t('app', 'Couldn’t save {type}.', [
                 'type' => Address::lowerDisplayName(),
-            ]), 'address');
+            ])), 'address');
         }
 
         return $this->asModelSuccess($address, Craft::t('app', '{type} saved.', [
@@ -2319,7 +2345,16 @@ JS);
 
     public function actionAuthForm(): Response
     {
-        $activeMethods = Craft::$app->getAuth()->getActiveMethods();
+        $user = null;
+        // If the current user is being impersonated get the "original" user instead
+        if ($previousUserId = Session::get(User::IMPERSONATE_KEY)) {
+            /** @var User $user */
+            $user = User::find()
+                ->id($previousUserId)
+                ->one();
+        }
+
+        $activeMethods = Craft::$app->getAuth()->getActiveMethods($user);
         $methodClass = $this->request->getParam('method');
 
         if ($methodClass) {

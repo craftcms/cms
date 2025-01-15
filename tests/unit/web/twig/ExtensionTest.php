@@ -979,9 +979,17 @@ class ExtensionTest extends TestCase
      */
     public function testDataUrlFunction(): void
     {
-        $path = dirname(__DIR__, 3) . '/_data/assets/files/craft-logo.svg';
+        $path = '@root/.github/workflows/ci.yml';
         $dataUrl = $this->view->renderString('{{ dataUrl(path) }}', compact('path'));
-        self::assertStringStartsWith('data:image/svg+xml;base64,', $dataUrl);
+        self::assertStringStartsWith('data:application/x-yaml;base64,', $dataUrl);
+    }
+
+    public function testEncodeUrlFunction(): void
+    {
+        $this->testRenderResult(
+            'https://domain/fr/offices/gen%C3%AAve',
+            '{{ encodeUrl("https://domain/fr/offices/genêve") }}',
+        );
     }
 
     public function testExpressionFunction(): void

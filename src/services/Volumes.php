@@ -296,7 +296,10 @@ class Volumes extends Component
         }
 
         if ($isNewVolume) {
-            $volume->uid = StringHelper::UUID();
+            if (!$volume->uid) {
+                $volume->uid = StringHelper::UUID();
+            }
+
             $volume->sortOrder = (new Query())
                     ->from([Table::VOLUMES])
                     ->max('[[sortOrder]]') + 1;

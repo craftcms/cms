@@ -10,6 +10,7 @@ namespace craft\controllers;
 use Craft;
 use craft\elements\Asset;
 use craft\errors\AssetException;
+use craft\filters\UtilityAccess;
 use craft\helpers\Json;
 use craft\i18n\Locale;
 use craft\models\AssetIndexingSession;
@@ -34,14 +35,25 @@ class AssetIndexesController extends Controller
     /**
      * @inheritdoc
      */
+    public function behaviors(): array
+    {
+        return array_merge(parent::behaviors(), [
+            [
+                'class' => UtilityAccess::class,
+                'utility' => AssetIndexes::class,
+            ],
+        ]);
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function beforeAction($action): bool
     {
         if (!parent::beforeAction($action)) {
             return false;
         }
 
-        // No permission no bueno
-        $this->requirePermission('utility:asset-indexes');
         $this->requireAcceptsJson();
 
         return true;

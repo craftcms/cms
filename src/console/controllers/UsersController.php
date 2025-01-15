@@ -8,6 +8,8 @@
 namespace craft\console\controllers;
 
 use Craft;
+use craft\auth\methods\AuthMethodInterface;
+use craft\auth\methods\RecoveryCodes;
 use craft\console\Controller;
 use craft\db\Table;
 use craft\elements\User;
@@ -117,6 +119,14 @@ class UsersController extends Controller
         return $options;
     }
 
+    protected function defineActions(): array
+    {
+        return parent::defineActions() + [
+            // Fix sluggification of the action ID
+            'remove-2fa' => [$this, 'remove2fa'],
+        ];
+    }
+
     /**
      * Lists admin users.
      *
@@ -182,7 +192,7 @@ class UsersController extends Controller
 
         $user = new User($attributesFromArgs);
 
-        if (!$user->validate(array_keys($attributesFromArgs))) {
+        if (!empty($attributesFromArgs) && !$user->validate(array_keys($attributesFromArgs))) {
             $this->stderr('Invalid arguments:' . PHP_EOL . '    - ' . implode(PHP_EOL . '    - ', $user->getErrorSummary(true)) . PHP_EOL, Console::FG_RED);
             return ExitCode::USAGE;
         }
@@ -224,7 +234,7 @@ class UsersController extends Controller
 
         $this->stdout('Saving the user ... ');
 
-        if (!Craft::$app->getElements()->saveElement($user)) {
+        if (!Craft::$app->getElements()->saveElement($user, false)) {
             $this->stderr('failed:' . PHP_EOL . '    - ' . implode(PHP_EOL . '    - ', $user->getErrorSummary(true)) . PHP_EOL, Console::FG_RED);
 
             return ExitCode::USAGE;
@@ -492,6 +502,59 @@ class UsersController extends Controller
     }
 
     /**
+     * Removes user's two-step verification method(s)
+     * @param string $user The ID, username, or email address of the user account.
+     * @return int
+     * @since 5.5.0
+     */
+    private function remove2fa(string $user): int
+    {
+        try {
+            $user = $this->_user($user);
+        } catch (InvalidArgumentException $e) {
+            $this->stderr($e->getMessage() . PHP_EOL, Console::FG_RED) . PHP_EOL;
+            return ExitCode::UNSPECIFIED_ERROR;
+        }
+
+        $authService = Craft::$app->getAuth();
+        $activeMethods = $authService->getActiveMethods($user);
+
+        // if user doesn't have any, say so, and we're done
+        if (empty($activeMethods)) {
+            $this->stdout("User “{$user->username}” doesn’t have any active two-step verification methods." . PHP_EOL);
+            return ExitCode::OK;
+        }
+
+        $activeMethods = array_combine(
+            array_map(fn(AuthMethodInterface $method) => $method::displayName(), $activeMethods),
+            $activeMethods,
+        );
+
+        // allow removal of all options in one go
+        $activeMethods = array_merge(['all' => 'all'], $activeMethods);
+
+        $methodToRemove = $this->select(
+            "Which two-step verification method would you like to remove for user “{$user->username}”",
+            $activeMethods,
+        );
+
+        if ($methodToRemove === 'all') {
+            $this->stdout('Removing all two-step verification methods for the user ...' . PHP_EOL);
+            unset($activeMethods['all']);
+            // remove recovery codes as we'll remove those after the last 2sv method is removed
+            unset($activeMethods[RecoveryCodes::displayName()]);
+
+            foreach ($activeMethods as $method) {
+                $this->_remove2faMethod($method, $user);
+            }
+        } else {
+            $this->_remove2faMethod($activeMethods[$methodToRemove], $user);
+        }
+
+        return ExitCode::OK;
+    }
+
+    /**
      * Resolves a `user` argument.
      *
      * @param string $value The `user` argument value
@@ -513,5 +576,32 @@ class UsersController extends Controller
         }
 
         return $user;
+    }
+
+    /**
+     * Removes auth method for a specific user.
+     *
+     * @param AuthMethodInterface $method
+     * @param User $user
+     * @return void
+     */
+    private function _remove2faMethod(AuthMethodInterface $method, User $user): void
+    {
+        $this->stdout("   > Removing “{$method::displayName()}” two-step verification method for the user ...");
+
+        $auth = Craft::$app->getAuth();
+        $method->remove();
+
+        $this->stdout(" done" . PHP_EOL, Console::FG_GREEN);
+
+        // if that was the last non-Recovery Codes method, remove Recovery Codes too
+        if (empty($auth->getActiveMethods($user))) {
+            $recoveryCodes = $auth->getMethod(RecoveryCodes::class, $user);
+            if ($recoveryCodes->isActive()) {
+                $this->stdout("No further two-step verification methods left. Removing “{$recoveryCodes::displayName()}” for the user ...");
+                $recoveryCodes->remove();
+                $this->stdout(" done" . PHP_EOL, Console::FG_GREEN);
+            }
+        }
     }
 }

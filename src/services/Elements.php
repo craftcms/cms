@@ -73,6 +73,7 @@ use craft\records\StructureElement as StructureElementRecord;
 use craft\validators\HandleValidator;
 use craft\validators\SlugValidator;
 use DateTime;
+use Illuminate\Support\Collection;
 use Throwable;
 use UnitEnum;
 use yii\base\Behavior;
@@ -99,7 +100,7 @@ class Elements extends Component
      *
      * Element types must implement [[ElementInterface]]. [[Element]] provides a base implementation.
      *
-     * See [Element Types](https://craftcms.com/docs/4.x/extend/element-types.html) for documentation on creating element types.
+     * See [Element Types](https://craftcms.com/docs/5.x/extend/element-types.html) for documentation on creating element types.
      * ---
      * ```php
      * use craft\events\RegisterComponentTypesEvent;
@@ -532,7 +533,7 @@ class Elements extends Component
      * Creates an element with a given config.
      *
      * @template T of ElementInterface
-     * @param string|array $config The element’s class name, or its config, with a `type` value
+     * @param class-string<T>|array $config The element’s class name, or its config, with a `type` value
      * @phpstan-param class-string<T>|array{type:class-string<T>} $config
      * @return T The element
      */
@@ -548,8 +549,7 @@ class Elements extends Component
     /**
      * Creates an element query for a given element type.
      *
-     * @param string $elementType The element class
-     * @phpstan-param class-string<ElementInterface> $elementType
+     * @param class-string<ElementInterface> $elementType The element class
      * @return ElementQueryInterface The element query
      * @throws InvalidArgumentException if $elementType is not a valid element
      * @since 3.5.0
@@ -677,7 +677,7 @@ class Elements extends Component
             return;
         }
 
-        $duration = $expiryDate->getTimestamp() - time();
+        $duration = $expiryDate->getTimestamp() - DateTimeHelper::currentTimeStamp();
 
         if ($duration > 0 && (!$this->_cacheDuration || $duration < $this->_cacheDuration)) {
             $this->_cacheDuration = $duration;
@@ -801,8 +801,7 @@ class Elements extends Component
     /**
      * Invalidates caches for the given element type.
      *
-     * @param string $elementType
-     * @phpstan-param class-string<ElementInterface> $elementType
+     * @param class-string<ElementInterface> $elementType
      * @since 3.5.0
      */
     public function invalidateCachesForElementType(string $elementType): void
@@ -888,8 +887,7 @@ class Elements extends Component
      *
      * @template T of ElementInterface
      * @param int $elementId The element’s ID.
-     * @param string|null $elementType The element class.
-     * @phpstan-param class-string<T>|null $elementType
+     * @param class-string<T>|null $elementType The element class.
      * @param int|string|int[]|null $siteId The site(s) to fetch the element in.
      * Defaults to the current site.
      * @param array $criteria
@@ -909,8 +907,7 @@ class Elements extends Component
      *
      * @template T of ElementInterface
      * @param string $uid The element’s UID.
-     * @param string|null $elementType The element class.
-     * @phpstan-param class-string<T>|null $elementType
+     * @param class-string<T>|null $elementType The element class.
      * @param int|string|int[]|null $siteId The site(s) to fetch the element in.
      * Defaults to the current site.
      * @param array $criteria
@@ -928,8 +925,7 @@ class Elements extends Component
      * @template T of ElementInterface
      * @param string $property Either `id` or `uid`
      * @param int|string $elementId The element’s ID/UID
-     * @param string|null $elementType The element class.
-     * @phpstan-param class-string<T>|null $elementType
+     * @param class-string<T>|null $elementType The element class.
      * @param int|string|int[]|null $siteId The site(s) to fetch the element in.
      * Defaults to the current site.
      * @param array $criteria
@@ -1025,7 +1021,7 @@ class Elements extends Component
      * Returns the class of an element with a given ID.
      *
      * @param int $elementId The element’s ID
-     * @return string|null The element’s class, or null if it could not be found
+     * @return class-string<ElementInterface>|null The element’s class, or null if it could not be found
      */
     public function getElementTypeById(int $elementId): ?string
     {
@@ -1680,7 +1676,6 @@ class Elements extends Component
                     $supportedSites = ArrayHelper::index(ElementHelper::supportedSitesForElement($element), 'siteId');
                     $supportedSiteIds = array_keys($supportedSites);
                     $elementSiteIds = $siteIds !== null ? array_intersect($siteIds, $supportedSiteIds) : $supportedSiteIds;
-                    /** @var string|ElementInterface $elementType */
                     $elementType = get_class($element);
 
                     $e = null;
@@ -2246,7 +2241,6 @@ class Elements extends Component
             }
 
             // Update any reference tags
-            /** @var ElementInterface|null $elementType */
             $elementType = $this->getElementTypeById($prevailingElement->id);
 
             if ($elementType !== null && ($refHandle = $elementType::refHandle()) !== null) {
@@ -2289,8 +2283,7 @@ class Elements extends Component
      * Deletes an element by its ID.
      *
      * @param int $elementId The element’s ID
-     * @param string|null $elementType The element class.
-     * @phpstan-param class-string<ElementInterface>|null $elementType
+     * @param class-string<ElementInterface>|null $elementType The element class.
      * @param int|null $siteId The site to fetch the element in.
      * Defaults to the current site.
      * @param bool $hardDelete Whether the element should be hard-deleted immediately, instead of soft-deleted
@@ -2698,7 +2691,7 @@ class Elements extends Component
             ->indexBy('id')
             ->all();
 
-        $activity = [];
+        $activity = Collection::make();
         /** @var ElementActivity[] $activityByUserId */
         $activityByUserId = [];
         $elements = [];
@@ -2714,7 +2707,7 @@ class Elements extends Component
                     $newerRecord->type === ElementActivity::TYPE_VIEW &&
                     $result['type'] !== ElementActivity::TYPE_VIEW
                 ) {
-                    array_splice($activity, array_search($newerRecord, $activity), 1);
+                    $activity = $activity->filter(fn(ElementActivity $record) => $record !== $newerRecord);
                     unset($activityByUserId[$result['userId']]);
                 } else {
                     continue;
@@ -2747,15 +2740,16 @@ class Elements extends Component
                 $elements[$elementKey][$result['siteId']] = $resultElement;
             }
 
-            $activity[] = $activityByUserId[$result['userId']] = new ElementActivity(
+            $record = $activityByUserId[$result['userId']] = new ElementActivity(
                 $users[$result['userId']],
                 $elements[$elementKey][$result['siteId']],
                 $result['type'],
                 DateTimeHelper::toDateTime($result['timestamp']),
             );
+            $activity->push($record);
         }
 
-        return $activity;
+        return $activity->values()->all();
     }
 
     /**
@@ -2830,7 +2824,7 @@ class Elements extends Component
      * Creates an element action with a given config.
      *
      * @template T of ElementActionInterface
-     * @param string|array $config The element action’s class name, or its config, with a `type` value and optionally a `settings` value
+     * @param class-string<T>|array $config The element action’s class name, or its config, with a `type` value and optionally a `settings` value
      * @phpstan-param class-string<T>|array{type:class-string<T>} $config
      * @return T The element action
      */
@@ -2843,7 +2837,7 @@ class Elements extends Component
      * Creates an element exporter with a given config.
      *
      * @template T of ElementExporterInterface
-     * @param string|array $config The element exporter’s class name, or its config, with a `type` value and optionally a `settings` value
+     * @param class-string<T>|array $config The element exporter’s class name, or its config, with a `type` value and optionally a `settings` value
      * @phpstan-param class-string<T>|array{type:class-string<T>} $config
      * @return T The element exporter
      */
@@ -2888,8 +2882,7 @@ class Elements extends Component
         }
 
         foreach ($this->getAllElementTypes() as $class) {
-            /** @var string|ElementInterface $class */
-            /** @phpstan-var class-string<ElementInterface>|ElementInterface $class */
+            /** @var class-string<ElementInterface> $class */
             if (
                 ($elementRefHandle = $class::refHandle()) !== null &&
                 strcasecmp($elementRefHandle, $refHandle) === 0
@@ -3169,14 +3162,12 @@ class Elements extends Component
     /**
      * Eager-loads additional elements onto a given set of elements.
      *
-     * @param string $elementType The root element type class
-     * @phpstan-param class-string<ElementInterface> $elementType
+     * @param class-string<ElementInterface> $elementType The root element type class
      * @param ElementInterface[] $elements The root element models that should be updated with the eager-loaded elements
      * @param array|string|EagerLoadPlan[] $with Dot-delimited paths of the elements that should be eager-loaded into the root elements
      */
     public function eagerLoadElements(string $elementType, array $elements, array|string $with): void
     {
-        /** @var ElementInterface|string $elementType */
         // Bail if there aren't even any elements
         if (empty($elements)) {
             return;
@@ -3188,8 +3179,7 @@ class Elements extends Component
     }
 
     /**
-     * @param string $elementType
-     * @phpstan-param class-string<ElementInterface> $elementType
+     * @param class-string<ElementInterface> $elementType
      * @param ElementInterface[][] $elementsBySite
      * @param EagerLoadPlan[] $with
      */
@@ -3212,12 +3202,6 @@ class Elements extends Component
             }
 
             foreach ($with as $plan) {
-                // Get the plan handle, without a provider prefix
-                $planHandle = $plan->alias;
-                if (str_contains($planHandle, ':')) {
-                    $planHandle = explode(':', $planHandle, 2)[1];
-                }
-
                 // Filter out any elements that the plan doesn't like
                 if ($plan->when !== null) {
                     $filteredElements = array_values(array_filter($elements, $plan->when));
@@ -3229,7 +3213,6 @@ class Elements extends Component
                 }
 
                 // Get the eager-loading map from the source element type
-                /** @var ElementInterface|string $elementType */
                 $map = $elementType::eagerLoadingMap($filteredElements, $plan->handle);
 
                 if ($map === null) {
@@ -3310,7 +3293,7 @@ class Elements extends Component
                                 }
                             }
                         }
-                        $sourceElement->setEagerLoadedElementCount($planHandle, $count);
+                        $sourceElement->setEagerLoadedElementCount($plan->alias, $count);
                     }
 
                     continue;
@@ -3381,11 +3364,11 @@ class Elements extends Component
                         }
                     }
 
-                    $sourceElement->setEagerLoadedElements($planHandle, $targetElementsForSource, $plan);
-                    $sourceElement->setLazyEagerLoadedElements($planHandle, $plan->lazy);
+                    $sourceElement->setEagerLoadedElements($plan->alias, $targetElementsForSource, $plan);
+                    $sourceElement->setLazyEagerLoadedElements($plan->alias, $plan->lazy);
 
                     if ($plan->count) {
-                        $sourceElement->setEagerLoadedElementCount($planHandle, count($targetElementsForSource));
+                        $sourceElement->setEagerLoadedElementCount($plan->alias, count($targetElementsForSource));
                     }
                 }
 
@@ -3738,7 +3721,8 @@ class Elements extends Component
                     }
                 }
 
-                // if we're supposed to save all the content
+                $saveContent = $saveContent || $element->isNewForSite;
+
                 if ($saveContent || !empty($dirtyFields)) {
                     $oldContent = $siteSettingsRecord->content ?? []; // we'll need that if we're not saving all the content
                     if (is_string($oldContent)) {
@@ -4027,7 +4011,11 @@ class Elements extends Component
             $siteElement->siteId = $siteInfo['siteId'];
             $siteElement->siteSettingsId = null;
             $siteElement->setEnabledForSite($siteInfo['enabledByDefault']);
-            $siteElement->isNewForSite = true;
+            // set isNewForSite to true unless we're reverting content from a revision
+            // in which case, it's possible that the canonical element exists for the site already,
+            // but didn't back when the revision was created.
+            // (see https://github.com/craftcms/cms/issues/15679)
+            $siteElement->isNewForSite = !$siteElement->duplicateOf?->getIsRevision();
 
             // Keep track of this new site ID
             $element->newSiteIds[] = $siteInfo['siteId'];
@@ -4104,8 +4092,11 @@ class Elements extends Component
                     foreach ($fieldLayout->getCustomFields() as $field) {
                         // Has this field changed, and does it produce the same translation key as it did for the initial element?
                         if (
-                            $element->isFieldDirty($field->handle) &&
-                            $field->getTranslationKey($siteElement) === $field->getTranslationKey($element)
+                            $element->propagateAll ||
+                            (
+                                $element->isFieldDirty($field->handle) &&
+                                $field->getTranslationKey($siteElement) === $field->getTranslationKey($element)
+                            )
                         ) {
                             // Copy the initial element’s value over
                             $siteElement->setFieldValue($field->handle, $element->getFieldValue($field->handle));

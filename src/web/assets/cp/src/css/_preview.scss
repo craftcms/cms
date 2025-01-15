@@ -110,10 +110,6 @@
       inset-inline-start: calc(50% - 12px);
       color: var(--ui-control-color);
     }
-
-    .matrixblock > .fields > .flex-fields > .field > .status-badge {
-      inset-inline-start: calc(var(--m) * -1);
-    }
   }
 
   .lp-draghandle {

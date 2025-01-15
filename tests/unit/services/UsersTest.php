@@ -120,6 +120,8 @@ class UsersTest extends TestCase
 
         self::assertSame(User::STATUS_ACTIVE, $user->getStatus());
         self::assertSame('jsmith@gmail.com', $user->username);
+
+        Craft::$app->getConfig()->getGeneral()->useEmailAsUsername = false;
     }
 
     /**
@@ -139,6 +141,8 @@ class UsersTest extends TestCase
 
         self::assertSame(User::STATUS_ACTIVE, $user->getStatus());
         self::assertSame('jsmith', $user->username);
+
+        Craft::$app->getConfig()->getGeneral()->useEmailAsUsername = false;
     }
 
     /**

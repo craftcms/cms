@@ -386,6 +386,10 @@ class Addresses extends Field implements
         // error or we're loading an entry revision.
         if ($value === '') {
             $query->setCachedResult([]);
+        } elseif ($value === '*') {
+            // preload the nested entries so NestedElementManager::saveNestedElements() doesn't resave them all
+            $query->drafts(null)->savedDraftsOnly()->status(null)->limit(null);
+            $query->setCachedResult($query->all());
         } elseif ($element && is_array($value)) {
             $query->setCachedResult($this->createAddressesFromSerializedData($value, $element, $fromRequest));
         }
@@ -659,6 +663,9 @@ class Addresses extends Field implements
         $config += [
             'allowedViewModes' => [ElementIndexViewMode::Cards],
             'pageSize' => $this->pageSize ?? 50,
+            // addresses don't have drafts, but in this particular context we need to allow drafts,
+            // so that addresses show while adding them via slideout in the element index view mode
+            'canHaveDrafts' => true,
         ];
 
         return $this->addressManager()->getIndexHtml($owner, $config);

@@ -1628,6 +1628,22 @@ class Users extends Component
     }
 
     /**
+     * Returns the maximum number of users the system can have, for the given Craft edition.
+     *
+     * @param CmsEdition $edition
+     * @return int|null
+     * @since 5.5.0
+     */
+    final public function getMaxUsers(CmsEdition $edition): ?int
+    {
+        return match ($edition) {
+            CmsEdition::Solo => 1,
+            CmsEdition::Team => 5,
+            default => null,
+        };
+    }
+
+    /**
      * Returns whether new users can be added to the system.
      *
      * @return bool
@@ -1635,11 +1651,7 @@ class Users extends Component
      */
     final public function canCreateUsers(): bool
     {
-        if (Craft::$app->edition->value >= CmsEdition::Pro->value) {
-            return true;
-        }
-
-        $max = Craft::$app->edition === CmsEdition::Solo ? 1 : 5;
-        return User::find()->status(null)->count() < $max;
+        $maxUsers = $this->getMaxUsers(Craft::$app->edition);
+        return !$maxUsers || $maxUsers > User::find()->status(null)->count();
     }
 }

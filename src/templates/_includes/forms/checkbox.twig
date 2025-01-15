@@ -1,3 +1,4 @@
+{% from '_includes/forms' import text %}
 {%- apply spaceless %}
 
 {% set id = id ?? "checkbox#{random()}" %}
@@ -35,7 +36,14 @@
 {{ input('checkbox', name ?? null, value ?? 1, inputAttributes) }}
 
 <label for="{{ id }}">
-    {{ label }}
+    {% if custom ?? false %}
+        {{ text({
+            value: value ?? null,
+            class: 'small',
+        }) }}
+    {% else %}
+        {{ label }}
+    {% endif %}
     {% if info ?? null %}
         <span class="info">{{ info|md|raw }}</span>
     {% endif %}

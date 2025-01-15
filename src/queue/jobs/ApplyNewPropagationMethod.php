@@ -32,8 +32,7 @@ use Throwable;
 class ApplyNewPropagationMethod extends BaseBatchedElementJob
 {
     /**
-     * @var string The element type to use
-     * @phpstan-var class-string<ElementInterface>
+     * @var class-string<ElementInterface> The element type to use
      */
     public string $elementType;
 
@@ -51,10 +50,7 @@ class ApplyNewPropagationMethod extends BaseBatchedElementJob
      */
     protected function loadData(): Batchable
     {
-        /** @var string|ElementInterface $elementType */
-        /** @phpstan-var class-string<ElementInterface>|ElementInterface $elementType */
-        $elementType = $this->elementType;
-        $query = $elementType::find()
+        $query = $this->elementType::find()
             ->site('*')
             ->preferSites([Craft::$app->getSites()->getPrimarySite()->id])
             ->unique()

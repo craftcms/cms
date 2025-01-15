@@ -21,8 +21,7 @@ use craft\queue\BaseJob;
 class PruneRevisions extends BaseJob
 {
     /**
-     * @var string The type of elements to update.
-     * @phpstan-var class-string<ElementInterface>
+     * @var class-string<ElementInterface> The type of elements to update.
      */
     public string $elementType;
 
@@ -56,10 +55,7 @@ class PruneRevisions extends BaseJob
             $this->maxRevisions = $generalConfig->maxRevisions;
         }
 
-        /** @var string|ElementInterface $class */
-        /** @phpstan-var class-string<ElementInterface>|ElementInterface $class */
-        $class = $this->elementType;
-        $extraRevisions = $class::find()
+        $extraRevisions = $this->elementType::find()
             ->revisionOf($this->canonicalId)
             ->siteId($this->siteId)
             ->status(null)

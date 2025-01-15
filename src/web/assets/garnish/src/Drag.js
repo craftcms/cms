@@ -61,6 +61,8 @@ export default BaseDrag.extend(
      * Start Dragging
      */
     startDragging: function () {
+      this.onBeforeDragStart();
+
       // Reset some things
       this.helpers = [];
       this.helperTargets = [];
@@ -104,7 +106,8 @@ export default BaseDrag.extend(
         this.updateHelperPosProxy
       );
 
-      this.base();
+      this.dragging = true;
+      this.onDragStart();
     },
 
     /**
@@ -323,6 +326,7 @@ export default BaseDrag.extend(
         top: helperPos.top,
         left: helperPos.left,
         zIndex: this.settings.helperBaseZindex + this.$draggee.length - index,
+        display: this.draggeeDisplay,
       });
 
       if (this.settings.helperOpacity != 1) {

@@ -79,6 +79,13 @@ Craft.ElementTableSorter = Garnish.DragSort.extend(
       // Are we dragging the last elements on the page?
       this.draggingLastElements = !$nextRow.length;
 
+      if (
+        this.tableView.elementIndex.paginated &&
+        this.settings.structureId == null
+      ) {
+        return $draggee;
+      }
+
       // Do we have a maxLevels to enforce,
       // and does it look like this draggee has descendants we don't know about yet?
       if (
@@ -187,7 +194,10 @@ Craft.ElementTableSorter = Garnish.DragSort.extend(
       this._setTargetLevelBounds();
 
       // Check to see if we should load more elements now
-      this.tableView.maybeLoadMore();
+
+      if (!this.tableView.elementIndex.paginated) {
+        this.tableView.maybeLoadMore();
+      }
 
       this.base();
     },
@@ -337,10 +347,14 @@ Craft.ElementTableSorter = Garnish.DragSort.extend(
     onReturnHelpersToDraggees: function () {
       this._$firstRowCells.css('width', '');
 
-      // If we were dragging the last elements on the page and ended up loading any additional elements in,
+      // If we were dragging the last elements on the page (and it's not a paginated view) and ended up loading any additional elements in,
       // there could be a gap between the last draggee item and whatever now comes after it.
       // So remove the post-draggee elements and possibly load up the next batch.
-      if (this.draggingLastElements && this.tableView.getMorePending()) {
+      if (
+        this.draggingLastElements &&
+        !this.tableView.elementIndex.paginated &&
+        this.tableView.getMorePending()
+      ) {
         // Update the element index's record of how many items are actually visible
         this.tableView._totalVisible +=
           this.newDraggeeIndexes[0] - this.oldDraggeeIndexes[0];

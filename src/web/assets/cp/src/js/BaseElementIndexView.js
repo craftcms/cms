@@ -123,9 +123,10 @@ Craft.BaseElementIndexView = Garnish.Base.extend(
       // Give sub-classes a chance to do post-initialization stuff here
       this.afterInit();
 
-      // Set up lazy-loading
+      // Set up $scroller for reordering
       if (
-        !this.elementIndex.paginated &&
+        (!this.elementIndex.paginated ||
+          this.elementIndex.settings.context === 'embedded-index') &&
         this.elementIndex.settings.batchSize
       ) {
         if (this.settings.context === 'index') {
@@ -135,8 +136,12 @@ Craft.BaseElementIndexView = Garnish.Base.extend(
         }
 
         this.$scroller.scrollTop(0);
-        this.addListener(this.$scroller, 'scroll', 'maybeLoadMore');
-        this.maybeLoadMore();
+
+        // and if we're not in a paginated view, set up lazy-loading
+        if (!this.elementIndex.paginated) {
+          this.addListener(this.$scroller, 'scroll', 'maybeLoadMore');
+          this.maybeLoadMore();
+        }
       }
     },
 

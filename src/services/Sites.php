@@ -1326,7 +1326,7 @@ class Sites extends Component
             $nonLocalizedElementTypes = [];
 
             foreach (Craft::$app->getElements()->getAllElementTypes() as $elementType) {
-                /** @var ElementInterface|string $elementType */
+                /** @var class-string<ElementInterface> $elementType */
                 if (!$elementType::isLocalized()) {
                     $nonLocalizedElementTypes[] = $elementType;
                 }

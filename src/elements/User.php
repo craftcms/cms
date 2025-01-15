@@ -29,6 +29,7 @@ use craft\enums\MenuItemType;
 use craft\enums\PropagationMethod;
 use craft\events\AuthenticateUserEvent;
 use craft\events\DefineValueEvent;
+use craft\fieldlayoutelements\users\FullNameField;
 use craft\helpers\App;
 use craft\helpers\ArrayHelper;
 use craft\helpers\DateTimeHelper;
@@ -60,6 +61,7 @@ use yii\base\InvalidArgumentException;
 use yii\base\InvalidConfigException;
 use yii\base\NotSupportedException;
 use yii\validators\InlineValidator;
+use yii\validators\RequiredValidator;
 use yii\validators\Validator;
 use yii\web\BadRequestHttpException;
 use yii\web\IdentityInterface;
@@ -419,7 +421,6 @@ class User extends Element implements IdentityInterface
                     'orderBy' => 'dateUpdated',
                     'defaultDir' => 'desc',
                 ],
-                'id' => Craft::t('app', 'ID'),
             ];
         } else {
             $attributes = [
@@ -443,7 +444,6 @@ class User extends Element implements IdentityInterface
                     'orderBy' => 'dateUpdated',
                     'defaultDir' => 'desc',
                 ],
-                'id' => Craft::t('app', 'ID'),
             ];
         }
 
@@ -493,6 +493,53 @@ class User extends Element implements IdentityInterface
         } else {
             parent::prepElementQueryForTableAttribute($elementQuery, $attribute);
         }
+    }
+
+    /**
+     * @inheritdoc
+     */
+    protected static function defineCardAttributes(): array
+    {
+        $i18n = Craft::$app->getI18n();
+
+        return array_merge(parent::defineCardAttributes(), [
+            'email' => [
+                'label' => Craft::t('app', 'Email'),
+                'placeholder' => 'test@example.com',
+            ],
+            'username' => [
+                'label' => Craft::t('app', 'Username'),
+                'placeholder' => Craft::t('app', 'Username'),
+            ],
+            'firstName' => [
+                'label' => Craft::t('app', 'First Name'),
+                'placeholder' => Craft::t('app', 'First Name'),
+            ],
+            'lastName' => [
+                'label' => Craft::t('app', 'Last Name'),
+                'placeholder' => Craft::t('app', 'Last Name'),
+            ],
+            'fullName' => [
+                'label' => Craft::t('app', 'Full Name'),
+                'placeholder' => Craft::t('app', 'Full Name'),
+            ],
+            'groups' => [
+                'label' => Craft::t('app', 'Groups'),
+                'placeholder' => Craft::t('app', 'Group Name'),
+            ],
+            'preferredLanguage' => [
+                'label' => Craft::t('app', 'Preferred Language'),
+                'placeholder' => $i18n->getLocaleById('en')->getDisplayName(Craft::$app->language),
+            ],
+            'preferredLocale' => [
+                'label' => Craft::t('app', 'Preferred Locale'),
+                'placeholder' => $i18n->getLocaleById('en-US')->getDisplayName(Craft::$app->language),
+            ],
+            'lastLoginDate' => [
+                'label' => Craft::t('app', 'Last Login'),
+                'placeholder' => (new \DateTime())->sub(new \DateInterval('P14D')),
+            ],
+        ]);
     }
 
     /**
@@ -565,7 +612,7 @@ class User extends Element implements IdentityInterface
             return $user;
         }
 
-        // If the current user is being impersonated by an admin, ignore their status
+        // If the current user is being impersonated, ignore their status
         if ($previousUserId = Session::get(self::IMPERSONATE_KEY)) {
             /** @var self|null $previousUser */
             $previousUser = self::find()
@@ -885,6 +932,27 @@ class User extends Element implements IdentityInterface
     /**
      * @inheritdoc
      */
+    public function afterValidate(): void
+    {
+        $scenario = $this->getScenario();
+
+        if ($scenario === self::SCENARIO_LIVE) {
+            $fullNameElement = $this->getFieldLayout()->getFirstVisibleElementByType(FullNameField::class, $this);
+            if ($fullNameElement && $fullNameElement->required) {
+                if (Craft::$app->getConfig()->getGeneral()->showFirstAndLastNameFields) {
+                    (new RequiredValidator(['attributes' => ['firstName', 'lastName']]))->validateAttributes($this, ['firstName', 'lastName']);
+                } else {
+                    (new RequiredValidator())->validateAttribute($this, 'fullName');
+                }
+            }
+        }
+
+        parent::afterValidate();
+    }
+
+    /**
+     * @inheritdoc
+     */
     protected function defineRules(): array
     {
         $rules = parent::defineRules();
@@ -910,13 +978,24 @@ class User extends Element implements IdentityInterface
 
         if (Craft::$app->getIsInstalled()) {
             $rules[] = [
-                ['username', 'email'],
+                ['email'],
                 UniqueValidator::class,
                 'targetClass' => UserRecord::class,
                 'caseInsensitive' => true,
                 'filter' => ['or', ['active' => true], ['pending' => true]],
                 'when' => $treatAsActive,
             ];
+
+            if (!Craft::$app->getConfig()->getGeneral()->useEmailAsUsername) {
+                $rules[] = [
+                    ['username'],
+                    UniqueValidator::class,
+                    'targetClass' => UserRecord::class,
+                    'caseInsensitive' => true,
+                    'filter' => ['or', ['active' => true], ['pending' => true]],
+                    'when' => $treatAsActive,
+                ];
+            }
 
             $rules[] = [['unverifiedEmail'], 'validateUnverifiedEmail'];
         }
@@ -1087,7 +1166,9 @@ class User extends Element implements IdentityInterface
                 return ElementCollection::make();
             }
 
-            $this->_addresses = $this->createAddressQuery()->collect();
+            $this->_addresses = $this->createAddressQuery()
+                ->andWhere(['fieldId' => null])
+                ->collect();
         }
 
         return $this->_addresses;
@@ -1895,6 +1976,7 @@ XML;
                         'params' => [
                             'userId' => $this->id,
                         ],
+                        'requireElevatedSession' => true,
                     ];
 
                     $copyImpersonationUrlId = sprintf('action-copy-impersonation-url-%s', mt_rand());
@@ -1906,13 +1988,15 @@ XML;
 
                     $view->registerJsWithVars(fn($id, $userId, $message) => <<<JS
 $('#' + $id).on('activate', () => {
-  Craft.sendActionRequest('POST', 'users/get-impersonation-url', {
-    data: {userId: $userId},
-  }).then((response) => {
-    Craft.ui.createCopyTextPrompt({
-      label: $message,
-      value: response.data.url,
-    });
+  Craft.elevatedSessionManager.requireElevatedSession(() => {
+      Craft.sendActionRequest('POST', 'users/get-impersonation-url', {
+        data: {userId: $userId},
+      }).then((response) => {
+        Craft.ui.createCopyTextPrompt({
+          label: $message,
+          value: response.data.url,
+        });
+      });
   });
 });
 JS, [
@@ -1990,9 +2074,9 @@ JS, [
                     $items[] = [
                         'id' => $deleteId,
                         'icon' => 'trash',
-                        'label' => Craft::t('app', 'Delete {type}', [
+                        'label' => StringHelper::upperCaseFirst(Craft::t('app', 'Delete {type}', [
                             'type' => static::lowerDisplayName(),
-                        ]),
+                        ])),
                     ];
 
                     $view->registerJsWithVars(fn($id, $userId, $redirect) => <<<JS
@@ -2285,6 +2369,10 @@ JS, [
     {
         if ($isNew && !Craft::$app->getUsers()->canCreateUsers()) {
             return false;
+        }
+
+        if (Craft::$app->getConfig()->getGeneral()->useEmailAsUsername) {
+            $this->username = $this->email;
         }
 
         return parent::beforeSave($isNew);

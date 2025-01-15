@@ -18,11 +18,13 @@ use craft\helpers\Cp;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\Html;
 use craft\helpers\Json;
+use craft\helpers\Session;
 use craft\helpers\StringHelper;
 use craft\helpers\UrlHelper;
 use craft\i18n\Locale;
 use craft\models\Section;
 use craft\services\Sites;
+use craft\utilities\QueueManager;
 use craft\validators\UserPasswordValidator;
 use craft\web\AssetBundle;
 use craft\web\assets\axios\AxiosAsset;
@@ -161,11 +163,12 @@ JS;
             'Couldn’t delete “{name}”.',
             'Couldn’t reorder items.',
             'Couldn’t save new order.',
-            'Create',
             'Create {type}',
+            'Create',
             'Customize sources',
             'Default Sort',
             'Default Table Columns',
+            'Default View Mode',
             'Delete custom source',
             'Delete folder',
             'Delete heading',
@@ -235,8 +238,8 @@ JS;
             'Level {num}',
             'License transferred.',
             'Limit',
-            'Loading',
             'Loading complete',
+            'Loading',
             'Make not required',
             'Make optional',
             'Make required',
@@ -304,6 +307,7 @@ JS;
             'Reorder',
             'Replace it',
             'Replace the folder (all existing files will be deleted)',
+            'Replace',
             'Required',
             'Rotate',
             'Row could not be added. Maximum number of rows reached.',
@@ -382,6 +386,7 @@ JS;
             'User Groups',
             'View in a new tab',
             'View in a new tab',
+            'View mode options',
             'View settings',
             'View',
             'Volume path',
@@ -415,10 +420,10 @@ JS;
             '{name} active, more info',
             '{name} folder',
             '{name} sorted by {attribute}, {direction}',
-            '{num, number} {num, plural, =1{result} other{results}}',
             '{num, number} {num, plural, =1{Available Update} other{Available Updates}}',
             '{num, number} {num, plural, =1{degree} other{degrees}}',
             '{num, number} {num, plural, =1{notification} other{notifications}}',
+            '{num, number} {num, plural, =1{result} other{results}}',
             '{pct} width',
             '{total, number} {total, plural, =1{error} other{errors}} found in {num, number} {num, plural, =1{tab} other{tabs}}.',
             '{total, number} {total, plural, =1{{item}} other{{items}}}',
@@ -501,14 +506,22 @@ JS;
 
         $elementTypeNames = [];
         foreach (Craft::$app->getElements()->getAllElementTypes() as $elementType) {
-            /** @var string|ElementInterface $elementType */
-            /** @phpstan-var class-string<ElementInterface>|ElementInterface $elementType */
+            /** @var class-string<ElementInterface> $elementType */
             $elementTypeNames[$elementType] = [
                 $elementType::displayName(),
                 $elementType::pluralDisplayName(),
                 $elementType::lowerDisplayName(),
                 $elementType::pluralLowerDisplayName(),
             ];
+        }
+
+        $impersonator = null;
+        // if we're impersonating, we need to check if the original user has passkey
+        if ($previousUserId = Session::get(User::IMPERSONATE_KEY)) {
+            /** @var User|null $impersonator */
+            $impersonator = User::find()
+                ->id($previousUserId)
+                ->one();
         }
 
         $data += [
@@ -519,7 +532,7 @@ JS;
             'appId' => Craft::$app->id,
             'autofocusPreferred' => $currentUser->getAutofocusPreferred(),
             'autosaveDrafts' => $generalConfig->autosaveDrafts,
-            'canAccessQueueManager' => $userSession->checkPermission('utility:queue-manager'),
+            'canAccessQueueManager' => Craft::$app->getUtilities()->checkAuthorization(QueueManager::class),
             'dataAttributes' => Html::$dataAttributes,
             'defaultIndexCriteria' => [],
             'disableAutofocus' => (bool)($currentUser->getPreference('disableAutofocus') ?? false),
@@ -546,7 +559,7 @@ JS;
             'siteToken' => $generalConfig->siteToken,
             'slugWordSeparator' => $generalConfig->slugWordSeparator,
             'userEmail' => $currentUser->email,
-            'userHasPasskeys' => Craft::$app->getAuth()->hasPasskeys($currentUser),
+            'userHasPasskeys' => Craft::$app->getAuth()->hasPasskeys($impersonator ?? $currentUser),
             'userIsAdmin' => $currentUser->admin,
             'username' => $currentUser->username,
         ];

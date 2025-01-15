@@ -1,19 +1,6 @@
 {% extends '_layouts/cp.twig' %}
 
-{% set elementInstance = craft.app.elements.createElement(elementType) %}
-{% set title = title ?? elementInstance.pluralDisplayName() %}
-{% set context = 'index' %}
-
-{% if not elementInstance %}
-    {% exit 404 %}
-{% endif %}
-
-{% set sources = craft.app.elementSources.getSources(elementType, 'index', true) %}
-
-{% set showSiteMenu = (craft.app.getIsMultiSite() ? (showSiteMenu ?? 'auto') : false) %}
-{% if showSiteMenu is same as ('auto') %}
-    {% set showSiteMenu = elementInstance.isLocalized() %}
-{% endif %}
+{% hook 'cp.layouts.elementindex' %}
 
 {% if showSiteMenu %}
     {% if selectableSites is not defined %}
@@ -44,8 +31,6 @@
         }
     }) %}
 {% endif %}
-
-{% set canHaveDrafts = canHaveDrafts ?? elementInstance.hasDrafts() %}
 
 {% block sidebar %}
     {% if sources is not empty %}
@@ -90,8 +75,8 @@
 
 {% block initJs %}
     Craft.elementIndex = Craft.createElementIndex('{{ elementType|e("js") }}', $('#page-container'), {
-        elementTypeName: '{{ elementInstance.displayName()|e("js") }}',
-        elementTypePluralName: '{{ elementInstance.pluralDisplayName()|e("js") }}',
+        elementTypeName: '{{ elementDisplayName|e("js") }}',
+        elementTypePluralName: '{{ elementPluralDisplayName|e("js") }}',
         context: '{{ context }}',
         storageKey: 'elementindex.{{ elementType|e("js") }}',
         criteria: Craft.defaultIndexCriteria,

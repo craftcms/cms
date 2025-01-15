@@ -505,7 +505,7 @@ class Cp extends Component
     public function areAlertsCached(): bool
     {
         // The license key status gets cached on each Craftnet request
-        return (Craft::$app->getCache()->get('licenseInfo') !== false);
+        return (Craft::$app->getCache()->get(App::licenseInfoCacheKey()) !== false);
     }
 
     /**
@@ -786,24 +786,26 @@ class Cp extends Component
     /**
      * Returns all known time zones for a time zone input.
      *
+     * @param DateTime|null $offsetDate The [[DateTime]] object that contains the date/time to compute time zone offsets from
      * @return array
      * @since 3.7.0
      */
-    public function getTimeZoneOptions(): array
+    public function getTimeZoneOptions(?DateTime $offsetDate = null): array
     {
         // Assemble the timezone options array (Technique adapted from http://stackoverflow.com/a/7022536/1688568)
         $options = [];
 
-        $utc = new DateTime();
+        $offsetDate ??= new DateTime();
+        $offsetDate->setTimezone(new DateTimeZone('UTC'));
         $offsets = [];
         $timezoneIds = [];
 
         foreach (DateTimeZone::listIdentifiers() as $timezoneId) {
             $timezone = new DateTimeZone($timezoneId);
-            $transition = $timezone->getTransitions($utc->getTimestamp(), $utc->getTimestamp());
+            $transition = $timezone->getTransitions($offsetDate->getTimestamp(), $offsetDate->getTimestamp());
             $abbr = $transition[0]['abbr'];
 
-            $offset = round($timezone->getOffset($utc) / 60);
+            $offset = round($timezone->getOffset($offsetDate) / 60);
 
             if ($offset) {
                 $hour = floor($offset / 60);
@@ -1088,6 +1090,7 @@ class Cp extends Component
      * @param array $config
      * @return string
      * @since 4.0.0
+     * @deprecated in 5.5.0. The `fieldLayoutDesigner()` global CP function should be used instead.
      */
     public function fieldLayoutDesigner(FieldLayout $fieldLayout, array $config = []): string
     {

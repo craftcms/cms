@@ -12,6 +12,7 @@ use craft\base\ElementInterface;
 use craft\base\Field;
 use craft\base\InlineEditableFieldInterface;
 use craft\base\MergeableFieldInterface;
+use craft\elements\Entry;
 use craft\fields\data\ColorData;
 use craft\helpers\Cp;
 use craft\helpers\Html;
@@ -233,5 +234,17 @@ class Color extends Field implements InlineEditableFieldInterface, MergeableFiel
 
         return "<div class='color small static'><div class='color-preview' style='background-color: {$value->getHex()};'></div></div>" .
             "<div class='colorhex code'>{$value->getHex()}</div>";
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function previewPlaceholderHtml(mixed $value, ?ElementInterface $element): string
+    {
+        if (!$value) {
+            $value = new ColorData(sprintf('#%06X', mt_rand(0, 0xFFFFFF)));
+        }
+
+        return $this->getPreviewHtml($value, $element ?? new Entry());
     }
 }

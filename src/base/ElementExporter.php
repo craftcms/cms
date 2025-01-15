@@ -24,8 +24,7 @@ abstract class ElementExporter extends Component implements ElementExporterInter
     }
 
     /**
-     * @var string
-     * @phpstan-var class-string<ElementInterface>
+     * @var class-string<ElementInterface>
      */
     protected string $elementType;
 

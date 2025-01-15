@@ -1,12 +1,19 @@
 /** global: Craft */
 /** global: Garnish */
+const punycode = require('punycode/');
+
 /**
- * Handle Generator
+ * Link Input
  */
 Craft.LinkInput = Garnish.Base.extend(
   {
+    /** @type Craft.LinkField */
+    field: null,
+
     /** @type {jQuery} */
     $container: null,
+    /** @type {jQuery} */
+    $field: null,
     /** @type {jQuery|null} */
     $chip: null,
     /** @type {jQuery|null} */
@@ -21,6 +28,10 @@ Craft.LinkInput = Garnish.Base.extend(
       this.setSettings(settings, Craft.LinkInput.defaults);
 
       this.$container.data('linkInput', this);
+      this.field = this.$container
+        .closest('[data-link-field]')
+        .parent()
+        .data('linkField');
       this.$chip = this.$container.children('.chip');
       this.$textInput = this.$container.children('.text');
       this.$hiddenInput = this.$container.children('input[type=hidden]');
@@ -88,11 +99,13 @@ Craft.LinkInput = Garnish.Base.extend(
     <a href="${Craft.escapeHtml(value)}" rel="noopener" target="_blank">
       ${Craft.escapeHtml(label)}
     </a>
+    <div class="chip-actions">
+      <button class="btn action-btn" type="button" aria-controls="${menuId}"
+          aria-label="${Craft.t('app', 'Actions')}"
+          data-disclosure-trigger data-icon="ellipsis"></button>
+      <div id="${menuId}" class="menu menu--disclosure"></div>
+    </div>
   </div>
-  <button class="btn action-btn" type="button" aria-controls="${menuId}"
-      aria-label="${Craft.t('app', 'Actions')}"
-      data-disclosure-trigger data-icon="ellipsis"></button>
-  <div id="${menuId}" class="menu menu--disclosure"></div>
 </div>
 `).prependTo(this.$container);
 
@@ -122,7 +135,9 @@ Craft.LinkInput = Garnish.Base.extend(
 
     initTextInput: function () {
       this.addListener(this.$textInput, 'input', () => {
-        this.$hiddenInput.val(this.normalize(this.$textInput.val()));
+        const value = this.normalize(this.$textInput.val());
+        this.$hiddenInput.val(value);
+        this.field.updateLabel(this.removePrefix(value));
       });
 
       this.addListener(this.$textInput, 'blur', () => {
@@ -146,6 +161,7 @@ Craft.LinkInput = Garnish.Base.extend(
     },
 
     validate: function (value) {
+      value = punycode.toASCII(value);
       return !!value.match(new RegExp(this.settings.pattern, 'i'));
     },
 

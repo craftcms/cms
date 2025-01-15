@@ -21,15 +21,24 @@ use craft\elements\Tag;
 use craft\elements\User;
 use craft\errors\InvalidElementException;
 use craft\events\MultiElementActionEvent;
+use craft\helpers\Console;
 use craft\helpers\ElementHelper;
+use craft\helpers\Inflector;
 use craft\helpers\Queue;
 use craft\helpers\StringHelper;
+use craft\models\CategoryGroup;
+use craft\models\EntryType;
+use craft\models\FieldLayout;
 use craft\models\Site;
+use craft\models\TagGroup;
+use craft\models\Volume;
 use craft\queue\jobs\ResaveElements;
 use craft\services\Elements;
+use Illuminate\Support\Collection;
+use ReflectionClass;
 use Throwable;
+use yii\console\Exception;
 use yii\console\ExitCode;
-use yii\helpers\Console;
 
 /**
  * Allows you to bulk-save elements.
@@ -204,6 +213,12 @@ class ResaveController extends Controller
     public ?string $countryCode = null;
 
     /**
+     * @var string[] Only resave elements that have custom fields with these global field handles.
+     * @since 5.5.0
+     */
+    public array $withFields = [];
+
+    /**
      * @var string|null An attribute name that should be set for each of the elements. The value will be determined by --to.
      * @since 3.7.29
      */
@@ -258,17 +273,23 @@ class ResaveController extends Controller
         $options[] = 'touch';
 
         switch ($actionID) {
+            case 'all':
+                $options[] = 'withFields';
+                break;
             case 'addresses':
                 $options[] = 'ownerId';
                 $options[] = 'countryCode';
+                $options[] = 'withFields';
                 break;
             case 'assets':
                 $options[] = 'volume';
+                $options[] = 'withFields';
                 break;
             case 'tags':
             case 'users':
             case 'categories':
                 $options[] = 'group';
+                $options[] = 'withFields';
                 break;
             case 'entries':
                 $options[] = 'section';
@@ -281,6 +302,7 @@ class ResaveController extends Controller
                 $options[] = 'revisions';
                 $options[] = 'propagateTo';
                 $options[] = 'setEnabledForSite';
+                $options[] = 'withFields';
                 break;
         }
 
@@ -329,6 +351,79 @@ class ResaveController extends Controller
     }
 
     /**
+     * Runs all other `resave/*` commands.
+     *
+     * @return int
+     */
+    public function actionAll(): int
+    {
+        $actions = [];
+        $ref = new ReflectionClass($this);
+        foreach ($ref->getMethods() as $method) {
+            if (
+                $method->name !== 'actionAll' &&
+                $method->isPublic() &&
+                !$method->isStatic() &&
+                !$method->isAbstract() &&
+                $method->getDeclaringClass()->name === self::class &&
+                str_starts_with($method->name, 'action')
+            ) {
+                $actions[] = StringHelper::toKebabCase(substr($method->name, 6));
+            }
+        }
+        array_push($actions, ...array_keys($this->actions()));
+
+        $params = $this->getPassedOptionValues();
+        $actionsToSkip = [];
+
+        // check if all actions support all the params
+        foreach ($actions as $key => $id) {
+            if (!$this->doesActionSupportsAllOptions($id, $params)) {
+                $actionsToSkip[] = $id;
+                unset($actions[$key]);
+            }
+        }
+
+        // ask for confirmation
+        if ($this->interactive && !empty($actionsToSkip)) {
+            $this->output('The following commands don’t support the provided options, and will be skipped:', Console::FG_YELLOW);
+            foreach ($actionsToSkip as $id) {
+                $invalidParams = array_map(
+                    fn($param) => sprintf('`--%s`', StringHelper::toKebabCase($param)),
+                    $this->getUnsupportedOptions($id, $params)
+                );
+                $this->output(' ' . $this->markdownToAnsi(sprintf(
+                    '- `resave/%s` doesn’t support %s',
+                    $id,
+                    Inflector::sentence($invalidParams)
+                )));
+            }
+            Console::outdent();
+            if (!$this->confirm('Continue?', true)) {
+                return ExitCode::OK;
+            }
+        }
+
+        // run the actions which support all the params
+        foreach ($actions as $id) {
+            try {
+                $this->output();
+                $this->do("Running `resave/$id`", function() use ($id, $params) {
+                    Console::indent();
+                    try {
+                        $this->runAction($id, $params);
+                    } finally {
+                        Console::outdent();
+                    }
+                });
+            } catch (Exception) {
+            }
+        }
+
+        return ExitCode::OK;
+    }
+
+    /**
      * Re-saves user addresses.
      *
      * @return int
@@ -343,6 +438,15 @@ class ResaveController extends Controller
         if (isset($this->countryCode)) {
             $criteria['countryCode'] = explode(',', (string)$this->countryCode);
         }
+
+        if (!empty($this->withFields)) {
+            $fieldLayout = Craft::$app->getAddresses()->getFieldLayout();
+            if (!$this->hasTheFields($fieldLayout)) {
+                $this->output($this->markdownToAnsi('The address field layout doesn’t satisfy `--with-fields`.'));
+                return ExitCode::UNSPECIFIED_ERROR;
+            }
+        }
+
         return $this->resaveElements(Address::class, $criteria);
     }
 
@@ -357,6 +461,23 @@ class ResaveController extends Controller
         if (isset($this->volume)) {
             $criteria['volume'] = explode(',', $this->volume);
         }
+
+        if (!empty($this->withFields)) {
+            $handles = Collection::make(Craft::$app->getVolumes()->getAllVolumes())
+                ->filter(fn(Volume $volume) => $this->hasTheFields($volume->getFieldLayout()))
+                ->map(fn(Volume $volume) => $volume->handle)
+                ->all();
+            if (isset($criteria['volume'])) {
+                $criteria['volume'] = array_intersect($criteria['volume'], $handles);
+            } else {
+                $criteria['volume'] = $handles;
+            }
+            if (empty($criteria['volume'])) {
+                $this->output($this->markdownToAnsi('No volumes satisfy `--with-fields`.'));
+                return ExitCode::UNSPECIFIED_ERROR;
+            }
+        }
+
         return $this->resaveElements(Asset::class, $criteria);
     }
 
@@ -371,6 +492,23 @@ class ResaveController extends Controller
         if (isset($this->group)) {
             $criteria['group'] = explode(',', $this->group);
         }
+
+        if (!empty($this->withFields)) {
+            $handles = Collection::make(Craft::$app->getCategories()->getAllGroups())
+                ->filter(fn(CategoryGroup $group) => $this->hasTheFields($group->getFieldLayout()))
+                ->map(fn(CategoryGroup $group) => $group->handle)
+                ->all();
+            if (isset($criteria['group'])) {
+                $criteria['group'] = array_intersect($criteria['group'], $handles);
+            } else {
+                $criteria['group'] = $handles;
+            }
+            if (empty($criteria['group'])) {
+                $this->output($this->markdownToAnsi('No category groups satisfy `--with-fields`.'));
+                return ExitCode::UNSPECIFIED_ERROR;
+            }
+        }
+
         return $this->resaveElements(Category::class, $criteria);
     }
 
@@ -396,6 +534,23 @@ class ResaveController extends Controller
         if (isset($this->type)) {
             $criteria['type'] = explode(',', $this->type);
         }
+
+        if (!empty($this->withFields)) {
+            $handles = Collection::make(Craft::$app->getEntries()->getAllEntryTypes())
+                ->filter(fn(EntryType $entryType) => $this->hasTheFields($entryType->getFieldLayout()))
+                ->map(fn(EntryType $entryType) => $entryType->handle)
+                ->all();
+            if (isset($criteria['type'])) {
+                $criteria['type'] = array_intersect($criteria['type'], $handles);
+            } else {
+                $criteria['type'] = $handles;
+            }
+            if (empty($criteria['type'])) {
+                $this->output($this->markdownToAnsi('No entry types satisfy `--with-fields`.'));
+                return ExitCode::UNSPECIFIED_ERROR;
+            }
+        }
+
         return $this->resaveElements(Entry::class, $criteria);
     }
 
@@ -410,6 +565,23 @@ class ResaveController extends Controller
         if (isset($this->group)) {
             $criteria['group'] = explode(',', $this->group);
         }
+
+        if (!empty($this->withFields)) {
+            $handles = Collection::make(Craft::$app->getTags()->getAllTagGroups())
+                ->filter(fn(TagGroup $group) => $this->hasTheFields($group->getFieldLayout()))
+                ->map(fn(TagGroup $group) => $group->handle)
+                ->all();
+            if (isset($criteria['group'])) {
+                $criteria['group'] = array_intersect($criteria['group'], $handles);
+            } else {
+                $criteria['group'] = $handles;
+            }
+            if (empty($criteria['group'])) {
+                $this->output($this->markdownToAnsi('No tag groups satisfy `--with-fields`.'));
+                return ExitCode::UNSPECIFIED_ERROR;
+            }
+        }
+
         return $this->resaveElements(Tag::class, $criteria);
     }
 
@@ -424,20 +596,44 @@ class ResaveController extends Controller
         if (isset($this->group)) {
             $criteria['group'] = explode(',', $this->group);
         }
+
+        if (!empty($this->withFields)) {
+            $fieldLayout = Craft::$app->getFields()->getLayoutByType(User::class);
+            if (!$this->hasTheFields($fieldLayout)) {
+                $this->output($this->markdownToAnsi('The user field layout doesn’t satisfy `--with-fields`.'));
+                return ExitCode::UNSPECIFIED_ERROR;
+            }
+        }
+
         return $this->resaveElements(User::class, $criteria);
     }
 
     /**
-     * @param string $elementType The element type that should be resaved
-     * @phpstan-param class-string<ElementInterface> $elementType
+     * Returns whether a field layout has any of the fields specified by [[$withFields]].
+     * @param FieldLayout $fieldLayout
+     * @return bool
+     * @since 5.5.0
+     */
+    public function hasTheFields(FieldLayout $fieldLayout): bool
+    {
+        $fieldsService = Craft::$app->getFields();
+        foreach ($this->withFields as $handle) {
+            $field = $fieldsService->getFieldByHandle($handle);
+            if ($field && $fieldLayout->getFieldByUid($field->uid)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * @param class-string<ElementInterface> $elementType The element type that should be resaved
      * @param array $criteria The element criteria that determines which elements should be resaved
      * @return int
      * @since 3.7.0
      */
     public function resaveElements(string $elementType, array $criteria = []): int
     {
-        /** @var string|ElementInterface $elementType */
-        /** @phpstan-var class-string<ElementInterface>|ElementInterface $elementType */
         $criteria += $this->_baseCriteria();
 
         if ($this->queue) {
@@ -451,7 +647,7 @@ class ResaveController extends Controller
                 'touch' => $this->touch,
                 'updateSearchIndex' => $this->updateSearchIndex,
             ]));
-            $this->stdout($elementType::pluralDisplayName() . ' queued to be resaved.' . PHP_EOL);
+            $this->output($elementType::pluralDisplayName() . ' queued to be resaved.');
             return ExitCode::OK;
         }
 
@@ -537,7 +733,7 @@ class ResaveController extends Controller
         $count = (int)$query->count();
 
         if ($count === 0) {
-            $this->stdout('No ' . $elementType::pluralLowerDisplayName() . ' exist for that criteria.' . PHP_EOL, Console::FG_YELLOW);
+            $this->output('No ' . $elementType::pluralLowerDisplayName() . ' exist for that criteria.', Console::FG_YELLOW);
             return ExitCode::OK;
         }
 
@@ -553,7 +749,7 @@ class ResaveController extends Controller
 
         $label = isset($this->propagateTo) ? 'Propagating' : 'Resaving';
         $elementsText = $count === 1 ? $elementType::lowerDisplayName() : $elementType::pluralLowerDisplayName();
-        $this->stdout("$label $count $elementsText ..." . PHP_EOL, Console::FG_YELLOW);
+        $this->output("$label $count $elementsText ...", Console::FG_YELLOW);
 
         $elementsService = Craft::$app->getElements();
         $fail = false;
@@ -562,7 +758,7 @@ class ResaveController extends Controller
             if ($e->query === $query) {
                 $label = isset($this->propagateTo) ? 'Propagating' : 'Resaving';
                 $element = $e->element;
-                $this->stdout("    - [$e->position/$count] $label $element ($element->id) ... ");
+                $this->stdout(Console::indentStr() . "    - [$e->position/$count] $label $element ($element->id) ... ");
 
                 if (isset($this->propagateTo)) {
                     // Set the full array for all sites, so the propagated element gets the right status
@@ -606,10 +802,10 @@ class ResaveController extends Controller
             if ($e->query === $query) {
                 $element = $e->element;
                 if ($e->exception) {
-                    $this->stderr('error: ' . $e->exception->getMessage() . PHP_EOL, Console::FG_RED);
+                    $this->stdout('error: ' . $e->exception->getMessage() . PHP_EOL, Console::FG_RED);
                     $fail = true;
                 } elseif ($element->hasErrors()) {
-                    $this->stderr('failed: ' . implode(', ', $element->getErrorSummary(true)) . PHP_EOL, Console::FG_RED);
+                    $this->stdout('failed: ' . implode(', ', $element->getErrorSummary(true)) . PHP_EOL, Console::FG_RED);
                     $fail = true;
                 } else {
                     $this->stdout('done' . PHP_EOL, Console::FG_GREEN);
@@ -633,7 +829,47 @@ class ResaveController extends Controller
         }
 
         $label = isset($this->propagateTo) ? 'propagating' : 'resaving';
-        $this->stdout("Done $label $elementsText." . PHP_EOL . PHP_EOL, Console::FG_YELLOW);
+        $this->output("Done $label $elementsText.", Console::FG_YELLOW);
         return $fail ? ExitCode::UNSPECIFIED_ERROR : ExitCode::OK;
+    }
+
+    /**
+     * Returns whether all options passed to an action are supported.
+     * Used by resave/all command.
+     *
+     * @param string $actionId
+     * @param array $params
+     * @return bool
+     */
+    private function doesActionSupportsAllOptions(string $actionId, array $params): bool
+    {
+        $options = $this->options($actionId);
+        foreach ($params as $param => $value) {
+            if (!in_array($param, $options)) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    /**
+     * Returns an array of options that are not supported by the action.
+     *
+     * @param string $actionId
+     * @param array $params
+     * @return array
+     */
+    private function getUnsupportedOptions(string $actionId, array $params): array
+    {
+        $unsupportedParams = [];
+        $options = $this->options($actionId);
+        foreach ($params as $param => $value) {
+            if (!in_array($param, $options)) {
+                $unsupportedParams[] = $param;
+            }
+        }
+
+        return $unsupportedParams;
     }
 }

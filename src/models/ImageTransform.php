@@ -108,8 +108,7 @@ class ImageTransform extends Model
     public ?bool $upscale = null;
 
     /**
-     * @var string The image transformer to use.
-     * @phpstan-var class-string<ImageTransformerInterface>
+     * @var class-string<ImageTransformerInterface> The image transformer to use.
      */
     protected string $transformer = self::DEFAULT_TRANSFORMER;
 

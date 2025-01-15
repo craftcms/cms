@@ -5,6 +5,8 @@ use craft\test\TestSetup;
 ini_set('date.timezone', 'UTC');
 date_default_timezone_set('UTC');
 
+define('CRAFT_ROOT_PATH', dirname(__DIR__));
+
 // Use the current installation of Craft
 const CRAFT_TESTS_PATH = __DIR__;
 const CRAFT_STORAGE_PATH = __DIR__ . DIRECTORY_SEPARATOR . '_craft' . DIRECTORY_SEPARATOR . 'storage';

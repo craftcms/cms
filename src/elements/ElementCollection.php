@@ -75,7 +75,7 @@ class ElementCollection extends Collection
     /**
      * Eager-loads related elements for the collected elements.
      *
-     * See [Eager-Loading Elements](https://craftcms.com/docs/4.x/dev/eager-loading-elements.html) for a full explanation of how to work with this parameter.
+     * See [Eager-Loading Elements](https://craftcms.com/docs/5.x/development/eager-loading.html) for a full explanation of how to work with this parameter.
      *
      * ---
      *
@@ -223,7 +223,7 @@ class ElementCollection extends Collection
         $freshElements = [];
 
         foreach ($idsByClass as $class => $ids) {
-            /** @var string|TElement $class */
+            /** @var class-string<TElement>|class-string<ElementInterface> $class */
             $freshElements[$class] = $class::find()
                 ->site('*')
                 ->siteSettingsId($ids)

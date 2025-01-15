@@ -308,13 +308,20 @@ class Assets extends Component
      */
     public function deleteFoldersByIds(int|array $folderIds, bool $deleteDir = true): void
     {
-        $folders = [];
+        $allFolderIds = [];
 
         foreach ((array)$folderIds as $folderId) {
             $folder = $this->getFolderById((int)$folderId);
-            $folders[] = $folder;
+            if (!$folder) {
+                continue;
+            }
 
-            if ($folder && $deleteDir) {
+            $allFolderIds[] = $folder->id;
+            $descendants = $this->getAllDescendantFolders($folder, withParent: false);
+            array_push($allFolderIds, ...array_map(fn(VolumeFolder $folder) => $folder->id, $descendants));
+
+            // Delete the directory on the filesystem
+            if ($folder->path && $deleteDir) {
                 $volume = $folder->getVolume();
                 try {
                     $volume->deleteDirectory($folder->path);
@@ -325,25 +332,18 @@ class Assets extends Component
             }
         }
 
-        /** @var Asset[] $assets */
-        $assets = Asset::find()->folderId($folderIds)->all();
-
+        // Delete the elements
+        $assetQuery = Asset::find()->folderId($allFolderIds);
         $elementService = Craft::$app->getElements();
 
-        foreach ($assets as $asset) {
+        foreach (Db::each($assetQuery) as $asset) {
+            /** @var Asset $asset */
             $asset->keepFileOnDelete = !$deleteDir;
             $elementService->deleteElement($asset, true);
         }
 
-        foreach ($folders as $folder) {
-            $descendants = $this->getAllDescendantFolders($folder);
-            usort($descendants, static fn($a, $b) => substr_count($a->path, '/') < substr_count($b->path, '/'));
-
-            foreach ($descendants as $descendant) {
-                VolumeFolderRecord::deleteAll(['id' => $descendant->id]);
-            }
-            VolumeFolderRecord::deleteAll(['id' => $folder->id]);
-        }
+        // Delete the folder records
+        VolumeFolderRecord::deleteAll(['id' => $allFolderIds]);
     }
 
     /**

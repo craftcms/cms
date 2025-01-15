@@ -52,7 +52,7 @@ class GetAttrAdjuster implements NodeVisitorInterface
             $attributes['spread'] = $node->getAttribute('spread');
         }
 
-        return new GetAttrNode($nodes, $attributes, $node->getTemplateLine(), $node->getNodeTag());
+        return new GetAttrNode($nodes, $attributes, $node->getTemplateLine());
     }
 
     /**

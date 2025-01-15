@@ -77,8 +77,7 @@ class MailerHelper
      * Creates a transport adapter based on the given mail settings.
      *
      * @template T of TransportAdapterInterface
-     * @param string $type
-     * @phpstan-param class-string<T> $type
+     * @param class-string<T> $type
      * @param array|null $settings
      * @return T
      * @throws MissingComponentException if $type is missing

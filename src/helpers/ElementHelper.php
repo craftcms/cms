@@ -240,6 +240,7 @@ class ElementHelper
     private static function _isUniqueUri(string $testUri, ElementInterface $element): bool
     {
         $query = (new Query())
+            ->select(['elements.id', 'elements.type'])
             ->from(['elements_sites' => Table::ELEMENTS_SITES])
             ->innerJoin(['elements' => Table::ELEMENTS], '[[elements.id]] = [[elements_sites.elementId]]')
             ->where([
@@ -268,7 +269,21 @@ class ElementHelper
             ]);
         }
 
-        return (int)$query->count() === 0;
+        $info = $query->all();
+
+        if (empty($info)) {
+            return true;
+        }
+
+        // Make sure the element(s) isn't owned by a draft/revision
+        foreach ($info as $row) {
+            $conflictingElement = Craft::$app->getElements()->getElementById($row['id'], $row['type'], $element->siteId);
+            if ($conflictingElement && !static::isDraftOrRevision($conflictingElement)) {
+                return false;
+            }
+        }
+
+        return true;
     }
 
     /**
@@ -649,8 +664,7 @@ class ElementHelper
     /**
      * Returns an element type's source definition based on a given source key/path and context.
      *
-     * @param string $elementType The element type class
-     * @phpstan-param class-string<ElementInterface> $elementType
+     * @param class-string<ElementInterface> $elementType The element type class
      * @param string $sourceKey The source key/path
      * @param string $context The context
      * @return array|null The source definition, or null if it cannot be found
@@ -696,7 +710,6 @@ class ElementHelper
 
         if (!str_starts_with($sourceKey, 'custom:')) {
             // Let the element get involved
-            /** @var string|ElementInterface $elementType */
             $source = $elementType::findSource($sourceKey, $context);
             if ($source) {
                 $source['type'] = ElementSources::TYPE_NATIVE;
@@ -817,6 +830,47 @@ class ElementHelper
         }
 
         return Html::encode(StringHelper::stripHtml($value));
+    }
+
+    /**
+     * Returns the HTML for a link attribute based on provided URL.
+     *
+     * @param string|null $url
+     * @return string
+     * @since 5.5.0
+     */
+    public static function linkAttributeHtml(?string $url): string
+    {
+        return Html::beginTag('a',  [
+            'href' => $url,
+            'rel' => 'noopener',
+            'target' => '_blank',
+            'title' => Craft::t('app', 'Visit webpage'),
+            'aria-label' => Craft::t('app', 'View'),
+        ]) .
+        Html::tag('span', Cp::iconSvg('world'), [
+            'class' => ['cp-icon', 'small', 'inline-flex'],
+        ]) .
+        Html::endTag('a');
+    }
+
+    /**
+     * Returns the HTML for URI attribute based on a value (text) and a URL it's supposed to link to.
+     *
+     * @param string|null $value
+     * @param string|null $url
+     * @return string
+     * @since 5.5.0
+     */
+    public static function uriAttributeHtml(?string $value, ?string $url): string
+    {
+        return Html::a(Html::tag('span', $value, ['dir' => 'ltr']), $url, [
+            'href' => $url,
+            'rel' => 'noopener',
+            'target' => '_blank',
+            'class' => 'go',
+            'title' => Craft::t('app', 'Visit webpage'),
+        ]);
     }
 
     /**
@@ -988,10 +1042,6 @@ class ElementHelper
 
         $first = reset($canonicalElements);
 
-        if (!$first::hasDrafts()) {
-            return;
-        }
-
         $drafts = $first::find()
             ->draftOf($canonicalElements)
             ->draftCreator($user)
@@ -1018,6 +1068,11 @@ class ElementHelper
                     $draft->lft = $element->lft;
                     $draft->rgt = $element->rgt;
                     $draft->level = $element->level;
+                }
+
+                // retain the canonical element's ownerId
+                if ($element instanceof NestedElementInterface && $draft instanceof NestedElementInterface) {
+                    $draft->setOwnerId($element->getOwnerId());
                 }
 
                 $elements[$i] = $draft;

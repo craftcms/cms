@@ -138,23 +138,20 @@ JS, [static::class]);
             return $this->confirmationMessage;
         }
 
-        /** @var ElementInterface|string $elementType */
-        $elementType = $this->elementType;
-
         if ($this->hard) {
             return Craft::t('app', 'Are you sure you want to permanently delete the selected {type}?', [
-                'type' => $elementType::pluralLowerDisplayName(),
+                'type' => $this->elementType::pluralLowerDisplayName(),
             ]);
         }
 
         if ($this->withDescendants) {
             return Craft::t('app', 'Are you sure you want to delete the selected {type} along with their descendants?', [
-                'type' => $elementType::pluralLowerDisplayName(),
+                'type' => $this->elementType::pluralLowerDisplayName(),
             ]);
         }
 
         return Craft::t('app', 'Are you sure you want to delete the selected {type}?', [
-            'type' => $elementType::pluralLowerDisplayName(),
+            'type' => $this->elementType::pluralLowerDisplayName(),
         ]);
     }
 
@@ -216,10 +213,8 @@ JS, [static::class]);
         if (isset($this->successMessage)) {
             $this->setMessage($this->successMessage);
         } else {
-            /** @var ElementInterface|string $elementType */
-            $elementType = $this->elementType;
             $this->setMessage(Craft::t('app', '{type} deleted.', [
-                'type' => $elementType::pluralDisplayName(),
+                'type' => $this->elementType::pluralDisplayName(),
             ]));
         }
 

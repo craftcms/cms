@@ -75,6 +75,7 @@ $gridColor: var(--gray-100);
 
 .fld-library-menu {
   width: $tabWidth;
+  min-height: 200px;
   margin-inline-start: $tabPadding * -1;
   padding: $tabPadding;
 }
@@ -101,6 +102,10 @@ $gridColor: var(--gray-100);
         margin-block-start: var(--s);
       }
     }
+
+    .fld-field-indicators {
+      display: none;
+    }
   }
 
   .fld-ui-library > *:not(:first-child) {
@@ -108,7 +113,7 @@ $gridColor: var(--gray-100);
   }
 
   .filtered {
-    display: none;
+    display: none !important;
   }
 }
 
@@ -378,7 +383,7 @@ $gridColor: var(--gray-100);
 
   & > .spinner {
     margin-inline: 0 var(--neg-padding);
-    margin-block: 0 0;
+    margin-block: 0;
   }
 }
 
@@ -402,4 +407,69 @@ $gridColor: var(--gray-100);
       }
     }
   }
+}
+
+// card view designer
+.card-view-designer {
+  container: cvd / inline-size;
+}
+
+.cvd-container {
+  display: grid;
+  position: relative;
+  overflow: hidden;
+  box-shadow: none;
+  gap: var(--xl);
+}
+
+@container cvd (width > 37.5rem) {
+  .cvd-container {
+    grid-template-columns: 1fr 2fr;
+  }
+}
+
+.cvd-library {
+  .draggable {
+    display: flex;
+  }
+}
+
+.cvd-preview-container {
+  padding: var(--xl);
+  border: 1px solid #{color.adjust(mixins.$inputColor, $alpha: -0.75)} !important;
+  border-radius: var(--small-border-radius);
+  display: grid;
+  height: 100%;
+  align-items: center;
+}
+
+.cvd-preview {
+  &:not(.loading) .spinner {
+    display: none;
+  }
+}
+
+.cvd-thumbnail {
+  --icon-size: 2rem;
+  --icon-color: var(--gray-300);
+  width: 100%;
+  aspect-ratio: 4/3;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: var(--gray-150);
+  border-radius: var(--medium-border-radius);
+}
+
+.card-placeholder {
+  display: inline-block;
+  border: 1px dashed mixins.$grey300;
+  border-radius: var(--small-border-radius);
+  padding-block: 0.1em;
+  padding-inline: 0.5em;
+}
+
+.field.cvd-field {
+  margin-block-start: 0.2em !important;
+  margin-inline-start: 0.5em;
 }

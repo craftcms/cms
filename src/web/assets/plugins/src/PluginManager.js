@@ -47,7 +47,7 @@ import './plugins.scss';
       },
 
       addUninstalledPluginRow: function (handle, info) {
-        const $table = $('#plugins');
+        let $table = $('#plugins');
         if (!$table.length) {
           $table = $('<table/>', {
             id: 'plugins',
@@ -114,7 +114,7 @@ import './plugins.scss';
               class: 'nowrap',
               'data-title': Craft.t('app', 'Status'),
             })
-              .append($('<span/>', {class: 'status'}))
+              .append($('<span/>', {class: 'status disabled'}))
               .append(
                 $('<span/>', {class: 'light', text: Craft.t('app', 'Missing')})
               )

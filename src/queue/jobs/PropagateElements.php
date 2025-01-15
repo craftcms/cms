@@ -25,8 +25,7 @@ use craft\queue\BaseBatchedElementJob;
 class PropagateElements extends BaseBatchedElementJob
 {
     /**
-     * @var string The element type that should be propagated
-     * @phpstan-var class-string<ElementInterface>
+     * @var class-string<ElementInterface> The element type that should be propagated
      */
     public string $elementType;
 
@@ -59,10 +58,7 @@ class PropagateElements extends BaseBatchedElementJob
      */
     protected function loadData(): Batchable
     {
-        /** @var string|ElementInterface $elementType */
-        /** @phpstan-var class-string<ElementInterface>|ElementInterface $elementType */
-        $elementType = $this->elementType;
-        $query = $elementType::find()
+        $query = $this->elementType::find()
             ->status(null)
             ->drafts(null)
             ->provisionalDrafts(null)
@@ -109,11 +105,10 @@ class PropagateElements extends BaseBatchedElementJob
      */
     protected function defaultDescription(): ?string
     {
-        /** @var string|ElementInterface $elementType */
-        /** @phpstan-var class-string<ElementInterface>|ElementInterface $elementType */
-        $elementType = $this->elementType;
         return Translation::prep('app', 'Propagating {type}', [
-            'type' => $this->totalItems() == 1 ? $elementType::lowerDisplayName() : $elementType::pluralLowerDisplayName(),
+            'type' => $this->totalItems() == 1
+                ? $this->elementType::lowerDisplayName()
+                : $this->elementType::pluralLowerDisplayName(),
         ]);
     }
 }

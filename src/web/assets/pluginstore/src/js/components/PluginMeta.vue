@@ -71,6 +71,8 @@
     <dl class="tw-mt-2">
       <install-plugin :plugin="plugin" />
 
+      <PluginRatingStat :plugin="plugin" :stats="plugin.reviewStats" />
+
       <active-installs :plugin="plugin" />
 
       <div class="tw-grid tw-grid-cols-2">
@@ -236,6 +238,7 @@
   import InstallPlugin from './InstallPlugin';
   import GithubActivity from './github-activity/GithubActivity';
   import ActiveInstalls from './ActiveInstalls';
+  import PluginRatingStat from './PluginRatingStat.vue';
 
   export default {
     data() {
@@ -246,6 +249,7 @@
       };
     },
     components: {
+      PluginRatingStat,
       InstallPlugin,
       ActiveInstalls,
       GithubActivity,

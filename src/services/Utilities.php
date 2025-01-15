@@ -41,7 +41,7 @@ class Utilities extends Component
      *
      * Utilities must implement [[UtilityInterface]]. [[\craft\base\Utility]] provides a base implementation.
      *
-     * Read more about creating utilities in the [documentation](https://craftcms.com/docs/4.x/extend/utilities.html).
+     * Read more about creating utilities in the [documentation](https://craftcms.com/docs/5.x/extend/utilities.html).
      * ---
      * ```php
      * use craft\events\RegisterComponentTypesEvent;
@@ -107,8 +107,8 @@ class Utilities extends Component
         $disabledUtilities = array_flip($generalConfig->disabledUtilities);
 
         return array_values(array_filter($utilityTypes, function(string $class) use ($disabledUtilities) {
-            /** @var string|UtilityInterface $class */
-            return !isset($disabledUtilities[$class::id()]);
+            /** @var class-string<UtilityInterface> $class */
+            return !isset($disabledUtilities[$class::id()]) && $class::isSelectable();
         }));
     }
 
@@ -116,6 +116,7 @@ class Utilities extends Component
      * Returns all utility type classes that the user has permission to use.
      *
      * @return string[]
+     * @phpstan-return class-string<UtilityInterface>[]
      */
     public function getAuthorizedUtilityTypes(): array
     {
@@ -133,31 +134,40 @@ class Utilities extends Component
     /**
      * Returns whether the current user is authorized to use a given utility.
      *
-     * @param string $class The utility class
-     * @phpstan-param class-string<UtilityInterface> $class
+     * @param class-string<UtilityInterface> $class The utility class
      * @return bool
      */
     public function checkAuthorization(string $class): bool
     {
-        /** @var string|UtilityInterface $class */
-        /** @phpstan-var class-string<UtilityInterface>|UtilityInterface $class */
         $utilityId = $class::id();
-        $user = Craft::$app->getUser();
 
-        return $utilityId === ProjectConfigUtility::id() ? $user->getIsAdmin() : $user->checkPermission('utility:' . $utilityId);
+        // The Project Config utility is for admins only!
+        if ($class === ProjectConfigUtility::class) {
+            if (!Craft::$app->getUser()->getIsAdmin()) {
+                return false;
+            }
+        } elseif (!Craft::$app->getUser()->checkPermission("utility:$utilityId")) {
+            return false;
+        }
+
+        // Make sure the utility isn't disabled
+        if (in_array($utilityId, Craft::$app->getConfig()->getGeneral()->disabledUtilities)) {
+            return false;
+        }
+
+        return true;
     }
 
     /**
      * Returns a utility class by its ID
      *
      * @param string $id
-     * @return string|null
+     * @return class-string<UtilityInterface>|null
      */
     public function getUtilityTypeById(string $id): ?string
     {
         foreach ($this->getAllUtilityTypes() as $class) {
-            /** @var string|UtilityInterface $class */
-            /** @phpstan-var class-string<UtilityInterface>|UtilityInterface $class */
+            /** @var class-string<UtilityInterface> $class */
             if ($class::id() === $id) {
                 return $class;
             }

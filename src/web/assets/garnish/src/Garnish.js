@@ -735,32 +735,34 @@ Garnish = $.extend(Garnish, {
    * @return {(string|string[])}
    */
   getInputPostVal: function ($input) {
-    var type = $input.attr('type'),
-      val = $input.val();
+    const type = $input.attr('type');
+    const val = $input.val();
 
     // Is this an unchecked checkbox or radio button?
     if (type === 'checkbox' || type === 'radio') {
       if ($input.prop('checked')) {
         return val;
-      } else {
-        return null;
       }
+      return null;
     }
 
     // Flatten any array values whose input name doesn't end in "[]"
     //  - e.g. a multi-select
-    else if (Array.isArray(val) && $input.attr('name').slice(-2) !== '[]') {
+    if (Array.isArray(val) && $input.attr('name').slice(-2) !== '[]') {
       if (val.length) {
         return val[val.length - 1];
-      } else {
-        return null;
       }
+      return null;
+    }
+
+    // If it's a dropdown with a null value, return an empty string instead
+    // (consistent with element.value)
+    if (val === null && $input.prop('nodeName') === 'SELECT') {
+      return '';
     }
 
     // Just return the value
-    else {
-      return val;
-    }
+    return val;
   },
 
   /**
@@ -780,14 +782,14 @@ Garnish = $.extend(Garnish, {
    * @return {array}
    */
   getPostData: function (container) {
-    var postData = {},
-      arrayInputCounters = {},
-      $inputs = Garnish.findInputs(container);
+    const postData = {};
+    const arrayInputCounters = {};
+    const $inputs = Garnish.findInputs(container);
 
-    var inputName;
+    let inputName;
 
-    for (var i = 0; i < $inputs.length; i++) {
-      var $input = $inputs.eq(i);
+    for (let i = 0; i < $inputs.length; i++) {
+      const $input = $inputs.eq(i);
 
       if ($input.prop('disabled')) {
         continue;
@@ -798,16 +800,17 @@ Garnish = $.extend(Garnish, {
         continue;
       }
 
-      var inputVal = Garnish.getInputPostVal($input);
+      let inputVal = Garnish.getInputPostVal($input);
       if (inputVal === null) {
         continue;
       }
 
-      var isArrayInput = inputName.slice(-2) === '[]';
+      const isArrayInput = inputName.slice(-2) === '[]';
+      let croppedName;
 
       if (isArrayInput) {
         // Get the cropped input name
-        var croppedName = inputName.substring(0, inputName.length - 2);
+        croppedName = inputName.substring(0, inputName.length - 2);
 
         // Prep the input counter
         if (typeof arrayInputCounters[croppedName] === 'undefined') {
@@ -819,7 +822,7 @@ Garnish = $.extend(Garnish, {
         inputVal = [inputVal];
       }
 
-      for (var j = 0; j < inputVal.length; j++) {
+      for (let j = 0; j < inputVal.length; j++) {
         if (isArrayInput) {
           inputName = croppedName + '[' + arrayInputCounters[croppedName] + ']';
           arrayInputCounters[croppedName]++;

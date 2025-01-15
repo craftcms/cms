@@ -80,6 +80,8 @@ class UrlHelper
     /**
      * Returns a query string based on the given params.
      *
+     * Param values will be encoded, except for `/`, `{`, and `}` characters.
+     *
      * @param array $params
      * @return string
      * @since 3.3.0
@@ -209,7 +211,7 @@ class UrlHelper
     }
 
     /**
-     * Encodes a URL’s query string params.
+     * Encodes a URL’s query string param values, except for `/`, `{`, and `}` characters.
      *
      * @param string $url
      * @return string
@@ -219,6 +221,27 @@ class UrlHelper
     {
         [$url, $params, $fragment] = self::_extractParams($url);
         return self::_buildUrl($url, $params, $fragment);
+    }
+
+    /**
+     * Encodes non-alphanumeric characters in a URL, except reserved characters and already-encoded characters.
+     *
+     * @param string $url
+     * @return string
+     * @since 5.5.0
+     */
+    public static function encodeUrl(string $url): string
+    {
+        $parts = preg_split('/([:\/?#\[\]@!$&\'()*+,;=%])/', $url, flags: PREG_SPLIT_DELIM_CAPTURE);
+        $url = '';
+        foreach ($parts as $i => $part) {
+            if ($i % 2 === 0) {
+                $url .= urlencode($part);
+            } else {
+                $url .= $part;
+            }
+        }
+        return $url;
     }
 
     /**

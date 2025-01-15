@@ -39,9 +39,7 @@ class StatusConditionRule extends BaseMultiSelectConditionRule implements Elemen
     {
         /** @var ElementCondition $condition */
         $condition = $this->getCondition();
-        /** @var ElementInterface|string $elementType */
-        $elementType = $condition->elementType;
-        return array_map(fn($info) => $info['label'] ?? $info, $elementType::statuses());
+        return array_map(fn($info) => $info['label'] ?? $info, $condition->elementType::statuses());
     }
 
     /**

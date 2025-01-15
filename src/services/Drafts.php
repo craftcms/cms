@@ -399,7 +399,7 @@ SQL,
         try {
             // no need to propagate or save content here – and it could end up overriding any
             // content changes made to other sites from a previous onAfterPropagate(), etc.
-            if ($draft->hasErrors() || !Craft::$app->getElements()->saveElement($draft, false, false)) {
+            if ($draft->hasErrors() || !Craft::$app->getElements()->saveElement($draft, false)) {
                 throw new InvalidElementException($draft, "Draft $draft->id could not be applied because it doesn't validate.");
             }
             Db::delete(Table::DRAFTS, [
@@ -443,7 +443,7 @@ SQL,
         $elementsService = Craft::$app->getElements();
 
         foreach ($drafts as $draftInfo) {
-            /** @var ElementInterface|string $elementType */
+            /** @var class-string<ElementInterface> $elementType */
             $elementType = $draftInfo['type'];
             $draft = $elementType::find()
                 ->draftId($draftInfo['draftId'])

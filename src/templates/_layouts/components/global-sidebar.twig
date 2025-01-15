@@ -78,12 +78,16 @@
                                 {{ _self.action(item) }}
 
                                 {% if item.subnav %}
-                                    <craft-disclosure class="nav-item__trigger">
+                                    <craft-disclosure
+                                        class="nav-item__trigger"
+                                        state="{{ item.sel ? 'expanded' : 'collapsed' }}"
+                                    >
                                         <button
                                             type="button"
                                             class="btn menubtn hairline"
                                             aria-controls="{{ item.id }}-subnav"
-                                           aria-describedby="{{ item.id }}-link" aria-expanded="{{ item.sel ?  'true' : 'false' }}"
+                                            aria-describedby="{{ item.id }}-link"
+                                            aria-expanded="{{ item.sel ?  'true' : 'false' }}"
                                         >
                                             <span class="visually-hidden">{{ 'Open subnavigation' |t('app') }}</span>
                                         </button>
@@ -92,20 +96,20 @@
                             </div>
 
                             {% if item.subnav %}
-                                <ul class="nav-item__subnav {{ item.sel ? 'is-open' : '' -}}" id="{{ item.id }}-subnav">
+                                <ul class="nav-item__subnav {{ item.sel ? 'is-open' : '' -}}" id="{{ item.id }}-subnav" data-state="{{ item.sel ?  'expanded' : 'collapsed' }}">
                                     {% for itemId, item in item.subnav %}
                                         {% set itemIsSelected = selectedSubnavItem is defined and selectedSubnavItem == itemId -%}
 
                                         <li>
                                             <div class="nav-item nav-item--sub {% if itemIsSelected %}sel{% endif %}">
-                                            {{ _self.action(item|merge({
-                                                linkAttributes:  {
-                                                    class: ['sidebar-action--sub'],
-                                                    aria: {
-                                                        current: itemIsSelected ? 'page' : false,
-                                                    },
-                                                }
-                                            }), itemIsSelected, false, ) }}
+                                                {{ _self.action(item|merge({
+                                                    linkAttributes:  {
+                                                        class: ['sidebar-action--sub'],
+                                                        aria: {
+                                                            current: itemIsSelected ? 'page' : false,
+                                                        },
+                                                    }
+                                                }), itemIsSelected, false, ) }}
                                             </div>
                                         </li>
                                     {% endfor %}
@@ -137,7 +141,7 @@
                 {% include '_includes/disclosure-toggle' with {
                     id: 'sidebar-trigger',
                     controls: 'global-sidebar',
-                    expanded: sidebarState == 'expanded' ? 'true' : 'false',
+                    state: sidebarState,
                     content: toggleContent,
                     attributes: {
                         class: 'sidebar-action',

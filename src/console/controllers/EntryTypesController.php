@@ -40,11 +40,6 @@ class EntryTypesController extends Controller
      */
     public function actionMerge(string $handleA, string $handleB): int
     {
-        if (!$this->interactive) {
-            $this->stderr("The entry-types/merge command must be run interactively.\n");
-            return ExitCode::UNSPECIFIED_ERROR;
-        }
-
         $entriesService = Craft::$app->getEntries();
         $fieldsService = Craft::$app->getFields();
 
@@ -62,38 +57,41 @@ class EntryTypesController extends Controller
         $usagesA = $entryTypeA->findUsages();
         $usagesB = $entryTypeB->findUsages();
 
-        $queryA = Entry::find()->typeId($entryTypeA->id)->status(null);
-        $queryB = Entry::find()->typeId($entryTypeB->id)->status(null);
+        if ($this->interactive) {
+            $queryA = Entry::find()->typeId($entryTypeA->id)->status(null);
+            $queryB = Entry::find()->typeId($entryTypeB->id)->status(null);
 
-        $totalEntriesA = $queryA->count();
-        $totalEntriesB = $queryB->count();
+            $totalEntriesA = $queryA->count();
+            $totalEntriesB = $queryB->count();
 
-        $infoA = sprintf(
-            '%s %s, %s %s',
-            count($usagesA),
-            count($usagesA) === 1 ? 'usage' : 'usages',
-            $totalEntriesA,
-            $totalEntriesA === 1 ? 'entry' : 'entries',
-        );
-        $infoB = sprintf(
-            '%s %s, %s %s',
-            count($usagesB),
-            count($usagesB) === 1 ? 'usage' : 'usages',
-            $totalEntriesB,
-            $totalEntriesB === 1 ? 'entry' : 'entries',
-        );
+            $infoA = sprintf(
+                '%s %s, %s %s',
+                count($usagesA),
+                count($usagesA) === 1 ? 'usage' : 'usages',
+                $totalEntriesA,
+                $totalEntriesA === 1 ? 'entry' : 'entries',
+            );
+            $infoB = sprintf(
+                '%s %s, %s %s',
+                count($usagesB),
+                count($usagesB) === 1 ? 'usage' : 'usages',
+                $totalEntriesB,
+                $totalEntriesB === 1 ? 'entry' : 'entries',
+            );
 
-        $this->stdout("\n" . $this->markdownToAnsi(<<<MD
+            $this->stdout("\n" . $this->markdownToAnsi(<<<MD
 **Which entry type should persist?**
 
  - `$entryTypeA->handle` ($infoA)
  - `$entryTypeB->handle` ($infoB)
 MD) . "\n\n");
-
-        $choice = $this->select('Choose:', [
-            $entryTypeA->handle => $entryTypeA->name,
-            $entryTypeB->handle => $entryTypeB->name,
-        ], $totalEntriesA >= $totalEntriesB ? $entryTypeA->handle : $entryTypeB->handle);
+            $choice = $this->select('Choose:', [
+                $entryTypeA->handle => $entryTypeA->name,
+                $entryTypeB->handle => $entryTypeB->name,
+            ], $totalEntriesA >= $totalEntriesB ? $entryTypeA->handle : $entryTypeB->handle);
+        } else {
+            $choice = $entryTypeA->handle;
+        }
 
         /** @var EntryType $persistingEntryType */
         /** @var EntryType $outgoingEntryType */

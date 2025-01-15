@@ -53,16 +53,8 @@
 
 <hr>
 
-{{ forms.lightswitchField({
-    label: "Show the Title field"|t('app'),
-    name: 'hasTitleField',
-    toggle: 'title-container',
-    reverseToggle: '#titleFormat-container, #field-layout .fld-title-field-icon',
-    on: entryType.hasTitleField
-}) }}
-
 {% if craft.app.getIsMultiSite() %}
-    <div id="title-container"{% if not entryType.hasTitleField %} class="hidden"{% endif %}>
+    <div id="title-container">
         {{ forms.selectField({
             label: '{name} Translation Method'|t('app', {
                 name: 'Title'|t('app'),
@@ -104,20 +96,18 @@
     </div>
 {% endif %}
 
-<div id="titleFormat-container"{% if entryType.hasTitleField %} class="hidden"{% endif %}>
-    {{ forms.textField({
-        label: "Title Format"|t('app'),
-        instructions: "What the auto-generated entry titles should look like. You can include tags that output entry properties, such as {ex}."|t('app', { ex: '<code>{myCustomField}</code>' }),
-        id: 'titleFormat',
-        name: 'titleFormat',
-        class: 'code',
-        value: entryType.titleFormat,
-        errors: entryType.getErrors('titleFormat'),
-        data: {
-            'error-key': 'titleFormat',
-        },
-    }) }}
-</div>
+{{ forms.textField({
+    label: 'Default Title Format'|t('app'),
+    instructions: 'What auto-generated entry titles should look like. You can include tags that output entry properties, such as {ex}.'|t('app', { ex: '<code>{myCustomField}</code>' }),
+    id: 'titleFormat',
+    name: 'titleFormat',
+    class: 'code',
+    value: entryType.titleFormat,
+    errors: entryType.getErrors('titleFormat'),
+    data: {
+        'error-key': 'titleFormat',
+    },
+}) }}
 
 {{ forms.lightswitchField({
     label: "Show the Slug field"|t('app'),
@@ -186,6 +176,7 @@
 {{ forms.fieldLayoutDesignerField({
     id: 'field-layout',
     fieldLayout: entryType.getFieldLayout(),
+    withCardViewDesigner: true,
 }) }}
 
 {% if not entryType.handle %}

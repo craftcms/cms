@@ -11,6 +11,7 @@ use Craft;
 use craft\console\Controller;
 use craft\events\ConfigEvent;
 use craft\helpers\Console;
+use craft\helpers\DateTimeHelper;
 use craft\helpers\FileHelper;
 use craft\helpers\ProjectConfig;
 use craft\services\ProjectConfig as ProjectConfigService;
@@ -459,7 +460,7 @@ class ProjectConfigController extends Controller
      */
     public function actionTouch(): int
     {
-        $time = time();
+        $time = DateTimeHelper::currentTimeStamp();
         ProjectConfig::touch($time);
         $this->stdout("The dateModified value in project.yaml is now set to $time." . PHP_EOL, Console::FG_GREEN);
         return ExitCode::OK;

@@ -221,6 +221,8 @@ class ElementQueryConditionBuilder extends Component
                         $extractedValue[$fieldNode->name->value] = $this->_extractArgumentValue($fieldNode);
                     }
                     return $extractedValue;
+                case 'NullValue':
+                    return null;
                 default:
                     return $argumentNodeValue->value;
             }

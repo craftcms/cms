@@ -71,6 +71,7 @@ export default Base.extend(
      * Start Dragging
      */
     startDragging: function () {
+      this.onBeforeDragStart();
       this.dragging = true;
       this.onDragStart();
     },
@@ -249,6 +250,14 @@ export default Base.extend(
 
     // Events
     // ---------------------------------------------------------------------
+
+    /**
+     * On Before Drag Start
+     */
+    onBeforeDragStart: function () {
+      this.trigger('beforeDragStart');
+      this.settings.onBeforeDragStart();
+    },
 
     /**
      * On Drag Start
@@ -488,6 +497,7 @@ export default Base.extend(
       axis: null,
       ignoreHandleSelector: 'input, textarea, button, select, .btn',
 
+      onBeforeDragStart: $.noop,
       onDragStart: $.noop,
       onDrag: $.noop,
       onDragStop: $.noop,

@@ -9,7 +9,10 @@
 namespace craft\base;
 
 use Craft;
+use craft\db\Query;
+use craft\db\Table;
 use craft\elements\db\EagerLoadPlan;
+use craft\helpers\Db;
 use yii\base\InvalidConfigException;
 
 /**
@@ -35,8 +38,13 @@ trait NestedElementTrait
             case 'owner':
             case 'primaryOwner':
                 /** @var NestedElementInterface[] $sourceElements */
+                $ownerId = $sourceElements[0]->getOwnerId();
+                if (!$ownerId) {
+                    return false;
+                }
+
                 return [
-                    'elementType' => get_class(reset($sourceElements)),
+                    'elementType' => Craft::$app->getElements()->getElementTypeById($ownerId),
                     'map' => array_map(fn(NestedElementInterface $element) => [
                         'source' => $element->id,
                         'target' => match ($handle) {
@@ -151,9 +159,23 @@ trait NestedElementTrait
                 return null;
             }
 
-            $this->_primaryOwner = Craft::$app->getElements()->getElementById($primaryOwnerId, null, $this->siteId, [
-                'trashed' => null,
-            ]) ?? false;
+            $ownerType = Craft::$app->getElements()->getElementTypeById($primaryOwnerId);
+            if (!$ownerType) {
+                return null;
+            }
+
+            $this->_primaryOwner = $ownerType::find()
+                ->id($primaryOwnerId)
+                ->site('*')
+                ->preferSites([$this->siteId])
+                ->unique()
+                ->status(null)
+                ->drafts(null)
+                ->provisionalDrafts(null)
+                ->revisions(null)
+                ->trashed(null)
+                ->one() ?? false;
+
             if (!$this->_primaryOwner) {
                 throw new InvalidConfigException("Invalid owner ID: $primaryOwnerId");
             }
@@ -203,9 +225,23 @@ trait NestedElementTrait
                 return $this->getPrimaryOwner();
             }
 
-            $this->_owner = Craft::$app->getElements()->getElementById($ownerId, null, $this->siteId, [
-                'trashed' => null,
-            ]) ?? false;
+            $ownerType = Craft::$app->getElements()->getElementTypeById($ownerId);
+            if (!$ownerType) {
+                return null;
+            }
+
+            $this->_owner = $ownerType::find()
+                ->id($ownerId)
+                ->site('*')
+                ->preferSites([$this->siteId])
+                ->unique()
+                ->status(null)
+                ->drafts(null)
+                ->provisionalDrafts(null)
+                ->revisions(null)
+                ->trashed(null)
+                ->one() ?? false;
+
             if (!$this->_owner) {
                 throw new InvalidConfigException("Invalid owner ID: $ownerId");
             }
@@ -293,5 +329,73 @@ trait NestedElementTrait
             default:
                 parent::setEagerLoadedElements($handle, $elements, $plan);
         }
+    }
+
+    /**
+     * Saves the element’s ownership data, if it belongs to a field + owner element
+     */
+    private function saveOwnership(bool $isNew, string $elementTable, string $fieldIdColumn = 'fieldId'): void
+    {
+        if (!$this->saveOwnership || !isset($this->fieldId)) {
+            return;
+        }
+        
+        $ownerId = $this->getOwnerId();
+        if (!$ownerId) {
+            return;
+        }
+
+        if (!isset($this->sortOrder) && (!$isNew || $this->duplicateOf)) {
+            // figure out if we should proceed this way
+            // if we're dealing with an element that's being duplicated, and it has a draftId
+            // it means we're creating a draft of something
+            // if we're duplicating element via duplicate action - draftId would be empty
+            $elementId = null;
+
+            if ($this->duplicateOf) {
+                if ($this->draftId) {
+                    $elementId = $this->duplicateOf->id;
+                }
+            } else {
+                // if we're not duplicating, use this element's id
+                $elementId = $this->id;
+            }
+
+            if ($elementId) {
+                $this->sortOrder = (new Query())
+                    ->select('sortOrder')
+                    ->from(Table::ELEMENTS_OWNERS)
+                    ->where([
+                        'elementId' => $elementId,
+                        'ownerId' => $ownerId,
+                    ])
+                    ->scalar() ?: null;
+            }
+        }
+
+        if (!isset($this->sortOrder)) {
+            $max = (new Query())
+                ->from(['eo' => Table::ELEMENTS_OWNERS])
+                ->innerJoin(['e' => $elementTable], '[[e.id]] = [[eo.elementId]]')
+                ->where([
+                    'eo.ownerId' => $ownerId,
+                    "e.$fieldIdColumn" => $this->fieldId,
+                ])
+                ->max('[[eo.sortOrder]]');
+            $this->sortOrder = $max ? $max + 1 : 1;
+        }
+
+        if (!$isNew) {
+            Db::delete(Table::ELEMENTS_OWNERS, [
+                'elementId' => $this->id,
+                'ownerId' => $ownerId,
+            ]);
+        }
+
+        Db::insert(Table::ELEMENTS_OWNERS, [
+            'elementId' => $this->id,
+            'ownerId' => $ownerId,
+            'sortOrder' => $this->sortOrder,
+        ]);
     }
 }

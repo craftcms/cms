@@ -1018,11 +1018,28 @@ class Html extends \yii\helpers\Html
             throw new InvalidArgumentException("Invalid file path: $file");
         }
 
+        $file = FileHelper::absolutePath(Craft::getAlias($file), '/');
+
+        // make sure it's contained within the project rot
+        $rootPath = FileHelper::absolutePath(Craft::getAlias('@root'), '/');
+        if (!str_starts_with($file, "$rootPath/")) {
+            throw new InvalidArgumentException(sprintf('%s cannot be passed a path outside of the project root.', __METHOD__));
+        }
+
+        if (Craft::$app->getSecurity()->isSystemDir(dirname($file))) {
+            throw new InvalidArgumentException(sprintf('%s cannot be passed a path within or above system directories.', __METHOD__));
+        }
+
+        $ext = pathinfo($file, PATHINFO_EXTENSION);
+        if (strtolower($ext) === 'php') {
+            throw new InvalidArgumentException(sprintf('%s cannot be passed a path to a PHP file.', __METHOD__));
+        }
+
         if ($mimeType === null) {
             try {
                 $mimeType = FileHelper::getMimeType($file);
             } catch (Throwable $e) {
-                Craft::warning("Unable to determine the MIME type for $file: " . $e->getMessage());
+                Craft::warning("Unable to determine the MIME type for $file: " . $e->getMessage(), __METHOD__);
                 Craft::$app->getErrorHandler()->logException($e);
             }
         }

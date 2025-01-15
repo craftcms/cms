@@ -1,18 +1,8 @@
 {% apply spaceless %}
-{% set keyPrefix = keyPrefix ?? '' %}
-{% set isTopLevel = not keyPrefix %}
 
-{% if isTopLevel and (baseSortOptions is not defined or tableColumns is not defined) %}
-    {% set elementInstance = craft.app.elements.createElement(elementType) %}
-    {% set baseSortOptions = baseSortOptions ?? elementInstance.sortOptions()|map((option, key) => {
-        label: option.label ?? option,
-        attr: option.attribute ?? option.orderBy ?? key,
-        defaultDir: option.defaultDir ?? 'asc',
-    })|values %}
-    {% set tableColumns = tableColumns ?? craft.app.elementSources.getAvailableTableAttributes(elementType) %}
-{% endif %}
+{% hook 'cp.elements.sources' %}
 
-{% macro sourceLink(key, source, isTopLevel, elementType, baseSortOptions, tableColumns, defaultTableColumns) %}
+{% macro sourceLink(key, source, isTopLevel, elementType, baseSortOptions, tableColumns, defaultTableColumns, viewModes) %}
     {{ tag('a', {
         role: 'button',
         tabindex: '0',
@@ -48,6 +38,8 @@
             criteria: source.criteria ?? {},
             disabled: source.disabled ?? false,
             'default-filter': source.defaultFilter ?? false,
+            'default-view-mode': source.defaultViewMode ?? false,
+            'view-modes': viewModes ?? [],
         }|merge(source.data ?? {}),
         html: _self.sourceInnerHtml(source)
     }) }}
@@ -108,7 +100,7 @@
                     (source.disabled ?? false) ? 'hidden' : null,
                 ]|filter,
             } %}
-                {{ _self.sourceLink(key, source, isTopLevel, elementType, baseSortOptions ?? null, tableColumns ?? null, defaultTableColumns ?? null) }}
+                {{ _self.sourceLink(key, source, isTopLevel, elementType, baseSortOptions ?? null, tableColumns ?? null, defaultTableColumns ?? null, viewModes ?? null) }}
                 {% if source.nested is defined and source.nested is not empty %}
                     <button class="toggle" aria-expanded="false" aria-label="{{ 'Show nested sources'|t('app') }}"></button>
                     {% include "_elements/sources" with {

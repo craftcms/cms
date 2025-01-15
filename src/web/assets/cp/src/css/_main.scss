@@ -76,7 +76,7 @@
     inset 0 0 0 3px hsl(var(--dark-focus-hsl) / var(--focus-ring-alpha));
   --touch-target-size: calc(24rem / 16);
   --icon-size: 1rem;
-  --elements-busy-top-position: calc(50% - var(--size, 20px) / 2);
+  --lh: 1.42em;
 }
 
 body,
@@ -689,7 +689,6 @@ body.rtl [data-icon-after='structure']::after {
 }
 
 .preview-btn::before {
-  margin-block-start: -2px;
   content: 'view';
 }
 
@@ -774,11 +773,6 @@ hr {
   border-block-start: 1px solid var(--hairline-color);
   height: 0;
   color: transparent;
-}
-
-.pane hr {
-  margin-block: 24px;
-  margin-inline: -24px;
 }
 
 /* paragraphs */
@@ -878,8 +872,6 @@ li.sel > a {
   font-size: 11px;
   margin-block-start: -1px;
   padding-inline-start: 4px;
-  color: var(--link-color);
-  opacity: 0.9;
 
   body.ltr & {
     content: 'circlerarr';
@@ -957,7 +949,7 @@ button {
 
   .so-notice > & {
     margin-inline: calc(var(--xl) * -1) 0;
-    margin-block: -5px -5px;
+    margin-block: -5px;
     padding-inline: var(--xl) 0;
     padding-block: 5px;
     border-end-start-radius: var(--large-border-radius);
@@ -1207,7 +1199,7 @@ input.checkbox + label.smalltext {
   margin-inline: 5px 0;
   margin-block: -2px 0;
   font-size: 12px;
-  color: var(--rose-500);
+  color: var(--rose-600);
 }
 
 .scrollpane {
@@ -1586,6 +1578,15 @@ td.right {
     flex: 1;
   }
 
+  .handle {
+    @include mixins.fixed-width-font;
+    font-size: 0.8em !important;
+  }
+
+  &:not(.sel) .handle {
+    color: var(--medium-text-color);
+  }
+
   &.heading {
     .label {
       text-transform: uppercase;
@@ -1603,7 +1604,7 @@ td.right {
 .customize-sources-item__move {
   position: absolute;
   inset-block-start: 50%;
-  inset-inline-end: 0;
+  inset-inline-end: 3px;
   transform: translate(-50%, -50%);
   justify-content: center;
   align-items: center;
@@ -1615,23 +1616,28 @@ td.right {
 }
 
 .customize-sources-item__btn {
-  padding-block: 8px;
-  padding-inline: 14px;
+  flex: 1;
+  padding-block: 6px;
+  padding-inline: var(--xl);
   padding-inline-end: 30px;
-  margin: 3px;
 }
 
 .checkbox-select-item {
   display: flex;
+  gap: var(--xs);
   align-items: flex-start;
   align-content: stretch;
-  margin-block-end: 4px;
+  padding-block: 4px;
 
   .move {
-    margin-block-start: -3px;
-    margin-inline-end: 10px;
+    margin-block-start: -4px;
+    margin-inline-end: var(--xs);
     position: relative;
     z-index: 1;
+  }
+
+  .action-btn {
+    margin-block: -4px;
   }
 }
 
@@ -1646,7 +1652,7 @@ ul.path {
 
     &:not(:last-child)::after {
       margin-inline: 2px 5px;
-      margin-block: 0 0;
+      margin-block: 0;
       @include mixins.angle(right, var(--light-text-color), calc(1rem / 16));
     }
   }
@@ -1913,7 +1919,6 @@ ul.icons {
   padding-inline: 10px;
   border: none;
   text-align: center;
-  white-space: nowrap;
   user-select: none;
   box-sizing: border-box;
   appearance: none;
@@ -2073,7 +2078,10 @@ ul.icons {
   }
 }
 
-.btn,
+.btn {
+  min-height: var(--ui-control-height);
+}
+
 .spinner {
   height: var(--ui-control-height);
 }
@@ -2263,7 +2271,7 @@ ul.icons {
 
   &:empty,
   &.btn-empty {
-    padding-inline: 8px 8px;
+    padding-inline: 8px;
   }
 }
 
@@ -2313,9 +2321,14 @@ ul.icons {
     position: absolute;
     width: var(--size, 20px);
     height: var(--size, 20px);
-    inset-block-start: var(--elements-busy-top-position);
-    inset-inline-start: var(--elements-busy-top-position);
+    transform: translateX(-50%) translateY(-50%);
+    inset-block-start: 50%;
+    inset-inline-start: 50%;
     z-index: 101;
+
+    .rtl & {
+      transform: translateX(50%) translateY(-50%);
+    }
   }
 }
 
@@ -2345,7 +2358,7 @@ ul.icons {
 .btngroup.small input.btn,
 .btn.small,
 .btn.small + .spinner {
-  height: 22px;
+  min-height: 22px;
 }
 
 /* big buttons */
@@ -2367,7 +2380,7 @@ ul.icons {
 .btngroup.big input.btn,
 .btn.big,
 .btn.big + .spinner {
-  height: 36px;
+  min-height: 36px;
 }
 
 /* huge buttons */
@@ -2687,7 +2700,7 @@ div.btn.submit input {
 
 .color-input {
   @include mixins.fixed-width-font;
-  padding-inline-start: calc(7px + 1em);
+  padding-inline: calc(7px + 1em) 9px;
 }
 
 .color {
@@ -3241,6 +3254,30 @@ table {
         border-block-start-color: var(--gray-300);
       }
     }
+
+    &.vuetable {
+      th.sortable {
+        &:hover {
+          color: var(--text-color);
+          background-color: var(--gray-100);
+        }
+
+        &.ordered {
+          background-color: var(--light-sel-color);
+
+          .sort-icon {
+            @include mixins.angle(up);
+            inset-inline-end: var(--m);
+            inset-block-start: calc(7rem / 16);
+          }
+
+          &.desc .sort-icon {
+            transform: rotate(45deg);
+            inset-block-start: calc((7rem / 16) - (2rem / 16));
+          }
+        }
+      }
+    }
   }
 
   // collapsable data tables for small screens
@@ -3364,7 +3401,7 @@ table {
 
     & > .thumb {
       margin-inline: -2px 2px;
-      margin-block: 0 0;
+      margin-block: 0;
 
       &.cp-icon {
         --thumb-size: 1rem; // 16px
@@ -3390,7 +3427,7 @@ table {
     flex-direction: row;
     align-items: center;
     gap: var(--s);
-    max-width: 100%;
+    width: 100%;
 
     .status,
     .icon {
@@ -3400,6 +3437,10 @@ table {
     .icon {
       margin-block: -4px 0;
       margin-inline: -1px;
+    }
+
+    .label {
+      flex: 1;
     }
 
     .chip-label {
@@ -3587,6 +3628,7 @@ table {
   cursor: default;
   user-select: none;
   width: 100%;
+  overflow: hidden;
 
   &::after {
     border-radius: var(--large-border-radius);
@@ -3609,7 +3651,6 @@ table {
     ) !important;
 
     & > .thumb {
-      background-color: var(--dark-sel-color) !important;
       filter: brightness(0.85);
     }
 
@@ -3633,35 +3674,12 @@ table {
   }
 
   & > .thumb {
-    position: relative;
     display: flex;
-    align-items: stretch;
-    margin: calc(var(--m) * -1);
-    margin-inline-end: 0;
+    flex: 0 0 128px;
     width: 128px;
-    min-width: 128px; // needed for flex
-    min-height: calc(var(--m) * 2 + var(--lh) * 3 + var(--xs));
-    background-color: var(--gray-100);
     overflow: hidden;
-
-    &::after {
-      display: block;
-      content: '';
-      font-size: 0;
-      position: absolute;
-      inset-block: 0;
-      @include mixins.shadow;
-      width: 10px;
-      inset-inline-end: -10px;
-    }
-
-    &,
-    &::after {
-      border-start-start-radius: var(--large-border-radius);
-      border-start-end-radius: 0;
-      border-end-end-radius: 0;
-      border-end-start-radius: var(--large-border-radius);
-    }
+    align-self: start;
+    border-radius: var(--small-border-radius);
 
     img,
     svg {
@@ -3678,6 +3696,14 @@ table {
   & > .cp-icon {
     margin-inline: -2px -4px;
     margin-block: 3px 0;
+
+    // hide the entry type icon if we're alreayd showing one for the card
+    + .card-content
+      .card-body
+      .chip[data-type='craft\\\\models\\\\EntryType']
+      .cp-icon {
+      display: none;
+    }
   }
 
   .card-content,
@@ -3712,7 +3738,7 @@ table {
         display: none;
       }
 
-      & > *:not(:has(> .no-truncate)) {
+      & > .card-attribute-preview:not(:has(> .no-truncate)) {
         --max-lines: 2;
         margin: 0;
         max-height: calc(var(--lh) * var(--max-lines));
@@ -3722,8 +3748,13 @@ table {
 
       .checkbox-preview-label {
         display: inline;
+
         font-style: italic;
         margin-inline-start: 5px;
+      }
+
+      .chip.small {
+        padding-inline: 0;
       }
     }
   }
@@ -3738,7 +3769,7 @@ table {
 .card-grid {
   display: grid !important;
   gap: var(--s) !important;
-  grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
 
   & > li {
     border-radius: var(--large-border-radius);
@@ -3776,7 +3807,7 @@ table {
 
   .menubtn:not(.action-btn) {
     margin-inline: 0 -1px;
-    margin-block: 0 0;
+    margin-block: 0;
     padding-inline-end: 2px !important;
     border-inline-start: 1px solid var(--medium-hairline-color);
     border-start-start-radius: 0;
@@ -3840,7 +3871,7 @@ table {
       position: relative;
       inset-block-start: -2px;
       margin-inline: 2px 5px;
-      margin-block: 0 0;
+      margin-block: 0;
       @include mixins.angle(right, var(--light-text-color), calc(1rem / 16));
 
       .sel & {
@@ -4257,7 +4288,7 @@ table {
     &.draginsertion {
       position: relative;
       margin-inline: 8px 0;
-      margin-block: -1px -1px;
+      margin-block: -1px;
       padding-inline-start: 0;
       height: 2px;
       background-color: var(--link-color) !important;
@@ -4439,6 +4470,7 @@ table.editable {
 
   td.action {
     padding-inline: var(--xs) !important;
+    vertical-align: middle;
 
     &:has(+ td.action) {
       padding-inline-end: 0 !important;
@@ -4513,7 +4545,6 @@ table.editable {
 
       td {
         vertical-align: top;
-        text-align: center;
         background-color: var(--white);
         padding-block: 4px;
         padding-inline: 10px;
@@ -4924,7 +4955,7 @@ $statusLabelBgShade: '500';
   .status,
   .cp-icon {
     margin-inline: -3px 0;
-    margin-block: 0 0;
+    margin-block: 0;
   }
 
   .status-label-text {
@@ -5421,13 +5452,18 @@ table.data tbody tr:not(.disabled).active-drop-target {
       height: 100%;
     }
   }
+
+  hr {
+    margin-block: var(--pane-padding);
+    margin-inline: calc(var(--pane-padding) * -1);
+  }
 }
 
 .pane-header {
   margin-block: calc(var(--xl) * -1) var(--xl);
   margin-inline: var(--neg-padding);
   padding-block: 5px 6px;
-  padding-inline: var(--xl);
+  padding-inline: var(--padding);
   min-height: 45px;
   box-sizing: border-box;
   box-shadow: inset 0 -1px 0 0 color.adjust(mixins.$grey300, $alpha: -0.75);
@@ -5672,7 +5708,7 @@ table.data tbody tr:not(.disabled).active-drop-target {
 
     .ui-datepicker {
       margin-inline: -8px 0;
-      margin-block: 0 0;
+      margin-block: 0;
     }
   }
 
@@ -5723,7 +5759,11 @@ table.data tbody tr:not(.disabled).active-drop-target {
     }
   }
 
-  & > fieldset {
+  /*
+  When there's no .meta container (which can occur when editing a matrix block)
+  make sure the sidebar aligns with the top of the content area.
+   */
+  & > fieldset:not(:first-child) {
     margin-block: var(--spacing) !important;
     margin-inline: 0 !important;
   }
@@ -6333,6 +6373,10 @@ $min2ColWidth: 400px;
   h1 {
     margin: 0;
   }
+
+  &::after {
+    @include mixins.clearafter;
+  }
 }
 
 .footer,
@@ -6563,6 +6607,7 @@ $min2ColWidth: 400px;
   display: flex;
   flex-direction: row;
   align-items: center;
+  justify-content: center;
   height: 190px;
   background-color: var(--gray-900);
   margin-block: 0 var(--spacing);
@@ -6605,6 +6650,7 @@ $min2ColWidth: 400px;
     display: flex;
     flex-direction: column;
     align-items: center;
+    justify-content: center;
     width: 100%;
     height: 100%;
 
@@ -7650,19 +7696,31 @@ textarea.text.fullwidth {
             box-shadow: none !important;
           }
         }
+
+        .chip-content {
+          a {
+            word-break: break-word;
+          }
+        }
       }
     }
-  }
 
-  @container (max-width: 399px) {
-    & {
-      flex-direction: column;
-      align-items: start;
+    @container (max-width: calc(399rem/16)) {
+      & {
+        flex-direction: column;
+        align-items: stretch;
 
-      & > .select,
-      & > .select select,
-      & > div > .text {
-        width: 100%;
+        & > .select,
+        & > .select select,
+        & > div[data-link-type] .text,
+        & > div[data-link-type] .chip {
+          display: flex;
+          width: 100%;
+        }
+
+        & > div[data-link-type] ul.elements {
+          align-items: stretch;
+        }
       }
     }
   }
@@ -7699,28 +7757,31 @@ fieldset {
   }
 }
 
+.status-badge {
+  position: absolute;
+  inset-block-start: 0;
+  inset-inline-start: 0;
+  width: 2px;
+  height: 100%;
+  content: '';
+  cursor: help;
+
+  &.modified {
+    background-color: var(--blue-600);
+    box-shadow: 0 0 5px hsl(221deg 83% 53% / 15%);
+  }
+
+  &.outdated {
+    background-color: var(--pending-color);
+    box-shadow: 0 0 5px hsl(27deg 96% 61% / 15%);
+  }
+}
+
 .field {
   min-inline-size: initial;
 
   & > .status-badge {
-    position: absolute;
-    inset-block-start: 0;
-    inset-inline-start: 0;
-    width: 2px;
-    height: 100%;
     border-radius: 1px;
-    content: '';
-    cursor: help;
-
-    &.modified {
-      background-color: var(--blue-600);
-      box-shadow: 0 0 5px hsl(221deg 83% 53% / 15%);
-    }
-
-    &.outdated {
-      background-color: var(--pending-color);
-      box-shadow: 0 0 5px hsl(27deg 96% 61% / 15%);
-    }
   }
 
   & > .heading {
@@ -7817,7 +7878,7 @@ fieldset {
 .expand-status-btn {
   margin-inline-start: 5px;
   width: 30px;
-  height: 17px;
+  min-height: 17px;
   padding: 0;
   line-height: 16px;
   border-radius: var(--small-border-radius);
@@ -7850,6 +7911,12 @@ input.checkbox {
   position: absolute;
   width: var(--checkbox-size);
   height: var(--checkbox-size);
+
+  & + label:has(> .text) {
+    &::before {
+      inset-block-start: 6px;
+    }
+  }
 }
 
 input.checkbox + label,
@@ -8097,6 +8164,10 @@ body.reduce-focus-visibility {
 .text,
 .selectize.multiselect .selectize-input {
   padding-block: 6px;
+}
+
+.text:not(.color-input),
+.selectize.multiselect .selectize-input {
   padding-inline: 9px;
 }
 
@@ -8252,7 +8323,7 @@ td.errors .text,
     border: none;
     background: transparent;
     padding-inline-end: 4rem;
-    box-shadow: none;
+    box-shadow: none !important;
   }
 
   .password-toggle {
@@ -9385,7 +9456,6 @@ body.sitepicker {
   width: var(--width) !important;
   min-width: 0 !important;
   max-width: calc(100% - 20px) !important;
-  max-height: 200px;
 
   .header {
     padding-block: calc(var(--m));
@@ -9393,10 +9463,20 @@ body.sitepicker {
   }
 
   .body {
+    height: 83%;
+    position: relative;
+
     .entry-mover-modal--list {
-      flex: 1;
+      height: calc(100% + 20px);
       position: relative;
-      overflow: hidden;
+
+      fieldset {
+        box-sizing: border-box;
+        height: 100%;
+        overflow: auto;
+        padding-block-end: 20px;
+        position: relative;
+      }
     }
   }
 

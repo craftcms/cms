@@ -124,7 +124,7 @@ class UserGroup extends Model
         $config = [
             'name' => $this->name,
             'handle' => $this->handle,
-            'description' => $this->description,
+            'description' => $this->description ?: null,
         ];
 
         if ($withPermissions && $this->id) {

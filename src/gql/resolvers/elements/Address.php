@@ -10,9 +10,7 @@ namespace craft\gql\resolvers\elements;
 use craft\elements\Address as AddressElement;
 use craft\elements\db\AddressQuery;
 use craft\elements\db\ElementQuery;
-use craft\elements\ElementCollection;
 use craft\gql\base\ElementResolver;
-use craft\helpers\Gql as GqlHelper;
 use yii\base\UnknownMethodException;
 
 /**
@@ -50,10 +48,6 @@ class Address extends ElementResolver
                     throw $e;
                 }
             }
-        }
-
-        if (!GqlHelper::canQueryUsers()) {
-            return ElementCollection::empty();
         }
 
         return $query;

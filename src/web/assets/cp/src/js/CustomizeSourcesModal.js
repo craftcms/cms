@@ -30,6 +30,7 @@ Craft.CustomizeSourcesModal = Garnish.Modal.extend({
   baseSortOptions: null,
   availableTableAttributes: null,
   customFieldAttributes: null,
+  viewModes: null,
 
   conditionBuilderHtml: null,
   conditionBuilderJs: null,
@@ -119,6 +120,7 @@ Craft.CustomizeSourcesModal = Garnish.Modal.extend({
     this.conditionBuilderJs = response.conditionBuilderJs;
     this.sites = response.sites;
     this.userGroups = response.userGroups;
+    this.viewModes = response.viewModes;
 
     if (response.headHtml) {
       await Craft.appendHeadHtml(response.headHtml);
@@ -347,11 +349,13 @@ Craft.CustomizeSourcesModal = Garnish.Modal.extend({
     const $item = $('<div class="customize-sources-item"/>').appendTo(
       this.$sourcesContainer
     );
-    const $itemLabel = $('<div class="label customize-sources-item__btn"/>')
+    const $itemButton = $('<div class="customize-sources-item__btn"/>')
       .attr({
         tabindex: '0',
         role: 'button',
       })
+      .append($('<div class="label"/>'))
+      .append($('<div class="handle"/>'))
       .appendTo($item);
     const $itemInput = $('<input type="hidden"/>').appendTo($item);
     $(
@@ -369,7 +373,7 @@ Craft.CustomizeSourcesModal = Garnish.Modal.extend({
       source = new Craft.CustomizeSourcesModal.Heading(
         this,
         $item,
-        $itemLabel,
+        $itemButton,
         $itemInput,
         sourceData,
         isNew
@@ -381,7 +385,7 @@ Craft.CustomizeSourcesModal = Garnish.Modal.extend({
         source = new Craft.CustomizeSourcesModal.Source(
           this,
           $item,
-          $itemLabel,
+          $itemButton,
           $itemInput,
           sourceData,
           isNew
@@ -390,13 +394,16 @@ Craft.CustomizeSourcesModal = Garnish.Modal.extend({
         source = new Craft.CustomizeSourcesModal.CustomSource(
           this,
           $item,
-          $itemLabel,
+          $itemButton,
           $itemInput,
           sourceData,
           isNew
         );
       }
       source.updateItemLabel(sourceData.label);
+      if (sourceData.data?.handle) {
+        source.updateItemHandle(sourceData.data.handle);
+      }
 
       // Select this by default?
       if (sourceData.key === this.elementIndex.rootSourceKey) {
@@ -500,24 +507,24 @@ Craft.CustomizeSourcesModal.BaseSource = Garnish.Base.extend({
   modal: null,
 
   $item: null,
-  $itemLabel: null,
+  $itemButton: null,
   $itemInput: null,
   $settingsContainer: null,
 
   sourceData: null,
   isNew: null,
 
-  init: function (modal, $item, $itemLabel, $itemInput, sourceData, isNew) {
+  init: function (modal, $item, $itemButton, $itemInput, sourceData, isNew) {
     this.modal = modal;
     this.$item = $item;
-    this.$itemLabel = $itemLabel;
+    this.$itemButton = $itemButton;
     this.$itemInput = $itemInput;
     this.sourceData = sourceData;
     this.isNew = isNew;
 
     this.$item.data('source', this);
 
-    this.addListener(this.$itemLabel, 'activate', this.select);
+    this.addListener(this.$itemButton, 'activate', this.select);
   },
 
   isHeading: function () {
@@ -542,7 +549,7 @@ Craft.CustomizeSourcesModal.BaseSource = Garnish.Base.extend({
     }
 
     this.$item.addClass('sel');
-    this.$itemLabel.attr({
+    this.$itemButton.attr({
       'aria-current': 'true',
     });
     this.modal.selectedSource = this;
@@ -566,7 +573,7 @@ Craft.CustomizeSourcesModal.BaseSource = Garnish.Base.extend({
 
   deselect: function () {
     this.$item.removeClass('sel');
-    this.$itemLabel.attr({
+    this.$itemButton.attr({
       'aria-current': 'false',
     });
     this.modal.selectedSource = null;
@@ -575,9 +582,17 @@ Craft.CustomizeSourcesModal.BaseSource = Garnish.Base.extend({
 
   updateItemLabel: function (val) {
     if (val) {
-      this.$itemLabel.text(val);
+      this.$itemButton.find('.label').text(val);
     } else {
-      this.$itemLabel.html('&nbsp;');
+      this.$itemButton.find('.label').html('&nbsp;');
+    }
+  },
+
+  updateItemHandle: function (val) {
+    if (val) {
+      this.$itemButton.find('.handle').text(val);
+    } else {
+      this.$itemButton.find('.handle').empty();
     }
   },
 
@@ -608,6 +623,9 @@ Craft.CustomizeSourcesModal.BaseSource = Garnish.Base.extend({
 
 Craft.CustomizeSourcesModal.Source =
   Craft.CustomizeSourcesModal.BaseSource.extend({
+    $viewModeInput: null,
+    viewModeListbox: null,
+
     $sortAttributeSelect: null,
     $sortDirectionPicker: null,
     $sortDirectionInput: null,
@@ -625,8 +643,69 @@ Craft.CustomizeSourcesModal.Source =
           on: !this.sourceData.disabled,
         })
         .appendTo($container);
+      this.createViewModeField($container);
       this.createSortField($container);
       this.createTableAttributesField($container);
+    },
+
+    createViewModeField: function ($container) {
+      const $inputContainer = $('<section/>', {
+        class: 'btngroup btngroup--exclusive',
+        'aria-label': Craft.t('app', 'View mode options'),
+      });
+
+      const viewModes = this.modal.viewModes.filter(
+        (viewMode) => !viewMode.structuresOnly || this.sourceData.structureId
+      );
+      let defaultViewMode = this.sourceData.defaultViewMode;
+      if (
+        !defaultViewMode ||
+        !viewModes.some((viewMode) => viewMode.mode === defaultViewMode)
+      ) {
+        defaultViewMode = viewModes[0]?.mode;
+      }
+
+      for (let viewMode of viewModes) {
+        const $btn = $('<button/>', {
+          type: 'button',
+          class: 'btn',
+          title: viewMode.title,
+          'aria-label': viewMode.title,
+          'data-mode': viewMode.mode,
+        }).appendTo($inputContainer);
+        $('<div/>', {
+          class: 'cp-icon small',
+        })
+          .append(viewMode.iconSvg)
+          .appendTo($btn);
+        if (viewMode.mode === defaultViewMode) {
+          $btn.addClass('active').attr('aria-pressed', 'true');
+        } else {
+          $btn.attr('aria-pressed', 'false');
+        }
+      }
+
+      $inputContainer.children('button:last').addClass('btngroup-btn-last');
+
+      this.$viewModeInput = $('<input/>', {
+        type: 'hidden',
+        name: `sources[${this.sourceData.key}][defaultViewMode]`,
+        value: this.sourceData.defaultViewMode,
+      }).appendTo($inputContainer);
+
+      this.viewModeListbox = new Craft.Listbox($inputContainer, {
+        onChange: ($selectedOption) => {
+          this.$viewModeInput.val($selectedOption.data('mode'));
+        },
+      });
+
+      Craft.ui
+        .createField($inputContainer, {
+          label: Craft.t('app', 'Default View Mode'),
+          fieldset: true,
+        })
+        .appendTo($container)
+        .addClass('view-mode-field');
     },
 
     createSortField: function ($container) {
@@ -858,6 +937,7 @@ Craft.CustomizeSourcesModal.CustomSource =
 
       this.createSortField($container);
       this.createTableAttributesField($container);
+      this.createViewModeField($container);
 
       if (Craft.sites.length > 1) {
         Craft.ui
@@ -911,7 +991,15 @@ Craft.CustomizeSourcesModal.CustomSource =
     availableTableAttributes: function () {
       const attributes = this.base();
       if (this.isNew) {
-        attributes.push(...this.modal.customFieldAttributes);
+        let existingFieldAttributes = [];
+        let customFieldAttributes = [];
+        this.modal.customFieldAttributes.forEach((item) => {
+          if (existingFieldAttributes.indexOf(item[0]) == -1) {
+            existingFieldAttributes.push(item[0]);
+            customFieldAttributes.push(item);
+          }
+        });
+        attributes.push(...customFieldAttributes);
       }
       return attributes;
     },
@@ -988,11 +1076,13 @@ Craft.CustomizeSourcesModal.Heading =
     },
 
     updateItemLabel: function (val) {
-      this.$itemLabel.html(
-        (val
-          ? Craft.escapeHtml(val)
-          : `<em>${Craft.t('app', '(blank)')}</em>`) + '&nbsp;'
-      );
+      this.$itemButton
+        .find('.label')
+        .html(
+          (val
+            ? Craft.escapeHtml(val)
+            : `<em>${Craft.t('app', '(blank)')}</em>`) + '&nbsp;'
+        );
       this.$itemInput.val(val);
     },
 

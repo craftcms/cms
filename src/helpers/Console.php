@@ -23,6 +23,74 @@ use const STDOUT;
 class Console extends \yii\helpers\Console
 {
     /**
+     * @var int The number of times [[output()]] has been called.
+     * @since 5.5.0
+     */
+    public static int $outputCount = 0;
+
+    /**
+     * @var bool Whether a newline should be prepended to the next output.
+     * @since 5.5.0
+     */
+    public static bool $prependNewline = false;
+
+    private static int $indent = 0;
+
+    /**
+     * Increases the indent prepended to [[output()]] strings.
+     *
+     * @since 5.5.0
+     */
+    public static function indent(): void
+    {
+        self::$indent++;
+    }
+
+    /**
+     * Decreases the indent prepended to [[output()]] strings.
+     *
+     * @since 5.5.0
+     */
+    public static function outdent(): void
+    {
+        self::$indent = max(0, self::$indent - 1);
+    }
+
+    /**
+     * Returns the indent string that should be appended to output lines.
+     *
+     * @return string
+     * @since 5.5.0
+     */
+    public static function indentStr(): string
+    {
+        return str_repeat('   ', self::$indent);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public static function output($string = null): int|bool
+    {
+        self::$outputCount++;
+
+        if ($string !== null) {
+            if (self::$prependNewline) {
+                $string = "\n$string";
+                self::$prependNewline = false;
+            }
+
+            if (self::$indent !== 0) {
+                $lines = StringHelper::lines($string);
+                $lines = array_map(fn(string $line) => static::indentStr() . $line, $lines);
+                $string = implode("\n", $lines);
+            }
+        }
+
+        return parent::output($string);
+    }
+
+    /**
      * Prints a string to STDOUT.
      *
      * You may optionally format the string with ANSI codes by
@@ -38,6 +106,13 @@ class Console extends \yii\helpers\Console
      */
     public static function stdout($string): int|false
     {
+        self::$outputCount++;
+
+        if (self::$prependNewline) {
+            $string = "\n$string";
+            self::$prependNewline = false;
+        }
+
         if (static::streamSupportsAnsiColors(STDOUT)) {
             $args = func_get_args();
             array_shift($args);
@@ -165,7 +240,7 @@ class Console extends \yii\helpers\Console
     {
         $options += [
             'maxSize' => 80,
-            'rowPrefix' => '    ',
+            'rowPrefix' => '   ',
             'rowSuffix' => '',
             'colors' => static::streamSupportsAnsiColors(STDOUT),
         ];
@@ -177,7 +252,8 @@ class Console extends \yii\helpers\Console
         foreach (array_merge($data, [$headers]) as $row) {
             foreach ($keys as $key) {
                 $cell = $row[$key];
-                $cellSizes[$key][] = mb_strlen(is_array($cell) ? reset($cell) : $cell);
+                $value = is_array($cell) ? reset($cell) : $cell;
+                $cellSizes[$key][] = mb_strlen(static::stripAnsiFormat($value));
             }
         }
 
@@ -210,23 +286,22 @@ class Console extends \yii\helpers\Console
         foreach ($sizes as $key => $size) {
             $cell = $row[$key] ?? '';
             $value = is_array($cell) ? reset($cell) : $cell;
-            $len = strlen($value);
+            $len = mb_strlen(static::stripAnsiFormat($value));
 
             if ($len < $size) {
-                if (isset($cell['align'])) {
-                    $padType = match ($cell['align']) {
-                        'left' => STR_PAD_RIGHT,
-                        'right' => STR_PAD_LEFT,
-                        'center' => STR_PAD_BOTH,
-                        default => throw new InvalidValueException("Invalid align value: {$cell['align']}"),
-                    };
-                } else {
-                    $padType = STR_PAD_RIGHT;
-                }
-
-                $value = str_pad($value, $size, ' ', $padType);
+                $padSize = $size - $len;
+                $value = match ($cell['align'] ?? null) {
+                    'right' => sprintf('%s%s', str_repeat(' ', $padSize), $value),
+                    'center' => sprintf(
+                        '%s%s%s',
+                        str_repeat(' ', (int)floor($padSize / 2)),
+                        $value,
+                        str_repeat(' ', (int)ceil($padSize / 2)),
+                    ),
+                    default => sprintf('%s%s', $value, str_repeat(' ', $padSize)),
+                };
             } elseif ($len > $size) {
-                $value = substr($value, 0, $size - 1) . '…';
+                $value = mb_substr($value, 0, $size - 1) . '…';
             }
 
             if (isset($cell['format']) && $options['colors']) {

@@ -46,7 +46,6 @@ use craft\events\AssetEvent;
 use craft\events\DefineAssetUrlEvent;
 use craft\events\GenerateTransformEvent;
 use craft\fieldlayoutelements\assets\AltField;
-use craft\fs\Temp;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Assets;
 use craft\helpers\Cp;
@@ -393,7 +392,7 @@ class Asset extends Element
                 'data' => [
                     'volume-handle' => false,
                     'folder-id' => $temporaryUploadFolder->id,
-                    'can-upload' => false,
+                    'can-upload' => true,
                     'can-move-to' => false,
                     'can-move-peer-files-to' => false,
                     'fs-type' => $temporaryUploadFs::class,
@@ -448,14 +447,10 @@ class Asset extends Element
      */
     protected static function defineFieldLayouts(?string $source): array
     {
-        if ($source !== null) {
-            $volumes = [];
-            if (preg_match('/^volume:(.+)$/', $source, $matches)) {
-                $volume = Craft::$app->getVolumes()->getVolumeByUid($matches[1]);
-                if ($volume) {
-                    $volumes[] = $volume;
-                }
-            }
+        if ($source !== null && preg_match('/^volume:(.+)$/', $source, $matches)) {
+            $volumes = array_filter([
+                Craft::$app->getVolumes()->getVolumeByUid($matches[1]),
+            ]);
         } else {
             $volumes = Craft::$app->getVolumes()->getAllVolumes();
         }
@@ -587,7 +582,6 @@ class Asset extends Element
                 'orderBy' => 'dateUpdated',
                 'defaultDir' => 'desc',
             ],
-            'id' => Craft::t('app', 'ID'),
             'width' => Craft::t('app', 'Width'),
             'height' => Craft::t('app', 'Height'),
         ];
@@ -657,6 +651,79 @@ class Asset extends Element
         } else {
             parent::prepElementQueryForTableAttribute($elementQuery, $attribute);
         }
+    }
+
+    /**
+     * @inheritdoc
+     */
+    protected static function defineCardAttributes(): array
+    {
+        $attributes = array_merge(parent::defineCardAttributes(), [
+            'dateCreated' => [
+                'label' => Craft::t('app', 'Date Uploaded'),
+                // placeholder will be merged from parent
+            ],
+            'filename' => [
+                'label' => Craft::t('app', 'Filename'),
+                'placeholder' => Craft::t('app', 'placeholder') . '.png',
+            ],
+            'size' => [
+                'label' => Craft::t('app', 'File Size'),
+                'placeholder' => '2KB',
+            ],
+            'kind' => [
+                'label' => Craft::t('app', 'File Kind'),
+                'placeholder' => Craft::t('app', 'Image'),
+
+            ],
+            'imageSize' => [
+                'label' => Craft::t('app', 'Dimensions'),
+                'placeholder' => '700x500',
+            ],
+            'width' => [
+                'label' => Craft::t('app', 'Image Width'),
+                'placeholder' => '700px',
+            ],
+            'height' => [
+                'label' => Craft::t('app', 'Image Height'),
+                'placeholder' => '500px',
+            ],
+            'location' => [
+                'label' => Craft::t('app', 'Location'),
+                'placeholder' => Craft::t('app', 'Volume'),
+            ],
+            'link' => [
+                'label' => Craft::t('app', 'Link'),
+                'icon' => 'world',
+                'placeholder' => ElementHelper::linkAttributeHtml(null),
+            ],
+            'dateModified' => [
+                'label' => Craft::t('app', 'File Modified Date'),
+                'placeholder' => (new \DateTime())->sub(new \DateInterval('P14D')),
+            ],
+            'uploader' => [
+                'label' => Craft::t('app', 'Uploaded By'),
+                'placeholder' => ($uploader = Craft::$app->getUser()->getIdentity()) ? Cp::elementChipHtml($uploader) : '',
+            ],
+        ]);
+
+        // Hide Author from Craft Solo
+        if (Craft::$app->edition === CmsEdition::Solo) {
+            unset($attributes['uploader']);
+        }
+
+        return $attributes;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public static function attributePreviewHtml(array $attribute): mixed
+    {
+        return match ($attribute['value']) {
+            'uploader' => $attribute['placeholder'],
+            default => parent::attributePreviewHtml($attribute),
+        };
     }
 
     /**
@@ -2749,6 +2816,35 @@ JS,[
                 ($userSession->getId() == $this->uploaderId || $userSession->checkPermission("editPeerImages:$volume->uid"))
             );
 
+            switch ($this->kind) {
+                case Asset::KIND_VIDEO:
+                    $previewInner =
+                        Html::tag('video', Html::tag('source', '', [
+                            'type' => $this->getMimeType(),
+                            'src' => $this->url,
+                        ]), [
+                            'class' => 'preview-thumb',
+                            'controls' => true,
+                            'preload' => 'metadata',
+                        ]);
+                    break;
+                case Asset::KIND_AUDIO:
+                    $previewInner =
+                        Html::tag('audio', Html::tag('source', '', [
+                            'src' => $this->url,
+                            'type' => $this->getMimeType(),
+                        ]), [
+                            'controls' => true,
+                            'preload' => 'metadata',
+                        ]);
+                    break;
+                default:
+                    $previewInner =
+                        Html::tag('div', $this->getPreviewThumbImg(350, 190), [
+                            'class' => 'preview-thumb',
+                        ]);
+            }
+
             $previewThumbHtml =
                 Html::beginTag('div', [
                     'id' => 'thumb-container',
@@ -2758,9 +2854,7 @@ JS,[
                         $this->hasCheckeredThumb() ? 'checkered' : null,
                     ]),
                 ]) .
-                Html::tag('div', $this->getPreviewThumbImg(350, 190), [
-                    'class' => 'preview-thumb',
-                ]) .
+                $previewInner .
                 Html::endTag('div'); // .preview-thumb-container
 
             if ($previewable || $editable) {

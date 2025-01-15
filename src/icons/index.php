@@ -1,6 +1,12 @@
 <?php
 
 return array(
+  'a' =>
+  array(
+    'name' => ' a ',
+    'terms' => ' latin capital letter a latin small letter a letter ',
+    'pro' => false,
+  ),
   'abacus' =>
   array(
     'name' => ' abacus ',
@@ -66,6 +72,42 @@ return array(
     'name' => ' alien 8bit ',
     'terms' => ' et alien alien monster creature extraterrestrial face humanoid monster space space invader strange ufo video game ',
     'pro' => true,
+  ),
+  'align-center' =>
+  array(
+    'name' => ' align center ',
+    'terms' => ' format middle paragraph text ',
+    'pro' => false,
+  ),
+  'align-justify' =>
+  array(
+    'name' => ' align justify ',
+    'terms' => ' format paragraph text ',
+    'pro' => false,
+  ),
+  'align-left' =>
+  array(
+    'name' => ' align left ',
+    'terms' => ' format paragraph text ',
+    'pro' => false,
+  ),
+  'align-right' =>
+  array(
+    'name' => ' align right ',
+    'terms' => ' format paragraph text ',
+    'pro' => false,
+  ),
+  'align-slash' =>
+  array(
+    'name' => ' align slash ',
+    'terms' => ' cancel disabled format paragraph remove ',
+    'pro' => true,
+  ),
+  'amazon' =>
+  array(
+    'name' => ' amazon ',
+    'terms' => '  ',
+    'pro' => false,
   ),
   'amp-guitar' =>
   array(
@@ -175,6 +217,12 @@ return array(
     'terms' => ' leftwards arrow back previous ',
     'pro' => false,
   ),
+  'arrow-left-from-bracket' =>
+  array(
+    'name' => ' arrow left from bracket ',
+    'terms' => ' leave logout send exit ',
+    'pro' => true,
+  ),
   'arrow-pointer' =>
   array(
     'name' => ' arrow pointer ',
@@ -185,6 +233,12 @@ return array(
   array(
     'name' => ' arrow right ',
     'terms' => ' rightwards arrow forward next ',
+    'pro' => false,
+  ),
+  'arrow-right-from-bracket' =>
+  array(
+    'name' => ' arrow right from bracket ',
+    'terms' => ' arrow exit leave log out logout ',
     'pro' => false,
   ),
   'arrow-rotate-left' =>
@@ -210,6 +264,12 @@ return array(
     'name' => ' arrow trend up ',
     'terms' => ' line stocks trend ',
     'pro' => false,
+  ),
+  'arrow-turn-down-left' =>
+  array(
+    'name' => ' arrow turn down left ',
+    'terms' => ' enter keyboard return ',
+    'pro' => true,
   ),
   'arrow-up' =>
   array(
@@ -295,6 +355,18 @@ return array(
     'terms' => ' backpack bag book carry hiking rucksack satchel school travel ',
     'pro' => true,
   ),
+  'backward' =>
+  array(
+    'name' => ' backward ',
+    'terms' => ' arrow double fast reverse button previous rewind ',
+    'pro' => false,
+  ),
+  'backward-step' =>
+  array(
+    'name' => ' backward step ',
+    'terms' => ' beginning first previous rewind start ',
+    'pro' => false,
+  ),
   'bacon' =>
   array(
     'name' => ' bacon ',
@@ -377,6 +449,12 @@ return array(
   array(
     'name' => ' balloon ',
     'terms' => ' balloon birthday celebrate celebration helium party pop up ',
+    'pro' => true,
+  ),
+  'balloons' =>
+  array(
+    'name' => ' balloons ',
+    'terms' => ' birthday celebrate celebration helium party pop up ',
     'pro' => true,
   ),
   'ballot-check' =>
@@ -565,6 +643,12 @@ return array(
     'terms' => ' signal ',
     'pro' => false,
   ),
+  'bold' =>
+  array(
+    'name' => ' bold ',
+    'terms' => ' emphasis format text ',
+    'pro' => false,
+  ),
   'bolt' =>
   array(
     'name' => ' bolt ',
@@ -676,6 +760,12 @@ return array(
   'brackets-curly' =>
   array(
     'name' => ' brackets curly ',
+    'terms' => ' code developer development parentheses ',
+    'pro' => true,
+  ),
+  'brackets-square' =>
+  array(
+    'name' => ' brackets square ',
     'terms' => ' code developer development parentheses ',
     'pro' => true,
   ),
@@ -913,6 +1003,12 @@ return array(
     'terms' => ' camera cinema director film movie movie camera theater video ',
     'pro' => true,
   ),
+  'camera-retro' =>
+  array(
+    'name' => ' camera retro ',
+    'terms' => ' camera image img lens photo picture record shutter video ',
+    'pro' => false,
+  ),
   'campfire' =>
   array(
     'name' => ' campfire ',
@@ -991,6 +1087,12 @@ return array(
     'terms' => ' auto electric mechanic power ',
     'pro' => false,
   ),
+  'car-side' =>
+  array(
+    'name' => ' car side ',
+    'terms' => ' auto automobile car sedan transportation travel vehicle ',
+    'pro' => false,
+  ),
   'caravan' =>
   array(
     'name' => ' caravan ',
@@ -1026,6 +1128,30 @@ return array(
     'name' => ' cards ',
     'terms' => ' ace card gamble playing card poker suit ',
     'pro' => true,
+  ),
+  'caret-down' =>
+  array(
+    'name' => ' caret down ',
+    'terms' => ' arrow dropdown expand menu more triangle ',
+    'pro' => false,
+  ),
+  'caret-left' =>
+  array(
+    'name' => ' caret left ',
+    'terms' => ' arrow back previous triangle ',
+    'pro' => false,
+  ),
+  'caret-right' =>
+  array(
+    'name' => ' caret right ',
+    'terms' => ' arrow forward next triangle ',
+    'pro' => false,
+  ),
+  'caret-up' =>
+  array(
+    'name' => ' caret up ',
+    'terms' => ' arrow collapse triangle upgrade ',
+    'pro' => false,
   ),
   'carrot' =>
   array(
@@ -1117,6 +1243,12 @@ return array(
     'terms' => ' electric ev tesla vehicle ',
     'pro' => false,
   ),
+  'chart-area' =>
+  array(
+    'name' => ' chart area ',
+    'terms' => ' analytics area chart graph performance revenue statistics ',
+    'pro' => false,
+  ),
   'chart-line' =>
   array(
     'name' => ' chart line ',
@@ -1129,11 +1261,23 @@ return array(
     'terms' => ' analytics chart diagram graph performance pie revenue statistics ',
     'pro' => false,
   ),
+  'chart-pie-simple' =>
+  array(
+    'name' => ' chart pie simple ',
+    'terms' => ' analytics chart diagram graph performance pie revenue statistics ',
+    'pro' => true,
+  ),
   'chart-pyramid' =>
   array(
     'name' => ' chart pyramid ',
     'terms' => ' chart food graph performance statistics ',
     'pro' => true,
+  ),
+  'chart-simple' =>
+  array(
+    'name' => ' chart simple ',
+    'terms' => ' analytics bar chart column graph performance revenue row statistics trend ',
+    'pro' => false,
   ),
   'check' =>
   array(
@@ -1169,6 +1313,54 @@ return array(
   array(
     'name' => ' chestnut ',
     'terms' => ' nut plant ',
+    'pro' => true,
+  ),
+  'chevron-down' =>
+  array(
+    'name' => ' chevron down ',
+    'terms' => ' arrow download expand insert ',
+    'pro' => false,
+  ),
+  'chevron-left' =>
+  array(
+    'name' => ' chevron left ',
+    'terms' => ' left pointing angle bracket arrow back bracket previous ',
+    'pro' => false,
+  ),
+  'chevron-right' =>
+  array(
+    'name' => ' chevron right ',
+    'terms' => ' right pointing angle bracket arrow bracket forward next ',
+    'pro' => false,
+  ),
+  'chevron-up' =>
+  array(
+    'name' => ' chevron up ',
+    'terms' => ' arrow collapse upgrade upload ',
+    'pro' => false,
+  ),
+  'chevrons-down' =>
+  array(
+    'name' => ' chevrons down ',
+    'terms' => ' arrow download expand ',
+    'pro' => true,
+  ),
+  'chevrons-left' =>
+  array(
+    'name' => ' chevrons left ',
+    'terms' => ' arrow back bracket previous ',
+    'pro' => true,
+  ),
+  'chevrons-right' =>
+  array(
+    'name' => ' chevrons right ',
+    'terms' => ' arrow bracket forward next ',
+    'pro' => true,
+  ),
+  'chevrons-up' =>
+  array(
+    'name' => ' chevrons up ',
+    'terms' => ' arrow collapse upgrade upload ',
     'pro' => true,
   ),
   'child' =>
@@ -1231,6 +1423,18 @@ return array(
     'terms' => ' upgrade upload ',
     'pro' => false,
   ),
+  'circle-caret-left' =>
+  array(
+    'name' => ' circle caret left ',
+    'terms' => ' arrow back previous triangle ',
+    'pro' => true,
+  ),
+  'circle-caret-right' =>
+  array(
+    'name' => ' circle caret right ',
+    'terms' => ' arrow forward next triangle ',
+    'pro' => true,
+  ),
   'circle-check' =>
   array(
     'name' => ' circle check ',
@@ -1243,10 +1447,22 @@ return array(
     'terms' => ' add copy dashed dotted marquee select selection ',
     'pro' => true,
   ),
+  'circle-dollar' =>
+  array(
+    'name' => ' circle dollar ',
+    'terms' => ' $ currency dollar sign investment money premium price salary usd ',
+    'pro' => true,
+  ),
   'circle-dot' =>
   array(
     'name' => ' circle dot ',
     'terms' => ' bullseye button geometric notification radio radio button target ',
+    'pro' => false,
+  ),
+  'circle-exclamation' =>
+  array(
+    'name' => ' circle exclamation ',
+    'terms' => ' affect alert attention damage danger error failed important notice notification notify problem required warning ',
     'pro' => false,
   ),
   'circle-info' =>
@@ -1255,16 +1471,34 @@ return array(
     'terms' => ' details help information more support ',
     'pro' => false,
   ),
+  'circle-minus' =>
+  array(
+    'name' => ' circle minus ',
+    'terms' => ' delete hide negative remove shape trash ',
+    'pro' => false,
+  ),
   'circle-nodes' =>
   array(
     'name' => ' circle nodes ',
     'terms' => ' cluster connect network ',
     'pro' => false,
   ),
+  'circle-plus' =>
+  array(
+    'name' => ' circle plus ',
+    'terms' => ' add create expand new positive shape ',
+    'pro' => false,
+  ),
   'circle-question' =>
   array(
     'name' => ' circle question ',
     'terms' => ' faq help information support unknown ',
+    'pro' => false,
+  ),
+  'circle-xmark' =>
+  array(
+    'name' => ' circle xmark ',
+    'terms' => ' close cross destroy exit incorrect notice notification notify problem uncheck wrong x ',
     'pro' => false,
   ),
   'citrus' =>
@@ -1339,6 +1573,12 @@ return array(
     'terms' => ' import save upgrade upload ',
     'pro' => false,
   ),
+  'cloud-check' =>
+  array(
+    'name' => ' cloud check ',
+    'terms' => ' enable success upload validate verify working ',
+    'pro' => true,
+  ),
   'clover' =>
   array(
     'name' => ' clover ',
@@ -1363,6 +1603,18 @@ return array(
     'terms' => ' brackets code development html mysql sql ',
     'pro' => false,
   ),
+  'code-simple' =>
+  array(
+    'name' => ' code simple ',
+    'terms' => ' code computer developer ',
+    'pro' => true,
+  ),
+  'codepen' =>
+  array(
+    'name' => ' codepen ',
+    'terms' => '  ',
+    'pro' => false,
+  ),
   'coffee-pot' =>
   array(
     'name' => ' coffee pot ',
@@ -1375,6 +1627,12 @@ return array(
     'terms' => ' box burial casket cemetery coffin death eulogy funeral halloween vampire ',
     'pro' => true,
   ),
+  'columns-3' =>
+  array(
+    'name' => ' columns 3 ',
+    'terms' => ' divide organize panes split ',
+    'pro' => true,
+  ),
   'comet' =>
   array(
     'name' => ' comet ',
@@ -1385,6 +1643,18 @@ return array(
   array(
     'name' => ' comment ',
     'terms' => ' conversation discussion talking right speech bubble answer bubble chat commenting conversation feedback message note notification sms speech talk texting ',
+    'pro' => false,
+  ),
+  'comment-lines' =>
+  array(
+    'name' => ' comment lines ',
+    'terms' => ' answer bubble chat commenting conversation feedback message note notification sms speech texting ',
+    'pro' => true,
+  ),
+  'comments' =>
+  array(
+    'name' => ' comments ',
+    'terms' => ' conversation discussion talking two speech bubbles answer bubble chat commenting conversation feedback message note notification sms speech talk texting ',
     'pro' => false,
   ),
   'compact-disc' =>
@@ -1403,6 +1673,12 @@ return array(
   array(
     'name' => ' compass drafting ',
     'terms' => ' design map mechanical drawing plot plotting ',
+    'pro' => false,
+  ),
+  'compress' =>
+  array(
+    'name' => ' compress ',
+    'terms' => ' collapse fullscreen minimize move resize shrink smaller ',
     'pro' => false,
   ),
   'computer-classic' =>
@@ -1687,6 +1963,12 @@ return array(
     'terms' => ' blu ray cd cd rom computer dvd load music optical drive peripheral tray video ',
     'pro' => true,
   ),
+  'discord' =>
+  array(
+    'name' => ' discord ',
+    'terms' => '  ',
+    'pro' => false,
+  ),
   'disease' =>
   array(
     'name' => ' disease ',
@@ -1783,6 +2065,12 @@ return array(
     'terms' => ' clay hanukkah holiday jewish judaism toy ',
     'pro' => true,
   ),
+  'dribbble' =>
+  array(
+    'name' => ' dribbble ',
+    'terms' => '  ',
+    'pro' => false,
+  ),
   'drone' =>
   array(
     'name' => ' drone ',
@@ -1812,6 +2100,12 @@ return array(
     'name' => ' drumstick ',
     'terms' => ' bone chicken drumstick leg meat poultry poultry leg turkey ',
     'pro' => true,
+  ),
+  'drumstick-bite' =>
+  array(
+    'name' => ' drumstick bite ',
+    'terms' => ' bone chicken leg meat poultry turkey ',
+    'pro' => false,
   ),
   'dryer' =>
   array(
@@ -1939,6 +2233,12 @@ return array(
     'terms' => ' back of envelope e mail email envelope letter mail message newsletter notification offer support ',
     'pro' => false,
   ),
+  'envelope-open-text' =>
+  array(
+    'name' => ' envelope open text ',
+    'terms' => ' e mail email letter mail message newsletter notification offer support ',
+    'pro' => false,
+  ),
   'eraser' =>
   array(
     'name' => ' eraser ',
@@ -1968,6 +2268,12 @@ return array(
     'name' => ' excavator ',
     'terms' => ' dig earth construction dirt ',
     'pro' => true,
+  ),
+  'expand' =>
+  array(
+    'name' => ' expand ',
+    'terms' => ' maximize resize scale arrows bigger enlarge fullscreen resize size expand viewfinder ',
+    'pro' => false,
   ),
   'explosion' =>
   array(
@@ -2659,6 +2965,12 @@ return array(
     'terms' => ' face lips mouth quiet sealed secret zipper zipper mouth face ',
     'pro' => true,
   ),
+  'facebook' =>
+  array(
+    'name' => ' facebook ',
+    'terms' => ' fabook facebook official fb social network ',
+    'pro' => false,
+  ),
   'falafel' =>
   array(
     'name' => ' falafel ',
@@ -2741,6 +3053,48 @@ return array(
   array(
     'name' => ' file code ',
     'terms' => ' css development document html mysql sql ',
+    'pro' => false,
+  ),
+  'file-lines' =>
+  array(
+    'name' => ' file lines ',
+    'terms' => ' document document with text document file text invoice new page pdf ',
+    'pro' => false,
+  ),
+  'file-music' =>
+  array(
+    'name' => ' file music ',
+    'terms' => ' aac aif audio midi mp3 ogg sheet music wav wma ',
+    'pro' => true,
+  ),
+  'file-pdf' =>
+  array(
+    'name' => ' file pdf ',
+    'terms' => ' acrobat document preview save ',
+    'pro' => false,
+  ),
+  'file-pen' =>
+  array(
+    'name' => ' file pen ',
+    'terms' => ' edit memo modify pen pencil update write ',
+    'pro' => false,
+  ),
+  'file-spreadsheet' =>
+  array(
+    'name' => ' file spreadsheet ',
+    'terms' => ' csv document excel numbers sheets xls ',
+    'pro' => true,
+  ),
+  'file-video' =>
+  array(
+    'name' => ' file video ',
+    'terms' => ' document m4v movie mp4 play ',
+    'pro' => false,
+  ),
+  'file-zipper' =>
+  array(
+    'name' => ' file zipper ',
+    'terms' => ' zip bundle compress compression download zip ',
     'pro' => false,
   ),
   'files' =>
@@ -2977,6 +3331,18 @@ return array(
     'terms' => ' turret castle fort fortress garrison palace ',
     'pro' => true,
   ),
+  'forward' =>
+  array(
+    'name' => ' forward ',
+    'terms' => ' arrow double fast fast forward button forward next skip ',
+    'pro' => false,
+  ),
+  'forward-step' =>
+  array(
+    'name' => ' forward step ',
+    'terms' => ' end last next ',
+    'pro' => false,
+  ),
   'frame' =>
   array(
     'name' => ' frame ',
@@ -3067,6 +3433,12 @@ return array(
     'terms' => ' dashboard fast odometer speed speedometer ',
     'pro' => false,
   ),
+  'gauge-max' =>
+  array(
+    'name' => ' gauge max ',
+    'terms' => ' dashboard fast odometer quick speed speedometer ',
+    'pro' => true,
+  ),
   'gavel' =>
   array(
     'name' => ' gavel ',
@@ -3108,6 +3480,12 @@ return array(
     'name' => ' gingerbread man ',
     'terms' => ' cookie decoration frosting holiday ',
     'pro' => true,
+  ),
+  'github' =>
+  array(
+    'name' => ' github ',
+    'terms' => ' octocat ',
+    'pro' => false,
   ),
   'glass' =>
   array(
@@ -3168,6 +3546,12 @@ return array(
     'name' => ' golf flag hole ',
     'terms' => ' bogey eagle flag in hole golf hole putt ',
     'pro' => true,
+  ),
+  'google' =>
+  array(
+    'name' => ' google ',
+    'terms' => '  ',
+    'pro' => false,
   ),
   'gopuram' =>
   array(
@@ -3451,6 +3835,12 @@ return array(
     'terms' => ' breath coronavirus covid 19 filter flu infection pandemic respirator uer virus ',
     'pro' => false,
   ),
+  'heading' =>
+  array(
+    'name' => ' heading ',
+    'terms' => ' format header text title ',
+    'pro' => false,
+  ),
   'headphones' =>
   array(
     'name' => ' headphones ',
@@ -3565,6 +3955,12 @@ return array(
     'terms' => ' equus fauna mammmal mare neigh pony ',
     'pro' => false,
   ),
+  'horse-saddle' =>
+  array(
+    'name' => ' horse saddle ',
+    'terms' => ' cowboy equus fauna mammmal mare neigh pony rodeo western ',
+    'pro' => true,
+  ),
   'hose' =>
   array(
     'name' => ' hose ',
@@ -3673,11 +4069,23 @@ return array(
     'terms' => ' album img landscape photo picture ',
     'pro' => false,
   ),
+  'image-landscape' =>
+  array(
+    'name' => ' image landscape ',
+    'terms' => ' image img mountain photo ',
+    'pro' => true,
+  ),
   'image-polaroid' =>
   array(
     'name' => ' image polaroid ',
     'terms' => ' capture film img instant camera lens photo photography retro snapshot vintage ',
     'pro' => true,
+  ),
+  'image-portrait' =>
+  array(
+    'name' => ' image portrait ',
+    'terms' => ' id image img photo picture selfie uer username ',
+    'pro' => false,
   ),
   'image-slash' =>
   array(
@@ -3695,6 +4103,12 @@ return array(
   array(
     'name' => ' inbox ',
     'terms' => ' archive desk email mail message ',
+    'pro' => false,
+  ),
+  'indent' =>
+  array(
+    'name' => ' indent ',
+    'terms' => ' align justify paragraph tab ',
     'pro' => false,
   ),
   'industry-windows' =>
@@ -3727,6 +4141,12 @@ return array(
     'terms' => ' field input name ',
     'pro' => true,
   ),
+  'instagram' =>
+  array(
+    'name' => ' instagram ',
+    'terms' => '  ',
+    'pro' => false,
+  ),
   'interrobang' =>
   array(
     'name' => ' interrobang ',
@@ -3744,6 +4164,12 @@ return array(
     'name' => ' island tropical ',
     'terms' => ' castaway desert desert island island palm tree sand stranded summer vacation ',
     'pro' => true,
+  ),
+  'italic' =>
+  array(
+    'name' => ' italic ',
+    'terms' => ' edit emphasis font format text type ',
+    'pro' => false,
   ),
   'jack-o-lantern' =>
   array(
@@ -3816,6 +4242,12 @@ return array(
     'name' => ' keynote ',
     'terms' => ' lecture panel seminar speak speaker talk ',
     'pro' => true,
+  ),
+  'kickstarter' =>
+  array(
+    'name' => ' kickstarter ',
+    'terms' => '  ',
+    'pro' => false,
   ),
   'kidneys' =>
   array(
@@ -3955,6 +4387,12 @@ return array(
     'terms' => ' back previous ',
     'pro' => true,
   ),
+  'left-right' =>
+  array(
+    'name' => ' left right ',
+    'terms' => ' arrow arrows h expand horizontal landscape left right arrow resize wide ',
+    'pro' => false,
+  ),
   'lemon' =>
   array(
     'name' => ' lemon ',
@@ -4009,6 +4447,18 @@ return array(
     'terms' => ' attach attachment chain connect lin link ',
     'pro' => false,
   ),
+  'link-slash' =>
+  array(
+    'name' => ' link slash ',
+    'terms' => ' attachment chain chain broken disabled disconnect remove ',
+    'pro' => false,
+  ),
+  'linkedin' =>
+  array(
+    'name' => ' linkedin ',
+    'terms' => ' linkedin square linkin ',
+    'pro' => false,
+  ),
   'lips' =>
   array(
     'name' => ' lips ',
@@ -4026,6 +4476,12 @@ return array(
     'name' => ' list check ',
     'terms' => ' bullet cheatsheet checklist downloading downloads enable loading progress project management settings summary to do validate working ',
     'pro' => false,
+  ),
+  'list-music' =>
+  array(
+    'name' => ' list music ',
+    'terms' => ' album cheatsheet itunes music playlist podcast soundtrack summary ',
+    'pro' => true,
   ),
   'list-ol' =>
   array(
@@ -4183,6 +4639,12 @@ return array(
     'terms' => ' address agree coordinates destination gps localize location map marker navigation pin place position pushpin round pushpin travel ',
     'pro' => false,
   ),
+  'markdown' =>
+  array(
+    'name' => ' markdown ',
+    'terms' => '  ',
+    'pro' => false,
+  ),
   'marker' =>
   array(
     'name' => ' marker ',
@@ -4307,6 +4769,18 @@ return array(
   array(
     'name' => ' message bot ',
     'terms' => ' ai answer automated chat chatbot comment help support ',
+    'pro' => true,
+  ),
+  'message-dots' =>
+  array(
+    'name' => ' message dots ',
+    'terms' => ' answer bubble chat commenting conversation feedback message more note notification reply request sms speech texting ',
+    'pro' => true,
+  ),
+  'message-xmark' =>
+  array(
+    'name' => ' message xmark ',
+    'terms' => ' answer archive bubble chat commenting conversation delete feedback message note notification remove sms speech texting uncheck x ',
     'pro' => true,
   ),
   'messages' =>
@@ -4489,6 +4963,12 @@ return array(
     'terms' => ' coffee cup drink hot chocolate tea ',
     'pro' => true,
   ),
+  'mug-saucer' =>
+  array(
+    'name' => ' mug saucer ',
+    'terms' => ' beverage breakfast cafe drink fall morning mug seasonal tea ',
+    'pro' => false,
+  ),
   'mug-tea' =>
   array(
     'name' => ' mug tea ',
@@ -4567,6 +5047,12 @@ return array(
     'terms' => ' daybook diary journal noteboo notebook notepad sketch ',
     'pro' => true,
   ),
+  'objects-column' =>
+  array(
+    'name' => ' objects column ',
+    'terms' => ' array grid organize scroll windows ',
+    'pro' => true,
+  ),
   'octagon' =>
   array(
     'name' => ' octagon ',
@@ -4619,6 +5105,12 @@ return array(
   array(
     'name' => ' otter ',
     'terms' => ' animal badger fauna fishing fur mammal marten otter playful ',
+    'pro' => false,
+  ),
+  'outdent' =>
+  array(
+    'name' => ' outdent ',
+    'terms' => ' align justify paragraph tab ',
     'pro' => false,
   ),
   'outlet' =>
@@ -4675,6 +5167,12 @@ return array(
     'terms' => ' breakfast crepe flapjack hotcake pancake stack syrup ',
     'pro' => true,
   ),
+  'panorama' =>
+  array(
+    'name' => ' panorama ',
+    'terms' => ' image img landscape photo wide ',
+    'pro' => false,
+  ),
   'paper-plane' =>
   array(
     'name' => ' paper plane ',
@@ -4721,6 +5219,12 @@ return array(
   array(
     'name' => ' paste ',
     'terms' => ' clipboard copy document paper ',
+    'pro' => false,
+  ),
+  'pause' =>
+  array(
+    'name' => ' pause ',
+    'terms' => ' bar double hold pause pause button vertical wait ',
     'pro' => false,
   ),
   'paw' =>
@@ -4789,6 +5293,42 @@ return array(
     'terms' => ' draw edit modify pencil write ',
     'pro' => true,
   ),
+  'pen-clip' =>
+  array(
+    'name' => ' pen clip ',
+    'terms' => ' design edit modify update write ',
+    'pro' => false,
+  ),
+  'pen-fancy' =>
+  array(
+    'name' => ' pen fancy ',
+    'terms' => ' black nib design edit fountain fountain pen modify nib pen update write ',
+    'pro' => false,
+  ),
+  'pen-field' =>
+  array(
+    'name' => ' pen field ',
+    'terms' => ' imput modify signature username ',
+    'pro' => true,
+  ),
+  'pen-line' =>
+  array(
+    'name' => ' pen line ',
+    'terms' => ' draw modify write ',
+    'pro' => true,
+  ),
+  'pen-nib' =>
+  array(
+    'name' => ' pen nib ',
+    'terms' => ' design edit fountain pen modify update write ',
+    'pro' => false,
+  ),
+  'pen-paintbrush' =>
+  array(
+    'name' => ' pen paintbrush ',
+    'terms' => ' art design modify paint pencil write ',
+    'pro' => true,
+  ),
   'pen-to-square' =>
   array(
     'name' => ' pen to square ',
@@ -4800,6 +5340,12 @@ return array(
     'name' => ' pencil ',
     'terms' => ' lower left pencil design draw edit lead maintenance modify pencil update write ',
     'pro' => false,
+  ),
+  'pencil-mechanical' =>
+  array(
+    'name' => ' pencil mechanical ',
+    'terms' => ' draw edit eraser graphite lead pencil stylus write ',
+    'pro' => true,
   ),
   'people' =>
   array(
@@ -4993,6 +5539,18 @@ return array(
     'terms' => ' call earphone number phone retro support telephone vintage voice ',
     'pro' => true,
   ),
+  'photo-film' =>
+  array(
+    'name' => ' photo film ',
+    'terms' => ' av film image library media ',
+    'pro' => false,
+  ),
+  'photo-film-music' =>
+  array(
+    'name' => ' photo film music ',
+    'terms' => ' img media ',
+    'pro' => true,
+  ),
   'pi' =>
   array(
     'name' => ' pi ',
@@ -5059,6 +5617,12 @@ return array(
     'terms' => ' ananas fruit pineapple tropical ',
     'pro' => true,
   ),
+  'pinterest' =>
+  array(
+    'name' => ' pinterest ',
+    'terms' => '  ',
+    'pro' => false,
+  ),
   'pipe-smoking' =>
   array(
     'name' => ' pipe smoking ',
@@ -5105,6 +5669,12 @@ return array(
   array(
     'name' => ' plug ',
     'terms' => ' connect electric electric plug electricity online plug power ',
+    'pro' => false,
+  ),
+  'plug-circle-check' =>
+  array(
+    'name' => ' plug circle check ',
+    'terms' => ' electric electricity enable not affected ok okay plug power validate working ',
     'pro' => false,
   ),
   'plus' =>
@@ -5209,6 +5779,12 @@ return array(
     'terms' => ' print screen symbol printer icon business computer copy document office paper printer ',
     'pro' => false,
   ),
+  'product-hunt' =>
+  array(
+    'name' => ' product hunt ',
+    'terms' => '  ',
+    'pro' => false,
+  ),
   'projector' =>
   array(
     'name' => ' projector ',
@@ -5237,6 +5813,12 @@ return array(
   array(
     'name' => ' question ',
     'terms' => ' question mark faq help information mark outlined punctuation question red question mark request support unknown white question mark ',
+    'pro' => false,
+  ),
+  'quote-left' =>
+  array(
+    'name' => ' quote left ',
+    'terms' => ' left double quotation mark mention note phrase text type ',
     'pro' => false,
   ),
   'quote-right' =>
@@ -5311,6 +5893,12 @@ return array(
     'terms' => ' flash gordon laser pew pew phaser space stun ',
     'pro' => true,
   ),
+  'rebel' =>
+  array(
+    'name' => ' rebel ',
+    'terms' => '  ',
+    'pro' => false,
+  ),
   'receipt' =>
   array(
     'name' => ' receipt ',
@@ -5353,6 +5941,24 @@ return array(
     'terms' => ' recycling symbol for generic materials universal recycling symbol waste compost garbage recycle recycling symbol reuse trash ',
     'pro' => false,
   ),
+  'reddit' =>
+  array(
+    'name' => ' reddit ',
+    'terms' => '  ',
+    'pro' => false,
+  ),
+  'reflect-horizontal' =>
+  array(
+    'name' => ' reflect horizontal ',
+    'terms' => ' exchange flip horizontal inverse invert negative reflect swap tool edit mirror ',
+    'pro' => true,
+  ),
+  'reflect-vertical' =>
+  array(
+    'name' => ' reflect vertical ',
+    'terms' => ' exchange flip inverse invert negative reflect swap tool edit mirror vertical ',
+    'pro' => true,
+  ),
   'refrigerator' =>
   array(
     'name' => ' refrigerator ',
@@ -5363,6 +5969,12 @@ return array(
   array(
     'name' => ' registered ',
     'terms' => ' copyright mark r registered trademark ',
+    'pro' => false,
+  ),
+  'repeat' =>
+  array(
+    'name' => ' repeat ',
+    'terms' => ' arrow clockwise flip reload renew repeat repeat button retry rewind switch ',
     'pro' => false,
   ),
   'restroom' =>
@@ -5731,6 +6343,12 @@ return array(
     'terms' => ' achievement armor award block cleric defend defense holy paladin protect safety security shield weapon winner ',
     'pro' => false,
   ),
+  'shield-halved' =>
+  array(
+    'name' => ' shield halved ',
+    'terms' => ' achievement armor award block cleric defend defense holy paladin privacy security shield weapon winner ',
+    'pro' => false,
+  ),
   'ship' =>
   array(
     'name' => ' ship ',
@@ -5779,6 +6397,12 @@ return array(
     'terms' => ' bodega building buy market purchase shopping store ',
     'pro' => false,
   ),
+  'shopify' =>
+  array(
+    'name' => ' shopify ',
+    'terms' => '  ',
+    'pro' => false,
+  ),
   'shovel' =>
   array(
     'name' => ' shovel ',
@@ -5807,6 +6431,12 @@ return array(
   array(
     'name' => ' shrimp ',
     'terms' => ' allergy crustacean prawn seafood shellfish shrimp tail ',
+    'pro' => false,
+  ),
+  'shuffle' =>
+  array(
+    'name' => ' shuffle ',
+    'terms' => ' arrow arrows crossed shuffle shuffle tracks button sort swap switch transfer ',
     'pro' => false,
   ),
   'shutters' =>
@@ -5947,6 +6577,12 @@ return array(
     'terms' => ' christmas claus fly holiday santa sled snow xmas ',
     'pro' => false,
   ),
+  'slider' =>
+  array(
+    'name' => ' slider ',
+    'terms' => ' adjust configuration modify settings toggle ',
+    'pro' => true,
+  ),
   'sliders' =>
   array(
     'name' => ' sliders ',
@@ -6025,6 +6661,12 @@ return array(
     'terms' => ' galaxy orbit planets premium space sun universe ',
     'pro' => true,
   ),
+  'sort' =>
+  array(
+    'name' => ' sort ',
+    'terms' => ' filter order ',
+    'pro' => false,
+  ),
   'spa' =>
   array(
     'name' => ' spa ',
@@ -6073,6 +6715,12 @@ return array(
     'terms' => ' audio device music sound subwoofer transducer tweeter ',
     'pro' => true,
   ),
+  'spell-check' =>
+  array(
+    'name' => ' spell check ',
+    'terms' => ' dictionary edit editor enable grammar text validate working ',
+    'pro' => false,
+  ),
   'spider' =>
   array(
     'name' => ' spider ',
@@ -6103,6 +6751,12 @@ return array(
     'terms' => ' baseball basketball football sports sportsball ',
     'pro' => true,
   ),
+  'spotify' =>
+  array(
+    'name' => ' spotify ',
+    'terms' => '  ',
+    'pro' => false,
+  ),
   'spray-can' =>
   array(
     'name' => ' spray can ',
@@ -6132,6 +6786,12 @@ return array(
     'name' => ' square check ',
     'terms' => ' accept agree box button check check box with check check mark button checkmark confirm correct coupon done enable mark ok select success tick todo validate working yes ✓ ',
     'pro' => false,
+  ),
+  'square-sliders-vertical' =>
+  array(
+    'name' => ' square sliders vertical ',
+    'terms' => ' adjust configuration modify settings sliders toggle ',
+    'pro' => true,
   ),
   'squid' =>
   array(
@@ -6192,6 +6852,12 @@ return array(
     'name' => ' star christmas ',
     'terms' => ' bethlehem christmas holiday north xmas ',
     'pro' => true,
+  ),
+  'star-half' =>
+  array(
+    'name' => ' star half ',
+    'terms' => ' achievement award rating score star half empty star half full ',
+    'pro' => false,
   ),
   'star-of-david' =>
   array(
@@ -6306,6 +6972,12 @@ return array(
     'name' => ' stretcher ',
     'terms' => ' ambulance bed emergency er patient ',
     'pro' => true,
+  ),
+  'strikethrough' =>
+  array(
+    'name' => ' strikethrough ',
+    'terms' => ' cancel edit font format modify text type ',
+    'pro' => false,
   ),
   'stroopwafel' =>
   array(
@@ -6589,6 +7261,12 @@ return array(
     'terms' => ' right thought bubble balloon bubble comic dream idea imagination think thought thought balloon ',
     'pro' => true,
   ),
+  'threads' =>
+  array(
+    'name' => ' threads ',
+    'terms' => '  ',
+    'pro' => false,
+  ),
   'thumbs-down' =>
   array(
     'name' => ' thumbs down ',
@@ -6618,6 +7296,18 @@ return array(
     'name' => ' ticket airline ',
     'terms' => ' airplane arrival boarding pass departure ticket travel ',
     'pro' => true,
+  ),
+  'tickets' =>
+  array(
+    'name' => ' tickets ',
+    'terms' => ' admission admission tickets movie pass support ticket voucher coupon ',
+    'pro' => true,
+  ),
+  'tiktok' =>
+  array(
+    'name' => ' tiktok ',
+    'terms' => '  ',
+    'pro' => false,
   ),
   'tilde' =>
   array(
@@ -6979,6 +7669,12 @@ return array(
     'terms' => ' computer display monitor television tv video ',
     'pro' => true,
   ),
+  'twitch' =>
+  array(
+    'name' => ' twitch ',
+    'terms' => '  ',
+    'pro' => false,
+  ),
   'typewriter' =>
   array(
     'name' => ' typewriter ',
@@ -7001,6 +7697,12 @@ return array(
   array(
     'name' => ' umbrella beach ',
     'terms' => ' beach beach with umbrella protection recreation sand shade summer sun umbrella ',
+    'pro' => false,
+  ),
+  'underline' =>
+  array(
+    'name' => ' underline ',
+    'terms' => ' edit emphasis format modify text writing ',
     'pro' => false,
   ),
   'unicorn' =>
@@ -7032,6 +7734,12 @@ return array(
     'name' => ' up ',
     'terms' => ' upgrade upload ',
     'pro' => true,
+  ),
+  'up-down-left-right' =>
+  array(
+    'name' => ' up down left right ',
+    'terms' => ' arrow arrows bigger enlarge expand fullscreen move position reorder resize ',
+    'pro' => false,
   ),
   'up-right-and-down-left-from-center' =>
   array(
@@ -7195,6 +7903,24 @@ return array(
     'terms' => ' bard playwright theater theatre uer ',
     'pro' => true,
   ),
+  'user-tie' =>
+  array(
+    'name' => ' user tie ',
+    'terms' => ' administrator avatar business clothing employee formal offer portfolio professional suit uer ',
+    'pro' => false,
+  ),
+  'user-tie-hair' =>
+  array(
+    'name' => ' user tie hair ',
+    'terms' => ' administrator avatar business clothing employee formal professional suit uer ',
+    'pro' => true,
+  ),
+  'user-tie-hair-long' =>
+  array(
+    'name' => ' user tie hair long ',
+    'terms' => ' administrator avatar business clothing employee formal professional suit uer ',
+    'pro' => true,
+  ),
   'user-visor' =>
   array(
     'name' => ' user visor ',
@@ -7285,6 +8011,12 @@ return array(
     'terms' => ' buddhism buddhist building monastery ',
     'pro' => false,
   ),
+  'vimeo' =>
+  array(
+    'name' => ' vimeo ',
+    'terms' => '  ',
+    'pro' => false,
+  ),
   'violin' =>
   array(
     'name' => ' violin ',
@@ -7326,6 +8058,12 @@ return array(
     'name' => ' volume ',
     'terms' => ' audio control medium music sound speaker speaker medium volume ',
     'pro' => true,
+  ),
+  'volume-off' =>
+  array(
+    'name' => ' volume off ',
+    'terms' => ' audio ban music mute quiet silent sound ',
+    'pro' => false,
   ),
   'waffle' =>
   array(
@@ -7459,6 +8197,12 @@ return array(
     'terms' => ' fauna mammal swimming whal whale ',
     'pro' => true,
   ),
+  'whatsapp' =>
+  array(
+    'name' => ' whatsapp ',
+    'terms' => '  ',
+    'pro' => false,
+  ),
   'wheat' =>
   array(
     'name' => ' wheat ',
@@ -7531,6 +8275,12 @@ return array(
     'terms' => ' break broken delicate glass ',
     'pro' => true,
   ),
+  'wordpress' =>
+  array(
+    'name' => ' wordpress ',
+    'terms' => '  ',
+    'pro' => false,
+  ),
   'worm' =>
   array(
     'name' => ' worm ',
@@ -7561,6 +8311,18 @@ return array(
     'terms' => ' health medical radiological images radiology skeleton ',
     'pro' => false,
   ),
+  'x-twitter' =>
+  array(
+    'name' => ' x twitter ',
+    'terms' => ' elon twitter x ',
+    'pro' => false,
+  ),
+  'xing' =>
+  array(
+    'name' => ' xing ',
+    'terms' => '  ',
+    'pro' => false,
+  ),
   'xmark' =>
   array(
     'name' => ' xmark ',
@@ -7571,6 +8333,12 @@ return array(
   array(
     'name' => ' yin yang ',
     'terms' => ' daoism opposites religion tao taoism taoist yang yin yin yang ',
+    'pro' => false,
+  ),
+  'youtube' =>
+  array(
+    'name' => ' youtube ',
+    'terms' => ' film video youtube play youtube square ',
     'pro' => false,
   ),
 );

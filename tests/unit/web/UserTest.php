@@ -9,6 +9,7 @@ namespace crafttests\unit\web;
 
 use Craft;
 use craft\elements\User as UserElement;
+use craft\helpers\DateTimeHelper;
 use craft\helpers\Session;
 use craft\services\Config;
 use craft\test\TestCase;
@@ -49,6 +50,8 @@ class UserTest extends TestCase
      */
     public function testSendUsernameCookie(): void
     {
+        DateTimeHelper::pause();
+
         // Send the cookie with a hardcoded time value
         $this->config->getGeneral()->rememberUsernameDuration = 20;
         $this->user->sendUsernameCookie($this->userElement);
@@ -57,7 +60,9 @@ class UserTest extends TestCase
         $cookie = Craft::$app->getResponse()->getCookies()->get($this->_getUsernameCookieName());
 
         self::assertSame($this->userElement->username, $cookie->value);
-        self::assertSame(time() + 20, $cookie->expire);
+        self::assertSame(DateTimeHelper::currentTimeStamp() + 20, $cookie->expire);
+
+        DateTimeHelper::resume();
     }
 
     /**
@@ -94,19 +99,21 @@ class UserTest extends TestCase
     }
 
     /**
-     * Test that the current time() is subtracted from the session expiration value.
+     * Test that the current timestamp is subtracted from the session expiration value.
      * We use a stub to ensure Craft::$app->getSession()->get() always returns 50 PHP sessions are difficult(ish) in testing.
      */
     public function testGetRemainingSessionTimeMath(): void
     {
+        DateTimeHelper::pause();
         $this->user->setIdentity($this->userElement);
 
-        // ensure Craft::$app->getSession()->get() always returns time() + 50.
-        $this->_sessionGetStub(time() + 50);
+        // ensure Craft::$app->getSession()->get() always returns the current timestamp + 50.
+        $this->_sessionGetStub(DateTimeHelper::currentTimeStamp() + 50);
 
         // Give a few seconds depending on how fast tests run.
-        self::assertContains(Craft::$app->getUser()->getRemainingSessionTime(), [48, 49, 50]);
+        self::assertEquals(Craft::$app->getUser()->getRemainingSessionTime(), 50);
 
+        DateTimeHelper::resume();
         Session::reset();
     }
 
@@ -147,15 +154,17 @@ class UserTest extends TestCase
      */
     public function testGetHasElevatedSessionMath(): void
     {
+        DateTimeHelper::pause();
         $this->user->setIdentity($this->userElement);
 
-        $this->_sessionGetStub(time() + 50);
-        self::assertEqualsWithDelta(50, $this->user->getElevatedSessionTimeout(), 2.0);
+        $this->_sessionGetStub(DateTimeHelper::currentTimeStamp() + 50);
+        self::assertEquals(50, $this->user->getElevatedSessionTimeout());
 
         // If the session->get() return value is smaller than time 0 is returned
-        $this->_sessionGetStub(time() - 50);
-        self::assertEqualsWithDelta(0, $this->user->getElevatedSessionTimeout(), 2.0);
+        $this->_sessionGetStub(DateTimeHelper::currentTimeStamp() - 50);
+        self::assertEquals(0, $this->user->getElevatedSessionTimeout());
 
+        DateTimeHelper::resume();
         Session::reset();
     }
 

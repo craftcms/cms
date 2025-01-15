@@ -177,7 +177,7 @@ class MigrateController extends BaseMigrateController
     /**
      * @inheritdoc
      */
-    public function runAction($id, $params = []): int
+    public function runAction($id, $params = []): ?int
     {
         // Make sure that the project config YAML exists in case any migrations need to check incoming YAML values
         $projectConfig = Craft::$app->getProjectConfig();

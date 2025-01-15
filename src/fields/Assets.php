@@ -486,6 +486,27 @@ class Assets extends BaseRelationField
         );
     }
 
+    /**
+     * @inheritdoc
+     */
+    public function previewPlaceholderHtml(mixed $value, ?ElementInterface $element): string
+    {
+        $asset = new Asset();
+        $asset->title = Craft::t('app', 'Related {type} Title', ['type' => $asset->displayName()]);
+
+        if ($this->restrictFiles) {
+            $extensions = $this->_getAllowedExtensions();
+            $filename = 'test.' . $extensions[0];
+        } else {
+            $filename = 'test.txt';
+        }
+
+        $asset->filename = $filename;
+        $collection = new ElementCollection([$asset]);
+
+        return $this->previewHtml($collection);
+    }
+
     // Events
     // -------------------------------------------------------------------------
 
@@ -552,6 +573,8 @@ class Assets extends BaseRelationField
                         // Add the newly uploaded IDs to the mix.
                         if (is_array($query->id)) {
                             $query = $this->normalizeValue(array_merge($query->id, $assetIds), $element);
+                        } elseif (isset($query->where['elements.id']) && ArrayHelper::isNumeric($query->where['elements.id'])) {
+                            $query = $this->normalizeValue(array_merge($query->where['elements.id'], $assetIds), $element);
                         } else {
                             $query = $this->normalizeValue($assetIds, $element);
                         }
@@ -900,6 +923,9 @@ class Assets extends BaseRelationField
         if ($isDynamic) {
             // Prepare the path by parsing tokens and normalizing slashes.
             try {
+                if ($element?->duplicateOf) {
+                    $element = $element->duplicateOf;
+                }
                 $renderedSubpath = Craft::$app->getView()->renderObjectTemplate($subpath, $element);
             } catch (InvalidConfigException|RuntimeError $e) {
                 throw new InvalidSubpathException($subpath, null, 0, $e);
@@ -1073,7 +1099,7 @@ class Assets extends BaseRelationField
     {
         if (!$folder->volumeId) {
             // Probably the user's temp folder
-            return "folder:$folder->uid";
+            return "temp";
         }
 
         $segments = array_map(function(VolumeFolder $folder) {

@@ -123,10 +123,7 @@ trait EditUserTrait
             $response->docTitle($pageName);
         } else {
             $username = $user->getUiLabel();
-            $extendedTitle = Craft::t('app', 'User {page}', [
-                'page' => $pageName,
-            ]);
-            $docTitle = "$username - $extendedTitle";
+            $docTitle = "$username - $pageName";
             $response->title($username);
             $response->docTitle($docTitle);
         }

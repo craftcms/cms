@@ -2453,6 +2453,8 @@ $.extend(Craft, {
           key: i,
           type: $element.data('type'),
           id: elementId,
+          fieldId: $element.data('field-id'),
+          ownerId: $element.data('owner-id'),
           siteId,
           instances: [],
         };
@@ -2468,11 +2470,17 @@ $.extend(Craft, {
         for (let key of Object.keys(instances)) {
           const $element = $elements.eq(key);
           const $replacement = $(instances[key]);
-          for (let attribute of $replacement[0].attributes) {
+          const replacementAttributes = $replacement[0].attributes;
+          for (let attribute of replacementAttributes) {
             if (attribute.name === 'class') {
               $element.addClass(attribute.value);
             } else {
               $element.attr(attribute.name, attribute.value);
+            }
+          }
+          for (let attribute of $element[0].attributes) {
+            if (replacementAttributes[attribute.name] === undefined) {
+              $element.removeAttr(attribute.name);
             }
           }
           const $actions = $element

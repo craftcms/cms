@@ -10,6 +10,7 @@ namespace craft\services;
 use Craft;
 use craft\db\Query;
 use craft\db\Table;
+use craft\elements\Address;
 use craft\elements\User;
 use craft\errors\BusyResourceException;
 use craft\errors\OperationAbortedException;
@@ -487,7 +488,7 @@ class ProjectConfig extends Component
         foreach ($config as $key => $item) {
             if (is_array($item)) {
                 $itemPath = sprintf('%s%s', ($path !== null) ? "$path." : '', $key);
-                if ($callback($item)) {
+                if ($callback($item, $itemPath)) {
                     $items[$itemPath] = $item;
                 } else {
                     $this->findInternal($item, $callback, $itemPath, $items);
@@ -1226,6 +1227,7 @@ class ProjectConfig extends Component
         // don't touch `meta`
         unset($config[self::PATH_META]);
 
+        $config[self::PATH_ADDRESSES] = $this->_getAddressesData();
         $config[self::PATH_CATEGORY_GROUPS] = $this->_getCategoryGroupData();
         $config[self::PATH_DATE_MODIFIED] = DateTimeHelper::currentTimeStamp();
         $config[self::PATH_ELEMENT_SOURCES] = $this->_getElementSourceData($config[self::PATH_ELEMENT_SOURCES] ?? []);
@@ -2051,6 +2053,26 @@ class ProjectConfig extends Component
 
         foreach (Craft::$app->getUserGroups()->getAllGroups() as $group) {
             $data['groups'][$group->uid] = $group->getConfig();
+        }
+
+        return $data;
+    }
+
+
+
+    /**
+     * Return addresses data config array.
+     *
+     * @return array
+     */
+    private function _getAddressesData(): array
+    {
+        $data = [];
+        $fieldLayout = Craft::$app->getFields()->getLayoutByType(Address::class);
+        if ($fieldLayoutConfig = $fieldLayout->getConfig()) {
+            $data['fieldLayouts'] = [
+                $fieldLayout->uid => $fieldLayoutConfig,
+            ];
         }
 
         return $data;

@@ -29,7 +29,7 @@ abstract class BaseElementSelectConditionRule extends BaseConditionRule
     /**
      * Returns the element type that can be selected.
      *
-     * @return string
+     * @return class-string<ElementInterface>
      */
     abstract protected function elementType(): string;
 
@@ -61,6 +61,26 @@ abstract class BaseElementSelectConditionRule extends BaseConditionRule
     protected function criteria(): ?array
     {
         return null;
+    }
+
+    /**
+     * Defines the element select config.
+     *
+     * @return array
+     * @since 5.5.0
+     */
+    protected function elementSelectConfig(): array
+    {
+        $element = $this->_element();
+        return [
+            'name' => 'elementId',
+            'elements' => $element ? [$element] : [],
+            'elementType' => $this->elementType(),
+            'sources' => $this->sources(),
+            'criteria' => $this->criteria(),
+            'condition' => $this->selectionCondition(),
+            'single' => true,
+        ];
     }
 
     /**
@@ -125,17 +145,7 @@ abstract class BaseElementSelectConditionRule extends BaseConditionRule
             ]);
         }
 
-        $element = $this->_element();
-
-        return Cp::elementSelectHtml([
-            'name' => 'elementId',
-            'elements' => $element ? [$element] : [],
-            'elementType' => $this->elementType(),
-            'sources' => $this->sources(),
-            'criteria' => $this->criteria(),
-            'condition' => $this->selectionCondition(),
-            'single' => true,
-        ]);
+        return Cp::elementSelectHtml($this->elementSelectConfig());
     }
 
     /**
@@ -148,10 +158,10 @@ abstract class BaseElementSelectConditionRule extends BaseConditionRule
             return null;
         }
 
-        /** @var string|ElementInterface $elementType */
-        /** @phpstan-var class-string<ElementInterface>|ElementInterface $elementType */
-        $elementType = $this->elementType();
-        return $elementType::find()
+        return $this->elementType()::find()
+            ->site('*')
+            ->preferSites(array_filter([Cp::requestedSite()?->id]))
+            ->unique()
             ->id($elementId)
             ->status(null)
             ->one();

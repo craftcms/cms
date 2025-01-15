@@ -95,6 +95,14 @@ class PruneRevisionsController extends Controller
             $subQuery
                 ->innerJoin(['entries' => Table::ENTRIES], '[[entries.id]] = [[r.canonicalId]]')
                 ->andWhere(['entries.sectionId' => $sectionIds]);
+        } else {
+            $subQuery
+                ->leftJoin(['entries' => Table::ENTRIES], '[[entries.id]] = [[r.canonicalId]]')
+                ->andWhere([
+                    'or',
+                    ['entries.id' => null],
+                    ['not', ['entries.sectionId' => null]],
+                ]);
         }
 
         $this->stdout('Finding elements with too many revisions ... ');
@@ -125,7 +133,7 @@ class PruneRevisionsController extends Controller
                 continue;
             }
 
-            /** @var ElementInterface|string $elementType */
+            /** @var class-string<ElementInterface> $elementType */
             $elementType = $element['type'];
             $deleteCount = $element['count'] - $this->maxRevisions;
 

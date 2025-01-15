@@ -532,9 +532,7 @@ class DateTimeHelper
      */
     public static function currentTimeStamp(): int
     {
-        $date = static::currentUTCDateTime();
-
-        return $date->getTimestamp();
+        return static::now()->getTimestamp();
     }
 
     /**
@@ -679,9 +677,7 @@ class DateTimeHelper
      */
     public static function isInThePast(mixed $date): bool
     {
-        $date = static::toDateTime($date);
-
-        return $date->getTimestamp() < time();
+        return static::toDateTime($date)->getTimestamp() < static::currentTimeStamp();
     }
 
     /**

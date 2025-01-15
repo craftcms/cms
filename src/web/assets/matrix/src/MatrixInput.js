@@ -1,5 +1,3 @@
-import $ from 'jquery';
-
 (function ($) {
   /** global: Craft */
   /** global: Garnish */
@@ -220,17 +218,10 @@ import $ from 'jquery';
       },
 
       async addEntry(type, $insertBefore, autofocus) {
-        if (this.addingEntry) {
-          // only one new entry at a time
-          return;
-        }
-
         if (!this.canAddMoreEntries()) {
           this.updateStatusMessage();
           return;
         }
-
-        this.addingEntry = true;
 
         if (this.elementEditor) {
           // First ensure we're working with drafts for all elements leading up
@@ -241,69 +232,78 @@ import $ from 'jquery';
           );
         }
 
-        const {data} = await Craft.sendActionRequest(
-          'POST',
-          'matrix/create-entry',
-          {
-            data: {
-              fieldId: this.settings.fieldId,
-              entryTypeId: this.entryTypesByHandle[type].id,
-              ownerId: this.settings.ownerId,
-              ownerElementType: this.settings.ownerElementType,
-              siteId: this.settings.siteId,
-              namespace: this.settings.namespace,
-              staticEntries: this.settings.staticEntries,
+        await Craft.queue.push(async () => {
+          if (this.addingEntry) {
+            // only one new entry at a time
+            return;
+          }
+
+          this.addingEntry = true;
+
+          const {data} = await Craft.sendActionRequest(
+            'POST',
+            'matrix/create-entry',
+            {
+              data: {
+                fieldId: this.settings.fieldId,
+                entryTypeId: this.entryTypesByHandle[type].id,
+                ownerId: this.settings.ownerId,
+                ownerElementType: this.settings.ownerElementType,
+                siteId: this.settings.siteId,
+                namespace: this.settings.namespace,
+                staticEntries: this.settings.staticEntries,
+              },
+            }
+          );
+
+          const $entry = $(data.blockHtml);
+
+          // Pause the element editor
+          await this.elementEditor?.pause();
+
+          if ($insertBefore) {
+            $entry.insertBefore($insertBefore);
+          } else {
+            $entry.appendTo(this.$entriesContainer);
+          }
+
+          this.trigger('entryAdded', {
+            $entry: $entry,
+          });
+
+          // Animate the entry into position
+          $entry.css(this.getHiddenEntryCss($entry)).velocity(
+            {
+              opacity: 1,
+              'margin-bottom': 10,
             },
-          }
-        );
+            'fast',
+            async () => {
+              $entry.css('margin-bottom', '');
+              Craft.initUiElements($entry.children('.fields'));
+              await Craft.appendHeadHtml(data.headHtml);
+              await Craft.appendBodyHtml(data.bodyHtml);
+              new Craft.MatrixInput.Entry(this, $entry);
+              this.entrySort.addItems($entry);
+              this.entrySelect.addItems($entry);
+              this.updateAddEntryBtn();
 
-        const $entry = $(data.blockHtml);
+              Garnish.requestAnimationFrame(() => {
+                if (typeof autofocus === 'undefined' || autofocus) {
+                  // Scroll to the entry
+                  Garnish.scrollContainerToElement($entry);
+                  // Focus on the first focusable element
+                  $entry.find('.flex-fields :focusable').first().focus();
+                }
 
-        // Pause the element editor
-        this.elementEditor?.pause();
+                // Resume the element editor
+                this.elementEditor?.resume();
+              });
+            }
+          );
 
-        if ($insertBefore) {
-          $entry.insertBefore($insertBefore);
-        } else {
-          $entry.appendTo(this.$entriesContainer);
-        }
-
-        this.trigger('entryAdded', {
-          $entry: $entry,
+          this.addingEntry = false;
         });
-
-        // Animate the entry into position
-        $entry.css(this.getHiddenEntryCss($entry)).velocity(
-          {
-            opacity: 1,
-            'margin-bottom': 10,
-          },
-          'fast',
-          async () => {
-            $entry.css('margin-bottom', '');
-            Craft.initUiElements($entry.children('.fields'));
-            await Craft.appendHeadHtml(data.headHtml);
-            await Craft.appendBodyHtml(data.bodyHtml);
-            new Craft.MatrixInput.Entry(this, $entry);
-            this.entrySort.addItems($entry);
-            this.entrySelect.addItems($entry);
-            this.updateAddEntryBtn();
-
-            Garnish.requestAnimationFrame(() => {
-              if (typeof autofocus === 'undefined' || autofocus) {
-                // Scroll to the entry
-                Garnish.scrollContainerToElement($entry);
-                // Focus on the first focusable element
-                $entry.find('.flex-fields :focusable').first().focus();
-              }
-
-              // Resume the element editor
-              this.elementEditor?.resume();
-            });
-          }
-        );
-
-        this.addingEntry = false;
       },
 
       getEntryTypeByHandle: function (handle) {

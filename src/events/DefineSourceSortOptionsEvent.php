@@ -19,8 +19,7 @@ use craft\base\Event;
 class DefineSourceSortOptionsEvent extends Event
 {
     /**
-     * @var string The element type class
-     * @phpstan-var class-string<ElementInterface>
+     * @var class-string<ElementInterface> The element type class
      */
     public string $elementType;
 

@@ -521,7 +521,7 @@ $menuBorderRadius: $mediumBorderRadius;
 
 @mixin header-btn {
   width: calc(30rem / 16);
-  height: calc(30rem / 16);
+  min-height: calc(30rem / 16);
   padding-left: 0;
   padding-right: 0;
 

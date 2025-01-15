@@ -214,9 +214,13 @@ Craft.NestedElementManager = Garnish.Base.extend(
     },
 
     async markAsDirty() {
-      if (this.elementEditor && this.settings.baseInputName) {
-        await this.elementEditor.setFormValue(this.settings.baseInputName, '*');
+      if (!this.elementEditor || !this.settings.baseInputName) {
+        return false;
       }
+      return await this.elementEditor.setFormValue(
+        this.settings.baseInputName,
+        '*'
+      );
     },
 
     async getBaseActionData() {
@@ -251,7 +255,10 @@ Craft.NestedElementManager = Garnish.Base.extend(
         Craft.cp.displayError(e?.response?.data?.message);
       }
 
-      await this.markAsDirty();
+      if (!(await this.markAsDirty())) {
+        // Refresh Live Preview
+        Craft.Preview.refresh();
+      }
     },
 
     updateCreateBtn() {
@@ -405,13 +412,27 @@ Craft.NestedElementManager = Garnish.Base.extend(
 
     initElement($element) {
       if (Garnish.hasAttr($element, 'data-editable')) {
+        // Double-clicks
         this.addListener($element, 'dblclick,taphold', (ev) => {
-          if ($(ev.target).closest('a[href],button,[role=button]').length) {
-            // Let the link/button do its thing
-            return;
+          if (!$(ev.target).closest('a[href],button,[role=button]').length) {
+            this.createElementEditor($element);
           }
-          Craft.createElementEditor(this.elementType, $element);
         });
+
+        // "Edit" action menu item
+        setTimeout(() => {
+          const $editBtn = $element
+            .find('.action-btn')
+            .data('disclosureMenu')
+            ?.$container.find('[data-edit-action]');
+          if ($editBtn?.length) {
+            // Override the default event listener
+            $editBtn.off('activate');
+            this.addListener($editBtn, 'activate', () => {
+              this.createElementEditor($element);
+            });
+          }
+        }, 1);
       }
 
       if (this.settings.sortable) {
@@ -419,26 +440,68 @@ Craft.NestedElementManager = Garnish.Base.extend(
       }
 
       const $actionMenuBtn = $element.find('.action-btn');
-      const disclosureMenu = $actionMenuBtn
-        .disclosureMenu()
-        .data('disclosureMenu');
+      if ($actionMenuBtn.length > 0) {
+        const disclosureMenu = $actionMenuBtn
+          .disclosureMenu()
+          .data('disclosureMenu');
 
-      if (Garnish.hasAttr($element, 'data-deletable')) {
-        const ul = disclosureMenu.addGroup();
-        disclosureMenu.addItem(
-          {
-            icon: 'trash',
-            label: this.settings.deleteLabel || Craft.t('app', 'Delete'),
-            destructive: true,
-            onActivate: () => {
-              if (confirm(this.settings.deleteConfirmationMessage)) {
-                this.deleteElement($element);
-              }
+        if (Garnish.hasAttr($element, 'data-deletable')) {
+          const ul = disclosureMenu.addGroup();
+          disclosureMenu.addItem(
+            {
+              icon: 'trash',
+              label: this.settings.deleteLabel || Craft.t('app', 'Delete'),
+              destructive: true,
+              onActivate: () => {
+                if (confirm(this.settings.deleteConfirmationMessage)) {
+                  this.deleteElement($element);
+                }
+              },
             },
-          },
-          ul
-        );
+            ul
+          );
+        }
       }
+    },
+
+    createElementEditor($element) {
+      const slideout = Craft.createElementEditor(this.elementType, $element, {
+        onBeforeSubmit: async () => {
+          // If the nested element is primarily owned by the same owner element it was queried for,
+          // then ensure we're working with a draft and save the nested entry changes to the draft
+          // note: this workflow doesn't apply to entries nested directly in global sets as globals don't use element editor
+          if (
+            typeof this.elementEditor !== 'undefined' &&
+            Garnish.hasAttr($element, 'data-owner-is-canonical') &&
+            !this.elementEditor.settings.isUnpublishedDraft
+          ) {
+            await slideout.elementEditor.checkForm(true, true);
+            await this.markAsDirty();
+            if (
+              this.elementEditor.settings.draftId &&
+              slideout.elementEditor.settings.draftId
+            ) {
+              if (!slideout.elementEditor.settings.saveParams) {
+                slideout.elementEditor.settings.saveParams = {};
+              }
+              slideout.elementEditor.settings.saveParams.action =
+                'elements/save-nested-element-for-derivative';
+              slideout.elementEditor.settings.saveParams.newOwnerId =
+                this.settings.ownerId;
+            }
+          }
+        },
+        onSubmit: (ev) => {
+          if (ev.data.id != $element.data('id')) {
+            // swap the element with the new one
+            $element
+              .attr('data-id', ev.data.id)
+              .data('id', ev.data.id)
+              .data('owner-id', ev.data.ownerId);
+            Craft.refreshElementInstances(ev.data.id);
+          }
+        },
+      });
     },
 
     async deleteElement($element) {

@@ -140,7 +140,7 @@
                                 {% elseif config.isInstalled %}
                                     <span class="status off"></span>{{ "Disabled"|t('app') }}
                                 {% else %}
-                                    <span class="status"></span><span class="light">{{ "Not installed"|t('app') }}</span>
+                                    <span class="status disabled"></span><span class="light">{{ "Not installed"|t('app') }}</span>
                                 {% endif %}
                             </td>
                             <td class="nowrap thin" data-title="{{ 'Action'|t('app') }}">
