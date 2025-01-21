@@ -370,7 +370,11 @@ class Section extends Model implements Chippable, CpEditable, Iconic
      */
     public function setEntryTypes(array $entryTypes): void
     {
-        $this->_entryTypes = $entryTypes;
+        $entriesService = Craft::$app->getEntries();
+        $this->_entryTypes = array_values(array_filter(array_map(
+            fn($entryType) => $entriesService->getEntryType($entryType),
+            $entryTypes,
+        )));
     }
 
     /**
@@ -416,7 +420,7 @@ class Section extends Model implements Chippable, CpEditable, Iconic
             'name' => $this->name,
             'handle' => $this->handle,
             'type' => $this->type,
-            'entryTypes' => array_map(fn(EntryType $entryType) => $entryType->uid, $this->getEntryTypes()),
+            'entryTypes' => array_map(fn(EntryType $entryType) => $entryType->getUsageConfig(), $this->getEntryTypes()),
             'enableVersioning' => $this->enableVersioning,
             'maxAuthors' => $this->maxAuthors,
             'propagationMethod' => $this->propagationMethod->value,

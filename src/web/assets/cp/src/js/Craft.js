@@ -413,6 +413,19 @@ $.extend(Craft, {
   },
 
   /**
+   * Sleeps for the given duration in milliseconds.
+   *
+   * @param {number} delay
+   * @return {Promise}
+   * @since 5.6.0
+   */
+  sleep: function (delay) {
+    return new Promise((resolve) => {
+      setTimeout(resolve, delay);
+    });
+  },
+
+  /**
    * @param {string} [path]
    * @param {(Object|string)} [params]
    * @param {string} [baseUrl]
@@ -2567,8 +2580,9 @@ $.extend(Craft, {
    *
    * @param {jQuery|HTMLElement} chip
    * @param {Array} actions
+   * @param {boolean} [prepend]
    */
-  addActionsToChip(chip, actions) {
+  addActionsToChip(chip, actions, prepend = false) {
     if (!actions?.length) {
       return;
     }
@@ -2608,12 +2622,22 @@ $.extend(Craft, {
     const safeActions = actions.filter((a) => !a.destructive);
     const destructiveActions = actions.filter((a) => a.destructive);
 
+    let before = prepend
+      ? disclosureMenu.$container.children().first().get(0)
+      : null;
+
     if (safeActions.length) {
-      disclosureMenu.addItems(safeActions, disclosureMenu.addGroup());
+      disclosureMenu.addItems(
+        safeActions,
+        disclosureMenu.addGroup(null, true, before)
+      );
     }
 
     if (destructiveActions.length) {
-      disclosureMenu.addItems(destructiveActions, disclosureMenu.addGroup());
+      disclosureMenu.addItems(
+        destructiveActions,
+        disclosureMenu.addGroup(null, true, before)
+      );
     }
 
     Craft.initUiElements(disclosureMenu.$container);
@@ -3113,7 +3137,11 @@ $.extend($.fn, {
       let checkValue = () => {
         let hasValue = false;
         for (let i = 0; i < $inputs.length; i++) {
-          if ($inputs.eq(i).val() && !$inputs.eq(i).is(':disabled')) {
+          if ($inputs.eq(i).is(':disabled')) {
+            hasValue = false;
+            break;
+          }
+          if ($inputs.eq(i).val()) {
             hasValue = true;
             break;
           }

@@ -1597,9 +1597,12 @@ class Users extends Component
             'id' => $user->uid,
         ];
 
+        $isCpRequest = Craft::$app->getRequest()->getIsCpRequest();
         $generalConfig = Craft::$app->getConfig()->getGeneral();
+
         $cp = (
-            $user->can('accessCp') ||
+            Craft::$app->edition->value < CmsEdition::Pro->value ||
+            ($isCpRequest && $user->can('accessCp')) ||
             ($generalConfig->headlessMode && !UrlHelper::isAbsoluteUrl($fePath))
         );
         $scheme = UrlHelper::getSchemeForTokenizedUrl($cp);
@@ -1610,7 +1613,7 @@ class Users extends Component
 
         // Only use cpUrl() if this is a control panel request, or the base control panel URL has been explicitly set,
         // so UrlHelper won't use HTTP_HOST
-        if ($generalConfig->baseCpUrl || Craft::$app->getRequest()->getIsCpRequest()) {
+        if ($generalConfig->baseCpUrl || $isCpRequest) {
             $url = UrlHelper::cpUrl($cpPath, $params, $scheme);
         } else {
             $path = UrlHelper::prependCpTrigger($cpPath);

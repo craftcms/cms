@@ -22,7 +22,6 @@ Craft.Preview = Garnish.Base.extend(
     $editorFooter: null,
     $saveBtn: null,
 
-    $statusIcon: null,
     $dragHandle: null,
     $previewWrapper: null,
     $previewContainer: null,
@@ -88,6 +87,10 @@ Craft.Preview = Garnish.Base.extend(
       );
 
       Craft.Preview.instances.push(this);
+
+      if (this.settings.standaloneMode) {
+        this.open(false);
+      }
     },
 
     get editorWidth() {
@@ -119,7 +122,7 @@ Craft.Preview = Garnish.Base.extend(
       this._editorWidthInPx = inPx;
     },
 
-    open: async function () {
+    open: async function (animate = true) {
       if (this.isActive) {
         return;
       }
@@ -145,7 +148,7 @@ Craft.Preview = Garnish.Base.extend(
       this.$editorContainer.css(Craft.left, -this.editorWidthInPx + 'px');
       this.$previewContainer.css(Craft.right, -this.getIframeWidth());
 
-      this.slideIn();
+      this.slideIn(animate);
 
       if (!this.elementEditor) {
         await this._loadElementEditor();
@@ -188,15 +191,18 @@ Craft.Preview = Garnish.Base.extend(
       }).appendTo(this.$previewContainer);
 
       this.$editorHeader = $('<header/>', {
-        class: 'flex flex-nowrap',
+        class: 'lp-editor-header',
       }).appendTo(this.$editorContainer);
-      const $closeBtn = $('<button/>', {
-        type: 'button',
-        class: 'btn',
-        'data-icon': 'xmark',
-        title: Craft.t('app', 'Close Preview'),
-        'aria-label': Craft.t('app', 'Close Preview'),
-      }).appendTo(this.$editorHeader);
+      if (!this.settings.standaloneMode) {
+        const $closeBtn = $('<button/>', {
+          type: 'button',
+          class: 'btn lp-close-btn',
+          'data-icon': 'xmark',
+          title: Craft.t('app', 'Close Preview'),
+          'aria-label': Craft.t('app', 'Close Preview'),
+        }).appendTo(this.$editorHeader);
+        this.addListener($closeBtn, 'click', 'close');
+      }
       this.$editorToolbar = $('<div/>', {class: 'lp-toolbar'}).appendTo(
         this.$editorHeader
       );
@@ -221,15 +227,12 @@ Craft.Preview = Garnish.Base.extend(
         class: 'spinner hidden',
         title: Craft.t('app', 'Saving'),
       }).appendTo(this.$editorHeader);
-      this.$statusIcon = $('<div/>', {class: 'invisible'}).appendTo(
-        this.$editorHeader
-      );
       this.$statusMessage = $('<span/>', {
         class: 'visually-hidden',
         'aria-live': 'polite',
       }).appendTo(this.$editorHeader);
       this.$previewSkipLink = $('<a/>', {
-        class: 'skip-link btn',
+        class: 'skip-link btn hidden',
         href: '#lp-preview-container',
         html: previewSkipLinkText,
       }).appendTo(this.$editorHeader);
@@ -294,11 +297,6 @@ Craft.Preview = Garnish.Base.extend(
         onDrag: this._onDrag.bind(this),
         onDragStop: this._onDragStop.bind(this),
       });
-
-      this.addListener($closeBtn, 'click', 'close');
-      this.addListener(this.$statusIcon, 'click', () => {
-        this.elementEditor.showStatusHud(this.$statusIcon);
-      });
     },
 
     _loadElementEditor: async function () {
@@ -324,7 +322,7 @@ Craft.Preview = Garnish.Base.extend(
       } catch (e) {
         if (!this.ignoreFailedRequest) {
           Craft.cp.displayError();
-          reject(e);
+          throw e;
         }
         this.ignoreFailedRequest = false;
         return;
@@ -335,6 +333,43 @@ Craft.Preview = Garnish.Base.extend(
 
       const {data} = response;
       this.namespace = data.namespace;
+
+      if (this.settings.standaloneMode) {
+        if (data.actionMenu) {
+          const labelId = Craft.namespaceId(
+            'action-menu-label',
+            this.namespace
+          );
+          const menuId = Craft.namespaceId('action-menu', this.namespace);
+          $('<label/>', {
+            id: labelId,
+            class: 'visually-hidden',
+            text: Craft.t('app', 'Actions'),
+          }).appendTo(this.$editorHeader);
+          const $actionBtn = $('<button/>', {
+            class: 'btn action-btn header-btn',
+            type: 'button',
+            title: Craft.t('app', 'Actions'),
+            'aria-controls': menuId,
+            'aria-describedby': labelId,
+            'data-disclosure-trigger': 'true',
+          }).appendTo(this.$editorHeader);
+          $(data.actionMenu).appendTo(this.$editorHeader);
+          $actionBtn.disclosureMenu();
+        }
+
+        if (data.editUrl) {
+          $('<a/>', {
+            target: '_blank',
+            class: 'btn header-btn',
+            title: Craft.t('app', 'Open in a new tab'),
+            'aria-label': Craft.t('app', 'Open in a new tab'),
+            'data-icon': 'external',
+            href: data.editUrl,
+          }).appendTo(this.$editorHeader);
+        }
+      }
+
       this.$content.html(data.content);
 
       this.$saveBtn = Craft.ui
@@ -374,7 +409,7 @@ Craft.Preview = Garnish.Base.extend(
             $spinnerContainer: this.$editorHeader,
             updateTabs: (tabs) => this.updateTabs(tabs),
             getTabManager: () => this.tabManager,
-            handleSubmitResponse: () => {
+            handleSubmitResponse: (response) => {
               window.location.reload();
             },
             handleSubmitError: async (error) => {
@@ -452,6 +487,8 @@ Craft.Preview = Garnish.Base.extend(
 
       this.updateIframe();
       Craft.ElementThumbLoader.retryAll();
+
+      this.$previewSkipLink.removeClass('hidden');
     },
 
     _getDeviceTypeTranslation: function (type) {
@@ -559,7 +596,7 @@ Craft.Preview = Garnish.Base.extend(
       this.updateWidths();
     },
 
-    slideIn: function () {
+    slideIn: function (animate = true) {
       if (!this.isActive || this.isVisible) {
         return;
       }
@@ -606,6 +643,11 @@ Craft.Preview = Garnish.Base.extend(
       Garnish.uiLayerManager.registerShortcut(Garnish.ESC_KEY, () => {
         this.close();
       });
+
+      if (!animate) {
+        this.$editorContainer.velocity('finish');
+        this.$previewContainer.velocity('finish');
+      }
     },
 
     close: async function () {
@@ -1071,6 +1113,7 @@ Craft.Preview = Garnish.Base.extend(
       draftId: null,
       revisionId: null,
       siteId: null,
+      standaloneMode: false,
       onBeforeLoad: async () => {},
     },
 

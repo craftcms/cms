@@ -8,6 +8,8 @@
 namespace craft\fieldlayoutelements;
 
 use Craft;
+use craft\base\Actionable;
+use craft\base\CrossSiteCopyableFieldInterface;
 use craft\base\ElementInterface;
 use craft\base\FieldInterface;
 use craft\base\PreviewableFieldInterface;
@@ -430,5 +432,27 @@ class CustomField extends BaseField
     protected function translationDescription(?ElementInterface $element = null, bool $static = false): ?string
     {
         return $this->_field->getTranslationDescription($element);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function isCrossSiteCopyable(ElementInterface $element): bool
+    {
+        return $this->_field instanceof CrossSiteCopyableFieldInterface && $this->_field->getIsTranslatable($element);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    protected function actionMenuItems(?ElementInterface $element = null, bool $static = false): array
+    {
+        if ($this->_field instanceof Actionable) {
+            $items = $this->_field->getActionMenuItems();
+        } else {
+            $items = [];
+        }
+
+        return $items;
     }
 }

@@ -379,27 +379,33 @@ class Images extends Component
         $image = new \Imagick($filePath);
         $orientation = $image->getImageOrientation();
 
-        $degrees = false;
+        $degrees = match ($orientation) {
+            ImageHelper::EXIF_IFD0_ROTATE_180, ImageHelper::EXIF_IFD0_ROTATE_180_MIRRORED => 180,
+            ImageHelper::EXIF_IFD0_ROTATE_90, ImageHelper::EXIF_IFD0_ROTATE_90_MIRRORED => 90,
+            ImageHelper::EXIF_IFD0_ROTATE_270, ImageHelper::EXIF_IFD0_ROTATE_270_MIRRORED => 270,
+            default => 0,
+        };
 
-        switch ($orientation) {
-            case ImageHelper::EXIF_IFD0_ROTATE_180:
-                $degrees = 180;
-                break;
-            case ImageHelper::EXIF_IFD0_ROTATE_90:
-                $degrees = 90;
-                break;
-            case ImageHelper::EXIF_IFD0_ROTATE_270:
-                $degrees = 270;
-                break;
-        }
+        $mirrored = match ($orientation) {
+            ImageHelper::EXIF_IFD0_ROTATE_0_MIRRORED, ImageHelper::EXIF_IFD0_ROTATE_180_MIRRORED,
+                ImageHelper::EXIF_IFD0_ROTATE_90_MIRRORED, ImageHelper::EXIF_IFD0_ROTATE_270_MIRRORED => true,
+            default => false,
+        };
 
-        if ($degrees === false) {
+        if ($degrees === 0 && !$mirrored) {
             return false;
         }
 
         /** @var Raster $image */
         $image = $this->loadImage($filePath);
-        $image->rotate($degrees);
+
+        if ($degrees !== 0) {
+            $image->rotate($degrees);
+        }
+
+        if ($mirrored) {
+            $image->flipHorizontally();
+        }
 
         return $image->saveAs($filePath, true);
     }

@@ -43,6 +43,16 @@ class HtmlHelperTest extends TestCase
     }
 
     /**
+     * @dataProvider disableInputsDataProvider
+     * @param string|null $expected
+     * @param callable|string|null $html
+     */
+    public function testDisableInputs(?string $expected, callable|string|null $html): void
+    {
+        self::assertSame($expected, Html::disableInputs($html));
+    }
+
+    /**
      * @dataProvider parseTagDataProvider
      * @param array|false $expected
      * @param string $tag
@@ -325,6 +335,59 @@ class HtmlHelperTest extends TestCase
         return [
             ['foo%20bar', 'foo bar'],
             ['foo%20%20bar', 'foo  bar'],
+        ];
+    }
+
+    /**
+     * @return array
+     */
+    public static function disableInputsDataProvider(): array
+    {
+        return [
+            [
+                null,
+                null,
+            ],
+            [
+                '',
+                '',
+            ],
+            [
+                '<input type="text" name="foo" disabled>',
+                '<input type="text" name="foo">',
+            ],
+            [
+                '<input type="text" name="foo" disabled>',
+                '<input type="text" name="foo" disabled>',
+            ],
+            [
+                '<input type="text" disabled>',
+                '<input type="text">',
+            ],
+            [
+                '<div class="field"><div class="input ltr disabled"><input type="text" name="foo" disabled></div></div>',
+                '<div class="field"><div class="input ltr"><input type="text" name="foo"></div></div>',
+            ],
+            [
+                '<fieldset class="field"><div class="input ltr disabled"><input type="text" name="foo" disabled></div></fieldset>',
+                '<fieldset class="field"><div class="input ltr"><input type="text" name="foo"></div></fieldset>',
+            ],
+            [
+                '<div class="field"><div class="input ltr disabled"><input type="text" name="foo" disabled></div></div>',
+                '<div class="field"><div class="input ltr disabled"><input type="text" name="foo"></div></div>',
+            ],
+            [
+                null,
+                fn() => null,
+            ],
+            [
+                '',
+                fn() => '',
+            ],
+            [
+                '<input type="text" name="foo" disabled>',
+                fn() => '<input type="text" name="foo">',
+            ],
         ];
     }
 

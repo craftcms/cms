@@ -427,6 +427,14 @@ html.noscroll body {
 .slide-rule .graduations ul {
   position: relative;
   float: inline-start;
+  height: 40px;
+
+  /* We need to use "left" vs. a logical property here because that's wha the JS sets */
+  transition: 200ms left linear; /* stylelint-disable-line */
+}
+
+.slide-rule.dragging .graduations ul {
+  transition: none;
 }
 
 .slide-rule .graduations ul li {
@@ -434,6 +442,14 @@ html.noscroll body {
   font-size: 8px;
   position: relative;
   width: 10px;
+
+  &:hover {
+    cursor: pointer;
+
+    &::before {
+      border-inline-start-color: #63a6e1;
+    }
+  }
 }
 
 .slide-rule .graduations ul li:not(.main-graduation) {
@@ -441,7 +457,8 @@ html.noscroll body {
 }
 
 .slide-rule .graduations ul li.main-graduation::before {
-  border-inline-start-width: 3px;
+  border-inline-start-width: 4px;
+  height: 10px;
 }
 
 .slide-rule .graduations ul li.main-graduation .label {
@@ -456,8 +473,8 @@ html.noscroll body {
 .slide-rule .graduations ul li::before {
   content: '';
   position: absolute;
-  border-inline-start: 1px solid var(--white);
-  height: 10px;
+  border-inline-start: 2px solid var(--white);
+  height: 6px;
   inset-block-start: 0;
   inset-inline-start: 0;
 }
@@ -489,6 +506,7 @@ html.noscroll body {
   position: absolute;
   inset-block: 0 1px;
   inset-inline: 0;
+  pointer-events: none;
   background-image: linear-gradient(
     to right,
     var(--gray-900) 0%,

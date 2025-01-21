@@ -10,35 +10,24 @@
 
 {% set formHtml %}
   <main>
-    <h1>
-      {% if hasLogo %}
-        {{ tag('img', {
-          id: 'login-logo',
-          src: logo.url,
-          alt: systemName,
-          width: logo.width,
-          height: logo.height,
-        }) }}
-      {% else %}
-        {{ systemName }}
-      {% endif %}
-    </h1>
-
     {% include '_special/login.twig' with {
       showResetPassword: true,
       showRememberMeCheckbox: true,
     } %}
 
-    <a id="poweredby" href="http://craftcms.com/" title="{{ 'Powered by Craft CMS'|t('app') }}" aria-label="Craft CMS">
-      {{ svg('@app/web/assets/cp/dist/images/craftcms.svg') }}
-    </a>
+    {% if craft.app.request.isCpRequest %}
+      <a id="poweredby" href="http://craftcms.com/" title="{{ 'Powered by Craft CMS'|t('app') }}" aria-label="Craft CMS">
+        {{ svg('@app/web/assets/cp/dist/images/craftcms.svg') }}
+      </a>
+    {% endif %}
   </main>
 {% endset %}
 
 {% set noCookiesHtml %}
-  <main>
-    <div class="message-container no-access">
-      <div class="pane notice">
+  <main class="message-container">
+    <div class="modal-shade visible"></div>
+    <div class="modal">
+      <div class="body">
         <p>{{ 'Cookies must be enabled to access the Craft CMS control panel.'|t('app') }}</p>
       </div>
     </div>
@@ -46,6 +35,27 @@
 {% endset %}
 
 {% block body %}
+  <header>
+    {% if hasLogo %}
+      {% tag siteUrl ? 'a' : 'div' with {
+        id: 'login-logo',
+        href: siteUrl ?? false,
+        rel: siteUrl ? 'noopener' : false,
+        target: siteUrl ? '_blank' : false,
+        title: siteUrl ? 'View site'|t('app') : false,
+      } %}
+        {{ tag('img', {
+          src: logo.url,
+          alt: systemName,
+          width: logo.width,
+          height: logo.height,
+        }) }}
+      {% endtag %}
+    {% else %}
+      {% include '_layouts/components/system-info' %}
+    {% endif %}
+  </header>
+
   <script type="text/javascript">
     var cookieTest = 'CraftCookieTest='+Math.floor(Math.random() * 1000000);
     document.cookie = cookieTest;
@@ -70,5 +80,11 @@
 {% endcss %}
 
 {% js %}
-  new Craft.LoginForm($('.login-container'));
+  (() => {
+    const loginForm = new Craft.LoginForm($('.login-container'));
+
+    {% if authFormData is defined %}
+      loginForm.show2faForm({{ authFormData|json_encode|raw }});
+    {% endif %}
+  })();
 {% endjs %}

@@ -432,40 +432,47 @@ class UserPermissions extends Component
         $permissions[] = [
             'heading' => Craft::t('app', 'Users'),
             'permissions' => [
-                'editUsers' => [
-                    'label' => StringHelper::upperCaseFirst(Craft::t('app', 'Edit {type}', [
+                'viewUsers' => [
+                    'label' => Craft::t('app', 'View {type}', [
                         'type' => User::pluralLowerDisplayName(),
-                    ])),
-                    'nested' => array_merge(
-                        array_filter([
-                            'registerUsers' => [
-                                'label' => Craft::t('app', 'Register users'),
-                            ],
-                            'moderateUsers' => [
-                                'label' => Craft::t('app', 'Moderate users'),
-                                'info' => Craft::t('app', 'Includes suspending, unsuspending, and unlocking user accounts.'),
-                            ],
-                            'administrateUsers' => [
-                                'label' => Craft::t('app', 'Administrate users'),
-                                'info' => Craft::t('app', 'Includes activating/deactivating user accounts, resetting passwords, and changing email addresses.'),
-                                'warning' => Craft::$app->edition->value >= CmsEdition::Pro->value
-                                    ? Craft::t('app', 'Accounts with this permission could use it to escalate their own permissions.')
-                                    : null,
-                            ],
-                            'impersonateUsers' => [
-                                'label' => Craft::t('app', 'Impersonate users'),
-                            ],
-                            'assignUserPermissions' => Craft::$app->edition->value >= CmsEdition::Pro->value
-                                ? [
-                                    'label' => Craft::t('app', 'Assign user permissions'),
-                                ]
-                                : null,
-                        ]),
-                        $assignGroupPermissions
-                    ),
-                ],
-                'deleteUsers' => [
-                    'label' => Craft::t('app', 'Delete users'),
+                    ]),
+                    'nested' => [
+                        'editUsers' => [
+                            'label' => StringHelper::upperCaseFirst(Craft::t('app', 'Edit {type}', [
+                                'type' => User::pluralLowerDisplayName(),
+                            ])),
+                            'nested' => array_merge(
+                                array_filter([
+                                    'registerUsers' => [
+                                        'label' => Craft::t('app', 'Register users'),
+                                    ],
+                                    'moderateUsers' => [
+                                        'label' => Craft::t('app', 'Moderate users'),
+                                        'info' => Craft::t('app', 'Includes suspending, unsuspending, and unlocking user accounts.'),
+                                    ],
+                                    'administrateUsers' => [
+                                        'label' => Craft::t('app', 'Administrate users'),
+                                        'info' => Craft::t('app', 'Includes activating/deactivating user accounts, resetting passwords, and changing email addresses.'),
+                                        'warning' => Craft::$app->edition->value >= CmsEdition::Pro->value
+                                            ? Craft::t('app', 'Accounts with this permission could use it to escalate their own permissions.')
+                                            : null,
+                                    ],
+                                    'impersonateUsers' => [
+                                        'label' => Craft::t('app', 'Impersonate users'),
+                                    ],
+                                    'assignUserPermissions' => Craft::$app->edition->value >= CmsEdition::Pro->value
+                                        ? [
+                                            'label' => Craft::t('app', 'Assign user permissions'),
+                                        ]
+                                        : null,
+                                ]),
+                                $assignGroupPermissions
+                            ),
+                        ],
+                        'deleteUsers' => [
+                            'label' => Craft::t('app', 'Delete users'),
+                        ],
+                    ],
                 ],
             ],
         ];

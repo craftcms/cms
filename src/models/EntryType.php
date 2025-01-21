@@ -17,10 +17,12 @@ use craft\base\Field;
 use craft\base\FieldLayoutProviderInterface;
 use craft\base\GqlInlineFragmentInterface;
 use craft\base\Iconic;
+use craft\base\Indicative;
 use craft\base\Model;
 use craft\behaviors\FieldLayoutBehavior;
 use craft\elements\Entry;
 use craft\enums\Color;
+use craft\helpers\Inflector;
 use craft\helpers\UrlHelper;
 use craft\records\EntryType as EntryTypeRecord;
 use craft\validators\HandleValidator;
@@ -39,6 +41,7 @@ class EntryType extends Model implements
     Chippable,
     CpEditable,
     Iconic,
+    Indicative,
     Colorable,
     Actionable
 {
@@ -137,6 +140,18 @@ class EntryType extends Model implements
     public ?string $uid = null;
 
     /**
+     * @var bool Whether the entry type handle’s uniqueness should be validated.
+     * @since 5.6.0
+     */
+    public bool $validateHandleUniqueness = true;
+
+    /**
+     * @var ?self The original entry type without an overridden name and handle
+     * @since 5.6.0
+     */
+    public ?self $original;
+
+    /**
      * @inheritdoc
      */
     public function init(): void
@@ -154,6 +169,17 @@ class EntryType extends Model implements
         if ($this->slugTranslationKeyFormat === '') {
             $this->slugTranslationKeyFormat = null;
         }
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function attributes(): array
+    {
+        $names = array_flip(parent::attributes());
+        unset($names['validateHandleUniqueness']);
+        unset($names['original']);
+        return array_keys($names);
     }
 
     /**
@@ -196,6 +222,33 @@ class EntryType extends Model implements
     /**
      * @inheritdoc
      */
+    public function getIndicators(): array
+    {
+        $indicators = [];
+
+        if (isset($this->original)) {
+            $attributes = array_values(array_filter([
+                $this->name !== $this->original->name ? Craft::t('app', 'Name') : null,
+                $this->handle !== $this->original->handle ? Craft::t('app', 'Handle') : null,
+            ]));
+            if (!empty($attributes)) {
+                array_unshift($indicators, [
+                    'label' => Craft::t('app', 'This entry type’s {attributes} {totalAttributes, plural, =1{has} other{have}} been overridden.', [
+                        'attributes' => mb_strtolower(Inflector::sentence($attributes)),
+                        'totalAttributes' => count($attributes),
+                    ]),
+                    'icon' => 'pencil',
+                    'iconColor' => 'teal',
+                ]);
+            }
+        }
+
+        return $indicators;
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function getColor(): ?Color
     {
         return $this->color;
@@ -216,8 +269,8 @@ class EntryType extends Model implements
             $editId = sprintf('action-edit-%s', mt_rand());
             $items[] = [
                 'id' => $editId,
-                'icon' => 'edit',
-                'label' => Craft::t('app', 'Edit'),
+                'icon' => 'gear',
+                'label' => Craft::t('app', 'Entry type settings'),
             ];
 
             $view = Craft::$app->getView();
@@ -264,13 +317,17 @@ JS, [
             HandleValidator::class,
             'reservedWords' => ['id', 'dateCreated', 'dateUpdated', 'uid', 'title'],
         ];
-        $rules[] = [
-            ['handle'],
-            UniqueValidator::class,
-            'targetClass' => EntryTypeRecord::class,
-            'targetAttribute' => 'handle',
-            'message' => Craft::t('yii', '{attribute} "{value}" has already been taken.'),
-        ];
+
+        if ($this->validateHandleUniqueness) {
+            $rules[] = [
+                ['handle'],
+                UniqueValidator::class,
+                'targetClass' => EntryTypeRecord::class,
+                'targetAttribute' => 'handle',
+                'message' => Craft::t('yii', '{attribute} "{value}" has already been taken.'),
+            ];
+        }
+
         $rules[] = [['fieldLayout'], 'validateFieldLayout'];
 
         return $rules;
@@ -384,6 +441,26 @@ JS, [
             ];
         }
 
+        return $config;
+    }
+
+    /**
+     * Returns the entry type’s usage info, possibly with name and handle override values.
+     *
+     * @return array
+     * @since 5.6.0
+     */
+    public function getUsageConfig(): array
+    {
+        $config = ['uid' => $this->uid];
+        if (isset($this->original)) {
+            if ($this->name !== $this->original->name) {
+                $config['name'] = $this->name;
+            }
+            if ($this->handle !== $this->original->handle) {
+                $config['handle'] = $this->handle;
+            }
+        }
         return $config;
     }
 

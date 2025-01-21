@@ -1,74 +1,6 @@
 @charset "UTF-8";
 @use '../../../../../../node_modules/@craftcms/sass/mixins';
 
-.login-container {
-  .login-form-container {
-    position: relative;
-    background-color: var(--gray-050);
-  }
-
-  .login-form {
-    input[readonly] {
-      cursor: not-allowed;
-    }
-
-    & > .field,
-    & > .btn {
-      margin-block-start: var(--l);
-
-      &:not(:last-child, .last) {
-        margin-block-end: var(--l);
-      }
-    }
-
-    .btn {
-      display: flex;
-    }
-  }
-
-  .alternative-login-methods {
-    margin-block-start: var(--m);
-
-    .btn {
-      width: 100%;
-    }
-  }
-
-  .login-forgot-password,
-  .login-alt-container button {
-    font-size: 11px;
-    color: var(--medium-text-color);
-    cursor: pointer !important;
-  }
-
-  .login-alt-container {
-    margin-block: calc(var(--s) - var(--xl));
-    margin-inline: 0;
-
-    button {
-      display: inline-flex;
-      background-color: transparent;
-      padding: 0;
-      width: auto;
-      height: auto;
-      min-height: var(--touch-target-size);
-    }
-  }
-
-  .login-forgot-password:hover,
-  .login-forgot-password:focus,
-  .login-alt-container button:hover,
-  .login-alt-container button:focus {
-    color: var(--link-color);
-  }
-
-  .login-errors {
-    text-align: center;
-    color: var(--error-color);
-    margin-block-start: 1em;
-  }
-}
-
 .login-alt-menu {
   z-index: 1001;
 }
@@ -76,43 +8,58 @@
 body.login {
   display: flex;
   flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  min-height: 100%;
+  align-items: stretch;
 
-  main {
-    padding: var(--padding);
-    width: calc(300px + var(--padding) * 2);
-    max-width: 100%;
+  header {
+    flex: 0 0 calc(var(--header-height) + 1px);
+    display: flex;
+    align-items: center;
+    padding: var(--header-padding);
+    border-block-end: var(--header-border);
+    background: var(--header-bg);
 
-    h1 {
-      text-align: center;
-      font-size: 32px;
-      line-height: 40px;
-      word-wrap: break-word;
+    #login-logo,
+    #system-info {
+      padding-inline: 0;
 
-      #login-logo {
-        width: 100%;
-        height: auto;
-        max-height: 300px;
+      &:hover,
+      &:focus {
+        background: transparent;
+      }
+    }
+
+    #login-logo {
+      img {
+        width: auto;
+        max-width: 100%;
+        height: calc(30rem / 16);
       }
     }
   }
 
-  #poweredby {
-    display: block;
-    text-align: center;
-    margin-block: 70px 48px;
-    opacity: 0.8;
+  main {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: calc(70rem / 16);
+    padding: var(--padding);
 
-    &:hover,
-    &:focus,
-    &:active {
-      opacity: 1;
-    }
+    #poweredby {
+      display: block;
+      text-align: center;
+      opacity: 0.8;
 
-    > svg {
-      display: inline-block;
+      &:hover,
+      &:focus,
+      &:active {
+        opacity: 1;
+      }
+
+      > svg {
+        display: inline-block;
+      }
     }
   }
 }
@@ -139,7 +86,7 @@ body.login {
 .login-modal {
   width: calc(600px + var(--l) * 2);
   max-width: calc(100% - 20px);
-  background: var(--gray-100);
+  background: var(--login-modal-bg, var(--modal-bg));
   border-radius: var(--large-border-radius);
 
   .body {
@@ -176,5 +123,70 @@ body.login {
         border-radius: 0;
       }
     }
+  }
+}
+
+.login-container {
+  position: relative;
+  width: calc(15rem + var(--pane-padding) * 2);
+  max-width: 100%;
+
+  form {
+    display: flex;
+    flex-direction: column;
+    gap: var(--l);
+
+    input[readonly] {
+      cursor: not-allowed;
+    }
+
+    .field {
+      margin-block: 0;
+    }
+
+    hr {
+      margin-block: calc(var(--pane-padding) - var(--l));
+    }
+
+    .btn {
+      display: flex;
+    }
+  }
+
+  .alternative-login-methods {
+    margin-block-start: var(--m);
+
+    .btn {
+      width: 100%;
+    }
+  }
+
+  .login-forgot-password,
+  .login-alt-container button {
+    font-size: 11px;
+    color: var(--light-text-color);
+  }
+
+  .login-alt-container {
+    margin-block: calc(var(--s) - var(--pane-padding));
+    margin-inline: 0;
+
+    button {
+      display: inline-flex;
+      width: auto;
+    }
+  }
+
+  .login-forgot-password:hover,
+  .login-forgot-password:focus,
+  .login-alt-container button:hover,
+  .login-alt-container button:focus {
+    color: var(--link-color);
+  }
+
+  .login-errors {
+    text-align: center;
+    color: var(--error-color);
+    margin-block-start: 1em;
   }
 }

@@ -71,7 +71,7 @@ class TemplateCaches extends Component
             return null;
         }
 
-        [$body, $cacheInfo, $bufferedJs, $bufferedScripts, $bufferedCss, $bufferedJsFiles, $bufferedCssFiles, $bufferedHtml, $bufferedMetaTags, $bufferedAssetBundles] = array_pad($data, 10, null);
+        [$body, $cacheInfo, $bufferedJs, $bufferedScripts, $bufferedCss, $bufferedJsFiles, $bufferedCssFiles, $bufferedHtml, $bufferedMetaTags, $bufferedAssetBundles, $bufferedJsImports] = array_pad($data, 11, null);
 
         // If we're actively collecting element cache info, register this cache's tags and duration
         $elementsService = Craft::$app->getElements();
@@ -95,6 +95,7 @@ class TemplateCaches extends Component
                 $bufferedHtml ?? [],
                 $bufferedMetaTags ?? [],
                 $bufferedAssetBundles ?? [],
+                $bufferedJsImports ?? []
             );
         }
 
@@ -130,6 +131,7 @@ class TemplateCaches extends Component
             $view->startHtmlBuffer();
             $view->startMetaTagBuffer();
             $view->startAssetBundleBuffer();
+            $view->startJsImportBuffer();
         }
     }
 
@@ -167,6 +169,7 @@ class TemplateCaches extends Component
             $bufferedHtml = $view->clearHtmlBuffer();
             $bufferedMetaTags = $view->clearMetaTagBuffer();
             $bufferedAssetBundles = $view->clearAssetBundleBuffer();
+            $bufferedJsImports = $view->clearJsImportBuffer();
         }
 
         // If there are any transform generation URLs in the body, don't cache it.
@@ -218,6 +221,7 @@ class TemplateCaches extends Component
                     $bufferedHtml,
                     $bufferedMetaTags,
                     $bufferedAssetBundles,
+                    $bufferedJsImports
                 );
             }
 
@@ -231,6 +235,7 @@ class TemplateCaches extends Component
                 $bufferedHtml,
                 $bufferedMetaTags,
                 $bufferedAssetBundles,
+                $bufferedJsImports
             );
         }
 
@@ -309,6 +314,7 @@ class TemplateCaches extends Component
         array $bufferedHtml,
         array $bufferedMetaTags,
         array $bufferedAssetBundles,
+        array $bufferedJsImports,
     ): void {
         $view = Craft::$app->getView();
 
@@ -351,6 +357,10 @@ class TemplateCaches extends Component
 
         foreach ($bufferedAssetBundles as [$name, $position]) {
             $view->registerAssetBundle($name, $position);
+        }
+
+        foreach ($bufferedJsImports as $key => $value) {
+            $view->registerJsImport($key, $value);
         }
     }
 

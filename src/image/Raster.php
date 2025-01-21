@@ -14,6 +14,7 @@ use craft\helpers\App;
 use craft\helpers\FileHelper;
 use craft\helpers\Image as ImageHelper;
 use Imagick;
+use ImagickException;
 use Imagine\Exception\NotSupportedException;
 use Imagine\Exception\RuntimeException;
 use Imagine\Gd\Imagine as GdImagine;
@@ -29,7 +30,6 @@ use Imagine\Image\Palette\RGB;
 use Imagine\Image\Point;
 use Imagine\Imagick\Imagine as ImagickImagine;
 use Throwable;
-use yii\base\ErrorException;
 
 /**
  * Raster class is used for raster image manipulations.
@@ -559,27 +559,36 @@ class Raster extends Image
     {
         $extension = mb_strtolower(pathinfo($targetPath, PATHINFO_EXTENSION));
 
-        $options = $this->_getSaveOptions(null, $extension);
         $targetPath = pathinfo($targetPath, PATHINFO_DIRNAME) . DIRECTORY_SEPARATOR . pathinfo($targetPath, PATHINFO_FILENAME) . '.' . pathinfo($targetPath, PATHINFO_EXTENSION);
+        $quality = null;
 
         try {
             if ($autoQuality && in_array($extension, ['jpeg', 'jpg', 'png'], true)) {
                 clearstatcache();
                 App::maxPowerCaptain();
 
-                $originalSize = filesize($this->_imageSourcePath);
-                $tempFile = $this->_autoGuessImageQuality($targetPath, $originalSize, $extension, 0, 200);
-                try {
+                if (Craft::$app->getImages()->getIsImagick() && method_exists(Imagick::class, 'getImageCompressionQuality')) {
+                    try {
+                        $image = new Imagick($this->_imageSourcePath);
+                        $quality = $image->getImageCompressionQuality();
+                    } catch (ImagickException) {
+                    }
+                }
+
+                if ($quality === null) {
+                    $originalSize = filesize($this->_imageSourcePath);
+                    $tempFile = $this->_autoGuessImageQuality($targetPath, $originalSize, $extension, 0, 200);
                     rename($tempFile, $targetPath);
-                } catch (ErrorException $e) {
-                    Craft::warning("Unable to rename \"$tempFile\" to \"$targetPath\": " . $e->getMessage(), __METHOD__);
+                    return true;
                 }
-            } else {
-                if (Craft::$app->getImages()->getIsImagick()) {
-                    ImageHelper::cleanExifDataFromImagickImage($this->_image->getImagick());
-                }
-                $this->_image->save($targetPath, $options);
             }
+
+            if (Craft::$app->getImages()->getIsImagick()) {
+                ImageHelper::cleanExifDataFromImagickImage($this->_image->getImagick());
+            }
+
+            $options = $this->_getSaveOptions($quality, $extension);
+            $this->_image->save($targetPath, $options);
         } catch (RuntimeException $e) {
             throw new ImageException(Craft::t('app', 'Failed to save the image.'), $e->getCode(), $e);
         }

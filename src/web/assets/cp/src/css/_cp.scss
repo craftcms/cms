@@ -25,7 +25,6 @@ $badgeColor: var(--gray-800);
   --neg-padding: calc(var(--padding) * -1);
   --sidebar-width: #{$sidebarWidth};
   --global-sidebar-width: #{$sidebarWidth};
-  --header-height: calc(44rem / 16);
   --details-width: #{$detailsWidth};
 
   // Sidebar
@@ -126,19 +125,21 @@ $systemInfoHoverBgColor: color.adjust(mixins.$grey800, $lightness: -10%);
   display: grid;
   grid-template-columns: var(--nav-item-prefix-width) auto;
   gap: 10px;
-  height: calc(45rem / 16);
+  height: 100%;
   padding-block: 0;
   padding-inline: var(--nav-item-gutter-width);
   position: relative;
-  flex: 0 0 calc(45rem / 16);
   flex-direction: row;
   align-items: center;
   color: currentcolor;
-  border-block-end: 1px solid var(--hairline-color);
   background-clip: padding-box;
 
   &::after {
     display: none;
+  }
+
+  #global-sidebar & {
+    border-block-end: 1px solid var(--hairline-color);
   }
 }
 
@@ -313,9 +314,13 @@ a#system-info {
   color: var(--error-color);
 
   & > li {
-    padding-block: 10px;
+    padding-block: 7px 8px;
     padding-inline: 24px;
     box-shadow: inset 0 -1px 0 0 var(--red-100);
+
+    span[data-icon]::before {
+      margin-block-start: -3px !important;
+    }
 
     .resolvable-alert-buttons {
       margin-block-start: var(--m);
@@ -369,11 +374,19 @@ a#system-info {
 li.crumb .btn.menubtn,
 .btn.action-btn {
   padding: 0;
-  width: var(--touch-target-size);
-  min-height: var(--touch-target-size);
 
   &:not(:hover, :active, [aria-expanded='true']) {
     background-color: transparent;
+  }
+
+  &:not(.m) {
+    width: var(--touch-target-size);
+    height: var(--touch-target-size);
+  }
+
+  &.m {
+    width: var(--ui-control-height);
+    height: var(--ui-control-height);
   }
 }
 
@@ -888,7 +901,7 @@ li.breadcrumb-toggle-wrapper {
   padding-block: 5px;
   padding-inline: var(--padding);
   position: relative;
-  z-index: 2;
+  isolation: isolate;
   box-sizing: border-box;
   background-color: color.adjust(mixins.$grey300, $alpha: -1);
   box-shadow: 0 1px 0 color.adjust(mixins.$grey800, $alpha: -1);
@@ -997,11 +1010,6 @@ li.breadcrumb-toggle-wrapper {
 
 #action-buttons {
   flex-shrink: 0;
-
-  .action-btn {
-    width: var(--ui-control-height);
-    height: var(--ui-control-height);
-  }
 
   @media only screen and (width <= 400px) {
     .btngroup .btn:first-child {
@@ -1117,11 +1125,14 @@ li.breadcrumb-toggle-wrapper {
 
 .content-pane {
   @include mixins.pane;
-  border-radius: var(--large-border-radius);
+
+  --border-radius: var(--large-border-radius);
+  border-radius: var(--border-radius);
   position: relative;
   background-clip: padding-box;
-  padding-block: var(--xl);
-  padding-inline: var(--padding);
+  padding: var(--padding);
+
+  --pane-padding: var(--padding);
   word-wrap: break-word;
 
   & > hr {
@@ -1632,7 +1643,8 @@ li.breadcrumb-toggle-wrapper {
         &.active-drop-target {
           cursor: default;
           background-color: var(--gray-500);
-          @include mixins.dark-btn-light-bg-focus-ring;
+
+          --focus-ring: var(--focus-ring-outset);
 
           &,
           & + .toggle {
@@ -1813,11 +1825,7 @@ li.breadcrumb-toggle-wrapper {
 }
 
 /* flexbox field layouts */
-#content :not(.meta) > .flex-fields,
-#content > .flex-fields,
-.so-content .flex-fields,
-.lp-content .flex-fields,
-.draghelper .flex-fields {
+.flex-fields {
   --row-gap: var(--xl);
   display: flex;
   flex-wrap: wrap;
@@ -1825,6 +1833,7 @@ li.breadcrumb-toggle-wrapper {
   margin-block: 0 calc(var(--padding) * -1);
   margin-inline: calc(var(--padding) * -1);
   width: calc(100% + var(--padding) * 2);
+  container-type: inline-size;
 
   & > :not(.error-summary) {
     margin-block: 0 var(--row-gap) !important;
@@ -1871,16 +1880,12 @@ li.breadcrumb-toggle-wrapper {
       }
     }
   }
-}
 
-#content :not(.meta) > .flex-fields,
-#content > .flex-fields,
-.draghelper.drag-in-content .flex-fields {
   & > :not(h2, hr, .line-break) {
     &,
     &:last-child {
-      // 4 cols for container width >= 888px
-      @container (min-width: 55.5em) {
+      // 4 cols for container width >= 800px
+      @container (min-width: calc(800rem/16)) {
         &.width-25 {
           width: 25%;
         }
@@ -1894,27 +1899,9 @@ li.breadcrumb-toggle-wrapper {
         }
       }
 
-      // 2 cols when container width > 584px and < 887px
-      @container (min-width: 36.5em) and (max-width: 55.4375em) {
-        &.width-25,
-        &.width-50 {
-          width: 50%;
-        }
-      }
-    }
-  }
-}
-
-.so-content .flex-fields,
-.lp-content .flex-fields,
-.draghelper.drag-in-slideout .flex-fields {
-  & > :not(h2, hr, .line-break) {
-    &,
-    &:last-child {
-      // 2 cols for >= 1200
-      @media only screen and (min-width: $minDesktopWidth * 2) {
-        &.width-25,
-        &.width-50 {
+      // 2 cols when container width >= 400px and < 800px
+      @container (min-width: calc(400rem/16)) and (max-width: calc(800rem/16 - 1px)) {
+        &.width-25 {
           width: 50%;
         }
       }

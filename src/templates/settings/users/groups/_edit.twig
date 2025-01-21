@@ -1,13 +1,19 @@
 {% extends "_layouts/cp" %}
 {% import "_includes/forms" as forms %}
-{% set fullPageForm = true %}
+{% set readOnly = not craft.app.config.general.allowAdminChanges %}
+{% set fullPageForm = not readOnly %}
+
+{% if readOnly %}
+    {% set contentNotice = readOnlyNotice() %}
+{% endif %}
 
 {% block content %}
-    {{ actionInput('user-settings/save-group') }}
-    {{ redirectInput('settings/users/groups/{id}') }}
-
-    {% if group.id %}
-        {{ hiddenInput('groupId', group.id) }}
+    {% if not readOnly %}
+        {{ actionInput('user-settings/save-group') }}
+        {{ redirectInput('settings/users/groups/{id}') }}
+        {% if group.id %}
+            {{ hiddenInput('groupId', group.id) }}
+        {% endif %}
     {% endif %}
 
     {{ forms.textField({
@@ -19,6 +25,7 @@
         errors: group.getErrors('name'),
         autofocus: true,
         required: true,
+        disabled: readOnly,
     }) }}
 
     {{ forms.textField({
@@ -30,7 +37,8 @@
         autocapitalize: false,
         value: group.handle,
         errors: group.getErrors('handle'),
-        required: true
+        required: true,
+        disabled: readOnly,
     }) }}
 
     {{ forms.textareaField({
@@ -40,6 +48,7 @@
         name: 'description',
         value: group.description ?? null,
         errors: group.getErrors('description'),
+        disabled: readOnly,
     }) }}
 
     <hr>
@@ -51,6 +60,7 @@
             subject: group ?? null,
             permissions: craft.app.userPermissions.getAllPermissions(),
             includeGroupPlaceholder: not group.id,
+            disabled: readOnly,
         } only %}
     </div>
 {% endblock %}

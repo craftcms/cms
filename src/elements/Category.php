@@ -344,7 +344,7 @@ class Category extends Element
         return array_merge(parent::defineCardAttributes(), [
             'parent' => [
                 'label' => Craft::t('app', 'Parent'),
-                'placeholder' => Html::tag(
+                'placeholder' => fn() => Html::tag(
                     'span',
                     Craft::t('app', 'Parent {type} Title', ['type' => self::displayName()]),
                     ['class' => 'card-placeholder'],

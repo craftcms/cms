@@ -3,6 +3,7 @@
 
 {% set id = id ?? "checkbox#{random()}" %}
 {% set label = checkboxLabel ?? label ?? null %}
+{% set labelId = labelId ?? "#{id}-label" %}
 
 {% set aria = (inputAttributes.aria ?? {})|merge(aria ?? {}) %}
 {% set inputAttributes = {
@@ -35,18 +36,27 @@
 
 {{ input('checkbox', name ?? null, value ?? 1, inputAttributes) }}
 
-<label for="{{ id }}">
+{% tag 'label' with {
+    for: id,
+    id: labelId,
+} %}
     {% if custom ?? false %}
-        {{ text({
-            value: value ?? null,
-            class: 'small',
-        }) }}
+        {{ 'Custom:'|t('app') }}
     {% else %}
         {{ label }}
     {% endif %}
     {% if info ?? null %}
         <span class="info">{{ info|md|raw }}</span>
     {% endif %}
-</label>
+{% endtag %}
 
+{% if custom ?? false %}
+    <div class="custom-option-wrapper">
+        {{ text({
+            value: value ?? null,
+            class: 'small custom-option-input',
+            labelledBy: labelId,
+        }) }}
+    </div>
+{% endif %}
 {% endapply -%}

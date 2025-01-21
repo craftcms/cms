@@ -8,6 +8,7 @@
 namespace craft\fields;
 
 use Craft;
+use craft\base\CrossSiteCopyableFieldInterface;
 use craft\base\ElementInterface;
 use craft\base\Field;
 use craft\base\InlineEditableFieldInterface;
@@ -30,7 +31,7 @@ use yii\db\Schema;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
  */
-class Number extends Field implements InlineEditableFieldInterface, SortableFieldInterface, MergeableFieldInterface
+class Number extends Field implements InlineEditableFieldInterface, SortableFieldInterface, MergeableFieldInterface, CrossSiteCopyableFieldInterface
 {
     /**
      * @since 3.5.11
@@ -74,8 +75,11 @@ class Number extends Field implements InlineEditableFieldInterface, SortableFiel
      */
     public static function dbType(): string
     {
-        $db = Craft::$app->getDb();
-        return $db->getIsMysql() ? sprintf('%s(65,16)', Schema::TYPE_DECIMAL) : Schema::TYPE_DECIMAL;
+        if (Craft::$app->getDb()->getIsMysql()) {
+            return sprintf('%s(65,16)', Schema::TYPE_DECIMAL);
+        }
+
+        return Schema::TYPE_DECIMAL;
     }
 
     /**
@@ -193,8 +197,22 @@ class Number extends Field implements InlineEditableFieldInterface, SortableFiel
      */
     public function getSettingsHtml(): ?string
     {
+        return $this->settingsHtml(false);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getReadOnlySettingsHtml(): ?string
+    {
+        return $this->settingsHtml(true);
+    }
+
+    private function settingsHtml(bool $readOnly): string
+    {
         return Craft::$app->getView()->renderTemplate('_components/fieldtypes/Number/settings.twig', [
             'field' => $this,
+            'readOnly' => $readOnly,
         ]);
     }
 
@@ -323,6 +341,22 @@ JS;
         }
 
         return NumberFieldConditionRule::class;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    protected function dbTypeForValueSql(): array|string|null
+    {
+        if (!$this->decimals) {
+            return Schema::TYPE_INTEGER;
+        }
+
+        if (Craft::$app->getDb()->getIsMysql()) {
+            return sprintf('%s(65,%s)', Schema::TYPE_DECIMAL, $this->decimals);
+        }
+
+        return Schema::TYPE_DECIMAL;
     }
 
     /**

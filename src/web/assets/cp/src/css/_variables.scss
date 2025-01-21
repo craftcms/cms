@@ -2,21 +2,18 @@
 @use '@craftcms/sass/mixins';
 
 :root {
-  --bg-color: $grey100;
+  --bg-color: var(--body-bg);
   --bg-color-hsl: #{color.hue(mixins.$grey100)},
     #{color.saturation(mixins.$grey100)}, #{color.lightness(mixins.$grey100)};
 
   // submit button colors
-  --primary-color: var(--red-600);
-  --secondary-color: var(--gray-500);
+  --primary-color: var(--primary-button-bg);
+  --secondary-color: var(--secondary-button-bg);
   --input-color: hsl(212deg 25% 50%);
 
   // text colors
-  --text-color: var(--gray-700);
   --medium-dark-text-color: var(--gray-550);
-  --medium-text-color: var(--gray-550);
-  --light-text-color: var(--gray-500);
-  --link-color: #1f5fea;
+  --medium-text-color: var(--light-text-color);
 
   // font styles
   --font-weight-bold: 700;
@@ -47,8 +44,12 @@
   --error-color-rgb: 216 31 35;
   --error-color: rgb(var(--error-color-rgb));
   --warning-color: var(--amber-700);
+  --warning-background: var(--amber-100);
+  --warning-border-color: var(--amber-300);
   --success-color: var(--teal-700);
   --notice-color: var(--sky-700);
+  --notice-background: var(--sky-100);
+  --notice-border-color: var(--sky-300);
 
   // status colors
   --enabled-color: var(--teal-550);
@@ -64,6 +65,4 @@
   --medium-border-radius: 4px;
   --large-border-radius: 5px;
   --menu-border-radius: var(--medium-border-radius);
-  --checkbox-size: 1rem;
-  --radio-size: 1rem;
 }

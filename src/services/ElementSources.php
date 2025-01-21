@@ -13,6 +13,7 @@ use craft\base\ElementInterface;
 use craft\base\PreviewableFieldInterface;
 use craft\base\SortableFieldInterface;
 use craft\db\CoalesceColumnsExpression;
+use craft\elements\conditions\ElementConditionInterface;
 use craft\errors\SiteNotFoundException;
 use craft\events\DefineSourceSortOptionsEvent;
 use craft\events\DefineSourceTableAttributesEvent;
@@ -277,7 +278,15 @@ class ElementSources extends Component
     {
         // Don't bother the element type for custom sources
         if (str_starts_with($sourceKey, 'custom:')) {
-            return Craft::$app->getFields()->getLayoutsByType($elementType);
+            $source = $this->_sourceConfig($elementType, $sourceKey);
+            if (empty($source['condition'])) {
+                return Craft::$app->getFields()->getLayoutsByType($elementType);
+            }
+            /** @var ElementConditionInterface $condition */
+            $condition = Craft::$app->getConditions()->createCondition($source['condition']);
+            $query = $elementType::find();
+            $condition->modifyQuery($query);
+            return $query->getFieldLayouts();
         }
 
         if (!isset($this->_fieldLayouts[$elementType][$sourceKey])) {

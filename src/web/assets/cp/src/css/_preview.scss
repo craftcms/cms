@@ -93,6 +93,21 @@
   display: flex;
   flex-direction: column;
 
+  .lp-editor-header {
+    display: flex;
+    align-items: center;
+    align-content: stretch;
+    gap: var(--xs);
+
+    &:not(:has(.lp-close-btn)) {
+      padding-inline-start: 0;
+
+      .pane-tabs [role='tablist'] {
+        padding-inline-start: 0;
+      }
+    }
+  }
+
   .lp-content {
     flex: 1;
     padding: var(--pane-padding, var(--xl));

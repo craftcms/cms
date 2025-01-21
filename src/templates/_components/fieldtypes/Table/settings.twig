@@ -9,6 +9,7 @@
     name: 'staticRows',
     on: field.staticRows,
     reverseToggle: 'dynamic-row-settings',
+    disabled: readOnly,
 }) }}
 
 <fieldset id="dynamic-row-settings"{% if field.staticRows %} class="hidden indent"{% endif %}>
@@ -21,6 +22,7 @@
         size: 3,
         errors: field.getErrors('minRows'),
         data: {'error-key': 'minRows'},
+        disabled: readOnly,
     }) }}
 
     {{ forms.textField({
@@ -32,6 +34,7 @@
         size: 3,
         errors: field.getErrors('maxRows'),
         data: {'error-key': 'maxRows'},
+        disabled: readOnly,
     }) }}
 
     {{ forms.textField({
@@ -41,7 +44,8 @@
         name: 'addRowLabel',
         value: field.addRowLabel,
         size: 20,
-        errors: field.getErrors('addRowLabel')
+        errors: field.getErrors('addRowLabel'),
+        disabled: readOnly,
     }) }}
 </fieldset>
 

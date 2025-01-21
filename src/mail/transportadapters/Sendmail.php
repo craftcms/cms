@@ -91,9 +91,21 @@ class Sendmail extends BaseTransportAdapter
 
     /**
      * @inheritdoc
-     * @since 3.4.0
      */
     public function getSettingsHtml(): ?string
+    {
+        return $this->settingsHtml(false);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getReadOnlySettingsHtml(): ?string
+    {
+        return $this->settingsHtml(true);
+    }
+
+    private function settingsHtml(bool $readOnly): string
     {
         $commandOptions = array_map(function(string $command) {
             return [
@@ -108,6 +120,7 @@ class Sendmail extends BaseTransportAdapter
         return Craft::$app->getView()->renderTemplate('_components/mailertransportadapters/Sendmail/settings.twig', [
             'adapter' => $this,
             'commandOptions' => $commandOptions,
+            'readOnly' => $readOnly,
         ]);
     }
 

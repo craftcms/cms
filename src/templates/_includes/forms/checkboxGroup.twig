@@ -24,7 +24,6 @@
             {%- set option = {label: option, value: key} %}
         {%- endif %}
         {% tag 'div' with {
-            class: 'checkboxfield',
             data: {custom: option.custom ?? false},
         } %}
             {% include "_includes/forms/checkbox" with {
@@ -47,7 +46,6 @@
         {% set customOptionHtml %}
             {% namespace view.namespace %}
                 {% tag 'div' with {
-                    class: 'checkboxfield',
                     data: {custom: true},
                 } %}
                     {% include '_includes/forms/checkbox' with {

@@ -13,6 +13,7 @@ use craft\base\ElementActionInterface;
 use craft\base\ElementInterface;
 use craft\base\Field;
 use craft\base\NestedElementInterface;
+use craft\config\GeneralConfig;
 use craft\db\Query;
 use craft\db\Table;
 use craft\errors\OperationAbortedException;
@@ -22,7 +23,6 @@ use craft\services\ElementSources;
 use craft\web\View;
 use DateTime;
 use Throwable;
-use Twig\Error\LoaderError as TwigLoaderError;
 use Twig\Markup;
 use yii\base\Exception;
 use yii\base\InvalidConfigException;
@@ -823,6 +823,10 @@ class ElementHelper
             ]);
         }
 
+        if ($value instanceof Markup) {
+            return (string)$value;
+        }
+
         try {
             $value = (string)$value;
         } catch (Throwable) {
@@ -994,31 +998,35 @@ class ElementHelper
     {
         $view = Craft::$app->getView();
         $generalConfig = Craft::$app->getConfig()->getGeneral();
-        $output = [];
+        $output = array_map(fn(ElementInterface $element) => self::renderElement($element, $variables, $view, $generalConfig), $elements);
+        return new Markup(implode("\n", $output), Craft::$app->charset);
+    }
 
-        foreach ($elements as $element) {
-            $refHandle = $element::refHandle();
-            if ($refHandle === null) {
-                throw new NotSupportedException(sprintf('Element type “%s” doesn’t define a reference handle, so it doesn’t support partial templates.', $element::displayName()));
-            }
-            $providerHandle = $element->getFieldLayout()?->provider?->getHandle();
-            if ($providerHandle === null) {
-                throw new InvalidConfigException(sprintf('Element “%s” doesn’t have a field layout provider that defines a handle, so it can’t be rendered with a partial template.', $element));
-            }
-            $template = sprintf('%s/%s/%s', $generalConfig->partialTemplatesPath, $refHandle, $providerHandle);
-            $variables[$refHandle] = $element;
-            try {
-                $output[] = $view->renderTemplate($template, $variables, View::TEMPLATE_MODE_SITE);
-            } catch (TwigLoaderError $error) {
-                if ($error->getSourceContext() !== null) {
-                    throw $error;
-                }
-                // fallback to the string representation of the element
-                $output[] = Html::tag('p', Html::encode((string)$element));
+    private static function renderElement(ElementInterface $element, array $variables, View $view, GeneralConfig $generalConfig): string
+    {
+        $refHandle = $element::refHandle();
+        if ($refHandle === null) {
+            throw new NotSupportedException(sprintf('Element type “%s” doesn’t define a reference handle, so it doesn’t support partial templates.', $element::displayName()));
+        }
+
+        $variables[$refHandle] = $element;
+        $templates = [
+            sprintf('%s/%s', $generalConfig->partialTemplatesPath, $refHandle),
+        ];
+
+        $providerHandle = $element->getFieldLayout()?->provider?->getHandle();
+        if ($providerHandle !== null) {
+            array_unshift($templates, sprintf('%s/%s/%s', $generalConfig->partialTemplatesPath, $refHandle, $providerHandle));
+        }
+
+        foreach ($templates as $template) {
+            if ($view->doesTemplateExist($template, View::TEMPLATE_MODE_SITE)) {
+                return $view->renderTemplate($template, $variables, View::TEMPLATE_MODE_SITE);
             }
         }
 
-        return new Markup(implode("\n", $output), Craft::$app->charset);
+        // fallback to the string representation of the element
+        return Html::tag('p', Html::encode((string)$element));
     }
 
     /**

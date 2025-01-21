@@ -312,7 +312,7 @@ class ComponentHelperTest extends TestCase
     {
         return [
             'default' => ['<title>Default</title>', null, 'Default'],
-            'svg-contents' => ['<svg aria-hidden="true">', '<svg/>', 'Testing'],
+            'svg-contents' => ['<svg focusable="false" aria-hidden="true">', '<svg/>', 'Testing'],
             'svg-file' => ['<svg ', dirname(__DIR__, 2) . '/_data/assets/files/craft-logo.svg', 'Default'],
             'file-does-not-exist' => ['<title>Default</title>', '/file/does/not/exist.svg', 'Default'],
             'not-an-svg' => ['<title>Default</title>', dirname(__DIR__, 2) . '/_data/assets/files/background.jpeg', 'Default'],

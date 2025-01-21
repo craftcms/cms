@@ -501,6 +501,7 @@ class Queue extends \yii\queue\cli\Queue implements QueueInterface
         $job = $this->serializer->unserialize($this->_jobData($result['job']));
 
         return ArrayHelper::filterEmptyStringsFromArray([
+            'class' => $job::class,
             'delay' => max(0, $result['timePushed'] + $result['delay'] - time()),
             'status' => $this->_status($result),
             'error' => $result['error'] ?? '',

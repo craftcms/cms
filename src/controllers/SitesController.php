@@ -17,6 +17,7 @@ use craft\models\SiteGroup;
 use craft\web\assets\sites\SitesAsset;
 use craft\web\Controller;
 use yii\web\BadRequestHttpException;
+use yii\web\ForbiddenHttpException;
 use yii\web\NotFoundHttpException;
 use yii\web\Response;
 use yii\web\ServerErrorHttpException;
@@ -31,6 +32,8 @@ use yii\web\ServerErrorHttpException;
  */
 class SitesController extends Controller
 {
+    private bool $readOnly;
+
     /**
      * @inheritdoc
      */
@@ -40,8 +43,16 @@ class SitesController extends Controller
             return false;
         }
 
-        // All actions require an admin account
-        $this->requireAdmin();
+        $viewActions = ['settings-index', 'edit-site'];
+        if (in_array($action->id, $viewActions)) {
+            // Some actions require admin but not allowAdminChanges
+            $this->requireAdmin(false);
+        } else {
+            // All other actions require an admin & allowAdminChanges
+            $this->requireAdmin();
+        }
+
+        $this->readOnly = !Craft::$app->getConfig()->getGeneral()->allowAdminChanges;
 
         return true;
     }
@@ -85,11 +96,12 @@ class SitesController extends Controller
             'Delete {site}',
         ]);
 
-        return $this->renderTemplate('settings/sites/index.twig', compact(
-            'crumbs',
-            'group',
-            'sites',
-        ));
+        return $this->renderTemplate('settings/sites/index.twig', [
+            'crumbs' => $crumbs,
+            'group' => $group,
+            'sites' => $sites,
+            'readOnly' => $this->readOnly,
+        ]);
     }
 
     // Groups
@@ -197,6 +209,10 @@ class SitesController extends Controller
      */
     public function actionEditSite(?int $siteId = null, ?Site $siteModel = null, ?int $groupId = null): Response
     {
+        if ($siteId === null && $this->readOnly) {
+            throw new ForbiddenHttpException('Administrative changes are disallowed in this environment.');
+        }
+
         $sitesService = Craft::$app->getSites();
 
         $brandNewSite = false;
@@ -271,6 +287,7 @@ class SitesController extends Controller
             'site' => $siteModel,
             'groupId' => $groupId,
             'groupOptions' => $groupOptions,
+            'readOnly' => $this->readOnly,
         ]);
     }
 

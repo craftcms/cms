@@ -111,18 +111,19 @@ Craft.CP = Garnish.Base.extend(
       //this.updateContentHeading();
 
       // Swap any instruction text with info icons
-      let $allInstructions = this.$details.find(
-        '.meta > .field > .instructions'
-      );
+      let $allInstructions = this.$details
+        .find('.meta > .field > .instructions')
+        .add($('.field.info-icon-instructions > .instructions'));
 
       for (let i = 0; i < $allInstructions.length; i++) {
         let $instructions = $allInstructions.eq(i);
         let $label = $instructions.siblings('.heading').children('label');
-        $('<span/>', {
+        $('<div/>', {
           class: 'info',
           html: $instructions.children().html(),
         }).appendTo($label);
-        $instructions.remove();
+        // Keep the original element around in case an aria-describedby attribute is referencing it
+        $instructions.addClass('visually-hidden');
       }
 
       if (!this.isMobile && this.$header.length) {
@@ -1267,7 +1268,7 @@ Craft.CP = Garnish.Base.extend(
       }
     },
 
-    checkForUpdates: function (
+    checkForUpdates: async function (
       forceRefresh,
       includeDetails,
       onSuccess,
@@ -1318,36 +1319,40 @@ Craft.CP = Garnish.Base.extend(
         this.forcingRefreshOnUpdatesCheck = forceRefresh === true;
         this.includingDetailsOnUpdatesCheck = includeDetails === true;
 
-        this._checkForUpdates(forceRefresh, includeDetails)
-          .then((info) => {
-            this.updateUtilitiesBadge();
-            this.checkingForUpdates = false;
+        let info;
 
-            if (Array.isArray(this.checkForUpdatesCallbacks)) {
-              const callbacks = this.checkForUpdatesCallbacks;
-              this.checkForUpdatesCallbacks = null;
+        try {
+          info = await this._checkForUpdates(forceRefresh, includeDetails);
+        } catch (e) {
+          this.checkingForUpdates = false;
 
-              for (let callback of callbacks) {
-                callback(info);
-              }
+          if (Array.isArray(this.checkForUpdatesFailureCallbacks)) {
+            const callbacks = this.checkForUpdatesFailureCallbacks;
+            this.checkForUpdatesFailureCallbacks = null;
+
+            for (let callback of callbacks) {
+              callback();
             }
+          }
 
-            this.trigger('checkForUpdates', {
-              updateInfo: info,
-            });
-          })
-          .catch(() => {
-            this.checkingForUpdates = false;
+          return;
+        }
 
-            if (Array.isArray(this.checkForUpdatesFailureCallbacks)) {
-              const callbacks = this.checkForUpdatesFailureCallbacks;
-              this.checkForUpdatesFailureCallbacks = null;
+        this.updateUtilitiesBadge();
+        this.checkingForUpdates = false;
 
-              for (let callback of callbacks) {
-                callback();
-              }
-            }
-          });
+        if (Array.isArray(this.checkForUpdatesCallbacks)) {
+          const callbacks = this.checkForUpdatesCallbacks;
+          this.checkForUpdatesCallbacks = null;
+
+          for (let callback of callbacks) {
+            callback(info);
+          }
+        }
+
+        this.trigger('checkForUpdates', {
+          updateInfo: info,
+        });
       }
     },
 
@@ -1693,7 +1698,12 @@ Craft.CP = Garnish.Base.extend(
         } else if (
           this.displayedJobInfo.status === Craft.CP.JOB_STATUS_FAILED
         ) {
-          this.jobProgressIcon.showFailMode(Craft.t('app', 'Failed'));
+          if (Craft.canAccessQueueManager) {
+            this.jobProgressIcon.showFailMode(Craft.t('app', 'Failed'));
+          } else {
+            this.jobProgressIcon.$a.remove();
+            this.jobProgressIcon.destroy();
+          }
         }
       } else {
         if (this.jobProgressIcon) {

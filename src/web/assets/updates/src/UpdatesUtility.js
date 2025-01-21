@@ -72,6 +72,7 @@ import './updates.scss';
           }
         },
         () => {
+          debugger;
           $graphic.removeClass('spinner').addClass('error');
           $status.text(Craft.t('app', 'Unable to fetch updates at this time.'));
         }
@@ -217,6 +218,49 @@ import './updates.scss';
     },
 
     createCta: function () {
+      const $buttonContainer = $('<div class="buttons right"/>').appendTo(
+        this.$header
+      );
+
+      const menuId = `menu-${Math.floor(Math.random() * 1000000)}`;
+      const $actionBtn = $('<button/>', {
+        type: 'button',
+        class: 'btn menubtn action-btn hairline-dark m',
+        'aria-label': Craft.t('app', 'Actions'),
+        'aria-controls': menuId,
+        title: Craft.t('app', 'Actions'),
+        'data-disclosure-trigger': '',
+      }).appendTo($buttonContainer);
+      $('<div/>', {
+        id: menuId,
+        class: 'menu menu--disclosure',
+      }).appendTo($buttonContainer);
+
+      const disclosureMenu = $actionBtn.disclosureMenu().data('disclosureMenu');
+
+      disclosureMenu.addItems([
+        {
+          icon: 'clipboard',
+          label: Craft.t('app', 'Copy plugin handle'),
+          onActivate: () => {
+            Craft.ui.createCopyTextPrompt({
+              label: Craft.t('app', 'Plugin Handle'),
+              value: this.updateInfo.handle,
+            });
+          },
+        },
+        {
+          icon: 'clipboard',
+          label: Craft.t('app', 'Copy package name'),
+          onActivate: () => {
+            Craft.ui.createCopyTextPrompt({
+              label: Craft.t('app', 'Package Name'),
+              value: this.updateInfo.packageName,
+            });
+          },
+        },
+      ]);
+
       if (
         !this.updatesPage.allowUpdates ||
         !this.updateInfo.latestVersion ||
@@ -225,31 +269,29 @@ import './updates.scss';
         return;
       }
 
-      var $buttonContainer = $('<div class="buttons right"/>').appendTo(
-        this.$header
-      );
       if (typeof this.updateInfo.ctaUrl !== 'undefined') {
         $('<a/>', {
           class: 'btn submit',
           text: this.updateInfo.ctaText,
           href: this.updateInfo.ctaUrl,
           target: '_blank',
-        }).appendTo($buttonContainer);
+        }).insertBefore($actionBtn);
       } else {
         this.updatesPage
           .createUpdateForm(this.updateInfo.ctaText, [this])
-          .appendTo($buttonContainer);
+          .insertBefore($actionBtn);
       }
+
       if (typeof this.updateInfo.altCtaUrl !== 'undefined') {
         $('<a/>', {
           class: 'btn hairline',
           text: this.updateInfo.altCtaText,
           href: this.updateInfo.altCtaUrl,
-        }).appendTo($buttonContainer);
+        }).insertBefore($actionBtn);
       } else if (typeof this.updateInfo.altCtaText !== 'undefined') {
         const $form = this.updatesPage
           .createUpdateForm(this.updateInfo.altCtaText, [this])
-          .appendTo($buttonContainer);
+          .insertBefore($actionBtn);
         $form.find('button').removeClass('submit').addClass('hairline');
       }
     },

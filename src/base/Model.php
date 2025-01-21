@@ -12,13 +12,10 @@ use craft\events\DefineBehaviorsEvent;
 use craft\events\DefineFieldsEvent;
 use craft\events\DefineRulesEvent;
 use craft\helpers\App;
+use craft\helpers\Component;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\StringHelper;
 use craft\helpers\Typecast;
-use DateTime;
-use ReflectionClass;
-use ReflectionNamedType;
-use ReflectionProperty;
 use yii\validators\Validator;
 
 /**
@@ -242,18 +239,7 @@ abstract class Model extends \yii\base\Model implements ModelInterface
     {
         $fields = parent::fields();
 
-        $datetimeAttributes = [];
-        foreach ((new ReflectionClass($this))->getProperties(ReflectionProperty::IS_PUBLIC) as $property) {
-            if (!$property->isStatic()) {
-                $type = $property->getType();
-                if ($type instanceof ReflectionNamedType && $type->getName() === DateTime::class) {
-                    $datetimeAttributes[] = $property->getName();
-                }
-            }
-        }
-
-        // Include datetimeAttributes() for now
-        $datetimeAttributes = array_unique(array_merge($datetimeAttributes, $this->datetimeAttributes()));
+        $datetimeAttributes = Component::datetimeAttributes($this);
 
         // Have all DateTime attributes converted to ISO-8601 strings
         foreach ($datetimeAttributes as $attribute) {

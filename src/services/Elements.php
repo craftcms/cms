@@ -1583,12 +1583,14 @@ class Elements extends Component
 
                         // Make sure this isn't a revision
                         if ($skipRevisions) {
+                            $label = $element->getUiLabel();
+                            $label = $label !== '' ? "$label ($element->id)" : sprintf('%s %s', $element::lowerDisplayName(), $element->id);
                             try {
                                 if (ElementHelper::isRevision($element)) {
-                                    throw new InvalidElementException($element, "Skipped resaving {$element->getUiLabel()} ($element->id) because it's a revision.");
+                                    throw new InvalidElementException($element, "Skipped resaving $label because it's a revision.");
                                 }
                             } catch (Throwable $rootException) {
-                                throw new InvalidElementException($element, "Skipped resaving {$element->getUiLabel()} ($element->id) due to an error obtaining its root element: " . $rootException->getMessage());
+                                throw new InvalidElementException($element, "Skipped resaving $label due to an error obtaining its root element: " . $rootException->getMessage());
                             }
                         }
                     } catch (InvalidElementException $e) {
@@ -4302,6 +4304,25 @@ SQL;
         }
 
         return $this->_authCheck($element, $user, self::EVENT_AUTHORIZE_SAVE) ?? $element->canSave($user);
+    }
+
+    /**
+     * Returns whether a user is authorized to save the canonical version of the given element.
+     *
+     * @param ElementInterface $element
+     * @param User|null $user
+     * @return bool
+     * @since 5.6.0
+     */
+    public function canSaveCanonical(ElementInterface $element, ?User $user = null): bool
+    {
+        if ($element->getIsUnpublishedDraft()) {
+            $fakeCanonical = clone $element;
+            $fakeCanonical->draftId = null;
+            return $this->canSave($fakeCanonical, $user);
+        }
+
+        return $this->canSave($element->getCanonical(true), $user);
     }
 
     /**

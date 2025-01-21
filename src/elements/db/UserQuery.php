@@ -17,7 +17,9 @@ use craft\elements\Entry;
 use craft\elements\User;
 use craft\enums\CmsEdition;
 use craft\helpers\Db;
+use craft\models\Site;
 use craft\models\UserGroup;
+use yii\base\InvalidArgumentException;
 use yii\db\Expression;
 
 /**
@@ -197,6 +199,13 @@ class UserQuery extends ElementQuery
      * @used-by lastName()
      */
     public mixed $lastName = null;
+
+    /**
+     * @var mixed The site(s) that resulting users must be affiliated with.
+     * @used-by affiliatedSiteId()
+     * @since 5.6.0
+     */
+    public mixed $affiliatedSiteId = null;
 
     /**
      * @var mixed The date that the resulting users must have last logged in.
@@ -680,6 +689,122 @@ class UserQuery extends ElementQuery
     }
 
     /**
+     * Narrows the query results based on the users’ affiliated sites.
+     *
+     * Possible values include:
+     *
+     * | Value | Fetches users…
+     * | - | -
+     * | `'foo'` | affiliated with the site with a handle of `foo`.
+     * | `['foo', 'bar']` | affiliated with a site with a handle of `foo` or `bar`.
+     * | `['not', 'foo', 'bar']` | not affiliated with a site with a handle of `foo` or `bar`.
+     * | a [[Site]] object | affiliated with the site represented by the object.
+     * | `'*'` | affiliated with any site.
+     *
+     * ---
+     *
+     * ```twig
+     * {# Fetch users affiliated with the Foo site #}
+     * {% set {elements-var} = {twig-method}
+     *   .affiliatedSite('foo')
+     *   .all() %}
+     * ```
+     *
+     * ```php
+     * // Fetch users affiliated with the Foo site
+     * ${elements-var} = {php-method}
+     *     ->affiliatedSite('foo')
+     *     ->all();
+     * ```
+     *
+     * @param mixed $value The property value
+     * @return static self reference
+     * @uses $affiliatedSiteId
+     * @since 5.6.0
+     */
+    public function affiliatedSite(mixed $value): static
+    {
+        if ($value === null) {
+            $this->affiliatedSiteId = null;
+        } elseif ($value === '*') {
+            $this->affiliatedSiteId = Craft::$app->getSites()->getAllSiteIds();
+        } elseif ($value instanceof Site) {
+            $this->affiliatedSiteId = $value->id;
+        } elseif (is_string($value)) {
+            $site = Craft::$app->getSites()->getSiteByHandle($value);
+            if (!$site) {
+                throw new InvalidArgumentException('Invalid site handle: ' . $value);
+            }
+            $this->affiliatedSiteId = $site->id;
+        } else {
+            if ($not = (strtolower(reset($value)) === 'not')) {
+                array_shift($value);
+            }
+            $this->affiliatedSiteId = [];
+            foreach (Craft::$app->getSites()->getAllSites() as $site) {
+                if (in_array($site->handle, $value, true) === !$not) {
+                    $this->affiliatedSiteId[] = $site->id;
+                }
+            }
+            if (empty($this->affiliatedSiteId)) {
+                throw new InvalidArgumentException('Invalid affiliatedSite param: [' . ($not ? 'not, ' : '') . implode(', ', $value) . ']');
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * Narrows the query results based on the users’ affiliated sites, per the site’s ID(s).
+     *
+     * Possible values include:
+     *
+     *  | Value | Fetches users…
+     *  | - | -
+     *  | `1` | affiliated with the site with an ID of `1`.
+     *  | `[1, 2]` | affiliated with a site with an ID of `1` or `2`.
+     *  | `['not', 1, 2]` | not affiliated with a site with an ID of `1` or `2`.
+     *  | `'*'` | affiliated with any site.
+     *
+     *  ---
+     *
+     *  ```twig
+     *  {# Fetch users affiliated with the site with an ID of 1 #}
+     *  {% set {elements-var} = {twig-method}
+     *    .affiliatedSiteId(1)
+     *    .all() %}
+     *  ```
+     *
+     *  ```php
+     *  // Fetch users affiliated with the site with an ID of 1
+     *  ${elements-var} = {php-method}
+     *      ->affiliatedSiteId(1)
+     *      ->all();
+     *  ```
+     *
+     * @param mixed $value The property value
+     * @return static self reference
+     * @uses $affiliatedSiteId
+     * @since 5.6.0
+     */
+    public function affiliatedSiteId(mixed $value): static
+    {
+        if (is_array($value) && strtolower(reset($value)) === 'not') {
+            array_shift($value);
+            $this->affiliatedSiteId = [];
+            foreach (Craft::$app->getSites()->getAllSites() as $site) {
+                if (!in_array($site->id, $value)) {
+                    $this->affiliatedSiteId[] = $site->id;
+                }
+            }
+        } else {
+            $this->affiliatedSiteId = $value;
+        }
+
+        return $this;
+    }
+
+    /**
      * Narrows the query results based on the users’ last login dates.
      *
      * Possible values include:
@@ -845,8 +970,13 @@ class UserQuery extends ElementQuery
 
         // todo: cleanup after next breakpoint
         $db = Craft::$app->getDb();
+        $affiliatedSiteColumnExists = $db->columnExists(Table::USERS, 'affiliatedSiteId');
         $activeColumnExists = $db->columnExists(Table::USERS, 'active');
         $fullNameColumnExists = $db->columnExists(Table::USERS, 'fullName');
+
+        if ($affiliatedSiteColumnExists) {
+            $this->query->addSelect('users.affiliatedSiteId');
+        }
 
         if ($activeColumnExists) {
             $this->query->addSelect(['users.active']);
@@ -954,6 +1084,10 @@ class UserQuery extends ElementQuery
                 $this->lastName = Db::escapeCommas($this->lastName);
             }
             $this->subQuery->andWhere(Db::parseParam('users.lastName', $this->lastName, '=', true));
+        }
+
+        if ($this->affiliatedSiteId && $affiliatedSiteColumnExists && Craft::$app->getIsMultiSite()) {
+            $this->subQuery->andWhere(['users.affiliatedSiteId' => $this->affiliatedSiteId]);
         }
 
         if ($this->lastLoginDate) {

@@ -8,6 +8,7 @@
 namespace craft\fields;
 
 use Craft;
+use craft\base\CrossSiteCopyableFieldInterface;
 use craft\base\ElementInterface;
 use craft\base\Field;
 use craft\base\InlineEditableFieldInterface;
@@ -35,7 +36,7 @@ use yii\db\Schema;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
  */
-class Date extends Field implements InlineEditableFieldInterface, SortableFieldInterface, MergeableFieldInterface
+class Date extends Field implements InlineEditableFieldInterface, SortableFieldInterface, MergeableFieldInterface, CrossSiteCopyableFieldInterface
 {
     /**
      * @inheritdoc
@@ -196,6 +197,19 @@ class Date extends Field implements InlineEditableFieldInterface, SortableFieldI
      */
     public function getSettingsHtml(): ?string
     {
+        return $this->settingsHtml(false);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getReadOnlySettingsHtml(): ?string
+    {
+        return $this->settingsHtml(true);
+    }
+
+    private function settingsHtml(bool $readOnly): string
+    {
         if ($this->showDate && !$this->showTime) {
             $dateTimeValue = 'showDate';
         } elseif ($this->showTime && !$this->showDate) {
@@ -232,6 +246,7 @@ class Date extends Field implements InlineEditableFieldInterface, SortableFieldI
             'value' => $dateTimeValue,
             'incrementOptions' => $incrementOptions,
             'field' => $this,
+            'readOnly' => $readOnly,
         ]);
     }
 

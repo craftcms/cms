@@ -5,10 +5,9 @@
   --is-always-visible: true;
   position: sticky;
   inset-block-start: 0;
-  z-index: cp.$sidebarZIndex;
   display: grid;
   grid-template-columns: var(--global-sidebar-width);
-  grid-template-rows: var(--header-height) minmax(0, 1fr) auto;
+  grid-template-rows: calc(var(--header-height) + 1px) minmax(0, 1fr) auto;
   grid-auto-flow: row;
   height: 100vh;
   padding: 0;
@@ -16,6 +15,8 @@
   background-color: var(--gray-150);
   border-inline-end: 1px solid var(--hairline-color);
   width: var(--global-sidebar-width);
+  isolation: isolate;
+  z-index: 1;
 
   a {
     text-decoration: none;

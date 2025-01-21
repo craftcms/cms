@@ -56,7 +56,13 @@
 {% endif %}
 {% endjs %}
 
-{% set hasSystemIcon = CraftEdition >= CraftPro and craft.rebrand.isIconUploaded %}
+{% set sidebarState = craft.app.request.rawCookies.value('Craft-' ~ craft.app.systemUid ~ ':sidebar') ?? 'expanded' %}
+{% set bodyAttributes = {
+    data: {
+        sidebar: sidebarState,
+    },
+}|merge(bodyAttributes ?? {}, recursive=true) -%}
+
 {% set fullPageForm = (fullPageForm is defined and fullPageForm) %}
 
 {% set editionName = craft.app.edition.name %}

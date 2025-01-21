@@ -2,9 +2,11 @@
 
 {% set id = id ?? "radio#{random()}" %}
 {% set label = radioLabel ?? label ?? null %}
+{% set labelId = labelId ?? "#{id}-label" %}
 
 {% set containerAttributes = {
     for: id,
+    id: labelId,
 }|merge(containerAttributes ?? []) %}
 
 {%- if block('attr') is defined %}
@@ -29,23 +31,30 @@
 
 {% tag 'label' with containerAttributes %}
     {% if custom ?? false %}
-        {% set textId = "#{id}-text" %}
-        {{ text({
-            id: textId,
-            value: value ?? null,
-            class: 'small',
-        }) }}
-
-        {% js %}
-            (() => {
-                const $radio = $('#{{ id|namespaceInputId }}');
-                const $text = $('#{{ textId|namespaceInputId }}');
-                $text.on('input', () => {
-                    $radio.val($text.val());
-                });
-            })();
-        {% endjs %}
+        {{ 'Other:'|t('app') }}
     {% else %}
         {{ label|raw }}
     {% endif %}
 {% endtag %}
+
+{% if custom ?? false %}
+    {% set textId = "#{id}-text" %}
+    <div class="custom-option-wrapper">
+        {{ text({
+            id: textId,
+            value: value ?? null,
+            class: 'small custom-option-input',
+            labelledBy: labelId,
+        }) }}
+    </div>
+
+    {% js %}
+        (() => {
+            const $radio = $('#{{ id|namespaceInputId }}');
+            const $text = $('#{{ textId|namespaceInputId }}');
+            $text.on('input', () => {
+                $radio.val($text.val());
+            });
+        })();
+    {% endjs %}
+{% endif %}

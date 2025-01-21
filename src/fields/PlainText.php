@@ -8,6 +8,7 @@
 namespace craft\fields;
 
 use Craft;
+use craft\base\CrossSiteCopyableFieldInterface;
 use craft\base\ElementInterface;
 use craft\base\Field;
 use craft\base\InlineEditableFieldInterface;
@@ -23,7 +24,7 @@ use craft\helpers\StringHelper;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
  */
-class PlainText extends Field implements InlineEditableFieldInterface, SortableFieldInterface, MergeableFieldInterface
+class PlainText extends Field implements InlineEditableFieldInterface, SortableFieldInterface, MergeableFieldInterface, CrossSiteCopyableFieldInterface
 {
     /**
      * @inheritdoc
@@ -139,10 +140,23 @@ class PlainText extends Field implements InlineEditableFieldInterface, SortableF
      */
     public function getSettingsHtml(): ?string
     {
-        return Craft::$app->getView()->renderTemplate('_components/fieldtypes/PlainText/settings.twig',
-            [
-                'field' => $this,
-            ]);
+        return $this->settingsHtml(false);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getReadOnlySettingsHtml(): ?string
+    {
+        return $this->settingsHtml(true);
+    }
+
+    private function settingsHtml(bool $readOnly): string
+    {
+        return Craft::$app->getView()->renderTemplate('_components/fieldtypes/PlainText/settings.twig', [
+            'field' => $this,
+            'readOnly' => $readOnly,
+        ]);
     }
 
     /**

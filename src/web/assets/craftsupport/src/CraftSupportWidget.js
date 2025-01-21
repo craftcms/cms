@@ -207,11 +207,16 @@ import './CraftSupportWidget.scss';
         );
         this.$searchSubmit = this.$searchForm.find('.submit:first');
         this.addListener(this.$searchForm, 'submit', 'handleSearchFormSubmit');
-        this.addListener(
-          this.$searchForm.find('.cs-button-wrapper > p > a'),
-          'click',
-          'handleSupportLinkClick'
+
+        const $supportLink = this.$searchForm.find(
+          '.cs-button-wrapper > p > a'
         );
+        const $supportButton = $('<button/>', {
+          type: 'button',
+          text: $supportLink.text(),
+        });
+        $supportLink.replaceWith($supportButton);
+        this.addListener($supportButton, 'click', 'handleSupportLinkClick');
 
         // Support mode stuff
         this.$supportForm = this.$formContainer.children(

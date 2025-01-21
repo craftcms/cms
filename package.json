@@ -61,6 +61,7 @@
     "punycode": "^2.3.1",
     "react": "^16.14.0",
     "react-dom": "^16.14.0",
+    "selectize-plugin-a11y": "^1.1.0",
     "timepicker": "^1.13.18",
     "ttf2woff2": "^5.0.0",
     "typescript": "^5.3.3",

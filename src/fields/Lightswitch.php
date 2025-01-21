@@ -8,12 +8,14 @@
 namespace craft\fields;
 
 use Craft;
+use craft\base\CrossSiteCopyableFieldInterface;
 use craft\base\ElementInterface;
 use craft\base\Field;
 use craft\base\InlineEditableFieldInterface;
 use craft\base\MergeableFieldInterface;
 use craft\base\SortableFieldInterface;
 use craft\elements\Entry;
+use craft\enums\Color as ColorEnum;
 use craft\fields\conditions\LightswitchFieldConditionRule;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Cp;
@@ -28,7 +30,7 @@ use yii\db\Schema;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
  */
-class Lightswitch extends Field implements InlineEditableFieldInterface, SortableFieldInterface, MergeableFieldInterface
+class Lightswitch extends Field implements InlineEditableFieldInterface, SortableFieldInterface, MergeableFieldInterface, CrossSiteCopyableFieldInterface
 {
     /**
      * @inheritdoc
@@ -114,12 +116,26 @@ class Lightswitch extends Field implements InlineEditableFieldInterface, Sortabl
      */
     public function getSettingsHtml(): ?string
     {
+        return $this->settingsHtml(false);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getReadOnlySettingsHtml(): ?string
+    {
+        return $this->settingsHtml(true);
+    }
+
+    private function settingsHtml(bool $readOnly): string
+    {
         return
             Cp::lightswitchFieldHtml([
                 'label' => Craft::t('app', 'Default Value'),
                 'id' => 'default',
                 'name' => 'default',
                 'on' => $this->default,
+                'disabled' => $readOnly,
             ]) .
             Cp::textFieldHtml([
                 'label' => Craft::t('app', 'OFF Label'),
@@ -127,6 +143,7 @@ class Lightswitch extends Field implements InlineEditableFieldInterface, Sortabl
                 'id' => 'off-label',
                 'name' => 'offLabel',
                 'value' => $this->offLabel,
+                'disabled' => $readOnly,
             ]) .
             Cp::textFieldHtml([
                 'label' => Craft::t('app', 'ON Label'),
@@ -134,6 +151,7 @@ class Lightswitch extends Field implements InlineEditableFieldInterface, Sortabl
                 'id' => 'on-label',
                 'name' => 'onLabel',
                 'value' => $this->onLabel,
+                'disabled' => $readOnly,
             ]);
     }
 
@@ -235,6 +253,14 @@ class Lightswitch extends Field implements InlineEditableFieldInterface, Sortabl
      */
     public function getPreviewHtml(mixed $value, ElementInterface $element): string
     {
+        if ($element->viewMode === 'cards') {
+            return Cp::statusLabelHtml([
+                'color' => $value ? ColorEnum::Teal : ColorEnum::Gray,
+                'label' => $this->getUiLabel(),
+                'icon' => $value ? 'check' : 'xmark',
+            ]);
+        }
+
         if (!$value) {
             return '';
         }
@@ -264,6 +290,6 @@ class Lightswitch extends Field implements InlineEditableFieldInterface, Sortabl
             $value = 1;
         }
 
-        return $this->getPreviewHtml($value, $element ?? new Entry());
+        return $this->getPreviewHtml($value, $element ?? new Entry(['viewMode' => 'cards']));
     }
 }

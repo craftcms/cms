@@ -11,6 +11,7 @@
         allowAdd: true,
         allowReorder: true,
         allowDelete: true,
+        static: readOnly ?? false,
     } %}
         {% block tablecell %}
             {% if colId == 'type' %}

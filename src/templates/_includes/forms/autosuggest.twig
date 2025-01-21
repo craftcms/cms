@@ -1,24 +1,37 @@
+{% import '_includes/forms.twig' as forms %}
+
 {% do view.registerAssetBundle("craft\\web\\assets\\vue\\VueAsset") %}
 
-{% if suggestEnvVars ?? false %}
-    {% set suggestions = (suggestions ?? [])|merge(craft.cp.getEnvSuggestions(
+{% set suggestions = (suggestions ?? [])
+    |merge((suggestTemplates ?? false) ? craft.cp.getTemplateSuggestions() : [])
+    |merge((suggestEnvVars ?? false) ? craft.cp.getEnvSuggestions(
         suggestAliases ?? false,
         suggestionFilter ?? null
-    )) %}
-{% endif %}
+    ) : []) %}
 
 {%- set id = id ?? "autosuggest#{random()}" %}
+{%- set previewInputId = "#{id}-preview" %}
 {%- set containerId = "#{id}-container" %}
 {%- set autosuggestId = "#{id}-autosuggest" %}
 {%- set labelledBy = labelledBy ?? null -%}
 
 {%- set class = (class ?? [])|explodeClass|merge([
     'text',
-    (disabled ?? false) ? 'disabled' : null,
     not (size ?? false) ? 'fullwidth' : null,
 ]|filter) %}
 
 <div id="{{ containerId }}" class="autosuggest-container">
+    {{ forms.text({
+        id: previewInputId,
+        class: class|join(' '),
+        value: value ?? '',
+        style: style ?? '',
+        size: size ?? '',
+        disabled: true,
+        title: title ?? '',
+        placeholder: placeholder ?? '',
+    }) }}
+
     {% verbatim %}
     <vue-autosuggest
         :suggestions="filteredOptions"
@@ -41,6 +54,9 @@
 </div>
 
 {% js %}
+(() => {
+$("#{{ previewInputId|namespaceInputId|e('js') }}").remove();
+
 new Vue({
     el: "#{{ containerId|namespaceInputId|e('js') }}",
 
@@ -50,7 +66,7 @@ new Vue({
             query: (value ?? '')|lower,
             selected: '',
             filteredOptions: [],
-            suggestions: suggestions ?? [],
+            suggestions,
             id: autosuggestId,
             inputProps: {
                 class: class|join(' '),
@@ -153,5 +169,6 @@ new Vue({
         },
         {% endblock %}
     }
-})
+});
+})();
 {% endjs %}

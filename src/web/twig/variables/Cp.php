@@ -18,6 +18,7 @@ use craft\helpers\App;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Assets;
 use craft\helpers\Cp as CpHelper;
+use craft\helpers\Html;
 use craft\helpers\Inflector;
 use craft\helpers\StringHelper;
 use craft\helpers\UrlHelper;
@@ -146,6 +147,14 @@ class Cp extends Component
     public const EVENT_REGISTER_CP_SETTINGS = 'registerCpSettings';
 
     /**
+     * @event RegisterCpSettingsEvent The event that is triggered when registering links that should render on the
+     * Settings page in the control panel, when admin changes are disallowed.
+     * @see EVENT_REGISTER_CP_SETTINGS
+     * @since 5.6.0
+     */
+    public const EVENT_REGISTER_READ_ONLY_CP_SETTINGS = 'registerReadOnlyCpSettings';
+
+    /**
      * Returns the site the control panel is currently working with, via a `site` query string param if sent.
      *
      * @return Site|null The site, or `null` if the user doesn’t have permission to edit any sites.
@@ -253,7 +262,7 @@ class Cp extends Component
 
         if (
             Craft::$app->edition !== CmsEdition::Solo &&
-            Craft::$app->getUser()->checkPermission('editUsers')
+            Craft::$app->getUser()->checkPermission('viewUsers')
         ) {
             $navItems[] = [
                 'label' => Craft::t('app', 'Users'),
@@ -325,13 +334,11 @@ class Cp extends Component
         }
 
         if ($isAdmin) {
-            if ($generalConfig->allowAdminChanges) {
-                $navItems[] = [
-                    'url' => 'settings',
-                    'label' => Craft::t('app', 'Settings'),
-                    'icon' => 'gear',
-                ];
-            }
+            $navItems[] = [
+                'url' => 'settings',
+                'label' => Craft::t('app', 'Settings'),
+                'icon' => 'gear',
+            ];
 
             $navItems[] = [
                 'url' => 'plugin-store',
@@ -398,6 +405,7 @@ class Cp extends Component
      */
     public function settings(): array
     {
+        $readOnly = !Craft::$app->getConfig()->getGeneral()->allowAdminChanges;
         $settings = [];
 
         $label = Craft::t('app', 'System');
@@ -422,10 +430,12 @@ class Cp extends Component
             'iconMask' => '@app/icons/light/user-group.svg',
             'label' => Craft::t('app', 'Users'),
         ];
-        $settings[$label]['addresses'] = [
-            'iconMask' => '@app/icons/light/map-location.svg',
-            'label' => Craft::t('app', 'Addresses'),
-        ];
+        if (Craft::$app->getConfig()->getGeneral()->allowAdminChanges) {
+            $settings[$label]['addresses'] = [
+                'iconMask' => '@app/icons/light/map-location.svg',
+                'label' => Craft::t('app', 'Addresses'),
+            ];
+        }
         $settings[$label]['email'] = [
             'iconMask' => '@app/icons/light/envelope.svg',
             'label' => Craft::t('app', 'Email'),
@@ -478,7 +488,7 @@ class Cp extends Component
         $pluginsService = Craft::$app->getPlugins();
 
         foreach ($pluginsService->getAllPlugins() as $plugin) {
-            if ($plugin->hasCpSettings) {
+            if ($plugin->hasCpSettings && (!$readOnly || $plugin->hasReadOnlyCpSettings)) {
                 $settings[$label][$plugin->id] = [
                     'url' => 'settings/plugins/' . $plugin->id,
                     'icon' => $pluginsService->getPluginIconSvg($plugin->id),
@@ -488,9 +498,10 @@ class Cp extends Component
         }
 
         // Fire a 'registerCpSettings' event
-        if ($this->hasEventHandlers(self::EVENT_REGISTER_CP_SETTINGS)) {
+        $eventName = $readOnly ? self::EVENT_REGISTER_READ_ONLY_CP_SETTINGS : self::EVENT_REGISTER_CP_SETTINGS;
+        if ($this->hasEventHandlers($eventName)) {
             $event = new RegisterCpSettingsEvent(['settings' => $settings]);
-            $this->trigger(self::EVENT_REGISTER_CP_SETTINGS, $event);
+            $this->trigger($eventName, $event);
             return $event->settings;
         }
 

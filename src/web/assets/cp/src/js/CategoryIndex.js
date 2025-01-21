@@ -214,6 +214,7 @@ Craft.CategoryIndex = Craft.BaseElementIndex.extend({
     }
 
     this.$newCategoryBtn.addClass('loading');
+    Craft.cp.announce(Craft.t('app', 'Loading'));
 
     Craft.sendActionRequest('POST', 'elements/create', {
       data: {

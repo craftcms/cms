@@ -8,6 +8,7 @@
 namespace craft\fields;
 
 use Craft;
+use craft\base\CrossSiteCopyableFieldInterface;
 use craft\base\ElementInterface;
 use craft\base\Field;
 use craft\base\InlineEditableFieldInterface;
@@ -29,7 +30,7 @@ use yii\db\Schema;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.5.12
  */
-class Time extends Field implements InlineEditableFieldInterface, SortableFieldInterface, MergeableFieldInterface
+class Time extends Field implements InlineEditableFieldInterface, SortableFieldInterface, MergeableFieldInterface, CrossSiteCopyableFieldInterface
 {
     /**
      * @inheritdoc
@@ -124,6 +125,19 @@ class Time extends Field implements InlineEditableFieldInterface, SortableFieldI
      */
     public function getSettingsHtml(): ?string
     {
+        return $this->settingsHtml(false);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getReadOnlySettingsHtml(): ?string
+    {
+        return $this->settingsHtml(true);
+    }
+
+    private function settingsHtml(bool $readOnly): string
+    {
         $incrementOptions = [5, 10, 15, 30, 60];
         $incrementOptions = array_combine($incrementOptions, $incrementOptions);
 
@@ -132,6 +146,7 @@ class Time extends Field implements InlineEditableFieldInterface, SortableFieldI
             'field' => $this,
             'min' => $this->min ? DateTimeHelper::toDateTime(['time' => $this->min], true) : null,
             'max' => $this->max ? DateTimeHelper::toDateTime(['time' => $this->max], true) : null,
+            'readOnly' => $readOnly,
         ]);
     }
 

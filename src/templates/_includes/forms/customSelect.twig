@@ -8,6 +8,10 @@
 {% set value = value ?? '' %}
 {% set disabled = disabled ?? false %}
 {% set selectedOption = value ? options|firstWhere(o => o.value == value) : null %}
+{% set buttonAttributes = buttonAttribues ?? {} %}
+{% if disabled %}
+  {% set buttonAttributes = buttonAttributes|merge({'disabled': 'disabled'}) %}
+{% endif %}
 
 {% macro color(color) %}
   {{- color is instance of ('craft\\enums\\Color') ? color.value : color -}}

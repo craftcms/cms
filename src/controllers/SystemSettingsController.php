@@ -26,6 +26,7 @@ use craft\web\assets\admintable\AdminTableAsset;
 use craft\web\assets\generalsettings\GeneralSettingsAsset;
 use craft\web\Controller;
 use yii\base\Exception;
+use yii\web\ForbiddenHttpException;
 use yii\web\NotFoundHttpException;
 use yii\web\Response;
 
@@ -39,6 +40,8 @@ use yii\web\Response;
  */
 class SystemSettingsController extends Controller
 {
+    private bool $readOnly;
+
     /**
      * @inheritdoc
      */
@@ -48,8 +51,16 @@ class SystemSettingsController extends Controller
             return false;
         }
 
-        // All system setting actions require an admin
-        $this->requireAdmin();
+        $viewActions = ['general-settings', 'edit-email-settings', 'global-set-index', 'edit-global-set'];
+        if (in_array($action->id, $viewActions)) {
+            // Some actions require admin but not allowAdminChanges
+            $this->requireAdmin(false);
+        } else {
+            // All other actions require an admin & allowAdminChanges
+            $this->requireAdmin();
+        }
+
+        $this->readOnly = !Craft::$app->getConfig()->getGeneral()->allowAdminChanges;
 
         return true;
     }
@@ -65,6 +76,7 @@ class SystemSettingsController extends Controller
 
         return $this->renderTemplate('settings/general/_index.twig', [
             'system' => Craft::$app->getProjectConfig()->get('system') ?? [],
+            'readOnly' => $this->readOnly,
         ]);
     }
 
@@ -160,6 +172,7 @@ class SystemSettingsController extends Controller
             'transportTypeOptions' => $transportTypeOptions,
             'allTransportAdapters' => $allTransportAdapters,
             'customMailerFiles' => $customMailerFiles,
+            'readOnly' => $this->readOnly,
         ]);
     }
 
@@ -264,6 +277,7 @@ class SystemSettingsController extends Controller
             'buttonLabel' => StringHelper::upperCaseFirst(Craft::t('app', 'New {type}', [
                 'type' => GlobalSet::lowerDisplayName(),
             ])),
+            'readOnly' => $this->readOnly,
         ]);
     }
 
@@ -277,6 +291,10 @@ class SystemSettingsController extends Controller
      */
     public function actionEditGlobalSet(?int $globalSetId = null, ?GlobalSet $globalSet = null): Response
     {
+        if ($globalSetId === null && $this->readOnly) {
+            throw new ForbiddenHttpException('Administrative changes are disallowed in this environment.');
+        }
+
         if ($globalSet === null) {
             if ($globalSetId !== null) {
                 $globalSet = Craft::$app->getGlobals()->getSetById($globalSetId);
@@ -317,6 +335,7 @@ class SystemSettingsController extends Controller
             'globalSet' => $globalSet,
             'title' => $title,
             'crumbs' => $crumbs,
+            'readOnly' => $this->readOnly,
         ]);
     }
 
@@ -335,6 +354,10 @@ class SystemSettingsController extends Controller
         $settings->template = $this->request->getBodyParam('template');
         $settings->transportType = $this->request->getBodyParam('transportType');
         $settings->transportSettings = Component::cleanseConfig($this->request->getBodyParam(sprintf('transportTypes.%s', Html::id($settings->transportType))) ?? []);
+        $settings->siteOverrides = array_filter(array_map(
+            fn(array $overrides) => array_filter($overrides),
+            $this->request->getBodyParam('siteOverrides') ?? [],
+        ));
 
         return $settings;
     }

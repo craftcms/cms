@@ -37,14 +37,14 @@ trait NestedElementTrait
         switch ($handle) {
             case 'owner':
             case 'primaryOwner':
-                /** @var NestedElementInterface[] $sourceElements */
-                $ownerId = $sourceElements[0]->getOwnerId();
-                if (!$ownerId) {
+                /** @var array<NestedElementInterface&self> $sourceElements */
+                $ownerType = $sourceElements[0]->ownerType();
+                if (!$ownerType) {
                     return false;
                 }
 
                 return [
-                    'elementType' => Craft::$app->getElements()->getElementTypeById($ownerId),
+                    'elementType' => $ownerType,
                     'map' => array_map(fn(NestedElementInterface $element) => [
                         'source' => $element->id,
                         'target' => match ($handle) {
@@ -70,6 +70,11 @@ trait NestedElementTrait
      * @var int|null Owner ID
      */
     private ?int $ownerId = null;
+
+    /**
+     * @var class-string<ElementInterface> Owner type
+     */
+    private string $ownerType;
 
     /**
      * @var int|null Field ID
@@ -159,7 +164,7 @@ trait NestedElementTrait
                 return null;
             }
 
-            $ownerType = Craft::$app->getElements()->getElementTypeById($primaryOwnerId);
+            $ownerType = $this->ownerType();
             if (!$ownerType) {
                 return null;
             }
@@ -225,7 +230,7 @@ trait NestedElementTrait
                 return $this->getPrimaryOwner();
             }
 
-            $ownerType = Craft::$app->getElements()->getElementTypeById($ownerId);
+            $ownerType = $this->ownerType();
             if (!$ownerType) {
                 return null;
             }
@@ -329,6 +334,24 @@ trait NestedElementTrait
             default:
                 parent::setEagerLoadedElements($handle, $elements, $plan);
         }
+    }
+
+    /**
+     * Returns the owner element’s type.
+     *
+     * @return class-string<ElementInterface>|null
+     * @since 5.6.0
+     */
+    protected function ownerType(): ?string
+    {
+        if (!isset($this->ownerType)) {
+            $ownerId = $this->getOwnerId();
+            if (!$ownerId) {
+                return null;
+            }
+            $this->ownerType = Craft::$app->getElements()->getElementTypeById($ownerId);
+        }
+        return $this->ownerType;
     }
 
     /**

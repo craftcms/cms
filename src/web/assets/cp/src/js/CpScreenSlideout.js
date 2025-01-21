@@ -403,6 +403,7 @@ Craft.CpScreenSlideout = Craft.Slideout.extend(
 
           resolve();
           this.trigger('load');
+          this.settings.onLoad();
         });
       });
     },
@@ -803,6 +804,7 @@ Craft.CpScreenSlideout = Craft.Slideout.extend(
       requestOptions: {},
       showHeader: null,
       closeOnSubmit: true,
+      onLoad: () => {},
       onSubmit: () => {},
     },
   }

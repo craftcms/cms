@@ -1,6 +1,10 @@
 {% import '_includes/forms.twig' as forms %}
 
-{% if oldHandle %}{{ hiddenInput('oldHandle', oldHandle) }}{% endif %}
+{% set readOnly = readOnly ?? false %}
+
+{% if not readOnly and oldHandle %}
+    {{ hiddenInput('oldHandle', oldHandle) }}
+{% endif %}
 
 {{ forms.textField({
     first: true,
@@ -12,6 +16,7 @@
     required: true,
     errors: (filesystem is defined ? filesystem.getErrors('name') : null),
     data: {'error-key': 'name'},
+    disabled: readOnly,
 }) }}
 
 {{ forms.textField({
@@ -26,6 +31,7 @@
     required: true,
     errors: (filesystem is defined ? filesystem.getErrors('handle') : null),
     data: {'error-key': 'handle'},
+    disabled: readOnly,
 }) }}
 
 <hr>
@@ -38,24 +44,30 @@
         name: 'type',
         options: fsOptions,
         value: className(filesystem),
-        toggle: true
+        toggle: true,
+        disabled: readOnly,
     }) }}
 {% endif %}
 
 {% for fsType in fsTypes %}
     {% set isCurrent = (fsType == className(filesystem)) %}
+    {% set fs = isCurrent ? filesystem : fsInstances[fsType] %}
+    {% set classes = [] %}
+    {% if not isCurrent %}
+        {% set classes = classes|merge(['hidden']) %}
+    {% endif %}
 
-    <div id="{{ fsType|id }}"{% if not isCurrent %} class="hidden"{% endif %}>
+    {% tag 'div' with {
+        id: fsType|id,
+        class: classes,
+    } %}
         {% namespace 'types['~fsType|id~']' %}
-            {% if isCurrent %}
-                {{ _self.fsUrlFields(filesystem) }}
-                {{ filesystem.getSettingsHtml()|raw }}
-            {% else %}
-                {{ _self.fsUrlFields(fsInstances[fsType]) }}
-                {{ fsInstances[fsType].getSettingsHtml()|raw }}
-            {% endif %}
+            {% autoescape false %}
+                {{ _self.fsUrlFields(fs, readOnly) }}
+                {{ readOnly ? fs.getReadOnlySettingsHtml() : fs.getSettingsHtml() }}
+            {% endautoescape %}
         {% endnamespace %}
-    </div>
+    {% endtag %}
 {% endfor %}
 
 
@@ -66,14 +78,15 @@
 {% endif %}
 
 
-{% macro fsUrlFields(filesystem) %}
+{% macro fsUrlFields(filesystem, disabled) %}
     {% if filesystem.getShowHasUrlSetting() %}
         {{ forms.lightswitchField({
             label: 'Files in this filesystem have public URLs'|t('app'),
             name: 'hasUrls',
             id: 'has-urls',
             on:   filesystem.hasUrls,
-            toggle: filesystem.getShowUrlSetting() ? "url-field-container" : null
+            toggle: filesystem.getShowUrlSetting() ? "url-field-container" : null,
+            disabled: disabled,
         }) }}
     {% endif %}
 
@@ -92,6 +105,7 @@
                 placeholder: "//example.com/path/to/folder",
                 errors: (filesystem is defined ? filesystem.getErrors('url') : null),
                 data: {'error-key': 'url'},
+                disabled: disabled,
             }) }}
         </div>
     {% endif %}

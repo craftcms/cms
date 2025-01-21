@@ -8,6 +8,7 @@
 namespace craft\models;
 
 use Craft;
+use craft\base\Chippable;
 use craft\base\Model;
 use craft\helpers\App;
 use craft\i18n\Locale;
@@ -29,8 +30,14 @@ use yii\base\InvalidConfigException;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
  */
-class Site extends Model
+class Site extends Model implements Chippable
 {
+    public static function get(int|string $id): ?static
+    {
+        /** @phpstan-ignore-next-line */
+        return Craft::$app->getSites()->getSiteById($id);
+    }
+
     /**
      * @var int|null ID
      */
@@ -103,6 +110,22 @@ class Site extends Model
      * @see setLanguage()
      */
     private ?string $_language = null;
+
+    /**
+     * @inheritdoc
+     */
+    public function getId(): string|int|null
+    {
+        return $this->id;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getUiLabel(): string
+    {
+        return Craft::t('site', $this->getName());
+    }
 
     /**
      * Returns the site’s name.
@@ -264,7 +287,7 @@ class Site extends Model
      */
     public function __toString(): string
     {
-        return Craft::t('site', $this->getName()) ?: static::class;
+        return $this->getUiLabel() ?: static::class;
     }
 
     /**

@@ -39,6 +39,7 @@ use craft\fieldlayoutelements\assets\AssetTitleField;
 use craft\fieldlayoutelements\entries\EntryTitleField;
 use craft\fieldlayoutelements\FullNameField;
 use craft\fieldlayoutelements\TitleField;
+use craft\fieldlayoutelements\users\AffiliatedSiteField;
 use craft\fieldlayoutelements\users\EmailField;
 use craft\fieldlayoutelements\users\FullNameField as UserFullNameField;
 use craft\fieldlayoutelements\users\PhotoField;
@@ -1588,11 +1589,6 @@ trait ApplicationTrait
         // Set the language
         $this->updateTargetLanguage();
 
-        // Prevent browser caching if this is a control panel request
-        if ($this instanceof WebApplication && $request->getIsCpRequest()) {
-            $this->getResponse()->setNoCacheHeaders();
-        }
-
         // Register the variable dumper
         VarDumper::setHandler(function($var) {
             $cloner = new VarCloner();
@@ -1728,6 +1724,9 @@ trait ApplicationTrait
                     $event->fields[] = UserFullNameField::class;
                     $event->fields[] = PhotoField::class;
                     $event->fields[] = EmailField::class;
+                    if (Craft::$app->getIsMultiSite()) {
+                        $event->fields[] = AffiliatedSiteField::class;
+                    }
                     break;
             }
         });

@@ -40,6 +40,7 @@
             'default-filter': source.defaultFilter ?? false,
             'default-view-mode': source.defaultViewMode ?? false,
             'view-modes': viewModes ?? [],
+            'field-layouts': source.fieldLayouts is defined ? source.fieldLayouts|map(layout => layout.getConfig()) : false,
         }|merge(source.data ?? {}),
         html: _self.sourceInnerHtml(source)
     }) }}

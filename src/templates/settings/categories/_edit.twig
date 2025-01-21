@@ -1,6 +1,7 @@
 {% extends '_layouts/cp.twig' %}
 
-{% set fullPageForm = true %}
+{% set readOnly = readOnly ?? false %}
+{% set fullPageForm = not readOnly %}
 
 {% set formActions = [
     {
@@ -15,12 +16,17 @@
 
 {% set headlessMode = craft.app.config.general.headlessMode %}
 
+{% if readOnly %}
+    {% set contentNotice = readOnlyNotice() %}
+{% endif %}
 
 {% block content %}
-    {{ actionInput('categories/save-group') }}
-    {{ redirectInput('settings/categories') }}
+    {% if not readOnly %}
+        {{ actionInput('categories/save-group') }}
+        {{ redirectInput('settings/categories') }}
 
-    {% if categoryGroup.id %}{{ hiddenInput('groupId', categoryGroup.id) }}{% endif %}
+        {% if categoryGroup.id %}{{ hiddenInput('groupId', categoryGroup.id) }}{% endif %}
+    {% endif %}
 
     {{ forms.textField({
         first: true,
@@ -32,6 +38,7 @@
         errors: categoryGroup.getErrors('name'),
         autofocus: true,
         required: true,
+        disabled: readOnly,
     }) }}
 
     {{ forms.textField({
@@ -44,7 +51,8 @@
         autocapitalize: false,
         value: categoryGroup.handle,
         errors: categoryGroup.getErrors('handle'),
-        required: true
+        required: true,
+        disabled: readOnly,
     }) }}
 
     {{ forms.textField({
@@ -54,7 +62,8 @@
         name: 'maxLevels',
         value: categoryGroup.maxLevels,
         size: 5,
-        errors: categoryGroup.getErrors('maxLevels')
+        errors: categoryGroup.getErrors('maxLevels'),
+        disabled: readOnly,
     }) }}
 
     {{ forms.selectField({
@@ -67,6 +76,7 @@
             {label: 'After other {type}'|t('app', {type: 'categories'|t('app')}), value: 'end'},
         ],
         value: categoryGroup.defaultPlacement,
+        disabled: readOnly,
     }) }}
 
     <hr>
@@ -125,7 +135,8 @@
         allowAdd: false,
         allowDelete: false,
         allowReorder: false,
-        errors: siteErrors|unique
+        errors: siteErrors|unique,
+        static: readOnly,
     }) }}
 
     <hr>
@@ -133,6 +144,7 @@
     {{ forms.fieldLayoutDesignerField({
         fieldLayout: categoryGroup.getFieldLayout(),
         withCardViewDesigner: true,
+        disabled: readOnly,
     }) }}
 {% endblock %}
 

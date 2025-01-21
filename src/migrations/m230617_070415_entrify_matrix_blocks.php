@@ -59,11 +59,9 @@ class m230617_070415_entrify_matrix_blocks extends Migration
         $projectConfig = Craft::$app->getProjectConfig();
         $fieldsService = Craft::$app->getFields();
 
-        // index entry type names and handles
-        $entryTypeNames = [];
+        // index entry handles
         $entryTypeHandles = [];
         foreach ($projectConfig->get(ProjectConfig::PATH_ENTRY_TYPES) ?? [] as $entryTypeConfig) {
-            $entryTypeNames[$entryTypeConfig['name']] = true;
             $entryTypeHandles[$entryTypeConfig['handle']] = true;
         }
 
@@ -100,7 +98,7 @@ class m230617_070415_entrify_matrix_blocks extends Migration
             foreach ($blockTypeConfigsByField[$fieldUid] as $blockTypeUid => $blockTypeConfig) {
                 $entryType = $newEntryTypes[] = $fieldEntryTypes[] = new EntryType([
                     'uid' => $blockTypeUid,
-                    'name' => $this->uniqueName($blockTypeConfig['name'], $entryTypeNames),
+                    'name' => $blockTypeConfig['name'],
                     'handle' => $this->uniqueHandle($blockTypeConfig['handle'], $entryTypeHandles),
                     'hasTitleField' => false,
                     'titleFormat' => null,
@@ -167,7 +165,14 @@ class m230617_070415_entrify_matrix_blocks extends Migration
             $fieldConfig['settings'] += [
                 'maxEntries' => ArrayHelper::remove($fieldConfig['settings'], 'maxBlocks'),
                 'minEntries' => ArrayHelper::remove($fieldConfig['settings'], 'minBlocks'),
-                'entryTypes' => array_map(fn(EntryType $entryType) => $entryType->uid, $fieldEntryTypes),
+                'entryTypes' => array_map(function(EntryType $entryType) use ($fieldUid, $blockTypeConfigsByField) {
+                    $config = ['uid' => $entryType->uid];
+                    $blockTypeConfig = $blockTypeConfigsByField[$fieldUid][$entryType->uid];
+                    if ($blockTypeConfig['handle'] !== $entryType->handle) {
+                        $config['handle'] = $blockTypeConfig['handle'];
+                    }
+                    return $config;
+                }, $fieldEntryTypes),
                 'viewMode' => Matrix::VIEW_MODE_BLOCKS,
             ];
             unset($fieldConfig['settings']['contentTable']);

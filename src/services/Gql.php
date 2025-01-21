@@ -338,6 +338,12 @@ class Gql extends Component
     private array $_contentArguments = [];
 
     /**
+     * @var array Custom field arguments by field layout UUID
+     * @see getFieldLayoutArguments()
+     */
+    private array $_fieldArguments = [];
+
+    /**
      * @var TypeManager|null GQL type manager
      */
     private ?TypeManager $_typeManager = null;
@@ -1166,6 +1172,29 @@ class Gql extends Component
             $this->_contentArguments[$elementType] = $setter();
         }
         return $this->_contentArguments[$elementType];
+    }
+
+    /**
+     * Returns arguments for fields in the given field layout.
+     *
+     * @param FieldLayout $fieldLayout
+     * @return array
+     * @since 5.6.0
+     */
+    public function getFieldLayoutArguments(FieldLayout $fieldLayout): array
+    {
+        if (!isset($fieldLayout->type)) {
+            throw new InvalidArgumentException('Field layout is missing its element type.');
+        }
+
+        if (!isset($this->_fieldArguments[$fieldLayout->uid])) {
+            $this->_fieldArguments[$fieldLayout->uid] = $this->defineContentArgumentsForFields(
+                $fieldLayout->type,
+                $fieldLayout->getCustomFields(),
+            );
+        }
+
+        return $this->_fieldArguments[$fieldLayout->uid];
     }
 
     /**

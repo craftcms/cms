@@ -12,6 +12,7 @@ use BaconQrCode\Renderer\ImageRenderer;
 use BaconQrCode\Renderer\RendererStyle\RendererStyle;
 use BaconQrCode\Writer;
 use Craft;
+use craft\helpers\Session as SessionHelper;
 use craft\records\Authenticator as AuthenticatorRecord;
 use craft\web\assets\totp\TotpAsset;
 use craft\web\Session;
@@ -173,7 +174,7 @@ JS, [
         if (empty($secret)) {
             try {
                 $secret = $google2fa->generateSecretKey(32);
-                Craft::$app->getSession()->set($this->secretParam, $secret);
+                SessionHelper::set($this->secretParam, $secret);
             } catch (\Exception $e) {
                 Craft::$app->getErrorHandler()->logException($e);
             }

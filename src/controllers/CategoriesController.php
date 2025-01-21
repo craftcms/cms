@@ -55,12 +55,13 @@ class CategoriesController extends Controller
      */
     public function actionGroupIndex(): Response
     {
-        $this->requireAdmin();
+        $this->requireAdmin(false);
 
         $groups = Craft::$app->getCategories()->getAllGroups();
 
         return $this->renderTemplate('settings/categories/index.twig', [
             'categoryGroups' => $groups,
+            'readOnly' => !Craft::$app->getConfig()->getGeneral()->allowAdminChanges,
         ]);
     }
 
@@ -74,7 +75,13 @@ class CategoriesController extends Controller
      */
     public function actionEditCategoryGroup(?int $groupId = null, ?CategoryGroup $categoryGroup = null): Response
     {
-        $this->requireAdmin();
+        $this->requireAdmin(false);
+
+        $readOnly = !Craft::$app->getConfig()->getGeneral()->allowAdminChanges;
+
+        if ($groupId === null && $readOnly) {
+            throw new ForbiddenHttpException('Administrative changes are disallowed in this environment.');
+        }
 
         $variables = [];
 
@@ -113,6 +120,7 @@ class CategoriesController extends Controller
 
         $variables['groupId'] = $groupId;
         $variables['categoryGroup'] = $categoryGroup;
+        $variables['readOnly'] = $readOnly;
 
         return $this->renderTemplate('settings/categories/_edit.twig', $variables);
     }

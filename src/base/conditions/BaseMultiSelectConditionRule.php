@@ -84,6 +84,10 @@ abstract class BaseMultiSelectConditionRule extends BaseConditionRule
      */
     protected function inputHtml(): string
     {
+        if (!in_array($this->operator, [self::OPERATOR_IN, self::OPERATOR_NOT_IN])) {
+            return '';
+        }
+
         $multiSelectId = 'multiselect';
 
         return

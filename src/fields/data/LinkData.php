@@ -9,6 +9,7 @@ namespace craft\fields\data;
 
 use craft\base\ElementInterface;
 use craft\base\Serializable;
+use craft\elements\db\ElementQueryInterface;
 use craft\fields\linktypes\BaseElementLinkType;
 use craft\fields\linktypes\BaseLinkType;
 use craft\helpers\Html;
@@ -19,21 +20,59 @@ use yii\base\BaseObject;
 /**
  * Link field data class.
  *
- * @property-read string $type The link type ID
- * @property-read string $value The link value
- * @property-read string $label The link label
- * @property-read Markup|null $link An anchor tag for this link
  * @property-read ElementInterface|null $element The element linked by the field, if there is one
+ * @property-read ElementQueryInterface|null $elementQuery An element query that will fetch the element linked by the field, if there is one
+ * @property-read Markup|null $link An anchor tag for this link
+ * @property-read string $label The link label
+ * @property-read string $type The link type ID
+ * @property-read string $url The full link URL, including the suffix
+ * @property-read string $value The link value
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 5.3.0
  */
 class LinkData extends BaseObject implements Serializable
 {
     /**
+     * @var string|null The link’s URL suffix value.
+     * @since 5.6.0
+     */
+    public ?string $urlSuffix = null;
+
+    /**
      * @var string|null The link’s `target` attribute.
      * @since 5.5.0
      */
     public ?string $target = null;
+
+    /**
+     * @var string|null The link’s `title` attribute.
+     * @since 5.6.0
+     */
+    public ?string $title = null;
+
+    /**
+     * @var string|null The link’s `class` attribute.
+     * @since 5.6.0
+     */
+    public ?string $class = null;
+
+    /**
+     * @var string|null The link’s `id` attribute.
+     * @since 5.6.0
+     */
+    public ?string $id = null;
+
+    /**
+     * @var string|null The link’s `rel` attribute.
+     * @since 5.6.0
+     */
+    public ?string $rel = null;
+
+    /**
+     * @var string|null The link’s `aria-label` attribute.
+     * @since 5.6.0
+     */
+    public ?string $ariaLabel = null;
 
     private string $renderedValue;
     private ?string $label = null;
@@ -48,7 +87,7 @@ class LinkData extends BaseObject implements Serializable
 
     public function __toString(): string
     {
-        return $this->getValue();
+        return $this->getUrl();
     }
 
     /**
@@ -70,6 +109,16 @@ class LinkData extends BaseObject implements Serializable
             $this->renderedValue = $this->linkType->renderValue($this->value);
         }
         return $this->renderedValue;
+    }
+
+    /**
+     * Returns the full link URL.
+     *
+     * @since 5.6.0
+     */
+    public function getUrl(): string
+    {
+        return sprintf('%s%s', $this->getValue(), $this->urlSuffix ?? '');
     }
 
     /**
@@ -105,17 +154,38 @@ class LinkData extends BaseObject implements Serializable
      */
     public function getLink(): Markup
     {
-        $url = $this->getValue();
+        $url = $this->getUrl();
         if ($url === '') {
             $html = '';
         } else {
             $label = $this->getLabel();
             $html = Html::a(Html::encode($label !== '' ? $label : $url), $url, [
                 'target' => $this->target,
+                'title' => $this->title,
+                'class' => $this->class,
+                'id' => $this->id,
+                'rel' => $this->rel,
+                'aria' => [
+                    'label' => $this->ariaLabel,
+                ],
             ]);
         }
 
         return Template::raw($html);
+    }
+
+    /**
+     * Returns an element query that will fetch the element linked by the field, if there is one.
+     *
+     * @return ElementQueryInterface|null
+     * @since 5.6.0
+     */
+    public function getElementQuery(): ?ElementQueryInterface
+    {
+        if (!$this->linkType instanceof BaseElementLinkType) {
+            return null;
+        }
+        return $this->linkType->elementQuery($this->value);
     }
 
     /**
@@ -133,11 +203,17 @@ class LinkData extends BaseObject implements Serializable
 
     public function serialize(): mixed
     {
-        return [
+        return array_filter([
             'value' => $this->value,
             'type' => $this->getType(),
             'label' => $this->label,
+            'urlSuffix' => $this->urlSuffix,
             'target' => $this->target,
-        ];
+            'title' => $this->title,
+            'class' => $this->class,
+            'id' => $this->id,
+            'rel' => $this->rel,
+            'ariaLabel' => $this->ariaLabel,
+        ]);
     }
 }

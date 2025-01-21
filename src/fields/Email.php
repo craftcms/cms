@@ -8,6 +8,7 @@
 namespace craft\fields;
 
 use Craft;
+use craft\base\CrossSiteCopyableFieldInterface;
 use craft\base\ElementInterface;
 use craft\base\Field;
 use craft\base\InlineEditableFieldInterface;
@@ -26,7 +27,7 @@ use yii\db\Schema;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
  */
-class Email extends Field implements InlineEditableFieldInterface, MergeableFieldInterface
+class Email extends Field implements InlineEditableFieldInterface, MergeableFieldInterface, CrossSiteCopyableFieldInterface
 {
     /**
      * @inheritdoc
@@ -81,6 +82,19 @@ class Email extends Field implements InlineEditableFieldInterface, MergeableFiel
      */
     public function getSettingsHtml(): ?string
     {
+        return $this->settingsHtml(false);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getReadOnlySettingsHtml(): ?string
+    {
+        return $this->settingsHtml(true);
+    }
+
+    private function settingsHtml(bool $readOnly): string
+    {
         return Cp::textFieldHtml([
             'label' => Craft::t('app', 'Placeholder Text'),
             'instructions' => Craft::t('app', 'The text that will be shown if the field doesn’t have a value.'),
@@ -88,6 +102,7 @@ class Email extends Field implements InlineEditableFieldInterface, MergeableFiel
             'name' => 'placeholder',
             'value' => $this->placeholder,
             'errors' => $this->getErrors('placeholder'),
+            'disabled' => $readOnly,
         ]);
     }
 

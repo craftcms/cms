@@ -16,13 +16,17 @@
   background-color: var(--gray-050);
   cursor: pointer;
 
-  &:hover::after {
+  &:hover:not(.inactive)::after {
     position: absolute;
     inset-block-start: 9px;
     @include right(5px);
     @include icon;
     content: 'edit';
     color: var(--link-color);
+  }
+
+  &.inactive:hover {
+    cursor: not-allowed;
   }
 
   .uri-container,

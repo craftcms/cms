@@ -1,12 +1,20 @@
-{% requireAdmin %}
+{% requireAdmin false %}
 
 {% extends "_layouts/cp" %}
 
+{% set readOnly = readOnly ?? false %}
+
 {% block actionButton %}
-    <a href="{{ url('settings/globals/new') }}" class="btn submit add icon">
-        {{ buttonLabel }}
-    </a>
+    {% if not readOnly %}
+        <a href="{{ url('settings/globals/new') }}" class="btn submit add icon">
+            {{ buttonLabel }}
+        </a>
+    {% endif %}
 {% endblock %}
+
+{% if readOnly %}
+    {% set contentNotice = readOnlyNotice() %}
+{% endif %}
 
 {% block content %}
     <div id="sets-vue-admin-table"></div>
@@ -34,12 +42,17 @@ var columns = [
     },
 ];
 
-new Craft.VueAdminTable({
+let config = {
     columns: columns,
     container: '#sets-vue-admin-table',
-    deleteAction: 'globals/delete-set',
     emptyMessage: Craft.t('app', 'No global sets exist yet.'),
-    reorderAction: '{{ globalSets|length > 1 ? 'globals/reorder-sets' : ''}}',
     tableData: {{ tableData|json_encode|raw }}
-});
+}
+
+{% if not readOnly %}
+    config['deleteAction'] = 'globals/delete-set';
+    config['reorderAction'] = '{{ globalSets|length > 1 ? 'globals/reorder-sets' : ''}}';
+{% endif %}
+
+new Craft.VueAdminTable(config);
 {% endjs %}

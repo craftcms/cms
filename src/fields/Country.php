@@ -10,6 +10,7 @@ namespace craft\fields;
 use CommerceGuys\Addressing\Country\Country as CountryModel;
 use CommerceGuys\Addressing\Exception\UnknownCountryException;
 use Craft;
+use craft\base\CrossSiteCopyableFieldInterface;
 use craft\base\ElementInterface;
 use craft\base\Field;
 use craft\base\InlineEditableFieldInterface;
@@ -24,7 +25,7 @@ use yii\db\Schema;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 4.6.0
  */
-class Country extends Field implements InlineEditableFieldInterface, MergeableFieldInterface
+class Country extends Field implements InlineEditableFieldInterface, MergeableFieldInterface, CrossSiteCopyableFieldInterface
 {
     /**
      * @inheritdoc

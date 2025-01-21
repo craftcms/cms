@@ -11,6 +11,7 @@ use Craft;
 use craft\base\Fs;
 use craft\base\FsInterface;
 use craft\helpers\ArrayHelper;
+use craft\helpers\Cp;
 use craft\helpers\Html;
 use craft\web\Controller;
 use yii\web\BadRequestHttpException;
@@ -29,6 +30,8 @@ use yii\web\Response as YiiResponse;
  */
 class FsController extends Controller
 {
+    private bool $readOnly;
+
     /**
      * @inheritdoc
      */
@@ -38,8 +41,16 @@ class FsController extends Controller
             return false;
         }
 
-        // All asset volume actions require an admin
-        $this->requireAdmin();
+        $viewActions = ['index', 'edit'];
+        if (in_array($action->id, $viewActions)) {
+            // Some actions require admin but not allowAdminChanges
+            $this->requireAdmin(false);
+        } else {
+            // All other actions require an admin & allowAdminChanges
+            $this->requireAdmin();
+        }
+
+        $this->readOnly = !Craft::$app->getConfig()->getGeneral()->allowAdminChanges;
 
         return true;
     }
@@ -53,6 +64,7 @@ class FsController extends Controller
     {
         $variables = [];
         $variables['filesystems'] = Craft::$app->getFs()->getAllFilesystems();
+        $variables['readOnly'] = $this->readOnly;
 
         return $this->renderTemplate('settings/filesystems/_index.twig', $variables);
     }
@@ -68,7 +80,9 @@ class FsController extends Controller
      */
     public function actionEdit(?string $handle = null, ?Fs $filesystem = null): Response
     {
-        $this->requireAdmin();
+        if ($handle === null && $this->readOnly) {
+            throw new ForbiddenHttpException('Administrative changes are disallowed in this environment.');
+        }
 
         $fsService = Craft::$app->getFs();
 
@@ -111,24 +125,33 @@ class FsController extends Controller
             $title = Craft::t('app', 'Create a new filesystem');
         }
 
-        return $this->asCpScreen()
+        $response = $this->asCpScreen()
             ->title($title)
             ->addCrumb(Craft::t('app', 'Settings'), 'settings')
             ->addCrumb(Craft::t('app', 'Filesystems'), 'settings/filesystems')
-            ->action('fs/save')
-            ->redirectUrl('settings/filesystems')
-            ->addAltAction(Craft::t('app', 'Save and continue editing'), [
-                'redirect' => 'settings/filesystems/{handle}',
-                'shortcut' => true,
-                'retainScroll' => true,
-            ])
             ->contentTemplate('settings/filesystems/_edit.twig', [
                 'oldHandle' => $handle,
                 'filesystem' => $filesystem,
                 'fsOptions' => $fsOptions,
                 'fsInstances' => $fsInstances,
                 'fsTypes' => $allFsTypes,
+                'readOnly' => $this->readOnly,
             ]);
+
+        if (!$this->readOnly) {
+            $response
+                ->action('fs/save')
+                ->redirectUrl('settings/filesystems')
+                ->addAltAction(Craft::t('app', 'Save and continue editing'), [
+                    'redirect' => 'settings/filesystems/{handle}',
+                    'shortcut' => true,
+                    'retainScroll' => true,
+                ]);
+        } else {
+            $response->noticeHtml(Cp::readOnlyNoticeHtml());
+        }
+
+        return $response;
     }
 
     /**

@@ -82,6 +82,15 @@ class AddressField extends BaseField
     /**
      * @inheritdoc
      */
+    protected function defaultLabel(?ElementInterface $element = null, bool $static = false): ?string
+    {
+        // we need it for the card view designer
+        return Craft::t('app', 'Address');
+    }
+
+    /**
+     * @inheritdoc
+     */
     protected function selectorLabel(): ?string
     {
         return Craft::t('app', 'Address');
@@ -195,5 +204,26 @@ class AddressField extends BaseField
     {
         // Not actually needed since we're overriding formHtml()
         return null;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function previewPlaceholderHtml(mixed $value, ?ElementInterface $element): string
+    {
+        if ($element instanceof Address) {
+            return $this->previewHtml($element);
+        } else {
+            $address = new Address([
+                'countryCode' => 'US',
+                'administrativeArea' => 'AK',
+                'addressLine1' => 'Address Line 1',
+                'locality' => 'Some City',
+                'postalCode' => '12345',
+            ]);
+            return Html::tag('div', Craft::$app->getAddresses()->formatAddress($address), [
+                'class' => 'no-truncate',
+            ]);
+        }
     }
 }

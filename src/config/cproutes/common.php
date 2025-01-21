@@ -88,4 +88,5 @@ return [
     'plugin-store' => 'plugin-store',
     'plugin-store/callback' => 'plugin-store/callback',
     'plugin-store/<url:(.*)>' => 'plugin-store',
+    'preview/<elementId:\d+><slug:(?:-[^\/]*)?>' => 'elements/preview',
 ];

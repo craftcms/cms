@@ -462,6 +462,7 @@ abstract class Field extends SavableComponent implements FieldInterface, Iconic,
                 'uri',
                 'url',
                 'username', // user-specific
+                'viewMode',
             ],
         ];
 
@@ -533,30 +534,55 @@ abstract class Field extends SavableComponent implements FieldInterface, Iconic,
     public function getActionMenuItems(): array
     {
         $items = [];
+        $userSessionService = Craft::$app->getUser();
 
-        if (
-            $this->id &&
-            Craft::$app->getUser()->getIsAdmin() &&
-            Craft::$app->getConfig()->getGeneral()->allowAdminChanges
-        ) {
-            $editId = sprintf('action-edit-%s', mt_rand());
-            $items[] = [
-                'id' => $editId,
-                'icon' => 'edit',
-                'label' => Craft::t('app', 'Edit'),
-            ];
-
+        if ($this->id && $userSessionService->getIsAdmin()) {
             $view = Craft::$app->getView();
-            $view->registerJsWithVars(fn($id, $params) => <<<JS
-$('#' + $id).on('click', () => {
-  new Craft.CpScreenSlideout('fields/edit-field', {
-    params: $params,
+
+            if (Craft::$app->getConfig()->getGeneral()->allowAdminChanges) {
+                // Edit field
+                $editId = sprintf('action-edit-%s', mt_rand());
+                $items[] = [
+                    'id' => $editId,
+                    'icon' => 'gear',
+                    'label' => Craft::t('app', 'Field settings'),
+                ];
+                $view->registerJsWithVars(fn($id, $params) => <<<JS
+(() => {
+  $('#' + $id).on('click', () => {
+    new Craft.CpScreenSlideout('fields/edit-field', {
+      params: $params,
+    });
   });
-});
+})();
 JS, [
-                $view->namespaceInputId($editId),
-                ['fieldId' => $this->id],
-            ]);
+                    $view->namespaceInputId($editId),
+                    ['fieldId' => $this->id],
+                ]);
+            }
+
+            // Copy field handle
+            if (!$userSessionService->getIdentity()->getPreference('showFieldHandles')) {
+                $copyId = sprintf('action-copy-handle-%s', mt_rand());
+                $items[] = [
+                    'id' => $copyId,
+                    'icon' => 'clipboard',
+                    'label' => Craft::t('app', 'Copy field handle'),
+                ];
+                $view->registerJsWithVars(fn($id, $attribute) => <<<JS
+(() => {
+  $('#' + $id).on('click', () => {
+    Craft.ui.createCopyTextPrompt({
+      label: Craft.t('app', 'Field Handle'),
+      value: $attribute,
+    });
+  });
+})();
+JS, [
+                    $view->namespaceInputId($copyId),
+                    $this->handle,
+                ]);
+            }
         }
 
         return $items;
@@ -741,12 +767,7 @@ JS, [
     public function getStaticHtml(mixed $value, ElementInterface $element): string
     {
         // Just return the input HTML with disabled inputs by default
-        Craft::$app->getView()->startJsBuffer();
-        $inputHtml = $this->getInputHtml($value, $element);
-        $inputHtml = preg_replace('/<(?:input|textarea|select)\s[^>]*/i', '$0 disabled', $inputHtml);
-        Craft::$app->getView()->clearJsBuffer();
-
-        return $inputHtml;
+        return Html::disableInputs(fn() => $this->getInputHtml($value, $element));
     }
 
     /**
@@ -944,6 +965,15 @@ JS, [
     }
 
     /**
+     * @see CrossSiteCopyableFieldInterface::copyCrossSiteValue()
+     * @since 5.6.0
+     */
+    public function copyCrossSiteValue(ElementInterface $from, ElementInterface $to): void
+    {
+        $this->copyValue($from, $to);
+    }
+
+    /**
      * @inheritdoc
      */
     public function getElementConditionRuleType(): array|string|null
@@ -967,7 +997,7 @@ JS, [
 
     private function _valueSql(?string $key): ?string
     {
-        $dbType = static::dbType();
+        $dbType = $this->dbTypeForValueSql();
 
         if ($dbType === null) {
             return null;
@@ -1040,6 +1070,18 @@ JS, [
         }
 
         return $sql;
+    }
+
+    /**
+     * Returns the DB data type(s) that this field will store within the `elements_sites.content` column.
+     *
+     * @see dbType()
+     * @return string|string[]|null The data type(s).
+     * @since 5.6.0
+     */
+    protected function dbTypeForValueSql(): array|string|null
+    {
+        return static::dbType();
     }
 
     /**

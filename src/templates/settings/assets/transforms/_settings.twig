@@ -1,6 +1,7 @@
 {% extends '_layouts/cp.twig' %}
 
-{% set fullPageForm = true %}
+{% set readOnly = readOnly ?? false %}
+{% set fullPageForm = not readOnly %}
 
 {% set crumbs = [
     { label: "Settings"|t('app'), url: url('settings') },
@@ -19,215 +20,231 @@
 
 {% import '_includes/forms.twig' as forms %}
 
+{% if readOnly %}
+    {% set contentNotice = readOnlyNotice() %}
+{% endif %}
 
 {% block content %}
+    {% if not readOnly %}
         {{ actionInput('image-transforms/save') }}
         {{ redirectInput('settings/assets/transforms') }}
 
         {% if transform.id %}{{ hiddenInput('transformId', transform.id) }}{% endif %}
+    {% endif %}
 
-        {{ forms.textField({
-            first: true,
-            label: "Name"|t('app'),
-            id: 'name',
-            name: 'name',
-            value: transform.name,
-            errors: transform.getErrors('name'),
-            autofocus: true,
-            required: true,
-        }) }}
+    {{ forms.textField({
+        first: true,
+        label: "Name"|t('app'),
+        id: 'name',
+        name: 'name',
+        value: transform.name,
+        errors: transform.getErrors('name'),
+        autofocus: true,
+        required: true,
+        disabled: readOnly,
+    }) }}
 
-        {{ forms.textField({
-            label: "Handle"|t('app'),
-            id: "handle",
-            name: "handle",
-            class: 'code',
-            autocorrect: false,
-            autocapitalize: false,
-            value: transform.handle,
-            errors: transform.getErrors('handle'),
-            required: true,
-        }) }}
+    {{ forms.textField({
+        label: "Handle"|t('app'),
+        id: "handle",
+        name: "handle",
+        class: 'code',
+        autocorrect: false,
+        autocapitalize: false,
+        value: transform.handle,
+        errors: transform.getErrors('handle'),
+        required: true,
+        disabled: readOnly,
+    }) }}
 
-        {% set modeInput %}
-            <div id="mode">
-                <label id="mode-crop">
-                    <input type="radio" name="mode" value="crop"{% if transform.mode == 'crop' %} checked{% endif %}>
-                    {{ "Crop"|t('app') }}
-                </label>
+    {% set modeInput %}
+        <div id="mode">
+            <label id="mode-crop">
+                <input type="radio" name="mode" value="crop"{% if transform.mode == 'crop' %} checked{% endif %}{% if readOnly %} disabled{% endif %}>
+                {{ "Crop"|t('app') }}
+            </label>
 
-                <label id="mode-fit">
-                    <input type="radio" name="mode" value="fit"{% if transform.mode == 'fit' %} checked{% endif %}>
-                    {{ "Fit"|t('app') }}
-                </label>
+            <label id="mode-fit">
+                <input type="radio" name="mode" value="fit"{% if transform.mode == 'fit' %} checked{% endif %}{% if readOnly %} disabled{% endif %}>
+                {{ "Fit"|t('app') }}
+            </label>
 
-                <label id="mode-letterbox">
-                    <input type="radio" name="mode" value="letterbox"{% if transform.mode == 'letterbox' %} checked{% endif %}>
-                    {{ "Letterbox"|t('app') }}
-                </label>
+            <label id="mode-letterbox">
+                <input type="radio" name="mode" value="letterbox"{% if transform.mode == 'letterbox' %} checked{% endif %}{% if readOnly %} disabled{% endif %}>
+                {{ "Letterbox"|t('app') }}
+            </label>
 
-                <label id="mode-stretch">
-                    <input type="radio" name="mode" value="stretch"{% if transform.mode == 'stretch' %} checked{% endif %}>
-                    {{ "Stretch"|t('app') }}
-                </label>
-            </div>
-        {% endset %}
-
-        {{ forms.field({
-            label: "Mode"|t('app')
-        }, modeInput) }}
-
-        <div id="fill-color" class="field {% if transform.mode != 'letterbox' or transform.fill is null %}hidden{% endif %}">
-            {{ forms.colorField({
-                label: 'Fill Color',
-                name: 'fill',
-                value: transform.mode == 'letterbox' and transform.fill != 'transparent' ? transform.fill,
-                errors: transform.getErrors('fill'),
-            }) }}
+            <label id="mode-stretch">
+                <input type="radio" name="mode" value="stretch"{% if transform.mode == 'stretch' %} checked{% endif %}{% if readOnly %} disabled{% endif %}>
+                {{ "Stretch"|t('app') }}
+            </label>
         </div>
+    {% endset %}
 
-        <div id="letterbox-position-container"{% if transform.mode != 'letterbox' %} class="hidden"{% endif %}>
-            {{ forms.selectField({
-                label: "Image Position"|t('app'),
-                id: 'position',
-                name: 'position',
-                options: {
-                    'top-left': "Top-Left"|t('app'),
-                    'top-center': "Top-Center"|t('app'),
-                    'top-right': "Top-Right"|t('app'),
-                    'center-left': "Center-Left"|t('app'),
-                    'center-center': "Center-Center"|t('app'),
-                    'center-right': "Center-Right"|t('app'),
-                    'bottom-left': "Bottom-Left"|t('app'),
-                    'bottom-center': "Bottom-Center"|t('app'),
-                    'bottom-right': "Bottom-Right"|t('app')
-                },
-                value: transform.mode != 'letterbox' ? transform.position : 'center-center'
-            }) }}
-        </div>
+    {{ forms.field({
+        label: "Mode"|t('app')
+    }, modeInput) }}
 
-        <div id="position-container"{% if transform.mode in ['stretch', 'letterbox'] %} class="hidden"{% endif %}>
-            {{ forms.selectField({
-                label: "Default Focal Point"|t('app'),
-                id: 'position',
-                name: 'position',
-                options: {
-                    'top-left': "Top-Left"|t('app'),
-                    'top-center': "Top-Center"|t('app'),
-                    'top-right': "Top-Right"|t('app'),
-                    'center-left': "Center-Left"|t('app'),
-                    'center-center': "Center-Center"|t('app'),
-                    'center-right': "Center-Right"|t('app'),
-                    'bottom-left': "Bottom-Left"|t('app'),
-                    'bottom-center': "Bottom-Center"|t('app'),
-                    'bottom-right': "Bottom-Right"|t('app')
-                },
-                value: transform.mode in ['crop', 'fit'] ? transform.position : 'center-center'
-            }) }}
-        </div>
-
-        {{ forms.textField({
-            label: "Width"|t('app'),
-            id: "width",
-            name: "width",
-            size: 5,
-            value: transform.width,
-            errors: transform.getErrors('width'),
+    <div id="fill-color" class="field {% if transform.mode != 'letterbox' or transform.fill is null %}hidden{% endif %}">
+        {{ forms.colorField({
+            label: 'Fill Color',
+            name: 'fill',
+            value: transform.mode == 'letterbox' and transform.fill != 'transparent' ? transform.fill,
+            errors: transform.getErrors('fill'),
+            disabled: readOnly,
         }) }}
+    </div>
 
-        {{ forms.textField({
-            label: "Height"|t('app'),
-            id: "height",
-            name: "height",
-            size: 5,
-            value: transform.height,
-            errors: transform.getErrors('height'),
+    <div id="letterbox-position-container"{% if transform.mode != 'letterbox' %} class="hidden"{% endif %}>
+        {{ forms.selectField({
+            label: "Image Position"|t('app'),
+            id: 'position',
+            name: 'position',
+            options: {
+                'top-left': "Top-Left"|t('app'),
+                'top-center': "Top-Center"|t('app'),
+                'top-right': "Top-Right"|t('app'),
+                'center-left': "Center-Left"|t('app'),
+                'center-center': "Center-Center"|t('app'),
+                'center-right': "Center-Right"|t('app'),
+                'bottom-left': "Bottom-Left"|t('app'),
+                'bottom-center': "Bottom-Center"|t('app'),
+                'bottom-right': "Bottom-Right"|t('app')
+            },
+            value: transform.mode != 'letterbox' ? transform.position : 'center-center',
+            disabled: readOnly,
         }) }}
+    </div>
 
-        {{ forms.lightswitchField({
-            label: 'Allow Upscaling'|t('app'),
-            id: 'upscale',
-            name: 'upscale',
-            on: transform.upscale ?? craft.app.config.general.upscaleImages,
-            errors: transform.getErrors('upscale'),
+    <div id="position-container"{% if transform.mode in ['stretch', 'letterbox'] %} class="hidden"{% endif %}>
+        {{ forms.selectField({
+            label: "Default Focal Point"|t('app'),
+            id: 'position',
+            name: 'position',
+            options: {
+                'top-left': "Top-Left"|t('app'),
+                'top-center': "Top-Center"|t('app'),
+                'top-right': "Top-Right"|t('app'),
+                'center-left': "Center-Left"|t('app'),
+                'center-center': "Center-Center"|t('app'),
+                'center-right': "Center-Right"|t('app'),
+                'bottom-left': "Bottom-Left"|t('app'),
+                'bottom-center': "Bottom-Center"|t('app'),
+                'bottom-right': "Bottom-Right"|t('app')
+            },
+            value: transform.mode in ['crop', 'fit'] ? transform.position : 'center-center',
+            disabled: readOnly,
         }) }}
+    </div>
 
-        {% embed '_includes/forms/field.twig' with {
-            label: 'Quality'|t('app'),
-            errors: transform.getErrors('quality'),
-        } %}
-            {% block input %}
-                {% import '_includes/forms.twig' as forms %}
-                <div class="flex flex-nowrap">
-                    <div>
-                        {{ forms.select({
-                            id: 'quality-picker',
-                            options: [
-                                {label: 'Auto'|t('app'), value: 0},
-                            ]|merge(qualityPickerOptions),
-                            value: qualityPickerValue,
-                            describedBy: describedBy,
-                        }) }}
-                    </div>
-                    <div class="flex-grow">
-                        {{ forms.text({
-                            id: 'quality',
-                            class: [
-                                'ltr',
-                                transform.quality == 0 ? 'hidden',
-                            ]|filter,
-                            name: 'quality',
-                            value: transform.quality,
-                            size: 5,
-                            type: 'number',
-                            min: 1,
-                            max: 100,
-                            describedBy: describedBy,
-                        }) }}
-                    </div>
+    {{ forms.textField({
+        label: "Width"|t('app'),
+        id: "width",
+        name: "width",
+        size: 5,
+        value: transform.width,
+        errors: transform.getErrors('width'),
+        disabled: readOnly,
+    }) }}
+
+    {{ forms.textField({
+        label: "Height"|t('app'),
+        id: "height",
+        name: "height",
+        size: 5,
+        value: transform.height,
+        errors: transform.getErrors('height'),
+        disabled: readOnly,
+    }) }}
+
+    {{ forms.lightswitchField({
+        label: 'Allow Upscaling'|t('app'),
+        id: 'upscale',
+        name: 'upscale',
+        on: transform.upscale ?? craft.app.config.general.upscaleImages,
+        errors: transform.getErrors('upscale'),
+        disabled: readOnly,
+    }) }}
+
+    {% embed '_includes/forms/field.twig' with {
+        label: 'Quality'|t('app'),
+        errors: transform.getErrors('quality'),
+    } %}
+        {% block input %}
+            {% import '_includes/forms.twig' as forms %}
+            <div class="flex flex-nowrap">
+                <div>
+                    {{ forms.select({
+                        id: 'quality-picker',
+                        options: [
+                            {label: 'Auto'|t('app'), value: 0},
+                        ]|merge(qualityPickerOptions),
+                        value: qualityPickerValue,
+                        describedBy: describedBy,
+                        disabled: readOnly,
+                    }) }}
                 </div>
-            {% endblock %}
-        {% endembed %}
+                <div class="flex-grow">
+                    {{ forms.text({
+                        id: 'quality',
+                        class: [
+                            'ltr',
+                            transform.quality == 0 ? 'hidden',
+                        ]|filter,
+                        name: 'quality',
+                        value: transform.quality,
+                        size: 5,
+                        type: 'number',
+                        min: 1,
+                        max: 100,
+                        describedBy: describedBy,
+                        disabled: readOnly,
+                    }) }}
+                </div>
+            </div>
+        {% endblock %}
+    {% endembed %}
 
-        {{ forms.selectField({
-            label: "Interlacing"|t('app'),
-            id: "interlace",
-            name: "interlace",
-            options: [
-                {label: 'None'|t('app'), value: 'none'},
-                {label: 'Line'|t('app'), value: 'line'},
-                {label: 'Plane'|t('app'), value: 'plane'},
-                {label: 'Partition'|t('app'), value: 'partition'},
-            ],
-            value: transform.interlace ?? 'none',
-            errors: transform.getErrors('interlace'),
-        }) }}
+    {{ forms.selectField({
+        label: "Interlacing"|t('app'),
+        id: "interlace",
+        name: "interlace",
+        options: [
+            {label: 'None'|t('app'), value: 'none'},
+            {label: 'Line'|t('app'), value: 'line'},
+            {label: 'Plane'|t('app'), value: 'plane'},
+            {label: 'Partition'|t('app'), value: 'partition'},
+        ],
+        value: transform.interlace ?? 'none',
+        errors: transform.getErrors('interlace'),
+        disabled: readOnly,
+    }) }}
 
-        {% set formatOptions = [
-            {label: 'Auto', value: null},
-            {label: 'jpg', value: 'jpg'},
-            {label: 'png', value: 'png'},
-            {label: 'gif', value: 'gif'},
-        ] %}
+    {% set formatOptions = [
+        {label: 'Auto', value: null},
+        {label: 'jpg', value: 'jpg'},
+        {label: 'png', value: 'png'},
+        {label: 'gif', value: 'gif'},
+    ] %}
 
-        {% if transform.format == 'webp' or craft.app.images.supportsWebP %}
-            {% set formatOptions = formatOptions|merge([{label: 'webp', value: 'webp'}]) %}
-        {% endif %}
+    {% if transform.format == 'webp' or craft.app.images.supportsWebP %}
+        {% set formatOptions = formatOptions|merge([{label: 'webp', value: 'webp'}]) %}
+    {% endif %}
 
-        {% if transform.format == 'avif' or craft.app.images.supportsAvif %}
-            {% set formatOptions = formatOptions|merge([{label: 'avif', value: 'avif'}]) %}
-        {% endif %}
+    {% if transform.format == 'avif' or craft.app.images.supportsAvif %}
+        {% set formatOptions = formatOptions|merge([{label: 'avif', value: 'avif'}]) %}
+    {% endif %}
 
-        {{ forms.selectField({
-            label: "Image Format"|t('app'),
-            id: "format",
-            name: "format",
-            instructions: "The image format that transformed images should use."|t('app'),
-            value: transform.format,
-            errors: transform.getErrors('format'),
-            options: formatOptions,
-        }) }}
-
+    {{ forms.selectField({
+        label: "Image Format"|t('app'),
+        id: "format",
+        name: "format",
+        instructions: "The image format that transformed images should use."|t('app'),
+        value: transform.format,
+        errors: transform.getErrors('format'),
+        options: formatOptions,
+        disabled: readOnly,
+    }) }}
 
 {% endblock %}
 

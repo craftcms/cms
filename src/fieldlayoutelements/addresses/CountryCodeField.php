@@ -7,6 +7,7 @@
 
 namespace craft\fieldlayoutelements\addresses;
 
+use CommerceGuys\Addressing\Country\Country;
 use Craft;
 use craft\base\ElementInterface;
 use craft\elements\Address;
@@ -112,5 +113,22 @@ class CountryCodeField extends BaseNativeField
                 'class' => ['spinner', 'hidden'],
             ]) .
             Html::endTag('div');
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function previewPlaceholderHtml(mixed $value, ?ElementInterface $element): string
+    {
+        if (!$value) {
+            $countries = Craft::$app->getAddresses()->getCountryRepository()->getList(Craft::$app->language);
+            $value = $countries['US'];
+        } else {
+            if ($value instanceof Country) {
+                $value = $value->getName();
+            }
+        }
+
+        return $value;
     }
 }

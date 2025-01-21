@@ -241,6 +241,12 @@ trait ElementTrait
     public bool $previewing = false;
 
     /**
+     * @var string|null The view mode used to show this element (e.g. `structure`, `table`, `thumbs`, `cards`).
+     * @since 5.6.0
+     */
+    public ?string $viewMode = null;
+
+    /**
      * @var bool Whether the element should definitely be saved, if it’s a nested element being considered
      * for saving by [[NestedElementManager]].
      * @since 5.0.0

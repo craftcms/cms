@@ -22,6 +22,11 @@ class SectionConditionRule extends BaseMultiSelectConditionRule implements Eleme
     /**
      * @inheritdoc
      */
+    protected bool $reloadOnOperatorChange = true;
+
+    /**
+     * @inheritdoc
+     */
     public function getLabel(): string
     {
         return Craft::t('app', 'Section');
@@ -33,6 +38,17 @@ class SectionConditionRule extends BaseMultiSelectConditionRule implements Eleme
     public function getExclusiveQueryParams(): array
     {
         return ['section', 'sectionId'];
+    }
+
+    /**
+     * @inheritdoc
+     */
+    protected function operators(): array
+    {
+        return [
+            ...parent::operators(),
+            self::OPERATOR_NOT_EMPTY,
+        ];
     }
 
     /**
@@ -50,8 +66,12 @@ class SectionConditionRule extends BaseMultiSelectConditionRule implements Eleme
     public function modifyQuery(ElementQueryInterface $query): void
     {
         /** @var EntryQuery $query */
-        $sections = Craft::$app->getEntries();
-        $query->sectionId($this->paramValue(fn($uid) => $sections->getSectionByUid($uid)->id ?? null));
+        if ($this->operator === self::OPERATOR_NOT_EMPTY) {
+            $query->section('*');
+        } else {
+            $sections = Craft::$app->getEntries();
+            $query->sectionId($this->paramValue(fn($uid) => $sections->getSectionByUid($uid)->id ?? null));
+        }
     }
 
     /**
@@ -60,6 +80,10 @@ class SectionConditionRule extends BaseMultiSelectConditionRule implements Eleme
     public function matchElement(ElementInterface $element): bool
     {
         /** @var Entry $element */
+        if ($this->operator === self::OPERATOR_NOT_EMPTY) {
+            return $element->getSection() !== null;
+        }
+
         return $this->matchValue($element->getSection()?->uid);
     }
 }

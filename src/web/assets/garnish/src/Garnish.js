@@ -962,6 +962,19 @@ Garnish = $.extend(Garnish, {
     callback();
     Garnish.resizeEventsMuted = resizeEventsMuted;
   },
+
+  /**
+   * Ensures that the given number is within a min/max range, and returns it.
+   *
+   * @param {number} num
+   * @param {number} min
+   * @param {number} max
+   */
+  within: function (num, min, max) {
+    num = Math.max(num, min);
+    num = Math.min(num, max);
+    return num;
+  },
 });
 
 Object.assign(Garnish, {

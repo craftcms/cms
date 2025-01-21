@@ -190,10 +190,10 @@ $menuBorderRadius: $mediumBorderRadius;
     sans-serif;
 }
 
-@mixin fixed-width-font {
+@mixin fixed-width-font($size: 0.9em) {
   font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, Courier,
     monospace;
-  font-size: 0.9em !important;
+  font-size: $size !important;
 }
 
 @function toRem($values...) {
@@ -312,10 +312,8 @@ $menuBorderRadius: $mediumBorderRadius;
 }
 
 @mixin pane {
-  background: $white;
-  box-shadow:
-    0 0 0 1px $grey200,
-    0 2px 12px color.adjust($grey200, $alpha: -0.5);
+  background: var(--pane-bg);
+  box-shadow: var(--pane-shadow);
 
   &:focus {
     box-shadow: var(--focus-ring);
@@ -323,9 +321,10 @@ $menuBorderRadius: $mediumBorderRadius;
 }
 
 @mixin modal {
-  border-radius: $largeBorderRadius;
-  background-color: $white;
-  box-shadow: 0 25px 100px color.adjust($grey900, $alpha: -0.5) !important;
+  border: var(--modal-border);
+  border-radius: var(--modal-border-radius);
+  background-color: var(--modal-bg);
+  box-shadow: var(--modal-shadow) !important;
 }
 
 @mixin light-on-dark-text() {
@@ -346,13 +345,7 @@ $menuBorderRadius: $mediumBorderRadius;
 }
 
 @mixin dark-btn-light-bg-focus-ring() {
-  --focus-ring: 0 0 0 1px
-      hsl(
-        #{color.hue($blue200)},
-        #{color.saturation($blue200)},
-        #{color.lightness($blue200)}
-      ),
-    0 0 0 3px hsla(var(--dark-focus-hsl), 0.8);
+  --focus-ring: var(--focus-ring-outset);
 }
 
 @mixin custom-color-focus-ring($primary, $secondary: null) {
@@ -521,7 +514,7 @@ $menuBorderRadius: $mediumBorderRadius;
 
 @mixin header-btn {
   width: calc(30rem / 16);
-  min-height: calc(30rem / 16);
+  height: calc(30rem / 16);
   padding-left: 0;
   padding-right: 0;
 
@@ -592,9 +585,9 @@ $menuBorderRadius: $mediumBorderRadius;
 }
 
 @mixin input-styles {
-  border-radius: $smallBorderRadius;
-  border: 1px solid color.adjust($inputColor, $alpha: -0.75);
-  background-color: hsl(212, 50%, 99%);
+  border-radius: var(--input-border-radius);
+  border: var(--input-border);
+  background: var(--input-bg);
   background-clip: padding-box;
 }
 

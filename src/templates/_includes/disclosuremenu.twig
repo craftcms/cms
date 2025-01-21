@@ -1,6 +1,7 @@
 {% set id = id ?? "menu-#{random()}" %}
 {% set withButton = withButton ?? false %}
 {% set buttonSpinner = buttonSpinner ?? false %}
+{% set disabled = disabled ?? false %}
 
 {% set hasSelected = items|map(i => i.items ?? [i])|flatten(1)|contains('selected') %}
 
@@ -38,6 +39,7 @@
         sel: selected,
         error: item.destructive ?? false,
         formsubmit: item.action ?? false,
+        disabled: item.disabled ?? false,
       }|filter|keys,
       href: type == 'button' ? null : url(item.url),
       data: {
@@ -112,6 +114,7 @@
     data: {
       'disclosure-trigger': true,
     },
+    disabled: disabled ?? false,
   }|merge(buttonAttributes ?? {}, recursive=true) %}
     {%- apply spaceless %}
       {% if buttonSpinner %}
@@ -120,7 +123,7 @@
       {{ (buttonLabel or buttonHtml) ? tag('div', {
         class: 'label',
         text: buttonLabel ?? null,
-        html: buttonHtml ?? null
+        html: buttonHtml ?? null,
       }) }}
       {% if buttonSpinner %}
         <div class="spinner spinner-absolute">

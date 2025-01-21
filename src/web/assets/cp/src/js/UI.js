@@ -39,6 +39,11 @@ Craft.ui = {
     if (config.spinner) {
       $btn.append($('<div class="spinner spinner-absolute"/>'));
     }
+
+    if (config.disabled) {
+      $btn.attr('disabled', 'disabled');
+    }
+
     return $btn;
   },
 
@@ -191,9 +196,7 @@ Craft.ui = {
     let id = config.id || 'copytext' + Math.floor(Math.random() * 1000000000);
     let value = config.value;
 
-    const $wrapper = $('<div/>', {
-      class: 'copytextbtn-wrapper',
-    });
+    const $wrapper = $('<craft-copy-attribute/>');
 
     let $btn = $('<div/>', {
       id,
@@ -207,50 +210,7 @@ Craft.ui = {
       $btn.addClass(config.class);
     }
 
-    let $input = $('<input/>', {
-      value,
-      readonly: true,
-      size: value.length,
-      tabindex: '-1',
-      'aria-hidden': 'true',
-      class: 'visually-hidden',
-    }).insertBefore($btn);
-
-    const $value = $('<span/>', {
-      text: value,
-      class: 'copytextbtn__value',
-    }).appendTo($btn);
-
-    $('<span/>', {
-      class: 'visually-hidden',
-      text: Craft.t('app', 'Copy to clipboard'),
-    }).appendTo($btn);
-
-    let $icon = $('<span/>', {
-      class: 'copytextbtn__icon',
-      'data-icon': 'clipboard',
-      'aria-hidden': 'true',
-    }).appendTo($btn);
-
-    const copyValue = function () {
-      $input[0].select();
-      document.execCommand('copy');
-      Craft.cp.displayNotice(Craft.t('app', 'Copied to clipboard.'));
-      $btn.trigger('copy');
-      $input[0].setSelectionRange(0, 0);
-      $btn.focus();
-    };
-
-    $btn.on('activate', () => {
-      copyValue();
-    });
-
-    $btn.on('keydown', (ev) => {
-      if (ev.keyCode === Garnish.SPACE_KEY) {
-        copyValue();
-        ev.preventDefault();
-      }
-    });
+    $btn.text(value);
 
     return $wrapper;
   },
@@ -537,6 +497,7 @@ Craft.ui = {
             value: allValue,
             checked: allChecked,
             autofocus: config.autofocus,
+            disabled: config.disabled,
           })
         );
 
@@ -582,7 +543,7 @@ Craft.ui = {
         name: config.name ? Craft.ensureEndsWith(config.name, '[]') : null,
         value: option.value,
         checked: allChecked || values.includes(option.value),
-        disabled: allChecked,
+        disabled: allChecked || config.disabled,
       }).appendTo($option);
     }
 
@@ -1121,6 +1082,97 @@ Craft.ui = {
     return $btn;
   },
 
+  /**
+   * Updates an input using the timepicker plugin for accessibility.
+   *
+   * @param {Object} $input - The input element
+   */
+  remediateTimepickerA11y: function (input) {
+    const $input = $(input);
+    let $listWrapper = null;
+    let listboxObserver = null;
+    const id = $input.attr('id');
+    const wrapperId = `${id}-wrapper-${Math.floor(Math.random() * 1000000000)}`;
+
+    const getInstance = () => {
+      return $input[0]?.timepickerObj;
+    };
+
+    const getTimepickerListbox = () => {
+      const instance = getInstance();
+      return $(instance.list);
+    };
+
+    getAccessibleName = () => {
+      return $input.attr('aria-label');
+    };
+
+    const callback = (mutationList, observer) => {
+      for (const mutation of mutationList) {
+        const {target} = mutation;
+
+        if ($(target).hasClass('ui-timepicker-selected')) {
+          const optionId = target.id;
+          $input.attr('aria-activedescendant', optionId);
+          $(target).attr('aria-selected', 'true');
+        } else {
+          $(target).attr('aria-selected', 'false');
+        }
+      }
+    };
+
+    if (!getInstance()) return;
+
+    // Add aria-controls to input
+    $input.attr('aria-controls', wrapperId);
+
+    $input.on('showTimepicker', () => {
+      $input.attr('aria-expanded', 'true');
+      $listWrapper = getTimepickerListbox();
+
+      setTimeout(() => {
+        $listWrapper.attr({
+          role: 'listbox',
+          id: wrapperId,
+          'aria-label': getAccessibleName(),
+        });
+
+        // Apply option roles to child elements
+        $listWrapper.find('li').each(function (index) {
+          const isSelected = $(this).hasClass('ui-timepicker-selected');
+          const optionId = `${id}-option-${index}`;
+
+          $(this).attr({
+            id: optionId,
+            role: 'option',
+            'aria-selected': isSelected,
+          });
+
+          if (isSelected) {
+            $input.attr('aria-activedescendant', optionId);
+          }
+        });
+
+        // Watch for updates to the listbox
+        if (!listboxObserver) {
+          listboxObserver = new MutationObserver(callback);
+        }
+
+        listboxObserver.observe($listWrapper[0], {
+          subtree: true,
+          attributeFilter: ['class'],
+        });
+      }, 0);
+    });
+
+    $input.on('hideTimepicker', () => {
+      $input.attr('aria-expanded', 'false');
+      if (listboxObserver) {
+        listboxObserver.disconnect();
+      }
+    });
+  },
+
   createTimeInput: function (config) {
     const isMobile = Garnish.isMobileBrowser();
     const id =
@@ -1166,6 +1218,7 @@ Craft.ui = {
       $input.datetimeinput();
     } else {
       $input.timepicker(Craft.timepickerOptions);
+      this.remediateTimepickerA11y($input);
       if (value) {
         $input.timepicker(
           'setTime',

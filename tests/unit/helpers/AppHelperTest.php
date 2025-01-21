@@ -369,18 +369,6 @@ class AppHelperTest extends TestCase
     }
 
     /**
-     *
-     */
-    public function testViewConfigIndexes(): void
-    {
-        $this->setInaccessibleProperty(Craft::$app->getRequest(), '_isCpRequest', true);
-        $this->testConfigIndexes('viewConfig', ['class', 'registeredAssetBundles', 'registeredJsFiles']);
-
-        $this->setInaccessibleProperty(Craft::$app->getRequest(), '_isCpRequest', false);
-        $this->testConfigIndexes('viewConfig', ['class']);
-    }
-
-    /**
      * @return array
      */
     public static function envConfigDataProvider(): array

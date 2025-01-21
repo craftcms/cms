@@ -22,48 +22,50 @@
         this.$container = $('<div/>', {
           class: 'slide-picker',
           role: 'slider',
-          tabindex: 0,
+          tabindex: this.settings.readOnly ? -1 : 0,
         });
 
         this.refresh();
         this.setValue(value, false);
 
-        this.addListener(this.$container, 'keydown', (ev) => {
-          switch (ev.keyCode) {
-            case Garnish.UP_KEY:
-              this.setValue(this.value + this.settings.step);
-              ev.preventDefault();
-              break;
-            case Garnish.DOWN_KEY:
-              this.setValue(this.value - this.settings.step);
-              ev.preventDefault();
-              break;
-            case Garnish.RIGHT_KEY:
-              if (Craft.orientation === 'ltr') {
+        if (!this.settings.readOnly) {
+          this.addListener(this.$container, 'keydown', (ev) => {
+            switch (ev.keyCode) {
+              case Garnish.UP_KEY:
                 this.setValue(this.value + this.settings.step);
-              } else {
+                ev.preventDefault();
+                break;
+              case Garnish.DOWN_KEY:
                 this.setValue(this.value - this.settings.step);
-              }
-              ev.preventDefault();
-              break;
-            case Garnish.LEFT_KEY:
-              if (Craft.orientation === 'ltr') {
-                this.setValue(this.value - this.settings.step);
-              } else {
-                this.setValue(this.value + this.settings.step);
-              }
-              ev.preventDefault();
-              break;
-            case Garnish.HOME_KEY:
-              this.setValue(this.min);
-              ev.preventDefault();
-              break;
-            case Garnish.END_KEY:
-              this.setValue(this.max);
-              ev.preventDefault();
-              break;
-          }
-        });
+                ev.preventDefault();
+                break;
+              case Garnish.RIGHT_KEY:
+                if (Craft.orientation === 'ltr') {
+                  this.setValue(this.value + this.settings.step);
+                } else {
+                  this.setValue(this.value - this.settings.step);
+                }
+                ev.preventDefault();
+                break;
+              case Garnish.LEFT_KEY:
+                if (Craft.orientation === 'ltr') {
+                  this.setValue(this.value - this.settings.step);
+                } else {
+                  this.setValue(this.value + this.settings.step);
+                }
+                ev.preventDefault();
+                break;
+              case Garnish.HOME_KEY:
+                this.setValue(this.min);
+                ev.preventDefault();
+                break;
+              case Garnish.END_KEY:
+                this.setValue(this.max);
+                ev.preventDefault();
+                break;
+            }
+          });
+        }
       },
 
       refresh: function () {
@@ -183,6 +185,7 @@
         step: 10,
         valueLabel: null,
         onChange: $.noop,
+        readOnly: false,
       },
     }
   );

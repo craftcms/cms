@@ -1,5 +1,6 @@
 {% extends "settings/assets/_layout" %}
 {% set selectedNavItem = 'volumes' %}
+{% set readOnly = not craft.app.config.general.allowAdminChanges %}
 
 {% do view.registerAssetBundle('craft\\web\\assets\\admintable\\AdminTableAsset') -%}
 
@@ -10,12 +11,18 @@
     "No volumes exist yet."
 ]) %}
 
+{% if readOnly %}
+    {% set contentNotice = readOnlyNotice() %}
+{% endif %}
+
 {% block content %}
     <div id="volumes-vue-admin-table"></div>
 
-    <div class="buttons">
-        <a class="btn submit add icon" href="{{ url('settings/assets/volumes/new') }}">{{ "New volume"|t('app') }}</a>
-    </div>
+    {% if not readOnly %}
+        <div class="buttons">
+            <a class="btn submit add icon" href="{{ url('settings/assets/volumes/new') }}">{{ "New volume"|t('app') }}</a>
+        </div>
+    {% endif %}
 {% endblock %}
 
 {% set tableData = [] %}
@@ -41,12 +48,17 @@ var columns = [
     { name: '__slot:handle', title: Craft.t('app', 'Handle') },
 ];
 
-new Craft.VueAdminTable({
+let config = {
     columns: columns,
     container: '#volumes-vue-admin-table',
-    deleteAction: 'volumes/delete-volume',
     emptyMessage: Craft.t('app', 'No volumes exist yet.'),
-    reorderAction: '{{ volumes|length > 1 ? 'volumes/reorder-volumes' : ''}}',
     tableData: {{ tableData|json_encode|raw }}
-});
+}
+
+{% if not readOnly %}
+    config['deleteAction'] = 'volumes/delete-volume';
+    config['reorderAction'] = '{{ volumes|length > 1 ? 'volumes/reorder-volumes' : ''}}';
+{% endif %}
+
+new Craft.VueAdminTable(config);
 {% endjs %}

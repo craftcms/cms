@@ -90,4 +90,12 @@ class TitleField extends TextField
     {
         return Craft::t('app', 'Title');
     }
+
+    /**
+     * @inheritdoc
+     */
+    public function isCrossSiteCopyable(ElementInterface $element): bool
+    {
+        return true;
+    }
 }

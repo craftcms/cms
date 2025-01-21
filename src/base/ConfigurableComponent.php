@@ -8,8 +8,10 @@
 namespace craft\base;
 
 use BackedEnum;
+use Craft;
 use craft\events\DefineValueEvent;
 use craft\helpers\DateTimeHelper;
+use craft\helpers\Html;
 use DateTime;
 use ReflectionClass;
 use ReflectionProperty;
@@ -80,5 +82,14 @@ abstract class ConfigurableComponent extends Component implements ConfigurableCo
     public function getSettingsHtml(): ?string
     {
         return null;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getReadOnlySettingsHtml(): ?string
+    {
+        // Just return the settings HTML with disabled inputs by default
+        return Html::disableInputs(fn() => $this->getSettingsHtml());
     }
 }

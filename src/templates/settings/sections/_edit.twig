@@ -1,5 +1,7 @@
 {% extends "_layouts/cp" %}
 
+{% set readOnly = readOnly ?? false %}
+
 {% set crumbs = [
     {
         label: 'Settings'|t('app'),
@@ -12,7 +14,7 @@
 ] %}
 
 {% set selectedTab = 'settings' %}
-{% set fullPageForm = true %}
+{% set fullPageForm = not readOnly %}
 {% set formActions = [
     {
         label: 'Save and continue editing'|t('app'),
@@ -26,12 +28,17 @@
 
 {% set headlessMode = craft.app.config.general.headlessMode %}
 
+{% if readOnly %}
+    {% set contentNotice = readOnlyNotice() %}
+{% endif %}
 
 {% block content %}
-    {{ actionInput('sections/save-section') }}
-    {{ redirectInput('settings/sections') }}
+    {% if not readOnly %}
+        {{ actionInput('sections/save-section') }}
+        {{ redirectInput('settings/sections') }}
 
-    {% if section.id %}{{ hiddenInput('sectionId', section.id) }}{% endif %}
+        {% if section.id %}{{ hiddenInput('sectionId', section.id) }}{% endif %}
+    {% endif %}
 
     {{ forms.textField({
         first: true,
@@ -43,6 +50,7 @@
         errors: section.getErrors('name'),
         autofocus: true,
         required: true,
+        disabled: readOnly,
     }) }}
 
     {{ forms.textField({
@@ -55,14 +63,16 @@
         autocapitalize: false,
         value: section.handle,
         errors: section.getErrors('handle'),
-        required: true
+        required: true,
+        disabled: readOnly,
     }) }}
 
     {{ forms.lightswitchField({
         label: 'Enable versioning for entries in this section'|t('app'),
         id: 'enableVersioning',
         name: 'enableVersioning',
-        on: section.enableVersioning
+        on: section.enableVersioning,
+        disabled: readOnly,
     }) }}
 
     {{ forms.selectField({
@@ -75,7 +85,8 @@
         value: section.type,
         toggle: true,
         targetPrefix: '.type-',
-        errors: section.getErrors('type')
+        errors: section.getErrors('type'),
+        disabled: readOnly,
     }) }}
 
     <hr>
@@ -86,8 +97,10 @@
         id: 'entry-types',
         name: 'entryTypes[]',
         values: section.getEntryTypes(),
+        allowOverrides: true,
         errors: section.getErrors('entryTypes'),
-        create: true,
+        create: not readOnly,
+        disabled: readOnly,
     }) }}
 
     {% set siteRows = [] %}
@@ -107,18 +120,19 @@
                     name: 'sites['~site.handle~'][enabled]',
                     on: brandNewSection or siteSettings,
                     value: site.id,
-                    small: true
+                    small: true,
+                    disabled: readOnly,
                 }),
                 singleHomepage: {
-                    value: (section.type == 'single' and siteSettings and siteSettings.uriFormat == '__home__')
+                    value: (section.type == 'single' and siteSettings and siteSettings.uriFormat == '__home__'),
                 },
                 singleUri: {
-                   value: (section.type == 'single' and siteSettings and siteSettings.uriFormat != '__home__') ? siteSettings.uriFormat,
-                   hasErrors: (section.type == 'single' and siteSettings ? siteSettings.hasErrors('uriFormat'))
+                    value: (section.type == 'single' and siteSettings and siteSettings.uriFormat != '__home__') ? siteSettings.uriFormat,
+                    hasErrors: (section.type == 'single' and siteSettings ? siteSettings.hasErrors('uriFormat')),
                 },
                 uriFormat: {
                     value: siteSettings ? siteSettings.uriFormat,
-                    hasErrors: (section.type != 'single' and siteSettings ? siteSettings.hasErrors('uriFormat'))
+                    hasErrors: (section.type != 'single' and siteSettings ? siteSettings.hasErrors('uriFormat')),
                 },
                 template: not headlessMode ? {
                     value: siteSettings ? siteSettings.template,
@@ -190,7 +204,8 @@
         allowAdd: false,
         allowDelete: false,
         allowReorder: false,
-        errors: siteErrors|unique
+        errors: siteErrors|unique,
+        static: readOnly,
     }) }}
 
     {% if craft.app.getIsMultiSite() %}
@@ -208,7 +223,8 @@
                     { value: 'all', label: 'Save entries to all sites enabled for this section'|t('app') },
                     { value: 'custom', label: 'Let each entry choose which sites it should be saved to'|t('app') },
                 ],
-                value: section.propagationMethod.value
+                value: section.propagationMethod.value,
+                disabled: readOnly,
             }) }}
         </div>
     {% endif %}
@@ -221,7 +237,8 @@
             name: 'maxLevels',
             value: section.maxLevels,
             size: 5,
-            errors: section.getErrors('maxLevels')
+            errors: section.getErrors('maxLevels'),
+            disabled: readOnly,
         }) }}
 
         {{ forms.selectField({
@@ -234,6 +251,7 @@
                 {label: 'After other {type}'|t('app', {type: 'entries'|t('app')}), value: 'end'},
             ],
             value: section.defaultPlacement,
+            disabled: readOnly,
         }) }}
     </div>
 
@@ -267,7 +285,8 @@
         allowReorder: true,
         allowDelete: true,
         rows: section.previewTargets,
-        errors: section.getErrors('previewTargets')
+        errors: section.getErrors('previewTargets'),
+        static: readOnly,
     }) }}
 
     {{ forms.textField({
@@ -281,7 +300,8 @@
         value: section.maxAuthors,
         errors: section.getErrors('maxAuthors'),
         size: 5,
-        required: true
+        required: true,
+        disabled: readOnly,
     }) }}
 {% endblock %}
 

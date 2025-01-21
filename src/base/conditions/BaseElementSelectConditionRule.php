@@ -20,11 +20,11 @@ use stdClass;
 abstract class BaseElementSelectConditionRule extends BaseConditionRule
 {
     /**
-     * @var int|string|null
-     * @see getElementId()
-     * @see setElementId()
+     * @var int[]|string|null
+     * @see getElementIds()
+     * @see setElementIds()
      */
-    private int|string|null $_elementId = null;
+    private array|string|null $_elementIds = null;
 
     /**
      * Returns the element type that can be selected.
@@ -64,6 +64,17 @@ abstract class BaseElementSelectConditionRule extends BaseConditionRule
     }
 
     /**
+     * Returns whether multiple elements can be selected.
+     *
+     * @return bool
+     * @since 5.6.0
+     */
+    protected function allowMultiple(): bool
+    {
+        return false;
+    }
+
+    /**
      * Defines the element select config.
      *
      * @return array
@@ -71,16 +82,55 @@ abstract class BaseElementSelectConditionRule extends BaseConditionRule
      */
     protected function elementSelectConfig(): array
     {
-        $element = $this->_element();
+        $elements = $this->_elements();
         return [
-            'name' => 'elementId',
-            'elements' => $element ? [$element] : [],
+            'name' => 'elementIds',
+            'elements' => $elements,
             'elementType' => $this->elementType(),
             'sources' => $this->sources(),
             'criteria' => $this->criteria(),
             'condition' => $this->selectionCondition(),
-            'single' => true,
+            'single' => !$this->allowMultiple(),
         ];
+    }
+
+    /**
+     * @param bool $parse Whether to parse the value for an environment variable
+     * @return int[]|string
+     * @since 5.6.0
+     */
+    public function getElementIds(bool $parse = true): array|string
+    {
+        if ($parse && is_string($this->_elementIds)) {
+            $elementIds = App::parseEnv($this->_elementIds);
+            if ($this->condition instanceof ElementCondition && isset($this->condition->referenceElement)) {
+                $referenceElement = $this->condition->referenceElement;
+            } else {
+                $referenceElement = new stdClass();
+            }
+            $elementIds = Craft::$app->getView()->renderObjectTemplate($elementIds, $referenceElement);
+            return array_values(array_filter(array_map(
+                fn(string $elementId) => (int)trim($elementId),
+                explode(',', $elementIds),
+            )));
+        }
+
+        return $this->_elementIds ?? [];
+    }
+
+    /**
+     * @param array|int|string|null $elementIds
+     * @phpstan-param array<int|string>|int|string|null $elementIds
+     */
+    public function setElementIds(array|int|string|null $elementIds): void
+    {
+        if (is_array($elementIds)) {
+            $elementIds = array_map(fn($id) => (int)$id, $elementIds);
+        } elseif (is_numeric($elementIds)) {
+            $elementIds = [(int)$elementIds];
+        }
+
+        $this->_elementIds = $elementIds ?: null;
     }
 
     /**
@@ -89,16 +139,8 @@ abstract class BaseElementSelectConditionRule extends BaseConditionRule
      */
     public function getElementId(bool $parse = true): int|string|null
     {
-        if ($parse && is_string($this->_elementId)) {
-            $elementId = App::parseEnv($this->_elementId);
-            if ($this->condition instanceof ElementCondition && isset($this->condition->referenceElement)) {
-                $referenceElement = $this->condition->referenceElement;
-            } else {
-                $referenceElement = new stdClass();
-            }
-            return Craft::$app->getView()->renderObjectTemplate($elementId, $referenceElement);
-        }
-        return $this->_elementId;
+        $elementIds = $this->getElementIds($parse);
+        return (is_array($elementIds) && !empty($elementIds)) ? $elementIds[0] : null;
     }
 
     /**
@@ -107,11 +149,7 @@ abstract class BaseElementSelectConditionRule extends BaseConditionRule
      */
     public function setElementId(array|int|string|null $elementId): void
     {
-        if (is_array($elementId)) {
-            $elementId = reset($elementId);
-        }
-
-        $this->_elementId = $elementId ?: null;
+        $this->setElementIds($elementId);
     }
 
     /**
@@ -120,7 +158,7 @@ abstract class BaseElementSelectConditionRule extends BaseConditionRule
     public function getConfig(): array
     {
         return array_merge(parent::getConfig(), [
-            'elementId' => $this->getElementId(false),
+            'elementIds' => $this->getElementIds(false),
         ]);
     }
 
@@ -130,18 +168,26 @@ abstract class BaseElementSelectConditionRule extends BaseConditionRule
     protected function inputHtml(): string
     {
         if ($this->getCondition()->forProjectConfig) {
+            $value = $this->getElementIds(false);
+            if (is_array($value)) {
+                $value = join(',', $value);
+            }
+            $type = $this->elementType()::displayName();
+
             return Cp::autosuggestFieldHtml([
                 'suggestEnvVars' => true,
                 'suggestionFilter' => fn($value) => is_int($value) && $value > 0,
                 'required' => true,
-                'id' => 'elementId',
+                'id' => 'elementIds',
                 'class' => 'code',
-                'name' => 'elementId',
-                'value' => $this->getElementId(false),
-                'tip' => Craft::t('app', 'This can be set to an environment variable, or a Twig template that outputs an ID.'),
-                'placeholder' => Craft::t('app', '{type} ID', [
-                    'type' => $this->elementType()::displayName(),
-                ]),
+                'name' => 'elementIds',
+                'value' => $value,
+                'tip' => $this->allowMultiple()
+                    ? Craft::t('app', 'This can be set to an environment variable, or a Twig template that outputs comma-separated IDs.')
+                    : Craft::t('app', 'This can be set to an environment variable, or a Twig template that outputs an ID.'),
+                'placeholder' => $this->allowMultiple()
+                    ? Craft::t('app', '{type} ID(s)', ['type' => $type])
+                    : Craft::t('app', '{type} ID', ['type' => $type]),
             ]);
         }
 
@@ -149,22 +195,23 @@ abstract class BaseElementSelectConditionRule extends BaseConditionRule
     }
 
     /**
-     * @return ElementInterface|null
+     * @return ElementInterface[]
      */
-    private function _element(): ?ElementInterface
+    private function _elements(): array
     {
-        $elementId = $this->getElementId();
-        if (!$elementId) {
-            return null;
+        $elementIds = $this->getElementIds();
+        if (empty($elementIds)) {
+            return [];
         }
 
         return $this->elementType()::find()
             ->site('*')
             ->preferSites(array_filter([Cp::requestedSite()?->id]))
             ->unique()
-            ->id($elementId)
+            ->id($elementIds)
             ->status(null)
-            ->one();
+            ->limit($this->allowMultiple() ? null : 1)
+            ->all();
     }
 
     /**
@@ -173,7 +220,7 @@ abstract class BaseElementSelectConditionRule extends BaseConditionRule
     protected function defineRules(): array
     {
         $rules = parent::defineRules();
-        $rules[] = [['elementId'], 'number'];
+        $rules[] = [['elementIds'], 'safe'];
         return $rules;
     }
 
@@ -186,9 +233,9 @@ abstract class BaseElementSelectConditionRule extends BaseConditionRule
      */
     protected function matchValue(mixed $value): bool
     {
-        $elementId = $this->getElementId();
+        $elementIds = $this->getElementIds();
 
-        if (!$elementId) {
+        if (empty($elementIds)) {
             return true;
         }
 
@@ -197,18 +244,18 @@ abstract class BaseElementSelectConditionRule extends BaseConditionRule
         }
 
         if ($value instanceof ElementInterface) {
-            return $value->id === $elementId;
+            return in_array($value->id, $elementIds);
         }
 
         if (is_numeric($value)) {
-            return (int)$value === (int)$elementId;
+            return in_array((int)$value, $elementIds);
         }
 
         if (is_array($value)) {
             foreach ($value as $val) {
                 if (
-                    $val instanceof ElementInterface && $val->id === $elementId ||
-                    is_numeric($val) && (int)$val === (int)$elementId
+                    $val instanceof ElementInterface && in_array($val->id, $elementIds) ||
+                    is_numeric($val) && in_array((int)$val, $elementIds)
                 ) {
                     return true;
                 }

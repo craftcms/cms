@@ -1,7 +1,7 @@
 {% set id = id ?? "selectize#{random()}" %}
 {% set selectizeOptions = {
     dropdownParent: 'body',
-    plugins: ['auto_position'],
+    plugins: ['auto_position', 'selectize-plugin-a11y'],
 }|merge(selectizeOptions ?? []) %}
 
 {% set multi = multi ?? false %}
@@ -95,6 +95,18 @@
         if (status) {
             label += `<span class="status ${status}"></span>`;
         }
+        const color = hasData(data, 'color') ? getData(data, 'color') : false;
+        if (color !== false) {
+            label += '<div class="color small">';
+            if (color[0] == '#') {
+                label += `<div class="color-preview" style="background-color: ${color}"></div>`;
+            } else if (color != '__blank__') {
+                label += `<div class="color-preview bg-${color}"></div>`;
+            } else {
+                label += `<div class="color-preview"></div>`;
+            }
+            label += '</div>';
+        }
         label += `<span>${Craft.escapeHtml(getData(data, 'text'))}</span>`;
         if (showHint && hasData(data, 'hint') && getData(data, 'hint') !== '') {
             const hintLang = getData(data, 'hintLang');
@@ -175,7 +187,7 @@
                 if (data.value === '') {
                     classes.push('selectize-dropdown-emptyoptionlabel');
                 }
-                return `<div class="${classes.join(' ')}">${label(data, true)}</div>`;
+                return `<div class="${classes.join(' ')}" role="option" id="${data.text.replace(' ', '')}">${label(data, true)}</div>`;
             },
             item: data => {
                 const attrs = ['class="item"'];

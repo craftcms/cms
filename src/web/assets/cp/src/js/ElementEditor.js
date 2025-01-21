@@ -149,6 +149,20 @@ Craft.ElementEditor = Garnish.Base.extend(
           'click',
           'expandSiteStatuses'
         );
+
+        // Use event delegation so we don't have to reinitialize when markup is replaced
+        Garnish.$bod.on('click', '[data-cross-site-copy]', (ev) => {
+          // Make sure the action menu is within this element editor container
+          const $target = $(ev.currentTarget);
+          const $field = $target
+            .closest('.menu')
+            .data('disclosureMenu')
+            ?.$trigger.closest('.field');
+          if ($field.closest(this.$container).length) {
+            ev.preventDefault();
+            this.showFieldCopyModal($target, $field);
+          }
+        });
       }
 
       if (this.settings.previewTargets.length && this.isFullPage) {
@@ -587,6 +601,96 @@ Craft.ElementEditor = Garnish.Base.extend(
 
       this.$globalLightswitch.on('change', this._updateSiteStatuses.bind(this));
       this._updateGlobalStatus();
+    },
+
+    showFieldCopyModal: function ($btn, $field) {
+      const headingId =
+        'cross-site-copy-heading-' + Math.floor(Math.random() * 1000000);
+
+      const $hudContent = $('<div/>', {
+        class: 'modal fitted cross-site-copy-modal',
+        'aria-labelledby': headingId,
+      });
+      const $body = $('<div/>', {
+        class: 'body',
+      }).appendTo($hudContent);
+
+      $body.append(
+        `<div class="header"><h1 id="${headingId}" class="h2">${Craft.t(
+          'app',
+          'Copy “{name}” value',
+          {
+            name: $btn.data('label'),
+          }
+        )}</h1></div>`
+      );
+
+      const $form = Craft.createForm().appendTo($body);
+      $form.append(Craft.getCsrfInput());
+
+      const $fields = $('<div/>', {
+        class: 'flex flex-end flex-nowrap',
+      }).appendTo($form);
+
+      const $siteSelectField = Craft.ui
+        .createSelectField({
+          label: Craft.t('app', 'Copy from'),
+          class: ['fullwidth'],
+          options: this._getOtherSupportedSites().map((s) => ({
+            label: s.name,
+            value: s.id,
+          })),
+        })
+        .addClass('flex-grow')
+        .appendTo($fields);
+
+      Craft.ui
+        .createSubmitButton({
+          label: Craft.t('app', 'Copy'),
+          spinner: true,
+        })
+        .appendTo($fields);
+
+      const modal = new Garnish.Modal($hudContent);
+
+      const $siteSelect = $siteSelectField.find('select').focus();
+
+      this.addListener($form, 'submit', async (ev) => {
+        ev.preventDefault();
+        const $submitBtn = $form.find('[type=submit]');
+        $submitBtn.addClass('loading');
+        Craft.cp.announce(Craft.t('app', 'Loading'));
+
+        try {
+          const response = await Craft.sendActionRequest(
+            'POST',
+            'elements/copy-values-from-site',
+            {
+              data: {
+                elementId: this.getDraftElementId($btn.data('element-id')),
+                siteId: this.settings.siteId,
+                fromSiteId: parseInt($siteSelect.val()),
+                layoutElementUid: $btn.data('layout-element'),
+                namespace: $btn.data('namespace'),
+              },
+            }
+          );
+
+          const {fieldHtml, headHtml, bodyHtml, message} = response.data;
+
+          const $newField = $(fieldHtml);
+          $field.replaceWith($newField);
+          Craft.initUiElements($newField);
+          await Craft.appendHeadHtml(headHtml);
+          await Craft.appendBodyHtml(bodyHtml);
+
+          Craft.cp.displaySuccess(message);
+        } finally {
+          $submitBtn.removeClass('loading');
+          Craft.cp.announce(Craft.t('app', 'Loading complete'));
+          modal.hide();
+        }
+      });
     },
 
     /**
@@ -1734,6 +1838,9 @@ Craft.ElementEditor = Garnish.Base.extend(
     },
 
     getDraftElementId(elementId) {
+      if (elementId == this.settings.canonicalId) {
+        return this.settings.elementId;
+      }
       return this.draftElementIds[elementId] || elementId;
     },
 

@@ -115,6 +115,16 @@ class User extends Element
                 'type' => Type::string(),
                 'description' => 'The user’s email.',
             ],
+            'affiliatedSiteHandle' => [
+                'name' => 'affiliatedSiteHandle',
+                'type' => Type::string(),
+                'description' => 'The handle of the site the user is affiliated with.',
+            ],
+            'affiliatedSiteId' => [
+                'name' => 'affiliatedSiteId',
+                'type' => Type::int(),
+                'description' => 'The ID of the site the user is affiliated with.',
+            ],
             'addresses' => [
                 'name' => 'addresses',
                 'args' => AddressArguments::getArguments(),

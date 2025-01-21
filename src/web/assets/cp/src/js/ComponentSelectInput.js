@@ -231,54 +231,7 @@ Craft.ComponentSelectInput = Garnish.Base.extend(
     addComponents: function ($components) {
       // add the action triggers
       for (let i = 0; i < $components.length; i++) {
-        const $component = $components.eq(i);
-
-        const actions = this.defineComponentActions($component);
-        Craft.addActionsToChip($component, actions);
-
-        const disclosureMenu = $component
-          .find('> .chip-content > .chip-actions .action-btn')
-          .disclosureMenu()
-          .data('disclosureMenu');
-        const moveForwardBtn = disclosureMenu.$container.find(
-          '[data-move-forward]'
-        )[0];
-        const moveBackwardBtn = disclosureMenu.$container.find(
-          '[data-move-backward]'
-        )[0];
-
-        disclosureMenu.on('show', () => {
-          const $li = $component.parent();
-          const $prev = $li.prev();
-          const $next = $li.next();
-
-          if (moveForwardBtn) {
-            disclosureMenu.toggleItem(moveForwardBtn, $prev.length);
-          }
-          if (moveBackwardBtn) {
-            disclosureMenu.toggleItem(moveBackwardBtn, $next.length);
-          }
-        });
-
-        if (this.settings.sortable) {
-          $('<button/>', {
-            type: 'button',
-            class: 'move icon',
-            title: Craft.t('app', 'Reorder'),
-            'aria-label': Craft.t('app', 'Reorder'),
-            'aria-describedby': $component.find('.label').attr('id'),
-          }).appendTo($component.find('.chip-actions'));
-        }
-
-        this.addListener($component, 'dblclick,taphold', (ev) => {
-          // don't open the edit slideout if we are tapholding to drag
-          if (ev.type === 'taphold' && ev.target.nodeName === 'BUTTON') {
-            return;
-          }
-          disclosureMenu.$container.find('[data-edit-action]').click();
-        });
-
-        this.hideOption($component.data('id'));
+        this.addComponentInternal($components.eq(i));
       }
 
       if (this.settings.selectable) {
@@ -303,6 +256,52 @@ Craft.ComponentSelectInput = Garnish.Base.extend(
       this.$components = this.$components.add($components);
 
       this.onChange();
+    },
+
+    addComponentInternal: function ($component) {
+      const actions = this.defineComponentActions($component);
+      Craft.addActionsToChip($component, actions);
+
+      const disclosureMenu = this.getDisclosureMenu($component);
+      const moveForwardBtn = disclosureMenu.$container.find(
+        '[data-move-forward]'
+      )[0];
+      const moveBackwardBtn = disclosureMenu.$container.find(
+        '[data-move-backward]'
+      )[0];
+
+      disclosureMenu.on('show', () => {
+        const $li = $component.parent();
+        const $prev = $li.prev();
+        const $next = $li.next();
+
+        if (moveForwardBtn) {
+          disclosureMenu.toggleItem(moveForwardBtn, $prev.length);
+        }
+        if (moveBackwardBtn) {
+          disclosureMenu.toggleItem(moveBackwardBtn, $next.length);
+        }
+      });
+
+      if (this.settings.sortable) {
+        $('<button/>', {
+          type: 'button',
+          class: 'move icon',
+          title: Craft.t('app', 'Reorder'),
+          'aria-label': Craft.t('app', 'Reorder'),
+          'aria-describedby': $component.find('.label').attr('id'),
+        }).appendTo($component.find('.chip-actions'));
+      }
+
+      this.addListener($component, 'dblclick,taphold', (ev) => {
+        // don't open the edit slideout if we are tapholding to drag
+        if (ev.type === 'taphold' && ev.target.nodeName === 'BUTTON') {
+          return;
+        }
+        disclosureMenu.$container.find('[data-edit-action]').click();
+      });
+
+      this.hideOption($component.data('id'));
     },
 
     defineComponentActions: function ($component) {
@@ -358,6 +357,13 @@ Craft.ComponentSelectInput = Garnish.Base.extend(
       });
 
       return actions;
+    },
+
+    getDisclosureMenu: function ($component) {
+      return $component
+        .find('> .chip-content > .chip-actions .action-btn')
+        .disclosureMenu()
+        .data('disclosureMenu');
     },
 
     onChange() {
@@ -474,13 +480,7 @@ Craft.ComponentSelectInput = Garnish.Base.extend(
               {
                 type,
                 id,
-                instances: [
-                  {
-                    showActionMenu: this.settings.showActionMenu,
-                    showHandle: this.settings.showHandles,
-                    inputName: this.settings.name,
-                  },
-                ],
+                instances: [this.renderSettings(id)],
               },
             ],
             withMenuItems: addToMenu,
@@ -510,6 +510,14 @@ Craft.ComponentSelectInput = Garnish.Base.extend(
 
       await Craft.appendHeadHtml(data.headHtml);
       await Craft.appendBodyHtml(data.bodyHtml);
+    },
+
+    renderSettings: function (id) {
+      return {
+        showActionMenu: this.settings.showActionMenu,
+        showHandle: this.settings.showHandles,
+        inputName: this.settings.name,
+      };
     },
   },
   {

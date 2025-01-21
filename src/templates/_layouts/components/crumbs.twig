@@ -26,7 +26,8 @@
                 href: crumb.url is defined ? url(crumb.url) : null,
               } %}
                 {% if crumb.icon is defined %}
-                  <span class="cp-icon puny" aria-hidden="true">{{ iconSvg(crumb.icon) }}</span>
+                  {% set iconAltText = crumb.iconAltText ?? null %}
+                  <span class="cp-icon puny">{{ iconSvg(crumb.icon, altText: iconAltText) }}</span>
                 {% endif %}
 
                 <span>{{ crumb.label ?? crumb.html|raw }}</span>

@@ -99,6 +99,15 @@ class LatLongField extends BaseNativeField
     /**
      * @inheritdoc
      */
+    protected function defaultLabel(?ElementInterface $element = null, bool $static = false): ?string
+    {
+        // we need it for the card view designer
+        return Craft::t('app', 'Latitude/Longitude');
+    }
+
+    /**
+     * @inheritdoc
+     */
     protected function selectorLabel(): ?string
     {
         return Craft::t('app', 'Latitude/Longitude');
@@ -149,5 +158,17 @@ class LatLongField extends BaseNativeField
             return [];
         }
         return array_merge($element->getErrors('latitude'), $element->getErrors('longitude'));
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function previewPlaceholderHtml(mixed $value, ?ElementInterface $element): string
+    {
+        if ($element) {
+            return $this->previewHtml($element);
+        }
+
+        return '61.108, -149.779';
     }
 }

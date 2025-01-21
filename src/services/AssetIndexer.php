@@ -309,6 +309,26 @@ class AssetIndexer extends Component
 
         // The most likely scenario is that the last entry is being worked on.
         if (!$indexEntry && !$indexingSession->processIfRootEmpty) {
+            // if indexEntry is null here, we should also check if there's anything in the assetindexdata table at all
+            // (if not, it could have been deleted when clearing caches)
+            // if that table is empty, we'll get into an infinite loop, calling processIndexSession with the same data all the time
+            // (and it'll be very hard to discard the session via ui)
+            if ($indexingSession->processedEntries < $indexingSession->totalEntries) {
+                $count = (new Query())
+                    ->from([Table::ASSETINDEXDATA])
+                    ->where([
+                        'sessionId' => $indexingSession->id,
+                        'completed' => false,
+                        'inProgress' => false,
+                    ])
+                    ->count();
+
+                if ((int)$count === 0) {
+                    Craft::warning('The assetindexdata table is empty; Can’t proceed with indexing.');
+                    $indexingSession->forceStop = true;
+                }
+            }
+
             $mutex->release($lockName);
             return $indexingSession;
         }

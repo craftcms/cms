@@ -55,6 +55,7 @@ class EntryQuery extends ElementQuery implements NestedElementQueryInterface
     use NestedElementQueryTrait {
         __set as nestedTraitSet;
         cacheTags as nestedTraitCacheTags;
+        fieldLayouts as nestedTraitFieldLayouts;
     }
 
     // General parameters
@@ -1245,6 +1246,9 @@ class EntryQuery extends ElementQuery implements NestedElementQueryInterface
      */
     protected function fieldLayouts(): array
     {
+        $this->_normalizeTypeId();
+        $this->_normalizeSectionId();
+
         if ($this->typeId || $this->sectionId) {
             $fieldLayouts = [];
             $sectionsService = Craft::$app->getEntries();
@@ -1268,6 +1272,6 @@ class EntryQuery extends ElementQuery implements NestedElementQueryInterface
             return $fieldLayouts;
         }
 
-        return parent::fieldLayouts();
+        return $this->nestedTraitFieldLayouts();
     }
 }

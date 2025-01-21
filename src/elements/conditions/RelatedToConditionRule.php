@@ -45,6 +45,14 @@ class RelatedToConditionRule extends BaseElementSelectConditionRule implements E
     /**
      * @inheritdoc
      */
+    protected function allowMultiple(): bool
+    {
+        return true;
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function getExclusiveQueryParams(): array
     {
         return [];
@@ -65,9 +73,9 @@ class RelatedToConditionRule extends BaseElementSelectConditionRule implements E
      */
     public function modifyQuery(ElementQueryInterface $query): void
     {
-        $elementId = $this->getElementId();
-        if ($elementId !== null) {
-            $query->andRelatedTo($elementId);
+        $elementIds = $this->getElementIds();
+        if (!empty($elementIds)) {
+            $query->andRelatedTo($elementIds);
         }
     }
 
@@ -139,8 +147,8 @@ class RelatedToConditionRule extends BaseElementSelectConditionRule implements E
      */
     public function matchElement(ElementInterface $element): bool
     {
-        $elementId = $this->getElementId();
-        if (!$elementId) {
+        $elementIds = $this->getElementIds();
+        if (empty($elementIds)) {
             return true;
         }
 
@@ -151,7 +159,7 @@ class RelatedToConditionRule extends BaseElementSelectConditionRule implements E
             ->provisionalDrafts($element->isProvisionalDraft)
             ->revisions($element->getIsRevision())
             ->status(null)
-            ->relatedTo($elementId)
+            ->relatedTo($elementIds)
             ->exists();
     }
 }

@@ -403,11 +403,16 @@ class DateTimeHelperTest extends TestCase
      * @param string $expected
      * @param string|int $duration
      * @param bool|null $showSeconds
+     * @param string|null $language
      * @throws Exception
      */
-    public function testHumanDuration(string $expected, string|int $duration, ?bool $showSeconds = null): void
-    {
-        self::assertSame($expected, DateTimeHelper::humanDuration($duration, $showSeconds));
+    public function testHumanDuration(
+        string $expected,
+        string|int $duration,
+        ?bool $showSeconds = null,
+        ?string $language = null,
+    ): void {
+        self::assertSame($expected, DateTimeHelper::humanDuration($duration, $showSeconds, $language));
     }
 
     /**
@@ -871,6 +876,8 @@ class DateTimeHelperTest extends TestCase
             ['27 minutes', 'PT10M999S'],
             ['0 seconds', 0],
             ['less than a minute', 0, false],
+            ['1,000 years', 'P1000Y', false],
+            ['1 000 ans', 'P1000Y', false, 'fr'],
         ];
     }
 

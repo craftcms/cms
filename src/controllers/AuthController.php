@@ -13,6 +13,7 @@ use craft\auth\methods\TOTP;
 use craft\helpers\Html;
 use craft\i18n\Locale;
 use craft\web\Controller;
+use craft\web\View;
 use yii\base\InvalidConfigException;
 use yii\web\Response;
 
@@ -36,20 +37,6 @@ class AuthController extends Controller
     ];
 
     /**
-     * @inheritdoc
-     */
-    public function beforeAction($action): bool
-    {
-        if (!parent::beforeAction($action)) {
-            return false;
-        }
-
-        $this->requireCpRequest();
-        ;
-        return true;
-    }
-
-    /**
      * Returns the HTML for an authentication method’s setup slideout.
      *
      * @return Response
@@ -64,14 +51,20 @@ class AuthController extends Controller
         $containerId = sprintf('auth-method-setup-%s', mt_rand());
         $displayName = $method::displayName();
         $view = Craft::$app->getView();
+        $templateMode = $view->getTemplateMode();
+        $view->setTemplateMode(View::TEMPLATE_MODE_CP);
 
-        $html = Html::tag('h1', Craft::t('app', '{name} Setup', [
-                'name' => $displayName,
-            ])) .
-            $view->namespaceInputs(
-                fn() => $method->getSetupHtml($containerId),
-                $containerId,
-            );
+        try {
+            $html = Html::tag('h1', Craft::t('app', '{name} Setup', [
+                    'name' => $displayName,
+                ])) .
+                $view->namespaceInputs(
+                    fn() => $method->getSetupHtml($containerId),
+                    $containerId,
+                );
+        } finally {
+            $view->setTemplateMode($templateMode);
+        }
 
         return $this->asJson([
             'containerId' => $containerId,
@@ -93,7 +86,7 @@ class AuthController extends Controller
         $this->requireAcceptsJson();
 
         $view = Craft::$app->getView();
-        $html = $view->renderTemplate('users/_auth-methods.twig');
+        $html = $view->renderTemplate('users/_auth-methods.twig', templateMode: View::TEMPLATE_MODE_CP);
 
         return $this->asJson([
             'html' => $html,
@@ -111,6 +104,7 @@ class AuthController extends Controller
      */
     public function actionRemoveMethod(): ?Response
     {
+        $this->requireCpRequest();
         $this->requirePostRequest();
         $this->requireElevatedSession();
 
@@ -176,6 +170,7 @@ class AuthController extends Controller
      */
     public function actionPasskeyCreationOptions(): Response
     {
+        $this->requireCpRequest();
         $this->requireAcceptsJson();
         $this->requirePostRequest();
         $this->requireElevatedSession();
@@ -211,6 +206,7 @@ class AuthController extends Controller
      */
     public function actionVerifyPasskeyCreation(): Response
     {
+        $this->requireCpRequest();
         $this->requireAcceptsJson();
         $this->requirePostRequest();
         $this->requireElevatedSession();
@@ -236,6 +232,7 @@ class AuthController extends Controller
      */
     public function actionDeletePasskey(): Response
     {
+        $this->requireCpRequest();
         $this->requireAcceptsJson();
         $this->requirePostRequest();
 

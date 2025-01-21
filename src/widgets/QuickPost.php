@@ -56,6 +56,12 @@ class QuickPost extends Widget
     public ?int $entryType = null;
 
     /**
+     * @var string|null The custom widget title.
+     * @since 5.6.0
+     */
+    public ?string $customTitle = null;
+
+    /**
      * @var Section|false
      * @see section()
      */
@@ -82,6 +88,10 @@ class QuickPost extends Widget
             }
 
             unset($config['sections']);
+        }
+
+        if (isset($config['customTitle']) && $config['customTitle'] === '') {
+            unset($config['customTitle']);
         }
 
         unset($config['fields']);
@@ -120,8 +130,8 @@ class QuickPost extends Widget
             'sections' => $sections,
             'widget' => $this,
             'siteId' => $this->siteId,
-            'sectionId' => $this->section()?->id,
-            'entryTypeId' => $this->entryType()?->id,
+            'section' => $this->section(),
+            'entryType' => $this->entryType(),
         ]);
     }
 
@@ -130,6 +140,10 @@ class QuickPost extends Widget
      */
     public function getTitle(): ?string
     {
+        if (isset($this->customTitle)) {
+            return Craft::t('site', $this->customTitle);
+        }
+
         $entryType = $this->entryType();
         if (!$entryType) {
             return static::displayName();

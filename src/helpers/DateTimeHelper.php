@@ -763,10 +763,11 @@ class DateTimeHelper
      *
      * @param mixed $dateInterval The value, represented as either a [[\DateInterval]] object, an interval duration string, or a number of seconds.
      * @param bool|null $showSeconds Whether the duration string should include the number of seconds
+     * @param string|null $language The language code that should be used. (Defaults to the current application language.)
      * @return string
      * @since 4.2.0
      */
-    public static function humanDuration(mixed $dateInterval, ?bool $showSeconds = null): string
+    public static function humanDuration(mixed $dateInterval, ?bool $showSeconds = null, ?string $language = null): string
     {
         $dateInterval = static::toDateInterval($dateInterval) ?: new DateInterval('PT0S');
         $secondsOnly = !$dateInterval->y && !$dateInterval->m && !$dateInterval->d && !$dateInterval->h && !$dateInterval->i;
@@ -778,24 +779,34 @@ class DateTimeHelper
         $timeComponents = [];
 
         if ($dateInterval->y) {
-            $timeComponents[] = Craft::t('app', '{num, number} {num, plural, =1{year} other{years}}', ['num' => $dateInterval->y]);
+            $timeComponents[] = Craft::t('app', '{num, number} {num, plural, =1{year} other{years}}', [
+                'num' => $dateInterval->y,
+            ], $language);
         }
 
         if ($dateInterval->m) {
-            $timeComponents[] = Craft::t('app', '{num, number} {num, plural, =1{month} other{months}}', ['num' => $dateInterval->m]);
+            $timeComponents[] = Craft::t('app', '{num, number} {num, plural, =1{month} other{months}}', [
+                'num' => $dateInterval->m,
+            ], $language);
         }
 
         if ($dateInterval->d) {
             // Is it an exact number of weeks?
             if ($dateInterval->d % 7 === 0) {
-                $timeComponents[] = Craft::t('app', '{num, number} {num, plural, =1{week} other{weeks}}', ['num' => $dateInterval->d / 7]);
+                $timeComponents[] = Craft::t('app', '{num, number} {num, plural, =1{week} other{weeks}}', [
+                    'num' => $dateInterval->d / 7,
+                ], $language);
             } else {
-                $timeComponents[] = Craft::t('app', '{num, number} {num, plural, =1{day} other{days}}', ['num' => $dateInterval->d]);
+                $timeComponents[] = Craft::t('app', '{num, number} {num, plural, =1{day} other{days}}', [
+                    'num' => $dateInterval->d,
+                ], $language);
             }
         }
 
         if ($dateInterval->h) {
-            $timeComponents[] = Craft::t('app', '{num, number} {num, plural, =1{hour} other{hours}}', ['num' => $dateInterval->h]);
+            $timeComponents[] = Craft::t('app', '{num, number} {num, plural, =1{hour} other{hours}}', [
+                'num' => $dateInterval->h,
+            ], $language);
         }
 
         $minutes = $dateInterval->i;
@@ -810,11 +821,15 @@ class DateTimeHelper
         }
 
         if ($minutes) {
-            $timeComponents[] = Craft::t('app', '{num, number} {num, plural, =1{minute} other{minutes}}', ['num' => $minutes]);
+            $timeComponents[] = Craft::t('app', '{num, number} {num, plural, =1{minute} other{minutes}}', [
+                'num' => $minutes,
+            ], $language);
         }
 
         if ($showSeconds && ($dateInterval->s || empty($timeComponents))) {
-            $timeComponents[] = Craft::t('app', '{num, number} {num, plural, =1{second} other{seconds}}', ['num' => $dateInterval->s]);
+            $timeComponents[] = Craft::t('app', '{num, number} {num, plural, =1{second} other{seconds}}', [
+                'num' => $dateInterval->s,
+            ], $language);
         }
 
         $last = array_pop($timeComponents);
@@ -823,10 +838,11 @@ class DateTimeHelper
             if (count($timeComponents) > 1) {
                 $string .= ',';
             }
-            $string .= ' ' . Craft::t('app', 'and') . ' ';
+            $string .= ' ' . Craft::t('app', 'and', language: $language) . ' ';
         } else {
             $string = '';
         }
+
         $string .= $last;
         return $string;
     }

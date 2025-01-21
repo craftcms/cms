@@ -9,7 +9,13 @@ namespace craft\helpers;
 
 use Craft;
 use craft\base\ComponentInterface;
+use craft\base\ElementInterface;
+use craft\base\Model;
 use craft\errors\MissingComponentException;
+use DateTime;
+use ReflectionClass;
+use ReflectionNamedType;
+use ReflectionProperty;
 use yii\base\InvalidConfigException;
 
 /**
@@ -175,5 +181,27 @@ class Component
         }
 
         return Cp::iconSvg($icon, $label);
+    }
+
+    /**
+     * Return all DateTime attributes for given model.
+     *
+     * @param Model|ElementInterface $model
+     * @return array
+     */
+    public static function datetimeAttributes(Model|ElementInterface $model): array
+    {
+        $datetimeAttributes = [];
+        foreach ((new ReflectionClass($model))->getProperties(ReflectionProperty::IS_PUBLIC) as $property) {
+            if (!$property->isStatic()) {
+                $type = $property->getType();
+                if ($type instanceof ReflectionNamedType && $type->getName() === DateTime::class) {
+                    $datetimeAttributes[] = $property->getName();
+                }
+            }
+        }
+
+        // Include datetimeAttributes() for now
+        return array_unique(array_merge($datetimeAttributes, $model->datetimeAttributes()));
     }
 }

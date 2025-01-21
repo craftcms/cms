@@ -1,5 +1,5 @@
 {% import '_includes/forms.twig' as forms %}
-
+{% set readOnly = readOnly ?? false %}
 
 {% if not isNewVolume %}{{ hiddenInput('volumeId', volume.id) }}{% endif %}
 
@@ -13,6 +13,7 @@
     required: true,
     errors: volume.getErrors('name'),
     data: {'error-key': 'name'},
+    disabled: readOnly,
 }) }}
 
 {{ forms.textField({
@@ -26,6 +27,7 @@
     required: true,
     errors: volume.getErrors('handle'),
     data: {'error-key': 'handle'},
+    disabled: readOnly,
 }) }}
 
 <hr>
@@ -40,6 +42,7 @@
     options: fsOptions,
     errors: volume.getErrors('fsHandle'),
     data: {'error-key': 'fsHandle'},
+    disabled: readOnly,
 }) }}
 
 {{ forms.autosuggestField({
@@ -51,6 +54,7 @@
     value: volume.getSubpath(false, false),
     errors: volume.getErrors('subpath'),
     data: {'error-key': 'subpath'},
+    disabled: readOnly,
 }) }}
 
 {{ forms.fsField({
@@ -63,6 +67,7 @@
     options: [{label: 'Same as asset filesystem'|t('app'), value: null}]|merge(craft.cp.getFsOptions()),
     errors: volume.getErrors('transformFsHandle'),
     data: {'error-key': 'transformFsHandle'},
+    disabled: readOnly,
 }) }}
 
 {{ forms.autosuggestField({
@@ -74,6 +79,7 @@
     value: volume.getTransformSubpath(false, false),
     errors: volume.getErrors('transformSubpath'),
     data: {'error-key': 'transformSubpath'},
+    disabled: readOnly,
 }) }}
 
 {% if craft.app.getIsMultiSite() %}
@@ -97,7 +103,8 @@
         ]|filter,
         value: volume.titleTranslationMethod,
         toggle: true,
-        targetPrefix: 'title-translation-method-'
+        targetPrefix: 'title-translation-method-',
+        disabled: readOnly,
     }) }}
 
     <div id="title-translation-method-custom" {% if volume.titleTranslationMethod != 'custom' %}class="hidden"{% endif %}>
@@ -113,6 +120,7 @@
             value: volume.titleTranslationKeyFormat,
             errors: volume.getErrors('titleTranslationKeyFormat'),
             data: {'error-key': 'titleTranslationKeyFormat'},
+            disabled: readOnly,
         }) }}
     </div>
 
@@ -134,7 +142,8 @@
         ]|filter,
         value: volume.altTranslationMethod,
         toggle: true,
-        targetPrefix: 'alt-translation-method-'
+        targetPrefix: 'alt-translation-method-',
+        disabled: readOnly,
     }) }}
 
     <div id="alt-translation-method-custom" {% if volume.altTranslationMethod != 'custom' %}class="hidden"{% endif %}>
@@ -150,6 +159,7 @@
             value: volume.altTranslationKeyFormat,
             errors: volume.getErrors('altTranslationKeyFormat'),
             data: {'error-key': 'altTranslationKeyFormat'},
+            disabled: readOnly,
         }) }}
     </div>
 {% endif %}
@@ -159,6 +169,7 @@
 {{ forms.fieldLayoutDesignerField({
     fieldLayout: volume.getFieldLayout(),
     withCardViewDesigner: true,
+    disabled: readOnly,
 }) }}
 
 

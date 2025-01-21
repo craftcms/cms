@@ -336,4 +336,27 @@ trait NestedElementQueryTrait
 
         return $tags;
     }
+
+    /**
+     * @inheritdoc
+     */
+    protected function fieldLayouts(): array
+    {
+        $this->normalizeFieldId();
+
+        if ($this->fieldId) {
+            $fieldLayouts = [];
+            foreach ($this->fieldId as $fieldId) {
+                $field = Craft::$app->getFields()->getFieldById($fieldId);
+                if ($field instanceof ElementContainerFieldInterface) {
+                    foreach ($field->getFieldLayoutProviders() as $provider) {
+                        $fieldLayouts[] = $provider->getFieldLayout();
+                    }
+                }
+            }
+            return $fieldLayouts;
+        }
+
+        return parent::fieldLayouts();
+    }
 }

@@ -2,7 +2,8 @@
 
 {% set id = id ?? "color#{random()}" -%}
 {% set containerId = containerId ?? id~'-container' -%}
-{% set hexLabelId = "hex-#{id}" %}
+{% set hexLabelId = "#{id}-label" %}
+{% set hexDescriptionId = "#{id}-desc" %}
 {% set name = name ?? null -%}
 {% set value = value ?? null -%}
 {% set small = small ?? false -%}
@@ -32,6 +33,7 @@
         <div class="color-input-container">
             <div class="color-hex-indicator light code" aria-hidden="true">#</div>
             <span id="{{ hexLabelId }}" class="visually-hidden">{{ 'Color hex value'|t('app') }}</span>
+            <span id="{{ hexDescriptionId }}" class="visually-hidden">{{ 'Value prefixed by “{prefix}”.'|t('app', {prefix: '#'}) }}</span>
             {{ forms.text({
                 id: id,
                 describedBy: describedBy ?? false,
@@ -42,6 +44,11 @@
                 autofocus: autofocus,
                 disabled: disabled,
                 labelledBy: [labelledBy, hexLabelId]|filter|join(' '),
+                inputAttributes: {
+                    aria: {
+                        describedby: hexDescriptionId,
+                    }
+                }
             }) }}
         </div>
     {% endtag %}

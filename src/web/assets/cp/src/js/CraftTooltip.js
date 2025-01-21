@@ -1,4 +1,11 @@
-import {arrow, computePosition, flip, offset, shift} from '@floating-ui/dom';
+import {
+  arrow,
+  autoUpdate,
+  computePosition,
+  flip,
+  offset,
+  shift,
+} from '@floating-ui/dom';
 
 /**
  * Tooltip
@@ -12,8 +19,9 @@ import {arrow, computePosition, flip, offset, shift} from '@floating-ui/dom';
  * @property {'top'|'top-start'|'top-end'|'right'|'right-start'|'right-end'|'bottom'|'bottom-start'|'bottom-end'|'left'|'left-start'|'left-end'} placement - The placement of the tooltip relative to the parent element.
  * @property {boolean} arrow - Whether the tooltip should have an arrow.
  * @property {number} offset - The offset of the tooltip from the parent element.
- * @property {boolean} self-managed - Whether the tooltip should manage its own state.
- * @property {string} aria-label - Text content for the tooltip
+ * @property {boolean} self-managed - When true, the tooltip will be its own trigger.
+ * @property {string} text - Text content for the tooltip
+ * @property {string} trigger - Selector for the element that should trigger the tooltip. If `self-managed` is set, this setting will be ignored.
  * @property {number} delay - The delay before the tooltip is shown on mouseentery.
  * @method show - Show the tooltip.
  * @method hide - Hide the tooltip.
@@ -22,13 +30,24 @@ import {arrow, computePosition, flip, offset, shift} from '@floating-ui/dom';
  * @example <craft-tooltip aria-label="Tooltip content"><button type="button">Trigger</button></craft-tooltip>
  */
 class CraftTooltip extends HTMLElement {
-  static get observedAttributes() {
-    return ['aria-label'];
+  static observedAttributes = ['text', 'placement'];
+
+  get triggerElement() {
+    if (this.selfManaged) {
+      return this;
+    }
+
+    if (this.getAttribute('trigger')) {
+      return this.closest(this.getAttribute('trigger'));
+    }
+
+    return this.querySelector('a,button,[role="button"]');
   }
 
   connectedCallback() {
+    this.abortController = new AbortController();
+
     this.arrowElement = this.querySelector('.arrow');
-    this.trigger = this.querySelector('a, button, [role="button"]');
     this.selfManaged = this.hasAttribute('self-managed');
 
     this.arrow = this.getAttribute('arrow') !== 'false';
@@ -40,6 +59,9 @@ class CraftTooltip extends HTMLElement {
     this.direction = getComputedStyle(this).direction;
     this.delay = this.getAttribute('delay') || 500;
     this.delayTimeout = null;
+    this.maxWidth = this.getAttribute('max-width') || '220px';
+    this.text = this.getAttribute('text') || this.innerText;
+    this.showing = false;
 
     this.renderTooltip();
     this.renderInner();
@@ -50,29 +72,26 @@ class CraftTooltip extends HTMLElement {
 
     this.listeners = [
       ['mouseenter', this.show, this.delay],
-      ['focus', this.show, 0],
-      ['mouseleave', this.hide, 0],
-      ['blur', this.hide, 0],
+      ['mouseleave', this.hide],
+      ['keyup', this.handleKeyUp],
+      ['click', this.toggle],
+      ['focus', this.show],
+      ['blur', this.hide],
     ];
 
-    if (this.selfManaged) {
-      this.trigger = this.parentElement;
-    }
-
-    if (!this.trigger) {
-      console.warn('No trigger found for tooltip');
+    if (!this.triggerElement) {
+      console.warn('No trigger found for tooltip', this);
       return false;
     }
 
     // Make sure the trigger accepts pointer events
-    this.trigger.style.pointerEvents = 'auto';
+    this.triggerElement.style.pointerEvents = 'auto';
 
     this.listeners.forEach(([event, handler, delay]) => {
-      this.trigger?.addEventListener(event, handler.bind(this, delay));
+      this.triggerElement.addEventListener(event, () => handler(delay), {
+        signal: this.abortController.signal,
+      });
     });
-
-    // Close on ESC
-    document.addEventListener('keyup', this.handleKeyUp.bind(this));
 
     // Update & hide to make sure everything is where it needs to be
     this.update();
@@ -81,18 +100,11 @@ class CraftTooltip extends HTMLElement {
 
   disconnectedCallback() {
     this.hide();
-
-    if (this.listeners.length) {
-      this.listeners.forEach(([event, handler]) => {
-        this.trigger?.removeEventListener(event, handler.bind(this));
-      });
-    }
-
-    document.removeEventListener('keyup', this.handleKeyUp.bind(this));
+    this.abortController.abort();
   }
 
   attributeChangedCallback(name, oldValue, newValue) {
-    if (name === 'aria-label' && this.inner) {
+    if (name === 'text' && this.inner) {
       this.inner.innerText = newValue;
 
       // innerText will remove the arrow, so we have to put it back if we need it.
@@ -101,18 +113,37 @@ class CraftTooltip extends HTMLElement {
         this.update();
       }
     }
+
+    if (name === 'placement') {
+      this.placement = newValue;
+    }
   }
 
-  handleKeyUp(e) {
+  handleKeyUp = (e) => {
     if (e.key === 'Escape') {
       this.hide();
     }
-  }
+  };
 
   renderTooltip() {
     this.tooltip = document.createElement('span');
     this.tooltip.classList.add('craft-tooltip');
-    this.appendChild(this.tooltip);
+    this.tooltip.style['max-width'] = this.maxWidth;
+
+    // Keep the tooltip open when the user is hovering over it.
+    this.tooltip.addEventListener('mouseenter', () => this.show(), {
+      signal: this.abortController.signal,
+    });
+    this.tooltip.addEventListener('mouseleave', this.hide, {
+      signal: this.abortController.signal,
+    });
+
+    /**
+     * We need to append the tooltip to the body because
+     * the `container-size` property will create a new context
+     * for position: fixed which is a problem when using `strategy: fixed`
+     */
+    window.document.body.appendChild(this.tooltip);
   }
 
   /**
@@ -122,7 +153,7 @@ class CraftTooltip extends HTMLElement {
   renderInner() {
     this.inner = document.createElement('span');
     this.inner.classList.add('inner');
-    this.inner.innerText = this.getAttribute('aria-label');
+    this.inner.innerText = this.text;
 
     // Replace the content with the inner container
     this.tooltip.appendChild(this.inner);
@@ -134,10 +165,27 @@ class CraftTooltip extends HTMLElement {
     this.inner.appendChild(this.arrowElement);
   }
 
-  show(delay) {
-    this.update();
+  toggle = () => {
+    if (this.showing) {
+      this.hide();
+    } else {
+      this.show();
+    }
+  };
+
+  show = (delay = 0) => {
+    this.isHovering = true;
+
+    if (this.delayTimeout) {
+      clearTimeout(this.delayTimeout);
+    }
 
     this.delayTimeout = setTimeout(() => {
+      // Check if the user is still over the tooltip before doing anything
+      if (!this.isHovering) {
+        return;
+      }
+
       Object.assign(this.tooltip.style, {
         opacity: 1,
         transform: ['left', 'right'].includes(this.getStaticSide())
@@ -146,10 +194,15 @@ class CraftTooltip extends HTMLElement {
         // Make sure if a user hovers over the label itself, it stays open
         pointerEvents: 'auto',
       });
-    }, delay);
-  }
 
-  hide() {
+      autoUpdate(this.triggerElement, this.tooltip, this.update);
+      this.showing = true;
+    }, delay);
+  };
+
+  hide = () => {
+    this.isHovering = false;
+
     if (this.delayTimeout) {
       clearTimeout(this.delayTimeout);
     }
@@ -159,7 +212,9 @@ class CraftTooltip extends HTMLElement {
       transform: this.getInitialTransform(),
       pointerEvents: 'none',
     });
-  }
+
+    this.showing = false;
+  };
 
   getInitialTransform() {
     // Make sure the bubble moves in a natural direction
@@ -180,8 +235,12 @@ class CraftTooltip extends HTMLElement {
     }[this.placement.split('-')[0]];
   }
 
-  update() {
-    computePosition(this.trigger, this.tooltip, {
+  cleanup() {
+    return autoUpdate(this.triggerElement, this.tooltip, this.update);
+  }
+
+  update = () => {
+    computePosition(this.triggerElement, this.tooltip, {
       strategy: 'fixed',
       placement: this.placement,
       middleware: [
@@ -192,11 +251,12 @@ class CraftTooltip extends HTMLElement {
       ],
     }).then(({x, y, middlewareData, placement}) => {
       // Placement may have changed
-      this.placement = placement;
+      this.setAttribute('placement', placement);
 
       Object.assign(this.tooltip.style, {
         left: `${x}px`,
         top: `${y}px`,
+        padding: '0px',
         // Add padding to the static side for accessible hovers
         [`padding${Craft.uppercaseFirst(this.getStaticSide())}`]:
           `${this.offset}px`,
@@ -216,7 +276,7 @@ class CraftTooltip extends HTMLElement {
         [this.getStaticSide()]: '-4px',
       });
     });
-  }
+  };
 }
 
 customElements.define('craft-tooltip', CraftTooltip);

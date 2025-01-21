@@ -4,7 +4,7 @@
 
 $base: 24px;
 $tabPadding: 14px;
-$tabWidth: $base * 11;
+$tabWidth: $base * 12;
 $gridColor: var(--gray-100);
 
 @mixin workspace-bg {
@@ -25,7 +25,6 @@ $gridColor: var(--gray-100);
   @include mixins.input-styles;
   overflow: hidden;
   box-shadow: none;
-  padding-inline-end: $tabWidth + 1;
   min-height: 500px;
 
   .errors > & {
@@ -34,6 +33,7 @@ $gridColor: var(--gray-100);
 
   .fld-workspace {
     flex: 1;
+    max-width: 100%;
     border-start-start-radius: calc(var(--small-border-radius) - 1px);
     border-start-end-radius: 0;
     border-end-end-radius: 0;
@@ -51,33 +51,22 @@ $gridColor: var(--gray-100);
     }
   }
 
-  &:not(:has(.fld-library)) {
-    padding-inline-end: 0;
-
-    .fld-workspace {
-      padding-inline-end: $base;
-    }
-  }
-
   .fld-library {
-    position: absolute;
-    inset-block-start: 0;
-    inset-inline-end: 0;
-    height: 100%;
-    width: $tabWidth + 1;
+    display: none;
+  }
+}
+
+.fld-library-hud {
+  width: $tabWidth - 1;
+  max-width: 100%;
+
+  .main {
     padding: $tabPadding;
   }
 }
 
 .fld-new-tab-btn:active {
   background-color: var(--gray-050);
-}
-
-.fld-library-menu {
-  width: $tabWidth;
-  min-height: 200px;
-  margin-inline-start: $tabPadding * -1;
-  padding: $tabPadding;
 }
 
 .fld-library {
@@ -119,13 +108,17 @@ $gridColor: var(--gray-100);
 
 .layoutdesigner .fld-library,
 .fld-tab .tabs .tab,
-.fld-tab .fld-tabcontent,
-.fld-new-tab-btn,
-.fld-new-tab-btn:hover {
+.fld-tab .fld-tabcontent {
   background-color: var(--white);
   box-shadow:
     0 0 0 1px color.adjust(mixins.$grey900, $alpha: -0.9),
     0 2px 5px -2px color.adjust(mixins.$grey900, $alpha: -0.8);
+}
+
+.fld-new-tab-btn {
+  --button-bg: var(--white);
+  --button-shadow: 0 0 0 1px #{color.adjust(mixins.$grey900, $alpha: -0.9)},
+    0 2px 5px -2px #{color.adjust(mixins.$grey900, $alpha: -0.8)};
 }
 
 .fld-tab .settings::before,
@@ -144,6 +137,7 @@ $gridColor: var(--gray-100);
 
 .fld-tab {
   width: $tabWidth + $base;
+  max-width: 100%;
   padding-inline: 0 $base + 1;
   padding-block: 0 $base;
   box-sizing: border-box;
@@ -191,10 +185,6 @@ $gridColor: var(--gray-100);
       &:not(:first-child) {
         margin-block-start: var(--s);
       }
-    }
-
-    .fld-add-btn:not([aria-expanded='true']) {
-      display: none;
     }
   }
 
@@ -252,7 +242,7 @@ $gridColor: var(--gray-100);
     color: var(--medium-text-color);
     background-color: var(--gray-100);
 
-    &:not(.draghelper) {
+    &:not(.draghelper, :focus) {
       box-shadow: none;
     }
 
@@ -384,28 +374,6 @@ $gridColor: var(--gray-100);
   & > .spinner {
     margin-inline: 0 var(--neg-padding);
     margin-block: 0;
-  }
-}
-
-@container (width < #{$base + $tabWidth + $base + $tabWidth + 1}) {
-  .fld-container {
-    padding-inline-end: 0;
-
-    .fld-workspace {
-      padding-inline-end: $base;
-    }
-
-    & > .fld-library {
-      display: none;
-    }
-  }
-
-  .fld-tab {
-    .fld-tabcontent {
-      .fld-add-btn {
-        display: inline-flex !important;
-      }
-    }
   }
 }
 

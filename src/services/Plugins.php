@@ -1010,7 +1010,8 @@ class Plugins extends Component
         $info['moduleId'] = $handle;
         $info['edition'] = $edition;
         $info['hasMultipleEditions'] = count($editions) > 1;
-        $info['hasCpSettings'] = ($plugin !== null && $plugin->hasCpSettings);
+        $info['hasCpSettings'] = $plugin?->hasCpSettings ?? false;
+        $info['hasReadOnlyCpSettings'] = $plugin?->hasReadOnlyCpSettings ?? false;
         $info['licenseKey'] = $pluginInfo['licenseKey'] ?? null;
 
         $licenseInfo = Craft::$app->getCache()->get(App::licenseInfoCacheKey()) ?? [];

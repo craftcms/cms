@@ -404,7 +404,7 @@ EOD;
             $guzzleConfig['proxy'] = $generalConfig->httpProxy;
         }
 
-        return new Client($guzzleConfig);
+        return Craft::createObject(Client::class, [$guzzleConfig]);
     }
 }
 

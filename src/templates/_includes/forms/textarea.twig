@@ -1,6 +1,5 @@
 {%- set class = (class ?? [])|explodeClass|merge([
     'text',
-    (disabled ?? false) ? 'disabled',
     not (cols ?? false) ? 'fullwidth',
 ]|filter) %}
 

@@ -258,7 +258,7 @@ abstract class BaseField extends FieldLayoutElement
      * The returned icon can be a system icon’s name (e.g. `'whiskey-glass-ice'`),
      * the path to an SVG file, or raw SVG markup.
      *
-     * System icons can be found in `src/icons/solid/.`
+     * System icons can be found in `src/icons/solid/`.
      *
      * @return string|null
      * @since 5.0.0
@@ -372,6 +372,40 @@ abstract class BaseField extends FieldLayoutElement
         $instructions = $this->instructions($element, $static);
         $tip = $this->tip($element, $static);
         $warning = $this->warning($element, $static);
+        $translatable = $this->translatable($element, $static);
+        $actionMenuItems = $this->actionMenuItems($element, $static);
+
+        if (
+            $this->uid &&
+            $element?->id &&
+            !$static &&
+            $this->isCrossSiteCopyable($element) &&
+            $this->translatable($element, $static) &&
+            $element->getIsCrossSiteCopyable()
+        ) {
+            // prepare namespace for the purpose of copying
+            $namespace = Craft::$app->getView()->getNamespace();
+
+            $actionMenuItems = array_filter([
+                [
+                    'icon' => 'clone',
+                    'label' => Craft::t('app', 'Copy value from site…'),
+                    'attributes' => [
+                        'data' => [
+                            'cross-site-copy' => true,
+                            'element-id' => $element->id,
+                            'layout-element' => $this->uid,
+                            'label' => $label,
+                            'namespace' => ($namespace && $namespace !== 'field')
+                                ? StringHelper::removeRight($namespace, '[fields]')
+                                : null,
+                        ],
+                    ],
+                ],
+                !empty($actionMenuItems) ? ['type' => 'hr'] : null,
+                ...$actionMenuItems,
+            ]);
+        }
 
         return Cp::fieldHtml($inputHtml, [
             'fieldset' => $this->useFieldset(),
@@ -394,8 +428,9 @@ abstract class BaseField extends FieldLayoutElement
             'tip' => $tip !== null ? Html::encode($tip) : null,
             'warning' => $warning !== null ? Html::encode($warning) : null,
             'orientation' => $this->orientation($element, $static),
-            'translatable' => $this->translatable($element, $static),
+            'translatable' => $translatable,
             'translationDescription' => $this->translationDescription($element, $static),
+            'actionMenuItems' => $actionMenuItems,
             'errors' => !$static ? $this->errors($element) : [],
         ]);
     }
@@ -776,6 +811,32 @@ abstract class BaseField extends FieldLayoutElement
     protected function translationDescription(?ElementInterface $element = null, bool $static = false): ?string
     {
         return null;
+    }
+
+    /**
+     * Returns whether field supports copying its value across sites.
+     *
+     * @param ElementInterface $element
+     * @return bool
+     */
+    public function isCrossSiteCopyable(ElementInterface $element): bool
+    {
+        return false;
+    }
+
+    /**
+     * Returns any action menu items that should be shown for the field.
+     *
+     * See [[\craft\helpers\Cp::disclosureMenu()]] for documentation on supported item properties.
+     *
+     * @param ElementInterface|null $element The element the form is being rendered for
+     * @param bool $static Whether the form should be static (non-interactive)
+     * @return array
+     * @since 5.6.0
+     */
+    protected function actionMenuItems(?ElementInterface $element = null, bool $static = false): array
+    {
+        return [];
     }
 
     /**

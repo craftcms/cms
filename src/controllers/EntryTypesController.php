@@ -14,12 +14,15 @@ use craft\base\FieldLayoutElement;
 use craft\elements\Entry;
 use craft\enums\Color;
 use craft\fieldlayoutelements\entries\EntryTitleField;
+use craft\helpers\ArrayHelper;
 use craft\helpers\Cp;
 use craft\helpers\Html;
+use craft\helpers\StringHelper;
 use craft\models\EntryType;
 use craft\models\Section;
 use craft\web\Controller;
 use yii\web\BadRequestHttpException;
+use yii\web\ForbiddenHttpException;
 use yii\web\NotFoundHttpException;
 use yii\web\Response;
 
@@ -33,13 +36,26 @@ use yii\web\Response;
  */
 class EntryTypesController extends Controller
 {
+    private bool $readOnly;
+
     /**
      * @inheritdoc
      */
     public function beforeAction($action): bool
     {
-        // All section actions require an admin
-        $this->requireAdmin();
+        // All actions require an admin account (but not allowAdminChanges)
+        $this->requireAdmin(false);
+
+        $viewActions = ['edit', 'table-data'];
+        if (in_array($action->id, $viewActions)) {
+            // Some actions require admin but not allowAdminChanges
+            $this->requireAdmin(false);
+        } else {
+            // All other actions require an admin & allowAdminChanges
+            $this->requireAdmin();
+        }
+
+        $this->readOnly = !Craft::$app->getConfig()->getGeneral()->allowAdminChanges;
 
         return parent::beforeAction($action);
     }
@@ -54,6 +70,10 @@ class EntryTypesController extends Controller
      */
     public function actionEdit(?int $entryTypeId = null, ?EntryType $entryType = null): Response
     {
+        if ($entryTypeId === null && $this->readOnly) {
+            throw new ForbiddenHttpException('Administrative changes are disallowed in this environment.');
+        }
+
         if ($entryTypeId !== null) {
             if ($entryType === null) {
                 $entryType = Craft::$app->getEntries()->getEntryTypeById($entryTypeId);
@@ -91,26 +111,36 @@ class EntryTypesController extends Controller
             ->title($title)
             ->addCrumb(Craft::t('app', 'Settings'), 'settings')
             ->addCrumb(Craft::t('app', 'Entry Types'), 'settings/entry-types')
-            ->action('entry-types/save')
-            ->redirectUrl('settings/entry-types')
-            ->addAltAction(Craft::t('app', 'Save and continue editing'), [
-                'redirect' => 'settings/entry-types/{id}',
-                'shortcut' => true,
-                'retainScroll' => true,
-            ])
             ->contentTemplate('settings/entry-types/_edit.twig', [
                 'entryTypeId' => $entryTypeId,
                 'entryType' => $entryType,
                 'typeName' => Entry::displayName(),
                 'lowerTypeName' => Entry::lowerDisplayName(),
+                'readOnly' => $this->readOnly,
             ]);
 
-        if ($entryType->id) {
+        if (!$this->readOnly) {
             $response
-                ->addAltAction(Craft::t('app', 'Delete'), [
+                ->action('entry-types/save')
+                ->redirectUrl('settings/entry-types')
+                ->addAltAction(Craft::t('app', 'Save and continue editing'), [
+                    'redirect' => 'settings/entry-types/{id}',
+                    'shortcut' => true,
+                    'retainScroll' => true,
+                ]);
+        } else {
+            $response->noticeHtml(Cp::readOnlyNoticeHtml());
+        }
+
+        if ($entryType->id) {
+            if (!$this->readOnly) {
+                $response->addAltAction(Craft::t('app', 'Delete'), [
                     'action' => 'entry-types/delete',
                     'destructive' => true,
-                ])
+                ]);
+            }
+
+            $response
                 ->metaSidebarHtml(Cp::metadataHtml([
                     Craft::t('app', 'ID') => $entryType->id,
                     Craft::t('app', 'Used by') => function() use ($entryType) {
@@ -255,5 +285,84 @@ class EntryTypesController extends Controller
             'pagination' => $pagination,
             'data' => $tableData,
         ]);
+    }
+
+    /**
+     * Renders an entry type’s override settings for an entry type select input.
+     *
+     * @return Response
+     * @since 5.6.0
+     */
+    public function actionRenderOverrideSettings(): Response
+    {
+        $entryType = $this->_entryTypeForSelectInput();
+        $entryType->name = $this->request->getBodyParam('name') ?? $entryType->name;
+        $entryType->handle = $this->request->getBodyParam('handle') ?? $entryType->handle;
+
+        $namespace = StringHelper::randomString(10);
+        $view = Craft::$app->getView();
+
+        $html = $view->namespaceInputs(
+            fn() => $view->renderTemplate('_includes/forms/entry-type-select/selection-settings.twig', [
+                'entryType' => $entryType,
+            ]),
+            $namespace,
+        );
+
+        return $this->asJson([
+            'settingsHtml' => $html,
+            'namespace' => $namespace,
+            'headHtml' => $view->getHeadHtml(),
+            'bodyHtml' => $view->getBodyHtml(),
+        ]);
+    }
+
+    /**
+     * Validates and returns an entry type’s override settings for an entry type select input.
+     *
+     * @return Response
+     * @since 5.6.0
+     */
+    public function actionApplyOverrideSettings(): Response
+    {
+        $entryType = $this->_entryTypeForSelectInput();
+
+        $settingsStr = $this->request->getBodyParam('settings');
+        parse_str($settingsStr, $postedSettings);
+        $settingsNamespace = $this->request->getRequiredBodyParam('settingsNamespace');
+        $settings = array_filter(ArrayHelper::getValue($postedSettings, $settingsNamespace, []));
+
+        if (!empty($settings)) {
+            Craft::configure($entryType, $settings);
+            $entryType->validateHandleUniqueness = false;
+
+            if (!$entryType->validate(array_keys($settings))) {
+                return $this->asModelFailure($entryType, Craft::t('app', 'Couldn’t apply changes.'), 'entryType');
+            }
+        }
+
+        $chipHtml = Cp::chipHtml($entryType, [
+            'showHandle' => true,
+            'showIndicators' => true,
+        ]);
+
+        return $this->asJson([
+            'config' => $entryType->toArray(['id', 'name', 'handle']),
+            'chipHtml' => $chipHtml,
+        ]);
+    }
+
+    private function _entryTypeForSelectInput(): EntryType
+    {
+        $id = $this->request->getRequiredBodyParam('id');
+        $original = Craft::$app->getEntries()->getEntryTypeById($id);
+
+        if (!$original) {
+            throw new BadRequestHttpException("Invalid entry type ID: $id");
+        }
+
+        $entryType = clone $original;
+        $entryType->original = $original;
+        return $entryType;
     }
 }

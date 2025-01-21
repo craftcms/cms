@@ -21,7 +21,7 @@
           this.progressBar.resetProgressBar();
         }
 
-        this.progressBar.$progressBar.removeClass('hidden');
+        this.progressBar.showProgressBar();
 
         this.progressBar.$progressBar.velocity('stop').velocity(
           {
@@ -94,20 +94,16 @@
         this.$allDone.css('opacity', 0);
       }
 
-      this.progressBar.$progressBar.velocity(
-        {opacity: 0},
-        {
-          duration: 'fast',
-          complete: () => {
-            if (typeof showAllDone === 'undefined' || showAllDone === true) {
-              this.$allDone.velocity({opacity: 1}, {duration: 'fast'});
-            }
+      // Add equivalent announcement for screen reader users
+      Craft.cp.announce(Craft.t('app', 'Success'));
 
-            this.$trigger.removeClass('disabled');
-            this.$trigger.focus();
-          },
-        }
-      );
+      this.progressBar.hideProgressBar();
+      if (typeof showAllDone === 'undefined' || showAllDone === true) {
+        this.$allDone.velocity({opacity: 1}, {duration: 'fast'});
+      }
+
+      this.$trigger.removeClass('disabled');
+      this.$trigger.focus();
     },
   });
 })(jQuery);

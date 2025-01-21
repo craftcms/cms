@@ -9,6 +9,7 @@ namespace craft\web;
 
 use Craft;
 use craft\events\ExceptionEvent;
+use craft\events\RedirectEvent;
 use craft\helpers\App;
 use craft\helpers\Json;
 use craft\helpers\Template;
@@ -39,6 +40,12 @@ class ErrorHandler extends \yii\web\ErrorHandler
     public const EVENT_BEFORE_HANDLE_EXCEPTION = 'beforeHandleException';
 
     /**
+     * @event RedirectEvent The event that is triggered before a 404 redirect.
+     * @since 5.6.0
+     */
+    public const EVENT_BEFORE_REDIRECT = 'beforeRedirect';
+
+    /**
      * @inheritdoc
      */
     public function handleException($exception): void
@@ -57,6 +64,35 @@ class ErrorHandler extends \yii\web\ErrorHandler
 
         // 404?
         if ($exception instanceof HttpException && $exception->statusCode === 404) {
+            $redirectRules = Craft::$app->getConfig()->getConfigFromFile('redirects');
+            if ($redirectRules) {
+                foreach ($redirectRules as $from => $rule) {
+                    if (!$rule instanceof RedirectRule) {
+                        $config = is_string($rule) ? ['to' => $rule] : $rule;
+                        $rule = Craft::createObject([
+                            'class' => RedirectRule::class,
+                            'from' => $from,
+                            ...$config,
+                        ]);
+                    }
+
+                    $url = $rule->getMatch();
+
+                    if ($url === null) {
+                        continue;
+                    }
+
+                    if ($this->hasEventHandlers(self::EVENT_BEFORE_REDIRECT)) {
+                        $this->trigger(self::EVENT_BEFORE_REDIRECT, new RedirectEvent([
+                            'rule' => $rule,
+                        ]));
+                    }
+
+                    Craft::$app->getResponse()->redirect($url, $rule->statusCode);
+                    Craft::$app->end();
+                }
+            }
+
             $request = Craft::$app->getRequest();
             if ($request->getIsSiteRequest() && $request->getPathInfo() === 'wp-admin') {
                 $exception->statusCode = 418;

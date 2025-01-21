@@ -6,9 +6,11 @@
     id: 'entry-types',
     name: 'entryTypes[]',
     values: field.getEntryTypes(),
+    allowOverrides: true,
     create: true,
     errors: field.getErrors('entryTypes'),
     data: {'error-key': 'entryTypes'},
+    disabled: readOnly,
 }) }}
 
 {% if craft.app.getIsMultiSite() %}
@@ -27,6 +29,7 @@
         value: field.propagationMethod.value,
         toggle: true,
         targetPrefix: 'propagation-method-',
+        disabled: readOnly,
     }) }}
 
     {% tag 'div' with {
@@ -41,6 +44,7 @@
             name: 'propagationKeyFormat',
             value: field.propagationKeyFormat,
             errors: field.getErrors('propagationKeyFormat'),
+            disabled: readOnly,
         }) }}
     {% endtag %}
 
@@ -123,6 +127,7 @@
     allowReorder: false,
     errors: siteErrors|unique,
     data: {'error-key': 'siteSettings'},
+    static: readOnly,
 }) }}
 
 {{ forms.textField({
@@ -138,6 +143,7 @@
     size: 3,
     errors: field.getErrors('minEntries'),
     data: {'error-key': 'minEntries'},
+    disabled: readOnly,
 }) }}
 
 {{ forms.textField({
@@ -153,6 +159,7 @@
     size: 3,
     errors: field.getErrors('maxEntries'),
     data: {'error-key': 'maxEntries'},
+    disabled: readOnly,
 }) }}
 
 <hr>
@@ -172,6 +179,7 @@
     value: field.viewMode,
     toggle: true,
     targetPrefix: 'view-mode--',
+    disabled: readOnly,
 }) }}
 
 {% tag 'div' with {
@@ -184,6 +192,7 @@
         id: 'show-cards-in-grid',
         name: 'showCardsInGrid',
         on: field.showCardsInGrid,
+        disabled: readOnly,
     }) }}
 {% endtag %}
 
@@ -200,6 +209,7 @@
         name: 'includeTableView',
         on: field.includeTableView,
         toggle: '#default-table-columns-container',
+        disabled: readOnly,
     }) }}
 
     {% tag 'div' with {
@@ -228,7 +238,8 @@
             id: 'default-view-mode',
             name: 'defaultIndexViewMode',
             options: options,
-            value: field.defaultIndexViewMode
+            value: field.defaultIndexViewMode,
+            disabled: readOnly,
         }) }}
     {% endtag %}
 
@@ -243,6 +254,7 @@
         name: 'pageSize',
         options: [10, 20, 50, 100]|map(num => {label: num, value: num}),
         value: field.pageSize ?? 50,
+        disabled: readOnly,
     }) }}
 {% endtag %}
 
@@ -253,19 +265,26 @@
     name: 'createButtonLabel',
     value: field.createButtonLabel,
     placeholder: defaultCreateButtonLabel,
-    errors: field.getErrors('createButtonLabel')
+    errors: field.getErrors('createButtonLabel'),
+    disabled: readOnly,
 }) }}
 
 {% js %}
   (() => {
     const $defaultColumnsContainer = $('#{{ 'default-table-columns-input'|namespaceInputId }}');
-
-    Craft.ui.createCheckboxSelect({
+    const config = {
       name: {{ 'defaultTableColumns'|namespaceInputName|json_encode|raw }},
       options: {{ defaultTableColumnOptions|json_encode|raw }},
       values: {{ field.defaultTableColumns|json_encode|raw }},
-      sortable: true,
-    }).appendTo($defaultColumnsContainer);
+    };
+
+    {% if readOnly %}
+        config['disabled'] = true;
+    {% else %}
+        config['sortable'] = true;
+    {% endif %}
+
+    Craft.ui.createCheckboxSelect(config).appendTo($defaultColumnsContainer);
 
     const componentSelect = $('#{{ 'entry-types'|namespaceInputId }}').data('componentSelect');
 

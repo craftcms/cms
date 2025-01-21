@@ -151,6 +151,14 @@ class AssetIndexesController extends Controller
         if (!$indexingSession->actionRequired) {
             $indexingSession = $assetIndexer->processIndexSession($indexingSession);
 
+            if ($indexingSession->forceStop) {
+                $assetIndexer->stopIndexingSession($indexingSession);
+                return $this->asFailure(data: [
+                    'stop' => $sessionId,
+                    'message' => Craft::t('app', 'There was a problem indexing assets.'),
+                ]);
+            }
+
             // If action is now required, we just processed the last entry
             // To save a round-trip, just pull the session review data
             if ($indexingSession->actionRequired) {

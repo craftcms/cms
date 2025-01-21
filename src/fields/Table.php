@@ -8,6 +8,7 @@
 namespace craft\fields;
 
 use Craft;
+use craft\base\CrossSiteCopyableFieldInterface;
 use craft\base\ElementInterface;
 use craft\base\Field;
 use craft\fields\data\ColorData;
@@ -35,7 +36,7 @@ use yii\validators\EmailValidator;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
  */
-class Table extends Field
+class Table extends Field implements CrossSiteCopyableFieldInterface
 {
     /**
      * @inheritdoc
@@ -246,6 +247,19 @@ class Table extends Field
      */
     public function getSettingsHtml(): ?string
     {
+        return $this->settingsHtml(false);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getReadOnlySettingsHtml(): ?string
+    {
+        return $this->settingsHtml(true);
+    }
+
+    private function settingsHtml(bool $readOnly): string
+    {
         $typeOptions = [
             'checkbox' => Craft::t('app', 'Checkbox'),
             'color' => Craft::t('app', 'Color'),
@@ -349,6 +363,7 @@ class Table extends Field
             'cols' => $columnSettings,
             'rows' => $this->columns,
             'errors' => $this->getErrors('columns'),
+            'readOnly' => $readOnly,
         ]);
 
         $defaultsField = Cp::editableTableFieldHtml([
@@ -362,12 +377,14 @@ class Table extends Field
             'cols' => $columns,
             'rows' => $this->defaults,
             'initJs' => false,
+            'static' => $readOnly,
         ]);
 
         return $view->renderTemplate('_components/fieldtypes/Table/settings.twig', [
             'field' => $this,
             'columnsField' => $columnsField,
             'defaultsField' => $defaultsField,
+            'readOnly' => $readOnly,
         ]);
     }
 

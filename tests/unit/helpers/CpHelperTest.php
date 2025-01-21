@@ -141,8 +141,8 @@ class CpHelperTest extends TestCase
         });
         // fieldset + legend
         $fieldset = Cp::fieldHtml('<input>', ['fieldset' => 'true', 'label' => 'Label']);
-        self::assertStringContainsString('<fieldset', $fieldset);
-        self::assertStringContainsString('<legend', $fieldset);
+        self::assertStringContainsString('aria-labelledby="', $fieldset);
+        self::assertStringContainsString('role="group"', $fieldset);
         // translatable
         self::assertStringContainsString('class="t9n-indicator"', Cp::fieldHtml('<input>', ['label' => 'Label', 'translatable' => true]));
         // instructions

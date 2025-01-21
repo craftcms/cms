@@ -13,6 +13,7 @@
     required: true,
     errors: entryType.getErrors('name'),
     data: {'error-key': 'name'},
+    disabled: readOnly,
 }) }}
 
 {{ forms.textField({
@@ -27,6 +28,7 @@
     required: true,
     errors: entryType.getErrors('handle'),
     data: {'error-key': 'handle'},
+    disabled: readOnly,
 }) }}
 
 {{ forms.iconPickerField({
@@ -38,6 +40,7 @@
     data: {
         'error-key': 'icon',
     },
+    static: readOnly,
 }) }}
 
 {{ forms.colorSelectField({
@@ -49,6 +52,7 @@
     data: {
         'error-key': 'color',
     },
+    disabled: readOnly,
 }) }}
 
 <hr>
@@ -73,7 +77,8 @@
             ]|filter,
             value: entryType.titleTranslationMethod,
             toggle: true,
-            targetPrefix: 'translation-method-'
+            targetPrefix: 'translation-method-',
+            disabled: readOnly,
         }) }}
 
         <div id="translation-method-custom" {% if entryType.titleTranslationMethod != 'custom' %}class="hidden"{% endif %}>
@@ -91,6 +96,7 @@
                 data: {
                     'error-key': 'titleTranslationKeyFormat',
                 },
+                disabled: readOnly,
             }) }}
         </div>
     </div>
@@ -107,6 +113,7 @@
     data: {
         'error-key': 'titleFormat',
     },
+    disabled: readOnly,
 }) }}
 
 {{ forms.lightswitchField({
@@ -114,7 +121,8 @@
     name: 'showSlugField',
     toggle: 'slug-container',
     reverseToggle: '#slugFormat-container, #field-layout .fld-slug-field-icon',
-    on: entryType.showSlugField
+    on: entryType.showSlugField,
+    disabled: readOnly,
 }) }}
 
 {% if craft.app.getIsMultiSite() %}
@@ -137,7 +145,8 @@
             ]|filter,
             value: entryType.slugTranslationMethod,
             toggle: true,
-            targetPrefix: 'slug-translation-method-'
+            targetPrefix: 'slug-translation-method-',
+            disabled: readOnly,
         }) }}
 
         <div id="slug-translation-method-custom" {% if entryType.slugTranslationMethod != 'custom' %}class="hidden"{% endif %}>
@@ -155,6 +164,7 @@
                 data: {
                     'error-key': 'slugTranslationKeyFormat',
                 },
+                disabled: readOnly,
             }) }}
         </div>
     </div>
@@ -169,6 +179,7 @@
     data: {
         'error-key': 'showStatusField',
     },
+    disabled: readOnly,
 }) }}
 
 <hr>
@@ -177,6 +188,7 @@
     id: 'field-layout',
     fieldLayout: entryType.getFieldLayout(),
     withCardViewDesigner: true,
+    disabled: readOnly,
 }) }}
 
 {% if not entryType.handle %}

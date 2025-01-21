@@ -34,14 +34,23 @@ Craft.ColorInput = Garnish.Base.extend(
         return;
       }
 
+      let isDisabled = false;
+      if (this.$container.parents('.input').hasClass('disabled')) {
+        isDisabled = true;
+      }
       this.$colorContainer.removeClass('static');
       this.$colorInput = $(input)
         .addClass('color-preview-input')
         .attr({
           'aria-controls': this.$input.attr('id'),
           'aria-label': Craft.t('app', 'Color picker'),
+          'aria-labelledby': this.$input.attr('aria-labelledby'),
         })
         .appendTo(this.$colorPreview);
+
+      if (isDisabled) {
+        this.$colorInput.attr('disabled', '');
+      }
 
       if (this.settings.presets?.length) {
         const listId = `listbox-${Math.floor(Math.random() * 1000000)}`;

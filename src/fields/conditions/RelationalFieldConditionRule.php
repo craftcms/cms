@@ -78,6 +78,14 @@ class RelationalFieldConditionRule extends BaseElementSelectConditionRule implem
     /**
      * @inheritdoc
      */
+    protected function allowMultiple(): bool
+    {
+        return true;
+    }
+
+    /**
+     * @inheritdoc
+     */
     protected function operators(): array
     {
         return array_filter([
@@ -139,10 +147,10 @@ class RelationalFieldConditionRule extends BaseElementSelectConditionRule implem
     /**
      * @inheritdoc
      */
-    protected function elementQueryParam(): int|string|null
+    protected function elementQueryParam(): array|null
     {
         // $this->operator will always be OPERATOR_RELATED_TO at this point
-        return $this->getElementId();
+        return $this->getElementIds();
     }
 
     /**
