@@ -1318,7 +1318,7 @@ return [
     'Related To' => 'เกี่ยวข้องกับ',
     'Related {type} Title' => 'ชื่อ {type} ที่เกี่ยวข้อง',
     'Relation ({ex})' => 'Relation ({ex})',
-    'Relations don’t store the selected site, so this should only be enabled if some {type} aren’t propagated to all sites.' => 'Relations don’t store the selected site, so this should only be enabled if some {type} aren’t propagated to all sites.',
+    'Relations don’t store the selected site, so this should only be enabled if some {type} aren’t propagated to all sites.' => 'ไม่ได้มีการบันทึกความสัมพันธ์ไว้ในเว็บไซต์ที่เลือก ดังนั้น รายการนี้ควรเปิดใช้งานเมื่อ {type} บางประเภทไม่ได้เผยแพร่ไปยังเว็บไซต์ทั้งหมด',
     'Release all jobs' => 'Release all jobs',
     'Release job' => 'Release job',
     'Release' => 'Release',
