@@ -100,7 +100,7 @@ class UserElementTest extends TestCase
 
         $activated = Craft::$app->getUsers()->activateUser($user);
         self::assertFalse($activated);
-        self::assertFalse($user->hasErrors('fullName'));
+        self::assertTrue($user->hasErrors('fullName'));
         self::assertTrue($user->hasErrors('username'));
         self::assertTrue($user->hasErrors('email'));
 
