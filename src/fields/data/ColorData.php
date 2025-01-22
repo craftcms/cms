@@ -14,6 +14,7 @@ use yii\base\BaseObject;
  * Multi-select option field data class.
  *
  * @property string $hex
+ * @property string $label
  * @property string $rgb
  * @property int $red
  * @property int $green
@@ -40,14 +41,20 @@ class ColorData extends BaseObject implements Serializable
     private array $_hsl;
 
     /**
+     * @var string The color’s label
+     */
+    private string $_label;
+
+    /**
      * Constructor.
      *
      * @param string $hex hex color value, beginning with `#`. (Shorthand is not supported, e.g. `#f00`.)
      * @param array $config name-value pairs that will be used to initialize the object properties
      */
-    public function __construct(string $hex, array $config = [])
+    public function __construct(string $hex, string $label = '', array $config = [])
     {
         $this->_hex = $hex;
+        $this->_label = $label;
         parent::__construct($config);
     }
 
@@ -75,6 +82,16 @@ class ColorData extends BaseObject implements Serializable
     public function getHex(): string
     {
         return $this->_hex;
+    }
+
+    /**
+     * Returns the color's label.
+     *
+     * @return string
+     */
+    public function getLabel(): string
+    {
+        return $this->_label;
     }
 
     /**

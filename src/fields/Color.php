@@ -293,7 +293,10 @@ class Color extends Field implements InlineEditableFieldInterface, MergeableFiel
         }
 
         $value = ColorValidator::normalizeColor($value);
-        return new ColorData($value);
+
+        $label = ArrayHelper::firstWhere($this->palette, 'color', $value)['label'] ?? '';
+
+        return new ColorData($value, $label);
     }
 
     /**
