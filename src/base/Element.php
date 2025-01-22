@@ -2512,6 +2512,7 @@ abstract class Element extends Component implements ElementInterface
             $fieldLayout = $this->getFieldLayout()
         ) {
             $scenario = $this->getScenario();
+            $scenarios = $this->scenarios();
             $layoutElements = $fieldLayout->getVisibleCustomFieldElements($this);
 
             foreach ($layoutElements as $layoutElement) {
@@ -2533,7 +2534,13 @@ abstract class Element extends Component implements ElementInterface
                     $validator = $this->_normalizeFieldValidator($attribute, $rule, $field, $isEmpty);
                     if (
                         in_array($scenario, $validator->on) ||
-                        (empty($validator->on) && !in_array($scenario, $validator->except))
+                        (
+                            (
+                                $scenario !== self::SCENARIO_ESSENTIALS && !empty($scenarios[self::SCENARIO_ESSENTIALS]) ||
+                                empty($validator->on)
+                            ) &&
+                            !in_array($scenario, $validator->except)
+                        )
                     ) {
                         $validator->validateAttributes($this);
                     }
