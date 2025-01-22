@@ -14,6 +14,7 @@ body.login {
     flex: 0 0 calc(var(--header-height) + 1px);
     display: flex;
     align-items: center;
+    justify-content: center;
     padding: var(--header-padding);
     border-block-end: var(--header-border);
     background: var(--header-bg);
