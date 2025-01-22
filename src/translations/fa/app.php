@@ -1735,7 +1735,7 @@ return [
     'This field was updated in the Current revision.' => 'این فیلد با بازبینی فعلی به‌روز شد.',
     'This field’s target subfolder path is invalid: {path}' => 'مسیر زیر پوشه مقصد این فیلد نا معتیر است: {path}',
     'This field’s values are used as search keywords.' => 'از مقادیر این فیلد به عنان کلمات کلیدی جستجو استفاده می‌شود.',
-    'This field’s {attributes} {totalAttributes, plural, =1{has} other{have}} been overridden.' => 'این فیلد {attributes} {totalAttributes, plural, =1{has} other{have}} لغو شده است.',
+    'This field’s {attributes} {totalAttributes, plural, =1{has} other{have}} been overridden.' => '{attributes} {totalAttributes, plural, =1{has} other{have}} این فیلد لغو شده است.',
     'This filesystem has been reserved for temporary asset uploads. Please choose a different one for your volume.' => 'این فایل سیستم برای بارگذاری موقت دارایی رزرو شده است. لطفاً یکی دیگر را برای نسخه خود انتخاب کنید.',
     'This global set doesn’t have any fields assigned to it in its field layout.' => 'این مجموعه سراسری هیچ فیلدی به آن در چیدمان فیلدش نسبت داده نشده است.',
     'This is a new {type}.' => 'این یک {type} جدید است.',
