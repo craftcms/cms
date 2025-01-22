@@ -2470,6 +2470,29 @@ abstract class Element extends Component implements ElementInterface
     /**
      * @inheritdoc
      */
+    public function activeAttributes(): array
+    {
+        $scenario = $this->getScenario();
+        $scenarios = $this->scenarios();
+        $attributes = array_values($scenarios[$scenario] ?? []);
+
+        // if this is a custom scenario, ensure that all essential attributes are included
+        if ($scenario !== self::SCENARIO_ESSENTIALS && !empty($scenarios[self::SCENARIO_ESSENTIALS])) {
+            $attributes = array_merge($attributes, $scenarios[self::SCENARIO_ESSENTIALS]);
+        }
+
+        foreach ($attributes as $i => $attribute) {
+            if (strncmp($attribute, '!', 1) === 0) {
+                $attributes[$i] = substr($attribute, 1);
+            }
+        }
+
+        return array_values(array_unique($attributes));
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function validate($attributeNames = null, $clearErrors = true)
     {
         $this->_attributeNames = $attributeNames ? array_flip((array)$attributeNames) : null;
