@@ -2443,13 +2443,29 @@ JS, [
             // check for an unpublished draft if we got this far
             // (e.g. newly added matrix "block" or where autosaveDrafts is off)
             // https://github.com/craftcms/cms/issues/15985
-            return $this->_elementQuery($elementType)
+            $element = $this->_elementQuery($elementType)
                 ->uid($elementUid)
                 ->siteId($siteId)
                 ->preferSites($preferSites)
                 ->unique()
                 ->status(null)
                 ->draftOf(false)
+                ->one();
+
+            if ($element) {
+                return $element;
+            }
+
+            // check for trashed items too;
+            // e.g. you just deleted a block and the update-field-layout kicks in with the uids that were just deleted
+            // https://github.com/craftcms/cms/issues/16540
+            return $this->_elementQuery($elementType)
+                ->uid($elementUid)
+                ->siteId($siteId)
+                ->preferSites($preferSites)
+                ->unique()
+                ->status(null)
+                ->trashed(null)
                 ->one();
         }
 
