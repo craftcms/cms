@@ -59,16 +59,19 @@ class Mailer extends \yii\symfonymailer\Mailer
     /**
      * Composes a new email based on a given key.
      *
-     * Craft has four predefined email keys: account_activation, verify_new_email, forgot_password and test_email.
-     * Plugins can register additional email keys using the
-     * [registerEmailMessages](http://craftcms.com/docs/plugins/hooks-reference#registerEmailMessages) hook, and
-     * by providing the corresponding language strings.
+     * Craft has four predefined email keys: account_activation, verify_new_email, forgot_password, and test_email.
      *
      * ```php
-     * Craft::$app->mailer->composeFromKey('account_activation', [
+     * $mailer = Craft::$app->getMailer();
+     *
+     * $message = $mailer->composeFromKey('account_activation', [
      *     'link' => $activationUrl
      * ]);
+     *
+     * $mailer->send($message);
      * ```
+     *
+     * Plugins can register additional emails using the [[\craft\services\SystemMessages::EVENT_REGISTER_MESSAGES]] event.
      *
      * @param string $key The email key
      * @param array $variables Any variables that should be passed to the email body template
