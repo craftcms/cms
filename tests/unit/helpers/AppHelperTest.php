@@ -532,8 +532,8 @@ class AppHelperTest extends TestCase
         return [
             [1, '1B'],
             [1024, '1K'],
-            [pow(1024, 2), '1M'],
-            [pow(1024, 3), '1G'],
+            [1024 ** 2, '1M'],
+            [1024 ** 3, '1G'],
         ];
     }
 

@@ -167,10 +167,14 @@ trait NestedElementTrait
                 return null;
             }
 
-            if (isset($this->id, $this->elementQueryResult)) {
+            $sameSiteElements = isset($this->id, $this->elementQueryResult)
+                ? array_filter($this->elementQueryResult, fn(ElementInterface $element) => $element->siteId === $this->siteId)
+                : [];
+
+            if (!empty($sameSiteElements)) {
                 // Eager-load the primary owner for each of the elements in the result,
                 // as we're probably going to end up needing them too
-                Craft::$app->getElements()->eagerLoadElements($this::class, $this->elementQueryResult, [
+                Craft::$app->getElements()->eagerLoadElements($this::class, $sameSiteElements, [
                     [
                         'path' => 'primaryOwner',
                         'criteria' => $this->ownerCriteria(),
@@ -239,10 +243,14 @@ trait NestedElementTrait
                 return $this->getPrimaryOwner();
             }
 
-            if (isset($this->id, $this->elementQueryResult)) {
+            $sameSiteElements = isset($this->id, $this->elementQueryResult)
+                ? array_filter($this->elementQueryResult, fn(ElementInterface $element) => $element->siteId === $this->siteId)
+                : [];
+
+            if (!empty($sameSiteElements)) {
                 // Eager-load the owner for each of the elements in the result,
                 // as we're probably going to end up needing them too
-                Craft::$app->getElements()->eagerLoadElements($this::class, $this->elementQueryResult, [
+                Craft::$app->getElements()->eagerLoadElements($this::class, $sameSiteElements, [
                     [
                         'path' => 'owner',
                         'criteria' => $this->ownerCriteria(),

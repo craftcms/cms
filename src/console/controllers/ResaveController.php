@@ -83,7 +83,7 @@ class ResaveController extends Controller
             $php = sprintf('return %s;', StringHelper::removeLeft(rtrim($match[2], ';'), 'return '));
             return function(ElementInterface $element) use ($var, $php) {
                 if ($var) {
-                    $$var = $element;
+                    ${$var} = $element;
                 }
                 return eval($php);
             };

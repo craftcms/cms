@@ -708,13 +708,9 @@ class App
      */
     public static function checkForValidIconv(): bool
     {
-        if (isset(self::$_iconv)) {
-            return self::$_iconv;
-        }
-
         // Check if iconv is installed. Note we can't just use HTMLPurifier_Encoder::iconvAvailable() because they
         // don't consider iconv "installed" if it's there but "unusable".
-        return self::$_iconv = (function_exists('iconv') && HTMLPurifier_Encoder::testIconvTruncateBug() === HTMLPurifier_Encoder::ICONV_OK);
+        return self::$_iconv ?? (self::$_iconv = (function_exists('iconv') && HTMLPurifier_Encoder::testIconvTruncateBug() === HTMLPurifier_Encoder::ICONV_OK));
     }
 
     /**

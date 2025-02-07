@@ -1050,6 +1050,7 @@ JS, [
         if ($db->getIsPgsql()) {
             $castType = match (Db::parseColumnType($dbType)) {
                 Schema::TYPE_DECIMAL => 'DECIMAL',
+                Schema::TYPE_INTEGER => 'INTEGER',
                 default => null,
             };
         }

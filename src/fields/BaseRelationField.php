@@ -1343,7 +1343,7 @@ JS, [
      */
     protected function settingsTemplateVariables(): array
     {
-        $elementType = $this->elementType();
+        $elementType = static::elementType();
 
         $selectionCondition = $this->getSelectionCondition() ?? $this->createSelectionCondition();
         if ($selectionCondition) {

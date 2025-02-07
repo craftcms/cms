@@ -235,11 +235,7 @@ class VolumeFolder extends Model
      */
     public function getChildren(): array
     {
-        if (isset($this->_children)) {
-            return $this->_children;
-        }
-
-        return $this->_children = Craft::$app->getAssets()->findFolders(['parentId' => $this->id]);
+        return $this->_children ?? ($this->_children = Craft::$app->getAssets()->findFolders(['parentId' => $this->id]));
     }
 
     /**

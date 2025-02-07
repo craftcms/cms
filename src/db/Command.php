@@ -283,9 +283,9 @@ class Command extends \yii\db\Command
             Craft::debug("SQL query:\n" . $rawSql, $category);
         }
         if (!$this->db->enableProfiling) {
-            return [false, isset($rawSql) ? $rawSql : null];
+            return [false, $rawSql ?? null];
         }
 
-        return [true, isset($rawSql) ? $rawSql : $this->getRawSql()];
+        return [true, $rawSql ?? $this->getRawSql()];
     }
 }

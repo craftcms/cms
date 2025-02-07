@@ -649,7 +649,10 @@ class Matrix extends Field implements
             'field' => $this,
             'defaultTableColumnOptions' => static::defaultTableColumnOptions($this->getEntryTypes()),
             'defaultCreateButtonLabel' => $this->defaultCreateButtonLabel(),
-            'indexViewModes' => Entry::indexViewModes(),
+            'indexViewModes' => array_filter(
+                Entry::indexViewModes(),
+                fn(array $viewMode) => !($viewMode['structuresOnly'] ?? false),
+            ),
             'readOnly' => $readOnly,
         ]);
     }

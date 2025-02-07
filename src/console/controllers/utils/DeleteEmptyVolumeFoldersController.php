@@ -17,7 +17,7 @@ use yii\console\ExitCode;
  * Deletes empty volume folders.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 4.14.0
+ * @since 5.6.0
  */
 class DeleteEmptyVolumeFoldersController extends Controller
 {

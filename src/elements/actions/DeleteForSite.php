@@ -81,11 +81,7 @@ JS, [static::class]);
      */
     public function getConfirmationMessage(): ?string
     {
-        if (isset($this->confirmationMessage)) {
-            return $this->confirmationMessage;
-        }
-
-        return Craft::t('app', 'Are you sure you want to delete the selected {type} for this site?', [
+        return $this->confirmationMessage ?? Craft::t('app', 'Are you sure you want to delete the selected {type} for this site?', [
             'type' => $this->elementType::pluralLowerDisplayName(),
         ]);
     }

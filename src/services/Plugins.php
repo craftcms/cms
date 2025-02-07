@@ -301,11 +301,7 @@ class Plugins extends Component
     {
         $this->loadPlugins();
 
-        if (isset($this->_plugins[$handle])) {
-            return $this->_plugins[$handle];
-        }
-
-        return null;
+        return $this->_plugins[$handle] ?? null;
     }
 
     /**

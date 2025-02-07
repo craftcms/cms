@@ -89,7 +89,7 @@ class AssetIndexingSession extends Model
 
     /**
      * @var bool Whether we should stop processing the session because there was a problem.
-     * @since 4.14.0
+     * @since 5.6.0
      */
     public bool $forceStop = false;
 }

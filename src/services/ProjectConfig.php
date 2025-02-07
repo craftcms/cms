@@ -1482,12 +1482,7 @@ class ProjectConfig extends Component
         $sorter = function($a, $b) {
             $aDepth = substr_count($a, '.');
             $bDepth = substr_count($b, '.');
-
-            if ($aDepth === $bDepth) {
-                return 0;
-            }
-
-            return $aDepth > $bDepth ? -1 : 1;
+            return $bDepth <=> $aDepth;
         };
 
         $newItems = array_unique($newItems);

@@ -3954,7 +3954,7 @@ class Elements extends Component
             Queue::push(new UpdateSearchIndex([
                 'elementType' => get_class($element),
                 'elementId' => $element->id,
-                'siteId' => $propagate ? '*' : $element->siteId,
+                'siteId' => $element->siteId,
                 'fieldHandles' => $searchableDirtyFields,
             ]), 2048);
         }

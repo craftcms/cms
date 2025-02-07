@@ -1039,7 +1039,7 @@ class User extends Element implements IdentityInterface
         ];
 
         $rules[] = [
-            ['fullName', 'firstName', 'lastName'], function($attribute, $params, Validator $validator) {
+            ['fullName', 'firstName', 'lastName', 'username'], function($attribute, $params, Validator $validator) {
                 if (str_contains($this->$attribute, '://')) {
                     $validator->addError($this, $attribute, Craft::t('app', 'Invalid value “{value}”.'));
                 }
@@ -1233,6 +1233,15 @@ class User extends Element implements IdentityInterface
         }
 
         return $this->_addressManager;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function afterRestore(): void
+    {
+        $this->getAddressManager()->restoreNestedElements($this);
+        parent::afterRestore();
     }
 
     private function createAddressQuery(): AddressQuery
