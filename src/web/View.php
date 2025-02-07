@@ -11,6 +11,7 @@ use Craft;
 use craft\base\ElementInterface;
 use craft\events\AssetBundleEvent;
 use craft\events\CreateTwigEvent;
+use craft\events\RegisterJsImportEvent;
 use craft\events\RegisterTemplateRootsEvent;
 use craft\events\TemplateEvent;
 use craft\helpers\App;
@@ -108,6 +109,12 @@ class View extends \yii\web\View
      * @since 4.5.0
      */
     public const EVENT_AFTER_REGISTER_ASSET_BUNDLE = 'afterRegisterAssetBundle';
+
+    /**
+     * @event RegisterJsImportEvent The event that is triggered when building a JavaScript import map
+     * @since 5.7.0
+     */
+    public const EVENT_REGISTER_JS_IMPORT_MAP = 'registerImportMap';
 
     /**
      * @const TEMPLATE_MODE_CP
@@ -1492,9 +1499,9 @@ class View extends \yii\web\View
      * Registers a JavaScript import map entry to be injected into the final page response.
      *
      * @param string $key The module specifier.
-     * @param string $value  The URL or path to the resource the key will resolve to.
+     * @param string $value The URL or path to the resource the key will resolve to.
      * @since 5.6.0
-    */
+     */
     public function registerJsImport(string $key, string $value): void
     {
         $this->_jsImports[$key] = $value;
@@ -2214,9 +2221,6 @@ JS;
             $lines[] = '<title>' . Html::encode($this->title) . '</title>';
         }
 
-        if (!empty($this->_jsImports)) {
-            $lines[] = '<script type="importmap">{"imports": ' . Json::encode($this->_jsImports) . '}</script>';
-        }
         if (!empty($this->_scripts[self::POS_HEAD])) {
             $lines[] = implode("\n", $this->_scripts[self::POS_HEAD]);
         }
@@ -2336,6 +2340,24 @@ JS;
         }
 
         return $bundle;
+    }
+
+    /**
+     * Returns a key => values array of JavaScript imports
+     *
+     * @return array
+     */
+    public function getImportMap(): array
+    {
+        $imports = $this->_jsImports;
+
+        if ($this->hasEventHandlers(self::EVENT_REGISTER_JS_IMPORT_MAP)) {
+            $event = new RegisterJsImportEvent(['imports' => $imports]);
+            $this->trigger(self::EVENT_REGISTER_JS_IMPORT_MAP, $event);
+            $imports = $event->imports;
+        }
+
+        return $imports;
     }
 
     /**

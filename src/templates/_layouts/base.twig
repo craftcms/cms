@@ -33,6 +33,12 @@
     <meta name="referrer" content="origin-when-cross-origin">
     <meta name="viewport" content="width=device-width, initial-scale=1">
 
+    {% if craft.app.view.importMap | length %}
+        <script type="importmap">
+            {"imports": {{ craft.app.view.importMap()|json_encode|raw }} }
+        </script>
+    {% endif %}
+
     {% set hasCustomIcon = false %}
     {% for tag in craft.app.config.general.cpHeadTags %}
         {{ tag(tag[0], tag[1]) }}
