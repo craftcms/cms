@@ -113,6 +113,18 @@ class View extends \yii\web\View
     /**
      * @event RegisterJsImportEvent The event that is triggered when building a JavaScript import map
      * @since 5.7.0
+     *
+     * ```php
+     * Event::on(
+     *    View::class,
+     *    View::EVENT_REGISTER_JS_IMPORT_MAP,
+     *    function(RegisterJsImportEvent $event) {
+     *        $view = $event->sender;
+     *
+     *        $bundle = $view->assetManager->getBundle(CkeditorPluginAsset::class);
+     *        $event->imports[$bundle->namespace] = $view->getAssetManager()->getAssetUrl($bundle, 'index.js');
+     *   }
+     * );
      */
     public const EVENT_REGISTER_JS_IMPORT_MAP = 'registerImportMap';
 
