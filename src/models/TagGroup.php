@@ -24,7 +24,7 @@ use DateTime;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
  */
-class TagGroup extends Model implements FieldLayoutProviderInterface
+class TagGroup extends Model implements FieldLayoutProviderInterface, \Stringable
 {
     /**
      * @var int|null ID

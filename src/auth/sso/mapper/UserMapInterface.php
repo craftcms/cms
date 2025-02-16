@@ -18,7 +18,6 @@ interface UserMapInterface
 {
     /**
      * @param User $user
-     * @param mixed $data
      * @return User
      */
     public function __invoke(User $user, mixed $data): User;

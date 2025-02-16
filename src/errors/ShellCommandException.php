@@ -19,21 +19,6 @@ use yii\base\Exception;
 final class ShellCommandException extends Exception
 {
     /**
-     * @var string The command that was executed
-     */
-    public string $command;
-
-    /**
-     * @var int The command’s exit code
-     */
-    public int $exitCode;
-
-    /**
-     * @var string|null The command’s error output
-     */
-    public ?string $error = null;
-
-    /**
      * Creates a ShellCommandException from a [[Command]] object
      *
      * @param Command $command The failed Command object
@@ -59,14 +44,10 @@ final class ShellCommandException extends Exception
      * @param string|null $message The error message
      * @param int $code The error code
      */
-    public function __construct(string $command, int $exitCode, ?string $error = null, ?string $message = null, int $code = 0)
+    public function __construct(public string $command, public int $exitCode, public ?string $error = null, ?string $message = null, int $code = 0)
     {
-        $this->command = $command;
-        $this->exitCode = $exitCode;
-        $this->error = $error;
-
         if ($message === null) {
-            $message = "The shell command \"$command\" failed with exit code $exitCode" . ($error ? ": $error" : '.');
+            $message = "The shell command \"{$this->command}\" failed with exit code {$this->exitCode}" . ($this->error ? ": {$this->error}" : '.');
         }
 
         parent::__construct($message, $code);

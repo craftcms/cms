@@ -22,7 +22,6 @@ class ElementRelationParamParserTest extends TestCase
     /**
      * @dataProvider normalizeRelatedToParamDataProvider
      * @param array $expected
-     * @param mixed $param
      */
     public function testNormalizeRelatedToParam(array $expected, mixed $param): void
     {
@@ -48,7 +47,6 @@ class ElementRelationParamParserTest extends TestCase
     /**
      * @dataProvider normalizeRelatedToCriteriaDataProvider
      * @param array|false $expected
-     * @param mixed $param
      */
     public function testNormalizeRelatedToCriteria(array|false $expected, mixed $param): void
     {

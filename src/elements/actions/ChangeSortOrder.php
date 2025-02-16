@@ -110,7 +110,7 @@ JS,
             [
                 static::class,
                 [
-                    'ownerElementType' => get_class($this->owner),
+                    'ownerElementType' => $this->owner::class,
                     'ownerId' => $this->owner->id,
                     'ownerSiteId' => $this->owner->siteId,
                     'attribute' => $this->attribute,

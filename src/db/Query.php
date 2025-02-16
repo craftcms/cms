@@ -71,7 +71,6 @@ class Query extends \yii\db\Query implements ArrayAccess, IteratorAggregate
     /**
      * Required by the ArrayAccess interface.
      *
-     * @param mixed $offset
      * @return bool
      * @since 4.2.0
      */
@@ -94,7 +93,6 @@ class Query extends \yii\db\Query implements ArrayAccess, IteratorAggregate
     /**
      * Required by the ArrayAccess interface.
      *
-     * @param mixed $offset
      * @return mixed
      * @throws UnknownPropertyException
      * @since 4.2.0
@@ -114,8 +112,6 @@ class Query extends \yii\db\Query implements ArrayAccess, IteratorAggregate
     /**
      * Required by the ArrayAccess interface.
      *
-     * @param mixed $offset
-     * @param mixed $value
      * @throws NotSupportedException
      * @throws UnknownPropertyException
      * @since 4.2.0
@@ -132,7 +128,6 @@ class Query extends \yii\db\Query implements ArrayAccess, IteratorAggregate
     /**
      * Required by the ArrayAccess interface.
      *
-     * @param mixed $offset
      * @return void
      * @throws NotSupportedException
      * @since 4.2.0

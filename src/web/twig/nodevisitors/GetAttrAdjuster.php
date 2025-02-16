@@ -27,7 +27,7 @@ class GetAttrAdjuster implements NodeVisitorInterface
     public function enterNode(Node $node, Environment $env): Node
     {
         // Make sure this is a GetAttrExpression (and not a subclass)
-        if (get_class($node) !== GetAttrExpression::class) {
+        if ($node::class !== GetAttrExpression::class) {
             return $node;
         }
 

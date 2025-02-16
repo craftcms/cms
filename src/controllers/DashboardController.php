@@ -75,7 +75,7 @@ class DashboardController extends Controller
             $settingsHtml = $view->namespaceInputs(fn() => (string)$widget->getSettingsHtml(), '__NAMESPACE__');
             $settingsJs = (string)$view->clearJsBuffer(false);
 
-            $class = get_class($widget);
+            $class = $widget::class;
             $widgetTypeInfo[$class] = [
                 'iconSvg' => $this->_getWidgetIconSvg($widget),
                 'name' => $widget::displayName(),
@@ -201,7 +201,7 @@ class DashboardController extends Controller
             'dateCreated' => $widget->dateCreated,
             'dateUpdated' => $widget->dateUpdated,
             'colspan' => $widget->colspan,
-            'type' => get_class($widget),
+            'type' => $widget::class,
             'settings' => $settings,
         ]);
 
@@ -480,7 +480,7 @@ class DashboardController extends Controller
 
         return [
             'id' => $widget->id,
-            'type' => get_class($widget),
+            'type' => $widget::class,
             'colspan' => $colspan,
             'title' => $widget->getTitle(),
             'subtitle' => $widget->getSubtitle(),

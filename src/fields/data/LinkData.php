@@ -30,7 +30,7 @@ use yii\base\BaseObject;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 5.3.0
  */
-class LinkData extends BaseObject implements Serializable
+class LinkData extends BaseObject implements Serializable, \Stringable
 {
     /**
      * @var string|null The link’s URL suffix value.

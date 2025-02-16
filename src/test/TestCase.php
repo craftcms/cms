@@ -41,7 +41,7 @@ class TestCase extends Unit
     public function assertObjectIsInstanceOfClassCallback(string $class): callable
     {
         return function($object) use ($class) {
-            $this->assertSame($class, get_class($object));
+            $this->assertSame($class, $object::class);
         };
     }
 
@@ -50,7 +50,6 @@ class TestCase extends Unit
      *
      * @param object|string $object
      * @param string $propertyName
-     * @param mixed $value
      * @param bool $revoke whether to make property inaccessible after setting
      * @throws ReflectionException
      * @credit https://github.com/yiisoft/yii2/blob/master/tests/TestCase.php#L155

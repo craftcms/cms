@@ -19,7 +19,7 @@ use craft\validators\UniqueValidator;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
  */
-class UserGroup extends Model
+class UserGroup extends Model implements \Stringable
 {
     /**
      * @var int|null ID

@@ -39,9 +39,7 @@ class Asset extends ElementMutationResolver
     /**
      * Save an asset using the passed arguments.
      *
-     * @param mixed $source
      * @param array $arguments
-     * @param mixed $context
      * @param ResolveInfo $resolveInfo
      * @return AssetElement
      * @throws Throwable if reasons.
@@ -109,9 +107,7 @@ class Asset extends ElementMutationResolver
     /**
      * Delete an asset identified by the arguments.
      *
-     * @param mixed $source
      * @param array $arguments
-     * @param mixed $context
      * @param ResolveInfo $resolveInfo
      * @return bool
      * @throws Throwable if reasons.

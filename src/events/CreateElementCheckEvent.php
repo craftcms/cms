@@ -24,14 +24,8 @@ class CreateElementCheckEvent extends AuthorizationCheckEvent
      * @param array $attributes
      * @param array $config
      */
-    public function __construct(User $user, array $attributes, array $config = [])
+    public function __construct(User $user, public array $attributes, array $config = [])
     {
-        $this->attributes = $attributes;
         parent::__construct($user, $config);
     }
-
-    /**
-     * @var array The attributes the new element would be created with.
-     */
-    public array $attributes;
 }

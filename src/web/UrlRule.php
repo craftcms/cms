@@ -36,7 +36,7 @@ class UrlRule extends \yii\web\UrlRule
         return [
             '{handle}' => sprintf('(?:%s)', HandleValidator::$handlePattern),
             // Reference: http://www.regular-expressions.info/unicode.html
-            '{slug}' => sprintf('(?:[\p{L}\p{N}\p{M}%s]+)', preg_quote(implode($slugChars), '/')),
+            '{slug}' => sprintf('(?:[\p{L}\p{N}\p{M}%s]+)', preg_quote(implode('', $slugChars), '/')),
             '{uid}' => sprintf('(?:%s)', StringHelper::UUID_PATTERN),
         ];
     }

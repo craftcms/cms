@@ -139,7 +139,7 @@ class Template
 
         // Convert any \Twig\Markup arguments back to strings (unless the class *extends* \Twig\Markup)
         foreach ($arguments as $key => $value) {
-            if (is_object($value) && get_class($value) === Markup::class) {
+            if (is_object($value) && $value::class === Markup::class) {
                 $arguments[$key] = (string)$value;
             }
         }

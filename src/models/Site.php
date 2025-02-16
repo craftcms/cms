@@ -30,7 +30,7 @@ use yii\base\InvalidConfigException;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
  */
-class Site extends Model implements Chippable
+class Site extends Model implements Chippable, \Stringable
 {
     public static function get(int|string $id): ?static
     {

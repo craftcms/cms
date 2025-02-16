@@ -21,7 +21,7 @@ use DateTime;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.4.0
  */
-class GqlToken extends Model
+class GqlToken extends Model implements \Stringable
 {
     /**
      * The public access token value.
@@ -126,7 +126,7 @@ class GqlToken extends Model
      */
     public function __toString(): string
     {
-        return $this->name;
+        return (string) $this->name;
     }
 
     /**

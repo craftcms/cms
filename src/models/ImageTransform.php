@@ -25,7 +25,7 @@ use DateTime;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 4.0.0
  */
-class ImageTransform extends Model
+class ImageTransform extends Model implements \Stringable
 {
     /**
      * @var string The default image transformer

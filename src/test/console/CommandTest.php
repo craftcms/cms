@@ -30,26 +30,6 @@ class CommandTest
     public const OUTPUT_COMMAND = 'outputCommand';
 
     /**
-     * @var ConsoleTest
-     */
-    protected ConsoleTest $test;
-
-    /**
-     * @var string
-     */
-    protected string $command;
-
-    /**
-     * @var array
-     */
-    protected array $parameters;
-
-    /**
-     * @var bool
-     */
-    protected bool $ignoreStdout = false;
-
-    /**
      * @var int
      */
     protected int $expectedExitCode;
@@ -92,18 +72,14 @@ class CommandTest
     /**
      * CommandTest constructor.
      *
-     * @param ConsoleTest $consoleTest
+     * @param ConsoleTest $test
      * @param string $command
      * @param array $parameters
-     * @param bool $ignoreStdOut
+     * @param bool $ignoreStdout
      * @throws InvalidConfigException
      */
-    public function __construct(ConsoleTest $consoleTest, string $command, array $parameters = [], bool $ignoreStdOut = false)
+    public function __construct(protected ConsoleTest $test, protected string $command, protected array $parameters = [], protected bool $ignoreStdout = false)
     {
-        $this->command = $command;
-        $this->parameters = $parameters;
-        $this->ignoreStdout = $ignoreStdOut;
-        $this->test = $consoleTest;
         $this->setupController();
     }
 
@@ -171,7 +147,6 @@ class CommandTest
 
     /**
      * @param string $prompt
-     * @param mixed $returnValue
      * @param array $options
      * @return CommandTest
      */
@@ -187,7 +162,6 @@ class CommandTest
 
     /**
      * @param string $message
-     * @param mixed $returnValue
      * @param bool $default
      * @return CommandTest
      */
@@ -203,7 +177,6 @@ class CommandTest
 
     /**
      * @param string $prompt
-     * @param mixed $returnValue
      * @param array $options
      * @return CommandTest
      */
@@ -236,7 +209,7 @@ class CommandTest
 
         $actionId = $controllerArray[1];
 
-        $stubController = Stub::construct(get_class($controller), [$controller->id, Craft::$app], [
+        $stubController = Stub::construct($controller::class, [$controller->id, Craft::$app], [
             'stdOut' => $this->stdoutHandler(),
             'stderr' => $this->stderrHandler(),
             'prompt' => $this->promptHandler(),

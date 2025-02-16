@@ -43,7 +43,7 @@ use yii\db\Schema;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
  */
-abstract class Field extends SavableComponent implements FieldInterface, Iconic, Actionable
+abstract class Field extends SavableComponent implements FieldInterface, Iconic, Actionable, \Stringable
 {
     use FieldTrait;
 

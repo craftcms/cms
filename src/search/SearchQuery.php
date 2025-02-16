@@ -18,11 +18,6 @@ use craft\helpers\StringHelper;
 class SearchQuery
 {
     /**
-     * @var string
-     */
-    private string $_query;
-
-    /**
      * @var array
      * @phpstan-var array{subLeft:bool,subRight:bool,exclude:bool,exact:bool}
      */
@@ -36,13 +31,12 @@ class SearchQuery
     /**
      * Constructor
      *
-     * @param string $query
+     * @param string $_query
      * @param array $defaultTermOptions
      * @phpstan-param array{subLeft?:bool,subRight?:bool,exclude?:bool,exact?:bool} $defaultTermOptions
      */
-    public function __construct(string $query, array $defaultTermOptions = [])
+    public function __construct(private string $_query, array $defaultTermOptions = [])
     {
-        $this->_query = $query;
         $this->_defaultTermOptions = $defaultTermOptions + [
                 'subLeft' => false,
                 'subRight' => true,

@@ -63,7 +63,7 @@ class QueueController extends Controller
 
         $queue = Craft::$app->getQueue();
         if (!$queue instanceof QueueInterface) {
-            throw new ServerErrorHttpException(sprintf('The queue class %s doesn’t support web-based runners.', get_class($queue)));
+            throw new ServerErrorHttpException(sprintf('The queue class %s doesn’t support web-based runners.', $queue::class));
         }
         $this->queue = $queue;
     }

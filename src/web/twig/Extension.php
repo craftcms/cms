@@ -130,25 +130,13 @@ class Extension extends AbstractExtension implements GlobalsInterface
     }
 
     /**
-     * @var View|null
-     */
-    protected ?View $view = null;
-
-    /**
-     * @var TwigEnvironment|null
-     */
-    protected ?TwigEnvironment $environment = null;
-
-    /**
      * Constructor
      *
      * @param View $view
      * @param TwigEnvironment $environment
      */
-    public function __construct(View $view, TwigEnvironment $environment)
+    public function __construct(protected ?View $view, protected ?TwigEnvironment $environment)
     {
-        $this->view = $view;
-        $this->environment = $environment;
     }
 
     /**
@@ -536,9 +524,6 @@ class Extension extends AbstractExtension implements GlobalsInterface
      * Reduces an array.
      *
      * @param TwigEnvironment $env
-     * @param mixed $array
-     * @param mixed $arrow
-     * @param mixed $initial
      * @return mixed
      * @throws RuntimeError
      * @since 4.4.16
@@ -553,8 +538,6 @@ class Extension extends AbstractExtension implements GlobalsInterface
      * Maps an array.
      *
      * @param TwigEnvironment $env
-     * @param mixed $array
-     * @param mixed $arrow
      * @return array
      * @throws RuntimeError
      * @since 4.4.16
@@ -569,7 +552,6 @@ class Extension extends AbstractExtension implements GlobalsInterface
     /**
      * Formats the value as a currency number.
      *
-     * @param mixed $value
      * @param string|null $currency
      * @param array $options
      * @param array $textOptions
@@ -593,7 +575,6 @@ class Extension extends AbstractExtension implements GlobalsInterface
     /**
      * Formats the value in bytes as a size in human-readable form, for example `12 kB`.
      *
-     * @param mixed $value
      * @param int|null $decimals
      * @param array $options
      * @param array $textOptions
@@ -616,7 +597,6 @@ class Extension extends AbstractExtension implements GlobalsInterface
     /**
      * Formats the value as a decimal number.
      *
-     * @param mixed $value
      * @param int|null $decimals
      * @param array $options
      * @param array $textOptions
@@ -639,7 +619,6 @@ class Extension extends AbstractExtension implements GlobalsInterface
     /**
      * Formats the value as a percent number with "%" sign.
      *
-     * @param mixed $value
      * @param int|null $decimals
      * @param array $options
      * @param array $textOptions
@@ -662,7 +641,6 @@ class Extension extends AbstractExtension implements GlobalsInterface
     /**
      * Formats the value as a human-readable timestamp.
      *
-     * @param mixed $value
      * @param string|null $format
      * @param bool $withPreposition
      * @return string
@@ -737,8 +715,6 @@ class Extension extends AbstractExtension implements GlobalsInterface
     /**
      * Returns an array without certain values.
      *
-     * @param mixed $arr
-     * @param mixed $exclude
      * @param bool $strict
      * @return array
      */
@@ -760,7 +736,6 @@ class Extension extends AbstractExtension implements GlobalsInterface
     /**
      * Returns an array without a certain key.
      *
-     * @param mixed $arr
      * @param string|string[] $key
      * @return array
      * @since 3.2.0
@@ -801,7 +776,6 @@ class Extension extends AbstractExtension implements GlobalsInterface
     /**
      * Parses a string for reference tags.
      *
-     * @param mixed $str
      * @param int|null $siteId
      * @return string
      */
@@ -923,9 +897,6 @@ class Extension extends AbstractExtension implements GlobalsInterface
      * Replaces Twig's |replace filter, adding support for passing in separate
      * search and replace arrays.
      *
-     * @param mixed $str
-     * @param mixed $search
-     * @param mixed $replace
      * @param bool|null $regex
      * @return mixed
      */
@@ -1226,8 +1197,6 @@ class Extension extends AbstractExtension implements GlobalsInterface
     /**
      * Returns the index of an item in a string or array, or -1 if it cannot be found.
      *
-     * @param mixed $haystack
-     * @param mixed $needle
      * @param int|null $default
      * @return int|null
      */
@@ -1439,7 +1408,6 @@ class Extension extends AbstractExtension implements GlobalsInterface
     /**
      * Returns a clone of the given variable.
      *
-     * @param mixed $var
      * @return mixed
      */
     public function cloneFunction(mixed $var): mixed
@@ -1450,7 +1418,6 @@ class Extension extends AbstractExtension implements GlobalsInterface
     /**
      * Returns a new collection.
      *
-     * @param mixed $var
      * @return Collection
      * @since 4.0.0
      */
@@ -1551,7 +1518,6 @@ class Extension extends AbstractExtension implements GlobalsInterface
     }
 
     /**
-     * @param mixed $expression
      * @param array $params
      * @param array $config
      * @return Expression
@@ -1623,7 +1589,6 @@ class Extension extends AbstractExtension implements GlobalsInterface
 
     /**
      * @param string $template
-     * @param mixed $object
      * @return string
      */
     public function renderObjectTemplate(string $template, mixed $object): string

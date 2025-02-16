@@ -135,8 +135,8 @@ class SystemSettingsController extends Controller
         $allTransportAdapterTypes = MailerHelper::allMailerTransportTypes();
 
         // Make sure the selected adapter class is in there
-        if (!in_array(get_class($adapter), $allTransportAdapterTypes, true)) {
-            $allTransportAdapterTypes[] = get_class($adapter);
+        if (!in_array($adapter::class, $allTransportAdapterTypes, true)) {
+            $allTransportAdapterTypes[] = $adapter::class;
         }
 
         $allTransportAdapters = [];
@@ -144,7 +144,7 @@ class SystemSettingsController extends Controller
 
         foreach ($allTransportAdapterTypes as $transportAdapterType) {
             /** @var class-string<TransportAdapterInterface> $transportAdapterType */
-            if ($transportAdapterType === get_class($adapter) || $transportAdapterType::isSelectable()) {
+            if ($transportAdapterType === $adapter::class || $transportAdapterType::isSelectable()) {
                 $allTransportAdapters[] = MailerHelper::createTransportAdapter($transportAdapterType);
                 $transportTypeOptions[] = [
                     'value' => $transportAdapterType,

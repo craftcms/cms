@@ -18,7 +18,7 @@ use craft\validators\UniqueValidator;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.3.0
  */
-class GqlSchema extends Model
+class GqlSchema extends Model implements \Stringable
 {
     /**
      * @var int|null ID
@@ -74,7 +74,7 @@ class GqlSchema extends Model
      */
     public function __toString(): string
     {
-        return $this->name;
+        return (string) $this->name;
     }
 
     /**

@@ -53,7 +53,7 @@ class UrlValidator extends YiiUrlValidator
      */
     public function validateValue($value): ?array
     {
-        if ($this->allowAlias && strncmp($value, '@', 1) === 0) {
+        if ($this->allowAlias && str_starts_with($value, '@')) {
             $value = Craft::getAlias($value);
 
             // Prevent validateAttribute() from prepending a default scheme if the alias is missing one

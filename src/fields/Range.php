@@ -178,7 +178,6 @@ class Range extends Field implements InlineEditableFieldInterface, SortableField
     }
 
     /**
-     * @param mixed $value
      * @return int|float|null
      */
     private function _normalizeNumber(mixed $value): int|float|null

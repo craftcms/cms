@@ -298,7 +298,7 @@ class GlobalSet extends Element implements FieldLayoutProviderInterface
 
         try {
             $fieldLayout = $this->getFieldLayout();
-        } catch (InvalidConfigException $e) {
+        } catch (InvalidConfigException) {
             $fieldLayout = null;
         }
 

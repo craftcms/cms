@@ -29,9 +29,7 @@ abstract class ElementResolver extends Resolver
     /**
      * Resolve an element query to a single result.
      *
-     * @param mixed $source
      * @param array $arguments
-     * @param mixed $context
      * @param ResolveInfo $resolveInfo
      * @return mixed
      */
@@ -55,7 +53,6 @@ abstract class ElementResolver extends Resolver
     /**
      * Resolve an element query to a total count of elements.
      *
-     * @param mixed $source
      * @param array $arguments
      * @param array|null $context
      * @param ResolveInfo $resolveInfo
@@ -70,7 +67,6 @@ abstract class ElementResolver extends Resolver
     /**
      * Prepare an element query for given resolution argument set.
      *
-     * @param mixed $source
      * @param array $arguments
      * @param array|null $context
      * @param ResolveInfo $resolveInfo

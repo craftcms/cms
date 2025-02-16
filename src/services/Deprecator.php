@@ -384,7 +384,7 @@ class Deprecator extends Component
             }
 
             $logTraces[] = [
-                'objectClass' => !empty($trace['object']) ? get_class($trace['object']) : null,
+                'objectClass' => !empty($trace['object']) ? $trace['object']::class : null,
                 'file' => $file,
                 'line' => $line,
                 'class' => !empty($trace['class']) ? $trace['class'] : null,
@@ -442,7 +442,7 @@ class Deprecator extends Component
             }
 
             if (is_object($value)) {
-                $strValue = get_class($value);
+                $strValue = $value::class;
             } elseif (is_bool($value)) {
                 $strValue = $value ? 'true' : 'false';
             } elseif (is_string($value)) {

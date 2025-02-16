@@ -17,17 +17,11 @@ namespace craft\search;
 class SearchQueryTermGroup
 {
     /**
-     * @var SearchQueryTerm[]
-     */
-    public array $terms;
-
-    /**
      * Constructor
      *
      * @param SearchQueryTerm[] $terms
      */
-    public function __construct(array $terms = [])
+    public function __construct(public array $terms = [])
     {
-        $this->terms = $terms;
     }
 }

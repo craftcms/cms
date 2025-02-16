@@ -46,8 +46,6 @@ class ProjectConfigData extends ReadOnlyProjectConfigData
     /**
      * Commit changes by firing the appropriate events and updating the appropriate storages.
      *
-     * @param mixed $oldValue
-     * @param mixed $newValue
      * @param string $path
      * @param bool $triggerUpdate
      * @param string|null $message
@@ -111,7 +109,6 @@ class ProjectConfigData extends ReadOnlyProjectConfigData
      * Update the internal data storage.
      *
      * @param string|string[] $path
-     * @param mixed $value
      */
     protected function setInternal(string|array $path, mixed $value): void
     {

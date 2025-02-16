@@ -236,7 +236,7 @@ class ErrorHandler extends \yii\web\ErrorHandler
     public function exceptionAsArray(Throwable $e)
     {
         $array = [
-            'exception' => get_class($e),
+            'exception' => $e::class,
             'message' => $e->getMessage(),
             'file' => $e->getFile(),
             'line' => $e->getLine(),

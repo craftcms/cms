@@ -113,7 +113,7 @@ class FieldsController extends Controller
         $allFieldTypes = $fieldsService->getAllFieldTypes();
 
         foreach ($allFieldTypes as $class) {
-            if ($class === get_class($field) || $class::isSelectable()) {
+            if ($class === $field::class || $class::isSelectable()) {
                 $supportedTranslationMethods[$class] = $class::supportedTranslationMethods();
             }
         }
@@ -135,7 +135,7 @@ class FieldsController extends Controller
         $multiInstanceTypesOnly = (bool)$this->request->getParam('multiInstanceTypesOnly');
 
         foreach ($allFieldTypes as $class) {
-            $isCurrent = $class === ($field instanceof MissingField ? $field->expectedType : get_class($field));
+            $isCurrent = $class === ($field instanceof MissingField ? $field->expectedType : $field::class);
             $foundCurrent = $foundCurrent || $isCurrent;
 
             if (
@@ -530,7 +530,7 @@ JS, [
         $selectorHtml = Cp::layoutElementSelectorHtml($element);
 
         return $this->asJson([
-            'config' => ['type' => get_class($element)] + $element->toArray(),
+            'config' => ['type' => $element::class] + $element->toArray(),
             'selectorHtml' => $selectorHtml,
         ]);
     }

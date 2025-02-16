@@ -313,7 +313,6 @@ class Craft extends Yii2
     }
 
     /**
-     * @param mixed $path
      * @return string|false
      */
     public static function normalizePathSeparators(mixed $path): string|false
@@ -497,7 +496,7 @@ class Craft extends Yii2
     {
         $componentInstance = $module->get($component);
 
-        $module->set($component, Stub::construct(get_class($componentInstance), $constructorParams, $params));
+        $module->set($component, Stub::construct($componentInstance::class, $constructorParams, $params));
     }
 
     /**

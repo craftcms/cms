@@ -19,23 +19,16 @@ use Throwable;
 class UploadFailedException extends FileException
 {
     /**
-     * @var int Error code
-     */
-    public int $errorCode;
-
-    /**
      * Constructor
      *
      * @param int $errorCode
      * @param string|null $message
      * @param Throwable|null $previous
      */
-    public function __construct(int $errorCode = 0, ?string $message = null, Throwable $previous = null)
+    public function __construct(public int $errorCode = 0, ?string $message = null, Throwable $previous = null)
     {
-        $this->errorCode = $errorCode;
-
         if ($message === null) {
-            $message = match ($errorCode) {
+            $message = match ($this->errorCode) {
                 UPLOAD_ERR_INI_SIZE, UPLOAD_ERR_FORM_SIZE => Craft::t('app', 'The uploaded file exceeds the maximum allowed size.'),
                 UPLOAD_ERR_PARTIAL, UPLOAD_ERR_NO_FILE => Craft::t('app', 'The file failed to upload to the server properly.'),
                 UPLOAD_ERR_NO_TMP_DIR => Craft::t('app', 'Could not write to the temporary upload folder.'),

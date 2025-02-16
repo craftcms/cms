@@ -110,14 +110,6 @@ class ElementQuery extends Query implements ElementQueryInterface
      */
     public const EVENT_AFTER_POPULATE_ELEMENTS = 'afterPopulateElements';
 
-    // Base config attributes
-    // -------------------------------------------------------------------------
-
-    /**
-     * @var class-string<TElement> The name of the [[ElementInterface]] class.
-     */
-    public string $elementType;
-
     /**
      * @var Query|null The query object created by [[prepare()]]
      * @see prepare()
@@ -597,10 +589,8 @@ class ElementQuery extends Query implements ElementQueryInterface
      * @param class-string<TElement> $elementType The element type class associated with this query
      * @param array $config Configurations to be applied to the newly created query object
      */
-    public function __construct(string $elementType, array $config = [])
+    public function __construct(public string $elementType, array $config = [])
     {
-        $this->elementType = $elementType;
-
         // Use ** as a placeholder for "all the default columns"
         $config['select'] ??= ['**' => '**'];
 
@@ -617,19 +607,16 @@ class ElementQuery extends Query implements ElementQueryInterface
      */
     public function __set($name, $value)
     {
-        switch ($name) {
-            case 'site':
-                $this->site($value);
-                break;
-            default:
-                parent::__set($name, $value);
-        }
+        match ($name) {
+            'site' => $this->site($value),
+            default => parent::__set($name, $value),
+        };
     }
 
     /**
      * @inheritdoc
      */
-    public function __toString()
+    public function __toString(): string
     {
         return self::class;
     }
@@ -2622,7 +2609,6 @@ class ElementQuery extends Query implements ElementQueryInterface
     /**
      * Combines the given condition with an alternative condition if there are any relevant placeholder elements.
      *
-     * @param mixed $condition
      * @return mixed
      */
     private function _placeholderCondition(mixed $condition): mixed

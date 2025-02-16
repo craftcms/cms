@@ -72,8 +72,6 @@ class NumberHelperTest extends TestCase
 
     /**
      * @dataProvider makeNumericDataProvider
-     * @param mixed $expected
-     * @param mixed $var
      */
     public function testMakeNumeric(mixed $expected, mixed $var): void
     {
@@ -83,7 +81,6 @@ class NumberHelperTest extends TestCase
     /**
      * @dataProvider isIntOrFloatDataProvider
      * @param bool $expected
-     * @param mixed $value
      */
     public function testIsIntOrFloat(bool $expected, mixed $value): void
     {

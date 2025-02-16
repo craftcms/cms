@@ -18,19 +18,13 @@ use yii\base\BaseObject;
 class CoalesceColumnsExpression extends BaseObject implements ExpressionInterface
 {
     /**
-     * @var string[] The columns that should be coalesced.
-     */
-    public array $columns;
-
-    /**
      * Constructor
      *
      * @param string[] $columns The columns that should be coalesced.
      * @param array $config
      */
-    public function __construct(array $columns = [], array $config = [])
+    public function __construct(public array $columns = [], array $config = [])
     {
-        $this->columns = $columns;
         parent::__construct($config);
     }
 

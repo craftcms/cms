@@ -22,7 +22,7 @@ use yii\base\InvalidArgumentException;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
  */
-class Locale extends BaseObject
+class Locale extends BaseObject implements \Stringable
 {
     /**
      * @var int Positive prefix.
@@ -493,18 +493,11 @@ class Locale extends BaseObject
 
         $formatter = new IntlDateFormatter($this->aliasOf ?? $this->id, IntlDateFormatter::NONE, IntlDateFormatter::NONE);
 
-        switch ($length) {
-            case self::LENGTH_ABBREVIATED:
-                $formatter->setPattern($standAlone ? 'LLLLL' : 'MMMMM');
-                break; // S
-            case self::LENGTH_SHORT:
-            case self::LENGTH_MEDIUM:
-                $formatter->setPattern($standAlone ? 'LLL' : 'MMM');
-                break; // Sep
-            default:
-                $formatter->setPattern($standAlone ? 'LLLL' : 'MMMM');
-                break; // September
-        }
+        match ($length) {
+            self::LENGTH_ABBREVIATED => $formatter->setPattern($standAlone ? 'LLLLL' : 'MMMMM'),
+            self::LENGTH_SHORT, self::LENGTH_MEDIUM => $formatter->setPattern($standAlone ? 'LLL' : 'MMM'),
+            default => $formatter->setPattern($standAlone ? 'LLLL' : 'MMMM'),
+        };
 
         return $formatter->format(new DateTime('1970-' . sprintf('%02d', $month) . '-01'));
     }
@@ -543,24 +536,12 @@ class Locale extends BaseObject
 
         $formatter = new IntlDateFormatter($this->aliasOf ?? $this->id, IntlDateFormatter::NONE, IntlDateFormatter::NONE);
 
-        switch ($length) {
-            case self::LENGTH_ABBREVIATED:
-                // T
-                $formatter->setPattern($standAlone ? 'ccccc' : 'eeeee');
-                break;
-            case self::LENGTH_SHORT:
-                // Tu
-                $formatter->setPattern($standAlone ? 'cccccc' : 'eeeeee');
-                break;
-            case self::LENGTH_MEDIUM:
-                // Tue
-                $formatter->setPattern($standAlone ? 'ccc' : 'eee');
-                break;
-            default:
-                // Tuesday
-                $formatter->setPattern($standAlone ? 'cccc' : 'eeee');
-                break;
-        }
+        match ($length) {
+            self::LENGTH_ABBREVIATED => $formatter->setPattern($standAlone ? 'ccccc' : 'eeeee'),
+            self::LENGTH_SHORT => $formatter->setPattern($standAlone ? 'cccccc' : 'eeeeee'),
+            self::LENGTH_MEDIUM => $formatter->setPattern($standAlone ? 'ccc' : 'eee'),
+            default => $formatter->setPattern($standAlone ? 'cccc' : 'eeee'),
+        };
 
         // 1970-01-04 => Sunday (0 + 4)
         // 1970-01-05 => Monday (1 + 4)

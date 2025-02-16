@@ -63,7 +63,6 @@ class ArrayValidatorTest extends TestCase
 
     /**
      * @dataProvider arrayValidatorValuesDataProvider
-     * @param mixed $inputValue
      * @param bool $mustValidate
      */
     public function testValidation(mixed $inputValue, bool $mustValidate): void

@@ -51,8 +51,6 @@ class LocalizationHelperTest extends TestCase
 
     /**
      * @dataProvider normalizeNumberDataProvider
-     * @param mixed $expected
-     * @param mixed $number
      * @param string|null $localeId
      */
     public function testNormalizeNumber(mixed $expected, mixed $number, ?string $localeId): void

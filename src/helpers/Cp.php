@@ -241,7 +241,7 @@ class Cp
             while (true) {
                 try {
                     $tagInfo = Html::parseTag($alert['content'], $offset);
-                } catch (InvalidHtmlTagException $e) {
+                } catch (InvalidHtmlTagException) {
                     break;
                 }
 
@@ -370,7 +370,7 @@ class Cp
                 '--custom-sel-bg-color' => $color?->cssVar(900),
             ]),
             'data' => array_filter([
-                'type' => get_class($component),
+                'type' => $component::class,
                 'id' => $component->getId(),
                 'settings' => $config['autoReload'] ? [
                     'selectable' => $config['selectable'],
@@ -924,7 +924,7 @@ class Cp
                     ($config['context'] === 'field' && $element->hasErrors()) ? 'error' : null,
                 ]),
                 'data' => array_filter([
-                    'type' => get_class($element),
+                    'type' => $element::class,
                     'id' => $element->isProvisionalDraft ? $element->getCanonicalId() : $element->id,
                     'draft-id' => $element->isProvisionalDraft ? null : $element->draftId,
                     'revision-id' => $element->revisionId,
@@ -2966,7 +2966,7 @@ JS;
             ]),
             'data' => [
                 'uid' => !$forLibrary ? $element->uid : false,
-                'config' => $forLibrary ? ['type' => get_class($element)] + $element->toArray() : false,
+                'config' => $forLibrary ? ['type' => $element::class] + $element->toArray() : false,
                 'ui-label' => $forLibrary && $element instanceof CustomField ? $element->getField()->getUiLabel() : false,
                 'is-multi-instance' => $element->isMultiInstance(),
                 'has-custom-width' => $element->hasCustomWidth(),

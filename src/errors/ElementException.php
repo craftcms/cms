@@ -19,20 +19,14 @@ use yii\base\Exception;
 class ElementException extends Exception
 {
     /**
-     * @var ElementInterface The element
-     */
-    public ElementInterface $element;
-
-    /**
      * Constructor.
      *
      * @param ElementInterface $element The element
      * @param string|null $message The error message
      * @param int $code The error code
      */
-    public function __construct(ElementInterface $element, ?string $message = null, int $code = 0)
+    public function __construct(public ElementInterface $element, ?string $message = null, int $code = 0)
     {
-        $this->element = $element;
         parent::__construct($message, $code);
     }
 }

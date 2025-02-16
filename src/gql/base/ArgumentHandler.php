@@ -34,7 +34,6 @@ abstract class ArgumentHandler implements ArgumentHandlerInterface
     /**
      * Handle a single argument value
      *
-     * @param mixed $argumentValue
      * @return mixed
      */
     abstract protected function handleArgument(mixed $argumentValue): mixed;

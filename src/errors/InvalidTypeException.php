@@ -18,16 +18,6 @@ use yii\base\Exception;
 class InvalidTypeException extends Exception
 {
     /**
-     * @var class-string The invalid class name
-     */
-    public string $class;
-
-    /**
-     * @var class-string The base class or interface that [[$class]] was supposed to be
-     */
-    public string $requiredType;
-
-    /**
      * Constructor.
      *
      * @param class-string $class The class that doesn’t exist or doesn’t extend/implement $requiredType
@@ -35,13 +25,10 @@ class InvalidTypeException extends Exception
      * @param string|null $message The error message
      * @param int $code The error code
      */
-    public function __construct(string $class, string $requiredType, ?string $message = null, int $code = 0)
+    public function __construct(public string $class, public string $requiredType, ?string $message = null, int $code = 0)
     {
-        $this->class = $class;
-        $this->requiredType = $requiredType;
-
         if ($message === null) {
-            $message = "$class doesn’t exist or doesn’t extend/implement $requiredType";
+            $message = "{$this->class} doesn’t exist or doesn’t extend/implement {$this->requiredType}";
         }
 
         parent::__construct($message, $code);

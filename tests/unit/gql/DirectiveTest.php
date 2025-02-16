@@ -45,7 +45,6 @@ class DirectiveTest extends TestCase
      *
      * @dataProvider directiveDataProvider
      * @param mixed $in input
-     * @param mixed $directiveClass
      * @param array $directives an array of directive data as expected by GQL
      * @param string $result expected result
      */

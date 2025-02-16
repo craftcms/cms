@@ -20,16 +20,6 @@ use yii\db\Migration;
 class MigrationException extends UserException
 {
     /**
-     * @var Migration The migration being executed
-     */
-    public Migration $migration;
-
-    /**
-     * @var string|null The migration output
-     */
-    public ?string $output = null;
-
-    /**
      * Constructor.
      *
      * @param Migration $migration The migration being executed
@@ -38,13 +28,10 @@ class MigrationException extends UserException
      * @param int $code The error code
      * @param Throwable|null $previous The previous exception
      */
-    public function __construct(Migration $migration, ?string $output = null, ?string $message = null, int $code = 0, ?Throwable $previous = null)
+    public function __construct(public Migration $migration, public ?string $output = null, ?string $message = null, int $code = 0, ?Throwable $previous = null)
     {
-        $this->migration = $migration;
-        $this->output = $output;
-
         if ($message === null) {
-            $message = 'An error occurred while executing the "' . get_class($migration) . ' migration' . ($previous ? ': ' . $previous->getMessage() : '.');
+            $message = 'An error occurred while executing the "' . $this->migration::class . ' migration' . ($previous ? ': ' . $previous->getMessage() : '.');
         }
 
         parent::__construct($message, $code, $previous);

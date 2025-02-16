@@ -75,7 +75,6 @@ class DbHelperTest extends TestCase
      * @dataProvider parseParamDataProvider
      * @param array|null $expected
      * @param string $column
-     * @param mixed $value
      * @param string $defaultOperator
      * @param bool $caseInsensitive
      * @param string|null $columnType
@@ -219,8 +218,6 @@ class DbHelperTest extends TestCase
 
     /**
      * @dataProvider prepareValueForDbDataProvider
-     * @param mixed $expected
-     * @param mixed $value
      */
     public function testPrepareValueForDb(mixed $expected, mixed $value): void
     {
@@ -323,7 +320,6 @@ class DbHelperTest extends TestCase
     /**
      * @dataProvider prepareValuesForDbDataProvider
      * @param array $expected
-     * @param mixed $values
      */
     public function testPrepareValuesForDb(array $expected, mixed $values): void
     {

@@ -150,7 +150,6 @@ class ElementsController extends Controller
 
     /**
      * @param string $name
-     * @param mixed $default
      * @return mixed
      */
     private function _param(string $name, mixed $default = null): mixed
@@ -427,7 +426,7 @@ class ElementsController extends Controller
                         'canonicalId' => $canonical->id,
                         'draftId' => $element->draftId,
                         'draftName' => $isDraft ? $element->draftName : null,
-                        'elementType' => get_class($element),
+                        'elementType' => $element::class,
                         'enablePreview' => $enablePreview,
                         'enabledForSite' => $element->enabled && $enabledForSite,
                         'hashedCpEditUrl' => $security->hashData('{cpEditUrl}'),

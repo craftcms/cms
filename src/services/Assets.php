@@ -123,7 +123,6 @@ class Assets extends Component
     /**
      * Gets the total number of assets that match a given criteria.
      *
-     * @param mixed $criteria
      * @return int
      */
     public function getTotalAssets(mixed $criteria = null): int
@@ -443,7 +442,6 @@ class Assets extends Component
     /**
      * Finds folders that match a given criteria.
      *
-     * @param mixed $criteria
      * @return VolumeFolder[]
      */
     public function findFolders(mixed $criteria = []): array
@@ -533,7 +531,6 @@ class Assets extends Component
     /**
      * Finds the first folder that matches a given criteria.
      *
-     * @param mixed $criteria
      * @return VolumeFolder|null
      */
     public function findFolder(mixed $criteria = []): ?VolumeFolder
@@ -590,7 +587,6 @@ class Assets extends Component
     /**
      * Gets the total number of folders that match a given criteria.
      *
-     * @param mixed $criteria
      * @return int
      */
     public function getTotalFolders(mixed $criteria): int
@@ -610,11 +606,10 @@ class Assets extends Component
     /**
      * Returns whether any folders exist which match a given criteria.
      *
-     * @param mixed $criteria
      * @return bool
      * @since 4.4.0
      */
-    public function foldersExist($criteria = null): bool
+    public function foldersExist(mixed $criteria = null): bool
     {
         if (!($criteria instanceof FolderCriteria)) {
             $criteria = new FolderCriteria($criteria);

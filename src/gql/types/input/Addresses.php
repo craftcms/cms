@@ -141,7 +141,6 @@ class Addresses extends InputObjectType
     /**
      * Normalize Matrix GraphQL input data to what Craft expects.
      *
-     * @param mixed $value
      * @return mixed
      */
     public static function normalizeValue(mixed $value): mixed

@@ -174,7 +174,6 @@ class ViewTest extends TestCase
      * @dataProvider renderObjectTemplateDataProvider
      * @param string $expected
      * @param string $template
-     * @param mixed $object
      * @param array $variables
      * @throws Exception
      * @throws Throwable
@@ -624,7 +623,6 @@ TWIG;
     }
 
     /**
-     * @param mixed $category
      * @param array $messages
      * @return string
      */
@@ -642,8 +640,6 @@ TWIG;
     }
 
     /**
-     * @param mixed $desiredJs
-     * @param mixed $desiredPosition
      * @throws \Exception
      */
     private function _assertRegisterJsInputValues(mixed $desiredJs, mixed $desiredPosition)

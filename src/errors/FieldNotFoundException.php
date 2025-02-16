@@ -19,11 +19,6 @@ use yii\base\Exception;
 class FieldNotFoundException extends Exception
 {
     /**
-     * @var string The field’s UUID
-     */
-    public string $fieldUid;
-
-    /**
      * Constructor
      *
      * @param string $fieldUid
@@ -31,9 +26,8 @@ class FieldNotFoundException extends Exception
      * @param int $code
      * @param Throwable|null $previous
      */
-    public function __construct(string $fieldUid, string $message = '', int $code = 0, ?Throwable $previous = null)
+    public function __construct(public string $fieldUid, string $message = '', int $code = 0, ?Throwable $previous = null)
     {
-        $this->fieldUid = $fieldUid;
         parent::__construct($message, $code, $previous);
     }
 

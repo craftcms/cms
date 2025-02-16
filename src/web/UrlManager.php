@@ -444,7 +444,7 @@ class UrlManager extends \yii\web\UrlManager
 
             if (App::devMode()) {
                 Craft::debug([
-                    'rule' => 'URL Rule: ' . (method_exists($rule, '__toString') ? $rule->__toString() : get_class($rule)),
+                    'rule' => 'URL Rule: ' . (method_exists($rule, '__toString') ? $rule->__toString() : $rule::class),
                     'match' => $route !== false,
                     'parent' => null,
                 ], __METHOD__);

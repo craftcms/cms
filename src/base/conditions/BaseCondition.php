@@ -237,10 +237,10 @@ abstract class BaseCondition extends Component implements ConditionInterface
             return false;
         }
 
-        $ruleClass = get_class($rule);
+        $ruleClass = $rule::class;
 
         foreach ($this->getSelectableConditionRules() as $selectableRule) {
-            if ($ruleClass === get_class($selectableRule)) {
+            if ($ruleClass === $selectableRule::class) {
                 return true;
             }
         }
@@ -298,7 +298,7 @@ JS, [$view->namespaceInputId($this->id)]);
                 ],
             ]);
 
-            $html .= Html::hiddenInput('class', get_class($this));
+            $html .= Html::hiddenInput('class', static::class);
             $html .= Html::hiddenInput('config', Json::encode($this->getBuilderConfig()));
 
             foreach ($this->getConditionRules() as $rule) {
@@ -311,7 +311,7 @@ JS, [$view->namespaceInputId($this->id)]);
                                 'class' => 'visually-hidden',
                             ]) .
                             Html::hiddenInput('uid', $rule->uid) .
-                            Html::hiddenInput('class', get_class($rule));
+                            Html::hiddenInput('class', $rule::class);
 
                         if ($this->sortable) {
                             $ruleHtml .= Html::tag('div',
@@ -611,7 +611,7 @@ JS,
     public function getConfig(): array
     {
         return array_merge($this->config(), [
-            'class' => get_class($this),
+            'class' => static::class,
             'conditionRules' => $this->_conditionRules
                 ->map(function(ConditionRuleInterface $rule) {
                     try {

@@ -372,7 +372,6 @@ abstract class BaseOptionsField extends Field implements PreviewableFieldInterfa
      * Check if given option should be marked as selected.
      *
      * @param array $option
-     * @param mixed $value
      * @param array $selectedValues
      * @param bool $selectedBlankOption
      * @return bool

@@ -268,7 +268,6 @@ class DateTimeHelperTest extends TestCase
      * toDateTime must start the DateTime from Asia/Tokyo instead of UTC(The default starting point) and then convert it to the system timezone.
      *
      * @dataProvider formatsWithTimezoneDataProvider
-     * @param mixed $value
      * @param callable $expectedResult
      * @throws Exception
      */
@@ -292,7 +291,6 @@ class DateTimeHelperTest extends TestCase
     /**
      * @dataProvider toDateTimeDataProvider
      * @param callable|DateTime|false $expected
-     * @param mixed $value
      * @throws Exception
      */
     public function testToDateTime(callable|DateTime|false $expected, mixed $value): void
@@ -319,7 +317,6 @@ class DateTimeHelperTest extends TestCase
      * Test that if we set the $setToSystemTimezone value to false that toDateTime creates a tz in UTC.
      *
      * @dataProvider simpleDateTimeFormatsDataProvider
-     * @param mixed $value
      * @throws Exception
      */
     public function testUtcDefault(mixed $value): void
@@ -332,7 +329,6 @@ class DateTimeHelperTest extends TestCase
      * Test that dateTime is created with the passed in timezone IF $setSystemTimezone is set to false.
      *
      * @dataProvider toDateTimeWithTzFormatsDataProvider
-     * @param mixed $value
      * @param DateTime $expectedResult
      * @param DateTimeZone $expectedTimezone
      * @throws Exception
@@ -349,7 +345,6 @@ class DateTimeHelperTest extends TestCase
 
     /**
      * @dataProvider toDateTimeFormatsDataProvider
-     * @param mixed $value
      * @param callable $expectedResult
      * @param string|null $closureParam
      * @throws Exception
@@ -391,7 +386,6 @@ class DateTimeHelperTest extends TestCase
     /**
      * @dataProvider isIsIso8601DataProvider
      * @param bool $expected
-     * @param mixed $value
      */
     public function testIsIso8601(bool $expected, mixed $value): void
     {
@@ -586,7 +580,6 @@ class DateTimeHelperTest extends TestCase
     /**
      * @dataProvider toIso8601DataProvider
      * @param string|false $expected
-     * @param mixed $date
      */
     public function testToIso8601(string|false $expected, mixed $date): void
     {
@@ -596,7 +589,6 @@ class DateTimeHelperTest extends TestCase
     /**
      * @dataProvider isValidTimeStampDataProvider
      * @param bool $expected
-     * @param mixed $timestamp
      */
     public function testIsValidTimeStamp(bool $expected, mixed $timestamp): void
     {

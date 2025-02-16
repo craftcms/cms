@@ -88,7 +88,7 @@ class PropagateElements extends BaseBatchedElementJob
         foreach ($elementSiteIds as $siteId) {
             if ($siteId !== $item->siteId) {
                 // Make sure the site element wasn't updated more recently than the main one
-                $siteElement = $elementsService->getElementById($item->id, get_class($item), $siteId);
+                $siteElement = $elementsService->getElementById($item->id, $item::class, $siteId);
                 if ($siteElement === null || $siteElement->dateUpdated < $item->dateUpdated) {
                     $elementsService->propagateElement($item, $siteId, $siteElement ?? false);
                 }

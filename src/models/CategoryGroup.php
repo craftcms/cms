@@ -35,7 +35,8 @@ use DateTime;
 class CategoryGroup extends Model implements
     Chippable,
     CpEditable,
-    FieldLayoutProviderInterface
+    FieldLayoutProviderInterface,
+    \Stringable
 {
     /** @since 3.7.0 */
     public const DEFAULT_PLACEMENT_BEGINNING = 'beginning';

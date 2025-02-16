@@ -141,7 +141,6 @@ abstract class BaseTextConditionRule extends BaseConditionRule
     /**
      * Returns whether the condition rule matches the given value.
      *
-     * @param mixed $value
      * @return bool
      */
     protected function matchValue(mixed $value): bool

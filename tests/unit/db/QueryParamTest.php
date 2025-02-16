@@ -23,7 +23,6 @@ class QueryParamTest extends TestCase
      * @dataProvider toArrayDataProvider
      *
      * @param array $expected
-     * @param mixed $value
      */
     public function testToArray(array $expected, mixed $value): void
     {

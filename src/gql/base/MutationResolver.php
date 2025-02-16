@@ -21,26 +21,14 @@ use GraphQL\Error\Error;
 abstract class MutationResolver extends Component
 {
     /**
-     * @var array Data that might be useful during mutation resolution.
-     */
-    private array $_resolutionData;
-
-    /**
-     * @var callable[] Value normalizers stored by argument name
-     */
-    private array $_valueNormalizers = [];
-
-    /**
      * Construct a mutation resolver and store the resolution data as well as normalizers, if any provided.
      *
-     * @param array $data Resolver data
-     * @param array $valueNormalizers Data normalizers
+     * @param array $_resolutionData Resolver data
+     * @param array $_valueNormalizers Data normalizers
      * @param array $config
      */
-    public function __construct(array $data = [], array $valueNormalizers = [], array $config = [])
+    public function __construct(private array $_resolutionData = [], private array $_valueNormalizers = [], array $config = [])
     {
-        $this->_resolutionData = $data;
-        $this->_valueNormalizers = $valueNormalizers;
         parent::__construct($config);
     }
 
@@ -48,7 +36,6 @@ abstract class MutationResolver extends Component
      * Set a piece of data to be used by the resolver when resolving.
      *
      * @param string $key
-     * @param mixed $value
      */
     public function setResolutionData(string $key, mixed $value): void
     {
@@ -85,7 +72,6 @@ abstract class MutationResolver extends Component
      * Normalize a value according to stored normalizers.
      *
      * @param string $argument
-     * @param mixed $value
      * @return mixed
      */
     protected function normalizeValue(string $argument, mixed $value): mixed

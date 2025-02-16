@@ -28,7 +28,6 @@ trait SetUserValueTrait
      * Set a value on a user; determine if we're setting a field value or property
      *
      * @param User $user
-     * @param mixed $value
      * @return void
      */
     protected function setValue(User $user, mixed $value): void

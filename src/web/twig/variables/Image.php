@@ -20,16 +20,6 @@ use craft\helpers\Image as ImageHelper;
 class Image
 {
     /**
-     * @var string|null
-     */
-    protected ?string $path = null;
-
-    /**
-     * @var string|null
-     */
-    protected ?string $url = null;
-
-    /**
      * @var array|null
      */
     protected ?array $size = null;
@@ -40,10 +30,8 @@ class Image
      * @param string $path
      * @param string $url
      */
-    public function __construct(string $path, string $url = '')
+    public function __construct(protected ?string $path, protected ?string $url = '')
     {
-        $this->path = $path;
-        $this->url = $url;
     }
 
     /**

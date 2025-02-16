@@ -230,7 +230,6 @@ class Number extends Field implements InlineEditableFieldInterface, SortableFiel
     }
 
     /**
-     * @param mixed $value
      * @return int|float|null
      */
     private function _normalizeNumber(mixed $value): float|int|null
@@ -274,7 +273,7 @@ class Number extends Field implements InlineEditableFieldInterface, SortableFiel
 
         try {
             $formatNumber = !$this->step && !$formatter->willBeMisrepresented($value);
-        } catch (InvalidArgumentException $e) {
+        } catch (InvalidArgumentException) {
             $formatNumber = false;
         }
 

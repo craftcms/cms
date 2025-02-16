@@ -508,7 +508,7 @@ abstract class BaseUpdaterController extends Controller
                 $previous = $e->getPrevious();
                 $migration = $e->migration;
                 $output = $e->output;
-                $error = get_class($migration) . ' migration failed' . ($previous ? ': ' . $previous->getMessage() : '.');
+                $error = $migration::class . ' migration failed' . ($previous ? ': ' . $previous->getMessage() : '.');
                 $e = $previous ?? $e;
             } else {
                 $migration = $output = null;
@@ -546,12 +546,12 @@ abstract class BaseUpdaterController extends Controller
                 'subject' => $ownerName . ' update failure',
             ];
 
-            $eName = $e instanceof Exception ? $e->getName() : get_class($e);
+            $eName = $e instanceof Exception ? $e->getName() : $e::class;
 
             return $this->send([
                 'error' => Craft::t('app', 'One of {name}’s migrations failed.', ['name' => $ownerName]),
                 'errorDetails' => $eName . ': ' . $e->getMessage() .
-                    ($migration ? "\n\nMigration: " . get_class($migration) : '') .
+                    ($migration ? "\n\nMigration: " . $migration::class : '') .
                     ($output ? "\n\nOutput:\n\n" . $output : ''),
                 'options' => $options,
             ]);
@@ -599,9 +599,9 @@ abstract class BaseUpdaterController extends Controller
 
             Craft::error('Plugin installation failed: ' . $e->getMessage(), __METHOD__);
 
-            $eName = $e instanceof YiiException ? $e->getName() : get_class($e);
+            $eName = $e instanceof YiiException ? $e->getName() : $e::class;
             $errorDetails = $eName . ': ' . $e->getMessage() .
-                ($migration ? "\n\nMigration: " . get_class($migration) : '') .
+                ($migration ? "\n\nMigration: " . $migration::class : '') .
                 ($output ? "\n\nOutput:\n\n" . $output : '');
         }
 
@@ -644,7 +644,7 @@ abstract class BaseUpdaterController extends Controller
         }
 
         if (empty($details)) {
-            $details[] = 'Exception of class ' . get_class($e) . ' was thrown.';
+            $details[] = 'Exception of class ' . $e::class . ' was thrown.';
         }
 
         return implode("\n\n", $details);

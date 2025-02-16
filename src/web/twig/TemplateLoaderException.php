@@ -18,17 +18,11 @@ use Twig\Error\LoaderError;
 class TemplateLoaderException extends LoaderError
 {
     /**
-     * @var string|null
-     */
-    public ?string $template = null;
-
-    /**
      * @param string $template The requested template
      * @param string $message The exception message
      */
-    public function __construct(string $template, string $message)
+    public function __construct(public ?string $template, string $message)
     {
-        $this->template = $template;
         parent::__construct($message);
     }
 }

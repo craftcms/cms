@@ -233,19 +233,12 @@ class EntryQuery extends ElementQuery implements NestedElementQueryInterface
      */
     public function __set($name, $value)
     {
-        switch ($name) {
-            case 'section':
-                $this->section($value);
-                break;
-            case 'type':
-                $this->type($value);
-                break;
-            case 'authorGroup':
-                $this->authorGroup($value);
-                break;
-            default:
-                $this->nestedTraitSet($name, $value);
-        }
+        match ($name) {
+            'section' => $this->section($value),
+            'type' => $this->type($value),
+            'authorGroup' => $this->authorGroup($value),
+            default => $this->nestedTraitSet($name, $value),
+        };
     }
 
     /**

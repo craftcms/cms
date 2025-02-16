@@ -229,7 +229,7 @@ class ElementIndexesController extends BaseElementsController
         if (!empty($this->actions)) {
             /** @var ElementAction $availableAction */
             foreach ($this->actions as $availableAction) {
-                if ($actionClass === get_class($availableAction)) {
+                if ($actionClass === $availableAction::class) {
                     $action = clone $availableAction;
                     break;
                 }
@@ -362,7 +362,7 @@ class ElementIndexesController extends BaseElementsController
                 $export = $export();
             }
             if (!is_iterable($export)) {
-                throw new InvalidValueException(get_class($exporter) . '::export() must return an array or generator function since isFormattable() returns true.');
+                throw new InvalidValueException($exporter::class . '::export() must return an array or generator function since isFormattable() returns true.');
             }
 
             $this->response->data = $export;
@@ -410,7 +410,7 @@ class ElementIndexesController extends BaseElementsController
         $exporterClass = $this->request->getBodyParam('type', Raw::class);
         if (!empty($this->exporters)) {
             foreach ($this->exporters as $exporter) {
-                if ($exporterClass === get_class($exporter)) {
+                if ($exporterClass === $exporter::class) {
                     return $exporter;
                 }
             }
@@ -979,7 +979,7 @@ class ElementIndexesController extends BaseElementsController
 
         foreach ($this->exporters as $exporter) {
             $exporterData[] = [
-                'type' => get_class($exporter),
+                'type' => $exporter::class,
                 'name' => $exporter::displayName(),
                 'formattable' => $exporter::isFormattable(),
             ];

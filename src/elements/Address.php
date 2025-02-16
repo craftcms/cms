@@ -119,12 +119,10 @@ class Address extends Element implements AddressInterface, NestedElementInterfac
      */
     protected function attributeHtml(string $attribute): string
     {
-        switch ($attribute) {
-            case 'country':
-                return $this->getCountry()->getName();
-            default:
-                return parent::attributeHtml($attribute);
-        }
+        return match ($attribute) {
+            'country' => $this->getCountry()->getName(),
+            default => parent::attributeHtml($attribute),
+        };
     }
 
     /**

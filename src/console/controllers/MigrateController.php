@@ -226,7 +226,7 @@ class MigrateController extends BaseMigrateController
             if (!$this->traitBeforeAction($action)) {
                 return false;
             }
-        } catch (InvalidConfigException $e) {
+        } catch (InvalidConfigException) {
             // migrations folder not created, but we don't mind.
         }
 
@@ -586,7 +586,7 @@ class MigrateController extends BaseMigrateController
      */
     protected function truncateDatabase(): void
     {
-        throw new NotSupportedException('This command is not implemented in ' . get_class($this));
+        throw new NotSupportedException('This command is not implemented in ' . static::class);
     }
 
     /**

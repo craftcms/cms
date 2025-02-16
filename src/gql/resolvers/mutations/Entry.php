@@ -39,9 +39,7 @@ class Entry extends ElementMutationResolver
     /**
      * Save an entry or draft using the passed arguments.
      *
-     * @param mixed $source
      * @param array $arguments
-     * @param mixed $context
      * @param ResolveInfo $resolveInfo
      * @return EntryElement
      * @throws Throwable if reasons.
@@ -115,9 +113,7 @@ class Entry extends ElementMutationResolver
     /**
      * Delete an entry identified by the passed arguments.
      *
-     * @param mixed $source
      * @param array $arguments
-     * @param mixed $context
      * @param ResolveInfo $resolveInfo
      * @return bool
      * @throws Throwable if reasons.
@@ -144,9 +140,7 @@ class Entry extends ElementMutationResolver
     /**
      * Create a new draft for the entry ID identified by the arguments
      *
-     * @param mixed $source
      * @param array $arguments
-     * @param mixed $context
      * @param ResolveInfo $resolveInfo
      * @return mixed
      * @throws Throwable if reasons.
@@ -187,9 +181,7 @@ class Entry extends ElementMutationResolver
     /**
      * Publish a draft identified by the arguments.
      *
-     * @param mixed $source
      * @param array $arguments
-     * @param mixed $context
      * @param ResolveInfo $resolveInfo
      * @return int
      * @throws Throwable if reasons.

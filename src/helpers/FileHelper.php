@@ -274,7 +274,7 @@ class FileHelper extends \yii\helpers\FileHelper
                 // Always use the primary site language, so file paths/names are normalized
                 // to ASCII consistently regardless of who is logged in.
                 $language = Craft::$app->getSites()->getPrimarySite()->language;
-            } catch (SiteNotFoundException $e) {
+            } catch (SiteNotFoundException) {
                 $language = Craft::$app->language;
             }
 
@@ -579,7 +579,7 @@ class FileHelper extends \yii\helpers\FileHelper
                         static::removeDirectory($path, $options);
                     } catch (UnexpectedValueException $e) {
                         // Ignore if the folder has already been removed.
-                        if (strpos($e->getMessage(), 'No such file or directory') === false) {
+                        if (!str_contains($e->getMessage(), 'No such file or directory')) {
                             Craft::warning("Tried to remove " . $path . ", but it doesn't exist.");
                             throw $e;
                         }

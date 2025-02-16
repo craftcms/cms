@@ -240,7 +240,6 @@ class App
      * $status = App::parseBooleanEnv('$SYSTEM_STATUS') ?? false;
      * ```
      *
-     * @param mixed $value
      * @return bool|null
      * @since 3.7.29
      */
@@ -440,7 +439,6 @@ class App
      * - `'false'` → `false`
      * - Numeric string → integer or float
      *
-     * @param mixed $value
      * @return mixed
      * @since 4.0.0
      */
@@ -1432,7 +1430,7 @@ class App
 
                             // If the license key path starts with the root project path, trim the project path off
                             $rootPath = Craft::getAlias('@root');
-                            if (strpos($keyPath, $rootPath . '/') === 0) {
+                            if (str_starts_with($keyPath, $rootPath . '/')) {
                                 $keyPath = substr($keyPath, strlen($rootPath) + 1);
                             }
 

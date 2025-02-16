@@ -43,7 +43,8 @@ class EntryType extends Model implements
     Iconic,
     Indicative,
     Colorable,
-    Actionable
+    Actionable,
+    \Stringable
 {
     /**
      * @inheritdoc

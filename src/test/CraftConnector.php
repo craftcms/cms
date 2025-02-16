@@ -91,7 +91,7 @@ class CraftConnector extends Yii2
 
         /** @var Module $module */
         foreach (Craft::$app->getModules(true) as $module) {
-            $moduleClass = get_class($module);
+            $moduleClass = $module::class;
             $moduleId = $module->id;
 
             if ($module instanceof PluginInterface) {

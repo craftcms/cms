@@ -53,7 +53,6 @@ class MoneyTest extends TestCase
 
     /**
      * @dataProvider normalizeValueDataProvider
-     * @param mixed $money
      * @param string $value
      * @param string|null $defaultValue
      * @param ElementInterface|null $element
@@ -69,7 +68,6 @@ class MoneyTest extends TestCase
 
     /**
      * @dataProvider getTableAttributeHtmlDataProvider
-     * @param mixed $value
      * @param string $expected
      * @param string|null $locale
      * @return void

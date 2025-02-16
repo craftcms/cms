@@ -3481,7 +3481,6 @@ class GeneralConfig extends BaseConfig
      * ```
      *
      * @group Routing
-     * @param mixed $value
      * @return self
      * @see $activateAccountSuccessPath
      * @see getActivateAccountSuccessPath()
@@ -3897,7 +3896,6 @@ class GeneralConfig extends BaseConfig
      *
      * @group System
      * @defaultAlt 1 day
-     * @param mixed $value
      * @return self
      * @see $cacheDuration
      * @since 4.2.0
@@ -3945,7 +3943,6 @@ class GeneralConfig extends BaseConfig
      *
      * @group Security
      * @defaultAlt 5 minutes
-     * @param mixed $value
      * @return self
      * @see $cooldownDuration
      * @since 4.2.0
@@ -4151,7 +4148,6 @@ class GeneralConfig extends BaseConfig
      * ```
      *
      * @group System
-     * @param mixed $value
      * @return self
      * @see $defaultDirMode
      * @since 4.2.0
@@ -4263,7 +4259,6 @@ class GeneralConfig extends BaseConfig
      *
      * @group Security
      * @defaultAlt 1 day
-     * @param mixed $value
      * @return self
      * @see $defaultTokenDuration
      * @since 4.2.0
@@ -4593,7 +4588,6 @@ class GeneralConfig extends BaseConfig
      *
      * @group Security
      * @defaultAlt 5 minutes
-     * @param mixed $value
      * @return self
      * @see $elevatedSessionDuration
      * @since 4.2.0
@@ -5000,7 +4994,6 @@ class GeneralConfig extends BaseConfig
      * ```
      *
      * @group Image Handling
-     * @param mixed $value
      * @return self
      * @see $imageDriver
      * @since 4.2.0
@@ -5069,7 +5062,6 @@ class GeneralConfig extends BaseConfig
      *
      * @group Security
      * @defaultAlt 1 hour
-     * @param mixed $value
      * @return self
      * @see $invalidLoginWindowDuration
      * @since 4.2.0
@@ -5092,7 +5084,6 @@ class GeneralConfig extends BaseConfig
      * ```
      *
      * @group Routing
-     * @param mixed $value
      * @return self
      * @see $invalidUserTokenPath
      * @since 4.2.0
@@ -5220,7 +5211,6 @@ class GeneralConfig extends BaseConfig
      * ```
      *
      * @group Routing
-     * @param mixed $value
      * @return self
      * @see $loginPath
      * @since 4.2.0
@@ -5243,7 +5233,6 @@ class GeneralConfig extends BaseConfig
      * ```
      *
      * @group Routing
-     * @param mixed $value
      * @return self
      * @see $logoutPath
      * @since 4.2.0
@@ -5670,7 +5659,6 @@ class GeneralConfig extends BaseConfig
      * ```
      *
      * @group Routing
-     * @param mixed $value
      * @return self
      * @see $postCpLoginRedirect
      * @since 4.2.0
@@ -5694,7 +5682,6 @@ class GeneralConfig extends BaseConfig
      * ```
      *
      * @group Routing
-     * @param mixed $value
      * @return self
      * @see $postLoginRedirect
      * @since 4.2.0
@@ -5715,7 +5702,6 @@ class GeneralConfig extends BaseConfig
      * ```
      *
      * @group Routing
-     * @param mixed $value
      * @return self
      * @see $postLogoutRedirect
      * @since 4.2.0
@@ -5901,7 +5887,6 @@ class GeneralConfig extends BaseConfig
      *
      * @group Security
      * @defaultAlt 1 day
-     * @param mixed $value
      * @return self
      * @see $previewTokenDuration
      * @since 4.2.0
@@ -5953,7 +5938,6 @@ class GeneralConfig extends BaseConfig
      * ```
      *
      * @group Garbage Collection
-     * @param mixed $value
      * @return self
      * @see $purgePendingUsersDuration
      * @since 4.2.0
@@ -5978,7 +5962,6 @@ class GeneralConfig extends BaseConfig
      *
      * @group Garbage Collection
      * @defaultAlt 90 days
-     * @param mixed $value
      * @return self
      * @see $purgeStaleUserSessionDuration
      * @since 4.2.0
@@ -6002,7 +5985,6 @@ class GeneralConfig extends BaseConfig
      *
      * @group Garbage Collection
      * @defaultAlt 30 days
-     * @param mixed $value
      * @return self
      * @see $purgeUnsavedDraftsDuration
      * @since 4.2.0
@@ -6047,7 +6029,6 @@ class GeneralConfig extends BaseConfig
      *
      * @group Session
      * @defaultAlt 1 year
-     * @param mixed $value
      * @return self
      * @see $rememberUsernameDuration
      * @since 4.2.0
@@ -6071,7 +6052,6 @@ class GeneralConfig extends BaseConfig
      *
      * @group Session
      * @defaultAlt 14 days
-     * @param mixed $value
      * @return self
      * @throws InvalidConfigException
      * @see $rememberedUserSessionDuration
@@ -6438,7 +6418,6 @@ class GeneralConfig extends BaseConfig
      * ```
      *
      * @group Routing
-     * @param mixed $value
      * @return self
      * @see $setPasswordPath
      * @since 4.2.0
@@ -6466,7 +6445,6 @@ class GeneralConfig extends BaseConfig
      * ```
      *
      * @group Routing
-     * @param mixed $value
      * @return self
      * @see $setPasswordRequestPath
      * @since 4.2.0
@@ -6487,7 +6465,6 @@ class GeneralConfig extends BaseConfig
      * ```
      *
      * @group Routing
-     * @param mixed $value
      * @return self
      * @see $setPasswordSuccessPath
      * @since 4.2.0
@@ -6631,7 +6608,6 @@ class GeneralConfig extends BaseConfig
      *
      * @group Garbage Collection
      * @defaultAlt 30 days
-     * @param mixed $value
      * @return self
      * @see $softDeleteDuration
      * @since 4.2.0
@@ -7008,7 +6984,6 @@ class GeneralConfig extends BaseConfig
      *
      * @group Session
      * @defaultAlt 1 hour
-     * @param mixed $value
      * @return self
      * @see $userSessionDuration
      * @since 4.2.0
@@ -7055,7 +7030,6 @@ class GeneralConfig extends BaseConfig
      *
      * @group Security
      * @defaultAlt 1 day
-     * @param mixed $value
      * @return self
      * @see $verificationCodeDuration
      * @since 4.2.0
@@ -7076,7 +7050,6 @@ class GeneralConfig extends BaseConfig
      * ```
      *
      * @group Routing
-     * @param mixed $value
      * @return self
      * @see $verifyEmailPath
      * @see getVerifyEmailPath()
@@ -7098,7 +7071,6 @@ class GeneralConfig extends BaseConfig
      * ```
      *
      * @group Routing
-     * @param mixed $value
      * @return self
      * @see $verifyEmailSuccessPath
      * @see getVerifyEmailSuccessPath()

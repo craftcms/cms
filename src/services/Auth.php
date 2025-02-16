@@ -338,7 +338,7 @@ class Auth extends Component
     public function getMethod(string $class, ?User $user = null): AuthMethodInterface
     {
         foreach ($this->getAllMethods($user) as $method) {
-            if (get_class($method) === $class) {
+            if ($method::class === $class) {
                 return $method;
             }
         }

@@ -183,7 +183,7 @@ class SoftDeleteQueryBehavior extends Behavior
      * @param mixed $deleted filter value.
      * @return \yii\db\ActiveQueryInterface|static
      */
-    public function filterDeleted($deleted)
+    public function filterDeleted(mixed $deleted)
     {
         if ($deleted === '' || $deleted === null || $deleted === []) {
             return $this->notDeleted();
@@ -259,7 +259,7 @@ class SoftDeleteQueryBehavior extends Behavior
                 } elseif (!is_scalar($value) && is_callable($value)) {
                     $restoreValue = null;
                 } else {
-                    throw new InvalidConfigException('Unable to automatically determine not delete condition, "' . get_class($this) . '::$notDeletedCondition" should be explicitly set.');
+                    throw new InvalidConfigException('Unable to automatically determine not delete condition, "' . static::class . '::$notDeletedCondition" should be explicitly set.');
                 }
 
                 $condition[$attribute] = $restoreValue;
@@ -297,12 +297,12 @@ class SoftDeleteQueryBehavior extends Behavior
             $alias = array_keys($fromTables)[0];
 
             foreach ($condition as $attribute => $value) {
-                if (is_numeric($attribute) || strpos($attribute, '.') !== false) {
+                if (is_numeric($attribute) || str_contains($attribute, '.')) {
                     continue;
                 }
 
                 unset($condition[$attribute]);
-                if (strpos($attribute, '[[') === false) {
+                if (!str_contains($attribute, '[[')) {
                     $attribute = '[[' . $attribute . ']]';
                 }
                 $attribute = $alias . '.' . $attribute;

@@ -22,8 +22,6 @@ class ElementQueryTest extends TestCase
     /**
      * @dataProvider relatedToDataProvider
      * @param array|false $expected
-     * @param mixed $relatedToParam
-     * @param mixed $andRelatedToParam
      */
     public function testAndRelatedTo(array|false $expected, mixed $relatedToParam, mixed $andRelatedToParam): void
     {
@@ -41,7 +39,6 @@ class ElementQueryTest extends TestCase
     /**
      * @dataProvider normalizeOrderByDataProvider
      * @param array $expected
-     * @param mixed $columns
      * @return void
      */
     public function testNormalizeOrderBy(array $expected, mixed $columns): void

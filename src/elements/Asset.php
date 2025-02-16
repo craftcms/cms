@@ -831,7 +831,7 @@ class Asset extends Element
         if (self::_includeFoldersInIndexElements($elementQuery, $sourceKey, $queryFolder)) {
             try {
                 $count += self::_createFolderQueryForIndex($elementQuery, $queryFolder)->count();
-            } catch (QueryAbortedException $e) {
+            } catch (QueryAbortedException) {
                 return 0;
             }
         }
@@ -1232,7 +1232,7 @@ class Asset extends Element
     {
         return (
             parent::__isset($name) ||
-            strncmp($name, 'transform:', 10) === 0 ||
+            str_starts_with($name, 'transform:') ||
             Craft::$app->getImageTransforms()->getTransformByHandle($name)
         );
     }
@@ -1251,7 +1251,7 @@ class Asset extends Element
      */
     public function __get($name)
     {
-        if (strncmp($name, 'transform:', 10) === 0) {
+        if (str_starts_with($name, 'transform:')) {
             return $this->copyWithTransform(substr($name, 10));
         }
 
@@ -2772,15 +2772,13 @@ JS,[
      */
     protected function inlineAttributeInputHtml(string $attribute): string
     {
-        switch ($attribute) {
-            case 'alt':
-                return Cp::textareaHtml([
-                    'name' => 'alt',
-                    'value' => $this->alt,
-                ]);
-            default:
-                return parent::inlineAttributeInputHtml($attribute);
-        }
+        return match ($attribute) {
+            'alt' => Cp::textareaHtml([
+                'name' => 'alt',
+                'value' => $this->alt,
+            ]),
+            default => parent::inlineAttributeInputHtml($attribute),
+        };
     }
 
     /**
@@ -2806,34 +2804,26 @@ JS,[
                 ($userSession->getId() == $this->uploaderId || $userSession->checkPermission("editPeerImages:$volume->uid"))
             );
 
-            switch ($this->kind) {
-                case Asset::KIND_VIDEO:
-                    $previewInner =
-                        Html::tag('video', Html::tag('source', '', [
-                            'type' => $this->getMimeType(),
-                            'src' => $this->url,
-                        ]), [
-                            'class' => 'preview-thumb',
-                            'controls' => true,
-                            'preload' => 'metadata',
-                        ]);
-                    break;
-                case Asset::KIND_AUDIO:
-                    $previewInner =
-                        Html::tag('audio', Html::tag('source', '', [
-                            'src' => $this->url,
-                            'type' => $this->getMimeType(),
-                        ]), [
-                            'controls' => true,
-                            'preload' => 'metadata',
-                        ]);
-                    break;
-                default:
-                    $previewInner =
-                        Html::tag('div', $this->getPreviewThumbImg(350, 190), [
-                            'class' => 'preview-thumb',
-                        ]);
-            }
+            $previewInner = match ($this->kind) {
+                Asset::KIND_VIDEO => Html::tag('video', Html::tag('source', '', [
+                    'type' => $this->getMimeType(),
+                    'src' => $this->url,
+                ]), [
+                    'class' => 'preview-thumb',
+                    'controls' => true,
+                    'preload' => 'metadata',
+                ]),
+                Asset::KIND_AUDIO => Html::tag('audio', Html::tag('source', '', [
+                    'src' => $this->url,
+                    'type' => $this->getMimeType(),
+                ]), [
+                    'controls' => true,
+                    'preload' => 'metadata',
+                ]),
+                default => Html::tag('div', $this->getPreviewThumbImg(350, 190), [
+                    'class' => 'preview-thumb',
+                ]),
+            };
 
             $previewThumbHtml =
                 Html::beginTag('div', [

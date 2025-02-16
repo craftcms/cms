@@ -22,7 +22,7 @@ use yii\base\InvalidConfigException;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 4.0.0
  */
-class ImageTransformIndex extends Model
+class ImageTransformIndex extends Model implements \Stringable
 {
     /**
      * @var int|null ID

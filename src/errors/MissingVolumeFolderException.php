@@ -21,21 +21,6 @@ use yii\base\Exception;
 class MissingVolumeFolderException extends Exception
 {
     /**
-     * @var AssetIndexData
-     */
-    public AssetIndexData $indexEntry;
-
-    /**
-     * @var Volume
-     */
-    public Volume $volume;
-
-    /**
-     * @var string
-     */
-    public string $folderName;
-
-    /**
      * Constructor
      *
      * @param AssetIndexData $indexEntry
@@ -45,11 +30,8 @@ class MissingVolumeFolderException extends Exception
      * @param int $code
      * @param Throwable|null $previous
      */
-    public function __construct(AssetIndexData $indexEntry, Volume $volume, string $folderName, string $message = '', int $code = 0, ?Throwable $previous = null)
+    public function __construct(public AssetIndexData $indexEntry, public Volume $volume, public string $folderName, string $message = '', int $code = 0, ?Throwable $previous = null)
     {
-        $this->indexEntry = $indexEntry;
-        $this->volume = $volume;
-        $this->folderName = $folderName;
         parent::__construct($message, $code, $previous);
     }
 

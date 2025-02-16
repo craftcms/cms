@@ -319,7 +319,7 @@ class ElementHelper
                 ];
             } else {
                 if (!isset($site['siteId'])) {
-                    throw new Exception('Missing "siteId" key in ' . get_class($element) . '::getSupportedSites()');
+                    throw new Exception('Missing "siteId" key in ' . $element::class . '::getSupportedSites()');
                 }
                 $site['siteId'] = (int)$site['siteId'];
             }

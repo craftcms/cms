@@ -334,7 +334,6 @@ abstract class BaseExternalProvider extends BaseProvider
     /**
      * Normalize a callback
      *
-     * @param mixed $callback
      * @param string|null $defaultClass
      * @return callable|null
      * @throws \yii\base\InvalidConfigException

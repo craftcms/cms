@@ -490,7 +490,7 @@ class View extends \yii\web\View
     public function registerCpTwigExtension(ExtensionInterface $extension): void
     {
         // Make sure this extension isn't already registered
-        $class = get_class($extension);
+        $class = $extension::class;
         if (isset($this->_cpTwigExtensions[$class])) {
             return;
         }
@@ -515,7 +515,7 @@ class View extends \yii\web\View
     public function registerSiteTwigExtension(ExtensionInterface $extension): void
     {
         // Make sure this extension isn't already registered
-        $class = get_class($extension);
+        $class = $extension::class;
         if (isset($this->_siteTwigExtensions[$class])) {
             return;
         }
@@ -1680,7 +1680,6 @@ JS;
      * Sets the initial value of a delta input name.
      *
      * @param string $inputName
-     * @param mixed $value
      * @see getInitialDeltaValues()
      * @since 3.4.6
      */

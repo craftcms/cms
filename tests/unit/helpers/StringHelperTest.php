@@ -1401,7 +1401,6 @@ class StringHelperTest extends TestCase
     /**
      * @dataProvider toStringDataProvider
      * @param string $expected
-     * @param mixed $object
      * @param string $glue
      */
     public function testToString(string $expected, mixed $object, string $glue = ','): void

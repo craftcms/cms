@@ -59,11 +59,6 @@ class Paginator extends BaseObject
     public int $pageSize = 100;
 
     /**
-     * @var QueryInterface The query being paginated
-     */
-    protected QueryInterface $query;
-
-    /**
      * @var int The total query count
      */
     protected int $totalResults;
@@ -89,10 +84,8 @@ class Paginator extends BaseObject
      * @param QueryInterface $query The query that should be paginated
      * @param array $config
      */
-    public function __construct(QueryInterface $query, array $config = [])
+    public function __construct(protected QueryInterface $query, array $config = [])
     {
-        $this->query = $query;
-
         // Set the current page after everything else
         $currentPage = ArrayHelper::remove($config, 'currentPage');
 

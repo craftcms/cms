@@ -22,7 +22,7 @@ use yii\base\InvalidConfigException;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
  */
-class VolumeFolder extends Model
+class VolumeFolder extends Model implements \Stringable
 {
     /**
      * @var int|null ID

@@ -34,7 +34,7 @@ use craft\validators\UniqueValidator;
  * @property EntryType[] $entryTypes Entry types
  * @property bool $hasMultiSiteEntries Whether entries in this section support multiple sites
  */
-class Section extends Model implements Chippable, CpEditable, Iconic
+class Section extends Model implements Chippable, CpEditable, Iconic, \Stringable
 {
     public const TYPE_SINGLE = 'single';
     public const TYPE_CHANNEL = 'channel';

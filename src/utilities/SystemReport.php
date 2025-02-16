@@ -61,7 +61,7 @@ class SystemReport extends Utility
                 continue;
             }
             if ($module instanceof Module) {
-                $modules[$id] = get_class($module);
+                $modules[$id] = $module::class;
             } elseif (is_string($module)) {
                 $modules[$id] = $module;
             } elseif (is_array($module) && isset($module['class'])) {

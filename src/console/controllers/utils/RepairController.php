@@ -303,7 +303,6 @@ class RepairController extends Controller
      *
      * @param ProjectConfig $projectConfigService
      * @param string $path
-     * @param mixed $value
      * @return mixed
      */
     private function _repairProjectConfigItem(ProjectConfig $projectConfigService, string $path, mixed $value): mixed

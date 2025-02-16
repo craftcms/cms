@@ -187,12 +187,12 @@ class ElementCollectionTest extends TestCase
     {
         $collection = Entry::find()->collect();
         self::assertInstanceOf(ElementCollection::class, $collection);
-        self::assertSame(Collection::class, get_class($collection->countBy(fn(Entry $entry) => $entry->sectionId)));
-        self::assertSame(Collection::class, get_class($collection->collapse()));
-        self::assertSame(Collection::class, get_class($collection->flatten(1)));
-        self::assertSame(Collection::class, get_class($collection->keys()));
-        self::assertSame(Collection::class, get_class($collection->pad(100, null)));
-        self::assertSame(Collection::class, get_class($collection->pluck('title')));
-        self::assertSame(Collection::class, get_class($collection->zip($collection->ids())));
+        self::assertSame(Collection::class, $collection->countBy(fn(Entry $entry) => $entry->sectionId)::class);
+        self::assertSame(Collection::class, $collection->collapse()::class);
+        self::assertSame(Collection::class, $collection->flatten(1)::class);
+        self::assertSame(Collection::class, $collection->keys()::class);
+        self::assertSame(Collection::class, $collection->pad(100, null)::class);
+        self::assertSame(Collection::class, $collection->pluck('title')::class);
+        self::assertSame(Collection::class, $collection->zip($collection->ids())::class);
     }
 }

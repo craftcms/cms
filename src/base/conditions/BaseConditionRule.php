@@ -121,7 +121,7 @@ abstract class BaseConditionRule extends Component implements ConditionRuleInter
     public function getConfig(): array
     {
         $config = [
-            'class' => get_class($this),
+            'class' => static::class,
             'uid' => $this->uid,
         ];
 

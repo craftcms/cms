@@ -60,7 +60,6 @@ class MysqlDbHelperTest extends TestCase
 
     /**
      * @dataProvider parseParamDataProvider
-     * @param mixed $expected
      * @param string $column
      * @param string|int|array $value
      * @param string $defaultOperator

@@ -131,7 +131,7 @@ class ApplyNewPropagationMethod extends BaseBatchedElementJob
                 // Just log it and move along
                 Craft::warning(sprintf(
                     "Unable to duplicate “%s” to site %d: %s",
-                    get_class($otherSiteElement),
+                    $otherSiteElement::class,
                     $otherSiteElement->siteId,
                     $e->getMessage()
                 ));

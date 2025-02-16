@@ -426,7 +426,7 @@ abstract class Controller extends \yii\web\Controller
     ): YiiResponse {
         $data += array_filter([
             'modelName' => $modelName,
-            'modelClass' => get_class($model),
+            'modelClass' => $model::class,
             ($modelName ?? 'model') => $model->toArray(),
         ]);
 

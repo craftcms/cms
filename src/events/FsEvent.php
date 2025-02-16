@@ -24,14 +24,8 @@ class FsEvent extends Event
      * @param FsInterface $fs
      * @param array $config
      */
-    public function __construct(FsInterface $fs, array $config = [])
+    public function __construct(public FsInterface $fs, array $config = [])
     {
-        $this->fs = $fs;
         parent::__construct($config);
     }
-
-    /**
-     * @var FsInterface The filesystem
-     */
-    public FsInterface $fs;
 }

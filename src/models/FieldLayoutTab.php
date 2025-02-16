@@ -215,7 +215,7 @@ class FieldLayoutTab extends FieldLayoutComponent
             if (!isset($layoutElement->uid)) {
                 $layoutElement->uid = StringHelper::UUID();
             }
-            $elementConfig = ['type' => get_class($layoutElement)] + $layoutElement->toArray();
+            $elementConfig = ['type' => $layoutElement::class] + $layoutElement->toArray();
             if (!isset($elementConfig['dateAdded'])) {
                 // Default `dateAdded` to a minute ago, so there’s no chance that an element that predated 5.3 would get
                 // the same timestamp as a newly-added element, if the layout was saved within a minute of being edited,

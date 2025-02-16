@@ -770,15 +770,13 @@ class Category extends Element
      */
     protected function inlineAttributeInputHtml(string $attribute): string
     {
-        switch ($attribute) {
-            case 'slug':
-                return Cp::textHtml([
-                    'name' => 'slug',
-                    'value' => $this->slug,
-                ]);
-            default:
-                return parent::inlineAttributeInputHtml($attribute);
-        }
+        return match ($attribute) {
+            'slug' => Cp::textHtml([
+                'name' => 'slug',
+                'value' => $this->slug,
+            ]),
+            default => parent::inlineAttributeInputHtml($attribute),
+        };
     }
 
     /**

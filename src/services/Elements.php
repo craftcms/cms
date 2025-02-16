@@ -697,7 +697,7 @@ class Elements extends Component
             return;
         }
 
-        $class = get_class($element);
+        $class = $element::class;
         $this->collectCacheTags([
             'element',
             "element::$class",
@@ -1350,7 +1350,7 @@ class Elements extends Component
         }
 
         if (!$element::trackChanges()) {
-            throw new InvalidArgumentException(get_class($element) . ' elements don’t track their changes');
+            throw new InvalidArgumentException($element::class . ' elements don’t track their changes');
         }
 
         // Make sure the derivative element actually supports its own site ID
@@ -1676,7 +1676,7 @@ class Elements extends Component
                     $supportedSites = ArrayHelper::index(ElementHelper::supportedSitesForElement($element), 'siteId');
                     $supportedSiteIds = array_keys($supportedSites);
                     $elementSiteIds = $siteIds !== null ? array_intersect($siteIds, $supportedSiteIds) : $supportedSiteIds;
-                    $elementType = get_class($element);
+                    $elementType = $element::class;
 
                     $e = null;
                     try {
@@ -2033,7 +2033,7 @@ class Elements extends Component
         if ($queue) {
             Queue::push(new UpdateElementSlugsAndUris([
                 'elementId' => $element->id,
-                'elementType' => get_class($element),
+                'elementType' => $element::class,
                 'siteId' => $element->siteId,
                 'updateOtherSites' => $updateOtherSites,
                 'updateDescendants' => $updateDescendants,
@@ -2111,7 +2111,7 @@ class Elements extends Component
      */
     public function updateDescendantSlugsAndUris(ElementInterface $element, bool $updateOtherSites = true, bool $queue = false): void
     {
-        $query = $this->createElementQuery(get_class($element))
+        $query = $this->createElementQuery($element::class)
             ->descendantOf($element)
             ->descendantDist(1)
             ->status(null)
@@ -2123,7 +2123,7 @@ class Elements extends Component
             if (!empty($childIds)) {
                 Queue::push(new UpdateElementSlugsAndUris([
                     'elementId' => $childIds,
-                    'elementType' => get_class($element),
+                    'elementType' => $element::class,
                     'siteId' => $element->siteId,
                     'updateOtherSites' => $updateOtherSites,
                     'updateDescendants' => true,
@@ -2443,10 +2443,10 @@ class Elements extends Component
 
         // Make sure each element has the same type and site ID
         $firstElement = reset($elements);
-        $elementType = get_class($firstElement);
+        $elementType = $firstElement::class;
 
         foreach ($elements as $element) {
-            if (get_class($element) !== $elementType || $element->siteId !== $firstElement->siteId) {
+            if ($element::class !== $elementType || $element->siteId !== $firstElement->siteId) {
                 throw new InvalidArgumentException('All elements must have the same type and site ID.');
             }
         }
@@ -3627,7 +3627,7 @@ class Elements extends Component
                         }
                     } else {
                         $elementRecord = new ElementRecord();
-                        $elementRecord->type = get_class($element);
+                        $elementRecord->type = $element::class;
                     }
 
                     // Set the attributes
@@ -3950,7 +3950,7 @@ class Elements extends Component
             Craft::$app->getSearch()->indexElementAttributes($element, $searchableDirtyFields);
         } else {
             Queue::push(new UpdateSearchIndex([
-                'elementType' => get_class($element),
+                'elementType' => $element::class,
                 'elementId' => $element->id,
                 'siteId' => $element->siteId,
                 'fieldHandles' => $searchableDirtyFields,
@@ -4008,7 +4008,7 @@ class Elements extends Component
 
         // Try to fetch the element in this site
         if ($siteElement === null && $element->id) {
-            $siteElement = $this->getElementById($element->id, get_class($element), $siteInfo['siteId']);
+            $siteElement = $this->getElementById($element->id, $element::class, $siteInfo['siteId']);
         } elseif (!$siteElement) {
             $siteElement = null;
         }
@@ -4257,7 +4257,7 @@ SQL;
             $value = $element->$attribute;
 
             if (is_object($value) && !method_exists($value, '__toString')) {
-                throw new Exception('Object of class ' . get_class($value) . ' could not be converted to string');
+                throw new Exception('Object of class ' . $value::class . ' could not be converted to string');
             }
 
             return $this->parseRefs((string)$value);

@@ -309,27 +309,12 @@ class BaseContentRefactorMigration extends Migration
                 return ['date' => $value];
             }
         }
-
-        switch ($dbType) {
-            case Schema::TYPE_TINYINT:
-            case Schema::TYPE_SMALLINT:
-            case Schema::TYPE_INTEGER:
-            case Schema::TYPE_BIGINT:
-                return (int)$value;
-
-            case Schema::TYPE_FLOAT:
-            case Schema::TYPE_DOUBLE:
-            case Schema::TYPE_DECIMAL:
-            case Schema::TYPE_MONEY:
-                return (float)$value;
-
-            case Schema::TYPE_BOOLEAN:
-                return (bool)$value;
-
-            case Schema::TYPE_JSON:
-                return Json::decodeIfJson($value);
-        }
-
-        return $value;
+        return match ($dbType) {
+            Schema::TYPE_TINYINT, Schema::TYPE_SMALLINT, Schema::TYPE_INTEGER, Schema::TYPE_BIGINT => (int)$value,
+            Schema::TYPE_FLOAT, Schema::TYPE_DOUBLE, Schema::TYPE_DECIMAL, Schema::TYPE_MONEY => (float)$value,
+            Schema::TYPE_BOOLEAN => (bool)$value,
+            Schema::TYPE_JSON => Json::decodeIfJson($value),
+            default => $value,
+        };
     }
 }

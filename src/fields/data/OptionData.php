@@ -15,29 +15,8 @@ use craft\base\Serializable;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
  */
-class OptionData implements Serializable
+class OptionData implements Serializable, \Stringable
 {
-    /**
-     * @var string|null
-     */
-    public ?string $label = null;
-
-    /**
-     * @var string|null
-     */
-    public ?string $value = null;
-
-    /**
-     * @var bool
-     */
-    public bool $selected;
-
-    /**
-     * @var bool
-     * @since 3.5.10
-     */
-    public bool $valid;
-
     /**
      * Constructor
      *
@@ -46,12 +25,15 @@ class OptionData implements Serializable
      * @param bool $selected
      * @param bool $valid
      */
-    public function __construct(?string $label, ?string $value, bool $selected, bool $valid = true)
-    {
-        $this->label = $label;
-        $this->value = $value;
-        $this->selected = $selected;
-        $this->valid = $valid;
+    public function __construct(
+        public ?string $label,
+        public ?string $value,
+        public bool $selected,
+        /**
+         * @since 3.5.10
+         */
+        public bool $valid = true,
+    ) {
     }
 
     /**

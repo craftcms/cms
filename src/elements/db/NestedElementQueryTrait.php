@@ -73,19 +73,12 @@ trait NestedElementQueryTrait
      */
     public function __set($name, $value)
     {
-        switch ($name) {
-            case 'field':
-                $this->field($value);
-                break;
-            case 'owner':
-                $this->owner($value);
-                break;
-            case 'primaryOwner':
-                $this->primaryOwner($value);
-                break;
-            default:
-                parent::__set($name, $value);
-        }
+        match ($name) {
+            'field' => $this->field($value),
+            'owner' => $this->owner($value),
+            'primaryOwner' => $this->primaryOwner($value),
+            default => parent::__set($name, $value),
+        };
     }
 
     /**
@@ -280,7 +273,6 @@ trait NestedElementQueryTrait
     /**
      * Normalizes the primaryOwnerId param to an array of IDs or null
      *
-     * @param mixed $value
      * @return int[]|null|false
      */
     private function normalizeOwnerId(mixed $value): array|null|false

@@ -63,7 +63,6 @@ class PasswordValidatorTest extends TestCase
 
     /**
      * @dataProvider customConfigDataProvider
-     * @param mixed $input
      * @param bool $mustValidate
      * @param int $min
      * @param int $max

@@ -84,7 +84,7 @@ class FieldLayoutBehavior extends Behavior
         }
 
         if (!isset($id) || !is_numeric($id)) {
-            throw new InvalidConfigException('Unable to determine the field layout ID for ' . get_class($this->owner) . '.');
+            throw new InvalidConfigException('Unable to determine the field layout ID for ' . $this->owner::class . '.');
         }
 
         return $this->_fieldLayoutId = (int)$id;

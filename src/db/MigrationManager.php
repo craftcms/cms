@@ -436,7 +436,7 @@ class MigrationManager extends Component
             $migrationName = $migration;
             $migration = $this->createMigration($migration);
         } else {
-            $classParts = explode('\\', get_class($migration));
+            $classParts = explode('\\', $migration::class);
             $migrationName = array_pop($classParts);
         }
 

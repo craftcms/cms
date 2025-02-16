@@ -35,11 +35,6 @@ use IteratorAggregate;
 class MemoizableArray implements IteratorAggregate, Countable
 {
     /**
-     * @var array Array elements
-     */
-    private array $_elements;
-
-    /**
      * @var callable|null Normalizer method
      */
     private $_normalizer;
@@ -57,13 +52,12 @@ class MemoizableArray implements IteratorAggregate, Countable
     /**
      * Constructor
      *
-     * @param array $elements The items to be memoized
+     * @param array $_elements The items to be memoized
      * @param callable|null $normalizer A method that the items should be normalized with when first returned by
      * [[all()]] or [[firstWhere()]].
      */
-    public function __construct(array $elements, ?callable $normalizer = null)
+    public function __construct(private array $_elements, ?callable $normalizer = null)
     {
-        $this->_elements = $elements;
         $this->_normalizer = $normalizer;
     }
 
@@ -179,7 +173,6 @@ class MemoizableArray implements IteratorAggregate, Countable
      *
      * @param string $method
      * @param string $key
-     * @param mixed $value
      * @param bool $strict
      * @return string
      */

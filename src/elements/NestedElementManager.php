@@ -337,7 +337,7 @@ class NestedElementManager extends Component
                     if (!isset($propagationKey)) {
                         $include = true;
                     } else {
-                        $siteOwner = $elementsService->getElementById($owner->id, get_class($owner), $siteId);
+                        $siteOwner = $elementsService->getElementById($owner->id, $owner::class, $siteId);
                         $include = $siteOwner && $propagationKey === $view->renderObjectTemplate($this->propagationKeyFormat, $siteOwner);
                     }
                     break;

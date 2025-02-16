@@ -174,7 +174,6 @@ class Lightswitch extends Field implements InlineEditableFieldInterface, Sortabl
     /**
      * Render html for both static and interactive lightswitch field
      *
-     * @param mixed $value
      * @param ElementInterface|null $element
      * @param bool $static
      * @return string

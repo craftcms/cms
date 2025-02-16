@@ -72,7 +72,7 @@ class Fs extends Component
     {
         $config = [
             'name' => $fs->name,
-            'type' => get_class($fs),
+            'type' => $fs::class,
             'settings' => ProjectConfigHelper::packAssociativeArrays($fs->getSettings()),
         ];
 

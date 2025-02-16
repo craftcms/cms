@@ -696,7 +696,6 @@ class Table extends Field implements CrossSiteCopyableFieldInterface
     /**
      * Returns the field's input HTML.
      *
-     * @param mixed $value
      * @param ElementInterface|null $element
      * @param bool $static
      * @return string

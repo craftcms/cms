@@ -144,7 +144,7 @@ class MailerHelper
      */
     public static function settingsReport(Mailer $mailer, ?TransportAdapterInterface $transportAdapter = null): string
     {
-        $transportType = $transportAdapter ? get_class($transportAdapter) : App::mailSettings()->transportType;
+        $transportType = $transportAdapter ? $transportAdapter::class : App::mailSettings()->transportType;
         $settings = [
             Craft::t('app', 'From') => self::_emailList($mailer->from),
             Craft::t('app', 'Reply To') => self::_emailList($mailer->replyTo),
@@ -186,7 +186,6 @@ class MailerHelper
     /**
      * Normalizes a list of emails and returns them in a comma-separated list.
      *
-     * @param mixed $emails
      * @return string
      */
     private static function _emailList(mixed $emails): string

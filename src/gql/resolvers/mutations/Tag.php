@@ -31,9 +31,7 @@ class Tag extends ElementMutationResolver
     /**
      * Save a tag using the passed arguments.
      *
-     * @param mixed $source
      * @param array $arguments
-     * @param mixed $context
      * @param ResolveInfo $resolveInfo
      * @return TagElement
      * @throws Throwable if reasons.
@@ -74,9 +72,7 @@ class Tag extends ElementMutationResolver
     /**
      * Delete a tag identified by the arguments.
      *
-     * @param mixed $source
      * @param array $arguments
-     * @param mixed $context
      * @param ResolveInfo $resolveInfo
      * @return bool
      * @throws Throwable if reasons.

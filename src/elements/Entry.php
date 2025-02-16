@@ -2400,7 +2400,7 @@ JS;
     {
         try {
             $showStatusField = $this->getType()->showStatusField;
-        } catch (InvalidConfigException $e) {
+        } catch (InvalidConfigException) {
             $showStatusField = true;
         }
 

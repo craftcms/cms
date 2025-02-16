@@ -167,7 +167,7 @@ class ProjectConfigController extends Controller
     {
         try {
             $parsedValue = Yaml::parse($value);
-        } catch (ParseException $e) {
+        } catch (ParseException) {
             $this->stderr('Input value must be valid YAML.' . PHP_EOL, Console::FG_RED);
             return ExitCode::USAGE;
         }
@@ -244,17 +244,11 @@ class ProjectConfigController extends Controller
 
         foreach (explode("\n", $diff) as $line) {
             $firstChar = $line[0] ?? '';
-            switch ($firstChar) {
-                case '-':
-                    $this->stdout($line . PHP_EOL, Console::FG_RED);
-                    break;
-                case '+':
-                    $this->stdout($line . PHP_EOL, Console::FG_GREEN);
-                    break;
-                default:
-                    $this->stdout($line . PHP_EOL);
-                    break;
-            }
+            match ($firstChar) {
+                '-' => $this->stdout($line . PHP_EOL, Console::FG_RED),
+                '+' => $this->stdout($line . PHP_EOL, Console::FG_GREEN),
+                default => $this->stdout($line . PHP_EOL),
+            };
         }
 
         $this->stdout(PHP_EOL);

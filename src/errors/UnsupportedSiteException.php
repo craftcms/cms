@@ -18,11 +18,6 @@ use craft\base\ElementInterface;
 class UnsupportedSiteException extends ElementException
 {
     /**
-     * @var int The site ID that the element doesn’t support.
-     */
-    public int $siteId;
-
-    /**
      * Constructor.
      *
      * @param ElementInterface $element The element
@@ -30,12 +25,10 @@ class UnsupportedSiteException extends ElementException
      * @param string|null $message The error message
      * @param int $code The error code
      */
-    public function __construct(ElementInterface $element, int $siteId, ?string $message = null, int $code = 0)
+    public function __construct(ElementInterface $element, public int $siteId, ?string $message = null, int $code = 0)
     {
-        $this->siteId = $siteId;
-
         if ($message === null) {
-            $message = "The element “{$element}” doesn’t support site $siteId.";
+            $message = "The element “{$element}” doesn’t support site {$this->siteId}.";
         }
 
         parent::__construct($element, $message, $code);

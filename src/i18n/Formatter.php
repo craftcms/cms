@@ -80,7 +80,7 @@ class Formatter extends \yii\i18n\Formatter
             $format = $this->dateTimeFormats[$format]['date'];
         }
 
-        if (strncmp($format, 'php:', 4) === 0) {
+        if (str_starts_with($format, 'php:')) {
             return $this->_formatDateTimeValueWithPhpFormat($value, substr($format, 4), 'date');
         }
 
@@ -105,7 +105,7 @@ class Formatter extends \yii\i18n\Formatter
             $format = $this->dateTimeFormats[$format]['time'];
         }
 
-        if (strncmp($format, 'php:', 4) === 0) {
+        if (str_starts_with($format, 'php:')) {
             return $this->_formatDateTimeValueWithPhpFormat($value, substr($format, 4), 'time');
         }
 
@@ -130,7 +130,7 @@ class Formatter extends \yii\i18n\Formatter
             $format = $this->dateTimeFormats[$format]['datetime'];
         }
 
-        if (strncmp($format, 'php:', 4) === 0) {
+        if (str_starts_with($format, 'php:')) {
             return $this->_formatDateTimeValueWithPhpFormat($value, substr($format, 4), 'datetime');
         }
 

@@ -19,19 +19,13 @@ use yii\caching\TagDependency;
 class ElementQueryTagDependency extends TagDependency
 {
     /**
-     * @var ElementQuery|null
-     */
-    public ?ElementQuery $elementQuery = null;
-
-    /**
      * Constructor
      *
      * @param ElementQuery $elementQuery
      * @param array $config
      */
-    public function __construct(ElementQuery $elementQuery, array $config = [])
+    public function __construct(public ?ElementQuery $elementQuery, array $config = [])
     {
-        $this->elementQuery = $elementQuery;
         parent::__construct($config);
     }
 

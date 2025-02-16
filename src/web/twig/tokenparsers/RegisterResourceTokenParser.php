@@ -22,16 +22,6 @@ use Twig\TokenStream;
 class RegisterResourceTokenParser extends AbstractTokenParser
 {
     /**
-     * @var string The tag name
-     */
-    public string $tag;
-
-    /**
-     * @var string The View method the tag represents
-     */
-    public string $method;
-
-    /**
      * @var bool Whether the tag supports a tag pair mode for capturing the JS/CSS
      */
     public bool $allowTagPair = false;
@@ -62,11 +52,8 @@ class RegisterResourceTokenParser extends AbstractTokenParser
      * @param string $method the View method the tag represents
      * @param array $config name-value pairs that will be used to initialize the object properties
      */
-    public function __construct(string $tag, string $method, array $config = [])
+    public function __construct(public string $tag, public string $method, array $config = [])
     {
-        $this->tag = $tag;
-        $this->method = $method;
-
         if (!empty($config)) {
             Craft::configure($this, $config);
         }

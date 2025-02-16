@@ -5,6 +5,8 @@ declare(strict_types=1);
 use Rector\Config\RectorConfig;
 use Rector\Php71\Rector\FuncCall\RemoveExtraParametersRector;
 use Rector\Php74\Rector\Closure\ClosureToArrowFunctionRector;
+use Rector\Php80\Rector\Catch_\RemoveUnusedVariableInCatchRector;
+use Rector\Php80\Rector\Switch_\ChangeSwitchToMatchRector;
 
 return RectorConfig::configure()
     ->withPaths([
@@ -24,5 +26,16 @@ return RectorConfig::configure()
         ClosureToArrowFunctionRector::class => [
             __DIR__ . '/src/base/ApplicationTrait.php',
         ],
+
+        // used by finally and next if
+        RemoveUnusedVariableInCatchRector::class => [
+            __DIR__ . '/src/console/controllers/PluginController.php',
+            __DIR__ . '/src/helpers/DateTimeHelper.php',
+        ],
+
+        // object check
+        ChangeSwitchToMatchRector::class => [
+            __DIR__ . '/src/elements/Entry.php',
+        ],
     ])
-    ->withPhpSets(php74: true);
+    ->withPhpSets(php80: true);

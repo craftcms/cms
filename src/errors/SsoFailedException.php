@@ -19,16 +19,6 @@ use yii\base\Exception;
 class SsoFailedException extends Exception
 {
     /**
-     * @var ProviderInterface
-     */
-    public ProviderInterface $provider;
-
-    /**
-     * @var User|null
-     */
-    public ?User $identity;
-
-    /**
      * Constructor
      *
      * @param ProviderInterface $provider
@@ -37,10 +27,8 @@ class SsoFailedException extends Exception
      * @param int $code
      * @param Throwable|null $previous
      */
-    public function __construct(ProviderInterface $provider, ?User $identity = null, string $message = '', int $code = 0, ?Throwable $previous = null)
+    public function __construct(public ProviderInterface $provider, public ?User $identity = null, string $message = '', int $code = 0, ?Throwable $previous = null)
     {
-        $this->provider = $provider;
-        $this->identity = $identity;
         parent::__construct($message, $code, $previous);
     }
 

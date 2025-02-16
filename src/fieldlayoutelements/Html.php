@@ -20,14 +20,11 @@ use yii\base\NotSupportedException;
  */
 class Html extends FieldLayoutElement
 {
-    private string $html;
-
     /**
      * Constructor
      */
-    public function __construct(string $html, array $config = [])
+    public function __construct(private string $html, array $config = [])
     {
-        $this->html = $html;
         parent::__construct($config);
     }
 

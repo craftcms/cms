@@ -852,7 +852,7 @@ class AppController extends Controller
                         'icon' => $component instanceof Iconic ? $component->getIcon() : null,
                         'attributes' => [
                             'data' => [
-                                'type' => get_class($component),
+                                'type' => $component::class,
                                 'id' => $component->getId(),
                             ],
                         ],

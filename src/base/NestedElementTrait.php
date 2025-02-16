@@ -371,16 +371,11 @@ trait NestedElementTrait
      */
     public function setEagerLoadedElements(string $handle, array $elements, EagerLoadPlan $plan): void
     {
-        switch ($plan->handle) {
-            case 'owner':
-                $this->setOwner(reset($elements) ?: null);
-                break;
-            case 'primaryOwner':
-                $this->setPrimaryOwner(reset($elements) ?: null);
-                break;
-            default:
-                parent::setEagerLoadedElements($handle, $elements, $plan);
-        }
+        match ($plan->handle) {
+            'owner' => $this->setOwner(reset($elements) ?: null),
+            'primaryOwner' => $this->setPrimaryOwner(reset($elements) ?: null),
+            default => parent::setEagerLoadedElements($handle, $elements, $plan),
+        };
     }
 
     /**

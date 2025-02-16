@@ -169,7 +169,7 @@ class LogTarget extends \yii\debug\LogTarget
     {
         try {
             $manifest = unserialize($this->module->fs->read($indexFile));
-        } catch (FsException $e) {
+        } catch (FsException) {
             $manifest = [];
         }
 

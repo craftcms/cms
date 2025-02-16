@@ -1073,7 +1073,6 @@ interface ElementInterface extends
     /**
      * Returns the next element relative to this one, from a given set of criteria.
      *
-     * @param mixed $criteria
      * @return self|null
      */
     public function getNext(mixed $criteria = false): ?self;
@@ -1081,7 +1080,6 @@ interface ElementInterface extends
     /**
      * Returns the previous element relative to this one, from a given set of criteria.
      *
-     * @param mixed $criteria
      * @return self|null
      */
     public function getPrev(mixed $criteria = false): ?self;

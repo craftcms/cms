@@ -14,21 +14,15 @@ namespace craft\test\mockclasses;
  * @author Global Network Group | Giel Tettelaar <giel@yellowflash.net>
  * @since 3.2
  */
-class ToString
+class ToString implements \Stringable
 {
-    /**
-     * @var string
-     */
-    private string $_string;
-
     /**
      * ToString constructor.
      *
-     * @param string $string
+     * @param string $_string
      */
-    public function __construct(string $string)
+    public function __construct(private string $_string)
     {
-        $this->_string = $string;
     }
 
     /**

@@ -303,8 +303,8 @@ class Fields extends Component
 
         // Make sure the current field class is in there if it's supposed to be
         /** @var FieldInterface $field */
-        if ($includeCurrent && !in_array(get_class($field), $types, true)) {
-            $types[] = get_class($field);
+        if ($includeCurrent && !in_array($field::class, $types, true)) {
+            $types[] = $field::class;
         }
 
         // Fire a 'defineCompatibleFieldTypes' event
@@ -587,7 +587,7 @@ class Fields extends Component
             'searchable' => $field->searchable,
             'translationMethod' => $field->translationMethod,
             'translationKeyFormat' => $field->translationKeyFormat,
-            'type' => get_class($field),
+            'type' => $field::class,
             'settings' => ProjectConfigHelper::packAssociativeArrays($field->getSettings()),
         ];
     }

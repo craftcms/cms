@@ -532,7 +532,7 @@ class SoftDeleteBehavior extends Behavior
             } elseif (!is_scalar($value) && is_callable($value)) {
                 $restoreValue = null;
             } else {
-                throw new InvalidConfigException('Unable to automatically determine restore attribute values, "' . get_class($this) . '::$restoreAttributeValues" should be explicitly set.');
+                throw new InvalidConfigException('Unable to automatically determine restore attribute values, "' . static::class . '::$restoreAttributeValues" should be explicitly set.');
             }
             $restoreAttributeValues[$name] = $restoreValue;
         }

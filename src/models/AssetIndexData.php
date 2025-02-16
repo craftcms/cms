@@ -16,7 +16,7 @@ use DateTime;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
  */
-class AssetIndexData extends Model
+class AssetIndexData extends Model implements \Stringable
 {
     /**
      * @var int|null ID

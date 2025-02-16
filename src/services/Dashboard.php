@@ -221,7 +221,7 @@ class Dashboard extends Component
         try {
             $widgetRecord = $this->_getUserWidgetRecordById($widget->id);
 
-            $widgetRecord->type = get_class($widget);
+            $widgetRecord->type = $widget::class;
             $widgetRecord->settings = $widget->getSettings();
 
             if ($isNewWidget) {

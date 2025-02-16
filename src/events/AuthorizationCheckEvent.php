@@ -25,9 +25,8 @@ class AuthorizationCheckEvent extends Event
      * @param User $user
      * @param array $config
      */
-    public function __construct(User $user, array $config = [])
+    public function __construct(public User $user, array $config = [])
     {
-        $this->user = $user;
         parent::__construct($config);
     }
 
@@ -39,11 +38,6 @@ class AuthorizationCheckEvent extends Event
      * @since 4.3.0
      */
     public ?ElementInterface $element = null;
-
-    /**
-     * @var User The user to be authorized.
-     */
-    public User $user;
 
     /**
      * @var bool|null Whether the user is authorized.

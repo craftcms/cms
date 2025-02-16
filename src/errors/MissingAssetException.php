@@ -22,26 +22,6 @@ use yii\base\Exception;
 class MissingAssetException extends Exception
 {
     /**
-     * @var AssetIndexData
-     */
-    public AssetIndexData $indexEntry;
-
-    /**
-     * @var Volume
-     */
-    public Volume $volume;
-
-    /**
-     * @var VolumeFolder
-     */
-    public VolumeFolder $folder;
-
-    /**
-     * @var string
-     */
-    public string $filename;
-
-    /**
      * Constructor
      *
      * @param AssetIndexData $indexEntry
@@ -52,12 +32,8 @@ class MissingAssetException extends Exception
      * @param int $code
      * @param Throwable|null $previous
      */
-    public function __construct(AssetIndexData $indexEntry, Volume $volume, VolumeFolder $folder, string $filename, string $message = '', int $code = 0, ?Throwable $previous = null)
+    public function __construct(public AssetIndexData $indexEntry, public Volume $volume, public VolumeFolder $folder, public string $filename, string $message = '', int $code = 0, ?Throwable $previous = null)
     {
-        $this->indexEntry = $indexEntry;
-        $this->volume = $volume;
-        $this->folder = $folder;
-        $this->filename = $filename;
         parent::__construct($message, $code, $previous);
     }
 
