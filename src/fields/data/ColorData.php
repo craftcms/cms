@@ -29,6 +29,11 @@ use yii\base\BaseObject;
 class ColorData extends BaseObject implements Serializable, \Stringable
 {
     /**
+     * @var string The color’s hex value
+     */
+    private string $_hex;
+
+    /**
      * @var array
      * @see _hsl()
      */
@@ -37,11 +42,12 @@ class ColorData extends BaseObject implements Serializable, \Stringable
     /**
      * Constructor.
      *
-     * @param string $_hex hex color value, beginning with `#`. (Shorthand is not supported, e.g. `#f00`.)
+     * @param string $hex hex color value, beginning with `#`. (Shorthand is not supported, e.g. `#f00`.)
      * @param array $config name-value pairs that will be used to initialize the object properties
      */
-    public function __construct(private string $_hex, array $config = [])
+    public function __construct(string $hex, array $config = [])
     {
+        $this->_hex = $hex;
         parent::__construct($config);
     }
 

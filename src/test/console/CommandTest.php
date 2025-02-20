@@ -30,6 +30,16 @@ class CommandTest
     public const OUTPUT_COMMAND = 'outputCommand';
 
     /**
+     * @var ConsoleTest
+     */
+    protected ConsoleTest $test;
+
+    /**
+     * @var bool
+     */
+    protected bool $ignoreStdout = false;
+
+    /**
      * @var int
      */
     protected int $expectedExitCode;
@@ -72,14 +82,16 @@ class CommandTest
     /**
      * CommandTest constructor.
      *
-     * @param ConsoleTest $test
+     * @param ConsoleTest $consoleTest
      * @param string $command
      * @param array $parameters
-     * @param bool $ignoreStdout
+     * @param bool $ignoreStdOut
      * @throws InvalidConfigException
      */
-    public function __construct(protected ConsoleTest $test, protected string $command, protected array $parameters = [], protected bool $ignoreStdout = false)
+    public function __construct(ConsoleTest $consoleTest, protected string $command, protected array $parameters = [], bool $ignoreStdOut = false)
     {
+        $this->ignoreStdout = $ignoreStdOut;
+        $this->test = $consoleTest;
         $this->setupController();
     }
 

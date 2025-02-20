@@ -17,12 +17,18 @@ namespace craft\test\mockclasses;
 class ToString implements \Stringable
 {
     /**
+     * @var string
+     */
+    private string $_string;
+
+    /**
      * ToString constructor.
      *
-     * @param string $_string
+     * @param string $string
      */
-    public function __construct(private string $_string)
+    public function __construct(string $string)
     {
+        $this->_string = $string;
     }
 
     /**
