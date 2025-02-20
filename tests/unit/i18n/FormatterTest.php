@@ -21,6 +21,7 @@ class FormatterTest extends TestCase
 {
     /**
      * @param string $expected
+     * @param mixed $value
      * @param int|null $decimals
      * @dataProvider asPercentDataProvider
      */

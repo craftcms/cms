@@ -20,6 +20,8 @@ class Diff
     /**
      * Generates a diff for two values, represented as YAML.
      *
+     * @param mixed $from
+     * @param mixed $to
      * @param int $indent The indent size that nested values should have
      * @param int $contextLines The number of lines to show before and after changes
      * @return string
@@ -74,6 +76,8 @@ class Diff
     }
 
     /**
+     * @param mixed$from
+     * @param mixed $to
      * @param int $indent
      * @param int $level
      * @return array[]
@@ -147,6 +151,8 @@ class Diff
      *
      * If the values are both arrays, they will be compared recursively.
      *
+     * @param mixed $a
+     * @param mixed $b
      * @param bool $strict Whether strict comparisons should be used
      * @return bool
      * @since 3.6.0

@@ -150,6 +150,7 @@ class ElementsController extends Controller
 
     /**
      * @param string $name
+     * @param mixed $default
      * @return mixed
      */
     private function _param(string $name, mixed $default = null): mixed

@@ -261,6 +261,7 @@ class ElementFieldResolverTest extends TestCase
      * Test whether url transform properties are correctly passed on when transforming
      *
      * @param array $fieldArguments
+     * @param mixed $expectedArguments
      * @dataProvider assetTransformDataProvider
      */
     public function testAssetUrlTransform(array $fieldArguments, mixed $expectedArguments): void
@@ -298,6 +299,7 @@ class ElementFieldResolverTest extends TestCase
     /**
      * Run the test on an element for a type class with the property name.
      *
+     * @param mixed $element
      * @param string $gqlTypeClass The Gql type class
      * @phpstan-param class-string<ObjectType> $gqlTypeClass
      * @param string $propertyName The property being tested

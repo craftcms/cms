@@ -63,6 +63,7 @@ class MailPanel extends \yii\debug\panels\MailPanel
     }
 
     /**
+     * @param mixed $attr
      * @return string
      */
     private function convertParams(mixed $attr): string

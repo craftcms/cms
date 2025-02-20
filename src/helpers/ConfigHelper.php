@@ -28,6 +28,7 @@ class ConfigHelper
      * - DateInterval object
      * - an empty value (represents 0 seconds)
      *
+     * @param mixed $value
      * @return int The time duration in seconds
      * @throws InvalidConfigException if the duration can't be determined
      */

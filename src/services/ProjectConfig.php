@@ -1705,6 +1705,8 @@ class ProjectConfig extends Component
      * is null, it will be removed instead.
      *
      * @param string $path
+     * @param mixed $oldValue
+     * @param mixed $newValue
      * @param string|null $message message describing the changes made.
      * @since 4.0.0
      */

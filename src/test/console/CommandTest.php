@@ -147,6 +147,7 @@ class CommandTest
 
     /**
      * @param string $prompt
+     * @param mixed $returnValue
      * @param array $options
      * @return CommandTest
      */
@@ -162,6 +163,7 @@ class CommandTest
 
     /**
      * @param string $message
+     * @param mixed $returnValue
      * @param bool $default
      * @return CommandTest
      */
@@ -177,6 +179,7 @@ class CommandTest
 
     /**
      * @param string $prompt
+     * @param mixed $returnValue
      * @param array $options
      * @return CommandTest
      */

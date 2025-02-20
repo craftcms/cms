@@ -6,6 +6,7 @@ use Rector\Config\RectorConfig;
 use Rector\Php71\Rector\FuncCall\RemoveExtraParametersRector;
 use Rector\Php74\Rector\Closure\ClosureToArrowFunctionRector;
 use Rector\Php80\Rector\Catch_\RemoveUnusedVariableInCatchRector;
+use Rector\Php80\Rector\FunctionLike\MixedTypeRector;
 use Rector\Php80\Rector\Switch_\ChangeSwitchToMatchRector;
 
 return RectorConfig::configure()
@@ -37,5 +38,7 @@ return RectorConfig::configure()
         ChangeSwitchToMatchRector::class => [
             __DIR__ . '/src/elements/Entry.php',
         ],
+
+        MixedTypeRector::class,
     ])
     ->withPhpSets(php80: true);

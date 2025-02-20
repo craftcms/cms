@@ -31,6 +31,7 @@ class MoneyHelper
     private static ISOCurrencies $_isoCurrencies;
 
     /**
+     * @param mixed $value
      * @return Money|false
      */
     public static function toMoney(mixed $value): Money|false
@@ -56,6 +57,7 @@ class MoneyHelper
     /**
      * Convert money object to standard decimal string.
      *
+     * @param mixed $value
      * @return string|false
      */
     public static function toDecimal(mixed $value): string|false
@@ -70,6 +72,7 @@ class MoneyHelper
     /**
      * Convert money object to localized currency string.
      *
+     * @param mixed $value
      * @param string|null $formatLocale
      * @return string|false
      */
@@ -92,6 +95,7 @@ class MoneyHelper
     /**
      * Convert money object to localized decimal string.
      *
+     * @param mixed $value
      * @param string|null $formatLocale
      * @return string|false
      */

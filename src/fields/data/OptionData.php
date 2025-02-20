@@ -32,8 +32,9 @@ class OptionData implements Serializable, \Stringable
         /**
          * @since 3.5.10
          */
-        public bool $valid = true,
-    ) {
+        public bool $valid = true
+    )
+    {
     }
 
     /**

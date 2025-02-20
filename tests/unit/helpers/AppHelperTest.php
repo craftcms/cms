@@ -60,8 +60,10 @@ class AppHelperTest extends TestCase
     /**
      * @dataProvider envConfigDataProvider
      *
+     * @param mixed $expected
      * @param string $paramName
      * @param string $overrideName
+     * @param mixed $overrideValue
      */
     public function testEnvConfig(mixed $expected, string $paramName, string $overrideName, mixed $overrideValue): void
     {
@@ -101,6 +103,7 @@ class AppHelperTest extends TestCase
     /**
      * @dataProvider parseBooleanEnvDataProvider
      * @param bool|null $expected
+     * @param mixed $value
      */
     public function testParseBooleanEnv(?bool $expected, mixed $value): void
     {
@@ -206,6 +209,7 @@ class AppHelperTest extends TestCase
     /**
      * @dataProvider validEditionsDataProvider
      * @param bool $expected
+     * @param mixed $edition
      */
     public function testIsValidEdition(bool $expected, mixed $edition): void
     {

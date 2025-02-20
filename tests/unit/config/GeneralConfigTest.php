@@ -25,6 +25,7 @@ class GeneralConfigTest extends Unit
      *
      * @param string $oldProperty
      * @param string $newProperty
+     * @param mixed $value
      */
     public function testRenamedSetting(string $oldProperty, string $newProperty, mixed $value): void
     {

@@ -23,6 +23,7 @@ abstract class Generator
     /**
      * Get content fields for a given context.
      *
+     * @param mixed $context
      * @return array
      */
     protected static function getContentFields(mixed $context): array

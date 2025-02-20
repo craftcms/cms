@@ -68,7 +68,7 @@ class ArrayHelper extends \yii\helpers\ArrayHelper
      * @since 3.4.0
      * @deprecated in 4.0.0. `array_unshift()` should be used instead.
      */
-    public static function prepend(array &$array, mixed ...$values): void
+    public static function prepend(array &$array, ...$values): void
     {
         array_unshift($array, ...$values);
     }
@@ -86,7 +86,7 @@ class ArrayHelper extends \yii\helpers\ArrayHelper
      * @since 3.4.0
      * @deprecated in 4.0.0. `array_push()` should be used instead.
      */
-    public static function append(array &$array, mixed ...$values): void
+    public static function append(array &$array, ...$values): void
     {
         array_push($array, ...$values);
     }
@@ -416,6 +416,7 @@ class ArrayHelper extends \yii\helpers\ArrayHelper
      * Returns a copy of an array without items matching the given value.
      *
      * @param array $array
+     * @param mixed $value
      * @return array
      */
     public static function withoutValue(array $array, mixed $value): array

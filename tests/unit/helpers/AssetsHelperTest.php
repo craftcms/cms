@@ -173,6 +173,7 @@ class AssetsHelperTest extends TestCase
     /**
      * @dataProvider parseSrcsetSizeDataProvider
      * @param array|false $expected
+     * @param mixed $size
      */
     public function testParseSrcsetSize(array|false $expected, mixed $size): void
     {

@@ -831,6 +831,7 @@ class Assets
     /**
      * Parses a srcset size (e.g. `100w` or `2x`).
      *
+     * @param mixed $size
      * @return array An array of the size value and unit (`w` or `x`)
      * @throws InvalidArgumentException if the size can’t be parsed
      * @since 3.5.0

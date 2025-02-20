@@ -651,6 +651,7 @@ EOD;
      * Sets an environment variable value in the project’s `.env` file.
      *
      * @param string $name
+     * @param mixed $value
      * @return bool
      */
     private function _setEnvVar(string $name, mixed $value): bool

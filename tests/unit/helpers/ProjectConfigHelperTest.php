@@ -81,6 +81,7 @@ class ProjectConfigHelperTest extends TestCase
     }
 
     /**
+     * @param mixed $incomingData
      * @param string $expectedResult
      * @dataProvider encodeTestDataProvider
      */

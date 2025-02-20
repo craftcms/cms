@@ -36,6 +36,7 @@ abstract class MutationResolver extends Component
      * Set a piece of data to be used by the resolver when resolving.
      *
      * @param string $key
+     * @param mixed $value
      */
     public function setResolutionData(string $key, mixed $value): void
     {
@@ -72,6 +73,7 @@ abstract class MutationResolver extends Component
      * Normalize a value according to stored normalizers.
      *
      * @param string $argument
+     * @param mixed $value
      * @return mixed
      */
     protected function normalizeValue(string $argument, mixed $value): mixed

@@ -1337,6 +1337,7 @@ class Gql extends Component
      *
      * @param GqlSchema $schema
      * @param string $query
+     * @param mixed $rootValue
      * @param array|null $variables
      * @param string|null $operationName
      * @return string|null

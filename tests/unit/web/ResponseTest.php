@@ -76,6 +76,7 @@ class ResponseTest extends TestCase
 
     /**
      * @param string $expected
+     * @param mixed $url
      * @dataProvider testRedirectDataProvider
      */
     public function testRedirect(string $expected, mixed $url): void

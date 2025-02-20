@@ -106,6 +106,7 @@ class Craft extends Yii
      * $status = Craft::parseBooleanEnv('$SYSTEM_STATUS') ?? false;
      * ```
      *
+     * @param mixed $value
      * @return bool|null
      * @since 3.7.22
      * @deprecated in 3.7.29. [[App::parseBooleanEnv()]] should be used instead.

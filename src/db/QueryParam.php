@@ -25,6 +25,7 @@ final class QueryParam
     /**
      * Parses a given query param, separating it into an array of values and the logical operator (`and`, `or`, `not`).
      *
+     * @param mixed $value
      * @return self
      */
     public static function parse(mixed $value): self

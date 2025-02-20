@@ -21,7 +21,9 @@ class SecurityTest extends TestCase
 {
     /**
      * @dataProvider redactIfSensitiveDataProvider
+     * @param mixed $expected
      * @param string $name
+     * @param mixed $value
      * @param string[] $sensitiveKeywords
      */
     public function testRedactIfSensitive(mixed $expected, string $name, mixed $value, array $sensitiveKeywords): void

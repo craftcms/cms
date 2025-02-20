@@ -26,6 +26,7 @@ class ProjectConfig
     /**
      * Returns a project config compatible value encoded for storage.
      *
+     * @param mixed $value
      * @return string
      * @since 4.0.0
      */
@@ -281,6 +282,7 @@ class ProjectConfig
     /**
      * Cleans a config value.
      *
+     * @param mixed $value
      * @return mixed
      * @throws InvalidConfigException
      */

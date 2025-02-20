@@ -24,6 +24,7 @@ class ArrayHelperTest extends TestCase
     /**
      * @dataProvider toArrayDataProvider
      * @param array $expected
+     * @param mixed $object
      */
     public function testToArray(array $expected, mixed $object): void
     {
@@ -58,6 +59,7 @@ class ArrayHelperTest extends TestCase
      * @dataProvider prependOrAppendDataProvider
      * @param array $expected
      * @param array $array
+     * @param mixed $appendable
      * @param bool $prepend
      */
     public function testPrependOrAppend(array $expected, array $array, mixed $appendable, bool $prepend): void
@@ -326,6 +328,7 @@ class ArrayHelperTest extends TestCase
      * @param bool $expected
      * @param array $array
      * @param callable|string $key
+     * @param mixed $value
      * @param bool $strict
      */
     public function testContains(bool $expected, array $array, callable|string $key, mixed $value = true, bool $strict = false): void
@@ -339,6 +342,7 @@ class ArrayHelperTest extends TestCase
      * @param bool $expected
      * @param array $array
      * @param callable|string $key
+     * @param mixed $value
      * @param bool $strict
      */
     public function testOnlyContains(bool $expected, array $array, callable|string $key, mixed $value = true, bool $strict = false): void
@@ -367,6 +371,7 @@ class ArrayHelperTest extends TestCase
 
     /**
      * @dataProvider firstValueDataProvider
+     * @param mixed $expected
      * @param array $array
      */
     public function testFirstValue(mixed $expected, array $array): void
@@ -380,6 +385,7 @@ class ArrayHelperTest extends TestCase
      * @param array $array
      * @param string $oldKey
      * @param string $newKey
+     * @param mixed $default
      */
     public function testRename(array $expected, array $array, string $oldKey, string $newKey, mixed $default = null): void
     {
@@ -402,6 +408,7 @@ class ArrayHelperTest extends TestCase
      * @dataProvider withoutValueDataProvider
      * @param array $expected
      * @param array $array
+     * @param mixed $value
      */
     public function testWithoutValue(array $expected, array $array, mixed $value): void
     {
@@ -454,6 +461,7 @@ class ArrayHelperTest extends TestCase
      * @dataProvider removeValueDataProvider
      * @param array $expected
      * @param array $array
+     * @param mixed $value
      * @param bool $strict
      */
     public function testRemoveValue(array $expected, array $array, mixed $value, bool $strict = false)

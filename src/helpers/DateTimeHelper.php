@@ -547,6 +547,7 @@ class DateTimeHelper
     }
 
     /**
+     * @param mixed $timestamp
      * @return bool
      */
     public static function isValidTimeStamp(mixed $timestamp): bool

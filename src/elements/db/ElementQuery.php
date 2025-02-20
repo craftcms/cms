@@ -2609,6 +2609,7 @@ class ElementQuery extends Query implements ElementQueryInterface
     /**
      * Combines the given condition with an alternative condition if there are any relevant placeholder elements.
      *
+     * @param mixed $condition
      * @return mixed
      */
     private function _placeholderCondition(mixed $condition): mixed

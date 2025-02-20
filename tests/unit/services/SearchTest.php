@@ -133,6 +133,7 @@ class SearchTest extends TestCase
     }
 
     /**
+     * @param mixed $attributeName
      * @param iterable $searchIndex
      * @return string
      */

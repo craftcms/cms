@@ -137,6 +137,8 @@ class GqlHelperTest extends TestCase
     /**
      * Test GQL types correctly wrapped in NonNull type.
      *
+     * @param mixed $input
+     * @param mixed $expected
      * @dataProvider wrapInNonNullProvider
      */
     public function testWrapInNonNull(mixed $input, mixed $expected): void

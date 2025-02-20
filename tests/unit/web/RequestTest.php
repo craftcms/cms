@@ -363,6 +363,8 @@ class RequestTest extends TestCase
 
     /**
      * @dataProvider getParamDataProvider
+     * @param mixed $expected
+     * @param mixed $defaultValue
      * @param array $params
      * @param string|null $name
      * @throws ReflectionException
@@ -526,6 +528,7 @@ class RequestTest extends TestCase
 
     /**
      * @param string|null $name
+     * @param mixed $defaultValue
      * @param array $params
      * @return mixed
      * @throws ReflectionException

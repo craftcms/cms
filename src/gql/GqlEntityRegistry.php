@@ -92,6 +92,7 @@ class GqlEntityRegistry
      * Create an entity registry entry.
      *
      * @param string $entityName
+     * @param mixed $entity
      * @return mixed
      */
     public static function createEntity(string $entityName, mixed $entity): mixed

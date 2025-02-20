@@ -131,6 +131,7 @@ class Number
      * If the variable is an object with a __toString() method, the numeric value of its string representation will be
      * returned.
      *
+     * @param mixed $var
      * @return float|int|string
      */
     public static function makeNumeric(mixed $var): float|int|string
@@ -149,6 +150,7 @@ class Number
     /**
      * Returns whether the given value is an int or float, or a string that represents an int or float.
      *
+     * @param mixed $value
      * @return bool
      * @since 4.0.5
      */

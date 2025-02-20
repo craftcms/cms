@@ -120,6 +120,7 @@ class ProjectConfigTest extends TestCase
     /**
      * @param string|null $path
      * @param bool $useExternal
+     * @param mixed $expectedValue
      * @throws Exception
      * @dataProvider getValueDataProvider
      */
@@ -131,6 +132,7 @@ class ProjectConfigTest extends TestCase
 
     /**
      * @param string $path
+     * @param mixed $value
      * @dataProvider setValueDataProvider
      */
     public function testSettingValue(string $path, mixed $value): void

@@ -24,6 +24,7 @@ class MoneyHelperTest extends TestCase
 {
     /**
      * @dataProvider toMoneyDataProvider
+     * @param mixed $value
      * @param Money|false $expected
      */
     public function testToMoney(mixed $value, Money|false $expected): void
@@ -33,6 +34,8 @@ class MoneyHelperTest extends TestCase
 
     /**
      * @dataProvider toDecimalDataProvider
+     * @param mixed $value
+     * @param mixed $expected
      * @return void
      */
     public function testToDecimal(mixed $value, mixed $expected): void
@@ -42,6 +45,8 @@ class MoneyHelperTest extends TestCase
 
     /**
      * @dataProvider toNumberDataProvider
+     * @param mixed $value
+     * @param mixed $expected
      * @param string|null $locale
      * @return void
      */
@@ -61,6 +66,8 @@ class MoneyHelperTest extends TestCase
 
     /**
      * @dataProvider toStringDataProvider
+     * @param mixed $value
+     * @param mixed $expected
      * @param string|null $locale
      * @return void
      */

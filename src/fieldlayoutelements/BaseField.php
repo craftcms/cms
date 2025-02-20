@@ -843,6 +843,7 @@ abstract class BaseField extends FieldLayoutElement
      * Return the HTML that should be shown for the native field in the card preview.
      * It can be used outside an element context, e.g. in a card view designer.
      *
+     * @param mixed $value
      * @param ElementInterface|null $element
      * @return string
      * @since 5.5.0

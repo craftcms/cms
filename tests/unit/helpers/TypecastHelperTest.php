@@ -28,6 +28,8 @@ class TypecastHelperTest extends TestCase
      *
      * @param string $class
      * @param string $property
+     * @param mixed $expected
+     * @param mixed $value
      */
     public function testScalarProperties(string $class, string $property, mixed $expected, mixed $value): void
     {

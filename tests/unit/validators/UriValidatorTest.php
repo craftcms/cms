@@ -33,6 +33,7 @@ class UriValidatorTest extends TestCase
     /**
      * @dataProvider validateValueDataProvider
      * @param bool $mustValidate
+     * @param mixed $input
      * @param string|null $pattern
      */
     public function testValidateValue(bool $mustValidate, mixed $input, string $pattern = null): void

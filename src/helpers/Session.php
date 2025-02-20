@@ -204,7 +204,7 @@ class Session
      * @see YiiSession::addFlash()
      * @since 5.5.0
      */
-    public static function addFlash($key, mixed $value = true, $removeAfterAccess = true): void
+    public static function addFlash($key, $value = true, $removeAfterAccess = true): void
     {
         self::session()?->addFlash($key, $value, $removeAfterAccess);
     }

@@ -22,6 +22,7 @@ class JsonHelperTest extends TestCase
 {
     /**
      * @dataProvider decodeIfJsonDataProvider
+     * @param mixed $expected
      * @param string $str
      */
     public function testDecodeIfJson(mixed $expected, string $str): void

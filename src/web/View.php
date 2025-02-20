@@ -1680,6 +1680,7 @@ JS;
      * Sets the initial value of a delta input name.
      *
      * @param string $inputName
+     * @param mixed $value
      * @see getInitialDeltaValues()
      * @since 3.4.6
      */

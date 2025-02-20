@@ -263,6 +263,7 @@ class ImageTransforms
     /**
      * Normalize a transform from handle or a set of properties to an ImageTransform.
      *
+     * @param mixed $transform
      * @return ImageTransform|null
      * @throws ImageTransformException if $transform is an invalid transform handle
      */

@@ -145,6 +145,7 @@ class Sso extends Component
     /**
      * Creates an auth provider from a given config.
      *
+     * @param mixed $config
      * @return ProviderInterface
      * @throws InvalidConfigException
      */

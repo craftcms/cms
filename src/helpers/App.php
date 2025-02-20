@@ -240,6 +240,7 @@ class App
      * $status = App::parseBooleanEnv('$SYSTEM_STATUS') ?? false;
      * ```
      *
+     * @param mixed $value
      * @return bool|null
      * @since 3.7.29
      */
@@ -439,6 +440,7 @@ class App
      * - `'false'` → `false`
      * - Numeric string → integer or float
      *
+     * @param mixed $value
      * @return mixed
      * @since 4.0.0
      */

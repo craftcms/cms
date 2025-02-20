@@ -289,6 +289,7 @@ class Gql
     /**
      * Wrap a GQL object type in a NonNull type.
      *
+     * @param mixed $type
      * @return mixed
      */
     public static function wrapInNonNull(mixed $type): mixed
@@ -342,7 +343,9 @@ class Gql
     /**
      * Apply directives (if any) to a resolved value according to source and resolve info.
      *
+     * @param mixed $source
      * @param ResolveInfo $resolveInfo
+     * @param mixed $value
      * @return mixed
      */
     public static function applyDirectives(mixed $source, ResolveInfo $resolveInfo, mixed $value): mixed
@@ -447,6 +450,7 @@ class Gql
     }
 
     /**
+     * @param mixed $value
      * @param array $variableValues
      * @return mixed
      */
@@ -467,6 +471,7 @@ class Gql
      * Looking at the resolve information and the source queried, return the field name or it's alias, if used.
      *
      * @param ResolveInfo $resolveInfo
+     * @param mixed $source
      * @param array|null $context
      * @return string
      */

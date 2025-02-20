@@ -128,6 +128,7 @@ class ElementRelationParamParser extends BaseObject
     /**
      * Normalizes an individual `relatedTo` criteria.
      *
+     * @param mixed $relCriteria
      * @param int|string|int[]|null $siteId
      * @return array
      * @throws InvalidArgumentException if the criteria contains an invalid site handle
@@ -207,6 +208,7 @@ class ElementRelationParamParser extends BaseObject
      * Parses a `relatedTo` element query param and returns the condition that should
      * be applied back on the element query, or `false` if there's an issue.
      *
+     * @param mixed $relatedToParam
      * @param int|string|int[]|null $siteId
      * @return array|false
      */
@@ -249,6 +251,7 @@ class ElementRelationParamParser extends BaseObject
     /**
      * Parses a part of a relatedTo element query param and returns the condition or `false` if there's an issue.
      *
+     * @param mixed $relCriteria
      * @return mixed
      */
     private function _subparse(mixed $relCriteria): mixed
@@ -503,6 +506,7 @@ class ElementRelationParamParser extends BaseObject
     /**
      * Returns a field model based on its handle or ID.
      *
+     * @param mixed $field
      * @param array|null $fieldHandleParts
      * @param bool $useElementQueryFields
      * @return FieldInterface|null

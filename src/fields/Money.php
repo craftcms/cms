@@ -264,6 +264,7 @@ class Money extends Field implements InlineEditableFieldInterface, SortableField
     }
 
     /**
+     * @param mixed $value
      * @param string|null $currency
      * @return string|null
      */

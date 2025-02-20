@@ -1804,6 +1804,7 @@ class Request extends \yii\web\Request
     }
 
     /**
+     * @param mixed $value
      * @return mixed
      */
     private function _utf8Value(mixed $value): mixed
@@ -1825,6 +1826,7 @@ class Request extends \yii\web\Request
      * The name may include dots, to specify the path to a nested param.
      *
      * @param string|null $name
+     * @param mixed $defaultValue
      * @param array $params
      * @return mixed
      */

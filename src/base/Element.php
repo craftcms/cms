@@ -2940,6 +2940,7 @@ abstract class Element extends Component implements ElementInterface
      * Normalizes a field’s validation rule.
      *
      * @param string $attribute
+     * @param mixed $rule
      * @param FieldInterface $field
      * @param callable $isEmpty
      * @return Validator
@@ -6627,6 +6628,7 @@ JS,
     /**
      * Returns an element right before/after this one, from a given set of criteria.
      *
+     * @param mixed $criteria
      * @param int $dir
      * @return ElementInterface|null
      */

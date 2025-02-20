@@ -929,7 +929,7 @@ class Db
      * @return bool Whether the value was normalized
      * @since 3.7.40
      */
-    public static function normalizeParam(mixed &$value, callable $resolver): bool
+    public static function normalizeParam(&$value, callable $resolver): bool
     {
         if ($value === null) {
             return true;

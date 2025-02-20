@@ -51,6 +51,7 @@ class PgsqlDbHelperTest extends TestCase
      * @dataProvider parseParamDataProvider
      * @param string|array $expected
      * @param string $column
+     * @param mixed $value
      * @param string $defaultOperator
      * @param bool $caseInsensitive
      */

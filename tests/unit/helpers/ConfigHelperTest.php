@@ -41,6 +41,7 @@ class ConfigHelperTest extends TestCase
     /**
      * @dataProvider durationInSecondsDataProvider
      * @param int $expected
+     * @param mixed $value
      * @throws InvalidConfigException
      */
     public function testDurationInSeconds(int $expected, mixed $value): void
@@ -80,6 +81,8 @@ class ConfigHelperTest extends TestCase
 
     /**
      * @dataProvider localizedValueDataProvider
+     * @param mixed $expected
+     * @param mixed $value
      * @param string|null $siteHandle
      */
     public function testLocalizedValue(mixed $expected, mixed $value, ?string $siteHandle = null): void

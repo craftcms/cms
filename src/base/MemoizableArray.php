@@ -173,6 +173,7 @@ class MemoizableArray implements IteratorAggregate, Countable
      *
      * @param string $method
      * @param string $key
+     * @param mixed $value
      * @param bool $strict
      * @return string
      */

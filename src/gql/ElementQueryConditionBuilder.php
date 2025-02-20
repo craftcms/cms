@@ -236,6 +236,7 @@ class ElementQueryConditionBuilder extends Component
      * Figure out whether a node in the parentfield is a special eager-loadable field.
      *
      * @param string $nodeName
+     * @param mixed $parentField
      * @return bool
      */
     private function _isAdditionalEagerLoadableNode(string $nodeName, mixed $parentField): bool

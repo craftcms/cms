@@ -183,7 +183,7 @@ class SoftDeleteQueryBehavior extends Behavior
      * @param mixed $deleted filter value.
      * @return \yii\db\ActiveQueryInterface|static
      */
-    public function filterDeleted(mixed $deleted)
+    public function filterDeleted($deleted)
     {
         if ($deleted === '' || $deleted === null || $deleted === []) {
             return $this->notDeleted();

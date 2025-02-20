@@ -22,6 +22,8 @@ class DiffHelperTest extends TestCase
     /**
      * @dataProvider compareDataProvider
      * @param bool $expected
+     * @param mixed $a
+     * @param mixed $b
      * @param bool $strict
      */
     public function testCompare(bool $expected, mixed $a, mixed $b, bool $strict): void
@@ -32,6 +34,8 @@ class DiffHelperTest extends TestCase
     /**
      * @dataProvider diffDataProvider
      * @param string $expected
+     * @param mixed $from
+     * @param mixed $to
      * @param int $indent
      * @param int $contextLines
      */

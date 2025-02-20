@@ -24,7 +24,9 @@ class GlobalSet extends ElementMutationResolver
     /**
      * Save the global set identified by resolver data.
      *
+     * @param mixed $source
      * @param array $arguments
+     * @param mixed $context
      * @param ResolveInfo $resolveInfo
      * @return GlobalSetElement
      * @throws Throwable if reasons.

@@ -37,6 +37,8 @@ class ScalarTypesTest extends TestCase
      *
      * @dataProvider serializationDataProvider
      * @param ScalarType $type
+     * @param mixed $testValue
+     * @param mixed $match
      * @throws Error
      */
     public function testSerialization(ScalarType $type, mixed $testValue, mixed $match): void
@@ -49,6 +51,8 @@ class ScalarTypesTest extends TestCase
      *
      * @dataProvider parsingValueDataProvider
      * @param ScalarType $type
+     * @param mixed $testValue
+     * @param mixed $match
      * @param string|null $exceptionThrown
      * @throws Error
      */
@@ -81,6 +85,7 @@ class ScalarTypesTest extends TestCase
      * @dataProvider parsingLiteralDataProvider
      * @param ScalarType $type
      * @param ValueNode $testValue
+     * @param mixed $match
      * @param string|null $exceptionThrown
      * @throws Exception
      */

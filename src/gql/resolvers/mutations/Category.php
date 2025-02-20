@@ -34,7 +34,9 @@ class Category extends ElementMutationResolver
     /**
      * Save a category using the passed arguments.
      *
+     * @param mixed $source
      * @param array $arguments
+     * @param mixed $context
      * @param ResolveInfo $resolveInfo
      * @return CategoryElement
      * @throws Throwable if reasons.
@@ -78,7 +80,9 @@ class Category extends ElementMutationResolver
     /**
      * Delete a category identified by the arguments.
      *
+     * @param mixed $source
      * @param array $arguments
+     * @param mixed $context
      * @param ResolveInfo $resolveInfo
      * @return bool
      * @throws Throwable if reasons.
