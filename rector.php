@@ -6,6 +6,7 @@ use Rector\Config\RectorConfig;
 use Rector\Php71\Rector\FuncCall\RemoveExtraParametersRector;
 use Rector\Php74\Rector\Closure\ClosureToArrowFunctionRector;
 use Rector\Php80\Rector\Catch_\RemoveUnusedVariableInCatchRector;
+use Rector\Php80\Rector\Class_\ClassPropertyAssignToConstructorPromotionRector;
 use Rector\Php80\Rector\FunctionLike\MixedTypeRector;
 use Rector\Php80\Rector\Switch_\ChangeSwitchToMatchRector;
 
@@ -41,4 +42,7 @@ return RectorConfig::configure()
 
         MixedTypeRector::class,
     ])
-    ->withPhpSets(php80: true);
+    ->withPhpSets(php80: true)
+    ->withConfiguredRule(ClassPropertyAssignToConstructorPromotionRector::class, [
+        ClassPropertyAssignToConstructorPromotionRector::RENAME_PROPERTY => false,
+    ]);
