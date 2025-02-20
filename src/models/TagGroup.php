@@ -16,6 +16,7 @@ use craft\records\TagGroup as TagGroupRecord;
 use craft\validators\HandleValidator;
 use craft\validators\UniqueValidator;
 use DateTime;
+use Stringable;
 
 /**
  * TagGroup model.
@@ -24,7 +25,7 @@ use DateTime;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
  */
-class TagGroup extends Model implements FieldLayoutProviderInterface, \Stringable
+class TagGroup extends Model implements FieldLayoutProviderInterface, Stringable
 {
     /**
      * @var int|null ID

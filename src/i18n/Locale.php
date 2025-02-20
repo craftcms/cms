@@ -11,6 +11,7 @@ use Craft;
 use DateTime;
 use IntlDateFormatter;
 use NumberFormatter;
+use Stringable;
 use yii\base\BaseObject;
 use yii\base\Exception;
 use yii\base\InvalidArgumentException;
@@ -22,7 +23,7 @@ use yii\base\InvalidArgumentException;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
  */
-class Locale extends BaseObject implements \Stringable
+class Locale extends BaseObject implements Stringable
 {
     /**
      * @var int Positive prefix.

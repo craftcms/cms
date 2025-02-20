@@ -13,6 +13,7 @@ use craft\helpers\DateTimeHelper;
 use craft\helpers\ImageTransforms;
 use craft\validators\DateTimeValidator;
 use DateTime;
+use Stringable;
 use yii\base\InvalidConfigException;
 
 /**
@@ -22,7 +23,7 @@ use yii\base\InvalidConfigException;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 4.0.0
  */
-class ImageTransformIndex extends Model implements \Stringable
+class ImageTransformIndex extends Model implements Stringable
 {
     /**
      * @var int|null ID

@@ -12,6 +12,7 @@ use craft\base\Model;
 use craft\records\UserGroup as UserGroupRecord;
 use craft\validators\HandleValidator;
 use craft\validators\UniqueValidator;
+use Stringable;
 
 /**
  * UserGroup model class.
@@ -19,7 +20,7 @@ use craft\validators\UniqueValidator;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
  */
-class UserGroup extends Model implements \Stringable
+class UserGroup extends Model implements Stringable
 {
     /**
      * @var int|null ID

@@ -11,6 +11,7 @@ use Craft;
 use craft\base\FsInterface;
 use craft\base\Model;
 use craft\helpers\Html;
+use Stringable;
 use yii\base\InvalidConfigException;
 
 /**
@@ -22,7 +23,7 @@ use yii\base\InvalidConfigException;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
  */
-class VolumeFolder extends Model implements \Stringable
+class VolumeFolder extends Model implements Stringable
 {
     /**
      * @var int|null ID

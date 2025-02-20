@@ -23,6 +23,7 @@ use craft\records\CategoryGroup as CategoryGroupRecord;
 use craft\validators\HandleValidator;
 use craft\validators\UniqueValidator;
 use DateTime;
+use Stringable;
 
 /**
  * CategoryGroup model.
@@ -36,7 +37,7 @@ class CategoryGroup extends Model implements
     Chippable,
     CpEditable,
     FieldLayoutProviderInterface,
-    \Stringable
+    Stringable
 {
     /** @since 3.7.0 */
     public const DEFAULT_PLACEMENT_BEGINNING = 'beginning';

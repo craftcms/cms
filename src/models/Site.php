@@ -18,6 +18,7 @@ use craft\validators\LanguageValidator;
 use craft\validators\UniqueValidator;
 use craft\validators\UrlValidator;
 use DateTime;
+use Stringable;
 use yii\base\InvalidConfigException;
 
 /**
@@ -30,7 +31,7 @@ use yii\base\InvalidConfigException;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
  */
-class Site extends Model implements Chippable, \Stringable
+class Site extends Model implements Chippable, Stringable
 {
     public static function get(int|string $id): ?static
     {

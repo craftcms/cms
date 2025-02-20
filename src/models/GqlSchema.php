@@ -11,6 +11,7 @@ use craft\base\Model;
 use craft\helpers\StringHelper;
 use craft\records\GqlSchema as GqlSchemaRecord;
 use craft\validators\UniqueValidator;
+use Stringable;
 
 /**
  * GraphQL schema class
@@ -18,7 +19,7 @@ use craft\validators\UniqueValidator;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.3.0
  */
-class GqlSchema extends Model implements \Stringable
+class GqlSchema extends Model implements Stringable
 {
     /**
      * @var int|null ID

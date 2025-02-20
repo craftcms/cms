@@ -7,6 +7,8 @@
 
 namespace craft\test\mockclasses;
 
+use Stringable;
+
 /**
  * Class ToString.
  *
@@ -14,7 +16,7 @@ namespace craft\test\mockclasses;
  * @author Global Network Group | Giel Tettelaar <giel@yellowflash.net>
  * @since 3.2
  */
-class ToString implements \Stringable
+class ToString implements Stringable
 {
     /**
      * @var string

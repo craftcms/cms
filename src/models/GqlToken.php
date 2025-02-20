@@ -13,6 +13,7 @@ use craft\helpers\DateTimeHelper;
 use craft\records\GqlToken as GqlSchemaRecord;
 use craft\validators\UniqueValidator;
 use DateTime;
+use Stringable;
 
 /**
  * GraphQL token class
@@ -21,7 +22,7 @@ use DateTime;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.4.0
  */
-class GqlToken extends Model implements \Stringable
+class GqlToken extends Model implements Stringable
 {
     /**
      * The public access token value.

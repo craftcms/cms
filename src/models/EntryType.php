@@ -27,6 +27,7 @@ use craft\helpers\UrlHelper;
 use craft\records\EntryType as EntryTypeRecord;
 use craft\validators\HandleValidator;
 use craft\validators\UniqueValidator;
+use Stringable;
 
 /**
  * EntryType model class.
@@ -44,7 +45,7 @@ class EntryType extends Model implements
     Indicative,
     Colorable,
     Actionable,
-    \Stringable
+    Stringable
 {
     /**
      * @inheritdoc

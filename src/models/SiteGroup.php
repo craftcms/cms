@@ -12,6 +12,7 @@ use craft\base\Model;
 use craft\helpers\App;
 use craft\records\SiteGroup as SiteGroupRecord;
 use craft\validators\UniqueValidator;
+use Stringable;
 
 /**
  * SiteGroup model class.
@@ -20,7 +21,7 @@ use craft\validators\UniqueValidator;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
  */
-class SiteGroup extends Model implements \Stringable
+class SiteGroup extends Model implements Stringable
 {
     /**
      * @var int|null ID

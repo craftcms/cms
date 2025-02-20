@@ -30,6 +30,7 @@ use craft\validators\UniqueValidator;
 use DateTime;
 use Exception;
 use GraphQL\Type\Definition\Type;
+use Stringable;
 use yii\base\Arrayable;
 use yii\base\ErrorHandler;
 use yii\base\InvalidArgumentException;
@@ -43,7 +44,7 @@ use yii\db\Schema;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
  */
-abstract class Field extends SavableComponent implements FieldInterface, Iconic, Actionable, \Stringable
+abstract class Field extends SavableComponent implements FieldInterface, Iconic, Actionable, Stringable
 {
     use FieldTrait;
 

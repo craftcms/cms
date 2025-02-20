@@ -8,6 +8,7 @@
 namespace craft\fields\data;
 
 use craft\base\Serializable;
+use Stringable;
 
 /**
  * Class OptionData
@@ -15,7 +16,7 @@ use craft\base\Serializable;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
  */
-class OptionData implements Serializable, \Stringable
+class OptionData implements Serializable, Stringable
 {
     /**
      * Constructor

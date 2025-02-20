@@ -8,6 +8,7 @@
 namespace craft\fields\data;
 
 use craft\base\Serializable;
+use Stringable;
 use yii\base\BaseObject;
 
 /**
@@ -26,7 +27,7 @@ use yii\base\BaseObject;
  * @author Top Shelf Craft <michael@michaelrog.com>
  * @since 3.0.0
  */
-class ColorData extends BaseObject implements Serializable, \Stringable
+class ColorData extends BaseObject implements Serializable, Stringable
 {
     /**
      * @var string The color’s hex value

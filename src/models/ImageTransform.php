@@ -17,6 +17,7 @@ use craft\validators\DateTimeValidator;
 use craft\validators\HandleValidator;
 use craft\validators\UniqueValidator;
 use DateTime;
+use Stringable;
 
 /**
  * The ImageTransform model class.
@@ -25,7 +26,7 @@ use DateTime;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 4.0.0
  */
-class ImageTransform extends Model implements \Stringable
+class ImageTransform extends Model implements Stringable
 {
     /**
      * @var string The default image transformer
