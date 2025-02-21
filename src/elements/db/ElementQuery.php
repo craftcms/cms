@@ -607,10 +607,13 @@ class ElementQuery extends Query implements ElementQueryInterface
      */
     public function __set($name, $value)
     {
-        match ($name) {
-            'site' => $this->site($value),
-            default => parent::__set($name, $value),
-        };
+        switch ($name) {
+            case 'site':
+                $this->site($value);
+                break;
+            default:
+                parent::__set($name, $value);
+        }
     }
 
     /**

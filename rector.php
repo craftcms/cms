@@ -35,9 +35,17 @@ return RectorConfig::configure()
             __DIR__ . '/src/helpers/DateTimeHelper.php',
         ],
 
-        // object check
+
         ChangeSwitchToMatchRector::class => [
+            // object check
             __DIR__ . '/src/elements/Entry.php',
+
+            // by preference usage, no assign or returns used, just void call
+            __DIR__ . '/src/base/NestedElementTrait.php',
+            __DIR__ . '/src/console/controllers/ProjectConfigController.php',
+            __DIR__ . '/src/elements/db/ElementQuery.php',
+            __DIR__ . '/src/elements/db/EntryQuery.php',
+            __DIR__ . '/src/i18n/Locale.php',
         ],
 
         MixedTypeRector::class,

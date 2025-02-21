@@ -244,11 +244,17 @@ class ProjectConfigController extends Controller
 
         foreach (explode("\n", $diff) as $line) {
             $firstChar = $line[0] ?? '';
-            match ($firstChar) {
-                '-' => $this->stdout($line . PHP_EOL, Console::FG_RED),
-                '+' => $this->stdout($line . PHP_EOL, Console::FG_GREEN),
-                default => $this->stdout($line . PHP_EOL),
-            };
+            switch ($firstChar) {
+                case '-':
+                    $this->stdout($line . PHP_EOL, Console::FG_RED);
+                    break;
+                case '+':
+                    $this->stdout($line . PHP_EOL, Console::FG_GREEN);
+                    break;
+                default:
+                    $this->stdout($line . PHP_EOL);
+                    break;
+            }
         }
 
         $this->stdout(PHP_EOL);
