@@ -73,12 +73,19 @@ trait NestedElementQueryTrait
      */
     public function __set($name, $value)
     {
-        match ($name) {
-            'field' => $this->field($value),
-            'owner' => $this->owner($value),
-            'primaryOwner' => $this->primaryOwner($value),
-            default => parent::__set($name, $value),
-        };
+        switch ($name) {
+            case 'field':
+                $this->field($value);
+                break;
+            case 'owner':
+                $this->owner($value);
+                break;
+            case 'primaryOwner':
+                $this->primaryOwner($value);
+                break;
+            default:
+                parent::__set($name, $value);
+        }
     }
 
     /**

@@ -42,6 +42,7 @@ return RectorConfig::configure()
 
             // by preference usage, no assign or returns used, just void call
             __DIR__ . '/src/base/NestedElementTrait.php',
+            __DIR__ . '/src/elements/db/NestedElementQueryTrait.php',
             __DIR__ . '/src/console/controllers/ProjectConfigController.php',
             __DIR__ . '/src/elements/db/ElementQuery.php',
             __DIR__ . '/src/elements/db/EntryQuery.php',
