@@ -563,7 +563,7 @@ class GeneralConfig extends BaseConfig
     /**
      * @var mixed The default length of time Craft will store data, RSS feed, and template caches.
      *
-     * If set to `0`, data and RSS feed caches will be stored indefinitely; template caches will be stored for one year.
+     * If set to `0`, data and RSS feed caches will be stored indefinitely.
      *
      * See [[ConfigHelper::durationInSeconds()]] for a list of supported value types.
      *
@@ -3787,7 +3787,7 @@ class GeneralConfig extends BaseConfig
     /**
      * The default length of time Craft will store data, RSS feed, and template caches.
      *
-     * If set to `0`, data and RSS feed caches will be stored indefinitely; template caches will be stored for one year.
+     * If set to `0`, data and RSS feed caches will be stored indefinitely.
      *
      * See [[ConfigHelper::durationInSeconds()]] for a list of supported value types.
      *
