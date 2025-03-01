@@ -50,6 +50,10 @@ return RectorConfig::configure()
         ],
 
         MixedTypeRector::class,
+
+        ClassPropertyAssignToConstructorPromotionRector::class => [
+            __DIR__ . '/src/cache/ElementQueryTagDependency.php',
+        ],
     ])
     ->withPhpSets(php80: true)
     ->withConfiguredRule(ClassPropertyAssignToConstructorPromotionRector::class, [
