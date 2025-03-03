@@ -28,7 +28,7 @@ interface ElementConditionInterface extends ConditionInterface
     /**
      * Modifies a given query based on the configured condition rules.
      *
-     * @param T $query
+     * @param TQuery $query
      */
     public function modifyQuery(ElementQueryInterface $query): void;
 
