@@ -14,6 +14,8 @@ use craft\elements\db\ElementQueryInterface;
 /**
  * ElementConditionRuleInterface defines the common interface to be implemented by element condition rule classes.
  *
+ * @template TQuery of ElementQueryInterface
+ * @template TElement of ElementInterface
  * @property-read string[] $exclusiveQueryParams The query param names that this rule should have exclusive control over
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 4.0.0
@@ -30,14 +32,14 @@ interface ElementConditionRuleInterface extends ConditionRuleInterface
     /**
      * Modifies the given query with the condition rule.
      *
-     * @param ElementQueryInterface $query
+     * @param TQuery $query
      */
     public function modifyQuery(ElementQueryInterface $query): void;
 
     /**
      * Returns whether the given element matches the condition rule.
      *
-     * @param ElementInterface $element
+     * @param TElement $element
      * @return bool
      */
     public function matchElement(ElementInterface $element): bool;
