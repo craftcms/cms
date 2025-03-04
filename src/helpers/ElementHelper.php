@@ -1092,4 +1092,15 @@ class ElementHelper
             }
         }
     }
+
+    /**
+     * Returns whether given element is nested.
+     *
+     * @param ElementInterface $element
+     * @return bool
+     */
+    public static function isNestedElement(ElementInterface $element): bool
+    {
+        return $element instanceof NestedElementInterface && $element->getOwnerId();
+    }
 }

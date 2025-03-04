@@ -3809,17 +3809,19 @@ abstract class Element extends Component implements ElementInterface
         ];
 
         if ($this->getIsCanonical() || $this->isProvisionalDraft) {
-            $newElement = $this->createAnother();
-            if ($newElement && $elementsService->canSave($newElement)) {
-                $altActions[] = [
-                    'label' => $isUnpublishedDraft && $canSaveCanonical
-                        ? Craft::t('app', 'Create and add another')
-                        : Craft::t('app', 'Save and add another'),
-                    'shortcut' => true,
-                    'shift' => true,
-                    'eventData' => ['autosave' => false],
-                    'params' => ['addAnother' => 1],
-                ];
+            if (!ElementHelper::isNestedElement($this)) {
+                $newElement = $this->createAnother();
+                if ($newElement && $elementsService->canSave($newElement)) {
+                    $altActions[] = [
+                        'label' => $isUnpublishedDraft && $canSaveCanonical
+                            ? Craft::t('app', 'Create and add another')
+                            : Craft::t('app', 'Save and add another'),
+                        'shortcut' => true,
+                        'shift' => true,
+                        'eventData' => ['autosave' => false],
+                        'params' => ['addAnother' => 1],
+                    ];
+                }
             }
 
             if ($canSaveCanonical && $isUnpublishedDraft) {
@@ -3833,7 +3835,11 @@ abstract class Element extends Component implements ElementInterface
                 ];
             }
 
-            if (!$this->getIsRevision() && $elementsService->canDuplicateAsDraft($this)) {
+            if (
+                !$this->getIsRevision() &&
+                $elementsService->canDuplicateAsDraft($this) &&
+                !ElementHelper::isNestedElement($this)
+            ) {
                 $altActions[] = [
                     'label' => Craft::t('app', 'Save as a new {type}', [
                         'type' => static::lowerDisplayName(),
