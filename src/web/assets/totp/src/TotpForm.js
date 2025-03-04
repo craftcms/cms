@@ -21,6 +21,7 @@
           }
 
           submitBtn.classList.add('loading');
+          Craft.cp.announce(Craft.t('app', 'Loading'));
 
           Craft.sendActionRequest('POST', 'auth/verify-totp', {
             data: {

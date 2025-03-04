@@ -8,7 +8,6 @@
 namespace craft\web\twig;
 
 use CommerceGuys\Addressing\Formatter\FormatterInterface;
-use Countable;
 use Craft;
 use craft\base\ElementInterface;
 use craft\base\FieldLayoutProviderInterface;
@@ -16,6 +15,7 @@ use craft\base\MissingComponentInterface;
 use craft\base\PluginInterface;
 use craft\elements\Address;
 use craft\elements\Asset;
+use craft\elements\ElementCollection;
 use craft\elements\User;
 use craft\errors\AssetException;
 use craft\helpers\App;
@@ -33,6 +33,8 @@ use craft\helpers\Template as TemplateHelper;
 use craft\helpers\UrlHelper;
 use craft\i18n\Locale;
 use craft\models\EntryType;
+use craft\web\twig\nodes\expressions\binaries\HasEveryBinary;
+use craft\web\twig\nodes\expressions\binaries\HasSomeBinary;
 use craft\web\twig\nodevisitors\EventTagAdder;
 use craft\web\twig\nodevisitors\EventTagFinder;
 use craft\web\twig\nodevisitors\GetAttrAdjuster;
@@ -42,6 +44,7 @@ use craft\web\twig\tokenparsers\DdTokenParser;
 use craft\web\twig\tokenparsers\DeprecatedTokenParser;
 use craft\web\twig\tokenparsers\DumpTokenParser;
 use craft\web\twig\tokenparsers\ExitTokenParser;
+use craft\web\twig\tokenparsers\ExpiresTokenParser;
 use craft\web\twig\tokenparsers\HeaderTokenParser;
 use craft\web\twig\tokenparsers\HookTokenParser;
 use craft\web\twig\tokenparsers\NamespaceTokenParser;
@@ -70,7 +73,9 @@ use Throwable;
 use Traversable;
 use Twig\Environment as TwigEnvironment;
 use Twig\Error\RuntimeError;
+use Twig\ExpressionParser;
 use Twig\Extension\AbstractExtension;
+use Twig\Extension\CoreExtension;
 use Twig\Extension\GlobalsInterface;
 use Twig\TwigFilter;
 use Twig\TwigFunction;
@@ -81,8 +86,6 @@ use yii\db\Exception;
 use yii\db\Expression;
 use yii\db\QueryInterface;
 use yii\helpers\Markdown;
-use function twig_date_converter;
-use function twig_date_format_filter;
 
 /**
  * Class Extension
@@ -92,6 +95,40 @@ use function twig_date_format_filter;
  */
 class Extension extends AbstractExtension implements GlobalsInterface
 {
+    /**
+     * @since 5.4.3
+     */
+    public static function arraySome(TwigEnvironment $env, $array, $arrow)
+    {
+        self::checkArrowFunction($arrow, 'has some', 'operator');
+        return CoreExtension::arraySome($env, $array, $arrow);
+    }
+
+    /**
+     * @since 5.4.3
+     */
+    public static function arrayEvery(TwigEnvironment $env, $array, $arrow)
+    {
+        self::checkArrowFunction($arrow, 'has every', 'operator');
+        return CoreExtension::arrayEvery($env, $array, $arrow);
+    }
+
+    private static function checkArrowFunction(mixed $arrow, string $thing, string $type): void
+    {
+        if (
+            is_string($arrow) &&
+            in_array(ltrim(strtolower($arrow), '\\'), [
+                'system',
+                'passthru',
+                'exec',
+                'file_get_contents',
+                'file_put_contents',
+            ])
+        ) {
+            throw new RuntimeError(sprintf('The "%s" %s does not support passing "%s".', $thing, $type, $arrow));
+        }
+    }
+
     /**
      * @var View|null
      */
@@ -138,6 +175,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
             new DdTokenParser(),
             new DumpTokenParser(),
             new ExitTokenParser(),
+            new ExpiresTokenParser(),
             new HeaderTokenParser(),
             new HookTokenParser(),
             new RegisterResourceTokenParser('css', TemplateHelper::class . '::css', [
@@ -214,6 +252,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
             new TwigFilter('indexOf', [$this, 'indexOfFilter']),
             new TwigFilter('integer', 'intval'),
             new TwigFilter('intersect', 'array_intersect'),
+            new TwigFilter('find', [$this, 'findFilter'], ['needs_environment' => true]),
             new TwigFilter('float', 'floatval'),
             new TwigFilter('json_encode', [$this, 'jsonEncodeFilter']),
             new TwigFilter('json_decode', [Json::class, 'decode']),
@@ -270,48 +309,34 @@ class Extension extends AbstractExtension implements GlobalsInterface
     public function getTests(): array
     {
         return [
-            new TwigTest('array', function($obj): bool {
-                return is_array($obj);
-            }),
-            new TwigTest('boolean', function($obj): bool {
-                return is_bool($obj);
-            }),
-            new TwigTest('callable', function($obj): bool {
-                return is_callable($obj);
-            }),
-            new TwigTest('countable', function($obj): bool {
-                if (!function_exists('is_countable')) {
-                    return is_array($obj) || $obj instanceof Countable;
-                }
-                return is_countable($obj);
-            }),
-            new TwigTest('float', function($obj): bool {
-                return is_float($obj);
-            }),
-            new TwigTest('instance of', function($obj, $class) {
-                return $obj instanceof $class;
-            }),
-            new TwigTest('integer', function($obj): bool {
-                return is_int($obj);
-            }),
-            new TwigTest('missing', function($obj) {
-                return $obj instanceof MissingComponentInterface;
-            }),
-            new TwigTest('numeric', function($obj): bool {
-                return is_numeric($obj);
-            }),
-            new TwigTest('object', function($obj): bool {
-                return is_object($obj);
-            }),
-            new TwigTest('resource', function($obj): bool {
-                return is_resource($obj);
-            }),
-            new TwigTest('scalar', function($obj): bool {
-                return is_scalar($obj);
-            }),
-            new TwigTest('string', function($obj): bool {
-                return is_string($obj);
-            }),
+            new TwigTest('array', fn($obj): bool => is_array($obj)),
+            new TwigTest('boolean', fn($obj): bool => is_bool($obj)),
+            new TwigTest('callable', fn($obj): bool => is_callable($obj)),
+            new TwigTest('countable', fn($obj): bool => is_countable($obj)),
+            new TwigTest('float', fn($obj): bool => is_float($obj)),
+            new TwigTest('instance of', fn($obj, $class) => $obj instanceof $class),
+            new TwigTest('integer', fn($obj): bool => is_int($obj)),
+            new TwigTest('missing', fn($obj) => $obj instanceof MissingComponentInterface),
+            new TwigTest('numeric', fn($obj): bool => is_numeric($obj)),
+            new TwigTest('object', fn($obj): bool => is_object($obj)),
+            new TwigTest('resource', fn($obj): bool => is_resource($obj)),
+            new TwigTest('scalar', fn($obj): bool => is_scalar($obj)),
+            new TwigTest('string', fn($obj): bool => is_string($obj)),
+        ];
+    }
+
+    /**
+     * @inheritdoc
+     */
+    /** @phpstan-ignore-next-line */
+    public function getOperators(): array
+    {
+        return [
+            [],
+            [
+                'has some' => ['precedence' => 20, 'class' => HasSomeBinary::class, 'associativity' => ExpressionParser::OPERATOR_LEFT],
+                'has every' => ['precedence' => 20, 'class' => HasEveryBinary::class, 'associativity' => ExpressionParser::OPERATOR_LEFT],
+            ],
         ];
     }
 
@@ -407,9 +432,11 @@ class Extension extends AbstractExtension implements GlobalsInterface
      *
      * @param mixed $string The multibyte string.
      * @return string The string with the first character converted to upercase.
+     * @deprecated in 5.6.0
      */
     public function ucfirstFilter(mixed $string): string
     {
+        Craft::$app->getDeprecator()->log('ucfirst', 'The `|ucfirst` filter has been deprecated. Use `|capitalize` instead.');
         return StringHelper::upperCaseFirst((string)$string);
     }
 
@@ -419,6 +446,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
      * @param TwigEnvironment $env
      * @param string $string
      * @return string
+     * @deprecated in 3.5.0
      */
     public function ucwordsFilter(TwigEnvironment $env, string $string): string
     {
@@ -500,8 +528,8 @@ class Extension extends AbstractExtension implements GlobalsInterface
      */
     public function sortFilter(TwigEnvironment $env, iterable $array, string|callable|null $arrow = null): array
     {
-        $this->_checkFilterSupport($arrow);
-        return twig_sort_filter($env, $array, $arrow);
+        self::checkArrowFunction($arrow, 'sort', 'filter');
+        return CoreExtension::sort($env, $array, $arrow);
     }
 
     /**
@@ -517,8 +545,8 @@ class Extension extends AbstractExtension implements GlobalsInterface
      */
     public function reduceFilter(TwigEnvironment $env, mixed $array, mixed $arrow, mixed $initial = null): mixed
     {
-        $this->_checkFilterSupport($arrow);
-        return twig_array_reduce($env, $array, $arrow, $initial);
+        self::checkArrowFunction($arrow, 'reduce', 'filter');
+        return CoreExtension::reduce($env, $array, $arrow, $initial);
     }
 
     /**
@@ -533,8 +561,8 @@ class Extension extends AbstractExtension implements GlobalsInterface
      */
     public function mapFilter(TwigEnvironment $env, mixed $array, mixed $arrow = null): array
     {
-        $this->_checkFilterSupport($arrow);
-        return twig_array_map($env, $array, $arrow);
+        self::checkArrowFunction($arrow, 'map', 'filter');
+        return CoreExtension::map($env, $array, $arrow);
     }
 
 
@@ -651,6 +679,15 @@ class Extension extends AbstractExtension implements GlobalsInterface
         } catch (InvalidArgumentException) {
             return $value;
         }
+    }
+
+    /**
+     * @since 5.4.3
+     */
+    public function findFilter(TwigEnvironment $env, $array, $arrow): mixed
+    {
+        self::checkArrowFunction($arrow, 'find', 'filter');
+        return CoreExtension::find($env, $array, $arrow);
     }
 
     /**
@@ -869,9 +906,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
     {
         try {
             $oldClasses = Html::parseTagAttributes($tag)['class'] ?? [];
-            $newClasses = array_filter($oldClasses, function(string $oldClass) use ($class) {
-                return is_string($class) ? $oldClass !== $class : !in_array($oldClass, $class, true);
-            });
+            $newClasses = array_filter($oldClasses, fn(string $oldClass) => is_string($class) ? $oldClass !== $class : !in_array($oldClass, $class, true));
 
             $newTag = Html::modifyTagAttributes($tag, ['class' => false]);
             if (!empty($newClasses)) {
@@ -956,7 +991,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
     public function dateFilter(TwigEnvironment $env, mixed $date, ?string $format = null, mixed $timezone = null, ?string $locale = null): string
     {
         if ($date instanceof DateInterval) {
-            return twig_date_format_filter($env, $date, $format, $timezone);
+            return $env->getExtension(CoreExtension::class)->formatDate($date, $format, $timezone);
         }
 
         // Is this a custom PHP date format?
@@ -968,7 +1003,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
             }
         }
 
-        $date = twig_date_converter($env, $date, $timezone);
+        $date = $env->getExtension(CoreExtension::class)->convertDate($date, $timezone);
         $formatter = $locale ? Craft::$app->getI18n()->getLocaleById($locale)->getFormatter() : Craft::$app->getFormatter();
         $fmtTimeZone = $formatter->timeZone;
         $formatter->timeZone = $timezone !== null ? $date->getTimezone()->getName() : $formatter->timeZone;
@@ -1008,7 +1043,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
      */
     public function atomFilter(TwigEnvironment $env, mixed $date, mixed $timezone = null): string
     {
-        return twig_date_format_filter($env, $date, DateTime::ATOM, $timezone);
+        return $env->getExtension(CoreExtension::class)->formatDate($date, DateTime::ATOM, $timezone);
     }
 
     /**
@@ -1039,7 +1074,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
      */
     public function rssFilter(TwigEnvironment $env, mixed $date, mixed $timezone = null): string
     {
-        return twig_date_format_filter($env, $date, DateTime::RSS, $timezone);
+        return $env->getExtension(CoreExtension::class)->formatDate($date, DateTime::RSS, $timezone);
     }
 
     /**
@@ -1063,7 +1098,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
             }
         }
 
-        $date = twig_date_converter($env, $date, $timezone);
+        $date = $env->getExtension(CoreExtension::class)->convertDate($date, $timezone);
         $formatter = $locale ? Craft::$app->getI18n()->getLocaleById($locale)->getFormatter() : Craft::$app->getFormatter();
         $fmtTimeZone = $formatter->timeZone;
         $formatter->timeZone = $timezone !== null ? $date->getTimezone()->getName() : $formatter->timeZone;
@@ -1093,7 +1128,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
             }
         }
 
-        $date = twig_date_converter($env, $date, $timezone);
+        $date = $env->getExtension(CoreExtension::class)->convertDate($date, $timezone);
         $formatter = $locale ? Craft::$app->getI18n()->getLocaleById($locale)->getFormatter() : Craft::$app->getFormatter();
         $fmtTimeZone = $formatter->timeZone;
         $formatter->timeZone = $timezone !== null ? $date->getTimezone()->getName() : $formatter->timeZone;
@@ -1124,7 +1159,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
      */
     public function filterFilter(TwigEnvironment $env, iterable $arr, ?callable $arrow = null): array
     {
-        $this->_checkFilterSupport($arrow);
+        self::checkArrowFunction($arrow, 'filter', 'filter');
 
         /** @var array|Traversable $arr */
         if ($arrow === null) {
@@ -1134,7 +1169,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
             return array_filter($arr);
         }
 
-        $filtered = twig_array_filter($env, $arr, $arrow);
+        $filtered = CoreExtension::filter($env, $arr, $arrow);
 
         if (is_array($filtered)) {
             return $filtered;
@@ -1184,7 +1219,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
      */
     public function httpdateFilter(TwigEnvironment $env, mixed $date, mixed $timezone = null): string
     {
-        return twig_date_format_filter($env, $date, DateTime::RFC7231, $timezone);
+        return $env->getExtension(CoreExtension::class)->formatDate($date, DateTime::RFC7231, $timezone);
     }
 
 
@@ -1193,12 +1228,13 @@ class Extension extends AbstractExtension implements GlobalsInterface
      *
      * @param mixed $haystack
      * @param mixed $needle
-     * @return int
+     * @param int|null $default
+     * @return int|null
      */
-    public function indexOfFilter(mixed $haystack, mixed $needle): int
+    public function indexOfFilter(mixed $haystack, mixed $needle, ?int $default = -1): ?int
     {
         if (is_string($haystack)) {
-            $index = strpos($haystack, $needle);
+            $index = strpos($haystack, (string) $needle);
         } elseif (is_array($haystack)) {
             $index = array_search($needle, $haystack, false);
         } elseif (is_object($haystack) && $haystack instanceof IteratorAggregate) {
@@ -1217,7 +1253,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
             return $index;
         }
 
-        return -1;
+        return $default;
     }
 
     /**
@@ -1234,7 +1270,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
             return $value->count();
         }
 
-        return twig_length_filter($env, $value);
+        return CoreExtension::length($env->getCharset(), $value);
     }
 
     /**
@@ -1306,7 +1342,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
             return ArrayHelper::merge($arr1, $arr2);
         }
 
-        return twig_array_merge($arr1, $arr2);
+        return CoreExtension::merge($arr1, $arr2);
     }
 
     /**
@@ -1354,6 +1390,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
             new TwigFunction('dataUrl', [$this, 'dataUrlFunction']),
             new TwigFunction('date', [$this, 'dateFunction'], ['needs_environment' => true]),
             new TwigFunction('dump', [$this, 'dumpFunction'], ['is_safe' => ['html'], 'needs_context' => true, 'is_variadic' => true]),
+            new TwigFunction('encodeUrl', [UrlHelper::class, 'encodeUrl']),
             new TwigFunction('entryType', [$this, 'entryTypeFunction']),
             new TwigFunction('expression', [$this, 'expressionFunction']),
             new TwigFunction('fieldValueSql', [$this, 'fieldValueSqlFunction']),
@@ -1419,7 +1456,14 @@ class Extension extends AbstractExtension implements GlobalsInterface
      */
     public function collectFunction(mixed $var): Collection
     {
-        return Collection::make($var);
+        $collection = Collection::make($var);
+
+        // If all the items are elements, return an ElementCollection instead
+        if ($collection->isNotEmpty() && $collection->doesntContain(fn($item) => !$item instanceof ElementInterface)) {
+            return ElementCollection::make($collection);
+        }
+
+        return $collection;
     }
 
     /**
@@ -1434,11 +1478,16 @@ class Extension extends AbstractExtension implements GlobalsInterface
      */
     public function dataUrlFunction(Asset|string $file, ?string $mimeType = null): string
     {
-        if ($file instanceof Asset) {
-            return $file->getDataUrl();
-        }
+        try {
+            if ($file instanceof Asset) {
+                return $file->getDataUrl();
+            }
 
-        return Html::dataUrl(Craft::getAlias($file), $mimeType);
+            return Html::dataUrl(Craft::getAlias($file), $mimeType);
+        } catch (InvalidArgumentException $e) {
+            Craft::warning($e->getMessage(), __METHOD__);
+            return '';
+        }
     }
 
     /**
@@ -1459,7 +1508,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
             }
         }
 
-        return twig_date_converter($env, $date, $timezone);
+        return $env->getExtension(CoreExtension::class)->convertDate($date, $timezone);
     }
 
     /**
@@ -1666,21 +1715,23 @@ class Extension extends AbstractExtension implements GlobalsInterface
         $setPasswordRequestPath = $generalConfig->getSetPasswordRequestPath();
 
         if ($isInstalled && !Craft::$app->getUpdates()->getIsCraftUpdatePending()) {
-            /** @noinspection PhpUnhandledExceptionInspection */
-            $currentSite = Craft::$app->getSites()->getCurrentSite();
+            $sitesService = Craft::$app->getSites();
+            $currentSite = $sitesService->getCurrentSite();
+            $primarySite = $sitesService->getPrimarySite();
 
             $currentUser = Craft::$app->getUser()->getIdentity();
             $siteName = Craft::t('site', $currentSite->getName());
             $siteUrl = $currentSite->getBaseUrl();
             $systemName = Craft::$app->getSystemName();
         } else {
-            $currentSite = $currentUser = $siteName = $siteUrl = $systemName = null;
+            $currentSite = $primarySite = $currentUser = $siteName = $siteUrl = $systemName = null;
         }
 
         return [
             'craft' => new CraftVariable(),
             'currentSite' => $currentSite,
             'currentUser' => $currentUser,
+            'primarySite' => $primarySite,
             'siteName' => $siteName,
             'siteUrl' => $siteUrl,
             'systemName' => $systemName,
@@ -1695,6 +1746,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
             'SORT_LOCALE_STRING' => SORT_LOCALE_STRING,
             'SORT_NATURAL' => SORT_NATURAL,
             'SORT_FLAG_CASE' => SORT_FLAG_CASE,
+            'PHP_INT_MAX' => PHP_INT_MAX,
             'POS_HEAD' => View::POS_HEAD,
             'POS_BEGIN' => View::POS_BEGIN,
             'POS_END' => View::POS_END,
@@ -1710,22 +1762,5 @@ class Extension extends AbstractExtension implements GlobalsInterface
             'tomorrow' => DateTimeHelper::tomorrow(),
             'yesterday' => DateTimeHelper::yesterday(),
         ];
-    }
-
-    /**
-     * @param mixed $arrow
-     * @throws RuntimeError
-     */
-    private function _checkFilterSupport(mixed $arrow): void
-    {
-        if (is_string($arrow) && in_array(ltrim(strtolower($arrow), '\\'), [
-            'system',
-            'passthru',
-            'exec',
-            'file_get_contents',
-            'file_put_contents',
-        ])) {
-            throw new RuntimeError('Not supported in this filter.');
-        }
     }
 }

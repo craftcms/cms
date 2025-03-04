@@ -113,9 +113,10 @@ class Asset extends ElementMutationResolver
      * @param array $arguments
      * @param mixed $context
      * @param ResolveInfo $resolveInfo
+     * @return bool
      * @throws Throwable if reasons.
      */
-    public function deleteAsset(mixed $source, array $arguments, mixed $context, ResolveInfo $resolveInfo): void
+    public function deleteAsset(mixed $source, array $arguments, mixed $context, ResolveInfo $resolveInfo): bool
     {
         $assetId = $arguments['id'];
 
@@ -124,13 +125,13 @@ class Asset extends ElementMutationResolver
         $asset = $elementService->getElementById($assetId, AssetElement::class);
 
         if (!$asset) {
-            return;
+            return false;
         }
 
         $volumeUid = Db::uidById(Table::VOLUMES, $asset->getVolumeId());
         $this->requireSchemaAction('volumes.' . $volumeUid, 'delete');
 
-        $elementService->deleteElementById($assetId);
+        return $elementService->deleteElementById($assetId);
     }
 
     /**

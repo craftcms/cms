@@ -8,7 +8,7 @@
 namespace craft\events;
 
 use craft\base\ElementInterface;
-use yii\base\Event;
+use craft\base\Event;
 
 /**
  * DefineEagerLoadingMapEvent class.
@@ -29,8 +29,7 @@ class DefineEagerLoadingMapEvent extends Event
     public string $handle;
 
     /**
-     * @var string|null The element type class to eager-load.
-     * @phpstan-var class-string<ElementInterface>|null
+     * @var class-string<ElementInterface>|null The element type class to eager-load.
      */
     public ?string $elementType = null;
 

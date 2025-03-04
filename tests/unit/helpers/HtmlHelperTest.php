@@ -43,6 +43,16 @@ class HtmlHelperTest extends TestCase
     }
 
     /**
+     * @dataProvider disableInputsDataProvider
+     * @param string|null $expected
+     * @param callable|string|null $html
+     */
+    public function testDisableInputs(?string $expected, callable|string|null $html): void
+    {
+        self::assertSame($expected, Html::disableInputs($html));
+    }
+
+    /**
      * @dataProvider parseTagDataProvider
      * @param array|false $expected
      * @param string $tag
@@ -331,6 +341,64 @@ class HtmlHelperTest extends TestCase
     /**
      * @return array
      */
+    public static function disableInputsDataProvider(): array
+    {
+        return [
+            [
+                null,
+                null,
+            ],
+            [
+                '',
+                '',
+            ],
+            [
+                '<input type="text" name="foo" disabled>',
+                '<input type="text" name="foo">',
+            ],
+            [
+                '<input type="text" name="foo" disabled>',
+                '<input type="text" name="foo" disabled>',
+            ],
+            [
+                '<input type="text" disabled>',
+                '<input type="text">',
+            ],
+            [
+                '<div class="field"><div class="input ltr disabled"><input type="text" name="foo" disabled></div></div>',
+                '<div class="field"><div class="input ltr"><input type="text" name="foo"></div></div>',
+            ],
+            [
+                '<fieldset class="field"><div class="input ltr disabled"><input type="text" name="foo" disabled></div></fieldset>',
+                '<fieldset class="field"><div class="input ltr"><input type="text" name="foo"></div></fieldset>',
+            ],
+            [
+                '<div class="field"><div class="input ltr disabled"><input type="text" name="foo" disabled></div></div>',
+                '<div class="field"><div class="input ltr disabled"><input type="text" name="foo"></div></div>',
+            ],
+            [
+                null,
+                fn() => null,
+            ],
+            [
+                '',
+                fn() => '',
+            ],
+            [
+                '<input type="text" name="foo" disabled>',
+                fn() => '<input type="text" name="foo">',
+            ],
+            // https://github.com/nystudio107/craft-retour/issues/329
+            [
+                '<style>foo { color: red; }</style><input type="text" name="foo" disabled>',
+                '<style>foo { color: red; }</style><input type="text" name="foo">',
+            ],
+        ];
+    }
+
+    /**
+     * @return array
+     */
     public static function parseTagDataProvider(): array
     {
         return [
@@ -478,6 +546,17 @@ class HtmlHelperTest extends TestCase
             [['class' => false], ['class' => null]],
             [['class' => false], ['class' => false]],
             [['class' => false], ['class' => null]],
+            // https://github.com/craftcms/cms/issues/14964
+            [
+                [
+                    'style' => [
+                        'background-image' => 'url(data:image/jpeg;base64,hash)',
+                    ],
+                ],
+                [
+                    'style' => 'background-image:url(data:image/jpeg;base64,hash);',
+                ],
+            ],
         ];
     }
 
@@ -493,7 +572,9 @@ class HtmlHelperTest extends TestCase
             ['foo-bar-baz', 'foo bar baz'],
             ['foo.bar', 'foo.bar'],
             ['foo-bar', 'foo bar'],
-            [null, '100'],
+            ['100', '100'],
+            ['100-foo-bar', '100-foo-bar'],
+            ['__FOO__ bar', '__FOO__ bar'],
         ];
     }
 
@@ -519,7 +600,7 @@ class HtmlHelperTest extends TestCase
             ['foo-bar-baz', 'bar[baz]', 'foo'],
             ['foo-bar-baz', 'baz', 'foo[bar]'],
             ['foo-bar', 'foo[bar]', null],
-            ['foo__', '__foo__', null],
+            ['__foo__', '__foo__', null],
             ['__FOO__', '__FOO__', null],
             ['__FOO_BAR__', '__FOO_BAR__', null],
             ['__FOO_BAR__-baz', '__FOO_BAR__-baz', null],

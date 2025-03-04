@@ -100,9 +100,7 @@ class PluginController extends Controller
                 $color = Console::FG_GREY;
             }
 
-            $tableData[] = array_map(function($value) use ($color) {
-                return [$value, 'format' => [$color]];
-            }, $row);
+            $tableData[] = array_map(fn($value) => [$value, 'format' => [$color]], $row);
         }
 
         $this->stdout(PHP_EOL);
@@ -125,9 +123,7 @@ class PluginController extends Controller
             $pluginInfo = Craft::$app->getPlugins()->getAllPluginInfo();
 
             // filter out the ones that are already installed
-            $pluginInfo = array_filter($pluginInfo, function(array $info) {
-                return !$info['isInstalled'];
-            });
+            $pluginInfo = array_filter($pluginInfo, fn(array $info) => !$info['isInstalled']);
 
             // if all plugins are already installed, we're done here
             if (empty($pluginInfo)) {
@@ -159,9 +155,7 @@ class PluginController extends Controller
             $pluginInfo = Craft::$app->getPlugins()->getAllPluginInfo();
 
             // filter out the ones that are uninstalled/disabled
-            $pluginInfo = array_filter($pluginInfo, function(array $info) {
-                return $info['isInstalled'] && ($info['isEnabled'] || $this->force);
-            });
+            $pluginInfo = array_filter($pluginInfo, fn(array $info) => $info['isInstalled'] && ($info['isEnabled'] || $this->force));
 
             // if all plugins are already uninstalled/disabled, we're done here
             if (empty($pluginInfo)) {
@@ -197,9 +191,7 @@ class PluginController extends Controller
             $pluginInfo = Craft::$app->getPlugins()->getAllPluginInfo();
 
             // filter out the ones that are uninstalled/enabled
-            $pluginInfo = array_filter($pluginInfo, function(array $info) {
-                return $info['isInstalled'] && !$info['isEnabled'];
-            });
+            $pluginInfo = array_filter($pluginInfo, fn(array $info) => $info['isInstalled'] && !$info['isEnabled']);
 
             // if all plugins are already uninstalled/enabled, we're done here
             if (empty($pluginInfo)) {
@@ -231,9 +223,7 @@ class PluginController extends Controller
             $pluginInfo = Craft::$app->getPlugins()->getAllPluginInfo();
 
             // filter out the ones that are uninstalled/disabled
-            $pluginInfo = array_filter($pluginInfo, function(array $info) {
-                return $info['isInstalled'] && $info['isEnabled'];
-            });
+            $pluginInfo = array_filter($pluginInfo, fn(array $info) => $info['isInstalled'] && $info['isEnabled']);
 
             // if all plugins are already uninstalled/enabled, we're done here
             if (empty($pluginInfo)) {
@@ -265,9 +255,7 @@ class PluginController extends Controller
                 'The following uninstalled plugins are present:',
                 'There aren’t any uninstalled plugins present.',
                 'Choose a plugin handle to install:',
-                function(array $info) {
-                    return !$info['isInstalled'];
-                }
+                fn(array $info) => !$info['isInstalled']
             );
             if (is_int($handle)) {
                 return $handle;
@@ -306,9 +294,7 @@ class PluginController extends Controller
                 'The following plugins plugins are installed and enabled:',
                 'There aren’t any installed and enabled plugins.',
                 'Choose a plugin handle to uninstall:',
-                function(array $info) {
-                    return $info['isInstalled'] && $info['isEnabled'];
-                }
+                fn(array $info) => $info['isInstalled'] && $info['isEnabled']
             );
             if (is_int($handle)) {
                 return $handle;
@@ -351,9 +337,7 @@ class PluginController extends Controller
                 'The following plugins are disabled:',
                 'There aren’t any disabled plugins.',
                 'Choose a plugin handle to enable:',
-                function(array $info) {
-                    return $info['isInstalled'] && !$info['isEnabled'];
-                }
+                fn(array $info) => $info['isInstalled'] && !$info['isEnabled']
             );
             if (is_int($handle)) {
                 return $handle;
@@ -392,9 +376,7 @@ class PluginController extends Controller
                 'The following plugins are enabled:',
                 'There aren’t any enabled plugins.',
                 'Choose a plugin handle to disable:',
-                function(array $info) {
-                    return $info['isInstalled'] && $info['isEnabled'];
-                }
+                fn(array $info) => $info['isInstalled'] && $info['isEnabled']
             );
             if (is_int($handle)) {
                 return $handle;
@@ -457,9 +439,7 @@ class PluginController extends Controller
         $this->stdout(PHP_EOL);
 
         return $this->prompt($prompt, [
-            'validator' => function(string $input) use ($uninstalledPluginInfo) {
-                return isset($uninstalledPluginInfo[$input]);
-            },
+            'validator' => fn(string $input) => isset($uninstalledPluginInfo[$input]),
         ]);
     }
 

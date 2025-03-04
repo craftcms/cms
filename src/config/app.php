@@ -3,9 +3,9 @@
 return [
     'id' => 'CraftCMS',
     'name' => 'Craft CMS',
-    'version' => '5.1.0',
-    'schemaVersion' => '5.0.0.20',
-    'minVersionRequired' => '4.4.0',
+    'version' => '5.6.10.2',
+    'schemaVersion' => '5.7.0.1',
+    'minVersionRequired' => '4.5.0',
     'basePath' => dirname(__DIR__), // Defines the @app alias
     'runtimePath' => '@storage/runtime', // Defines the @runtime alias
     'controllerNamespace' => 'craft\controllers',
@@ -175,7 +175,9 @@ return [
         ],
         'sites' => [
             'class' => craft\services\Sites::class,
-            'currentSite' => craft\helpers\App::env('CRAFT_SITE'),
+        ],
+        'sso' => [
+            'class' => craft\services\Sso::class,
         ],
         'i18n' => [
             'class' => craft\i18n\I18N::class,
@@ -219,17 +221,16 @@ return [
             return Craft::createObject($config);
         },
 
-        'formatter' => function() {
-            return Craft::$app->getFormattingLocale()->getFormatter();
+        'db2' => function() {
+            $config = craft\helpers\App::dbConfig();
+            return Craft::createObject($config);
         },
 
-        'formattingLocale' => function() {
-            return craft\helpers\App::createFormattingLocale();
-        },
+        'formatter' => fn() => Craft::$app->getFormattingLocale()->getFormatter(),
 
-        'locale' => function() {
-            return Craft::$app->getI18n()->getLocaleById(Craft::$app->language);
-        },
+        'formattingLocale' => fn() => craft\helpers\App::createFormattingLocale(),
+
+        'locale' => fn() => Craft::$app->getI18n()->getLocaleById(Craft::$app->language),
 
         'mailer' => function() {
             $config = craft\helpers\App::mailerConfig();

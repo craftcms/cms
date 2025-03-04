@@ -19,6 +19,7 @@ use craft\elements\User;
 use craft\enums\CmsEdition;
 use craft\enums\PropagationMethod;
 use craft\errors\InvalidPluginException;
+use craft\errors\OperationAbortedException;
 use craft\helpers\App;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\ProjectConfig as ProjectConfigHelper;
@@ -30,8 +31,7 @@ use craft\models\Section;
 use craft\models\Site;
 use craft\services\ProjectConfig;
 use craft\web\Response;
-use Throwable;
-use yii\base\InvalidConfigException;
+use ReflectionClass;
 
 /**
  * Installation Migration
@@ -72,12 +72,26 @@ class Install extends Migration
      */
     public function safeUp(): bool
     {
+        if (!$this->_validateProjectConfig($error)) {
+            $message = "Project config validation failed: $error\n\nRun `composer install` or remove your `config/project/` folder and try again.";
+            echo "\n$message\n\nAborting install.\n\n";
+            throw new OperationAbortedException($message);
+        }
+
         $this->createTables();
         $this->createIndexes();
         $this->addForeignKeys();
         $this->db->getSchema()->refresh();
-        $this->insertDefaultData();
         return true;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    protected function afterUp(): void
+    {
+        $this->insertDefaultData();
+        parent::afterUp();
     }
 
     /**
@@ -219,8 +233,16 @@ class Install extends Migration
             'id' => $this->primaryKey(),
             'userId' => $this->integer()->notNull(),
             'auth2faSecret' => $this->string()->defaultValue(null),
+            'oldTimestamp' => $this->integer()->unsigned()->defaultValue(null),
             'dateCreated' => $this->dateTime()->notNull(),
             'dateUpdated' => $this->dateTime()->notNull(),
+        ]);
+        $this->createTable(Table::BULKOPEVENTS, [
+            'key' => $this->char(10)->notNull(),
+            'senderClass' => $this->string()->notNull(),
+            'eventName' => $this->string()->notNull(),
+            'timestamp' => $this->dateTime()->notNull(),
+            'PRIMARY KEY([[key]], [[senderClass]], [[eventName]])',
         ]);
         $this->createTable(Table::CATEGORIES, [
             'id' => $this->integer()->notNull(),
@@ -393,6 +415,7 @@ class Install extends Migration
             'postDate' => $this->dateTime(),
             'expiryDate' => $this->dateTime(),
             'deletedWithEntryType' => $this->boolean()->null(),
+            'deletedWithSection' => $this->boolean()->null(),
             'dateCreated' => $this->dateTime()->notNull(),
             'dateUpdated' => $this->dateTime()->notNull(),
             'PRIMARY KEY([[id]])',
@@ -446,6 +469,7 @@ class Install extends Migration
             'settings' => $this->text(),
             'dateCreated' => $this->dateTime()->notNull(),
             'dateUpdated' => $this->dateTime()->notNull(),
+            'dateDeleted' => $this->dateTime()->null(),
             'uid' => $this->uid(),
         ]);
         $this->createTable(Table::GLOBALSETS, [
@@ -550,6 +574,17 @@ class Install extends Migration
             'dateUpdated' => $this->dateTime()->notNull(),
             'uid' => $this->uid(),
         ]);
+        $this->createTable(Table::SEARCHINDEXQUEUE, [
+            'id' => $this->primaryKey(),
+            'elementId' => $this->integer()->notNull(),
+            'siteId' => $this->integer()->notNull(),
+            'reserved' => $this->boolean()->notNull()->defaultValue(false),
+        ]);
+        $this->createTable(Table::SEARCHINDEXQUEUE_FIELDS, [
+            'jobId' => $this->integer()->notNull(),
+            'fieldHandle' => $this->string()->notNull(),
+            'PRIMARY KEY([[jobId]], [[fieldHandle]])',
+        ]);
         $this->createTable(Table::SECTIONS, [
             'id' => $this->primaryKey(),
             'structureId' => $this->integer(),
@@ -570,6 +605,8 @@ class Install extends Migration
             'sectionId' => $this->integer()->notNull(),
             'typeId' => $this->integer()->notNull(),
             'sortOrder' => $this->smallInteger()->unsigned()->notNull(),
+            'name' => $this->string(),
+            'handle' => $this->string(),
             'PRIMARY KEY([[sectionId]], [[typeId]])',
         ]);
         $this->createTable(Table::SECTIONS_SITES, [
@@ -624,6 +661,14 @@ class Install extends Migration
             'dateUpdated' => $this->dateTime()->notNull(),
             'dateDeleted' => $this->dateTime()->null(),
             'uid' => $this->uid(),
+        ]);
+        $this->createTable(Table::SSO_IDENTITIES, [
+            'provider' => $this->string()->notNull(),
+            'identityId' => $this->string()->notNull(),
+            'userId' => $this->integer()->notNull(),
+            'dateCreated' => $this->dateTime()->notNull(),
+            'dateUpdated' => $this->dateTime()->notNull(),
+            'PRIMARY KEY([[provider]], [[identityId]], [[userId]])',
         ]);
         $this->createTable(Table::STRUCTUREELEMENTS, [
             'id' => $this->primaryKey(),
@@ -721,6 +766,7 @@ class Install extends Migration
         $this->createTable(Table::USERS, [
             'id' => $this->integer()->notNull(),
             'photoId' => $this->integer(),
+            'affiliatedSiteId' => $this->integer(),
             'active' => $this->boolean()->defaultValue(false)->notNull(),
             'pending' => $this->boolean()->defaultValue(false)->notNull(),
             'locked' => $this->boolean()->defaultValue(false)->notNull(),
@@ -814,6 +860,7 @@ class Install extends Migration
         $this->createIndex(null, Table::ASSETS, ['filename', 'folderId'], false);
         $this->createIndex(null, Table::ASSETS, ['folderId'], false);
         $this->createIndex(null, Table::ASSETS, ['volumeId'], false);
+        $this->createIndex(null, Table::BULKOPEVENTS, ['timestamp'], false);
         $this->createIndex(null, Table::CATEGORIES, ['groupId'], false);
         $this->createIndex(null, Table::CATEGORYGROUPS, ['name'], false);
         $this->createIndex(null, Table::CATEGORYGROUPS, ['handle'], false);
@@ -858,6 +905,7 @@ class Install extends Migration
         $this->createIndex(null, Table::FIELDLAYOUTS, ['type'], false);
         $this->createIndex(null, Table::FIELDS, ['handle', 'context']);
         $this->createIndex(null, Table::FIELDS, ['context'], false);
+        $this->createIndex(null, Table::FIELDS, ['dateDeleted'], false);
         $this->createIndex(null, Table::GLOBALSETS, ['name'], false);
         $this->createIndex(null, Table::GLOBALSETS, ['handle'], false);
         $this->createIndex(null, Table::GLOBALSETS, ['fieldLayoutId'], false);
@@ -876,6 +924,8 @@ class Install extends Migration
         $this->createIndex(null, Table::RELATIONS, ['targetId'], false);
         $this->createIndex(null, Table::RELATIONS, ['sourceSiteId'], false);
         $this->createIndex(null, Table::REVISIONS, ['canonicalId', 'num'], true);
+        $this->createIndex(null, Table::SEARCHINDEXQUEUE, ['elementId', 'siteId', 'reserved'], false);
+        $this->createIndex(null, Table::SEARCHINDEXQUEUE_FIELDS, ['jobId', 'fieldHandle'], true);
         $this->createIndex(null, Table::SECTIONS, ['handle'], false);
         $this->createIndex(null, Table::SECTIONS, ['name'], false);
         $this->createIndex(null, Table::SECTIONS, ['structureId'], false);
@@ -1015,7 +1065,6 @@ class Install extends Migration
         $this->addForeignKey(null, Table::ELEMENTS, ['draftId'], Table::DRAFTS, ['id'], 'CASCADE', null);
         $this->addForeignKey(null, Table::ELEMENTS, ['revisionId'], Table::REVISIONS, ['id'], 'CASCADE', null);
         $this->addForeignKey(null, Table::ELEMENTS, ['fieldLayoutId'], Table::FIELDLAYOUTS, ['id'], 'SET NULL', null);
-        $this->addForeignKey(null, Table::ELEMENTS_BULKOPS, ['elementId'], Table::ELEMENTS, ['id'], 'CASCADE', null);
         $this->addForeignKey(null, Table::ELEMENTS_OWNERS, ['elementId'], Table::ELEMENTS, ['id'], 'CASCADE', null);
         $this->addForeignKey(null, Table::ELEMENTS_OWNERS, ['ownerId'], Table::ELEMENTS, ['id'], 'CASCADE', null);
         $this->addForeignKey(null, Table::ELEMENTS_SITES, ['elementId'], Table::ELEMENTS, ['id'], 'CASCADE', null);
@@ -1037,6 +1086,8 @@ class Install extends Migration
         $this->addForeignKey(null, Table::RELATIONS, ['sourceSiteId'], Table::SITES, ['id'], 'CASCADE', 'CASCADE');
         $this->addForeignKey(null, Table::REVISIONS, ['creatorId'], Table::USERS, ['id'], 'SET NULL', null);
         $this->addForeignKey(null, Table::REVISIONS, ['canonicalId'], Table::ELEMENTS, ['id'], 'CASCADE', null);
+        $this->addForeignKey(null, Table::SEARCHINDEXQUEUE, 'elementId', Table::ELEMENTS, 'id', 'CASCADE', null);
+        $this->addForeignKey(null, Table::SEARCHINDEXQUEUE_FIELDS, 'jobId', Table::SEARCHINDEXQUEUE, 'id', 'CASCADE', null);
         $this->addForeignKey(null, Table::SECTIONS, ['structureId'], Table::STRUCTURES, ['id'], 'SET NULL', null);
         $this->addForeignKey(null, Table::SECTIONS_ENTRYTYPES, ['sectionId'], Table::SECTIONS, ['id'], 'CASCADE', null);
         $this->addForeignKey(null, Table::SECTIONS_ENTRYTYPES, ['typeId'], Table::ENTRYTYPES, ['id'], 'CASCADE', null);
@@ -1045,6 +1096,7 @@ class Install extends Migration
         $this->addForeignKey(null, Table::SESSIONS, ['userId'], Table::USERS, ['id'], 'CASCADE', null);
         $this->addForeignKey(null, Table::SHUNNEDMESSAGES, ['userId'], Table::USERS, ['id'], 'CASCADE', null);
         $this->addForeignKey(null, Table::SITES, ['groupId'], Table::SITEGROUPS, ['id'], 'CASCADE', null);
+        $this->addForeignKey(null, Table::SSO_IDENTITIES, ['userId'], Table::USERS, ['id'], 'CASCADE', null);
         $this->addForeignKey(null, Table::STRUCTUREELEMENTS, ['structureId'], Table::STRUCTURES, ['id'], 'CASCADE', null);
         $this->addForeignKey(null, Table::TAGGROUPS, ['fieldLayoutId'], Table::FIELDLAYOUTS, ['id'], 'SET NULL', null);
         $this->addForeignKey(null, Table::TAGS, ['groupId'], Table::TAGGROUPS, ['id'], 'CASCADE', null);
@@ -1058,6 +1110,7 @@ class Install extends Migration
         $this->addForeignKey(null, Table::USERPREFERENCES, ['userId'], Table::USERS, ['id'], 'CASCADE', null);
         $this->addForeignKey(null, Table::USERS, ['id'], Table::ELEMENTS, ['id'], 'CASCADE', null);
         $this->addForeignKey(null, Table::USERS, ['photoId'], Table::ASSETS, ['id'], 'SET NULL', null);
+        $this->addForeignKey(null, Table::USERS, ['affiliatedSiteId'], Table::SITES, ['id'], 'SET NULL', null);
         $this->addForeignKey(null, Table::VOLUMEFOLDERS, ['parentId'], Table::VOLUMEFOLDERS, ['id'], 'CASCADE', null);
         $this->addForeignKey(null, Table::VOLUMEFOLDERS, ['volumeId'], Table::VOLUMES, ['id'], 'CASCADE', null);
         $this->addForeignKey(null, Table::VOLUMES, ['fieldLayoutId'], Table::FIELDLAYOUTS, ['id'], 'SET NULL', null);
@@ -1084,47 +1137,17 @@ class Install extends Migration
         $generalConfig = Craft::$app->getConfig()->getGeneral();
         $projectConfig = Craft::$app->getProjectConfig();
 
-        $applyExistingProjectConfig = false;
-
-        if ($this->applyProjectConfigYaml && $projectConfig->getDoesExternalConfigExist()) {
-            try {
-                $expectedSchemaVersion = (string)$projectConfig->get(ProjectConfig::PATH_SCHEMA_VERSION, true);
-                $craftSchemaVersion = Craft::$app->schemaVersion;
-
-                // Compare existing Craft schema version with the one that is being applied.
-                if (!version_compare($craftSchemaVersion, $expectedSchemaVersion, '=')) {
-                    throw new InvalidConfigException("Craft is installed at the wrong schema version ($craftSchemaVersion, but project.yaml lists $expectedSchemaVersion).");
-                }
-
-                // Make sure at least sites are processed
-                ProjectConfigHelper::ensureAllSitesProcessed(true);
-
-                $this->_installPlugins();
-                $applyExistingProjectConfig = true;
-            } catch (Throwable $e) {
-                echo "    > can't apply existing project config: {$e->getMessage()}\n";
-                Craft::$app->getErrorHandler()->logException($e);
-
-                // Rename config/project/ so we can create a new one
-                $backupName = "project-" . date('Y-m-d-His');
-                echo "    > moving config/project/ to storage/config-backups/$backupName ... ";
-                $pathService = Craft::$app->getPath();
-                rename($pathService->getProjectConfigPath(), $pathService->getConfigBackupPath() . DIRECTORY_SEPARATOR . $backupName);
-                echo "done\n";
-
-                // Forget everything we knew about the old config
-                $projectConfig->reset();
-            }
-        }
-
-        if ($applyExistingProjectConfig) {
+        if ($this->applyProjectConfigYaml) {
+            // Make sure at least sites are processed
+            ProjectConfigHelper::ensureAllSitesProcessed(true);
+            $this->_installPlugins();
             // Save the existing system settings
-            echo '    > applying existing project config ... ';
+            echo '    > applying the project config ... ';
             $projectConfig->applyExternalChanges();
             echo "done\n";
         } else {
             // Save the default system settings
-            echo '    > saving default site data ... ';
+            echo '    > saving default data ... ';
             $configData = $this->_generateInitialConfig();
             $projectConfig->applyConfigChanges($configData);
             echo "done\n";
@@ -1133,7 +1156,7 @@ class Install extends Migration
         // Craft, you are installed now.
         Craft::$app->setIsInstalled();
 
-        if ($applyExistingProjectConfig) {
+        if ($this->applyProjectConfigYaml) {
             // Update the primary site with the installer settings
             $sitesService = Craft::$app->getSites();
             $site = $sitesService->getPrimarySite();
@@ -1171,26 +1194,68 @@ class Install extends Migration
     }
 
     /**
+     * Validates the existing project config data, if present.
+     */
+    private function _validateProjectConfig(string &$error = null): bool
+    {
+        if (!$this->applyProjectConfigYaml) {
+            return true;
+        }
+
+        $projectConfig = Craft::$app->getProjectConfig();
+        if (!$projectConfig->getDoesExternalConfigExist()) {
+            $this->applyProjectConfigYaml = false;
+            return true;
+        }
+
+        $expectedSchemaVersion = (string)$projectConfig->get(ProjectConfig::PATH_SCHEMA_VERSION, true);
+        $craftSchemaVersion = Craft::$app->schemaVersion;
+
+        // Compare existing Craft schema version with the one that is being applied.
+        if (!version_compare($craftSchemaVersion, $expectedSchemaVersion, '=')) {
+            $error = "Craft CMS is Composer-installed with schema version $craftSchemaVersion, but project.yaml expects $expectedSchemaVersion.";
+            return false;
+        }
+
+        $pluginsService = Craft::$app->getPlugins();
+        $pluginConfigs = $projectConfig->get(ProjectConfig::PATH_PLUGINS, true) ?? [];
+
+        // Make sure that all to-be-installed plugins actually exist,
+        // and that they have the same schema as project.yaml
+        foreach ($pluginConfigs as $handle => $pluginConfig) {
+            try {
+                $pluginInfo = $pluginsService->getPluginInfo($handle);
+            } catch (InvalidPluginException) {
+                $error = "The “{$handle}” plugin is not Composer-installed, but project.yaml expects it to be.";
+                return false;
+            }
+
+            if (isset($pluginInfo['schemaVersion'])) {
+                $schemaVersion = $pluginInfo['schemaVersion'];
+            } else {
+                $pluginRef = new ReflectionClass($pluginInfo['class']);
+                $schemaVersion = $pluginRef->getProperty('schemaVersion')->getDefaultValue();
+            }
+
+            $expectedSchemaVersion = $pluginConfig['schemaVersion'] ?? null;
+
+            if ($schemaVersion && $expectedSchemaVersion && $schemaVersion != $expectedSchemaVersion) {
+                $error = "{$pluginInfo['name']} is installed with schema version $schemaVersion, but project.yaml expects $expectedSchemaVersion.";
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    /**
      * Attempts to install any plugins listed in project.yaml.
-     *
-     * @throws Throwable if reasons
      */
     private function _installPlugins(): void
     {
         $projectConfig = Craft::$app->getProjectConfig();
         $pluginsService = Craft::$app->getPlugins();
         $pluginConfigs = $projectConfig->get(ProjectConfig::PATH_PLUGINS, true) ?? [];
-
-        // Make sure that all to-be-installed plugins actually exist,
-        // and that they have the same schema as project.yaml
-        foreach ($pluginConfigs as $handle => $config) {
-            $plugin = $pluginsService->createPlugin($handle);
-            $expectedSchemaVersion = $projectConfig->get(ProjectConfig::PATH_PLUGINS . '.' . $handle . '.schemaVersion', true);
-
-            if ($plugin->schemaVersion && $expectedSchemaVersion && $plugin->schemaVersion != $expectedSchemaVersion) {
-                throw new InvalidPluginException($handle, "$handle is installed at the wrong schema version ($plugin->schemaVersion, but project.yaml lists $expectedSchemaVersion).");
-            }
-        }
 
         // Prevent the plugin from sending any headers, etc.
         $realResponse = Craft::$app->getResponse();

@@ -739,6 +739,16 @@ class StringHelperTest extends TestCase
     }
 
     /**
+     * @dataProvider firstLineDataProvider
+     * @param string $expected
+     * @param string $string
+     */
+    public function testFirstLine(string $expected, string $string): void
+    {
+        self::assertEquals($expected, StringHelper::firstLine($string));
+    }
+
+    /**
      *
      */
     public function testLineWrapAfterWord(): void
@@ -2181,6 +2191,41 @@ class StringHelperTest extends TestCase
     /**
      * @return array
      */
+    public static function firstLineDataProvider(): array
+    {
+        return [
+            [
+                'test',
+                'test
+             
+             
+             test',
+            ],
+            ['test <br> test', 'test <br> test'],
+            ['thesearetabs       notspaces', 'thesearetabs       notspaces'],
+            [
+                '😂', '😂
+            😁',
+            ],
+            [
+                '', '
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            ',
+            ],
+        ];
+    }
+
+    /**
+     * @return array
+     */
     public static function toUppercaseDataProvider(): array
     {
         return [
@@ -2208,6 +2253,10 @@ class StringHelperTest extends TestCase
             ['fooBar', 'Fo’o Bar'],
             ['fooBarBaz', 'Foo Ba’r   Baz'],
             ['fooBar', '0 Foo Bar'],
+            ['fooBar', 'Foo!Bar'],
+            ['fooBar', 'Foo,Bar'],
+            ['fooBar', 'Foo/Bar'],
+            ['fooBar', 'Foo\\Bar'],
         ];
     }
 

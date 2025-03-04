@@ -1,3 +1,5 @@
+import $ from 'jquery';
+
 (function ($) {
   /** global: Craft */
   /** global: Garnish */
@@ -9,6 +11,7 @@
       $outerContainer: null,
       $container: null,
       $shade: null,
+      $liveRegion: $('<span class="visually-hidden" role="status"></span>'),
       isOpen: false,
       useMobileStyles: null,
 
@@ -35,6 +38,8 @@
         Garnish.addModalAttributes(this.$outerContainer);
 
         Craft.trapFocusWithin(this.$container);
+
+        this.$liveRegion.appendTo(this.$container);
 
         if (this.settings.autoOpen) {
           this.open();
@@ -112,7 +117,7 @@
             .css(Garnish.ltr ? 'left' : 'right', '100vw');
         }
 
-        this.$container.one('transitionend.slideout', () => {
+        this._afterTransition(this.$container, () => {
           Craft.setFocusWithin(this.$container);
         });
 
@@ -162,23 +167,54 @@
         this._cancelTransitionListeners();
 
         if (this.$shade) {
-          this.$shade
-            .removeClass('so-visible')
-            .one('transitionend.slideout', () => {
-              this.$shade.hide();
-            });
+          this.$shade.removeClass('so-visible');
+          this._afterTransition(this.$shade, () => {
+            this.$shade.hide();
+          });
         }
 
         Craft.Slideout.removePanel(this);
         Garnish.uiLayerManager.removeLayer();
         Garnish.resetModalBackgroundLayerVisibility();
-        this.$container.one('transitionend.slideout', () => {
+        this._afterTransition(this.$container, () => {
           this.$outerContainer.addClass('hidden');
           this.trigger('close');
         });
 
         if (this.settings.triggerElement) {
-          this.settings.triggerElement.focus();
+          let focusTarget = this.settings.triggerElement;
+
+          // Check if target is still visible
+          if (!focusTarget.checkVisibility()) {
+            // If it's a disclosure, get the disclosure trigger instead
+            if (focusTarget.closest('.menu--disclosure')) {
+              const disclosureId = focusTarget
+                .closest('.menu--disclosure')
+                .getAttribute('id');
+              focusTarget = document.querySelector(
+                `[aria-controls="${disclosureId}"]`
+              );
+            }
+          }
+
+          if (focusTarget) {
+            focusTarget.focus();
+          }
+        }
+      },
+
+      /**
+       * Performs the callback after the CSS transition has ended, or immediately if user prefers reduced motion
+       * @param $target
+       * @param callback
+       * @private
+       */
+      _afterTransition: function ($target, callback) {
+        // If a user prefers reduced motion, perform the callback immediately
+        if (Garnish.prefersReducedMotion()) {
+          callback();
+        } else {
+          $target.one('transitionend.slideout', callback);
         }
       },
 
@@ -222,6 +258,9 @@
       },
       instances: {},
       openPanels: [],
+      totalPanels: function () {
+        return Craft.Slideout.openPanels.length;
+      },
       addPanel: function (panel) {
         Craft.Slideout.openPanels.unshift(panel);
         if (panel.useMobileStyles) {
@@ -242,7 +281,7 @@
         }
       },
       updateStyles: function () {
-        const totalPanels = Craft.Slideout.openPanels.length;
+        const totalPanels = Craft.Slideout.totalPanels();
         Craft.Slideout.openPanels.forEach((panel, i) => {
           panel.$container.css(
             Garnish.ltr ? 'left' : 'right',

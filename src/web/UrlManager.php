@@ -85,9 +85,9 @@ class UrlManager extends \yii\web\UrlManager
     private array $_routeParams = [];
 
     /**
-     * @var ElementInterface|false|null
+     * @var ElementInterface|false
      */
-    private null|false|ElementInterface $_matchedElement = null;
+    private ElementInterface|false $_matchedElement;
 
     /**
      * @var mixed
@@ -267,7 +267,7 @@ class UrlManager extends \yii\web\UrlManager
             $element = false;
         }
 
-        $this->_matchedElement = $element;
+        $this->_matchedElement = $element ?? false;
         $this->_matchedElementRoute = $element;
     }
 
@@ -328,7 +328,7 @@ class UrlManager extends \yii\web\UrlManager
             if (Craft::$app->edition->value >= CmsEdition::Team->value) {
                 $rules = array_merge($rules, require $baseCpRoutesPath . DIRECTORY_SEPARATOR . 'team.php');
 
-                if (Craft::$app->edition === CmsEdition::Pro) {
+                if (Craft::$app->edition->value >= CmsEdition::Pro->value) {
                     $rules = array_merge($rules, require $baseCpRoutesPath . DIRECTORY_SEPARATOR . 'pro.php');
                 }
             }
@@ -345,12 +345,13 @@ class UrlManager extends \yii\web\UrlManager
             $eventName = self::EVENT_REGISTER_SITE_URL_RULES;
         }
 
-        $event = new RegisterUrlRulesEvent([
-            'rules' => $rules,
-        ]);
-        $this->trigger($eventName, $event);
+        if ($this->hasEventHandlers($eventName)) {
+            $event = new RegisterUrlRulesEvent(['rules' => $rules]);
+            $this->trigger($eventName, $event);
+            $rules = $event->rules;
+        }
 
-        return array_filter($event->rules);
+        return array_filter($rules);
     }
 
     /**

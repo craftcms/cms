@@ -10,6 +10,7 @@ namespace craft\elements\db;
 use craft\base\ElementInterface;
 use craft\db\Query;
 use craft\elements\ElementCollection;
+use craft\models\FieldLayout;
 use yii\base\Arrayable;
 use yii\db\Connection;
 use yii\db\QueryInterface;
@@ -73,6 +74,16 @@ interface ElementQueryInterface extends QueryInterface, Arrayable
      * @return static self reference
      */
     public function asArray(bool $value = true): static;
+
+    /**
+     * Causes the query to return provisional drafts for the matching elements,
+     * when they exist for the current user.
+     *
+     * @param bool $value The property value (defaults to true)
+     * @return static self reference
+     * @since 5.6.0
+     */
+    public function withProvisionalDrafts(bool $value = true): static;
 
     /**
      * Causes the query to return matching {elements} as they are stored in the database, ignoring matching placeholder
@@ -150,7 +161,9 @@ interface ElementQueryInterface extends QueryInterface, Arrayable
      * | Value | Fetches drafts…
      * | - | -
      * | `1` | for the {element} with an ID of 1.
+     * | `[1, 2]` | for the {elements} with an ID of 1 or 2.
      * | a [[{element-class}]] object | for the {element} represented by the object.
+     * | an array of [[{element-class}]] objects | for the {elements} represented by the objects.
      * | `'*'` | for any {element}
      * | `false` | that aren’t associated with a published {element}
      *
@@ -234,6 +247,20 @@ interface ElementQueryInterface extends QueryInterface, Arrayable
      * @since 3.7.0
      */
     public function provisionalDrafts(?bool $value = true): static;
+
+    /**
+     * Narrows the query results to only canonical elements, including elements
+     * that reference another canonical element via `canonicalId` so long as they
+     * aren’t a draft.
+     *
+     * Unpublished drafts can be included as well if `drafts(null)` and
+     * `draftOf(false)` are also passed.
+     *
+     * @param bool $value The property value
+     * @return static self reference
+     * @since 5.7.0
+     */
+    public function canonicalsOnly(bool $value = true): static;
 
     /**
      * Narrows the query results to only unpublished drafts which have been saved after initial creation.
@@ -832,9 +859,65 @@ interface ElementQueryInterface extends QueryInterface, Arrayable
     public function preferSites(?array $value = null): static;
 
     /**
+     * Narrows the query results to only {elements} that are not related to certain other elements.
+     *
+     * See [Relations](https://craftcms.com/docs/5.x/system/relations.html) for a full explanation of how to work with this parameter.
+     *
+     * ---
+     *
+     * ```twig
+     * {# Fetch all {elements} that are related to myEntry #}
+     * {% set {elements-var} = {twig-method}
+     *   .notRelatedTo(myEntry)
+     *   .all() %}
+     * ```
+     *
+     * ```php
+     * // Fetch all {elements} that are related to $myEntry
+     * ${elements-var} = {php-method}
+     *     ->notRelatedTo($myEntry)
+     *     ->all();
+     * ```
+     *
+     * @param mixed $value The property value
+     * @return static self reference
+     * @since 5.4.0
+     */
+    public function notRelatedTo(mixed $value): static;
+
+    /**
+     * Narrows the query results to only {elements} that are not related to certain other elements.
+     *
+     * See [Relations](https://craftcms.com/docs/5.x/system/relations.html) for a full explanation of how to work with this parameter.
+     *
+     * ---
+     *
+     * ```twig
+     * {# Fetch all {elements} that are related to myCategoryA and not myCategoryB #}
+     * {% set {elements-var} = {twig-method}
+     *   .relatedTo(myCategoryA)
+     *   .andNotRelatedTo(myCategoryB)
+     *   .all() %}
+     * ```
+     *
+     * ```php
+     * // Fetch all {elements} that are related to $myCategoryA and not $myCategoryB
+     * ${elements-var} = {php-method}
+     *     ->relatedTo($myCategoryA)
+     *     ->andNotRelatedTo($myCategoryB)
+     *     ->all();
+     * ```
+     *
+     * @param mixed $value The property value
+     * @return static self reference
+     * @since 5.4.0
+     */
+    public function andNotRelatedTo(mixed $value): static;
+
+    /**
      * Narrows the query results to only {elements} that are related to certain other elements.
      *
-     * See [Relations](https://craftcms.com/docs/4.x/relations.html) for a full explanation of how to work with this parameter.
+     * See [Relations](https://craftcms.com/docs/5.x/system/relations.html) for a full explanation of how to work with this parameter.
      *
      * ---
      *
@@ -860,7 +943,7 @@ interface ElementQueryInterface extends QueryInterface, Arrayable
     /**
      * Narrows the query results to only {elements} that are related to certain other elements.
      *
-     * See [Relations](https://craftcms.com/docs/4.x/relations.html) for a full explanation of how to work with this parameter.
+     * See [Relations](https://craftcms.com/docs/5.x/system/relations.html) for a full explanation of how to work with this parameter.
      *
      * ---
      *
@@ -1009,7 +1092,7 @@ interface ElementQueryInterface extends QueryInterface, Arrayable
     /**
      * Narrows the query results to only {elements} that match a search query.
      *
-     * See [Searching](https://craftcms.com/docs/4.x/searching.html) for a full explanation of how to work with this parameter.
+     * See [Searching](https://craftcms.com/docs/5.x/system/searching.html) for a full explanation of how to work with this parameter.
      *
      * ---
      *
@@ -1058,7 +1141,7 @@ interface ElementQueryInterface extends QueryInterface, Arrayable
     /**
      * Causes the query to return matching {elements} eager-loaded with related elements.
      *
-     * See [Eager-Loading Elements](https://craftcms.com/docs/4.x/dev/eager-loading-elements.html) for a full explanation of how to work with this parameter.
+     * See [Eager-Loading Elements](https://craftcms.com/docs/5.x/development/eager-loading.html) for a full explanation of how to work with this parameter.
      *
      * ---
      *
@@ -1099,6 +1182,15 @@ interface ElementQueryInterface extends QueryInterface, Arrayable
      * @since 5.0.0
      */
     public function eagerly(string|bool $value = true): static;
+
+    /**
+     * Sets whether custom fields should be factored into the query.
+     *
+     * @param bool $value The property value (defaults to true)
+     * @return static self reference
+     * @since 5.2.0
+     */
+    public function withCustomFields(bool $value = true): static;
 
     /**
      * Explicitly determines whether the query should join in the structure data.
@@ -1581,4 +1673,12 @@ interface ElementQueryInterface extends QueryInterface, Arrayable
      * @since 3.6.0
      */
     public function afterPopulate(array $elements): array;
+
+    /**
+     * Returns the field layouts that could be associated with the resulting elements.
+     *
+     * @return FieldLayout[]
+     * @since 5.6.0
+     */
+    public function getFieldLayouts(): array;
 }

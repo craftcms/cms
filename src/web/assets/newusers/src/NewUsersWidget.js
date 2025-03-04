@@ -96,9 +96,9 @@
             );
           })
           .catch(({response}) => {
-            var msg =
-              response.data.message || Craft.t('A server error occurred.');
-
+            const msg =
+              response?.data?.message ||
+              Craft.t('app', 'A server error occurred.');
             this.$error.html(msg);
             this.$error.removeClass('hidden');
           });

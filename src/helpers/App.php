@@ -9,6 +9,7 @@ namespace craft\helpers;
 
 use Closure;
 use Craft;
+use craft\attributes\EnvName;
 use craft\behaviors\SessionBehavior;
 use craft\cache\FileCache;
 use craft\config\DbConfig;
@@ -143,8 +144,7 @@ class App
      * For example, if an object has a `fooBar` property, and `X`/`X_` is passed as the prefix, the resulting array
      * may contain a `fooBar` key set to an `X_FOO_BAR` environment variable value, if it exists.
      *
-     * @param string $class The class name
-     * @phpstan-param class-string $class
+     * @param class-string $class The class name
      * @param string|null $envPrefix The environment variable name prefix
      * @return array
      * @phpstan-return array<string, mixed>
@@ -161,12 +161,23 @@ class App
                 continue;
             }
 
-            $propName = $prop->getName();
-            $envName = $envPrefix . strtoupper(StringHelper::toSnakeCase($propName));
-            $envValue = static::env($envName);
+            $envName = null;
+
+            foreach ($prop->getAttributes(EnvName::class) as $attribute) {
+                /** @var EnvName $envName */
+                $envName = $attribute->newInstance();
+                $envName = $envName->name;
+                break;
+            }
+
+            if (!$envName) {
+                $envName = strtoupper(StringHelper::toSnakeCase($prop->getName()));
+            }
+
+            $envValue = static::env(sprintf('%s%s', $envPrefix, $envName));
 
             if ($envValue !== null) {
-                $envConfig[$propName] = $envValue;
+                $envConfig[$prop->getName()] = $envValue;
             }
         }
 
@@ -201,7 +212,7 @@ class App
             return null;
         }
 
-        if (preg_match('/^\$(\w+)$/', $value, $matches)) {
+        if (preg_match('/^\$(\w+)(\/.*)?/', $value, $matches)) {
             $env = static::env($matches[1]);
 
             if ($env === null) {
@@ -209,7 +220,7 @@ class App
                 return null;
             }
 
-            $value = $env;
+            $value = $env . ($matches[2] ?? '');
         }
 
         if (is_string($value) && str_starts_with($value, '@')) {
@@ -435,12 +446,26 @@ class App
      */
     public static function normalizeValue(mixed $value): mixed
     {
-        return match (is_string($value) ? strtolower($value) : $value) {
-            'true' => true,
-            'false' => false,
-            'null' => null,
-            default => Number::isIntOrFloat($value) ? Number::toIntOrFloat($value) : $value,
-        };
+        if (is_string($value)) {
+            switch (strtolower($value)) {
+                case 'true':
+                    return true;
+                case 'false':
+                    return false;
+                case 'null':
+                    return null;
+            }
+
+            if (Number::isIntOrFloat($value)) {
+                $intOrFloat = Number::toIntOrFloat($value);
+                // make sure we didn't lose any precision
+                if ((string)$intOrFloat === $value) {
+                    return $intOrFloat;
+                }
+            }
+        }
+
+        return $value;
     }
 
     /**
@@ -624,6 +649,7 @@ class App
 
         if (
             getenv('PHP_BINARY') === false &&
+            /** @phpstan-ignore-next-line */
             PHP_BINARY &&
             PHP_SAPI === 'cgi-fcgi' &&
             str_ends_with(PHP_BINARY, 'php-cgi')
@@ -682,13 +708,9 @@ class App
      */
     public static function checkForValidIconv(): bool
     {
-        if (isset(self::$_iconv)) {
-            return self::$_iconv;
-        }
-
         // Check if iconv is installed. Note we can't just use HTMLPurifier_Encoder::iconvAvailable() because they
         // don't consider iconv "installed" if it's there but "unusable".
-        return self::$_iconv = (function_exists('iconv') && HTMLPurifier_Encoder::testIconvTruncateBug() === HTMLPurifier_Encoder::ICONV_OK);
+        return self::$_iconv ?? (self::$_iconv = (function_exists('iconv') && HTMLPurifier_Encoder::testIconvTruncateBug() === HTMLPurifier_Encoder::ICONV_OK));
     }
 
     /**
@@ -705,8 +727,7 @@ class App
     /**
      * Returns a humanized class name.
      *
-     * @param string $class
-     * @phpstan-param class-string $class
+     * @param class-string $class
      * @return string
      */
     public static function humanizeClass(string $class): string
@@ -718,7 +739,7 @@ class App
 
     /**
      * Sets PHP’s memory limit to the maximum specified by the
-     * <config4:phpMaxMemoryLimit> config setting, and gives the script an
+     * <config5:phpMaxMemoryLimit> config setting, and gives the script an
      * unlimited amount of time to execute.
      */
     public static function maxPowerCaptain(): void
@@ -850,6 +871,45 @@ class App
     public static function isStreamLog(): bool
     {
         return self::parseBooleanEnv('$CRAFT_STREAM_LOG') === true;
+    }
+
+    /**
+     * Returns whether Craft is being run from a TTY terminal.
+     *
+     * This is copied verbatim from `Composer\Util\Platform::isTty()`. Full credit to Nils Adermann and Jordi Boggiano.
+     *
+     * @param resource|null $fd Open file descriptor or `null`. Defaults to `STDOUT`.
+     * @since 5.4.8
+     */
+    public static function isTty($fd = null): bool
+    {
+        if ($fd === null) {
+            $fd = defined('STDOUT') ? STDOUT : fopen('php://stdout', 'w');
+            if ($fd === false) {
+                return false;
+            }
+        }
+
+        // detect msysgit/mingw and assume this is a tty because detection
+        // does not work correctly, see https://github.com/composer/composer/issues/9690
+        if (in_array(strtoupper(self::env('MSYSTEM') ?: ''), ['MINGW32', 'MINGW64'], true)) {
+            return true;
+        }
+
+        // modern cross-platform function, includes the fstat
+        // fallback so if it is present we trust it
+        if (function_exists('stream_isatty')) {
+            return stream_isatty($fd);
+        }
+
+        // only trusting this if it is positive, otherwise prefer fstat fallback
+        if (function_exists('posix_isatty') && posix_isatty($fd)) {
+            return true;
+        }
+
+        $stat = @fstat($fd);
+        // Check if formatted mode is S_IFCHR
+        return $stat ? 0020000 === ($stat['mode'] & 0170000) : false;
     }
 
     // App component configs
@@ -993,6 +1053,7 @@ class App
             ],
             'replyTo' => App::parseEnv($settings->replyToEmail),
             'template' => App::parseEnv($settings->template),
+            'siteOverrides' => $settings->siteOverrides,
             'transport' => $adapter->defineTransport(),
         ];
     }
@@ -1005,21 +1066,17 @@ class App
      */
     public static function dbMutexConfig(): array
     {
-        // Use a dedicated connection, to avoid erratic behavior when locks are used during transactions
-        // https://makandracards.com/makandra/17437-mysql-careful-when-using-database-locks-in-transactions
-        $dbConfig = static::dbConfig();
-
         if (Craft::$app->getDb()->getIsMysql()) {
             return [
                 'class' => MysqlMutex::class,
-                'db' => $dbConfig,
-                'keyPrefix' => Craft::$app->id,
+                'db' => 'db2',
+                'keyPrefix' => Craft::$app->getEnvId(),
             ];
         }
 
         return [
             'class' => PgsqlMutex::class,
-            'db' => $dbConfig,
+            'db' => 'db2',
         ];
     }
 
@@ -1067,7 +1124,7 @@ class App
      */
     public static function sessionConfig(): array
     {
-        $stateKeyPrefix = md5('Craft.' . Session::class . '.' . Craft::$app->id);
+        $stateKeyPrefix = md5('Craft.' . Session::class . '.' . Craft::$app->getEnvId());
 
         return [
             'class' => Session::class,
@@ -1097,7 +1154,7 @@ class App
             $loginUrl = UrlHelper::cpUrl(Request::CP_PATH_LOGIN);
         }
 
-        $stateKeyPrefix = md5('Craft.' . WebUser::class . '.' . Craft::$app->id);
+        $stateKeyPrefix = md5('Craft.' . WebUser::class . '.' . Craft::$app->getEnvId());
 
         return [
             'class' => WebUser::class,
@@ -1108,11 +1165,12 @@ class App
             'authTimeout' => $generalConfig->userSessionDuration ?: null,
             'identityCookie' => Craft::cookieConfig(['name' => $stateKeyPrefix . '_identity']),
             'usernameCookie' => Craft::cookieConfig(['name' => $stateKeyPrefix . '_username']),
-            'idParam' => $stateKeyPrefix . '__id',
-            'tokenParam' => $stateKeyPrefix . '__token',
-            'authTimeoutParam' => $stateKeyPrefix . '__expire',
             'absoluteAuthTimeoutParam' => $stateKeyPrefix . '__absoluteExpire',
+            'authTimeoutParam' => $stateKeyPrefix . '__expire',
+            'idParam' => $stateKeyPrefix . '__id',
+            'impersonatorIdParam' => $stateKeyPrefix . '__impersonator_id',
             'returnUrlParam' => $stateKeyPrefix . '__returnUrl',
+            'tokenParam' => $stateKeyPrefix . '__token',
         ];
     }
 
@@ -1129,8 +1187,8 @@ class App
         ];
 
         $request = Craft::$app->getRequest();
-
-        if ($request->getIsCpRequest()) {
+        if (!$request->getIsConsoleRequest()) {
+            // Check these headers for site requests too, in case we're rendering a system fallback template
             $headers = $request->getHeaders();
             $config['registeredAssetBundles'] = array_filter(explode(',', $headers->get('X-Registered-Asset-Bundles', '')));
             $config['registeredJsFiles'] = array_filter(explode(',', $headers->get('X-Registered-Js-Files', '')));
@@ -1248,6 +1306,21 @@ class App
     }
 
     /**
+     * Returns the cache key that licensing info should be stored with.
+     *
+     * @return string
+     * @internal
+     */
+    public static function licenseInfoCacheKey(): string
+    {
+        $request = Craft::$app->getRequest();
+        if ($request->getIsConsoleRequest()) {
+            return 'licenseInfo';
+        }
+        return sprintf('licenseInfo@%s', $request->getHostName());
+    }
+
+    /**
      * Returns all known licensing issues.
      *
      * @param bool $withUnresolvables
@@ -1264,7 +1337,8 @@ class App
 
         $updatesService = Craft::$app->getUpdates();
         $cache = Craft::$app->getCache();
-        $isInfoCached = $cache->exists('licenseInfo') && $updatesService->getIsUpdateInfoCached();
+        $licenseInfoCacheKey = static::licenseInfoCacheKey();
+        $isInfoCached = $cache->exists($licenseInfoCacheKey) && $updatesService->getIsUpdateInfoCached();
 
         if (!$isInfoCached) {
             if (!$fetch) {
@@ -1276,7 +1350,7 @@ class App
 
         $issues = [];
 
-        $allLicenseInfo = $cache->get('licenseInfo') ?: [];
+        $allLicenseInfo = $cache->get($licenseInfoCacheKey) ?: [];
         $pluginsService = Craft::$app->getPlugins();
         $generalConfig = Craft::$app->getConfig()->getGeneral();
         $consoleUrl = rtrim(Craft::$app->getPluginStore()->craftIdEndpoint, '/');
@@ -1450,5 +1524,22 @@ class App
         $resolveItems = array_map(fn($issue) => Json::encode($issue[2]), $issues);
         sort($resolveItems);
         return md5(implode('', $resolveItems));
+    }
+
+    /**
+     * Configures an object with property values.
+     *
+     * This is identical to [[\BaseYii::configure()]], except this class is safe to be called during application
+     * bootstrap, whereas `\BaseYii` is not.
+     *
+     * @param object $object the object to be configured
+     * @param array $properties the property initial values given in terms of name-value pairs.
+     * @since 5.3.0
+     */
+    public static function configure(object $object, array $properties): void
+    {
+        foreach ($properties as $name => $value) {
+            $object->$name = $value;
+        }
     }
 }

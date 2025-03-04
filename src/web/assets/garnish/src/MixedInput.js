@@ -163,7 +163,6 @@ export default Base.extend({
   },
 
   setFocus: function ($elem) {
-    debugger;
     this.$container.addClass('focus');
 
     if (!this.focussedElement) {

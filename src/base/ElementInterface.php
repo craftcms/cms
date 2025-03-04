@@ -18,6 +18,7 @@ use craft\enums\AttributeStatus;
 use craft\errors\InvalidFieldException;
 use craft\models\FieldLayout;
 use craft\models\Site;
+use GraphQL\Type\Definition\Type;
 use Twig\Markup;
 use yii\web\Response;
 
@@ -343,7 +344,7 @@ interface ElementInterface extends
     public static function modifyCustomSource(array $config): array;
 
     /**
-     * Returns the available [bulk element actions](https://craftcms.com/docs/4.x/extend/element-actions.html)
+     * Returns the available [bulk element actions](https://craftcms.com/docs/5.x/extend/element-actions.html)
      * for a given source.
      *
      * The actions can be represented by their fully qualified class name, a config array with the class name
@@ -482,6 +483,33 @@ interface ElementInterface extends
     public static function sortOptions(): array;
 
     /**
+     * Returns the view modes available for the element type.
+     *
+     * This method should return an array, where each item is a sub-array with the following keys:
+     *
+     * - `mode` – Name of the view mode
+     * - `title` – How this mode should be described to the user
+     * - `icon` – Icon representing this view mode
+     * - `availableOnMobile` - Whether the view mode is available on mobile devices (defaults to `true`)
+     * - `structuresOnly` – Whether the view mode should only be available for structured sources (defaults to `false`)
+     *
+     * ```php
+     * return [
+     *     [
+     *         'mode' => 'table',
+     *         'title' => Craft::t('app', 'Display in a table'),
+     *         'icon' => 'list',
+     *         'availableOnMobile' => false,
+     *     ],
+     * ];
+     *  ```
+     *
+     * @return array The view modes.
+     * @since 5.5.0
+     */
+    public static function indexViewModes(): array;
+
+    /**
      * Defines all of the available columns that can be shown in table views.
      *
      * This method should return an array whose keys represent element attribute names, and whose values make
@@ -501,6 +529,37 @@ interface ElementInterface extends
      * @return string[] The table attribute keys
      */
     public static function defaultTableAttributes(string $source): array;
+
+    /**
+     * Defines all the available attributes that can be shown in card views.
+     *
+     * This method should return an array whose keys represent element attribute names, and whose values make
+     * up the table’s column headers.
+     *
+     * @return array The card attributes.
+     * @since 5.5.0
+     */
+    public static function cardAttributes(): array;
+
+    /**
+     * Returns the list of card attribute keys that should be shown by default, if the field layout hasn't been customised.
+     *
+     * This method should return an array where each element in the array maps to one of the keys of the array returned
+     * by [[cardAttributes()]].
+     *
+     * @return string[] The card attribute keys
+     * @since 5.5.0
+     */
+    public static function defaultCardAttributes(): array;
+
+    /**
+     * Return HTML for the attribute in the card preview.
+     *
+     * @param array $attribute
+     * @return mixed
+     * @since 5.5.0
+     */
+    public static function attributePreviewHtml(array $attribute): mixed;
 
     /**
      * Returns an array that maps source-to-target element IDs based on the given sub-property handle.
@@ -555,6 +614,14 @@ interface ElementInterface extends
      * should be ignored
      */
     public static function eagerLoadingMap(array $sourceElements, string $handle): array|null|false;
+
+    /**
+     * Returns the base GraphQL type name that represents elements of this type.
+     *
+     * @return Type
+     * @since 5.7.0
+     */
+    public static function baseGqlType(): Type;
 
     /**
      * Returns the GraphQL scopes required by element’s context.
@@ -791,6 +858,14 @@ interface ElementInterface extends
     public function getChipLabelHtml(): string;
 
     /**
+     * Returns whether chips and cards for this element should include a status indicator.
+     *
+     * @return bool
+     * @since 5.4.0
+     */
+    public function showStatusIndicator(): bool;
+
+    /**
      * Returns the body HTML for element cards.
      *
      * @return string|null
@@ -939,6 +1014,16 @@ interface ElementInterface extends
     public function getAdditionalButtons(): string;
 
     /**
+     * Returns alternative form actions for the element.
+     *
+     * See [[\craft\web\CpScreenResponseBehavior::altActions()]] for documentation on supported action properties.
+     *
+     * @return array
+     * @since 5.6.0
+     */
+    public function getAltActions(): array;
+
+    /**
      * Returns the additional locations that should be available for previewing the element, besides its primary [[getUrl()|URL]].
      *
      * Each target should be represented by a sub-array with the following keys:
@@ -978,6 +1063,14 @@ interface ElementInterface extends
      * @since 3.4.0
      */
     public function setEnabledForSite(array|bool $enabledForSite): void;
+
+    /**
+     * Returns the root owner element.
+     *
+     * @return self
+     * @since 5.4.0
+     */
+    public function getRootOwner(): self;
 
     /**
      * Returns the same element in other locales.
@@ -1332,6 +1425,18 @@ interface ElementInterface extends
     public function getSerializedFieldValues(?array $fieldHandles = null): array;
 
     /**
+     * Returns an array of the element’s serialized custom field values, indexed by their handles,
+     * for database storage.
+     *
+     * @param string[]|null $fieldHandles The list of field handles whose values
+     * need to be returned. Defaults to null, meaning all fields’ values will be
+     * returned. If it is an array, only the fields in the array will be returned.
+     * @return array
+     * @since 5.7.0
+     */
+    public function getSerializedFieldValuesForDb(?array $fieldHandles = null): array;
+
+    /**
      * Sets the element’s custom field values.
      *
      * @param array $values The custom field values (handle => value)
@@ -1480,6 +1585,22 @@ interface ElementInterface extends
     public function getFieldContext(): string;
 
     /**
+     * Returns the element’s invalid nested element IDs.
+     *
+     * @return int[]
+     * @since 5.3.0
+     */
+    public function getInvalidNestedElementIds(): array;
+
+    /**
+     * Registers invalid nested element IDs with the element, so an `error` class can be added on their cards.
+     *
+     * @param int[] $ids
+     * @since 5.3.0
+     */
+    public function addInvalidNestedElementIds(array $ids): void;
+
+    /**
      * Returns whether elements have been eager-loaded with a given handle.
      *
      * @param string $handle The handle of the eager-loaded elements
@@ -1569,6 +1690,16 @@ interface ElementInterface extends
      * @since 3.2.0
      */
     public function getCurrentRevision(): ?self;
+
+    /**
+     * Return if the element is copyable between sites.
+     * Checks if it's a multisite installation, if user can edit the element in other sites,
+     * and if the element actually exists in other sites.
+     *
+     * @return bool
+     * @since 5.6.0
+     */
+    public function getIsCrossSiteCopyable(): bool;
 
     // Indexes, etc.
     // -------------------------------------------------------------------------

@@ -33,6 +33,8 @@ class UrlHelperTest extends TestCase
     public const PROTOCOL_RELATIVE_URL = '//craftcms.com/';
     public const EMAIL_URL = 'mailto:test@abc.com';
     public const TEL_URL = 'tel:+10123456789';
+    public const FILE_PATH_1 = 'C:';
+    public const FILE_PATH_2 = 'C:\foo\bar.txt';
 
     /**
      * @var UnitTester
@@ -165,6 +167,14 @@ class UrlHelperTest extends TestCase
     }
 
     /**
+     * @dataProvider encodeUrlDataProvider
+     */
+    public function testEncodeUrl(string $expected, string $url): void
+    {
+        self::assertSame($expected, UrlHelper::encodeUrl($url));
+    }
+
+    /**
      * Tests the UrlHelper::rootRelativeUrl() method.
      *
      * @dataProvider rootRelativeUrlDataProvider
@@ -188,7 +198,7 @@ class UrlHelperTest extends TestCase
      */
     public function testUrlFunction(string $expected, string $path = '', ?array $params = null, ?string $scheme = null, ?bool $showScriptName = null): void
     {
-        $scheme = $scheme ?? 'https';
+        $scheme ??= 'https';
         $expected = $this->_prepExpectedUrl($expected, $scheme);
         self::assertSame($expected, UrlHelper::url($path, $params, $scheme, $showScriptName));
     }
@@ -228,7 +238,7 @@ class UrlHelperTest extends TestCase
      */
     public function testSiteUrl(string $expected, string $path, array|string|null $params = null, ?string $scheme = null, ?int $siteId = null): void
     {
-        $scheme = $scheme ?? 'https';
+        $scheme ??= 'https';
         $expected = $this->_prepExpectedUrl($expected, $scheme);
         self::assertSame($expected, UrlHelper::siteUrl($path, $params, $scheme, $siteId));
     }
@@ -307,6 +317,8 @@ class UrlHelperTest extends TestCase
             'non-absolute-url-www' => [false, self::NON_ABSOLUTE_URL_WWW],
             'email-url' => [true, self::EMAIL_URL],
             'tel-url' => [true, self::TEL_URL],
+            'file-path-1' => [false, self::FILE_PATH_1],
+            'file-path-2' => [false, self::FILE_PATH_2],
         ];
     }
 
@@ -572,6 +584,19 @@ class UrlHelperTest extends TestCase
             ['http://example.test?foo=bar+baz', 'http://example.test?foo=bar+baz'],
             ['http://example.test?foo=bar+baz#hash', 'http://example.test?foo=bar baz#hash'],
             ['http://example.test?foo=bar%2Bbaz#hash', 'http://example.test?foo=bar%2Bbaz#hash'],
+        ];
+    }
+
+    /**
+     * @return array
+     */
+    public function encodeUrlDataProvider(): array
+    {
+        return [
+            ['https://domain/fr/offices/gen%C3%AAve', 'https://domain/fr/offices/genêve'],
+            ['https://domain/fr/offices/gen%C3%AAve?foo=bar', 'https://domain/fr/offices/genêve?foo=bar'],
+            ['https://domain/fr/offices/gen%C3%AAve?foo=bar', 'https://domain/fr/offices/gen%C3%AAve?foo=bar'],
+            ['foo+bar', 'foo bar'],
         ];
     }
 

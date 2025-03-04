@@ -12,10 +12,13 @@ use craft\config\DbConfig;
 use craft\db\Connection;
 use craft\elements\User;
 use craft\errors\DbConnectException;
+use craft\errors\MigrationException;
+use craft\errors\OperationAbortedException;
 use craft\helpers\App;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Install as InstallHelper;
 use craft\helpers\StringHelper;
+use craft\markdown\Markdown;
 use craft\migrations\Install;
 use craft\models\Site;
 use craft\web\assets\installer\InstallerAsset;
@@ -294,7 +297,19 @@ class InstallController extends Controller
             'site' => $site,
         ]);
 
-        $migrator->migrateUp($migration);
+        try {
+            $migrator->migrateUp($migration);
+        } catch (MigrationException $e) {
+            $data = [];
+            $previous = $e->getPrevious();
+            if ($previous instanceof OperationAbortedException) {
+                $message = $previous->getMessage();
+                $data['messageHtml'] = (new Markdown())->parse($message);
+            } else {
+                $message = $e->getMessage();
+            }
+            return $this->asFailure($message, $data);
+        }
 
         // Mark all existing migrations as applied
         foreach ($migrator->getNewMigrations() as $name) {

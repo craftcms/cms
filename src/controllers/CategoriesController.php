@@ -13,6 +13,7 @@ use craft\elements\Category;
 use craft\errors\InvalidElementException;
 use craft\helpers\Cp;
 use craft\helpers\ElementHelper;
+use craft\helpers\StringHelper;
 use craft\helpers\UrlHelper;
 use craft\models\CategoryGroup;
 use craft\models\CategoryGroup_SiteSettings;
@@ -54,12 +55,13 @@ class CategoriesController extends Controller
      */
     public function actionGroupIndex(): Response
     {
-        $this->requireAdmin();
+        $this->requireAdmin(false);
 
         $groups = Craft::$app->getCategories()->getAllGroups();
 
         return $this->renderTemplate('settings/categories/index.twig', [
             'categoryGroups' => $groups,
+            'readOnly' => !Craft::$app->getConfig()->getGeneral()->allowAdminChanges,
         ]);
     }
 
@@ -73,7 +75,13 @@ class CategoriesController extends Controller
      */
     public function actionEditCategoryGroup(?int $groupId = null, ?CategoryGroup $categoryGroup = null): Response
     {
-        $this->requireAdmin();
+        $this->requireAdmin(false);
+
+        $readOnly = !Craft::$app->getConfig()->getGeneral()->allowAdminChanges;
+
+        if ($groupId === null && $readOnly) {
+            throw new ForbiddenHttpException('Administrative changes are disallowed in this environment.');
+        }
 
         $variables = [];
 
@@ -112,6 +120,7 @@ class CategoriesController extends Controller
 
         $variables['groupId'] = $groupId;
         $variables['categoryGroup'] = $categoryGroup;
+        $variables['readOnly'] = $readOnly;
 
         return $this->renderTemplate('settings/categories/_edit.twig', $variables);
     }
@@ -279,9 +288,9 @@ class CategoriesController extends Controller
         // Save it
         $category->setScenario(Element::SCENARIO_ESSENTIALS);
         if (!Craft::$app->getDrafts()->saveElementAsDraft($category, Craft::$app->getUser()->getId(), null, null, false)) {
-            return $this->asModelFailure($category, Craft::t('app', 'Couldn’t create {type}.', [
+            return $this->asModelFailure($category, StringHelper::upperCaseFirst(Craft::t('app', 'Couldn’t create {type}.', [
                 'type' => Category::lowerDisplayName(),
-            ]), 'category');
+            ])), 'category');
         }
 
         // Set its position in the structure if a before/after param was passed
@@ -370,9 +379,9 @@ class CategoriesController extends Controller
         if (!Craft::$app->getElements()->saveElement($category)) {
             return $this->asModelFailure(
                 $category,
-                Craft::t('app', 'Couldn’t save {type}.', [
+                StringHelper::upperCaseFirst(Craft::t('app', 'Couldn’t save {type}.', [
                     'type' => Category::lowerDisplayName(),
-                ]),
+                ])),
                 $categoryVariable
             );
         }

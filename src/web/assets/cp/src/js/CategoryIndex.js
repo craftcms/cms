@@ -74,9 +74,11 @@ Craft.CategoryIndex = Craft.BaseElementIndex.extend({
       if (selectedGroup) {
         const visibleLabel =
           this.settings.context === 'index'
-            ? Craft.t('app', 'New {type}', {
-                type: Craft.t('app', 'category'),
-              })
+            ? Craft.uppercaseFirst(
+                Craft.t('app', 'New {type}', {
+                  type: Craft.elementTypeNames['craft\\elements\\Category'][2],
+                })
+              )
             : Craft.t('app', 'New {group} category', {
                 group: selectedGroup.name,
               });
@@ -127,9 +129,11 @@ Craft.CategoryIndex = Craft.BaseElementIndex.extend({
       } else {
         this.$newCategoryBtn = $menuBtn = Craft.ui
           .createButton({
-            label: Craft.t('app', 'New {type}', {
-              type: Craft.t('app', 'category'),
-            }),
+            label: Craft.uppercaseFirst(
+              Craft.t('app', 'New {type}', {
+                type: Craft.elementTypeNames['craft\\elements\\Category'][2],
+              })
+            ),
             ariaLabel: Craft.t('app', 'New category, choose a category group'),
             spinner: true,
           })
@@ -210,6 +214,7 @@ Craft.CategoryIndex = Craft.BaseElementIndex.extend({
     }
 
     this.$newCategoryBtn.addClass('loading');
+    Craft.cp.announce(Craft.t('app', 'Loading'));
 
     Craft.sendActionRequest('POST', 'elements/create', {
       data: {

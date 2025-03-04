@@ -1,5 +1,19 @@
+{%- set id = id ?? "checkbox-select-#{random()}" %}
 {%- set options = options ?? [] %}
-{%- set values = values ?? [] -%}
+{%- set values = values ?? [] %}
+{%- set disabled = disabled ?? false %}
+{%- set sortable = sortable ?? false %}
+
+{% set options = options|map((value, key) => value is iterable ? value : {
+    label: value,
+    value: key,
+}) %}
+
+{% if sortable and values|length %}
+    {% set options = collect(options)
+        .sortBy(o => values|indexOf(o.value, PHP_INT_MAX))
+        .all() %}
+{% endif %}
 
 {%- set showAllOption = showAllOption ?? false %}
 {%- if showAllOption %}
@@ -9,6 +23,7 @@
 {%- endif %}
 
 {% set containerAttributes = {
+    id,
     class: ['checkbox-select']|merge((class ?? [])|explodeClass),
 }|merge(containerAttributes ?? [], recursive=true) %}
 
@@ -21,29 +36,46 @@
         <div>
             {% include "_includes/forms/checkbox" with {
                 describedBy: describedBy ?? false,
-                class: 'all',
+                class: ['checkbox-select-item', 'all'],
                 label: raw("<b>#{allLabel}</b>"),
                 name: name ?? null,
                 value: allValue,
                 checked: allChecked,
                 autofocus: (autofocus ?? false) and not craft.app.request.isMobileBrowser(true),
+                targetPrefix: targetPrefix ?? null,
+                disabled: disabled
             } only %}
         </div>
     {%- elseif name is defined and (name|length < 3 or name|slice(-2) != '[]') %}
         {{- hiddenInput(name, '') }}
     {%- endif %}
     {%- for key, option in options %}
-        {%- if option is not iterable %}
-            {%- set option = {label: option, value: key} %}
-        {%- endif %}
         {% if not showAllOption or option.value is not defined or option.value != allValue %}
-            <div>
+            <div class="checkbox-select-item">
+                {% set selected = (showAllOption and allChecked) or (option.value is defined and option.value in values) %}
+                {% if sortable and not disabled %}
+                    {{ tag('a', {
+                        class: {
+                            move: true,
+                            icon: true,
+                            'draggable-handle': true,
+                            disabled: not selected,
+                        }|filter|keys,
+                    }) }}
+                {% endif %}
                 {% include "_includes/forms/checkbox" with {
                     name: (name ?? false) ? "#{name}[]" : null,
-                    checked: ((showAllOption and allChecked) or (option.value is defined and option.value in values)),
-                    disabled: (showAllOption and allChecked)
+                    checked: selected,
+                    disabled: (showAllOption and allChecked) or disabled,
+                    targetPrefix: targetPrefix ?? null,
                 }|merge(option) only %}
             </div>
         {% endif %}
     {% endfor %}
 {% endtag %}
+
+{% if sortable and not disabled %}
+    {% js %}
+        new Craft.SortableCheckboxSelect($('#{{ id|namespaceInputId }}'));
+    {% endjs %}
+{% endif %}

@@ -66,6 +66,9 @@ class SearchHelperTest extends TestCase
             ['this accord', 'this?D’accord!'],
             ['womens', "women's"],
             ['womens', 'women’s'],
+            ['toolbox', 'tool­box'],
+            ['toolbox', 'tool‍box'],
+            ['tool box', 'tool&nbsp;box'],
         ];
     }
 }

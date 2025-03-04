@@ -13,8 +13,10 @@ use craft\base\Element;
 use craft\base\ElementContainerFieldInterface;
 use craft\base\ElementInterface;
 use craft\base\Field;
+use craft\base\FieldInterface;
 use craft\base\GqlInlineFragmentFieldInterface;
 use craft\base\GqlInlineFragmentInterface;
+use craft\base\MergeableFieldInterface;
 use craft\base\NestedElementInterface;
 use craft\behaviors\EventBehavior;
 use craft\db\Query;
@@ -38,6 +40,7 @@ use craft\gql\resolvers\elements\Entry as EntryResolver;
 use craft\gql\types\generators\EntryType as EntryTypeGenerator;
 use craft\gql\types\input\Matrix as MatrixInputType;
 use craft\helpers\ArrayHelper;
+use craft\helpers\Db;
 use craft\helpers\Gql;
 use craft\helpers\Html;
 use craft\helpers\Json;
@@ -67,6 +70,7 @@ use yii\db\Expression;
 class Matrix extends Field implements
     ElementContainerFieldInterface,
     EagerLoadingFieldInterface,
+    MergeableFieldInterface,
     GqlInlineFragmentFieldInterface
 {
     /**
@@ -159,9 +163,7 @@ class Matrix extends Field implements
                 $ids = is_string($ids) ? StringHelper::split($ids) : [$ids];
             }
 
-            $ids = array_map(function($id) {
-                return $id instanceof Entry ? $id->id : (int)$id;
-            }, $ids);
+            $ids = array_map(fn($id) => $id instanceof Entry ? $id->id : (int)$id, $ids);
 
             $existsQuery->andWhere(["entries_$ns.id" => $ids]);
         }
@@ -228,6 +230,13 @@ class Matrix extends Field implements
      * @since 5.0.0
      */
     public array $defaultTableColumns = [];
+
+    /**
+     * @var string The default view mode that should be used
+     * if the field's view mode is set to element index and has "Include Table View" turned on.
+     * @since 5.5.0
+     */
+    public string $defaultIndexViewMode = 'cards';
 
     /**
      * @var int|null The total entries to display per page within element indexes
@@ -354,7 +363,10 @@ class Matrix extends Field implements
     public function getSettings(): array
     {
         $settings = parent::getSettings();
-        $settings['entryTypes'] = array_map(fn(EntryType $entryType) => $entryType->uid, $this->_entryTypes);
+        $settings['entryTypes'] = array_map(
+            fn(EntryType $entryType) => $entryType->getUsageConfig(),
+            $this->getEntryTypes(),
+        );
         return $settings;
     }
 
@@ -443,42 +455,38 @@ class Matrix extends Field implements
      */
     public function getEntryTypesForField(array $value, ?ElementInterface $element): array
     {
-        // Let plugins/modules override which entry types should be available for this field
-        $event = new DefineEntryTypesForFieldEvent([
-            'entryTypes' => $this->getEntryTypes(),
-            'element' => $element,
-            'value' => $value,
-        ]);
-        $this->trigger(self::EVENT_DEFINE_ENTRY_TYPES, $event);
-        $entryTypes = array_values($event->entryTypes);
+        $entryTypes = $this->getEntryTypes();
+
+        // Fire a 'defineEntryTypes' event
+        if ($this->hasEventHandlers(self::EVENT_DEFINE_ENTRY_TYPES)) {
+            $event = new DefineEntryTypesForFieldEvent([
+                'entryTypes' => $entryTypes,
+                'element' => $element,
+                'value' => $value,
+            ]);
+            $this->trigger(self::EVENT_DEFINE_ENTRY_TYPES, $event);
+            $entryTypes = $event->entryTypes;
+        }
 
         if (empty($entryTypes)) {
             throw new InvalidConfigException('At least one entry type is required.');
         }
 
-        return $entryTypes;
+        return array_values($entryTypes);
     }
 
     /**
      * Sets the available entry types.
      *
-     * @param array<int|string|EntryType> $entryTypes The entry types, or their IDs or UUIDs
+     * @param array<EntryType|int|string|array{id?:int,uid?:string,name?:string,handle?:string}> $entryTypes The entry types
      */
     public function setEntryTypes(array $entryTypes): void
     {
         $entriesService = Craft::$app->getEntries();
-
-        $this->_entryTypes = array_values(array_filter(array_map(function(EntryType|string|int $entryType) use ($entriesService) {
-            if (is_numeric($entryType)) {
-                $entryType = $entriesService->getEntryTypeById($entryType);
-            } elseif (is_string($entryType)) {
-                $entryTypeUid = $entryType;
-                $entryType = $entriesService->getEntryTypeByUid($entryTypeUid);
-            } elseif (!$entryType instanceof EntryType) {
-                throw new InvalidArgumentException('Invalid entry type');
-            }
-            return $entryType;
-        }, $entryTypes)));
+        $this->_entryTypes = array_values(array_filter(array_map(
+            fn($entryType) => $entriesService->getEntryType($entryType),
+            $entryTypes,
+        )));
     }
 
     /**
@@ -553,11 +561,6 @@ class Matrix extends Field implements
             return false;
         }
 
-        // If this is a new entry, make sure we aren't hitting the Max Entries limit
-        if (!$element->id && $element->getIsCanonical() && $this->maxEntriesReached($element->getOwner())) {
-            return false;
-        }
-
         return true;
     }
 
@@ -587,8 +590,7 @@ class Matrix extends Field implements
             return false;
         }
 
-        // Make sure we aren't hitting the Min Entries limit
-        return !$this->minEntriesReached($owner);
+        return true;
     }
 
     /**
@@ -596,22 +598,7 @@ class Matrix extends Field implements
      */
     public function canDeleteElementForSite(NestedElementInterface $element, User $user): ?bool
     {
-        $owner = $element->getOwner();
-
-        if (!$owner || !Craft::$app->getElements()->canSave($owner, $user)) {
-            return false;
-        }
-
-        // Make sure we aren't hitting the Min Entries limit
-        return !$this->minEntriesReached($owner);
-    }
-
-    private function minEntriesReached(ElementInterface $owner): bool
-    {
-        return (
-            $this->minEntries &&
-            $this->minEntries >= $this->totalEntries($owner)
-        );
+        return false;
     }
 
     private function maxEntriesReached(ElementInterface $owner): bool
@@ -629,11 +616,9 @@ class Matrix extends Field implements
 
         if ($value instanceof EntryQuery) {
             return (clone $value)
-                ->drafts(null)
                 ->status(null)
-                ->site('*')
+                ->siteId($owner->siteId)
                 ->limit(null)
-                ->unique()
                 ->count();
         }
 
@@ -645,10 +630,28 @@ class Matrix extends Field implements
      */
     public function getSettingsHtml(): ?string
     {
+        return $this->settingsHtml(false);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getReadOnlySettingsHtml(): ?string
+    {
+        return $this->settingsHtml(true);
+    }
+
+    private function settingsHtml(bool $readOnly): string
+    {
         return Craft::$app->getView()->renderTemplate('_components/fieldtypes/Matrix/settings.twig', [
             'field' => $this,
             'defaultTableColumnOptions' => static::defaultTableColumnOptions($this->getEntryTypes()),
             'defaultCreateButtonLabel' => $this->defaultCreateButtonLabel(),
+            'indexViewModes' => array_filter(
+                Entry::indexViewModes(),
+                fn(array $viewMode) => !($viewMode['structuresOnly'] ?? false),
+            ),
+            'readOnly' => $readOnly,
         ]);
     }
 
@@ -680,8 +683,14 @@ class Matrix extends Field implements
         // error or we're loading an entry revision.
         if ($value === '') {
             $query->setCachedResult([]);
+        } elseif ($value === '*') {
+            // preload the nested entries so NestedElementManager::saveNestedElements() doesn't resave them all
+            $query->drafts(null)->savedDraftsOnly()->status(null)->limit(null);
+            $query->setCachedResult($query->all());
         } elseif ($element && is_array($value)) {
             $query->setCachedResult($this->_createEntriesFromSerializedData($value, $element, $fromRequest));
+        } elseif (Craft::$app->getRequest()->getIsPreview()) {
+            $query->withProvisionalDrafts();
         }
 
         return $query;
@@ -738,7 +747,7 @@ class Matrix extends Field implements
 
         foreach ($value->all() as $entry) {
             /** @var Entry $entry */
-            $entryId = $entry->id ?? 'new' . ++$new;
+            $entryId = $entry->id ?? sprintf('new%s', ++$new);
             $serialized[$entryId] = [
                 'title' => $entry->title,
                 'slug' => $entry->slug,
@@ -746,6 +755,31 @@ class Matrix extends Field implements
                 'enabled' => $entry->enabled,
                 'collapsed' => $entry->collapsed,
                 'fields' => $entry->getSerializedFieldValues(),
+            ];
+        }
+
+        return $serialized;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function serializeValueForDb(mixed $value, ElementInterface $element): mixed
+    {
+        /** @var EntryQuery|ElementCollection $value */
+        $serialized = [];
+        $new = 0;
+
+        foreach ($value->all() as $entry) {
+            /** @var Entry $entry */
+            $entryId = $entry->id ?? sprintf('new%s', ++$new);
+            $serialized[$entryId] = [
+                'title' => $entry->title,
+                'slug' => $entry->slug,
+                'type' => $entry->getType()->handle,
+                'enabled' => $entry->enabled,
+                'collapsed' => $entry->collapsed,
+                'fields' => $entry->getSerializedFieldValuesForDb(),
             ];
         }
 
@@ -811,7 +845,13 @@ class Matrix extends Field implements
         }
 
         if ($value instanceof EntryQuery) {
-            $value = $value->getCachedResult() ?? $value->limit(null)->status(null)->all();
+            $value = $value->getCachedResult() ?? (clone $value)
+                ->drafts(null)
+                ->canonicalsOnly()
+                ->status(null)
+                ->limit(null)
+                ->eagerly()
+                ->all();
         }
 
         $view = Craft::$app->getView();
@@ -865,10 +905,26 @@ class Matrix extends Field implements
             // and so not passed to PHP for save
             $view->setInitialDeltaValue($this->handle, null);
 
+            $js .= "\n" . <<<JS
+input.on('afterInit', async () => {
+  input.elementEditor?.pause();
+JS . "\n";
+
             $entryTypeJs = Json::encode($entryTypes[0]->handle);
             for ($i = count($value); $i < $this->minEntries; $i++) {
-                $js .= "\ninput.addEntry($entryTypeJs, null, false);";
+                $js .= <<<JS
+  await input.addEntry($entryTypeJs, null, false);
+JS . "\n";
             }
+
+            $js .= <<<JS
+  setTimeout(() => {
+    Garnish.requestAnimationFrame(() => {
+      input.elementEditor?.resume();
+    });
+  }, 100);
+});
+JS;
         }
 
         $view->registerJs("(() => {\n$js\n})();");
@@ -891,6 +947,7 @@ class Matrix extends Field implements
         $entryTypes = $this->getEntryTypes();
         $config = [
             'showInGrid' => $this->showCardsInGrid,
+            'prevalidate' => false,
         ];
 
         if (!$static) {
@@ -910,6 +967,10 @@ class Matrix extends Field implements
                 'minElements' => $this->minEntries,
                 'maxElements' => $this->maxEntries,
             ];
+
+            if ($owner->hasErrors($this->handle)) {
+                $config['prevalidate'] = true;
+            }
         }
 
         if ($this->viewMode === self::VIEW_MODE_CARDS) {
@@ -927,6 +988,7 @@ class Matrix extends Field implements
             )),
             'pageSize' => $this->pageSize ?? 50,
             'storageKey' => sprintf('field:%s', $this->uid),
+            'defaultViewMode' => $this->defaultIndexViewMode,
         ];
 
         if (!$static) {
@@ -981,12 +1043,18 @@ class Matrix extends Field implements
     {
         /** @var EntryQuery|ElementCollection $value */
         $value = $element->getFieldValue($this->handle);
+        $new = 0;
 
         if ($value instanceof EntryQuery) {
             /** @var Entry[] $entries */
-            $entries = $value->getCachedResult() ?? (clone $value)->status(null)->limit(null)->all();
+            $entries = $value->getCachedResult() ?? (clone $value)
+                ->drafts(null)
+                ->savedDraftsOnly()
+                ->status(null)
+                ->limit(null)
+                ->all();
 
-            $allEntriesValidate = true;
+            $invalidEntryIds = [];
             $scenario = $element->getScenario();
 
             foreach ($entries as $entry) {
@@ -1001,14 +1069,28 @@ class Matrix extends Field implements
                 }
 
                 if (!$entry->validate()) {
-                    $element->addModelErrors($entry, "$this->handle[$entry->uid]");
-                    $allEntriesValidate = false;
+                    // we only want to show the nested entries errors when the matrix field is in blocks view mode;
+                    if ($this->viewMode === self::VIEW_MODE_BLOCKS) {
+                        $key = $entry->uid ?? sprintf('new%s', ++$new);
+                        $element->addModelErrors($entry, sprintf('%s[%s]', $this->handle, $key));
+                    }
+                    $invalidEntryIds[] = $entry->id;
                 }
             }
 
-            if (!$allEntriesValidate) {
+            if (!empty($invalidEntryIds)) {
                 // Just in case the entries weren't already cached
                 $value->setCachedResult($entries);
+                $element->addInvalidNestedElementIds($invalidEntryIds);
+
+                if ($this->viewMode !== self::VIEW_MODE_BLOCKS) {
+                    // in card/index modes, we want to show a top level error to let users know
+                    // that there are validation errors in the nested entries
+                    $element->addError($this->handle, Craft::t('app', 'Validation errors found in {count, plural, =1{one nested entry} other{{count, spellout} nested entries}} within the *{fieldName}* field; please fix them.', [
+                        'count' => count($invalidEntryIds),
+                        'fieldName' => $this->getUiLabel(),
+                    ]));
+                }
             }
         } else {
             $entries = $value->all();
@@ -1128,6 +1210,36 @@ JS;
 
     /**
      * @inheritdoc
+     */
+    public function canMergeFrom(FieldInterface $outgoingField, ?string &$reason): bool
+    {
+        if (!$outgoingField instanceof self) {
+            $reason = 'Matrix fields can only be merged into other Matrix fields.';
+            return false;
+        }
+
+        // Make sure this field has all the entry types the outgoing field has
+        $outgoingEntryTypeIds = array_map(fn(EntryType $entryType) => $entryType->id, $outgoingField->getEntryTypes());
+        $persistentEntryTypeIds = array_map(fn(EntryType $entryType) => $entryType->id, $this->getEntryTypes());
+        $missingEntryTypeIds = array_diff($outgoingEntryTypeIds, $persistentEntryTypeIds);
+        if (!empty($missingEntryTypeIds)) {
+            $reason = "$this->name doesn’t have all of the entry types that $outgoingField->name does.";
+            return false;
+        }
+        return true;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function afterMergeFrom(FieldInterface $outgoingField)
+    {
+        Db::update(DbTable::ENTRIES, ['fieldId' => $this->id], ['fieldId' => $outgoingField->id]);
+        parent::afterMergeFrom($outgoingField);
+    }
+
+    /**
+     * @inheritdoc
      * @since 3.3.0
      */
     public function getContentGqlType(): Type|array
@@ -1135,10 +1247,17 @@ JS;
         $typeArray = EntryTypeGenerator::generateTypes($this);
         $typeName = $this->handle . '_MatrixField';
 
+        $arguments = EntryArguments::getArguments();
+        $gqlService = Craft::$app->getGql();
+
+        foreach ($this->getEntryTypes() as $entryType) {
+            $arguments += $gqlService->getFieldLayoutArguments($entryType->getFieldLayout());
+        }
+
         return [
             'name' => $this->handle,
             'type' => Type::nonNull(Type::listOf(Gql::getUnionType($typeName, $typeArray))),
-            'args' => EntryArguments::getArguments(),
+            'args' => $arguments,
             'resolve' => EntryResolver::class . '::resolve',
             'complexity' => Gql::eagerLoadComplexity(),
         ];
@@ -1438,7 +1557,18 @@ JS;
                 $forceSave = !empty($entryData);
 
                 // Is this a derivative element, and does the entry primarily belong to the canonical?
-                if ($forceSave && $element->getIsDerivative() && $entry->getPrimaryOwnerId() === $element->getCanonicalId()) {
+                $request = Craft::$app->getRequest();
+                if (
+                    $forceSave &&
+                    $element->getIsDerivative() &&
+                    $entry->getPrimaryOwnerId() === $element->getCanonicalId() &&
+                    // this is so that extra drafts don't get created for matrix in matrix scenario
+                    // where both are set to inline-editable blocks view mode
+                    (
+                        $request->getIsConsoleRequest() ||
+                        $request->getActionSegments() !== ['elements', 'update-field-layout']
+                    )
+                ) {
                     // Duplicate it as a draft. (We'll drop its draft status from NestedElementManager::saveNestedElements().)
                     $entry = Craft::$app->getDrafts()->createDraft($entry, Craft::$app->getUser()->getId(), null, null, [
                         'canonicalId' => $entry->id,

@@ -8,7 +8,9 @@
 namespace craft\models;
 
 use Craft;
+use craft\base\Chippable;
 use craft\base\CpEditable;
+use craft\base\Iconic;
 use craft\base\Model;
 use craft\db\Query;
 use craft\db\Table;
@@ -32,7 +34,7 @@ use craft\validators\UniqueValidator;
  * @property EntryType[] $entryTypes Entry types
  * @property bool $hasMultiSiteEntries Whether entries in this section support multiple sites
  */
-class Section extends Model implements CpEditable
+class Section extends Model implements Chippable, CpEditable, Iconic
 {
     public const TYPE_SINGLE = 'single';
     public const TYPE_CHANNEL = 'channel';
@@ -49,6 +51,15 @@ class Section extends Model implements CpEditable
     public const DEFAULT_PLACEMENT_BEGINNING = 'beginning';
     /** @since 3.7.0 */
     public const DEFAULT_PLACEMENT_END = 'end';
+
+    /**
+     * @inheritdoc
+     */
+    public static function get(int|string $id): ?static
+    {
+        /** @phpstan-ignore-next-line */
+        return Craft::$app->getEntries()->getSectionById($id);
+    }
 
     /**
      * @var int|null ID
@@ -71,7 +82,7 @@ class Section extends Model implements CpEditable
     public ?string $handle = null;
 
     /**
-     * @var string|null Type
+     * @var self::TYPE_*|null Type
      */
     public ?string $type = null;
 
@@ -99,7 +110,7 @@ class Section extends Model implements CpEditable
      *  - [[PropagationMethod::None]] – Only save entries in the site they were created in
      *  - [[PropagationMethod::SiteGroup]] – Save  entries to other sites in the same site group
      *  - [[PropagationMethod::Language]] – Save entries to other sites with the same language
-     *  - [[PropagationMethod::Custom]] – Save entries to other sites based on a custom [[$propagationKeyFormat|propagation key format]]
+     *  - [[PropagationMethod::Custom]] – Let each entry choose which sites it should be saved to
      *  - [[PropagationMethod::All]] – Save entries to all sites supported by the owner element
      *
      * @since 3.2.0
@@ -155,6 +166,22 @@ class Section extends Model implements CpEditable
     /**
      * @inheritdoc
      */
+    public function getUiLabel(): string
+    {
+        return Craft::t('site', $this->name);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getId(): ?int
+    {
+        return $this->id;
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function attributeLabels(): array
     {
         return [
@@ -183,7 +210,7 @@ class Section extends Model implements CpEditable
                 self::TYPE_STRUCTURE,
             ],
         ];
-        $rules[] = [['name', 'handle'], UniqueValidator::class, 'targetClass' => SectionRecord::class];
+        $rules[] = [['handle'], UniqueValidator::class, 'targetClass' => SectionRecord::class];
         $rules[] = [['name', 'handle', 'type', 'entryTypes', 'propagationMethod', 'siteSettings'], 'required'];
         $rules[] = [['name', 'handle'], 'string', 'max' => 255];
         $rules[] = [['siteSettings'], 'validateSiteSettings'];
@@ -279,7 +306,10 @@ class Section extends Model implements CpEditable
      */
     public function setSiteSettings(array $siteSettings): void
     {
-        $this->_siteSettings = ArrayHelper::index($siteSettings, 'siteId');
+        $this->_siteSettings = ArrayHelper::index(
+            $siteSettings,
+            fn(Section_SiteSettings $siteSettings) => $siteSettings->siteId,
+        );
 
         foreach ($this->_siteSettings as $settings) {
             $settings->setSection($this);
@@ -340,7 +370,11 @@ class Section extends Model implements CpEditable
      */
     public function setEntryTypes(array $entryTypes): void
     {
-        $this->_entryTypes = $entryTypes;
+        $entriesService = Craft::$app->getEntries();
+        $this->_entryTypes = array_values(array_filter(array_map(
+            fn($entryType) => $entriesService->getEntryType($entryType),
+            $entryTypes,
+        )));
     }
 
     /**
@@ -367,6 +401,14 @@ class Section extends Model implements CpEditable
     }
 
     /**
+     * @inheritdoc
+     */
+    public function getIcon(): ?string
+    {
+        return 'newspaper';
+    }
+
+    /**
      * Returns the section’s config.
      *
      * @return array
@@ -378,7 +420,7 @@ class Section extends Model implements CpEditable
             'name' => $this->name,
             'handle' => $this->handle,
             'type' => $this->type,
-            'entryTypes' => array_map(fn(EntryType $entryType) => $entryType->uid, $this->getEntryTypes()),
+            'entryTypes' => array_map(fn(EntryType $entryType) => $entryType->getUsageConfig(), $this->getEntryTypes()),
             'enableVersioning' => $this->enableVersioning,
             'maxAuthors' => $this->maxAuthors,
             'propagationMethod' => $this->propagationMethod->value,

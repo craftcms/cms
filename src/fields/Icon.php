@@ -8,10 +8,13 @@
 namespace craft\fields;
 
 use Craft;
+use craft\base\CrossSiteCopyableFieldInterface;
 use craft\base\ElementInterface;
 use craft\base\Field;
 use craft\base\InlineEditableFieldInterface;
+use craft\base\MergeableFieldInterface;
 use craft\base\ThumbableFieldInterface;
+use craft\elements\Entry;
 use craft\helpers\Cp;
 use craft\helpers\Html;
 use yii\db\Schema;
@@ -22,7 +25,7 @@ use yii\db\Schema;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 5.0.0
  */
-class Icon extends Field implements InlineEditableFieldInterface, ThumbableFieldInterface
+class Icon extends Field implements InlineEditableFieldInterface, ThumbableFieldInterface, MergeableFieldInterface, CrossSiteCopyableFieldInterface
 {
     /**
      * @inheritdoc
@@ -57,6 +60,54 @@ class Icon extends Field implements InlineEditableFieldInterface, ThumbableField
     }
 
     /**
+     * @var bool Whether icons exclusive to Font Awesome Pro should be selectable.
+     * @since 5.3.0
+     */
+    public bool $includeProIcons = false;
+
+    /**
+     * @inheritdoc
+     */
+    public function __construct($config = [])
+    {
+        // Default includeProIcons to true for existing Icon fields
+        if (isset($config['id']) && !isset($config['includeProIcons'])) {
+            $config['includeProIcons'] = true;
+        }
+
+        parent::__construct($config);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getSettingsHtml(): ?string
+    {
+        return $this->settingsHtml(false);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getReadOnlySettingsHtml(): ?string
+    {
+        return $this->settingsHtml(true);
+    }
+
+    private function settingsHtml(bool $readOnly): string
+    {
+        return Cp::lightswitchFieldHtml([
+            'label' => Craft::t('app', 'Include Pro icons'),
+            'instructions' => Craft::t('app', 'Should icons that are exclusive to Font Awesome Pro be selectable? (<a href="{url}">View pricing</a>)', [
+                'url' => 'https://fontawesome.com/plans',
+            ]),
+            'name' => 'includeProIcons',
+            'on' => $this->includeProIcons,
+            'disabled' => $readOnly,
+        ]);
+    }
+
+    /**
      * @inheritdoc
      */
     public function normalizeValue(mixed $value, ?ElementInterface $element): mixed
@@ -74,6 +125,7 @@ class Icon extends Field implements InlineEditableFieldInterface, ThumbableField
             'describedBy' => $this->describedBy,
             'name' => $this->handle,
             'value' => $value,
+            'freeOnly' => !$this->includeProIcons,
         ]);
     }
 
@@ -94,6 +146,18 @@ class Icon extends Field implements InlineEditableFieldInterface, ThumbableField
     public function getPreviewHtml(mixed $value, ElementInterface $element): string
     {
         return $value ? Html::tag('div', Cp::iconSvg($value), ['class' => 'cp-icon']) : '';
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function previewPlaceholderHtml(mixed $value, ?ElementInterface $element): string
+    {
+        if (!$value) {
+            $value = 'info';
+        }
+
+        return $this->getPreviewHtml($value, $element ?? new Entry());
     }
 
     /**

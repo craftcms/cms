@@ -27,7 +27,7 @@ use yii\validators\Validator;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
  */
-interface FieldInterface extends SavableComponentInterface, Chippable
+interface FieldInterface extends SavableComponentInterface, Chippable, Grippable, CpEditable
 {
     /**
      * Returns the field type’s SVG icon.
@@ -35,7 +35,7 @@ interface FieldInterface extends SavableComponentInterface, Chippable
      * The returned icon can be a system icon’s name (e.g. `'whiskey-glass-ice'`),
      * the path to an SVG file, or raw SVG markup.
      *
-     * System icons can be found in `src/icons/solid/.`
+     * System icons can be found in `src/icons/solid/`.
      *
      * @return string
      * @since 5.0.0
@@ -92,7 +92,7 @@ interface FieldInterface extends SavableComponentInterface, Chippable
     public static function phpType(): string;
 
     /**
-     * Returns the DB data type(s) that this field will store within the `elements_sites.content` column.
+     * Returns the DB data type(s) that fields of this type will store within the `elements_sites.content` column.
      *
      * ```php
      * return \yii\db\Schema::TYPE_STRING;
@@ -116,6 +116,7 @@ interface FieldInterface extends SavableComponentInterface, Chippable
      * [[normalizeValue()]] and [[afterElementSave()]]/[[afterElementPropagate()]].
      *
      * @return string|string[]|null The column type(s).
+     * @since 5.0.0
      */
     public static function dbType(): array|string|null;
 
@@ -314,9 +315,9 @@ interface FieldInterface extends SavableComponentInterface, Chippable
     public function getInputHtml(mixed $value, ?ElementInterface $element): string;
 
     /**
-     * Returns a static (non-editable) version of the field’s input HTML.
+     * Returns a read-only version of the field’s input HTML.
      *
-     * This function is called to output field values when viewing element drafts.
+     * This method is called to output field values when viewing element revisions.
      *
      * @param mixed $value The field’s value
      * @param ElementInterface $element The element the field is associated with
@@ -418,9 +419,8 @@ interface FieldInterface extends SavableComponentInterface, Chippable
     public function normalizeValueFromRequest(mixed $value, ?ElementInterface $element): mixed;
 
     /**
-     * Prepares the field’s value to be stored somewhere, like the content table.
+     * Serializes the field’s value into a transportable format (either a scalar value or array of scalar values).
      *
-     * Data types that are JSON-encodable are safe (arrays, integers, strings, booleans, etc).
      * Whatever this returns should be something [[normalizeValue()]] can handle.
      *
      * @param mixed $value The raw field value
@@ -428,6 +428,19 @@ interface FieldInterface extends SavableComponentInterface, Chippable
      * @return mixed The serialized field value
      */
     public function serializeValue(mixed $value, ?ElementInterface $element): mixed;
+
+    /**
+     * Serializes the field’s value into a transportable format (either a scalar value or array of scalar values),
+     * for database storage.
+     *
+     * Whatever this returns should be something [[normalizeValue()]] can handle.
+     *
+     * @param mixed $value
+     * @param ElementInterface $element
+     * @return mixed
+     * @since 5.7.0
+     */
+    public function serializeValueForDb(mixed $value, ElementInterface $element): mixed;
 
     /**
      * Copies the field’s value from one element to another.

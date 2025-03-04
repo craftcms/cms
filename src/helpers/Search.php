@@ -66,6 +66,10 @@ class Search
             }
         }
 
+        // Get rid of invisible Unicode special characters
+        // (see https://github.com/craftcms/cms/issues/16430)
+        $str = preg_replace(StringHelper::invisibleCharsRegex(), '', $str);
+
         // Strip out new lines and superfluous spaces
         return trim(preg_replace(['/[\n\r]+/u', '/\s{2,}/u'], ' ', $str));
     }

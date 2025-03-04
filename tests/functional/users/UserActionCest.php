@@ -32,12 +32,12 @@ class UserActionCest
     /**
      * @var User|null
      */
-    public ?User $activeUser;
+    public ?User $activeUser = null;
 
     /**
      * @var User|null
      */
-    public ?User $currentUser;
+    public ?User $currentUser = null;
 
     /**
      * @param FunctionalTester $I

@@ -7,6 +7,7 @@
 
 namespace craft\fieldlayoutelements\addresses;
 
+use CommerceGuys\Addressing\Country\Country;
 use Craft;
 use craft\base\ElementInterface;
 use craft\elements\Address;
@@ -92,7 +93,7 @@ class CountryCodeField extends BaseNativeField
     protected function inputHtml(?ElementInterface $element = null, bool $static = false): ?string
     {
         if (!$element instanceof Address) {
-            throw new InvalidArgumentException(sprintf('%s can only be used in address field layouts.', __CLASS__));
+            throw new InvalidArgumentException(sprintf('%s can only be used in address field layouts.', self::class));
         }
 
         return
@@ -102,14 +103,32 @@ class CountryCodeField extends BaseNativeField
             Cp::selectizeHtml([
                 'id' => 'countryCode',
                 'name' => 'countryCode',
-                'options' => Craft::$app->getAddresses()->getCountryRepository()->getList(Craft::$app->language),
+                'options' => Craft::$app->getAddresses()->getCountryList(Craft::$app->language),
                 'value' => $element->countryCode,
                 'autocomplete' => $element->getBelongsToCurrentUser() ? 'country' : 'off',
+                'disabled' => $static,
             ]) .
             Html::tag('div', '', [
                 'id' => 'countryCode-spinner',
                 'class' => ['spinner', 'hidden'],
             ]) .
             Html::endTag('div');
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function previewPlaceholderHtml(mixed $value, ?ElementInterface $element): string
+    {
+        if (!$value) {
+            $countries = Craft::$app->getAddresses()->getCountryRepository()->getList(Craft::$app->language);
+            $value = $countries['US'];
+        } else {
+            if ($value instanceof Country) {
+                $value = $value->getName();
+            }
+        }
+
+        return $value;
     }
 }

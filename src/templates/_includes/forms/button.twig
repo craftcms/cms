@@ -3,6 +3,7 @@
 {% set failureMessage = failureMessage ?? false %}
 {% set retryMessage = retryMessage ?? false %}
 {% set successMessage = successMessage ?? false %}
+{% set enableLiveRegion = busyMessage or failureMessage or retryMessage or successMessage %}
 {% set label = label ?? null %}
 {% set labelHtml = labelHtml ?? null %}
 {% set attributes = {
@@ -10,8 +11,8 @@
     id: id ?? false,
     class: (class ?? [])|explodeClass|merge([
         'btn',
-        'btngroup-btn-first',
         not (label or labelHtml) ? 'btn-empty' : null,
+        (disabled ?? false) ? 'disabled',
     ]|filter),
     data: {
         'busy-message': busyMessage,
@@ -22,7 +23,7 @@
 }|merge(attributes ?? {}) -%}
 
 {% apply spaceless %}
-    {% if spinner %}
+    {% if spinner and enableLiveRegion %}
         <div role="status" class="visually-hidden"></div>
     {% endif %}
     {% tag 'button' with attributes %}

@@ -8,22 +8,24 @@
 
   .money-currency-label {
     @include input-styles;
-    @include border-right(none);
-    @include border-top-right-radius(0);
-    @include border-bottom-right-radius(0);
+    border-inline-end: none;
+    border-start-end-radius: 0;
+    border-end-end-radius: 0;
     align-items: center;
     box-sizing: border-box;
     background: transparent;
     display: flex;
     height: 100%;
-    padding: 6px 9px;
+    padding-block: 6px;
+    padding-inline: 9px;
     white-space: nowrap;
 
     & + .text {
-      @include border-top-left-radius(0);
-      @include border-bottom-left-radius(0);
+      border-start-start-radius: 0;
+      border-end-start-radius: 0;
     }
   }
+
   .money-placeholder {
     color: var(--light-sel-color);
   }

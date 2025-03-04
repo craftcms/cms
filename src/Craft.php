@@ -9,6 +9,7 @@ use craft\base\FieldInterface;
 use craft\behaviors\CustomFieldBehavior;
 use craft\helpers\App;
 use craft\helpers\ArrayHelper;
+use craft\helpers\DateTimeHelper;
 use craft\helpers\FileHelper;
 use craft\helpers\StringHelper;
 use craft\models\FieldLayout;
@@ -56,7 +57,7 @@ class Craft extends Yii
     /**
      * @inheritdoc
      * @template T
-     * @param string|array|callable $type
+     * @param class-string<T>|array|callable $type
      * @phpstan-param class-string<T>|array{class:class-string<T>}|callable():T $type
      * @param array $params
      * @return T
@@ -175,7 +176,7 @@ class Craft extends Yii
             $generalConfig = static::$app->getConfig()->getGeneral();
 
             if ($generalConfig->useSecureCookies === 'auto') {
-                $request = $request ?? static::$app->getRequest();
+                $request ??= static::$app->getRequest();
 
                 if (!$request->getIsConsoleRequest()) {
                     $generalConfig->useSecureCookies = $request->getIsSecureConnection();
@@ -196,8 +197,7 @@ class Craft extends Yii
     /**
      * Class autoloader.
      *
-     * @param string $className
-     * @phpstan-param class-string $className
+     * @param class-string $className
      */
     public static function autoload($className): void
     {
@@ -293,7 +293,7 @@ class Craft extends Yii
 
         foreach ($fieldHandles as $handle => $types) {
             $methods[] = <<<EOD
- * @method static $handle(mixed \$value) Sets the [[$handle]] property
+ * @method \$this $handle(mixed \$value) Sets the [[$handle]] property
 EOD;
 
             $handles[] = <<<EOD
@@ -340,7 +340,7 @@ EOD;
 
             // Delete any CustomFieldBehavior files that are over 10 seconds old
             $basename = basename($filePath);
-            $time = time() - 10;
+            $time = DateTimeHelper::currentTimeStamp() - 10;
             FileHelper::clearDirectory($dir, [
                 'filter' => function(string $path) use ($basename, $time): bool {
                     $b = basename($path);
@@ -404,7 +404,7 @@ EOD;
             $guzzleConfig['proxy'] = $generalConfig->httpProxy;
         }
 
-        return new Client($guzzleConfig);
+        return Craft::createObject(Client::class, [$guzzleConfig]);
     }
 }
 

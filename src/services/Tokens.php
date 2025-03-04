@@ -96,7 +96,7 @@ class Tokens extends Component
     }
 
     /**
-     * Creates a new token for previewing content, using the <config4:previewTokenDuration> to determine the duration, if set.
+     * Creates a new token for previewing content, using the <config5:previewTokenDuration> to determine the duration, if set.
      *
      * @param mixed $route Where matching requests should be routed to.
      * @param int|null $usageLimit The maximum number of times this token can be

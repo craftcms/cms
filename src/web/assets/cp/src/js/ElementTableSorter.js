@@ -79,12 +79,19 @@ Craft.ElementTableSorter = Garnish.DragSort.extend(
       // Are we dragging the last elements on the page?
       this.draggingLastElements = !$nextRow.length;
 
+      if (
+        this.tableView.elementIndex.paginated &&
+        this.settings.structureId == null
+      ) {
+        return $draggee;
+      }
+
       // Do we have a maxLevels to enforce,
       // and does it look like this draggee has descendants we don't know about yet?
       if (
         this.settings.maxLevels &&
-        this.draggingLastElements &&
-        this.tableView.getMorePending()
+        ($draggee.has('> th button.toggle[aria-expanded=false]').length ||
+          (this.draggingLastElements && this.tableView.getMorePending()))
       ) {
         // Only way to know the true descendant level delta is to ask PHP
         this._loadingDraggeeLevelDelta = true;
@@ -98,6 +105,7 @@ Craft.ElementTableSorter = Garnish.DragSort.extend(
 
           if (this.dragging) {
             this._draggeeLevelDelta = response.data.delta;
+            this._setTargetLevelBounds();
             this.drag(false);
           }
         });
@@ -159,10 +167,6 @@ Craft.ElementTableSorter = Garnish.DragSort.extend(
      * Returns whether the draggee can be inserted before a given item.
      */
     canInsertBefore: function ($item) {
-      if (this._loadingDraggeeLevelDelta) {
-        return false;
-      }
-
       return this._getLevelBounds($item.prev(), $item) !== false;
     },
 
@@ -170,10 +174,6 @@ Craft.ElementTableSorter = Garnish.DragSort.extend(
      * Returns whether the draggee can be inserted after a given item.
      */
     canInsertAfter: function ($item) {
-      if (this._loadingDraggeeLevelDelta) {
-        return false;
-      }
-
       return this._getLevelBounds($item, $item.next()) !== false;
     },
 
@@ -194,7 +194,10 @@ Craft.ElementTableSorter = Garnish.DragSort.extend(
       this._setTargetLevelBounds();
 
       // Check to see if we should load more elements now
-      this.tableView.maybeLoadMore();
+
+      if (!this.tableView.elementIndex.paginated) {
+        this.tableView.maybeLoadMore();
+      }
 
       this.base();
     },
@@ -317,8 +320,8 @@ Craft.ElementTableSorter = Garnish.DragSort.extend(
               // See if we should run any pending tasks
               Craft.cp.runQueue();
             })
-            .catch(({response}) => {
-              Craft.cp.displayError(Craft.t('app', 'A server error occurred.'));
+            .catch((e) => {
+              Craft.cp.displayError(e?.response?.data?.message);
               this.tableView.elementIndex.updateElements();
             });
         }
@@ -344,10 +347,14 @@ Craft.ElementTableSorter = Garnish.DragSort.extend(
     onReturnHelpersToDraggees: function () {
       this._$firstRowCells.css('width', '');
 
-      // If we were dragging the last elements on the page and ended up loading any additional elements in,
+      // If we were dragging the last elements on the page (and it's not a paginated view) and ended up loading any additional elements in,
       // there could be a gap between the last draggee item and whatever now comes after it.
       // So remove the post-draggee elements and possibly load up the next batch.
-      if (this.draggingLastElements && this.tableView.getMorePending()) {
+      if (
+        this.draggingLastElements &&
+        !this.tableView.elementIndex.paginated &&
+        this.tableView.getMorePending()
+      ) {
         // Update the element index's record of how many items are actually visible
         this.tableView._totalVisible +=
           this.newDraggeeIndexes[0] - this.oldDraggeeIndexes[0];
@@ -369,6 +376,10 @@ Craft.ElementTableSorter = Garnish.DragSort.extend(
      * two given rows, or false if it’s not going to work out.
      */
     _getLevelBounds: function ($prevRow, $nextRow) {
+      if (this._loadingDraggeeLevelDelta) {
+        return false;
+      }
+
       // Can't go any lower than the next row, if there is one
       if ($nextRow && $nextRow.length) {
         this._getLevelBounds._minLevel = this._level($nextRow);
@@ -651,7 +662,7 @@ Craft.ElementTableSorter = Garnish.DragSort.extend(
   },
   {
     HELPER_MARGIN: 0,
-    LEVEL_INDENT: 48,
+    LEVEL_INDENT: 44,
     MAX_GIVE: 22,
 
     defaults: {

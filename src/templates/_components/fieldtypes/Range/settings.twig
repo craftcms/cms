@@ -1,0 +1,71 @@
+{% import "_includes/forms" as forms %}
+
+{% macro numberField(config) %}
+    {% from '_includes/forms' import textField %}
+    {# Only format the value if it isn’t going to be misrepresented #}
+    {% if not craft.app.formatter.willBeMisrepresented(config.value) %}
+        {{ hiddenInput("#{config.name}[locale]", craft.app.formattingLocale.id) }}
+        {% set config = config|merge({
+            name: "#{config.name}[value]",
+            value: config.value|number,
+        }) %}
+    {% endif %}
+    {{ textField(config) }}
+{% endmacro %}
+
+{{ _self.numberField({
+    label: 'Min Value'|t('app'),
+    id: 'min',
+    name: 'min',
+    value: field.min,
+    size: 5,
+    required: true,
+    errors: field.getErrors('min'),
+    data: {'error-key': 'min'},
+    disabled: readOnly,
+}) }}
+
+{{ _self.numberField({
+    label: 'Max Value'|t('app'),
+    id: 'max',
+    name: 'max',
+    value: field.max,
+    size: 5,
+    required: true,
+    errors: field.getErrors('max'),
+    data: {'error-key': 'max'},
+    disabled: readOnly,
+}) }}
+
+{{ _self.numberField({
+    label: 'Step Size'|t('app'),
+    id: 'step',
+    name: 'step',
+    value: field.step,
+    size: 5,
+    required: true,
+    errors: field.getErrors('step'),
+    data: {'error-key': 'step'},
+    disabled: readOnly,
+}) }}
+
+{{ _self.numberField({
+    label: 'Default Value'|t('app'),
+    id: 'default-value',
+    name: 'defaultValue',
+    value: field.defaultValue,
+    size: 5,
+    errors: field.getErrors('defaultValue'),
+    data: {'error-key': 'defaultValue'},
+    disabled: readOnly,
+}) }}
+
+{{ forms.textField({
+    label: 'Suffix Text'|t('app'),
+    instructions: 'Text that should be shown after the input.'|t('app'),
+    id: 'suffix',
+    name: 'suffix',
+    value: field.suffix,
+    errors: field.getErrors('suffix'),
+    disabled: readOnly,
+}) }}

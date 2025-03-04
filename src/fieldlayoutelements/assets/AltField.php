@@ -12,6 +12,7 @@ use craft\base\ElementInterface;
 use craft\base\Field;
 use craft\elements\Asset;
 use craft\fieldlayoutelements\TextareaField;
+use craft\helpers\ArrayHelper;
 use craft\helpers\ElementHelper;
 use craft\helpers\Html;
 use yii\base\InvalidArgumentException;
@@ -89,6 +90,16 @@ class AltField extends TextareaField
     /**
      * @inheritdoc
      */
+    protected function inputTemplateVariables(?ElementInterface $element, bool $static): array
+    {
+        return ArrayHelper::merge(parent::inputTemplateVariables($element, $static), [
+            'class' => ['nicetext'],
+        ]);
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function defaultLabel(?ElementInterface $element = null, bool $static = false): ?string
     {
         return Craft::t('app', 'Alternative Text');
@@ -100,7 +111,7 @@ class AltField extends TextareaField
     protected function translatable(?ElementInterface $element = null, bool $static = false): bool
     {
         if (!$element instanceof Asset) {
-            throw new InvalidArgumentException(sprintf('%s can only be used in asset field layouts.', __CLASS__));
+            throw new InvalidArgumentException(sprintf('%s can only be used in asset field layouts.', self::class));
         }
 
         return $element->getVolume()->altTranslationMethod !== Field::TRANSLATION_METHOD_NONE;
@@ -112,9 +123,17 @@ class AltField extends TextareaField
     protected function translationDescription(?ElementInterface $element = null, bool $static = false): ?string
     {
         if (!$element instanceof Asset) {
-            throw new InvalidArgumentException(sprintf('%s can only be used in asset field layouts.', __CLASS__));
+            throw new InvalidArgumentException(sprintf('%s can only be used in asset field layouts.', self::class));
         }
 
         return ElementHelper::translationDescription($element->getVolume()->altTranslationMethod);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function isCrossSiteCopyable(ElementInterface $element): bool
+    {
+        return true;
     }
 }

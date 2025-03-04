@@ -3,7 +3,7 @@
 namespace craft\events;
 
 use craft\base\ElementInterface;
-use yii\base\Event;
+use craft\base\Event;
 
 /**
  * DefineInputOptionsEvent class.
@@ -26,5 +26,5 @@ class DefineInputOptionsEvent extends Event
     /**
      * @var ElementInterface|null The element that the field is generating an input for.
      */
-    public ?ElementInterface $element;
+    public ?ElementInterface $element = null;
 }

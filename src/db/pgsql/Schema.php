@@ -26,6 +26,17 @@ use yii\db\Exception;
 class Schema extends \yii\db\pgsql\Schema
 {
     /**
+     * @see getBackupFormat()
+     * @see setBackupFormat()
+     */
+    private ?string $backupFormat = null;
+    /**
+     * @see getRestoreFormat()
+     * @see setRestoreFormat()
+     */
+    private ?string $restoreFormat = null;
+
+    /**
      * @var int The maximum length that objects' names can be.
      */
     public int $maxObjectNameLength = 63;
@@ -64,6 +75,7 @@ class Schema extends \yii\db\pgsql\Schema
      *
      * @param string $name
      * @return string
+     * @deprecated in 5.4.0
      */
     public function quoteDatabaseName(string $name): string
     {
@@ -147,8 +159,8 @@ class Schema extends \yii\db\pgsql\Schema
             ->addArg('--file=', '{file}')
             ->addArg('--schema=', '{schema}');
 
-        $ignoreTables = $ignoreTables ?? Craft::$app->getDb()->getIgnoredBackupTables();
-        $format = Craft::$app->getConfig()->getGeneral()->backupCommandFormat;
+        $ignoreTables ??= Craft::$app->getDb()->getIgnoredBackupTables();
+        $format = $this->getBackupFormat();
         $commandFromConfig = Craft::$app->getConfig()->getGeneral()->backupCommand;
 
         foreach ($ignoreTables as $table) {
@@ -164,7 +176,7 @@ class Schema extends \yii\db\pgsql\Schema
             $command = $commandFromConfig($command);
         }
 
-        return $command->getExecCommand();
+        return $this->_pgpasswordCommand() . $command->getExecCommand();
     }
 
     /**
@@ -181,13 +193,20 @@ class Schema extends \yii\db\pgsql\Schema
             ->addArg('--username=', '{user}')
             ->addArg('--no-password');
 
-        $commandFromConfig = Craft::$app->getConfig()->getGeneral()->restoreCommand;
-
-
-        // If we're using pg_restore, we can't use STDIN, as it may be a directory
         if ($this->usePgRestore()) {
-            $command->addArg('{file}');
+            $command
+                ->addArg('--clean')
+                ->addArg('--if-exists')
+                ->addArg('--no-owner')
+                ->addArg('--no-acl')
+                ->addArg('--schema=', '{schema}')
+                ->addArg('--single-transaction')
+
+                // If we're using pg_restore, we can't use STDIN, as it may be a directory
+                ->addArg('{file}');
         }
+
+        $commandFromConfig = Craft::$app->getConfig()->getGeneral()->restoreCommand;
 
         if ($commandFromConfig instanceof \Closure) {
             $command = $commandFromConfig($command);
@@ -257,17 +276,14 @@ class Schema extends \yii\db\pgsql\Schema
     }
 
     /**
-     * Whether `pg_restore` should be used by default for the backup command.
+     * Whether `pg_restore` should be used for the restore command.
      *
      * @return bool
-     * @since 4.9.0
+     * @since 5.1.0
      */
     public function usePgRestore(): bool
     {
-        return in_array(Craft::$app->getConfig()->getGeneral()->backupCommandFormat, [
-            'custom',
-            'directory',
-        ], true);
+        return isset($this->restoreFormat) && $this->restoreFormat !== 'plain';
     }
 
     /**
@@ -375,5 +391,49 @@ ORDER BY i.relname, k';
     private function _pgpasswordCommand(): string
     {
         return App::isWindows() ? 'set PGPASSWORD="{password}" && ' : 'PGPASSWORD="{password}" ';
+    }
+
+    /**
+     * Returns the backup format that should be used (`custom`, `directory`, `tar`, or `plain`).
+     *
+     * @return string|null
+     * @since 5.2.0
+     */
+    public function getBackupFormat(): ?string
+    {
+        return $this->backupFormat ?? Craft::$app->getConfig()->getGeneral()->backupCommandFormat;
+    }
+
+    /**
+     * Sets the backup format that should be used (`custom`, `directory`, `tar`, or `plain`).
+     *
+     * @param string|null $backupFormat
+     * @since 5.2.0
+     */
+    public function setBackupFormat(?string $backupFormat): void
+    {
+        $this->backupFormat = $backupFormat;
+    }
+
+    /**
+     * Returns the restore format that should be used (`custom`, `directory`, `tar`, or `plain`).
+     *
+     * @return string|null
+     * @since 5.2.0
+     */
+    public function getRestoreFormat(): ?string
+    {
+        return $this->restoreFormat;
+    }
+
+    /**
+     * Sets the restore format that should be used (`custom`, `directory`, `tar`, or `plain`).
+     *
+     * @param string|null $restoreFormat
+     * @since 5.2.0
+     */
+    public function setRestoreFormat(?string $restoreFormat): void
+    {
+        $this->restoreFormat = $restoreFormat;
     }
 }

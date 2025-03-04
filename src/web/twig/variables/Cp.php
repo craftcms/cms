@@ -18,6 +18,8 @@ use craft\helpers\App;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Assets;
 use craft\helpers\Cp as CpHelper;
+use craft\helpers\Html;
+use craft\helpers\Inflector;
 use craft\helpers\StringHelper;
 use craft\helpers\UrlHelper;
 use craft\i18n\Locale;
@@ -35,7 +37,6 @@ use SplFileInfo;
 use yii\base\Component;
 use yii\base\InvalidArgumentException;
 use yii\base\InvalidConfigException;
-use yii\helpers\Inflector;
 
 /**
  * Control panel functions
@@ -146,6 +147,14 @@ class Cp extends Component
     public const EVENT_REGISTER_CP_SETTINGS = 'registerCpSettings';
 
     /**
+     * @event RegisterCpSettingsEvent The event that is triggered when registering links that should render on the
+     * Settings page in the control panel, when admin changes are disallowed.
+     * @see EVENT_REGISTER_CP_SETTINGS
+     * @since 5.6.0
+     */
+    public const EVENT_REGISTER_READ_ONLY_CP_SETTINGS = 'registerReadOnlyCpSettings';
+
+    /**
      * Returns the site the control panel is currently working with, via a `site` query string param if sent.
      *
      * @return Site|null The site, or `null` if the user doesn’t have permission to edit any sites.
@@ -253,7 +262,7 @@ class Cp extends Component
 
         if (
             Craft::$app->edition !== CmsEdition::Solo &&
-            Craft::$app->getUser()->checkPermission('editUsers')
+            Craft::$app->getUser()->checkPermission('viewUsers')
         ) {
             $navItems[] = [
                 'label' => Craft::t('app', 'Users'),
@@ -325,13 +334,11 @@ class Cp extends Component
         }
 
         if ($isAdmin) {
-            if ($generalConfig->allowAdminChanges) {
-                $navItems[] = [
-                    'url' => 'settings',
-                    'label' => Craft::t('app', 'Settings'),
-                    'icon' => 'gear',
-                ];
-            }
+            $navItems[] = [
+                'url' => 'settings',
+                'label' => Craft::t('app', 'Settings'),
+                'icon' => Craft::$app->getConfig()->getGeneral()->allowAdminChanges ? 'gear' : 'gear-slash',
+            ];
 
             $navItems[] = [
                 'url' => 'plugin-store',
@@ -340,12 +347,12 @@ class Cp extends Component
             ];
         }
 
-        // Allow plugins to modify the nav
-        $event = new RegisterCpNavItemsEvent([
-            'navItems' => $navItems,
-        ]);
-        $this->trigger(self::EVENT_REGISTER_CP_NAV_ITEMS, $event);
-        $navItems = $event->navItems;
+        // Fire a 'registerCpNavItems' event
+        if ($this->hasEventHandlers(self::EVENT_REGISTER_CP_NAV_ITEMS)) {
+            $event = new RegisterCpNavItemsEvent(['navItems' => $navItems]);
+            $this->trigger(self::EVENT_REGISTER_CP_NAV_ITEMS, $event);
+            $navItems = $event->navItems;
+        }
 
         // Figure out which item is selected, and normalize the items
         $path = Craft::$app->getRequest()->getPathInfo();
@@ -398,6 +405,7 @@ class Cp extends Component
      */
     public function settings(): array
     {
+        $readOnly = !Craft::$app->getConfig()->getGeneral()->allowAdminChanges;
         $settings = [];
 
         $label = Craft::t('app', 'System');
@@ -422,10 +430,12 @@ class Cp extends Component
             'iconMask' => '@app/icons/light/user-group.svg',
             'label' => Craft::t('app', 'Users'),
         ];
-        $settings[$label]['addresses'] = [
-            'iconMask' => '@app/icons/light/map-location.svg',
-            'label' => Craft::t('app', 'Addresses'),
-        ];
+        if (Craft::$app->getConfig()->getGeneral()->allowAdminChanges) {
+            $settings[$label]['addresses'] = [
+                'iconMask' => '@app/icons/light/map-location.svg',
+                'label' => Craft::t('app', 'Addresses'),
+            ];
+        }
         $settings[$label]['email'] = [
             'iconMask' => '@app/icons/light/envelope.svg',
             'label' => Craft::t('app', 'Email'),
@@ -478,7 +488,7 @@ class Cp extends Component
         $pluginsService = Craft::$app->getPlugins();
 
         foreach ($pluginsService->getAllPlugins() as $plugin) {
-            if ($plugin->hasCpSettings) {
+            if ($plugin->hasCpSettings && (!$readOnly || $plugin->hasReadOnlyCpSettings)) {
                 $settings[$label][$plugin->id] = [
                     'url' => 'settings/plugins/' . $plugin->id,
                     'icon' => $pluginsService->getPluginIconSvg($plugin->id),
@@ -487,13 +497,15 @@ class Cp extends Component
             }
         }
 
-        // Allow plugins to modify the settings
-        $event = new RegisterCpSettingsEvent([
-            'settings' => $settings,
-        ]);
-        $this->trigger(self::EVENT_REGISTER_CP_SETTINGS, $event);
+        // Fire a 'registerCpSettings' event
+        $eventName = $readOnly ? self::EVENT_REGISTER_READ_ONLY_CP_SETTINGS : self::EVENT_REGISTER_CP_SETTINGS;
+        if ($this->hasEventHandlers($eventName)) {
+            $event = new RegisterCpSettingsEvent(['settings' => $settings]);
+            $this->trigger($eventName, $event);
+            return $event->settings;
+        }
 
-        return $event->settings;
+        return $settings;
     }
 
     /**
@@ -504,7 +516,7 @@ class Cp extends Component
     public function areAlertsCached(): bool
     {
         // The license key status gets cached on each Craftnet request
-        return (Craft::$app->getCache()->get('licenseInfo') !== false);
+        return (Craft::$app->getCache()->get(App::licenseInfoCacheKey()) !== false);
     }
 
     /**
@@ -559,7 +571,7 @@ class Cp extends Component
         }
 
         $message = Craft::t('app', '{names} {total, plural, =1{is installed as a trial} other{are installed as trials}}.', [
-            'names' => Inflector::sentence($names, lastWordConnector: sprintf(',%s', Craft::t('yii', ' and '))),
+            'names' => Inflector::sentence($names),
             'total' => $issues->count(),
         ]);
 
@@ -614,6 +626,11 @@ class Cp extends Component
         if ($includeAliases) {
             $aliasSuggestions = [];
             foreach (Craft::$aliases as $alias => $path) {
+                // Don't ever suggest @web
+                if ($alias === '@web' || str_starts_with($alias, '@web/')) {
+                    continue;
+                }
+
                 if (is_array($path)) {
                     if (
                         isset($path[$alias]) &&
@@ -780,24 +797,26 @@ class Cp extends Component
     /**
      * Returns all known time zones for a time zone input.
      *
+     * @param DateTime|null $offsetDate The [[DateTime]] object that contains the date/time to compute time zone offsets from
      * @return array
      * @since 3.7.0
      */
-    public function getTimeZoneOptions(): array
+    public function getTimeZoneOptions(?DateTime $offsetDate = null): array
     {
         // Assemble the timezone options array (Technique adapted from http://stackoverflow.com/a/7022536/1688568)
         $options = [];
 
-        $utc = new DateTime();
+        $offsetDate ??= new DateTime();
+        $offsetDate->setTimezone(new DateTimeZone('UTC'));
         $offsets = [];
         $timezoneIds = [];
 
         foreach (DateTimeZone::listIdentifiers() as $timezoneId) {
             $timezone = new DateTimeZone($timezoneId);
-            $transition = $timezone->getTransitions($utc->getTimestamp(), $utc->getTimestamp());
+            $transition = $timezone->getTransitions($offsetDate->getTimestamp(), $offsetDate->getTimestamp());
             $abbr = $transition[0]['abbr'];
 
-            $offset = round($timezone->getOffset($utc) / 60);
+            $offset = round($timezone->getOffset($offsetDate) / 60);
 
             if ($offset) {
                 $hour = floor($offset / 60);
@@ -1048,11 +1067,16 @@ class Cp extends Component
      */
     public function prepFormActions(?array $formActions): ?array
     {
-        $event = new FormActionsEvent([
-            'formActions' => $formActions ?? [],
-        ]);
-        $this->trigger(self::EVENT_REGISTER_FORM_ACTIONS, $event);
-        return $event->formActions ?: null;
+        // Fire a 'registerFormActions' event
+        if ($this->hasEventHandlers(self::EVENT_REGISTER_FORM_ACTIONS)) {
+            $event = new FormActionsEvent([
+                'formActions' => $formActions ?? [],
+            ]);
+            $this->trigger(self::EVENT_REGISTER_FORM_ACTIONS, $event);
+            return $event->formActions ?: null;
+        }
+
+        return $formActions;
     }
 
     /**
@@ -1077,6 +1101,7 @@ class Cp extends Component
      * @param array $config
      * @return string
      * @since 4.0.0
+     * @deprecated in 5.5.0. The `fieldLayoutDesigner()` global CP function should be used instead.
      */
     public function fieldLayoutDesigner(FieldLayout $fieldLayout, array $config = []): string
     {

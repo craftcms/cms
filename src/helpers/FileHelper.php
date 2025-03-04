@@ -54,7 +54,7 @@ class FileHelper extends \yii\helpers\FileHelper
     public static function normalizePath($path, $ds = DIRECTORY_SEPARATOR): string
     {
         // Remove any file protocol wrappers
-        $path = StringHelper::removeLeft($path, 'file://');
+        $path = preg_replace('/^(file:\\/\\/)*/i', '', $path);
 
         // Is this a UNC network share path?
         $isUnc = (str_starts_with($path, '//') || str_starts_with($path, '\\\\'));
@@ -133,7 +133,7 @@ class FileHelper extends \yii\helpers\FileHelper
             $from = static::absolutePath($from, ds: $ds);
         }
 
-        return $from . $ds . $to;
+        return static::normalizePath($from . $ds . $to, $ds);
     }
 
     /**
@@ -254,13 +254,9 @@ class FileHelper extends \yii\helpers\FileHelper
         // Replace any control characters in the name with a space.
         $filename = preg_replace("/\\x{00a0}/iu", ' ', $filename);
 
+        // Remove invisible chars from the filename
         // https://github.com/craftcms/cms/issues/12741
-        // Remove soft hyphens (00ad), no break (0083),
-        // zero width space (200b), zero width non-joiner (200c), zero width joiner (200d),
-        // LTR character (200e), RTL character (200f),
-        // invisible times (2062), invisible comma (2063), invisible plus (2064),
-        // zero width non-break space (feff) in the filename
-        $filename = preg_replace('/\\x{00ad}|\\x{0083}|\\x{200b}|\\x{200c}|\\x{200d}|\\x{200e}|\\x{200f}|\\x{2062}|\\x{2063}|\\x{2064}|\\x{feff}/iu', '', $filename);
+        $filename = preg_replace(StringHelper::invisibleCharsRegex(), '', $filename);
 
         // Strip any characters not allowed.
         $filename = str_replace($disallowedChars, '', strip_tags($filename));

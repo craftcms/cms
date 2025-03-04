@@ -48,9 +48,8 @@ use yii\di\Instance;
 class Paginator extends BaseObject
 {
     /**
-     * @var YiiConnection|array|string|null The DB connection to be used with the query.
+     * @var YiiConnection|array|class-string<YiiConnection>|null The DB connection to be used with the query.
      * If null, the query will choose the connection to use.
-     * @phpstan-var YiiConnection|array{class:class-string<YiiConnection>}|class-string<YiiConnection>|null
      */
     public YiiConnection|array|string|null $db = null;
 

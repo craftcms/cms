@@ -8,6 +8,7 @@
 namespace craft\web\twig\nodes;
 
 use Craft;
+use craft\helpers\DateTimeHelper;
 use craft\helpers\StringHelper;
 use Twig\Compiler;
 use Twig\Node\Node;
@@ -37,7 +38,7 @@ class CacheNode extends Node
         $key = $this->hasNode('key') ? $this->getNode('key') : null;
         $expiration = $this->hasNode('expiration') ? $this->getNode('expiration') : null;
 
-        $durationNum = $this->getAttribute('durationNum');
+        $durationNum = $this->hasNode('durationNum') ? $this->getNode('durationNum') : null;
         $durationUnit = $this->getAttribute('durationUnit');
         $global = $this->getAttribute('global') ? 'true' : 'false';
 
@@ -95,18 +96,10 @@ class CacheNode extends Node
             ->write("\$cacheService->endTemplateCache(\$cacheKey$n, $global, ");
 
         if ($durationNum) {
-            // So silly that PHP doesn't support "+1 week" http://www.php.net/manual/en/datetime.formats.relative.php
-
-            if ($durationUnit === 'week') {
-                if ($durationNum == 1) {
-                    $durationNum = 7;
-                    $durationUnit = 'days';
-                } else {
-                    $durationUnit = 'weeks';
-                }
-            }
-
-            $compiler->raw("'+$durationNum $durationUnit'");
+            $compiler
+                ->raw(sprintf('%s::relativeTimeStatement(', DateTimeHelper::class))
+                ->subcompile($durationNum)
+                ->raw(", '$durationUnit')");
         } else {
             $compiler->raw('null');
         }

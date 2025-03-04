@@ -8,10 +8,13 @@
 namespace craft\fields;
 
 use Craft;
+use craft\base\CrossSiteCopyableFieldInterface;
 use craft\base\ElementInterface;
 use craft\base\Field;
 use craft\base\InlineEditableFieldInterface;
+use craft\base\MergeableFieldInterface;
 use craft\base\SortableFieldInterface;
+use craft\elements\Entry;
 use craft\fields\conditions\TextFieldConditionRule;
 use craft\helpers\StringHelper;
 
@@ -21,7 +24,7 @@ use craft\helpers\StringHelper;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
  */
-class PlainText extends Field implements InlineEditableFieldInterface, SortableFieldInterface
+class PlainText extends Field implements InlineEditableFieldInterface, SortableFieldInterface, MergeableFieldInterface, CrossSiteCopyableFieldInterface
 {
     /**
      * @inheritdoc
@@ -137,10 +140,23 @@ class PlainText extends Field implements InlineEditableFieldInterface, SortableF
      */
     public function getSettingsHtml(): ?string
     {
-        return Craft::$app->getView()->renderTemplate('_components/fieldtypes/PlainText/settings.twig',
-            [
-                'field' => $this,
-            ]);
+        return $this->settingsHtml(false);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getReadOnlySettingsHtml(): ?string
+    {
+        return $this->settingsHtml(true);
+    }
+
+    private function settingsHtml(bool $readOnly): string
+    {
+        return Craft::$app->getView()->renderTemplate('_components/fieldtypes/PlainText/settings.twig', [
+            'field' => $this,
+            'readOnly' => $readOnly,
+        ]);
     }
 
     /**
@@ -177,12 +193,23 @@ class PlainText extends Field implements InlineEditableFieldInterface, SortableF
      */
     protected function inputHtml(mixed $value, ?ElementInterface $element, bool $inline): string
     {
+        return $this->_inputHtml($value, $element, false);
+    }
+
+    public function getStaticHtml(mixed $value, ElementInterface $element): string
+    {
+        return $this->_inputHtml($value, $element, true);
+    }
+
+    private function _inputHtml(mixed $value, ?ElementInterface $element, bool $static): string
+    {
         return Craft::$app->getView()->renderTemplate('_components/fieldtypes/PlainText/input.twig', [
             'name' => $this->handle,
             'value' => $value,
             'field' => $this,
             'placeholder' => $this->placeholder !== null ? Craft::t('site', StringHelper::unescapeShortcodes($this->placeholder)) : null,
             'orientation' => $this->getOrientation($element),
+            'disabled' => $static,
         ]);
     }
 
@@ -217,5 +244,17 @@ class PlainText extends Field implements InlineEditableFieldInterface, SortableF
     public function getElementConditionRuleType(): ?string
     {
         return TextFieldConditionRule::class;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function previewPlaceholderHtml(mixed $value, ?ElementInterface $element): string
+    {
+        if (!$value) {
+            $value = 'Lorem ipsum dolor sit amet, consectetur adipiscing elit.';
+        }
+
+        return $this->getPreviewHtml($value, $element ?? new Entry());
     }
 }

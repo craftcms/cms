@@ -31,7 +31,7 @@ class FullNameField extends BaseFullNameField
     protected function inputAttributes(?ElementInterface $element = null, bool $static = false): array
     {
         if (!$element instanceof User) {
-            throw new InvalidArgumentException(sprintf('%s can only be used in user field layouts.', __CLASS__));
+            throw new InvalidArgumentException(sprintf('%s can only be used in user field layouts.', self::class));
         }
 
         return [

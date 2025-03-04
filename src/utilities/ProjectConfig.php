@@ -50,7 +50,7 @@ class ProjectConfig extends Utility
     public static function contentHtml(): string
     {
         $projectConfig = Craft::$app->getProjectConfig();
-        $areChangesPending = $projectConfig->areChangesPending();
+        $areChangesPending = $projectConfig->areChangesPending(force: true);
         $view = Craft::$app->getView();
 
         if ($areChangesPending) {

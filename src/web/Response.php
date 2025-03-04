@@ -9,6 +9,8 @@ namespace craft\web;
 
 use Craft;
 use craft\helpers\ArrayHelper;
+use craft\helpers\DateTimeHelper;
+use craft\helpers\Session;
 use craft\helpers\UrlHelper;
 use Throwable;
 use yii\base\Application as BaseApplication;
@@ -121,7 +123,8 @@ class Response extends \yii\web\Response
             return $this;
         }
 
-        $this->setHeader('Expires', sprintf('%s GMT', gmdate('D, d M Y H:i:s', time() + $duration)), $overwrite);
+        $expires = DateTimeHelper::currentTimeStamp() + $duration;
+        $this->setHeader('Expires', sprintf('%s GMT', gmdate('D, d M Y H:i:s', $expires)), $overwrite);
         $this->setHeader('Pragma', 'cache', $overwrite);
         $this->setHeader('Cache-Control', "public, max-age=$duration", $overwrite);
         return $this;
@@ -215,7 +218,7 @@ class Response extends \yii\web\Response
     public function redirect($url, $statusCode = 302, $checkAjax = true): self
     {
         if (is_string($url)) {
-            $url = UrlHelper::url($url);
+            $url = UrlHelper::encodeUrl(UrlHelper::url($url));
         }
 
         if ($this->format === TemplateResponseFormatter::FORMAT) {
@@ -226,6 +229,7 @@ class Response extends \yii\web\Response
 
         if (Craft::$app->state === BaseApplication::STATE_SENDING_RESPONSE) {
             $this->send();
+            Craft::$app->end();
         }
 
         return $this;
@@ -304,7 +308,7 @@ class Response extends \yii\web\Response
         $this->send();
 
         // Close the session.
-        Craft::$app->getSession()->close();
+        Session::close();
 
         // In case we're running on php-fpm (https://secure.php.net/manual/en/book.fpm.php)
         if (function_exists('fastcgi_finish_request')) {

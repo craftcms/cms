@@ -17,6 +17,7 @@ use craft\helpers\Session as SessionHelper;
 use craft\helpers\StringHelper;
 use craft\models\Site;
 use craft\services\Sites;
+use yii\base\InvalidArgumentException;
 use yii\base\InvalidConfigException;
 use yii\db\Exception as DbException;
 use yii\di\Instance;
@@ -263,7 +264,7 @@ class Request extends \yii\web\Request
                     }
                     $testBaseCpUrls[] = $this->getBaseUrl() . "/{$this->generalConfig->cpTrigger}";
                 }
-                $siteScore = $siteScore ?? (isset($site) ? $this->_scoreSite($site) : 0);
+                $siteScore ??= isset($site) ? $this->_scoreSite($site) : 0;
                 foreach ($testBaseCpUrls as $testUrl) {
                     $cpScore = $this->_scoreUrl($testUrl);
                     if ($cpScore > $siteScore) {
@@ -411,8 +412,8 @@ class Request extends \yii\web\Request
      * Returns the segments of the requested path.
      *
      * ::: tip
-     * Note that the segments will not include the [control panel trigger](config4:cpTrigger)
-     * if it’s a control panel request, or the [page trigger](config4:pageTrigger)
+     * Note that the segments will not include the [control panel trigger](config5:cpTrigger)
+     * if it’s a control panel request, or the [page trigger](config5:pageTrigger)
      * or page number if it’s a paginated request.
      * :::
      *
@@ -429,11 +430,7 @@ class Request extends \yii\web\Request
      */
     public function getSegments(): array
     {
-        if (isset($this->_segments)) {
-            return $this->_segments;
-        }
-
-        return $this->_segments = $this->_segments($this->_path);
+        return $this->_segments ?? ($this->_segments = $this->_segments($this->_path));
     }
 
     /**
@@ -505,7 +502,7 @@ class Request extends \yii\web\Request
     /**
      * Returns the token submitted with the request, if there is one.
      *
-     * Tokens must be sent either as a query string param named after the <config4:tokenParam> config setting (`token` by
+     * Tokens must be sent either as a query string param named after the <config5:tokenParam> config setting (`token` by
      * default), or an `X-Craft-Token` HTTP header on the request.
      *
      * @return string|null The token, or `null` if there isn’t one.
@@ -522,7 +519,7 @@ class Request extends \yii\web\Request
     /**
      * Sets the token value.
      *
-     * @param ?string $token
+     * @param string|null $token
      * @since 3.6.0
      */
     public function setToken(?string $token): void
@@ -561,7 +558,7 @@ class Request extends \yii\web\Request
     /**
      * Returns the site token submitted with the request, if there is one.
      *
-     * Tokens must be sent either as a query string param named after the <config4:siteToken> config setting
+     * Tokens must be sent either as a query string param named after the <config5:siteToken> config setting
      * (`siteToken` by default), or an `X-Craft-Site-Token` HTTP header on the request.
      *
      * @return string|null The token, or `null` if there isn’t one.
@@ -591,7 +588,7 @@ class Request extends \yii\web\Request
      * Returns whether the control panel was requested.
      *
      * The result depends on whether the first segment in the URI matches the
-     * [control panel trigger](config4:cpTrigger).
+     * [control panel trigger](config5:cpTrigger).
      *
      * @return bool Whether the current request should be routed to the control panel.
      */
@@ -628,7 +625,7 @@ class Request extends \yii\web\Request
      *
      * There are several ways that this method could return `true`:
      *
-     * - If the first segment in the Craft path matches the [action trigger](config4:actionTrigger)
+     * - If the first segment in the Craft path matches the [action trigger](config5:actionTrigger)
      * - If there is an `action` param in either the POST data or query string
      * - If the Craft path matches the Login path, the Logout path, or the Set Password path
      *
@@ -696,11 +693,16 @@ class Request extends \yii\web\Request
      */
     public function getIsPreview(): bool
     {
-        return (
-            ($this->getQueryParam('x-craft-preview') ?? $this->getQueryParam('x-craft-live-preview')) !== null &&
-            // If there's a token but it expired, they're looking at the live site
-            (!$this->getHadToken() || $this->getToken() !== null)
-        );
+        $previewParamValue = $this->getQueryParam('x-craft-preview') ?? $this->getQueryParam('x-craft-live-preview');
+        if (!$previewParamValue) {
+            return false;
+        }
+        if (!Craft::$app->getSecurity()->validateData($previewParamValue)) {
+            return false;
+        }
+
+        // If there's a token but it expired, they're looking at the live site
+        return !$this->getHadToken() || $this->getToken() !== null;
     }
 
     /**
@@ -1242,7 +1244,7 @@ class Request extends \yii\web\Request
      * Returns the `Bearer` token value from the `X-Craft-Authorization` or `Authorization` header, if present.
      *
      * @return string|null
-     * @since 4.9.0
+     * @since 5.1.0
      */
     public function getBearerToken(): ?string
     {
@@ -1307,6 +1309,9 @@ class Request extends \yii\web\Request
      */
     public function getCsrfToken($regenerate = false): string
     {
+        // Ensure the response is not cached by the browser or static cache proxies.
+        Craft::$app->getResponse()->setNoCacheHeaders();
+
         if (!isset($this->_craftCsrfToken) || $regenerate) {
             $token = $this->loadCsrfToken();
 
@@ -1417,6 +1422,9 @@ class Request extends \yii\web\Request
      */
     protected function generateCsrfToken(): string
     {
+        // Ensure the response is not cached by the browser or static cache proxies.
+        Craft::$app->getResponse()->setNoCacheHeaders();
+
         $existingToken = $this->loadCsrfToken();
 
         // They have an existing CSRF token.
@@ -1528,6 +1536,20 @@ class Request extends \yii\web\Request
         // Was a site token provided?
         $site = $this->_validateSiteToken();
         if ($site !== null) {
+            return $site;
+        }
+
+        // Is CRAFT_SITE or X-Craft-Site present?
+        $siteId = App::env('CRAFT_SITE') ?? $this->getHeaders()->get('X-Craft-Site');
+        if ($siteId !== null) {
+            if (is_numeric($siteId)) {
+                $site = $this->sites->getSiteById($siteId, false);
+            } else {
+                $site = $this->sites->getSiteByHandle($siteId, false);
+            }
+            if (!$site && Craft::$app->getIsInstalled() && !Craft::$app->getUpdates()->getIsCraftUpdatePending()) {
+                throw new InvalidArgumentException("Invalid site: $siteId");
+            }
             return $site;
         }
 
@@ -1730,10 +1752,7 @@ class Request extends \yii\web\Request
         }
 
         // Special path?
-        if (
-            $checkSpecialPaths &&
-            ($this->_isCpRequest || !$this->generalConfig->headlessMode)
-        ) {
+        if ($checkSpecialPaths) {
             $specialPaths = [
                 [
                     $this->_isCpRequest ? self::CP_PATH_LOGIN : $this->generalConfig->getLoginPath(),

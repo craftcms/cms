@@ -23,12 +23,12 @@ use craft\helpers\UrlHelper;
 use craft\i18n\Locale;
 use craft\models\Section;
 use craft\services\Sites;
+use craft\utilities\QueueManager;
 use craft\validators\UserPasswordValidator;
 use craft\web\AssetBundle;
 use craft\web\assets\axios\AxiosAsset;
 use craft\web\assets\d3\D3Asset;
 use craft\web\assets\datepickeri18n\DatepickerI18nAsset;
-use craft\web\assets\elementresizedetector\ElementResizeDetectorAsset;
 use craft\web\assets\fabric\FabricAsset;
 use craft\web\assets\fileupload\FileUploadAsset;
 use craft\web\assets\garnish\GarnishAsset;
@@ -39,6 +39,7 @@ use craft\web\assets\jqueryui\JqueryUiAsset;
 use craft\web\assets\picturefill\PicturefillAsset;
 use craft\web\assets\selectize\SelectizeAsset;
 use craft\web\assets\tailwindreset\TailwindResetAsset;
+use craft\web\assets\theme\ThemeAsset;
 use craft\web\assets\velocity\VelocityAsset;
 use craft\web\assets\xregexp\XregexpAsset;
 use craft\web\View;
@@ -61,7 +62,6 @@ class CpAsset extends AssetBundle
         TailwindResetAsset::class,
         AxiosAsset::class,
         D3Asset::class,
-        ElementResizeDetectorAsset::class,
         GarnishAsset::class,
         JqueryAsset::class,
         JqueryTouchEventsAsset::class,
@@ -75,6 +75,7 @@ class CpAsset extends AssetBundle
         XregexpAsset::class,
         FabricAsset::class,
         IframeResizerAsset::class,
+        ThemeAsset::class,
     ];
 
     /**
@@ -130,11 +131,13 @@ JS;
             'Are you sure you want to close the editor? Any changes will be lost.',
             'Are you sure you want to close this screen? Any changes will be lost.',
             'Are you sure you want to delete this image?',
+            'Are you sure you want to delete this {type}?',
             'Are you sure you want to delete “{name}”?',
             'Are you sure you want to discard your changes?',
             'Are you sure you want to transfer your license to this domain?',
             'Ascending',
             'Assets',
+            'Attributes',
             'Breadcrumbs',
             'Buy {name}',
             'Cancel',
@@ -146,6 +149,7 @@ JS;
             'Choose which sites this source should be visible for.',
             'Choose which table columns should be visible for this source by default.',
             'Choose which user groups should have access to this source.',
+            'Choose',
             'Clear search',
             'Clear',
             'Close Preview',
@@ -155,17 +159,23 @@ JS;
             'Content',
             'Continue',
             'Copied to clipboard.',
+            'Copy from',
             'Copy the URL',
             'Copy the reference tag',
             'Copy to clipboard',
+            'Copy “{name}” value',
+            'Copy',
             'Could not save due to validation errors.',
             'Couldn’t delete “{name}”.',
             'Couldn’t reorder items.',
             'Couldn’t save new order.',
+            'Create {type}',
             'Create',
+            'Custom',
             'Customize sources',
             'Default Sort',
             'Default Table Columns',
+            'Default View Mode',
             'Delete custom source',
             'Delete folder',
             'Delete heading',
@@ -179,6 +189,7 @@ JS;
             'Device type',
             'Discard changes',
             'Discard',
+            'Display as cards',
             'Display as thumbnails',
             'Display in a structured table',
             'Display in a table',
@@ -186,6 +197,7 @@ JS;
             'Don’t show in element cards',
             'Don’t use for element thumbnails',
             'Draft Name',
+            'Duplicate',
             'Edit draft settings',
             'Edit {type}',
             'Edit',
@@ -197,6 +209,7 @@ JS;
             'Enter the name of the folder',
             'Enter your password to log back in.',
             'Error',
+            'Existing {type}',
             'Export Type',
             'Export',
             'Export…',
@@ -220,6 +233,7 @@ JS;
             'Hide sidebar',
             'Hide',
             'Incorrect password.',
+            'Indexing assets: {progress}',
             'Information',
             'Instructions',
             'Invalid email.',
@@ -233,6 +247,7 @@ JS;
             'Level {num}',
             'License transferred.',
             'Limit',
+            'Loading complete',
             'Loading',
             'Make not required',
             'Make optional',
@@ -262,6 +277,7 @@ JS;
             'New entry in the {section} section',
             'New entry, choose a section',
             'New field',
+            'New file uploaded.',
             'New heading',
             'New order saved.',
             'New position saved.',
@@ -274,6 +290,7 @@ JS;
             'No limit',
             'Notes',
             'Notice',
+            'Number of columns',
             'OK',
             'Open in a new tab',
             'Options',
@@ -289,6 +306,8 @@ JS;
             'Previewing {type} device in {orientation}',
             'Previewing {type} device',
             'Previous Page',
+            'Process complete',
+            'Processing',
             'Really delete folder “{folder}”?',
             'Recent Activity',
             'Refresh',
@@ -300,11 +319,13 @@ JS;
             'Reorder',
             'Replace it',
             'Replace the folder (all existing files will be deleted)',
+            'Replace',
             'Required',
             'Rotate',
             'Row could not be added. Maximum number of rows reached.',
             'Row could not be deleted. Minimum number of rows reached.',
-            'Save as a new asset',
+            'Row {index}',
+            'Save as a new {type}',
             'Save',
             'Saved {timestamp} by {creator}',
             'Saved {timestamp}',
@@ -376,6 +397,9 @@ JS;
             'Use for element thumbnails',
             'User Groups',
             'View in a new tab',
+            'View in a new tab',
+            'View mode options',
+            'View settings',
             'View',
             'Volume path',
             'Warning',
@@ -387,15 +411,12 @@ JS;
             'Your changes have been stored.',
             'Your session will expire in {time}.',
             'by {creator}',
-            'category',
             'day',
             'days',
             'draft',
             'element',
-            'entry',
             'files',
             'folders',
-            'global set',
             'hour',
             'hours',
             'minute',
@@ -414,6 +435,8 @@ JS;
             '{num, number} {num, plural, =1{Available Update} other{Available Updates}}',
             '{num, number} {num, plural, =1{degree} other{degrees}}',
             '{num, number} {num, plural, =1{notification} other{notifications}}',
+            '{num, number} {num, plural, =1{result} other{results}}',
+            '{num} percent complete',
             '{pct} width',
             '{total, number} {total, plural, =1{error} other{errors}} found in {num, number} {num, plural, =1{tab} other{tabs}}.',
             '{total, number} {total, plural, =1{{item}} other{{items}}}',
@@ -426,6 +449,28 @@ JS;
         $view->registerTranslations('yii', [
             '{attribute} should contain at least {min, number} {min, plural, one{character} other{characters}}.',
             '{attribute} should contain at most {max, number} {max, plural, one{character} other{characters}}.',
+        ]);
+
+        $view->registerIcons([
+            'arrow-down',
+            'arrow-left',
+            'arrow-right',
+            'arrow-up',
+            'arrows-rotate',
+            'asterisk',
+            'asterisk-slash',
+            'clipboard',
+            'copy',
+            'edit',
+            'gear',
+            'image',
+            'image-slash',
+            'pencil',
+            'plus',
+            'remove',
+            'share',
+            'trash',
+            'xmark',
         ]);
     }
 
@@ -443,9 +488,10 @@ JS;
         $primarySite = $upToDate ? $sitesService->getPrimarySite() : null;
 
         $data = [
-            'Pro' => CmsEdition::Pro->value,
-            'Team' => CmsEdition::Team->value,
             'Solo' => CmsEdition::Solo->value,
+            'Team' => CmsEdition::Team->value,
+            'Pro' => CmsEdition::Pro->value,
+            'Enterprise' => CmsEdition::Enterprise->value,
             'actionTrigger' => $generalConfig->actionTrigger,
             'actionUrl' => UrlHelper::actionUrl(),
             'announcements' => $upToDate ? Craft::$app->getAnnouncements()->get() : [],
@@ -495,8 +541,7 @@ JS;
 
         $elementTypeNames = [];
         foreach (Craft::$app->getElements()->getAllElementTypes() as $elementType) {
-            /** @var string|ElementInterface $elementType */
-            /** @phpstan-var class-string<ElementInterface>|ElementInterface $elementType */
+            /** @var class-string<ElementInterface> $elementType */
             $elementTypeNames[$elementType] = [
                 $elementType::displayName(),
                 $elementType::pluralDisplayName(),
@@ -513,7 +558,7 @@ JS;
             'appId' => Craft::$app->id,
             'autofocusPreferred' => $currentUser->getAutofocusPreferred(),
             'autosaveDrafts' => $generalConfig->autosaveDrafts,
-            'canAccessQueueManager' => $userSession->checkPermission('utility:queue-manager'),
+            'canAccessQueueManager' => Craft::$app->getUtilities()->checkAuthorization(QueueManager::class),
             'dataAttributes' => Html::$dataAttributes,
             'defaultIndexCriteria' => [],
             'disableAutofocus' => (bool)($currentUser->getPreference('disableAutofocus') ?? false),
@@ -540,7 +585,7 @@ JS;
             'siteToken' => $generalConfig->siteToken,
             'slugWordSeparator' => $generalConfig->slugWordSeparator,
             'userEmail' => $currentUser->email,
-            'userHasPasskeys' => Craft::$app->getAuth()->hasPasskeys($currentUser),
+            'userHasPasskeys' => Craft::$app->getAuth()->hasPasskeys($userSession->getImpersonator() ?? $currentUser),
             'userIsAdmin' => $currentUser->admin,
             'username' => $currentUser->username,
         ];
@@ -552,6 +597,7 @@ JS;
     {
         return [
             'constrainInput' => false,
+            'changeYear' => true,
             'dateFormat' => $formattingLocale->getDateFormat(Locale::LENGTH_SHORT, Locale::FORMAT_JUI),
             'dayNames' => $locale->getWeekDayNames(Locale::LENGTH_FULL),
             'dayNamesMin' => $locale->getWeekDayNames(Locale::LENGTH_ABBREVIATED),

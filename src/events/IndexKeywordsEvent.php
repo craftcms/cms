@@ -8,7 +8,7 @@
 namespace craft\events;
 
 use craft\base\ElementInterface;
-use yii\base\Event;
+use craft\base\Event;
 
 /**
  * Index keywords event class.
@@ -26,12 +26,12 @@ class IndexKeywordsEvent extends CancelableEvent
     /**
      * @var string|null The attribute name being indexed, or `null` if this is for a custom field
      */
-    public ?string $attribute;
+    public ?string $attribute = null;
 
     /**
      * @var int|null The field ID being indexed, or `null` if this is for an attribute
      */
-    public ?int $fieldId;
+    public ?int $fieldId = null;
 
     /**
      * @var string Space-separated list of keywords to be indexed

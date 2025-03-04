@@ -538,7 +538,7 @@ abstract class BaseUpdaterController extends Controller
             if ($ownerHandle !== 'craft' && ($plugin = Craft::$app->getPlugins()->getPlugin($ownerHandle)) !== null) {
                 $email = $plugin->developerEmail;
             }
-            $email = $email ?? 'support@craftcms.com';
+            $email ??= 'support@craftcms.com';
 
             $options[] = [
                 'label' => Craft::t('app', 'Send for help'),

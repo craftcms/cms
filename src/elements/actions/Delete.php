@@ -138,23 +138,20 @@ JS, [static::class]);
             return $this->confirmationMessage;
         }
 
-        /** @var ElementInterface|string $elementType */
-        $elementType = $this->elementType;
-
         if ($this->hard) {
             return Craft::t('app', 'Are you sure you want to permanently delete the selected {type}?', [
-                'type' => $elementType::pluralLowerDisplayName(),
+                'type' => $this->elementType::pluralLowerDisplayName(),
             ]);
         }
 
         if ($this->withDescendants) {
             return Craft::t('app', 'Are you sure you want to delete the selected {type} along with their descendants?', [
-                'type' => $elementType::pluralLowerDisplayName(),
+                'type' => $this->elementType::pluralLowerDisplayName(),
             ]);
         }
 
         return Craft::t('app', 'Are you sure you want to delete the selected {type}?', [
-            'type' => $elementType::pluralLowerDisplayName(),
+            'type' => $this->elementType::pluralLowerDisplayName(),
         ]);
     }
 
@@ -173,6 +170,7 @@ JS, [static::class]);
                         'descendants',
                         [
                             'orderBy' => ['structureelements.lft' => SORT_DESC],
+                            'status' => null,
                         ],
                     ],
                 ])
@@ -196,7 +194,7 @@ JS, [static::class]);
                             $elementsService->canView($descendant, $user) &&
                             $elementsService->canDelete($descendant, $user)
                         ) {
-                            $this->deleteElement($element, $elementsService, $deleteOwnership);
+                            $this->deleteElement($descendant, $elementsService, $deleteOwnership);
                             $deletedElementIds[$descendant->id] = true;
                         }
                     }
@@ -216,10 +214,8 @@ JS, [static::class]);
         if (isset($this->successMessage)) {
             $this->setMessage($this->successMessage);
         } else {
-            /** @var ElementInterface|string $elementType */
-            $elementType = $this->elementType;
             $this->setMessage(Craft::t('app', '{type} deleted.', [
-                'type' => $elementType::pluralDisplayName(),
+                'type' => $this->elementType::pluralDisplayName(),
             ]));
         }
 
@@ -231,8 +227,8 @@ JS, [static::class]);
         Elements $elementsService,
         array &$deleteOwnership,
     ): void {
-        // If the element primarily belongs to a different element, just delete the ownership
-        if ($element instanceof NestedElementInterface) {
+        // If the element primarily belongs to a different element, (and we're not hard deleting) just delete the ownership
+        if (!$this->hard && $element instanceof NestedElementInterface) {
             $ownerId = $element->getOwnerId();
             if ($ownerId && $element->getPrimaryOwnerId() !== $ownerId) {
                 $deleteOwnership[$ownerId][] = $element->id;

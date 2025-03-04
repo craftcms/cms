@@ -84,8 +84,13 @@ Craft.ElementActionTrigger = Garnish.Base.extend(
         return false;
       }
 
-      if (this.settings.requireId && this.$selectedItems.is('[data-id=""]')) {
-        return false;
+      if (this.settings.requireId) {
+        for (let i = 0; i < this.$selectedItems.length; i++) {
+          const $item = this.$selectedItems.eq(i);
+          if (!Garnish.hasAttr($item, 'data-id') || $item.is('[data-id=""]')) {
+            return false;
+          }
+        }
       }
 
       if (typeof this.settings.validateSelection === 'function') {

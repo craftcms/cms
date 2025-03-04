@@ -92,9 +92,7 @@ class InterfaceAndGeneratorTest extends TestCase
             Craft::$app,
             'globals',
             [
-                'getAllSets' => function() {
-                    return static::mockGlobalSets();
-                },
+                'getAllSets' => fn() => static::mockGlobalSets(),
             ]
         );
 
@@ -102,9 +100,7 @@ class InterfaceAndGeneratorTest extends TestCase
             Craft::$app,
             'categories',
             [
-                'getAllGroups' => function() {
-                    return static::mockCategoryGroups();
-                },
+                'getAllGroups' => fn() => static::mockCategoryGroups(),
             ]
         );
 
@@ -112,9 +108,7 @@ class InterfaceAndGeneratorTest extends TestCase
             Craft::$app,
             'tags',
             [
-                'getAllTagGroups' => function() {
-                    return static::mockTagGroups();
-                },
+                'getAllTagGroups' => fn() => static::mockTagGroups(),
             ]
         );
     }

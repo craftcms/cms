@@ -68,7 +68,8 @@ class ImageTransform extends Model
     public ?DateTime $parameterChangeTime = null;
 
     /**
-     * @var string 'crop'|'fit'|'stretch'|'letterbox' Mode
+     * @var string Mode
+     * @phpstan-var 'crop'|'fit'|'stretch'|'letterbox'
      */
     public string $mode = 'crop';
 
@@ -107,10 +108,15 @@ class ImageTransform extends Model
     public ?bool $upscale = null;
 
     /**
-     * @var string The image transformer to use.
-     * @phpstan-var class-string<ImageTransformerInterface>
+     * @var class-string<ImageTransformerInterface> The image transformer to use.
      */
     protected string $transformer = self::DEFAULT_TRANSFORMER;
+
+    /**
+     * @var int|null The image transform index ID (if one was passed to the request).
+     * @since 5.3.0
+     */
+    public ?int $indexId = null;
 
     /**
      * @inheritdoc

@@ -1,54 +1,54 @@
 @charset "UTF-8";
 @import '@craftcms/sass/mixins';
 
-#mode:after {
+#mode::after {
   @include clearafter;
 }
 
 #mode label {
   display: block;
-  @include floatleft;
-  margin-top: -1px;
+  float: inline-start;
+  margin-block-start: -1px;
   width: 113px;
-  padding-top: 85px;
+  padding-block-start: 85px;
   text-align: center;
   background: no-repeat 50% 0;
 }
 
 #mode label#mode-crop {
-  background-image: url(images/crop.jpg);
+  background-image: url('images/crop.jpg');
 }
 
 #mode label#mode-fit {
-  background-image: url(images/fit.jpg);
+  background-image: url('images/fit.jpg');
 }
 
 #mode label#mode-letterbox {
-  background-image: url(images/letterbox.jpg);
+  background-image: url('images/letterbox.jpg');
 }
 
 #mode label#mode-stretch {
-  background-image: url(images/stretch.jpg);
+  background-image: url('images/stretch.jpg');
 }
 
-@media only screen and (-webkit-min-device-pixel-ratio: 1.5),
-  only screen and (-moz-min-device-pixel-ratio: 1.5),
-  only screen and (-o-min-device-pixel-ratio: 3/2),
-  only screen and (min-device-pixel-ratio: 1.5),
-  only screen and (min-resolution: 1.5dppx) {
+@media only screen and (resolution >= 1.5dppx) {
   #mode label {
     background-size: 113px;
   }
+
   #mode label#mode-crop {
-    background-image: url(images/crop_2x.jpg);
+    background-image: url('images/crop_2x.jpg');
   }
+
   #mode label#mode-fit {
-    background-image: url(images/fit_2x.jpg);
+    background-image: url('images/fit_2x.jpg');
   }
+
   #mode label#mode-stretch {
-    background-image: url(images/stretch_2x.jpg);
+    background-image: url('images/stretch_2x.jpg');
   }
+
   #mode label#mode-letterbox {
-    background-image: url(images/letterbox_2x.jpg);
+    background-image: url('images/letterbox_2x.jpg');
   }
 }

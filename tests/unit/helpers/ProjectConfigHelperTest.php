@@ -8,6 +8,7 @@
 namespace crafttests\unit\helpers;
 
 use Craft;
+use craft\helpers\DateTimeHelper;
 use craft\helpers\FileHelper;
 use craft\helpers\ProjectConfig as ProjectConfigHelper;
 use craft\helpers\StringHelper;
@@ -68,10 +69,11 @@ class ProjectConfigHelperTest extends TestCase
         FileHelper::writeToFile($path, $input);
 
         // Test
-        $timestamp = time();
-        $expected = str_replace('__TIMESTAMP__', (string)$timestamp, $expected);
-        ProjectConfigHelper::touch($timestamp);
+        DateTimeHelper::pause();
+        $expected = str_replace('__TIMESTAMP__', (string)DateTimeHelper::currentTimeStamp(), $expected);
+        ProjectConfigHelper::touch();
         self::assertSame($expected, file_get_contents($path));
+        DateTimeHelper::resume();
 
         // Put the old project.yaml back
         FileHelper::unlink($path);

@@ -32,6 +32,7 @@ use craft\models\SiteGroup;
 use craft\queue\jobs\PropagateElements;
 use craft\records\Site as SiteRecord;
 use craft\records\SiteGroup as SiteGroupRecord;
+use Illuminate\Support\Collection;
 use Throwable;
 use yii\base\Component;
 use yii\base\Exception;
@@ -464,12 +465,8 @@ class Sites extends Component
      */
     public function getCurrentSite(): Site
     {
-        if (isset($this->_currentSite)) {
-            return $this->_currentSite;
-        }
-
         // Default to the primary site
-        return $this->_currentSite = $this->getPrimarySite();
+        return $this->_currentSite ?? ($this->_currentSite = $this->getPrimarySite());
     }
 
     /**
@@ -600,6 +597,23 @@ class Sites extends Component
         ArrayHelper::multisort($sites, 'sortOrder', SORT_ASC, SORT_NUMERIC);
 
         return $sites;
+    }
+
+    /**
+     * Returns editable sites by a group ID.
+     *
+     * @param int $groupId
+     * @param bool|null $withDisabled
+     * @return Site[]
+     * @since 5.4.0
+     */
+    public function getEditableSitesByGroupId(int $groupId, ?bool $withDisabled = null): array
+    {
+        $editableSiteIds = array_flip($this->getEditableSiteIds());
+        return Collection::make($this->getSitesByGroupId($groupId, $withDisabled))
+            ->filter(fn(Site $site) => isset($editableSiteIds[$site->id]))
+            ->values()
+            ->all();
     }
 
     /**
@@ -844,6 +858,7 @@ class Sites extends Component
                         'siteId' => $oldPrimarySiteId,
                     ],
                     'siteId' => $site->id,
+                    'isNewSite' => true,
                 ]));
             }
         }
@@ -932,17 +947,16 @@ class Sites extends Component
             throw new Exception('You cannot delete the primary site.');
         }
 
-        // Fire a 'beforeDeleteSite' event
-        $event = new DeleteSiteEvent([
-            'site' => $site,
-            'transferContentTo' => $transferContentTo,
-        ]);
-
-        $this->trigger(self::EVENT_BEFORE_DELETE_SITE, $event);
-
-        // Make sure the event is giving us the go ahead
-        if (!$event->isValid) {
-            return false;
+        // Fire a 'beforeDeleteSite'
+        if ($this->hasEventHandlers(self::EVENT_BEFORE_DELETE_SITE)) {
+            $event = new DeleteSiteEvent([
+                'site' => $site,
+                'transferContentTo' => $transferContentTo,
+            ]);
+            $this->trigger(self::EVENT_BEFORE_DELETE_SITE, $event);
+            if (!$event->isValid) {
+                return false;
+            }
         }
 
         $projectConfig = Craft::$app->getProjectConfig();
@@ -1309,7 +1323,7 @@ class Sites extends Component
             $nonLocalizedElementTypes = [];
 
             foreach (Craft::$app->getElements()->getAllElementTypes() as $elementType) {
-                /** @var ElementInterface|string $elementType */
+                /** @var class-string<ElementInterface> $elementType */
                 if (!$elementType::isLocalized()) {
                     $nonLocalizedElementTypes[] = $elementType;
                 }
@@ -1376,7 +1390,7 @@ SQL;
         // Set the new primary site by forcing a reload from the DB.
         $this->refreshSites();
 
-        // Fire an afterChangePrimarySite event
+        // Fire an 'afterChangePrimarySite' event
         if ($this->hasEventHandlers(self::EVENT_AFTER_CHANGE_PRIMARY_SITE)) {
             $this->trigger(self::EVENT_AFTER_CHANGE_PRIMARY_SITE, new SiteEvent([
                 'site' => $this->_primarySite,

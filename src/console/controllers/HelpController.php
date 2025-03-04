@@ -121,6 +121,7 @@ class HelpController extends BaseHelpController
             Console::ansiFormat('→', [Console::FG_BLUE]) . ' Official Documentation: https://craftcms.com/docs',
             Console::ansiFormat('→', [Console::FG_BLUE]) . ' Knowledge Base: https://craftcms.com/knowledge-base',
             Console::ansiFormat('→', [Console::FG_BLUE]) . ' Support: https://craftcms.com/contact',
+            Console::ansiFormat('→', [Console::FG_BLUE]) . ' ' . sprintf('Release notes: https://github.com/craftcms/cms/releases/%s', Craft::$app->getVersion()),
             '', // Blank line
         ]);
     }

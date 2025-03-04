@@ -39,6 +39,25 @@ enum Color: string
     case Black = 'black';
 
     /**
+     * Returns the color associated with a given status name, if known.
+     *
+     * @param string $status
+     * @return self|null
+     * @since 5.2.0
+     */
+    public static function tryFromStatus(string $status): ?self
+    {
+        return match ($status) {
+            'on', 'live', 'active', 'enabled', 'turquoise' => self::Teal,
+            'off', 'suspended', 'expired' => self::Red,
+            'warning' => self::Amber,
+            'pending' => self::Orange,
+            'grey' => self::Gray,
+            default => self::tryFrom($status),
+        };
+    }
+
+    /**
      * Returns the color’s CSS `var()` property for a given shade (50, 100, 200, ... 900).
      *
      * @param int $shade

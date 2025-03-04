@@ -33,7 +33,7 @@ import './routes.scss';
     },
 
     getRoutes: function () {
-      return this.$container.children();
+      return this.$container.children('.route');
     },
 
     updateRouteOrder: function () {
@@ -79,7 +79,9 @@ import './routes.scss';
       this.$uri = this.$container.find('.uri:first');
       this.$template = this.$container.find('.template:first');
 
-      this.addListener(this.$container, 'click', 'edit');
+      if (Craft.allowAdminChanges) {
+        this.addListener(this.$container, 'click', 'edit');
+      }
     },
 
     edit: function () {

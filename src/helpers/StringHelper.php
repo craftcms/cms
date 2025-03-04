@@ -125,7 +125,7 @@ class StringHelper extends \yii\helpers\StringHelper
 
     /**
      * Returns ASCII character mappings, merging in any custom defined mappings
-     * from the <config4:customAsciiCharMappings> config setting.
+     * from the <config5:customAsciiCharMappings> config setting.
      *
      * @param bool $flat Whether the mappings should be returned as a flat array (é => e)
      * @param string|null $language Whether to include language-specific mappings (only applied if $flat is true)
@@ -915,13 +915,19 @@ class StringHelper extends \yii\helpers\StringHelper
     public static function lines(string $str): array
     {
         $lines = BaseStringy::create($str)->lines();
+        return array_map(fn(BaseStringy $line) => (string)$line, $lines);
+    }
 
-        foreach ($lines as $i => $line) {
-            $lines[$i] = $line;
-        }
-
-        /** @var string[] $lines */
-        return $lines;
+    /**
+     * Returns the first line of a string.
+     *
+     * @param string $str
+     * @return string
+     * @since 5.5.0
+     */
+    public static function firstLine(string $str): string
+    {
+        return (string)BaseStringy::create($str)->lines()[0];
     }
 
     /**
@@ -1051,11 +1057,7 @@ class StringHelper extends \yii\helpers\StringHelper
         // repeat the steps until we've created a string of the right length
         for ($i = 0; $i < $length; $i++) {
             // pick a random number from 1 up to the number of valid chars
-            try {
-                $randomPick = random_int(0, $numValidChars - 1);
-            } catch (\Exception) {
-                $randomPick = rand(0, $numValidChars - 1);
-            }
+            $randomPick = random_int(0, $numValidChars - 1);
 
             // take the random character out of the string of valid chars
             $randomChar = $validChars[$randomPick];
@@ -1348,8 +1350,9 @@ class StringHelper extends \yii\helpers\StringHelper
      */
     public static function slugify(string $str, string $replacement = '-', ?string $language = null): string
     {
+        $language ??= Craft::$app->language;
+
         /** @var ASCII::*_LANGUAGE_CODE $language */
-        $language = $language ?? Craft::$app->language;
         return (string)BaseStringy::create($str)->slugify($replacement, $language);
     }
 
@@ -1577,9 +1580,9 @@ class StringHelper extends \yii\helpers\StringHelper
         // Normalize NFD chars to NFC
         $str = Normalizer::normalize($str, Normalizer::FORM_C);
 
-        /** @var ASCII::*_LANGUAGE_CODE $language */
-        $language = $language ?? Craft::$app->language;
+        $language ??= Craft::$app->language;
 
+        /** @var ASCII::*_LANGUAGE_CODE $language */
         return (string)BaseStringy::create($str)->toAscii($language);
     }
 
@@ -1624,9 +1627,7 @@ class StringHelper extends \yii\helpers\StringHelper
     public static function toKebabCase(string $str, string $glue = '-', bool $lower = true, bool $removePunctuation = true): string
     {
         $words = self::toWords($str, $lower, $removePunctuation);
-        $words = ArrayHelper::filterEmptyStringsFromArray(array_map(function($str) use ($glue) {
-            return trim($str, $glue);
-        }, $words));
+        $words = ArrayHelper::filterEmptyStringsFromArray(array_map(fn($str) => trim($str, $glue), $words));
 
         return implode($glue, $words);
     }
@@ -1792,7 +1793,7 @@ class StringHelper extends \yii\helpers\StringHelper
         }
 
         // Remove inner-word punctuation.
-        $str = preg_replace('/[\'"‘’“”\[\]\(\)\{\}:]/u', '', $str);
+        $str = preg_replace('/[\'"‘’“”ʻ\[\]\(\)\{\}:]/u', '', $str);
 
         // Split on the words and return
         return static::splitOnWords($str);
@@ -1811,7 +1812,7 @@ class StringHelper extends \yii\helpers\StringHelper
         $handle = static::stripHtml($str);
 
         // Remove inner-word punctuation
-        $handle = preg_replace('/[\'"‘’“”\[\]\(\)\{\}:]/', '', $handle);
+        $handle = preg_replace('/[\'"‘’“”ʻ\[\]\(\)\{\}:]/', '', $handle);
 
         // Make it lowercase
         $handle = static::toLowerCase($handle);
@@ -1821,6 +1822,9 @@ class StringHelper extends \yii\helpers\StringHelper
 
         // Handle must start with a letter
         $handle = preg_replace('/^[^a-z]+/', '', $handle);
+
+        // Replace any remaining non-alphanumeric or underscore characters with spaces
+        $handle = preg_replace('/[^a-z0-9_]/', ' ', $handle);
 
         return static::toCamelCase($handle);
     }
@@ -2034,5 +2038,47 @@ class StringHelper extends \yii\helpers\StringHelper
         }
 
         return self::$_shortcodeEscapeMap;
+    }
+
+    /**
+     * Indents each line in the given string.
+     *
+     * @param string $str
+     * @return string
+     * @since 5.2.0
+     */
+    public static function indent(string $str, string $indent = '    '): string
+    {
+        return implode("\n", array_map(fn(string $line) => $indent . $line, static::lines($str)));
+    }
+
+    /**
+     * Returns a regex pattern for invisible characters.
+     *
+     * @return string
+     * @since 5.6.1
+     */
+    public static function invisibleCharsRegex(): string
+    {
+        $invisibleCharCodes = [
+            '00ad', // soft hyphen
+            '0083', // no break
+            '200b', // zero width space
+            '200c', // zero width non-joiner
+            '200d', // zero width joiner
+            '200e', // LTR character
+            '200f', // RTL character
+            '2062', // invisible times
+            '2063', // invisible comma
+            '2064', // invisible plus
+            'feff', //zero width non-break space
+        ];
+
+        array_walk(
+            $invisibleCharCodes,
+            fn(&$charCode) => $charCode = sprintf('\\x{%s}', $charCode)
+        );
+
+        return sprintf('/%s/iu', implode('|', $invisibleCharCodes));
     }
 }

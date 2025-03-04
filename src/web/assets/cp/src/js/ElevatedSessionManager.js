@@ -94,8 +94,6 @@ Craft.ElevatedSessionManager = Garnish.Base.extend(
 
       this.loginModal = new Garnish.Modal($container, {
         closeOtherModals: false,
-        hideOnEsc: false,
-        hideOnShadeClick: false,
         shadeClass: 'modal-shade dark login-modal-shade',
         onFadeIn: async () => {
           Craft.initUiElements($container);

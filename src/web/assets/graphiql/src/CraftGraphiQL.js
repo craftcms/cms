@@ -3,19 +3,19 @@ import React from 'react';
 import GraphiQL from 'graphiql';
 import GraphiQLExplorer from 'graphiql-explorer';
 
-var elem = React.createElement;
+const elem = React.createElement;
 
 // URL updater functions
 
 // Parse the search string to get url parameters.
-var search = window.location.search;
-var parameters = {};
+const search = window.location.search;
+const parameters = {};
 
 search
   .substring(1)
   .split('&')
   .forEach(function (entry) {
-    var eq = entry.indexOf('=');
+    const eq = entry.indexOf('=');
     if (eq >= 0) {
       parameters[decodeURIComponent(entry.slice(0, eq))] = decodeURIComponent(
         entry.slice(eq + 1)
@@ -65,7 +65,7 @@ function getShareableURL() {
 }
 
 function setSchema(uid) {
-  var pattern = /schemaUid=[a-z0-9-]+/i;
+  const pattern = /schemaUid=[a-z0-9-]+/i;
   if (location.href.match(pattern)) {
     location.href = location.href.replace(pattern, 'schemaUid=' + uid);
   } else {
@@ -92,7 +92,7 @@ class Item extends React.Component {
 
 class SchemaSelector extends React.Component {
   render() {
-    let e = elem(
+    return elem(
       GraphiQL.Menu,
       {
         className: 'menu',
@@ -101,8 +101,6 @@ class SchemaSelector extends React.Component {
       },
       this.props.menuItems
     );
-
-    return e;
   }
 }
 
@@ -181,11 +179,10 @@ export class CraftGraphiQL extends React.Component {
 
   // Create the schema dropdown selector
   _makeSchemaSelector(gqlSchemas, selectedSchema) {
-    let menuItems = [];
-    let schemaName = '';
+    const menuItems = [];
 
-    for (schemaName in gqlSchemas) {
-      var schemaUid = gqlSchemas[schemaName];
+    for (const schemaName in gqlSchemas) {
+      const schemaUid = gqlSchemas[schemaName];
       if (schemaName !== selectedSchema.name) {
         menuItems.push(
           elem(
@@ -211,14 +208,14 @@ export class CraftGraphiQL extends React.Component {
   }
 
   render() {
-    let logoElement = React.createElement(
+    const logoElement = React.createElement(
       GraphiQL.Logo,
       {},
       Craft.t('app', 'Explore the GraphQL API')
     );
 
     // Set up the toolbar.
-    let toolbarElements = [
+    const toolbarElements = [
       elem(GraphiQL.Button, {
         onClick: this.handleClickPrettifyButton.bind(this),
         label: Craft.t('app', 'Prettify'),
@@ -249,7 +246,7 @@ export class CraftGraphiQL extends React.Component {
       }),
     ];
 
-    let toolBar = elem(GraphiQL.Toolbar, {}, toolbarElements);
+    const toolBar = elem(GraphiQL.Toolbar, {}, toolbarElements);
 
     // Render explorer and GraphiQL components side-to-side.
     return elem(

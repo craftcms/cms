@@ -24,45 +24,65 @@ Craft.VolumeFolderSelectorModal = Craft.BaseElementSelectorModal.extend(
       });
     },
 
-    hasSelection: function () {
+    shouldEnableSelectBtn: function () {
+      if (this.base()) {
+        return true;
+      }
+
+      // If nothing's selected, allow selecting the current folder,
+      // as long as it’s not disabled
       return (
-        this.base() ||
-        (this.elementIndex &&
-          this.elementIndex.sourcePath.length &&
-          typeof this.elementIndex.sourcePath[
-            this.elementIndex.sourcePath.length - 1
-          ].folderId !== 'undefined' &&
-          !this.settings.disabledFolderIds.includes(
-            this.elementIndex.sourcePath[
-              this.elementIndex.sourcePath.length - 1
-            ].folderId
-          ))
+        this.elementIndex?.sourcePath.length &&
+        typeof this.elementIndex.sourcePath[
+          this.elementIndex.sourcePath.length - 1
+        ].folderId !== 'undefined' &&
+        !this.settings.disabledFolderIds.includes(
+          this.elementIndex.sourcePath[this.elementIndex.sourcePath.length - 1]
+            .folderId
+        )
       );
     },
 
+    selectElements: function (ev) {
+      if (this.hasSelection()) {
+        this.base();
+        return;
+      }
+
+      if (
+        this.$selectBtn &&
+        ev?.currentTarget === this.$selectBtn[0] &&
+        this.shouldEnableSelectBtn()
+      ) {
+        const {folderId} =
+          this.elementIndex.sourcePath[this.elementIndex.sourcePath.length - 1];
+        this.onSelect([{folderId}]);
+
+        if (this.settings.hideOnSelect) {
+          this.hide();
+        }
+      }
+    },
+
     getElementInfo: function ($selectedElements) {
-      return [
-        {
-          folderId: $selectedElements.length
-            ? parseInt(
-                $selectedElements.find('.element:first').data('folder-id')
-              )
-            : this.elementIndex.sourcePath[
-                this.elementIndex.sourcePath.length - 1
-              ].folderId,
-        },
-      ];
+      const info = [];
+      for (let i = 0; i < $selectedElements.length; i++) {
+        const $element = $selectedElements.eq(i).find('.element:first');
+        const folderId = parseInt($element.data('folder-id'));
+        info.push({folderId});
+      }
+      return info;
     },
 
     getIndexSettings: function () {
       return Object.assign(this.base(), {
         foldersOnly: true,
-        canSelectElement: ($element) => {
-          const folderId = $element.find('.element:first').data('folder-id');
-          return (
-            folderId && !this.settings.disabledFolderIds.includes(folderId)
-          );
-        },
+        viewSettings: () => ({
+          canSelectElement: ($element) => {
+            $element = $element.find('.element:first');
+            return Garnish.hasAttr($element, 'data-folder-id');
+          },
+        }),
       });
     },
   },

@@ -10,6 +10,7 @@ namespace crafttests\unit\web\twig;
 use ArrayObject;
 use Craft;
 use craft\elements\Address;
+use craft\elements\ElementCollection;
 use craft\elements\Entry;
 use craft\elements\User;
 use craft\enums\CmsEdition;
@@ -21,6 +22,7 @@ use craft\web\View;
 use crafttests\fixtures\GlobalSetFixture;
 use DateInterval;
 use DateTime;
+use Illuminate\Support\Collection;
 use Twig\Error\LoaderError;
 use Twig\Error\RuntimeError;
 use Twig\Error\SyntaxError;
@@ -977,9 +979,17 @@ class ExtensionTest extends TestCase
      */
     public function testDataUrlFunction(): void
     {
-        $path = dirname(__DIR__, 3) . '/_data/assets/files/craft-logo.svg';
+        $path = '@root/.github/workflows/ci.yml';
         $dataUrl = $this->view->renderString('{{ dataUrl(path) }}', compact('path'));
-        self::assertStringStartsWith('data:image/svg+xml;base64,', $dataUrl);
+        self::assertStringStartsWith('data:application/x-yaml;base64,', $dataUrl);
+    }
+
+    public function testEncodeUrlFunction(): void
+    {
+        $this->testRenderResult(
+            'https://domain/fr/offices/gen%C3%AAve',
+            '{{ encodeUrl("https://domain/fr/offices/genêve") }}',
+        );
     }
 
     public function testExpressionFunction(): void
@@ -1191,6 +1201,32 @@ class ExtensionTest extends TestCase
             'FROM_EMAIL_NAME',
             '{{ parseEnv("FROM_EMAIL_NAME") }}'
         );
+    }
+
+    /**
+     * @dataProvider collectFunctionDataProvider
+     *
+     * @param string $expectedClass
+     * @param array $items
+     */
+    public function testCollectFunction(string $expectedClass, array $items): void
+    {
+        $this->testRenderResult(
+            Collection::class,
+            "{{ className(collect(items)) }}",
+            ['items' => $items],
+        );
+    }
+
+    public static function collectFunctionDataProvider(): array
+    {
+        $users = User::find()->all();
+        return [
+            [Collection::class, []],
+            [Collection::class, ['foo']],
+            [Collection::class, array_merge($users, ['foo'])],
+            [ElementCollection::class, $users],
+        ];
     }
 
     /**

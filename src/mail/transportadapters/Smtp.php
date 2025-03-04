@@ -110,10 +110,9 @@ class Smtp extends BaseTransportAdapter
         $rules[] = [
             ['username', 'password'],
             'required',
-            'when' => function($model) {
+            'when' => fn($model) =>
                 /** @var self $model */
-                return App::parseBooleanEnv($model->useAuthentication) ?? false;
-            },
+                App::parseBooleanEnv($model->useAuthentication) ?? false,
         ];
         return $rules;
     }
@@ -123,8 +122,22 @@ class Smtp extends BaseTransportAdapter
      */
     public function getSettingsHtml(): ?string
     {
+        return $this->settingsHtml(false);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getReadOnlySettingsHtml(): ?string
+    {
+        return $this->settingsHtml(true);
+    }
+
+    private function settingsHtml(bool $readOnly): string
+    {
         return Craft::$app->getView()->renderTemplate('_components/mailertransportadapters/Smtp/settings.twig', [
             'adapter' => $this,
+            'readOnly' => $readOnly,
         ]);
     }
 
@@ -135,7 +148,7 @@ class Smtp extends BaseTransportAdapter
     {
         $config = [
             'scheme' => 'smtp',
-            'host' => App::parseEnv($this->host),
+            'host' => App::parseEnv($this->host) ?? '',
             'port' => $this->port ? (int) App::parseEnv($this->port) : null,
         ];
 

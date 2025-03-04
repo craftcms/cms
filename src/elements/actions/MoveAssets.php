@@ -32,8 +32,7 @@ class MoveAssets extends ElementAction
      */
     public function getTriggerHtml(): ?string
     {
-        Craft::$app->getView()->registerJsWithVars(function($actionClass) {
-            return <<<JS
+        Craft::$app->getView()->registerJsWithVars(fn($actionClass) => <<<JS
 (() => {
   const groupItems = function(\$items) {
     const \$folders = \$items.has('.element[data-is-folder]');
@@ -101,8 +100,7 @@ class MoveAssets extends ElementAction
     },
   });
 })();
-JS;
-        }, [
+JS, [
             static::class,
         ]);
 

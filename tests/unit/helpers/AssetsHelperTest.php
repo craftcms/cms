@@ -209,6 +209,7 @@ class AssetsHelperTest extends TestCase
             ['name', 'name.', true, false],
 
             ['te-@st.notaf ile', 'te !@#$%^&*()st.notaf ile', true, false],
+            ['te-@st.notaf ile', 'te !@#$%^&*()st.notaf ile', true, true],
             ['', '', false, false],
             ['-', '', true, false],
 

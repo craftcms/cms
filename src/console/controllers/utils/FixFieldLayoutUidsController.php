@@ -101,9 +101,9 @@ class FixFieldLayoutUidsController extends Controller
     private function _checkUid(array &$config, int &$count, array &$uids, bool &$modified, string $path): void
     {
         if (empty($config['uid'])) {
-            $reason = 'Duplicate UUID found at';
+            $reason = 'Missing UUID found at';
         } elseif (isset($uids[$config['uid']])) {
-            $reason = 'Missing UUID at';
+            $reason = 'Duplicate UUID at';
         } else {
             $uids[$config['uid']] = true;
             return;

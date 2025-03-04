@@ -8,10 +8,13 @@
 namespace craft\fields;
 
 use Craft;
+use craft\base\CrossSiteCopyableFieldInterface;
 use craft\base\ElementInterface;
 use craft\base\Field;
 use craft\base\InlineEditableFieldInterface;
+use craft\base\MergeableFieldInterface;
 use craft\base\SortableFieldInterface;
+use craft\elements\Entry;
 use craft\fields\conditions\DateFieldConditionRule;
 use craft\gql\directives\FormatDateTime;
 use craft\gql\types\DateTime as DateTimeType;
@@ -33,7 +36,7 @@ use yii\db\Schema;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
  */
-class Date extends Field implements InlineEditableFieldInterface, SortableFieldInterface
+class Date extends Field implements InlineEditableFieldInterface, SortableFieldInterface, MergeableFieldInterface, CrossSiteCopyableFieldInterface
 {
     /**
      * @inheritdoc
@@ -194,6 +197,19 @@ class Date extends Field implements InlineEditableFieldInterface, SortableFieldI
      */
     public function getSettingsHtml(): ?string
     {
+        return $this->settingsHtml(false);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getReadOnlySettingsHtml(): ?string
+    {
+        return $this->settingsHtml(true);
+    }
+
+    private function settingsHtml(bool $readOnly): string
+    {
         if ($this->showDate && !$this->showTime) {
             $dateTimeValue = 'showDate';
         } elseif ($this->showTime && !$this->showDate) {
@@ -230,6 +246,7 @@ class Date extends Field implements InlineEditableFieldInterface, SortableFieldI
             'value' => $dateTimeValue,
             'incrementOptions' => $incrementOptions,
             'field' => $this,
+            'readOnly' => $readOnly,
         ]);
     }
 
@@ -290,6 +307,7 @@ class Date extends Field implements InlineEditableFieldInterface, SortableFieldI
                 'describedBy' => $this->describedBy,
                 'name' => "$this->handle[timezone]",
                 'value' => $timezone,
+                'offsetDate' => $value,
             ]);
         } else {
             $components[] = Html::hiddenInput("$this->handle[timezone]", $timezone);
@@ -360,6 +378,17 @@ class Date extends Field implements InlineEditableFieldInterface, SortableFieldI
     /**
      * @inheritdoc
      */
+    public function previewPlaceholderHtml(mixed $value, ?ElementInterface $element): string
+    {
+        if (!$value) {
+            $value = new DateTime();
+        }
+        return $this->getPreviewHtml($value, $element ?? new Entry());
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function useFieldset(): bool
     {
         return $this->showTime;
@@ -403,7 +432,7 @@ class Date extends Field implements InlineEditableFieldInterface, SortableFieldI
     /**
      * @inheritdoc
      */
-    public function serializeValue(mixed $value, ?ElementInterface $element): mixed
+    public function serializeValueForDb(mixed $value, ElementInterface $element): mixed
     {
         if (!$value) {
             return null;

@@ -12,12 +12,17 @@ use craft\base\conditions\ConditionInterface;
 use craft\base\ElementInterface;
 use craft\base\PreviewableFieldInterface;
 use craft\base\SortableFieldInterface;
+use craft\db\CoalesceColumnsExpression;
+use craft\elements\conditions\ElementConditionInterface;
+use craft\errors\SiteNotFoundException;
 use craft\events\DefineSourceSortOptionsEvent;
 use craft\events\DefineSourceTableAttributesEvent;
 use craft\fieldlayoutelements\CustomField;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Cp;
+use craft\helpers\StringHelper;
 use craft\models\FieldLayout;
+use Illuminate\Support\Collection;
 use yii\base\Component;
 
 /**
@@ -57,26 +62,20 @@ class ElementSources extends Component
      */
     public static function filterExtraHeadings(array $sources): array
     {
-        return array_values(array_filter($sources, function($source, $i) use ($sources) {
-            return (
-                $source['type'] !== self::TYPE_HEADING ||
-                (isset($sources[$i + 1]) && $sources[$i + 1]['type'] !== self::TYPE_HEADING)
-            );
-        }, ARRAY_FILTER_USE_BOTH));
+        return array_values(array_filter($sources, fn($source, $i) => $source['type'] !== self::TYPE_HEADING ||
+        (isset($sources[$i + 1]) && $sources[$i + 1]['type'] !== self::TYPE_HEADING), ARRAY_FILTER_USE_BOTH));
     }
 
     /**
      * Returns the element index sources in the custom groupings/order.
      *
-     * @param string $elementType The element type class
-     * @phpstan-param class-string<ElementInterface> $elementType
+     * @param class-string<ElementInterface> $elementType The element type class
      * @param string $context The context
      * @param bool $withDisabled Whether disabled sources should be included
      * @return array[]
      */
     public function getSources(string $elementType, string $context = self::CONTEXT_INDEX, bool $withDisabled = false): array
     {
-        /** @var string|ElementInterface $elementType */
         $nativeSources = $this->_nativeSources($elementType, $context);
         $sourceConfigs = $this->_sourceConfigs($elementType);
 
@@ -129,6 +128,24 @@ class ElementSources extends Component
             $sources = $nativeSources;
         }
 
+        // Normalize the site IDs
+        foreach ($sources as &$source) {
+            if (isset($source['sites'])) {
+                $sitesService = null;
+                $source['sites'] = array_filter(array_map(function(int|string $siteId) use (&$sitesService): ?int {
+                    if (is_string($siteId) && StringHelper::isUUID($siteId)) {
+                        $sitesService ??= Craft::$app->getSites();
+                        try {
+                            return $sitesService->getSiteByUid($siteId)->id;
+                        } catch (SiteNotFoundException) {
+                            return null;
+                        }
+                    }
+                    return (int)$siteId;
+                }, $source['sites'] ?: []));
+            }
+        }
+
         return $sources;
     }
 
@@ -171,14 +188,11 @@ class ElementSources extends Component
     /**
      * Returns the common table attributes that are available for a given element type, across all its sources.
      *
-     * @param string $elementType The element type class
-     * @phpstan-param class-string<ElementInterface> $elementType
+     * @param class-string<ElementInterface> $elementType The element type class
      * @return array[]
      */
     public function getAvailableTableAttributes(string $elementType): array
     {
-        /** @var string|ElementInterface $elementType */
-        /** @phpstan-var class-string<ElementInterface>|ElementInterface $elementType */
         $attributes = $elementType::tableAttributes();
 
         // Normalize
@@ -200,15 +214,13 @@ class ElementSources extends Component
     /**
      * Returns the attributes that should be shown for a given element type source.
      *
-     * @param string $elementType The element type class
-     * @phpstan-param class-string<ElementInterface> $elementType
+     * @param class-string<ElementInterface> $elementType The element type class
      * @param string $sourceKey The element type source key
      * @param string[]|null $customAttributes Custom attributes to show rather than the defaults
      * @return array[]
      */
     public function getTableAttributes(string $elementType, string $sourceKey, ?array $customAttributes = null): array
     {
-        /** @var ElementInterface|string $elementType */
         // If this is a source path, use the first segment
         if (($slash = strpos($sourceKey, '/')) !== false) {
             $sourceKey = substr($sourceKey, 0, $slash);
@@ -254,8 +266,7 @@ class ElementSources extends Component
     /**
      * Returns all the field layouts available for the given element source.
      *
-     * @param string $elementType
-     * @phpstan-param class-string<ElementInterface> $elementType
+     * @param class-string<ElementInterface> $elementType
      * @param string $sourceKey
      * @return FieldLayout[]
      */
@@ -263,37 +274,65 @@ class ElementSources extends Component
     {
         // Don't bother the element type for custom sources
         if (str_starts_with($sourceKey, 'custom:')) {
-            return Craft::$app->getFields()->getLayoutsByType($elementType);
+            $source = $this->_sourceConfig($elementType, $sourceKey);
+            if (empty($source['condition'])) {
+                return Craft::$app->getFields()->getLayoutsByType($elementType);
+            }
+            /** @var ElementConditionInterface $condition */
+            $condition = Craft::$app->getConditions()->createCondition($source['condition']);
+            $query = $elementType::find();
+            $condition->modifyQuery($query);
+            return $query->getFieldLayouts();
         }
 
         if (!isset($this->_fieldLayouts[$elementType][$sourceKey])) {
-            /** @var string|ElementInterface $elementType */
-            /** @phpstan-var class-string<ElementInterface>|ElementInterface $elementType */
             $this->_fieldLayouts[$elementType][$sourceKey] = $elementType::fieldLayouts($sourceKey);
         }
+
         return $this->_fieldLayouts[$elementType][$sourceKey];
     }
 
     /**
      * Returns additional sort options that should be available for a given element source.
      *
-     * @param string $elementType The element type class
-     * @phpstan-param class-string<ElementInterface> $elementType
+     * @param class-string<ElementInterface> $elementType The element type class
      * @param string $sourceKey The element source key
      * @return array[]
      */
     public function getSourceSortOptions(string $elementType, string $sourceKey): array
     {
-        $event = new DefineSourceSortOptionsEvent([
-            'elementType' => $elementType,
-            'source' => $sourceKey,
-        ]);
+        $fieldLayouts = $sourceKey === '__IMP__'
+            ? $elementType::fieldLayouts(null)
+            : $this->getFieldLayoutsForSource($elementType, $sourceKey);
+        $sortOptions = $this->getSortOptionsForFieldLayouts($fieldLayouts);
 
-        $fieldLayouts = $this->getFieldLayoutsForSource($elementType, $sourceKey);
-        $event->sortOptions = array_merge($event->sortOptions, $this->getSortOptionsForFieldLayouts($fieldLayouts));
+        // Fire a 'defineSourceSortOptions' event
+        if ($this->hasEventHandlers(self::EVENT_DEFINE_SOURCE_SORT_OPTIONS)) {
+            $event = new DefineSourceSortOptionsEvent([
+                'elementType' => $elementType,
+                'source' => $sourceKey,
+                'sortOptions' => $sortOptions,
+            ]);
+            $this->trigger(self::EVENT_DEFINE_SOURCE_SORT_OPTIONS, $event);
+            $sortOptions = $event->sortOptions;
+        }
 
-        $this->trigger(self::EVENT_DEFINE_SOURCE_SORT_OPTIONS, $event);
-        return $event->sortOptions;
+        // Combine duplicate attributes. If any attributes map to multiple sort
+        // options and each option has a string orderBy value, cmobine them
+        // with a CoalesceColumnsExpression.
+        return Collection::make($sortOptions)
+            ->groupBy('attribute')
+            ->map(function(Collection $group) {
+                $orderBys = $group->pluck('orderBy');
+                if ($orderBys->count() === 1 || $orderBys->doesntContain(fn($orderBy) => is_string($orderBy))) {
+                    return $group->first();
+                }
+                $expression = new CoalesceColumnsExpression($orderBys->all());
+                return array_merge($group->first(), [
+                    'orderBy' => $expression,
+                ]);
+            })
+            ->all();
     }
 
     /**
@@ -306,16 +345,12 @@ class ElementSources extends Component
      */
     public function getSortOptionsForFieldLayouts(array $fieldLayouts): array
     {
-        $processedFieldIds = [];
         $sortOptions = [];
 
         foreach ($fieldLayouts as $fieldLayout) {
             foreach ($fieldLayout->getCustomFieldElements() as $layoutElement) {
                 $field = $layoutElement->getField();
-                if (
-                    $field instanceof SortableFieldInterface &&
-                    !isset($processedFieldIds[$field->id])
-                ) {
+                if ($field instanceof SortableFieldInterface) {
                     $sortOption = $field->getSortOption();
                     if (!isset($sortOption['attribute'])) {
                         $sortOption['attribute'] = $sortOption['orderBy'];
@@ -324,7 +359,6 @@ class ElementSources extends Component
                         $sortOption['defaultDir'] = 'asc';
                     }
                     $sortOptions[] = $sortOption;
-                    $processedFieldIds[$field->id] = true;
                 }
             }
         }
@@ -335,23 +369,31 @@ class ElementSources extends Component
     /**
      * Returns any table attributes that should be available for a given source, in addition to the [[getAvailableTableAttributes()|common attributes]].
      *
-     * @param string $elementType The element type class
-     * @phpstan-param class-string<ElementInterface> $elementType
+     * @param class-string<ElementInterface> $elementType The element type class
      * @param string $sourceKey The element source key
      * @return array[]
      */
     public function getSourceTableAttributes(string $elementType, string $sourceKey): array
     {
-        $event = new DefineSourceTableAttributesEvent([
-            'elementType' => $elementType,
-            'source' => $sourceKey,
-        ]);
+        if ($sourceKey === '__IMP__') {
+            return [];
+        }
 
         $fieldLayouts = $this->getFieldLayoutsForSource($elementType, $sourceKey);
-        $event->attributes = array_merge($event->attributes, $this->getTableAttributesForFieldLayouts($fieldLayouts));
+        $attributes = $this->getTableAttributesForFieldLayouts($fieldLayouts);
 
-        $this->trigger(self::EVENT_DEFINE_SOURCE_TABLE_ATTRIBUTES, $event);
-        return $event->attributes;
+        // Fire a 'defineSourceTableAttributes' event
+        if ($this->hasEventHandlers(self::EVENT_DEFINE_SOURCE_TABLE_ATTRIBUTES)) {
+            $event = new DefineSourceTableAttributesEvent([
+                'elementType' => $elementType,
+                'source' => $sourceKey,
+                'attributes' => $attributes,
+            ]);
+            $this->trigger(self::EVENT_DEFINE_SOURCE_TABLE_ATTRIBUTES, $event);
+            return $event->attributes;
+        }
+
+        return $attributes;
     }
 
     /**
@@ -415,15 +457,12 @@ class ElementSources extends Component
     /**
      * Returns the native sources for a given element type and context, normalized with `type` keys.
      *
-     * @param string $elementType
-     * @phpstan-param class-string<ElementInterface> $elementType
+     * @param class-string<ElementInterface> $elementType
      * @param string $context
      * @return array[]
      */
     private function _nativeSources(string $elementType, string $context): array
     {
-        /** @var string|ElementInterface $elementType */
-        /** @phpstan-var class-string<ElementInterface>|ElementInterface $elementType */
         $sources = $elementType::sources($context);
         $normalized = [];
 
@@ -461,8 +500,7 @@ class ElementSources extends Component
     /**
      * Returns the source configs for a given element type.
      *
-     * @param string $elementType The element type class
-     * @phpstan-param class-string<ElementInterface> $elementType
+     * @param class-string<ElementInterface> $elementType The element type class
      * @return array[]|null
      */
     private function _sourceConfigs(string $elementType): ?array
@@ -473,8 +511,7 @@ class ElementSources extends Component
     /**
      * Returns the source config for a given native source key.
      *
-     * @param string $elementType
-     * @phpstan-param class-string<ElementInterface> $elementType
+     * @param class-string<ElementInterface> $elementType
      * @param string $sourceKey
      * @return array|null
      */

@@ -127,9 +127,7 @@ class DbHelperTest extends TestCase
         $group1 = new UserGroup(['id' => 1]);
         $group2 = new UserGroup(['id' => 2]);
 
-        $normalizeUserGroup = function($item) {
-            return $item instanceof UserGroup ? $item->id : null;
-        };
+        $normalizeUserGroup = fn($item) => $item instanceof UserGroup ? $item->id : null;
 
         $value = $group1;
         self::assertEquals(true, Db::normalizeParam($value, $normalizeUserGroup));

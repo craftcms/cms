@@ -1,13 +1,22 @@
 {% set attributes = attributes ?? {} %}
 {% set controls = controls ?? null %}
 {% set expanded = expanded ?? 'true' %}
+{% set content = (content ?? block('content') ?? '')|trim %}
+{% set cookieName = cookieName ?? null %}
+{% set cookieState = cookieName ? craft.app.request.rawCookies.value('Craft-' ~ craft.app.systemUid ~  ':' ~ cookieName) : null %}
+
+{% set state = state ?? cookieState ?? 'expanded' %}
 
 {% if controls %}
-    <craft-disclosure id="{{ id ?? null }}">
+    <craft-disclosure
+        id="{{ id ?? null }}"
+        {% if cookieName %}cookie-name="{{ cookieName }}"{% endif %}
+        state="{{ state }}"
+    >
         <button
             type="button"
             aria-controls="{{ controls }}"
-            aria-expanded="{{ expanded }}"
+            aria-expanded="{{ state == 'expanded' ? 'true' : 'false' }}"
             {{ attr(attributes) }}
         >
             {{ content | raw }}

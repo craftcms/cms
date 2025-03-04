@@ -7,8 +7,8 @@
 
 namespace craft\events;
 
+use craft\base\Event;
 use craft\models\UserGroup;
-use yii\base\Event;
 
 /**
  * UserGroupEvent class.

@@ -72,6 +72,17 @@ final class QueryParam
                 $value[$key] = $val;
             }
 
+            // Split the first value if it begins with an operator
+            $firstValue = $value[0];
+            if (str_contains($firstValue, ' ')) {
+                $parts = explode(' ', $firstValue);
+                $operator = self::extractOperator($parts);
+                if ($operator !== null) {
+                    $value[0] = implode(' ', $parts);
+                    array_unshift($value, $operator);
+                }
+            }
+
             // Remove any empty elements and reset the keys
             return array_values(ArrayHelper::filterEmptyStringsFromArray($value));
         }

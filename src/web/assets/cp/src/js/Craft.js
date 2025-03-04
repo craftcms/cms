@@ -413,6 +413,19 @@ $.extend(Craft, {
   },
 
   /**
+   * Sleeps for the given duration in milliseconds.
+   *
+   * @param {number} delay
+   * @return {Promise}
+   * @since 5.6.0
+   */
+  sleep: function (delay) {
+    return new Promise((resolve) => {
+      setTimeout(resolve, delay);
+    });
+  },
+
+  /**
    * @param {string} [path]
    * @param {(Object|string)} [params]
    * @param {string} [baseUrl]
@@ -831,7 +844,15 @@ $.extend(Craft, {
         // Force Safari to not load from cache
         v: new Date().getTime(),
       });
-      axios.request(options).then(resolve).catch(reject);
+      axios
+        .request(options)
+        .then((response) => {
+          if (response.headers['x-csrf-token']) {
+            Craft.csrfTokenValue = response.headers['x-csrf-token'];
+          }
+          resolve(response);
+        })
+        .catch(reject);
     });
   },
 
@@ -1136,15 +1157,13 @@ $.extend(Craft, {
     // Make sure oldData and newData are always strings. This is important because further below String.split is called.
     oldData = typeof oldData === 'string' ? oldData : '';
     newData = typeof newData === 'string' ? newData : '';
-    if (!Array.isArray(deltaNames)) {
-      deltaNames = [];
-    }
-    if (!$.isPlainObject(initialDeltaValues)) {
-      initialDeltaValues = {};
-    }
-    if (!Array.isArray(modifiedDeltaNames)) {
-      modifiedDeltaNames = [];
-    }
+    deltaNames = Array.isArray(deltaNames) ? [...deltaNames] : [];
+    initialDeltaValues = $.isPlainObject(initialDeltaValues)
+      ? initialDeltaValues
+      : {};
+    modifiedDeltaNames = Array.isArray(modifiedDeltaNames)
+      ? [...modifiedDeltaNames]
+      : [];
 
     // Sort the delta namespaces from least -> most specific
     deltaNames.sort((a, b) => {
@@ -1182,6 +1201,17 @@ $.extend(Craft, {
         modifiedDeltaNames.push(name);
       }
     }
+
+    // Sort the delta namespaces from least -> most specific
+    modifiedDeltaNames.sort((a, b) => {
+      if (a.length === b.length) {
+        return 0;
+      }
+      if (mostSpecific) {
+        return a.length < b.length ? 1 : -1;
+      }
+      return a.length > b.length ? 1 : -1;
+    });
 
     return [modifiedDeltaNames, groupedNewParams];
   },
@@ -1529,11 +1559,29 @@ $.extend(Craft, {
    *
    * @param {string} str
    * @param {string} substr
+   * @param {boolean} [caseInsensitive=false]
    * @returns {boolean}
-   * @deprecated String.prototype.endsWith() should be used instead
    */
-  startsWith: function (str, substr) {
+  startsWith: function (str, substr, caseInsensitive = false) {
+    if (caseInsensitive) {
+      return str.toLowerCase().startsWith(substr.toLowerCase());
+    }
     return str.startsWith(substr);
+  },
+
+  /**
+   * Returns whether a string ends with another string.
+   *
+   * @param {string} str
+   * @param {string} substr
+   * @param {boolean} [caseInsensitive=false]
+   * @returns {boolean}
+   */
+  endsWith: function (str, substr, caseInsensitive = false) {
+    if (caseInsensitive) {
+      return str.toLowerCase().endsWith(substr.toLowerCase());
+    }
+    return str.endsWith(substr);
   },
 
   /**
@@ -1541,10 +1589,11 @@ $.extend(Craft, {
    *
    * @param {string} str
    * @param {string} substr
+   * @param {boolean} [caseInsensitive=false]
    * @return {string}
    */
-  ensureStartsWith: function (str, substr) {
-    if (!str.startsWith(substr)) {
+  ensureStartsWith: function (str, substr, caseInsensitive = false) {
+    if (!Craft.startsWith(str, substr, caseInsensitive)) {
       str = substr + str;
     }
     return str;
@@ -1555,11 +1604,42 @@ $.extend(Craft, {
    *
    * @param {string} str
    * @param {string} substr
+   * @param {boolean} [caseInsensitive=false]
    * @return {string}
    */
-  ensureEndsWith: function (str, substr) {
-    if (!str.endsWith(substr)) {
+  ensureEndsWith: function (str, substr, caseInsensitive = false) {
+    if (!Craft.endsWith(str, substr, caseInsensitive)) {
       str += substr;
+    }
+    return str;
+  },
+
+  /**
+   * Removes a string from the beginning of another string.
+   *
+   * @param {string} str
+   * @param {string} substr
+   * @param {boolean} [caseInsensitive=false]
+   * @return {string}
+   */
+  removeLeft: function (str, substr, caseInsensitive = false) {
+    if (Craft.startsWith(str, substr, caseInsensitive)) {
+      return str.slice(substr.length);
+    }
+    return str;
+  },
+
+  /**
+   * Removes a string from the end of another string.
+   *
+   * @param {string} str
+   * @param {string} substr
+   * @param {boolean} [caseInsensitive=false]
+   * @return {string}
+   */
+  removeRight: function (str, substr, caseInsensitive = false) {
+    if (Craft.endsWith(str, substr, caseInsensitive)) {
+      return str.slice(0, -substr.length);
     }
     return str;
   },
@@ -2004,7 +2084,6 @@ $.extend(Craft, {
    */
   initUiElements: function ($container) {
     $('.grid', $container).grid();
-    $('.info', $container).infoicon();
     $('.checkbox-select', $container).checkboxselect();
     $('.fieldtoggle', $container).fieldtoggle();
     $('.lightswitch', $container).lightswitch();
@@ -2018,6 +2097,26 @@ $.extend(Craft, {
     // menus last, since they can mess with the DOM
     $('.menubtn:not([data-disclosure-trigger])', $container).menubtn();
     $('[data-disclosure-trigger]', $container).disclosureMenu();
+
+    /**
+     * Swap any instruction text with info icons
+     * This needs to happen before the `infoicon` method
+     */
+    $(
+      '.field.info-icon-instructions > .instructions, #details .meta > .field > .instructions',
+      $container
+    ).each(function () {
+      const $instructions = $(this);
+      const $label = $instructions.siblings('.heading').find('label');
+      $('<div/>', {
+        class: 'info',
+        html: $instructions.children().html(),
+      }).appendTo($label);
+      // Keep the original element around in case an aria-describedby attribute is referencing it
+      $instructions.addClass('visually-hidden');
+    });
+
+    $('.info', $container).infoicon();
 
     // Open outbound links in new windows
     // hat tip: https://stackoverflow.com/a/2911045/1688568
@@ -2207,7 +2306,7 @@ $.extend(Craft, {
    * Retrieves a value from localStorage if it exists.
    *
    * @param {string} key
-   * @param {*} defaultValue
+   * @param {*} [defaultValue]
    */
   getLocalStorage: function (key, defaultValue) {
     key = 'Craft-' + Craft.systemUid + '.' + key;
@@ -2384,6 +2483,8 @@ $.extend(Craft, {
           key: i,
           type: $element.data('type'),
           id: elementId,
+          fieldId: $element.data('field-id'),
+          ownerId: $element.data('owner-id'),
           siteId,
           instances: [],
         };
@@ -2399,11 +2500,17 @@ $.extend(Craft, {
         for (let key of Object.keys(instances)) {
           const $element = $elements.eq(key);
           const $replacement = $(instances[key]);
-          for (let attribute of $replacement[0].attributes) {
+          const replacementAttributes = $replacement[0].attributes;
+          for (let attribute of replacementAttributes) {
             if (attribute.name === 'class') {
               $element.addClass(attribute.value);
             } else {
               $element.attr(attribute.name, attribute.value);
+            }
+          }
+          for (let attribute of $element[0].attributes) {
+            if (replacementAttributes[attribute.name] === undefined) {
+              $element.removeAttr(attribute.name);
             }
           }
           const $actions = $element
@@ -2412,11 +2519,13 @@ $.extend(Craft, {
             )
             .detach();
           const $inputs = $element.find('input,button').detach();
-          $element.html($replacement.html());
+          $element.html($replacement.html()).removeClass('error');
 
           if ($actions.length) {
             const $oldStatus = $actions.find('span.status');
-            const $newStatus = $replacement.find('span.status');
+            const $newStatus = $replacement.find(
+              '> .chip-content .chip-actions span.status,> .card-actions-container .card-actions span.status'
+            );
 
             if (
               $oldStatus.length &&
@@ -2488,8 +2597,9 @@ $.extend(Craft, {
    *
    * @param {jQuery|HTMLElement} chip
    * @param {Array} actions
+   * @param {boolean} [prepend]
    */
-  addActionsToChip(chip, actions) {
+  addActionsToChip(chip, actions, prepend = false) {
     if (!actions?.length) {
       return;
     }
@@ -2529,12 +2639,22 @@ $.extend(Craft, {
     const safeActions = actions.filter((a) => !a.destructive);
     const destructiveActions = actions.filter((a) => a.destructive);
 
+    let before = prepend
+      ? disclosureMenu.$container.children().first().get(0)
+      : null;
+
     if (safeActions.length) {
-      disclosureMenu.addItems(safeActions, disclosureMenu.addGroup());
+      disclosureMenu.addItems(
+        safeActions,
+        disclosureMenu.addGroup(null, true, before)
+      );
     }
 
     if (destructiveActions.length) {
-      disclosureMenu.addItems(destructiveActions, disclosureMenu.addGroup());
+      disclosureMenu.addItems(
+        destructiveActions,
+        disclosureMenu.addGroup(null, true, before)
+      );
     }
 
     Craft.initUiElements(disclosureMenu.$container);
@@ -2613,6 +2733,14 @@ $.extend(Craft, {
    */
   trapFocusWithin: function (container) {
     Garnish.trapFocusWithin(container);
+  },
+
+  /**
+   * Releases focus within a container.
+   * @param {Object} container
+   */
+  releaseFocusWithin: function (container) {
+    Garnish.releaseFocusWithin(container);
   },
 
   /**
@@ -2976,6 +3104,7 @@ $.extend($.fn, {
         confirm: $btn.data('confirm'),
         action: $btn.data('action'),
         redirect: $btn.data('redirect'),
+        retainScroll: Garnish.hasAttr($btn, 'data-retain-scroll'),
         requireElevatedSession: Garnish.hasAttr(
           $btn,
           'data-require-elevated-session'
@@ -3025,7 +3154,11 @@ $.extend($.fn, {
       let checkValue = () => {
         let hasValue = false;
         for (let i = 0; i < $inputs.length; i++) {
-          if ($inputs.eq(i).val() && !$inputs.eq(i).is(':disabled')) {
+          if ($inputs.eq(i).is(':disabled')) {
+            hasValue = false;
+            break;
+          }
+          if ($inputs.eq(i).val()) {
             hasValue = true;
             break;
           }

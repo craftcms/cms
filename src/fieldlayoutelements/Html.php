@@ -37,7 +37,7 @@ class Html extends FieldLayoutElement
      */
     public function selectorHtml(): string
     {
-        throw new NotSupportedException(sprintf('%s should not be included in user-modifyable field layouts.', __CLASS__));
+        throw new NotSupportedException(sprintf('%s should not be included in user-modifyable field layouts.', self::class));
     }
 
     /**

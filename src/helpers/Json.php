@@ -124,13 +124,25 @@ class Json extends \yii\helpers\Json
                 $indent = $defaultIndent;
             }
 
-            if ($indent !== '    ') {
-                $json = preg_replace_callback('/^ {4,}/m', function(array $match) use ($indent) {
-                    return strtr($match[0], ['    ' => $indent]);
-                }, $json);
-            }
+            $json = static::reindent($json, $indent);
         }
 
         FileHelper::writeToFile($path, $json);
+    }
+
+    /**
+     * Re-indents JSON with the given indentation string.
+     *
+     * @param string $json
+     * @param string $indent
+     * @return string
+     * @since 5.7.0
+     */
+    public static function reindent(string $json, string $indent = '  '): string
+    {
+        if ($indent !== '    ') {
+            return preg_replace_callback('/^ {4,}/m', fn(array $match) => strtr($match[0], ['    ' => $indent]), $json);
+        }
+        return $json;
     }
 }

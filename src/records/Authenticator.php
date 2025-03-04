@@ -17,6 +17,7 @@ use yii\db\ActiveQueryInterface;
  * @property int $id ID
  * @property int $userId Volume ID
  * @property string $auth2faSecret 2FA secret
+ * @property int $oldTimestamp old TOTP timestamp
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 5.0.0
  */
@@ -39,6 +40,7 @@ class Authenticator extends ActiveRecord
         return [
             [['userId', 'auth2faSecret'], 'required'],
             [['auth2faSecret'], 'string', 'max' => 32],
+            [['oldTimestamp'], 'integer'],
         ];
     }
 

@@ -21,6 +21,7 @@ use craft\addresses\SubdivisionRepository;
 use craft\base\FieldLayoutProviderInterface;
 use craft\elements\Address;
 use craft\events\ConfigEvent;
+use craft\events\DefineAddressCountriesEvent;
 use craft\events\DefineAddressFieldLabelEvent;
 use craft\events\DefineAddressFieldsEvent;
 use craft\events\DefineAddressSubdivisionsEvent;
@@ -69,6 +70,18 @@ class Addresses extends Component implements FieldLayoutProviderInterface
      * @since 4.5.0
      */
     public const EVENT_DEFINE_ADDRESS_SUBDIVISIONS = 'defineAddressSubdivisions';
+
+    /**
+     * @event DefineAddressCountriesEvent The event that is triggered when defining country options for an address.
+     *
+     * This event is primarily used to modify the list of countries that are available for selection. You can also use
+     * the event to add additional countries to the list, however, this will require you to use dependency injection to override the
+     * `Addresses::getCountryRepository()` method and provide your own `CountryRepository` instance.
+     *
+     * @see getCountryList()
+     * @since 5.5.0
+     */
+    public const EVENT_DEFINE_ADDRESS_COUNTRIES = 'defineAddressCountries';
 
     /**
      * @var FormatterInterface|null The default address formatter used by [[formatAddress()]]
@@ -143,17 +156,42 @@ class Addresses extends Component implements FieldLayoutProviderInterface
      */
     public function defineAddressSubdivisions(array $parents, array $options = []): array
     {
+        // Fire a 'defineAddressSubdivisions' event
         if ($this->hasEventHandlers(self::EVENT_DEFINE_ADDRESS_SUBDIVISIONS)) {
             $event = new DefineAddressSubdivisionsEvent([
                 'parents' => $parents,
                 'subdivisions' => $options,
             ]);
             $this->trigger(self::EVENT_DEFINE_ADDRESS_SUBDIVISIONS, $event);
-
             return $event->subdivisions;
         }
 
         return $options;
+    }
+
+    /**
+     * Returns a list of countries to be used as options for selection.
+     *
+     * @param string|null $locale
+     * @return array
+     * @since 5.5.0
+     */
+    public function getCountryList(?string $locale = null): array
+    {
+        $locale ??= Craft::$app->language;
+        $countries = $this->getCountryRepository()->getList($locale);
+
+        if ($this->hasEventHandlers(self::EVENT_DEFINE_ADDRESS_COUNTRIES)) {
+            $event = new DefineAddressCountriesEvent([
+                'locale' => $locale,
+                'countries' => $countries,
+            ]);
+            $this->trigger(self::EVENT_DEFINE_ADDRESS_COUNTRIES, $event);
+
+            return $event->countries;
+        }
+
+        return $countries;
     }
 
     /**
@@ -168,6 +206,7 @@ class Addresses extends Component implements FieldLayoutProviderInterface
     {
         $fields = $this->getAddressFormatRepository()->get($countryCode)->getUsedFields();
 
+        // Fire a 'defineUsedFields' event
         if ($this->hasEventHandlers(self::EVENT_DEFINE_USED_FIELDS)) {
             $event = new DefineAddressFieldsEvent([
                 'countryCode' => $countryCode,
@@ -192,6 +231,7 @@ class Addresses extends Component implements FieldLayoutProviderInterface
     {
         $fields = $this->getAddressFormatRepository()->get($countryCode)->getUsedSubdivisionFields();
 
+        // Fire a 'defineUsedSubdivisionFields' event
         if ($this->hasEventHandlers(self::EVENT_DEFINE_USED_SUBDIVISION_FIELDS)) {
             $event = new DefineAddressFieldsEvent([
                 'countryCode' => $countryCode,
@@ -230,6 +270,7 @@ class Addresses extends Component implements FieldLayoutProviderInterface
             AddressField::FAMILY_NAME => Craft::t('app', 'Last Name'),
         };
 
+        // Fire a 'defineFieldLabel' event
         if ($this->hasEventHandlers(self::EVENT_DEFINE_FIELD_LABEL)) {
             $event = new DefineAddressFieldLabelEvent([
                 'countryCode' => $countryCode,
@@ -271,9 +312,10 @@ class Addresses extends Component implements FieldLayoutProviderInterface
     public function getLocalityTypeLabel(?string $type): string
     {
         return match ($type) {
-            LocalityType::SUBURB => Craft::t('app', 'Suburb'),
             LocalityType::DISTRICT => Craft::t('app', 'District'),
             LocalityType::POST_TOWN => Craft::t('app', 'Post Town'),
+            LocalityType::SUBURB => Craft::t('app', 'Suburb'),
+            LocalityType::TOWN_CITY => Craft::t('app', 'City/Town'),
             default => Craft::t('app', 'City'),
         };
     }

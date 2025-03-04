@@ -99,6 +99,15 @@ class LatLongField extends BaseNativeField
     /**
      * @inheritdoc
      */
+    protected function defaultLabel(?ElementInterface $element = null, bool $static = false): ?string
+    {
+        // we need it for the card view designer
+        return Craft::t('app', 'Latitude/Longitude');
+    }
+
+    /**
+     * @inheritdoc
+     */
     protected function selectorLabel(): ?string
     {
         return Craft::t('app', 'Latitude/Longitude');
@@ -110,7 +119,7 @@ class LatLongField extends BaseNativeField
     protected function inputHtml(ElementInterface $element = null, bool $static = false): ?string
     {
         if (!$element instanceof Address) {
-            throw new InvalidArgumentException(sprintf('%s can only be used in address field layouts.', __CLASS__));
+            throw new InvalidArgumentException(sprintf('%s can only be used in address field layouts.', self::class));
         }
 
         return
@@ -122,6 +131,9 @@ class LatLongField extends BaseNativeField
                 'name' => 'latitude',
                 'value' => $element->latitude,
                 'required' => $this->required,
+                'data' => [
+                    'error-key' => 'latitude',
+                ],
             ]) .
             Cp::textFieldHtml([
                 'fieldClass' => 'width-50',
@@ -130,6 +142,9 @@ class LatLongField extends BaseNativeField
                 'name' => 'longitude',
                 'value' => $element->longitude,
                 'required' => $this->required,
+                'data' => [
+                    'error-key' => 'longitude',
+                ],
             ]) .
             Html::endTag('div');
     }
@@ -143,5 +158,17 @@ class LatLongField extends BaseNativeField
             return [];
         }
         return array_merge($element->getErrors('latitude'), $element->getErrors('longitude'));
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function previewPlaceholderHtml(mixed $value, ?ElementInterface $element): string
+    {
+        if ($element) {
+            return $this->previewHtml($element);
+        }
+
+        return '61.108, -149.779';
     }
 }

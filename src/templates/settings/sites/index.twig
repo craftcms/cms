@@ -1,16 +1,19 @@
 {% extends "_layouts/cp" %}
 {% set title = "Sites"|t('app') %}
+{% set readOnly = not craft.app.config.general.allowAdminChanges %}
 
-{% set multiple = (sites|length > 1) %}
-{% set canSort = group and multiple %}
+{% set multiple = (sites|length > 1) and not readOnly %}
+{% set canSort = group and multiple and not readOnly %}
 
 
 {% block actionButton %}
-    {{ tag('a', {
-        href: url('settings/sites/new', (group ? { groupId: group.id } : null)),
-        class:  ['btn', 'submit', 'add', 'icon', craft.app.sites.getRemainingSites() ? null : 'disabled'],
-        text: "New site"|t('app'),
-    }) }}
+    {% if not readOnly %}
+        {{ tag('a', {
+            href: url('settings/sites/new', (group ? { groupId: group.id } : null)),
+            class:  ['btn', 'submit', 'add', 'icon', craft.app.sites.getRemainingSites() ? null : 'disabled'],
+            text: "New site"|t('app'),
+        }) }}
+    {% endif %}
 {% endblock %}
 
 
@@ -34,21 +37,26 @@
         </ul>
     </nav>
 
-    <div class="buttons">
-        <button type="button" id="newgroupbtn" class="btn add icon">{{ "New group"|t('app') }}</button>
+    {% if not readOnly %}
+        <div class="buttons">
+            <button type="button" id="newgroupbtn" class="btn add icon">{{ "New group"|t('app') }}</button>
 
-        {% if group %}
-            <button type="button" id="groupsettingsbtn" class="btn settings icon menubtn" title="{{ 'Settings' }}" aria-label="{{ 'Settings' }}"></button>
-            <div class="menu">
-                <ul>
-                    <li><a data-action="rename" role="button">{{ "Rename selected group"|t('app') }}</a></li>
-                    <li><a data-action="delete" role="button"{% if sites|length %} class="disabled" title="{{ 'You can only delete groups that have no sites.'|t('app') }}"{% endif %}>{{ "Delete selected group"|t('app') }}</a></li>
-                </ul>
-            </div>
-        {% endif %}
-    </div>
+            {% if group %}
+                <button type="button" id="groupsettingsbtn" class="btn settings icon menubtn" title="{{ 'Settings' }}" aria-label="{{ 'Settings' }}"></button>
+                <div class="menu">
+                    <ul>
+                        <li><a data-action="rename" role="button">{{ "Rename selected group"|t('app') }}</a></li>
+                        <li><a data-action="delete" role="button"{% if sites|length %} class="disabled" title="{{ 'You can only delete groups that have no sites.'|t('app') }}"{% endif %}>{{ "Delete selected group"|t('app') }}</a></li>
+                    </ul>
+                </div>
+            {% endif %}
+        </div>
+    {% endif %}
 {% endblock %}
 
+{% if readOnly %}
+    {% set contentNotice = readOnlyNotice() %}
+{% endif %}
 
 {% block content %}
     {% if sites|length %}

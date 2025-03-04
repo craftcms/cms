@@ -652,7 +652,7 @@ import './dashboard.scss';
 
       // Focus on the first input
       setTimeout(() => {
-        this.$settingsForm.find(':focusable:first').trigger('focus');
+        this.$settingsForm.find(':focusable:first').focus();
       }, 1);
     },
 
@@ -704,7 +704,6 @@ import './dashboard.scss';
           return window.dashboard.grid.totalCols;
         },
         step: 1,
-        label: Craft.t('app', 'Number of columns'),
         describedBy: this.getWidgetLabelId(),
         valueLabel: (colspan) => {
           return Craft.t(

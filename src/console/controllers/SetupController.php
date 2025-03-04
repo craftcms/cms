@@ -252,9 +252,7 @@ EOD;
         $this->driver = $this->prompt('Which database driver are you using? (mysql or pgsql)', [
             'required' => true,
             'default' => $this->driver ?? $envDriver ?: 'mysql',
-            'validator' => function(string $input) {
-                return in_array($input, [Connection::DRIVER_MYSQL, Connection::DRIVER_PGSQL]);
-            },
+            'validator' => fn(string $input) => in_array($input, [Connection::DRIVER_MYSQL, Connection::DRIVER_PGSQL]),
         ]);
         $this->_useEnvDefaults = !$envDriver || $envDriver === $this->driver;
 
@@ -269,9 +267,7 @@ EOD;
         $this->port = (int)$this->prompt('Database port:', [
             'required' => true,
             'default' => $this->port ?? $this->_envDefault('CRAFT_DB_PORT') ?? ($this->driver === Connection::DRIVER_MYSQL ? 3306 : 5432),
-            'validator' => function(string $input): bool {
-                return is_numeric($input);
-            },
+            'validator' => fn(string $input): bool => is_numeric($input),
         ]);
 
         userCredentials:

@@ -8,6 +8,7 @@
 namespace crafttests\unit\web;
 
 use Codeception\Test\Unit;
+use craft\helpers\DateTimeHelper;
 use craft\test\TestCase;
 use craft\web\Response;
 
@@ -47,15 +48,16 @@ class ResponseTest extends TestCase
      */
     public function testSetCacheHeaders(): void
     {
+        DateTimeHelper::pause();
         $this->response->setCacheHeaders();
         $headers = $this->response->getHeaders();
-
         $cacheTime = 31536000; // 1 year
-
         self::assertSame('cache', $headers->get('Pragma'));
         self::assertSame('cache', $headers->get('Pragma'));
         self::assertSame('public, max-age=31536000', $headers->get('Cache-Control'));
-        self::assertSame(gmdate('D, d M Y H:i:s', time() + $cacheTime) . ' GMT', $headers->get('Expires'));
+        $expectedExpires = DateTimeHelper::currentTimeStamp() + $cacheTime;
+        self::assertSame(gmdate('D, d M Y H:i:s', $expectedExpires) . ' GMT', $headers->get('Expires'));
+        DateTimeHelper::resume();
     }
 
     /**

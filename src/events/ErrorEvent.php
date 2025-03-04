@@ -7,8 +7,8 @@
 
 namespace craft\events;
 
+use craft\base\Event;
 use Exception;
-use yii\base\Event;
 
 /**
  * Exception event class.

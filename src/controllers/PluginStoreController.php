@@ -107,6 +107,7 @@ class PluginStoreController extends Controller
         $data['CraftSolo'] = CmsEdition::Solo->value;
         $data['CraftTeam'] = CmsEdition::Team->value;
         $data['CraftPro'] = CmsEdition::Pro->value;
+        $data['CraftEnterprise'] = CmsEdition::Enterprise->value;
 
         // Logos
         $data['craftLogo'] = Craft::$app->getAssetManager()->getPublishedUrl('@app/web/assets/pluginstore/dist/', true, 'images/craft.svg');

@@ -11,6 +11,7 @@ use Composer\Semver\Comparator;
 use Craft;
 use craft\errors\InvalidPluginException;
 use craft\helpers\App;
+use craft\helpers\FileHelper;
 use RequirementsChecker;
 use Symfony\Component\Process\Process;
 use Throwable;
@@ -99,8 +100,13 @@ class UpdaterController extends BaseUpdaterController
      */
     public function actionRestoreDb(): Response
     {
+        $backupPath = $this->data['dbBackupPath'];
+        if (!file_exists($backupPath) || !FileHelper::isWithin($backupPath, Craft::$app->getPath()->getDbBackupPath())) {
+            throw new BadRequestHttpException("Invalid backup path: $backupPath");
+        }
+
         try {
-            Craft::$app->getDb()->restore($this->data['dbBackupPath']);
+            Craft::$app->getDb()->restore($backupPath);
         } catch (Throwable $e) {
             Craft::error('Error restoring up the database: ' . $e->getMessage(), __METHOD__);
             return $this->send([

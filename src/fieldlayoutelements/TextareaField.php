@@ -9,6 +9,7 @@ namespace craft\fieldlayoutelements;
 
 use Craft;
 use craft\base\ElementInterface;
+use craft\helpers\Html as HtmlHelper;
 
 /**
  * TextareaField represents a textarea field that can be included in field layouts.
@@ -88,8 +89,24 @@ class TextareaField extends BaseNativeField
      */
     protected function inputHtml(?ElementInterface $element = null, bool $static = false): ?string
     {
-        return Craft::$app->getView()->renderTemplate('_includes/forms/textarea.twig', [
-            'class' => $this->class,
+        return Craft::$app->getView()->renderTemplate(
+            '_includes/forms/textarea.twig',
+            $this->inputTemplateVariables($element, $static),
+        );
+    }
+
+    /**
+     * Returns the variables that should be passed to the `_includes/forms/textarea.twig` template.
+     *
+     * @param ElementInterface|null $element The element the form is being rendered for
+     * @param bool $static Whether the form should be static (non-interactive)
+     * @return array
+     * @since 5.1.5
+     */
+    protected function inputTemplateVariables(?ElementInterface $element, bool $static): array
+    {
+        return [
+            'class' => HtmlHelper::explodeClass($this->class),
             'id' => $this->id(),
             'describedBy' => $this->describedBy($element, $static),
             'rows' => $this->rows,
@@ -103,7 +120,7 @@ class TextareaField extends BaseNativeField
             'required' => !$static && $this->required,
             'title' => $this->title,
             'placeholder' => $this->placeholder,
-        ]);
+        ];
     }
 
     /**

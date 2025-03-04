@@ -1,7 +1,30 @@
 {% extends '_includes/forms/fld/field-settings.twig' %}
 {% import '_includes/forms' as forms %}
 
+{% set originalField = craft.app.fields.getFieldByUid(field.getField().uid) %}
+
 {% block fieldSettings %}
+  {% if originalField %}
+    {% set fieldChipId = "chip#{random()}" %}
+    <div class="pane no-border p-m">
+      {{ chip(originalField, {
+        id: fieldChipId,
+        class: 'hairline',
+        showActionMenu: true,
+        showHandle: true,
+      }) }}
+    </div>
+
+    {% js %}
+      (() => {
+        const $chip = $('#{{ fieldChipId|namespaceInputId }}');
+        $chip.on('dblclick taphold', (ev) => {
+          $chip.find('.btn').data('disclosureMenu').$container.find('[data-edit-action]').click();
+        });
+      })();
+    {% endjs %}
+  {% endif %}
+
   {{ block('labelField') }}
 
   {{ forms.textField({
@@ -18,8 +41,10 @@
     required: true,
     data: {
       'error-key': 'handle'
-    }
+    },
   }) }}
 
   {{ block('instructionsField') }}
+  {{ block('tipField') }}
+  {{ block('warningField') }}
 {% endblock %}

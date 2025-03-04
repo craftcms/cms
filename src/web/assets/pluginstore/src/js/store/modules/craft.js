@@ -17,6 +17,7 @@ const state = {
   CraftSolo: null,
   CraftTeam: null,
   CraftPro: null,
+  CraftEnterprise: null,
 };
 
 /**
@@ -141,6 +142,8 @@ const getters = {
           return state.CraftTeam;
         case 'pro':
           return state.CraftPro;
+        case 'enterprise':
+          return state.CraftEnterprise;
         default:
           return null;
       }
@@ -253,6 +256,7 @@ const mutations = {
     state.CraftSolo = response.data.CraftSolo;
     state.CraftTeam = response.data.CraftTeam;
     state.CraftPro = response.data.CraftPro;
+    state.CraftEnterprise = response.data.CraftEnterprise;
   },
 
   updateCraftIdData(state, {responseData}) {

@@ -240,7 +240,7 @@ class AssetIndexer extends Component
             $record = AssetIndexingSessionRecord::findOne($session->id);
         }
 
-        $record = $record ?? new AssetIndexingSessionRecord();
+        $record ??= new AssetIndexingSessionRecord();
 
         $record->indexedVolumes = $session->indexedVolumes;
         $record->totalEntries = $session->totalEntries;
@@ -309,6 +309,26 @@ class AssetIndexer extends Component
 
         // The most likely scenario is that the last entry is being worked on.
         if (!$indexEntry && !$indexingSession->processIfRootEmpty) {
+            // if indexEntry is null here, we should also check if there's anything in the assetindexdata table at all
+            // (if not, it could have been deleted when clearing caches)
+            // if that table is empty, we'll get into an infinite loop, calling processIndexSession with the same data all the time
+            // (and it'll be very hard to discard the session via ui)
+            if ($indexingSession->processedEntries < $indexingSession->totalEntries) {
+                $count = (new Query())
+                    ->from([Table::ASSETINDEXDATA])
+                    ->where([
+                        'sessionId' => $indexingSession->id,
+                        'completed' => false,
+                        'inProgress' => false,
+                    ])
+                    ->count();
+
+                if ((int)$count === 0) {
+                    Craft::warning('The assetindexdata table is empty; Can’t proceed with indexing.');
+                    $indexingSession->forceStop = true;
+                }
+            }
+
             $mutex->release($lockName);
             return $indexingSession;
         }
@@ -468,9 +488,7 @@ class AssetIndexer extends Component
             if ($session->listEmptyFolders && $hasAssets > 0) {
                 // if the folder contains as many assets as are listed in the $missingFiles
                 // allow this folder to be offered for deletion (with the assets in it)
-                if ($hasAssets == count(array_filter($missingFiles, function($file) use ($path) {
-                    return StringHelper::startsWith($file['path'], $path);
-                }))) {
+                if ($hasAssets == count(array_filter($missingFiles, fn($file) => StringHelper::startsWith($file['path'], $path)))) {
                     $missing['folders'][$folderId] = $volumeName . '/' . $path;
                 }
             }

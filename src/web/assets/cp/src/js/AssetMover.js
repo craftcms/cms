@@ -50,7 +50,8 @@ Craft.AssetMover = Garnish.Base.extend({
   moveFolders: function (folderIds, targetFolderId) {
     return new Promise((resolve, reject) => {
       const transferList = [];
-      const folderIdsToDelete = [];
+      let folderIdsToDelete = [];
+      let folderIdsWithFailedAssets = [];
 
       const requests = folderIds.map((folderId) => {
         return {
@@ -62,6 +63,9 @@ Craft.AssetMover = Garnish.Base.extend({
           },
           onSuccess: (response) => {
             if (response.transferList.length) {
+              response.transferList.forEach(
+                (item) => (item['oldFolderId'] = folderId)
+              );
               transferList.push(...response.transferList);
             }
             folderIdsToDelete.push(folderId);
@@ -106,7 +110,27 @@ Craft.AssetMover = Garnish.Base.extend({
         },
       })
         .then((totalMoved) => {
-          this._processTransferList(transferList).then(() => {
+          this._processTransferList(transferList).then((response) => {
+            response.forEach((asset) => {
+              if (asset.error?.length) {
+                let oldFolderId = asset.request.params.oldFolderId;
+
+                // store the old folder ID of the asset that failed to move
+                if (!folderIdsWithFailedAssets.includes(oldFolderId)) {
+                  folderIdsWithFailedAssets.push(oldFolderId);
+                }
+
+                // if the old folder ID of the asset that failed to move is due for deletion, prevent it
+                if (folderIdsToDelete.includes(oldFolderId)) {
+                  folderIdsToDelete = folderIdsToDelete.filter(function (item) {
+                    return item !== oldFolderId;
+                  });
+                }
+              }
+            });
+
+            // adjust number of moved folders
+            totalMoved = totalMoved - folderIdsWithFailedAssets.length;
             this._deleteFolders(folderIdsToDelete).then(() => {
               resolve(totalMoved);
             });

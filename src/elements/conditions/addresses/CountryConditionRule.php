@@ -39,7 +39,7 @@ class CountryConditionRule extends BaseMultiSelectConditionRule implements Eleme
      */
     protected function options(): array
     {
-        return Craft::$app->getAddresses()->getCountryRepository()->getList();
+        return Craft::$app->getAddresses()->getCountryList();
     }
 
     /**

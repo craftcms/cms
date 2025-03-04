@@ -169,8 +169,7 @@ class TestSetup
     }
 
     /**
-     * @param string $class
-     * @phpstan-param class-string<Migration> $class
+     * @param class-string<Migration> $class
      * @param array $params
      * @param bool $ignorePreviousMigrations
      * @return bool
@@ -296,8 +295,7 @@ class TestSetup
 
     /**
      * @param string $preDefinedAppType
-     * @return string
-     * @phpstan-return class-string<ConsoleApplication|WebApplication>
+     * @return class-string<ConsoleApplication|WebApplication>
      */
     public static function appClass(string $preDefinedAppType = ''): string
     {
@@ -319,6 +317,7 @@ class TestSetup
 
         $configPath = realpath(CRAFT_CONFIG_PATH);
         $contentMigrationsPath = realpath(CRAFT_MIGRATIONS_PATH);
+        $rootPath = realpath(CRAFT_ROOT_PATH);
         $storagePath = realpath(CRAFT_STORAGE_PATH);
         $templatesPath = realpath(CRAFT_TEMPLATES_PATH);
         $testsPath = realpath(CRAFT_TESTS_PATH);
@@ -328,7 +327,7 @@ class TestSetup
         ini_set('log_errors', '1');
         ini_set('error_log', $storagePath . '/logs/phperrors.log');
 
-        error_reporting(E_ALL);
+        error_reporting(E_ALL & ~E_DEPRECATED & ~E_USER_DEPRECATED);
         ini_set('display_errors', '1');
         defined('YII_DEBUG') || define('YII_DEBUG', true);
         defined('CRAFT_ENVIRONMENT') || define('CRAFT_ENVIRONMENT', '');
@@ -350,6 +349,7 @@ class TestSetup
         Craft::setAlias('@appicons', $srcPath . DIRECTORY_SEPARATOR . 'icons');
         Craft::setAlias('@config', $configPath);
         Craft::setAlias('@contentMigrations', $contentMigrationsPath);
+        Craft::setAlias('@root', $rootPath);
         Craft::setAlias('@storage', $storagePath);
         Craft::setAlias('@templates', $templatesPath);
         Craft::setAlias('@tests', $testsPath);
@@ -491,21 +491,20 @@ class TestSetup
             'site' => $site,
         ]);
 
-        $migration->safeUp();
+        $migration->up(true);
     }
 
     /**
      * @template T of Module
      * @param CodeceptionTestCase $test
      * @param array $serviceMap
-     * @param string|null $moduleClass
-     * @phpstan-param class-string<T>|null $moduleClass
+     * @param class-string<T>|null $moduleClass
      * @return T
      * @credit https://github.com/nerds-and-company/schematic/blob/master/tests/_support/Helper/Unit.php
      */
     public static function getMockModule(CodeceptionTestCase $test, array $serviceMap = [], ?string $moduleClass = null): Module
     {
-        $moduleClass = $moduleClass ?? self::appClass();
+        $moduleClass ??= self::appClass();
         $serviceMap = $serviceMap ?: self::getCraftServiceMap();
 
         $mockApp = self::getMock($test, $moduleClass);
@@ -544,8 +543,7 @@ class TestSetup
     /**
      * @template T
      * @param CodeceptionTestCase $test
-     * @param string $class
-     * @phpstan-param class-string<T> $class
+     * @param class-string<T> $class
      * @return T|MockObject
      * @credit https://github.com/nerds-and-company/schematic/blob/master/tests/_support/Helper/Unit.php
      */

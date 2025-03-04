@@ -157,7 +157,7 @@ class BaseContentRefactorMigration extends Migration
             // don't call $this->update() so it doesn't mess with the CLI output
             Db::update(Table::ELEMENTS_SITES, [
                 'title' => $element['title'] ?? null,
-                'content' => !empty($content) ? Db::prepareForJsonColumn($content, $this->db) : null,
+                'content' => $content ?: null,
             ], ['id' => $element['id']], updateTimestamp: false, db: $this->db);
 
             echo " done\n";
@@ -209,7 +209,6 @@ class BaseContentRefactorMigration extends Migration
     {
         $elementType = $element['type'];
         if ($elementType && class_exists($elementType) && is_subclass_of($elementType, ElementInterface::class)) {
-            /** @var string|ElementInterface $elementType */
             $label = $elementType::lowerDisplayName();
         } else {
             $label = 'element';

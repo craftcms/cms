@@ -9,7 +9,7 @@ Craft.SlugGenerator = Craft.BaseInputGenerator.extend({
     sourceVal = sourceVal.replace(/<(.*?)>/g, '');
 
     // Remove inner-word punctuation
-    sourceVal = sourceVal.replace(/['"‘’“”\[\]\(\)\{\}:]/g, '');
+    sourceVal = sourceVal.replace(/['"‘’“”ʻ\[\]\(\)\{\}:]/g, '');
 
     if (Craft.limitAutoSlugsToAscii) {
       // Convert extended ASCII characters to basic ASCII

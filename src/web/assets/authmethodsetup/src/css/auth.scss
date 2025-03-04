@@ -5,18 +5,17 @@
 #auth-method-setup {
   .auth-method {
     display: flex;
-    flex-direction: row;
+    flex-flow: row nowrap;
     align-items: center;
-    flex-wrap: nowrap;
     justify-content: space-between;
     gap: var(--l);
 
     h3 {
-      margin-bottom: var(--xs);
+      margin-block-end: var(--xs);
     }
 
     .auth-method-footer {
-      margin-top: var(--s);
+      margin-block-start: var(--s);
       display: flex;
       flex-direction: row;
       gap: var(--xs);
@@ -30,11 +29,11 @@
 
     .auth-method-active {
       display: inline-flex;
-      flex-direction: row;
-      flex-wrap: nowrap;
+      flex-flow: row nowrap;
       align-items: center;
       gap: var(--xs);
-      @include padding(0, var(--s), 0, 1px);
+      padding-inline: 1px var(--s);
+      padding-block: 0;
       border: 1px solid var(--enabled-color);
       font-weight: 500;
 
@@ -45,9 +44,9 @@
         background-color: var(--enabled-color);
         text-align: center;
 
-        &:before {
+        &::before {
           position: relative;
-          top: -2px;
+          inset-block-start: -2px;
           color: var(--white);
           opacity: 1;
         }
@@ -62,6 +61,7 @@
   justify-content: center;
   align-items: center;
   gap: var(--s);
+  text-align: center;
 
   .auth-method-setup-success-graphic {
     width: 50px;
@@ -70,7 +70,7 @@
     background-color: var(--enabled-color);
     text-align: center;
 
-    &:before {
+    &::before {
       position: relative;
       color: var(--white);
       opacity: 1;
@@ -80,24 +80,17 @@
   }
 
   h1.auth-method-setup-success-message {
-    border-bottom: none !important;
+    border-block-end: none !important;
   }
 }
 
 ul.auth-method-recovery-codes-list {
-  --width: 12em;
-  --gap: var(--s);
-  display: grid;
-  width: calc(var(--width) * 2 + var(--gap));
-  margin: 0 auto;
-  gap: var(--gap) !important;
-  grid-template-columns: var(--width) var(--width);
-  grid-template-rows: auto auto auto auto auto;
-  grid-auto-flow: column;
   @include fixed-width-font;
+  max-width: 20em;
+  margin-inline: auto;
 
-  li {
-    text-align: center;
+  @container (min-width: 20em) {
+    columns: 2;
   }
 }
 

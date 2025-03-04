@@ -148,9 +148,20 @@ class UserPermissionsTest extends TestCase
         );
 
         $this->tester->expectEvent(UserPermissions::class, UserPermissions::EVENT_AFTER_SAVE_USER_PERMISSIONS, function() use ($user) {
-            $this->userPermissions->saveUserPermissions($user->id, ['editUsers']);
+            $this->userPermissions->saveUserPermissions($user->id, ['viewUsers']);
         }, UserPermissionsEvent::class);
 
+        self::assertTrue(
+            $this->userPermissions->doesUserHavePermission($user->id, 'viewUsers')
+        );
+        self::assertFalse(
+            $this->userPermissions->doesUserHavePermission($user->id, 'editUsers')
+        );
+
+        $this->tester->expectEvent(UserPermissions::class, UserPermissions::EVENT_AFTER_SAVE_USER_PERMISSIONS, function() use ($user) {
+            $this->userPermissions->saveUserPermissions($user->id, ['viewUsers', 'editUsers']);
+        }, UserPermissionsEvent::class);
+        
         self::assertTrue(
             $this->userPermissions->doesUserHavePermission($user->id, 'editUsers')
         );

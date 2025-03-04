@@ -17,7 +17,7 @@ use yii\queue\Queue as BaseQueue;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
  */
-interface QueueInterface
+interface QueueInterface extends ReleasableQueueInterface
 {
     /**
      * Runs all the queued-up jobs.
@@ -39,20 +39,6 @@ interface QueueInterface
      * @since 3.4.0
      */
     public function retryAll(): void;
-
-    /**
-     * Releases all jobs.
-     *
-     * @since 3.4.0
-     */
-    public function releaseAll(): void;
-
-    /**
-     * Releases a job from the queue.
-     *
-     * @param string $id
-     */
-    public function release(string $id): void;
 
     /**
      * Sets the progress for the currently reserved job.

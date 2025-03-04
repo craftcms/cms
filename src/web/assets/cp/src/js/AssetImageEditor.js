@@ -3,6 +3,7 @@
 
 /**
  * Asset image editor class
+ * @property {Object} imageVerticeCoords - The corner coordinates of the image being edited
  */
 
 Craft.AssetImageEditor = Garnish.Modal.extend(
@@ -29,6 +30,9 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
     image: null,
     viewport: null,
     focalPoint: null,
+    focalPointInnerCircle: null,
+    focalPointOuterCircle: null,
+    focalPointPickedIndicator: null,
     grid: null,
     croppingCanvas: null,
     clipper: null,
@@ -52,7 +56,11 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
     cacheBust: null,
     draggingCropper: false,
     scalingCropper: false,
+    handleClicked: false,
     draggingFocal: false,
+    focalPickedUp: false,
+    focalClicked: false,
+    cropperClicked: false,
     previousMouseX: 0,
     previousMouseY: 0,
     shiftKeyHeld: false,
@@ -115,7 +123,9 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
         this.$saveBtn = Craft.ui
           .createButton({
             class: 'save copy',
-            label: Craft.t('app', 'Save as a new asset'),
+            label: Craft.t('app', 'Save as a new {type}', {
+              type: Craft.elementTypeNames['craft\\elements\\Asset'][2],
+            }),
             spinner: true,
           })
           .appendTo(this.$buttons);
@@ -550,28 +560,43 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
           deltaY / (sizeFactor * this.zoomRatio * this.scaleFactor);
       }
 
+      this.focalPointOuterCircle = new fabric.Circle({
+        radius: 8,
+        fill: 'rgba(0,0,0,0.5)',
+        strokeWidth: 2,
+        stroke: 'rgba(255,255,255,0.8)',
+        left: 0,
+        top: 0,
+        originX: 'center',
+        originY: 'center',
+      });
+
+      this.focalPointInnerCircle = new fabric.Circle({
+        radius: 1,
+        fill: 'rgba(255,255,255,0)',
+        strokeWidth: 2,
+        stroke: 'rgba(255,255,255,0.8)',
+        left: 0,
+        top: 0,
+        originX: 'center',
+        originY: 'center',
+      });
+
+      this.focalPointPickedIndicator = new fabric.Circle({
+        radius: 12,
+        strokeWidth: 0,
+        stroke: 'rgba(255,255,255,0.8)',
+        left: 0,
+        top: 0,
+        originX: 'center',
+        originY: 'center',
+      });
+
       this.focalPoint = new fabric.Group(
         [
-          new fabric.Circle({
-            radius: 8,
-            fill: 'rgba(0,0,0,0.5)',
-            strokeWidth: 2,
-            stroke: 'rgba(255,255,255,0.8)',
-            left: 0,
-            top: 0,
-            originX: 'center',
-            originY: 'center',
-          }),
-          new fabric.Circle({
-            radius: 1,
-            fill: 'rgba(255,255,255,0)',
-            strokeWidth: 2,
-            stroke: 'rgba(255,255,255,0.8)',
-            left: 0,
-            top: 0,
-            originX: 'center',
-            originY: 'center',
-          }),
+          this.focalPointPickedIndicator,
+          this.focalPointOuterCircle,
+          this.focalPointInnerCircle,
         ],
         {
           originX: 'center',
@@ -1026,7 +1051,7 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
           'aria-selected': 'true',
           tabindex: '0',
         })
-        .trigger('focus');
+        .focus();
       this.showView(view);
     },
 
@@ -2398,13 +2423,35 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
         this.previousMouseY = ev.pageY;
 
         if (focal) {
-          this.draggingFocal = true;
+          this.focalClicked = true;
         } else if (handle) {
-          this.scalingCropper = handle;
+          this.handleClicked = handle;
         } else if (move) {
-          this.draggingCropper = true;
+          this.cropperClicked = true;
         }
       }
+    },
+
+    _toggleFocalModeStyles: function () {
+      let indicatorStrokeWidth;
+      let indicatorFill;
+
+      if (this.focalPickedUp) {
+        indicatorStrokeWidth = 2;
+        indicatorFill = 'rgba(0,0,0,0.5)';
+        $('.body').css('cursor', 'grabbing');
+      } else {
+        indicatorStrokeWidth = 0;
+        indicatorFill = 'rgba(0,0,0,0)';
+        $('.body').css('cursor', 'pointer');
+      }
+
+      this.focalPointPickedIndicator.set({
+        strokeWidth: indicatorStrokeWidth,
+        fill: indicatorFill,
+      });
+
+      this.canvas.renderAll();
     },
 
     /**
@@ -2424,14 +2471,17 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
         return;
       }
 
-      if (this.focalPoint && this.draggingFocal) {
+      if (this.focalPoint && this.focalClicked) {
+        this.draggingFocal = true;
         this._handleFocalDrag(this.mouseMoveEvent);
         this.storeFocalPointState();
         this.renderImage();
-      } else if (this.draggingCropper || this.scalingCropper) {
-        if (this.draggingCropper) {
+      } else if (this.cropperClicked || this.handleClicked) {
+        if (this.cropperClicked) {
+          this.draggingCropper = true;
           this._handleCropperDrag(this.mouseMoveEvent);
         } else {
+          this.scalingCropper = true;
           this._handleCropperResize(this.mouseMoveEvent);
         }
 
@@ -2452,10 +2502,34 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
     /**
      * Handle mouse being released.
      */
-    _handleMouseUp: function () {
+    _handleMouseUp: function (ev) {
+      if (this.focalClicked) {
+        if (!this.draggingFocal) {
+          this.focalPickedUp = !this.focalPickedUp;
+          this._toggleFocalModeStyles();
+        }
+      } else {
+        if (
+          this.focalPickedUp &&
+          !this.draggingFocal &&
+          !this.draggingCropper &&
+          !this.scalingCropper
+        ) {
+          this._handleFocalClickToMove(ev);
+        }
+      }
+
+      // Reset cropper
       this.draggingCropper = false;
+      this.cropperClicked = false;
+
+      // Reset scaling
       this.scalingCropper = false;
+      this.handleClicked = false;
+
+      // Reset focal
       this.draggingFocal = false;
+      this.focalClicked = false;
     },
 
     /**
@@ -2467,6 +2541,63 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
       this._handleMouseUp(ev);
       this.mouseMoveEvent = ev;
       this._handleMouseMoveInternal();
+    },
+
+    /**
+     * Handle focal point being moved via click.
+     *
+     * @param {Object} ev
+     */
+    _handleFocalClickToMove: function (ev) {
+      if (typeof this._handleFocalClickToMove._ === 'undefined') {
+        this._handleFocalClickToMove._ = {};
+      }
+
+      if (!this.focalPoint) return;
+
+      const left = this.focalPoint.get('left');
+      const top = this.focalPoint.get('top');
+
+      const canvasOffset = this.$croppingCanvas.offset();
+      const canvasOffsetX = canvasOffset.left;
+      const canvasOffsetY = canvasOffset.top;
+
+      this._handleFocalClickToMove._.newX = ev.pageX - canvasOffsetX;
+      this._handleFocalClickToMove._.newY = ev.pageY - canvasOffsetY;
+
+      // Just make sure that the focal point stays inside the image
+      if (this.currentView === 'crop') {
+        if (
+          !this.arePointsInsideRectangle(
+            [
+              {
+                x: this._handleFocalClickToMove._.newX,
+                y: this._handleFocalClickToMove._.newY,
+              },
+            ],
+            this.imageVerticeCoords
+          )
+        ) {
+          return;
+        }
+      } else {
+        if (
+          !this.isPointInsideViewport({
+            x: this._handleFocalClickToMove._.newX,
+            y: this._handleFocalClickToMove._.newY,
+          })
+        ) {
+          return;
+        }
+      }
+
+      this.focalPoint.set({
+        left: this._handleFocalClickToMove._.newX,
+        top: this._handleFocalClickToMove._.newY,
+      });
+
+      this.storeFocalPointState();
+      this.renderImage();
     },
 
     /**
@@ -2633,24 +2764,10 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
           }
         } else {
           if (
-            !(
-              this.viewport.left -
-                this.viewport.width / 2 -
-                this._handleFocalDrag._.newX <
-                0 &&
-              this.viewport.left +
-                this.viewport.width / 2 -
-                this._handleFocalDrag._.newX >
-                0 &&
-              this.viewport.top -
-                this.viewport.height / 2 -
-                this._handleFocalDrag._.newY <
-                0 &&
-              this.viewport.top +
-                this.viewport.height / 2 -
-                this._handleFocalDrag._.newY >
-                0
-            )
+            !this.isPointInsideViewport({
+              x: this._handleFocalDrag._.newX,
+              y: this._handleFocalDrag._.newY,
+            })
           ) {
             return;
           }
@@ -2661,6 +2778,24 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
           top: this.focalPoint.top + this._handleFocalDrag._.deltaY,
         });
       }
+    },
+
+    /**
+     * Given point coordinates in the form {x: int, y:int}, returns true
+     * if the points are inside the viewport
+     *
+     * Adapted from: http://stackoverflow.com/a/2763387/2040791
+     *
+     * @param {Object} points
+     * @param {Object} rectangle
+     */
+    isPointInsideViewport(coordinateSet) {
+      return (
+        this.viewport.left - this.viewport.width / 2 - coordinateSet.x < 0 &&
+        this.viewport.left + this.viewport.width / 2 - coordinateSet.x > 0 &&
+        this.viewport.top - this.viewport.height / 2 - coordinateSet.y < 0 &&
+        this.viewport.top + this.viewport.height / 2 - coordinateSet.y > 0
+      );
     },
 
     /**
@@ -2807,11 +2942,11 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
       this._handleCropperResize._.deltaX = ev.pageX - this.previousMouseX;
       this._handleCropperResize._.deltaY = ev.pageY - this.previousMouseY;
 
-      if (this.scalingCropper === 'b' || this.scalingCropper === 't') {
+      if (this.handleClicked === 'b' || this.handleClicked === 't') {
         this._handleCropperResize._.deltaX = 0;
       }
 
-      if (this.scalingCropper === 'l' || this.scalingCropper === 'r') {
+      if (this.handleClicked === 'l' || this.handleClicked === 'r') {
         this._handleCropperResize._.deltaY = 0;
       }
 
@@ -2835,7 +2970,7 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
           this._handleCropperResize._.startingRectangle,
           this._handleCropperResize._.deltaX,
           this._handleCropperResize._.deltaY,
-          this.scalingCropper
+          this.handleClicked
         );
 
       if (
@@ -3100,6 +3235,8 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
         }
       } else if (this.croppingCanvas && this._isMouseOver(ev, this.clipper)) {
         this._setMouseCursor._.cursor = 'move';
+      } else if (this.focalPickedUp) {
+        this._setMouseCursor._.cursor = 'grabbing';
       }
 
       $('.body').css('cursor', this._setMouseCursor._.cursor);

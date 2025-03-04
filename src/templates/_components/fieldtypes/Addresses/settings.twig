@@ -13,6 +13,7 @@
   size: 3,
   errors: field.getErrors('minAddresses'),
   data: {'error-key': 'minAddresses'},
+  disabled: readOnly,
 }) }}
 
 {{ forms.textField({
@@ -28,6 +29,7 @@
   size: 3,
   errors: field.getErrors('maxAddresses'),
   data: {'error-key': 'maxAddresses'},
+  disabled: readOnly,
 }) }}
 
 {{ forms.selectField({
@@ -42,4 +44,5 @@
     {label: 'As an element index'|t('app'), value: constant('VIEW_MODE_INDEX', field)},
   ],
   value: field.viewMode,
+  disabled: readOnly,
 }) }}

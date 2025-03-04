@@ -1,8 +1,14 @@
-<div class="button-fade asset-image-preview">
-    <div class="buttons">
-        <div class="btn" id="toggle-focal">
+{% set containerId = "asset-image-preview#{random()}" %}
+{% set toggleId = "toggle-focal#{random()}" %}
+{% set enableFocalPoint = asset.mimeType != 'image/svg+xml' %}
+
+<div id="{{ containerId }}" class="button-fade asset-image-preview">
+    {% if enableFocalPoint %}
+        <div class="buttons">
+            <div class="btn" id="{{ toggleId }}">
+            </div>
         </div>
-    </div>
+    {% endif %}
     {{ tag('img', {
         src: url,
         width: asset.width,
@@ -22,13 +28,23 @@
 {% do view.registerTranslations('app', [
     'Enable focal point',
     'Disable focal point',
+    'Saved',
     'Saving…',
 ]) %}
 
-{% js %}
-  if (window.imageFocalPoint) {
-    window.imageFocalPoint.destruct();
-    delete window.imageFocalPoint;
-  }
-  window.imageFocalPoint = new Craft.FocalPoint(Craft.PreviewFileModal.openInstance.$container.find('.asset-image-preview'), $('#toggle-focal'), {{ editFocal|default(false) }});
-{% endjs %}
+{% if enableFocalPoint %}
+  {% js %}
+    (() => {
+      if (window.imageFocalPoint) {
+        window.imageFocalPoint.destruct();
+        delete window.imageFocalPoint;
+      }
+
+      const $container = $('#{{ containerId }}');
+      const $toggle = $('#{{ toggleId }}');
+      if ($container.length && $toggle.length) {
+        window.imageFocalPoint = new Craft.FocalPoint($container, $toggle, {{ editFocal|default(false) }});
+      }
+    })();
+  {% endjs %}
+{% endif %}

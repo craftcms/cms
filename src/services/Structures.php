@@ -155,6 +155,10 @@ class Structures extends Component
         $prevElement = null;
         $patchedElements = [];
 
+        // https://github.com/craftcms/cms/issues/16085
+        // don't assume that elements are in the top to bottom order
+        usort($elements, fn(ElementInterface $a, ElementInterface $b) => $a->lft <=> $b->lft);
+
         foreach ($elements as $i => $element) {
             // Did we just skip any elements?
             if (
@@ -165,7 +169,10 @@ class Structures extends Component
                 )
             ) {
                 // Merge in any missing ancestors
-                $ancestorQuery = $element->getAncestors()
+                $ancestorQuery = $element::find()
+                    ->structureId($element->structureId)
+                    ->ancestorOf($element)
+                    ->siteId($element->siteId)
                     ->status(null);
 
                 if ($prevElement) {
@@ -535,8 +542,8 @@ class Structures extends Component
 
         $targetElementId = $targetElementRecord->isRoot() ? null : $targetElementRecord->elementId;
 
+        // Fire a 'beforeInsertElement' or 'beforeMoveElement' event
         if ($this->hasEventHandlers($beforeEvent)) {
-            // Fire a 'beforeInsertElement' or 'beforeMoveElement' event
             $event = new MoveElementEvent([
                 'element' => $element,
                 'structureId' => $structureId,

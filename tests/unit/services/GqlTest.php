@@ -86,7 +86,7 @@ class GqlTest extends TestCase
     public function testCreatingSchemaSuccess(): void
     {
         $schema = Craft::$app->getGql()->getSchemaDef();
-        self::assertInstanceOf('GraphQL\Type\Schema', $schema);
+        self::assertInstanceOf(\GraphQL\Type\Schema::class, $schema);
     }
 
     /**
@@ -209,7 +209,7 @@ class GqlTest extends TestCase
         });
 
         $directive = Craft::$app->getGql()->getSchemaDef()->getDirective(MockDirective::name());
-        self::assertInstanceOf('GraphQL\Type\Definition\Directive', $directive);
+        self::assertInstanceOf(\GraphQL\Type\Definition\Directive::class, $directive);
     }
 
     /**
@@ -225,7 +225,7 @@ class GqlTest extends TestCase
         MockType::getType();
 
         $mockType = Craft::$app->getGql()->getSchemaDef()->getType(MockType::getName());
-        self::assertInstanceOf('GraphQL\Type\Definition\ScalarType', $mockType);
+        self::assertInstanceOf(\GraphQL\Type\Definition\ScalarType::class, $mockType);
     }
 
     /**

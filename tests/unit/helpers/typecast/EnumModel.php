@@ -18,5 +18,5 @@ class EnumModel
 
     public Suit $anotherSuit;
 
-    public ?Suit $nullableSuit;
+    public ?Suit $nullableSuit = null;
 }

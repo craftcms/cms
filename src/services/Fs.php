@@ -99,13 +99,14 @@ class Fs extends Component
             Local::class,
         ];
 
-        $event = new RegisterComponentTypesEvent([
-            'types' => $fsTypes,
-        ]);
+        // Fire a 'registerFilesystemTypes' event
+        if ($this->hasEventHandlers(self::EVENT_REGISTER_FILESYSTEM_TYPES)) {
+            $event = new RegisterComponentTypesEvent(['types' => $fsTypes]);
+            $this->trigger(self::EVENT_REGISTER_FILESYSTEM_TYPES, $event);
+            return $event->types;
+        }
 
-        $this->trigger(self::EVENT_REGISTER_FILESYSTEM_TYPES, $event);
-
-        return $event->types;
+        return $fsTypes;
     }
 
     /**
@@ -199,7 +200,7 @@ class Fs extends Component
                     }
                 }
 
-                // Trigger a 'renameFs' event
+                // Fire a 'renameFs' event
                 if ($this->hasEventHandlers(self::EVENT_RENAME_FILESYSTEM)) {
                     $this->trigger(self::EVENT_RENAME_FILESYSTEM, new FsEvent($fs));
                 }
@@ -218,7 +219,7 @@ class Fs extends Component
      * Creates a filesystem from a given config.
      *
      * @template T as FsInterface
-     * @param string|array $config The filesystem’s class name, or its config, with a `type` value and optionally a `settings` value
+     * @param class-string<T>|array $config The filesystem’s class name, or its config, with a `type` value and optionally a `settings` value
      * @phpstan-param class-string<T>|array{type:class-string<T>} $config
      * @return T The filesystem
      */

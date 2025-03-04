@@ -7,7 +7,7 @@
 
 namespace craft\events;
 
-use yii\base\Event;
+use craft\base\Event;
 
 /**
  * Delete Template Caches event class.

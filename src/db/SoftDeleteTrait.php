@@ -109,9 +109,7 @@ trait SoftDeleteTrait
         $behaviors['softDelete'] = [
             'class' => SoftDeleteBehavior::class,
             'softDeleteAttributeValues' => [
-                'dateDeleted' => function() {
-                    return Db::prepareDateForDb(new DateTime());
-                },
+                'dateDeleted' => fn() => Db::prepareDateForDb(new DateTime()),
             ],
         ];
         return $behaviors;

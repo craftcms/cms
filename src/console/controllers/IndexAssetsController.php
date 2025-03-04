@@ -343,9 +343,7 @@ class IndexAssetsController extends Controller
         }
 
         $selection = (int)$this->prompt('>', [
-            'validator' => function($input) use ($missingRecords) {
-                return !$input || (is_numeric($input) && isset($missingRecords[$input - 1]));
-            },
+            'validator' => fn($input) => !$input || (is_numeric($input) && isset($missingRecords[$input - 1])),
         ]);
 
         return $selection ? $missingRecords[$selection - 1] : null;

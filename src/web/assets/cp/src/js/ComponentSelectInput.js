@@ -231,54 +231,7 @@ Craft.ComponentSelectInput = Garnish.Base.extend(
     addComponents: function ($components) {
       // add the action triggers
       for (let i = 0; i < $components.length; i++) {
-        const $component = $components.eq(i);
-
-        const actions = this.defineComponentActions($component);
-        Craft.addActionsToChip($component, actions);
-
-        const disclosureMenu = $component
-          .find('> .chip-content > .chip-actions .action-btn')
-          .disclosureMenu()
-          .data('disclosureMenu');
-        const moveForwardBtn = disclosureMenu.$container.find(
-          '[data-move-forward]'
-        )[0];
-        const moveBackwardBtn = disclosureMenu.$container.find(
-          '[data-move-backward]'
-        )[0];
-
-        disclosureMenu.on('show', () => {
-          const $li = $component.parent();
-          const $prev = $li.prev();
-          const $next = $li.next();
-
-          if (moveForwardBtn) {
-            disclosureMenu.toggleItem(moveForwardBtn, $prev.length);
-          }
-          if (moveBackwardBtn) {
-            disclosureMenu.toggleItem(moveBackwardBtn, $next.length);
-          }
-        });
-
-        if (this.settings.sortable) {
-          $('<button/>', {
-            type: 'button',
-            class: 'move icon',
-            title: Craft.t('app', 'Reorder'),
-            'aria-label': Craft.t('app', 'Reorder'),
-            'aria-describedby': $component.find('.label').attr('id'),
-          }).appendTo($component.find('.chip-actions'));
-        }
-
-        this.addListener($component, 'dblclick,taphold', (ev) => {
-          // don't open the edit slideout if we are tapholding to drag
-          if (ev.type === 'taphold' && ev.target.nodeName === 'BUTTON') {
-            return;
-          }
-          disclosureMenu.$container.find('[data-edit-action]').click();
-        });
-
-        this.hideOption($component.data('id'));
+        this.addComponentInternal($components.eq(i));
       }
 
       if (this.settings.selectable) {
@@ -305,18 +258,66 @@ Craft.ComponentSelectInput = Garnish.Base.extend(
       this.onChange();
     },
 
+    addComponentInternal: function ($component) {
+      const actions = this.defineComponentActions($component);
+      Craft.addActionsToChip($component, actions);
+
+      const disclosureMenu = this.getDisclosureMenu($component);
+      const moveForwardBtn = disclosureMenu.$container.find(
+        '[data-move-forward]'
+      )[0];
+      const moveBackwardBtn = disclosureMenu.$container.find(
+        '[data-move-backward]'
+      )[0];
+
+      disclosureMenu.on('show', () => {
+        const $li = $component.parent();
+        const $prev = $li.prev();
+        const $next = $li.next();
+
+        if (moveForwardBtn) {
+          disclosureMenu.toggleItem(moveForwardBtn, $prev.length);
+        }
+        if (moveBackwardBtn) {
+          disclosureMenu.toggleItem(moveBackwardBtn, $next.length);
+        }
+      });
+
+      if (this.settings.sortable) {
+        $('<button/>', {
+          type: 'button',
+          class: 'move icon',
+          title: Craft.t('app', 'Reorder'),
+          'aria-label': Craft.t('app', 'Reorder'),
+          'aria-describedby': $component.find('.label').attr('id'),
+        }).appendTo($component.find('.chip-actions'));
+      }
+
+      this.addListener($component, 'dblclick,taphold', (ev) => {
+        // don't open the edit slideout if we are tapholding to drag
+        if (ev.type === 'taphold' && ev.target.nodeName === 'BUTTON') {
+          return;
+        }
+        disclosureMenu.$container.find('[data-edit-action]').click();
+      });
+
+      this.hideOption($component.data('id'));
+    },
+
     defineComponentActions: function ($component) {
       const actions = [];
 
       if (this.settings.sortable) {
         const axis = this.getComponentSortAxis();
         actions.push({
-          icon:
-            axis === 'y'
-              ? 'arrow-up'
-              : Craft.orientation === 'ltr'
-                ? 'arrow-left'
-                : 'arrow-right',
+          icon: async () =>
+            await Craft.ui.icon(
+              axis === 'y'
+                ? 'arrow-up'
+                : Craft.orientation === 'ltr'
+                  ? 'arrow-left'
+                  : 'arrow-right'
+            ),
           label:
             axis === 'y'
               ? Craft.t('app', 'Move up')
@@ -329,12 +330,14 @@ Craft.ComponentSelectInput = Garnish.Base.extend(
           },
         });
         actions.push({
-          icon:
-            axis === 'y'
-              ? 'arrow-down'
-              : Craft.orientation === 'ltr'
-                ? 'arrow-right'
-                : 'arrow-left',
+          icon: async () =>
+            await Craft.ui.icon(
+              axis === 'y'
+                ? 'arrow-down'
+                : Craft.orientation === 'ltr'
+                  ? 'arrow-right'
+                  : 'arrow-left'
+            ),
           label:
             axis === 'y'
               ? Craft.t('app', 'Move down')
@@ -349,7 +352,7 @@ Craft.ComponentSelectInput = Garnish.Base.extend(
       }
 
       actions.push({
-        icon: 'remove',
+        icon: async () => await Craft.ui.icon('remove'),
         label: Craft.t('app', 'Remove'),
         callback: () => {
           this.removeComponent($component);
@@ -358,6 +361,13 @@ Craft.ComponentSelectInput = Garnish.Base.extend(
       });
 
       return actions;
+    },
+
+    getDisclosureMenu: function ($component) {
+      return $component
+        .find('> .chip-content > .chip-actions .action-btn')
+        .disclosureMenu()
+        .data('disclosureMenu');
     },
 
     onChange() {
@@ -474,12 +484,7 @@ Craft.ComponentSelectInput = Garnish.Base.extend(
               {
                 type,
                 id,
-                instances: [
-                  {
-                    showActionMenu: this.settings.showActionMenu,
-                    inputName: this.settings.name,
-                  },
-                ],
+                instances: [this.renderSettings(id)],
               },
             ],
             withMenuItems: addToMenu,
@@ -510,6 +515,14 @@ Craft.ComponentSelectInput = Garnish.Base.extend(
       await Craft.appendHeadHtml(data.headHtml);
       await Craft.appendBodyHtml(data.bodyHtml);
     },
+
+    renderSettings: function (id) {
+      return {
+        showActionMenu: this.settings.showActionMenu,
+        showHandle: this.settings.showHandles,
+        inputName: this.settings.name,
+      };
+    },
   },
   {
     REMOVE_FX_DURATION: 200,
@@ -517,6 +530,7 @@ Craft.ComponentSelectInput = Garnish.Base.extend(
       id: null,
       name: null,
       limit: null,
+      showHandles: false,
       sortable: true,
       selectable: true,
       showActionMenu: true,

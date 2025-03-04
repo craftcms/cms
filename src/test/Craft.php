@@ -164,6 +164,9 @@ class Craft extends Yii2
 
         parent::_before($test);
 
+        // transaction events are registered now, so it's ok to open the connection
+        \Craft::$app->db->open();
+
         // If full mock, create the mock app and don't perform to any further actions
         if ($this->_getConfig('fullMock') === true) {
             /** @var ConsoleApplication|WebApplication|MockObject $mockApp */
@@ -418,7 +421,7 @@ class Craft extends Yii2
     }
 
     /**
-     * @param string $elementType
+     * @param class-string<ElementInterface> $elementType
      * @param array $searchProperties
      * @param int $amount
      * @param bool $searchAll Whether `status(null)` and `trashed(null)` should be applied
@@ -426,8 +429,6 @@ class Craft extends Yii2
      */
     public function assertElementsExist(string $elementType, array $searchProperties = [], int $amount = 1, bool $searchAll = false): array
     {
-        /** @var string|ElementInterface $elementType */
-        /** @phpstan-var class-string<ElementInterface>|ElementInterface $elementType */
         $elementQuery = $elementType::find();
         if ($searchAll) {
             $elementQuery->status(null);
@@ -673,8 +674,7 @@ class Craft extends Yii2
 
     /**
      * @param CodeceptionTestCase $test
-     * @param string $moduleClass
-     * @phpstan-param class-string<Module> $moduleClass
+     * @param class-string<Module> $moduleClass
      * @throws ReflectionException
      */
     protected function addModule(CodeceptionTestCase $test, string $moduleClass): void

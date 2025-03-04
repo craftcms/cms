@@ -9,7 +9,13 @@ namespace craft\helpers;
 
 use Craft;
 use craft\base\ComponentInterface;
+use craft\base\ElementInterface;
+use craft\base\Model;
 use craft\errors\MissingComponentException;
+use DateTime;
+use ReflectionClass;
+use ReflectionNamedType;
+use ReflectionProperty;
 use yii\base\InvalidConfigException;
 
 /**
@@ -24,10 +30,8 @@ class Component
      * Returns whether a component class exists, is an instance of a given interface,
      * and doesn't belong to a disabled plugin.
      *
-     * @param string $class The component’s class name.
-     * @phpstan-param class-string<ComponentInterface> $class
-     * @param string|null $instanceOf The class or interface that the component must be an instance of.
-     * @phpstan-param class-string<ComponentInterface>|null $instanceOf
+     * @param class-string<ComponentInterface> $class The component’s class name.
+     * @param class-string<ComponentInterface>|null $instanceOf The class or interface that the component must be an instance of.
      * @param bool $throwException Whether an exception should be thrown if an issue is encountered
      * @return bool
      * @throws InvalidConfigException if $config doesn’t contain a `type` value, or the type isn’t compatible with|null $instanceOf.
@@ -51,8 +55,6 @@ class Component
             throw new InvalidConfigException("Component class '$class' does not implement ComponentInterface.");
         }
 
-        /** @var string $class */
-        /** @phpstan-var class-string $class */
         if ($instanceOf !== null && !is_subclass_of($class, $instanceOf)) {
             if (!$throwException) {
                 return false;
@@ -105,10 +107,9 @@ class Component
      * Instantiates and populates a component, and ensures that it is an instance of a given interface.
      *
      * @template T of ComponentInterface
-     * @param string|array $config The component’s class name, or its config, with a `type` value and optionally a `settings` value.
+     * @param class-string<T>|array $config The component’s class name, or its config, with a `type` value and optionally a `settings` value.
      * @phpstan-param class-string<T>|array{type:class-string<T>,__class?:string} $config
-     * @param string|null $instanceOf The class or interface that the component must be an instance of.
-     * @phpstan-param class-string<T>|null $instanceOf
+     * @param class-string<T>|null $instanceOf The class or interface that the component must be an instance of.
      * @return T The component
      * @throws InvalidConfigException if $config doesn’t contain a `type` value, or the type isn’t compatible with|null $instanceOf.
      * @throws MissingComponentException if the class specified by $config doesn’t exist, or belongs to an uninstalled plugin
@@ -180,5 +181,27 @@ class Component
         }
 
         return Cp::iconSvg($icon, $label);
+    }
+
+    /**
+     * Return all DateTime attributes for given model.
+     *
+     * @param Model|ElementInterface $model
+     * @return array
+     */
+    public static function datetimeAttributes(Model|ElementInterface $model): array
+    {
+        $datetimeAttributes = [];
+        foreach ((new ReflectionClass($model))->getProperties(ReflectionProperty::IS_PUBLIC) as $property) {
+            if (!$property->isStatic()) {
+                $type = $property->getType();
+                if ($type instanceof ReflectionNamedType && $type->getName() === DateTime::class) {
+                    $datetimeAttributes[] = $property->getName();
+                }
+            }
+        }
+
+        // Include datetimeAttributes() for now
+        return array_unique(array_merge($datetimeAttributes, $model->datetimeAttributes()));
     }
 }

@@ -149,9 +149,7 @@ class Globals extends Component
         if (!isset($this->_editableGlobalSets[$currentSiteId])) {
             $session = Craft::$app->getUser();
             $this->_editableGlobalSets[$currentSiteId] = ArrayHelper::where($this->_allSets($currentSiteId),
-                function(GlobalSet $globalSet) use ($session): bool {
-                    return $session->checkPermission("editGlobalSet:$globalSet->uid");
-                }, true, true, false);
+                fn(GlobalSet $globalSet): bool => $session->checkPermission("editGlobalSet:$globalSet->uid"), true, true, false);
         }
 
         return $this->_editableGlobalSets[$currentSiteId];
@@ -506,13 +504,15 @@ class Globals extends Component
                 ->where(['id' => $globalSetRecord->id])
                 ->scalar();
 
-            $fieldLayout = Craft::$app->getFields()->getLayoutById($fieldLayoutId);
-
             Craft::$app->getElements()->deleteElementById($globalSetRecord->id);
 
-            // Delete the field layout after the element has been deleted
-            if ($fieldLayout) {
-                Craft::$app->getFields()->deleteLayout($fieldLayout);
+            if ($fieldLayoutId) {
+                $fieldLayout = Craft::$app->getFields()->getLayoutById($fieldLayoutId);
+
+                // Delete the field layout after the element has been deleted
+                if ($fieldLayout) {
+                    Craft::$app->getFields()->deleteLayout($fieldLayout);
+                }
             }
 
             $transaction->commit();

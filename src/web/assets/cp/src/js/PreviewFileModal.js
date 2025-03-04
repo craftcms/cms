@@ -10,6 +10,7 @@ Craft.PreviewFileModal = Garnish.Modal.extend(
     $triggerElement: null,
     $bumperButtonStart: null,
     $bumperButtonEnd: null,
+    $liveRegion: $('<span class="visually-hidden" role="status"></span>'),
     elementSelect: null,
     type: null,
     loaded: null,
@@ -32,21 +33,8 @@ Craft.PreviewFileModal = Garnish.Modal.extend(
       settings = $.extend(this.defaultSettings, settings);
       this.$triggerElement = Garnish.getFocusedElement();
 
-      settings.onHide = this._onHide.bind(this);
-
       if (Craft.PreviewFileModal.openInstance) {
-        var instance = Craft.PreviewFileModal.openInstance;
-
-        if (instance.assetId !== assetId) {
-          instance.loadAsset(
-            assetId,
-            settings.startingWidth,
-            settings.startingHeight
-          );
-          instance.elementSelect = elementSelect;
-        }
-
-        return this.destroy();
+        Craft.PreviewFileModal.openInstance.quickHide();
       }
 
       Craft.PreviewFileModal.openInstance = this;
@@ -66,16 +54,16 @@ Craft.PreviewFileModal = Garnish.Modal.extend(
         )
       );
 
+      Craft.cp.announce(Craft.t('app', 'Loading'));
+
       // Cut the flicker, just show the nice person the preview.
-      if (this.$container) {
-        this.$container.velocity('stop');
-        this.$container.show().css('opacity', 1);
+      this.$container.velocity('stop');
+      this.$container.show().css('opacity', 1);
 
-        this.$shade.velocity('stop');
-        this.$shade.show().css('opacity', 1);
+      this.$shade.velocity('stop');
+      this.$shade.show().css('opacity', 1);
 
-        Garnish.setFocusWithin(this.$container);
-      }
+      Garnish.setFocusWithin(this.$container);
 
       // Add bumper elements to maintain focus trap
       this.$bumperButtonStart = Craft.ui.createButton({
@@ -89,25 +77,77 @@ Craft.PreviewFileModal = Garnish.Modal.extend(
       this.$bumperButtonEnd = this.$bumperButtonStart.clone(true);
 
       this.loadAsset(assetId, settings.startingWidth, settings.startingHeight);
+
+      this.addListener(this.$container, 'keydown', (ev) => {
+        switch (ev.keyCode) {
+          case Garnish.LEFT_KEY:
+          case Garnish.UP_KEY:
+            ev.preventDefault();
+            this.previewPreviousAsset();
+            break;
+          case Garnish.RIGHT_KEY:
+          case Garnish.DOWN_KEY:
+            ev.preventDefault();
+            this.previewNextAsset();
+            break;
+          case Garnish.SPACE_KEY:
+            ev.preventDefault();
+            if (ev.shiftKey) {
+              this.hide();
+            }
+        }
+      });
+    },
+
+    getSelectItem: function () {
+      const $item = this.elementSelect?.$items.filter(
+        `[data-id=${this.assetId}]`
+      );
+      return $item?.length ? $item : null;
+    },
+
+    previewPreviousAsset: function () {
+      const $element = this.getSelectItem();
+      if ($element) {
+        const index = this.elementSelect.getItemIndex($element);
+        let $prev = this.elementSelect.getPreviousItem(index);
+        if ($prev?.length) {
+          if (Craft.PreviewFileModal.showForAsset($prev, this.elementSelect)) {
+            this.elementSelect.deselectAll();
+            this.elementSelect.selectItem($prev, false, false);
+          }
+        }
+      }
+    },
+
+    previewNextAsset: function () {
+      const $element = this.getSelectItem();
+      if ($element) {
+        const index = this.elementSelect.getItemIndex($element);
+        let $next = this.elementSelect.getNextItem(index);
+        if ($next?.length) {
+          if (Craft.PreviewFileModal.showForAsset($next, this.elementSelect)) {
+            this.elementSelect.deselectAll();
+            this.elementSelect.selectItem($next, false, false);
+          }
+        }
+      }
     },
 
     /**
      * When hiding, remove all traces and focus last focused element.
-     * @private
      */
-    _onHide: function () {
-      Craft.PreviewFileModal.openInstance = null;
-      if (this.elementSelect) {
-        this.elementSelect.focusItem(
-          this.elementSelect.$items.filter(`[data-id=${this.assetId}]`)
-        );
+    onFadeOut: function () {
+      this.base();
+
+      const $element = this.getSelectItem();
+      if ($element) {
+        this.elementSelect.focusItem($element);
       } else if (this.$triggerElement && this.$triggerElement.length) {
-        this.$triggerElement.trigger('focus');
+        this.$triggerElement.focus();
       }
 
-      this.$shade.remove();
-
-      return this.destroy();
+      this.destroy();
     },
 
     _addBumperButtons: function () {
@@ -128,22 +168,26 @@ Craft.PreviewFileModal = Garnish.Modal.extend(
       this.$container.attr('aria-labelledby', headingId);
     },
 
+    _addLiveRegion: function () {
+      this.$container.append(this.$liveRegion);
+    },
+
     /**
-     * Disappear immediately forever.
-     * @returns {boolean}
+     * @deprecated
      */
     selfDestruct: function () {
-      var instance = Craft.PreviewFileModal.openInstance;
-
-      instance.hide();
-      instance.$shade.remove();
-      instance.destroy();
-
-      Craft.PreviewFileModal.openInstance = null;
-      Craft.focalPoint.destruct();
-      Craft.focalPoint = null;
-
+      this.quickHide();
       return true;
+    },
+
+    destroy: function () {
+      this.base();
+
+      if (Craft.PreviewFileModal.openInstance === this) {
+        Craft.PreviewFileModal.openInstance = null;
+        Craft.focalPoint?.destruct();
+        Craft.focalPoint = null;
+      }
     },
 
     /**
@@ -235,6 +279,7 @@ Craft.PreviewFileModal = Garnish.Modal.extend(
           this.$container.attr('data-asset-id', this.assetId);
           this.$container.append(response.data.previewHtml);
           this._addBumperButtons();
+          this._addLiveRegion();
           this._addModalName();
           await Craft.appendHeadHtml(response.data.headHtml);
           await Craft.appendBodyHtml(response.data.bodyHtml);
@@ -364,6 +409,26 @@ Craft.PreviewFileModal = Garnish.Modal.extend(
           window.imageFocalPoint.renderFocal();
         }
       }
+    },
+
+    showForAsset: function ($element, elementSelect) {
+      if (!$element.hasClass('element')) {
+        $element = $element.find('.element:first');
+      }
+      if (
+        !$element.hasClass('element') ||
+        Garnish.hasAttr($element, 'data-folder-id')
+      ) {
+        return false;
+      }
+
+      const settings = {};
+      if ($element.data('image-width')) {
+        settings.startingWidth = $element.data('image-width');
+        settings.startingHeight = $element.data('image-height');
+      }
+      new Craft.PreviewFileModal($element.data('id'), elementSelect, settings);
+      return true;
     },
   }
 );

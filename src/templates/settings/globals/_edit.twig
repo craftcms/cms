@@ -1,5 +1,8 @@
 {% extends '_layouts/cp.twig' %}
-{% set fullPageForm = true %}
+
+{% set readOnly = readOnly ?? false %}
+
+{% set fullPageForm = not readOnly %}
 
 {% set formActions = [
     {
@@ -13,11 +16,17 @@
 {% import '_includes/forms.twig' as forms %}
 
 
-{% block content %}
-    {{ actionInput('globals/save-set') }}
-    {{ redirectInput('settings/globals') }}
+{% if readOnly %}
+    {% set contentNotice = readOnlyNotice() %}
+{% endif %}
 
-    {% if globalSet.id %}{{ hiddenInput('setId', globalSet.id) }}{% endif %}
+{% block content %}
+    {% if not readOnly %}
+        {{ actionInput('globals/save-set') }}
+        {{ redirectInput('settings/globals') }}
+
+        {% if globalSet.id %}{{ hiddenInput('setId', globalSet.id) }}{% endif %}
+    {% endif %}
 
     {{ forms.textField({
         first: true,
@@ -29,6 +38,7 @@
         errors: globalSet.getErrors('name'),
         autofocus: true,
         required: true,
+        disabled: readOnly,
     }) }}
 
     {{ forms.textField({
@@ -41,13 +51,15 @@
         autocapitalize: false,
         value: globalSet.handle,
         errors: globalSet.getErrors('handle'),
-        required: true
+        required: true,
+        disabled: readOnly,
     }) }}
 
     <hr>
 
     {{ forms.fieldLayoutDesignerField({
         fieldLayout: globalSet.getFieldLayout(),
+        disabled: readOnly,
     }) }}
 {% endblock %}
 

@@ -308,13 +308,20 @@ class Assets extends Component
      */
     public function deleteFoldersByIds(int|array $folderIds, bool $deleteDir = true): void
     {
-        $folders = [];
+        $allFolderIds = [];
 
         foreach ((array)$folderIds as $folderId) {
             $folder = $this->getFolderById((int)$folderId);
-            $folders[] = $folder;
+            if (!$folder) {
+                continue;
+            }
 
-            if ($folder && $deleteDir) {
+            $allFolderIds[] = $folder->id;
+            $descendants = $this->getAllDescendantFolders($folder, withParent: false);
+            array_push($allFolderIds, ...array_map(fn(VolumeFolder $folder) => $folder->id, $descendants));
+
+            // Delete the directory on the filesystem
+            if ($folder->path && $deleteDir) {
                 $volume = $folder->getVolume();
                 try {
                     $volume->deleteDirectory($folder->path);
@@ -325,25 +332,18 @@ class Assets extends Component
             }
         }
 
-        /** @var Asset[] $assets */
-        $assets = Asset::find()->folderId($folderIds)->all();
-
+        // Delete the elements
+        $assetQuery = Asset::find()->folderId($allFolderIds);
         $elementService = Craft::$app->getElements();
 
-        foreach ($assets as $asset) {
+        foreach (Db::each($assetQuery) as $asset) {
+            /** @var Asset $asset */
             $asset->keepFileOnDelete = !$deleteDir;
             $elementService->deleteElement($asset, true);
         }
 
-        foreach ($folders as $folder) {
-            $descendants = $this->getAllDescendantFolders($folder);
-            usort($descendants, static fn($a, $b) => substr_count($a->path, '/') < substr_count($b->path, '/'));
-
-            foreach ($descendants as $descendant) {
-                VolumeFolderRecord::deleteAll(['id' => $descendant->id]);
-            }
-            VolumeFolderRecord::deleteAll(['id' => $folder->id]);
-        }
+        // Delete the folder records
+        VolumeFolderRecord::deleteAll(['id' => $allFolderIds]);
     }
 
     /**
@@ -660,7 +660,7 @@ class Assets extends Component
             $height = $width;
         }
 
-        // Maybe a plugin wants to do something here
+        // Fire a 'defineThumbUrl' event
         if ($this->hasEventHandlers(self::EVENT_DEFINE_THUMB_URL)) {
             $event = new DefineAssetThumbUrlEvent([
                 'asset' => $asset,
@@ -668,7 +668,6 @@ class Assets extends Component
                 'height' => $height,
             ]);
             $this->trigger(self::EVENT_DEFINE_THUMB_URL, $event);
-
             // If a plugin set the url, we'll just use that.
             if ($event->url !== null) {
                 return $event->url;
@@ -681,7 +680,8 @@ class Assets extends Component
             return $iconFallback ? AssetsHelper::iconUrl($extension) : null;
         }
 
-        $transform = new ImageTransform([
+        $transform = Craft::createObject([
+            'class' => ImageTransform::class,
             'width' => $width,
             'height' => $height,
             'mode' => 'crop',
@@ -725,7 +725,8 @@ class Assets extends Component
             $originalWidth > $width ||
             $originalHeight > $height
         ) {
-            $transform = new ImageTransform([
+            $transform = Craft::createObject([
+                'class' => ImageTransform::class,
                 'width' => $width,
                 'height' => $height,
                 'mode' => 'crop',
@@ -812,9 +813,7 @@ class Assets extends Component
         }
 
         // Check whether a filename we'd want to use does not exist
-        $canUse = static function($filenameToTest) use ($potentialConflicts, $volume, $folder) {
-            return !isset($potentialConflicts[mb_strtolower($filenameToTest)]) && !$volume->fileExists($folder->path . $filenameToTest);
-        };
+        $canUse = static fn($filenameToTest) => !isset($potentialConflicts[mb_strtolower($filenameToTest)]) && !$volume->fileExists($folder->path . $filenameToTest);
 
         if ($canUse($originalFilename)) {
             return $originalFilename;
@@ -1051,7 +1050,7 @@ class Assets extends Component
      */
     public function getAssetPreviewHandler(Asset $asset): ?AssetPreviewHandlerInterface
     {
-        // Give plugins a chance to register their own preview handlers
+        // Fire a 'registerPreviewHandler' event
         if ($this->hasEventHandlers(self::EVENT_REGISTER_PREVIEW_HANDLER)) {
             $event = new AssetPreviewEvent(['asset' => $asset]);
             $this->trigger(self::EVENT_REGISTER_PREVIEW_HANDLER, $event);

@@ -7,6 +7,7 @@
 
 namespace craft\web\twig\tokenparsers;
 
+use craft\helpers\DateTimeHelper;
 use craft\web\twig\nodes\CacheNode;
 use Twig\Token;
 use Twig\TokenParser\AbstractTokenParser;
@@ -57,32 +58,8 @@ class CacheTokenParser extends AbstractTokenParser
 
         if ($stream->test(Token::NAME_TYPE, 'for')) {
             $stream->next();
-            $attributes['durationNum'] = $stream->expect(Token::NUMBER_TYPE)->getValue();
-            $attributes['durationUnit'] = $stream->expect(Token::NAME_TYPE,
-                [
-                    'sec',
-                    'secs',
-                    'second',
-                    'seconds',
-                    'min',
-                    'mins',
-                    'minute',
-                    'minutes',
-                    'hour',
-                    'hours',
-                    'day',
-                    'days',
-                    'fortnight',
-                    'fortnights',
-                    'forthnight',
-                    'forthnights',
-                    'month',
-                    'months',
-                    'year',
-                    'years',
-                    'week',
-                    'weeks',
-                ])->getValue();
+            $nodes['durationNum'] = $parser->getExpressionParser()->parseExpression();
+            $attributes['durationUnit'] = $stream->expect(Token::NAME_TYPE, DateTimeHelper::RELATIVE_TIME_UNITS)->getValue();
         } elseif ($stream->test(Token::NAME_TYPE, 'until')) {
             $stream->next();
             $nodes['expiration'] = $parser->getExpressionParser()->parseExpression();

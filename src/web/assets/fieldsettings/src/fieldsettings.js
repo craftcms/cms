@@ -32,10 +32,13 @@
           });
         }
 
+        const oldType = this.currentType;
+        const settings = $('<form/>')
+          .append(this.$container.clone())
+          .serialize();
+
         // Save & detach the current settings
-        this.typeSettings[this.currentType] = this.$container
-          .children()
-          .detach();
+        this.typeSettings[oldType] = this.$container.children().detach();
 
         this.currentType = this.$toggle.data('value');
 
@@ -54,11 +57,17 @@
 
         let data = {
           type: this.currentType,
+          oldType,
+          settings,
         };
         if (this.namespace) {
           data.namespace = this.namespace.replace(
             /__TYPE__/g,
             Craft.formatInputId(this.currentType)
+          );
+          data.oldNamespace = this.namespace.replace(
+            /__TYPE__/g,
+            Craft.formatInputId(oldType)
           );
         }
 
@@ -78,9 +87,9 @@
             await Craft.appendHeadHtml(response.data.headHtml);
             await Craft.appendBodyHtml(response.data.bodyHtml);
           })
-          .catch(() => {
+          .catch((e) => {
             if (!this._ignoreFailedRequest) {
-              Craft.cp.displayError(Craft.t('app', 'A server error occurred.'));
+              Craft.cp.displayError(e?.response?.data?.message);
               this.$container.html('');
             }
           });

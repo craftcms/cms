@@ -177,6 +177,24 @@ class MigrateController extends BaseMigrateController
     /**
      * @inheritdoc
      */
+    public function runAction($id, $params = []): ?int
+    {
+        // Make sure that the project config YAML exists in case any migrations need to check incoming YAML values
+        $projectConfig = Craft::$app->getProjectConfig();
+        if ($projectConfig->writeYamlAutomatically && !$projectConfig->getDoesExternalConfigExist()) {
+            $projectConfig->regenerateExternalConfig();
+        } elseif ($projectConfig->areChangesPending(force: true)) {
+            // allow project config changes, but don't overwrite the pending changes
+            $projectConfig->readOnly = false;
+            $projectConfig->writeYamlAutomatically = false;
+        }
+
+        return parent::runAction($id, $params);
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function beforeAction($action): bool
     {
         if ($action->id !== 'all') {
@@ -202,16 +220,6 @@ class MigrateController extends BaseMigrateController
             }
 
             $this->migrationPath = $this->getMigrator()->migrationPath;
-        }
-
-        // Make sure that the project config YAML exists in case any migrations need to check incoming YAML values
-        $projectConfig = Craft::$app->getProjectConfig();
-        if ($projectConfig->writeYamlAutomatically && !$projectConfig->getDoesExternalConfigExist()) {
-            $projectConfig->regenerateExternalConfig();
-        } elseif ($projectConfig->areChangesPending(force: true)) {
-            // allow project config changes, but don't overwrite the pending changes
-            $projectConfig->readOnly = false;
-            $projectConfig->writeYamlAutomatically = false;
         }
 
         try {
@@ -500,15 +508,20 @@ class MigrateController extends BaseMigrateController
                         $this->_migrators[$track] = Craft::$app->getContentMigrator();
                         break;
                     default:
-                        // Give plugins & modules a chance to register a custom migrator
-                        $event = new RegisterMigratorEvent([
-                            'track' => $track,
-                        ]);
-                        $this->trigger(self::EVENT_REGISTER_MIGRATOR, $event);
-                        if (!$event->migrator) {
+                        // Fire a 'registerMigrator' event
+                        if ($this->hasEventHandlers(self::EVENT_REGISTER_MIGRATOR)) {
+                            $event = new RegisterMigratorEvent(['track' => $track]);
+                            $this->trigger(self::EVENT_REGISTER_MIGRATOR, $event);
+                            $migrator = $event->migrator;
+                        } else {
+                            $migrator = null;
+                        }
+
+                        if (!$migrator) {
                             throw new InvalidConfigException("Invalid migration track: $track");
                         }
-                        $this->_migrators[$track] = $event->migrator;
+
+                        $this->_migrators[$track] = $migrator;
                 }
             }
         }

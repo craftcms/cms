@@ -8,7 +8,9 @@
 namespace craft\records;
 
 use craft\db\ActiveRecord;
+use craft\db\SoftDeleteTrait;
 use craft\db\Table;
+use yii2tech\ar\softdelete\SoftDeleteBehavior;
 
 /**
  * Class Field record.
@@ -24,11 +26,14 @@ use craft\db\Table;
  * @property string $translationKeyFormat Translation key format
  * @property string $type Type
  * @property array $settings Settings
+ * @mixin SoftDeleteBehavior
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
  */
 class Field extends ActiveRecord
 {
+    use SoftDeleteTrait;
+
     /**
      * @var string|null
      */

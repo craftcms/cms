@@ -67,7 +67,7 @@ class Command extends \yii\db\Command
 
         if (!in_array('dateUpdated', $columns) && $this->db->columnExists($table, 'dateUpdated')) {
             $columns[] = 'dateUpdated';
-            $now = $now ?? Db::prepareDateForDb(new DateTime());
+            $now ??= Db::prepareDateForDb(new DateTime());
             foreach ($rows as &$row) {
                 $row[] = $now;
             }
@@ -108,7 +108,7 @@ class Command extends \yii\db\Command
             }
 
             if (!isset($insertColumns['dateUpdated']) && $this->db->columnExists($table, 'dateUpdated')) {
-                $now = $now ?? Db::prepareDateForDb(new DateTime());
+                $now ??= Db::prepareDateForDb(new DateTime());
                 $insertColumns['dateUpdated'] = $now;
             }
 
@@ -283,9 +283,9 @@ class Command extends \yii\db\Command
             Craft::debug("SQL query:\n" . $rawSql, $category);
         }
         if (!$this->db->enableProfiling) {
-            return [false, isset($rawSql) ? $rawSql : null];
+            return [false, $rawSql ?? null];
         }
 
-        return [true, isset($rawSql) ? $rawSql : $this->getRawSql()];
+        return [true, $rawSql ?? $this->getRawSql()];
     }
 }

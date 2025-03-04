@@ -39,8 +39,7 @@ final class Typecast
     /**
      * Typecasts the given property values based on their type declarations.
      *
-     * @param string $class The class name
-     * @phpstan-param class-string $class
+     * @param class-string $class The class name
      * @param array $properties The property values
      */
     public static function properties(string $class, array &$properties): void
@@ -53,8 +52,7 @@ final class Typecast
     /**
      * Typecasts the given property value based on its type declaration.
      *
-     * @param string $class The class name
-     * @phpstan-param class-string $class
+     * @param class-string $class The class name
      * @param string $property The property name
      * @param mixed $value The property value
      */
@@ -169,7 +167,7 @@ final class Typecast
                 return [self::TYPE_INT_FLOAT, in_array(self::TYPE_NULL, $names)];
             }
             // Special case for int|string
-            if ($names === [self::TYPE_INT, self::TYPE_STRING] || $names === [self::TYPE_INT, self::TYPE_STRING, self::TYPE_NULL]) {
+            if ($names === [self::TYPE_INT, self::TYPE_STRING] || $names === [self::TYPE_INT, self::TYPE_NULL, self::TYPE_STRING]) {
                 return [self::TYPE_INT_STRING, in_array(self::TYPE_NULL, $names)];
             }
         }

@@ -3,6 +3,7 @@
 namespace craft\elements\conditions\categories;
 
 use craft\elements\conditions\ElementCondition;
+use craft\elements\conditions\HasDescendantsRule;
 use craft\elements\conditions\LevelConditionRule;
 
 /**
@@ -20,6 +21,7 @@ class CategoryCondition extends ElementCondition
     {
         return array_merge(parent::selectableConditionRules(), [
             GroupConditionRule::class,
+            HasDescendantsRule::class,
             LevelConditionRule::class,
         ]);
     }

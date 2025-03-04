@@ -30,6 +30,10 @@ Craft.AuthMethodSetup = Garnish.Base.extend(
       });
     },
 
+    focusMethodButton(method) {
+      this.methodListings[method].querySelector('button').focus();
+    },
+
     showSetupSlideout(method) {
       const button = this.methodListings[method].querySelector(
         '.auth-method-setup-btn'
@@ -39,6 +43,7 @@ Craft.AuthMethodSetup = Garnish.Base.extend(
       }
 
       button.classList.add('loading');
+      Craft.cp.announce(Craft.t('app', 'Loading'));
 
       Craft.elevatedSessionManager.requireElevatedSession(
         () => {
@@ -54,6 +59,7 @@ Craft.AuthMethodSetup = Garnish.Base.extend(
                 'activate',
                 () => {
                   slideout.close();
+                  this.focusMethodButton(method);
                 }
               );
 
@@ -138,9 +144,11 @@ Craft.AuthMethodSetup.Slideout = Craft.Slideout.extend({
     });
     this.$container.find('.so-body').addClass('auth-method-setup-success')
       .html(`
-<div class="auth-method-setup-success-graphic" data-icon="check"></div>
-<h1 class="auth-method-setup-success-message">${message}</h1>
-`);
+        <div class="auth-method-setup-success-graphic" data-icon="check" aria-hidden="true"></div>
+        <h1 class="auth-method-setup-success-message" tabindex="-1">${message}</h1>
+      `);
+
+    this.$container.find('.auth-method-setup-success-message').focus();
     this.$container
       .find('.auth-method-close-btn')
       .text(Craft.t('app', 'Close'));

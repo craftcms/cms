@@ -19,7 +19,6 @@ use craft\mail\transportadapters\Smtp;
 use craft\mail\transportadapters\TransportAdapterInterface;
 use yii\base\Event;
 use yii\base\Model;
-use yii\helpers\Inflector;
 
 /**
  * Class MailerHelper
@@ -63,20 +62,21 @@ class MailerHelper
             Gmail::class,
         ];
 
-        $event = new RegisterComponentTypesEvent([
-            'types' => $transportTypes,
-        ]);
-        Event::trigger(static::class, self::EVENT_REGISTER_MAILER_TRANSPORTS, $event);
+        // Fire a 'registerMailerTransports' event
+        if (Event::hasHandlers(self::class, self::EVENT_REGISTER_MAILER_TRANSPORTS)) {
+            $event = new RegisterComponentTypesEvent(['types' => $transportTypes]);
+            Event::trigger(self::class, self::EVENT_REGISTER_MAILER_TRANSPORTS, $event);
+            return $event->types;
+        }
 
-        return $event->types;
+        return $transportTypes;
     }
 
     /**
      * Creates a transport adapter based on the given mail settings.
      *
      * @template T of TransportAdapterInterface
-     * @param string $type
-     * @phpstan-param class-string<T> $type
+     * @param class-string<T> $type
      * @param array|null $settings
      * @return T
      * @throws MissingComponentException if $type is missing
@@ -162,13 +162,6 @@ class MailerHelper
             $settingsAttributes = $transportAdapter->settingsAttributes();
             foreach ($settingsAttributes as $name) {
                 $transportSettings[$transportAdapter->getAttributeLabel($name)] = $transportAdapter->$name;
-            }
-        } else {
-            // Otherwise just output whatever public properties we have available on the transport
-            /** @var array $asArray */
-            $asArray = (array)$transportAdapter;
-            foreach ($asArray as $name => $value) {
-                $transportSettings[Inflector::camel2words($name, true)] = $value;
             }
         }
 
