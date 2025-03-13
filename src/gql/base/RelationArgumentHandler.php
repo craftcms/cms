@@ -38,6 +38,9 @@ abstract class RelationArgumentHandler extends ArgumentHandler
         foreach ($criteriaList as $criteria) {
             /** @var ElementQuery $elementQuery */
             $elementQuery = Craft::configure(Craft::$app->getElements()->createElementQuery($elementType), $criteria);
+            if ($elementQuery->siteId == null) {
+                $elementQuery->site('*');
+            }
             $idSets[] = $elementQuery->ids();
         }
 
