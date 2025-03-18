@@ -196,7 +196,7 @@ Craft.ui = {
     let id = config.id || 'copytext' + Math.floor(Math.random() * 1000000000);
     let value = config.value;
 
-    const $wrapper = $('<craft-copy-attribute/>');
+    const $wrapper = $('<craft-copy-attribute value="' + value + '"/>');
 
     let $btn = $('<div/>', {
       id,
