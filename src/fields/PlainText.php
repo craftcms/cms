@@ -178,7 +178,7 @@ class PlainText extends Field implements InlineEditableFieldInterface, SortableF
     private function _normalizeValueInternal(mixed $value, ?ElementInterface $element, bool $fromRequest): mixed
     {
         if ($value !== null) {
-            if (!$fromRequest) {
+            if (!$fromRequest && !Craft::$app->getDb()->getSupportsMb4()) {
                 $value = StringHelper::unescapeShortcodes(StringHelper::shortcodesToEmoji($value));
             }
 
