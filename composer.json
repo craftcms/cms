@@ -57,7 +57,7 @@
     "symfony/css-selector": "^6.0|^7.0",
     "symfony/dom-crawler": "^6.0|^7.0",
     "symfony/filesystem": "^6.3",
-    "symfony/http-client": "^6.0.3",
+    "symfony/http-client": "^6.0.3|^7.0",
     "symfony/property-access": "^7.0",
     "symfony/property-info": "^7.0",
     "symfony/serializer": "^6.4",
