@@ -441,6 +441,10 @@ class AssetsController extends Controller
                 Craft::$app->getElements()->deleteElement($sourceAsset);
             } else {
                 // If all we have is the filename, then make sure that the destination is empty and go for it.
+                // This can happen when you replace a file via front-end with a form that contains fields named:
+                // - sourceAssetId - ID of the asset that we want to replace the file for,
+                // - targetFilename - filename of the file we're replacing with,
+                // - replaceFile - the file we're replacing with
                 $volume = $sourceAsset->getVolume();
                 $volume->deleteFile(rtrim($sourceAsset->folderPath, '/') . '/' . $targetFilename);
                 $sourceAsset->newFilename = $targetFilename;
