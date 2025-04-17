@@ -251,6 +251,14 @@ class Time extends Field implements InlineEditableFieldInterface, SortableFieldI
     /**
      * @inheritdoc
      */
+    public function serializeValueForDb(mixed $value, ?ElementInterface $element): mixed
+    {
+        return $this->serializeValue($value, $element);
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function getElementConditionRuleType(): array|string|null
     {
         return EmptyFieldConditionRule::class;
