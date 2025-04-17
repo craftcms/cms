@@ -218,12 +218,13 @@ export default Base.extend(
       let $focusTarget = this.$triggerElement;
 
       // Check for visibility of trigger
-      if (this.$triggerElement.is(':hidden')) {
-        if (this.$triggerElement.closest('.menu--disclosure')) {
-          const menuId = this.$triggerElement
-            .closest('.menu--disclosure')
-            .attr('id');
+      if ($focusTarget?.is(':hidden')) {
+        const $disclosure = $focusTarget.closest('.menu--disclosure');
+        if ($disclosure.length) {
+          const menuId = $disclosure.attr('id');
           $focusTarget = $(`[aria-controls="${menuId}"]`);
+        } else {
+          $focusTarget = null;
         }
       }
 
@@ -401,7 +402,7 @@ export default Base.extend(
         this.resizeDragger.destroy();
       }
 
-      Garnish.Modal.instances = Craft.Preview.instances.filter(
+      Garnish.Modal.instances = Garnish.Modal.instances.filter(
         (o) => o !== this
       );
 

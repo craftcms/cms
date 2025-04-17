@@ -704,7 +704,6 @@ class Asset extends Element
             ],
             'link' => [
                 'label' => Craft::t('app', 'Link'),
-                'icon' => 'world',
                 'placeholder' => fn() => ElementHelper::linkAttributeHtml(null),
             ],
             'dateModified' => [
@@ -1736,6 +1735,11 @@ $('#' + $id).on('activate', () => {
           alert(result.error);
         } else {
           Craft.cp.displayNotice(Craft.t('app', 'New file uploaded.'));
+          // update the View menu item link
+          let viewBtn = $('#action-menu .menu-item[data-view]');
+          if (viewBtn && result.resultingUrl) {
+            viewBtn.attr('href', result.resultingUrl)
+          }
         }
       },
       fileuploadfail: (event, data) => {
@@ -1881,7 +1885,7 @@ JS,[
      */
     public function getSrcset(array $sizes, mixed $transform = null): string|false
     {
-        $urls = $this->getUrlsBySize($sizes, $transform);
+        $urls = array_filter($this->getUrlsBySize($sizes, $transform));
 
         if (empty($urls)) {
             return false;
@@ -2353,6 +2357,9 @@ JS,[
             'sizes' => "{$thumbSizes[0][0]}px",
             'srcset' => implode(', ', $srcsets),
             'alt' => $this->thumbAlt(),
+            'data' => [
+                'animated' => $this->couldHaveAnimatedThumb(),
+            ],
         ]);
     }
 
@@ -2407,6 +2414,14 @@ JS,[
     public function getExtension(): string
     {
         return pathinfo($this->_filename, PATHINFO_EXTENSION);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    protected function couldHaveAnimatedThumb(): bool
+    {
+        return $this->getExtension() === 'gif' || $this->getExtension() === 'webp';
     }
 
     /**
@@ -3392,6 +3407,7 @@ JS;
                 'kind' => $this->kind,
                 'alt' => $this->alt,
                 'filename' => $this->filename,
+                'animated' => $this->couldHaveAnimatedThumb(),
             ],
         ];
 

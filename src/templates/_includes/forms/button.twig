@@ -4,6 +4,7 @@
 {% set retryMessage = retryMessage ?? false %}
 {% set successMessage = successMessage ?? false %}
 {% set enableLiveRegion = busyMessage or failureMessage or retryMessage or successMessage %}
+{% set icon = icon ?? null %}
 {% set label = label ?? null %}
 {% set labelHtml = labelHtml ?? null %}
 {% set attributes = {
@@ -11,7 +12,7 @@
     id: id ?? false,
     class: (class ?? [])|explodeClass|merge([
         'btn',
-        not (label or labelHtml) ? 'btn-empty' : null,
+        not (icon or label or labelHtml) ? 'btn-empty' : null,
         (disabled ?? false) ? 'disabled',
     ]|filter),
     data: {
@@ -27,11 +28,20 @@
         <div role="status" class="visually-hidden"></div>
     {% endif %}
     {% tag 'button' with attributes %}
-        {{ (label or labelHtml) ? tag('div', {
-            class: ['label', 'inline-flex'],
-            text: label ?? null,
-            html: labelHtml ?? null
-        }) }}
+        {% if icon or label or labelHtml %}
+            <div class="inline-flex">
+                {% if icon %}
+                    <div class="cp-icon">{{ iconSvg(icon) }}</div>
+                {% endif %}
+                {% if label or labelHtml %}
+                    {{ tag('div', {
+                        class: 'label',
+                        text: label,
+                        html: labelHtml,
+                    }) }}
+                {% endif %}
+            </div>
+        {% endif %}
         {% if spinner %}
             <div class="spinner spinner-absolute">
                 <span class="visually-hidden">{{ 'Loading'|t('app') }}</span>

@@ -140,10 +140,12 @@ abstract class BaseElementLinkType extends BaseLinkType
     const element = ev.elements[0];
     input.val(`{\${refHandle}:\${element.id}@\${element.siteId}:url}`);
     field.updateLabel(element.label);
+    field.updateFilename(element.\$element.data('filename'));
   });
   elementSelect.on('removeElements', () => {
     input.val('');
     field.updateLabel('');
+    field.updateFilename('');
   });
 })();
 JS, [

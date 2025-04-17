@@ -11,6 +11,7 @@
 {% set criteria = criteria ?? null -%}
 {% set sourceElementId = sourceElementId ?? null -%}
 {% set storageKey = storageKey ?? null -%}
+{% set defaultPlacement = defaultPlacement ?? 'end' %}
 {% set viewMode = viewMode ?? 'list' %}
 {% set prevalidate = prevalidate ?? false %}
 {% set fieldId = fieldId ?? null %}
@@ -74,6 +75,7 @@
                     'add',
                     'icon',
                     'dashed',
+                    'wrap',
                     disabled ? 'disabled',
                     limit and elements|length >= limit ? 'hidden',
                 ]|filter,
@@ -97,6 +99,9 @@
         sources: sources,
         condition: condition ? condition.getConfig() : null,
         referenceElementId: referenceElement.id ?? null,
+        referenceElementOwnerId: (referenceElement ?? null) is instance of('craft\\base\\NestedElementInterface')
+            ? referenceElement.getOwnerId()
+            : null,
         referenceElementSiteId: referenceElement.siteId ?? null,
         criteria: criteria,
         allowAdd: allowAdd,
@@ -106,6 +111,7 @@
         branchLimit: branchLimit ?? null,
         sourceElementId: sourceElementId,
         disabledElementIds: disabledElementIds ?? null,
+        defaultPlacement,
         viewMode: viewMode,
         single: single,
         limit: limit,

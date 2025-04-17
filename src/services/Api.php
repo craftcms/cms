@@ -21,7 +21,7 @@ use yii\base\Component;
 /**
  * The API service provides APIs for calling the Craft API (api.craftcms.com).
  *
- * An instance of the service is available via [[\craft\base\ApplicationTrait::getApi()|`Craft::$app->api`]].
+ * An instance of the service is available via [[\craft\base\ApplicationTrait::getApi()|`Craft::$app->getApi()`]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0

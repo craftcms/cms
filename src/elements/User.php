@@ -473,6 +473,7 @@ class User extends Element implements IdentityInterface
             'preferredLocale' => ['label' => Craft::t('app', 'Preferred Locale')],
             'lastLoginDate' => ['label' => Craft::t('app', 'Last Login')],
             'isCredentialed' => ['label' => Craft::t('app', 'Credentialed')],
+            'is2faEnabled' => ['label' => Craft::t('app', 'Two-Step Verification')],
         ]));
     }
 
@@ -558,6 +559,14 @@ class User extends Element implements IdentityInterface
             'lastLoginDate' => [
                 'label' => Craft::t('app', 'Last Login'),
                 'placeholder' => fn() => (new \DateTime())->sub(new \DateInterval('P14D')),
+            ],
+            'is2faEnabled' => [
+                'label' => Craft::t('app', 'Two-Step Verification'),
+                'placeholder' => fn() => Template::raw(Cp::statusLabelHtml([
+                    'color' => Color::Teal,
+                    'label' => Craft::t('app', 'Two-Step Verification'),
+                    'icon' => 'check',
+                ])),
             ],
         ]);
     }
@@ -2346,6 +2355,30 @@ JS, [
                 $locale = $this->getPreferredLocale();
                 return $locale ? Craft::$app->getI18n()->getLocaleById($locale)->getDisplayName(Craft::$app->language) : '';
 
+            case 'is2faEnabled':
+                $enabled = Craft::$app->getAuth()->hasActiveMethod($this);
+                if ($this->viewMode === 'cards') {
+                    return Cp::statusLabelHtml([
+                        'color' => $enabled ? Color::Teal : Color::Gray,
+                        'label' => Craft::t('app', 'Two-Step Verification'),
+                        'icon' => $enabled ? 'check' : 'xmark',
+                    ]);
+                } else {
+                    if (!$enabled) {
+                        return '';
+                    }
+
+                    return Html::tag('span', '', [
+                        'class' => 'checkbox-icon',
+                        'role' => 'img',
+                        'title' => Craft::t('app', 'Enabled'),
+                        'aria' => [
+                            'label' => Craft::t('app', 'Enabled'),
+                        ],
+                    ]);
+                }
+                
+                // no break
             case 'isCredentialed':
                 $value = $this->getIsCredentialed();
                 if ($this->viewMode === 'cards') {

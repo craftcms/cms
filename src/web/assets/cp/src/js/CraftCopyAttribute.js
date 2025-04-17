@@ -31,7 +31,7 @@ class CraftCopyAttribute extends HTMLElement {
     input.value = this.value;
     input.classList.add('visually-hidden');
     input.readOnly = true;
-    input.size = this.value.length;
+    input.size = Math.max(this.value.length, 1);
     input.tabIndex = -1;
     input.ariaHidden = 'true';
 
@@ -64,7 +64,9 @@ class CraftCopyAttribute extends HTMLElement {
   }
 
   connectedCallback() {
-    this.value = this.innerText.trim();
+    this.value =
+      (this.getAttribute('value') || this.innerText).trim() ||
+      this.innerText.trim();
     this.innerHTML = '';
 
     this.renderButton();

@@ -27,7 +27,7 @@ use yii\base\InvalidArgumentException;
 /**
  * Revisions service.
  *
- * An instance of the service is available via [[\craft\base\ApplicationTrait::getRevisions()|`Craft::$app->revisions`]].
+ * An instance of the service is available via [[\craft\base\ApplicationTrait::getRevisions()|`Craft::$app->getRevisions()`]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.2.0

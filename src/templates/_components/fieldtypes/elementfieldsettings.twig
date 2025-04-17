@@ -2,6 +2,8 @@
 
 {% set sourceOptions = field.getSourceOptions() %}
 {% set elementType = elementType ?? pluralElementType %}
+{% set upperElementType = upperElementType ?? elementType|capitalize %}
+
 {% block fieldSettings %}
     {% block sourcesField %}
         {% if sourceOptions %}
@@ -89,6 +91,22 @@
             errors: field.getErrors('branchLimit'),
             data: {'error-key': 'branchLimit'},
         }) }}
+    {% endblock %}
+
+    {% block defaultPlacementField %}
+        {{ forms.selectField({
+            label: 'Default {type} Placement'|t('app', {type: upperElementType}),
+            instructions: 'Where new {type} should be placed by default in the field.'|t('app', {type: pluralElementType}),
+            id: 'default-placement',
+            name: 'defaultPlacement',
+            options: [
+                {label: 'Before other {type}'|t('app', {type: pluralElementType}), value: 'beginning'},
+                {label: 'After other {type}'|t('app', {type: pluralElementType}), value: 'end'},
+            ],
+            value: field.defaultPlacement,
+            errors: field.getErrors('defaultPlacement'),
+            data: {'error-key': 'defaultPlacement'},
+        })}}
     {% endblock %}
 
     {% block viewModeField %}

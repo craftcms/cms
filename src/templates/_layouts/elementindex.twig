@@ -38,7 +38,9 @@
         {{ tag('a', {
             class: 'btn skip-link',
             href: '#elements',
-            html: 'Skip to {title}'|t('app', {title: title}),
+            html: 'Skip to {name}'|t('app', {
+                name: elementPluralDisplayName|lower,
+            })|capitalize,
         }) }}
 
         <nav aria-labelledby="source-heading">
@@ -61,7 +63,7 @@
 {% block content %}
     <div class="main element-index">
         <span class="visually-hidden" role="status" data-status-message></span>
-        <a class="skip-link btn" href="#footer">{{ 'Skip to {title}'|t('app', { title: 'Footer'|t }) }}</a>
+        <a class="skip-link btn" href="#footer">{{ 'Skip to footer'|t('app') }}</a>
         <div id="elements" class="elements busy">
             <div class="update-spinner spinner spinner-absolute"></div>
         </div>

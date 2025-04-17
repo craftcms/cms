@@ -61,7 +61,7 @@
                         }|filter,
                     } %}
                         {%- if (sortable or structureEditable) and not inlineEditing %}
-                            <a class="move icon" title="{{ 'Reorder'|t('app') }}" aria-label="{{ 'Reorder'|t('app') }}" role="button">&nbsp;</a>
+                            <a class="move icon" title="{{ 'Reorder'|t('app') }}">&nbsp;</a>
                         {% endif %}
                         {%- if structure and totalDescendants %}
                             {% set toggleLabel = 'Show {title} children'|t('app', {title: elementTitle}) %}

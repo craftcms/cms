@@ -7,7 +7,6 @@
       $container: null,
       namespace: null,
       currentType: null,
-      typeSettings: null,
 
       _cancelToken: null,
       _ignoreFailedRequest: false,
@@ -17,7 +16,6 @@
         this.$container = $(container);
         this.namespace = namespace;
         this.currentType = this.$toggle.data('value');
-        this.typeSettings = {};
         this.setSettings(settings, Craft.FieldSettingsToggle.defaults);
         this.addListener(this.$toggle, 'change', 'handleToggleChange');
       },
@@ -37,15 +35,7 @@
           .append(this.$container.clone())
           .serialize();
 
-        // Save & detach the current settings
-        this.typeSettings[oldType] = this.$container.children().detach();
-
         this.currentType = this.$toggle.data('value');
-
-        if (typeof this.typeSettings[this.currentType] !== 'undefined') {
-          this.typeSettings[this.currentType].appendTo(this.$container);
-          return;
-        }
 
         // Show a spinner
         this.$container.html(

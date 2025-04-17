@@ -57,7 +57,7 @@
     "symfony/css-selector": "^6.0|^7.0",
     "symfony/dom-crawler": "^6.0|^7.0",
     "symfony/filesystem": "^6.3",
-    "symfony/http-client": "^6.0.3",
+    "symfony/http-client": "^6.0.3|^7.0",
     "symfony/property-access": "^7.0",
     "symfony/property-info": "^7.0",
     "symfony/serializer": "^6.4",
@@ -67,9 +67,9 @@
     "twig/twig": "~3.15.0",
     "voku/stringy": "^6.4.0",
     "web-auth/webauthn-lib": "~4.9.0",
-    "webonyx/graphql-php": "~14.11.5",
+    "webonyx/graphql-php": "~14.11.10",
     "yiisoft/yii2": "~2.0.52.0",
-    "yiisoft/yii2-debug": "~2.1.25.0",
+    "yiisoft/yii2-debug": "~2.1.26.0",
     "yiisoft/yii2-queue": "~2.3.2",
     "yiisoft/yii2-symfonymailer": "^4.0.0"
   },
@@ -96,9 +96,6 @@
     "bower-asset/yii2-pjax": "~2.0.1",
     "yii2tech/ar-softdelete": "1.0.4"
   },
-  "conflict": {
-    "webonyx/graphql-php": "14.11.7"
-  },
   "suggest": {
     "ext-exif": "Adds support for parsing image EXIF data.",
     "ext-imagick": "Adds support for more image processing formats and options.",
@@ -120,7 +117,8 @@
     "check-cs": "ecs check --ansi",
     "fix-cs": "ecs check --ansi --fix",
     "codecept-build": "codecept build",
-    "phpstan": "phpstan --memory-limit=1G"
+    "phpstan": "phpstan --memory-limit=1G",
+    "rector": "rector"
   },
   "config": {
     "sort-packages": true,

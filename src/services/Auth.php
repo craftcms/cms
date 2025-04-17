@@ -44,7 +44,7 @@ use yii\base\InvalidArgumentException;
 /**
  * User authentication service.
  *
- * An instance of the service is globally accessible in Craft via [[\craft\base\ApplicationTrait::getAuth()|`Craft::$app->auth`]].
+ * An instance of the service is globally accessible in Craft via [[\craft\base\ApplicationTrait::getAuth()|`Craft::$app->getAuth()`]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 5.0.0

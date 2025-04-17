@@ -29,7 +29,7 @@ use yii\base\Component;
 /**
  * The Utilities service provides APIs for managing utilities.
  *
- * An instance of the service is available via [[\craft\base\ApplicationTrait::getUtilities()|`Craft::$app->utilities()`]].
+ * An instance of the service is available via [[\craft\base\ApplicationTrait::getUtilities()|`Craft::$app->getUtilities()`]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0

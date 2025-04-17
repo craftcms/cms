@@ -23,7 +23,7 @@
 {% set options = options|map(o => o|merge({
     data: (o.data ?? {})|merge(o.data.data ?? {})|merge({
         color: o.data.color ?? o.color ?? null,
-        icon: o.data.icon ?? o.icon ?? null,
+        icon: iconSvg(o.data.icon ?? o.icon ?? null),
     }|filter)
 })) %}
 

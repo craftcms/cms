@@ -21,6 +21,7 @@ use craft\db\Connection;
 use craft\db\FixedOrderExpression;
 use craft\db\Query;
 use craft\db\QueryAbortedException;
+use craft\db\QueryParam;
 use craft\db\Table;
 use craft\elements\ElementCollection;
 use craft\elements\User;
@@ -2748,6 +2749,18 @@ class ElementQuery extends Query implements ElementQueryInterface
 
                 // Make sure the custom field exists in one of the field layouts
                 if (!isset($fieldsByHandle[$handle])) {
+                    // If it looks like null/:empty: is a valid option, let it slide
+                    $value = is_array($fieldAttributes->$handle) && isset($fieldAttributes->$handle['value'])
+                        ? $fieldAttributes->$handle['value']
+                        : $fieldAttributes->$handle;
+                    if (is_array($value) && in_array(null, $value, true)) {
+                        $values = [...$value];
+                        $operator = QueryParam::extractOperator($values) ?? QueryParam::OR;
+                        if ($operator === QueryParam::OR) {
+                            continue;
+                        }
+                    }
+
                     throw new QueryAbortedException("No custom field with the handle \"$handle\" exists in the field layouts involved with this element query.");
                 }
 
@@ -3632,7 +3645,7 @@ class ElementQuery extends Query implements ElementQueryInterface
             return $this->_columnMappingSql($str) ?? $str;
         }
 
-        return preg_replace_callback('/\[\[(\w+(?:\.\w+)?)]]/', function(array $match) {
+        return preg_replace_callback('/(?<!\.)\[\[(\w+(?:\.\w+)?)]]/', function(array $match) {
             $mapping = $this->_columnMappingSql($match[1]);
             if ($mapping === null) {
                 return $match[0];

@@ -82,19 +82,24 @@ class MoveAssets extends ElementAction
           defaultSource: elementIndex.sourceKey,
           defaultSourcePath: elementIndex.sourcePath,
         },
-        onSelect: ([targetFolder]) => {
+        onSelect: async ([targetFolder]) => {
           const mover = new Craft.AssetMover();
-          mover.moveFolders(selectedFolderIds, targetFolder.folderId).then((totalFoldersMoved) => {
-            mover.moveAssets(selectedAssetIds, targetFolder.folderId).then((totalAssetsMoved) => {
-              const totalItemsMoved = totalFoldersMoved + totalAssetsMoved;
-              if (totalItemsMoved) {
-                Craft.cp.displayNotice(Craft.t('app', '{totalItems, plural, =1{Item} other{Items}} moved.', {
-                  totalItems: totalItemsMoved,
-                }));
-                elementIndex.updateElements(true);
-              }
-            });
-          });
+          const moveParams = await mover.getMoveParams(selectedFolderIds, selectedAssetIds);
+          if (!moveParams.proceed) {
+            return;
+          }
+          const totalFoldersMoved = await mover.moveFolders(selectedFolderIds, targetFolder.folderId, elementIndex.currentFolderId);
+          const totalAssetsMoved = await mover.moveAssets(selectedAssetIds, targetFolder.folderId, elementIndex.currentFolderId);
+          const totalItemsMoved = totalFoldersMoved + totalAssetsMoved;
+          if (totalItemsMoved) {
+            mover.successNotice(
+              moveParams,
+              Craft.t('app', '{totalItems, plural, =1{Item} other{Items}} moved.', {
+                totalItems: totalItemsMoved,
+              })
+            );
+            elementIndex.updateElements(true);
+          }
         },
       });
     },

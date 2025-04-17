@@ -56,6 +56,13 @@ class ReplaceFile extends ElementAction
                 const result = event instanceof CustomEvent ? event.detail : data.result;
                 if (!result.error) {
                   Craft.cp.displayNotice(Craft.t('app', 'New file uploaded.'));
+                  // update the element row
+                  if (Craft.broadcaster) {
+                      Craft.broadcaster.postMessage({
+                        event: 'saveElement',
+                        id: result.assetId,
+                      });
+                  }
                 }
                 if (fileuploaddone) {
                   fileuploaddone(event, data);                      

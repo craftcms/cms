@@ -23,7 +23,7 @@ use yii\base\InvalidConfigException;
 /**
  * SSO service.
  *
- * An instance of the service is available via [[\craft\base\ApplicationTrait::getSites()|`Craft::$app->sites`]].
+ * An instance of the service is available via [[\craft\base\ApplicationTrait::getSso()|`Craft::$app->getSso()`]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @internal

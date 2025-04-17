@@ -232,8 +232,11 @@ class PlainText extends Field implements InlineEditableFieldInterface, SortableF
      */
     public function serializeValue(mixed $value, ?ElementInterface $element): mixed
     {
-        if ($value !== null && !Craft::$app->getDb()->getSupportsMb4()) {
-            $value = StringHelper::emojiToShortcodes(StringHelper::escapeShortcodes($value));
+        if ($value !== null) {
+            $value = StringHelper::escapeShortcodes($value);
+            if (!Craft::$app->getDb()->getSupportsMb4()) {
+                $value = StringHelper::emojiToShortcodes($value);
+            }
         }
         return $value;
     }

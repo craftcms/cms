@@ -160,9 +160,7 @@ Craft.Preview = Garnish.Base.extend(
     _buildUi: function () {
       this.editorId = `lp-editor-${Math.floor(Math.random() * 100000000)}`;
 
-      const previewSkipLinkText = Craft.t('app', 'Skip to {title}', {
-        title: Craft.t('app', 'Top of preview'),
-      });
+      const previewSkipLinkText = Craft.t('app', 'Skip to top of preview');
 
       this.$shade = $('<div/>', {class: 'modal-shade dark'}).appendTo(
         Garnish.$bod

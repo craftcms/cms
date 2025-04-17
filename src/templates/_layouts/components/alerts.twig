@@ -18,24 +18,34 @@
       {% block content %}
         {% for alert in alerts %}
           {% embed '_layouts/components/tag.twig' with {
-            alert: alert,
+            alert,
             type: 'li',
             style: {
-              'display': 'block',
+              'display': 'flex',
               'min-height': 'var(--header-height)'
             },
           } only %}
             {% block content %}
-              {% if alert is string or alert.showIcon ?? true %}
-                {% include '_layouts/components/tag.twig' with {
-                  type: 'span',
-                  attributes: {
-                    'aria-label': 'Error'|t('app'),
-                    'data-icon': 'alert',
-                  },
-                } only %}
-              {% endif %}
-              {{ (alert is array ? alert.content : alert)|raw }}
+              {% embed '_layouts/components/tag.twig' with {
+                alert,
+                type: 'div',
+                style: {
+                  'display': 'block',
+                },
+              } only %}
+                {% block content %}
+                  {% if alert is string or alert.showIcon ?? true %}
+                    {% include '_layouts/components/tag.twig' with {
+                      type: 'span',
+                      attributes: {
+                        'aria-label': 'Error'|t('app'),
+                        'data-icon': 'alert',
+                      },
+                    } only %}
+                  {% endif %}
+                  {{ (alert is array ? alert.content : alert)|raw }}
+                {% endblock %}
+              {% endembed %}
             {% endblock %}
           {% endembed %}
         {% endfor %}

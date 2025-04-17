@@ -1,3 +1,4 @@
+{% set context = context ?? 'index' %}
 {% apply spaceless %}
   {% for element in elements %}
     {% tag 'li' with {
@@ -7,9 +8,10 @@
       },
     } %}
       {{ elementCard(element, {
-        context: context ?? 'index',
-        selectable: selectable,
-        sortable: sortable,
+        context,
+        selectable,
+        sortable,
+        hyperlink: context == 'index',
       }) }}
     {% endtag %}
   {% endfor %}

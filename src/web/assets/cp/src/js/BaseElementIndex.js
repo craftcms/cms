@@ -17,7 +17,6 @@ Craft.BaseElementIndex = Garnish.Base.extend(
     sourceStatesStorageKey: null,
 
     searchTimeout: null,
-    sourceSelect: null,
     sourceNav: null,
 
     $container: null,
@@ -81,6 +80,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
     $countContainer: null,
     $actionsContainer: null,
     $actionMenuBtn: null,
+    $pasteBtn: null,
     page: 1,
     prevPage: null,
     resultSet: null,
@@ -519,6 +519,15 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 
       // Set visible source name on small/zoomed screens
       this.updateMainHeading();
+
+      if (this.settings.context === 'index') {
+        Craft.cp.onCopyElements((elementInfo, buttonLabel) => {
+          this.updatePasteButton(elementInfo);
+          if (this.$pasteBtn && buttonLabel) {
+            this.$pasteBtn.find('.label').text(buttonLabel);
+          }
+        });
+      }
     },
 
     afterInit: function () {
@@ -678,6 +687,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
       if (!this.sourceNav) {
         this.sourceNav = new SourceNav(this.$sidebar.find('nav'), {
           onSelectionChange: this._handleSourceSelectionChange.bind(this),
+          handleCtrlClicks: this.settings.context === 'index',
         });
       }
 
@@ -1564,6 +1574,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
         source: this.sourceKey,
         condition: this.settings.condition,
         referenceElementId: this.settings.referenceElementId,
+        referenceElementOwnerId: this.settings.referenceElementOwnerId,
         referenceElementSiteId: this.settings.referenceElementSiteId,
         baseCriteria,
         criteria,
@@ -1817,7 +1828,9 @@ Craft.BaseElementIndex = Garnish.Base.extend(
         this._$triggers.appendTo(this.$actionsContainer);
       }
 
+      this.$actionsContainer.removeClass('hidden');
       this.showingActionTriggers = true;
+      this.updatePasteButton();
     },
 
     submitAction: async function (action, actionParams, beforeCallback) {
@@ -1929,7 +1942,9 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 
       this._$triggers.detach();
 
+      this.$actionsContainer.addClass('hidden');
       this.showingActionTriggers = false;
+      this.updatePasteButton();
     },
 
     updateSelectAllCheckbox: function () {
@@ -1964,6 +1979,62 @@ Craft.BaseElementIndex = Garnish.Base.extend(
           this.hideActionTriggers();
         }
       }
+    },
+
+    updatePasteButton(elementInfo = null) {
+      elementInfo = elementInfo || Craft.cp.getCopiedElements();
+      if (this.canPasteInternal(elementInfo)) {
+        if (!this.$pasteBtn) {
+          this.$pasteBtn = Craft.ui
+            .createPasteButton()
+            .insertAfter(this.$actionsContainer);
+          this.addListener(this.$pasteBtn, 'activate', 'pasteElements');
+        } else {
+          this.$pasteBtn.removeClass('hidden');
+        }
+      } else {
+        this.$pasteBtn?.addClass('hidden');
+      }
+    },
+
+    canPasteInternal(elementInfo) {
+      if (!elementInfo.length || !this.$source || this.showingActionTriggers) {
+        return false;
+      }
+
+      for (const e of elementInfo) {
+        if (e.type !== this.elementType) {
+          return false;
+        }
+      }
+
+      return this.canPaste(elementInfo);
+    },
+
+    canPaste: function (elementInfo) {
+      return false;
+    },
+
+    pasteAttributes: function () {
+      return {};
+    },
+
+    async pasteElements() {
+      Craft.cp.announce(Craft.t('app', 'Loading'));
+      this.$pasteBtn.addClass('loading');
+
+      try {
+        const newElementInfo = await Craft.cp.pasteElements(
+          this.pasteAttributes()
+        );
+        if (!newElementInfo.length) {
+          return;
+        }
+      } finally {
+        this.$pasteBtn.removeClass('loading');
+      }
+
+      await this.updateElements();
     },
 
     getSelectedElements: function () {
@@ -2341,6 +2412,8 @@ Craft.BaseElementIndex = Garnish.Base.extend(
         urlParams.source = this.sourceKey;
         Craft.setUrl(Craft.getUrl(Craft.path, urlParams));
       }
+
+      this.updatePasteButton();
 
       return true;
     },
@@ -2742,9 +2815,11 @@ Craft.BaseElementIndex = Garnish.Base.extend(
       }
     },
 
-    setIndexBusy: function () {
+    setIndexBusy: function (showSpinner = true) {
       this.$elements.addClass('busy');
-      this.$updateSpinner.appendTo(this.$elements);
+      if (showSpinner) {
+        this.$updateSpinner.appendTo(this.$elements);
+      }
       this.isIndexBusy = true;
 
       // Blur the active element, if it's within the element listing pane
@@ -3819,6 +3894,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
       storageKey: null,
       condition: null,
       referenceElementId: null,
+      referenceElementOwnerId: null,
       referenceElementSiteId: null,
       allowedViewModes: null,
       showHeaderColumn: true,
@@ -3831,6 +3907,10 @@ Craft.BaseElementIndex = Garnish.Base.extend(
       waitForDoubleClicks: false,
       canSelectElement: null,
       canDuplicateElements: (selectedItems) => true,
+      onBeforeMoveElementsToPage: async (selectedItems, page) => {},
+      onMoveElementsToPage: async (selectedItems, page) => {},
+      onBeforeReorderElements: async (selectedItems, offset) => {},
+      onReorderElements: async (selectedItems, offset) => {},
       onBeforeDuplicateElements: async (selectedItems) => {},
       onDuplicateElements: async (selectedItems) => {},
       canDeleteElements: (selectedItems) => true,
@@ -3882,23 +3962,18 @@ const SourceNav = Garnish.Base.extend(
 
     init: function (container, settings) {
       this.$container = $(container);
-
-      const items = this.$container.find('[data-source-item]');
-
       this.setSettings(settings, SourceNav.defaults);
-
       this.$items = $();
-      this.addItems(items);
     },
 
     addItems: function (items) {
       const $items = $(items);
 
-      for (var i = 0; i < $items.length; i++) {
+      for (let i = 0; i < $items.length; i++) {
         const item = $items[i];
 
-        this.addListener(item, 'click', this.handleClick.bind(this));
-        this.addListener(item, 'keydown', this.handleKeypress.bind(this));
+        this.addListener(item, 'click', 'handleClick');
+        this.addListener(item, 'keydown', 'handleKeypress');
       }
 
       this.$items = this.$items.add($items);
@@ -3908,7 +3983,7 @@ const SourceNav = Garnish.Base.extend(
      * Remove All Items
      */
     removeAllItems: function () {
-      for (var i = 0; i < this.$items.length; i++) {
+      for (let i = 0; i < this.$items.length; i++) {
         this._deinitItem(this.$items[i]);
       }
 
@@ -3931,6 +4006,16 @@ const SourceNav = Garnish.Base.extend(
 
     handleClick: function (event) {
       const $item = this.getClosestItem(event.target);
+
+      if (this.settings.handleCtrlClicks && Garnish.isCtrlKeyPressed(event)) {
+        const sourceKey = $item.data('key');
+        if (sourceKey) {
+          const urlParams = Craft.getQueryParams();
+          urlParams.source = sourceKey;
+          window.open(Craft.getUrl(Craft.path, urlParams));
+          return;
+        }
+      }
 
       this.selectItem($item);
     },
@@ -4022,6 +4107,7 @@ const SourceNav = Garnish.Base.extend(
     defaults: {
       selectedClass: 'sel',
       onSelectionChange: $.noop,
+      handleCtrlClicks: false,
     },
   }
 );
@@ -4734,13 +4820,39 @@ const FilterHud = Garnish.HUD.extend({
       hudHeight = windowHeight - searchOffset.bottom - 10;
     }
 
-    this.$hud.css({
-      width: this.elementIndex.$searchContainer.outerWidth() - 2,
-      top: searchOffset.top + this.elementIndex.$searchContainer.outerHeight(),
-      left: searchOffset.left + 1,
-      height: hudHeight ? `${hudHeight}px` : 'unset',
-      overflowY: hudHeight ? 'scroll' : 'unset',
-    });
+    const containerWidth = this.elementIndex.$searchContainer.outerWidth() - 2;
+    if (containerWidth >= 450) {
+      this.$hud.css({
+        maxWidth: 'none',
+        width: containerWidth,
+        top:
+          searchOffset.top + this.elementIndex.$searchContainer.outerHeight(),
+        left: searchOffset.left + 1,
+        height: hudHeight ? `${hudHeight}px` : 'unset',
+        overflowY: hudHeight ? 'scroll' : 'unset',
+        transform: 'none',
+      });
+
+      // Add an overlay for the shade
+      this.$shade.css({
+        backgroundColor: 'transparent',
+      });
+    } else {
+      this.$hud.css({
+        maxWidth: '680px',
+        width: '90%',
+        top: '50%',
+        left: '50%',
+        height: hudHeight ? `${hudHeight}px` : 'unset',
+        overflowY: hudHeight ? 'scroll' : 'unset',
+        transform: 'translateY(-50%) translateX(-50%)',
+      });
+
+      // Add an overlay for the shade
+      this.$shade.css({
+        backgroundColor: 'var(--shade-bg)',
+      });
+    }
   },
 
   onShow: function () {

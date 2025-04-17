@@ -123,6 +123,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
                 'exec',
                 'file_get_contents',
                 'file_put_contents',
+                'popen',
             ])
         ) {
             throw new RuntimeError(sprintf('The "%s" %s does not support passing "%s".', $thing, $type, $arrow));

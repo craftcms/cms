@@ -11,6 +11,8 @@
 {% set showHandles = showHandles ?? false %}
 {% set showIndicators = showIndicators ?? false %}
 {% set sortable = (not limit or limit > 1) and (sortable ?? true) %}
+{% set showActionMenus = showActionMenus ?? true %}
+{% set hyperlinks = hyperlinks ?? true %}
 {% set withSearchInput = withSearchInput ?? true %}
 {% set createAction = createAction ?? null %}
 {% set disabled = (disabled ?? false) ? true : false %}
@@ -47,9 +49,10 @@
             {% set chip = chip(component, {
               inputName: inputName ?? name ?? null,
               checkbox: selectable ?? false,
-              showActionMenu: true,
+              showActionMenu: showActionMenus,
               showHandle: showHandles,
               showIndicators: showIndicators,
+              hyperlink: hyperlinks,
             }) %}
             {% if disabled %}
               {% set chip = chip|removeClass('removable') %}
@@ -94,7 +97,7 @@
 
     {% if createAction and not disabled %}
       {{ forms.button({
-        class: ['add', 'icon', 'dashed', 'create-btn'],
+        class: ['dashed', 'create-btn'],
         label: 'Create'|t('app'),
         icon: 'plus',
       }) }}
@@ -109,6 +112,8 @@
     limit,
     showHandles,
     sortable,
+    showActionMenus,
+    hyperlinks,
     createAction,
   }|merge(jsSettings ?? {}) %}
 

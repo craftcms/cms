@@ -476,8 +476,10 @@
 
 {% macro fieldLayoutDesignerField(config) %}
     <div class="fld-cvd">
+    <h2 class="visually-hidden">{{ 'Field Layout'|t('app') }}</h2>
         {{ _self.field({
             label: 'Field Layout'|t('app'),
+            fieldset: true,
             errors: (config.fieldLayout ?? false) ? config.fieldLayout.getErrorSummary(true),
         }|merge(config), 'template:_includes/forms/fieldLayoutDesigner') }}
 

@@ -45,8 +45,8 @@
     {% if custom ?? false %}
         {{ 'Custom:'|t('app') }}
     {% else %}
-        <div class="flex flex-nowrap gap-xs">
-            {% if icon or color %}
+        {% if icon or color %}
+            <div class="flex flex-nowrap gap-xs">
                 {% if icon %}
                     {% set style = {
                         '--icon-color': color,
@@ -54,7 +54,7 @@
                     {{ tag('span', {
                         class: 'cp-icon puny',
                         style,
-                        html: icon,
+                        html: iconSvg(icon),
                     }) }}
                 {% else %}
                     <div class="color small">
@@ -62,10 +62,11 @@
                     </div>
                 {% endif %}
                 <span>{{ label|raw }}</span>
-            {% else %}
-                {{ label|raw }}
-            {% endif %}
-        </div>
+            </div>
+        {% else %}
+            {{ label|raw }}
+        {% endif %}
+
     {% endif %}
     {% if info ?? null %}
         <span class="info">{{ info|md|raw }}</span>

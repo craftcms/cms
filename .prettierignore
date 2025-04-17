@@ -5,6 +5,7 @@ cpresources/*
 lib/*
 src/templates/*
 src/web/assets/**/dist/*
+packages/**/dist/*
 tests/_craft/*
 vendor/*
 .ddev/*

@@ -1,0 +1,117 @@
+@charset "UTF-8";
+@import '@craftcms/sass/mixins';
+
+body,
+.cp-graphiql {
+  width: 100vw;
+  height: 100vh;
+}
+
+.graphiql-container {
+  --color-base: transparent;
+  --color-neutral: 219, 28%, 32%;
+  --color-primary: 0, 72%, 51%;
+}
+
+.cp-graphiql {
+  display: grid;
+  grid-template-rows: auto 1fr;
+
+  .CodeMirror {
+    border-color: transparent;
+    height: 100% !important;
+  }
+
+  .CodeMirror-hints {
+    background-color: #fff;
+  }
+
+  .CodeMirror.CodeMirror-focused {
+    box-shadow: none;
+    outline: none;
+  }
+}
+
+.cp-graphiql-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-block: 8px 0;
+  padding-inline: 16px;
+  gap: 1.5em;
+
+  .select select {
+    color: var(--text-color);
+    background-color: transparentize($inputColor, 0.75);
+  }
+}
+
+.cp-graphiql-title {
+  margin: 0;
+}
+
+.schema-selector {
+  display: flex;
+  gap: 0.5em;
+
+  .field {
+    margin: 0;
+    display: flex;
+    gap: 0.5em;
+    align-items: baseline;
+  }
+
+  .heading {
+    margin-block-end: 0;
+  }
+}
+
+.graphiql-editor {
+  font-size: 14px;
+  line-height: 20px;
+  color: var(--text-color);
+  -webkit-font-smoothing: subpixel-antialiased;
+}
+
+.graphiql-editor:has(.spinner) {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.graphiql-container .graphiql-sessions {
+  // @mixins.pane
+  border-radius: 5px;
+  background: var(--gray-050);
+  box-shadow:
+    0 0 0 1px #cdd8e4,
+    0 2px 12px rgb(205 216 228 / 50%);
+  margin-top: 8px; // stylelint-disable-line
+}
+
+.graphiql-container .graphiql-editors {
+  background-color: #fff;
+  border-radius: 4px;
+}
+
+button.graphiql-execute-button:hover {
+  background-color: hsl(0deg 72.41% 45.49%);
+}
+
+.graphiql-dialog-close > svg {
+  padding: 0;
+}
+
+.cp-graphiql .graphiql-container .CodeMirror {
+  height: 100% !important;
+}
+
+.cp-graphiql .CodeMirror.CodeMirror-focused {
+  box-shadow: none;
+  outline: none;
+}
+
+.graphiql-doc-explorer-search {
+  background-color: #fff;
+}

@@ -83,6 +83,40 @@ class DbController extends Controller
     }
 
     /**
+     * Repairs all tables in the database.
+     *
+     * Note that this can cause table locking, which could interfere with SQL being executed.
+     *
+     * @since 5.7.0
+     * @see https://dev.mysql.com/doc/refman/8.4/en/optimize-table.html
+     * @see https://www.postgresql.org/docs/current/sql-analyze.html
+     */
+    public function actionRepair(): int
+    {
+        if (!$this->_tablesExist()) {
+            $this->stdout('No existing database tables found.' . PHP_EOL, Console::FG_YELLOW);
+            return ExitCode::OK;
+        }
+
+        if ($this->interactive && !$this->confirm('Are you sure you want to repair all tables from the database?')) {
+            $this->stdout('Aborted.' . PHP_EOL, Console::FG_YELLOW);
+            return ExitCode::OK;
+        }
+
+        $this->_backupPrompt();
+
+        try {
+            $this->_repairAllTables();
+        } catch (Throwable $e) {
+            Craft::$app->getErrorHandler()->logException($e);
+            $this->stderr('error: ' . $e->getMessage() . PHP_EOL, Console::FG_RED);
+            return ExitCode::UNSPECIFIED_ERROR;
+        }
+
+        return ExitCode::OK;
+    }
+
+    /**
      * Drops all tables in the database.
      *
      * Example:
@@ -138,6 +172,34 @@ class DbController extends Controller
             $this->runAction('backup');
             $this->stdout(PHP_EOL);
         }
+    }
+
+    /**
+     * Repairs all tables in the database.
+     *
+     * @throws NotSupportedException
+     * @throws Exception
+     */
+    private function _repairAllTables(): void
+    {
+        $db = Craft::$app->getDb();
+        $tableNames = $db->getSchema()->getTableNames();
+
+        $this->stdout('Repairing all database tables ... ' . PHP_EOL);
+
+        if ($db->getIsMysql()) {
+            $sql = 'OPTIMIZE TABLE [[%s]]';
+        } else {
+            $sql = 'ANALYZE VERBOSE [[%s]]';
+        }
+
+        foreach ($tableNames as $tableName) {
+            $this->do("Repairing `$tableName`", function() use ($db, $sql, $tableName) {
+                $db->createCommand(sprintf($sql, $tableName))->execute();
+            });
+        }
+
+        $this->stdout('Finished repairing all database tables.' . PHP_EOL . PHP_EOL, Console::FG_GREEN);
     }
 
     /**

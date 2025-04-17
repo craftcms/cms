@@ -1020,6 +1020,7 @@ class FieldLayout extends Model
                 if ($showTab && (!$isConditional || $layoutElement->showInForm($element))) {
                     // If it was already included and we just need the missing elements, only keep track that it’s still included
                     if (
+                        !$layoutElement->alwaysRefresh() &&
                         $visibleElements !== null &&
                         (!$isConditional || (isset($visibleElements[$tab->uid]) && in_array($layoutElement->uid, $visibleElements[$tab->uid])))
                     ) {

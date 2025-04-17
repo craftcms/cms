@@ -165,6 +165,8 @@ export default Base.extend(
         this.$hud.appendTo(Garnish.$bod);
         this.hideContainer();
       }
+
+      Garnish.HUD.instances.push(this);
     },
 
     /**
@@ -703,6 +705,8 @@ export default Base.extend(
         this.$shade.remove();
       }
 
+      Garnish.HUD.instances = Garnish.HUD.instances.filter((o) => o !== this);
+
       this.base();
     },
   },
@@ -735,5 +739,10 @@ export default Base.extend(
       hideOnEsc: true,
       hideOnShadeClick: true,
     },
+
+    /**
+     * @type {Garnish.HUD[]}
+     */
+    instances: [],
   }
 );

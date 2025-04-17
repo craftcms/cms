@@ -500,7 +500,9 @@ class Category extends Element
 
         foreach ($ancestors->all() as $ancestor) {
             if ($elementsService->canView($ancestor, $user)) {
-                $crumbs[] = ['html' => Cp::elementChipHtml($ancestor)];
+                $crumbs[] = [
+                    'html' => Cp::elementChipHtml($ancestor, ['class' => 'chromeless']),
+                ];
             }
         }
 

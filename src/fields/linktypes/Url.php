@@ -46,6 +46,12 @@ class Url extends BaseTextLinkType
      */
     public bool $allowAnchors = false;
 
+    /**
+     * @return bool Whether custom URL schemes should be allowed.
+     * @since 5.7.0
+     */
+    public bool $allowCustomSchemes = false;
+
     protected function urlPrefix(): array
     {
         return ['https://', 'http://'];
@@ -63,6 +69,11 @@ class Url extends BaseTextLinkType
                 'label' => Craft::t('app', 'Allow anchors'),
                 'name' => 'allowAnchors',
                 'on' => $this->allowAnchors,
+            ]) .
+            Cp::lightswitchFieldHtml([
+                'label' => Craft::t('app', 'Allow custom URL schemes'),
+                'name' => 'allowCustomSchemes',
+                'on' => $this->allowCustomSchemes,
             ]);
     }
 
@@ -96,6 +107,10 @@ class Url extends BaseTextLinkType
 
         if ($this->allowAnchors) {
             $pattern .= '|#';
+        }
+
+        if ($this->allowCustomSchemes) {
+            $pattern .= '|(?!https?:)\w+:.+';
         }
 
         return "^($pattern)";

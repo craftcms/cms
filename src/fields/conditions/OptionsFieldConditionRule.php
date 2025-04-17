@@ -20,6 +20,8 @@ class OptionsFieldConditionRule extends BaseMultiSelectConditionRule implements 
 {
     use FieldConditionRuleTrait;
 
+    protected bool $includeEmptyOperators = true;
+
     protected function options(): array
     {
         /** @var BaseOptionsField $field */
@@ -53,7 +55,7 @@ class OptionsFieldConditionRule extends BaseMultiSelectConditionRule implements 
     /**
      * @inheritdoc
      */
-    protected function elementQueryParam(): ?array
+    protected function elementQueryParam(): string|array|null
     {
         if (!$this->field() instanceof BaseOptionsField) {
             return null;

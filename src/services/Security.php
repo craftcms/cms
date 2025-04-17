@@ -17,7 +17,7 @@ use yii\helpers\Inflector;
 /**
  * Security service.
  *
- * An instance of the service is available via [[\yii\base\Application::getSecurity()|`Craft::$app->security`]].
+ * An instance of the service is available via [[\yii\base\Application::getSecurity()|`Craft::$app->getSecurity()`]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0

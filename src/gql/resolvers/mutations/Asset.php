@@ -11,12 +11,14 @@ use Craft;
 use craft\base\ElementInterface;
 use craft\db\Table;
 use craft\elements\Asset as AssetElement;
+use craft\events\ReplaceAssetEvent;
 use craft\gql\base\ElementMutationResolver;
 use craft\helpers\Assets as AssetsHelper;
 use craft\helpers\Db;
 use craft\helpers\FileHelper;
 use craft\helpers\UrlHelper;
 use craft\models\Volume;
+use craft\services\Assets;
 use GraphQL\Error\Error;
 use GraphQL\Error\UserError;
 use GraphQL\Type\Definition\ResolveInfo;
@@ -35,6 +37,8 @@ class Asset extends ElementMutationResolver
 {
     /** @inheritdoc */
     protected array $immutableAttributes = ['id', 'uid', 'volumeId', 'folderId'];
+
+    private ?string $filename = null;
 
     /**
      * Save an asset using the passed arguments.
@@ -98,10 +102,31 @@ class Asset extends ElementMutationResolver
             }
         }
 
+        /** @var AssetElement $asset */
         $asset->setVolumeId($volume->id);
 
         $asset = $this->populateElementWithData($asset, $arguments, $resolveInfo);
+        $triggerReplaceEvents = (
+            $asset->getScenario() === AssetElement::SCENARIO_REPLACE &&
+            $assetService->hasEventHandlers(Assets::EVENT_BEFORE_REPLACE_ASSET)
+        );
+
+        if ($triggerReplaceEvents) {
+            $assetService->trigger(Assets::EVENT_BEFORE_REPLACE_ASSET, new ReplaceAssetEvent([
+                'asset' => $asset,
+                'replaceWith' => $asset->tempFilePath,
+                'filename' => $this->filename,
+            ]));
+        }
+
         $asset = $this->saveElement($asset);
+
+        if ($triggerReplaceEvents) {
+            $assetService->trigger(Assets::EVENT_AFTER_REPLACE_ASSET, new ReplaceAssetEvent([
+                'asset' => $asset,
+                'filename' => $this->filename,
+            ]));
+        }
 
         return $elementService->getElementById($asset->id, AssetElement::class);
     }
@@ -225,7 +250,12 @@ class Asset extends ElementMutationResolver
         }
 
         $asset->tempFilePath = $tempPath;
-        $asset->setFilename($filename);
+        $this->filename = $filename;
+        if ($asset->id !== null && $asset->getFilename() !== $filename) {
+            $asset->newFilename = $filename;
+        } else {
+            $asset->setFilename($filename);
+        }
         $asset->avoidFilenameConflicts = true;
 
         return true;

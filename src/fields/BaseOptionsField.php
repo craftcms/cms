@@ -686,7 +686,7 @@ abstract class BaseOptionsField extends Field implements PreviewableFieldInterfa
                     'label' => Craft::t('site', $option['label']),
                     'value' => $encode ? $this->encodeValue($option['value']) : $option['value'],
                     'color' => static::$optionColors && !empty($option['color']) ? $option['color'] : null,
-                    'icon' => static::$optionIcons && !empty($option['icon']) ? Cp::iconSvg($option['icon']) : null,
+                    'icon' => static::$optionIcons && !empty($option['icon']) ? $option['icon'] : null,
                 ];
             }
         }

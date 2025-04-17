@@ -28,7 +28,7 @@ use yii\base\Exception;
 /**
  * Images service.
  *
- * An instance of the service is available via [[\craft\base\ApplicationTrait::getImages()|`Craft::$app->images`]].
+ * An instance of the service is available via [[\craft\base\ApplicationTrait::getImages()|`Craft::$app->getImages()`]].
  *
  * @property bool $isGd Whether image manipulations will be performed using GD or not
  * @property bool $isImagick Whether image manipulations will be performed using Imagick or not

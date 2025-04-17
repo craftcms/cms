@@ -26,6 +26,7 @@ use craft\services\Sites;
 use craft\utilities\QueueManager;
 use craft\validators\UserPasswordValidator;
 use craft\web\AssetBundle;
+use craft\web\assets\animationblocker\AnimationBlockerAsset;
 use craft\web\assets\axios\AxiosAsset;
 use craft\web\assets\d3\D3Asset;
 use craft\web\assets\datepickeri18n\DatepickerI18nAsset;
@@ -60,6 +61,7 @@ class CpAsset extends AssetBundle
      */
     public $depends = [
         TailwindResetAsset::class,
+        AnimationBlockerAsset::class,
         AxiosAsset::class,
         D3Asset::class,
         GarnishAsset::class,
@@ -134,7 +136,9 @@ JS;
             'Are you sure you want to delete this {type}?',
             'Are you sure you want to delete “{name}”?',
             'Are you sure you want to discard your changes?',
+            'Are you sure you want to move the selected items?',
             'Are you sure you want to transfer your license to this domain?',
+            'Are you sure you want to undo the move?',
             'Ascending',
             'Assets',
             'Attributes',
@@ -264,6 +268,7 @@ JS;
             'Move down',
             'Move folder',
             'Move forward',
+            'Move reverted.',
             'Move to the left',
             'Move to the right',
             'Move to',
@@ -297,6 +302,7 @@ JS;
             'Password',
             'Past year',
             'Past {num} days',
+            'Paste {type}',
             'Pay {price}',
             'Pending',
             'Phone',
@@ -351,7 +357,8 @@ JS;
             'Showing {total, number} {total, plural, =1{{item}} other{{items}}}',
             'Sign out now',
             'Sites',
-            'Skip to {title}',
+            'Skip to card view designer',
+            'Skip to top of preview',
             'Sort ascending',
             'Sort attribute',
             'Sort by',
@@ -382,7 +389,6 @@ JS;
             'To {date}',
             'To',
             'Today',
-            'Top of preview',
             'Transfer it to:',
             'Try again',
             'Try another way',
@@ -415,6 +421,7 @@ JS;
             'days',
             'draft',
             'element',
+            'elements',
             'files',
             'folders',
             'hour',
@@ -440,8 +447,10 @@ JS;
             '{pct} width',
             '{total, number} {total, plural, =1{error} other{errors}} found in {num, number} {num, plural, =1{tab} other{tabs}}.',
             '{total, number} {total, plural, =1{{item}} other{{items}}}',
+            '{total, number} {type} copied.',
             '{totalItems, plural, =1{Item} other{Items}} moved.',
             '{type} Criteria',
+            '{type} copied.',
             '{type} saved.',
             '“{name}” deleted.',
         ]);
@@ -460,11 +469,14 @@ JS;
             'asterisk',
             'asterisk-slash',
             'clipboard',
-            'copy',
+            'clone',
+            'clone-dashed',
+            'duplicate',
             'edit',
             'gear',
             'image',
             'image-slash',
+            'move',
             'pencil',
             'plus',
             'remove',

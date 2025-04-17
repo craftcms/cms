@@ -150,6 +150,14 @@ class Template extends BaseUiElement
     }
 
     /**
+     * @inheritdoc
+     */
+    public function alwaysRefresh(): bool
+    {
+        return true;
+    }
+
+    /**
      * Renders an error message.
      *
      * @param string $error

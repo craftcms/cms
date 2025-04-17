@@ -234,6 +234,14 @@ class CustomField extends BaseField
     }
 
     /**
+     * @inheritdoc
+     */
+    public function hasConditions(): bool
+    {
+        return parent::hasConditions() || $this->getEditCondition();
+    }
+
+    /**
      * Returns the edit condition for this layout element.
      *
      * @return UserCondition|null

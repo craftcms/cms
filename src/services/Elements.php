@@ -83,12 +83,14 @@ use yii\base\InvalidCallException;
 use yii\base\InvalidConfigException;
 use yii\caching\TagDependency;
 use yii\di\Instance;
+use yii\web\ForbiddenHttpException;
 
 /**
  * The Elements service provides APIs for managing elements.
  *
- * An instance of the service is available via [[\craft\base\ApplicationTrait::getElements()|`Craft::$app->elements`]].
+ * An instance of the service is available via [[\craft\base\ApplicationTrait::getElements()|`Craft::$app->getElements()`]].
  *
+ * @phpstan-import-type EagerLoadingMap from ElementInterface
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
  */
@@ -431,6 +433,30 @@ class Elements extends Component
      * @since 5.0.0
      */
     public const EVENT_AUTHORIZE_DUPLICATE_AS_DRAFT = 'authorizeDuplicateAsDraft';
+
+    /**
+     * @event AuthorizationCheckEvent The event that is triggered when determining whether a user is authorized to copy an element, to be duplicated elsewhere.
+     *
+     * To authorize the user, set [[AuthorizationCheckEvent::$authorized]] to `true`.
+     *
+     * ```php
+     * use craft\events\AuthorizationCheckEvent;
+     * use craft\services\Elements;
+     * use yii\base\Event;
+     *
+     * Event::on(
+     *     Elements::class,
+     *     Elements::EVENT_AUTHORIZE_COPY,
+     *     function(AuthorizationCheckEvent $event) {
+     *         $event->authorized = true;
+     *     }
+     * );
+     * ```
+     *
+     * @see canCopy()
+     * @since 5.7.0
+     */
+    public const EVENT_AUTHORIZE_COPY = 'authorizeCopy';
 
     /**
      * @event AuthorizationCheckEvent The event that is triggered when determining whether a user is authorized to delete an element.
@@ -1478,6 +1504,10 @@ class Elements extends Component
             'dirtyFields' => [],
         ];
 
+        if ($canonical instanceof Entry) {
+            $newAttributes['oldStatus'] = $canonical->oldStatus;
+        }
+
         foreach ($changedAttributes as $attribute) {
             $newAttributes['siteAttributes'][$attribute['siteId']]['dirtyAttributes'][] = $attribute['attribute'];
         }
@@ -1740,9 +1770,12 @@ class Elements extends Component
      * @param bool $placeInStructure whether to position the cloned element after the original one in its structure.
      * (This will only happen if the duplicated element is canonical.)
      * @param bool $asUnpublishedDraft whether the duplicate should be created as unpublished draft
+     * @param bool $checkAuthorization whether to ensure the current user is authorized to save the new element,
+     * once its new attributes have been applied to it
      * @return T the duplicated element
      * @throws UnsupportedSiteException if the element is being duplicated into a site it doesn’t support
      * @throws InvalidElementException if saveElement() returns false for any of the sites
+     * @throws ForbiddenHttpException if the user isn't authorized to save the duplicated element
      * @throws Throwable if reasons
      */
     public function duplicateElement(
@@ -1750,6 +1783,7 @@ class Elements extends Component
         array $newAttributes = [],
         bool $placeInStructure = true,
         bool $asUnpublishedDraft = false,
+        bool $checkAuthorization = false,
     ): ElementInterface {
         // Make sure the element exists
         if (!$element->id) {
@@ -1810,6 +1844,11 @@ class Elements extends Component
             }
         }
         $mainClone->setDirtyFields($dirtyFields, false);
+
+        // Check authorization?
+        if ($checkAuthorization && !$this->canSave($mainClone)) {
+            throw new ForbiddenHttpException('User not authorized to duplicate this element.');
+        }
 
         // If we are duplicating a draft as another draft, create a new draft row
         if ($mainClone->draftId && $mainClone->draftId === $element->draftId) {
@@ -3211,197 +3250,302 @@ class Elements extends Component
                 }
 
                 // Get the eager-loading map from the source element type
-                $map = $elementType::eagerLoadingMap($filteredElements, $plan->handle);
+                $maps = $elementType::eagerLoadingMap($filteredElements, $plan->handle);
 
-                if ($map === null) {
+                if ($maps === null) {
                     // Null means to skip eager-loading this segment
                     continue;
                 }
 
-                $targetElementIdsBySourceIds = null;
-                $query = null;
-                $offset = 0;
-                $limit = null;
-
-                if (!empty($map['map'])) {
-                    // Loop through the map to find:
-                    // - unique target element IDs
-                    // - target element IDs indexed by source element IDs
-                    $uniqueTargetElementIds = [];
-                    $targetElementIdsBySourceIds = [];
-
-                    foreach ($map['map'] as $mapping) {
-                        if (!empty($mapping['target'])) {
-                            $uniqueTargetElementIds[$mapping['target']] = true;
-                            $targetElementIdsBySourceIds[$mapping['source']][$mapping['target']] = true;
-                        }
-                    }
-
-                    // Get the target elements
-                    $query = $this->createElementQuery($map['elementType']);
-
-                    // Default to no order, offset, or limit, but allow the element type/path criteria to override
-                    $query->orderBy = null;
-                    $query->offset = null;
-                    $query->limit = null;
-
-                    $criteria = array_merge(
-                        $map['criteria'] ?? [],
-                        $plan->criteria
-                    );
-
-                    // Save the offset & limit params for later
-                    $offset = ArrayHelper::remove($criteria, 'offset', 0);
-                    $limit = ArrayHelper::remove($criteria, 'limit');
-
-                    Craft::configure($query, $criteria);
-
-                    if (!$query->siteId) {
-                        $query->siteId = $siteId;
-                    }
-
-                    if (!$query->id) {
-                        $query->id = array_keys($uniqueTargetElementIds);
-                    } else {
-                        $query->andWhere([
-                            'elements.id' => array_keys($uniqueTargetElementIds),
-                        ]);
-                    }
-                }
-
-                // Do we just need the count?
-                if ($plan->count && !$plan->all) {
-                    // Just fetch the target elements’ IDs
-                    $targetElementIdCounts = [];
-                    if ($query) {
-                        foreach ($query->ids() as $id) {
-                            if (!isset($targetElementIdCounts[$id])) {
-                                $targetElementIdCounts[$id] = 1;
-                            } else {
-                                $targetElementIdCounts[$id]++;
-                            }
-                        }
-                    }
-
-                    // Loop through the source elements and count up their targets
-                    foreach ($filteredElements as $sourceElement) {
-                        $count = 0;
-                        if (!empty($targetElementIdCounts) && isset($targetElementIdsBySourceIds[$sourceElement->id])) {
-                            foreach (array_keys($targetElementIdsBySourceIds[$sourceElement->id]) as $targetElementId) {
-                                if (isset($targetElementIdCounts[$targetElementId])) {
-                                    $count += $targetElementIdCounts[$targetElementId];
-                                }
-                            }
-                        }
-                        $sourceElement->setEagerLoadedElementCount($plan->alias, $count);
-                    }
-
-                    continue;
-                }
-
-                $targetElementData = $query ? ArrayHelper::index($query->asArray()->all(), null, ['id']) : [];
-                $targetElements = [];
-
-                // Tell the source elements about their eager-loaded elements
+                // Set everything to empty results as a starting point
                 foreach ($filteredElements as $sourceElement) {
-                    $targetElementIdsForSource = [];
-                    $targetElementsForSource = [];
+                    if ($plan->count) {
+                        $sourceElement->setEagerLoadedElementCount($plan->alias, 0);
+                    }
+                    if ($plan->all) {
+                        $sourceElement->setEagerLoadedElements($plan->alias, [], $plan);
+                        $sourceElement->setLazyEagerLoadedElements($plan->alias, $plan->lazy);
+                    }
+                }
 
-                    if (isset($targetElementIdsBySourceIds[$sourceElement->id])) {
-                        // Does the path mapping want a custom order?
-                        if (!empty($criteria['orderBy']) || !empty($criteria['order'])) {
-                            // Assign the elements in the order they were returned from the query
-                            foreach (array_keys($targetElementData) as $targetElementId) {
-                                if (isset($targetElementIdsBySourceIds[$sourceElement->id][$targetElementId])) {
-                                    $targetElementIdsForSource[] = $targetElementId;
-                                }
+                $maps = $this->normalizeEagerLoadingMaps($maps);
+
+                foreach ($maps as $map) {
+                    $targetElementIdsBySourceIds = null;
+                    $query = null;
+                    $offset = 0;
+                    $limit = null;
+
+                    if (!empty($map['map'])) {
+                        // Loop through the map to find:
+                        // - unique target element IDs
+                        // - target element IDs indexed by source element IDs
+                        $uniqueTargetElementIds = [];
+                        $targetElementIdsBySourceIds = [];
+
+                        foreach ($map['map'] as $mapping) {
+                            if (!empty($mapping['target'])) {
+                                $uniqueTargetElementIds[$mapping['target']] = true;
+                                $targetElementIdsBySourceIds[$mapping['source']][$mapping['target']] = true;
                             }
+                        }
+
+                        // Get the target elements
+                        $query = $this->createElementQuery($map['elementType']);
+
+                        // Default to no order, offset, or limit, but allow the element type/path criteria to override
+                        $query->orderBy = null;
+                        $query->offset = null;
+                        $query->limit = null;
+
+                        $criteria = array_merge(
+                            $map['criteria'] ?? [],
+                            $plan->criteria
+                        );
+
+                        // Save the offset & limit params for later
+                        $offset = ArrayHelper::remove($criteria, 'offset', 0);
+                        $limit = ArrayHelper::remove($criteria, 'limit');
+
+                        Craft::configure($query, $criteria);
+
+                        if (!$query->siteId) {
+                            $query->siteId = $siteId;
+                        }
+
+                        if (!$query->id) {
+                            $query->id = array_keys($uniqueTargetElementIds);
                         } else {
-                            // Assign the elements in the order defined by the map
-                            foreach (array_keys($targetElementIdsBySourceIds[$sourceElement->id]) as $targetElementId) {
-                                if (isset($targetElementData[$targetElementId])) {
-                                    $targetElementIdsForSource[] = $targetElementId;
+                            $query->andWhere([
+                                'elements.id' => array_keys($uniqueTargetElementIds),
+                            ]);
+                        }
+                    }
+
+                    // Do we just need the count?
+                    if ($plan->count && !$plan->all) {
+                        // Just fetch the target elements’ IDs
+                        $targetElementIdCounts = [];
+                        if ($query) {
+                            foreach ($query->ids() as $id) {
+                                if (!isset($targetElementIdCounts[$id])) {
+                                    $targetElementIdCounts[$id] = 1;
+                                } else {
+                                    $targetElementIdCounts[$id]++;
                                 }
                             }
                         }
 
-                        if (!empty($criteria['inReverse'])) {
-                            $targetElementIdsForSource = array_reverse($targetElementIdsForSource);
-                        }
-
-                        // Create the elements
-                        $currentOffset = 0;
-                        $count = 0;
-                        foreach ($targetElementIdsForSource as $elementId) {
-                            foreach ($targetElementData[$elementId] as $result) {
-                                if ($offset && $currentOffset < $offset) {
-                                    $currentOffset++;
-                                    continue;
-                                }
-                                $targetSiteId = $result['siteId'];
-                                if (!isset($targetElements[$targetSiteId][$elementId])) {
-                                    if (isset($map['createElement'])) {
-                                        $targetElements[$targetSiteId][$elementId] = $map['createElement']($query, $result, $sourceElement);
-                                    } else {
-                                        $targetElements[$targetSiteId][$elementId] = $query->createElement($result);
+                        // Loop through the source elements and count up their targets
+                        foreach ($filteredElements as $sourceElement) {
+                            if (!empty($targetElementIdCounts) && isset($targetElementIdsBySourceIds[$sourceElement->id])) {
+                                $count = 0;
+                                foreach (array_keys($targetElementIdsBySourceIds[$sourceElement->id]) as $targetElementId) {
+                                    if (isset($targetElementIdCounts[$targetElementId])) {
+                                        $count += $targetElementIdCounts[$targetElementId];
                                     }
                                 }
-                                $targetElementsForSource[] = $element = $targetElements[$targetSiteId][$elementId];
-
-                                // If we're collecting cache info and the element is expirable, register its expiry date
-                                if (
-                                    $element instanceof ExpirableElementInterface &&
-                                    $elementsService->getIsCollectingCacheInfo() &&
-                                    ($expiryDate = $element->getExpiryDate()) !== null
-                                ) {
-                                    $elementsService->setCacheExpiryDate($expiryDate);
+                                if ($count !== 0) {
+                                    $sourceElement->setEagerLoadedElementCount($plan->alias, $count);
                                 }
+                            }
+                        }
 
-                                if ($limit && ++$count == $limit) {
-                                    break 2;
+                        continue;
+                    }
+
+                    $targetElementData = $query ? ArrayHelper::index($query->asArray()->all(), null, ['id']) : [];
+                    $targetElements = [];
+
+                    // Tell the source elements about their eager-loaded elements
+                    foreach ($filteredElements as $sourceElement) {
+                        $targetElementIdsForSource = [];
+                        $targetElementsForSource = [];
+
+                        if (isset($targetElementIdsBySourceIds[$sourceElement->id])) {
+                            // Does the path mapping want a custom order?
+                            if (!empty($criteria['orderBy']) || !empty($criteria['order'])) {
+                                // Assign the elements in the order they were returned from the query
+                                foreach (array_keys($targetElementData) as $targetElementId) {
+                                    if (isset($targetElementIdsBySourceIds[$sourceElement->id][$targetElementId])) {
+                                        $targetElementIdsForSource[] = $targetElementId;
+                                    }
                                 }
+                            } else {
+                                // Assign the elements in the order defined by the map
+                                foreach (array_keys($targetElementIdsBySourceIds[$sourceElement->id]) as $targetElementId) {
+                                    if (isset($targetElementData[$targetElementId])) {
+                                        $targetElementIdsForSource[] = $targetElementId;
+                                    }
+                                }
+                            }
+
+                            if (!empty($criteria['inReverse'])) {
+                                $targetElementIdsForSource = array_reverse($targetElementIdsForSource);
+                            }
+
+                            // Create the elements
+                            $currentOffset = 0;
+                            $count = 0;
+                            foreach ($targetElementIdsForSource as $elementId) {
+                                foreach ($targetElementData[$elementId] as $result) {
+                                    if ($offset && $currentOffset < $offset) {
+                                        $currentOffset++;
+                                        continue;
+                                    }
+                                    $targetSiteId = $result['siteId'];
+                                    if (!isset($targetElements[$targetSiteId][$elementId])) {
+                                        if (isset($map['createElement'])) {
+                                            $targetElements[$targetSiteId][$elementId] = $map['createElement']($query, $result, $sourceElement);
+                                        } else {
+                                            $targetElements[$targetSiteId][$elementId] = $query->createElement($result);
+                                        }
+                                    }
+                                    $targetElementsForSource[] = $element = $targetElements[$targetSiteId][$elementId];
+
+                                    // If we're collecting cache info and the element is expirable, register its expiry date
+                                    if (
+                                        $element instanceof ExpirableElementInterface &&
+                                        $elementsService->getIsCollectingCacheInfo() &&
+                                        ($expiryDate = $element->getExpiryDate()) !== null
+                                    ) {
+                                        $elementsService->setCacheExpiryDate($expiryDate);
+                                    }
+
+                                    if ($limit && ++$count == $limit) {
+                                        break 2;
+                                    }
+                                }
+                            }
+                        }
+
+                        if (!empty($targetElementsForSource)) {
+                            if (!empty($criteria['withProvisionalDrafts'])) {
+                                ElementHelper::swapInProvisionalDrafts($targetElementsForSource);
+                            }
+
+                            $sourceElement->setEagerLoadedElements($plan->alias, $targetElementsForSource, $plan);
+
+                            if ($plan->count) {
+                                $sourceElement->setEagerLoadedElementCount($plan->alias, count($targetElementsForSource));
                             }
                         }
                     }
 
-                    if (!empty($criteria['withProvisionalDrafts'])) {
-                        ElementHelper::swapInProvisionalDrafts($targetElementsForSource);
+                    if (!empty($targetElements)) {
+                        /** @var ElementInterface[] $flatTargetElements */
+                        $flatTargetElements = array_merge(...array_values($targetElements));
+
+                        // Set the eager loading info on each of the target elements,
+                        // in case it's needed for lazy eager loading
+                        $eagerLoadResult = new EagerLoadInfo($plan, $filteredElements);
+                        foreach ($flatTargetElements as $element) {
+                            $element->eagerLoadInfo = $eagerLoadResult;
+                        }
+
+                        // Pass the instantiated elements to afterPopulate()
+                        $query->asArray = false;
+                        $query->afterPopulate($flatTargetElements);
                     }
 
-                    $sourceElement->setEagerLoadedElements($plan->alias, $targetElementsForSource, $plan);
-                    $sourceElement->setLazyEagerLoadedElements($plan->alias, $plan->lazy);
-
-                    if ($plan->count) {
-                        $sourceElement->setEagerLoadedElementCount($plan->alias, count($targetElementsForSource));
+                    // Now eager-load any sub paths
+                    if (!empty($map['map']) && !empty($plan->nested)) {
+                        $this->_eagerLoadElementsInternal(
+                            $map['elementType'],
+                            array_map('array_values', $targetElements),
+                            $plan->nested,
+                        );
                     }
-                }
-
-                if (!empty($targetElements)) {
-                    /** @var ElementInterface[] $flatTargetElements */
-                    $flatTargetElements = array_merge(...array_values($targetElements));
-
-                    // Set the eager loading info on each of the target elements,
-                    // in case it's needed for lazy eager loading
-                    $eagerLoadResult = new EagerLoadInfo($plan, $filteredElements);
-                    foreach ($flatTargetElements as $element) {
-                        $element->eagerLoadInfo = $eagerLoadResult;
-                    }
-
-                    // Pass the instantiated elements to afterPopulate()
-                    $query->asArray = false;
-                    $query->afterPopulate($flatTargetElements);
-                }
-
-                // Now eager-load any sub paths
-                if (!empty($map['map']) && !empty($plan->nested)) {
-                    $this->_eagerLoadElementsInternal(
-                        $map['elementType'],
-                        array_map('array_values', $targetElements),
-                        $plan->nested,
-                    );
                 }
             }
         }
+    }
+
+    /**
+     * @param EagerLoadingMap|EagerLoadingMap[]|false $map
+     * @return EagerLoadingMap[]|false[]
+     */
+    private function normalizeEagerLoadingMaps(array|false $map): array
+    {
+        if (isset($map['elementType']) || $map === false) {
+            // a normal, one-dimensional map
+            return [$map];
+        }
+
+        if (isset($map['map'])) {
+            // no single element type was provided, so split it up into multiple maps - one for each unique type
+            $maps = $this->groupMapsByElementType($map['map']);
+            if (isset($map['criteria']) || isset($map['createElement'])) {
+                foreach ($maps as &$m) {
+                    $m['criteria'] ??= $map['criteria'] ?? [];
+                    $m['createElement'] ??= $map['createElement'] ?? null;
+                }
+            }
+            return $maps;
+        }
+
+        // multiple maps were provided, so normalize and return each of them
+        $maps = [];
+        foreach ($map as $m) {
+            /** @phpstan-ignore-next-line */
+            if (isset($m['map'])) {
+                $maps += $this->normalizeEagerLoadingMaps($m);
+            }
+        }
+        return $maps;
+    }
+
+    /**
+     * @param array{source:int,target:int,elementType?:class-string<ElementInterface>}[] $map
+     * @return EagerLoadingMap[]
+     */
+    private function groupMapsByElementType(array $map): array
+    {
+        if (empty($map)) {
+            return [];
+        }
+
+        $maps = [];
+        $untypedMaps = [];
+        $untypedTargetIds = [];
+
+        foreach ($map as $m) {
+            if (isset($m['elementType'])) {
+                $elementType = $m['elementType'];
+                $maps[$elementType] ??= ['elementType' => $elementType];
+                $maps[$elementType]['map'][] = $m;
+            } else {
+                $untypedMaps[] = $m;
+                $untypedTargetIds[] = $m['target'];
+            }
+        }
+
+        if (!empty($untypedMaps)) {
+            $elementTypesById = [];
+
+            foreach (array_chunk($untypedTargetIds, 100) as $ids) {
+                $types = (new Query())
+                    ->select(['id', 'type'])
+                    ->from(Table::ELEMENTS)
+                    ->where(['id' => $ids])
+                    ->pairs();
+                // we need to preserve the numeric keys, so array_merge() won't work here
+                foreach ($types as $id => $type) {
+                    $elementTypesById[$id] = $type;
+                }
+            }
+
+            foreach ($untypedMaps as $m) {
+                if (!isset($elementTypesById[$m['target']])) {
+                    continue;
+                }
+                $elementType = $elementTypesById[$m['target']];
+                $maps[$elementType] ??= ['elementType' => $elementType];
+                $maps[$elementType]['map'][] = $m;
+            }
+        }
+
+        return array_values($maps);
     }
 
     /**
@@ -3743,7 +3887,13 @@ class Elements extends Component
                     if ($fieldLayout) {
                         foreach ($fieldLayout->getCustomFields() as $field) {
                             if (($saveContent || in_array($field->handle, $dirtyFields)) && $field::dbType() !== null) {
-                                $serializedValue = $field->serializeValueForDb($element->getFieldValue($field->handle), $element);
+                                $value = $element->getFieldValue($field->handle);
+                                if ($element->isNewForSite && $field->isValueEmpty($value, $element)) {
+                                    // don't store empty values if element is new for site
+                                    // https://github.com/craftcms/cms/issues/16797
+                                    continue;
+                                }
+                                $serializedValue = $field->serializeValueForDb($value, $element);
                                 if ($serializedValue !== null) {
                                     $content[$field->layoutElement->uid] = $serializedValue;
                                 } elseif (!$saveContent) {
@@ -4367,6 +4517,26 @@ SQL;
 
         return $this->_authCheck($element, $user, self::EVENT_AUTHORIZE_DUPLICATE_AS_DRAFT)
             ?? $element->canDuplicateAsDraft($user);
+    }
+
+    /**
+     * Returns whether a user is authorized to copy the given element, to be duplicated elsewhere.
+     *
+     * @param ElementInterface $element
+     * @param User|null $user
+     * @return bool
+     * @since 5.7.0
+     */
+    public function canCopy(ElementInterface $element, ?User $user = null): bool
+    {
+        if (!$user) {
+            $user = Craft::$app->getUser()->getIdentity();
+            if (!$user) {
+                return false;
+            }
+        }
+
+        return $this->_authCheck($element, $user, self::EVENT_AUTHORIZE_COPY) ?? $element->canCopy($user);
     }
 
     /**

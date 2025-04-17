@@ -41,7 +41,7 @@ use yii\di\Instance;
 /**
  * Garbage Collection service.
  *
- * An instance of the service is available via [[\craft\base\ApplicationTrait::getGc()|`Craft::$app->gc`]].
+ * An instance of the service is available via [[\craft\base\ApplicationTrait::getGc()|`Craft::$app->getGc()`]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.1.0

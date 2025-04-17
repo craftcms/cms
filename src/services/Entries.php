@@ -58,7 +58,7 @@ use yii\caching\TagDependency;
 /**
  * The Entries service provides APIs for managing entries in Craft.
  *
- * An instance of the service is available via [[\craft\base\ApplicationTrait::getEntries()|`Craft::$app->entries`]].
+ * An instance of the service is available via [[\craft\base\ApplicationTrait::getEntries()|`Craft::$app->getEntries()`]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
@@ -648,7 +648,7 @@ class Entries extends Component
             $sectionRecord->handle = $data['handle'];
             $sectionRecord->type = $data['type'];
             $sectionRecord->enableVersioning = (bool)$data['enableVersioning'];
-            $sectionRecord->maxAuthors = $data['maxAuthors'] ?? 1;
+            $sectionRecord->maxAuthors = $data['maxAuthors'] ?? null;
             $sectionRecord->propagationMethod = $data['propagationMethod'] ?? PropagationMethod::All->value;
             $sectionRecord->defaultPlacement = $data['defaultPlacement'] ?? Section::DEFAULT_PLACEMENT_END;
             $sectionRecord->previewTargets = isset($data['previewTargets']) && is_array($data['previewTargets'])
@@ -1928,9 +1928,7 @@ SQL)->execute();
                     ]),
                 ]),
                 'handle' => $entryType->handle,
-                'usages' => Cp::componentPreviewHtml($usages[$entryType->id] ?? [], [
-                    'hyperlink' => true,
-                ]),
+                'usages' => Cp::componentPreviewHtml($usages[$entryType->id] ?? []),
             ];
         }
 

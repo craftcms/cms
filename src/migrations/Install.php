@@ -15,6 +15,7 @@ use craft\base\Field;
 use craft\db\Migration;
 use craft\db\Table;
 use craft\elements\Asset;
+use craft\elements\Entry;
 use craft\elements\User;
 use craft\enums\CmsEdition;
 use craft\enums\PropagationMethod;
@@ -414,6 +415,11 @@ class Install extends Migration
             'typeId' => $this->integer()->notNull(),
             'postDate' => $this->dateTime(),
             'expiryDate' => $this->dateTime(),
+            'status' => $this->enum('status', [
+                Entry::STATUS_LIVE,
+                Entry::STATUS_PENDING,
+                Entry::STATUS_EXPIRED,
+            ])->notNull()->defaultValue(Entry::STATUS_LIVE),
             'deletedWithEntryType' => $this->boolean()->null(),
             'deletedWithSection' => $this->boolean()->null(),
             'dateCreated' => $this->dateTime()->notNull(),
@@ -592,7 +598,7 @@ class Install extends Migration
             'handle' => $this->string()->notNull(),
             'type' => $this->enum('type', [Section::TYPE_SINGLE, Section::TYPE_CHANNEL, Section::TYPE_STRUCTURE])->notNull()->defaultValue('channel'),
             'enableVersioning' => $this->boolean()->defaultValue(false)->notNull(),
-            'maxAuthors' => $this->smallInteger()->unsigned()->defaultValue(1)->notNull(),
+            'maxAuthors' => $this->smallInteger()->unsigned(),
             'propagationMethod' => $this->string()->defaultValue(PropagationMethod::All->value)->notNull(),
             'defaultPlacement' => $this->enum('defaultPlacement', [Section::DEFAULT_PLACEMENT_BEGINNING, Section::DEFAULT_PLACEMENT_END])->defaultValue('end')->notNull(),
             'previewTargets' => $this->json(),
@@ -893,6 +899,7 @@ class Install extends Migration
         $this->createIndex(null, Table::SYSTEMMESSAGES, ['language'], false);
         $this->createIndex(null, Table::ENTRIES, ['postDate'], false);
         $this->createIndex(null, Table::ENTRIES, ['expiryDate'], false);
+        $this->createIndex(null, Table::ENTRIES, ['status'], false);
         $this->createIndex(null, Table::ENTRIES, ['sectionId'], false);
         $this->createIndex(null, Table::ENTRIES, ['typeId'], false);
         $this->createIndex(null, Table::ENTRIES_AUTHORS, ['authorId'], false);

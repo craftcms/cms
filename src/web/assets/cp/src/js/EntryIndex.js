@@ -200,7 +200,8 @@ Craft.EntryIndex = Craft.BaseElementIndex.extend({
                 section: section.name,
               }),
             }).appendTo($li);
-            this.addListener($a, 'activate', () => {
+            this.addListener($a, 'activate', (ev) => {
+              ev.originalEvent.preventDefault();
               $menuBtn.data('trigger').hide();
               this._createEntry(section.id);
             });
@@ -280,6 +281,28 @@ Craft.EntryIndex = Craft.BaseElementIndex.extend({
       .finally(() => {
         this.$newEntryBtn.removeClass('loading');
       });
+  },
+
+  canPaste: function (elementInfo) {
+    if (!this.$source.data('sectionId')) {
+      return false;
+    }
+
+    const entryTypeIds = this.$source.data('entryTypeIds') || [];
+    for (const info of elementInfo) {
+      if (!entryTypeIds.includes(info.data.entryTypeId)) {
+        return false;
+      }
+    }
+
+    return true;
+  },
+
+  pasteAttributes: function () {
+    return {
+      sectionId: this.$source.data('sectionId'),
+      placeInStructure: true,
+    };
   },
 });
 

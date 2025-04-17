@@ -45,7 +45,7 @@ use yii\db\Exception as DbException;
 /**
  * Asset Indexer service.
  *
- * An instance of the service is available via [[\craft\base\ApplicationTrait::getAssetIndexer()|`Craft::$app->assetIndexer`]].
+ * An instance of the service is available via [[\craft\base\ApplicationTrait::getAssetIndexer()|`Craft::$app->getAssetIndexer()`]].
  *
  * @property-read array $existingIndexingSessions
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>

@@ -12,6 +12,7 @@ use Craft;
 use craft\behaviors\CustomFieldBehavior;
 use craft\behaviors\DraftBehavior;
 use craft\behaviors\RevisionBehavior;
+use craft\cache\ElementQueryTagDependency;
 use craft\db\CoalesceColumnsExpression;
 use craft\db\Command;
 use craft\db\Connection;
@@ -73,7 +74,6 @@ use craft\helpers\Cp;
 use craft\helpers\Db;
 use craft\helpers\ElementHelper;
 use craft\helpers\Html;
-use craft\helpers\Json;
 use craft\helpers\StringHelper;
 use craft\helpers\Template;
 use craft\helpers\UrlHelper;
@@ -1194,6 +1194,31 @@ abstract class Element extends Component implements ElementInterface
         return [];
     }
 
+    /**
+     * @inheritdoc
+     */
+    public static function baseBulkDuplicateAttributes(): array
+    {
+        $attributes = [
+            'structureId' => null,
+            'root' => null,
+            'lft' => null,
+            'rgt' => null,
+            'level' => null,
+        ];
+
+        if (is_subclass_of(static::class, NestedElementInterface::class)) {
+            $attributes += [
+                'fieldId' => null,
+                'ownerId' => null,
+                'primaryOwnerId' => null,
+                'sortOrder' => null,
+            ];
+        }
+
+        return $attributes;
+    }
+
     // Element index methods
     // -------------------------------------------------------------------------
 
@@ -1293,9 +1318,14 @@ abstract class Element extends Component implements ElementInterface
             }
         }
 
-        // Only cache if there's no search term
-        if (!$elementQuery->search) {
-            $elementQuery->cache();
+        // Only cache if there's no search term or relation param
+        if ($elementQuery instanceof ElementQuery && !$elementQuery->search && !$elementQuery->relatedTo) {
+            $elementQuery->cache(dependency: new ElementQueryTagDependency($elementQuery, [
+                'tags' => [
+                    'element-index-query',
+                    sprintf('element-index-query::%s', static::class),
+                ],
+            ]));
         }
 
         $elements = static::indexElements($elementQuery, $sourceKey);
@@ -1613,7 +1643,6 @@ abstract class Element extends Component implements ElementInterface
             $attributes = array_merge($attributes, [
                 'link' => [
                     'label' => Craft::t('app', 'Link'),
-                    'icon' => 'world',
                     'placeholder' => fn() => ElementHelper::linkAttributeHtml('#'),
                 ],
                 'slug' => [
@@ -1758,7 +1787,8 @@ abstract class Element extends Component implements ElementInterface
             }
         }
 
-        return false;
+        // return null so eager-loading is ignored for this handle
+        return null;
     }
 
     /**
@@ -3448,6 +3478,7 @@ abstract class Element extends Component implements ElementInterface
                     [
                         'html' => Cp::elementChipHtml($owner, [
                             'showDraftName' => false,
+                            'class' => 'chromeless',
                         ]),
                     ],
                 ];
@@ -3526,6 +3557,14 @@ abstract class Element extends Component implements ElementInterface
     public function showStatusIndicator(): bool
     {
         return static::hasStatuses();
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getCardTitle(): ?string
+    {
+        return null;
     }
 
     /**
@@ -3639,6 +3678,14 @@ abstract class Element extends Component implements ElementInterface
     {
         // if anything, this will be more lenient than canDuplicate()
         return Craft::$app->getElements()->canDuplicate($this, $user);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function canCopy(User $user): bool
+    {
+        return false;
     }
 
     /**
@@ -3904,6 +3951,7 @@ abstract class Element extends Component implements ElementInterface
     protected function safeActionMenuItems(): array
     {
         $items = [];
+        $elementsService = Craft::$app->getElements();
 
         // View
         $url = $this->getUrl();
@@ -3916,12 +3964,15 @@ abstract class Element extends Component implements ElementInterface
                 'url' => $url,
                 'attributes' => [
                     'target' => '_blank',
+                    'data' => [
+                        'view' => true,
+                    ],
                 ],
             ];
         }
 
         // Edit
-        if (Craft::$app->getElements()->canView($this)) {
+        if ($elementsService->canView($this)) {
             $editId = sprintf('action-edit-%s', mt_rand());
             $items[] = [
                 'id' => $editId,
@@ -3945,6 +3996,39 @@ JS, [
                     'revisionId' => $this->revisionId,
                     'siteId' => $this->siteId,
                     'ownerId' => $this instanceof NestedElementInterface ? $this->getOwnerId() : null,
+                ],
+            ]);
+        }
+
+        // Copy
+        if ($elementsService->canCopy($this)) {
+            $copyId = sprintf('action-copy-%s', mt_rand());
+            $items[] = [
+                'id' => $copyId,
+                'color' => Color::Fuchsia,
+                'icon' => 'clone-dashed',
+                'label' => StringHelper::upperCaseFirst(Craft::t('app', 'Copy {type}', [
+                    'type' => static::lowerDisplayName(),
+                ])),
+            ];
+
+            $view = Craft::$app->getView();
+            $view->registerJsWithVars(fn($id, $elementInfo) => <<<JS
+(() => {
+  $('#' + $id).on('activate', () => {
+    Craft.cp.copyElements([$elementInfo]);
+  });
+})();
+JS, [
+                $view->namespaceInputId($copyId),
+                [
+                    'type' => static::class,
+                    'id' => $this->isProvisionalDraft ? $this->getCanonicalId() : $this->id,
+                    'draftId' => $this->isProvisionalDraft ? null : $this->draftId,
+                    'revisionId' => $this->revisionId,
+                    'fieldId' => $this instanceof NestedElementInterface ? $this->getField()?->id : null,
+                    'ownerId' => $this instanceof NestedElementInterface ? $this->getOwnerId() : null,
+                    'siteId' => $this->siteId,
                 ],
             ]);
         }
@@ -4185,6 +4269,7 @@ JS, [
                     'sizes' => sprintf('calc(%srem/16)', $size),
                     'srcset' => sprintf('%s %sw, %s %sw', $thumbUrl, $size, $this->thumbUrl($size * 2), $size * 2),
                     'alt' => $this->thumbAlt(),
+                    'animated' => $this->couldHaveAnimatedThumb(),
                 ],
             ]);
         }
@@ -4261,6 +4346,17 @@ JS, [
      * @since 5.0.0
      */
     protected function hasRoundedThumb(): bool
+    {
+        return false;
+    }
+
+    /**
+     * Returns whether the element’s thumbnail is potentially animated.
+     *
+     * @return boolean
+     * @since 5.7.0
+     */
+    protected function couldHaveAnimatedThumb(): bool
     {
         return false;
     }
@@ -5952,27 +6048,6 @@ JS, [
     {
         $slug = isset($this->slug) && !ElementHelper::isTempSlug($this->slug) ? $this->slug : null;
 
-        if (!$slug && !$static) {
-            $view = Craft::$app->getView();
-            $site = $this->getSite();
-            $charMapJs = Json::encode($site->language !== Craft::$app->language
-                ? StringHelper::asciiCharMap(true, $site->language)
-                : null
-            );
-
-            Craft::$app->getView()->registerJsWithVars(
-                fn($titleSelector, $slugSelector) => <<<JS
-new Craft.SlugGenerator($titleSelector, $slugSelector, {
-    charMap: $charMapJs,
-})
-JS,
-                [
-                    sprintf('#%s', $view->namespaceInputId('title')),
-                    sprintf('#%s', $view->namespaceInputId('slug')),
-                ]
-            );
-        }
-
         return Cp::textFieldHtml([
             'status' => $this->getAttributeStatus('slug'),
             'label' => Craft::t('app', 'Slug'),
@@ -6213,7 +6288,7 @@ JS,
     public function afterSave(bool $isNew): void
     {
         // Update the element’s relation data
-        $this->updateRelations();
+        $this->updateRelations($isNew);
 
         // Tell the fields about it
         foreach ($this->fieldLayoutFields() as $field) {
@@ -6228,7 +6303,7 @@ JS,
         }
     }
 
-    private function updateRelations(): void
+    private function updateRelations(bool $isNew): void
     {
         if (!$this->hasFieldLayout()) {
             return;
@@ -6250,8 +6325,10 @@ JS,
             foreach ($instances as $field) {
                 // Skip if nothing changed, or the element is just propagating and we're not localizing relations
                 if (
-                    ($this->duplicateOf || $this->isFieldDirty($field->handle) || $field->forceUpdateRelations($this)) &&
-                    (!$this->propagating || $localizeRelations)
+                    $isNew || (
+                        ($this->duplicateOf || $this->isFieldDirty($field->handle) || $field->forceUpdateRelations($this)) &&
+                        (!$this->propagating || $localizeRelations)
+                    )
                 ) {
                     $include = true;
                     break;

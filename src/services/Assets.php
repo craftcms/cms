@@ -53,7 +53,7 @@ use yii\db\Expression;
 /**
  * Assets service.
  *
- * An instance of the service is available via [[\craft\base\ApplicationTrait::getAssets()|`Craft::$app->assets`]].
+ * An instance of the service is available via [[\craft\base\ApplicationTrait::getAssets()|`Craft::$app->getAssets()`]].
  *
  * @property-read VolumeFolder $currentUserTemporaryUploadFolder
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
@@ -487,7 +487,7 @@ class Assets extends Component
      * @param string $orderBy
      * @param bool $withParent Whether the parent folder should be included in the results
      * @param bool $asTree Whether the folders should be returned hierarchically
-     * @return VolumeFolder[]
+     * @return array<int,VolumeFolder> The descendant folders, indexed by their IDs
      */
     public function getAllDescendantFolders(
         VolumeFolder $parentFolder,

@@ -243,11 +243,11 @@ abstract class Field extends SavableComponent implements FieldInterface, Iconic,
             return false;
         }
 
+        $caseInsensitive = false;
+
         if (is_array($value) && isset($value['value'])) {
-            $caseInsensitive = $value['caseInsensitive'] ?? false;
+            $caseInsensitive = $value['caseInsensitive'] ?? $caseInsensitive;
             $value = $value['value'];
-        } else {
-            $caseInsensitive = false;
         }
 
         return Db::parseParam($valueSql, $value, caseInsensitive: $caseInsensitive, columnType: Schema::TYPE_JSON);
@@ -430,14 +430,12 @@ abstract class Field extends SavableComponent implements FieldInterface, Iconic,
                 'localized',
                 'localized',
                 'mergingCanonicalChanges',
-                'name', // global set-specific
                 'newSiteIds',
                 'next',
                 'nextSibling',
                 'owner',
                 'parent',
                 'parents',
-                'postDate', // entry-specific
                 'prev',
                 'prevSibling',
                 'previewing',
@@ -454,6 +452,7 @@ abstract class Field extends SavableComponent implements FieldInterface, Iconic,
                 'rgt',
                 'root',
                 'scenario',
+                'searchKeywords',
                 'searchScore',
                 'siblings',
                 'site',
@@ -470,7 +469,6 @@ abstract class Field extends SavableComponent implements FieldInterface, Iconic,
                 'updatingFromDerivative',
                 'uri',
                 'url',
-                'username', // user-specific
                 'viewMode',
             ],
         ];
@@ -534,7 +532,10 @@ abstract class Field extends SavableComponent implements FieldInterface, Iconic,
      */
     public function getCpEditUrl(): ?string
     {
-        return $this->id ? UrlHelper::cpUrl("settings/fields/edit/$this->id") : null;
+        if (!$this->id || !Craft::$app->getUser()->getIsAdmin()) {
+            return null;
+        }
+        return UrlHelper::cpUrl("settings/fields/edit/$this->id");
     }
 
     /**

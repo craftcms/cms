@@ -10,7 +10,7 @@
 {% block content %}
     {% if not readOnly %}
         {{ actionInput('user-settings/save-group') }}
-        {{ redirectInput('settings/users/groups/{id}') }}
+        {{ redirectInput('settings/users') }}
         {% if group.id %}
             {{ hiddenInput('groupId', group.id) }}
         {% endif %}

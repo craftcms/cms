@@ -511,4 +511,36 @@ MD, $infoByField->join("\n"))));
         $expected = $override ?? $outgoingFieldValue;
         return $persistingFieldValue !== $expected ? $expected : null;
     }
+
+    /**
+     * Deletes custom fields.
+     *
+     * @param string ...$handles
+     * @return int
+     * @since 5.7.0
+     */
+    public function actionDelete(string ...$handles): int
+    {
+        /** @var FieldInterface[] $fields */
+        $fields = [];
+        $fieldsService = Craft::$app->getFields();
+
+        foreach ($handles as $handle) {
+            $field = $fieldsService->getFieldByHandle($handle);
+            if (!$field) {
+                $this->stdout("Invalid field handle: $handle\n", Console::FG_RED);
+                return ExitCode::UNSPECIFIED_ERROR;
+            }
+            $fields[] = $field;
+        }
+
+        foreach ($fields as $field) {
+            $this->do("Deleting `$field->name`", function() use ($fieldsService, $field) {
+                $fieldsService->deleteField($field);
+            });
+        }
+
+        $this->stdout("Done\n", Console::FG_GREEN);
+        return ExitCode::OK;
+    }
 }

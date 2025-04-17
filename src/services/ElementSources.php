@@ -28,7 +28,7 @@ use yii\base\Component;
 /**
  * The Element Sources service provides APIs for managing element indexes.
  *
- * An instance of the service is available via [[\craft\base\ApplicationTrait::getElementSources()|`Craft::$app->elementSources`]].
+ * An instance of the service is available via [[\craft\base\ApplicationTrait::getElementSources()|`Craft::$app->getElementSources()`]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 4.0.0

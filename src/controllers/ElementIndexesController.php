@@ -656,8 +656,17 @@ class ElementIndexesController extends BaseElementsController
         if ($condition instanceof ElementCondition) {
             $referenceElementId = $this->request->getBodyParam('referenceElementId');
             if ($referenceElementId) {
+                $ownerId = $this->request->getBodyParam('referenceElementOwnerId');
                 $siteId = $this->request->getBodyParam('referenceElementSiteId');
-                $condition->referenceElement = Craft::$app->getElements()->getElementById((int)$referenceElementId, siteId: $siteId);
+                $criteria = [];
+                if ($ownerId) {
+                    $criteria['ownerId'] = $ownerId;
+                }
+                $condition->referenceElement = Craft::$app->getElements()->getElementById(
+                    (int)$referenceElementId,
+                    siteId: $siteId,
+                    criteria: $criteria,
+                );
             }
         }
 

@@ -200,10 +200,14 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
         .filter('[value="custom"]')
         .parent();
 
+      $customConstraintGroupLabel = $customConstraintWrapper.find('label');
+
       // Add custom constraint inputs to fieldset
       this.$customConstraints = $('<div/>', {
         class: 'constraint custom hidden',
         'data-constraint': 'custom',
+        role: 'group',
+        'aria-labelledby': $customConstraintGroupLabel.attr('id'),
       })
         .append(
           $('<input/>', {

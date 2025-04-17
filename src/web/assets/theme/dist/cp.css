@@ -29,7 +29,7 @@
     /* Modals */
     --modal-border: var(--pane-border);
     --modal-border-radius: var(--pane-border-radius);
-    --modal-padding: var(--xl);
+    --modal-padding: var(--l);
     --modal-bg: var(--pane-bg);
     --modal-shadow: 0 0 0 1px hsl(from var(--gray-400) h s l / 25%),
         0 25px 100px hsl(from var(--gray-900) h s l / 50%);
@@ -89,4 +89,10 @@
     /* Horizontal rules */
     --hr-margin: var(--pane-padding);
     --hr-border: 1px solid var(--hairline-color);
+}
+
+@media screen and (min-width: 1024px) {
+  :root {
+    --modal-padding: var(--xl);
+  }
 }

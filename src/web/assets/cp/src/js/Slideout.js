@@ -12,6 +12,7 @@ import $ from 'jquery';
       $container: null,
       $shade: null,
       $liveRegion: $('<span class="visually-hidden" role="status"></span>'),
+      $triggerElement: null,
       isOpen: false,
       useMobileStyles: null,
 
@@ -51,8 +52,9 @@ import $ from 'jquery';
           return;
         }
 
-        this.setTriggerElement(document.activeElement);
-
+        this.setTriggerElement(
+          this.settings.triggerElement || document.activeElement
+        );
         this._cancelTransitionListeners();
 
         const activePreview =
@@ -152,7 +154,7 @@ import $ from 'jquery';
       },
 
       setTriggerElement: function (trigger) {
-        this.settings.triggerElement = trigger;
+        this.$triggerElement = $(trigger);
       },
 
       close: function () {
@@ -181,19 +183,20 @@ import $ from 'jquery';
           this.trigger('close');
         });
 
-        if (this.settings.triggerElement) {
-          let focusTarget = this.settings.triggerElement;
+        if (this.$triggerElement?.length) {
+          let focusTarget = $(this.$triggerElement)[0]; // Ensure we convert from jQuery to DOM element
 
           // Check if target is still visible
           if (!focusTarget.checkVisibility()) {
             // If it's a disclosure, get the disclosure trigger instead
-            if (focusTarget.closest('.menu--disclosure')) {
-              const disclosureId = focusTarget
-                .closest('.menu--disclosure')
-                .getAttribute('id');
+            const disclosure = focusTarget.closest('.menu--disclosure');
+            if (disclosure) {
+              const disclosureId = disclosure.getAttribute('id');
               focusTarget = document.querySelector(
                 `[aria-controls="${disclosureId}"]`
               );
+            } else {
+              focusTarget = null;
             }
           }
 
@@ -297,4 +300,13 @@ import $ from 'jquery';
       },
     }
   );
+
+  Garnish.on(Craft.Slideout, ['open', 'close'], () => {
+    for (const hud of Garnish.HUD.instances) {
+      if (hud.showing) {
+        console.log('update');
+        hud.updateSizeAndPosition(true);
+      }
+    }
+  });
 })(jQuery);

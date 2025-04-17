@@ -11,6 +11,8 @@ use Craft;
 use craft\assetpreviews\Image as ImagePreview;
 use craft\base\Element;
 use craft\base\LocalFsInterface;
+use craft\db\Query;
+use craft\db\Table;
 use craft\elements\Asset;
 use craft\elements\conditions\ElementCondition;
 use craft\errors\AssetException;
@@ -438,6 +440,10 @@ class AssetsController extends Controller
                 Craft::$app->getElements()->deleteElement($sourceAsset);
             } else {
                 // If all we have is the filename, then make sure that the destination is empty and go for it.
+                // This can happen when you replace a file via front-end with a form that contains fields named:
+                // - sourceAssetId - ID of the asset that we want to replace the file for,
+                // - targetFilename - filename of the file we're replacing with,
+                // - replaceFile - the file we're replacing with
                 $volume = $sourceAsset->getVolume();
                 $volume->deleteFile(rtrim($sourceAsset->folderPath, '/') . '/' . $targetFilename);
                 $sourceAsset->newFilename = $targetFilename;
@@ -457,6 +463,7 @@ class AssetsController extends Controller
             'formattedDateUpdated' => Craft::$app->getFormatter()->asDatetime($resultingAsset->dateUpdated, Formatter::FORMAT_WIDTH_SHORT),
             'dimensions' => $resultingAsset->getDimensions(),
             'updatedTimestamp' => $resultingAsset->dateUpdated->getTimestamp(),
+            'resultingUrl' => $resultingAsset->getUrl(),
         ]);
     }
 
@@ -883,6 +890,12 @@ class AssetsController extends Controller
         $flipData = $this->request->getBodyParam('flipData');
         $zoom = (float)$this->request->getBodyParam('zoom', 1);
 
+        // avoid a potential division by zero error (somehow)
+        // see https://github.com/craftcms/cms/issues/17019
+        if (!$imageDimensions['width'] || !$imageDimensions['height']) {
+            throw new BadRequestHttpException('Invalid imageDimensions param');
+        }
+
         $asset = $assets->getAssetById($assetId);
 
         if ($asset === null) {
@@ -1110,6 +1123,9 @@ class AssetsController extends Controller
             } else {
                 $assetId = $this->request->getRequiredBodyParam('assetId');
                 $handle = $this->request->getRequiredBodyParam('handle');
+                if (!is_string($handle)) {
+                    throw new BadRequestHttpException('Invalid transform handle.');
+                }
                 $transform = ImageTransforms::normalizeTransform($handle);
                 $transformer = $transform?->getImageTransformer();
             }
@@ -1402,5 +1418,49 @@ class AssetsController extends Controller
         ]);
 
         return $this->redirect($url);
+    }
+
+    /**
+     * Returns the total number of assets, and their total file size, based on their IDs and/or folder IDs.
+     *
+     * @return Response
+     * @throws BadRequestHttpException
+     * @since 5.7.0
+     */
+    public function actionMoveInfo(): Response
+    {
+        $this->requireCpRequest();
+        $this->requirePostRequest();
+
+        $folderIds = Craft::$app->getRequest()->getBodyParam('folderIds', []);
+        $assetIds = Craft::$app->getRequest()->getBodyParam('assetIds', []);
+
+        if (!empty($folderIds)) {
+            // Add descendant folders
+            $assetsService = Craft::$app->getAssets();
+            foreach ($folderIds as $folderId) {
+                $folder = $assetsService->getFolderById($folderId);
+                if (!$folder) {
+                    throw new BadRequestHttpException("Invalid folder ID: $folderId");
+                }
+                $descendants = $assetsService->getAllDescendantFolders($folder);
+                array_push($folderIds, ...array_keys($descendants));
+            }
+        }
+
+        $query = (new Query())
+            ->from(Table::ASSETS)
+            ->where([
+                'or',
+                ['id' => $assetIds],
+                ['folderId' => array_unique($folderIds)],
+            ]);
+        $count = (int)$query->count();
+        $totalSize = (int)$query->sum('[[size]]');
+
+        return $this->asJson([
+            'count' => $count,
+            'totalSize' => $totalSize,
+        ]);
     }
 }

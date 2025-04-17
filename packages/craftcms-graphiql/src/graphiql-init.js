@@ -1,15 +1,10 @@
-import {init} from './CraftGraphiQL.js';
-import ReactDOM from 'react-dom';
 import 'graphiql/graphiql.css';
 import './graphiql.scss';
+import React from 'react';
+import {createRoot} from 'react-dom/client';
+import GraphiQL from 'graphiql';
 
-function initGraphiQl(domTarget) {
-  const attributes = domTarget.attributes;
-  const schemas = JSON.parse(attributes.schemas.nodeValue);
-  const selectedSchema = JSON.parse(attributes.selectedSchema.nodeValue);
-  const endpoint = attributes.endpoint.nodeValue;
-
-  // Defines a GraphQL fetcher using the fetch API.
+const CraftGraphiQL = ({endpoint, selectedSchema}) => {
   function graphQLFetcher(graphQLParams) {
     return fetch(endpoint, {
       method: 'post',
@@ -33,9 +28,16 @@ function initGraphiQl(domTarget) {
       });
   }
 
-  ReactDOM.render(init(graphQLFetcher, schemas, selectedSchema), domTarget);
-}
+  return <GraphiQL fetcher={graphQLFetcher} forcedTheme="light" />;
+};
 
-document.addEventListener('DOMContentLoaded', function () {
-  initGraphiQl(document.getElementById('graphiql'));
-});
+export function init(domTarget) {
+  const data = domTarget.dataset;
+  const selectedSchema = JSON.parse(data.selectedSchema);
+  const endpoint = data.endpoint;
+
+  const root = createRoot(domTarget);
+  root.render(
+    <CraftGraphiQL endpoint={endpoint} selectedSchema={selectedSchema} />
+  );
+}

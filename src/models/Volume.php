@@ -201,7 +201,10 @@ class Volume extends Model implements
      */
     public function getCpEditUrl(): ?string
     {
-        return $this->id ? UrlHelper::cpUrl("settings/assets/volumes/$this->id") : null;
+        if (!$this->id || !Craft::$app->getUser()->getIsAdmin()) {
+            return null;
+        }
+        return UrlHelper::cpUrl("settings/assets/volumes/$this->id");
     }
 
     /**

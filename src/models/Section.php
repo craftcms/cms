@@ -24,6 +24,7 @@ use craft\helpers\UrlHelper;
 use craft\records\Section as SectionRecord;
 use craft\validators\HandleValidator;
 use craft\validators\UniqueValidator;
+use yii\db\Schema;
 
 /**
  * Section model class.
@@ -87,10 +88,10 @@ class Section extends Model implements Chippable, CpEditable, Iconic
     public ?string $type = null;
 
     /**
-     * @var int Max authors
+     * @var int|null Max authors
      * @since 5.0.0
      */
-    public int $maxAuthors = 1;
+    public int|null $maxAuthors = 1;
 
     /**
      * @var int|null Max levels
@@ -119,7 +120,7 @@ class Section extends Model implements Chippable, CpEditable, Iconic
 
     /**
      * @var string Default placement
-     * @phpstan-var self::DEFAULT_PLACEMENT_BEGINNING|self::DEFAULT_PLACEMENT_END
+     * @phpstan-var self::DEFAULT_PLACEMENT_*
      * @since 3.7.0
      */
     public string $defaultPlacement = self::DEFAULT_PLACEMENT_END;
@@ -201,7 +202,13 @@ class Section extends Model implements Chippable, CpEditable, Iconic
     {
         $rules = parent::defineRules();
         $rules[] = [['id', 'structureId', 'maxLevels'], 'number', 'integerOnly' => true];
-        $rules[] = [['maxAuthors'], 'number', 'integerOnly' => true, 'min' => 1];
+        $rules[] = [
+            ['maxAuthors'],
+            'number',
+            'integerOnly' => true,
+            'min' => 0,
+            'max' => Db::getMaxAllowedValueForNumericColumn(Schema::TYPE_SMALLINT),
+        ];
         $rules[] = [['handle'], HandleValidator::class, 'reservedWords' => ['id', 'dateCreated', 'dateUpdated', 'uid', 'title']];
         $rules[] = [
             ['type'], 'in', 'range' => [
@@ -397,7 +404,10 @@ class Section extends Model implements Chippable, CpEditable, Iconic
      */
     public function getCpEditUrl(): ?string
     {
-        return $this->id ? UrlHelper::cpUrl("settings/sections/$this->id") : null;
+        if (!$this->id || !Craft::$app->getUser()->getIsAdmin()) {
+            return null;
+        }
+        return UrlHelper::cpUrl("settings/sections/$this->id");
     }
 
     /**

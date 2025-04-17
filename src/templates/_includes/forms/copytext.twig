@@ -28,6 +28,7 @@
             Craft.cp.displayNotice("{{ 'Copied to clipboard.'|t('app')|e('js') }}");
             $(this).parent().trigger('copy');
             document.getElementById('{{ id|namespaceInputId|e('js') }}').setSelectionRange(0, 0);
+            $(this).focus();
         });
     {% endblock %}
 {% endjs %}

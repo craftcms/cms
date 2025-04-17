@@ -22,7 +22,7 @@ use yii\base\InvalidArgumentException;
 /**
  * Updates service.
  *
- * An instance of the service is available via [[\craft\base\ApplicationTrait::getUpdates()|`Craft::$app->updates`]].
+ * An instance of the service is available via [[\craft\base\ApplicationTrait::getUpdates()|`Craft::$app->getUpdates()`]].
  *
  * @property bool $isCraftDbMigrationNeeded Whether Craft needs to run any database migrations
  * @property bool $isCraftSchemaVersionCompatible Whether the uploaded DB schema is equal to or greater than the installed schema

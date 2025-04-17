@@ -28,7 +28,7 @@ use yii\base\Component;
 /**
  * Globals service.
  *
- * An instance of the service is available via [[\craft\base\ApplicationTrait::getGlobals()|`Craft::$app->globals`]].
+ * An instance of the service is available via [[\craft\base\ApplicationTrait::getGlobals()|`Craft::$app->getGlobals()`]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0

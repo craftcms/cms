@@ -187,4 +187,61 @@ class MatrixController extends Controller
             'bodyHtml' => $view->getBodyHtml(),
         ]);
     }
+
+    /**
+     * Renders the blocks for newly-created entries.
+     *
+     * @return Response
+     * @since 5.7.0
+     */
+    public function actionRenderBlocks(): Response
+    {
+        $entryIds = $this->request->getRequiredBodyParam('entryIds');
+        $siteId = $this->request->getRequiredBodyParam('siteId');
+        $namespace = $this->request->getRequiredBodyParam('namespace');
+
+        if (empty($entryIds)) {
+            throw new BadRequestHttpException('Request missing required body param');
+        }
+
+        /** @var Entry[] $entries */
+        $entries = Entry::find()
+            ->id($entryIds)
+            ->fixedOrder()
+            ->siteId($siteId)
+            ->status(null)
+            ->all();
+
+        $elementsService = Craft::$app->getElements();
+        $view = $this->getView();
+        $field = null;
+        $entryTypes = null;
+        $html = '';
+
+        if (!empty($entries)) {
+            foreach ($entries as $entry) {
+                $field ??= $entry->getField();
+                if (!$field instanceof Matrix || $field->id !== $entry->fieldId) {
+                    throw new BadRequestHttpException('Entry must belong to a Matrix field.');
+                }
+                $entryTypes ??= $field->getEntryTypesForField($entries, $entry->getOwner());
+                if (!$elementsService->canView($entry)) {
+                    throw new ForbiddenHttpException('User not authorized to view this element.');
+                }
+
+                $html .= $view->namespaceInputs(fn() => $view->renderTemplate('_components/fieldtypes/Matrix/block.twig', [
+                    'name' => $field->handle,
+                    'entryTypes' => $entryTypes,
+                    'entry' => $entry,
+                    'isFresh' => true,
+                ]), $namespace);
+            }
+        }
+
+        return $this->asJson([
+            'blockHtml' => $html,
+            'headHtml' => $view->getHeadHtml(),
+            'bodyHtml' => $view->getBodyHtml(),
+        ]);
+    }
 }

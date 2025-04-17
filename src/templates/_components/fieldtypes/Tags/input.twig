@@ -5,6 +5,7 @@
 {% set elements = (elements is defined ? elements : []) -%}
 {% set criteria = (criteria is defined and criteria ? criteria : null) -%}
 {% set sourceElementId = (sourceElementId is defined and sourceElementId ? sourceElementId : null) -%}
+{% set defaultPlacement = defaultPlacement ?? 'end' %}
 
 {% from "_includes/forms" import text %}
 
@@ -44,6 +45,7 @@
     sourceElementId: sourceElementId ?: null,
     targetSiteId: targetSiteId,
     allowSelfRelations: allowSelfRelations ?? false,
+    defaultPlacement,
 } %}
 
 {% js %}

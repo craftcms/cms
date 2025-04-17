@@ -37,14 +37,9 @@ trait NestedElementTrait
         switch ($handle) {
             case 'owner':
             case 'primaryOwner':
-                /** @var array<NestedElementInterface&self> $sourceElements */
-                $ownerType = $sourceElements[0]->ownerType();
-                if (!$ownerType) {
-                    return false;
-                }
-
+                /** @phpstan-ignore-next-line */
                 return [
-                    'elementType' => $ownerType,
+                    /** @phpstan-ignore-next-line */
                     'map' => array_filter(array_map(function(NestedElementInterface $element) use ($handle) {
                         $ownerId = match ($handle) {
                             'owner' => $element->getOwnerId(),
@@ -75,9 +70,9 @@ trait NestedElementTrait
     private ?int $ownerId = null;
 
     /**
-     * @var class-string<ElementInterface> Owner type
+     * @var class-string<ElementInterface>|null Owner type
      */
-    private string $ownerType;
+    private ?string $ownerType = null;
 
     /**
      * @var int|null Field ID
@@ -124,6 +119,7 @@ trait NestedElementTrait
 
         $this->_primaryOwner = null;
         $this->_owner = null;
+        $this->ownerType = null;
     }
 
     /**
@@ -162,6 +158,10 @@ trait NestedElementTrait
     public function setPrimaryOwnerId(?int $id): void
     {
         $this->primaryOwnerId = $id;
+
+        if (!$id || $this->_primaryOwner === false || $this->_primaryOwner?->id !== $id) {
+            $this->_primaryOwner = null;
+        }
     }
 
     /**
@@ -234,6 +234,10 @@ trait NestedElementTrait
     public function setOwnerId(?int $id): void
     {
         $this->ownerId = $id;
+
+        if (!$id || $this->_owner === false || $this->_owner?->id !== $id) {
+            $this->_owner = null;
+        }
     }
 
     /**
@@ -468,17 +472,24 @@ trait NestedElementTrait
             $this->sortOrder = $max ? $max + 1 : 1;
         }
 
+        $ownerIds = array_unique([
+            $this->getPrimaryOwnerId(),
+            $ownerId,
+        ]);
+
         if (!$isNew) {
             Db::delete(Table::ELEMENTS_OWNERS, [
                 'elementId' => $this->id,
-                'ownerId' => $ownerId,
+                'ownerId' => $ownerIds,
             ]);
         }
 
-        Db::insert(Table::ELEMENTS_OWNERS, [
-            'elementId' => $this->id,
-            'ownerId' => $ownerId,
-            'sortOrder' => $this->sortOrder,
-        ]);
+        foreach ($ownerIds as $ownerId) {
+            Db::insert(Table::ELEMENTS_OWNERS, [
+                'elementId' => $this->id,
+                'ownerId' => $ownerId,
+                'sortOrder' => $this->sortOrder,
+            ]);
+        }
     }
 }

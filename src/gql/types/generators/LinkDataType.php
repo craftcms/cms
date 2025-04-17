@@ -66,6 +66,8 @@ class LinkDataType implements GeneratorInterface, SingleGeneratorInterface
                     'id' => Type::string(),
                     'rel' => Type::string(),
                     'ariaLabel' => Type::string(),
+                    'download' => Type::boolean(),
+                    'filename' => Type::string(),
                     'elementType' => Type::string(),
                     'elementId' => Type::int(),
                     'elementSiteId' => Type::int(),

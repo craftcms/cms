@@ -25,7 +25,7 @@ use yii\base\InvalidArgumentException;
  * The Config service provides APIs for retrieving the values of Craft’s [config settings](http://craftcms.com/docs/config-settings),
  * as well as the values of any plugins’ config settings.
  *
- * An instance of the service is available via [[\craft\base\ApplicationTrait::getConfig()|`Craft::$app->config`]].
+ * An instance of the service is available via [[\craft\base\ApplicationTrait::getConfig()|`Craft::$app->getConfig()`]].
  *
  * @property-read DbConfig $db the DB config settings
  * @property-read GeneralConfig $general the general config settings

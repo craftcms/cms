@@ -607,53 +607,55 @@ class Assets extends BaseRelationField
                 return $_targetFolderId ?? ($_targetFolderId = $this->_uploadFolder($element, $isCanonical)->id);
             };
 
-            // Are there any related assets?
-            /** @var AssetQuery $query */
-            /** @var Asset[] $assets */
-            $assets = $query->all();
+            if (!$element->propagating || $this->localizeRelations) {
+                // Are there any related assets?
+                /** @var AssetQuery $query */
+                /** @var Asset[] $assets */
+                $assets = $query->all();
 
-            if (!empty($assets)) {
-                // Only enforce the restricted asset location for canonical elements
-                if ($this->restrictLocation && $isCanonical) {
-                    if (!$this->allowSubfolders) {
-                        $rootRestrictedFolderId = $getUploadFolderId();
+                if (!empty($assets)) {
+                    // Only enforce the restricted asset location for canonical elements
+                    if ($this->restrictLocation && $isCanonical) {
+                        if (!$this->allowSubfolders) {
+                            $rootRestrictedFolderId = $getUploadFolderId();
+                        } else {
+                            $rootRestrictedFolderId = $this->_uploadFolder($element, true, false)->id;
+                        }
+
+                        $assetsToMove = array_filter($assets, function(Asset $asset) use ($rootRestrictedFolderId, $assetsService) {
+                            if ($asset->folderId === $rootRestrictedFolderId) {
+                                return false;
+                            }
+                            if (!$this->allowSubfolders) {
+                                return true;
+                            }
+                            $rootRestrictedFolder = $assetsService->getFolderById($rootRestrictedFolderId);
+                            return (
+                                $asset->volumeId !== $rootRestrictedFolder->volumeId ||
+                                !str_starts_with($asset->folderPath, $rootRestrictedFolder->path)
+                            );
+                        });
                     } else {
-                        $rootRestrictedFolderId = $this->_uploadFolder($element, true, false)->id;
+                        // Find the files with temp sources and just move those.
+                        /** @var Asset[] $assetsToMove */
+                        $assetsToMove = $assetsService->createTempAssetQuery()
+                            ->id(array_map(fn(Asset $asset) => $asset->id, $assets))
+                            ->all();
                     }
 
-                    $assetsToMove = array_filter($assets, function(Asset $asset) use ($rootRestrictedFolderId, $assetsService) {
-                        if ($asset->folderId === $rootRestrictedFolderId) {
-                            return false;
-                        }
-                        if (!$this->allowSubfolders) {
-                            return true;
-                        }
-                        $rootRestrictedFolder = $assetsService->getFolderById($rootRestrictedFolderId);
-                        return (
-                            $asset->volumeId !== $rootRestrictedFolder->volumeId ||
-                            !str_starts_with($asset->folderPath, $rootRestrictedFolder->path)
-                        );
-                    });
-                } else {
-                    // Find the files with temp sources and just move those.
-                    /** @var Asset[] $assetsToMove */
-                    $assetsToMove = $assetsService->createTempAssetQuery()
-                        ->id(array_map(fn(Asset $asset) => $asset->id, $assets))
-                        ->all();
-                }
+                    if (!empty($assetsToMove)) {
+                        $uploadFolder = $assetsService->getFolderById($getUploadFolderId());
 
-                if (!empty($assetsToMove)) {
-                    $uploadFolder = $assetsService->getFolderById($getUploadFolderId());
-
-                    // Resolve all conflicts by keeping both
-                    foreach ($assetsToMove as $asset) {
-                        $asset->avoidFilenameConflicts = true;
-                        try {
-                            $assetsService->moveAsset($asset, $uploadFolder);
-                        } catch (FsObjectNotFoundException $e) {
-                            // Don't freak out about that.
-                            Craft::warning('Couldn’t move asset because the file doesn’t exist: ' . $e->getMessage());
-                            Craft::$app->getErrorHandler()->logException($e);
+                        // Resolve all conflicts by keeping both
+                        foreach ($assetsToMove as $asset) {
+                            $asset->avoidFilenameConflicts = true;
+                            try {
+                                $assetsService->moveAsset($asset, $uploadFolder);
+                            } catch (FsObjectNotFoundException $e) {
+                                // Don't freak out about that.
+                                Craft::warning('Couldn’t move asset because the file doesn’t exist: ' . $e->getMessage());
+                                Craft::$app->getErrorHandler()->logException($e);
+                            }
                         }
                     }
                 }

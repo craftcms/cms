@@ -81,11 +81,31 @@ export default Base.extend(
 
     setScrollContainer: function () {
       this._.$scrollContainer = this.$targetItem.scrollParent();
-      if (
-        this._.$scrollContainer[0] === Garnish.$doc[0] ||
-        this._.$scrollContainer[0] === Garnish.$bod[0]
-      ) {
-        this._.$scrollContainer = Garnish.$win;
+
+      while (true) {
+        if (
+          this._.$scrollContainer[0] === Garnish.$doc[0] ||
+          this._.$scrollContainer[0] === Garnish.$bod[0]
+        ) {
+          this._.$scrollContainer = Garnish.$win;
+          break;
+        }
+
+        if (
+          // if we're able to drag vertically and the container is vertically scrollable
+          (this.settings.axis !== Garnish.X_AXIS &&
+            this._.$scrollContainer[0].scrollHeight >
+              this._.$scrollContainer[0].clientHeight) ||
+          // or if we're able to drag horizontally and the container is horizontally scrollable
+          (this.settings.axis !== Garnish.Y_AXIS &&
+            this._.$scrollContainer[0].scrollWidth >
+              this._.$scrollContainer[0].clientWidth)
+        ) {
+          // ...we found our scroll container
+          break;
+        }
+
+        this._.$scrollContainer = this._.$scrollContainer.scrollParent();
       }
     },
 

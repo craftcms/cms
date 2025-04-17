@@ -22,6 +22,7 @@
       $addEntryBtnContainer: null,
       $addEntryBtn: null,
       $addEntryMenuBtn: null,
+      $pasteBtn: null,
       $statusMessage: null,
 
       entrySort: null,
@@ -68,7 +69,8 @@
         const collapsedEntries = Craft.MatrixInput.getCollapsedEntryIds();
 
         this.entrySort = new Garnish.DragSort($entries, {
-          handle: '> .actions > .move',
+          handle: '> .actions > .move-btn',
+          ignoreHandleSelector: null,
           axis: 'y',
           filter: () => {
             // Only return all the selected items if the target item is selected
@@ -167,13 +169,118 @@
             this.destroy();
           }
         });
+
+        Craft.cp.onCopyElements((elementInfo, buttonLabel) => {
+          this.updatePasteBtn(elementInfo);
+          if (this.$pasteBtn && buttonLabel) {
+            this.$pasteBtn.find('.label').text(buttonLabel);
+          }
+        });
       },
 
-      canAddMoreEntries: function () {
+      canAddMoreEntries: function (num = 1) {
+        if (num === 0) {
+          return false;
+        }
+
         return (
           !this.maxEntries ||
-          this.$entriesContainer.children().length < this.maxEntries
+          this.$entriesContainer.children().length + num <= this.maxEntries
         );
+      },
+
+      canPaste(elementInfo) {
+        if (!this.canAddMoreEntries(elementInfo.length)) {
+          return false;
+        }
+
+        for (const e of elementInfo) {
+          if (e.type !== 'craft\\elements\\Entry') {
+            return false;
+          }
+        }
+
+        const entryTypeIds = this.entryTypes.map((entryType) => entryType.id);
+        for (const info of elementInfo) {
+          if (!entryTypeIds.includes(info.data.entryTypeId)) {
+            return false;
+          }
+        }
+
+        return true;
+      },
+
+      async pasteEntries() {
+        Craft.cp.announce(Craft.t('app', 'Loading'));
+        this.$pasteBtn.addClass('loading');
+
+        try {
+          if (this.elementEditor) {
+            // First ensure we're working with drafts for all elements leading up
+            // to this field’s element
+            await this.elementEditor.setFormValue(
+              this.settings.baseInputName,
+              '*'
+            );
+          }
+
+          const newElementInfo = await Craft.cp.pasteElements({
+            primaryOwnerId: this.settings.ownerId,
+            ownerId: this.settings.ownerId,
+            fieldId: this.settings.fieldId,
+            siteId: this.settings.siteId,
+          });
+
+          if (!newElementInfo.length) {
+            return;
+          }
+
+          let data;
+          try {
+            const response = await Craft.sendActionRequest(
+              'POST',
+              'matrix/render-blocks',
+              {
+                data: {
+                  entryIds: newElementInfo.map((info) => info.id),
+                  siteId: this.settings.siteId,
+                  namespace: this.settings.namespace,
+                },
+              }
+            );
+            data = response.data;
+          } catch (e) {
+            Craft.cp.displayError(e?.response?.data?.message);
+            return;
+          }
+
+          // Pause the element editor
+          await this.elementEditor?.pause();
+
+          const $newEntries = $(data.blockHtml);
+          this.$entriesContainer.append($newEntries);
+          await Craft.appendHeadHtml(data.headHtml);
+          await Craft.appendBodyHtml(data.bodyHtml);
+          Craft.initUiElements($newEntries);
+
+          $newEntries.each((i, entry) => {
+            const $entry = $(entry);
+            new Craft.MatrixInput.Entry(this, $entry);
+            this.trigger('entryAdded', {
+              $entry,
+            });
+          });
+
+          this.entrySort.addItems($newEntries);
+          this.entrySelect.addItems($newEntries);
+          this.updateAddEntryBtn();
+          Garnish.firstFocusableElement($newEntries).focus();
+        } finally {
+          this.$pasteBtn.removeClass('loading');
+        }
+
+        // Resume the element editor
+        this.elementEditor?.resume();
       },
 
       updateAddEntryBtn: function () {
@@ -183,6 +290,24 @@
         } else {
           this.$addEntryBtn.addClass('disabled').attr('aria-disabled', 'true');
           this.$addEntryMenuBtn.addClass('disabled');
+        }
+
+        this.updatePasteBtn();
+      },
+
+      updatePasteBtn: function (elementInfo = null) {
+        elementInfo = elementInfo || Craft.cp.getCopiedElements();
+        if (this.canPaste(elementInfo)) {
+          if (!this.$pasteBtn) {
+            this.$pasteBtn = Craft.ui
+              .createPasteButton()
+              .appendTo(this.$addEntryBtnContainer);
+            this.addListener(this.$pasteBtn, 'activate', 'pasteEntries');
+          } else {
+            this.$pasteBtn.removeClass('hidden');
+          }
+        } else {
+          this.$pasteBtn?.addClass('hidden');
         }
       },
 
@@ -263,7 +388,7 @@
           $entry.css(this.getHiddenEntryCss($entry)).velocity(
             {
               opacity: 1,
-              'margin-bottom': 10,
+              'margin-bottom': 8,
             },
             'fast',
             async () => {
@@ -503,7 +628,7 @@
         this.tabManager = Craft.MatrixInput.initTabs(this.$tabContainer);
       }
 
-      const $actionMenuBtn = this.$container.find('> .actions .action-btn');
+      const $actionMenuBtn = this.$container.find('> .actions > .action-btn');
       const actionDisclosure =
         $actionMenuBtn.data('disclosureMenu') ||
         new Garnish.DisclosureMenu($actionMenuBtn);
@@ -667,11 +792,11 @@
 
       if (animate && !Garnish.prefersReducedMotion()) {
         this.$fieldsContainer.velocity('fadeOut', {duration: 'fast'});
-        this.$container.velocity({height: 34}, 'fast');
+        this.$container.velocity({height: 30}, 'fast');
       } else {
         this.$previewContainer.show();
         this.$fieldsContainer.hide();
-        this.$container.css({height: 34});
+        this.$container.css({height: 30});
       }
 
       this.$tabContainer.hide();
@@ -890,6 +1015,23 @@
               duplicate: elementEditor?.getDraftElementId(this.id) || this.id,
             }
           );
+          break;
+        }
+
+        case 'copy': {
+          Craft.cp.copyElements([
+            {
+              type: 'craft\\elements\\Entry',
+              id:
+                this.matrix.elementEditor?.getDraftElementId(this.id) ||
+                this.id,
+              draftId: this.$container.data('draftId'),
+              revisionId: this.$container.data('revisionId'),
+              fieldId: this.matrix.settings.fieldId,
+              ownerId: this.matrix.settings.ownerId,
+              siteId: this.matrix.settings.siteId,
+            },
+          ]);
           break;
         }
 

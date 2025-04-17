@@ -34,7 +34,7 @@ use yii\db\Exception;
 /**
  * User Permissions service.
  *
- * An instance of the service is available via [[\craft\base\ApplicationTrait::getUserPermissions()|`Craft::$app->userPermissions`]].
+ * An instance of the service is available via [[\craft\base\ApplicationTrait::getUserPermissions()|`Craft::$app->getUserPermissions()`]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0

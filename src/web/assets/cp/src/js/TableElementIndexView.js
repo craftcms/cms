@@ -88,7 +88,10 @@ Craft.TableElementIndexView = Craft.BaseElementIndexView.extend({
     // Set up the broadcast listener
     if (Craft.messageReceiver) {
       this._broadcastListener = (ev) => {
-        if (ev.data.event === 'saveElement') {
+        if (
+          ev.data.event === 'saveElement' ||
+          ev.data.event === 'replaceFile'
+        ) {
           const $rows = this.$table.find(
             `> tbody > tr[data-id="${ev.data.id}"]`
           );

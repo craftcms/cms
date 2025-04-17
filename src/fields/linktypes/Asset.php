@@ -142,4 +142,11 @@ class Asset extends BaseElementLinkType
 
         return $config;
     }
+
+    public function filename(string $value): ?string
+    {
+        /** @var AssetElement|null $element */
+        $element = $this->element($value);
+        return $element?->getFilename();
+    }
 }

@@ -214,10 +214,12 @@ Craft::setAlias('@tests', $testsPath);
 // Custom icons
 Craft::setAlias('@appicons/c-debug.svg', "$customIconsPath/c-debug.svg");
 Craft::setAlias('@appicons/c-outline.svg', "$customIconsPath/c-outline.svg");
+Craft::setAlias('@appicons/clone-dashed.svg', "$customIconsPath/clone-dashed.svg");
 Craft::setAlias('@appicons/craft-cms.svg', "$customIconsPath/craft-cms.svg");
 Craft::setAlias('@appicons/craft-partners.svg', "$customIconsPath/craft-partners.svg");
 Craft::setAlias('@appicons/craft-stack-exchange.svg', "$customIconsPath/craft-stack-exchange.svg");
 Craft::setAlias('@appicons/default-plugin.svg', "$customIconsPath/default-plugin.svg");
+Craft::setAlias('@appicons/duplicate.svg', "$customIconsPath/duplicate.svg");
 Craft::setAlias('@appicons/element-card.svg', "$customIconsPath/element-card.svg");
 Craft::setAlias('@appicons/gear-slash.svg', "$customIconsPath/gear-slash.svg");
 Craft::setAlias('@appicons/graphql.svg', "$customIconsPath/graphql.svg");
@@ -290,6 +292,13 @@ Craft::setAlias('@appicons/upgrade.svg', "$solidIconsPath/square-arrow-up.svg");
 Craft::setAlias('@appicons/wand.svg', "$solidIconsPath/wand-magic-sparkles.svg");
 Craft::setAlias('@appicons/world.svg', "$solidIconsPath/earth-americas.svg");
 
+// Set any custom aliases
+foreach ($generalConfig->aliases as $name => $value) {
+    if (is_string($value)) {
+        Craft::setAlias($name, $value);
+    }
+}
+
 $webUrl = App::env('CRAFT_WEB_URL');
 if ($webUrl) {
     Craft::setAlias('@web', $webUrl);
@@ -298,13 +307,6 @@ if ($webUrl) {
 $webRoot = App::env('CRAFT_WEB_ROOT');
 if ($webRoot) {
     Craft::setAlias('@webroot', $webRoot);
-}
-
-// Set any custom aliases
-foreach ($generalConfig->aliases as $name => $value) {
-    if (is_string($value)) {
-        Craft::setAlias($name, $value);
-    }
 }
 
 // Load the config

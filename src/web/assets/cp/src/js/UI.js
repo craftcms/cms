@@ -18,10 +18,22 @@ Craft.ui = {
     if (config.role) {
       $btn.attr('role', config.role);
     }
-    if (config.html) {
-      $btn.html(config.html);
-    } else if (config.label) {
-      $btn.append($('<div class="label"/>').text(config.label));
+    let $iconContainer;
+    if (config.icon || config.label || config.html) {
+      const $labelContainer = $('<div class="inline-flex gap-xs"/>').appendTo(
+        $btn
+      );
+      if (config.icon) {
+        $iconContainer = $('<div class="cp-icon"/>').prependTo($labelContainer);
+      }
+      if (config.label || config.html) {
+        const $label = $('<div class="label"/>').appendTo($labelContainer);
+        if (config.label) {
+          $label.text(config.label);
+        } else {
+          $label.html(config.html);
+        }
+      }
     } else {
       $btn.addClass('btn-empty');
     }
@@ -44,18 +56,39 @@ Craft.ui = {
       $btn.attr('disabled', 'disabled');
     }
 
+    // todo: make this function async so we can add await here
+    if (config.icon) {
+      this.icon(config.icon).then((svg) => {
+        $iconContainer.append(svg);
+      });
+    }
+
     return $btn;
   },
 
-  createSubmitButton: function (config) {
-    const $btn = this.createButton(
+  createSubmitButton: function (config = {}) {
+    return this.createButton(
       Object.assign({}, config, {
         type: 'submit',
         label: config.label || Craft.t('app', 'Submit'),
       })
-    );
-    $btn.addClass('submit');
-    return $btn;
+    ).addClass('submit');
+  },
+
+  createPasteButton: function (config = {}) {
+    return this.createButton(
+      Object.assign({}, config, {
+        icon: 'duplicate',
+        label:
+          config.label ||
+          Craft.uppercaseFirst(
+            Craft.t('app', 'Paste {type}', {
+              type: Craft.t('app', 'elements'),
+            })
+          ),
+        spinner: true,
+      })
+    ).addClass('paste-btn');
   },
 
   createTextInput: function (config) {

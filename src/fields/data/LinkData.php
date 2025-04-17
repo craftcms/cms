@@ -27,6 +27,7 @@ use yii\base\BaseObject;
  * @property-read string $type The link type ID
  * @property-read string $url The full link URL, including the suffix
  * @property-read string $value The link value
+ * @property-read string|null $filename The download filename
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 5.3.0
  */
@@ -74,8 +75,15 @@ class LinkData extends BaseObject implements Serializable
      */
     public ?string $ariaLabel = null;
 
+    /**
+     * @var bool Whether the link should have a `download` attribute.
+     * @since 5.7.0
+     */
+    public bool $download = false;
+
     private string $renderedValue;
     private ?string $label = null;
+    private ?string $filename = null;
 
     public function __construct(
         private readonly string $value,
@@ -148,6 +156,29 @@ class LinkData extends BaseObject implements Serializable
     }
 
     /**
+     * Returns the download filename.
+     *
+     * @param bool $custom Whether to return the custom filename
+     * @return string|null
+     * @since 5.7.0
+     */
+    public function getFilename(bool $custom = true): ?string
+    {
+        return $custom ? $this->filename : $this->linkType->filename($this->value);
+    }
+
+    /**
+     * Sets the download filename.
+     *
+     * @param string|null $filename
+     * @since 5.7.0
+     */
+    public function setFilename(?string $filename): void
+    {
+        $this->filename = $filename;
+    }
+
+    /**
      * Returns an anchor tag for this link.
      *
      * @return Markup
@@ -168,6 +199,7 @@ class LinkData extends BaseObject implements Serializable
                 'aria' => [
                     'label' => $this->ariaLabel,
                 ],
+                'download' => $this->download ? ($this->filename ?? true) : false,
             ]);
         }
 
@@ -214,6 +246,8 @@ class LinkData extends BaseObject implements Serializable
             'id' => $this->id,
             'rel' => $this->rel,
             'ariaLabel' => $this->ariaLabel,
+            'download' => $this->download,
+            'filename' => $this->filename,
         ]);
     }
 }

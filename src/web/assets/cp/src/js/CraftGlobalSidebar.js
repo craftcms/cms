@@ -21,13 +21,19 @@ class CraftGlobalSidebar extends HTMLElement {
     this.expand();
   }
 
+  itemHasTooltip(item) {
+    return item.querySelector('craft-tooltip');
+  }
+
   createTooltips() {
     if (this.items) {
       this.items.forEach((item) => {
+        if (this.itemHasTooltip(item)) return;
+
         const tooltip = document.createElement('craft-tooltip');
         tooltip.setAttribute('placement', 'right');
         tooltip.setAttribute('trigger', `.sidebar-action`);
-        tooltip.setAttribute('text', item.querySelector('.label')?.innerText);
+        tooltip.setAttribute('text', item.querySelector('.label')?.textContent);
         item.append(tooltip);
       });
     }

@@ -860,6 +860,14 @@ class EntryQuery extends ElementQuery implements NestedElementQueryInterface
             'entries.expiryDate',
         ]);
 
+        // todo: update after the next breakpoint
+        if (
+            Craft::$app->getConfig()->getGeneral()->staticStatuses &&
+            Craft::$app->getDb()->columnExists(Table::ENTRIES, 'status')
+        ) {
+            $this->query->addSelect(['entries.status']);
+        }
+
         $this->_applySectionIdParam();
         $this->applyNestedElementParams('entries.fieldId', 'entries.primaryOwnerId');
 
@@ -950,6 +958,11 @@ class EntryQuery extends ElementQuery implements NestedElementQueryInterface
 
     private function loadAuthorIds(array $entries): void
     {
+        $entries = array_filter($entries, fn(Entry $entry) => isset($entry->sectionId));
+        if (empty($entries)) {
+            return;
+        }
+
         /** @var Entry[][] $indexedEntries */
         $indexedEntries = ArrayHelper::index($entries, null, [
             fn(Entry $entry) => $entry->id,
@@ -979,6 +992,17 @@ class EntryQuery extends ElementQuery implements NestedElementQueryInterface
      */
     protected function statusCondition(string $status): mixed
     {
+        if (
+            in_array($status, [Entry::STATUS_LIVE, Entry::STATUS_PENDING, Entry::STATUS_EXPIRED]) &&
+            Craft::$app->getConfig()->getGeneral()->staticStatuses
+        ) {
+            return [
+                'elements.enabled' => true,
+                'elements_sites.enabled' => true,
+                'entries.status' => $status,
+            ];
+        }
+
         // Always consider “now” to be the current time @ 59 seconds into the minute.
         // This makes entry queries more cacheable, since they only change once every minute (https://github.com/craftcms/cms/issues/5389),
         // while not excluding any entries that may have just been published in the past minute (https://github.com/craftcms/cms/issues/7853).

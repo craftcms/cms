@@ -18,9 +18,10 @@
           inputName: inputName ?? name ?? null,
           inputValue: allowOverrides ? entryType.toArray(['id', 'name', 'handle'])|json_encode : null,
           checkbox: selectable ?? false,
-          showActionMenu: true,
+          showActionMenu: showActionMenus,
           showHandle: showHandles,
           showIndicators: showIndicators,
+          hyperlink: hyperlinks,
         }) %}
         {% if disabled %}
           {% set chip = chip|removeClass('removable') %}

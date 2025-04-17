@@ -104,17 +104,26 @@ class Mailer extends \yii\symfonymailer\Mailer
 
         $generalConfig = Craft::$app->getConfig()->getGeneral();
         $sitesService = Craft::$app->getSites();
-        $currentSite = $messageSite = null;
+        $view = Craft::$app->getView();
+        $currentSite = $messageSite = $twig = null;
         $language = Craft::$app->language;
         $generateTransformsBeforePageLoad = $generalConfig->generateTransformsBeforePageLoad;
         $originalSettings = [];
 
+        $originalTemplateMode = $view->getTemplateMode();
+        $view->setTemplateMode(View::TEMPLATE_MODE_SITE);
+
         try {
             if ($message instanceof Message && isset($message->siteId)) {
-                $messageSite = $sitesService->getSiteById($message->siteId);
-                if ($messageSite) {
-                    $currentSite = $sitesService->getCurrentSite();
-                    $sitesService->setCurrentSite($messageSite);
+                $currentSite = $sitesService->getCurrentSite();
+                if ($message->siteId !== $currentSite->id) {
+                    $messageSite = $sitesService->getSiteById($message->siteId);
+                    if ($messageSite) {
+                        $sitesService->setCurrentSite($messageSite);
+                        // reset Twig so any global sets and singles get reloaded for the new site
+                        $twig = $view->getTwig();
+                        $view->setTwig($view->createTwig());
+                    }
                 }
             }
 
@@ -168,10 +177,9 @@ class Mailer extends \yii\symfonymailer\Mailer
                     ];
 
                 // Render the subject and body text
-                $view = Craft::$app->getView();
-                $subject = $view->renderString($systemMessage->subject, $variables, View::TEMPLATE_MODE_SITE);
-                $textBody = $view->renderString($systemMessage->body, $variables, View::TEMPLATE_MODE_SITE);
-                $htmlBody = $view->renderString($systemMessage->body, $variables, View::TEMPLATE_MODE_SITE, true);
+                $subject = $view->renderString($systemMessage->subject, $variables);
+                $textBody = $view->renderString($systemMessage->body, $variables);
+                $htmlBody = $view->renderString($systemMessage->body, $variables, escapeHtml: true);
 
                 // Remove </> from around URLs, so they’re not interpreted as HTML tags
                 $textBody = preg_replace('/<(https?:\/\/.+?)>/', '$1', $textBody);
@@ -223,8 +231,14 @@ class Mailer extends \yii\symfonymailer\Mailer
             Craft::$app->language = $language;
             $generalConfig->generateTransformsBeforePageLoad = $generateTransformsBeforePageLoad;
 
-            if ($currentSite) {
+            if ($currentSite && $messageSite) {
                 $sitesService->setCurrentSite($currentSite);
+            }
+
+            $view->setTemplateMode($originalTemplateMode);
+
+            if ($twig) {
+                $view->setTwig($twig);
             }
 
             Craft::configure($this, $originalSettings);

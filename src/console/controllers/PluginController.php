@@ -8,7 +8,9 @@
 namespace craft\console\controllers;
 
 use Craft;
+use craft\base\PluginInterface;
 use craft\console\Controller;
+use craft\errors\InvalidPluginException;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Console;
 use Throwable;
@@ -116,11 +118,13 @@ class PluginController extends Controller
      * @param string|null $handle The plugin handle (omitted if --all provided).
      * @return int
      */
-    public function actionInstall(?string $handle = null): int
+    public function actionInstall(?string $handle = null, ?string $edition = null): int
     {
+        $pluginsService = Craft::$app->getPlugins();
+
         if ($this->all) {
             // get all plugins’ info
-            $pluginInfo = Craft::$app->getPlugins()->getAllPluginInfo();
+            $pluginInfo = $pluginsService->getAllPluginInfo();
 
             // filter out the ones that are already installed
             $pluginInfo = array_filter($pluginInfo, fn(array $info) => !$info['isInstalled']);
@@ -136,7 +140,47 @@ class PluginController extends Controller
                 $this->_installPluginByHandle($handle);
             }
         } else {
-            $this->_installPluginByHandle($handle);
+            if ($pluginsService->isPluginInstalled($handle)) {
+                $plugin = $pluginsService->getPlugin($handle);
+                if ($edition === null || $edition === $plugin->edition) {
+                    $this->stderr(sprintf("%s%s is already installed.\n", $plugin->name, $edition !== null ? " ($edition)" : ''), Console::FG_YELLOW);
+                    return ExitCode::UNSPECIFIED_ERROR;
+                }
+                try {
+                    $pluginsService->switchEdition($handle, $edition);
+                } catch (Throwable $e) {
+                    $this->stderr("{$e->getMessage()}\n", Console::FG_RED);
+                    return ExitCode::UNSPECIFIED_ERROR;
+                }
+                $this->stdout($this->markdownToAnsi("$plugin->name switched to the `$edition` edition.") . "\n");
+                return ExitCode::OK;
+            }
+
+            if ($edition === null && $this->interactive) {
+                // see if it's a multi-edition plugin
+                try {
+                    $info = $pluginsService->getPluginInfo($handle);
+                } catch (InvalidPluginException $e) {
+                    $this->stderr("{$e->getMessage()}\n", Console::FG_RED);
+                    return ExitCode::UNSPECIFIED_ERROR;
+                }
+
+                /** @var class-string<PluginInterface> $class */
+                $class = $info['class'];
+                $editions = $class::editions();
+                if (count($editions) > 1) {
+                    $this->stdout("Which edition?\n");
+                    foreach ($editions as $edition) {
+                        $this->stdout($this->markdownToAnsi("- `$edition`") . "\n");
+                    }
+                    $edition = $this->prompt('Choose:', [
+                        'default' => reset($editions),
+                        'validate' => fn($input) => in_array($input, $editions),
+                    ]);
+                }
+            }
+
+            $this->_installPluginByHandle($handle, $edition);
         }
 
         return ExitCode::OK;
@@ -150,9 +194,11 @@ class PluginController extends Controller
      */
     public function actionUninstall(?string $handle = null): int
     {
+        $pluginsService = Craft::$app->getPlugins();
+
         if ($this->all) {
             // get all plugins’ info
-            $pluginInfo = Craft::$app->getPlugins()->getAllPluginInfo();
+            $pluginInfo = $pluginsService->getAllPluginInfo();
 
             // filter out the ones that are uninstalled/disabled
             $pluginInfo = array_filter($pluginInfo, fn(array $info) => $info['isInstalled'] && ($info['isEnabled'] || $this->force));
@@ -172,6 +218,12 @@ class PluginController extends Controller
                 $this->_uninstallPluginByHandle($handle);
             }
         } else {
+            $plugin = $pluginsService->isPluginInstalled($handle);
+            if (!$plugin) {
+                $this->stderr($this->markdownToAnsi("No plugin is installed with the handle `$handle`.") . "\n");
+                return ExitCode::OK;
+            }
+
             $this->_uninstallPluginByHandle($handle);
         }
 
@@ -248,7 +300,7 @@ class PluginController extends Controller
      * @param null|string $handle
      * @return int
      */
-    private function _installPluginByHandle(?string $handle = null): int
+    private function _installPluginByHandle(?string $handle, ?string $edition = null): int
     {
         if ($handle === null) {
             $handle = $this->_pluginPrompt(
@@ -266,7 +318,7 @@ class PluginController extends Controller
         $start = microtime(true);
 
         try {
-            $success = Craft::$app->getPlugins()->installPlugin($handle);
+            $success = Craft::$app->getPlugins()->installPlugin($handle, $edition);
         } catch (Throwable $e) {
             $success = false;
         } finally {

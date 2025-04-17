@@ -27,6 +27,7 @@ use craft\helpers\Component;
 use craft\helpers\Cp;
 use craft\helpers\Html;
 use craft\helpers\StringHelper;
+use craft\helpers\Typecast;
 use craft\helpers\UrlHelper;
 use craft\models\FieldLayout;
 use craft\models\FieldLayoutTab;
@@ -376,6 +377,7 @@ JS, [
                 }
             }, ARRAY_FILTER_USE_KEY);
 
+            Typecast::properties($type, $settings);
             Craft::configure($field, $settings);
         }
 

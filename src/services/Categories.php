@@ -36,7 +36,7 @@ use yii\base\Exception;
 /**
  * Categories service.
  *
- * An instance of the service is available via [[\craft\base\ApplicationTrait::getCategories()|`Craft::$app->categories`]].
+ * An instance of the service is available via [[\craft\base\ApplicationTrait::getCategories()|`Craft::$app->getCategories()`]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0

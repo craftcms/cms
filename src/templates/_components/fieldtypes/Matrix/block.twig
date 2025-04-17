@@ -1,3 +1,5 @@
+{% from '_includes/forms.twig' import button %}
+
 {% set entryType = entry.getType() %}
 {% set singleType = singleType ?? entryTypes|length == 1 %}
 {% set entryTypeName = entryType.name|t('site') %}
@@ -89,15 +91,23 @@
       },
     },
     {hr: true},
-  ]) %}
-
-  {% set actionMenuItems = actionMenuItems|push({
-    icon: 'copy',
-    label: 'Duplicate'|t('app'),
-    attributes: {
-      data: {action: 'duplicate'},
+    {
+      icon: 'clone',
+      label: 'Duplicate'|t('app'),
+      attributes: {
+        data: {action: 'duplicate'},
+      },
     },
-  }) %}
+    {
+      icon: 'clone-dashed',
+      color: 'fuchsia',
+      label: 'Copy'|t('app'),
+      attributes: {
+        data: {action: 'copy'},
+      },
+    },
+    {hr: true},
+  ]) %}
 
   {% for entryType in entryTypes %}
     {% set actionMenuItems = actionMenuItems|push({
@@ -126,10 +136,17 @@
     static ? 'static',
   ]|filter,
   style: {
-    'border-color': entryType.color.cssVar(100) ?? null,
+    '--custom-bg-color': entryType.color.cssVar(50) ?? null,
+    '--custom-text-color': entryType.color.cssVar(900) ?? null,
+    '--custom-titlebar-bg-color': entryType.color.cssVar(100) ?? null,
+    '--custom-border-color': entryType.color.cssVar(200) ?? null,
   }|filter,
   data: {
     id: entry.id,
+    'draft-id': entry.isProvisionalDraft ? null : entry.draftId,
+    'revision-id': entry.revisionId,
+    'owner-id': entry.getOwnerId(),
+    'site-id': entry.siteId,
     uid: entry.uid,
     type: entryType.handle,
     'type-name': entryTypeName,
@@ -156,10 +173,6 @@
 
   {% tag 'div' with {
     class: 'titlebar',
-    style: {
-      'background-color': entryType.color.cssVar(50) ?? null,
-      '--custom-text-color': entryType.color.cssVar(900) ?? null,
-    }|filter,
   } %}
     {% tag 'div' with {
       class: {
@@ -204,19 +217,26 @@
       </div>
 
       <div class="checkbox" title="{{ 'Select'|t('app') }}" aria-label="{{ 'Select'|t('app') }}" tabindex="0" role="checkbox" aria-checked="false"></div>
-      <div>
-        {{ disclosureMenu(actionMenuItems, {
-          hiddenLabel: 'Actions'|t('app'),
-          buttonAttributes: {
-            class: ['action-btn'],
-            title: 'Actions'|t('app'),
-            data: {
-              'disclosure-trigger': true,
-            },
+      {{ disclosureMenu(actionMenuItems, {
+        hiddenLabel: 'Actions'|t('app'),
+        buttonAttributes: {
+          class: ['action-btn', 'small'],
+          title: 'Actions'|t('app'),
+          data: {
+            'disclosure-trigger': true,
           },
-        }) }}
-      </div>
-      <a class="move icon" title="{{ 'Reorder'|t('app') }}" aria-label="{{ 'Reorder'|t('app') }}" role="button"></a>
+        },
+      }) }}
+      {{ button({
+        class: ['chromeless', 'small', 'move-btn'],
+        icon: 'move',
+        attributes: {
+          title: 'Reorder'|t('app'),
+          aria: {label: 'Reorder'|t('app')},
+          role: 'none',
+          tabindex: '-1',
+        },
+      }) }}
     </div>
   {% endif %}
   <div class="fields">

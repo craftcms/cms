@@ -559,7 +559,8 @@ class Raster extends Image
         if ($fill === 'transparent') {
             $this->_fill = $this->_image->palette()->color('#ffffff', 0);
         } else {
-            $this->_fill = $this->_image->palette()->color($fill);
+            // set alpha to 100, otherwise it'll be set to 0 (fully transparent) for grayscale images
+            $this->_fill = $this->_image->palette()->color($fill, 100);
         }
 
         return $this;
@@ -823,6 +824,9 @@ class Raster extends Image
         switch ($extension) {
             case 'jpeg':
             case 'jpg':
+                // ensure quality is between -1 and 100
+                // https://github.com/craftcms/cms/issues/16977
+                $quality = min(100, max(-1, $quality));
                 return ['jpeg_quality' => $quality, 'flatten' => true];
 
             case 'gif':

@@ -32,7 +32,7 @@ use yii\base\InvalidConfigException;
 /**
  * Volumes service.
  *
- * An instance of the service is available via [[\craft\base\ApplicationTrait::getVolumes()|`Craft::$app->volumes()`]].
+ * An instance of the service is available via [[\craft\base\ApplicationTrait::getVolumes()|`Craft::$app->getVolumes()`]].
  *
  * @property-read int[] $allVolumeIds
  * @property-read string[] $allVolumeTypes

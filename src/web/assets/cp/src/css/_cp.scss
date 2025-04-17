@@ -22,7 +22,7 @@ $badgeColor: var(--gray-800);
   --l: 18px;
   --xl: 24px;
   --padding: var(--xl);
-  --neg-padding: calc(var(--padding) * -1);
+  --neg-padding: calc(var(--xl) * -1);
   --sidebar-width: #{$sidebarWidth};
   --global-sidebar-width: #{$sidebarWidth};
   --details-width: #{$detailsWidth};
@@ -86,7 +86,7 @@ body {
   }
 }
 
-#global-skip-link {
+.skip-link--global {
   @media only screen and (min-width: $minFullUiWidth) {
     @include mixins.two-color-focus-ring;
   }
@@ -310,6 +310,9 @@ a#system-info {
     padding-block: 7px 8px;
     padding-inline: 24px;
     box-shadow: inset 0 -1px 0 0 var(--red-100);
+    min-height: var(--header-height);
+    display: flex;
+    align-items: center;
 
     span[data-icon]::before {
       margin-block-start: -3px !important;
@@ -554,13 +557,6 @@ li.crumb {
   }
 
   .chip {
-    padding: 0;
-    background-color: transparent;
-
-    --custom-bg-color: initial !important;
-    --custom-text-color: initial !important;
-    --custom-sel-bg-color: initial !important;
-
     .label-link {
       max-width: 15em;
 
@@ -793,39 +789,43 @@ li.breadcrumb-toggle-wrapper {
   }
 
   .notification {
-    display: flex;
     position: relative;
     @include mixins.pane;
-    padding-block: 10px;
-    padding-inline: 14px;
     border-radius: var(--large-border-radius);
     box-shadow:
       0 0 0 1px color.adjust(mixins.$grey1000, $alpha: -0.85),
       0 2px 12px color.adjust(mixins.$grey1000, $alpha: -0.85);
 
-    --color: var(--notice-color);
-
     &[data-type='success'] {
-      --color: var(--success-color);
+      .notification-icon {
+        --icon-color: var(--success-color);
+      }
     }
 
     &[data-type='error'] {
-      --color: var(--error-color);
+      .notification-icon {
+        --icon-color: var(--error-color);
+      }
     }
 
     & + .notification {
       margin-block-start: 12px;
     }
 
+    .notification-inner {
+      display: flex;
+      padding-block: 10px;
+      padding-inline: 14px;
+    }
+
     .notification-icon {
-      width: 18px;
-      margin-block-start: -2px;
-      margin-inline-end: 10px;
-      font-size: 18px;
-      color: var(--color);
+      --icon-color: var(--notice-color);
+      margin-block-start: 2px;
     }
 
     .notification-main {
+      margin: -10px;
+      padding: 10px;
       overflow: hidden;
     }
 
@@ -843,10 +843,6 @@ li.breadcrumb-toggle-wrapper {
 
       .notification-details {
         margin-block-start: var(--xs);
-
-        .chip {
-          border: 1px solid mixins.$hairlineColor;
-        }
       }
     }
 
@@ -855,6 +851,68 @@ li.breadcrumb-toggle-wrapper {
       inset-block-start: -2px;
       margin-inline-start: 10px;
     }
+  }
+
+  .copied-elements-notification {
+    padding: 2px;
+    background: linear-gradient(
+      135deg,
+      var(--fuchsia-600),
+      var(--violet-600),
+      var(--indigo-600)
+    );
+
+    .notification-icon {
+      --icon-color: var(--fuchsia-500);
+    }
+
+    .notification-inner {
+      border-radius: var(--small-border-radius);
+      background: var(--white);
+    }
+
+    .copied-elements {
+      overflow: hidden;
+      margin-block-end: -10px;
+      padding-block-end: 10px;
+      position: relative;
+      pointer-events: none;
+
+      .chip:not(:first-child) {
+        position: absolute;
+
+        &::after {
+          content: '';
+          position: absolute;
+          display: block;
+          inset: -1px;
+          background: rgb(255 255 255 / var(--overlay-opacity));
+        }
+      }
+    }
+  }
+}
+
+.paste-btn {
+  background: linear-gradient(
+    135deg,
+    var(--fuchsia-600),
+    var(--violet-600),
+    var(--indigo-600)
+  );
+  color: var(--white);
+  text-shadow: 0 1px 2px rgb(0 0 0 / 25%);
+
+  --focus-ring: var(--focus-ring-outset);
+
+  &:hover,
+  &.loading {
+    background: linear-gradient(
+      135deg,
+      var(--fuchsia-700),
+      var(--violet-700),
+      var(--indigo-700)
+    );
   }
 }
 
@@ -968,8 +1026,9 @@ li.breadcrumb-toggle-wrapper {
 
 #toolbar {
   flex: 1;
-  align-items: flex-start;
+  align-items: center;
   justify-content: space-between;
+  min-height: 34px;
 
   .icon::before,
   .texticon::before,
@@ -1160,7 +1219,7 @@ li.breadcrumb-toggle-wrapper {
   position: sticky;
   inset-block-end: 0;
   z-index: 1;
-  margin-block: calc(var(--s) + 1px) calc(var(--padding) * -1 + 2px);
+  margin-block: var(--padding) calc(var(--padding) * -1 + 2px);
   margin-inline: calc(var(--padding) * -1 + 2px);
   background-color: var(--gray-050);
   border-radius: var(--small-border-radius);

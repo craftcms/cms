@@ -7,6 +7,7 @@
 
 namespace craft\gql\base;
 
+use craft\gql\GqlEntityRegistry;
 use craft\gql\types\input\criteria\AssetRelation;
 use craft\gql\types\input\criteria\CategoryRelation;
 use craft\gql\types\input\criteria\EntryRelation;
@@ -14,6 +15,7 @@ use craft\gql\types\input\criteria\TagRelation;
 use craft\gql\types\input\criteria\UserRelation;
 use craft\gql\types\QueryArgument;
 use craft\helpers\Gql;
+use GraphQL\Type\Definition\InputObjectType;
 use GraphQL\Type\Definition\Type;
 
 /**
@@ -69,6 +71,31 @@ abstract class ElementArguments extends Arguments
                 'name' => 'search',
                 'type' => Type::string(),
                 'description' => 'Narrows the query results to only elements that match a search query.',
+            ],
+            'searchTermOptions' => [
+                'name' => 'searchTermOptions',
+                'type' => GqlEntityRegistry::getOrCreate('SearchTermOptions', fn() => new InputObjectType([
+                    'name' => 'SearchTermOptions',
+                    'fields' => fn() => [
+                        'subLeft' => [
+                            'name' => 'subLeft',
+                            'type' => Type::boolean(),
+                        ],
+                        'subRight' => [
+                            'name' => 'subRight',
+                            'type' => Type::boolean(),
+                        ],
+                        'exclude' => [
+                            'name' => 'exclude',
+                            'type' => Type::boolean(),
+                        ],
+                        'exact' => [
+                            'name' => 'exact',
+                            'type' => Type::boolean(),
+                        ],
+                    ],
+                ])),
+                'description' => 'Defines the default options that should be applied terms within the `search` argument.',
             ],
             'relatedTo' => [
                 'name' => 'relatedTo',

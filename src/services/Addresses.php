@@ -32,7 +32,7 @@ use yii\base\Component;
 
 /**
  * Addresses service.
- * An instance of the Addresses service is globally accessible in Craft via [[\craft\base\ApplicationTrait::getAddresses()|`Craft::$app->addresses`]].
+ * An instance of the Addresses service is globally accessible in Craft via [[\craft\base\ApplicationTrait::getAddresses()|`Craft::$app->getAddresses()`]].
  *
  * @property-read AddressFormatRepository $addressFormatRepository
  * @property-read CountryRepository $countryRepository

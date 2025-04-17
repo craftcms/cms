@@ -45,14 +45,6 @@ class ElementCollectionTest extends TestCase
         self::assertNull($collection->find(-1));
     }
 
-    public function testWith(): void
-    {
-        $collection = Entry::find()->limit(1)->collect();
-        self::assertFalse($collection->first()->hasEagerLoadedElements('foo'));
-        $collection->with('foo');
-        self::assertTrue($collection->first()->hasEagerLoadedElements('foo'));
-    }
-
     public function testContains(): void
     {
         $collection = Entry::find()->collect();

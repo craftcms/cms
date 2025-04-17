@@ -99,7 +99,7 @@ use yii\caching\TagDependency;
 /**
  * GraphQL service.
  *
- * An instance of the service is available via [[\craft\base\ApplicationTrait::getGql()|`Craft::$app->gql`]].
+ * An instance of the service is available via [[\craft\base\ApplicationTrait::getGql()|`Craft::$app->getGql()`]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.3.0

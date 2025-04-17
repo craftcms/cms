@@ -27,7 +27,7 @@ use yii\base\Component;
 /**
  * Tags service.
  *
- * An instance of the service is available via [[\craft\base\ApplicationTrait::getTags()|`Craft::$app->tags`]].
+ * An instance of the service is available via [[\craft\base\ApplicationTrait::getTags()|`Craft::$app->getTags()`]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0

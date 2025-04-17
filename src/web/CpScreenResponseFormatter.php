@@ -68,6 +68,7 @@ class CpScreenResponseFormatter extends Component implements ResponseFormatterIn
             $view->setNamespace(null);
         }
 
+        $extraToolbarItems = is_callable($behavior->toolbarHtml) ? call_user_func($behavior->toolbarHtml) : $behavior->toolbarHtml;
         $notice = $behavior->noticeHtml ? $view->namespaceInputs($behavior->noticeHtml, $namespace) : null;
 
         $tabs = count($behavior->tabs) > 1 ? $view->namespaceInputs(fn() => $view->renderTemplate('_includes/tabs.twig', [
@@ -99,6 +100,7 @@ class CpScreenResponseFormatter extends Component implements ResponseFormatterIn
             'bodyClass' => $behavior->slideoutBodyClass,
             'formAttributes' => $behavior->formAttributes,
             'action' => $behavior->action,
+            'extraToolbarItems' => $extraToolbarItems,
             'submitButtonLabel' => $behavior->submitButtonLabel,
             'actionMenu' => $this->_actionMenu($behavior, false, [
                 'withButton' => false,
@@ -127,6 +129,7 @@ class CpScreenResponseFormatter extends Component implements ResponseFormatterIn
 
         $docTitle = $behavior->docTitle ?? strip_tags($behavior->title ?? '');
         $crumbs = (is_callable($behavior->crumbs) ? call_user_func($behavior->crumbs) : $behavior->crumbs) ?? [];
+        $toolbar = is_callable($behavior->toolbarHtml) ? call_user_func($behavior->toolbarHtml) : $behavior->toolbarHtml;
         $addlButtons = is_callable($behavior->additionalButtonsHtml) ? call_user_func($behavior->additionalButtonsHtml) : $behavior->additionalButtonsHtml;
         $altActions = is_callable($behavior->altActions) ? call_user_func($behavior->altActions) : $behavior->altActions;
         $notice = is_callable($behavior->noticeHtml) ? call_user_func($behavior->noticeHtml) : $behavior->noticeHtml;
@@ -175,6 +178,7 @@ class CpScreenResponseFormatter extends Component implements ResponseFormatterIn
                     return $crumb;
                 }, $crumbs ?? []),
                 'contextMenu' => $this->_contextMenu($behavior),
+                'toolbar' => $toolbar,
                 'actionMenu' => $this->_actionMenu($behavior, config: [
                     'hiddenLabel' => Craft::t('app', 'Actions'),
                     'buttonAttributes' => [

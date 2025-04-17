@@ -138,12 +138,8 @@ class ElementCondition extends BaseCondition implements ElementConditionInterfac
         // Make sure the rule doesn't conflict with the existing params
         $queryParams = array_merge($this->queryParams);
         foreach ($this->getConditionRules() as $existingRule) {
-            try {
-                /** @var ElementConditionRuleInterface $existingRule */
-                array_push($queryParams, ...$existingRule->getExclusiveQueryParams());
-            } catch (InvalidConfigException) {
-                return false;
-            }
+            /** @var ElementConditionRuleInterface $existingRule */
+            array_push($queryParams, ...$existingRule->getExclusiveQueryParams());
         }
 
         $queryParams = array_flip($queryParams);

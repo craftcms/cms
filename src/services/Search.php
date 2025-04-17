@@ -38,7 +38,7 @@ use yii\db\Schema;
 /**
  * Search service.
  *
- * An instance of the service is available via [[\craft\base\ApplicationTrait::getSearch()|`Craft::$app->search`]].
+ * An instance of the service is available via [[\craft\base\ApplicationTrait::getSearch()|`Craft::$app->getSearch()`]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
@@ -327,7 +327,7 @@ class Search extends Component
                     ->status(null)
                     ->one();
 
-                if ($elementId) {
+                if ($element) {
                     $this->indexElementAttributes($element, $fieldHandles);
                 }
             }
@@ -414,7 +414,12 @@ class Search extends Component
 
         $results = $query
             ->andWhere(['elementId' => $elementQuery])
-            ->cache(true, new ElementQueryTagDependency($elementQuery))
+            ->cache(true, new ElementQueryTagDependency($elementQuery, [
+                'tags' => [
+                    'element-index-query',
+                    sprintf('element-index-query::%s', $elementQuery->elementType),
+                ],
+            ]))
             ->all();
 
         // Score the results

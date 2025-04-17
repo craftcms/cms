@@ -162,6 +162,16 @@
     disabled: readOnly,
 }) }}
 
+{{ forms.lightswitchField({
+    label: 'Enable versioning for entries in this field'|t('app'),
+    id: 'enableVersioning',
+    name: 'enableVersioning',
+    on: field.enableVersioning,
+    errors: field.getErrors('enableVersioning'),
+    data: {'error-key': 'enableVersioning'},
+    disabled: readOnly,
+}) }}
+
 <hr>
 
 {{ forms.selectField({

@@ -10,6 +10,8 @@ Craft.LinkField = Garnish.Base.extend({
   $typeSelect: null,
   /** @type {jQuery} */
   $labelInput: null,
+  /** @type {jQuery} */
+  $filenameInput: null,
 
   init: function (container, settings) {
     this.$container = $(container);
@@ -19,6 +21,9 @@ Craft.LinkField = Garnish.Base.extend({
     this.$labelInput = this.$container
       .children('[data-label-field]:first')
       .find('.text:first');
+    this.$filenameInput = this.$container.find(
+      '[data-filename-field]:first .text:first'
+    );
 
     if (this.$typeSelect.length) {
       this.$typeSelect
@@ -26,23 +31,32 @@ Craft.LinkField = Garnish.Base.extend({
         .data('fieldtoggle')
         .on('toggleChange', () => {
           this.updateLabel();
+          this.updateFilename();
         });
     }
+  },
 
-    this.addListener(this.$container, 'labelChanged', () => {
-      this.updateLabel();
-    });
+  getActiveLinkTypeContainer: function () {
+    return this.$container.find('[data-link-type]:not(.hidden):first');
   },
 
   updateLabel: function (label = null) {
-    const $container = this.$container.find(
-      '[data-link-type]:not(.hidden):first'
-    );
+    const $container = this.getActiveLinkTypeContainer();
     if (label === null) {
       label = $container.data('linkLabel') || '';
     } else {
       $container.data('linkLabel', label);
     }
     this.$labelInput.prop('placeholder', label);
+  },
+
+  updateFilename: function (filename = null) {
+    const $container = this.getActiveLinkTypeContainer();
+    if (filename === null) {
+      filename = $container.data('filename') || '';
+    } else {
+      $container.data('filename', filename);
+    }
+    this.$filenameInput.prop('placeholder', filename);
   },
 });

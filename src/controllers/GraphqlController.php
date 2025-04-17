@@ -380,12 +380,17 @@ class GraphqlController extends Controller
         }
 
         $schemas = [
-            Craft::t('app', 'Full Schema') => '*',
+            [
+                'label' => Craft::t('app', 'Full Schema'),
+                'value' => '*',
+            ],
         ];
 
         foreach ($gqlService->getSchemas() as $schema) {
-            $name = $schema->name;
-            $schemas[$name] = $schema->uid;
+            $schemas[] = [
+                'label' => $schema->name,
+                'value' => $schema->uid,
+            ];
         }
 
         return $this->renderTemplate('graphql/graphiql.twig', [

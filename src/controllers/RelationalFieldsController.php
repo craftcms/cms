@@ -68,10 +68,13 @@ class RelationalFieldsController extends Controller
             'selectionLabel' => $this->request->getParam('selectionLabel'),
             'elementType' => $elementType,
             'maintainHierarchy' => true,
+            'registerJs' => false,
         ]);
 
         return $this->asJson([
             'html' => $html,
+            'headHtml' => $this->getView()->getHeadHtml(),
+            'bodyHtml' => $this->getView()->getBodyHtml(),
         ]);
     }
 }

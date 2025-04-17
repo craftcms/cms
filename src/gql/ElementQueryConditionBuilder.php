@@ -274,9 +274,7 @@ class ElementQueryConditionBuilder extends Component
         $nodeList = $this->_getKnownSpecialEagerLoadNodes();
 
         if (isset($nodeList[$nodeName])) {
-            if (!isset($nodeList[$nodeName]['canBeAliased']) || $nodeList[$nodeName]['canBeAliased']) {
-                return true;
-            }
+            return $nodeList[$nodeName]['canBeAliased'] ?? true;
         }
 
         return false;
