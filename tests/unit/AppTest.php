@@ -9,10 +9,10 @@ namespace crafttests\unit;
 
 use Codeception\Test\Unit;
 use Craft;
-use craft\helpers\ArrayHelper;
 use craft\mail\Mailer;
 use craft\test\TestCase;
 use craft\test\TestSetup;
+use Illuminate\Support\Collection;
 use yii\base\InvalidConfigException;
 
 /**
@@ -47,11 +47,8 @@ class AppTest extends TestCase
         $content = TestSetup::getCraftServiceMap();
 
         // Dont test mailer. The test get's all fussy about it being a mock.
-        /** @noinspection PhpParamsInspection */
-        ArrayHelper::removeValue(
-            $content, [Mailer::class, ['getMailer', 'mailer']]
-        );
-
-        return $content;
+        return Collection::make($content)
+            ->reject(fn($value) => $value === [Mailer::class, ['getMailer', 'mailer']])
+            ->all();
     }
 }

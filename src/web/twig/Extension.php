@@ -745,17 +745,9 @@ class Extension extends AbstractExtension implements GlobalsInterface
      */
     public function withoutFilter(mixed $arr, mixed $exclude, bool $strict = false): array
     {
-        $arr = (array)$arr;
-
-        if (!is_array($exclude)) {
-            $exclude = [$exclude];
-        }
-
-        foreach ($exclude as $value) {
-            ArrayHelper::removeValue($arr, $value, $strict);
-        }
-
-        return $arr;
+        return Collection::make($arr)
+            ->reject(fn($value) => in_array($value, Arr::wrap($exclude), $strict))
+            ->all();
     }
 
     /**

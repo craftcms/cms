@@ -14,7 +14,7 @@ use craft\db\MigrationManager;
 use craft\errors\InvalidPluginException;
 use craft\errors\MigrateException;
 use craft\events\RegisterMigratorEvent;
-use craft\helpers\ArrayHelper;
+use craft\helpers\Arr;
 use craft\helpers\FileHelper;
 use yii\base\ErrorException;
 use yii\base\InvalidArgumentException;
@@ -148,9 +148,10 @@ class MigrateController extends BaseMigrateController
         $options = $this->traitOptions($actionID);
 
         // Remove options we end up overriding
-        ArrayHelper::removeValue($options, 'migrationPath');
-        ArrayHelper::removeValue($options, 'migrationNamespaces');
-        ArrayHelper::removeValue($options, 'compact');
+        Arr::forget($options, array_search('migration', $options));
+        Arr::forget($options, array_search('migrationPath', $options));
+        Arr::forget($options, array_search('migrationNamespaces', $options));
+        Arr::forget($options, array_search('compact', $options));
 
         if ($actionID === 'all') {
             $options[] = 'noBackup';
