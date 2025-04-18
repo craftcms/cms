@@ -15,6 +15,7 @@ use Illuminate\Support\Collection;
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
+ * @deprecated in 5.x. `craft\helpers\Arr` should be used instead.
  */
 class ArrayHelper extends \yii\helpers\ArrayHelper
 {
