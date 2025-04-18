@@ -10,12 +10,12 @@ use craft\db\Query;
 use craft\db\Table;
 use craft\elements\Entry;
 use craft\fields\Matrix;
+use craft\helpers\Arr;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Json;
 use craft\models\EntryType;
 use craft\models\FieldLayout;
 use craft\services\ProjectConfig;
-use Illuminate\Support\Arr;
 use yii\db\Exception as DbException;
 use yii\helpers\Inflector;
 

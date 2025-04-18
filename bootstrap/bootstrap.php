@@ -8,6 +8,7 @@
  */
 
 use craft\helpers\App;
+use craft\helpers\Arr;
 use craft\helpers\ArrayHelper;
 use craft\helpers\FileHelper;
 use craft\services\Config;
@@ -314,7 +315,7 @@ $components = [
     'config' => $configService,
 ];
 
-$config = ArrayHelper::merge(
+$config = Arr::merge(
     [
         'vendorPath' => $vendorPath,
         'env' => $environment,
@@ -324,7 +325,7 @@ $config = ArrayHelper::merge(
     require $srcPath . DIRECTORY_SEPARATOR . 'config' . DIRECTORY_SEPARATOR . "app.{$appType}.php"
 );
 
-$localConfig = ArrayHelper::merge(
+$localConfig = Arr::merge(
     $configService->getConfigFromFile('app'),
     $configService->getConfigFromFile("app.{$appType}")
 );
@@ -338,7 +339,7 @@ if ($safeMode) {
     ArrayHelper::remove($localConfig, 'container');
 }
 
-$config = ArrayHelper::merge($config, $localConfig);
+$config = Arr::merge($config, $localConfig);
 
 if (function_exists('craft_modify_app_config')) {
     craft_modify_app_config($config, $appType);

@@ -8,7 +8,7 @@
 namespace craft\web;
 
 use Craft;
-use craft\helpers\ArrayHelper;
+use craft\helpers\Arr;
 use craft\helpers\StringHelper;
 use craft\validators\HandleValidator;
 
@@ -101,7 +101,7 @@ class UrlRule extends \yii\web\UrlRule
             }
 
             if (isset($result[1]['variables']['variables'])) {
-                $result[1]['variables'] = ArrayHelper::merge($result[1]['variables'], $result[1]['variables']['variables']);
+                $result[1]['variables'] = Arr::merge($result[1]['variables'], $result[1]['variables']['variables']);
                 unset($result[1]['variables']['variables']);
             }
 

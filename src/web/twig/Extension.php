@@ -19,6 +19,7 @@ use craft\elements\ElementCollection;
 use craft\elements\User;
 use craft\errors\AssetException;
 use craft\helpers\App;
+use craft\helpers\Arr;
 use craft\helpers\ArrayHelper;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\Db;
@@ -65,7 +66,6 @@ use DateInterval;
 use DateTime;
 use DateTimeInterface;
 use DateTimeZone;
-use Illuminate\Support\Arr;
 use Illuminate\Support\Collection;
 use IteratorAggregate;
 use Money\Money;
@@ -1344,7 +1344,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
         }
 
         if ($recursive) {
-            return ArrayHelper::merge($arr1, $arr2);
+            return Arr::merge($arr1, $arr2);
         }
 
         return CoreExtension::merge($arr1, $arr2);

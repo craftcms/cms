@@ -5,6 +5,7 @@ namespace craft\base\conditions;
 use Craft;
 use craft\base\Component;
 use craft\events\RegisterConditionRulesEvent;
+use craft\helpers\Arr;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Html;
 use craft\helpers\Json;
@@ -570,7 +571,7 @@ JS,
         );
 
         return
-            Html::button(Html::encode($rule?->getLabel() ?? $this->addRuleLabel), ArrayHelper::merge([
+            Html::button(Html::encode($rule?->getLabel() ?? $this->addRuleLabel), Arr::merge([
                 'id' => $buttonId,
                 'class' => ['btn', 'menubtn', 'wrap'],
                 'autofocus' => $rule?->getAutofocus(),

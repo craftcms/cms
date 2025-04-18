@@ -25,11 +25,11 @@ use craft\fieldlayoutelements\LineBreak;
 use craft\fieldlayoutelements\Markdown;
 use craft\fieldlayoutelements\Template;
 use craft\fieldlayoutelements\Tip;
+use craft\helpers\Arr;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Html;
 use craft\helpers\StringHelper;
 use Generator;
-use Illuminate\Support\Arr;
 use yii\base\InvalidArgumentException;
 use yii\base\InvalidConfigException;
 

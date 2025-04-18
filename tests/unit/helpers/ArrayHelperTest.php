@@ -8,6 +8,7 @@
 namespace crafttests\unit\helpers;
 
 use Codeception\Test\Unit;
+use craft\helpers\Arr;
 use craft\helpers\ArrayHelper;
 use craft\test\TestCase;
 use stdClass;
@@ -31,28 +32,56 @@ class ArrayHelperTest extends TestCase
         self::assertSame($expected, ArrayHelper::toArray($object));
     }
 
-    /**
-     * @dataProvider prependDataProvider
-     * @param array $expected
-     * @param array $array
-     * @param array $values
-     */
-    public function testPrepend(array $expected, array $array, array $values): void
+    public function testMerge(): void
     {
-        ArrayHelper::prepend($array, ...$values);
-        self::assertSame($expected, $array);
-    }
+        $a = [
+            'name' => 'Yii',
+            'version' => '1.0',
+            'options' => [
+                'namespace' => false,
+                'unittest' => false,
+            ],
+            'features' => [
+                'mvc',
+            ],
+        ];
+        $b = [
+            'version' => '1.1',
+            'options' => [
+                'unittest' => true,
+            ],
+            'features' => [
+                'gii',
+            ],
+        ];
+        $c = [
+            'version' => '2.0',
+            'options' => [
+                'namespace' => true,
+            ],
+            'features' => [
+                'debug',
+            ],
+            'foo',
+        ];
 
-    /**
-     * @dataProvider appendDataProvider
-     * @param array $expected
-     * @param array $array
-     * @param array $values
-     */
-    public function testAppend(array $expected, array $array, array $values): void
-    {
-        ArrayHelper::append($array, ...$values);
-        self::assertSame($expected, $array);
+        $result = Arr::merge($a, $b, $c);
+        $expected = [
+            'name' => 'Yii',
+            'version' => '2.0',
+            'options' => [
+                'namespace' => true,
+                'unittest' => true,
+            ],
+            'features' => [
+                'mvc',
+                'gii',
+                'debug',
+            ],
+            'foo',
+        ];
+
+        self::assertSame($expected, $result);
     }
 
     /**

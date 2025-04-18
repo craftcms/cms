@@ -15,6 +15,7 @@ use craft\events\FormActionsEvent;
 use craft\events\RegisterCpNavItemsEvent;
 use craft\events\RegisterCpSettingsEvent;
 use craft\helpers\App;
+use craft\helpers\Arr;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Assets;
 use craft\helpers\Cp as CpHelper;
@@ -971,7 +972,7 @@ class Cp extends Component
     public function getTemplateSuggestions(): array
     {
         // Get all the template files sorted by path length
-        $roots = ArrayHelper::merge([
+        $roots = Arr::merge([
             '' => [Craft::$app->getPath()->getSiteTemplatesPath()],
         ], Craft::$app->getView()->getSiteTemplateRoots());
 

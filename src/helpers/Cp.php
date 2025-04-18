@@ -358,7 +358,7 @@ class Cp
 
         $color = $component instanceof Colorable ? $component->getColor() : null;
 
-        $attributes = ArrayHelper::merge([
+        $attributes = Arr::merge([
             'id' => $config['id'],
             'class' => [
                 'chip',
@@ -536,7 +536,7 @@ class Cp
             'sortable' => false,
         ];
 
-        $config['attributes'] = ArrayHelper::merge(
+        $config['attributes'] = Arr::merge(
             self::baseElementAttributes($element, $config),
             [
                 'data' => array_filter([
@@ -660,7 +660,7 @@ JS, [
             $classes[] = 'error';
         }
 
-        $attributes = ArrayHelper::merge(
+        $attributes = Arr::merge(
             self::baseElementAttributes($element, $config),
             [
                 'class' => $classes,
@@ -986,7 +986,7 @@ JS, [
         $user = Craft::$app->getUser()->getIdentity();
         $editable = $user && $elementsService->canView($element, $user);
 
-        return ArrayHelper::merge(
+        return Arr::merge(
             Html::normalizeTagAttributes($element->getHtmlAttributes($config['context'])),
             [
                 'id' => $config['id'],
@@ -1681,7 +1681,7 @@ JS, [
         }
 
         return
-            Html::beginTag('div', ArrayHelper::merge(
+            Html::beginTag('div', Arr::merge(
                 [
                     'class' => $fieldClass,
                     'id' => $fieldId,
@@ -1712,7 +1712,7 @@ JS, [
                     Html::beginTag('div', ['class' => 'heading']) .
                     ($config['headingPrefix'] ?? '') .
                     ($label
-                        ? Html::tag($fieldset ? 'legend' : 'label', $labelHtml, ArrayHelper::merge([
+                        ? Html::tag($fieldset ? 'legend' : 'label', $labelHtml, Arr::merge([
                             'id' => $labelId,
                             'class' => $config['labelClass'] ?? null,
                             'for' => !$fieldset ? $id : null,
@@ -1738,7 +1738,7 @@ JS, [
                 )
                 : '') .
             ($instructionsPosition === 'before' ? $instructionsHtml : '') .
-            Html::tag('div', $input, ArrayHelper::merge(
+            Html::tag('div', $input, Arr::merge(
                 [
                     'class' => array_filter([
                         'input',
@@ -3065,7 +3065,7 @@ JS;
         array $attributes = [],
     ): string {
         if ($element instanceof BaseField) {
-            $attributes = ArrayHelper::merge($attributes, [
+            $attributes = Arr::merge($attributes, [
                 'data' => [
                     'keywords' => $forLibrary ? implode(' ', array_map('mb_strtolower', $element->keywords())) : false,
                 ],
@@ -3079,7 +3079,7 @@ JS;
             }
         }
 
-        $attributes = ArrayHelper::merge($attributes, [
+        $attributes = Arr::merge($attributes, [
             'class' => array_filter([
                 'fld-element',
                 $forLibrary ? 'unused' : null,

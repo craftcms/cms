@@ -7,7 +7,7 @@
 
 namespace crafttests\unit\validators;
 
-use craft\helpers\ArrayHelper;
+use craft\helpers\Arr;
 use craft\test\mockclasses\models\ExampleModel;
 use craft\test\TestCase;
 use craft\validators\LanguageValidator;
@@ -96,7 +96,7 @@ class LanguageValidatorTest extends TestCase
             ];
         }
 
-        return ArrayHelper::merge($returnArray, [
+        return Arr::merge($returnArray, [
             [true, 'en-US'],
             [true, 'EN-US'],
             [false, 'notalang'],

@@ -9,10 +9,10 @@ namespace craft\elements;
 
 use Craft;
 use craft\base\ElementInterface;
+use craft\helpers\Arr;
 use craft\helpers\ArrayHelper;
 use craft\helpers\ElementHelper;
 use Illuminate\Contracts\Support\Arrayable;
-use Illuminate\Support\Arr;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Enumerable;
 use Twig\Markup;

@@ -15,12 +15,12 @@ use craft\base\InlineEditableFieldInterface;
 use craft\base\MergeableFieldInterface;
 use craft\elements\Entry;
 use craft\fields\data\ColorData;
+use craft\helpers\Arr;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Cp;
 use craft\helpers\Html;
 use craft\helpers\StringHelper;
 use craft\validators\ColorValidator;
-use Illuminate\Support\Arr;
 use yii\db\Schema;
 
 /**

@@ -567,7 +567,7 @@ class EntryQuery extends ElementQuery implements NestedElementQueryInterface
             return $this;
         }
 
-        if (ArrayHelper::isTraversable($value)) {
+        if (is_iterable($value)) {
             $collection = Collection::make($value);
             if ($collection->every(fn($v) => $v instanceof UserGroup)) {
                 $this->authorGroupId = $collection->map(fn(UserGroup $g) => $g->id)->all();

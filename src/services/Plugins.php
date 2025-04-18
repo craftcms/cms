@@ -18,6 +18,7 @@ use craft\errors\InvalidLicenseKeyException;
 use craft\errors\InvalidPluginException;
 use craft\events\PluginEvent;
 use craft\helpers\App;
+use craft\helpers\Arr;
 use craft\helpers\ArrayHelper;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\Db;
@@ -905,7 +906,7 @@ class Plugins extends Component
         }
 
         // Merge in the plugin’s dynamic config
-        $config = ArrayHelper::merge($config, $class::config());
+        $config = Arr::merge($config, $class::config());
 
         // Is it installed?
         if ($info !== null) {
@@ -929,7 +930,7 @@ class Plugins extends Component
 
             // Merge in the custom config, if there is one
             if (isset($this->pluginConfigs[$handle])) {
-                $config = ArrayHelper::merge($config, $this->pluginConfigs[$handle]);
+                $config = Arr::merge($config, $this->pluginConfigs[$handle]);
             }
         }
 

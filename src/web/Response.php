@@ -8,7 +8,7 @@
 namespace craft\web;
 
 use Craft;
-use craft\helpers\ArrayHelper;
+use craft\helpers\Arr;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\Session;
 use craft\helpers\UrlHelper;
@@ -38,12 +38,12 @@ class Response extends \yii\web\Response
      *
      * ```php
      * use craft\helpers\App;
-     * use craft\helpers\ArrayHelper;
+     * use craft\helpers\Arr;
      * use craft\web\Response;
      *
      * return [
      *     'components' => [
-     *         'response' => fn() => Craft::createObject(ArrayHelper::merge(
+     *         'response' => fn() => Craft::createObject(Arr::merge(
      *             App::webResponseConfig(),
      *             [
      *                 'defaultFormatters' => [
@@ -322,7 +322,7 @@ class Response extends \yii\web\Response
      */
     protected function defaultFormatters(): array
     {
-        return ArrayHelper::merge(
+        return Arr::merge(
             parent::defaultFormatters(),
             [
                 self::FORMAT_CSV => [

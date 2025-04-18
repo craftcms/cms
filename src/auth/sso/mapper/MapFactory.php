@@ -8,7 +8,7 @@
 namespace craft\auth\sso\mapper;
 
 use Craft;
-use craft\helpers\ArrayHelper;
+use craft\helpers\Arr;
 use craft\helpers\Typecast;
 use yii\base\InvalidConfigException;
 
@@ -38,7 +38,7 @@ class MapFactory
         } else {
             // Apply defaults?
             if (is_array($mapper)) {
-                $mapper = ArrayHelper::merge(
+                $mapper = Arr::merge(
                     [
                         'class' => $defaultClass,
                     ],

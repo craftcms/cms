@@ -684,7 +684,7 @@ class Assets
             ];
 
             // Merge with the extraFileKinds setting
-            self::$_fileKinds = ArrayHelper::merge(self::$_fileKinds, Craft::$app->getConfig()->getGeneral()->extraFileKinds);
+            self::$_fileKinds = Arr::merge(self::$_fileKinds, Craft::$app->getConfig()->getGeneral()->extraFileKinds);
 
             // Fire a 'registerFileKinds' event
             if (Event::hasHandlers(self::class, self::EVENT_REGISTER_FILE_KINDS)) {

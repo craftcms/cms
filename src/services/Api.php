@@ -9,7 +9,7 @@ namespace craft\services;
 
 use Craft;
 use craft\helpers\Api as ApiHelper;
-use craft\helpers\ArrayHelper;
+use craft\helpers\Arr;
 use craft\helpers\Json;
 use craft\helpers\Session;
 use GuzzleHttp\Client;
@@ -122,7 +122,7 @@ class Api extends Component
         // Close the PHP session in case this takes a while
         Session::close();
 
-        $options = ArrayHelper::merge($options, [
+        $options = Arr::merge($options, [
             'headers' => ApiHelper::headers(),
         ]);
 

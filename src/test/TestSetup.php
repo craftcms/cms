@@ -14,6 +14,7 @@ use craft\db\Connection;
 use craft\db\Migration;
 use craft\db\MigrationManager;
 use craft\errors\MigrationException;
+use craft\helpers\Arr;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Db;
 use craft\helpers\FileHelper;
@@ -237,7 +238,7 @@ class TestSetup
 
         $configService = self::$_configService ?? self::createConfigService();
 
-        $config = ArrayHelper::merge(
+        $config = Arr::merge(
             [
                 'components' => [
                     'config' => $configService,
@@ -257,7 +258,7 @@ class TestSetup
 
         $class = self::appClass($appType);
 
-        return ArrayHelper::merge($config, [
+        return Arr::merge($config, [
             'class' => $class,
             'id' => 'craft-test',
             'env' => 'test',
@@ -608,7 +609,7 @@ class TestSetup
         $appType = self::appType();
 
         if ($appType === 'web') {
-            $map = ArrayHelper::merge($map, [
+            $map = Arr::merge($map, [
                 [Request::class, ['getRequest', 'request']],
                 [Session::class, ['getSession', 'session']],
                 [ErrorHandler::class, ['getErrorHandler', 'errorHandler']],
@@ -618,7 +619,7 @@ class TestSetup
         }
 
         if ($appType === 'console') {
-            $map = ArrayHelper::merge($map, [
+            $map = Arr::merge($map, [
                 [\craft\console\Request::class, ['getRequest', 'request']],
                 [\yii\console\ErrorHandler::class, ['getErrorHandler', 'errorHandler']],
                 [\yii\console\Response::class, ['getResponse', 'response']],

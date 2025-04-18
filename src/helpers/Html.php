@@ -391,7 +391,7 @@ class Html extends \yii\helpers\Html
         // Normalize the attributes & merge with the old attributes
         $attributes = static::normalizeTagAttributes($attributes);
         $oldAttributes = static::parseTagAttributes($tag, 0, $start, $end, true);
-        $attributes = ArrayHelper::merge($oldAttributes, $attributes);
+        $attributes = Arr::merge($oldAttributes, $attributes);
 
         // Ensure we don't have any duplicate classes
         if (isset($attributes['class']) && is_array($attributes['class'])) {

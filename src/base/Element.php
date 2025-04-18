@@ -69,6 +69,7 @@ use craft\fieldlayoutelements\BaseField;
 use craft\fieldlayoutelements\CustomField;
 use craft\gql\interfaces\Element as ElementGqlType;
 use craft\helpers\App;
+use craft\helpers\Arr;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Cp;
 use craft\helpers\Db;
@@ -5685,7 +5686,7 @@ JS, [
      */
     public function getHtmlAttributes(string $context): array
     {
-        $htmlAttributes = ArrayHelper::merge($this->htmlAttributes($context), [
+        $htmlAttributes = Arr::merge($this->htmlAttributes($context), [
             'data' => [
                 'disallow-status' => !$this->showStatusField(),
             ],

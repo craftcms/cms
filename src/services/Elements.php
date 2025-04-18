@@ -51,6 +51,7 @@ use craft\events\MergeElementsEvent;
 use craft\events\MultiElementActionEvent;
 use craft\events\RegisterComponentTypesEvent;
 use craft\fieldlayoutelements\CustomField;
+use craft\helpers\Arr;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Component as ComponentHelper;
 use craft\helpers\DateTimeHelper;
@@ -1827,7 +1828,7 @@ class Elements extends Component
 
         // Note: must use Craft::configure() rather than setAttributes() here,
         // so we're not limited to whatever attributes() returns
-        Craft::configure($mainClone, ArrayHelper::merge(
+        Craft::configure($mainClone, Arr::merge(
             $newAttributes,
             $siteAttributes[$mainClone->siteId] ?? [],
         ));
@@ -1990,7 +1991,7 @@ class Elements extends Component
 
                         // Note: must use Craft::configure() rather than setAttributes() here,
                         // so we're not limited to whatever attributes() returns
-                        Craft::configure($siteClone, ArrayHelper::merge(
+                        Craft::configure($siteClone, Arr::merge(
                             $newAttributes,
                             $siteAttributes[$siteElement->siteId] ?? [],
                         ));

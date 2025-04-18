@@ -8,7 +8,7 @@
 use craft\base\FieldInterface;
 use craft\behaviors\CustomFieldBehavior;
 use craft\helpers\App;
-use craft\helpers\ArrayHelper;
+use craft\helpers\Arr;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\FileHelper;
 use craft\helpers\StringHelper;
@@ -398,7 +398,7 @@ EOD;
         $generalConfig = $configService->getGeneral();
 
         // Merge everything together
-        $guzzleConfig = ArrayHelper::merge($defaultConfig, $guzzleConfig, $config);
+        $guzzleConfig = Arr::merge($defaultConfig, $guzzleConfig, $config);
 
         if ($generalConfig->httpProxy) {
             $guzzleConfig['proxy'] = $generalConfig->httpProxy;
