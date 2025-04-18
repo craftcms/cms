@@ -12,6 +12,7 @@ use craft\base\RequestTrait;
 use craft\config\GeneralConfig;
 use craft\errors\SiteNotFoundException;
 use craft\helpers\App;
+use craft\helpers\Arr;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Session as SessionHelper;
 use craft\helpers\StringHelper;
@@ -1509,7 +1510,7 @@ class Request extends \yii\web\Request
      */
     private function _segments(string $path): array
     {
-        return array_values(ArrayHelper::filterEmptyStringsFromArray(explode('/', $path)));
+        return array_values(Arr::whereNotEmpty(explode('/', $path)));
     }
 
     /**

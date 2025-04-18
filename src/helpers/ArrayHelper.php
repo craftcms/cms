@@ -50,7 +50,7 @@ class ArrayHelper extends \yii\helpers\ArrayHelper
             }
 
             // Remove any empty elements and reset the keys
-            return array_values(static::filterEmptyStringsFromArray($object));
+            return array_values(Arr::whereNotEmpty($object));
         }
 
         return parent::toArray($object, $properties, $recursive);

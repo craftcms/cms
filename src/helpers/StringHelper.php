@@ -1381,7 +1381,7 @@ class StringHelper extends \yii\helpers\StringHelper
         // Reference: http://www.regular-expressions.info/unicode.html
         preg_match_all('/[\p{L}\p{N}\p{M}\._-]+/u', $str, $matches);
 
-        return ArrayHelper::filterEmptyStringsFromArray($matches[0]);
+        return Arr::whereNotEmpty($matches[0]);
     }
 
     /**
@@ -1627,7 +1627,7 @@ class StringHelper extends \yii\helpers\StringHelper
     public static function toKebabCase(string $str, string $glue = '-', bool $lower = true, bool $removePunctuation = true): string
     {
         $words = self::toWords($str, $lower, $removePunctuation);
-        $words = ArrayHelper::filterEmptyStringsFromArray(array_map(fn($str) => trim($str, $glue), $words));
+        $words = Arr::whereNotEmpty(array_map(fn($str) => trim($str, $glue), $words));
 
         return implode($glue, $words);
     }

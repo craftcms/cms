@@ -12,7 +12,7 @@ use craft\db\Connection;
 use craft\db\Table;
 use craft\errors\MutexException;
 use craft\helpers\App;
-use craft\helpers\ArrayHelper;
+use craft\helpers\Arr;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\Db;
 use craft\helpers\Json;
@@ -492,7 +492,7 @@ class Queue extends \yii\queue\cli\Queue implements QueueInterface
         $formatter = Craft::$app->getFormatter();
         $job = $this->serializer->unserialize($this->_jobData($result['job']));
 
-        return ArrayHelper::filterEmptyStringsFromArray([
+        return Arr::whereNotEmpty([
             'class' => $job::class,
             'delay' => max(0, $result['timePushed'] + $result['delay'] - time()),
             'status' => $this->_status($result),

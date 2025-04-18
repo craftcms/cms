@@ -570,7 +570,7 @@ class Html extends \yii\helpers\Html
             return $value;
         }
         if (is_string($value)) {
-            return ArrayHelper::filterEmptyStringsFromArray(explode(' ', $value));
+            return Arr::whereNotEmpty(explode(' ', $value));
         }
         throw new InvalidArgumentException('Invalid class value');
     }
@@ -600,7 +600,7 @@ class Html extends \yii\helpers\Html
             }, $value);
 
             // now split the styles string on semicolons
-            $styles = ArrayHelper::filterEmptyStringsFromArray(preg_split('/\s*;\s*/', $value));
+            $styles = Arr::whereNotEmpty(preg_split('/\s*;\s*/', $value));
 
             // and proceed with the array of styles
             $normalized = [];

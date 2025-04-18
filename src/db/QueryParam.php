@@ -7,6 +7,7 @@
 
 namespace craft\db;
 
+use craft\helpers\Arr;
 use craft\helpers\ArrayHelper;
 use DateTime;
 
@@ -84,7 +85,7 @@ final class QueryParam
             }
 
             // Remove any empty elements and reset the keys
-            return array_values(ArrayHelper::filterEmptyStringsFromArray($value));
+            return array_values(Arr::whereNotEmpty($value));
         }
 
         return ArrayHelper::toArray($value);

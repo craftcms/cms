@@ -47,4 +47,14 @@ class Arr extends \Illuminate\Support\Arr
 
         return $res;
     }
+    /**
+     * Filter items where the value is not empty.
+     *
+     * @param  array  $array
+     * @return array
+     */
+    public static function whereNotEmpty(array $array): array
+    {
+        return static::where($array, fn($value) => $value !== '');
+    }
 }

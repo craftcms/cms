@@ -1482,7 +1482,7 @@ class Db
         }
 
         $params = substr($dsn, $pos + 1);
-        foreach (ArrayHelper::filterEmptyStringsFromArray(explode(';', $params)) as $param) {
+        foreach (Arr::whereNotEmpty(explode(';', $params)) as $param) {
             [$n, $v] = array_pad(explode('=', $param, 2), 2, '');
             if ($key === $n) {
                 return $v;

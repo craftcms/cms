@@ -384,7 +384,7 @@ class ArrayHelperTest extends TestCase
      */
     public function testFilterEmptyStringsFromArray(): void
     {
-        self::assertSame([0 => 1, 1 => 2, 4 => null, 5 => 5], ArrayHelper::filterEmptyStringsFromArray([0 => 1, 1 => 2, 3 => '', 4 => null, 5 => 5]));
+        self::assertSame([0 => 1, 1 => 2, 4 => null, 5 => 5], Arr::whereNotEmpty([0 => 1, 1 => 2, 3 => '', 4 => null, 5 => 5]));
     }
 
     /**

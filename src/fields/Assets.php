@@ -1011,7 +1011,7 @@ class Assets extends BaseRelationField
             $subpath = $this->restrictedLocationSubpath;
 
             if ($this->allowSubfolders && $resolveSubtreeDefaultLocation) {
-                $subpath = implode('/', ArrayHelper::filterEmptyStringsFromArray(array_map(fn($segment) => trim($segment, '/'), [
+                $subpath = implode('/', Arr::whereNotEmpty(array_map(fn($segment) => trim($segment, '/'), [
                     $subpath ?? '',
                     $this->restrictedDefaultUploadSubpath ?? '',
                 ])));

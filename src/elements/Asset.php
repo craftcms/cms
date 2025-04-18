@@ -770,7 +770,7 @@ class Asset extends Element
                 foreach ($folders as $folder) {
                     $sourcePath = [$baseSourcePathStep];
                     $path = rtrim($baseFolder->path ?? '', '/');
-                    $pathSegs = ArrayHelper::filterEmptyStringsFromArray(explode('/', StringHelper::removeLeft($folder['path'], $baseFolder->path ?? '')));
+                    $pathSegs = Arr::whereNotEmpty(explode('/', StringHelper::removeLeft($folder['path'], $baseFolder->path ?? '')));
                     foreach ($pathSegs as $i => $seg) {
                         $path .= ($path !== '' ? '/' : '') . $seg;
                         if (isset($foldersByPath[$path])) {
@@ -802,7 +802,7 @@ class Asset extends Element
                         'folderId' => $folder->id,
                         'folderPath' => $path,
                         'title' => $folder->name,
-                        'uiLabelPath' => ArrayHelper::filterEmptyStringsFromArray(explode('/', $path)),
+                        'uiLabelPath' => Arr::whereNotEmpty(explode('/', $path)),
                         'sourcePath' => $sourcePath,
                     ]);
                 }
@@ -1441,7 +1441,7 @@ class Asset extends Element
         $uri = "assets/$volume->handle";
 
         if ($this->folderPath !== null) {
-            $subfolders = ArrayHelper::filterEmptyStringsFromArray(explode('/', $this->folderPath));
+            $subfolders = Arr::whereNotEmpty(explode('/', $this->folderPath));
             foreach ($subfolders as $subfolder) {
                 $uri .= "/$subfolder";
                 $crumbs[] = [
@@ -3062,7 +3062,7 @@ JS;
             ];
         }
         if ($this->folderPath) {
-            $subfolders = ArrayHelper::filterEmptyStringsFromArray(explode('/', $this->folderPath));
+            $subfolders = Arr::whereNotEmpty(explode('/', $this->folderPath));
             foreach ($subfolders as $subfolder) {
                 if (!$isTemp) {
                     $uri .= "/$subfolder";

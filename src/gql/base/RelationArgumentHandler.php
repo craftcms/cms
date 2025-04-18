@@ -60,8 +60,8 @@ abstract class RelationArgumentHandler extends ArgumentHandler
         $relationParams = [];
         foreach ($argumentValue as &$value) {
             $relationParams[] = array_filter([
-                'field' => Arr::pull($value, 'relatedViaField'),
-                'site' => Arr::pull($value, 'relatedViaSite'),
+                'field' => is_array($value) ? Arr::pull($value, 'relatedViaField') : null,
+                'site' => is_array($value) ? Arr::pull($value, 'relatedViaSite') : null,
             ]);
         }
 

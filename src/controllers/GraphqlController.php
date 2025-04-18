@@ -11,7 +11,7 @@ use Craft;
 use craft\errors\GqlException;
 use craft\errors\MissingComponentException;
 use craft\helpers\App;
-use craft\helpers\ArrayHelper;
+use craft\helpers\Arr;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\Gql as GqlHelper;
 use craft\helpers\Json;
@@ -91,7 +91,7 @@ class GraphqlController extends Controller
         $generalConfig = Craft::$app->getConfig()->getGeneral();
         if (is_array($generalConfig->allowedGraphqlOrigins)) {
             if (($origins = $this->request->getOrigin()) !== null) {
-                $origins = ArrayHelper::filterEmptyStringsFromArray(array_map('trim', explode(',', $origins)));
+                $origins = Arr::whereNotEmpty(array_map('trim', explode(',', $origins)));
                 foreach ($origins as $origin) {
                     if (in_array($origin, $generalConfig->allowedGraphqlOrigins)) {
                         $headers->setDefault('Access-Control-Allow-Origin', $origin);
