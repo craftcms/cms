@@ -405,7 +405,7 @@ class ArrayHelperTest extends TestCase
      */
     public function testFirstValue(mixed $expected, array $array): void
     {
-        self::assertSame($expected, ArrayHelper::firstValue($array));
+        self::assertSame($expected, Arr::first($array));
     }
 
     /**

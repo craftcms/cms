@@ -18,6 +18,7 @@ use craft\errors\SiteNotFoundException;
 use craft\events\DefineSourceSortOptionsEvent;
 use craft\events\DefineSourceTableAttributesEvent;
 use craft\fieldlayoutelements\CustomField;
+use craft\helpers\Arr;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Cp;
 use craft\helpers\StringHelper;
@@ -521,6 +522,9 @@ class ElementSources extends Component
         if (empty($sourceConfigs)) {
             return null;
         }
-        return ArrayHelper::firstWhere($sourceConfigs, fn($s) => $s['type'] !== self::TYPE_HEADING && $s['key'] === $sourceKey);
+        return Arr::first(
+            $sourceConfigs,
+            fn($s) => $s['type'] !== self::TYPE_HEADING && $s['key'] === $sourceKey
+        );
     }
 }

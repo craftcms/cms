@@ -23,6 +23,7 @@ use craft\enums\Color;
 use craft\enums\PropagationMethod;
 use craft\events\BulkElementsEvent;
 use craft\events\DuplicateNestedElementsEvent;
+use craft\helpers\Arr;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Cp;
 use craft\helpers\Db;
@@ -623,7 +624,7 @@ class NestedElementManager extends Component
                 $settings['createAttributes'] = $config['createAttributes'];
                 if (ArrayHelper::isIndexed($settings['createAttributes'])) {
                     if (count($settings['createAttributes']) === 1) {
-                        $settings['createAttributes'] = ArrayHelper::firstValue($settings['createAttributes'])['attributes'];
+                        $settings['createAttributes'] = Arr::first($settings['createAttributes'])['attributes'];
                     } else {
                         $settings['createAttributes'] = array_map(function(array $attributes) {
                             if (isset($attributes['icon'])) {

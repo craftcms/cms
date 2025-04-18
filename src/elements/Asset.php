@@ -940,7 +940,7 @@ class Asset extends Element
             // and we already know it only has one token
             /** @var SearchQuery $searchQuery */
             $searchQuery = $assetQuery->search;
-            $token = ArrayHelper::firstValue($searchQuery->getTokens());
+            $token = Arr::first($searchQuery->getTokens());
             $query->andWhere(self::_buildFolderQuerySearchCondition($token));
         }
 

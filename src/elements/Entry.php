@@ -341,7 +341,7 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
 
         // see if it's limited to one section
         /** @var SectionConditionRule|null $sectionRule */
-        $sectionRule = ArrayHelper::firstWhere(
+        $sectionRule = Arr::first(
             $config['condition']['conditionRules'],
             fn(array $rule) => $rule['class'] === SectionConditionRule::class,
         );
@@ -356,7 +356,7 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
 
         // see if it specifies any entry types
         /** @var TypeConditionRule|null $entryTypeRule */
-        $entryTypeRule = ArrayHelper::firstWhere(
+        $entryTypeRule = Arr::first(
             $config['condition']['conditionRules'],
             fn(array $rule) => $rule['class'] === TypeConditionRule::class,
         );
@@ -1585,7 +1585,7 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
     {
         if (!isset($this->_type)) {
             if (isset($this->_typeId)) {
-                $entryType = ArrayHelper::firstWhere(
+                $entryType = Arr::first(
                     $this->getAvailableEntryTypes(false),
                     fn(EntryType $entryType) => $entryType->id === $this->_typeId,
                 );
@@ -1599,7 +1599,7 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
                 }
             } else {
                 // Default to the section/field's first entry type
-                $entryType = ArrayHelper::firstValue($this->getAvailableEntryTypes());
+                $entryType = Arr::first($this->getAvailableEntryTypes());
                 if (!$entryType) {
                     throw new InvalidConfigException('Entry is missing its type ID');
                 }

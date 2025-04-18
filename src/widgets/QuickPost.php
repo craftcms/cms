@@ -10,7 +10,7 @@ namespace craft\widgets;
 use Craft;
 use craft\base\Widget;
 use craft\elements\Entry;
-use craft\helpers\ArrayHelper;
+use craft\helpers\Arr;
 use craft\helpers\Html;
 use craft\helpers\StringHelper;
 use craft\models\EntryType;
@@ -249,14 +249,14 @@ JS, [
         }
 
         $possibleSiteIds = array_intersect($editableSiteIds, $this->section()->getSiteIds());
-        return ArrayHelper::firstValue($possibleSiteIds);
+        return Arr::first($possibleSiteIds);
     }
 
     private function section(): ?Section
     {
         if (!isset($this->_section)) {
             if (isset($this->section)) {
-                $section = ArrayHelper::firstWhere(
+                $section = Arr::first(
                     Craft::$app->getEntries()->getEditableSections(),
                     fn(Section $section) => $section->id === $this->section,
                 );
@@ -274,7 +274,7 @@ JS, [
         if (!isset($this->_entryType)) {
             $section = $this->section();
             if ($section && isset($this->entryType)) {
-                $entryType = ArrayHelper::firstWhere(
+                $entryType = Arr::first(
                     $section->getEntryTypes(),
                     fn(EntryType $entryType) => $entryType->id === $this->entryType,
                 );

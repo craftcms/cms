@@ -25,6 +25,7 @@ use craft\events\InvalidUserTokenEvent;
 use craft\events\LoginFailureEvent;
 use craft\events\UserEvent;
 use craft\helpers\App;
+use craft\helpers\Arr;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Assets;
 use craft\helpers\Db;
@@ -1647,7 +1648,7 @@ JS);
             if (!empty($groups)) {
                 $user->setGroups($groups);
             }
-            
+
             // keep track of which site they registered from
             // (do this even if it's not a multi-site install, in case it becomes one later.)
             $user->affiliatedSiteId = Craft::$app->getSites()->getCurrentSite()->id;
@@ -2423,7 +2424,7 @@ JS);
 
         if ($methodClass) {
             /** @var AuthMethodInterface|null $method */
-            $method = ArrayHelper::firstWhere(
+            $method = Arr::first(
                 $activeMethods,
                 fn(AuthMethodInterface $method) => $method::class === $methodClass,
             );

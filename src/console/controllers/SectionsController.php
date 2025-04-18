@@ -10,6 +10,7 @@ namespace craft\console\controllers;
 use Craft;
 use craft\console\Controller;
 use craft\elements\Entry;
+use craft\helpers\Arr;
 use craft\helpers\ArrayHelper;
 use craft\helpers\StringHelper;
 use craft\models\CategoryGroup_SiteSettings;
@@ -326,7 +327,7 @@ class SectionsController extends Controller
         try {
             $this->do('Saving the section', function() use ($section, $entriesService) {
                 if (!$entriesService->saveSection($section)) {
-                    $message = ArrayHelper::firstValue($section->getFirstErrors()) ?? 'Unable to save the section';
+                    $message = Arr::first($section->getFirstErrors()) ?? 'Unable to save the section';
                     throw new InvalidConfigException($message);
                 }
             });
@@ -361,7 +362,7 @@ class SectionsController extends Controller
 
         $this->do('Deleting section', function() use ($sectionsService, $section) {
             if (!$sectionsService->deleteSection($section)) {
-                $message = ArrayHelper::firstValue($section->getFirstErrors()) ?? 'Unable to delete the section.';
+                $message = Arr::first($section->getFirstErrors()) ?? 'Unable to delete the section.';
                 throw new InvalidConfigException($message);
             }
         });

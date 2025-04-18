@@ -94,7 +94,7 @@ class m230524_220029_global_entry_types extends Migration
                 $originalHandle = $entryTypeConfig['handle'];
 
                 // find the section that was using it
-                $sectionConfig = ArrayHelper::firstWhere(
+                $sectionConfig = Arr::first(
                     $sectionConfigs,
                     fn(array $config) => ArrayHelper::contains(
                         $config['entryTypes'] ?? [],

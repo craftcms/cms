@@ -13,6 +13,7 @@ use craft\db\Query;
 use craft\db\Table;
 use craft\elements\Entry;
 use craft\elements\User;
+use craft\helpers\Arr;
 use craft\helpers\ArrayHelper;
 use craft\records\User as UserRecord;
 use craft\services\Gc;
@@ -125,7 +126,7 @@ class GcTest extends TestCase
             ->all();
 
         self::assertCount($remainingCount, $items);
-        self::assertSame((string)ArrayHelper::firstValue($items)['id'], $leftoverId);
+        self::assertSame((string)Arr::first($items)['id'], $leftoverId);
     }
 
     /**
