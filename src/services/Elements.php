@@ -4335,7 +4335,7 @@ class Elements extends Component
             $user->can("editSite:{$propagateToSite?->uid}") &&
             $siteElement->canSave($user)
         ) {
-            $queryParams = ArrayHelper::without(Craft::$app->getRequest()->getQueryParams(), 'site');
+            $queryParams = Arr::except(Craft::$app->getRequest()->getQueryParams(), 'site');
             $url = UrlHelper::url($siteElement->getCpEditUrl(), $queryParams + ['prevalidate' => 1]);
             $message = Html::beginTag('a', [
                 'href' => $url,

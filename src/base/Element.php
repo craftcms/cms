@@ -1479,7 +1479,7 @@ abstract class Element extends Component implements ElementInterface
         // Make sure ID is listed first
         $sortOptions = [
             'id' => Craft::t('app', 'ID'),
-            ...ArrayHelper::without($sortOptions, 'id'),
+            ...Arr::except($sortOptions, 'id'),
         ];
 
         // Fire a 'registerSortOptions' event

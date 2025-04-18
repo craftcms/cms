@@ -14,6 +14,7 @@ use craft\db\Connection;
 use craft\db\Table;
 use craft\errors\DbConnectException;
 use craft\helpers\App;
+use craft\helpers\Arr;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Console;
 use craft\helpers\FileHelper;
@@ -345,7 +346,7 @@ EOD;
 
         $db = Craft::$app->getDb();
         $db->close();
-        Craft::configure($db, ArrayHelper::without(App::dbConfig($dbConfig), 'class'));
+        Craft::configure($db, Arr::except(App::dbConfig($dbConfig), 'class'));
 
         try {
             $db->open();

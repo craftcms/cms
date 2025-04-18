@@ -430,7 +430,7 @@ class ArrayHelperTest extends TestCase
      */
     public function testWithout(array $expected, array $array, string $key): void
     {
-        self::assertSame($expected, ArrayHelper::without($array, $key));
+        self::assertSame($expected, Arr::except($array, $key));
     }
 
     /**

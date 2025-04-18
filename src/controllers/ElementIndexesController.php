@@ -22,7 +22,7 @@ use craft\elements\conditions\ElementConditionRuleInterface;
 use craft\elements\db\ElementQueryInterface;
 use craft\elements\exporters\Raw;
 use craft\events\ElementActionEvent;
-use craft\helpers\ArrayHelper;
+use craft\helpers\Arr;
 use craft\helpers\Component;
 use craft\helpers\ElementHelper;
 use craft\helpers\Html;
@@ -540,7 +540,7 @@ class ElementIndexesController extends BaseElementsController
         // set attributes and validate everything
         $errors = [];
         foreach ($elements as $element) {
-            $attributes = ArrayHelper::without($data["element-$element->id"], 'fields');
+            $attributes = Arr::except($data["element-$element->id"], 'fields');
             if (!empty($attributes)) {
                 $scenario = $element->getScenario();
                 $element->setScenario(Element::SCENARIO_LIVE);
