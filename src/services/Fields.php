@@ -56,6 +56,7 @@ use craft\fields\Tags as TagsField;
 use craft\fields\Time;
 use craft\fields\Users as UsersField;
 use craft\helpers\AdminTable;
+use craft\helpers\Arr;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Component as ComponentHelper;
 use craft\helpers\Cp;
@@ -898,7 +899,7 @@ class Fields extends Component
 
             $this->_layouts = new MemoizableArray($layoutConfigs, function($config) {
                 if (array_key_exists('config', $config)) {
-                    $nestedConfig = ArrayHelper::remove($config, 'config');
+                    $nestedConfig = Arr::pull($config, 'config');
                     if ($nestedConfig) {
                         $config += is_string($nestedConfig) ? JsonHelper::decode($nestedConfig) : $nestedConfig;
                     }
@@ -950,13 +951,13 @@ class Fields extends Component
             }
 
             if (array_key_exists('settings', $tabResult)) {
-                $settings = ArrayHelper::remove($tabResult, 'settings');
+                $settings = Arr::pull($tabResult, 'settings');
                 if ($settings) {
                     $tabResult += JsonHelper::decode($settings);
                 }
             }
 
-            $elements = ArrayHelper::remove($tabResult, 'elements');
+            $elements = Arr::pull($tabResult, 'elements');
             if ($elements) {
                 $elements = JsonHelper::decode($elements);
             } else {
@@ -1089,7 +1090,7 @@ class Fields extends Component
      */
     public function createLayoutElement(array $config): FieldLayoutElement
     {
-        $type = ArrayHelper::remove($config, 'type');
+        $type = Arr::pull($config, 'type');
 
         if (!$type || !is_subclass_of($type, FieldLayoutElement::class)) {
             throw new InvalidArgumentException("Invalid field layout element class: $type");

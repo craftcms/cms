@@ -14,7 +14,7 @@ use craft\elements\ElementCollection;
 use craft\elements\User as UserElement;
 use craft\enums\CmsEdition;
 use craft\gql\base\ElementResolver;
-use craft\helpers\ArrayHelper;
+use craft\helpers\Arr;
 use craft\helpers\Gql as GqlHelper;
 use yii\base\UnknownMethodException;
 
@@ -46,12 +46,12 @@ class User extends ElementResolver
         }
 
         if (!GqlHelper::canSchema('usergroups.everyone')) {
-            $groups = ArrayHelper::remove($arguments, 'group');
+            $groups = Arr::pull($arguments, 'group');
             if ($groups) {
                 $query->group($groups);
             }
 
-            $groupIds = ArrayHelper::remove($arguments, 'groupId');
+            $groupIds = Arr::pull($arguments, 'groupId');
             if ($groupIds) {
                 $query->groupId($groupIds);
             }

@@ -31,6 +31,7 @@ use craft\events\AuthenticateUserEvent;
 use craft\events\DefineValueEvent;
 use craft\fieldlayoutelements\users\FullNameField;
 use craft\helpers\App;
+use craft\helpers\Arr;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Cp;
 use craft\helpers\DateTimeHelper;
@@ -1087,7 +1088,7 @@ class User extends Element implements IdentityInterface
                         !$userSession->checkPermission('administrateUsers')
                     ) {
                         // set it as the unverified email instead, and
-                        $values['unverifiedEmail'] = ArrayHelper::remove($values, 'email');
+                        $values['unverifiedEmail'] = Arr::pull($values, 'email');
                     }
                 } else {
                     unset($values['email']);
@@ -2377,7 +2378,7 @@ JS, [
                         ],
                     ]);
                 }
-                
+
                 // no break
             case 'isCredentialed':
                 $value = $this->getIsCredentialed();

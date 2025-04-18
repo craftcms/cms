@@ -11,7 +11,7 @@ use craft\base\ElementInterface;
 use craft\base\Field;
 use craft\elements\Entry;
 use craft\fieldlayoutelements\TitleField;
-use craft\helpers\ArrayHelper;
+use craft\helpers\Arr;
 use craft\helpers\ElementHelper;
 use yii\base\InvalidArgumentException;
 
@@ -38,7 +38,7 @@ class EntryTitleField extends TitleField
      */
     public function __construct($config = [])
     {
-        $this->required = ArrayHelper::remove($config, 'required', $this->required);
+        $this->required = Arr::pull($config, 'required', $this->required);
         unset($config['requirable']);
         parent::__construct($config);
     }

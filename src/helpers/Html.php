@@ -148,7 +148,7 @@ class Html extends \yii\helpers\Html
     public static function csrfInput(array $options = []): string
     {
         $request = Craft::$app->getRequest();
-        $async = ArrayHelper::remove($options, 'async')
+        $async = Arr::pull($options, 'async')
             ?? ($request->getIsSiteRequest() && Craft::$app->getConfig()->getGeneral()->asyncCsrfInputs);
 
         if (!$async) {
@@ -547,7 +547,7 @@ class Html extends \yii\helpers\Html
         }
 
         if (isset($normalized['removeClass'])) {
-            $removeClasses = ArrayHelper::remove($normalized, 'removeClass');
+            $removeClasses = Arr::pull($normalized, 'removeClass');
             $normalized['class'] = array_diff($normalized['class'] ?? [], $removeClasses);
         }
 

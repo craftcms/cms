@@ -31,6 +31,7 @@ use craft\events\DefineValueEvent;
 use craft\events\PopulateElementEvent;
 use craft\events\PopulateElementsEvent;
 use craft\helpers\App;
+use craft\helpers\Arr;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Db;
 use craft\helpers\ElementHelper;
@@ -2320,7 +2321,7 @@ class ElementQuery extends Query implements ElementQueryInterface
         }
 
         // Set the field values
-        $content = ArrayHelper::remove($row, 'content');
+        $content = Arr::pull($row, 'content');
         $row['fieldValues'] = [];
 
         if (!empty($this->customFields) && !empty($content)) {
@@ -2347,9 +2348,9 @@ class ElementQuery extends Query implements ElementQueryInterface
 
             if (!empty($row['draftId'])) {
                 $behaviors['draft'] = new DraftBehavior([
-                    'creatorId' => ArrayHelper::remove($row, 'draftCreatorId'),
-                    'draftName' => ArrayHelper::remove($row, 'draftName'),
-                    'draftNotes' => ArrayHelper::remove($row, 'draftNotes'),
+                    'creatorId' => Arr::pull($row, 'draftCreatorId'),
+                    'draftName' => Arr::pull($row, 'draftName'),
+                    'draftNotes' => Arr::pull($row, 'draftNotes'),
                 ]);
             } else {
                 unset(
@@ -2363,9 +2364,9 @@ class ElementQuery extends Query implements ElementQueryInterface
         if ($this->revisions !== false) {
             if (!empty($row['revisionId'])) {
                 $behaviors['revision'] = new RevisionBehavior([
-                    'creatorId' => ArrayHelper::remove($row, 'revisionCreatorId'),
-                    'revisionNum' => ArrayHelper::remove($row, 'revisionNum'),
-                    'revisionNotes' => ArrayHelper::remove($row, 'revisionNotes'),
+                    'creatorId' => Arr::pull($row, 'revisionCreatorId'),
+                    'revisionNum' => Arr::pull($row, 'revisionNum'),
+                    'revisionNotes' => Arr::pull($row, 'revisionNotes'),
                 ]);
             } else {
                 unset(

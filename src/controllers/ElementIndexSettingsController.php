@@ -11,6 +11,7 @@ use Craft;
 use craft\base\ElementInterface;
 use craft\base\PreviewableFieldInterface;
 use craft\elements\conditions\ElementConditionInterface;
+use craft\helpers\Arr;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Cp;
 use craft\models\UserGroup;
@@ -133,7 +134,7 @@ class ElementIndexSettingsController extends BaseElementsController
             if ($source['type'] === ElementSources::TYPE_CUSTOM) {
                 if (isset($source['condition'])) {
                     /** @var ElementConditionInterface $condition */
-                    $condition = $conditionsService->createCondition(ArrayHelper::remove($source, 'condition'));
+                    $condition = $conditionsService->createCondition(Arr::pull($source, 'condition'));
                     $condition->mainTag = 'div';
                     $condition->name = "sources[{$source['key']}][condition]";
                     $condition->forProjectConfig = true;

@@ -11,7 +11,7 @@ use Craft;
 use craft\base\PluginInterface;
 use craft\errors\InvalidPluginException;
 use craft\errors\MigrateException;
-use craft\helpers\ArrayHelper;
+use craft\helpers\Arr;
 use craft\helpers\FileHelper;
 use craft\models\Updates as UpdatesModel;
 use Throwable;
@@ -223,12 +223,12 @@ class Updates extends Component
     public function runMigrations(array $handles): void
     {
         // Make sure Craft is first
-        if (ArrayHelper::remove($handles, 'craft') !== null) {
+        if (Arr::pull($handles, 'craft') !== null) {
             array_unshift($handles, 'craft');
         }
 
         // Make sure content is last
-        if (ArrayHelper::remove($handles, 'content') !== null) {
+        if (Arr::pull($handles, 'content') !== null) {
             $handles[] = 'content';
         }
 

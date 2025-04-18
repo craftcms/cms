@@ -1820,11 +1820,11 @@ class Elements extends Component
         $mainClone->duplicateOf = $element;
         $mainClone->setCanonicalId(null);
 
-        $behaviors = ArrayHelper::remove($newAttributes, 'behaviors', []);
-        $mainClone->setRevisionNotes(ArrayHelper::remove($newAttributes, 'revisionNotes'));
+        $behaviors = Arr::pull($newAttributes, 'behaviors', []);
+        $mainClone->setRevisionNotes(Arr::pull($newAttributes, 'revisionNotes'));
 
         // Extract any attributes that are meant for other sites
-        $siteAttributes = ArrayHelper::remove($newAttributes, 'siteAttributes') ?? [];
+        $siteAttributes = Arr::pull($newAttributes, 'siteAttributes', []);
 
         // Note: must use Craft::configure() rather than setAttributes() here,
         // so we're not limited to whatever attributes() returns
@@ -3141,7 +3141,7 @@ class Elements extends Component
             // Separate the path and the criteria
             if (is_array($path)) {
                 $criteria = $path['criteria'] ?? $path[1] ?? null;
-                $count = $path['count'] ?? ArrayHelper::remove($criteria, 'count', false);
+                $count = $path['count'] ?? Arr::pull($criteria, 'count', false);
                 $when = $path['when'] ?? null;
                 $path = $path['path'] ?? $path[0];
             } else {
@@ -3320,8 +3320,8 @@ class Elements extends Component
                         );
 
                         // Save the offset & limit params for later
-                        $offset = ArrayHelper::remove($criteria, 'offset', 0);
-                        $limit = ArrayHelper::remove($criteria, 'limit');
+                        $offset = Arr::pull($criteria, 'offset', 0);
+                        $limit = Arr::pull($criteria, 'limit');
 
                         Craft::configure($query, $criteria);
 

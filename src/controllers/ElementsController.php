@@ -28,6 +28,7 @@ use craft\events\DraftEvent;
 use craft\fieldlayoutelements\BaseField;
 use craft\fieldlayoutelements\CustomField;
 use craft\fields\Matrix;
+use craft\helpers\Arr;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Component;
 use craft\helpers\Cp;
@@ -160,7 +161,7 @@ class ElementsController extends Controller
      */
     private function _param(string $name, mixed $default = null): mixed
     {
-        $value = ArrayHelper::remove($this->_attributes, $name) ?? $this->request->getQueryParam($name);
+        $value = Arr::pull($this->_attributes, $name, $this->request->getQueryParam($name));
         if ($value === null && $default !== null && $this->request->getIsPost()) {
             return $default;
         }

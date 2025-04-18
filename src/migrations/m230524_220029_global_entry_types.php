@@ -6,6 +6,7 @@ use Craft;
 use craft\db\Migration;
 use craft\db\Query;
 use craft\db\Table;
+use craft\helpers\Arr;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Db;
 use craft\services\ProjectConfig;
@@ -66,7 +67,7 @@ class m230524_220029_global_entry_types extends Migration
 
         foreach ($entryTypeConfigs as $entryTypeUid => &$entryTypeConfig) {
             $entryTypePath = sprintf('%s.%s', ProjectConfig::PATH_ENTRY_TYPES, $entryTypeUid);
-            $sectionUid = ArrayHelper::remove($entryTypeConfig, 'section');
+            $sectionUid = Arr::pull($entryTypeConfig, 'section');
             if (!$sectionUid || !isset($sectionConfigs[$sectionUid])) {
                 $projectConfig->remove($entryTypePath);
                 continue;

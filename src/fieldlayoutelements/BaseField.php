@@ -11,7 +11,6 @@ use Craft;
 use craft\base\ElementInterface;
 use craft\base\FieldLayoutElement;
 use craft\helpers\Arr;
-use craft\helpers\ArrayHelper;
 use craft\helpers\Cp;
 use craft\helpers\ElementHelper;
 use craft\helpers\Html;
@@ -67,7 +66,7 @@ abstract class BaseField extends FieldLayoutElement
      */
     public function __construct($config = [])
     {
-        if (ArrayHelper::remove($config, 'labelHidden')) {
+        if (Arr::pull($config, 'labelHidden')) {
             $config['label'] = '__blank__';
         }
 

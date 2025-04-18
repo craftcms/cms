@@ -39,6 +39,7 @@ use craft\gql\arguments\elements\Entry as EntryArguments;
 use craft\gql\resolvers\elements\Entry as EntryResolver;
 use craft\gql\types\generators\EntryType as EntryTypeGenerator;
 use craft\gql\types\input\Matrix as MatrixInputType;
+use craft\helpers\Arr;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Db;
 use craft\helpers\Gql;
@@ -313,10 +314,10 @@ class Matrix extends Field implements
         }
 
         if (array_key_exists('minBlocks', $config)) {
-            $config['minEntries'] = ArrayHelper::remove($config, 'minBlocks');
+            $config['minEntries'] = Arr::pull($config, 'minBlocks');
         }
         if (array_key_exists('maxBlocks', $config)) {
-            $config['maxEntries'] = ArrayHelper::remove($config, 'maxBlocks');
+            $config['maxEntries'] = Arr::pull($config, 'maxBlocks');
         }
 
         parent::__construct($config);

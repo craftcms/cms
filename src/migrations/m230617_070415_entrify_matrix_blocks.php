@@ -163,8 +163,8 @@ class m230617_070415_entrify_matrix_blocks extends Migration
 
             // update the field config
             $fieldConfig['settings'] += [
-                'maxEntries' => ArrayHelper::remove($fieldConfig['settings'], 'maxBlocks'),
-                'minEntries' => ArrayHelper::remove($fieldConfig['settings'], 'minBlocks'),
+                'maxEntries' => Arr::pull($fieldConfig['settings'], 'maxBlocks'),
+                'minEntries' => Arr::pull($fieldConfig['settings'], 'minBlocks'),
                 'entryTypes' => array_map(function(EntryType $entryType) use ($fieldUid, $blockTypeConfigsByField) {
                     $config = ['uid' => $entryType->uid];
                     $blockTypeConfig = $blockTypeConfigsByField[$fieldUid][$entryType->uid];

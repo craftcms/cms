@@ -9,7 +9,7 @@ namespace crafttests\fixtures;
 
 use Craft;
 use craft\db\Table;
-use craft\helpers\ArrayHelper;
+use craft\helpers\Arr;
 use craft\helpers\Db;
 use craft\records\Section;
 use craft\services\Entries;
@@ -78,7 +78,7 @@ class SectionsFixture extends ActiveFixture
 
         foreach ($data as $key => &$row) {
             if (isset($row['entryTypes'])) {
-                $this->entryTypeIds[$key] = ArrayHelper::remove($row, 'entryTypes') ?? [];
+                $this->entryTypeIds[$key] = Arr::pull($row, 'entryTypes', []);
             }
         }
 

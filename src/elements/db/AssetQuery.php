@@ -14,6 +14,7 @@ use craft\db\QueryAbortedException;
 use craft\db\Table;
 use craft\elements\Asset;
 use craft\elements\User;
+use craft\helpers\Arr;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Assets;
 use craft\helpers\Db;
@@ -1138,7 +1139,7 @@ class AssetQuery extends ElementQuery
     public function createElement(array $row): ElementInterface
     {
         // Use the site-specific alt text, if set
-        $siteAlt = ArrayHelper::remove($row, 'siteAlt');
+        $siteAlt = Arr::pull($row, 'siteAlt');
         if ($siteAlt !== null) {
             $row['alt'] = $siteAlt;
         }

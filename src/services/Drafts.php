@@ -16,7 +16,7 @@ use craft\db\Query;
 use craft\db\Table;
 use craft\errors\InvalidElementException;
 use craft\events\DraftEvent;
-use craft\helpers\ArrayHelper;
+use craft\helpers\Arr;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\Db;
 use craft\helpers\ElementHelper;
@@ -127,7 +127,7 @@ class Drafts extends Component
             throw new InvalidArgumentException('Cannot create a draft from another draft or revision.');
         }
 
-        $markAsSaved = ArrayHelper::remove($newAttributes, 'markAsSaved') ?? true;
+        $markAsSaved = Arr::pull($newAttributes, 'markAsSaved', true);
 
         // Fire a 'beforeCreateDraft' event
         if ($this->hasEventHandlers(self::EVENT_BEFORE_CREATE_DRAFT)) {

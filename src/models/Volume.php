@@ -19,7 +19,7 @@ use craft\behaviors\FieldLayoutBehavior;
 use craft\elements\Asset;
 use craft\fs\MissingFs;
 use craft\helpers\App;
-use craft\helpers\ArrayHelper;
+use craft\helpers\Arr;
 use craft\helpers\StringHelper;
 use craft\helpers\UrlHelper;
 use craft\records\Volume as VolumeRecord;
@@ -157,11 +157,11 @@ class Volume extends Model implements
     public function __construct($config = [])
     {
         if (isset($config['fs']) && is_string($config['fs'])) {
-            $config['fsHandle'] = ArrayHelper::remove($config, 'fs');
+            $config['fsHandle'] = Arr::pull($config, 'fs');
         }
 
         if (isset($config['transformFs']) && is_string($config['transformFs'])) {
-            $config['transformFsHandle'] = ArrayHelper::remove($config, 'transformFs');
+            $config['transformFsHandle'] = Arr::pull($config, 'transformFs');
         }
 
         parent::__construct($config);

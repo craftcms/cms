@@ -26,7 +26,6 @@ use craft\fieldlayoutelements\Markdown;
 use craft\fieldlayoutelements\Template;
 use craft\fieldlayoutelements\Tip;
 use craft\helpers\Arr;
-use craft\helpers\ArrayHelper;
 use craft\helpers\Html;
 use craft\helpers\StringHelper;
 use Generator;
@@ -173,7 +172,7 @@ class FieldLayout extends Model
      */
     public static function createFromConfig(array $config): self
     {
-        $tabConfigs = ArrayHelper::remove($config, 'tabs');
+        $tabConfigs = Arr::pull($config, 'tabs');
         $layout = new self($config);
 
         if (is_array($tabConfigs)) {
@@ -979,10 +978,10 @@ class FieldLayout extends Model
 
         // Calling this with an existing namespace isn’t fully supported,
         // since the tab anchors’ `href` attributes won’t end up getting set properly
-        $namespace = ArrayHelper::remove($config, 'namespace');
+        $namespace = Arr::pull($config, 'namespace');
 
         // Register delta names?
-        $registerDeltas = ArrayHelper::remove($config, 'registerDeltas');
+        $registerDeltas = Arr::pull($config, 'registerDeltas');
         $changeDeltaRegistration = $registerDeltas !== null;
         if ($changeDeltaRegistration) {
             $view = Craft::$app->getView();
@@ -991,7 +990,7 @@ class FieldLayout extends Model
         }
 
         // Any already-included layout elements?
-        $visibleElements = ArrayHelper::remove($config, 'visibleElements');
+        $visibleElements = Arr::pull($config, 'visibleElements');
 
         $form = new FieldLayoutForm($config);
         $tabs = $this->getTabs();

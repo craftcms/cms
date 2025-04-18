@@ -8,7 +8,7 @@
 namespace craft\services;
 
 use Craft;
-use craft\helpers\ArrayHelper;
+use craft\helpers\Arr;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\Html;
 use craft\helpers\StringHelper;
@@ -291,7 +291,7 @@ class TemplateCaches extends Component
             [$tag, $condition] = Html::unwrapCondition($tag);
             [$tag, $noscript] = Html::unwrapNoscript($tag);
             $tag = Html::parseTag($tag);
-            $url = ArrayHelper::remove($tag['attributes'], $urlAttribute);
+            $url = Arr::pull($tag['attributes'], $urlAttribute);
             $options = $tag['attributes'];
             if ($condition) {
                 $options['condition'] = $condition;

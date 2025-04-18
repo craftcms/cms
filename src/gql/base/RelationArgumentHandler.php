@@ -10,6 +10,7 @@ namespace craft\gql\base;
 use Craft;
 use craft\base\ElementInterface;
 use craft\elements\db\ElementQuery;
+use craft\helpers\Arr;
 use craft\helpers\ArrayHelper;
 use craft\helpers\StringHelper;
 
@@ -59,8 +60,8 @@ abstract class RelationArgumentHandler extends ArgumentHandler
         $relationParams = [];
         foreach ($argumentValue as &$value) {
             $relationParams[] = array_filter([
-                'field' => ArrayHelper::remove($value, 'relatedViaField'),
-                'site' => ArrayHelper::remove($value, 'relatedViaSite'),
+                'field' => Arr::pull($value, 'relatedViaField'),
+                'site' => Arr::pull($value, 'relatedViaSite'),
             ]);
         }
 

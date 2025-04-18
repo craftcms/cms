@@ -15,6 +15,7 @@ use craft\errors\DbConnectException;
 use craft\errors\MigrationException;
 use craft\errors\OperationAbortedException;
 use craft\helpers\App;
+use craft\helpers\Arr;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Install as InstallHelper;
 use craft\helpers\StringHelper;
@@ -190,7 +191,7 @@ class InstallController extends Controller
         $errors = $user->getErrors();
 
         if (isset($errors['newPassword'])) {
-            $errors['password'] = ArrayHelper::remove($errors, 'newPassword');
+            $errors['password'] = Arr::pull($errors, 'newPassword');
         }
 
         if (!$validates) {

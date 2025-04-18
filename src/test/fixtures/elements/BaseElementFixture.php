@@ -13,7 +13,7 @@ use craft\base\ElementInterface;
 use craft\db\Table;
 use craft\elements\Entry;
 use craft\errors\InvalidElementException;
-use craft\helpers\ArrayHelper;
+use craft\helpers\Arr;
 use craft\helpers\Db;
 use craft\models\FieldLayout;
 use craft\test\DbFixtureTrait;
@@ -66,18 +66,18 @@ abstract class BaseElementFixture extends DbFixture
             $element = $this->createElement();
 
             // If they want to add a dateDeleted, store it but don't set it on the element
-            $dateDeleted = ArrayHelper::remove($data, 'dateDeleted');
+            $dateDeleted = Arr::pull($data, 'dateDeleted');
 
             // Set the field layout
             $fieldLayout = null;
             if (isset($data['fieldLayoutType'])) {
-                $fieldLayoutType = ArrayHelper::remove($data, 'fieldLayoutType');
+                $fieldLayoutType = Arr::pull($data, 'fieldLayoutType');
                 $fieldLayout = $fieldsService->getLayoutByType($fieldLayoutType);
                 if ($fieldLayout->id === null) {
                     codecept_debug("Field layout with type: $fieldLayoutType could not be found");
                 }
             } elseif (isset($data['fieldLayoutUid'])) {
-                $fieldLayoutUid = ArrayHelper::remove($data, 'fieldLayoutUid');
+                $fieldLayoutUid = Arr::pull($data, 'fieldLayoutUid');
                 $fieldLayout = $fieldsService->getLayoutByUid($fieldLayoutUid);
                 if (!$fieldLayout) {
                     $fieldLayout = new FieldLayout([

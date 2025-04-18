@@ -15,7 +15,7 @@ use craft\db\Table;
 use craft\errors\InvalidElementException;
 use craft\errors\MutexException;
 use craft\events\RevisionEvent;
-use craft\helpers\ArrayHelper;
+use craft\helpers\Arr;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\Db;
 use craft\helpers\Queue;
@@ -90,7 +90,7 @@ class Revisions extends Component
 
         $db = Craft::$app->getDb();
 
-        $num = ArrayHelper::remove($newAttributes, 'revisionNum');
+        $num = Arr::pull($newAttributes, 'revisionNum');
         $lastRevisionInfo = null;
 
         try {

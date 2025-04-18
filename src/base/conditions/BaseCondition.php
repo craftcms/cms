@@ -507,7 +507,8 @@ JS,
         // Sort by group label, and then option label
         ksort($groupedRuleTypeOptions);
         if (isset($groupedRuleTypeOptions['__UNGROUPED__']) && count($groupedRuleTypeOptions) > 1) {
-            $ungroupedRuleTypeOptions = ArrayHelper::remove($groupedRuleTypeOptions, '__UNGROUPED__');
+            $ungroupedRuleTypeOptions = $groupedRuleTypeOptions;
+            Arr::forget($ungroupedRuleTypeOptions, '__UNGROUPED__');
             $groupedRuleTypeOptions = array_merge(['__UNGROUPED__' => $ungroupedRuleTypeOptions], $groupedRuleTypeOptions);
         }
 

@@ -36,6 +36,7 @@ use craft\events\CancelableEvent;
 use craft\events\ElementCriteriaEvent;
 use craft\fieldlayoutelements\CustomField;
 use craft\fields\conditions\RelationalFieldConditionRule;
+use craft\helpers\Arr;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Cp;
 use craft\helpers\Db;
@@ -345,7 +346,7 @@ abstract class BaseRelationField extends Field implements
     {
         // limit => maxRelations
         if (array_key_exists('limit', $config)) {
-            $config['maxRelations'] = ArrayHelper::remove($config, 'limit');
+            $config['maxRelations'] = Arr::pull($config, 'limit');
         }
 
         // Config normalization

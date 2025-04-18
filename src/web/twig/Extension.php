@@ -775,7 +775,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
         }
 
         foreach ($key as $k) {
-            ArrayHelper::remove($arr, $k);
+            Arr::forget($arr, $k);
         }
 
         return $arr;
@@ -1700,8 +1700,8 @@ class Extension extends AbstractExtension implements GlobalsInterface
      */
     public function tagFunction(string $type, array $attributes = []): string
     {
-        $html = ArrayHelper::remove($attributes, 'html', '');
-        $text = ArrayHelper::remove($attributes, 'text');
+        $html = Arr::pull($attributes, 'html', '');
+        $text = Arr::pull($attributes, 'text');
 
         if ($text !== null) {
             $html = Html::encode($text);

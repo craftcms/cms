@@ -151,7 +151,7 @@ class Component
      */
     public static function mergeSettings(array $config): array
     {
-        if (($settings = ArrayHelper::remove($config, 'settings')) === null) {
+        if (($settings = Arr::pull($config, 'settings')) === null) {
             return $config;
         }
 

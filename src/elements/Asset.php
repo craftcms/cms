@@ -47,6 +47,7 @@ use craft\events\DefineAssetUrlEvent;
 use craft\events\GenerateTransformEvent;
 use craft\fieldlayoutelements\assets\AltField;
 use craft\gql\interfaces\elements\Asset as AssetInterface;
+use craft\helpers\Arr;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Assets;
 use craft\helpers\Cp;
@@ -1203,7 +1204,7 @@ class Asset extends Element
     public function __construct($config = [])
     {
         // alt='' actually means something, so we should preserve it.
-        $alt = ArrayHelper::remove($config, 'alt');
+        $alt = Arr::pull($config, 'alt');
         if ($alt !== null) {
             $this->alt = $alt;
         }
@@ -1300,7 +1301,7 @@ class Asset extends Element
     public function setAttributesFromRequest(array $values): void
     {
         // alt='' actually means something, so we should preserve it.
-        $alt = ArrayHelper::remove($values, 'alt');
+        $alt = Arr::pull($values, 'alt');
         if ($alt !== null) {
             $this->alt = $alt;
         }

@@ -22,6 +22,7 @@ use craft\fs\Temp;
 use craft\gql\arguments\elements\Asset as AssetArguments;
 use craft\gql\interfaces\elements\Asset as AssetInterface;
 use craft\gql\resolvers\elements\Asset as AssetResolver;
+use craft\helpers\Arr;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Assets as AssetsHelper;
 use craft\helpers\Cp;
@@ -221,7 +222,7 @@ class Assets extends BaseRelationField
         ];
         foreach ($oldSettings as $old => $new) {
             if (array_key_exists($old, $config)) {
-                $config[$new] = ArrayHelper::remove($config, $old);
+                $config[$new] = Arr::pull($config, $old);
             }
         }
 

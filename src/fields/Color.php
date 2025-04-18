@@ -84,12 +84,12 @@ class Color extends Field implements InlineEditableFieldInterface, MergeableFiel
     {
         // presets => palette
         if (array_key_exists('presets', $config) || array_key_exists('defaultColor', $config)) {
-            $defaultColor = ArrayHelper::remove($config, 'defaultColor');
+            $defaultColor = Arr::pull($config, 'defaultColor');
             $config['palette'] = array_map(fn(string $color) => [
                 'color' => $color,
                 'label' => null,
                 'default' => ($color === $defaultColor),
-            ], ArrayHelper::remove($config, 'presets') ?? []);
+            ], Arr::pull($config, 'presets', []));
         }
 
         if (isset($config['palette'])) {

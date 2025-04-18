@@ -721,7 +721,7 @@ class UrlHelper
 
             if ($path) {
                 // Prepend it to the params array
-                ArrayHelper::remove($params, $generalConfig->pathParam);
+                Arr::forget($params, $generalConfig->pathParam);
                 $params = array_merge([$generalConfig->pathParam => $path], $params);
             }
         }
@@ -760,7 +760,7 @@ class UrlHelper
     {
         // If it's already an array, just split out the fragment and return
         if (is_array($params)) {
-            $fragment = ArrayHelper::remove($params, '#');
+            $fragment = Arr::pull($params, '#');
             return [$params, $fragment];
         }
 

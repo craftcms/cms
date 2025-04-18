@@ -21,6 +21,7 @@ use craft\fields\data\OptionData;
 use craft\fields\data\SingleOptionFieldData;
 use craft\gql\arguments\OptionField as OptionFieldArguments;
 use craft\gql\resolvers\OptionField as OptionFieldResolver;
+use craft\helpers\Arr;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Cp;
 use craft\helpers\Json;
@@ -307,7 +308,7 @@ abstract class BaseOptionsField extends Field implements PreviewableFieldInterfa
         foreach ($this->options as $option) {
             if (isset($option['optgroup'])) {
                 $option['isOptgroup'] = true;
-                $option['label'] = ArrayHelper::remove($option, 'optgroup');
+                $option['label'] = Arr::pull($option, 'optgroup');
             }
             $rows[] = $option;
         }

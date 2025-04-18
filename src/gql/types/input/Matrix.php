@@ -12,7 +12,7 @@ use craft\base\Field;
 use craft\fields\Matrix as MatrixField;
 use craft\gql\GqlEntityRegistry;
 use craft\gql\types\QueryArgument;
-use craft\helpers\ArrayHelper;
+use craft\helpers\Arr;
 use GraphQL\Type\Definition\InputObjectType;
 use GraphQL\Type\Definition\Type;
 
@@ -108,7 +108,7 @@ class Matrix extends InputObjectType
         $entryCounter = 1;
 
         if (!isset($value['entries']) && isset($value['blocks'])) {
-            $value['entries'] = ArrayHelper::remove($value, 'blocks');
+            $value['entries'] = Arr::pull($value, 'blocks');
         }
 
         if (!empty($value['entries'])) {
@@ -116,8 +116,8 @@ class Matrix extends InputObjectType
                 if (!empty($entry)) {
                     $type = array_key_first($entry);
                     $entry = reset($entry);
-                    $entryId = ArrayHelper::remove($entry, 'id') ?? sprintf('new:%s', $entryCounter++);
-                    $title = ArrayHelper::remove($entry, 'title');
+                    $entryId = Arr::pull($entry, 'id', sprintf('new:%s', $entryCounter++));
+                    $title = Arr::pull($entry, 'title');
 
                     $preparedEntries[$entryId] = [
                         'type' => $type,

@@ -26,6 +26,7 @@ use craft\events\EntryTypeEvent;
 use craft\events\MoveEntryEvent;
 use craft\events\SectionEvent;
 use craft\helpers\AdminTable;
+use craft\helpers\Arr;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Cp;
 use craft\helpers\Db;
@@ -251,8 +252,7 @@ class Entries extends Component
                     $result['previewTargets'] = [];
                 }
                 $section = new Section($result);
-                /** @phpstan-ignore-next-line */
-                $siteSettings = ArrayHelper::remove($siteSettingsBySection, $section->id);
+                $siteSettings = Arr::pull($siteSettingsBySection, $section->id);
                 if ($siteSettings !== null) {
                     $section->setSiteSettings(
                         array_map(fn(array $config) => new Section_SiteSettings($config), $siteSettings),

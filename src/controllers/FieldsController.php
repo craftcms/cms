@@ -22,6 +22,7 @@ use craft\elements\GlobalSet;
 use craft\fieldlayoutelements\CustomField;
 use craft\fields\MissingField;
 use craft\fields\PlainText;
+use craft\helpers\Arr;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Component;
 use craft\helpers\Cp;
@@ -263,7 +264,7 @@ JS, [
                         [fn(FieldLayout $layout) => $layout->type ?? '__UNKNOWN__'],
                     );
                     /** @var FieldLayout[] $unknownLayouts */
-                    $unknownLayouts = ArrayHelper::remove($layoutsByType, '__UNKNOWN__');
+                    $unknownLayouts = Arr::pull($layoutsByType, '__UNKNOWN__');
                     /** @var FieldLayout[] $layoutsWithProviders */
                     $layoutsWithProviders = [];
 

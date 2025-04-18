@@ -176,7 +176,7 @@ class Plugins extends Component
                         unset($plugin['basePath']);
                     }
                 }
-                $handle = $this->_normalizeHandle(ArrayHelper::remove($plugin, 'handle'));
+                $handle = $this->_normalizeHandle(Arr::pull($plugin, 'handle'));
                 $this->_composerPluginInfo[$handle] = $plugin;
             }
         }

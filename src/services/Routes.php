@@ -10,6 +10,7 @@ namespace craft\services;
 use Craft;
 use craft\events\DeleteSiteEvent;
 use craft\events\RouteEvent;
+use craft\helpers\Arr;
 use craft\helpers\ArrayHelper;
 use craft\helpers\StringHelper;
 use yii\base\Component;
@@ -77,7 +78,7 @@ class Routes extends Component
                 !isset($routes[$site->handle]['route']) &&
                 !isset($routes[$site->handle]['template'])
             ) {
-                $siteRoutes = ArrayHelper::remove($routes, $site->handle);
+                $siteRoutes = Arr::pull($routes, $site->handle);
 
                 /** @noinspection PhpUnhandledExceptionInspection */
                 if ($site->handle === $sitesService->getCurrentSite()->handle) {

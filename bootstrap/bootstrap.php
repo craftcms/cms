@@ -9,7 +9,6 @@
 
 use craft\helpers\App;
 use craft\helpers\Arr;
-use craft\helpers\ArrayHelper;
 use craft\helpers\FileHelper;
 use craft\services\Config;
 use yii\base\ErrorException;
@@ -333,10 +332,10 @@ $localConfig = Arr::merge(
 $safeMode = App::env('CRAFT_SAFE_MODE') ?? $generalConfig->safeMode;
 
 if ($safeMode) {
-    ArrayHelper::remove($localConfig, 'bootstrap');
-    ArrayHelper::remove($localConfig, 'components');
-    ArrayHelper::remove($localConfig, 'extensions');
-    ArrayHelper::remove($localConfig, 'container');
+    Arr::forget($localConfig, 'bootstrap');
+    Arr::forget($localConfig, 'components');
+    Arr::forget($localConfig, 'extensions');
+    Arr::forget($localConfig, 'container');
 }
 
 $config = Arr::merge($config, $localConfig);
