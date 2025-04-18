@@ -1237,7 +1237,7 @@ JS, [
                     fn(array $siteInfo) => $siteInfo['siteId'],
                     ElementHelper::supportedSitesForElement($element),
                 );
-                $siteIds = ArrayHelper::withoutValue($siteIds, $element->siteId);
+                $siteIds = Arr::where($siteIds, fn($siteId) => $siteId !== $element->siteId);
                 if (!empty($siteIds)) {
                     $userId = Craft::$app->getUser()->getId();
                     $timestamp = Db::prepareDateForDb(new DateTime());

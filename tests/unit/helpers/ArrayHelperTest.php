@@ -441,7 +441,11 @@ class ArrayHelperTest extends TestCase
      */
     public function testWithoutValue(array $expected, array $array, mixed $value): void
     {
-        self::assertSame($expected, ArrayHelper::withoutValue($array, $value));
+        /**
+         * This used to be ArrayHelper::withoutValue(),
+         * this tests the replacement implementation
+         */
+        self::assertSame($expected, Arr::where($array, fn($v) => $v !== $value));
     }
 
     /**

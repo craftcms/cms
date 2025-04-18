@@ -1404,7 +1404,7 @@ class Elements extends Component
         $this->ensureBulkOp(function() use ($element, $supportedSites) {
             Craft::$app->getDb()->transaction(function() use ($element, $supportedSites) {
                 // Start with the other sites (if any), so we don't update dateLastMerged until the end
-                $otherSiteIds = ArrayHelper::withoutValue(array_keys($supportedSites), $element->siteId);
+                $otherSiteIds = array_keys(Arr::except($supportedSites, $element->siteId));
                 if (!empty($otherSiteIds)) {
                     $siteElements = $this->_localizedElementQuery($element)
                         ->siteId($otherSiteIds)
@@ -1952,7 +1952,7 @@ class Elements extends Component
                 $mainClone->newSiteIds = [];
 
                 // Propagate it
-                $otherSiteIds = ArrayHelper::withoutValue(array_keys($supportedSites), $mainClone->siteId);
+                $otherSiteIds = array_keys(Arr::except($supportedSites, $mainClone->siteId));
                 if ($element->id && !empty($otherSiteIds)) {
                     $siteElements = $this->_localizedElementQuery($element)
                         ->siteId($otherSiteIds)
@@ -2630,7 +2630,7 @@ class Elements extends Component
                 }
 
                 // Get the element in each supported site
-                $otherSiteIds = ArrayHelper::withoutValue(array_keys($supportedSites), $element->siteId);
+                $otherSiteIds = array_keys(Arr::except($supportedSites, $element->siteId));
 
                 if (!empty($otherSiteIds)) {
                     $siteElements = $this->_localizedElementQuery($element)
@@ -3953,7 +3953,7 @@ class Elements extends Component
 
                 // Update the element across the other sites?
                 if ($propagate) {
-                    $otherSiteIds = ArrayHelper::withoutValue(array_keys($supportedSites), $element->siteId);
+                    $otherSiteIds = array_keys(Arr::except($supportedSites, $element->siteId));
 
                     if (!empty($otherSiteIds)) {
                         if (!$isNewElement) {

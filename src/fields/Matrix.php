@@ -361,7 +361,7 @@ class Matrix extends Field implements
      */
     public function settingsAttributes(): array
     {
-        return ArrayHelper::withoutValue(parent::settingsAttributes(), 'localizeEntries');
+        return Arr::where(parent::settingsAttributes(), fn($attribute) => $attribute !== 'localizeEntries');
     }
 
     /**
