@@ -6654,7 +6654,7 @@ JS, [
         $query = static::find();
 
         if ($criteria !== null) {
-            if (is_array($criteria) && Arr::isList($criteria)) {
+            if (!is_array($criteria) || Arr::isList($criteria)) {
                 $criteria = ['id' => $criteria];
             }
             Craft::configure($query, $criteria);
