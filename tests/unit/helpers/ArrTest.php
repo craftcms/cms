@@ -114,6 +114,16 @@ class ArrTest extends TestCase
     }
 
     /**
+     * @dataProvider isOrderedDataProvider
+     * @param bool $expected
+     * @param array $array
+     */
+    public function testIsOrdered(bool $expected, array $array): void
+    {
+        self::assertSame($expected, Arr::isOrdered($array));
+    }
+
+    /**
      * @return array
      */
     public static function firstDataProvider(): array
@@ -162,6 +172,20 @@ class ArrTest extends TestCase
             ['foo[bar][]', ['foo[bar][]' => 'foo[bar][]'], 'foo[bar][]'],
             ['foo.bar:baz.qux', ['foo' => ['bar:baz' => ['qux' => 'foo.bar:baz.qux']]], 'foo[bar:baz][qux]'],
             ['foo-bar.baz.qux', ['foo-bar' => ['baz' => ['qux' => 'foo-bar.baz.qux']]], 'foo-bar[baz][qux]'],
+        ];
+    }
+
+    /**
+     * @return array
+     */
+    public static function isOrderedDataProvider(): array
+    {
+        return [
+            [true, ['a', 'b', 'c']],
+            [true, [5 => 'a', 10 => 'b', 15 => 'c']],
+            [false, ['a' => 1, 'b' => 2, 'c' => 3]],
+            [false, ['a', 'b', 'c' => 3]],
+            [false, [3 => 'a', 2 => 'b', 1 => 'c']],
         ];
     }
 }
