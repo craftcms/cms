@@ -239,6 +239,7 @@ class Entries extends Component
                 $sectionIds = array_map(fn(array $result) => $result['id'], $results);
                 $siteSettingsBySection = Collection::make($this->_createSectionSiteSettingsQuery()->where(['sections_sites.sectionId' => $sectionIds])->all())
                     ->groupBy('sectionId')
+                    ->map(fn(Collection $collection) => $collection->all())
                     ->all();
             }
 

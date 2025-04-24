@@ -9,7 +9,7 @@ use craft\elements\conditions\ElementConditionRuleInterface;
 use craft\elements\db\ElementQueryInterface;
 use craft\elements\db\UserQuery;
 use craft\elements\User;
-use craft\helpers\ArrayHelper;
+use craft\helpers\Arr;
 use craft\models\UserGroup;
 
 /**
@@ -50,7 +50,7 @@ class GroupConditionRule extends BaseMultiSelectConditionRule implements Element
     protected function options(): array
     {
         $groups = Craft::$app->getUserGroups()->getAllGroups();
-        return ArrayHelper::map($groups, 'uid', 'name');
+        return Arr::pluck($groups, 'name', 'uid');
     }
 
     /**

@@ -6,8 +6,8 @@ use Craft;
 use craft\base\conditions\BaseMultiSelectConditionRule;
 use craft\base\ElementInterface;
 use craft\elements\db\ElementQueryInterface;
-use craft\helpers\ArrayHelper;
 use craft\i18n\Locale;
+use Illuminate\Support\Collection;
 
 /**
  * Language condition rule.
@@ -38,11 +38,10 @@ class LanguageConditionRule extends BaseMultiSelectConditionRule implements Elem
      */
     protected function options(): array
     {
-        return ArrayHelper::map(
-            Craft::$app->getI18n()->getSiteLocales(),
-            fn(Locale $locale) => $locale->id,
-            fn(Locale $locale) => $locale->getDisplayName(Craft::$app->language),
-        );
+        return Collection::make(Craft::$app->getI18n()->getSiteLocales())
+            ->keyBy('id')
+            ->map(fn(Locale $locale) => $locale->getDisplayName(Craft::$app->language))
+            ->all();
     }
 
     /**
