@@ -3226,7 +3226,7 @@ class Elements extends Component
         }
 
         $elementsBySite = Collection::make($elements)
-            ->groupBy('siteId')
+            ->groupBy(fn(ElementInterface $element) => $element->siteId)
             ->map(fn(Collection $elements) => $elements->all())
             ->all();
         $with = $this->createEagerLoadingPlans($with);
