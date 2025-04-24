@@ -94,7 +94,7 @@ Craft.LinkInput = Garnish.Base.extend(
 
       this.reset();
       this.$chip = $(`
-<div class="chip small">
+<div class="chip chromeless">
   <div class="chip-content">
     <a href="${Craft.escapeHtml(value)}" rel="noopener" target="_blank">
       ${Craft.escapeHtml(label)}

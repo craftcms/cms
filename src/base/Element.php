@@ -5782,6 +5782,10 @@ JS, [
     protected function attributeHtml(string $attribute): string
     {
         switch ($attribute) {
+            case 'id':
+                return (string)$this->getCanonicalId();
+            case 'uid':
+                return $this->getCanonicalUid();
             case 'ancestors':
                 $element = $this->isProvisionalDraft ? $this->getCanonical() : $this;
                 $ancestors = $element->getAncestors();

@@ -253,9 +253,6 @@ class CraftTooltip extends HTMLElement {
     autoUpdate(this.triggerElement, this.tooltip, this.update);
     Object.assign(this.tooltip.style, {
       opacity: 1,
-      transform: ['left', 'right'].includes(this.getStaticSide())
-        ? `translateX(0)`
-        : `translateY(0)`,
       // Make sure if a user hovers over the label itself, it stays open
       pointerEvents: 'auto',
       zIndex: 101,
@@ -266,22 +263,11 @@ class CraftTooltip extends HTMLElement {
   hide = () => {
     Object.assign(this.tooltip.style, {
       opacity: 0,
-      transform: this.getInitialTransform(),
       pointerEvents: 'none',
     });
 
     this.showing = false;
   };
-
-  getInitialTransform() {
-    // Make sure the bubble moves in a natural direction
-    return {
-      top: `translateY(-${this.offset}px)`,
-      right: `translateX(${this.offset}px)`,
-      bottom: `translateY(${this.offset}px)`,
-      left: `translateX(-${this.offset}px)`,
-    }[this.getStaticSide()];
-  }
 
   getStaticSide() {
     return {

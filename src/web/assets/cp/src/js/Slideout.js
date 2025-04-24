@@ -110,13 +110,15 @@ import $ from 'jquery';
         }
 
         if (this.useMobileStyles) {
-          this.$container
-            .css('top', '100vh')
-            .css(Garnish.ltr ? 'left' : 'right', '');
+          this.$container.css({
+            top: '100vh',
+            [Craft.Slideout.positionProp()]: '',
+          });
         } else {
-          this.$container
-            .css('top', '')
-            .css(Garnish.ltr ? 'left' : 'right', '100vw');
+          this.$container.css({
+            top: '',
+            [Craft.Slideout.positionProp()]: '100vw',
+          });
         }
 
         this._afterTransition(this.$container, () => {
@@ -261,6 +263,12 @@ import $ from 'jquery';
       },
       instances: {},
       openPanels: [],
+      positionProp: function () {
+        // go with the opposite of the setting, b/c of the way we animate it
+        return `inset-inline-${
+          Craft.slideoutPosition === 'start' ? 'end' : 'start'
+        }`;
+      },
       totalPanels: function () {
         return Craft.Slideout.openPanels.length;
       },
@@ -279,7 +287,7 @@ import $ from 'jquery';
         if (panel.useMobileStyles) {
           panel.$container.css('top', '100vh');
         } else {
-          panel.$container.css(Garnish.ltr ? 'left' : 'right', '100vw');
+          panel.$container.css(Craft.Slideout.positionProp(), '100vw');
           Craft.Slideout.updateStyles();
         }
       },
@@ -287,7 +295,7 @@ import $ from 'jquery';
         const totalPanels = Craft.Slideout.totalPanels();
         Craft.Slideout.openPanels.forEach((panel, i) => {
           panel.$container.css(
-            Garnish.ltr ? 'left' : 'right',
+            Craft.Slideout.positionProp(),
             `${45 * ((totalPanels - i) / totalPanels)}vw`
           );
         });

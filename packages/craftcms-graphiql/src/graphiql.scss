@@ -1,5 +1,9 @@
 @charset "UTF-8";
-@import '@craftcms/sass/mixins';
+
+:root {
+  --input-color: var(--input-color, hsl(212deg 25% 50%));
+  --graphiql-header-height: calc(42rem / 16);
+}
 
 body,
 .cp-graphiql {
@@ -11,12 +15,10 @@ body,
   --color-base: transparent;
   --color-neutral: 219, 28%, 32%;
   --color-primary: 0, 72%, 51%;
+  height: calc(100% - var(--graphiql-header-height));
 }
 
 .cp-graphiql {
-  display: grid;
-  grid-template-rows: auto 1fr;
-
   .CodeMirror {
     border-color: transparent;
     height: 100% !important;
@@ -33,6 +35,7 @@ body,
 }
 
 .cp-graphiql-header {
+  height: var(--graphiql-header-height);
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -42,7 +45,11 @@ body,
 
   .select select {
     color: var(--text-color);
-    background-color: transparentize($inputColor, 0.75);
+    background-color: color-mix(
+      in oklch,
+      var(--input-color, hsl(212deg 25% 50%)) 25%,
+      transparent
+    );
   }
 }
 
@@ -81,7 +88,7 @@ body,
 }
 
 .graphiql-container .graphiql-sessions {
-  // @mixins.pane
+  // equivalent of @mixins.pane
   border-radius: 5px;
   background: var(--gray-050);
   box-shadow:

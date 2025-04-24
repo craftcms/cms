@@ -5,6 +5,7 @@ import {browserSupportsWebAuthn} from '@simplewebauthn/browser';
 Craft.AuthMethodSetup = Garnish.Base.extend(
   {
     methodListings: null,
+    showingSlideout: false,
 
     init(settings) {
       this.setSettings(settings, Craft.AuthMethodSetup.defaults);
@@ -35,6 +36,9 @@ Craft.AuthMethodSetup = Garnish.Base.extend(
     },
 
     showSetupSlideout(method) {
+      if (this.showingSlideout) {
+        return;
+      }
       const button = this.methodListings[method].querySelector(
         '.auth-method-setup-btn'
       );
@@ -51,7 +55,11 @@ Craft.AuthMethodSetup = Garnish.Base.extend(
             data: {method},
           })
             .then(async ({data}) => {
+              this.showingSlideout = true;
               const slideout = new Craft.AuthMethodSetup.Slideout(data);
+              slideout.on('close', () => {
+                this.showingSlideout = false;
+              });
               await Craft.appendHeadHtml(data.headHtml);
               await Craft.appendBodyHtml(data.bodyHtml);
               this.addListener(

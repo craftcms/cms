@@ -745,15 +745,16 @@
           let value;
 
           if ($input.hasClass('label')) {
-            const $maybeLightswitchContainer = $input.parent().parent();
-
+            const $lightswitch = $input.closest('.lightswitch');
             if (
-              $maybeLightswitchContainer.hasClass('lightswitch') &&
-              (($maybeLightswitchContainer.hasClass('on') &&
-                $input.hasClass('off')) ||
-                (!$maybeLightswitchContainer.hasClass('on') &&
-                  $input.hasClass('on')))
+              $lightswitch.length &&
+              (($lightswitch.hasClass('on') && $input.hasClass('off')) ||
+                (!$lightswitch.hasClass('on') && $input.hasClass('on')))
             ) {
+              continue;
+            }
+
+            if ($input.closest('button[aria-pressed=false]').length) {
               continue;
             }
 

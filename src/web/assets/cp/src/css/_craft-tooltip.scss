@@ -2,7 +2,6 @@
   position: fixed;
   white-space: normal;
   opacity: 0;
-  transform: translateY(-4px);
   width: max-content;
   max-width: 240px;
   transition:
@@ -31,7 +30,6 @@
   border-radius: var(--medium-border-radius);
   padding-block: var(--xs);
   padding-inline: var(--s);
-  pointer-events: none;
   user-select: none;
   font-weight: 400;
 }

@@ -501,6 +501,8 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
                     $actions[] = DeleteForSite::class;
                 }
             }
+        } else {
+            $actions[] = Copy::class;
         }
 
         // Restore

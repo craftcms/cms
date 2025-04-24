@@ -157,7 +157,10 @@ trait EditUserTrait
             $response->crumbs([
                 ...$user->getCrumbs(),
                 [
-                    'html' => Cp::elementChipHtml($user, ['showDraftName' => false]),
+                    'html' => Cp::elementChipHtml($user, [
+                        'showDraftName' => false,
+                        'class' => 'chromeless',
+                    ]),
                     'current' => true,
                 ],
             ]);

@@ -688,12 +688,15 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
         }
         const sourcePath = $folder.data('source-path');
         if (sourcePath) {
-          $link.attr({
-            href: Craft.getCpUrl(sourcePath[sourcePath.length - 1].uri),
-            role: 'button',
-            'aria-label': label,
-          });
-          this.addListener($link, 'activate', (ev) => {
+          const $newLink = $('<a class="label-link"/>')
+            .html($link.html())
+            .attr({
+              href: Craft.getCpUrl(sourcePath[sourcePath.length - 1].uri),
+              role: 'button',
+              'aria-label': label,
+            });
+          $link.replaceWith($newLink);
+          this.addListener($newLink, 'activate', (ev) => {
             this.sourcePath = sourcePath;
             this.clearSearch(false);
             this.updateElements().then(() => {

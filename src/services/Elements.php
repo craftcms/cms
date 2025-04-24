@@ -3115,6 +3115,11 @@ class Elements extends Component
         foreach ($with as $path) {
             // Is this already an EagerLoadPlan object?
             if ($path instanceof EagerLoadPlan) {
+                // Make sure $all is true if $count is false
+                if (!$path->count && !$path->all) {
+                    $path->all = true;
+                }
+
                 // Don't index the plan by its alias, as two plans w/ different `when` filters could be using the same alias.
                 // Side effect: mixing EagerLoadPlan objects and arrays could result in redundant element queries,
                 // but that would be a weird thing to do.

@@ -844,10 +844,15 @@ class Db
 
         if ($value !== null) {
             self::_normalizeEmptyValue($value);
+            $operator = self::_parseParamOperator($value, '=');
             $value = $value && $value !== ':empty:';
+        } else {
+            $operator = self::_parseParamOperator($value, '=');
         }
 
-        $operator = self::_parseParamOperator($value, '=');
+        if ($operator === '!=' && is_bool($value)) {
+            $value = !$value;
+        }
 
         if ($columnType === Schema::TYPE_JSON) {
             /** @phpstan-ignore-next-line */
@@ -866,10 +871,6 @@ class Db
         $condition = [$column => $value];
         if ($defaultValue === $value && $value !== null) {
             $condition = ['or', $condition, [$column => null]];
-        }
-
-        if ($operator === '!=') {
-            $condition = ['not', $condition];
         }
 
         return $condition;

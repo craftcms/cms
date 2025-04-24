@@ -508,6 +508,7 @@ $menuBorderRadius: $mediumBorderRadius;
 @mixin header-btn {
   width: calc(30rem / 16);
   height: calc(30rem / 16);
+  min-height: auto;
   padding-left: 0;
   padding-right: 0;
 
@@ -655,7 +656,7 @@ $menuBorderRadius: $mediumBorderRadius;
   font-size: 14px;
   line-height: 20px;
   color: $textColor;
-  background-color: hsl(212, 25%, 90%);
+  background-color: var(--button-bg);
   appearance: none;
   // from https://stackoverflow.com/a/15933790/1688568
   &::-ms-expand {
@@ -669,12 +670,11 @@ $menuBorderRadius: $mediumBorderRadius;
 
 @mixin select-input-hovered-styles {
   outline-color: transparent;
-  background-color: hsl(212, 25%, 85%);
+  background-color: var(--button-bg--hover);
 }
 
 @mixin select-input-focused-styles {
   outline-color: transparent;
-  background-color: hsl(212, 25%, 85%);
   box-shadow: var(--focus-ring);
 }
 

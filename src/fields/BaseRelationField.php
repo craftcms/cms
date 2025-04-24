@@ -40,6 +40,7 @@ use craft\helpers\ArrayHelper;
 use craft\helpers\Cp;
 use craft\helpers\Db;
 use craft\helpers\ElementHelper;
+use craft\helpers\Html;
 use craft\helpers\Queue;
 use craft\helpers\StringHelper;
 use craft\queue\jobs\LocalizeRelations;
@@ -87,6 +88,16 @@ abstract class BaseRelationField extends Field implements
      * @return class-string<ElementInterface> The Element class name
      */
     abstract public static function elementType(): string;
+
+    /**
+     * Returns whether the “Show the site menu” setting should be shown for the field.
+     *
+     * @since 5.8.0
+     */
+    protected static function canShowSiteMenu(): bool
+    {
+        return static::elementType()::isLocalized();
+    }
 
     /**
      * Returns the default [[selectionLabel]] value.
@@ -856,6 +867,19 @@ JS, [
      */
     protected function inputHtml(mixed $value, ?ElementInterface $element, bool $inline): string
     {
+        return $this->_inputHtml($value, $element, $inline, false);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getStaticHtml(mixed $value, ElementInterface $element): string
+    {
+        return $this->_inputHtml($value, $element, false, true);
+    }
+
+    private function _inputHtml(mixed $value, ?ElementInterface $element, bool $inline, bool $static): string
+    {
         if ($element !== null && $element->hasEagerLoadedElements($this->handle)) {
             $value = $element->getEagerLoadedElements($this->handle)->all();
         } else {
@@ -880,7 +904,15 @@ JS, [
             $variables['viewMode'] = 'list';
         }
 
-        return Craft::$app->getView()->renderTemplate($this->inputTemplate, $variables);
+        if ($static) {
+            $variables['disabled'] = true;
+            $variables['allowAdd'] = false;
+            $template = '_includes/forms/elementSelect.twig';
+        } else {
+            $template = $this->inputTemplate;
+        }
+
+        return Craft::$app->getView()->renderTemplate($template, $variables);
     }
 
     /**
@@ -902,42 +934,6 @@ JS, [
         }
 
         return parent::searchKeywords($titles, $element);
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function getStaticHtml(mixed $value, ElementInterface $element): string
-    {
-        /** @var ElementQueryInterface|ElementCollection $value */
-        if ($value instanceof ElementCollection) {
-            $value = $value->all();
-        } else {
-            $value = $this->_all($value, $element)->all();
-        }
-
-        if (empty($value)) {
-            return '<p class="light">' . Craft::t('app', 'Nothing selected.') . '</p>';
-        }
-
-        $size = Cp::CHIP_SIZE_SMALL;
-        $viewMode = $this->viewMode();
-        if ($viewMode == 'large') {
-            $size = Cp::CHIP_SIZE_LARGE;
-        }
-
-        $id = $this->getInputId();
-        $html = "<div id='$id' class='elementselect noteditable'>" .
-            "<div class='elements chips" . ($size === Cp::CHIP_SIZE_LARGE ? ' inline-chips' : '') . "'>";
-
-        foreach ($value as $relatedElement) {
-            $html .= Cp::elementChipHtml($relatedElement, [
-                'size' => $size,
-            ]);
-        }
-
-        $html .= '</div></div>';
-        return $html;
     }
 
     /**
@@ -1289,7 +1285,7 @@ JS, [
             ];
         }
 
-        return
+        $html =
             Cp::checkboxFieldHtml([
                 'checkboxLabel' => Craft::t('app', 'Relate {type} from a specific site?', ['type' => $pluralType]),
                 'name' => 'useTargetSite',
@@ -1304,8 +1300,10 @@ JS, [
                 'name' => 'targetSiteId',
                 'options' => $siteOptions,
                 'value' => $this->targetSiteId,
-            ]) .
-            Cp::checkboxFieldHtml([
+            ]);
+
+        if (static::canShowSiteMenu()) {
+            $html .= Cp::checkboxFieldHtml([
                 'fieldset' => true,
                 'fieldClass' => $showTargetSite ? ['hidden'] : null,
                 'checkboxLabel' => Craft::t('app', 'Show the site menu'),
@@ -1319,6 +1317,9 @@ JS, [
                 'name' => 'showSiteMenu',
                 'checked' => $this->showSiteMenu,
             ]);
+        }
+
+        return $html;
     }
 
     /**
@@ -1463,7 +1464,7 @@ JS, [
             'condition' => $selectionCondition,
             'referenceElement' => $element,
             'criteria' => $selectionCriteria,
-            'showSiteMenu' => ($this->targetSiteId || !$this->showSiteMenu) ? false : 'auto',
+            'showSiteMenu' => ($this->targetSiteId || !$this->showSiteMenu || !static::canShowSiteMenu()) ? false : 'auto',
             'allowSelfRelations' => (bool)$this->allowSelfRelations,
             'maintainHierarchy' => (bool)$this->maintainHierarchy,
             'branchLimit' => $this->branchLimit,

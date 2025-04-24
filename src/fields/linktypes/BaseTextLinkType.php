@@ -93,7 +93,7 @@ JS, [
             $linkText = $this->linkLabel($value);
             $html =
                 Html::beginTag('div', [
-                    'class' => ['chip', 'small'],
+                    'class' => ['chip', 'chromeless'],
                 ]) .
                 Html::beginTag('div', [
                     'class' => 'chip-content',

@@ -113,6 +113,11 @@
 {% endmacro %}
 
 
+{% macro buttonGroup(config) %}
+    {% include "_includes/forms/buttonGroup" with config only %}
+{% endmacro %}
+
+
 {% macro file(config) %}
     {% include "_includes/forms/file" with config only %}
 {% endmacro %}
@@ -295,10 +300,10 @@
 {% macro checkboxField(config) %}
     {# label --> checkboxLabel #}
     {% set config = config|merge({
-        fieldset: config.fieldLabel is defined,
+        fieldset: config.fieldset ?? (config.fieldLabel is defined),
         fieldClass: (config.fieldClass ?? [])|explodeClass|push('checkboxfield'),
         id: config.id ?? "checkbox#{random()}",
-        checkboxLabel: config.label ?? null,
+        checkboxLabel: config.checkboxLabel ?? config.label ?? null,
         instructionsPosition: config.instructionsPosition ?? 'after',
     })|withoutKey('label') %}
     {{ _self.field(config, 'template:_includes/forms/checkbox') }}
@@ -329,6 +334,15 @@
         id: config.id ?? "radiogroup#{random()}",
     }) %}
     {{ _self.field(config, 'template:_includes/forms/radioGroup') }}
+{% endmacro %}
+
+
+{% macro buttonGroupField(config) %}
+    {% set config = config|merge({
+        fieldset: true,
+        id: config.id ?? "buttongroup#{random()}",
+    }) %}
+    {{ _self.field(config, 'template:_includes/forms/buttonGroup') }}
 {% endmacro %}
 
 

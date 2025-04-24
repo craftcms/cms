@@ -932,6 +932,10 @@ class Extension extends AbstractExtension implements GlobalsInterface
      */
     public function replaceFilter(mixed $str, mixed $search, mixed $replace = null, ?bool $regex = null): mixed
     {
+        if ($str === null) {
+            return '';
+        }
+
         if ($search instanceof Traversable) {
             $search = iterator_to_array($search);
         }

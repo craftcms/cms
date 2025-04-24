@@ -390,7 +390,7 @@ ORDER BY i.relname, k';
      */
     private function _pgpasswordCommand(): string
     {
-        return App::isWindows() ? 'set PGPASSWORD="{password}" && ' : 'PGPASSWORD="{password}" ';
+        return App::isWindows() ? "set PGPASSWORD='{password}' && " : "PGPASSWORD='{password}' ";
     }
 
     /**

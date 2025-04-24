@@ -130,6 +130,7 @@ class TemplatesController extends Controller
      */
     public function actionManualUpdateNotification(): Response
     {
+        $this->response->setNoCacheHeaders();
         return $this->renderTemplate('_special/dbupdate.twig');
     }
 
