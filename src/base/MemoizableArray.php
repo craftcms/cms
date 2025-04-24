@@ -9,7 +9,6 @@ namespace craft\base;
 
 use ArrayIterator;
 use Countable;
-use craft\helpers\ArrayHelper;
 use craft\helpers\Json;
 use Illuminate\Support\Collection;
 use IteratorAggregate;
