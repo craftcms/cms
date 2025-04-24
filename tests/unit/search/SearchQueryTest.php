@@ -7,7 +7,7 @@
 
 namespace crafttests\unit\search;
 
-use craft\helpers\ArrayHelper;
+use craft\helpers\Arr;
 use craft\search\SearchQuery;
 use craft\search\SearchQueryTerm;
 use craft\search\SearchQueryTermGroup;
@@ -71,7 +71,7 @@ class SearchQueryTest extends TestCase
     public function ensureIdenticalSearchTermObjects(SearchQueryTerm $one, SearchQueryTerm $two)
     {
         $properties = ['subLeft', 'subRight', 'exclude', 'exact', 'attribute', 'term', 'phrase'];
-        self::assertSame(ArrayHelper::toArray($one, $properties), ArrayHelper::toArray($two, $properties));
+        self::assertSame(Arr::pluck((array) $one, $properties), Arr::pluck((array) $two, $properties));
     }
 
     /**

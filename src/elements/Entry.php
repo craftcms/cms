@@ -48,7 +48,6 @@ use craft\fieldlayoutelements\entries\EntryTitleField;
 use craft\fields\Matrix;
 use craft\gql\interfaces\elements\Entry as EntryInterface;
 use craft\helpers\Arr;
-use craft\helpers\ArrayHelper;
 use craft\helpers\Cp;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\Db;
@@ -1680,9 +1679,7 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
         }
 
         // make sure we're working with an array
-        if (!is_array($authorIds)) {
-            $authorIds = ArrayHelper::toArray($authorIds);
-        }
+        $authorIds = Arr::wrap($authorIds);
 
         return array_map(fn($id) => (int)$id, $authorIds);
     }

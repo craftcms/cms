@@ -2,7 +2,7 @@
 
 namespace craft\base\conditions;
 
-use craft\helpers\ArrayHelper;
+use craft\helpers\Arr;
 use craft\helpers\Cp;
 use craft\helpers\Db;
 use craft\helpers\Html;
@@ -79,7 +79,7 @@ abstract class BaseMultiSelectConditionRule extends BaseConditionRule
         if ($values === '') {
             $this->_values = [];
         } else {
-            $this->_values = ArrayHelper::toArray($values);
+            $this->_values = Arr::wrap($values);
         }
     }
 
