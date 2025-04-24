@@ -15,7 +15,6 @@ use craft\db\Table;
 use craft\elements\Asset;
 use craft\events\ConfigEvent;
 use craft\events\VolumeEvent;
-use craft\helpers\ArrayHelper;
 use craft\helpers\Db;
 use craft\helpers\ProjectConfig as ProjectConfigHelper;
 use craft\helpers\StringHelper;
@@ -24,6 +23,7 @@ use craft\models\Volume;
 use craft\models\VolumeFolder;
 use craft\records\Volume as AssetVolumeRecord;
 use craft\records\VolumeFolder as VolumeFolderRecord;
+use Illuminate\Support\Collection;
 use Throwable;
 use yii\base\Component;
 use yii\base\InvalidArgumentException;
@@ -127,7 +127,11 @@ class Volumes extends Component
         }
 
         $userSession = Craft::$app->getUser();
-        return ArrayHelper::where($this->getAllVolumes(), fn(Volume $volume) => $userSession->checkPermission("viewAssets:$volume->uid"), true, true, false);
+
+        return Collection::make($this->getAllVolumes())
+            ->filter(fn(Volume $volume) => $userSession->checkPermission("viewAssets:$volume->uid"))
+            ->values()
+            ->all();
     }
 
     /**

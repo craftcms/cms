@@ -12,10 +12,10 @@ use Craft;
 use craft\db\Query;
 use craft\db\Table;
 use craft\elements\User;
-use craft\helpers\ArrayHelper;
 use craft\services\Search;
 use craft\test\TestCase;
 use crafttests\fixtures\UserFixture;
+use Illuminate\Support\Collection;
 
 /**
  * Unit tests for the search service
@@ -139,7 +139,7 @@ class SearchTest extends TestCase
      */
     private function _getSearchIndexValueByAttribute(mixed $attributeName, iterable $searchIndex): string
     {
-        foreach (ArrayHelper::where($searchIndex, 'attribute', $attributeName) as $array) {
+        foreach (Collection::make($searchIndex)->where('attribute', $attributeName) as $array) {
             if (isset($array['keywords'])) {
                 return $array['keywords'];
             }

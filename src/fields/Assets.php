@@ -736,19 +736,26 @@ class Assets extends BaseRelationField
         if (!$this->showUnpermittedVolumes && !empty($sources)) {
             $userService = Craft::$app->getUser();
             $volumesService = Craft::$app->getVolumes();
-            return ArrayHelper::where($sources, function(string $source) use ($volumesService, $userService) {
-                // If it’s not a volume folder, let it through
-                if (!str_starts_with($source, 'volume:')) {
-                    return true;
-                }
-                // Only show it if they have permission to view it, or if it's the temp volume
-                $volumeUid = explode(':', $source)[1];
-                if ($userService->checkPermission("viewAssets:$volumeUid")) {
-                    return true;
-                }
-                $volume = $volumesService->getVolumeByUid($volumeUid);
-                return $volume?->getFs() instanceof Temp;
-            }, true, true, false);
+
+            return Collection::make($sources)
+                ->filter(function(string $source) use ($volumesService, $userService) {
+                    // If it’s not a volume folder, let it through
+                    if (!str_starts_with($source, 'volume:')) {
+                        return true;
+                    }
+
+                    // Only show it if they have permission to view it, or if it's the temp volume
+                    $volumeUid = explode(':', $source)[1];
+                    if ($userService->checkPermission("viewAssets:$volumeUid")) {
+                        return true;
+                    }
+
+                    $volume = $volumesService->getVolumeByUid($volumeUid);
+
+                    return $volume?->getFs() instanceof Temp;
+                })
+                ->values()
+                ->all();
         }
 
         return $sources;

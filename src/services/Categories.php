@@ -17,7 +17,6 @@ use craft\events\CategoryGroupEvent;
 use craft\events\ConfigEvent;
 use craft\events\DeleteSiteEvent;
 use craft\helpers\App;
-use craft\helpers\ArrayHelper;
 use craft\helpers\Db;
 use craft\helpers\ProjectConfig as ProjectConfigHelper;
 use craft\helpers\StringHelper;
@@ -29,6 +28,7 @@ use craft\records\CategoryGroup as CategoryGroupRecord;
 use craft\records\CategoryGroup_SiteSettings as CategoryGroup_SiteSettingsRecord;
 use craft\web\View;
 use DateTime;
+use Illuminate\Support\Collection;
 use Throwable;
 use yii\base\Component;
 use yii\base\Exception;
@@ -157,7 +157,10 @@ class Categories extends Component
             return [];
         }
 
-        return ArrayHelper::where($this->getAllGroups(), fn(CategoryGroup $group) => $user->can("viewCategories:$group->uid"), true, true, false);
+        return Collection::make($this->getAllGroups())
+            ->filter(fn(CategoryGroup $group) => $user->can("viewCategories:$group->uid"))
+            ->values()
+            ->all();
     }
 
     /**

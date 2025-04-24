@@ -269,11 +269,11 @@ class Fields extends Component
      */
     public function getFieldTypesWithContent(): array
     {
-        return ArrayHelper::where(
-            $this->getAllFieldTypes(),
-            fn(string $class) => /** @var class-string<FieldInterface> $class */ $class::dbType() !== null,
-            keepKeys: false,
-        );
+        return Collection::make($this->getAllFieldTypes())
+            /** @var class-string<FieldInterface> $class */
+            ->filter(fn(string $class) => $class::dbType() !== null)
+            ->values()
+            ->all();
     }
 
     /**
@@ -476,11 +476,10 @@ class Fields extends Component
      */
     public function getFieldsWithContent(mixed $context = null): array
     {
-        return ArrayHelper::where(
-            $this->getAllFields($context),
-            fn(FieldInterface $field) => $field::dbType() !== null,
-            keepKeys: false,
-        );
+        return Collection::make($this->getAllFields($context))
+            ->filter(fn(FieldInterface $field) => $field::dbType() !== null)
+            ->values()
+            ->all();
     }
 
     /**
@@ -493,11 +492,10 @@ class Fields extends Component
      */
     public function getFieldsWithoutContent(mixed $context = null): array
     {
-        return ArrayHelper::where(
-            $this->getAllFields($context),
-            fn(FieldInterface $field) => $field::dbType() === null,
-            keepKeys: false,
-        );
+        return Collection::make($this->getAllFields($context))
+            ->filter(fn(FieldInterface $field) => $field::dbType() === null)
+            ->values()
+            ->all();
     }
 
     /**
@@ -511,11 +509,10 @@ class Fields extends Component
      */
     public function getFieldsByType(string $type, mixed $context = null): array
     {
-        return ArrayHelper::where(
-            $this->getAllFields($context),
-            fn(FieldInterface $field) => $field instanceof $type,
-            keepKeys: false
-        );
+        return Collection::make($this->getAllFields($context))
+            ->filter(fn(FieldInterface $field) => $field instanceof $type)
+            ->values()
+            ->all();
     }
 
     /**

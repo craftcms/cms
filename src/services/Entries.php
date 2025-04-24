@@ -344,7 +344,10 @@ class Entries extends Component
             return [];
         }
 
-        return ArrayHelper::where($this->getAllSections(), fn(Section $section) => $user->can("viewEntries:$section->uid"), true, true, false);
+        return Collection::make($this->getAllSections())
+            ->filter(fn(Section $section) => $user->can("viewEntries:$section->uid"))
+            ->values()
+            ->all();
     }
 
     /**
@@ -943,11 +946,12 @@ class Entries extends Component
             throw new Exception('No site settings exist for section ' . $section->id);
         }
 
-        $sites = ArrayHelper::where(Craft::$app->getSites()->getAllSites(), fn(Site $site) =>
+        $siteIds = Collection::make(Craft::$app->getSites()->getAllSites())
             // Only include it if it's one of this section's sites
-            isset($siteSettings[$site->uid]), true, true, false);
-
-        $siteIds = array_map(fn(Site $site) => $site->id, $sites);
+            ->filter(fn(Site $site) => isset($siteSettings[$site->uid]))
+            ->map(fn(Site $site) => $site->id)
+            ->values()
+            ->all();
 
         // Get the section's entry types
         // ---------------------------------------------------------------------

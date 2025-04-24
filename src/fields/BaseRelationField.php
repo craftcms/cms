@@ -1658,7 +1658,7 @@ JS, [
      */
     protected function availableSources(): array
     {
-        return ArrayHelper::where(
+        return Arr::where(
             Craft::$app->getElementSources()->getSources(static::elementType(), 'modal'),
             fn($s) => $s['type'] !== ElementSources::TYPE_HEADING
         );

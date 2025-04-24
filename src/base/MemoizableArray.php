@@ -11,6 +11,7 @@ use ArrayIterator;
 use Countable;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Json;
+use Illuminate\Support\Collection;
 use IteratorAggregate;
 
 /**
@@ -120,7 +121,9 @@ class MemoizableArray implements IteratorAggregate, Countable
 
         if (!isset($this->_memoized[$memKey])) {
             $this->_memoized[$memKey] = new MemoizableArray(
-                ArrayHelper::where($this->_elements, $key, $value, $strict),
+                Collection::make($this->_elements)
+                    ->where('key', $strict ? '===' : '==', $value)
+                    ->all(),
                 isset($this->_normalizer) ? fn($element, $key) => $this->normalizeByKey($key) : null,
             );
         }

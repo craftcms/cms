@@ -592,7 +592,10 @@ class Sites extends Component
      */
     public function getSitesByGroupId(int $groupId, ?bool $withDisabled = null): array
     {
-        $sites = ArrayHelper::where($this->_allSites($withDisabled), 'groupId', $groupId, false, false);
+        $sites = Collection::make($this->_allSites($withDisabled))
+            ->where('groupId', '==', $groupId)
+            ->values()
+            ->all();
 
         // Using array_multisort threw a nesting error for no obvious reason, so don't use it here.
         ArrayHelper::multisort($sites, 'sortOrder', SORT_ASC, SORT_NUMERIC);
@@ -671,7 +674,9 @@ class Sites extends Component
      */
     public function getSitesByLanguage(string $language, ?bool $withDisabled = null): array
     {
-        return ArrayHelper::where($this->_allSites($withDisabled), 'language', $language, true);
+        return Collection::make($this->_allSites($withDisabled))
+            ->where('language', $language)
+            ->all();
     }
 
     /**

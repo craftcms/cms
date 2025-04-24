@@ -16,12 +16,12 @@ use craft\errors\ElementNotFoundException;
 use craft\errors\GlobalSetNotFoundException;
 use craft\events\ConfigEvent;
 use craft\events\GlobalSetEvent;
-use craft\helpers\ArrayHelper;
 use craft\helpers\Db;
 use craft\helpers\ProjectConfig as ProjectConfigHelper;
 use craft\helpers\StringHelper;
 use craft\models\FieldLayout;
 use craft\records\GlobalSet as GlobalSetRecord;
+use Illuminate\Support\Collection;
 use Throwable;
 use yii\base\Component;
 
@@ -148,8 +148,11 @@ class Globals extends Component
 
         if (!isset($this->_editableGlobalSets[$currentSiteId])) {
             $session = Craft::$app->getUser();
-            $this->_editableGlobalSets[$currentSiteId] = ArrayHelper::where($this->_allSets($currentSiteId),
-                fn(GlobalSet $globalSet): bool => $session->checkPermission("editGlobalSet:$globalSet->uid"), true, true, false);
+
+            $this->_editableGlobalSets[$currentSiteId] = Collection::make($this->_allSets($currentSiteId))
+                ->filter(fn(GlobalSet $globalSet) => $session->checkPermission("editGlobalSet:$globalSet->uid"))
+                ->values()
+                ->all();
         }
 
         return $this->_editableGlobalSets[$currentSiteId];
