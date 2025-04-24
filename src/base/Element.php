@@ -70,7 +70,6 @@ use craft\fieldlayoutelements\CustomField;
 use craft\gql\interfaces\Element as ElementGqlType;
 use craft\helpers\App;
 use craft\helpers\Arr;
-use craft\helpers\ArrayHelper;
 use craft\helpers\Cp;
 use craft\helpers\Db;
 use craft\helpers\ElementHelper;
@@ -6655,7 +6654,7 @@ JS, [
         $query = static::find();
 
         if ($criteria !== null) {
-            if (!ArrayHelper::isAssociative($criteria)) {
+            if (is_array($criteria) && Arr::isList($criteria)) {
                 $criteria = ['id' => $criteria];
             }
             Craft::configure($query, $criteria);

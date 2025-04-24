@@ -434,9 +434,7 @@ class ArrayHelper extends \yii\helpers\ArrayHelper
      */
     public static function ensureNonAssociative(array &$array): void
     {
-        if (static::isAssociative($array, false)) {
-            $array = array_values($array);
-        }
+        $array = array_values($array);
     }
 
     /**

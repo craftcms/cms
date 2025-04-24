@@ -86,8 +86,8 @@ class Diff
     {
         // Are we done doing recursion?
         if (
-            (!is_array($from) || !ArrayHelper::isAssociative($from)) ||
-            (!is_array($to) || !ArrayHelper::isAssociative($to))
+            (!is_array($from) || !Arr::isAssoc($from)) ||
+            (!is_array($to) || !Arr::isAssoc($to))
         ) {
             if (static::compare($from, $to)) {
                 return self::_buildLinesForValue($from, $indent, $level);

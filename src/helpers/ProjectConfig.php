@@ -574,7 +574,7 @@ class ProjectConfig
                     }
                     unset($config[$key]);
                     $split = true;
-                } elseif (ArrayHelper::isAssociative($configData)) {
+                } elseif (Arr::isAssoc($configData)) {
                     // Look deeper
                     $subpath = ($path ? "$path/" : '') . $key;
                     if (self::splitConfigIntoComponentsInternal($configData, $splitConfig, $subpath)) {
