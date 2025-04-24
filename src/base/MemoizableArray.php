@@ -148,7 +148,7 @@ class MemoizableArray implements IteratorAggregate, Countable
 
         if (!isset($this->_memoized[$memKey])) {
             $this->_memoized[$memKey] = new MemoizableArray(
-                ArrayHelper::whereIn($this->_elements, $key, $values, $strict),
+                Collection::make($this->_elements)->whereIn($key, $values, $strict)->all(),
                 isset($this->_normalizer) ? fn($element, $key) => $this->normalizeByKey($key) : null,
             );
         }
