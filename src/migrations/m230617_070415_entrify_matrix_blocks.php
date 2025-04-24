@@ -11,7 +11,6 @@ use craft\db\Table;
 use craft\elements\Entry;
 use craft\fields\Matrix;
 use craft\helpers\Arr;
-use craft\helpers\ArrayHelper;
 use craft\helpers\Json;
 use craft\models\EntryType;
 use craft\models\FieldLayout;
@@ -87,7 +86,7 @@ class m230617_070415_entrify_matrix_blocks extends Migration
         $newEntryTypes = [];
 
         foreach ($fieldConfigs as $fieldPath => $fieldConfig) {
-            $fieldUid = ArrayHelper::lastValue(explode('.', $fieldPath));
+            $fieldUid = Arr::last(explode('.', $fieldPath));
             $fieldEntryTypes = [];
             $blockTypeConfigsByField[$fieldUid] ??= [];
             $blockTypeConfigsByField[$fieldUid] = Arr::sort(

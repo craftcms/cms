@@ -7,7 +7,7 @@ use craft\db\Query;
 use craft\db\Table;
 use craft\elements\User;
 use craft\fieldlayoutelements\CustomField;
-use craft\helpers\ArrayHelper;
+use craft\helpers\Arr;
 use yii\console\Exception;
 
 /**
@@ -101,7 +101,7 @@ class m230511_215903_content_refactor extends BaseContentRefactorMigration
             fn(array $config) => ($config['type'] ?? null) === 'craft\fields\Matrix',
         );
         foreach ($matrixFieldConfigs as $matrixFieldPath => $matrixFieldConfig) {
-            $matrixFieldUid = ArrayHelper::lastValue(explode('.', $matrixFieldPath));
+            $matrixFieldUid = Arr::last(explode('.', $matrixFieldPath));
             if (!isset($matrixFieldConfig['settings']['contentTable'])) {
                 throw new Exception("Matrix field {$matrixFieldUid} is missing its contentTable value.");
             }
