@@ -1455,7 +1455,7 @@ JS, [
         // If all the sources are site-specific, filter out any unneeded site IDs
         if (
             $config['showSiteMenu'] &&
-            ArrayHelper::onlyContains($sources, fn(array $source) => $source['type'] === 'heading' || isset($source['sites']))
+            Collection::make($sources)->every(fn(array $source) => $source['type'] === 'heading' || isset($source['sites']))
         ) {
             $representedSiteIds = [];
             foreach ($sources as $source) {
