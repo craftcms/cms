@@ -52,7 +52,6 @@ use craft\events\MultiElementActionEvent;
 use craft\events\RegisterComponentTypesEvent;
 use craft\fieldlayoutelements\CustomField;
 use craft\helpers\Arr;
-use craft\helpers\ArrayHelper;
 use craft\helpers\Component as ComponentHelper;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\Db;
@@ -1389,7 +1388,7 @@ class Elements extends Component
         }
 
         // Make sure the derivative element actually supports its own site ID
-        $supportedSites = ArrayHelper::index(ElementHelper::supportedSitesForElement($element), 'siteId');
+        $supportedSites = Arr::keyBy(ElementHelper::supportedSitesForElement($element), 'siteId');
         if (!isset($supportedSites[$element->siteId])) {
             throw new Exception('Attempting to merge source changes for a draft in an unsupported site.');
         }
@@ -1712,7 +1711,7 @@ class Elements extends Component
                     }
 
                     $element->setScenario(Element::SCENARIO_ESSENTIALS);
-                    $supportedSites = ArrayHelper::index(ElementHelper::supportedSitesForElement($element), 'siteId');
+                    $supportedSites = Arr::keyBy(ElementHelper::supportedSitesForElement($element), 'siteId');
                     $supportedSiteIds = array_keys($supportedSites);
                     $elementSiteIds = $siteIds !== null ? array_intersect($siteIds, $supportedSiteIds) : $supportedSiteIds;
                     $elementType = get_class($element);
@@ -1842,7 +1841,7 @@ class Elements extends Component
         }
 
         // Make sure the element actually supports its own site ID
-        $supportedSites = ArrayHelper::index(ElementHelper::supportedSitesForElement($mainClone), 'siteId');
+        $supportedSites = Arr::keyBy(ElementHelper::supportedSitesForElement($mainClone), 'siteId');
         if (!isset($supportedSites[$mainClone->siteId])) {
             throw new UnsupportedSiteException($element, $mainClone->siteId, 'Attempting to duplicate an element in an unsupported site.');
         }
@@ -2619,7 +2618,7 @@ class Elements extends Component
             // Restore the elements
             foreach ($elements as $element) {
                 // Get the sites supported by this element
-                $supportedSites = ArrayHelper::index(ElementHelper::supportedSitesForElement($element), 'siteId');
+                $supportedSites = Arr::keyBy(ElementHelper::supportedSitesForElement($element), 'siteId');
                 if (empty($supportedSites)) {
                     throw new UnsupportedSiteException($element, $element->siteId, "Element $element->id has no supported sites.");
                 }
@@ -3034,7 +3033,7 @@ class Elements extends Component
                         $elementQuery->ref($refNames);
                     }
 
-                    $elements = ArrayHelper::index($elementQuery->all(), $refType);
+                    $elements = Arr::keyBy($elementQuery->all(), $refType);
 
                     // Now append new token search/replace strings
                     foreach ($tokensByName as $refName => $tokens) {
@@ -3226,7 +3225,10 @@ class Elements extends Component
             return;
         }
 
-        $elementsBySite = ArrayHelper::index($elements, null, ['siteId']);
+        $elementsBySite = Collection::make($elements)
+            ->groupBy('siteId')
+            ->map(fn(Collection $elements) => $elements->all())
+            ->all();
         $with = $this->createEagerLoadingPlans($with);
         $this->_eagerLoadElementsInternal($elementType, $elementsBySite, $with);
     }
@@ -3370,7 +3372,7 @@ class Elements extends Component
                         continue;
                     }
 
-                    $targetElementData = $query ? ArrayHelper::index($query->asArray()->all(), null, ['id']) : [];
+                    $targetElementData = $query ? Collection::make($query->asArray()->all())->groupBy('id')->all() : [];
                     $targetElements = [];
 
                     // Tell the source elements about their eager-loaded elements
@@ -3581,7 +3583,7 @@ class Elements extends Component
         int $siteId,
         ElementInterface|false|null $siteElement = null,
     ): ElementInterface {
-        $supportedSites = ArrayHelper::index(ElementHelper::supportedSitesForElement($element), 'siteId');
+        $supportedSites = Arr::keyBy(ElementHelper::supportedSitesForElement($element), 'siteId');
 
         $this->ensureBulkOp(function() use ($element, $supportedSites, $siteId, &$siteElement) {
             $this->_propagateElement($element, $supportedSites, $siteId, $siteElement);
@@ -3672,7 +3674,7 @@ class Elements extends Component
         }
 
         // Get the sites supported by this element
-        $supportedSites ??= ArrayHelper::index(ElementHelper::supportedSitesForElement($element), 'siteId');
+        $supportedSites ??= Arr::keyBy(ElementHelper::supportedSitesForElement($element), 'siteId');
 
         // Make sure the element actually supports the site it's being saved in
         if (!isset($supportedSites[$element->siteId])) {

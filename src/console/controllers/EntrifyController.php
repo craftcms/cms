@@ -20,7 +20,7 @@ use craft\events\SectionEvent;
 use craft\fields\Categories;
 use craft\fields\Entries;
 use craft\fields\Tags;
-use craft\helpers\ArrayHelper;
+use craft\helpers\Arr;
 use craft\helpers\Db;
 use craft\models\EntryType;
 use craft\models\Section;
@@ -574,7 +574,7 @@ class EntrifyController extends Controller
     {
         if (!isset($this->_entryType)) {
             $section = $this->_section();
-            $allEntryTypes = ArrayHelper::index($section->getEntryTypes(), 'handle');
+            $allEntryTypes = Arr::keyBy($section->getEntryTypes(), 'handle');
             if (isset($this->entryType)) {
                 if (!isset($allEntryTypes[$this->entryType])) {
                     throw new InvalidConfigException("Invalid entry type handle for the section “{$section->name}”: $this->entryType");

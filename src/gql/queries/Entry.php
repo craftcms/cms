@@ -15,7 +15,7 @@ use craft\gql\interfaces\elements\Entry as EntryInterface;
 use craft\gql\resolvers\elements\Entry as EntryResolver;
 use craft\gql\types\elements\Entry as EntryGqlType;
 use craft\gql\types\generators\EntryType as EntryTypeGenerator;
-use craft\helpers\ArrayHelper;
+use craft\helpers\Arr;
 use craft\helpers\Gql as GqlHelper;
 use craft\models\EntryType;
 use GraphQL\Type\Definition\ResolveInfo;
@@ -42,10 +42,7 @@ class Entry extends Query
         /** @var EntryGqlType[] $entryTypeGqlTypes */
         $entryTypeGqlTypes = array_map(
             fn(EntryType $entryType) => EntryTypeGenerator::generateType($entryType),
-            ArrayHelper::index(
-                GqlHelper::getSchemaContainedEntryTypes(),
-                fn(EntryType $entryType) => $entryType->id
-            ),
+            Arr::keyBy(GqlHelper::getSchemaContainedEntryTypes(), 'id'),
         );
 
         return [

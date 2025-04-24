@@ -1086,7 +1086,7 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
 
         $section = $this->getSection();
         /** @var Site[] $allSites */
-        $allSites = ArrayHelper::index(Craft::$app->getSites()->getAllSites(true), 'id');
+        $allSites = Arr::keyBy(Craft::$app->getSites()->getAllSites(true), 'id');
         $sites = [];
 
         // If the section is leaving it up to entries to decide which sites to be propagated to,

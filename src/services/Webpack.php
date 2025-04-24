@@ -9,7 +9,7 @@ namespace craft\services;
 
 use Craft;
 use craft\helpers\App;
-use craft\helpers\ArrayHelper;
+use craft\helpers\Arr;
 use craft\helpers\FileHelper;
 use craft\helpers\Session;
 use craft\helpers\StringHelper;
@@ -151,7 +151,7 @@ class Webpack extends Component
      */
     private function _getDevServerLoopback(string $class): ?string
     {
-        return ArrayHelper::getValue($this->_getEnvVars($class), 'DEV_SERVER_LOOPBACK');
+        return Arr::get($this->_getEnvVars($class), 'DEV_SERVER_LOOPBACK');
     }
 
     /**
@@ -161,7 +161,7 @@ class Webpack extends Component
      */
     private function _getDevServerPublic(string $class): ?string
     {
-        return ArrayHelper::getValue($this->_getEnvVars($class), 'DEV_SERVER_PUBLIC');
+        return Arr::get($this->_getEnvVars($class), 'DEV_SERVER_PUBLIC');
     }
 
     /**

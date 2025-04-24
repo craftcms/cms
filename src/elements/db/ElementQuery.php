@@ -2861,7 +2861,7 @@ class ElementQuery extends Query implements ElementQueryInterface
         }
 
         $parser = new ElementRelationParamParser([
-            'fields' => $this->customFields ? ArrayHelper::index(
+            'fields' => $this->customFields ? Arr::keyBy(
                 $this->customFields,
                 fn(FieldInterface $field) => $field->layoutElement?->getOriginalHandle() ?? $field->handle,
             ) : [],
@@ -2889,7 +2889,7 @@ class ElementQuery extends Query implements ElementQueryInterface
         $notRelatedToParam = $this->notRelatedTo;
 
         $parser = new ElementRelationParamParser([
-            'fields' => $this->customFields ? ArrayHelper::index(
+            'fields' => $this->customFields ? Arr::keyBy(
                 $this->customFields,
                 fn(FieldInterface $field) => $field->layoutElement?->getOriginalHandle() ?? $field->handle,
             ) : [],

@@ -23,7 +23,6 @@ use craft\fieldlayoutelements\CustomField;
 use craft\fields\MissingField;
 use craft\fields\PlainText;
 use craft\helpers\Arr;
-use craft\helpers\ArrayHelper;
 use craft\helpers\Component;
 use craft\helpers\Cp;
 use craft\helpers\Html;
@@ -34,6 +33,7 @@ use craft\models\FieldLayout;
 use craft\models\FieldLayoutTab;
 use craft\web\assets\fieldsettings\FieldSettingsAsset;
 use craft\web\Controller;
+use Illuminate\Support\Collection;
 use ReflectionException;
 use ReflectionProperty;
 use yii\web\BadRequestHttpException;
@@ -259,10 +259,11 @@ JS, [
                     }
 
                     /** @var FieldLayout[][] $layoutsByType */
-                    $layoutsByType = ArrayHelper::index($layouts,
-                        fn(FieldLayout $layout) => $layout->uid,
-                        [fn(FieldLayout $layout) => $layout->type ?? '__UNKNOWN__'],
-                    );
+                    $layoutsByType = Collection::make($layouts)
+                        ->keyBy('uid')
+                        ->groupBy(fn(FieldLayout $layout) => $layout->type ?? '__UNKNOWN__')
+                        ->all();
+
                     /** @var FieldLayout[] $unknownLayouts */
                     $unknownLayouts = Arr::pull($layoutsByType, '__UNKNOWN__');
                     /** @var FieldLayout[] $layoutsWithProviders */

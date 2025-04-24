@@ -11,7 +11,6 @@ use Craft;
 use craft\console\Controller;
 use craft\elements\Entry;
 use craft\helpers\Arr;
-use craft\helpers\ArrayHelper;
 use craft\helpers\StringHelper;
 use craft\models\CategoryGroup_SiteSettings;
 use craft\models\EntryType;
@@ -280,7 +279,7 @@ class SectionsController extends Controller
             }
         } elseif ($this->interactive) {
             /** @var EntryType[] $allEntryTypes */
-            $allEntryTypes = ArrayHelper::index($entriesService->getAllEntryTypes(), 'handle');
+            $allEntryTypes = Arr::keyBy($entriesService->getAllEntryTypes(), 'handle');
             if (
                 !$this->fromCategoryGroup &&
                 !$this->fromTagGroup &&

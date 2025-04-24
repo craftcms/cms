@@ -964,9 +964,7 @@ class EntryQuery extends ElementQuery implements NestedElementQueryInterface
         }
 
         /** @var Entry[][] $indexedEntries */
-        $indexedEntries = ArrayHelper::index($entries, null, [
-            fn(Entry $entry) => $entry->id,
-        ]);
+        $indexedEntries = Collection::make($entries)->groupBy(fn(Entry $entry) => $entry->id)->all();
         $indexedAuthorIds = [];
 
         $results = (new Query())

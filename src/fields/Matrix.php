@@ -40,7 +40,6 @@ use craft\gql\resolvers\elements\Entry as EntryResolver;
 use craft\gql\types\generators\EntryType as EntryTypeGenerator;
 use craft\gql\types\input\Matrix as MatrixInputType;
 use craft\helpers\Arr;
-use craft\helpers\ArrayHelper;
 use craft\helpers\Db;
 use craft\helpers\Gql;
 use craft\helpers\Html;
@@ -1538,7 +1537,7 @@ JS;
     {
         // Get the possible entry types for this field
         /** @var EntryType[] $entryTypes */
-        $entryTypes = ArrayHelper::index($this->getEntryTypes(), 'handle');
+        $entryTypes = Arr::keyBy($this->getEntryTypes(), 'handle');
 
         // Were the entries posted by UUID or ID?
         $uids = (

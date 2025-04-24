@@ -308,7 +308,7 @@ class NestedElementManager extends Component
     public function getSupportedSiteIds(ElementInterface $owner): array
     {
         /** @var Site[] $allSites */
-        $allSites = ArrayHelper::index(Craft::$app->getSites()->getAllSites(), 'id');
+        $allSites = Arr::keyBy(Craft::$app->getSites()->getAllSites(), 'id');
         $ownerSiteIds = array_map(
             fn(array $siteInfo) => $siteInfo['siteId'],
             ElementHelper::supportedSitesForElement($owner),

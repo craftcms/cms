@@ -48,7 +48,6 @@ use craft\events\GenerateTransformEvent;
 use craft\fieldlayoutelements\assets\AltField;
 use craft\gql\interfaces\elements\Asset as AssetInterface;
 use craft\helpers\Arr;
-use craft\helpers\ArrayHelper;
 use craft\helpers\Assets;
 use craft\helpers\Cp;
 use craft\helpers\Db;
@@ -765,7 +764,7 @@ class Asset extends Element
 
                 $folders = array_map(fn(array $result) => new VolumeFolder($result), $folderQuery->all());
 
-                $foldersByPath = ArrayHelper::index($folders, fn(VolumeFolder $folder) => rtrim($folder->path, '/'));
+                $foldersByPath = Arr::keyBy($folders, fn(VolumeFolder $folder) => rtrim($folder->path, '/'));
 
                 foreach ($folders as $folder) {
                     $sourcePath = [$baseSourcePathStep];

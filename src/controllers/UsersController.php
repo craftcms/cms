@@ -26,7 +26,6 @@ use craft\events\LoginFailureEvent;
 use craft\events\UserEvent;
 use craft\helpers\App;
 use craft\helpers\Arr;
-use craft\helpers\ArrayHelper;
 use craft\helpers\Assets;
 use craft\helpers\Db;
 use craft\helpers\FileHelper;
@@ -2738,7 +2737,7 @@ JS);
         }
 
         /** @var UserGroup[] $allGroups */
-        $allGroups = ArrayHelper::index(Craft::$app->getUserGroups()->getAllGroups(), 'id');
+        $allGroups = Arr::keyBy(Craft::$app->getUserGroups()->getAllGroups(), 'id');
 
         // See if there are any new groups in here
         $oldGroupIds = array_map(fn(UserGroup $group) => $group->id, $user->getGroups());

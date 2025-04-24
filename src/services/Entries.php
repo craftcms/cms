@@ -27,7 +27,6 @@ use craft\events\MoveEntryEvent;
 use craft\events\SectionEvent;
 use craft\helpers\AdminTable;
 use craft\helpers\Arr;
-use craft\helpers\ArrayHelper;
 use craft\helpers\Cp;
 use craft\helpers\Db;
 use craft\helpers\Html;
@@ -238,11 +237,9 @@ class Entries extends Component
             if (!empty($results) && Craft::$app->getRequest()->getIsCpRequest()) {
                 // Eager load the site settings
                 $sectionIds = array_map(fn(array $result) => $result['id'], $results);
-                $siteSettingsBySection = ArrayHelper::index(
-                    $this->_createSectionSiteSettingsQuery()->where(['sections_sites.sectionId' => $sectionIds])->all(),
-                    null,
-                    ['sectionId'],
-                );
+                $siteSettingsBySection = Collection::make($this->_createSectionSiteSettingsQuery()->where(['sections_sites.sectionId' => $sectionIds])->all())
+                    ->groupBy('sectionId')
+                    ->all();
             }
 
             $this->_sections = new MemoizableArray($results, function(array $result) use (&$siteSettingsBySection) {
@@ -863,7 +860,7 @@ class Entries extends Component
                 ->andWhere(['entries.deletedWithSection' => true])
                 ->all();
             /** @var Entry[][] $entriesByType */
-            $entriesByType = ArrayHelper::index($entries, null, ['typeId']);
+            $entriesByType = Collection::make($entries)->groupBy('typeId')->all();
             foreach ($entriesByType as $typeEntries) {
                 try {
                     array_walk($typeEntries, function(Entry $entry) {
@@ -1693,7 +1690,7 @@ SQL)->execute();
                     ->andWhere(['entries.deletedWithEntryType' => true])
                     ->all();
                 /** @var Entry[][] $entriesBySection */
-                $entriesBySection = ArrayHelper::index($entries, null, ['sectionId']);
+                $entriesBySection = Collection::make($entries)->groupBy('sectionId')->all();
                 foreach ($entriesBySection as $sectionEntries) {
                     try {
                         Craft::$app->getElements()->restoreElements($sectionEntries);
@@ -2072,7 +2069,7 @@ SQL)->execute();
 
         if (!empty($missingEntries)) {
             /** @var array<string,Section> $singleSections */
-            $singleSections = ArrayHelper::index(
+            $singleSections = Arr::keyBy(
                 $this->getSectionsByType(Section::TYPE_SINGLE),
                 fn(Section $section) => $section->handle,
             );
@@ -2092,7 +2089,7 @@ SQL)->execute();
                     ->siteId($siteId)
                     ->all();
                 /** @var array<string,Entry> $fetchedEntries */
-                $fetchedEntries = ArrayHelper::index($fetchedEntries, fn(Entry $entry) => $entry->getSection()->handle);
+                $fetchedEntries = Arr::keyBy($fetchedEntries, fn(Entry $entry) => $entry->getSection()->handle);
                 foreach ($fetchSectionHandles as $handle) {
                     if (isset($fetchedEntries[$handle])) {
                         $this->_singleEntries[$siteId][$handle] = $fetchedEntries[$handle];

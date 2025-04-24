@@ -432,11 +432,8 @@ abstract class BaseRelationField extends Field implements
             $inputSources = [$inputSources];
         }
 
-        $elementSources = ArrayHelper::whereIn(
-            Craft::$app->elementSources->getSources(static::elementType()),
-            'key',
-            $inputSources
-        );
+        $elementSources = Collection::make(Craft::$app->elementSources->getSources(static::elementType()))
+            ->whereIn('key', $inputSources);
 
         if (count($elementSources) > 1) {
             $this->maintainHierarchy = false;

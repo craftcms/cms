@@ -12,7 +12,6 @@ use craft\base\ElementInterface;
 use craft\base\PreviewableFieldInterface;
 use craft\elements\conditions\ElementConditionInterface;
 use craft\helpers\Arr;
-use craft\helpers\ArrayHelper;
 use craft\helpers\Cp;
 use craft\models\UserGroup;
 use craft\services\ElementSources;
@@ -244,7 +243,10 @@ class ElementIndexSettingsController extends BaseElementsController
         // Get the old source configs
         $projectConfig = Craft::$app->getProjectConfig();
         $oldSourceConfigs = $projectConfig->get(ProjectConfig::PATH_ELEMENT_SOURCES . ".$elementType") ?? [];
-        $oldSourceConfigs = ArrayHelper::index(array_filter($oldSourceConfigs, fn($s) => $s['type'] !== ElementSources::TYPE_HEADING), 'key');
+        $oldSourceConfigs = Collection::make($oldSourceConfigs)
+            ->filter(fn($s) => $s['type'] !== ElementSources::TYPE_HEADING)
+            ->keyBy('key')
+            ->all();
 
         $conditionsService = Craft::$app->getConditions();
 

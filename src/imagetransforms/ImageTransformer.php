@@ -21,7 +21,6 @@ use craft\errors\ImageTransformException;
 use craft\events\ImageTransformerOperationEvent;
 use craft\helpers\App;
 use craft\helpers\Arr;
-use craft\helpers\ArrayHelper;
 use craft\helpers\Assets as AssetsHelper;
 use craft\helpers\Db;
 use craft\helpers\FileHelper;
@@ -220,7 +219,7 @@ class ImageTransformer extends Component implements ImageTransformerInterface, E
     public function eagerLoadTransforms(array $transforms, array $assets): void
     {
         // Index the assets by ID
-        $assetsById = ArrayHelper::index($assets, 'id');
+        $assetsById = Arr::keyBy($assets, 'id');
         $indexCondition = ['or'];
         $transformsByFingerprint = [];
 
