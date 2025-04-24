@@ -32,7 +32,6 @@ use craft\events\DefineValueEvent;
 use craft\fieldlayoutelements\users\FullNameField;
 use craft\helpers\App;
 use craft\helpers\Arr;
-use craft\helpers\ArrayHelper;
 use craft\helpers\Cp;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\Db;
@@ -56,6 +55,7 @@ use craft\web\View;
 use DateInterval;
 use DateTime;
 use DateTimeZone;
+use Illuminate\Support\Collection;
 use Throwable;
 use Webauthn\PublicKeyCredentialRequestOptions;
 use yii\base\ErrorHandler;
@@ -1472,10 +1472,10 @@ class User extends Element implements IdentityInterface
         }
 
         if (is_numeric($group)) {
-            return ArrayHelper::contains($this->getGroups(), fn(UserGroup $g) => $g->id == $group);
+            return Collection::make($this->getGroups())->contains('id', '==', $group);
         }
 
-        return ArrayHelper::contains($this->getGroups(), fn(UserGroup $g) => $g->handle === $group);
+        return Collection::make($this->getGroups())->contains('handle', '===', $group);
     }
 
     /**

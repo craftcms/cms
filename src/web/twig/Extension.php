@@ -939,7 +939,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
                 $regex === false ||
                 (
                     $regex === null &&
-                    !ArrayHelper::contains(array_keys($search), fn(string $str) => $this->isRegex($str))
+                    !Collection::make($search)->keys()->contains(fn(string $str) => $this->isRegex($str))
                 )
             ) {
                 return strtr($str, $search);

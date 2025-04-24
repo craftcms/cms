@@ -2288,7 +2288,7 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
 
         // get sections that use the same entry type as this entry
         $compatibleSections = $sections
-            ->filter(fn(array $s) => ArrayHelper::contains($s['entryTypes'], 'id', $entryTypeId));
+            ->filter(fn(array $s) => Collection::make($s['entryTypes'])->contains('id', $entryTypeId));
 
         return $compatibleSections->count();
     }
@@ -2308,7 +2308,7 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
         // Type
         $fields[] = (function() use ($static) {
             $entryTypes = $this->getAvailableEntryTypes();
-            if (!ArrayHelper::contains($entryTypes, fn(EntryType $entryType) => $entryType->id === $this->typeId)) {
+            if (!Collection::make($entryTypes)->contains(fn(EntryType $entryType) => $entryType->id === $this->typeId)) {
                 $entryTypes[] = $this->getType();
             }
             if (count($entryTypes) <= 1 && $this->isEntryTypeAllowed($entryTypes)) {

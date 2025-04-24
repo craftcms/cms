@@ -22,12 +22,12 @@ use craft\fields\data\SingleOptionFieldData;
 use craft\gql\arguments\OptionField as OptionFieldArguments;
 use craft\gql\resolvers\OptionField as OptionFieldResolver;
 use craft\helpers\Arr;
-use craft\helpers\ArrayHelper;
 use craft\helpers\Cp;
 use craft\helpers\Json;
 use craft\helpers\StringHelper;
 use craft\validators\ColorValidator;
 use GraphQL\Type\Definition\Type;
+use Illuminate\Support\Collection;
 use yii\db\Schema;
 
 /**
@@ -496,7 +496,7 @@ abstract class BaseOptionsField extends Field implements PreviewableFieldInterfa
                 function(ElementInterface $element) {
                     $value = $element->getFieldValue($this->handle);
                     $options = $value instanceof MultiOptionsFieldData ? $value : [$value];
-                    if (ArrayHelper::contains($options, fn(OptionData $option) => !$option->valid)) {
+                    if (Collection::make($options)->contains(fn(OptionData $option) => !$option->valid)) {
                         $element->addError($this->handle, Craft::t('yii', '{attribute} is invalid.', [
                             'attribute' => Craft::t('site', $this->name),
                         ]));

@@ -1075,7 +1075,7 @@ JS,
                 ElementIndexViewMode::Cards,
                 $this->includeTableView ? ElementIndexViewMode::Table : null,
             ]),
-            'showHeaderColumn' => ArrayHelper::contains($entryTypes, fn(EntryType $entryType) => (
+            'showHeaderColumn' => Collection::make($entryTypes)->contains(fn(EntryType $entryType) => (
                 $entryType->hasTitleField ||
                 $entryType->titleFormat
             )),

@@ -20,6 +20,7 @@ use craft\fs\Temp;
 use craft\helpers\ImageTransforms as TransformHelper;
 use craft\models\VolumeFolder;
 use DateTime;
+use Illuminate\Support\Collection;
 use yii\base\Event;
 use yii\base\Exception;
 use yii\base\InvalidArgumentException;
@@ -150,7 +151,7 @@ class Assets
             if ($transformFs !== $fs) {
                 $fss[] = $transformFs;
             }
-            $matchingFs = ArrayHelper::contains($fss, function(FsInterface $fs) use ($url): bool {
+            $matchingFs = Collection::make($fss)->contains(function(FsInterface $fs) use ($url): bool {
                 if (!$fs->hasUrls) {
                     return false;
                 }

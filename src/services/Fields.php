@@ -57,7 +57,6 @@ use craft\fields\Time;
 use craft\fields\Users as UsersField;
 use craft\helpers\AdminTable;
 use craft\helpers\Arr;
-use craft\helpers\ArrayHelper;
 use craft\helpers\Component as ComponentHelper;
 use craft\helpers\Cp;
 use craft\helpers\Db;
@@ -569,7 +568,7 @@ class Fields extends Component
      */
     public function doesFieldWithHandleExist(string $handle, ?string $context = null): bool
     {
-        return ArrayHelper::contains($this->getAllFields($context), 'handle', $handle, true);
+        return Collection::make($this->getAllFields($context))->contains('handle', '===', $handle);
     }
 
     /**

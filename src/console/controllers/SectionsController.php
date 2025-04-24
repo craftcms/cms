@@ -19,6 +19,7 @@ use craft\models\FieldLayout;
 use craft\models\Section;
 use craft\models\Section_SiteSettings;
 use craft\models\Site;
+use Illuminate\Support\Collection;
 use yii\base\InvalidArgumentException;
 use yii\base\InvalidConfigException;
 use yii\console\ExitCode;
@@ -254,7 +255,7 @@ class SectionsController extends Controller
             ));
         }
 
-        $hasUrls = ArrayHelper::contains($section->getSiteSettings(), fn(Section_SiteSettings $siteSettings) => $siteSettings->hasUrls);
+        $hasUrls = Collection::make($section->getSiteSettings())->contains(fn(Section_SiteSettings $siteSettings) => $siteSettings->hasUrls);
         if ($hasUrls) {
             $section->previewTargets = [
                 [

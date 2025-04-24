@@ -3105,8 +3105,7 @@ JS;
      */
     private static function _fldFieldSelectorsHtml(string $groupName, array $groupFields, FieldLayout $fieldLayout): string
     {
-        $showGroup = ArrayHelper::contains(
-            $groupFields,
+        $showGroup = Collection::make($groupFields)->contains(
             fn(BaseField $field) => self::_showFldFieldSelector($fieldLayout, $field),
         );
 
@@ -3400,7 +3399,7 @@ JS;
                 $items[] = [
                     'heading' => Craft::t('site', $siteGroup->name),
                     'items' => $groupSiteItems,
-                    'hidden' => !ArrayHelper::contains($groupSiteItems, fn(array $item) => !$item['hidden']),
+                    'hidden' => !Collection::make($groupSiteItems)->contains(fn(array $item) => !$item['hidden']),
                 ];
             } else {
                 array_push($items, ...$groupSiteItems);

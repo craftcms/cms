@@ -10,7 +10,7 @@ namespace craft\fields;
 use Craft;
 use craft\base\ElementInterface;
 use craft\fields\data\OptionData;
-use craft\helpers\ArrayHelper;
+use Illuminate\Support\Collection;
 
 /**
  * Checkboxes represents a Checkboxes field.
@@ -69,7 +69,7 @@ class Checkboxes extends BaseOptionsField
      */
     protected function inputHtml(mixed $value, ?ElementInterface $element, bool $inline): string
     {
-        if (!$this->customOptions && ArrayHelper::contains($value, fn(OptionData $option) => !$option->valid)) {
+        if (!$this->customOptions && Collection::make($value)->contains(fn(OptionData $option) => !$option->valid)) {
             Craft::$app->getView()->setInitialDeltaValue($this->handle, null);
         }
 

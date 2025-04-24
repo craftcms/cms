@@ -51,6 +51,7 @@ use craft\web\ServiceUnavailableHttpException;
 use craft\web\UploadedFile;
 use craft\web\View;
 use DateTime;
+use Illuminate\Support\Collection;
 use Throwable;
 use yii\base\Exception;
 use yii\base\InvalidArgumentException;
@@ -1277,7 +1278,7 @@ class UsersController extends Controller
 
         if (
             !$userLanguage ||
-            !ArrayHelper::contains($i18n->getAppLocales(), fn(Locale $locale) => $locale->id === App::parseEnv($userLanguage))
+            !Collection::make($i18n->getAppLocales())->contains(fn(Locale $locale) => $locale->id === App::parseEnv($userLanguage))
         ) {
             $userLanguage = Craft::$app->language;
         }
@@ -1287,7 +1288,7 @@ class UsersController extends Controller
 
         if (
             !$userLocale ||
-            !ArrayHelper::contains($i18n->getAllLocales(), fn(Locale $locale) => $locale->id === App::parseEnv($userLocale))
+            !Collection::make($i18n->getAllLocales())->contains(fn(Locale $locale) => $locale->id === App::parseEnv($userLocale))
         ) {
             $userLocale = Craft::$app->getConfig()->getGeneral()->defaultCpLocale;
         }
