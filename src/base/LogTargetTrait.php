@@ -8,7 +8,7 @@
 namespace craft\base;
 
 use Craft;
-use craft\helpers\ArrayHelper;
+use craft\helpers\Arr;
 use Throwable;
 use yii\base\InvalidConfigException;
 use yii\helpers\VarDumper;
@@ -97,7 +97,7 @@ trait LogTargetTrait
             $logVars = $this->logVars;
         }
 
-        $context = ArrayHelper::filter($GLOBALS, $logVars);
+        $context = Arr::only($GLOBALS, $logVars);
 
         // Workaround for codeception testing until these gets addressed:
         // https://github.com/yiisoft/yii-core/issues/49
