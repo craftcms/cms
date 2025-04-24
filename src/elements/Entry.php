@@ -1834,7 +1834,7 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
         if ($section) {
             // Set the default status based on the section's settings
             /** @var Section_SiteSettings $siteSettings */
-            $siteSettings = ArrayHelper::firstWhere($section->getSiteSettings(), 'siteId', $this->siteId);
+            $siteSettings = Collection::make($section->getSiteSettings())->firstWhere('siteId', $this->siteId);
             $enabled = $siteSettings->enabledByDefault;
         } else {
             $enabled = true;

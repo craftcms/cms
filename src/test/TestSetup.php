@@ -15,7 +15,6 @@ use craft\db\Migration;
 use craft\db\MigrationManager;
 use craft\errors\MigrationException;
 use craft\helpers\Arr;
-use craft\helpers\ArrayHelper;
 use craft\helpers\Db;
 use craft\helpers\FileHelper;
 use craft\i18n\Locale;
@@ -66,6 +65,7 @@ use craft\web\Response;
 use craft\web\Session;
 use craft\web\UploadedFile;
 use craft\web\User;
+use Illuminate\Support\Collection;
 use PHPUnit\Framework\MockObject\MockObject;
 use yii\base\ErrorException;
 use yii\base\Event;
@@ -468,10 +468,8 @@ class TestSetup
             $existingProjectConfig = self::getSeedProjectConfigData();
 
             if ($existingProjectConfig && isset($existingProjectConfig['sites'])) {
-                $doesConfigExist = ArrayHelper::firstWhere(
-                    $existingProjectConfig['sites'],
-                    'primary'
-                );
+                $doesConfigExist = Collection::make($existingProjectConfig['sites'])
+                    ->firstWhere('primary', true);
 
                 if ($doesConfigExist) {
                     $siteConfig = $doesConfigExist;

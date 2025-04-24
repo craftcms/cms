@@ -102,9 +102,9 @@ class ElementIndexSettingsController extends BaseElementsController
 
             if (isset($source['defaultSort'])) {
                 if (is_string($source['defaultSort'])) {
-                    $defaultSortOption = ArrayHelper::firstWhere($source['sortOptions'], 'attr', $source['defaultSort']);
+                    $defaultSortOption = Collection::make($source['sortOptions'])->firstWhere('attr', $source['defaultSort']);
                 } elseif (is_array($source['defaultSort']) && isset($source['defaultSort'][0])) {
-                    $defaultSortOption = ArrayHelper::firstWhere($source['sortOptions'], 'attr', $source['defaultSort'][0]);
+                    $defaultSortOption = Collection::make($source['sortOptions'])->firstWhere('attr', $source['defaultSort'][0]);
                     if ($defaultSortOption && isset($source['defaultSort'][1])) {
                         $defaultSortDir = $source['defaultSort'][1];
                     }

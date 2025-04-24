@@ -170,7 +170,11 @@ class MemoizableArray implements IteratorAggregate, Countable
 
         // Use array_key_exists() because it could be null
         if (!array_key_exists($memKey, $this->_memoized)) {
-            ArrayHelper::firstWhere($this->_elements, $key, $value, $strict, valueKey: $valueKey);
+            $valueKey = Collection::make($this->_elements)
+                ->where($key, $strict ? '===' : '==', $value)
+                ->keys()
+                ->first();
+
             $this->_memoized[$memKey] = $this->normalizeByKey($valueKey);
         }
 

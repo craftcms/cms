@@ -1374,7 +1374,7 @@ JS;
     {
         $entryTypeHandle = StringHelper::removeLeft(StringHelper::removeRight($fragmentName, '_Entry'), $this->handle . '_');
 
-        $entryType = ArrayHelper::firstWhere($this->getEntryTypes(), 'handle', $entryTypeHandle);
+        $entryType = Collection::make($this->getEntryTypes())->firstWhere('handle', $entryTypeHandle);
 
         if (!$entryType) {
             throw new InvalidArgumentException('Invalid fragment name: ' . $fragmentName);

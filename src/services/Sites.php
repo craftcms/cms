@@ -441,7 +441,7 @@ class Sites extends Component
      */
     public function getSiteByUid(string $uid, ?bool $withDisabled = null): Site
     {
-        $site = ArrayHelper::firstWhere($this->_allSites($withDisabled), 'uid', $uid, true);
+        $site = Collection::make($this->_allSites($withDisabled))->firstWhere('uid', $uid);
         if ($site === null) {
             throw new SiteNotFoundException('Site with UID ”' . $uid . '“ not found!');
         }
@@ -661,7 +661,7 @@ class Sites extends Component
      */
     public function getSiteByHandle(string $siteHandle, ?bool $withDisabled = null): ?Site
     {
-        return ArrayHelper::firstWhere($this->_allSites($withDisabled), 'handle', $siteHandle, true);
+        return Collection::make($this->_allSites($withDisabled))->firstWhere('handle', $siteHandle);
     }
 
     /**

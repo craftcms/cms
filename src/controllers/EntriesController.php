@@ -16,7 +16,6 @@ use craft\enums\PropagationMethod;
 use craft\errors\InvalidElementException;
 use craft\errors\MutexException;
 use craft\errors\UnsupportedSiteException;
-use craft\helpers\ArrayHelper;
 use craft\helpers\Cp;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\ElementHelper;
@@ -109,7 +108,7 @@ class EntriesController extends BaseEntriesController
 
         // Type
         if (($typeHandle = $this->request->getParam('type')) !== null) {
-            $type = ArrayHelper::firstWhere($entry->getAvailableEntryTypes(), 'handle', $typeHandle);
+            $type = Collection::make($entry->getAvailableEntryTypes())->firstWhere('handle', $typeHandle);
             if ($type === null) {
                 throw new BadRequestHttpException("Invalid entry type handle: $typeHandle");
             }
@@ -124,7 +123,7 @@ class EntriesController extends BaseEntriesController
         } else {
             // Set the default status based on the section's settings
             /** @var Section_SiteSettings $siteSettings */
-            $siteSettings = ArrayHelper::firstWhere($section->getSiteSettings(), 'siteId', $entry->siteId);
+            $siteSettings = Collection::make($section->getSiteSettings())->firstWhere('siteId', $entry->siteId);
             $enabled = $siteSettings->enabledByDefault;
         }
         if (Craft::$app->getIsMultiSite() && count($entry->getSupportedSites()) > 1) {

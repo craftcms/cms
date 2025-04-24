@@ -14,6 +14,7 @@ use craft\image\SvgAllowedAttributes;
 use craft\web\View;
 use DOMElement;
 use enshrined\svgSanitize\Sanitizer;
+use Illuminate\Support\Collection;
 use Symfony\Component\DomCrawler\Crawler;
 use Throwable;
 use yii\base\Exception;
@@ -657,7 +658,7 @@ class Html extends \yii\helpers\Html
         if ($ifExists) {
             // See if we have a child of the same type
             [$type] = self::_findTag($html);
-            $child = ArrayHelper::firstWhere($info['children'], 'type', $type, true);
+            $child = Collection::make($info['children'])->firstWhere('type', $type);
 
             if ($child) {
                 return match ($ifExists) {
