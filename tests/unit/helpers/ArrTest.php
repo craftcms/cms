@@ -124,6 +124,16 @@ class ArrTest extends TestCase
     }
 
     /**
+     * @dataProvider isNumericDataProvider
+     * @param bool $expected
+     * @param array $array
+     */
+    public function testIsNumeric(bool $expected, array $array): void
+    {
+        self::assertSame($expected, Arr::isNumeric($array));
+    }
+
+    /**
      * @return array
      */
     public static function firstDataProvider(): array
@@ -186,6 +196,17 @@ class ArrTest extends TestCase
             [false, ['a' => 1, 'b' => 2, 'c' => 3]],
             [false, ['a', 'b', 'c' => 3]],
             [false, [3 => 'a', 2 => 'b', 1 => 'c']],
+        ];
+    }
+
+    /**
+     * @return array
+     */
+    public static function isNumericDataProvider(): array
+    {
+        return [
+            [true, [0, 1, 2, '3']],
+            [false, [0, 1, 2, '3a']],
         ];
     }
 }

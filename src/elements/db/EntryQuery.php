@@ -13,7 +13,7 @@ use craft\db\QueryAbortedException;
 use craft\db\Table;
 use craft\elements\Entry;
 use craft\enums\CmsEdition;
-use craft\helpers\ArrayHelper;
+use craft\helpers\Arr;
 use craft\helpers\Db;
 use craft\helpers\StringHelper;
 use craft\models\EntryType;
@@ -1147,7 +1147,7 @@ class EntryQuery extends ElementQuery implements NestedElementQueryInterface
             $this->typeId = is_array($this->typeId) ? [] : null;
         } elseif (is_numeric($this->typeId)) {
             $this->typeId = [$this->typeId];
-        } elseif (!is_array($this->typeId) || !ArrayHelper::isNumeric($this->typeId)) {
+        } elseif (!is_array($this->typeId) || !Arr::isNumeric($this->typeId)) {
             $this->typeId = (new Query())
                 ->select(['id'])
                 ->from([Table::ENTRYTYPES])
@@ -1189,7 +1189,7 @@ class EntryQuery extends ElementQuery implements NestedElementQueryInterface
             $this->sectionId = is_array($this->sectionId) ? [] : null;
         } elseif (is_numeric($this->sectionId)) {
             $this->sectionId = [$this->sectionId];
-        } elseif (!is_array($this->sectionId) || !ArrayHelper::isNumeric($this->sectionId)) {
+        } elseif (!is_array($this->sectionId) || !Arr::isNumeric($this->sectionId)) {
             $this->sectionId = (new Query())
                 ->select(['id'])
                 ->from([Table::SECTIONS])

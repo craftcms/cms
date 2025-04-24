@@ -11,7 +11,6 @@ use Craft;
 use craft\base\ElementInterface;
 use craft\elements\db\ElementQuery;
 use craft\helpers\Arr;
-use craft\helpers\ArrayHelper;
 use craft\helpers\StringHelper;
 
 /**
@@ -136,7 +135,7 @@ abstract class RelationArgumentHandler extends ArgumentHandler
             array_shift($relatedTo);
         }
 
-        if (ArrayHelper::isNumeric($relatedTo)) {
+        if (Arr::isNumeric($relatedTo)) {
             // If it was "and", split out all the ids to their own condition
             if ($firstOperand === 'and') {
                 $output = ['and'];

@@ -13,7 +13,7 @@ use craft\base\ElementInterface;
 use craft\db\Query;
 use craft\db\QueryAbortedException;
 use craft\db\Table;
-use craft\helpers\ArrayHelper;
+use craft\helpers\Arr;
 use craft\helpers\Db;
 
 /**
@@ -268,7 +268,7 @@ trait NestedElementQueryTrait
             $this->fieldId = is_array($this->fieldId) ? [] : null;
         } elseif (is_numeric($this->fieldId)) {
             $this->fieldId = [$this->fieldId];
-        } elseif (!is_array($this->fieldId) || !ArrayHelper::isNumeric($this->fieldId)) {
+        } elseif (!is_array($this->fieldId) || !Arr::isNumeric($this->fieldId)) {
             $this->fieldId = (new Query())
                 ->select(['id'])
                 ->from([Table::FIELDS])
@@ -291,7 +291,7 @@ trait NestedElementQueryTrait
         if (is_numeric($value)) {
             return [$value];
         }
-        if (!is_array($value) || !ArrayHelper::isNumeric($value)) {
+        if (!is_array($value) || !Arr::isNumeric($value)) {
             return false;
         }
         return $value;

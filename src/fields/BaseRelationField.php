@@ -37,7 +37,6 @@ use craft\events\ElementCriteriaEvent;
 use craft\fieldlayoutelements\CustomField;
 use craft\fields\conditions\RelationalFieldConditionRule;
 use craft\helpers\Arr;
-use craft\helpers\ArrayHelper;
 use craft\helpers\Cp;
 use craft\helpers\Db;
 use craft\helpers\ElementHelper;
@@ -1169,12 +1168,12 @@ JS, [
             $targetIds = $value->map(fn(ElementInterface $element) => $element->id)->all();
         } elseif (
             is_array($value->id) &&
-            ArrayHelper::isNumeric($value->id)
+            Arr::isNumeric($value->id)
         ) {
             $targetIds = $value->id ?: [];
         } elseif (
             isset($value->where['elements.id']) &&
-            ArrayHelper::isNumeric($value->where['elements.id'])
+            Arr::isNumeric($value->where['elements.id'])
         ) {
             $targetIds = $value->where['elements.id'] ?: [];
         } else {

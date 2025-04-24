@@ -2,6 +2,8 @@
 
 namespace craft\helpers;
 
+use Illuminate\Support\Collection;
+
 /**
  * Class Arr
  *
@@ -101,5 +103,17 @@ class Arr extends \Illuminate\Support\Arr
         }
 
         return true;
+    }
+
+    /**
+     * Returns whether all the elements in the array are numeric.
+     *
+     * @param array $array
+     * @return bool
+     * @since 5.x
+     */
+    public static function isNumeric(array $array): bool
+    {
+        return Collection::make($array)->every(fn($v) => is_numeric($v));
     }
 }

@@ -32,7 +32,6 @@ use craft\events\PopulateElementEvent;
 use craft\events\PopulateElementsEvent;
 use craft\helpers\App;
 use craft\helpers\Arr;
-use craft\helpers\ArrayHelper;
 use craft\helpers\Db;
 use craft\helpers\ElementHelper;
 use craft\helpers\Json;
@@ -753,7 +752,7 @@ class ElementQuery extends Query implements ElementQueryInterface
             $valid = true;
         } elseif (
             is_numeric($value) ||
-            (is_array($value) && ArrayHelper::isNumeric($value)) ||
+            (is_array($value) && Arr::isNumeric($value)) ||
             $value === '*' ||
             $value === false ||
             $value === null
@@ -2478,7 +2477,7 @@ class ElementQuery extends Query implements ElementQueryInterface
             // If (<= 100) specific IDs were requested, then use those
             if (
                 is_numeric($this->id) ||
-                (is_array($this->id) && count($this->id) <= 100 && ArrayHelper::isNumeric($this->id))
+                (is_array($this->id) && count($this->id) <= 100 && Arr::isNumeric($this->id))
             ) {
                 array_push($this->_cacheTags, ...array_map(fn($id) => "element::$id", (array)$this->id));
             } else {
@@ -3222,7 +3221,7 @@ class ElementQuery extends Query implements ElementQueryInterface
             $this->siteId = $sitesService->getCurrentSite()->id;
         } elseif ($this->siteId === '*') {
             $this->siteId = $sitesService->getAllSiteIds();
-        } elseif (is_numeric($this->siteId) || ArrayHelper::isNumeric($this->siteId)) {
+        } elseif (is_numeric($this->siteId) || Arr::isNumeric($this->siteId)) {
             // Filter out any invalid site IDs
             $siteIds = Collection::make((array)$this->siteId)
                 ->filter(fn($siteId) => $sitesService->getSiteById($siteId, true) !== null)
