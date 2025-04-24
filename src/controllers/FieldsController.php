@@ -365,7 +365,7 @@ JS, [
             $settingsStr = $this->request->getBodyParam('settings');
             parse_str($settingsStr, $postedOldSettings);
             $oldNamespace = $this->request->getBodyParam('oldNamespace');
-            $settings = ArrayHelper::getValue($postedOldSettings, $oldNamespace, []);
+            $settings = Arr::get($postedOldSettings, $oldNamespace, []);
 
             // Remove any settings that aren't defined by the same class between both types
             $settings = array_filter($settings, function($attribute) use ($type, $oldType) {
@@ -661,7 +661,7 @@ JS, [
         if ($settingsStr !== null) {
             parse_str($settingsStr, $postedSettings);
             $settingsNamespace = $this->request->getRequiredBodyParam('settingsNamespace');
-            $settings = ArrayHelper::getValue($postedSettings, $settingsNamespace, []);
+            $settings = Arr::get($postedSettings, $settingsNamespace, []);
             $componentConfig = array_merge($componentConfig, $settings);
         }
 

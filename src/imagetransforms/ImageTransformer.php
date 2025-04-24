@@ -20,6 +20,7 @@ use craft\errors\FsException;
 use craft\errors\ImageTransformException;
 use craft\events\ImageTransformerOperationEvent;
 use craft\helpers\App;
+use craft\helpers\Arr;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Assets as AssetsHelper;
 use craft\helpers\Db;
@@ -584,7 +585,7 @@ class ImageTransformer extends Component implements ImageTransformerInterface, E
         }
 
         // If the asset has been modified since the time the index was created, it’s no longer valid
-        $dateModified = ArrayHelper::getValue($asset, 'dateModified');
+        $dateModified = Arr::get($asset, 'dateModified');
         if ($result['dateIndexed'] < Db::prepareDateForDb($dateModified)) {
             return false;
         }

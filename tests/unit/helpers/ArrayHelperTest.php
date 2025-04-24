@@ -8,7 +8,6 @@
 namespace crafttests\unit\helpers;
 
 use Codeception\Test\Unit;
-use craft\helpers\Arr;
 use craft\helpers\ArrayHelper;
 use craft\test\TestCase;
 use stdClass;
@@ -65,7 +64,7 @@ class ArrayHelperTest extends TestCase
             'foo',
         ];
 
-        $result = Arr::merge($a, $b, $c);
+        $result = ArrayHelper::merge($a, $b, $c);
         $expected = [
             'name' => 'Yii',
             'version' => '2.0',
@@ -384,7 +383,7 @@ class ArrayHelperTest extends TestCase
      */
     public function testFilterEmptyStringsFromArray(): void
     {
-        self::assertSame([0 => 1, 1 => 2, 4 => null, 5 => 5], Arr::whereNotEmpty([0 => 1, 1 => 2, 3 => '', 4 => null, 5 => 5]));
+        self::assertSame([0 => 1, 1 => 2, 4 => null, 5 => 5], ArrayHelper::filterEmptyStringsFromArray([0 => 1, 1 => 2, 3 => '', 4 => null, 5 => 5]));
     }
 
     /**
@@ -405,7 +404,7 @@ class ArrayHelperTest extends TestCase
      */
     public function testFirstValue(mixed $expected, array $array): void
     {
-        self::assertSame($expected, Arr::first($array));
+        self::assertSame($expected, ArrayHelper::firstValue($array));
     }
 
     /**
@@ -430,7 +429,7 @@ class ArrayHelperTest extends TestCase
      */
     public function testWithout(array $expected, array $array, string $key): void
     {
-        self::assertSame($expected, Arr::except($array, $key));
+        self::assertSame($expected, ArrayHelper::without($array, $key));
     }
 
     /**
@@ -445,7 +444,7 @@ class ArrayHelperTest extends TestCase
          * This used to be ArrayHelper::withoutValue(),
          * this tests the replacement implementation
          */
-        self::assertSame($expected, Arr::where($array, fn($v) => $v !== $value));
+        self::assertSame($expected, ArrayHelper::withoutValue($array, $value));
     }
 
     /**

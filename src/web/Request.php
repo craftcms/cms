@@ -13,7 +13,6 @@ use craft\config\GeneralConfig;
 use craft\errors\SiteNotFoundException;
 use craft\helpers\App;
 use craft\helpers\Arr;
-use craft\helpers\ArrayHelper;
 use craft\helpers\Session as SessionHelper;
 use craft\helpers\StringHelper;
 use craft\models\Site;
@@ -840,7 +839,7 @@ class Request extends \yii\web\Request
             // Was a namespace passed?
             $namespace = $this->getHeaders()->get('X-Craft-Namespace');
             if ($namespace) {
-                $params = ArrayHelper::getValue($params, $namespace, []);
+                $params = Arr::get($params, $namespace, []);
             }
 
             $this->setBodyParams($this->_utf8AllTheThings($params));
@@ -1838,7 +1837,7 @@ class Request extends \yii\web\Request
             return $this->_utf8AllTheThings($params);
         }
 
-        return ArrayHelper::getValue($params, $name, $defaultValue);
+        return Arr::get($params, $name, $defaultValue);
     }
 
     /**
