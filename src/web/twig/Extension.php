@@ -1362,10 +1362,9 @@ class Extension extends AbstractExtension implements GlobalsInterface
      */
     public function multisortFilter(mixed $array, mixed $key, int|array $direction = SORT_ASC, int|array $sortFlag = SORT_REGULAR): array
     {
-        // Prevent multisort() from modifying the original array
-        $array = array_merge($array);
-        ArrayHelper::multisort($array, $key, $direction, $sortFlag);
-        return $array;
+        return Collection::make($array)
+            ->sortBy($key, $sortFlag, $direction === SORT_DESC)
+            ->all();
     }
 
     /**

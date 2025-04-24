@@ -10,7 +10,7 @@ namespace craft\controllers;
 use Craft;
 use craft\base\WidgetInterface;
 use craft\helpers\App;
-use craft\helpers\ArrayHelper;
+use craft\helpers\Arr;
 use craft\helpers\Cp;
 use craft\helpers\FileHelper;
 use craft\helpers\Json;
@@ -87,7 +87,7 @@ class DashboardController extends Controller
         }
 
         // Sort them by name
-        ArrayHelper::multisort($widgetTypeInfo, 'name');
+        $widgetTypeInfo = Arr::sort($widgetTypeInfo, 'name');
 
         $variables = [];
 

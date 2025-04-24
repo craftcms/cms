@@ -24,7 +24,6 @@ use craft\events\SiteEvent;
 use craft\events\SiteGroupEvent;
 use craft\helpers\App;
 use craft\helpers\Arr;
-use craft\helpers\ArrayHelper;
 use craft\helpers\Db;
 use craft\helpers\Queue;
 use craft\helpers\StringHelper;
@@ -592,15 +591,11 @@ class Sites extends Component
      */
     public function getSitesByGroupId(int $groupId, ?bool $withDisabled = null): array
     {
-        $sites = Collection::make($this->_allSites($withDisabled))
-            ->where('groupId', '==', $groupId)
+        return Collection::make($this->_allSites($withDisabled))
+            ->where('groupId', $groupId)
+            ->sortBy('sortOrder', SORT_NUMERIC)
             ->values()
             ->all();
-
-        // Using array_multisort threw a nesting error for no obvious reason, so don't use it here.
-        ArrayHelper::multisort($sites, 'sortOrder', SORT_ASC, SORT_NUMERIC);
-
-        return $sites;
     }
 
     /**

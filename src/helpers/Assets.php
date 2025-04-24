@@ -350,7 +350,7 @@ class Assets
      */
     public static function sortFolderTree(array &$tree): void
     {
-        ArrayHelper::multisort($tree, fn($folder) => $folder->getVolume()->sortOrder);
+        $tree = Arr::sort($tree, fn($folder) => $folder->getVolume()->sortOrder);
     }
 
     /**
@@ -695,7 +695,7 @@ class Assets
             }
 
             // Sort by label
-            ArrayHelper::multisort(self::$_fileKinds, 'label');
+            self::$_fileKinds = Arr::sort(self::$_fileKinds, 'label');
         }
     }
 

@@ -11,7 +11,7 @@ use Craft;
 use craft\base\Utility;
 use craft\db\Table;
 use craft\events\RegisterCacheOptionsEvent;
-use craft\helpers\ArrayHelper;
+use craft\helpers\Arr;
 use craft\helpers\Db;
 use craft\helpers\FileHelper;
 use craft\web\assets\clearcaches\ClearCachesAsset;
@@ -101,7 +101,7 @@ class ClearCaches extends Utility
             ];
         }
 
-        ArrayHelper::multisort($cacheOptions, 'label');
+        $cacheOptions = Arr::sort($cacheOptions, 'label');
         $view = Craft::$app->getView();
 
         $view->registerAssetBundle(ClearCachesAsset::class);
@@ -230,9 +230,7 @@ class ClearCaches extends Utility
             $options = $event->options;
         }
 
-        ArrayHelper::multisort($options, 'label');
-
-        return $options;
+        return Arr::sort($options, 'label');
     }
 
     /**
@@ -264,8 +262,6 @@ class ClearCaches extends Utility
             $options = $event->options;
         }
 
-        ArrayHelper::multisort($options, 'label');
-
-        return $options;
+        return Arr::sort($options, 'label');
     }
 }

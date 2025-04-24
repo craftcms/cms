@@ -16,7 +16,6 @@ use craft\events\RegisterCpNavItemsEvent;
 use craft\events\RegisterCpSettingsEvent;
 use craft\helpers\App;
 use craft\helpers\Arr;
-use craft\helpers\ArrayHelper;
 use craft\helpers\Assets;
 use craft\helpers\Cp as CpHelper;
 use craft\helpers\Html;
@@ -618,10 +617,9 @@ class Cp extends Component
                 ];
             }
         }
-        ArrayHelper::multisort($envSuggestions, 'name');
         $suggestions[] = [
             'label' => Craft::t('app', 'Environment Variables'),
-            'data' => $envSuggestions,
+            'data' => Arr::sort($envSuggestions, 'name'),
         ];
 
         if ($includeAliases) {
@@ -649,10 +647,9 @@ class Cp extends Component
                     ];
                 }
             }
-            ArrayHelper::multisort($aliasSuggestions, 'name');
             $suggestions[] = [
                 'label' => Craft::t('app', 'Aliases'),
-                'data' => $aliasSuggestions,
+                'data' => Arr::sort($aliasSuggestions, 'name'),
             ];
         }
 
@@ -785,14 +782,12 @@ class Cp extends Component
      */
     private function _envOptions(array $options): array
     {
-        if (!empty($options)) {
-            ArrayHelper::multisort($options, 'value');
-            array_unshift($options, [
+        return Collection::make($options)
+            ->sortBy('value')
+            ->prepend([
                 'optgroup' => Craft::t('app', 'Environment Variables'),
-            ]);
-        }
-
-        return $options;
+            ])
+            ->all();
     }
 
     /**
@@ -878,7 +873,7 @@ class Cp extends Component
             $allLocales = Craft::$app->getI18n()->getAllLocales();
         }
 
-        ArrayHelper::multisort($allLocales, fn(Locale $locale) => $locale->getDisplayName());
+        $allLocales = Arr::sort($allLocales, fn(Locale $locale) => $locale->getDisplayName());
 
         foreach ($allLocales as $locale) {
             $name = $locale->getLanguageID() !== $languageId ? $locale->getDisplayName() : '';
@@ -936,14 +931,13 @@ class Cp extends Component
      */
     public function getVolumeOptions(): array
     {
-        $options = array_map(fn(Volume $volume) => [
-            'label' => $volume->name,
-            'value' => $volume->id,
-        ], Craft::$app->getVolumes()->getAllVolumes());
-
-        ArrayHelper::multisort($options, 'label');
-
-        return $options;
+        return Collection::make(Craft::$app->getVolumes()->getAllVolumes())
+            ->map(fn(Volume $volume) => [
+                'label' => $volume->name,
+                'value' => $volume->id,
+            ])
+            ->sortBy('label')
+            ->all();
     }
 
     /**
@@ -1049,12 +1043,10 @@ class Cp extends Component
             }
         }
 
-        ArrayHelper::multisort($suggestions, 'name');
-
         return [
             [
                 'label' => Craft::t('app', 'Templates'),
-                'data' => $suggestions,
+                'data' => Arr::sort($suggestions, 'name'),
             ],
         ];
     }

@@ -6,7 +6,6 @@ use Craft;
 use craft\base\Component;
 use craft\events\RegisterConditionRulesEvent;
 use craft\helpers\Arr;
-use craft\helpers\ArrayHelper;
 use craft\helpers\Html;
 use craft\helpers\Json;
 use craft\helpers\UrlHelper;
@@ -519,7 +518,9 @@ JS,
                 $optionsHtml .= Html::tag('hr', options: ['class' => 'padded']) .
                     Html::tag('h6', Html::encode($groupLabel), ['class' => 'padded']);
             }
-            ArrayHelper::multisort($groupRuleTypeOptions, ['label', 'hint']);
+            $groupRuleTypeOptions = Collection::make($groupRuleTypeOptions)
+                ->sortBy(['label', 'hint'])
+                ->all();
             $optionsHtml .=
                 Html::beginTag('ul', ['class' => 'padded']) .
                 implode("\n", array_map(function(array $option) use ($ruleValue) {

@@ -14,7 +14,7 @@ use craft\base\FieldLayoutElement;
 use craft\errors\FieldNotFoundException;
 use craft\fieldlayoutelements\BaseField;
 use craft\fieldlayoutelements\CustomField;
-use craft\helpers\ArrayHelper;
+use craft\helpers\Arr;
 use craft\helpers\Cp;
 use craft\helpers\Html;
 use craft\helpers\Json;
@@ -78,7 +78,7 @@ class FieldLayoutTab extends FieldLayoutComponent
 
         $config['elements'] = [];
 
-        ArrayHelper::multisort($config['fields'], 'sortOrder');
+        $config['fields'] = Arr::sort($config['fields'], 'sortOrder');
         foreach ($config['fields'] as $fieldUid => $fieldConfig) {
             $config['elements'][] = [
                 'type' => CustomField::class,

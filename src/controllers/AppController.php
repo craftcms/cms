@@ -21,6 +21,7 @@ use craft\errors\StaleResourceException;
 use craft\filters\UtilityAccess;
 use craft\helpers\Api;
 use craft\helpers\App;
+use craft\helpers\Arr;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Cp;
 use craft\helpers\DateTimeHelper;
@@ -560,7 +561,7 @@ class AppController extends Controller
         $this->requireAdmin(false);
         $pluginLicenses = $this->request->getBodyParam('pluginLicenses');
         $result = $this->_pluginLicenseInfo($pluginLicenses);
-        ArrayHelper::multisort($result, 'name');
+        $result = Arr::sort($result, 'name');
         return $this->asJson($result);
     }
 
