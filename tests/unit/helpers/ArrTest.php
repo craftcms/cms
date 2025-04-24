@@ -134,6 +134,16 @@ class ArrTest extends TestCase
     }
 
     /**
+     * @dataProvider isIndexedDataProvider
+     * @param bool $expected
+     * @param array $array
+     */
+    public function testIsIndexed(bool $expected, array $array): void
+    {
+        self::assertSame($expected, Arr::isIndexed($array));
+    }
+
+    /**
      * @return array
      */
     public static function firstDataProvider(): array
@@ -206,6 +216,18 @@ class ArrTest extends TestCase
     {
         return [
             [true, [0, 1, 2, '3']],
+            [false, [0, 1, 2, '3a']],
+        ];
+    }
+
+    /**
+     * @return array
+     */
+    public static function isIndexedDataProvider(): array
+    {
+        return [
+            [true, [0, 1, 2]],
+            [false, [0, 1, 2, '3']],
             [false, [0, 1, 2, '3a']],
         ];
     }

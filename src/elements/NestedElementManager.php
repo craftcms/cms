@@ -24,7 +24,6 @@ use craft\enums\PropagationMethod;
 use craft\events\BulkElementsEvent;
 use craft\events\DuplicateNestedElementsEvent;
 use craft\helpers\Arr;
-use craft\helpers\ArrayHelper;
 use craft\helpers\Cp;
 use craft\helpers\Db;
 use craft\helpers\ElementHelper;
@@ -622,7 +621,7 @@ class NestedElementManager extends Component
 
             if (!empty($config['createAttributes'])) {
                 $settings['createAttributes'] = $config['createAttributes'];
-                if (ArrayHelper::isIndexed($settings['createAttributes'])) {
+                if (Arr::isIndexed($settings['createAttributes'])) {
                     if (count($settings['createAttributes']) === 1) {
                         $settings['createAttributes'] = Arr::first($settings['createAttributes'])['attributes'];
                     } else {

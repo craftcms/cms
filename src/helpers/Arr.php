@@ -116,4 +116,16 @@ class Arr extends \Illuminate\Support\Arr
     {
         return Collection::make($array)->every(fn($v) => is_numeric($v));
     }
+
+    /**
+     * Returns whether all the elements in the array are integers.
+     *
+     * @param array $array
+     * @return bool
+     * @since 5.x
+     */
+    public static function isIndexed(array $array): bool
+    {
+        return Collection::make($array)->every(fn($v) => is_int($v));
+    }
 }
