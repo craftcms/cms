@@ -8,7 +8,6 @@
 namespace craft\db;
 
 use craft\helpers\Arr;
-use craft\helpers\ArrayHelper;
 use DateTime;
 
 /**
@@ -88,7 +87,7 @@ final class QueryParam
             return array_values(Arr::whereNotEmpty($value));
         }
 
-        return ArrayHelper::toArray($value);
+        return Arr::toArray($value);
     }
 
     /**

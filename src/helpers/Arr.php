@@ -2,6 +2,9 @@
 
 namespace craft\helpers;
 
+use Craft;
+use DateTimeInterface;
+use Illuminate\Contracts\Support\Arrayable;
 use Illuminate\Support\Collection;
 
 /**
@@ -12,6 +15,121 @@ use Illuminate\Support\Collection;
  */
 class Arr extends \Illuminate\Support\Arr
 {
+    /**
+     * Converts an object or an array of objects into an array.
+     * @param mixed $object the object to be converted into an array
+     * @param array $properties a mapping from object class names to the properties that need to put into the resulting arrays.
+     * The properties specified for each class are an array of the following format:
+     *
+     * ```php
+     * [
+     *     'app\models\Post' => [
+     *         'id',
+     *         'title',
+     *         // the key name in array result => property name
+     *         'createTime' => 'created_at',
+     *         // the key name in array result => anonymous function
+     *         'length' => function ($post) {
+     *             return strlen($post->content);
+     *         },
+     *     ],
+     * ]
+     * ```
+     *
+     * The result of `Arr::toArray($post, $properties)` could be like the following:
+     *
+     * ```php
+     * [
+     *     'id' => 123,
+     *     'title' => 'test',
+     *     'createTime' => '2013-01-01 12:00AM',
+     *     'length' => 301,
+     * ]
+     * ```
+     *
+     * @param bool $recursive whether to recursively convert properties which are objects into arrays.
+     * @return array the array representation of the object
+     */
+    public static function toArray(mixed $object, array $properties = [], bool $recursive = true): array
+    {
+        if ($object === null) {
+            return [];
+        }
+
+        if (is_string($object) && str_contains($object, ',')) {
+            Craft::$app->getDeprecator()->log('Arr::toArray(string)', 'Passing a string to `Arr::toArray()` has been deprecated. Use `StringHelper::split()` instead.');
+
+            // Split it on the non-escaped commas
+            $object = preg_split('/(?<!\\\),/', $object);
+
+            // Remove any of the backslashes used to escape the commas
+            foreach ($object as $key => $val) {
+                // Remove leading/trailing whitespace
+                $val = trim($val);
+
+                // Remove any backslashes used to escape commas
+                $val = str_replace('\,', ',', $val);
+
+                $object[$key] = $val;
+            }
+
+            // Remove any empty elements and reset the keys
+            return array_values(static::whereNotEmpty($object));
+        }
+
+        if (is_array($object)) {
+            if (!$recursive) {
+                return $object;
+            }
+
+            foreach ($object as $key => $value) {
+                if (is_array($value) || is_object($value)) {
+                    $object[$key] = static::toArray($value, $properties, true);
+                }
+            }
+
+            return $object;
+        }
+
+        if ($object instanceof DateTimeInterface) {
+            return (array) $object;
+        }
+
+        if (is_object($object)) {
+            if (!empty($properties)) {
+                $className = get_class($object);
+                if (!empty($properties[$className])) {
+                    $result = [];
+                    foreach ($properties[$className] as $key => $name) {
+                        if (is_int($key)) {
+                            $result[$name] = $object->$name;
+                        } else {
+                            $result[$key] = static::get($object, $name);
+                        }
+                    }
+
+                    return $recursive ? static::toArray($result, $properties) : $result;
+                }
+            }
+
+            if ($object instanceof \yii\base\Arrayable) {
+                $result = $object->toArray([], [], $recursive);
+            } elseif ($object instanceof Arrayable || method_exists($object, 'toArray')) {
+                $result = $object->toArray();
+            } else {
+                $result = [];
+
+                foreach ($object as $key => $value) {
+                    $result[$key] = $value;
+                }
+            }
+
+            return $recursive ? static::toArray($result, $properties) : $result;
+        }
+
+        return [$object];
+    }
+
     /**
      * Merges two or more arrays into one recursively.
      *

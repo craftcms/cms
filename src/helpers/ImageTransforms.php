@@ -278,7 +278,7 @@ class ImageTransforms
         }
 
         if (is_object($transform)) {
-            $transform = ArrayHelper::toArray($transform);
+            $transform = Arr::toArray($transform);
         }
 
         if (is_array($transform)) {

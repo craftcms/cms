@@ -7,7 +7,6 @@
 
 namespace crafttests\unit\helpers;
 
-use Codeception\Test\Unit;
 use craft\helpers\Arr;
 use craft\test\TestCase;
 use stdClass;
@@ -21,6 +20,16 @@ use stdClass;
  */
 class ArrTest extends TestCase
 {
+    /**
+     * @dataProvider toArrayDataProvider
+     * @param array $expected
+     * @param mixed $object
+     */
+    public function testToArray(array $expected, mixed $object): void
+    {
+        self::assertSame($expected, Arr::toArray($object));
+    }
+
     public function testMerge(): void
     {
         $a = [
@@ -141,6 +150,27 @@ class ArrTest extends TestCase
     public function testIsIndexed(bool $expected, array $array): void
     {
         self::assertSame($expected, Arr::isIndexed($array));
+    }
+
+    /**
+     * @return array
+     */
+    public static function toArrayDataProvider(): array
+    {
+        $stdClass2 = new stdClass();
+        $stdClass2->subProp = 'value';
+
+        $stdClass = new stdClass();
+        $stdClass->prop1 = '11';
+        $stdClass->prop2 = '22';
+        $stdClass->prop3 = $stdClass2;
+
+        return [
+            [[], null],
+            [[], null], [[1, 2, 3], [1, 2, 3]],
+            [['prop1' => '11', 'prop2' => '22', 'prop3' => ['subProp' => 'value']], $stdClass],
+            [['foo', 'bar, baz'], 'foo, bar\, baz', ''],
+        ];
     }
 
     /**
