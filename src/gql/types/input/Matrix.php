@@ -116,7 +116,7 @@ class Matrix extends InputObjectType
                 if (!empty($entry)) {
                     $type = array_key_first($entry);
                     $entry = reset($entry);
-                    $entryId = Arr::pull($entry, 'id', sprintf('new:%s', $entryCounter++));
+                    $entryId = Arr::pull($entry, 'id') ?? sprintf('new:%s', $entryCounter++);
                     $title = Arr::pull($entry, 'title');
 
                     $preparedEntries[$entryId] = [
