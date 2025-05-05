@@ -803,6 +803,12 @@ JS, [
      */
     public function serializeValue(mixed $value, ?ElementInterface $element): mixed
     {
+        if ($this->maintainHierarchy) {
+            // Enforce the “Maintain hierarchy” and “Branch Limit” settings
+            $value = $this->normalizeValueForInput($value, $element);
+            return array_map(fn(ElementInterface $element) => $element->id, $value);
+        }
+
         /** @var ElementQueryInterface|ElementCollection $value */
         if ($value instanceof ElementCollection) {
             return $value->ids()->all();
@@ -854,21 +860,7 @@ JS, [
      */
     protected function inputHtml(mixed $value, ?ElementInterface $element, bool $inline): string
     {
-        if ($element !== null && $element->hasEagerLoadedElements($this->handle)) {
-            $value = $element->getEagerLoadedElements($this->handle)->all();
-        } else {
-            $value = $this->_all($value, $element)->all();
-        }
-
-        if ($this->maintainHierarchy) {
-            $structuresService = Craft::$app->getStructures();
-            // Fill in any gaps
-            $structuresService->fillGapsInElements($value);
-            // Enforce the branch limit
-            if ($this->branchLimit) {
-                $structuresService->applyBranchLimitToElements($value, $this->branchLimit);
-            }
-        }
+        $value = $this->normalizeValueForInput($value, $element, $initialValue);
 
         /** @var ElementInterface[] $value */
         $variables = $this->inputTemplateVariables($value, $element);
@@ -878,7 +870,44 @@ JS, [
             $variables['viewMode'] = 'list';
         }
 
+        if ($initialValue !== null) {
+            // make sure the field gets updated on save, even if it hasn't changed
+            Craft::$app->getView()->setInitialDeltaValue($this->handle, $initialValue);
+        }
+
         return Craft::$app->getView()->renderTemplate($this->inputTemplate, $variables);
+    }
+
+    /**
+     * @param ElementQueryInterface|ElementCollection $value
+     * @param ElementInterface|null $element
+     * @param int[]|null $initialValue
+     * @return ElementInterface[]
+     */
+    private function normalizeValueForInput(mixed $value, ?ElementInterface $element, ?array &$initialValue = null): array
+    {
+        if ($element !== null && $element->hasEagerLoadedElements($this->handle)) {
+            $value = $element->getEagerLoadedElements($this->handle)->all();
+        } else {
+            $value = $this->_all($value, $element)->all();
+        }
+
+        if ($this->maintainHierarchy) {
+            $initialValue = array_map(fn(ElementInterface $element) => $element->id, $value);
+            $structuresService = Craft::$app->getStructures();
+            // Fill in any gaps
+            $structuresService->fillGapsInElements($value);
+            // Enforce the branch limit
+            if ($this->branchLimit) {
+                $structuresService->applyBranchLimitToElements($value, $this->branchLimit);
+            }
+
+            if (count($initialValue) === count($value)) {
+                $initialValue = null;
+            }
+        }
+
+        return $value;
     }
 
     /**
@@ -1419,10 +1448,11 @@ JS, [
     {
         if ($value instanceof ElementQueryInterface) {
             $value = $value->eagerly()->all();
-            ElementHelper::swapInProvisionalDrafts($value);
         } elseif (!is_array($value)) {
             $value = [];
         }
+
+        ElementHelper::swapInProvisionalDrafts($value);
 
         if ($this->validateRelatedElements && $element !== null) {
             // Pre-validate related elements

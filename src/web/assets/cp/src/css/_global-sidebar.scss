@@ -368,14 +368,6 @@ States
     .sidebar-action {
       width: var(--nav-item-prefix-width);
       min-height: var(--nav-item-prefix-width);
-
-      &:focus-visible,
-      &:hover {
-        .sidebar-action__label {
-          opacity: 1;
-          transform: translateY(-50%) translateX(0);
-        }
-      }
     }
 
     .nav-item__trigger {
@@ -387,8 +379,7 @@ States
     }
 
     .sidebar-action__label {
-      z-index: 10;
-      opacity: 0;
+      display: none;
     }
 
     .sidebar-action__badge {

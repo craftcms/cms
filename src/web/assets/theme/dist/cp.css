@@ -54,7 +54,7 @@
     /* Buttons */
     --button-border: none;
     --button-border-radius: var(--ui-control-border-radius);
-    --button-padding: 7px 10px;
+    --button-padding: 10px;
     --button-text-color: var(--text-color);
     --button-bg: var(--ui-control-bg-color);
 

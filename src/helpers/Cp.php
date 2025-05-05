@@ -2780,16 +2780,6 @@ JS, [
                 'class' => ['element', 'card'],
             ]);
 
-        // get thumb placeholder
-        if ($showThumb ?? $fieldLayout->getThumbField() !== null) {
-            $previewThumb = Html::tag('div',
-                Html::tag('div', Cp::iconSvg('image'), ['class' => 'cp-icon']),
-                ['class' => 'cvd-thumbnail']
-            );
-
-            $previewHtml .= Html::tag('div', $previewThumb, ['class' => ['thumb']]);
-        }
-
         $previewHtml .=
             Html::tag('div', options: ['class' => 'card-titlebar']) .
             Html::beginTag('div', ['class' => 'card-main']) .
@@ -2823,7 +2813,19 @@ JS, [
 
         $previewHtml .=
             Html::endTag('div') . // .card-body
-            Html::endTag('div') . // .card-content
+            Html::endTag('div'); // .card-content
+
+        // get thumb placeholder
+        if ($showThumb ?? $fieldLayout->getThumbField() !== null) {
+            $previewThumb = Html::tag('div',
+                Html::tag('div', Cp::iconSvg('image'), ['class' => 'cp-icon']),
+                ['class' => 'cvd-thumbnail']
+            );
+
+            $previewHtml .= Html::tag('div', $previewThumb, ['class' => ['thumb']]);
+        }
+
+        $previewHtml .=
             Html::endTag('div') . // .card-main
             Html::tag('div', '', ['class' => 'spinner spinner-absolute']) .
             Html::endTag('div'); // .element.card

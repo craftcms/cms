@@ -61,6 +61,15 @@ use yii\web\JsonParser;
 class App
 {
     /**
+     * @internal
+     */
+    public const CACHE_KEY_LICENSE_INFO = 'licenseInfo';
+    /**
+     * @internal
+     */
+    public const CACHE_KEY_LICENSE_INFO_HOST = 'licenseInfoHost';
+
+    /**
      * @var bool
      */
     private static bool $_iconv;
@@ -1306,21 +1315,6 @@ class App
     }
 
     /**
-     * Returns the cache key that licensing info should be stored with.
-     *
-     * @return string
-     * @internal
-     */
-    public static function licenseInfoCacheKey(): string
-    {
-        $request = Craft::$app->getRequest();
-        if ($request->getIsConsoleRequest()) {
-            return 'licenseInfo';
-        }
-        return sprintf('licenseInfo@%s', $request->getHostName());
-    }
-
-    /**
      * Returns all known licensing issues.
      *
      * @param bool $withUnresolvables
@@ -1337,8 +1331,7 @@ class App
 
         $updatesService = Craft::$app->getUpdates();
         $cache = Craft::$app->getCache();
-        $licenseInfoCacheKey = static::licenseInfoCacheKey();
-        $isInfoCached = $cache->exists($licenseInfoCacheKey) && $updatesService->getIsUpdateInfoCached();
+        $isInfoCached = $cache->exists(App::CACHE_KEY_LICENSE_INFO) && $updatesService->getIsUpdateInfoCached();
 
         if (!$isInfoCached) {
             if (!$fetch) {
@@ -1350,7 +1343,8 @@ class App
 
         $issues = [];
 
-        $allLicenseInfo = $cache->get($licenseInfoCacheKey) ?: [];
+        $allLicenseInfo = $cache->get(App::CACHE_KEY_LICENSE_INFO) ?: [];
+        $licenseInfoHost = $cache->get(App::CACHE_KEY_LICENSE_INFO_HOST);
         $pluginsService = Craft::$app->getPlugins();
         $generalConfig = Craft::$app->getConfig()->getGeneral();
         $consoleUrl = rtrim(Craft::$app->getPluginStore()->craftIdEndpoint, '/');
@@ -1416,36 +1410,39 @@ class App
             } elseif ($licenseInfo['status'] === LicenseKeyStatus::Mismatched->value) {
                 if ($withUnresolvables) {
                     if ($isCraft) {
-                        // wrong domain
-                        $licensedDomain = $cache->get('licensedDomain');
-                        $domainLink = Html::a($licensedDomain, "http://$licensedDomain", [
-                            'rel' => 'noopener',
-                            'target' => '_blank',
-                        ]);
-
-                        if (defined('CRAFT_LICENSE_KEY')) {
-                            $message = Craft::t('app', 'The Craft CMS license key in use belongs to {domain}', [
-                                'domain' => $domainLink,
+                        // wrong domain. ignore if the cache wasn't saved from the same host name we're currently on
+                        $request = Craft::$app->getRequest();
+                        if ($licenseInfoHost && $request->getIsWebRequest() && $request->getHostName() === $licenseInfoHost) {
+                            $licensedDomain = $cache->get('licensedDomain');
+                            $domainLink = Html::a($licensedDomain, "http://$licensedDomain", [
+                                'rel' => 'noopener',
+                                'target' => '_blank',
                             ]);
-                        } else {
-                            $keyPath = Craft::$app->getPath()->getLicenseKeyPath();
 
-                            // If the license key path starts with the root project path, trim the project path off
-                            $rootPath = Craft::getAlias('@root');
-                            if (strpos($keyPath, $rootPath . '/') === 0) {
-                                $keyPath = substr($keyPath, strlen($rootPath) + 1);
+                            if (defined('CRAFT_LICENSE_KEY')) {
+                                $message = Craft::t('app', 'The Craft CMS license key in use belongs to {domain}', [
+                                    'domain' => $domainLink,
+                                ]);
+                            } else {
+                                $keyPath = Craft::$app->getPath()->getLicenseKeyPath();
+
+                                // If the license key path starts with the root project path, trim the project path off
+                                $rootPath = Craft::getAlias('@root');
+                                if (strpos($keyPath, $rootPath . '/') === 0) {
+                                    $keyPath = substr($keyPath, strlen($rootPath) + 1);
+                                }
+
+                                $message = Craft::t('app', 'The Craft CMS license located at {file} belongs to {domain}.', [
+                                    'file' => $keyPath,
+                                    'domain' => $domainLink,
+                                ]);
                             }
 
-                            $message = Craft::t('app', 'The Craft CMS license located at {file} belongs to {domain}.', [
-                                'file' => $keyPath,
-                                'domain' => $domainLink,
+                            $learnMoreLink = Html::a(Craft::t('app', 'Learn more'), 'https://craftcms.com/support/resolving-mismatched-licenses', [
+                                'class' => 'go',
                             ]);
+                            $issues[] = [$name, "$message $learnMoreLink", null];
                         }
-
-                        $learnMoreLink = Html::a(Craft::t('app', 'Learn more'), 'https://craftcms.com/support/resolving-mismatched-licenses', [
-                            'class' => 'go',
-                        ]);
-                        $issues[] = [$name, "$message $learnMoreLink", null];
                     } else {
                         // wrong Craft install
                         $issues[] = [

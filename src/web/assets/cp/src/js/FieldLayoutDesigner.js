@@ -385,6 +385,7 @@ Craft.FieldLayoutDesigner = Garnish.Base.extend(
       const tab = hud.$trigger.closest('.fld-tab').data('fld-tab');
       $element.insertBefore(hud.$trigger);
       const element = tab.initElement($element);
+      tab.designer.$cvd?.data('cvd').addCheckbox(element);
       element.updatePositionInConfig();
       this.tabGrid.refreshCols(true);
     },

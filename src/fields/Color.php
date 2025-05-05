@@ -66,7 +66,7 @@ class Color extends Field implements InlineEditableFieldInterface, MergeableFiel
 
     /**
      * @var array Color palette
-     * @phpstan-var array{color:string,label:string|null,default:bool}[]
+     * @phpstan-var array{color:string,label:string|null,default:bool|null}[]
      * @since 5.6.0
      */
     public array $palette = [];

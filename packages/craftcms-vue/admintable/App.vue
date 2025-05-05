@@ -1182,6 +1182,12 @@
     margin-top: 14px;
     position: sticky;
     min-height: 44px;
+
+    .so-body & {
+      margin: 0;
+      padding: 0;
+      position: static;
+    }
   }
 
   .vue-admin-tablepane + .vue-admin-table-footer {

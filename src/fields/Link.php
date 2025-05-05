@@ -193,6 +193,7 @@ class Link extends Field implements InlineEditableFieldInterface, RelationalFiel
     /**
      * @var bool Whether GraphQL values should be returned as objects with `type`,
      * `value`, `label`, `urlSuffix`, and `url` keys.
+     * @since 5.6.0
      */
     public bool $fullGraphqlData = true;
 
@@ -509,7 +510,7 @@ class Link extends Field implements InlineEditableFieldInterface, RelationalFiel
         if (
             $value instanceof LinkData &&
             $element?->propagating &&
-            ($element->propagateAll || $element->isNewForSite) &&
+            ($element->propagateAll || ($element->isNewForSite && !isset($element->duplicateOf))) &&
             isset($element->propagatingFrom) &&
             $this->getTranslationKey($element) !== $this->getTranslationKey($element->propagatingFrom)
         ) {

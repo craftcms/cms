@@ -485,7 +485,7 @@ return [
     'Created at' => 'Gemaakt op',
     'Created by' => 'Gemaakt door',
     'Credentialed' => 'Gecertificeerd',
-    'Critical' => 'Kritische',
+    'Critical' => 'Kritisch',
     'Crop' => 'Bijsnijden',
     'Currency' => 'Valuta',
     'Current Password' => 'Huidige wachtwoord',

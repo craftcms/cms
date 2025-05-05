@@ -4593,11 +4593,66 @@ table.editable {
     }
   }
 
+  thead:first-child,
+  tbody:first-child,
+  colgroup + thead,
+  colgroup + tbody {
+    tr:first-child {
+      th,
+      td {
+        &:first-child {
+          border-start-start-radius: var(--large-border-radius);
+
+          textarea,
+          input.text {
+            border-start-start-radius: calc(var(--large-border-radius) - 1px);
+          }
+        }
+
+        &:last-child {
+          border-start-end-radius: var(--large-border-radius);
+
+          textarea,
+          input.text {
+            border-start-end-radius: calc(var(--large-border-radius) - 1px);
+          }
+        }
+      }
+    }
+  }
+
+  thead,
+  tbody {
+    &:last-child tr:last-child {
+      th,
+      td {
+        &:first-child {
+          border-end-start-radius: var(--large-border-radius);
+
+          textarea,
+          input.text {
+            border-end-start-radius: calc(var(--large-border-radius) - 1px);
+          }
+        }
+
+        &:last-child {
+          border-end-end-radius: var(--large-border-radius);
+
+          textarea,
+          input.text {
+            border-end-end-radius: calc(var(--large-border-radius) - 1px);
+          }
+        }
+      }
+    }
+  }
+
   thead {
     tr {
       th {
         border-block-end: 1px solid var(--hairline-color);
-        font-size: 0.8em;
+        font-family: inherit; // for .code
+        font-size: 0.8em !important; // ! for .code
         font-weight: 500;
         line-height: 1.4;
 
@@ -4619,17 +4674,6 @@ table.editable {
         th,
         td {
           border-block-start: 1px solid var(--hairline-color);
-        }
-      }
-
-      &:last-child {
-        td:first-child {
-          border-end-start-radius: var(--large-border-radius);
-
-          textarea,
-          input.text {
-            border-end-start-radius: calc(var(--large-border-radius) - 1px);
-          }
         }
       }
 

@@ -2588,6 +2588,10 @@ Craft.BaseElementIndex = Garnish.Base.extend(
     getViewModesForSource: function () {
       let viewModes = this.$source.data('viewModes');
 
+      if (!viewModes) {
+        return false;
+      }
+
       // apply availableOnMobile
       if (Garnish.isMobileBrowser(true)) {
         viewModes = viewModes.filter(

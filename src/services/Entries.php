@@ -978,14 +978,19 @@ class Entries extends Component
             ->typeId($entryTypeIds)
             ->one();
 
-        // if we didn't find any, try without the typeId,
-        // in case that changed to something completely new
+        // if we didn't find any, look for any entry in this section
+        // regardless of type ID, and potentially even soft-deleted
         if ($entry === null) {
             $entry = $baseEntryQuery
                 ->typeId(null)
+                ->trashed(null)
                 ->one();
 
             if ($entry !== null) {
+                if (isset($entry->dateDeleted)) {
+                    Craft::$app->getElements()->restoreElement($entry);
+                }
+
                 $entry->setTypeId($entryTypeIds[0]);
             }
         }
@@ -1468,12 +1473,30 @@ SQL)->execute();
      * ```
      *
      * @param int $entryTypeId
+     * @param bool $withTrashed
      * @return EntryType|null
      * @since 5.0.0
      */
-    public function getEntryTypeById(int $entryTypeId): ?EntryType
+    public function getEntryTypeById(int $entryTypeId, bool $withTrashed = false): ?EntryType
     {
-        return $this->_entryTypes()->firstWhere('id', $entryTypeId);
+        $entryType = $this->_entryTypes()->firstWhere('id', $entryTypeId);
+        if (!$entryType && $withTrashed) {
+            $record = $this->_getEntryTypeRecord($entryTypeId, true);
+            if (!$record->getIsNewRecord()) {
+                return new EntryType($record->toArray([
+                    'id',
+                    'fieldLayoutId',
+                    'name',
+                    'handle',
+                    'hasTitleField',
+                    'titleTranslationMethod',
+                    'titleTranslationKeyFormat',
+                    'titleFormat',
+                    'uid',
+                ]));
+            }
+        }
+        return $entryType;
     }
 
     /**
@@ -1993,14 +2016,18 @@ SQL)->execute();
     /**
      * Gets an entry type's record by uid.
      *
-     * @param string $uid
+     * @param int|string $id
      * @param bool $withTrashed Whether to include trashed entry types in search
      * @return EntryTypeRecord
      */
-    private function _getEntryTypeRecord(string $uid, bool $withTrashed = false): EntryTypeRecord
+    private function _getEntryTypeRecord(int|string $id, bool $withTrashed = false): EntryTypeRecord
     {
         $query = $withTrashed ? EntryTypeRecord::findWithTrashed() : EntryTypeRecord::find();
-        $query->andWhere(['uid' => $uid]);
+        if (is_int($id)) {
+            $query->andWhere(['id' => $id]);
+        } else {
+            $query->andWhere(['uid' => $id]);
+        }
         /** @noinspection PhpIncompatibleReturnTypeInspection */
         /** @var EntryTypeRecord */
         return $query->one() ?? new EntryTypeRecord();
