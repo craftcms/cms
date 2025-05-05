@@ -1,4 +1,5 @@
 {% import '_includes/forms.twig' as forms %}
+{% set orientation = craft.app.locale.getOrientation() -%}
 
 <div>
   <h2>{{ 'General'|t('app') }}</h2>
@@ -80,6 +81,85 @@
     ],
     value: currentUser.getPreference('notificationDuration') ?? a11yDefaults['notificationDuration'] ?? 5000,
   }) }}
+
+  {{ forms.buttonGroupField({
+    id: 'notification-position',
+    name: 'notificationPosition',
+    label: 'Notification Position'|t('app'),
+    options: [
+      {
+        icon: orientation == 'ltr' ? 'notification-top-left' : 'notification-top-right',
+        value: 'start-start',
+        attributes: {
+          title: orientation == 'ltr' ? 'Top-Left'|t('app') : 'Top-Right'|t('app'),
+          aria: {
+            label: orientation == 'ltr' ? 'Top-Left'|t('app') : 'Top-Right'|t('app'),
+          },
+        },
+      },
+      {
+        icon: orientation == 'ltr' ? 'notification-top-right' : 'notification-top-left',
+        value: 'start-end',
+        attributes: {
+          title: orientation == 'ltr' ? 'Top-Right'|t('app') : 'Top-Left'|t('app'),
+          aria: {
+            label: orientation == 'ltr' ? 'Top-Right'|t('app') : 'Top-Left'|t('app'),
+          },
+        },
+      },
+      {
+        icon: orientation == 'ltr' ? 'notification-bottom-left' : 'notification-bottom-right',
+        value: 'end-start',
+        attributes: {
+          title: orientation == 'ltr' ? 'Bottom-Left'|t('app') : 'Bottom-Right'|t('app'),
+          aria: {
+            label: orientation == 'ltr' ? 'Bottom-Left'|t('app') : 'Bottom-Right'|t('app'),
+          },
+        },
+      },
+      {
+        icon: orientation == 'ltr' ? 'notification-bottom-right' : 'notification-bottom-left',
+        value: 'end-end',
+        attributes: {
+          title: orientation == 'ltr' ? 'Bottom-Right'|t('app') : 'Bottom-Left'|t('app'),
+          aria: {
+            label: orientation == 'ltr' ? 'Bottom-Right'|t('app') : 'Bottom-Left'|t('app'),
+          },
+        },
+      },
+    ],
+    value: currentUser.getPreference('notificationPosition') ?? a11yDefaults['notificationPosition'] ?? 'end-start',
+  }) }}
+
+  {{ forms.buttonGroupField({
+    id: 'slideout-position',
+    name: 'slideoutPosition',
+    label: 'Slideout Position'|t('app'),
+    options: [
+      {
+        icon: orientation == 'ltr' ? 'slideout-left' : 'slideout-right',
+        value: 'start',
+        attributes: {
+          title: orientation == 'ltr' ? 'Left'|t('app') : 'Right'|t('app'),
+          aria: {
+            label: orientation == 'ltr' ? 'Left'|t('app') : 'Right'|t('app'),
+          },
+        },
+      },
+      {
+        icon: orientation == 'ltr' ? 'slideout-right' : 'slideout-left',
+        value: 'end',
+        attributes: {
+          title: orientation == 'ltr' ? 'Right'|t('app') : 'Left'|t('app'),
+          aria: {
+            label: orientation == 'ltr' ? 'Right'|t('app') : 'Left'|t('app'),
+          },
+        },
+      },
+    ],
+    value: currentUser.getPreference('slideoutPosition') ?? a11yDefaults['slideoutPosition'] ?? 'end',
+  }) }}
+
 </div>
 
 {% if currentUser.admin %}

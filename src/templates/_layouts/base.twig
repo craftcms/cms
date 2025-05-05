@@ -8,6 +8,7 @@
     orientation,
     (currentUser.getPreference('useShapes') ?? a11yDefaults['useShapes'] ?? false) ? 'use-shapes',
     (currentUser.getPreference('underlineLinks') ?? a11yDefaults['underlineLinks'] ?? false) ? 'underline-links',
+    "notifications--#{currentUser.getPreference('notificationPosition') ?? a11yDefaults['notificationPosition'] ?? 'end-start'}",
     requestedSite ? "site--#{requestedSite.handle}",
 ])|filter -%}
 

@@ -6371,8 +6371,10 @@ $min2ColWidth: 400px;
     height: 100%;
 
     @media screen and (prefers-reduced-motion: no-preference) {
-      transition: inset-inline-start linear 250ms;
-      will-change: inset-inline-start;
+      transition:
+        inset-inline-start linear 250ms,
+        inset-inline-end linear 250ms;
+      will-change: inset-inline-start, inset-inline-end;
     }
   }
 

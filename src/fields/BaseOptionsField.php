@@ -23,6 +23,7 @@ use craft\gql\arguments\OptionField as OptionFieldArguments;
 use craft\gql\resolvers\OptionField as OptionFieldResolver;
 use craft\helpers\Arr;
 use craft\helpers\Cp;
+use craft\helpers\Html;
 use craft\helpers\Json;
 use craft\helpers\StringHelper;
 use craft\validators\ColorValidator;
@@ -373,15 +374,21 @@ abstract class BaseOptionsField extends Field implements PreviewableFieldInterfa
         }
 
         $selectedBlankOption = false;
+        /** @var OptionData[] $options */
         $options = [];
         $optionValues = [];
-        $optionLabels = [];
         foreach ($this->options() as $option) {
             if (!isset($option['optgroup'])) {
                 $selected = $this->isOptionSelected($option, $value, $selectedValues, $selectedBlankOption);
-                $options[] = new OptionData($option['label'], $option['value'], $selected, true);
+                $options[] = new OptionData(
+                    $option['label'],
+                    $option['value'],
+                    $selected,
+                    true,
+                    $option['icon'] ?? null,
+                    $option['color'] ?? null,
+                );
                 $optionValues[] = (string)$option['value'];
-                $optionLabels[] = (string)$option['label'];
             }
         }
 
@@ -391,8 +398,10 @@ abstract class BaseOptionsField extends Field implements PreviewableFieldInterfa
             foreach ($selectedValues as $selectedValue) {
                 $index = array_search($selectedValue, $optionValues, true);
                 $valid = $index !== false;
-                $label = $valid ? $optionLabels[$index] : null;
-                $selectedOptions[] = new OptionData($label, $selectedValue, true, $valid);
+                $label = $valid ? $options[$index]->label : null;
+                $icon = $valid ? $options[$index]->icon : null;
+                $color = $valid ? $options[$index]->color : null;
+                $selectedOptions[] = new OptionData($label, $selectedValue, true, $valid, $icon, $color);
             }
             $value = new MultiOptionsFieldData($selectedOptions);
         } elseif (!empty($selectedValues)) {
@@ -400,8 +409,10 @@ abstract class BaseOptionsField extends Field implements PreviewableFieldInterfa
             $selectedValue = reset($selectedValues);
             $index = array_search($selectedValue, $optionValues, true);
             $valid = $index !== false;
-            $label = $valid ? $optionLabels[$index] : null;
-            $value = new SingleOptionFieldData($label, $selectedValue, true, $valid);
+            $label = $valid ? $options[$index]->label : null;
+            $icon = $valid ? $options[$index]->icon : null;
+            $color = $valid ? $options[$index]->color : null;
+            $value = new SingleOptionFieldData($label, $selectedValue, true, $valid, $icon, $color);
         } else {
             $value = new SingleOptionFieldData(null, null, true, false);
         }
@@ -541,8 +552,30 @@ abstract class BaseOptionsField extends Field implements PreviewableFieldInterfa
 
         /** @var SingleOptionFieldData $value */
         if (!$this->isValueEmpty($value, $element)) {
+            $parts = [];
+            if (isset($value->icon)) {
+                $parts[] = Html::tag('div', Cp::iconSvg($value->icon), [
+                    'class' => ['cp-icon', 'small'],
+                    'style' => array_filter([
+                        '--icon-color' => $value->color,
+                    ]),
+                ]);
+            } elseif (isset($value->color)) {
+                $parts[] = Html::beginTag('div', ['class' => ['color', 'small', 'static']]) .
+                    Html::tag('div', options: [
+                        'class' => 'color-preview',
+                        'style' => [
+                            'background-color' => $value->color,
+                        ],
+                    ]) .
+                    Html::endTag('div');
+            }
             // Custom values have no label
-            return $value->label ? Craft::t('site', (string)$value->label) : (string)$value->value;
+            $parts[] = Html::tag('div', $value->label ? Craft::t('site', (string)$value->label) : (string)$value->value);
+
+            return Html::beginTag('div', ['class' => ['flex', 'flex-inline', 'gap-xs']])
+                . implode('', $parts)
+                . Html::endTag('div');
         }
 
         return '';

@@ -92,6 +92,14 @@ class Assets extends BaseRelationField
     /**
      * @inheritdoc
      */
+    protected static function canShowSiteMenu(): bool
+    {
+        return false;
+    }
+
+    /**
+     * @inheritdoc
+     */
     public static function defaultSelectionLabel(): string
     {
         return Craft::t('app', 'Add an asset');

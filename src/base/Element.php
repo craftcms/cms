@@ -32,6 +32,7 @@ use craft\elements\db\ElementQuery;
 use craft\elements\db\ElementQueryInterface;
 use craft\elements\db\NestedElementQueryInterface;
 use craft\elements\ElementCollection;
+use craft\elements\Entry;
 use craft\elements\exporters\Expanded;
 use craft\elements\exporters\Raw;
 use craft\elements\User;
@@ -63,6 +64,7 @@ use craft\events\RegisterElementSortOptionsEvent;
 use craft\events\RegisterElementSourcesEvent;
 use craft\events\RegisterElementTableAttributesEvent;
 use craft\events\RegisterPreviewTargetsEvent;
+use craft\events\RenderElementEvent;
 use craft\events\SetEagerLoadedElementsEvent;
 use craft\events\SetElementRouteEvent;
 use craft\fieldlayoutelements\BaseField;
@@ -86,6 +88,7 @@ use craft\validators\SiteIdValidator;
 use craft\validators\SlugValidator;
 use craft\validators\StringValidator;
 use craft\web\UploadedFile;
+use craft\web\View;
 use DateTime;
 use GraphQL\Type\Definition\Type;
 use Illuminate\Support\Collection;
@@ -791,6 +794,26 @@ abstract class Element extends Component implements ElementInterface
      * should be used instead.
      */
     public const EVENT_AFTER_MOVE_IN_STRUCTURE = 'afterMoveInStructure';
+
+    /**
+     * @event RenderElementEvent The event that is triggered before an element is rendered.
+     * @since 5.7.5
+     *
+     * ```php
+     * use craft\base\Element;
+     * use craft\events\RenderElementEvent;
+     * use yii\base\Event;
+     *
+     * Event::on(
+     *     Element::class,
+     *     Element::EVENT_RENDER,
+     *     function(RenderElementEvent $event) {
+     *         $event->output = '…';
+     *     }
+     * );
+     * ```
+     */
+    public const EVENT_RENDER = 'render';
 
     /**
      * @inheritdoc
@@ -6801,19 +6824,59 @@ JS, [
     }
 
     /**
-     * Renders the element using its partial template.
-     *
-     * If no partial template exists for the element, its string representation will be output instead.
-     *
-     * @param array $variables
-     * @return Markup
-     * @throws InvalidConfigException
-     * @throws NotSupportedException
-     * @see ElementHelper::renderElements()
-     * @since 5.0.0
+     * @inheritdoc
      */
     public function render(array $variables = []): Markup
     {
-        return ElementHelper::renderElements([$this], $variables);
+        if ($this->hasEventHandlers(self::EVENT_RENDER)) {
+            $event = new RenderElementEvent([
+                'variables' => $variables,
+            ]);
+            $this->trigger(self::EVENT_RENDER, $event);
+            if (isset($event->output)) {
+                return new Markup($event->output, Craft::$app->charset);
+            }
+            $variables = $event->variables;
+        }
+
+        $refHandle = static::refHandle();
+        if ($refHandle === null) {
+            throw new NotSupportedException(sprintf('Element type “%s” doesn’t define a reference handle, so it doesn’t support partial templates.', static::displayName()));
+        }
+
+        $generalConfig = Craft::$app->getConfig()->getGeneral();
+        $view = Craft::$app->getView();
+
+        $variables[$refHandle] = $this;
+        $templates = [
+            sprintf('%s/%s', $generalConfig->partialTemplatesPath, $refHandle),
+        ];
+
+        // todo: make this better in 5.8
+        if ($this instanceof Entry) {
+            $entryType = $this->getType();
+            if (isset($entryType->original) && $entryType->original->handle !== $entryType->handle) {
+                array_unshift(
+                    $templates,
+                    sprintf('%s/%s/%s', $generalConfig->partialTemplatesPath, $refHandle, $entryType->original->handle),
+                );
+            }
+        }
+
+        $providerHandle = $this->getFieldLayout()?->provider?->getHandle();
+        if ($providerHandle !== null) {
+            array_unshift($templates, sprintf('%s/%s/%s', $generalConfig->partialTemplatesPath, $refHandle, $providerHandle));
+        }
+
+        foreach ($templates as $template) {
+            if ($view->doesTemplateExist($template, View::TEMPLATE_MODE_SITE)) {
+                $output = $view->renderTemplate($template, $variables, View::TEMPLATE_MODE_SITE);
+                return new Markup($output, Craft::$app->charset);
+            }
+        }
+
+        // fallback to the string representation of the element
+        $output = Html::tag('p', Html::encode((string)$this));
+        return new Markup($output, Craft::$app->charset);
     }
 }

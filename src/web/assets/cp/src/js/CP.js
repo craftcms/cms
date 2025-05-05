@@ -2056,14 +2056,17 @@ Craft.CP.Notification = Garnish.Base.extend(
       this.$container.appendTo(Craft.cp.$notificationContainer);
 
       if (this.settings.animate) {
+        const prop = Craft.notificationPosition.startsWith('start-')
+          ? 'top'
+          : 'bottom';
         this.$container.css({
           opacity: 0,
-          'margin-bottom': this._negMargin(),
+          [`margin-${prop}`]: this._negMargin(),
         });
 
         await Craft.animate(this.$container, {
           opacity: 1,
-          'margin-bottom': 0,
+          [`margin-${prop}`]: 0,
         });
       }
 
@@ -2148,9 +2151,12 @@ Craft.CP.Notification = Garnish.Base.extend(
         $(this.originalActiveElement).focus();
       }
 
+      const prop = Craft.notificationPosition.startsWith('start-')
+        ? 'top'
+        : 'bottom';
       await Craft.animate(this.$container, {
         opacity: 0,
-        'margin-bottom': this._negMargin(),
+        [`margin-${prop}`]: this._negMargin(),
       });
 
       this.destroy();

@@ -90,6 +90,16 @@ abstract class BaseRelationField extends Field implements
     abstract public static function elementType(): string;
 
     /**
+     * Returns whether the “Show the site menu” setting should be shown for the field.
+     *
+     * @since 5.8.0
+     */
+    protected static function canShowSiteMenu(): bool
+    {
+        return static::elementType()::isLocalized();
+    }
+
+    /**
      * Returns the default [[selectionLabel]] value.
      *
      * @return string The default selection label
@@ -605,10 +615,13 @@ JS, [
         }
 
         if ($errorCount) {
-            $elementType = static::elementType();
-            $element->addError($this->handle, Craft::t('app', 'Validation errors found in {attribute} {type}; please fix them.', [
-                'type' => $errorCount === 1 ? $elementType::lowerDisplayName() : $elementType::pluralLowerDisplayName(),
-                'attribute' => Craft::t('site', $this->name),
+            $selectedCount = (int)$value->count();
+            $element->addError($this->handle, Craft::t('app', 'The selected {relatedType} {count, plural, =1{contains} other{contain}} validation errors, preventing this {type} from being saved. Edit the {relatedType} to fix them.', [
+                'relatedType' => $selectedCount === 1
+                    ? static::elementType()::lowerDisplayName()
+                    : static::elementType()::pluralLowerDisplayName(),
+                'count' => $selectedCount,
+                'type' => $element::lowerDisplayName(),
             ]));
         }
     }
@@ -860,6 +873,19 @@ JS, [
      */
     protected function inputHtml(mixed $value, ?ElementInterface $element, bool $inline): string
     {
+        return $this->_inputHtml($value, $element, $inline, false);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getStaticHtml(mixed $value, ElementInterface $element): string
+    {
+        return $this->_inputHtml($value, $element, false, true);
+    }
+
+    private function _inputHtml(mixed $value, ?ElementInterface $element, bool $inline, bool $static): string
+    {
         $value = $this->normalizeValueForInput($value, $element, $initialValue);
 
         /** @var ElementInterface[] $value */
@@ -870,12 +896,20 @@ JS, [
             $variables['viewMode'] = 'list';
         }
 
-        if ($initialValue !== null) {
-            // make sure the field gets updated on save, even if it hasn't changed
-            Craft::$app->getView()->setInitialDeltaValue($this->handle, $initialValue);
+        if ($static) {
+            $variables['disabled'] = true;
+            $variables['allowAdd'] = false;
+            $template = '_includes/forms/elementSelect.twig';
+        } else {
+            $template = $this->inputTemplate;
+
+            if ($initialValue !== null) {
+                // make sure the field gets updated on save, even if it hasn't changed
+                Craft::$app->getView()->setInitialDeltaValue($this->handle, $initialValue);
+            }
         }
 
-        return Craft::$app->getView()->renderTemplate($this->inputTemplate, $variables);
+        return Craft::$app->getView()->renderTemplate($template, $variables);
     }
 
     /**
@@ -929,54 +963,6 @@ JS, [
         }
 
         return parent::searchKeywords($titles, $element);
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function getStaticHtml(mixed $value, ElementInterface $element): string
-    {
-        /** @var ElementQueryInterface|ElementCollection $value */
-        if ($value instanceof ElementCollection) {
-            $value = $value->all();
-        } else {
-            $value = $this->_all($value, $element)->all();
-        }
-
-        if (empty($value)) {
-            return '<p class="light">' . Craft::t('app', 'Nothing selected.') . '</p>';
-        }
-
-        if ($this->maintainHierarchy) {
-            $structuresService = Craft::$app->getStructures();
-            // Fill in any gaps
-            $structuresService->fillGapsInElements($value);
-
-            return Html::beginTag('div', ['class' => 'elementselect']) .
-                Craft::$app->getView()->renderTemplate('_elements/structurelist.twig', [
-                    'elements' => $value,
-                ]) .
-                Html::endTag('div');
-        }
-
-        $size = Cp::CHIP_SIZE_SMALL;
-        $viewMode = $this->viewMode();
-        if ($viewMode == 'large') {
-            $size = Cp::CHIP_SIZE_LARGE;
-        }
-
-        $id = $this->getInputId();
-        $html = "<div id='$id' class='elementselect noteditable'>" .
-            "<div class='elements chips" . ($size === Cp::CHIP_SIZE_LARGE ? ' inline-chips' : '') . "'>";
-
-        foreach ($value as $relatedElement) {
-            $html .= Cp::elementChipHtml($relatedElement, [
-                'size' => $size,
-            ]);
-        }
-
-        $html .= '</div></div>';
-        return $html;
     }
 
     /**
@@ -1328,7 +1314,7 @@ JS, [
             ];
         }
 
-        return
+        $html =
             Cp::checkboxFieldHtml([
                 'checkboxLabel' => Craft::t('app', 'Relate {type} from a specific site?', ['type' => $pluralType]),
                 'name' => 'useTargetSite',
@@ -1343,8 +1329,10 @@ JS, [
                 'name' => 'targetSiteId',
                 'options' => $siteOptions,
                 'value' => $this->targetSiteId,
-            ]) .
-            Cp::checkboxFieldHtml([
+            ]);
+
+        if (static::canShowSiteMenu()) {
+            $html .= Cp::checkboxFieldHtml([
                 'fieldset' => true,
                 'fieldClass' => $showTargetSite ? ['hidden'] : null,
                 'checkboxLabel' => Craft::t('app', 'Show the site menu'),
@@ -1358,6 +1346,9 @@ JS, [
                 'name' => 'showSiteMenu',
                 'checked' => $this->showSiteMenu,
             ]);
+        }
+
+        return $html;
     }
 
     /**
@@ -1503,7 +1494,7 @@ JS, [
             'condition' => $selectionCondition,
             'referenceElement' => $element,
             'criteria' => $selectionCriteria,
-            'showSiteMenu' => ($this->targetSiteId || !$this->showSiteMenu) ? false : 'auto',
+            'showSiteMenu' => ($this->targetSiteId || !$this->showSiteMenu || !static::canShowSiteMenu()) ? false : 'auto',
             'allowSelfRelations' => (bool)$this->allowSelfRelations,
             'maintainHierarchy' => (bool)$this->maintainHierarchy,
             'branchLimit' => $this->branchLimit,

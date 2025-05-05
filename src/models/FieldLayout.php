@@ -598,6 +598,33 @@ class FieldLayout extends Model
     }
 
     /**
+     * Resets the field layout’s UUIDs.
+     *
+     * @since 5.8.0
+     */
+    public function resetUids(): void
+    {
+        $this->uid = StringHelper::UUID();
+        $cardView = $this->getCardView();
+
+        foreach ($this->getTabs() as $tab) {
+            $tab->uid = StringHelper::UUID();
+
+            foreach ($tab->getElements() as $element) {
+                $oldUid = $element->uid;
+                $element->uid = StringHelper::UUID();
+
+                $cardViewPos = array_search("layoutElement:$oldUid", $cardView);
+                if ($cardViewPos !== false) {
+                    $cardView[$cardViewPos] = "layoutElement:$element->uid";
+                }
+            }
+        }
+
+        $this->setCardView($cardView);
+    }
+
+    /**
      * Returns a layout element by its UID.
      *
      * @param string $uid

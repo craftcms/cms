@@ -822,10 +822,65 @@ class Matrix extends Field implements
     protected function actionMenuItems(): array
     {
         $items = [];
+        $view = Craft::$app->getView();
+
+        if ($this->viewMode === self::VIEW_MODE_BLOCKS) {
+            // Expand/Collapse all
+            $expandAllId = sprintf('expand-all-%s', mt_rand());
+            $collapseAllId = sprintf('collapse-all-%s', mt_rand());
+            $items[] = [
+                'id' => $expandAllId,
+                'icon' => 'expand',
+                'label' => StringHelper::upperCaseFirst(Craft::t('app', 'Expand all blocks', [
+                    'type' => Entry::pluralLowerDisplayName(),
+                ])),
+            ];
+            $items[] = [
+                'id' => $collapseAllId,
+                'icon' => 'collapse',
+                'label' => StringHelper::upperCaseFirst(Craft::t('app', 'Collapse all blocks', [
+                    'type' => Entry::pluralLowerDisplayName(),
+                ])),
+            ];
+            $view->registerJsWithVars(fn($expandAllId, $collapseAllId, $fieldId) => <<<JS
+(() => {
+  const expandAllBtn = $('#' + $expandAllId);
+  const collapseAllBtn = $('#' + $collapseAllId);
+  const getBlocks = () => $('#' + $fieldId + ' > .blocks > .matrixblock');
+
+  expandAllBtn.on('activate', () => {
+    getBlocks().each((i, block) => {
+      $(block).data('entry').expand();
+    });
+  });
+
+  collapseAllBtn.on('activate', () => {
+    getBlocks().each((i, block) => {
+      $(block).data('entry').collapse();
+    });
+  });
+
+  setTimeout(() => {
+    const menu = expandAllBtn.closest('.menu').data('disclosureMenu');
+    menu.on('show', () => {
+      const blocks = getBlocks();
+      menu.toggleItem(expandAllBtn[0], blocks.is('.collapsed'));
+      menu.toggleItem(collapseAllBtn[0], blocks.is(':not(.collapsed)'));
+    });
+  }, 1);
+})();
+JS, [
+                $view->namespaceInputId($expandAllId),
+                $view->namespaceInputId($collapseAllId),
+                $view->namespaceInputId($this->getInputId()),
+            ]);
+        }
 
         // Copy all
         if ($this->maxEntries !== 1 && $this->viewMode !== self::VIEW_MODE_INDEX) {
-            $view = Craft::$app->getView();
+            if (!empty($items)) {
+                $items[] = ['type' => 'hr'];
+            }
             $copyAllId = sprintf('action-copy-all-%s', mt_rand());
             $items[] = [
                 'id' => $copyAllId,

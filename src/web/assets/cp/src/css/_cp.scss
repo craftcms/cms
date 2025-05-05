@@ -778,10 +778,28 @@ li.breadcrumb-toggle-wrapper {
   position: fixed;
   inset-block-end: 8px;
   inset-inline-start: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
   width: calc(100% - 16px);
   z-index: 101;
 
-  body.has-debug-toolbar & {
+  // top
+  body.notifications--start-start &,
+  body.notifications--start-end & {
+    inset-block: 8px auto;
+    flex-direction: column-reverse;
+  }
+
+  // right
+  body.notifications--start-end &,
+  body.notifications--end-end & {
+    inset-inline: auto 8px;
+  }
+
+  // bottom + toolbar
+  body.notifications--end-start.has-debug-toolbar &,
+  body.notifications--end-end.has-debug-toolbar & {
     inset-block-end: 50px;
   }
 
@@ -807,10 +825,6 @@ li.breadcrumb-toggle-wrapper {
       .notification-icon {
         --icon-color: var(--error-color);
       }
-    }
-
-    & + .notification {
-      margin-block-start: 12px;
     }
 
     .notification-inner {
