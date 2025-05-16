@@ -7,7 +7,7 @@
 
 namespace crafttests\unit\validators;
 
-use craft\helpers\Arr;
+use Craft\Cms\Support\Arr;
 use craft\test\mockclasses\models\ExampleModel;
 use craft\test\TestCase;
 use craft\validators\LanguageValidator;

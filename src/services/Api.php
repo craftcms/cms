@@ -8,8 +8,8 @@
 namespace craft\services;
 
 use Craft;
+use Craft\Cms\Support\Arr;
 use craft\helpers\Api as ApiHelper;
-use craft\helpers\Arr;
 use craft\helpers\Json;
 use craft\helpers\Session;
 use GuzzleHttp\Client;

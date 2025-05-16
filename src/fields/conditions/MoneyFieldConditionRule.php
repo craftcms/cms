@@ -4,8 +4,8 @@ namespace craft\fields\conditions;
 
 use Craft;
 use craft\base\conditions\BaseNumberConditionRule;
+use Craft\Cms\Support\Arr;
 use craft\fields\Money;
-use craft\helpers\Arr;
 use craft\helpers\Cp;
 use craft\helpers\Html;
 use craft\helpers\MoneyHelper;

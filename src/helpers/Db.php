@@ -9,6 +9,7 @@ namespace craft\helpers;
 
 use Craft;
 use craft\base\Serializable;
+use Craft\Cms\Support\Arr;
 use craft\db\Connection;
 use craft\db\mysql\Schema as MysqlSchema;
 use craft\db\pgsql\Schema as PgsqlSchema;

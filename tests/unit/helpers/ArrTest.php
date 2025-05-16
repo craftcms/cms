@@ -7,7 +7,7 @@
 
 namespace crafttests\unit\helpers;
 
-use craft\helpers\Arr;
+use Craft\Cms\Support\Arr;
 use craft\test\TestCase;
 use stdClass;
 

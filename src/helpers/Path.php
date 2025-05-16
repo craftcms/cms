@@ -7,6 +7,8 @@
 
 namespace craft\helpers;
 
+use Craft\Cms\Support\Arr;
+
 /**
  * Class Path
  *

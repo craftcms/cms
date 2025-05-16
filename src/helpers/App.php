@@ -11,7 +11,8 @@ use Closure;
 use Craft;
 use craft\attributes\EnvName;
 use craft\behaviors\SessionBehavior;
-use craft\cache\FileCache;
+use Craft\Cms\Yii\Web\Request as WebRequest;
+use Craft\Cms\Yii\Web\Response as WebResponse;
 use craft\config\DbConfig;
 use craft\db\Command;
 use craft\db\Connection;
@@ -31,8 +32,6 @@ use craft\models\MailSettings;
 use craft\services\ProjectConfig as ProjectConfigService;
 use craft\web\AssetManager;
 use craft\web\Request;
-use craft\web\Request as WebRequest;
-use craft\web\Response as WebResponse;
 use craft\web\Session;
 use craft\web\User as WebUser;
 use craft\web\View;
@@ -946,11 +945,8 @@ class App
         $generalConfig = Craft::$app->getConfig()->getGeneral();
 
         return [
-            'class' => FileCache::class,
+            'class' => Craft\Cms\Yii\Cache::class,
             'keyPrefix' => Craft::$app->id,
-            'cachePath' => Craft::$app->getPath()->getCachePath(),
-            'fileMode' => $generalConfig->defaultFileMode,
-            'dirMode' => $generalConfig->defaultDirMode,
             'defaultDuration' => $generalConfig->cacheDuration,
         ];
     }
@@ -982,7 +978,7 @@ class App
         }
 
         $config = [
-            'class' => Connection::class,
+            'class' => Craft\Cms\Yii\DatabaseConnection::class,
             'driverName' => $driver,
             'dsn' => $dbConfig->dsn,
             'username' => $dbConfig->user,
@@ -1124,10 +1120,10 @@ class App
      */
     public static function sessionConfig(): array
     {
-        $stateKeyPrefix = md5('Craft.' . Session::class . '.' . Craft::$app->getEnvId());
+        $stateKeyPrefix = md5('Craft.' . Craft\Cms\Yii\Web\Session::class . '.' . Craft::$app->getEnvId());
 
         return [
-            'class' => Session::class,
+            'class' => Craft\Cms\Yii\Web\Session::class,
             'as session' => SessionBehavior::class,
             'flashParam' => $stateKeyPrefix . '__flash',
             'authAccessParam' => $stateKeyPrefix . '__auth_access',

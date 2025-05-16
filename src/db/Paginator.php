@@ -7,7 +7,7 @@
 
 namespace craft\db;
 
-use craft\helpers\Arr;
+use Craft\Cms\Support\Arr;
 use yii\base\BaseObject;
 use yii\base\InvalidConfigException;
 use yii\db\Connection as YiiConnection;

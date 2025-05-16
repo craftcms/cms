@@ -9,7 +9,7 @@ namespace craft\errors;
 
 use Craft;
 use craft\base\ElementInterface;
-use craft\helpers\Arr;
+use Craft\Cms\Support\Arr;
 
 /**
  * InvalidElementException represents an exception caused by setting an invalid element.

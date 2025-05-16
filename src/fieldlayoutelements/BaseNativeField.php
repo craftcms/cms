@@ -8,7 +8,7 @@
 namespace craft\fieldlayoutelements;
 
 use craft\base\ElementInterface;
-use craft\helpers\Arr;
+use Craft\Cms\Support\Arr;
 
 /**
  * BaseNativeField is the base class for native fields that can be included in field layouts.

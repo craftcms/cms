@@ -132,5 +132,12 @@
       "yiisoft/yii2-composer": true,
       "craftcms/plugin-installer": true
     }
+  },
+  "extra": {
+    "laravel": {
+      "providers": [
+        "Craft\\Cms\\Providers\\CraftServiceProvider"
+      ]
+    }
   }
 }

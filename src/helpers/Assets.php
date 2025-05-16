@@ -11,6 +11,7 @@ use Craft;
 use craft\base\BaseFsInterface;
 use craft\base\FsInterface;
 use craft\base\LocalFsInterface;
+use Craft\Cms\Support\Arr;
 use craft\elements\Asset;
 use craft\enums\TimePeriod;
 use craft\errors\FsException;

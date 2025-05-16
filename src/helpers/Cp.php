@@ -23,6 +23,7 @@ use craft\base\NestedElementInterface;
 use craft\base\Statusable;
 use craft\base\Thumbable;
 use craft\behaviors\DraftBehavior;
+use Craft\Cms\Support\Arr;
 use craft\elements\Address;
 use craft\enums\AttributeStatus;
 use craft\enums\CmsEdition;

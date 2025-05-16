@@ -9,8 +9,8 @@ namespace craft\widgets;
 
 use Craft;
 use craft\base\Widget;
+use Craft\Cms\Support\Arr;
 use craft\elements\Entry;
-use craft\helpers\Arr;
 use craft\helpers\Html;
 use craft\helpers\StringHelper;
 use craft\models\EntryType;

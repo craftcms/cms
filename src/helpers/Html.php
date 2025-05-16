@@ -8,6 +8,7 @@
 namespace craft\helpers;
 
 use Craft;
+use Craft\Cms\Support\Arr;
 use craft\elements\Asset;
 use craft\errors\InvalidHtmlTagException;
 use craft\image\SvgAllowedAttributes;

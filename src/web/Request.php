@@ -9,10 +9,10 @@ namespace craft\web;
 
 use Craft;
 use craft\base\RequestTrait;
+use Craft\Cms\Support\Arr;
 use craft\config\GeneralConfig;
 use craft\errors\SiteNotFoundException;
 use craft\helpers\App;
-use craft\helpers\Arr;
 use craft\helpers\Session as SessionHelper;
 use craft\helpers\StringHelper;
 use craft\models\Site;

@@ -8,6 +8,7 @@
 namespace craft\helpers;
 
 use Craft;
+use Craft\Cms\Support\Arr;
 use craft\console\Request as ConsoleRequest;
 use craft\errors\SiteNotFoundException;
 use craft\web\Request as WebRequest;

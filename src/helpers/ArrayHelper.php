@@ -8,6 +8,7 @@
 namespace craft\helpers;
 
 use Craft;
+use Craft\Cms\Support\Arr;
 use Illuminate\Support\Collection;
 
 /**

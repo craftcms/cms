@@ -1,0 +1,5 @@
+<?php
+
+use Craft\Cms\Craft\Cms\Tests\TestCase;
+
+uses(TestCase::class)->in(__DIR__);

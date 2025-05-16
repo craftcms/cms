@@ -9,6 +9,7 @@ namespace craft\helpers;
 
 use BackedEnum;
 use Craft;
+use Craft\Cms\Support\Arr;
 use HTMLPurifier_Config;
 use IteratorAggregate;
 use LitEmoji\LitEmoji;

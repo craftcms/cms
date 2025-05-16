@@ -8,7 +8,7 @@
 namespace craft\web;
 
 use Craft;
-use craft\helpers\Arr;
+use Craft\Cms\Support\Arr;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\Session;
 use craft\helpers\UrlHelper;

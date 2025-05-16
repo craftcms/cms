@@ -1,5 +1,7 @@
 <?php
 
+use Craft\Cms\Yii\Log\LogTarget;
+
 return [
     'id' => 'CraftCMS',
     'name' => 'Craft CMS',
@@ -79,6 +81,11 @@ return [
         ],
         'log' => [
             'class' => craft\log\Dispatcher::class,
+            'targets' => [
+                [
+                    'class' => LogTarget::class,
+                ],
+            ],
         ],
         'mutex' => [
             'class' => craft\mutex\Mutex::class,
@@ -180,7 +187,11 @@ return [
             'class' => craft\services\Sso::class,
         ],
         'i18n' => [
-            'class' => craft\i18n\I18N::class,
+            'class' => \Craft\Cms\Yii\Localization::class,
+            'laravelCategories' => [
+                'auth',
+                'validation',
+            ],
             'messageFormatter' => [
                 'class' => craft\i18n\MessageFormatter::class,
             ],

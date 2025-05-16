@@ -11,6 +11,7 @@ use Craft;
 use craft\base\ComponentInterface;
 use craft\base\ElementInterface;
 use craft\base\Model;
+use Craft\Cms\Support\Arr;
 use craft\errors\MissingComponentException;
 use DateTime;
 use ReflectionClass;

@@ -352,6 +352,9 @@ if (function_exists('craft_modify_app_config')) {
     craft_modify_app_config($config, $appType);
 }
 
+Craft::$container = new \Craft\Cms\Yii\Container();
+Craft::setLogger(new \Craft\Cms\Yii\Log\Logger());
+
 // Initialize the application
 /** @var \craft\web\Application|craft\console\Application $app */
 $app = Craft::createObject($config);

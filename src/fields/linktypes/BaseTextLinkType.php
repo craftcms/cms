@@ -8,8 +8,8 @@
 namespace craft\fields\linktypes;
 
 use Craft;
+use Craft\Cms\Support\Arr;
 use craft\fields\Link;
-use craft\helpers\Arr;
 use craft\helpers\Cp;
 use craft\helpers\Html;
 use craft\helpers\StringHelper;

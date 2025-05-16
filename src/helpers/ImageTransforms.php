@@ -10,6 +10,7 @@ namespace craft\helpers;
 use Craft;
 use craft\base\Image as BaseImage;
 use craft\base\LocalFsInterface;
+use Craft\Cms\Support\Arr;
 use craft\elements\Asset;
 use craft\errors\AssetException;
 use craft\errors\AssetOperationException;
