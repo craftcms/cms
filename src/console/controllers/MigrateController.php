@@ -9,12 +9,12 @@ namespace craft\console\controllers;
 
 use Craft;
 use craft\base\PluginInterface;
+use Craft\Cms\Support\Arr;
 use craft\console\ControllerTrait;
 use craft\db\MigrationManager;
 use craft\errors\InvalidPluginException;
 use craft\errors\MigrateException;
 use craft\events\RegisterMigratorEvent;
-use craft\helpers\Arr;
 use craft\helpers\FileHelper;
 use yii\base\ErrorException;
 use yii\base\InvalidArgumentException;

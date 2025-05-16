@@ -8,9 +8,9 @@
 namespace craft\console\controllers;
 
 use Craft;
+use Craft\Cms\Support\Arr;
 use craft\console\Controller;
 use craft\elements\Entry;
-use craft\helpers\Arr;
 use craft\helpers\StringHelper;
 use craft\models\CategoryGroup_SiteSettings;
 use craft\models\EntryType;

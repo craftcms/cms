@@ -7,8 +7,8 @@
  * @license https://craftcms.github.io/license/
  */
 
+use Craft\Cms\Support\Arr;
 use craft\helpers\App;
-use craft\helpers\Arr;
 use craft\helpers\FileHelper;
 use craft\services\Config;
 use yii\base\ErrorException;

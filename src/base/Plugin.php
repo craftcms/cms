@@ -8,11 +8,11 @@
 namespace craft\base;
 
 use Craft;
+use Craft\Cms\Support\Arr;
 use craft\db\Migration;
 use craft\db\MigrationManager;
 use craft\events\ModelEvent;
 use craft\events\RegisterTemplateRootsEvent;
-use craft\helpers\Arr;
 use craft\helpers\Html;
 use craft\i18n\PhpMessageSource;
 use craft\web\Controller;

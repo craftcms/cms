@@ -8,10 +8,10 @@
 namespace craft\controllers;
 
 use Craft;
+use Craft\Cms\Support\Arr;
 use craft\errors\BusyResourceException;
 use craft\errors\InvalidPluginException;
 use craft\errors\StaleResourceException;
-use craft\helpers\Arr;
 use craft\services\ProjectConfig;
 use Throwable;
 use yii\base\NotSupportedException;

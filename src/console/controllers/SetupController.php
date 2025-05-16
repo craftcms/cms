@@ -8,13 +8,13 @@
 namespace craft\console\controllers;
 
 use Craft;
+use Craft\Cms\Support\Arr;
 use craft\config\DbConfig;
 use craft\console\Controller;
 use craft\db\Connection;
 use craft\db\Table;
 use craft\errors\DbConnectException;
 use craft\helpers\App;
-use craft\helpers\Arr;
 use craft\helpers\Console;
 use craft\helpers\FileHelper;
 use craft\helpers\StringHelper;

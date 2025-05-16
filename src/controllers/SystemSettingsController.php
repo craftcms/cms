@@ -8,16 +8,15 @@
 namespace craft\controllers;
 
 use Craft;
+use Craft\Cms\Support\Arr;
 use craft\elements\GlobalSet;
 use craft\errors\MissingComponentException;
 use craft\helpers\App;
-use craft\helpers\Arr;
 use craft\helpers\Component;
 use craft\helpers\Html;
 use craft\helpers\MailerHelper;
 use craft\helpers\StringHelper;
 use craft\helpers\UrlHelper;
-use craft\mail\Mailer;
 use craft\mail\transportadapters\BaseTransportAdapter;
 use craft\mail\transportadapters\Sendmail;
 use craft\mail\transportadapters\TransportAdapterInterface;

@@ -7,8 +7,8 @@
 
 use craft\base\FieldInterface;
 use craft\behaviors\CustomFieldBehavior;
+use Craft\Cms\Support\Arr;
 use craft\helpers\App;
-use craft\helpers\Arr;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\FileHelper;
 use craft\helpers\StringHelper;

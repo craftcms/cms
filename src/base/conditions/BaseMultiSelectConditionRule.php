@@ -2,7 +2,7 @@
 
 namespace craft\base\conditions;
 
-use craft\helpers\Arr;
+use Craft\Cms\Support\Arr;
 use craft\helpers\Cp;
 use craft\helpers\Db;
 use craft\helpers\Html;

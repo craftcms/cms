@@ -8,7 +8,7 @@
 namespace craft\base;
 
 use Craft;
-use craft\helpers\Arr;
+use Craft\Cms\Support\Arr;
 use Throwable;
 use yii\base\InvalidConfigException;
 use yii\helpers\VarDumper;

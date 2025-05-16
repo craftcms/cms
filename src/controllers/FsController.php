@@ -10,7 +10,7 @@ namespace craft\controllers;
 use Craft;
 use craft\base\Fs;
 use craft\base\FsInterface;
-use craft\helpers\Arr;
+use Craft\Cms\Support\Arr;
 use craft\helpers\Cp;
 use craft\helpers\Html;
 use craft\web\Controller;

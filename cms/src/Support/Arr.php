@@ -1,6 +1,6 @@
 <?php
 
-namespace craft\helpers;
+namespace Craft\Cms\Support;
 
 use Craft;
 use DateTimeInterface;
@@ -11,7 +11,7 @@ use Illuminate\Support\Collection;
  * Class Arr
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 5.x
+ * @since 6.x
  */
 class Arr extends \Illuminate\Support\Arr
 {
@@ -200,7 +200,7 @@ class Arr extends \Illuminate\Support\Arr
      *
      * @param array $array
      * @return bool
-     * @since 5.x
+     * @since 6.x
      */
     public static function isOrdered(array $array): bool
     {
@@ -228,7 +228,7 @@ class Arr extends \Illuminate\Support\Arr
      *
      * @param array $array
      * @return bool
-     * @since 5.x
+     * @since 6.x
      */
     public static function isNumeric(array $array): bool
     {
@@ -240,7 +240,7 @@ class Arr extends \Illuminate\Support\Arr
      *
      * @param array $array
      * @return bool
-     * @since 5.x
+     * @since 6.x
      */
     public static function isIndexed(array $array): bool
     {

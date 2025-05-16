@@ -9,8 +9,8 @@ namespace craft\controllers;
 
 use Craft;
 use craft\base\WidgetInterface;
+use Craft\Cms\Support\Arr;
 use craft\helpers\App;
-use craft\helpers\Arr;
 use craft\helpers\Cp;
 use craft\helpers\FileHelper;
 use craft\helpers\Json;

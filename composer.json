@@ -43,7 +43,7 @@
     "elvanto/litemoji": "~4.3.0",
     "enshrined/svg-sanitize": "~0.19.0",
     "guzzlehttp/guzzle": "^7.2.0",
-    "laravel/framework": "^12.10.2",
+    "laravel/framework": "^12.14.1",
     "league/uri": "^7.0",
     "mikehaertl/php-shellcommand": "^1.6.3",
     "moneyphp/money": "^4.0",
@@ -104,12 +104,14 @@
   "autoload": {
     "psr-4": {
       "craft\\": "src/",
+      "Craft\\Cms\\": "cms/src/",
       "yii2tech\\ar\\softdelete\\": "lib/ar-softdelete/src/"
     }
   },
   "autoload-dev": {
     "psr-4": {
-      "crafttests\\": "tests/"
+      "crafttests\\": "tests/",
+      "Craft\\Cms\\Tests\\": "cms/tests/"
     }
   },
   "scripts": {

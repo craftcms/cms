@@ -4,10 +4,10 @@ namespace craft\base\conditions;
 
 use Craft;
 use craft\base\ElementInterface;
+use Craft\Cms\Support\Arr;
 use craft\elements\conditions\ElementCondition;
 use craft\elements\conditions\ElementConditionInterface;
 use craft\helpers\App;
-use craft\helpers\Arr;
 use craft\helpers\Cp;
 use stdClass;
 

@@ -8,10 +8,10 @@
 namespace craft\controllers;
 
 use Craft;
+use Craft\Cms\Support\Arr;
 use craft\errors\GqlException;
 use craft\errors\MissingComponentException;
 use craft\helpers\App;
-use craft\helpers\Arr;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\Gql as GqlHelper;
 use craft\helpers\Json;

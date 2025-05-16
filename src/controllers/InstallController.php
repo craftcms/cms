@@ -8,6 +8,7 @@
 namespace craft\controllers;
 
 use Craft;
+use Craft\Cms\Support\Arr;
 use craft\config\DbConfig;
 use craft\db\Connection;
 use craft\elements\User;
@@ -15,7 +16,6 @@ use craft\errors\DbConnectException;
 use craft\errors\MigrationException;
 use craft\errors\OperationAbortedException;
 use craft\helpers\App;
-use craft\helpers\Arr;
 use craft\helpers\Install as InstallHelper;
 use craft\helpers\StringHelper;
 use craft\markdown\Markdown;

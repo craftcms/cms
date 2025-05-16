@@ -9,6 +9,7 @@ namespace craft\console\controllers;
 
 use Craft;
 use craft\base\Event;
+use Craft\Cms\Support\Arr;
 use craft\console\Controller;
 use craft\db\Query;
 use craft\db\Table;
@@ -20,7 +21,6 @@ use craft\events\SectionEvent;
 use craft\fields\Categories;
 use craft\fields\Entries;
 use craft\fields\Tags;
-use craft\helpers\Arr;
 use craft\helpers\Db;
 use craft\models\EntryType;
 use craft\models\Section;
