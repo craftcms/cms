@@ -10,7 +10,7 @@ namespace craft\console\controllers;
 use Craft;
 use craft\console\Controller;
 use craft\elements\Entry;
-use craft\helpers\ArrayHelper;
+use craft\helpers\Arr;
 use craft\helpers\StringHelper;
 use craft\models\CategoryGroup_SiteSettings;
 use craft\models\EntryType;
@@ -18,6 +18,7 @@ use craft\models\FieldLayout;
 use craft\models\Section;
 use craft\models\Section_SiteSettings;
 use craft\models\Site;
+use Illuminate\Support\Collection;
 use yii\base\InvalidArgumentException;
 use yii\base\InvalidConfigException;
 use yii\console\ExitCode;
@@ -253,7 +254,7 @@ class SectionsController extends Controller
             ));
         }
 
-        $hasUrls = ArrayHelper::contains($section->getSiteSettings(), fn(Section_SiteSettings $siteSettings) => $siteSettings->hasUrls);
+        $hasUrls = Collection::make($section->getSiteSettings())->contains(fn(Section_SiteSettings $siteSettings) => $siteSettings->hasUrls);
         if ($hasUrls) {
             $section->previewTargets = [
                 [
@@ -278,7 +279,7 @@ class SectionsController extends Controller
             }
         } elseif ($this->interactive) {
             /** @var EntryType[] $allEntryTypes */
-            $allEntryTypes = ArrayHelper::index($entriesService->getAllEntryTypes(), 'handle');
+            $allEntryTypes = Arr::keyBy($entriesService->getAllEntryTypes(), 'handle');
             if (
                 !$this->fromCategoryGroup &&
                 !$this->fromTagGroup &&
@@ -326,7 +327,7 @@ class SectionsController extends Controller
         try {
             $this->do('Saving the section', function() use ($section, $entriesService) {
                 if (!$entriesService->saveSection($section)) {
-                    $message = ArrayHelper::firstValue($section->getFirstErrors()) ?? 'Unable to save the section';
+                    $message = Arr::first($section->getFirstErrors()) ?? 'Unable to save the section';
                     throw new InvalidConfigException($message);
                 }
             });
@@ -361,7 +362,7 @@ class SectionsController extends Controller
 
         $this->do('Deleting section', function() use ($sectionsService, $section) {
             if (!$sectionsService->deleteSection($section)) {
-                $message = ArrayHelper::firstValue($section->getFirstErrors()) ?? 'Unable to delete the section.';
+                $message = Arr::first($section->getFirstErrors()) ?? 'Unable to delete the section.';
                 throw new InvalidConfigException($message);
             }
         });

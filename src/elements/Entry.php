@@ -47,7 +47,7 @@ use craft\events\ElementCriteriaEvent;
 use craft\fieldlayoutelements\entries\EntryTitleField;
 use craft\fields\Matrix;
 use craft\gql\interfaces\elements\Entry as EntryInterface;
-use craft\helpers\ArrayHelper;
+use craft\helpers\Arr;
 use craft\helpers\Cp;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\Db;
@@ -67,7 +67,6 @@ use craft\validators\DateCompareValidator;
 use craft\validators\DateTimeValidator;
 use DateTime;
 use GraphQL\Type\Definition\Type;
-use Illuminate\Support\Arr;
 use Illuminate\Support\Collection;
 use Throwable;
 use yii\base\Exception;
@@ -341,7 +340,7 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
 
         // see if it's limited to one section
         /** @var SectionConditionRule|null $sectionRule */
-        $sectionRule = ArrayHelper::firstWhere(
+        $sectionRule = Arr::first(
             $config['condition']['conditionRules'],
             fn(array $rule) => $rule['class'] === SectionConditionRule::class,
         );
@@ -356,7 +355,7 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
 
         // see if it specifies any entry types
         /** @var TypeConditionRule|null $entryTypeRule */
-        $entryTypeRule = ArrayHelper::firstWhere(
+        $entryTypeRule = Arr::first(
             $config['condition']['conditionRules'],
             fn(array $rule) => $rule['class'] === TypeConditionRule::class,
         );
@@ -1086,7 +1085,7 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
 
         $section = $this->getSection();
         /** @var Site[] $allSites */
-        $allSites = ArrayHelper::index(Craft::$app->getSites()->getAllSites(true), 'id');
+        $allSites = Arr::keyBy(Craft::$app->getSites()->getAllSites(true), 'id');
         $sites = [];
 
         // If the section is leaving it up to entries to decide which sites to be propagated to,
@@ -1585,7 +1584,7 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
     {
         if (!isset($this->_type)) {
             if (isset($this->_typeId)) {
-                $entryType = ArrayHelper::firstWhere(
+                $entryType = Arr::first(
                     $this->getAvailableEntryTypes(false),
                     fn(EntryType $entryType) => $entryType->id === $this->_typeId,
                 );
@@ -1599,7 +1598,7 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
                 }
             } else {
                 // Default to the section/field's first entry type
-                $entryType = ArrayHelper::firstValue($this->getAvailableEntryTypes());
+                $entryType = Arr::first($this->getAvailableEntryTypes());
                 if (!$entryType) {
                     throw new InvalidConfigException('Entry is missing its type ID');
                 }
@@ -1680,9 +1679,7 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
         }
 
         // make sure we're working with an array
-        if (!is_array($authorIds)) {
-            $authorIds = ArrayHelper::toArray($authorIds);
-        }
+        $authorIds = Arr::wrap($authorIds);
 
         return array_map(fn($id) => (int)$id, $authorIds);
     }
@@ -1834,7 +1831,7 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
         if ($section) {
             // Set the default status based on the section's settings
             /** @var Section_SiteSettings $siteSettings */
-            $siteSettings = ArrayHelper::firstWhere($section->getSiteSettings(), 'siteId', $this->siteId);
+            $siteSettings = Collection::make($section->getSiteSettings())->firstWhere('siteId', $this->siteId);
             $enabled = $siteSettings->enabledByDefault;
         } else {
             $enabled = true;
@@ -2288,7 +2285,7 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
 
         // get sections that use the same entry type as this entry
         $compatibleSections = $sections
-            ->filter(fn(array $s) => ArrayHelper::contains($s['entryTypes'], 'id', $entryTypeId));
+            ->filter(fn(array $s) => Collection::make($s['entryTypes'])->contains('id', $entryTypeId));
 
         return $compatibleSections->count();
     }
@@ -2308,7 +2305,7 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
         // Type
         $fields[] = (function() use ($static) {
             $entryTypes = $this->getAvailableEntryTypes();
-            if (!ArrayHelper::contains($entryTypes, fn(EntryType $entryType) => $entryType->id === $this->typeId)) {
+            if (!Collection::make($entryTypes)->contains(fn(EntryType $entryType) => $entryType->id === $this->typeId)) {
                 $entryTypes[] = $this->getType();
             }
             if (count($entryTypes) <= 1 && $this->isEntryTypeAllowed($entryTypes)) {

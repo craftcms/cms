@@ -12,7 +12,7 @@ use craft\config\BaseConfig;
 use craft\config\DbConfig;
 use craft\config\GeneralConfig;
 use craft\helpers\App;
-use craft\helpers\ArrayHelper;
+use craft\helpers\Arr;
 use craft\helpers\FileHelper;
 use craft\helpers\StringHelper;
 use craft\helpers\Typecast;
@@ -309,7 +309,7 @@ class Config extends Component
         $mergedConfig = [];
         foreach ($config as $env => $envConfig) {
             if ($env === '*' || StringHelper::contains($this->env, $env)) {
-                $mergedConfig = ArrayHelper::merge($mergedConfig, $envConfig);
+                $mergedConfig = Arr::merge($mergedConfig, $envConfig);
             }
         }
 

@@ -25,7 +25,7 @@ use craft\events\InvalidUserTokenEvent;
 use craft\events\LoginFailureEvent;
 use craft\events\UserEvent;
 use craft\helpers\App;
-use craft\helpers\ArrayHelper;
+use craft\helpers\Arr;
 use craft\helpers\Assets;
 use craft\helpers\Db;
 use craft\helpers\FileHelper;
@@ -50,6 +50,7 @@ use craft\web\ServiceUnavailableHttpException;
 use craft\web\UploadedFile;
 use craft\web\View;
 use DateTime;
+use Illuminate\Support\Collection;
 use Throwable;
 use yii\base\Exception;
 use yii\base\InvalidArgumentException;
@@ -1276,7 +1277,7 @@ class UsersController extends Controller
 
         if (
             !$userLanguage ||
-            !ArrayHelper::contains($i18n->getAppLocales(), fn(Locale $locale) => $locale->id === App::parseEnv($userLanguage))
+            !Collection::make($i18n->getAppLocales())->contains(fn(Locale $locale) => $locale->id === App::parseEnv($userLanguage))
         ) {
             $userLanguage = Craft::$app->language;
         }
@@ -1286,7 +1287,7 @@ class UsersController extends Controller
 
         if (
             !$userLocale ||
-            !ArrayHelper::contains($i18n->getAllLocales(), fn(Locale $locale) => $locale->id === App::parseEnv($userLocale))
+            !Collection::make($i18n->getAllLocales())->contains(fn(Locale $locale) => $locale->id === App::parseEnv($userLocale))
         ) {
             $userLocale = Craft::$app->getConfig()->getGeneral()->defaultCpLocale;
         }
@@ -1649,7 +1650,7 @@ JS);
             if (!empty($groups)) {
                 $user->setGroups($groups);
             }
-            
+
             // keep track of which site they registered from
             // (do this even if it's not a multi-site install, in case it becomes one later.)
             $user->affiliatedSiteId = Craft::$app->getSites()->getCurrentSite()->id;
@@ -2425,7 +2426,7 @@ JS);
 
         if ($methodClass) {
             /** @var AuthMethodInterface|null $method */
-            $method = ArrayHelper::firstWhere(
+            $method = Arr::first(
                 $activeMethods,
                 fn(AuthMethodInterface $method) => $method::class === $methodClass,
             );
@@ -2738,7 +2739,7 @@ JS);
         }
 
         /** @var UserGroup[] $allGroups */
-        $allGroups = ArrayHelper::index(Craft::$app->getUserGroups()->getAllGroups(), 'id');
+        $allGroups = Arr::keyBy(Craft::$app->getUserGroups()->getAllGroups(), 'id');
 
         // See if there are any new groups in here
         $oldGroupIds = array_map(fn(UserGroup $group) => $group->id, $user->getGroups());

@@ -12,7 +12,7 @@ use craft\db\Migration;
 use craft\db\MigrationManager;
 use craft\events\ModelEvent;
 use craft\events\RegisterTemplateRootsEvent;
-use craft\helpers\ArrayHelper;
+use craft\helpers\Arr;
 use craft\helpers\Html;
 use craft\i18n\PhpMessageSource;
 use craft\web\Controller;
@@ -82,10 +82,10 @@ class Plugin extends Module implements PluginInterface
         // Set some things early in case there are any settings, and the settings model's
         // init() method needs to call Craft::t() or Plugin::getInstance().
 
-        $this->t9nCategory = ArrayHelper::remove($config, 't9nCategory', $this->t9nCategory ?? $id);
-        $this->sourceLanguage = ArrayHelper::remove($config, 'sourceLanguage', $this->sourceLanguage);
+        $this->t9nCategory = Arr::pull($config, 't9nCategory', $this->t9nCategory ?? $id);
+        $this->sourceLanguage = Arr::pull($config, 'sourceLanguage', $this->sourceLanguage);
 
-        if (($basePath = ArrayHelper::remove($config, 'basePath')) !== null) {
+        if (($basePath = Arr::pull($config, 'basePath')) !== null) {
             $this->setBasePath($basePath);
         }
 

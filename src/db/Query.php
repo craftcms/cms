@@ -11,7 +11,7 @@ use ArrayAccess;
 use ArrayIterator;
 use craft\base\ClonefixTrait;
 use craft\events\DefineBehaviorsEvent;
-use craft\helpers\ArrayHelper;
+use craft\helpers\Arr;
 use Illuminate\Support\Collection;
 use IteratorAggregate;
 use yii\base\Exception;
@@ -276,7 +276,7 @@ class Query extends \yii\db\Query implements ArrayAccess, IteratorAggregate
                 throw new Exception('Less than two columns were selected');
             }
 
-            $rows = ArrayHelper::map($rows, $columns[0], $columns[1]);
+            $rows = Arr::pluck($rows, $columns[1], $columns[0]);
         }
 
         return $rows;

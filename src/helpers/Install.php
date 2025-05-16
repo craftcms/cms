@@ -8,6 +8,7 @@
 namespace craft\helpers;
 
 use Craft;
+use Illuminate\Support\Collection;
 
 /**
  * Install helper
@@ -107,7 +108,7 @@ class Install
     {
         if (!isset(self::$_primarySiteConfig)) {
             $sites = Craft::$app->getProjectConfig()->get('sites', true) ?? [];
-            self::$_primarySiteConfig = ArrayHelper::firstWhere($sites, 'primary') ?? false;
+            self::$_primarySiteConfig = Collection::make($sites)->firstWhere('primary', true) ?? false;
         }
 
         return self::$_primarySiteConfig ?: null;

@@ -12,7 +12,7 @@ use craft\base\Field;
 use craft\base\FieldInterface;
 use craft\base\ModelInterface;
 use craft\fieldlayoutelements\CustomField;
-use craft\helpers\ArrayHelper;
+use craft\helpers\Arr;
 use craft\helpers\Component;
 use craft\models\FieldLayout;
 use craft\models\FieldLayoutTab;
@@ -56,7 +56,7 @@ abstract class FieldLayoutFixture extends DbFixture
 
         foreach ($this->getData() as $layoutConfig) {
             // Get the tabs from the $fieldLayout value and unset the tabs (for later)
-            $tabConfigs = ArrayHelper::remove($layoutConfig, 'tabs') ?? [];
+            $tabConfigs = Arr::pull($layoutConfig, 'tabs' ,[]);
 
             $layout = null;
             if (isset($layoutConfig['uid'])) {
@@ -69,7 +69,7 @@ abstract class FieldLayoutFixture extends DbFixture
             $tabs = [];
 
             foreach ($tabConfigs as $tabIndex => $tabConfig) {
-                $fieldConfigs = ArrayHelper::remove($tabConfig, 'fields') ?? [];
+                $fieldConfigs = Arr::pull($tabConfig, 'fields', []);
 
                 $tab = $tabs[] = new FieldLayoutTab(['layout' => $layout] + $tabConfig);
                 $tab->sortOrder = $tabIndex + 1;
@@ -83,10 +83,10 @@ abstract class FieldLayoutFixture extends DbFixture
 
                     // fieldType -> type
                     if (isset($fieldConfig['fieldType'])) {
-                        $fieldConfig['type'] = ArrayHelper::remove($fieldConfig, 'fieldType');
+                        $fieldConfig['type'] = Arr::pull($fieldConfig, 'fieldType');
                     }
 
-                    $required = ArrayHelper::remove($fieldConfig, 'required') ?? false;
+                    $required = Arr::pull($fieldConfig, 'required', false);
                     /** @var FieldInterface|Field $field */
                     $field = $this->_fields[] = Component::createComponent($fieldConfig, FieldInterface::class);
 

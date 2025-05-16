@@ -6,7 +6,7 @@ use Craft;
 use craft\db\Migration;
 use craft\db\Query;
 use craft\db\Table;
-use craft\helpers\ArrayHelper;
+use craft\helpers\Arr;
 use craft\helpers\Db;
 use craft\services\ProjectConfig;
 use Illuminate\Support\Collection;
@@ -66,7 +66,7 @@ class m230524_220029_global_entry_types extends Migration
 
         foreach ($entryTypeConfigs as $entryTypeUid => &$entryTypeConfig) {
             $entryTypePath = sprintf('%s.%s', ProjectConfig::PATH_ENTRY_TYPES, $entryTypeUid);
-            $sectionUid = ArrayHelper::remove($entryTypeConfig, 'section');
+            $sectionUid = Arr::pull($entryTypeConfig, 'section');
             if (!$sectionUid || !isset($sectionConfigs[$sectionUid])) {
                 $projectConfig->remove($entryTypePath);
                 continue;
@@ -93,10 +93,9 @@ class m230524_220029_global_entry_types extends Migration
                 $originalHandle = $entryTypeConfig['handle'];
 
                 // find the section that was using it
-                $sectionConfig = ArrayHelper::firstWhere(
+                $sectionConfig = Arr::first(
                     $sectionConfigs,
-                    fn(array $config) => ArrayHelper::contains(
-                        $config['entryTypes'] ?? [],
+                    fn(array $config) => Collection::make($config['entryTypes'] ?? [])->contains(
                         fn(array $entryType) => $entryType['uid'] === $entryTypeUid,
                     ),
                 );

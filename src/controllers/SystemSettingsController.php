@@ -11,7 +11,7 @@ use Craft;
 use craft\elements\GlobalSet;
 use craft\errors\MissingComponentException;
 use craft\helpers\App;
-use craft\helpers\ArrayHelper;
+use craft\helpers\Arr;
 use craft\helpers\Component;
 use craft\helpers\Html;
 use craft\helpers\MailerHelper;
@@ -159,7 +159,7 @@ class SystemSettingsController extends Controller
         }
 
         // Sort them by name
-        ArrayHelper::multisort($transportTypeOptions, 'label');
+        $transportTypeOptions = Arr::sort($transportTypeOptions, 'label');
 
         // See if it looks like config/app.php is overriding the mailer component
         $customMailerFiles = [];

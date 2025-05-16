@@ -17,7 +17,6 @@ use craft\events\DefineMenuItemsEvent;
 use craft\events\FieldElementEvent;
 use craft\events\FieldEvent;
 use craft\gql\types\QueryArgument;
-use craft\helpers\ArrayHelper;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\Db;
 use craft\helpers\ElementHelper;
@@ -31,6 +30,7 @@ use craft\validators\UniqueValidator;
 use DateTime;
 use Exception;
 use GraphQL\Type\Definition\Type;
+use Illuminate\Support\Collection;
 use yii\base\Arrayable;
 use yii\base\ErrorHandler;
 use yii\base\InvalidArgumentException;
@@ -347,11 +347,13 @@ abstract class Field extends SavableComponent implements FieldInterface, Iconic,
      */
     public function attributes(): array
     {
-        $names = parent::attributes();
-        ArrayHelper::removeValue($names, 'validateHandleUniqueness');
-        ArrayHelper::removeValue($names, 'layoutElement');
-        ArrayHelper::removeValue($names, 'static');
-        return $names;
+        return Collection::make(parent::attributes())
+            ->filter(fn($name) => !in_array($name, [
+                'validateHandleUniqueness',
+                'layoutElement',
+                'static',
+            ]))
+            ->all();
     }
 
     /**

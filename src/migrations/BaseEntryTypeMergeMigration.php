@@ -5,7 +5,7 @@ namespace craft\migrations;
 use craft\db\Migration;
 use craft\db\Query;
 use craft\db\Table;
-use craft\helpers\ArrayHelper;
+use craft\helpers\Arr;
 use craft\helpers\Db;
 use craft\helpers\Json;
 use craft\models\Section;
@@ -106,7 +106,7 @@ class BaseEntryTypeMergeMigration extends Migration
             $changed = false;
             foreach ($this->layoutElementUidMap as $oldUid => $newUid) {
                 if (array_key_exists($oldUid, $content)) {
-                    $content[$newUid] = ArrayHelper::remove($content, $oldUid);
+                    $content[$newUid] = Arr::pull($content, $oldUid);
                     $changed = true;
                 }
             }

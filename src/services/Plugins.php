@@ -18,13 +18,14 @@ use craft\errors\InvalidLicenseKeyException;
 use craft\errors\InvalidPluginException;
 use craft\events\PluginEvent;
 use craft\helpers\App;
-use craft\helpers\ArrayHelper;
+use craft\helpers\Arr;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\Db;
 use craft\helpers\FileHelper;
 use craft\helpers\ProjectConfig as ProjectConfigHelper;
 use craft\helpers\StringHelper;
 use DateTime;
+use Illuminate\Support\Collection;
 use ReflectionClass;
 use ReflectionException;
 use Throwable;
@@ -175,7 +176,7 @@ class Plugins extends Component
                         unset($plugin['basePath']);
                     }
                 }
-                $handle = $this->_normalizeHandle(ArrayHelper::remove($plugin, 'handle'));
+                $handle = $this->_normalizeHandle(Arr::pull($plugin, 'handle'));
                 $this->_composerPluginInfo[$handle] = $plugin;
             }
         }
@@ -270,7 +271,9 @@ class Plugins extends Component
         unset($row);
 
         // Sort enabled plugins by their names
-        ArrayHelper::multisort($this->_plugins, 'name', SORT_ASC, SORT_NATURAL | SORT_FLAG_CASE);
+        $this->_plugins = Collection::make($this->_plugins)
+            ->sortBy('name', SORT_NATURAL | SORT_FLAG_CASE)
+            ->all();
 
         $this->_loadingPlugins = false;
         $this->_pluginsLoaded = true;
@@ -905,7 +908,7 @@ class Plugins extends Component
         }
 
         // Merge in the plugin’s dynamic config
-        $config = ArrayHelper::merge($config, $class::config());
+        $config = Arr::merge($config, $class::config());
 
         // Is it installed?
         if ($info !== null) {
@@ -929,7 +932,7 @@ class Plugins extends Component
 
             // Merge in the custom config, if there is one
             if (isset($this->pluginConfigs[$handle])) {
-                $config = ArrayHelper::merge($config, $this->pluginConfigs[$handle]);
+                $config = Arr::merge($config, $this->pluginConfigs[$handle]);
             }
         }
 
@@ -949,17 +952,11 @@ class Plugins extends Component
     {
         $this->loadPlugins();
 
-        // Get the info arrays
-        $info = [];
-
-        foreach (array_keys($this->_composerPluginInfo) as $handle) {
-            $info[$handle] = $this->getPluginInfo($handle);
-        }
-
-        // Sort plugins by their names
-        ArrayHelper::multisort($info, 'name', SORT_ASC, SORT_NATURAL | SORT_FLAG_CASE);
-
-        return $info;
+        return Collection::make($this->_composerPluginInfo)
+            ->keys()
+            ->mapWithKeys(fn(string $handle) => [$handle => $this->getPluginInfo($handle)])
+            ->sortBy('name', SORT_NATURAL | SORT_FLAG_CASE)
+            ->all();
     }
 
     /**

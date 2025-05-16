@@ -56,7 +56,7 @@ use craft\fields\Tags as TagsField;
 use craft\fields\Time;
 use craft\fields\Users as UsersField;
 use craft\helpers\AdminTable;
-use craft\helpers\ArrayHelper;
+use craft\helpers\Arr;
 use craft\helpers\Component as ComponentHelper;
 use craft\helpers\Cp;
 use craft\helpers\Db;
@@ -268,11 +268,11 @@ class Fields extends Component
      */
     public function getFieldTypesWithContent(): array
     {
-        return ArrayHelper::where(
-            $this->getAllFieldTypes(),
-            fn(string $class) => /** @var class-string<FieldInterface> $class */ $class::dbType() !== null,
-            keepKeys: false,
-        );
+        return Collection::make($this->getAllFieldTypes())
+            /** @var class-string<FieldInterface> $class */
+            ->filter(fn(string $class) => $class::dbType() !== null)
+            ->values()
+            ->all();
     }
 
     /**
@@ -475,11 +475,10 @@ class Fields extends Component
      */
     public function getFieldsWithContent(mixed $context = null): array
     {
-        return ArrayHelper::where(
-            $this->getAllFields($context),
-            fn(FieldInterface $field) => $field::dbType() !== null,
-            keepKeys: false,
-        );
+        return Collection::make($this->getAllFields($context))
+            ->filter(fn(FieldInterface $field) => $field::dbType() !== null)
+            ->values()
+            ->all();
     }
 
     /**
@@ -492,11 +491,10 @@ class Fields extends Component
      */
     public function getFieldsWithoutContent(mixed $context = null): array
     {
-        return ArrayHelper::where(
-            $this->getAllFields($context),
-            fn(FieldInterface $field) => $field::dbType() === null,
-            keepKeys: false,
-        );
+        return Collection::make($this->getAllFields($context))
+            ->filter(fn(FieldInterface $field) => $field::dbType() === null)
+            ->values()
+            ->all();
     }
 
     /**
@@ -510,11 +508,10 @@ class Fields extends Component
      */
     public function getFieldsByType(string $type, mixed $context = null): array
     {
-        return ArrayHelper::where(
-            $this->getAllFields($context),
-            fn(FieldInterface $field) => $field instanceof $type,
-            keepKeys: false
-        );
+        return Collection::make($this->getAllFields($context))
+            ->filter(fn(FieldInterface $field) => $field instanceof $type)
+            ->values()
+            ->all();
     }
 
     /**
@@ -571,7 +568,7 @@ class Fields extends Component
      */
     public function doesFieldWithHandleExist(string $handle, ?string $context = null): bool
     {
-        return ArrayHelper::contains($this->getAllFields($context), 'handle', $handle, true);
+        return Collection::make($this->getAllFields($context))->contains('handle', '===', $handle);
     }
 
     /**
@@ -898,7 +895,7 @@ class Fields extends Component
 
             $this->_layouts = new MemoizableArray($layoutConfigs, function($config) {
                 if (array_key_exists('config', $config)) {
-                    $nestedConfig = ArrayHelper::remove($config, 'config');
+                    $nestedConfig = Arr::pull($config, 'config');
                     if ($nestedConfig) {
                         $config += is_string($nestedConfig) ? JsonHelper::decode($nestedConfig) : $nestedConfig;
                     }
@@ -950,13 +947,13 @@ class Fields extends Component
             }
 
             if (array_key_exists('settings', $tabResult)) {
-                $settings = ArrayHelper::remove($tabResult, 'settings');
+                $settings = Arr::pull($tabResult, 'settings');
                 if ($settings) {
                     $tabResult += JsonHelper::decode($settings);
                 }
             }
 
-            $elements = ArrayHelper::remove($tabResult, 'elements');
+            $elements = Arr::pull($tabResult, 'elements');
             if ($elements) {
                 $elements = JsonHelper::decode($elements);
             } else {
@@ -1089,7 +1086,7 @@ class Fields extends Component
      */
     public function createLayoutElement(array $config): FieldLayoutElement
     {
-        $type = ArrayHelper::remove($config, 'type');
+        $type = Arr::pull($config, 'type');
 
         if (!$type || !is_subclass_of($type, FieldLayoutElement::class)) {
             throw new InvalidArgumentException("Invalid field layout element class: $type");

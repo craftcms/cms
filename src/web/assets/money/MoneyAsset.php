@@ -7,12 +7,11 @@
 
 namespace craft\web\assets\money;
 
-use craft\helpers\ArrayHelper;
-use craft\helpers\Json;
 use craft\web\AssetBundle;
 use craft\web\assets\cp\CpAsset;
 use craft\web\assets\inputmask\InputmaskAsset;
 use craft\web\View;
+use Illuminate\Support\Collection;
 use Money\Currencies\ISOCurrencies;
 use Money\Currency;
 
@@ -70,8 +69,10 @@ JS;
     private function _getCurrencySubUnits(): string
     {
         $currencies = new ISOCurrencies();
-        $subUnitsByCurrencyCode = ArrayHelper::map(iterator_to_array($currencies), static fn(Currency $currency) => $currency->getCode(), static fn(Currency $currency) => $currencies->subunitFor($currency));
 
-        return Json::encode($subUnitsByCurrencyCode);
+        return Collection::make($currencies)
+            ->keyBy(static fn(Currency $currency) => $currency->getCode())
+            ->map(static fn(Currency $currency) => $currencies->subunitFor($currency))
+            ->toJson();
     }
 }

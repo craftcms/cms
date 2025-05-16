@@ -12,7 +12,7 @@ use craft\db\Query;
 use craft\db\QueryAbortedException;
 use craft\db\Table;
 use craft\elements\Category;
-use craft\helpers\ArrayHelper;
+use craft\helpers\Arr;
 use craft\helpers\Db;
 use craft\helpers\StringHelper;
 use craft\models\CategoryGroup;
@@ -263,7 +263,7 @@ class CategoryQuery extends ElementQuery
             $this->groupId = is_array($this->groupId) ? [] : null;
         } elseif (is_numeric($this->groupId)) {
             $this->groupId = [$this->groupId];
-        } elseif (!is_array($this->groupId) || !ArrayHelper::isNumeric($this->groupId)) {
+        } elseif (!is_array($this->groupId) || !Arr::isNumeric($this->groupId)) {
             $this->groupId = (new Query())
                 ->select(['id'])
                 ->from([Table::CATEGORYGROUPS])

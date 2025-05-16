@@ -8,7 +8,7 @@
 namespace craft\fieldlayoutelements;
 
 use craft\base\ElementInterface;
-use craft\helpers\ArrayHelper;
+use craft\helpers\Arr;
 
 /**
  * BaseNativeField is the base class for native fields that can be included in field layouts.
@@ -105,7 +105,7 @@ abstract class BaseNativeField extends BaseField
     protected function containerAttributes(?ElementInterface $element = null, bool $static = false): array
     {
         $attributes = parent::containerAttributes($element, $static);
-        return ArrayHelper::merge($attributes, $this->containerAttributes);
+        return Arr::merge($attributes, $this->containerAttributes);
     }
 
     /**

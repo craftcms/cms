@@ -7,7 +7,7 @@
 
 namespace craft\db;
 
-use craft\helpers\ArrayHelper;
+use craft\helpers\Arr;
 use yii\base\BaseObject;
 use yii\base\InvalidConfigException;
 use yii\db\Connection as YiiConnection;
@@ -94,7 +94,7 @@ class Paginator extends BaseObject
         $this->query = $query;
 
         // Set the current page after everything else
-        $currentPage = ArrayHelper::remove($config, 'currentPage');
+        $currentPage = Arr::pull($config, 'currentPage');
 
         parent::__construct($config);
 

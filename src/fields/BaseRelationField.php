@@ -36,7 +36,7 @@ use craft\events\CancelableEvent;
 use craft\events\ElementCriteriaEvent;
 use craft\fieldlayoutelements\CustomField;
 use craft\fields\conditions\RelationalFieldConditionRule;
-use craft\helpers\ArrayHelper;
+use craft\helpers\Arr;
 use craft\helpers\Cp;
 use craft\helpers\Db;
 use craft\helpers\ElementHelper;
@@ -355,7 +355,7 @@ abstract class BaseRelationField extends Field implements
     {
         // limit => maxRelations
         if (array_key_exists('limit', $config)) {
-            $config['maxRelations'] = ArrayHelper::remove($config, 'limit');
+            $config['maxRelations'] = Arr::pull($config, 'limit');
         }
 
         // Config normalization
@@ -441,11 +441,8 @@ abstract class BaseRelationField extends Field implements
             $inputSources = [$inputSources];
         }
 
-        $elementSources = ArrayHelper::whereIn(
-            Craft::$app->elementSources->getSources(static::elementType()),
-            'key',
-            $inputSources
-        );
+        $elementSources = Collection::make(Craft::$app->elementSources->getSources(static::elementType()))
+            ->whereIn('key', $inputSources);
 
         if (count($elementSources) > 1) {
             $this->maintainHierarchy = false;
@@ -1154,12 +1151,12 @@ JS, [
             $targetIds = $value->map(fn(ElementInterface $element) => $element->id)->all();
         } elseif (
             is_array($value->id) &&
-            ArrayHelper::isNumeric($value->id)
+            Arr::isNumeric($value->id)
         ) {
             $targetIds = $value->id ?: [];
         } elseif (
             isset($value->where['elements.id']) &&
-            ArrayHelper::isNumeric($value->where['elements.id'])
+            Arr::isNumeric($value->where['elements.id'])
         ) {
             $targetIds = $value->where['elements.id'] ?: [];
         } else {
@@ -1219,7 +1216,7 @@ JS, [
                     fn(array $siteInfo) => $siteInfo['siteId'],
                     ElementHelper::supportedSitesForElement($element),
                 );
-                $siteIds = ArrayHelper::withoutValue($siteIds, $element->siteId);
+                $siteIds = Arr::where($siteIds, fn($siteId) => $siteId !== $element->siteId);
                 if (!empty($siteIds)) {
                     $userId = Craft::$app->getUser()->getId();
                     $timestamp = Db::prepareDateForDb(new DateTime());
@@ -1249,15 +1246,15 @@ JS, [
      */
     public function getSourceOptions(): array
     {
-        $options = array_map(fn($s) => [
-            'label' => $s['label'],
-            'value' => $s['key'],
-            'data' => [
-                'structure-id' => $s['structureId'] ?? null,
-            ],
-        ], $this->availableSources());
-        ArrayHelper::multisort($options, 'label', SORT_ASC, SORT_NATURAL | SORT_FLAG_CASE);
-        return $options;
+        return Collection::make($this->availableSources())
+            ->map(fn($s) => [
+                'label' => $s['label'],
+                'data' => [
+                    'structure-id' => $s['structureId'] ?? null,
+                ],
+            ])
+            ->sortBy('label', SORT_NATURAL | SORT_FLAG_CASE)
+            ->all();
     }
 
     /**
@@ -1645,7 +1642,7 @@ JS, [
      */
     protected function availableSources(): array
     {
-        return ArrayHelper::where(
+        return Arr::where(
             Craft::$app->getElementSources()->getSources(static::elementType(), 'modal'),
             fn($s) => $s['type'] !== ElementSources::TYPE_HEADING
         );

@@ -31,7 +31,7 @@ use craft\events\DefineValueEvent;
 use craft\events\PopulateElementEvent;
 use craft\events\PopulateElementsEvent;
 use craft\helpers\App;
-use craft\helpers\ArrayHelper;
+use craft\helpers\Arr;
 use craft\helpers\Db;
 use craft\helpers\ElementHelper;
 use craft\helpers\Json;
@@ -752,7 +752,7 @@ class ElementQuery extends Query implements ElementQueryInterface
             $valid = true;
         } elseif (
             is_numeric($value) ||
-            (is_array($value) && ArrayHelper::isNumeric($value)) ||
+            (is_array($value) && Arr::isNumeric($value)) ||
             $value === '*' ||
             $value === false ||
             $value === null
@@ -2320,7 +2320,7 @@ class ElementQuery extends Query implements ElementQueryInterface
         }
 
         // Set the field values
-        $content = ArrayHelper::remove($row, 'content');
+        $content = Arr::pull($row, 'content');
         $row['fieldValues'] = [];
 
         if (!empty($this->customFields) && !empty($content)) {
@@ -2347,9 +2347,9 @@ class ElementQuery extends Query implements ElementQueryInterface
 
             if (!empty($row['draftId'])) {
                 $behaviors['draft'] = new DraftBehavior([
-                    'creatorId' => ArrayHelper::remove($row, 'draftCreatorId'),
-                    'draftName' => ArrayHelper::remove($row, 'draftName'),
-                    'draftNotes' => ArrayHelper::remove($row, 'draftNotes'),
+                    'creatorId' => Arr::pull($row, 'draftCreatorId'),
+                    'draftName' => Arr::pull($row, 'draftName'),
+                    'draftNotes' => Arr::pull($row, 'draftNotes'),
                 ]);
             } else {
                 unset(
@@ -2363,9 +2363,9 @@ class ElementQuery extends Query implements ElementQueryInterface
         if ($this->revisions !== false) {
             if (!empty($row['revisionId'])) {
                 $behaviors['revision'] = new RevisionBehavior([
-                    'creatorId' => ArrayHelper::remove($row, 'revisionCreatorId'),
-                    'revisionNum' => ArrayHelper::remove($row, 'revisionNum'),
-                    'revisionNotes' => ArrayHelper::remove($row, 'revisionNotes'),
+                    'creatorId' => Arr::pull($row, 'revisionCreatorId'),
+                    'revisionNum' => Arr::pull($row, 'revisionNum'),
+                    'revisionNotes' => Arr::pull($row, 'revisionNotes'),
                 ]);
             } else {
                 unset(
@@ -2477,7 +2477,7 @@ class ElementQuery extends Query implements ElementQueryInterface
             // If (<= 100) specific IDs were requested, then use those
             if (
                 is_numeric($this->id) ||
-                (is_array($this->id) && count($this->id) <= 100 && ArrayHelper::isNumeric($this->id))
+                (is_array($this->id) && count($this->id) <= 100 && Arr::isNumeric($this->id))
             ) {
                 array_push($this->_cacheTags, ...array_map(fn($id) => "element::$id", (array)$this->id));
             } else {
@@ -2860,7 +2860,7 @@ class ElementQuery extends Query implements ElementQueryInterface
         }
 
         $parser = new ElementRelationParamParser([
-            'fields' => $this->customFields ? ArrayHelper::index(
+            'fields' => $this->customFields ? Arr::keyBy(
                 $this->customFields,
                 fn(FieldInterface $field) => $field->layoutElement?->getOriginalHandle() ?? $field->handle,
             ) : [],
@@ -2888,7 +2888,7 @@ class ElementQuery extends Query implements ElementQueryInterface
         $notRelatedToParam = $this->notRelatedTo;
 
         $parser = new ElementRelationParamParser([
-            'fields' => $this->customFields ? ArrayHelper::index(
+            'fields' => $this->customFields ? Arr::keyBy(
                 $this->customFields,
                 fn(FieldInterface $field) => $field->layoutElement?->getOriginalHandle() ?? $field->handle,
             ) : [],
@@ -3221,7 +3221,7 @@ class ElementQuery extends Query implements ElementQueryInterface
             $this->siteId = $sitesService->getCurrentSite()->id;
         } elseif ($this->siteId === '*') {
             $this->siteId = $sitesService->getAllSiteIds();
-        } elseif (is_numeric($this->siteId) || ArrayHelper::isNumeric($this->siteId)) {
+        } elseif (is_numeric($this->siteId) || Arr::isNumeric($this->siteId)) {
             // Filter out any invalid site IDs
             $siteIds = Collection::make((array)$this->siteId)
                 ->filter(fn($siteId) => $sitesService->getSiteById($siteId, true) !== null)

@@ -14,7 +14,7 @@ use craft\console\Controller;
 use craft\db\Table;
 use craft\elements\User;
 use craft\errors\InvalidElementException;
-use craft\helpers\ArrayHelper;
+use craft\helpers\Arr;
 use craft\helpers\Console;
 use craft\helpers\Db;
 use craft\helpers\UrlHelper;
@@ -190,12 +190,12 @@ class UsersController extends Controller
         }
 
         // Validate the arguments
-        $attributesFromArgs = ArrayHelper::withoutValue([
+        $attributesFromArgs = Arr::whereNotNull([
             'email' => $this->email,
             'username' => $this->username,
             'newPassword' => $this->password,
             'admin' => $this->admin,
-        ], null);
+        ]);
 
         $user = new User($attributesFromArgs);
 

@@ -9,7 +9,7 @@ namespace craft\fields\linktypes;
 
 use Craft;
 use craft\fields\Link;
-use craft\helpers\ArrayHelper;
+use craft\helpers\Arr;
 use craft\helpers\Cp;
 use craft\helpers\Html;
 use craft\helpers\StringHelper;
@@ -49,7 +49,7 @@ abstract class BaseTextLinkType extends BaseLinkType
         }
 
         // Only add a prefix if the end result validates
-        $prefix = ArrayHelper::firstValue((array)$this->urlPrefix());
+        $prefix = Arr::first((array)$this->urlPrefix());
         $normalized = "$prefix$value";
         return $this->validateValue($normalized) ? $normalized : $value;
     }

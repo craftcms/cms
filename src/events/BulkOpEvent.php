@@ -10,7 +10,7 @@ namespace craft\events;
 use Craft;
 use craft\db\Query;
 use craft\db\Table;
-use craft\helpers\ArrayHelper;
+use craft\helpers\Arr;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\Db;
 use craft\services\Elements;
@@ -56,7 +56,7 @@ class BulkOpEvent extends ElementQueryEvent
             self::$triggers = [];
 
             Event::on(Elements::class, Elements::EVENT_AFTER_BULK_OP, function(self $event) {
-                $triggers = ArrayHelper::remove(self::$triggers, $event->key, []);
+                $triggers = Arr::pull(self::$triggers, $event->key, []);
                 $db = Craft::$app->getElements()->bulkOpDb;
 
                 // see if any events were fired for the same bulk op key from previous requests

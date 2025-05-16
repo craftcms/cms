@@ -13,7 +13,7 @@ use craft\db\Query;
 use craft\db\Table;
 use craft\elements\Entry;
 use craft\elements\User;
-use craft\helpers\ArrayHelper;
+use craft\helpers\Arr;
 use craft\records\User as UserRecord;
 use craft\services\Gc;
 use craft\test\TestCase;
@@ -27,6 +27,7 @@ use DateInterval;
 use DateTime;
 use DateTimeZone;
 use Exception;
+use Illuminate\Support\Collection;
 use yii\base\InvalidArgumentException;
 
 /**
@@ -125,7 +126,7 @@ class GcTest extends TestCase
             ->all();
 
         self::assertCount($remainingCount, $items);
-        self::assertSame((string)ArrayHelper::firstValue($items)['id'], $leftoverId);
+        self::assertSame((string)Arr::first($items)['id'], $leftoverId);
     }
 
     /**
@@ -204,7 +205,7 @@ class GcTest extends TestCase
 
         // Check any non allowed titles. Fail if an entry exists with a title that isn't allowed.
         foreach ($notAllowedTitles as $notAllowedTitle) {
-            $doesEntryExistWithThisTitle = ArrayHelper::where($entries, 'title', $notAllowedTitle);
+            $doesEntryExistWithThisTitle = Collection::make($entries)->firstWhere('title', $notAllowedTitle);
             if ($doesEntryExistWithThisTitle) {
                 self::fail("Entries were deleted but an entry with title ($notAllowedTitle) still exists");
             }

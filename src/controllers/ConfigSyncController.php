@@ -11,7 +11,7 @@ use Craft;
 use craft\errors\BusyResourceException;
 use craft\errors\InvalidPluginException;
 use craft\errors\StaleResourceException;
-use craft\helpers\ArrayHelper;
+use craft\helpers\Arr;
 use craft\services\ProjectConfig;
 use Throwable;
 use yii\base\NotSupportedException;
@@ -266,12 +266,12 @@ class ConfigSyncController extends BaseUpdaterController
             case self::ACTION_REGENERATE_YAML:
                 return Craft::t('app', 'Regenerating project config YAML files from the loaded project config…');
             case self::ACTION_UNINSTALL_PLUGIN:
-                $handle = ArrayHelper::firstValue($this->data['uninstallPlugins']);
+                $handle = Arr::first($this->data['uninstallPlugins']);
                 return Craft::t('app', 'Uninstalling {name}', [
                     'name' => $this->_pluginName($handle),
                 ]);
             case self::ACTION_INSTALL_PLUGIN:
-                $handle = ArrayHelper::firstValue($this->data['installPlugins']);
+                $handle = Arr::first($this->data['installPlugins']);
                 return Craft::t('app', 'Installing {name}', [
                     'name' => $this->_pluginName($handle),
                 ]);

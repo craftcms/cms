@@ -11,7 +11,7 @@ use Craft;
 use craft\elements\User;
 use craft\errors\ElementNotFoundException;
 use craft\errors\InvalidElementException;
-use craft\helpers\ArrayHelper;
+use craft\helpers\Arr;
 use craft\test\mockclasses\components\EventTriggeringComponent;
 use craft\test\TestCase;
 use DateInterval;
@@ -107,7 +107,7 @@ class CraftCodeceptionModuleTest extends TestCase
         $user = new User($configArray);
         $this->tester->saveElement($user);
 
-        $this->tester->assertElementsExist(User::class, ArrayHelper::without($configArray, 'active'));
+        $this->tester->assertElementsExist(User::class, Arr::except($configArray, 'active'));
         $this->tester->deleteElement($user);
     }
 
@@ -130,7 +130,7 @@ class CraftCodeceptionModuleTest extends TestCase
         $this->tester->saveElement($user);
 
         $this->tester->assertTestFails(function() use ($configArray) {
-            $this->tester->assertElementsExist(User::class, ArrayHelper::without($configArray, 'active'), 2);
+            $this->tester->assertElementsExist(User::class, Arr::except($configArray, 'active'), 2);
         });
 
         $this->tester->deleteElement($user);
@@ -158,8 +158,8 @@ class CraftCodeceptionModuleTest extends TestCase
         $dupeConfig = ['username' => 'user3', 'email' => 'user3@crafttest.com'];
         $dupeUser = Craft::$app->getElements()->duplicateElement($user, $dupeConfig);
 
-        $this->tester->assertElementsExist(User::class, ArrayHelper::without($configArray, 'active'), 1);
-        $this->tester->assertElementsExist(User::class, array_merge(ArrayHelper::without($configArray, 'active'), $dupeConfig), 1);
+        $this->tester->assertElementsExist(User::class, Arr::except($configArray, 'active'), 1);
+        $this->tester->assertElementsExist(User::class, array_merge(Arr::except($configArray, 'active'), $dupeConfig), 1);
 
         $this->tester->deleteElement($user);
         $this->tester->deleteElement($dupeUser);

@@ -19,6 +19,7 @@ use craft\elements\ElementCollection;
 use craft\elements\User;
 use craft\errors\AssetException;
 use craft\helpers\App;
+use craft\helpers\Arr;
 use craft\helpers\ArrayHelper;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\Db;
@@ -65,7 +66,6 @@ use DateInterval;
 use DateTime;
 use DateTimeInterface;
 use DateTimeZone;
-use Illuminate\Support\Arr;
 use Illuminate\Support\Collection;
 use IteratorAggregate;
 use Money\Money;
@@ -745,17 +745,9 @@ class Extension extends AbstractExtension implements GlobalsInterface
      */
     public function withoutFilter(mixed $arr, mixed $exclude, bool $strict = false): array
     {
-        $arr = (array)$arr;
-
-        if (!is_array($exclude)) {
-            $exclude = [$exclude];
-        }
-
-        foreach ($exclude as $value) {
-            ArrayHelper::removeValue($arr, $value, $strict);
-        }
-
-        return $arr;
+        return Collection::make($arr)
+            ->reject(fn($value) => in_array($value, Arr::wrap($exclude), $strict))
+            ->all();
     }
 
     /**
@@ -775,7 +767,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
         }
 
         foreach ($key as $k) {
-            ArrayHelper::remove($arr, $k);
+            Arr::forget($arr, $k);
         }
 
         return $arr;
@@ -947,7 +939,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
                 $regex === false ||
                 (
                     $regex === null &&
-                    !ArrayHelper::contains(array_keys($search), fn(string $str) => $this->isRegex($str))
+                    !Collection::make($search)->keys()->contains(fn(string $str) => $this->isRegex($str))
                 )
             ) {
                 return strtr($str, $search);
@@ -1344,7 +1336,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
         }
 
         if ($recursive) {
-            return ArrayHelper::merge($arr1, $arr2);
+            return Arr::merge($arr1, $arr2);
         }
 
         return CoreExtension::merge($arr1, $arr2);
@@ -1700,8 +1692,8 @@ class Extension extends AbstractExtension implements GlobalsInterface
      */
     public function tagFunction(string $type, array $attributes = []): string
     {
-        $html = ArrayHelper::remove($attributes, 'html', '');
-        $text = ArrayHelper::remove($attributes, 'text');
+        $html = Arr::pull($attributes, 'html', '');
+        $text = Arr::pull($attributes, 'text');
 
         if ($text !== null) {
             $html = Html::encode($text);

@@ -15,7 +15,7 @@ use craft\base\Model;
 use craft\behaviors\FieldLayoutBehavior;
 use craft\db\Table;
 use craft\elements\Category;
-use craft\helpers\ArrayHelper;
+use craft\helpers\Arr;
 use craft\helpers\Db;
 use craft\helpers\StringHelper;
 use craft\helpers\UrlHelper;
@@ -257,10 +257,7 @@ class CategoryGroup extends Model implements
      */
     public function setSiteSettings(array $siteSettings): void
     {
-        $this->_siteSettings = ArrayHelper::index(
-            $siteSettings,
-            fn(CategoryGroup_SiteSettings $siteSettings) => $siteSettings->siteId,
-        );
+        $this->_siteSettings = Arr::keyBy($siteSettings, 'siteId');
 
         foreach ($this->_siteSettings as $settings) {
             $settings->setGroup($this);

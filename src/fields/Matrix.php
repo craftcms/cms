@@ -39,7 +39,7 @@ use craft\gql\arguments\elements\Entry as EntryArguments;
 use craft\gql\resolvers\elements\Entry as EntryResolver;
 use craft\gql\types\generators\EntryType as EntryTypeGenerator;
 use craft\gql\types\input\Matrix as MatrixInputType;
-use craft\helpers\ArrayHelper;
+use craft\helpers\Arr;
 use craft\helpers\Db;
 use craft\helpers\Gql;
 use craft\helpers\Html;
@@ -313,10 +313,10 @@ class Matrix extends Field implements
         }
 
         if (array_key_exists('minBlocks', $config)) {
-            $config['minEntries'] = ArrayHelper::remove($config, 'minBlocks');
+            $config['minEntries'] = Arr::pull($config, 'minBlocks');
         }
         if (array_key_exists('maxBlocks', $config)) {
-            $config['maxEntries'] = ArrayHelper::remove($config, 'maxBlocks');
+            $config['maxEntries'] = Arr::pull($config, 'maxBlocks');
         }
 
         parent::__construct($config);
@@ -360,7 +360,7 @@ class Matrix extends Field implements
      */
     public function settingsAttributes(): array
     {
-        return ArrayHelper::withoutValue(parent::settingsAttributes(), 'localizeEntries');
+        return Arr::where(parent::settingsAttributes(), fn($attribute) => $attribute !== 'localizeEntries');
     }
 
     /**
@@ -1129,7 +1129,7 @@ JS,
                 ElementIndexViewMode::Cards,
                 $this->includeTableView ? ElementIndexViewMode::Table : null,
             ]),
-            'showHeaderColumn' => ArrayHelper::contains($entryTypes, fn(EntryType $entryType) => (
+            'showHeaderColumn' => Collection::make($entryTypes)->contains(fn(EntryType $entryType) => (
                 $entryType->hasTitleField ||
                 $entryType->titleFormat
             )),
@@ -1428,7 +1428,7 @@ JS;
     {
         $entryTypeHandle = StringHelper::removeLeft(StringHelper::removeRight($fragmentName, '_Entry'), $this->handle . '_');
 
-        $entryType = ArrayHelper::firstWhere($this->getEntryTypes(), 'handle', $entryTypeHandle);
+        $entryType = Collection::make($this->getEntryTypes())->firstWhere('handle', $entryTypeHandle);
 
         if (!$entryType) {
             throw new InvalidArgumentException('Invalid fragment name: ' . $fragmentName);
@@ -1592,7 +1592,7 @@ JS;
     {
         // Get the possible entry types for this field
         /** @var EntryType[] $entryTypes */
-        $entryTypes = ArrayHelper::index($this->getEntryTypes(), 'handle');
+        $entryTypes = Arr::keyBy($this->getEntryTypes(), 'handle');
 
         // Were the entries posted by UUID or ID?
         $uids = (

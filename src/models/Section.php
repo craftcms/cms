@@ -16,7 +16,7 @@ use craft\db\Query;
 use craft\db\Table;
 use craft\elements\Entry;
 use craft\enums\PropagationMethod;
-use craft\helpers\ArrayHelper;
+use craft\helpers\Arr;
 use craft\helpers\Db;
 use craft\helpers\ProjectConfig as ProjectConfigHelper;
 use craft\helpers\StringHelper;
@@ -313,10 +313,7 @@ class Section extends Model implements Chippable, CpEditable, Iconic
      */
     public function setSiteSettings(array $siteSettings): void
     {
-        $this->_siteSettings = ArrayHelper::index(
-            $siteSettings,
-            fn(Section_SiteSettings $siteSettings) => $siteSettings->siteId,
-        );
+        $this->_siteSettings = Arr::keyBy($siteSettings, 'siteId');
 
         foreach ($this->_siteSettings as $settings) {
             $settings->setSection($this);

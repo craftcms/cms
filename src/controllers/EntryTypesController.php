@@ -14,7 +14,7 @@ use craft\base\FieldLayoutElement;
 use craft\elements\Entry;
 use craft\enums\Color;
 use craft\fieldlayoutelements\entries\EntryTitleField;
-use craft\helpers\ArrayHelper;
+use craft\helpers\Arr;
 use craft\helpers\Cp;
 use craft\helpers\Html;
 use craft\helpers\StringHelper;
@@ -330,7 +330,7 @@ class EntryTypesController extends Controller
         $settingsStr = $this->request->getBodyParam('settings');
         parse_str($settingsStr, $postedSettings);
         $settingsNamespace = $this->request->getRequiredBodyParam('settingsNamespace');
-        $settings = array_filter(ArrayHelper::getValue($postedSettings, $settingsNamespace, []));
+        $settings = array_filter(Arr::get($postedSettings, $settingsNamespace, []));
 
         if (!empty($settings)) {
             Craft::configure($entryType, $settings);

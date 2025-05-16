@@ -17,7 +17,7 @@ use craft\db\Table;
 use craft\elements\db\ElementQuery;
 use craft\events\IndexKeywordsEvent;
 use craft\events\SearchEvent;
-use craft\helpers\ArrayHelper;
+use craft\helpers\Arr;
 use craft\helpers\Component as ComponentHelper;
 use craft\helpers\Db;
 use craft\helpers\ElementHelper;
@@ -552,7 +552,7 @@ class Search extends Component
         }
 
         $options = array_merge($searchQuery);
-        $searchQuery = ArrayHelper::remove($options, 'query');
+        $searchQuery = Arr::pull($options, 'query');
         $options = array_merge(Craft::$app->getConfig()->getGeneral()->defaultSearchTermOptions, $options);
         return new SearchQuery($searchQuery, $options);
     }

@@ -278,7 +278,7 @@ class ImageTransforms
         }
 
         if (is_object($transform)) {
-            $transform = ArrayHelper::toArray($transform);
+            $transform = Arr::toArray($transform);
         }
 
         if (is_array($transform)) {
@@ -303,7 +303,7 @@ class ImageTransforms
             }
 
             if (array_key_exists('transform', $transform)) {
-                $baseTransform = self::normalizeTransform(ArrayHelper::remove($transform, 'transform'));
+                $baseTransform = self::normalizeTransform(Arr::pull($transform, 'transform'));
                 return self::extendTransform($baseTransform, $transform);
             }
 

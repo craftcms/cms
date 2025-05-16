@@ -15,7 +15,7 @@ use craft\errors\DbConnectException;
 use craft\errors\MigrationException;
 use craft\errors\OperationAbortedException;
 use craft\helpers\App;
-use craft\helpers\ArrayHelper;
+use craft\helpers\Arr;
 use craft\helpers\Install as InstallHelper;
 use craft\helpers\StringHelper;
 use craft\markdown\Markdown;
@@ -190,7 +190,7 @@ class InstallController extends Controller
         $errors = $user->getErrors();
 
         if (isset($errors['newPassword'])) {
-            $errors['password'] = ArrayHelper::remove($errors, 'newPassword');
+            $errors['password'] = Arr::pull($errors, 'newPassword');
         }
 
         if (!$validates) {
@@ -261,7 +261,7 @@ class InstallController extends Controller
             // Update the db component based on new values
             $db = Craft::$app->getDb();
             $db->close();
-            Craft::configure($db, ArrayHelper::without(App::dbConfig($dbConfig), 'class'));
+            Craft::configure($db, Arr::except(App::dbConfig($dbConfig), 'class'));
         }
 
         // Run the install migration

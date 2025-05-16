@@ -9,8 +9,8 @@ namespace craft\base;
 
 use ArrayIterator;
 use Countable;
-use craft\helpers\ArrayHelper;
 use craft\helpers\Json;
+use Illuminate\Support\Collection;
 use IteratorAggregate;
 
 /**
@@ -120,7 +120,9 @@ class MemoizableArray implements IteratorAggregate, Countable
 
         if (!isset($this->_memoized[$memKey])) {
             $this->_memoized[$memKey] = new MemoizableArray(
-                ArrayHelper::where($this->_elements, $key, $value, $strict),
+                Collection::make($this->_elements)
+                    ->where($key, $strict ? '===' : '==', $value)
+                    ->all(),
                 isset($this->_normalizer) ? fn($element, $key) => $this->normalizeByKey($key) : null,
             );
         }
@@ -145,7 +147,7 @@ class MemoizableArray implements IteratorAggregate, Countable
 
         if (!isset($this->_memoized[$memKey])) {
             $this->_memoized[$memKey] = new MemoizableArray(
-                ArrayHelper::whereIn($this->_elements, $key, $values, $strict),
+                Collection::make($this->_elements)->whereIn($key, $values, $strict)->all(),
                 isset($this->_normalizer) ? fn($element, $key) => $this->normalizeByKey($key) : null,
             );
         }
@@ -167,7 +169,11 @@ class MemoizableArray implements IteratorAggregate, Countable
 
         // Use array_key_exists() because it could be null
         if (!array_key_exists($memKey, $this->_memoized)) {
-            ArrayHelper::firstWhere($this->_elements, $key, $value, $strict, valueKey: $valueKey);
+            $valueKey = Collection::make($this->_elements)
+                ->where($key, $strict ? '===' : '==', $value)
+                ->keys()
+                ->first();
+
             $this->_memoized[$memKey] = $this->normalizeByKey($valueKey);
         }
 

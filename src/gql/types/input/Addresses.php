@@ -10,7 +10,7 @@ namespace craft\gql\types\input;
 use Craft;
 use craft\base\Field;
 use craft\gql\GqlEntityRegistry;
-use craft\helpers\ArrayHelper;
+use craft\helpers\Arr;
 use GraphQL\Type\Definition\InputObjectType;
 use GraphQL\Type\Definition\Type;
 
@@ -171,13 +171,13 @@ class Addresses extends InputObjectType
 
             foreach ($value as $addressData) {
                 if (!empty($addressData)) {
-                    $addressId = ArrayHelper::remove($addressData, 'id') ?? sprintf('new:%s', $addressCounter++);
+                    $addressId = Arr::pull($addressData, 'id', sprintf('new:%s', $addressCounter++));
                     $normalized = [];
 
                     foreach ($nativeFields as $field) {
                         if (array_key_exists($field, $addressData)) {
                         }
-                        $normalized[$field] = ArrayHelper::remove($addressData, $field);
+                        $normalized[$field] = Arr::pull($addressData, $field);
                     }
 
                     // Whatever's left must be custom fields

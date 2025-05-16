@@ -13,7 +13,7 @@ use craft\base\ElementInterface;
 use craft\enums\CmsEdition;
 use craft\events\RegisterUrlRulesEvent;
 use craft\helpers\App;
-use craft\helpers\ArrayHelper;
+use craft\helpers\Arr;
 use craft\helpers\UrlHelper;
 use craft\web\UrlRule as CraftUrlRule;
 use yii\web\UrlRule as YiiUrlRule;
@@ -133,7 +133,7 @@ class UrlManager extends \yii\web\UrlManager
         }
 
         // Merge in any additional route params
-        $route[1] = $this->_routeParams = ArrayHelper::merge($route[1], $this->_routeParams);
+        $route[1] = $this->_routeParams = Arr::merge($route[1], $this->_routeParams);
 
         return $route;
     }
@@ -198,7 +198,7 @@ class UrlManager extends \yii\web\UrlManager
     public function setRouteParams(array $params, bool $merge = true): void
     {
         if ($merge) {
-            $this->_routeParams = ArrayHelper::merge($this->_routeParams, $params);
+            $this->_routeParams = Arr::merge($this->_routeParams, $params);
         } else {
             $this->_routeParams = $params;
         }

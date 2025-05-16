@@ -8,7 +8,7 @@
  */
 
 use craft\helpers\App;
-use craft\helpers\ArrayHelper;
+use craft\helpers\Arr;
 use craft\helpers\FileHelper;
 use craft\services\Config;
 use yii\base\ErrorException;
@@ -322,7 +322,7 @@ $components = [
     'config' => $configService,
 ];
 
-$config = ArrayHelper::merge(
+$config = Arr::merge(
     [
         'vendorPath' => $vendorPath,
         'env' => $environment,
@@ -332,7 +332,7 @@ $config = ArrayHelper::merge(
     require $srcPath . DIRECTORY_SEPARATOR . 'config' . DIRECTORY_SEPARATOR . "app.{$appType}.php"
 );
 
-$localConfig = ArrayHelper::merge(
+$localConfig = Arr::merge(
     $configService->getConfigFromFile('app'),
     $configService->getConfigFromFile("app.{$appType}")
 );
@@ -340,13 +340,13 @@ $localConfig = ArrayHelper::merge(
 $safeMode = App::env('CRAFT_SAFE_MODE') ?? $generalConfig->safeMode;
 
 if ($safeMode) {
-    ArrayHelper::remove($localConfig, 'bootstrap');
-    ArrayHelper::remove($localConfig, 'components');
-    ArrayHelper::remove($localConfig, 'extensions');
-    ArrayHelper::remove($localConfig, 'container');
+    Arr::forget($localConfig, 'bootstrap');
+    Arr::forget($localConfig, 'components');
+    Arr::forget($localConfig, 'extensions');
+    Arr::forget($localConfig, 'container');
 }
 
-$config = ArrayHelper::merge($config, $localConfig);
+$config = Arr::merge($config, $localConfig);
 
 if (function_exists('craft_modify_app_config')) {
     craft_modify_app_config($config, $appType);

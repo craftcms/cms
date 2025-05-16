@@ -17,7 +17,7 @@ use craft\base\SortableFieldInterface;
 use craft\elements\Entry;
 use craft\enums\Color as ColorEnum;
 use craft\fields\conditions\LightswitchFieldConditionRule;
-use craft\helpers\ArrayHelper;
+use craft\helpers\Arr;
 use craft\helpers\Cp;
 use craft\helpers\Db;
 use craft\helpers\Html;
@@ -112,7 +112,7 @@ class Lightswitch extends Field implements InlineEditableFieldInterface, Sortabl
     public function __construct($config = [])
     {
         // Config normalization
-        if (($onLabel = ArrayHelper::remove($config, 'label')) !== null) {
+        if (($onLabel = Arr::pull($config, 'label')) !== null) {
             $config['onLabel'] = $onLabel;
         }
 

@@ -11,7 +11,7 @@ use Craft;
 use craft\base\ElementInterface;
 use craft\base\PreviewableFieldInterface;
 use craft\elements\conditions\ElementConditionInterface;
-use craft\helpers\ArrayHelper;
+use craft\helpers\Arr;
 use craft\helpers\Cp;
 use craft\models\UserGroup;
 use craft\services\ElementSources;
@@ -101,9 +101,9 @@ class ElementIndexSettingsController extends BaseElementsController
 
             if (isset($source['defaultSort'])) {
                 if (is_string($source['defaultSort'])) {
-                    $defaultSortOption = ArrayHelper::firstWhere($source['sortOptions'], 'attr', $source['defaultSort']);
+                    $defaultSortOption = Collection::make($source['sortOptions'])->firstWhere('attr', $source['defaultSort']);
                 } elseif (is_array($source['defaultSort']) && isset($source['defaultSort'][0])) {
-                    $defaultSortOption = ArrayHelper::firstWhere($source['sortOptions'], 'attr', $source['defaultSort'][0]);
+                    $defaultSortOption = Collection::make($source['sortOptions'])->firstWhere('attr', $source['defaultSort'][0]);
                     if ($defaultSortOption && isset($source['defaultSort'][1])) {
                         $defaultSortDir = $source['defaultSort'][1];
                     }
@@ -133,7 +133,7 @@ class ElementIndexSettingsController extends BaseElementsController
             if ($source['type'] === ElementSources::TYPE_CUSTOM) {
                 if (isset($source['condition'])) {
                     /** @var ElementConditionInterface $condition */
-                    $condition = $conditionsService->createCondition(ArrayHelper::remove($source, 'condition'));
+                    $condition = $conditionsService->createCondition(Arr::pull($source, 'condition'));
                     $condition->mainTag = 'div';
                     $condition->name = "sources[{$source['key']}][condition]";
                     $condition->forProjectConfig = true;
@@ -243,7 +243,10 @@ class ElementIndexSettingsController extends BaseElementsController
         // Get the old source configs
         $projectConfig = Craft::$app->getProjectConfig();
         $oldSourceConfigs = $projectConfig->get(ProjectConfig::PATH_ELEMENT_SOURCES . ".$elementType") ?? [];
-        $oldSourceConfigs = ArrayHelper::index(array_filter($oldSourceConfigs, fn($s) => $s['type'] !== ElementSources::TYPE_HEADING), 'key');
+        $oldSourceConfigs = Collection::make($oldSourceConfigs)
+            ->filter(fn($s) => $s['type'] !== ElementSources::TYPE_HEADING)
+            ->keyBy('key')
+            ->all();
 
         $conditionsService = Craft::$app->getConditions();
 

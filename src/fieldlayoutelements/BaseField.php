@@ -10,7 +10,7 @@ namespace craft\fieldlayoutelements;
 use Craft;
 use craft\base\ElementInterface;
 use craft\base\FieldLayoutElement;
-use craft\helpers\ArrayHelper;
+use craft\helpers\Arr;
 use craft\helpers\Cp;
 use craft\helpers\ElementHelper;
 use craft\helpers\Html;
@@ -66,7 +66,7 @@ abstract class BaseField extends FieldLayoutElement
      */
     public function __construct($config = [])
     {
-        if (ArrayHelper::remove($config, 'labelHidden')) {
+        if (Arr::pull($config, 'labelHidden')) {
             $config['label'] = '__blank__';
         }
 
@@ -587,7 +587,7 @@ abstract class BaseField extends FieldLayoutElement
      */
     protected function containerAttributes(?ElementInterface $element = null, bool $static = false): array
     {
-        return ArrayHelper::merge(parent::containerAttributes($element, $static), [
+        return Arr::merge(parent::containerAttributes($element, $static), [
             'data' => [
                 'base-input-name' => Craft::$app->getView()->namespaceInputName($this->baseInputName()),
                 'error-key' => $this->errorKey(),

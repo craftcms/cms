@@ -8,7 +8,6 @@
 namespace craft\auth\methods;
 
 use Craft;
-use craft\helpers\ArrayHelper;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\Json;
 use craft\records\RecoveryCodes as RecoveryCodesRecord;
@@ -109,7 +108,7 @@ JS, [$containerId]);
 
         // check if secret is stored, if not, we need to store it
         [$codes] = $this->getRecoveryCodes();
-        $codeExists = ArrayHelper::contains($codes, fn(string|false $c) => $c === $code);
+        $codeExists = in_array($code, $codes, true);
 
         if (!$codeExists) {
             return false;

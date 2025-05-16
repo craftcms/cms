@@ -17,7 +17,7 @@ use craft\errors\OperationAbortedException;
 use craft\errors\StaleResourceException;
 use craft\events\ConfigEvent;
 use craft\events\RebuildConfigEvent;
-use craft\helpers\ArrayHelper;
+use craft\helpers\Arr;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\Db;
 use craft\helpers\FileHelper;
@@ -387,7 +387,7 @@ class ProjectConfig extends Component
     public function __construct($config = [])
     {
         if (isset($config['maxBackups'])) {
-            $config['maxDeltas'] = ArrayHelper::remove($config, 'maxBackups');
+            $config['maxDeltas'] = Arr::pull($config, 'maxBackups');
             Craft::$app->getDeprecator()->log(self::class . '::maxBackups', '`' . self::class . '::maxBackups` has been deprecated. Use `maxDeltas` instead.');
         }
 

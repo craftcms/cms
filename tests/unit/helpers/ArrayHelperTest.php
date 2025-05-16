@@ -31,28 +31,56 @@ class ArrayHelperTest extends TestCase
         self::assertSame($expected, ArrayHelper::toArray($object));
     }
 
-    /**
-     * @dataProvider prependDataProvider
-     * @param array $expected
-     * @param array $array
-     * @param array $values
-     */
-    public function testPrepend(array $expected, array $array, array $values): void
+    public function testMerge(): void
     {
-        ArrayHelper::prepend($array, ...$values);
-        self::assertSame($expected, $array);
-    }
+        $a = [
+            'name' => 'Yii',
+            'version' => '1.0',
+            'options' => [
+                'namespace' => false,
+                'unittest' => false,
+            ],
+            'features' => [
+                'mvc',
+            ],
+        ];
+        $b = [
+            'version' => '1.1',
+            'options' => [
+                'unittest' => true,
+            ],
+            'features' => [
+                'gii',
+            ],
+        ];
+        $c = [
+            'version' => '2.0',
+            'options' => [
+                'namespace' => true,
+            ],
+            'features' => [
+                'debug',
+            ],
+            'foo',
+        ];
 
-    /**
-     * @dataProvider appendDataProvider
-     * @param array $expected
-     * @param array $array
-     * @param array $values
-     */
-    public function testAppend(array $expected, array $array, array $values): void
-    {
-        ArrayHelper::append($array, ...$values);
-        self::assertSame($expected, $array);
+        $result = ArrayHelper::merge($a, $b, $c);
+        $expected = [
+            'name' => 'Yii',
+            'version' => '2.0',
+            'options' => [
+                'namespace' => true,
+                'unittest' => true,
+            ],
+            'features' => [
+                'mvc',
+                'gii',
+                'debug',
+            ],
+            'foo',
+        ];
+
+        self::assertSame($expected, $result);
     }
 
     /**
@@ -412,6 +440,10 @@ class ArrayHelperTest extends TestCase
      */
     public function testWithoutValue(array $expected, array $array, mixed $value): void
     {
+        /**
+         * This used to be ArrayHelper::withoutValue(),
+         * this tests the replacement implementation
+         */
         self::assertSame($expected, ArrayHelper::withoutValue($array, $value));
     }
 
@@ -455,19 +487,6 @@ class ArrayHelperTest extends TestCase
     public function testGetValue(string $expected, array $array, string $key): void
     {
         self::assertSame($expected, ArrayHelper::getValue($array, $key));
-    }
-
-    /**
-     * @dataProvider removeValueDataProvider
-     * @param array $expected
-     * @param array $array
-     * @param mixed $value
-     * @param bool $strict
-     */
-    public function testRemoveValue(array $expected, array $array, mixed $value, bool $strict = false)
-    {
-        ArrayHelper::removeValue($array, $value, $strict);
-        self::assertSame($expected, $array);
     }
 
     /**
@@ -646,36 +665,6 @@ class ArrayHelperTest extends TestCase
             ['foo[bar][]', ['foo[bar][]' => 'foo[bar][]'], 'foo[bar][]'],
             ['foo.bar:baz.qux', ['foo' => ['bar:baz' => ['qux' => 'foo.bar:baz.qux']]], 'foo[bar:baz][qux]'],
             ['foo-bar.baz.qux', ['foo-bar' => ['baz' => ['qux' => 'foo-bar.baz.qux']]], 'foo-bar[baz][qux]'],
-        ];
-    }
-
-    public static function removeValueDataProvider(): array
-    {
-        $obj1 = (object)['foo' => true];
-        $obj2 = (object)['bar' => true];
-
-        return [
-            [
-                ['a', 'b'],
-                ['a', 'b', 'c'],
-                'c',
-            ],
-            [
-                ['1', '2'],
-                ['1', '2', '3'],
-                3,
-            ],
-            [
-                ['1', '2', '3'],
-                ['1', '2', '3'],
-                3,
-                true,
-            ],
-            [
-                [$obj1, $obj2],
-                [$obj1, $obj2],
-                1,
-            ],
         ];
     }
 }

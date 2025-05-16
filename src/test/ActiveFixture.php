@@ -9,7 +9,7 @@ namespace craft\test;
 
 use Craft;
 use craft\elements\Entry;
-use craft\helpers\ArrayHelper;
+use craft\helpers\Arr;
 use craft\models\FieldLayout;
 use yii\base\InvalidArgumentException;
 use yii\db\ActiveRecord;
@@ -52,13 +52,13 @@ class ActiveFixture extends YiiActiveFixture
             // Set the field layout if it exists.
             $fieldLayout = null;
             if (isset($row['fieldLayoutType'])) {
-                $fieldLayoutType = ArrayHelper::remove($row, 'fieldLayoutType');
+                $fieldLayoutType = Arr::pull($row, 'fieldLayoutType');
                 $fieldLayout = $fieldsService->getLayoutByType($fieldLayoutType);
                 if ($fieldLayout->id === null) {
                     codecept_debug("Field layout with type: $fieldLayoutType could not be found");
                 }
             } elseif (isset($row['fieldLayoutUid'])) {
-                $fieldLayoutUid = ArrayHelper::remove($row, 'fieldLayoutUid');
+                $fieldLayoutUid = Arr::pull($row, 'fieldLayoutUid');
                 $fieldLayout = $fieldsService->getLayoutByUid($fieldLayoutUid);
                 if (!$fieldLayout) {
                     $fieldLayout = new FieldLayout([

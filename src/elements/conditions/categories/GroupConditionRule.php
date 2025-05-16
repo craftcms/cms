@@ -9,7 +9,7 @@ use craft\elements\Category;
 use craft\elements\conditions\ElementConditionRuleInterface;
 use craft\elements\db\CategoryQuery;
 use craft\elements\db\ElementQueryInterface;
-use craft\helpers\ArrayHelper;
+use craft\helpers\Arr;
 
 /**
  * Category group condition rule.
@@ -41,7 +41,7 @@ class GroupConditionRule extends BaseMultiSelectConditionRule implements Element
     protected function options(): array
     {
         $groups = Craft::$app->getCategories()->getAllGroups();
-        return ArrayHelper::map($groups, 'uid', 'name');
+        return Arr::pluck($groups, 'name', 'uid');
     }
 
     /**

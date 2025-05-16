@@ -8,7 +8,7 @@
 namespace craft\log;
 
 use Craft;
-use craft\helpers\ArrayHelper;
+use craft\helpers\Arr;
 use craft\helpers\Json;
 use Illuminate\Support\Collection;
 use Monolog\LogRecord;
@@ -115,7 +115,7 @@ class ContextProcessor implements ProcessorInterface
 
     protected function filterVars(array $vars = []): array
     {
-        $filtered = ArrayHelper::filter($GLOBALS, $vars);
+        $filtered = Arr::only($GLOBALS, $vars);
 
         // Workaround for codeception testing until these gets addressed:
         // https://github.com/yiisoft/yii-core/issues/49

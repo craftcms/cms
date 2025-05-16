@@ -21,7 +21,7 @@ use craft\errors\StaleResourceException;
 use craft\filters\UtilityAccess;
 use craft\helpers\Api;
 use craft\helpers\App;
-use craft\helpers\ArrayHelper;
+use craft\helpers\Arr;
 use craft\helpers\Cp;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\ElementHelper;
@@ -560,7 +560,7 @@ class AppController extends Controller
         $this->requireAdmin(false);
         $pluginLicenses = $this->request->getBodyParam('pluginLicenses');
         $result = $this->_pluginLicenseInfo($pluginLicenses);
-        ArrayHelper::multisort($result, 'name');
+        $result = Arr::sort($result, 'name');
         return $this->asJson($result);
     }
 
@@ -784,7 +784,7 @@ class AppController extends Controller
             $siteId = $criterion['siteId'];
             $instances = $criterion['instances'];
 
-            if (!$id || (!is_numeric($id) && !(is_array($id) && ArrayHelper::isNumeric($id)))) {
+            if (!$id || (!is_numeric($id) && !(is_array($id) && Arr::isNumeric($id)))) {
                 throw new BadRequestHttpException('Invalid element ID');
             }
 

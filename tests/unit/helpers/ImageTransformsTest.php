@@ -4,7 +4,7 @@ namespace crafttests\unit\helpers;
 
 use Codeception\Test\Unit;
 use craft\errors\ImageTransformException;
-use craft\helpers\ArrayHelper;
+use craft\helpers\Arr;
 use craft\helpers\ImageTransforms;
 use craft\models\ImageTransform;
 
@@ -145,24 +145,24 @@ class ImageTransformsTest extends Unit
                 $this->fullTransform,
             ],
             'non-numeric width' => [
-                ArrayHelper::merge($this->fullTransform, ['width' => null]),
-                ArrayHelper::merge($this->fullTransform, ['width' => 'not a number']),
+                Arr::merge($this->fullTransform, ['width' => null]),
+                Arr::merge($this->fullTransform, ['width' => 'not a number']),
             ],
             'non-numeric height' => [
-                ArrayHelper::merge($this->fullTransform, ['height' => null]),
-                ArrayHelper::merge($this->fullTransform, ['height' => 'not a number']),
+                Arr::merge($this->fullTransform, ['height' => null]),
+                Arr::merge($this->fullTransform, ['height' => 'not a number']),
             ],
             'invalid fill' => [
                 [
                     'fill' => null,
                 ],
-                ArrayHelper::merge($this->fullTransform, ['fill' => 'invalidFill']),
+                Arr::merge($this->fullTransform, ['fill' => 'invalidFill']),
             ],
             'transparent fill' => [
                 [
                     'fill' => 'transparent',
                 ],
-                ArrayHelper::merge($this->fullTransform, ['fill' => 'transparent']),
+                Arr::merge($this->fullTransform, ['fill' => 'transparent']),
             ],
             'extended transform' => [
                 [
@@ -171,7 +171,7 @@ class ImageTransformsTest extends Unit
                     'width' => $this->fullTransform['width'],
                     'height' => $this->fullTransform['height'],
                 ],
-                ArrayHelper::merge($this->fullTransform, [
+                Arr::merge($this->fullTransform, [
                     'transform' => [
                         'id' => '200',
                         'name' => 'Base Transform',
@@ -252,11 +252,11 @@ class ImageTransformsTest extends Unit
             ],
             'full transform' => [
                 '_100x200_fit_center-center_95_line_ff0000_ns',
-                ArrayHelper::merge($this->fullTransform, ['handle' => null, 'upscale' => false]),
+                Arr::merge($this->fullTransform, ['handle' => null, 'upscale' => false]),
             ],
             'transparent fill' => [
                 '_100x200_fit_center-center_95_line_transparent_ns',
-                ArrayHelper::merge($this->fullTransform, ['fill' => 'transparent', 'handle' => null, 'upscale' => false]),
+                Arr::merge($this->fullTransform, ['fill' => 'transparent', 'handle' => null, 'upscale' => false]),
             ],
         ];
     }

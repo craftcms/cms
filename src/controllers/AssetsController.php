@@ -23,7 +23,7 @@ use craft\errors\UploadFailedException;
 use craft\errors\VolumeException;
 use craft\fields\Assets as AssetsField;
 use craft\helpers\App;
-use craft\helpers\ArrayHelper;
+use craft\helpers\Arr;
 use craft\helpers\Assets;
 use craft\helpers\Db;
 use craft\helpers\FileHelper;
@@ -87,7 +87,7 @@ class AssetsController extends Controller
         $variables = [];
 
         if ($defaultSource) {
-            $defaultSourcePath = ArrayHelper::filterEmptyStringsFromArray(explode('/', $defaultSource));
+            $defaultSourcePath = Arr::whereNotEmpty(explode('/', $defaultSource));
             $volumesService = Craft::$app->getVolumes();
             $volume = $volumesService->getVolumeByHandle(array_shift($defaultSourcePath));
 

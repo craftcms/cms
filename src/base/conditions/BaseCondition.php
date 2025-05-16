@@ -5,7 +5,7 @@ namespace craft\base\conditions;
 use Craft;
 use craft\base\Component;
 use craft\events\RegisterConditionRulesEvent;
-use craft\helpers\ArrayHelper;
+use craft\helpers\Arr;
 use craft\helpers\Html;
 use craft\helpers\Json;
 use craft\helpers\UrlHelper;
@@ -506,7 +506,8 @@ JS,
         // Sort by group label, and then option label
         ksort($groupedRuleTypeOptions);
         if (isset($groupedRuleTypeOptions['__UNGROUPED__']) && count($groupedRuleTypeOptions) > 1) {
-            $ungroupedRuleTypeOptions = ArrayHelper::remove($groupedRuleTypeOptions, '__UNGROUPED__');
+            $ungroupedRuleTypeOptions = $groupedRuleTypeOptions;
+            Arr::forget($ungroupedRuleTypeOptions, '__UNGROUPED__');
             $groupedRuleTypeOptions = array_merge(['__UNGROUPED__' => $ungroupedRuleTypeOptions], $groupedRuleTypeOptions);
         }
 
@@ -517,7 +518,9 @@ JS,
                 $optionsHtml .= Html::tag('hr', options: ['class' => 'padded']) .
                     Html::tag('h6', Html::encode($groupLabel), ['class' => 'padded']);
             }
-            ArrayHelper::multisort($groupRuleTypeOptions, ['label', 'hint']);
+            $groupRuleTypeOptions = Collection::make($groupRuleTypeOptions)
+                ->sortBy(['label', 'hint'])
+                ->all();
             $optionsHtml .=
                 Html::beginTag('ul', ['class' => 'padded']) .
                 implode("\n", array_map(function(array $option) use ($ruleValue) {
@@ -570,7 +573,7 @@ JS,
         );
 
         return
-            Html::button(Html::encode($rule?->getLabel() ?? $this->addRuleLabel), ArrayHelper::merge([
+            Html::button(Html::encode($rule?->getLabel() ?? $this->addRuleLabel), Arr::merge([
                 'id' => $buttonId,
                 'class' => ['btn', 'menubtn', 'wrap'],
                 'autofocus' => $rule?->getAutofocus(),

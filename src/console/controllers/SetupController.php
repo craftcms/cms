@@ -14,7 +14,7 @@ use craft\db\Connection;
 use craft\db\Table;
 use craft\errors\DbConnectException;
 use craft\helpers\App;
-use craft\helpers\ArrayHelper;
+use craft\helpers\Arr;
 use craft\helpers\Console;
 use craft\helpers\FileHelper;
 use craft\helpers\StringHelper;
@@ -345,7 +345,7 @@ EOD;
 
         $db = Craft::$app->getDb();
         $db->close();
-        Craft::configure($db, ArrayHelper::without(App::dbConfig($dbConfig), 'class'));
+        Craft::configure($db, Arr::except(App::dbConfig($dbConfig), 'class'));
 
         try {
             $db->open();
@@ -410,7 +410,7 @@ EOD;
             } elseif ($this->schema === null) {
                 // Make sure that the DB is actually configured to use the provided schema by default
                 $searchPath = $db->createCommand('SHOW search_path')->queryScalar();
-                $defaultSchemas = ArrayHelper::filterEmptyStringsFromArray(array_map('trim', explode(',', $searchPath))) ?: ['public'];
+                $defaultSchemas = Arr::whereNotEmpty(array_map('trim', explode(',', $searchPath))) ?: ['public'];
 
                 // Get the available schemas (h/t https://dba.stackexchange.com/a/40051/205387)
                 try {

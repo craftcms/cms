@@ -5,7 +5,7 @@ namespace craft\fields\conditions;
 use Craft;
 use craft\base\conditions\BaseNumberConditionRule;
 use craft\fields\Money;
-use craft\helpers\ArrayHelper;
+use craft\helpers\Arr;
 use craft\helpers\Cp;
 use craft\helpers\Html;
 use craft\helpers\MoneyHelper;
@@ -31,12 +31,12 @@ class MoneyFieldConditionRule extends BaseNumberConditionRule implements FieldCo
         // Hold setting of the value attribute until we have all the info we need
         if (isset($values['value']) && is_array($values['value'])) {
             /** @var array $value */
-            $value = ArrayHelper::remove($values, 'value');
+            $value = Arr::pull($values, 'value');
         }
 
         if (isset($values['maxValue']) && is_array($values['maxValue'])) {
             /** @var array $maxValue */
-            $maxValue = ArrayHelper::remove($values, 'maxValue');
+            $maxValue = Arr::pull($values, 'maxValue');
         }
 
         parent::setAttributes($values, $safeOnly);

@@ -16,7 +16,6 @@ use craft\elements\Entry;
 use craft\gql\arguments\elements\Entry as EntryArguments;
 use craft\gql\interfaces\elements\Entry as EntryInterface;
 use craft\gql\resolvers\elements\Entry as EntryResolver;
-use craft\helpers\ArrayHelper;
 use craft\helpers\Cp;
 use craft\helpers\Gql;
 use craft\helpers\Gql as GqlHelper;
@@ -24,6 +23,7 @@ use craft\models\EntryType;
 use craft\models\GqlSchema;
 use craft\services\Gql as GqlService;
 use GraphQL\Type\Definition\Type;
+use Illuminate\Support\Collection;
 
 /**
  * Entries represents an Entries field.
@@ -222,15 +222,18 @@ class Entries extends BaseRelationField
         // Enforce the showUnpermittedSections setting
         if (!$this->showUnpermittedSections) {
             $userService = Craft::$app->getUser();
-            return ArrayHelper::where((array)$this->sources, function(string $source) use ($userService) {
-                // If it’s not a section, let it through
-                if (!str_starts_with($source, 'section:')) {
-                    return true;
-                }
-                // Only show it if they have permission to view it
-                $sectionUid = explode(':', $source)[1];
-                return $userService->checkPermission("viewEntries:$sectionUid");
-            }, true, true, false);
+            return Collection::make($this->sources)
+                ->filter(function(string $source) use ($userService) {
+                    // If it’s not a section, let it through
+                    if (!str_starts_with($source, 'section:')) {
+                        return true;
+                    }
+                    // Only show it if they have permission to view it
+                    $sectionUid = explode(':', $source)[1];
+                    return $userService->checkPermission("viewEntries:$sectionUid");
+                })
+                ->values()
+                ->all();
         }
         return $this->sources;
     }

@@ -9,7 +9,7 @@ use craft\elements\conditions\ElementConditionRuleInterface;
 use craft\elements\db\ElementQueryInterface;
 use craft\elements\db\EntryQuery;
 use craft\elements\Entry;
-use craft\helpers\ArrayHelper;
+use craft\helpers\Arr;
 
 /**
  * Entry section condition rule.
@@ -57,7 +57,7 @@ class SectionConditionRule extends BaseMultiSelectConditionRule implements Eleme
     protected function options(): array
     {
         $sections = Craft::$app->getEntries()->getAllSections();
-        return ArrayHelper::map($sections, 'uid', 'name');
+        return Arr::pluck($sections, 'name', 'uid');
     }
 
     /**

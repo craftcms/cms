@@ -22,7 +22,7 @@ use craft\fs\Temp;
 use craft\gql\arguments\elements\Asset as AssetArguments;
 use craft\gql\interfaces\elements\Asset as AssetInterface;
 use craft\gql\resolvers\elements\Asset as AssetResolver;
-use craft\helpers\ArrayHelper;
+use craft\helpers\Arr;
 use craft\helpers\Assets as AssetsHelper;
 use craft\helpers\Cp;
 use craft\helpers\ElementHelper;
@@ -229,7 +229,7 @@ class Assets extends BaseRelationField
         ];
         foreach ($oldSettings as $old => $new) {
             if (array_key_exists($old, $config)) {
-                $config[$new] = ArrayHelper::remove($config, $old);
+                $config[$new] = Arr::pull($config, $old);
             }
         }
 
@@ -580,7 +580,7 @@ class Assets extends BaseRelationField
                         // Add the newly uploaded IDs to the mix.
                         if (is_array($query->id)) {
                             $query = $this->normalizeValue(array_merge($query->id, $assetIds), $element);
-                        } elseif (isset($query->where['elements.id']) && ArrayHelper::isNumeric($query->where['elements.id'])) {
+                        } elseif (isset($query->where['elements.id']) && Arr::isNumeric($query->where['elements.id'])) {
                             $query = $this->normalizeValue(array_merge($query->where['elements.id'], $assetIds), $element);
                         } else {
                             $query = $this->normalizeValue($assetIds, $element);
@@ -743,19 +743,26 @@ class Assets extends BaseRelationField
         if (!$this->showUnpermittedVolumes && !empty($sources)) {
             $userService = Craft::$app->getUser();
             $volumesService = Craft::$app->getVolumes();
-            return ArrayHelper::where($sources, function(string $source) use ($volumesService, $userService) {
-                // If it’s not a volume folder, let it through
-                if (!str_starts_with($source, 'volume:')) {
-                    return true;
-                }
-                // Only show it if they have permission to view it, or if it's the temp volume
-                $volumeUid = explode(':', $source)[1];
-                if ($userService->checkPermission("viewAssets:$volumeUid")) {
-                    return true;
-                }
-                $volume = $volumesService->getVolumeByUid($volumeUid);
-                return $volume?->getFs() instanceof Temp;
-            }, true, true, false);
+
+            return Collection::make($sources)
+                ->filter(function(string $source) use ($volumesService, $userService) {
+                    // If it’s not a volume folder, let it through
+                    if (!str_starts_with($source, 'volume:')) {
+                        return true;
+                    }
+
+                    // Only show it if they have permission to view it, or if it's the temp volume
+                    $volumeUid = explode(':', $source)[1];
+                    if ($userService->checkPermission("viewAssets:$volumeUid")) {
+                        return true;
+                    }
+
+                    $volume = $volumesService->getVolumeByUid($volumeUid);
+
+                    return $volume?->getFs() instanceof Temp;
+                })
+                ->values()
+                ->all();
         }
 
         return $sources;
@@ -1018,7 +1025,7 @@ class Assets extends BaseRelationField
             $subpath = $this->restrictedLocationSubpath;
 
             if ($this->allowSubfolders && $resolveSubtreeDefaultLocation) {
-                $subpath = implode('/', ArrayHelper::filterEmptyStringsFromArray(array_map(fn($segment) => trim($segment, '/'), [
+                $subpath = implode('/', Arr::whereNotEmpty(array_map(fn($segment) => trim($segment, '/'), [
                     $subpath ?? '',
                     $this->restrictedDefaultUploadSubpath ?? '',
                 ])));

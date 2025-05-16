@@ -9,10 +9,9 @@ namespace craft\elements;
 
 use Craft;
 use craft\base\ElementInterface;
-use craft\helpers\ArrayHelper;
+use craft\helpers\Arr;
 use craft\helpers\ElementHelper;
 use Illuminate\Contracts\Support\Arrayable;
-use Illuminate\Support\Arr;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Enumerable;
 use Twig\Markup;
@@ -324,7 +323,7 @@ class ElementCollection extends Collection
             $keys = [$keys];
         }
 
-        if (!ArrayHelper::isNumeric($keys)) {
+        if (!Arr::isNumeric($keys)) {
             return parent::only($keys);
         }
 
@@ -355,7 +354,7 @@ class ElementCollection extends Collection
             $keys = [$keys];
         }
 
-        if (!ArrayHelper::isNumeric($keys)) {
+        if (!Arr::isNumeric($keys)) {
             return parent::except($keys);
         }
 

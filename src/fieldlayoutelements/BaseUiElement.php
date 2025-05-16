@@ -9,7 +9,7 @@ namespace craft\fieldlayoutelements;
 
 use Craft;
 use craft\base\FieldLayoutElement;
-use craft\helpers\ArrayHelper;
+use craft\helpers\Arr;
 use craft\helpers\Cp;
 use craft\helpers\Html;
 
@@ -54,7 +54,7 @@ abstract class BaseUiElement extends FieldLayoutElement
             ($icon ? Cp::iconSvg($icon, $label) : Cp::fallbackIconSvg($label)) .
             Html::endTag('div') . // .fld-element-icon
             Html::beginTag('div', ['class' => 'field-name']) .
-            Html::beginTag('div', ArrayHelper::merge(
+            Html::beginTag('div', Arr::merge(
                 ['class' => ['fld-element-label']],
                 $this->selectorLabelAttributes(),
             )) .

@@ -18,7 +18,7 @@ use craft\debug\RequestPanel;
 use craft\debug\UserPanel;
 use craft\errors\ExitException;
 use craft\helpers\App;
-use craft\helpers\ArrayHelper;
+use craft\helpers\Arr;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\Db;
 use craft\helpers\FileHelper;
@@ -692,7 +692,7 @@ class Application extends \yii\web\Application
             !(
                 $request->getIsActionRequest() &&
                 (
-                    ArrayHelper::firstValue($request->getActionSegments()) === 'updater' ||
+                    Arr::first($request->getActionSegments()) === 'updater' ||
                     $request->getActionSegments() === ['app', 'migrate']
                 )
             )
@@ -745,7 +745,7 @@ class Application extends \yii\web\Application
         if ($request->getIsActionRequest()) {
             $actionSegments = $request->getActionSegments();
             if (
-                ArrayHelper::firstValue($actionSegments) === 'updater' ||
+                Arr::first($actionSegments) === 'updater' ||
                 $actionSegments === ['app', 'health-check'] ||
                 $actionSegments === ['app', 'migrate'] ||
                 $actionSegments === ['pluginstore', 'install', 'migrate']

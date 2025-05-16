@@ -14,7 +14,7 @@ use craft\db\Query;
 use craft\db\Table;
 use craft\fields\BaseRelationField;
 use craft\fields\Matrix;
-use craft\helpers\ArrayHelper;
+use craft\helpers\Arr;
 use craft\helpers\StringHelper;
 use craft\models\Site;
 use Illuminate\Support\Collection;
@@ -153,7 +153,7 @@ class ElementRelationParamParser extends BaseObject
         if ($relCriteria['sourceSite']) {
             if (
                 !is_numeric($relCriteria['sourceSite']) &&
-                (!is_array($relCriteria['sourceSite']) || !ArrayHelper::isNumeric($relCriteria['sourceSite']))
+                (!is_array($relCriteria['sourceSite']) || !Arr::isNumeric($relCriteria['sourceSite']))
             ) {
                 if ($relCriteria['sourceSite'] instanceof Site) {
                     $relCriteria['sourceSite'] = $relCriteria['sourceSite']->id;

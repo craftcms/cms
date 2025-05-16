@@ -9,7 +9,7 @@ use craft\elements\Asset;
 use craft\elements\conditions\ElementConditionRuleInterface;
 use craft\elements\db\AssetQuery;
 use craft\elements\db\ElementQueryInterface;
-use craft\helpers\ArrayHelper;
+use craft\helpers\Arr;
 
 /**
  * Asset volume condition rule.
@@ -41,7 +41,7 @@ class VolumeConditionRule extends BaseMultiSelectConditionRule implements Elemen
     protected function options(): array
     {
         $volumes = Craft::$app->getVolumes()->getAllVolumes();
-        return ArrayHelper::map($volumes, 'uid', 'name');
+        return Arr::pluck($volumes, 'name', 'uid');
     }
 
     /**

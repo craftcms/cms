@@ -32,7 +32,7 @@ use craft\fields\linktypes\Sms;
 use craft\fields\linktypes\Url as UrlType;
 use craft\gql\GqlEntityRegistry;
 use craft\gql\types\generators\LinkDataType;
-use craft\helpers\ArrayHelper;
+use craft\helpers\Arr;
 use craft\helpers\Component;
 use craft\helpers\Cp;
 use craft\helpers\Html;
@@ -231,7 +231,7 @@ class Link extends Field implements InlineEditableFieldInterface, RelationalFiel
         }
 
         if (isset($config['graphqlMode'])) {
-            $config['fullGraphqlData'] = ArrayHelper::remove($config, 'graphqlMode') === 'full';
+            $config['fullGraphqlData'] = Arr::pull($config, 'graphqlMode') === 'full';
         }
 
         // Default fullGraphqlData to false for existing fields
@@ -312,7 +312,7 @@ class Link extends Field implements InlineEditableFieldInterface, RelationalFiel
         $linkTypes = $this->getLinkTypes();
 
         // check URL last, if it's selected
-        $urlType = ArrayHelper::remove($linkTypes, UrlType::id());
+        $urlType = Arr::pull($linkTypes, UrlType::id());
         if ($urlType) {
             $linkTypes[UrlType::id()] = $urlType;
         }

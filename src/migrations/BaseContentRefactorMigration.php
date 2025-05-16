@@ -9,10 +9,10 @@ use craft\db\Query;
 use craft\db\Table;
 use craft\fieldlayoutelements\CustomField;
 use craft\fields\MissingField;
-use craft\helpers\ArrayHelper;
 use craft\helpers\Db;
 use craft\helpers\Json;
 use craft\models\FieldLayout;
+use Illuminate\Support\Collection;
 use yii\base\InvalidArgumentException;
 use yii\db\ColumnSchema;
 use yii\db\Expression;
@@ -261,7 +261,7 @@ class BaseContentRefactorMigration extends Migration
                 array_slice($dbTypeKeys, 1),
             );
 
-            if (ArrayHelper::contains($extraColumns, fn(string $column) => $contentTableSchema->getColumn($column))) {
+            if (Collection::make($extraColumns)->contains(fn(string $column) => !is_null($contentTableSchema->getColumn($column)))) {
                 $columns = [$primaryColumn, ...$extraColumns];
                 foreach ($columns as $i => $column) {
                     if ($contentTableSchema->getColumn($column)) {

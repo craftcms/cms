@@ -12,7 +12,7 @@ use craft\db\Query;
 use craft\db\Table;
 use craft\enums\CmsEdition;
 use craft\events\RegisterEmailMessagesEvent;
-use craft\helpers\ArrayHelper;
+use craft\helpers\Arr;
 use craft\models\SystemMessage;
 use craft\records\SystemMessage as EmailMessageRecord;
 use yii\base\Component;
@@ -123,7 +123,7 @@ class SystemMessages extends Component
         }
 
         // Sort them all by key
-        $messages = ArrayHelper::index($messages, 'key');
+        $messages = Arr::keyBy($messages, 'key');
 
         // Make sure they're SystemMessage objects
         foreach ($messages as $key => $message) {

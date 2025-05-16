@@ -69,7 +69,7 @@ use craft\fieldlayoutelements\BaseField;
 use craft\fieldlayoutelements\CustomField;
 use craft\gql\interfaces\Element as ElementGqlType;
 use craft\helpers\App;
-use craft\helpers\ArrayHelper;
+use craft\helpers\Arr;
 use craft\helpers\Cp;
 use craft\helpers\Db;
 use craft\helpers\ElementHelper;
@@ -1478,7 +1478,7 @@ abstract class Element extends Component implements ElementInterface
         // Make sure ID is listed first
         $sortOptions = [
             'id' => Craft::t('app', 'ID'),
-            ...ArrayHelper::without($sortOptions, 'id'),
+            ...Arr::except($sortOptions, 'id'),
         ];
 
         // Fire a 'registerSortOptions' event
@@ -5685,7 +5685,7 @@ JS, [
      */
     public function getHtmlAttributes(string $context): array
     {
-        $htmlAttributes = ArrayHelper::merge($this->htmlAttributes($context), [
+        $htmlAttributes = Arr::merge($this->htmlAttributes($context), [
             'data' => [
                 'disallow-status' => !$this->showStatusField(),
             ],
@@ -6654,7 +6654,7 @@ JS, [
         $query = static::find();
 
         if ($criteria !== null) {
-            if (!ArrayHelper::isAssociative($criteria)) {
+            if (!is_array($criteria) || Arr::isList($criteria)) {
                 $criteria = ['id' => $criteria];
             }
             Craft::configure($query, $criteria);

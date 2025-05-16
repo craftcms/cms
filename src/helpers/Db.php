@@ -102,7 +102,7 @@ class Db
     public static function prepareValuesForDb(mixed $values): array
     {
         // Normalize to an array
-        $values = ArrayHelper::toArray($values, [], false);
+        $values = Arr::toArray($values, [], false);
 
         foreach ($values as $key => $value) {
             $values[$key] = static::prepareValueForDb($value);
@@ -138,7 +138,7 @@ class Db
         // If this isn’t a JSON column and the value is an object or array, JSON-encode it
         if (is_object($value) || is_array($value)) {
             if (in_array($columnType, [Schema::TYPE_JSON, YiiPgqslSchema::TYPE_JSONB])) {
-                return ArrayHelper::toArray($value);
+                return Arr::toArray($value);
             }
             return Json::encode($value);
         }
@@ -1482,7 +1482,7 @@ class Db
         }
 
         $params = substr($dsn, $pos + 1);
-        foreach (ArrayHelper::filterEmptyStringsFromArray(explode(';', $params)) as $param) {
+        foreach (Arr::whereNotEmpty(explode(';', $params)) as $param) {
             [$n, $v] = array_pad(explode('=', $param, 2), 2, '');
             if ($key === $n) {
                 return $v;

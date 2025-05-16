@@ -10,7 +10,7 @@ namespace craft\controllers;
 use Craft;
 use craft\base\Fs;
 use craft\base\FsInterface;
-use craft\helpers\ArrayHelper;
+use craft\helpers\Arr;
 use craft\helpers\Cp;
 use craft\helpers\Html;
 use craft\web\Controller;
@@ -117,7 +117,7 @@ class FsController extends Controller
         }
 
         // Sort them by name
-        ArrayHelper::multisort($fsOptions, 'label');
+        $fsOptions = Arr::sort($fsOptions, 'label');
 
         if ($handle && $fsService->getFilesystemByHandle($handle)) {
             $title = trim($filesystem->name ?: Craft::t('app', 'Edit Filesystem'));

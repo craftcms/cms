@@ -86,8 +86,8 @@ class Diff
     {
         // Are we done doing recursion?
         if (
-            (!is_array($from) || !ArrayHelper::isAssociative($from)) ||
-            (!is_array($to) || !ArrayHelper::isAssociative($to))
+            (!is_array($from) || !Arr::isAssoc($from)) ||
+            (!is_array($to) || !Arr::isAssoc($to))
         ) {
             if (static::compare($from, $to)) {
                 return self::_buildLinesForValue($from, $indent, $level);
@@ -111,7 +111,7 @@ class Diff
                 // Output any keys in $to that come before this one
                 if ($toPos > $toCursor) {
                     $newKeys = array_slice($toKeys, $toCursor, $toPos - $toCursor);
-                    array_push($lines, ...self::_buildLinesForValue(ArrayHelper::filter($to, $newKeys), $indent, $level, '+'));
+                    array_push($lines, ...self::_buildLinesForValue(Arr::only($to, $newKeys), $indent, $level, '+'));
                 }
 
                 $lines[] = self::_buildLine("$key:", $indent, $level);
@@ -125,7 +125,7 @@ class Diff
         // Output any remaining $to keys
         $newKeys = array_slice($toKeys, $toCursor);
         if (!empty($newKeys)) {
-            array_push($lines, ...self::_buildLinesForValue(ArrayHelper::filter($to, $newKeys), $indent, $level, '+'));
+            array_push($lines, ...self::_buildLinesForValue(Arr::only($to, $newKeys), $indent, $level, '+'));
         }
 
         return $lines;

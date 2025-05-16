@@ -23,7 +23,7 @@ use craft\events\ReorderSitesEvent;
 use craft\events\SiteEvent;
 use craft\events\SiteGroupEvent;
 use craft\helpers\App;
-use craft\helpers\ArrayHelper;
+use craft\helpers\Arr;
 use craft\helpers\Db;
 use craft\helpers\Queue;
 use craft\helpers\StringHelper;
@@ -440,7 +440,7 @@ class Sites extends Component
      */
     public function getSiteByUid(string $uid, ?bool $withDisabled = null): Site
     {
-        $site = ArrayHelper::firstWhere($this->_allSites($withDisabled), 'uid', $uid, true);
+        $site = Collection::make($this->_allSites($withDisabled))->firstWhere('uid', $uid);
         if ($site === null) {
             throw new SiteNotFoundException('Site with UID ”' . $uid . '“ not found!');
         }
@@ -591,12 +591,11 @@ class Sites extends Component
      */
     public function getSitesByGroupId(int $groupId, ?bool $withDisabled = null): array
     {
-        $sites = ArrayHelper::where($this->_allSites($withDisabled), 'groupId', $groupId, false, false);
-
-        // Using array_multisort threw a nesting error for no obvious reason, so don't use it here.
-        ArrayHelper::multisort($sites, 'sortOrder', SORT_ASC, SORT_NUMERIC);
-
-        return $sites;
+        return Collection::make($this->_allSites($withDisabled))
+            ->where('groupId', $groupId)
+            ->sortBy('sortOrder', SORT_NUMERIC)
+            ->values()
+            ->all();
     }
 
     /**
@@ -657,7 +656,7 @@ class Sites extends Component
      */
     public function getSiteByHandle(string $siteHandle, ?bool $withDisabled = null): ?Site
     {
-        return ArrayHelper::firstWhere($this->_allSites($withDisabled), 'handle', $siteHandle, true);
+        return Collection::make($this->_allSites($withDisabled))->firstWhere('handle', $siteHandle);
     }
 
     /**
@@ -670,7 +669,9 @@ class Sites extends Component
      */
     public function getSitesByLanguage(string $language, ?bool $withDisabled = null): array
     {
-        return ArrayHelper::where($this->_allSites($withDisabled), 'language', $language, true);
+        return Collection::make($this->_allSites($withDisabled))
+            ->where('language', $language)
+            ->all();
     }
 
     /**
@@ -997,7 +998,7 @@ class Sites extends Component
                 $projectConfig->muteEvents = true;
                 foreach ($projectConfig->get(ProjectConfig::PATH_SECTIONS) as $sectionUid => $sectionConfig) {
                     if (count($sectionConfig['siteSettings']) === 1 && isset($sectionConfig['siteSettings'][$site->uid])) {
-                        $sectionConfig['siteSettings'][$transferContentToSite->uid] = ArrayHelper::remove($sectionConfig['siteSettings'], $site->uid);
+                        $sectionConfig['siteSettings'][$transferContentToSite->uid] = Arr::pull($sectionConfig['siteSettings'], $site->uid);
                         $projectConfig->set(ProjectConfig::PATH_SECTIONS . '.' . $sectionUid, $sectionConfig, 'Prune site settings');
                     }
                 }

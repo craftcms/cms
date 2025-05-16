@@ -14,7 +14,7 @@ use craft\errors\WrongEditionException;
 use craft\events\RegisterUserPermissionsEvent;
 use craft\events\UserGroupPermissionsEvent;
 use craft\events\UserPermissionsEvent;
-use craft\helpers\ArrayHelper;
+use craft\helpers\Arr;
 use craft\services\UserPermissions;
 use craft\test\TestCase;
 use crafttests\fixtures\GlobalSetFixture;
@@ -82,7 +82,7 @@ class UserPermissionsTest extends TestCase
         }, RegisterUserPermissionsEvent::class);
 
         // Just check for the main group headings.
-        $headings = ArrayHelper::getColumn($permissions, 'heading');
+        $headings = Arr::pluck($permissions, 'heading');
         self::assertContains('General', $headings);
         self::assertContains('Sites', $headings);
         self::assertContains('Section - Single', $headings);
@@ -161,7 +161,7 @@ class UserPermissionsTest extends TestCase
         $this->tester->expectEvent(UserPermissions::class, UserPermissions::EVENT_AFTER_SAVE_USER_PERMISSIONS, function() use ($user) {
             $this->userPermissions->saveUserPermissions($user->id, ['viewUsers', 'editUsers']);
         }, UserPermissionsEvent::class);
-        
+
         self::assertTrue(
             $this->userPermissions->doesUserHavePermission($user->id, 'editUsers')
         );

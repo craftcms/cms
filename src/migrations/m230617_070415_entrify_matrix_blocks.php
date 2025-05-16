@@ -10,12 +10,11 @@ use craft\db\Query;
 use craft\db\Table;
 use craft\elements\Entry;
 use craft\fields\Matrix;
-use craft\helpers\ArrayHelper;
+use craft\helpers\Arr;
 use craft\helpers\Json;
 use craft\models\EntryType;
 use craft\models\FieldLayout;
 use craft\services\ProjectConfig;
-use Illuminate\Support\Arr;
 use yii\db\Exception as DbException;
 use yii\helpers\Inflector;
 
@@ -87,7 +86,7 @@ class m230617_070415_entrify_matrix_blocks extends Migration
         $newEntryTypes = [];
 
         foreach ($fieldConfigs as $fieldPath => $fieldConfig) {
-            $fieldUid = ArrayHelper::lastValue(explode('.', $fieldPath));
+            $fieldUid = Arr::last(explode('.', $fieldPath));
             $fieldEntryTypes = [];
             $blockTypeConfigsByField[$fieldUid] ??= [];
             $blockTypeConfigsByField[$fieldUid] = Arr::sort(
@@ -163,8 +162,8 @@ class m230617_070415_entrify_matrix_blocks extends Migration
 
             // update the field config
             $fieldConfig['settings'] += [
-                'maxEntries' => ArrayHelper::remove($fieldConfig['settings'], 'maxBlocks'),
-                'minEntries' => ArrayHelper::remove($fieldConfig['settings'], 'minBlocks'),
+                'maxEntries' => Arr::pull($fieldConfig['settings'], 'maxBlocks'),
+                'minEntries' => Arr::pull($fieldConfig['settings'], 'minBlocks'),
                 'entryTypes' => array_map(function(EntryType $entryType) use ($fieldUid, $blockTypeConfigsByField) {
                     $config = ['uid' => $entryType->uid];
                     $blockTypeConfig = $blockTypeConfigsByField[$fieldUid][$entryType->uid];

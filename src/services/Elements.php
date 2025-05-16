@@ -51,7 +51,7 @@ use craft\events\MergeElementsEvent;
 use craft\events\MultiElementActionEvent;
 use craft\events\RegisterComponentTypesEvent;
 use craft\fieldlayoutelements\CustomField;
-use craft\helpers\ArrayHelper;
+use craft\helpers\Arr;
 use craft\helpers\Component as ComponentHelper;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\Db;
@@ -1378,7 +1378,7 @@ class Elements extends Component
         }
 
         // Make sure the derivative element actually supports its own site ID
-        $supportedSites = ArrayHelper::index(ElementHelper::supportedSitesForElement($element), 'siteId');
+        $supportedSites = Arr::keyBy(ElementHelper::supportedSitesForElement($element), 'siteId');
         if (!isset($supportedSites[$element->siteId])) {
             throw new Exception('Attempting to merge source changes for a draft in an unsupported site.');
         }
@@ -1393,7 +1393,7 @@ class Elements extends Component
         $this->ensureBulkOp(function() use ($element, $supportedSites) {
             Craft::$app->getDb()->transaction(function() use ($element, $supportedSites) {
                 // Start with the other sites (if any), so we don't update dateLastMerged until the end
-                $otherSiteIds = ArrayHelper::withoutValue(array_keys($supportedSites), $element->siteId);
+                $otherSiteIds = array_keys(Arr::except($supportedSites, $element->siteId));
                 if (!empty($otherSiteIds)) {
                     $siteElements = $this->_localizedElementQuery($element)
                         ->siteId($otherSiteIds)
@@ -1701,7 +1701,7 @@ class Elements extends Component
                     }
 
                     $element->setScenario(Element::SCENARIO_ESSENTIALS);
-                    $supportedSites = ArrayHelper::index(ElementHelper::supportedSitesForElement($element), 'siteId');
+                    $supportedSites = Arr::keyBy(ElementHelper::supportedSitesForElement($element), 'siteId');
                     $supportedSiteIds = array_keys($supportedSites);
                     $elementSiteIds = $siteIds !== null ? array_intersect($siteIds, $supportedSiteIds) : $supportedSiteIds;
                     $elementType = get_class($element);
@@ -1809,15 +1809,15 @@ class Elements extends Component
         $mainClone->duplicateOf = $element;
         $mainClone->setCanonicalId(null);
 
-        $behaviors = ArrayHelper::remove($newAttributes, 'behaviors', []);
-        $mainClone->setRevisionNotes(ArrayHelper::remove($newAttributes, 'revisionNotes'));
+        $behaviors = Arr::pull($newAttributes, 'behaviors', []);
+        $mainClone->setRevisionNotes(Arr::pull($newAttributes, 'revisionNotes'));
 
         // Extract any attributes that are meant for other sites
-        $siteAttributes = ArrayHelper::remove($newAttributes, 'siteAttributes') ?? [];
+        $siteAttributes = Arr::pull($newAttributes, 'siteAttributes', []);
 
         // Note: must use Craft::configure() rather than setAttributes() here,
         // so we're not limited to whatever attributes() returns
-        Craft::configure($mainClone, ArrayHelper::merge(
+        Craft::configure($mainClone, Arr::merge(
             $newAttributes,
             $siteAttributes[$mainClone->siteId] ?? [],
         ));
@@ -1831,7 +1831,7 @@ class Elements extends Component
         }
 
         // Make sure the element actually supports its own site ID
-        $supportedSites = ArrayHelper::index(ElementHelper::supportedSitesForElement($mainClone), 'siteId');
+        $supportedSites = Arr::keyBy(ElementHelper::supportedSitesForElement($mainClone), 'siteId');
         if (!isset($supportedSites[$mainClone->siteId])) {
             throw new UnsupportedSiteException($element, $mainClone->siteId, 'Attempting to duplicate an element in an unsupported site.');
         }
@@ -1941,7 +1941,7 @@ class Elements extends Component
                 $mainClone->newSiteIds = [];
 
                 // Propagate it
-                $otherSiteIds = ArrayHelper::withoutValue(array_keys($supportedSites), $mainClone->siteId);
+                $otherSiteIds = array_keys(Arr::except($supportedSites, $mainClone->siteId));
                 if ($element->id && !empty($otherSiteIds)) {
                     $siteElements = $this->_localizedElementQuery($element)
                         ->siteId($otherSiteIds)
@@ -1980,7 +1980,7 @@ class Elements extends Component
 
                         // Note: must use Craft::configure() rather than setAttributes() here,
                         // so we're not limited to whatever attributes() returns
-                        Craft::configure($siteClone, ArrayHelper::merge(
+                        Craft::configure($siteClone, Arr::merge(
                             $newAttributes,
                             $siteAttributes[$siteElement->siteId] ?? [],
                         ));
@@ -2608,7 +2608,7 @@ class Elements extends Component
             // Restore the elements
             foreach ($elements as $element) {
                 // Get the sites supported by this element
-                $supportedSites = ArrayHelper::index(ElementHelper::supportedSitesForElement($element), 'siteId');
+                $supportedSites = Arr::keyBy(ElementHelper::supportedSitesForElement($element), 'siteId');
                 if (empty($supportedSites)) {
                     throw new UnsupportedSiteException($element, $element->siteId, "Element $element->id has no supported sites.");
                 }
@@ -2619,7 +2619,7 @@ class Elements extends Component
                 }
 
                 // Get the element in each supported site
-                $otherSiteIds = ArrayHelper::withoutValue(array_keys($supportedSites), $element->siteId);
+                $otherSiteIds = array_keys(Arr::except($supportedSites, $element->siteId));
 
                 if (!empty($otherSiteIds)) {
                     $siteElements = $this->_localizedElementQuery($element)
@@ -3023,7 +3023,7 @@ class Elements extends Component
                         $elementQuery->ref($refNames);
                     }
 
-                    $elements = ArrayHelper::index($elementQuery->all(), $refType);
+                    $elements = Arr::keyBy($elementQuery->all(), $refType);
 
                     // Now append new token search/replace strings
                     foreach ($tokensByName as $refName => $tokens) {
@@ -3130,7 +3130,7 @@ class Elements extends Component
             // Separate the path and the criteria
             if (is_array($path)) {
                 $criteria = $path['criteria'] ?? $path[1] ?? null;
-                $count = $path['count'] ?? ArrayHelper::remove($criteria, 'count', false);
+                $count = $path['count'] ?? Arr::pull($criteria, 'count', false);
                 $when = $path['when'] ?? null;
                 $path = $path['path'] ?? $path[0];
             } else {
@@ -3215,7 +3215,10 @@ class Elements extends Component
             return;
         }
 
-        $elementsBySite = ArrayHelper::index($elements, null, ['siteId']);
+        $elementsBySite = Collection::make($elements)
+            ->groupBy(fn(ElementInterface $element) => $element->siteId)
+            ->map(fn(Collection $elements) => $elements->all())
+            ->all();
         $with = $this->createEagerLoadingPlans($with);
         $this->_eagerLoadElementsInternal($elementType, $elementsBySite, $with);
     }
@@ -3309,8 +3312,8 @@ class Elements extends Component
                         );
 
                         // Save the offset & limit params for later
-                        $offset = ArrayHelper::remove($criteria, 'offset', 0);
-                        $limit = ArrayHelper::remove($criteria, 'limit');
+                        $offset = Arr::pull($criteria, 'offset', 0);
+                        $limit = Arr::pull($criteria, 'limit');
 
                         Craft::configure($query, $criteria);
 
@@ -3359,7 +3362,7 @@ class Elements extends Component
                         continue;
                     }
 
-                    $targetElementData = $query ? ArrayHelper::index($query->asArray()->all(), null, ['id']) : [];
+                    $targetElementData = $query ? Collection::make($query->asArray()->all())->groupBy('id')->all() : [];
                     $targetElements = [];
 
                     // Tell the source elements about their eager-loaded elements
@@ -3570,7 +3573,7 @@ class Elements extends Component
         int $siteId,
         ElementInterface|false|null $siteElement = null,
     ): ElementInterface {
-        $supportedSites = ArrayHelper::index(ElementHelper::supportedSitesForElement($element), 'siteId');
+        $supportedSites = Arr::keyBy(ElementHelper::supportedSitesForElement($element), 'siteId');
 
         $this->ensureBulkOp(function() use ($element, $supportedSites, $siteId, &$siteElement) {
             $this->_propagateElement($element, $supportedSites, $siteId, $siteElement);
@@ -3661,7 +3664,7 @@ class Elements extends Component
         }
 
         // Get the sites supported by this element
-        $supportedSites ??= ArrayHelper::index(ElementHelper::supportedSitesForElement($element), 'siteId');
+        $supportedSites ??= Arr::keyBy(ElementHelper::supportedSitesForElement($element), 'siteId');
 
         // Make sure the element actually supports the site it's being saved in
         if (!isset($supportedSites[$element->siteId])) {
@@ -3942,7 +3945,7 @@ class Elements extends Component
 
                 // Update the element across the other sites?
                 if ($propagate) {
-                    $otherSiteIds = ArrayHelper::withoutValue(array_keys($supportedSites), $element->siteId);
+                    $otherSiteIds = array_keys(Arr::except($supportedSites, $element->siteId));
 
                     if (!empty($otherSiteIds)) {
                         if (!$isNewElement) {
@@ -4324,7 +4327,7 @@ class Elements extends Component
             $user->can("editSite:{$propagateToSite?->uid}") &&
             $siteElement->canSave($user)
         ) {
-            $queryParams = ArrayHelper::without(Craft::$app->getRequest()->getQueryParams(), 'site');
+            $queryParams = Arr::except(Craft::$app->getRequest()->getQueryParams(), 'site');
             $url = UrlHelper::url($siteElement->getCpEditUrl(), $queryParams + ['prevalidate' => 1]);
             $message = Html::beginTag('a', [
                 'href' => $url,

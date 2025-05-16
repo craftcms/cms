@@ -23,7 +23,7 @@ use craft\enums\Color;
 use craft\enums\PropagationMethod;
 use craft\events\BulkElementsEvent;
 use craft\events\DuplicateNestedElementsEvent;
-use craft\helpers\ArrayHelper;
+use craft\helpers\Arr;
 use craft\helpers\Cp;
 use craft\helpers\Db;
 use craft\helpers\ElementHelper;
@@ -307,7 +307,7 @@ class NestedElementManager extends Component
     public function getSupportedSiteIds(ElementInterface $owner): array
     {
         /** @var Site[] $allSites */
-        $allSites = ArrayHelper::index(Craft::$app->getSites()->getAllSites(), 'id');
+        $allSites = Arr::keyBy(Craft::$app->getSites()->getAllSites(), 'id');
         $ownerSiteIds = array_map(
             fn(array $siteInfo) => $siteInfo['siteId'],
             ElementHelper::supportedSitesForElement($owner),
@@ -621,9 +621,9 @@ class NestedElementManager extends Component
 
             if (!empty($config['createAttributes'])) {
                 $settings['createAttributes'] = $config['createAttributes'];
-                if (ArrayHelper::isIndexed($settings['createAttributes'])) {
+                if (Arr::isIndexed($settings['createAttributes'])) {
                     if (count($settings['createAttributes']) === 1) {
-                        $settings['createAttributes'] = ArrayHelper::firstValue($settings['createAttributes'])['attributes'];
+                        $settings['createAttributes'] = Arr::first($settings['createAttributes'])['attributes'];
                     } else {
                         $settings['createAttributes'] = array_map(function(array $attributes) {
                             if (isset($attributes['icon'])) {

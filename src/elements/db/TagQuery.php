@@ -12,7 +12,7 @@ use craft\db\Query;
 use craft\db\QueryAbortedException;
 use craft\db\Table;
 use craft\elements\Tag;
-use craft\helpers\ArrayHelper;
+use craft\helpers\Arr;
 use craft\helpers\Db;
 use craft\models\TagGroup;
 
@@ -208,7 +208,7 @@ class TagQuery extends ElementQuery
             $this->groupId = null;
         } elseif (is_numeric($this->groupId)) {
             $this->groupId = [$this->groupId];
-        } elseif (!is_array($this->groupId) || !ArrayHelper::isNumeric($this->groupId)) {
+        } elseif (!is_array($this->groupId) || !Arr::isNumeric($this->groupId)) {
             $this->groupId = (new Query())
                 ->select(['id'])
                 ->from([Table::TAGGROUPS])

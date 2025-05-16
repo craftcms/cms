@@ -117,7 +117,7 @@ class ElementHelper
 
         // Get the "words". Split on anything that is not alphanumeric or allowed punctuation
         // Reference: http://www.regular-expressions.info/unicode.html
-        $words = ArrayHelper::filterEmptyStringsFromArray(preg_split('/[^\p{L}\p{N}\p{M}\._\-]+/u', $slug));
+        $words = Arr::whereNotEmpty(preg_split('/[^\p{L}\p{N}\p{M}\._\-]+/u', $slug));
 
         return implode($generalConfig->slugWordSeparator, $words);
     }
@@ -310,7 +310,7 @@ class ElementHelper
     public static function supportedSitesForElement(ElementInterface $element, bool $withUnpropagatedSites = false): array
     {
         $sites = [];
-        $siteUidMap = ArrayHelper::map(Craft::$app->getSites()->getAllSites(true), 'id', 'uid');
+        $siteUidMap = Arr::pluck(Craft::$app->getSites()->getAllSites(true), 'uid', 'id');
 
         foreach ($element->getSupportedSites() as $site) {
             if (!is_array($site)) {

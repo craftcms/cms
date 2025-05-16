@@ -14,7 +14,7 @@ use craft\db\QueryAbortedException;
 use craft\db\Table;
 use craft\elements\Asset;
 use craft\elements\User;
-use craft\helpers\ArrayHelper;
+use craft\helpers\Arr;
 use craft\helpers\Assets;
 use craft\helpers\Db;
 use craft\helpers\StringHelper;
@@ -932,7 +932,7 @@ class AssetQuery extends ElementQuery
         if ($this->folderId) {
             // [X] => X, so includeSubfolders works with GraphQL
             // (see https://github.com/craftcms/cms/issues/17023)
-            if (is_array($this->folderId) && count($this->folderId) === 1 && ArrayHelper::isNumeric($this->folderId)) {
+            if (is_array($this->folderId) && count($this->folderId) === 1 && Arr::isNumeric($this->folderId)) {
                 $this->folderId = reset($this->folderId);
             }
 
@@ -1123,7 +1123,7 @@ class AssetQuery extends ElementQuery
             $this->volumeId = is_array($this->volumeId) ? [] : null;
         } elseif (is_numeric($this->volumeId)) {
             $this->volumeId = [$this->volumeId];
-        } elseif (!is_array($this->volumeId) || !ArrayHelper::isNumeric($this->volumeId)) {
+        } elseif (!is_array($this->volumeId) || !Arr::isNumeric($this->volumeId)) {
             $this->volumeId = (new Query())
                 ->select(['id'])
                 ->from([Table::VOLUMES])
@@ -1138,7 +1138,7 @@ class AssetQuery extends ElementQuery
     public function createElement(array $row): ElementInterface
     {
         // Use the site-specific alt text, if set
-        $siteAlt = ArrayHelper::remove($row, 'siteAlt');
+        $siteAlt = Arr::pull($row, 'siteAlt');
         if ($siteAlt !== null) {
             $row['alt'] = $siteAlt;
         }

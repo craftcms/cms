@@ -15,7 +15,7 @@ use craft\elements\User;
 use craft\errors\SsoFailedException;
 use craft\events\SsoEvent;
 use craft\events\UserGroupsAssignEvent;
-use craft\helpers\ArrayHelper;
+use craft\helpers\Arr;
 use craft\helpers\Html;
 use craft\helpers\StringHelper;
 use craft\helpers\UrlHelper;
@@ -353,7 +353,7 @@ abstract class BaseExternalProvider extends BaseProvider
 
         if (is_array($callback)) {
             if ($defaultClass) {
-                $callback = ArrayHelper::merge(
+                $callback = Arr::merge(
                     [
                         'class' => $defaultClass,
                     ],

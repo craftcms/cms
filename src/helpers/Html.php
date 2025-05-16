@@ -14,6 +14,7 @@ use craft\image\SvgAllowedAttributes;
 use craft\web\View;
 use DOMElement;
 use enshrined\svgSanitize\Sanitizer;
+use Illuminate\Support\Collection;
 use Symfony\Component\DomCrawler\Crawler;
 use Throwable;
 use yii\base\Exception;
@@ -148,7 +149,7 @@ class Html extends \yii\helpers\Html
     public static function csrfInput(array $options = []): string
     {
         $request = Craft::$app->getRequest();
-        $async = ArrayHelper::remove($options, 'async')
+        $async = Arr::pull($options, 'async')
             ?? ($request->getIsSiteRequest() && Craft::$app->getConfig()->getGeneral()->asyncCsrfInputs);
 
         if (!$async) {
@@ -391,7 +392,7 @@ class Html extends \yii\helpers\Html
         // Normalize the attributes & merge with the old attributes
         $attributes = static::normalizeTagAttributes($attributes);
         $oldAttributes = static::parseTagAttributes($tag, 0, $start, $end, true);
-        $attributes = ArrayHelper::merge($oldAttributes, $attributes);
+        $attributes = Arr::merge($oldAttributes, $attributes);
 
         // Ensure we don't have any duplicate classes
         if (isset($attributes['class']) && is_array($attributes['class'])) {
@@ -547,7 +548,7 @@ class Html extends \yii\helpers\Html
         }
 
         if (isset($normalized['removeClass'])) {
-            $removeClasses = ArrayHelper::remove($normalized, 'removeClass');
+            $removeClasses = Arr::pull($normalized, 'removeClass');
             $normalized['class'] = array_diff($normalized['class'] ?? [], $removeClasses);
         }
 
@@ -570,7 +571,7 @@ class Html extends \yii\helpers\Html
             return $value;
         }
         if (is_string($value)) {
-            return ArrayHelper::filterEmptyStringsFromArray(explode(' ', $value));
+            return Arr::whereNotEmpty(explode(' ', $value));
         }
         throw new InvalidArgumentException('Invalid class value');
     }
@@ -600,7 +601,7 @@ class Html extends \yii\helpers\Html
             }, $value);
 
             // now split the styles string on semicolons
-            $styles = ArrayHelper::filterEmptyStringsFromArray(preg_split('/\s*;\s*/', $value));
+            $styles = Arr::whereNotEmpty(preg_split('/\s*;\s*/', $value));
 
             // and proceed with the array of styles
             $normalized = [];
@@ -657,7 +658,7 @@ class Html extends \yii\helpers\Html
         if ($ifExists) {
             // See if we have a child of the same type
             [$type] = self::_findTag($html);
-            $child = ArrayHelper::firstWhere($info['children'], 'type', $type, true);
+            $child = Collection::make($info['children'])->firstWhere('type', $type);
 
             if ($child) {
                 return match ($ifExists) {

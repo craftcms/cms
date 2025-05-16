@@ -18,7 +18,7 @@ use craft\errors\SiteNotFoundException;
 use craft\events\DefineSourceSortOptionsEvent;
 use craft\events\DefineSourceTableAttributesEvent;
 use craft\fieldlayoutelements\CustomField;
-use craft\helpers\ArrayHelper;
+use craft\helpers\Arr;
 use craft\helpers\Cp;
 use craft\helpers\StringHelper;
 use craft\models\FieldLayout;
@@ -82,7 +82,10 @@ class ElementSources extends Component
         if (!empty($sourceConfigs)) {
             // Merge native source settings into the configs
             $sources = [];
-            $indexedNativeSources = ArrayHelper::index(array_filter($nativeSources, fn($s) => $s['type'] === self::TYPE_NATIVE), 'key');
+            $indexedNativeSources = Collection::make($nativeSources)
+                ->where('type', self::TYPE_NATIVE)
+                ->keyBy('key')
+                ->all();
             $nativeSourceKeys = [];
             foreach ($sourceConfigs as $source) {
                 if ($source['type'] === self::TYPE_NATIVE) {
@@ -521,6 +524,9 @@ class ElementSources extends Component
         if (empty($sourceConfigs)) {
             return null;
         }
-        return ArrayHelper::firstWhere($sourceConfigs, fn($s) => $s['type'] !== self::TYPE_HEADING && $s['key'] === $sourceKey);
+        return Arr::first(
+            $sourceConfigs,
+            fn($s) => $s['type'] !== self::TYPE_HEADING && $s['key'] === $sourceKey
+        );
     }
 }

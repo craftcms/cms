@@ -16,7 +16,6 @@ use craft\auth\passkeys\WebauthnServer;
 use craft\elements\User;
 use craft\enums\CmsEdition;
 use craft\events\RegisterComponentTypesEvent;
-use craft\helpers\ArrayHelper;
 use craft\helpers\Component as ComponentHelper;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\Json;
@@ -27,6 +26,7 @@ use craft\web\Session;
 use craft\web\View;
 use DateTime;
 use GuzzleHttp\Psr7\ServerRequest;
+use Illuminate\Support\Collection;
 use ParagonIE\ConstantTime\Base64UrlSafe;
 use Throwable;
 use Webauthn\AuthenticatorAssertionResponse;
@@ -283,8 +283,7 @@ class Auth extends Component
         $methods = $this->getAllMethods($user);
 
         // only include Recovery Codes if at least one other method is active
-        $hasActiveMethod = ArrayHelper::contains(
-            $methods,
+        $hasActiveMethod = Collection::make($methods)->contains(
             fn(AuthMethodInterface $method) => !$method instanceof RecoveryCodes && $method->isActive(),
         );
 

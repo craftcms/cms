@@ -390,7 +390,7 @@ class ProjectConfig
         unset($value);
 
         // Only pack this array if its keys are not in numerical order
-        if (ArrayHelper::isOrdered($array)) {
+        if (Arr::isOrdered($array)) {
             return $array;
         }
 
@@ -574,7 +574,7 @@ class ProjectConfig
                     }
                     unset($config[$key]);
                     $split = true;
-                } elseif (ArrayHelper::isAssociative($configData)) {
+                } elseif (Arr::isAssoc($configData)) {
                     // Look deeper
                     $subpath = ($path ? "$path/" : '') . $key;
                     if (self::splitConfigIntoComponentsInternal($configData, $splitConfig, $subpath)) {

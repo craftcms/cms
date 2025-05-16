@@ -11,8 +11,8 @@ use Craft;
 use craft\base\PluginInterface;
 use craft\console\Controller;
 use craft\errors\InvalidPluginException;
-use craft\helpers\ArrayHelper;
 use craft\helpers\Console;
+use Illuminate\Support\Collection;
 use Throwable;
 use yii\console\ExitCode;
 
@@ -80,8 +80,10 @@ class PluginController extends Controller
      */
     public function actionList(): int
     {
-        $pluginInfo = Craft::$app->getPlugins()->getAllPluginInfo();
-        ArrayHelper::multisort($pluginInfo, ['isEnabled', 'isInstalled'], [SORT_DESC, SORT_DESC]);
+        $pluginInfo = Collection::make(Craft::$app->getPlugins()->getAllPluginInfo())
+            ->sortBy(['isEnabled', 'isInstalled'], SORT_REGULAR, true)
+            ->all();
+
         $tableData = [];
 
         foreach ($pluginInfo as $handle => $info) {

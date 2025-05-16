@@ -10,7 +10,7 @@ namespace craft\auth\sso\mapper;
 use Craft;
 use craft\base\Component;
 use craft\elements\User;
-use craft\helpers\ArrayHelper;
+use craft\helpers\Arr;
 
 /**
  * Set a value from the IdP as a User's attribute
@@ -33,7 +33,7 @@ class IdpAttributeUserMapper extends Component implements UserMapInterface
      */
     public function __invoke(User $user, mixed $data): User
     {
-        $value = ArrayHelper::getValue($data, $this->idpProperty);
+        $value = Arr::get($data, $this->idpProperty);
 
         if (is_null($value)) {
             Craft::warning(

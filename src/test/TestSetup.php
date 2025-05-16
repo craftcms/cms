@@ -14,7 +14,7 @@ use craft\db\Connection;
 use craft\db\Migration;
 use craft\db\MigrationManager;
 use craft\errors\MigrationException;
-use craft\helpers\ArrayHelper;
+use craft\helpers\Arr;
 use craft\helpers\Db;
 use craft\helpers\FileHelper;
 use craft\i18n\Locale;
@@ -65,6 +65,7 @@ use craft\web\Response;
 use craft\web\Session;
 use craft\web\UploadedFile;
 use craft\web\User;
+use Illuminate\Support\Collection;
 use PHPUnit\Framework\MockObject\MockObject;
 use yii\base\ErrorException;
 use yii\base\Event;
@@ -237,7 +238,7 @@ class TestSetup
 
         $configService = self::$_configService ?? self::createConfigService();
 
-        $config = ArrayHelper::merge(
+        $config = Arr::merge(
             [
                 'components' => [
                     'config' => $configService,
@@ -257,7 +258,7 @@ class TestSetup
 
         $class = self::appClass($appType);
 
-        return ArrayHelper::merge($config, [
+        return Arr::merge($config, [
             'class' => $class,
             'id' => 'craft-test',
             'env' => 'test',
@@ -467,10 +468,8 @@ class TestSetup
             $existingProjectConfig = self::getSeedProjectConfigData();
 
             if ($existingProjectConfig && isset($existingProjectConfig['sites'])) {
-                $doesConfigExist = ArrayHelper::firstWhere(
-                    $existingProjectConfig['sites'],
-                    'primary'
-                );
+                $doesConfigExist = Collection::make($existingProjectConfig['sites'])
+                    ->firstWhere('primary', true);
 
                 if ($doesConfigExist) {
                     $siteConfig = $doesConfigExist;
@@ -608,7 +607,7 @@ class TestSetup
         $appType = self::appType();
 
         if ($appType === 'web') {
-            $map = ArrayHelper::merge($map, [
+            $map = Arr::merge($map, [
                 [Request::class, ['getRequest', 'request']],
                 [Session::class, ['getSession', 'session']],
                 [ErrorHandler::class, ['getErrorHandler', 'errorHandler']],
@@ -618,7 +617,7 @@ class TestSetup
         }
 
         if ($appType === 'console') {
-            $map = ArrayHelper::merge($map, [
+            $map = Arr::merge($map, [
                 [\craft\console\Request::class, ['getRequest', 'request']],
                 [\yii\console\ErrorHandler::class, ['getErrorHandler', 'errorHandler']],
                 [\yii\console\Response::class, ['getResponse', 'response']],

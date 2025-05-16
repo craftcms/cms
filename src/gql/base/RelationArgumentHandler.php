@@ -10,7 +10,7 @@ namespace craft\gql\base;
 use Craft;
 use craft\base\ElementInterface;
 use craft\elements\db\ElementQuery;
-use craft\helpers\ArrayHelper;
+use craft\helpers\Arr;
 use craft\helpers\StringHelper;
 
 /**
@@ -59,8 +59,8 @@ abstract class RelationArgumentHandler extends ArgumentHandler
         $relationParams = [];
         foreach ($argumentValue as &$value) {
             $relationParams[] = array_filter([
-                'field' => ArrayHelper::remove($value, 'relatedViaField'),
-                'site' => ArrayHelper::remove($value, 'relatedViaSite'),
+                'field' => is_array($value) ? Arr::pull($value, 'relatedViaField') : null,
+                'site' => is_array($value) ? Arr::pull($value, 'relatedViaSite') : null,
             ]);
         }
 
@@ -101,12 +101,12 @@ abstract class RelationArgumentHandler extends ArgumentHandler
     protected function handleArgument($argumentValue): mixed
     {
         // Recursively parse nested arguments.
-        if (ArrayHelper::isAssociative($argumentValue)) {
+        if (is_array($argumentValue) && Arr::isAssoc($argumentValue)) {
             $argumentValue = $this->argumentManager->prepareArguments($argumentValue);
         } elseif (is_array($argumentValue)) {
             // Entirely possible that this a list of relation arguments.
             foreach ($argumentValue as &$nestedArgumentValue) {
-                if (ArrayHelper::isAssociative($nestedArgumentValue)) {
+                if (is_array($nestedArgumentValue) && Arr::isAssoc($nestedArgumentValue)) {
                     $nestedArgumentValue = $this->argumentManager->prepareArguments($nestedArgumentValue);
                 }
             }
@@ -135,7 +135,7 @@ abstract class RelationArgumentHandler extends ArgumentHandler
             array_shift($relatedTo);
         }
 
-        if (ArrayHelper::isNumeric($relatedTo)) {
+        if (Arr::isNumeric($relatedTo)) {
             // If it was "and", split out all the ids to their own condition
             if ($firstOperand === 'and') {
                 $output = ['and'];

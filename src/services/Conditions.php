@@ -10,7 +10,7 @@ namespace craft\services;
 use Craft;
 use craft\base\conditions\ConditionInterface;
 use craft\base\conditions\ConditionRuleInterface;
-use craft\helpers\ArrayHelper;
+use craft\helpers\Arr;
 use craft\helpers\Json;
 use ReflectionException;
 use ReflectionProperty;
@@ -44,7 +44,7 @@ class Conditions extends Component
             $class = $config;
             $config = [];
         } else {
-            $class = ArrayHelper::remove($config, 'class');
+            $class = Arr::pull($config, 'class');
         }
 
         if (!is_subclass_of($class, ConditionInterface::class)) {
@@ -54,13 +54,13 @@ class Conditions extends Component
         // The base config will be JSON-encoded within a `config` key if this came from a condition builder
         if (isset($config['config']) && Json::isJsonObject($config['config'])) {
             $config = array_merge(
-                Json::decode(ArrayHelper::remove($config, 'config')),
+                Json::decode(Arr::pull($config, 'config')),
                 $config
             );
         }
 
         // Set condition rules last, in case any available rules are dependent on the condition config
-        $rules = ArrayHelper::remove($config, 'conditionRules', []);
+        $rules = Arr::pull($config, 'conditionRules', []);
 
         /** @var ConditionInterface */
         return Craft::createObject([
@@ -84,16 +84,16 @@ class Conditions extends Component
             $class = $config;
             $config = [];
         } else {
-            $class = ArrayHelper::remove($config, 'class');
+            $class = Arr::pull($config, 'class');
 
             // Merge `type` in, if this is coming from a condition builder
             if (isset($config['type'])) {
-                $newConfig = Json::decodeIfJson(ArrayHelper::remove($config, 'type'));
+                $newConfig = Json::decodeIfJson(Arr::pull($config, 'type'));
                 if (is_string($newConfig)) {
                     $newClass = $newConfig;
                     $newConfig = [];
                 } else {
-                    $newClass = ArrayHelper::remove($newConfig, 'class');
+                    $newClass = Arr::pull($newConfig, 'class');
                 }
 
                 // Make sure the condition is being passed to the condition rule when it's being constructed

@@ -10,8 +10,9 @@ namespace craft\services;
 use Craft;
 use craft\events\DeleteSiteEvent;
 use craft\events\RouteEvent;
-use craft\helpers\ArrayHelper;
+use craft\helpers\Arr;
 use craft\helpers\StringHelper;
+use Illuminate\Support\Collection;
 use yii\base\Component;
 
 /**
@@ -77,7 +78,7 @@ class Routes extends Component
                 !isset($routes[$site->handle]['route']) &&
                 !isset($routes[$site->handle]['template'])
             ) {
-                $siteRoutes = ArrayHelper::remove($routes, $site->handle);
+                $siteRoutes = Arr::pull($routes, $site->handle);
 
                 /** @noinspection PhpUnhandledExceptionInspection */
                 if ($site->handle === $sitesService->getCurrentSite()->handle) {
@@ -107,8 +108,9 @@ class Routes extends Component
             return $this->_projectConfigRoutes;
         }
 
-        $routes = Craft::$app->getProjectConfig()->get(ProjectConfig::PATH_ROUTES) ?? [];
-        ArrayHelper::multisort($routes, 'sortOrder', SORT_ASC, SORT_NUMERIC);
+        $routes = Collection::make(Craft::$app->getProjectConfig()->get(ProjectConfig::PATH_ROUTES) ?? [])
+            ->sortBy('sortOrder', SORT_NUMERIC)
+            ->all();
         $currentSiteUid = Craft::$app->getSites()->getCurrentSite()->uid;
         $this->_projectConfigRoutes = [];
 
@@ -163,7 +165,7 @@ class Routes extends Component
 
         // Compile the URI parts into a regex pattern
         $uriPattern = '';
-        $uriParts = ArrayHelper::filterEmptyStringsFromArray($uriParts);
+        $uriParts = Arr::whereNotEmpty($uriParts);
         $subpatternNameCounts = [];
 
         foreach ($uriParts as $part) {

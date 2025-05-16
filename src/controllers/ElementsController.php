@@ -28,7 +28,7 @@ use craft\events\DraftEvent;
 use craft\fieldlayoutelements\BaseField;
 use craft\fieldlayoutelements\CustomField;
 use craft\fields\Matrix;
-use craft\helpers\ArrayHelper;
+use craft\helpers\Arr;
 use craft\helpers\Component;
 use craft\helpers\Cp;
 use craft\helpers\Db;
@@ -160,7 +160,7 @@ class ElementsController extends Controller
      */
     private function _param(string $name, mixed $default = null): mixed
     {
-        $value = ArrayHelper::remove($this->_attributes, $name) ?? $this->request->getQueryParam($name);
+        $value = Arr::pull($this->_attributes, $name, $this->request->getQueryParam($name));
         if ($value === null && $default !== null && $this->request->getIsPost()) {
             return $default;
         }
@@ -795,7 +795,7 @@ JS, [
         // if we're viewing a revision, make sure it's in the list
         if (
             $element->getIsRevision() &&
-            !ArrayHelper::contains($revisions, fn(ElementInterface $revision) => $revision->id === $element->id)
+            !Collection::make($revisions)->contains(fn(ElementInterface $revision) => $revision->id === $element->id)
         ) {
             $revisions[] = $element;
         }

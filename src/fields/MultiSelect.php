@@ -10,8 +10,8 @@ namespace craft\fields;
 use Craft;
 use craft\base\ElementInterface;
 use craft\fields\data\MultiOptionsFieldData;
-use craft\helpers\ArrayHelper;
 use craft\helpers\Cp;
+use Illuminate\Support\Collection;
 
 /**
  * MultiSelect represents a Multi-select field.
@@ -63,7 +63,7 @@ class MultiSelect extends BaseOptionsField
     protected function inputHtml(mixed $value, ?ElementInterface $element, bool $inline): string
     {
         /** @var MultiOptionsFieldData $value */
-        if (ArrayHelper::contains($value, 'valid', false, true)) {
+        if (Collection::make($value)->contains('valid', '===', false)) {
             Craft::$app->getView()->setInitialDeltaValue($this->handle, null);
         }
 

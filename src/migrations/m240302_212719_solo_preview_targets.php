@@ -6,8 +6,8 @@ use Craft;
 use craft\db\Migration;
 use craft\elements\Entry;
 use craft\enums\CmsEdition;
-use craft\helpers\ArrayHelper;
 use craft\models\Section_SiteSettings;
+use Illuminate\Support\Collection;
 
 /**
  * m240302_212719_solo_preview_targets migration.
@@ -23,9 +23,8 @@ class m240302_212719_solo_preview_targets extends Migration
             // Add a {url} preview target to all sections that have a URI format
             $entriesService = Craft::$app->getEntries();
             foreach ($entriesService->getAllSections() as $section) {
-                if (ArrayHelper::contains(
-                    $section->getSiteSettings(),
-                    fn(Section_SiteSettings $siteSettings) => $siteSettings->hasUrls
+                if (Collection::make($section->getSiteSettings())->contains(
+                    fn(Section_SiteSettings $siteSettings) => $siteSettings->hasUrls,
                 )) {
                     $section->previewTargets = [
                         [

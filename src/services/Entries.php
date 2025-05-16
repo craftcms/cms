@@ -26,7 +26,7 @@ use craft\events\EntryTypeEvent;
 use craft\events\MoveEntryEvent;
 use craft\events\SectionEvent;
 use craft\helpers\AdminTable;
-use craft\helpers\ArrayHelper;
+use craft\helpers\Arr;
 use craft\helpers\Cp;
 use craft\helpers\Db;
 use craft\helpers\Html;
@@ -237,11 +237,10 @@ class Entries extends Component
             if (!empty($results) && Craft::$app->getRequest()->getIsCpRequest()) {
                 // Eager load the site settings
                 $sectionIds = array_map(fn(array $result) => $result['id'], $results);
-                $siteSettingsBySection = ArrayHelper::index(
-                    $this->_createSectionSiteSettingsQuery()->where(['sections_sites.sectionId' => $sectionIds])->all(),
-                    null,
-                    ['sectionId'],
-                );
+                $siteSettingsBySection = Collection::make($this->_createSectionSiteSettingsQuery()->where(['sections_sites.sectionId' => $sectionIds])->all())
+                    ->groupBy('sectionId')
+                    ->map(fn(Collection $collection) => $collection->all())
+                    ->all();
             }
 
             $this->_sections = new MemoizableArray($results, function(array $result) use (&$siteSettingsBySection) {
@@ -251,8 +250,7 @@ class Entries extends Component
                     $result['previewTargets'] = [];
                 }
                 $section = new Section($result);
-                /** @phpstan-ignore-next-line */
-                $siteSettings = ArrayHelper::remove($siteSettingsBySection, $section->id);
+                $siteSettings = Arr::pull($siteSettingsBySection, $section->id);
                 if ($siteSettings !== null) {
                     $section->setSiteSettings(
                         array_map(fn(array $config) => new Section_SiteSettings($config), $siteSettings),
@@ -344,7 +342,10 @@ class Entries extends Component
             return [];
         }
 
-        return ArrayHelper::where($this->getAllSections(), fn(Section $section) => $user->can("viewEntries:$section->uid"), true, true, false);
+        return Collection::make($this->getAllSections())
+            ->filter(fn(Section $section) => $user->can("viewEntries:$section->uid"))
+            ->values()
+            ->all();
     }
 
     /**
@@ -860,7 +861,7 @@ class Entries extends Component
                 ->andWhere(['entries.deletedWithSection' => true])
                 ->all();
             /** @var Entry[][] $entriesByType */
-            $entriesByType = ArrayHelper::index($entries, null, ['typeId']);
+            $entriesByType = Collection::make($entries)->groupBy('typeId')->all();
             foreach ($entriesByType as $typeEntries) {
                 try {
                     array_walk($typeEntries, function(Entry $entry) {
@@ -943,11 +944,12 @@ class Entries extends Component
             throw new Exception('No site settings exist for section ' . $section->id);
         }
 
-        $sites = ArrayHelper::where(Craft::$app->getSites()->getAllSites(), fn(Site $site) =>
+        $siteIds = Collection::make(Craft::$app->getSites()->getAllSites())
             // Only include it if it's one of this section's sites
-            isset($siteSettings[$site->uid]), true, true, false);
-
-        $siteIds = array_map(fn(Site $site) => $site->id, $sites);
+            ->filter(fn(Site $site) => isset($siteSettings[$site->uid]))
+            ->map(fn(Site $site) => $site->id)
+            ->values()
+            ->all();
 
         // Get the section's entry types
         // ---------------------------------------------------------------------
@@ -1689,7 +1691,7 @@ SQL)->execute();
                     ->andWhere(['entries.deletedWithEntryType' => true])
                     ->all();
                 /** @var Entry[][] $entriesBySection */
-                $entriesBySection = ArrayHelper::index($entries, null, ['sectionId']);
+                $entriesBySection = Collection::make($entries)->groupBy('sectionId')->all();
                 foreach ($entriesBySection as $sectionEntries) {
                     try {
                         Craft::$app->getElements()->restoreElements($sectionEntries);
@@ -2068,7 +2070,7 @@ SQL)->execute();
 
         if (!empty($missingEntries)) {
             /** @var array<string,Section> $singleSections */
-            $singleSections = ArrayHelper::index(
+            $singleSections = Arr::keyBy(
                 $this->getSectionsByType(Section::TYPE_SINGLE),
                 fn(Section $section) => $section->handle,
             );
@@ -2088,7 +2090,7 @@ SQL)->execute();
                     ->siteId($siteId)
                     ->all();
                 /** @var array<string,Entry> $fetchedEntries */
-                $fetchedEntries = ArrayHelper::index($fetchedEntries, fn(Entry $entry) => $entry->getSection()->handle);
+                $fetchedEntries = Arr::keyBy($fetchedEntries, fn(Entry $entry) => $entry->getSection()->handle);
                 foreach ($fetchSectionHandles as $handle) {
                     if (isset($fetchedEntries[$handle])) {
                         $this->_singleEntries[$siteId][$handle] = $fetchedEntries[$handle];

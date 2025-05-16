@@ -15,6 +15,7 @@ use Illuminate\Support\Collection;
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
+ * @deprecated in 5.x. `craft\helpers\Arr` should be used instead.
  */
 class ArrayHelper extends \yii\helpers\ArrayHelper
 {
@@ -49,7 +50,7 @@ class ArrayHelper extends \yii\helpers\ArrayHelper
             }
 
             // Remove any empty elements and reset the keys
-            return array_values(static::filterEmptyStringsFromArray($object));
+            return array_values(Arr::whereNotEmpty($object));
         }
 
         return parent::toArray($object, $properties, $recursive);
@@ -433,9 +434,7 @@ class ArrayHelper extends \yii\helpers\ArrayHelper
      */
     public static function ensureNonAssociative(array &$array): void
     {
-        if (static::isAssociative($array, false)) {
-            $array = array_values($array);
-        }
+        $array = array_values($array);
     }
 
     /**

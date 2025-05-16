@@ -9,7 +9,7 @@ use craft\elements\conditions\ElementConditionRuleInterface;
 use craft\elements\db\ElementQueryInterface;
 use craft\elements\db\TagQuery;
 use craft\elements\Tag;
-use craft\helpers\ArrayHelper;
+use craft\helpers\Arr;
 
 /**
  * Tag group condition rule.
@@ -41,7 +41,7 @@ class GroupConditionRule extends BaseMultiSelectConditionRule implements Element
     protected function options(): array
     {
         $groups = Craft::$app->getTags()->getAllTagGroups();
-        return ArrayHelper::map($groups, 'uid', 'name');
+        return Arr::pluck($groups, 'name', 'uid');
     }
 
     /**

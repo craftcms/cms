@@ -47,7 +47,7 @@ use craft\events\DefineAssetUrlEvent;
 use craft\events\GenerateTransformEvent;
 use craft\fieldlayoutelements\assets\AltField;
 use craft\gql\interfaces\elements\Asset as AssetInterface;
-use craft\helpers\ArrayHelper;
+use craft\helpers\Arr;
 use craft\helpers\Assets;
 use craft\helpers\Cp;
 use craft\helpers\Db;
@@ -764,12 +764,12 @@ class Asset extends Element
 
                 $folders = array_map(fn(array $result) => new VolumeFolder($result), $folderQuery->all());
 
-                $foldersByPath = ArrayHelper::index($folders, fn(VolumeFolder $folder) => rtrim($folder->path, '/'));
+                $foldersByPath = Arr::keyBy($folders, fn(VolumeFolder $folder) => rtrim($folder->path, '/'));
 
                 foreach ($folders as $folder) {
                     $sourcePath = [$baseSourcePathStep];
                     $path = rtrim($baseFolder->path ?? '', '/');
-                    $pathSegs = ArrayHelper::filterEmptyStringsFromArray(explode('/', StringHelper::removeLeft($folder['path'], $baseFolder->path ?? '')));
+                    $pathSegs = Arr::whereNotEmpty(explode('/', StringHelper::removeLeft($folder['path'], $baseFolder->path ?? '')));
                     foreach ($pathSegs as $i => $seg) {
                         $path .= ($path !== '' ? '/' : '') . $seg;
                         if (isset($foldersByPath[$path])) {
@@ -801,7 +801,7 @@ class Asset extends Element
                         'folderId' => $folder->id,
                         'folderPath' => $path,
                         'title' => $folder->name,
-                        'uiLabelPath' => ArrayHelper::filterEmptyStringsFromArray(explode('/', $path)),
+                        'uiLabelPath' => Arr::whereNotEmpty(explode('/', $path)),
                         'sourcePath' => $sourcePath,
                     ]);
                 }
@@ -939,7 +939,7 @@ class Asset extends Element
             // and we already know it only has one token
             /** @var SearchQuery $searchQuery */
             $searchQuery = $assetQuery->search;
-            $token = ArrayHelper::firstValue($searchQuery->getTokens());
+            $token = Arr::first($searchQuery->getTokens());
             $query->andWhere(self::_buildFolderQuerySearchCondition($token));
         }
 
@@ -1203,7 +1203,7 @@ class Asset extends Element
     public function __construct($config = [])
     {
         // alt='' actually means something, so we should preserve it.
-        $alt = ArrayHelper::remove($config, 'alt');
+        $alt = Arr::pull($config, 'alt');
         if ($alt !== null) {
             $this->alt = $alt;
         }
@@ -1300,7 +1300,7 @@ class Asset extends Element
     public function setAttributesFromRequest(array $values): void
     {
         // alt='' actually means something, so we should preserve it.
-        $alt = ArrayHelper::remove($values, 'alt');
+        $alt = Arr::pull($values, 'alt');
         if ($alt !== null) {
             $this->alt = $alt;
         }
@@ -1440,7 +1440,7 @@ class Asset extends Element
         $uri = "assets/$volume->handle";
 
         if ($this->folderPath !== null) {
-            $subfolders = ArrayHelper::filterEmptyStringsFromArray(explode('/', $this->folderPath));
+            $subfolders = Arr::whereNotEmpty(explode('/', $this->folderPath));
             foreach ($subfolders as $subfolder) {
                 $uri .= "/$subfolder";
                 $crumbs[] = [
@@ -3061,7 +3061,7 @@ JS;
             ];
         }
         if ($this->folderPath) {
-            $subfolders = ArrayHelper::filterEmptyStringsFromArray(explode('/', $this->folderPath));
+            $subfolders = Arr::whereNotEmpty(explode('/', $this->folderPath));
             foreach ($subfolders as $subfolder) {
                 if (!$isTemp) {
                     $uri .= "/$subfolder";

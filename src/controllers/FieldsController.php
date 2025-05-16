@@ -22,7 +22,7 @@ use craft\elements\GlobalSet;
 use craft\fieldlayoutelements\CustomField;
 use craft\fields\MissingField;
 use craft\fields\PlainText;
-use craft\helpers\ArrayHelper;
+use craft\helpers\Arr;
 use craft\helpers\Component;
 use craft\helpers\Cp;
 use craft\helpers\Html;
@@ -33,6 +33,7 @@ use craft\models\FieldLayout;
 use craft\models\FieldLayoutTab;
 use craft\web\assets\fieldsettings\FieldSettingsAsset;
 use craft\web\Controller;
+use Illuminate\Support\Collection;
 use ReflectionException;
 use ReflectionProperty;
 use yii\web\BadRequestHttpException;
@@ -258,12 +259,13 @@ JS, [
                     }
 
                     /** @var FieldLayout[][] $layoutsByType */
-                    $layoutsByType = ArrayHelper::index($layouts,
-                        fn(FieldLayout $layout) => $layout->uid,
-                        [fn(FieldLayout $layout) => $layout->type ?? '__UNKNOWN__'],
-                    );
+                    $layoutsByType = Collection::make($layouts)
+                        ->keyBy('uid')
+                        ->groupBy(fn(FieldLayout $layout) => $layout->type ?? '__UNKNOWN__')
+                        ->all();
+
                     /** @var FieldLayout[] $unknownLayouts */
-                    $unknownLayouts = ArrayHelper::remove($layoutsByType, '__UNKNOWN__');
+                    $unknownLayouts = Arr::pull($layoutsByType, '__UNKNOWN__');
                     /** @var FieldLayout[] $layoutsWithProviders */
                     $layoutsWithProviders = [];
 
@@ -364,7 +366,7 @@ JS, [
             $settingsStr = $this->request->getBodyParam('settings');
             parse_str($settingsStr, $postedOldSettings);
             $oldNamespace = $this->request->getBodyParam('oldNamespace');
-            $settings = ArrayHelper::getValue($postedOldSettings, $oldNamespace, []);
+            $settings = Arr::get($postedOldSettings, $oldNamespace, []);
 
             // Remove any settings that aren't defined by the same class between both types
             $settings = array_filter($settings, function($attribute) use ($type, $oldType) {
@@ -660,7 +662,7 @@ JS, [
         if ($settingsStr !== null) {
             parse_str($settingsStr, $postedSettings);
             $settingsNamespace = $this->request->getRequiredBodyParam('settingsNamespace');
-            $settings = ArrayHelper::getValue($postedSettings, $settingsNamespace, []);
+            $settings = Arr::get($postedSettings, $settingsNamespace, []);
             $componentConfig = array_merge($componentConfig, $settings);
         }
 

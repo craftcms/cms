@@ -17,7 +17,7 @@ use craft\base\ThumbableFieldInterface;
 use craft\elements\conditions\users\UserCondition;
 use craft\elements\User;
 use craft\errors\FieldNotFoundException;
-use craft\helpers\ArrayHelper;
+use craft\helpers\Arr;
 use craft\helpers\Cp;
 use craft\helpers\Html;
 use craft\helpers\Inflector;
@@ -75,7 +75,7 @@ class CustomField extends BaseField
     {
         // ensure we set the field last, so it has access to other properties that need to be set first
         // see https://github.com/craftcms/cms/issues/15752
-        $fieldUid = ArrayHelper::remove($config, 'fieldUid');
+        $fieldUid = Arr::pull($config, 'fieldUid');
         if ($fieldUid) {
             $config['fieldUid'] = $fieldUid;
         }
@@ -285,7 +285,7 @@ class CustomField extends BaseField
      */
     protected function selectorAttributes(): array
     {
-        return ArrayHelper::merge(parent::selectorAttributes(), [
+        return Arr::merge(parent::selectorAttributes(), [
             'data' => [
                 'id' => $this->_field->id,
             ],
@@ -314,7 +314,7 @@ class CustomField extends BaseField
         /** @var FieldInterface $field */
         $field = $this->_field;
 
-        return ArrayHelper::merge(parent::containerAttributes($element, $static), [
+        return Arr::merge(parent::containerAttributes($element, $static), [
             'id' => "{$this->_field->handle}-field",
             'data' => [
                 'type' => get_class($field),

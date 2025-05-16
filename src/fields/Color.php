@@ -15,12 +15,12 @@ use craft\base\InlineEditableFieldInterface;
 use craft\base\MergeableFieldInterface;
 use craft\elements\Entry;
 use craft\fields\data\ColorData;
-use craft\helpers\ArrayHelper;
+use craft\helpers\Arr;
 use craft\helpers\Cp;
 use craft\helpers\Html;
 use craft\helpers\StringHelper;
 use craft\validators\ColorValidator;
-use Illuminate\Support\Arr;
+use Illuminate\Support\Collection;
 use yii\db\Schema;
 
 /**
@@ -84,12 +84,12 @@ class Color extends Field implements InlineEditableFieldInterface, MergeableFiel
     {
         // presets => palette
         if (array_key_exists('presets', $config) || array_key_exists('defaultColor', $config)) {
-            $defaultColor = ArrayHelper::remove($config, 'defaultColor');
+            $defaultColor = Arr::pull($config, 'defaultColor');
             $config['palette'] = array_map(fn(string $color) => [
                 'color' => $color,
                 'label' => null,
                 'default' => ($color === $defaultColor),
-            ], ArrayHelper::remove($config, 'presets') ?? []);
+            ], Arr::pull($config, 'presets', []));
         }
 
         if (isset($config['palette'])) {
@@ -97,7 +97,7 @@ class Color extends Field implements InlineEditableFieldInterface, MergeableFiel
                 fn(array $color) => [
                     'color' => $color['color'] ? ColorValidator::normalizeColor($color['color']) : null,
                 ] + $color,
-                $config['palette']
+                $config['palette'],
             );
         }
 
@@ -316,7 +316,7 @@ class Color extends Field implements InlineEditableFieldInterface, MergeableFiel
                     if (!$this->allowCustomColors) {
                         /** @var ColorData $value */
                         $value = $element->getFieldValue($this->handle);
-                        if (!ArrayHelper::contains($this->palette, fn(array $color) => $color['color'] === $value->getHex())) {
+                        if (!Collection::make($this->palette)->contains(fn(array $color) => $color['color'] === $value->getHex())) {
                             $element->addError("field:$this->handle", Craft::t('yii', '{attribute} is invalid.', [
                                 'attribute' => $this->getUiLabel(),
                             ]));
@@ -346,7 +346,7 @@ class Color extends Field implements InlineEditableFieldInterface, MergeableFiel
         /** @var ColorData|null $value */
         $isInPalette = (
             $value &&
-            ArrayHelper::contains($this->palette, fn(array $color) => $color['color'] === $value->getHex())
+            Collection::make($this->palette)->contains('color', $value->getHex())
         );
         $isCustom = (
             $value &&

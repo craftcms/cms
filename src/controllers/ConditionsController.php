@@ -10,7 +10,7 @@ namespace craft\controllers;
 use Craft;
 use craft\base\conditions\ConditionInterface;
 use craft\base\conditions\ConditionRuleInterface;
-use craft\helpers\ArrayHelper;
+use craft\helpers\Arr;
 use craft\helpers\Component;
 use craft\helpers\Json;
 use craft\web\Controller;
@@ -43,7 +43,7 @@ class ConditionsController extends Controller
 
         $baseConfig = Component::cleanseConfig(Json::decodeIfJson($this->request->getBodyParam('config')));
         $config = Component::cleanseConfig($this->request->getBodyParam($baseConfig['name']));
-        $newRuleType = ArrayHelper::remove($config, 'new-rule-type');
+        $newRuleType = Arr::pull($config, 'new-rule-type');
         $conditionsService = Craft::$app->getConditions();
         $this->_condition = $conditionsService->createCondition($config);
         Craft::configure($this->_condition, $baseConfig);
