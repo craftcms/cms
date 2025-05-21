@@ -178,6 +178,7 @@ class Install extends Migration
             'folderId' => $this->integer()->notNull(),
             'uploaderId' => $this->integer(),
             'filename' => $this->string()->notNull(),
+            'mimeType' => $this->string(),
             'kind' => $this->string(50)->notNull()->defaultValue(Asset::KIND_UNKNOWN),
             'alt' => $this->text(),
             'width' => $this->integer()->unsigned(),

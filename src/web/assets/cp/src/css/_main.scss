@@ -2162,8 +2162,7 @@ ul.icons {
   }
 }
 
-.btn,
-.spinner {
+.btn {
   height: var(--input-height);
   min-height: var(--input-height);
 }
@@ -4593,11 +4592,66 @@ table.editable {
     }
   }
 
+  thead:first-child,
+  tbody:first-child,
+  colgroup + thead,
+  colgroup + tbody {
+    tr:first-child {
+      th,
+      td {
+        &:first-child {
+          border-start-start-radius: var(--large-border-radius);
+
+          textarea,
+          input.text {
+            border-start-start-radius: calc(var(--large-border-radius) - 1px);
+          }
+        }
+
+        &:last-child {
+          border-start-end-radius: var(--large-border-radius);
+
+          textarea,
+          input.text {
+            border-start-end-radius: calc(var(--large-border-radius) - 1px);
+          }
+        }
+      }
+    }
+  }
+
+  thead,
+  tbody {
+    &:last-child tr:last-child {
+      th,
+      td {
+        &:first-child {
+          border-end-start-radius: var(--large-border-radius);
+
+          textarea,
+          input.text {
+            border-end-start-radius: calc(var(--large-border-radius) - 1px);
+          }
+        }
+
+        &:last-child {
+          border-end-end-radius: var(--large-border-radius);
+
+          textarea,
+          input.text {
+            border-end-end-radius: calc(var(--large-border-radius) - 1px);
+          }
+        }
+      }
+    }
+  }
+
   thead {
     tr {
       th {
         border-block-end: 1px solid var(--hairline-color);
-        font-size: 0.8em;
+        font-family: inherit; // for .code
+        font-size: 0.8em !important; // ! for .code
         font-weight: 500;
         line-height: 1.4;
 
@@ -4619,17 +4673,6 @@ table.editable {
         th,
         td {
           border-block-start: 1px solid var(--hairline-color);
-        }
-      }
-
-      &:last-child {
-        td:first-child {
-          border-end-start-radius: var(--large-border-radius);
-
-          textarea,
-          input.text {
-            border-end-start-radius: calc(var(--large-border-radius) - 1px);
-          }
         }
       }
 
@@ -6339,6 +6382,11 @@ $min2ColWidth: 400px;
     z-index: 2;
     border-radius: 0;
 
+    // keep the margin-block-start as it was for wider viewports
+    @media only screen and (width <= 767px) {
+      margin-block: calc(var(--xl) * -1) var(--padding);
+    }
+
     & > .so-toolbar {
       display: flex;
       flex-direction: row;
@@ -6385,6 +6433,11 @@ $min2ColWidth: 400px;
       box-sizing: border-box;
       padding-block: 0 var(--spacing);
       padding-inline: var(--padding);
+
+      // set the margin-block-start so the slideout doesn't overlap the toolbar
+      @media only screen and (width <= 767px) {
+        margin-block-start: 16px;
+      }
 
       & > .preview-thumb-container {
         margin-block: 0;
@@ -7861,6 +7914,10 @@ textarea.text.fullwidth {
   container-type: inline-size;
 
   & > .flex {
+    & > .flex-grow {
+      overflow: hidden;
+    }
+
     & > div {
       &.text-link {
         border: var(--input-border);
@@ -7892,7 +7949,7 @@ textarea.text.fullwidth {
         }
 
         .chip {
-          height: calc(34rem / 16);
+          min-height: calc(34rem / 16);
           padding-inline: var(--s);
 
           .chip-content {

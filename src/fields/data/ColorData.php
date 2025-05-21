@@ -7,8 +7,8 @@
 
 namespace craft\fields\data;
 
+use craft\base\Model;
 use craft\base\Serializable;
-use yii\base\BaseObject;
 
 /**
  * Multi-select option field data class.
@@ -26,7 +26,7 @@ use yii\base\BaseObject;
  * @author Top Shelf Craft <michael@michaelrog.com>
  * @since 3.0.0
  */
-class ColorData extends BaseObject implements Serializable
+class ColorData extends Model implements Serializable
 {
     /**
      * @var string|null The human-facing label for the color.
@@ -63,6 +63,21 @@ class ColorData extends BaseObject implements Serializable
     public function __toString(): string
     {
         return $this->_hex;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function attributes()
+    {
+        $attributes = parent::attributes();
+        $attributes[] = 'blue';
+        $attributes[] = 'green';
+        $attributes[] = 'hex';
+        $attributes[] = 'luma';
+        $attributes[] = 'red';
+        $attributes[] = 'rgb';
+        return $attributes;
     }
 
     /**

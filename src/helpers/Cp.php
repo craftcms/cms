@@ -631,7 +631,14 @@ $('#' + $id).on('activate', (ev) => {
   } else {
     // focus on the button so that when the slideout is closed, it's returned to the button
     $(ev.currentTarget).focus();
-    Craft.createElementEditor($elementType, $settings);
+
+    const settings = $settings;
+    // if settings have draftId but the replaced card doesn't have the data-draft-id attribute anymore,
+    // remove the draftId from the settings before creating element editor, so the correct element can be retrieved
+    if (settings.draftId && !Garnish.hasAttr($(ev.currentTarget).parents('.card'), 'data-draft-id')) {
+      delete settings.draftId;
+    }
+    Craft.createElementEditor($elementType, settings);
   }
 });
 JS, [
@@ -1808,6 +1815,33 @@ JS, [
     }
 
     /**
+     * Renders a button group.
+     *
+     * @param array $config
+     * @return string
+     * @since 5.8.0
+     */
+    public static function buttonGroupHtml(array $config): string
+    {
+        return static::renderTemplate('_includes/forms/buttonGroup.twig', $config);
+    }
+
+    /**
+     * Renders a button group field’s HTML.
+     *
+     * @param array $config
+     * @return string
+     * @throws InvalidArgumentException if `$config['siteId']` is invalid
+     * @since 5.8.0
+     */
+    public static function buttonGroupFieldHtml(array $config): string
+    {
+        $config['id'] ??= 'buttongroup' . mt_rand();
+        $config['fieldset'] = true;
+        return static::fieldHtml('template:_includes/forms/buttonGroup.twig', $config);
+    }
+
+    /**
      * Renders a checkbox field’s HTML.
      *
      * Note that unlike the `checkboxField` macro in `_includes/forms.html`, you must set the checkbox label via
@@ -2780,16 +2814,6 @@ JS, [
                 'class' => ['element', 'card'],
             ]);
 
-        // get thumb placeholder
-        if ($showThumb ?? $fieldLayout->getThumbField() !== null) {
-            $previewThumb = Html::tag('div',
-                Html::tag('div', Cp::iconSvg('image'), ['class' => 'cp-icon']),
-                ['class' => 'cvd-thumbnail']
-            );
-
-            $previewHtml .= Html::tag('div', $previewThumb, ['class' => ['thumb']]);
-        }
-
         $previewHtml .=
             Html::tag('div', options: ['class' => 'card-titlebar']) .
             Html::beginTag('div', ['class' => 'card-main']) .
@@ -2823,7 +2847,19 @@ JS, [
 
         $previewHtml .=
             Html::endTag('div') . // .card-body
-            Html::endTag('div') . // .card-content
+            Html::endTag('div'); // .card-content
+
+        // get thumb placeholder
+        if ($showThumb ?? $fieldLayout->getThumbField() !== null) {
+            $previewThumb = Html::tag('div',
+                Html::tag('div', Cp::iconSvg('image'), ['class' => 'cp-icon']),
+                ['class' => 'cvd-thumbnail']
+            );
+
+            $previewHtml .= Html::tag('div', $previewThumb, ['class' => ['thumb']]);
+        }
+
+        $previewHtml .=
             Html::endTag('div') . // .card-main
             Html::tag('div', '', ['class' => 'spinner spinner-absolute']) .
             Html::endTag('div'); // .element.card

@@ -89,25 +89,25 @@ class ElementQuery extends Query implements ElementQueryInterface
     public const EVENT_DEFINE_CACHE_TAGS = 'defineCacheTags';
 
     /**
-     * @event PopulateElementEvent The event that is triggered before an element is populated.
+     * @event PopulateElementEvent The event that is triggered before an element is populated from a database row.
      *
-     * If [[PopulateElementEvent::$element]] is set by an event handler, the replacement will be returned by [[createElement()]] instead.
+     * If [[PopulateElementEvent::$element]] is set by an event handler, the replacement will be returned by [[createElement()]] instead of the original.
      *
      * @since 4.5.0
      */
     public const EVENT_BEFORE_POPULATE_ELEMENT = 'beforePopulateElement';
 
     /**
-     * @event PopulateElementEvent The event that is triggered after an element is populated.
+     * @event PopulateElementEvent The event that is triggered after an element is populated from a database row.
      *
-     * If [[PopulateElementEvent::$element]] is replaced by an event handler, the replacement will be returned by [[createElement()]] instead.
+     * If [[PopulateElementEvent::$element]] is replaced by an event handler, the replacement will be returned by [[createElement()]] instead of the original.
      */
     public const EVENT_AFTER_POPULATE_ELEMENT = 'afterPopulateElement';
 
     /**
-     * @event PopulateElementEvent The event that is triggered after an element is populated.
+     * @event PopulateElementEvent The event triggered after all elements are populated.
      *
-     * If [[PopulateElementEvent::$element]] is replaced by an event handler, the replacement will be returned by [[createElement()]] instead.
+     * The query’s results are assigned to [[PopulateElementsEvent::$elements]], and are returned after all handlers are invoked. Handlers may add, remove, modify, and replace populated elements.
      */
     public const EVENT_AFTER_POPULATE_ELEMENTS = 'afterPopulateElements';
 

@@ -11,6 +11,7 @@ use Craft;
 use craft\base\ElementInterface;
 use craft\base\FieldInterface;
 use craft\base\FieldLayoutProviderInterface;
+use craft\models\EntryType;
 use craft\models\FieldLayout;
 use yii\base\Behavior;
 use yii\base\InvalidConfigException;
@@ -129,7 +130,12 @@ class FieldLayoutBehavior extends Behavior
             ]);
         }
 
-        if ($this->owner instanceof FieldLayoutProviderInterface) {
+        if ($this->owner instanceof EntryType) {
+            // Set the provider to the original entry type, so it uses the original provider handle
+            // (see https://github.com/craftcms/cms/pull/17213)
+            // todo: FieldLayoutProviderInterface could define a getProvider() method
+            $fieldLayout->provider = $this->owner->original ?? $this->owner;
+        } elseif ($this->owner instanceof FieldLayoutProviderInterface) {
             $fieldLayout->provider = $this->owner;
         }
 

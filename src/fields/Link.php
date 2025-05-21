@@ -19,7 +19,7 @@ use craft\base\RelationalFieldTrait;
 use craft\elements\db\ElementQueryInterface;
 use craft\elements\Entry as EntryElement;
 use craft\events\RegisterComponentTypesEvent;
-use craft\fields\conditions\TextFieldConditionRule;
+use craft\fields\conditions\LinkFieldConditionRule;
 use craft\fields\data\LinkData;
 use craft\fields\linktypes\Asset;
 use craft\fields\linktypes\BaseLinkType;
@@ -193,6 +193,7 @@ class Link extends Field implements InlineEditableFieldInterface, RelationalFiel
     /**
      * @var bool Whether GraphQL values should be returned as objects with `type`,
      * `value`, `label`, `urlSuffix`, and `url` keys.
+     * @since 5.6.0
      */
     public bool $fullGraphqlData = true;
 
@@ -509,7 +510,7 @@ class Link extends Field implements InlineEditableFieldInterface, RelationalFiel
         if (
             $value instanceof LinkData &&
             $element?->propagating &&
-            ($element->propagateAll || $element->isNewForSite) &&
+            ($element->propagateAll || ($element->isNewForSite && !isset($element->duplicateOf))) &&
             isset($element->propagatingFrom) &&
             $this->getTranslationKey($element) !== $this->getTranslationKey($element->propagatingFrom)
         ) {
@@ -864,7 +865,7 @@ JS;
      */
     public function getElementConditionRuleType(): array|string|null
     {
-        return TextFieldConditionRule::class;
+        return LinkFieldConditionRule::class;
     }
 
     /**

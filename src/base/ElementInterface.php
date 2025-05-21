@@ -10,7 +10,6 @@ namespace craft\base;
 use craft\behaviors\CustomFieldBehavior;
 use craft\elements\conditions\ElementConditionInterface;
 use craft\elements\db\EagerLoadPlan;
-use craft\elements\db\ElementQuery;
 use craft\elements\db\ElementQueryInterface;
 use craft\elements\ElementCollection;
 use craft\elements\User;
@@ -20,6 +19,8 @@ use craft\models\FieldLayout;
 use craft\models\Site;
 use GraphQL\Type\Definition\Type;
 use Twig\Markup;
+use yii\base\InvalidConfigException;
+use yii\base\NotSupportedException;
 use yii\web\Response;
 
 /**
@@ -1902,4 +1903,17 @@ interface ElementInterface extends
      * Returns the string representation of the element.
      */
     public function __toString(): string;
+
+    /**
+     * Renders the element using its partial template.
+     *
+     * If no partial template exists for the element, its string representation will be output instead.
+     *
+     * @param array $variables
+     * @return Markup
+     * @throws InvalidConfigException
+     * @throws NotSupportedException
+     * @since 5.8.0
+     */
+    public function render(array $variables = []): Markup;
 }

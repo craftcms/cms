@@ -152,13 +152,13 @@
   display: inline-flex;
   justify-content: center;
   text-align: center;
-  font-size: 11px;
+  font-size: calc(10rem / 16);
   line-height: 1rem;
   min-width: 1.1rem;
   height: 1rem;
   padding-block: 0;
   padding-inline: var(--xs);
-  border-radius: 8px;
+  border-radius: var(--s);
   background-color: var(--nav-item-badge-bgColor);
   color: var(--nav-item-badge-fgColor);
 }
@@ -368,14 +368,6 @@ States
     .sidebar-action {
       width: var(--nav-item-prefix-width);
       min-height: var(--nav-item-prefix-width);
-
-      &:focus-visible,
-      &:hover {
-        .sidebar-action__label {
-          opacity: 1;
-          transform: translateY(-50%) translateX(0);
-        }
-      }
     }
 
     .nav-item__trigger {
@@ -387,8 +379,7 @@ States
     }
 
     .sidebar-action__label {
-      z-index: 10;
-      opacity: 0;
+      display: none;
     }
 
     .sidebar-action__badge {

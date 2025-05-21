@@ -573,6 +573,22 @@ class FieldLayout extends Model
     }
 
     /**
+     * Returns all fields in the layout that match a given callback.
+     *
+     * @param callable $filter
+     * @return BaseField[]
+     * @throws InvalidArgumentException if the field isn’t included
+     * @since 5.8.0
+     */
+    public function getFields(callable $filter): array
+    {
+        return iterator_to_array($this->_elements(fn(FieldLayoutElement $layoutElement) => (
+            $layoutElement instanceof BaseField &&
+            $filter($layoutElement)
+        )));
+    }
+
+    /**
      * Returns the field layout’s config.
      *
      * @return array|null
@@ -595,6 +611,33 @@ class FieldLayout extends Model
             'tabs' => $tabConfigs,
             'cardView' => $cardViewConfig,
         ];
+    }
+
+    /**
+     * Resets the field layout’s UUIDs.
+     *
+     * @since 5.8.0
+     */
+    public function resetUids(): void
+    {
+        $this->uid = StringHelper::UUID();
+        $cardView = $this->getCardView();
+
+        foreach ($this->getTabs() as $tab) {
+            $tab->uid = StringHelper::UUID();
+
+            foreach ($tab->getElements() as $element) {
+                $oldUid = $element->uid;
+                $element->uid = StringHelper::UUID();
+
+                $cardViewPos = array_search("layoutElement:$oldUid", $cardView);
+                if ($cardViewPos !== false) {
+                    $cardView[$cardViewPos] = "layoutElement:$element->uid";
+                }
+            }
+        }
+
+        $this->setCardView($cardView);
     }
 
     /**

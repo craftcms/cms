@@ -116,7 +116,7 @@ class Entry extends BaseElementLinkType
     }
 
     /**
-     * @inerhitdoc
+     * @inheritdoc
      */
     protected function elementSelectConfig(): array
     {

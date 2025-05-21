@@ -28,6 +28,7 @@ use craft\events\UserPhotoEvent;
 use craft\helpers\Assets as AssetsHelper;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\Db;
+use craft\helpers\FileHelper;
 use craft\helpers\Image;
 use craft\helpers\Json;
 use craft\helpers\ProjectConfig as ProjectConfigHelper;
@@ -574,10 +575,11 @@ class Users extends Component
      * @param User $user the user.
      * @param string $fileLocation the local image path on server
      * @param string|null $filename name of the file to use, defaults to filename of `$fileLocation`
+     * @param string|null $mimeType the default MIME type to use, if it can’t be determined based on the server path
      * @throws ImageException if the file provided is not a manipulatable image
      * @throws VolumeException if the user photo volume is not provided or is invalid
      */
-    public function saveUserPhoto(string $fileLocation, User $user, ?string $filename = null): void
+    public function saveUserPhoto(string $fileLocation, User $user, ?string $filename = null, ?string $mimeType = null): void
     {
         $filename = AssetsHelper::prepareAssetName($filename ?? pathinfo($fileLocation, PATHINFO_BASENAME), true, true);
 
@@ -600,7 +602,7 @@ class Users extends Component
 
         // If the photo exists, just replace the file.
         if ($photoId && ($photo = Craft::$app->getAssets()->getAssetById($photoId)) !== null) {
-            $assetsService->replaceAssetFile($photo, $fileLocation, $filename);
+            $assetsService->replaceAssetFile($photo, $fileLocation, $filename, $mimeType);
         } else {
             $volume = $this->_userPhotoVolume();
             $folderId = $this->_userPhotoFolderId($user, $volume);
@@ -610,6 +612,7 @@ class Users extends Component
             $photo->setScenario(Asset::SCENARIO_CREATE);
             $photo->tempFilePath = $fileLocation;
             $photo->setFilename($filename);
+            $photo->setMimeType(FileHelper::getMimeType($fileLocation, checkExtension: false) ?? $mimeType);
             $photo->newFolderId = $folderId;
             $photo->setVolumeId($volume->id);
 

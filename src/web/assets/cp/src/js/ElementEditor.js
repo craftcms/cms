@@ -1504,6 +1504,38 @@ Craft.ElementEditor = Garnish.Base.extend(
             this._afterSaveDraft();
             this.settings.previewParamValue = response.data.previewParamValue;
             this._afterUpdateFieldLayout(data, selectedTabId, response);
+            const newInitialDeltaValues = {};
+
+            if (response.data.deltaNames?.length) {
+              let deltaNames = this.$container.data('delta-names');
+              deltaNames = Array.isArray(deltaNames) ? [...deltaNames] : [];
+              const newDeltaNames = [];
+              for (const name of response.data.deltaNames) {
+                if (deltaNames.indexOf(name) === -1) {
+                  deltaNames.push(name);
+                  newDeltaNames.push(name);
+                }
+              }
+              if (newDeltaNames.length) {
+                this.$container.data('delta-names', deltaNames);
+
+                // update the initial delta values with the initial values of the new field inputs
+                const groupedParams = Craft.groupParams(
+                  this.serializeForm(),
+                  newDeltaNames
+                );
+                for (const [deltaName, params] of Object.entries(
+                  groupedParams
+                )) {
+                  for (const param of params) {
+                    const [name, value] = param.split('=', 2);
+                    newInitialDeltaValues[decodeURIComponent(name)] =
+                      decodeURIComponent(value);
+                  }
+                }
+              }
+            }
+
             this._handleSaveDraftResponse(response);
 
             if ($.isPlainObject(response.data.draftElementUids)) {
@@ -1546,7 +1578,7 @@ Craft.ElementEditor = Garnish.Base.extend(
               );
             }
 
-            this.afterUpdate(data);
+            this.afterUpdate(data, newInitialDeltaValues);
             this.trigger('afterSaveDraft', {response});
 
             if (Craft.broadcaster) {
@@ -1921,7 +1953,6 @@ Craft.ElementEditor = Garnish.Base.extend(
               } else {
                 $newElement.appendTo($tabContainer);
               }
-              Craft.initUiElements($newElement);
               Craft.cp.elementThumbLoader.load($newElement);
               changedElements = true;
             }
@@ -1999,6 +2030,7 @@ Craft.ElementEditor = Garnish.Base.extend(
 
       await Craft.appendHeadHtml(response.data.headHtml);
       await Craft.appendBodyHtml(response.data.bodyHtml);
+      Craft.initUiElements(this.$contentContainer);
 
       // Did any layout elements get added or removed?
       if (changedElements) {
@@ -2019,9 +2051,9 @@ Craft.ElementEditor = Garnish.Base.extend(
       this.handleDismissibleTips();
     },
 
-    afterUpdate: function (data) {
+    afterUpdate: function (data, newInitialDeltaValues = {}) {
       this.$container.data('initialSerializedValue', data);
-      this.$container.data('initial-delta-values', {});
+      this.$container.data('initial-delta-values', newInitialDeltaValues);
 
       const $statusIcons = this.statusIcons()
         .velocity('stop')
@@ -2374,43 +2406,47 @@ Craft.ElementEditor = Garnish.Base.extend(
                   }
                 }
 
-                // if the element has been updated upstream, show a notification about it
-                const elementUpdated =
-                  this.settings.updatedTimestamp &&
-                  this.settings.updatedTimestamp !== data.updatedTimestamp;
-                const canonicalUpdated =
-                  this.settings.canonicalUpdatedTimestamp &&
-                  this.settings.canonicalUpdatedTimestamp !==
-                    data.canonicalUpdatedTimestamp;
+                if (this.isFullPage) {
+                  // if the element has been updated upstream, show a notification about it
+                  const elementUpdated =
+                    this.settings.updatedTimestamp &&
+                    this.settings.updatedTimestamp !== data.updatedTimestamp;
+                  const canonicalUpdated =
+                    this.settings.canonicalUpdatedTimestamp &&
+                    this.settings.canonicalUpdatedTimestamp !==
+                      data.canonicalUpdatedTimestamp;
 
-                if (elementUpdated || canonicalUpdated) {
-                  const $reloadBtn = Craft.ui.createButton({
-                    label: Craft.t('app', 'Reload'),
-                    spinner: true,
-                  });
+                  if (elementUpdated || canonicalUpdated) {
+                    const $reloadBtn = Craft.ui.createButton({
+                      label: Craft.t('app', 'Reload'),
+                      spinner: true,
+                    });
 
-                  Craft.cp.displayNotice(
-                    Craft.uppercaseFirst(
-                      Craft.t('app', 'This {type} has been updated.', {
-                        type:
-                          elementUpdated &&
-                          this.settings.draftId &&
-                          !this.settings.isProvisionalDraft
-                            ? Craft.t('app', 'draft')
-                            : Craft.elementTypeNames[this.settings.elementType]
-                              ? Craft.elementTypeNames[
-                                  this.settings.elementType
-                                ][2]
-                              : Craft.t('app', 'element'),
-                      })
-                    ),
-                    {
-                      details: $reloadBtn,
-                    }
-                  );
-                  $reloadBtn.on('click', () => {
-                    window.location.reload();
-                  });
+                    Craft.cp.displayNotice(
+                      Craft.uppercaseFirst(
+                        Craft.t('app', 'This {type} has been updated.', {
+                          type:
+                            elementUpdated &&
+                            this.settings.draftId &&
+                            !this.settings.isProvisionalDraft
+                              ? Craft.t('app', 'draft')
+                              : Craft.elementTypeNames[
+                                    this.settings.elementType
+                                  ]
+                                ? Craft.elementTypeNames[
+                                    this.settings.elementType
+                                  ][2]
+                                : Craft.t('app', 'element'),
+                        })
+                      ),
+                      {
+                        details: $reloadBtn,
+                      }
+                    );
+                    $reloadBtn.on('click', () => {
+                      window.location.reload();
+                    });
+                  }
                 }
 
                 this.settings.updatedTimestamp = data.updatedTimestamp;

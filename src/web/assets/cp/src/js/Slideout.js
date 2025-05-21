@@ -14,6 +14,7 @@ import $ from 'jquery';
       $liveRegion: $('<span class="visually-hidden" role="status"></span>'),
       $triggerElement: null,
       isOpen: false,
+      isOpening: false,
       useMobileStyles: null,
 
       init: function (contents, settings) {
@@ -109,6 +110,8 @@ import $ from 'jquery';
           });
         }
 
+        this.isOpening = true;
+
         if (this.useMobileStyles) {
           this.$container.css({
             top: '100vh',
@@ -122,7 +125,8 @@ import $ from 'jquery';
         }
 
         this._afterTransition(this.$container, () => {
-          Craft.setFocusWithin(this.$container);
+          this.isOpening = false;
+          this.setFocusWithin();
         });
 
         if (this.$shade) {
@@ -145,6 +149,10 @@ import $ from 'jquery';
 
         this.isOpen = true;
         this.trigger('open');
+      },
+
+      setFocusWithin: function () {
+        Craft.setFocusWithin(this.$container);
       },
 
       updateWidthsForPreviewPane: function (activePreview) {
@@ -312,7 +320,6 @@ import $ from 'jquery';
   Garnish.on(Craft.Slideout, ['open', 'close'], () => {
     for (const hud of Garnish.HUD.instances) {
       if (hud.showing) {
-        console.log('update');
         hud.updateSizeAndPosition(true);
       }
     }

@@ -1791,10 +1791,12 @@ li.breadcrumb-toggle-wrapper {
           margin-inline: 10px -4px;
           margin-block: 0;
           flex-shrink: 1;
+          font-size: calc(10rem / 16);
+          line-height: 1rem;
+          min-width: 1.1rem;
+          height: 1rem;
           padding-block: 0;
-          padding-inline: 6px;
-          font-size: calc(11rem / 16);
-          line-height: 16px;
+          padding-inline: var(--xs);
           border-radius: var(--s);
           background-color: var(--medium-text-color);
           color: var(--white);

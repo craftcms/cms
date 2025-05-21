@@ -82,7 +82,7 @@ class Address extends Element implements AddressInterface, NestedElementInterfac
     }
 
     /**
-     * @inerhitdoc
+     * @inheritdoc
      */
     public static function hasTitles(): bool
     {

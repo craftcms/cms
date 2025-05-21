@@ -101,6 +101,12 @@ class CraftElementLabel extends HTMLElement {
   }
 
   disconnectedCallback() {
+    // put the .label-link back into <craft-element-label>
+    // so that when connectedCallback() is called after insetBefore/insertAfter
+    // everything can get initialised as expected
+    // we can't use Element.moveBefore/Element.moveAfter as those are experimental at the moment and not available in Safari & FF
+    this.append(this.labelLink);
+
     this.tooltip?.remove();
     if (this.$tabs?.length) {
       this.$tabs.data('tabs')?.off('selectTab');

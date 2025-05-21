@@ -211,7 +211,7 @@ class Entries extends BaseRelationField
     }
 
     /**
-     * @inerhitdoc
+     * @inheritdoc
      */
     public function getInputSources(?ElementInterface $element = null): array|string|null
     {

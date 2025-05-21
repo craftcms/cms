@@ -1059,7 +1059,8 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
         } catch (InvalidArgumentException) {
             return true;
         }
-        return $titleField->required;
+
+        return $titleField->required && $titleField->showInForm($this);
     }
 
     /**
@@ -1591,7 +1592,7 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
                 if (!$entryType) {
                     // Maybe the section/field no longer allows this type,
                     // so get it directly from the Entries service instead
-                    $entryType = Craft::$app->getEntries()->getEntryTypeById($this->_typeId);
+                    $entryType = Craft::$app->getEntries()->getEntryTypeById($this->_typeId, true);
                     if (!$entryType) {
                         throw new InvalidConfigException("Invalid entry type ID: $this->_typeId");
                     }
@@ -2552,6 +2553,7 @@ JS;
     {
         $entryType = $this->getType();
 
+        // Leave the title alone if the layout has a Title field, and it's already set to something
         if ($entryType->hasTitleField && trim($this->title ?? '') !== '') {
             return;
         }
@@ -3040,5 +3042,25 @@ JS;
                 }
             }
         }
+    }
+
+    protected function partialTemplatePathCandidates(): array
+    {
+        $templates = parent::partialTemplatePathCandidates();
+
+        $entryType = $this->getType();
+        if (isset($entryType->original) && $entryType->original->handle !== $entryType->handle) {
+            $templates[] = [
+                'template' => sprintf(
+                    '%s/%s/%s',
+                    Craft::$app->getConfig()->getGeneral()->partialTemplatesPath,
+                    static::refHandle(),
+                    $entryType->original->handle,
+                ),
+                'priority' => 5,
+            ];
+        }
+
+        return $templates;
     }
 }

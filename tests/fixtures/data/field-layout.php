@@ -9,6 +9,7 @@ use craft\elements\Asset;
 use craft\elements\Entry;
 use craft\elements\GlobalSet;
 use craft\elements\User;
+use craft\fieldlayoutelements\entries\EntryTitleField;
 use craft\fields\Entries;
 use craft\fields\Matrix;
 use craft\fields\PlainText;
@@ -63,6 +64,12 @@ return [
             [
                 'name' => 'Tab 1',
                 'fields' => [
+                    // Entry Title Field
+                    [
+                        'uid' => 'native-field-1002----------------uid',
+                        'type' => EntryTitleField::class,
+                        'required' => true,
+                    ],
                     // MATRIX FIELD 1
                     [
                         'uid' => 'field-1000-----------------------uid',
@@ -128,6 +135,12 @@ return [
             [
                 'name' => 'Tab 1',
                 'fields' => [
+                    // Entry Title Field
+                    [
+                        'uid' => 'native-field-1003----------------uid',
+                        'type' => EntryTitleField::class,
+                        'required' => true,
+                    ],
                     // MATRIX FIELD 2
                     [
                         'uid' => 'field-1003-----------------------uid',
@@ -305,6 +318,32 @@ return [
                         'settings' => [
                             'multiline' => '',
                         ],
+                    ],
+                ],
+            ],
+        ],
+    ],
+    [
+        'uid' => 'field-layout-1011----------------uid',
+        'type' => Entry::class,
+        'tabs' => [
+            [
+                'name' => 'Tab 1',
+                'fields' => [
+                    // Entry Title Field
+                    [
+                        'uid' => 'native-field-1011----------------uid',
+                        'type' => EntryTitleField::class,
+                        'required' => true,
+                    ],
+
+                    // PLAIN TEXT FIELD FOUR
+                    [
+                        'uid' => 'field-1009-----------------------uid',
+                        'name' => 'Plain Text Field4',
+                        'handle' => 'plainTextField4',
+                        'type' => PlainText::class,
+                        'required' => false,
                     ],
                 ],
             ],
