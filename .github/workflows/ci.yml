@@ -3,7 +3,7 @@ on:
   workflow_dispatch:
   push:
     branches:
-      - 5.x
+      - 6.x-internal
   pull_request:
 permissions:
   contents: read
