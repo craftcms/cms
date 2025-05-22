@@ -17,7 +17,6 @@ Craft.TagSelectInput = Craft.BaseElementSelectInput.extend(
     _ignoreBlur: false,
 
     init: function (settings) {
-      console.log(settings);
       // Normalize the settings
       // ---------------------------------------------------------------------
 
@@ -39,7 +38,6 @@ Craft.TagSelectInput = Craft.BaseElementSelectInput.extend(
       }
 
       this.base($.extend({}, Craft.TagSelectInput.defaults, settings));
-      console.log(this.settings);
 
       this.$addTagInput = this.$container.children('.add').children('.text');
       this.$spinner = this.$addTagInput.next();

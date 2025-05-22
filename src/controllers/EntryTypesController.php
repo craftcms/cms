@@ -128,6 +128,13 @@ class EntryTypesController extends Controller
                     'shortcut' => true,
                     'retainScroll' => true,
                 ]);
+
+            if ($entryType->id) {
+                $response->addAltAction(Craft::t('app', 'Save as a new entry type'), [
+                    'params' => ['saveAsNew' => true],
+                    'redirect' => 'settings/entry-types/{id}',
+                ]);
+            }
         } else {
             $response->noticeHtml(Cp::readOnlyNoticeHtml());
         }
@@ -189,11 +196,19 @@ class EntryTypesController extends Controller
 
         $sectionsService = Craft::$app->getEntries();
         $entryTypeId = $this->request->getBodyParam('entryTypeId');
+        $saveAsNew = $this->request->getBodyParam('saveAsNew');
 
         if ($entryTypeId) {
             $entryType = $sectionsService->getEntryTypeById($entryTypeId);
             if (!$entryType) {
                 throw new BadRequestHttpException("Invalid entry type ID: $entryTypeId");
+            }
+
+            if ($saveAsNew) {
+                $oldId = $entryType->id;
+                $oldUid = $entryType->uid;
+                $entryType = clone $entryType;
+                $entryType->id = $entryType->uid = null;
             }
         } else {
             $entryType = new EntryType();
@@ -218,11 +233,21 @@ class EntryTypesController extends Controller
         $fieldLayout->type = Entry::class;
         $entryType->setFieldLayout($fieldLayout);
 
-        // Save it
-        if (!$sectionsService->saveEntryType($entryType)) {
+        if (!$entryType->validate()) {
+            if (isset($oldId, $oldUid)) {
+                $entryType->id = $oldId;
+                $entryType->uid = $oldUid;
+            }
+
             return $this->asModelFailure($entryType, Craft::t('app', 'Couldn’t save entry type.'), 'entryType');
         }
 
+        if ($saveAsNew) {
+            $fieldLayout->resetUids();
+        }
+
+        // Save it
+        $sectionsService->saveEntryType($entryType, false);
         return $this->asModelSuccess($entryType, Craft::t('app', 'Entry type saved.'), 'entryType');
     }
 

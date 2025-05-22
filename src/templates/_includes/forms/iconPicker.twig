@@ -2,8 +2,10 @@
 
 {% set id = id ?? "selectize#{random()}" %}
 {% set value = value ?? null %}
-{% set small = small ?? false -%}
+{% set small = small ?? false %}
 {% set static = static ?? false %}
+
+{% set hasValue = value or value is same as('0') %}
 
 {% tag 'div' with {
   id,
@@ -17,14 +19,14 @@
       'icon-picker--icon': true,
       small,
     }|filter|keys,
-    title: value ?: false,
-    role: value ? 'img' : false,
+    title: hasValue ? value : false,
+    role: hasValue ? 'img' : false,
     lang: craft.app.getTargetLanguage() starts with 'en' ? false : 'en',
     aria: {
-      label: value ?: false,
+      label: hasValue ? value : false,
     },
   } %}
-    {% if value %}
+    {% if hasValue %}
       {{ svg("@appicons/#{value}.svg") }}
     {% endif %}
   {% endtag %}
@@ -34,16 +36,16 @@
       class: {
         'icon-picker--choose-btn': true,
         small,
-        hidden: value and small,
+        hidden: hasValue and small,
       }|filter|keys,
-      label: value ? 'Change'|t('app') : 'Choose'|t('app'),
+      label: hasValue ? 'Change'|t('app') : 'Choose'|t('app'),
     }) }}
 
     {{ forms.button({
       class: {
         'icon-picker--remove-btn': true,
         small,
-        hidden: not value,
+        hidden: not hasValue,
       }|filter|keys,
       label: 'Remove'|t('app'),
     }) }}

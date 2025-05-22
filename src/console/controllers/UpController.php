@@ -88,6 +88,10 @@ class UpController extends Controller
                 return $res;
             }
             $this->stdout("\n");
+
+            $this->stdout('Updating license info ... ');
+            Craft::$app->getUpdates()->getUpdates(true);
+            $this->stdout("done\n", Console::FG_GREEN);
         } catch (Throwable $e) {
             if (!$e instanceof OperationAbortedException) {
                 throw $e;

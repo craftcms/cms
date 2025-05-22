@@ -74,7 +74,10 @@ class DirectiveTest extends TestCase
     public function testTransformOnlyUrl(): void
     {
         /** @var Asset $asset */
-        $asset = $this->make(Asset::class, ['filename' => StringHelper::randomString() . '.jpg']);
+        $asset = $this->make(Asset::class, [
+            'filename' => StringHelper::randomString() . '.jpg',
+            'getMimeType' => 'image/jpeg',
+        ]);
 
         /** @var GqlAssetType $type */
         $type = $this->make(GqlAssetType::class);

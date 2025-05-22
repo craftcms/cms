@@ -24,14 +24,18 @@ class m250315_131608_unlimited_authors extends Migration
         }
 
         $projectConfig = Craft::$app->getProjectConfig();
-        $sectionConfigs = $projectConfig->get(ProjectConfig::PATH_SECTIONS) ?? [];
+        $muteEvents = $projectConfig->muteEvents;
+        $projectConfig->muteEvents = true;
 
+        $sectionConfigs = $projectConfig->get(ProjectConfig::PATH_SECTIONS) ?? [];
         foreach ($sectionConfigs as $uid => $config) {
             if (!isset($config['maxAuthors'])) {
                 $config['maxAuthors'] = 1;
                 $projectConfig->set(sprintf('%s.%s', ProjectConfig::PATH_SECTIONS, $uid), $config);
             }
         }
+
+        $projectConfig->muteEvents = $muteEvents;
 
         return true;
     }

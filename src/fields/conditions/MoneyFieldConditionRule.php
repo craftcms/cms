@@ -150,6 +150,10 @@ class MoneyFieldConditionRule extends BaseNumberConditionRule implements FieldCo
             return true;
         }
 
+        if ($value instanceof MoneyLibrary) {
+            $value = (float)$value->getAmount();
+        }
+
         /** @var int|float|null $value */
         return $this->matchValue($value);
     }

@@ -7,12 +7,17 @@
 {% set icon = icon ?? null %}
 {% set label = label ?? null %}
 {% set labelHtml = labelHtml ?? null %}
+
+{% set hasIcon = icon or icon is same as('0') %}
+{% set hasLabel = label or label is same as('0') %}
+{% set hasLabelHtml = labelHtml or labelHtml is same as('0') %}
+
 {% set attributes = {
     type: type ?? 'button',
     id: id ?? false,
     class: (class ?? [])|explodeClass|merge([
         'btn',
-        not (icon or label or labelHtml) ? 'btn-empty' : null,
+        not (hasIcon or hasLabel or hasLabelHtml) ? 'btn-empty' : null,
         (disabled ?? false) ? 'disabled',
     ]|filter),
     data: {
@@ -28,16 +33,16 @@
         <div role="status" class="visually-hidden"></div>
     {% endif %}
     {% tag 'button' with attributes %}
-        {% if icon or label or labelHtml %}
+        {% if hasIcon or hasLabel or hasLabelHtml %}
             <div class="inline-flex">
-                {% if icon %}
+                {% if hasIcon %}
                     <div class="cp-icon">{{ iconSvg(icon) }}</div>
                 {% endif %}
-                {% if label or labelHtml %}
+                {% if hasLabel or hasLabelHtml %}
                     {{ tag('div', {
                         class: 'label',
-                        text: label,
-                        html: labelHtml,
+                        text: hasLabel ? label : null,
+                        html: hasLabelHtml ? labelHtml : null,
                     }) }}
                 {% endif %}
             </div>

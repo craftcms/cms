@@ -921,6 +921,11 @@ class AssetQuery extends ElementQuery
             'folderPath' => 'volumeFolders.path',
         ]);
 
+        // todo: update after the next breakpoint
+        if (Craft::$app->getDb()->columnExists(Table::ASSETS, 'mimeType')) {
+            $this->query->addSelect('assets.mimeType');
+        }
+
         if ($this->volumeId) {
             if ($this->volumeId === ':empty:') {
                 $this->subQuery->andWhere(['assets.volumeId' => null]);

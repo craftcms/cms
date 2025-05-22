@@ -460,6 +460,10 @@ class Sites extends Component
     /**
      * Returns the current site.
      *
+     * > [!NOTE]
+     * > This will always return the primary site for control panel requests. To fetch the site the control panel
+     * > is currently working with, based on the `site` query string param, use [[\craft\helpers\Cp::requestedSite()]].
+     *
      * @return Site the current site
      * @throws SiteNotFoundException if no sites exist
      */

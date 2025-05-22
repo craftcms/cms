@@ -39,6 +39,7 @@ return [
         'name' => 'With URLS',
         'handle' => 'withUrls',
         'titleFormat' => null,
+        'fieldLayoutUid' => 'field-layout-1003----------------uid',
         'uid' => 'entry-type-1003------------------uid',
     ],
     [
@@ -47,6 +48,7 @@ return [
         'name' => 'With versioning',
         'handle' => 'withVersioning',
         'titleFormat' => null,
+        'fieldLayoutUid' => 'field-layout-1003----------------uid',
         'uid' => 'entry-type-1004------------------uid',
     ],
     [
@@ -55,6 +57,7 @@ return [
         'name' => 'Single',
         'handle' => 'single',
         'titleFormat' => null,
+        'fieldLayoutUid' => 'field-layout-1003----------------uid',
         'uid' => 'entry-type-1005------------------uid',
     ],
     [
@@ -109,9 +112,10 @@ return [
     [
         'id' => '1011',
         'fieldLayoutId' => null,
-        'name' => 'Test 1',
-        'handle' => 'test1',
+        'name' => 'Test 2',
+        'handle' => 'test2',
         'titleFormat' => null,
+        'fieldLayoutUid' => 'field-layout-1011----------------uid',
         'uid' => 'entry-type-1011------------------uid',
     ],
 ];

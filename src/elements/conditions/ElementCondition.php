@@ -21,7 +21,7 @@ use yii\base\InvalidConfigException;
 class ElementCondition extends BaseCondition implements ElementConditionInterface
 {
     /**
-     * @inerhitdoc
+     * @inheritdoc
      */
     public bool $sortable = false;
 

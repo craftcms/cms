@@ -112,7 +112,7 @@ class Icon extends Field implements InlineEditableFieldInterface, ThumbableField
      */
     public function normalizeValue(mixed $value, ?ElementInterface $element): mixed
     {
-        return $value ?: null;
+        return ($value || $value === '0') ? $value : null;
     }
 
     /**

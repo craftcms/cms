@@ -3,6 +3,7 @@
 namespace craft\fields\conditions;
 
 use craft\base\conditions\BaseNumberConditionRule;
+use Money\Money;
 
 /**
  * Text field condition rule.
@@ -27,6 +28,10 @@ class NumberFieldConditionRule extends BaseNumberConditionRule implements FieldC
      */
     protected function matchFieldValue($value): bool
     {
+        if ($value instanceof Money) {
+            $value = (float)$value->getAmount();
+        }
+
         /** @var int|float|null $value */
         return $this->matchValue($value);
     }

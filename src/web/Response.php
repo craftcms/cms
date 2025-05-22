@@ -38,7 +38,7 @@ class Response extends \yii\web\Response
      *
      * ```php
      * use craft\helpers\App;
-     * use craft\helpers\Arr;
+     * use Craft\Cms\Support\Arr;
      * use craft\web\Response;
      *
      * return [
