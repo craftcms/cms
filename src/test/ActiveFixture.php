@@ -8,8 +8,8 @@
 namespace craft\test;
 
 use Craft;
+use Craft\Cms\Support\Arr;
 use craft\elements\Entry;
-use craft\helpers\Arr;
 use craft\models\FieldLayout;
 use yii\base\InvalidArgumentException;
 use yii\db\ActiveRecord;

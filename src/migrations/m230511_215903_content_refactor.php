@@ -3,11 +3,11 @@
 namespace craft\migrations;
 
 use Craft;
+use Craft\Cms\Support\Arr;
 use craft\db\Query;
 use craft\db\Table;
 use craft\elements\User;
 use craft\fieldlayoutelements\CustomField;
-use craft\helpers\Arr;
 use yii\console\Exception;
 
 /**

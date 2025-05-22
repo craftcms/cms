@@ -9,11 +9,11 @@ namespace crafttests\unit\services;
 
 use Codeception\Test\Unit;
 use Craft;
+use Craft\Cms\Support\Arr;
 use craft\db\Query;
 use craft\db\Table;
 use craft\elements\Entry;
 use craft\elements\User;
-use craft\helpers\Arr;
 use craft\records\User as UserRecord;
 use craft\services\Gc;
 use craft\test\TestCase;

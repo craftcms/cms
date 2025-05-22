@@ -7,7 +7,7 @@
 
 namespace crafttests\unit\search;
 
-use craft\helpers\Arr;
+use Craft\Cms\Support\Arr;
 use craft\search\SearchQuery;
 use craft\search\SearchQueryTerm;
 use craft\search\SearchQueryTermGroup;

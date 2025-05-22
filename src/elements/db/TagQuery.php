@@ -8,11 +8,11 @@
 namespace craft\elements\db;
 
 use Craft;
+use Craft\Cms\Support\Arr;
 use craft\db\Query;
 use craft\db\QueryAbortedException;
 use craft\db\Table;
 use craft\elements\Tag;
-use craft\helpers\Arr;
 use craft\helpers\Db;
 use craft\models\TagGroup;
 

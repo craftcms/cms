@@ -10,7 +10,7 @@ namespace craft\services;
 use Craft;
 use craft\base\conditions\ConditionInterface;
 use craft\base\conditions\ConditionRuleInterface;
-use craft\helpers\Arr;
+use Craft\Cms\Support\Arr;
 use craft\helpers\Json;
 use ReflectionException;
 use ReflectionProperty;

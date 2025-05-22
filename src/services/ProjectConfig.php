@@ -8,6 +8,7 @@
 namespace craft\services;
 
 use Craft;
+use Craft\Cms\Support\Arr;
 use craft\db\Query;
 use craft\db\Table;
 use craft\elements\Address;
@@ -17,7 +18,6 @@ use craft\errors\OperationAbortedException;
 use craft\errors\StaleResourceException;
 use craft\events\ConfigEvent;
 use craft\events\RebuildConfigEvent;
-use craft\helpers\Arr;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\Db;
 use craft\helpers\FileHelper;

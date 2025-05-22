@@ -8,6 +8,7 @@
 namespace craft\gql\queries;
 
 use Craft;
+use Craft\Cms\Support\Arr;
 use craft\gql\arguments\elements\Entry as EntryArguments;
 use craft\gql\base\Query;
 use craft\gql\GqlEntityRegistry;
@@ -15,7 +16,6 @@ use craft\gql\interfaces\elements\Entry as EntryInterface;
 use craft\gql\resolvers\elements\Entry as EntryResolver;
 use craft\gql\types\elements\Entry as EntryGqlType;
 use craft\gql\types\generators\EntryType as EntryTypeGenerator;
-use craft\helpers\Arr;
 use craft\helpers\Gql as GqlHelper;
 use craft\models\EntryType;
 use craft\models\Section;

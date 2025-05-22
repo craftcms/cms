@@ -9,8 +9,8 @@ namespace craft\gql\base;
 
 use Craft;
 use craft\base\ElementInterface;
+use Craft\Cms\Support\Arr;
 use craft\elements\db\ElementQuery;
-use craft\helpers\Arr;
 use craft\helpers\StringHelper;
 
 /**

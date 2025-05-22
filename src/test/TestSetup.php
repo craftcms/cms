@@ -9,12 +9,12 @@ namespace craft\test;
 
 use Codeception\PHPUnit\TestCase as CodeceptionTestCase;
 use Craft;
+use Craft\Cms\Support\Arr;
 use craft\console\Application as ConsoleApplication;
 use craft\db\Connection;
 use craft\db\Migration;
 use craft\db\MigrationManager;
 use craft\errors\MigrationException;
-use craft\helpers\Arr;
 use craft\helpers\Db;
 use craft\helpers\FileHelper;
 use craft\i18n\Locale;

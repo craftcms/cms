@@ -9,7 +9,7 @@ namespace craft\elements;
 
 use Craft;
 use craft\base\ElementInterface;
-use craft\helpers\Arr;
+use Craft\Cms\Support\Arr;
 use craft\helpers\ElementHelper;
 use Illuminate\Contracts\Support\Arrayable;
 use Illuminate\Support\Collection;

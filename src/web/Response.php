@@ -8,7 +8,7 @@
 namespace craft\web;
 
 use Craft;
-use craft\helpers\Arr;
+use Craft\Cms\Support\Arr;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\Session;
 use craft\helpers\UrlHelper;
@@ -38,7 +38,7 @@ class Response extends \yii\web\Response
      *
      * ```php
      * use craft\helpers\App;
-     * use craft\helpers\Arr;
+     * use Craft\Cms\Support\Arr;
      * use craft\web\Response;
      *
      * return [

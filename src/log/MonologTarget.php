@@ -3,8 +3,8 @@
 namespace craft\log;
 
 use Craft;
+use Craft\Cms\Support\Arr;
 use craft\helpers\App;
-use craft\helpers\Arr;
 use DateTimeZone;
 use Illuminate\Support\Collection;
 use Monolog\Formatter\FormatterInterface;

@@ -9,10 +9,10 @@ namespace craft\services;
 
 use Craft;
 use craft\base\PluginInterface;
+use Craft\Cms\Support\Arr;
 use craft\errors\InvalidPluginException;
 use craft\errors\MigrateException;
 use craft\helpers\App;
-use craft\helpers\Arr;
 use craft\helpers\FileHelper;
 use craft\models\Updates as UpdatesModel;
 use Throwable;

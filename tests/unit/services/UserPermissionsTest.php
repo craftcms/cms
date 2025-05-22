@@ -8,13 +8,13 @@
 namespace crafttests\unit\services;
 
 use Craft;
+use Craft\Cms\Support\Arr;
 use craft\elements\User;
 use craft\enums\CmsEdition;
 use craft\errors\WrongEditionException;
 use craft\events\RegisterUserPermissionsEvent;
 use craft\events\UserGroupPermissionsEvent;
 use craft\events\UserPermissionsEvent;
-use craft\helpers\Arr;
 use craft\services\UserPermissions;
 use craft\test\TestCase;
 use crafttests\fixtures\GlobalSetFixture;

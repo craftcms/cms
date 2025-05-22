@@ -8,8 +8,8 @@
 namespace crafttests\fixtures;
 
 use Craft;
+use Craft\Cms\Support\Arr;
 use craft\db\Table;
-use craft\helpers\Arr;
 use craft\helpers\Db;
 use craft\records\Section;
 use craft\services\Entries;

@@ -9,6 +9,7 @@ namespace craft\web;
 
 use Craft;
 use craft\base\ApplicationTrait;
+use Craft\Cms\Support\Arr;
 use craft\db\Query;
 use craft\db\Table;
 use craft\debug\DeprecatedPanel;
@@ -18,7 +19,6 @@ use craft\debug\RequestPanel;
 use craft\debug\UserPanel;
 use craft\errors\ExitException;
 use craft\helpers\App;
-use craft\helpers\Arr;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\Db;
 use craft\helpers\FileHelper;

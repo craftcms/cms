@@ -8,13 +8,13 @@
 namespace craft\gql\resolvers\elements;
 
 use Craft;
+use Craft\Cms\Support\Arr;
 use craft\elements\db\ElementQuery;
 use craft\elements\db\UserQuery;
 use craft\elements\ElementCollection;
 use craft\elements\User as UserElement;
 use craft\enums\CmsEdition;
 use craft\gql\base\ElementResolver;
-use craft\helpers\Arr;
 use craft\helpers\Gql as GqlHelper;
 use yii\base\UnknownMethodException;
 

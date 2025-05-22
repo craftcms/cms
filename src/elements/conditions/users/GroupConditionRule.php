@@ -5,11 +5,11 @@ namespace craft\elements\conditions\users;
 use Craft;
 use craft\base\conditions\BaseMultiSelectConditionRule;
 use craft\base\ElementInterface;
+use Craft\Cms\Support\Arr;
 use craft\elements\conditions\ElementConditionRuleInterface;
 use craft\elements\db\ElementQueryInterface;
 use craft\elements\db\UserQuery;
 use craft\elements\User;
-use craft\helpers\Arr;
 use craft\models\UserGroup;
 
 /**

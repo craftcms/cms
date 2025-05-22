@@ -8,11 +8,11 @@
 namespace craft\services;
 
 use Craft;
+use Craft\Cms\Support\Arr;
 use craft\config\BaseConfig;
 use craft\config\DbConfig;
 use craft\config\GeneralConfig;
 use craft\helpers\App;
-use craft\helpers\Arr;
 use craft\helpers\FileHelper;
 use craft\helpers\StringHelper;
 use craft\helpers\Typecast;

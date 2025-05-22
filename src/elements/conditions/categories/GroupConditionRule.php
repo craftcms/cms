@@ -5,11 +5,11 @@ namespace craft\elements\conditions\categories;
 use Craft;
 use craft\base\conditions\BaseMultiSelectConditionRule;
 use craft\base\ElementInterface;
+use Craft\Cms\Support\Arr;
 use craft\elements\Category;
 use craft\elements\conditions\ElementConditionRuleInterface;
 use craft\elements\db\CategoryQuery;
 use craft\elements\db\ElementQueryInterface;
-use craft\helpers\Arr;
 
 /**
  * Category group condition rule.

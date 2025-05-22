@@ -9,10 +9,10 @@ namespace craft\gql\types\input;
 
 use Craft;
 use craft\base\Field;
+use Craft\Cms\Support\Arr;
 use craft\fields\Matrix as MatrixField;
 use craft\gql\GqlEntityRegistry;
 use craft\gql\types\QueryArgument;
-use craft\helpers\Arr;
 use GraphQL\Type\Definition\InputObjectType;
 use GraphQL\Type\Definition\Type;
 

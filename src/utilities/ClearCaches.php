@@ -9,9 +9,9 @@ namespace craft\utilities;
 
 use Craft;
 use craft\base\Utility;
+use Craft\Cms\Support\Arr;
 use craft\db\Table;
 use craft\events\RegisterCacheOptionsEvent;
-use craft\helpers\Arr;
 use craft\helpers\Db;
 use craft\helpers\FileHelper;
 use craft\web\assets\clearcaches\ClearCachesAsset;

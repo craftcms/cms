@@ -3,10 +3,10 @@
 namespace craft\migrations;
 
 use Craft;
+use Craft\Cms\Support\Arr;
 use craft\db\Migration;
 use craft\db\Query;
 use craft\db\Table;
-use craft\helpers\Arr;
 use craft\helpers\Db;
 use craft\services\ProjectConfig;
 use Illuminate\Support\Collection;
