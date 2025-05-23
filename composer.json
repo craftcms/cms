@@ -124,7 +124,8 @@
     "fix-cs": "ecs check --ansi --fix",
     "codecept-build": "codecept build",
     "phpstan": "phpstan --memory-limit=1G",
-    "rector": "rector"
+    "rector": "rector",
+    "tests-cms": "./vendor/bin/pest cms --test-directory=cms/tests"
   },
   "config": {
     "sort-packages": true,

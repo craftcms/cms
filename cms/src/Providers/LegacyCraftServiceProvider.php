@@ -33,7 +33,7 @@ class LegacyCraftServiceProvider extends ServiceProvider
         $this->app->singleton('Craft', function() {
             if ($this->app->runningInConsole()) {
                 /** @var \craft\console\Application $app */
-                $app = require CRAFT_VENDOR_PATH . '/craftcms/cms/bootstrap/console.php';
+                $app = require __DIR__ . '/../../../bootstrap/console.php';
             } else {
                 /**
                  * Yii seems weird about these
@@ -44,7 +44,7 @@ class LegacyCraftServiceProvider extends ServiceProvider
                 ]);
 
                 /** @var \craft\web\Application $app */
-                $app = require CRAFT_VENDOR_PATH . '/craftcms/cms/bootstrap/web.php';
+                $app = require __DIR__ . '/../../../bootstrap/web.php';
             }
 
             return $app;
