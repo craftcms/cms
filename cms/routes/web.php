@@ -14,5 +14,8 @@ Route::any('{any}', function() {
         'web',
         \Craft\Cms\Yii\LegacyMiddleware::class,
     ])
+    ->withoutMiddleware(
+        \Illuminate\Foundation\Http\Middleware\VerifyCsrfToken::class,
+    )
     ->where('any', '.*')
     ->fallback();
