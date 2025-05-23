@@ -75,7 +75,7 @@
   },
   "require-dev": {
     "codeception/codeception": "^5.2.0",
-    "codeception/lib-innerbrowser": "4.0.1",
+    "codeception/lib-innerbrowser": "4.0.6",
     "codeception/module-asserts": "^3.0.0",
     "codeception/module-datafactory": "^3.0.0",
     "codeception/module-phpbrowser": "^3.0.0",
@@ -84,6 +84,10 @@
     "craftcms/ecs": "dev-main",
     "fakerphp/faker": "^1.19.0",
     "league/factory-muffin": "^3.3.0",
+    "orchestra/testbench": "^10.3",
+    "pestphp/pest": "^3.8",
+    "pestphp/pest-plugin-arch": "^3.1",
+    "pestphp/pest-plugin-laravel": "^3.2",
     "phpstan/phpstan": "^1.10.56",
     "rector/rector": "^1.2",
     "vlucas/phpdotenv": "^5.4.1",
@@ -129,8 +133,9 @@
     },
     "platform-check": false,
     "allow-plugins": {
-      "yiisoft/yii2-composer": true,
-      "craftcms/plugin-installer": true
+      "craftcms/plugin-installer": true,
+      "pestphp/pest-plugin": true,
+      "yiisoft/yii2-composer": true
     }
   },
   "extra": {

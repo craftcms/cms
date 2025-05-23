@@ -2,13 +2,11 @@
 
 namespace Craft\Cms\Providers;
 
-use Craft;
 use Craft\Cms\Console\CraftCommand;
 use craft\console\controllers\HelpController;
 use Illuminate\Console\Application as ConsoleApplication;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Str;
-use Yii;
 
 class LegacyCraftServiceProvider extends ServiceProvider
 {
