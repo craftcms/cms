@@ -48,7 +48,7 @@ class Request extends \craft\web\Request
      * @var bool whether to use CSRF generation/validation supplied by Laravel.
      * If enabled make sure {@see $csrfParam} is set to '_token'.
      */
-    public $useIlluminateCsrfValildation = false;
+    public $useIlluminateCsrfValildation = true;
 
     /**
      * @var \Illuminate\Http\Request related Laravel HTTP request.

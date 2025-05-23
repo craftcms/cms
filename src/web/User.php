@@ -30,7 +30,7 @@ use yii\web\IdentityInterface;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
  */
-class User extends \yii\web\User
+class User extends Craft\Cms\Yii\Web\User
 {
     /**
      * @var string The session variable name used to store the duration of the authenticated state.

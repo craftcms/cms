@@ -9,6 +9,7 @@
 namespace Craft\Cms\Yii\Web;
 
 use ArrayIterator;
+use craft\behaviors\SessionBehavior;
 use Illuminate\Session\Store;
 use yii\base\Component;
 
@@ -39,7 +40,7 @@ use yii\base\Component;
  * @author Paul Klimov <klimov.paul@gmail.com>
  * @since 1.0
  */
-class Session extends \craft\web\Session
+class Session extends \yii\web\Session
 {
     /**
      * {@inheritdoc}

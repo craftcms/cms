@@ -16,7 +16,7 @@ use craft\behaviors\SessionBehavior;
  * @since 3.0.0
  * @mixin SessionBehavior
  */
-class Session extends \yii\web\Session
+class Session extends \Craft\Cms\Yii\Web\Session
 {
     /**
      * @inheritdoc

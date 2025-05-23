@@ -32,7 +32,6 @@ use craft\models\MailSettings;
 use craft\services\ProjectConfig as ProjectConfigService;
 use craft\web\AssetManager;
 use craft\web\Request;
-use craft\web\Session;
 use craft\web\User as WebUser;
 use craft\web\View;
 use HTMLPurifier_Encoder;
@@ -1129,15 +1128,15 @@ class App
      */
     public static function sessionConfig(): array
     {
-        $stateKeyPrefix = md5('Craft.' . Craft\Cms\Yii\Web\Session::class . '.' . Craft::$app->getEnvId());
+        $stateKeyPrefix = md5('Craft.' . \craft\web\Session::class . '.' . Craft::$app->getEnvId());
 
         return [
-            'class' => Craft\Cms\Yii\Web\Session::class,
+            'class' => \craft\web\Session::class,
             'as session' => SessionBehavior::class,
-            'flashParam' => $stateKeyPrefix . '__flash',
-            'authAccessParam' => $stateKeyPrefix . '__auth_access',
-            'name' => Craft::$app->getConfig()->getGeneral()->phpSessionName,
-            'cookieParams' => Craft::cookieConfig(),
+            //'flashParam' => $stateKeyPrefix . '__flash',
+            //'authAccessParam' => $stateKeyPrefix . '__auth_access',
+            //'name' => Craft::$app->getConfig()->getGeneral()->phpSessionName,
+            //'cookieParams' => Craft::cookieConfig(),
         ];
     }
 
@@ -1168,14 +1167,14 @@ class App
             'autoRenewCookie' => true,
             'loginUrl' => $loginUrl,
             'authTimeout' => $generalConfig->userSessionDuration ?: null,
-            'identityCookie' => Craft::cookieConfig(['name' => $stateKeyPrefix . '_identity']),
+            //'identityCookie' => Craft::cookieConfig(['name' => $stateKeyPrefix . '_identity']),
             'usernameCookie' => Craft::cookieConfig(['name' => $stateKeyPrefix . '_username']),
-            'absoluteAuthTimeoutParam' => $stateKeyPrefix . '__absoluteExpire',
-            'authTimeoutParam' => $stateKeyPrefix . '__expire',
-            'idParam' => $stateKeyPrefix . '__id',
-            'impersonatorIdParam' => $stateKeyPrefix . '__impersonator_id',
-            'returnUrlParam' => $stateKeyPrefix . '__returnUrl',
-            'tokenParam' => $stateKeyPrefix . '__token',
+            //'absoluteAuthTimeoutParam' => $stateKeyPrefix . '__absoluteExpire',
+            //'authTimeoutParam' => $stateKeyPrefix . '__expire',
+            //'idParam' => $stateKeyPrefix . '__id',
+            //'impersonatorIdParam' => $stateKeyPrefix . '__impersonator_id',
+            //'returnUrlParam' => $stateKeyPrefix . '__returnUrl',
+            //'tokenParam' => $stateKeyPrefix . '__token',
         ];
     }
 

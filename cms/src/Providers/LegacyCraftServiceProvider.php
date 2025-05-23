@@ -5,6 +5,7 @@ namespace Craft\Cms\Providers;
 use Craft\Cms\Console\CraftCommand;
 use craft\console\controllers\HelpController;
 use Illuminate\Console\Application as ConsoleApplication;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Str;
 
@@ -53,6 +54,10 @@ class LegacyCraftServiceProvider extends ServiceProvider
 
     public function boot(): void
     {
+        if (! $this->app->runningInConsole()) {
+            return;
+        }
+
         $this->bootLegacyCommands();
     }
 
