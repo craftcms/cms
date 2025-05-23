@@ -88,6 +88,10 @@ class Session extends \yii\web\Session
      */
     public function init(): void
     {
+        if ($this->getIsActive()) {
+            $this->updateFlashCounters();
+        }
+
         Component::init(); // skip parent init, avoiding `register_shutdown_function()` call.
     }
 

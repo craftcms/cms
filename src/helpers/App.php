@@ -1133,10 +1133,8 @@ class App
         return [
             'class' => \craft\web\Session::class,
             'as session' => SessionBehavior::class,
-            //'flashParam' => $stateKeyPrefix . '__flash',
-            //'authAccessParam' => $stateKeyPrefix . '__auth_access',
-            //'name' => Craft::$app->getConfig()->getGeneral()->phpSessionName,
-            //'cookieParams' => Craft::cookieConfig(),
+            'flashParam' => $stateKeyPrefix . '__flash',
+            'authAccessParam' => $stateKeyPrefix . '__auth_access',
         ];
     }
 
