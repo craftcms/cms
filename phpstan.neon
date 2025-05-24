@@ -1,3 +1,7 @@
+includes:
+    - vendor/larastan/larastan/extension.neon
+    - vendor/nesbot/carbon/extension.neon
+
 parameters:
     level: 5
     paths:
@@ -14,8 +18,6 @@ parameters:
         - tests/_data/*
         - tests/_output/*
         - tests/_support/_generated/
-        # TODO: Enable cms in paths
-        - cms
     scanFiles:
         - lib/craft/behaviors/CustomFieldBehavior.php
         - tests/_support/_generated/AcceptanceTesterActions.php
