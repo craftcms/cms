@@ -5584,8 +5584,8 @@ class GeneralConfig extends BaseConfig
      */
     public function passwordResetCooldownDuration(int $value): self
     {
-      $this->passwordResetCooldownDuration = $value;
-      return $this;
+        $this->passwordResetCooldownDuration = $value;
+        return $this;
     }
 
     /**
