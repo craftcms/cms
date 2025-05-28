@@ -482,21 +482,23 @@ class Users extends Component
      * @param User $user The user to send the forgot password email to.
      * @return bool Whether the email was sent successfully.
      * @throws InvalidElementException if the user doesn't validate
-     * @throws UserNotFoundException if the user is invalid
      */
     public function sendPasswordResetEmail(User $user): bool
     {
         $cooldown = Craft::$app->getConfig()->getGeneral()->passwordResetCooldownDuration;
         if ($cooldown > 0) {
-            $userRecord = $this->_getUserRecordById($user->id);
-            $issuedAtRaw = $userRecord->verificationCodeIssuedDate;
+            try {
+                $userRecord = $this->_getUserRecordById($user->id);
+                $issuedAtRaw = $userRecord->verificationCodeIssuedDate;
+                $issuedAt = $issuedAtRaw ? new DateTime($issuedAtRaw, new DateTimeZone('UTC')) : null;
+            } catch (\Throwable) {
+                return false;
+            }
 
-            if ($issuedAtRaw) {
-                $issuedAt = new DateTime($issuedAtRaw, new DateTimeZone('UTC'));
+            if ($issuedAt) {
                 $elapsed = time() - $issuedAt->getTimestamp();
-
                 if ($elapsed < $cooldown) {
-                    throw new \Exception('Password reset cooldown active');
+                    return false;
                 }
             }
         }
