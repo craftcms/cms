@@ -4,8 +4,10 @@ namespace Craft\Cms\Providers;
 
 use Craft\Cms\Console\CraftCommand;
 use craft\console\controllers\HelpController;
+use craft\test\TestSetup;
 use Illuminate\Console\Application as ConsoleApplication;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Str;
 
@@ -30,6 +32,7 @@ class LegacyCraftServiceProvider extends ServiceProvider
         define('CRAFT_BASE_PATH', base_path());
         define('CRAFT_VENDOR_PATH', CRAFT_BASE_PATH . '/vendor');
         define('CRAFT_CONFIG_PATH', config_path('craft'));
+        define('CRAFT_DB_DRIVER', DB::connection()->getDriverName());
 
         $this->app->singleton('Craft', function() {
             if ($this->app->runningInConsole()) {
@@ -65,6 +68,11 @@ class LegacyCraftServiceProvider extends ServiceProvider
     {
         /** @var \craft\console\Application $app */
         $app = $this->app->get('Craft');
+
+        if ($app instanceof \Craft) {
+            $app = $app::$app;
+        }
+
         $controller = new HelpController('help', $app);
         $commands = $controller->allCommandsInfo();
 
