@@ -11,6 +11,7 @@ namespace Craft\Cms\Yii\Web;
 use ArrayIterator;
 use craft\behaviors\SessionBehavior;
 use Illuminate\Session\Store;
+use Illuminate\Support\Facades\Session as SessionFacade;
 use yii\base\Component;
 
 /**
@@ -57,30 +58,7 @@ class Session extends \yii\web\Session
      */
     public function getIlluminateSession(): Store
     {
-        if ($this->_illuminateSession === null) {
-            $this->_illuminateSession = $this->defaultIlluminateSession();
-        }
-
-        return $this->_illuminateSession;
-    }
-
-    /**
-     * @param \Illuminate\Session\Store $session Laravel session store.
-     * @return static self reference.
-     */
-    public function setIlluminateSession(Store $session): self
-    {
-        $this->_illuminateSession = $session;
-
-        return $this;
-    }
-
-    /**
-     * @return Store session store instance.
-     */
-    protected function defaultIlluminateSession(): Store
-    {
-        return \Illuminate\Support\Facades\Session::getFacadeRoot()->driver();
+        return $this->_illuminateSession ??= SessionFacade::getFacadeRoot()->driver();
     }
 
     /**
@@ -92,7 +70,8 @@ class Session extends \yii\web\Session
             $this->updateFlashCounters();
         }
 
-        Component::init(); // skip parent init, avoiding `register_shutdown_function()` call.
+        // skip parent init, avoiding `register_shutdown_function()` call.
+        Component::init();
     }
 
     /**
@@ -112,9 +91,11 @@ class Session extends \yii\web\Session
      */
     public function close(): void
     {
-        if ($this->getIsActive()) {
-            $this->getIlluminateSession()->save();
+        if (! $this->getIsActive()) {
+            return;
         }
+
+        $this->getIlluminateSession()->save();
     }
 
     /**
@@ -122,9 +103,11 @@ class Session extends \yii\web\Session
      */
     public function destroy(): void
     {
-        if ($this->getIsActive()) {
-            $this->getIlluminateSession()->invalidate();
+        if (! $this->getIsActive()) {
+            return;
         }
+
+        $this->getIlluminateSession()->invalidate();
     }
 
     /**
@@ -156,9 +139,11 @@ class Session extends \yii\web\Session
      */
     public function regenerateID($deleteOldSession = false): void
     {
-        if ($this->getIsActive()) {
-            $this->getIlluminateSession()->regenerate($deleteOldSession);
+        if (! $this->getIsActive()) {
+            return;
         }
+
+        $this->getIlluminateSession()->regenerate($deleteOldSession);
     }
 
     /**
@@ -254,20 +239,24 @@ class Session extends \yii\web\Session
     protected function updateFlashCounters(): void
     {
         $counters = $this->get($this->flashParam, []);
-        if (is_array($counters)) {
-            foreach ($counters as $key => $count) {
-                if ($count > 0) {
-                    unset($counters[$key]);
-                    $this->remove($key);
-                } elseif ($count == 0) {
-                    $counters[$key]++;
-                }
-            }
-            $this->set($this->flashParam, $counters);
-        } else {
+
+        if (! is_array($counters)) {
             // fix the unexpected problem that flashParam doesn't return an array
             $this->remove($this->flashParam);
+
+            return;
         }
+
+        foreach ($counters as $key => $count) {
+            if ($count > 0) {
+                unset($counters[$key]);
+                $this->remove($key);
+            } elseif ($count == 0) {
+                $counters[$key]++;
+            }
+        }
+
+        $this->set($this->flashParam, $counters);
     }
 
     /**
@@ -276,20 +265,22 @@ class Session extends \yii\web\Session
     public function getFlash($key, $defaultValue = null, $delete = false)
     {
         $counters = $this->get($this->flashParam, []);
-        if (isset($counters[$key])) {
-            $value = $this->get($key, $defaultValue);
-            if ($delete) {
-                $this->removeFlash($key);
-            } elseif ($counters[$key] < 0) {
-                // mark for deletion in the next request
-                $counters[$key] = 1;
-                $this->set($this->flashParam, $counters);
-            }
 
-            return $value;
+        if (! isset($counters[$key])) {
+            return $defaultValue;
         }
 
-        return $defaultValue;
+        $value = $this->get($key, $defaultValue);
+
+        if ($delete) {
+            $this->removeFlash($key);
+        } elseif ($counters[$key] < 0) {
+            // mark for deletion in the next request
+            $counters[$key] = 1;
+            $this->set($this->flashParam, $counters);
+        }
+
+        return $value;
     }
 
     /**
@@ -377,9 +368,11 @@ class Session extends \yii\web\Session
     public function removeAllFlashes(): void
     {
         $counters = $this->get($this->flashParam, []);
+
         foreach (array_keys($counters) as $key) {
             $this->remove($key);
         }
+
         $this->remove($this->flashParam);
     }
 

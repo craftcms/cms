@@ -26,6 +26,10 @@
         <env name="QUEUE_DRIVER" value="sync"/>
         <env name="APP_URL" value="http://localhost" />
         <env name="APP_KEY" value="base64:6BDzvwO4hrN7Twv6/gaQ6oZMB/CvpUArZXho189U75E=" />
-        <env name="DB_CONNECTION" value="testing"/>
+        <env name="DB_CONNECTION" value="pgsql"/>
+        <env name="DB_DRIVER" value="pgsql"/>
+        <env name="DB_DATABASE" value="craft_tests"/>
+        <env name="DB_USERNAME" value="postgres"/>
+        <env name="DB_PASSWORD" value="password"/>
     </php>
 </phpunit>

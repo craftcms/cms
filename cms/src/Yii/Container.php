@@ -7,22 +7,16 @@
 
 namespace Craft\Cms\Yii;
 
+use Illuminate\Container\Container as IlluminateContainer;
 use Illuminate\Contracts\Container\Container as ContainerContract;
 
 class Container extends \yii\di\Container
 {
-    private ?ContainerContract $laravelContainer = null;
+    private ?ContainerContract $container = null;
 
-    public function getLaravelContainer(): ContainerContract
+    public function getContainer(): ContainerContract
     {
-        $this->laravelContainer ??= $this->defaultLaravelContainer();
-
-        return $this->laravelContainer;
-    }
-
-    protected function defaultLaravelContainer(): ContainerContract
-    {
-        return \Illuminate\Container\Container::getInstance();
+        return $this->container ??= IlluminateContainer::getInstance();
     }
 
     /**
@@ -30,8 +24,8 @@ class Container extends \yii\di\Container
      */
     public function get($class, $params = [], $config = [])
     {
-        if ($this->getLaravelContainer()->has($class)) {
-            return $this->getLaravelContainer()->get($class);
+        if ($this->getContainer()->has($class)) {
+            return $this->getContainer()->get($class);
         }
 
         return parent::get($class, $params, $config);
@@ -42,7 +36,7 @@ class Container extends \yii\di\Container
      */
     public function has($class): bool
     {
-        if ($this->getLaravelContainer()->has($class)) {
+        if ($this->getContainer()->has($class)) {
             return true;
         }
 

@@ -75,30 +75,7 @@ class Request extends \craft\web\Request
      */
     public function getIlluminateRequest(): IlluminateRequest
     {
-        if ($this->_illuminateRequest === null) {
-            $this->_illuminateRequest = $this->defaultIlluminateRequest();
-        }
-
-        return $this->_illuminateRequest;
-    }
-
-    /**
-     * @param  \Illuminate\Http\Request  $illuminateRequest
-     * @return static self reference.
-     */
-    public function setIlluminateRequest(IlluminateRequest $illuminateRequest): self
-    {
-        $this->_illuminateRequest = $illuminateRequest;
-
-        return $this;
-    }
-
-    /**
-     * @return \Illuminate\Http\Request default related Laravel HTTP request.
-     */
-    protected function defaultIlluminateRequest(): IlluminateRequest
-    {
-        return app('request');
+        return $this->_illuminateRequest ??= app('request');
     }
 
     /**

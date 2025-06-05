@@ -115,8 +115,9 @@
   },
   "autoload-dev": {
     "psr-4": {
-      "crafttests\\": "tests/",
-      "Craft\\Cms\\Tests\\": "cms/tests/"
+      "Craft\\Cms\\Tests\\": "cms/tests/",
+      "Craft\\Cms\\Database\\": "cms/database/",
+      "crafttests\\": "tests/"
     }
   },
   "scripts": {

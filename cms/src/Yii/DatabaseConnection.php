@@ -43,8 +43,6 @@ class DatabaseConnection extends Connection
 
     public function getLaravelConnection(): IlluminateConnection
     {
-        $this->laravelConnection ??= DB::connection();
-
-        return $this->laravelConnection;
+        return $this->laravelConnection ??= DB::connection();
     }
 }
