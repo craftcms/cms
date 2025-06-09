@@ -8,6 +8,5 @@ class CraftServiceProvider extends AggregateServiceProvider
 {
     protected $providers = [
         AppServiceProvider::class,
-        LegacyCraftServiceProvider::class,
     ];
 }

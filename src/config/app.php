@@ -1,6 +1,6 @@
 <?php
 
-use Craft\Cms\Yii\Log\LogTarget;
+use Craft\Yii2Adapter\Log\LogTarget;
 
 return [
     'id' => 'CraftCMS',
@@ -187,7 +187,7 @@ return [
             'class' => craft\services\Sso::class,
         ],
         'i18n' => [
-            'class' => \Craft\Cms\Yii\Localization::class,
+            'class' => \Craft\Yii2Adapter\Localization::class,
             'laravelCategories' => [
                 'auth',
                 'validation',

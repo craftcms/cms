@@ -73,10 +73,11 @@ class TestCase extends Orchestra
         //$this->artisan('migrate:fresh', $this->migrateFreshUsing());
     }
 
-    protected function getPackageProviders($app)
+    protected function getPackageProviders($app): array
     {
         return [
             CraftServiceProvider::class,
+            Craft\Yii2Adapter\Yii2ServiceProvider::class,
         ];
     }
 }

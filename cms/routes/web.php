@@ -16,13 +16,4 @@ Route::middleware([
 
     // Add new routes & controllers here
 
-    /**
-     * Register a fallback route that boots up the Yii-based Craft
-     */
-    Route::any('{any}', function() {
-        abort(404);
-    })
-        ->middleware(\Craft\Cms\Yii\LegacyMiddleware::class)
-        ->where('any', '.*')
-        ->fallback();
 });

@@ -352,8 +352,8 @@ if (function_exists('craft_modify_app_config')) {
     craft_modify_app_config($config, $appType);
 }
 
-Craft::$container = new \Craft\Cms\Yii\Container();
-Craft::setLogger(new \Craft\Cms\Yii\Log\Logger());
+Craft::$container = new \Craft\Yii2Adapter\Container();
+Craft::setLogger(new \Craft\Yii2Adapter\Log\Logger());
 
 // Initialize the application
 /** @var \craft\web\Application|craft\console\Application $app */
