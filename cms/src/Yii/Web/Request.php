@@ -7,6 +7,7 @@
 
 namespace Craft\Cms\Yii\Web;
 
+use Craft\Cms\Support\Arr;
 use Illuminate\Http\Request as IlluminateRequest;
 use Yii;
 use yii\base\InvalidConfigException;
@@ -69,6 +70,11 @@ class Request extends \craft\web\Request
      * @var array|null the request body parameters.
      */
     private $_bodyParams;
+
+    /**
+     * @var bool
+     */
+    private bool $_setBodyParams = false;
 
     /**
      * @return \Illuminate\Http\Request

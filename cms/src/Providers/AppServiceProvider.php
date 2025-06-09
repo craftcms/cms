@@ -2,6 +2,8 @@
 
 namespace Craft\Cms\Providers;
 
+use Craft\Cms\Http\Middleware\ExtractNamespace;
+use Illuminate\Routing\Router;
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
@@ -24,6 +26,8 @@ class AppServiceProvider extends ServiceProvider
 
     public function boot(): void
     {
+        $this->bootMiddleware();
+
         if (!$this->app->runningInConsole()) {
             return;
         }
@@ -39,5 +43,14 @@ class AppServiceProvider extends ServiceProvider
         $this->publishes([
             base_path('vendor/craftcms/cms/cpresources') => public_path('cpresources'),
         ], 'craftcms-cpresources');
+    }
+
+    protected function bootMiddleware(): void
+    {
+        $router = $this->app->make(Router::class);
+
+        collect([
+            ExtractNamespace::class,
+        ])->each(fn ($middleware) => $router->pushMiddlewareToGroup('craft', $middleware));
     }
 }
