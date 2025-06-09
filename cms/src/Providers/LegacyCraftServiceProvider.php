@@ -2,14 +2,14 @@
 
 namespace Craft\Cms\Providers;
 
+use Craft\Aliases\Facades\Aliases;
 use Craft\Cms\Console\CraftCommand;
 use craft\console\controllers\HelpController;
-use craft\test\TestSetup;
 use Illuminate\Console\Application as ConsoleApplication;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Str;
+use yii\BaseYii;
 
 class LegacyCraftServiceProvider extends ServiceProvider
 {
@@ -33,6 +33,15 @@ class LegacyCraftServiceProvider extends ServiceProvider
         define('CRAFT_VENDOR_PATH', CRAFT_BASE_PATH . '/vendor');
         define('CRAFT_CONFIG_PATH', config_path('craft'));
         define('CRAFT_DB_DRIVER', DB::connection()->getDriverName());
+
+        /**
+         * Register the base aliases that Yii sets
+         */
+        Aliases::set('@app', base_path());
+
+        foreach (BaseYii::$aliases as $alias => $path) {
+            Aliases::set($alias, $path);
+        }
 
         $this->app->singleton('Craft', function() {
             if ($this->app->runningInConsole()) {

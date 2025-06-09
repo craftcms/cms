@@ -8,6 +8,7 @@
 namespace craft\web\twig\variables;
 
 use Craft;
+use Craft\Aliases\Facades\Aliases;
 use craft\base\FsInterface;
 use craft\base\UtilityInterface;
 use Craft\Cms\Support\Arr;
@@ -623,7 +624,7 @@ class Cp extends Component
 
         if ($includeAliases) {
             $aliasSuggestions = [];
-            foreach (Craft::$aliases as $alias => $path) {
+            foreach (Aliases::getAll() as $alias => $path) {
                 // Don't ever suggest @web
                 if ($alias === '@web' || str_starts_with($alias, '@web/')) {
                     continue;

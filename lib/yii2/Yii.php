@@ -5,6 +5,7 @@
  * @license https://craftcms.github.io/license/
  */
 
+use Craft\Aliases\Facades\Aliases;
 use craft\helpers\FileHelper;
 use yii\BaseYii;
 use yii\di\Container;
@@ -24,17 +25,50 @@ class Yii extends BaseYii
      */
     private static $_aliasesChanged = false;
 
+    public static function getAlias($alias, $throwException = true)
+    {
+        try {
+            return Aliases::get($alias);
+        } catch (Throwable $e) {
+            if ($throwException) {
+                throw $e;
+            }
+
+            return false;
+        }
+    }
+
     /**
      * @inheritdoc
      */
-    public static function setAlias($alias, $path)
+    public static function setAlias($alias, $path): void
     {
-        if (strncmp($alias, '@', 1)) {
-            $alias = '@' . $alias;
-        }
-        parent::setAlias($alias, $path);
+        Aliases::set($alias, $path);
+
         self::$_aliasPaths[$alias] = FileHelper::normalizePath($path);
         self::$_aliasesChanged = true;
+    }
+
+    public static function getRootAlias($alias): string|false
+    {
+        $pos = strpos($alias, '/');
+        $root = $pos === false ? $alias : substr($alias, 0, $pos);
+
+        $aliases = Aliases::getAll();
+
+        if (isset($aliases[$root])) {
+            if (is_string($aliases[$root])) {
+                return $root;
+            }
+
+            foreach ($aliases[$root] as $name => $path) {
+                if (str_starts_with($alias . '/', $name . '/')) {
+                    return $name;
+                }
+            }
+        }
+
+        return false;
     }
 
     /**

@@ -9,6 +9,7 @@ namespace craft\utilities;
 
 use Composer\InstalledVersions;
 use Craft;
+use Craft\Aliases\Facades\Aliases;
 use craft\base\PluginInterface;
 use craft\base\Utility;
 use craft\db\Connection;
@@ -72,7 +73,7 @@ class SystemReport extends Utility
         }
 
         $aliases = [];
-        foreach (Craft::$aliases as $alias => $value) {
+        foreach (Aliases::getAll() as $alias => $value) {
             if (is_array($value)) {
                 foreach ($value as $a => $v) {
                     $aliases[$a] = $v;

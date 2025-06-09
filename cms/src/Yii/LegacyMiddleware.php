@@ -82,7 +82,6 @@ class LegacyMiddleware
     protected function cleanup(): void
     {
         Craft::$classMap = [];
-        Craft::$aliases = [];
 
         Craft::setLogger(null);
         Craft::$app = null;
