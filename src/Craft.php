@@ -5,7 +5,6 @@
  * @license https://craftcms.github.io/license/
  */
 
-use Craft\Aliases\Facades\Aliases;
 use craft\base\FieldInterface;
 use craft\behaviors\CustomFieldBehavior;
 use Craft\Cms\Support\Arr;
@@ -47,12 +46,12 @@ class Craft extends Yii
      */
     public static function getAlias($alias, $throwException = true)
     {
-        return Aliases::get($alias, $throwException);
-    }
+        // @app/icons/file.svg => @appicons/file.svg
+        if (preg_match('/^@app\/icons\/([\w\-]+\.svg)$/', $alias, $match)) {
+            $alias = "@appicons/$match[1]";
+        }
 
-    public static function setAlias($alias, $path): void
-    {
-        Aliases::set($alias, $path);
+        return parent::getAlias($alias, $throwException);
     }
 
     /**
