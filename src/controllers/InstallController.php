@@ -143,14 +143,14 @@ class InstallController extends Controller
 
         if (empty($errors)) {
             // Test the connection
-            /** @var Connection $db */
+            /** @var \Craft\Yii2Adapter\DatabaseConnection $db */
             $db = Craft::createObject(App::dbConfig($dbConfig));
 
             try {
                 $db->open();
             } catch (DbConnectException $e) {
                 /** @var PDOException $pdoException */
-                $pdoException = $e->getPrevious()->getPrevious();
+                $pdoException = $e->getPrevious();
                 $attr = match ($pdoException->getCode()) {
                     1045 => 'user',
                     1049 => 'database',
