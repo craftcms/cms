@@ -340,8 +340,8 @@ class TestSetup
         $libPath = $repoRoot . '/lib';
         $srcPath = $repoRoot . '/src';
 
-        require $libPath . '/yii2/Yii.php';
-        require $srcPath . '/Craft.php';
+        require_once $libPath . '/yii2/Yii.php';
+        require_once $srcPath . '/Craft.php';
 
         // Set aliases
         Craft::setAlias('@vendor', $vendorPath);
