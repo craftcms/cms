@@ -5,6 +5,7 @@ includes:
 parameters:
     level: 5
     paths:
+        - cms
         - bootstrap
         - src
         - tests

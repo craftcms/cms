@@ -312,7 +312,7 @@ class TestSetup
      */
     public static function configureCraft(): bool
     {
-        define('YII_ENV', 'test');
+        !defined('YII_ENV') && define('YII_ENV', 'test');
 
         $vendorPath = realpath(CRAFT_VENDOR_PATH);
 
