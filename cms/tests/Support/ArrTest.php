@@ -2,13 +2,13 @@
 
 use Craft\Cms\Support\Arr;
 
-test('toArray', function(array $expected, mixed $object) {
+test('toArray', function (array $expected, mixed $object) {
     expect(Arr::toArray($object))->toBe($expected);
-})->with(function() {
-    $stdClass2 = new stdClass();
+})->with(function () {
+    $stdClass2 = new stdClass;
     $stdClass2->subProp = 'value';
 
-    $stdClass = new stdClass();
+    $stdClass = new stdClass;
     $stdClass->prop1 = '11';
     $stdClass->prop2 = '22';
     $stdClass->prop3 = $stdClass2;
@@ -21,7 +21,7 @@ test('toArray', function(array $expected, mixed $object) {
     ];
 });
 
-test('merge', function() {
+test('merge', function () {
     $a = [
         'name' => 'Yii',
         'version' => '1.0',
@@ -72,7 +72,7 @@ test('merge', function() {
     expect($expected)->toBe($result);
 });
 
-test('whereNotEmpty', function() {
+test('whereNotEmpty', function () {
     expect(
         Arr::whereNotEmpty([0 => 1, 1 => 2, 3 => '', 4 => null, 5 => 5]),
     )->toBe(
@@ -80,10 +80,10 @@ test('whereNotEmpty', function() {
     );
 });
 
-test('first', function(mixed $expected, array $array) {
+test('first', function (mixed $expected, array $array) {
     expect(Arr::first($array))->toBe($expected);
-})->with(function() {
-    $std = new stdClass();
+})->with(function () {
+    $std = new stdClass;
     $std->a = '22';
 
     return [
@@ -93,7 +93,7 @@ test('first', function(mixed $expected, array $array) {
     ];
 });
 
-test('except', function(array $expected, array $array, string $key) {
+test('except', function (array $expected, array $array, string $key) {
     expect(Arr::except($array, $key))->toBe($expected);
 })->with([
     [[], ['key' => 'value'], 'key'],
@@ -101,7 +101,7 @@ test('except', function(array $expected, array $array, string $key) {
     [['key' => 'value'], ['key' => 'value'], 'notakey'],
 ]);
 
-test('get', function(string $expected, array $array, string $key) {
+test('get', function (string $expected, array $array, string $key) {
     expect(Arr::get($array, $key))->toBe($expected);
 })->with([
     ['foo', ['foo' => 'foo'], 'foo'],
@@ -113,7 +113,7 @@ test('get', function(string $expected, array $array, string $key) {
     ['foo-bar.baz.qux', ['foo-bar' => ['baz' => ['qux' => 'foo-bar.baz.qux']]], 'foo-bar[baz][qux]'],
 ]);
 
-test('isOrdered', function(bool $expected, array $array) {
+test('isOrdered', function (bool $expected, array $array) {
     expect(Arr::isOrdered($array))->toBe($expected);
 })->with([
     [true, ['a', 'b', 'c']],
@@ -123,14 +123,14 @@ test('isOrdered', function(bool $expected, array $array) {
     [false, [3 => 'a', 2 => 'b', 1 => 'c']],
 ]);
 
-test('isNumeric', function(bool $expected, array $array) {
+test('isNumeric', function (bool $expected, array $array) {
     expect(Arr::isNumeric($array))->toBe($expected);
 })->with([
     [true, [0, 1, 2, '3']],
     [false, [0, 1, 2, '3a']],
 ]);
 
-test('isIndexed', function(bool $expected, array $array) {
+test('isIndexed', function (bool $expected, array $array) {
     expect(Arr::isIndexed($array))->toBe($expected);
 })->with([
     [true, [0, 1, 2]],

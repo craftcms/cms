@@ -92,6 +92,7 @@
     "craftcms/ecs": "dev-main",
     "fakerphp/faker": "^1.19.0",
     "larastan/larastan": "^3.4",
+    "laravel/pint": "^1.22",
     "league/factory-muffin": "^3.3.0",
     "orchestra/testbench": "^10.3",
     "pestphp/pest": "^3.8",

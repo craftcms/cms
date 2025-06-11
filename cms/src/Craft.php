@@ -2,6 +2,4 @@
 
 namespace Craft\Cms;
 
-class Craft
-{
-}
+class Craft {}

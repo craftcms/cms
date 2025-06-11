@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Site URL Rules
  *
@@ -6,6 +7,7 @@
  * to routes defined in Settings → Routes.
  *
  * Read about Craft’s routing behavior (and this file’s structure), here:
+ *
  * @link https://craftcms.com/docs/5.x/system/routing.html
  */
 

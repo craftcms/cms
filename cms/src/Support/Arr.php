@@ -11,15 +11,17 @@ use Illuminate\Support\Collection;
  * Class Arr
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
+ *
  * @since 6.x
  */
 class Arr extends \Illuminate\Support\Arr
 {
     /**
      * Converts an object or an array of objects into an array.
-     * @param mixed $object the object to be converted into an array
-     * @param array $properties a mapping from object class names to the properties that need to put into the resulting arrays.
-     * The properties specified for each class are an array of the following format:
+     *
+     * @param  mixed  $object  the object to be converted into an array
+     * @param  array  $properties  a mapping from object class names to the properties that need to put into the resulting arrays.
+     *                             The properties specified for each class are an array of the following format:
      *
      * ```php
      * [
@@ -46,8 +48,7 @@ class Arr extends \Illuminate\Support\Arr
      *     'length' => 301,
      * ]
      * ```
-     *
-     * @param bool $recursive whether to recursively convert properties which are objects into arrays.
+     * @param  bool  $recursive  whether to recursively convert properties which are objects into arrays.
      * @return array the array representation of the object
      */
     public static function toArray(mixed $object, array $properties = [], bool $recursive = true): array
@@ -78,7 +79,7 @@ class Arr extends \Illuminate\Support\Arr
         }
 
         if (is_array($object)) {
-            if (!$recursive) {
+            if (! $recursive) {
                 return $object;
             }
 
@@ -96,9 +97,9 @@ class Arr extends \Illuminate\Support\Arr
         }
 
         if (is_object($object)) {
-            if (!empty($properties)) {
+            if (! empty($properties)) {
                 $className = get_class($object);
-                if (!empty($properties[$className])) {
+                if (! empty($properties[$className])) {
                     $result = [];
                     foreach ($properties[$className] as $key => $name) {
                         if (is_int($key)) {
@@ -142,22 +143,24 @@ class Arr extends \Illuminate\Support\Arr
      * For integer-keyed elements, the elements from the latter array will
      * be appended to the former array.
      *
-     * @param array ...$arrays The arrays to merge. The first array will be merged to.
+     * @param  array  ...$arrays  The arrays to merge. The first array will be merged to.
      * @return array the merged array (the original arrays are not changed.)
      */
     public static function merge(array ...$arrays): array
     {
         $result = array_shift($arrays);
 
-        while (!empty($arrays)) {
+        while (! empty($arrays)) {
             foreach (array_shift($arrays) as $key => $value) {
                 if (is_int($key) && array_key_exists($key, $result)) {
                     $result[] = $value;
+
                     continue;
                 }
 
-                if (!is_int($key) && is_array($value) && isset($result[$key]) && is_array($result[$key])) {
+                if (! is_int($key) && is_array($value) && isset($result[$key]) && is_array($result[$key])) {
                     $result[$key] = static::merge($result[$key], $value);
+
                     continue;
                 }
 
@@ -169,7 +172,7 @@ class Arr extends \Illuminate\Support\Arr
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      *
      * If the key is specified in square bracket notation (e.g. `x[y][z]`), it will automatically be converted
      * to dot notation (`x.y.z`).
@@ -186,20 +189,15 @@ class Arr extends \Illuminate\Support\Arr
 
     /**
      * Filter items where the value is not empty.
-     *
-     * @param  array  $array
-     * @return array
      */
     public static function whereNotEmpty(array $array): array
     {
-        return static::where($array, fn($value) => $value !== '');
+        return static::where($array, fn ($value) => $value !== '');
     }
 
     /**
      * Checks whether a numerically-indexed array's keys are in ascending order.
      *
-     * @param array $array
-     * @return bool
      * @since 6.x
      */
     public static function isOrdered(array $array): bool
@@ -226,24 +224,20 @@ class Arr extends \Illuminate\Support\Arr
     /**
      * Returns whether all the elements in the array are numeric.
      *
-     * @param array $array
-     * @return bool
      * @since 6.x
      */
     public static function isNumeric(array $array): bool
     {
-        return Collection::make($array)->every(fn($v) => is_numeric($v));
+        return Collection::make($array)->every(fn ($v) => is_numeric($v));
     }
 
     /**
      * Returns whether all the elements in the array are integers.
      *
-     * @param array $array
-     * @return bool
      * @since 6.x
      */
     public static function isIndexed(array $array): bool
     {
-        return Collection::make($array)->every(fn($v) => is_int($v));
+        return Collection::make($array)->every(fn ($v) => is_int($v));
     }
 }

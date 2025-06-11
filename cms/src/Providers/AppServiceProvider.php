@@ -2,13 +2,15 @@
 
 namespace Craft\Cms\Providers;
 
+use Craft\Aliases\Facades\Aliases;
 use Craft\Cms\Http\Middleware\ExtractNamespace;
+use craft\helpers\FileHelper;
 use Illuminate\Routing\Router;
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
 {
-    private string $root = __DIR__ . '/../..';
+    private string $root = __DIR__.'/../..';
 
     private array $configFiles = [
         'general',
@@ -16,10 +18,12 @@ class AppServiceProvider extends ServiceProvider
 
     public function register(): void
     {
+        Aliases::set('@package', FileHelper::normalizePath($this->root.'/src'));
+
         $this->loadRoutesFrom("{$this->root}/routes/web.php");
         $this->loadViewsFrom("{$this->root}/resources/views", 'craftcms');
 
-        collect($this->configFiles)->each(function(string $file) {
+        collect($this->configFiles)->each(function (string $file) {
             $this->mergeConfigFrom("{$this->root}/config/$file.php", 'craftcms');
         });
     }
@@ -28,11 +32,11 @@ class AppServiceProvider extends ServiceProvider
     {
         $this->bootMiddleware();
 
-        if (!$this->app->runningInConsole()) {
+        if (! $this->app->runningInConsole()) {
             return;
         }
 
-        collect($this->configFiles)->each(function($file) {
+        collect($this->configFiles)->each(function ($file) {
             $this->publishes(["{$this->root}/config/$file.php" => config_path("craft/$file.php")], 'craftcms');
         });
 

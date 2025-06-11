@@ -9,11 +9,9 @@ use craft\migrations\Install;
 use craft\models\Site;
 use craft\test\TestSetup;
 use Illuminate\Database\Eloquent\Factories\Factory;
-use Illuminate\Foundation\Testing\LazilyRefreshDatabase;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Schema;
 use Orchestra\Testbench\TestCase as Orchestra;
+
 use function Orchestra\Testbench\artisan;
 
 class TestCase extends Orchestra
@@ -35,7 +33,7 @@ class TestCase extends Orchestra
         Craft::$app->getElements()->saveElement($user);
 
         Factory::guessFactoryNamesUsing(
-            fn(string $modelName) => 'Craft\\Cms\\Database\\Factories\\' . class_basename($modelName) . 'Factory'
+            fn (string $modelName) => 'Craft\\Cms\\Database\\Factories\\'.class_basename($modelName).'Factory'
         );
     }
 
@@ -70,7 +68,7 @@ class TestCase extends Orchestra
 
         $migration->up(true);
 
-        //$this->artisan('migrate:fresh', $this->migrateFreshUsing());
+        // $this->artisan('migrate:fresh', $this->migrateFreshUsing());
     }
 
     protected function getPackageProviders($app): array

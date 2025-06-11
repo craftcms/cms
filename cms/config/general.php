@@ -1,4 +1,5 @@
 <?php
+
 /**
  * General Configuration
  *
@@ -24,5 +25,4 @@ return GeneralConfig::create()
     ->aliases([
         '@webroot' => public_path(),
     ])
-    ->toArray()
-    ;
+    ->toArray();

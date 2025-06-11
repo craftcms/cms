@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Redirection Rules
  *
@@ -26,6 +27,7 @@
  * ```
  *
  * Read all about Craft’s redirection behavior and capabilities, here:
+ *
  * @link https://craftcms.com/docs/5.x/system/routing.html#redirection
  */
 
