@@ -116,6 +116,7 @@ class SystemReport extends Utility
         }
 
         if (class_exists(InstalledVersions::class, false)) {
+            self::_addVersion($info, 'Laravel version', 'laravel/framework');
             self::_addVersion($info, 'Yii version', 'yiisoft/yii2');
             self::_addVersion($info, 'Twig version', 'twig/twig');
             self::_addVersion($info, 'Guzzle version', 'guzzlehttp/guzzle');
