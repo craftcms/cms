@@ -8,10 +8,6 @@ Route::middleware([
     'web',
     'craft',
 ])
-/** TODO: Make Craft+Laravel CSRF token work */
-    ->withoutMiddleware(
-        \Illuminate\Foundation\Http\Middleware\VerifyCsrfToken::class,
-    )
     ->group(function () {
 
         // Add new routes & controllers here

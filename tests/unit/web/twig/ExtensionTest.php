@@ -1113,7 +1113,7 @@ class ExtensionTest extends TestCase
     {
         Craft::$app->getConfig()->getGeneral()->enableCsrfProtection = true;
         $this->testRenderResult(
-            '<input type="hidden" name="CRAFT_CSRF_TOKEN" value="' . Craft::$app->getRequest()->getCsrfToken() . '">',
+            '<input type="hidden" name="_token" value="' . Craft::$app->getRequest()->getCsrfToken() . '">',
             '{{ csrfInput() }}'
         );
 
