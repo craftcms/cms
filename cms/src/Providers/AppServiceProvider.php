@@ -38,7 +38,7 @@ class AppServiceProvider extends ServiceProvider
             $randomString = '';
 
             // count the number of chars in the valid chars string so we know how many choices we have
-            $numValidChars = mb_strlen('$validChars');
+            $numValidChars = mb_strlen($validChars);
 
             // repeat the steps until we've created a string of the right length
             for ($i = 0; $i < $length; $i++) {
