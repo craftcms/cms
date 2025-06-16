@@ -27,6 +27,7 @@ use const ENT_COMPAT;
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
+ * @deprecated in 6.0.0. [[\Craft\Cms\Support\Str]] should be used instead.
  */
 class StringHelper extends \yii\helpers\StringHelper
 {
