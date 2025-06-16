@@ -9,6 +9,7 @@ namespace craft\gql;
 
 use Craft;
 use craft\base\Component;
+use Craft\Cms\Support\Str;
 use craft\errors\GqlException;
 use craft\events\RegisterGqlArgumentHandlersEvent;
 use craft\gql\base\ArgumentHandlerInterface;
@@ -20,7 +21,6 @@ use craft\gql\handlers\RelatedTags;
 use craft\gql\handlers\RelatedUsers;
 use craft\gql\handlers\Site;
 use craft\gql\handlers\SiteId;
-use craft\helpers\StringHelper;
 use yii\base\InvalidConfigException;
 
 /**
@@ -123,13 +123,13 @@ class ArgumentManager extends Component
     {
         $orderBy = $arguments['orderBy'] ?? null;
         if ($orderBy) {
-            foreach (StringHelper::split($orderBy) as $chunk) {
+            foreach (str($orderBy)->split(',') as $chunk) {
                 // Special case for rand()/random()
                 if (in_array(strtolower($chunk), ['rand()', 'random()'], true)) {
                     continue;
                 }
                 if (
-                    StringHelper::containsAny($orderBy, ['(', ')']) ||
+                    Str::contains($chunk, ['(', ')']) ||
                     !preg_match('/^\w+(\.\w+)?( (asc|desc))?$/i', $chunk)
                 ) {
                     throw new GqlException('Illegal value for `orderBy` argument: `' . $orderBy . '`');

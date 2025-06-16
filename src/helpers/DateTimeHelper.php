@@ -926,12 +926,12 @@ class DateTimeHelper
         $format = $locale->getDateFormat(Locale::LENGTH_SHORT, Locale::FORMAT_PHP);
 
         // Make sure it's a 4-digit year
-        $format = StringHelper::replace($format, 'y', 'Y');
+        $format = str_replace('y', 'Y', $format);
 
         // Valid separators are either '-', '.' or '/'.
-        if (StringHelper::contains($format, '.')) {
+        if (str_contains($format, '.')) {
             $separator = '.';
-        } elseif (StringHelper::contains($format, '-')) {
+        } elseif (str_contains($format, '-')) {
             $separator = '-';
         } else {
             $separator = '/';
@@ -941,7 +941,7 @@ class DateTimeHelper
         $date = strtr($value, '-./', str_repeat($separator, 3));
 
         // Two-digit year?
-        $altFormat = StringHelper::replace($format, 'Y', 'y');
+        $altFormat = str_replace('Y', 'y', $format);
         if (DateTime::createFromFormat($altFormat, $date) !== false) {
             return [$date, $altFormat];
         }

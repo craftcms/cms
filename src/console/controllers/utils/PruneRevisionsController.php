@@ -64,15 +64,16 @@ class PruneRevisionsController extends Controller
         $sectionIds = [];
         if ($this->section) {
             $sectionsService = Craft::$app->getEntries();
-            $sectionHandles = StringHelper::split($this->section);
-            foreach ($sectionHandles as $sectionHandle) {
+            $sectionIds = str($this->section)->split(',')->map(function (string $sectionHandle) use ($sectionsService) {
                 $section = $sectionsService->getSectionByHandle($sectionHandle);
-                if (!$section) {
+
+                if (! $section) {
                     $this->stderr("$sectionHandle isn’t a valid section handle.\n", Console::FG_RED);
                     return ExitCode::UNSPECIFIED_ERROR;
                 }
-                $sectionIds[] = $section->id;
-            }
+
+                return $section->id;
+            })->all();
         }
 
         if (!isset($this->maxRevisions)) {

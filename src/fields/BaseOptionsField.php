@@ -14,6 +14,7 @@ use craft\base\Field;
 use craft\base\MergeableFieldInterface;
 use craft\base\PreviewableFieldInterface;
 use Craft\Cms\Support\Arr;
+use Craft\Cms\Support\Str;
 use craft\db\QueryParam;
 use craft\events\DefineInputOptionsEvent;
 use craft\fields\conditions\OptionsFieldConditionRule;
@@ -25,7 +26,6 @@ use craft\gql\resolvers\OptionField as OptionFieldResolver;
 use craft\helpers\Cp;
 use craft\helpers\Html;
 use craft\helpers\Json;
-use craft\helpers\StringHelper;
 use craft\validators\ColorValidator;
 use GraphQL\Type\Definition\Type;
 use Illuminate\Support\Collection;
@@ -368,7 +368,7 @@ abstract class BaseOptionsField extends Field implements PreviewableFieldInterfa
         foreach ((array)$value as $val) {
             $val = (string)$val;
             if (str_starts_with($val, 'base64:')) {
-                $val = base64_decode(StringHelper::removeLeft($val, 'base64:'));
+                $val = base64_decode(Str::chopStart($val, 'base64:'));
             }
             $selectedValues[] = $val;
         }

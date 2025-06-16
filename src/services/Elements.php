@@ -18,6 +18,7 @@ use craft\base\NestedElementInterface;
 use craft\behaviors\DraftBehavior;
 use craft\behaviors\RevisionBehavior;
 use Craft\Cms\Support\Arr;
+use Craft\Cms\Support\Str;
 use craft\console\controllers\MigrateController;
 use craft\console\controllers\UpController;
 use craft\controllers\AppController;
@@ -59,7 +60,6 @@ use craft\helpers\ElementHelper;
 use craft\helpers\Html;
 use craft\helpers\Json;
 use craft\helpers\Queue;
-use craft\helpers\StringHelper;
 use craft\helpers\UrlHelper;
 use craft\i18n\Translation;
 use craft\models\ElementActivity;
@@ -1144,7 +1144,7 @@ class Elements extends Component
      */
     public function beginBulkOp(): string
     {
-        $key = StringHelper::randomString(10);
+        $key = Str::random(10);
 
         if ($this->hasEventHandlers(self::EVENT_BEFORE_BULK_OP)) {
             $this->trigger(self::EVENT_BEFORE_BULK_OP, new BulkOpEvent([
@@ -1790,7 +1790,7 @@ class Elements extends Component
         // Create our first clone for the $element’s site
         $mainClone = clone $element;
         $mainClone->id = null;
-        $mainClone->uid = StringHelper::UUID();
+        $mainClone->uid = Str::uuid()->toString();
         $mainClone->draftId = null;
         $mainClone->siteSettingsId = null;
         $mainClone->root = null;
@@ -2934,7 +2934,7 @@ class Elements extends Component
      */
     public function parseRefs(string $str, ?int $defaultSiteId = null): string
     {
-        if (!StringHelper::contains($str, '{')) {
+        if (!str_contains($str, '{')) {
             return $str;
         }
 
@@ -2969,11 +2969,9 @@ class Elements extends Component
                         $siteId = (int)$siteId;
                     } else {
                         try {
-                            if (StringHelper::isUUID($siteId)) {
-                                $site = $sitesService->getSiteByUid($siteId);
-                            } else {
-                                $site = $sitesService->getSiteByHandle($siteId);
-                            }
+                            $site = Str::isUuid($siteId)
+                                ? $sitesService->getSiteByUid($siteId)
+                                : $sitesService->getSiteByHandle($siteId);
                         } catch (SiteNotFoundException) {
                             $site = null;
                         }
@@ -2987,7 +2985,7 @@ class Elements extends Component
                 }
 
                 $refType = is_numeric($ref) ? 'id' : 'ref';
-                $token = '{' . StringHelper::randomString(9) . '}';
+                $token = '{' . Str::random(9) . '}';
                 $allRefTagTokens[$siteId][$elementType][$refType][$ref][] = [$token, $attribute, $fallback, $fullMatch];
 
                 return $token;
@@ -3100,7 +3098,7 @@ class Elements extends Component
     {
         // Normalize the paths and group based on the top level eager loading handle
         if (is_string($with)) {
-            $with = StringHelper::split($with);
+            $with = str($with)->split(',');
         }
 
         $plans = [];
@@ -3634,9 +3632,7 @@ class Elements extends Component
 
         if ($isNewElement) {
             // Give it a UID right away
-            if (!$element->uid) {
-                $element->uid = StringHelper::UUID();
-            }
+            $element->uid ??= Str::uuid()->toString();
 
             if (!$element->getIsDraft() && !$element->getIsRevision()) {
                 // Let Matrix fields, etc., know they should be duplicating their values across all sites.

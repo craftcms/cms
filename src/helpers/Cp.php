@@ -24,6 +24,7 @@ use craft\base\Statusable;
 use craft\base\Thumbable;
 use craft\behaviors\DraftBehavior;
 use Craft\Cms\Support\Arr;
+use Craft\Cms\Support\Str;
 use craft\elements\Address;
 use craft\enums\AttributeStatus;
 use craft\enums\CmsEdition;
@@ -768,11 +769,11 @@ JS, [
                 'icon' => 'edit',
                 'attributes' => [
                     'id' => $editId,
-                    'title' => StringHelper::upperCaseFirst(Craft::t('app', 'Edit {type}', [
+                    'title' => mb_ucfirst(Craft::t('app', 'Edit {type}', [
                         'type' => $element::lowerDisplayName(),
                     ])),
                     'aria' => [
-                        'label' => StringHelper::upperCaseFirst(Craft::t('app', 'Edit {type}', [
+                        'label' => mb_ucfirst(Craft::t('app', 'Edit {type}', [
                             'type' => $element::lowerDisplayName(),
                         ])),
                     ],
@@ -2889,7 +2890,7 @@ JS, [
 
         if (!$config['customizableTabs']) {
             $tab = array_shift($tabs) ?? new FieldLayoutTab([
-                'uid' => StringHelper::UUID(),
+                'uid' => Str::uuid()->toString(),
                 'layout' => $fieldLayout,
             ]);
             $tab->name = $config['pretendTabName'] ?? Craft::t('app', 'Content');
@@ -2911,13 +2912,11 @@ JS, [
         // get the impression that tabs/elements have persisting UUIDs if they don't.)
         foreach ($tabs as $tab) {
             if (!isset($tab->uid)) {
-                $tab->uid = StringHelper::UUID();
+                $tab->uid = Str::uuid()->toString();
             }
 
             foreach ($tab->getElements() as $layoutElement) {
-                if (!isset($layoutElement->uid)) {
-                    $layoutElement->uid = StringHelper::UUID();
-                }
+                $layoutElement->uid ??= Str::uuid()->toString();
             }
         }
 

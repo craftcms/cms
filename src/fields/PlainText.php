@@ -14,6 +14,7 @@ use craft\base\Field;
 use craft\base\InlineEditableFieldInterface;
 use craft\base\MergeableFieldInterface;
 use craft\base\SortableFieldInterface;
+use Craft\Cms\Support\Str;
 use craft\elements\Entry;
 use craft\fields\conditions\TextFieldConditionRule;
 use craft\helpers\StringHelper;
@@ -109,7 +110,7 @@ class PlainText extends Field implements InlineEditableFieldInterface, SortableF
         parent::init();
 
         if (isset($this->placeholder)) {
-            $this->placeholder = StringHelper::shortcodesToEmoji($this->placeholder);
+            $this->placeholder = Str::shortcodesToEmoji($this->placeholder);
         }
     }
 
@@ -120,7 +121,7 @@ class PlainText extends Field implements InlineEditableFieldInterface, SortableF
     {
         $settings = parent::getSettings();
         if (isset($settings['placeholder']) && !Craft::$app->getDb()->getSupportsMb4()) {
-            $settings['placeholder'] = StringHelper::emojiToShortcodes($settings['placeholder']);
+            $settings['placeholder'] = Str::emojiToShortcodes($settings['placeholder']);
         }
         return $settings;
     }
@@ -179,7 +180,7 @@ class PlainText extends Field implements InlineEditableFieldInterface, SortableF
     {
         if ($value !== null) {
             if (!$fromRequest) {
-                $value = StringHelper::unescapeShortcodes(StringHelper::shortcodesToEmoji($value));
+                $value = StringHelper::unescapeShortcodes(Str::shortcodesToEmoji($value));
             }
 
             $value = trim(preg_replace('/\R/u', "\n", $value));
@@ -235,7 +236,7 @@ class PlainText extends Field implements InlineEditableFieldInterface, SortableF
         if ($value !== null) {
             $value = StringHelper::escapeShortcodes($value);
             if (!Craft::$app->getDb()->getSupportsMb4()) {
-                $value = StringHelper::emojiToShortcodes($value);
+                $value = Str::emojiToShortcodes($value);
             }
         }
         return $value;

@@ -10,6 +10,7 @@ namespace craft\helpers;
 use BackedEnum;
 use Craft;
 use Craft\Cms\Support\Arr;
+use Craft\Cms\Support\Str;
 use HTMLPurifier_Config;
 use IteratorAggregate;
 use LitEmoji\LitEmoji;
@@ -1238,7 +1239,7 @@ class StringHelper extends \yii\helpers\StringHelper
      * ---
      * ```php
      * // Convert emojis to smilies
-     * $string = StringHelper::replaceMb4($string, function($char) {
+     * $string = Str::replaceMb4($string, function($char) {
      *     switch ($char) {
      *         case '😀':
      *             return ':)';
@@ -1257,20 +1258,7 @@ class StringHelper extends \yii\helpers\StringHelper
      */
     public static function replaceMb4(string $str, callable|string $replace): string
     {
-        $r = preg_replace_callback('/./u', function(array $match) use ($replace): string {
-            if (strlen($match[0]) >= 4) {
-                return is_callable($replace) ? $replace($match[0]) : $replace;
-            }
-            return $match[0];
-        }, $str);
-        if ($r === null) {
-            $message = match (preg_last_error()) {
-                PREG_BAD_UTF8_ERROR => 'Malformed UTF-8 data',
-                default => 'Invalid string',
-            };
-            throw new InvalidArgumentException($message);
-        }
-        return $r;
+        return Str::replaceMb4($str, $replace);
     }
 
     /**
@@ -1818,25 +1806,7 @@ class StringHelper extends \yii\helpers\StringHelper
      */
     public static function toHandle(string $str): string
     {
-        // Remove HTML tags
-        $handle = static::stripHtml($str);
-
-        // Remove inner-word punctuation
-        $handle = preg_replace('/[\'"‘’“”ʻ\[\]\(\)\{\}:]/', '', $handle);
-
-        // Make it lowercase
-        $handle = static::toLowerCase($handle);
-
-        // Convert extended ASCII characters to basic ASCII
-        $handle = static::toAscii($handle);
-
-        // Handle must start with a letter
-        $handle = preg_replace('/^[^a-z]+/', '', $handle);
-
-        // Replace any remaining non-alphanumeric or underscore characters with spaces
-        $handle = preg_replace('/[^a-z0-9_]/', ' ', $handle);
-
-        return static::toCamelCase($handle);
+        return Str::toHandle($str);
     }
 
     /**
@@ -1946,24 +1916,7 @@ class StringHelper extends \yii\helpers\StringHelper
      */
     public static function idnToUtf8Email(string $email): string
     {
-        if (!App::supportsIdn()) {
-            return $email;
-        }
-
-        $parts = explode('@', $email, 2);
-        foreach ($parts as &$part) {
-            if (($part = idn_to_utf8($part, IDNA_DEFAULT, INTL_IDNA_VARIANT_UTS46)) === false) {
-                return $email;
-            }
-        }
-        $combined = implode('@', $parts);
-
-        // Return the original string if nothing changed besides casing
-        if (strcasecmp($combined, $email) === 0) {
-            return $email;
-        }
-
-        return $combined;
+        return Str::idnToUtf8Email($email);
     }
 
     /**
@@ -1975,16 +1928,7 @@ class StringHelper extends \yii\helpers\StringHelper
      */
     public static function emojiToShortcodes(string $str): string
     {
-        // Add delimiters around all 4-byte chars
-        $dl = '__MB4_DL__';
-        $dr = '__MB4_DR__';
-        $str = static::replaceMb4($str, fn($char) => sprintf('%s%s%s', $dl, $char, $dr));
-
-        // Strip out consecutive delimiters
-        $str = str_replace(sprintf('%s%s', $dr, $dl), '', $str);
-
-        // Replace all 4-byte sequences individually
-        return preg_replace_callback("/$dl(.+?)$dr/", fn($m) => LitEmoji::unicodeToShortcode($m[1]), $str);
+        return Str::emojiToShortcodes($str);
     }
 
     /**
@@ -1996,7 +1940,7 @@ class StringHelper extends \yii\helpers\StringHelper
      */
     public static function shortcodesToEmoji(string $str): string
     {
-        return LitEmoji::shortcodeToUnicode($str);
+        return Str::shortcodesToEmoji($str);
     }
 
     /**
@@ -2070,25 +2014,6 @@ class StringHelper extends \yii\helpers\StringHelper
      */
     public static function invisibleCharsRegex(): string
     {
-        $invisibleCharCodes = [
-            '00ad', // soft hyphen
-            '0083', // no break
-            '200b', // zero width space
-            '200c', // zero width non-joiner
-            '200d', // zero width joiner
-            '200e', // LTR character
-            '200f', // RTL character
-            '2062', // invisible times
-            '2063', // invisible comma
-            '2064', // invisible plus
-            'feff', //zero width non-break space
-        ];
-
-        array_walk(
-            $invisibleCharCodes,
-            fn(&$charCode) => $charCode = sprintf('\\x{%s}', $charCode)
-        );
-
-        return sprintf('/%s/iu', implode('|', $invisibleCharCodes));
+        return Str::invisibleCharsPattern();
     }
 }

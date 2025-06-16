@@ -8,9 +8,9 @@
 namespace craft\controllers;
 
 use Craft;
+use Craft\Cms\Support\Str;
 use craft\helpers\Cp;
 use craft\helpers\Json;
-use craft\helpers\StringHelper;
 use craft\helpers\UrlHelper;
 use craft\models\Site;
 use craft\models\SiteGroup;
@@ -128,7 +128,7 @@ class SitesController extends Controller
             'value' => $this->request->getBodyParam('name') ?? '',
             'suggestEnvVars' => true,
             'required' => true,
-        ]), 'name' . StringHelper::randomString(10));
+        ]), 'name' . Str::random(10));
         $js = $view->clearJsBuffer();
 
         return $this->asJson(compact('html', 'js'));

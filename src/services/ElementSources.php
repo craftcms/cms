@@ -13,6 +13,7 @@ use craft\base\ElementInterface;
 use craft\base\PreviewableFieldInterface;
 use craft\base\SortableFieldInterface;
 use Craft\Cms\Support\Arr;
+use Craft\Cms\Support\Str;
 use craft\db\CoalesceColumnsExpression;
 use craft\elements\conditions\ElementConditionInterface;
 use craft\errors\SiteNotFoundException;
@@ -20,7 +21,6 @@ use craft\events\DefineSourceSortOptionsEvent;
 use craft\events\DefineSourceTableAttributesEvent;
 use craft\fieldlayoutelements\CustomField;
 use craft\helpers\Cp;
-use craft\helpers\StringHelper;
 use craft\models\FieldLayout;
 use Illuminate\Support\Collection;
 use yii\base\Component;
@@ -136,7 +136,7 @@ class ElementSources extends Component
             if (isset($source['sites'])) {
                 $sitesService = null;
                 $source['sites'] = array_filter(array_map(function(int|string $siteId) use (&$sitesService): ?int {
-                    if (is_string($siteId) && StringHelper::isUUID($siteId)) {
+                    if (is_string($siteId) && Str::isUuid($siteId)) {
                         $sitesService ??= Craft::$app->getSites();
                         try {
                             return $sitesService->getSiteByUid($siteId)->id;

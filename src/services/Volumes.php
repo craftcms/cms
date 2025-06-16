@@ -10,6 +10,7 @@ namespace craft\services;
 use Craft;
 use craft\base\Field;
 use craft\base\MemoizableArray;
+use Craft\Cms\Support\Str;
 use craft\db\Query;
 use craft\db\Table;
 use craft\elements\Asset;
@@ -17,7 +18,6 @@ use craft\events\ConfigEvent;
 use craft\events\VolumeEvent;
 use craft\helpers\Db;
 use craft\helpers\ProjectConfig as ProjectConfigHelper;
-use craft\helpers\StringHelper;
 use craft\models\FieldLayout;
 use craft\models\Volume;
 use craft\models\VolumeFolder;
@@ -298,9 +298,7 @@ class Volumes extends Component
         }
 
         if ($isNewVolume) {
-            if (!$volume->uid) {
-                $volume->uid = StringHelper::UUID();
-            }
+            $volume->uid ??= Str::uuid()->toString();
 
             $volume->sortOrder = (new Query())
                     ->from([Table::VOLUMES])

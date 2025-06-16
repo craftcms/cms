@@ -103,7 +103,7 @@ final class Typecast
                             $value = $decoded;
                         }
                     } catch (InvalidArgumentException) {
-                        $value = StringHelper::split($value);
+                        $value = str($value)->split(',')->all();
                     }
                     return;
                 }

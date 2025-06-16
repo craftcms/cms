@@ -8,6 +8,7 @@
 namespace craft\helpers;
 
 use Craft;
+use Craft\Cms\Support\Str;
 
 /**
  * Search helper.
@@ -43,7 +44,7 @@ class Search
         $str = preg_replace('/&#?[a-z0-9]{2,8};/i', '', $str);
 
         // Get rid of emoji
-        $str = StringHelper::replaceMb4($str, '');
+        $str = Str::replaceMb4($str, '');
 
         // Normalize to lowercase
         $str = mb_strtolower($str);
@@ -68,7 +69,7 @@ class Search
 
         // Get rid of invisible Unicode special characters
         // (see https://github.com/craftcms/cms/issues/16430)
-        $str = preg_replace(StringHelper::invisibleCharsRegex(), '', $str);
+        $str = preg_replace(Str::invisibleCharsPattern(), '', $str);
 
         // Strip out new lines and superfluous spaces
         return trim(preg_replace(['/[\n\r]+/u', '/\s{2,}/u'], ' ', $str));

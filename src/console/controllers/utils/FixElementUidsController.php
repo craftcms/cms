@@ -7,12 +7,12 @@
 
 namespace craft\console\controllers\utils;
 
+use Craft\Cms\Support\Str;
 use craft\console\Controller;
 use craft\db\Query;
 use craft\db\Table;
 use craft\helpers\Console;
 use craft\helpers\Db;
-use craft\helpers\StringHelper;
 use yii\console\ExitCode;
 
 /**
@@ -59,7 +59,7 @@ class FixElementUidsController extends Controller
             }
 
             // Duplicate! Give this element a unique UID
-            $newUid = StringHelper::UUID();
+            $newUid = Str::uuid()->toString();
             $this->stdout("- Changing {$result['uid']} ({$result['id']}) to $newUid ... ");
             Db::update(Table::ELEMENTS, [
                 'uid' => $newUid,

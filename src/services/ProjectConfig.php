@@ -9,6 +9,7 @@ namespace craft\services;
 
 use Craft;
 use Craft\Cms\Support\Arr;
+use Craft\Cms\Support\Str;
 use craft\db\Query;
 use craft\db\Table;
 use craft\elements\Address;
@@ -1162,7 +1163,7 @@ class ProjectConfig extends Component
                     // 2) get the extra path component from matches array
                     // 3) grab the actual new data from the event and merge it over the stale data
                     $newValue = $incomingConfig->get($path);
-                    $extraPath = StringHelper::removeLeft($matches['extra'], '.');
+                    $extraPath = Str::chopStart($matches['extra'], '.');
                     $newNestedValue = $event->newValue;
                     if (is_array($newValue)) {
                         ProjectConfigHelper::traverseDataArray($newValue, $extraPath, $newNestedValue);
@@ -1386,7 +1387,7 @@ class ProjectConfig extends Component
             $yamlConfig = Yaml::parse(file_get_contents($filePath));
             $subPath = substr($filePath, $projectConfigPathLength + 1);
 
-            if (StringHelper::countSubstrings($subPath, DIRECTORY_SEPARATOR) > 0) {
+            if (Str::substrCount($subPath, DIRECTORY_SEPARATOR) > 0) {
                 $configPath = explode(DIRECTORY_SEPARATOR, $subPath);
                 $filename = pathinfo(array_pop($configPath), PATHINFO_FILENAME);
                 $insertionPoint = &$generatedConfig;
@@ -1405,7 +1406,7 @@ class ProjectConfig extends Component
                     $insertionPoint = array_merge($insertionPoint, $yamlConfig);
                 } else {
                     // Is this in the <handle>--<uid> format?
-                    if (preg_match('/^\w+--(' . StringHelper::UUID_PATTERN . ')$/', $filename, $match)) {
+                    if (preg_match('/^\w+--(' . Str::uuidPattern() . ')$/', $filename, $match)) {
                         // Ignore the handle
                         $filename = $match[1];
                     }

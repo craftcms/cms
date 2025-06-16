@@ -8,10 +8,10 @@
 namespace craft\db;
 
 use Craft;
+use Craft\Cms\Support\Str;
 use craft\events\DefineBehaviorsEvent;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\Db;
-use craft\helpers\StringHelper;
 use DateTime;
 
 /**
@@ -110,7 +110,7 @@ abstract class ActiveRecord extends \yii\db\ActiveRecord
             }
 
             if ($this->hasAttribute('uid') && !isset($this->uid)) {
-                $this->uid = StringHelper::UUID();
+                $this->uid = Str::uuid()->toString();
             }
 
             // Unset any empty primary key values

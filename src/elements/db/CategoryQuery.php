@@ -14,7 +14,6 @@ use craft\db\QueryAbortedException;
 use craft\db\Table;
 use craft\elements\Category;
 use craft\helpers\Db;
-use craft\helpers\StringHelper;
 use craft\models\CategoryGroup;
 
 /**
@@ -283,7 +282,7 @@ class CategoryQuery extends ElementQuery
 
         $refs = $this->ref;
         if (!is_array($refs)) {
-            $refs = is_string($refs) ? StringHelper::split($refs) : [$refs];
+            $refs = is_string($refs) ? str($refs)->split(',') : [$refs];
         }
 
         $condition = ['or'];

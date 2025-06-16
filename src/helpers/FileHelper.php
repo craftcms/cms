@@ -8,6 +8,7 @@
 namespace craft\helpers;
 
 use Craft;
+use Craft\Cms\Support\Str;
 use craft\errors\MutexException;
 use craft\errors\SiteNotFoundException;
 use FilesystemIterator;
@@ -256,14 +257,14 @@ class FileHelper extends \yii\helpers\FileHelper
 
         // Remove invisible chars from the filename
         // https://github.com/craftcms/cms/issues/12741
-        $filename = preg_replace(StringHelper::invisibleCharsRegex(), '', $filename);
+        $filename = preg_replace(Str::invisibleCharsPattern(), '', $filename);
 
         // Strip any characters not allowed.
         $filename = str_replace($disallowedChars, '', strip_tags($filename));
 
         if (!Craft::$app->getDb()->getSupportsMb4()) {
             // Strip emojis
-            $filename = StringHelper::replaceMb4($filename, '');
+            $filename = Str::replaceMb4($filename, '');
         }
 
         // Nuke any trailing or leading .-_
@@ -278,7 +279,7 @@ class FileHelper extends \yii\helpers\FileHelper
                 $language = Craft::$app->language;
             }
 
-            $filename = StringHelper::toAscii($filename, $language);
+            $filename = Str::ascii($filename, $language);
         }
 
         if ($separator !== null) {

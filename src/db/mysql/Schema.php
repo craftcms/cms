@@ -8,6 +8,7 @@
 namespace craft\db\mysql;
 
 use Craft;
+use Craft\Cms\Support\Str;
 use craft\db\Connection;
 use craft\db\ExpressionBuilder;
 use craft\db\ExpressionInterface;
@@ -15,7 +16,6 @@ use craft\db\TableSchema;
 use craft\helpers\App;
 use craft\helpers\Db;
 use craft\helpers\FileHelper;
-use craft\helpers\StringHelper;
 use mikehaertl\shellcommand\Command as ShellCommand;
 use PDO;
 use PDOException;
@@ -457,7 +457,7 @@ SQL;
      */
     private function _createDumpConfigFile(): string
     {
-        $this->tempMyCnfPath = FileHelper::normalizePath(sys_get_temp_dir()) . DIRECTORY_SEPARATOR . StringHelper::randomString(12) . '.cnf';
+        $this->tempMyCnfPath = FileHelper::normalizePath(sys_get_temp_dir()) . DIRECTORY_SEPARATOR . Str::random(12) . '.cnf';
 
         $parsed = Db::parseDsn($this->db->dsn);
         $username = $this->db->getIsPgsql() && !empty($parsed['user']) ? $parsed['user'] : $this->db->username;

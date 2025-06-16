@@ -20,6 +20,7 @@ use craft\base\MergeableFieldInterface;
 use craft\base\NestedElementInterface;
 use craft\behaviors\EventBehavior;
 use Craft\Cms\Support\Arr;
+use Craft\Cms\Support\Str;
 use craft\db\Query;
 use craft\db\Table as DbTable;
 use craft\elements\db\ElementQuery;
@@ -45,7 +46,6 @@ use craft\helpers\Gql;
 use craft\helpers\Html;
 use craft\helpers\Json;
 use craft\helpers\Queue;
-use craft\helpers\StringHelper;
 use craft\i18n\Translation;
 use craft\models\EntryType;
 use craft\queue\jobs\ApplyNewPropagationMethod;
@@ -136,7 +136,7 @@ class Matrix extends Field implements
     {
         /** @var self $field */
         $field = reset($instances);
-        $ns = $field->handle . '_' . StringHelper::randomString(5);
+        $ns = $field->handle . '_' . Str::random(5);
 
         $existsQuery = (new Query())
             ->from(["entries_$ns" => DbTable::ENTRIES])
@@ -160,7 +160,7 @@ class Matrix extends Field implements
         if ($value !== ':notempty:') {
             $ids = $value;
             if (!is_array($ids)) {
-                $ids = is_string($ids) ? StringHelper::split($ids) : [$ids];
+                $ids = is_string($ids) ? str($ids)->split(',')->all() : [$ids];
             }
 
             $ids = array_map(fn($id) => $id instanceof Entry ? $id->id : (int)$id, $ids);
@@ -831,14 +831,14 @@ class Matrix extends Field implements
             $items[] = [
                 'id' => $expandAllId,
                 'icon' => 'expand',
-                'label' => StringHelper::upperCaseFirst(Craft::t('app', 'Expand all blocks', [
+                'label' => mb_ucfirst(Craft::t('app', 'Expand all blocks', [
                     'type' => Entry::pluralLowerDisplayName(),
                 ])),
             ];
             $items[] = [
                 'id' => $collapseAllId,
                 'icon' => 'collapse',
-                'label' => StringHelper::upperCaseFirst(Craft::t('app', 'Collapse all blocks', [
+                'label' => mb_ucfirst(Craft::t('app', 'Collapse all blocks', [
                     'type' => Entry::pluralLowerDisplayName(),
                 ])),
             ];
@@ -886,7 +886,7 @@ JS, [
                 'id' => $copyAllId,
                 'icon' => 'clone-dashed',
                 'color' => \craft\enums\Color::Fuchsia,
-                'label' => StringHelper::upperCaseFirst(Craft::t('app', 'Copy all {type}', [
+                'label' => mb_ucfirst(Craft::t('app', 'Copy all {type}', [
                     'type' => Entry::pluralLowerDisplayName(),
                 ])),
             ];
@@ -1294,7 +1294,7 @@ JS,
         $view = Craft::$app->getView();
         $view->registerAssetBundle(MatrixAsset::class);
 
-        $id = StringHelper::randomString();
+        $id = Str::random(36);
         $js = '';
 
         foreach ($entries as $entry) {
@@ -1426,7 +1426,7 @@ JS;
      */
     public function getGqlFragmentEntityByName(string $fragmentName): GqlInlineFragmentInterface
     {
-        $entryTypeHandle = StringHelper::removeLeft(StringHelper::removeRight($fragmentName, '_Entry'), $this->handle . '_');
+        $entryTypeHandle = Str::between($fragmentName, $this->handle . '_', '_Entry');
 
         $entryType = Collection::make($this->getEntryTypes())->firstWhere('handle', $entryTypeHandle);
 
@@ -1597,14 +1597,14 @@ JS;
         // Were the entries posted by UUID or ID?
         $uids = (
             (isset($value['entries']) && str_starts_with(array_key_first($value['entries']), 'uid:')) ||
-            (isset($value['sortOrder']) && StringHelper::isUUID(reset($value['sortOrder'])))
+            (isset($value['sortOrder']) && Str::isUuid(reset($value['sortOrder'])))
         );
 
         if ($uids) {
             // strip out the `uid:` key prefixes
             if (isset($value['entries'])) {
                 $value['entries'] = array_combine(
-                    array_map(fn(string $key) => StringHelper::removeLeft($key, 'uid:'), array_keys($value['entries'])),
+                    array_map(fn(string $key) => Str::chopStart($key, 'uid:'), array_keys($value['entries'])),
                     array_values($value['entries']),
                 );
             }

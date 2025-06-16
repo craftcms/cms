@@ -13,6 +13,7 @@ use craft\base\FieldInterface;
 use craft\base\MemoizableArray;
 use craft\cache\ElementQueryTagDependency;
 use Craft\Cms\Support\Arr;
+use Craft\Cms\Support\Str;
 use craft\db\Query;
 use craft\db\Table;
 use craft\elements\db\ElementQuery;
@@ -728,7 +729,7 @@ SQL;
         $wordCount = count(array_filter(explode(' ', $haystack)));
 
         // Get number of matches
-        $score = StringHelper::countSubstrings($haystack, $keywords);
+        $score = Str::substrCount($haystack, $keywords);
 
         if ($score) {
             // Exact match
@@ -917,14 +918,14 @@ SQL;
                         }
 
                         // Add quotes for exact match
-                        if ($isMysql && StringHelper::contains($keywords, ' ')) {
-                            if (StringHelper::first($keywords, 1) === '*') {
+                        if ($isMysql && str_contains($keywords, ' ')) {
+                            if (Str::first($keywords) === '*') {
                                 $keywords = StringHelper::insert($keywords, '"', 1);
                             } else {
                                 $keywords = '"' . $keywords;
                             }
 
-                            if (StringHelper::last($keywords, 1) === '*') {
+                            if (Str::last($keywords) === '*') {
                                 $keywords = StringHelper::insert($keywords, '"', StringHelper::length($keywords) - 1);
                             } else {
                                 $keywords .= '"';
@@ -1057,7 +1058,7 @@ SQL;
 
         if (is_array($val)) {
             foreach ($val as $key => $value) {
-                if (StringHelper::contains($value, ' ')) {
+                if (str_contains($value, ' ')) {
                     $temp = explode(' ', $value);
                     $temp = implode(' & ', $temp);
                     $val[$key] = $temp;
@@ -1066,8 +1067,8 @@ SQL;
         } else {
             // If where here, it's a single string with punctuation that's been stripped out (i.e. "multi-site").
             // We can assume "and".
-            if (StringHelper::contains($val, ' ')) {
-                $val = StringHelper::replace($val, ' ', ' & ');
+            if (str_contains($val, ' ')) {
+                $val = str_replace(' ', ' & ', $val);
             }
         }
 

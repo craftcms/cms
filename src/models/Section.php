@@ -13,13 +13,13 @@ use craft\base\CpEditable;
 use craft\base\Iconic;
 use craft\base\Model;
 use Craft\Cms\Support\Arr;
+use Craft\Cms\Support\Str;
 use craft\db\Query;
 use craft\db\Table;
 use craft\elements\Entry;
 use craft\enums\PropagationMethod;
 use craft\helpers\Db;
 use craft\helpers\ProjectConfig as ProjectConfigHelper;
-use craft\helpers\StringHelper;
 use craft\helpers\UrlHelper;
 use craft\records\Section as SectionRecord;
 use craft\validators\HandleValidator;
@@ -441,7 +441,7 @@ class Section extends Model implements Chippable, CpEditable, Iconic
 
         if ($this->type === self::TYPE_STRUCTURE) {
             $config['structure'] = [
-                'uid' => $this->structureId ? Db::uidById(Table::STRUCTURES, $this->structureId) : StringHelper::UUID(),
+                'uid' => $this->structureId ? Db::uidById(Table::STRUCTURES, $this->structureId) : Str::uuid()->toString(),
                 'maxLevels' => (int)$this->maxLevels ?: null,
             ];
         }

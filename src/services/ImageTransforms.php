@@ -11,6 +11,7 @@ use Craft;
 use craft\base\imagetransforms\EagerImageTransformerInterface;
 use craft\base\imagetransforms\ImageTransformerInterface;
 use craft\base\MemoizableArray;
+use Craft\Cms\Support\Str;
 use craft\db\Connection;
 use craft\db\Query;
 use craft\db\Table;
@@ -24,7 +25,6 @@ use craft\helpers\Assets as AssetsHelper;
 use craft\helpers\Db;
 use craft\helpers\FileHelper;
 use craft\helpers\ImageTransforms as TransformHelper;
-use craft\helpers\StringHelper;
 use craft\imagetransforms\ImageTransformer;
 use craft\models\ImageTransform;
 use craft\records\ImageTransform as ImageTransformRecord;
@@ -207,7 +207,7 @@ class ImageTransforms extends Component
         }
 
         if ($isNewTransform) {
-            $transform->uid = StringHelper::UUID();
+            $transform->uid = Str::uuid()->toString();
         } elseif (!$transform->uid) {
             $transform->uid = Db::uidById(Table::IMAGETRANSFORMS, $transform->id, $this->db);
         }

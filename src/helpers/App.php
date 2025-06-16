@@ -11,6 +11,7 @@ use Closure;
 use Craft;
 use craft\attributes\EnvName;
 use craft\behaviors\SessionBehavior;
+use Craft\Cms\Support\Str;
 use craft\config\DbConfig;
 use craft\db\Command;
 use craft\db\Connection;
@@ -159,7 +160,7 @@ class App
      */
     public static function envConfig(string $class, ?string $envPrefix = null): array
     {
-        $envPrefix = $envPrefix !== null ? StringHelper::ensureRight($envPrefix, '_') : '';
+        $envPrefix = $envPrefix !== null ? Str::finish($envPrefix, '_') : '';
         $properties = (new ReflectionClass($class))->getProperties(ReflectionProperty::IS_PUBLIC);
         $envConfig = [];
 
@@ -178,7 +179,7 @@ class App
             }
 
             if (!$envName) {
-                $envName = strtoupper(StringHelper::toSnakeCase($prop->getName()));
+                $envName = str($prop->getName())->snake()->upper()->value();
             }
 
             $envValue = static::env(sprintf('%s%s', $envPrefix, $envName));
@@ -1359,7 +1360,7 @@ class App
                 if (!str_starts_with($handle, 'plugin-')) {
                     continue;
                 }
-                $handle = StringHelper::removeLeft($handle, 'plugin-');
+                $handle = Str::chopStart($handle, 'plugin-');
 
                 try {
                     $pluginInfo = $pluginsService->getPluginInfo($handle);

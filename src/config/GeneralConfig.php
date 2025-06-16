@@ -13,7 +13,6 @@ use craft\attributes\EnvName;
 use craft\helpers\ConfigHelper;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\Localization;
-use craft\helpers\StringHelper;
 use craft\services\Config;
 use DateInterval;
 use yii\base\InvalidArgumentException;
@@ -4433,7 +4432,7 @@ class GeneralConfig extends BaseConfig
     public function disabledPlugins(string|array|null $value): self
     {
         if (is_string($value) && $value !== '*') {
-            $value = StringHelper::split($value);
+            $value = str($value)->split(',')->all();
         }
 
         $this->disabledPlugins = $value;

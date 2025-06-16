@@ -11,6 +11,7 @@ use Craft;
 use craft\base\CrossSiteCopyableFieldInterface;
 use craft\base\ElementInterface;
 use craft\base\Field;
+use Craft\Cms\Support\Str;
 use craft\fields\data\ColorData;
 use craft\gql\GqlEntityRegistry;
 use craft\gql\types\generators\TableRowType;
@@ -546,7 +547,7 @@ class Table extends Field implements CrossSiteCopyableFieldInterface
                 if (is_string($value)) {
                     $value = StringHelper::escapeShortcodes($value);
                     if (!$supportsMb4) {
-                        $value = StringHelper::emojiToShortcodes($value);
+                        $value = Str::emojiToShortcodes($value);
                     }
                 }
 
@@ -580,7 +581,7 @@ class Table extends Field implements CrossSiteCopyableFieldInterface
                 $value = $row[$colId];
 
                 if (is_string($value) && !$supportsMb4) {
-                    $value = StringHelper::emojiToShortcodes(StringHelper::escapeShortcodes($value));
+                    $value = Str::emojiToShortcodes(StringHelper::escapeShortcodes($value));
                 }
 
                 // can't call parent::serializeValueForDb() here because that calls $this->serializeValue()

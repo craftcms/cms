@@ -8,9 +8,9 @@
 namespace craft\gql\directives;
 
 use Craft;
+use Craft\Cms\Support\Str;
 use craft\gql\base\Directive;
 use craft\gql\GqlEntityRegistry;
-use craft\helpers\StringHelper;
 use craft\i18n\Locale;
 use DateTime;
 use GraphQL\Language\DirectiveLocation;
@@ -87,7 +87,7 @@ class FormatDateTime extends Directive
                 if (str_starts_with($format, 'icu:')) {
                     $format = substr($format, 4);
                 } else {
-                    $format = StringHelper::ensureLeft($format, 'php:');
+                    $format = Str::start($format, 'php:');
                 }
             }
 

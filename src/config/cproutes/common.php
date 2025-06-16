@@ -1,6 +1,6 @@
 <?php
 
-use craft\helpers\StringHelper;
+use Craft\Cms\Support\Str;
 
 return [
     'assets/edit/<elementId:\d+><filename:(?:-[^\/]*)?>' => 'elements/edit',
@@ -12,7 +12,7 @@ return [
     'categories/<groupHandle:{handle}>/<elementId:\d+><slug:(?:-[^\/]*)?>' => 'elements/edit',
     'dashboard' => 'dashboard/index',
     'edit/<elementId:\d+><slug:(?:-[^\/]*)?>' => 'elements/redirect',
-    'edit/<elementUid:' . StringHelper::UUID_PATTERN . '>' => 'elements/redirect',
+    'edit/<elementUid:' .  Str::uuidPattern() . '>' => 'elements/redirect',
     'entries/<sectionHandle:{handle}>' => ['template' => 'entries'],
     'entries/<section:{handle}>/new' => 'entries/create',
     'entries/<section:{handle}>/<elementId:\d+><slug:(?:-[^\/]*)?>' => 'elements/edit',
@@ -64,7 +64,7 @@ return [
                 'day' => '(?:0?[1-9]|[12][0-9]|3[01])',
                 'number' => '\d+',
                 'page' => '\d+',
-                'uid' => StringHelper::UUID_PATTERN,
+                'uid' => Str::uuidPattern(),
                 'slug' => '[^\/]+',
                 'tag' => '[^\/]+',
                 '*' => '[^\/]+',

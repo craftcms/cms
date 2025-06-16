@@ -8,7 +8,6 @@
 namespace craft\validators;
 
 use Craft;
-use craft\helpers\StringHelper;
 use yii\base\Model;
 use yii\db\ActiveQueryInterface;
 use yii\db\ActiveRecord;
@@ -53,7 +52,7 @@ class UniqueValidator extends YiiUniqueValidator
             /** @var class-string<ActiveRecord> $targetClass */
             $pks = $targetClass::primaryKey();
             if (isset($this->pk)) {
-                $pkMap = is_string($this->pk) ? StringHelper::split($this->pk) : $this->pk;
+                $pkMap = is_string($this->pk) ? str($this->pk)->split(',')->all() : $this->pk;
             } else {
                 $pkMap = $pks;
             }

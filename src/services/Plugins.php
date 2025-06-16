@@ -11,6 +11,7 @@ use Craft;
 use craft\base\Plugin;
 use craft\base\PluginInterface;
 use Craft\Cms\Support\Arr;
+use Craft\Cms\Support\Str;
 use craft\db\MigrationManager;
 use craft\db\Query;
 use craft\db\Table;
@@ -23,7 +24,6 @@ use craft\helpers\DateTimeHelper;
 use craft\helpers\Db;
 use craft\helpers\FileHelper;
 use craft\helpers\ProjectConfig as ProjectConfigHelper;
-use craft\helpers\StringHelper;
 use DateTime;
 use Illuminate\Support\Collection;
 use ReflectionClass;
@@ -1017,7 +1017,7 @@ class Plugins extends Component
         $info['licenseKey'] = $pluginInfo['licenseKey'] ?? null;
 
         $licenseInfo = Craft::$app->getCache()->get(App::CACHE_KEY_LICENSE_INFO) ?? [];
-        $pluginCacheKey = StringHelper::ensureLeft($handle, 'plugin-');
+        $pluginCacheKey = Str::start($handle, 'plugin-');
         $info['licenseId'] = $licenseInfo[$pluginCacheKey]['id'] ?? null;
         $info['licensedEdition'] = $licenseInfo[$pluginCacheKey]['edition'] ?? null;
         $info['licenseKeyStatus'] = $licenseInfo[$pluginCacheKey]['status'] ?? LicenseKeyStatus::Unknown->value;

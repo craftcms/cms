@@ -7,7 +7,7 @@
 
 namespace craft\search;
 
-use craft\helpers\StringHelper;
+use Craft\Cms\Support\Str;
 
 /**
  * Search Query class.
@@ -107,7 +107,7 @@ class SearchQuery
             $term = new SearchQueryTerm();
 
             // Is this an exclude term?
-            if (StringHelper::first($token, 1) === '-') {
+            if (str_starts_with($token, '-')) {
                 $term->exclude = true;
                 $token = mb_substr($token, 1);
             }
@@ -126,17 +126,17 @@ class SearchQuery
 
             if ($token && (str_starts_with($token, "'") || str_starts_with($token, '"'))) {
                 // Is the end quote at the end of this very token?
-                if (StringHelper::last($token, 1) === StringHelper::first($token, 1)) {
+                if (Str::last($token) === Str::first($token)) {
                     $token = mb_substr($token, 1, -1);
                 } else {
-                    $token = mb_substr($token, 1) . ' ' . strtok(StringHelper::first($token, 1));
+                    $token = mb_substr($token, 1) . ' ' . strtok(Str::first($token, 1));
                 }
 
                 $term->phrase = true;
             }
 
             // Include sub-word matches?
-            if ($token && StringHelper::first($token, 1) === '*') {
+            if ($token && Str::first($token, 1) === '*') {
                 $term->subLeft = true;
                 $token = mb_substr($token, 1);
             }

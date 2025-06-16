@@ -14,7 +14,6 @@ use craft\config\GeneralConfig;
 use craft\errors\SiteNotFoundException;
 use craft\helpers\App;
 use craft\helpers\Session as SessionHelper;
-use craft\helpers\StringHelper;
 use craft\models\Site;
 use craft\services\Sites;
 use yii\base\InvalidArgumentException;
@@ -1840,7 +1839,7 @@ class Request extends \yii\web\Request
         }
 
         if (is_string($value)) {
-            return StringHelper::convertToUtf8($value);
+            return mb_convert_encoding($value, 'UTF-8');
         }
 
         return $value;

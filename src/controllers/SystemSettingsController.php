@@ -15,7 +15,6 @@ use craft\helpers\App;
 use craft\helpers\Component;
 use craft\helpers\Html;
 use craft\helpers\MailerHelper;
-use craft\helpers\StringHelper;
 use craft\helpers\UrlHelper;
 use craft\mail\transportadapters\BaseTransportAdapter;
 use craft\mail\transportadapters\Sendmail;
@@ -284,7 +283,7 @@ class SystemSettingsController extends Controller
                 ],
             ],
             'globalSets' => Craft::$app->getGlobals()->getAllSets(),
-            'buttonLabel' => StringHelper::upperCaseFirst(Craft::t('app', 'New {type}', [
+            'buttonLabel' => mb_ucfirst(Craft::t('app', 'New {type}', [
                 'type' => GlobalSet::lowerDisplayName(),
             ])),
             'readOnly' => $this->readOnly,

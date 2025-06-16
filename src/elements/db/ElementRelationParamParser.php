@@ -15,7 +15,6 @@ use craft\db\Query;
 use craft\db\Table;
 use craft\fields\BaseRelationField;
 use craft\fields\Matrix;
-use craft\helpers\StringHelper;
 use craft\models\Site;
 use Illuminate\Support\Collection;
 use yii\base\BaseObject;
@@ -71,7 +70,7 @@ class ElementRelationParamParser extends BaseObject
         // Ensure it's an array
         if (!is_array($relatedToParam)) {
             if (is_string($relatedToParam)) {
-                $relatedToParam = StringHelper::split($relatedToParam);
+                $relatedToParam = str($relatedToParam)->split(',')->all();
             } elseif ($relatedToParam instanceof Collection) {
                 $relatedToParam = $relatedToParam->all();
             } else {
@@ -175,8 +174,10 @@ class ElementRelationParamParser extends BaseObject
 
                 if (!is_array($elements)) {
                     if (is_string($elements)) {
-                        $elements = StringHelper::split($elements);
-                    } elseif ($elements instanceof Collection) {
+                        $elements = str($elements)->split(',');
+                    }
+
+                    if ($elements instanceof Collection) {
                         $elements = $elements->all();
                     } else {
                         $elements = [$elements];
@@ -346,7 +347,7 @@ class ElementRelationParamParser extends BaseObject
             // conditions right away and save the normal field IDs for later
             $fields = $relCriteria['field'];
             if (!is_array($fields)) {
-                $fields = is_string($fields) ? StringHelper::split($fields) : [$fields];
+                $fields = is_string($fields) ? str($fields)->split(',') : [$fields];
             }
 
             // We only care about the fields provided by the element query if the target elements were specified,

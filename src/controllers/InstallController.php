@@ -9,6 +9,7 @@ namespace craft\controllers;
 
 use Craft;
 use Craft\Cms\Support\Arr;
+use Craft\Cms\Support\Str;
 use craft\config\DbConfig;
 use craft\db\Connection;
 use craft\elements\User;
@@ -17,7 +18,6 @@ use craft\errors\MigrationException;
 use craft\errors\OperationAbortedException;
 use craft\helpers\App;
 use craft\helpers\Install as InstallHelper;
-use craft\helpers\StringHelper;
 use craft\markdown\Markdown;
 use craft\migrations\Install;
 use craft\models\Site;
@@ -137,7 +137,7 @@ class InstallController extends Controller
                 'attribute' => Craft::t('app', 'Database Name'),
             ]);
         }
-        if (strlen(StringHelper::ensureRight($dbConfig->tablePrefix, '_')) > 6) {
+        if (strlen(Str::finish($dbConfig->tablePrefix, '_')) > 6) {
             $errors['tablePrefix'][] = Craft::t('app', 'Prefix must be 5 or less characters long.');
         }
 

@@ -373,7 +373,7 @@ class NestedElementManager extends Component
             self::VIEW_MODE_CARDS,
             function(string $id, array $config, $attribute, &$settings) use ($owner) {
                 $settings += [
-                    'deleteLabel' => StringHelper::upperCaseFirst(Craft::t('app', 'Delete {type}', [
+                    'deleteLabel' => mb_ucfirst(Craft::t('app', 'Delete {type}', [
                         'type' => $this->elementType::lowerDisplayName(),
                     ])),
                     'deleteConfirmationMessage' => Craft::t('app', 'Are you sure you want to delete the selected {type}?', [

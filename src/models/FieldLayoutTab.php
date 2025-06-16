@@ -12,13 +12,13 @@ use craft\base\ElementInterface;
 use craft\base\FieldLayoutComponent;
 use craft\base\FieldLayoutElement;
 use Craft\Cms\Support\Arr;
+use Craft\Cms\Support\Str;
 use craft\errors\FieldNotFoundException;
 use craft\fieldlayoutelements\BaseField;
 use craft\fieldlayoutelements\CustomField;
 use craft\helpers\Cp;
 use craft\helpers\Html;
 use craft\helpers\Json;
-use craft\helpers\StringHelper;
 use yii\base\InvalidArgumentException;
 use yii\base\InvalidConfigException;
 
@@ -194,7 +194,7 @@ class FieldLayoutTab extends FieldLayoutComponent
     public function getConfig(): array
     {
         if (!isset($this->uid)) {
-            $this->uid = StringHelper::UUID();
+            $this->uid = Str::uuid()->toString();
         }
 
         $config = $this->toArray(['name', 'uid', 'userCondition', 'elementCondition']);
@@ -213,7 +213,7 @@ class FieldLayoutTab extends FieldLayoutComponent
         $elementConfigs = [];
         foreach ($this->getElements() as $layoutElement) {
             if (!isset($layoutElement->uid)) {
-                $layoutElement->uid = StringHelper::UUID();
+                $layoutElement->uid = Str::uuid()->toString();
             }
             $elementConfigs[] = ['type' => get_class($layoutElement)] + $layoutElement->toArray();
         }
@@ -312,7 +312,7 @@ class FieldLayoutTab extends FieldLayoutComponent
      */
     public function getHtmlId(): string
     {
-        $asciiName = StringHelper::toKebabCase(StringHelper::toAscii($this->name, 'en'));
+        $asciiName = Str::kebab(Str::ascii($this->name, 'en'));
 
         if ($asciiName === '') {
             // Use md5() as a fallback
@@ -320,7 +320,7 @@ class FieldLayoutTab extends FieldLayoutComponent
         }
 
         // ensure unique tab id even if there are multiple tabs with the same name
-        $tabOrder = StringHelper::pad((string)$this->sortOrder, 2, '0', 'left');
+        $tabOrder = Str::padLeft((string) $this->sortOrder, 2, '0');
 
         return Html::id("tab$tabOrder-$asciiName");
     }

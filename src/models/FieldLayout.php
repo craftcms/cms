@@ -27,7 +27,6 @@ use craft\fieldlayoutelements\Markdown;
 use craft\fieldlayoutelements\Template;
 use craft\fieldlayoutelements\Tip;
 use craft\helpers\Html;
-use craft\helpers\StringHelper;
 use Generator;
 use yii\base\InvalidArgumentException;
 use yii\base\InvalidConfigException;
@@ -260,7 +259,7 @@ class FieldLayout extends Model
         parent::init();
 
         if (!isset($this->uid)) {
-            $this->uid = StringHelper::UUID();
+            $this->uid = Str::uuid()->toString();
         }
 
         if (!isset($this->_tabs)) {
@@ -620,15 +619,15 @@ class FieldLayout extends Model
      */
     public function resetUids(): void
     {
-        $this->uid = StringHelper::UUID();
+        $this->uid = Str::uuid()->toString();
         $cardView = $this->getCardView();
 
         foreach ($this->getTabs() as $tab) {
-            $tab->uid = StringHelper::UUID();
+            $tab->uid = Str::uuid()->toString();
 
             foreach ($tab->getElements() as $element) {
                 $oldUid = $element->uid;
-                $element->uid = StringHelper::UUID();
+                $element->uid = Str::uuid()->toString();
 
                 $cardViewPos = array_search("layoutElement:$oldUid", $cardView);
                 if ($cardViewPos !== false) {
