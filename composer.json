@@ -22,12 +22,6 @@
     "docs": "https://craftcms.com/docs/5.x/",
     "rss": "https://github.com/craftcms/cms/releases.atom"
   },
-  "repositories": [
-    {
-      "type": "path",
-      "url": "../yii2-adapter"
-    }
-  ],
   "require": {
     "php": "^8.2",
     "ext-bcmath": "*",
@@ -155,6 +149,13 @@
       "providers": [
         "Craft\\Cms\\Providers\\CraftServiceProvider"
       ]
+    }
+  },
+  "repositories": {
+    "packagist.org": false,
+    "private-packagist": {
+      "type": "composer",
+      "url": "https://repo.packagist.com/craftcms/"
     }
   }
 }
