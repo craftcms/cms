@@ -31,7 +31,7 @@ class Search
     {
         // Flatten
         if (is_array($str)) {
-            $str = StringHelper::toString($str, ' ');
+            $str = Str::toString($str, ' ');
         }
 
         // Get rid of tags
@@ -50,7 +50,7 @@ class Search
         $str = mb_strtolower($str);
 
         if ($processCharMap) {
-            $str = strtr($str, StringHelper::asciiCharMap(true, $language ?? Craft::$app->language));
+            $str = strtr($str, Str::asciiCharMap(true, $language ?? Craft::$app->language));
 
             $str = preg_replace(self::_getElisionsRegex(), '', $str);
 

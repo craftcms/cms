@@ -8,6 +8,7 @@
 namespace craft\base;
 
 use Craft;
+use Craft\Cms\Support\Str;
 use craft\db\Table as DbTable;
 use craft\elements\db\ElementQueryInterface;
 use craft\enums\AttributeStatus;
@@ -21,7 +22,6 @@ use craft\helpers\DateTimeHelper;
 use craft\helpers\Db;
 use craft\helpers\ElementHelper;
 use craft\helpers\Html;
-use craft\helpers\StringHelper;
 use craft\helpers\UrlHelper;
 use craft\models\GqlSchema;
 use craft\records\Field as FieldRecord;
@@ -849,7 +849,7 @@ JS, [
      */
     protected function searchKeywords(mixed $value, ElementInterface $element): string
     {
-        return StringHelper::toString($value, ' ');
+        return Str::toString($value, ' ');
     }
 
     /**

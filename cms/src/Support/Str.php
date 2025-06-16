@@ -2,13 +2,21 @@
 
 namespace Craft\Cms\Support;
 
+use BackedEnum;
 use craft\helpers\App;
 use InvalidArgumentException;
 use LitEmoji\LitEmoji;
 use Ramsey\Uuid\Validator\GenericValidator;
+use voku\helper\ASCII;
 
 class Str extends \Illuminate\Support\Str
 {
+    /**
+     * @var array Character mappings
+     * @see asciiCharMap()
+     */
+    private static array $_asciiCharMaps;
+
     /**
      * Get the first n characters from the string.
      *
@@ -40,6 +48,79 @@ class Str extends \Illuminate\Support\Str
     public static function uuidPattern(): string
     {
         return (new GenericValidator())->getPattern();
+    }
+
+    /**
+     * Converts an object to its string representation. If the object is an array, will glue the array elements together
+     * with the $glue param. Otherwise will cast the object to a string.
+     *
+     * @param mixed $object The object to convert to a string.
+     * @param string $glue The glue to use if the object is an array.
+     * @return string The string representation of the object.
+     */
+    public static function toString(mixed $object, string $glue = ','): string
+    {
+        if (is_scalar($object) || (is_object($object) && method_exists($object, '__toString'))) {
+            return (string) $object;
+        }
+
+        if ($object instanceof BackedEnum) {
+            return $object->value;
+        }
+
+        if (is_iterable($object)) {
+            $stringValues = [];
+
+            foreach ($object as $value) {
+                if (($value = static::toString($value, $glue)) !== '') {
+                    $stringValues[] = $value;
+                }
+            }
+
+            return implode($glue, $stringValues);
+        }
+
+        return '';
+    }
+
+    /**
+     * Returns ASCII character mappings, merging in any custom defined mappings
+     * from the <config5:customAsciiCharMappings> config setting.
+     *
+     * @param bool $flat Whether the mappings should be returned as a flat array (é => e)
+     * @param string|null $language Whether to include language-specific mappings (only applied if $flat is true)
+     * @return array The fully merged ASCII character mappings.
+     */
+    public static function asciiCharMap(bool $flat = false, ?string $language = '*'): array
+    {
+        $key = $flat ? "flat-$language" : '*';
+
+        if (isset(self::$_asciiCharMaps[$key])) {
+            return self::$_asciiCharMaps[$key];
+        }
+
+        $map = ASCII::charsArrayWithSingleLanguageValues(false, false);
+
+        if ($language !== null) {
+            /** @var ASCII::*_LANGUAGE_CODE $language */
+            $langSpecific = ASCII::charsArrayWithOneLanguage($language, false, false);
+
+            if ($langSpecific !== []) {
+                $map = array_merge($map, $langSpecific);
+            }
+        }
+
+        if ($flat) {
+            return self::$_asciiCharMaps[$key] = $map;
+        }
+
+        $byAscii = [];
+
+        foreach ($map as $char => $ascii) {
+            $byAscii[$ascii][] = $char;
+        }
+
+        return self::$_asciiCharMaps[$key] = $byAscii;
     }
 
     /**

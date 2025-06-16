@@ -12,6 +12,7 @@ use Craft\Aliases\Facades\Aliases;
 use craft\base\FsInterface;
 use craft\base\UtilityInterface;
 use Craft\Cms\Support\Arr;
+use Craft\Cms\Support\Str;
 use craft\enums\CmsEdition;
 use craft\events\FormActionsEvent;
 use craft\events\RegisterCpNavItemsEvent;
@@ -953,7 +954,7 @@ class Cp extends Component
             return null;
         }
 
-        return StringHelper::asciiCharMap(true, $language);
+        return Str::asciiCharMap(true, $language);
     }
 
     /**

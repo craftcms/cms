@@ -13,7 +13,6 @@ use craft\console\Controller;
 use craft\db\Query;
 use craft\db\Table;
 use craft\helpers\Console;
-use craft\helpers\StringHelper;
 use yii\console\ExitCode;
 use yii\db\Expression;
 

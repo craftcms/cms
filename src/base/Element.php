@@ -14,6 +14,7 @@ use craft\behaviors\DraftBehavior;
 use craft\behaviors\RevisionBehavior;
 use craft\cache\ElementQueryTagDependency;
 use Craft\Cms\Support\Arr;
+use Craft\Cms\Support\Str;
 use craft\db\CoalesceColumnsExpression;
 use craft\db\Command;
 use craft\db\Connection;
@@ -76,7 +77,6 @@ use craft\helpers\Cp;
 use craft\helpers\Db;
 use craft\helpers\ElementHelper;
 use craft\helpers\Html;
-use craft\helpers\StringHelper;
 use craft\helpers\Template;
 use craft\helpers\UrlHelper;
 use craft\i18n\Formatter;
@@ -3406,7 +3406,7 @@ abstract class Element extends Component implements ElementInterface
      */
     protected function searchKeywords(string $attribute): string
     {
-        return StringHelper::toString($this->$attribute);
+        return Str::toString($this->$attribute);
     }
 
     /**

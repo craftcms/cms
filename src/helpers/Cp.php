@@ -1707,7 +1707,7 @@ JS, [
             ($status
                 ? Html::beginTag('div', [
                     'id' => $statusId,
-                    'class' => ['status-badge', StringHelper::toString($status[0])],
+                    'class' => ['status-badge', Str::toString($status[0])],
                     'title' => $status[1],
                     'aria-hidden' => 'true',
                 ]) .

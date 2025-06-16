@@ -15,6 +15,7 @@ use craft\base\FieldInterface;
 use craft\base\NestedElementInterface;
 use craft\behaviors\DraftBehavior;
 use Craft\Cms\Support\Arr;
+use Craft\Cms\Support\Str;
 use craft\db\Table;
 use craft\elements\actions\ChangeSortOrder;
 use craft\elements\actions\MoveDown;
@@ -28,7 +29,6 @@ use craft\helpers\Cp;
 use craft\helpers\Db;
 use craft\helpers\ElementHelper;
 use craft\helpers\Html;
-use craft\helpers\StringHelper;
 use craft\models\Site;
 use Generator;
 use Throwable;
@@ -259,7 +259,7 @@ class NestedElementManager extends Component
             }
         }
 
-        return StringHelper::toString($keywords, ' ');
+        return Str::toString($keywords, ' ');
     }
 
     /**
@@ -508,7 +508,7 @@ class NestedElementManager extends Component
                 $settings['indexSettings'] = [
                     'namespace' => $view->getNamespace(),
                     'allowedViewModes' => $config['allowedViewModes']
-                        ? array_map(fn($mode) => StringHelper::toString($mode), $config['allowedViewModes'])
+                        ? array_map(fn($mode) => Str::toString($mode), $config['allowedViewModes'])
                         : null,
                     'showHeaderColumn' => $config['showHeaderColumn'],
                     'criteria' => array_merge($criteria, $this->criteria),

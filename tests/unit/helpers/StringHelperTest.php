@@ -8,6 +8,7 @@
 namespace crafttests\unit\helpers;
 
 use Codeception\Test\Unit;
+use Craft\Cms\Support\Str;
 use craft\enums\LicenseKeyStatus;
 use craft\helpers\StringHelper;
 use craft\test\mockclasses\ToString;
@@ -45,13 +46,13 @@ class StringHelperTest extends TestCase
             'é' => 'e',
         ];
 
-        $mapByAscii = StringHelper::asciiCharMap(false, 'de');
+        $mapByAscii = Str::asciiCharMap(false, 'de');
         foreach ($expected as $char => $ascii) {
             self::assertArrayHasKey($ascii, $mapByAscii);
             self::assertContains($char, $mapByAscii[$ascii]);
         }
 
-        $mapByChar = StringHelper::asciiCharMap(true, 'de');
+        $mapByChar = Str::asciiCharMap(true, 'de');
         foreach ($expected as $char => $ascii) {
             self::assertArrayHasKey($char, $mapByChar);
             self::assertSame($ascii, $mapByChar[$char]);

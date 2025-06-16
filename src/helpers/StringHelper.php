@@ -39,12 +39,6 @@ class StringHelper extends \yii\helpers\StringHelper
     public const UUID_PATTERN = '[A-Za-z0-9]{8}-[A-Za-z0-9]{4}-4[A-Za-z0-9]{3}-[89abAB][A-Za-z0-9]{3}-[A-Za-z0-9]{12}';
 
     /**
-     * @var array Character mappings
-     * @see asciiCharMap()
-     */
-    private static array $_asciiCharMaps;
-
-    /**
      * @var string[]|false
      * @see escapeShortcodes()
      */
@@ -137,31 +131,7 @@ class StringHelper extends \yii\helpers\StringHelper
      */
     public static function asciiCharMap(bool $flat = false, ?string $language = null): array
     {
-        $key = $flat ? 'flat-' . ($language ?? '*') : '*';
-        if (isset(self::$_asciiCharMaps[$key])) {
-            return self::$_asciiCharMaps[$key];
-        }
-
-        $map = ASCII::charsArrayWithSingleLanguageValues(false, false);
-        if ($language !== null) {
-            /** @var ASCII::*_LANGUAGE_CODE $language */
-            $langSpecific = ASCII::charsArrayWithOneLanguage($language, false, false);
-            if ($langSpecific !== []) {
-                $map = array_merge($map, $langSpecific);
-            }
-        }
-
-        if ($flat) {
-            return self::$_asciiCharMaps[$key] = $map;
-        }
-
-        $byAscii = [];
-
-        foreach ($map as $char => $ascii) {
-            $byAscii[$ascii][] = $char;
-        }
-
-        return self::$_asciiCharMaps[$key] = $byAscii;
+        return Str::asciiCharMap($flat, $language);
     }
 
     /**
@@ -1692,27 +1662,7 @@ class StringHelper extends \yii\helpers\StringHelper
      */
     public static function toString(mixed $object, string $glue = ','): string
     {
-        if (is_scalar($object) || (is_object($object) && method_exists($object, '__toString'))) {
-            return (string)$object;
-        }
-
-        if (is_array($object) || $object instanceof IteratorAggregate) {
-            $stringValues = [];
-
-            foreach ($object as $value) {
-                if (($value = static::toString($value, $glue)) !== '') {
-                    $stringValues[] = $value;
-                }
-            }
-
-            return implode($glue, $stringValues);
-        }
-
-        if ($object instanceof BackedEnum) {
-            return $object->value;
-        }
-
-        return '';
+        return Str::toString($object, $glue);
     }
 
     /**

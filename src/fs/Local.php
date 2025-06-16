@@ -16,7 +16,6 @@ use craft\errors\FsObjectNotFoundException;
 use craft\helpers\App;
 use craft\helpers\FileHelper;
 use craft\helpers\Path;
-use craft\helpers\StringHelper;
 use craft\models\FsListing;
 use DirectoryIterator;
 use FilesystemIterator;

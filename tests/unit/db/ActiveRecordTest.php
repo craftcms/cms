@@ -8,6 +8,7 @@
 namespace crafttests\unit\db;
 
 use Codeception\Test\Unit;
+use Craft\Cms\Support\Str;
 use craft\db\ActiveRecord;
 use craft\helpers\StringHelper;
 use craft\records\Session;
@@ -89,7 +90,7 @@ class ActiveRecordTest extends TestCase
     {
         $session = $this->ensureSession();
 
-        self::assertTrue(StringHelper::isUUID($session->uid));
+        self::assertTrue(Str::isUuid($session->uid));
 
         $session->delete();
     }
@@ -122,7 +123,7 @@ class ActiveRecordTest extends TestCase
         $save = $session->save();
 
         self::assertTrue($save);
-        self::assertTrue(StringHelper::isUUID($session->uid));
+        self::assertTrue(Str::isUuid($session->uid));
 
         $session->delete();
     }

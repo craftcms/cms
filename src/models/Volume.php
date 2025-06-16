@@ -21,7 +21,6 @@ use Craft\Cms\Support\Str;
 use craft\elements\Asset;
 use craft\fs\MissingFs;
 use craft\helpers\App;
-use craft\helpers\StringHelper;
 use craft\helpers\UrlHelper;
 use craft\records\Volume as VolumeRecord;
 use craft\validators\HandleValidator;

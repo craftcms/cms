@@ -9,6 +9,7 @@ namespace craft\fieldlayoutelements;
 
 use Craft;
 use craft\base\ElementInterface;
+use Craft\Cms\Support\Str;
 use craft\helpers\StringHelper;
 
 /**
@@ -102,7 +103,7 @@ class TitleField extends TextField
 
             $language = $element->getSite()->language;
             $charMap = $language !== Craft::$app->language
-                ? StringHelper::asciiCharMap(true, $language)
+                ? Str::asciiCharMap(true, $language)
                 : null;
 
             $view->registerJsWithVars(fn($titleId, $slugId, $charMap) => <<<JS
