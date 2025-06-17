@@ -13,12 +13,12 @@ use craft\base\ElementInterface;
 use craft\base\Field;
 use craft\base\InlineEditableFieldInterface;
 use craft\base\MergeableFieldInterface;
+use Craft\Cms\Support\Str;
 use craft\elements\Entry;
 use craft\fields\conditions\TextFieldConditionRule;
 use craft\helpers\App;
 use craft\helpers\Cp;
 use craft\helpers\Html;
-use craft\helpers\StringHelper;
 use yii\db\Schema;
 
 /**
@@ -119,7 +119,7 @@ class Email extends Field implements InlineEditableFieldInterface, MergeableFiel
      */
     public function serializeValue(mixed $value, ElementInterface $element = null): mixed
     {
-        return $value !== null ? StringHelper::idnToUtf8Email($value) : null;
+        return $value !== null ? Str::idnToUtf8Email($value) : null;
     }
 
     /**

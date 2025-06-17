@@ -9,6 +9,7 @@ namespace crafttests\unit\gql;
 
 use Craft;
 use craft\base\Fs;
+use Craft\Cms\Support\Str;
 use craft\elements\Asset;
 use craft\elements\Asset as AssetElement;
 use craft\elements\Category as CategoryElement;
@@ -79,8 +80,8 @@ class ElementFieldResolverTest extends TestCase
      */
     public function testEntryFieldResolving(string $gqlTypeClass, string $propertyName, mixed $result): void
     {
-        $sectionHandle = StringHelper::UUID();
-        $typeHandle = StringHelper::UUID();
+        $sectionHandle = Str::uuid()->toString();
+        $typeHandle = Str::uuid()->toString();
 
         $mockElement = $this->make(
             EntryElement::class, [
@@ -152,7 +153,7 @@ class ElementFieldResolverTest extends TestCase
      */
     public function testCategoryFieldResolving(string $gqlTypeClass, string $propertyName, mixed $result): void
     {
-        $groupHandle = StringHelper::UUID();
+        $groupHandle = Str::uuid()->toString();
 
         $mockElement = $this->make(
             CategoryElement::class, [
@@ -177,7 +178,7 @@ class ElementFieldResolverTest extends TestCase
      */
     public function testTagFieldResolving(string $gqlTypeClass, string $propertyName, mixed $result): void
     {
-        $groupHandle = StringHelper::UUID();
+        $groupHandle = Str::uuid()->toString();
 
         $mockElement = $this->make(
             CategoryElement::class, [
@@ -202,7 +203,7 @@ class ElementFieldResolverTest extends TestCase
      */
     public function testMatrixEntryFieldResolving(string $gqlTypeClass, string $propertyName, mixed $result): void
     {
-        $typeHandle = StringHelper::UUID();
+        $typeHandle = Str::uuid()->toString();
 
         $mockElement = $this->make(
             Entry::class, [

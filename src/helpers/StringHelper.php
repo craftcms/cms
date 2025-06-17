@@ -39,12 +39,6 @@ class StringHelper extends \yii\helpers\StringHelper
     public const UUID_PATTERN = '[A-Za-z0-9]{8}-[A-Za-z0-9]{4}-4[A-Za-z0-9]{3}-[89abAB][A-Za-z0-9]{3}-[A-Za-z0-9]{12}';
 
     /**
-     * @var string[]|false
-     * @see escapeShortcodes()
-     */
-    private static array|false $_shortcodeEscapeMap;
-
-    /**
      * Gets the substring after the first occurrence of a separator.
      *
      * @param string $str The string to search.
@@ -268,15 +262,7 @@ class StringHelper extends \yii\helpers\StringHelper
      */
     public static function containsMb4(string $str): bool
     {
-        $length = strlen($str);
-
-        for ($i = 0; $i < $length; $i++) {
-            if (ord($str[$i]) >= 240) {
-                return true;
-            }
-        }
-
-        return false;
+        return Str::containsMb4($str);
     }
 
     /**
@@ -331,7 +317,7 @@ class StringHelper extends \yii\helpers\StringHelper
         if (App::checkForValidIconv()) {
             $str = HtmlPurifier::convertToUtf8($str, $config);
         } else {
-            $str = mb_convert_encoding($str, self::UTF8);
+            $str = mb_convert_encoding($str, 'UTF-8');
         }
 
         return $str;
@@ -435,14 +421,7 @@ class StringHelper extends \yii\helpers\StringHelper
      */
     public static function encodeMb4(string $str): string
     {
-        // (Logic pulled from WP's wp_encode_emoji() function)
-        // UTF-32's hex encoding is the same as HTML's hex encoding.
-        // So, by converting from UTF-8 to UTF-32, we magically
-        // get the correct hex encoding.
-        return static::replaceMb4($str, static function($char) {
-            $unpacked = unpack('H*', mb_convert_encoding($char, 'UTF-32', self::UTF8));
-            return isset($unpacked[1]) ? '&#x' . ltrim($unpacked[1], '0') . ';' : '';
-        });
+        return Str::encodeMb4($str);
     }
 
     /**
@@ -795,7 +774,7 @@ class StringHelper extends \yii\helpers\StringHelper
      */
     public static function isUtf8(string $str): bool
     {
-        return mb_check_encoding($str, self::UTF8);
+        return mb_check_encoding($str, 'UTF-8');
     }
 
     /**
@@ -821,7 +800,7 @@ class StringHelper extends \yii\helpers\StringHelper
      */
     public static function isUUID(string $uuid): bool
     {
-        return !empty($uuid) && preg_match('/^' . self::UUID_PATTERN . '$/', $uuid);
+        return Str::isUuid($uuid);
     }
 
     /**
@@ -1026,7 +1005,7 @@ class StringHelper extends \yii\helpers\StringHelper
         $randomString = '';
 
         // count the number of chars in the valid chars string so we know how many choices we have
-        $numValidChars = static::length($validChars);
+        $numValidChars = Str::length($validChars);
 
         // repeat the steps until we've created a string of the right length
         for ($i = 0; $i < $length; $i++) {
@@ -1903,11 +1882,7 @@ class StringHelper extends \yii\helpers\StringHelper
      */
     public static function escapeShortcodes(string $str): string
     {
-        $map = self::shortcodeEscapeMap();
-        if ($map === false) {
-            return $str;
-        }
-        return str_replace(array_keys($map), $map, $str);
+        return Str::escapeShortcodes($str);
     }
 
     /**
@@ -1919,30 +1894,7 @@ class StringHelper extends \yii\helpers\StringHelper
      */
     public static function unescapeShortcodes(string $str): string
     {
-        $map = self::shortcodeEscapeMap();
-        if ($map === false) {
-            return $str;
-        }
-        return str_replace($map, array_keys($map), $str);
-    }
-
-    private static function shortcodeEscapeMap(): array|false
-    {
-        if (!isset(self::$_shortcodeEscapeMap)) {
-            $path = Craft::$app->getPath()->getVendorPath() . '/elvanto/litemoji/src/shortcodes-array.php';
-            if (file_exists($path)) {
-                $shortcodes = array_keys(require $path);
-                self::$_shortcodeEscapeMap = array_combine(
-                    array_map(fn(string $shortcode) => ":$shortcode:", $shortcodes),
-                    array_map(fn(string $shortcode) => "\\:$shortcode\\:", $shortcodes),
-                );
-            } else {
-                Craft::warning('Unable to escape shortcodes: shortcodes-array.php doesn’t exist at the expected location.');
-                self::$_shortcodeEscapeMap = false;
-            }
-        }
-
-        return self::$_shortcodeEscapeMap;
+        return Str::unescapeShortcodes($str);
     }
 
     /**

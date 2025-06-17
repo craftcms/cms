@@ -9,6 +9,7 @@ namespace crafttests\unit\services;
 
 use Codeception\Test\Unit;
 use Craft;
+use Craft\Cms\Support\Str;
 use craft\errors\ElementNotFoundException;
 use craft\events\ConfigEvent;
 use craft\helpers\StringHelper;
@@ -44,8 +45,8 @@ class GlobalsTest extends TestCase
             'tokenMatches' => ['testuid'],
             'oldValue' => [],
             'newValue' => [
-                'name' => 'Test ' . StringHelper::UUID(),
-                'handle' => 'test' . StringHelper::UUID(),
+                'name' => 'Test ' . Str::uuid()->toString(),
+                'handle' => 'test' . Str::uuid()->toString(),
             ],
         ]);
 

@@ -62,10 +62,10 @@ class ImagesTest extends TestCase
         $contents = file_get_contents($this->sandboxPath . 'dirty-svg.svg');
 
         self::assertFalse(
-            StringHelper::contains($contents, '<script>')
+            str_contains($contents, '<script>')
         );
         self::assertFalse(
-            StringHelper::contains($contents, '<this>')
+            str_contains($contents, '<this>')
         );
     }
 
@@ -83,10 +83,10 @@ class ImagesTest extends TestCase
         $contents = file_get_contents($this->sandboxPath . 'dirty-svg.svg');
 
         self::assertTrue(
-            StringHelper::contains($contents, '<script>')
+            str_contains($contents, '<script>')
         );
         self::assertTrue(
-            StringHelper::contains($contents, '<this>')
+            str_contains($contents, '<this>')
         );
     }
 

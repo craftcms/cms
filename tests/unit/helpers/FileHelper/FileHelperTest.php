@@ -7,6 +7,7 @@
 
 namespace crafttests\unit\helpers\FileHelper;
 
+use Craft\Cms\Support\Str;
 use craft\helpers\FileHelper;
 use craft\helpers\StringHelper;
 use craft\test\TestCase;
@@ -512,7 +513,7 @@ class FileHelperTest extends TestCase
      */
     public static function uniqueNameDataProvider(): array
     {
-        $bigStr = StringHelper::randomString(300);
+        $bigStr = Str::random(300);
 
         return [
             ['{id}', ''],

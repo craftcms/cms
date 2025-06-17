@@ -17,7 +17,6 @@ use craft\base\SortableFieldInterface;
 use Craft\Cms\Support\Str;
 use craft\elements\Entry;
 use craft\fields\conditions\TextFieldConditionRule;
-use craft\helpers\StringHelper;
 
 /**
  * PlainText represents a Plain Text field.
@@ -180,7 +179,7 @@ class PlainText extends Field implements InlineEditableFieldInterface, SortableF
     {
         if ($value !== null) {
             if (!$fromRequest) {
-                $value = StringHelper::unescapeShortcodes(Str::shortcodesToEmoji($value));
+                $value = Str::unescapeShortcodes(Str::shortcodesToEmoji($value));
             }
 
             $value = trim(preg_replace('/\R/u', "\n", $value));
@@ -208,7 +207,7 @@ class PlainText extends Field implements InlineEditableFieldInterface, SortableF
             'name' => $this->handle,
             'value' => $value,
             'field' => $this,
-            'placeholder' => $this->placeholder !== null ? Craft::t('site', StringHelper::unescapeShortcodes($this->placeholder)) : null,
+            'placeholder' => $this->placeholder !== null ? Craft::t('site', Str::unescapeShortcodes($this->placeholder)) : null,
             'orientation' => $this->getOrientation($element),
             'disabled' => $static,
         ]);
@@ -234,7 +233,7 @@ class PlainText extends Field implements InlineEditableFieldInterface, SortableF
     public function serializeValue(mixed $value, ?ElementInterface $element): mixed
     {
         if ($value !== null) {
-            $value = StringHelper::escapeShortcodes($value);
+            $value = Str::escapeShortcodes($value);
             if (!Craft::$app->getDb()->getSupportsMb4()) {
                 $value = Str::emojiToShortcodes($value);
             }

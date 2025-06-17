@@ -8,6 +8,7 @@
 namespace crafttests\unit\elements;
 
 use Craft;
+use Craft\Cms\Support\Str;
 use craft\db\Query;
 use craft\db\Table;
 use craft\elements\User;
@@ -292,10 +293,10 @@ class UserElementTest extends TestCase
             ], [
                 [
                     $this->activeUser->id,
-                    StringHelper::randomString(32),
+                    Str::random(32),
                 ], [
                     $this->activeUser->id,
-                    StringHelper::randomString(32),
+                    Str::random(32),
                 ],
             ]);
 

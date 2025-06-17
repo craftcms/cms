@@ -352,7 +352,7 @@ class StringHelperTest extends TestCase
      */
     public function testEnsureRight(string $expected, string $string, string $append): void
     {
-        $actual = StringHelper::ensureRight($string, $append);
+        $actual = Str::start($string, $append);
         self::assertSame($expected, $actual);
     }
 
@@ -679,7 +679,7 @@ class StringHelperTest extends TestCase
      */
     public function testIsMb4(bool $expected, string $string): void
     {
-        $actual = StringHelper::containsMb4($string);
+        $actual = Str::containsMb4($string);
         self::assertSame($expected, $actual);
     }
 
@@ -794,7 +794,7 @@ class StringHelperTest extends TestCase
         self::assertSame($expected, $actual);
         self::assertIsString($actual);
 
-        self::assertFalse(StringHelper::containsMb4($actual));
+        self::assertFalse(Str::containsMb4($actual));
     }
 
     /**
@@ -890,7 +890,7 @@ class StringHelperTest extends TestCase
      */
     public function testRandomString(int $length = 36, bool $extendedChars = false): void
     {
-        $random = StringHelper::randomString($length, $extendedChars);
+        $random = Str::random($length, $extendedChars);
         $len = strlen($random);
         self::assertSame($length, $len);
 
@@ -1571,7 +1571,7 @@ class StringHelperTest extends TestCase
      */
     public function testEmojiToShortcodes(string $expected, string $str)
     {
-        self::assertSame($expected, StringHelper::emojiToShortcodes($str));
+        self::assertSame($expected, Str::emojiToShortcodes($str));
     }
 
     /**
@@ -1582,7 +1582,7 @@ class StringHelperTest extends TestCase
      */
     public function testShortcodesToEmoji(string $expected, string $str)
     {
-        self::assertSame($expected, StringHelper::shortcodesToEmoji($str));
+        self::assertSame($expected, Str::shortcodesToEmoji($str));
     }
 
     /**
@@ -1593,7 +1593,7 @@ class StringHelperTest extends TestCase
      */
     public function testEscapeShortcodes(string $expected, string $str)
     {
-        self::assertSame($expected, StringHelper::escapeShortcodes($str));
+        self::assertSame($expected, Str::escapeShortcodes($str));
     }
 
     /**
@@ -1604,7 +1604,7 @@ class StringHelperTest extends TestCase
      */
     public function testUnescapeShortcodes(string $expected, string $str)
     {
-        self::assertSame($expected, StringHelper::unescapeShortcodes($str));
+        self::assertSame($expected, Str::unescapeShortcodes($str));
     }
 
     /**
@@ -3270,8 +3270,7 @@ class StringHelperTest extends TestCase
             ['bar', 'foo bar', 'foo '],
             ['foo bar', 'foo bar', 'oo'],
             ['foo bar', 'foo bar', 'oo bar'],
-            ['oo bar', 'foo bar', StringHelper::first('foo bar', 1)],
-            ['oo bar', 'foo bar', StringHelper::at('foo bar', 0)],
+            ['oo bar', 'foo bar', Str::first('foo bar')],
             ['fòô bàř', 'fòô bàř', ''],
             ['òô bàř', 'fòô bàř', 'f'],
             ['bàř', 'fòô bàř', 'fòô '],
@@ -3291,8 +3290,7 @@ class StringHelperTest extends TestCase
             ['foo', 'foo bar', ' bar'],
             ['foo bar', 'foo bar', 'ba'],
             ['foo bar', 'foo bar', 'foo ba'],
-            ['foo ba', 'foo bar', StringHelper::last('foo bar', 1)],
-            ['foo ba', 'foo bar', StringHelper::at('foo bar', 6)],
+            ['foo ba', 'foo bar', Str::last('foo bar')],
             ['fòô bàř', 'fòô bàř', ''],
             ['fòô bà', 'fòô bàř', 'ř'],
             ['fòô', 'fòô bàř', ' bàř'],

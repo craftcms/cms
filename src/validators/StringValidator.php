@@ -8,6 +8,7 @@
 namespace craft\validators;
 
 use Craft;
+use Craft\Cms\Support\Str;
 use craft\helpers\StringHelper;
 
 /**
@@ -50,7 +51,7 @@ class StringValidator extends \yii\validators\StringValidator
 
         parent::validateAttribute($model, $attribute);
 
-        if (is_string($value) && $this->disallowMb4 && !Craft::$app->getDb()->getSupportsMb4() && StringHelper::containsMb4($value)) {
+        if (is_string($value) && $this->disallowMb4 && !Craft::$app->getDb()->getSupportsMb4() && Str::containsMb4($value)) {
             $this->addError($model, $attribute, $this->containsMb4);
         }
     }
@@ -64,7 +65,7 @@ class StringValidator extends \yii\validators\StringValidator
             return $result;
         }
 
-        if ($this->disallowMb4 && !Craft::$app->getDb()->getSupportsMb4() && StringHelper::containsMb4($value)) {
+        if ($this->disallowMb4 && !Craft::$app->getDb()->getSupportsMb4() && Str::containsMb4($value)) {
             return [$this->containsMb4, []];
         }
 

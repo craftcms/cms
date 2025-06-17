@@ -4,6 +4,7 @@ namespace Craft\Cms\Support;
 
 use BackedEnum;
 use craft\helpers\App;
+use Illuminate\Support\Facades\Log;
 use InvalidArgumentException;
 use LitEmoji\LitEmoji;
 use Ramsey\Uuid\Validator\GenericValidator;
@@ -11,11 +12,11 @@ use voku\helper\ASCII;
 
 class Str extends \Illuminate\Support\Str
 {
-    /**
-     * @var array Character mappings
-     * @see asciiCharMap()
-     */
-    private static array $_asciiCharMaps;
+    /** @see asciiCharMap() */
+    private static ?array $asciiCharMaps = null;
+
+    /** @see escapeShortcodes() */
+    private static array|false|null $shortcodeEscapeMap = null;
 
     /**
      * Get the first n characters from the string.
@@ -95,8 +96,8 @@ class Str extends \Illuminate\Support\Str
     {
         $key = $flat ? "flat-$language" : '*';
 
-        if (isset(self::$_asciiCharMaps[$key])) {
-            return self::$_asciiCharMaps[$key];
+        if (isset(self::$asciiCharMaps[$key])) {
+            return self::$asciiCharMaps[$key];
         }
 
         $map = ASCII::charsArrayWithSingleLanguageValues(false, false);
@@ -111,7 +112,7 @@ class Str extends \Illuminate\Support\Str
         }
 
         if ($flat) {
-            return self::$_asciiCharMaps[$key] = $map;
+            return self::$asciiCharMaps[$key] = $map;
         }
 
         $byAscii = [];
@@ -120,7 +121,7 @@ class Str extends \Illuminate\Support\Str
             $byAscii[$ascii][] = $char;
         }
 
-        return self::$_asciiCharMaps[$key] = $byAscii;
+        return self::$asciiCharMaps[$key] = $byAscii;
     }
 
     /**
@@ -219,6 +220,84 @@ class Str extends \Illuminate\Support\Str
     }
 
     /**
+     * Escapes shortcodes.
+     *
+     * @param string $str
+     * @return string
+     * @since 4.5.0
+     */
+    public static function escapeShortcodes(string $str): string
+    {
+        $map = self::shortcodeEscapeMap();
+
+        if ($map === false) {
+            return $str;
+        }
+
+        return str_replace(array_keys($map), $map, $str);
+    }
+
+    /**
+     * Unscapes shortcodes.
+     *
+     * @param string $str
+     * @return string
+     * @since 4.5.0
+     */
+    public static function unescapeShortcodes(string $str): string
+    {
+        $map = self::shortcodeEscapeMap();
+
+        if ($map === false) {
+            return $str;
+        }
+
+        return str_replace($map, array_keys($map), $str);
+    }
+
+    private static function shortcodeEscapeMap(): array|false
+    {
+        if (isset(self::$shortcodeEscapeMap)) {
+            return self::$shortcodeEscapeMap;
+        }
+
+        $path = base_path('vendor/elvanto/litemoji/src/shortcodes-array.php');
+
+        if (! file_exists($path)) {
+            Log::warning('Unable to escape shortcodes: shortcodes-array.php doesn’t exist at the expected location.');
+            return self::$shortcodeEscapeMap = false;
+        }
+
+        $shortcodes = array_keys(require $path);
+
+        self::$shortcodeEscapeMap = array_combine(
+            array_map(fn(string $shortcode) => ":$shortcode:", $shortcodes),
+            array_map(fn(string $shortcode) => "\\:$shortcode\\:", $shortcodes),
+        );
+
+        return self::$shortcodeEscapeMap;
+    }
+
+    /**
+     * Detects whether the given string has any 4-byte UTF-8 characters.
+     *
+     * @param string $str The string to process.
+     * @return bool Whether the string contains any 4-byte UTF-8 characters or not.
+     */
+    public static function containsMb4(string $str): bool
+    {
+        $length = strlen($str);
+
+        for ($i = 0; $i < $length; $i++) {
+            if (ord($str[$i]) >= 240) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
      * Replaces 4-byte UTF-8 characters in a string.
      * ---
      * ```php
@@ -263,6 +342,25 @@ class Str extends \Illuminate\Support\Str
     }
 
     /**
+     * HTML-encodes any 4-byte UTF-8 characters.
+     *
+     * @param string $str The string
+     * @return string The string with converted 4-byte UTF-8 characters
+     * @see http://stackoverflow.com/a/16496730/1688568
+     */
+    public static function encodeMb4(string $str): string
+    {
+        // (Logic pulled from WP's wp_encode_emoji() function)
+        // UTF-32's hex encoding is the same as HTML's hex encoding.
+        // So, by converting from UTF-8 to UTF-32, we magically
+        // get the correct hex encoding.
+        return Str::replaceMb4($str, static function($char) {
+            $unpacked = unpack('H*', mb_convert_encoding($char, 'UTF-32', 'UTF-8'));
+            return isset($unpacked[1]) ? '&#x' . ltrim($unpacked[1], '0') . ';' : '';
+        });
+    }
+
+    /**
      * Returns a regex pattern for invisible characters.
      *
      * @return string
@@ -290,5 +388,12 @@ class Str extends \Illuminate\Support\Str
         );
 
         return sprintf('/%s/iu', implode('|', $invisibleCharCodes));
+    }
+
+    public static function flushCache(): void
+    {
+        parent::flushCache();
+        self::$asciiCharMaps = null;
+        self::$shortcodeEscapeMap = null;
     }
 }

@@ -135,7 +135,7 @@ class ActiveRecordTest extends TestCase
     {
         $session = new Session();
         $session->userId = 1;
-        $session->token = 'test' . StringHelper::randomString();
+        $session->token = 'test' . Str::random();
         $save = $session->save();
 
         self::assertTrue($save);
