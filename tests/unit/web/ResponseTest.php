@@ -117,10 +117,10 @@ class ResponseTest extends TestCase
         return [
             ['https://localhost/', ''],
             ['http://some-external-domain.com', 'http://some-external-domain.com'],
-            ['https://localhost/', '/'],
-            ['https://localhost/something-relative', '/something-relative'],
-            ['https://localhost/actions/foo/bar', ['foo/bar']],
-            ['https://localhost/actions/foo/bar?id=3', ['foo/bar', 'id' => 3]],
+            ['http://localhost/', '/'],
+            ['http://localhost/something-relative', '/something-relative'],
+            ['http://localhost/actions/foo/bar', ['foo/bar']],
+            ['http://localhost/actions/foo/bar?id=3', ['foo/bar', 'id' => 3]],
         ];
     }
 }
