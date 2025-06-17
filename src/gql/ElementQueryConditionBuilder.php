@@ -609,7 +609,7 @@ class ElementQueryConditionBuilder extends Component
             }
         }
 
-        return array_values($plans);
+        return $plans;
     }
 
     /**

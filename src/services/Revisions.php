@@ -219,7 +219,7 @@ class Revisions extends Component
      */
     public function revertToRevision(ElementInterface $revision, int $creatorId): ElementInterface
     {
-        /** @var ElementInterface|RevisionBehavior $revision */
+        /** @var ElementInterface&RevisionBehavior $revision */
         $canonical = $revision->getCanonical();
 
         // Fire a 'beforeRevertToRevision' event

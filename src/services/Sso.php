@@ -16,6 +16,7 @@ use craft\enums\CmsEdition;
 use craft\errors\AuthProviderNotFoundException;
 use craft\errors\SsoFailedException;
 use craft\helpers\User as UserHelper;
+use craft\records\SsoIdentity;
 use craft\records\SsoIdentity as AuthRecord;
 use yii\base\Component;
 use yii\base\InvalidConfigException;
@@ -296,5 +297,19 @@ class Sso extends Component
         }
 
         return true;
+    }
+
+    /**
+     * Returns whether the given user ID has an associated SSO identity.
+     *
+     * @param int $userId
+     * @return bool
+     * @since 5.7.8
+     */
+    public function identityExists(int $userId): bool
+    {
+        return SsoIdentity::find()
+            ->where(['userId' => $userId])
+            ->exists();
     }
 }

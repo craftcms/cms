@@ -432,7 +432,10 @@ class Controller extends YiiController
 
         $error = null;
 
-        if ($options['validator'] && !$options['validator']($input, $error)) {
+        /** @var callable(string $input, ?string &$error):bool $validate */
+        $validate = $options['validator'];
+
+        if ($options['validator'] && !$validate($input, $error)) {
             /** @var string|null $error */
             $this->output(($error ?? $options['error']));
             goto top;

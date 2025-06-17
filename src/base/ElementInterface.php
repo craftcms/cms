@@ -31,7 +31,8 @@ use yii\web\Response;
  * @mixin CustomFieldBehavior
  * @mixin Component
  * @phpstan-require-extends Element
- * @phpstan-type EagerLoadingMap array{elementType?:class-string<ElementInterface>,map:array{elementType?:class-string<ElementInterface>,source:int,target:int}[],criteria?:array,createElement?:callable}
+ * @phpstan-type EagerLoadingMapItem array{elementType?:class-string<ElementInterface>,source:int,target:int}
+ * @phpstan-type EagerLoadingMap array{elementType?:class-string<ElementInterface>,map:EagerLoadingMapItem[],criteria?:array,createElement?:callable}
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
  */
@@ -1620,6 +1621,22 @@ interface ElementInterface extends
      * @return string
      */
     public function getFieldContext(): string;
+
+    /**
+     * Returns the generated field values for the element, indexed by handle.
+     *
+     * @return array<string,string>
+     * @since 5.8.0
+     */
+    public function getGeneratedFieldValues(): array;
+
+    /**
+     * Sets the generated field values for the element, indexed by handle.
+     *
+     * @param array<string,string|null> $values
+     * @since 5.8.0
+     */
+    public function setGeneratedFieldValues(array $values): void;
 
     /**
      * Returns the element’s invalid nested element IDs.

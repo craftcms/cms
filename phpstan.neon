@@ -33,8 +33,8 @@ parameters:
         - stubs/yii/base/Module.stub
         - stubs/yii/BaseYii.stub
         - stubs/yii/db/BaseActiveRecord.stub
-        - stubs/yii/db/Migration.stub
         - stubs/yii/db/Query.stub
+        - stubs/yii/db/Migration.stub
         - stubs/yii/di/ServiceLocator.stub
         - stubs/yii/helpers/BaseArrayHelper.stub
         - stubs/yii/validators/UniqueValidator.stub
@@ -52,3 +52,5 @@ parameters:
         - '#^Dead catch#'
         - '#^PHPDoc tag @mixin contains invalid type CraftTrait\.$#'
         - '#^Parameter \#2 \$callback of function usort expects#'
+        - '#is never assigned craft\\base\\MemoizableArray#'
+    treatPhpDocTypesAsCertain: false

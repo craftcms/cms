@@ -18,7 +18,7 @@ Craft.AuthMethodSetup = Garnish.Base.extend(
         (container) => container.getAttribute('data-method')
       );
 
-      for (let container of Object.values(this.methodListings)) {
+      for (const container of Object.values(this.methodListings)) {
         this.initListing(container);
       }
     },

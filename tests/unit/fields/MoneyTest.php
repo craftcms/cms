@@ -83,7 +83,6 @@ class MoneyTest extends TestCase
 
         $html = $this->field->getPreviewHtml($value, new Entry());
 
-        self::assertIsString($html);
         self::assertEquals($expected, $html);
 
         if ($locale) {

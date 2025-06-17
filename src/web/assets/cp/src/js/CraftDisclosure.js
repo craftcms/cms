@@ -1,7 +1,7 @@
 /**
  * Very simple disclosure trigger.
  *
- * Allows you to wrap a button[type="button"] and target an element to toggle the `is-open` class on.
+ * Allows you to wrap a button[type="button"] and target an element to toggle the `data-state` attribute on.
  * Set `aria-expanded` on the button
  */
 class CraftDisclosure extends HTMLElement {

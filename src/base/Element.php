@@ -150,6 +150,7 @@ use yii\web\Response;
  * @property string|null $url The element’s full URL
  * @property-write int|null $revisionCreatorId revision creator ID to be saved
  * @property-write string|null $revisionNotes revision notes to be saved
+ * @phpstan-import-type EagerLoadingMap from ElementInterface
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
  */
@@ -231,7 +232,7 @@ abstract class Element extends Component implements ElementInterface
      * @event ElementIndexTableAttributeEvent The event that is triggered when preparing an element query for an element index, for each
      * attribute present in the table.
      *
-     * Paired with [[EVENT_REGISTER_TABLE_ATTRIBUTES]] and [[EVENT_SET_TABLE_ATTRIBUTE_HTML]], this allows optimization of queries on element indexes.
+     * Paired with [[EVENT_REGISTER_TABLE_ATTRIBUTES]] and [[EVENT_DEFINE_ATTRIBUTE_HTML]], this allows optimization of queries on element indexes.
      *
      * ```php
      * use craft\base\Element;
@@ -265,7 +266,7 @@ abstract class Element extends Component implements ElementInterface
      *
      * Event::on(
      *     Entry::class,
-     *     Element::EVENT_SET_TABLE_ATTRIBUTE_HTML,
+     *     Element::EVENT_DEFINE_ATTRIBUTE_HTML,
      *     function(DefineAttributeHtmlEvent $e) {
      *         $attribute = $e->attribute;
      *
@@ -1732,6 +1733,7 @@ abstract class Element extends Component implements ElementInterface
 
     /**
      * @inheritdoc
+     * @return EagerLoadingMap|null|false
      */
     public static function eagerLoadingMap(array $sourceElements, string $handle): array|null|false
     {
@@ -2396,6 +2398,13 @@ abstract class Element extends Component implements ElementInterface
     private ?array $_normalizedFieldValues = null;
 
     /**
+     * @var array
+     * @see getGeneratedFieldValues()
+     * @see setGeneratedFieldValues()
+     */
+    private array $_generatedFieldValues;
+
+    /**
      * @var bool Whether all attributes and field values should be considered dirty.
      * @see getDirtyAttributes()
      * @see getDirtyFields()
@@ -2404,11 +2413,11 @@ abstract class Element extends Component implements ElementInterface
     private bool $_allDirty = false;
 
     /**
-     * @var string[]|null Record of dirty attributes.
+     * @var array<string, int|string|bool> Record of dirty attributes.
      * @see getDirtyAttributes()
      * @see isAttributeDirty()
      */
-    private ?array $_dirtyAttributes = [];
+    private array $_dirtyAttributes = [];
 
     /**
      * @var string|null The initial title value, if there was one.
@@ -2601,7 +2610,7 @@ abstract class Element extends Component implements ElementInterface
     public function __isset($name): bool
     {
         // Is this the "field:handle" syntax?
-        if (strncmp($name, 'field:', 6) === 0) {
+        if (str_starts_with($name, 'field:')) {
             return $this->fieldByHandle(substr($name, 6)) !== null;
         }
 
@@ -2619,13 +2628,17 @@ abstract class Element extends Component implements ElementInterface
         }
 
         // Is this the "field:handle" syntax?
-        if (strncmp($name, 'field:', 6) === 0) {
+        if (str_starts_with($name, 'field:')) {
             return $this->getFieldValue(substr($name, 6));
         }
 
         // If this is a field, make sure the value has been normalized before returning the CustomFieldBehavior value
         if ($this->fieldByHandle($name) !== null) {
             return $this->clonedFieldValue($name);
+        }
+
+        if (isset($this->_generatedFieldValues) && array_key_exists($name, $this->_generatedFieldValues)) {
+            return $this->_generatedFieldValues[$name];
         }
 
         return parent::__get($name);
@@ -2637,7 +2650,7 @@ abstract class Element extends Component implements ElementInterface
     public function __set($name, $value)
     {
         // Is this the "field:handle" syntax?
-        if (strncmp($name, 'field:', 6) === 0) {
+        if (str_starts_with($name, 'field:')) {
             $this->setFieldValue(substr($name, 6), $value);
             return;
         }
@@ -2659,7 +2672,7 @@ abstract class Element extends Component implements ElementInterface
      */
     public function __call($name, $params)
     {
-        if (strncmp($name, 'isFieldEmpty:', 13) === 0) {
+        if (str_starts_with($name, 'isFieldEmpty:')) {
             return $this->isFieldEmpty(substr($name, 13));
         }
 
@@ -2847,7 +2860,7 @@ abstract class Element extends Component implements ElementInterface
     public function getAttributeLabel($attribute): string
     {
         // Is this the "field:handle" syntax?
-        if (strncmp($attribute, 'field:', 6) === 0) {
+        if (str_starts_with($attribute, 'field:')) {
             $attribute = substr($attribute, 6);
         }
 
@@ -3116,7 +3129,7 @@ abstract class Element extends Component implements ElementInterface
      */
     public function addError($attribute, $error = ''): void
     {
-        if (strncmp($attribute, 'field:', 6) === 0) {
+        if (str_starts_with($attribute, 'field:')) {
             $attribute = substr($attribute, 6);
         }
 
@@ -3610,9 +3623,14 @@ abstract class Element extends Component implements ElementInterface
         $html = '';
 
         foreach ($this->getFieldLayout()?->getCardBodyElements($this) ?? [] as $item) {
-            $itemHtml = $item instanceof BaseField
-                ? $item->previewHtml($this)
-                : $this->getAttributeHtml($item['value']);
+            if ($item instanceof BaseField) {
+                $itemHtml = $item->previewHtml($this);
+            } elseif (is_array($item) && isset($item['html'])) {
+                $itemHtml = $item['html'];
+            } else {
+                $itemHtml = $this->getAttributeHtml($item['value']);
+            }
+
             if ($itemHtml !== '') {
                 $html .= Html::tag('div', $itemHtml, [
                     'class' => 'card-attribute-preview',
@@ -3986,6 +4004,46 @@ abstract class Element extends Component implements ElementInterface
     {
         $items = [];
         $elementsService = Craft::$app->getElements();
+        $view = Craft::$app->getView();
+
+        // Validate
+        if (
+            !$this->getIsRevision() &&
+            !Craft::$app->getRequest()->getHeaders()->has('X-Craft-Container-Id')
+        ) {
+            $validateId = sprintf('action-validate-%s', mt_rand());
+            $items[] = [
+                'id' => $validateId,
+                'icon' => 'circle-check',
+                'label' => Craft::t('app', 'Validate {type}', [
+                    'type' => static::lowerDisplayName(),
+                ]),
+            ];
+
+            $view->registerJsWithVars(fn($id) => <<<JS
+(() => {
+  const btn = $('#' + $id);
+  btn.on('activate', () => {
+    const elementId = btn.closest('.menu').data('disclosureMenu').\$trigger
+      .closest('form').data('elementEditor').settings.elementId;
+    const form = Craft.createForm()
+      .addClass('hidden')
+      .append(Craft.getCsrfInput())
+      .appendTo(Garnish.\$bod);
+
+    Craft.submitForm(form, {
+      action: 'elements/validate',
+      retainScroll: true,
+      params: {
+        elementId,
+      },
+    });
+  });
+})();
+JS, [
+                $view->namespaceInputId($validateId),
+            ]);
+        }
 
         // View
         $url = $this->getUrl();
@@ -4005,8 +4063,8 @@ abstract class Element extends Component implements ElementInterface
             ];
         }
 
-        // Edit
         if ($elementsService->canView($this)) {
+            // Edit
             $editId = sprintf('action-edit-%s', mt_rand());
             $items[] = [
                 'id' => $editId,
@@ -4016,7 +4074,6 @@ abstract class Element extends Component implements ElementInterface
                 ])),
             ];
 
-            $view = Craft::$app->getView();
             $view->registerJsWithVars(fn($id, $elementType, $settings) => <<<JS
 $('#' + $id).on('activate', () => {
   Craft.createElementEditor($elementType, $settings);
@@ -4032,39 +4089,39 @@ JS, [
                     'ownerId' => $this instanceof NestedElementInterface ? $this->getOwnerId() : null,
                 ],
             ]);
-        }
 
-        // Copy
-        if ($elementsService->canCopy($this)) {
-            $copyId = sprintf('action-copy-%s', mt_rand());
-            $items[] = [
-                'id' => $copyId,
-                'color' => Color::Fuchsia,
-                'icon' => 'clone-dashed',
-                'label' => StringHelper::upperCaseFirst(Craft::t('app', 'Copy {type}', [
-                    'type' => static::lowerDisplayName(),
-                ])),
-            ];
+            // Copy
+            if (!$this->getIsRevision() && $elementsService->canCopy($this)) {
+                $copyId = sprintf('action-copy-%s', mt_rand());
+                $items[] = [
+                    'id' => $copyId,
+                    'color' => Color::Fuchsia,
+                    'icon' => 'clone-dashed',
+                    'label' => StringHelper::upperCaseFirst(Craft::t('app', 'Copy {type}', [
+                        'type' => static::lowerDisplayName(),
+                    ])),
+                ];
 
-            $view = Craft::$app->getView();
-            $view->registerJsWithVars(fn($id, $elementInfo) => <<<JS
+                $view = Craft::$app->getView();
+                $view->registerJsWithVars(fn($id, $elementInfo) => <<<JS
 (() => {
   $('#' + $id).on('activate', () => {
     Craft.cp.copyElements([$elementInfo]);
   });
 })();
 JS, [
-                $view->namespaceInputId($copyId),
-                [
-                    'type' => static::class,
-                    'id' => $this->isProvisionalDraft ? $this->getCanonicalId() : $this->id,
-                    'draftId' => $this->isProvisionalDraft ? null : $this->draftId,
-                    'revisionId' => $this->revisionId,
-                    'fieldId' => $this instanceof NestedElementInterface ? $this->getField()?->id : null,
-                    'ownerId' => $this instanceof NestedElementInterface ? $this->getOwnerId() : null,
-                    'siteId' => $this->siteId,
-                ],
-            ]);
+                    $view->namespaceInputId($copyId),
+                    [
+                        'type' => static::class,
+                        'id' => $this->isProvisionalDraft ? $this->getCanonicalId() : $this->id,
+                        'draftId' => $this->isProvisionalDraft ? null : $this->draftId,
+                        'revisionId' => $this->revisionId,
+                        'fieldId' => $this instanceof NestedElementInterface ? $this->getField()?->id : null,
+                        'ownerId' => $this instanceof NestedElementInterface ? $this->getOwnerId() : null,
+                        'siteId' => $this->siteId,
+                    ],
+                ]);
+            }
         }
 
         return $items;
@@ -4914,7 +4971,6 @@ JS, [
     public function offsetExists($offset): bool
     {
         return (
-            /** @phpstan-ignore-next-line */
             $offset === 'title' ||
             /** @phpstan-ignore-next-line */
             ($this->hasEagerLoadedElements($offset) && !($this->_lazyEagerLoadedElements[$offset] ?? false)) ||
@@ -5490,6 +5546,22 @@ JS, [
     public function getFieldContext(): string
     {
         return Craft::$app->getFields()->fieldContext;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getGeneratedFieldValues(): array
+    {
+        return $this->_generatedFieldValues ?? [];
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function setGeneratedFieldValues(array $values): void
+    {
+        $this->_generatedFieldValues = $values;
     }
 
     /**
@@ -6178,7 +6250,10 @@ JS, [
     protected function notesFieldHtml(): string
     {
         // todo: this should accept a $static arg
-        /** @var static|DraftBehavior $this */
+        /**
+         * @var static|DraftBehavior $this
+         * @phpstan-ignore varTag.nativeType
+         */
         return Cp::textareaFieldHtml([
             'label' => Craft::t('app', 'Notes about your changes'),
             'labelClass' => 'h6',

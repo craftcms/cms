@@ -35,7 +35,9 @@
           data: {
             value: option.value ?? null,
           },
+          tabindex: disabled ? '-1' : '0',
         }|merge(option.attributes ?? {}, recursive=true),
+        readOnly: disabled,
       })) }}
     {% endfor %}
   {% endtag %}
@@ -53,6 +55,7 @@
       onChange: (selectedOption) => {
         $('#{{ inputId|namespaceInputId }}').val(selectedOption.data('value'));
       },
+      readOnly: {{ disabled ? 1 : 0 }}
     });
   })();
   {% endjs %}

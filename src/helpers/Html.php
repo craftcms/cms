@@ -69,16 +69,12 @@ class Html extends \yii\helpers\Html
         // Normalize the param keys
         $normalizedVariables = [];
 
-        if (is_array($variables)) {
-            foreach ($variables as $key => $value) {
-                $key = '{' . trim($key, '{}') . '}';
-                $normalizedVariables[$key] = static::encode($value);
-            }
-
-            $html = strtr($html, $normalizedVariables);
+        foreach ($variables as $key => $value) {
+            $key = '{' . trim($key, '{}') . '}';
+            $normalizedVariables[$key] = static::encode($value);
         }
 
-        return $html;
+        return strtr($html, $normalizedVariables);
     }
 
     /**
@@ -411,6 +407,7 @@ class Html extends \yii\helpers\Html
      * @param string $tag The HTML tag to parse
      * @param int $offset The offset to start looking for a tag
      * @param int|null $start The start position of the first attribute in the given tag
+     * @param-out int $start
      * @param int|null $end The end position of the last attribute in the given tag
      * @param bool $decode Whether the attributes should be HTML decoded in the process
      * @return array The parsed HTML tag attributes
@@ -504,7 +501,7 @@ class Html extends \yii\helpers\Html
             }
         }
 
-        $start = $match[1][1];
+        $start = (int) $match[1][1];
         $end = $offset;
 
         return [$match[1][0], $value];
@@ -620,7 +617,7 @@ class Html extends \yii\helpers\Html
      *
      * @param string $html
      * @param int $offset
-     * @return array The tag type and starting position
+     * @return array{non-empty-string, int} The tag type and starting position
      * @throws InvalidHtmlTagException
      */
     private static function _findTag(string $html, int $offset = 0): array
@@ -838,7 +835,7 @@ class Html extends \yii\helpers\Html
      */
     private static function _namespaceInputs(string &$html, string $namespace): void
     {
-        $html = preg_replace('/(?<![\w\-])(name=(\'|"))([^\'"\[\]]+)([^\'"]*)\2/i', '${1}' . $namespace . '[$3]$4$2', $html);
+        $html = preg_replace('/(?<![\w\-])(name=(\'|"))([^\'"\[\]]+)([^\'"]*)\2/i', '${1}' . $namespace . '[$3]$4$2', $html) ?? '';
     }
 
     /**
@@ -891,7 +888,7 @@ class Html extends \yii\helpers\Html
         $html = preg_replace_callback('/(?<=\sid=)(\'|")([^\'"\s]*)\1/i', function($match) use ($namespace, &$ids): string {
             $ids[] = $match[2];
             return $match[1] . $namespace . '-' . $match[2] . $match[1];
-        }, $html);
+        }, $html) ?? '';
         $ids = array_flip($ids);
 
         // normal HTML attributes
@@ -924,7 +921,7 @@ class Html extends \yii\helpers\Html
                     $namespacedIds .= $id;
                 }
                 return sprintf('%s%s%s', $match[1], $namespacedIds, $match[3]);
-            }, $html);
+            }, $html) ?? '';
 
         // ID references in url() calls
         $html = preg_replace_callback(
@@ -934,7 +931,7 @@ class Html extends \yii\helpers\Html
                     return $namespace . '-' . $match[0];
                 }
                 return $match[0];
-            }, $html);
+            }, $html) ?? '';
 
         // class attributes
         if ($withClasses) {
@@ -944,7 +941,7 @@ class Html extends \yii\helpers\Html
                     $newClasses[] = "$namespace-$class";
                 }
                 return 'class=' . $match[1] . implode(' ', $newClasses) . $match[1];
-            }, $html);
+            }, $html) ?? '';
         }
 
         // CSS selectors
@@ -963,7 +960,7 @@ class Html extends \yii\helpers\Html
                     $html = preg_replace("/(?<![\\w'\"])\\.([\\w\\-]+)(?=[,:\\s{])/", ".$namespace-$1", $match[2]);
                 }
                 return $match[1] . $html . $match[3];
-            }, $html);
+            }, $html) ?? '';
     }
 
     /**

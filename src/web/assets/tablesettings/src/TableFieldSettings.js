@@ -128,7 +128,7 @@
       }
 
       // Add in the dropdown options
-      for (let colId in this.columnsData) {
+      for (const colId in this.columnsData) {
         if (this.columnsData.hasOwnProperty(colId)) {
           switch (this.columnsData[colId].type) {
             case 'select':
@@ -165,7 +165,7 @@
       if (Object.values(this.columnsData).some((c) => c.heading !== '')) {
         let theadHtml = '';
 
-        for (let colId in this.columnsData) {
+        for (const colId in this.columnsData) {
           if (!this.columnsData.hasOwnProperty(colId)) {
             continue;
           }
@@ -186,7 +186,7 @@
 
       const $tbody = $('<tbody/>').appendTo($table);
 
-      for (let rowId in defaults) {
+      for (const rowId in defaults) {
         if (!defaults.hasOwnProperty(rowId)) {
           continue;
         }

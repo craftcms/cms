@@ -65,8 +65,8 @@ Craft.ElementThumbLoader = Garnish.Base.extend(
   {
     invisibleThumbs: {},
     retryAll: function () {
-      for (let key in Craft.ElementThumbLoader.invisibleThumbs) {
-        let [queue, $thumb] = Craft.ElementThumbLoader.invisibleThumbs[key];
+      for (const key in Craft.ElementThumbLoader.invisibleThumbs) {
+        const [queue, $thumb] = Craft.ElementThumbLoader.invisibleThumbs[key];
         delete Craft.ElementThumbLoader.invisibleThumbs[key];
         queue.load($thumb.parent());
       }

@@ -80,9 +80,9 @@ class Install
     /**
      * Returns the default site language for the installer.
      *
-     * @return string|null
+     * @return string
      */
-    public static function defaultSiteLanguage(): ?string
+    public static function defaultSiteLanguage(): string
     {
         // Is there a project.yaml that defines a primary site?
         $primarySite = self::_primarySiteConfig();
@@ -90,13 +90,7 @@ class Install
             return $primarySite['language'];
         }
 
-        // If this is a console request, give up now
-        $request = Craft::$app->getRequest();
-        if ($request->getIsConsoleRequest()) {
-            return null;
-        }
-
-        return Craft::$app->language;
+        return 'en';
     }
 
     /**

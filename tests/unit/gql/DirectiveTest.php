@@ -189,7 +189,6 @@ class DirectiveTest extends TestCase
             $argumentList[] = sprintf($argumentTemplate, $key, Json::encode($value));
         }
 
-        /** @var string|Directive $className */
         return sprintf($directiveTemplate, $className::name(), implode(', ', $argumentList));
     }
 
@@ -202,7 +201,6 @@ class DirectiveTest extends TestCase
     private function _registerDirective(string $className)
     {
         // Make sure the mock directive is available in the entity registry
-        /** @var string|Directive $className */
         $directiveName = $className::name();
 
         Craft::$app->set('config', $this->make(Config::class, [
@@ -211,7 +209,6 @@ class DirectiveTest extends TestCase
             ]),
         ]));
 
-        /** @var string|Directive $className */
         GqlEntityRegistry::getOrCreate($directiveName, fn() => $className::create());
     }
 }

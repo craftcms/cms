@@ -138,7 +138,7 @@ class AssetsHelperTest extends TestCase
      * @dataProvider parseFileLocationDataProvider
      * @param array $expected
      * @param string $location
-     * @throws Exception
+     * @throws \Exception
      */
     public function testParseFileLocation(array $expected, string $location): void
     {

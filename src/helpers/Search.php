@@ -59,7 +59,7 @@ class Search
         }
 
         // Remove ignore-words?
-        if (is_array($ignore) && !empty($ignore)) {
+        if (!empty($ignore)) {
             foreach ($ignore as $word) {
                 $word = preg_quote(static::normalizeKeywords($word, [], true, $language), '/');
                 $str = preg_replace("/\b$word\b/u", '', $str);

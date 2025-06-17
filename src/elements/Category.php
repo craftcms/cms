@@ -546,7 +546,10 @@ class Category extends Element
         $group = $this->getGroup();
 
         if ($this->getIsDraft() && $this->getIsDerivative()) {
-            /** @var static|DraftBehavior $this */
+            /**
+             * @var static|DraftBehavior $this
+             * @phpstan-ignore varTag.nativeType
+             */
             return (
                 $this->creatorId === $user->id ||
                 $user->can("viewPeerCategoryDrafts:$group->uid")
@@ -568,7 +571,10 @@ class Category extends Element
         $group = $this->getGroup();
 
         if ($this->getIsDraft()) {
-            /** @var static|DraftBehavior $this */
+            /**
+             * @var static|DraftBehavior $this
+             * @phpstan-ignore varTag.nativeType
+             */
             return (
                 $this->creatorId === $user->id ||
                 $user->can("savePeerCategoryDrafts:$group->uid")
@@ -603,7 +609,10 @@ class Category extends Element
         }
 
         if ($this->getIsDraft() && $this->getIsDerivative()) {
-            /** @var static|DraftBehavior $this */
+            /**
+             * @var static|DraftBehavior $this
+             * @phpstan-ignore varTag.nativeType
+             */
             return (
                 $this->creatorId === $user->id ||
                 $user->can("deletePeerCategoryDrafts:$group->uid")

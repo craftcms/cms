@@ -335,8 +335,8 @@ class RequestTest extends TestCase
         self::assertNotSame($newToken, $token);
 
         // Ensure that the data we want exists and is according to our desired specs
-        self::assertSame('1', $tokenComponents['2']);
-        self::assertSame(40, strlen($tokenComponents['0']));
+        self::assertSame('1', $tokenComponents[2]);
+        self::assertSame(40, strlen($tokenComponents[0]));
     }
 
     /**

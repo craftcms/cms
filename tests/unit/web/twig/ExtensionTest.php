@@ -137,7 +137,7 @@ class ExtensionTest extends TestCase
     /**
      * @throws LoaderError
      * @throws SyntaxError
-     * @throws Exception
+     * @throws \Throwable
      */
     public function testElementGlobals(): void
     {

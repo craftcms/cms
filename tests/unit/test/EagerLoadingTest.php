@@ -104,7 +104,6 @@ class EagerLoadingTest extends TestCase
         } catch (ErrorException) {
             $this->fail();
         }
-        self::assertTrue(true);
 
         // try to eager load a field that doesn't exist
         try {
@@ -116,7 +115,6 @@ class EagerLoadingTest extends TestCase
         } catch (ErrorException) {
             $this->fail();
         }
-        self::assertTrue(true);
 
         // try to eager load a field that exists,
         // but is not part of the layout for $entries that we retrieved
@@ -131,7 +129,8 @@ class EagerLoadingTest extends TestCase
         } catch (ErrorException) {
             $this->fail();
         }
-        self::assertTrue(true);
+
+        $this->expectNotToPerformAssertions();
     }
 
     /**
