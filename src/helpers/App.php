@@ -30,10 +30,10 @@ use craft\models\MailSettings;
 use craft\services\ProjectConfig as ProjectConfigService;
 use craft\web\AssetManager;
 use craft\web\Request;
+use craft\web\Request as WebRequest;
+use craft\web\Response as WebResponse;
 use craft\web\User as WebUser;
 use craft\web\View;
-use Craft\Yii2Adapter\Web\Request as WebRequest;
-use Craft\Yii2Adapter\Web\Response as WebResponse;
 use HTMLPurifier_Encoder;
 use ReflectionClass;
 use ReflectionFunction;
@@ -1169,14 +1169,7 @@ class App
             'autoRenewCookie' => true,
             'loginUrl' => $loginUrl,
             'authTimeout' => $generalConfig->userSessionDuration ?: null,
-            //'identityCookie' => Craft::cookieConfig(['name' => $stateKeyPrefix . '_identity']),
             'usernameCookie' => Craft::cookieConfig(['name' => $stateKeyPrefix . '_username']),
-            //'absoluteAuthTimeoutParam' => $stateKeyPrefix . '__absoluteExpire',
-            //'authTimeoutParam' => $stateKeyPrefix . '__expire',
-            //'idParam' => $stateKeyPrefix . '__id',
-            //'impersonatorIdParam' => $stateKeyPrefix . '__impersonator_id',
-            //'returnUrlParam' => $stateKeyPrefix . '__returnUrl',
-            //'tokenParam' => $stateKeyPrefix . '__token',
         ];
     }
 

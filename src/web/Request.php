@@ -13,13 +13,11 @@ use Craft\Cms\Support\Arr;
 use craft\config\GeneralConfig;
 use craft\errors\SiteNotFoundException;
 use craft\helpers\App;
-use craft\helpers\Session as SessionHelper;
 use craft\helpers\StringHelper;
 use craft\models\Site;
 use craft\services\Sites;
 use yii\base\InvalidArgumentException;
 use yii\base\InvalidConfigException;
-use yii\db\Exception as DbException;
 use yii\di\Instance;
 use yii\web\BadRequestHttpException;
 use yii\web\Cookie;
@@ -47,7 +45,7 @@ use yii\web\NotFoundHttpException;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
  */
-class Request extends \yii\web\Request
+class Request extends Craft\Yii2Adapter\Web\Request
 {
     use RequestTrait;
 
@@ -173,19 +171,9 @@ class Request extends \yii\web\Request
     private CookieCollection $_rawCookies;
 
     /**
-     * @var string|null
-     */
-    private ?string $_craftCsrfToken = null;
-
-    /**
      * @var bool
      */
     private bool $_encodedQueryParams = false;
-
-    /**
-     * @var bool
-     */
-    private bool $_setBodyParams = false;
 
     /**
      * @var bool|null Whether the request initially had a token
@@ -831,36 +819,6 @@ class Request extends \yii\web\Request
     }
 
     /**
-     * @inheritdoc
-     */
-    public function getBodyParams(): array
-    {
-        if ($this->_setBodyParams === false) {
-            $params = parent::getBodyParams();
-
-            // Was a namespace passed?
-            $namespace = $this->getHeaders()->get('X-Craft-Namespace');
-            if ($namespace) {
-                $params = Arr::get($params, $namespace, []);
-            }
-
-            $this->setBodyParams($this->_utf8AllTheThings($params));
-            $this->_setBodyParams = true;
-        }
-
-        return parent::getBodyParams();
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function setBodyParams($values)
-    {
-        parent::setBodyParams($values);
-        $this->_setBodyParams = false;
-    }
-
-    /**
      * Returns the named request body parameter value.
      *
      * If the parameter does not exist, the second argument passed to this method will be returned.
@@ -1325,47 +1283,6 @@ class Request extends \yii\web\Request
     }
 
     /**
-     * Returns the token used to perform CSRF validation.
-     *
-     * This token is a masked version of [[rawCsrfToken]] to prevent [BREACH attacks](http://breachattack.com/).
-     * This token may be passed along via a hidden field of an HTML form or an HTTP header value
-     * to support CSRF validation.
-     *
-     * @param bool $regenerate whether to regenerate CSRF token. When this parameter is true, each time
-     * this method is called, a new CSRF token will be generated and persisted (in session or cookie).
-     * @return string the token used to perform CSRF validation.
-     */
-    public function getCsrfToken($regenerate = false): string
-    {
-        // Ensure the response is not cached by the browser or static cache proxies.
-        Craft::$app->getResponse()->setNoCacheHeaders();
-
-        if (!isset($this->_craftCsrfToken) || $regenerate) {
-            $token = $this->loadCsrfToken();
-
-            if (
-                $regenerate ||
-                $token === null ||
-                !$this->csrfTokenValidForCurrentUser($token)
-            ) {
-                $token = $this->generateCsrfToken();
-            }
-
-            $this->_craftCsrfToken = Craft::$app->getSecurity()->maskToken($token);
-        }
-
-        return $this->_craftCsrfToken;
-    }
-
-    /**
-     * Regenerates a CSRF token.
-     */
-    public function regenCsrfToken(): void
-    {
-        $this->_craftCsrfToken = $this->getCsrfToken(true);
-    }
-
-    /**
      * Returns whether the request will accept a given content type3
      *
      * @param string $contentType
@@ -1441,92 +1358,6 @@ class Request extends \yii\web\Request
 
         /** @noinspection AdditionOperationOnArraysInspection */
         return [$route, $params + $this->getQueryParams()];
-    }
-
-    /**
-     * Generates an unmasked random token used to perform CSRF validation.
-     *
-     * @return string the random token for CSRF validation.
-     */
-    protected function generateCsrfToken(): string
-    {
-        // Ensure the response is not cached by the browser or static cache proxies.
-        Craft::$app->getResponse()->setNoCacheHeaders();
-
-        $existingToken = $this->loadCsrfToken();
-
-        // They have an existing CSRF token.
-        if ($existingToken) {
-            // It's a CSRF token that came from an authenticated request.
-            if (str_contains($existingToken, '|')) {
-                // Grab the existing nonce.
-                $parts = explode('|', $existingToken);
-                $nonce = $parts[0];
-            } else {
-                // It's a CSRF token from an unauthenticated request.
-                $nonce = $existingToken;
-            }
-        } else {
-            // No previous CSRF token, generate a new nonce.
-            $nonce = Craft::$app->getSecurity()->generateRandomString(40);
-        }
-
-        // Authenticated users
-        if (Craft::$app->get('user', false) && ($currentUser = Craft::$app->getUser()->getIdentity())) {
-            $userId = $currentUser->id;
-            $hashable = implode('|', [$nonce, $userId]);
-            $token = $nonce . '|' . Craft::$app->getSecurity()->hashData($hashable, $this->cookieValidationKey);
-        } else {
-            // Unauthenticated users.
-            $token = $nonce;
-        }
-
-        if ($this->enableCsrfCookie) {
-            $cookie = $this->createCsrfCookie($token);
-            Craft::$app->getResponse()->getCookies()->add($cookie);
-        } else {
-            SessionHelper::set($this->csrfParam, $token);
-        }
-
-        return $token;
-    }
-
-    /**
-     * Gets whether the CSRF token is valid for the current user or not
-     *
-     * @param string $token
-     * @return bool
-     */
-    protected function csrfTokenValidForCurrentUser(string $token): bool
-    {
-        if (!Craft::$app->getIsInstalled()) {
-            return true;
-        }
-
-        try {
-            if (($currentUser = Craft::$app->getUser()->getIdentity()) === null) {
-                return true;
-            }
-        } catch (DbException) {
-            // Craft is probably not installed or updating
-            Craft::$app->getUser()->switchIdentity(null);
-            return true;
-        }
-
-        $splitToken = explode('|', $token, 2);
-
-        if (count($splitToken) !== 2) {
-            return false;
-        }
-
-        [$nonce,] = $splitToken;
-
-        // Check that this token is for the current user
-        $userId = $currentUser->id;
-        $hashable = implode('|', [$nonce, $userId]);
-        $expectedToken = $nonce . '|' . Craft::$app->getSecurity()->hashData($hashable, $this->cookieValidationKey);
-
-        return Craft::$app->getSecurity()->compareString($expectedToken, $token);
     }
 
     /**
