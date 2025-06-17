@@ -115,12 +115,12 @@ class ResponseTest extends TestCase
     public static function testRedirectDataProvider(): array
     {
         return [
-            ['https://test.craftcms.test/', ''],
+            ['https://localhost/', ''],
             ['http://some-external-domain.com', 'http://some-external-domain.com'],
-            ['https://test.craftcms.test:80/', '/'],
-            ['https://test.craftcms.test:80/something-relative', '/something-relative'],
-            ['https://test.craftcms.test:80/actions/foo/bar', ['foo/bar']],
-            ['https://test.craftcms.test:80/actions/foo/bar?id=3', ['foo/bar', 'id' => 3]],
+            ['https://localhost/', '/'],
+            ['https://localhost/something-relative', '/something-relative'],
+            ['https://localhost/actions/foo/bar', ['foo/bar']],
+            ['https://localhost/actions/foo/bar?id=3', ['foo/bar', 'id' => 3]],
         ];
     }
 }

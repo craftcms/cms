@@ -91,7 +91,7 @@ class TestSetup
     /**
      * @since 3.6.0
      */
-    public const SITE_URL = 'https://test.craftcms.test/';
+    public const SITE_URL = 'https://localhost/';
 
     /**
      * @since 3.6.0
