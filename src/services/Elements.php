@@ -16,7 +16,6 @@ use craft\base\ExpirableElementInterface;
 use craft\base\FieldInterface;
 use craft\base\NestedElementInterface;
 use craft\behaviors\DraftBehavior;
-use craft\behaviors\RevisionBehavior;
 use Craft\Cms\Support\Arr;
 use craft\console\controllers\MigrateController;
 use craft\console\controllers\UpController;
