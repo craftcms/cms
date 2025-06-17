@@ -13,5 +13,3 @@ class Migration
      */
     public function upsert($table, $insertColumns, $updateColumns = true, $params = []) {}
 }
-
-class Query {}

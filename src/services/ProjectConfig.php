@@ -409,7 +409,7 @@ class ProjectConfig extends Component
     }
 
     /**
-     * Saves the modified project confgi state and writes out updated YAML files, if needed.
+     * Saves the modified project config state and writes out updated YAML files, if needed.
      *
      * @since 5.0.0
      */
@@ -1843,6 +1843,7 @@ class ProjectConfig extends Component
                 $segments = explode('.', $path);
                 foreach ($segments as $segment) {
                     // If we're still traversing, enforce array to avoid errors.
+                    /** @phpstan-ignore-next-line */
                     if (!is_array($current)) {
                         $current = [];
                     }

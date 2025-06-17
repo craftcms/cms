@@ -739,7 +739,7 @@ class ResaveController extends Controller
     private function _resaveElements(ElementQueryInterface $query): int
     {
         /** @var ElementQuery $query */
-        /** @var ElementInterface $elementType */
+        /** @var class-string<ElementInterface> $elementType */
         $elementType = $query->elementType;
         $count = (int)$query->count();
 

@@ -1588,10 +1588,12 @@ class GeneralConfig extends BaseConfig
     public mixed $invalidLoginWindowDuration = 3600;
 
     /**
-     * @var mixed The URI Craft should redirect to when user token validation fails. A token is used on things like setting and resetting user account
-     * passwords. Note that this only affects front-end site requests.
+     * @var mixed The URI Craft should redirect to when user token validation fails. User tokens are used for
+     * email verification and password resets. If `null`, <config5:loginPath> will be used by default.
      *
      * See [[ConfigHelper::localizedValue()]] for a list of supported value types.
+     *
+     * Note that this only affects front-end site requests.
      *
      * ::: code
      * ```php Static Config
@@ -1607,7 +1609,7 @@ class GeneralConfig extends BaseConfig
      * @see getInvalidUserTokenPath()
      * @group Routing
      */
-    public mixed $invalidUserTokenPath = '';
+    public mixed $invalidUserTokenPath = null;
 
     /**
      * @var string[]|null List of headers where proxies store the real client IP.
@@ -5109,10 +5111,12 @@ class GeneralConfig extends BaseConfig
     }
 
     /**
-     * The URI Craft should redirect to when user token validation fails. A token is used on things like setting and resetting user account
-     * passwords. Note that this only affects front-end site requests.
+     * The URI Craft should redirect to when user token validation fails. User tokens are used for
+     * email verification and password resets. If `null`, <config5:loginPath> will be used by default.
      *
      * See [[ConfigHelper::localizedValue()]] for a list of supported value types.
+     *
+     * Note that this only affects front-end site requests.
      *
      * ```php
      * // 1 day
@@ -7217,10 +7221,10 @@ class GeneralConfig extends BaseConfig
      * Returns the localized Invalid User Token Path value.
      *
      * @param string|null $siteHandle The site handle the value should be defined for. Defaults to the current site.
-     * @return string
+     * @return string|null
      * @see invalidUserTokenPath
      */
-    public function getInvalidUserTokenPath(?string $siteHandle = null): string
+    public function getInvalidUserTokenPath(?string $siteHandle = null): ?string
     {
         $path = ConfigHelper::localizedValue($this->invalidUserTokenPath, $siteHandle);
         return is_string($path) ? trim($path, '/') : $path;

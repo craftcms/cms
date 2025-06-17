@@ -437,6 +437,7 @@ class Image
 
         if (!$config->preserveExifData) {
             $iccProfiles = null;
+            /** @phpstan-ignore-next-line */
             $supportsImageProfiles = method_exists($imagick, 'getimageprofiles');
 
             if ($config->preserveImageColorProfiles && $supportsImageProfiles) {

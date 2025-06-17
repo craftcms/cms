@@ -58,7 +58,7 @@ Craft.ColorInput = Garnish.Base.extend(
         const $list = $('<datalist/>', {
           id: listId,
         }).insertAfter(this.$colorInput);
-        for (let color of this.settings.presets) {
+        for (const color of this.settings.presets) {
           $('<option/>').text(color).appendTo($list);
         }
       }

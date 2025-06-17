@@ -675,7 +675,7 @@ Craft.CustomizeSourcesModal.Source =
         defaultViewMode = viewModes[0]?.mode;
       }
 
-      for (let viewMode of viewModes) {
+      for (const viewMode of viewModes) {
         const $btn = $('<button/>', {
           type: 'button',
           class: 'btn',

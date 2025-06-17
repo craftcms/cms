@@ -221,7 +221,12 @@ class Search extends Component
      */
     public function queueIndexElement(ElementInterface $element, array $fieldHandles): void
     {
-        $this->createOrUpdateIndexJob($element, $fieldHandles);
+        try {
+            $this->createOrUpdateIndexJob($element, $fieldHandles);
+        } catch (DbException) {
+            // the job was probably just cascade-deleted
+            return;
+        }
 
         Queue::push(new UpdateSearchIndex([
             'elementType' => get_class($element),
@@ -231,6 +236,9 @@ class Search extends Component
         ]), 2048);
     }
 
+    /**
+     * @throws DbException
+     */
     private function createOrUpdateIndexJob(ElementInterface $element, array $fieldHandles): void
     {
         $jobId = $this->pendingIndexJobId($element->id, $element->siteId);
@@ -300,9 +308,22 @@ class Search extends Component
         }
 
         try {
-            if (!Db::update(Table::SEARCHINDEXQUEUE, ['reserved' => true], ['id' => $jobId])) {
-                // another process must be handling the same job
-                return;
+            for ($try = 0; $try < 3; $try++) {
+                try {
+                    if (!Db::update(Table::SEARCHINDEXQUEUE, ['reserved' => true], ['id' => $jobId])) {
+                        // another process must be handling the same job
+                        return;
+                    }
+                    break;
+                } catch (DbException $e) {
+                    if (str_contains($e->getPrevious()?->getMessage(), 'deadlock')) {
+                        // A gap lock was probably hit. Try again in one second
+                        // https://github.com/craftcms/cms/issues/17318
+                        sleep(1);
+                    } else {
+                        throw $e;
+                    }
+                }
             }
         } finally {
             $mutex->release($lockName);

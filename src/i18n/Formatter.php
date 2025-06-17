@@ -90,7 +90,7 @@ class Formatter extends \yii\i18n\Formatter
             return $dateFormattedWithoutIntl;
         }
 
-        if (strncmp($format, 'php:', 4) === 0) {
+        if (str_starts_with($format, 'php:')) {
             return $this->_formatDateTimeValueWithPhpFormat($value, substr($format, 4), 'date');
         }
 
@@ -133,7 +133,7 @@ class Formatter extends \yii\i18n\Formatter
         }
 
         // copied from yii\i18n\Formatter::formatDateTimeValue()
-        if (strncmp($format, 'php:', 4) === 0) {
+        if (str_starts_with($format, 'php:')) {
             $format = substr($format, 4);
         } else {
             $format = FormatConverter::convertDateIcuToPhp($format, 'date', Yii::$app->language);
@@ -160,7 +160,7 @@ class Formatter extends \yii\i18n\Formatter
             $format = $this->dateTimeFormats[$format]['time'];
         }
 
-        if (strncmp($format, 'php:', 4) === 0) {
+        if (str_starts_with($format, 'php:')) {
             return $this->_formatDateTimeValueWithPhpFormat($value, substr($format, 4), 'time');
         }
 
@@ -185,7 +185,7 @@ class Formatter extends \yii\i18n\Formatter
             $format = $this->dateTimeFormats[$format]['datetime'];
         }
 
-        if (strncmp($format, 'php:', 4) === 0) {
+        if (str_starts_with($format, 'php:')) {
             return $this->_formatDateTimeValueWithPhpFormat($value, substr($format, 4), 'datetime');
         }
 
@@ -341,7 +341,7 @@ class Formatter extends \yii\i18n\Formatter
     private function _formatDateTimeValueWithPhpFormat(mixed $value, string $format, string $type): string
     {
         // special cases for PHP format characters not supported by ICU
-        /** @var string[] $split */
+        /** @var list<array{string, int<0, max>}|string> $split */
         $split = preg_split('/(?<!\\\\)(S|w|t|L|B|u|I|Z|U|A|a)/', $format, -1, PREG_SPLIT_DELIM_CAPTURE);
         $formatted = '';
 

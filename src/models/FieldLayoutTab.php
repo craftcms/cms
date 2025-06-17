@@ -312,7 +312,7 @@ class FieldLayoutTab extends FieldLayoutComponent
      */
     public function getHtmlId(): string
     {
-        $asciiName = StringHelper::toKebabCase(StringHelper::toAscii($this->name, 'en'));
+        $asciiName = isset($this->name) ? StringHelper::toKebabCase(StringHelper::toAscii($this->name, 'en')) : '';
 
         if ($asciiName === '') {
             // Use md5() as a fallback

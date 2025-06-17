@@ -21,19 +21,26 @@ Craft.EntryTypeSelectInput = Craft.ComponentSelectInput.extend(
         if ($editBtn.length) {
           disclosureMenu.hideItem($editBtn[0]);
         }
-        Craft.addActionsToChip(
-          $component,
-          [
-            {
-              icon: async () => await Craft.ui.icon('gear'),
-              label: Craft.t('app', 'Settings'),
-              callback: () => {
-                this.createSettings($component);
+        if (this.settings.addItemsToActionMenus) {
+          Craft.addActionsToChip(
+            $component,
+            [
+              {
+                icon: async () => await Craft.ui.icon('gear'),
+                label: Craft.t('app', 'Settings'),
+                onActivate: (el) => {
+                  $(el)
+                    .closest('.menu')
+                    .data('disclosureMenu')
+                    .$trigger.closest('.componentselect')
+                    .data('componentSelect')
+                    .createSettings($component);
+                },
               },
-            },
-          ],
-          true
-        );
+            ],
+            true
+          );
+        }
       }
 
       this.base($component);
@@ -157,7 +164,6 @@ Craft.EntryTypeSelectInput = Craft.ComponentSelectInput.extend(
         } catch (e) {
           let errors = e?.response?.data?.errors;
           if (errors) {
-            debugger;
             Object.entries(errors).forEach(([name, fieldErrors]) => {
               const $field = slideout.$container.find(
                 `[data-error-key="${name}"]`
@@ -177,6 +183,8 @@ Craft.EntryTypeSelectInput = Craft.ComponentSelectInput.extend(
           .find('.chip-label')
           .replaceWith($newContainer.find('.chip-label'));
         $component.find('input').val(JSON.stringify(data.config));
+
+        this.trigger('applySettings');
 
         slideout.close();
         slideout.destroy();

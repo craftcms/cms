@@ -111,7 +111,6 @@ class TypeResolverTest extends TestCase
      */
     public function _runResolverTest(string $elementType, array $params, string $resolverClass, bool $mustNotBeSame = false)
     {
-        /** @var string|ElementInterface $elementType */
         $elementQuery = Craft::configure($elementType::find(), $params);
 
         // Get the ids and elements.
@@ -125,7 +124,6 @@ class TypeResolverTest extends TestCase
 
         $resolveInfo = $this->make(ResolveInfo::class, ['fieldName' => 'someField', 'fieldNodes' => new \ArrayObject([null])]);
 
-        /** @var Resolver $resolverClass */
         $resolvedField = $resolverClass::resolve($sourceElement, $filterParameters, null, $resolveInfo);
 
         if ($mustNotBeSame) {

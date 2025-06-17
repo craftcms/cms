@@ -405,11 +405,11 @@ class Assets extends BaseRelationField
     public function normalizeValue(mixed $value, ?ElementInterface $element): mixed
     {
         // If data strings are passed along, make sure the array keys are retained.
-        if (is_array($value) && isset($value['data']) && !empty($value['data'])) {
+        if (is_array($value) && !empty($value['data'])) {
             $this->_uploadedDataFiles = ['data' => $value['data'], 'filename' => $value['filename']];
             unset($value['data'], $value['filename']);
 
-            /** @var Asset $class */
+            /** @var class-string<Asset> $class */
             $class = static::elementType();
             $query = $class::find();
 
@@ -423,18 +423,15 @@ class Assets extends BaseRelationField
                     ->preferSites([$targetSite]);
             }
 
-            // $value might be an array of element IDs
-            if (is_array($value)) {
-                $query
-                    ->id(array_values(array_filter($value)))
-                    ->fixedOrder();
+            $query
+                ->id(array_values(array_filter($value)))
+                ->fixedOrder();
 
-                if ($this->allowLimit && $this->maxRelations) {
-                    $query->limit($this->maxRelations);
-                }
-
-                return $query;
+            if ($this->allowLimit && $this->maxRelations) {
+                $query->limit($this->maxRelations);
             }
+
+            return $query;
         }
 
         return parent::normalizeValue($value, $element);

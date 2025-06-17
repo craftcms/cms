@@ -81,10 +81,6 @@ class TypecastHelperTest extends TestCase
      */
     public function testEnumProperties(): void
     {
-        if (PHP_VERSION_ID < 80100) {
-            $this->markTestSkipped('PHP 8.1+ only');
-        }
-
         $config = [
             'suit' => 'H',
             'anotherSuit' => Suit::Hearts,

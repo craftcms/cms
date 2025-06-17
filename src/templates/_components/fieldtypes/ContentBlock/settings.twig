@@ -1,0 +1,54 @@
+{% import '_includes/forms.twig' as forms %}
+
+{{ forms.fieldLayoutDesignerField({
+  label: 'Field Layout'|t('app'),
+  fieldLayout: field.getFieldLayout(),
+  customizableTabs: false,
+  withGeneratedFields: true,
+  disabled: readOnly,
+}) }}
+
+{% embed '_includes/forms/field.twig' with {
+  label: 'View Mode'|t('app')
+} %}
+  {% block input %}
+    <div class="flex flex-nowrap gap-l">
+      <label>
+        <div class="pane p-m hairline mb-xs flex flex-col gap-xs">
+          <div class="chip" style="width: 50px; height: 14px;"></div>
+          <div class="chip" style="width: 50px; height: 14px;"></div>
+          <div class="chip" style="width: 50px; height: 14px;"></div>
+        </div>
+        {{ input('radio', 'viewMode', 'grouped', {
+          checked: field.viewMode == 'grouped',
+          disabled: readOnly,
+        }) }}
+        {{ 'Grouped'|t('app') }}
+      </label>
+      <label>
+        <div class="pane p-m mb-xs flex flex-col gap-xs">
+          <div class="chip" style="width: 50px; height: 14px;"></div>
+          <div class="chip" style="width: 50px; height: 14px;"></div>
+          <div class="chip" style="width: 50px; height: 14px;"></div>
+        </div>
+        {{ input('radio', 'viewMode', 'pane', {
+          checked: field.viewMode == 'pane',
+          disabled: readOnly,
+        }) }}
+        {{ 'In a pane'|t('app') }}
+      </label>
+      <label>
+        <div class="pane chromeless mb-xs flex flex-col gap-xs" style="padding: calc(var(--m) + 1px);">
+          <div class="chip" style="width: 50px; height: 14px;"></div>
+          <div class="chip" style="width: 50px; height: 14px;"></div>
+          <div class="chip" style="width: 50px; height: 14px;"></div>
+        </div>
+        {{ input('radio', 'viewMode', 'inline', {
+          checked: field.viewMode == 'inline',
+          disabled: readOnly,
+        }) }}
+        {{ 'Inline'|t('app') }}
+      </label>
+    </div>
+  {% endblock %}
+{% endembed %}

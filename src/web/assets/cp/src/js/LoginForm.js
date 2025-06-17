@@ -242,7 +242,7 @@ Craft.LoginForm = Garnish.Base.extend(
           '<div id="login-alt-menu" class="login-alt-menu menu menu--disclosure"/>'
         ).appendTo($altContainer);
         const $ul = $('<ul/>').appendTo($menu);
-        for (let method of data.otherMethods) {
+        for (const method of data.otherMethods) {
           $('<li/>')
             .append(
               $('<button/>', {

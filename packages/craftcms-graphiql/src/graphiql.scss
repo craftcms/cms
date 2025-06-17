@@ -34,6 +34,12 @@ body,
   }
 }
 
+.graphiql-query-editor {
+  .CodeMirror-gutters {
+    background-color: #fff;
+  }
+}
+
 .cp-graphiql-header {
   height: var(--graphiql-header-height);
   display: flex;

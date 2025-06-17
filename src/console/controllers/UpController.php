@@ -99,7 +99,7 @@ class UpController extends Controller
             return ExitCode::UNSPECIFIED_ERROR;
         }
 
-        if ($writeYamlAutomatically) {
+        if ($writeYamlAutomatically && !$projectConfig->readOnly) {
             $projectConfig->writeYamlFiles(true);
         }
 

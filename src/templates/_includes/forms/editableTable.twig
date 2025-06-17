@@ -230,6 +230,10 @@
                                                 name: cellName,
                                                 rows: col.rows ?? 1,
                                                 placeholder: col.placeholder ?? false,
+                                                autocomplete: isCode ? 'off' : false,
+                                                autocorrect: isCode ? 'off' : false,
+                                                autocapitalize: isCode ? 'off' : false,
+                                                spellcheck: isCode ? 'false' : false,
                                                 aria: {
                                                     labelledby: headingId,
                                                     describedby: describedBy,
@@ -278,6 +282,9 @@
                         }) }}
                     </td>
                 {%- endif -%}
+                {% for inputName, value in row.hiddenInputs ?? [] %}
+                    {{ hiddenInput("#{name}[#{rowId}][#{inputName}]", value) }}
+                {% endfor %}
             </tr>
         {% endfor %}
     </tbody>

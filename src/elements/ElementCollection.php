@@ -177,6 +177,7 @@ class ElementCollection extends Collection
     public function map(callable $callback)
     {
         $result = parent::map($callback);
+        /** @phpstan-ignore instanceof.alwaysTrue */
         return $result->contains(fn($item) => !$item instanceof ElementInterface) ? $result->toBase() : $result;
     }
 
@@ -194,6 +195,7 @@ class ElementCollection extends Collection
     public function mapWithKeys(callable $callback)
     {
         $result = parent::mapWithKeys($callback);
+        /** @phpstan-ignore instanceof.alwaysTrue */
         return $result->contains(fn($item) => !$item instanceof ElementInterface) ? $result->toBase() : $result;
     }
 

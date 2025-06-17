@@ -1113,7 +1113,10 @@ $.extend($.event.special, {
       if (!$elem.hasClass('disabled')) {
         $elem.attr('tabindex', '0');
       } else {
-        $elem.removeAttr('tabindex');
+        // allow setting of tabindex attr if the element has a "read-only" class
+        if (!$elem.hasClass('read-only')) {
+          $elem.removeAttr('tabindex');
+        }
       }
     },
     teardown: function () {

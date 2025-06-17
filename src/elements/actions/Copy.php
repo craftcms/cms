@@ -107,7 +107,7 @@ JS, [static::class]);
     /**
      * @param ElementQueryInterface $query
      * @param ElementInterface[] $elements
-     * @param int[] $duplicatedElementIds
+     * @param array<int|string, bool> $duplicatedElementIds
      * @param int $successCount
      * @param int $failCount
      * @param ElementInterface|null $newParent

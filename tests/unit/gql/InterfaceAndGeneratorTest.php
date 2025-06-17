@@ -136,7 +136,6 @@ class InterfaceAndGeneratorTest extends TestCase
         ?callable $generator = null,
         bool $preloaded = true,
     ): void {
-        /** @var string|SingularTypeInterface $gqlInterfaceClass */
         $gqlInterfaceClass::getType();
 
         foreach ($getAllContexts() as $context) {

@@ -151,11 +151,13 @@ class Request extends \yii\web\Request
 
     /**
      * @var bool|null
+     * @phpstan-ignore property.unusedType
      */
     private ?bool $_isMobileBrowser = null;
 
     /**
      * @var bool|null
+     * @phpstan-ignore property.unusedType
      */
     private ?bool $_isMobileOrTabletBrowser = null;
 

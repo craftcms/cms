@@ -547,7 +547,7 @@ class Assets extends Component
         $criteria->limit = 1;
         $folder = $this->findFolders($criteria);
 
-        if (is_array($folder) && !empty($folder)) {
+        if (!empty($folder)) {
             return array_pop($folder);
         }
 

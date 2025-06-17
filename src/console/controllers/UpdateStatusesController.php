@@ -26,6 +26,11 @@ use yii\console\ExitCode;
 class UpdateStatusesController extends Controller
 {
     /**
+     * @inheritdoc
+     */
+    public bool $isolated = true;
+
+    /**
      * Updates statically-stored entry statuses.
      *
      * @return int

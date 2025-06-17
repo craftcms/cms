@@ -290,7 +290,6 @@ class StringHelperTest extends TestCase
     {
         $actual = StringHelper::delimit($string, $delimiter);
         self::assertSame($expected, $actual);
-        self::assertIsString($actual);
     }
 
     /**
@@ -724,7 +723,6 @@ class StringHelperTest extends TestCase
     {
         $actual = StringHelper::isWhitespace($string);
         self::assertSame($expected, $actual);
-        self::assertIsBool($actual);
     }
 
     /**
@@ -791,7 +789,6 @@ class StringHelperTest extends TestCase
     {
         $actual = StringHelper::encodeMb4($string);
         self::assertSame($expected, $actual);
-        self::assertIsString($actual);
 
         self::assertFalse(StringHelper::containsMb4($actual));
     }

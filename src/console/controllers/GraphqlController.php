@@ -180,11 +180,14 @@ class GraphqlController extends Controller
         $token->accessToken = Craft::$app->getSecurity()->generateRandomString(32);
 
         if (isset($this->expiry)) {
-            $token->expiryDate = DateTimeHelper::toDateTime($this->expiry);
-            if (!$token->expiryDate) {
+            $expiry = DateTimeHelper::toDateTime($this->expiry);
+
+            if (!$expiry) {
                 $this->stderr("Invalid expiry date: $this->expiry" . PHP_EOL, Console::FG_RED);
                 return ExitCode::UNSPECIFIED_ERROR;
             }
+
+            $token->expiryDate = $expiry;
         } elseif ($this->interactive && $this->confirm('Set an expiry date?')) {
             $expiryDate = $this->prompt('Expiry date:', [
                 'required' => true,

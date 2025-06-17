@@ -194,6 +194,7 @@ $icons = [
     'solid/bird.svg',
     'solid/block-brick.svg',
     'solid/block-question.svg',
+    'solid/block.svg',
     'solid/bluetooth.svg',
     'solid/bold.svg',
     'solid/bolt.svg',

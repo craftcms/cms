@@ -913,7 +913,7 @@ JS, [
     /**
      * @param ElementQueryInterface|ElementCollection $value
      * @param ElementInterface|null $element
-     * @param int[]|null $initialValue
+     * @param array<int|null>|null $initialValue
      * @return ElementInterface[]
      */
     private function normalizeValueForInput(mixed $value, ?ElementInterface $element, ?array &$initialValue = null): array
@@ -1200,8 +1200,6 @@ JS, [
 
         if ($this->maintainHierarchy) {
             $structuresService = Craft::$app->getStructures();
-
-            /** @var ElementInterface $class */
             $class = static::elementType();
 
             /** @var ElementInterface[] $structureElements */
@@ -1693,7 +1691,8 @@ JS, [
             ->status(null)
             ->site('*')
             ->limit(null)
-            ->unique();
+            ->unique()
+            ->eagerly(false);
         if ($element !== null) {
             $clone->preferSites([$this->targetSiteId($element)]);
         }

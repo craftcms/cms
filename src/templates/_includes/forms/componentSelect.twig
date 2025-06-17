@@ -1,6 +1,6 @@
 {% import '_includes/forms.twig' as forms %}
 
-{% if name ?? false %}
+{% if (name ?? false) and (renderDefaultInput ?? true) %}
   {{ hiddenInput(name|replace('/\\[\\]$/', ''), '') }}
 {% endif -%}
 

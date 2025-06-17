@@ -43,7 +43,8 @@ trait MissingComponentTrait
      */
     public function createFallback(string $type): ComponentInterface
     {
-        /** @var Arrayable $this */
+        assert($this instanceof Arrayable);
+
         $config = $this->toArray();
         unset($config['expectedType'], $config['errorMessage'], $config['settings']);
         $config['type'] = $type;

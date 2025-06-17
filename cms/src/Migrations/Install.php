@@ -278,6 +278,12 @@ class Install extends Migration implements MigrationInterface
             $table->primary(['elementId', 'siteId', 'fieldId', 'layoutElementUid']);
         });
 
+        Schema::create(Table::withoutYiiPlaceholder(Table::CONTENTBLOCKS), function (Blueprint $table) {
+            $table->integerIncrements('id');
+            $table->integer('primaryOwnerId')->nullable();
+            $table->integer('fieldId')->nullable();
+        });
+
         Schema::create(Table::withoutYiiPlaceholder(Table::CRAFTIDTOKENS), function (Blueprint $table) {
             $table->integerIncrements('id');
             $table->integer('userId');
@@ -917,6 +923,8 @@ class Install extends Migration implements MigrationInterface
         $this->createIndex(Table::CATEGORYGROUPS_SITES, ['siteId']);
         $this->createIndex(Table::CHANGEDATTRIBUTES, ['elementId', 'siteId', 'dateUpdated']);
         $this->createIndex(Table::CHANGEDFIELDS, ['elementId', 'siteId', 'dateUpdated']);
+        $this->createIndex(Table::CONTENTBLOCKS, ['primaryOwnerId']);
+        $this->createIndex(Table::CONTENTBLOCKS, ['fieldId']);
         $this->createIndex(Table::DEPRECATIONERRORS, ['key', 'fingerprint'], unique: true);
         $this->createIndex(Table::DRAFTS, ['creatorId', 'provisional']);
         $this->createIndex(Table::DRAFTS, ['saved']);
@@ -1083,6 +1091,9 @@ class Install extends Migration implements MigrationInterface
         $this->addForeignKey(Table::CHANGEDATTRIBUTES, ['siteId'], Table::SITES, ['id'], onDelete: 'CASCADE', onUpdate: 'CASCADE');
         $this->addForeignKey(Table::CHANGEDATTRIBUTES, ['userId'], Table::USERS, ['id'], onDelete: 'SET NULL', onUpdate: 'CASCADE');
         $this->addForeignKey(Table::CHANGEDFIELDS, ['elementId'], Table::ELEMENTS, ['id'], onDelete: 'CASCADE', onUpdate: 'CASCADE');
+        $this->addForeignKey(Table::CONTENTBLOCKS, ['id'], Table::ELEMENTS, ['id'], onDelete: 'CASCADE');
+        $this->addForeignKey(Table::CONTENTBLOCKS, ['fieldId'], Table::FIELDS, ['id'], onDelete: 'CASCADE');
+        $this->addForeignKey(Table::CONTENTBLOCKS, ['primaryOwnerId'], Table::ELEMENTS, ['id'], onDelete: 'CASCADE');
         $this->addForeignKey(Table::CHANGEDFIELDS, ['siteId'], Table::SITES, ['id'], onDelete: 'CASCADE', onUpdate: 'CASCADE');
         $this->addForeignKey(Table::CHANGEDFIELDS, ['fieldId'], Table::FIELDS, ['id'], onDelete: 'CASCADE', onUpdate: 'CASCADE');
         $this->addForeignKey(Table::CHANGEDFIELDS, ['userId'], Table::USERS, ['id'], onDelete: 'SET NULL', onUpdate: 'CASCADE');

@@ -120,7 +120,7 @@ class FieldLayoutBehavior extends Behavior
         }
 
         if ($id) {
-            $fieldLayout = Craft::$app->getFields()->getLayoutById($id);
+            $fieldLayout = Craft::$app->getFields()->getLayoutById($id, true);
             if (!$fieldLayout) {
                 throw new InvalidConfigException('Invalid field layout ID: ' . $id);
             }
