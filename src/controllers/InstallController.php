@@ -8,6 +8,7 @@
 namespace craft\controllers;
 
 use Craft;
+use Craft\Cms\Migrations\Install;
 use Craft\Cms\Support\Arr;
 use craft\config\DbConfig;
 use craft\db\Connection;
@@ -19,7 +20,6 @@ use craft\helpers\App;
 use craft\helpers\Install as InstallHelper;
 use craft\helpers\StringHelper;
 use craft\markdown\Markdown;
-use craft\migrations\Install;
 use craft\models\Site;
 use craft\web\assets\installer\InstallerAsset;
 use craft\web\Controller;
@@ -295,12 +295,12 @@ class InstallController extends Controller
             'language' => $this->request->getBodyParam('site-language'),
         ]);
 
-        $migration = new Install([
-            'username' => $username,
-            'password' => $this->request->getBodyParam('account-password'),
-            'email' => $email,
-            'site' => $site,
-        ]);
+        $migration = new Install(
+            username: $username,
+            password: $this->request->getBodyParam('account-password'),
+            email: $email,
+            site: $site,
+        );
 
         try {
             $migrator->migrateUp($migration);

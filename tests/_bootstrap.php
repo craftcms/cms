@@ -17,6 +17,14 @@ const CRAFT_TESTS_PATH = __DIR__;
 !defined('CRAFT_TRANSLATIONS_PATH') && define('CRAFT_TRANSLATIONS_PATH', __DIR__ . DIRECTORY_SEPARATOR . '_craft' . DIRECTORY_SEPARATOR . 'translations');
 !defined('CRAFT_VENDOR_PATH') && define('CRAFT_VENDOR_PATH', dirname(__DIR__) . DIRECTORY_SEPARATOR . 'vendor');
 
+/**
+ * Initialize the Laravel Craft Application
+ */
+(new \Craft\Cms\Tests\TestCase(''))
+    ->createApplication();
+
+config()->set('database.default', env('DB_DRIVER'));
+
 $devMode = true;
 
 $compiledTemplates = CRAFT_STORAGE_PATH . DIRECTORY_SEPARATOR . 'runtime' . DIRECTORY_SEPARATOR . 'compiled_classes';

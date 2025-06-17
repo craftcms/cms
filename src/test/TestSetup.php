@@ -9,6 +9,7 @@ namespace craft\test;
 
 use Codeception\PHPUnit\TestCase as CodeceptionTestCase;
 use Craft;
+use Craft\Cms\Migrations\Install;
 use Craft\Cms\Support\Arr;
 use craft\console\Application as ConsoleApplication;
 use craft\db\Connection;
@@ -19,7 +20,6 @@ use craft\helpers\Db;
 use craft\helpers\FileHelper;
 use craft\i18n\Locale;
 use craft\mail\Mailer;
-use craft\migrations\Install;
 use craft\models\Site;
 use craft\queue\Queue;
 use craft\services\Api;
@@ -482,15 +482,14 @@ class TestSetup
 
         $site = new Site($siteConfig);
 
-        $migration = new Install([
-            'db' => $connection,
-            'username' => self::USERNAME,
-            'password' => 'craftcms2018!!',
-            'email' => 'support@craftcms.com',
-            'site' => $site,
-        ]);
+        $migration = new Install(
+            username: self::USERNAME,
+            password: 'craftcms2018!!',
+            email: 'support@craftcms.com',
+            site: $site,
+        );
 
-        $migration->up(true);
+        $migration->up();
     }
 
     /**

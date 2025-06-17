@@ -7,8 +7,8 @@
 
 use Craft\Aliases\Facades\Aliases;
 use craft\helpers\FileHelper;
+use Craft\Yii2Adapter\Container;
 use yii\BaseYii;
-use yii\di\Container;
 
 /**
  * @inheritdoc

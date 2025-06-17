@@ -3,9 +3,9 @@
 namespace Craft\Cms\Tests;
 
 use Craft;
+use Craft\Cms\Migrations\Install;
 use Craft\Cms\Providers\CraftServiceProvider;
 use craft\elements\User;
-use craft\migrations\Install;
 use craft\models\Site;
 use craft\test\TestSetup;
 use Illuminate\Database\Eloquent\Factories\Factory;
@@ -58,13 +58,12 @@ class TestCase extends Orchestra
 
         $site = new Site($siteConfig);
 
-        $migration = new Install([
-            'db' => $app->getDb(),
-            'username' => 'craftcms',
-            'password' => 'craftcms2018!!',
-            'email' => 'support@craftcms.com',
-            'site' => $site,
-        ]);
+        $migration = new Install(
+            username: 'craftcms',
+            password: 'craftcms2018!!',
+            email: 'support@craftcms.com',
+            site: $site,
+        );
 
         $migration->up(true);
 

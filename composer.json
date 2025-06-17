@@ -130,7 +130,7 @@
     "codecept-build": "codecept build",
     "phpstan": "phpstan --memory-limit=1G",
     "rector": "rector",
-    "tests-cms": "./vendor/bin/pest cms --test-directory=cms/tests"
+    "tests-cms": "./vendor/bin/pest --configuration ./cms/phpunit.xml.dist --test-directory ./cms/tests"
   },
   "config": {
     "sort-packages": true,

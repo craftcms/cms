@@ -7,6 +7,8 @@
 
 namespace craft\db;
 
+use Illuminate\Support\Str;
+
 /**
  * This class provides constants for defining Craft’s database table names.
  *
@@ -112,4 +114,9 @@ abstract class Table
     /** @since 5.0 */
     public const WEBAUTHN = '{{%webauthn}}';
     public const WIDGETS = '{{%widgets}}';
+
+    public static function withoutYiiPlaceholder(string $table): string
+    {
+        return Str::of($table)->after('{{%')->before('}}')->value();
+    }
 }

@@ -5,8 +5,8 @@ use Craft\Yii2Adapter\Log\LogTarget;
 return [
     'id' => 'CraftCMS',
     'name' => 'Craft CMS',
-    'version' => '5.7.6',
-    'schemaVersion' => '5.8.0.0',
+    'version' => '6.0.0',
+    'schemaVersion' => '6.0.0.0',
     'minVersionRequired' => '4.5.0',
     'basePath' => dirname(__DIR__), // Defines the @app alias
     'runtimePath' => '@storage/runtime', // Defines the @runtime alias
@@ -177,8 +177,8 @@ return [
         'migrator' => [
             'class' => craft\db\MigrationManager::class,
             'track' => craft\db\MigrationManager::TRACK_CRAFT,
-            'migrationNamespace' => 'craft\migrations',
-            'migrationPath' => '@app/migrations',
+            'migrationNamespace' => 'Craft\Cms\Migrations',
+            'migrationPath' => '@package/Migrations',
         ],
         'sites' => [
             'class' => craft\services\Sites::class,
