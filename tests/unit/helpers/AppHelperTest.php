@@ -518,9 +518,9 @@ class AppHelperTest extends TestCase
             ['dbConfig', ['class', 'dsn', 'password', 'username', 'charset', 'tablePrefix', 'schemaMap', 'commandMap', 'attributes', 'enableSchemaCache']],
             ['mutexConfig', ['class', 'fileMode', 'dirMode']],
             ['webRequestConfig', ['class', 'enableCookieValidation', 'cookieValidationKey', 'enableCsrfValidation', 'enableCsrfCookie', 'csrfParam', ]],
-            ['cacheConfig', ['class', 'cachePath', 'fileMode', 'dirMode', 'defaultDuration']],
-            ['sessionConfig', ['class', 'flashParam', 'authAccessParam', 'name', 'cookieParams']],
-            ['userConfig', ['class', 'identityClass', 'enableAutoLogin', 'autoRenewCookie', 'loginUrl', 'authTimeout', 'identityCookie', 'usernameCookie', 'idParam', 'authTimeoutParam', 'absoluteAuthTimeoutParam', 'returnUrlParam']],
+            ['cacheConfig', ['class', 'keyPrefix', 'defaultDuration']],
+            ['sessionConfig', ['class', 'as session', 'authAccessParam', 'flashParam']],
+            ['userConfig', ['class', 'identityClass', 'enableAutoLogin', 'autoRenewCookie', 'loginUrl', 'authTimeout', 'usernameCookie']],
         ];
     }
 
