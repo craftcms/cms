@@ -522,14 +522,20 @@ class TestSetup
 
             // Set the ServiceLocator::$object->getProperty()` get method.
             if ($accessMethod) {
-                $mockApp->expects($test->any())
+                $class = new \ReflectionClass($test);
+                $method = $class->getMethod('any');
+
+                $mockApp->expects($method->invoke($test))
                     ->method($accessMethod)
                     ->willReturn($mock);
             }
         }
 
+        $class = new \ReflectionClass($test);
+        $method = $class->getMethod('any');
+
         // Set the map
-        $mockApp->expects($test->any())
+        $mockApp->expects($method->invoke($test))
             ->method('__get')
             ->willReturnMap($mockMapForMagicGet);
 
@@ -545,7 +551,10 @@ class TestSetup
      */
     public static function getMock(CodeceptionTestCase $test, string $class)
     {
-        return $test->getMockBuilder($class)
+        $reflection = new \ReflectionClass($test);
+        $method = $reflection->getMethod('getMockBuilder');
+
+        return $method->invokeArgs($test, [$class])
             ->disableOriginalConstructor()
             ->getMock();
     }

@@ -44,7 +44,7 @@ use yii\db\MigrationInterface;
  *
  * @since 6.0.0
  */
-class Install extends Migration implements MigrationInterface
+class Install extends Migration
 {
     public function __construct(
         public ?string $username = null,
@@ -55,7 +55,7 @@ class Install extends Migration implements MigrationInterface
     ) {
     }
 
-    public function up(): void
+    public function up(): bool
     {
         if (! $this->_validateProjectConfig($error)) {
             $message = "Project config validation failed: $error\n\nRun `composer install` or remove your `config/project/` folder and try again.";
@@ -68,6 +68,8 @@ class Install extends Migration implements MigrationInterface
         $this->addForeignKeys();
 
         $this->insertDefaultData();
+
+        return true;
     }
 
     /**
@@ -1354,8 +1356,10 @@ class Install extends Migration implements MigrationInterface
         ];
     }
 
-    public function down(): void
+    public function down(): bool
     {
         echo "Install migration cannot be reverted.\n";
+
+        return false;
     }
 }

@@ -20,7 +20,7 @@ const CRAFT_TESTS_PATH = __DIR__;
 /**
  * Initialize the Laravel Craft Application
  */
-(new \Craft\Cms\Tests\TestCase(''))
+(new \Craft\Cms\Tests\TestCase('laravel'))
     ->createApplication();
 
 config()->set('database.default', env('DB_DRIVER'));

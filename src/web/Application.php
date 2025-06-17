@@ -57,13 +57,13 @@ use yii\web\UnauthorizedHttpException;
  *
  * An instance of the Web Application class is globally accessible to web requests in Craft via [[\Craft::$app|`Craft::$app`]].
  *
- * @property-read Request $request The request component
- * @property-read Response $response The response component
+ * @property-read \Craft\Yii2Adapter\Web\Request $request The request component
+ * @property-read \Craft\Yii2Adapter\Web\Response $response The response component
  * @property-read Session $session The session component
  * @property-read UrlManager $urlManager The URL manager for this application
  * @property-read User $user The user component
- * @method Request getRequest() Returns the request component.
- * @method Response getResponse() Returns the response component.
+ * @method \Craft\Yii2Adapter\Web\Request getRequest() Returns the request component.
+ * @method \Craft\Yii2Adapter\Web\Response getResponse() Returns the response component.
  * @method Session getSession() Returns the session component.
  * @method UrlManager getUrlManager() Returns the URL manager for this application.
  * @method User getUser() Returns the user component.

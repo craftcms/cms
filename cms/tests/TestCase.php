@@ -65,7 +65,7 @@ class TestCase extends Orchestra
             site: $site,
         );
 
-        $migration->up(true);
+        $migration->up();
 
         // $this->artisan('migrate:fresh', $this->migrateFreshUsing());
     }
