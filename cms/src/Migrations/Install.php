@@ -350,7 +350,7 @@ class Install extends Migration
         });
 
         Schema::create(Table::withoutYiiPlaceholder(Table::ELEMENTS_BULKOPS), function (Blueprint $table) {
-            $table->integer('elementId')->nullable();
+            $table->integer('elementId');
             $table->char('key', 10);
             $table->dateTime('timestamp');
             $table->primary(['elementId', 'key']);
