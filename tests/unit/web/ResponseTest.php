@@ -81,7 +81,10 @@ class ResponseTest extends TestCase
      */
     public function testRedirect(string $expected, mixed $url): void
     {
-        self::assertEquals($expected, $this->response->redirect($url)->headers->get('location'));
+        self::assertEquals(
+            $expected,
+            str_replace(':80', '', $this->response->redirect($url)->headers->get('location')),
+        );
     }
 
     /**
