@@ -94,7 +94,7 @@ jobs:
           echo "::add-matcher::${{ runner.tool_cache }}/phpunit.json"
 
       - name: Copy tests .env
-        run: cp ./cms/tests/.env.example.${{ matrix.db }} ./cms/tests/.env
+        run: cp ./cms/.env.example.${{ matrix.db }} ./cms/.env
 
       - name: Install dependencies
         uses: ramsey/composer-install@v3
