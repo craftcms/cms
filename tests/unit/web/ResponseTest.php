@@ -117,8 +117,8 @@ class ResponseTest extends TestCase
         return [
             ['https://localhost/', ''],
             ['http://some-external-domain.com', 'http://some-external-domain.com'],
-            ['http://localhost/', '/'],
-            ['http://localhost/something-relative', '/something-relative'],
+            ['https://localhost/', '/'],
+            ['https://localhost/something-relative', '/something-relative'],
             ['http://localhost/actions/foo/bar', ['foo/bar']],
             ['http://localhost/actions/foo/bar?id=3', ['foo/bar', 'id' => 3]],
         ];
