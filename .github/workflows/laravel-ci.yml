@@ -26,10 +26,10 @@ jobs:
         with:
           extensions: json, dom, curl, libxml, mbstring
           coverage: none
- 
+
       - name: Install Pint
         run: composer global require laravel/pint
-      
+
       - name: Run Pint
         run: pint cms --test --verbose
 
@@ -65,7 +65,7 @@ jobs:
         options: --health-cmd="mysqladmin ping" --health-interval 10s --health-timeout 5s --health-retries 5
         ports:
           - 3306:3306
-    
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -101,4 +101,3 @@ jobs:
 
       - name: Execute tests
         run: vendor/bin/pest --ci --configuration ./cms/phpunit.xml.dist --test-directory ./cms/tests
-        env:
