@@ -8,7 +8,6 @@ use Craft\Cms\Providers\CraftServiceProvider;
 use craft\elements\User;
 use craft\models\Site;
 use craft\test\TestSetup;
-use Dotenv\Dotenv;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Config;
@@ -90,7 +89,7 @@ class TestCase extends Orchestra
         $dotenv = \Dotenv\Dotenv::createImmutable(__DIR__.'/../');
         $dotenv->load();
 
-        $configKey = "database.connections." . env('CRAFT_DB_DRIVER');
+        $configKey = 'database.connections.'.env('CRAFT_DB_DRIVER');
 
         $app['config']->set($configKey, array_merge(
             Config::array($configKey, []),
