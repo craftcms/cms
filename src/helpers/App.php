@@ -1078,7 +1078,7 @@ class App
             return [
                 'class' => MysqlMutex::class,
                 'db' => 'db2',
-                'keyPrefix' => Craft::$app->getEnvId(),
+                //'keyPrefix' => Craft::$app->getEnvId(),
             ];
         }
 
