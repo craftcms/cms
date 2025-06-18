@@ -853,30 +853,32 @@ class Matrix extends Field implements
     /**
      * @inheritdoc
      */
-    protected function actionMenuItems(): array
+    protected function actionMenuItems(?ElementInterface $element = null, bool $static = false): array
     {
         $items = [];
         $view = Craft::$app->getView();
 
-        if ($this->viewMode === self::VIEW_MODE_BLOCKS) {
-            // Expand/Collapse all
-            $expandAllId = sprintf('expand-all-%s', mt_rand());
-            $collapseAllId = sprintf('collapse-all-%s', mt_rand());
-            $items[] = [
-                'id' => $expandAllId,
-                'icon' => 'expand',
-                'label' => StringHelper::upperCaseFirst(Craft::t('app', 'Expand all blocks', [
-                    'type' => Entry::pluralLowerDisplayName(),
-                ])),
-            ];
-            $items[] = [
-                'id' => $collapseAllId,
-                'icon' => 'collapse',
-                'label' => StringHelper::upperCaseFirst(Craft::t('app', 'Collapse all blocks', [
-                    'type' => Entry::pluralLowerDisplayName(),
-                ])),
-            ];
-            $view->registerJsWithVars(fn($expandAllId, $collapseAllId, $fieldId) => <<<JS
+        // actions that should only be available if we have an element
+        if ($element) {
+            if ($this->viewMode === self::VIEW_MODE_BLOCKS) {
+                // Expand/Collapse all
+                $expandAllId = sprintf('expand-all-%s', mt_rand());
+                $collapseAllId = sprintf('collapse-all-%s', mt_rand());
+                $items[] = [
+                    'id' => $expandAllId,
+                    'icon' => 'expand',
+                    'label' => StringHelper::upperCaseFirst(Craft::t('app', 'Expand all blocks', [
+                        'type' => Entry::pluralLowerDisplayName(),
+                    ])),
+                ];
+                $items[] = [
+                    'id' => $collapseAllId,
+                    'icon' => 'collapse',
+                    'label' => StringHelper::upperCaseFirst(Craft::t('app', 'Collapse all blocks', [
+                        'type' => Entry::pluralLowerDisplayName(),
+                    ])),
+                ];
+                $view->registerJsWithVars(fn($expandAllId, $collapseAllId, $fieldId) => <<<JS
 (() => {
   const expandAllBtn = $('#' + $expandAllId);
   const collapseAllBtn = $('#' + $collapseAllId);
@@ -904,40 +906,40 @@ class Matrix extends Field implements
   }, 1);
 })();
 JS, [
-                $view->namespaceInputId($expandAllId),
-                $view->namespaceInputId($collapseAllId),
-                $view->namespaceInputId($this->getInputId()),
-            ]);
-        }
-
-        // Copy all
-        if ($this->maxEntries !== 1 && $this->viewMode !== self::VIEW_MODE_INDEX) {
-            if (!empty($items)) {
-                $items[] = ['type' => 'hr'];
+                    $view->namespaceInputId($expandAllId),
+                    $view->namespaceInputId($collapseAllId),
+                    $view->namespaceInputId($this->getInputId()),
+                ]);
             }
-            $copyAllId = sprintf('action-copy-all-%s', mt_rand());
-            $items[] = [
-                'id' => $copyAllId,
-                'icon' => 'clone-dashed',
-                'color' => \craft\enums\Color::Fuchsia,
-                'label' => StringHelper::upperCaseFirst(Craft::t('app', 'Copy all {type}', [
-                    'type' => Entry::pluralLowerDisplayName(),
-                ])),
-            ];
 
-            if ($this->viewMode === self::VIEW_MODE_CARDS) {
-                $view->registerJsWithVars(fn($copyAllId, $fieldId) => <<<JS
+            // Copy all
+            if ($this->maxEntries !== 1 && $this->viewMode !== self::VIEW_MODE_INDEX) {
+                if (!empty($items)) {
+                    $items[] = ['type' => 'hr'];
+                }
+                $copyAllId = sprintf('action-copy-all-%s', mt_rand());
+                $items[] = [
+                    'id' => $copyAllId,
+                    'icon' => 'clone-dashed',
+                    'color' => \craft\enums\Color::Fuchsia,
+                    'label' => StringHelper::upperCaseFirst(Craft::t('app', 'Copy all {type}', [
+                        'type' => Entry::pluralLowerDisplayName(),
+                    ])),
+                ];
+
+                if ($this->viewMode === self::VIEW_MODE_CARDS) {
+                    $view->registerJsWithVars(fn($copyAllId, $fieldId) => <<<JS
 (() => {
   $('#' + $copyAllId).on('activate', () => {
     Craft.cp.copyElements($('#' + $fieldId + ' > .nested-element-cards > .elements > li > .element'));
   });
 })();
 JS, [
-                    $view->namespaceInputId($copyAllId),
-                    $view->namespaceInputId($this->getInputId()),
-                ]);
-            } else {
-                $view->registerJsWithVars(fn($copyAllId, $fieldId, $baseInfo) => <<<JS
+                        $view->namespaceInputId($copyAllId),
+                        $view->namespaceInputId($this->getInputId()),
+                    ]);
+                } else {
+                    $view->registerJsWithVars(fn($copyAllId, $fieldId, $baseInfo) => <<<JS
 (() => {
   $('#' + $copyAllId).on('activate', () => {
     const elementInfo = [];
@@ -955,13 +957,14 @@ JS, [
   });
 })();
 JS, [
-                    $view->namespaceInputId($copyAllId),
-                    $view->namespaceInputId($this->getInputId()),
-                    [
-                        'type' => Entry::class,
-                        'fieldId' => $this->id,
-                    ],
-                ]);
+                        $view->namespaceInputId($copyAllId),
+                        $view->namespaceInputId($this->getInputId()),
+                        [
+                            'type' => Entry::class,
+                            'fieldId' => $this->id,
+                        ],
+                    ]);
+                }
             }
         }
 

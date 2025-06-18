@@ -570,7 +570,7 @@ class CustomField extends BaseField
     {
         if ($this->_field instanceof Actionable) {
             $this->_field->static = $static;
-            $items = $this->_field->getActionMenuItems();
+            $items = $this->_field->getActionMenuItems($element, $static);
         } else {
             $items = [];
         }
