@@ -1,0 +1,100 @@
+name: laravel-ci.yml
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - 6.x-internal
+  pull_request:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  pint:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.head_ref }}
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          extensions: json, dom, curl, libxml, mbstring
+          coverage: none
+ 
+      - name: Install Pint
+        run: composer global require laravel/pint
+      
+      - name: Run Pint
+        run: pint cms --test --verbose
+
+  tests:
+    needs: [pint]
+    name: PHP ${{ matrix.php }} on ${{ matrix.db }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: true
+      matrix:
+        php: [8.4, 8.3, 8.2]
+        db: [mysql, pgsql]
+    services:
+      # Install Postgres
+      pgsql:
+        image: postgres:latest
+        env:
+          POSTGRES_USER: root
+          POSTGRES_PASSWORD: mysecretpassword
+          POSTGRES_DB: craft_test
+        ports:
+          - 5432:5432
+        # Set health checks to wait until Postgres has started
+        options: --health-cmd pg_isready --health-interval 10s --health-timeout 5s --health-retries 3
+      # Install MySQL
+      mysql:
+        image: bitnami/mysql:8.0.37
+        env:
+          MYSQL_ROOT_PASSWORD: mysecretpassword
+          MYSQL_DATABASE: craft_test
+          MYSQL_AUTHENTICATION_PLUGIN: mysql_native_password
+        # Set health checks to wait until mysql has started
+        options: --health-cmd="mysqladmin ping" --health-interval 10s --health-timeout 5s --health-retries 5
+        ports:
+          - 3306:3306
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ matrix.php }}
+          extensions: dom, curl, libxml, mbstring, zip, pcntl, pdo, sqlite, pdo_sqlite, bcmath, soap, intl, gd, exif, iconv, imagick, fileinfo
+          coverage: none
+        env:
+          COMPOSER_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          COMPOSER_AUTH_JSON: |
+            {
+              "http-basic": {
+                "repo.packagist.com": {
+                  "username": "${{ secrets.packagist_username }}",
+                  "password": "${{ secrets.packagist_token }}"
+                }
+              }
+            }
+
+      - name: Setup problem matchers
+        run: |
+          echo "::add-matcher::${{ runner.tool_cache }}/php.json"
+          echo "::add-matcher::${{ runner.tool_cache }}/phpunit.json"
+
+      - name: Install dependencies
+        uses: ramsey/composer-install@v3
+
+      - name: Execute tests
+        run: vendor/bin/pest --ci --configuration ./cms/phpunit.xml.dist --test-directory ./cms/tests
