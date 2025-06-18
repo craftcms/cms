@@ -1,4 +1,4 @@
-name: laravel-ci.yml
+name: "ci / Laravel"
 on:
   workflow_dispatch:
   push:
@@ -12,6 +12,7 @@ concurrency:
 
 jobs:
   pint:
+    name: "Code Quality / Pint"
     runs-on: ubuntu-latest
     timeout-minutes: 5
 
@@ -35,7 +36,7 @@ jobs:
 
   tests:
     needs: [pint]
-    name: PHP ${{ matrix.php }} on ${{ matrix.db }}
+    name: Tests / PHP ${{ matrix.php }} on ${{ matrix.db }}
     runs-on: ubuntu-latest
     strategy:
       fail-fast: true
