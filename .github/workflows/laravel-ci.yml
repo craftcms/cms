@@ -7,7 +7,7 @@ on:
   pull_request:
 
 concurrency:
-  group: ci-${{ github.ref }}
+  group: laravel-ci-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
