@@ -149,7 +149,7 @@ class CraftConnector extends Yii2
         /**
          * Fake Laravel request
          */
-        app()->bind('request', fn () => Request::create(
+        app()->bind('request', fn() => Request::create(
             uri: $request->getUri(),
             method: $request->getMethod(),
             parameters: $request->getParameters(),
@@ -206,8 +206,10 @@ class CraftConnector extends Yii2
         $yiiRequest = $app->getRequest();
         if ($request->getContent() !== null) {
             $yiiRequest->setRawBody($request->getContent());
+            /** @phpstan-ignore-next-line */
             $yiiRequest->setBodyParams(null);
         } else {
+            /** @phpstan-ignore-next-line */
             $yiiRequest->setRawBody(null);
             $yiiRequest->setBodyParams($_POST);
         }
@@ -249,6 +251,7 @@ class CraftConnector extends Yii2
 
         // /Addition
 
+        /** @phpstan-ignore-next-line */
         if (empty($content) && !empty($response->content) && !isset($response->stream)) {
             throw new \Exception('No content was sent from Yii application');
         }
