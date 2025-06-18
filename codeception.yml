@@ -9,7 +9,7 @@ paths:
 bootstrap: _bootstrap.php
 settings:
   colors: true
-  memory_limit: 2048M
+  memory_limit: 4096M
 coverage:
   enabled: true
   include:
