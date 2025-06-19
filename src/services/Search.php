@@ -919,13 +919,13 @@ SQL;
 
                         // Add quotes for exact match
                         if ($isMysql && str_contains($keywords, ' ')) {
-                            if (Str::first($keywords) === '*') {
+                            if (Str::take($keywords, 1) === '*') {
                                 $keywords = StringHelper::insert($keywords, '"', 1);
                             } else {
                                 $keywords = '"' . $keywords;
                             }
 
-                            if (Str::last($keywords) === '*') {
+                            if (Str::take($keywords, -1) === '*') {
                                 $keywords = StringHelper::insert($keywords, '"', StringHelper::length($keywords) - 1);
                             } else {
                                 $keywords .= '"';

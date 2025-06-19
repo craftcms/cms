@@ -126,17 +126,17 @@ class SearchQuery
 
             if ($token && (str_starts_with($token, "'") || str_starts_with($token, '"'))) {
                 // Is the end quote at the end of this very token?
-                if (Str::last($token) === Str::first($token)) {
+                if (Str::take($token, -1) === Str::take($token, 1)) {
                     $token = mb_substr($token, 1, -1);
                 } else {
-                    $token = mb_substr($token, 1) . ' ' . strtok(Str::first($token, 1));
+                    $token = mb_substr($token, 1) . ' ' . strtok(Str::take($token, 1));
                 }
 
                 $term->phrase = true;
             }
 
             // Include sub-word matches?
-            if ($token && Str::first($token, 1) === '*') {
+            if ($token && Str::take($token, 1) === '*') {
                 $term->subLeft = true;
                 $token = mb_substr($token, 1);
             }

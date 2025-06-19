@@ -18,34 +18,6 @@ class Str extends \Illuminate\Support\Str
     /** @see escapeShortcodes() */
     private static array|false|null $shortcodeEscapeMap = null;
 
-    /**
-     * Get the first n characters from the string.
-     *
-     * @param  string  $string
-     * @param  int  $length
-     * @param string $encoding
-     *
-     * @return string
-     */
-    public static function first(string $string, int $length = 1, string $encoding = 'UTF-8'): string
-    {
-        return static::substr($string, 0, $length, $encoding);
-    }
-
-    /**
-     * Get the last n characters from the string.
-     *
-     * @param  string  $string
-     * @param  int  $length
-     * @param string $encoding
-     *
-     * @return string
-     */
-    public static function last(string $string, int $length = 1, string $encoding = 'UTF-8'): string
-    {
-        return static::substr($string, -1, $length, $encoding);
-    }
-
     public static function uuidPattern(): string
     {
         return (new GenericValidator())->getPattern();
