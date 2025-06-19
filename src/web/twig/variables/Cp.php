@@ -21,7 +21,6 @@ use craft\helpers\App;
 use craft\helpers\Assets;
 use craft\helpers\Cp as CpHelper;
 use craft\helpers\Inflector;
-use craft\helpers\StringHelper;
 use craft\helpers\UrlHelper;
 use craft\i18n\Locale;
 use craft\models\FieldLayout;

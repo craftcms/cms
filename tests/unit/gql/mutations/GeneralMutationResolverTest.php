@@ -19,7 +19,6 @@ use craft\gql\base\Mutation;
 use craft\gql\base\MutationResolver;
 use craft\gql\GqlEntityRegistry;
 use craft\gql\resolvers\mutations\Entry as EntryMutationResolver;
-use craft\helpers\StringHelper;
 use craft\models\GqlSchema;
 use craft\services\Elements;
 use craft\test\TestCase;

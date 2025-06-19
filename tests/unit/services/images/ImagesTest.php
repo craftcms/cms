@@ -10,7 +10,6 @@ namespace crafttests\unit\services\images;
 use Codeception\Test\Unit;
 use Craft;
 use craft\helpers\FileHelper;
-use craft\helpers\StringHelper;
 use craft\services\Images;
 use craft\test\TestCase;
 use Imagick;

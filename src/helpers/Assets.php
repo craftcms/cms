@@ -253,7 +253,7 @@ class Assets
      */
     public static function filename2Title(string $filename): string
     {
-        $title = mb_ucfirst(implode(' ', StringHelper::toWords($filename, false, true)));
+        $title = mb_ucfirst(implode(' ', Str::toWords($filename, false, true)));
 
         if (strlen($title) > 255) {
             $title = rtrim(substr($title, 255), ' ');

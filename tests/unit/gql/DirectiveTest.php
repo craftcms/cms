@@ -22,7 +22,6 @@ use craft\gql\GqlEntityRegistry;
 use craft\gql\types\elements\Asset as GqlAssetType;
 use craft\gql\types\elements\Entry as GqlEntryType;
 use craft\helpers\Json;
-use craft\helpers\StringHelper;
 use craft\services\Config;
 use craft\test\mockclasses\elements\ExampleElement;
 use craft\test\mockclasses\gql\MockDirective;

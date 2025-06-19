@@ -24,7 +24,6 @@ use craft\helpers\Db;
 use craft\helpers\ElementHelper;
 use craft\helpers\Queue;
 use craft\helpers\Search as SearchHelper;
-use craft\helpers\StringHelper;
 use craft\queue\jobs\UpdateSearchIndex;
 use craft\search\SearchQuery;
 use craft\search\SearchQueryTerm;
@@ -920,13 +919,13 @@ SQL;
                         // Add quotes for exact match
                         if ($isMysql && str_contains($keywords, ' ')) {
                             if (Str::take($keywords, 1) === '*') {
-                                $keywords = StringHelper::insert($keywords, '"', 1);
+                                $keywords = Str::insert($keywords, '"', 1);
                             } else {
                                 $keywords = '"' . $keywords;
                             }
 
                             if (Str::take($keywords, -1) === '*') {
-                                $keywords = StringHelper::insert($keywords, '"', StringHelper::length($keywords) - 1);
+                                $keywords = Str::insert($keywords, '"', Str::length($keywords) - 1);
                             } else {
                                 $keywords .= '"';
                             }

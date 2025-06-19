@@ -15,7 +15,6 @@ use craft\elements\User;
 use craft\enums\CmsEdition;
 use craft\events\UserEvent;
 use craft\helpers\Db;
-use craft\helpers\StringHelper;
 use craft\mail\Message;
 use craft\services\Users;
 use craft\test\EventItem;

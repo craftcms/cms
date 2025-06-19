@@ -9,7 +9,6 @@ namespace craft\validators;
 
 use Craft;
 use Craft\Cms\Support\Str;
-use craft\helpers\StringHelper;
 
 /**
  * Class StringValidator.

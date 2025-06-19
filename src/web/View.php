@@ -20,7 +20,6 @@ use craft\helpers\FileHelper;
 use craft\helpers\Html;
 use craft\helpers\Json;
 use craft\helpers\Path;
-use craft\helpers\StringHelper;
 use craft\web\twig\CpExtension;
 use craft\web\twig\Environment;
 use craft\web\twig\Extension;
@@ -965,7 +964,7 @@ class View extends \yii\web\View
     private function _resolveTemplateInternal(string $name, bool $publicOnly): string|false
     {
         // Normalize the template name
-        $name = trim(preg_replace('#/{2,}#', '/', str_replace('\\', '/', StringHelper::convertToUtf8($name, 'UTF-8'))), '/');
+        $name = trim(preg_replace('#/{2,}#', '/', str_replace('\\', '/', Str::convertToUtf8($name, 'UTF-8'))), '/');
 
         $key = $this->_templatesPath . ':' . $name;
 

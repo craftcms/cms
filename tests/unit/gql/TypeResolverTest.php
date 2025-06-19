@@ -19,7 +19,6 @@ use craft\gql\resolvers\elements\Asset as AssetResolver;
 use craft\gql\resolvers\elements\Entry as EntryResolver;
 use craft\gql\resolvers\elements\GlobalSet as GlobalSetResolver;
 use craft\gql\resolvers\elements\User as UserResolver;
-use craft\helpers\StringHelper;
 use craft\test\mockclasses\elements\ExampleElement;
 use craft\test\TestCase;
 use crafttests\fixtures\AssetFixture;

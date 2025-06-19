@@ -3,12 +3,18 @@
 namespace Craft\Cms\Support;
 
 use BackedEnum;
+use Craft;
 use craft\helpers\App;
+use craft\helpers\HtmlPurifier;
+use Exception;
+use HTMLPurifier_Config;
 use Illuminate\Support\Facades\Log;
 use InvalidArgumentException;
 use LitEmoji\LitEmoji;
 use Ramsey\Uuid\Validator\GenericValidator;
+use Stringy\Stringy as BaseStringy;
 use voku\helper\ASCII;
+use yii\base\InvalidConfigException;
 
 class Str extends \Illuminate\Support\Str
 {
@@ -97,11 +103,51 @@ class Str extends \Illuminate\Support\Str
     }
 
     /**
+     * Attempts to convert a string to UTF-8 and clean any non-valid UTF-8 characters.
+     *
+     * @param string $str
+     * @return string
+     */
+    public static function convertToUtf8(string $str): string
+    {
+        // If it's already a UTF8 string, just clean and return it
+        if (mb_check_encoding($str, 'UTF-8')) {
+            return HtmlPurifier::cleanUtf8($str);
+        }
+
+        // Otherwise set HTMLPurifier to the actual string encoding
+        $config = HTMLPurifier_Config::createDefault();
+        $config->set('Core.Encoding', static::encoding($str));
+
+        // Clean it
+        $str = HtmlPurifier::cleanUtf8($str);
+
+        // Convert it to UTF8 if possible
+        if (App::checkForValidIconv()) {
+            $str = HtmlPurifier::convertToUtf8($str, $config);
+        } else {
+            $str = mb_convert_encoding($str, 'UTF-8');
+        }
+
+        return $str;
+    }
+
+    /**
+     * Gets the encoding of the given string.
+     *
+     * @param string $str The string to process.
+     * @return string The encoding of the string.
+     */
+    public static function encoding(string $str): string
+    {
+        return mb_strtolower(mb_detect_encoding($str, mb_detect_order(), true));
+    }
+
+    /**
      * Returns a handle-safe version of a string.
      *
      * @param string $str
      * @return string
-     * @since 6.0.0
      */
     public static function toHandle(string $str): string
     {
@@ -131,7 +177,6 @@ class Str extends \Illuminate\Support\Str
      *
      * @param string $email
      * @return string
-     * @since 6.0.0
      */
     public static function idnToUtf8Email(string $email): string
     {
@@ -162,7 +207,6 @@ class Str extends \Illuminate\Support\Str
      *
      * @param string $str
      * @return string
-     * @since 6.0.0
      */
     public static function shortcodesToEmoji(string $str): string
     {
@@ -174,7 +218,6 @@ class Str extends \Illuminate\Support\Str
      *
      * @param string $str
      * @return string
-     * @since 6.0.0
      */
     public static function emojiToShortcodes(string $str): string
     {
@@ -189,6 +232,49 @@ class Str extends \Illuminate\Support\Str
 
         // Replace all 4-byte sequences individually
         return preg_replace_callback("/$dl(.+?)$dr/", fn($m) => LitEmoji::unicodeToShortcode($m[1]), $str);
+    }
+
+    /**
+     * Replaces 4-byte UTF-8 characters in a string.
+     * ---
+     * ```php
+     * // Convert emojis to smilies
+     * $string = StringHelper::replaceMb4($string, function($char) {
+     *     switch ($char) {
+     *         case '😀':
+     *             return ':)';
+     *         case '☹️':
+     *             return ':(';
+     *         default:
+     *             return '¯\_(ツ)_/¯';
+     *     }
+     * });
+     * ```
+     *
+     * @param string $str The string
+     * @param callable|string $replace The replacement string, or callback function.
+     * @return string The string with converted 4-byte UTF-8 characters
+     */
+    public static function replaceMb4(string $str, callable|string $replace): string
+    {
+        $r = preg_replace_callback('/./u', function(array $match) use ($replace): string {
+            if (strlen($match[0]) >= 4) {
+                return is_callable($replace) ? $replace($match[0]) : $replace;
+            }
+
+            return $match[0];
+        }, $str);
+
+        if ($r === null) {
+            $message = match (preg_last_error()) {
+                PREG_BAD_UTF8_ERROR => 'Malformed UTF-8 data',
+                default => 'Invalid string',
+            };
+
+            throw new InvalidArgumentException($message);
+        }
+
+        return $r;
     }
 
     /**
@@ -207,24 +293,6 @@ class Str extends \Illuminate\Support\Str
         }
 
         return str_replace(array_keys($map), $map, $str);
-    }
-
-    /**
-     * Unscapes shortcodes.
-     *
-     * @param string $str
-     * @return string
-     * @since 4.5.0
-     */
-    public static function unescapeShortcodes(string $str): string
-    {
-        $map = self::shortcodeEscapeMap();
-
-        if ($map === false) {
-            return $str;
-        }
-
-        return str_replace($map, array_keys($map), $str);
     }
 
     private static function shortcodeEscapeMap(): array|false
@@ -251,6 +319,24 @@ class Str extends \Illuminate\Support\Str
     }
 
     /**
+     * Unscapes shortcodes.
+     *
+     * @param string $str
+     * @return string
+     * @since 4.5.0
+     */
+    public static function unescapeShortcodes(string $str): string
+    {
+        $map = self::shortcodeEscapeMap();
+
+        if ($map === false) {
+            return $str;
+        }
+
+        return str_replace($map, array_keys($map), $str);
+    }
+
+    /**
      * Detects whether the given string has any 4-byte UTF-8 characters.
      *
      * @param string $str The string to process.
@@ -270,47 +356,38 @@ class Str extends \Illuminate\Support\Str
     }
 
     /**
-     * Replaces 4-byte UTF-8 characters in a string.
-     * ---
-     * ```php
-     * // Convert emojis to smilies
-     * $string = StringHelper::replaceMb4($string, function($char) {
-     *     switch ($char) {
-     *         case '😀':
-     *             return ':)';
-     *         case '☹️':
-     *             return ':(';
-     *         default:
-     *             return '¯\_(ツ)_/¯';
-     *     }
-     * });
-     * ```
+     * Base64-decodes and decrypts a string generated by [[encenc()]].
      *
-     * @param string $str The string
-     * @param callable|string $replace The replacement string, or callback function.
-     * @return string The string with converted 4-byte UTF-8 characters
-     * @since 6.0.0
+     * @param string $str The string.
+     * @return string
+     * @throws InvalidConfigException on OpenSSL not loaded
+     * @throws \yii\base\Exception on OpenSSL error
      */
-    public static function replaceMb4(string $str, callable|string $replace): string
+    public static function decdec(string $str): string
     {
-        $r = preg_replace_callback('/./u', function(array $match) use ($replace): string {
-            if (strlen($match[0]) >= 4) {
-                return is_callable($replace) ? $replace($match[0]) : $replace;
-            }
-
-            return $match[0];
-        }, $str);
-
-        if ($r === null) {
-            $message = match (preg_last_error()) {
-                PREG_BAD_UTF8_ERROR => 'Malformed UTF-8 data',
-                default => 'Invalid string',
-            };
-
-            throw new InvalidArgumentException($message);
+        if (strncmp($str, 'base64:', 7) === 0) {
+            $str = base64_decode(substr($str, 7));
         }
 
-        return $r;
+        if (strncmp($str, 'crypt:', 6) === 0) {
+            $str = Craft::$app->getSecurity()->decryptByKey(substr($str, 6));
+        }
+
+        return $str;
+    }
+
+    /**
+     * Encrypts and base64-encodes a string.
+     *
+     * @param string $str the string
+     * @return string
+     * @throws InvalidConfigException on OpenSSL not loaded
+     * @throws \yii\base\Exception on OpenSSL error
+     * @see decdec()
+     */
+    public static function encenc(string $str): string
+    {
+        return 'base64:' . base64_encode('crypt:' . Craft::$app->getSecurity()->encryptByKey($str));
     }
 
     /**
@@ -333,10 +410,33 @@ class Str extends \Illuminate\Support\Str
     }
 
     /**
+     * Indents each line in the given string.
+     *
+     * @param string $str
+     * @return string
+     */
+    public static function indent(string $str, string $indent = '    '): string
+    {
+        return implode("\n", array_map(fn(string $line) => $indent . $line, static::lines($str)));
+    }
+
+    /**
+     * Inserts $substring into the string at the $index provided.
+     *
+     * @param string $str The string to insert into.
+     * @param string $substring The string to be inserted.
+     * @param int $index The 0-based index at which to insert the substring.
+     * @return string The resulting string after the insertion
+     */
+    public static function insert(string $str, string $substring, int $index): string
+    {
+        return static::substr($str, 0, $index) . $substring . static::substr($str, $index);
+    }
+
+    /**
      * Returns a regex pattern for invisible characters.
      *
      * @return string
-     * @since 6.0.0
      */
     public static function invisibleCharsPattern(): string
     {
@@ -360,6 +460,91 @@ class Str extends \Illuminate\Support\Str
         );
 
         return sprintf('/%s/iu', implode('|', $invisibleCharCodes));
+    }
+
+    /**
+     * Returns the first line of a string.
+     *
+     * @param string $str
+     * @return string
+     */
+    public static function firstLine(string $str): string
+    {
+        return static::lines($str)[0];
+    }
+
+    /**
+     * Splits on newlines and carriage returns, returning an array of strings
+     * corresponding to the lines in the string.
+     *
+     * @param string $str The string to split.
+     * @return non-empty-array<string> An array of strings.
+     */
+    public static function lines(string $str): array
+    {
+        $lines = mb_split("[\r\n]{1,2}", $str);
+
+        if ($lines === false) {
+            return [''];
+        }
+
+        return $lines;
+    }
+
+    /**
+     * Returns true if the string contains only hexadecimal chars, false otherwise.
+     *
+     * @param string $str The string to check.
+     * @return bool Whether $str contains only hexadecimal chars.
+     */
+    public static function isHexadecimal(string $str): bool
+    {
+        return mb_ereg_match('^[[:xdigit:]]*$', $str);
+    }
+
+    /**
+     * Returns an array of words extracted from a string
+     *
+     * @param string $str The string
+     * @param bool $lower Whether the returned words should be lowercased
+     * @param bool $removePunctuation Whether punctuation should be removed from the returned words
+     * @return string[] The prepped words in the string
+     */
+    public static function toWords(string $str, bool $lower = false, bool $removePunctuation = false): array
+    {
+        // Convert CamelCase to multiple words
+        // Regex copied from Inflector::camel2words(), but without dropping punctuation
+        $str = preg_replace('/(?<!\p{Lu})(\p{Lu})|(\p{Lu})(?=\p{Ll})/u', ' \0', $str);
+
+        if ($lower) {
+            // Make it lowercase
+            $str = mb_strtolower($str);
+        }
+
+        if ($removePunctuation) {
+            $str = str_replace(['.', '_', '-'], ' ', $str);
+        }
+
+        // Remove inner-word punctuation.
+        $str = preg_replace('/[\'"‘’“”ʻ\[\]\(\)\{\}:]/u', '', $str);
+
+        // Split on the words and return
+        return static::splitOnWords($str);
+    }
+
+    /**
+     * Splits a string into an array of the words in the string.
+     *
+     * @param string $str The string
+     * @return string[] The words in the string
+     */
+    public static function splitOnWords(string $str): array
+    {
+        // Split on anything that is not alphanumeric, or a period, underscore, or hyphen.
+        // Reference: http://www.regular-expressions.info/unicode.html
+        preg_match_all('/[\p{L}\p{N}\p{M}._-]+/u', $str, $matches);
+
+        return Arr::whereNotEmpty($matches[0]);
     }
 
     public static function flushCache(): void

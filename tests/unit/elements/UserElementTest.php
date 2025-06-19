@@ -14,7 +14,6 @@ use craft\db\Table;
 use craft\elements\User;
 use craft\errors\InvalidElementException;
 use craft\helpers\Session;
-use craft\helpers\StringHelper;
 use craft\services\Users;
 use craft\test\TestCase;
 use DateInterval;

@@ -10,7 +10,6 @@ namespace crafttests\unit\services;
 use Codeception\Test\Unit;
 use Craft;
 use Craft\Cms\Support\Str;
-use craft\helpers\StringHelper;
 use craft\services\ProjectConfig;
 use craft\services\Routes;
 use craft\test\TestCase;

@@ -12,7 +12,6 @@ use Craft;
 use Craft\Cms\Support\Str;
 use craft\errors\ElementNotFoundException;
 use craft\events\ConfigEvent;
-use craft\helpers\StringHelper;
 use craft\test\TestCase;
 use UnitTester;
 

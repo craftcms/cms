@@ -24,7 +24,6 @@ use craft\gql\GqlEntityRegistry;
 use craft\gql\interfaces\elements\User as UserInterface;
 use craft\gql\TypeLoader;
 use craft\helpers\Db;
-use craft\helpers\StringHelper;
 use craft\models\CategoryGroup;
 use craft\models\EntryType;
 use craft\models\GqlSchema;

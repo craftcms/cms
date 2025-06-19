@@ -26,7 +26,6 @@ use craft\gql\types\elements\GlobalSet as GlobalSetGqlType;
 use craft\gql\types\elements\Tag as TagGqlType;
 use craft\gql\types\elements\User as UserGqlType;
 use craft\helpers\Json;
-use craft\helpers\StringHelper;
 use craft\imagetransforms\ImageTransformer;
 use craft\models\CategoryGroup;
 use craft\models\EntryType;

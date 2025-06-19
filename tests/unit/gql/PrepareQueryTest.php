@@ -18,7 +18,6 @@ use craft\gql\resolvers\elements\GlobalSet as GlobalSetResolver;
 use craft\gql\resolvers\elements\Tag as TagResolver;
 use craft\gql\resolvers\elements\User as UserResolver;
 use craft\helpers\Db;
-use craft\helpers\StringHelper;
 use craft\models\GqlSchema;
 use craft\records\CategoryGroup;
 use craft\records\Element;

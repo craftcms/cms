@@ -27,7 +27,7 @@ class Path
     public static function ensurePathIsContained(string $path): bool
     {
         // Sanitize
-        $path = StringHelper::convertToUtf8($path);
+        $path = Str::convertToUtf8($path);
 
         $segs = Arr::whereNotEmpty(preg_split('/[\\/\\\\]/', $path));
         $level = 0;

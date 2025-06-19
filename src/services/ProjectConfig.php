@@ -24,7 +24,6 @@ use craft\helpers\Db;
 use craft\helpers\FileHelper;
 use craft\helpers\Json;
 use craft\helpers\ProjectConfig as ProjectConfigHelper;
-use craft\helpers\StringHelper;
 use craft\models\ProjectConfigData;
 use craft\models\ReadOnlyProjectConfigData;
 use Symfony\Component\Yaml\Yaml;
@@ -828,7 +827,7 @@ class ProjectConfig extends Component
                             // Prepare for delta
                             if (!empty($currentSet['removed']) && array_key_exists($key, $currentSet['removed'])) {
                                 if (is_string($changeSet['removed'][$key])) {
-                                    $changeSet['removed'][$key] = StringHelper::decdec($changeSet['removed'][$key]);
+                                    $changeSet['removed'][$key] = Str::decdec($changeSet['removed'][$key]);
                                 }
 
                                 $changeSet['removed'][$key] = Json::decodeIfJson($changeSet['removed'][$key]);
@@ -1820,7 +1819,7 @@ class ProjectConfig extends Component
 
             if ($config) {
                 // Try to decode it in case it contains any 4+ byte characters
-                $config = StringHelper::decdec($config);
+                $config = Str::decdec($config);
                 if (str_starts_with($config, '{')) {
                     $data = Json::decode($config);
                 } else {
@@ -1853,7 +1852,7 @@ class ProjectConfig extends Component
                     }
                     $current = &$current[$segment];
                 }
-                $current = Json::decode(StringHelper::decdec($value));
+                $current = Json::decode(Str::decdec($value));
             }
             return ProjectConfigHelper::cleanupConfig($data);
         }, $this->cacheDuration, $this->getCacheDependency());

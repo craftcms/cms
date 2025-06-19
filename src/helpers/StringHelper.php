@@ -301,26 +301,7 @@ class StringHelper extends \yii\helpers\StringHelper
      */
     public static function convertToUtf8(string $str): string
     {
-        // If it's already a UTF8 string, just clean and return it
-        if (static::isUtf8($str)) {
-            return HtmlPurifier::cleanUtf8($str);
-        }
-
-        // Otherwise set HTMLPurifier to the actual string encoding
-        $config = HTMLPurifier_Config::createDefault();
-        $config->set('Core.Encoding', static::encoding($str));
-
-        // Clean it
-        $str = HtmlPurifier::cleanUtf8($str);
-
-        // Convert it to UTF8 if possible
-        if (App::checkForValidIconv()) {
-            $str = HtmlPurifier::convertToUtf8($str, $config);
-        } else {
-            $str = mb_convert_encoding($str, 'UTF-8');
-        }
-
-        return $str;
+        return Str::convertToUtf8($str);
     }
 
     /**
@@ -332,7 +313,7 @@ class StringHelper extends \yii\helpers\StringHelper
      */
     public static function count(string $str): int
     {
-        return BaseStringy::create($str)->count();
+        return Str::length($str);
     }
 
     /**
@@ -373,15 +354,7 @@ class StringHelper extends \yii\helpers\StringHelper
      */
     public static function decdec(string $str): string
     {
-        if (strncmp($str, 'base64:', 7) === 0) {
-            $str = base64_decode(substr($str, 7));
-        }
-
-        if (strncmp($str, 'crypt:', 6) === 0) {
-            $str = Craft::$app->getSecurity()->decryptByKey(substr($str, 6));
-        }
-
-        return $str;
+        return Str::decdec($str);
     }
 
     /**
@@ -409,7 +382,7 @@ class StringHelper extends \yii\helpers\StringHelper
      */
     public static function encenc(string $str): string
     {
-        return 'base64:' . base64_encode('crypt:' . Craft::$app->getSecurity()->encryptByKey($str));
+        return Str::encenc($str);
     }
 
     /**
@@ -432,7 +405,7 @@ class StringHelper extends \yii\helpers\StringHelper
      */
     public static function encoding(string $str): string
     {
-        return mb_strtolower(mb_detect_encoding($str, mb_detect_order(), true));
+        return Str::encoding($str);
     }
 
     /**
@@ -625,7 +598,7 @@ class StringHelper extends \yii\helpers\StringHelper
      */
     public static function insert(string $str, string $substring, int $index): string
     {
-        return (string)BaseStringy::create($str)->insert($substring, $index);
+        return Str::insert($str, $substring, $index);
     }
 
     /**
@@ -700,7 +673,7 @@ class StringHelper extends \yii\helpers\StringHelper
      */
     public static function isHexadecimal(string $str): bool
     {
-        return BaseStringy::create($str)->isHexadecimal();
+        return Str::isHexadecimal($str);
     }
 
     /**
@@ -867,8 +840,7 @@ class StringHelper extends \yii\helpers\StringHelper
      */
     public static function lines(string $str): array
     {
-        $lines = BaseStringy::create($str)->lines();
-        return array_map(fn(BaseStringy $line) => (string)$line, $lines);
+        return Str::lines($str);
     }
 
     /**
@@ -880,7 +852,7 @@ class StringHelper extends \yii\helpers\StringHelper
      */
     public static function firstLine(string $str): string
     {
-        return (string)BaseStringy::create($str)->lines()[0];
+        return Str::firstLine($str);
     }
 
     /**
@@ -1325,11 +1297,7 @@ class StringHelper extends \yii\helpers\StringHelper
      */
     public static function splitOnWords(string $str): array
     {
-        // Split on anything that is not alphanumeric, or a period, underscore, or hyphen.
-        // Reference: http://www.regular-expressions.info/unicode.html
-        preg_match_all('/[\p{L}\p{N}\p{M}\._-]+/u', $str, $matches);
-
-        return Arr::whereNotEmpty($matches[0]);
+        return Str::splitOnWords($str);
     }
 
     /**
@@ -1707,24 +1675,7 @@ class StringHelper extends \yii\helpers\StringHelper
      */
     public static function toWords(string $str, bool $lower = false, bool $removePunctuation = false): array
     {
-        // Convert CamelCase to multiple words
-        // Regex copied from Inflector::camel2words(), but without dropping punctuation
-        $str = preg_replace('/(?<!\p{Lu})(\p{Lu})|(\p{Lu})(?=\p{Ll})/u', ' \0', $str);
-
-        if ($lower) {
-            // Make it lowercase
-            $str = mb_strtolower($str);
-        }
-
-        if ($removePunctuation) {
-            $str = str_replace(['.', '_', '-'], ' ', $str);
-        }
-
-        // Remove inner-word punctuation.
-        $str = preg_replace('/[\'"‘’“”ʻ\[\]\(\)\{\}:]/u', '', $str);
-
-        // Split on the words and return
-        return static::splitOnWords($str);
+        return Str::toWords($str, $lower, $removePunctuation);
     }
 
     /**
@@ -1906,7 +1857,7 @@ class StringHelper extends \yii\helpers\StringHelper
      */
     public static function indent(string $str, string $indent = '    '): string
     {
-        return implode("\n", array_map(fn(string $line) => $indent . $line, static::lines($str)));
+        return Str::indent($str, $indent);
     }
 
     /**

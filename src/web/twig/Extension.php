@@ -30,7 +30,6 @@ use craft\helpers\HtmlPurifier;
 use craft\helpers\Json;
 use craft\helpers\MoneyHelper;
 use craft\helpers\Sequence;
-use craft\helpers\StringHelper;
 use craft\helpers\Template as TemplateHelper;
 use craft\helpers\UrlHelper;
 use craft\i18n\Locale;
@@ -1148,7 +1147,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
      */
     public function encencFilter(mixed $str): string
     {
-        return StringHelper::encenc((string)$str);
+        return Str::encenc((string)$str);
     }
 
     /**

@@ -12,7 +12,6 @@ use Craft\Cms\Support\Str;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\FileHelper;
 use craft\helpers\ProjectConfig as ProjectConfigHelper;
-use craft\helpers\StringHelper;
 use craft\services\ProjectConfig;
 use craft\test\TestCase;
 use yii\base\InvalidArgumentException;
