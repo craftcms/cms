@@ -3787,7 +3787,13 @@ table {
     width: 100%;
     overflow: hidden;
 
+    @container (min-width: 200px) {
+      grid-template-areas: 'content thumb';
+      grid-template-columns: 1fr auto;
+    }
+
     & > .thumb {
+      grid-area: thumb;
       display: flex;
       justify-content: center;
       flex: 0 0 120px;
@@ -3804,15 +3810,14 @@ table {
       }
     }
 
-    @container (min-width: 200px) {
-      grid-template-columns: 1fr auto;
+    & > .card-content {
+      grid-area: content;
     }
   }
 
   &.thumb-start > .card-main {
-    @container (min-width: 200px) {
-      grid-template-columns: auto 1fr;
-    }
+    grid-template-areas: 'thumb content';
+    grid-template-columns: auto 1fr;
   }
 
   .ck-content & {
