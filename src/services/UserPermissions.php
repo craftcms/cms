@@ -16,6 +16,7 @@ use craft\elements\Category;
 use craft\elements\Entry;
 use craft\elements\User;
 use craft\enums\CmsEdition;
+use craft\enums\PropagationMethod;
 use craft\errors\WrongEditionException;
 use craft\events\ConfigEvent;
 use craft\events\RegisterUserPermissionsEvent;
@@ -541,13 +542,18 @@ class UserPermissions extends Component
                     ],
                 ];
             } else {
+                $hasCustomPropagation = (
+                    $section->propagationMethod === PropagationMethod::Custom &&
+                    Craft::$app->getIsMultiSite()
+                );
+
                 $sectionPermissions = [
                     "viewEntries:$section->uid" => [
                         'label' => StringHelper::upperCaseFirst(Craft::t('app', 'View {type}', ['type' => $pluralType])),
                         'info' => Craft::t('app', 'Allows viewing existing {type} and creating drafts for them.', [
                             'type' => $pluralType,
                         ]),
-                        'nested' => [
+                        'nested' => array_filter([
                             "createEntries:$section->uid" => [
                                 'label' => StringHelper::upperCaseFirst(Craft::t('app', 'Create {type}', ['type' => $pluralType])),
                                 'info' => Craft::t('app', 'Allows creating drafts of new {type}.', ['type' => $pluralType]),
@@ -558,19 +564,37 @@ class UserPermissions extends Component
                                     'type' => $pluralType,
                                 ]),
                             ],
+                            "deleteEntriesForSite:$section->uid" => $hasCustomPropagation ? [
+                                'label' => StringHelper::upperCaseFirst(Craft::t('app', 'Delete {type} for site', ['type' => $pluralType])),
+                                'info' => Craft::t('app', 'Allows deleting {type} for individual sites, provided the user has access to them.', [
+                                    'type' => $pluralType,
+                                ]),
+                            ] : null,
                             "deleteEntries:$section->uid" => [
                                 'label' => StringHelper::upperCaseFirst(Craft::t('app', 'Delete {type}', ['type' => $pluralType])),
+                                'info' => Craft::t('app', 'Allows deleting {type} for all sites.', [
+                                    'type' => $pluralType,
+                                ]),
                             ],
                             "viewPeerEntries:$section->uid" => [
                                 'label' => StringHelper::upperCaseFirst(Craft::t('app', 'View other users’ {type}', ['type' => $pluralType])),
-                                'nested' => [
+                                'nested' => array_filter([
                                     "savePeerEntries:$section->uid" => [
                                         'label' => StringHelper::upperCaseFirst(Craft::t('app', 'Save other users’ {type}', ['type' => $pluralType])),
                                     ],
+                                    "deletePeerEntriesForSite:$section->uid" => $hasCustomPropagation ? [
+                                        'label' => Craft::t('app', 'Delete other users’ {type} for site', ['type' => $pluralType]),
+                                        'info' => Craft::t('app', 'Allows deleting other users’ {type} for individual sites, provided the user has access to them.', [
+                                            'type' => $pluralType,
+                                        ]),
+                                    ] : null,
                                     "deletePeerEntries:$section->uid" => [
                                         'label' => Craft::t('app', 'Delete other users’ {type}', ['type' => $pluralType]),
+                                        'info' => Craft::t('app', 'Allows deleting other users’ {type} for all sites.', [
+                                            'type' => $pluralType,
+                                        ]),
                                     ],
-                                ],
+                                ]),
                             ],
                             "viewPeerEntryDrafts:$section->uid" => [
                                 'label' => StringHelper::upperCaseFirst(Craft::t('app', 'View other users’ {type}', [
@@ -589,7 +613,7 @@ class UserPermissions extends Component
                                     ],
                                 ],
                             ],
-                        ],
+                        ]),
                     ],
                 ];
             }

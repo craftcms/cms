@@ -1534,6 +1534,7 @@ foreach ($icons as $icon) {
                 'name' => sprintf(" %s ", Search::normalizeKeywords($name)),
                 'terms' => sprintf(" %s ", Search::normalizeKeywords($terms)),
                 'pro' => empty($meta[$name]['free']),
+                'styles' => $meta[$name]['styles'] ?? [],
             ];
         }
     }

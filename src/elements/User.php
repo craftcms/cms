@@ -2192,12 +2192,6 @@ JS,
         return $items;
     }
 
-//    public function prepareEditScreen(Response $response, string $containerId): void
-//    {
-//        $cpScreen = $response->getBehavior('cp-screen');
-//        $t = 1;
-//    }
-
     private function _copyPasswordResetUrlActionItem(string $label, View $view): array
     {
         $id = sprintf('action-copy-password-reset-url-%s', mt_rand());

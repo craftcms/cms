@@ -4613,10 +4613,7 @@ SQL;
             }
         }
 
-        return $this->_authCheck($element, $user, self::EVENT_AUTHORIZE_DELETE_FOR_SITE) ?? (
-            $element->canDelete($user) &&
-            $element->canDeleteForSite($user)
-        );
+        return $this->_authCheck($element, $user, self::EVENT_AUTHORIZE_DELETE_FOR_SITE) ?? $element->canDeleteForSite($user);
     }
 
     /**
