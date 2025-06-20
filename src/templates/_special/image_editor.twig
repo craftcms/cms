@@ -10,7 +10,7 @@
     text: 'Edit Image'|t('app'),
 }) }}
 
-{% macro cropperButton(config) %}
+{% macro editButton(config) %}
     {% set id = config.id ?? null %}
     {% tag 'button' with {
         id: id,
@@ -19,7 +19,7 @@
             pressed: 'false',
         },
     }|merge(config.buttonAttributes ?? {}, recursive=true) %}
-        <div data-item-name>{{ config.label }}</div>
+        {{ config.label }}
     {% endtag %}
 {% endmacro %}
 
@@ -40,14 +40,10 @@
             <button type="button" class="flip-horizontal btn icon leftalign">{{ 'Flip Horizontal'|t('app') }}</button>
         </div>
         <div class="btngroup">
-            <button type="button" class="focal-point btn icon leftalign" aria-pressed="false">{{ 'Focal Point'|t('app') }}</button>
+            <button type="button" class="focal-point btn icon leftalign" data-fabric-element="focalpoint" data-item-name="{{ 'Focal Point'|t('app') }}" aria-pressed="false">{{ 'Focal Point'|t('app') }}</button>
         </div>
     </div>
     <div role="tabpanel" class="crop hidden" data-view="crop" data-crop="true" aria-labelledby="crop-tab">
-        <div class="btngroup">
-            <button type="button" class="focal-point btn icon leftalign">{{ 'Focal Point'|t('app') }}</button>
-        </div>
-
         <fieldset class="orientation" aria-label="{{ 'Orientation'|t('app') }}">
             <input type="radio" aria-label="{{ 'Landscape'|t('app') }}" name="orientation" value="landscape" checked/>
             <input type="radio" aria-label="{{ 'Portrait'|t('app') }}"  name="orientation" value="portrait"/>
@@ -130,45 +126,49 @@
             },
         ] %}
 
-        <fieldset data-cropper-edit>
-            <legend>
-                {{ 'Edit {type}'|t('app', {
-                    type: 'Cropping Rectangle'|t('app'),
-                }) }}
-            </legend>
-            <div id="move-icon-wrapper" style="display: none;">{{ iconSvg('up-down-left-right') }}</div>
-            <div role="application">
+        <div role="application">
+            <div class="btngroup">
+                <button type="button" class="focal-point btn icon leftalign" data-fabric-element="focalpoint" data-item-name="{{ 'Focal Point'|t('app') }}" aria-pressed="false">{{ 'Focal Point'|t('app') }}</button>
+            </div>
+            <fieldset data-cropper-edit>
+                <legend>
+                    {{ 'Edit {type}'|t('app', {
+                        type: 'Cropping Rectangle'|t('app'),
+                    }) }}
+                </legend>
+                <div id="move-icon-wrapper" style="display: none;">{{ iconSvg('up-down-left-right') }}</div>
                 <div>
-                    {{ _self.cropperButton({
+                    {{ _self.editButton({
                         label: 'Cropping Rectangle'|t('app'),
                         id: 'cropper-handle',
                         buttonAttributes: {
                             data: {
-                                'crop-editor': 'rectangle',
-                            },
-                            class: ['cropper-edit__btn']
+                                'crop-editor': true,
+                                'fabric-element': 'rectangle',
+                                'item-name': 'Cropping Rectangle'|t('app'),
+                            }
                         }
                     }) }}
                 </div>
-
                 <div>
                     {% for button in cropHandleBtns %}
                         {% if loop.index == 5 %}
                             <div></div>
                         {% endif %}
-                        {{ _self.cropperButton({
+                        {{ _self.editButton({
                             label: button.label,
                             buttonAttributes: {
                                 data: {
-                                    'crop-editor': button.handle,
-                                },
-                                class: ['cropper-edit__btn']
+                                    'crop-editor': true,
+                                    'fabric-element': button.handle,
+                                    'item-name': button.label,
+                                }
                             }
                         }) }}
                     {% endfor %}
                 </div>
-            </div>
-        </fieldset>
+            </fieldset>
+        </div>
     </div>
 </div>
 <div class="image-container">
