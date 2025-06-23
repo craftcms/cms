@@ -101,4 +101,4 @@ jobs:
         uses: ramsey/composer-install@v3
 
       - name: Execute tests
-        run: vendor/bin/pest --configuration ./cms/phpunit.xml.dist --test-directory ./cms/tests
+        run: vendor/bin/pest -v --ci --configuration ./cms/phpunit.xml.dist --test-directory ./cms/tests
