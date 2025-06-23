@@ -5,7 +5,6 @@ namespace Craft\Cms\Tests;
 use Craft;
 use Craft\Cms\Migrations\Install;
 use Craft\Cms\Providers\CraftServiceProvider;
-use craft\elements\User;
 use craft\models\Site;
 use craft\services\ProjectConfig;
 use Illuminate\Database\Eloquent\Factories\Factory;
@@ -24,16 +23,7 @@ class TestCase extends Orchestra
     {
         parent::setUp();
 
-        $user = new User([
-            'active' => true,
-            'admin' => true,
-            'username' => 'craftcms',
-            'newPassword' => 'password',
-            'email' => 'support@craftcms.com',
-        ]);
-
         Craft::$app->mutex->release(ProjectConfig::MUTEX_NAME);
-        Craft::$app->getElements()->saveElement($user);
 
         Factory::guessFactoryNamesUsing(
             fn (string $modelName) => 'Craft\\Cms\\Database\\Factories\\'.class_basename($modelName).'Factory'
