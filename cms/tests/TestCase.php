@@ -7,14 +7,14 @@ use Craft\Cms\Migrations\Install;
 use Craft\Cms\Providers\CraftServiceProvider;
 use craft\elements\User;
 use craft\models\Site;
-use craft\test\TestSetup;
+use craft\services\ProjectConfig;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\File;
+use Illuminate\Support\Facades\Schema;
 use Orchestra\Testbench\TestCase as Orchestra;
-
-use function Orchestra\Testbench\artisan;
 
 class TestCase extends Orchestra
 {
@@ -32,6 +32,7 @@ class TestCase extends Orchestra
             'email' => 'support@craftcms.com',
         ]);
 
+        Craft::$app->mutex->release(ProjectConfig::MUTEX_NAME);
         Craft::$app->getElements()->saveElement($user);
 
         Factory::guessFactoryNamesUsing(
@@ -41,19 +42,20 @@ class TestCase extends Orchestra
 
     protected function migrateDatabases()
     {
-        $app = app('Craft');
-
-        if ($app instanceof \Craft) {
-            $app = $app::$app;
+        if (Schema::hasTable('migrations')) {
+            return;
         }
 
-        TestSetup::cleanseDb($app->getDb());
+        $this->artisan('migrate:fresh', $this->migrateFreshUsing());
+
+        /** Install migration adds their own */
+        Schema::drop('migrations');
 
         $siteConfig = [
             'name' => 'Craft test site',
             'handle' => 'default',
             'hasUrls' => true,
-            'baseUrl' => 'https://test.craftcms.test/',
+            'baseUrl' => 'https://localhost/',
             'language' => 'en-US',
             'primary' => true,
         ];
@@ -68,8 +70,6 @@ class TestCase extends Orchestra
         );
 
         $migration->up();
-
-        // $this->artisan('migrate:fresh', $this->migrateFreshUsing());
     }
 
     protected function getPackageProviders($app): array
@@ -82,6 +82,8 @@ class TestCase extends Orchestra
 
     protected function getEnvironmentSetUp($app)
     {
+        File::cleanDirectory(config_path('craft/project'));
+
         if (! file_exists(__DIR__.'/../.env')) {
             return;
         }

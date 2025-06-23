@@ -987,7 +987,7 @@ class App
         }
 
         $config = [
-            'class' => Craft\Yii2Adapter\DatabaseConnection::class,
+            'class' => Connection::class,
             'driverName' => $driver,
             'dsn' => $dbConfig->dsn,
             'server' => $dbConfig->server,

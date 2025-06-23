@@ -34,6 +34,7 @@ use craft\web\Response;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
+use Laravel\Prompts\Output\ConsoleOutput;
 use ReflectionClass;
 
 /**
@@ -45,19 +46,25 @@ use ReflectionClass;
  */
 class Install extends Migration
 {
+    private ConsoleOutput $output;
+
     public function __construct(
         public ?string $username = null,
         public ?string $password = null,
         public ?string $email = null,
         public ?Site $site = null,
         public bool $applyProjectConfigYaml = true
-    ) {}
+    ) {
+        $this->output = new ConsoleOutput;
+    }
 
     public function up(): bool
     {
         if (! $this->_validateProjectConfig($error)) {
-            $message = "Project config validation failed: $error\n\nRun `composer install` or remove your `config/project/` folder and try again.";
-            echo "\n$message\n\nAborting install.\n\n";
+            $message = "Project config validation failed: $error Run `composer install` or remove your `config/project/` folder and try again.";
+            $this->output->writeln($message);
+            $this->output->writeln('');
+            $this->output->writeln('Aborting install.');
             throw new OperationAbortedException($message);
         }
 
@@ -1162,7 +1169,7 @@ class Install extends Migration
 
     public function insertDefaultData(): void
     {
-        echo '    > populating the info table ... ';
+        $this->output->writeln('    > populating the info table ... ');
         Craft::$app->saveInfo(new Info([
             'version' => Craft::$app->getVersion(),
             'schemaVersion' => Craft::$app->schemaVersion,
@@ -1170,7 +1177,7 @@ class Install extends Migration
             'configVersion' => StringHelper::randomString(12),
             'fieldVersion' => StringHelper::randomString(12),
         ]));
-        echo "done\n";
+        $this->output->writeln('done');
 
         $generalConfig = Craft::$app->getConfig()->getGeneral();
         $projectConfig = Craft::$app->getProjectConfig();
@@ -1180,15 +1187,15 @@ class Install extends Migration
             ProjectConfigHelper::ensureAllSitesProcessed(true);
             $this->_installPlugins();
             // Save the existing system settings
-            echo '    > applying the project config ... ';
+            $this->output->writeln('    > applying the project config ... ');
             $projectConfig->applyExternalChanges();
-            echo "done\n";
+            $this->output->writeln('done');
         } else {
             // Save the default system settings
-            echo '    > saving default data ... ';
+            $this->output->writeln('    > saving default data ... ');
             $configData = $this->_generateInitialConfig();
             $projectConfig->applyConfigChanges($configData);
-            echo "done\n";
+            $this->output->writeln('done');
         }
 
         // Craft, you are installed now.
@@ -1207,7 +1214,7 @@ class Install extends Migration
 
         Craft::$app->language = $this->site->language;
 
-        echo '    > saving the first user ... ';
+        $this->output->writeln('    > saving the first user ... ');
         $user = new User([
             'active' => true,
             'admin' => true,
@@ -1216,7 +1223,7 @@ class Install extends Migration
             'email' => $this->email,
         ]);
         Craft::$app->getElements()->saveElement($user);
-        echo "done\n";
+        $this->output->writeln('done');
 
         Craft::$app->getUsers()->saveUserPreferences($user, [
             'language' => $this->site->language,
@@ -1297,9 +1304,9 @@ class Install extends Migration
 
         try {
             foreach ($pluginConfigs as $handle => $pluginConfig) {
-                echo "    > installing $handle ... ";
+                $this->output->writeln("    > installing $handle ... ");
                 $pluginsService->installPlugin($handle);
-                echo "done\n";
+                $this->output->writeln('done');
             }
         } finally {
             // Put the real response back
@@ -1355,7 +1362,7 @@ class Install extends Migration
 
     public function down(): bool
     {
-        echo "Install migration cannot be reverted.\n";
+        $this->output->writeln('Install migration cannot be reverted.');
 
         return false;
     }
