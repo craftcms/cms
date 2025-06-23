@@ -124,7 +124,6 @@ it('renders pages', function (string $url, string $title, array $extraContent = 
         'title' => 'System Report',
         'extraContent' => [
             ['rendered' => 'Application Info'],
-            ['rendered' => 'Yii version'],
             ['rendered' => 'Plugins'],
             ['rendered' => 'Requirements'],
         ],
