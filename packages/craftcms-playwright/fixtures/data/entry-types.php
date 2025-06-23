@@ -54,6 +54,6 @@ return [
         'name' => 'With Colour',
         'handle' => 'withColour',
         'fieldLayoutUid' => 'field-layout-1007----------------uid',
-        'uid' => 'entry-type-1003------------------uid',
+        'uid' => 'entry-type-1005------------------uid',
     ],
 ];

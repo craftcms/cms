@@ -270,7 +270,7 @@ return [
                     ],
                     // MATRIX FIELD IN BLOCKS MODE
                     [
-                        'uid' => 'field-1005-----------------------uid',
+                        'uid' => 'field-1009-----------------------uid',
                         'name' => 'Matrix Blocks Field 2',
                         'handle' => 'matrixBlocksField2',
                         'type' => Matrix::class,
@@ -284,7 +284,7 @@ return [
                     ],
                     // MATRIX FIELD IN CARDS MODE
                     [
-                        'uid' => 'field-1003-----------------------uid',
+                        'uid' => 'field-1010-----------------------uid',
                         'name' => 'Matrix Cards Field 2',
                         'handle' => 'matrixCardsField2',
                         'type' => Matrix::class,
