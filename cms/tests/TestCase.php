@@ -36,8 +36,9 @@ class TestCase extends Orchestra
     protected function tearDown(): void
     {
         if (Craft::$app) {
-            Craft::$app->getDb()->close();
-            Craft::$app->getDb2()->close();
+            Craft::$app->getDb()->pdo = null;
+            Craft::$app->getDb2()->pdo = null;
+            DB::disconnect();
 
             TestSetup::tearDownCraft();
         }
@@ -60,10 +61,6 @@ class TestCase extends Orchestra
 
     protected function migrateDatabases()
     {
-        if (Schema::hasTable('migrations')) {
-            return;
-        }
-
         $this->artisan('migrate:fresh', $this->migrateFreshUsing());
 
         /** Install migration adds their own */
