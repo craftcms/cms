@@ -17,6 +17,7 @@ use craft\helpers\DateTimeHelper;
 use craft\test\TestCase;
 use DateInterval;
 use DateTime;
+use DateTimeZone;
 
 /**
  * Unit tests for DateCreatedConditionRule.
@@ -97,8 +98,8 @@ class DateCreatedConditionRuleTest extends TestCase
      */
     public static function queryParamValueDataProvider(): array
     {
-        $startDate = DateTimeHelper::now()->sub(new DateInterval('P1D'));
-        $endDate = DateTimeHelper::now()->add(new DateInterval('P1D'));
+        $startDate = DateTimeHelper::now(new DateTimeZone('America/Los_Angeles'))->sub(new DateInterval('P1D'));
+        $endDate = DateTimeHelper::now(new DateTimeZone('America/Los_Angeles'))->add(new DateInterval('P1D'));
 
         return [
             'start-and-end' => [
@@ -157,37 +158,37 @@ class DateCreatedConditionRuleTest extends TestCase
             'periodTypeHoursAfter' => [
                 ['rangeType' => DateRange::TYPE_AFTER, 'periodValue' => 10, 'periodType' => DateRange::PERIOD_HOURS_AGO],
                 [
-                    fn() => sprintf('>= %s', DateTimeHelper::now()->modify('-10 hours')->format(DATE_ATOM)),
+                    fn() => sprintf('>= %s', DateTimeHelper::now(new DateTimeZone('America/Los_Angeles'))->modify('-10 hours')->format(DATE_ATOM)),
                 ],
             ],
             'periodTypeMinutesAfter' => [
                 ['rangeType' => DateRange::TYPE_AFTER, 'periodValue' => 10, 'periodType' => DateRange::PERIOD_MINUTES_AGO],
                 [
-                    fn() => sprintf('>= %s', DateTimeHelper::now()->modify('-10 minutes')->format(DATE_ATOM)),
+                    fn() => sprintf('>= %s', DateTimeHelper::now(new DateTimeZone('America/Los_Angeles'))->modify('-10 minutes')->format(DATE_ATOM)),
                 ],
             ],
             'periodTypeDaysAfter' => [
                 ['rangeType' => DateRange::TYPE_AFTER, 'periodValue' => 10, 'periodType' => DateRange::PERIOD_DAYS_AGO],
                 [
-                    fn() => sprintf('>= %s', DateTimeHelper::now()->modify('-10 days')->format(DATE_ATOM)),
+                    fn() => sprintf('>= %s', DateTimeHelper::now(new DateTimeZone('America/Los_Angeles'))->modify('-10 days')->format(DATE_ATOM)),
                 ],
             ],
             'periodTypeHoursBefore' => [
                 ['rangeType' => DateRange::TYPE_BEFORE, 'periodValue' => 10, 'periodType' => DateRange::PERIOD_HOURS_AGO],
                 [
-                    fn() => sprintf('< %s', DateTimeHelper::now()->modify('-10 hours')->format(DATE_ATOM)),
+                    fn() => sprintf('< %s', DateTimeHelper::now(new DateTimeZone('America/Los_Angeles'))->modify('-10 hours')->format(DATE_ATOM)),
                 ],
             ],
             'periodTypeMinutesBefore' => [
                 ['rangeType' => DateRange::TYPE_BEFORE, 'periodValue' => 10, 'periodType' => DateRange::PERIOD_MINUTES_AGO],
                 [
-                    fn() => sprintf('< %s', DateTimeHelper::now()->modify('-10 minutes')->format(DATE_ATOM)),
+                    fn() => sprintf('< %s', DateTimeHelper::now(new DateTimeZone('America/Los_Angeles'))->modify('-10 minutes')->format(DATE_ATOM)),
                 ],
             ],
             'periodTypeDaysBefore' => [
                 ['rangeType' => DateRange::TYPE_BEFORE, 'periodValue' => 10, 'periodType' => DateRange::PERIOD_DAYS_AGO],
                 [
-                    fn() => sprintf('< %s', DateTimeHelper::now()->modify('-10 days')->format(DATE_ATOM)),
+                    fn() => sprintf('< %s', DateTimeHelper::now(new DateTimeZone('America/Los_Angeles'))->modify('-10 days')->format(DATE_ATOM)),
                 ],
             ],
         ];
