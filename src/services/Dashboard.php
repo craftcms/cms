@@ -16,6 +16,7 @@ use craft\errors\WidgetNotFoundException;
 use craft\events\RegisterComponentTypesEvent;
 use craft\events\WidgetEvent;
 use craft\helpers\Component as ComponentHelper;
+use craft\helpers\Db;
 use craft\records\Widget as WidgetRecord;
 use craft\widgets\CraftSupport as CraftSupportWidget;
 use craft\widgets\Feed as FeedWidget;
@@ -26,7 +27,6 @@ use craft\widgets\QuickPost as QuickPostWidget;
 use craft\widgets\RecentEntries as RecentEntriesWidget;
 use craft\widgets\Updates as UpdatesWidget;
 use DateTime;
-use Illuminate\Support\Facades\DB;
 use Throwable;
 use yii\base\Component;
 use yii\base\Exception;
@@ -391,12 +391,11 @@ class Dashboard extends Component
 
         // Update the user record
         $user->hasDashboard = true;
-
-        DB::table(Table::withoutYiiPlaceholder(Table::USERS))
-            ->where('id', $user->id)
-            ->update([
-                'hasDashboard' => true,
-            ]);
+        Db::update(Table::USERS, [
+            'hasDashboard' => true,
+        ], [
+            'id' => $user->id,
+        ]);
     }
 
     /**
