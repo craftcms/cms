@@ -34,6 +34,7 @@
     "ext-pcre": "*",
     "ext-pdo": "*",
     "ext-zip": "*",
+    "composer-runtime-api": "^2.0",
     "bacon/bacon-qr-code": "^2.0",
     "commerceguys/addressing": "^2.1.1",
     "composer/semver": "^3.3.2",
