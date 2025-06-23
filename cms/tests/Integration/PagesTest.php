@@ -20,7 +20,7 @@ it('renders pages', function (string $url, string $title, array $extraContent = 
         ->assertSee($title);
 
     foreach ($extraContent as $content) {
-        $response->assertSee($content['rendered'] ?? $content['source']);
+        $response->assertSeeText($content['rendered']);
     }
 })->with([
     ['url' => '/dashboard', 'title' => 'Dashboard'],
