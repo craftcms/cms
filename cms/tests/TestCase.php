@@ -7,8 +7,10 @@ use Craft\Cms\Migrations\Install;
 use Craft\Cms\Providers\CraftServiceProvider;
 use craft\models\Site;
 use craft\services\ProjectConfig;
+use Illuminate\Contracts\Console\Kernel;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Foundation\Testing\RefreshDatabaseState;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\File;
@@ -28,6 +30,19 @@ class TestCase extends Orchestra
         Factory::guessFactoryNamesUsing(
             fn (string $modelName) => 'Craft\\Cms\\Database\\Factories\\'.class_basename($modelName).'Factory'
         );
+    }
+
+    protected function refreshTestDatabase()
+    {
+        if (RefreshDatabaseState::$migrated) {
+            return;
+        }
+
+        $this->migrateDatabases();
+
+        $this->app[Kernel::class]->setArtisan(null);
+
+        RefreshDatabaseState::$migrated = true;
     }
 
     protected function migrateDatabases()
