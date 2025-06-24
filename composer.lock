@@ -646,12 +646,12 @@
             "source": {
                 "type": "git",
                 "url": "git@github.com:craftcms/yii2-adapter.git",
-                "reference": "88788278304c4428c96b5e543be829771f8f81f6"
+                "reference": "37f64fbc81296ca47bcbfe38ccdfcf247997f0fd"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/craftcms/yii2-adapter/zipball/88788278304c4428c96b5e543be829771f8f81f6",
-                "reference": "88788278304c4428c96b5e543be829771f8f81f6",
+                "url": "https://api.github.com/repos/craftcms/yii2-adapter/zipball/37f64fbc81296ca47bcbfe38ccdfcf247997f0fd",
+                "reference": "37f64fbc81296ca47bcbfe38ccdfcf247997f0fd",
                 "shasum": "",
                 "mirrors": [
                     {
@@ -736,7 +736,7 @@
                 "source": "https://github.com/craftcms/yii2-adapter/tree/main",
                 "issues": "https://github.com/craftcms/yii2-adapter/issues"
             },
-            "time": "2025-06-23T12:29:35+00:00"
+            "time": "2025-06-24T07:27:03+00:00"
         },
         {
             "name": "creocoder/yii2-nested-sets",
