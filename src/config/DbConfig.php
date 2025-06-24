@@ -12,6 +12,7 @@ use craft\db\Connection;
 use craft\helpers\Db;
 use craft\helpers\StringHelper;
 use craft\services\Config;
+use Illuminate\Support\Facades\Config as ConfigFacade;
 use yii\base\InvalidConfigException;
 
 /**
@@ -758,7 +759,7 @@ class DbConfig extends BaseConfig
     private function _updateDsn(): void
     {
         if (!$this->driver) {
-            $this->driver = Connection::DRIVER_MYSQL;
+            $this->driver = ConfigFacade::get('database.default', Connection::DRIVER_MYSQL);
         }
 
         if (!in_array($this->driver, [Connection::DRIVER_MYSQL, Connection::DRIVER_PGSQL], true)) {
