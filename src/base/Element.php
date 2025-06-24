@@ -4154,12 +4154,6 @@ JS, [
         $canonical = $this->getCanonical(true);
         $redirectUrl = ElementHelper::postEditUrl($this);
 
-        // Site info
-        $supportedSites = ElementHelper::supportedSitesForElement($this, true);
-        $propSites = array_values(array_filter($supportedSites, fn($site) => $site['propagate']));
-        $propSiteIds = array_column($propSites, 'siteId');
-        $isMultiSiteElement = count($supportedSites) > 1;
-
         // Is this a new site that isn’t supported by the canonical element yet?
         if ($isUnpublishedDraft) {
             $isNewSite = true;
@@ -4176,10 +4170,10 @@ JS, [
         // Permissions
         $canDeleteDraft = $isDraft && !$this->isProvisionalDraft && $elementsService->canDelete($this, $user);
         $canDeleteCanonical = $elementsService->canDelete($canonical, $user);
+        $canDeleteCanonicalForSite = $elementsService->canDeleteForSite($canonical, $user);
         $canDeleteForSite = (
-            $isMultiSiteElement &&
-            count($propSiteIds) > 1 &&
-            (($isCurrent && $canDeleteCanonical) || ($canDeleteDraft && $isNewSite)) &&
+            ElementHelper::isMultiSite($this) &&
+            (($isCurrent && $canDeleteCanonicalForSite) || ($canDeleteDraft && $isNewSite)) &&
             $elementsService->canDeleteForSite($this, $user)
         );
 

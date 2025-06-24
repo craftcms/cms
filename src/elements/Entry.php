@@ -497,13 +497,27 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
                         'withDescendants' => true,
                     ];
                 }
-
-                if ($section->propagationMethod === PropagationMethod::Custom && $section->getHasMultiSiteEntries()) {
-                    $actions[] = DeleteForSite::class;
-                }
             }
         } else {
             $actions[] = Copy::class;
+        }
+
+        if (
+            (
+                $section &&
+                $section->propagationMethod === PropagationMethod::Custom &&
+                $section->getHasMultiSiteEntries() &&
+                $user->can("deleteEntriesForSite:$section->uid")
+            ) ||
+            (
+                !$section &&
+                str_starts_with($source, 'custom:') &&
+                Craft::$app->getIsMultiSite() &&
+                Collection::make(Craft::$app->getEntries()->getEditableSections())
+                    ->contains(fn(Section $section) => $section->propagationMethod === PropagationMethod::Custom)
+            )
+        ) {
+            $actions[] = DeleteForSite::class;
         }
 
         // Restore
@@ -2051,7 +2065,29 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
             return false;
         }
 
-        return $section->propagationMethod === PropagationMethod::Custom;
+        if ($section->propagationMethod === PropagationMethod::Custom) {
+            if ($this->getIsDraft()) {
+                /**
+                 * @var static|DraftBehavior $this
+                 * @phpstan-ignore varTag.nativeType
+                 */
+                return (
+                    $this->creatorId === $user->id ||
+                    $user->can("deletePeerEntryDrafts:$section->uid")
+                );
+            }
+
+            if (!$user->can("deleteEntriesForSite:$section->uid")) {
+                return false;
+            }
+
+            return (
+                in_array($user->id, $this->getAuthorIds(), true) ||
+                $user->can("deletePeerEntriesForSite:$section->uid")
+            );
+        }
+
+        return false;
     }
 
     /**

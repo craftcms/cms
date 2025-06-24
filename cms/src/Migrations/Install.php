@@ -846,6 +846,7 @@ class Install extends Migration
             $table->string('unverifiedEmail')->nullable();
             $table->boolean('passwordResetRequired')->default(false);
             $table->dateTime('lastPasswordChangeDate')->nullable();
+            $table->rememberToken();
             $table->dateTime('dateCreated');
             $table->dateTime('dateUpdated');
 
