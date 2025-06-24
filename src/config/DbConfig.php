@@ -759,7 +759,13 @@ class DbConfig extends BaseConfig
     private function _updateDsn(): void
     {
         if (!$this->driver) {
-            $this->driver = ConfigFacade::get('database.default', Connection::DRIVER_MYSQL);
+            $laravelDriver = ConfigFacade::get('database.default');
+
+            if (!in_array($laravelDriver, [Connection::DRIVER_MYSQL, Connection::DRIVER_PGSQL], true)) {
+                $laravelDriver = Connection::DRIVER_MYSQL;
+            }
+
+            $this->driver = $laravelDriver;
         }
 
         if (!in_array($this->driver, [Connection::DRIVER_MYSQL, Connection::DRIVER_PGSQL], true)) {
