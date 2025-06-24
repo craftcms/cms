@@ -106,21 +106,21 @@ class TestCase extends Orchestra
         $dotenv = \Dotenv\Dotenv::createImmutable(__DIR__.'/../');
         $dotenv->load();
 
-        $configKey = 'database.connections.'.env('CRAFT_DB_DRIVER');
+        $configKey = 'database.connections.'.env('DB_CONNECTION');
 
         $app['config']->set($configKey, array_merge(
             Config::array($configKey, []),
             [
-                'host' => env('CRAFT_DB_SERVER'),
-                'port' => env('CRAFT_DB_PORT'),
-                'database' => env('CRAFT_DB_DATABASE'),
-                'username' => env('CRAFT_DB_USER'),
-                'password' => env('CRAFT_DB_PASSWORD'),
-                'prefix' => env('CRAFT_DB_PREFIX'),
-                'charset' => env('CRAFT_DB_CHARSET'),
+                'host' => env('DB_HOST'),
+                'port' => env('DB_PORT'),
+                'database' => env('DB_DATABASE'),
+                'username' => env('DB_USERNAME'),
+                'password' => env('DB_PASSWORD'),
+                'prefix' => env('DB_PREFIX'),
+                'charset' => env('DB_CHARSET'),
             ]),
         );
 
-        DB::setDefaultConnection(env('CRAFT_DB_DRIVER'));
+        DB::setDefaultConnection(env('DB_CONNECTION'));
     }
 }
