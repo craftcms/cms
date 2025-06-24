@@ -35,7 +35,6 @@ use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 use ReflectionClass;
-use yii\db\MigrationInterface;
 
 /**
  * Installation Migration
@@ -52,8 +51,7 @@ class Install extends Migration
         public ?string $email = null,
         public ?Site $site = null,
         public bool $applyProjectConfigYaml = true
-    ) {
-    }
+    ) {}
 
     public function up(): bool
     {
@@ -842,6 +840,7 @@ class Install extends Migration
             $table->string('unverifiedEmail')->nullable();
             $table->boolean('passwordResetRequired')->default(false);
             $table->dateTime('lastPasswordChangeDate')->nullable();
+            $table->rememberToken();
             $table->dateTime('dateCreated');
             $table->dateTime('dateUpdated');
 
