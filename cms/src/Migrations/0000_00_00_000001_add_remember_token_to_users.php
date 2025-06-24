@@ -7,15 +7,19 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration implements \yii\db\MigrationInterface
 {
-    public function up(): void
+    public function up(): bool
     {
         Schema::table(Table::withoutYiiPlaceholder(Table::USERS), function (Blueprint $table) {
             $table->rememberToken();
         });
+
+        return true;
     }
 
-    public function down(): void
+    public function down(): bool
     {
         Schema::dropColumns(Table::withoutYiiPlaceholder(Table::USERS), 'remember_token');
+
+        return true;
     }
 };
