@@ -19,7 +19,7 @@ class Str extends \Illuminate\Support\Str
     private static ?array $asciiCharMaps = null;
 
     /** @see escapeShortcodes() */
-    private static array|false|null $shortcodeEscapeMap = null;
+    private static array|null $shortcodeEscapeMap = null;
 
     /**
      * Returns ASCII character mappings, merging in any custom defined mappings
