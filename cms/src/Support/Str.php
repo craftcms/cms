@@ -542,6 +542,6 @@ class Str extends \Illuminate\Support\Str
 
     public static function uuidPattern(): string
     {
-        return (new GenericValidator)->getPattern();
+        return Str::between((new GenericValidator)->getPattern(), '\A', '\z');
     }
 }
