@@ -6,13 +6,11 @@ use BackedEnum;
 use Craft;
 use craft\helpers\App;
 use craft\helpers\HtmlPurifier;
-use Exception;
 use HTMLPurifier_Config;
 use Illuminate\Support\Facades\Log;
 use InvalidArgumentException;
 use LitEmoji\LitEmoji;
 use Ramsey\Uuid\Validator\GenericValidator;
-use Stringy\Stringy as BaseStringy;
 use voku\helper\ASCII;
 use yii\base\InvalidConfigException;
 
@@ -26,15 +24,15 @@ class Str extends \Illuminate\Support\Str
 
     public static function uuidPattern(): string
     {
-        return (new GenericValidator())->getPattern();
+        return (new GenericValidator)->getPattern();
     }
 
     /**
      * Converts an object to its string representation. If the object is an array, will glue the array elements together
      * with the $glue param. Otherwise will cast the object to a string.
      *
-     * @param mixed $object The object to convert to a string.
-     * @param string $glue The glue to use if the object is an array.
+     * @param  mixed  $object  The object to convert to a string.
+     * @param  string  $glue  The glue to use if the object is an array.
      * @return string The string representation of the object.
      */
     public static function toString(mixed $object, string $glue = ','): string
@@ -66,8 +64,8 @@ class Str extends \Illuminate\Support\Str
      * Returns ASCII character mappings, merging in any custom defined mappings
      * from the <config5:customAsciiCharMappings> config setting.
      *
-     * @param bool $flat Whether the mappings should be returned as a flat array (é => e)
-     * @param string|null $language Whether to include language-specific mappings (only applied if $flat is true)
+     * @param  bool  $flat  Whether the mappings should be returned as a flat array (é => e)
+     * @param  string|null  $language  Whether to include language-specific mappings (only applied if $flat is true)
      * @return array The fully merged ASCII character mappings.
      */
     public static function asciiCharMap(bool $flat = false, ?string $language = '*'): array
@@ -104,9 +102,6 @@ class Str extends \Illuminate\Support\Str
 
     /**
      * Attempts to convert a string to UTF-8 and clean any non-valid UTF-8 characters.
-     *
-     * @param string $str
-     * @return string
      */
     public static function convertToUtf8(string $str): string
     {
@@ -135,7 +130,7 @@ class Str extends \Illuminate\Support\Str
     /**
      * Gets the encoding of the given string.
      *
-     * @param string $str The string to process.
+     * @param  string  $str  The string to process.
      * @return string The encoding of the string.
      */
     public static function encoding(string $str): string
@@ -145,9 +140,6 @@ class Str extends \Illuminate\Support\Str
 
     /**
      * Returns a handle-safe version of a string.
-     *
-     * @param string $str
-     * @return string
      */
     public static function toHandle(string $str): string
     {
@@ -174,9 +166,6 @@ class Str extends \Illuminate\Support\Str
 
     /**
      * Converts an email from IDNA ASCII to Unicode, if the server supports IDNA ASCII strings.
-     *
-     * @param string $email
-     * @return string
      */
     public static function idnToUtf8Email(string $email): string
     {
@@ -204,9 +193,6 @@ class Str extends \Illuminate\Support\Str
 
     /**
      * Converts shortcodes to emoji.
-     *
-     * @param string $str
-     * @return string
      */
     public static function shortcodesToEmoji(string $str): string
     {
@@ -215,9 +201,6 @@ class Str extends \Illuminate\Support\Str
 
     /**
      * Converts emoji to shortcodes.
-     *
-     * @param string $str
-     * @return string
      */
     public static function emojiToShortcodes(string $str): string
     {
@@ -225,13 +208,13 @@ class Str extends \Illuminate\Support\Str
         $dl = '__MB4_DL__';
         $dr = '__MB4_DR__';
 
-        $str = static::replaceMb4($str, fn($char) => sprintf('%s%s%s', $dl, $char, $dr));
+        $str = static::replaceMb4($str, fn ($char) => sprintf('%s%s%s', $dl, $char, $dr));
 
         // Strip out consecutive delimiters
         $str = str_replace(sprintf('%s%s', $dr, $dl), '', $str);
 
         // Replace all 4-byte sequences individually
-        return preg_replace_callback("/$dl(.+?)$dr/", fn($m) => LitEmoji::unicodeToShortcode($m[1]), $str);
+        return preg_replace_callback("/$dl(.+?)$dr/", fn ($m) => LitEmoji::unicodeToShortcode($m[1]), $str);
     }
 
     /**
@@ -240,8 +223,8 @@ class Str extends \Illuminate\Support\Str
      * cryptographically secure string. If you need a cryptographically secure string, use
      * [[\craft\services\Security::generateRandomString()|`Craft::$app->security->generateRandomString()`]].
      *
-     * @param int $length The length of the random string. Defaults to 36.
-     * @param bool $extendedChars Whether to include symbols in the random string.
+     * @param  int  $length  The length of the random string. Defaults to 36.
+     * @param  bool  $extendedChars  Whether to include symbols in the random string.
      * @return string The randomly generated string.
      */
     public static function random($length = 36, bool $extendedChars = false): string
@@ -278,13 +261,13 @@ class Str extends \Illuminate\Support\Str
      * });
      * ```
      *
-     * @param string $str The string
-     * @param callable|string $replace The replacement string, or callback function.
+     * @param  string  $str  The string
+     * @param  callable|string  $replace  The replacement string, or callback function.
      * @return string The string with converted 4-byte UTF-8 characters
      */
     public static function replaceMb4(string $str, callable|string $replace): string
     {
-        $r = preg_replace_callback('/./u', function(array $match) use ($replace): string {
+        $r = preg_replace_callback('/./u', function (array $match) use ($replace): string {
             if (strlen($match[0]) >= 4) {
                 return is_callable($replace) ? $replace($match[0]) : $replace;
             }
@@ -307,8 +290,6 @@ class Str extends \Illuminate\Support\Str
     /**
      * Escapes shortcodes.
      *
-     * @param string $str
-     * @return string
      * @since 4.5.0
      */
     public static function escapeShortcodes(string $str): string
@@ -332,14 +313,15 @@ class Str extends \Illuminate\Support\Str
 
         if (! file_exists($path)) {
             Log::warning('Unable to escape shortcodes: shortcodes-array.php doesn’t exist at the expected location.');
+
             return self::$shortcodeEscapeMap = false;
         }
 
         $shortcodes = array_keys(require $path);
 
         self::$shortcodeEscapeMap = array_combine(
-            array_map(fn(string $shortcode) => ":$shortcode:", $shortcodes),
-            array_map(fn(string $shortcode) => "\\:$shortcode\\:", $shortcodes),
+            array_map(fn (string $shortcode) => ":$shortcode:", $shortcodes),
+            array_map(fn (string $shortcode) => "\\:$shortcode\\:", $shortcodes),
         );
 
         return self::$shortcodeEscapeMap;
@@ -348,8 +330,6 @@ class Str extends \Illuminate\Support\Str
     /**
      * Unscapes shortcodes.
      *
-     * @param string $str
-     * @return string
      * @since 4.5.0
      */
     public static function unescapeShortcodes(string $str): string
@@ -366,7 +346,7 @@ class Str extends \Illuminate\Support\Str
     /**
      * Detects whether the given string has any 4-byte UTF-8 characters.
      *
-     * @param string $str The string to process.
+     * @param  string  $str  The string to process.
      * @return bool Whether the string contains any 4-byte UTF-8 characters or not.
      */
     public static function containsMb4(string $str): bool
@@ -385,8 +365,8 @@ class Str extends \Illuminate\Support\Str
     /**
      * Base64-decodes and decrypts a string generated by [[encenc()]].
      *
-     * @param string $str The string.
-     * @return string
+     * @param  string  $str  The string.
+     *
      * @throws InvalidConfigException on OpenSSL not loaded
      * @throws \yii\base\Exception on OpenSSL error
      */
@@ -406,22 +386,24 @@ class Str extends \Illuminate\Support\Str
     /**
      * Encrypts and base64-encodes a string.
      *
-     * @param string $str the string
-     * @return string
+     * @param  string  $str  the string
+     *
      * @throws InvalidConfigException on OpenSSL not loaded
      * @throws \yii\base\Exception on OpenSSL error
+     *
      * @see decdec()
      */
     public static function encenc(string $str): string
     {
-        return 'base64:' . base64_encode('crypt:' . Craft::$app->getSecurity()->encryptByKey($str));
+        return 'base64:'.base64_encode('crypt:'.Craft::$app->getSecurity()->encryptByKey($str));
     }
 
     /**
      * HTML-encodes any 4-byte UTF-8 characters.
      *
-     * @param string $str The string
+     * @param  string  $str  The string
      * @return string The string with converted 4-byte UTF-8 characters
+     *
      * @see http://stackoverflow.com/a/16496730/1688568
      */
     public static function encodeMb4(string $str): string
@@ -430,40 +412,36 @@ class Str extends \Illuminate\Support\Str
         // UTF-32's hex encoding is the same as HTML's hex encoding.
         // So, by converting from UTF-8 to UTF-32, we magically
         // get the correct hex encoding.
-        return Str::replaceMb4($str, static function($char) {
+        return Str::replaceMb4($str, static function ($char) {
             $unpacked = unpack('H*', mb_convert_encoding($char, 'UTF-32', 'UTF-8'));
-            return isset($unpacked[1]) ? '&#x' . ltrim($unpacked[1], '0') . ';' : '';
+
+            return isset($unpacked[1]) ? '&#x'.ltrim($unpacked[1], '0').';' : '';
         });
     }
 
     /**
      * Indents each line in the given string.
-     *
-     * @param string $str
-     * @return string
      */
     public static function indent(string $str, string $indent = '    '): string
     {
-        return implode("\n", array_map(fn(string $line) => $indent . $line, static::lines($str)));
+        return implode("\n", array_map(fn (string $line) => $indent.$line, static::lines($str)));
     }
 
     /**
      * Inserts $substring into the string at the $index provided.
      *
-     * @param string $str The string to insert into.
-     * @param string $substring The string to be inserted.
-     * @param int $index The 0-based index at which to insert the substring.
+     * @param  string  $str  The string to insert into.
+     * @param  string  $substring  The string to be inserted.
+     * @param  int  $index  The 0-based index at which to insert the substring.
      * @return string The resulting string after the insertion
      */
     public static function insert(string $str, string $substring, int $index): string
     {
-        return static::substr($str, 0, $index) . $substring . static::substr($str, $index);
+        return static::substr($str, 0, $index).$substring.static::substr($str, $index);
     }
 
     /**
      * Returns a regex pattern for invisible characters.
-     *
-     * @return string
      */
     public static function invisibleCharsPattern(): string
     {
@@ -478,12 +456,12 @@ class Str extends \Illuminate\Support\Str
             '2062', // invisible times
             '2063', // invisible comma
             '2064', // invisible plus
-            'feff', //zero width non-break space
+            'feff', // zero width non-break space
         ];
 
         array_walk(
             $invisibleCharCodes,
-            fn(&$charCode) => $charCode = sprintf('\\x{%s}', $charCode)
+            fn (&$charCode) => $charCode = sprintf('\\x{%s}', $charCode)
         );
 
         return sprintf('/%s/iu', implode('|', $invisibleCharCodes));
@@ -491,9 +469,6 @@ class Str extends \Illuminate\Support\Str
 
     /**
      * Returns the first line of a string.
-     *
-     * @param string $str
-     * @return string
      */
     public static function firstLine(string $str): string
     {
@@ -504,7 +479,7 @@ class Str extends \Illuminate\Support\Str
      * Splits on newlines and carriage returns, returning an array of strings
      * corresponding to the lines in the string.
      *
-     * @param string $str The string to split.
+     * @param  string  $str  The string to split.
      * @return non-empty-array<string> An array of strings.
      */
     public static function lines(string $str): array
@@ -521,7 +496,7 @@ class Str extends \Illuminate\Support\Str
     /**
      * Returns true if the string contains only hexadecimal chars, false otherwise.
      *
-     * @param string $str The string to check.
+     * @param  string  $str  The string to check.
      * @return bool Whether $str contains only hexadecimal chars.
      */
     public static function isHexadecimal(string $str): bool
@@ -532,9 +507,9 @@ class Str extends \Illuminate\Support\Str
     /**
      * Returns an array of words extracted from a string
      *
-     * @param string $str The string
-     * @param bool $lower Whether the returned words should be lowercased
-     * @param bool $removePunctuation Whether punctuation should be removed from the returned words
+     * @param  string  $str  The string
+     * @param  bool  $lower  Whether the returned words should be lowercased
+     * @param  bool  $removePunctuation  Whether punctuation should be removed from the returned words
      * @return string[] The prepped words in the string
      */
     public static function toWords(string $str, bool $lower = false, bool $removePunctuation = false): array
@@ -562,7 +537,7 @@ class Str extends \Illuminate\Support\Str
     /**
      * Splits a string into an array of the words in the string.
      *
-     * @param string $str The string
+     * @param  string  $str  The string
      * @return string[] The words in the string
      */
     public static function splitOnWords(string $str): array

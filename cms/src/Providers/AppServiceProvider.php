@@ -4,7 +4,6 @@ namespace Craft\Cms\Providers;
 
 use Craft\Aliases\Facades\Aliases;
 use Craft\Cms\Http\Middleware\ExtractNamespace;
-use Craft\Cms\Support\Str;
 use craft\helpers\FileHelper;
 use Illuminate\Routing\Router;
 use Illuminate\Support\ServiceProvider;
