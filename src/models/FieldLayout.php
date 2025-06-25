@@ -482,7 +482,7 @@ class FieldLayout extends Model
         if (!empty($fields)) {
             foreach ($fields as &$field) {
                 // make sure it has a UUID
-                $field['uid'] ??= StringHelper::UUID();
+                $field['uid'] ??= Str::uuid()->toString();
             }
             $fields = array_values($fields);
         } else {
