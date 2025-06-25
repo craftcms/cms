@@ -402,7 +402,7 @@ class Str extends \Illuminate\Support\Str
         return $r;
     }
 
-    private static function shortcodeEscapeMap(): array|false
+    private static function shortcodeEscapeMap(): array
     {
         if (isset(self::$shortcodeEscapeMap)) {
             return self::$shortcodeEscapeMap;
