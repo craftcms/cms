@@ -12,6 +12,7 @@ use Craft\Cms\Support\Str;
 use craft\db\Connection;
 use craft\helpers\Db;
 use craft\services\Config;
+use Illuminate\Support\Facades\Config as ConfigFacade;
 use yii\base\InvalidConfigException;
 
 /**
@@ -758,7 +759,13 @@ class DbConfig extends BaseConfig
     private function _updateDsn(): void
     {
         if (!$this->driver) {
-            $this->driver = Connection::DRIVER_MYSQL;
+            $laravelDriver = ConfigFacade::get('database.default');
+
+            if (!in_array($laravelDriver, [Connection::DRIVER_MYSQL, Connection::DRIVER_PGSQL], true)) {
+                $laravelDriver = Connection::DRIVER_MYSQL;
+            }
+
+            $this->driver = $laravelDriver;
         }
 
         if (!in_array($this->driver, [Connection::DRIVER_MYSQL, Connection::DRIVER_PGSQL], true)) {

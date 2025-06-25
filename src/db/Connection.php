@@ -40,7 +40,7 @@ use yii\db\Exception as DbException;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
  */
-class Connection extends \yii\db\Connection
+class Connection extends Craft\Yii2Adapter\DatabaseConnection
 {
     use PrimaryReplicaTrait;
 

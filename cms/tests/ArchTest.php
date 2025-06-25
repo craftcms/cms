@@ -1,5 +1,5 @@
 <?php
 
-arch('it will not use debugging functions')
-    ->expect(['dd', 'dump', 'ray'])
-    ->each->not->toBeUsed();
+arch()
+    ->expect('cms')
+    ->not->toUse(['die', 'dd', 'dump']);
