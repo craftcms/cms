@@ -351,7 +351,7 @@ class StringHelperTest extends TestCase
      */
     public function testEnsureRight(string $expected, string $string, string $append): void
     {
-        $actual = Str::start($string, $append);
+        $actual = Str::finish($string, $append);
         self::assertSame($expected, $actual);
     }
 
