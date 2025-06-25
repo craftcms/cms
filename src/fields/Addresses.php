@@ -46,6 +46,7 @@ use yii\db\Expression;
 /**
  * Addresses field type.
  *
+ * @phpstan-import-type EagerLoadingMap from ElementInterface
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 5.0.0
  */
@@ -784,6 +785,7 @@ class Addresses extends Field implements
 
     /**
      * @inheritdoc
+     * @return EagerLoadingMap|null|false
      */
     public function getEagerLoadingMap(array $sourceElements): array|null|false
     {

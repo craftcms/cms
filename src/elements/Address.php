@@ -666,7 +666,9 @@ class Address extends Element implements AddressInterface, NestedElementInterfac
             }
         }
 
-        $rules[] = [['longitude', 'latitude'], 'safe'];
+        $rules[] = ['latitude', 'number', 'min' => -90, 'max' => 90, 'on' => [self::SCENARIO_LIVE, self::SCENARIO_DEFAULT]];
+        $rules[] = ['longitude', 'number', 'min' => -180, 'max' => 180, 'on' => [self::SCENARIO_LIVE, self::SCENARIO_DEFAULT]];
+
         $rules[] = [self::_addressAttributes(), 'safe'];
 
         if ($generalConfig->showFirstAndLastNameFields) {

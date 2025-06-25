@@ -99,7 +99,7 @@
                             </div>
 
                             {% if item.subnav %}
-                                <ul class="nav-item__subnav {{ item.sel ? 'is-open' : '' -}}" id="{{ item.id }}-subnav" data-state="{{ item.sel ?  'expanded' : 'collapsed' }}">
+                                <ul class="nav-item__subnav" id="{{ item.id }}-subnav" data-state="{{ item.sel ?  'expanded' : 'collapsed' }}">
                                     {% for itemId, item in item.subnav %}
                                         {% set itemIsSelected = selectedSubnavItem is defined and selectedSubnavItem == itemId -%}
 

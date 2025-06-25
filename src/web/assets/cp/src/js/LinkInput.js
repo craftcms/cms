@@ -96,7 +96,9 @@ Craft.LinkInput = Garnish.Base.extend(
       this.$chip = $(`
 <div class="chip chromeless">
   <div class="chip-content">
-    <a href="${Craft.escapeHtml(value)}" rel="noopener" target="_blank">
+    <a href="${Craft.escapeHtml(
+      value
+    )}" rel="noopener" target="_blank" class="truncate">
       ${Craft.escapeHtml(label)}
     </a>
     <div class="chip-actions">
@@ -188,12 +190,23 @@ Craft.LinkInput = Garnish.Base.extend(
         label: Craft.t('app', 'Edit'),
         icon: async () => await Craft.ui.icon('pencil'),
       });
+      const viewFullUrl = this.menu.addItem({
+        label: Craft.t('app', 'Copy URL'),
+        icon: async () => await Craft.ui.icon('link'),
+      });
       this.menu.addHr();
       this.menu.addGroup();
       const removeAction = this.menu.addItem({
         label: 'Remove',
         icon: async () => await Craft.ui.icon('xmark'),
         destructive: true,
+      });
+
+      this.addListener(viewFullUrl, 'activate', () => {
+        Craft.ui.createCopyTextPrompt({
+          label: 'Full URL',
+          value: this.$hiddenInput.val(),
+        });
       });
 
       this.addListener(viewAction, 'activate', () => {

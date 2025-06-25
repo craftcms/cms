@@ -31,10 +31,10 @@ use craft\models\MailSettings;
 use craft\services\ProjectConfig as ProjectConfigService;
 use craft\web\AssetManager;
 use craft\web\Request;
+use craft\web\Request as WebRequest;
+use craft\web\Response as WebResponse;
 use craft\web\User as WebUser;
 use craft\web\View;
-use Craft\Yii2Adapter\Web\Request as WebRequest;
-use Craft\Yii2Adapter\Web\Response as WebResponse;
 use HTMLPurifier_Encoder;
 use ReflectionClass;
 use ReflectionFunction;
@@ -231,7 +231,7 @@ class App
             $value = $env . ($matches[2] ?? '');
         }
 
-        if (is_string($value) && str_starts_with($value, '@')) {
+        if (str_starts_with($value, '@')) {
             $value = Craft::getAlias($value, false) ?: $value;
         }
 
@@ -293,7 +293,7 @@ class App
      *
      * @param string $name The option name, beginning with `--` or `-`
      * @param bool $unset Whether the option should be removed from `argv` if found
-     * @return string|float|int|true|null
+     * @return string|float|int|bool|null
      * @since 4.0.0
      */
     public static function cliOption(string $name, bool $unset = false): string|float|int|bool|null
@@ -702,6 +702,7 @@ class App
         // ini_set can return false or an empty string depending on your php version / FastCGI.
         // If ini_set has been disabled in php.ini, the value will be null because of our muted error handler
         return (
+            /** @phpstan-ignore-next-line */
             $result !== null &&
             $result !== false &&
             $result !== '' &&
@@ -1169,14 +1170,7 @@ class App
             'autoRenewCookie' => true,
             'loginUrl' => $loginUrl,
             'authTimeout' => $generalConfig->userSessionDuration ?: null,
-            //'identityCookie' => Craft::cookieConfig(['name' => $stateKeyPrefix . '_identity']),
             'usernameCookie' => Craft::cookieConfig(['name' => $stateKeyPrefix . '_username']),
-            //'absoluteAuthTimeoutParam' => $stateKeyPrefix . '__absoluteExpire',
-            //'authTimeoutParam' => $stateKeyPrefix . '__expire',
-            //'idParam' => $stateKeyPrefix . '__id',
-            //'impersonatorIdParam' => $stateKeyPrefix . '__impersonator_id',
-            //'returnUrlParam' => $stateKeyPrefix . '__returnUrl',
-            //'tokenParam' => $stateKeyPrefix . '__token',
         ];
     }
 
@@ -1425,7 +1419,7 @@ class App
 
                                 // If the license key path starts with the root project path, trim the project path off
                                 $rootPath = Craft::getAlias('@root');
-                                if (strpos($keyPath, $rootPath . '/') === 0) {
+                                if (str_starts_with($keyPath, $rootPath . '/')) {
                                     $keyPath = substr($keyPath, strlen($rootPath) + 1);
                                 }
 

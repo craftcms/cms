@@ -166,7 +166,7 @@ class ControllerTest extends TestCase
         self::assertSame(TestSetup::SITE_URL . 'do/stuff', $this->controller->redirect('do/stuff')->headers->get('Location'));
 
         // We dont use _getBaseUrlForRedirect because the :port80 wont work with urlWithScheme.
-        self::assertSame(rtrim(TestSetup::SITE_URL, '/') . ':80/', $this->controller->redirect(null)->headers->get('Location'));
+        self::assertSame(TestSetup::SITE_URL, $this->controller->redirect(null)->headers->get('Location'));
 
         // Absolute url
         self::assertSame(

@@ -118,7 +118,7 @@ class JsonData extends BaseObject implements ArrayAccess, IteratorAggregate, Ser
 
         throw new InvalidCallException(sprintf(
             'Cannot iterate over non-iterable type: %s',
-            is_object($this->value) ? get_class($this->value) : gettype($this->value),
+            get_debug_type($this->value),
         ));
     }
 

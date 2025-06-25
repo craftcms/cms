@@ -72,7 +72,6 @@ class GqlHelperTest extends TestCase
         self::assertFalse(GqlHelper::canSchema('something'));
 
         $result = GqlHelper::extractAllowedEntitiesFromSchema();
-        self::assertIsArray($result);
         self::assertEmpty($result);
     }
 

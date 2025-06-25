@@ -392,6 +392,15 @@ $gridColor: var(--gray-100);
   }
 }
 
+// thumbnail management
+.thumb-management {
+  margin-block: var(--xl);
+
+  .field:first-child {
+    margin-inline-end: var(--xl);
+  }
+}
+
 // card view designer
 .card-view-designer {
   container: cvd / inline-size;

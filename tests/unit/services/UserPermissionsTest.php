@@ -132,7 +132,7 @@ class UserPermissionsTest extends TestCase
     {
         $this->userPermissions->saveGroupPermissions(1000, ['accessCp']);
 
-        /** @var User $user */
+        /** @var ?User $user */
         $user = User::find()
             ->admin(false)
             ->one();
@@ -179,7 +179,7 @@ class UserPermissionsTest extends TestCase
         $this->userPermissions->saveGroupPermissions(1001, ['utility:php-info']);
         $this->userPermissions->saveGroupPermissions(1000, ['accessCp', 'utility:updates']);
 
-        /** @var User $user */
+        /** @var ?User $user */
         $user = User::find()
             ->admin(false)
             ->one();
@@ -210,7 +210,7 @@ class UserPermissionsTest extends TestCase
             $this->userPermissions->saveGroupPermissions(1000, ['accessCp']);
         }, UserGroupPermissionsEvent::class);
 
-        /** @var User $user */
+        /** @var ?User $user */
         $user = User::find()
             ->admin(false)
             ->one();

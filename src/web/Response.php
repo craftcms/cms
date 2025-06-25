@@ -24,7 +24,7 @@ use yii\web\HttpException;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
  */
-class Response extends \yii\web\Response
+class Response extends Craft\Yii2Adapter\Web\Response
 {
     /**
      * @since 3.4.0

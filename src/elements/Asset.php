@@ -1245,7 +1245,7 @@ class Asset extends Element
     {
         return (
             parent::__isset($name) ||
-            strncmp($name, 'transform:', 10) === 0 ||
+            str_starts_with($name, 'transform:') ||
             Craft::$app->getImageTransforms()->getTransformByHandle($name)
         );
     }
@@ -1264,7 +1264,7 @@ class Asset extends Element
      */
     public function __get($name)
     {
-        if (strncmp($name, 'transform:', 10) === 0) {
+        if (str_starts_with($name, 'transform:')) {
             return $this->copyWithTransform(substr($name, 10));
         }
 
@@ -2490,7 +2490,7 @@ JS,[
         }
 
         $transform ??= $this->_transform;
-        return ImageTransforms::normalizeTransform($transform)?->format ?? $ext;
+        return ImageTransforms::normalizeTransform($transform)->format ?? $ext;
     }
 
     /**

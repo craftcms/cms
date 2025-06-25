@@ -18,7 +18,7 @@ use craft\base\Event;
 class RegisterGqlArgumentHandlersEvent extends Event
 {
     /**
-     * @var array[] List of Argument handler class names.
+     * @var array<array|object> List of Argument handler class names.
      */
     public array $handlers = [];
 }

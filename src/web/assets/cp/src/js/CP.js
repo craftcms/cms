@@ -1306,7 +1306,7 @@ Craft.CP = Garnish.Base.extend(
       if (Array.isArray(alerts) && alerts.length) {
         this.$alerts = $('<ul id="alerts"/>').prependTo(this.$pageContainer);
 
-        for (let alert of alerts) {
+        for (const alert of alerts) {
           if (!$.isPlainObject(alert)) {
             alert = {
               content: alert,
@@ -1509,7 +1509,7 @@ Craft.CP = Garnish.Base.extend(
             const callbacks = this.checkForUpdatesFailureCallbacks;
             this.checkForUpdatesFailureCallbacks = null;
 
-            for (let callback of callbacks) {
+            for (const callback of callbacks) {
               callback();
             }
           }
@@ -1524,7 +1524,7 @@ Craft.CP = Garnish.Base.extend(
           const callbacks = this.checkForUpdatesCallbacks;
           this.checkForUpdatesCallbacks = null;
 
-          for (let callback of callbacks) {
+          for (const callback of callbacks) {
             callback(info);
           }
         }
@@ -1933,7 +1933,7 @@ Craft.CP = Garnish.Base.extend(
       history.replaceState({}, '', url);
 
       // update the site--x body class
-      for (let className of document.body.classList) {
+      for (const className of document.body.classList) {
         if (className.match(/^site--/)) {
           document.body.classList.remove(className);
         }
@@ -1980,6 +1980,7 @@ Craft.CP.Notification = Garnish.Base.extend(
     $closeBtn: null,
     $main: null,
     $message: null,
+    $detailsContainer: null,
     originalActiveElement: null,
 
     init: function (type, message, settings = {}) {
@@ -2033,11 +2034,11 @@ Craft.CP.Notification = Garnish.Base.extend(
 
       const details = await this.getDetails();
       if (details) {
-        const $detailsContainer = $('<div class="notification-details"/>')
+        this.$detailsContainer = $('<div class="notification-details"/>')
           .append(details)
           .appendTo(this.$main);
 
-        if ($detailsContainer.find('button,input').length) {
+        if (this.$detailsContainer.find('button,input').length) {
           this.originalActiveElement = document.activeElement;
           this.$container.attr('tabindex', '-1').focus();
           this.addListener(this.$container, 'keydown', (ev) => {
@@ -2068,6 +2069,10 @@ Craft.CP.Notification = Garnish.Base.extend(
           opacity: 1,
           [`margin-${prop}`]: 0,
         });
+      }
+
+      if (this.$detailsContainer) {
+        Craft.cp.elementThumbLoader.load(this.$detailsContainer);
       }
 
       if (Craft.notificationDuration && !this.settings.persist) {
@@ -2290,14 +2295,13 @@ Craft.CP.ElementCopyNotification = Craft.CP.Notification.extend({
     setTimeout(async () => {
       await Craft.appendHeadHtml(data.headHtml);
       await Craft.appendBodyHtml(data.bodyHtml);
-      Craft.cp.elementThumbLoader.load(this.$main);
     }, 1);
 
     const gap = 4;
     this.$copiedElements = $('<div class="copied-elements"/>');
     let $chips = $();
 
-    for (let elementInfo of this.elementInfo) {
+    for (const elementInfo of this.elementInfo) {
       for (const chip of data.elements[elementInfo.id] || []) {
         $chips = $chips.add(chip);
       }

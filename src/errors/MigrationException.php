@@ -10,6 +10,7 @@ namespace craft\errors;
 use Throwable;
 use yii\base\UserException;
 use yii\db\Migration;
+use yii\db\MigrationInterface;
 
 /**
  * MigrationException represents an exception thrown while executing a migration.
@@ -22,7 +23,7 @@ class MigrationException extends UserException
     /**
      * @var Migration The migration being executed
      */
-    public Migration $migration;
+    public Migration|MigrationInterface $migration;
 
     /**
      * @var string|null The migration output
@@ -38,7 +39,7 @@ class MigrationException extends UserException
      * @param int $code The error code
      * @param Throwable|null $previous The previous exception
      */
-    public function __construct(Migration $migration, ?string $output = null, ?string $message = null, int $code = 0, ?Throwable $previous = null)
+    public function __construct(Migration|MigrationInterface $migration, ?string $output = null, ?string $message = null, int $code = 0, ?Throwable $previous = null)
     {
         $this->migration = $migration;
         $this->output = $output;

@@ -4,9 +4,8 @@
   options: options ?? craft.app.entries.getAllEntryTypes(),
   showHandles: true,
   showIndicators: showIndicators ?? allowOverrides,
-  inputValueFn: et => allowOverrides ? et.toArray(['id', 'name', 'handle']) : null,
   createAction: (create ?? false) ? 'entry-types/edit' : null,
-  jsClass: 'Craft.EntryTypeSelectInput',
+  jsClass: jsClass ?? 'Craft.EntryTypeSelectInput',
   jsSettings: {
     allowOverrides,
   }|merge(jsSettings ?? {}),
@@ -16,7 +15,12 @@
       <li>
         {% set chip = chip(entryType, {
           inputName: inputName ?? name ?? null,
-          inputValue: allowOverrides ? entryType.toArray(['id', 'name', 'handle'])|json_encode : null,
+          inputValue: allowOverrides ? {
+            id: entryType.id,
+            name: entryType.name,
+            handle: entryType.handle,
+            group: (includeGroupInValues ?? false) ? (entryType.group ?? 'General'|t('app')) : null,
+          }|filter|json_encode : null,
           checkbox: selectable ?? false,
           showActionMenu: showActionMenus,
           showHandle: showHandles,

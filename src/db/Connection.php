@@ -322,6 +322,7 @@ class Connection extends \yii\db\Connection
             $backupPath = Craft::$app->getPath()->getDbBackupPath();
 
             // Grab all .sql/.dump files in the backup folder.
+            /** @var string[] $files */
             $files = array_merge(
                 glob($backupPath . DIRECTORY_SEPARATOR . "*{$this->_getDumpExtension()}"),
                 glob($backupPath . DIRECTORY_SEPARATOR . "*{$this->_getDumpExtension()}.zip"),

@@ -1566,11 +1566,12 @@ SQL)->execute();
             return null;
         }
 
-        if (isset($config['name']) || isset($config['handle'])) {
+        if (isset($config['name']) || isset($config['handle']) || isset($config['group'])) {
             $original = $entryType;
             $entryType = clone $original;
             $entryType->name = $config['name'] ?? $original->name;
             $entryType->handle = $config['handle'] ?? $original->handle;
+            $entryType->group = $config['group'] ?? null;
             $entryType->original = $original;
         }
 

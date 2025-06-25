@@ -2,15 +2,8 @@
 <phpunit
         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
         xsi:noNamespaceSchemaLocation="https://schema.phpunit.de/10.3/phpunit.xsd"
-        backupGlobals="false"
         bootstrap="../vendor/autoload.php"
         colors="true"
-        processIsolation="false"
-        stopOnFailure="false"
-        failOnWarning="true"
-        failOnRisky="true"
-        failOnEmptyTestSuite="true"
-        beStrictAboutOutputDuringTests="true"
         cacheDirectory="../.phpunit.cache"
         backupStaticProperties="false"
 >
@@ -21,15 +14,29 @@
     </testsuites>
     <php>
         <env name="APP_ENV" value="testing"/>
-        <env name="CACHE_DRIVER" value="array"/>
+        <env name="APP_MAINTENANCE_DRIVER" value="file"/>
+        <env name="BCRYPT_ROUNDS" value="4"/>
+        <env name="CACHE_STORE" value="array"/>
+        <env name="MAIL_MAILER" value="array"/>
+        <env name="PULSE_ENABLED" value="false"/>
+        <env name="QUEUE_CONNECTION" value="sync"/>
         <env name="SESSION_DRIVER" value="array"/>
-        <env name="QUEUE_DRIVER" value="sync"/>
+        <env name="TELESCOPE_ENABLED" value="false"/>
+
         <env name="APP_URL" value="http://localhost" />
         <env name="APP_KEY" value="base64:6BDzvwO4hrN7Twv6/gaQ6oZMB/CvpUArZXho189U75E=" />
         <env name="DB_CONNECTION" value="pgsql"/>
         <env name="DB_DRIVER" value="pgsql"/>
         <env name="DB_DATABASE" value="craft_tests"/>
         <env name="DB_USERNAME" value="postgres"/>
-        <env name="DB_PASSWORD" value="password"/>
+        <env name="DB_PASSWORD" value=""/>
+
+        <env name="CRAFT_DB_DRIVER" value="pgsql" />
+        <env name="CRAFT_DB_SERVER" value="127.0.0.1" />
+        <env name="CRAFT_DB_PORT" value="5432" />
+        <env name="CRAFT_DB_DATABASE" value="craft_tests" />
+        <env name="CRAFT_DB_USER" value="postgres" />
+        <env name="CRAFT_DB_PASSWORD" value="" />
+        <env name="CRAFT_DB_SCHEMA" value="public" />
     </php>
 </phpunit>

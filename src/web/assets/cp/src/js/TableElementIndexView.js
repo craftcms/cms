@@ -106,7 +106,7 @@ Craft.TableElementIndexView = Craft.BaseElementIndexView.extend({
             ).then(({data}) => {
               for (let i = 0; i < $rows.length; i++) {
                 const $row = $rows.eq(i);
-                for (let attribute in data.attributeHtml) {
+                for (const attribute in data.attributeHtml) {
                   if (data.attributeHtml.hasOwnProperty(attribute)) {
                     $row
                       .find(`> td[data-attr="${attribute}"]`)
@@ -152,12 +152,12 @@ Craft.TableElementIndexView = Craft.BaseElementIndexView.extend({
         this.saveChanges()
           .then((data) => {
             if (data.errors) {
-              for (let elementId in data.errors) {
+              for (const elementId in data.errors) {
                 if (data.errors.hasOwnProperty(elementId)) {
                   const $row = this.$elementContainer.children(
                     `[data-id="${elementId}"]`
                   );
-                  for (let attribute in data.errors[elementId]) {
+                  for (const attribute in data.errors[elementId]) {
                     $row
                       .find(`[name*="${attribute}"]`)
                       .closest('td')
@@ -250,7 +250,7 @@ Craft.TableElementIndexView = Craft.BaseElementIndexView.extend({
   serializeInputs: function () {
     const data = Garnish.getPostData(this.$elementContainer);
     const serialized = [];
-    for (let i in data) {
+    for (const i in data) {
       serialized.push(encodeURIComponent(`${i}=${data[i]}`));
     }
     return serialized.join('&');

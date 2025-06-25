@@ -7,6 +7,8 @@
 
 namespace craft\db;
 
+use Illuminate\Support\Str;
+
 /**
  * This class provides constants for defining Craft’s database table names.
  *
@@ -37,6 +39,8 @@ abstract class Table
     public const CHANGEDATTRIBUTES = '{{%changedattributes}}';
     /** @since 3.4.0 */
     public const CHANGEDFIELDS = '{{%changedfields}}';
+    /** @since 5.8.0 */
+    public const CONTENTBLOCKS = '{{%contentblocks}}';
     public const CRAFTIDTOKENS = '{{%craftidtokens}}';
     public const DEPRECATIONERRORS = '{{%deprecationerrors}}';
     /** @since 3.2.0 */
@@ -112,4 +116,9 @@ abstract class Table
     /** @since 5.0 */
     public const WEBAUTHN = '{{%webauthn}}';
     public const WIDGETS = '{{%widgets}}';
+
+    public static function withoutYiiPlaceholder(string $table): string
+    {
+        return Str::of($table)->after('{{%')->before('}}')->value();
+    }
 }

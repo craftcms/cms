@@ -348,11 +348,15 @@ class Assets
      * Sorts a folder tree by the volume sort order.
      *
      * @param VolumeFolder[] $tree array passed by reference of the sortable folders.
+     * @param-out VolumeFolder[] $tree
      * @deprecated in 4.4.0
      */
     public static function sortFolderTree(array &$tree): void
     {
-        $tree = Arr::sort($tree, fn($folder) => $folder->getVolume()->sortOrder);
+        /** @var VolumeFolder[] $sorted */
+        $sorted = Arr::sort($tree, fn($folder) => $folder->getVolume()->sortOrder);
+
+        $tree = $sorted;
     }
 
     /**

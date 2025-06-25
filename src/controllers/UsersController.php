@@ -667,7 +667,10 @@ class UsersController extends Controller
 
             $user = Craft::$app->getUsers()->getUserByUsernameOrEmail($loginName);
 
-            if (!$user || !$user->getIsCredentialed() || !$user->getHasPassword()) {
+            if (
+                !$user?->getIsCredentialed() ||
+                (!$user->getHasPassword() && $user->getHasSsoIdentity())
+            ) {
                 $errors[] = Craft::$app->getConfig()->getGeneral()->useEmailAsUsername
                     ? Craft::t('app', 'Invalid email.')
                     : Craft::t('app', 'Invalid username or email.');
@@ -845,7 +848,7 @@ class UsersController extends Controller
         $user = Craft::$app->getUsers()->getUserByUid($uid);
 
         if (!$user) {
-            throw new BadRequestHttpException("Invalid user UID: $uid");
+            throw new BadRequestHttpException("Invalid user UUID: $uid");
         }
 
         // Make sure we still have a valid token.
@@ -918,12 +921,39 @@ class UsersController extends Controller
             $this->response->format = Response::FORMAT_HTML;
         }
 
-        if (!is_array($info = $this->_processTokenRequest())) {
-            return $info;
+        if (!$this->request->getIsPost()) {
+            if (!is_array($info = $this->_processTokenRequest())) {
+                return $info;
+            }
+
+            /** @var User $user */
+            /** @var string $uid */
+            /** @var string $code */
+            [$user, $uid, $code] = $info;
+
+            Craft::$app->getUser()->sendUsernameCookie($user);
+
+            // Send them to the set verify-email template
+            return $this->_rerouteWithFallbackTemplate('verify-email.twig', [
+                'id' => $uid,
+                'code' => $code,
+            ]);
         }
 
-        /** @var User $user */
-        [$user] = $info;
+        // POST request
+        $code = $this->request->getRequiredBodyParam('code');
+        $uid = $this->request->getRequiredParam('uid');
+        $user = Craft::$app->getUsers()->getUserByUid($uid);
+
+        if (!$user) {
+            throw new BadRequestHttpException("Invalid user UUID: $uid");
+        }
+
+        // Make sure we still have a valid token.
+        if (!Craft::$app->getUsers()->isVerificationCodeValidForUser($user, $code)) {
+            return $this->_processInvalidToken($user);
+        }
+
         $pending = $user->pending;
         $usersService = Craft::$app->getUsers();
 
@@ -1132,7 +1162,10 @@ class UsersController extends Controller
     {
         $this->requireCpRequest();
         $user = $this->editedUser($userId);
-        /** @var Response|CpScreenResponseBehavior $response */
+        /**
+         * @var Response|CpScreenResponseBehavior $response
+         * @phpstan-ignore varTag.nativeType
+         */
         $response = $this->asEditUserScreen($user, self::SCREEN_ADDRESSES);
 
         $response->contentHtml(function() use ($user) {
@@ -1166,7 +1199,10 @@ class UsersController extends Controller
     {
         $this->requireCpRequest();
         $user = $this->editedUser($userId);
-        /** @var Response|CpScreenResponseBehavior $response */
+        /**
+         * @var Response|CpScreenResponseBehavior $response
+         * @phpstan-ignore varTag.nativeType
+         */
         $response = $this->asEditUserScreen($user, self::SCREEN_PERMISSIONS);
 
         $response->action('users/save-permissions');
@@ -1175,7 +1211,7 @@ class UsersController extends Controller
             'currentGroupIds' => array_map(fn(UserGroup $group) => $group->id, $user->getGroups()),
         ]);
 
-        if (!$user->getIsCredentialed() && $user->username && static::currentUser()->can('administrateUsers')) {
+        if (!$user->getIsCredentialed() && $user->username && static::currentUser()->can('moderateUsers')) {
             $response->additionalButtonsHtml(
                 Html::button(Craft::t('app', 'Save and send activation email'), [
                     'class' => ['btn', 'secondary', 'formsubmit'],
@@ -1265,7 +1301,10 @@ class UsersController extends Controller
     {
         $this->requireCpRequest();
         $user = static::currentUser();
-        /** @var Response|CpScreenResponseBehavior $response */
+        /**
+         * @var Response|CpScreenResponseBehavior $response
+         * @phpstan-ignore varTag.nativeType
+         */
         $response = $this->asEditUserScreen($user, self::SCREEN_PREFERENCES);
 
         $i18n = Craft::$app->getI18n();
@@ -1353,7 +1392,10 @@ class UsersController extends Controller
     {
         $this->requireCpRequest();
         $user ??= static::currentUser();
-        /** @var Response|CpScreenResponseBehavior $response */
+        /**
+         * @var Response|CpScreenResponseBehavior $response
+         * @phpstan-ignore varTag.nativeType
+         */
         $response = $this->asEditUserScreen($user, self::SCREEN_PASSWORD);
 
         $this->getView()->registerAssetBundle(AuthMethodSetupAsset::class);
@@ -1414,7 +1456,10 @@ class UsersController extends Controller
     {
         $this->requireCpRequest();
         $user = static::currentUser();
-        /** @var Response|CpScreenResponseBehavior $response */
+        /**
+         * @var Response|CpScreenResponseBehavior $response
+         * @phpstan-ignore varTag.nativeType
+         */
         $response = $this->asEditUserScreen($user, self::SCREEN_PASSKEYS);
 
         $view = $this->getView();
@@ -1919,7 +1964,7 @@ JS);
         }
 
         if (!$user->pending) {
-            $this->requirePermission('administrateUsers');
+            $this->requirePermission('moderateUsers');
         }
 
         $userVariable = $this->request->getValidatedBodyParam('userVariable') ?? 'user';
@@ -2416,7 +2461,8 @@ JS);
                 }
                 return $this->redirect($loginPath);
             }
-            return $this->redirect('login');
+
+            return $this->redirect(Request::CP_PATH_LOGIN);
         }
 
         $activeMethods = $authService->getActiveMethods($user);
@@ -2520,7 +2566,7 @@ JS);
      */
     private function _renderSetPasswordTemplate(array $variables): Response
     {
-        return $this->_rerouteWithFallbackTemplate('setpassword.twig', $variables);
+        return $this->_rerouteWithFallbackTemplate('set-password.twig', $variables);
     }
 
     private function _rerouteWithFallbackTemplate(string $cpTemplate, array $variables = []): ?Response
@@ -2842,11 +2888,12 @@ JS);
 
         // If the invalidUserTokenPath config setting is set, send them there
         if ($this->request->getIsSiteRequest()) {
-            $url = Craft::$app->getConfig()->getGeneral()->getInvalidUserTokenPath();
+            $generalConfig = Craft::$app->getConfig()->getGeneral();
+            $url = $generalConfig->getInvalidUserTokenPath() ?? $generalConfig->getLoginPath();
             return $this->redirect(UrlHelper::siteUrl($url));
         }
 
-        throw new BadRequestHttpException(Craft::t('app', 'Invalid verification code. Please sign in or reset your password.'));
+        return $this->redirect(Request::CP_PATH_LOGIN);
     }
 
     /**

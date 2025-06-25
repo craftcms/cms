@@ -581,7 +581,7 @@ class User extends Craft\Yii2Adapter\Web\User
 
         if (Craft::$app->getConfig()->getGeneral()->enableCsrfProtection) {
             // Let's keep the current nonce around.
-            Craft::$app->getRequest()->regenCsrfToken();
+            Craft::$app->getRequest()->getCsrfToken(true);
         }
 
         parent::afterLogout($identity);

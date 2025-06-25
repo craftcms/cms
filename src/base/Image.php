@@ -117,14 +117,16 @@ abstract class Image extends BaseObject
      * Normalizes the given dimensions. If width or height is set to 'AUTO', we calculate the missing dimension.
      *
      * @param int|string|null $width
+     * @param-out int|string $width
      * @param int|string|null $height
+     * @param-out int|string $height
      */
     protected function normalizeDimensions(int|string|null &$width, int|string|null &$height): void
     {
         // See if $width is in "XxY" format
         if (preg_match('/^([\d]+|AUTO)x([\d]+|AUTO)/', (string)$width, $matches)) {
-            $width = $matches[1] !== 'AUTO' ? (int)$matches[1] : null;
-            $height = $matches[2] !== 'AUTO' ? (int)$matches[2] : null;
+            $width = $matches[1] !== 'AUTO' ? (int)$matches[1] : '';
+            $height = $matches[2] !== 'AUTO' ? (int)$matches[2] : '';
         }
 
         if (!$height || !$width) {

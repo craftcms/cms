@@ -803,7 +803,7 @@ li.breadcrumb-toggle-wrapper {
     inset-block-end: 50px;
   }
 
-  @media only screen and (min-width: $minHorizontalUiWidth) {
+  @media only screen and (min-width: $minDesktopWidth) {
     width: 350px;
   }
 
@@ -1041,9 +1041,13 @@ li.breadcrumb-toggle-wrapper {
 
 #toolbar {
   flex: 1;
-  align-items: center;
+  align-items: flex-start;
   justify-content: space-between;
   min-height: 34px;
+
+  #main-form & {
+    align-items: center;
+  }
 
   .icon::before,
   .texticon::before,

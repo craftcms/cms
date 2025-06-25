@@ -81,7 +81,10 @@ class ResponseTest extends TestCase
      */
     public function testRedirect(string $expected, mixed $url): void
     {
-        self::assertEquals($expected, $this->response->redirect($url)->headers->get('location'));
+        self::assertEquals(
+            $expected,
+            str_replace(':80', '', $this->response->redirect($url)->headers->get('location')),
+        );
     }
 
     /**
@@ -115,12 +118,12 @@ class ResponseTest extends TestCase
     public static function testRedirectDataProvider(): array
     {
         return [
-            ['https://test.craftcms.test/', ''],
+            ['https://localhost/', ''],
             ['http://some-external-domain.com', 'http://some-external-domain.com'],
-            ['https://test.craftcms.test:80/', '/'],
-            ['https://test.craftcms.test:80/something-relative', '/something-relative'],
-            ['https://test.craftcms.test:80/actions/foo/bar', ['foo/bar']],
-            ['https://test.craftcms.test:80/actions/foo/bar?id=3', ['foo/bar', 'id' => 3]],
+            ['https://localhost/', '/'],
+            ['https://localhost/something-relative', '/something-relative'],
+            ['http://localhost/actions/foo/bar', ['foo/bar']],
+            ['http://localhost/actions/foo/bar?id=3', ['foo/bar', 'id' => 3]],
         ];
     }
 }

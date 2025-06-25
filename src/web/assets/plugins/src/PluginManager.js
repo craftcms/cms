@@ -39,7 +39,7 @@ import './plugins.scss';
         }
 
         this.getPluginLicenseInfo().then((response) => {
-          for (let handle in response) {
+          for (const handle in response) {
             if (response.hasOwnProperty(handle)) {
               if (!response[handle].isComposerInstalled) {
                 this.addUninstalledPluginRow(handle, response[handle]);

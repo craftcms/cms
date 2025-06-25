@@ -41,6 +41,7 @@ use craft\gql\arguments\elements\Entry as EntryArguments;
 use craft\gql\resolvers\elements\Entry as EntryResolver;
 use craft\gql\types\generators\EntryType as EntryTypeGenerator;
 use craft\gql\types\input\Matrix as MatrixInputType;
+use craft\helpers\Cp;
 use craft\helpers\Db;
 use craft\helpers\Gql;
 use craft\helpers\Html;
@@ -64,6 +65,7 @@ use yii\db\Expression;
 /**
  * Matrix field type
  *
+ * @phpstan-import-type EagerLoadingMap from ElementInterface
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
  */
@@ -649,8 +651,40 @@ class Matrix extends Field implements
 
     private function settingsHtml(bool $readOnly): string
     {
-        return Craft::$app->getView()->renderTemplate('_components/fieldtypes/Matrix/settings.twig', [
+        $view = Craft::$app->getView();
+
+        $entryTypes = Collection::make($this->getEntryTypes());
+        $entryTypeSelectConfig = [
+            'name' => 'entryTypes[]',
+            'renderDefaultInput' => false,
+            'allowOverrides' => true,
+            'create' => true,
+            'jsClass' => 'Craft.GroupedEntryTypeSelectInput',
+            'errors' => $this->getErrors('entryTypes'),
+            'data' => [
+                'error-key' => 'entryTypes',
+                'disabled' => $readOnly,
+            ],
+        ];
+
+        if (!$readOnly) {
+            $view->startJsBuffer();
+            $namespace = $view->getNamespace();
+            $view->setNamespace(null);
+            $entryTypeSelectHtml = $view->namespaceInputs(fn() => Cp::entryTypeSelectHtml([
+                ...$entryTypeSelectConfig,
+                'id' => 'TEMP_ID',
+            ]), $namespace);
+            $view->setNamespace($namespace);
+            $entryTypeSelectJs = $view->clearJsBuffer();
+        }
+
+        return $view->renderTemplate('_components/fieldtypes/Matrix/settings.twig', [
             'field' => $this,
+            'entryTypes' => $entryTypes,
+            'entryTypeSelectConfig' => $entryTypeSelectConfig,
+            'entryTypeSelectHtml' => $entryTypeSelectHtml ?? null,
+            'entryTypeSelectJs' => $entryTypeSelectJs ?? null,
             'defaultTableColumnOptions' => static::defaultTableColumnOptions($this->getEntryTypes()),
             'defaultCreateButtonLabel' => $this->defaultCreateButtonLabel(),
             'indexViewModes' => array_filter(
@@ -976,7 +1010,7 @@ JS, [
             return Html::tag('div', $message, ['class' => 'pane no-border zilch small']);
         }
 
-        if ($element !== null && $element->hasEagerLoadedElements($this->handle)) {
+        if ($element->hasEagerLoadedElements($this->handle)) {
             $value = $element->getEagerLoadedElements($this->handle)->all();
         }
 
@@ -1103,6 +1137,7 @@ JS;
 }
 JS,
                 'createAttributes' => array_map(fn(EntryType $entryType) => [
+                    'group' => $entryType->group,
                     'icon' => $entryType->icon,
                     'color' => $entryType->color,
                     'label' => Craft::t('site', $entryType->name),
@@ -1317,6 +1352,7 @@ JS;
 
     /**
      * @inheritdoc
+     * @return EagerLoadingMap|null|false
      */
     public function getEagerLoadingMap(array $sourceElements): array|null|false
     {
@@ -1350,7 +1386,10 @@ JS;
                 'fieldId' => $this->id,
                 'allowOwnerDrafts' => true,
                 'allowOwnerRevisions' => true,
-                'revisions' => null,
+                // only include revisions if any of the source elements is a revision
+                // see https://github.com/craftcms/cms/issues/14448 and https://github.com/craftcms/cms/issues/17324
+                'revisions' => Collection::make($sourceElements)
+                    ->contains(fn($sourceElement) => $sourceElement->getIsRevision()),
             ],
         ];
     }

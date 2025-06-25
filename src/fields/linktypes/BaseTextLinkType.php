@@ -99,6 +99,7 @@ JS, [
                     'class' => 'chip-content',
                 ]) .
                 Html::a($linkText, $value, [
+                    'class' => ['truncate'],
                     'target' => '_blank',
                 ]) .
                 Html::beginTag('div', [

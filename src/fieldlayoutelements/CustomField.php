@@ -380,6 +380,14 @@ class CustomField extends BaseField
     /**
      * @inheritdoc
      */
+    protected function showStatus(): bool
+    {
+        return $this->_field->showStatus();
+    }
+
+    /**
+     * @inheritdoc
+     */
     protected function statusClass(?ElementInterface $element = null, bool $static = false): ?string
     {
         if ($element && ($status = $this->_field->getStatus($element))) {

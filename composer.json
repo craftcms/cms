@@ -22,12 +22,6 @@
     "docs": "https://craftcms.com/docs/5.x/",
     "rss": "https://github.com/craftcms/cms/releases.atom"
   },
-  "repositories": [
-    {
-      "type": "path",
-      "url": "../yii2-adapter"
-    }
-  ],
   "require": {
     "php": "^8.2",
     "ext-bcmath": "*",
@@ -98,8 +92,8 @@
     "pestphp/pest": "^3.8",
     "pestphp/pest-plugin-arch": "^3.1",
     "pestphp/pest-plugin-laravel": "^3.2",
-    "phpstan/phpstan": "^2.1.17",
-    "rector/rector": "^2.0.16",
+    "phpstan/phpstan": "^2.1",
+    "rector/rector": "^2.0",
     "vlucas/phpdotenv": "^5.4.1",
     "yiisoft/yii2-redis": "^2.0"
   },
@@ -136,7 +130,7 @@
     "codecept-build": "codecept build",
     "phpstan": "phpstan --memory-limit=1G",
     "rector": "rector",
-    "tests-cms": "./vendor/bin/pest cms --test-directory=cms/tests"
+    "tests-cms": "./vendor/bin/pest --configuration ./cms/phpunit.xml.dist --test-directory ./cms/tests"
   },
   "config": {
     "sort-packages": true,
@@ -155,6 +149,13 @@
       "providers": [
         "Craft\\Cms\\Providers\\CraftServiceProvider"
       ]
+    }
+  },
+  "repositories": {
+    "packagist.org": false,
+    "private-packagist": {
+      "type": "composer",
+      "url": "https://repo.packagist.com/craftcms/"
     }
   }
 }

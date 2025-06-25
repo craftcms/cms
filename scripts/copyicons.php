@@ -194,6 +194,7 @@ $icons = [
     'solid/bird.svg',
     'solid/block-brick.svg',
     'solid/block-question.svg',
+    'solid/block.svg',
     'solid/bluetooth.svg',
     'solid/bold.svg',
     'solid/bolt.svg',
@@ -1533,6 +1534,7 @@ foreach ($icons as $icon) {
                 'name' => sprintf(" %s ", Search::normalizeKeywords($name)),
                 'terms' => sprintf(" %s ", Search::normalizeKeywords($terms)),
                 'pro' => empty($meta[$name]['free']),
+                'styles' => $meta[$name]['styles'] ?? [],
             ];
         }
     }

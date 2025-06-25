@@ -366,7 +366,8 @@ abstract class BaseField extends FieldLayoutElement
             return null;
         }
 
-        $statusClass = $this->statusClass($element, $static);
+        $showStatus = $this->showStatus();
+        $statusClass = $showStatus ? $this->statusClass($element, $static) : null;
         $label = $this->showLabel() ? $this->label() : null;
         $instructions = $this->instructions($element, $static);
         $tip = $this->tip($element, $static);
@@ -407,6 +408,9 @@ abstract class BaseField extends FieldLayoutElement
         }
 
         return Cp::fieldHtml($inputHtml, [
+            'fieldClass' => array_keys(array_filter([
+                'no-status' => !$showStatus,
+            ])),
             'fieldset' => $this->useFieldset(),
             'id' => $this->id(),
             'labelId' => $this->labelId(),
@@ -414,7 +418,7 @@ abstract class BaseField extends FieldLayoutElement
             'tipId' => $this->tipId(),
             'warningId' => $this->warningId(),
             'errorsId' => $this->errorsId(),
-            'statusId' => $this->statusId(),
+            'statusId' => $showStatus ? $this->statusId() : null,
             'fieldAttributes' => $this->containerAttributes($element, $static),
             'inputContainerAttributes' => $this->inputContainerAttributes($element, $static),
             'labelAttributes' => $this->labelAttributes($element, $static),
@@ -675,6 +679,17 @@ abstract class BaseField extends FieldLayoutElement
     protected function showLabel(): bool
     {
         return $this->label !== '__blank__';
+    }
+
+    /**
+     * Returns whether the field should show a status indicator when modified.
+     *
+     * @return bool
+     * @since 5.8.0
+     */
+    protected function showStatus(): bool
+    {
+        return true;
     }
 
     /**

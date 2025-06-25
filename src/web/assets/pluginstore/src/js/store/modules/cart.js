@@ -424,7 +424,7 @@ const actions = {
       const pluginHandles = [];
       const pluginLicenseInfo = rootState.craft.pluginLicenseInfo;
 
-      for (let pluginHandle in pluginLicenseInfo) {
+      for (const pluginHandle in pluginLicenseInfo) {
         if (
           Object.prototype.hasOwnProperty.call(
             pluginLicenseInfo,
