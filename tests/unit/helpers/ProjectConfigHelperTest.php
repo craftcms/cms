@@ -57,8 +57,8 @@ class ProjectConfigHelperTest extends TestCase
     public function testTouch(string $input, string $expected): void
     {
         // Make sure they both end in a newline
-        $input = Str::start($input, "\n");
-        $expected = Str::start($expected, "\n");
+        $input = Str::finish($input, "\n");
+        $expected = Str::finish($expected, "\n");
 
         // Make a backup of project.yaml
         $path = Craft::$app->getPath()->getProjectConfigFilePath();
