@@ -7,7 +7,6 @@ use Craft;
 use craft\helpers\App;
 use craft\helpers\HtmlPurifier;
 use HTMLPurifier_Config;
-use Illuminate\Support\Facades\Log;
 use InvalidArgumentException;
 use LitEmoji\LitEmoji;
 use Ramsey\Uuid\Validator\GenericValidator;
@@ -409,15 +408,9 @@ class Str extends \Illuminate\Support\Str
             return self::$shortcodeEscapeMap;
         }
 
-        $path = base_path('vendor/elvanto/litemoji/src/shortcodes-array.php');
-
-        if (! file_exists($path)) {
-            Log::warning('Unable to escape shortcodes: shortcodes-array.php doesn’t exist at the expected location.');
-
-            return self::$shortcodeEscapeMap = false;
-        }
-
-        $shortcodes = array_keys(require $path);
+        $reflectionClass = new \ReflectionClass(LitEmoji::class);
+        $reflectionMethod = $reflectionClass->getMethod('getShortcodes');
+        $shortcodes = array_keys($reflectionMethod->invoke(null));
 
         self::$shortcodeEscapeMap = array_combine(
             array_map(fn (string $shortcode) => ":$shortcode:", $shortcodes),
