@@ -1791,7 +1791,9 @@ Craft.BaseElementIndex = Garnish.Base.extend(
           : Craft.t('app', 'Descending');
       const sortLabel = this.getSortLabel(attribute);
 
-      if (!attribute && !direction && !sortLabel) return;
+      if (!attribute && !direction && !sortLabel) {
+        return;
+      }
 
       return Craft.t('app', '{name} sorted by {attribute}, {direction}', {
         name: this.getSourceLabel(),
@@ -1801,7 +1803,9 @@ Craft.BaseElementIndex = Garnish.Base.extend(
     },
 
     updateLiveRegion: function (message) {
-      if (!message) return;
+      if (!message) {
+        return;
+      }
 
       this.$srStatusContainer.empty().text(message);
 
@@ -1810,7 +1814,9 @@ Craft.BaseElementIndex = Garnish.Base.extend(
         const currentMessage = this.$srStatusContainer.text();
 
         // Check that this is the same message and hasn't been updated since
-        if (message !== currentMessage) return;
+        if (message !== currentMessage) {
+          return;
+        }
 
         this.$srStatusContainer.empty();
       }, 5000);
@@ -3160,9 +3166,11 @@ Craft.BaseElementIndex = Garnish.Base.extend(
     // -------------------------------------------------------------------------
 
     _getSourcesInList: function ($list, topLevel) {
-      let $sources = $list.find('> li:not(.heading) > a');
+      let $sources = $list.find('> li:not(.heading) [data-source-item]');
       if (topLevel) {
-        $sources = $sources.add($list.find('> li.heading > ul > li > a'));
+        $sources = $sources.add(
+          $list.find('> li.heading > ul > li [data-source-item]')
+        );
       }
       return $sources;
     },
@@ -3965,6 +3973,7 @@ const SourceNav = Garnish.Base.extend(
     $container: null,
     $items: null,
     $selectedItem: null,
+    $disclosures: null,
 
     init: function (container, settings) {
       this.$container = $(container);

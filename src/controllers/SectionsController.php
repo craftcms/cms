@@ -10,6 +10,7 @@ namespace craft\controllers;
 use Craft;
 use craft\base\Element;
 use craft\enums\PropagationMethod;
+use craft\helpers\Cp;
 use craft\models\Section;
 use craft\models\Section_SiteSettings;
 use craft\web\assets\editsection\EditSectionAsset;
@@ -99,14 +100,14 @@ class SectionsController extends Controller
                 }
             }
 
-            $variables['title'] = trim($section->name) ?: Craft::t('app', 'Edit Section');
+            $title = trim($section->name) ?: Craft::t('app', 'Edit Section');
         } else {
             if ($section === null) {
                 $section = new Section();
                 $variables['brandNewSection'] = true;
             }
 
-            $variables['title'] = Craft::t('app', 'Create a new section');
+            $title = Craft::t('app', 'Create a new section');
         }
 
         $typeOptions = [
@@ -125,7 +126,27 @@ class SectionsController extends Controller
 
         $this->getView()->registerAssetBundle(EditSectionAsset::class);
 
-        return $this->renderTemplate('settings/sections/_edit.twig', $variables);
+        $response = $this->asCpScreen()
+            ->editUrl($section->getCpEditUrl())
+            ->title($title)
+            ->addCrumb(Craft::t('app', 'Settings'), 'settings')
+            ->addCrumb(Craft::t('app', 'Sections'), 'settings/sections')
+            ->contentTemplate('settings/sections/_edit.twig', $variables);
+
+        if (!$this->readOnly) {
+            $response
+                ->action('sections/save-section')
+                ->redirectUrl('settings/sections')
+                ->addAltAction(Craft::t('app', 'Save and continue editing'), [
+                    'redirect' => 'settings/sections/{id}',
+                    'shortcut' => true,
+                    'retainScroll' => true,
+                ]);
+        } else {
+            $response->noticeHtml(Cp::readOnlyNoticeHtml());
+        }
+
+        return $response;
     }
 
     /**

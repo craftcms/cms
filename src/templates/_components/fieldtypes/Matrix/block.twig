@@ -67,16 +67,27 @@
   },
 ] %}
 
-{% if entry.id %}
-  {% set actionMenuItems = actionMenuItems|merge([
-    {hr: true},
-    {
+{% if entry.id or (currentUser.admin and craft.app.config.general.allowAdminChanges) %}
+  {% set actionMenuItems = actionMenuItems|push({hr: true}) %}
+
+  {% if entry.id %}
+    {% set actionMenuItems = actionMenuItems|push({
       icon: 'external',
       label: 'Open in a new tab'|t('app'),
       url: entry.getCpEditUrl(),
       attributes: {target: '_blank'},
-    },
-  ]) %}
+    }) %}
+  {% endif %}
+
+  {% if currentUser.admin and craft.app.config.general.allowAdminChanges %}
+    {% set actionMenuItems = actionMenuItems|push({
+      icon: 'gear',
+      label: 'Entry type settings'|t('app'),
+      attributes: {
+        data: {action: 'editEntryType'},
+      },
+    }) %}
+  {% endif %}
 {% endif %}
 
 {% if not staticEntries %}

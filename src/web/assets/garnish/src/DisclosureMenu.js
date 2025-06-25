@@ -136,6 +136,14 @@ export default Base.extend(
           });
           $matches.removeClass('filtered');
           $options.not($matches).addClass('filtered');
+
+          // also match the headings
+          this.$container.find('h3').each((i, heading) => {
+            const $heading = $(heading);
+            if ($heading.text().toLowerCase().includes(val)) {
+              $heading.next('ul').find('li.filtered').removeClass('filtered');
+            }
+          });
         } else {
           $clearBtn.addClass('hidden');
           $options.removeClass('filtered');

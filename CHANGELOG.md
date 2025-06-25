@@ -2,7 +2,26 @@
 
 ## Unreleased
 
+- Table fields with “Static Rows” enabled now get populated with the default row values when their value is `null`. ([#17452](https://github.com/craftcms/cms/pull/17452))
+- Added `craft\fields\linktypes\BaseLinkType::isValueEmpty()`.
+- Added `craft\services\Auth::getAuthErrorMessage()`.
+- Added `craft\services\ElementSources::sourceExists()`.
+- Added new icons. ([#17441](https://github.com/craftcms/cms/pull/17441))
+- Updated yii2-debug to 2.1.27. ([#17115](https://github.com/craftcms/cms/issues/17115))
+- Fixed a bug where Number fields’ Prefix Text and Suffix Text values weren’t getting translated. ([#17467](https://github.com/craftcms/cms/pull/17467))
+- Fixed a bug where some address field values could be cleared out unexpectedly when editing an address. ([#17468](https://github.com/craftcms/cms/pull/17468))
 - Fixed a PHP error that could occur when rendering a field layout’s form, if it didn’t have customizable tabs.
+- Fixed an error that could occur when loading control panel resources on the front end.
+- Fixed a bug where entries’ section breadcrumbs were getting hyperlinked even if the section’s source was disabled. ([#17411](https://github.com/craftcms/cms/issues/17411))
+- Fixed a bug where entries that were pasted within a Matrix field were losing custom field translations for other sites. ([17414](https://github.com/craftcms/cms/issues/17414))
+- Fixed a bug where Matrix fields’ chips were getting “Copy all entries” actions. ([#17404](https://github.com/craftcms/cms/issues/17404))
+- Fixed a bug where Link fields were validating if a deleted element was selected. ([#17409](https://github.com/craftcms/cms/issues/17409))
+- Fixed a bug where copy buttons weren’t working on table rows that had been reordered. ([#17459](https://github.com/craftcms/cms/issues/17459))
+- Fixed a bug where clicking on a structured element’s drag handle was causing its row to be selected. ([#17461](https://github.com/craftcms/cms/issues/17461))
+- Fixed a bug where bulk actions weren’t working within embedded element indexes, when shown within a slideout. ([#17468](https://github.com/craftcms/cms/pull/17468))
+- Fixed a bug where autosuggest inputs weren’t getting correct `aria-describedby` and `aria-labelledby` values. ([#17413](https://github.com/craftcms/cms/pull/17413))
+- Fixed a bug where Matrix fields’ entry types were retaining their original names and handles as override values, if the entry type was edited via a slideout from the Matrix field settings. ([#17471](https://github.com/craftcms/cms/issues/17471))
+- Users’ maximum invalid login counts now factor in invalid two-step verification attempts. ([#17454](https://github.com/craftcms/cms/pull/17454))
 
 ## 5.7.10 - 2025-06-04
 

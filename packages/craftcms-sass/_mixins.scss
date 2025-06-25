@@ -328,20 +328,18 @@ $menuBorderRadius: $mediumBorderRadius;
 }
 
 @mixin light-focus-ring() {
-  --focus-ring: 0 0 0 1px
-      hsl(
-        #{color.hue($blue200)},
-        #{color.saturation($blue200)},
-        #{color.lightness($blue200)}
-      ),
-    0 0 0 3px hsla(var(--light-focus-hsl), 1);
+  @warn "light-focus-ring mixin is deprecated. Use CSS variables instead.";
+  --focus-ring: var(--focus-ring-light);
 }
 
 @mixin dark-btn-light-bg-focus-ring() {
+  @warn "dark-btn-light-bg-focus-ring is deprecated. Use CSS variables instead.";
   --focus-ring: var(--focus-ring-outset);
 }
 
 @mixin custom-color-focus-ring($primary, $secondary: null) {
+  @warn "custom-color-focus-ring mixin is deprecated. Use CSS variables instead.";
+
   @if $secondary != null {
     --focus-ring: 0 0 0 1px #{$primary}, 0 0 0 3px #{$secondary};
   } @else {
@@ -564,9 +562,9 @@ $menuBorderRadius: $mediumBorderRadius;
 
 @mixin menu-item-active-styles {
   color: var(--white) !important;
-  --medium-text-color: rgba(255, 255, 255, 0.8);
+  --fg-subtle: rgba(255, 255, 255, 0.8);
   --light-text-color: rgba(255, 255, 255, 0.8);
-  background-color: var(--dark-sel-color);
+  background-color: var(--bg-selection-dark);
 
   svg {
     @include svg-mask(var(--white));

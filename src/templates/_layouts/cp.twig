@@ -74,7 +74,7 @@
 {% set contentNotice = (contentNotice ?? block('contentNotice') ?? '')|trim %}
 {% set sidebar = (sidebar ?? block('sidebar') ?? '')|trim %}
 {% set toolbar = (toolbar ?? block('toolbar') ?? '')|trim %}
-{% set actionButton = (block('actionButton') ?? '')|trim %}
+{% set actionButton = (actionButton ?? block('actionButton') ?? '')|trim %}
 {% set additionalButtons = additionalButtons ?? null %}
 {% set details = (details ?? block('details') ?? '')|trim %}
 {% set footer = (footer ?? block('footer') ?? '')|trim %}

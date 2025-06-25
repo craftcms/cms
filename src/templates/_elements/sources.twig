@@ -83,29 +83,73 @@
 
 {% tag 'ul' with {
     class: keyPrefix ? 'nested' : null,
+    id: id ?? ''
 } %}
     {% for source in sources %}
         {% if (source.type ?? null) == 'heading' %}
+            {% set key = source.key ?? source.heading | kebab %}
             {% if nestedUnderHeading %}
                     </ul>
                 </li>
             {% endif %}
             <li class="heading">
-                <span>{{ source.heading|t('site') }}</span>
-                <ul>
+                <div class="source-item source-item--heading">
+                    <span class="type-heading-small">{{ source.heading|t('site') }}</span>
+                    {# Don't toggle blank headings #}
+                    {% if source.heading | length %}
+                        {% embed '_includes/disclosure-toggle' with {
+                            cookieName: 'sources-list:'~ key,
+                            controls: key,
+                            attributes: {
+                                class: 'source-item__toggle'
+                            }
+                        } %}
+                            {% block content %}
+                                <span class="cp-icon puny">
+                                    {{ iconSvg('angle-down') }}
+                                </span>
+                                <span class="visually-hidden">{{ 'Expand {heading} sources' | t('app', {
+                                        heading: source.heading
+                                    }) }}</span>
+                            {% endblock %}
+                        {% endembed %}
+                    {% endif %}
+                </div>
+                <ul id="{{ key }}">
             {% set nestedUnderHeading = true %}
         {% elseif (source.sites ?? null) is not same as([]) %}
             {% set key = source.keyPath ?? (keyPrefix ~ source.key) %}
             {% tag 'li' with {
                 class: [
+                    (source.nested ?? false) ? 'collapsible' : null,
                     (source.disabled ?? false) ? 'hidden' : null,
                 ]|filter,
             } %}
-                {{ _self.sourceLink(key, source, isTopLevel, elementType, sortOptions ?? null, baseSortOptions ?? null, tableColumns ?? null, defaultTableColumns ?? null, viewModes ?? null) }}
+                <div class="source-item source-item--link">
+                    {{ _self.sourceLink(key, source, isTopLevel, elementType, sortOptions ?? null, baseSortOptions ?? null, tableColumns ?? null, defaultTableColumns ?? null, viewModes ?? null) }}
+                    {% if source.nested is defined and source.nested is not empty %}
+                        {% embed '_includes/disclosure-toggle' with {
+                            cookieName: 'sources-list:'~ key,
+                            controls: key,
+                            attributes: {
+                                class: 'source-item__toggle'
+                            }
+                        } %}
+                            {% block content %}
+                                <span class="cp-icon puny">
+                                    {{ iconSvg('angle-down') }}
+                                </span>
+                                <span class="visually-hidden">{{ 'Expand {heading} sources' | t('app', {
+                                        heading: source.label
+                                    }) }}</span>
+                            {% endblock %}
+                        {% endembed %}
+                    {% endif %}
+                </div>
                 {% if source.nested is defined and source.nested is not empty %}
-                    <button class="toggle" aria-expanded="false" aria-label="{{ 'Show nested sources'|t('app') }}"></button>
                     {% include "_elements/sources" with {
                         keyPrefix: key ~ '/',
+                        id: key,
                         sources: source.nested
                     } %}
                 {% endif %}

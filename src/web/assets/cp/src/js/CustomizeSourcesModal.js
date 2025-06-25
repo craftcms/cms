@@ -378,8 +378,26 @@ Craft.CustomizeSourcesModal = Garnish.Modal.extend({
     let source;
 
     if (sourceData.type === 'heading') {
+      // Sources pre 5.8 don't have a `key` so we need to add one if it is missing.
+      if (!sourceData.key) {
+        sourceData.key = `heading:${Craft.uuid()}`;
+      }
+
       $item.addClass('heading');
-      $itemInput.attr('name', 'sourceOrder[][heading]');
+      $itemInput.attr('name', 'sourceOrder[][key]').val(sourceData.key);
+
+      /**
+       * We add this here so it will get sent in every POST request.
+       * This ensures that header sources will be updated to the new format
+       * on save.
+       * When updating, this will result in two `sources[${key}][heading]` values
+       * getting sent to the server, but that should be fine.
+       */
+      $('<input type="hidden"/>')
+        .attr('name', `sources[${sourceData.key}][heading]`)
+        .val(sourceData.heading)
+        .appendTo($item);
+
       source = new Craft.CustomizeSourcesModal.Heading(
         this,
         $item,
@@ -1058,6 +1076,7 @@ Craft.CustomizeSourcesModal.Heading =
       const $labelField = Craft.ui
         .createTextField({
           label: Craft.t('app', 'Heading'),
+          name: `sources[${this.sourceData.key}][heading]`,
           instructions: Craft.t(
             'app',
             'This can be left blank if you just want an unlabeled separator.'
@@ -1093,7 +1112,6 @@ Craft.CustomizeSourcesModal.Heading =
             ? Craft.escapeHtml(val)
             : `<em>${Craft.t('app', '(blank)')}</em>`) + '&nbsp;'
         );
-      this.$itemInput.val(val);
     },
 
     getIndexSourceItem: function () {

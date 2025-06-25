@@ -45,41 +45,6 @@
 /*  Basic stuff
 /* ---------------------------------------- */
 
-:root {
-  --ui-control-color: var(--gray-550);
-  --ui-control-hover-color: var(--gray-600);
-  --ui-control-active-color: var(--gray-700);
-  --ui-control-static-bg-color: #{color.adjust(
-      mixins.$inputColor,
-      $alpha: -0.75
-    )};
-  --ui-control-bg-color: var(--ui-control-static-bg-color);
-  --ui-control-hover-bg-color: #{color.adjust(mixins.$inputColor, $alpha: -0.7)};
-  --ui-control-active-bg-color: #{color.adjust(mixins.$inputColor, $alpha: -0.5)};
-  --ui-control-border-radius: var(--large-border-radius);
-  --ui-control-height: calc(34rem / 16);
-  --ui-control-height--small: calc(30rem / 16);
-  --focus-ring-alpha: 0.85;
-  --light-focus-hsl: #{color.hue(mixins.$lightFocusColor)},
-    #{color.saturation(mixins.$lightFocusColor)},
-    #{color.lightness(mixins.$lightFocusColor)};
-  --dark-focus-hsl: #{color.hue(mixins.$darkFocusColor)},
-    #{color.saturation(mixins.$darkFocusColor)},
-    #{color.lightness(mixins.$darkFocusColor)};
-  --focus-ring: 0 0 0 2px var(--focus-ring-color),
-    0 0 5px 1px
-      hsl(from var(--focus-ring-color) h s l / var(--focus-ring-alpha));
-  --focus-ring-outset: 0 0 0 1px currentcolor, 0 0 0 3px var(--focus-ring-color),
-    0 0 6px 2px
-      hsl(from var(--focus-ring-color) h s l / var(--focus-ring-alpha));
-  --inner-focus-ring: inset 0 0 0 1px var(--focus-ring-color),
-    inset 0 0 0 3px
-      hsl(from var(--focus-ring-color) h s l / var(--focus-ring-alpha));
-  --touch-target-size: calc(24rem / 16);
-  --icon-size: 1rem;
-  --lh: 1.42em;
-}
-
 body,
 html {
   background: var(--body-bg);
@@ -599,9 +564,9 @@ table.editable textarea {
   width: 1rem;
   height: 1rem;
   box-sizing: border-box;
-  border: 1px solid var(--indicator-border-color);
-  border-radius: var(--small-border-radius);
-  color: var(--indicator-icon-color);
+  border: 1px solid var(--border-warning-emphasis);
+  border-radius: var(--radius-sm);
+  color: var(--fg-warning);
   font-size: 9px;
 }
 
@@ -744,7 +709,7 @@ h4,
   margin-inline: 0;
   font-weight: bold;
   line-height: 1.2;
-  color: var(--medium-text-color);
+  color: var(--fg-subtle);
 }
 
 h5,
@@ -752,7 +717,7 @@ h5,
   margin-block: 14px 3px;
   margin-inline: 0;
   line-height: 1.2;
-  color: var(--medium-text-color);
+  color: var(--fg-subtle);
 }
 
 h6,
@@ -829,18 +794,18 @@ code,
     background-color: var(--gray-100);
     padding-block: 0.0625em;
     padding-inline: 0.25em;
-    border-radius: var(--small-border-radius);
-    border: 1px solid var(--hairline-color);
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--border-hairline);
   }
 
   .warning & {
-    background-color: var(--warning-background);
-    border-color: var(--warning-border-color);
+    background-color: var(--bg-warning);
+    border-color: var(--border-warning);
   }
 
   .tip & {
-    background-color: var(--notice-background);
-    border-color: var(--notice-border-color);
+    background-color: var(--bg-notice);
+    border-color: var(--border-notice);
   }
 }
 
@@ -933,7 +898,7 @@ button {
 
   &::before {
     content: 'check';
-    color: var(--success-color);
+    color: var(--fg-success);
   }
 }
 
@@ -942,7 +907,7 @@ button {
 
   &::before {
     content: 'alert';
-    color: var(--error-color);
+    color: var(--fg-error);
   }
 }
 
@@ -950,8 +915,8 @@ button {
   max-width: 400px;
 
   .http-error {
-    border-radius: var(--medium-border-radius);
-    border: 1px solid var(--hairline-color);
+    border-radius: var(--radius-md);
+    border: 1px solid var(--border-hairline);
     color: var(--light-text-color);
     background-color: var(--gray-050);
     padding-block: 7px;
@@ -976,7 +941,7 @@ button {
     margin-block: -5px;
     padding-inline: var(--xl) 0;
     padding-block: 5px;
-    border-end-start-radius: var(--large-border-radius);
+    border-end-start-radius: var(--radius-lg);
 
     body.ltr & {
       background-image: linear-gradient(
@@ -1109,6 +1074,7 @@ a.fieldtoggle::before {
 }
 
 .toggle.expanded::before,
+.toggle[aria-expanded='true']::before,
 button.fieldtoggle:not(.lightswitch).expanded::before,
 a.fieldtoggle.expanded::before,
 .sidebar nav li.expanded > .toggle::before,
@@ -1187,7 +1153,7 @@ i em {
 }
 
 .light {
-  color: var(--medium-text-color) !important;
+  color: var(--fg-subtle) !important;
 }
 
 .extralight {
@@ -1338,7 +1304,7 @@ td.right {
 }
 
 .success {
-  color: var(--success-color) !important;
+  color: var(--fg-success) !important;
 }
 
 .notice,
@@ -1365,7 +1331,7 @@ td.right {
 }
 
 .notice {
-  color: var(--notice-color) !important;
+  color: var(--fg-notice) !important;
 
   a {
     text-decoration: underline;
@@ -1380,7 +1346,7 @@ td.right {
 }
 
 .warning {
-  color: var(--warning-color) !important;
+  color: var(--fg-warning) !important;
 
   &.with-icon,
   .icon {
@@ -1391,7 +1357,7 @@ td.right {
 }
 
 .error {
-  color: var(--error-color) !important;
+  color: var(--fg-error) !important;
 }
 
 .icon.move,
@@ -1425,7 +1391,7 @@ td.right {
     cursor: pointer;
 
     &:hover::before {
-      color: var(--disabled-color);
+      color: var(--bg-disabled);
     }
 
     &:active::before {
@@ -1484,7 +1450,7 @@ td.right {
     }
 
     &:hover::before {
-      color: var(--warning-color);
+      color: var(--fg-warning);
     }
   }
 }
@@ -1541,8 +1507,8 @@ td.right {
     box-sizing: border-box;
     background-color: var(--gray-050);
     overflow: auto;
-    box-shadow: inset -1px 0 0 var(--hairline-color);
-    border-start-start-radius: var(--large-border-radius);
+    box-shadow: inset -1px 0 0 var(--border-hairline);
+    border-start-start-radius: var(--radius-lg);
 
     & > .btn {
       margin-inline: 14px 0;
@@ -1586,7 +1552,7 @@ td.right {
   position: relative;
   margin-block-start: -1px;
   background-color: var(--gray-100);
-  border: solid var(--hairline-color);
+  border: solid var(--border-hairline);
   border-width: 1px 0;
   user-select: none;
   cursor: default;
@@ -1597,14 +1563,14 @@ td.right {
     }
 
     &:not(.heading) {
-      border-block-start: 1px solid var(--hairline-color);
+      border-block-start: 1px solid var(--border-hairline);
     }
   }
 
   &.sel {
     --focus-ring: var(--focus-ring-outset);
     --ui-control-color: var(--selected-item-color);
-    background-color: var(--dark-sel-color);
+    background-color: var(--bg-selection-dark);
     color: var(--selected-item-color);
     z-index: 1;
   }
@@ -1619,7 +1585,7 @@ td.right {
   }
 
   &:not(.sel) .handle {
-    color: var(--medium-text-color);
+    color: var(--fg-subtle);
   }
 
   &.heading {
@@ -1789,7 +1755,7 @@ ul.icons {
   }
 
   .text {
-    border-radius: var(--large-border-radius) !important;
+    border-radius: var(--radius-lg) !important;
   }
 }
 
@@ -2017,7 +1983,7 @@ ul.icons {
 
   &.hairline,
   &.link-btn {
-    border: 1px solid var(--medium-hairline-color);
+    border: 1px solid var(--border-hairline-medium);
 
     &:active,
     &.active,
@@ -2031,12 +1997,12 @@ ul.icons {
     &:active,
     &.active,
     &[aria-expanded='true'] {
-      border-color: var(--dark-hairline-color);
+      border-color: var(--border-hairline-dark);
     }
   }
 
   &.hairline-dark {
-    border: 1px solid var(--dark-hairline-color);
+    border: 1px solid var(--border-hairline-dark);
 
     &:not(:hover, :active, .active, [aria-expanded='true']) {
       background-color: transparent;
@@ -2120,7 +2086,7 @@ ul.icons {
   }
 
   &.copyable {
-    color: var(--medium-text-color);
+    color: var(--fg-subtle);
 
     [data-icon] {
       margin-inline: 0;
@@ -2208,7 +2174,7 @@ ul.icons {
   display: flex;
   white-space: nowrap;
   align-items: center;
-  border-radius: var(--large-border-radius);
+  border-radius: var(--radius-lg);
 
   &.fullwidth .btn {
     flex: 1;
@@ -2269,13 +2235,13 @@ ul.icons {
 craft-copy-attribute {
   display: inline-block;
   @include mixins.fixed-width-font(calc(11rem / 16));
-  color: var(--medium-text-color);
+  color: var(--fg-subtle);
   height: calc(22rem / 16);
 
   button {
     gap: 5px;
     display: inline-flex;
-    border: 1px solid var(--hairline-color);
+    border: 1px solid var(--border-hairline);
     border-radius: var(--button-border-radius);
     padding-inline: 5px;
     flex-wrap: nowrap;
@@ -2285,7 +2251,7 @@ craft-copy-attribute {
 
     &:hover,
     &:focus {
-      border-color: var(--medium-hairline-color);
+      border-color: var(--border-hairline-medium);
       color: var(--text-color);
     }
 
@@ -2503,7 +2469,7 @@ craft-copy-attribute {
 
   &.caution {
     background-color: var(--red-050) !important;
-    color: var(--error-color);
+    color: var(--fg-error);
 
     &:hover,
     &.hover,
@@ -2615,8 +2581,8 @@ div.btn.submit input {
     }
 
     &.current-step {
+      --focus-ring: var(--focus-ring-light);
       @include mixins.light-on-dark-text;
-      @include mixins.light-focus-ring;
     }
 
     &:focus-visible {
@@ -2820,7 +2786,7 @@ div.btn.submit input {
   display: inline-block;
   margin-inline-start: 5px;
   vertical-align: middle;
-  color: var(--medium-text-color);
+  color: var(--fg-subtle);
 }
 
 /* lightswitch */
@@ -2828,8 +2794,8 @@ div.btn.submit input {
   display: flex;
 
   .lightswitch-inner-container {
-    border: 1px solid var(--hairline-color);
-    border-radius: var(--small-border-radius);
+    border: 1px solid var(--border-hairline);
+    border-radius: var(--radius-sm);
     display: flex;
     align-items: center;
     max-width: 100%;
@@ -2839,7 +2805,7 @@ div.btn.submit input {
       flex-grow: 1;
       padding-block: 7px;
       padding-inline: 0;
-      color: var(--medium-text-color);
+      color: var(--fg-subtle);
       cursor: default;
       overflow: auto;
       overflow-wrap: break-word;
@@ -2871,15 +2837,15 @@ div.btn.submit input {
   &.on {
     background-image: linear-gradient(
       to right,
-      var(--enabled-color),
-      var(--enabled-color)
+      var(--bg-enabled),
+      var(--bg-enabled)
     );
   }
 
   &.indeterminate {
     background-image: linear-gradient(
       to right,
-      var(--enabled-color),
+      var(--bg-enabled),
       var(--gray-300)
     );
   }
@@ -2971,7 +2937,7 @@ div.btn.submit input {
     display: flex;
     align-items: center;
     justify-content: center;
-    border-radius: var(--medium-border-radius);
+    border-radius: var(--radius-md);
 
     &::after {
       position: relative;
@@ -2990,7 +2956,7 @@ div.btn.submit input {
 
     &:not(.disabled) {
       transition: box-shadow linear 100ms;
-      box-shadow: inset 0 0 0 1px var(--hairline-color);
+      box-shadow: inset 0 0 0 1px var(--border-hairline);
       cursor: pointer;
 
       &:hover {
@@ -3004,7 +2970,7 @@ div.btn.submit input {
 
       &:focus-visible {
         box-shadow:
-          inset 0 0 0 1px var(--hairline-color),
+          inset 0 0 0 1px var(--border-hairline),
           var(--focus-ring);
       }
     }
@@ -3013,7 +2979,7 @@ div.btn.submit input {
       opacity: 1;
 
       &::after {
-        border-color: var(--hairline-color);
+        border-color: var(--border-hairline);
       }
     }
   }
@@ -3149,25 +3115,13 @@ table {
         th,
         td {
           &:first-child {
-            border-start-start-radius: var(
-              --border-radius,
-              var(--small-border-radius)
-            );
-            border-end-start-radius: var(
-              --border-radius,
-              var(--small-border-radius)
-            );
+            border-start-start-radius: var(--border-radius, var(--radius-sm));
+            border-end-start-radius: var(--border-radius, var(--radius-sm));
           }
 
           &:last-child {
-            border-start-end-radius: var(
-              --border-radius,
-              var(--small-border-radius)
-            );
-            border-end-end-radius: var(
-              --border-radius,
-              var(--small-border-radius)
-            );
+            border-start-end-radius: var(--border-radius, var(--radius-sm));
+            border-end-end-radius: var(--border-radius, var(--radius-sm));
           }
         }
       }
@@ -3199,7 +3153,7 @@ table {
           }
 
           &.ordered {
-            background-color: var(--light-sel-color);
+            background-color: var(--bg-selection-light);
 
             &:not(.loading) {
               button::after {
@@ -3248,7 +3202,7 @@ table {
     tbody {
       tr {
         --hover-bg-color: var(--gray-050);
-        --selected-bg-color: var(--dark-sel-color);
+        --selected-bg-color: var(--bg-selection-dark);
 
         &:not(.disabled) {
           &:hover {
@@ -3266,14 +3220,11 @@ table {
           &.sel,
           &.active-drop-target {
             --text-color: var(--white);
-            --medium-dark-text-color: var(--white);
-            --medium-text-color: var(--white);
+            --fg-subtle: var(--white);
             --light-text-color: var(--white);
             --link-color: var(--white);
             --ui-control-color: var(--white);
-            @include mixins.custom-color-focus-ring(
-              hsl(var(--light-focus-hsl))
-            );
+            --focus-ring: 0 0 0 3px hsl(--focus-light);
 
             .status-label .status-label-text {
               --status-label-text-color: var(--white) !important;
@@ -3345,7 +3296,7 @@ table {
         }
 
         &.ordered {
-          background-color: var(--light-sel-color);
+          background-color: var(--bg-selection-light);
 
           .sort-icon {
             @include mixins.angle(up);
@@ -3388,7 +3339,7 @@ table {
       tr {
         padding-block: 6px;
         padding-inline: 0;
-        border-block-end: 1px dotted var(--hairline-color);
+        border-block-end: 1px dotted var(--border-hairline);
 
         &::after {
           @include mixins.clearafter;
@@ -3454,7 +3405,7 @@ table {
 .card,
 .matrixblock {
   position: relative;
-  border-radius: var(--large-border-radius);
+  border-radius: var(--radius-lg);
   color: var(--custom-text-color, var(--text-color));
 
   --custom-border-color: initial;
@@ -3473,7 +3424,7 @@ table {
     position: absolute;
     content: '';
     inset: 0;
-    border-radius: var(--large-border-radius);
+    border-radius: var(--radius-lg);
     box-shadow: inset 0 0 0 1px var(--custom-border-color, var(--gray-200));
     pointer-events: none;
     z-index: 1;
@@ -3491,19 +3442,18 @@ table {
   .card.sel & {
     --text-color: var(--white);
     --custom-text-color: var(--white) !important;
-    --medium-dark-text-color: var(--white);
-    --medium-text-color: var(--white);
+    --fg-subtle: var(--white);
     --light-text-color: var(--white);
     --link-color: var(--white);
     --ui-control-color: var(--white);
     --custom-border-color: rgb(0 0 0 / 10%) !important;
-    @include mixins.custom-color-focus-ring(hsl(var(--light-focus-hsl)));
+    --focus-ring: 0 0 0 3px hsl(var(--focus-outline-light));
     color: var(--white);
 
     &:not(.chromeless) {
       background-color: var(
         --custom-sel-bg-color,
-        var(--dark-sel-color)
+        var(--bg-selection-dark)
       ) !important;
     }
 
@@ -3532,7 +3482,7 @@ table {
   padding-block: 0;
   max-width: 100%;
   gap: var(--xs);
-  border-radius: var(--large-border-radius);
+  border-radius: var(--radius-lg);
 
   &:not(.chromeless) {
     padding-inline: var(--s);
@@ -3655,7 +3605,7 @@ table {
     svg {
       display: block;
       flex-shrink: 0;
-      border-radius: var(--small-border-radius);
+      border-radius: var(--radius-sm);
       max-width: 100%;
       max-height: 100%;
     }
@@ -3746,7 +3696,7 @@ table {
   container-type: inline-size;
 
   &::after {
-    border-radius: var(--large-border-radius);
+    border-radius: var(--radius-lg);
   }
 
   & > .card-titlebar {
@@ -3755,8 +3705,8 @@ table {
     justify-content: space-between;
     padding-inline: var(--m);
     background-color: var(--custom-titlebar-bg-color, var(--gray-100));
-    border-start-start-radius: var(--large-border-radius);
-    border-start-end-radius: var(--large-border-radius);
+    border-start-start-radius: var(--radius-lg);
+    border-start-end-radius: var(--radius-lg);
     user-select: none;
 
     @container (min-width: 200px) {
@@ -3782,8 +3732,8 @@ table {
     padding-block: var(--s);
     padding-inline: var(--m);
     gap: var(--s);
-    border-end-start-radius: var(--large-border-radius);
-    border-end-end-radius: var(--large-border-radius);
+    border-end-start-radius: var(--radius-lg);
+    border-end-end-radius: var(--radius-lg);
     width: 100%;
     overflow: hidden;
 
@@ -3806,7 +3756,7 @@ table {
       svg {
         max-width: 120px;
         max-height: 120px;
-        border-radius: var(--small-border-radius);
+        border-radius: var(--radius-sm);
       }
     }
 
@@ -3840,7 +3790,7 @@ table {
     overflow: hidden;
     position: relative;
 
-    --focus-ring: var(--inner-focus-ring);
+    --focus-ring: var(--focus-ring-inner);
 
     .card-heading {
       display: flex;
@@ -3873,16 +3823,15 @@ table {
   li.sel & {
     --text-color: var(--white);
     --custom-text-color: var(--white) !important;
-    --medium-dark-text-color: var(--white);
-    --medium-text-color: var(--white);
+    --fg-subtle: var(--white);
     --light-text-color: var(--white);
     --link-color: var(--white);
     --ui-control-color: var(--white);
-    @include mixins.custom-color-focus-ring(hsl(var(--light-focus-hsl)));
+    --focus-ring: 0 0 0 3px hsl(var(--focus-outline-light));
     color: var(--white);
     background-color: var(
       --custom-sel-bg-color,
-      var(--dark-sel-color)
+      var(--bg-selection-dark)
     ) !important;
 
     & > .card-titlebar {
@@ -3908,7 +3857,7 @@ table {
   grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
 
   & > li {
-    border-radius: var(--large-border-radius);
+    border-radius: var(--radius-lg);
 
     & > .card {
       margin: 0 !important;
@@ -3935,9 +3884,9 @@ table {
   font-size: 11px;
   font-weight: normal;
   text-decoration: none !important;
-  color: var(--medium-dark-text-color);
+  color: var(--fg-subtle);
   border-radius: calc(var(--touch-target-size) / 2);
-  border: 1px solid var(--medium-hairline-color);
+  border: 1px solid var(--border-hairline-medium);
 }
 
 .context-menu-container {
@@ -3947,14 +3896,14 @@ table {
     margin-inline: 0 -1px;
     margin-block: 0;
     padding-inline-end: 2px !important;
-    border-inline-start: 1px solid var(--medium-hairline-color);
+    border-inline-start: 1px solid var(--border-hairline-medium);
     border-start-start-radius: 0;
     border-start-end-radius: calc(var(--touch-target-size) / 2);
     border-end-end-radius: calc(var(--touch-target-size) / 2);
     border-end-start-radius: 0;
 
     &:hover {
-      border-color: var(--dark-hairline-color) !important;
+      border-color: var(--border-hairline-dark) !important;
     }
   }
 
@@ -4040,7 +3989,7 @@ table {
       text-overflow: ellipsis;
 
       &:focus {
-        box-shadow: var(--inner-focus-ring);
+        box-shadow: var(--focus-ring-inner);
       }
     }
 
@@ -4064,7 +4013,7 @@ table {
   }
 
   &.error .label .label-link {
-    color: var(--error-color);
+    color: var(--fg-error);
   }
 }
 
@@ -4073,7 +4022,7 @@ table {
     background-color: var(--gray-050);
     border-radius: 3px;
 
-    --ui-control-bg-color: var(--light-sel-color);
+    --ui-control-bg-color: var(--bg-selection-light);
     --ui-control-hover-bg-color: #{color.adjust(
         mixins.$lightSelColor,
         $lightness: -5%
@@ -4184,17 +4133,17 @@ table {
       z-index: 2;
       margin-block: calc(var(--pane-padding) * -1) var(--pane-padding) !important;
       margin-inline: calc(var(--pane-padding) * -1) !important;
-      border-radius: calc(var(--large-border-radius) - 1px)
-        calc(var(--large-border-radius) - 1px) 0 0;
+      border-radius: calc(var(--radius-lg) - 1px) calc(var(--radius-lg) - 1px) 0
+        0;
       padding: var(--pane-padding);
-      box-shadow: 0 1px 0 var(--hairline-color);
+      box-shadow: 0 1px 0 var(--border-hairline);
       background-color: var(--gray-050);
     }
 
     .header {
       padding-block: var(--pane-padding);
       background-color: transparent;
-      border-block-end: 1px solid var(--hairline-color);
+      border-block-end: 1px solid var(--border-hairline);
     }
 
     .elements {
@@ -4203,7 +4152,7 @@ table {
       .tableview table.data thead {
         th,
         td {
-          border-block-end: 1px solid var(--hairline-color);
+          border-block-end: 1px solid var(--border-hairline);
 
           &:not(.ordered) {
             background-color: transparent;
@@ -4213,10 +4162,10 @@ table {
     }
 
     .footer {
-      border-radius: 0 0 calc(var(--large-border-radius) - 1px)
-        calc(var(--large-border-radius) - 1px) !important;
+      border-radius: 0 0 calc(var(--radius-lg) - 1px)
+        calc(var(--radius-lg) - 1px) !important;
       box-shadow: none;
-      border-block-start: 1px solid var(--hairline-color);
+      border-block-start: 1px solid var(--border-hairline);
       background: transparent;
     }
   }
@@ -4251,7 +4200,7 @@ table {
       width: calc(100% + var(--pane-padding, 24px) + var(--pane-padding, 24px));
       height: 100%;
       background: color.adjust(mixins.$white, $alpha: -0.25);
-      border-radius: var(--large-border-radius);
+      border-radius: var(--radius-lg);
     }
   }
 
@@ -4261,7 +4210,7 @@ table {
     padding: var(--s);
     background-color: var(--gray-050);
     box-shadow: none;
-    border-radius: var(--border-radius, var(--small-border-radius));
+    border-radius: var(--border-radius, var(--radius-sm));
 
     &::after {
       content: '';
@@ -4361,7 +4310,7 @@ table {
       margin-inline: 0 1px;
       margin-block: 0 1px;
       max-width: 226px;
-      border-radius: var(--large-border-radius);
+      border-radius: var(--radius-lg);
 
       &:hover {
         .chip {
@@ -4468,7 +4417,7 @@ table {
 
       &::before {
         content: 'downangle';
-        color: var(--dark-hairline-color);
+        color: var(--border-hairline-dark);
       }
 
       &:not(.disabled):hover::before,
@@ -4589,14 +4538,14 @@ table {
 
 /* editable tables */
 table.editable {
-  border-radius: var(--large-border-radius);
+  border-radius: var(--radius-lg);
   border: var(--input-border);
   color: var(--text-color);
 
   th,
   td.heading,
   td.action {
-    color: var(--medium-text-color);
+    color: var(--fg-subtle);
     font-weight: normal;
 
     button:not(.lightswitch),
@@ -4644,20 +4593,20 @@ table.editable {
       th,
       td {
         &:first-child {
-          border-start-start-radius: var(--large-border-radius);
+          border-start-start-radius: var(--radius-lg);
 
           textarea,
           input.text {
-            border-start-start-radius: calc(var(--large-border-radius) - 1px);
+            border-start-start-radius: calc(var(--radius-lg) - 1px);
           }
         }
 
         &:last-child {
-          border-start-end-radius: var(--large-border-radius);
+          border-start-end-radius: var(--radius-lg);
 
           textarea,
           input.text {
-            border-start-end-radius: calc(var(--large-border-radius) - 1px);
+            border-start-end-radius: calc(var(--radius-lg) - 1px);
           }
         }
       }
@@ -4670,20 +4619,20 @@ table.editable {
       th,
       td {
         &:first-child {
-          border-end-start-radius: var(--large-border-radius);
+          border-end-start-radius: var(--radius-lg);
 
           textarea,
           input.text {
-            border-end-start-radius: calc(var(--large-border-radius) - 1px);
+            border-end-start-radius: calc(var(--radius-lg) - 1px);
           }
         }
 
         &:last-child {
-          border-end-end-radius: var(--large-border-radius);
+          border-end-end-radius: var(--radius-lg);
 
           textarea,
           input.text {
-            border-end-end-radius: calc(var(--large-border-radius) - 1px);
+            border-end-end-radius: calc(var(--radius-lg) - 1px);
           }
         }
       }
@@ -4693,7 +4642,7 @@ table.editable {
   thead {
     tr {
       th {
-        border-block-end: 1px solid var(--hairline-color);
+        border-block-end: 1px solid var(--border-hairline);
         font-family: inherit; // for .code
         font-size: 0.8em !important; // ! for .code
         font-weight: 500;
@@ -4716,13 +4665,13 @@ table.editable {
       &:not(:first-child) {
         th,
         td {
-          border-block-start: 1px solid var(--hairline-color);
+          border-block-start: 1px solid var(--border-hairline);
         }
       }
 
       td:not(:first-child),
       th ~ td:not(.hidden) ~ td {
-        border-inline-start: 1px solid var(--hairline-color);
+        border-inline-start: 1px solid var(--border-hairline);
       }
 
       th {
@@ -4745,7 +4694,7 @@ table.editable {
 
         &.focus {
           position: relative;
-          box-shadow: inset 0 0 0 1px var(--hairline-color);
+          box-shadow: inset 0 0 0 1px var(--border-hairline);
         }
 
         &.textual {
@@ -4800,7 +4749,7 @@ table.editable {
         }
 
         &.error {
-          box-shadow: inset 0 0 0 1px var(--error-color);
+          box-shadow: inset 0 0 0 1px var(--fg-error);
         }
 
         &.disabled {
@@ -4905,7 +4854,7 @@ table.editable {
 
   &:not(.hidden) + .btn.add {
     border-block-start-width: 0;
-    border-radius: 0 0 var(--medium-border-radius) var(--medium-border-radius);
+    border-radius: 0 0 var(--radius-md) var(--radius-md);
   }
 }
 
@@ -4952,7 +4901,7 @@ ul.tree,
       background-color: transparent;
       border-style: solid;
       border-width: 0 5px 10px;
-      border-color: transparent transparent var(--pending-color) transparent;
+      border-color: transparent transparent var(--bg-pending) transparent;
       border-radius: 1px;
     }
 
@@ -4991,7 +4940,7 @@ ul.tree,
 .status.live,
 .status.active,
 .status.enabled {
-  background-color: var(--enabled-color);
+  background-color: var(--bg-enabled);
 }
 
 .status.red,
@@ -4999,17 +4948,17 @@ ul.tree,
 .status.off,
 .status.suspended,
 .status.expired {
-  background-color: var(--disabled-color);
+  background-color: var(--bg-disabled);
 }
 
 .status.warning {
-  background-color: var(--warning-color);
+  background-color: var(--fg-warning);
 }
 
 .status.orange,
 .bg-orange,
 .status.pending {
-  background-color: var(--pending-color);
+  background-color: var(--bg-pending);
 }
 
 .status.amber,
@@ -5041,7 +4990,7 @@ ul.tree,
 .bg-teal,
 .status.turquoise,
 .bg-turquoise {
-  background-color: var(--enabled-color);
+  background-color: var(--bg-enabled);
 }
 
 .status.cyan,
@@ -5155,7 +5104,7 @@ $statusLabelBgShade: '500';
 
   &.red {
     --status-label-text-color: var(--red-#{$statusLabelColorShade});
-    --status-label-bg-color: var(--disabled-color);
+    --status-label-bg-color: var(--bg-disabled);
   }
 
   &.amber {
@@ -5165,7 +5114,7 @@ $statusLabelBgShade: '500';
 
   &.orange {
     --status-label-text-color: var(--orange-#{$statusLabelColorShade});
-    --status-label-bg-color: var(--pending-color);
+    --status-label-bg-color: var(--bg-pending);
   }
 
   &.yellow {
@@ -5191,7 +5140,7 @@ $statusLabelBgShade: '500';
   &.teal,
   &.turquoise {
     --status-label-text-color: var(--teal-#{$statusLabelColorShade});
-    --status-label-bg-color: var(--enabled-color);
+    --status-label-bg-color: var(--bg-enabled);
   }
 
   &.cyan {
@@ -5275,15 +5224,15 @@ table.data tbody tr:not(.disabled).active-drop-target {
 [data-icon],
 [data-icon-after] {
   &.warning {
-    --icon-color: var(--warning-color);
+    --icon-color: var(--fg-warning);
   }
 
   &.red {
-    --icon-color: var(--disabled-color);
+    --icon-color: var(--bg-disabled);
   }
 
   &.orange {
-    --icon-color: var(--pending-color);
+    --icon-color: var(--bg-pending);
   }
 
   &.amber {
@@ -5307,7 +5256,7 @@ table.data tbody tr:not(.disabled).active-drop-target {
   }
 
   &.teal {
-    --icon-color: var(--enabled-color);
+    --icon-color: var(--bg-enabled);
   }
 
   &.cyan {
@@ -5401,8 +5350,8 @@ table.data tbody tr:not(.disabled).active-drop-target {
 }
 
 .condition-footer {
-  border: 1px dashed var(--medium-hairline-color);
-  border-radius: var(--large-border-radius);
+  border: 1px dashed var(--border-hairline-medium);
+  border-radius: var(--radius-lg);
 
   .condition:not(:empty) + & {
     border-block-start-width: 0;
@@ -5417,12 +5366,12 @@ table.data tbody tr:not(.disabled).active-drop-target {
 
 .condition-rule {
   margin: 0;
-  border: 1px solid var(--hairline-color);
+  border: 1px solid var(--border-hairline);
   background-color: var(--gray-050);
 
   &:first-child {
-    border-start-start-radius: var(--large-border-radius);
-    border-start-end-radius: var(--large-border-radius);
+    border-start-start-radius: var(--radius-lg);
+    border-start-end-radius: var(--radius-lg);
   }
 
   & + .condition-rule {
@@ -5545,7 +5494,7 @@ table.data tbody tr:not(.disabled).active-drop-target {
   .install-plugin {
     margin-block: 7px -7px;
     margin-inline: 0;
-    border-block-start: 1px solid var(--hairline-color);
+    border-block-start: 1px solid var(--border-hairline);
     position: relative;
     padding-inline: 40px 0;
     padding-block: 10px;
@@ -5602,7 +5551,7 @@ table.data tbody tr:not(.disabled).active-drop-target {
   .slideout &,
   #content &,
   .lp-content & {
-    border: 1px solid var(--hairline-color);
+    border: 1px solid var(--border-hairline);
     background: var(--secondary-pane-bg);
     box-shadow: none;
   }
@@ -5610,7 +5559,7 @@ table.data tbody tr:not(.disabled).active-drop-target {
   &.dashed {
     background-color: transparent !important;
     box-shadow: none;
-    border: 1px dashed var(--medium-hairline-color) !important;
+    border: 1px dashed var(--border-hairline-medium) !important;
   }
 
   &.hairline,
@@ -5680,7 +5629,7 @@ table.data tbody tr:not(.disabled).active-drop-target {
   min-height: 45px;
   box-sizing: border-box;
   box-shadow: inset 0 -1px 0 0 color.adjust(mixins.$grey300, $alpha: -0.75);
-  border-radius: var(--large-border-radius) var(--large-border-radius) 0 0;
+  border-radius: var(--radius-lg) var(--radius-lg) 0 0;
   background-color: var(--gray-050);
 
   .spinner {
@@ -5696,7 +5645,7 @@ table.data tbody tr:not(.disabled).active-drop-target {
   margin-inline: calc(var(--padding) * -1);
 
   &:first-child {
-    border-radius: var(--large-border-radius) var(--large-border-radius) 0 0;
+    border-radius: var(--radius-lg) var(--radius-lg) 0 0;
     overflow: hidden;
   }
 
@@ -5733,8 +5682,8 @@ table.data tbody tr:not(.disabled).active-drop-target {
       --tab-label-color: var(--light-text-color);
 
       &.error {
-        --highlight-color: var(--error-color) !important;
-        --tab-label-color: var(--error-color) !important;
+        --highlight-color: var(--fg-error) !important;
+        --tab-label-color: var(--fg-error) !important;
       }
 
       &,
@@ -5759,7 +5708,7 @@ table.data tbody tr:not(.disabled).active-drop-target {
 
       &:focus-visible {
         .tab-label {
-          box-shadow: var(--inner-focus-ring);
+          box-shadow: var(--focus-ring-inner);
         }
       }
 
@@ -5797,7 +5746,7 @@ table.data tbody tr:not(.disabled).active-drop-target {
         &:first-child {
           &,
           .tab-label {
-            border-start-start-radius: var(--large-border-radius);
+            border-start-start-radius: var(--radius-lg);
           }
         }
       }
@@ -5836,7 +5785,7 @@ table.data tbody tr:not(.disabled).active-drop-target {
     }
 
     &.read-only {
-      color: var(--medium-text-color);
+      color: var(--fg-subtle);
 
       & > .data {
         min-height: auto;
@@ -5919,7 +5868,7 @@ table.data tbody tr:not(.disabled).active-drop-target {
   hr {
     margin-block: var(--spacing);
     margin-inline: 0;
-    border-block-start-color: var(--hairline-color);
+    border-block-start-color: var(--border-hairline);
   }
 
   @include mixins.placeholder-styles(var(--gray-500));
@@ -5978,7 +5927,7 @@ table.data tbody tr:not(.disabled).active-drop-target {
   }
 
   & > .text {
-    border-radius: var(--large-border-radius);
+    border-radius: var(--radius-lg);
     margin-block-end: var(--spacing);
 
     &:not(:focus) {
@@ -6082,7 +6031,7 @@ $min2ColWidth: 400px;
       @media screen and (min-width: $min2ColWidth) {
         padding-block: 12px;
         padding-inline: var(--m) var(--s);
-        border-inline-end: 1px solid var(--hairline-color);
+        border-inline-end: 1px solid var(--border-hairline);
       }
 
       & > .copytextbtn {
@@ -6097,7 +6046,7 @@ $min2ColWidth: 400px;
 
     & > .field > .heading > label,
     & > .data > .heading {
-      color: var(--medium-text-color);
+      color: var(--fg-subtle);
     }
 
     & > .field > .input,
@@ -6143,16 +6092,16 @@ $min2ColWidth: 400px;
 
     & > .field {
       &.has-errors {
-        border: 1px solid var(--error-color) !important;
+        border: 1px solid var(--fg-error) !important;
 
         &:first-child {
-          border-start-start-radius: var(--large-border-radius);
-          border-start-end-radius: var(--large-border-radius);
+          border-start-start-radius: var(--radius-lg);
+          border-start-end-radius: var(--radius-lg);
         }
 
         &:last-child {
-          border-end-start-radius: var(--large-border-radius);
-          border-end-end-radius: var(--large-border-radius);
+          border-end-start-radius: var(--radius-lg);
+          border-end-end-radius: var(--radius-lg);
         }
 
         & + .field {
@@ -6249,7 +6198,7 @@ $min2ColWidth: 400px;
 
   & > .field:not(:first-child, .first-child),
   & > .flex-fields + .field:not(.first-child) {
-    border-block-start: 1px solid var(--hairline-color);
+    border-block-start: 1px solid var(--border-hairline);
   }
 
   & > .flex-fields {
@@ -6412,14 +6361,14 @@ $min2ColWidth: 400px;
   }
 
   &.so-lp {
-    border-radius: var(--large-border-radius);
+    border-radius: var(--radius-lg);
   }
 
   &:not(.so-mobile, .so-lp) {
-    border-start-start-radius: var(--large-border-radius);
+    border-start-start-radius: var(--radius-lg);
     border-start-end-radius: 0;
     border-end-end-radius: 0;
-    border-end-start-radius: var(--large-border-radius);
+    border-end-start-radius: var(--radius-lg);
   }
 
   &:not(.so-mobile, .so-lp) {
@@ -6473,7 +6422,7 @@ $min2ColWidth: 400px;
 
     & > h1:not(:last-child) {
       padding-block-end: var(--s);
-      border-block-end: 1px solid var(--hairline-color);
+      border-block-end: 1px solid var(--border-hairline);
     }
 
     &.so-full-details,
@@ -6585,7 +6534,7 @@ $min2ColWidth: 400px;
       margin-inline: var(--neg-padding);
       padding-block: 0 8px;
       padding-inline: var(--padding);
-      border-block-end: 1px solid var(--hairline-color);
+      border-block-end: 1px solid var(--border-hairline);
     }
   }
 }
@@ -6650,9 +6599,9 @@ $min2ColWidth: 400px;
 
 .header,
 .hud-header {
-  border-radius: var(--large-border-radius) var(--large-border-radius) 0 0;
+  border-radius: var(--radius-lg) var(--radius-lg) 0 0;
   padding: 24px;
-  box-shadow: inset 0 -1px 0 var(--hairline-color);
+  box-shadow: inset 0 -1px 0 var(--border-hairline);
 
   h1 {
     margin: 0;
@@ -6665,10 +6614,10 @@ $min2ColWidth: 400px;
 
 .footer,
 .hud-footer {
-  border-radius: 0 0 var(--large-border-radius) var(--large-border-radius);
+  border-radius: 0 0 var(--radius-lg) var(--radius-lg);
   padding-block: 5px;
   padding-inline: var(--pane-padding, var(--xl));
-  box-shadow: inset 0 1px 0 var(--hairline-color);
+  box-shadow: inset 0 1px 0 var(--border-hairline);
 
   &.flex {
     & > * {
@@ -6923,7 +6872,7 @@ $min2ColWidth: 400px;
   }
 
   #details & {
-    border-radius: var(--large-border-radius);
+    border-radius: var(--radius-lg);
     overflow: hidden;
   }
 
@@ -7501,7 +7450,7 @@ $min2ColWidth: 400px;
         padding-inline: var(--m);
 
         a {
-          border-radius: var(--large-border-radius);
+          border-radius: var(--radius-lg);
         }
       }
     }
@@ -7579,7 +7528,7 @@ $min2ColWidth: 400px;
           margin-inline-start: 14px;
           padding-block: 0;
           padding-inline: 4px;
-          border-radius: var(--medium-border-radius);
+          border-radius: var(--radius-md);
           box-shadow:
             0 0 0 1px color.adjust(mixins.$grey600, $alpha: -0.75),
             0 1px 3px -1px color.adjust(mixins.$grey600, $alpha: -0.5);
@@ -7661,11 +7610,11 @@ $min2ColWidth: 400px;
     &.error {
       &[data-icon]::before,
       [data-icon]::before {
-        color: var(--error-color);
+        color: var(--fg-error);
       }
 
       span.icon:not([data-icon]) svg {
-        @include mixins.svg-mask(var(--error-color));
+        @include mixins.svg-mask(var(--fg-error));
       }
     }
   }
@@ -7710,7 +7659,7 @@ $min2ColWidth: 400px;
   & > .search-container {
     margin-inline: calc(var(--m) * -1);
     padding: var(--m);
-    border-block-end: 1px solid var(--hairline-color);
+    border-block-end: 1px solid var(--border-hairline);
   }
 
   ul li {
@@ -7721,7 +7670,7 @@ $min2ColWidth: 400px;
     & > a:not(.crumb-link),
     & > .menu-item,
     & > .menu-option {
-      --focus-ring: var(--inner-focus-ring);
+      --focus-ring: var(--focus-ring-inner);
 
       &:hover {
         @include mixins.disclosure-link-hover-styles;
@@ -7789,7 +7738,7 @@ $min2ColWidth: 400px;
 /* ---------------------------------------- */
 
 .shadow-box {
-  border-radius: var(--large-border-radius);
+  border-radius: var(--radius-lg);
   border: 1px solid var(--gray-200);
   @include mixins.shadow;
 }
@@ -7807,7 +7756,7 @@ table.editable {
       td:first-child {
         &,
         &.disabled::after {
-          border-start-start-radius: var(--medium-border-radius);
+          border-start-start-radius: var(--radius-md);
         }
       }
 
@@ -7815,7 +7764,7 @@ table.editable {
       td:last-child {
         &,
         &.disabled::after {
-          border-start-end-radius: var(--medium-border-radius);
+          border-start-end-radius: var(--radius-md);
         }
       }
     }
@@ -7828,7 +7777,7 @@ table.editable {
       td:first-child {
         &,
         &.disabled::after {
-          border-end-start-radius: calc(var(--large-border-radius) - 1px);
+          border-end-start-radius: calc(var(--radius-lg) - 1px);
         }
       }
 
@@ -7836,7 +7785,7 @@ table.editable {
       td:last-child {
         &,
         &.disabled::after {
-          border-end-end-radius: calc(var(--large-border-radius) - 1px);
+          border-end-end-radius: calc(var(--radius-lg) - 1px);
         }
       }
     }
@@ -7894,21 +7843,21 @@ textarea.text.fullwidth {
 
   &:first-child .text {
     &:first-child {
-      border-start-start-radius: var(--medium-border-radius);
+      border-start-start-radius: var(--radius-md);
     }
 
     &:last-child {
-      border-start-end-radius: var(--medium-border-radius);
+      border-start-end-radius: var(--radius-md);
     }
   }
 
   &:last-child .text {
     &:first-child {
-      border-end-start-radius: var(--medium-border-radius);
+      border-end-start-radius: var(--radius-md);
     }
 
     &:last-child {
-      border-end-end-radius: var(--medium-border-radius);
+      border-end-end-radius: var(--radius-md);
     }
   }
 
@@ -7979,7 +7928,7 @@ textarea.text.fullwidth {
     & > div {
       &.text-link {
         border: var(--input-border);
-        border-radius: var(--large-border-radius);
+        border-radius: var(--radius-lg);
         background-color: var(--input-bg);
         cursor: text;
 
@@ -8050,7 +7999,7 @@ textarea.text.fullwidth {
   }
 
   &.negative-chars-left {
-    color: var(--error-color);
+    color: var(--fg-error);
   }
 }
 
@@ -8081,7 +8030,7 @@ fieldset {
   }
 
   &.outdated {
-    background-color: var(--pending-color);
+    background-color: var(--bg-pending);
     box-shadow: 0 0 5px hsl(27deg 96% 61% / 15%);
   }
 }
@@ -8212,7 +8161,7 @@ fieldset {
   // BC
 .field > .heading > .instructions,
 .checkboxfield .instructions {
-  color: var(--custom-text-color, var(--medium-text-color));
+  color: var(--custom-text-color, var(--fg-subtle));
 }
 
 // Special adjustments for content formatted via Markdown
@@ -8244,7 +8193,7 @@ fieldset {
   min-height: auto;
   padding: 0;
   line-height: 16px;
-  border-radius: var(--small-border-radius);
+  border-radius: var(--radius-sm);
   color: var(--text-color);
 
   &::before {
@@ -8390,9 +8339,9 @@ input.checkbox:focus-visible + label::before,
 .checkbox-icon {
   display: inline-flex;
   padding: 3px;
-  background-color: var(--enabled-color);
+  background-color: var(--bg-enabled);
   color: var(--white);
-  border-radius: var(--small-border-radius);
+  border-radius: var(--radius-sm);
 
   &::before {
     --checkbox-size: 14px;
@@ -8578,7 +8527,7 @@ td.errors .text,
 .input.errors > .autosuggest-container .text,
 .input.errors > .datetimewrapper .text,
 .text.error {
-  border: 1px solid var(--error-color) !important;
+  border: 1px solid var(--fg-error) !important;
 }
 
 .tagselect__input-wrapper,
@@ -8644,7 +8593,7 @@ td.errors .text,
       &::before {
         @include mixins.icon;
         content: 'filter';
-        color: var(--medium-text-color);
+        color: var(--fg-subtle);
       }
 
       &:hover {
@@ -9041,7 +8990,7 @@ body {
 
     .optgroup {
       &:not(:first-child) {
-        border-block-start: 1px solid var(--hairline-color);
+        border-block-start: 1px solid var(--border-hairline);
       }
 
       padding-block-start: 5px;
@@ -9153,7 +9102,7 @@ body {
     background-color: hsl(212deg 25% 90%);
     padding-block: 0;
     padding-inline: var(--xs);
-    border-radius: var(--large-border-radius);
+    border-radius: var(--radius-lg);
     height: calc(22rem / 16);
   }
 }
@@ -9173,7 +9122,7 @@ body {
 }
 
 .ui-datepicker-calendar th span {
-  color: var(--medium-text-color);
+  color: var(--fg-subtle);
   font-weight: normal;
 }
 
@@ -9182,12 +9131,12 @@ body {
 }
 
 .ui-datepicker-calendar td a:hover {
-  background-color: var(--light-sel-color);
+  background-color: var(--bg-selection-light);
   text-decoration: none;
 }
 
 .ui-datepicker-calendar td a.ui-state-active {
-  background-color: var(--dark-sel-color);
+  background-color: var(--bg-selection-dark);
   color: var(--white);
   @include mixins.light-on-dark-text;
   cursor: default;
@@ -9195,7 +9144,7 @@ body {
 
 .ui-datepicker-calendar td.ui-datepicker-today a {
   border-radius: 13px;
-  box-shadow: inset 0 0 0 2px var(--light-sel-color);
+  box-shadow: inset 0 0 0 2px var(--bg-selection-light);
 }
 
 /* timepicker */
@@ -9219,11 +9168,11 @@ body {
 }
 
 .ui-timepicker-list li:hover {
-  background-color: var(--light-sel-color);
+  background-color: var(--bg-selection-light);
 }
 
 .ui-timepicker-list li.ui-timepicker-selected {
-  background-color: var(--dark-sel-color);
+  background-color: var(--bg-selection-dark);
   color: var(--white);
   @include mixins.light-on-dark-text;
   cursor: default;
@@ -9237,7 +9186,7 @@ body {
 
   a {
     position: relative;
-    border: 1px solid var(--hairline-color);
+    border: 1px solid var(--border-hairline);
     border-inline-start: none;
     background-image: none;
     width: calc(8rem / 16 - 1px);
@@ -9271,21 +9220,21 @@ body {
 
     &:first-child {
       border-inline-start: 1px solid var(--gray-400);
-      border-start-start-radius: var(--small-border-radius);
-      border-end-start-radius: var(--small-border-radius);
+      border-start-start-radius: var(--radius-sm);
+      border-end-start-radius: var(--radius-sm);
     }
   }
 
   &:not(:hover) a.last-active,
   &:hover a.last-active-hover {
     border-inline-end: 1px solid var(--gray-400);
-    border-start-end-radius: var(--small-border-radius);
-    border-end-end-radius: var(--small-border-radius);
+    border-start-end-radius: var(--radius-sm);
+    border-end-end-radius: var(--radius-sm);
   }
 
   &:focus {
     a.active {
-      background-color: var(--light-sel-color);
+      background-color: var(--bg-selection-light);
     }
   }
 }
@@ -9374,7 +9323,7 @@ body {
         overflow: auto;
 
         .icon-picker--icon {
-          --focus-ring: var(--inner-focus-ring);
+          --focus-ring: var(--focus-ring-inner);
 
           &:hover {
             border-color: var(--link-color);
@@ -9394,7 +9343,7 @@ ul.errors {
 }
 
 ul.errors li {
-  color: var(--error-color);
+  color: var(--fg-error);
 }
 
 /* message pages */
@@ -9482,7 +9431,7 @@ body.licensing-issues {
   position: absolute;
   z-index: 2;
   width: 100%;
-  border-radius: var(--large-border-radius);
+  border-radius: var(--radius-lg);
   background-color: var(--white);
   @include mixins.shadow;
   box-sizing: border-box;
@@ -9568,7 +9517,7 @@ body.licensing-issues {
     margin-block: 0;
     margin-inline: calc(var(--m) * -1);
     box-sizing: border-box;
-    border-radius: var(--large-border-radius) var(--large-border-radius) 0 0;
+    border-radius: var(--radius-lg) var(--radius-lg) 0 0;
     padding-inline: var(--m) calc(var(--m) + 70px);
     padding-block: 5px;
     overflow: hidden;
@@ -9695,7 +9644,7 @@ body.licensing-issues {
 
   &.collapsed {
     & > .titlebar {
-      border-radius: var(--large-border-radius);
+      border-radius: var(--radius-lg);
 
       & > .preview {
         opacity: 1;
@@ -9800,8 +9749,8 @@ body.sitepicker {
       text-align: start;
       width: 100%;
       box-sizing: border-box;
-      border: 1px solid var(--hairline-color);
-      border-radius: var(--medium-border-radius);
+      border: 1px solid var(--border-hairline);
+      border-radius: var(--radius-md);
       padding-inline: 15px 42px;
       padding-block: 9px;
       font-size: 16px;

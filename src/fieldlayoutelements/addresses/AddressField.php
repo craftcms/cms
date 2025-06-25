@@ -130,7 +130,7 @@ class AddressField extends BaseField
             ];
             for (let name of fieldNames) {
                 fields[name] = $('#' + Craft.namespaceId(name, $namespace));
-                if (values) {
+                if (values && values[name] !== null) {
                     fields[name].val(values[name]);
                 }
             }
@@ -163,6 +163,21 @@ class AddressField extends BaseField
                             Object.fromEntries(fieldNames.map(name => [name, fields[name].val()])),
                             Object.fromEntries(hotFieldNames.map(name => [name, hotValues[name] || null]))
                         );
+                        let newField = null;
+                        hotFieldNames.forEach((name) => {
+                          // if value for any hotFieldNames is null, but we have one in fields
+                          if (values[name] == null && fields[name]?.val().trim() !== '') {
+                            // and the old and new field for that name is not a select - use the fields value
+                            newField = $(response.data.fieldsHtml).find('#' + Craft.namespaceId(name, $namespace));
+                            if (
+                              newField.length > 0 && 
+                              fields[name].prop('nodeName') !== 'SELECT' && 
+                              newField.prop('nodeName') !== 'SELECT'
+                            ) {
+                              values[name] = fields[name].val();
+                            }
+                          }
+                        });
                         const \$addressFields = $(
                             Object.entries(fields)
                                 .filter(([name]) => name !== 'countryCode')

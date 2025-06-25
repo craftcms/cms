@@ -3148,8 +3148,9 @@ $.extend($.fn, {
             : $btn;
 
         let isFullPage = $anchor.parents('.slideout').length == 0;
+        let isElementIndex = $anchor.parents('.element-index.pane').length > 0;
 
-        if (isFullPage) {
+        if (isFullPage || isElementIndex) {
           $form = $anchor.attr('data-form')
             ? $('#' + $anchor.attr('data-form'))
             : $btn.attr('data-form')

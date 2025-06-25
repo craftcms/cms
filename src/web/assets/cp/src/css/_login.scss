@@ -84,7 +84,7 @@ body.login {
   width: calc(600px + var(--l) * 2);
   max-width: calc(100% - 20px);
   background: var(--login-modal-bg, var(--modal-bg));
-  border-radius: var(--large-border-radius);
+  border-radius: var(--radius-lg);
 
   .body {
     display: flex;
@@ -103,7 +103,7 @@ body.login {
   }
 
   @media screen and (width <= 656px) {
-    border-radius: var(--large-border-radius);
+    border-radius: var(--radius-lg);
 
     .body {
       padding: var(--m);
@@ -183,7 +183,7 @@ body.login {
 
   .login-errors {
     text-align: center;
-    color: var(--error-color);
+    color: var(--fg-error);
     margin-block-start: 1em;
   }
 

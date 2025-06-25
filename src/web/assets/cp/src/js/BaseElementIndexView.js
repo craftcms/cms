@@ -60,8 +60,9 @@ Craft.BaseElementIndexView = Garnish.Base.extend(
             multi: this.settings.multiSelect,
             vertical: this.isVerticalList(),
             filter: (target) => {
-              return !$(target).closest('a[href],.toggle,.btn,[role=button]')
-                .length;
+              return !$(target).closest(
+                'a[href],.toggle,.btn,[role=button],.move,craft-copy-attribute'
+              ).length;
             },
             checkboxMode: this.settings.checkboxMode,
             waitForDoubleClicks: this.settings.waitForDoubleClicks,

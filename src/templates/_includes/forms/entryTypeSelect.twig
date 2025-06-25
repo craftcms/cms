@@ -17,8 +17,8 @@
           inputName: inputName ?? name ?? null,
           inputValue: allowOverrides ? {
             id: entryType.id,
-            name: entryType.name,
-            handle: entryType.handle,
+            name: (entryType.original.name ?? entryType.name) != entryType.name ? entryType.name : null,
+            handle: (entryType.original.handle ?? entryType.handle) != entryType.handle ? entryType.handle : null,
             group: (includeGroupInValues ?? false) ? (entryType.group ?? 'General'|t('app')) : null,
           }|filter|json_encode : null,
           checkbox: selectable ?? false,

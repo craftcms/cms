@@ -926,43 +926,51 @@ JS, [
             ];
 
             if ($this->viewMode === self::VIEW_MODE_CARDS) {
-                $view->registerJsWithVars(fn($copyAllId, $fieldId) => <<<JS
-(() => {
-  $('#' + $copyAllId).on('activate', () => {
-    Craft.cp.copyElements($('#' + $fieldId + ' > .nested-element-cards > .elements > li > .element'));
-  });
-})();
-JS, [
-                    $view->namespaceInputId($copyAllId),
-                    $view->namespaceInputId($this->getInputId()),
-                ]);
+                $copyAllJs = <<<JS
+copyAllBtn.on('activate', () => {
+  Craft.cp.copyElements(field.find('> .nested-element-cards > .elements > li > .element'));
+});
+JS;
             } else {
-                $view->registerJsWithVars(fn($copyAllId, $fieldId, $baseInfo) => <<<JS
-(() => {
-  $('#' + $copyAllId).on('activate', () => {
-    const elementInfo = [];
-    $('#' + $fieldId + ' > .blocks > .matrixblock').each((i, element) => {
-      element = $(element);
-      elementInfo.push(Object.assign({
-          id: element.data('id'),
-          draftId: element.data('draftId'),
-          revisionId: element.data('revisionId'),
-          ownerId: element.data('ownerId'),
-          siteId: element.data('siteId'),
-        }, $baseInfo));
-    });
-    Craft.cp.copyElements(elementInfo);
+                $baseInfo = Json::encode([
+                    'type' => Entry::class,
+                    'fieldId' => $this->id,
+                ]);
+                $copyAllJs = <<<JS
+copyAllBtn.on('activate', () => {
+  const elementInfo = [];
+  field.find('> .blocks > .matrixblock').each((i, element) => {
+    element = $(element);
+    elementInfo.push(Object.assign({
+        id: element.data('id'),
+        draftId: element.data('draftId'),
+        revisionId: element.data('revisionId'),
+        ownerId: element.data('ownerId'),
+        siteId: element.data('siteId'),
+      }, $baseInfo));
   });
+  Craft.cp.copyElements(elementInfo);
+});
+JS;
+            }
+
+            $view->registerJsWithVars(fn($copyAllId, $fieldId) => <<<JS
+(() => {
+  const copyAllBtn = $('#' + $copyAllId);
+  const field = $('#' + $fieldId);
+  if (field.length) {
+    $copyAllJs
+  } else {
+    setTimeout(() => {
+      const menu = copyAllBtn.closest('.menu').data('disclosureMenu');
+      menu.removeItem(copyAllBtn[0]);
+    }, 1);
+  }
 })();
 JS, [
-                    $view->namespaceInputId($copyAllId),
-                    $view->namespaceInputId($this->getInputId()),
-                    [
-                        'type' => Entry::class,
-                        'fieldId' => $this->id,
-                    ],
-                ]);
-            }
+                $view->namespaceInputId($copyAllId),
+                $view->namespaceInputId($this->getInputId()),
+            ]);
         }
 
         $parentItems = parent::actionMenuItems();

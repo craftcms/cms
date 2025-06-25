@@ -863,6 +863,24 @@ JS;
     /**
      * @inheritdoc
      */
+    public function isValueEmpty(mixed $value, ElementInterface $element): bool
+    {
+        if (parent::isValueEmpty($value, $element)) {
+            return true;
+        }
+
+        /** @var LinkData $value */
+        $value = $element->getFieldValue($this->handle);
+        $linkTypes = $this->getLinkTypes();
+        $linkType = $linkTypes[$value->type];
+        $value = $value->serialize()['value'];
+
+        return $linkType->isValueEmpty($value);
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function getElementConditionRuleType(): array|string|null
     {
         return LinkFieldConditionRule::class;
