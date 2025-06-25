@@ -202,10 +202,6 @@ class Str extends \Illuminate\Support\Str
     {
         $map = self::shortcodeEscapeMap();
 
-        if ($map === false) {
-            return $str;
-        }
-
         return str_replace(array_keys($map), $map, $str);
     }
 
@@ -540,10 +536,6 @@ class Str extends \Illuminate\Support\Str
     public static function unescapeShortcodes(string $str): string
     {
         $map = self::shortcodeEscapeMap();
-
-        if ($map === false) {
-            return $str;
-        }
 
         return str_replace($map, array_keys($map), $str);
     }
