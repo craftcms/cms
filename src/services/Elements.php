@@ -3097,7 +3097,7 @@ class Elements extends Component
     {
         // Normalize the paths and group based on the top level eager loading handle
         if (is_string($with)) {
-            $with = str($with)->split(',');
+            $with = str($with)->explode(',');
         }
 
         $plans = [];

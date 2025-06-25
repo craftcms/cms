@@ -52,7 +52,7 @@ class UniqueValidator extends YiiUniqueValidator
             /** @var class-string<ActiveRecord> $targetClass */
             $pks = $targetClass::primaryKey();
             if (isset($this->pk)) {
-                $pkMap = is_string($this->pk) ? str($this->pk)->split(',')->all() : $this->pk;
+                $pkMap = is_string($this->pk) ? str($this->pk)->explode(',')->all() : $this->pk;
             } else {
                 $pkMap = $pks;
             }

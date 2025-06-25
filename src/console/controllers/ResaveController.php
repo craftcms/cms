@@ -338,7 +338,7 @@ class ResaveController extends Controller
         }
 
         if (isset($this->propagateTo)) {
-            $siteHandles = str($this->propagateTo)->split(',')->filter()->all();
+            $siteHandles = str($this->propagateTo)->explode(',')->filter()->all();
             $this->propagateTo = [];
             $sitesService = Craft::$app->getSites();
             foreach ($siteHandles as $siteHandle) {

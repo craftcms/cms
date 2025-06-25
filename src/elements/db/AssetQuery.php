@@ -869,7 +869,7 @@ class AssetQuery extends ElementQuery
         if ($this->withTransforms && !$this->asArray) {
             $transforms = $this->withTransforms;
             if (!is_array($transforms)) {
-                $transforms = is_string($transforms) ? str($transforms)->split(',')->all() : [$transforms];
+                $transforms = is_string($transforms) ? str($transforms)->explode(',')->all() : [$transforms];
             }
 
             Craft::$app->getImageTransforms()->eagerLoadTransforms($elements, $transforms);

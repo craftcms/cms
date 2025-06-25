@@ -1829,7 +1829,7 @@ class Db
         Connection|null $db = null,
     ): ?string {
         if (is_string($columns)) {
-            $columns = str($columns)->split(',')->all();
+            $columns = str($columns)->explode(',')->all();
         }
 
         if ($db === null) {
@@ -1862,7 +1862,7 @@ class Db
         Connection|null $db = null,
     ): ?string {
         if (is_string($columns)) {
-            $columns = str($columns)->split(',')->all();
+            $columns = str($columns)->explode(',')->all();
         }
 
         if ($db === null) {

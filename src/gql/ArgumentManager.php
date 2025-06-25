@@ -123,7 +123,7 @@ class ArgumentManager extends Component
     {
         $orderBy = $arguments['orderBy'] ?? null;
         if ($orderBy) {
-            foreach (str($orderBy)->split(',') as $chunk) {
+            foreach (str($orderBy)->explode(',') as $chunk) {
                 // Special case for rand()/random()
                 if (in_array(strtolower($chunk), ['rand()', 'random()'], true)) {
                     continue;

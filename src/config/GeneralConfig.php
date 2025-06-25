@@ -4434,7 +4434,7 @@ class GeneralConfig extends BaseConfig
     public function disabledPlugins(string|array|null $value): self
     {
         if (is_string($value) && $value !== '*') {
-            $value = str($value)->split(',')->all();
+            $value = str($value)->explode(',')->all();
         }
 
         $this->disabledPlugins = $value;

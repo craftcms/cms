@@ -1302,7 +1302,7 @@ class ElementQuery extends Query implements ElementQueryInterface
             $this->with = [$value];
         } else {
             if (is_string($this->with)) {
-                $this->with = str($this->with)->split(',')->all();
+                $this->with = str($this->with)->explode(',')->all();
             }
             $this->with[] = $value;
         }
@@ -2859,7 +2859,7 @@ class ElementQuery extends Query implements ElementQueryInterface
 
         // Normalize the status param
         if (!is_array($this->status)) {
-            $this->status = str($this->status)->split(',')->all();
+            $this->status = str($this->status)->explode(',')->all();
         }
 
         $statuses = array_merge($this->status);
@@ -3442,7 +3442,7 @@ class ElementQuery extends Query implements ElementQueryInterface
 
                 $ids = $this->id;
                 if (!is_array($ids)) {
-                    $ids = is_string($ids) ? str($ids)->split(',')->all() : [$ids];
+                    $ids = is_string($ids) ? str($ids)->explode(',')->all() : [$ids];
                 }
 
                 if (!$db instanceof Connection) {

@@ -70,7 +70,7 @@ class ElementRelationParamParser extends BaseObject
         // Ensure it's an array
         if (!is_array($relatedToParam)) {
             if (is_string($relatedToParam)) {
-                $relatedToParam = str($relatedToParam)->split(',')->all();
+                $relatedToParam = str($relatedToParam)->explode(',')->all();
             } elseif ($relatedToParam instanceof Collection) {
                 $relatedToParam = $relatedToParam->all();
             } else {
@@ -174,7 +174,7 @@ class ElementRelationParamParser extends BaseObject
 
                 if (!is_array($elements)) {
                     if (is_string($elements)) {
-                        $elements = str($elements)->split(',');
+                        $elements = str($elements)->explode(',');
                     }
 
                     if ($elements instanceof Collection) {
@@ -347,7 +347,7 @@ class ElementRelationParamParser extends BaseObject
             // conditions right away and save the normal field IDs for later
             $fields = $relCriteria['field'];
             if (!is_array($fields)) {
-                $fields = is_string($fields) ? str($fields)->split(',') : [$fields];
+                $fields = is_string($fields) ? str($fields)->explode(',') : [$fields];
             }
 
             // We only care about the fields provided by the element query if the target elements were specified,

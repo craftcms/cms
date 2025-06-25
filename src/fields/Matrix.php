@@ -162,7 +162,7 @@ class Matrix extends Field implements
         if ($value !== ':notempty:') {
             $ids = $value;
             if (!is_array($ids)) {
-                $ids = is_string($ids) ? str($ids)->split(',')->all() : [$ids];
+                $ids = is_string($ids) ? str($ids)->explode(',')->all() : [$ids];
             }
 
             $ids = array_map(fn($id) => $id instanceof Entry ? $id->id : (int)$id, $ids);

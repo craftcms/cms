@@ -282,7 +282,7 @@ class CategoryQuery extends ElementQuery
 
         $refs = $this->ref;
         if (!is_array($refs)) {
-            $refs = is_string($refs) ? str($refs)->split(',') : [$refs];
+            $refs = is_string($refs) ? str($refs)->explode(',') : [$refs];
         }
 
         $condition = ['or'];
