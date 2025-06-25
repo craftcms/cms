@@ -15,6 +15,7 @@ use craft\base\FieldLayoutElement;
 use craft\base\FieldLayoutProviderInterface;
 use craft\base\Model;
 use Craft\Cms\Support\Arr;
+use Craft\Cms\Support\Str;
 use craft\events\CreateFieldLayoutFormEvent;
 use craft\events\DefineFieldLayoutCustomFieldsEvent;
 use craft\events\DefineFieldLayoutElementsEvent;

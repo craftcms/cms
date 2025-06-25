@@ -830,7 +830,7 @@ class Assets extends Component
         }
 
         // Append a random string at the end too, to avoid race-conditions
-        $base = $buildFilename($base, sprintf('_%s', Str::randomString(4)));
+        $base = $buildFilename($base, sprintf('_%s', Str::random(4)));
 
         $increment = 0;
 

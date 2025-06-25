@@ -887,7 +887,7 @@ class StringHelperTest extends TestCase
      */
     public function testRandomString(int $length = 36, bool $extendedChars = false): void
     {
-        $random = Str::random($length, $extendedChars);
+        $random = StringHelper::randomString($length, $extendedChars);
         $len = strlen($random);
         self::assertSame($length, $len);
 

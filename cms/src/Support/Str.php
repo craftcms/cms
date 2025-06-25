@@ -235,6 +235,33 @@ class Str extends \Illuminate\Support\Str
     }
 
     /**
+     * Generates a random string of latin alphanumeric characters that defaults to a $length of 36. If $extendedChars is
+     * set to true, additional symbols can be included in the string. Note that the generated string is *not* a
+     * cryptographically secure string. If you need a cryptographically secure string, use
+     * [[\craft\services\Security::generateRandomString()|`Craft::$app->security->generateRandomString()`]].
+     *
+     * @param int $length The length of the random string. Defaults to 36.
+     * @param bool $extendedChars Whether to include symbols in the random string.
+     * @return string The randomly generated string.
+     */
+    public static function random($length = 36, bool $extendedChars = false): string
+    {
+        $validChars = $extendedChars
+            ? 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890`~!@#$%^&*()-_=+[]\{}|;:\'",./<>?"'
+            : 'abcdefghijklmnopqrstuvwxyz';
+
+        $string = '';
+
+        $numValidChars = mb_strlen($validChars);
+
+        for ($i = 0; $i < $length; $i++) {
+            $string .= $validChars[random_int(0, $numValidChars - 1)];
+        }
+
+        return $string;
+    }
+
+    /**
      * Replaces 4-byte UTF-8 characters in a string.
      * ---
      * ```php

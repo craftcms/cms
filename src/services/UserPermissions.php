@@ -564,7 +564,7 @@ class UserPermissions extends Component
                                 ]),
                             ],
                             "deleteEntriesForSite:$section->uid" => $hasCustomPropagation ? [
-                                'label' => StringHelper::upperCaseFirst(Craft::t('app', 'Delete {type} for site', ['type' => $pluralType])),
+                                'label' => mb_ucfirst(Craft::t('app', 'Delete {type} for site', ['type' => $pluralType])),
                                 'info' => Craft::t('app', 'Allows deleting {type} for individual sites, provided the user has access to them.', [
                                     'type' => $pluralType,
                                 ]),

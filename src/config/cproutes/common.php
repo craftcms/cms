@@ -12,7 +12,7 @@ return [
     'categories/<groupHandle:{handle}>/<elementId:\d+><slug:(?:-[^\/]*)?>' => 'elements/edit',
     'dashboard' => 'dashboard/index',
     'edit/<elementId:\d+><slug:(?:-[^\/]*)?>' => 'elements/redirect',
-    'edit/<elementUid:' .  Str::uuidPattern() . '>' => 'elements/redirect',
+    'edit/<elementUid:' . Str::uuidPattern() . '>' => 'elements/redirect',
     'entries/<sectionHandle:{handle}>' => ['template' => 'entries'],
     'entries/<section:{handle}>/new' => 'entries/create',
     'entries/<section:{handle}>/<elementId:\d+><slug:(?:-[^\/]*)?>' => 'elements/edit',

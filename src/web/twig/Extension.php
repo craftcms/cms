@@ -483,9 +483,9 @@ class Extension extends AbstractExtension implements GlobalsInterface
     public function kebabFilter(mixed $string, string $glue = '-', bool $lower = true, bool $removePunctuation = true): string
     {
         return str($string)
-            ->when($removePunctuation, fn (Stringable $s) => $s->replace(['.', '_', '-'], ' '))
+            ->when($removePunctuation, fn(Stringable $s) => $s->replace(['.', '_', '-'], ' '))
             ->snake($glue)
-            ->when($lower, fn (Stringable $s) => $s->lower())
+            ->when($lower, fn(Stringable $s) => $s->lower())
             ->value();
     }
 

@@ -952,7 +952,7 @@ class View extends \yii\web\View
     private function _resolveTemplateInternal(string $name, bool $publicOnly): string|false
     {
         // Normalize the template name
-        $name = trim(preg_replace('#/{2,}#', '/', str_replace('\\', '/', Str::convertToUtf8($name, 'UTF-8'))), '/');
+        $name = trim(preg_replace('#/{2,}#', '/', str_replace('\\', '/', Str::convertToUtf8($name))), '/');
 
         $key = $this->_templatesPath . ':' . $name;
 
