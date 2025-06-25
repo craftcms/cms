@@ -81,7 +81,7 @@ test('encodeMb4', function (string $expected, string $string) {
 test('escapeShortcodes', function (string $expected, string $str) {
     expect(Str::escapeShortcodes($str))->toBe($expected);
 })->with([
-    ['\\:100\\: \\:1234\\: 🔥', ':100: :1234: 🔥'],
+    ['\:100\: \:1234\: 🔥', ':100: :1234: 🔥'],
 ]);
 
 test('firstLine', function (string $expected, string $string) {
@@ -239,7 +239,7 @@ test('toString', function (string $expected, mixed $object, string $glue = ',') 
 test('unescapeShortcodes', function (string $expected, string $str) {
     expect(Str::unescapeShortcodes($str))->toBe($expected);
 })->with([
-    [':100: :1234: 🔥', '\\:100\\: \\:1234\\: 🔥'],
+    [':100: :1234: 🔥', '\:100\: \:1234\: 🔥'],
 ]);
 
 test('uuidPattern', function () {
