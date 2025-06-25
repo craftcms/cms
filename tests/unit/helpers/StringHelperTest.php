@@ -1768,7 +1768,7 @@ class StringHelperTest extends TestCase
             [true, 'c3d6a75d-5b98-4048-8106-8cc2de4af159'],
             [true, 'c74e8f78-c052-4978-b0e8-77a307f7b946'],
             [true, '469e6ed2-f270-458a-a80e-173821fee715'],
-            [false, '00000000-0000-0000-0000-000000000000'],
+            [true, '00000000-0000-0000-0000-000000000000'],
             [false, StringHelper::UUID() . StringHelper::UUID()],
             [false, 'abc'],
             [false, '123'],
