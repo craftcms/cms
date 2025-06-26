@@ -426,6 +426,8 @@ class Extension extends AbstractExtension implements GlobalsInterface
             return $string;
         }
 
+        $length = (int) ($length - mb_strlen($suffix));
+
         return Str::limit($string, $length, $suffix, preserveWords: true);
     }
 
