@@ -106,7 +106,7 @@ class Install extends Migration
             $table->dateTime('dateUpdated');
         });
 
-        Schema::create(Table::withoutYiiPlaceholder(Table::ANNOUNCEMENTS), function (Blueprint $table) {
+        Schema::create('announcements', function (Blueprint $table) {
             $table->integer('id', true);
             $table->integer('userId');
             $table->integer('pluginId')->nullable();
@@ -545,7 +545,7 @@ class Install extends Migration
             $table->char('uid', 36)->default('0');
         });
 
-        Schema::create(Table::withoutYiiPlaceholder(Table::PLUGINS), function (Blueprint $table) {
+        Schema::create('plugins', function (Blueprint $table) {
             $table->integer('id', true);
             $table->string('handle');
             $table->string('version');

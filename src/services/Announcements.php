@@ -8,17 +8,7 @@
 namespace craft\services;
 
 use Craft;
-use craft\base\PluginInterface;
-use craft\db\Query;
-use craft\db\Table;
-use craft\helpers\Db;
-use craft\helpers\Html;
-use craft\helpers\Queue;
-use craft\i18n\Translation;
-use craft\queue\jobs\Announcement;
-use DateTime;
 use yii\base\Component;
-use yii\helpers\Markdown;
 
 /**
  * Announcements service.
@@ -27,6 +17,7 @@ use yii\helpers\Markdown;
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.7.0
+ * @deprecated in 6.0.0. [[\Craft\Cms\Announcement\Announcements]] should be used instead.
  */
 class Announcements extends Component
 {
@@ -45,12 +36,7 @@ class Announcements extends Component
      */
     public function push(string $heading, string $body, ?string $pluginHandle = null, bool $adminsOnly = false): void
     {
-        Queue::push(new Announcement([
-            'heading' => $heading,
-            'body' => $body,
-            'pluginHandle' => $pluginHandle,
-            'adminsOnly' => $adminsOnly,
-        ]));
+        Craft::$app->getAnnouncements()->push($heading, $body, $pluginHandle, $adminsOnly);
     }
 
     /**
@@ -61,59 +47,7 @@ class Announcements extends Component
      */
     public function get(): array
     {
-        $userId = Craft::$app->getUser()->getId();
-        if (!$userId) {
-            return [];
-        }
-
-        $query = (new Query())
-            ->select(['a.id', 'a.heading', 'a.body', 'a.unread'])
-            ->from(['a' => Table::ANNOUNCEMENTS])
-            ->orderBy(['a.dateCreated' => SORT_DESC])
-            ->where(['userId' => $userId])
-            ->andWhere([
-                'or',
-                ['a.unread' => true],
-                ['>', 'a.dateRead', Db::prepareDateForDb(new DateTime('7 days ago'))],
-            ]);
-
-        // Any enabled plugins?
-        $pluginsService = Craft::$app->getPlugins();
-        $enabledPluginHandles = array_map(
-            fn(PluginInterface $plugin) => $plugin->getHandle(),
-            $pluginsService->getAllPlugins(),
-        );
-        if (!empty($enabledPluginHandles)) {
-            $query
-                ->addSelect(['pluginHandle' => 'p.handle'])
-                ->leftJoin(['p' => Table::PLUGINS], '[[p.id]] = [[a.pluginId]]')
-                ->andWhere([
-                    'or',
-                    ['p.id' => null],
-                    ['p.handle' => $enabledPluginHandles],
-                ]);
-        } else {
-            $query->andWhere(['a.pluginId' => null]);
-        }
-
-        return array_map(function(array $result) use ($pluginsService) {
-            $plugin = !empty($result['pluginHandle']) ? $pluginsService->getPlugin($result['pluginHandle']) : null;
-            if ($plugin) {
-                $icon = $pluginsService->getPluginIconSvg($plugin->getHandle());
-                $label = $plugin->name;
-            } else {
-                $icon = file_get_contents(Craft::getAlias('@appicons/craft-cms.svg'));
-                $label = 'Craft CMS';
-            }
-            return [
-                'id' => (int)$result['id'],
-                'icon' => $icon,
-                'label' => $label,
-                'heading' => Html::widont(Html::encode(Translation::translate($result['heading']))),
-                'body' => Html::widont(Markdown::processParagraph(Html::encode(Translation::translate($result['body'])))),
-                'unread' => (bool)$result['unread'],
-            ];
-        }, $query->all());
+        return Craft::$app->getAnnouncements()->get();
     }
 
     /**
@@ -123,20 +57,6 @@ class Announcements extends Component
      */
     public function markAsRead(array $ids): void
     {
-        if (empty($ids)) {
-            return;
-        }
-
-        $userId = Craft::$app->getUser()->getId();
-        if (!$userId) {
-            return;
-        }
-
-        Craft::$app->getDb()->createCommand()
-            ->update(Table::ANNOUNCEMENTS, [
-                'unread' => false,
-                'dateRead' => Db::prepareDateForDb(new DateTime()),
-            ], ['id' => $ids, 'userId' => $userId])
-            ->execute();
+        Craft::$app->getAnnouncements()->markAsRead($ids);
     }
 }

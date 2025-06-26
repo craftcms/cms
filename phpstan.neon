@@ -60,6 +60,8 @@ parameters:
         - '#^Parameter \#2 \$callback of function usort expects#'
         - '#is never assigned craft\\base\\MemoizableArray#'
     treatPhpDocTypesAsCertain: false
+    databaseMigrationsPath:
+        - cms/src/Migrations
     configDirectories:
         - tests
         - cms/tests

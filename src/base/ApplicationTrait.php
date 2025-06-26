@@ -8,6 +8,7 @@
 namespace craft\base;
 
 use Craft;
+use Craft\Cms\Announcement\Announcements;
 use craft\console\Application as ConsoleApplication;
 use craft\console\Request as ConsoleRequest;
 use craft\db\Connection;
@@ -60,7 +61,6 @@ use craft\models\FieldLayout;
 use craft\models\Info;
 use craft\queue\QueueInterface;
 use craft\services\Addresses;
-use craft\services\Announcements;
 use craft\services\Api;
 use craft\services\AssetIndexer;
 use craft\services\Assets;
