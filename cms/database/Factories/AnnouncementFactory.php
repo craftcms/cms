@@ -1,6 +1,8 @@
 <?php
+
 /**
  * @link https://craftcms.com/
+ *
  * @copyright Copyright (c) Pixel & Tonic, Inc.
  * @license https://craftcms.github.io/license/
  */
@@ -8,7 +10,6 @@
 namespace Craft\Cms\Database\Factories;
 
 use Craft\Cms\Announcement\Models\Announcement;
-use Craft\Cms\Plugin\Models\Plugin;
 use Craft\Cms\User\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 

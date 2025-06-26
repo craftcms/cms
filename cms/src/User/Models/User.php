@@ -1,6 +1,8 @@
 <?php
+
 /**
  * @link https://craftcms.com/
+ *
  * @copyright Copyright (c) Pixel & Tonic, Inc.
  * @license https://craftcms.github.io/license/
  */
@@ -17,16 +19,13 @@ use Illuminate\Contracts\Auth\CanResetPassword as CanResetPasswordContract;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\Access\Authorizable;
 
-class User extends BaseModel implements
-    AuthenticatableContract,
-    AuthorizableContract,
-    CanResetPasswordContract
+class User extends BaseModel implements AuthenticatableContract, AuthorizableContract, CanResetPasswordContract
 {
     use Authenticatable;
     use Authorizable;
     use CanResetPassword;
-    use MustVerifyEmail;
     use HasFactory;
+    use MustVerifyEmail;
 
     /**
      * The attributes that should be hidden for serialization.

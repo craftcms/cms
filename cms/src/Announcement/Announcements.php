@@ -1,6 +1,8 @@
 <?php
+
 /**
  * @link https://craftcms.com/
+ *
  * @copyright Copyright (c) Pixel & Tonic, Inc.
  * @license https://craftcms.github.io/license/
  */
@@ -10,6 +12,7 @@ namespace Craft\Cms\Announcement;
 use Craft;
 use Craft\Aliases\Facades\Aliases;
 use craft\base\PluginInterface;
+use Craft\Cms\Announcement\Models\Announcement;
 use craft\helpers\Html;
 use craft\helpers\Queue;
 use craft\i18n\Translation;
@@ -19,7 +22,6 @@ use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Date;
 use yii\helpers\Markdown;
-use Craft\Cms\Announcement\Models\Announcement;
 
 class Announcements
 {
@@ -31,10 +33,10 @@ class Announcements
      * so they can be lazy-translated for users’ preferred languages rather than the current app language.
      * :::
      *
-     * @param string $heading The announcement heading.
-     * @param string $body The announcement body.
-     * @param string|null $pluginHandle The plugin handle, if this announcement belongs to a plugin
-     * @param bool $adminsOnly Whether only admin users should receive the announcement
+     * @param  string  $heading  The announcement heading.
+     * @param  string  $body  The announcement body.
+     * @param  string|null  $pluginHandle  The plugin handle, if this announcement belongs to a plugin
+     * @param  bool  $adminsOnly  Whether only admin users should receive the announcement
      */
     public function push(string $heading, string $body, ?string $pluginHandle = null, bool $adminsOnly = false): void
     {
@@ -50,7 +52,6 @@ class Announcements
     /**
      * Returns any announcements for the logged-in user.
      *
-     * @return array
      * @since 6.0.0
      */
     public function get(): array
@@ -68,7 +69,7 @@ class Announcements
         // Any enabled plugins?
         $pluginsService = Craft::$app->getPlugins();
         $enabledPluginHandles = Collection::make($pluginsService->getAllPlugins())
-            ->map(fn(PluginInterface $plugin) => $plugin->getHandle());
+            ->map(fn (PluginInterface $plugin) => $plugin->getHandle());
 
         $query->when(
             $enabledPluginHandles->isNotEmpty(),
@@ -77,7 +78,7 @@ class Announcements
         );
 
         return $query->get()->map(function (Announcement $announcement) use ($pluginsService) {
-            $plugin = !empty($announcement->pluginId)
+            $plugin = ! empty($announcement->pluginId)
                 ? $pluginsService->getPlugin($announcement->plugin->handle)
                 : null;
 
@@ -103,7 +104,7 @@ class Announcements
     /**
      * Marks the user’s announcements as read.
      *
-     * @param int[] $ids
+     * @param  int[]  $ids
      */
     public function markAsRead(array $ids): void
     {

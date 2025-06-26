@@ -1,6 +1,8 @@
 <?php
+
 /**
  * @link https://craftcms.com/
+ *
  * @copyright Copyright (c) Pixel & Tonic, Inc.
  * @license https://craftcms.github.io/license/
  */
@@ -10,13 +12,13 @@ use Craft\Cms\Announcement\Models\Announcement;
 use Craft\Cms\User\Models\User;
 
 it('can get announcements', function () {
-    $service = new Announcements();
+    $service = new Announcements;
 
     expect($service->get())->toBe([]);
 });
 
 it('can get announcements for a user', function () {
-    $service = new Announcements();
+    $service = new Announcements;
 
     $user = User::first();
 
@@ -34,7 +36,7 @@ it('can get announcements for a user', function () {
 });
 
 it('can mark announcements as read', function () {
-    $service = new Announcements();
+    $service = new Announcements;
 
     $user = User::first();
 
