@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "9ff9f0243a7f7dde947d1c3309ae15de",
+    "content-hash": "351d90835aad00762936d11577a2b83b",
     "packages": [
         {
             "name": "bacon/bacon-qr-code",
@@ -646,12 +646,12 @@
             "source": {
                 "type": "git",
                 "url": "git@github.com:craftcms/yii2-adapter.git",
-                "reference": "b14b28d2aaa8a8c7a8646d01b75fb4fa7294ec1d"
+                "reference": "2947b2dffe2fb29b9b1262f60c2361df62ac77ed"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/craftcms/yii2-adapter/zipball/b14b28d2aaa8a8c7a8646d01b75fb4fa7294ec1d",
-                "reference": "b14b28d2aaa8a8c7a8646d01b75fb4fa7294ec1d",
+                "url": "https://api.github.com/repos/craftcms/yii2-adapter/zipball/2947b2dffe2fb29b9b1262f60c2361df62ac77ed",
+                "reference": "2947b2dffe2fb29b9b1262f60c2361df62ac77ed",
                 "shasum": "",
                 "mirrors": [
                     {
@@ -661,6 +661,8 @@
                 ]
             },
             "require": {
+                "craftcms/cms": "dev-6.x-internal",
+                "craftcms/laravel-aliases": "*",
                 "php": "^8.2"
             },
             "require-dev": {
@@ -736,7 +738,7 @@
                 "source": "https://github.com/craftcms/yii2-adapter/tree/main",
                 "issues": "https://github.com/craftcms/yii2-adapter/issues"
             },
-            "time": "2025-06-25T06:43:33+00:00"
+            "time": "2025-07-08T10:03:49+00:00"
         },
         {
             "name": "creocoder/yii2-nested-sets",
@@ -16514,20 +16516,12 @@
             "time": "2025-06-05T04:02:45+00:00"
         }
     ],
-    "aliases": [
-        {
-            "package": "craftcms/yii2-adapter",
-            "version": "dev-main",
-            "alias": "1.0",
-            "alias_normalized": "1.0.0.0"
-        }
-    ],
-    "minimum-stability": "stable",
+    "aliases": [],
+    "minimum-stability": "dev",
     "stability-flags": {
-        "craftcms/ecs": 20,
-        "craftcms/yii2-adapter": 20
+        "craftcms/ecs": 20
     },
-    "prefer-stable": false,
+    "prefer-stable": true,
     "prefer-lowest": false,
     "platform": {
         "php": "^8.2",
