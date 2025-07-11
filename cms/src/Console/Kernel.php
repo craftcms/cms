@@ -4,6 +4,9 @@ namespace Craft\Cms\Console;
 
 use Symfony\Component\EventDispatcher\EventDispatcher;
 
+/**
+ * @property Application|null $artisan
+ */
 class Kernel extends \Illuminate\Foundation\Console\Kernel
 {
     protected function getArtisan(): ?Application

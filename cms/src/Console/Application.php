@@ -2,6 +2,7 @@
 
 namespace Craft\Cms\Console;
 
+use Craft\Yii2Adapter\Console\LegacyCraftCommand;
 use Illuminate\Console\Command;
 use Symfony\Component\Console\Command\Command as SymfonyCommand;
 
@@ -16,7 +17,7 @@ class Application extends \Illuminate\Console\Application
         if (! in_array(CraftCommand::class, class_uses($command))) {
             $command->setHidden();
         } else {
-            /** @var CraftCommand $command */
+            /** @var LegacyCraftCommand $command */
             $command->removeCraftGroup();
         }
 
