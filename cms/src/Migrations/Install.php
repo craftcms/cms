@@ -34,6 +34,7 @@ use craft\web\Response;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
+use Laravel\Prompts\Output\ConsoleOutput;
 use ReflectionClass;
 
 /**
@@ -45,19 +46,25 @@ use ReflectionClass;
  */
 class Install extends Migration
 {
+    private ConsoleOutput $output;
+
     public function __construct(
         public ?string $username = null,
         public ?string $password = null,
         public ?string $email = null,
         public ?Site $site = null,
         public bool $applyProjectConfigYaml = true
-    ) {}
+    ) {
+        $this->output = new ConsoleOutput;
+    }
 
     public function up(): bool
     {
         if (! $this->_validateProjectConfig($error)) {
-            $message = "Project config validation failed: $error\n\nRun `composer install` or remove your `config/project/` folder and try again.";
-            echo "\n$message\n\nAborting install.\n\n";
+            $message = "Project config validation failed: $error Run `composer install` or remove your `config/project/` folder and try again.";
+            $this->output->writeln($message);
+            $this->output->writeln('');
+            $this->output->writeln('Aborting install.');
             throw new OperationAbortedException($message);
         }
 
@@ -76,7 +83,7 @@ class Install extends Migration
     public function createTables(): void
     {
         Schema::create(Table::withoutYiiPlaceholder(Table::ADDRESSES), function (Blueprint $table) {
-            $table->integer('id')->autoIncrement()->primary();
+            $table->integer('id', true);
             $table->integer('primaryOwnerId')->nullable();
             $table->integer('fieldId')->nullable();
             $table->string('countryCode');
@@ -100,7 +107,7 @@ class Install extends Migration
         });
 
         Schema::create(Table::withoutYiiPlaceholder(Table::ANNOUNCEMENTS), function (Blueprint $table) {
-            $table->integer('id')->autoIncrement()->primary();
+            $table->integer('id', true);
             $table->integer('userId');
             $table->integer('pluginId')->nullable();
             $table->string('heading');
@@ -111,7 +118,7 @@ class Install extends Migration
         });
 
         Schema::create(Table::withoutYiiPlaceholder(Table::ASSETINDEXDATA), function (Blueprint $table) {
-            $table->integer('id')->autoIncrement()->primary();
+            $table->integer('id', true);
             $table->integer('sessionId');
             $table->integer('volumeId');
             $table->text('uri')->nullable();
@@ -128,7 +135,7 @@ class Install extends Migration
         });
 
         Schema::create(Table::withoutYiiPlaceholder(Table::ASSETINDEXINGSESSIONS), function (Blueprint $table) {
-            $table->integer('id')->autoIncrement()->primary();
+            $table->integer('id', true);
             $table->text('indexedVolumes')->nullable();
             $table->integer('totalEntries')->nullable();
             $table->integer('processedEntries')->default(0);
@@ -143,7 +150,7 @@ class Install extends Migration
         });
 
         Schema::create(Table::withoutYiiPlaceholder(Table::ASSETS), function (Blueprint $table) {
-            $table->integer('id');
+            $table->integer('id')->primary();
             $table->integer('volumeId')->nullable();
             $table->integer('folderId');
             $table->integer('uploaderId')->nullable();
@@ -160,7 +167,6 @@ class Install extends Migration
             $table->dateTime('dateModified')->nullable();
             $table->dateTime('dateCreated');
             $table->dateTime('dateUpdated');
-            $table->primary('id');
         });
 
         Schema::create(Table::withoutYiiPlaceholder(Table::ASSETS_SITES), function (Blueprint $table) {
@@ -171,7 +177,7 @@ class Install extends Migration
         });
 
         Schema::create(Table::withoutYiiPlaceholder(Table::IMAGETRANSFORMINDEX), function (Blueprint $table) {
-            $table->integer('id')->autoIncrement()->primary();
+            $table->integer('id', true);
             $table->integer('assetId');
             $table->string('transformer')->default(null)->nullable();
             $table->string('filename')->nullable();
@@ -187,7 +193,7 @@ class Install extends Migration
         });
 
         Schema::create(Table::withoutYiiPlaceholder(Table::IMAGETRANSFORMS), function (Blueprint $table) {
-            $table->integer('id')->autoIncrement()->primary();
+            $table->integer('id', true);
             $table->string('name');
             $table->string('handle');
             $table->enum('mode', ['stretch', 'fit', 'crop', 'letterbox'])->default('crop');
@@ -206,7 +212,7 @@ class Install extends Migration
         });
 
         Schema::create(Table::withoutYiiPlaceholder(Table::AUTHENTICATOR), function (Blueprint $table) {
-            $table->integer('id')->autoIncrement()->primary();
+            $table->integer('id', true);
             $table->integer('userId');
             $table->string('auth2faSecret')->default(null)->nullable();
             $table->unsignedInteger('oldTimestamp')->default(null)->nullable();
@@ -233,7 +239,7 @@ class Install extends Migration
         });
 
         Schema::create(Table::withoutYiiPlaceholder(Table::CATEGORYGROUPS), function (Blueprint $table) {
-            $table->integer('id')->autoIncrement()->primary();
+            $table->integer('id', true);
             $table->integer('structureId');
             $table->integer('fieldLayoutId')->nullable();
             $table->string('name');
@@ -246,7 +252,7 @@ class Install extends Migration
         });
 
         Schema::create(Table::withoutYiiPlaceholder(Table::CATEGORYGROUPS_SITES), function (Blueprint $table) {
-            $table->integer('id')->autoIncrement()->primary();
+            $table->integer('id', true);
             $table->integer('groupId');
             $table->integer('siteId');
             $table->boolean('hasUrls')->default(true);
@@ -279,13 +285,13 @@ class Install extends Migration
         });
 
         Schema::create(Table::withoutYiiPlaceholder(Table::CONTENTBLOCKS), function (Blueprint $table) {
-            $table->integer('id')->autoIncrement()->primary();
+            $table->integer('id', true);
             $table->integer('primaryOwnerId')->nullable();
             $table->integer('fieldId')->nullable();
         });
 
         Schema::create(Table::withoutYiiPlaceholder(Table::CRAFTIDTOKENS), function (Blueprint $table) {
-            $table->integer('id')->autoIncrement()->primary();
+            $table->integer('id', true);
             $table->integer('userId');
             $table->text('accessToken');
             $table->dateTime('expiryDate')->nullable();
@@ -295,7 +301,7 @@ class Install extends Migration
         });
 
         Schema::create(Table::withoutYiiPlaceholder(Table::DEPRECATIONERRORS), function (Blueprint $table) {
-            $table->integer('id')->autoIncrement()->primary();
+            $table->integer('id', true);
             $table->string('key');
             $table->string('fingerprint');
             $table->dateTime('lastOccurrence');
@@ -309,7 +315,7 @@ class Install extends Migration
         });
 
         Schema::create(Table::withoutYiiPlaceholder(Table::DRAFTS), function (Blueprint $table) {
-            $table->integer('id')->autoIncrement()->primary();
+            $table->integer('id', true);
             $table->integer('canonicalId')->nullable();
             $table->integer('creatorId')->nullable();
             $table->boolean('provisional')->default(false);
@@ -331,7 +337,7 @@ class Install extends Migration
         });
 
         Schema::create(Table::withoutYiiPlaceholder(Table::ELEMENTS), function (Blueprint $table) {
-            $table->integer('id')->autoIncrement()->primary();
+            $table->integer('id', true);
             $table->integer('canonicalId')->nullable();
             $table->integer('draftId')->nullable();
             $table->integer('revisionId')->nullable();
@@ -362,7 +368,7 @@ class Install extends Migration
         });
 
         Schema::create(Table::withoutYiiPlaceholder(Table::ELEMENTS_SITES), function (Blueprint $table) {
-            $table->integer('id')->autoIncrement()->primary();
+            $table->integer('id', true);
             $table->integer('elementId');
             $table->integer('siteId');
             $table->string('title')->nullable();
@@ -382,7 +388,7 @@ class Install extends Migration
         });
 
         Schema::create(Table::withoutYiiPlaceholder(Table::REVISIONS), function (Blueprint $table) {
-            $table->integer('id')->autoIncrement()->primary();
+            $table->integer('id', true);
             $table->integer('canonicalId');
             $table->integer('creatorId')->nullable();
             $table->integer('num');
@@ -396,7 +402,7 @@ class Install extends Migration
         });
 
         Schema::create(Table::withoutYiiPlaceholder(Table::SYSTEMMESSAGES), function (Blueprint $table) {
-            $table->integer('id')->autoIncrement()->primary();
+            $table->integer('id', true);
             $table->string('language');
             $table->string('key');
             $table->text('subject');
@@ -435,7 +441,7 @@ class Install extends Migration
         });
 
         Schema::create(Table::withoutYiiPlaceholder(Table::ENTRYTYPES), function (Blueprint $table) {
-            $table->integer('id')->autoIncrement()->primary();
+            $table->integer('id', true);
             $table->integer('fieldLayoutId')->nullable();
             $table->string('name');
             $table->string('handle');
@@ -456,7 +462,7 @@ class Install extends Migration
         });
 
         Schema::create(Table::withoutYiiPlaceholder(Table::FIELDLAYOUTS), function (Blueprint $table) {
-            $table->integer('id')->autoIncrement()->primary();
+            $table->integer('id', true);
             $table->string('type');
             $table->jsonb('config')->nullable();
             $table->dateTime('dateCreated');
@@ -466,7 +472,7 @@ class Install extends Migration
         });
 
         Schema::create(Table::withoutYiiPlaceholder(Table::FIELDS), function (Blueprint $table) {
-            $table->integer('id')->autoIncrement()->primary();
+            $table->integer('id', true);
             $table->text('name');
             $table->string('handle', 64);
             $table->string('context')->default('global');
@@ -484,7 +490,7 @@ class Install extends Migration
         });
 
         Schema::create(Table::withoutYiiPlaceholder(Table::GLOBALSETS), function (Blueprint $table) {
-            $table->integer('id')->autoIncrement()->primary();
+            $table->integer('id', true);
             $table->string('name');
             $table->string('handle');
             $table->integer('fieldLayoutId')->nullable();
@@ -495,7 +501,7 @@ class Install extends Migration
         });
 
         Schema::create(Table::withoutYiiPlaceholder(Table::GQLTOKENS), function (Blueprint $table) {
-            $table->integer('id')->autoIncrement()->primary();
+            $table->integer('id', true);
             $table->string('name');
             $table->string('accessToken');
             $table->boolean('enabled')->default(true);
@@ -508,7 +514,7 @@ class Install extends Migration
         });
 
         Schema::create(Table::withoutYiiPlaceholder(Table::GQLSCHEMAS), function (Blueprint $table) {
-            $table->integer('id')->autoIncrement()->primary();
+            $table->integer('id', true);
             $table->string('name');
             $table->jsonb('scope')->nullable();
             $table->boolean('isPublic')->default(false);
@@ -518,7 +524,7 @@ class Install extends Migration
         });
 
         Schema::create(Table::withoutYiiPlaceholder(Table::INFO), function (Blueprint $table) {
-            $table->integer('id')->autoIncrement()->primary();
+            $table->integer('id', true);
             $table->string('version', 50);
             $table->string('schemaVersion', 15);
             $table->boolean('maintenance')->default(false);
@@ -530,7 +536,7 @@ class Install extends Migration
         });
 
         Schema::create(Table::withoutYiiPlaceholder(Table::MIGRATIONS), function (Blueprint $table) {
-            $table->integer('id')->autoIncrement()->primary();
+            $table->integer('id', true);
             $table->string('track');
             $table->string('name');
             $table->dateTime('applyTime');
@@ -540,7 +546,7 @@ class Install extends Migration
         });
 
         Schema::create(Table::withoutYiiPlaceholder(Table::PLUGINS), function (Blueprint $table) {
-            $table->integer('id')->autoIncrement()->primary();
+            $table->integer('id', true);
             $table->string('handle');
             $table->string('version');
             $table->string('schemaVersion');
@@ -556,7 +562,7 @@ class Install extends Migration
         });
 
         Schema::create(Table::withoutYiiPlaceholder(Table::QUEUE), function (Blueprint $table) {
-            $table->integer('id')->autoIncrement()->primary();
+            $table->integer('id', true);
             $table->string('channel')->default('queue');
             $table->binary('job');
             $table->text('description')->nullable();
@@ -575,7 +581,7 @@ class Install extends Migration
         });
 
         Schema::create(Table::withoutYiiPlaceholder(Table::RECOVERYCODES), function (Blueprint $table) {
-            $table->integer('id')->autoIncrement()->primary();
+            $table->integer('id', true);
             $table->integer('userId');
             $table->text('recoveryCodes')->nullable();
             $table->dateTime('dateCreated');
@@ -583,7 +589,7 @@ class Install extends Migration
         });
 
         Schema::create(Table::withoutYiiPlaceholder(Table::RELATIONS), function (Blueprint $table) {
-            $table->integer('id')->autoIncrement()->primary();
+            $table->integer('id', true);
             $table->integer('fieldId');
             $table->integer('sourceId');
             $table->integer('sourceSiteId')->nullable();
@@ -595,7 +601,7 @@ class Install extends Migration
         });
 
         Schema::create(Table::withoutYiiPlaceholder(Table::SEARCHINDEXQUEUE), function (Blueprint $table) {
-            $table->integer('id')->autoIncrement()->primary();
+            $table->integer('id', true);
             $table->integer('elementId');
             $table->integer('siteId');
             $table->boolean('reserved')->default(false);
@@ -609,7 +615,7 @@ class Install extends Migration
         });
 
         Schema::create(Table::withoutYiiPlaceholder(Table::SECTIONS), function (Blueprint $table) {
-            $table->integer('id')->autoIncrement()->primary();
+            $table->integer('id', true);
             $table->integer('structureId')->nullable();
             $table->string('name');
             $table->string('handle');
@@ -643,7 +649,7 @@ class Install extends Migration
         });
 
         Schema::create(Table::withoutYiiPlaceholder(Table::SECTIONS_SITES), function (Blueprint $table) {
-            $table->integer('id')->autoIncrement()->primary();
+            $table->integer('id', true);
             $table->integer('sectionId');
             $table->integer('siteId');
             $table->boolean('hasUrls')->default(true);
@@ -656,7 +662,7 @@ class Install extends Migration
         });
 
         Schema::create(Table::withoutYiiPlaceholder(Table::SESSIONS), function (Blueprint $table) {
-            $table->integer('id')->autoIncrement()->primary();
+            $table->integer('id', true);
             $table->integer('userId');
             $table->char('token', 100);
             $table->dateTime('dateCreated');
@@ -665,7 +671,7 @@ class Install extends Migration
         });
 
         Schema::create(Table::withoutYiiPlaceholder(Table::SHUNNEDMESSAGES), function (Blueprint $table) {
-            $table->integer('id')->autoIncrement()->primary();
+            $table->integer('id', true);
             $table->integer('userId');
             $table->string('message');
             $table->dateTime('expiryDate')->nullable();
@@ -675,7 +681,7 @@ class Install extends Migration
         });
 
         Schema::create(Table::withoutYiiPlaceholder(Table::SITES), function (Blueprint $table) {
-            $table->integer('id')->autoIncrement()->primary();
+            $table->integer('id', true);
             $table->integer('groupId');
             $table->boolean('primary');
             $table->string('enabled')->default('true');
@@ -692,7 +698,7 @@ class Install extends Migration
         });
 
         Schema::create(Table::withoutYiiPlaceholder(Table::SITEGROUPS), function (Blueprint $table) {
-            $table->integer('id')->autoIncrement()->primary();
+            $table->integer('id', true);
             $table->string('name');
             $table->dateTime('dateCreated');
             $table->dateTime('dateUpdated');
@@ -711,7 +717,7 @@ class Install extends Migration
         });
 
         Schema::create(Table::withoutYiiPlaceholder(Table::STRUCTUREELEMENTS), function (Blueprint $table) {
-            $table->integer('id')->autoIncrement()->primary();
+            $table->integer('id', true);
             $table->integer('structureId');
             $table->integer('elementId')->nullable();
             $table->unsignedInteger('root')->nullable();
@@ -724,7 +730,7 @@ class Install extends Migration
         });
 
         Schema::create(Table::withoutYiiPlaceholder(Table::STRUCTURES), function (Blueprint $table) {
-            $table->integer('id')->autoIncrement()->primary();
+            $table->integer('id', true);
             $table->unsignedSmallInteger('maxLevels')->nullable();
             $table->dateTime('dateCreated');
             $table->dateTime('dateUpdated');
@@ -733,7 +739,7 @@ class Install extends Migration
         });
 
         Schema::create(Table::withoutYiiPlaceholder(Table::TAGGROUPS), function (Blueprint $table) {
-            $table->integer('id')->autoIncrement()->primary();
+            $table->integer('id', true);
             $table->string('name');
             $table->string('handle');
             $table->integer('fieldLayoutId')->nullable();
@@ -752,7 +758,7 @@ class Install extends Migration
         });
 
         Schema::create(Table::withoutYiiPlaceholder(Table::TOKENS), function (Blueprint $table) {
-            $table->integer('id')->autoIncrement()->primary();
+            $table->integer('id', true);
             $table->char('token', 32);
             $table->text('route')->nullable();
             $table->unsignedTinyInteger('usageLimit')->nullable();
@@ -764,7 +770,7 @@ class Install extends Migration
         });
 
         Schema::create(Table::withoutYiiPlaceholder(Table::USERGROUPS), function (Blueprint $table) {
-            $table->integer('id')->autoIncrement()->primary();
+            $table->integer('id', true);
             $table->string('name');
             $table->string('handle');
             $table->text('description')->nullable();
@@ -774,7 +780,7 @@ class Install extends Migration
         });
 
         Schema::create(Table::withoutYiiPlaceholder(Table::USERGROUPS_USERS), function (Blueprint $table) {
-            $table->integer('id')->autoIncrement()->primary();
+            $table->integer('id', true);
             $table->integer('groupId');
             $table->integer('userId');
             $table->dateTime('dateCreated');
@@ -783,7 +789,7 @@ class Install extends Migration
         });
 
         Schema::create(Table::withoutYiiPlaceholder(Table::USERPERMISSIONS), function (Blueprint $table) {
-            $table->integer('id')->autoIncrement()->primary();
+            $table->integer('id', true);
             $table->string('name');
             $table->dateTime('dateCreated');
             $table->dateTime('dateUpdated');
@@ -791,7 +797,7 @@ class Install extends Migration
         });
 
         Schema::create(Table::withoutYiiPlaceholder(Table::USERPERMISSIONS_USERGROUPS), function (Blueprint $table) {
-            $table->integer('id')->autoIncrement()->primary();
+            $table->integer('id', true);
             $table->integer('permissionId');
             $table->integer('groupId');
             $table->dateTime('dateCreated');
@@ -800,7 +806,7 @@ class Install extends Migration
         });
 
         Schema::create(Table::withoutYiiPlaceholder(Table::USERPERMISSIONS_USERS), function (Blueprint $table) {
-            $table->integer('id')->autoIncrement()->primary();
+            $table->integer('id', true);
             $table->integer('permissionId');
             $table->integer('userId');
             $table->dateTime('dateCreated');
@@ -848,7 +854,7 @@ class Install extends Migration
         });
 
         Schema::create(Table::withoutYiiPlaceholder(Table::VOLUMEFOLDERS), function (Blueprint $table) {
-            $table->integer('id')->autoIncrement()->primary();
+            $table->integer('id', true);
             $table->integer('parentId')->nullable();
             $table->integer('volumeId')->nullable();
             $table->string('name');
@@ -859,7 +865,7 @@ class Install extends Migration
         });
 
         Schema::create(Table::withoutYiiPlaceholder(Table::VOLUMES), function (Blueprint $table) {
-            $table->integer('id')->autoIncrement()->primary();
+            $table->integer('id', true);
             $table->integer('fieldLayoutId')->nullable();
             $table->string('name');
             $table->string('handle');
@@ -879,7 +885,7 @@ class Install extends Migration
         });
 
         Schema::create(Table::withoutYiiPlaceholder(Table::WEBAUTHN), function (Blueprint $table) {
-            $table->integer('id')->autoIncrement()->primary();
+            $table->integer('id', true);
             $table->integer('userId');
             $table->string('credentialId')->default(null)->nullable();
             $table->text('credential')->nullable();
@@ -891,7 +897,7 @@ class Install extends Migration
         });
 
         Schema::create(Table::withoutYiiPlaceholder(Table::WIDGETS), function (Blueprint $table) {
-            $table->integer('id')->autoIncrement()->primary();
+            $table->integer('id', true);
             $table->integer('userId');
             $table->string('type');
             $table->unsignedSmallInteger('sortOrder')->nullable();
@@ -1164,7 +1170,7 @@ class Install extends Migration
 
     public function insertDefaultData(): void
     {
-        echo '    > populating the info table ... ';
+        $this->output->writeln('    > populating the info table ... ');
         Craft::$app->saveInfo(new Info([
             'version' => Craft::$app->getVersion(),
             'schemaVersion' => Craft::$app->schemaVersion,
@@ -1172,7 +1178,7 @@ class Install extends Migration
             'configVersion' => StringHelper::randomString(12),
             'fieldVersion' => StringHelper::randomString(12),
         ]));
-        echo "done\n";
+        $this->output->writeln('done');
 
         $generalConfig = Craft::$app->getConfig()->getGeneral();
         $projectConfig = Craft::$app->getProjectConfig();
@@ -1182,15 +1188,15 @@ class Install extends Migration
             ProjectConfigHelper::ensureAllSitesProcessed(true);
             $this->_installPlugins();
             // Save the existing system settings
-            echo '    > applying the project config ... ';
+            $this->output->writeln('    > applying the project config ... ');
             $projectConfig->applyExternalChanges();
-            echo "done\n";
+            $this->output->writeln('done');
         } else {
             // Save the default system settings
-            echo '    > saving default data ... ';
+            $this->output->writeln('    > saving default data ... ');
             $configData = $this->_generateInitialConfig();
             $projectConfig->applyConfigChanges($configData);
-            echo "done\n";
+            $this->output->writeln('done');
         }
 
         // Craft, you are installed now.
@@ -1209,7 +1215,7 @@ class Install extends Migration
 
         Craft::$app->language = $this->site->language;
 
-        echo '    > saving the first user ... ';
+        $this->output->writeln('    > saving the first user ... ');
         $user = new User([
             'active' => true,
             'admin' => true,
@@ -1218,7 +1224,7 @@ class Install extends Migration
             'email' => $this->email,
         ]);
         Craft::$app->getElements()->saveElement($user);
-        echo "done\n";
+        $this->output->writeln('done');
 
         Craft::$app->getUsers()->saveUserPreferences($user, [
             'language' => $this->site->language,
@@ -1299,9 +1305,9 @@ class Install extends Migration
 
         try {
             foreach ($pluginConfigs as $handle => $pluginConfig) {
-                echo "    > installing $handle ... ";
+                $this->output->writeln("    > installing $handle ... ");
                 $pluginsService->installPlugin($handle);
-                echo "done\n";
+                $this->output->writeln('done');
             }
         } finally {
             // Put the real response back
@@ -1357,7 +1363,7 @@ class Install extends Migration
 
     public function down(): bool
     {
-        echo "Install migration cannot be reverted.\n";
+        $this->output->writeln('Install migration cannot be reverted.');
 
         return false;
     }

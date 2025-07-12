@@ -5,14 +5,18 @@ namespace Craft\Cms\Tests;
 use Craft;
 use Craft\Cms\Migrations\Install;
 use Craft\Cms\Providers\CraftServiceProvider;
-use craft\elements\User;
 use craft\models\Site;
+use craft\services\ProjectConfig;
 use craft\test\TestSetup;
+use Illuminate\Contracts\Console\Kernel;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Foundation\Testing\RefreshDatabaseState;
+use Illuminate\Support\Facades\Config;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\File;
+use Illuminate\Support\Facades\Schema;
 use Orchestra\Testbench\TestCase as Orchestra;
-
-use function Orchestra\Testbench\artisan;
 
 class TestCase extends Orchestra
 {
@@ -22,36 +26,51 @@ class TestCase extends Orchestra
     {
         parent::setUp();
 
-        $user = new User([
-            'active' => true,
-            'admin' => true,
-            'username' => 'craftcms',
-            'newPassword' => 'password',
-            'email' => 'support@craftcms.com',
-        ]);
-
-        Craft::$app->getElements()->saveElement($user);
+        Craft::$app->mutex->release(ProjectConfig::MUTEX_NAME);
 
         Factory::guessFactoryNamesUsing(
             fn (string $modelName) => 'Craft\\Cms\\Database\\Factories\\'.class_basename($modelName).'Factory'
         );
     }
 
-    protected function migrateDatabases()
+    protected function tearDown(): void
     {
-        $app = app('Craft');
+        if (Craft::$app) {
+            Craft::$app->getDb()->pdo = null;
+            Craft::$app->getDb2()->pdo = null;
+            DB::disconnect();
 
-        if ($app instanceof \Craft) {
-            $app = $app::$app;
+            TestSetup::tearDownCraft();
         }
 
-        TestSetup::cleanseDb($app->getDb());
+        parent::tearDown();
+    }
+
+    protected function refreshTestDatabase()
+    {
+        if (RefreshDatabaseState::$migrated) {
+            return;
+        }
+
+        $this->migrateDatabases();
+
+        $this->app[Kernel::class]->setArtisan(null);
+
+        RefreshDatabaseState::$migrated = true;
+    }
+
+    protected function migrateDatabases()
+    {
+        $this->artisan('migrate:fresh', $this->migrateFreshUsing());
+
+        /** Install migration adds their own */
+        Schema::drop('migrations');
 
         $siteConfig = [
             'name' => 'Craft test site',
             'handle' => 'default',
             'hasUrls' => true,
-            'baseUrl' => 'https://test.craftcms.test/',
+            'baseUrl' => 'https://localhost/',
             'language' => 'en-US',
             'primary' => true,
         ];
@@ -66,8 +85,6 @@ class TestCase extends Orchestra
         );
 
         $migration->up();
-
-        // $this->artisan('migrate:fresh', $this->migrateFreshUsing());
     }
 
     protected function getPackageProviders($app): array
@@ -76,5 +93,34 @@ class TestCase extends Orchestra
             CraftServiceProvider::class,
             Craft\Yii2Adapter\Yii2ServiceProvider::class,
         ];
+    }
+
+    protected function getEnvironmentSetUp($app)
+    {
+        File::cleanDirectory(config_path('craft/project'));
+
+        if (! file_exists(__DIR__.'/../.env')) {
+            return;
+        }
+
+        $dotenv = \Dotenv\Dotenv::createImmutable(__DIR__.'/../');
+        $dotenv->load();
+
+        $configKey = 'database.connections.'.env('DB_CONNECTION');
+
+        $app['config']->set($configKey, array_merge(
+            Config::array($configKey, []),
+            [
+                'host' => env('DB_HOST'),
+                'port' => env('DB_PORT'),
+                'database' => env('DB_DATABASE'),
+                'username' => env('DB_USERNAME'),
+                'password' => env('DB_PASSWORD'),
+                'prefix' => env('DB_PREFIX'),
+                'charset' => env('DB_CHARSET'),
+            ]),
+        );
+
+        DB::setDefaultConnection(env('DB_CONNECTION'));
     }
 }

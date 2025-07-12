@@ -987,7 +987,7 @@ class App
         }
 
         $config = [
-            'class' => Craft\Yii2Adapter\DatabaseConnection::class,
+            'class' => Connection::class,
             'driverName' => $driver,
             'dsn' => $dbConfig->dsn,
             'server' => $dbConfig->server,
@@ -1078,7 +1078,7 @@ class App
             return [
                 'class' => MysqlMutex::class,
                 'db' => 'db2',
-                'keyPrefix' => Craft::$app->getEnvId(),
+                //'keyPrefix' => Craft::$app->getEnvId(),
             ];
         }
 

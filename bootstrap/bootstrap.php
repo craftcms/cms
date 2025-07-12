@@ -194,8 +194,8 @@ $brandIconsPath = $iconsPath . DIRECTORY_SEPARATOR . 'brands';
 $customIconsPath = $iconsPath . DIRECTORY_SEPARATOR . 'custom-icons';
 $regularIconsPath = $iconsPath . DIRECTORY_SEPARATOR . 'regular';
 $solidIconsPath = $iconsPath . DIRECTORY_SEPARATOR . 'solid';
-require $libPath . DIRECTORY_SEPARATOR . 'yii2' . DIRECTORY_SEPARATOR . 'Yii.php';
-require $srcPath . DIRECTORY_SEPARATOR . 'Craft.php';
+require_once $libPath . DIRECTORY_SEPARATOR . 'yii2' . DIRECTORY_SEPARATOR . 'Yii.php';
+require_once $srcPath . DIRECTORY_SEPARATOR . 'Craft.php';
 
 // Set aliases
 Craft::setAlias('@craftcms', $cmsPath);
