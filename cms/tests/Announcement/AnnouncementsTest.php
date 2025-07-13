@@ -7,19 +7,17 @@
  * @license https://craftcms.github.io/license/
  */
 
-use Craft\Cms\Announcement\Announcements;
 use Craft\Cms\Announcement\Models\Announcement;
+use Craft\Cms\Support\Facades\Announcements;
 use Craft\Cms\User\Models\User;
 
-it('can get announcements', function () {
-    $service = new Announcements;
+use function Pest\Laravel\actingAs;
 
-    expect($service->get())->toBe([]);
+it('can get announcements', function () {
+    expect(Announcements::get())->toBe([]);
 });
 
 it('can get announcements for a user', function () {
-    $service = new Announcements;
-
     $user = User::first();
 
     $announcement = Announcement::factory()
@@ -28,16 +26,14 @@ it('can get announcements for a user', function () {
             'userId' => $user->id,
         ]);
 
-    $this->actingAs(User::find($user->id));
+    actingAs(User::find($user->id));
 
-    expect($announcements = $service->get())->not()->toBe([])
+    expect($announcements = Announcements::get())->not()->toBe([])
         ->and($announcements[0]['id'])->toBe($announcement->id)
         ->and($announcements[0]['label'])->toBe('Craft CMS');
 });
 
 it('can mark announcements as read', function () {
-    $service = new Announcements;
-
     $user = User::first();
 
     $announcement = Announcement::factory()
@@ -46,9 +42,9 @@ it('can mark announcements as read', function () {
             'userId' => $user->id,
         ]);
 
-    $this->actingAs(User::find($user->id));
+    actingAs(User::find($user->id));
 
-    $service->markAsRead([$announcement->id]);
+    Announcements::markAsRead([$announcement->id]);
 
     $announcement->refresh();
 

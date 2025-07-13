@@ -13,6 +13,7 @@ use craft\base\Element;
 use craft\base\ModelInterface;
 use craft\base\NameTrait;
 use Craft\Cms\Support\Arr;
+use Craft\Cms\Support\Facades\Announcements;
 use craft\elements\Address;
 use craft\elements\Asset;
 use craft\elements\Entry;
@@ -3046,7 +3047,7 @@ JS);
     {
         $this->requirePostRequest();
         $ids = $this->request->getRequiredBodyParam('ids');
-        Craft::$app->getAnnouncements()->markAsRead($ids);
+        Announcements::markAsRead($ids);
         return $this->asSuccess();
     }
 
