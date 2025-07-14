@@ -32,6 +32,17 @@ jobs:
           extensions: :php-psr
           tools: composer:v2
           coverage: none
+        env:
+          COMPOSER_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          COMPOSER_AUTH_JSON: |
+            {
+              "http-basic": {
+                "repo.packagist.com": {
+                  "username": "${{ secrets.packagist_username }}",
+                  "password": "${{ secrets.packagist_token }}"
+                }
+              }
+            }
 
       - name: Install dependencies
         uses: nick-fields/retry@v3
