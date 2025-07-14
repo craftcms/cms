@@ -3047,7 +3047,7 @@ JS);
     {
         $this->requirePostRequest();
         $ids = $this->request->getRequiredBodyParam('ids');
-        resolve(Announcements::class)->markAsRead($ids);
+        app(Announcements::class)->markAsRead($ids);
         return $this->asSuccess();
     }
 

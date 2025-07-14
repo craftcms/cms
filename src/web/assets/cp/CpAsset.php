@@ -513,7 +513,7 @@ JS;
             'Enterprise' => CmsEdition::Enterprise->value,
             'actionTrigger' => $generalConfig->actionTrigger,
             'actionUrl' => UrlHelper::actionUrl(),
-            'announcements' => $upToDate ? resolve(Announcements::class)->get() : [],
+            'announcements' => $upToDate ? app(Announcements::class)->get() : [],
             'asciiCharMap' => StringHelper::asciiCharMap(true, Craft::$app->language),
             'baseApiUrl' => Craft::$app->baseApiUrl,
             'baseCpUrl' => UrlHelper::cpUrl(),
