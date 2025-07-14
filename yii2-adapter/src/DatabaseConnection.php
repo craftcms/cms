@@ -67,6 +67,20 @@ class DatabaseConnection extends Connection
             DB::purge($this->driverName);
         }
 
+        $this->dsn = implode('', [
+            $this->driverName,
+            ':host=',
+            Config::string("database.connections.{$this->driverName}.host"),
+            ';port=',
+            Config::string("database.connections.{$this->driverName}.port"),
+            ';dbname=',
+            Config::string("database.connections.{$this->driverName}.database"),
+            ';user=',
+            Config::string("database.connections.{$this->driverName}.username"),
+            ';password=',
+            Config::string("database.connections.{$this->driverName}.password"),
+        ]);
+
         return DB::connection($this->driverName);
     }
 }
