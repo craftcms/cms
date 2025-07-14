@@ -5,6 +5,8 @@ on:
     branches:
       - main
       - '*.x'
+      - 'feature/*'
+
   workflow_dispatch:
 
 permissions:
@@ -13,16 +15,16 @@ permissions:
 jobs:
   update:
     runs-on: ubuntu-24.04
-    
+
     strategy:
       fail-fast: true
-    
+
     name: Facade DocBlocks
-    
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-      
+
       - name: Setup PHP
         uses: shivammathur/setup-php@v2
         with:
@@ -30,7 +32,7 @@ jobs:
           extensions: :php-psr
           tools: composer:v2
           coverage: none
- 
+
       - name: Install dependencies
         uses: nick-fields/retry@v3
         with:
@@ -39,7 +41,7 @@ jobs:
           command: |
             composer config repositories.facade-documenter vcs git@github.com:laravel/facade-documenter.git
             composer require --dev laravel/facade-documenter:dev-main --prefer-stable --prefer-dist --no-interaction --no-progress
-      
+
       - name: Update facade docblocks
         run: |
           php -f vendor/bin/facade.php -- \
