@@ -13,7 +13,7 @@ trait CraftCommand
 {
     public function removeCraftGroup(): void
     {
-        if (! isset($this->signature)) {
+        if (empty($this->signature)) {
             $this->signature = $this->name;
         }
 
