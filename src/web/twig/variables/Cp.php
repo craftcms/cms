@@ -619,7 +619,7 @@ class Cp extends Component
         }
         $suggestions[] = [
             'label' => Craft::t('app', 'Environment Variables'),
-            'data' => Arr::sort($envSuggestions, 'name'),
+            'data' => array_values(Arr::sort($envSuggestions, 'name')),
         ];
 
         if ($includeAliases) {
@@ -649,7 +649,7 @@ class Cp extends Component
             }
             $suggestions[] = [
                 'label' => Craft::t('app', 'Aliases'),
-                'data' => Arr::sort($aliasSuggestions, 'name'),
+                'data' => array_values(Arr::sort($aliasSuggestions, 'name')),
             ];
         }
 
@@ -1046,7 +1046,7 @@ class Cp extends Component
         return [
             [
                 'label' => Craft::t('app', 'Templates'),
-                'data' => Arr::sort($suggestions, 'name'),
+                'data' => array_values(Arr::sort($suggestions, 'name')),
             ],
         ];
     }

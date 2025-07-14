@@ -120,6 +120,7 @@
     "psr-4": {
       "Craft\\Cms\\Tests\\": "cms/tests/",
       "Craft\\Cms\\Database\\": "cms/database/",
+      "Craft\\Yii2Adapter\\Tests\\": "yii2-adapter/tests/",
       "crafttests\\": "tests/"
     }
   },
@@ -153,6 +154,10 @@
   },
   "repositories": {
     "packagist.org": false,
+    "yii2-adapter": {
+      "type": "path",
+      "url": "./yii2-adapter"
+    },
     "private-packagist": {
       "type": "composer",
       "url": "https://repo.packagist.com/craftcms/"

@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "351d90835aad00762936d11577a2b83b",
+    "content-hash": "d4dd179e3e8bd788f56ad4716e95c413",
     "packages": [
         {
             "name": "bacon/bacon-qr-code",
@@ -643,22 +643,10 @@
         {
             "name": "craftcms/yii2-adapter",
             "version": "dev-main",
-            "source": {
-                "type": "git",
-                "url": "git@github.com:craftcms/yii2-adapter.git",
-                "reference": "9b0f7d33ce41cdd8a8d4470cf0a60712b396034e"
-            },
             "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/craftcms/yii2-adapter/zipball/9b0f7d33ce41cdd8a8d4470cf0a60712b396034e",
-                "reference": "9b0f7d33ce41cdd8a8d4470cf0a60712b396034e",
-                "shasum": "",
-                "mirrors": [
-                    {
-                        "url": "https://repo.packagist.com/craftcms/dists/%package%/%version%/r%reference%.%type%",
-                        "preferred": true
-                    }
-                ]
+                "type": "path",
+                "url": "./yii2-adapter",
+                "reference": "3d776ef4ecbdab0df5e7b331e4b86c20b7e0bebb"
             },
             "require": {
                 "craftcms/laravel-aliases": "*",
@@ -676,7 +664,6 @@
                 "phpstan/phpstan-deprecation-rules": "^1.1||^2.0",
                 "phpstan/phpstan-phpunit": "^1.3||^2.0"
             },
-            "default-branch": true,
             "type": "library",
             "extra": {
                 "laravel": {
@@ -695,7 +682,6 @@
                     "Craft\\Yii2Adapter\\Tests\\": "tests/"
                 }
             },
-            "notification-url": "https://repo.packagist.com/craftcms/downloads/",
             "scripts": {
                 "post-autoload-dump": [
                     "@composer run prepare"
@@ -733,11 +719,9 @@
                 "laravel-aliases",
                 "yii"
             ],
-            "support": {
-                "source": "https://github.com/craftcms/yii2-adapter/tree/main",
-                "issues": "https://github.com/craftcms/yii2-adapter/issues"
-            },
-            "time": "2025-07-11T23:22:49+00:00"
+            "transport-options": {
+                "relative": true
+            }
         },
         {
             "name": "creocoder/yii2-nested-sets",
@@ -4323,16 +4307,16 @@
         },
         {
             "name": "phpstan/phpdoc-parser",
-            "version": "2.1.0",
+            "version": "2.2.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/phpstan/phpdoc-parser.git",
-                "reference": "9b30d6fd026b2c132b3985ce6b23bec09ab3aa68"
+                "reference": "b9e61a61e39e02dd90944e9115241c7f7e76bfd8"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/phpstan/phpdoc-parser/zipball/9b30d6fd026b2c132b3985ce6b23bec09ab3aa68",
-                "reference": "9b30d6fd026b2c132b3985ce6b23bec09ab3aa68",
+                "url": "https://api.github.com/repos/phpstan/phpdoc-parser/zipball/b9e61a61e39e02dd90944e9115241c7f7e76bfd8",
+                "reference": "b9e61a61e39e02dd90944e9115241c7f7e76bfd8",
                 "shasum": "",
                 "mirrors": [
                     {
@@ -4370,9 +4354,9 @@
             "description": "PHPDoc parser with support for nullable, intersection and generic types",
             "support": {
                 "issues": "https://github.com/phpstan/phpdoc-parser/issues",
-                "source": "https://github.com/phpstan/phpdoc-parser/tree/2.1.0"
+                "source": "https://github.com/phpstan/phpdoc-parser/tree/2.2.0"
             },
-            "time": "2025-02-19T13:28:12+00:00"
+            "time": "2025-07-13T07:04:09+00:00"
         },
         {
             "name": "pixelandtonic/imagine",
