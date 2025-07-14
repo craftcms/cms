@@ -1,6 +1,6 @@
 {
   "name": "craftcms/yii2-adapter",
-  "description": "A Laravel Facade around yiisoft/aliases",
+  "description": "Craft CMS Yii2 compatibility adapter",
   "keywords": [
     "craftcms",
     "yii",
