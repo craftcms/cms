@@ -6,6 +6,7 @@ parameters:
     level: 5
     paths:
         - cms
+        - yii2-adapter
         - bootstrap
         - src
         - tests
@@ -20,6 +21,7 @@ parameters:
         - tests/_output/*
         - tests/_support/_generated/
         - cms/tests
+        - yii2-adapter/tests
     scanFiles:
         - lib/craft/behaviors/CustomFieldBehavior.php
         - tests/_support/_generated/AcceptanceTesterActions.php
@@ -60,6 +62,9 @@ parameters:
         - '#^Parameter \#2 \$callback of function usort expects#'
         - '#is never assigned craft\\base\\MemoizableArray#'
     treatPhpDocTypesAsCertain: false
+    databaseMigrationsPath:
+        - cms/src/Migrations
     configDirectories:
         - tests
         - cms/tests
+        - yii2-adapter/tests

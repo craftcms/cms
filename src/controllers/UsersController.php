@@ -12,6 +12,7 @@ use craft\auth\methods\AuthMethodInterface;
 use craft\base\Element;
 use craft\base\ModelInterface;
 use craft\base\NameTrait;
+use Craft\Cms\Announcement\Announcements;
 use Craft\Cms\Support\Arr;
 use craft\elements\Address;
 use craft\elements\Asset;
@@ -3045,7 +3046,7 @@ JS);
     {
         $this->requirePostRequest();
         $ids = $this->request->getRequiredBodyParam('ids');
-        Craft::$app->getAnnouncements()->markAsRead($ids);
+        app(Announcements::class)->markAsRead($ids);
         return $this->asSuccess();
     }
 
