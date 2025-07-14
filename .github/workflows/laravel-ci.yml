@@ -102,6 +102,6 @@ jobs:
 
       - name: Execute CMS tests
         run: vendor/bin/pest --ci --configuration ./cms/phpunit.xml.dist --test-directory ./cms/tests
-      
+
       - name: Execute Yii2 Adapter tests
         run: vendor/bin/pest --ci --configuration ./yii2-adapter/phpunit.xml.dist --test-directory ./yii2-adapter/tests
