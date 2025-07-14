@@ -70,15 +70,15 @@ class DatabaseConnection extends Connection
         $this->dsn = implode('', [
             $this->driverName,
             ':host=',
-            Config::string("database.connections.{$this->driverName}.host"),
+            Config::get("database.connections.{$this->driverName}.host"),
             ';port=',
-            Config::string("database.connections.{$this->driverName}.port"),
+            Config::get("database.connections.{$this->driverName}.port"),
             ';dbname=',
-            Config::string("database.connections.{$this->driverName}.database"),
+            Config::get("database.connections.{$this->driverName}.database"),
             ';user=',
-            Config::string("database.connections.{$this->driverName}.username"),
+            Config::get("database.connections.{$this->driverName}.username"),
             ';password=',
-            Config::string("database.connections.{$this->driverName}.password"),
+            Config::get("database.connections.{$this->driverName}.password"),
         ]);
 
         return DB::connection($this->driverName);
