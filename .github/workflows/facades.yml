@@ -1,0 +1,52 @@
+name: facades
+
+on:
+  push:
+    branches:
+      - main
+      - '*.x'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  update:
+    runs-on: ubuntu-24.04
+    
+    strategy:
+      fail-fast: true
+    
+    name: Facade DocBlocks
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: 8.2
+          extensions: :php-psr
+          tools: composer:v2
+          coverage: none
+ 
+      - name: Install dependencies
+        uses: nick-fields/retry@v3
+        with:
+          timeout_minutes: 5
+          max_attempts: 5
+          command: |
+            composer config repositories.facade-documenter vcs git@github.com:laravel/facade-documenter.git
+            composer require --dev laravel/facade-documenter:dev-main --prefer-stable --prefer-dist --no-interaction --no-progress
+      
+      - name: Update facade docblocks
+        run: |
+          php -f vendor/bin/facade.php -- \
+            Craft\Cms\Support\Facades\\Announcements
+
+      - name: Commit facade docblocks
+        uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: Update facade docblocks
+          file_pattern: cms/
