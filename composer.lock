@@ -642,14 +642,13 @@
         },
         {
             "name": "craftcms/yii2-adapter",
-            "version": "dev-feature/adapter-in-repo",
+            "version": "dev-main",
             "dist": {
                 "type": "path",
                 "url": "./yii2-adapter",
-                "reference": "c6573f8aadbbd0bf989a6ab74ebc9d80af5489b2"
+                "reference": "3d776ef4ecbdab0df5e7b331e4b86c20b7e0bebb"
             },
             "require": {
-                "craftcms/cms": "dev-6.x-internal",
                 "craftcms/laravel-aliases": "*",
                 "php": "^8.2"
             },
@@ -4308,16 +4307,16 @@
         },
         {
             "name": "phpstan/phpdoc-parser",
-            "version": "2.1.0",
+            "version": "2.2.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/phpstan/phpdoc-parser.git",
-                "reference": "9b30d6fd026b2c132b3985ce6b23bec09ab3aa68"
+                "reference": "b9e61a61e39e02dd90944e9115241c7f7e76bfd8"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/phpstan/phpdoc-parser/zipball/9b30d6fd026b2c132b3985ce6b23bec09ab3aa68",
-                "reference": "9b30d6fd026b2c132b3985ce6b23bec09ab3aa68",
+                "url": "https://api.github.com/repos/phpstan/phpdoc-parser/zipball/b9e61a61e39e02dd90944e9115241c7f7e76bfd8",
+                "reference": "b9e61a61e39e02dd90944e9115241c7f7e76bfd8",
                 "shasum": "",
                 "mirrors": [
                     {
@@ -4355,9 +4354,9 @@
             "description": "PHPDoc parser with support for nullable, intersection and generic types",
             "support": {
                 "issues": "https://github.com/phpstan/phpdoc-parser/issues",
-                "source": "https://github.com/phpstan/phpdoc-parser/tree/2.1.0"
+                "source": "https://github.com/phpstan/phpdoc-parser/tree/2.2.0"
             },
-            "time": "2025-02-19T13:28:12+00:00"
+            "time": "2025-07-13T07:04:09+00:00"
         },
         {
             "name": "pixelandtonic/imagine",

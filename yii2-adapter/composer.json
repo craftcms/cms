@@ -27,8 +27,7 @@
   },
   "require": {
     "php": "^8.2",
-    "craftcms/laravel-aliases": "*",
-    "craftcms/cms": "dev-6.x-internal"
+    "craftcms/laravel-aliases": "*"
   },
   "require-dev": {
     "laravel/pint": "^1.14",
