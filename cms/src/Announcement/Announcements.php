@@ -1,0 +1,129 @@
+<?php
+
+/**
+ * @link https://craftcms.com/
+ *
+ * @copyright Copyright (c) Pixel & Tonic, Inc.
+ * @license https://craftcms.github.io/license/
+ */
+
+namespace Craft\Cms\Announcement;
+
+use Craft;
+use Craft\Aliases\Facades\Aliases;
+use craft\base\PluginInterface;
+use Craft\Cms\Announcement\Models\Announcement;
+use craft\helpers\Html;
+use craft\helpers\Queue;
+use craft\i18n\Translation;
+use craft\queue\jobs\Announcement as AnnouncementJob;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Date;
+use yii\helpers\Markdown;
+
+class Announcements
+{
+    /**
+     * Pushes a new announcement out to all control panel users.
+     *
+     * ::: tip
+     * Run the heading and body through [[\craft\i18n\Translation::prep()]] rather than [[\yii\BaseYii::t()|Craft::t()]]
+     * so they can be lazy-translated for users’ preferred languages rather than the current app language.
+     * :::
+     *
+     * @param  string  $heading  The announcement heading.
+     * @param  string  $body  The announcement body.
+     * @param  string|null  $pluginHandle  The plugin handle, if this announcement belongs to a plugin
+     * @param  bool  $adminsOnly  Whether only admin users should receive the announcement
+     */
+    public function push(string $heading, string $body, ?string $pluginHandle = null, bool $adminsOnly = false): void
+    {
+        /** @todo: Laravel queue */
+        Queue::push(new AnnouncementJob([
+            'heading' => $heading,
+            'body' => $body,
+            'pluginHandle' => $pluginHandle,
+            'adminsOnly' => $adminsOnly,
+        ]));
+    }
+
+    /**
+     * Returns any announcements for the logged-in user.
+     *
+     * @since 6.0.0
+     */
+    public function get(): array
+    {
+        $userId = Auth::user()?->getKey();
+
+        if (! $userId) {
+            return [];
+        }
+
+        $query = Announcement::query()
+            ->where('userId', $userId)
+            ->visible();
+
+        // Any enabled plugins?
+        $pluginsService = Craft::$app->getPlugins();
+        $enabledPluginHandles = Collection::make($pluginsService->getAllPlugins())
+            ->map(fn (PluginInterface $plugin) => $plugin->getHandle());
+
+        $query->when(
+            $enabledPluginHandles->isNotEmpty(),
+            fn (Builder $query) => $query->with('plugin:id,handle'),
+            fn (Builder $query) => $query->whereNull('pluginId'),
+        );
+
+        return $query->get()->map(function (Announcement $announcement) use ($pluginsService) {
+            $plugin = ! empty($announcement->pluginId)
+                ? $pluginsService->getPlugin($announcement->plugin->handle)
+                : null;
+
+            if ($plugin) {
+                $icon = $pluginsService->getPluginIconSvg($plugin->getHandle());
+                $label = $plugin->name;
+            } else {
+                $icon = file_get_contents(Aliases::get('@appicons/craft-cms.svg'));
+                $label = 'Craft CMS';
+            }
+
+            return [
+                'id' => $announcement->id,
+                'icon' => $icon,
+                'label' => $label,
+                'heading' => Html::widont(Html::encode(Translation::translate($announcement->heading))),
+                'body' => Html::widont(Markdown::processParagraph(Html::encode(Translation::translate($announcement->body)))),
+                'unread' => $announcement->unread,
+            ];
+        })->all();
+    }
+
+    /**
+     * Marks the user’s announcements as read.
+     *
+     * @param  int[]  $ids
+     */
+    public function markAsRead(array $ids): void
+    {
+        if (empty($ids)) {
+            return;
+        }
+
+        $userId = Auth::user()?->getKey();
+
+        if (! $userId) {
+            return;
+        }
+
+        Announcement::query()
+            ->whereIn('id', $ids)
+            ->where('userId', $userId)
+            ->update([
+                'unread' => false,
+                'dateRead' => Date::now(),
+            ]);
+    }
+}
