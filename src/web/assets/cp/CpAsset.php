@@ -10,7 +10,7 @@ namespace craft\web\assets\cp;
 use Craft;
 use craft\base\ElementInterface;
 use craft\base\FieldInterface;
-use Craft\Cms\Support\Facades\Announcements;
+use Craft\Cms\Announcement\Announcements;
 use craft\config\GeneralConfig;
 use craft\elements\User;
 use craft\enums\CmsEdition;
@@ -513,7 +513,7 @@ JS;
             'Enterprise' => CmsEdition::Enterprise->value,
             'actionTrigger' => $generalConfig->actionTrigger,
             'actionUrl' => UrlHelper::actionUrl(),
-            'announcements' => $upToDate ? Announcements::get() : [],
+            'announcements' => $upToDate ? resolve(Announcements::class)->get() : [],
             'asciiCharMap' => StringHelper::asciiCharMap(true, Craft::$app->language),
             'baseApiUrl' => Craft::$app->baseApiUrl,
             'baseCpUrl' => UrlHelper::cpUrl(),
