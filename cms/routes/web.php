@@ -2,14 +2,16 @@
 
 use Illuminate\Support\Facades\Route;
 
-// Route::get('admin/dashboard', [\Craft\Cms\Http\Controllers\DashboardController::class, 'index'])->name('dashboard.index');
-
-Route::middleware([
-    'web',
-    'craft',
-])
+Route::middleware(['web', 'craft'])
     ->group(function () {
+        // Add new routes here
 
-        // Add new routes & controllers here
-
+        Route::prefix(config('craft.general.cpTrigger'))
+            ->middleware([
+                'auth',
+                'craft.cp',
+            ])
+            ->group(function () {
+                // Add new control panel routes here
+            });
     });
