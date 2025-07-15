@@ -106,6 +106,8 @@ class LegacyMiddleware
     {
         Craft::$classMap = [];
 
+        Craft::$app->getSession()->updateFlashCounters();
+
         Craft::setLogger(null);
         Craft::$app = null;
         app()->forgetInstance('Craft');
