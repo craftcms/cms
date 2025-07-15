@@ -78,7 +78,7 @@ class Icon extends Field implements InlineEditableFieldInterface, ThumbableField
     private static function iconStyles(string $name): array
     {
         if (!isset(self::$_icons)) {
-            $indexPath = '@app/icons/index.php';
+            $indexPath = '@packageRoot/resources/icons/index.php';
             self::$_icons = require Craft::getAlias($indexPath);
         }
 

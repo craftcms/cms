@@ -3779,7 +3779,7 @@ JS, [
                     'slideout-right',
                     'thumb-left',
                     'thumb-right',
-                    => Craft::getAlias("@app/icons/custom-icons/$icon.svg"),
+                    => Craft::getAlias("@packageRoot/resources/icons/custom-icons/$icon.svg"),
                     default => Craft::getAlias("@appicons/$icon.svg"),
                 };
                 if (!file_exists($path)) {

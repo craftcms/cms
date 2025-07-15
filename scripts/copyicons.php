@@ -40,6 +40,9 @@ $index = [];
 $aliasesPhp = <<<PHP
 <?php
 
+use Craft\Aliases\Facades\Aliases;
+
+
 PHP;
 
 $skipped = 0;
@@ -85,7 +88,7 @@ foreach ($meta as $name => $info) {
 
     if ($style !== 'solid') {
         $aliasesPhp .= <<<PHP
-Craft::setAlias('@appicons/$name.svg', "@craft/icons/$dir/$name.svg");
+Aliases::set('@appicons/$name.svg', "@packageRoot/resources/icons/$dir/$name.svg");
 
 PHP;
     }

@@ -18,7 +18,8 @@ class AppServiceProvider extends ServiceProvider
 
     public function register(): void
     {
-        Aliases::set('@package', FileHelper::normalizePath($this->root.'/src'));
+        Aliases::set('@packageRoot', FileHelper::normalizePath($this->root));
+        Aliases::set('@package', '@packageRoot/src');
 
         $this->loadRoutesFrom("{$this->root}/routes/web.php");
         $this->loadViewsFrom("{$this->root}/resources/views", 'craftcms');
