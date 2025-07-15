@@ -43,14 +43,14 @@ Craft.ComponentSelectInput = Garnish.Base.extend(
       this.resetComponents();
 
       if (this.$addBtn.length) {
-        this.addListener(this.getOptions(), 'activate', (ev) => {
+        this.getOptions().on('activate', (ev) => {
           const $button = $(ev.currentTarget);
           this.addComponent($button.data('type'), $button.data('id'));
         });
       }
 
       if (this.$createBtn.length && this.settings.createAction) {
-        this.addListener(this.$createBtn, 'activate', () => {
+        this.$createBtn.on('activate', () => {
           const slideout = new Craft.CpScreenSlideout(
             this.settings.createAction
           );
@@ -517,11 +517,13 @@ Craft.ComponentSelectInput = Garnish.Base.extend(
       );
 
       const canAdd = this.canAddMoreComponents();
+      let $item = false;
 
       if (canAdd) {
         const $component = $(data.components[type][id][0]);
         this.insertComponent($component);
         this.addComponents($component);
+        $item = $component;
       }
 
       if (addToMenu && disclosureMenu) {
@@ -530,13 +532,18 @@ Craft.ComponentSelectInput = Garnish.Base.extend(
         if (canAdd) {
           disclosureMenu.hideItem($menuItem.children()[0]);
         }
-        this.addListener($menuItem.find('button'), 'activate', () => {
+        $item = $menuItem;
+        $menuItem.find('button').on('activate', () => {
           this.addComponent(type, id);
         });
       }
 
       await Craft.appendHeadHtml(data.headHtml);
       await Craft.appendBodyHtml(data.bodyHtml);
+
+      if (this.settings.showDescription && $item) {
+        Craft.initUiElements($item);
+      }
     },
 
     insertComponent: function ($component) {
@@ -547,6 +554,7 @@ Craft.ComponentSelectInput = Garnish.Base.extend(
       return {
         showActionMenu: this.settings.showActionMenus,
         showHandle: this.settings.showHandles,
+        showDescription: this.settings.showDescription,
         inputName: this.settings.name,
         hyperlink: this.settings.hyperlinks,
       };
@@ -557,6 +565,9 @@ Craft.ComponentSelectInput = Garnish.Base.extend(
       this.componentSort?.destroy();
       delete this.componentSelect;
       delete this.componentSort;
+      this.getOptions().off('activate');
+      this.$createBtn.off('activate');
+      this.base();
     },
   },
   {
@@ -566,10 +577,11 @@ Craft.ComponentSelectInput = Garnish.Base.extend(
       name: null,
       limit: null,
       showHandles: false,
+      showDescription: false,
       sortable: true,
       selectable: true,
       showActionMenus: true,
-      hyperlinks: true,
+      hyperlinks: false,
       createAction: null,
       addItemsToActionMenus: true,
     },

@@ -276,7 +276,7 @@ class UsersController extends Controller
         // if we're impersonating, pass the user we're impersonating to the complete method
         $impersonator = $userSession->getImpersonator();
         if ($impersonator !== null) {
-            $user = Craft::$app->getUser()->getIdentity();
+            $user = Craft::$app->getUser()->getIdentity() ?? $user;
         }
 
         return $this->_completeLogin($user, $duration);
@@ -886,14 +886,11 @@ class UsersController extends Controller
             }
         }
 
-        // Maybe automatically log them in
-        $loggedIn = $this->_maybeLoginUserAfterAccountActivation($user);
-
         if ($this->request->getAcceptsJson()) {
             $return = [
                 'status' => $user->getStatus(),
             ];
-            if ($loggedIn && Craft::$app->getConfig()->getGeneral()->enableCsrfProtection) {
+            if (!Craft::$app->getUser()->getIsGuest() && Craft::$app->getConfig()->getGeneral()->enableCsrfProtection) {
                 $return['csrfTokenValue'] = $this->request->getCsrfToken();
             }
             return $this->asSuccess(data: $return);
@@ -2366,9 +2363,11 @@ JS);
             'active',
             'addresses',
             'admin',
+            'affiliatedSiteId',
             'email',
             'firstName',
             'friendlyName',
+            'fullName',
             'groups',
             'lastName',
             'locked',
@@ -2916,9 +2915,10 @@ JS);
     }
 
     /**
-     * Possibly log a user in right after they were activated or reset their password, if Craft is configured to do so.
+     * Possibly log a user in right after they activated their account (not when they reset their password),
+     * if Craft is configured to do so.
      *
-     * @param User $user The user that was just activated or reset their password
+     * @param User $user The user that was just activated
      * @return bool Whether the user was logged in
      */
     private function _maybeLoginUserAfterAccountActivation(User $user): bool

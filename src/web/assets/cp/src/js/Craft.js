@@ -559,6 +559,9 @@ $.extend(Craft, {
    * @returns {string}
    */
   getCpUrl: function (path, params) {
+    if (!Craft.baseCpUrl) {
+      throw 'Craft.baseCpUrl is undefined.';
+    }
     return this.getUrl(path, params, Craft.baseCpUrl);
   },
 
@@ -3148,8 +3151,9 @@ $.extend($.fn, {
             : $btn;
 
         let isFullPage = $anchor.parents('.slideout').length == 0;
+        let isElementIndex = $anchor.parents('.element-index.pane').length > 0;
 
-        if (isFullPage) {
+        if (isFullPage || isElementIndex) {
           $form = $anchor.attr('data-form')
             ? $('#' + $anchor.attr('data-form'))
             : $btn.attr('data-form')

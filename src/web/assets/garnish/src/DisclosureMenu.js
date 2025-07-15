@@ -32,6 +32,8 @@ export default Base.extend(
     searchStr: '',
     clearSearchStrTimeout: null,
 
+    infoIconActivated: false,
+
     /**
      * Constructor
      */
@@ -136,6 +138,14 @@ export default Base.extend(
           });
           $matches.removeClass('filtered');
           $options.not($matches).addClass('filtered');
+
+          // also match the headings
+          this.$container.find('h3').each((i, heading) => {
+            const $heading = $(heading);
+            if ($heading.text().toLowerCase().includes(val)) {
+              $heading.next('ul').find('li.filtered').removeClass('filtered');
+            }
+          });
         } else {
           $clearBtn.addClass('hidden');
           $options.removeClass('filtered');
@@ -241,6 +251,18 @@ export default Base.extend(
 
     handleMousedown: function (event) {
       const newTarget = event.target;
+
+      // if the info icon was previously activated, reset the activation status,
+      // and don't count this mouse down as one in the disclosure menu
+      if (this.infoIconActivated) {
+        this.infoIconActivated = false;
+        return;
+      }
+
+      if (event.target.classList.contains('info')) {
+        this.infoIconActivated = true;
+      }
+
       const triggerButton = $(newTarget).closest('[data-disclosure-trigger]');
       const newTargetIsInsideDisclosure =
         this.$container[0] === event.target ||
@@ -869,12 +891,22 @@ export default Base.extend(
         this.toggleGroup(el);
       });
 
+      this.$container.find('hr').each((i, el) => {
+        const $el = $(el);
+        const $prevVisibleItems = $el
+          .prevUntil('h3,hr')
+          .filter(':not(.hidden):not(.filtered)');
+        if (!$prevVisibleItems.length) {
+          $el.addClass('hidden');
+        }
+      });
+
       this.$container.find('h3,hr').each((i, el) => {
         const $el = $(el);
-        const $visibleItems = $el
+        const $nextVisibleItems = $el
           .nextUntil('h3,hr')
           .filter(':not(.hidden):not(.filtered)');
-        if ($visibleItems.length) {
+        if ($nextVisibleItems.length) {
           $el.removeClass('hidden');
         } else {
           $el.addClass('hidden');

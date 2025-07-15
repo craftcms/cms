@@ -445,6 +445,7 @@ class Install extends Migration
             $table->integer('fieldLayoutId')->nullable();
             $table->string('name');
             $table->string('handle');
+            $table->text('description')->nullable();
             $table->string('icon')->nullable();
             $table->string('color')->nullable();
             $table->boolean('hasTitleField')->default(true);
@@ -644,6 +645,7 @@ class Install extends Migration
             $table->unsignedSmallInteger('sortOrder');
             $table->string('name')->nullable();
             $table->string('handle')->nullable();
+            $table->text('description')->nullable();
 
             $table->primary(['sectionId', 'typeId']);
         });

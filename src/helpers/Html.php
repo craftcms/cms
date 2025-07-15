@@ -1181,6 +1181,18 @@ class Html extends \yii\helpers\Html
     }
 
     /**
+     * Decodes any double-encoded entities.
+     *
+     * @param string $html
+     * @return string
+     * @since 5.8.3
+     */
+    public static function decodeDoubles(string $html): string
+    {
+        return preg_replace('/&amp;(\w+);/', '&$1;', $html);
+    }
+
+    /**
      * Returns the contents of a given SVG file.
      *
      * @param string|Asset $svg An SVG asset, a file path, or raw SVG markup

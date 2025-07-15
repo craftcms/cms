@@ -863,6 +863,24 @@ JS;
     /**
      * @inheritdoc
      */
+    public function isValueEmpty(mixed $value, ElementInterface $element): bool
+    {
+        if (parent::isValueEmpty($value, $element)) {
+            return true;
+        }
+
+        /** @var LinkData $value */
+        $value = $element->getFieldValue($this->handle);
+        $linkTypes = $this->getLinkTypes();
+        $linkType = $linkTypes[$value->type];
+        $value = $value->serialize()['value'];
+
+        return $linkType->isValueEmpty($value);
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function getElementConditionRuleType(): array|string|null
     {
         return LinkFieldConditionRule::class;
@@ -874,11 +892,7 @@ JS;
     public function getPreviewHtml(mixed $value, ElementInterface $element): string
     {
         /** @var LinkData|null $value */
-        if (!$value) {
-            return '';
-        }
-        $value = Html::encode((string)$value);
-        return "<a href=\"$value\" target=\"_blank\">$value</a>";
+        return $value?->getLink() ?? '';
     }
 
     /**
@@ -887,7 +901,8 @@ JS;
     public function previewPlaceholderHtml(mixed $value, ?ElementInterface $element): string
     {
         if (!$value) {
-            $value = Craft::$app->getSites()->getCurrentSite()->baseUrl;
+            $url = Craft::$app->getSites()->getPrimarySite()->getBaseUrl() ?? 'https://craftcms.com/';
+            $value = new LinkData($url, new UrlType());
         }
 
         return $this->getPreviewHtml($value, new EntryElement());

@@ -2,6 +2,7 @@
 
 .entry-type-groups {
   display: flex;
+  align-items: start;
   flex-wrap: wrap;
   gap: var(--s);
 }
@@ -49,6 +50,11 @@
 
     .components {
       flex: 1;
+
+      // match the height of a single entry type chip being included
+      min-height: calc(
+        var(--xs) * 2 + var(--lh) + var(--xs) + 1.2 * 0.8em + var(--xs)
+      );
 
       .entry-type-group--caboose {
         content: '';

@@ -110,7 +110,7 @@ class Entry extends BaseElementLinkType
 
     protected function selectionCriteria(): array
     {
-        $criteria = [];
+        $criteria = parent::selectionCriteria();
 
         if (!$this->showUnpermittedEntries) {
             $criteria['editable'] = true;

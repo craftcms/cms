@@ -89,7 +89,10 @@ Craft.LinkInput = Garnish.Base.extend(
     },
 
     createChip: function (value) {
-      const label = this.removePrefix(value);
+      let label = this.removePrefix(value);
+      if (label.match(/^[^\/]+\/$/)) {
+        label = Craft.removeRight(label, '/');
+      }
       const menuId = `menu-${Math.floor(Math.random() * 1000000)}`;
 
       this.reset();

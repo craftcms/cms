@@ -29,7 +29,7 @@
       <table id="plugins" class="data fullwidth">
         <tbody>
         {% for handle, config in info %}
-          {% set pluginStoreUrl = url('plugin-store/' ~ handle) %}
+          {% set pluginStoreUrl = not config.private ? url('plugin-store/' ~ handle) : null %}
           {% set forceDisabled = disabledPlugins == '*' or handle in disabledPlugins %}
 
           {% set actionItems = [
@@ -111,12 +111,19 @@
           } %}
             <th>
               <div class="plugin-infos">
-                <a class="icon" href="{{ pluginStoreUrl }}" title="{{ 'View {plugin} in the Plugin Store'|t('app', {plugin: config.name}) }}" title="{{ 'View {plugin} in the Plugin Store'|t('app', {plugin: config.name}) }}">
+                {% set pluginIcon %}
                   {{ svg(craft.app.plugins.getPluginIconSvg(handle), sanitize=true, namespace=true) }}
                   {% if config.licenseKeyStatus == 'valid' or config.licenseIssues is not empty %}
                     <span class="license-key-status {{ config.licenseIssues is empty ? 'valid' }}"></span>
                   {% endif %}
-                </a>
+                {% endset %}
+                {% if pluginStoreUrl %}
+                  <a class="icon" href="{{ pluginStoreUrl }}" title="{{ 'View {plugin} in the Plugin Store'|t('app', {plugin: config.name}) }}" title="{{ 'View {plugin} in the Plugin Store'|t('app', {plugin: config.name}) }}">
+                    {{ pluginIcon }}
+                  </a>
+                {% else %}
+                  <span class="icon">{{ pluginIcon }}</span>
+                {% endif %}
                 <div class="plugin-details">
                   <div class="plugin-id">
                     <h2>{{ config.name }}</h2>

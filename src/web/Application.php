@@ -60,12 +60,10 @@ use yii\web\UnauthorizedHttpException;
  * @property-read Request $request The request component
  * @property-read Response $response The response component
  * @property-read Session $session The session component
- * @property-read UrlManager $urlManager The URL manager for this application
  * @property-read User $user The user component
  * @method Request getRequest() Returns the request component.
  * @method Response getResponse() Returns the response component.
  * @method Session getSession() Returns the session component.
- * @method UrlManager getUrlManager() Returns the URL manager for this application.
  * @method User getUser() Returns the user component.
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0

@@ -264,4 +264,13 @@ trait ElementTrait
      * @since 3.2.0
      */
     public bool $hardDelete = false;
+
+    /**
+     * @var bool Whether the element’s search keywords should be indexed immediately.
+     *
+     * If `null`, the search index will only be updated immediately for console requests.
+     *
+     * @since 5.8.0
+     */
+    public ?bool $updateSearchIndexImmediately = null;
 }

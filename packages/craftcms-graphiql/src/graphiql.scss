@@ -1,7 +1,7 @@
 @charset "UTF-8";
 
 :root {
-  --input-color: var(--input-color, hsl(212deg 25% 50%));
+  --input-color: var(--bg-input, hsl(212deg 25% 50%));
   --graphiql-header-height: calc(42rem / 16);
 }
 
@@ -53,7 +53,7 @@ body,
     color: var(--text-color);
     background-color: color-mix(
       in oklch,
-      var(--input-color, hsl(212deg 25% 50%)) 25%,
+      var(--bg-input, hsl(212deg 25% 50%)) 25%,
       transparent
     );
   }

@@ -73,6 +73,14 @@ class CraftCopyAttribute extends HTMLElement {
     this.renderInput();
     this.renderIcon();
   }
+
+  disconnectedCallback() {
+    // put the "value" attribute back into <craft-copy-attribute>
+    // so that when connectedCallback() is called after insetBefore/insertAfter
+    // everything can get initialised as expected
+    // we can't use Element.moveBefore/Element.moveAfter as those are experimental at the moment and not available in Safari & FF
+    this.setAttribute('value', this.value);
+  }
 }
 
 customElements.define('craft-copy-attribute', CraftCopyAttribute);

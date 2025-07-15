@@ -18,6 +18,13 @@ Craft.BaseElementSelectInput = Garnish.Base.extend(
     $addElementBtn: null,
     $spinner: null,
 
+    searchTimeout: null,
+    searchMenu: null,
+    $searchContainer: null,
+    $searchInput: null,
+    $searchSpinner: null,
+    _ignoreSearchBlur: false,
+
     _initialized: false,
     _$replaceElement: null,
 
@@ -81,9 +88,13 @@ Craft.BaseElementSelectInput = Garnish.Base.extend(
       this.$elementsContainer = this.getElementsContainer();
       this.$addElementBtn = this.getAddElementsBtn();
       this.$spinner = this.getSpinner();
+      this.$searchContainer = this.getSearchContainer();
+      this.$searchInput = this.getSearchInput();
+      this.$searchSpinner = this.getSearchSpinner();
 
       this.initElementSelect();
       this.initElementSort();
+      this.initSearch();
       this.resetElements();
 
       if (this.$addElementBtn.length) {
@@ -131,6 +142,18 @@ Craft.BaseElementSelectInput = Garnish.Base.extend(
       } else {
         return this.$elementsContainer.find('> li > .element');
       }
+    },
+
+    getSearchContainer: function () {
+      return this.$container.find('.elementselect__search-input-wrapper');
+    },
+
+    getSearchInput: function () {
+      return this.$searchContainer.find('input');
+    },
+
+    getSearchSpinner: function () {
+      return this.$searchContainer.find('.spinner');
     },
 
     getAddElementsBtn: function () {
@@ -244,6 +267,7 @@ Craft.BaseElementSelectInput = Garnish.Base.extend(
     enableAddElementsBtn: function () {
       if (this.settings.allowAdd && this.$addElementBtn.length) {
         this.$addElementBtn.removeClass('hidden');
+        this.$searchContainer.removeClass('hidden');
       }
 
       this.updateButtonContainer();
@@ -252,6 +276,7 @@ Craft.BaseElementSelectInput = Garnish.Base.extend(
     disableAddElementsBtn: function () {
       if (this.$addElementBtn.length) {
         this.$addElementBtn.addClass('hidden');
+        this.$searchContainer.addClass('hidden');
       }
 
       this.updateButtonContainer();
@@ -287,12 +312,17 @@ Craft.BaseElementSelectInput = Garnish.Base.extend(
 
     focusNextLogicalElement: function () {
       if (this.canAddMoreElements()) {
-        // If can add more elements, focus ADD button
+        // If can add more elements, focus on search input or add button
         if (
+          this.$searchContainer.length &&
+          !this.$searchContainer.hasClass('hidden')
+        ) {
+          this.$searchInput.focus();
+        } else if (
           this.$addElementBtn.length &&
           !this.$addElementBtn.hasClass('hidden')
         ) {
-          this.$addElementBtn.get(0).focus();
+          this.$addElementBtn.focus();
         }
       } else {
         // If can't add more elements, focus on the final remove
@@ -527,12 +557,6 @@ Craft.BaseElementSelectInput = Garnish.Base.extend(
         }
 
         this.showSpinner();
-
-        const data = {
-          elementId: replacementId,
-          siteId: this.settings.criteria.siteId,
-          thumbSize: this.settings.viewMode,
-        };
 
         Craft.sendActionRequest('POST', 'app/render-elements', {
           data: {
@@ -1111,6 +1135,305 @@ Craft.BaseElementSelectInput = Garnish.Base.extend(
         setTimeout(func, 100 * i);
       }
     },
+
+    canCreateElements: function () {
+      return false;
+    },
+
+    createElement: async function (title) {},
+
+    initSearch() {
+      if (!this.$searchInput.length) {
+        return;
+      }
+
+      this.addListener(this.$searchInput, 'input', () => {
+        if (this.searchTimeout) {
+          clearTimeout(this.searchTimeout);
+        }
+
+        this.searchTimeout = setTimeout(() => {
+          this.searchForTags();
+        }, 500);
+      });
+
+      this.addListener(this.$searchInput, 'keydown', function (ev) {
+        if (ev.keyCode === Garnish.RETURN_KEY) {
+          ev.preventDefault();
+        }
+
+        switch (ev.keyCode) {
+          case Garnish.RETURN_KEY: {
+            ev.preventDefault();
+            if (this.searchMenu) {
+              this.selectSearchResult(
+                this.searchMenu.$options.filter('.hover')
+              );
+            }
+            return;
+          }
+
+          case Garnish.DOWN_KEY: {
+            ev.preventDefault();
+            if (this.searchMenu) {
+              let $hoverOption = this.searchMenu.$options.filter('.hover');
+              if ($hoverOption.length) {
+                let $nextOption = $hoverOption
+                  .parent()
+                  .nextAll()
+                  .find('.menu-item:not(.disabled)')
+                  .first();
+                if ($nextOption.length) {
+                  this.focusOption($nextOption);
+                }
+              } else {
+                this.focusOption(this.searchMenu.$options.eq(0));
+              }
+            }
+            return;
+          }
+
+          case Garnish.UP_KEY: {
+            ev.preventDefault();
+            if (this.searchMenu) {
+              let $hoverOption = this.searchMenu.$options.filter('.hover');
+              if ($hoverOption.length) {
+                let $prevOption = $hoverOption
+                  .parent()
+                  .prevAll()
+                  .find('.menu-item:not(.disabled)')
+                  .last();
+                if ($prevOption.length) {
+                  this.focusOption($prevOption);
+                }
+              } else {
+                this.focusOption(
+                  this.searchMenu.$options.eq(
+                    this.searchMenu.$options.length - 1
+                  )
+                );
+              }
+            }
+            return;
+          }
+        }
+      });
+
+      this.addListener(this.$searchInput, 'focus', function () {
+        if (this.searchMenu) {
+          this.searchMenu.show();
+        }
+      });
+
+      this.addListener(this.$searchInput, 'blur', function () {
+        if (this._ignoreSearchBlur) {
+          this._ignoreSearchBlur = false;
+          return;
+        }
+
+        setTimeout(() => {
+          if (this.searchMenu) {
+            this.searchMenu.hide();
+          }
+        }, 1);
+      });
+    },
+
+    searchForTags: async function () {
+      if (this.searchMenu) {
+        this.killSearchMenu();
+      }
+
+      const val = this.$searchInput.val();
+
+      if (val) {
+        this.$searchSpinner.removeClass('hidden');
+        Craft.cp.announce(Craft.t('app', 'Loading'));
+
+        const excludeIds = [];
+
+        for (let i = 0; i < this.$elements.length; i++) {
+          const id = $(this.$elements[i]).data('id');
+          if (id) {
+            excludeIds.push(id);
+          }
+        }
+
+        // take allowSelfRelations into consideration too
+        if (
+          this.settings.sourceElementId &&
+          !this.settings.allowSelfRelations
+        ) {
+          excludeIds.push(this.settings.sourceElementId);
+        }
+
+        let response;
+
+        try {
+          response = await Craft.sendActionRequest(
+            'POST',
+            'element-search/search',
+            {
+              data: {
+                elementType: this.settings.elementType,
+                siteId: this.settings.criteria.siteId,
+                search: val,
+                criteria: this.settings.searchCriteria,
+                condition: this.settings.condition,
+                referenceElementId: this.settings.referenceElementId
+                  ? this.elementEditor?.getDraftElementId(
+                      this.settings.referenceElementId
+                    ) || this.settings.referenceElementId
+                  : null,
+                referenceElementOwnerId: this.settings.referenceElementOwnerId
+                  ? this.elementEditor?.getDraftElementId(
+                      this.settings.referenceElementOwnerId
+                    ) || this.settings.referenceElementOwnerId
+                  : null,
+                referenceElementSiteId: this.settings.referenceElementSiteId,
+                excludeIds,
+              },
+            }
+          );
+        } finally {
+          // Just in case
+          if (this.searchMenu) {
+            this.killSearchMenu();
+          }
+          this.$searchSpinner.addClass('hidden');
+          Craft.cp.announce(Craft.t('app', 'Loading complete'));
+        }
+
+        const $menu = $('<div class="menu tagmenu"/>').appendTo(Garnish.$bod);
+        const $ul = $('<ul/>').appendTo($menu);
+
+        for (const element of response.data.elements) {
+          const $li = $('<li/>').appendTo($ul);
+          const optionLabel = `${Craft.t('app', 'Existing {type}', {
+            type:
+              Craft.elementTypeNames[this.settings.elementType][2] ??
+              Craft.t('app', 'element'),
+          })}: ${element.title}`;
+          $li.attr('aria-label', optionLabel);
+
+          const $item = $('<div class="menu-item"/>')
+            .appendTo($li)
+            .html(element.html)
+            .data('id', element.id);
+
+          if (element.exclude) {
+            $item.addClass('disabled');
+          }
+        }
+
+        if (!response.data.exactMatch && this.canCreateElements()) {
+          const $li = $('<li/>').appendTo($ul);
+          const optionLabel = `${Craft.t('app', 'Create {type}', {
+            type:
+              Craft.elementTypeNames[this.settings.elementType][2] ??
+              Craft.t('app', 'element'),
+          })}: ${val}`;
+          $li.attr('aria-label', optionLabel);
+
+          $('<div class="menu-item" data-icon="plus"/>')
+            .appendTo($li)
+            .text(val);
+        }
+
+        $ul.find('.menu-item:not(.disabled):first').addClass('hover');
+
+        this.searchMenu = new Garnish.CustomSelect($menu, {
+          anchor: this.$searchInput,
+          onOptionSelect: (option) => {
+            this.selectSearchResult(option);
+          },
+        });
+
+        // Add required ARIA attributes
+        this.$searchInput.attr('aria-controls', this.searchMenu.menuId);
+
+        this.searchMenu.on('show', () => {
+          this.$searchInput.attr('aria-expanded', 'true');
+          this.focusSelectedOption();
+          Craft.cp.elementThumbLoader.load($menu);
+        });
+
+        this.searchMenu.on('hide', () => {
+          this.$searchInput.attr('aria-expanded', 'false');
+          this.$searchInput.removeAttr('aria-activedescendant');
+        });
+
+        this.addListener($menu, 'mousedown', () => {
+          this._ignoreSearchBlur = true;
+        });
+
+        this.searchMenu.show();
+      } else {
+        // No need to update the live region here
+        this.$searchSpinner.addClass('hidden');
+      }
+    },
+
+    focusOption: function ($option) {
+      this.searchMenu.$options.removeClass('hover');
+      this.searchMenu.$ariaOptions.attr('aria-selected', 'false');
+
+      $option.addClass('hover');
+      this.$searchInput.attr(
+        'aria-activedescendant',
+        $option.parent('li').attr('id')
+      );
+    },
+
+    focusSelectedOption: function () {
+      let $option = this.searchMenu.$options.filter('.hover:first');
+
+      if ($option.length) {
+        this.focusOption($option);
+      } else {
+        this.focusFirstOption();
+      }
+    },
+
+    focusFirstOption: function () {
+      const $option = this.searchMenu.$options.first();
+      this.focusOption($option);
+    },
+
+    selectSearchResult: async function (option) {
+      const $option = $(option);
+
+      if ($option.hasClass('disabled')) {
+        return;
+      }
+
+      let id = $option.data('id');
+
+      if (!id && this.canCreateElements()) {
+        id = await this.createElement($option.text());
+      }
+
+      if (id) {
+        await this.onModalSelect([
+          {
+            id,
+            siteId: this.settings.criteria.siteId,
+          },
+        ]);
+      }
+
+      this.killSearchMenu();
+      this.$searchInput.val('');
+      setTimeout(() => {
+        this.focusNextLogicalElement();
+      }, 200);
+    },
+
+    killSearchMenu: function () {
+      this.searchMenu.hide();
+      this.searchMenu.destroy();
+      this.searchMenu = null;
+    },
   },
   {
     ADD_FX_DURATION: 200,
@@ -1127,6 +1450,7 @@ Craft.BaseElementSelectInput = Garnish.Base.extend(
       referenceElementOwnerId: null,
       referenceElementSiteId: null,
       criteria: {},
+      searchCriteria: null,
       allowAdd: true,
       allowRemove: true,
       allowSelfRelations: false,

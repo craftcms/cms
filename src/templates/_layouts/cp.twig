@@ -74,7 +74,7 @@
 {% set contentNotice = (contentNotice ?? block('contentNotice') ?? '')|trim %}
 {% set sidebar = (sidebar ?? block('sidebar') ?? '')|trim %}
 {% set toolbar = (toolbar ?? block('toolbar') ?? '')|trim %}
-{% set actionButton = (block('actionButton') ?? '')|trim %}
+{% set actionButton = (actionButton ?? block('actionButton') ?? '')|trim %}
 {% set additionalButtons = additionalButtons ?? null %}
 {% set details = (details ?? block('details') ?? '')|trim %}
 {% set footer = (footer ?? block('footer') ?? '')|trim %}
@@ -305,18 +305,16 @@ history.replaceState(undefined, undefined, window.location.href.match(/^[^#]*/)[
                                                 {% embed '_includes/disclosure-toggle' with {
                                                     id: 'details-toggle',
                                                     controls: 'details-container',
-                                                    cookieName: 'sidebar-details',
+                                                    persist: true,
+                                                    storageMode: 'cookies',
+                                                    storageKey: 'sidebar-details',
                                                 } only %}
                                                     {% block content %}
                                                         <span class="details-toggle__inner">
                                                             <span
                                                                 aria-hidden="true"
-                                                                class="cp-icon toggle-icon toggle-icon--close"
+                                                                class="cp-icon"
                                                             >{{ iconSvg('angle-right') }}</span>
-                                                            <span
-                                                                aria-hidden="true"
-                                                                class="cp-icon toggle-icon toggle-icon--open"
-                                                            >{{ iconSvg('angle-left') }}</span>
                                                             <span class="visually-hidden">{{ 'Toggle details sidebar'|t('app') }}</span>
                                                         </span>
                                                     {% endblock %}

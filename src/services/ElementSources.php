@@ -153,6 +153,27 @@ class ElementSources extends Component
     }
 
     /**
+     * Returns whether the given source exists.
+     *
+     * @param class-string<ElementInterface> $elementType The element type class
+     * @param string $sourceKey The source key
+     * @param string $context The context
+     * @param bool $withDisabled Whether disabled sources should be included
+     * @return bool
+     * @since 5.7.11
+     */
+    public function sourceExists(string $elementType, string $sourceKey, string $context = self::CONTEXT_INDEX, bool $withDisabled = false): bool
+    {
+        foreach ($this->getSources($elementType, $context, $withDisabled) as $source) {
+            if (($source['key'] ?? null) === $sourceKey) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
      * Returns whether the given custom source should be available for the current user.
      *
      * @param array $source
@@ -275,21 +296,21 @@ class ElementSources extends Component
      */
     public function getFieldLayoutsForSource(string $elementType, string $sourceKey): array
     {
-        // Don't bother the element type for custom sources
-        if (str_starts_with($sourceKey, 'custom:')) {
-            $source = $this->_sourceConfig($elementType, $sourceKey);
-            if (empty($source['condition'])) {
-                return Craft::$app->getFields()->getLayoutsByType($elementType);
-            }
-            /** @var ElementConditionInterface $condition */
-            $condition = Craft::$app->getConditions()->createCondition($source['condition']);
-            $query = $elementType::find();
-            $condition->modifyQuery($query);
-            return $query->getFieldLayouts();
-        }
-
         if (!isset($this->_fieldLayouts[$elementType][$sourceKey])) {
-            $this->_fieldLayouts[$elementType][$sourceKey] = $elementType::fieldLayouts($sourceKey);
+            // Don't bother the element type for custom sources
+            if (str_starts_with($sourceKey, 'custom:')) {
+                $source = $this->_sourceConfig($elementType, $sourceKey);
+                if (empty($source['condition'])) {
+                    return Craft::$app->getFields()->getLayoutsByType($elementType);
+                }
+                /** @var ElementConditionInterface $condition */
+                $condition = Craft::$app->getConditions()->createCondition($source['condition']);
+                $query = $elementType::find();
+                $condition->modifyQuery($query);
+                $this->_fieldLayouts[$elementType][$sourceKey] = $query->getFieldLayouts();
+            } else {
+                $this->_fieldLayouts[$elementType][$sourceKey] = $elementType::fieldLayouts($sourceKey);
+            }
         }
 
         return $this->_fieldLayouts[$elementType][$sourceKey];

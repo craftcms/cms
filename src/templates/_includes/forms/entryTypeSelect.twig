@@ -4,6 +4,7 @@
   options: options ?? craft.app.entries.getAllEntryTypes(),
   showHandles: true,
   showIndicators: showIndicators ?? allowOverrides,
+  showDescription: showDescription ?? allowOverrides,
   createAction: (create ?? false) ? 'entry-types/edit' : null,
   jsClass: jsClass ?? 'Craft.EntryTypeSelectInput',
   jsSettings: {
@@ -17,14 +18,16 @@
           inputName: inputName ?? name ?? null,
           inputValue: allowOverrides ? {
             id: entryType.id,
-            name: entryType.name,
-            handle: entryType.handle,
+            name: entryType.original and entryType.name != entryType.original.name ? entryType.name : null,
+            handle: entryType.original and entryType.handle != entryType.original.handle ? entryType.handle : null,
+            description: entryType.original and entryType.description != entryType.original.description ? entryType.description : null,
             group: (includeGroupInValues ?? false) ? (entryType.group ?? 'General'|t('app')) : null,
           }|filter|json_encode : null,
           checkbox: selectable ?? false,
           showActionMenu: showActionMenus,
           showHandle: showHandles,
           showIndicators: showIndicators,
+          showDescription: showDescription,
           hyperlink: hyperlinks,
         }) %}
         {% if disabled %}

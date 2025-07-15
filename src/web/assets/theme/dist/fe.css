@@ -42,7 +42,8 @@
     --slideout-footer-shadow: none;
 
     /* Inputs */
-    --input-border: 1px solid #cbd5e1;
+    --input-border-color: #cbd5e1;
+    --input-border: 1px solid var(--input-border-color);
     --input-border-radius: 0.25rem;
     --input-height: 2.25rem;
     --input-bg: #f8fafc;

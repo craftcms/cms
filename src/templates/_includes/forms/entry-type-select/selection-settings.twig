@@ -47,3 +47,16 @@
     'error-key': 'handle'
   },
 }) }}
+
+{{ forms.textareaField({
+  label: 'Description'|t('app'),
+  id: 'description',
+  class: 'nicetext',
+  name: 'description',
+  value: entryType.description != entryType.original.description ? entryType.description : null,
+  placeholder: entryType.original.description,
+  errors: entryType.getErrors('description'),
+  data: {
+    'error-key': 'description',
+  },
+}) }}

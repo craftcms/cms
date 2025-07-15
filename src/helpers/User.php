@@ -108,6 +108,16 @@ class User
      */
     public static function getLoginFailureMessage(?string $authError, ?UserElement $user): string
     {
+        $generalConfig = Craft::$app->getConfig()->getGeneral();
+        // if preventUserEnumeration is true and the account is locked
+        // set the $authError to a value that will trigger the generic, default message
+        if (
+            $generalConfig->preventUserEnumeration &&
+            in_array($authError, [UserElement::AUTH_ACCOUNT_LOCKED, UserElement::AUTH_ACCOUNT_COOLDOWN])
+        ) {
+            $authError = 'default';
+        }
+
         switch ($authError) {
             case UserElement::AUTH_PENDING_VERIFICATION:
                 $message = Craft::t('app', 'Account has not been activated.');
@@ -144,7 +154,7 @@ class User
                 $message = Craft::t('app', 'You cannot access the site while the system is offline with that account.');
                 break;
             default:
-                if (Craft::$app->getConfig()->getGeneral()->useEmailAsUsername) {
+                if ($generalConfig->useEmailAsUsername) {
                     $message = Craft::t('app', 'Invalid email or password.');
                 } else {
                     $message = Craft::t('app', 'Invalid username or password.');

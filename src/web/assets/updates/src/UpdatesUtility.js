@@ -72,7 +72,6 @@ import './updates.scss';
           }
         },
         () => {
-          debugger;
           $graphic.removeClass('spinner').addClass('error');
           $status.text(Craft.t('app', 'Unable to fetch updates at this time.'));
         }
