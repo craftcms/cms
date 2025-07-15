@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "d4dd179e3e8bd788f56ad4716e95c413",
+    "content-hash": "9ceb4cb3d00d9c0f09229cc05564969e",
     "packages": [
         {
             "name": "bacon/bacon-qr-code",
@@ -639,89 +639,6 @@
                 "source": "https://github.com/craftcms/server-check"
             },
             "time": "2025-02-11T20:26:29+00:00"
-        },
-        {
-            "name": "craftcms/yii2-adapter",
-            "version": "dev-main",
-            "dist": {
-                "type": "path",
-                "url": "./yii2-adapter",
-                "reference": "3d776ef4ecbdab0df5e7b331e4b86c20b7e0bebb"
-            },
-            "require": {
-                "craftcms/laravel-aliases": "*",
-                "php": "^8.2"
-            },
-            "require-dev": {
-                "larastan/larastan": "^2.9||^3.0",
-                "laravel/pint": "^1.14",
-                "nunomaduro/collision": "^8.1.1||^7.10.0",
-                "orchestra/testbench": "^10.0.0||^9.0.0||^8.22.0",
-                "pestphp/pest": "^3.0",
-                "pestphp/pest-plugin-arch": "^3.0",
-                "pestphp/pest-plugin-laravel": "^3.0",
-                "phpstan/extension-installer": "^1.3||^2.0",
-                "phpstan/phpstan-deprecation-rules": "^1.1||^2.0",
-                "phpstan/phpstan-phpunit": "^1.3||^2.0"
-            },
-            "type": "library",
-            "extra": {
-                "laravel": {
-                    "providers": [
-                        "Craft\\Yii2Adapter\\Yii2ServiceProvider"
-                    ]
-                }
-            },
-            "autoload": {
-                "psr-4": {
-                    "Craft\\Yii2Adapter\\": "src/"
-                }
-            },
-            "autoload-dev": {
-                "psr-4": {
-                    "Craft\\Yii2Adapter\\Tests\\": "tests/"
-                }
-            },
-            "scripts": {
-                "post-autoload-dump": [
-                    "@composer run prepare"
-                ],
-                "prepare": [
-                    "@php vendor/bin/testbench package:discover --ansi"
-                ],
-                "analyse": [
-                    "vendor/bin/phpstan analyse"
-                ],
-                "test": [
-                    "vendor/bin/pest"
-                ],
-                "test-coverage": [
-                    "vendor/bin/pest --coverage"
-                ],
-                "format": [
-                    "vendor/bin/pint"
-                ]
-            },
-            "license": [
-                "MIT"
-            ],
-            "authors": [
-                {
-                    "name": "Pixel & Tonic",
-                    "homepage": "https://pixelandtonic.com/"
-                }
-            ],
-            "description": "A Laravel Facade around yiisoft/aliases",
-            "homepage": "https://github.com/craftcms/yii2-adapter",
-            "keywords": [
-                "craftcms",
-                "laravel",
-                "laravel-aliases",
-                "yii"
-            ],
-            "transport-options": {
-                "relative": true
-            }
         },
         {
             "name": "creocoder/yii2-nested-sets",
