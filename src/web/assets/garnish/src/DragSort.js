@@ -481,10 +481,22 @@ export default Drag.extend(
       this._testForClosestItem._mouseDistY = Math.abs(
         this._testForClosestItem._midpoint.y - this.draggeeVirtualMidpointY
       );
-      this._testForClosestItem._mouseDist = Math.sqrt(
-        this._testForClosestItem._mouseDistX ** 2 +
-          this._testForClosestItem._mouseDistY ** 2
-      );
+
+      switch (this.settings.axis) {
+        case Garnish.X_AXIS:
+          this._testForClosestItem._mouseDist =
+            this._testForClosestItem._mouseDistX;
+          break;
+        case Garnish.Y_AXIS:
+          this._testForClosestItem._mouseDist =
+            this._testForClosestItem._mouseDistY;
+          break;
+        default:
+          this._testForClosestItem._mouseDist = Math.sqrt(
+            this._testForClosestItem._mouseDistX ** 2 +
+              this._testForClosestItem._mouseDistY ** 2
+          );
+      }
 
       if (
         this._getClosestItem._closestItem === null ||

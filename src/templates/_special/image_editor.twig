@@ -1,4 +1,5 @@
 {% import "_includes/forms" as forms %}
+{% set orientation = craft.app.locale.getOrientation() -%}
 {% do view.registerTranslations('app', [
   'Original',
   'Square',
@@ -8,6 +9,20 @@
     class: 'visually-hidden',
     text: 'Edit Image'|t('app'),
 }) }}
+
+{% macro cropperButton(config) %}
+    {% set id = config.id ?? null %}
+    {% tag 'button' with {
+        id: id,
+        type: 'button',
+        aria: {
+            pressed: 'false',
+        },
+    }|merge(config.buttonAttributes ?? {}, recursive=true) %}
+        <div data-item-name>{{ config.label }}</div>
+    {% endtag %}
+{% endmacro %}
+
 <div class="tabs">
     <ul role="tablist">
         <li id="rotate-tab" data-view="rotate" role="tab" tabindex="0" aria-selected="true"><i></i>{{ 'Rotate'|t('app') }}</li>
@@ -60,6 +75,100 @@
             value: 'none',
             options: constraintOptions,
         }) }}
+
+        {% set cropHandleBtns = [
+            {
+                label: orientation == 'ltr' ? 'Top-Left Handle'|t('app') : 'Top-Right Handle'|t('app'),
+                handle: orientation == 'ltr' ? 'tl' : 'tr',
+            },
+            {
+                label: 'Top Handle'|t('app'),
+                handle: 't',
+            },
+            {
+                label: orientation == 'ltr' ? 'Top-Right Handle'|t('app') : 'Top-Left Handle'|t('app'),
+                handle: orientation == 'ltr' ? 'tr' : 'tl',
+            },
+            {
+                label: orientation == 'ltr' ? 'Left Handle'|t('app') : 'Right Handle'|t('app'),
+                handle: orientation == 'ltr' ? 'l' : 'r',
+            },
+            {
+                label: orientation == 'ltr' ? 'Right Handle'|t('app') : 'Left Handle'|t('app'),
+                handle: orientation == 'ltr' ? 'r' : 'l',
+            },
+            {
+                label: orientation == 'ltr' ? 'Bottom-Left Handle'|t('app') : 'Bottom-Right Handle'|t('app'),
+                handle: orientation == 'ltr' ? 'bl' : 'br',
+            },
+            {
+                label: 'Bottom Handle'|t('app'),
+                handle: 'b',
+            },
+            {
+                label: orientation == 'ltr' ? 'Bottom-Right Handle'|t('app') : 'Bottom-Left Handle'|t('app'),
+                handle: orientation == 'ltr' ? 'br' : 'bl',
+            },
+        ] %}
+
+        {% set directionalButtons = [
+            {
+                label: 'Up'|t('app'),
+                direction: 'up',
+            },
+            {
+                label: orientation == 'ltr' ? 'Left'|t('app') : 'Right'|t('app'),
+                direction: orientation == 'ltr' ? 'left' : 'right',
+            },
+            {
+                label: 'Down'|t('app'),
+                direction: 'down',
+            },
+            {
+                label: orientation == 'ltr' ? 'Right'|t('app') : 'Left'|t('app'),
+                direction: orientation == 'ltr' ? 'right' : 'left',
+            },
+        ] %}
+
+        <fieldset data-cropper-edit>
+            <legend>
+                {{ 'Edit {type}'|t('app', {
+                    type: 'Cropping Rectangle'|t('app'),
+                }) }}
+            </legend>
+            <div id="move-icon-wrapper" style="display: none;">{{ iconSvg('up-down-left-right') }}</div>
+            <div role="application">
+                <div>
+                    {{ _self.cropperButton({
+                        label: 'Cropping Rectangle'|t('app'),
+                        id: 'cropper-handle',
+                        buttonAttributes: {
+                            data: {
+                                'crop-editor': 'rectangle',
+                            },
+                            class: ['cropper-edit__btn']
+                        }
+                    }) }}
+                </div>
+
+                <div>
+                    {% for button in cropHandleBtns %}
+                        {% if loop.index == 5 %}
+                            <div></div>
+                        {% endif %}
+                        {{ _self.cropperButton({
+                            label: button.label,
+                            buttonAttributes: {
+                                data: {
+                                    'crop-editor': button.handle,
+                                },
+                                class: ['cropper-edit__btn']
+                            }
+                        }) }}
+                    {% endfor %}
+                </div>
+            </div>
+        </fieldset>
     </div>
 </div>
 <div class="image-container">

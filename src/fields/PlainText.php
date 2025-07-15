@@ -17,6 +17,7 @@ use craft\base\SortableFieldInterface;
 use Craft\Cms\Support\Str;
 use craft\elements\Entry;
 use craft\fields\conditions\TextFieldConditionRule;
+use craft\helpers\Html;
 
 /**
  * PlainText represents a Plain Text field.
@@ -247,6 +248,22 @@ class PlainText extends Field implements InlineEditableFieldInterface, SortableF
     public function getElementConditionRuleType(): ?string
     {
         return TextFieldConditionRule::class;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getPreviewHtml(mixed $value, ?ElementInterface $element = null): string
+    {
+        $previewHtml = parent::getPreviewHtml($value, $element);
+
+        if (!$this->code) {
+            return $previewHtml;
+        }
+
+        return Html::tag('div', $previewHtml, [
+            'class' => 'code',
+        ]);
     }
 
     /**

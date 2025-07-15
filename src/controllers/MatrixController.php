@@ -233,7 +233,6 @@ class MatrixController extends Controller
                     'name' => $field->handle,
                     'entryTypes' => $entryTypes,
                     'entry' => $entry,
-                    'isFresh' => true,
                 ]), $namespace);
             }
         }

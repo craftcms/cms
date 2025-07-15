@@ -13,6 +13,7 @@
 {%- set previewInputId = "#{id}-preview" %}
 {%- set containerId = "#{id}-container" %}
 {%- set autosuggestId = "#{id}-autosuggest" %}
+{%- set describedBy = describedBy ?? null -%}
 {%- set labelledBy = labelledBy ?? null -%}
 
 {%- set class = (class ?? [])|explodeClass|merge([
@@ -80,8 +81,8 @@ new Vue({
                 disabled: disabled ?? false,
                 title: title ?? '',
                 placeholder: placeholder ?? '',
-                'aria-describedby': describedBy ?? false,
-                'aria-labelledby': labelledBy ?? false,
+                'aria-describedby': describedBy ? describedBy|split(' ')|map(id => id|namespaceInputId)|join(' ') : false,
+                'aria-labelledby': labelledBy ? labelledBy|split(' ')|map(id => id|namespaceInputId)|join(' ') : false,
             }|merge(inputProps ?? inputAttributes ?? [], recursive=true)|filter,
             limit: limit ?? 5
         }|json_encode|raw }};

@@ -1,68 +1,96 @@
 @use 'sass:color';
 @use '@craftcms/sass/mixins';
 
+/**
+These variables will be removed in the next major version and area only provided for compatibility.
+Use the new values in the `tokens.scss` file instead.
+*/
 :root {
   --bg-color: var(--body-bg);
-  --bg-color-hsl: #{color.hue(mixins.$grey100)},
-    #{color.saturation(mixins.$grey100)}, #{color.lightness(mixins.$grey100)};
+  --bg-color-hsl: 212deg, 50%, 93%;
 
   // submit button colors
-  --primary-color: var(--primary-button-bg);
-  --secondary-color: var(--secondary-button-bg);
-  --input-color: hsl(212deg 25% 50%);
+  --primary-color: var(--bg-primary);
+  --secondary-color: var(--bg-secondary);
+  --input-color: var(--fg-input);
 
   // text colors
-  --medium-dark-text-color: var(--gray-550);
-  --medium-text-color: var(--light-text-color);
+  --medium-dark-text-color: var(--fg-subtle);
+  --medium-text-color: var(--fg-subtle);
 
   // font styles
   --font-weight-bold: 700;
 
   // hairline colors
-  --hairline-color: #{color.adjust(hsl(209deg 20% 25%), $alpha: -0.9)};
-  --medium-hairline-color: #cfd8e3; // matches shadow below global header;
-  --dark-hairline-color: #{color.adjust(hsl(210deg 10% 53%), $alpha: -0.5)};
+  --hairline-color: var(--border-hairline);
+  --medium-hairline-color: var(--border-hairline-medium);
+  --dark-hairline-color: var(--border-hairline-dark);
 
   // focus colors
-  --light-focus-color: var(--blue-300);
-  --medium-focus-color: var(--blue-500);
-  --dark-focus-color: #0f74b1;
+  --light-focus-color: var(--focus-outline-light);
+  --medium-focus-color: var(--focus-outline-medium);
+  --dark-focus-color: var(--focus-outline-dark);
 
   // focus rings
-  --light-focus-ring: 0 0 0 1px #5ed0fa,
-    0 0 0 3px #{color.adjust(#5ed0fa, $alpha: -0.3)};
-  --medium-focus-ring: 0 0 0 1px #2bb0ed,
-    0 0 0 3px #{color.adjust(#2bb0ed, $alpha: -0.3)};
-  --dark-focus-ring: 0 0 0 1px #0f74b1,
-    0 0 0 3px #{color.adjust(#0f74b1, $alpha: -0.3)};
+  --light-focus-ring: var(--focus-ring-light);
+  --medium-focus-ring: var(--focus-ring-medium);
+  --dark-focus-ring: var(--focus-ring-dark);
 
   // selection colors
-  --light-sel-color: var(--gray-200);
-  --dark-sel-color: var(--gray-500);
+  --light-sel-color: var(--bg-selection-light);
+  --dark-sel-color: var(--bg-selection-dark);
 
   // alert/notice colors
   --error-color-rgb: 216 31 35;
-  --error-color: rgb(var(--error-color-rgb));
-  --warning-color: var(--amber-700);
-  --warning-background: var(--amber-100);
-  --warning-border-color: var(--amber-300);
-  --success-color: var(--teal-700);
-  --notice-color: var(--sky-700);
-  --notice-background: var(--sky-100);
-  --notice-border-color: var(--sky-300);
+  --error-color: var(--fg-error);
+  --warning-color: var(--fg-warning);
+  --warning-background: var(--bg-warning);
+  --warning-border-color: var(--border-warning);
+  --success-color: var(--fg-success);
+  --notice-color: var(--fg-notice);
+  --notice-background: var(--bg-notice);
+  --notice-border-color: var(--border-notice);
 
   // status colors
-  --enabled-color: var(--teal-550);
-  --pending-color: var(--orange-400);
-  --disabled-color: var(--red-600);
+  --enabled-color: var(--bg-enabled);
+  --pending-color: var(--bg-pending);
+  --disabled-color: var(--bg-disabled);
 
   // misc colors
-  --indicator-border-color: var(--amber-600);
-  --indicator-icon-color: var(--amber-700);
+  --indicator-border-color: var(--border-warning-emphasis);
+  --indicator-icon-color: var(--fg-warning);
 
   // UI element styles
-  --small-border-radius: 3px;
-  --medium-border-radius: 4px;
-  --large-border-radius: 5px;
+  --small-border-radius: var(--radius-sm);
+  --medium-border-radius: var(--radius-md);
+  --large-border-radius: var(--radius-lg);
   --menu-border-radius: var(--medium-border-radius);
+
+  // Variables from _main.scss
+  --ui-control-color: var(--ui-control-fg);
+  --ui-control-hover-color: var(--ui-control-fg-hover);
+  --ui-control-active-color: var(--ui-control-fg-active);
+  --ui-control-static-bg-color: var(--ui-control-bg-static);
+  --ui-control-bg-color: var(--ui-control-bg);
+  --ui-control-hover-bg-color: var(--ui-control-bg-hover);
+  --ui-control-active-bg-color: var(--ui-control-bg-active);
+  --ui-control-border-radius: var(--ui-control-radius);
+  --ui-control-height--small: var(--ui-control-height-small);
+  --light-focus-hsl: 212deg, 96%, 78%;
+  --dark-focus-hsl: 203deg, 84%, 38%;
+  --inner-focus-ring: var(--focus-ring-inner);
+  --touch-target-size: var(--size-touch-target);
+  --icon-size: var(--size-icon);
+  --lh: var(--size-line-height);
+
+  // Sidebar
+  --sidebar-bgColor: var(--sidebar-bg);
+
+  // Nav items (compatibility)
+  --nav-item-badge-bgColor: var(--nav-item-badge-bg);
+  --nav-item-badge-fgColor: var(--nav-item-badge-fg);
+  --nav-item-fgColor-active: var(--nav-item-fg-active);
+  --nav-item-bgColor-active: var(--nav-item-bg-active);
+  --nav-item-fgColor-hover: var(--nav-item-fg-hover);
+  --nav-item-bgColor-hover: var(--nav-item-bg-hover);
 }

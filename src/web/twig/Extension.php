@@ -114,6 +114,16 @@ class Extension extends AbstractExtension implements GlobalsInterface
         return CoreExtension::arrayEvery($env, $array, $arrow);
     }
 
+    /**
+     * Called by:
+     * - has every (operator)
+     * - has some (operator)
+     * - |filter
+     * - |find
+     * - |map
+     * - |reduce
+     * - |sort
+     */
     private static function checkArrowFunction(mixed $arrow, string $thing, string $type): void
     {
         if (
@@ -330,7 +340,6 @@ class Extension extends AbstractExtension implements GlobalsInterface
     /**
      * @inheritdoc
      */
-    /** @phpstan-ignore-next-line */
     public function getOperators(): array
     {
         return [

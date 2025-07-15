@@ -332,6 +332,8 @@ class CategoryQuery extends ElementQuery
      */
     protected function fieldLayouts(): array
     {
+        $this->_normalizeGroupId();
+
         if ($this->groupId) {
             $fieldLayouts = [];
             $categoriesService = Craft::$app->getCategories();

@@ -9,10 +9,12 @@ namespace craft\helpers;
 
 use CommerceGuys\Addressing\Subdivision\SubdivisionRepository as BaseSubdivisionRepository;
 use Craft;
+use craft\assetpreviews\Text;
 use craft\base\Actionable;
 use craft\base\Chippable;
 use craft\base\Colorable;
 use craft\base\CpEditable;
+use craft\base\Describable;
 use craft\base\Element;
 use craft\base\ElementInterface;
 use craft\base\FieldLayoutElement;
@@ -337,7 +339,7 @@ class Cp
             'autoReload' => true,
             'id' => sprintf('chip-%s', mt_rand()),
             'class' => null,
-            'hyperlink' => true,
+            'hyperlink' => false,
             'inputName' => null,
             'inputValue' => null,
             'labelHtml' => null,
@@ -348,6 +350,7 @@ class Cp
             'showStatus' => true,
             'showThumb' => true,
             'showIndicators' => false,
+            'showDescription' => false,
             'size' => self::CHIP_SIZE_SMALL,
             'sortable' => false,
         ];
@@ -357,6 +360,7 @@ class Cp
         $config['showStatus'] = $config['showStatus'] && $component instanceof Statusable;
         $config['showThumb'] = $config['showThumb'] && ($component instanceof Thumbable || $component instanceof Iconic);
         $config['showIndicators'] = $config['showIndicators'] && $component instanceof Indicative;
+        $config['showDescription'] = $config['showDescription'] && $component instanceof Describable;
 
         $color = $component instanceof Colorable ? $component->getColor() : null;
 
@@ -384,6 +388,7 @@ class Cp
                     'showHandle' => $config['showHandle'],
                     'showStatus' => $config['showStatus'],
                     'showThumb' => $config['showThumb'],
+                    'showDescription' => $config['showDescription'],
                     'size' => $config['size'],
                     'ui' => 'chip',
                 ] : false,
@@ -428,7 +433,19 @@ class Cp
                     $labelHtml = Html::a($labelHtml, $url);
                 }
             }
+
+            if ($config['showDescription']) {
+                /** @var Chippable&Describable $component */
+                $description = $component->getDescription();
+                if ($description) {
+                    $labelHtml .= Html::tag('span',
+                        static::parseMarkdown(Html::encode($description)),
+                        ['class' => 'info']);
+                }
+            }
+
             $labelHtml = Html::tag('div', $labelHtml);
+
             if ($config['showHandle']) {
                 /** @var Chippable&Grippable $component */
                 $handle = $component->getHandle();
@@ -613,7 +630,7 @@ class Cp
             'autoReload' => true,
             'context' => 'index',
             'id' => sprintf('card-%s', mt_rand()),
-            'hyperlink' => true,
+            'hyperlink' => false,
             'inputName' => null,
             'selectable' => false,
             'showEditButton' => true,
@@ -1113,7 +1130,7 @@ JS, [
         // the inner span is needed for `text-overflow: ellipsis` (e.g. within breadcrumbs)
         if ($content !== '') {
             if (
-                ($config['hyperlink'] ?? true) &&
+                ($config['hyperlink'] ?? false) &&
                 !$element->trashed &&
                 $config['context'] !== 'modal' &&
                 ($url = $attributes['data']['cp-url'] ?? null)
@@ -1272,7 +1289,7 @@ JS, [
         }
 
         $first = array_shift($elements);
-        $html = Html::beginTag('div', ['class' => 'inline-chips']) .
+        $html = Html::beginTag('div', ['class' => ['inline-chips', 'no-truncate']]) .
             static::elementChipHtml($first, [
                 'showDraftName' => $showDraftName,
                 'showLabel' => $showLabel,
@@ -1671,7 +1688,7 @@ JS, [
         $showLabelExtra = $showAttribute || $showActionMenu || isset($config['labelExtra']);
 
         $instructionsHtml = $instructions
-            ? Html::tag('div', preg_replace('/&amp;(\w+);/', '&$1;', Markdown::process(Html::encodeInvalidTags($instructions), 'gfm-comment')), [
+            ? Html::tag('div', static::parseMarkdown($instructions), [
                 'id' => $instructionsId,
                 'class' => ['instructions'],
             ])
@@ -1824,7 +1841,7 @@ JS, [
             Html::tag('span', "$label ", [
                 'class' => 'visually-hidden',
             ]) .
-            Html::tag('span', preg_replace('/&amp;(\w+);/', '&$1;', Markdown::processParagraph(Html::encodeInvalidTags($message)))) .
+            Html::tag('span', Html::decodeDoubles(Markdown::processParagraph(Html::encodeInvalidTags($message)))) .
             Html::endTag('p');
     }
 
@@ -2723,9 +2740,7 @@ JS, [
             'disabled' => false,
         ];
 
-        /** @var ElementInterface $elementType */
-        $elementType = new ($fieldLayout['type']);
-        $allOptions = $elementType::cardAttributes();
+        $allOptions = $fieldLayout->type::cardAttributes();
 
         foreach ($fieldLayout->getAllElements() as $layoutElement) {
             if ($layoutElement instanceof BaseField && $layoutElement->previewable()) {
@@ -2815,7 +2830,7 @@ JS, [
             'disabled' => false,
         ];
 
-        if ((new ($fieldLayout['type']))->hasThumbs()) {
+        if ($fieldLayout->type::hasThumbs()) {
             $options = [
                 ['label' => Craft::t('app', 'Default'), 'value' => '__default__'],
             ];
@@ -2900,7 +2915,7 @@ JS, [
      */
     public static function cardPreviewHtml(FieldLayout $fieldLayout, array $cardElements = [], $showThumb = false): string
     {
-        $hasThumb = $showThumb ?? $fieldLayout->getThumbField() !== null ? true : (new ($fieldLayout['type']))->hasThumbs();
+        $hasThumb = $showThumb ?? ($fieldLayout->getThumbField() !== null || $fieldLayout->type::hasThumbs());
         $thumbAlignment = $fieldLayout->getCardThumbAlignment();
 
         // get heading
@@ -2916,9 +2931,7 @@ JS, [
         );
 
         // get status label placeholder
-        /** @var ElementInterface $elementType */
-        $elementType = new ($fieldLayout['type']);
-        $labels = [$elementType::hasStatuses() ? static::componentStatusLabelHtml($elementType) : null];
+        $labels = [$fieldLayout->type::hasStatuses() ? static::componentStatusLabelHtml(new ($fieldLayout->type)()) : null];
 
         $previewHtml =
             Html::beginTag('div', [
@@ -2947,7 +2960,7 @@ JS, [
             } elseif (is_array($cardElement) && isset($cardElement['html'])) {
                 $previewHtml .= Html::tag('div', $cardElement['html']);
             } else {
-                $html = $elementType::attributePreviewHtml($cardElement);
+                $html = $fieldLayout->type::attributePreviewHtml($cardElement);
                 if (is_callable($html)) {
                     $html = $html();
                 }
@@ -3041,7 +3054,7 @@ JS, [
             'customizableTabs' => $config['customizableTabs'],
             'customizableUi' => $config['customizableUi'],
             'withCardViewDesigner' => $config['withCardViewDesigner'] ?? false,
-            'alwaysShowThumbAlignmentBtns' => (new ($fieldLayout['type']))->hasThumbs(),
+            'alwaysShowThumbAlignmentBtns' => $fieldLayout->type::hasThumbs(),
             'readOnly' => $config['disabled'],
         ]);
         $namespacedId = $view->namespaceInputId($config['id']);
@@ -3153,7 +3166,11 @@ JS;
             Html::endTag('div') . // .fld-field-library
             ($config['customizableUi']
                 ? Html::beginTag('div', ['class' => ['fld-ui-library', 'hidden']]) .
-                implode('', array_map(fn(FieldLayoutElement $element) => self::layoutElementSelectorHtml($element, true), $availableUiElements)) .
+                implode('', array_map(fn(FieldLayoutElement $element) => self::layoutElementSelectorHtml($element, true, [
+                    'class' => array_filter([
+                        !self::_showFldUiElementSelector($fieldLayout, $element) ? 'hidden' : null,
+                    ]),
+                ]), $availableUiElements)) .
                 Html::endTag('div') // .fld-ui-library
                 : '') .
             Html::endTag('div') . // .fld-library
@@ -3298,6 +3315,14 @@ JS;
         );
     }
 
+    private static function _showFldUiElementSelector(FieldLayout $fieldLayout, FieldLayoutElement $uiElement): bool
+    {
+        return $uiElement->isMultiInstance() ||
+            !$fieldLayout->isUiElementIncluded(
+                fn(FieldLayoutElement $element) => $uiElement::class === $element::class
+            );
+    }
+
     /**
      * Renders a Generated Fields table for a field layout
      *
@@ -3346,6 +3371,7 @@ JS;
             'allowAdd' => true,
             'allowReorder' => true,
             'allowDelete' => true,
+            'static' => $config['disabled'],
         ];
 
         $view = Craft::$app->getView();
@@ -3897,5 +3923,18 @@ JS, [
     public static function reset(): void
     {
         self::$_requestedSite = null;
+    }
+
+    /**
+     * Processes the given text as Markdown, with extra defenses against invalid tags and double-encoded entities.
+     *
+     * @param string $text
+     * @param string $flavor
+     * @return string
+     * @since 5.8.3
+     */
+    public static function parseMarkdown(string $text, string $flavor = 'gfm-comment'): string
+    {
+        return Html::decodeDoubles(Markdown::process(Html::encodeInvalidTags($text), $flavor));
     }
 }

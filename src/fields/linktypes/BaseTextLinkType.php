@@ -44,7 +44,7 @@ abstract class BaseTextLinkType extends BaseLinkType
     {
         $value = str_replace(' ', '+', $value);
 
-        if ($this->supports($value)) {
+        if (str_contains($value, ':') || $this->supports($value)) {
             return $value;
         }
 
@@ -58,6 +58,9 @@ abstract class BaseTextLinkType extends BaseLinkType
     {
         foreach ((array)$this->urlPrefix() as $prefix) {
             $value = Str::chopStart($value, $prefix);
+        }
+        if (preg_match('/^[^\/]+\/$/', $value)) {
+            $value = rtrim($value, '/');
         }
         return $value;
     }

@@ -21,7 +21,9 @@ use craft\helpers\Gql as GqlHelper;
 use craft\models\GqlSchema;
 use craft\models\TagGroup;
 use craft\services\Gql as GqlService;
+use DOMElement;
 use GraphQL\Type\Definition\Type;
+use Symfony\Component\DomCrawler\Crawler;
 
 /**
  * Tags represents a Tags field.
@@ -86,6 +88,22 @@ class Tags extends BaseRelationField
      * @see _getTagGroupUid()
      */
     private string|false $_tagGroupUid;
+
+    /**
+     * @inheritdoc
+     */
+    public function getSettingsHtml(): ?string
+    {
+        $html = parent::getSettingsHtml();
+
+        // Remove the “Show the search input” field
+        $crawler = new Crawler("<html><body>$html</body></html>");
+        /** @var DOMElement $node */
+        $node = $crawler->filter('#show-search-input-field')->getNode(0);
+        $node->remove();
+
+        return $crawler->filter('body')->first()->html();
+    }
 
     /**
      * @inheritdoc

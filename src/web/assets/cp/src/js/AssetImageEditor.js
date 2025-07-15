@@ -3,6 +3,7 @@
 
 /**
  * Asset image editor class
+ * @property {fabric.Rect|null} croppingRectangle The rectangle representing the cropping area on the image within the image editor
  * @property {Object} imageVerticeCoords - The corner coordinates of the image being edited
  */
 
@@ -20,6 +21,8 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
     $editorContainer: null,
     $straighten: null,
     $croppingCanvas: null,
+    $cropperMoveBtn: null,
+    $cropperEditBtn: null,
     $spinner: null,
     $constraintContainer: null,
     $constraintRadioInputs: null,
@@ -36,10 +39,13 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
     grid: null,
     croppingCanvas: null,
     clipper: null,
+    cropperHandleIndicator: null,
     croppingRectangle: null,
     cropperHandles: null,
     cropperGrid: null,
     croppingShade: null,
+    mediumBlueColor: null,
+    moveIcon: null,
 
     // Image state attributes
     imageStraightenAngle: 0,
@@ -55,9 +61,12 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
     assetId: null,
     cacheBust: null,
     draggingCropper: false,
+    movingCropper: false,
     scalingCropper: false,
-    handleClicked: false,
+    handlePicked: false,
     draggingFocal: false,
+    cropperPickedUp: false,
+    cropperEditBtnFocused: null,
     focalPickedUp: false,
     focalClicked: false,
     cropperClicked: false,
@@ -78,6 +87,9 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
     constraintOrientation: 'landscape',
     showingCustomConstraint: false,
     saving: false,
+    nonDragEditMode: false,
+
+    announcerTimeout: null,
 
     // Rendering proxy functions
     renderImage: null,
@@ -148,6 +160,12 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
       Craft.sendActionRequest('POST', 'assets/image-editor', {
         data: {assetId},
       }).then((response) => this.loadEditor(response.data));
+
+      // Get colors
+      const root = document.documentElement;
+      const rootStyles = window.getComputedStyle(root);
+      this.mediumBlueColor = rootStyles.getPropertyValue('--blue-500');
+      this.addLiveRegion();
     },
 
     /**
@@ -191,6 +209,29 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
       this.$focalPointBtn = $('.focal-point', this.$body);
       this.editorHeight = this.$editorContainer.innerHeight();
       this.editorWidth = this.$editorContainer.innerWidth();
+
+      // Keyboard accessibility
+      this.$cropperMoveBtn = $('#cropper-handle', this.$body);
+      this.$cropperEditBtn = $('[data-crop-editor]', this.$body);
+
+      // Get SVG to use for move/active indicator
+      const $moveSvg = $('#move-icon-wrapper svg').prop('outerHTML');
+
+      // Store move icon for later use
+      fabric.loadSVGFromString($moveSvg, (objects, options) => {
+        var obj = fabric.util.groupSVGElements(objects, options);
+        obj.set({
+          left: 0,
+          top: 0,
+          scaleX: 0.03,
+          scaleY: 0.03,
+          originX: 'center',
+          originY: 'center',
+          fill: 'white',
+        });
+
+        this.moveIcon = obj;
+      });
 
       this._showSpinner();
 
@@ -852,6 +893,24 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
       });
       this.addListener($('.flip-horizontal'), 'click', function () {
         this.flipImage('x');
+      });
+
+      // Cropper
+      this.addListener(this.$cropperEditBtn, 'click', (ev) => {
+        this._handleCropperEditBtnClick(ev);
+      });
+      this.addListener(this.$cropperEditBtn, 'keydown', (ev) => {
+        this._handleKeydownOnCropperEditBtn(ev);
+      });
+      this.addListener(this.$cropperEditBtn, 'blur', (ev) => {
+        this._handleCropperEditBtnBlur(ev);
+        this._redrawCropperElements();
+        this.renderCropper();
+      });
+      this.addListener(this.$cropperEditBtn, 'focus', (ev) => {
+        this.cropperEditBtnFocused = $(ev.target);
+        this._redrawCropperElements();
+        this.renderCropper();
       });
 
       // Straighten slider
@@ -1802,7 +1861,7 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
         var grid = [
           new fabric.Rect({
             strokeWidth: 2,
-            stroke: 'rgba(255,255,255,1)',
+            stroke: this.settings.colors.white,
             originX: 'center',
             originY: 'center',
             width: gridWidth,
@@ -2105,7 +2164,7 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
     _setupCropperLayer: function (clipperData) {
       // Set up the canvas for cropper
       this.croppingCanvas = new fabric.StaticCanvas('cropping-canvas', {
-        backgroundColor: 'rgba(0,0,0,0)',
+        backgroundColor: this.settings.colors.transparent,
         hoverCursor: 'default',
         selection: false,
       });
@@ -2133,7 +2192,7 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
         originY: 'center',
         width: this.editorWidth,
         height: this.editorHeight,
-        fill: 'rgba(0,0,0,0.7)',
+        fill: this.settings.colors.transparentBlack,
       });
 
       // Calculate the cropping rectangle size
@@ -2187,9 +2246,15 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
         this.croppingCanvas.remove(this.cropperGrid);
         this.croppingCanvas.remove(this.croppingRectangle);
       }
+
+      if (this.cropperHandleIndicator) {
+        this.croppingCanvas.remove(this.cropperHandleIndicator);
+        this.cropperHandleIndicator = null;
+      }
+
       this._redrawCropperElements._.lineOptions = {
         strokeWidth: 4,
-        stroke: 'rgb(255,255,255)',
+        stroke: this.settings.colors.white,
         fill: false,
       };
 
@@ -2250,18 +2315,10 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
         }
       );
 
+      this.cropperHandleIndicator = this._getCropperHandleIndicator();
+
       // Don't forget the rectangle
-      this.croppingRectangle = new fabric.Rect({
-        left: this.clipper.left,
-        top: this.clipper.top,
-        width: this.clipper.width,
-        height: this.clipper.height,
-        fill: 'rgba(0,0,0,0)',
-        stroke: 'rgba(255,255,255,0.8)',
-        strokeWidth: 2,
-        originX: 'center',
-        originY: 'center',
-      });
+      this.croppingRectangle = this._getCroppingRectangle();
 
       this.cropperGrid = new fabric.Group(
         [
@@ -2312,7 +2369,8 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 
       this._redrawCropperElements._.cropTextTop =
         this.croppingRectangle.top + this.clipper.height / 2 + 12;
-      this._redrawCropperElements._.cropTextBackgroundColor = 'rgba(0,0,0,0)';
+      this._redrawCropperElements._.cropTextBackgroundColor =
+        this.settings.colors.transparent;
 
       if (
         this._redrawCropperElements._.cropTextTop + 12 >
@@ -2323,9 +2381,190 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
           'rgba(0,0,0,0.5)';
       }
 
+      this.croppingCanvas.add(this.croppingRectangle);
       this.croppingCanvas.add(this.cropperHandles);
       this.croppingCanvas.add(this.cropperGrid);
-      this.croppingCanvas.add(this.croppingRectangle);
+
+      if (this.cropperHandleIndicator) {
+        this.croppingCanvas.add(this.cropperHandleIndicator);
+      }
+    },
+
+    /**
+     * Whether the cropping rectangle edit button is focused.
+     * @returns {boolean}
+     */
+    _getCroppingRectangleEditBtnIsFocused: function () {
+      if (this.cropperEditBtnFocused) {
+        // Check button properties. If rectangle, use rectangle styles
+        const cropperElement = this._getCropperElementFromEditBtn(
+          this.cropperEditBtnFocused
+        );
+
+        if (cropperElement === 'rectangle') {
+          return true;
+        }
+
+        return false;
+      }
+    },
+
+    /**
+     * Whether one of the handle edit buttons is focused.
+     * @returns {boolean}
+     */
+    _getCropperHandleEditBtnIsFocused: function () {
+      if (this.cropperEditBtnFocused) {
+        // Check button properties. If rectangle, use rectangle styles
+        const cropperElement = this._getCropperElementFromEditBtn(
+          this.cropperEditBtnFocused
+        );
+
+        if (cropperElement !== 'rectangle') {
+          return true;
+        }
+
+        return false;
+      }
+    },
+
+    /**
+     * Creates and returns a cropping rectangle group.
+     * @returns {fabric.Group} The created rectangle group.
+     */
+    _getCroppingRectangle: function () {
+      const strokeWidth = 2;
+      const width = this.clipper.width;
+      const height = this.clipper.height;
+      const rectangleOptions = {
+        fill: this.settings.colors.transparent,
+        top: 0,
+        left: 0,
+        strokeWidth: strokeWidth,
+        originX: 'center',
+        originY: 'center',
+      };
+
+      const outerOutline = new fabric.Rect({
+        width: width + strokeWidth * 4,
+        height: height + strokeWidth * 4,
+        stroke: null,
+        ...rectangleOptions,
+      });
+
+      const innerOutline = new fabric.Rect({
+        width: width + strokeWidth * 2,
+        height: height + strokeWidth * 2,
+        stroke: null,
+        ...rectangleOptions,
+      });
+
+      const cropperRectangle = new fabric.Rect({
+        width: width,
+        height: height,
+        stroke: this.settings.colors.white,
+        ...rectangleOptions,
+      });
+
+      const group = new fabric.Group(
+        [outerOutline, innerOutline, cropperRectangle],
+        {
+          originX: 'center',
+          originY: 'center',
+          left: this.clipper.left,
+          top: this.clipper.top,
+        }
+      );
+
+      if (
+        this.cropperPickedUp ||
+        this._getCroppingRectangleEditBtnIsFocused()
+      ) {
+        outerOutline.set({
+          stroke: this.settings.colors.white,
+        });
+        innerOutline.set({
+          stroke: this.mediumBlueColor,
+        });
+
+        if (this.cropperPickedUp) {
+          // Create a background for the move icon to exist on
+          const moveIconBackground = new fabric.Circle({
+            fill: this.settings.colors.black,
+            top: 0,
+            left: 0,
+            radius: 15,
+            stroke: this.settings.colors.white,
+            strokeWidth: 2,
+            originX: 'center',
+            originY: 'center',
+          });
+          group.add(moveIconBackground);
+          group.add(this.moveIcon);
+        }
+      }
+
+      return group;
+    },
+
+    /**
+     * Creates and returns a cropper handle indicator group.
+     * @returns {fabric.Group} The created cropper handle indicator group.
+     */
+    _getCropperHandleIndicator: function () {
+      if (!this._getCropperHandleEditBtnIsFocused() && !this.handlePicked)
+        return;
+
+      const handle = this.handlePicked
+        ? this.handlePicked
+        : this._getCropperElementFromEditBtn(this.cropperEditBtnFocused);
+
+      let handleCoordinates = this._getClipperHandlePosition(handle);
+      const size = 12;
+      const width = 3;
+      const commonProps = {
+        fill: null,
+        strokeWidth: width,
+        left: 0,
+        top: 0,
+        originX: 'center',
+        originY: 'center',
+      };
+
+      const innerRing = new fabric.Circle({
+        radius: size,
+        stroke: this.mediumBlueColor,
+        ...commonProps,
+      });
+
+      const centerRing = new fabric.Circle({
+        radius: size + width,
+        stroke: this.settings.colors.white,
+        ...commonProps,
+      });
+
+      const outerRing = new fabric.Circle({
+        radius: size + width * 2,
+        stroke: this.mediumBlueColor,
+        ...commonProps,
+      });
+
+      const focusRing = new fabric.Group([outerRing, centerRing, innerRing], {
+        originX: 'center',
+        originY: 'center',
+        left: handleCoordinates.x,
+        top: handleCoordinates.y,
+      });
+
+      if (this.handlePicked) {
+        focusRing.add(this.moveIcon);
+
+        focusRing.item(0).set({
+          fill: this.settings.colors.transparentBlack,
+        });
+      }
+
+      return focusRing;
     },
 
     /**
@@ -2412,6 +2651,219 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
     },
 
     /**
+     * Handle click events on the cropper rectangle or cropper handle edit buttons.
+     * @param ev
+     */
+    _handleCropperEditBtnClick: function (ev) {
+      const $btn = $(ev.target.closest('button'));
+      const btnPressed = $btn.attr('aria-pressed') === 'true';
+      const itemPicked = this._getCropperElementFromEditBtn($btn);
+
+      if (btnPressed) {
+        this.nonDragEditMode = false;
+        this._dropCropperElement(itemPicked);
+      } else {
+        this.nonDragEditMode = true;
+        this._pickUpCropperElement(itemPicked);
+      }
+    },
+
+    /**
+     * Get a string containing the position of an item relative to the image.
+     * @param item
+     * @returns {string} The message containing the relative position of the item.
+     */
+    _getRelativePositionMessage: function (item) {
+      if (!item.left || !item.top) return;
+
+      const xPercent = (
+        ((item.left - this.image.left + this.image.width / 2) /
+          this.image.width) *
+        100
+      ).toFixed(1);
+      const yPercent = (
+        ((item.top - this.image.top + this.image.height / 2) /
+          this.image.height) *
+        100
+      ).toFixed(1);
+
+      return `Centered at X axis: ${xPercent}%, Y axis: ${yPercent}%.`;
+    },
+
+    /**
+     * Get a string containing the size and position of an item relative to the image.
+     * @param item
+     * @returns {string} The message containing the size and relative position of the item.
+     */
+    _getSizeAndRelativePositionMessage: function (item) {
+      const positionMessage = this._getRelativePositionMessage(item);
+      const sizeMessage = `Crop rectangle width: ${item.width}px, height:${item.height}px.`;
+
+      return `${sizeMessage} ${positionMessage}`;
+    },
+
+    /**
+     * Sends a message to the global announcer.
+     * @param {string} message
+     */
+    _announce: function (message) {
+      if (this.announceTimeout) {
+        clearTimeout(this.announceTimeout);
+      }
+      this.announceTimeout = setTimeout(() => {
+        Craft.cp.announce(message);
+        this.announceTimeout = null;
+      }, 300);
+    },
+
+    /**
+     * Returns the cropper element type from the edit button.
+     * @param $btn
+     * @returns {'rectangle'|'tl'|'t'|'tr'|'l'|'r'|'bl'|'b'|'br'}
+     */
+    _getCropperElementFromEditBtn: function ($btn) {
+      return $($btn).attr('data-crop-editor');
+    },
+
+    /**
+     * Returns the edit button for a given cropper element handle.
+     * @param {string} element - The cropper element handle, e.g. 'rectangle', 'tl', 't', etc.
+     * @returns {jQuery}
+     */
+    _getCropperEditBtnFromElementHandle: function (element) {
+      return this.$cropperEditBtn.filter(`[data-crop-editor="${element}"]`);
+    },
+
+    /**
+     * Pick up a cropper element given its handle.
+     * @param {string} element - The cropper element handle, e.g. 'rectangle', 'tl', 't', etc.
+     */
+    _pickUpCropperElement: function (element) {
+      this.cropperPickedUp = false;
+      this.handlePicked = false;
+
+      let stateMessage = '';
+      let positionMessage = '';
+      let instructionMessage = '';
+
+      const $btn = this._getCropperEditBtnFromElementHandle(element);
+      $btn.attr('aria-pressed', 'true');
+      const itemName = $btn.find('[data-item-name]').text();
+
+      if (element === 'rectangle') {
+        this.cropperPickedUp = true;
+        positionMessage = this._getRelativePositionMessage(this.clipper);
+      } else {
+        $btn.attr('aria-pressed', 'true');
+        this.handlePicked = element;
+      }
+
+      stateMessage = Craft.t('app', '{item} picked up.', {
+        item: itemName,
+      });
+
+      instructionMessage += Craft.t(
+        'app',
+        'Use the arrow keys to change position, Tab or Spacebar to drop.'
+      );
+
+      this._announce(
+        `${stateMessage} ${positionMessage} ${instructionMessage}`
+      );
+
+      this._redrawCropperElements();
+      this.renderCropper();
+    },
+
+    /**
+     * Drops a cropper element given its handle.
+     * @param {string} element - The cropper element handle, e.g. 'rectangle', 'tl', 't', etc.
+     */
+    _dropCropperElement: function (element) {
+      const $btn = this._getCropperEditBtnFromElementHandle(element);
+      const itemName = $btn.find('[data-item-name]').text();
+
+      // Messages
+      let stateMessage = '';
+      let positionMessage = '';
+
+      // Defaults
+      this.cropperPickedUp = false;
+      this.handlePicked = false;
+      $btn.attr('aria-pressed', 'false');
+
+      stateMessage = Craft.t('app', '{item} dropped.', {
+        item: itemName,
+      });
+
+      this._announce(`${stateMessage} ${positionMessage}`);
+
+      this._redrawCropperElements();
+      this.renderCropper();
+    },
+
+    _toggleFocalModeStyles: function () {
+      let indicatorStrokeWidth;
+      let indicatorFill;
+
+      if (this.focalPickedUp) {
+        indicatorStrokeWidth = 2;
+        indicatorFill = 'rgba(0,0,0,0.5)';
+        $('.body').css('cursor', 'grabbing');
+      } else {
+        indicatorStrokeWidth = 0;
+        indicatorFill = this.settings.colors.transparent;
+        $('.body').css('cursor', 'pointer');
+      }
+
+      this.focalPointPickedIndicator.set({
+        strokeWidth: indicatorStrokeWidth,
+        fill: indicatorFill,
+      });
+
+      this.canvas.renderAll();
+    },
+
+    /**
+     * Handle keydown events on the cropper rectangle or cropper handle edit buttons.
+     * @param ev
+     */
+    _handleKeydownOnCropperEditBtn: function (ev) {
+      const {target} = ev;
+
+      if (!this.focalPoint && !this.cropperPickedUp && !this.handlePicked)
+        return;
+
+      const isDirectionalKey = [
+        Garnish.LEFT_KEY,
+        Garnish.RIGHT_KEY,
+        Garnish.UP_KEY,
+        Garnish.DOWN_KEY,
+      ].includes(ev.keyCode);
+
+      if (!isDirectionalKey) return;
+
+      event.preventDefault();
+
+      if (this.croppingCanvas) {
+        this._handleCropperKeyboardEdit(ev);
+      }
+    },
+
+    _handleCropperEditBtnBlur: function (ev) {
+      const $btn = $(ev.target.closest('button'));
+      const btnPressed = $btn.attr('aria-pressed') !== 'false';
+
+      this.cropperEditBtnFocused = null;
+      this.nonDragEditMode = false;
+
+      if (btnPressed) {
+        const elementToDrop = this._getCropperElementFromEditBtn($btn);
+        this._dropCropperElement(elementToDrop);
+      }
+    },
+
+    /**
      * Handle the mouse being clicked.
      *
      * @param {Object} ev
@@ -2429,33 +2881,11 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
         if (focal) {
           this.focalClicked = true;
         } else if (handle) {
-          this.handleClicked = handle;
+          this.handlePicked = handle;
         } else if (move) {
           this.cropperClicked = true;
         }
       }
-    },
-
-    _toggleFocalModeStyles: function () {
-      let indicatorStrokeWidth;
-      let indicatorFill;
-
-      if (this.focalPickedUp) {
-        indicatorStrokeWidth = 2;
-        indicatorFill = 'rgba(0,0,0,0.5)';
-        $('.body').css('cursor', 'grabbing');
-      } else {
-        indicatorStrokeWidth = 0;
-        indicatorFill = 'rgba(0,0,0,0)';
-        $('.body').css('cursor', 'pointer');
-      }
-
-      this.focalPointPickedIndicator.set({
-        strokeWidth: indicatorStrokeWidth,
-        fill: indicatorFill,
-      });
-
-      this.canvas.renderAll();
     },
 
     /**
@@ -2464,6 +2894,8 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
      * @param {Object} ev
      */
     _handleMouseMove: function (ev) {
+      if (this.nonDragEditMode) return;
+
       if (this.mouseMoveEvent !== null) {
         Garnish.requestAnimationFrame(this._handleMouseMoveInternal.bind(this));
       }
@@ -2480,7 +2912,7 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
         this._handleFocalDrag(this.mouseMoveEvent);
         this.storeFocalPointState();
         this.renderImage();
-      } else if (this.cropperClicked || this.handleClicked) {
+      } else if (this.cropperClicked || this.handlePicked) {
         if (this.cropperClicked) {
           this.draggingCropper = true;
           this._handleCropperDrag(this.mouseMoveEvent);
@@ -2529,7 +2961,7 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 
       // Reset scaling
       this.scalingCropper = false;
-      this.handleClicked = false;
+      this.handlePicked = false;
 
       // Reset focal
       this.draggingFocal = false;
@@ -2605,6 +3037,285 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
     },
 
     /**
+     * Returns the rectangle properties of the clipper.
+     * @returns {{left: number, top: number, width: number, height: number}}
+     */
+    _getClipperRectProperties: function () {
+      return {
+        left: this.clipper.left - this.clipper.width / 2,
+        top: this.clipper.top - this.clipper.height / 2,
+        width: this.clipper.width,
+        height: this.clipper.height,
+      };
+    },
+
+    /**
+     * Returns the x and y coordinates of the clipper handles.
+     *
+     * @param {'tl'|'t'|'tr'|'r'|'br'|'b'|'bl'|'l'} handle
+     */
+    _getClipperHandlePosition: function (handle) {
+      let position = {
+        x: null,
+        y: null,
+      };
+
+      switch (handle) {
+        case 'tl':
+          position.x = this.clipper.left - this.clipper.width / 2;
+          position.y = this.clipper.top - this.clipper.height / 2;
+          break;
+        case 't':
+          position.x = this.clipper.left;
+          position.y = this.clipper.top - this.clipper.height / 2;
+          break;
+        case 'b':
+          position.x = this.clipper.left;
+          position.y = this.clipper.top + this.clipper.height / 2;
+          break;
+        case 'tr':
+          position.x = this.clipper.left + this.clipper.width / 2;
+          position.y = this.clipper.top - this.clipper.height / 2;
+          break;
+        case 'r':
+          position.x = this.clipper.left + this.clipper.width / 2;
+          position.y = this.clipper.top;
+          break;
+        case 'l':
+          position.x = this.clipper.left - this.clipper.width / 2;
+          position.y = this.clipper.top;
+          break;
+        case 'br':
+          position.x = this.clipper.left + this.clipper.width / 2;
+          position.y = this.clipper.top + this.clipper.height / 2;
+          break;
+        case 'bl':
+          position.x = this.clipper.left - this.clipper.width / 2;
+          position.y = this.clipper.top + this.clipper.height / 2;
+          break;
+      }
+
+      return position;
+    },
+
+    /**
+     * Handle keyboard events for editing the cropper.
+     * @param ev
+     */
+    _handleCropperKeyboardEdit: function (ev) {
+      let direction;
+
+      // Figure out which direction to move the cropper
+      switch (ev.keyCode) {
+        case Garnish.LEFT_KEY:
+          direction = 'left';
+          break;
+        case Garnish.RIGHT_KEY:
+          direction = 'right';
+          break;
+        case Garnish.UP_KEY:
+          direction = 'up';
+          break;
+        case Garnish.DOWN_KEY:
+          direction = 'down';
+          break;
+      }
+
+      const deltaValues = this._getDeltaValuesFromDirection(direction);
+
+      if (this.cropperPickedUp) {
+        this._moveCropperByDelta(deltaValues.deltaX, deltaValues.deltaY);
+      } else if (this.handlePicked) {
+        this._resizeCropperByHandleAndDeltas(this.handlePicked, {
+          x: deltaValues.deltaX,
+          y: deltaValues.deltaY,
+        });
+      }
+    },
+
+    /**
+     * Resizes the cropper rectangle by a handle, given an object with deltas.
+     * @param {string} handle - The handle to resize the cropper by.
+     * @param {{x: number, y: number}} deltas
+     */
+    _resizeCropperByHandleAndDeltas: function (handle, deltas) {
+      if (typeof this._resizeCropperByHandleAndDeltas._ === 'undefined') {
+        this._resizeCropperByHandleAndDeltas._ = {};
+      }
+
+      // Translate from center-center origin to absolute coords
+      this._resizeCropperByHandleAndDeltas._.startingRectangle =
+        this._getClipperRectProperties();
+
+      this._resizeCropperByHandleAndDeltas._.rectangle =
+        this._calculateNewCropperSizeByDeltas(
+          this._resizeCropperByHandleAndDeltas._.startingRectangle,
+          deltas.x,
+          deltas.y,
+          handle
+        );
+
+      if (
+        this._resizeCropperByHandleAndDeltas._.rectangle.height < 30 ||
+        this._resizeCropperByHandleAndDeltas._.rectangle.width < 30
+      ) {
+        return;
+      }
+
+      if (
+        !this.arePointsInsideRectangle(
+          this._getRectangleVertices(
+            this._resizeCropperByHandleAndDeltas._.rectangle
+          ),
+          this.imageVerticeCoords
+        )
+      ) {
+        return;
+      }
+
+      // Translate back to center-center origin.
+      this.clipper.set({
+        top:
+          this._resizeCropperByHandleAndDeltas._.rectangle.top +
+          this._resizeCropperByHandleAndDeltas._.rectangle.height / 2,
+        left:
+          this._resizeCropperByHandleAndDeltas._.rectangle.left +
+          this._resizeCropperByHandleAndDeltas._.rectangle.width / 2,
+        width: this._resizeCropperByHandleAndDeltas._.rectangle.width,
+        height: this._resizeCropperByHandleAndDeltas._.rectangle.height,
+      });
+
+      this._redrawCropperElements();
+      this._announce(this._getSizeAndRelativePositionMessage(this.clipper));
+    },
+
+    /**
+     * Gets the delta values based on the direction.
+     * @param direction
+     * @returns {{deltaX: number, deltaY: number}}
+     */
+    _getDeltaValuesFromDirection: function (direction) {
+      const base = 5;
+
+      let values = {
+        deltaX: 0,
+        deltaY: 0,
+      };
+
+      switch (direction) {
+        case 'up':
+          values.deltaY = base * -1;
+          break;
+        case 'down':
+          values.deltaY = base;
+          break;
+        case 'left':
+          values.deltaX = base * -1;
+          break;
+        case 'right':
+          values.deltaX = base;
+          break;
+      }
+
+      return values;
+    },
+
+    /**
+     * Moves the cropper rectangle by a given delta.
+     * @param deltaX
+     * @param deltaY
+     */
+    _moveCropperByDelta: function (deltaX, deltaY) {
+      if (typeof this._moveCropperByDelta._ === 'undefined') {
+        this._moveCropperByDelta._ = {};
+      }
+
+      this._moveCropperByDelta._.deltaX = deltaX;
+      this._moveCropperByDelta._.deltaY = deltaY;
+      this._moveCropperByDelta._.rectangle = this._getClipperRectProperties();
+
+      const newVertices = this._getRectangleVertices(
+        this._moveCropperByDelta._.rectangle,
+        this._moveCropperByDelta._.deltaX,
+        this._moveCropperByDelta._.deltaY
+      );
+
+      // // If this would drag it outside of the image
+      if (
+        !this.arePointsInsideRectangle(newVertices, this.imageVerticeCoords)
+      ) {
+        const {farthest, farthestDeltas} =
+          this._getFarthestAllowedDeltasForRectangle(
+            this._moveCropperByDelta._.rectangle,
+            {
+              x: this._moveCropperByDelta._.deltaX,
+              y: this._moveCropperByDelta._.deltaY,
+            }
+          );
+
+        if (farthest == 0) {
+          return;
+        } else {
+          this._moveCropperByDelta._.deltaX = farthestDeltas.x;
+          this._moveCropperByDelta._.deltaY = farthestDeltas.y;
+        }
+      }
+
+      this.clipper.set({
+        left: this.clipper.left + this._moveCropperByDelta._.deltaX,
+        top: this.clipper.top + this._moveCropperByDelta._.deltaY,
+      });
+
+      this._announce(this._getRelativePositionMessage(this.clipper));
+
+      this._redrawCropperElements();
+      this.storeCropperState();
+      this.renderCropper();
+    },
+
+    /**
+     * Try to find the farthest possible placement based on the proposed move.
+     * @param moveObj
+     */
+    _getFarthestAllowedDeltasForRectangle: function (rectangle, deltas) {
+      // Delta iterator setup
+      let dxi = 0;
+      let dyi = 0;
+      let xStep = deltas.x > 0 ? -1 : 1;
+      let yStep = deltas.y > 0 ? -1 : 1;
+
+      const calculatedMove = {
+        farthest: 0,
+        farthestDeltas: {},
+      };
+
+      // Loop through every combination of dragging it not so far
+      for (dxi = Math.min(Math.abs(deltas.x), 10); dxi >= 0; dxi--) {
+        for (dyi = Math.min(Math.abs(deltas.y), 10); dyi >= 0; dyi--) {
+          const vertices = this._getRectangleVertices(
+            rectangle,
+            dxi * (deltas.x > 0 ? 1 : -1),
+            dyi * (deltas.y > 0 ? 1 : -1)
+          );
+
+          if (
+            this.arePointsInsideRectangle(vertices, this.imageVerticeCoords)
+          ) {
+            if (dxi + dyi > calculatedMove.farthest) {
+              calculatedMove.farthest = dxi + dyi;
+              calculatedMove.farthestDeltas = {
+                x: dxi * (deltas.x > 0 ? 1 : -1),
+                y: dyi * (deltas.y > 0 ? 1 : -1),
+              };
+            }
+          }
+        }
+      }
+
+      return calculatedMove;
+    },
+
+    /**
      * Handle cropper being dragged.
      *
      * @param {Object} ev
@@ -2624,12 +3335,7 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
         return false;
       }
 
-      this._handleCropperDrag._.rectangle = {
-        left: this.clipper.left - this.clipper.width / 2,
-        top: this.clipper.top - this.clipper.height / 2,
-        width: this.clipper.width,
-        height: this.clipper.height,
-      };
+      this._handleCropperDrag._.rectangle = this._getClipperRectProperties();
 
       this._handleCropperDrag._.vertices = this._getRectangleVertices(
         this._handleCropperDrag._.rectangle,
@@ -2644,78 +3350,21 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
           this.imageVerticeCoords
         )
       ) {
-        // Try to find the furthest point in the same general direction where we can drag it
-
-        // Delta iterator setup
-        this._handleCropperDrag._.dxi = 0;
-        this._handleCropperDrag._.dyi = 0;
-        this._handleCropperDrag._.xStep =
-          this._handleCropperDrag._.deltaX > 0 ? -1 : 1;
-        this._handleCropperDrag._.yStep =
-          this._handleCropperDrag._.deltaY > 0 ? -1 : 1;
-
-        // The furthest we can move
-        this._handleCropperDrag._.furthest = 0;
-        this._handleCropperDrag._.furthestDeltas = {};
-
-        // Loop through every combination of dragging it not so far
-        for (
-          this._handleCropperDrag._.dxi = Math.min(
-            Math.abs(this._handleCropperDrag._.deltaX),
-            10
-          );
-          this._handleCropperDrag._.dxi >= 0;
-          this._handleCropperDrag._.dxi--
-        ) {
-          for (
-            this._handleCropperDrag._.dyi = Math.min(
-              Math.abs(this._handleCropperDrag._.deltaY),
-              10
-            );
-            this._handleCropperDrag._.dyi >= 0;
-            this._handleCropperDrag._.dyi--
-          ) {
-            this._handleCropperDrag._.vertices = this._getRectangleVertices(
-              this._handleCropperDrag._.rectangle,
-              this._handleCropperDrag._.dxi *
-                (this._handleCropperDrag._.deltaX > 0 ? 1 : -1),
-              this._handleCropperDrag._.dyi *
-                (this._handleCropperDrag._.deltaY > 0 ? 1 : -1)
-            );
-
-            if (
-              this.arePointsInsideRectangle(
-                this._handleCropperDrag._.vertices,
-                this.imageVerticeCoords
-              )
-            ) {
-              if (
-                this._handleCropperDrag._.dxi + this._handleCropperDrag._.dyi >
-                this._handleCropperDrag._.furthest
-              ) {
-                this._handleCropperDrag._.furthest =
-                  this._handleCropperDrag._.dxi + this._handleCropperDrag._.dyi;
-                this._handleCropperDrag._.furthestDeltas = {
-                  x:
-                    this._handleCropperDrag._.dxi *
-                    (this._handleCropperDrag._.deltaX > 0 ? 1 : -1),
-                  y:
-                    this._handleCropperDrag._.dyi *
-                    (this._handleCropperDrag._.deltaY > 0 ? 1 : -1),
-                };
-              }
+        const {farthest, farthestDeltas} =
+          this._getFarthestAllowedDeltasForRectangle(
+            this._handleCropperDrag._.rectangle,
+            {
+              x: this._handleCropperDrag._.deltaX,
+              y: this._handleCropperDrag._.deltaY,
             }
-          }
-        }
+          );
 
         // REALLY can't drag along the cursor movement
-        if (this._handleCropperDrag._.furthest == 0) {
+        if (farthest == 0) {
           return;
         } else {
-          this._handleCropperDrag._.deltaX =
-            this._handleCropperDrag._.furthestDeltas.x;
-          this._handleCropperDrag._.deltaY =
-            this._handleCropperDrag._.furthestDeltas.y;
+          this._handleCropperDrag._.deltaX = farthestDeltas.x;
+          this._handleCropperDrag._.deltaY = farthestDeltas.y;
         }
       }
 
@@ -2847,12 +3496,8 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
       this.animationInProgress = true;
 
       // Mock the clipping rectangle for collision tests
-      this.enforceCroppingConstraint._.rectangle = {
-        left: this.clipper.left - this.clipper.width / 2,
-        top: this.clipper.top - this.clipper.height / 2,
-        width: this.clipper.width,
-        height: this.clipper.height,
-      };
+      this.enforceCroppingConstraint._.rectangle =
+        this._getClipperRectProperties();
 
       // If wider than it should be
       if (this.clipper.width > this.clipper.height * this.croppingConstraint) {
@@ -2946,11 +3591,11 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
       this._handleCropperResize._.deltaX = ev.pageX - this.previousMouseX;
       this._handleCropperResize._.deltaY = ev.pageY - this.previousMouseY;
 
-      if (this.handleClicked === 'b' || this.handleClicked === 't') {
+      if (this.handlePicked === 'b' || this.handlePicked === 't') {
         this._handleCropperResize._.deltaX = 0;
       }
 
-      if (this.handleClicked === 'l' || this.handleClicked === 'r') {
+      if (this.handlePicked === 'l' || this.handlePicked === 'r') {
         this._handleCropperResize._.deltaY = 0;
       }
 
@@ -2961,51 +3606,10 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
         return;
       }
 
-      // Translate from center-center origin to absolute coords
-      this._handleCropperResize._.startingRectangle = {
-        left: this.clipper.left - this.clipper.width / 2,
-        top: this.clipper.top - this.clipper.height / 2,
-        width: this.clipper.width,
-        height: this.clipper.height,
-      };
-
-      this._handleCropperResize._.rectangle =
-        this._calculateNewCropperSizeByDeltas(
-          this._handleCropperResize._.startingRectangle,
-          this._handleCropperResize._.deltaX,
-          this._handleCropperResize._.deltaY,
-          this.handleClicked
-        );
-
-      if (
-        this._handleCropperResize._.rectangle.height < 30 ||
-        this._handleCropperResize._.rectangle.width < 30
-      ) {
-        return;
-      }
-
-      if (
-        !this.arePointsInsideRectangle(
-          this._getRectangleVertices(this._handleCropperResize._.rectangle),
-          this.imageVerticeCoords
-        )
-      ) {
-        return;
-      }
-
-      // Translate back to center-center origin.
-      this.clipper.set({
-        top:
-          this._handleCropperResize._.rectangle.top +
-          this._handleCropperResize._.rectangle.height / 2,
-        left:
-          this._handleCropperResize._.rectangle.left +
-          this._handleCropperResize._.rectangle.width / 2,
-        width: this._handleCropperResize._.rectangle.width,
-        height: this._handleCropperResize._.rectangle.height,
+      this._resizeCropperByHandleAndDeltas(this.handlePicked, {
+        x: this._handleCropperResize._.deltaX,
+        y: this._handleCropperResize._.deltaY,
       });
-
-      this._redrawCropperElements();
     },
 
     _calculateNewCropperSizeByDeltas: function (
@@ -3753,6 +4357,12 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
       allowSavingAsNew: true,
       onSave: $.noop,
       allowDegreeFractions: null,
+      colors: {
+        white: 'rgb(255, 255, 255)',
+        black: 'rgb(0, 0, 0)',
+        transparentBlack: 'rgba(0, 0, 0, 0.8)',
+        transparent: 'rgba(0,0,0,0)',
+      },
     },
   }
 );

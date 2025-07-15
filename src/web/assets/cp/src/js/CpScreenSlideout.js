@@ -309,7 +309,7 @@ Craft.CpScreenSlideout = Craft.Slideout.extend(
         this.$content.html(data.content);
 
         if (data.submitButtonLabel) {
-          this.$saveBtn.text(data.submitButtonLabel);
+          this.$saveBtn.find('.label').text(data.submitButtonLabel);
         }
 
         this.updateTabs(data.tabs);

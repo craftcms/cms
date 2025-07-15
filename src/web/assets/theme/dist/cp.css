@@ -43,7 +43,8 @@
     --slideout-footer-shadow: var(--pane-shadow);
 
     /* Inputs */
-    --input-border: 1px solid hsl(212 25% 50% / 40%);
+    --input-border-color: hsl(212deg 25% 50% / 40%);
+    --input-border: 1px solid var(--input-border-color);
     --input-border-radius: var(--small-border-radius);
     --input-height: var(--ui-control-height);
     --input-bg: hsl(212, 50%, 99%);

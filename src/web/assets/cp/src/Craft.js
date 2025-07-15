@@ -65,6 +65,7 @@ import './js/ElementTableSorter.js';
 import './js/ElevatedSessionForm.js';
 import './js/ElevatedSessionManager.js';
 import './js/EntryIndex.js';
+import './js/EntrySelectInput.js';
 import './js/EntryTypeSelectInput.js';
 import './js/EnvVarGenerator.js';
 import './js/EntryMover.js';

@@ -4115,7 +4115,7 @@ class Elements extends Component
         bool $propagate,
         ?bool $updateForOwner = null,
     ): void {
-        if (Craft::$app->getRequest()->getIsConsoleRequest()) {
+        if ($element->updateSearchIndexImmediately ?? Craft::$app->getRequest()->getIsConsoleRequest()) {
             Craft::$app->getSearch()->indexElementAttributes($element, $searchableDirtyFields);
         } else {
             Craft::$app->getSearch()->queueIndexElement($element, $searchableDirtyFields);

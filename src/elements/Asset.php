@@ -2448,19 +2448,7 @@ JS,[
             return FileHelper::getMimeTypeByExtension('.' . $transform->format);
         }
 
-        if (isset($this->_mimeType)) {
-            return $this->_mimeType;
-        }
-
-        $volume = $this->getVolume();
-        $fs = $volume->getFs();
-
-        if ($fs instanceof LocalFsInterface) {
-            $path = FileHelper::normalizePath($volume->getSubpath() . $this->getPath());
-            return FileHelper::getMimeType($fs->getRootPath() . DIRECTORY_SEPARATOR . $path);
-        }
-
-        return FileHelper::getMimeTypeByExtension($this->_filename);
+        return $this->_mimeType ?? FileHelper::getMimeTypeByExtension($this->_filename);
     }
 
     /**

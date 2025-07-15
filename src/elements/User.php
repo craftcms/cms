@@ -1334,6 +1334,23 @@ class User extends Element implements IdentityInterface
     }
 
     /**
+     * Handles an invalid login for a user and sets the authError param.
+     *
+     * @return void
+     */
+    public function handleInvalidLoginParam(): void
+    {
+        Craft::$app->getUsers()->handleInvalidLogin($this);
+        // Was that one bad password/2fa code/passkey too many?
+        if ($this->locked && !Craft::$app->getConfig()->getGeneral()->preventUserEnumeration) {
+            // Will set the authError to either AccountCooldown or AccountLocked
+            $this->authError = $this->_getAuthError();
+        } else {
+            $this->authError = self::AUTH_INVALID_CREDENTIALS;
+        }
+    }
+
+    /**
      * Determines whether the user is allowed to be logged in with a given password.
      *
      * @param string $password The user’s plain text password.
@@ -1363,14 +1380,7 @@ class User extends Element implements IdentityInterface
         }
 
         if (!$passwordValid) {
-            Craft::$app->getUsers()->handleInvalidLogin($this);
-            // Was that one bad password too many?
-            if ($this->locked && !Craft::$app->getConfig()->getGeneral()->preventUserEnumeration) {
-                // Will set the authError to either AccountCooldown or AccountLocked
-                $this->authError = $this->_getAuthError();
-            } else {
-                $this->authError = self::AUTH_INVALID_CREDENTIALS;
-            }
+            $this->handleInvalidLoginParam();
             return false;
         }
 
@@ -1421,7 +1431,7 @@ class User extends Element implements IdentityInterface
         }
 
         if (!$keyValid) {
-            $this->authError = self::AUTH_INVALID_CREDENTIALS;
+            $this->handleInvalidLoginParam();
             return false;
         }
 

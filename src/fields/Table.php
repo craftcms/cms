@@ -474,7 +474,7 @@ class Table extends Field implements CrossSiteCopyableFieldInterface
 
         if (is_string($value) && !empty($value)) {
             $value = Json::decodeIfJson($value);
-        } elseif ($value === null && $this->isFresh($element)) {
+        } elseif ($value === null && ($this->isFresh($element) || $this->staticRows)) {
             $value = $defaults;
         }
 

@@ -1011,6 +1011,15 @@
           break;
         }
 
+        case 'editEntryType': {
+          new Craft.CpScreenSlideout('entry-types/edit', {
+            params: {
+              entryTypeId: this.$container.data('type-id'),
+            },
+          });
+          break;
+        }
+
         case 'add': {
           const type = $option.data('type');
           this.matrix.addEntry(type, this.$container);

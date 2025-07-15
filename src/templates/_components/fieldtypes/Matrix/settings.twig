@@ -8,6 +8,11 @@
   {% block input %}
     {% import "_includes/forms" as forms %}
     {% set groupedEntryTypes = entryTypes.groupBy(et => et.group ?? 'General'|t('app')) %}
+    {% if not groupedEntryTypes|length %}
+      {% set groupedEntryTypes = {
+        ('General'|t('app')): [],
+      } %}
+    {% endif %}
     {{ hiddenInput('entryTypes', '') }}
     <div id="entry-type-manager" class="entry-type-manager">
       <ul class="entry-type-groups mb-s">

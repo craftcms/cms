@@ -250,6 +250,10 @@ class CraftTooltip extends HTMLElement {
   };
 
   show = () => {
+    if (!this.triggerElement || !this.tooltip) {
+      return;
+    }
+
     autoUpdate(this.triggerElement, this.tooltip, this.update);
     Object.assign(this.tooltip.style, {
       opacity: 1,
@@ -283,6 +287,10 @@ class CraftTooltip extends HTMLElement {
   }
 
   update = () => {
+    if (!this.triggerElement || !this.tooltip) {
+      return;
+    }
+
     computePosition(this.triggerElement, this.tooltip, {
       strategy: 'fixed',
       placement: this.placement,

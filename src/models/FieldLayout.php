@@ -21,6 +21,7 @@ use craft\events\DefineFieldLayoutCustomFieldsEvent;
 use craft\events\DefineFieldLayoutElementsEvent;
 use craft\events\DefineFieldLayoutFieldsEvent;
 use craft\fieldlayoutelements\BaseField;
+use craft\fieldlayoutelements\BaseUiElement;
 use craft\fieldlayoutelements\CustomField;
 use craft\fieldlayoutelements\Heading;
 use craft\fieldlayoutelements\HorizontalRule;
@@ -304,7 +305,7 @@ class FieldLayout extends Model
     {
         $rules = parent::defineRules();
         $rules[] = [['id'], 'number', 'integerOnly' => true];
-        $rules[] = [['customFields', 'generatedFields'], 'validateFields'];
+        $rules[] = [['customFields'], 'validateFields', 'skipOnEmpty' => false];
         return $rules;
     }
 
@@ -324,7 +325,7 @@ class FieldLayout extends Model
                     'handle' => $field->handle,
                 ]));
             } elseif (isset($handles[$field->handle])) {
-                $this->addError('fields', Craft::t('yii', '{attribute} "{value}" has already been taken.', [
+                $this->addError('customFields', Craft::t('yii', '{attribute} "{value}" has already been taken.', [
                     'attribute' => Craft::t('app', 'Handle'),
                     'value' => $field->handle,
                 ]));
@@ -343,7 +344,7 @@ class FieldLayout extends Model
                 ],
             ]);
 
-            foreach ($generatedFields as $i => &$field) {
+            foreach ($generatedFields as &$field) {
                 $field['name'] = trim($field['name'] ?? '');
                 $field['handle'] = trim($field['handle'] ?? '');
                 $field['template'] = trim($field['template'] ?? '');
@@ -680,6 +681,27 @@ class FieldLayout extends Model
         } catch (InvalidArgumentException) {
             return false;
         }
+    }
+
+    /**
+     * Returns whether UI Element is included in the field layout.
+     *
+     * @param callable $filter
+     * @return bool
+     * @since 5.7.12
+     */
+    public function isUiElementIncluded(callable $filter): bool
+    {
+        $element = $this->_element(fn(FieldLayoutElement $layoutElement) => (
+            $layoutElement instanceof BaseUiElement &&
+            $filter($layoutElement)
+        ));
+
+        if (!$element) {
+            return false;
+        }
+
+        return true;
     }
 
     /**
@@ -1026,7 +1048,7 @@ class FieldLayout extends Model
 
         if (empty($cardElements)) {
             // index field layout elements by prefix + uid
-            foreach ($this->getCardBodyFields($element) as $key => $layoutElement) {
+            foreach ($this->getCardBodyFields($element) as $layoutElement) {
                 $layoutElements["layoutElement:$layoutElement->uid"] = $layoutElement;
             }
 

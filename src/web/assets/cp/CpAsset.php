@@ -408,6 +408,7 @@ JS;
             'Upload files',
             'Use defaults',
             'Use for element thumbnails',
+            'Use the arrow keys to change position, Tab or Spacebar to drop.',
             'User Groups',
             'View in a new tab',
             'View in a new tab',
@@ -443,6 +444,8 @@ JS;
             '{element} pagination',
             '{first, number}-{last, number} of {total, number} {total, plural, =1{{item}} other{{items}}}',
             '{first}-{last} of {total}',
+            '{item} dropped.',
+            '{item} picked up.',
             '{name} active, more info',
             '{name} folder',
             '{name} sorted by {attribute}, {direction}',
@@ -513,14 +516,11 @@ JS;
             'Enterprise' => CmsEdition::Enterprise->value,
             'actionTrigger' => $generalConfig->actionTrigger,
             'actionUrl' => UrlHelper::actionUrl(),
-            'announcements' => $upToDate ? app(Announcements::class)->get() : [],
             'asciiCharMap' => Str::asciiCharMap(true, Craft::$app->language),
             'baseApiUrl' => Craft::$app->baseApiUrl,
-            'baseCpUrl' => UrlHelper::cpUrl(),
             'baseSiteUrl' => UrlHelper::siteUrl(),
             'baseUrl' => UrlHelper::url(),
             'clientOs' => $request->getClientOs(),
-            'cpTrigger' => $generalConfig->cpTrigger,
             'datepickerOptions' => $this->_datepickerOptions($formattingLocale, $locale, $currentUser, $generalConfig),
             'defaultCookieOptions' => $this->_defaultCookieOptions(),
             'fileKinds' => Assets::getFileKinds(),
@@ -548,9 +548,19 @@ JS;
             'usePathInfo' => $generalConfig->usePathInfo,
         ];
 
+        if ($request->getIsCpRequest()) {
+            $data += [
+                'announcements' => $upToDate ? app(Announcements::class)->get() : [],
+                'baseCpUrl' => UrlHelper::cpUrl(),
+                'cpTrigger' => $generalConfig->cpTrigger,
+            ];
+        }
+
         if ($generalConfig->enableCsrfProtection) {
-            $data['csrfTokenName'] = $request->csrfParam;
-            $data['csrfTokenValue'] = $request->getCsrfToken();
+            $data += [
+                'csrfTokenName' => $request->csrfParam,
+                'csrfTokenValue' => $request->getCsrfToken(),
+            ];
         }
 
         // If no one's logged in yet, leave it at that
@@ -619,6 +629,7 @@ JS;
             'slugWordSeparator' => $generalConfig->slugWordSeparator,
             'userEmail' => $currentUser->email,
             'userHasPasskeys' => Craft::$app->getAuth()->hasPasskeys($userSession->getImpersonator() ?? $currentUser),
+            'userId' => $currentUser->id,
             'userIsAdmin' => $currentUser->admin,
             'username' => $currentUser->username,
         ];

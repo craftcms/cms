@@ -161,21 +161,37 @@ class I18N extends \yii\i18n\I18N
         }
 
         $this->_appLocaleIds = [
-            Craft::$app->sourceLanguage => true,
+            'en-US' => true,
+            'ar' => true,
+            'cs' => true,
+            'da' => true,
+            'de' => true,
+            'de-CH' => true,
+            'en' => true,
+            'en-GB' => true,
+            'es' => true,
+            'fa' => true,
+            'fr' => true,
+            'fr-CA' => true,
+            'he' => true,
+            'hu' => true,
+            'is' => true,
+            'it' => true,
+            'ja' => true,
+            'ko' => true,
+            'nb' => true,
+            'nl' => true,
+            'nn' => true,
+            'pl' => true,
+            'pt' => true,
+            'ru' => true,
+            'sk' => true,
+            'sv' => true,
+            'th' => true,
+            'tr' => true,
+            'uk' => true,
+            'zh' => true,
         ];
-
-        // Scan the translations/ dir for the others
-        $dir = Craft::$app->getPath()->getCpTranslationsPath();
-        $handle = opendir($dir);
-        if ($handle === false) {
-            throw new Exception("Unable to open directory: $dir");
-        }
-        while (($subDir = readdir($handle)) !== false) {
-            if ($subDir !== '.' && $subDir !== '..' && is_dir($dir . DIRECTORY_SEPARATOR . $subDir)) {
-                $this->_appLocaleIds[$subDir] = true;
-            }
-        }
-        closedir($handle);
 
         // Add in any extra locales defined by the config
         $generalConfig = Craft::$app->getConfig()->getGeneral();

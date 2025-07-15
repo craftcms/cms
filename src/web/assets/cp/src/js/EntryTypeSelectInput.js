@@ -182,7 +182,17 @@ Craft.EntryTypeSelectInput = Craft.ComponentSelectInput.extend(
         $component
           .find('.chip-label')
           .replaceWith($newContainer.find('.chip-label'));
-        $component.find('input').val(JSON.stringify(data.config));
+
+        // Update the input with the new config, but keep the old group value around
+        const $input = $component.find('input');
+        const config = {...data.config};
+        const group = JSON.parse($input.val()).group;
+        if (group) {
+          config.group = group;
+        }
+        $input.val(JSON.stringify(config));
+
+        Craft.initUiElements($component);
 
         this.trigger('applySettings');
 

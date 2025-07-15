@@ -78,6 +78,9 @@ class UpController extends Controller
                     return $res;
                 }
                 $this->stdout("\n");
+
+                $projectConfig->flush();
+                $projectConfig->reset();
             }
 
             // Content migration

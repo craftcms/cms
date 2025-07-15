@@ -69,7 +69,15 @@ class GeneratedFieldConditionRule extends BaseTextConditionRule implements Eleme
         if (!$field) {
             return [];
         }
-        return [$field['handle']];
+
+        $handle = $field['handle'];
+        if (is_array($handle)) {
+            if (!isset($handle['value'])) {
+                return [];
+            }
+            $handle = $handle['value'];
+        }
+        return [$handle];
     }
 
     /**
