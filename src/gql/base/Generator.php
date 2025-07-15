@@ -42,17 +42,19 @@ abstract class Generator
         $contentFieldGqlTypes = [];
         $layout = $context instanceof FieldLayout ? $context : $context->getFieldLayout();
 
-        foreach ($layout->getCustomFields() as $contentField) {
-            /** @var Field $contentField */
-            if ($contentField->includeInGqlSchema($schema)) {
-                $contentFieldGqlTypes[$contentField->handle] = $contentField->getContentGqlType();
+        if ($layout) {
+            foreach ($layout->getCustomFields() as $contentField) {
+                /** @var Field $contentField */
+                if ($contentField->includeInGqlSchema($schema)) {
+                    $contentFieldGqlTypes[$contentField->handle] = $contentField->getContentGqlType();
+                }
             }
-        }
-
-        foreach ($layout->getGeneratedFields() as $generatedField) {
-            $handle = $generatedField['handle'] ?? '';
-            if ($handle !== '' && !isset($contentFieldGqlTypes[$handle])) {
-                $contentFieldGqlTypes[$handle] = Type::string();
+    
+            foreach ($layout->getGeneratedFields() as $generatedField) {
+                $handle = $generatedField['handle'] ?? '';
+                if ($handle !== '' && !isset($contentFieldGqlTypes[$handle])) {
+                    $contentFieldGqlTypes[$handle] = Type::string();
+                }
             }
         }
 

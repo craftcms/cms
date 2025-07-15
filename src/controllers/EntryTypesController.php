@@ -217,6 +217,7 @@ class EntryTypesController extends Controller
         // Set the simple stuff
         $entryType->name = $this->request->getBodyParam('name', $entryType->name);
         $entryType->handle = $this->request->getBodyParam('handle', $entryType->handle);
+        $entryType->description = $this->request->getBodyParam('description', $entryType->description);
         $entryType->icon = $this->request->getBodyParam('icon', $entryType->icon);
         $color = $this->request->getBodyParam('color', $entryType->color?->value);
         $entryType->color = $color && $color !== '__blank__' ? Color::from($color) : null;
@@ -323,6 +324,7 @@ class EntryTypesController extends Controller
         $entryType = $this->_entryTypeForSelectInput();
         $entryType->name = $this->request->getBodyParam('name') ?? $entryType->name;
         $entryType->handle = $this->request->getBodyParam('handle') ?? $entryType->handle;
+        $entryType->description = $this->request->getBodyParam('description') ?? $entryType->description;
 
         $namespace = StringHelper::randomString(10);
         $view = Craft::$app->getView();
@@ -369,10 +371,11 @@ class EntryTypesController extends Controller
         $chipHtml = Cp::chipHtml($entryType, [
             'showHandle' => true,
             'showIndicators' => true,
+            'showDescription' => true,
         ]);
 
         return $this->asJson([
-            'config' => $entryType->toArray(['id', 'name', 'handle']),
+            'config' => $entryType->toArray(['id', 'name', 'handle', 'description']),
             'chipHtml' => $chipHtml,
         ]);
     }

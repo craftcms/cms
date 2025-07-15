@@ -1028,7 +1028,6 @@ JS, [
                 ->canonicalsOnly()
                 ->status(null)
                 ->limit(null)
-                ->eagerly()
                 ->all();
         }
 
@@ -1328,7 +1327,7 @@ JS,
         }
 
         /** @var EntryQuery|ElementCollection $value */
-        $entries = $value->all();
+        $entries = $value->status(null)->all();
 
         if (empty($entries)) {
             return '<p class="light">' . Craft::t('app', 'No entries.') . '</p>';

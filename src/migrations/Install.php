@@ -444,6 +444,7 @@ class Install extends Migration
             'fieldLayoutId' => $this->integer(),
             'name' => $this->string()->notNull(),
             'handle' => $this->string()->notNull(),
+            'description' => $this->text(),
             'icon' => $this->string(),
             'color' => $this->string(),
             'hasTitleField' => $this->boolean()->defaultValue(true)->notNull(),
@@ -620,6 +621,7 @@ class Install extends Migration
             'sortOrder' => $this->smallInteger()->unsigned()->notNull(),
             'name' => $this->string(),
             'handle' => $this->string(),
+            'description' => $this->text(),
             'PRIMARY KEY([[sectionId]], [[typeId]])',
         ]);
         $this->createTable(Table::SECTIONS_SITES, [

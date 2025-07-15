@@ -1500,10 +1500,10 @@ Craft.ElementEditor = Garnish.Base.extend(
           headers: this._saveHeaders,
           data: params.join('&'),
         })
-          .then((response) => {
+          .then(async (response) => {
             this._afterSaveDraft();
             this.settings.previewParamValue = response.data.previewParamValue;
-            this._afterUpdateFieldLayout(data, selectedTabId, response);
+            await this._afterUpdateFieldLayout(data, selectedTabId, response);
             const newInitialDeltaValues = {};
 
             if (response.data.deltaNames?.length) {
@@ -1578,7 +1578,7 @@ Craft.ElementEditor = Garnish.Base.extend(
               );
             }
 
-            this.afterUpdate(data, newInitialDeltaValues);
+            this.afterUpdate(this.lastSerializedValue, newInitialDeltaValues);
             this.trigger('afterSaveDraft', {response});
 
             if (Craft.broadcaster) {
@@ -1779,8 +1779,8 @@ Craft.ElementEditor = Garnish.Base.extend(
           headers: this._saveHeaders,
           data: preparedData,
         })
-          .then((response) => {
-            this._afterUpdateFieldLayout(data, selectedTabId, response);
+          .then(async (response) => {
+            await this._afterUpdateFieldLayout(data, selectedTabId, response);
             resolve();
           })
           .catch((e) => {

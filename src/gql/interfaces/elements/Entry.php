@@ -248,7 +248,7 @@ class Entry extends Structure
                 ],
                 'author' => [
                     'name' => 'author',
-                    'type' => Type::listOf(User::getType()),
+                    'type' => User::getType(),
                     'description' => 'The primary entry author.',
                     'complexity' => Gql::eagerLoadComplexity(),
                 ],

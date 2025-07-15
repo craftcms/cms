@@ -19,6 +19,7 @@
     name: 'name',
     value: section.name,
     errors: section.getErrors('name'),
+    data: {'error-key': 'name'},
     autofocus: true,
     required: true,
     disabled: readOnly,
@@ -34,6 +35,7 @@
     autocapitalize: false,
     value: section.handle,
     errors: section.getErrors('handle'),
+    data: {'error-key': 'handle'},
     required: true,
     disabled: readOnly,
 }) }}
@@ -57,6 +59,7 @@
     toggle: true,
     targetPrefix: '.type-',
     errors: section.getErrors('type'),
+    data: {'error-key': 'type'},
     disabled: readOnly,
 }) }}
 
@@ -70,6 +73,7 @@
     values: section.getEntryTypes(),
     allowOverrides: true,
     errors: section.getErrors('entryTypes'),
+    data: {'error-key': 'entryTypes'},
     create: not readOnly,
     disabled: readOnly,
 }) }}
@@ -176,6 +180,7 @@
     allowDelete: false,
     allowReorder: false,
     errors: siteErrors|unique,
+    data: {'error-key': 'siteSettings'},
     static: readOnly,
 }) }}
 
@@ -209,6 +214,7 @@
         value: section.maxLevels,
         size: 5,
         errors: section.getErrors('maxLevels'),
+        data: {'error-key': 'maxLevels'},
         disabled: readOnly,
     }) }}
 
@@ -257,6 +263,7 @@
     allowDelete: true,
     rows: section.previewTargets,
     errors: section.getErrors('previewTargets'),
+    data: {'error-key': 'previewTargets'},
     static: readOnly,
 }) }}
 
@@ -270,6 +277,7 @@
     default: 1,
     value: section.maxAuthors,
     errors: section.getErrors('maxAuthors'),
+    data: {'error-key': 'maxAuthors'},
     size: 5,
     disabled: readOnly,
 }) }}

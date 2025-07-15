@@ -18,6 +18,10 @@ html.noscroll body {
   @include mixins.light-on-dark-text;
   opacity: 0;
   user-select: none;
+
+  [data-cropper-edit] {
+    @include mixins.visually-hidden;
+  }
 }
 
 .modal.imageeditor.modal {
@@ -529,4 +533,8 @@ html.noscroll body {
       }
     }
   }
+}
+
+#cropping-canvas {
+  --focus-ring: none;
 }

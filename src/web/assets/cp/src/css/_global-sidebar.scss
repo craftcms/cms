@@ -264,7 +264,7 @@
 
   .sidebar-action__label {
     flex-wrap: wrap;
-    padding-block: var(--2xs);
+    padding-block: calc((30px - var(--lh)) / 2);
     gap: var(--2xs);
   }
 

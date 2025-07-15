@@ -221,18 +221,10 @@ class SectionsController extends Controller
 
         // Save it
         if (!$sectionsService->saveSection($section)) {
-            $this->setFailFlash(Craft::t('app', 'Couldn’t save section.'));
-
-            // Send the section back to the template
-            Craft::$app->getUrlManager()->setRouteParams([
-                'section' => $section,
-            ]);
-
-            return null;
+            return $this->asModelFailure($section, Craft::t('app', 'Couldn’t save section.'), 'section');
         }
 
-        $this->setSuccessFlash(Craft::t('app', 'Section saved.'));
-        return $this->redirectToPostedUrl($section);
+        return $this->asModelSuccess($section, Craft::t('app',  'Section saved.'), 'section');
     }
 
     /**

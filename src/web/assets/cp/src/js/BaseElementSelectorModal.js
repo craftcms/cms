@@ -348,6 +348,11 @@ Craft.BaseElementSelectorModal = Garnish.Modal.extend(
 
       this.updateModalBottomPadding();
       this.updateSidebarView();
+
+      if (this.elementIndex?.searching) {
+        this.elementIndex.clearSearch(true);
+      }
+
       this.base();
     },
 

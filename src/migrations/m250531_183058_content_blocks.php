@@ -15,6 +15,8 @@ class m250531_183058_content_blocks extends Migration
      */
     public function safeUp(): bool
     {
+        $this->safeDown();
+
         $this->createTable(Table::CONTENTBLOCKS, [
             'id' => $this->integer()->notNull(),
             'primaryOwnerId' => $this->integer(),

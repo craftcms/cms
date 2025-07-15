@@ -14,6 +14,7 @@ use craft\behaviors\DraftBehavior;
 use craft\behaviors\RevisionBehavior;
 use craft\cache\ElementQueryTagDependency;
 use Craft\Cms\Support\Arr;
+use craft\controllers\ElementsController;
 use craft\db\CoalesceColumnsExpression;
 use craft\db\Command;
 use craft\db\Connection;
@@ -2751,6 +2752,7 @@ abstract class Element extends Component implements ElementInterface
             $names['saveOwnership'],
             $names['searchScore'],
             $names['updateSearchIndexForOwner'],
+            $names['updateSearchIndexImmediately'],
             $names['updatingFromDerivative'],
             $names['viewMode'],
         );
@@ -4009,7 +4011,9 @@ abstract class Element extends Component implements ElementInterface
         // Validate
         if (
             !$this->getIsRevision() &&
-            !Craft::$app->getRequest()->getHeaders()->has('X-Craft-Container-Id')
+            !Craft::$app->getRequest()->getHeaders()->has('X-Craft-Container-Id') &&
+            Craft::$app->controller instanceof ElementsController &&
+            Craft::$app->controller->element === $this
         ) {
             $validateId = sprintf('action-validate-%s', mt_rand());
             $items[] = [

@@ -12,27 +12,15 @@
             'has-thumbs': (source.hasThumbs ?? false) ? true : false,
             'has-structure': (source.structureId ?? null)|boolean,
             'default-sort': source.defaultSort ?? false,
-            'sort-opts': isTopLevel
-                ? sortOptions ?? (baseSortOptions
-                    |merge(craft.app.elementSources.getSourceSortOptions(elementType, key)|map(option => {
-                        label: option.label,
-                        attr: option.attribute ?? option.orderBy,
-                        defaultDir: option.defaultDir ?? 'asc'
-                    })|values))
+            'sort-opts': isTopLevel ? (sortOptions ?? false) : false,
+            'base-sort-opts': (isTopLevel and sortOptions is same as(null)) ? (baseSortOptions ?? false) : false,
+            'base-table-col-opts': isTopLevel and (tableColumns ?? false)
+                ? tableColumns|map((a, key) => a|merge({attr: key}))|values
+                : false,
+            'default-table-cols': isTopLevel and (defaultTableColumns ?? false)
+                ? defaultTableColumns|map(a => a[0])|filter(a => a != 'title')|values
                 : false,
             'source-item': true,
-            'table-col-opts': isTopLevel
-                ? tableColumns
-                    |merge(craft.app.elementSources.getSourceTableAttributes(elementType, key))
-                    |map((a, key) => a|merge({attr: key}))
-                    |values
-                : false,
-            'default-table-cols': isTopLevel
-                ? (defaultTableColumns ?? craft.app.elementSources.getTableAttributes(elementType, key))
-                    |map(a => a[0])
-                    |filter(a => a != 'title')
-                    |values
-                : false,
             'default-source-path': (source.defaultSourcePath ?? false) ? source.defaultSourcePath|json_encode : false,
             sites: (source.sites ?? false) ? source.sites|join(',') : false,
             criteria: source.criteria ?? {},
@@ -82,12 +70,12 @@
 {% set nestedUnderHeading = false %}
 
 {% tag 'ul' with {
-    class: keyPrefix ? 'nested' : null,
+    class: keyPrefix ? 'nested sources-list' : 'sources-list',
     id: id ?? ''
 } %}
     {% for source in sources %}
         {% if (source.type ?? null) == 'heading' %}
-            {% set key = source.key ?? source.heading | kebab %}
+            {% set key = source.key ?? (source.heading | kebab) %}
             {% if nestedUnderHeading %}
                     </ul>
                 </li>
@@ -98,7 +86,9 @@
                     {# Don't toggle blank headings #}
                     {% if source.heading | length %}
                         {% embed '_includes/disclosure-toggle' with {
-                            cookieName: 'sources-list:'~ key,
+                            persist: true,
+                            storageKey: 'sources-list:'~ key,
+                            storageMode: 'cookies',
                             controls: key,
                             attributes: {
                                 class: 'source-item__toggle'
@@ -115,7 +105,7 @@
                         {% endembed %}
                     {% endif %}
                 </div>
-                <ul id="{{ key }}">
+                <ul id="{{ key }}" class="sources-list">
             {% set nestedUnderHeading = true %}
         {% elseif (source.sites ?? null) is not same as([]) %}
             {% set key = source.keyPath ?? (keyPrefix ~ source.key) %}
@@ -129,7 +119,8 @@
                     {{ _self.sourceLink(key, source, isTopLevel, elementType, sortOptions ?? null, baseSortOptions ?? null, tableColumns ?? null, defaultTableColumns ?? null, viewModes ?? null) }}
                     {% if source.nested is defined and source.nested is not empty %}
                         {% embed '_includes/disclosure-toggle' with {
-                            cookieName: 'sources-list:'~ key,
+                            persist: true,
+                            storageKey: 'sources-list:'~ key,
                             controls: key,
                             attributes: {
                                 class: 'source-item__toggle'

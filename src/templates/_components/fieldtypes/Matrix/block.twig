@@ -218,15 +218,15 @@
     {% endtag %}
   {% endtag %}{# /.titlebar #}
 
-  {% if not static %}
-    <div class="actions">
-      <div class="status off" title="{{ 'Disabled'|t('app') }}">
-        {{ tag('span', {
-          class: 'visually-hidden',
-          html: 'Disabled'|t('app'),
-        }) }}
-      </div>
+  <div class="actions">
+    <div class="status off" title="{{ 'Disabled'|t('app') }}">
+      {{ tag('span', {
+        class: 'visually-hidden',
+        html: 'Disabled'|t('app'),
+      }) }}
+    </div>
 
+    {% if not static %}
       <div class="checkbox" title="{{ 'Select'|t('app') }}" aria-label="{{ 'Select'|t('app') }}" tabindex="0" role="checkbox" aria-checked="false"></div>
       {{ disclosureMenu(actionMenuItems, {
         hiddenLabel: 'Actions'|t('app'),
@@ -248,8 +248,8 @@
           tabindex: '-1',
         },
       }) }}
-    </div>
-  {% endif %}
+    {% endif %}
+  </div>
   <div class="fields">
     {% namespace baseInputName %}
       {{ form.render()|raw }}

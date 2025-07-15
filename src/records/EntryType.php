@@ -20,6 +20,7 @@ use yii2tech\ar\softdelete\SoftDeleteBehavior;
  * @property int|null $fieldLayoutId Field layout ID
  * @property string $name Name
  * @property string $handle Handle
+ * @property string|null $description Description
  * @property string|null $icon Icon
  * @property string|null $color Color
  * @property bool $hasTitleField Has title field

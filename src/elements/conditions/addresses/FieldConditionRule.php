@@ -1,22 +1,22 @@
 <?php
 
-namespace craft\elements\conditions\entries;
+namespace craft\elements\conditions\addresses;
 
 use Craft;
 use craft\base\conditions\BaseMultiSelectConditionRule;
-use craft\base\ElementContainerFieldInterface;
 use craft\base\ElementInterface;
+use craft\elements\Address;
 use craft\elements\conditions\ElementConditionRuleInterface;
+use craft\elements\db\AddressQuery;
 use craft\elements\db\ElementQueryInterface;
-use craft\elements\db\EntryQuery;
-use craft\elements\Entry;
+use craft\fields\Addresses;
 use Illuminate\Support\Collection;
 
 /**
  * Field condition rule.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 5.6.0
+ * @since 5.8.0
  */
 class FieldConditionRule extends BaseMultiSelectConditionRule implements ElementConditionRuleInterface
 {
@@ -46,9 +46,9 @@ class FieldConditionRule extends BaseMultiSelectConditionRule implements Element
      */
     protected function options(): array
     {
-        return $this->nestedEntryFields()
-            ->keyBy(fn(ElementContainerFieldInterface $field) => $field->uid)
-            ->map(fn(ElementContainerFieldInterface $field) => $field->getUiLabel())
+        return Collection::make($this->addressFields())
+            ->keyBy(fn(Addresses $field) => $field->uid)
+            ->map(fn(Addresses $field) => $field->getUiLabel())
             ->all();
     }
 
@@ -57,9 +57,9 @@ class FieldConditionRule extends BaseMultiSelectConditionRule implements Element
      */
     public function modifyQuery(ElementQueryInterface $query): void
     {
-        /** @var EntryQuery $query */
+        /** @var AddressQuery $query */
         if ($this->operator === self::OPERATOR_NOT_EMPTY) {
-            $query->field($this->nestedEntryFields()->all());
+            $query->field($this->addressFields());
         } elseif ($this->operator === self::OPERATOR_EMPTY) {
             $query->field(false);
         } else {
@@ -73,7 +73,7 @@ class FieldConditionRule extends BaseMultiSelectConditionRule implements Element
      */
     public function matchElement(ElementInterface $element): bool
     {
-        /** @var Entry $element */
+        /** @var Address $element */
         return match ($this->operator) {
             self::OPERATOR_NOT_EMPTY => $element->getField() !== null,
             self::OPERATOR_EMPTY => $element->getField() === null,
@@ -82,13 +82,11 @@ class FieldConditionRule extends BaseMultiSelectConditionRule implements Element
     }
 
     /**
-     * @return Collection<ElementContainerFieldInterface>
+     * @return Addresses[]
      */
-    private function nestedEntryFields(): Collection
+    private function addressFields(): array
     {
-        $fieldsService = Craft::$app->getFields();
-        return Collection::make($fieldsService->getNestedEntryFieldTypes())
-            ->map(fn(string $class) => $fieldsService->getFieldsByType($class))
-            ->flatten(1);
+        /** @phpstan-ignore-next-line */
+        return Craft::$app->getFields()->getFieldsByType(Addresses::class);
     }
 }

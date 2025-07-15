@@ -1,5 +1,4 @@
 @charset "UTF-8";
-@charset "UTF-8";
 @use 'sass:color';
 @use 'variables';
 @use '@craftcms/sass/mixins';
@@ -2824,29 +2823,55 @@ div.btn.submit input {
 }
 
 .lightswitch {
+  // Ensures contrast with pane background is over 3:1
+  --_lightswitch-border-color: var(
+    --lightswitch-border-color,
+    hsl(from var(--input-border-color) h s l / 80%)
+  );
   display: block;
   position: relative;
   border: none !important;
   overflow: hidden;
   cursor: pointer;
   user-select: none;
-  background-image: linear-gradient(to right, var(--gray-400), var(--gray-400));
+  background-image: linear-gradient(to right, var(--gray-200), var(--gray-200));
   transition: background-image linear 100ms;
-  box-shadow: inset 0 0 0 1px rgb(0 0 0 / 10%); // Ensures contrast with pane background is over 3:1
+  box-shadow: inset 0 0 0 1px var(--_lightswitch-border-color);
+
+  &[disabled] {
+    --_lightswitch-border-color: var(
+      --lightswitch-border-color-disabled,
+      hsl(from var(--input-border-color) h s l / 30%)
+    );
+  }
 
   &.on {
+    --_lightswitch-border-color: oklch(
+      from var(--bg-enabled) calc(l - 0.1) c h
+    );
     background-image: linear-gradient(
       to right,
       var(--bg-enabled),
       var(--bg-enabled)
     );
+
+    .lightswitch-container .handle::before {
+      background-color: var(--enabled-color);
+      mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 448 512'%3E%3C!--! Font Awesome Pro 6.7.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license (Commercial License) Copyright 2024 Fonticons, Inc. --%3E%3Cpath d='M438.6 105.4c12.5 12.5 12.5 32.8 0 45.3l-256 256c-12.5 12.5-32.8 12.5-45.3 0l-128-128c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0L160 338.7 393.4 105.4c12.5-12.5 32.8-12.5 45.3 0z'/%3E%3C/svg%3E%0A");
+      mask-repeat: no-repeat;
+    }
+
+    // Makes small icon a little darker to compensate for the size
+    &.small .lightswitch-container .handle::before {
+      background-color: hsl(from var(--enabled-color) h s calc(l - 20));
+    }
   }
 
   &.indeterminate {
     background-image: linear-gradient(
       to right,
-      var(--bg-enabled),
-      var(--gray-300)
+      var(--bg-enabled) 40%,
+      var(--gray-200) 60%
     );
   }
 
@@ -2858,7 +2883,17 @@ div.btn.submit input {
       position: absolute;
       inset-block-start: 2px;
       background-color: var(--white);
-      box-shadow: 0 0 0 1px rgb(0 0 0 / 10%); // Ensures contrast with pane background is over 3:1
+      box-shadow: inset 0 0 0 1px var(--_lightswitch-border-color);
+    }
+
+    .handle::before {
+      content: '';
+      position: absolute;
+      inset-block-start: 50%;
+      inset-inline-start: 54%;
+      transform: translateX(-50%) translateY(-50%);
+      width: 12px;
+      height: 12px;
     }
   }
 
@@ -2895,6 +2930,11 @@ div.btn.submit input {
         width: 14px;
         height: 14px;
         inset-inline-start: calc(50% - 7px);
+      }
+
+      .handle::before {
+        width: 8px;
+        height: 8px;
       }
     }
   }
@@ -3406,7 +3446,10 @@ table {
 .matrixblock {
   position: relative;
   border-radius: var(--radius-lg);
-  color: var(--custom-text-color, var(--text-color));
+
+  &:not(.chromeless) {
+    color: var(--custom-text-color, var(--text-color));
+  }
 
   --custom-border-color: initial;
   --custom-titlebar-bg-color: initial;
@@ -3533,6 +3576,10 @@ table {
     align-items: center;
     gap: var(--s);
     width: 100%;
+
+    .infoicon-container {
+      margin-inline-start: var(--xs);
+    }
 
     .status,
     .icon {
@@ -4239,6 +4286,7 @@ table {
     margin-inline: calc(
       var(--pane-padding, var(--pane-x-padding-default)) * -1
     );
+    overflow-x: auto;
 
     .elementselectormodal & {
       margin-block: 0;
@@ -4522,6 +4570,33 @@ table {
         --background-position-y: 0;
       }
     }
+  }
+}
+
+.elementselect__search-input-wrapper,
+.tagselect__input-wrapper {
+  position: relative;
+  z-index: 1;
+  width: 12em;
+
+  .text {
+    padding-inline-end: 30px !important;
+  }
+
+  .spinner {
+    position: absolute;
+    inset-block-start: 0;
+    inset-inline-end: 5px;
+  }
+
+  &.icon.add::before {
+    content: none;
+  }
+
+  svg {
+    width: calc(14rem / 16);
+    height: calc(14rem / 16);
+    fill: var(--ui-control-color);
   }
 }
 
@@ -7533,6 +7608,13 @@ $min2ColWidth: 400px;
             0 0 0 1px color.adjust(mixins.$grey600, $alpha: -0.75),
             0 1px 3px -1px color.adjust(mixins.$grey600, $alpha: -0.5);
         }
+
+        .infoicon-container {
+          display: inline-flex;
+          align-items: flex-start;
+          margin-inline-start: var(--s);
+          font-size: 0.8em;
+        }
       }
     }
   }
@@ -7617,6 +7699,10 @@ $min2ColWidth: 400px;
         @include mixins.svg-mask(var(--fg-error));
       }
     }
+
+    .chip {
+      margin-block: -4px;
+    }
   }
 }
 
@@ -7693,22 +7779,9 @@ $min2ColWidth: 400px;
   }
 
   .tagselect__input-wrapper {
-    position: relative;
-    z-index: 1;
     margin-inline: 0 7px;
     margin-block: 7px 0;
     display: inline-block;
-    width: 12em;
-
-    .text {
-      padding-inline-end: 30px;
-    }
-
-    .spinner {
-      position: absolute;
-      inset-block-start: 0;
-      inset-inline-end: 5px;
-    }
   }
 }
 
@@ -8530,6 +8603,7 @@ td.errors .text,
   border: 1px solid var(--fg-error) !important;
 }
 
+.elementselect__search-input-wrapper,
 .tagselect__input-wrapper,
 .texticon {
   position: relative;
@@ -8620,18 +8694,6 @@ td.errors .text,
     .clear-btn {
       inset-inline-end: 30px;
     }
-  }
-}
-
-.tagselect__input-wrapper {
-  &.icon.add::before {
-    content: none;
-  }
-
-  svg {
-    width: calc(14rem / 16);
-    height: calc(14rem / 16);
-    fill: var(--ui-control-color);
   }
 }
 

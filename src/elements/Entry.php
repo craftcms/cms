@@ -1280,7 +1280,8 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
         ];
 
         // If the section’s source is disabled, just show its name w/o a link
-        if (Craft::$app->getElementSources()->sourceExists(Entry::class, "section:$section->uid")) {
+        $sourceKey = $section->type === Section::TYPE_SINGLE ? 'singles' : "section:$section->uid";
+        if (Craft::$app->getElementSources()->sourceExists(Entry::class, $sourceKey)) {
             $sections = Collection::make(Craft::$app->getEntries()->getEditableSections());
             $requestedSite = Cp::requestedSite();
             if ($requestedSite) {

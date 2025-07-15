@@ -491,43 +491,43 @@ Craft.BaseElementIndex = Garnish.Base.extend(
         stepKey = this.instanceState.sourcePathStep || null;
       }
 
-      this.selectDefaultSource();
+      this.asyncSelectDefaultSource().then(() => {
+        const sourcePath = this.getDefaultSourcePath();
 
-      const sourcePath = this.getDefaultSourcePath();
-
-      // If no default source path was explicitly configured, or it's set to the root of the volume, use the localStorage key
-      if ((!sourcePath || sourcePath.length == 1) && stepKey) {
-        this.loadSourcePathByKey(stepKey).then((sourcePath) => {
-          if (sourcePath) {
-            // Filter out any source path steps that are above the source's root
-            const lastSourceKey = this.sourceKey.split('/').slice(-1)[0];
-            const sourceRootIndex = sourcePath.findIndex(
-              (p) => p.key === lastSourceKey
-            );
-            if (sourceRootIndex !== -1) {
-              this.sourcePath = sourcePath.slice(sourceRootIndex);
+        // If no default source path was explicitly configured, or it's set to the root of the volume, use the localStorage key
+        if ((!sourcePath || sourcePath.length == 1) && stepKey) {
+          this.loadSourcePathByKey(stepKey).then((sourcePath) => {
+            if (sourcePath) {
+              // Filter out any source path steps that are above the source's root
+              const lastSourceKey = this.sourceKey.split('/').slice(-1)[0];
+              const sourceRootIndex = sourcePath.findIndex(
+                (p) => p.key === lastSourceKey
+              );
+              if (sourceRootIndex !== -1) {
+                this.sourcePath = sourcePath.slice(sourceRootIndex);
+              }
             }
+            this.afterSetInitialSource(queryParams);
+          });
+        } else {
+          if (sourcePath) {
+            this.sourcePath = sourcePath;
           }
           this.afterSetInitialSource(queryParams);
-        });
-      } else {
-        if (sourcePath) {
-          this.sourcePath = sourcePath;
         }
-        this.afterSetInitialSource(queryParams);
-      }
 
-      // Set visible source name on small/zoomed screens
-      this.updateMainHeading();
+        // Set visible source name on small/zoomed screens
+        this.updateMainHeading();
 
-      if (this.settings.context === 'index') {
-        Craft.cp.onCopyElements((elementInfo, buttonLabel) => {
-          this.updatePasteButton(elementInfo);
-          if (this.$pasteBtn && buttonLabel) {
-            this.$pasteBtn.find('.label').text(buttonLabel);
-          }
-        });
-      }
+        if (this.settings.context === 'index') {
+          Craft.cp.onCopyElements((elementInfo, buttonLabel) => {
+            this.updatePasteButton(elementInfo);
+            if (this.$pasteBtn && buttonLabel) {
+              this.$pasteBtn.find('.label').text(buttonLabel);
+            }
+          });
+        }
+      });
     },
 
     afterInit: function () {
@@ -704,7 +704,20 @@ Craft.BaseElementIndex = Garnish.Base.extend(
       return this._getSourcesInList(this.getSourceContainer(), true);
     },
 
+    /**
+     * @deprecated in 5.9.0. Use asyncSelectDefaultSource() instead.
+     */
     selectDefaultSource: function () {
+      const $source = this.getDefaultSource();
+      return this.selectSource($source);
+    },
+
+    asyncSelectDefaultSource: async function () {
+      const $source = this.getDefaultSource();
+      return await this.asyncSelectSource($source);
+    },
+
+    getDefaultSource: function () {
       // The `source` query param should always take precedence
       let sourceKey;
       if (this.settings.context === 'index') {
@@ -731,7 +744,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
         $source = this.$visibleSources.first();
       }
 
-      return this.selectSource($source);
+      return $source;
     },
 
     refreshSources: function () {
@@ -745,11 +758,11 @@ Craft.BaseElementIndex = Garnish.Base.extend(
           elementType: this.elementType,
         },
       })
-        .then((response) => {
+        .then(async (response) => {
           this.setIndexAvailable();
           this.getSourceContainer().replaceWith(response.data.html);
           this.initSources();
-          this.selectDefaultSource();
+          await this.asyncSelectDefaultSource();
         })
         .catch((e) => {
           if (!axios.isCancel(e)) {
@@ -1264,6 +1277,10 @@ Craft.BaseElementIndex = Garnish.Base.extend(
         clearTimeout(this.searchTimeout);
       }
 
+      if (this.settings.context === 'index') {
+        Craft.setQueryParam('search', null);
+      }
+
       this.stopSearching();
 
       if (updateElements) {
@@ -1530,15 +1547,28 @@ Craft.BaseElementIndex = Garnish.Base.extend(
       const baseCriteria = Object.assign(
         {
           status: null,
-          drafts: this.settings.canHaveDrafts ? null : false,
-          draftOf: this.settings.canHaveDrafts && this.drafts ? null : false,
-          savedDraftsOnly: true,
         },
         this.baseCriteria,
         {
           siteId: this.siteId,
         }
       );
+
+      // set drafts/draftOf/savedDraftsOnly params depending on the context
+      if (this.settings.context !== 'index') {
+        baseCriteria.drafts = this.settings.canHaveDrafts ? null : false;
+        baseCriteria.draftOf =
+          this.settings.canHaveDrafts && this.drafts ? null : false;
+        baseCriteria.savedDraftsOnly = true;
+      } else if (
+        this.settings.canHaveDrafts &&
+        (this.drafts || (this.settings.context === 'index' && !this.status))
+      ) {
+        baseCriteria.drafts = this.drafts || null;
+        baseCriteria.savedDraftsOnly = true;
+        baseCriteria.draftOf =
+          this.settings.canHaveDrafts && this.drafts ? null : false;
+      }
 
       const criteria = {
         offset: this.settings.batchSize * (this.page - 1),
@@ -2257,6 +2287,54 @@ Craft.BaseElementIndex = Garnish.Base.extend(
       return this.sourcesByKey[key] || null;
     },
 
+    ensureSourceAttributeInfo: async function (source) {
+      const $source = this.getRootSource($(source));
+
+      // table-col-opts is the only one that won't ever be fully defined on page load
+      if ($source.data('table-col-opts') !== undefined) {
+        return;
+      }
+
+      let response;
+
+      try {
+        response = await Craft.sendActionRequest(
+          'POST',
+          'element-indexes/source-attribute-info',
+          {
+            data: {
+              elementType: this.elementType,
+              context: this.settings.context,
+              source: $source.data('key'),
+            },
+          }
+        );
+      } catch (e) {}
+
+      $source.data(
+        'table-col-opts',
+        ($source.data('base-table-col-opts') || []).concat(
+          response.data.tableColumns
+        )
+      );
+
+      if ($source.data('sort-opts') === undefined) {
+        $source.data(
+          'sort-opts',
+          ($source.data('base-sort-opts') || []).concat(
+            response.data.sortOptions
+          )
+        );
+      }
+
+      if ($source.data('default-table-cols') === undefined) {
+        $source.data('default-table-cols', response.data.defaultTableColumns);
+      }
+    },
+
+    /**
+     * @deprecated in 5.9.0. Use asyncSelectSource() instead.
+     */
     selectSource: function (source) {
       const $source = $(source);
 
@@ -2286,16 +2364,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
       this.sourceNav.selectItem($source);
 
       this.updateMainHeading();
-
-      if (this.searching) {
-        // Clear the search value without causing it to update elements
-        this.searchText = null;
-        this.$search.val('');
-        if (this.settings.context === 'index') {
-          Craft.setQueryParam('search', null);
-        }
-        this.stopSearching();
-      }
+      this.clearSearch(false);
 
       // Status menu
       // ----------------------------------------------------------------------
@@ -2426,14 +2495,28 @@ Craft.BaseElementIndex = Garnish.Base.extend(
       return true;
     },
 
-    selectSourceByKey: function (key) {
-      var $source = this.getSourceByKey(key);
+    asyncSelectSource: async function (source) {
+      await this.ensureSourceAttributeInfo(source);
+      return this.selectSource(source);
+    },
 
-      if ($source) {
-        return this.selectSource($source);
-      } else {
+    /**
+     * @deprecated in 5.9.0. Use asyncSelectSourceByKey() instead.
+     */
+    selectSourceByKey: function (key) {
+      const $source = this.getSourceByKey(key);
+      if (!$source) {
         return false;
       }
+      return this.selectSource($source);
+    },
+
+    asyncSelectSourceByKey: async function (key) {
+      const $source = this.getSourceByKey(key);
+      if (!$source) {
+        return false;
+      }
+      return this.asyncSelectSource($source);
     },
 
     getSourceData($source, key) {
@@ -2980,7 +3063,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
     // UI state handlers
     // -------------------------------------------------------------------------
 
-    _handleSourceSelectionChange: function (event) {
+    _handleSourceSelectionChange: async function () {
       // If the selected source was just removed (maybe because its parent was collapsed),
       // there won't be a selected source
 
@@ -2989,7 +3072,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
         return;
       }
 
-      if (this.selectSource(this.sourceNav.$selectedItem)) {
+      if (await this.asyncSelectSource(this.sourceNav.$selectedItem)) {
         this.updateElements();
       }
     },
@@ -3066,31 +3149,22 @@ Craft.BaseElementIndex = Garnish.Base.extend(
       this.updateElements();
     },
 
-    _handleSiteChange: function (ev) {
+    _handleSiteChange: async function (ev) {
       this.siteMenu.$options.removeClass('sel');
       var $option = $(ev.selectedOption).addClass('sel');
       this.$siteMenuBtn.html($option.html());
-      this._setSite($option.data('site-id'));
+      await this._setSite($option.data('site-id'));
       if (this.initialized) {
         this.updateElements();
       }
       this.onSelectSite();
     },
 
-    _setSite: function (siteId) {
+    _setSite: async function (siteId) {
       let firstSite = this.siteId === null;
       this.siteId = siteId;
 
       this.updateSourceVisibility();
-
-      if (
-        this.initialized &&
-        !firstSite &&
-        (!this.$source || !this.$source.length) &&
-        this.$visibleSources.length
-      ) {
-        this.selectSource(this.$visibleSources[0]);
-      }
 
       // Hide any empty-nester headings
       var $headings = this.getSourceContainer().children('.heading');
@@ -3098,7 +3172,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 
       for (let i = 0; i < $headings.length; i++) {
         $heading = $headings.eq(i);
-        if ($heading.has('> ul > li:not(.hidden)').length !== 0) {
+        if ($heading.has('> ul > li .source-item:not(.hidden)').length !== 0) {
           $heading.removeClass('hidden');
         } else {
           $heading.addClass('hidden');
@@ -3110,9 +3184,21 @@ Craft.BaseElementIndex = Garnish.Base.extend(
           // Remember this site for later
           Craft.cp.setSiteId(siteId);
         }
-
-        this.updateFilterBtn();
       }
+
+      const selectSource =
+        this.initialized &&
+        !firstSite &&
+        (!this.$source || !this.$source.length) &&
+        this.$visibleSources.length;
+
+      return new Promise(async (resolve) => {
+        if (selectSource) {
+          await this.asyncSelectSource(this.$visibleSources[0]);
+        }
+
+        resolve();
+      });
     },
 
     updateSourceVisibility: function () {
@@ -3973,7 +4059,6 @@ const SourceNav = Garnish.Base.extend(
     $container: null,
     $items: null,
     $selectedItem: null,
-    $disclosures: null,
 
     init: function (container, settings) {
       this.$container = $(container);

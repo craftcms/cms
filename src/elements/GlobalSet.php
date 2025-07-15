@@ -227,6 +227,13 @@ class GlobalSet extends Element implements FieldLayoutProviderInterface
             'except' => [self::SCENARIO_ESSENTIALS],
         ];
 
+        $rules[] = [['fieldLayout'], function() {
+            $fieldLayout = $this->getFieldLayout();
+            if (!$fieldLayout->validate()) {
+                $this->addModelErrors($fieldLayout, 'fieldLayout');
+            }
+        }];
+
         return $rules;
     }
 

@@ -363,7 +363,11 @@ class FileHelper extends \yii\helpers\FileHelper
      */
     public static function getMimeType($file, $magicFile = null, $checkExtension = true): ?string
     {
-        $mimeType = parent::getMimeType($file, $magicFile, $checkExtension);
+        try {
+            $mimeType = parent::getMimeType($file, $magicFile, $checkExtension);
+        } catch (ErrorException $e) {
+            $mimeType = null;
+        }
 
         // Be forgiving of SVG files, etc., that don't have an XML declaration
         if ($checkExtension && ($mimeType === null || !static::canTrustMimeType($mimeType))) {

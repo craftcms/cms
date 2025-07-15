@@ -387,14 +387,12 @@ EOD;
         $fieldsService = static::$app->getFields();
         /** @var FieldInterface[] $fields */
         $fields = $fieldsService->getAllFields(false);
-        $fieldHandles = array_map(fn(FieldInterface $field) => $field->handle, $fields);
         $generatedFieldHandles = [];
 
         foreach ($fieldsService->getAllLayouts() as $layout) {
             foreach ($layout->getCustomFields() as $field) {
                 if ($field->handle !== $field->layoutElement->getOriginalHandle()) {
                     $fields[] = $field;
-                    $fieldHandles[] = $field->handle;
                 }
             }
             foreach ($layout->getGeneratedFields() as $generatedField) {
@@ -406,7 +404,8 @@ EOD;
         }
 
         // Sort custom fields by handle
-        array_multisort($fieldHandles, SORT_ASC, $fields);
+        // Note: we can't use array_multisort here! https://github.com/craftcms/cms/issues/17556
+        usort($fields, fn(FieldInterface $a, FieldInterface $b) => $a->handle <=> $b->handle);
 
         return [$fields, array_keys($generatedFieldHandles)];
     }
