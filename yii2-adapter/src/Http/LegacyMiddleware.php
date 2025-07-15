@@ -11,11 +11,9 @@ namespace Craft\Yii2Adapter\Http;
 
 use Closure;
 use Craft;
-use Craft\Cms\Support\Arr;
 use Craft\Yii2Adapter\Web\DummyResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
-use Symfony\Component\HttpFoundation\InputBag;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 use yii\base\ExitException as YiiExitException;
 use yii\web\HttpException as YiiHttpException;
@@ -124,7 +122,7 @@ class LegacyMiddleware
         }
     }
 
-    private function restoreValue($request, $key, $value): void
+    private function restoreValue(Request $request, $key, $value): void
     {
         if (!$request->has($key)) {
             return;
@@ -140,11 +138,8 @@ class LegacyMiddleware
             return;
         }
 
-        $data = $request->request->all();
-
-        // Use Arr::set() which supports dotted keys
-        Arr::set($data, $key, '');
-
-        $request->request = new InputBag($data);
+        $request->merge([
+            $key => '',
+        ]);
     }
 }
