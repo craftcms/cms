@@ -1,6 +1,8 @@
 <?php
+
 /**
  * @link https://craftcms.com/
+ *
  * @copyright Copyright (c) Pixel & Tonic, Inc.
  * @license https://craftcms.github.io/license/
  */
@@ -30,6 +32,7 @@ use Illuminate\Support\Facades\Event;
  * The Utilities service provides APIs for managing utilities.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
+ *
  * @since 6.0.0
  */
 class Utilities
@@ -38,6 +41,7 @@ class Utilities
      * Returns all available utility type classes.
      *
      * @return string[]
+     *
      * @phpstan-return class-string<UtilityInterface>[]
      */
     public function getAllUtilityTypes(): array
@@ -53,7 +57,7 @@ class Utilities
             $utilityTypes[] = SystemMessagesUtility::class;
         }
 
-        if (!empty(Craft::$app->getVolumes()->getAllVolumes())) {
+        if (! empty(Craft::$app->getVolumes()->getAllVolumes())) {
             $utilityTypes[] = AssetIndexes::class;
         }
 
@@ -80,15 +84,16 @@ class Utilities
 
         $disabledUtilities = array_flip($generalConfig->disabledUtilities);
 
-        return array_values(array_filter($utilityTypes, fn(string $class) =>
+        return array_values(array_filter($utilityTypes, fn (string $class) =>
             /** @var class-string<UtilityInterface> $class */
-            !isset($disabledUtilities[$class::id()]) && $class::isSelectable()));
+            ! isset($disabledUtilities[$class::id()]) && $class::isSelectable()));
     }
 
     /**
      * Returns all utility type classes that the user has permission to use.
      *
      * @return string[]
+     *
      * @phpstan-return class-string<UtilityInterface>[]
      */
     public function getAuthorizedUtilityTypes(): array
@@ -107,8 +112,7 @@ class Utilities
     /**
      * Returns whether the current user is authorized to use a given utility.
      *
-     * @param class-string<UtilityInterface> $class The utility class
-     * @return bool
+     * @param  class-string<UtilityInterface>  $class  The utility class
      */
     public function checkAuthorization(string $class): bool
     {
@@ -116,10 +120,10 @@ class Utilities
 
         // The Project Config utility is for admins only!
         if ($class === ProjectConfigUtility::class) {
-            if (!Craft::$app->getUser()->getIsAdmin()) {
+            if (! Craft::$app->getUser()->getIsAdmin()) {
                 return false;
             }
-        } elseif (!Craft::$app->getUser()->checkPermission("utility:$utilityId")) {
+        } elseif (! Craft::$app->getUser()->checkPermission("utility:$utilityId")) {
             return false;
         }
 
@@ -134,7 +138,6 @@ class Utilities
     /**
      * Returns a utility class by its ID
      *
-     * @param string $id
      * @return class-string<UtilityInterface>|null
      */
     public function getUtilityTypeById(string $id): ?string

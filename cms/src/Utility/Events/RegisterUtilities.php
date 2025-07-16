@@ -22,6 +22,5 @@ class RegisterUtilities
 {
     public function __construct(
         public array $types
-    ) {
-    }
+    ) {}
 }
