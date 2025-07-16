@@ -8,8 +8,6 @@
 
 namespace craft\markdown;
 
-use craft\helpers\StringHelper;
-
 /**
  * SafeLinkTrait
  *
@@ -28,7 +26,7 @@ trait SafeLinkTrait
         if (
             !$this->parseJavaScriptLinks &&
             isset($block['url']) &&
-            StringHelper::startsWith($block['url'], 'javascript:', false)
+            str_starts_with(strtolower($block['url']), 'javascript:')
         ) {
             return $block['orig'] ?? '';
         }

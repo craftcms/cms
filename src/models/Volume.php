@@ -17,10 +17,10 @@ use craft\base\FsInterface;
 use craft\base\Model;
 use craft\behaviors\FieldLayoutBehavior;
 use Craft\Cms\Support\Arr;
+use Craft\Cms\Support\Str;
 use craft\elements\Asset;
 use craft\fs\MissingFs;
 use craft\helpers\App;
-use craft\helpers\StringHelper;
 use craft\helpers\UrlHelper;
 use craft\records\Volume as VolumeRecord;
 use craft\validators\HandleValidator;
@@ -520,7 +520,7 @@ class Volume extends Model implements
     public function getRootUrl(): ?string
     {
         $rootUrl = $this->getFs()->getRootUrl() ?? '';
-        return ($rootUrl !== '' ? StringHelper::ensureRight($rootUrl, '/') : '') . $this->getSubpath();
+        return ($rootUrl !== '' ? Str::finish($rootUrl, '/') : '') . $this->getSubpath();
     }
 
     /**

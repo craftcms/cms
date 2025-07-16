@@ -8,13 +8,13 @@
 namespace crafttests\unit\services;
 
 use Craft;
+use Craft\Cms\Support\Str;
 use craft\db\Query;
 use craft\db\Table;
 use craft\elements\User;
 use craft\enums\CmsEdition;
 use craft\events\UserEvent;
 use craft\helpers\Db;
-use craft\helpers\StringHelper;
 use craft\mail\Message;
 use craft\services\Users;
 use craft\test\EventItem;
@@ -470,7 +470,7 @@ class UsersTest extends TestCase
     {
         // Ensure we know what the unhashed code is - so we can compare against it later.
         $this->tester->mockCraftMethods('security', [
-            'generateRandomString' => $string = StringHelper::randomString(32),
+            'generateRandomString' => $string = Str::random(32),
         ]);
 
         // Test send activation email with password null

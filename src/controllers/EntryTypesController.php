@@ -12,12 +12,12 @@ use craft\base\ElementContainerFieldInterface;
 use craft\base\FieldInterface;
 use craft\base\FieldLayoutElement;
 use Craft\Cms\Support\Arr;
+use Craft\Cms\Support\Str;
 use craft\elements\Entry;
 use craft\enums\Color;
 use craft\fieldlayoutelements\entries\EntryTitleField;
 use craft\helpers\Cp;
 use craft\helpers\Html;
-use craft\helpers\StringHelper;
 use craft\models\EntryType;
 use craft\models\Section;
 use craft\web\Controller;
@@ -326,7 +326,7 @@ class EntryTypesController extends Controller
         $entryType->handle = $this->request->getBodyParam('handle') ?? $entryType->handle;
         $entryType->description = $this->request->getBodyParam('description') ?? $entryType->description;
 
-        $namespace = StringHelper::randomString(10);
+        $namespace = Str::random(10);
         $view = Craft::$app->getView();
 
         $html = $view->namespaceInputs(

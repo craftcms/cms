@@ -12,6 +12,7 @@ use Craft\Aliases\Facades\Aliases;
 use craft\base\FsInterface;
 use craft\base\UtilityInterface;
 use Craft\Cms\Support\Arr;
+use Craft\Cms\Support\Str;
 use craft\enums\CmsEdition;
 use craft\events\FormActionsEvent;
 use craft\events\RegisterCpNavItemsEvent;
@@ -20,7 +21,6 @@ use craft\helpers\App;
 use craft\helpers\Assets;
 use craft\helpers\Cp as CpHelper;
 use craft\helpers\Inflector;
-use craft\helpers\StringHelper;
 use craft\helpers\UrlHelper;
 use craft\i18n\Locale;
 use craft\models\FieldLayout;
@@ -679,7 +679,7 @@ class Cp extends Component
         foreach (array_keys($_SERVER) as $var) {
             if (
                 is_string($var) &&
-                !StringHelper::startsWith($var, 'HTTP_') &&
+                !str_starts_with($var, 'HTTP_') &&
                 is_string($value = App::env($var)) &&
                 ($allowedValues === null || isset($allowedValues[$value]))
             ) {
@@ -953,7 +953,7 @@ class Cp extends Component
             return null;
         }
 
-        return StringHelper::asciiCharMap(true, $language);
+        return Str::asciiCharMap(true, $language);
     }
 
     /**

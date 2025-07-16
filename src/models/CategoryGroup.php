@@ -14,10 +14,10 @@ use craft\base\FieldLayoutProviderInterface;
 use craft\base\Model;
 use craft\behaviors\FieldLayoutBehavior;
 use Craft\Cms\Support\Arr;
+use Craft\Cms\Support\Str;
 use craft\db\Table;
 use craft\elements\Category;
 use craft\helpers\Db;
-use craft\helpers\StringHelper;
 use craft\helpers\UrlHelper;
 use craft\records\CategoryGroup as CategoryGroupRecord;
 use craft\validators\HandleValidator;
@@ -276,7 +276,7 @@ class CategoryGroup extends Model implements
             'name' => $this->name,
             'handle' => $this->handle,
             'structure' => [
-                'uid' => $this->structureId ? Db::uidById(Table::STRUCTURES, $this->structureId) : StringHelper::UUID(),
+                'uid' => $this->structureId ? Db::uidById(Table::STRUCTURES, $this->structureId) : Str::uuid()->toString(),
                 'maxLevels' => (int)$this->maxLevels ?: null,
             ],
             'siteSettings' => [],

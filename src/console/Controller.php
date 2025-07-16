@@ -7,12 +7,11 @@
 
 namespace craft\console;
 
-use craft\console\controllers\ResaveController;
+use Craft\Cms\Support\Str;
 use craft\events\DefineConsoleActionsEvent;
 use craft\helpers\Console;
 use craft\helpers\FileHelper;
 use craft\helpers\Json;
-use craft\helpers\StringHelper;
 use ReflectionFunction;
 use ReflectionFunctionAbstract;
 use ReflectionMethod;
@@ -417,7 +416,7 @@ class Controller extends YiiController
             'confirm' => true,
         ];
 
-        $options['label'] = StringHelper::ensureRight($options['label'], ' ');
+        $options['label'] = Str::finish($options['label'], ' ');
 
         // todo: would be nice to replace CliPrompt with a native Yii silent prompt
         // (https://github.com/yiisoft/yii2/issues/10551)

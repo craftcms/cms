@@ -5,7 +5,6 @@ namespace craft\base\conditions;
 use craft\helpers\Cp;
 use craft\helpers\Db;
 use craft\helpers\Html;
-use craft\helpers\StringHelper;
 use yii\base\InvalidConfigException;
 
 /**
@@ -164,9 +163,9 @@ abstract class BaseTextConditionRule extends BaseConditionRule
             self::OPERATOR_LTE => $value <= $this->value,
             self::OPERATOR_GT => $value > $this->value,
             self::OPERATOR_GTE => $value >= $this->value,
-            self::OPERATOR_BEGINS_WITH => is_string($value) && StringHelper::startsWith($value, $this->value),
-            self::OPERATOR_ENDS_WITH => is_string($value) && StringHelper::endsWith($value, $this->value),
-            self::OPERATOR_CONTAINS => is_string($value) && StringHelper::contains($value, $this->value),
+            self::OPERATOR_BEGINS_WITH => is_string($value) && str_starts_with($value, $this->value),
+            self::OPERATOR_ENDS_WITH => is_string($value) && str_ends_with($value, $this->value),
+            self::OPERATOR_CONTAINS => is_string($value) && str_contains($value, $this->value),
             default => throw new InvalidConfigException("Invalid operator: $this->operator"),
         };
     }

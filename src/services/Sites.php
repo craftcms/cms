@@ -11,6 +11,7 @@ use Craft;
 use craft\base\ElementInterface;
 use craft\base\MemoizableArray;
 use Craft\Cms\Support\Arr;
+use Craft\Cms\Support\Str;
 use craft\db\Query;
 use craft\db\Table;
 use craft\elements\Asset;
@@ -26,7 +27,6 @@ use craft\events\SiteGroupEvent;
 use craft\helpers\App;
 use craft\helpers\Db;
 use craft\helpers\Queue;
-use craft\helpers\StringHelper;
 use craft\models\Site;
 use craft\models\SiteGroup;
 use craft\queue\jobs\PropagateElements;
@@ -275,7 +275,7 @@ class Sites extends Component
         }
 
         if ($isNewGroup) {
-            $group->uid = StringHelper::UUID();
+            $group->uid = Str::uuid()->toString();
         } elseif (!$group->uid) {
             $group->uid = Db::uidById(Table::SITEGROUPS, $group->id);
         }
@@ -728,7 +728,7 @@ class Sites extends Component
         }
 
         if ($isNewSite) {
-            $site->uid = StringHelper::UUID();
+            $site->uid = Str::uuid()->toString();
             $site->sortOrder = ((int)(new Query())
                     ->from([Table::SITES])
                     ->where(['dateDeleted' => null])

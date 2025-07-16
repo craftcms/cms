@@ -9,7 +9,7 @@ namespace craft\web;
 
 use Craft;
 use Craft\Cms\Support\Arr;
-use craft\helpers\StringHelper;
+use Craft\Cms\Support\Str;
 use craft\validators\HandleValidator;
 
 /**
@@ -37,7 +37,7 @@ class UrlRule extends \yii\web\UrlRule
             '{handle}' => sprintf('(?:%s)', HandleValidator::$handlePattern),
             // Reference: http://www.regular-expressions.info/unicode.html
             '{slug}' => sprintf('(?:[\p{L}\p{N}\p{M}%s]+)', preg_quote(implode($slugChars), '/')),
-            '{uid}' => sprintf('(?:%s)', StringHelper::UUID_PATTERN),
+            '{uid}' => sprintf('(?:%s)', Str::uuidPattern()),
         ];
     }
 

@@ -9,10 +9,10 @@ namespace craft\services;
 
 use Craft;
 use Craft\Cms\Support\Arr;
+use Craft\Cms\Support\Str;
 use craft\helpers\App;
 use craft\helpers\FileHelper;
 use craft\helpers\Session;
-use craft\helpers\StringHelper;
 use Exception;
 use GuzzleHttp\Exception\GuzzleException;
 use ReflectionClass;
@@ -215,7 +215,7 @@ class Webpack extends Component
         // Make sure the request isn't too strict for people running the dev server using https and outside the container
         $client = Craft::createGuzzleClient(['verify' => false]);
         try {
-            $res = $client->get(StringHelper::ensureRight($loopback, '/') . 'which-asset');
+            $res = $client->get(Str::finish($loopback, '/') . 'which-asset');
             if ($res->getStatusCode() !== 200) {
                 throw new Exception('Could not connect to dev server.');
             }

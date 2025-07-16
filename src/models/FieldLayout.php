@@ -15,6 +15,7 @@ use craft\base\FieldLayoutElement;
 use craft\base\FieldLayoutProviderInterface;
 use craft\base\Model;
 use Craft\Cms\Support\Arr;
+use Craft\Cms\Support\Str;
 use craft\events\CreateFieldLayoutFormEvent;
 use craft\events\DefineFieldLayoutCustomFieldsEvent;
 use craft\events\DefineFieldLayoutElementsEvent;
@@ -29,7 +30,6 @@ use craft\fieldlayoutelements\Markdown;
 use craft\fieldlayoutelements\Template;
 use craft\fieldlayoutelements\Tip;
 use craft\helpers\Html;
-use craft\helpers\StringHelper;
 use craft\validators\HandleValidator;
 use Generator;
 use yii\base\InvalidArgumentException;
@@ -277,7 +277,7 @@ class FieldLayout extends Model
         parent::init();
 
         if (!isset($this->uid)) {
-            $this->uid = StringHelper::UUID();
+            $this->uid = Str::uuid()->toString();
         }
 
         if (!isset($this->_tabs)) {
@@ -483,7 +483,7 @@ class FieldLayout extends Model
         if (!empty($fields)) {
             foreach ($fields as &$field) {
                 // make sure it has a UUID
-                $field['uid'] ??= StringHelper::UUID();
+                $field['uid'] ??= Str::uuid()->toString();
             }
             $fields = array_values($fields);
         } else {
@@ -785,15 +785,15 @@ class FieldLayout extends Model
      */
     public function resetUids(): void
     {
-        $this->uid = StringHelper::UUID();
+        $this->uid = Str::uuid()->toString();
         $cardView = $this->getCardView();
 
         foreach ($this->getTabs() as $tab) {
-            $tab->uid = StringHelper::UUID();
+            $tab->uid = Str::uuid()->toString();
 
             foreach ($tab->getElements() as $element) {
                 $oldUid = $element->uid;
-                $element->uid = StringHelper::UUID();
+                $element->uid = Str::uuid()->toString();
 
                 $cardViewPos = array_search("layoutElement:$oldUid", $cardView);
                 if ($cardViewPos !== false) {

@@ -14,6 +14,7 @@ use craft\assetpreviews\Text;
 use craft\assetpreviews\Video;
 use craft\base\AssetPreviewHandlerInterface;
 use craft\base\FsInterface;
+use Craft\Cms\Support\Str;
 use craft\db\Query;
 use craft\db\Table;
 use craft\elements\Asset;
@@ -36,7 +37,6 @@ use craft\helpers\Db;
 use craft\helpers\FileHelper;
 use craft\helpers\Image;
 use craft\helpers\Json;
-use craft\helpers\StringHelper;
 use craft\imagetransforms\FallbackTransformer;
 use craft\models\FolderCriteria;
 use craft\models\ImageTransform;
@@ -811,7 +811,7 @@ class Assets extends Component
         $potentialConflicts = [];
 
         foreach ($dbFileList as $filename) {
-            $potentialConflicts[StringHelper::toLowerCase($filename)] = true;
+            $potentialConflicts[mb_strtolower($filename)] = true;
         }
 
         // Check whether a filename we'd want to use does not exist
@@ -830,7 +830,7 @@ class Assets extends Component
         }
 
         // Append a random string at the end too, to avoid race-conditions
-        $base = $buildFilename($base, sprintf('_%s', StringHelper::randomString(4)));
+        $base = $buildFilename($base, sprintf('_%s', Str::random(4)));
 
         $increment = 0;
 

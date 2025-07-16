@@ -8,9 +8,9 @@
 namespace craft\web;
 
 use Craft;
+use Craft\Cms\Support\Str;
 use craft\helpers\Cp;
 use craft\helpers\Html;
-use craft\helpers\StringHelper;
 use craft\helpers\UrlHelper;
 use yii\base\Component;
 use yii\base\InvalidConfigException;
@@ -55,7 +55,7 @@ class CpScreenResponseFormatter extends Component implements ResponseFormatterIn
     {
         $response->format = Response::FORMAT_JSON;
 
-        $namespace = StringHelper::randomString(10);
+        $namespace = Str::random(10);
         $view = Craft::$app->getView();
 
         if ($behavior->prepareScreen) {

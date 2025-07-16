@@ -8,8 +8,8 @@
 namespace craft\behaviors;
 
 use Craft;
+use Craft\Cms\Support\Str;
 use craft\helpers\App;
-use craft\helpers\StringHelper;
 use yii\base\Behavior;
 use yii\base\Model;
 use yii\validators\UrlValidator;
@@ -107,7 +107,7 @@ class EnvAttributeParserBehavior extends Behavior
                     }
 
                     if (is_string($validator->message) && !$securityService->isSensitive($value)) {
-                        $validator->message = StringHelper::ensureRight($validator->message, ' ({value})');
+                        $validator->message = Str::finish($validator->message, ' ({value})');
                     }
                 }
             }

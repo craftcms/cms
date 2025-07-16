@@ -15,6 +15,7 @@ use craft\base\Fs;
 use craft\base\FsInterface;
 use craft\base\LocalFsInterface;
 use Craft\Cms\Support\Arr;
+use Craft\Cms\Support\Str;
 use craft\controllers\ElementIndexesController;
 use craft\controllers\ElementSelectorModalsController;
 use craft\db\Query;
@@ -57,7 +58,6 @@ use craft\helpers\Html;
 use craft\helpers\Image;
 use craft\helpers\ImageTransforms;
 use craft\helpers\Json;
-use craft\helpers\StringHelper;
 use craft\helpers\Template;
 use craft\helpers\UrlHelper;
 use craft\models\FieldLayout;
@@ -769,7 +769,7 @@ class Asset extends Element
                 foreach ($folders as $folder) {
                     $sourcePath = [$baseSourcePathStep];
                     $path = rtrim($baseFolder->path ?? '', '/');
-                    $pathSegs = Arr::whereNotEmpty(explode('/', StringHelper::removeLeft($folder['path'], $baseFolder->path ?? '')));
+                    $pathSegs = Arr::whereNotEmpty(explode('/', Str::chopStart($folder['path'], $baseFolder->path ?? '')));
                     foreach ($pathSegs as $i => $seg) {
                         $path .= ($path !== '' ? '/' : '') . $seg;
                         if (isset($foldersByPath[$path])) {
@@ -792,8 +792,7 @@ class Asset extends Element
                     }
 
                     $path = rtrim($folder->path, '/');
-                    $path = StringHelper::removeRight($path, $folder->name);
-                    $path = StringHelper::removeLeft($path, $queryFolder->path ?? '');
+                    $path = Str::between($path, $queryFolder->path ?? '', $folder->name);
 
                     $assets[] = new self([
                         'isFolder' => true,

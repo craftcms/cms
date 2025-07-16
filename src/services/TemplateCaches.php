@@ -9,9 +9,9 @@ namespace craft\services;
 
 use Craft;
 use Craft\Cms\Support\Arr;
+use Craft\Cms\Support\Str;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\Html;
-use craft\helpers\StringHelper;
 use DateTime;
 use Illuminate\Support\Collection;
 use Throwable;
@@ -174,7 +174,7 @@ class TemplateCaches extends Component
 
         // If there are any transform generation URLs in the body, don't cache it.
         // stripslashes($body) in case the URL has been JS-encoded or something.
-        $saveCache = !StringHelper::contains(stripslashes($body), 'assets/generate-transform');
+        $saveCache = !str_contains(stripslashes($body), 'assets/generate-transform');
 
         if ($saveCache) {
             if (!$dep) {
@@ -433,7 +433,7 @@ class TemplateCaches extends Component
 
         $this->_path .= $request->getPathInfo();
         if (!Craft::$app->getDb()->getSupportsMb4()) {
-            $this->_path = StringHelper::encodeMb4($this->_path);
+            $this->_path = Str::encodeMb4($this->_path);
         }
 
         $pageNum = $request->getPageNum();

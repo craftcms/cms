@@ -8,6 +8,7 @@
 namespace crafttests\unit\gql;
 
 use Craft;
+use Craft\Cms\Support\Str;
 use craft\config\GeneralConfig;
 use craft\elements\Asset;
 use craft\gql\base\Directive;
@@ -21,7 +22,6 @@ use craft\gql\GqlEntityRegistry;
 use craft\gql\types\elements\Asset as GqlAssetType;
 use craft\gql\types\elements\Entry as GqlEntryType;
 use craft\helpers\Json;
-use craft\helpers\StringHelper;
 use craft\services\Config;
 use craft\test\mockclasses\elements\ExampleElement;
 use craft\test\mockclasses\gql\MockDirective;
@@ -75,7 +75,7 @@ class DirectiveTest extends TestCase
     {
         /** @var Asset $asset */
         $asset = $this->make(Asset::class, [
-            'filename' => StringHelper::randomString() . '.jpg',
+            'filename' => Str::random() . '.jpg',
             'getMimeType' => 'image/jpeg',
         ]);
 

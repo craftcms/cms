@@ -13,7 +13,6 @@ use craft\elements\Category;
 use craft\errors\InvalidElementException;
 use craft\helpers\Cp;
 use craft\helpers\ElementHelper;
-use craft\helpers\StringHelper;
 use craft\helpers\UrlHelper;
 use craft\models\CategoryGroup;
 use craft\models\CategoryGroup_SiteSettings;
@@ -288,7 +287,7 @@ class CategoriesController extends Controller
         // Save it
         $category->setScenario(Element::SCENARIO_ESSENTIALS);
         if (!Craft::$app->getDrafts()->saveElementAsDraft($category, Craft::$app->getUser()->getId(), null, null, false)) {
-            return $this->asModelFailure($category, StringHelper::upperCaseFirst(Craft::t('app', 'Couldn’t create {type}.', [
+            return $this->asModelFailure($category, mb_ucfirst(Craft::t('app', 'Couldn’t create {type}.', [
                 'type' => Category::lowerDisplayName(),
             ])), 'category');
         }
@@ -379,7 +378,7 @@ class CategoriesController extends Controller
         if (!Craft::$app->getElements()->saveElement($category)) {
             return $this->asModelFailure(
                 $category,
-                StringHelper::upperCaseFirst(Craft::t('app', 'Couldn’t save {type}.', [
+                mb_ucfirst(Craft::t('app', 'Couldn’t save {type}.', [
                     'type' => Category::lowerDisplayName(),
                 ])),
                 $categoryVariable

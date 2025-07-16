@@ -14,11 +14,11 @@ use craft\base\Field;
 use craft\base\InlineEditableFieldInterface;
 use craft\base\MergeableFieldInterface;
 use Craft\Cms\Support\Arr;
+use Craft\Cms\Support\Str;
 use craft\elements\Entry;
 use craft\fields\data\ColorData;
 use craft\helpers\Cp;
 use craft\helpers\Html;
-use craft\helpers\StringHelper;
 use craft\validators\ColorValidator;
 use Illuminate\Support\Collection;
 use yii\db\Schema;
@@ -240,7 +240,7 @@ class Color extends Field implements InlineEditableFieldInterface, MergeableFiel
                 foreach ($this->palette as $color) {
                     if (!$validator->validate($color['color'], $error)) {
                         $this->addError('palette', Craft::t('yii', '{attribute} is invalid.', [
-                            'attribute' => StringHelper::ensureLeft($color['color'] ?? '', '#'),
+                            'attribute' => Str::start($color['color'] ?? '', '#'),
                         ]));
                     }
                 }

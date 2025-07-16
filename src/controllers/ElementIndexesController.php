@@ -14,6 +14,7 @@ use craft\base\ElementActionInterface;
 use craft\base\ElementExporterInterface;
 use craft\base\ElementInterface;
 use Craft\Cms\Support\Arr;
+use Craft\Cms\Support\Str;
 use craft\db\ExcludeDescendantIdsExpression;
 use craft\elements\actions\DeleteActionInterface;
 use craft\elements\actions\Restore;
@@ -26,7 +27,6 @@ use craft\events\ElementActionEvent;
 use craft\helpers\Component;
 use craft\helpers\ElementHelper;
 use craft\helpers\Html;
-use craft\helpers\StringHelper;
 use craft\models\FieldLayout;
 use craft\services\ElementSources;
 use Illuminate\Support\Collection;
@@ -554,7 +554,7 @@ class ElementIndexesController extends BaseElementsController
 
         // get all the elements
         $elementIds = array_map(
-            fn(string $key) => (int)StringHelper::removeLeft($key, 'element-'),
+            fn(string $key) => (int) Str::chopStart($key, 'element-'),
             array_keys($data),
         );
         $elements = $this->elementType()::find()

@@ -14,6 +14,7 @@ use craft\base\imagetransforms\ImageEditorTransformerInterface;
 use craft\base\imagetransforms\ImageTransformerInterface;
 use craft\base\LocalFsInterface;
 use Craft\Cms\Support\Arr;
+use Craft\Cms\Support\Str;
 use craft\db\Query;
 use craft\db\Table;
 use craft\elements\Asset;
@@ -27,7 +28,6 @@ use craft\helpers\FileHelper;
 use craft\helpers\Image;
 use craft\helpers\ImageTransforms as TransformHelper;
 use craft\helpers\Queue;
-use craft\helpers\StringHelper;
 use craft\helpers\UrlHelper;
 use craft\image\Raster;
 use craft\models\ImageTransform;
@@ -779,7 +779,7 @@ class ImageTransformer extends Component implements ImageTransformerInterface, E
     protected function getTransformBasePath(Asset $asset): string
     {
         $subPath = $asset->getVolume()->getTransformSubpath();
-        $subPath = StringHelper::removeRight($subPath, '/');
+        $subPath = Str::chopEnd($subPath, '/');
         return ($subPath ? $subPath . DIRECTORY_SEPARATOR : '') . $asset->folderPath;
     }
 

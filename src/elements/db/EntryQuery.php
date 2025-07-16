@@ -15,7 +15,6 @@ use craft\db\Table;
 use craft\elements\Entry;
 use craft\enums\CmsEdition;
 use craft\helpers\Db;
-use craft\helpers\StringHelper;
 use craft\models\EntryType;
 use craft\models\Section;
 use craft\models\UserGroup;
@@ -1168,7 +1167,7 @@ class EntryQuery extends ElementQuery implements NestedElementQueryInterface
 
         $refs = $this->ref;
         if (!is_array($refs)) {
-            $refs = is_string($refs) ? StringHelper::split($refs) : [$refs];
+            $refs = is_string($refs) ? str($refs)->explode(',') : [$refs];
         }
 
         $joinSections = false;
