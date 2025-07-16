@@ -1519,6 +1519,7 @@ trait ApplicationTrait
     /**
      * Returns the utilities service.
      *
+     * @deprecated in 6.0.0. [[app(\Craft\Cms\Utility\Utilities)]] should be used instead.
      * @return Utilities The utilities service
      */
     public function getUtilities(): Utilities

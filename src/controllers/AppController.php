@@ -13,6 +13,7 @@ use craft\base\ElementInterface;
 use craft\base\Iconic;
 use craft\base\UtilityInterface;
 use Craft\Cms\Support\Arr;
+use Craft\Cms\Utility\Utilities;
 use craft\elements\db\NestedElementQueryInterface;
 use craft\enums\CmsEdition;
 use craft\enums\LicenseKeyStatus;
@@ -374,7 +375,7 @@ class AppController extends Controller
         $this->requireAcceptsJson();
 
         $badgeCount = 0;
-        $utilities = Craft::$app->getUtilities()->getAuthorizedUtilityTypes();
+        $utilities = app(Utilities::class)->getAuthorizedUtilityTypes();
 
         foreach ($utilities as $class) {
             /** @var UtilityInterface $class */

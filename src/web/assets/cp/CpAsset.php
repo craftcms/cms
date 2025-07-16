@@ -12,6 +12,7 @@ use craft\base\ElementInterface;
 use craft\base\FieldInterface;
 use Craft\Cms\Announcement\Announcements;
 use Craft\Cms\Support\Str;
+use Craft\Cms\Utility\Utilities;
 use craft\config\GeneralConfig;
 use craft\elements\User;
 use craft\enums\CmsEdition;
@@ -587,7 +588,7 @@ JS;
             'appId' => Craft::$app->id,
             'autofocusPreferred' => $currentUser->getAutofocusPreferred(),
             'autosaveDrafts' => $generalConfig->autosaveDrafts,
-            'canAccessQueueManager' => Craft::$app->getUtilities()->checkAuthorization(QueueManager::class),
+            'canAccessQueueManager' => app(Utilities::class)->checkAuthorization(QueueManager::class),
             'dataAttributes' => Html::$dataAttributes,
             'defaultIndexCriteria' => [],
             'disableAutofocus' => (bool)(

@@ -34,7 +34,7 @@ class UtilityAccess extends ActionFilter
      */
     public function beforeAction($action): bool
     {
-        if (!Craft::$app->getUtilities()->checkAuthorization($this->utility)) {
+        if (!app(Craft\Cms\Utility\Utilities::class)->checkAuthorization($this->utility)) {
             throw new ForbiddenHttpException('User is not authorized to perform this action.');
         }
 

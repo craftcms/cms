@@ -27,6 +27,7 @@ use craft\base\Thumbable;
 use craft\behaviors\DraftBehavior;
 use Craft\Cms\Support\Arr;
 use Craft\Cms\Support\Str;
+use Craft\Cms\Utility\Utilities;
 use craft\elements\Address;
 use craft\enums\AttributeStatus;
 use craft\enums\CmsEdition;
@@ -179,7 +180,7 @@ class Cp
             ]);
         }
 
-        $utilitiesService = Craft::$app->getUtilities();
+        $utilitiesService = app(Utilities::class);
 
         // Critical update available?
         if (

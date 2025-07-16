@@ -13,6 +13,7 @@ use craft\base\FsInterface;
 use craft\base\UtilityInterface;
 use Craft\Cms\Support\Arr;
 use Craft\Cms\Support\Str;
+use Craft\Cms\Utility\Utilities;
 use craft\enums\CmsEdition;
 use craft\events\FormActionsEvent;
 use craft\events\RegisterCpNavItemsEvent;
@@ -315,7 +316,7 @@ class Cp extends Component
             }
         }
 
-        $utilities = Craft::$app->getUtilities()->getAuthorizedUtilityTypes();
+        $utilities = app(Utilities::class)->getAuthorizedUtilityTypes();
 
         if (!empty($utilities)) {
             $badgeCount = 0;

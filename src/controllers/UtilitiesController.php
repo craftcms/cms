@@ -9,6 +9,7 @@ namespace craft\controllers;
 
 use Craft;
 use craft\base\UtilityInterface;
+use Craft\Cms\Utility\Utilities;
 use craft\errors\MigrationException;
 use craft\filters\UtilityAccess;
 use craft\helpers\Cp;
@@ -76,7 +77,7 @@ class UtilitiesController extends Controller
      */
     public function actionIndex(): Response
     {
-        $utilities = Craft::$app->getUtilities()->getAuthorizedUtilityTypes();
+        $utilities = app(Utilities::class)->getAuthorizedUtilityTypes();
 
         if (empty($utilities)) {
             throw new ForbiddenHttpException('User not permitted to view Utilities');
@@ -108,7 +109,7 @@ class UtilitiesController extends Controller
      */
     public function actionShowUtility(string $id): Response
     {
-        $utilitiesService = Craft::$app->getUtilities();
+        $utilitiesService = app(Utilities::class);
         $class = $utilitiesService->getUtilityTypeById($id);
 
         if ($class === null) {
@@ -322,7 +323,7 @@ class UtilitiesController extends Controller
     {
         $info = [];
 
-        foreach (Craft::$app->getUtilities()->getAuthorizedUtilityTypes() as $class) {
+        foreach (app(Utilities::class)->getAuthorizedUtilityTypes() as $class) {
             /** @var class-string<UtilityInterface> $class */
             $info[] = [
                 'id' => $class::id(),
