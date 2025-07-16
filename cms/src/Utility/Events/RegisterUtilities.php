@@ -2,6 +2,8 @@
 
 namespace Craft\Cms\Utility\Events;
 
+use Illuminate\Support\Collection;
+
 /**
  * @event RegisterUtilities The event that is triggered when registering utilities.
  *
@@ -21,6 +23,6 @@ namespace Craft\Cms\Utility\Events;
 class RegisterUtilities
 {
     public function __construct(
-        public array $types
+        public Collection $types,
     ) {}
 }

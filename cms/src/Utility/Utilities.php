@@ -26,6 +26,7 @@ use craft\utilities\QueueManager;
 use craft\utilities\SystemMessages as SystemMessagesUtility;
 use craft\utilities\SystemReport;
 use craft\utilities\Updates as UpdatesUtility;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Event;
 
 /**
@@ -46,36 +47,39 @@ class Utilities
      */
     public function getAllUtilityTypes(): array
     {
-        $utilityTypes = [
-            UpdatesUtility::class,
-            SystemReport::class,
-            ProjectConfigUtility::class,
-            PhpInfo::class,
-        ];
-
-        if (Craft::$app->edition->value >= CmsEdition::Pro->value) {
-            $utilityTypes[] = SystemMessagesUtility::class;
-        }
-
-        if (! empty(Craft::$app->getVolumes()->getAllVolumes())) {
-            $utilityTypes[] = AssetIndexes::class;
-        }
-
-        // Ensure we only implement queue if we can use the corresponding web based controller.
-        if (Craft::$app->getQueue() instanceof QueueInterface) {
-            $utilityTypes[] = QueueManager::class;
-        }
-
-        $utilityTypes[] = ClearCaches::class;
-        $utilityTypes[] = DeprecationErrors::class;
-
         $generalConfig = Craft::$app->getConfig()->getGeneral();
-        if ($generalConfig->backupCommand !== false) {
-            $utilityTypes[] = DbBackup::class;
-        }
 
-        $utilityTypes[] = FindAndReplace::class;
-        $utilityTypes[] = Migrations::class;
+        $utilityTypes = Collection::make()
+            ->push(
+                UpdatesUtility::class,
+                SystemReport::class,
+                ProjectConfigUtility::class,
+                PhpInfo::class,
+            )
+            ->when(
+                Craft::$app->edition->value >= CmsEdition::Pro->value,
+                fn (Collection $c) => $c->push(SystemMessagesUtility::class)
+            )
+            ->when(
+                ! empty(Craft::$app->getVolumes()->getAllVolumes()),
+                fn (Collection $c) => $c->push(AssetIndexes::class)
+            )
+            ->when(
+                Craft::$app->getQueue() instanceof QueueInterface,
+                fn (Collection $c) => $c->push(QueueManager::class)
+            )
+            ->push(
+                ClearCaches::class,
+                DeprecationErrors::class,
+            )
+            ->when(
+                $generalConfig->backupCommand !== false,
+                fn (Collection $c) => $c->push(DbBackup::class)
+            )
+            ->push(
+                FindAndReplace::class,
+                Migrations::class,
+            );
 
         if (Event::hasListeners(RegisterUtilities::class)) {
             Event::dispatch($event = new RegisterUtilities($utilityTypes));
@@ -84,9 +88,11 @@ class Utilities
 
         $disabledUtilities = array_flip($generalConfig->disabledUtilities);
 
-        return array_values(array_filter($utilityTypes, fn (string $class) =>
+        return $utilityTypes
             /** @var class-string<UtilityInterface> $class */
-            ! isset($disabledUtilities[$class::id()]) && $class::isSelectable()));
+            ->filter(fn (string $class) => ! isset($disabledUtilities[$class::id()]) && $class::isSelectable())
+            ->values()
+            ->all();
     }
 
     /**
@@ -98,15 +104,10 @@ class Utilities
      */
     public function getAuthorizedUtilityTypes(): array
     {
-        $utilityTypes = [];
-
-        foreach ($this->getAllUtilityTypes() as $class) {
-            if ($this->checkAuthorization($class)) {
-                $utilityTypes[] = $class;
-            }
-        }
-
-        return $utilityTypes;
+        return Collection::make($this->getAllUtilityTypes())
+            ->filter(fn (string $class) => $this->checkAuthorization($class))
+            ->values()
+            ->all();
     }
 
     /**
@@ -116,14 +117,14 @@ class Utilities
      */
     public function checkAuthorization(string $class): bool
     {
+        // The Project Config utility is for admins only!
+        if ($class === ProjectConfigUtility::class && ! Craft::$app->getUser()->getIsAdmin()) {
+            return false;
+        }
+
         $utilityId = $class::id();
 
-        // The Project Config utility is for admins only!
-        if ($class === ProjectConfigUtility::class) {
-            if (! Craft::$app->getUser()->getIsAdmin()) {
-                return false;
-            }
-        } elseif (! Craft::$app->getUser()->checkPermission("utility:$utilityId")) {
+        if (! Craft::$app->getUser()->checkPermission("utility:$utilityId")) {
             return false;
         }
 
@@ -142,13 +143,8 @@ class Utilities
      */
     public function getUtilityTypeById(string $id): ?string
     {
-        foreach ($this->getAllUtilityTypes() as $class) {
+        return Collection::make($this->getAllUtilityTypes())
             /** @var class-string<UtilityInterface> $class */
-            if ($class::id() === $id) {
-                return $class;
-            }
-        }
-
-        return null;
+            ->first(fn (string $class) => $class::id() === $id);
     }
 }
