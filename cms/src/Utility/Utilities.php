@@ -5,12 +5,12 @@
  * @license https://craftcms.github.io/license/
  */
 
-namespace craft\services;
+namespace Craft\Cms\Utility;
 
 use Craft;
 use craft\base\UtilityInterface;
+use Craft\Cms\Utility\Events\RegisterUtilities;
 use craft\enums\CmsEdition;
-use craft\events\RegisterComponentTypesEvent;
 use craft\queue\QueueInterface;
 use craft\utilities\AssetIndexes;
 use craft\utilities\ClearCaches;
@@ -24,40 +24,16 @@ use craft\utilities\QueueManager;
 use craft\utilities\SystemMessages as SystemMessagesUtility;
 use craft\utilities\SystemReport;
 use craft\utilities\Updates as UpdatesUtility;
-use yii\base\Component;
+use Illuminate\Support\Facades\Event;
 
 /**
  * The Utilities service provides APIs for managing utilities.
  *
- * An instance of the service is available via [[\craft\base\ApplicationTrait::getUtilities()|`Craft::$app->getUtilities()`]].
- *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0.0
+ * @since 6.0.0
  */
-class Utilities extends Component
+class Utilities
 {
-    /**
-     * @event RegisterComponentTypesEvent The event that is triggered when registering utilities.
-     *
-     * Utilities must implement [[UtilityInterface]]. [[\craft\base\Utility]] provides a base implementation.
-     *
-     * Read more about creating utilities in the [documentation](https://craftcms.com/docs/5.x/extend/utilities.html).
-     * ---
-     * ```php
-     * use craft\events\RegisterComponentTypesEvent;
-     * use craft\services\Utilities;
-     * use yii\base\Event;
-     *
-     * Event::on(Utilities::class,
-     *     Utilities::EVENT_REGISTER_UTILITIES,
-     *     function(RegisterComponentTypesEvent $event) {
-     *         $event->types[] = MyUtilityType::class;
-     *     }
-     * );
-     * ```
-     */
-    public const EVENT_REGISTER_UTILITIES = 'registerUtilities';
-
     /**
      * Returns all available utility type classes.
      *
@@ -89,22 +65,19 @@ class Utilities extends Component
         $utilityTypes[] = ClearCaches::class;
         $utilityTypes[] = DeprecationErrors::class;
 
-        $generalConfig = Craft::$app->getConfig()->getGeneral();
-        if ($generalConfig->backupCommand !== false) {
+        if (config('craft.general.backupCommand') !== false) {
             $utilityTypes[] = DbBackup::class;
         }
 
         $utilityTypes[] = FindAndReplace::class;
         $utilityTypes[] = Migrations::class;
 
-        // Fire a 'registerUtilities' event
-        if ($this->hasEventHandlers(self::EVENT_REGISTER_UTILITIES)) {
-            $event = new RegisterComponentTypesEvent(['types' => $utilityTypes]);
-            $this->trigger(self::EVENT_REGISTER_UTILITIES, $event);
+        if (Event::hasListeners(RegisterUtilities::class)) {
+            Event::dispatch($event = new RegisterUtilities($utilityTypes));
             $utilityTypes = $event->types;
         }
 
-        $disabledUtilities = array_flip($generalConfig->disabledUtilities);
+        $disabledUtilities = array_flip(config('craft.general.disabledUtilities'));
 
         return array_values(array_filter($utilityTypes, fn(string $class) =>
             /** @var class-string<UtilityInterface> $class */

@@ -6,6 +6,7 @@ use Craft\Aliases\Facades\Aliases;
 use Craft\Cms\User\Models\User;
 use craft\console\controllers\HelpController;
 use craft\helpers\App;
+use craft\services\Utilities;
 use Craft\Yii2Adapter\Console\LegacyCraftCommand;
 use Exception;
 use Illuminate\Console\Application as ConsoleApplication;
@@ -89,6 +90,8 @@ class Yii2ServiceProvider extends ServiceProvider
 
     public function boot(): void
     {
+        $this->bootEvents();
+
         /**
          * When running in a Craft 5 upgraded project, the User model
          * won't exist. As such we need to use the base model.
@@ -200,5 +203,14 @@ class Yii2ServiceProvider extends ServiceProvider
         }
 
         return " {{$definitionSignature}}";
+    }
+
+    /**
+     * Every legacy class that fires Yii events should listen to
+     * the relevant Laravel event and trigger the Yii event.
+     */
+    private function bootEvents(): void
+    {
+        Utilities::registerEvents();
     }
 }
