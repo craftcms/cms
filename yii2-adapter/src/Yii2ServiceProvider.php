@@ -73,25 +73,27 @@ class Yii2ServiceProvider extends ServiceProvider
             };
 
             if ($this->app->runningInConsole() && !$this->app->runningUnitTests()) {
-                return require $basePath . '/bootstrap/console.php';
+                $app = require $basePath . '/bootstrap/console.php';
+            } else {
+                /**
+                 * Yii seems weird about these
+                 */
+                $_SERVER = array_merge($_SERVER, [
+                    'SCRIPT_FILENAME' => public_path('index.php'),
+                    'SCRIPT_NAME' => '/index.php',
+                ]);
+
+                $app = require $basePath . '/bootstrap/web.php';
             }
 
-            /**
-             * Yii seems weird about these
-             */
-            $_SERVER = array_merge($_SERVER, [
-                'SCRIPT_FILENAME' => public_path('index.php'),
-                'SCRIPT_NAME' => '/index.php',
-            ]);
+            $this->bootEvents();
 
-            return require $basePath . '/bootstrap/web.php';
+            return $app;
         });
     }
 
     public function boot(): void
     {
-        $this->bootEvents();
-
         /**
          * When running in a Craft 5 upgraded project, the User model
          * won't exist. As such we need to use the base model.

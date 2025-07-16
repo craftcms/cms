@@ -8,9 +8,10 @@
 namespace craft\services;
 
 use Craft;
+use craft\base\Event;
 use Craft\Cms\Utility\Events\RegisterUtilities;
 use craft\events\RegisterComponentTypesEvent;
-use Illuminate\Support\Facades\Event;
+use Illuminate\Support\Facades\Event as EventFacade;
 
 /**
  * The Utilities service provides APIs for managing utilities.
@@ -45,10 +46,14 @@ class Utilities extends Craft\Cms\Utility\Utilities
 
     public static function registerEvents(): void
     {
-        Event::listen(RegisterUtilities::class, function(RegisterUtilities $event) {
+        if (!Event::hasHandlers(self::class, self::EVENT_REGISTER_UTILITIES)) {
+            return;
+        }
+
+        EventFacade::listen(RegisterUtilities::class, function(RegisterUtilities $event) {
             $yiiEvent = new RegisterComponentTypesEvent(['types' => $event->types]);
 
-            \craft\base\Event::trigger(self::class, self::EVENT_REGISTER_UTILITIES, $yiiEvent);
+            Event::trigger(self::class, self::EVENT_REGISTER_UTILITIES, $yiiEvent);
 
             $event->types = $yiiEvent->types;
         });
