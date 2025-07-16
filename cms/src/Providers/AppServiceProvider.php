@@ -6,6 +6,7 @@ use Craft\Aliases\Facades\Aliases;
 use Craft\Cms\Http\Middleware\ExtractNamespace;
 use Craft\Cms\Http\Middleware\RequireCpRequest;
 use craft\helpers\FileHelper;
+use Illuminate\Foundation\Console\AboutCommand;
 use Illuminate\Routing\Router;
 use Illuminate\Support\ServiceProvider;
 
@@ -28,6 +29,12 @@ class AppServiceProvider extends ServiceProvider
 
     public function boot(): void
     {
+        AboutCommand::add('Craft CMS', fn () => [
+            'Edition' => \Craft::$app->edition->name,
+            'Schema' => \Craft::$app->schemaVersion,
+            'Version' => \Craft::$app->getVersion(),
+        ]);
+
         $this->bootMiddleware();
 
         $this->loadRoutesFrom("{$this->root}/routes/web.php");
