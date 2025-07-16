@@ -65,7 +65,8 @@ class Utilities
         $utilityTypes[] = ClearCaches::class;
         $utilityTypes[] = DeprecationErrors::class;
 
-        if (config('craft.general.backupCommand') !== false) {
+        $generalConfig = Craft::$app->getConfig()->getGeneral();
+        if ($generalConfig->backupCommand !== false) {
             $utilityTypes[] = DbBackup::class;
         }
 
@@ -77,7 +78,7 @@ class Utilities
             $utilityTypes = $event->types;
         }
 
-        $disabledUtilities = array_flip(config('craft.general.disabledUtilities'));
+        $disabledUtilities = array_flip($generalConfig->disabledUtilities);
 
         return array_values(array_filter($utilityTypes, fn(string $class) =>
             /** @var class-string<UtilityInterface> $class */
