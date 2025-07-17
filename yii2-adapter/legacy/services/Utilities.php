@@ -57,6 +57,10 @@ class Utilities extends Craft\Cms\Utility\Utilities
             Event::trigger(self::class, self::EVENT_REGISTER_UTILITIES, $yiiEvent);
 
             $event->types = Collection::make($yiiEvent->types);
+
+            if ($yiiEvent->handled) {
+                return false;
+            }
         });
     }
 }
