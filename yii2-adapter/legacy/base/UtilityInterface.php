@@ -12,6 +12,7 @@ namespace craft\base;
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
+ * @deprecated in 6.0.0. Utilities should extend [[\Craft\Cms\Utility\Utility]] instead.
  */
 interface UtilityInterface extends ComponentInterface
 {

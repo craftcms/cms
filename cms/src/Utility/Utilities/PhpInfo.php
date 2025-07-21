@@ -5,10 +5,10 @@
  * @license https://craftcms.github.io/license/
  */
 
-namespace craft\utilities;
+namespace Craft\Cms\Utility\Utilities;
 
 use Craft;
-use craft\base\Utility;
+use Craft\Cms\Utility\Utility;
 
 /**
  * PhpInfo represents a PhpInfo dashboard widget.
@@ -56,7 +56,7 @@ class PhpInfo extends Utility
     public static function contentHtml(): string
     {
         return Craft::$app->getView()->renderTemplate('_components/utilities/PhpInfo.twig', [
-            'phpInfo' => self::_phpInfo(),
+            'phpInfo' => self::phpInfo(),
         ]);
     }
 
@@ -65,7 +65,7 @@ class PhpInfo extends Utility
      *
      * @return array
      */
-    private static function _phpInfo(): array
+    private static function phpInfo(): array
     {
         // Remove any arrays from $_ENV and $_SERVER to get around an "Array to string conversion" error
         $envVals = [];
@@ -128,17 +128,18 @@ class PhpInfo extends Utility
         foreach ($sections as $section) {
             $heading = substr($section, 0, strpos($section, '</h2>'));
 
-            if (preg_match_all('#%S%(?:<td>(.*?)</td>)?(?:<td>(.*?)</td>)?(?:<td>(.*?)</td>)?%E%#', $section, $matches, PREG_SET_ORDER) !== 0) {
-                foreach ($matches as $row) {
-                    if (!isset($row[2])) {
-                        continue;
-                    }
+            if (preg_match_all('#%S%(?:<td>(.*?)</td>)?(?:<td>(.*?)</td>)?(?:<td>(.*?)</td>)?%E%#', $section, $matches, PREG_SET_ORDER) === 0) {
+                continue;
+            }
 
-                    $value = $row[2];
-                    $name = $row[1];
-
-                    $phpInfo[$heading][$name] = $security->redactIfSensitive($name, $value);
+            foreach ($matches as $row) {
+                if (!isset($row[2])) {
+                    continue;
                 }
+
+                [, $name, $value] = $row;
+
+                $phpInfo[$heading][$name] = $security->redactIfSensitive($name, $value);
             }
         }
 

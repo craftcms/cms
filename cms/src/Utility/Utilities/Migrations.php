@@ -8,7 +8,7 @@
 namespace Craft\Cms\Utility\Utilities;
 
 use Craft;
-use craft\base\Utility;
+use Craft\Cms\Utility\Utility;
 
 /**
  * Migrations represents a Migrations utility.
