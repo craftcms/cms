@@ -9,7 +9,6 @@ namespace craft\utilities;
 
 use Craft;
 use craft\base\Utility;
-use craft\web\assets\queuemanager\QueueManagerAsset;
 
 /**
  * Queue manager is a utility used for managing jobs in the Queue.
@@ -17,6 +16,7 @@ use craft\web\assets\queuemanager\QueueManagerAsset;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @author Global Network Group | Giel Tettelaar <giel@yellowflash.net>
  * @since 3.4.0
+ * @deprecated in 6.0.0. [[\Craft\Cms\Utility\Utilities\QueueManager]] should be used instead.
  */
 class QueueManager extends Utility
 {
@@ -25,7 +25,7 @@ class QueueManager extends Utility
      */
     public static function displayName(): string
     {
-        return Craft::t('app', 'Queue Manager');
+        return Craft\Cms\Utility\Utilities\QueueManager::displayName();
     }
 
     /**
@@ -33,7 +33,7 @@ class QueueManager extends Utility
      */
     public static function id(): string
     {
-        return 'queue-manager';
+        return Craft\Cms\Utility\Utilities\QueueManager::id();
     }
 
     /**
@@ -41,7 +41,7 @@ class QueueManager extends Utility
      */
     public static function icon(): ?string
     {
-        return 'play';
+        return Craft\Cms\Utility\Utilities\QueueManager::icon();
     }
 
     /**
@@ -49,7 +49,7 @@ class QueueManager extends Utility
      */
     public static function toolbarHtml(): string
     {
-        return Craft::$app->getView()->renderTemplate('_components/utilities/QueueManager/toolbar.twig');
+        return Craft\Cms\Utility\Utilities\QueueManager::toolbarHtml();
     }
 
     /**
@@ -57,7 +57,7 @@ class QueueManager extends Utility
      */
     public static function footerHtml(): string
     {
-        return Craft::$app->getView()->renderTemplate('_components/utilities/QueueManager/footer.twig');
+        return Craft\Cms\Utility\Utilities\QueueManager::footerHtml();
     }
 
     /**
@@ -65,8 +65,6 @@ class QueueManager extends Utility
      */
     public static function contentHtml(): string
     {
-        $view = Craft::$app->getView();
-        $view->registerAssetBundle(QueueManagerAsset::class);
-        return $view->renderTemplate('_components/utilities/QueueManager/content.twig');
+        return Craft\Cms\Utility\Utilities\QueueManager::contentHtml();
     }
 }
