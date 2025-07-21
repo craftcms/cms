@@ -10,12 +10,11 @@
 namespace Craft\Cms\Utility;
 
 use Craft;
-use craft\base\UtilityInterface;
 use Craft\Cms\Utility\Events\RegisterUtilities;
+use Craft\Cms\Utility\Utilities\AssetIndexes;
+use Craft\Cms\Utility\Utilities\ClearCaches;
 use craft\enums\CmsEdition;
 use craft\queue\QueueInterface;
-use craft\utilities\AssetIndexes;
-use craft\utilities\ClearCaches;
 use craft\utilities\DbBackup;
 use craft\utilities\DeprecationErrors;
 use craft\utilities\FindAndReplace;
@@ -41,11 +40,9 @@ class Utilities
     /**
      * Returns all available utility type classes.
      *
-     * @return string[]
-     *
-     * @phpstan-return class-string<UtilityInterface>[]
+     * @return Collection<class-string<Utility>>
      */
-    public function getAllUtilityTypes(): array
+    public function getAllUtilityTypes(): Collection
     {
         $generalConfig = Craft::$app->getConfig()->getGeneral();
 
@@ -89,31 +86,25 @@ class Utilities
         $disabledUtilities = array_flip($generalConfig->disabledUtilities);
 
         return $utilityTypes
-            /** @var class-string<UtilityInterface> $class */
-            ->filter(fn (string $class) => ! isset($disabledUtilities[$class::id()]) && $class::isSelectable())
-            ->values()
-            ->all();
+            /** @var class-string<Utility> $class */
+            ->filter(fn (string $class) => ! isset($disabledUtilities[$class::id()]) && $class::isSelectable());
     }
 
     /**
      * Returns all utility type classes that the user has permission to use.
      *
-     * @return string[]
-     *
-     * @phpstan-return class-string<UtilityInterface>[]
+     * @return Collection<class-string<Utility>>
      */
-    public function getAuthorizedUtilityTypes(): array
+    public function getAuthorizedUtilityTypes(): Collection
     {
         return Collection::make($this->getAllUtilityTypes())
-            ->filter(fn (string $class) => $this->checkAuthorization($class))
-            ->values()
-            ->all();
+            ->filter(fn (string $class) => $this->checkAuthorization($class));
     }
 
     /**
      * Returns whether the current user is authorized to use a given utility.
      *
-     * @param  class-string<UtilityInterface>  $class  The utility class
+     * @param  class-string<Utility>  $class  The utility class
      */
     public function checkAuthorization(string $class): bool
     {
@@ -139,12 +130,12 @@ class Utilities
     /**
      * Returns a utility class by its ID
      *
-     * @return class-string<UtilityInterface>|null
+     * @return class-string<Utility>|null
      */
     public function getUtilityTypeById(string $id): ?string
     {
-        return Collection::make($this->getAllUtilityTypes())
-            /** @var class-string<UtilityInterface> $class */
+        return $this->getAllUtilityTypes()
+            /** @var class-string<Utility> $class */
             ->first(fn (string $class) => $class::id() === $id);
     }
 }

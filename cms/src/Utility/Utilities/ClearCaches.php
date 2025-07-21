@@ -1,61 +1,30 @@
 <?php
-/**
- * @link https://craftcms.com/
- * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license https://craftcms.github.io/license/
- */
 
-namespace craft\utilities;
+namespace Craft\Cms\Utility\Utilities;
 
 use Craft;
-use craft\base\Utility;
 use Craft\Cms\Support\Arr;
+use Craft\Cms\Utility\Events\RegisterCacheOptions;
+use Craft\Cms\Utility\Events\RegisterTagOptions;
+use Craft\Cms\Utility\Utility;
 use craft\db\Table;
-use craft\events\RegisterCacheOptionsEvent;
 use craft\helpers\Db;
-use craft\helpers\FileHelper;
 use craft\web\assets\clearcaches\ClearCachesAsset;
 use Exception;
-use yii\base\Event;
-use yii\base\InvalidArgumentException;
+use Illuminate\Support\Facades\Event;
+use Illuminate\Support\Facades\File;
 
 /**
  * ClearCaches represents a ClearCaches dashboard widget.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0.0
+ *
+ * @since 6.0.0
  */
 class ClearCaches extends Utility
 {
     /**
-     * @event RegisterCacheOptionsEvent The event that is triggered when registering cache options.
-     *
-     * Each option added to [[RegisterCacheOptionsEvent::$options]] should be an array that has the following keys:
-     *
-     * - `key` – An identifying key for the cache option.
-     * - `label` – A human-facing label for the cache option.
-     * - `action` – Either the path to a folder that should be cleared, or a callable that should handle the cache clearing.
-     * - `info` _(optional)_ – A description of the cache option.
-     *
-     * @see cacheOptions()
-     */
-    public const EVENT_REGISTER_CACHE_OPTIONS = 'registerCacheOptions';
-
-    /**
-     * @event RegisterCacheOptionsEvent The event that is triggered when registering cache tag invalidation options.
-     *
-     * Each option added to [[RegisterCacheOptionsEvent::$options]] should be an array that has the following keys:
-     *
-     * - `tag` – The cache tag name that sholud be cleared.
-     * - `label` – A human-facing label for the cache tag option.
-     *
-     * @see tagOptions()
-     * @since 3.5.0
-     */
-    public const EVENT_REGISTER_TAG_OPTIONS = 'registerTagOptions';
-
-    /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public static function displayName(): string
     {
@@ -63,7 +32,7 @@ class ClearCaches extends Utility
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public static function id(): string
     {
@@ -71,7 +40,7 @@ class ClearCaches extends Utility
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public static function icon(): ?string
     {
@@ -79,7 +48,7 @@ class ClearCaches extends Utility
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public static function contentHtml(): string
     {
@@ -115,8 +84,6 @@ class ClearCaches extends Utility
 
     /**
      * Returns all cache options
-     *
-     * @return array
      */
     public static function cacheOptions(): array
     {
@@ -133,18 +100,14 @@ class ClearCaches extends Utility
                 'key' => 'asset',
                 'label' => Craft::t('app', 'Asset caches'),
                 'info' => Craft::t('app', 'Local copies of remote images, generated thumbnails'),
-                'action' => function() use ($pathService) {
+                'action' => function () use ($pathService) {
                     $dirs = [
                         $pathService->getAssetSourcesPath(false),
                         $pathService->getAssetsIconsPath(false),
                         $pathService->getImageTransformsPath(false),
                     ];
                     foreach ($dirs as $dir) {
-                        try {
-                            FileHelper::clearDirectory($dir);
-                        } catch (InvalidArgumentException) {
-                            // the directory doesn't exist
-                        }
+                        File::cleanDirectory($dir);
                     }
                 },
             ],
@@ -170,7 +133,7 @@ class ClearCaches extends Utility
                 'info' => Craft::t('app', 'Contents of {path}', [
                     'path' => '`web/cpresources/`',
                 ]),
-                'action' => function() {
+                'action' => function () {
                     $basePath = Craft::$app->getConfig()->getGeneral()->resourceBasePath;
                     $request = Craft::$app->getRequest();
                     if (
@@ -178,16 +141,22 @@ class ClearCaches extends Utility
                         $request->isWebrootAliasSetDynamically &&
                         str_starts_with($basePath, '@webroot')
                     ) {
-                        throw new Exception("Unable to clear control panel resources because the location isn't known for console commands.\n" .
-                            "Explicitly set the @webroot alias in config/general.php to avoid this error.\n" .
-                            'See https://craftcms.com/docs/5.x/configure.html#aliases for more info.');
+                        throw new Exception("Unable to clear control panel resources because the location isn't known for console commands.\n".
+                            "Explicitly set the @webroot alias in config/general.php to avoid this error.\n".
+                            'See https://craftcms.com/docs/6.x/configure.html#aliases for more info.');
                     }
 
                     $basePath = Craft::getAlias($basePath);
                     if ($basePath !== false && file_exists($basePath)) {
-                        FileHelper::clearDirectory($basePath, [
-                            'except' => ['.gitignore'],
-                        ]);
+                        if (File::exists($basePath.'/.gitignore')) {
+                            $gitignoreContents = File::get($basePath.'/.gitignore');
+                        }
+
+                        File::cleanDirectory($basePath);
+
+                        if (isset($gitignoreContents)) {
+                            File::put($basePath.'/.gitignore', $gitignoreContents);
+                        }
                     }
 
                     // truncate the resourcepaths table while we're at it
@@ -206,7 +175,7 @@ class ClearCaches extends Utility
                 'key' => 'transform-indexes',
                 'label' => Craft::t('app', 'Asset transform index'),
                 'info' => Craft::t('app', 'Record of generated image transforms'),
-                'action' => function() {
+                'action' => function () {
                     Craft::$app->getDb()->createCommand()
                         ->truncateTable(Table::IMAGETRANSFORMINDEX)
                         ->execute();
@@ -215,7 +184,7 @@ class ClearCaches extends Utility
             [
                 'key' => 'asset-indexing-data',
                 'label' => Craft::t('app', 'Asset indexing data'),
-                'action' => function() {
+                'action' => function () {
                     Craft::$app->getDb()->createCommand()
                         ->truncateTable(Table::ASSETINDEXDATA)
                         ->execute();
@@ -223,10 +192,8 @@ class ClearCaches extends Utility
             ],
         ];
 
-        // Fire a 'registerCacheOptions' event
-        if (Event::hasHandlers(self::class, self::EVENT_REGISTER_CACHE_OPTIONS)) {
-            $event = new RegisterCacheOptionsEvent(['options' => $options]);
-            Event::trigger(self::class, self::EVENT_REGISTER_CACHE_OPTIONS, $event);
+        if (Event::hasListeners(RegisterCacheOptions::class)) {
+            Event::dispatch($event = new RegisterCacheOptions($options));
             $options = $event->options;
         }
 
@@ -235,9 +202,6 @@ class ClearCaches extends Utility
 
     /**
      * Returns all cache tag invalidation options.
-     *
-     * @return array
-     * @since 3.5.0
      */
     public static function tagOptions(): array
     {
@@ -255,10 +219,8 @@ class ClearCaches extends Utility
             ];
         }
 
-        // Fire a 'registerTagOptions' event
-        if (Event::hasHandlers(self::class, self::EVENT_REGISTER_TAG_OPTIONS)) {
-            $event = new RegisterCacheOptionsEvent(['options' => $options]);
-            Event::trigger(self::class, self::EVENT_REGISTER_TAG_OPTIONS, $event);
+        if (Event::hasListeners(RegisterTagOptions::class)) {
+            Event::dispatch($event = new RegisterTagOptions($options));
             $options = $event->options;
         }
 

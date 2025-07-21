@@ -8,6 +8,7 @@
 namespace craft\services;
 
 use Craft;
+use craft\base\Component;
 use craft\base\Event;
 use Craft\Cms\Utility\Events\RegisterUtilities;
 use craft\events\RegisterComponentTypesEvent;
@@ -21,7 +22,7 @@ use Illuminate\Support\Facades\Event as EventFacade;
  * @since 3.0.0
  * @deprecated in 6.0.0. [[\Craft\Cms\Utility\Utilities]] should be used instead.
  */
-class Utilities extends Craft\Cms\Utility\Utilities
+class Utilities extends Component
 {
     /**
      * @event RegisterComponentTypesEvent The event that is triggered when registering utilities.
@@ -45,16 +46,29 @@ class Utilities extends Craft\Cms\Utility\Utilities
      */
     public const EVENT_REGISTER_UTILITIES = 'registerUtilities';
 
+    private Craft\Cms\Utility\Utilities $utilities;
+
+    public function init(): void
+    {
+        parent::init();
+
+        $this->utilities = app(Craft\Cms\Utility\Utilities::class);
+    }
+
+    public function getAllUtilityTypes(): array
+    {
+        return $this->utilities
+            ->getAllUtilityTypes()
+            ->values()
+            ->all();
+    }
+
     public static function registerEvents(): void
     {
-        if (!Event::hasHandlers(self::class, self::EVENT_REGISTER_UTILITIES)) {
-            return;
-        }
-
         EventFacade::listen(RegisterUtilities::class, function(RegisterUtilities $event) {
             $yiiEvent = new RegisterComponentTypesEvent(['types' => $event->types->all()]);
 
-            Event::trigger(self::class, self::EVENT_REGISTER_UTILITIES, $yiiEvent);
+            Craft::$app->getUtilities()->trigger(self::EVENT_REGISTER_UTILITIES, $yiiEvent);
 
             $event->types = Collection::make($yiiEvent->types);
 

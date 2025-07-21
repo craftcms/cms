@@ -8,17 +8,19 @@
 namespace craft\events;
 
 use craft\base\Event;
+use craft\models\Volume;
 
 /**
- * RegisterCacheOptionsEvent class.
+ * ListVolumesEvent class.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0.0
+ * @since 4.4.0
+ * @deprecated in 6.0.0. [[\Craft\Cms\Utility\Events\ListVolumes]] should be used instead.
  */
-class RegisterCacheOptionsEvent extends Event
+class ListVolumesEvent extends Event
 {
     /**
-     * @var array List of registered cache options for the Clear Caches tool.
+     * @var Volume[] The volumes to be listed.
      */
-    public array $options = [];
+    public array $volumes = [];
 }

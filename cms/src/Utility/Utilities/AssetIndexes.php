@@ -1,38 +1,35 @@
 <?php
+
 /**
  * @link https://craftcms.com/
+ *
  * @copyright Copyright (c) Pixel & Tonic, Inc.
  * @license https://craftcms.github.io/license/
  */
 
-namespace craft\utilities;
+namespace Craft\Cms\Utility\Utilities;
 
 use Craft;
-use craft\base\Utility;
-use craft\events\ListVolumesEvent;
+use Craft\Cms\Utility\Events\ListVolumes;
+use Craft\Cms\Utility\Utility;
 use craft\helpers\App;
 use craft\helpers\Html;
 use craft\i18n\Locale;
 use craft\models\Volume;
 use craft\web\assets\assetindexes\AssetIndexesAsset;
-use yii\base\Event;
+use Illuminate\Support\Facades\Event;
 
 /**
  * AssetIndexes represents a AssetIndexes dashboard widget.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0.0
+ *
+ * @since 6.0.0
  */
 class AssetIndexes extends Utility
 {
     /**
-     * @event ListVolumesEvent The event that is triggered when listing the available volumes to index.
-     * @since 4.4.0
-     */
-    public const EVENT_LIST_VOLUMES = 'listVolumes';
-
-    /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public static function displayName(): string
     {
@@ -40,7 +37,7 @@ class AssetIndexes extends Utility
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public static function id(): string
     {
@@ -48,7 +45,7 @@ class AssetIndexes extends Utility
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public static function icon(): ?string
     {
@@ -56,19 +53,18 @@ class AssetIndexes extends Utility
     }
 
     /**
-     * Returns all of the available volumes for indexing.
+     * Returns all the available volumes for indexing.
      *
      * @return Volume[]
-     * @since 4.4.6
      */
     public static function volumes(): array
     {
         $volumes = Craft::$app->getVolumes()->getAllVolumes();
 
-        // Fire a 'listVolumes' event
-        if (Event::hasHandlers(self::class, self::EVENT_LIST_VOLUMES)) {
-            $event = new ListVolumesEvent(['volumes' => $volumes]);
-            Event::trigger(self::class, self::EVENT_LIST_VOLUMES, $event);
+        if (Event::hasListeners(ListVolumes::class)) {
+            $event = new ListVolumes($volumes);
+            Event::dispatch($event);
+
             return $event->volumes;
         }
 
@@ -76,7 +72,7 @@ class AssetIndexes extends Utility
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public static function contentHtml(): string
     {

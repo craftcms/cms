@@ -9,7 +9,6 @@ namespace craft\base;
 
 use Craft;
 use Craft\Cms\Announcement\Announcements;
-use Craft\Cms\Utility\Utilities;
 use craft\console\Application as ConsoleApplication;
 use craft\console\Request as ConsoleRequest;
 use craft\db\Connection;
@@ -103,6 +102,7 @@ use craft\services\Updates;
 use craft\services\UserGroups;
 use craft\services\UserPermissions;
 use craft\services\Users;
+use craft\services\Utilities;
 use craft\services\Volumes;
 use craft\services\Webpack;
 use craft\web\Application as WebApplication;

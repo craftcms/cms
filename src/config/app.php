@@ -160,7 +160,9 @@ return [
         'userPermissions' => [
             'class' => craft\services\UserPermissions::class,
         ],
-        'utilities' => \Craft\Cms\Utility\Utilities::class,
+        'utilities' => [
+            'class' => \craft\services\Utilities::class,
+        ],
         'webpack' => [
             'class' => craft\services\Webpack::class,
         ],
