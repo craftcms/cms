@@ -7,10 +7,10 @@
 
 namespace craft\console\controllers;
 
+use Craft\Cms\Utility\Utilities\ClearCaches;
 use craft\console\actions\ClearCacheAction;
 use craft\console\Controller;
 use craft\helpers\Console;
-use Craft\Cms\Utility\Utilities\ClearCaches;
 use yii\base\InvalidRouteException;
 use yii\console\Exception;
 use yii\console\ExitCode;

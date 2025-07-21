@@ -10,6 +10,7 @@ namespace craft\services;
 use Craft;
 use craft\base\UtilityInterface;
 use Craft\Cms\Utility\Utilities;
+use Craft\Cms\Utility\Utilities\ProjectConfig as ProjectConfigUtility;
 use craft\db\Query;
 use craft\db\Table;
 use craft\elements\Asset;
@@ -28,7 +29,6 @@ use craft\helpers\ProjectConfig as ProjectConfigHelper;
 use craft\models\Section;
 use craft\models\UserGroup;
 use craft\records\UserPermission as UserPermissionRecord;
-use Craft\Cms\Utility\Utilities\ProjectConfig as ProjectConfigUtility;
 use yii\base\Component;
 use yii\db\Exception;
 

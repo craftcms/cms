@@ -8,11 +8,11 @@
 namespace craft\controllers;
 
 use Craft;
+use Craft\Cms\Utility\Utilities\QueueManager;
 use craft\filters\UtilityAccess;
 use craft\helpers\App;
 use craft\helpers\Json;
 use craft\queue\QueueInterface;
-use Craft\Cms\Utility\Utilities\QueueManager;
 use craft\web\Controller;
 use yii\base\InvalidArgumentException;
 use yii\db\Exception as YiiDbException;

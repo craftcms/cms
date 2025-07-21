@@ -9,10 +9,10 @@ namespace craft\controllers;
 
 use Craft;
 use Craft\Cms\Support\Str;
+use Craft\Cms\Utility\Utilities\ProjectConfig as ProjectConfigUtility;
 use craft\filters\UtilityAccess;
 use craft\helpers\FileHelper;
 use craft\helpers\ProjectConfig;
-use Craft\Cms\Utility\Utilities\ProjectConfig as ProjectConfigUtility;
 use craft\web\Controller;
 use Symfony\Component\Yaml\Yaml;
 use yii\base\Exception;
