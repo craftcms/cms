@@ -5,7 +5,7 @@
  * @license https://craftcms.github.io/license/
  */
 
-namespace craft\utilities;
+namespace Craft\Cms\Utility\Utilities;
 
 use Craft;
 use craft\base\Utility;
