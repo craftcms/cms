@@ -5,16 +5,15 @@
  * @license https://craftcms.github.io/license/
  */
 
-namespace craft\utilities;
+namespace Craft\Cms\Utility\Utilities;
 
 use Composer\InstalledVersions;
 use Craft;
 use Craft\Aliases\Facades\Aliases;
 use craft\base\PluginInterface;
-use craft\base\Utility;
-use craft\db\Connection;
+use Craft\Cms\Utility\Utility;
 use craft\helpers\App;
-use craft\helpers\Db;
+use Illuminate\Support\Facades\DB;
 use OutOfBoundsException;
 use RequirementsChecker;
 use yii\base\Module;
@@ -23,7 +22,7 @@ use yii\base\Module;
  * SystemReport represents a SystemReport dashboard widget.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0.0
+ * @since 6.0.0
  */
 class SystemReport extends Utility
 {
@@ -56,21 +55,27 @@ class SystemReport extends Utility
      */
     public static function contentHtml(): string
     {
-        $modules = [];
-        foreach (Craft::$app->getModules() as $id => $module) {
-            if ($module instanceof PluginInterface) {
-                continue;
-            }
-            if ($module instanceof Module) {
-                $modules[$id] = get_class($module);
-            } elseif (is_string($module)) {
-                $modules[$id] = $module;
-            } elseif (is_array($module) && isset($module['class'])) {
-                $modules[$id] = $module['class'];
-            } else {
-                $modules[$id] = Craft::t('app', 'Unknown type');
-            }
-        }
+        $modules = collect(Craft::$app->getModules())
+            ->map(function (mixed $module): string {
+                if ($module instanceof PluginInterface) {
+                    return '';
+                }
+
+                if ($module instanceof Module) {
+                    return get_class($module);
+                }
+
+                if (is_string($module)) {
+                    return $module;
+                }
+
+                if (is_array($module) && isset($module['class'])) {
+                    return $module['class'];
+                }
+
+                return Craft::t('app', 'Unknown type');
+            })
+            ->filter();
 
         $aliases = [];
         foreach (Aliases::getAll() as $alias => $value) {
@@ -85,26 +90,24 @@ class SystemReport extends Utility
         ksort($aliases);
 
         return Craft::$app->getView()->renderTemplate('_components/utilities/SystemReport.twig', [
-            'appInfo' => self::_appInfo(),
+            'appInfo' => self::appInfo(),
             'plugins' => Craft::$app->getPlugins()->getAllPlugins(),
             'modules' => $modules,
             'aliases' => $aliases,
-            'requirements' => self::_requirementResults(),
+            'requirements' => self::requirementResults(),
         ]);
     }
 
     /**
      * Returns application info.
-     *
-     * @return array
      */
-    private static function _appInfo(): array
+    private static function appInfo(): array
     {
         $info = [
             'PHP version' => App::phpVersion(),
             'OS version' => PHP_OS . ' ' . php_uname('r'),
-            'Database driver & version' => self::_dbDriver(),
-            'Image driver & version' => self::_imageDriver(),
+            'Database driver & version' => self::dbDriver(),
+            'Image driver & version' => self::imageDriver(),
             'Craft edition & version' => sprintf('Craft %s %s', Craft::$app->edition->name, Craft::$app->getVersion()),
         ];
 
@@ -116,79 +119,69 @@ class SystemReport extends Utility
         }
 
         if (class_exists(InstalledVersions::class, false)) {
-            self::_addVersion($info, 'Laravel version', 'laravel/framework');
-            self::_addVersion($info, 'Yii version', 'yiisoft/yii2');
-            self::_addVersion($info, 'Twig version', 'twig/twig');
-            self::_addVersion($info, 'Guzzle version', 'guzzlehttp/guzzle');
+            $info = self::addVersion($info, 'Laravel version', 'laravel/framework');
+            $info = self::addVersion($info, 'Yii version', 'yiisoft/yii2');
+            $info = self::addVersion($info, 'Twig version', 'twig/twig');
+            $info = self::addVersion($info, 'Guzzle version', 'guzzlehttp/guzzle');
+        }
+
+        return $info;
+    }
+
+    private static function addVersion(array $info, string $label, string $packageName): array
+    {
+        try {
+            $version = InstalledVersions::getPrettyVersion($packageName) ?? InstalledVersions::getVersion($packageName);
+        } catch (OutOfBoundsException) {
+            return $info;
+        }
+
+        if ($version !== null) {
+            $info[$label] = $version;
         }
 
         return $info;
     }
 
     /**
-     * @param array $info
-     * @param string $label
-     * @param string $packageName
-     */
-    private static function _addVersion(array &$info, string $label, string $packageName): void
-    {
-        try {
-            $version = InstalledVersions::getPrettyVersion($packageName) ?? InstalledVersions::getVersion($packageName);
-        } catch (OutOfBoundsException) {
-            return;
-        }
-
-        if ($version !== null) {
-            $info[$label] = $version;
-        }
-    }
-
-    /**
      * Returns the DB driver name and version
-     *
-     * @return string
      */
-    private static function _dbDriver(): string
+    private static function dbDriver(): string
     {
-        $db = Craft::$app->getDb();
-        $label = $db->getDriverLabel();
-        $version = App::normalizeVersion($db->getSchema()->getServerVersion());
+        $label = DB::getDriverTitle();
+        $version = App::normalizeVersion(DB::getServerVersion());
+
         return "$label $version";
     }
 
     /**
      * Returns the image driver name and version
-     *
-     * @return string
      */
-    private static function _imageDriver(): string
+    private static function imageDriver(): string
     {
         $imagesService = Craft::$app->getImages();
 
-        if ($imagesService->getIsGd()) {
-            $driverName = 'GD';
-        } else {
-            $driverName = 'Imagick';
-        }
+        $driverName = $imagesService->getIsGd()
+            ? 'GD'
+            : 'Imagick';
 
         return $driverName . ' ' . $imagesService->getVersion();
     }
 
     /**
      * Runs the requirements checker and returns its results.
-     *
-     * @return array
      */
-    private static function _requirementResults(): array
+    private static function requirementResults(): array
     {
-        $reqCheck = new RequirementsChecker();
-        $dbConfig = Craft::$app->getConfig()->getDb();
-        $reqCheck->dsn = $dbConfig->dsn;
-        $reqCheck->dbDriver = $dbConfig->dsn ? Db::parseDsn($dbConfig->dsn, 'driver') : Connection::DRIVER_MYSQL;
-        $reqCheck->dbUser = $dbConfig->user;
-        $reqCheck->dbPassword = $dbConfig->password;
-        $reqCheck->checkCraft();
+        $checker = new RequirementsChecker();
 
-        return $reqCheck->getResult()['requirements'];
+        $dbConfig = Craft::$app->getConfig()->getDb();
+        $checker->dsn = $dbConfig->dsn;
+        $checker->dbDriver = DB::getDriverName();
+        $checker->dbUser = $dbConfig->user;
+        $checker->dbPassword = $dbConfig->password;
+        $checker->checkCraft();
+
+        return $checker->getResult()['requirements'];
     }
 }
