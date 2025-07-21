@@ -9,14 +9,13 @@ namespace craft\utilities;
 
 use Craft;
 use craft\base\Utility;
-use craft\enums\CmsEdition;
-use craft\web\assets\systemmessages\SystemMessagesAsset;
 
 /**
  * SystemMessages represents a System Messages utility.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.1.0
+ * @deprecated in 6.0.0. [[\Craft\Cms\Utility\Utilities\SystemMessages]] should be used instead.
  */
 class SystemMessages extends Utility
 {
@@ -25,7 +24,7 @@ class SystemMessages extends Utility
      */
     public static function displayName(): string
     {
-        return Craft::t('app', 'System Messages');
+        return Craft\Cms\Utility\Utilities\SystemMessages::displayName();
     }
 
     /**
@@ -33,7 +32,7 @@ class SystemMessages extends Utility
      */
     public static function id(): string
     {
-        return 'system-messages';
+        return Craft\Cms\Utility\Utilities\SystemMessages::id();
     }
 
     /**
@@ -41,7 +40,7 @@ class SystemMessages extends Utility
      */
     public static function icon(): ?string
     {
-        return 'envelope';
+        return Craft\Cms\Utility\Utilities\SystemMessages::icon();
     }
 
     /**
@@ -49,15 +48,6 @@ class SystemMessages extends Utility
      */
     public static function contentHtml(): string
     {
-        Craft::$app->requireEdition(CmsEdition::Pro);
-
-        $view = Craft::$app->getView();
-        $view->registerAssetBundle(SystemMessagesAsset::class);
-
-        $messages = Craft::$app->getSystemMessages()->getAllMessages();
-
-        return $view->renderTemplate('_components/utilities/SystemMessages/index.twig', [
-            'messages' => $messages,
-        ]);
+        return Craft\Cms\Utility\Utilities\SystemMessages::contentHtml();
     }
 }
