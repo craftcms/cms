@@ -22,9 +22,9 @@ use Craft\Cms\Utility\Utilities\ProjectConfig as ProjectConfigUtility;
 use Craft\Cms\Utility\Utilities\QueueManager;
 use Craft\Cms\Utility\Utilities\SystemMessages as SystemMessagesUtility;
 use Craft\Cms\Utility\Utilities\SystemReport;
+use Craft\Cms\Utility\Utilities as UpdatesUtility;
 use craft\enums\CmsEdition;
 use craft\queue\QueueInterface;
-use craft\utilities\Updates as UpdatesUtility;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Event;
 

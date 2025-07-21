@@ -9,13 +9,13 @@ namespace craft\utilities;
 
 use Craft;
 use craft\base\Utility;
-use craft\web\assets\updates\UpdatesAsset;
 
 /**
  * Updates represents a Updates dashboard widget.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
+ * @deprecated in 6.0.0. [[\Craft\Cms\Utility\Utilities\Updates]] should be used instead.
  */
 class Updates extends Utility
 {
@@ -24,7 +24,7 @@ class Updates extends Utility
      */
     public static function displayName(): string
     {
-        return Craft::t('app', 'Updates');
+        return Craft\Cms\Utility\Utilities\Updates::displayName();
     }
 
     /**
@@ -32,7 +32,7 @@ class Updates extends Utility
      */
     public static function id(): string
     {
-        return 'updates';
+        return Craft\Cms\Utility\Utilities\Updates::id();
     }
 
     /**
@@ -40,7 +40,7 @@ class Updates extends Utility
      */
     public static function icon(): ?string
     {
-        return 'certificate';
+        return Craft\Cms\Utility\Utilities\Updates::icon();
     }
 
     /**
@@ -48,7 +48,7 @@ class Updates extends Utility
      */
     public static function badgeCount(): int
     {
-        return Craft::$app->getUpdates()->getTotalAvailableUpdates();
+        return Craft\Cms\Utility\Utilities\Updates::badgeCount();
     }
 
     /**
@@ -56,9 +56,6 @@ class Updates extends Utility
      */
     public static function contentHtml(): string
     {
-        $view = Craft::$app->getView();
-        $view->registerAssetBundle(UpdatesAsset::class);
-        $view->registerJs('new Craft.UpdatesUtility();');
-        return $view->renderTemplate('_components/utilities/Updates.twig');
+        return Craft\Cms\Utility\Utilities\Updates::contentHtml();
     }
 }
