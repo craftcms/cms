@@ -10,7 +10,6 @@ namespace craft\web\twig\variables;
 use Craft;
 use Craft\Aliases\Facades\Aliases;
 use craft\base\FsInterface;
-use craft\base\UtilityInterface;
 use Craft\Cms\Support\Arr;
 use Craft\Cms\Support\Str;
 use Craft\Cms\Utility\Utilities;
@@ -322,7 +321,7 @@ class Cp extends Component
             $badgeCount = 0;
 
             foreach ($utilities as $class) {
-                /** @var UtilityInterface $class */
+                /** @var \Craft\Cms\Utility\Utility $class */
                 $badgeCount += $class::badgeCount();
             }
 

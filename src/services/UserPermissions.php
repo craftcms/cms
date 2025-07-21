@@ -8,7 +8,6 @@
 namespace craft\services;
 
 use Craft;
-use craft\base\UtilityInterface;
 use Craft\Cms\Utility\Utilities;
 use Craft\Cms\Utility\Utilities\ProjectConfig as ProjectConfigUtility;
 use craft\db\Query;
@@ -764,7 +763,7 @@ class UserPermissions extends Component
         $utilityPermissions = [];
 
         foreach (app(Utilities::class)->getAllUtilityTypes() as $class) {
-            /** @var UtilityInterface $class */
+            /** @var \Craft\Cms\Utility\Utility $class */
             // Admins only
             if (ProjectConfigUtility::id() === $class::id()) {
                 continue;

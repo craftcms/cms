@@ -11,7 +11,6 @@ use Craft;
 use craft\base\Chippable;
 use craft\base\ElementInterface;
 use craft\base\Iconic;
-use craft\base\UtilityInterface;
 use Craft\Cms\Support\Arr;
 use Craft\Cms\Utility\Utilities;
 use Craft\Cms\Utility\Utilities\Updates as UpdatesUtility;
@@ -378,7 +377,7 @@ class AppController extends Controller
         $utilities = app(Utilities::class)->getAuthorizedUtilityTypes();
 
         foreach ($utilities as $class) {
-            /** @var UtilityInterface $class */
+            /** @var \Craft\Cms\Utility\Utility $class */
             $badgeCount += $class::badgeCount();
         }
 

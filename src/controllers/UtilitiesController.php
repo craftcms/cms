@@ -8,7 +8,6 @@
 namespace craft\controllers;
 
 use Craft;
-use craft\base\UtilityInterface;
 use Craft\Cms\Utility\Utilities;
 use Craft\Cms\Utility\Utilities\ClearCaches;
 use Craft\Cms\Utility\Utilities\DbBackup;
@@ -79,23 +78,18 @@ class UtilitiesController extends Controller
     {
         $utilities = app(Utilities::class)->getAuthorizedUtilityTypes();
 
-        if (empty($utilities)) {
+        if ($utilities->isEmpty()) {
             throw new ForbiddenHttpException('User not permitted to view Utilities');
         }
 
         // Don’t go to the Updates or Upgrade utilities by default if there are any others
-        $firstUtility = null;
-        foreach ($utilities as $utility) {
-            if (!in_array($utility, [Updates::class, Upgrade::class])) {
-                $firstUtility = $utility;
-                break;
-            }
-        }
+        $firstUtility = $utilities->first(fn(string $utility) => !in_array($utility, [Updates::class, Upgrade::class]));
 
         if (!$firstUtility) {
-            $firstUtility = reset($utilities);
+            $firstUtility = $utilities->first();
         }
 
+        /** @var class-string<\Craft\Cms\Utility\Utility> $firstUtility */
         return $this->redirect('utilities/' . $firstUtility::id());
     }
 
@@ -324,7 +318,7 @@ class UtilitiesController extends Controller
         $info = [];
 
         foreach (app(Utilities::class)->getAuthorizedUtilityTypes() as $class) {
-            /** @var class-string<UtilityInterface> $class */
+            /** @var class-string<\Craft\Cms\Utility\Utility> $class */
             $info[] = [
                 'id' => $class::id(),
                 'iconSvg' => $this->_getUtilityIconSvg($class),
@@ -340,7 +334,7 @@ class UtilitiesController extends Controller
     /**
      * Returns a utility type’s SVG icon.
      *
-     * @param class-string<UtilityInterface> $class
+     * @param class-string<\Craft\Cms\Utility\Utility> $class
      * @return string
      */
     private function _getUtilityIconSvg(string $class): string
@@ -365,7 +359,7 @@ class UtilitiesController extends Controller
     /**
      * Returns the default icon SVG for a given utility type.
      *
-     * @param class-string<UtilityInterface> $class
+     * @param class-string<\Craft\Cms\Utility\Utility> $class
      * @return string
      */
     private function _getDefaultUtilityIconSvg(string $class): string
