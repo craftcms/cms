@@ -9,13 +9,13 @@ namespace craft\utilities;
 
 use Craft;
 use craft\base\Utility;
-use craft\web\assets\deprecationerrors\DeprecationErrorsAsset;
 
 /**
  * DeprecationErrors represents a DeprecationErrors dashboard widget.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
+ * @deprecated in 6.0.0. [[\Craft\Cms\Utility\Utilities\DeprecationErrors]] should be used instead.
  */
 class DeprecationErrors extends Utility
 {
@@ -24,7 +24,7 @@ class DeprecationErrors extends Utility
      */
     public static function displayName(): string
     {
-        return Craft::t('app', 'Deprecation Warnings');
+        return Craft\Cms\Utility\Utilities\DeprecationErrors::displayName();
     }
 
     /**
@@ -32,7 +32,7 @@ class DeprecationErrors extends Utility
      */
     public static function id(): string
     {
-        return 'deprecation-errors';
+        return Craft\Cms\Utility\Utilities\DeprecationErrors::id();
     }
 
     /**
@@ -40,7 +40,7 @@ class DeprecationErrors extends Utility
      */
     public static function icon(): ?string
     {
-        return 'bug';
+        return Craft\Cms\Utility\Utilities\DeprecationErrors::icon();
     }
 
     /**
@@ -48,7 +48,7 @@ class DeprecationErrors extends Utility
      */
     public static function badgeCount(): int
     {
-        return Craft::$app->getDeprecator()->getTotalLogs();
+        return Craft\Cms\Utility\Utilities\DeprecationErrors::badgeCount();
     }
 
     /**
@@ -56,12 +56,6 @@ class DeprecationErrors extends Utility
      */
     public static function contentHtml(): string
     {
-        $view = Craft::$app->getView();
-
-        $view->registerAssetBundle(DeprecationErrorsAsset::class);
-
-        return $view->renderTemplate('_components/utilities/DeprecationErrors/index.twig', [
-            'logs' => Craft::$app->getDeprecator()->getLogs(),
-        ]);
+        return Craft\Cms\Utility\Utilities\DeprecationErrors::contentHtml();
     }
 }
