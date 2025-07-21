@@ -1,6 +1,8 @@
 <?php
+
 /**
  * @link https://craftcms.com/
+ *
  * @copyright Copyright (c) Pixel & Tonic, Inc.
  * @license https://craftcms.github.io/license/
  */
@@ -16,12 +18,13 @@ use craft\web\assets\systemmessages\SystemMessagesAsset;
  * SystemMessages represents a System Messages utility.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
+ *
  * @since 6.0.0
  */
 class SystemMessages extends Utility
 {
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public static function displayName(): string
     {
@@ -29,7 +32,7 @@ class SystemMessages extends Utility
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public static function id(): string
     {
@@ -37,7 +40,7 @@ class SystemMessages extends Utility
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public static function icon(): ?string
     {
@@ -45,7 +48,7 @@ class SystemMessages extends Utility
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public static function contentHtml(): string
     {

@@ -1,6 +1,8 @@
 <?php
+
 /**
  * @link https://craftcms.com/
+ *
  * @copyright Copyright (c) Pixel & Tonic, Inc.
  * @license https://craftcms.github.io/license/
  */
@@ -15,12 +17,13 @@ use craft\web\assets\updates\UpdatesAsset;
  * Updates represents a Updates dashboard widget.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
+ *
  * @since 6.0.0
  */
 class Updates extends Utility
 {
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public static function displayName(): string
     {
@@ -28,7 +31,7 @@ class Updates extends Utility
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public static function id(): string
     {
@@ -36,7 +39,7 @@ class Updates extends Utility
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public static function icon(): ?string
     {
@@ -44,7 +47,7 @@ class Updates extends Utility
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public static function badgeCount(): int
     {
@@ -52,7 +55,7 @@ class Updates extends Utility
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public static function contentHtml(): string
     {

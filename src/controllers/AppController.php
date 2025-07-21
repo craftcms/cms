@@ -34,7 +34,7 @@ use craft\helpers\Update as UpdateHelper;
 use craft\helpers\UrlHelper;
 use craft\models\Update;
 use craft\models\Updates;
-use craft\utilities\Updates as UpdatesUtility;
+use Craft\Cms\Utility\Utilities\Updates as UpdatesUtility;
 use craft\web\Controller;
 use craft\web\ServiceUnavailableHttpException;
 use DateInterval;

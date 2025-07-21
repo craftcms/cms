@@ -11,7 +11,7 @@ use Craft;
 use craft\enums\CmsEdition;
 use craft\filters\UtilityAccess;
 use craft\models\SystemMessage;
-use craft\utilities\SystemMessages;
+use Craft\Cms\Utility\Utilities\SystemMessages;
 use craft\web\Controller;
 use yii\web\Response;
 

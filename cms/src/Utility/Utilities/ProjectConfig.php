@@ -1,6 +1,8 @@
 <?php
+
 /**
  * @link https://craftcms.com/
+ *
  * @copyright Copyright (c) Pixel & Tonic, Inc.
  * @license https://craftcms.github.io/license/
  */
@@ -16,12 +18,13 @@ use Symfony\Component\Yaml\Yaml;
  * ProjectConfig represents a ProjectConfig utility.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
+ *
  * @since 6.0.0
  */
 class ProjectConfig extends Utility
 {
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public static function displayName(): string
     {
@@ -29,7 +32,7 @@ class ProjectConfig extends Utility
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public static function id(): string
     {
@@ -37,7 +40,7 @@ class ProjectConfig extends Utility
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public static function icon(): ?string
     {
@@ -45,7 +48,7 @@ class ProjectConfig extends Utility
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public static function contentHtml(): string
     {
@@ -59,8 +62,8 @@ class ProjectConfig extends Utility
                 'Show all changes',
             ]);
             $invert = (
-                !$projectConfig->readOnly &&
-                !$projectConfig->writeYamlAutomatically &&
+                ! $projectConfig->readOnly &&
+                ! $projectConfig->writeYamlAutomatically &&
                 $projectConfig->get('dateModified') > $projectConfig->get('dateModified', true)
             );
         } else {

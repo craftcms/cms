@@ -12,7 +12,7 @@ use craft\filters\UtilityAccess;
 use craft\helpers\App;
 use craft\helpers\Json;
 use craft\queue\QueueInterface;
-use craft\utilities\QueueManager;
+use Craft\Cms\Utility\Utilities\QueueManager;
 use craft\web\Controller;
 use yii\base\InvalidArgumentException;
 use yii\db\Exception as YiiDbException;

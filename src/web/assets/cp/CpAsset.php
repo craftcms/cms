@@ -25,7 +25,7 @@ use craft\helpers\UrlHelper;
 use craft\i18n\Locale;
 use craft\models\Section;
 use craft\services\Sites;
-use craft\utilities\QueueManager;
+use Craft\Cms\Utility\Utilities\QueueManager;
 use craft\validators\UserPasswordValidator;
 use craft\web\AssetBundle;
 use craft\web\assets\animationblocker\AnimationBlockerAsset;

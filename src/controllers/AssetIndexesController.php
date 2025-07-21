@@ -15,7 +15,7 @@ use craft\helpers\Json;
 use craft\i18n\Locale;
 use craft\models\AssetIndexingSession;
 use craft\models\Volume;
-use craft\utilities\AssetIndexes;
+use Craft\Cms\Utility\Utilities\AssetIndexes;
 use craft\web\Controller;
 use Throwable;
 use yii\web\BadRequestHttpException;

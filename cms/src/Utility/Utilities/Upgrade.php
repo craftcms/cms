@@ -1,36 +1,39 @@
 <?php
+
 /**
  * @link https://craftcms.com/
+ *
  * @copyright Copyright (c) Pixel & Tonic, Inc.
  * @license https://craftcms.github.io/license/
  */
 
-namespace craft\utilities;
+namespace Craft\Cms\Utility\Utilities;
 
 use Craft;
-use craft\base\Utility;
+use Craft\Cms\Utility\Utility;
 use craft\web\assets\upgrade\UpgradeAsset;
 
 /**
  * Upgrade utility
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
+ *
  * @since 3.7.40
  */
 class Upgrade extends Utility
 {
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public static function displayName(): string
     {
         return Craft::t('app', 'Craft {version} Upgrade', [
-            'version' => (int)Craft::$app->version + 1,
+            'version' => (int) Craft::$app->version + 1,
         ]);
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public static function id(): string
     {
@@ -38,7 +41,7 @@ class Upgrade extends Utility
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public static function icon(): ?string
     {
@@ -46,7 +49,7 @@ class Upgrade extends Utility
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public static function contentHtml(): string
     {
@@ -66,8 +69,8 @@ class Upgrade extends Utility
             ];
         }
 
-        $version = (int)Craft::$app->version + 1;
-        $view->registerJsWithVars(fn($args) => <<<JS
+        $version = (int) Craft::$app->version + 1;
+        $view->registerJsWithVars(fn ($args) => <<<JS
 window.upgardeUtility = new Craft.UpgradeUtility(...$args);
 JS, [
             [$version, $allPlugins],

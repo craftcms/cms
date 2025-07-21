@@ -1,6 +1,8 @@
 <?php
+
 /**
  * @link https://craftcms.com/
+ *
  * @copyright Copyright (c) Pixel & Tonic, Inc.
  * @license https://craftcms.github.io/license/
  */
@@ -22,12 +24,13 @@ use yii\base\Module;
  * SystemReport represents a SystemReport dashboard widget.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
+ *
  * @since 6.0.0
  */
 class SystemReport extends Utility
 {
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public static function displayName(): string
     {
@@ -35,7 +38,7 @@ class SystemReport extends Utility
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public static function id(): string
     {
@@ -43,7 +46,7 @@ class SystemReport extends Utility
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public static function icon(): ?string
     {
@@ -51,7 +54,7 @@ class SystemReport extends Utility
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public static function contentHtml(): string
     {
@@ -105,14 +108,14 @@ class SystemReport extends Utility
     {
         $info = [
             'PHP version' => App::phpVersion(),
-            'OS version' => PHP_OS . ' ' . php_uname('r'),
+            'OS version' => PHP_OS.' '.php_uname('r'),
             'Database driver & version' => self::dbDriver(),
             'Image driver & version' => self::imageDriver(),
             'Craft edition & version' => sprintf('Craft %s %s', Craft::$app->edition->name, Craft::$app->getVersion()),
         ];
 
-        if (!class_exists(InstalledVersions::class, false)) {
-            $path = Craft::$app->getPath()->getVendorPath() . DIRECTORY_SEPARATOR . 'composer' . DIRECTORY_SEPARATOR . 'InstalledVersions.php';
+        if (! class_exists(InstalledVersions::class, false)) {
+            $path = Craft::$app->getPath()->getVendorPath().DIRECTORY_SEPARATOR.'composer'.DIRECTORY_SEPARATOR.'InstalledVersions.php';
             if (file_exists($path)) {
                 require $path;
             }
@@ -165,7 +168,7 @@ class SystemReport extends Utility
             ? 'GD'
             : 'Imagick';
 
-        return $driverName . ' ' . $imagesService->getVersion();
+        return $driverName.' '.$imagesService->getVersion();
     }
 
     /**
@@ -173,7 +176,7 @@ class SystemReport extends Utility
      */
     private static function requirementResults(): array
     {
-        $checker = new RequirementsChecker();
+        $checker = new RequirementsChecker;
 
         $dbConfig = Craft::$app->getConfig()->getDb();
         $checker->dsn = $dbConfig->dsn;

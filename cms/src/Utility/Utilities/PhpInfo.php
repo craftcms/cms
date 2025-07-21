@@ -1,6 +1,8 @@
 <?php
+
 /**
  * @link https://craftcms.com/
+ *
  * @copyright Copyright (c) Pixel & Tonic, Inc.
  * @license https://craftcms.github.io/license/
  */
@@ -14,12 +16,13 @@ use Craft\Cms\Utility\Utility;
  * PhpInfo represents a PhpInfo dashboard widget.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
+ *
  * @since 3.0.0
  */
 class PhpInfo extends Utility
 {
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public static function displayName(): string
     {
@@ -27,7 +30,7 @@ class PhpInfo extends Utility
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public static function id(): string
     {
@@ -35,7 +38,7 @@ class PhpInfo extends Utility
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public static function isSelectable(): bool
     {
@@ -43,7 +46,7 @@ class PhpInfo extends Utility
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public static function icon(): ?string
     {
@@ -51,7 +54,7 @@ class PhpInfo extends Utility
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public static function contentHtml(): string
     {
@@ -62,8 +65,6 @@ class PhpInfo extends Utility
 
     /**
      * Parses and returns the PHP info.
-     *
-     * @return array
      */
     private static function phpInfo(): array
     {
@@ -102,16 +103,16 @@ class PhpInfo extends Utility
             '#<h2>PHP License</h2>.*$#ms' => '',
             '#<h1>Configuration</h1>#' => '',
             "#\r?\n#" => '',
-            '#</(h1|h2|h3|tr)>#' => '</$1>' . "\n",
+            '#</(h1|h2|h3|tr)>#' => '</$1>'."\n",
             '# +<#' => '<',
             "#[ \t]+#" => ' ',
             '#&nbsp;#' => ' ',
             '#  +#' => ' ',
             '# class=".*?"#' => '',
             '%&#039;%' => ' ',
-            '#<tr>(?:.*?)"src="(?:.*?)=(.*?)" alt="PHP Logo" /></a><h1>PHP Version (.*?)</h1>(?:\n+?)</td></tr>#' => '<h2>PHP Configuration</h2>' . "\n" . '<tr><td>PHP Version</td><td>$2</td></tr>' . "\n" . '<tr><td>PHP Egg</td><td>$1</td></tr>',
+            '#<tr>(?:.*?)"src="(?:.*?)=(.*?)" alt="PHP Logo" /></a><h1>PHP Version (.*?)</h1>(?:\n+?)</td></tr>#' => '<h2>PHP Configuration</h2>'."\n".'<tr><td>PHP Version</td><td>$2</td></tr>'."\n".'<tr><td>PHP Egg</td><td>$1</td></tr>',
             '#<h1><a href="(?:.*?)\?=(.*?)">PHP Credits</a></h1>#' => '<tr><td>PHP Credits Egg</td><td>$1</td></tr>',
-            '#<tr>(?:.*?)" src="(?:.*?)=(.*?)"(?:.*?)Zend Engine (.*?),(?:.*?)</tr>#' => '<tr><td>Zend Engine</td><td>$2</td></tr>' . "\n" . '<tr><td>Zend Egg</td><td>$1</td></tr>',
+            '#<tr>(?:.*?)" src="(?:.*?)=(.*?)"(?:.*?)Zend Engine (.*?),(?:.*?)</tr>#' => '<tr><td>Zend Engine</td><td>$2</td></tr>'."\n".'<tr><td>Zend Egg</td><td>$1</td></tr>',
             '# +#' => ' ',
             '#<tr>#' => '%S%',
             '#</tr>#' => '%E%',
@@ -133,7 +134,7 @@ class PhpInfo extends Utility
             }
 
             foreach ($matches as $row) {
-                if (!isset($row[2])) {
+                if (! isset($row[2])) {
                     continue;
                 }
 

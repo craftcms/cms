@@ -1,6 +1,8 @@
 <?php
+
 /**
  * @link https://craftcms.com/
+ *
  * @copyright Copyright (c) Pixel & Tonic, Inc.
  * @license https://craftcms.github.io/license/
  */
@@ -16,12 +18,13 @@ use craft\web\assets\queuemanager\QueueManagerAsset;
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @author Global Network Group | Giel Tettelaar <giel@yellowflash.net>
+ *
  * @since 6.0.0
  */
 class QueueManager extends Utility
 {
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public static function displayName(): string
     {
@@ -29,7 +32,7 @@ class QueueManager extends Utility
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public static function id(): string
     {
@@ -37,7 +40,7 @@ class QueueManager extends Utility
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public static function icon(): ?string
     {
@@ -45,7 +48,7 @@ class QueueManager extends Utility
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public static function toolbarHtml(): string
     {
@@ -53,7 +56,7 @@ class QueueManager extends Utility
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public static function footerHtml(): string
     {
@@ -61,12 +64,13 @@ class QueueManager extends Utility
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public static function contentHtml(): string
     {
         $view = Craft::$app->getView();
         $view->registerAssetBundle(QueueManagerAsset::class);
+
         return $view->renderTemplate('_components/utilities/QueueManager/content.twig');
     }
 }

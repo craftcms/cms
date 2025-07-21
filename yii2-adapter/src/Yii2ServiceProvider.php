@@ -8,6 +8,7 @@ use craft\console\controllers\HelpController;
 use craft\helpers\App;
 use craft\services\Utilities;
 use craft\utilities\AssetIndexes;
+use craft\utilities\ClearCaches;
 use Craft\Yii2Adapter\Console\LegacyCraftCommand;
 use Exception;
 use Illuminate\Console\Application as ConsoleApplication;
@@ -223,5 +224,6 @@ class Yii2ServiceProvider extends ServiceProvider
          * Utilities
          */
         AssetIndexes::registerEvents();
+        ClearCaches::registerEvents();
     }
 }
