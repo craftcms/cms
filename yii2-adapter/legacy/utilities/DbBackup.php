@@ -9,13 +9,13 @@ namespace craft\utilities;
 
 use Craft;
 use craft\base\Utility;
-use craft\web\assets\dbbackup\DbBackupAsset;
 
 /**
  * DbBackup represents a DbBackup dashboard widget.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
+ * @deprecated in 6.0.0. [[\Craft\Cms\Utility\Utilities\DbBackup]] should be used instead.
  */
 class DbBackup extends Utility
 {
@@ -24,7 +24,7 @@ class DbBackup extends Utility
      */
     public static function displayName(): string
     {
-        return Craft::t('app', 'Database Backup');
+        return Craft\Cms\Utility\Utilities\DbBackup::displayName();
     }
 
     /**
@@ -32,7 +32,7 @@ class DbBackup extends Utility
      */
     public static function id(): string
     {
-        return 'db-backup';
+        return Craft\Cms\Utility\Utilities\DbBackup::id();
     }
 
     /**
@@ -40,7 +40,7 @@ class DbBackup extends Utility
      */
     public static function icon(): ?string
     {
-        return 'database';
+        return Craft\Cms\Utility\Utilities\DbBackup::icon();
     }
 
     /**
@@ -48,11 +48,6 @@ class DbBackup extends Utility
      */
     public static function contentHtml(): string
     {
-        $view = Craft::$app->getView();
-
-        $view->registerAssetBundle(DbBackupAsset::class);
-        $view->registerJs('new Craft.DbBackupUtility(\'db-backup\');');
-
-        return $view->renderTemplate('_components/utilities/DbBackup.twig');
+        return Craft\Cms\Utility\Utilities\DbBackup::contentHtml();
     }
 }
