@@ -5,10 +5,10 @@
  * @license https://craftcms.github.io/license/
  */
 
-namespace craft\utilities;
+namespace Craft\Cms\Utility\Utilities;
 
 use Craft;
-use craft\base\Utility;
+use Craft\Cms\Utility\Utility;
 use craft\web\assets\prismjs\PrismJsAsset;
 use Symfony\Component\Yaml\Yaml;
 
@@ -16,7 +16,7 @@ use Symfony\Component\Yaml\Yaml;
  * ProjectConfig represents a ProjectConfig utility.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.5.0
+ * @since 6.0.0
  */
 class ProjectConfig extends Utility
 {
