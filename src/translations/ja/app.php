@@ -2256,6 +2256,7 @@ return [
     '{item} picked up.' => '{item}を取得しました。',
     '{max, plural, =1{Author} other {Authors}}' => '{max, plural, =1{作成者} other {作成者}}',
     '{names} {total, plural, =1{is installed as a trial} other{are installed as trials}}.' => '{names}{total, plural, =1{がトライアルとしてインストールされました} other{がトライアルとしてインストールされました}}。',
+    '{name} Settings' => '{name} Settings',
     '{name} Setup' => '{name}の設定',
     '{name} Translation Key Format' => '{name}の翻訳キーの形式',
     '{name} Translation Method' => '{name}の翻訳方法',

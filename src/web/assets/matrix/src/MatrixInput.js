@@ -342,7 +342,8 @@
           );
         }
 
-        await Craft.queue.push(async () => {
+        const queue = this.elementEditor?.queue ?? Craft.queue;
+        await queue.push(async () => {
           if (this.addingEntry) {
             // only one new entry at a time
             return;

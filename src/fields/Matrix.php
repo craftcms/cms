@@ -1084,7 +1084,9 @@ JS, [
 
             $js .= "\n" . <<<JS
 input.on('afterInit', async () => {
-  input.elementEditor?.pause();
+  if (input.elementEditor) {
+    await input.elementEditor.pause();
+  }
 JS . "\n";
 
             $entryTypeJs = Json::encode($entryTypes[0]->handle);

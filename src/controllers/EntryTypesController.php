@@ -194,24 +194,24 @@ class EntryTypesController extends Controller
     {
         $this->requirePostRequest();
 
-        $sectionsService = Craft::$app->getEntries();
+        $entriesService = Craft::$app->getEntries();
         $entryTypeId = $this->request->getBodyParam('entryTypeId');
-        $saveAsNew = $this->request->getBodyParam('saveAsNew');
 
         if ($entryTypeId) {
-            $entryType = $sectionsService->getEntryTypeById($entryTypeId);
+            $entryType = $entriesService->getEntryTypeById($entryTypeId);
             if (!$entryType) {
                 throw new BadRequestHttpException("Invalid entry type ID: $entryTypeId");
             }
 
+            $saveAsNew = $this->request->getBodyParam('saveAsNew');
             if ($saveAsNew) {
-                $oldId = $entryType->id;
-                $oldUid = $entryType->uid;
+                $originalEntryType = $entryType;
                 $entryType = clone $entryType;
                 $entryType->id = $entryType->uid = null;
             }
         } else {
             $entryType = new EntryType();
+            $saveAsNew = false;
         }
 
         // Set the simple stuff
@@ -229,15 +229,33 @@ class EntryTypesController extends Controller
         $entryType->slugTranslationKeyFormat = $this->request->getBodyParam('slugTranslationKeyFormat', $entryType->slugTranslationKeyFormat);
         $entryType->showStatusField = $this->request->getBodyParam('showStatusField', $entryType->showStatusField);
 
+        // If we're duplicating the entry type and the handle hasn't changed, find a unique one
+        if ($entryType->handle === ($originalEntryType->handle ?? null)) {
+            if (preg_match('/^(.*?)(\d+)$/', $entryType->handle, $match)) {
+                $baseHandle = $match[1];
+                $i = (int)$match[2];
+            } else {
+                $baseHandle = $entryType->handle;
+                $i = 1;
+            }
+            do {
+                $testHandle = sprintf('%s%s', $baseHandle, ++$i);
+                if (!$entriesService->getEntryTypeByHandle($testHandle)) {
+                    $entryType->handle = $testHandle;
+                    break;
+                }
+            } while (true);
+        }
+
         // Set the field layout
         $fieldLayout = Craft::$app->getFields()->assembleLayoutFromPost();
         $fieldLayout->type = Entry::class;
         $entryType->setFieldLayout($fieldLayout);
 
         if (!$entryType->validate()) {
-            if (isset($oldId, $oldUid)) {
-                $entryType->id = $oldId;
-                $entryType->uid = $oldUid;
+            if (isset($originalEntryType)) {
+                $entryType->id = $originalEntryType->id;
+                $entryType->uid = $originalEntryType->uid;
             }
 
             return $this->asModelFailure($entryType, Craft::t('app', 'Couldn’t save entry type.'), 'entryType');
@@ -248,7 +266,7 @@ class EntryTypesController extends Controller
         }
 
         // Save it
-        $sectionsService->saveEntryType($entryType, false);
+        $entriesService->saveEntryType($entryType, false);
         return $this->asModelSuccess($entryType, Craft::t('app', 'Entry type saved.'), 'entryType');
     }
 

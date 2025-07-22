@@ -112,8 +112,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 
     get viewMode() {
       if (this._viewMode === 'structure' && !this.canSort) {
-        // return the default
-        return this.validateViewMode(null);
+        return this.doesSourceHaveViewMode('table') ? 'table' : 'cards';
       }
 
       return this.validateViewMode(this._viewMode);
@@ -3347,7 +3346,6 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 
       // Update the count text
       // -------------------------------------------------------------
-
       if (this.$countContainer.length) {
         this.$countSpinner.removeClass('hidden');
         this.$countContainer.html('');
@@ -3359,7 +3357,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
             const itemsLabel = this.getItemsLabel();
 
             if (!this.paginated) {
-              let countLabel = Craft.t(
+              countLabel = Craft.t(
                 'app',
                 '{total, number} {total, plural, =1{{item}} other{{items}}}',
                 {
@@ -3372,7 +3370,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
             } else {
               const first = this.getFirstItemNumber(total);
               const last = this.getLastItemNumber(first, total);
-              let countLabel = Craft.t(
+              countLabel = Craft.t(
                 'app',
                 '{first, number}-{last, number} of {total, number} {total, plural, =1{{item}} other{{items}}}',
                 {
@@ -3454,6 +3452,8 @@ Craft.BaseElementIndex = Garnish.Base.extend(
                 });
               }
             }
+
+            this._addPaginationContextToDocumentTitle(countLabel);
           })
           .catch(() => {
             this.$countSpinner.addClass('hidden');
@@ -3597,11 +3597,54 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 
         this._autoSelectElements = null;
       }
+      this._addSourceNameToDocumentTitle();
 
       // Trigger the event
       // -------------------------------------------------------------
 
       this.onUpdateElements();
+    },
+
+    /**
+     * Updates the document title to include the source label if it exists.
+     * Example: "Blog - Entries - Craft CMS", where "Blog" is the source label.
+     * @private
+     */
+    _addSourceNameToDocumentTitle: function () {
+      const documentTitleIncludesSourceLabel = () => {
+        const elementIndexType = this.settings.elementTypePluralName;
+        const titleArr = document.title.split(' - ');
+        return titleArr[1] === elementIndexType;
+      };
+
+      const titleArr = document.title.split(' - ');
+
+      // Include source label in the document title if it exists
+      if (this.getSourceLabel()) {
+        const elementIndexType = this.settings.elementTypePluralName;
+        // If the first part of the title is the element type (i.e., "Entries - Craft CMS"), push the source label to the front
+        if (!documentTitleIncludesSourceLabel()) {
+          titleArr.unshift(this.getSourceLabel());
+        } else {
+          titleArr[0] = this.getSourceLabel();
+        }
+      }
+      document.querySelector('title').textContent = titleArr.join(' - ');
+    },
+
+    /**
+     * Appends context information to the document title after the specific source label.
+     * Example: "Blog, 1-100 of 250 entries - Craft CMS", where "1-100 of 250 entries" is the context info.
+     * @param text
+     * @private
+     */
+    _addPaginationContextToDocumentTitle: function (text) {
+      const titleArr = document.title.split(' - ');
+
+      if (titleArr[0] !== this.getSourceLabel()) return;
+
+      titleArr[0] = `${titleArr[0]}, ${text}`;
+      document.querySelector('title').textContent = titleArr.join(' - ');
     },
 
     _updateBadgeCounts: function (badgeCounts) {

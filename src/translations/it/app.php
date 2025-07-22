@@ -2258,6 +2258,7 @@ Congratulazioni! Craft ti ha inviato una email con successo. Ecco le impostazion
     '{item} picked up.' => '{item} raccolto.',
     '{max, plural, =1{Author} other {Authors}}' => '{max, plural, one {}=1{Autore} other {Autori}}',
     '{names} {total, plural, =1{is installed as a trial} other{are installed as trials}}.' => '{names} {total, plural, one {}=1{è installato come versione di prova} other{sono installati come versioni di prova}}.',
+    '{name} Settings' => '{name} Settings',
     '{name} Setup' => 'Configurazione di {name}',
     '{name} Translation Key Format' => 'Formato chiave traduzione {name}',
     '{name} Translation Method' => 'Metodo di traduzione {name}',

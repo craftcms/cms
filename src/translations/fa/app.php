@@ -2256,6 +2256,7 @@ return [
     '{item} picked up.' => '{item} برداشته شد.',
     '{max, plural, =1{Author} other {Authors}}' => '{max, plural, =1{Author} other {Authors}}',
     '{names} {total, plural, =1{is installed as a trial} other{are installed as trials}}.' => '{names} {total, plural, =1{is installed as a trial} other{are installed as trials}}.',
+    '{name} Settings' => '{name} Settings',
     '{name} Setup' => 'راه‌اندازی {name}',
     '{name} Translation Key Format' => '{name} قالب کلیدی ترجمه',
     '{name} Translation Method' => 'روش ترجمه {name}',

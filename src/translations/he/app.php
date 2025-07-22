@@ -2256,6 +2256,7 @@ return [
     '{item} picked up.' => 'ה{item} נאסף.',
     '{max, plural, =1{Author} other {Authors}}' => '{max, plural, =1{יוצר} other {יוצרים}}',
     '{names} {total, plural, =1{is installed as a trial} other{are installed as trials}}.' => '{names} {total, plural, =1{מותקן כניסיון} other{מותקנים כניסיונות}}.',
+    '{name} Settings' => '{name} Settings',
     '{name} Setup' => 'הגדרת {name}',
     '{name} Translation Key Format' => 'פורמט מפתח תרגום {name}',
     '{name} Translation Method' => 'שיטת תרגום {name}',

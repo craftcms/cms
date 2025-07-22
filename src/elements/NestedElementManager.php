@@ -1002,12 +1002,17 @@ JS, [
         bool $force = false,
     ): void {
         $elementsService = Craft::$app->getElements();
-        $value = $this->getValue($source, true);
-        if ($value instanceof ElementCollection) {
-            $elements = $value->all();
-        } else {
-            $elements = $value->getCachedResult() ?? $value->all();
+        $elements = $this->getValue($source, true);
+        if ($elements instanceof ElementQueryInterface) {
+            $elements = ElementCollection::make($elements->getCachedResult() ?? $elements->all());
         }
+
+        // Ignore any elements that don't have an ID yet
+        /** @var ElementCollection<NestedElementInterface> $elements */
+        $elements = $elements
+            ->filter(fn(ElementInterface $element) => isset($element->id))
+            ->values()
+            ->all();
 
         /** @var NestedElementInterface[] $elements */
         $this->setOwnerOnNestedElements($source, $elements);

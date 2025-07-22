@@ -728,6 +728,11 @@ JS, [
             $docTitle .= ' (' . $element->getRevisionLabel() . ')';
         }
 
+        // Include site name if localized
+        if ($element::isLocalized() && Craft::$app->getIsMultiSite()) {
+            $docTitle .= sprintf(' - %s', $element->getSite()->getUiLabel());
+        }
+
         return [$docTitle, $title];
     }
 

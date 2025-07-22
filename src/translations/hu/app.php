@@ -2260,6 +2260,7 @@ Köszönjük, hogy regsiztráltál, a felhasználói filókod aktiváláshoz kat
     '{item} picked up.' => '{item} felvéve.',
     '{max, plural, =1{Author} other {Authors}}' => '{max, plural, one {}=1{Szerző} other {Szerző}}',
     '{names} {total, plural, =1{is installed as a trial} other{are installed as trials}}.' => '{names} {total, plural, one {}=1{telepítve próbaverzióként} other{telepítve próbaverzióként}}.',
+    '{name} Settings' => '{name} Settings',
     '{name} Setup' => '{name} beállítás',
     '{name} Translation Key Format' => '{name} fordítási kulcs formátuma',
     '{name} Translation Method' => '{name} fordítási mód',

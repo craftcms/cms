@@ -1689,11 +1689,6 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
             if ($authorIds === $this->_authorIds) {
                 return;
             }
-
-            if (!isset($this->_oldAuthorIds)) {
-                // remember the old IDs so we know if this has been modified
-                $this->_oldAuthorIds = $this->_authorIds;
-            }
         }
 
         $this->_authorIds = $authorIds;
@@ -2925,6 +2920,17 @@ JS;
      */
     private function _saveAuthors(): void
     {
+        if (!isset($this->_oldAuthorIds)) {
+            // Don't trust $this->_authors/_authorIds, as it may have been set to the updated value
+            $oldAuthorIds = (new Query())
+                ->select('authorId')
+                ->from(Table::ENTRIES_AUTHORS)
+                ->where(['entryId' => $this->duplicateOf->id ?? $this->id])
+                ->orderBy(['sortOrder' => SORT_ASC])
+                ->column();
+            $this->_oldAuthorIds = array_map(fn($id) => (int)$id, $oldAuthorIds);
+        }
+
         Db::delete(Table::ENTRIES_AUTHORS, ['entryId' => $this->id]);
 
         if (!empty($this->_authorIds)) {
