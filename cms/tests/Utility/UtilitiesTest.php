@@ -1,18 +1,18 @@
 <?php
 
-use Craft\Cms\User\Models\User;
-use Craft\Cms\Utility\Events\RegisterUtilities;
-use Craft\Cms\Utility\Utilities\AssetIndexes;
-use Craft\Cms\Utility\Utilities\SystemMessages;
-use Craft\Cms\Utility\Utilities\SystemReport;
-use Craft\Cms\Utility\Utility;
 use craft\enums\CmsEdition;
+use CraftCms\Cms\User\Models\User;
+use CraftCms\Cms\Utility\Events\RegisterUtilities;
+use CraftCms\Cms\Utility\Utilities\AssetIndexes;
+use CraftCms\Cms\Utility\Utilities\SystemMessages;
+use CraftCms\Cms\Utility\Utilities\SystemReport;
+use CraftCms\Cms\Utility\Utility;
 use Illuminate\Support\Facades\Event;
 
 use function Pest\Laravel\actingAs;
 
 beforeEach(function () {
-    $this->utilities = app(\Craft\Cms\Utility\Utilities::class);
+    $this->utilities = app(\CraftCms\Cms\Utility\Utilities::class);
 });
 
 it('can get all utility types', function () {

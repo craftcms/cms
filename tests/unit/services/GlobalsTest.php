@@ -9,10 +9,10 @@ namespace crafttests\unit\services;
 
 use Codeception\Test\Unit;
 use Craft;
-use Craft\Cms\Support\Str;
 use craft\errors\ElementNotFoundException;
 use craft\events\ConfigEvent;
 use craft\test\TestCase;
+use CraftCms\Cms\Support\Str;
 use UnitTester;
 
 /**

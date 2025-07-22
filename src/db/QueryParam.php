@@ -7,7 +7,7 @@
 
 namespace craft\db;
 
-use Craft\Cms\Support\Arr;
+use CraftCms\Cms\Support\Arr;
 use DateTime;
 
 /**

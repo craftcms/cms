@@ -7,7 +7,7 @@
  * @license https://craftcms.github.io/license/
  */
 
-namespace Craft\Cms\Support\Facades;
+namespace CraftCms\Cms\Support\Facades;
 
 use Illuminate\Support\Facades\Facade;
 
@@ -16,12 +16,12 @@ use Illuminate\Support\Facades\Facade;
  * @method static array get()
  * @method static void markAsRead(int[] $ids)
  *
- * @see \Craft\Cms\Announcement\Announcements
+ * @see \CraftCms\Cms\Announcement\Announcements
  */
 class Announcements extends Facade
 {
     protected static function getFacadeAccessor(): string
     {
-        return \Craft\Cms\Announcement\Announcements::class;
+        return \CraftCms\Cms\Announcement\Announcements::class;
     }
 }

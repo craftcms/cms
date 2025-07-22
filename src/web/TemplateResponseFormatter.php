@@ -8,10 +8,10 @@
 namespace craft\web;
 
 use Craft;
-use Craft\Cms\Support\Str;
 use craft\errors\ExitException;
 use craft\helpers\FileHelper;
 use craft\web\assets\iframeresizer\ContentWindowAsset;
+use CraftCms\Cms\Support\Str;
 use Throwable;
 use yii\base\Component;
 use yii\base\ExitException as YiiExitException;

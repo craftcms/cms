@@ -14,13 +14,13 @@ use craft\base\Field;
 use craft\base\InlineEditableFieldInterface;
 use craft\base\MergeableFieldInterface;
 use craft\base\SortableFieldInterface;
-use Craft\Cms\Support\Arr;
 use craft\elements\Entry;
 use craft\enums\Color as ColorEnum;
 use craft\fields\conditions\LightswitchFieldConditionRule;
 use craft\helpers\Cp;
 use craft\helpers\Db;
 use craft\helpers\Html;
+use CraftCms\Cms\Support\Arr;
 use GraphQL\Type\Definition\Type;
 use yii\db\Schema;
 

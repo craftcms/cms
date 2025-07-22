@@ -7,16 +7,16 @@
  * @license https://craftcms.github.io/license/
  */
 
-namespace Craft\Cms\Utility\Utilities;
+namespace CraftCms\Cms\Utility\Utilities;
 
 use Craft;
-use Craft\Cms\Utility\Events\ListVolumes;
-use Craft\Cms\Utility\Utility;
 use craft\helpers\App;
 use craft\helpers\Html;
 use craft\i18n\Locale;
 use craft\models\Volume;
 use craft\web\assets\assetindexes\AssetIndexesAsset;
+use CraftCms\Cms\Utility\Events\ListVolumes;
+use CraftCms\Cms\Utility\Utility;
 use Illuminate\Support\Facades\Event;
 
 /**

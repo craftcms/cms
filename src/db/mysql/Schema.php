@@ -8,7 +8,6 @@
 namespace craft\db\mysql;
 
 use Craft;
-use Craft\Cms\Support\Str;
 use craft\db\Connection;
 use craft\db\ExpressionBuilder;
 use craft\db\ExpressionInterface;
@@ -16,6 +15,7 @@ use craft\db\TableSchema;
 use craft\helpers\App;
 use craft\helpers\Db;
 use craft\helpers\FileHelper;
+use CraftCms\Cms\Support\Str;
 use mikehaertl\shellcommand\Command as ShellCommand;
 use PDO;
 use PDOException;

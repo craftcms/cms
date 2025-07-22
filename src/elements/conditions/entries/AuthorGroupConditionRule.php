@@ -5,12 +5,12 @@ namespace craft\elements\conditions\entries;
 use Craft;
 use craft\base\conditions\BaseMultiSelectConditionRule;
 use craft\base\ElementInterface;
-use Craft\Cms\Support\Arr;
 use craft\elements\conditions\ElementConditionRuleInterface;
 use craft\elements\db\ElementQueryInterface;
 use craft\elements\db\EntryQuery;
 use craft\elements\Entry;
 use craft\models\UserGroup;
+use CraftCms\Cms\Support\Arr;
 
 /**
  * Author group condition rule.

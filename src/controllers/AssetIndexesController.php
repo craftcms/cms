@@ -8,7 +8,6 @@
 namespace craft\controllers;
 
 use Craft;
-use Craft\Cms\Utility\Utilities\AssetIndexes;
 use craft\elements\Asset;
 use craft\errors\AssetException;
 use craft\filters\UtilityAccess;
@@ -17,6 +16,7 @@ use craft\i18n\Locale;
 use craft\models\AssetIndexingSession;
 use craft\models\Volume;
 use craft\web\Controller;
+use CraftCms\Cms\Utility\Utilities\AssetIndexes;
 use Throwable;
 use yii\web\BadRequestHttpException;
 use yii\web\Response;

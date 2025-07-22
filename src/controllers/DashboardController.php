@@ -9,8 +9,6 @@ namespace craft\controllers;
 
 use Craft;
 use craft\base\WidgetInterface;
-use Craft\Cms\Support\Arr;
-use Craft\Cms\Support\Str;
 use craft\helpers\App;
 use craft\helpers\Cp;
 use craft\helpers\FileHelper;
@@ -19,6 +17,8 @@ use craft\models\CraftSupport;
 use craft\web\assets\dashboard\DashboardAsset;
 use craft\web\Controller;
 use craft\web\UploadedFile;
+use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Support\Str;
 use GuzzleHttp\RequestOptions;
 use Symfony\Component\Yaml\Yaml;
 use Throwable;

@@ -9,12 +9,12 @@ namespace craft\services;
 
 use Craft;
 use craft\base\PluginInterface;
-use Craft\Cms\Support\Arr;
 use craft\errors\InvalidPluginException;
 use craft\errors\MigrateException;
 use craft\helpers\App;
 use craft\helpers\FileHelper;
 use craft\models\Updates as UpdatesModel;
+use CraftCms\Cms\Support\Arr;
 use Throwable;
 use yii\base\Component;
 use yii\base\ErrorException;

@@ -1,6 +1,6 @@
 <?php
 
-namespace Craft\Cms\Console;
+namespace CraftCms\Cms\Console;
 
 use Illuminate\Support\ServiceProvider;
 

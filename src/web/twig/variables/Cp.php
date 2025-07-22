@@ -9,9 +9,6 @@ namespace craft\web\twig\variables;
 
 use Craft;
 use craft\base\FsInterface;
-use Craft\Cms\Support\Arr;
-use Craft\Cms\Support\Str;
-use Craft\Cms\Utility\Utilities;
 use craft\enums\CmsEdition;
 use craft\events\FormActionsEvent;
 use craft\events\RegisterCpNavItemsEvent;
@@ -27,6 +24,9 @@ use craft\models\Site;
 use craft\models\Volume;
 use craft\web\twig\TemplateLoaderException;
 use CraftCms\Aliases\Facades\Aliases;
+use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Support\Str;
+use CraftCms\Cms\Utility\Utilities;
 use DateTime;
 use DateTimeZone;
 use Illuminate\Support\Collection;
@@ -321,7 +321,7 @@ class Cp extends Component
             $badgeCount = 0;
 
             foreach ($utilities as $class) {
-                /** @var \Craft\Cms\Utility\Utility $class */
+                /** @var \CraftCms\Cms\Utility\Utility $class */
                 $badgeCount += $class::badgeCount();
             }
 

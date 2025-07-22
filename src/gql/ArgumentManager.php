@@ -9,7 +9,6 @@ namespace craft\gql;
 
 use Craft;
 use craft\base\Component;
-use Craft\Cms\Support\Str;
 use craft\errors\GqlException;
 use craft\events\RegisterGqlArgumentHandlersEvent;
 use craft\gql\base\ArgumentHandlerInterface;
@@ -21,6 +20,7 @@ use craft\gql\handlers\RelatedTags;
 use craft\gql\handlers\RelatedUsers;
 use craft\gql\handlers\Site;
 use craft\gql\handlers\SiteId;
+use CraftCms\Cms\Support\Str;
 use yii\base\InvalidConfigException;
 
 /**

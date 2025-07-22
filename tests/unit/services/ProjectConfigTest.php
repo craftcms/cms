@@ -9,12 +9,12 @@ namespace crafttests\unit\services;
 
 use Codeception\Stub\Expected;
 use Craft;
-use Craft\Cms\Support\Str;
 use craft\models\ReadOnlyProjectConfigData;
 use craft\mutex\Mutex;
 use craft\mutex\NullMutex;
 use craft\services\ProjectConfig;
 use craft\test\TestCase;
+use CraftCms\Cms\Support\Str;
 use Exception;
 use UnitTester;
 use yii\base\NotSupportedException;

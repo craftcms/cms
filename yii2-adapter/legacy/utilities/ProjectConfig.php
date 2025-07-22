@@ -7,7 +7,6 @@
 
 namespace craft\utilities;
 
-use Craft;
 use craft\base\Utility;
 
 /**
@@ -15,7 +14,7 @@ use craft\base\Utility;
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.5.0
- * @deprecated in 6.0.0. [[\Craft\Cms\Utility\Utilities\ProjectConfig]] should be used instead.
+ * @deprecated in 6.0.0. [[\CraftCms\Cms\Utility\Utilities\ProjectConfig]] should be used instead.
  */
 class ProjectConfig extends Utility
 {
@@ -24,7 +23,7 @@ class ProjectConfig extends Utility
      */
     public static function displayName(): string
     {
-        return Craft\Cms\Utility\Utilities\ProjectConfig::displayName();
+        return \CraftCms\Cms\Utility\Utilities\ProjectConfig::displayName();
     }
 
     /**
@@ -32,7 +31,7 @@ class ProjectConfig extends Utility
      */
     public static function id(): string
     {
-        return Craft\Cms\Utility\Utilities\ProjectConfig::id();
+        return \CraftCms\Cms\Utility\Utilities\ProjectConfig::id();
     }
 
     /**
@@ -40,7 +39,7 @@ class ProjectConfig extends Utility
      */
     public static function icon(): ?string
     {
-        return Craft\Cms\Utility\Utilities\ProjectConfig::icon();
+        return \CraftCms\Cms\Utility\Utilities\ProjectConfig::icon();
     }
 
     /**
@@ -48,6 +47,6 @@ class ProjectConfig extends Utility
      */
     public static function contentHtml(): string
     {
-        return Craft\Cms\Utility\Utilities\ProjectConfig::contentHtml();
+        return \CraftCms\Cms\Utility\Utilities\ProjectConfig::contentHtml();
     }
 }

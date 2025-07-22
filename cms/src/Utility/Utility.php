@@ -1,8 +1,8 @@
 <?php
 
-namespace Craft\Cms\Utility;
+namespace CraftCms\Cms\Utility;
 
-use Craft\Cms\Support\Contracts\ComponentInterface;
+use CraftCms\Cms\Support\Contracts\ComponentInterface;
 
 abstract class Utility implements ComponentInterface
 {

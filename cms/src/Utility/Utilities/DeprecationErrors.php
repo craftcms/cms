@@ -7,11 +7,11 @@
  * @license https://craftcms.github.io/license/
  */
 
-namespace Craft\Cms\Utility\Utilities;
+namespace CraftCms\Cms\Utility\Utilities;
 
 use Craft;
-use Craft\Cms\Utility\Utility;
 use craft\web\assets\deprecationerrors\DeprecationErrorsAsset;
+use CraftCms\Cms\Utility\Utility;
 
 /**
  * DeprecationErrors represents a DeprecationErrors dashboard widget.

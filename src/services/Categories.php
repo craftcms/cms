@@ -9,7 +9,6 @@ namespace craft\services;
 
 use Craft;
 use craft\base\MemoizableArray;
-use Craft\Cms\Support\Str;
 use craft\db\Query;
 use craft\db\Table;
 use craft\elements\Category;
@@ -27,6 +26,7 @@ use craft\models\Structure;
 use craft\records\CategoryGroup as CategoryGroupRecord;
 use craft\records\CategoryGroup_SiteSettings as CategoryGroup_SiteSettingsRecord;
 use craft\web\View;
+use CraftCms\Cms\Support\Str;
 use DateTime;
 use Illuminate\Support\Collection;
 use Throwable;

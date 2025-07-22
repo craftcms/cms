@@ -7,24 +7,24 @@
  * @license https://craftcms.github.io/license/
  */
 
-namespace Craft\Cms\Utility;
+namespace CraftCms\Cms\Utility;
 
 use Craft;
-use Craft\Cms\Utility\Events\RegisterUtilities;
-use Craft\Cms\Utility\Utilities\AssetIndexes;
-use Craft\Cms\Utility\Utilities\ClearCaches;
-use Craft\Cms\Utility\Utilities\DbBackup;
-use Craft\Cms\Utility\Utilities\DeprecationErrors;
-use Craft\Cms\Utility\Utilities\FindAndReplace;
-use Craft\Cms\Utility\Utilities\Migrations;
-use Craft\Cms\Utility\Utilities\PhpInfo;
-use Craft\Cms\Utility\Utilities\ProjectConfig as ProjectConfigUtility;
-use Craft\Cms\Utility\Utilities\QueueManager;
-use Craft\Cms\Utility\Utilities\SystemMessages as SystemMessagesUtility;
-use Craft\Cms\Utility\Utilities\SystemReport;
-use Craft\Cms\Utility\Utilities\Updates as UpdatesUtility;
 use craft\enums\CmsEdition;
 use craft\queue\QueueInterface;
+use CraftCms\Cms\Utility\Events\RegisterUtilities;
+use CraftCms\Cms\Utility\Utilities\AssetIndexes;
+use CraftCms\Cms\Utility\Utilities\ClearCaches;
+use CraftCms\Cms\Utility\Utilities\DbBackup;
+use CraftCms\Cms\Utility\Utilities\DeprecationErrors;
+use CraftCms\Cms\Utility\Utilities\FindAndReplace;
+use CraftCms\Cms\Utility\Utilities\Migrations;
+use CraftCms\Cms\Utility\Utilities\PhpInfo;
+use CraftCms\Cms\Utility\Utilities\ProjectConfig as ProjectConfigUtility;
+use CraftCms\Cms\Utility\Utilities\QueueManager;
+use CraftCms\Cms\Utility\Utilities\SystemMessages as SystemMessagesUtility;
+use CraftCms\Cms\Utility\Utilities\SystemReport;
+use CraftCms\Cms\Utility\Utilities\Updates as UpdatesUtility;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Event;
@@ -109,7 +109,7 @@ class Utilities
      */
     public function checkAuthorization(string $class): bool
     {
-        /** @var ?\Craft\Cms\User\Models\User $user */
+        /** @var ?\CraftCms\Cms\User\Models\User $user */
         $user = Auth::user();
 
         // The Project Config utility is for admins only!

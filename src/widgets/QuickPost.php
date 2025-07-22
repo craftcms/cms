@@ -9,11 +9,11 @@ namespace craft\widgets;
 
 use Craft;
 use craft\base\Widget;
-use Craft\Cms\Support\Arr;
 use craft\elements\Entry;
 use craft\helpers\Html;
 use craft\models\EntryType;
 use craft\models\Section;
+use CraftCms\Cms\Support\Arr;
 
 /**
  * QuickPost represents a Quick Post dashboard widget.

@@ -8,8 +8,6 @@
 namespace craft\services;
 
 use Craft;
-use Craft\Cms\Utility\Utilities;
-use Craft\Cms\Utility\Utilities\ProjectConfig as ProjectConfigUtility;
 use craft\db\Query;
 use craft\db\Table;
 use craft\elements\Asset;
@@ -28,6 +26,8 @@ use craft\helpers\ProjectConfig as ProjectConfigHelper;
 use craft\models\Section;
 use craft\models\UserGroup;
 use craft\records\UserPermission as UserPermissionRecord;
+use CraftCms\Cms\Utility\Utilities;
+use CraftCms\Cms\Utility\Utilities\ProjectConfig as ProjectConfigUtility;
 use yii\base\Component;
 use yii\db\Exception;
 
@@ -763,7 +763,7 @@ class UserPermissions extends Component
         $utilityPermissions = [];
 
         foreach (app(Utilities::class)->getAllUtilityTypes() as $class) {
-            /** @var \Craft\Cms\Utility\Utility $class */
+            /** @var \CraftCms\Cms\Utility\Utility $class */
             // Admins only
             if (ProjectConfigUtility::id() === $class::id()) {
                 continue;

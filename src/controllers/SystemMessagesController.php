@@ -8,11 +8,11 @@
 namespace craft\controllers;
 
 use Craft;
-use Craft\Cms\Utility\Utilities\SystemMessages;
 use craft\enums\CmsEdition;
 use craft\filters\UtilityAccess;
 use craft\models\SystemMessage;
 use craft\web\Controller;
+use CraftCms\Cms\Utility\Utilities\SystemMessages;
 use yii\web\Response;
 
 /**

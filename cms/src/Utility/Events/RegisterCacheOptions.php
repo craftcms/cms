@@ -1,6 +1,6 @@
 <?php
 
-namespace Craft\Cms\Utility\Events;
+namespace CraftCms\Cms\Utility\Events;
 
 /**
  * @event RegisterCacheOptions The event that is triggered when registering cache options.
@@ -12,7 +12,7 @@ namespace Craft\Cms\Utility\Events;
  * - `action` – Either the path to a folder that should be cleared, or a callable that should handle the cache clearing.
  * - `info` _(optional)_ – A description of the cache option.
  *
- * @see \Craft\Cms\Utility\Utilities\ClearCaches::cacheOptions()
+ * @see \CraftCms\Cms\Utility\Utilities\ClearCaches::cacheOptions()
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  *

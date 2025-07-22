@@ -12,8 +12,6 @@ use craft\base\Chippable;
 use craft\base\CpEditable;
 use craft\base\Iconic;
 use craft\base\Model;
-use Craft\Cms\Support\Arr;
-use Craft\Cms\Support\Str;
 use craft\db\Query;
 use craft\db\Table;
 use craft\elements\Entry;
@@ -24,6 +22,8 @@ use craft\helpers\UrlHelper;
 use craft\records\Section as SectionRecord;
 use craft\validators\HandleValidator;
 use craft\validators\UniqueValidator;
+use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Support\Str;
 use yii\db\Schema;
 
 /**

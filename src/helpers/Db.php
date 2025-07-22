@@ -9,12 +9,12 @@ namespace craft\helpers;
 
 use Craft;
 use craft\base\Serializable;
-use Craft\Cms\Support\Arr;
 use craft\db\Connection;
 use craft\db\mysql\Schema as MysqlSchema;
 use craft\db\pgsql\Schema as PgsqlSchema;
 use craft\db\Query;
 use craft\db\QueryParam;
+use CraftCms\Cms\Support\Arr;
 use DateTimeInterface;
 use DateTimeZone;
 use Money\Money;

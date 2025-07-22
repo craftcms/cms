@@ -8,10 +8,10 @@
 namespace craft\db;
 
 use Craft;
-use Craft\Cms\Support\Str;
 use craft\events\DefineBehaviorsEvent;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\Db;
+use CraftCms\Cms\Support\Str;
 use DateTime;
 
 /**

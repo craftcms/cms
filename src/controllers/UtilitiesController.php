@@ -8,14 +8,6 @@
 namespace craft\controllers;
 
 use Craft;
-use Craft\Cms\Utility\Utilities;
-use Craft\Cms\Utility\Utilities\ClearCaches;
-use Craft\Cms\Utility\Utilities\DbBackup;
-use Craft\Cms\Utility\Utilities\DeprecationErrors;
-use Craft\Cms\Utility\Utilities\FindAndReplace as FindAndReplaceUtility;
-use Craft\Cms\Utility\Utilities\Migrations;
-use Craft\Cms\Utility\Utilities\Updates;
-use Craft\Cms\Utility\Utilities\Upgrade;
 use craft\errors\MigrationException;
 use craft\filters\UtilityAccess;
 use craft\helpers\Cp;
@@ -24,6 +16,14 @@ use craft\helpers\Queue;
 use craft\queue\jobs\FindAndReplace;
 use craft\web\assets\utilities\UtilitiesAsset;
 use craft\web\Controller;
+use CraftCms\Cms\Utility\Utilities;
+use CraftCms\Cms\Utility\Utilities\ClearCaches;
+use CraftCms\Cms\Utility\Utilities\DbBackup;
+use CraftCms\Cms\Utility\Utilities\DeprecationErrors;
+use CraftCms\Cms\Utility\Utilities\FindAndReplace as FindAndReplaceUtility;
+use CraftCms\Cms\Utility\Utilities\Migrations;
+use CraftCms\Cms\Utility\Utilities\Updates;
+use CraftCms\Cms\Utility\Utilities\Upgrade;
 use Throwable;
 use yii\base\Exception;
 use yii\base\InvalidArgumentException;
@@ -89,7 +89,7 @@ class UtilitiesController extends Controller
             $firstUtility = $utilities->first();
         }
 
-        /** @var class-string<\Craft\Cms\Utility\Utility> $firstUtility */
+        /** @var class-string<\CraftCms\Cms\Utility\Utility> $firstUtility */
         return $this->redirect('utilities/' . $firstUtility::id());
     }
 
@@ -318,7 +318,7 @@ class UtilitiesController extends Controller
         $info = [];
 
         foreach (app(Utilities::class)->getAuthorizedUtilityTypes() as $class) {
-            /** @var class-string<\Craft\Cms\Utility\Utility> $class */
+            /** @var class-string<\CraftCms\Cms\Utility\Utility> $class */
             $info[] = [
                 'id' => $class::id(),
                 'iconSvg' => $this->_getUtilityIconSvg($class),
@@ -334,7 +334,7 @@ class UtilitiesController extends Controller
     /**
      * Returns a utility type’s SVG icon.
      *
-     * @param class-string<\Craft\Cms\Utility\Utility> $class
+     * @param class-string<\CraftCms\Cms\Utility\Utility> $class
      * @return string
      */
     private function _getUtilityIconSvg(string $class): string
@@ -359,7 +359,7 @@ class UtilitiesController extends Controller
     /**
      * Returns the default icon SVG for a given utility type.
      *
-     * @param class-string<\Craft\Cms\Utility\Utility> $class
+     * @param class-string<\CraftCms\Cms\Utility\Utility> $class
      * @return string
      */
     private function _getDefaultUtilityIconSvg(string $class): string

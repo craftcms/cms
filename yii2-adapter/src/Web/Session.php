@@ -7,7 +7,7 @@
  * @license [New BSD License](http://www.opensource.org/licenses/bsd-license.php)
  */
 
-namespace Craft\Yii2Adapter\Web;
+namespace CraftCms\Yii2Adapter\Web;
 
 use ArrayIterator;
 use Illuminate\Session\Store;
@@ -24,7 +24,7 @@ use yii\base\Component;
  * ```php
  * return [
  *     'components' => [
- *         'session' => Craft\Cms\Yii\Web\Session::class,
+ *         'session' => CraftCms\Cms\Yii\Web\Session::class,
  *         // ...
  *     ],
  *     // ...

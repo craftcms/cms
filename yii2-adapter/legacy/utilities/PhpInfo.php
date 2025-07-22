@@ -7,7 +7,6 @@
 
 namespace craft\utilities;
 
-use Craft;
 use craft\base\Utility;
 
 /**
@@ -15,7 +14,7 @@ use craft\base\Utility;
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
- * @deprecated in 6.0.0. [[\Craft\Cms\Utility\Utilities\PhpInfo]] should be used instead.
+ * @deprecated in 6.0.0. [[\CraftCms\Cms\Utility\Utilities\PhpInfo]] should be used instead.
  */
 class PhpInfo extends Utility
 {
@@ -24,7 +23,7 @@ class PhpInfo extends Utility
      */
     public static function displayName(): string
     {
-        return Craft\Cms\Utility\Utilities\PhpInfo::displayName();
+        return \CraftCms\Cms\Utility\Utilities\PhpInfo::displayName();
     }
 
     /**
@@ -32,7 +31,7 @@ class PhpInfo extends Utility
      */
     public static function id(): string
     {
-        return Craft\Cms\Utility\Utilities\PhpInfo::id();
+        return \CraftCms\Cms\Utility\Utilities\PhpInfo::id();
     }
 
     /**
@@ -40,7 +39,7 @@ class PhpInfo extends Utility
      */
     public static function isSelectable(): bool
     {
-        return Craft\Cms\Utility\Utilities\PhpInfo::isSelectable();
+        return \CraftCms\Cms\Utility\Utilities\PhpInfo::isSelectable();
     }
 
     /**
@@ -48,7 +47,7 @@ class PhpInfo extends Utility
      */
     public static function icon(): ?string
     {
-        return Craft\Cms\Utility\Utilities\PhpInfo::icon();
+        return \CraftCms\Cms\Utility\Utilities\PhpInfo::icon();
     }
 
     /**
@@ -56,6 +55,6 @@ class PhpInfo extends Utility
      */
     public static function contentHtml(): string
     {
-        return Craft\Cms\Utility\Utilities\PhpInfo::contentHtml();
+        return \CraftCms\Cms\Utility\Utilities\PhpInfo::contentHtml();
     }
 }

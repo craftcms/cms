@@ -7,12 +7,12 @@
  * @license https://craftcms.github.io/license/
  */
 
-namespace Craft\Cms\Utility\Utilities;
+namespace CraftCms\Cms\Utility\Utilities;
 
 use Craft;
-use Craft\Cms\Utility\Utility;
 use craft\enums\CmsEdition;
 use craft\web\assets\systemmessages\SystemMessagesAsset;
+use CraftCms\Cms\Utility\Utility;
 
 /**
  * SystemMessages represents a System Messages utility.

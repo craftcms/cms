@@ -8,7 +8,6 @@
 namespace craft\console\controllers;
 
 use Craft;
-use Craft\Cms\Migrations\Install;
 use craft\console\Controller;
 use craft\elements\User;
 use craft\errors\DbConnectException;
@@ -17,6 +16,7 @@ use craft\errors\OperationAbortedException;
 use craft\helpers\Console;
 use craft\helpers\Install as InstallHelper;
 use craft\models\Site;
+use CraftCms\Cms\Migrations\Install;
 use yii\base\Exception;
 use yii\console\ExitCode;
 

@@ -7,7 +7,6 @@
 
 namespace craft\utilities;
 
-use Craft;
 use craft\base\Utility;
 
 /**
@@ -16,7 +15,7 @@ use craft\base\Utility;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @author Global Network Group | Giel Tettelaar <giel@yellowflash.net>
  * @since 3.4.0
- * @deprecated in 6.0.0. [[\Craft\Cms\Utility\Utilities\QueueManager]] should be used instead.
+ * @deprecated in 6.0.0. [[\CraftCms\Cms\Utility\Utilities\QueueManager]] should be used instead.
  */
 class QueueManager extends Utility
 {
@@ -25,7 +24,7 @@ class QueueManager extends Utility
      */
     public static function displayName(): string
     {
-        return Craft\Cms\Utility\Utilities\QueueManager::displayName();
+        return \CraftCms\Cms\Utility\Utilities\QueueManager::displayName();
     }
 
     /**
@@ -33,7 +32,7 @@ class QueueManager extends Utility
      */
     public static function id(): string
     {
-        return Craft\Cms\Utility\Utilities\QueueManager::id();
+        return \CraftCms\Cms\Utility\Utilities\QueueManager::id();
     }
 
     /**
@@ -41,7 +40,7 @@ class QueueManager extends Utility
      */
     public static function icon(): ?string
     {
-        return Craft\Cms\Utility\Utilities\QueueManager::icon();
+        return \CraftCms\Cms\Utility\Utilities\QueueManager::icon();
     }
 
     /**
@@ -49,7 +48,7 @@ class QueueManager extends Utility
      */
     public static function toolbarHtml(): string
     {
-        return Craft\Cms\Utility\Utilities\QueueManager::toolbarHtml();
+        return \CraftCms\Cms\Utility\Utilities\QueueManager::toolbarHtml();
     }
 
     /**
@@ -57,7 +56,7 @@ class QueueManager extends Utility
      */
     public static function footerHtml(): string
     {
-        return Craft\Cms\Utility\Utilities\QueueManager::footerHtml();
+        return \CraftCms\Cms\Utility\Utilities\QueueManager::footerHtml();
     }
 
     /**
@@ -65,6 +64,6 @@ class QueueManager extends Utility
      */
     public static function contentHtml(): string
     {
-        return Craft\Cms\Utility\Utilities\QueueManager::contentHtml();
+        return \CraftCms\Cms\Utility\Utilities\QueueManager::contentHtml();
     }
 }

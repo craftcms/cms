@@ -9,7 +9,6 @@ namespace craft\web;
 
 use Craft;
 use craft\base\ApplicationTrait;
-use Craft\Cms\Support\Arr;
 use craft\db\Query;
 use craft\db\Table;
 use craft\debug\DeprecatedPanel;
@@ -26,6 +25,7 @@ use craft\helpers\Json;
 use craft\helpers\Path;
 use craft\helpers\UrlHelper;
 use craft\queue\QueueLogBehavior;
+use CraftCms\Cms\Support\Arr;
 use IntlDateFormatter;
 use IntlException;
 use ReflectionClass;

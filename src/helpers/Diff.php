@@ -7,7 +7,7 @@
 
 namespace craft\helpers;
 
-use Craft\Cms\Support\Arr;
+use CraftCms\Cms\Support\Arr;
 use Symfony\Component\Yaml\Yaml;
 
 /**

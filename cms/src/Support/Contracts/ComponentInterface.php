@@ -1,6 +1,6 @@
 <?php
 
-namespace Craft\Cms\Support\Contracts;
+namespace CraftCms\Cms\Support\Contracts;
 
 /**
  * ComponentInterface defines the common interface to be implemented by Craft component classes.

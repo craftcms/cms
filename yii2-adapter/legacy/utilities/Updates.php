@@ -7,7 +7,6 @@
 
 namespace craft\utilities;
 
-use Craft;
 use craft\base\Utility;
 
 /**
@@ -15,7 +14,7 @@ use craft\base\Utility;
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
- * @deprecated in 6.0.0. [[\Craft\Cms\Utility\Utilities\Updates]] should be used instead.
+ * @deprecated in 6.0.0. [[\CraftCms\Cms\Utility\Utilities\Updates]] should be used instead.
  */
 class Updates extends Utility
 {
@@ -24,7 +23,7 @@ class Updates extends Utility
      */
     public static function displayName(): string
     {
-        return Craft\Cms\Utility\Utilities\Updates::displayName();
+        return \CraftCms\Cms\Utility\Utilities\Updates::displayName();
     }
 
     /**
@@ -32,7 +31,7 @@ class Updates extends Utility
      */
     public static function id(): string
     {
-        return Craft\Cms\Utility\Utilities\Updates::id();
+        return \CraftCms\Cms\Utility\Utilities\Updates::id();
     }
 
     /**
@@ -40,7 +39,7 @@ class Updates extends Utility
      */
     public static function icon(): ?string
     {
-        return Craft\Cms\Utility\Utilities\Updates::icon();
+        return \CraftCms\Cms\Utility\Utilities\Updates::icon();
     }
 
     /**
@@ -48,7 +47,7 @@ class Updates extends Utility
      */
     public static function badgeCount(): int
     {
-        return Craft\Cms\Utility\Utilities\Updates::badgeCount();
+        return \CraftCms\Cms\Utility\Utilities\Updates::badgeCount();
     }
 
     /**
@@ -56,6 +55,6 @@ class Updates extends Utility
      */
     public static function contentHtml(): string
     {
-        return Craft\Cms\Utility\Utilities\Updates::contentHtml();
+        return \CraftCms\Cms\Utility\Utilities\Updates::contentHtml();
     }
 }

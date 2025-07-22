@@ -7,11 +7,11 @@
  * @license https://craftcms.github.io/license/
  */
 
-namespace Craft\Cms\Utility\Utilities;
+namespace CraftCms\Cms\Utility\Utilities;
 
 use Craft;
-use Craft\Cms\Utility\Utility;
 use craft\web\assets\prismjs\PrismJsAsset;
+use CraftCms\Cms\Utility\Utility;
 use Symfony\Component\Yaml\Yaml;
 
 /**

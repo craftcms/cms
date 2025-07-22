@@ -8,7 +8,6 @@
 namespace crafttests\unit\services;
 
 use Craft;
-use Craft\Cms\Support\Str;
 use craft\db\Table;
 use craft\elements\GlobalSet;
 use craft\elements\User;
@@ -41,6 +40,7 @@ use craft\services\Volumes;
 use craft\test\mockclasses\gql\MockDirective;
 use craft\test\mockclasses\gql\MockType;
 use craft\test\TestCase;
+use CraftCms\Cms\Support\Str;
 use GraphQL\Type\Definition\ObjectType;
 use UnitTester;
 use yii\base\Event;

@@ -7,8 +7,8 @@
  * @license https://craftcms.github.io/license/
  */
 
-namespace Craft\Cms\Plugin\Models;
+namespace CraftCms\Cms\Plugin\Models;
 
-use Craft\Cms\Support\BaseModel;
+use CraftCms\Cms\Support\BaseModel;
 
 class Plugin extends BaseModel {}

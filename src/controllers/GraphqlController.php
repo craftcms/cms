@@ -8,7 +8,6 @@
 namespace craft\controllers;
 
 use Craft;
-use Craft\Cms\Support\Arr;
 use craft\errors\GqlException;
 use craft\errors\MissingComponentException;
 use craft\helpers\App;
@@ -23,6 +22,7 @@ use craft\services\Gql as GqlService;
 use craft\web\assets\graphiql\GraphiqlAsset;
 use craft\web\Controller;
 use craft\web\ErrorHandler;
+use CraftCms\Cms\Support\Arr;
 use DateTimeZone;
 use Throwable;
 use yii\base\Exception;

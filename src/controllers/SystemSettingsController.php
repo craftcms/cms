@@ -8,7 +8,6 @@
 namespace craft\controllers;
 
 use Craft;
-use Craft\Cms\Support\Arr;
 use craft\elements\GlobalSet;
 use craft\errors\MissingComponentException;
 use craft\helpers\App;
@@ -23,6 +22,7 @@ use craft\models\MailSettings;
 use craft\web\assets\admintable\AdminTableAsset;
 use craft\web\assets\generalsettings\GeneralSettingsAsset;
 use craft\web\Controller;
+use CraftCms\Cms\Support\Arr;
 use yii\base\Exception;
 use yii\web\ForbiddenHttpException;
 use yii\web\NotFoundHttpException;

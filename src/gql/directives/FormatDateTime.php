@@ -8,10 +8,10 @@
 namespace craft\gql\directives;
 
 use Craft;
-use Craft\Cms\Support\Str;
 use craft\gql\base\Directive;
 use craft\gql\GqlEntityRegistry;
 use craft\i18n\Locale;
+use CraftCms\Cms\Support\Str;
 use DateTime;
 use GraphQL\Language\DirectiveLocation;
 use GraphQL\Type\Definition\Directive as GqlDirective;

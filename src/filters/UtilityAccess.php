@@ -7,8 +7,8 @@
 
 namespace craft\filters;
 
-use Craft\Cms\Utility\Utilities;
 use craft\web\Controller;
+use CraftCms\Cms\Utility\Utilities;
 use yii\base\ActionFilter;
 use yii\web\ForbiddenHttpException;
 
@@ -24,7 +24,7 @@ class UtilityAccess extends ActionFilter
     use ConditionalFilterTrait;
 
     /**
-     * @var class-string<\Craft\Cms\Utility\Utility> The utility class
+     * @var class-string<\CraftCms\Cms\Utility\Utility> The utility class
      */
     public string $utility;
 

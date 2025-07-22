@@ -16,8 +16,6 @@ use craft\base\FieldLayoutProviderInterface;
 use craft\base\FsInterface;
 use craft\base\Model;
 use craft\behaviors\FieldLayoutBehavior;
-use Craft\Cms\Support\Arr;
-use Craft\Cms\Support\Str;
 use craft\elements\Asset;
 use craft\fs\MissingFs;
 use craft\helpers\App;
@@ -25,6 +23,8 @@ use craft\helpers\UrlHelper;
 use craft\records\Volume as VolumeRecord;
 use craft\validators\HandleValidator;
 use craft\validators\UniqueValidator;
+use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Support\Str;
 use Generator;
 use yii\base\InvalidConfigException;
 

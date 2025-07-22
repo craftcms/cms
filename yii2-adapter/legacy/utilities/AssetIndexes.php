@@ -7,11 +7,10 @@
 
 namespace craft\utilities;
 
-use Craft;
 use craft\base\Utility;
-use Craft\Cms\Utility\Events\ListVolumes;
 use craft\events\ListVolumesEvent;
 use craft\models\Volume;
+use CraftCms\Cms\Utility\Events\ListVolumes;
 use Illuminate\Support\Facades\Event as EventFacade;
 use yii\base\Event;
 
@@ -20,7 +19,7 @@ use yii\base\Event;
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
- * @deprecated in 6.0.0. [[\Craft\Cms\Utility\Utilities\AssetIndexes]] should be used instead.
+ * @deprecated in 6.0.0. [[\CraftCms\Cms\Utility\Utilities\AssetIndexes]] should be used instead.
  */
 class AssetIndexes extends Utility
 {
@@ -35,7 +34,7 @@ class AssetIndexes extends Utility
      */
     public static function displayName(): string
     {
-        return Craft\Cms\Utility\Utilities\AssetIndexes::displayName();
+        return \CraftCms\Cms\Utility\Utilities\AssetIndexes::displayName();
     }
 
     /**
@@ -43,7 +42,7 @@ class AssetIndexes extends Utility
      */
     public static function id(): string
     {
-        return Craft\Cms\Utility\Utilities\AssetIndexes::id();
+        return \CraftCms\Cms\Utility\Utilities\AssetIndexes::id();
     }
 
     /**
@@ -51,7 +50,7 @@ class AssetIndexes extends Utility
      */
     public static function icon(): ?string
     {
-        return Craft\Cms\Utility\Utilities\AssetIndexes::icon();
+        return \CraftCms\Cms\Utility\Utilities\AssetIndexes::icon();
     }
 
     /**
@@ -61,7 +60,7 @@ class AssetIndexes extends Utility
      */
     public static function volumes(): array
     {
-        return Craft\Cms\Utility\Utilities\AssetIndexes::volumes();
+        return \CraftCms\Cms\Utility\Utilities\AssetIndexes::volumes();
     }
 
     /**
@@ -69,7 +68,7 @@ class AssetIndexes extends Utility
      */
     public static function contentHtml(): string
     {
-        return Craft\Cms\Utility\Utilities\AssetIndexes::contentHtml();
+        return \CraftCms\Cms\Utility\Utilities\AssetIndexes::contentHtml();
     }
 
     public static function registerEvents(): void

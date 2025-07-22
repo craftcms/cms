@@ -8,7 +8,6 @@
 namespace craft\base;
 
 use Craft;
-use Craft\Cms\Support\Str;
 use craft\db\Table as DbTable;
 use craft\elements\db\ElementQueryInterface;
 use craft\enums\AttributeStatus;
@@ -27,6 +26,7 @@ use craft\models\GqlSchema;
 use craft\records\Field as FieldRecord;
 use craft\validators\HandleValidator;
 use craft\validators\UniqueValidator;
+use CraftCms\Cms\Support\Str;
 use DateTime;
 use Exception;
 use GraphQL\Type\Definition\Type;

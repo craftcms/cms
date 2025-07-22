@@ -8,7 +8,6 @@
 namespace craft\db;
 
 use Craft;
-use Craft\Cms\Support\Str;
 use craft\db\mysql\QueryBuilder as MysqlQueryBuilder;
 use craft\db\mysql\Schema as MysqlSchema;
 use craft\db\pgsql\QueryBuilder as PgsqlQueryBuilder;
@@ -20,6 +19,7 @@ use craft\events\RestoreEvent;
 use craft\helpers\App;
 use craft\helpers\Db;
 use craft\helpers\FileHelper;
+use CraftCms\Cms\Support\Str;
 use mikehaertl\shellcommand\Command as ShellCommand;
 use Throwable;
 use yii\base\Event;
@@ -40,7 +40,7 @@ use yii\db\Exception as DbException;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
  */
-class Connection extends Craft\Yii2Adapter\DatabaseConnection
+class Connection extends \CraftCms\Yii2Adapter\DatabaseConnection
 {
     use PrimaryReplicaTrait;
 

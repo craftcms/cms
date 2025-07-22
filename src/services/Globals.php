@@ -9,7 +9,6 @@ namespace craft\services;
 
 use Craft;
 use craft\base\MemoizableArray;
-use Craft\Cms\Support\Str;
 use craft\db\Query;
 use craft\db\Table;
 use craft\elements\GlobalSet;
@@ -21,6 +20,7 @@ use craft\helpers\Db;
 use craft\helpers\ProjectConfig as ProjectConfigHelper;
 use craft\models\FieldLayout;
 use craft\records\GlobalSet as GlobalSetRecord;
+use CraftCms\Cms\Support\Str;
 use Illuminate\Support\Collection;
 use Throwable;
 use yii\base\Component;

@@ -10,8 +10,8 @@ namespace craft\services;
 use Craft;
 use craft\base\Component;
 use craft\base\Event;
-use Craft\Cms\Utility\Events\RegisterUtilities;
 use craft\events\RegisterComponentTypesEvent;
+use CraftCms\Cms\Utility\Events\RegisterUtilities;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Event as EventFacade;
 
@@ -20,7 +20,7 @@ use Illuminate\Support\Facades\Event as EventFacade;
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
- * @deprecated in 6.0.0. [[\Craft\Cms\Utility\Utilities]] should be used instead.
+ * @deprecated in 6.0.0. [[\CraftCms\Cms\Utility\Utilities]] should be used instead.
  */
 class Utilities extends Component
 {
@@ -46,13 +46,13 @@ class Utilities extends Component
      */
     public const EVENT_REGISTER_UTILITIES = 'registerUtilities';
 
-    private Craft\Cms\Utility\Utilities $utilities;
+    private \CraftCms\Cms\Utility\Utilities $utilities;
 
     public function init(): void
     {
         parent::init();
 
-        $this->utilities = app(Craft\Cms\Utility\Utilities::class);
+        $this->utilities = app(\CraftCms\Cms\Utility\Utilities::class);
     }
 
     public function getAllUtilityTypes(): array
@@ -61,6 +61,38 @@ class Utilities extends Component
             ->getAllUtilityTypes()
             ->values()
             ->all();
+    }
+
+    /**
+     * Returns all utility type classes that the user has permission to use.
+     *
+     * @return array<class-string<\craft\base\UtilityInterface>>
+     */
+    public function getAuthorizedUtilityTypes(): array
+    {
+        return $this->utilities->getAuthorizedUtilityTypes()->values()->all();
+    }
+
+    /**
+     * Returns whether the current user is authorized to use a given utility.
+     *
+     * @param  class-string<\craft\base\UtilityInterface>  $class  The utility class
+     */
+    public function checkAuthorization(string $class): bool
+    {
+        /** @phpstan-ignore-next-line */
+        return $this->utilities->checkAuthorization($class);
+    }
+
+    /**
+     * Returns a utility class by its ID
+     *
+     * @return class-string<\craft\base\UtilityInterface>|null
+     */
+    public function getUtilityTypeById(string $id): ?string
+    {
+        /** @phpstan-ignore-next-line */
+        return $this->utilities->getUtilityTypeById($id);
     }
 
     public static function registerEvents(): void

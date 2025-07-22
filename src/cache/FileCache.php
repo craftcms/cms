@@ -7,7 +7,7 @@
 
 namespace craft\cache;
 
-use Craft\Cms\Support\Str;
+use CraftCms\Cms\Support\Str;
 use yii\caching\FileCache as YiiFileCache;
 
 /**

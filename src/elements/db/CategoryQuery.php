@@ -8,13 +8,13 @@
 namespace craft\elements\db;
 
 use Craft;
-use Craft\Cms\Support\Arr;
 use craft\db\Query;
 use craft\db\QueryAbortedException;
 use craft\db\Table;
 use craft\elements\Category;
 use craft\helpers\Db;
 use craft\models\CategoryGroup;
+use CraftCms\Cms\Support\Arr;
 
 /**
  * CategoryQuery represents a SELECT SQL statement for categories in a way that is independent of DBMS.

@@ -8,13 +8,13 @@
 namespace craft\services;
 
 use Craft;
-use Craft\Cms\Support\Arr;
 use craft\db\Query;
 use craft\db\Table;
 use craft\enums\CmsEdition;
 use craft\events\RegisterEmailMessagesEvent;
 use craft\models\SystemMessage;
 use craft\records\SystemMessage as EmailMessageRecord;
+use CraftCms\Cms\Support\Arr;
 use yii\base\Component;
 use yii\db\Expression;
 

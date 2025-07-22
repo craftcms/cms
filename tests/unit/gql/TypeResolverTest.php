@@ -9,7 +9,6 @@ namespace crafttests\unit\gql;
 
 use Craft;
 use craft\base\ElementInterface;
-use Craft\Cms\Support\Str;
 use craft\elements\Asset;
 use craft\elements\Entry;
 use craft\elements\GlobalSet;
@@ -21,6 +20,7 @@ use craft\gql\resolvers\elements\GlobalSet as GlobalSetResolver;
 use craft\gql\resolvers\elements\User as UserResolver;
 use craft\test\mockclasses\elements\ExampleElement;
 use craft\test\TestCase;
+use CraftCms\Cms\Support\Str;
 use crafttests\fixtures\AssetFixture;
 use crafttests\fixtures\EntryFixture;
 use crafttests\fixtures\GlobalSetFixture;

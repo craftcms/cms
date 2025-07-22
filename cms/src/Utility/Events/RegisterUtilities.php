@@ -1,6 +1,6 @@
 <?php
 
-namespace Craft\Cms\Utility\Events;
+namespace CraftCms\Cms\Utility\Events;
 
 use Illuminate\Support\Collection;
 
@@ -13,7 +13,7 @@ use Illuminate\Support\Collection;
  * ---
  * ```php
  * use Illuminate\Support\Facades\Event;
- * use Craft\Cms\Utility\Events\RegisterUtilities;
+ * use CraftCms\Cms\Utility\Events\RegisterUtilities;
  *
  * Event::listen(RegisterUtilities::class, function(RegisterUtilities $event) {
  *     $event->types[] = MyUtilityType::class;

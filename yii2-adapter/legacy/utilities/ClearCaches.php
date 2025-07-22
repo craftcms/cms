@@ -7,11 +7,10 @@
 
 namespace craft\utilities;
 
-use Craft;
 use craft\base\Utility;
-use Craft\Cms\Utility\Events\RegisterCacheOptions;
-use Craft\Cms\Utility\Events\RegisterTagOptions;
 use craft\events\RegisterCacheOptionsEvent;
+use CraftCms\Cms\Utility\Events\RegisterCacheOptions;
+use CraftCms\Cms\Utility\Events\RegisterTagOptions;
 use yii\base\Event;
 
 /**
@@ -19,7 +18,7 @@ use yii\base\Event;
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
- * @deprecated in 6.0.0. [[\Craft\Cms\Utility\Utilities\ClearCaches]] should be used instead.
+ * @deprecated in 6.0.0. [[\CraftCms\Cms\Utility\Utilities\ClearCaches]] should be used instead.
  */
 class ClearCaches extends Utility
 {
@@ -55,7 +54,7 @@ class ClearCaches extends Utility
      */
     public static function displayName(): string
     {
-        return Craft\Cms\Utility\Utilities\ClearCaches::displayName();
+        return \CraftCms\Cms\Utility\Utilities\ClearCaches::displayName();
     }
 
     /**
@@ -63,7 +62,7 @@ class ClearCaches extends Utility
      */
     public static function id(): string
     {
-        return Craft\Cms\Utility\Utilities\ClearCaches::id();
+        return \CraftCms\Cms\Utility\Utilities\ClearCaches::id();
     }
 
     /**
@@ -71,7 +70,7 @@ class ClearCaches extends Utility
      */
     public static function icon(): ?string
     {
-        return Craft\Cms\Utility\Utilities\ClearCaches::icon();
+        return \CraftCms\Cms\Utility\Utilities\ClearCaches::icon();
     }
 
     /**
@@ -79,7 +78,7 @@ class ClearCaches extends Utility
      */
     public static function contentHtml(): string
     {
-        return Craft\Cms\Utility\Utilities\ClearCaches::contentHtml();
+        return \CraftCms\Cms\Utility\Utilities\ClearCaches::contentHtml();
     }
 
     /**
@@ -89,7 +88,7 @@ class ClearCaches extends Utility
      */
     public static function cacheOptions(): array
     {
-        return Craft\Cms\Utility\Utilities\ClearCaches::cacheOptions();
+        return \CraftCms\Cms\Utility\Utilities\ClearCaches::cacheOptions();
     }
 
     /**
@@ -100,7 +99,7 @@ class ClearCaches extends Utility
      */
     public static function tagOptions(): array
     {
-        return Craft\Cms\Utility\Utilities\ClearCaches::tagOptions();
+        return \CraftCms\Cms\Utility\Utilities\ClearCaches::tagOptions();
     }
 
     public static function registerEvents(): void

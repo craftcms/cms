@@ -1,6 +1,6 @@
 <?php
 
-namespace Craft\Cms\Utility\Events;
+namespace CraftCms\Cms\Utility\Events;
 
 /**
  * @event RegisterTagOptions The event that is triggered when registering cache tag invalidation options.
@@ -10,7 +10,7 @@ namespace Craft\Cms\Utility\Events;
  * - `tag` – The cache tag name that should be cleared.
  * - `label` – A human-facing label for the cache tag option.
  *
- * @see \Craft\Cms\Utility\Utilities\ClearCaches::tagOptions()
+ * @see \CraftCms\Cms\Utility\Utilities\ClearCaches::tagOptions()
  * @since 6.0.0
  */
 class RegisterTagOptions

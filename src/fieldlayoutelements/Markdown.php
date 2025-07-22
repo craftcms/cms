@@ -9,9 +9,9 @@ namespace craft\fieldlayoutelements;
 
 use Craft;
 use craft\base\ElementInterface;
-use Craft\Cms\Support\Str;
 use craft\helpers\Cp;
 use craft\helpers\Html;
+use CraftCms\Cms\Support\Str;
 use yii\helpers\Markdown as MarkdownHelper;
 
 /**

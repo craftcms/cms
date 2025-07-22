@@ -11,9 +11,6 @@ use Craft;
 use craft\base\Chippable;
 use craft\base\ElementInterface;
 use craft\base\Iconic;
-use Craft\Cms\Support\Arr;
-use Craft\Cms\Utility\Utilities;
-use Craft\Cms\Utility\Utilities\Updates as UpdatesUtility;
 use craft\elements\db\NestedElementQueryInterface;
 use craft\enums\CmsEdition;
 use craft\enums\LicenseKeyStatus;
@@ -36,6 +33,9 @@ use craft\models\Update;
 use craft\models\Updates;
 use craft\web\Controller;
 use craft\web\ServiceUnavailableHttpException;
+use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Utility\Utilities;
+use CraftCms\Cms\Utility\Utilities\Updates as UpdatesUtility;
 use DateInterval;
 use Throwable;
 use yii\base\InvalidArgumentException;
@@ -377,7 +377,7 @@ class AppController extends Controller
         $utilities = app(Utilities::class)->getAuthorizedUtilityTypes();
 
         foreach ($utilities as $class) {
-            /** @var \Craft\Cms\Utility\Utility $class */
+            /** @var \CraftCms\Cms\Utility\Utility $class */
             $badgeCount += $class::badgeCount();
         }
 

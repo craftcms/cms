@@ -8,7 +8,6 @@
 namespace craft\base;
 
 use Closure;
-use Craft\Cms\Support\Str;
 use craft\events\DefineBehaviorsEvent;
 use craft\events\DefineFieldsEvent;
 use craft\events\DefineRulesEvent;
@@ -16,6 +15,7 @@ use craft\helpers\App;
 use craft\helpers\Component;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\Typecast;
+use CraftCms\Cms\Support\Str;
 use yii\validators\Validator;
 
 /**

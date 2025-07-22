@@ -8,11 +8,11 @@
 namespace craft\fields\linktypes;
 
 use Craft;
-use Craft\Cms\Support\Arr;
-use Craft\Cms\Support\Str;
 use craft\fields\Link;
 use craft\helpers\Cp;
 use craft\helpers\Html;
+use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Support\Str;
 
 /**
  * Base text link type.

@@ -9,7 +9,6 @@ namespace craft\console\controllers;
 
 use Craft;
 use craft\base\Event;
-use Craft\Cms\Support\Arr;
 use craft\console\Controller;
 use craft\db\Query;
 use craft\db\Table;
@@ -27,6 +26,7 @@ use craft\models\Section;
 use craft\services\Entries as EntriesService;
 use craft\services\ProjectConfig;
 use craft\services\Structures;
+use CraftCms\Cms\Support\Arr;
 use yii\base\InvalidConfigException;
 use yii\console\ExitCode;
 use yii\helpers\Console;

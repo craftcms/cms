@@ -1,6 +1,6 @@
 <?php
 
-use Craft\Cms\Support\Str;
+use CraftCms\Cms\Support\Str;
 
 return [
     'assets/edit/<elementId:\d+><filename:(?:-[^\/]*)?>' => 'elements/edit',

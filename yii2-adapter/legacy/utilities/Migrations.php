@@ -7,7 +7,6 @@
 
 namespace craft\utilities;
 
-use Craft;
 use craft\base\Utility;
 
 /**
@@ -15,7 +14,7 @@ use craft\base\Utility;
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
- * @deprecated in 6.0.0. [[\Craft\Cms\Utility\Utilities\Migrations]] should be used instead.
+ * @deprecated in 6.0.0. [[\CraftCms\Cms\Utility\Utilities\Migrations]] should be used instead.
  */
 class Migrations extends Utility
 {
@@ -24,7 +23,7 @@ class Migrations extends Utility
      */
     public static function displayName(): string
     {
-        return Craft\Cms\Utility\Utilities\Migrations::displayName();
+        return \CraftCms\Cms\Utility\Utilities\Migrations::displayName();
     }
 
     /**
@@ -32,7 +31,7 @@ class Migrations extends Utility
      */
     public static function id(): string
     {
-        return Craft\Cms\Utility\Utilities\Migrations::id();
+        return \CraftCms\Cms\Utility\Utilities\Migrations::id();
     }
 
     /**
@@ -40,7 +39,7 @@ class Migrations extends Utility
      */
     public static function icon(): ?string
     {
-        return Craft\Cms\Utility\Utilities\Migrations::icon();
+        return \CraftCms\Cms\Utility\Utilities\Migrations::icon();
     }
 
     /**
@@ -48,7 +47,7 @@ class Migrations extends Utility
      */
     public static function badgeCount(): int
     {
-        return Craft\Cms\Utility\Utilities\Migrations::badgeCount();
+        return \CraftCms\Cms\Utility\Utilities\Migrations::badgeCount();
     }
 
     /**
@@ -56,6 +55,6 @@ class Migrations extends Utility
      */
     public static function contentHtml(): string
     {
-        return Craft\Cms\Utility\Utilities\Migrations::contentHtml();
+        return \CraftCms\Cms\Utility\Utilities\Migrations::contentHtml();
     }
 }

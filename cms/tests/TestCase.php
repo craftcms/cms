@@ -1,13 +1,14 @@
 <?php
 
-namespace Craft\Cms\Tests;
+namespace CraftCms\Cms\Tests;
 
 use Craft;
-use Craft\Cms\Migrations\Install;
-use Craft\Cms\Providers\CraftServiceProvider;
 use craft\models\Site;
 use craft\services\ProjectConfig;
 use craft\test\TestSetup;
+use CraftCms\Cms\Migrations\Install;
+use CraftCms\Cms\Providers\CraftServiceProvider;
+use CraftCms\Yii2Adapter\Yii2ServiceProvider;
 use Illuminate\Contracts\Console\Kernel;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -29,7 +30,7 @@ class TestCase extends Orchestra
         Craft::$app->mutex->release(ProjectConfig::MUTEX_NAME);
 
         Factory::guessFactoryNamesUsing(
-            fn (string $modelName) => 'Craft\\Cms\\Database\\Factories\\'.class_basename($modelName).'Factory'
+            fn (string $modelName) => 'CraftCms\\Cms\\Database\\Factories\\'.class_basename($modelName).'Factory'
         );
     }
 
@@ -92,7 +93,7 @@ class TestCase extends Orchestra
     {
         return [
             CraftServiceProvider::class,
-            Craft\Yii2Adapter\Yii2ServiceProvider::class,
+            Yii2ServiceProvider::class,
         ];
     }
 

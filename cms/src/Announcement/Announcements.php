@@ -7,16 +7,16 @@
  * @license https://craftcms.github.io/license/
  */
 
-namespace Craft\Cms\Announcement;
+namespace CraftCms\Cms\Announcement;
 
 use Craft;
 use craft\base\PluginInterface;
-use Craft\Cms\Announcement\Models\Announcement;
 use craft\helpers\Html;
 use craft\helpers\Queue;
 use craft\i18n\Translation;
 use craft\queue\jobs\Announcement as AnnouncementJob;
 use CraftCms\Aliases\Facades\Aliases;
+use CraftCms\Cms\Announcement\Models\Announcement;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;

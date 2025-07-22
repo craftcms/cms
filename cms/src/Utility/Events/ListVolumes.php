@@ -1,6 +1,6 @@
 <?php
 
-namespace Craft\Cms\Utility\Events;
+namespace CraftCms\Cms\Utility\Events;
 
 use craft\models\Volume;
 

@@ -1,15 +1,15 @@
 <?php
 
-namespace Craft\Cms\Utility\Utilities;
+namespace CraftCms\Cms\Utility\Utilities;
 
 use Craft;
-use Craft\Cms\Support\Arr;
-use Craft\Cms\Utility\Events\RegisterCacheOptions;
-use Craft\Cms\Utility\Events\RegisterTagOptions;
-use Craft\Cms\Utility\Utility;
 use craft\db\Table;
 use craft\helpers\Db;
 use craft\web\assets\clearcaches\ClearCachesAsset;
+use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Utility\Events\RegisterCacheOptions;
+use CraftCms\Cms\Utility\Events\RegisterTagOptions;
+use CraftCms\Cms\Utility\Utility;
 use Exception;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\File;

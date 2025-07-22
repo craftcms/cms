@@ -7,9 +7,9 @@
 
 namespace crafttests\unit\helpers\FileHelper;
 
-use Craft\Cms\Support\Str;
 use craft\helpers\FileHelper;
 use craft\test\TestCase;
+use CraftCms\Cms\Support\Str;
 use UnitTester;
 use yii\base\ErrorException;
 use yii\base\Exception;

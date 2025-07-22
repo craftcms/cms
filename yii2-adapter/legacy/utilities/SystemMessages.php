@@ -7,7 +7,6 @@
 
 namespace craft\utilities;
 
-use Craft;
 use craft\base\Utility;
 
 /**
@@ -15,7 +14,7 @@ use craft\base\Utility;
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.1.0
- * @deprecated in 6.0.0. [[\Craft\Cms\Utility\Utilities\SystemMessages]] should be used instead.
+ * @deprecated in 6.0.0. [[\CraftCms\Cms\Utility\Utilities\SystemMessages]] should be used instead.
  */
 class SystemMessages extends Utility
 {
@@ -24,7 +23,7 @@ class SystemMessages extends Utility
      */
     public static function displayName(): string
     {
-        return Craft\Cms\Utility\Utilities\SystemMessages::displayName();
+        return \CraftCms\Cms\Utility\Utilities\SystemMessages::displayName();
     }
 
     /**
@@ -32,7 +31,7 @@ class SystemMessages extends Utility
      */
     public static function id(): string
     {
-        return Craft\Cms\Utility\Utilities\SystemMessages::id();
+        return \CraftCms\Cms\Utility\Utilities\SystemMessages::id();
     }
 
     /**
@@ -40,7 +39,7 @@ class SystemMessages extends Utility
      */
     public static function icon(): ?string
     {
-        return Craft\Cms\Utility\Utilities\SystemMessages::icon();
+        return \CraftCms\Cms\Utility\Utilities\SystemMessages::icon();
     }
 
     /**
@@ -48,6 +47,6 @@ class SystemMessages extends Utility
      */
     public static function contentHtml(): string
     {
-        return Craft\Cms\Utility\Utilities\SystemMessages::contentHtml();
+        return \CraftCms\Cms\Utility\Utilities\SystemMessages::contentHtml();
     }
 }

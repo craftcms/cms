@@ -7,9 +7,9 @@
  * @license https://craftcms.github.io/license/
  */
 
-use Craft\Cms\Announcement\Models\Announcement;
-use Craft\Cms\Support\Facades\Announcements;
-use Craft\Cms\User\Models\User;
+use CraftCms\Cms\Announcement\Models\Announcement;
+use CraftCms\Cms\Support\Facades\Announcements;
+use CraftCms\Cms\User\Models\User;
 
 use function Pest\Laravel\actingAs;
 

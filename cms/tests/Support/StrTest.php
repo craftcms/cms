@@ -1,7 +1,7 @@
 <?php
 
-use Craft\Cms\Support\Str;
 use craft\enums\LicenseKeyStatus;
+use CraftCms\Cms\Support\Str;
 use Illuminate\Support\Stringable;
 
 test('asciiCharMap', function (string $char, string $ascii) {

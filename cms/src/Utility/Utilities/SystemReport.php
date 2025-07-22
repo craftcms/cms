@@ -7,14 +7,14 @@
  * @license https://craftcms.github.io/license/
  */
 
-namespace Craft\Cms\Utility\Utilities;
+namespace CraftCms\Cms\Utility\Utilities;
 
 use Composer\InstalledVersions;
 use Craft;
 use craft\base\PluginInterface;
-use Craft\Cms\Utility\Utility;
 use craft\helpers\App;
 use CraftCms\Aliases\Facades\Aliases;
+use CraftCms\Cms\Utility\Utility;
 use Illuminate\Support\Facades\DB;
 use OutOfBoundsException;
 use RequirementsChecker;

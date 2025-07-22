@@ -7,7 +7,6 @@
 
 namespace craft\utilities;
 
-use Craft;
 use craft\base\Utility;
 
 /**
@@ -15,7 +14,7 @@ use craft\base\Utility;
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
- * @deprecated in 6.0.0. [[\Craft\Cms\Utility\Utilities\SystemReport]] should be used instead.
+ * @deprecated in 6.0.0. [[\CraftCms\Cms\Utility\Utilities\SystemReport]] should be used instead.
  */
 class SystemReport extends Utility
 {
@@ -24,7 +23,7 @@ class SystemReport extends Utility
      */
     public static function displayName(): string
     {
-        return Craft\Cms\Utility\Utilities\SystemReport::displayName();
+        return \CraftCms\Cms\Utility\Utilities\SystemReport::displayName();
     }
 
     /**
@@ -32,7 +31,7 @@ class SystemReport extends Utility
      */
     public static function id(): string
     {
-        return Craft\Cms\Utility\Utilities\SystemReport::id();
+        return \CraftCms\Cms\Utility\Utilities\SystemReport::id();
     }
 
     /**
@@ -40,7 +39,7 @@ class SystemReport extends Utility
      */
     public static function icon(): ?string
     {
-        return Craft\Cms\Utility\Utilities\SystemReport::icon();
+        return \CraftCms\Cms\Utility\Utilities\SystemReport::icon();
     }
 
     /**
@@ -48,6 +47,6 @@ class SystemReport extends Utility
      */
     public static function contentHtml(): string
     {
-        return Craft\Cms\Utility\Utilities\SystemReport::contentHtml();
+        return \CraftCms\Cms\Utility\Utilities\SystemReport::contentHtml();
     }
 }
