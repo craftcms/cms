@@ -100,8 +100,8 @@ class Yii2ServiceProvider extends ServiceProvider
          * When running in a Craft 5 upgraded project, the User model
          * won't exist. As such we need to use the base model.
          */
-        if (!class_exists(config('auth.providers.users.model'))) {
-            config()->set('auth.providers.users.model', User::class);
+        if (!class_exists(config('auth.providers.users.model')) || !Config::get('auth.providers.users.model') instanceof User) {
+            Config::set('auth.providers.users.model', User::class);
         }
 
         /**
