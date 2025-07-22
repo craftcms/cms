@@ -20,6 +20,8 @@ it('can get all utility types', function () {
 });
 
 it('contains system messages when craft is pro', function () {
+    Craft::$app->setEdition(CmsEdition::Solo);
+
     expect($this->utilities->getAllUtilityTypes())->not()->toContain(SystemMessages::class);
 
     Craft::$app->setEdition(CmsEdition::Pro);
@@ -49,7 +51,7 @@ it('can get authorized utility types', function () {
     expect($this->utilities->getAuthorizedUtilityTypes())->not()->toBeEmpty();
 });
 
-it('disabled utilities are not included', function () {
+test('disabled utilities are not included', function () {
     actingAs(User::first());
 
     expect($this->utilities->getAuthorizedUtilityTypes())->toContain(SystemReport::class);

@@ -36,8 +36,9 @@ class TestCase extends Orchestra
     protected function tearDown(): void
     {
         if (Craft::$app) {
-            Craft::$app->getDb()->pdo = null;
-            Craft::$app->getDb2()->pdo = null;
+            Craft::$app->getProjectConfig()->flush();
+            Craft::$app->getDb()->close();
+            Craft::$app->getDb2()->close();
             DB::disconnect();
 
             TestSetup::tearDownCraft();
