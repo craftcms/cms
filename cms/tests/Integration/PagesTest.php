@@ -1,7 +1,7 @@
 <?php
 
-use craft\enums\CmsEdition;
 use Craft\Cms\User\Models\User;
+use craft\enums\CmsEdition;
 
 use function Pest\Laravel\actingAs;
 use function Pest\Laravel\get;
