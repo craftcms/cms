@@ -436,12 +436,12 @@
             "source": {
                 "type": "git",
                 "url": "git@github.com:craftcms/laravel-aliases.git",
-                "reference": "6829f5dd99dedccafac63ff0344ddd748fa2229b"
+                "reference": "a53eef19457bd3a2951731c275fce54f1d23812d"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/craftcms/laravel-aliases/zipball/6829f5dd99dedccafac63ff0344ddd748fa2229b",
-                "reference": "6829f5dd99dedccafac63ff0344ddd748fa2229b",
+                "url": "https://api.github.com/repos/craftcms/laravel-aliases/zipball/a53eef19457bd3a2951731c275fce54f1d23812d",
+                "reference": "a53eef19457bd3a2951731c275fce54f1d23812d",
                 "shasum": "",
                 "mirrors": [
                     {
@@ -471,22 +471,22 @@
             "extra": {
                 "laravel": {
                     "providers": [
-                        "Craft\\Aliases\\AliasesServiceProvider"
+                        "CraftCms\\Aliases\\AliasesServiceProvider"
                     ],
                     "aliases": {
-                        "Aliases": "Craft\\Aliases\\Facades\\Aliases"
+                        "Aliases": "CraftCms\\Aliases\\Facades\\Aliases"
                     }
                 }
             },
             "autoload": {
                 "psr-4": {
-                    "Craft\\Aliases\\": "src/",
-                    "Craft\\Aliases\\Database\\Factories\\": "database/factories/"
+                    "CraftCms\\Aliases\\": "src/",
+                    "CraftCms\\Aliases\\Database\\Factories\\": "database/factories/"
                 }
             },
             "autoload-dev": {
                 "psr-4": {
-                    "Craft\\Aliases\\Tests\\": "tests/"
+                    "CraftCms\\Aliases\\Tests\\": "tests/"
                 }
             },
             "notification-url": "https://repo.packagist.com/craftcms/downloads/",
@@ -531,7 +531,7 @@
                 "source": "https://github.com/craftcms/laravel-aliases/tree/1.0.0",
                 "issues": "https://github.com/craftcms/laravel-aliases/issues"
             },
-            "time": "2025-06-09T06:03:01+00:00"
+            "time": "2025-07-22T09:15:05+00:00"
         },
         {
             "name": "craftcms/plugin-installer",

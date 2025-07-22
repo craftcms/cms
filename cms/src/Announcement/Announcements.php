@@ -10,13 +10,13 @@
 namespace Craft\Cms\Announcement;
 
 use Craft;
-use Craft\Aliases\Facades\Aliases;
 use craft\base\PluginInterface;
 use Craft\Cms\Announcement\Models\Announcement;
 use craft\helpers\Html;
 use craft\helpers\Queue;
 use craft\i18n\Translation;
 use craft\queue\jobs\Announcement as AnnouncementJob;
+use CraftCms\Aliases\Facades\Aliases;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;

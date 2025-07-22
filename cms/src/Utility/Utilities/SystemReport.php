@@ -11,10 +11,10 @@ namespace Craft\Cms\Utility\Utilities;
 
 use Composer\InstalledVersions;
 use Craft;
-use Craft\Aliases\Facades\Aliases;
 use craft\base\PluginInterface;
 use Craft\Cms\Utility\Utility;
 use craft\helpers\App;
+use CraftCms\Aliases\Facades\Aliases;
 use Illuminate\Support\Facades\DB;
 use OutOfBoundsException;
 use RequirementsChecker;

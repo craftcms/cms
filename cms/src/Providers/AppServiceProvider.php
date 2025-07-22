@@ -2,10 +2,10 @@
 
 namespace Craft\Cms\Providers;
 
-use Craft\Aliases\Facades\Aliases;
 use Craft\Cms\Http\Middleware\ExtractNamespace;
 use Craft\Cms\Http\Middleware\RequireCpRequest;
 use craft\helpers\FileHelper;
+use CraftCms\Aliases\Facades\Aliases;
 use Illuminate\Foundation\Console\AboutCommand;
 use Illuminate\Routing\Router;
 use Illuminate\Support\ServiceProvider;
