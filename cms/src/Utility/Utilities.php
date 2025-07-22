@@ -26,6 +26,7 @@ use Craft\Cms\Utility\Utilities\Updates as UpdatesUtility;
 use craft\enums\CmsEdition;
 use craft\queue\QueueInterface;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Event;
 
 /**
@@ -108,14 +109,17 @@ class Utilities
      */
     public function checkAuthorization(string $class): bool
     {
+        /** @var ?\Craft\Cms\User\Models\User $user */
+        $user = Auth::user();
+
         // The Project Config utility is for admins only!
-        if ($class === ProjectConfigUtility::class && ! Craft::$app->getUser()->getIsAdmin()) {
+        if ($class === ProjectConfigUtility::class && ! $user?->isAdmin()) {
             return false;
         }
 
         $utilityId = $class::id();
 
-        if (! Craft::$app->getUser()->checkPermission("utility:$utilityId")) {
+        if (! $user?->can("utility:$utilityId")) {
             return false;
         }
 

@@ -9,7 +9,9 @@
 
 namespace Craft\Cms\User\Models;
 
+use Craft;
 use Craft\Cms\Support\BaseModel;
+use craft\enums\CmsEdition;
 use Illuminate\Auth\Authenticatable;
 use Illuminate\Auth\MustVerifyEmail;
 use Illuminate\Auth\Passwords\CanResetPassword;
@@ -36,4 +38,36 @@ class User extends BaseModel implements AuthenticatableContract, AuthorizableCon
         'password',
         'remember_token',
     ];
+
+    protected $casts = [
+        'admin' => 'boolean',
+    ];
+
+    public function isAdmin(): bool
+    {
+        return $this->admin;
+    }
+
+    /**
+     * Returns whether the user has permission to perform a given action.
+     *
+     * @param  string  $abilities
+     *
+     * @todo Permissions to Laravel Gates
+     */
+    public function can($abilities, $arguments = []): bool
+    {
+        if (
+            $this->admin ||
+            Craft::$app->edition === CmsEdition::Solo
+        ) {
+            return true;
+        }
+
+        if (! isset($this->id)) {
+            return false;
+        }
+
+        return Craft::$app->getUserPermissions()->doesUserHavePermission($this->id, $abilities);
+    }
 }
