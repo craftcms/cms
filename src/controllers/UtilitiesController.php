@@ -24,10 +24,10 @@ use craft\utilities\Updates;
 use craft\utilities\Upgrade;
 use craft\web\assets\utilities\UtilitiesAsset;
 use craft\web\Controller;
+use CraftCms\DependencyAwareCache\Dependency\TagDependency;
 use Throwable;
 use yii\base\Exception;
 use yii\base\InvalidArgumentException;
-use yii\caching\TagDependency;
 use yii\web\BadRequestHttpException;
 use yii\web\ForbiddenHttpException;
 use yii\web\Response;
@@ -232,10 +232,9 @@ class UtilitiesController extends Controller
     public function actionInvalidateTags(): Response
     {
         $tags = $this->request->getRequiredBodyParam('tags');
-        $cache = Craft::$app->getCache();
 
         foreach ($tags as $tag) {
-            TagDependency::invalidate($cache, $tag);
+            TagDependency::invalidate($tag);
         }
 
         return $this->asSuccess();

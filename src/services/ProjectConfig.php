@@ -26,6 +26,8 @@ use craft\models\ProjectConfigData;
 use craft\models\ReadOnlyProjectConfigData;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Str;
+use CraftCms\DependencyAwareCache\Dependency\CallbackDependency;
+use CraftCms\DependencyAwareCache\Facades\DependencyCache;
 use Illuminate\Support\Facades\Cache;
 use Symfony\Component\Yaml\Yaml;
 use Throwable;
@@ -36,7 +38,6 @@ use yii\base\Exception;
 use yii\base\InvalidArgumentException;
 use yii\base\InvalidConfigException;
 use yii\base\NotSupportedException;
-use yii\caching\ExpressionDependency;
 use yii\web\ServerErrorHttpException;
 
 /**
@@ -1834,7 +1835,7 @@ class ProjectConfig extends Component
         }
 
         // See if we can get away with using the cached data
-        $data = Craft::$app->getCache()->getOrSet(self::STORED_CACHE_KEY, function() {
+        $data = DependencyCache::remember(self::STORED_CACHE_KEY, $this->cacheDuration, function() {
             $data = [];
             // Load the project config data
             $rows = $this->_createProjectConfigQuery()->orderBy('path')->pairs();
@@ -1856,7 +1857,7 @@ class ProjectConfig extends Component
                 $current = Json::decode(Str::decdec($value));
             }
             return ProjectConfigHelper::cleanupConfig($data);
-        }, $this->cacheDuration, $this->getCacheDependency());
+        }, $this->getCacheDependency());
 
         return Craft::createObject(ReadOnlyProjectConfigData::class, [
             'data' => $data,
@@ -1867,14 +1868,14 @@ class ProjectConfig extends Component
     /**
      * Returns the cache dependency that should be used for project config caches.
      *
-     * @return ExpressionDependency
-     * @since 3.5.8
+     * @return CallbackDependency
+     * @since 6.0.0
      */
-    public function getCacheDependency(): ExpressionDependency
+    public function getCacheDependency(): CallbackDependency
     {
-        return new ExpressionDependency([
-            'expression' => Craft::class . '::$app->getInfo()->configVersion',
-        ]);
+        return new CallbackDependency(function() {
+            return Craft::$app->getInfo()->configVersion;
+        });
     }
 
     /**

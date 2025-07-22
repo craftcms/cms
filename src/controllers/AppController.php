@@ -36,12 +36,13 @@ use craft\utilities\Updates as UpdatesUtility;
 use craft\web\Controller;
 use craft\web\ServiceUnavailableHttpException;
 use CraftCms\Cms\Support\Arr;
+use CraftCms\DependencyAwareCache\Dependency\FileDependency;
+use CraftCms\DependencyAwareCache\Facades\DependencyCache;
 use DateInterval;
 use Illuminate\Support\Facades\Cache;
 use Throwable;
 use yii\base\InvalidArgumentException;
 use yii\base\InvalidConfigException;
-use yii\caching\FileDependency;
 use yii\web\BadRequestHttpException;
 use yii\web\Cookie;
 use yii\web\ForbiddenHttpException;
@@ -906,8 +907,9 @@ class AppController extends Controller
         $freeOnly = (bool)($this->request->getBodyParam('freeOnly') ?? false);
         $noSearch = $search === '';
 
+        $cacheKey = sprintf('icon-picker-options-list-html%s', $freeOnly ? ':free' : '');
+
         if ($noSearch) {
-            $cacheKey = sprintf('icon-picker-options-list-html%s', $freeOnly ? ':free' : '');
             $listHtml = Cache::get($cacheKey);
             if ($listHtml !== false) {
                 return $this->asJson([
@@ -956,11 +958,11 @@ class AppController extends Controller
         $listHtml = implode('', $output);
 
         if ($noSearch) {
-            $cache = Craft::$app->getCache();
-            /** @phpstan-ignore-next-line */
-            $cache->set($cacheKey, $listHtml, dependency: new FileDependency([
-                'fileName' => $indexPath,
-            ]));
+            DependencyCache::put(
+                key: $cacheKey,
+                value: $listHtml,
+                dependency: new FileDependency($indexPath),
+            );
         }
 
         return $this->asJson([

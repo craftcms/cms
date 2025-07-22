@@ -78,6 +78,8 @@ use craft\models\Section;
 use craft\records\GqlSchema as GqlSchemaRecord;
 use craft\records\GqlToken as GqlTokenRecord;
 use CraftCms\Cms\Support\Str;
+use CraftCms\DependencyAwareCache\Dependency\TagDependency;
+use CraftCms\DependencyAwareCache\Facades\DependencyCache;
 use GraphQL\Error\ClientAware;
 use GraphQL\Error\DebugFlag;
 use GraphQL\Error\Error;
@@ -97,7 +99,6 @@ use yii\base\Component;
 use yii\base\Exception;
 use yii\base\InvalidArgumentException;
 use yii\base\UnknownMethodException;
-use yii\caching\TagDependency;
 
 /**
  * GraphQL service.
@@ -578,7 +579,7 @@ class Gql extends Component
      */
     public function invalidateCaches(): void
     {
-        TagDependency::invalidate(Craft::$app->getCache(), self::CACHE_TAG);
+        TagDependency::invalidate(self::CACHE_TAG);
     }
 
     /**
@@ -611,7 +612,7 @@ class Gql extends Component
         // Add the global graphql cache tag
         $dependency->tags[] = self::CACHE_TAG;
 
-        Craft::$app->getCache()->set($cacheKey, $result, $duration, $dependency);
+        DependencyCache::put($cacheKey, $result, $duration, $dependency);
     }
 
     /**
