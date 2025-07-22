@@ -26,6 +26,7 @@ use craft\models\ProjectConfigData;
 use craft\models\ReadOnlyProjectConfigData;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Str;
+use Illuminate\Support\Facades\Cache;
 use Symfony\Component\Yaml\Yaml;
 use Throwable;
 use yii\base\Application;
@@ -620,8 +621,7 @@ class ProjectConfig extends Component
         $this->reset();
 
         $this->_applyingExternalChanges = true;
-        $cache = Craft::$app->getCache();
-        $cache->delete(self::CACHE_KEY);
+        Cache::forget(self::CACHE_KEY);
 
         $changes = $this->_getPendingChanges();
 
@@ -629,7 +629,7 @@ class ProjectConfig extends Component
         $anyChangesApplied = (bool)(count($changes['newItems']) + count($changes['removedItems']) + count($changes['changedItems']));
 
         // Kill the cached config data
-        $cache->delete(self::STORED_CACHE_KEY);
+        Cache::forget(self::STORED_CACHE_KEY);
         if ($anyChangesApplied) {
             $this->updateConfigVersion();
         }
@@ -704,7 +704,7 @@ class ProjectConfig extends Component
 
         if (!$force) {
             // If the file modification date hasn't changed, then no need to check the contents
-            $cachedModifiedTime = Craft::$app->getCache()->get(self::CACHE_KEY);
+            $cachedModifiedTime = Cache::get(self::CACHE_KEY);
             if (
                 $cachedModifiedTime &&
                 $cachedModifiedTime === $this->_getConfigFileModifiedTime()
@@ -726,7 +726,7 @@ class ProjectConfig extends Component
         }
 
         // Clear the cached config, just in case it conflicts with what we've got here
-        Craft::$app->getCache()->delete(self::STORED_CACHE_KEY);
+        Cache::forget(self::STORED_CACHE_KEY);
         $this->_currentWorkingConfig = null;
         return true;
     }
@@ -779,7 +779,7 @@ class ProjectConfig extends Component
      */
     public function updateParsedConfigTimes(): bool
     {
-        return Craft::$app->getCache()->set(
+        return Cache::put(
             self::CACHE_KEY,
             $this->_getConfigFileModifiedTime(),
             self::CACHE_DURATION,
@@ -1638,7 +1638,7 @@ class ProjectConfig extends Component
                 FileHelper::writeToFile($filePath, $yamlContent);
             }
         } catch (Throwable $e) {
-            Craft::$app->getCache()->set(self::FILE_ISSUES_CACHE_KEY, true, self::CACHE_DURATION);
+            Cache::put(self::FILE_ISSUES_CACHE_KEY, true, self::CACHE_DURATION);
             if (isset($basePath)) {
                 // Try to delete everything (again?) so Craft doesn't apply half-baked project config data
                 try {
@@ -1652,7 +1652,7 @@ class ProjectConfig extends Component
             throw new Exception('Unable to write new project config files', 0, $e);
         }
 
-        Craft::$app->getCache()->delete(self::FILE_ISSUES_CACHE_KEY);
+        Cache::forget(self::FILE_ISSUES_CACHE_KEY);
 
         // Let plugins know about it
         $this->trigger(self::EVENT_AFTER_WRITE_YAML_FILES);
@@ -1697,7 +1697,7 @@ class ProjectConfig extends Component
      */
     public function getHadFileWriteIssues(): bool
     {
-        return $this->writeYamlAutomatically && Craft::$app->getCache()->get(self::FILE_ISSUES_CACHE_KEY);
+        return $this->writeYamlAutomatically && Cache::get(self::FILE_ISSUES_CACHE_KEY);
     }
 
     /**

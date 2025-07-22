@@ -20,6 +20,7 @@ use craft\web\UploadedFile;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Str;
 use GuzzleHttp\RequestOptions;
+use Illuminate\Support\Facades\Cache;
 use Symfony\Component\Yaml\Yaml;
 use Throwable;
 use yii\base\Exception;
@@ -268,7 +269,7 @@ class DashboardController extends Controller
     {
         $url = $this->request->getRequiredBodyParam('url');
         $data = $this->request->getRequiredBodyParam('data');
-        Craft::$app->getCache()->set("feed:$url", $data);
+        Cache::put("feed:$url", $data);
         return $this->asSuccess();
     }
 

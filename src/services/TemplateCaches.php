@@ -14,6 +14,7 @@ use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Str;
 use DateTime;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Cache;
 use Throwable;
 use yii\base\Component;
 use yii\base\Exception;
@@ -65,9 +66,9 @@ class TemplateCaches extends Component
         }
 
         $cacheKey = $this->_cacheKey($key, $global);
-        $data = Craft::$app->getCache()->get($cacheKey);
+        $data = Cache::get($cacheKey);
 
-        if ($data === false) {
+        if (!$data) {
             return null;
         }
 

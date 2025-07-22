@@ -37,6 +37,7 @@ use craft\web\Controller;
 use craft\web\ServiceUnavailableHttpException;
 use CraftCms\Cms\Support\Arr;
 use DateInterval;
+use Illuminate\Support\Facades\Cache;
 use Throwable;
 use yii\base\InvalidArgumentException;
 use yii\base\InvalidConfigException;
@@ -906,9 +907,8 @@ class AppController extends Controller
         $noSearch = $search === '';
 
         if ($noSearch) {
-            $cache = Craft::$app->getCache();
             $cacheKey = sprintf('icon-picker-options-list-html%s', $freeOnly ? ':free' : '');
-            $listHtml = $cache->get($cacheKey);
+            $listHtml = Cache::get($cacheKey);
             if ($listHtml !== false) {
                 return $this->asJson([
                     'listHtml' => $listHtml,
@@ -956,6 +956,7 @@ class AppController extends Controller
         $listHtml = implode('', $output);
 
         if ($noSearch) {
+            $cache = Craft::$app->getCache();
             /** @phpstan-ignore-next-line */
             $cache->set($cacheKey, $listHtml, dependency: new FileDependency([
                 'fileName' => $indexPath,

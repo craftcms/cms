@@ -30,6 +30,7 @@ use CraftCms\Cms\Support\Str;
 use DateTime;
 use DateTimeZone;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Cache;
 use RecursiveCallbackFilterIterator;
 use RecursiveDirectoryIterator;
 use RecursiveIteratorIterator;
@@ -516,7 +517,7 @@ class Cp extends Component
     public function areAlertsCached(): bool
     {
         // The license key status gets cached on each Craftnet request
-        return (Craft::$app->getCache()->get(App::CACHE_KEY_LICENSE_INFO) !== false);
+        return !is_null(Cache::get(App::CACHE_KEY_LICENSE_INFO));
     }
 
     /**

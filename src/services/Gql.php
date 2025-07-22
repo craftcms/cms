@@ -91,6 +91,7 @@ use GraphQL\Validator\Rules\FieldsOnCorrectType;
 use GraphQL\Validator\Rules\KnownTypeNames;
 use GraphQL\Validator\Rules\QueryComplexity;
 use GraphQL\Validator\Rules\QueryDepth;
+use Illuminate\Support\Facades\Cache;
 use Throwable;
 use yii\base\Component;
 use yii\base\Exception;
@@ -589,7 +590,7 @@ class Gql extends Component
      */
     public function getCachedResult(string $cacheKey): ?array
     {
-        return Craft::$app->getCache()->get($cacheKey) ?: null;
+        return Cache::get($cacheKey) ?: null;
     }
 
     /**
@@ -1018,7 +1019,7 @@ class Gql extends Component
             // If we're updating to 3.4+, check if the old token info for this schema was cached
             if (
                 $isNew &&
-                ($allSchemas = Craft::$app->getCache()->get('migration:add_gql_project_config_support:schemas')) &&
+                ($allSchemas = Cache::get('migration:add_gql_project_config_support:schemas')) &&
                 !empty($allSchemas[$schemaUid])
             ) {
                 $migratedSchema = $allSchemas[$schemaUid];
