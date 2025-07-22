@@ -11,6 +11,7 @@ use Craft;
 use craft\base\ElementInterface;
 use craft\base\FieldInterface;
 use Craft\Cms\Announcement\Announcements;
+use Craft\Cms\Support\Str;
 use craft\config\GeneralConfig;
 use craft\elements\User;
 use craft\enums\CmsEdition;
@@ -19,7 +20,6 @@ use craft\helpers\Cp;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\Html;
 use craft\helpers\Json;
-use craft\helpers\StringHelper;
 use craft\helpers\UrlHelper;
 use craft\i18n\Locale;
 use craft\models\Section;
@@ -516,7 +516,7 @@ JS;
             'Enterprise' => CmsEdition::Enterprise->value,
             'actionTrigger' => $generalConfig->actionTrigger,
             'actionUrl' => UrlHelper::actionUrl(),
-            'asciiCharMap' => StringHelper::asciiCharMap(true, Craft::$app->language),
+            'asciiCharMap' => Str::asciiCharMap(true, Craft::$app->language),
             'baseApiUrl' => Craft::$app->baseApiUrl,
             'baseSiteUrl' => UrlHelper::siteUrl(),
             'baseUrl' => UrlHelper::url(),

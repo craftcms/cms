@@ -8,12 +8,12 @@
 namespace craft\services;
 
 use Craft;
+use Craft\Cms\Support\Str;
 use craft\db\Query;
 use craft\db\Table;
 use craft\elements\db\ElementQuery;
 use craft\errors\DeprecationException;
 use craft\helpers\Db;
-use craft\helpers\StringHelper;
 use craft\helpers\Template;
 use craft\models\DeprecationError;
 use craft\web\twig\Extension;
@@ -446,11 +446,7 @@ class Deprecator extends Component
             } elseif (is_bool($value)) {
                 $strValue = $value ? 'true' : 'false';
             } elseif (is_string($value)) {
-                if (strlen($value) > 64) {
-                    $strValue = '"' . StringHelper::substr($value, 0, 64) . '..."';
-                } else {
-                    $strValue = '"' . $value . '"';
-                }
+                $strValue = Str::limit($value, 64);
             } elseif (is_array($value)) {
                 $strValue = '[' . $this->_argsToString($value) . ']';
             } elseif ($value === null) {

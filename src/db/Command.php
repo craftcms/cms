@@ -8,8 +8,8 @@
 namespace craft\db;
 
 use Craft;
+use Craft\Cms\Support\Str;
 use craft\helpers\Db;
-use craft\helpers\StringHelper;
 use DateTime;
 use yii\db\Query as YiiQuery;
 
@@ -39,7 +39,7 @@ class Command extends \yii\db\Command
         }
 
         if (!isset($columns['uid']) && $this->db->columnExists($table, 'uid')) {
-            $columns['uid'] = StringHelper::UUID();
+            $columns['uid'] = Str::uuid()->toString();
         }
 
         return parent::insert($table, $columns);
@@ -76,7 +76,7 @@ class Command extends \yii\db\Command
         if (!in_array('uid', $columns) && $this->db->columnExists($table, 'uid')) {
             $columns[] = 'uid';
             foreach ($rows as &$row) {
-                $row[] = StringHelper::UUID();
+                $row[] = Str::uuid()->toString();
             }
         }
 
@@ -113,7 +113,7 @@ class Command extends \yii\db\Command
             }
 
             if (!isset($insertColumns['uid']) && $this->db->columnExists($table, 'uid')) {
-                $insertColumns['uid'] = StringHelper::UUID();
+                $insertColumns['uid'] = Str::uuid()->toString();
             }
 
             if (

@@ -7,7 +7,7 @@
 
 namespace craft\cache;
 
-use craft\helpers\StringHelper;
+use Craft\Cms\Support\Str;
 use yii\caching\FileCache as YiiFileCache;
 
 /**
@@ -27,7 +27,7 @@ class FileCache extends YiiFileCache
         }
 
         // Copied from the parent method, except the key prefix is removed from the directory names
-        $originalKey = StringHelper::removeLeft($normalizedKey, $this->keyPrefix);
+        $originalKey = Str::chopStart($normalizedKey, $this->keyPrefix);
 
         if ($this->directoryLevel > 0) {
             $base = $this->cachePath;

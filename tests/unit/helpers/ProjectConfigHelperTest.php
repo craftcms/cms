@@ -8,10 +8,10 @@
 namespace crafttests\unit\helpers;
 
 use Craft;
+use Craft\Cms\Support\Str;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\FileHelper;
 use craft\helpers\ProjectConfig as ProjectConfigHelper;
-use craft\helpers\StringHelper;
 use craft\services\ProjectConfig;
 use craft\test\TestCase;
 use yii\base\InvalidArgumentException;
@@ -57,8 +57,8 @@ class ProjectConfigHelperTest extends TestCase
     public function testTouch(string $input, string $expected): void
     {
         // Make sure they both end in a newline
-        $input = StringHelper::ensureRight($input, "\n");
-        $expected = StringHelper::ensureRight($expected, "\n");
+        $input = Str::finish($input, "\n");
+        $expected = Str::finish($expected, "\n");
 
         // Make a backup of project.yaml
         $path = Craft::$app->getPath()->getProjectConfigFilePath();

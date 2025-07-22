@@ -10,6 +10,7 @@ namespace craft\console\controllers;
 use Craft;
 use craft\base\Element;
 use craft\base\ElementInterface;
+use Craft\Cms\Support\Str;
 use craft\console\Controller;
 use craft\elements\Address;
 use craft\elements\Asset;
@@ -26,11 +27,9 @@ use craft\helpers\Console;
 use craft\helpers\ElementHelper;
 use craft\helpers\Inflector;
 use craft\helpers\Queue;
-use craft\helpers\StringHelper;
 use craft\models\CategoryGroup;
 use craft\models\EntryType;
 use craft\models\FieldLayout;
-use craft\models\Site;
 use craft\models\TagGroup;
 use craft\models\Volume;
 use craft\queue\jobs\ResaveElements;
@@ -76,7 +75,7 @@ class ResaveController extends Controller
         // PHP arrow function
         if (preg_match('/^fn\s*\(\s*(?:\$(\w+)\s*)?\)\s*=>\s*(.+)/', $to, $match)) {
             $var = $match[1];
-            $php = sprintf('return %s;', StringHelper::removeLeft(rtrim($match[2], ';'), 'return '));
+            $php = sprintf('return %s;', Str::chopStart(rtrim($match[2], ';'), 'return '));
             return function(ElementInterface $element) use ($var, $php) {
                 if ($var) {
                     ${$var} = $element;
@@ -339,7 +338,7 @@ class ResaveController extends Controller
         }
 
         if (isset($this->propagateTo)) {
-            $siteHandles = array_filter(StringHelper::split($this->propagateTo));
+            $siteHandles = str($this->propagateTo)->explode(',')->filter()->all();
             $this->propagateTo = [];
             $sitesService = Craft::$app->getSites();
             foreach ($siteHandles as $siteHandle) {
@@ -383,7 +382,7 @@ class ResaveController extends Controller
                 $method->getDeclaringClass()->name === self::class &&
                 str_starts_with($method->name, 'action')
             ) {
-                $actions[] = StringHelper::toKebabCase(substr($method->name, 6));
+                $actions[] = Str::kebab(substr($method->name, 6));
             }
         }
         array_push($actions, ...array_keys($this->actions()));
@@ -404,7 +403,7 @@ class ResaveController extends Controller
             $this->output('The following commands don’t support the provided options, and will be skipped:', Console::FG_YELLOW);
             foreach ($actionsToSkip as $id) {
                 $invalidParams = array_map(
-                    fn($param) => sprintf('`--%s`', StringHelper::toKebabCase($param)),
+                    fn($param) => sprintf('`--%s`', Str::kebab($param)),
                     $this->getUnsupportedOptions($id, $params)
                 );
                 $this->output(' ' . $this->markdownToAnsi(sprintf(

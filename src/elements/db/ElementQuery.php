@@ -17,6 +17,7 @@ use craft\behaviors\DraftBehavior;
 use craft\behaviors\RevisionBehavior;
 use craft\cache\ElementQueryTagDependency;
 use Craft\Cms\Support\Arr;
+use Craft\Cms\Support\Str;
 use craft\db\CoalesceColumnsExpression;
 use craft\db\Connection;
 use craft\db\FixedOrderExpression;
@@ -35,7 +36,6 @@ use craft\helpers\App;
 use craft\helpers\Db;
 use craft\helpers\ElementHelper;
 use craft\helpers\Json;
-use craft\helpers\StringHelper;
 use craft\models\FieldLayout;
 use craft\models\Site;
 use Illuminate\Support\Collection;
@@ -1302,7 +1302,7 @@ class ElementQuery extends Query implements ElementQueryInterface
             $this->with = [$value];
         } else {
             if (is_string($this->with)) {
-                $this->with = StringHelper::split($this->with);
+                $this->with = str($this->with)->explode(',')->all();
             }
             $this->with[] = $value;
         }
@@ -2859,7 +2859,7 @@ class ElementQuery extends Query implements ElementQueryInterface
 
         // Normalize the status param
         if (!is_array($this->status)) {
-            $this->status = StringHelper::split($this->status);
+            $this->status = str($this->status)->explode(',')->all();
         }
 
         $statuses = array_merge($this->status);
@@ -3442,7 +3442,7 @@ class ElementQuery extends Query implements ElementQueryInterface
 
                 $ids = $this->id;
                 if (!is_array($ids)) {
-                    $ids = is_string($ids) ? StringHelper::split($ids) : [$ids];
+                    $ids = is_string($ids) ? str($ids)->explode(',')->all() : [$ids];
                 }
 
                 if (!$db instanceof Connection) {
@@ -3482,7 +3482,7 @@ class ElementQuery extends Query implements ElementQueryInterface
         if (isset($this->_searchResults)) {
             $scoreSql = 'CASE';
             $scoreParams = [];
-            $paramSuffix = StringHelper::randomString(10);
+            $paramSuffix = Str::random(10);
             $keys = array_keys($this->_searchResults);
             if ($this->inReverse) {
                 $keys = array_reverse($keys);

@@ -8,6 +8,7 @@
 namespace crafttests\unit\helpers;
 
 use Codeception\Test\Unit;
+use Craft\Cms\Support\Str;
 use craft\enums\LicenseKeyStatus;
 use craft\helpers\StringHelper;
 use craft\test\mockclasses\ToString;
@@ -45,13 +46,13 @@ class StringHelperTest extends TestCase
             'é' => 'e',
         ];
 
-        $mapByAscii = StringHelper::asciiCharMap(false, 'de');
+        $mapByAscii = Str::asciiCharMap(false, 'de');
         foreach ($expected as $char => $ascii) {
             self::assertArrayHasKey($ascii, $mapByAscii);
             self::assertContains($char, $mapByAscii[$ascii]);
         }
 
-        $mapByChar = StringHelper::asciiCharMap(true, 'de');
+        $mapByChar = Str::asciiCharMap(true, 'de');
         foreach ($expected as $char => $ascii) {
             self::assertArrayHasKey($char, $mapByChar);
             self::assertSame($ascii, $mapByChar[$char]);
@@ -350,7 +351,7 @@ class StringHelperTest extends TestCase
      */
     public function testEnsureRight(string $expected, string $string, string $append): void
     {
-        $actual = StringHelper::ensureRight($string, $append);
+        $actual = Str::finish($string, $append);
         self::assertSame($expected, $actual);
     }
 
@@ -677,7 +678,7 @@ class StringHelperTest extends TestCase
      */
     public function testIsMb4(bool $expected, string $string): void
     {
-        $actual = StringHelper::containsMb4($string);
+        $actual = Str::containsMb4($string);
         self::assertSame($expected, $actual);
     }
 
@@ -790,7 +791,7 @@ class StringHelperTest extends TestCase
         $actual = StringHelper::encodeMb4($string);
         self::assertSame($expected, $actual);
 
-        self::assertFalse(StringHelper::containsMb4($actual));
+        self::assertFalse(Str::containsMb4($actual));
     }
 
     /**
@@ -1567,7 +1568,7 @@ class StringHelperTest extends TestCase
      */
     public function testEmojiToShortcodes(string $expected, string $str)
     {
-        self::assertSame($expected, StringHelper::emojiToShortcodes($str));
+        self::assertSame($expected, Str::emojiToShortcodes($str));
     }
 
     /**
@@ -1578,7 +1579,7 @@ class StringHelperTest extends TestCase
      */
     public function testShortcodesToEmoji(string $expected, string $str)
     {
-        self::assertSame($expected, StringHelper::shortcodesToEmoji($str));
+        self::assertSame($expected, Str::shortcodesToEmoji($str));
     }
 
     /**
@@ -1589,7 +1590,7 @@ class StringHelperTest extends TestCase
      */
     public function testEscapeShortcodes(string $expected, string $str)
     {
-        self::assertSame($expected, StringHelper::escapeShortcodes($str));
+        self::assertSame($expected, Str::escapeShortcodes($str));
     }
 
     /**
@@ -1600,7 +1601,7 @@ class StringHelperTest extends TestCase
      */
     public function testUnescapeShortcodes(string $expected, string $str)
     {
-        self::assertSame($expected, StringHelper::unescapeShortcodes($str));
+        self::assertSame($expected, Str::unescapeShortcodes($str));
     }
 
     /**
@@ -1767,7 +1768,7 @@ class StringHelperTest extends TestCase
             [true, 'c3d6a75d-5b98-4048-8106-8cc2de4af159'],
             [true, 'c74e8f78-c052-4978-b0e8-77a307f7b946'],
             [true, '469e6ed2-f270-458a-a80e-173821fee715'],
-            [false, '00000000-0000-0000-0000-000000000000'],
+            [true, '00000000-0000-0000-0000-000000000000'],
             [false, StringHelper::UUID() . StringHelper::UUID()],
             [false, 'abc'],
             [false, '123'],
@@ -3266,8 +3267,7 @@ class StringHelperTest extends TestCase
             ['bar', 'foo bar', 'foo '],
             ['foo bar', 'foo bar', 'oo'],
             ['foo bar', 'foo bar', 'oo bar'],
-            ['oo bar', 'foo bar', StringHelper::first('foo bar', 1)],
-            ['oo bar', 'foo bar', StringHelper::at('foo bar', 0)],
+            ['oo bar', 'foo bar', Str::take('foo bar', 1)],
             ['fòô bàř', 'fòô bàř', ''],
             ['òô bàř', 'fòô bàř', 'f'],
             ['bàř', 'fòô bàř', 'fòô '],
@@ -3287,8 +3287,7 @@ class StringHelperTest extends TestCase
             ['foo', 'foo bar', ' bar'],
             ['foo bar', 'foo bar', 'ba'],
             ['foo bar', 'foo bar', 'foo ba'],
-            ['foo ba', 'foo bar', StringHelper::last('foo bar', 1)],
-            ['foo ba', 'foo bar', StringHelper::at('foo bar', 6)],
+            ['foo ba', 'foo bar', Str::take('foo bar', -1)],
             ['fòô bàř', 'fòô bàř', ''],
             ['fòô bà', 'fòô bàř', 'ř'],
             ['fòô', 'fòô bàř', ' bàř'],

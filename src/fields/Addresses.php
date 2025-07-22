@@ -17,6 +17,7 @@ use craft\base\FieldInterface;
 use craft\base\MergeableFieldInterface;
 use craft\base\NestedElementInterface;
 use craft\behaviors\EventBehavior;
+use Craft\Cms\Support\Str;
 use craft\db\Query;
 use craft\db\Table as DbTable;
 use craft\elements\Address;
@@ -37,8 +38,6 @@ use craft\gql\resolvers\elements\Address as AddressResolver;
 use craft\gql\types\input\Addresses as AddressesInput;
 use craft\helpers\Db;
 use craft\helpers\Gql;
-use craft\helpers\StringHelper;
-use craft\services\Elements;
 use craft\validators\ArrayValidator;
 use GraphQL\Type\Definition\Type;
 use yii\base\InvalidConfigException;
@@ -109,7 +108,7 @@ class Addresses extends Field implements
     {
         /** @var self $field */
         $field = reset($instances);
-        $ns = $field->handle . '_' . StringHelper::randomString(5);
+        $ns = $field->handle . '_' . Str::random(5);
 
         $existsQuery = (new Query())
             ->from(["addresses_$ns" => DbTable::ADDRESSES])
@@ -133,7 +132,7 @@ class Addresses extends Field implements
         if ($value !== ':notempty:') {
             $ids = $value;
             if (!is_array($ids)) {
-                $ids = is_string($ids) ? StringHelper::split($ids) : [$ids];
+                $ids = is_string($ids) ? str($ids)->explode(',')->all() : [$ids];
             }
 
             $ids = array_map(fn($id) => $id instanceof Address ? $id->id : (int)$id, $ids);

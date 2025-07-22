@@ -2,7 +2,7 @@
 
 namespace Craft\Cms\Providers;
 
-use Craft\Aliases\Facades\Aliases;
+use CraftCms\Aliases\Facades\Aliases;
 use Illuminate\Support\ServiceProvider;
 
 class IconServiceProvider extends ServiceProvider

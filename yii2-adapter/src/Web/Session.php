@@ -231,7 +231,7 @@ class Session extends \yii\web\Session
     /**
      * {@inheritdoc}
      */
-    protected function updateFlashCounters(): void
+    public function updateFlashCounters(): void
     {
         $counters = $this->get($this->flashParam, []);
 

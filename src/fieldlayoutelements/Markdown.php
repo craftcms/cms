@@ -9,9 +9,9 @@ namespace craft\fieldlayoutelements;
 
 use Craft;
 use craft\base\ElementInterface;
+use Craft\Cms\Support\Str;
 use craft\helpers\Cp;
 use craft\helpers\Html;
-use craft\helpers\StringHelper;
 use yii\helpers\Markdown as MarkdownHelper;
 
 /**
@@ -37,7 +37,7 @@ class Markdown extends BaseUiElement
      */
     protected function selectorLabel(): string
     {
-        return StringHelper::firstLine($this->content) ?: 'Markdown';
+        return Str::firstLine($this->content) ?: 'Markdown';
     }
 
     /**

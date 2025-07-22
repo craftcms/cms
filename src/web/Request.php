@@ -10,10 +10,10 @@ namespace craft\web;
 use Craft;
 use craft\base\RequestTrait;
 use Craft\Cms\Support\Arr;
+use Craft\Cms\Support\Str;
 use craft\config\GeneralConfig;
 use craft\errors\SiteNotFoundException;
 use craft\helpers\App;
-use craft\helpers\StringHelper;
 use craft\models\Site;
 use craft\services\Sites;
 use yii\base\InvalidArgumentException;
@@ -1673,7 +1673,7 @@ class Request extends Craft\Yii2Adapter\Web\Request
         }
 
         if (is_string($value)) {
-            return StringHelper::convertToUtf8($value);
+            return Str::convertToUtf8($value);
         }
 
         return $value;

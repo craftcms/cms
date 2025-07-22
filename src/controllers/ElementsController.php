@@ -15,6 +15,7 @@ use craft\base\NestedElementInterface;
 use craft\behaviors\DraftBehavior;
 use craft\behaviors\RevisionBehavior;
 use Craft\Cms\Support\Arr;
+use Craft\Cms\Support\Str;
 use craft\db\Query;
 use craft\db\Table;
 use craft\elements\db\ElementQueryInterface;
@@ -34,7 +35,6 @@ use craft\helpers\Db;
 use craft\helpers\ElementHelper;
 use craft\helpers\Html;
 use craft\helpers\Json;
-use craft\helpers\StringHelper;
 use craft\helpers\UrlHelper;
 use craft\i18n\Locale;
 use craft\models\ElementActivity;
@@ -226,7 +226,7 @@ class ElementsController extends Controller
         // Save it
         $element->setScenario(Element::SCENARIO_ESSENTIALS);
         if (!Craft::$app->getDrafts()->saveElementAsDraft($element, $user->id, null, null, false)) {
-            return $this->_asFailure($element, StringHelper::upperCaseFirst(Craft::t('app', 'Couldn’t create {type}.', [
+            return $this->_asFailure($element, mb_ucfirst(Craft::t('app', 'Couldn’t create {type}.', [
                 'type' => $element::lowerDisplayName(),
             ])));
         }
@@ -452,7 +452,7 @@ class ElementsController extends Controller
                         'isUnpublishedDraft' => $isUnpublishedDraft,
                         'previewTargets' => $previewTargets,
                         'previewToken' => $previewTargets ? $security->generateRandomString() : null,
-                        'previewParamValue' => $previewTargets ? $security->hashData(StringHelper::randomString(10)) : null,
+                        'previewParamValue' => $previewTargets ? $security->hashData(Str::random(10)) : null,
                         'revisionId' => $element->revisionId,
                         'fieldId' => $element instanceof NestedElementInterface ? $element->getField()?->id : null,
                         'ownerId' => $element instanceof NestedElementInterface ? $element->getOwnerId() : null,
@@ -471,7 +471,7 @@ class ElementsController extends Controller
             if ($isUnpublishedDraft) {
                 if ($canSaveCanonical) {
                     $response
-                        ->submitButtonLabel(StringHelper::upperCaseFirst(Craft::t('app', 'Create {type}', [
+                        ->submitButtonLabel(mb_ucfirst(Craft::t('app', 'Create {type}', [
                             'type' => $element::lowerDisplayName(),
                         ])))
                         ->action('elements/apply-draft')
@@ -487,7 +487,7 @@ class ElementsController extends Controller
                     ->redirectUrl("$redirectUrl#");
             } elseif ($isDraft) {
                 $response
-                    ->submitButtonLabel(StringHelper::upperCaseFirst(Craft::t('app', 'Save {type}', [
+                    ->submitButtonLabel(mb_ucfirst(Craft::t('app', 'Save {type}', [
                         'type' => Craft::t('app', 'draft'),
                     ])))
                     ->action('elements/save-draft')
@@ -1192,7 +1192,7 @@ JS, [
                         // After:  bar[<uuid>].baz
                         if (substr_count($key, '.') > 1) {
                             $keyParts = explode('.', $key);
-                            if (preg_match(sprintf('/\[%s\]$/', StringHelper::UUID_PATTERN), $keyParts[count($keyParts) - 3])) {
+                            if (preg_match(sprintf('/\[%s\]$/', Str::uuidPattern()), $keyParts[count($keyParts) - 3])) {
                                 $key = implode('.', array_slice($keyParts, -2));
                             }
                         }
@@ -1429,7 +1429,7 @@ JS, [
         }
 
         if (!$success) {
-            return $this->_asFailure($element, StringHelper::upperCaseFirst(Craft::t('app', 'Couldn’t save {type}.', [
+            return $this->_asFailure($element, mb_ucfirst(Craft::t('app', 'Couldn’t save {type}.', [
                 'type' => $element::lowerDisplayName(),
             ])));
         }
@@ -1568,7 +1568,7 @@ JS, [
 
             if (!$success) {
                 $transaction->rollBack();
-                return $this->_asFailure($element, StringHelper::upperCaseFirst(Craft::t('app', 'Couldn’t save {type}.', [
+                return $this->_asFailure($element, mb_ucfirst(Craft::t('app', 'Couldn’t save {type}.', [
                     'type' => $element::lowerDisplayName(),
                 ])));
             }
@@ -1717,7 +1717,7 @@ JS, [
 
         /** @var class-string<ElementInterface> $elementType */
         $elementType = $elementInfo[0]['type'];
-        return $this->asSuccess(StringHelper::upperCaseFirst(Craft::t('app', '{type} duplicated.', [
+        return $this->asSuccess(mb_ucfirst(Craft::t('app', '{type} duplicated.', [
             'type' => count($elementInfo) === 1 ? $elementType::displayName() : $elementType::pluralDisplayName(),
         ])), [
             'newElements' => $newElementInfo,
@@ -1944,7 +1944,7 @@ JS, [
 
             if (!$elementsService->saveElement($element)) {
                 $transaction->rollBack();
-                return $this->_asFailure($element, StringHelper::upperCaseFirst(Craft::t('app', 'Couldn’t save {type}.', [
+                return $this->_asFailure($element, mb_ucfirst(Craft::t('app', 'Couldn’t save {type}.', [
                     'type' => Craft::t('app', 'draft'),
                 ])));
             }
@@ -1982,7 +1982,7 @@ JS, [
                 'docTitle' => $docTitle,
                 'title' => $title,
                 'previewTargets' => $previewTargets,
-                'previewParamValue' => $previewTargets ? Craft::$app->getSecurity()->hashData(StringHelper::randomString(10)) : null,
+                'previewParamValue' => $previewTargets ? Craft::$app->getSecurity()->hashData(Str::random(10)) : null,
                 'deltaNames' => Craft::$app->getView()->getDeltaNames(),
                 'initialDeltaValues' => Craft::$app->getView()->getInitialDeltaValues(),
                 'updatedTimestamp' => $element->dateUpdated->getTimestamp(),
@@ -2171,11 +2171,11 @@ JS, [
     private function _asAppyDraftFailure(ElementInterface $element): ?Response
     {
         if ($element->getIsUnpublishedDraft()) {
-            $message = StringHelper::upperCaseFirst(Craft::t('app', 'Couldn’t create {type}.', [
+            $message = mb_ucfirst(Craft::t('app', 'Couldn’t create {type}.', [
                 'type' => $element::lowerDisplayName(),
             ]));
         } elseif ($element->isProvisionalDraft) {
-            $message = StringHelper::upperCaseFirst(Craft::t('app', 'Couldn’t save {type}.', [
+            $message = mb_ucfirst(Craft::t('app', 'Couldn’t save {type}.', [
                 'type' => $element::lowerDisplayName(),
             ]));
         } else {

@@ -8,6 +8,7 @@
 namespace crafttests\unit\services;
 
 use Craft;
+use Craft\Cms\Support\Str;
 use craft\db\Table;
 use craft\elements\GlobalSet;
 use craft\elements\User;
@@ -23,7 +24,6 @@ use craft\gql\GqlEntityRegistry;
 use craft\gql\interfaces\elements\User as UserInterface;
 use craft\gql\TypeLoader;
 use craft\helpers\Db;
-use craft\helpers\StringHelper;
 use craft\models\CategoryGroup;
 use craft\models\EntryType;
 use craft\models\GqlSchema;
@@ -405,7 +405,7 @@ class GqlTest extends TestCase
         $gql->setCachedResult($cacheKey, $cacheValue);
 
         $schema = new GqlSchema([
-            'name' => StringHelper::randomString(15),
+            'name' => Str::random(15),
             'scope' => [],
         ]);
 
@@ -430,8 +430,8 @@ class GqlTest extends TestCase
             ->truncateTable(Table::GQLTOKENS)
             ->execute();
 
-        $accessToken = StringHelper::randomString();
-        $tokenName = StringHelper::randomString(15);
+        $accessToken = Str::random();
+        $tokenName = Str::random(15);
 
         $token = new GqlToken([
             'name' => $tokenName,
@@ -470,9 +470,9 @@ class GqlTest extends TestCase
         $gql = Craft::$app->getGql();
         $gql->invalidateCaches();
 
-        $schemaUid = StringHelper::UUID();
+        $schemaUid = Str::uuid()->toString();
         $schema = new GqlSchema([
-            'name' => StringHelper::randomString(15),
+            'name' => Str::random(15),
             'scope' => [],
             'uid' => $schemaUid,
         ]);

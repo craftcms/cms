@@ -9,7 +9,7 @@ namespace crafttests\unit\services;
 
 use Codeception\Stub\Expected;
 use Craft;
-use craft\helpers\StringHelper;
+use Craft\Cms\Support\Str;
 use craft\models\ReadOnlyProjectConfigData;
 use craft\mutex\Mutex;
 use craft\mutex\NullMutex;
@@ -154,7 +154,7 @@ class ProjectConfigTest extends TestCase
         $projectConfig->set($path, $initialValue);
         self::assertSame($initialTimestamp, $projectConfig->get('dateModified'));
 
-        $projectConfig->set($path, StringHelper::randomString());
+        $projectConfig->set($path, Str::random());
         self::assertNotSame($initialTimestamp, $projectConfig->get('dateModified'));
     }
 

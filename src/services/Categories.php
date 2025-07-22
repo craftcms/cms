@@ -9,6 +9,7 @@ namespace craft\services;
 
 use Craft;
 use craft\base\MemoizableArray;
+use Craft\Cms\Support\Str;
 use craft\db\Query;
 use craft\db\Table;
 use craft\elements\Category;
@@ -19,7 +20,6 @@ use craft\events\DeleteSiteEvent;
 use craft\helpers\App;
 use craft\helpers\Db;
 use craft\helpers\ProjectConfig as ProjectConfigHelper;
-use craft\helpers\StringHelper;
 use craft\models\CategoryGroup;
 use craft\models\CategoryGroup_SiteSettings;
 use craft\models\FieldLayout;
@@ -276,7 +276,7 @@ class Categories extends Component
         }
 
         if ($isNewCategoryGroup && !$group->uid) {
-            $group->uid = StringHelper::UUID();
+            $group->uid = Str::uuid()->toString();
         }
 
         // If they've set maxLevels to 0 (don't ask why), then pretend like there are none.

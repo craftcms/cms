@@ -11,6 +11,7 @@ use Craft;
 use craft\base\Image as BaseImage;
 use craft\base\LocalFsInterface;
 use Craft\Cms\Support\Arr;
+use Craft\Cms\Support\Str;
 use craft\elements\Asset;
 use craft\errors\AssetException;
 use craft\errors\AssetOperationException;
@@ -319,7 +320,7 @@ class ImageTransforms
                 return self::createTransformFromString($transform);
             }
 
-            $transform = StringHelper::removeLeft($transform, '_');
+            $transform = Str::chopStart($transform, '_');
             if (($transformModel = Craft::$app->getImageTransforms()->getTransformByHandle($transform)) === null) {
                 throw new ImageTransformException(Craft::t('app', 'Invalid transform handle: {handle}', ['handle' => $transform]));
             }

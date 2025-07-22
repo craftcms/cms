@@ -8,9 +8,9 @@
 namespace craft\web;
 
 use Craft;
+use Craft\Cms\Support\Str;
 use craft\errors\ExitException;
 use craft\helpers\FileHelper;
-use craft\helpers\StringHelper;
 use craft\web\assets\iframeresizer\ContentWindowAsset;
 use Throwable;
 use yii\base\Component;
@@ -79,7 +79,7 @@ class TemplateResponseFormatter extends Component implements ResponseFormatterIn
         // Set the MIME type for the request based on the matched template's file extension (unless the
         // Content-Type header was already set, perhaps by the template via the {% header %} tag)
         if (!$headers->has('content-type')) {
-            $templateFile = StringHelper::removeRight(strtolower($view->resolveTemplate($behavior->template)), '.twig');
+            $templateFile = Str::chopEnd(strtolower($view->resolveTemplate($behavior->template)), '.twig');
             $mimeType = FileHelper::getMimeTypeByExtension($templateFile) ?? 'text/html';
             $headers->set('content-type', $mimeType . '; charset=' . $response->charset);
         }

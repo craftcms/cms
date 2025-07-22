@@ -7,12 +7,9 @@
 
 namespace craft\helpers;
 
-use BackedEnum;
 use Craft;
 use Craft\Cms\Support\Arr;
-use HTMLPurifier_Config;
-use IteratorAggregate;
-use LitEmoji\LitEmoji;
+use Craft\Cms\Support\Str;
 use Normalizer;
 use Stringy\Stringy as BaseStringy;
 use voku\helper\ASCII;
@@ -26,6 +23,7 @@ use const ENT_COMPAT;
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
+ * @deprecated in 6.0.0. [[\Craft\Cms\Support\Str]] should be used instead.
  */
 class StringHelper extends \yii\helpers\StringHelper
 {
@@ -35,18 +33,6 @@ class StringHelper extends \yii\helpers\StringHelper
      * @since 3.0.37
      */
     public const UUID_PATTERN = '[A-Za-z0-9]{8}-[A-Za-z0-9]{4}-4[A-Za-z0-9]{3}-[89abAB][A-Za-z0-9]{3}-[A-Za-z0-9]{12}';
-
-    /**
-     * @var array Character mappings
-     * @see asciiCharMap()
-     */
-    private static array $_asciiCharMaps;
-
-    /**
-     * @var string[]|false
-     * @see escapeShortcodes()
-     */
-    private static array|false $_shortcodeEscapeMap;
 
     /**
      * Gets the substring after the first occurrence of a separator.
@@ -135,31 +121,7 @@ class StringHelper extends \yii\helpers\StringHelper
      */
     public static function asciiCharMap(bool $flat = false, ?string $language = null): array
     {
-        $key = $flat ? 'flat-' . ($language ?? '*') : '*';
-        if (isset(self::$_asciiCharMaps[$key])) {
-            return self::$_asciiCharMaps[$key];
-        }
-
-        $map = ASCII::charsArrayWithSingleLanguageValues(false, false);
-        if ($language !== null) {
-            /** @var ASCII::*_LANGUAGE_CODE $language */
-            $langSpecific = ASCII::charsArrayWithOneLanguage($language, false, false);
-            if ($langSpecific !== []) {
-                $map = array_merge($map, $langSpecific);
-            }
-        }
-
-        if ($flat) {
-            return self::$_asciiCharMaps[$key] = $map;
-        }
-
-        $byAscii = [];
-
-        foreach ($map as $char => $ascii) {
-            $byAscii[$ascii][] = $char;
-        }
-
-        return self::$_asciiCharMaps[$key] = $byAscii;
+        return Str::asciiCharMap($flat, $language);
     }
 
     /**
@@ -296,15 +258,7 @@ class StringHelper extends \yii\helpers\StringHelper
      */
     public static function containsMb4(string $str): bool
     {
-        $length = strlen($str);
-
-        for ($i = 0; $i < $length; $i++) {
-            if (ord($str[$i]) >= 240) {
-                return true;
-            }
-        }
-
-        return false;
+        return Str::containsMb4($str);
     }
 
     /**
@@ -343,26 +297,7 @@ class StringHelper extends \yii\helpers\StringHelper
      */
     public static function convertToUtf8(string $str): string
     {
-        // If it's already a UTF8 string, just clean and return it
-        if (static::isUtf8($str)) {
-            return HtmlPurifier::cleanUtf8($str);
-        }
-
-        // Otherwise set HTMLPurifier to the actual string encoding
-        $config = HTMLPurifier_Config::createDefault();
-        $config->set('Core.Encoding', static::encoding($str));
-
-        // Clean it
-        $str = HtmlPurifier::cleanUtf8($str);
-
-        // Convert it to UTF8 if possible
-        if (App::checkForValidIconv()) {
-            $str = HtmlPurifier::convertToUtf8($str, $config);
-        } else {
-            $str = mb_convert_encoding($str, self::UTF8);
-        }
-
-        return $str;
+        return Str::convertToUtf8($str);
     }
 
     /**
@@ -374,7 +309,7 @@ class StringHelper extends \yii\helpers\StringHelper
      */
     public static function count(string $str): int
     {
-        return BaseStringy::create($str)->count();
+        return Str::length($str);
     }
 
     /**
@@ -415,15 +350,7 @@ class StringHelper extends \yii\helpers\StringHelper
      */
     public static function decdec(string $str): string
     {
-        if (str_starts_with($str, 'base64:')) {
-            $str = base64_decode(substr($str, 7));
-        }
-
-        if (str_starts_with($str, 'crypt:')) {
-            $str = Craft::$app->getSecurity()->decryptByKey(substr($str, 6));
-        }
-
-        return $str;
+        return Str::decdec($str);
     }
 
     /**
@@ -451,7 +378,7 @@ class StringHelper extends \yii\helpers\StringHelper
      */
     public static function encenc(string $str): string
     {
-        return 'base64:' . base64_encode('crypt:' . Craft::$app->getSecurity()->encryptByKey($str));
+        return Str::encenc($str);
     }
 
     /**
@@ -463,14 +390,7 @@ class StringHelper extends \yii\helpers\StringHelper
      */
     public static function encodeMb4(string $str): string
     {
-        // (Logic pulled from WP's wp_encode_emoji() function)
-        // UTF-32's hex encoding is the same as HTML's hex encoding.
-        // So, by converting from UTF-8 to UTF-32, we magically
-        // get the correct hex encoding.
-        return static::replaceMb4($str, static function($char) {
-            $unpacked = unpack('H*', mb_convert_encoding($char, 'UTF-32', self::UTF8));
-            return isset($unpacked[1]) ? '&#x' . ltrim($unpacked[1], '0') . ';' : '';
-        });
+        return Str::encodeMb4($str);
     }
 
     /**
@@ -481,7 +401,7 @@ class StringHelper extends \yii\helpers\StringHelper
      */
     public static function encoding(string $str): string
     {
-        return mb_strtolower(mb_detect_encoding($str, mb_detect_order(), true));
+        return Str::encoding($str);
     }
 
     /**
@@ -674,7 +594,7 @@ class StringHelper extends \yii\helpers\StringHelper
      */
     public static function insert(string $str, string $substring, int $index): string
     {
-        return (string)BaseStringy::create($str)->insert($substring, $index);
+        return Str::insert($str, $substring, $index);
     }
 
     /**
@@ -749,7 +669,7 @@ class StringHelper extends \yii\helpers\StringHelper
      */
     public static function isHexadecimal(string $str): bool
     {
-        return BaseStringy::create($str)->isHexadecimal();
+        return Str::isHexadecimal($str);
     }
 
     /**
@@ -823,7 +743,7 @@ class StringHelper extends \yii\helpers\StringHelper
      */
     public static function isUtf8(string $str): bool
     {
-        return mb_check_encoding($str, self::UTF8);
+        return mb_check_encoding($str, 'UTF-8');
     }
 
     /**
@@ -849,7 +769,7 @@ class StringHelper extends \yii\helpers\StringHelper
      */
     public static function isUUID(string $uuid): bool
     {
-        return !empty($uuid) && preg_match('/^' . self::UUID_PATTERN . '$/', $uuid);
+        return Str::isUuid($uuid);
     }
 
     /**
@@ -916,8 +836,7 @@ class StringHelper extends \yii\helpers\StringHelper
      */
     public static function lines(string $str): array
     {
-        $lines = BaseStringy::create($str)->lines();
-        return array_map(fn(BaseStringy $line) => (string)$line, $lines);
+        return Str::lines($str);
     }
 
     /**
@@ -929,7 +848,7 @@ class StringHelper extends \yii\helpers\StringHelper
      */
     public static function firstLine(string $str): string
     {
-        return (string)BaseStringy::create($str)->lines()[0];
+        return Str::firstLine($str);
     }
 
     /**
@@ -1031,13 +950,7 @@ class StringHelper extends \yii\helpers\StringHelper
      */
     public static function randomString(int $length = 36, bool $extendedChars = false): string
     {
-        if ($extendedChars) {
-            $validChars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890`~!@#$%^&*()-_=+[]\{}|;:\'",./<>?"';
-        } else {
-            $validChars = 'abcdefghijklmnopqrstuvwxyz';
-        }
-
-        return static::randomStringWithChars($validChars, $length);
+        return Str::random($length, $extendedChars);
     }
 
     /**
@@ -1054,7 +967,7 @@ class StringHelper extends \yii\helpers\StringHelper
         $randomString = '';
 
         // count the number of chars in the valid chars string so we know how many choices we have
-        $numValidChars = static::length($validChars);
+        $numValidChars = Str::length($validChars);
 
         // repeat the steps until we've created a string of the right length
         for ($i = 0; $i < $length; $i++) {
@@ -1238,7 +1151,7 @@ class StringHelper extends \yii\helpers\StringHelper
      * ---
      * ```php
      * // Convert emojis to smilies
-     * $string = StringHelper::replaceMb4($string, function($char) {
+     * $string = Str::replaceMb4($string, function($char) {
      *     switch ($char) {
      *         case '😀':
      *             return ':)';
@@ -1257,20 +1170,7 @@ class StringHelper extends \yii\helpers\StringHelper
      */
     public static function replaceMb4(string $str, callable|string $replace): string
     {
-        $r = preg_replace_callback('/./u', function(array $match) use ($replace): string {
-            if (strlen($match[0]) >= 4) {
-                return is_callable($replace) ? $replace($match[0]) : $replace;
-            }
-            return $match[0];
-        }, $str);
-        if ($r === null) {
-            $message = match (preg_last_error()) {
-                PREG_BAD_UTF8_ERROR => 'Malformed UTF-8 data',
-                default => 'Invalid string',
-            };
-            throw new InvalidArgumentException($message);
-        }
-        return $r;
+        return Str::replaceMb4($str, $replace);
     }
 
     /**
@@ -1387,11 +1287,7 @@ class StringHelper extends \yii\helpers\StringHelper
      */
     public static function splitOnWords(string $str): array
     {
-        // Split on anything that is not alphanumeric, or a period, underscore, or hyphen.
-        // Reference: http://www.regular-expressions.info/unicode.html
-        preg_match_all('/[\p{L}\p{N}\p{M}\._-]+/u', $str, $matches);
-
-        return Arr::whereNotEmpty($matches[0]);
+        return Str::splitOnWords($str);
     }
 
     /**
@@ -1703,27 +1599,7 @@ class StringHelper extends \yii\helpers\StringHelper
      */
     public static function toString(mixed $object, string $glue = ','): string
     {
-        if (is_scalar($object) || (is_object($object) && method_exists($object, '__toString'))) {
-            return (string)$object;
-        }
-
-        if (is_array($object) || $object instanceof IteratorAggregate) {
-            $stringValues = [];
-
-            foreach ($object as $value) {
-                if (($value = static::toString($value, $glue)) !== '') {
-                    $stringValues[] = $value;
-                }
-            }
-
-            return implode($glue, $stringValues);
-        }
-
-        if ($object instanceof BackedEnum) {
-            return $object->value;
-        }
-
-        return '';
+        return Str::toString($object, $glue);
     }
 
     /**
@@ -1789,24 +1665,7 @@ class StringHelper extends \yii\helpers\StringHelper
      */
     public static function toWords(string $str, bool $lower = false, bool $removePunctuation = false): array
     {
-        // Convert CamelCase to multiple words
-        // Regex copied from Inflector::camel2words(), but without dropping punctuation
-        $str = preg_replace('/(?<!\p{Lu})(\p{Lu})|(\p{Lu})(?=\p{Ll})/u', ' \0', $str);
-
-        if ($lower) {
-            // Make it lowercase
-            $str = mb_strtolower($str);
-        }
-
-        if ($removePunctuation) {
-            $str = str_replace(['.', '_', '-'], ' ', $str);
-        }
-
-        // Remove inner-word punctuation.
-        $str = preg_replace('/[\'"‘’“”ʻ\[\]\(\)\{\}:]/u', '', $str);
-
-        // Split on the words and return
-        return static::splitOnWords($str);
+        return Str::toWords($str, $lower, $removePunctuation);
     }
 
     /**
@@ -1818,25 +1677,7 @@ class StringHelper extends \yii\helpers\StringHelper
      */
     public static function toHandle(string $str): string
     {
-        // Remove HTML tags
-        $handle = static::stripHtml($str);
-
-        // Remove inner-word punctuation
-        $handle = preg_replace('/[\'"‘’“”ʻ\[\]\(\)\{\}:]/', '', $handle);
-
-        // Make it lowercase
-        $handle = static::toLowerCase($handle);
-
-        // Convert extended ASCII characters to basic ASCII
-        $handle = static::toAscii($handle);
-
-        // Handle must start with a letter
-        $handle = preg_replace('/^[^a-z]+/', '', $handle);
-
-        // Replace any remaining non-alphanumeric or underscore characters with spaces
-        $handle = preg_replace('/[^a-z0-9_]/', ' ', $handle);
-
-        return static::toCamelCase($handle);
+        return Str::toHandle($str);
     }
 
     /**
@@ -1946,24 +1787,7 @@ class StringHelper extends \yii\helpers\StringHelper
      */
     public static function idnToUtf8Email(string $email): string
     {
-        if (!App::supportsIdn()) {
-            return $email;
-        }
-
-        $parts = explode('@', $email, 2);
-        foreach ($parts as &$part) {
-            if (($part = idn_to_utf8($part, IDNA_DEFAULT, INTL_IDNA_VARIANT_UTS46)) === false) {
-                return $email;
-            }
-        }
-        $combined = implode('@', $parts);
-
-        // Return the original string if nothing changed besides casing
-        if (strcasecmp($combined, $email) === 0) {
-            return $email;
-        }
-
-        return $combined;
+        return Str::idnToUtf8Email($email);
     }
 
     /**
@@ -1975,16 +1799,7 @@ class StringHelper extends \yii\helpers\StringHelper
      */
     public static function emojiToShortcodes(string $str): string
     {
-        // Add delimiters around all 4-byte chars
-        $dl = '__MB4_DL__';
-        $dr = '__MB4_DR__';
-        $str = static::replaceMb4($str, fn($char) => sprintf('%s%s%s', $dl, $char, $dr));
-
-        // Strip out consecutive delimiters
-        $str = str_replace(sprintf('%s%s', $dr, $dl), '', $str);
-
-        // Replace all 4-byte sequences individually
-        return preg_replace_callback("/$dl(.+?)$dr/", fn($m) => LitEmoji::unicodeToShortcode($m[1]), $str);
+        return Str::emojiToShortcodes($str);
     }
 
     /**
@@ -1996,7 +1811,7 @@ class StringHelper extends \yii\helpers\StringHelper
      */
     public static function shortcodesToEmoji(string $str): string
     {
-        return LitEmoji::shortcodeToUnicode($str);
+        return Str::shortcodesToEmoji($str);
     }
 
     /**
@@ -2008,11 +1823,7 @@ class StringHelper extends \yii\helpers\StringHelper
      */
     public static function escapeShortcodes(string $str): string
     {
-        $map = self::shortcodeEscapeMap();
-        if ($map === false) {
-            return $str;
-        }
-        return str_replace(array_keys($map), $map, $str);
+        return Str::escapeShortcodes($str);
     }
 
     /**
@@ -2024,30 +1835,7 @@ class StringHelper extends \yii\helpers\StringHelper
      */
     public static function unescapeShortcodes(string $str): string
     {
-        $map = self::shortcodeEscapeMap();
-        if ($map === false) {
-            return $str;
-        }
-        return str_replace($map, array_keys($map), $str);
-    }
-
-    private static function shortcodeEscapeMap(): array|false
-    {
-        if (!isset(self::$_shortcodeEscapeMap)) {
-            $path = Craft::$app->getPath()->getVendorPath() . '/elvanto/litemoji/src/shortcodes-array.php';
-            if (file_exists($path)) {
-                $shortcodes = array_keys(require $path);
-                self::$_shortcodeEscapeMap = array_combine(
-                    array_map(fn(string $shortcode) => ":$shortcode:", $shortcodes),
-                    array_map(fn(string $shortcode) => "\\:$shortcode\\:", $shortcodes),
-                );
-            } else {
-                Craft::warning('Unable to escape shortcodes: shortcodes-array.php doesn’t exist at the expected location.');
-                self::$_shortcodeEscapeMap = false;
-            }
-        }
-
-        return self::$_shortcodeEscapeMap;
+        return Str::unescapeShortcodes($str);
     }
 
     /**
@@ -2059,7 +1847,7 @@ class StringHelper extends \yii\helpers\StringHelper
      */
     public static function indent(string $str, string $indent = '    '): string
     {
-        return implode("\n", array_map(fn(string $line) => $indent . $line, static::lines($str)));
+        return Str::indent($str, $indent);
     }
 
     /**
@@ -2070,25 +1858,6 @@ class StringHelper extends \yii\helpers\StringHelper
      */
     public static function invisibleCharsRegex(): string
     {
-        $invisibleCharCodes = [
-            '00ad', // soft hyphen
-            '0083', // no break
-            '200b', // zero width space
-            '200c', // zero width non-joiner
-            '200d', // zero width joiner
-            '200e', // LTR character
-            '200f', // RTL character
-            '2062', // invisible times
-            '2063', // invisible comma
-            '2064', // invisible plus
-            'feff', //zero width non-break space
-        ];
-
-        array_walk(
-            $invisibleCharCodes,
-            fn(&$charCode) => $charCode = sprintf('\\x{%s}', $charCode)
-        );
-
-        return sprintf('/%s/iu', implode('|', $invisibleCharCodes));
+        return Str::invisibleCharsPattern();
     }
 }

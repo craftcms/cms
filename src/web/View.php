@@ -9,6 +9,7 @@ namespace craft\web;
 
 use Craft;
 use craft\base\ElementInterface;
+use Craft\Cms\Support\Str;
 use craft\events\AssetBundleEvent;
 use craft\events\CreateTwigEvent;
 use craft\events\RegisterTemplateRootsEvent;
@@ -19,7 +20,6 @@ use craft\helpers\FileHelper;
 use craft\helpers\Html;
 use craft\helpers\Json;
 use craft\helpers\Path;
-use craft\helpers\StringHelper;
 use craft\web\twig\CpExtension;
 use craft\web\twig\Environment;
 use craft\web\twig\Extension;
@@ -776,7 +776,7 @@ class View extends \yii\web\View
         // Tokenize {% verbatim %} ... {% endverbatim %} tags in their entirety
         $template = preg_replace_callback('/\{%-?\s*verbatim\s*-?%\}.*?{%-?\s*endverbatim\s*-?%\}/s',
             function(array $matches) use (&$tokens) {
-                $token = 'tok_' . StringHelper::randomString(10);
+                $token = 'tok_' . Str::random(10);
                 $tokens[$token] = $matches[0];
                 return $token;
             },
@@ -786,7 +786,7 @@ class View extends \yii\web\View
         // Tokenize any remaining Twig tags (including print tags)
         $template = preg_replace_callback('/\{%-?\s*\w+.*?%\}|(?<!\{)\{\{(?!\{).+?(?<!\})\}\}(?!\})/s',
             function(array $matches) use (&$tokens) {
-                $token = 'tok_' . StringHelper::randomString(10);
+                $token = 'tok_' . Str::random(10);
                 $tokens[$token] = $matches[0];
                 return $token;
             },
@@ -795,7 +795,7 @@ class View extends \yii\web\View
 
         // Tokenize inline code and code blocks
         $template = preg_replace_callback('/(?<!`)(`|`{3,})(?!`).*?(?<!`)\1(?!`)/s', function(array $matches) use (&$tokens) {
-            $token = 'tok_' . StringHelper::randomString(10);
+            $token = 'tok_' . Str::random(10);
             $tokens[$token] = '{% verbatim %}' . $matches[0] . '{% endverbatim %}';
             return $token;
         }, $template);
@@ -803,7 +803,7 @@ class View extends \yii\web\View
         // Tokenize objects (call preg_replace_callback() multiple times in case there are nested objects)
         while (true) {
             $template = preg_replace_callback('/\{\s*([\'"]?)\w+\1\s*:[^\{]+?\}/', function(array $matches) use (&$tokens) {
-                $token = 'tok_' . StringHelper::randomString(10);
+                $token = 'tok_' . Str::random(10);
                 $tokens[$token] = $matches[0];
                 return $token;
             }, $template, -1, $count);
@@ -952,7 +952,7 @@ class View extends \yii\web\View
     private function _resolveTemplateInternal(string $name, bool $publicOnly): string|false
     {
         // Normalize the template name
-        $name = trim(preg_replace('#/{2,}#', '/', str_replace('\\', '/', StringHelper::convertToUtf8($name))), '/');
+        $name = trim(preg_replace('#/{2,}#', '/', str_replace('\\', '/', Str::convertToUtf8($name))), '/');
 
         $key = $this->_templatesPath . ':' . $name;
 
@@ -1037,7 +1037,7 @@ class View extends \yii\web\View
     public function registerJs($js, $position = self::POS_READY, $key = null): void
     {
         // Trim any whitespace and ensure it ends with a semicolon.
-        $js = StringHelper::ensureRight(trim($js, " \t\n\r\0\x0B"), ';');
+        $js = Str::finish(trim($js, " \t\n\r\0\x0B"), ';');
 
         parent::registerJs($js, $position, $key);
     }
@@ -2363,7 +2363,7 @@ JS;
      */
     private function _validateTemplateName(string $name): void
     {
-        if (StringHelper::contains($name, "\0")) {
+        if (str_contains($name, "\0")) {
             throw new TwigLoaderError(Craft::t('app', 'A template name cannot contain NUL bytes.'));
         }
 

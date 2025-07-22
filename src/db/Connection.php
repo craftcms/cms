@@ -8,6 +8,7 @@
 namespace craft\db;
 
 use Craft;
+use Craft\Cms\Support\Str;
 use craft\db\mysql\QueryBuilder as MysqlQueryBuilder;
 use craft\db\mysql\Schema as MysqlSchema;
 use craft\db\pgsql\QueryBuilder as PgsqlQueryBuilder;
@@ -19,7 +20,6 @@ use craft\events\RestoreEvent;
 use craft\helpers\App;
 use craft\helpers\Db;
 use craft\helpers\FileHelper;
-use craft\helpers\StringHelper;
 use mikehaertl\shellcommand\Command as ShellCommand;
 use Throwable;
 use yii\base\Event;
@@ -512,7 +512,7 @@ class Connection extends Craft\Yii2Adapter\DatabaseConnection
      */
     private function _objectName(string $prefix): string
     {
-        return $this->tablePrefix . $prefix . '_' . StringHelper::randomString();
+        return $this->tablePrefix . $prefix . '_' . Str::random(36);
     }
 
     /**

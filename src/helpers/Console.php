@@ -8,7 +8,9 @@
 namespace craft\helpers;
 
 use Craft;
+use Craft\Cms\Support\Str;
 use craft\console\MarkdownParser;
+use Illuminate\Support\Collection;
 use yii\base\InvalidConfigException;
 use yii\base\InvalidValueException;
 use yii\console\Controller;
@@ -81,9 +83,9 @@ class Console extends \yii\helpers\Console
             }
 
             if (self::$indent !== 0) {
-                $lines = StringHelper::lines($string);
-                $lines = array_map(fn(string $line) => static::indentStr() . $line, $lines);
-                $string = implode("\n", $lines);
+                $string = Collection::make(Str::lines($string))
+                    ->map(fn(string $line) => static::indentStr() . $line)
+                    ->join("\n");
             }
         }
 

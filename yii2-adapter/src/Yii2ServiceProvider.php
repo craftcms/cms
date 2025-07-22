@@ -2,15 +2,13 @@
 
 namespace Craft\Yii2Adapter;
 
-use Craft\Aliases\Facades\Aliases;
 use Craft\Cms\User\Models\User;
 use craft\console\controllers\HelpController;
 use craft\helpers\App;
 use Craft\Yii2Adapter\Console\LegacyCraftCommand;
-use Craft\Yii2Adapter\Http\LegacyMiddleware;
+use CraftCms\Aliases\Facades\Aliases;
 use Exception;
 use Illuminate\Console\Application as ConsoleApplication;
-use Illuminate\Routing\Router;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\ServiceProvider;
@@ -119,22 +117,11 @@ class Yii2ServiceProvider extends ServiceProvider
         $connection = Config::get('database.default');
         Config::set("database.connections.{$connection}.prefix", App::env('DB_TABLE_PREFIX'));
 
-        $this->bootMiddleware();
-
         if (!$this->app->runningInConsole()) {
             return;
         }
 
         $this->bootLegacyCommands();
-    }
-
-    protected function bootMiddleware(): void
-    {
-        $router = $this->app->make(Router::class);
-
-        collect([
-            LegacyMiddleware::class,
-        ])->each(fn($middleware) => $router->pushMiddlewareToGroup('craft', $middleware));
     }
 
     private function bootLegacyCommands(): void

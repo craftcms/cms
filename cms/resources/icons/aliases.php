@@ -1,6 +1,6 @@
 <?php
 
-use Craft\Aliases\Facades\Aliases;
+use CraftCms\Aliases\Facades\Aliases;
 
 Aliases::set('@appicons/monero.svg', '@packageRoot/resources/icons/brands/monero.svg');
 Aliases::set('@appicons/hooli.svg', '@packageRoot/resources/icons/brands/hooli.svg');

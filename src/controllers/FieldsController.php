@@ -19,6 +19,7 @@ use craft\base\FieldLayoutElement;
 use craft\base\FieldLayoutProviderInterface;
 use craft\base\Iconic;
 use Craft\Cms\Support\Arr;
+use Craft\Cms\Support\Str;
 use craft\elements\GlobalSet;
 use craft\fieldlayoutelements\CustomField;
 use craft\fields\MissingField;
@@ -26,7 +27,6 @@ use craft\fields\PlainText;
 use craft\helpers\Component;
 use craft\helpers\Cp;
 use craft\helpers\Html;
-use craft\helpers\StringHelper;
 use craft\helpers\Typecast;
 use craft\helpers\UrlHelper;
 use craft\models\FieldLayout;
@@ -493,7 +493,7 @@ JS, [
     public function actionRenderLayoutComponentSettings(): Response
     {
         $element = $this->_fldComponent();
-        $namespace = StringHelper::randomString(10);
+        $namespace = Str::random(10);
         $view = Craft::$app->getView();
         $html = $view->namespaceInputs(fn() => $element->getSettingsHtml(), $namespace);
 

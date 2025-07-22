@@ -40,7 +40,7 @@ $index = [];
 $aliasesPhp = <<<PHP
 <?php
 
-use Craft\Aliases\Facades\Aliases;
+use CraftCms\Aliases\Facades\Aliases;
 
 
 PHP;

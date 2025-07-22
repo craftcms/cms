@@ -1,6 +1,6 @@
 {
   "*.php": [
-    "../vendor/bin/pint",
-    "../vendor/bin/phpstan analyse --memory-limit=1G"
+    "cd ../ && ./vendor/bin/pint",
+    "cd ../ && ./vendor/bin/phpstan analyse --memory-limit=1G"
   ]
 }

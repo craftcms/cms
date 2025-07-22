@@ -8,10 +8,9 @@
 namespace craft\test\mockclasses\elements;
 
 use Craft;
-use craft\base\Element;
 use craft\base\ElementInterface;
+use Craft\Cms\Support\Str;
 use craft\elements\db\ElementQuery;
-use craft\helpers\StringHelper;
 
 /**
  * MockElementQuery is used to mimic element queries and mock their results
@@ -58,7 +57,7 @@ class MockElementQuery extends ElementQuery
         // Split out the relevant parts and generate a prefix
         $element = array_pop($parts);
         $namespace = implode('\\', $parts);
-        $prefix = StringHelper::randomStringWithChars('abcdefghijklmnopqrstuvwxyz', 20);
+        $prefix = Str::random(20);
         $className = $prefix . 'MockElementQuery';
 
         // Load template and fill it with the relevant values

@@ -9,6 +9,7 @@ namespace craft\queue;
 
 use Craft;
 use Craft\Cms\Support\Arr;
+use Craft\Cms\Support\Str;
 use craft\db\Connection;
 use craft\db\Table;
 use craft\errors\MutexException;
@@ -17,7 +18,6 @@ use craft\helpers\DateTimeHelper;
 use craft\helpers\Db;
 use craft\helpers\Json;
 use craft\helpers\Queue as QueueHelper;
-use craft\helpers\StringHelper;
 use craft\helpers\UrlHelper;
 use craft\i18n\Translation;
 use craft\queue\jobs\Proxy;
@@ -773,7 +773,7 @@ EOD;
 
             if (is_string($job) && str_starts_with($job, 'x')) {
                 $hex = substr($job, 1);
-                if (StringHelper::isHexadecimal($hex)) {
+                if (Str::isHexadecimal($hex)) {
                     $job = hex2bin($hex);
                 }
             }

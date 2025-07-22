@@ -8,10 +8,10 @@
 namespace crafttests\unit\gql;
 
 use Craft;
+use Craft\Cms\Support\Str;
 use craft\elements\Asset;
 use craft\elements\db\AssetQuery;
 use craft\gql\resolvers\elements\Asset as AssetResolver;
-use craft\helpers\StringHelper;
 use craft\models\GqlSchema;
 use craft\test\TestCase;
 use GraphQL\Type\Definition\ResolveInfo;
@@ -49,7 +49,7 @@ class ElementResolverTest extends TestCase
      */
     public function testResolveOneAndCount(): void
     {
-        $testUid = StringHelper::UUID();
+        $testUid = Str::uuid()->toString();
         $testCount = random_int(1, 1000);
 
         // Mock the fetched Asset query

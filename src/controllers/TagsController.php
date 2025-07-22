@@ -11,7 +11,6 @@ use Craft;
 use craft\elements\Tag;
 use craft\helpers\Db;
 use craft\helpers\Search;
-use craft\helpers\StringHelper;
 use craft\helpers\UrlHelper;
 use craft\models\TagGroup;
 use craft\web\Controller;
@@ -215,7 +214,7 @@ class TagsController extends Controller
                 'exclude' => $exclude,
             ];
 
-            $tagTitleLengths[] = StringHelper::length($tag->title);
+            $tagTitleLengths[] = mb_strlen($tag->title);
 
             if ($allowSimilarTags) {
                 $title = Search::normalizeKeywords($tag->title, [], false);

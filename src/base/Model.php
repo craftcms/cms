@@ -8,13 +8,13 @@
 namespace craft\base;
 
 use Closure;
+use Craft\Cms\Support\Str;
 use craft\events\DefineBehaviorsEvent;
 use craft\events\DefineFieldsEvent;
 use craft\events\DefineRulesEvent;
 use craft\helpers\App;
 use craft\helpers\Component;
 use craft\helpers\DateTimeHelper;
-use craft\helpers\StringHelper;
 use craft\helpers\Typecast;
 use yii\validators\Validator;
 
@@ -165,7 +165,7 @@ abstract class Model extends \yii\base\Model implements ModelInterface
     {
         return [];
     }
-    
+
     /**
      * Returns the validation rules for attributes.
      *
@@ -304,10 +304,10 @@ abstract class Model extends \yii\base\Model implements ModelInterface
      */
     public function hasErrors($attribute = null): bool
     {
-        $includeNested = $attribute !== null && StringHelper::endsWith($attribute, '.*');
+        $includeNested = $attribute !== null && str_ends_with($attribute, '.*');
 
         if ($includeNested) {
-            $attribute = StringHelper::removeRight($attribute, '.*');
+            $attribute = Str::chopEnd($attribute, '.*');
         }
 
         if (parent::hasErrors($attribute)) {

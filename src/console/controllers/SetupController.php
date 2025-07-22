@@ -9,6 +9,7 @@ namespace craft\console\controllers;
 
 use Craft;
 use Craft\Cms\Support\Arr;
+use Craft\Cms\Support\Str;
 use craft\config\DbConfig;
 use craft\console\Controller;
 use craft\db\Connection;
@@ -17,7 +18,6 @@ use craft\errors\DbConnectException;
 use craft\helpers\App;
 use craft\helpers\Console;
 use craft\helpers\FileHelper;
-use craft\helpers\StringHelper;
 use craft\migrations\CreateDbCacheTable;
 use craft\migrations\CreatePhpSessionTable;
 use m150207_210500_i18n_init;
@@ -210,7 +210,7 @@ EOD;
     public function actionAppId(): int
     {
         $this->stdout('Generating an application ID ... ', Console::FG_YELLOW);
-        $key = 'CraftCMS--' . StringHelper::UUID();
+        $key = 'CraftCMS--' . Str::uuid()->toString();
         if (!$this->_setEnvVar('CRAFT_APP_ID', $key)) {
             return ExitCode::UNSPECIFIED_ERROR;
         }
@@ -307,7 +307,7 @@ EOD;
         $this->tablePrefix = $this->prompt('Database table prefix' . ($this->tablePrefix ? ' (type "none" for none)' : '') . ':', [
             'default' => $this->tablePrefix ?? $this->_envDefault('DB_TABLE_PREFIX') ?? $this->_envDefault('CRAFT_DB_TABLE_PREFIX') ?? null,
             'validator' => function(string $input): bool {
-                if (strlen(StringHelper::ensureRight($input, '_')) > 6) {
+                if (strlen(Str::finish($input, '_')) > 6) {
                     $this->stderr('The table prefix must be 5 or less characters long.' . PHP_EOL, Console::FG_RED);
                     return false;
                 }
@@ -315,7 +315,7 @@ EOD;
             },
         ]);
         if ($this->tablePrefix && $this->tablePrefix !== 'none') {
-            $this->tablePrefix = StringHelper::ensureRight($this->tablePrefix, '_');
+            $this->tablePrefix = Str::finish($this->tablePrefix, '_');
         } else {
             $this->tablePrefix = '';
         }

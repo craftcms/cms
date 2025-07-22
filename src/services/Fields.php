@@ -16,6 +16,7 @@ use craft\base\FieldLayoutElement;
 use craft\base\MemoizableArray;
 use craft\behaviors\CustomFieldBehavior;
 use Craft\Cms\Support\Arr;
+use Craft\Cms\Support\Str;
 use craft\db\FixedOrderExpression;
 use craft\db\Query;
 use craft\db\Table;
@@ -63,7 +64,6 @@ use craft\helpers\Cp;
 use craft\helpers\Db;
 use craft\helpers\Json as JsonHelper;
 use craft\helpers\ProjectConfig as ProjectConfigHelper;
-use craft\helpers\StringHelper;
 use craft\models\FieldLayout;
 use craft\models\FieldLayoutTab;
 use craft\records\Field as FieldRecord;
@@ -670,7 +670,7 @@ class Fields extends Component
         // Make sure it's got a UUID
         if ($isNew) {
             if (empty($field->uid)) {
-                $field->uid = StringHelper::UUID();
+                $field->uid = Str::uuid()->toString();
             }
         } elseif (!$field->uid) {
             $field->uid = Db::uidById(Table::FIELDS, $field->id);
@@ -976,7 +976,7 @@ class Fields extends Component
                     $field = $this->getFieldById($fieldResult['fieldId']);
                     if ($field) {
                         $elements[] = new CustomField($field, [
-                            'uid' => StringHelper::UUID(),
+                            'uid' => Str::uuid()->toString(),
                             'required' => $fieldResult['required'],
                         ]);
                     }
@@ -1349,7 +1349,7 @@ class Fields extends Component
         class_exists(CustomFieldBehavior::class);
 
         $info = Craft::$app->getInfo();
-        $info->fieldVersion = '3@' . StringHelper::randomString(10);
+        $info->fieldVersion = '3@' . Str::random(10);
         Craft::$app->saveInfo($info, ['fieldVersion']);
     }
 

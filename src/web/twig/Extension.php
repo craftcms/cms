@@ -14,6 +14,7 @@ use craft\base\FieldLayoutProviderInterface;
 use craft\base\MissingComponentInterface;
 use craft\base\PluginInterface;
 use Craft\Cms\Support\Arr;
+use Craft\Cms\Support\Str;
 use craft\elements\Address;
 use craft\elements\Asset;
 use craft\elements\ElementCollection;
@@ -29,7 +30,6 @@ use craft\helpers\HtmlPurifier;
 use craft\helpers\Json;
 use craft\helpers\MoneyHelper;
 use craft\helpers\Sequence;
-use craft\helpers\StringHelper;
 use craft\helpers\Template as TemplateHelper;
 use craft\helpers\UrlHelper;
 use craft\i18n\Locale;
@@ -67,6 +67,7 @@ use DateTime;
 use DateTimeInterface;
 use DateTimeZone;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Stringable;
 use IteratorAggregate;
 use Money\Money;
 use Throwable;
@@ -233,7 +234,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
         return [
             new TwigFilter('address', [$this, 'addressFilter'], ['is_safe' => ['html']]),
             new TwigFilter('append', [$this, 'appendFilter'], ['is_safe' => ['html']]),
-            new TwigFilter('ascii', [StringHelper::class, 'toAscii']),
+            new TwigFilter('ascii', [Str::class, 'ascii']),
             new TwigFilter('atom', [$this, 'atomFilter'], ['needs_environment' => true]),
             new TwigFilter('attr', [$this, 'attrFilter'], ['is_safe' => ['html']]),
             new TwigFilter('base64_decode', 'base64_decode'),
@@ -434,7 +435,9 @@ class Extension extends AbstractExtension implements GlobalsInterface
             return $string;
         }
 
-        return StringHelper::safeTruncate($string, $length, $suffix, $splitSingleWord);
+        $length = (int) ($length - mb_strlen($suffix));
+
+        return Str::limit($string, $length, $suffix, preserveWords: true);
     }
 
     /**
@@ -447,7 +450,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
     public function ucfirstFilter(mixed $string): string
     {
         Craft::$app->getDeprecator()->log('ucfirst', 'The `|ucfirst` filter has been deprecated. Use `|capitalize` instead.');
-        return StringHelper::upperCaseFirst((string)$string);
+        return mb_ucfirst((string)$string);
     }
 
     /**
@@ -476,7 +479,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
      */
     public function lcfirstFilter(mixed $string): string
     {
-        return StringHelper::lowercaseFirst((string)$string);
+        return Str::lcfirst((string)$string);
     }
 
     /**
@@ -490,7 +493,11 @@ class Extension extends AbstractExtension implements GlobalsInterface
      */
     public function kebabFilter(mixed $string, string $glue = '-', bool $lower = true, bool $removePunctuation = true): string
     {
-        return StringHelper::toKebabCase((string)$string, $glue, $lower, $removePunctuation);
+        return str($string)
+            ->when($removePunctuation, fn(Stringable $s) => $s->replace(['.', '_', '-'], ' '))
+            ->snake($glue)
+            ->when($lower, fn(Stringable $s) => $s->lower())
+            ->value();
     }
 
     /**
@@ -501,7 +508,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
      */
     public function camelFilter(mixed $string): string
     {
-        return StringHelper::toCamelCase((string)$string);
+        return Str::camel((string) $string);
     }
 
     /**
@@ -512,7 +519,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
      */
     public function pascalFilter(mixed $string): string
     {
-        return StringHelper::toPascalCase((string)$string);
+        return Str::pascal((string) $string);
     }
 
     /**
@@ -523,7 +530,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
      */
     public function snakeFilter(mixed $string): string
     {
-        return StringHelper::toSnakeCase((string)$string);
+        return Str::snake((string) $string);
     }
 
     /**
@@ -1005,7 +1012,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
             if (str_starts_with($format, 'icu:')) {
                 $format = substr($format, 4);
             } else {
-                $format = StringHelper::ensureLeft($format, 'php:');
+                $format = Str::start($format, 'php:');
             }
         }
 
@@ -1100,7 +1107,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
             if (str_starts_with($format, 'icu:')) {
                 $format = substr($format, 4);
             } else {
-                $format = StringHelper::ensureLeft($format, 'php:');
+                $format = Str::start($format, 'php:');
             }
         }
 
@@ -1130,7 +1137,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
             if (str_starts_with($format, 'icu:')) {
                 $format = substr($format, 4);
             } else {
-                $format = StringHelper::ensureLeft($format, 'php:');
+                $format = Str::start($format, 'php:');
             }
         }
 
@@ -1151,7 +1158,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
      */
     public function encencFilter(mixed $str): string
     {
-        return StringHelper::encenc((string)$str);
+        return Str::encenc((string)$str);
     }
 
     /**

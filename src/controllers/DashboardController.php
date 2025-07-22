@@ -10,11 +10,11 @@ namespace craft\controllers;
 use Craft;
 use craft\base\WidgetInterface;
 use Craft\Cms\Support\Arr;
+use Craft\Cms\Support\Str;
 use craft\helpers\App;
 use craft\helpers\Cp;
 use craft\helpers\FileHelper;
 use craft\helpers\Json;
-use craft\helpers\StringHelper;
 use craft\models\CraftSupport;
 use craft\web\assets\dashboard\DashboardAsset;
 use craft\web\Controller;
@@ -324,7 +324,7 @@ class DashboardController extends Controller
         $zipAttachment = $getHelpModel->attachment && $this->_shouldZipAttachment($getHelpModel->attachment);
 
         // Create the SupportAttachment zip
-        $zipPath = Craft::$app->getPath()->getTempPath() . '/' . StringHelper::UUID() . '.zip';
+        $zipPath = Craft::$app->getPath()->getTempPath() . '/' . Str::uuid()->toString() . '.zip';
         try {
             // Create the zip
             $zip = new ZipArchive();

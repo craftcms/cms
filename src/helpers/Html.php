@@ -9,6 +9,7 @@ namespace craft\helpers;
 
 use Craft;
 use Craft\Cms\Support\Arr;
+use Craft\Cms\Support\Str;
 use craft\elements\Asset;
 use craft\errors\InvalidHtmlTagException;
 use craft\image\SvgAllowedAttributes;
@@ -740,7 +741,7 @@ class Html extends \yii\helpers\Html
         }
 
         $id = trim(preg_replace('/[^A-Za-z0-9_.]+/', '-', $id), '-');
-        return $id ?: StringHelper::randomString(10);
+        return $id ?: Str::random(10);
     }
 
     /**
@@ -1263,7 +1264,7 @@ class Html extends \yii\helpers\Html
 
         // Namespace class names and IDs
         if ($namespace) {
-            $ns = StringHelper::randomString(10);
+            $ns = Str::random(10);
             $svg = Html::namespaceAttributes($svg, $ns, true);
         }
 

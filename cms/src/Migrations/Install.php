@@ -13,6 +13,7 @@ namespace Craft\Cms\Migrations;
 
 use Craft;
 use craft\base\Field;
+use Craft\Cms\Support\Str;
 use craft\db\Table;
 use craft\elements\Asset;
 use craft\elements\Entry;
@@ -23,7 +24,6 @@ use craft\errors\InvalidPluginException;
 use craft\errors\OperationAbortedException;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\ProjectConfig as ProjectConfigHelper;
-use craft\helpers\StringHelper;
 use craft\mail\transportadapters\Sendmail;
 use craft\models\CategoryGroup;
 use craft\models\Info;
@@ -1177,8 +1177,8 @@ class Install extends Migration
             'version' => Craft::$app->getVersion(),
             'schemaVersion' => Craft::$app->schemaVersion,
             'maintenance' => false,
-            'configVersion' => StringHelper::randomString(12),
-            'fieldVersion' => StringHelper::randomString(12),
+            'configVersion' => Str::random(12),
+            'fieldVersion' => Str::random(12),
         ]));
         $this->output->writeln('done');
 
@@ -1319,7 +1319,7 @@ class Install extends Migration
 
     private function _generateInitialConfig(): array
     {
-        $siteGroupUid = StringHelper::UUID();
+        $siteGroupUid = Str::uuid()->toString();
 
         return [
             'dateModified' => DateTimeHelper::currentTimeStamp(),
@@ -1334,7 +1334,7 @@ class Install extends Migration
                 ],
             ],
             'sites' => [
-                StringHelper::UUID() => [
+                Str::uuid()->toString() => [
                     'baseUrl' => $this->site->getBaseUrl(false),
                     'handle' => $this->site->handle,
                     'hasUrls' => $this->site->hasUrls,
