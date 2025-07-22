@@ -7,11 +7,11 @@
  * @license https://craftcms.github.io/license/
  */
 
-namespace Craft\Cms\Announcement\Models;
+namespace CraftCms\Cms\Announcement\Models;
 
-use Craft\Cms\Plugin\Models\Plugin;
-use Craft\Cms\Support\BaseModel;
-use Craft\Cms\User\Models\User;
+use CraftCms\Cms\Plugin\Models\Plugin;
+use CraftCms\Cms\Support\BaseModel;
+use CraftCms\Cms\User\Models\User;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Facades\Date;

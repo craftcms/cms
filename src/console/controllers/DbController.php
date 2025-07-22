@@ -8,13 +8,13 @@
 namespace craft\console\controllers;
 
 use Craft;
-use Craft\Cms\Support\Str;
 use craft\console\Controller;
 use craft\db\Connection;
 use craft\db\Table;
 use craft\helpers\Console;
 use craft\helpers\Db;
 use craft\helpers\FileHelper;
+use CraftCms\Cms\Support\Str;
 use Throwable;
 use yii\base\NotSupportedException;
 use yii\console\ExitCode;

@@ -11,7 +11,7 @@ Route::any('{any}', function() {
     ->middleware([
         'web',
         'craft',
-        \Craft\Yii2Adapter\Http\LegacyMiddleware::class,
+        \CraftCms\Yii2Adapter\Http\LegacyMiddleware::class,
     ])
     ->where('any', '.*')
     ->fallback();

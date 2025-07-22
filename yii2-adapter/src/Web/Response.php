@@ -7,7 +7,7 @@
  * @license [New BSD License](http://www.opensource.org/licenses/bsd-license.php)
  */
 
-namespace Craft\Yii2Adapter\Web;
+namespace CraftCms\Yii2Adapter\Web;
 
 use Craft;
 use Illuminate\Http\Response as IlluminateResponse;
@@ -26,7 +26,7 @@ use yii\web\HeadersAlreadySentException;
  * ```php
  * return [
  *     'components' => [
- *         'response' => Craft\Cms\Yii\Web\Response::class,
+ *         'response' => CraftCms\Cms\Yii\Web\Response::class,
  *         // ...
  *     ],
  *     // ...

@@ -11,7 +11,6 @@ use Closure;
 use Craft;
 use craft\attributes\EnvName;
 use craft\behaviors\SessionBehavior;
-use Craft\Cms\Support\Str;
 use craft\config\DbConfig;
 use craft\db\Command;
 use craft\db\Connection;
@@ -35,6 +34,7 @@ use craft\web\Request as WebRequest;
 use craft\web\Response as WebResponse;
 use craft\web\User as WebUser;
 use craft\web\View;
+use CraftCms\Cms\Support\Str;
 use HTMLPurifier_Encoder;
 use ReflectionClass;
 use ReflectionFunction;
@@ -955,7 +955,7 @@ class App
         $generalConfig = Craft::$app->getConfig()->getGeneral();
 
         return [
-            'class' => Craft\Yii2Adapter\Cache::class,
+            'class' => \CraftCms\Yii2Adapter\Cache::class,
             'keyPrefix' => Craft::$app->id,
             'defaultDuration' => $generalConfig->cacheDuration,
         ];

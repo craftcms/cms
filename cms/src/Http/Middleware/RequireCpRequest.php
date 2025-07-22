@@ -1,6 +1,6 @@
 <?php
 
-namespace Craft\Cms\Http\Middleware;
+namespace CraftCms\Cms\Http\Middleware;
 
 use Closure;
 use Illuminate\Http\Request;

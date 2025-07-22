@@ -9,13 +9,13 @@ namespace craft\web;
 
 use Craft;
 use craft\base\RequestTrait;
-use Craft\Cms\Support\Arr;
-use Craft\Cms\Support\Str;
 use craft\config\GeneralConfig;
 use craft\errors\SiteNotFoundException;
 use craft\helpers\App;
 use craft\models\Site;
 use craft\services\Sites;
+use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Support\Str;
 use yii\base\InvalidArgumentException;
 use yii\base\InvalidConfigException;
 use yii\di\Instance;
@@ -45,7 +45,7 @@ use yii\web\NotFoundHttpException;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
  */
-class Request extends Craft\Yii2Adapter\Web\Request
+class Request extends \CraftCms\Yii2Adapter\Web\Request
 {
     use RequestTrait;
 

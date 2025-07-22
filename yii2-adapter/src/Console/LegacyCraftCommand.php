@@ -1,9 +1,9 @@
 <?php
 
-namespace Craft\Yii2Adapter\Console;
+namespace CraftCms\Yii2Adapter\Console;
 
-use Craft\Cms\Console\CraftCommand;
 use craft\console\Application;
+use CraftCms\Cms\Console\CraftCommand;
 use Illuminate\Console\Command;
 use Illuminate\Support\Str;
 use Symfony\Component\Console\Input\ArgvInput;

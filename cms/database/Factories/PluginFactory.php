@@ -7,9 +7,9 @@
  * @license https://craftcms.github.io/license/
  */
 
-namespace Craft\Cms\Database\Factories;
+namespace CraftCms\Cms\Database\Factories;
 
-use Craft\Cms\Plugin\Models\Plugin;
+use CraftCms\Cms\Plugin\Models\Plugin;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 class PluginFactory extends Factory

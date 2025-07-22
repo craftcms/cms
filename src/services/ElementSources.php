@@ -12,8 +12,6 @@ use craft\base\conditions\ConditionInterface;
 use craft\base\ElementInterface;
 use craft\base\PreviewableFieldInterface;
 use craft\base\SortableFieldInterface;
-use Craft\Cms\Support\Arr;
-use Craft\Cms\Support\Str;
 use craft\db\CoalesceColumnsExpression;
 use craft\elements\conditions\ElementConditionInterface;
 use craft\errors\SiteNotFoundException;
@@ -22,6 +20,8 @@ use craft\events\DefineSourceTableAttributesEvent;
 use craft\fieldlayoutelements\CustomField;
 use craft\helpers\Cp;
 use craft\models\FieldLayout;
+use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Support\Str;
 use Illuminate\Support\Collection;
 use yii\base\Component;
 

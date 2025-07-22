@@ -9,7 +9,6 @@ namespace craft\controllers;
 
 use Craft;
 use craft\base\Element;
-use Craft\Cms\Support\Str;
 use craft\elements\db\EntryQuery;
 use craft\elements\ElementCollection;
 use craft\elements\Entry;
@@ -17,6 +16,7 @@ use craft\errors\InvalidElementException;
 use craft\fields\Matrix;
 use craft\helpers\ElementHelper;
 use craft\web\Controller;
+use CraftCms\Cms\Support\Str;
 use Throwable;
 use yii\web\BadRequestHttpException;
 use yii\web\ForbiddenHttpException;

@@ -2,10 +2,10 @@
 
 namespace craft\base\conditions;
 
-use Craft\Cms\Support\Arr;
 use craft\helpers\Cp;
 use craft\helpers\Db;
 use craft\helpers\Html;
+use CraftCms\Cms\Support\Arr;
 use yii\base\InvalidConfigException;
 
 /**

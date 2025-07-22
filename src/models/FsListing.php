@@ -8,7 +8,7 @@
 namespace craft\models;
 
 use craft\base\Model;
-use Craft\Cms\Support\Str;
+use CraftCms\Cms\Support\Str;
 
 /**
  * The FsListings model class.

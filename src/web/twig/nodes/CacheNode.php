@@ -8,8 +8,8 @@
 namespace craft\web\twig\nodes;
 
 use Craft;
-use Craft\Cms\Support\Str;
 use craft\helpers\DateTimeHelper;
+use CraftCms\Cms\Support\Str;
 use Twig\Compiler;
 use Twig\Node\Node;
 

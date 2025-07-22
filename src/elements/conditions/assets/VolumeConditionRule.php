@@ -5,11 +5,11 @@ namespace craft\elements\conditions\assets;
 use Craft;
 use craft\base\conditions\BaseMultiSelectConditionRule;
 use craft\base\ElementInterface;
-use Craft\Cms\Support\Arr;
 use craft\elements\Asset;
 use craft\elements\conditions\ElementConditionRuleInterface;
 use craft\elements\db\AssetQuery;
 use craft\elements\db\ElementQueryInterface;
+use CraftCms\Cms\Support\Arr;
 
 /**
  * Asset volume condition rule.

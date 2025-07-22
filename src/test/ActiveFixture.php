@@ -8,9 +8,9 @@
 namespace craft\test;
 
 use Craft;
-use Craft\Cms\Support\Arr;
 use craft\elements\Entry;
 use craft\models\FieldLayout;
+use CraftCms\Cms\Support\Arr;
 use yii\base\InvalidArgumentException;
 use yii\db\ActiveRecord;
 use yii\db\TableSchema;

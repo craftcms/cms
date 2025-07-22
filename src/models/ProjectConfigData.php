@@ -8,10 +8,10 @@
 namespace craft\models;
 
 use Craft;
-use Craft\Cms\Support\Str;
 use craft\events\ConfigEvent;
 use craft\helpers\ProjectConfig as ProjectConfigHelper;
 use craft\services\ProjectConfig as ProjectConfigService;
+use CraftCms\Cms\Support\Str;
 
 /**
  * ProjectConfigData model class represents a modifiable instance of a project config data structure that can be modified

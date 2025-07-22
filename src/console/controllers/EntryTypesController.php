@@ -11,8 +11,6 @@ use Craft;
 use craft\base\ElementContainerFieldInterface;
 use craft\base\FieldInterface;
 use craft\base\FieldLayoutElement;
-use Craft\Cms\Support\Arr;
-use Craft\Cms\Support\Str;
 use craft\console\Controller;
 use craft\elements\Entry;
 use craft\helpers\Console;
@@ -20,6 +18,8 @@ use craft\helpers\FileHelper;
 use craft\models\EntryType;
 use craft\models\FieldLayoutTab;
 use craft\models\Section;
+use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Support\Str;
 use Illuminate\Support\Collection;
 use yii\console\ExitCode;
 

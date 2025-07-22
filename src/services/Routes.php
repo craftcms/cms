@@ -8,10 +8,10 @@
 namespace craft\services;
 
 use Craft;
-use Craft\Cms\Support\Arr;
-use Craft\Cms\Support\Str;
 use craft\events\DeleteSiteEvent;
 use craft\events\RouteEvent;
+use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Support\Str;
 use Illuminate\Support\Collection;
 use yii\base\Component;
 

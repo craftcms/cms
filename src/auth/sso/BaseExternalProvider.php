@@ -9,8 +9,6 @@ namespace craft\auth\sso;
 
 use Craft;
 use craft\auth\sso\mapper\UserAttributesMapper;
-use Craft\Cms\Support\Arr;
-use Craft\Cms\Support\Str;
 use craft\db\Query;
 use craft\db\Table;
 use craft\elements\User;
@@ -20,6 +18,8 @@ use craft\events\UserGroupsAssignEvent;
 use craft\helpers\Html;
 use craft\helpers\UrlHelper;
 use craft\services\Sso;
+use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Support\Str;
 
 /**
  * BaseExternalProvider provides a base implementation for external identity providers.

@@ -1,12 +1,12 @@
 <?php
 
-namespace Craft\Yii2Adapter;
+namespace CraftCms\Yii2Adapter;
 
-use Craft\Cms\User\Models\User;
 use craft\console\controllers\HelpController;
 use craft\helpers\App;
-use Craft\Yii2Adapter\Console\LegacyCraftCommand;
 use CraftCms\Aliases\Facades\Aliases;
+use CraftCms\Cms\User\Models\User;
+use CraftCms\Yii2Adapter\Console\LegacyCraftCommand;
 use Exception;
 use Illuminate\Console\Application as ConsoleApplication;
 use Illuminate\Support\Facades\Config;

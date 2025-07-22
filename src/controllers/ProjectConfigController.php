@@ -8,12 +8,12 @@
 namespace craft\controllers;
 
 use Craft;
-use Craft\Cms\Support\Str;
 use craft\filters\UtilityAccess;
 use craft\helpers\FileHelper;
 use craft\helpers\ProjectConfig;
 use craft\utilities\ProjectConfig as ProjectConfigUtility;
 use craft\web\Controller;
+use CraftCms\Cms\Support\Str;
 use Symfony\Component\Yaml\Yaml;
 use yii\base\Exception;
 use yii\base\Response;

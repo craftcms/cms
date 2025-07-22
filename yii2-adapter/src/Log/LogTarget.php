@@ -1,6 +1,6 @@
 <?php
 
-namespace Craft\Yii2Adapter\Log;
+namespace CraftCms\Yii2Adapter\Log;
 
 use Illuminate\Support\Facades\Log;
 use yii\helpers\VarDumper;

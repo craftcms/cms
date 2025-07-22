@@ -8,8 +8,6 @@
 namespace craft\console\controllers;
 
 use Craft;
-use Craft\Cms\Support\Arr;
-use Craft\Cms\Support\Str;
 use craft\config\DbConfig;
 use craft\console\Controller;
 use craft\db\Connection;
@@ -20,6 +18,8 @@ use craft\helpers\Console;
 use craft\helpers\FileHelper;
 use craft\migrations\CreateDbCacheTable;
 use craft\migrations\CreatePhpSessionTable;
+use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Support\Str;
 use m150207_210500_i18n_init;
 use PDOException;
 use Seld\CliPrompt\CliPrompt;

@@ -8,8 +8,6 @@
 namespace craft\queue;
 
 use Craft;
-use Craft\Cms\Support\Arr;
-use Craft\Cms\Support\Str;
 use craft\db\Connection;
 use craft\db\Table;
 use craft\errors\MutexException;
@@ -21,6 +19,8 @@ use craft\helpers\Queue as QueueHelper;
 use craft\helpers\UrlHelper;
 use craft\i18n\Translation;
 use craft\queue\jobs\Proxy;
+use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Support\Str;
 use DateTime;
 use yii\base\Exception;
 use yii\base\InvalidArgumentException;

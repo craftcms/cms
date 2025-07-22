@@ -8,10 +8,10 @@
 namespace craft\config;
 
 use Craft;
-use Craft\Cms\Support\Str;
 use craft\db\Connection;
 use craft\helpers\Db;
 use craft\services\Config;
+use CraftCms\Cms\Support\Str;
 use Illuminate\Support\Facades\Config as ConfigFacade;
 use yii\base\InvalidConfigException;
 

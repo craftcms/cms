@@ -14,14 +14,14 @@ use craft\base\ElementInterface;
 use craft\base\FieldInterface;
 use craft\base\PreviewableFieldInterface;
 use craft\base\ThumbableFieldInterface;
-use Craft\Cms\Support\Arr;
-use Craft\Cms\Support\Str;
 use craft\elements\conditions\users\UserCondition;
 use craft\elements\User;
 use craft\errors\FieldNotFoundException;
 use craft\helpers\Cp;
 use craft\helpers\Html;
 use craft\helpers\Inflector;
+use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Support\Str;
 
 /**
  * CustomField represents a custom field that can be included in field layouts.

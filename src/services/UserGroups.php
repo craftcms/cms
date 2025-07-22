@@ -8,7 +8,6 @@
 namespace craft\services;
 
 use Craft;
-use Craft\Cms\Support\Str;
 use craft\db\Query;
 use craft\db\Table;
 use craft\elements\User;
@@ -19,6 +18,7 @@ use craft\events\UserGroupEvent;
 use craft\helpers\Db;
 use craft\models\UserGroup;
 use craft\records\UserGroup as UserGroupRecord;
+use CraftCms\Cms\Support\Str;
 use yii\base\Component;
 
 /**

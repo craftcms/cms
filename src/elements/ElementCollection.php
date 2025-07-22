@@ -9,8 +9,8 @@ namespace craft\elements;
 
 use Craft;
 use craft\base\ElementInterface;
-use Craft\Cms\Support\Arr;
 use craft\helpers\ElementHelper;
+use CraftCms\Cms\Support\Arr;
 use Illuminate\Contracts\Support\Arrayable;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Enumerable;

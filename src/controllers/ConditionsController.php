@@ -10,10 +10,10 @@ namespace craft\controllers;
 use Craft;
 use craft\base\conditions\ConditionInterface;
 use craft\base\conditions\ConditionRuleInterface;
-use Craft\Cms\Support\Arr;
 use craft\helpers\Component;
 use craft\helpers\Json;
 use craft\web\Controller;
+use CraftCms\Cms\Support\Arr;
 use Illuminate\Support\Collection;
 
 /**

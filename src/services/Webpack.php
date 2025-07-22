@@ -8,11 +8,11 @@
 namespace craft\services;
 
 use Craft;
-use Craft\Cms\Support\Arr;
-use Craft\Cms\Support\Str;
 use craft\helpers\App;
 use craft\helpers\FileHelper;
 use craft\helpers\Session;
+use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Support\Str;
 use Exception;
 use GuzzleHttp\Exception\GuzzleException;
 use ReflectionClass;

@@ -8,9 +8,9 @@
 namespace craft\web;
 
 use Craft;
-use Craft\Cms\Support\Arr;
-use Craft\Cms\Support\Str;
 use craft\validators\HandleValidator;
+use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Support\Str;
 
 /**
  * @inheritdoc

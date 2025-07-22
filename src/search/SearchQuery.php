@@ -7,7 +7,7 @@
 
 namespace craft\search;
 
-use Craft\Cms\Support\Str;
+use CraftCms\Cms\Support\Str;
 
 /**
  * Search Query class.

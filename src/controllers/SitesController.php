@@ -8,7 +8,6 @@
 namespace craft\controllers;
 
 use Craft;
-use Craft\Cms\Support\Str;
 use craft\helpers\Cp;
 use craft\helpers\Json;
 use craft\helpers\UrlHelper;
@@ -16,6 +15,7 @@ use craft\models\Site;
 use craft\models\SiteGroup;
 use craft\web\assets\sites\SitesAsset;
 use craft\web\Controller;
+use CraftCms\Cms\Support\Str;
 use yii\web\BadRequestHttpException;
 use yii\web\ForbiddenHttpException;
 use yii\web\NotFoundHttpException;

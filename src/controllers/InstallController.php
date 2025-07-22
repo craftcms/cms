@@ -8,9 +8,6 @@
 namespace craft\controllers;
 
 use Craft;
-use Craft\Cms\Migrations\Install;
-use Craft\Cms\Support\Arr;
-use Craft\Cms\Support\Str;
 use craft\config\DbConfig;
 use craft\db\Connection;
 use craft\elements\User;
@@ -23,6 +20,9 @@ use craft\markdown\Markdown;
 use craft\models\Site;
 use craft\web\assets\installer\InstallerAsset;
 use craft\web\Controller;
+use CraftCms\Cms\Migrations\Install;
+use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Support\Str;
 use PDOException;
 use Throwable;
 use yii\base\Exception;
@@ -143,7 +143,7 @@ class InstallController extends Controller
 
         if (empty($errors)) {
             // Test the connection
-            /** @var \Craft\Yii2Adapter\DatabaseConnection $db */
+            /** @var \CraftCms\Yii2Adapter\DatabaseConnection $db */
             $db = Craft::createObject(App::dbConfig($dbConfig));
 
             try {

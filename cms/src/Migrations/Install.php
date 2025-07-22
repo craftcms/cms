@@ -9,11 +9,10 @@
  * @license https://craftcms.github.io/license/
  */
 
-namespace Craft\Cms\Migrations;
+namespace CraftCms\Cms\Migrations;
 
 use Craft;
 use craft\base\Field;
-use Craft\Cms\Support\Str;
 use craft\db\Table;
 use craft\elements\Asset;
 use craft\elements\Entry;
@@ -31,6 +30,7 @@ use craft\models\Section;
 use craft\models\Site;
 use craft\services\ProjectConfig;
 use craft\web\Response;
+use CraftCms\Cms\Support\Str;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;

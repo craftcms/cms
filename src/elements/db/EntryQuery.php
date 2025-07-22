@@ -8,7 +8,6 @@
 namespace craft\elements\db;
 
 use Craft;
-use Craft\Cms\Support\Arr;
 use craft\db\Query;
 use craft\db\QueryAbortedException;
 use craft\db\Table;
@@ -18,6 +17,7 @@ use craft\helpers\Db;
 use craft\models\EntryType;
 use craft\models\Section;
 use craft\models\UserGroup;
+use CraftCms\Cms\Support\Arr;
 use DateTime;
 use Illuminate\Support\Collection;
 use yii\base\InvalidConfigException;

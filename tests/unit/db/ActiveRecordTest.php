@@ -8,11 +8,11 @@
 namespace crafttests\unit\db;
 
 use Codeception\Test\Unit;
-use Craft\Cms\Support\Str;
 use craft\db\ActiveRecord;
 use craft\records\Session;
 use craft\records\Volume;
 use craft\test\TestCase;
+use CraftCms\Cms\Support\Str;
 use DateTime;
 use DateTimeZone;
 use Exception;

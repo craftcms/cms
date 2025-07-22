@@ -7,12 +7,12 @@
 
 namespace craft\console\controllers\utils;
 
-use Craft\Cms\Support\Str;
 use craft\console\Controller;
 use craft\db\Query;
 use craft\db\Table;
 use craft\helpers\Console;
 use craft\helpers\Db;
+use CraftCms\Cms\Support\Str;
 use yii\console\ExitCode;
 
 /**

@@ -9,8 +9,6 @@ namespace craft\test;
 
 use Codeception\PHPUnit\TestCase as CodeceptionTestCase;
 use Craft;
-use Craft\Cms\Migrations\Install;
-use Craft\Cms\Support\Arr;
 use craft\console\Application as ConsoleApplication;
 use craft\db\Connection;
 use craft\db\Migration;
@@ -65,6 +63,8 @@ use craft\web\Response;
 use craft\web\Session;
 use craft\web\UploadedFile;
 use craft\web\User;
+use CraftCms\Cms\Migrations\Install;
+use CraftCms\Cms\Support\Arr;
 use Illuminate\Support\Collection;
 use PHPUnit\Framework\MockObject\MockObject;
 use yii\base\ErrorException;

@@ -7,11 +7,11 @@
 
 namespace craft\console;
 
-use Craft\Cms\Support\Str;
 use craft\events\DefineConsoleActionsEvent;
 use craft\helpers\Console;
 use craft\helpers\FileHelper;
 use craft\helpers\Json;
+use CraftCms\Cms\Support\Str;
 use ReflectionFunction;
 use ReflectionFunctionAbstract;
 use ReflectionMethod;

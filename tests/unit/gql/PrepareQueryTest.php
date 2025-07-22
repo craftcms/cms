@@ -8,7 +8,6 @@
 namespace crafttests\unit\gql;
 
 use Craft;
-use Craft\Cms\Support\Str;
 use craft\db\Table;
 use craft\enums\PropagationMethod;
 use craft\gql\resolvers\elements\Asset as AssetResolver;
@@ -30,6 +29,7 @@ use craft\records\UserGroup;
 use craft\records\Volume;
 use craft\services\Entries;
 use craft\test\TestCase;
+use CraftCms\Cms\Support\Str;
 use UnitTester;
 
 class PrepareQueryTest extends TestCase

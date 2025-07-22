@@ -7,9 +7,9 @@
  * @license https://craftcms.github.io/license/
  */
 
-namespace Craft\Cms\Database\Factories;
+namespace CraftCms\Cms\Database\Factories;
 
-use Craft\Cms\User\Models\User;
+use CraftCms\Cms\User\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 class UserFactory extends Factory

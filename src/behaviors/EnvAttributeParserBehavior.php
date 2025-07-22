@@ -8,8 +8,8 @@
 namespace craft\behaviors;
 
 use Craft;
-use Craft\Cms\Support\Str;
 use craft\helpers\App;
+use CraftCms\Cms\Support\Str;
 use yii\base\Behavior;
 use yii\base\Model;
 use yii\validators\UrlValidator;

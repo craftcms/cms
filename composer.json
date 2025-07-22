@@ -114,16 +114,16 @@
         "src/",
         "yii2-adapter/legacy/"
       ],
-      "Craft\\Cms\\": "cms/src/",
-      "Craft\\Yii2Adapter\\": "yii2-adapter/src/",
+      "CraftCms\\Cms\\": "cms/src/",
+      "CraftCms\\Yii2Adapter\\": "yii2-adapter/src/",
       "yii2tech\\ar\\softdelete\\": "lib/ar-softdelete/src/"
     }
   },
   "autoload-dev": {
     "psr-4": {
-      "Craft\\Cms\\Tests\\": "cms/tests/",
-      "Craft\\Cms\\Database\\": "cms/database/",
-      "Craft\\Yii2Adapter\\Tests\\": "yii2-adapter/tests/",
+      "CraftCms\\Cms\\Tests\\": "cms/tests/",
+      "CraftCms\\Cms\\Database\\": "cms/database/",
+      "CraftCms\\Yii2Adapter\\Tests\\": "yii2-adapter/tests/",
       "crafttests\\": "tests/"
     }
   },
@@ -134,7 +134,8 @@
     "codecept-build": "codecept build",
     "phpstan": "phpstan --memory-limit=1G",
     "rector": "rector",
-    "tests-cms": "./vendor/bin/pest --configuration ./cms/phpunit.xml.dist --test-directory ./cms/tests"
+    "tests-cms": "./vendor/bin/pest --configuration ./cms/phpunit.xml.dist --test-directory ./cms/tests",
+    "tests-adapter": "./vendor/bin/pest --configuration ./yii2-adapter/phpunit.xml.dist --test-directory ./yii2-adapter/tests"
   },
   "config": {
     "sort-packages": true,
@@ -151,8 +152,8 @@
   "extra": {
     "laravel": {
       "providers": [
-        "Craft\\Cms\\Providers\\CraftServiceProvider",
-        "Craft\\Yii2Adapter\\Yii2ServiceProvider"
+        "CraftCms\\Cms\\Providers\\CraftServiceProvider",
+        "CraftCms\\Yii2Adapter\\Yii2ServiceProvider"
       ]
     }
   },

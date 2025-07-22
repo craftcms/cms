@@ -7,9 +7,9 @@
  * @license https://craftcms.github.io/license/
  */
 
-namespace Craft\Cms\User\Models;
+namespace CraftCms\Cms\User\Models;
 
-use Craft\Cms\Support\BaseModel;
+use CraftCms\Cms\Support\BaseModel;
 use Illuminate\Auth\Authenticatable;
 use Illuminate\Auth\MustVerifyEmail;
 use Illuminate\Auth\Passwords\CanResetPassword;

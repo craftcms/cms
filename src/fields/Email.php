@@ -13,12 +13,12 @@ use craft\base\ElementInterface;
 use craft\base\Field;
 use craft\base\InlineEditableFieldInterface;
 use craft\base\MergeableFieldInterface;
-use Craft\Cms\Support\Str;
 use craft\elements\Entry;
 use craft\fields\conditions\TextFieldConditionRule;
 use craft\helpers\App;
 use craft\helpers\Cp;
 use craft\helpers\Html;
+use CraftCms\Cms\Support\Str;
 use yii\db\Schema;
 
 /**

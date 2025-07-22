@@ -3,10 +3,10 @@
 namespace crafttests\unit\helpers;
 
 use Codeception\Test\Unit;
-use Craft\Cms\Support\Arr;
 use craft\errors\ImageTransformException;
 use craft\helpers\ImageTransforms;
 use craft\models\ImageTransform;
+use CraftCms\Cms\Support\Arr;
 
 class ImageTransformsTest extends Unit
 {

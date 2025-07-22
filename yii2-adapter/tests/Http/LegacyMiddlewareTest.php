@@ -1,6 +1,6 @@
 <?php
 
-use Craft\Yii2Adapter\Http\LegacyMiddleware;
+use CraftCms\Yii2Adapter\Http\LegacyMiddleware;
 use Illuminate\Foundation\Http\Middleware\ConvertEmptyStringsToNull;
 use Illuminate\Http\Request;
 

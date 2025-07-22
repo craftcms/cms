@@ -14,10 +14,10 @@ use craft\base\Field;
 use craft\base\InlineEditableFieldInterface;
 use craft\base\MergeableFieldInterface;
 use craft\base\SortableFieldInterface;
-use Craft\Cms\Support\Str;
 use craft\elements\Entry;
 use craft\fields\conditions\TextFieldConditionRule;
 use craft\helpers\Html;
+use CraftCms\Cms\Support\Str;
 
 /**
  * PlainText represents a Plain Text field.

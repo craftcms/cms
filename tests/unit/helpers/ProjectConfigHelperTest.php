@@ -8,12 +8,12 @@
 namespace crafttests\unit\helpers;
 
 use Craft;
-use Craft\Cms\Support\Str;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\FileHelper;
 use craft\helpers\ProjectConfig as ProjectConfigHelper;
 use craft\services\ProjectConfig;
 use craft\test\TestCase;
+use CraftCms\Cms\Support\Str;
 use yii\base\InvalidArgumentException;
 
 class ProjectConfigHelperTest extends TestCase

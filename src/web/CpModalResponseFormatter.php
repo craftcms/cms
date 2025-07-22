@@ -8,9 +8,9 @@
 namespace craft\web;
 
 use Craft;
-use Craft\Cms\Support\Str;
 use craft\helpers\Html;
 use craft\web\assets\htmx\HtmxAsset;
+use CraftCms\Cms\Support\Str;
 use yii\base\Component;
 use yii\base\InvalidConfigException;
 use yii\web\BadRequestHttpException;

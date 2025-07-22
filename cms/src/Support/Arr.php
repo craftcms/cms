@@ -1,6 +1,6 @@
 <?php
 
-namespace Craft\Cms\Support;
+namespace CraftCms\Cms\Support;
 
 use Craft;
 use DateTimeInterface;

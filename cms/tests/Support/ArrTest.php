@@ -1,6 +1,6 @@
 <?php
 
-use Craft\Cms\Support\Arr;
+use CraftCms\Cms\Support\Arr;
 
 test('toArray', function (array $expected, mixed $object) {
     expect(Arr::toArray($object))->toBe($expected);

@@ -8,8 +8,6 @@
 namespace craft\services;
 
 use Craft;
-use Craft\Cms\Support\Arr;
-use Craft\Cms\Support\Str;
 use craft\db\Query;
 use craft\db\Table;
 use craft\elements\Address;
@@ -26,6 +24,8 @@ use craft\helpers\Json;
 use craft\helpers\ProjectConfig as ProjectConfigHelper;
 use craft\models\ProjectConfigData;
 use craft\models\ReadOnlyProjectConfigData;
+use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Support\Str;
 use Symfony\Component\Yaml\Yaml;
 use Throwable;
 use yii\base\Application;

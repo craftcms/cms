@@ -8,8 +8,6 @@
 namespace craft\console\controllers;
 
 use Craft;
-use Craft\Cms\Support\Arr;
-use Craft\Cms\Support\Str;
 use craft\console\Controller;
 use craft\elements\Entry;
 use craft\models\CategoryGroup_SiteSettings;
@@ -18,6 +16,8 @@ use craft\models\FieldLayout;
 use craft\models\Section;
 use craft\models\Section_SiteSettings;
 use craft\models\Site;
+use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Support\Str;
 use Illuminate\Support\Collection;
 use yii\base\InvalidArgumentException;
 use yii\base\InvalidConfigException;

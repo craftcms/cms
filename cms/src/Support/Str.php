@@ -1,6 +1,6 @@
 <?php
 
-namespace Craft\Cms\Support;
+namespace CraftCms\Cms\Support;
 
 use BackedEnum;
 use Craft;

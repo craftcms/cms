@@ -8,7 +8,6 @@
 namespace craft\services;
 
 use Craft;
-use Craft\Cms\Support\Str;
 use craft\db\Query;
 use craft\db\Table;
 use craft\elements\Asset;
@@ -40,6 +39,7 @@ use craft\models\UserGroup;
 use craft\models\Volume;
 use craft\records\User as UserRecord;
 use craft\web\Request;
+use CraftCms\Cms\Support\Str;
 use DateTime;
 use DateTimeZone;
 use Throwable;

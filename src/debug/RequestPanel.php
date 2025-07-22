@@ -8,7 +8,7 @@
 namespace craft\debug;
 
 use Craft;
-use Craft\Cms\Support\Str;
+use CraftCms\Cms\Support\Str;
 
 /**
  * Debugger panel that collects and displays request data.
