@@ -8,7 +8,6 @@
 namespace crafttests\unit\services;
 
 use Craft;
-use Craft\Cms\Support\Str;
 use craft\db\Query;
 use craft\db\Table;
 use craft\elements\User;
@@ -19,6 +18,7 @@ use craft\mail\Message;
 use craft\services\Users;
 use craft\test\EventItem;
 use craft\test\TestCase;
+use CraftCms\Cms\Support\Str;
 use crafttests\fixtures\UserGroupsFixture;
 use DateTime;
 use DateTimeZone;

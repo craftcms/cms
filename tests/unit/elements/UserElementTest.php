@@ -8,7 +8,6 @@
 namespace crafttests\unit\elements;
 
 use Craft;
-use Craft\Cms\Support\Str;
 use craft\db\Query;
 use craft\db\Table;
 use craft\elements\User;
@@ -16,6 +15,7 @@ use craft\errors\InvalidElementException;
 use craft\helpers\Session;
 use craft\services\Users;
 use craft\test\TestCase;
+use CraftCms\Cms\Support\Str;
 use DateInterval;
 use DateTime;
 use DateTimeZone;

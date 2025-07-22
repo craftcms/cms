@@ -1,6 +1,6 @@
 <?php
 
-namespace Craft\Yii2Adapter\Web;
+namespace CraftCms\Yii2Adapter\Web;
 
 use Illuminate\Auth\AuthManager;
 use Illuminate\Contracts\Auth\Authenticatable;

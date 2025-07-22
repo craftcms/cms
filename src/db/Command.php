@@ -8,8 +8,8 @@
 namespace craft\db;
 
 use Craft;
-use Craft\Cms\Support\Str;
 use craft\helpers\Db;
+use CraftCms\Cms\Support\Str;
 use DateTime;
 use yii\db\Query as YiiQuery;
 

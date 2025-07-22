@@ -10,12 +10,12 @@ namespace craft\web;
 use Craft;
 use craft\base\Element;
 use craft\base\ElementInterface;
-use Craft\Cms\Support\Arr;
 use craft\enums\CmsEdition;
 use craft\events\RegisterUrlRulesEvent;
 use craft\helpers\App;
 use craft\helpers\UrlHelper;
 use craft\web\UrlRule as CraftUrlRule;
+use CraftCms\Cms\Support\Arr;
 use yii\web\UrlRule as YiiUrlRule;
 
 /**

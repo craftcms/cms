@@ -9,8 +9,8 @@ namespace craft\test\mockclasses\elements;
 
 use Craft;
 use craft\base\ElementInterface;
-use Craft\Cms\Support\Str;
 use craft\elements\db\ElementQuery;
+use CraftCms\Cms\Support\Str;
 
 /**
  * MockElementQuery is used to mimic element queries and mock their results

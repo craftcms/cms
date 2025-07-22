@@ -1,6 +1,6 @@
 <?php
 
-namespace Craft\Cms\Migrations;
+namespace CraftCms\Cms\Migrations;
 
 use craft\db\Table;
 use Illuminate\Database\Migrations\Migration as LaravelMigration;

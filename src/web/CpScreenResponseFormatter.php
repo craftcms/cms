@@ -8,10 +8,10 @@
 namespace craft\web;
 
 use Craft;
-use Craft\Cms\Support\Str;
 use craft\helpers\Cp;
 use craft\helpers\Html;
 use craft\helpers\UrlHelper;
+use CraftCms\Cms\Support\Str;
 use yii\base\Component;
 use yii\base\InvalidConfigException;
 use yii\web\BadRequestHttpException;

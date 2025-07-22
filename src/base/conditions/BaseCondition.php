@@ -4,12 +4,12 @@ namespace craft\base\conditions;
 
 use Craft;
 use craft\base\Component;
-use Craft\Cms\Support\Arr;
 use craft\events\RegisterConditionRulesEvent;
 use craft\helpers\Html;
 use craft\helpers\Json;
 use craft\helpers\UrlHelper;
 use craft\web\assets\conditionbuilder\ConditionBuilderAsset;
+use CraftCms\Cms\Support\Arr;
 use Illuminate\Support\Collection;
 use Throwable;
 use yii\base\InvalidArgumentException;

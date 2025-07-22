@@ -13,13 +13,13 @@ use craft\base\ElementInterface;
 use craft\base\Field;
 use craft\base\InlineEditableFieldInterface;
 use craft\base\MergeableFieldInterface;
-use Craft\Cms\Support\Arr;
-use Craft\Cms\Support\Str;
 use craft\elements\Entry;
 use craft\fields\data\ColorData;
 use craft\helpers\Cp;
 use craft\helpers\Html;
 use craft\validators\ColorValidator;
+use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Support\Str;
 use Illuminate\Support\Collection;
 use yii\db\Schema;
 

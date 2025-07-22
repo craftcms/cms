@@ -8,12 +8,12 @@
 namespace craft\helpers;
 
 use Craft;
-use Craft\Cms\Support\Arr;
-use Craft\Cms\Support\Str;
 use craft\elements\Asset;
 use craft\errors\InvalidHtmlTagException;
 use craft\image\SvgAllowedAttributes;
 use craft\web\View;
+use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Support\Str;
 use DOMElement;
 use enshrined\svgSanitize\Sanitizer;
 use Illuminate\Support\Collection;

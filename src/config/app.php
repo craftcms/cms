@@ -1,6 +1,6 @@
 <?php
 
-use Craft\Yii2Adapter\Log\LogTarget;
+use CraftCms\Yii2Adapter\Log\LogTarget;
 
 return [
     'id' => 'CraftCMS',
@@ -16,7 +16,7 @@ return [
         'addresses' => [
             'class' => craft\services\Addresses::class,
         ],
-        'announcements' => \Craft\Cms\Announcement\Announcements::class,
+        'announcements' => \CraftCms\Cms\Announcement\Announcements::class,
         'api' => [
             'class' => craft\services\Api::class,
         ],
@@ -175,7 +175,7 @@ return [
         'migrator' => [
             'class' => craft\db\MigrationManager::class,
             'track' => craft\db\MigrationManager::TRACK_CRAFT,
-            'migrationNamespace' => 'Craft\Cms\Migrations',
+            'migrationNamespace' => 'CraftCms\Cms\Migrations',
             'migrationPath' => '@package/Migrations',
         ],
         'sites' => [
@@ -185,7 +185,7 @@ return [
             'class' => craft\services\Sso::class,
         ],
         'i18n' => [
-            'class' => \Craft\Yii2Adapter\Localization::class,
+            'class' => \CraftCms\Yii2Adapter\Localization::class,
             'laravelCategories' => [
                 'auth',
                 'validation',

@@ -9,7 +9,7 @@ namespace craft\fieldlayoutelements;
 
 use Craft;
 use craft\base\ElementInterface;
-use Craft\Cms\Support\Str;
+use CraftCms\Cms\Support\Str;
 
 /**
  * TitleField represents a Title field that can be included in field layouts.

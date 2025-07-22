@@ -8,12 +8,12 @@
 namespace crafttests\unit\gql;
 
 use Craft;
-use Craft\Cms\Support\Str;
 use craft\elements\Asset;
 use craft\elements\db\AssetQuery;
 use craft\gql\resolvers\elements\Asset as AssetResolver;
 use craft\models\GqlSchema;
 use craft\test\TestCase;
+use CraftCms\Cms\Support\Str;
 use GraphQL\Type\Definition\ResolveInfo;
 use UnitTester;
 

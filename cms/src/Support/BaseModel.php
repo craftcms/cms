@@ -7,7 +7,7 @@
  * @license https://craftcms.github.io/license/
  */
 
-namespace Craft\Cms\Support;
+namespace CraftCms\Cms\Support;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;

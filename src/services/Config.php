@@ -8,14 +8,14 @@
 namespace craft\services;
 
 use Craft;
-use Craft\Cms\Support\Arr;
-use Craft\Cms\Support\Str;
 use craft\config\BaseConfig;
 use craft\config\DbConfig;
 use craft\config\GeneralConfig;
 use craft\helpers\App;
 use craft\helpers\FileHelper;
 use craft\helpers\Typecast;
+use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Support\Str;
 use yii\base\Component;
 use yii\base\Exception;
 use yii\base\InvalidArgumentException;

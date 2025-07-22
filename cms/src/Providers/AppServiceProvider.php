@@ -1,11 +1,11 @@
 <?php
 
-namespace Craft\Cms\Providers;
+namespace CraftCms\Cms\Providers;
 
-use Craft\Cms\Http\Middleware\ExtractNamespace;
-use Craft\Cms\Http\Middleware\RequireCpRequest;
 use craft\helpers\FileHelper;
 use CraftCms\Aliases\Facades\Aliases;
+use CraftCms\Cms\Http\Middleware\ExtractNamespace;
+use CraftCms\Cms\Http\Middleware\RequireCpRequest;
 use Illuminate\Foundation\Console\AboutCommand;
 use Illuminate\Routing\Router;
 use Illuminate\Support\ServiceProvider;

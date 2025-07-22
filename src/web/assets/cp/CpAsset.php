@@ -10,8 +10,6 @@ namespace craft\web\assets\cp;
 use Craft;
 use craft\base\ElementInterface;
 use craft\base\FieldInterface;
-use Craft\Cms\Announcement\Announcements;
-use Craft\Cms\Support\Str;
 use craft\config\GeneralConfig;
 use craft\elements\User;
 use craft\enums\CmsEdition;
@@ -45,6 +43,8 @@ use craft\web\assets\theme\ThemeAsset;
 use craft\web\assets\velocity\VelocityAsset;
 use craft\web\assets\xregexp\XregexpAsset;
 use craft\web\View;
+use CraftCms\Cms\Announcement\Announcements;
+use CraftCms\Cms\Support\Str;
 use yii\web\JqueryAsset;
 
 /**

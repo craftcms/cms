@@ -9,7 +9,6 @@ namespace craft\services;
 
 use Craft;
 use craft\base\MemoizableArray;
-use Craft\Cms\Support\Str;
 use craft\db\Table;
 use craft\elements\Tag;
 use craft\errors\TagGroupNotFoundException;
@@ -20,6 +19,7 @@ use craft\helpers\ProjectConfig as ProjectConfigHelper;
 use craft\models\FieldLayout;
 use craft\models\TagGroup;
 use craft\records\TagGroup as TagGroupRecord;
+use CraftCms\Cms\Support\Str;
 use DateTime;
 use Throwable;
 use yii\base\Component;

@@ -10,8 +10,6 @@ namespace craft\helpers;
 use Craft;
 use craft\base\Image as BaseImage;
 use craft\base\LocalFsInterface;
-use Craft\Cms\Support\Arr;
-use Craft\Cms\Support\Str;
 use craft\elements\Asset;
 use craft\errors\AssetException;
 use craft\errors\AssetOperationException;
@@ -22,6 +20,8 @@ use craft\errors\ImageTransformException;
 use craft\image\Raster;
 use craft\models\ImageTransform;
 use craft\validators\ColorValidator;
+use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Support\Str;
 use Imagine\Image\Format;
 use yii\base\InvalidArgumentException;
 

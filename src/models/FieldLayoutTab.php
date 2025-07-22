@@ -11,14 +11,14 @@ use Craft;
 use craft\base\ElementInterface;
 use craft\base\FieldLayoutComponent;
 use craft\base\FieldLayoutElement;
-use Craft\Cms\Support\Arr;
-use Craft\Cms\Support\Str;
 use craft\errors\FieldNotFoundException;
 use craft\fieldlayoutelements\BaseField;
 use craft\fieldlayoutelements\CustomField;
 use craft\helpers\Cp;
 use craft\helpers\Html;
 use craft\helpers\Json;
+use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Support\Str;
 use yii\base\InvalidArgumentException;
 use yii\base\InvalidConfigException;
 

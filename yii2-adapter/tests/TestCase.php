@@ -1,10 +1,10 @@
 <?php
 
-namespace Craft\Yii2Adapter\Tests;
+namespace CraftCms\Yii2Adapter\Tests;
 
-use Craft\Cms\Providers\CraftServiceProvider;
-use Craft\Yii2Adapter\Yii2ServiceProvider;
 use CraftCms\Aliases\AliasesServiceProvider;
+use CraftCms\Cms\Providers\CraftServiceProvider;
+use CraftCms\Yii2Adapter\Yii2ServiceProvider;
 use Orchestra\Testbench\TestCase as Orchestra;
 
 class TestCase extends Orchestra

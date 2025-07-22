@@ -8,9 +8,9 @@
 namespace craft\models;
 
 use craft\base\Model;
-use Craft\Cms\Support\Str;
 use craft\records\GqlSchema as GqlSchemaRecord;
 use craft\validators\UniqueValidator;
+use CraftCms\Cms\Support\Str;
 
 /**
  * GraphQL schema class

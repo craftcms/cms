@@ -8,8 +8,8 @@
 namespace craft\helpers;
 
 use Craft;
-use Craft\Cms\Support\Arr;
-use Craft\Cms\Support\Str;
+use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Support\Str;
 use Normalizer;
 use Stringy\Stringy as BaseStringy;
 use voku\helper\ASCII;
@@ -23,7 +23,7 @@ use const ENT_COMPAT;
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
- * @deprecated in 6.0.0. [[\Craft\Cms\Support\Str]] should be used instead.
+ * @deprecated in 6.0.0. [[\CraftCms\Cms\Support\Str]] should be used instead.
  */
 class StringHelper extends \yii\helpers\StringHelper
 {

@@ -1,6 +1,6 @@
 <?php
 
-namespace Craft\Cms\Providers;
+namespace CraftCms\Cms\Providers;
 
 use CraftCms\Aliases\Facades\Aliases;
 use Illuminate\Support\ServiceProvider;

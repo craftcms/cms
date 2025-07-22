@@ -7,7 +7,7 @@
 
 namespace craft\web\twig\nodes;
 
-use Craft\Cms\Support\Str;
+use CraftCms\Cms\Support\Str;
 use Twig\Compiler;
 use Twig\Node\Expression\AbstractExpression;
 use Twig\Node\Node;

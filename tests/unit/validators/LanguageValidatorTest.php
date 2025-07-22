@@ -7,10 +7,10 @@
 
 namespace crafttests\unit\validators;
 
-use Craft\Cms\Support\Arr;
 use craft\test\mockclasses\models\ExampleModel;
 use craft\test\TestCase;
 use craft\validators\LanguageValidator;
+use CraftCms\Cms\Support\Arr;
 use UnitTester;
 use yii\base\NotSupportedException;
 

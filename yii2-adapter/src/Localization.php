@@ -7,7 +7,7 @@
  * @license [New BSD License](http://www.opensource.org/licenses/bsd-license.php)
  */
 
-namespace Craft\Yii2Adapter;
+namespace CraftCms\Yii2Adapter;
 
 use craft\i18n\I18N;
 use Illuminate\Support\Str;

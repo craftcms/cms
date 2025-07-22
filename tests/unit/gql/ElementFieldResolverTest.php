@@ -9,7 +9,6 @@ namespace crafttests\unit\gql;
 
 use Craft;
 use craft\base\Fs;
-use Craft\Cms\Support\Str;
 use craft\elements\Asset;
 use craft\elements\Asset as AssetElement;
 use craft\elements\Category as CategoryElement;
@@ -36,6 +35,7 @@ use craft\models\UserGroup;
 use craft\models\Volume;
 use craft\services\ImageTransforms;
 use craft\test\TestCase;
+use CraftCms\Cms\Support\Str;
 use DateTime;
 use GraphQL\Type\Definition\ResolveInfo;
 use UnitTester;

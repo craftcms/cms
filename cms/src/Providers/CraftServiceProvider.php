@@ -1,8 +1,8 @@
 <?php
 
-namespace Craft\Cms\Providers;
+namespace CraftCms\Cms\Providers;
 
-use Craft\Cms\Console\ConsoleServiceProvider;
+use CraftCms\Cms\Console\ConsoleServiceProvider;
 use Illuminate\Support\AggregateServiceProvider;
 
 class CraftServiceProvider extends AggregateServiceProvider

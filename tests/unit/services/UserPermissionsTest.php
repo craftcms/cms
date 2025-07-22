@@ -8,7 +8,6 @@
 namespace crafttests\unit\services;
 
 use Craft;
-use Craft\Cms\Support\Arr;
 use craft\elements\User;
 use craft\enums\CmsEdition;
 use craft\errors\WrongEditionException;
@@ -17,6 +16,7 @@ use craft\events\UserGroupPermissionsEvent;
 use craft\events\UserPermissionsEvent;
 use craft\services\UserPermissions;
 use craft\test\TestCase;
+use CraftCms\Cms\Support\Arr;
 use crafttests\fixtures\GlobalSetFixture;
 use crafttests\fixtures\SectionsFixture;
 use crafttests\fixtures\SitesFixture;

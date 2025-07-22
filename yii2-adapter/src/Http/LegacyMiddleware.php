@@ -7,11 +7,11 @@
  * @license [New BSD License](http://www.opensource.org/licenses/bsd-license.php)
  */
 
-namespace Craft\Yii2Adapter\Http;
+namespace CraftCms\Yii2Adapter\Http;
 
 use Closure;
 use Craft;
-use Craft\Yii2Adapter\Web\DummyResponse;
+use CraftCms\Yii2Adapter\Web\DummyResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Symfony\Component\HttpKernel\Exception\HttpException;
@@ -81,7 +81,7 @@ class LegacyMiddleware
      * @return \Illuminate\Http\Response HTTP response instance.
      *
      *@see DummyResponse
-     * @see \Craft\Yii2Adapter\Web\Response
+     * @see \CraftCms\Yii2Adapter\Web\Response
      */
     protected function createResponse(): Response
     {
@@ -95,7 +95,7 @@ class LegacyMiddleware
 
         $this->cleanup();
 
-        if ($yiiResponse instanceof Craft\Yii2Adapter\Web\Response) {
+        if ($yiiResponse instanceof \CraftCms\Yii2Adapter\Web\Response) {
             return $yiiResponse->getIlluminateResponse(true);
         }
 

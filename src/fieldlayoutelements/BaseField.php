@@ -10,11 +10,11 @@ namespace craft\fieldlayoutelements;
 use Craft;
 use craft\base\ElementInterface;
 use craft\base\FieldLayoutElement;
-use Craft\Cms\Support\Arr;
-use Craft\Cms\Support\Str;
 use craft\helpers\Cp;
 use craft\helpers\ElementHelper;
 use craft\helpers\Html;
+use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Support\Str;
 
 /**
  * BaseField is the base class for native and custom fields that can be included in field layouts.

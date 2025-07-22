@@ -16,7 +16,7 @@ $app = require_once __DIR__.'/bootstrap/app.php';
 // Rebind console kernel to Craft's
 $app->singleton(
     \Illuminate\Contracts\Console\Kernel::class,
-    \Craft\Cms\Console\Kernel::class,
+    \CraftCms\Cms\Console\Kernel::class,
 );
 
 $status = $app->handleCommand(new ArgvInput);

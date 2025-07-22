@@ -1,8 +1,8 @@
 <?php
 
-namespace Craft\Cms\Console;
+namespace CraftCms\Cms\Console;
 
-use Craft\Yii2Adapter\Console\LegacyCraftCommand;
+use CraftCms\Yii2Adapter\Console\LegacyCraftCommand;
 use Illuminate\Console\Command;
 use Symfony\Component\Console\Command\Command as SymfonyCommand;
 

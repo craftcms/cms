@@ -9,13 +9,13 @@ namespace craft\console\controllers;
 
 use Craft;
 use craft\base\PluginInterface;
-use Craft\Cms\Support\Arr;
 use craft\console\ControllerTrait;
 use craft\db\MigrationManager;
 use craft\errors\InvalidPluginException;
 use craft\errors\MigrateException;
 use craft\events\RegisterMigratorEvent;
 use craft\helpers\FileHelper;
+use CraftCms\Cms\Support\Arr;
 use yii\base\ErrorException;
 use yii\base\InvalidArgumentException;
 use yii\base\InvalidConfigException;

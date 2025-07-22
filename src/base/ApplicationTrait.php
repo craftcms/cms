@@ -8,7 +8,6 @@
 namespace craft\base;
 
 use Craft;
-use Craft\Cms\Announcement\Announcements;
 use craft\console\Application as ConsoleApplication;
 use craft\console\Request as ConsoleRequest;
 use craft\db\Connection;
@@ -111,6 +110,7 @@ use craft\web\Request as WebRequest;
 use craft\web\UrlManager;
 use craft\web\User as UserSession;
 use craft\web\View;
+use CraftCms\Cms\Announcement\Announcements;
 use Illuminate\Support\Collection;
 use Symfony\Component\VarDumper\Caster\ReflectionCaster;
 use Symfony\Component\VarDumper\Cloner\VarCloner;

@@ -8,9 +8,9 @@
 namespace craft\console\controllers\utils;
 
 use Craft;
-use Craft\Cms\Support\Str;
 use craft\console\Controller;
 use craft\helpers\Console;
+use CraftCms\Cms\Support\Str;
 use yii\console\ExitCode;
 
 /**

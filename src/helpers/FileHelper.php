@@ -8,9 +8,9 @@
 namespace craft\helpers;
 
 use Craft;
-use Craft\Cms\Support\Str;
 use craft\errors\MutexException;
 use craft\errors\SiteNotFoundException;
+use CraftCms\Cms\Support\Str;
 use FilesystemIterator;
 use RecursiveDirectoryIterator;
 use RecursiveIteratorIterator;

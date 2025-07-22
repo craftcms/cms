@@ -13,8 +13,6 @@ use craft\base\CpEditable;
 use craft\base\FieldLayoutProviderInterface;
 use craft\base\Model;
 use craft\behaviors\FieldLayoutBehavior;
-use Craft\Cms\Support\Arr;
-use Craft\Cms\Support\Str;
 use craft\db\Table;
 use craft\elements\Category;
 use craft\helpers\Db;
@@ -22,6 +20,8 @@ use craft\helpers\UrlHelper;
 use craft\records\CategoryGroup as CategoryGroupRecord;
 use craft\validators\HandleValidator;
 use craft\validators\UniqueValidator;
+use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Support\Str;
 use DateTime;
 
 /**

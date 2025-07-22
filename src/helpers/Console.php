@@ -8,8 +8,8 @@
 namespace craft\helpers;
 
 use Craft;
-use Craft\Cms\Support\Str;
 use craft\console\MarkdownParser;
+use CraftCms\Cms\Support\Str;
 use Illuminate\Support\Collection;
 use yii\base\InvalidConfigException;
 use yii\base\InvalidValueException;

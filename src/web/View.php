@@ -9,7 +9,6 @@ namespace craft\web;
 
 use Craft;
 use craft\base\ElementInterface;
-use Craft\Cms\Support\Str;
 use craft\events\AssetBundleEvent;
 use craft\events\CreateTwigEvent;
 use craft\events\RegisterTemplateRootsEvent;
@@ -28,6 +27,7 @@ use craft\web\twig\GlobalsExtension;
 use craft\web\twig\SafeHtml;
 use craft\web\twig\SinglePreloaderExtension;
 use craft\web\twig\TemplateLoader;
+use CraftCms\Cms\Support\Str;
 use Illuminate\Support\Collection;
 use LogicException;
 use Throwable;

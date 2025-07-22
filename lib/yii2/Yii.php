@@ -6,8 +6,8 @@
  */
 
 use craft\helpers\FileHelper;
-use Craft\Yii2Adapter\Container;
 use CraftCms\Aliases\Facades\Aliases;
+use CraftCms\Yii2Adapter\Container;
 use yii\BaseYii;
 
 /**

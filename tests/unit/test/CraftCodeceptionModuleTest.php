@@ -8,12 +8,12 @@
 namespace crafttests\unit\test;
 
 use Craft;
-use Craft\Cms\Support\Arr;
 use craft\elements\User;
 use craft\errors\ElementNotFoundException;
 use craft\errors\InvalidElementException;
 use craft\test\mockclasses\components\EventTriggeringComponent;
 use craft\test\TestCase;
+use CraftCms\Cms\Support\Arr;
 use DateInterval;
 use DateTime;
 use DateTimeZone;

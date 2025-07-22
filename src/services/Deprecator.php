@@ -8,7 +8,6 @@
 namespace craft\services;
 
 use Craft;
-use Craft\Cms\Support\Str;
 use craft\db\Query;
 use craft\db\Table;
 use craft\elements\db\ElementQuery;
@@ -17,6 +16,7 @@ use craft\helpers\Db;
 use craft\helpers\Template;
 use craft\models\DeprecationError;
 use craft\web\twig\Extension;
+use CraftCms\Cms\Support\Str;
 use DateTime;
 use Twig\Template as TwigTemplate;
 use yii\base\Application;

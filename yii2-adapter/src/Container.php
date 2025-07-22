@@ -7,7 +7,7 @@
  * @license [New BSD License](http://www.opensource.org/licenses/bsd-license.php)
  */
 
-namespace Craft\Yii2Adapter;
+namespace CraftCms\Yii2Adapter;
 
 class Container extends \yii\di\Container
 {

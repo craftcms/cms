@@ -4,10 +4,10 @@ namespace craft\base\conditions;
 
 use Craft;
 use craft\base\Component;
-use Craft\Cms\Support\Str;
 use craft\helpers\Cp;
 use craft\helpers\Html;
 use craft\helpers\UrlHelper;
+use CraftCms\Cms\Support\Str;
 
 /**
  * BaseConditionRule provides a base implementation for condition rules.

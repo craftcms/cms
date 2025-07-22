@@ -2,7 +2,6 @@
 
 namespace craft\migrations;
 
-use Craft\Cms\Support\Arr;
 use craft\db\Migration;
 use craft\db\Query;
 use craft\db\Table;
@@ -10,6 +9,7 @@ use craft\helpers\Db;
 use craft\helpers\Json;
 use craft\models\Section;
 use craft\records\EntryType as EntryTypeRecord;
+use CraftCms\Cms\Support\Arr;
 
 /**
  * Base entry type merge migration class.

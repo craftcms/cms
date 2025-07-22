@@ -5,11 +5,11 @@ namespace craft\elements\conditions\tags;
 use Craft;
 use craft\base\conditions\BaseMultiSelectConditionRule;
 use craft\base\ElementInterface;
-use Craft\Cms\Support\Arr;
 use craft\elements\conditions\ElementConditionRuleInterface;
 use craft\elements\db\ElementQueryInterface;
 use craft\elements\db\TagQuery;
 use craft\elements\Tag;
+use CraftCms\Cms\Support\Arr;
 
 /**
  * Tag group condition rule.
