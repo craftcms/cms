@@ -54,6 +54,10 @@ class FieldLayoutFormTab extends Model
      */
     public function getName(): string
     {
+        if (!isset($this->layoutTab->name)) {
+            return '';
+        }
+
         return Craft::t('site', $this->layoutTab->name);
     }
 

@@ -2,8 +2,32 @@
 
 ## Unreleased
 
+- Element index and edit pages now include the selected site’s name in the window title, on multi-site installs. ([#17626](https://github.com/craftcms/cms/pull/17626))
+- Entry type handles are now automatically incremented when duplicating an entry type, if the handle wasn’t edited. ([#17641](https://github.com/craftcms/cms/issues/17641))
+- Fixed a bug where element indexes in structure view weren’t switching to table/card view when searching.
+- Fixed a bug where Assets fields’ “Show the search input” setting wasn’t always visible when “Restrict assets to a single location” was enabled. ([#17628](https://github.com/craftcms/cms/issues/17628))
+- Fixed a bug where relational fields were showing the search input if “All” sources were selected, but there was only one available source. ([#17628](https://github.com/craftcms/cms/issues/17628))
+
+## 5.8.8 - 2025-07-18
+
+- Fixed a bug where Content Block fields could lose their initial values, if they had just been conditionally shown for the first time. ([#17630](https://github.com/craftcms/cms/issues/17630))
+- Fixed a bug where Content Block fields weren’t getting stored for revisions.
+- Fixed a bug where global sidebar nav items with the same name as the selected nav item would also appear to be selected. ([#17633](https://github.com/craftcms/cms/issues/17633))
+
+## 5.8.7 - 2025-07-17
+
 - Button Group fields set to only show icons now add `title` text to the buttons, revealing the icon name. ([#17598](https://github.com/craftcms/cms/discussions/17598))
+- Improved the accessibility of the Settings index page for screen reader users. ([#17610](https://github.com/craftcms/cms/pull/17610))
+- Craft no longer logs warnings for requests that don’t meet the user agent and IP requirements for maintaining a user session, unless a PHP session already exists or the user is attempting to sign in.
+- Fixed a bug where transformed images based on named transforms weren’t getting regenerated when the transform settings changed. ([#17615](https://github.com/craftcms/cms/issues/17615))
 - Fixed an error that occurred when viewing a custom category source set to exclude certain category groups. ([#17599](https://github.com/craftcms/cms/issues/17599))
+- Fixed a bug where entries’ Author/Authors settings weren’t showing changed indicators. ([#17608](https://github.com/craftcms/cms/issues/17608))
+- Fixed a bug where closing a modal could cause the page to be unscrollable. ([#17613](https://github.com/craftcms/cms/pull/17613))
+- Fixed an error that prevented field conditions within Content Block fields to apply after autosaves. ([#17618](https://github.com/craftcms/cms/issues/17618))
+- Fixed a bug where preview targets that didn’t specify host info were linking to the primary site. ([#17605](https://github.com/craftcms/cms/issues/17605))
+- Fixed an error that could prevent nested Matrix entries from being automatically created when the Matrix field was rendered. ([#17621](https://github.com/craftcms/cms/issues/17621))
+- Fixed a styling issue. ([#17611](https://github.com/craftcms/cms/pull/17611))
+- Fixed an RCE vulnerability.
 
 ## 5.8.6 - 2025-07-10
 

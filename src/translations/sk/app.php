@@ -2256,6 +2256,7 @@ return [
     '{item} picked up.' => 'položka {item} zdvihnutá.',
     '{max, plural, =1{Author} other {Authors}}' => '{max, plural, =1{autor} few{autori} other {autorov}}',
     '{names} {total, plural, =1{is installed as a trial} other{are installed as trials}}.' => '{names} {total, plural, =1{je nainštalovaný ako skúšobná verzia} few {sú nainštalované ako skúšobná verzia} other{sú nainštalované ako skúšobná verzia}}.',
+    '{name} Settings' => '{name} Settings',
     '{name} Setup' => 'Nastavenie {name}',
     '{name} Translation Key Format' => 'Formát kľúča prekladu {name}',
     '{name} Translation Method' => 'Spôsob prekladu {name}',

@@ -4,7 +4,7 @@
 /** global: jQuery */
 
 /**
- * CP Screen Slideout
+ * CP Modal
  */
 Craft.CpModal = Garnish.Modal.extend(
   {
@@ -380,6 +380,8 @@ Craft.CpModal = Garnish.Modal.extend(
         this.ignoreFailedRequest = true;
         this.cancelToken.cancel();
       }
+
+      this.hide();
       this.trigger('close');
       this.destroy();
     },

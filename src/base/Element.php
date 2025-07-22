@@ -4296,7 +4296,7 @@ JS, [
                 // No URL, no preview target
                 continue;
             }
-            $previewTarget['url'] = UrlHelper::siteUrl($previewTarget['url']);
+            $previewTarget['url'] = UrlHelper::siteUrl($previewTarget['url'], siteId: $this->siteId);
             if (!isset($previewTarget['refresh'])) {
                 $previewTarget['refresh'] = true;
             }

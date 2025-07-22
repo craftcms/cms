@@ -2258,6 +2258,7 @@ Gratulujeme, Craftu se podařilo odeslat email.Byla pro to použita následujíc
     '{item} picked up.' => '{item}: zvednuto.',
     '{max, plural, =1{Author} other {Authors}}' => '{max, plural, =1{Autor} few{Autoři} other {Autorů}}',
     '{names} {total, plural, =1{is installed as a trial} other{are installed as trials}}.' => '{names} {total, plural, =1{je instalován jako zkušební} other{jsou instalovány jako zkušební}}.',
+    '{name} Settings' => '{name} Settings',
     '{name} Setup' => 'Nastavení {name}',
     '{name} Translation Key Format' => 'Formát překladového klíče {name}',
     '{name} Translation Method' => 'Metoda překladu {name}',

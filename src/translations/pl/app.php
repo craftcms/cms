@@ -2258,6 +2258,7 @@ Gratulacje! Craft z powodzeniem może wysyłać e-maile. Zostały użyte poniżs
     '{item} picked up.' => '{item} podniesiono.',
     '{max, plural, =1{Author} other {Authors}}' => '{max, plural, =1{Autor} other {Autorzy}}',
     '{names} {total, plural, =1{is installed as a trial} other{are installed as trials}}.' => '{names} {total, plural, =1{zainstalowano jako wersję próbną} other{zainstalowano jako wersje próbne}}.',
+    '{name} Settings' => '{name} Settings',
     '{name} Setup' => 'Konfiguracja {name}',
     '{name} Translation Key Format' => 'Format klucza tłumaczenia {name}',
     '{name} Translation Method' => 'Metoda tłumaczenia {name}',

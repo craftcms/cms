@@ -2258,6 +2258,7 @@ Tebrikler! Craft eposta göndermeyi başardı.Gerkli ayarlar şu şekilde: {{ se
     '{item} picked up.' => '{item} alındı.',
     '{max, plural, =1{Author} other {Authors}}' => '{max, plural, one {}=1{Yazar} other {Yazar}}',
     '{names} {total, plural, =1{is installed as a trial} other{are installed as trials}}.' => '{names} {total, plural, one {}=1{deneme amaçlı kuruldu} other{deneme amaçlı kuruldu}}.',
+    '{name} Settings' => '{name} Settings',
     '{name} Setup' => '{name} Kurulumu',
     '{name} Translation Key Format' => '{name} Çeviri Anahtarı Biçimi',
     '{name} Translation Method' => '{name} Çeviri Yöntemi',

@@ -2257,6 +2257,7 @@ return [
     '{item} picked up.' => 'หยิบ {item} ขึ้นมา',
     '{max, plural, =1{Author} other {Authors}}' => '{max, plural, =1{ผู้สร้าง} other {ผู้สร้าง}}',
     '{names} {total, plural, =1{is installed as a trial} other{are installed as trials}}.' => '{names} {total, plural, =1{ได้รับการติดตั้งสำหรับทดลองใช้งาน} other{ได้รับการติดตั้งสำหรับทดลองใช้งาน}}',
+    '{name} Settings' => '{name} Settings',
     '{name} Setup' => 'การตั้งค่า {name}',
     '{name} Translation Key Format' => 'รูปแบบคีย์การแปล {name}',
     '{name} Translation Method' => 'วิธีการแปล {name}',
