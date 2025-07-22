@@ -9,12 +9,12 @@ namespace craft\utilities;
 
 use Composer\InstalledVersions;
 use Craft;
-use Craft\Aliases\Facades\Aliases;
 use craft\base\PluginInterface;
 use craft\base\Utility;
 use craft\db\Connection;
 use craft\helpers\App;
 use craft\helpers\Db;
+use CraftCms\Aliases\Facades\Aliases;
 use OutOfBoundsException;
 use RequirementsChecker;
 use yii\base\Module;

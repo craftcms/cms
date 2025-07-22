@@ -5,9 +5,9 @@
  * @license https://craftcms.github.io/license/
  */
 
-use Craft\Aliases\Facades\Aliases;
 use craft\helpers\FileHelper;
 use Craft\Yii2Adapter\Container;
+use CraftCms\Aliases\Facades\Aliases;
 use yii\BaseYii;
 
 /**

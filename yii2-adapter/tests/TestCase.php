@@ -2,9 +2,9 @@
 
 namespace Craft\Yii2Adapter\Tests;
 
-use Craft\Aliases\AliasesServiceProvider;
 use Craft\Cms\Providers\CraftServiceProvider;
 use Craft\Yii2Adapter\Yii2ServiceProvider;
+use CraftCms\Aliases\AliasesServiceProvider;
 use Orchestra\Testbench\TestCase as Orchestra;
 
 class TestCase extends Orchestra

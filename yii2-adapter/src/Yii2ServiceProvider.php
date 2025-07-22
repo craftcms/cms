@@ -2,11 +2,11 @@
 
 namespace Craft\Yii2Adapter;
 
-use Craft\Aliases\Facades\Aliases;
 use Craft\Cms\User\Models\User;
 use craft\console\controllers\HelpController;
 use craft\helpers\App;
 use Craft\Yii2Adapter\Console\LegacyCraftCommand;
+use CraftCms\Aliases\Facades\Aliases;
 use Exception;
 use Illuminate\Console\Application as ConsoleApplication;
 use Illuminate\Support\Facades\Config;
