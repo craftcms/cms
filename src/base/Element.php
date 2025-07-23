@@ -1351,10 +1351,8 @@ abstract class Element extends Component implements ElementInterface
              * the new Laravel package but query cache relies on Yii's old one.
              */
             $dependency = new ElementQueryTagDependency($elementQuery, [
-                'tags' => [
-                    'element-index-query',
-                    sprintf('element-index-query::%s', static::class),
-                ],
+                'element-index-query',
+                sprintf('element-index-query::%s', static::class),
             ]);
             $dependency->evaluate(DependencyCache::store());
 

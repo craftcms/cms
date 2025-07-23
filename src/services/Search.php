@@ -441,10 +441,8 @@ class Search extends Component
          * the new Laravel package but query cache relies on Yii's old one.
          */
         $dependency = new ElementQueryTagDependency($elementQuery, [
-            'tags' => [
-                'element-index-query',
-                sprintf('element-index-query::%s', $elementQuery->elementType),
-            ],
+            'element-index-query',
+            sprintf('element-index-query::%s', $elementQuery->elementType),
         ]);
         $dependency->evaluate(DependencyCache::store());
 
