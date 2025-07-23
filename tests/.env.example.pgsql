@@ -11,3 +11,5 @@ DB_SCHEMA=public
 
 FROM_EMAIL_NAME="Craft CMS"
 FROM_EMAIL_ADDRESS=info@craftcms.com
+
+AUTH_MODEL=\CraftCms\Cms\User\Models\User
