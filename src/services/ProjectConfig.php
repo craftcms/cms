@@ -1873,9 +1873,7 @@ class ProjectConfig extends Component
      */
     public function getCacheDependency(): CallbackDependency
     {
-        return new CallbackDependency(function() {
-            return Craft::$app->getInfo()->configVersion;
-        });
+        return new CallbackDependency(fn() => Craft::$app->getInfo()->configVersion);
     }
 
     /**

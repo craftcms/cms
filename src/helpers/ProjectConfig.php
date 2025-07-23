@@ -638,9 +638,7 @@ class ProjectConfig
             return Diff::diff($currentConfig, $pendingConfig);
         }, new AllDependencies([
             $projectConfig->getCacheDependency(),
-            new CallbackDependency(function(): string {
-                return md5(Json::encode(Craft::$app->getProjectConfig()->get(null, true)));
-            }),
+            new CallbackDependency(fn(): string => md5(Json::encode(Craft::$app->getProjectConfig()->get(null, true)))),
         ]));
     }
 
