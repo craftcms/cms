@@ -373,16 +373,8 @@ class AppController extends Controller
     {
         $this->requireAcceptsJson();
 
-        $badgeCount = 0;
-        $utilities = app(Utilities::class)->getAuthorizedUtilityTypes();
-
-        foreach ($utilities as $class) {
-            /** @var \CraftCms\Cms\Utility\Utility $class */
-            $badgeCount += $class::badgeCount();
-        }
-
         return $this->asJson([
-            'badgeCount' => $badgeCount,
+            'badgeCount' => app(Utilities::class)->getUtilitiesBadgeCount(),
         ]);
     }
 
