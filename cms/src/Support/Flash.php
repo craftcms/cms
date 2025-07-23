@@ -1,10 +1,10 @@
 <?php
 
-namespace CraftCms\Cms\Http\Controllers;
+namespace CraftCms\Cms\Support;
 
-trait UseFlash
+class Flash
 {
-    public function flashSuccess(?string $default = null, array $settings = []): void
+    public static function success(?string $default = null, array $settings = []): void
     {
         $message = request('successMessage', $default);
 
@@ -15,7 +15,7 @@ trait UseFlash
         }
     }
 
-    public function flashFail(?string $default = null, array $settings = []): void
+    public static function fail(?string $default = null, array $settings = []): void
     {
         $message = request('failMessage', $default);
 

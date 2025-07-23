@@ -4,14 +4,12 @@ namespace CraftCms\Cms\Http\Controllers\Utilities;
 
 use Craft;
 use craft\errors\MigrationException;
-use CraftCms\Cms\Http\Controllers\UseFlash;
+use CraftCms\Cms\Support\Flash;
 use CraftCms\Cms\Utility\Utilities;
 use Illuminate\Http\Request;
 
 class MigrationsController
 {
-    use UseFlash;
-
     public function __construct(Utilities $utilitiesService)
     {
         if (! $utilitiesService->checkAuthorization(Utilities\Migrations::class)) {
@@ -28,9 +26,9 @@ class MigrationsController
 
         try {
             $migrator->up();
-            $this->flashSuccess(Craft::t('app', 'Applied new migrations successfully.'));
+            Flash::success(Craft::t('app', 'Applied new migrations successfully.'));
         } catch (MigrationException) {
-            $this->flashFail(Craft::t('app', 'Couldn’t apply new migrations.'));
+            Flash::fail(Craft::t('app', 'Couldn’t apply new migrations.'));
         }
 
         return cp_redirect('utilities/migrations');
