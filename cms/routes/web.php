@@ -25,25 +25,23 @@ Route::middleware(['web', 'craft'])
 
                 /** @todo This config doesn't actually work and always defaults to actions right now */
                 Route::prefix(config('craft.general.actionTrigger', 'actions'))->group(function () {
-                    Route::prefix('utilities')->group(function () {
-                        // DeprecationErrors
-                        Route::post('get-deprecation-error-traces-modal', [DeprecationErrorsController::class, 'getDeprecationErrorTracesModal']);
-                        Route::post('delete-deprecation-error', [DeprecationErrorsController::class, 'deleteDeprecationError']);
-                        Route::post('delete-all-deprecation-errors', [DeprecationErrorsController::class, 'deleteAllDeprecationErrors']);
+                    // DeprecationErrors
+                    Route::post('utilities/get-deprecation-error-traces-modal', [DeprecationErrorsController::class, 'getDeprecationErrorTracesModal']);
+                    Route::post('utilities/delete-deprecation-error', [DeprecationErrorsController::class, 'deleteDeprecationError']);
+                    Route::post('utilities/delete-all-deprecation-errors', [DeprecationErrorsController::class, 'deleteAllDeprecationErrors']);
 
-                        // ClearCaches
-                        Route::post('clear-caches-perform-action', [ClearCachesController::class, 'clearCaches']);
-                        Route::post('invalidate-tags', [ClearCachesController::class, 'invalidateTags']);
+                    // ClearCaches
+                    Route::post('utilities/clear-caches-perform-action', [ClearCachesController::class, 'clearCaches']);
+                    Route::post('utilities/invalidate-tags', [ClearCachesController::class, 'invalidateTags']);
 
-                        // DbBackup
-                        Route::post('db-backup-perform-action', DbBackupController::class);
+                    // DbBackup
+                    Route::post('utilities/db-backup-perform-action', DbBackupController::class);
 
-                        // FindAndReplace
-                        Route::post('find-and-replace-perform-action', FindAndReplaceController::class);
+                    // FindAndReplace
+                    Route::post('utilities/find-and-replace-perform-action', FindAndReplaceController::class);
 
-                        // Migrations
-                        Route::post('apply-new-migrations', MigrationsController::class);
-                    });
+                    // Migrations
+                    Route::post('utilities/apply-new-migrations', MigrationsController::class);
                 });
 
             });
