@@ -22,6 +22,37 @@ class LegacyMiddleware
 {
     public function handle(Request $request, Closure $next): mixed
     {
+        if ($request->uri()->path() === 'index.php' && $request->has('p')) {
+            $internal = Request::create(
+                uri: $request->get('p'),
+                method: $request->method(),
+                parameters: $request->except('p'),
+                cookies: $request->cookies->all(),
+                files: $request->allFiles(),
+                server: $request->server->all(),
+                content: $request->getContent(),
+            );
+
+            return app()->handle($internal);
+        }
+
+        if ($action = $request->get('action')) {
+            $internal = Request::create(
+                uri: cp_url("actions/{$action}"),
+                method: $request->method(),
+                parameters: $request->except('action'),
+                cookies: $request->cookies->all(),
+                files: $request->allFiles(),
+                server: $request->server->all(),
+            );
+
+            $response = app()->handle($internal);
+
+            if ($response->getStatusCode() !== 404) {
+                return $response;
+            }
+        }
+
         /**
          * Laravel applies \Illuminate\Foundation\Http\Middleware\ConvertEmptyStringsToNull
          * globally, which causes issues in the legacy codebase. Here we restore all the

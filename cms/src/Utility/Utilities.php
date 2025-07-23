@@ -9,7 +9,6 @@
 
 namespace CraftCms\Cms\Utility;
 
-use Craft;
 use craft\enums\CmsEdition;
 use craft\queue\QueueInterface;
 use CraftCms\Cms\Utility\Events\RegisterUtilities;
