@@ -45,7 +45,10 @@ class Utilities
      */
     public function getAllUtilityTypes(): Collection
     {
-        $generalConfig = Craft::$app->getConfig()->getGeneral();
+        /** @var \craft\web\Application $craft */
+        $craft = app('Craft');
+
+        $generalConfig = $craft->getConfig()->getGeneral();
 
         $utilityTypes = Collection::make()
             ->push(
@@ -55,15 +58,15 @@ class Utilities
                 PhpInfo::class,
             )
             ->when(
-                Craft::$app->edition->value >= CmsEdition::Pro->value,
+                $craft->edition->value >= CmsEdition::Pro->value,
                 fn (Collection $c) => $c->push(SystemMessagesUtility::class)
             )
             ->when(
-                ! empty(Craft::$app->getVolumes()->getAllVolumes()),
+                ! empty($craft->getVolumes()->getAllVolumes()),
                 fn (Collection $c) => $c->push(AssetIndexes::class)
             )
             ->when(
-                Craft::$app->getQueue() instanceof QueueInterface,
+                $craft->getQueue() instanceof QueueInterface,
                 fn (Collection $c) => $c->push(QueueManager::class)
             )
             ->push(
@@ -109,6 +112,9 @@ class Utilities
      */
     public function checkAuthorization(string $class): bool
     {
+        /** @var \craft\web\Application $craft */
+        $craft = app('Craft');
+
         /** @var ?\CraftCms\Cms\User\Models\User $user */
         $user = Auth::user();
 
@@ -124,7 +130,7 @@ class Utilities
         }
 
         // Make sure the utility isn't disabled
-        if (in_array($utilityId, Craft::$app->getConfig()->getGeneral()->disabledUtilities)) {
+        if (in_array($utilityId, $craft->getConfig()->getGeneral()->disabledUtilities)) {
             return false;
         }
 

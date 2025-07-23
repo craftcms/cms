@@ -106,7 +106,7 @@ class ClearCaches extends Utility
     {
         // Fire a 'registerCacheOptions' event
         if (Event::hasHandlers(self::class, self::EVENT_REGISTER_CACHE_OPTIONS)) {
-            \Illuminate\Support\Facades\Event::listen(RegisterCacheOptions::class, function(RegisterCacheOptionsEvent $event) {
+            \Illuminate\Support\Facades\Event::listen(RegisterCacheOptions::class, function(RegisterCacheOptions $event) {
                 $yiiEvent = new RegisterCacheOptionsEvent(['options' => $event->options]);
                 Event::trigger(self::class, self::EVENT_REGISTER_CACHE_OPTIONS, $yiiEvent);
 
@@ -120,7 +120,7 @@ class ClearCaches extends Utility
 
         // Fire a 'registerTagOptions' event
         if (Event::hasHandlers(self::class, self::EVENT_REGISTER_TAG_OPTIONS)) {
-            \Illuminate\Support\Facades\Event::listen(RegisterTagOptions::class, function(RegisterCacheOptionsEvent $event) {
+            \Illuminate\Support\Facades\Event::listen(RegisterTagOptions::class, function(RegisterTagOptions $event) {
                 $yiiEvent = new RegisterCacheOptionsEvent(['options' => $event->options]);
                 Event::trigger(self::class, self::EVENT_REGISTER_TAG_OPTIONS, $yiiEvent);
 
