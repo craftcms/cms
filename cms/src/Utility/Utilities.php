@@ -24,6 +24,7 @@ use CraftCms\Cms\Utility\Utilities\QueueManager;
 use CraftCms\Cms\Utility\Utilities\SystemMessages as SystemMessagesUtility;
 use CraftCms\Cms\Utility\Utilities\SystemReport;
 use CraftCms\Cms\Utility\Utilities\Updates as UpdatesUtility;
+use Illuminate\Container\Attributes\Singleton;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Event;
@@ -35,6 +36,7 @@ use Illuminate\Support\Facades\Event;
  *
  * @since 6.0.0
  */
+#[Singleton]
 class Utilities
 {
     /**

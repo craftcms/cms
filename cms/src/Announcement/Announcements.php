@@ -17,12 +17,14 @@ use craft\i18n\Translation;
 use craft\queue\jobs\Announcement as AnnouncementJob;
 use CraftCms\Aliases\Facades\Aliases;
 use CraftCms\Cms\Announcement\Models\Announcement;
+use Illuminate\Container\Attributes\Singleton;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Date;
 use yii\helpers\Markdown;
 
+#[Singleton]
 class Announcements
 {
     /**
