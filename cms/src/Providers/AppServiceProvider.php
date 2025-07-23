@@ -37,7 +37,7 @@ class AppServiceProvider extends ServiceProvider
 
         $this->bootMiddleware();
 
-        $this->loadRoutesFrom("{$this->root}/routes/web.php");
+        $this->loadRoutesFrom("{$this->root}/routes/routes.php");
         $this->loadViewsFrom("{$this->root}/resources/views", 'craftcms');
 
         if (! $this->app->runningInConsole()) {
