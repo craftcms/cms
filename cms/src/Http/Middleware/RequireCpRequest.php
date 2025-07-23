@@ -9,7 +9,10 @@ class RequireCpRequest
 {
     public function handle(Request $request, Closure $next): mixed
     {
-        if (! $request->is(config('craft.general.cpTrigger').'/*')) {
+        /** @var \craft\web\Application $craft */
+        $craft = app('Craft');
+
+        if (! $request->is($craft->getConfig()->getGeneral()->cpTrigger.'/*')) {
             throw new \HttpException('Request must be a control panel request');
         }
 
