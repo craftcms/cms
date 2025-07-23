@@ -160,10 +160,6 @@
   },
   "repositories": {
     "packagist.org": false,
-    "dependency-aware-cache": {
-      "type": "vcs",
-      "url": "git@github.com:craftcms/laravel-dependency-aware-cache.git"
-    },
     "private-packagist": {
       "type": "composer",
       "url": "https://repo.packagist.com/craftcms/"

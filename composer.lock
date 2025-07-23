@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "18e0ff2fa4d7c2e56aea6e19b7eca349",
+    "content-hash": "518a91fe335b47b991eaaba29f71baaa",
     "packages": [
         {
             "name": "bacon/bacon-qr-code",
@@ -545,7 +545,13 @@
                 "type": "zip",
                 "url": "https://api.github.com/repos/craftcms/laravel-dependency-aware-cache/zipball/c78158f50cfc9d6cb0cc4ee4a35591d939be0999",
                 "reference": "c78158f50cfc9d6cb0cc4ee4a35591d939be0999",
-                "shasum": ""
+                "shasum": "",
+                "mirrors": [
+                    {
+                        "url": "https://repo.packagist.com/craftcms/dists/%package%/%version%/r%reference%.%type%",
+                        "preferred": true
+                    }
+                ]
             },
             "require": {
                 "illuminate/cache": "^10.0||^11.0||^12.0",
@@ -585,6 +591,7 @@
                     "CraftCms\\DependencyAwareCache\\Tests\\": "tests/"
                 }
             },
+            "notification-url": "https://repo.packagist.com/craftcms/downloads/",
             "scripts": {
                 "post-autoload-dump": [
                     "@composer run prepare"
