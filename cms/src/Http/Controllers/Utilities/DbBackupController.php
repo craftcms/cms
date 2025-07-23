@@ -3,8 +3,10 @@
 namespace CraftCms\Cms\Http\Controllers\Utilities;
 
 use craft\helpers\FileHelper;
+use craft\web\Application;
 use CraftCms\Cms\Utility\Utilities;
 use Exception;
+use Illuminate\Container\Attributes\Give;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Throwable;
@@ -18,11 +20,8 @@ class DbBackupController
         }
     }
 
-    public function __invoke(Request $request)
+    public function __invoke(Request $request, #[Give('Craft')] Application $craft)
     {
-        /** @var \craft\web\Application $craft */
-        $craft = app('Craft');
-
         try {
             $backupPath = $craft->getDb()->backup();
         } catch (Throwable $e) {

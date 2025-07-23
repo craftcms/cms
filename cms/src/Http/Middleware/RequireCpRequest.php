@@ -3,16 +3,19 @@
 namespace CraftCms\Cms\Http\Middleware;
 
 use Closure;
+use craft\web\Application;
+use Illuminate\Container\Attributes\Give;
 use Illuminate\Http\Request;
 
 class RequireCpRequest
 {
+    public function __construct(
+        #[Give('Craft')] protected Application $craft,
+    ) {}
+
     public function handle(Request $request, Closure $next): mixed
     {
-        /** @var \craft\web\Application $craft */
-        $craft = app('Craft');
-
-        if (! $request->is($craft->getConfig()->getGeneral()->cpTrigger.'/*')) {
+        if (! $request->is($this->craft->getConfig()->getGeneral()->cpTrigger.'/*')) {
             throw new \HttpException('Request must be a control panel request');
         }
 

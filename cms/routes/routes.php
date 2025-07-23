@@ -7,4 +7,3 @@ Route::middleware(['web', 'craft', 'auth', 'craft.cp'])
 
 Route::middleware(['web', 'craft'])
     ->group(__DIR__.'/web.php');
-

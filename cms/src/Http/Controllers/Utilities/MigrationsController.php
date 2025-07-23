@@ -4,8 +4,10 @@ namespace CraftCms\Cms\Http\Controllers\Utilities;
 
 use Craft;
 use craft\errors\MigrationException;
+use craft\web\Application;
 use CraftCms\Cms\Support\Flash;
 use CraftCms\Cms\Utility\Utilities;
+use Illuminate\Container\Attributes\Give;
 use Illuminate\Http\Request;
 
 class MigrationsController
@@ -17,11 +19,8 @@ class MigrationsController
         }
     }
 
-    public function __invoke(Request $request)
+    public function __invoke(Request $request, #[Give('Craft')] Application $craft)
     {
-        /** @var \craft\web\Application $craft */
-        $craft = app('Craft');
-
         $migrator = $craft->getContentMigrator();
 
         try {

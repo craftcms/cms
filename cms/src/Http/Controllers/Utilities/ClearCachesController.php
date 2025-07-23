@@ -3,8 +3,10 @@
 namespace CraftCms\Cms\Http\Controllers\Utilities;
 
 use craft\helpers\FileHelper;
+use craft\web\Application as Craft;
 use CraftCms\Cms\Utility\Utilities;
 use CraftCms\Cms\Utility\Utilities\ClearCaches;
+use Illuminate\Foundation\Application;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
@@ -21,7 +23,7 @@ class ClearCachesController
         }
     }
 
-    public function clearCaches(Request $request): JsonResponse
+    public function clearCaches(Request $request, Application $app): JsonResponse
     {
         $caches = $request->validate([
             'caches' => ['required'],
@@ -43,7 +45,7 @@ class ClearCachesController
                     Log::warning("Could not clear the directory $action: ".$e->getMessage(), [__METHOD__]);
                 }
             } elseif (isset($cacheOption['params'])) {
-                app()->call($action, $cacheOption['params']);
+                $app->call($action, $cacheOption['params']);
             } else {
                 $action();
             }
@@ -52,15 +54,13 @@ class ClearCachesController
         return new JsonResponse;
     }
 
-    public function invalidateTags(Request $request): JsonResponse
+    public function invalidateTags(Request $request, Craft $craft): JsonResponse
     {
         $tags = $request->validate([
             'tags' => ['required', 'array'],
             'tags.*' => ['string'],
         ])['tags'];
 
-        /** @var \craft\web\Application $craft */
-        $craft = app('Craft');
         $cache = $craft->getCache();
 
         foreach ($tags as $tag) {

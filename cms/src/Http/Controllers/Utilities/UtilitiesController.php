@@ -3,10 +3,12 @@
 namespace CraftCms\Cms\Http\Controllers\Utilities;
 
 use craft\helpers\Cp;
+use craft\web\Application;
 use craft\web\assets\utilities\UtilitiesAsset;
 use CraftCms\Cms\Utility\Utilities;
 use CraftCms\Cms\Utility\Utilities\Updates;
 use CraftCms\Cms\Utility\Utilities\Upgrade;
+use Illuminate\Container\Attributes\Give;
 use Illuminate\Support\Collection;
 use yii\base\InvalidArgumentException;
 
@@ -14,6 +16,7 @@ class UtilitiesController
 {
     public function __construct(
         protected Utilities $utilitiesService,
+        #[Give('Craft')] protected Application $craft,
     ) {}
 
     public function index()
@@ -45,11 +48,9 @@ class UtilitiesController
             abort(403, 'User not permitted to access the "'.$class::displayName().'".');
         }
 
-        /** @var \craft\web\Application $craft */
-        $craft = app('Craft');
-        $craft->getView()->registerAssetBundle(UtilitiesAsset::class);
+        $this->craft->getView()->registerAssetBundle(UtilitiesAsset::class);
 
-        return $craft->getView()->renderPageTemplate('utilities/_index.twig', [
+        return $this->craft->getView()->renderPageTemplate('utilities/_index.twig', [
             'id' => $id,
             'displayName' => $class::displayName(),
             'contentHtml' => $class::contentHtml(),
@@ -108,10 +109,7 @@ class UtilitiesController
      */
     private function defaultUtilityIconSvg(string $class): string
     {
-        /** @var \craft\web\Application $craft */
-        $craft = app('Craft');
-
-        return $craft->getView()->renderTemplate('_includes/fallback-icon.svg.twig', [
+        return $this->craft->getView()->renderTemplate('_includes/fallback-icon.svg.twig', [
             'label' => $class::displayName(),
         ]);
     }

@@ -4,7 +4,7 @@ use CraftCms\Cms\Support\Str;
 
 function cp_url(string $url)
 {
-    return Str::start($url, Str::finish(app('Craft')->getConfig()->getGeneral()->cpTrigger, '/'));
+    return Str::start($url, Str::finish(config('craft.general.cpTrigger', 'admin'), '/'));
 }
 
 function cp_redirect(string $url, int $status = 302, array $headers = [], ?bool $secure = null)
