@@ -65,6 +65,7 @@ class UtilitiesController
             ->getAuthorizedUtilityTypes()
             /**
              * @var class-string<\CraftCms\Cms\Utility\Utility> $class
+             *
              * @phpstan-ignore argument.unresolvableType
              */
             ->map(function (string $class) {
