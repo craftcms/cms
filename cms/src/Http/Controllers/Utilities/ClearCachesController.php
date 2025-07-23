@@ -6,6 +6,7 @@ use craft\helpers\FileHelper;
 use craft\web\Application as Craft;
 use CraftCms\Cms\Utility\Utilities;
 use CraftCms\Cms\Utility\Utilities\ClearCaches;
+use Illuminate\Container\Attributes\Give;
 use Illuminate\Foundation\Application;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -54,7 +55,7 @@ class ClearCachesController
         return new JsonResponse;
     }
 
-    public function invalidateTags(Request $request, Craft $craft): JsonResponse
+    public function invalidateTags(Request $request, #[Give('Craft')] Craft $craft): JsonResponse
     {
         $tags = $request->validate([
             'tags' => ['required', 'array'],
