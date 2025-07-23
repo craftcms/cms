@@ -12,6 +12,7 @@ Route::middleware(['web', 'craft'])
     ->group(function () {
         // Add new routes here
 
+        /** @todo This config doesn't actually work and always defaults to admin right now */
         Route::prefix(config('craft.general.cpTrigger', 'admin'))
             ->middleware([
                 'auth',
@@ -22,6 +23,7 @@ Route::middleware(['web', 'craft'])
                 Route::get('utilities', [UtilitiesController::class, 'index']);
                 Route::get('utilities/{id}', [UtilitiesController::class, 'show']);
 
+                /** @todo This config doesn't actually work and always defaults to actions right now */
                 Route::prefix(config('craft.general.actionTrigger', 'actions'))->group(function () {
                     Route::prefix('utilities')->group(function () {
                         // DeprecationErrors
