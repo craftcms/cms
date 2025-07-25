@@ -455,6 +455,8 @@ class Install extends Migration
             'slugTranslationMethod' => $this->string()->notNull()->defaultValue(Field::TRANSLATION_METHOD_SITE),
             'slugTranslationKeyFormat' => $this->text(),
             'showStatusField' => $this->boolean()->defaultValue(true),
+            'showPostDateField' => $this->boolean()->defaultValue(true),
+            'showExpiryDateField' => $this->boolean()->defaultValue(true),
             'dateCreated' => $this->dateTime()->notNull(),
             'dateUpdated' => $this->dateTime()->notNull(),
             'dateDeleted' => $this->dateTime()->null(),

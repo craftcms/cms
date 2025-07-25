@@ -228,6 +228,8 @@ class EntryTypesController extends Controller
         $entryType->slugTranslationMethod = $this->request->getBodyParam('slugTranslationMethod', $entryType->slugTranslationMethod);
         $entryType->slugTranslationKeyFormat = $this->request->getBodyParam('slugTranslationKeyFormat', $entryType->slugTranslationKeyFormat);
         $entryType->showStatusField = $this->request->getBodyParam('showStatusField', $entryType->showStatusField);
+        $entryType->showPostDateField = $this->request->getBodyParam('showPostDateField', $entryType->showPostDateField);
+        $entryType->showExpiryDateField = $this->request->getBodyParam('showExpiryDateField', $entryType->showExpiryDateField);
 
         // If we're duplicating the entry type and the handle hasn't changed, find a unique one
         if ($entryType->handle === ($originalEntryType->handle ?? null)) {

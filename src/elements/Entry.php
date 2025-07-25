@@ -2538,8 +2538,10 @@ JS, [
             $view->registerDeltaName('postDate');
             $view->registerDeltaName('expiryDate');
             $view->setIsDeltaRegistrationActive($isDeltaRegistrationActive);
+        }
 
-            // Post Date
+        // Post Date
+        if ($this->getType()->showPostDateField) {
             $fields[] = Cp::dateTimeFieldHtml([
                 'status' => $this->getAttributeStatus('postDate'),
                 'label' => Craft::t('app', 'Post Date'),
@@ -2549,8 +2551,10 @@ JS, [
                 'errors' => $this->getErrors('postDate'),
                 'disabled' => $static,
             ]);
+        }
 
-            // Expiry Date
+        // Expiry Date
+        if ($this->getType()->showExpiryDateField) {
             $fields[] = Cp::dateTimeFieldHtml([
                 'status' => $this->getAttributeStatus('expiryDate'),
                 'label' => Craft::t('app', 'Expiry Date'),

@@ -31,6 +31,8 @@ use yii2tech\ar\softdelete\SoftDeleteBehavior;
  * @property string $slugTranslationMethod Slug translation method
  * @property string|null $slugTranslationKeyFormat Slug translation key format
  * @property bool $showStatusField Whether to show the Status field
+ * @property bool $showPostDateField Whether to show the Post Date field
+ * @property bool $showExpiryDateField Whether to show the Expiry Date field
  * @property FieldLayout $fieldLayout Field layout
  * @mixin SoftDeleteBehavior
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>

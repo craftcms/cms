@@ -166,6 +166,18 @@ class EntryType extends Model implements
     public ?self $original = null;
 
     /**
+     * @var bool Whether to show the Post Date field
+     * @since 5.9.0
+     */
+    public bool $showPostDateField = true;
+
+    /**
+     * @var bool Whether to show the Expiry Date field
+     * @since 5.9.0
+     */
+    public bool $showExpiryDateField = true;
+
+    /**
      * @inheritdoc
      */
     public function init(): void
@@ -323,6 +335,8 @@ JS, [
             'titleFormat' => Craft::t('app', 'Default Title Format'),
             'showStatusField' => Craft::t('app', 'Show the Status field'),
             'showSlugField' => Craft::t('app', 'Show the Slug field'),
+            'showPostDateField' => Craft::t('app', 'Show the Post Date field'),
+            'showExpiryDateField' => Craft::t('app', 'Show the Expiry Date field'),
         ];
     }
 
@@ -459,6 +473,8 @@ JS, [
             'slugTranslationMethod' => $this->slugTranslationMethod,
             'slugTranslationKeyFormat' => $this->slugTranslationKeyFormat ?: null,
             'showStatusField' => $this->showStatusField,
+            'showPostDateField' => $this->showPostDateField,
+            'showExpiryDateField' => $this->showExpiryDateField,
         ];
 
         $fieldLayout = $this->getFieldLayout();

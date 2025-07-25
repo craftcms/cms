@@ -73,6 +73,32 @@ class Entry extends ElementMutationResolver
             unset($arguments['enabled']);
         }
 
+        // If saving an entry and the postDate is provided, check if we should allow changing it.
+        if (array_key_exists('postDate', $arguments)) {
+            try {
+                $showPostDateField = $entry->getType()->showPostDateField;
+            } catch (InvalidConfigException) {
+                $showPostDateField = true;
+            }
+
+            if (!$showPostDateField) {
+                unset($arguments['postDate']);
+            }
+        }
+
+        // If saving an entry and the expiryDate is provided, check if we should allow changing it.
+        if (array_key_exists('expiryDate', $arguments)) {
+            try {
+                $showExpiryDateField = $entry->getType()->showExpiryDateField;
+            } catch (InvalidConfigException) {
+                $showExpiryDateField = true;
+            }
+
+            if (!$showExpiryDateField) {
+                unset($arguments['expiryDate']);
+            }
+        }
+
         // If saving an entry the slug is provided, check if we should allow changing it.
         if (array_key_exists('slug', $arguments)) {
             try {

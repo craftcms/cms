@@ -1452,6 +1452,12 @@ SQL)->execute();
         if ($db->columnExists(Table::ENTRYTYPES, 'color')) {
             $query->addSelect('color');
         }
+        if ($db->columnExists(Table::ENTRYTYPES, 'showPostDateField')) {
+            $query->addSelect('showPostDateField');
+        }
+        if ($db->columnExists(Table::ENTRYTYPES, 'showExpiryDateField')) {
+            $query->addSelect('showExpiryDateField');
+        }
 
         return $query;
     }
@@ -1675,6 +1681,16 @@ SQL)->execute();
             // todo: remove after the next breakpoint
             if (Craft::$app->getDb()->columnExists(Table::ENTRYTYPES, 'description')) {
                 $entryTypeRecord->description = $data['description'] ?? null;
+            }
+
+            // todo: remove after the next breakpoint
+            if (Craft::$app->getDb()->columnExists(Table::ENTRYTYPES, 'showPostDateField')) {
+                $entryTypeRecord->showPostDateField = $data['showPostDateField'] ?? true;
+            }
+
+            // todo: remove after the next breakpoint
+            if (Craft::$app->getDb()->columnExists(Table::ENTRYTYPES, 'showExpiryDateField')) {
+                $entryTypeRecord->showExpiryDateField = $data['showExpiryDateField'] ?? true;
             }
 
             if (!empty($data['fieldLayouts'])) {

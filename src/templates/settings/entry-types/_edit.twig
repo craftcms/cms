@@ -192,6 +192,32 @@
     disabled: readOnly,
 }) }}
 
+{{ forms.lightswitchField({
+    label: "Show the Post Date field"|t('app'),
+    instructions: "Whether to show the Post Date field."|t('app'),
+    id: 'showPostDateField',
+    name: 'showPostDateField',
+    on: entryType.showPostDateField,
+    errors: entryType.getErrors('showPostDateField'),
+    data: {
+        'error-key': 'showPostDateField',
+    },
+    disabled: readOnly,
+}) }}
+
+{{ forms.lightswitchField({
+    label: "Show the Expiry Date field"|t('app'),
+    instructions: "Whether to show the Expiry Date field."|t('app'),
+    id: 'showExpiryDateField',
+    name: 'showExpiryDateField',
+    on: entryType.showExpiryDateField,
+    errors: entryType.getErrors('showExpiryDateField'),
+    data: {
+        'error-key': 'showExpiryDateField',
+    },
+    disabled: readOnly,
+}) }}
+
 <hr>
 
 {{ forms.fieldLayoutDesignerField({
