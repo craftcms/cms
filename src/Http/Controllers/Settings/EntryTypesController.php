@@ -167,6 +167,8 @@ class EntryTypesController
             'values.slugTranslationMethod' => ['nullable', Rule::enum(TranslationMethod::class)],
             'values.slugTranslationKeyFormat' => ['nullable', 'string'],
             'values.showStatusField' => ['required', 'boolean'],
+            'values.showPostDateField' => ['required', 'boolean'],
+            'values.showExpiryDateField' => ['required', 'boolean'],
             'values.fieldLayout' => ['present', 'array'],
             'scope' => ['present', 'array', 'size:0'],
         ]);
@@ -215,6 +217,8 @@ class EntryTypesController
         $entryType->slugTranslationMethod = $request->enum('slugTranslationMethod', TranslationMethod::class, $entryType->slugTranslationMethod);
         $entryType->slugTranslationKeyFormat = $request->input('slugTranslationKeyFormat', $entryType->slugTranslationKeyFormat);
         $entryType->showStatusField = $request->boolean('showStatusField', $entryType->showStatusField);
+        $entryType->showPostDateField = $request->boolean('showPostDateField', $entryType->showPostDateField);
+        $entryType->showExpiryDateField = $request->boolean('showExpiryDateField', $entryType->showExpiryDateField);
 
         // If we're duplicating the entry type and the handle hasn't changed, find a unique one
         if ($saveAsNew && $entryType->handle === ($originalEntryType->handle ?? null)) {
