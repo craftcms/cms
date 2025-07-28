@@ -67,6 +67,7 @@ use DateTime;
 use DateTimeInterface;
 use DateTimeZone;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Stringable;
 use IteratorAggregate;
 use Money\Money;
@@ -1743,6 +1744,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
 
         return [
             'craft' => new CraftVariable(),
+            'config' => Config::all(),
             'currentSite' => $currentSite,
             'currentUser' => $currentUser,
             'primarySite' => $primarySite,
