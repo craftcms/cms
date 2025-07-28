@@ -5,13 +5,13 @@ namespace CraftCms\Cms\Http\Controllers\Utilities;
 use craft\helpers\FileHelper;
 use CraftCms\Cms\Utility\Utilities;
 use CraftCms\Cms\Utility\Utilities\ClearCaches;
+use CraftCms\DependencyAwareCache\Dependency\TagDependency;
 use Illuminate\Foundation\Application;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Throwable;
 use yii\base\InvalidArgumentException;
-use CraftCms\DependencyAwareCache\Dependency\TagDependency;
 
 class ClearCachesController
 {
