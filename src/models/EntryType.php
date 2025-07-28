@@ -287,7 +287,7 @@ class EntryType extends Model implements
         if (
             $this->id &&
             Craft::$app->getUser()->getIsAdmin() &&
-            Craft::$app->getConfig()->getGeneral()->allowAdminChanges
+            \CraftCms\Cms\Craft::generalConfig()->allowAdminChanges
         ) {
             $editId = sprintf('action-edit-%s', mt_rand());
             $items[] = [

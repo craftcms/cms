@@ -147,7 +147,7 @@ class Icon extends Field implements InlineEditableFieldInterface, ThumbableField
             'disabled' => $readOnly,
         ]);
 
-        if (Craft::$app->getConfig()->getGeneral()->enableGql) {
+        if (\CraftCms\Cms\Craft::generalConfig()->enableGql) {
             $html .= Html::tag('hr') .
             Html::button(Craft::t('app', 'Advanced'), options: [
                 'class' => 'fieldtoggle',

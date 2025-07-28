@@ -189,7 +189,7 @@ EOD;
             $didSomething = true;
         }
 
-        if (!Craft::$app->getConfig()->getGeneral()->securityKey) {
+        if (!\CraftCms\Cms\Craft::generalConfig()->securityKey) {
             $this->run('security-key');
             $didSomething = true;
         }
@@ -231,7 +231,7 @@ EOD;
             return ExitCode::UNSPECIFIED_ERROR;
         }
 
-        Craft::$app->getConfig()->getGeneral()->securityKey = $key;
+        \CraftCms\Cms\Craft::generalConfig()->securityKey = $key;
         $this->stdout("done ($key)" . PHP_EOL, Console::FG_YELLOW);
         return ExitCode::OK;
     }

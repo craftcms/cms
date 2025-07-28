@@ -54,7 +54,7 @@ class MailerController extends Controller
         if (isset($this->to)) {
             $to = $this->to;
         } else {
-            $testToEmailAddress = Craft::$app->getConfig()->getGeneral()->getTestToEmailAddress();
+            $testToEmailAddress = \CraftCms\Cms\Craft::generalConfig()->getTestToEmailAddress();
             $to = $this->prompt('Which email address should the test email be sent to?', [
                 'default' => array_key_first($testToEmailAddress),
             ]);

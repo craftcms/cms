@@ -71,7 +71,7 @@ trait MissingComponentTrait
 
         if (
             Craft::$app->getUser()->getIsAdmin() &&
-            Craft::$app->getConfig()->getGeneral()->allowAdminChanges
+            \CraftCms\Cms\Craft::generalConfig()->allowAdminChanges
         ) {
             $pluginsService = Craft::$app->getPlugins();
 

@@ -191,7 +191,7 @@ abstract class BaseExternalProvider extends BaseProvider
 
         // If the user has an ID, don't mess with username/em
         if (!$user->getId()) {
-            if (!$user->username || Craft::$app->getConfig()->getGeneral()->useEmailAsUsername) {
+            if (!$user->username || \CraftCms\Cms\Craft::generalConfig()->useEmailAsUsername) {
                 $user->username = $user->email;
             }
         }

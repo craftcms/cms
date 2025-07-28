@@ -6,7 +6,7 @@ Route::middleware(['web', 'craft'])
     ->group(function () {
         // Add new routes here
 
-        Route::prefix(config('craft.general.cpTrigger'))
+        Route::prefix(\CraftCms\Cms\Craft::generalConfig()->cpTrigger)
             ->middleware([
                 'auth',
                 'craft.cp',

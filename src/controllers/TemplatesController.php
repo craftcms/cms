@@ -88,7 +88,7 @@ class TemplatesController extends Controller
         // Does that template exist?
         if (
             (
-                Craft::$app->getConfig()->getGeneral()->headlessMode &&
+                \CraftCms\Cms\Craft::generalConfig()->headlessMode &&
                 $this->request->getIsSiteRequest()
             ) ||
             !Path::ensurePathIsContained($template) || // avoid the Craft::warning() from View::_validateTemplateName()
@@ -199,7 +199,7 @@ class TemplatesController extends Controller
         }
 
         if ($this->request->getIsSiteRequest()) {
-            $prefix = Craft::$app->getConfig()->getGeneral()->errorTemplatePrefix;
+            $prefix = \CraftCms\Cms\Craft::generalConfig()->errorTemplatePrefix;
 
             if ($this->getView()->doesTemplateExist($prefix . $statusCode)) {
                 $template = $prefix . $statusCode;

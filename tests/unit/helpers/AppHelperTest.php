@@ -8,13 +8,13 @@
 namespace crafttests\unit\helpers;
 
 use Craft;
-use craft\config\GeneralConfig;
 use craft\enums\CmsEdition;
 use craft\helpers\App;
 use craft\mail\transportadapters\Sendmail;
 use craft\models\MailSettings;
 use craft\services\Entries;
 use craft\test\TestCase;
+use CraftCms\Cms\Config\GeneralConfig;
 use stdClass;
 use yii\base\Component;
 use yii\base\InvalidArgumentException;
@@ -298,7 +298,7 @@ class AppHelperTest extends TestCase
         $oldMemoryLimit = ini_get('memory_limit');
         $oldMaxExecution = ini_get('max_execution_time');
 
-        $generalConfig = Craft::$app->getConfig()->getGeneral();
+        $generalConfig = \CraftCms\Cms\Craft::generalConfig();
         $generalConfig->phpMaxMemoryLimit = '512M';
 
         if (@ini_set('memory_limit', '256M') === false) {

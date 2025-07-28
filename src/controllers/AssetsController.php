@@ -940,7 +940,7 @@ class AssetsController extends Controller
             $transformer->flipImage(!empty($flipData['x']), !empty($flipData['y']));
         }
 
-        $generalConfig = Craft::$app->getConfig()->getGeneral();
+        $generalConfig = \CraftCms\Cms\Craft::generalConfig();
         $upscale = $generalConfig->upscaleImages;
         $generalConfig->upscaleImages = true;
 

@@ -421,7 +421,7 @@ SQL,
      */
     public function purgeUnsavedDrafts(): void
     {
-        $generalConfig = Craft::$app->getConfig()->getGeneral();
+        $generalConfig = \CraftCms\Cms\Craft::generalConfig();
 
         if ($generalConfig->purgeUnsavedDraftsDuration === 0) {
             return;

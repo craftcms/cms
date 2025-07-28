@@ -125,7 +125,7 @@ class SsoController extends Controller
                 'returnUrl' => $returnUrl,
             ];
 
-            if (Craft::$app->getConfig()->getGeneral()->enableCsrfProtection) {
+            if (\CraftCms\Cms\Craft::generalConfig()->enableCsrfProtection) {
                 $return['csrfTokenValue'] = $this->request->getCsrfToken();
             }
 

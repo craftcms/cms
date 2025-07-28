@@ -71,7 +71,7 @@ class FieldsController extends Controller
             $this->requireAdmin();
         }
 
-        $this->readOnly = !Craft::$app->getConfig()->getGeneral()->allowAdminChanges;
+        $this->readOnly = !\CraftCms\Cms\Craft::generalConfig()->allowAdminChanges;
 
         return true;
     }

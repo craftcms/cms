@@ -218,7 +218,7 @@ class Cp extends Component
     public function nav(): array
     {
         $isAdmin = Craft::$app->getUser()->getIsAdmin();
-        $generalConfig = Craft::$app->getConfig()->getGeneral();
+        $generalConfig = \CraftCms\Cms\Craft::generalConfig();
 
         $navItems = [
             [
@@ -337,7 +337,7 @@ class Cp extends Component
             $navItems[] = [
                 'url' => 'settings',
                 'label' => Craft::t('app', 'Settings'),
-                'icon' => Craft::$app->getConfig()->getGeneral()->allowAdminChanges ? 'gear' : 'gear-slash',
+                'icon' => \CraftCms\Cms\Craft::generalConfig()->allowAdminChanges ? 'gear' : 'gear-slash',
             ];
 
             $navItems[] = [
@@ -405,7 +405,7 @@ class Cp extends Component
      */
     public function settings(): array
     {
-        $readOnly = !Craft::$app->getConfig()->getGeneral()->allowAdminChanges;
+        $readOnly = !\CraftCms\Cms\Craft::generalConfig()->allowAdminChanges;
         $settings = [];
 
         $label = Craft::t('app', 'System');
@@ -419,7 +419,7 @@ class Cp extends Component
             'label' => Craft::t('app', 'Sites'),
         ];
 
-        if (!Craft::$app->getConfig()->getGeneral()->headlessMode) {
+        if (!\CraftCms\Cms\Craft::generalConfig()->headlessMode) {
             $settings[$label]['routes'] = [
                 'iconMask' => '@app/icons/light/signs-post.svg',
                 'label' => Craft::t('app', 'Routes'),
@@ -430,7 +430,7 @@ class Cp extends Component
             'iconMask' => '@app/icons/light/user-group.svg',
             'label' => Craft::t('app', 'Users'),
         ];
-        if (Craft::$app->getConfig()->getGeneral()->allowAdminChanges) {
+        if (\CraftCms\Cms\Craft::generalConfig()->allowAdminChanges) {
             $settings[$label]['addresses'] = [
                 'iconMask' => '@app/icons/light/map-location.svg',
                 'label' => Craft::t('app', 'Addresses'),

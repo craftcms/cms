@@ -7,7 +7,6 @@
 
 namespace crafttests\unit\helpers;
 
-use Craft;
 use craft\elements\Asset;
 use craft\helpers\Assets;
 use craft\test\TestCase;
@@ -88,7 +87,7 @@ class AssetsHelperTest extends TestCase
      */
     public function testPrepareAssetNameAsciiRemove(): void
     {
-        Craft::$app->getConfig()->getGeneral()->convertFilenamesToAscii = true;
+        \CraftCms\Cms\Craft::generalConfig()->convertFilenamesToAscii = true;
         self::assertSame('tesSSt.text', Assets::prepareAssetName('tes§t.text'));
     }
 
@@ -97,10 +96,10 @@ class AssetsHelperTest extends TestCase
      */
     public function testConfigSeparator(): void
     {
-        Craft::$app->getConfig()->getGeneral()->filenameWordSeparator = '||';
+        \CraftCms\Cms\Craft::generalConfig()->filenameWordSeparator = '||';
         self::assertSame('te||st.notafile', Assets::prepareAssetName('te st.notafile'));
 
-        Craft::$app->getConfig()->getGeneral()->filenameWordSeparator = false;
+        \CraftCms\Cms\Craft::generalConfig()->filenameWordSeparator = false;
         self::assertSame('t est.notafile', Assets::prepareAssetName('t est.notafile'));
     }
 
@@ -166,7 +165,7 @@ class AssetsHelperTest extends TestCase
      */
     public function testMaxUploadSize(): void
     {
-        Craft::$app->getConfig()->getGeneral()->maxUploadFileSize = 1;
+        \CraftCms\Cms\Craft::generalConfig()->maxUploadFileSize = 1;
         self::assertSame(1, Assets::getMaxUploadSize());
     }
 

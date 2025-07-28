@@ -45,8 +45,8 @@ class InstallController extends BaseUpdaterController
         $this->requireAdmin();
 
         if (
-            !Craft::$app->getConfig()->getGeneral()->allowUpdates ||
-            !Craft::$app->getConfig()->getGeneral()->allowAdminChanges
+            !\CraftCms\Cms\Craft::generalConfig()->allowUpdates ||
+            !\CraftCms\Cms\Craft::generalConfig()->allowAdminChanges
         ) {
             throw new ForbiddenHttpException('Installation of plugins from the Plugin Store is disabled.');
         }

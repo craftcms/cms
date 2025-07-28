@@ -76,7 +76,7 @@ class AssetLocationValidator extends Validator
         parent::init();
 
         if (!isset($this->allowedExtensions)) {
-            $this->allowedExtensions = Craft::$app->getConfig()->getGeneral()->allowedFileExtensions;
+            $this->allowedExtensions = \CraftCms\Cms\Craft::generalConfig()->allowedFileExtensions;
         }
 
         if (!isset($this->disallowedExtension)) {

@@ -46,7 +46,7 @@ class UserSettingsController extends Controller
             $this->requireAdmin();
         }
 
-        $this->readOnly = !Craft::$app->getConfig()->getGeneral()->allowAdminChanges;
+        $this->readOnly = !\CraftCms\Cms\Craft::generalConfig()->allowAdminChanges;
 
         if ($action->id !== 'save-user-settings') {
             Craft::$app->requireEdition(CmsEdition::Team);

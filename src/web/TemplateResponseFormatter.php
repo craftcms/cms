@@ -42,7 +42,7 @@ class TemplateResponseFormatter extends Component implements ResponseFormatterIn
         }
 
         $view = Craft::$app->getView();
-        $generalConfig = Craft::$app->getConfig()->getGeneral();
+        $generalConfig = \CraftCms\Cms\Craft::generalConfig();
 
         // If this is a preview request and `useIframeResizer` is enabled, register the iframe resizer script
         if (

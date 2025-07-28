@@ -259,7 +259,7 @@ class Volume extends Model implements
         $rules[] = [['fieldLayout'], 'validateFieldLayout'];
         $rules[] = [['subpath'], fn($attribute) => $this->validateUniqueSubpath($attribute), 'skipOnEmpty' => false];
 
-        $tempAssetUploadFs = App::parseEnv(Craft::$app->getConfig()->getGeneral()->tempAssetUploadFs);
+        $tempAssetUploadFs = App::parseEnv(\CraftCms\Cms\Craft::generalConfig()->tempAssetUploadFs);
         if ($tempAssetUploadFs) {
             $rules[] = [
                 ['fsHandle'],

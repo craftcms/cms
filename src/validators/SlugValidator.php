@@ -49,7 +49,7 @@ class SlugValidator extends Validator
         }
 
         if (!isset($this->limitAutoSlugsToAscii)) {
-            $this->limitAutoSlugsToAscii = Craft::$app->getConfig()->getGeneral()->limitAutoSlugsToAscii;
+            $this->limitAutoSlugsToAscii = \CraftCms\Cms\Craft::generalConfig()->limitAutoSlugsToAscii;
         }
     }
 

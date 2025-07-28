@@ -435,7 +435,7 @@ class Gql extends Component
             );
         }
 
-        $generalConfig = Craft::$app->getConfig()->getGeneral();
+        $generalConfig = \CraftCms\Cms\Craft::generalConfig();
 
         if (!$isIntrospectionQuery) {
             // Set complexity rule, if defined,
@@ -526,7 +526,7 @@ class Gql extends Component
                 $result = $cachedResult;
             } else {
                 $isIntrospectionQuery = GqlHelper::isIntrospectionQuery($query);
-                $prebuildSchema = $isIntrospectionQuery || !Craft::$app->getConfig()->getGeneral()->lazyGqlTypes;
+                $prebuildSchema = $isIntrospectionQuery || !\CraftCms\Cms\Craft::generalConfig()->lazyGqlTypes;
                 $schemaDef = $this->getSchemaDef($schema, $prebuildSchema);
                 $elementsService = Craft::$app->getElements();
                 $elementsService->startCollectingCacheInfo();
@@ -868,7 +868,7 @@ class Gql extends Component
         $schema = $this->_getPublicSchema();
 
         if (!$schema) {
-            if (!Craft::$app->getConfig()->getGeneral()->allowAdminChanges) {
+            if (!\CraftCms\Cms\Craft::generalConfig()->allowAdminChanges) {
                 return null;
             }
 
@@ -1324,7 +1324,7 @@ class Gql extends Component
      */
     public function handleQueryErrors(array $errors, callable $formatter): array
     {
-        $devMode = Craft::$app->getConfig()->getGeneral()->devMode;
+        $devMode = \CraftCms\Cms\Craft::generalConfig()->devMode;
 
         foreach ($errors as &$error) {
             $originException = $nextException = $error;
@@ -1393,7 +1393,7 @@ class Gql extends Component
         ?string $operationName = null,
     ): ?string {
         // No cache key, if explicitly disabled
-        $generalConfig = Craft::$app->getConfig()->getGeneral();
+        $generalConfig = \CraftCms\Cms\Craft::generalConfig();
 
         if (!$generalConfig->enableGraphqlCaching) {
             return null;
@@ -1541,7 +1541,7 @@ class Gql extends Component
             Trim::class,
         ];
 
-        if (!Craft::$app->getConfig()->getGeneral()->disableGraphqlTransformDirective) {
+        if (!\CraftCms\Cms\Craft::generalConfig()->disableGraphqlTransformDirective) {
             $directiveClasses[] = Transform::class;
         }
 

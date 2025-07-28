@@ -756,7 +756,7 @@ class App
         // Don't mess with the memory_limit, even at the config's request, if it's already set to -1 or >= 1.5GB
         $memoryLimit = static::phpConfigValueInBytes('memory_limit');
         if ($memoryLimit !== -1 && $memoryLimit < 1024 * 1024 * 1536) {
-            $maxMemoryLimit = Craft::$app->getConfig()->getGeneral()->phpMaxMemoryLimit;
+            $maxMemoryLimit = \CraftCms\Cms\Craft::generalConfig()->phpMaxMemoryLimit;
             @ini_set('memory_limit', $maxMemoryLimit ?: '1536M');
         }
 
@@ -932,7 +932,7 @@ class App
      */
     public static function assetManagerConfig(): array
     {
-        $generalConfig = Craft::$app->getConfig()->getGeneral();
+        $generalConfig = \CraftCms\Cms\Craft::generalConfig();
 
         return [
             'class' => AssetManager::class,
@@ -952,7 +952,7 @@ class App
      */
     public static function cacheConfig(): array
     {
-        $generalConfig = Craft::$app->getConfig()->getGeneral();
+        $generalConfig = \CraftCms\Cms\Craft::generalConfig();
 
         return [
             'class' => \CraftCms\Yii2Adapter\Cache::class,
@@ -1104,7 +1104,7 @@ class App
      */
     public static function mutexConfig(): array
     {
-        $generalConfig = Craft::$app->getConfig()->getGeneral();
+        $generalConfig = \CraftCms\Cms\Craft::generalConfig();
 
         return [
             'class' => FileMutex::class,
@@ -1120,7 +1120,7 @@ class App
     {
         return [
             'class' => ProjectConfigService::class,
-            'readOnly' => Craft::$app->getIsInstalled() && !Craft::$app->getConfig()->getGeneral()->allowAdminChanges,
+            'readOnly' => Craft::$app->getIsInstalled() && !\CraftCms\Cms\Craft::generalConfig()->allowAdminChanges,
             'writeYamlAutomatically' => !self::isEphemeral(),
         ];
     }
@@ -1151,8 +1151,7 @@ class App
      */
     public static function userConfig(): array
     {
-        $configService = Craft::$app->getConfig();
-        $generalConfig = $configService->getGeneral();
+        $generalConfig = \CraftCms\Cms\Craft::generalConfig();
         $request = Craft::$app->getRequest();
 
         if ($request->getIsConsoleRequest() || $request->getIsSiteRequest()) {
@@ -1205,7 +1204,7 @@ class App
      */
     public static function webRequestConfig(): array
     {
-        $generalConfig = Craft::$app->getConfig()->getGeneral();
+        $generalConfig = \CraftCms\Cms\Craft::generalConfig();
 
         $config = [
             'class' => WebRequest::class,
@@ -1255,7 +1254,7 @@ class App
         if (
             Craft::$app->has('request', true) &&
             Craft::$app->getRequest()->getIsSiteRequest() &&
-            Craft::$app->getConfig()->getGeneral()->headlessMode
+            \CraftCms\Cms\Craft::generalConfig()->headlessMode
         ) {
             $config['format'] = WebResponse::FORMAT_JSON;
         }
@@ -1295,7 +1294,7 @@ class App
             }
 
             // If the defaultCpLocale setting is set, go with that
-            $generalConfig = Craft::$app->getConfig()->getGeneral();
+            $generalConfig = \CraftCms\Cms\Craft::generalConfig();
             if ($generalConfig->defaultCpLocale) {
                 return $i18n->getLocaleById($generalConfig->defaultCpLocale);
             }
@@ -1337,7 +1336,7 @@ class App
         $allLicenseInfo = $cache->get(App::CACHE_KEY_LICENSE_INFO) ?: [];
         $licenseInfoHost = $cache->get(App::CACHE_KEY_LICENSE_INFO_HOST);
         $pluginsService = Craft::$app->getPlugins();
-        $generalConfig = Craft::$app->getConfig()->getGeneral();
+        $generalConfig = \CraftCms\Cms\Craft::generalConfig();
         $consoleUrl = rtrim(Craft::$app->getPluginStore()->craftIdEndpoint, '/');
 
         foreach ($allLicenseInfo as $handle => $licenseInfo) {

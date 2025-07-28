@@ -35,7 +35,7 @@ class User
             case UserElement::STATUS_ACTIVE:
                 if ($user->locked) {
                     // Let them know how much time they have to wait (if any) before their account is unlocked.
-                    if (Craft::$app->getConfig()->getGeneral()->cooldownDuration) {
+                    if (\CraftCms\Cms\Craft::generalConfig()->cooldownDuration) {
                         return UserElement::AUTH_ACCOUNT_COOLDOWN;
                     }
                     return UserElement::AUTH_ACCOUNT_LOCKED;
@@ -108,7 +108,7 @@ class User
      */
     public static function getLoginFailureMessage(?string $authError, ?UserElement $user): string
     {
-        $generalConfig = Craft::$app->getConfig()->getGeneral();
+        $generalConfig = \CraftCms\Cms\Craft::generalConfig();
         // if preventUserEnumeration is true and the account is locked
         // set the $authError to a value that will trigger the generic, default message
         if (

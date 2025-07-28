@@ -303,7 +303,7 @@ class Address extends Element implements AddressInterface, NestedElementInterfac
         parent::init();
 
         if (!isset($this->countryCode)) {
-            $this->countryCode = Craft::$app->getConfig()->getGeneral()->defaultCountryCode;
+            $this->countryCode = \CraftCms\Cms\Craft::generalConfig()->defaultCountryCode;
         }
 
         $this->normalizeNames();
@@ -643,7 +643,7 @@ class Address extends Element implements AddressInterface, NestedElementInterfac
             LatLongField::class,
         ];
 
-        $generalConfig = Craft::$app->getConfig()->getGeneral();
+        $generalConfig = \CraftCms\Cms\Craft::generalConfig();
         $fieldLayout = $this->getFieldLayout();
 
         foreach ($requirableNativeFields as $class) {

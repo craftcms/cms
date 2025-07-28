@@ -180,7 +180,7 @@ class Application extends \yii\web\Application
             $isCpRequest = $request->getIsCpRequest();
             $response = $this->getResponse();
             $headers = $response->getHeaders();
-            $generalConfig = $this->getConfig()->getGeneral();
+            $generalConfig = \CraftCms\Cms\Craft::generalConfig();
 
             // Set no-cache headers for all action and CP requests
             if ($request->getIsActionRequest() || $request->getIsCpRequest()) {
@@ -393,7 +393,7 @@ class Application extends \yii\web\Application
      */
     protected function ensureResourcePathExists(): void
     {
-        $generalConfig = $this->getConfig()->getGeneral();
+        $generalConfig = \CraftCms\Cms\Craft::generalConfig();
 
         $resourceBasePath = Craft::getAlias($generalConfig->resourceBasePath);
 
@@ -414,7 +414,7 @@ class Application extends \yii\web\Application
      */
     protected function authenticate(): void
     {
-        if (!Craft::$app->getConfig()->getGeneral()->enableBasicHttpAuth) {
+        if (!\CraftCms\Cms\Craft::generalConfig()->enableBasicHttpAuth) {
             return;
         }
 
@@ -522,7 +522,7 @@ class Application extends \yii\web\Application
      */
     private function _processResourceRequest(Request $request): void
     {
-        $generalConfig = $this->getConfig()->getGeneral();
+        $generalConfig = \CraftCms\Cms\Craft::generalConfig();
 
         // Does this look like a resource request?
         $resourceBaseUri = parse_url(Craft::getAlias($generalConfig->resourceBaseUrl), PHP_URL_PATH);

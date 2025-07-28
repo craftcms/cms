@@ -402,7 +402,7 @@ trait ApplicationTrait
             }
 
             // Fall back on the default control panel language, if there is one, otherwise the browser language
-            return Craft::$app->getConfig()->getGeneral()->defaultCpLanguage ?? $this->_getFallbackLanguage();
+            return \CraftCms\Cms\Craft::generalConfig()->defaultCpLanguage ?? $this->_getFallbackLanguage();
         }
 
         /** @noinspection PhpUnhandledExceptionInspection */
@@ -720,7 +720,7 @@ trait ApplicationTrait
         // Only admin accounts can upgrade Craft
         if (
             $this->getUser()->getIsAdmin() &&
-            Craft::$app->getConfig()->getGeneral()->allowAdminChanges
+            \CraftCms\Cms\Craft::generalConfig()->allowAdminChanges
         ) {
             // Are they either *using* or *licensed to use* something < Craft Pro?
             $licensedEdition = $this->getLicensedEdition();
@@ -779,7 +779,7 @@ trait ApplicationTrait
      */
     public function getIsLive(): bool
     {
-        if (is_bool($live = $this->getConfig()->getGeneral()->isSystemLive)) {
+        if (is_bool($live = \CraftCms\Cms\Craft::generalConfig()->isSystemLive)) {
             return $live;
         }
 
@@ -1647,7 +1647,7 @@ trait ApplicationTrait
      */
     private function _setTimeZone(): void
     {
-        $timeZone = $this->getConfig()->getGeneral()->timezone ?? $this->getProjectConfig()->get('system.timeZone');
+        $timeZone = \CraftCms\Cms\Craft::generalConfig()->timezone ?? $this->getProjectConfig()->get('system.timeZone');
 
         if ($timeZone) {
             $this->setTimeZone(App::parseEnv($timeZone));
@@ -1720,7 +1720,7 @@ trait ApplicationTrait
                     $event->fields[] = EntryTitleField::class;
                     break;
                 case User::class:
-                    if (!$this->getConfig()->getGeneral()->useEmailAsUsername) {
+                    if (!\CraftCms\Cms\Craft::generalConfig()->useEmailAsUsername) {
                         $event->fields[] = UsernameField::class;
                     }
                     $event->fields[] = UserFullNameField::class;

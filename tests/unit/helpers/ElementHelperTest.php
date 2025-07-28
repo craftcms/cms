@@ -7,7 +7,6 @@
 
 namespace crafttests\unit\helpers;
 
-use Craft;
 use craft\errors\OperationAbortedException;
 use craft\helpers\ElementHelper;
 use craft\test\mockclasses\elements\ExampleElement;
@@ -48,7 +47,7 @@ class ElementHelperTest extends TestCase
      */
     public function testGenerateSlug(string $expected, string $input, ?bool $ascii = null, ?string $language = null): void
     {
-        $glue = Craft::$app->getConfig()->getGeneral()->slugWordSeparator;
+        $glue = \CraftCms\Cms\Craft::generalConfig()->slugWordSeparator;
         $expected = str_replace('[separator-here]', $glue, $expected);
 
         self::assertSame($expected, ElementHelper::generateSlug($input, $ascii, $language));
@@ -61,7 +60,7 @@ class ElementHelperTest extends TestCase
      */
     public function testNormalizeSlug(string $expected, string $slug): void
     {
-        $glue = Craft::$app->getConfig()->getGeneral()->slugWordSeparator;
+        $glue = \CraftCms\Cms\Craft::generalConfig()->slugWordSeparator;
         $expected = str_replace('[separator-here]', $glue, $expected);
 
         self::assertSame($expected, ElementHelper::normalizeSlug($slug));
@@ -72,7 +71,7 @@ class ElementHelperTest extends TestCase
      */
     public function testLowerRemoveFromCreateSlug(): void
     {
-        $general = Craft::$app->getConfig()->getGeneral();
+        $general = \CraftCms\Cms\Craft::generalConfig();
         $general->allowUppercaseInSlug = false;
 
         self::assertSame('word' . $general->slugWordSeparator . 'word', ElementHelper::normalizeSlug('word WORD'));
@@ -109,8 +108,8 @@ class ElementHelperTest extends TestCase
      */
     public function testMaxSlugIncrementDoesntThrow(): void
     {
-        $oldValue = Craft::$app->getConfig()->getGeneral()->maxSlugIncrement;
-        Craft::$app->getConfig()->getGeneral()->maxSlugIncrement = 0;
+        $oldValue = \CraftCms\Cms\Craft::generalConfig()->maxSlugIncrement;
+        \CraftCms\Cms\Craft::generalConfig()->maxSlugIncrement = 0;
 
         $this->tester->expectThrowable(OperationAbortedException::class, function() {
             $el = new ExampleElement(['uriFormat' => 'test/{slug}']);
@@ -118,7 +117,7 @@ class ElementHelperTest extends TestCase
         });
 
         // reset
-        Craft::$app->getConfig()->getGeneral()->maxSlugIncrement = $oldValue;
+        \CraftCms\Cms\Craft::generalConfig()->maxSlugIncrement = $oldValue;
     }
 
     /**

@@ -9,11 +9,11 @@ namespace craft\web;
 
 use Craft;
 use craft\base\RequestTrait;
-use craft\config\GeneralConfig;
 use craft\errors\SiteNotFoundException;
 use craft\helpers\App;
 use craft\models\Site;
 use craft\services\Sites;
+use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Str;
 use yii\base\InvalidArgumentException;
@@ -195,7 +195,7 @@ class Request extends \CraftCms\Yii2Adapter\Web\Request
         parent::init();
 
         if (!isset($this->generalConfig)) {
-            $this->generalConfig = Craft::$app->getConfig()->getGeneral();
+            $this->generalConfig = \CraftCms\Cms\Craft::generalConfig();
         }
         $this->generalConfig = Instance::ensure($this->generalConfig, GeneralConfig::class);
 

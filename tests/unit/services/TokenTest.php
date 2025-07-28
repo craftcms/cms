@@ -57,7 +57,7 @@ class TokenTest extends TestCase
      */
     public function testCreateTokenDefaults(): void
     {
-        Craft::$app->getConfig()->getGeneral()->defaultTokenDuration = 10000;
+        \CraftCms\Cms\Craft::generalConfig()->defaultTokenDuration = 10000;
 
         // Determine what the expiry date is *supposed* to be
         $expiryDate = (new DateTime('now', new DateTimeZone('UTC')))->add(new DateInterval('PT10000S'));

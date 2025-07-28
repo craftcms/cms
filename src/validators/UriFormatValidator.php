@@ -55,7 +55,7 @@ class UriFormatValidator extends Validator
         }
 
         if ($this->disallowTriggers) {
-            $generalConfig = Craft::$app->getConfig()->getGeneral();
+            $generalConfig = \CraftCms\Cms\Craft::generalConfig();
             $firstSeg = explode('/', $value, 2)[0];
 
             if ($firstSeg === $generalConfig->actionTrigger) {

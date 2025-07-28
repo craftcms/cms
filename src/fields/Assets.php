@@ -370,7 +370,7 @@ class Assets extends BaseRelationField
      */
     public function validateFileSize(ElementInterface $element): void
     {
-        $maxSize = Craft::$app->getConfig()->getGeneral()->maxUploadFileSize;
+        $maxSize = \CraftCms\Cms\Craft::generalConfig()->maxUploadFileSize;
 
         $filenames = [];
 
@@ -983,7 +983,7 @@ class Assets extends BaseRelationField
 
             // Sanitize the subpath
             $segments = array_filter(explode('/', $renderedSubpath), fn(string $segment): bool => $segment !== ':ignore:');
-            $generalConfig = Craft::$app->getConfig()->getGeneral();
+            $generalConfig = \CraftCms\Cms\Craft::generalConfig();
             $segments = array_map(fn(string $segment): string => FileHelper::sanitizeFilename($segment, [
                 'asciiOnly' => $generalConfig->convertFilenamesToAscii,
             ]), $segments);

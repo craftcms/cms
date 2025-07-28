@@ -861,7 +861,7 @@ class EntryQuery extends ElementQuery implements NestedElementQueryInterface
 
         // todo: update after the next breakpoint
         if (
-            Craft::$app->getConfig()->getGeneral()->staticStatuses &&
+            \CraftCms\Cms\Craft::generalConfig()->staticStatuses &&
             Craft::$app->getDb()->columnExists(Table::ENTRIES, 'status')
         ) {
             $this->query->addSelect(['entries.status']);
@@ -950,7 +950,7 @@ class EntryQuery extends ElementQuery implements NestedElementQueryInterface
     {
         if (
             in_array($status, [Entry::STATUS_LIVE, Entry::STATUS_PENDING, Entry::STATUS_EXPIRED]) &&
-            Craft::$app->getConfig()->getGeneral()->staticStatuses
+            \CraftCms\Cms\Craft::generalConfig()->staticStatuses
         ) {
             return [
                 'elements.enabled' => true,

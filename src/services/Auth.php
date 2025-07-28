@@ -151,7 +151,7 @@ class Auth extends Component
     public function setUser(?User $user, ?int $sessionDuration = null): void
     {
         $this->_user = $user ?? false;
-        $this->_sessionDuration = $user ? ($sessionDuration ?? Craft::$app->getConfig()->getGeneral()->userSessionDuration) : false;
+        $this->_sessionDuration = $user ? ($sessionDuration ?? \CraftCms\Cms\Craft::generalConfig()->userSessionDuration) : false;
 
         if ($user) {
             SessionHelper::set($this->userIdParam, $user->id);

@@ -1182,7 +1182,7 @@ class Install extends Migration
         ]));
         $this->output->writeln('done');
 
-        $generalConfig = Craft::$app->getConfig()->getGeneral();
+        $generalConfig = \CraftCms\Cms\Craft::generalConfig();
         $projectConfig = Craft::$app->getProjectConfig();
 
         if ($this->applyProjectConfigYaml) {

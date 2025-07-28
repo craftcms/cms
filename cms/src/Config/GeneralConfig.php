@@ -175,6 +175,30 @@ class GeneralConfig extends BaseConfig
     public bool $allowAdminChanges = true;
 
     /**
+     * @var string[]|null|false The Ajax origins that should be allowed to access the GraphQL API, if enabled.
+     *
+     * If this is set to an array, then `graphql/api` requests will only include the current request’s [[\yii\web\Request::getOrigin()|origin]]
+     * in the `Access-Control-Allow-Origin` response header if it’s listed here.
+     *
+     * If this is set to `false`, then the `Access-Control-Allow-Origin` response header will never be sent.
+     *
+     * ::: code
+     * ```php Static Config
+     * ->allowedGraphqlOrigins(false)
+     * ```
+     * ```shell Environment Override
+     * CRAFT_ALLOW_GRAPHQL_ORIGINS=false
+     * ```
+     * :::
+     *
+     * @group GraphQL
+     * @since 3.5.0
+     * @deprecated in 4.11.0. [[\craft\filters\Cors]] should be used instead.
+     * @see https://www.yiiframework.com/doc/api/2.0/yii-filters-cors
+     */
+    public array|null|false $allowedGraphqlOrigins = null;
+
+    /**
      * @var bool Whether Craft should allow system and plugin updates in the control panel, and plugin installation from the Plugin Store.
      *
      * This setting will automatically be disabled if <config5:allowAdminChanges> is disabled.
@@ -353,6 +377,23 @@ class GeneralConfig extends BaseConfig
      * @group System
      */
     public bool $autoLoginAfterAccountActivation = false;
+
+    /**
+     * @var bool Whether drafts should be saved automatically as they are edited.
+     *
+     * Note that drafts *will* be autosaved while Live Preview is open, regardless of this setting.
+     *
+     * ::: code
+     * ```shell Environment Override
+     * CRAFT_AUTOSAVE_DRAFTS=false
+     * ```
+     * :::
+     *
+     * @group System
+     * @since 3.5.6
+     * @deprecated in 4.0.0
+     */
+    public bool $autosaveDrafts = true;
 
     /**
      * @var string|null The base URL Craft should use when generating control panel URLs.
@@ -1018,38 +1059,22 @@ class GeneralConfig extends BaseConfig
     public bool $asyncCsrfInputs = false;
 
     /**
-     * @var bool Whether GraphQL introspection queries are allowed. Defaults to `true` and is always allowed in the control panel.
+     * @var bool Whether front-end web requests should support basic HTTP authentication.
      *
      * ::: code
      * ```php Static Config
-     * ->enableGraphqlIntrospection(false)
+     * ->enableBasicHttpAuth(true)
      * ```
      * ```shell Environment Override
-     * CRAFT_ENABLE_GRAPHQL_INTROSPECTION=false
+     * CRAFT_ENABLE_BASIC_HTTP_AUTH=true
      * ```
      * :::
      *
-     * @group GraphQL
+     * @group Security
+     * @since 3.5.0
+     * @deprecated in 4.13.0. [[\craft\filters\BasicHttpAuthLogin]] should be used instead.
      */
-    public bool $enableGraphqlIntrospection = true;
-
-    /**
-     * @var bool Whether the GraphQL API should be enabled.
-     *
-     * The GraphQL API is only available for Craft Pro.
-     *
-     * ::: code
-     * ```php Static Config
-     * ->enableGql(false)
-     * ```
-     * ```shell Environment Override
-     * CRAFT_ENABLE_GQL=false
-     * ```
-     * :::
-     *
-     * @group GraphQL
-     */
-    public bool $enableGql = true;
+    public bool $enableBasicHttpAuth = false;
 
     /**
      * @var bool Whether to use a cookie to persist the CSRF token if <config5:enableCsrfProtection> is enabled. If false, the CSRF token will be
@@ -1089,6 +1114,40 @@ class GeneralConfig extends BaseConfig
      * @group Security
      */
     public bool $enableCsrfProtection = true;
+
+    /**
+     * @var bool Whether GraphQL introspection queries are allowed. Defaults to `true` and is always allowed in the control panel.
+     *
+     * ::: code
+     * ```php Static Config
+     * ->enableGraphqlIntrospection(false)
+     * ```
+     * ```shell Environment Override
+     * CRAFT_ENABLE_GRAPHQL_INTROSPECTION=false
+     * ```
+     * :::
+     *
+     * @group GraphQL
+     */
+    public bool $enableGraphqlIntrospection = true;
+
+    /**
+     * @var bool Whether the GraphQL API should be enabled.
+     *
+     * The GraphQL API is only available for Craft Pro.
+     *
+     * ::: code
+     * ```php Static Config
+     * ->enableGql(false)
+     * ```
+     * ```shell Environment Override
+     * CRAFT_ENABLE_GQL=false
+     * ```
+     * :::
+     *
+     * @group GraphQL
+     */
+    public bool $enableGql = true;
 
     /**
      * @var mixed The amount of time a user’s elevated session will last, which is required for some sensitive actions (e.g. user group/permission assignment).
@@ -1968,6 +2027,24 @@ class GeneralConfig extends BaseConfig
      * @group Routing
      */
     public ?string $pathParam = 'p';
+
+    /**
+     * @var string|null The `Permissions-Policy` header that should be sent for site responses.
+     *
+     * ::: code
+     * ```php Static Config
+     * ->permissionsPolicyHeader('Permissions-Policy: geolocation=(self)')
+     * ```
+     * ```shell Environment Override
+     * CRAFT_PERMISSIONS_POLICY_HEADER=Permissions-Policy: geolocation=(self)
+     * ```
+     * :::
+     *
+     * @group System
+     * @since 3.6.14
+     * @deprecated in 4.11.0. [[\craft\filters\Headers]] should be used instead.
+     */
+    public ?string $permissionsPolicyHeader = null;
 
     /**
      * @var string|null The maximum amount of memory Craft will try to reserve during memory-intensive operations such as zipping,
@@ -3045,7 +3122,7 @@ class GeneralConfig extends BaseConfig
      *
      * @group Security
      */
-    public array $trustedHosts = ['any'];
+    public ?array $trustedHosts = ['any'];
 
     /**
      * @var string The query string parameter name that Craft tokens should be set to.
@@ -3499,6 +3576,32 @@ class GeneralConfig extends BaseConfig
     {
         $this->allowedFileExtensions = array_map('strtolower', $value);
 
+        return $this;
+    }
+
+    /**
+     * The Ajax origins that should be allowed to access the GraphQL API, if enabled.
+     *
+     * If this is set to an array, then `graphql/api` requests will only include the current request’s [[\yii\web\Request::getOrigin()|origin]]
+     * in the `Access-Control-Allow-Origin` response header if it’s listed here.
+     *
+     * If this is set to `false`, then the `Access-Control-Allow-Origin` response header will never be sent.
+     *
+     * ```php
+     * ->allowedGraphqlOrigins(false)
+     * ```
+     *
+     * @group GraphQL
+     * @param array|null|false $value
+     * @return self
+     * @see $allowedGraphqlOrigins
+     * @since 4.2.0
+     * @deprecated in 4.11.0. [[\craft\filters\Cors]] should be used instead.
+     * @see https://www.yiiframework.com/doc/api/2.0/yii-filters-cors
+     */
+    public function allowedGraphqlOrigins(array|null|false $value): self
+    {
+        $this->allowedGraphqlOrigins = $value;
         return $this;
     }
 
@@ -4334,6 +4437,25 @@ class GeneralConfig extends BaseConfig
     {
         $this->asyncCsrfInputs = $value;
 
+        return $this;
+    }
+
+    /**
+     * Whether front-end web requests should support basic HTTP authentication.
+     *
+     * ```php
+     * ->enableBasicHttpAuth(true)
+     * ```
+     *
+     * @group Security
+     * @param bool $value
+     * @return self
+     * @see $enableBasicHttpAuth
+     * @since 4.2.0
+     */
+    public function enableBasicHttpAuth(bool $value = true): self
+    {
+        $this->enableBasicHttpAuth = $value;
         return $this;
     }
 
@@ -5402,6 +5524,26 @@ class GeneralConfig extends BaseConfig
 
         $this->pathParam = $value;
 
+        return $this;
+    }
+
+    /**
+     * The `Permissions-Policy` header that should be sent for web responses.
+     *
+     * ```php
+     * ->permissionsPolicyHeader('Permissions-Policy: geolocation=(self)')
+     * ```
+     *
+     * @group System
+     * @param string|null $value
+     * @return self
+     * @see $permissionsPolicyHeader
+     * @since 4.2.0
+     * @deprecated in 4.11.0. [[\craft\filters\Headers]] should be used instead.
+     */
+    public function permissionsPolicyHeader(?string $value): self
+    {
+        $this->permissionsPolicyHeader = $value;
         return $this;
     }
 

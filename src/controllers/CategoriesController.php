@@ -60,7 +60,7 @@ class CategoriesController extends Controller
 
         return $this->renderTemplate('settings/categories/index.twig', [
             'categoryGroups' => $groups,
-            'readOnly' => !Craft::$app->getConfig()->getGeneral()->allowAdminChanges,
+            'readOnly' => !\CraftCms\Cms\Craft::generalConfig()->allowAdminChanges,
         ]);
     }
 
@@ -76,7 +76,7 @@ class CategoriesController extends Controller
     {
         $this->requireAdmin(false);
 
-        $readOnly = !Craft::$app->getConfig()->getGeneral()->allowAdminChanges;
+        $readOnly = !\CraftCms\Cms\Craft::generalConfig()->allowAdminChanges;
 
         if ($groupId === null && $readOnly) {
             throw new ForbiddenHttpException('Administrative changes are disallowed in this environment.');

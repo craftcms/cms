@@ -85,7 +85,7 @@ class RebrandController extends Controller
 
         $imagesService = Craft::$app->getImages();
 
-        if (Craft::$app->getConfig()->getGeneral()->sanitizeCpImageUploads) {
+        if (\CraftCms\Cms\Craft::generalConfig()->sanitizeCpImageUploads) {
             Image::cleanImageByPath($fileDestination);
         }
 

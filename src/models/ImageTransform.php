@@ -144,7 +144,7 @@ class ImageTransform extends Model
         parent::init();
 
         if (!isset($this->upscale)) {
-            $this->upscale = Craft::$app->getConfig()->getGeneral()->upscaleImages;
+            $this->upscale = \CraftCms\Cms\Craft::generalConfig()->upscaleImages;
         }
     }
 
@@ -322,7 +322,7 @@ class ImageTransform extends Model
             'name' => $this->name,
             'position' => $this->position,
             'quality' => $this->quality,
-            'upscale' => $this->upscale ?? Craft::$app->getConfig()->getGeneral()->upscaleImages,
+            'upscale' => $this->upscale ?? \CraftCms\Cms\Craft::generalConfig()->upscaleImages,
             'width' => $this->width,
         ];
     }

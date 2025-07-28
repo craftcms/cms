@@ -9,7 +9,7 @@ use function Pest\Laravel\get;
 beforeEach(function () {
     actingAs(User::first());
 
-    $this->cpTrigger = Craft::$app->getConfig()->getGeneral()->cpTrigger;
+    $this->cpTrigger = \CraftCms\Cms\Craft::generalConfig()->cpTrigger;
 
     Craft::$app->edition = CmsEdition::Pro;
 });

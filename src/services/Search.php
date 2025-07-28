@@ -569,12 +569,12 @@ class Search extends Component
         }
 
         if (is_string($searchQuery)) {
-            return new SearchQuery($searchQuery, Craft::$app->getConfig()->getGeneral()->defaultSearchTermOptions);
+            return new SearchQuery($searchQuery, \CraftCms\Cms\Craft::generalConfig()->defaultSearchTermOptions);
         }
 
         $options = array_merge($searchQuery);
         $searchQuery = Arr::pull($options, 'query');
-        $options = array_merge(Craft::$app->getConfig()->getGeneral()->defaultSearchTermOptions, $options);
+        $options = array_merge(\CraftCms\Cms\Craft::generalConfig()->defaultSearchTermOptions, $options);
         return new SearchQuery($searchQuery, $options);
     }
 

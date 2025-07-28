@@ -89,7 +89,7 @@ class Utilities extends Component
         $utilityTypes[] = ClearCaches::class;
         $utilityTypes[] = DeprecationErrors::class;
 
-        $generalConfig = Craft::$app->getConfig()->getGeneral();
+        $generalConfig = \CraftCms\Cms\Craft::generalConfig();
         if ($generalConfig->backupCommand !== false) {
             $utilityTypes[] = DbBackup::class;
         }
@@ -150,7 +150,7 @@ class Utilities extends Component
         }
 
         // Make sure the utility isn't disabled
-        if (in_array($utilityId, Craft::$app->getConfig()->getGeneral()->disabledUtilities)) {
+        if (in_array($utilityId, \CraftCms\Cms\Craft::generalConfig()->disabledUtilities)) {
             return false;
         }
 

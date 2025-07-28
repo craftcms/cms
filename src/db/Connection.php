@@ -295,7 +295,7 @@ class Connection extends \CraftCms\Yii2Adapter\DatabaseConnection
         }
 
         // Determine the command that should be executed
-        $backupCommand = Craft::$app->getConfig()->getGeneral()->backupCommand;
+        $backupCommand = \CraftCms\Cms\Craft::generalConfig()->backupCommand;
 
         if ($backupCommand === false) {
             throw new Exception('Database not backed up because the backup command is false.');
@@ -316,7 +316,7 @@ class Connection extends \CraftCms\Yii2Adapter\DatabaseConnection
             ]));
         }
 
-        $generalConfig = Craft::$app->getConfig()->getGeneral();
+        $generalConfig = \CraftCms\Cms\Craft::generalConfig();
 
         if ($generalConfig->maxBackups) {
             $backupPath = Craft::$app->getPath()->getDbBackupPath();
@@ -358,7 +358,7 @@ class Connection extends \CraftCms\Yii2Adapter\DatabaseConnection
         }
 
         // Determine the command that should be executed
-        $restoreCommand = Craft::$app->getConfig()->getGeneral()->restoreCommand;
+        $restoreCommand = \CraftCms\Cms\Craft::generalConfig()->restoreCommand;
 
         if ($restoreCommand === false) {
             throw new Exception('Database not restored because the restore command is false.');

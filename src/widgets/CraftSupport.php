@@ -133,7 +133,7 @@ JS, [
         $iconsDir = Craft::getAlias('@appicons');
 
         // Only show the DB backup option if DB backups haven't been disabled
-        $showBackupOption = (Craft::$app->getConfig()->getGeneral()->backupCommand !== false);
+        $showBackupOption = (\CraftCms\Cms\Craft::generalConfig()->backupCommand !== false);
 
         return $view->renderTemplate('_components/widgets/CraftSupport/body.twig', [
             'widget' => $this,

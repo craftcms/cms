@@ -277,7 +277,7 @@ class Sso extends Component
 
         if (empty($sessionDuration)) {
             // Get the session duration
-            $generalConfig = Craft::$app->getConfig()->getGeneral();
+            $generalConfig = \CraftCms\Cms\Craft::generalConfig();
             if ($rememberMe && $generalConfig->rememberedUserSessionDuration !== 0) {
                 $sessionDuration = $generalConfig->rememberedUserSessionDuration;
             } else {

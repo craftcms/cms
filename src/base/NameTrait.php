@@ -7,7 +7,6 @@
 
 namespace craft\base;
 
-use Craft;
 use craft\nameparsing\CustomLanguage;
 use TheIconic\NameParser\Language\English;
 use TheIconic\NameParser\Language\German;
@@ -63,7 +62,7 @@ trait NameTrait
                 return;
             }
 
-            $generalConfig = Craft::$app->getConfig()->getGeneral();
+            $generalConfig = \CraftCms\Cms\Craft::generalConfig();
             $languages = [
                 // Load our custom language file first so config settings can override the defaults
                 new CustomLanguage(

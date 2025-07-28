@@ -77,7 +77,7 @@ class PruneRevisionsController extends Controller
 
         if (!isset($this->maxRevisions)) {
             $this->maxRevisions = (int)$this->prompt('What is the max number of revisions an element can have?', [
-                'default' => Craft::$app->getConfig()->getGeneral()->maxRevisions,
+                'default' => \CraftCms\Cms\Craft::generalConfig()->maxRevisions,
                 'validator' => fn($input) => filter_var($input, FILTER_VALIDATE_INT, FILTER_NULL_ON_FAILURE) !== null && $input >= 0,
             ]);
         }

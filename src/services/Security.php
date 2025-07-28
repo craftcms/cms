@@ -42,7 +42,7 @@ class Security extends \yii\base\Security
     {
         parent::init();
 
-        $this->_blowFishHashCost = Craft::$app->getConfig()->getGeneral()->blowfishHashCost;
+        $this->_blowFishHashCost = \CraftCms\Cms\Craft::generalConfig()->blowfishHashCost;
 
         // normalize the sensitive keywords
         $this->sensitiveKeywords = array_map(
@@ -96,7 +96,7 @@ class Security extends \yii\base\Security
     public function hashData($data, $key = null, $rawHash = false): string
     {
         if ($key === null) {
-            $key = Craft::$app->getConfig()->getGeneral()->securityKey;
+            $key = \CraftCms\Cms\Craft::generalConfig()->securityKey;
         }
 
         return parent::hashData($data, $key, $rawHash);
@@ -121,7 +121,7 @@ class Security extends \yii\base\Security
     public function validateData($data, $key = null, $rawHash = false): string|false
     {
         if ($key === null) {
-            $key = Craft::$app->getConfig()->getGeneral()->securityKey;
+            $key = \CraftCms\Cms\Craft::generalConfig()->securityKey;
         }
 
         return parent::validateData($data, $key, $rawHash);
@@ -141,7 +141,7 @@ class Security extends \yii\base\Security
     public function encryptByKey($data, $inputKey = null, $info = null): string
     {
         if ($inputKey === null) {
-            $inputKey = Craft::$app->getConfig()->getGeneral()->securityKey;
+            $inputKey = \CraftCms\Cms\Craft::generalConfig()->securityKey;
         }
 
         return parent::encryptByKey($data, $inputKey, $info);
@@ -160,7 +160,7 @@ class Security extends \yii\base\Security
     public function decryptByKey($data, $inputKey = null, $info = null): string|false
     {
         if ($inputKey === null) {
-            $inputKey = Craft::$app->getConfig()->getGeneral()->securityKey;
+            $inputKey = \CraftCms\Cms\Craft::generalConfig()->securityKey;
         }
 
         return parent::decryptByKey($data, $inputKey, $info);

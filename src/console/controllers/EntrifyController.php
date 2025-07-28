@@ -611,7 +611,7 @@ class EntrifyController extends Controller
                     throw new InvalidConfigException('The --author option is required when this command is run non-interactively.');
                 }
                 $usersService = Craft::$app->getUsers();
-                $generalConfig = Craft::$app->getConfig()->getGeneral();
+                $generalConfig = \CraftCms\Cms\Craft::generalConfig();
                 $what = $generalConfig->useEmailAsUsername ? 'email' : 'username or email';
                 $usernameOrEmail = $this->prompt("Enter the $what of the author that the entries should have:", [
                     'required' => true,

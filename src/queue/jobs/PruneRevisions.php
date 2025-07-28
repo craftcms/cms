@@ -48,7 +48,7 @@ class PruneRevisions extends BaseJob
     {
         if (!$this->maxRevisions) {
             // Make sure maxRevisions is still set
-            $generalConfig = Craft::$app->getConfig()->getGeneral();
+            $generalConfig = \CraftCms\Cms\Craft::generalConfig();
             if (!$generalConfig->maxRevisions) {
                 return;
             }

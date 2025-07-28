@@ -181,7 +181,7 @@ class UrlHelper
         $url = static::urlWithScheme($url, $scheme);
 
         return static::urlWithParams($url, [
-            Craft::$app->getConfig()->getGeneral()->tokenParam => $token,
+            \CraftCms\Cms\Craft::generalConfig()->tokenParam => $token,
         ]);
     }
 
@@ -395,7 +395,7 @@ class UrlHelper
      */
     public static function actionUrl(string $path = '', array|string|null $params = null, ?string $scheme = null, ?bool $showScriptName = null): string
     {
-        $generalConfig = Craft::$app->getConfig()->getGeneral();
+        $generalConfig = \CraftCms\Cms\Craft::generalConfig();
         $path = $generalConfig->actionTrigger . '/' . trim($path, '/');
 
         $request = Craft::$app->getRequest();
@@ -450,7 +450,7 @@ class UrlHelper
      */
     public static function getSchemeForTokenizedUrl(bool $cp = false): string
     {
-        $useSslOnTokenizedUrls = Craft::$app->getConfig()->getGeneral()->useSslOnTokenizedUrls;
+        $useSslOnTokenizedUrls = \CraftCms\Cms\Craft::generalConfig()->useSslOnTokenizedUrls;
 
         // If they've explicitly set `useSslOnTokenizedUrls` to true, use https.
         if ($useSslOnTokenizedUrls === true) {
@@ -525,7 +525,7 @@ class UrlHelper
     public static function baseCpUrl(): string
     {
         // Is a custom base control panel URL being defined in the config?
-        $generalConfig = Craft::$app->getConfig()->getGeneral();
+        $generalConfig = \CraftCms\Cms\Craft::generalConfig();
         if ($generalConfig->baseCpUrl) {
             return rtrim($generalConfig->baseCpUrl, '/') . '/';
         }
@@ -612,7 +612,7 @@ class UrlHelper
      */
     public static function prependCpTrigger(string $path): string
     {
-        return implode('/', array_filter([Craft::$app->getConfig()->getGeneral()->cpTrigger, $path]));
+        return implode('/', array_filter([\CraftCms\Cms\Craft::generalConfig()->cpTrigger, $path]));
     }
 
     /**
@@ -645,7 +645,7 @@ class UrlHelper
         $params = array_merge($baseParams, $params);
         $fragment ??= $baseFragment;
 
-        $generalConfig = Craft::$app->getConfig()->getGeneral();
+        $generalConfig = \CraftCms\Cms\Craft::generalConfig();
         $request = Craft::$app->getRequest();
 
         if ($cpUrl) {

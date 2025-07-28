@@ -159,7 +159,7 @@ class Request extends \yii\web\Request
     {
         $cookies = [];
 
-        $this->enableCookieValidation = !empty(Craft::$app->getConfig()->getGeneral()->securityKey);
+        $this->enableCookieValidation = !empty(\CraftCms\Cms\Craft::generalConfig()->securityKey);
 
         if ($this->enableCookieValidation && $this->cookieValidationKey !== '') {
             foreach ($this->getIlluminateRequest()->cookies as $name => $value) {

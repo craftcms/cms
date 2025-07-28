@@ -7,7 +7,6 @@
 
 namespace craft\gql\directives;
 
-use Craft;
 use craft\elements\Asset;
 use craft\gql\arguments\Transform as TransformArguments;
 use craft\gql\base\Directive;
@@ -84,7 +83,7 @@ class Transform extends Directive
                 }
             }
         } elseif ($source instanceof Asset) {
-            $generalConfig = Craft::$app->getConfig()->getGeneral();
+            $generalConfig = \CraftCms\Cms\Craft::generalConfig();
             $allowTransform = match ($source->getMimeType()) {
                 'image/gif' => $generalConfig->transformGifs,
                 'image/svg+xml' => $generalConfig->transformSvgs,

@@ -358,7 +358,7 @@ abstract class Controller extends \yii\web\Controller
                 ];
             }
             $response = $this->asJson($data);
-            if ($this->request->isCpRequest && Craft::$app->getConfig()->getGeneral()->enableCsrfProtection) {
+            if ($this->request->isCpRequest && \CraftCms\Cms\Craft::generalConfig()->enableCsrfProtection) {
                 $response->getHeaders()->setDefault('X-CSRF-Token', $this->request->getCsrfToken());
             }
             return $response;
@@ -493,7 +493,7 @@ abstract class Controller extends \yii\web\Controller
         }
 
         // Make sure admin changes are allowed
-        if ($requireAdminChanges && !Craft::$app->getConfig()->getGeneral()->allowAdminChanges) {
+        if ($requireAdminChanges && !\CraftCms\Cms\Craft::generalConfig()->allowAdminChanges) {
             throw new ForbiddenHttpException('Administrative changes are disallowed in this environment.');
         }
     }

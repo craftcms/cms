@@ -480,7 +480,7 @@ class Link extends Field implements InlineEditableFieldInterface, RelationalFiel
                 'disabled' => $readOnly,
             ]);
 
-        if (Craft::$app->getConfig()->getGeneral()->enableGql) {
+        if (\CraftCms\Cms\Craft::generalConfig()->enableGql) {
             $html .=
                 Cp::selectFieldHtml([
                     'label' => Craft::t('app', 'GraphQL Mode'),

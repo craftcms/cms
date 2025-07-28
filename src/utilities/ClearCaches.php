@@ -171,7 +171,7 @@ class ClearCaches extends Utility
                     'path' => '`web/cpresources/`',
                 ]),
                 'action' => function() {
-                    $basePath = Craft::$app->getConfig()->getGeneral()->resourceBasePath;
+                    $basePath = \CraftCms\Cms\Craft::generalConfig()->resourceBasePath;
                     $request = Craft::$app->getRequest();
                     if (
                         $request->getIsConsoleRequest() &&
@@ -248,7 +248,7 @@ class ClearCaches extends Utility
             ],
         ];
 
-        if (Craft::$app->getConfig()->getGeneral()->enableGql) {
+        if (\CraftCms\Cms\Craft::generalConfig()->enableGql) {
             $options[] = [
                 'tag' => 'graphql',
                 'label' => Craft::t('app', 'GraphQL queries'),

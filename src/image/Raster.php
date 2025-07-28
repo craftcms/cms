@@ -89,7 +89,7 @@ class Raster extends Image
      */
     public function __construct($config = [])
     {
-        $generalConfig = Craft::$app->getConfig()->getGeneral();
+        $generalConfig = \CraftCms\Cms\Craft::generalConfig();
 
         $extension = strtolower($generalConfig->imageDriver);
 
@@ -191,7 +191,7 @@ class Raster extends Image
         // For Imagick, convert CMYK to RGB, save and re-open.
         if (
             !Craft::$app->getImages()->getIsGd()
-            && !Craft::$app->getConfig()->getGeneral()->preserveCmykColorspace
+            && !\CraftCms\Cms\Craft::generalConfig()->preserveCmykColorspace
             && method_exists($this->_image->getImagick(), 'getImageColorspace')
             && $this->_image->getImagick()->getImageColorspace() === Imagick::COLORSPACE_CMYK
             && method_exists($this->_image->getImagick(), 'transformImageColorspace')
@@ -256,7 +256,7 @@ class Raster extends Image
         $width = $this->getWidth();
         $height = $this->getHeight();
 
-        $scaleIfSmaller ??= Craft::$app->getConfig()->getGeneral()->upscaleImages;
+        $scaleIfSmaller ??= \CraftCms\Cms\Craft::generalConfig()->upscaleImages;
 
         if ($scaleIfSmaller || $width > $targetWidth || $height > $targetHeight) {
             // go with the provided target dimensions if they both check out
@@ -288,7 +288,7 @@ class Raster extends Image
      */
     public function scaleToFitAndFill(?int $targetWidth, ?int $targetHeight, string $fill = null, string|array $position = 'center-center', bool $upscale = null): static
     {
-        $upscale ??= Craft::$app->getConfig()->getGeneral()->upscaleImages;
+        $upscale ??= \CraftCms\Cms\Craft::generalConfig()->upscaleImages;
 
         $this->normalizeDimensions($targetWidth, $targetHeight);
         $this->scaleToFit($targetWidth, $targetHeight, $upscale);
@@ -466,8 +466,8 @@ class Raster extends Image
 
             $this->_image = $gif;
         } else {
-            if (Craft::$app->getImages()->getIsImagick() && Craft::$app->getConfig()->getGeneral()->optimizeImageFilesize) {
-                $keepImageProfiles = Craft::$app->getConfig()->getGeneral()->preserveImageColorProfiles;
+            if (Craft::$app->getImages()->getIsImagick() && \CraftCms\Cms\Craft::generalConfig()->optimizeImageFilesize) {
+                $keepImageProfiles = \CraftCms\Cms\Craft::generalConfig()->preserveImageColorProfiles;
 
                 $this->_image->smartResize(new Box($targetWidth, $targetHeight), $keepImageProfiles, true, $this->_quality);
             } else {

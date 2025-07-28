@@ -125,20 +125,20 @@ class ScalarTypesTest extends TestCase
             'getFieldValue' => fn() => clone $dateTime,
         ]);
 
-        $settingValue = Craft::$app->getConfig()->getGeneral()->setGraphqlDatesToSystemTimeZone;
+        $settingValue = \CraftCms\Cms\Craft::generalConfig()->setGraphqlDatesToSystemTimeZone;
         $currentTimezone = Craft::$app->getTimeZone();
 
         // Make sure we don't use UTC
         $newTimezone = 'America/New_York';
 
         Craft::$app->setTimeZone($newTimezone);
-        Craft::$app->getConfig()->getGeneral()->setGraphqlDatesToSystemTimeZone = true;
+        \CraftCms\Cms\Craft::generalConfig()->setGraphqlDatesToSystemTimeZone = true;
         $value1 = $resolver($element, [], null, $resolveInfo);
 
-        Craft::$app->getConfig()->getGeneral()->setGraphqlDatesToSystemTimeZone = false;
+        \CraftCms\Cms\Craft::generalConfig()->setGraphqlDatesToSystemTimeZone = false;
         $value2 = $resolver($element, [], null, $resolveInfo);
 
-        Craft::$app->getConfig()->getGeneral()->setGraphqlDatesToSystemTimeZone = $settingValue;
+        \CraftCms\Cms\Craft::generalConfig()->setGraphqlDatesToSystemTimeZone = $settingValue;
 
         self::assertNotEquals($value1->getTimeZone(), $value2->getTimeZone());
         Craft::$app->setTimeZone($currentTimezone);

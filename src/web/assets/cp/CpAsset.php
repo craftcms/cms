@@ -10,7 +10,6 @@ namespace craft\web\assets\cp;
 use Craft;
 use craft\base\ElementInterface;
 use craft\base\FieldInterface;
-use craft\config\GeneralConfig;
 use craft\elements\User;
 use craft\enums\CmsEdition;
 use craft\helpers\Assets;
@@ -44,6 +43,7 @@ use craft\web\assets\velocity\VelocityAsset;
 use craft\web\assets\xregexp\XregexpAsset;
 use craft\web\View;
 use CraftCms\Cms\Announcement\Announcements;
+use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Support\Str;
 use yii\web\JqueryAsset;
 
@@ -500,7 +500,7 @@ JS;
     {
         $upToDate = Craft::$app->getIsInstalled() && !Craft::$app->getUpdates()->getAreMigrationsPending();
         $request = Craft::$app->getRequest();
-        $generalConfig = Craft::$app->getConfig()->getGeneral();
+        $generalConfig = \CraftCms\Cms\Craft::generalConfig();
         $sitesService = Craft::$app->getSites();
         $formattingLocale = Craft::$app->getFormattingLocale();
         $locale = Craft::$app->getLocale();

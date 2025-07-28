@@ -133,7 +133,7 @@ class UrlHelperTest extends TestCase
      */
     public function testUrlWithToken(string $expected, string $url, string $token): void
     {
-        Craft::$app->getConfig()->getGeneral()->useSslOnTokenizedUrls = true;
+        \CraftCms\Cms\Craft::generalConfig()->useSslOnTokenizedUrls = true;
         self::assertSame($expected, UrlHelper::urlWithToken($url, $token));
     }
 
@@ -219,7 +219,7 @@ class UrlHelperTest extends TestCase
     public function testSchemeForTokenizedBasedOnConfig(): void
     {
         // Run down the logic to see what we will need to require.
-        $config = Craft::$app->getConfig()->getGeneral();
+        $config = \CraftCms\Cms\Craft::generalConfig();
 
         $config->useSslOnTokenizedUrls = true;
         self::assertSame('https', UrlHelper::getSchemeForTokenizedUrl());
@@ -677,7 +677,7 @@ class UrlHelperTest extends TestCase
      */
     protected function _before(): void
     {
-        $generalConfig = Craft::$app->getConfig()->getGeneral();
+        $generalConfig = \CraftCms\Cms\Craft::generalConfig();
         $this->cpTrigger = $generalConfig->cpTrigger;
     }
 

@@ -8,12 +8,12 @@
 namespace craft\services;
 
 use Craft;
-use craft\config\BaseConfig;
 use craft\config\DbConfig;
-use craft\config\GeneralConfig;
 use craft\helpers\App;
 use craft\helpers\FileHelper;
 use craft\helpers\Typecast;
+use CraftCms\Cms\Config\BaseConfig;
+use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Str;
 use yii\base\Component;
@@ -112,8 +112,12 @@ class Config extends Component
         return $this->_configSettings[$category];
     }
 
-    private function _createConfigObj(string $category, string $filename, ?BaseConfig $existingConfig): object
+    private function _createConfigObj(string $category, string $filename, BaseConfig|\craft\config\BaseConfig|null $existingConfig): object
     {
+        if ($category === self::CATEGORY_GENERAL) {
+            return \CraftCms\Cms\Craft::generalConfig();
+        }
+
         $config = $this->getConfigFromFile($filename);
 
         if ($existingConfig && empty($config)) {
@@ -126,10 +130,6 @@ class Config extends Component
             case self::CATEGORY_DB:
                 $configClass = DbConfig::class;
                 $envPrefix = 'CRAFT_DB_';
-                break;
-            case self::CATEGORY_GENERAL:
-                $configClass = GeneralConfig::class;
-                $envPrefix = 'CRAFT_';
                 break;
             default:
                 throw new InvalidArgumentException("Invalid config category: $category");
@@ -233,11 +233,13 @@ class Config extends Component
      * ```
      *
      * @return GeneralConfig
+     * @deprecated in 6.0.0. Use `\CraftCms\Cms\Craft::generalConfig()` (PHP) or `config.craft.general` (Twig) instead.
      */
     public function getGeneral(): GeneralConfig
     {
-        /** @noinspection PhpIncompatibleReturnTypeInspection */
-        return $this->getConfigSettings(self::CATEGORY_GENERAL);
+        Craft::$app->getDeprecator()->log('Craft::$app->config->general', 'Craft::$app->config->general is deprecated. Use `\CraftCms\Cms\Craft::generalConfig()` (PHP) or `config.craft.general` (Twig) instead.');
+
+        return \CraftCms\Cms\Craft::generalConfig();
     }
 
     /**

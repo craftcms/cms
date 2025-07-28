@@ -195,7 +195,7 @@ class UserElementTest extends TestCase
             )
         );
 
-        Craft::$app->getConfig()->getGeneral()->requireMatchingUserAgentForSession = true;
+        \CraftCms\Cms\Craft::generalConfig()->requireMatchingUserAgentForSession = true;
 
         // Valid token, user agent, and json string
         $this->tester->mockCraftMethods('request', [
@@ -215,7 +215,7 @@ class UserElementTest extends TestCase
     {
         $validUserAgent = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/74.0.3729.169 Safari/537.36';
 
-        Craft::$app->getConfig()->getGeneral()->requireMatchingUserAgentForSession = false;
+        \CraftCms\Cms\Craft::generalConfig()->requireMatchingUserAgentForSession = false;
         $this->tester->mockCraftMethods('request', [
             'getUserAgent' => $validUserAgent,
         ]);
@@ -246,7 +246,7 @@ class UserElementTest extends TestCase
         self::assertNull($this->activeUser->getCooldownEndTime());
 
 
-        Craft::$app->getConfig()->getGeneral()->cooldownDuration = 172800;
+        \CraftCms\Cms\Craft::generalConfig()->cooldownDuration = 172800;
         $this->activeUser->locked = true;
         $this->activeUser->lockoutDate = new DateTime('now', new DateTimeZone('UTC'));
         $cooldown = $this->activeUser->getCooldownEndTime();
@@ -271,7 +271,7 @@ class UserElementTest extends TestCase
 
         $this->activeUser->locked = true;
         $this->activeUser->lockoutDate = new DateTime('now', new DateTimeZone('UTC'));
-        Craft::$app->getConfig()->getGeneral()->cooldownDuration = (60 * 60 * 24 * 2) + 10; // 2 days and 10 seconds
+        \CraftCms\Cms\Craft::generalConfig()->cooldownDuration = (60 * 60 * 24 * 2) + 10; // 2 days and 10 seconds
 
         self::assertInstanceOf(DateInterval::class, $interval = $this->activeUser->getRemainingCooldownTime());
         self::assertSame('2', (string)$interval->d);

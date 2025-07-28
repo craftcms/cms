@@ -172,7 +172,7 @@ class Craft extends Yii
     public static function cookieConfig(array $config = [], ?Request $request = null): array
     {
         if (!isset(self::$_baseCookieConfig)) {
-            $generalConfig = static::$app->getConfig()->getGeneral();
+            $generalConfig = \CraftCms\Cms\Craft::generalConfig();
 
             if ($generalConfig->useSecureCookies === 'auto') {
                 $request ??= static::$app->getRequest();
@@ -428,7 +428,7 @@ EOD;
         // Grab the config from config/guzzle.php that is used on every Guzzle request.
         $configService = static::$app->getConfig();
         $guzzleConfig = $configService->getConfigFromFile('guzzle');
-        $generalConfig = $configService->getGeneral();
+        $generalConfig = \CraftCms\Cms\Craft::generalConfig();
 
         // Merge everything together
         $guzzleConfig = Arr::merge($defaultConfig, $guzzleConfig, $config);
