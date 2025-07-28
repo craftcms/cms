@@ -1,52 +1,41 @@
 <?php
-/**
- * @link https://craftcms.com/
- * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license https://craftcms.github.io/license/
- */
 
-namespace craft\config;
+namespace CraftCms\Cms\Config;
 
 use Closure;
-use Craft;
 use craft\attributes\EnvName;
 use craft\helpers\ConfigHelper;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\Localization;
-use craft\services\Config;
 use DateInterval;
+use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken;
+use Illuminate\Http\Middleware\TrustProxies;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Config;
 use yii\base\InvalidArgumentException;
 use yii\base\InvalidConfigException;
-use yii\base\UnknownPropertyException;
 
 /**
  * General config class
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0.0
+ *
+ * @since 6.0.0
  */
 class GeneralConfig extends BaseConfig
 {
     public const IMAGE_DRIVER_AUTO = 'auto';
+
     public const IMAGE_DRIVER_GD = 'gd';
+
     public const IMAGE_DRIVER_IMAGICK = 'imagick';
 
-    /**
-     * @since 3.6.0
-     */
     public const CAMEL_CASE = 'camel';
-    /**
-     * @since 3.6.0
-     */
+
     public const PASCAL_CASE = 'pascal';
-    /**
-     * @since 3.6.0
-     */
+
     public const SNAKE_CASE = 'snake';
 
-    /**
-     * @inheritdoc
-     */
     protected static array $renamedSettings = [
         'activateAccountFailurePath' => 'invalidUserTokenPath',
         'allowAutoUpdates' => 'allowUpdates',
@@ -60,11 +49,6 @@ class GeneralConfig extends BaseConfig
         'useWriteFileLock' => 'useFileLocks',
         'validationKey' => 'securityKey',
     ];
-
-    /**
-     * @inheritdoc
-     */
-    protected ?string $filename = Config::CATEGORY_GENERAL;
 
     /**
      * @var array The default user accessibility preferences that should be applied to users that haven’t saved their preferences yet.
@@ -89,7 +73,6 @@ class GeneralConfig extends BaseConfig
      * ```
      *
      * @group System
-     * @since 3.6.4
      */
     public array $accessibilityDefaults = [
         'useShapes' => false,
@@ -131,6 +114,7 @@ class GeneralConfig extends BaseConfig
      * :::
      *
      * @see getActivateAccountSuccessPath()
+     *
      * @group Routing
      */
     public mixed $activateAccountSuccessPath = '';
@@ -187,33 +171,8 @@ class GeneralConfig extends BaseConfig
      * :::
      *
      * @group System
-     * @since 3.1.0
      */
     public bool $allowAdminChanges = true;
-
-    /**
-     * @var string[]|null|false The Ajax origins that should be allowed to access the GraphQL API, if enabled.
-     *
-     * If this is set to an array, then `graphql/api` requests will only include the current request’s [[\yii\web\Request::getOrigin()|origin]]
-     * in the `Access-Control-Allow-Origin` response header if it’s listed here.
-     *
-     * If this is set to `false`, then the `Access-Control-Allow-Origin` response header will never be sent.
-     *
-     * ::: code
-     * ```php Static Config
-     * ->allowedGraphqlOrigins(false)
-     * ```
-     * ```shell Environment Override
-     * CRAFT_ALLOW_GRAPHQL_ORIGINS=false
-     * ```
-     * :::
-     *
-     * @group GraphQL
-     * @since 3.5.0
-     * @deprecated in 4.11.0. [[\craft\filters\Cors]] should be used instead.
-     * @see https://www.yiiframework.com/doc/api/2.0/yii-filters-cors
-     */
-    public array|null|false $allowedGraphqlOrigins = null;
 
     /**
      * @var bool Whether Craft should allow system and plugin updates in the control panel, and plugin installation from the Plugin Store.
@@ -244,6 +203,7 @@ class GeneralConfig extends BaseConfig
      * ```
      *
      * @see extraAllowedFileExtensions
+     *
      * @group Assets
      */
     public array $allowedFileExtensions = [
@@ -395,21 +355,26 @@ class GeneralConfig extends BaseConfig
     public bool $autoLoginAfterAccountActivation = false;
 
     /**
-     * @var bool Whether drafts should be saved automatically as they are edited.
+     * @var string|null The base URL Craft should use when generating control panel URLs.
      *
-     * Note that drafts *will* be autosaved while Live Preview is open, regardless of this setting.
+     * It will be determined automatically if left blank.
+     *
+     * ::: tip
+     * The base control panel URL should **not** include the [control panel trigger word](config5:cpTrigger) (e.g. `/admin`).
+     * :::
      *
      * ::: code
+     * ```php Static Config
+     * ->baseCpUrl('https://cms.my-project.tld/')
+     * ```
      * ```shell Environment Override
-     * CRAFT_AUTOSAVE_DRAFTS=false
+     * CRAFT_BASE_CP_URL=https://cms.my-project.tld/
      * ```
      * :::
      *
-     * @group System
-     * @since 3.5.6
-     * @deprecated in 4.0.0
+     * @group Routing
      */
-    public bool $autosaveDrafts = true;
+    public ?string $baseCpUrl = null;
 
     /**
      * @var bool Whether Craft should create a database backup before applying a new system update.
@@ -424,6 +389,7 @@ class GeneralConfig extends BaseConfig
      * :::
      *
      * @see backupCommand
+     *
      * @group System
      */
     public bool $backupOnUpdate = true;
@@ -466,6 +432,7 @@ class GeneralConfig extends BaseConfig
      *
      * Valid options are `custom`, `directory`, `tar`, or `plain`.
      * When set to `null` (default), `pg_restore` will default to `plain`
+     *
      * @see https://www.postgresql.org/docs/current/app-pgdump.html
      *
      *  ::: code
@@ -478,31 +445,8 @@ class GeneralConfig extends BaseConfig
      *  :::
      *
      * @group Environment
-     * @since 5.1.0
      */
     public ?string $backupCommandFormat = null;
-
-    /**
-     * @var string|null The base URL Craft should use when generating control panel URLs.
-     *
-     * It will be determined automatically if left blank.
-     *
-     * ::: tip
-     * The base control panel URL should **not** include the [control panel trigger word](config5:cpTrigger) (e.g. `/admin`).
-     * :::
-     *
-     * ::: code
-     * ```php Static Config
-     * ->baseCpUrl('https://cms.my-project.tld/')
-     * ```
-     * ```shell Environment Override
-     * CRAFT_BASE_CP_URL=https://cms.my-project.tld/
-     * ```
-     * :::
-     *
-     * @group Routing
-     */
-    public ?string $baseCpUrl = null;
 
     /**
      * @var int The higher the cost value, the longer it takes to generate a password hash and to verify against it.
@@ -531,7 +475,7 @@ class GeneralConfig extends BaseConfig
 
     /**
      * @var string|null The server path to an image file that should be sent when responding to an image request with a
-     * 404 status code.
+     *                  404 status code.
      *
      * This can be set to an aliased path such as `@webroot/assets/404.svg`.
      *
@@ -545,7 +489,6 @@ class GeneralConfig extends BaseConfig
      * :::
      *
      * @group Image Handling
-     * @since 3.5.0
      */
     public ?string $brokenImagePath = null;
 
@@ -564,7 +507,6 @@ class GeneralConfig extends BaseConfig
      * :::
      *
      * @group Environment
-     * @since 4.0.0
      */
     public ?string $buildId = null;
 
@@ -585,6 +527,7 @@ class GeneralConfig extends BaseConfig
      * :::
      *
      * @group System
+     *
      * @defaultAlt 1 day
      */
     public mixed $cacheDuration = 86400;
@@ -611,7 +554,7 @@ class GeneralConfig extends BaseConfig
 
     /**
      * @var mixed The amount of time a user must wait before re-attempting to log in after their account is locked due to too many
-     * failed login attempts.
+     *            failed login attempts.
      *
      * Set to `0` to keep the account locked indefinitely, requiring an admin to manually unlock the account.
      *
@@ -627,6 +570,7 @@ class GeneralConfig extends BaseConfig
      * :::
      *
      * @group Security
+     *
      * @defaultAlt 5 minutes
      */
     public mixed $cooldownDuration = 300;
@@ -652,13 +596,12 @@ class GeneralConfig extends BaseConfig
      * ```
      *
      * @group System
-     * @since 3.5.0
      */
     public array $cpHeadTags = [];
 
     /**
      * @var string|null The URI segment Craft should look for when determining if the current request should route to the control panel rather than
-     * the front-end website.
+     *                  the front-end website.
      *
      * This can be set to `null` if you have a dedicated hostname for the control panel (e.g. `cms.my-project.tld`), or you are running Craft in
      * [Headless Mode](config5:headlessMode). If you do that, you will need to ensure that the control panel is being served from its own web root
@@ -699,14 +642,15 @@ class GeneralConfig extends BaseConfig
      * :::
      *
      * @group Security
+     *
      * @see enableCsrfProtection
      */
     public string $csrfTokenName = '_token';
 
     /**
      * @var string The domain that cookies generated by Craft should be created for. If blank, it will be left up to the browser to determine
-     * which domain to use (almost always the current). If you want the cookies to work for all subdomains, for example, you could
-     * set this to `'.my-project.tld'`.
+     *             which domain to use (almost always the current). If you want the cookies to work for all subdomains, for example, you could
+     *             set this to `'.my-project.tld'`.
      *
      * ::: code
      * ```php Static Config
@@ -736,7 +680,6 @@ class GeneralConfig extends BaseConfig
      * :::
      *
      * @group System
-     * @since 4.5.0
      */
     public string $defaultCountryCode = 'US';
 
@@ -758,7 +701,7 @@ class GeneralConfig extends BaseConfig
 
     /**
      * @var string|null The default locale the control panel should use for date/number formatting, for users who haven’t set
-     * a preferred language or formatting locale.
+     *                  a preferred language or formatting locale.
      *
      * If this is `null`, the <config5:defaultCpLanguage> config setting will determine which locale is used for date/number formatting by default.
      *
@@ -772,7 +715,6 @@ class GeneralConfig extends BaseConfig
      * :::
      *
      * @group System
-     * @since 3.5.0
      */
     public ?string $defaultCpLocale = null;
 
@@ -814,7 +756,7 @@ class GeneralConfig extends BaseConfig
 
     /**
      * @var int The quality level Craft will use when saving JPG and PNG files. Ranges from 1 (worst quality, smallest file) to
-     * 100 (best quality, biggest file).
+     *          100 (best quality, biggest file).
      *
      * ::: code
      * ```php Static Config
@@ -883,6 +825,7 @@ class GeneralConfig extends BaseConfig
      * :::
      *
      * @group Security
+     *
      * @defaultAlt 1 day
      */
     public mixed $defaultTokenDuration = 86400;
@@ -910,14 +853,15 @@ class GeneralConfig extends BaseConfig
      * :::
      *
      * @group System
+     *
      * @defaultAlt Monday
      */
     public int $defaultWeekStartDay = 1;
 
     /**
      * @var bool By default, Craft requires a front-end “password” field for public user registrations. Setting this to
-     * `true` removes that requirement for the initial registration form. Instead, new users will set their password
-     * once they’ve followed the link in their activation email.
+     *           `true` removes that requirement for the initial registration form. Instead, new users will set their password
+     *           once they’ve followed the link in their activation email.
      *
      * ::: code
      * ```php Static Config
@@ -961,7 +905,6 @@ class GeneralConfig extends BaseConfig
      * :::
      *
      * @group Users
-     * @since 5.6.0
      */
     #[EnvName('DISABLE_2FA')]
     public bool $disable2fa = false;
@@ -999,7 +942,6 @@ class GeneralConfig extends BaseConfig
      * :::
      *
      * @group System
-     * @since 3.1.9
      */
     public string|array|null $disabledPlugins = null;
 
@@ -1019,13 +961,12 @@ class GeneralConfig extends BaseConfig
      * :::
      *
      * @group System
-     * @since 4.6.0
      */
     public array $disabledUtilities = [];
 
     /**
      * @var bool Whether front end requests should respond with `X-Robots-Tag: none` HTTP headers, indicating that pages should not be indexed,
-     * and links on the page should not be followed, by web crawlers.
+     *           and links on the page should not be followed, by web crawlers.
      *
      * ::: tip
      * This should be set to `true` for development and staging environments.
@@ -1041,7 +982,6 @@ class GeneralConfig extends BaseConfig
      * :::
      *
      * @group System
-     * @since 3.5.10
      */
     public bool $disallowRobots = false;
 
@@ -1058,10 +998,8 @@ class GeneralConfig extends BaseConfig
      * :::
      *
      * @group GraphQL
-     * @since 3.6.0
      */
     public bool $disableGraphqlTransformDirective = false;
-
 
     /**
      * @var bool Whether CSRF values should be injected via JavaScript for greater cache-ability. This setting can be overridden by passing an `async` option into the `csrfInput()` function.
@@ -1076,46 +1014,8 @@ class GeneralConfig extends BaseConfig
      *  :::
      *
      * @group Security
-     * @since 5.1.0
      */
     public bool $asyncCsrfInputs = false;
-
-    /**
-     * @var bool Whether front-end web requests should support basic HTTP authentication.
-     *
-     * ::: code
-     * ```php Static Config
-     * ->enableBasicHttpAuth(true)
-     * ```
-     * ```shell Environment Override
-     * CRAFT_ENABLE_BASIC_HTTP_AUTH=true
-     * ```
-     * :::
-     *
-     * @group Security
-     * @since 3.5.0
-     * @deprecated in 4.13.0. [[\craft\filters\BasicHttpAuthLogin]] should be used instead.
-     */
-    public bool $enableBasicHttpAuth = false;
-
-    /**
-     * @var bool Whether to use a cookie to persist the CSRF token if <config5:enableCsrfProtection> is enabled. If false, the CSRF token will be
-     * stored in session under the `csrfTokenName` config setting name. Note that while storing CSRF tokens in session increases security,
-     * it requires starting a session for every page that a CSRF token is needed, which may degrade site performance.
-     *
-     * ::: code
-     * ```php Static Config
-     * ->enableCsrfCookie(false)
-     * ```
-     * ```shell Environment Override
-     * CRAFT_ENABLE_CSRF_COOKIE=false
-     * ```
-     * :::
-     *
-     * @see enableCsrfProtection
-     * @group Security
-     */
-    public bool $enableCsrfCookie = true;
 
     /**
      * @var bool Whether GraphQL introspection queries are allowed. Defaults to `true` and is always allowed in the control panel.
@@ -1130,7 +1030,6 @@ class GeneralConfig extends BaseConfig
      * :::
      *
      * @group GraphQL
-     * @since 3.6.0
      */
     public bool $enableGraphqlIntrospection = true;
 
@@ -1149,9 +1048,47 @@ class GeneralConfig extends BaseConfig
      * :::
      *
      * @group GraphQL
-     * @since 3.3.1
      */
     public bool $enableGql = true;
+
+    /**
+     * @var bool Whether to use a cookie to persist the CSRF token if <config5:enableCsrfProtection> is enabled. If false, the CSRF token will be
+     *           stored in session under the `csrfTokenName` config setting name. Note that while storing CSRF tokens in session increases security,
+     *           it requires starting a session for every page that a CSRF token is needed, which may degrade site performance.
+     *
+     * ::: code
+     * ```php Static Config
+     * ->enableCsrfCookie(false)
+     * ```
+     * ```shell Environment Override
+     * CRAFT_ENABLE_CSRF_COOKIE=false
+     * ```
+     * :::
+     *
+     * @see enableCsrfProtection
+     *
+     * @group Security
+     */
+    public bool $enableCsrfCookie = true;
+
+    /**
+     * @var bool Whether to enable CSRF protection via hidden form inputs for all forms submitted via Craft.
+     *
+     * ::: code
+     * ```php Static Config
+     * ->enableCsrfProtection(false)
+     * ```
+     * ```shell Environment Override
+     * CRAFT_ENABLE_CSRF_PROTECTION=false
+     * ```
+     * :::
+     *
+     * @see csrfTokenName
+     * @see enableCsrfCookie
+     *
+     * @group Security
+     */
+    public bool $enableCsrfProtection = true;
 
     /**
      * @var mixed The amount of time a user’s elevated session will last, which is required for some sensitive actions (e.g. user group/permission assignment).
@@ -1170,27 +1107,10 @@ class GeneralConfig extends BaseConfig
      * :::
      *
      * @group Security
+     *
      * @defaultAlt 5 minutes
      */
     public mixed $elevatedSessionDuration = 300;
-
-    /**
-     * @var bool Whether to enable CSRF protection via hidden form inputs for all forms submitted via Craft.
-     *
-     * ::: code
-     * ```php Static Config
-     * ->enableCsrfProtection(false)
-     * ```
-     * ```shell Environment Override
-     * CRAFT_ENABLE_CSRF_PROTECTION=false
-     * ```
-     * :::
-     *
-     * @see csrfTokenName
-     * @see enableCsrfCookie
-     * @group Security
-     */
-    public bool $enableCsrfProtection = true;
 
     /**
      * @var bool Whether Craft should cache GraphQL queries.
@@ -1211,7 +1131,6 @@ class GeneralConfig extends BaseConfig
      * :::
      *
      * @group GraphQL
-     * @since 3.3.12
      */
     public bool $enableGraphqlCaching = true;
 
@@ -1228,7 +1147,6 @@ class GeneralConfig extends BaseConfig
      * :::
      *
      * @group GraphQL
-     * @since 3.7.0
      */
     public bool $setGraphqlDatesToSystemTimeZone = false;
 
@@ -1245,6 +1163,7 @@ class GeneralConfig extends BaseConfig
      * :::
      *
      * @see https://craftcms.com/docs/templating/cache
+     *
      * @group System
      */
     public bool $enableTemplateCaching = true;
@@ -1280,6 +1199,7 @@ class GeneralConfig extends BaseConfig
      * :::
      *
      * @see allowedFileExtensions
+     *
      * @group System
      */
     public ?array $extraAllowedFileExtensions = null;
@@ -1297,13 +1217,12 @@ class GeneralConfig extends BaseConfig
      * :::
      *
      * @group System
-     * @since 3.0.24
      */
     public ?array $extraAppLocales = null;
 
     /**
      * @var array List of additional file kinds Craft should support. This array will get merged with the one defined in
-     * `\craft\helpers\Assets::_buildFileKinds()`.
+     *            `\craft\helpers\Assets::_buildFileKinds()`.
      *
      * ```php Static Config
      * ->extraFileKinds([
@@ -1325,7 +1244,6 @@ class GeneralConfig extends BaseConfig
      * :::
      *
      * @group Assets
-     * @since 3.0.37
      */
     public array $extraFileKinds = [];
 
@@ -1342,7 +1260,6 @@ class GeneralConfig extends BaseConfig
      * :::
      *
      * @group Users
-     * @since 4.3.0
      */
     public array $extraLastNamePrefixes = [];
 
@@ -1359,7 +1276,6 @@ class GeneralConfig extends BaseConfig
      * :::
      *
      * @group Users
-     * @since 4.3.0
      */
     public array $extraNameSalutations = [];
 
@@ -1376,7 +1292,6 @@ class GeneralConfig extends BaseConfig
      * :::
      *
      * @group Users
-     * @since 4.3.0
      */
     public array $extraNameSuffixes = [];
 
@@ -1430,6 +1345,7 @@ class GeneralConfig extends BaseConfig
 
     /**
      * @var string The casing to use for autogenerated component handles.
+     *
      * @phpstan-var self::CAMEL_CASE|self::PASCAL_CASE|self::SNAKE_CASE
      *
      * This can be set to one of the following:
@@ -1448,7 +1364,6 @@ class GeneralConfig extends BaseConfig
      * :::
      *
      * @group System
-     * @since 3.6.0
      */
     public string $handleCasing = self::CAMEL_CASE;
 
@@ -1480,7 +1395,6 @@ class GeneralConfig extends BaseConfig
      * :::
      *
      * @group System
-     * @since 3.3.0
      */
     public bool $headlessMode = false;
 
@@ -1499,13 +1413,12 @@ class GeneralConfig extends BaseConfig
      * :::
      *
      * @group System
-     * @since 3.7.0
      */
     public ?string $httpProxy = null;
 
     /**
      * @var mixed The image driver Craft should use to cleanse and transform images. By default Craft will use ImageMagick if it’s installed
-     * and otherwise fall back to GD. You can explicitly set either `'imagick'` or `'gd'` here to override that behavior.
+     *            and otherwise fall back to GD. You can explicitly set either `'imagick'` or `'gd'` here to override that behavior.
      *
      * ::: code
      * ```php Static Config
@@ -1522,7 +1435,7 @@ class GeneralConfig extends BaseConfig
 
     /**
      * @var array An array containing the selectable image aspect ratios for the image editor. The array must be in the format
-     * of `label` => `ratio`, where ratio must be a float or a string. For string values, only values of “none” and “original” are allowed.
+     *            of `label` => `ratio`, where ratio must be a float or a string. For string values, only values of “none” and “original” are allowed.
      *
      * ```php Static Config
      * ->imageEditorRatios([
@@ -1550,7 +1463,7 @@ class GeneralConfig extends BaseConfig
 
     /**
      * @var string[] The template filenames Craft will look for within a directory to represent the directory’s “index” template when
-     * matching a template path to a file on the front end.
+     *               matching a template path to a file on the front end.
      *
      * ::: code
      * ```php Static Config
@@ -1582,13 +1495,14 @@ class GeneralConfig extends BaseConfig
      * :::
      *
      * @group Security
+     *
      * @defaultAlt 1 hour
      */
     public mixed $invalidLoginWindowDuration = 3600;
 
     /**
      * @var mixed The URI Craft should redirect to when user token validation fails. User tokens are used for
-     * email verification and password resets. If `null`, <config5:loginPath> will be used by default.
+     *            email verification and password resets. If `null`, <config5:loginPath> will be used by default.
      *
      * See [[ConfigHelper::localizedValue()]] for a list of supported value types.
      *
@@ -1606,6 +1520,7 @@ class GeneralConfig extends BaseConfig
      * :::
      *
      * @see getInvalidUserTokenPath()
+     *
      * @group Routing
      */
     public mixed $invalidUserTokenPath = null;
@@ -1632,7 +1547,7 @@ class GeneralConfig extends BaseConfig
 
     /**
      * @var bool|null Whether the site is currently live. If set to `true` or `false`, it will take precedence over the System Status setting
-     * in Settings → General.
+     *                in Settings → General.
      *
      * ::: code
      * ```php Static Config
@@ -1660,7 +1575,6 @@ class GeneralConfig extends BaseConfig
      * :::
      *
      * @group GraphQL
-     * @since 5.3.0
      */
     public bool $lazyGqlTypes = false;
 
@@ -1704,7 +1618,6 @@ class GeneralConfig extends BaseConfig
      *  ```
      *  :::
      *
-     * @since 5.0.0
      * @group System
      */
     public array $localeAliases = [];
@@ -1726,6 +1639,7 @@ class GeneralConfig extends BaseConfig
      * :::
      *
      * @see getLoginPath()
+     *
      * @group Routing
      */
     public mixed $loginPath = 'login';
@@ -1747,6 +1661,7 @@ class GeneralConfig extends BaseConfig
      * :::
      *
      * @see getLogoutPath()
+     *
      * @group Routing
      */
     public mixed $logoutPath = 'logout';
@@ -1780,7 +1695,6 @@ class GeneralConfig extends BaseConfig
      *  :::
      *
      * @group GraphQL
-     * @since 4.5.5
      */
     public int $maxGraphqlBatchSize = 0;
 
@@ -1797,7 +1711,6 @@ class GeneralConfig extends BaseConfig
      * :::
      *
      * @group GraphQL
-     * @since 3.6.0
      */
     public int $maxGraphqlComplexity = 0;
 
@@ -1814,7 +1727,6 @@ class GeneralConfig extends BaseConfig
      * :::
      *
      * @group GraphQL
-     * @since 3.6.0
      */
     public int $maxGraphqlDepth = 0;
 
@@ -1831,7 +1743,6 @@ class GeneralConfig extends BaseConfig
      * :::
      *
      * @group GraphQL
-     * @since 3.6.0
      */
     public int $maxGraphqlResults = 0;
 
@@ -1853,7 +1764,7 @@ class GeneralConfig extends BaseConfig
 
     /**
      * @var int|false The number of backups Craft should make before it starts deleting the oldest backups. If set to `false`, Craft will
-     * not delete any backups.
+     *                not delete any backups.
      *
      * ::: code
      * ```php Static Config
@@ -1883,7 +1794,6 @@ class GeneralConfig extends BaseConfig
      * :::
      *
      * @group System
-     * @since 3.2.0
      */
     public ?int $maxRevisions = 50;
 
@@ -1920,6 +1830,7 @@ class GeneralConfig extends BaseConfig
      * :::
      *
      * @group Assets
+     *
      * @defaultAlt 16MB
      */
     public string|int $maxUploadFileSize = 16777216;
@@ -1958,7 +1869,7 @@ class GeneralConfig extends BaseConfig
 
     /**
      * @var bool Whether Craft should optimize images for reduced file sizes without noticeably reducing image quality. (Only supported when
-     * ImageMagick is used.)
+     *           ImageMagick is used.)
      *
      * ::: code
      * ```php Static Config
@@ -1970,13 +1881,14 @@ class GeneralConfig extends BaseConfig
      * :::
      *
      * @see imageDriver
+     *
      * @group Image Handling
      */
     public bool $optimizeImageFilesize = true;
 
     /**
      * @var string The string preceding a number which Craft will look for when determining if the current request is for a particular page in
-     * a paginated list of pages.
+     *             a paginated list of pages.
      *
      * Example Value | Example URI
      * ------------- | -----------
@@ -2000,6 +1912,7 @@ class GeneralConfig extends BaseConfig
      * :::
      *
      * @see getPageTrigger()
+     *
      * @group Routing
      */
     public string $pageTrigger = 'p';
@@ -2030,7 +1943,6 @@ class GeneralConfig extends BaseConfig
      * :::
      *
      * @group System
-     * @since 5.0.0
      */
     public string $partialTemplatesPath = '_partials';
 
@@ -2058,26 +1970,8 @@ class GeneralConfig extends BaseConfig
     public ?string $pathParam = 'p';
 
     /**
-     * @var string|null The `Permissions-Policy` header that should be sent for site responses.
-     *
-     * ::: code
-     * ```php Static Config
-     * ->permissionsPolicyHeader('Permissions-Policy: geolocation=(self)')
-     * ```
-     * ```shell Environment Override
-     * CRAFT_PERMISSIONS_POLICY_HEADER=Permissions-Policy: geolocation=(self)
-     * ```
-     * :::
-     *
-     * @group System
-     * @since 3.6.14
-     * @deprecated in 4.11.0. [[\craft\filters\Headers]] should be used instead.
-     */
-    public ?string $permissionsPolicyHeader = null;
-
-    /**
      * @var string|null The maximum amount of memory Craft will try to reserve during memory-intensive operations such as zipping,
-     * unzipping and updating. Defaults to an empty string, which means it will use as much memory as it can.
+     *                  unzipping and updating. Defaults to an empty string, which means it will use as much memory as it can.
      *
      * See <https://php.net/manual/en/faq.using.php#faq.using.shorthandbytes> for a list of acceptable values.
      *
@@ -2107,6 +2001,7 @@ class GeneralConfig extends BaseConfig
      * :::
      *
      * @see https://php.net/manual/en/function.session-name.php
+     *
      * @group Session
      */
     public string $phpSessionName = 'CraftSessionId';
@@ -2129,6 +2024,7 @@ class GeneralConfig extends BaseConfig
      * :::
      *
      * @see getPostCpLoginRedirect()
+     *
      * @group Routing
      */
     public mixed $postCpLoginRedirect = 'dashboard';
@@ -2151,6 +2047,7 @@ class GeneralConfig extends BaseConfig
      * :::
      *
      * @see getPostLoginRedirect()
+     *
      * @group Routing
      */
     public mixed $postLoginRedirect = '';
@@ -2170,6 +2067,7 @@ class GeneralConfig extends BaseConfig
      * :::
      *
      * @see getPostLogoutRedirect()
+     *
      * @group Routing
      */
     public mixed $postLogoutRedirect = '';
@@ -2187,7 +2085,6 @@ class GeneralConfig extends BaseConfig
      * :::
      *
      * @group GraphQL
-     * @since 3.6.6
      */
     public bool $prefixGqlRootTypes = true;
 
@@ -2211,7 +2108,6 @@ class GeneralConfig extends BaseConfig
      * :::
      *
      * @group System
-     * @since 4.4.0
      */
     public bool $preloadSingles = false;
 
@@ -2231,7 +2127,6 @@ class GeneralConfig extends BaseConfig
      * :::
      *
      * @group Image Handling
-     * @since 3.0.8
      */
     public bool $preserveCmykColorspace = false;
 
@@ -2304,7 +2199,6 @@ class GeneralConfig extends BaseConfig
      * ```
      *
      * @group System
-     * @since 3.5.0
      */
     public array $previewIframeResizerOptions = [];
 
@@ -2327,14 +2221,14 @@ class GeneralConfig extends BaseConfig
      * :::
      *
      * @group Security
+     *
      * @defaultAlt 1 day
-     * @since 3.7.0
      */
     public mixed $previewTokenDuration = null;
 
     /**
      * @var string The template path segment prefix that should be used to identify “private” templates, which are templates that are not
-     * directly accessible via a matching URL.
+     *             directly accessible via a matching URL.
      *
      * Set to an empty value to disable public template routing.
      *
@@ -2380,6 +2274,28 @@ class GeneralConfig extends BaseConfig
     public mixed $purgePendingUsersDuration = 0;
 
     /**
+     * @var mixed The amount of time to wait before Craft purges unpublished drafts that were never updated with content.
+     *
+     * Set to `0` to disable this feature.
+     *
+     * See [[ConfigHelper::durationInSeconds()]] for a list of supported value types.
+     *
+     * ::: code
+     * ```php Static Config
+     * ->purgeUnsavedDraftsDuration(0)
+     * ```
+     * ```shell Environment Override
+     * CRAFT_PURGE_UNSAVED_DRAFTS_DURATION=0
+     * ```
+     * :::
+     *
+     * @group Garbage Collection
+     *
+     * @defaultAlt 30 days
+     */
+    public mixed $purgeUnsavedDraftsDuration = 2592000;
+
+    /**
      * @var mixed The amount of time to wait before Craft purges stale user sessions from the sessions table in the database.
      *
      * Set to `0` to disable this feature.
@@ -2398,32 +2314,12 @@ class GeneralConfig extends BaseConfig
      * :::
      *
      * @group Garbage Collection
+     *
      * @defaultAlt 90 days
+     *
      * @since 3.3.0
      */
     public mixed $purgeStaleUserSessionDuration = 7776000;
-
-    /**
-     * @var mixed The amount of time to wait before Craft purges unpublished drafts that were never updated with content.
-     *
-     * Set to `0` to disable this feature.
-     *
-     * See [[ConfigHelper::durationInSeconds()]] for a list of supported value types.
-     *
-     * ::: code
-     * ```php Static Config
-     * ->purgeUnsavedDraftsDuration(0)
-     * ```
-     * ```shell Environment Override
-     * CRAFT_PURGE_UNSAVED_DRAFTS_DURATION=0
-     * ```
-     * :::
-     *
-     * @group Garbage Collection
-     * @defaultAlt 30 days
-     * @since 3.2.0
-     */
-    public mixed $purgeUnsavedDraftsDuration = 2592000;
 
     /**
      * @var bool Whether SVG thumbnails should be rasterized.
@@ -2440,7 +2336,6 @@ class GeneralConfig extends BaseConfig
      * :::
      *
      * @group Image Handling
-     * @since 3.6.0
      */
     public bool $rasterizeSvgThumbs = false;
 
@@ -2461,6 +2356,7 @@ class GeneralConfig extends BaseConfig
      * :::
      *
      * @group Session
+     *
      * @defaultAlt 1 year
      */
     public mixed $rememberUsernameDuration = 31536000;
@@ -2482,6 +2378,7 @@ class GeneralConfig extends BaseConfig
      * :::
      *
      * @group Session
+     *
      * @defaultAlt 14 days
      */
     public mixed $rememberedUserSessionDuration = 1209600;
@@ -2592,7 +2489,6 @@ class GeneralConfig extends BaseConfig
      * :::
      *
      * @group Assets
-     * @since 3.7.0
      */
     public bool $revAssetUrls = false;
 
@@ -2656,29 +2552,12 @@ class GeneralConfig extends BaseConfig
      * :::
      *
      * @group System
-     * @since 5.1.0
      */
     public bool $safeMode = false;
 
     /**
-     * @var bool Whether images uploaded via the control panel should be sanitized.
-     *
-     * ::: code
-     * ```php Static Config
-     * ->sanitizeCpImageUploads(false)
-     * ```
-     * ```shell Environment Override
-     * CRAFT_SANITIZE_CP_IMAGE_UPLOADS=false
-     * ```
-     * :::
-     *
-     * @group Security
-     * @since 3.6.0
-     */
-    public bool $sanitizeCpImageUploads = true;
-
-    /**
      * @var string|null The [SameSite](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Set-Cookie/SameSite) value that should be set on Craft cookies, if any.
+     *
      * @phpstan-var 'None'|'Lax'|'Strict'|null
      *
      * This can be set to `'None'`, `'Lax'`, `'Strict'`, or `null`.
@@ -2693,9 +2572,26 @@ class GeneralConfig extends BaseConfig
      * :::
      *
      * @group System
+     *
      * @since 3.1.33
      */
     public ?string $sameSiteCookieValue = null;
+
+    /**
+     * @var bool Whether images uploaded via the control panel should be sanitized.
+     *
+     * ::: code
+     * ```php Static Config
+     * ->sanitizeCpImageUploads(false)
+     * ```
+     * ```shell Environment Override
+     * CRAFT_SANITIZE_CP_IMAGE_UPLOADS=false
+     * ```
+     * :::
+     *
+     * @group Security
+     */
+    public bool $sanitizeCpImageUploads = true;
 
     /**
      * @var bool Whether Craft should sanitize uploaded SVG files and strip out potential malicious-looking content.
@@ -2714,166 +2610,6 @@ class GeneralConfig extends BaseConfig
      * @group Security
      */
     public bool $sanitizeSvgUploads = true;
-
-    /**
-     * @var string A private, random, cryptographically-secure key that is used for hashing and encrypting data in [[\craft\services\Security]].
-     *
-     * ::: warning
-     * **Do not** share this key publicly. If exposed, it could lead to a compromised system.
-     * :::
-     *
-     * In the event that the key is compromised, a new secure key can be generated with the command:
-     *
-     * ```sh
-     * php craft setup/security-key
-     * ```
-     *
-     * Note that if the key changes, any data that is encrypted with it (e.g. user session cookies) will be inaccessible.
-     *
-     * ```php Static Config
-     * ->securityKey('2cf24dba5...')
-     * ```
-     *
-     * @see https://craftcms.com/knowledge-base/securing-craft
-     * @group Security
-     */
-    public string $securityKey = '';
-
-    /**
-     * @var bool Whether a `Content-Length` header should be sent with responses.
-     *
-     * ::: code
-     * ```php Static Config
-     * ->sendContentLengthHeader(true)
-     * ```
-     * ```shell Environment Override
-     * CRAFT_SEND_CONTENT_LENGTH_HEADER=true
-     * ```
-     * :::
-     *
-     * @group System
-     * @since 3.7.3
-     */
-    public bool $sendContentLengthHeader = false;
-
-    /**
-     * @var bool Whether an `X-Powered-By: Craft CMS` header should be sent, helping services like [BuiltWith](https://builtwith.com/) and
-     * [Wappalyzer](https://www.wappalyzer.com/) identify that the site is running on Craft.
-     *
-     * ::: code
-     * ```php Static Config
-     * ->sendPoweredByHeader(false)
-     * ```
-     * ```shell Environment Override
-     * CRAFT_SEND_POWERED_BY_HEADER=false
-     * ```
-     * :::
-     *
-     * @group System
-     */
-    public bool $sendPoweredByHeader = true;
-
-    /**
-     * @var mixed The URI or URL that Craft should use for Set Password forms on the front end.
-     *
-     * See [[ConfigHelper::localizedValue()]] for a list of supported value types.
-     *
-     * ::: tip
-     * You might also want to set <config5:invalidUserTokenPath> in case a user clicks on an expired password reset link.
-     * :::
-     *
-     * ::: code
-     * ```php Static Config
-     * ->setPasswordPath('set-password')
-     * ```
-     * ```shell Environment Override
-     * CRAFT_SET_PASSWORD_PATH=set-password
-     * ```
-     * :::
-     *
-     * @see getSetPasswordPath()
-     * @group Routing
-     */
-    public mixed $setPasswordPath = 'setpassword';
-
-    /**
-     * @var mixed The URI to the page where users can request to change their password.
-     *
-     * See [[ConfigHelper::localizedValue()]] for a list of supported value types.
-     *
-     * If this is set, Craft will redirect [.well-known/change-password requests](https://w3c.github.io/webappsec-change-password-url/) to this URI.
-     *
-     * ::: tip
-     * You’ll also need to set [setPasswordPath](config5:setPasswordPath), which determines the URI and template path for the Set Password form
-     * where the user resets their password after following the link in the Password Reset email.
-     * :::
-     *
-     * ::: code
-     * ```php Static Config
-     * ->setPasswordRequestPath('request-password')
-     * ```
-     * ```shell Environment Override
-     * CRAFT_SET_PASSWORD_REQUEST_PATH=request-password
-     * ```
-     * :::
-     *
-     * @see getSetPasswordRequestPath()
-     * @group Routing
-     * @since 3.5.14
-     */
-    public mixed $setPasswordRequestPath = null;
-
-    /**
-     * @var mixed The URI Craft should redirect users to after setting their password from the front end.
-     *
-     * See [[ConfigHelper::localizedValue()]] for a list of supported value types.
-     *
-     * ::: code
-     * ```php Static Config
-     * ->setPasswordSuccessPath('password-set')
-     * ```
-     * ```shell Environment Override
-     * CRAFT_SET_PASSWORD_SUCCESS_PATH=password-set
-     * ```
-     * :::
-     *
-     * @see getSetPasswordSuccessPath()
-     * @group Routing
-     */
-    public mixed $setPasswordSuccessPath = '';
-
-    /**
-     * @var string The query string parameter name that site tokens should be set to.
-     *
-     * ::: code
-     * ```php Static Config
-     * ->siteToken('t')
-     * ```
-     * ```shell Environment Override
-     * CRAFT_SITE_TOKEN=t
-     * ```
-     * :::
-     *
-     * @group Routing
-     * @since 3.5.0
-     */
-    public string $siteToken = 'siteToken';
-
-    /**
-     * @var string The character(s) that should be used to separate words in slugs.
-     *
-     * ::: code
-     * ```php Static Config
-     * ->slugWordSeparator('.')
-     * ```
-     * ```shell Environment Override
-     * CRAFT_SLUG_WORD_SEPARATOR=.
-     * ```
-     * :::
-     *
-     * @group System
-     */
-    public string $slugWordSeparator = '-';
 
     /**
      * @var array|null Lists of headers that are, by default, subject to the trusted host configuration.
@@ -2928,6 +2664,169 @@ class GeneralConfig extends BaseConfig
     public ?array $secureProtocolHeaders = null;
 
     /**
+     * @var string A private, random, cryptographically-secure key that is used for hashing and encrypting data in [[\craft\services\Security]].
+     *
+     * ::: warning
+     * **Do not** share this key publicly. If exposed, it could lead to a compromised system.
+     * :::
+     *
+     * In the event that the key is compromised, a new secure key can be generated with the command:
+     *
+     * ```sh
+     * php craft setup/security-key
+     * ```
+     *
+     * Note that if the key changes, any data that is encrypted with it (e.g. user session cookies) will be inaccessible.
+     *
+     * ```php Static Config
+     * ->securityKey('2cf24dba5...')
+     * ```
+     *
+     * @see https://craftcms.com/knowledge-base/securing-craft
+     *
+     * @group Security
+     */
+    public string $securityKey = '';
+
+    /**
+     * @var bool Whether a `Content-Length` header should be sent with responses.
+     *
+     * ::: code
+     * ```php Static Config
+     * ->sendContentLengthHeader(true)
+     * ```
+     * ```shell Environment Override
+     * CRAFT_SEND_CONTENT_LENGTH_HEADER=true
+     * ```
+     * :::
+     *
+     * @group System
+     *
+     * @since 3.7.3
+     */
+    public bool $sendContentLengthHeader = false;
+
+    /**
+     * @var bool Whether an `X-Powered-By: Craft CMS` header should be sent, helping services like [BuiltWith](https://builtwith.com/) and
+     *           [Wappalyzer](https://www.wappalyzer.com/) identify that the site is running on Craft.
+     *
+     * ::: code
+     * ```php Static Config
+     * ->sendPoweredByHeader(false)
+     * ```
+     * ```shell Environment Override
+     * CRAFT_SEND_POWERED_BY_HEADER=false
+     * ```
+     * :::
+     *
+     * @group System
+     */
+    public bool $sendPoweredByHeader = true;
+
+    /**
+     * @var mixed The URI or URL that Craft should use for Set Password forms on the front end.
+     *
+     * See [[ConfigHelper::localizedValue()]] for a list of supported value types.
+     *
+     * ::: tip
+     * You might also want to set <config5:invalidUserTokenPath> in case a user clicks on an expired password reset link.
+     * :::
+     *
+     * ::: code
+     * ```php Static Config
+     * ->setPasswordPath('set-password')
+     * ```
+     * ```shell Environment Override
+     * CRAFT_SET_PASSWORD_PATH=set-password
+     * ```
+     * :::
+     *
+     * @see getSetPasswordPath()
+     *
+     * @group Routing
+     */
+    public mixed $setPasswordPath = 'setpassword';
+
+    /**
+     * @var mixed The URI to the page where users can request to change their password.
+     *
+     * See [[ConfigHelper::localizedValue()]] for a list of supported value types.
+     *
+     * If this is set, Craft will redirect [.well-known/change-password requests](https://w3c.github.io/webappsec-change-password-url/) to this URI.
+     *
+     * ::: tip
+     * You’ll also need to set [setPasswordPath](config5:setPasswordPath), which determines the URI and template path for the Set Password form
+     * where the user resets their password after following the link in the Password Reset email.
+     * :::
+     *
+     * ::: code
+     * ```php Static Config
+     * ->setPasswordRequestPath('request-password')
+     * ```
+     * ```shell Environment Override
+     * CRAFT_SET_PASSWORD_REQUEST_PATH=request-password
+     * ```
+     * :::
+     *
+     * @see getSetPasswordRequestPath()
+     *
+     * @group Routing
+     */
+    public mixed $setPasswordRequestPath = null;
+
+    /**
+     * @var mixed The URI Craft should redirect users to after setting their password from the front end.
+     *
+     * See [[ConfigHelper::localizedValue()]] for a list of supported value types.
+     *
+     * ::: code
+     * ```php Static Config
+     * ->setPasswordSuccessPath('password-set')
+     * ```
+     * ```shell Environment Override
+     * CRAFT_SET_PASSWORD_SUCCESS_PATH=password-set
+     * ```
+     * :::
+     *
+     * @see getSetPasswordSuccessPath()
+     *
+     * @group Routing
+     */
+    public mixed $setPasswordSuccessPath = '';
+
+    /**
+     * @var string The query string parameter name that site tokens should be set to.
+     *
+     * ::: code
+     * ```php Static Config
+     * ->siteToken('t')
+     * ```
+     * ```shell Environment Override
+     * CRAFT_SITE_TOKEN=t
+     * ```
+     * :::
+     *
+     * @group Routing
+     */
+    public string $siteToken = 'siteToken';
+
+    /**
+     * @var string The character(s) that should be used to separate words in slugs.
+     *
+     * ::: code
+     * ```php Static Config
+     * ->slugWordSeparator('.')
+     * ```
+     * ```shell Environment Override
+     * CRAFT_SLUG_WORD_SEPARATOR=.
+     * ```
+     * :::
+     *
+     * @group System
+     */
+    public string $slugWordSeparator = '-';
+
+    /**
      * @var bool Whether “First Name” and “Last Name” fields should be shown in place of “Full Name” fields.
      *
      * ::: code
@@ -2940,7 +2839,6 @@ class GeneralConfig extends BaseConfig
      * :::
      *
      * @group Users
-     * @since 4.6.0
      */
     public bool $showFirstAndLastNameFields = false;
 
@@ -2961,14 +2859,14 @@ class GeneralConfig extends BaseConfig
      * :::
      *
      * @group Garbage Collection
+     *
      * @defaultAlt 30 days
-     * @since 3.1.0
      */
     public mixed $softDeleteDuration = 2592000;
 
     /**
      * @var bool Whether entries’ statuses should be stored statically, and only get updated on entry save, or when the
-     * `update-statuses` command is executed.
+     *           `update-statuses` command is executed.
      *
      * ::: code
      * ```php Static Config
@@ -2980,7 +2878,6 @@ class GeneralConfig extends BaseConfig
      * :::
      *
      * @group System
-     * @since 5.7.0
      */
     public bool $staticStatuses = false;
 
@@ -2997,13 +2894,12 @@ class GeneralConfig extends BaseConfig
      * :::
      *
      * @group Security
-     * @since 3.1.0
      */
     public bool $storeUserIps = false;
 
     /**
      * @var string|null The URL to a CSS file that should be included when rendering system templates on the front end,
-     * such as the Login and Set Password templates.
+     *                  such as the Login and Set Password templates.
      *
      * ::: code
      * ```php Static Config
@@ -3015,13 +2911,12 @@ class GeneralConfig extends BaseConfig
      * :::
      *
      * @group System
-     * @since 5.6.0
      */
     public ?string $systemTemplateCss = null;
 
     /**
      * @var string|null The handle of the filesystem that should be used for storing temporary asset uploads. A local temp folder will
-     * be used by default.
+     *                  be used by default.
      *
      * ::: code
      * ```php Static Config
@@ -3033,13 +2928,12 @@ class GeneralConfig extends BaseConfig
      * :::
      *
      * @group Assets
-     * @since 5.0.0
      */
     public ?string $tempAssetUploadFs = null;
 
     /**
      * @var string|array|null|false Configures Craft to send all system emails to either a single email address or an array of email addresses
-     * for testing purposes.
+     *                              for testing purposes.
      *
      * By default, the recipient name(s) will be “Test Recipient”, but you can customize that by setting the value with the format
      * `['me@domain.tld' => 'Name']`.
@@ -3088,7 +2982,6 @@ class GeneralConfig extends BaseConfig
      * :::
      *
      * @group Image Handling
-     * @since 3.0.7
      */
     public bool $transformGifs = true;
 
@@ -3105,13 +2998,12 @@ class GeneralConfig extends BaseConfig
      * :::
      *
      * @group Image Handling
-     * @since 3.7.1
      */
     public bool $transformSvgs = true;
 
     /**
      * @var bool Whether translated messages should be wrapped in special characters to help find any strings that are not being run through
-     * `Craft::t()` or the `|translate` filter.
+     *           `Craft::t()` or the `|translate` filter.
      *
      * ::: code
      * ```php Static Config
@@ -3136,22 +3028,6 @@ class GeneralConfig extends BaseConfig
     public bool $translationDebugOutput = false;
 
     /**
-     * @var string The query string parameter name that Craft tokens should be set to.
-     *
-     * ::: code
-     * ```php Static Config
-     * ->tokenParam('t')
-     * ```
-     * ```shell Environment Override
-     * CRAFT_TOKEN_PARAM=t
-     * ```
-     * :::
-     *
-     * @group Routing
-     */
-    public string $tokenParam = 'token';
-
-    /**
      * @var array The configuration for trusted security-related headers.
      *
      * See [[\yii\web\Request::trustedHosts]] for more details.
@@ -3172,6 +3048,22 @@ class GeneralConfig extends BaseConfig
     public array $trustedHosts = ['any'];
 
     /**
+     * @var string The query string parameter name that Craft tokens should be set to.
+     *
+     * ::: code
+     * ```php Static Config
+     * ->tokenParam('t')
+     * ```
+     * ```shell Environment Override
+     * CRAFT_TOKEN_PARAM=t
+     * ```
+     * :::
+     *
+     * @group Routing
+     */
+    public string $tokenParam = 'token';
+
+    /**
      * @var bool Whether image transforms should allow upscaling by default, for images that are smaller than the transform dimensions.
      *
      * ::: code
@@ -3184,7 +3076,6 @@ class GeneralConfig extends BaseConfig
      * :::
      *
      * @group Image Handling
-     * @since 3.4.0
      */
     public bool $upscaleImages = true;
 
@@ -3238,7 +3129,6 @@ class GeneralConfig extends BaseConfig
      * :::
      *
      * @group System
-     * @since 3.5.5
      */
     public bool $useIframeResizer = false;
 
@@ -3281,8 +3171,8 @@ class GeneralConfig extends BaseConfig
 
     /**
      * @var bool|string Determines what protocol/schema Craft will use when generating tokenized URLs. If set to `'auto'`, Craft will check the
-     * current site’s base URL and the protocol of the current request and if either of them are HTTPS will use `https` in the tokenized URL. If not,
-     * will use `http`.
+     *                  current site’s base URL and the protocol of the current request and if either of them are HTTPS will use `https` in the tokenized URL. If not,
+     *                  will use `http`.
      *
      * If set to `false`, Craft will always use `http`. If set to `true`, then, Craft will always use `https`.
      *
@@ -3318,6 +3208,7 @@ class GeneralConfig extends BaseConfig
      * :::
      *
      * @group Session
+     *
      * @defaultAlt 1 hour
      */
     public mixed $userSessionDuration = 3600;
@@ -3339,6 +3230,7 @@ class GeneralConfig extends BaseConfig
      * :::
      *
      * @see https://php.net/manual/en/function.file-put-contents.php
+     *
      * @group System
      */
     public ?bool $useFileLocks = null;
@@ -3360,6 +3252,7 @@ class GeneralConfig extends BaseConfig
      * :::
      *
      * @group Security
+     *
      * @defaultAlt 1 day
      */
     public mixed $verificationCodeDuration = 86400;
@@ -3379,8 +3272,8 @@ class GeneralConfig extends BaseConfig
      * :::
      *
      * @see getVerifyEmailPath()
+     *
      * @group Routing
-     * @since 3.4.0
      */
     public mixed $verifyEmailPath = 'verifyemail';
 
@@ -3399,60 +3292,12 @@ class GeneralConfig extends BaseConfig
      * :::
      *
      * @see getVerifyEmailSuccessPath()
+     *
      * @group Routing
-     * @since 3.1.20
      */
     public mixed $verifyEmailSuccessPath = '';
 
-    private ?DateInterval $_rememberedUserSessionDuration = null;
-
-    /**
-     * @inheritdoc
-     */
-    public function __set($name, $value)
-    {
-        try {
-            parent::__set($name, $value);
-        } catch (UnknownPropertyException) {
-            throw new UnknownPropertyException("Invalid general config setting: $name. You can set custom config settings from config/custom.php.");
-        }
-    }
-
-    /**
-     * @inheritdoc
-     * @throws InvalidConfigException
-     */
-    public function init(): void
-    {
-        // (Re-)normalize everything.
-        // Even if they were already set via the fluent methods, \Craft may not have been autoloaded yet,
-        // so some values would still be in need of normalization, e.g. defaultCpLanguage/extraAppLocales.
-        $this
-            // file extensions
-            ->allowedFileExtensions($this->allowedFileExtensions)
-            ->extraAllowedFileExtensions($this->extraAllowedFileExtensions)
-            // durations
-            ->cacheDuration($this->cacheDuration)
-            ->cooldownDuration($this->cooldownDuration)
-            ->defaultTokenDuration($this->defaultTokenDuration)
-            ->elevatedSessionDuration($this->elevatedSessionDuration)
-            ->invalidLoginWindowDuration($this->invalidLoginWindowDuration)
-            ->previewTokenDuration($this->previewTokenDuration ?? $this->defaultTokenDuration)
-            ->purgePendingUsersDuration($this->purgePendingUsersDuration)
-            ->purgeUnsavedDraftsDuration($this->purgeUnsavedDraftsDuration)
-            ->rememberUsernameDuration($this->rememberUsernameDuration)
-            ->rememberedUserSessionDuration($this->rememberedUserSessionDuration)
-            ->softDeleteDuration($this->softDeleteDuration)
-            ->userSessionDuration($this->userSessionDuration)
-            ->verificationCodeDuration($this->verificationCodeDuration)
-            // locales
-            ->defaultCpLanguage($this->defaultCpLanguage)
-            ->extraAppLocales($this->extraAppLocales)
-            // misc
-            ->maxUploadFileSize($this->maxUploadFileSize)
-            ->disabledPlugins($this->disabledPlugins)
-        ;
-    }
+    protected ?DateInterval $_rememberedUserSessionDuration = null;
 
     /**
      * The default user accessibility preferences that should be applied to users that haven’t saved their preferences yet.
@@ -3472,14 +3317,13 @@ class GeneralConfig extends BaseConfig
      * ```
      *
      * @group System
-     * @param array $value
-     * @return self
+     *
      * @see $accessibilityDefaults
-     * @since 4.2.0
      */
     public function accessibilityDefaults(array $value): self
     {
         $this->accessibilityDefaults = $value;
+
         return $this;
     }
 
@@ -3491,14 +3335,14 @@ class GeneralConfig extends BaseConfig
      * ```
      *
      * @group Routing
-     * @param string $value
-     * @return self
+     *
      * @see $actionTrigger
      * @since 4.2.0
      */
     public function actionTrigger(string $value): self
     {
         $this->actionTrigger = $value;
+
         return $this;
     }
 
@@ -3512,15 +3356,14 @@ class GeneralConfig extends BaseConfig
      * ```
      *
      * @group Routing
-     * @param mixed $value
-     * @return self
+     *
      * @see $activateAccountSuccessPath
      * @see getActivateAccountSuccessPath()
-     * @since 4.2.0
      */
     public function activateAccountSuccessPath(mixed $value): self
     {
         $this->activateAccountSuccessPath = $value;
+
         return $this;
     }
 
@@ -3532,14 +3375,13 @@ class GeneralConfig extends BaseConfig
      * ```
      *
      * @group Routing
-     * @param bool $value
-     * @return self
+     *
      * @see $addTrailingSlashesToUrls
-     * @since 4.2.0
      */
     public function addTrailingSlashesToUrls(bool $value = true): self
     {
         $this->addTrailingSlashesToUrls = $value;
+
         return $this;
     }
 
@@ -3553,10 +3395,10 @@ class GeneralConfig extends BaseConfig
      * ```
      *
      * @group Environment
-     * @param array<string,string|null> $value
-     * @return self
+     *
+     * @param  array<string,string|null>  $value
+     *
      * @see $aliases
-     * @since 4.2.0
      */
     public function aliases(array $value): self
     {
@@ -3564,6 +3406,7 @@ class GeneralConfig extends BaseConfig
         foreach ($value as $name => $path) {
             $this->addAlias($name, $path);
         }
+
         return $this;
     }
 
@@ -3575,18 +3418,16 @@ class GeneralConfig extends BaseConfig
      * ```
      *
      * @group Environment
-     * @param string $name
-     * @param string|null $path
-     * @return self
+     *
      * @see $aliases
-     * @since 4.2.0
      */
     public function addAlias(string $name, ?string $path): self
     {
-        if (!str_starts_with($name, '@')) {
+        if (! str_starts_with($name, '@')) {
             $name = "@$name";
         }
         $this->aliases[$name] = $path;
+
         return $this;
     }
 
@@ -3608,40 +3449,13 @@ class GeneralConfig extends BaseConfig
      * ```
      *
      * @group System
-     * @param bool $value
-     * @return self
+     *
      * @see $allowAdminChanges
-     * @since 4.2.0
      */
     public function allowAdminChanges(bool $value = true): self
     {
         $this->allowAdminChanges = $value;
-        return $this;
-    }
 
-    /**
-     * The Ajax origins that should be allowed to access the GraphQL API, if enabled.
-     *
-     * If this is set to an array, then `graphql/api` requests will only include the current request’s [[\yii\web\Request::getOrigin()|origin]]
-     * in the `Access-Control-Allow-Origin` response header if it’s listed here.
-     *
-     * If this is set to `false`, then the `Access-Control-Allow-Origin` response header will never be sent.
-     *
-     * ```php
-     * ->allowedGraphqlOrigins(false)
-     * ```
-     *
-     * @group GraphQL
-     * @param array|null|false $value
-     * @return self
-     * @see $allowedGraphqlOrigins
-     * @since 4.2.0
-     * @deprecated in 4.11.0. [[\craft\filters\Cors]] should be used instead.
-     * @see https://www.yiiframework.com/doc/api/2.0/yii-filters-cors
-     */
-    public function allowedGraphqlOrigins(array|null|false $value): self
-    {
-        $this->allowedGraphqlOrigins = $value;
         return $this;
     }
 
@@ -3655,14 +3469,13 @@ class GeneralConfig extends BaseConfig
      * ```
      *
      * @group System
-     * @param bool $value
-     * @return self
+     *
      * @see $allowUpdates
-     * @since 4.2.0
      */
     public function allowUpdates(bool $value = true): self
     {
         $this->allowUpdates = $value;
+
         return $this;
     }
 
@@ -3677,14 +3490,15 @@ class GeneralConfig extends BaseConfig
      * ```
      *
      * @group Assets
-     * @param string[] $value
-     * @return self
+     *
+     * @param  string[]  $value
+     *
      * @see $allowedFileExtensions
-     * @since 4.2.0
      */
     public function allowedFileExtensions(array $value): self
     {
         $this->allowedFileExtensions = array_map('strtolower', $value);
+
         return $this;
     }
 
@@ -3696,14 +3510,13 @@ class GeneralConfig extends BaseConfig
      * ```
      *
      * @group System
-     * @param bool $value
-     * @return self
+     *
      * @see $allowSimilarTags
-     * @since 4.2.0
      */
     public function allowSimilarTags(bool $value = true): self
     {
         $this->allowSimilarTags = $value;
+
         return $this;
     }
 
@@ -3715,14 +3528,13 @@ class GeneralConfig extends BaseConfig
      * ```
      *
      * @group Routing
-     * @param bool $value
-     * @return self
+     *
      * @see $allowUppercaseInSlug
-     * @since 4.2.0
      */
     public function allowUppercaseInSlug(bool $value = true): self
     {
         $this->allowUppercaseInSlug = $value;
+
         return $this;
     }
 
@@ -3734,14 +3546,38 @@ class GeneralConfig extends BaseConfig
      * ```
      *
      * @group System
-     * @param bool $value
-     * @return self
+     *
      * @see $autoLoginAfterAccountActivation
-     * @since 4.2.0
      */
     public function autoLoginAfterAccountActivation(bool $value = true): self
     {
         $this->autoLoginAfterAccountActivation = $value;
+
+        return $this;
+    }
+
+    /**
+     * The base URL Craft should use when generating control panel URLs.
+     *
+     * It will be determined automatically if left blank.
+     *
+     * ::: tip
+     * The base control panel URL should **not** include the [control panel trigger word](config5:cpTrigger) (e.g. `/admin`).
+     * :::
+     *
+     * ```php
+     * ->baseCpUrl('https://cms.my-project.tld/')
+     * ```
+     *
+     * @group Routing
+     *
+     * @see $baseCpUrl
+     * @since 4.2.0
+     */
+    public function baseCpUrl(?string $value): self
+    {
+        $this->baseCpUrl = $value;
+
         return $this;
     }
 
@@ -3753,14 +3589,13 @@ class GeneralConfig extends BaseConfig
      * ```
      *
      * @group System
-     * @param bool $value
-     * @return self
+     *
      * @see $backupOnUpdate
-     * @since 4.2.0
      */
     public function backupOnUpdate(bool $value = true): self
     {
         $this->backupOnUpdate = $value;
+
         return $this;
     }
 
@@ -3787,14 +3622,13 @@ class GeneralConfig extends BaseConfig
      * ```
      *
      * @group Environment
-     * @param string|null|false|Closure $value
-     * @return self
+     *
      * @see $backupCommand
-     * @since 4.2.0
      */
     public function backupCommand(string|null|false|Closure $value): self
     {
         $this->backupCommand = $value;
+
         return $this;
     }
 
@@ -3805,42 +3639,17 @@ class GeneralConfig extends BaseConfig
      *
      * Valid options are `custom`, `directory`, `tar`, or `plain`.
      * When set to `null` (default), `pg_restore` will default to `plain`
+     *
      * @see https://www.postgresql.org/docs/current/app-pgdump.html
      *
      * @group Environment
-     * @param string $value
-     * @return self
+     *
      * @see $backupCommandFormat
-     * @since 5.1.0
      */
     public function backupCommandFormat(string $value): self
     {
         $this->backupCommandFormat = $value;
-        return $this;
-    }
 
-    /**
-     * The base URL Craft should use when generating control panel URLs.
-     *
-     * It will be determined automatically if left blank.
-     *
-     * ::: tip
-     * The base control panel URL should **not** include the [control panel trigger word](config5:cpTrigger) (e.g. `/admin`).
-     * :::
-     *
-     * ```php
-     * ->baseCpUrl('https://cms.my-project.tld/')
-     * ```
-     *
-     * @group Routing
-     * @param string|null $value
-     * @return self
-     * @see $baseCpUrl
-     * @since 4.2.0
-     */
-    public function baseCpUrl(?string $value): self
-    {
-        $this->baseCpUrl = $value;
         return $this;
     }
 
@@ -3861,14 +3670,19 @@ class GeneralConfig extends BaseConfig
      * ```
      *
      * @group Security
-     * @param int $value
-     * @return self
+     *
      * @see $blowfishHashCost
      * @since 4.2.0
+     * @deprecated in 6.0.0. Set hashing.bcrypt.rounds or BCRYPT_ROUNDS environment variable instead.
      */
     public function blowfishHashCost(int $value): self
     {
+        // \Craft::$app->getDeprecator()->log('generalConfig.blowfishHashCost', 'blowfishHashCost is deprecated. Set hashing.bcrypt.rounds or BCRYPT_ROUNDS instead.');
+
         $this->blowfishHashCost = $value;
+
+        Config::set('hashing.bcrypt.rounds', $value);
+
         return $this;
     }
 
@@ -3883,14 +3697,13 @@ class GeneralConfig extends BaseConfig
      * ```
      *
      * @group Image Handling
-     * @param string|null $value
-     * @return self
+     *
      * @see $brokenImagePath
-     * @since 4.2.0
      */
     public function brokenImagePath(?string $value): self
     {
         $this->brokenImagePath = $value;
+
         return $this;
     }
 
@@ -3904,14 +3717,13 @@ class GeneralConfig extends BaseConfig
      * ```
      *
      * @group Environment
-     * @param string|null $value
-     * @return self
+     *
      * @see $buildId
-     * @since 4.2.0
      */
     public function buildId(?string $value): self
     {
         $this->buildId = $value;
+
         return $this;
     }
 
@@ -3927,15 +3739,15 @@ class GeneralConfig extends BaseConfig
      * ```
      *
      * @group System
+     *
      * @defaultAlt 1 day
-     * @param mixed $value
-     * @return self
+     *
      * @see $cacheDuration
-     * @since 4.2.0
      */
     public function cacheDuration(mixed $value): self
     {
         $this->cacheDuration = ConfigHelper::durationInSeconds($value);
+
         return $this;
     }
 
@@ -3951,14 +3763,13 @@ class GeneralConfig extends BaseConfig
      * ```
      *
      * @group Assets
-     * @param bool $value
-     * @return self
+     *
      * @see $convertFilenamesToAscii
-     * @since 4.2.0
      */
     public function convertFilenamesToAscii(bool $value = true): self
     {
         $this->convertFilenamesToAscii = $value;
+
         return $this;
     }
 
@@ -3975,15 +3786,15 @@ class GeneralConfig extends BaseConfig
      * ```
      *
      * @group Security
+     *
      * @defaultAlt 5 minutes
-     * @param mixed $value
-     * @return self
+     *
      * @see $cooldownDuration
-     * @since 4.2.0
      */
     public function cooldownDuration(mixed $value): self
     {
         $this->cooldownDuration = ConfigHelper::durationInSeconds($value);
+
         return $this;
     }
 
@@ -4008,14 +3819,13 @@ class GeneralConfig extends BaseConfig
      * ```
      *
      * @group System
-     * @param array $value
-     * @return self
+     *
      * @see $cpHeadTags
-     * @since 4.2.0
      */
     public function cpHeadTags(array $value): self
     {
         $this->cpHeadTags = $value;
+
         return $this;
     }
 
@@ -4041,14 +3851,13 @@ class GeneralConfig extends BaseConfig
      * ```
      *
      * @group Routing
-     * @param string|null $value
-     * @return self
+     *
      * @see $cpTrigger
-     * @since 4.2.0
      */
     public function cpTrigger(?string $value): self
     {
         $this->cpTrigger = $value;
+
         return $this;
     }
 
@@ -4060,15 +3869,18 @@ class GeneralConfig extends BaseConfig
      * ```
      *
      * @group Security
-     * @param string $value
-     * @return self
+     *
      * @see $csrfTokenName
      * @see enableCsrfProtection
      * @since 4.2.0
+     * @deprecated in 6.0.0. Calling csrfTokenName() is deprecated. The token is always named XSRF-TOKEN.
      */
     public function csrfTokenName(string $value): self
     {
+        // \Craft::$app->getDeprecator()->log('generalConfig.csrfTokenName', 'Calling csrfTokenName() is deprecated. The token is always named XSRF-TOKEN.');
+
         $this->csrfTokenName = $value;
+
         return $this;
     }
 
@@ -4082,14 +3894,16 @@ class GeneralConfig extends BaseConfig
      * ```
      *
      * @group Environment
-     * @param string $value
-     * @return self
+     *
      * @see $defaultCookieDomain
      * @since 4.2.0
      */
     public function defaultCookieDomain(string $value): self
     {
         $this->defaultCookieDomain = $value;
+
+        Config::set('session.domain', $value);
+
         return $this;
     }
 
@@ -4103,10 +3917,8 @@ class GeneralConfig extends BaseConfig
      * ```
      *
      * @group System
-     * @param string $value
-     * @return self
+     *
      * @see $defaultCountryCode
-     * @since 4.5.0
      */
     public function defaultCountryCode(string $value): self
     {
@@ -4115,6 +3927,7 @@ class GeneralConfig extends BaseConfig
         }
 
         $this->defaultCountryCode = $value;
+
         return $this;
     }
 
@@ -4126,18 +3939,17 @@ class GeneralConfig extends BaseConfig
      * ```
      *
      * @group System
-     * @param string|null $value
-     * @return self
+     *
      * @throws InvalidConfigException
+     *
      * @see $defaultCpLanguage
-     * @since 4.2.0
      */
     public function defaultCpLanguage(?string $value): self
     {
         if (
             $value !== null &&
-            class_exists(Craft::class, false) &&
-            isset(Craft::$app)
+            class_exists(\Craft::class, false) &&
+            isset(\Craft::$app)
         ) {
             try {
                 $value = Localization::normalizeLanguage($value);
@@ -4147,6 +3959,7 @@ class GeneralConfig extends BaseConfig
         }
 
         $this->defaultCpLanguage = $value;
+
         return $this;
     }
 
@@ -4161,14 +3974,13 @@ class GeneralConfig extends BaseConfig
      * ```
      *
      * @group System
-     * @param string|null $value
-     * @return self
+     *
      * @see $defaultCpLocale
-     * @since 4.2.0
      */
     public function defaultCpLocale(?string $value): self
     {
         $this->defaultCpLocale = $value;
+
         return $this;
     }
 
@@ -4182,14 +3994,14 @@ class GeneralConfig extends BaseConfig
      * ```
      *
      * @group System
-     * @param mixed $value
-     * @return self
+     *
      * @see $defaultDirMode
      * @since 4.2.0
      */
     public function defaultDirMode(mixed $value): self
     {
         $this->defaultDirMode = $value;
+
         return $this;
     }
 
@@ -4203,14 +4015,14 @@ class GeneralConfig extends BaseConfig
      * ```
      *
      * @group System
-     * @param int|null $value
-     * @return self
+     *
      * @see $defaultFileMode
      * @since 4.2.0
      */
     public function defaultFileMode(?int $value): self
     {
         $this->defaultFileMode = $value;
+
         return $this;
     }
 
@@ -4223,14 +4035,13 @@ class GeneralConfig extends BaseConfig
      * ```
      *
      * @group Image Handling
-     * @param int $value
-     * @return self
+     *
      * @see $defaultImageQuality
-     * @since 4.2.0
      */
     public function defaultImageQuality(int $value): self
     {
         $this->defaultImageQuality = $value;
+
         return $this;
     }
 
@@ -4252,14 +4063,13 @@ class GeneralConfig extends BaseConfig
      * ```
      *
      * @group System
-     * @param array $value
-     * @return self
+     *
      * @see $defaultSearchTermOptions
-     * @since 4.2.0
      */
     public function defaultSearchTermOptions(array $value): self
     {
         $this->defaultSearchTermOptions = $value;
+
         return $this;
     }
 
@@ -4271,14 +4081,13 @@ class GeneralConfig extends BaseConfig
      * ```
      *
      * @group System
-     * @param array $value
-     * @return self
+     *
      * @see $defaultTemplateExtensions
-     * @since 4.2.0
      */
     public function defaultTemplateExtensions(array $value): self
     {
         $this->defaultTemplateExtensions = $value;
+
         return $this;
     }
 
@@ -4293,15 +4102,15 @@ class GeneralConfig extends BaseConfig
      * ```
      *
      * @group Security
+     *
      * @defaultAlt 1 day
-     * @param mixed $value
-     * @return self
+     *
      * @see $defaultTokenDuration
-     * @since 4.2.0
      */
     public function defaultTokenDuration(mixed $value): self
     {
         $this->defaultTokenDuration = ConfigHelper::durationInSeconds($value);
+
         return $this;
     }
 
@@ -4323,15 +4132,15 @@ class GeneralConfig extends BaseConfig
      * ```
      *
      * @group System
+     *
      * @defaultAlt Monday
-     * @param int $value
-     * @return self
+     *
      * @see $defaultWeekStartDay
-     * @since 4.2.0
      */
     public function defaultWeekStartDay(int $value): self
     {
         $this->defaultWeekStartDay = $value;
+
         return $this;
     }
 
@@ -4345,14 +4154,13 @@ class GeneralConfig extends BaseConfig
      * ```
      *
      * @group Security
-     * @param bool $value
-     * @return self
+     *
      * @see $deferPublicRegistrationPassword
-     * @since 4.2.0
      */
     public function deferPublicRegistrationPassword(bool $value = true): self
     {
         $this->deferPublicRegistrationPassword = $value;
+
         return $this;
     }
 
@@ -4364,14 +4172,19 @@ class GeneralConfig extends BaseConfig
      * ```
      *
      * @group System
-     * @param bool $value
-     * @return self
+     *
      * @see $devMode
      * @since 4.2.0
+     * @deprecated in 6.0.0. Set `app.debug` or `APP_DEBUG` environment variable instead.
      */
     public function devMode(bool $value = true): self
     {
+        // \Craft::$app->getDeprecator()->log('generalConfig.devMode', 'devMode is deprecated. Set `app.debug` or `APP_DEBUG` environment variable instead.');
+
         $this->devMode = $value;
+
+        Config::set('app.debug', $value);
+
         return $this;
     }
 
@@ -4388,14 +4201,13 @@ class GeneralConfig extends BaseConfig
      * :::
      *
      * @group Users
-     * @param bool $value
-     * @return self
+     *
      * @see $disable2fa
-     * @since 5.6.0
      */
     public function disable2fa(bool $value = true): self
     {
         $this->disable2fa = $value;
+
         return $this;
     }
 
@@ -4426,10 +4238,8 @@ class GeneralConfig extends BaseConfig
      * ```
      *
      * @group System
-     * @param string|array|null $value
-     * @return self
+     *
      * @see $disabledPlugins
-     * @since 4.2.0
      */
     public function disabledPlugins(string|array|null $value): self
     {
@@ -4438,6 +4248,7 @@ class GeneralConfig extends BaseConfig
         }
 
         $this->disabledPlugins = $value;
+
         return $this;
     }
 
@@ -4457,14 +4268,15 @@ class GeneralConfig extends BaseConfig
      *  :::
      *
      * @group System
-     * @param string[] $value
-     * @return self
+     *
+     * @param  string[]  $value
+     *
      * @see $disabledUtilities
-     * @since 4.6.0
      */
     public function disabledUtilities(array $value): self
     {
         $this->disabledUtilities = $value;
+
         return $this;
     }
 
@@ -4481,14 +4293,13 @@ class GeneralConfig extends BaseConfig
      * ```
      *
      * @group System
-     * @param bool $value
-     * @return self
+     *
      * @see $disallowRobots
-     * @since 4.2.0
      */
     public function disallowRobots(bool $value = true): self
     {
         $this->disallowRobots = $value;
+
         return $this;
     }
 
@@ -4500,14 +4311,13 @@ class GeneralConfig extends BaseConfig
      * ```
      *
      * @group GraphQL
-     * @param bool $value
-     * @return self
+     *
      * @see $disableGraphqlTransformDirective
-     * @since 4.2.0
      */
     public function disableGraphqlTransformDirective(bool $value = true): self
     {
         $this->disableGraphqlTransformDirective = $value;
+
         return $this;
     }
 
@@ -4518,33 +4328,12 @@ class GeneralConfig extends BaseConfig
      *  ->asyncCsrfInputs(true)
      *  ```
      *
-     * @param bool $value
-     * @return self
      * @see $asyncCsrfInputs
-     * @since 5.1.0
      */
     public function asyncCsrfInputs(bool $value = true): self
     {
         $this->asyncCsrfInputs = $value;
-        return $this;
-    }
 
-    /**
-     * Whether front-end web requests should support basic HTTP authentication.
-     *
-     * ```php
-     * ->enableBasicHttpAuth(true)
-     * ```
-     *
-     * @group Security
-     * @param bool $value
-     * @return self
-     * @see $enableBasicHttpAuth
-     * @since 4.2.0
-     */
-    public function enableBasicHttpAuth(bool $value = true): self
-    {
-        $this->enableBasicHttpAuth = $value;
         return $this;
     }
 
@@ -4558,14 +4347,43 @@ class GeneralConfig extends BaseConfig
      * ```
      *
      * @group Security
-     * @param bool $value
-     * @return self
+     *
      * @see $enableCsrfCookie
      * @since 4.2.0
+     * @deprecated in 6.0.0. A cookie will always be used to persist the CSRF token.
      */
     public function enableCsrfCookie(bool $value = true): self
     {
+        // \Craft::$app->getDeprecator()->log('generalConfig.enableCsrfCookie', 'A cookie will always be used to persist the CSRF token.');
+
         $this->enableCsrfCookie = $value;
+
+        return $this;
+    }
+
+    /**
+     * Whether to enable CSRF protection via hidden form inputs for all forms submitted via Craft.
+     *
+     * ```php
+     * ->enableCsrfProtection(false)
+     * ```
+     *
+     * @group Security
+     *
+     * @see $enableCsrfProtection
+     * @since 4.2.0
+     * @deprecated in 6.0.0. [Configure excluded routes instead](https://laravel.com/docs/12.x/csrf#csrf-excluding-uris)
+     */
+    public function enableCsrfProtection(bool $value = true): self
+    {
+        // \Craft::$app->getDeprecator()->log('generalConfig.enableCsrfProtection', 'Configure excluded routes instead.');
+
+        $this->enableCsrfProtection = $value;
+
+        if ($value === false) {
+            VerifyCsrfToken::except(['*']);
+        }
+
         return $this;
     }
 
@@ -4577,14 +4395,13 @@ class GeneralConfig extends BaseConfig
      * ```
      *
      * @group GraphQL
-     * @param bool $value
-     * @return self
+     *
      * @see $enableGraphqlIntrospection
-     * @since 4.2.0
      */
     public function enableGraphqlIntrospection(bool $value = true): self
     {
         $this->enableGraphqlIntrospection = $value;
+
         return $this;
     }
 
@@ -4598,14 +4415,13 @@ class GeneralConfig extends BaseConfig
      * ```
      *
      * @group GraphQL
-     * @param bool $value
-     * @return self
+     *
      * @see $enableGql
-     * @since 4.2.0
      */
     public function enableGql(bool $value = true): self
     {
         $this->enableGql = $value;
+
         return $this;
     }
 
@@ -4621,34 +4437,15 @@ class GeneralConfig extends BaseConfig
      * ```
      *
      * @group Security
+     *
      * @defaultAlt 5 minutes
-     * @param mixed $value
-     * @return self
+     *
      * @see $elevatedSessionDuration
-     * @since 4.2.0
      */
     public function elevatedSessionDuration(mixed $value): self
     {
         $this->elevatedSessionDuration = ConfigHelper::durationInSeconds($value);
-        return $this;
-    }
 
-    /**
-     * Whether to enable CSRF protection via hidden form inputs for all forms submitted via Craft.
-     *
-     * ```php
-     * ->enableCsrfProtection(false)
-     * ```
-     *
-     * @group Security
-     * @param bool $value
-     * @return self
-     * @see $enableCsrfProtection
-     * @since 4.2.0
-     */
-    public function enableCsrfProtection(bool $value = true): self
-    {
-        $this->enableCsrfProtection = $value;
         return $this;
     }
 
@@ -4666,14 +4463,13 @@ class GeneralConfig extends BaseConfig
      * ```
      *
      * @group GraphQL
-     * @param bool $value
-     * @return self
+     *
      * @see $enableGraphqlCaching
-     * @since 4.2.0
      */
     public function enableGraphqlCaching(bool $value = true): self
     {
         $this->enableGraphqlCaching = $value;
+
         return $this;
     }
 
@@ -4685,14 +4481,13 @@ class GeneralConfig extends BaseConfig
      * ```
      *
      * @group GraphQL
-     * @param bool $value
-     * @return self
+     *
      * @see $setGraphqlDatesToSystemTimeZone
-     * @since 4.2.0
      */
     public function setGraphqlDatesToSystemTimeZone(bool $value = true): self
     {
         $this->setGraphqlDatesToSystemTimeZone = $value;
+
         return $this;
     }
 
@@ -4704,15 +4499,14 @@ class GeneralConfig extends BaseConfig
      * ```
      *
      * @group System
-     * @param bool $value
-     * @return self
+     *
      * @see $enableTemplateCaching
      * @see https://craftcms.com/docs/templating/cache
-     * @since 4.2.0
      */
     public function enableTemplateCaching(bool $value = true): self
     {
         $this->enableTemplateCaching = $value;
+
         return $this;
     }
 
@@ -4726,14 +4520,13 @@ class GeneralConfig extends BaseConfig
      * ```
      *
      * @group System
-     * @param string $value
-     * @return self
+     *
      * @see $errorTemplatePrefix
-     * @since 4.2.0
      */
     public function errorTemplatePrefix(string $value): self
     {
         $this->errorTemplatePrefix = $value;
+
         return $this;
     }
 
@@ -4745,10 +4538,10 @@ class GeneralConfig extends BaseConfig
      * ```
      *
      * @group System
-     * @param string[]|null $value
-     * @return self
+     *
+     * @param  string[]|null  $value
+     *
      * @see $extraAllowedFileExtensions
-     * @since 4.2.0
      */
     public function extraAllowedFileExtensions(?array $value): self
     {
@@ -4757,6 +4550,7 @@ class GeneralConfig extends BaseConfig
         }
 
         $this->extraAllowedFileExtensions = null;
+
         return $this;
     }
 
@@ -4768,11 +4562,12 @@ class GeneralConfig extends BaseConfig
      * ```
      *
      * @group System
-     * @param string[]|null $value
-     * @return self
+     *
+     * @param  string[]|null  $value
+     *
      * @throws InvalidConfigException
+     *
      * @see $extraAppLocales
-     * @since 4.2.0
      */
     public function extraAppLocales(?array $value): self
     {
@@ -4787,6 +4582,7 @@ class GeneralConfig extends BaseConfig
         }
 
         $this->extraAppLocales = $value;
+
         return $this;
     }
 
@@ -4814,14 +4610,13 @@ class GeneralConfig extends BaseConfig
      * :::
      *
      * @group Assets
-     * @param array $value
-     * @return self
+     *
      * @see $extraFileKinds
-     * @since 4.2.0
      */
     public function extraFileKinds(array $value): self
     {
         $this->extraFileKinds = $value;
+
         return $this;
     }
 
@@ -4833,14 +4628,15 @@ class GeneralConfig extends BaseConfig
      * ```
      *
      * @group Users
-     * @param string[] $value
-     * @return self
+     *
+     * @param  string[]  $value
+     *
      * @see $extraLastNamePrefixes
-     * @since 4.3.0
      */
     public function extraLastNamePrefixes(array $value): self
     {
         $this->extraLastNamePrefixes = $value;
+
         return $this;
     }
 
@@ -4852,14 +4648,15 @@ class GeneralConfig extends BaseConfig
      * ```
      *
      * @group Users
-     * @param string[] $value
-     * @return self
+     *
+     * @param  string[]  $value
+     *
      * @see $extraNameSalutations
-     * @since 4.3.0
      */
     public function extraNameSalutations(array $value): self
     {
         $this->extraNameSalutations = $value;
+
         return $this;
     }
 
@@ -4871,14 +4668,15 @@ class GeneralConfig extends BaseConfig
      * ```
      *
      * @group Users
-     * @param string[] $value
-     * @return self
+     *
+     * @param  string[]  $value
+     *
      * @see $extraNameSuffixes
-     * @since 4.3.0
      */
     public function extraNameSuffixes(array $value): self
     {
         $this->extraNameSuffixes = $value;
+
         return $this;
     }
 
@@ -4890,14 +4688,13 @@ class GeneralConfig extends BaseConfig
      * ```
      *
      * @group Assets
-     * @param string|false $value
-     * @return self
+     *
      * @see $filenameWordSeparator
-     * @since 4.2.0
      */
     public function filenameWordSeparator(string|false $value): self
     {
         $this->filenameWordSeparator = $value;
+
         return $this;
     }
 
@@ -4909,14 +4706,13 @@ class GeneralConfig extends BaseConfig
      * ```
      *
      * @group Image Handling
-     * @param bool $value
-     * @return self
+     *
      * @see $generateTransformsBeforePageLoad
-     * @since 4.2.0
      */
     public function generateTransformsBeforePageLoad(bool $value = true): self
     {
         $this->generateTransformsBeforePageLoad = $value;
+
         return $this;
     }
 
@@ -4928,14 +4724,13 @@ class GeneralConfig extends BaseConfig
      * ```
      *
      * @group GraphQL
-     * @param string $value
-     * @return self
+     *
      * @see $gqlTypePrefix
-     * @since 4.2.0
      */
     public function gqlTypePrefix(string $value): self
     {
         $this->gqlTypePrefix = $value;
+
         return $this;
     }
 
@@ -4953,15 +4748,15 @@ class GeneralConfig extends BaseConfig
      * ```
      *
      * @group System
-     * @param string $value
+     *
      * @phpstan-param self::CAMEL_CASE|self::PASCAL_CASE|self::SNAKE_CASE $value
-     * @return self
+     *
      * @see $handleCasing
-     * @since 4.2.0
      */
     public function handleCasing(string $value): self
     {
         $this->handleCasing = $value;
+
         return $this;
     }
 
@@ -4988,14 +4783,13 @@ class GeneralConfig extends BaseConfig
      * ```
      *
      * @group System
-     * @param bool $value
-     * @return self
+     *
      * @see $headlessMode
-     * @since 4.2.0
      */
     public function headlessMode(bool $value = true): self
     {
         $this->headlessMode = $value;
+
         return $this;
     }
 
@@ -5009,14 +4803,13 @@ class GeneralConfig extends BaseConfig
      * ```
      *
      * @group System
-     * @param string|null $value
-     * @return self
+     *
      * @see $httpProxy
-     * @since 4.2.0
      */
     public function httpProxy(?string $value): self
     {
         $this->httpProxy = $value;
+
         return $this;
     }
 
@@ -5029,14 +4822,13 @@ class GeneralConfig extends BaseConfig
      * ```
      *
      * @group Image Handling
-     * @param mixed $value
-     * @return self
+     *
      * @see $imageDriver
-     * @since 4.2.0
      */
     public function imageDriver(mixed $value): self
     {
         $this->imageDriver = $value;
+
         return $this;
     }
 
@@ -5055,14 +4847,13 @@ class GeneralConfig extends BaseConfig
      * ```
      *
      * @group Image Handling
-     * @param array $value
-     * @return self
+     *
      * @see $imageEditorRatios
-     * @since 4.2.0
      */
     public function imageEditorRatios(array $value): self
     {
         $this->imageEditorRatios = $value;
+
         return $this;
     }
 
@@ -5075,14 +4866,15 @@ class GeneralConfig extends BaseConfig
      * ```
      *
      * @group System
-     * @param string[] $value
-     * @return self
+     *
+     * @param  string[]  $value
+     *
      * @see $indexTemplateFilenames
-     * @since 4.2.0
      */
     public function indexTemplateFilenames(array $value): self
     {
         $this->indexTemplateFilenames = $value;
+
         return $this;
     }
 
@@ -5097,15 +4889,15 @@ class GeneralConfig extends BaseConfig
      * ```
      *
      * @group Security
+     *
      * @defaultAlt 1 hour
-     * @param mixed $value
-     * @return self
+     *
      * @see $invalidLoginWindowDuration
-     * @since 4.2.0
      */
     public function invalidLoginWindowDuration(mixed $value): self
     {
         $this->invalidLoginWindowDuration = ConfigHelper::durationInSeconds($value);
+
         return $this;
     }
 
@@ -5123,14 +4915,13 @@ class GeneralConfig extends BaseConfig
      * ```
      *
      * @group Routing
-     * @param mixed $value
-     * @return self
+     *
      * @see $invalidUserTokenPath
-     * @since 4.2.0
      */
     public function invalidUserTokenPath(mixed $value): self
     {
         $this->invalidUserTokenPath = $value;
+
         return $this;
     }
 
@@ -5146,14 +4937,15 @@ class GeneralConfig extends BaseConfig
      * ```
      *
      * @group System
-     * @param string[]|null $value
-     * @return self
+     *
+     * @param  string[]|null  $value
+     *
      * @see $ipHeaders
-     * @since 4.2.0
      */
     public function ipHeaders(?array $value): self
     {
         $this->ipHeaders = $value;
+
         return $this;
     }
 
@@ -5166,14 +4958,13 @@ class GeneralConfig extends BaseConfig
      * ```
      *
      * @group System
-     * @param bool|null $value
-     * @return self
+     *
      * @see $isSystemLive
-     * @since 4.2.0
      */
     public function isSystemLive(?bool $value): self
     {
         $this->isSystemLive = $value;
+
         return $this;
     }
 
@@ -5185,14 +4976,13 @@ class GeneralConfig extends BaseConfig
      * ```
      *
      * @group GraphQL
-     * @param bool $value
-     * @return self
+     *
      * @see $lazyGqlTypes
-     * @since 5.3.0
      */
     public function lazyGqlTypes(bool $value): self
     {
         $this->lazyGqlTypes = $value;
+
         return $this;
     }
 
@@ -5208,14 +4998,13 @@ class GeneralConfig extends BaseConfig
      * ```
      *
      * @group System
-     * @param bool $value
-     * @return self
+     *
      * @see $limitAutoSlugsToAscii
-     * @since 4.2.0
      */
     public function limitAutoSlugsToAscii(bool $value = true): self
     {
         $this->limitAutoSlugsToAscii = $value;
+
         return $this;
     }
 
@@ -5228,14 +5017,12 @@ class GeneralConfig extends BaseConfig
      * - `aliasOf`: The original locale ID
      * - `displayName`: The locale alias’s display name _(optional)_
      *
-     * @param array $value
-     * @return self
      * @group System
-     * @since 5.0.0
      */
     public function localeAliases(array $value): self
     {
         $this->localeAliases = $value;
+
         return $this;
     }
 
@@ -5251,14 +5038,13 @@ class GeneralConfig extends BaseConfig
      * ```
      *
      * @group Routing
-     * @param mixed $value
-     * @return self
+     *
      * @see $loginPath
-     * @since 4.2.0
      */
     public function loginPath(mixed $value): self
     {
         $this->loginPath = $value;
+
         return $this;
     }
 
@@ -5274,14 +5060,13 @@ class GeneralConfig extends BaseConfig
      * ```
      *
      * @group Routing
-     * @param mixed $value
-     * @return self
+     *
      * @see $logoutPath
-     * @since 4.2.0
      */
     public function logoutPath(mixed $value): self
     {
         $this->logoutPath = $value;
+
         return $this;
     }
 
@@ -5293,14 +5078,13 @@ class GeneralConfig extends BaseConfig
      * ```
      *
      * @group Image Handling
-     * @param int $value
-     * @return self
+     *
      * @see $maxCachedCloudImageSize
-     * @since 4.2.0
      */
     public function maxCachedCloudImageSize(int $value): self
     {
         $this->maxCachedCloudImageSize = $value;
+
         return $this;
     }
 
@@ -5312,14 +5096,13 @@ class GeneralConfig extends BaseConfig
      * ```
      *
      * @group GraphQL
-     * @param int $value
-     * @return self
+     *
      * @see $maxGraphqlBatchSize
-     * @since 4.5.5
      */
     public function maxGraphqlBatchSize(int $value): self
     {
         $this->maxGraphqlBatchSize = $value;
+
         return $this;
     }
 
@@ -5331,14 +5114,13 @@ class GeneralConfig extends BaseConfig
      * ```
      *
      * @group GraphQL
-     * @param int $value
-     * @return self
+     *
      * @see $maxGraphqlComplexity
-     * @since 4.2.0
      */
     public function maxGraphqlComplexity(int $value): self
     {
         $this->maxGraphqlComplexity = $value;
+
         return $this;
     }
 
@@ -5350,14 +5132,13 @@ class GeneralConfig extends BaseConfig
      * ```
      *
      * @group GraphQL
-     * @param int $value
-     * @return self
+     *
      * @see $maxGraphqlDepth
-     * @since 4.2.0
      */
     public function maxGraphqlDepth(int $value): self
     {
         $this->maxGraphqlDepth = $value;
+
         return $this;
     }
 
@@ -5369,14 +5150,13 @@ class GeneralConfig extends BaseConfig
      * ```
      *
      * @group GraphQL
-     * @param int $value
-     * @return self
+     *
      * @see $maxGraphqlResults
-     * @since 4.2.0
      */
     public function maxGraphqlResults(int $value): self
     {
         $this->maxGraphqlResults = $value;
+
         return $this;
     }
 
@@ -5388,14 +5168,13 @@ class GeneralConfig extends BaseConfig
      * ```
      *
      * @group Security
-     * @param int|false $value
-     * @return self
+     *
      * @see $maxInvalidLogins
-     * @since 4.2.0
      */
     public function maxInvalidLogins(int|false $value): self
     {
         $this->maxInvalidLogins = $value;
+
         return $this;
     }
 
@@ -5408,14 +5187,13 @@ class GeneralConfig extends BaseConfig
      * ```
      *
      * @group System
-     * @param int|false $value
-     * @return self
+     *
      * @see $maxBackups
-     * @since 4.2.0
      */
     public function maxBackups(int|false $value): self
     {
         $this->maxBackups = $value;
+
         return $this;
     }
 
@@ -5429,14 +5207,13 @@ class GeneralConfig extends BaseConfig
      * ```
      *
      * @group System
-     * @param int|null $value
-     * @return self
+     *
      * @see $maxRevisions
-     * @since 4.2.0
      */
     public function maxRevisions(?int $value): self
     {
         $this->maxRevisions = $value;
+
         return $this;
     }
 
@@ -5448,14 +5225,13 @@ class GeneralConfig extends BaseConfig
      * ```
      *
      * @group System
-     * @param int $value
-     * @return self
+     *
      * @see $maxSlugIncrement
-     * @since 4.2.0
      */
     public function maxSlugIncrement(int $value): self
     {
         $this->maxSlugIncrement = $value;
+
         return $this;
     }
 
@@ -5470,15 +5246,15 @@ class GeneralConfig extends BaseConfig
      * ```
      *
      * @group Assets
+     *
      * @defaultAlt 16MB
-     * @param int|string $value
-     * @return self
+     *
      * @see $maxUploadFileSize
-     * @since 4.2.0
      */
     public function maxUploadFileSize(string|int $value): self
     {
         $this->maxUploadFileSize = ConfigHelper::sizeInBytes($value);
+
         return $this;
     }
 
@@ -5500,14 +5276,17 @@ class GeneralConfig extends BaseConfig
      * ```
      *
      * @group Routing
-     * @param bool $value
-     * @return self
+     *
      * @see $omitScriptNameInUrls
      * @since 4.2.0
+     * @deprecated in 6.0.0. Script name is now always omitted.
      */
     public function omitScriptNameInUrls(bool $value = true): self
     {
+        // \Craft::$app->getDeprecator()->log('generalConfig.omitScriptNameInUrls', 'Calling omitScriptNameInUrls() is deprecated. Script name is now always omitted.');
+
         $this->omitScriptNameInUrls = $value;
+
         return $this;
     }
 
@@ -5520,14 +5299,13 @@ class GeneralConfig extends BaseConfig
      * ```
      *
      * @group Image Handling
-     * @param bool $value
-     * @return self
+     *
      * @see $optimizeImageFilesize
-     * @since 4.2.0
      */
     public function optimizeImageFilesize(bool $value = true): self
     {
         $this->optimizeImageFilesize = $value;
+
         return $this;
     }
 
@@ -5552,14 +5330,13 @@ class GeneralConfig extends BaseConfig
      * ```
      *
      * @group Routing
-     * @param string $value
-     * @return self
+     *
      * @see $pageTrigger
-     * @since 4.2.0
      */
     public function pageTrigger(string $value): self
     {
         $this->pageTrigger = $value;
+
         return $this;
     }
 
@@ -5589,14 +5366,13 @@ class GeneralConfig extends BaseConfig
      * :::
      *
      * @group System
-     * @param string $value
-     * @return self
+     *
      * @see $partialTemplatesPath
-     * @since 5.0.0
      */
     public function partialTemplatesPath(string $value): self
     {
         $this->partialTemplatesPath = $value;
+
         return $this;
     }
 
@@ -5615,34 +5391,17 @@ class GeneralConfig extends BaseConfig
      * ```
      *
      * @group Routing
-     * @param string|null $value
-     * @return self
+     *
      * @see $pathParam
      * @since 4.2.0
+     * @deprecated in 6.0.0. This method no longer does anything.
      */
     public function pathParam(?string $value): self
     {
-        $this->pathParam = $value;
-        return $this;
-    }
+        // \Craft::$app->getDeprecator()->log('generalConfig.pathParam', 'Calling pathParam() is deprecated.');
 
-    /**
-     * The `Permissions-Policy` header that should be sent for web responses.
-     *
-     * ```php
-     * ->permissionsPolicyHeader('Permissions-Policy: geolocation=(self)')
-     * ```
-     *
-     * @group System
-     * @param string|null $value
-     * @return self
-     * @see $permissionsPolicyHeader
-     * @since 4.2.0
-     * @deprecated in 4.11.0. [[\craft\filters\Headers]] should be used instead.
-     */
-    public function permissionsPolicyHeader(?string $value): self
-    {
-        $this->permissionsPolicyHeader = $value;
+        $this->pathParam = $value;
+
         return $this;
     }
 
@@ -5657,14 +5416,13 @@ class GeneralConfig extends BaseConfig
      * ```
      *
      * @group System
-     * @param string|null $value
-     * @return self
+     *
      * @see $phpMaxMemoryLimit
-     * @since 4.2.0
      */
     public function phpMaxMemoryLimit(?string $value): self
     {
         $this->phpMaxMemoryLimit = $value;
+
         return $this;
     }
 
@@ -5676,15 +5434,20 @@ class GeneralConfig extends BaseConfig
      * ```
      *
      * @group Session
-     * @param string $value
-     * @return self
+     *
      * @see $phpSessionName
      * @see https://php.net/manual/en/function.session-name.php
      * @since 4.2.0
+     * @deprecated in 6.0.0. Configure `session.cookie` or set `SESSION_COOKIE` environment variable.
      */
     public function phpSessionName(string $value): self
     {
+        // \Craft::$app->getDeprecator()->log('generalConfig.phpSessionName', 'Calling phpSessionName() is deprecated. Configure `session.cookie` or set `SESSION_COOKIE` environment variable.');
+
         $this->phpSessionName = $value;
+
+        Config::set('session.cookie', $value);
+
         return $this;
     }
 
@@ -5701,14 +5464,13 @@ class GeneralConfig extends BaseConfig
      * ```
      *
      * @group Routing
-     * @param mixed $value
-     * @return self
+     *
      * @see $postCpLoginRedirect
-     * @since 4.2.0
      */
     public function postCpLoginRedirect(mixed $value): self
     {
         $this->postCpLoginRedirect = $value;
+
         return $this;
     }
 
@@ -5725,14 +5487,13 @@ class GeneralConfig extends BaseConfig
      * ```
      *
      * @group Routing
-     * @param mixed $value
-     * @return self
+     *
      * @see $postLoginRedirect
-     * @since 4.2.0
      */
     public function postLoginRedirect(mixed $value): self
     {
         $this->postLoginRedirect = $value;
+
         return $this;
     }
 
@@ -5746,14 +5507,13 @@ class GeneralConfig extends BaseConfig
      * ```
      *
      * @group Routing
-     * @param mixed $value
-     * @return self
+     *
      * @see $postLogoutRedirect
-     * @since 4.2.0
      */
     public function postLogoutRedirect(mixed $value): self
     {
         $this->postLogoutRedirect = $value;
+
         return $this;
     }
 
@@ -5765,14 +5525,13 @@ class GeneralConfig extends BaseConfig
      * ```
      *
      * @group GraphQL
-     * @param bool $value
-     * @return self
+     *
      * @see $prefixGqlRootTypes
-     * @since 4.2.0
      */
     public function prefixGqlRootTypes(bool $value = true): self
     {
         $this->prefixGqlRootTypes = $value;
+
         return $this;
     }
 
@@ -5796,14 +5555,13 @@ class GeneralConfig extends BaseConfig
      * :::
      *
      * @group System
-     * @param bool $value
-     * @return self
+     *
      * @see $preloadSingles
-     * @since 4.4.0
      */
-    public function preloadSingles(bool$value = true): self
+    public function preloadSingles(bool $value = true): self
     {
         $this->preloadSingles = $value;
+
         return $this;
     }
 
@@ -5818,14 +5576,13 @@ class GeneralConfig extends BaseConfig
      * ```
      *
      * @group Image Handling
-     * @param bool $value
-     * @return self
+     *
      * @see $preserveCmykColorspace
-     * @since 4.2.0
      */
     public function preserveCmykColorspace(bool $value = true): self
     {
         $this->preserveCmykColorspace = $value;
+
         return $this;
     }
 
@@ -5841,14 +5598,13 @@ class GeneralConfig extends BaseConfig
      * ```
      *
      * @group Image Handling
-     * @param bool $value
-     * @return self
+     *
      * @see $preserveExifData
-     * @since 4.2.0
      */
     public function preserveExifData(bool $value = true): self
     {
         $this->preserveExifData = $value;
+
         return $this;
     }
 
@@ -5863,14 +5619,13 @@ class GeneralConfig extends BaseConfig
      * ```
      *
      * @group Image Handling
-     * @param bool $value
-     * @return self
+     *
      * @see $preserveImageColorProfiles
-     * @since 4.2.0
      */
     public function preserveImageColorProfiles(bool $value = true): self
     {
         $this->preserveImageColorProfiles = $value;
+
         return $this;
     }
 
@@ -5886,14 +5641,13 @@ class GeneralConfig extends BaseConfig
      * ```
      *
      * @group Security
-     * @param bool $value
-     * @return self
+     *
      * @see $preventUserEnumeration
-     * @since 4.2.0
      */
     public function preventUserEnumeration(bool $value = true): self
     {
         $this->preventUserEnumeration = $value;
+
         return $this;
     }
 
@@ -5907,14 +5661,13 @@ class GeneralConfig extends BaseConfig
      * ```
      *
      * @group System
-     * @param array $value
-     * @return self
+     *
      * @see $previewIframeResizerOptions
-     * @since 4.2.0
      */
     public function previewIframeResizerOptions(array $value): self
     {
         $this->previewIframeResizerOptions = $value;
+
         return $this;
     }
 
@@ -5931,15 +5684,15 @@ class GeneralConfig extends BaseConfig
      * ```
      *
      * @group Security
+     *
      * @defaultAlt 1 day
-     * @param mixed $value
-     * @return self
+     *
      * @see $previewTokenDuration
-     * @since 4.2.0
      */
     public function previewTokenDuration(mixed $value): self
     {
         $this->previewTokenDuration = ConfigHelper::durationInSeconds($value);
+
         return $this;
     }
 
@@ -5954,14 +5707,13 @@ class GeneralConfig extends BaseConfig
      * ```
      *
      * @group System
-     * @param string $value
-     * @return self
+     *
      * @see $privateTemplateTrigger
-     * @since 4.2.0
      */
     public function privateTemplateTrigger(string $value): self
     {
         $this->privateTemplateTrigger = $value;
+
         return $this;
     }
 
@@ -5984,14 +5736,13 @@ class GeneralConfig extends BaseConfig
      * ```
      *
      * @group Garbage Collection
-     * @param mixed $value
-     * @return self
+     *
      * @see $purgePendingUsersDuration
-     * @since 4.2.0
      */
     public function purgePendingUsersDuration(mixed $value): self
     {
         $this->purgePendingUsersDuration = ConfigHelper::durationInSeconds($value);
+
         return $this;
     }
 
@@ -6008,15 +5759,19 @@ class GeneralConfig extends BaseConfig
      * ```
      *
      * @group Garbage Collection
+     *
      * @defaultAlt 90 days
-     * @param mixed $value
-     * @return self
+     *
      * @see $purgeStaleUserSessionDuration
      * @since 4.2.0
+     * @deprecated in 6.0.0. This method no longer does anything, sessions are cleaned up on a lottery basis when needed.
      */
     public function purgeStaleUserSessionDuration(mixed $value): self
     {
+        // \Craft::$app->getDeprecator()->log('generalConfig.purgeStaleUserSessionDuration', 'Calling purgeStaleUserSessionDuration() is deprecated. Sessions are cleaned up on a lottery basis when needed.');
+
         $this->purgeStaleUserSessionDuration = $value;
+
         return $this;
     }
 
@@ -6032,15 +5787,15 @@ class GeneralConfig extends BaseConfig
      * ```
      *
      * @group Garbage Collection
+     *
      * @defaultAlt 30 days
-     * @param mixed $value
-     * @return self
+     *
      * @see $purgeUnsavedDraftsDuration
-     * @since 4.2.0
      */
     public function purgeUnsavedDraftsDuration(mixed $value): self
     {
         $this->purgeUnsavedDraftsDuration = ConfigHelper::durationInSeconds($value);
+
         return $this;
     }
 
@@ -6054,38 +5809,13 @@ class GeneralConfig extends BaseConfig
      * ```
      *
      * @group Image Handling
-     * @param bool $value
-     * @return self
+     *
      * @see $rasterizeSvgThumbs
-     * @since 4.2.0
      */
     public function rasterizeSvgThumbs(bool $value = true): self
     {
         $this->rasterizeSvgThumbs = $value;
-        return $this;
-    }
 
-    /**
-     * The amount of time Craft will remember a username and pre-populate it on the control panel’s Login page.
-     *
-     * Set to `0` to disable this feature altogether.
-     *
-     * See [[ConfigHelper::durationInSeconds()]] for a list of supported value types.
-     *
-     * ```php
-     * ->rememberUsernameDuration(0)
-     * ```
-     *
-     * @group Session
-     * @defaultAlt 1 year
-     * @param mixed $value
-     * @return self
-     * @see $rememberUsernameDuration
-     * @since 4.2.0
-     */
-    public function rememberUsernameDuration(mixed $value): self
-    {
-        $this->rememberUsernameDuration = ConfigHelper::durationInSeconds($value);
         return $this;
     }
 
@@ -6101,13 +5831,15 @@ class GeneralConfig extends BaseConfig
      * ```
      *
      * @group Session
+     *
      * @defaultAlt 14 days
-     * @param mixed $value
-     * @return self
+     *
      * @throws InvalidConfigException
+     *
      * @see $rememberedUserSessionDuration
      * @see getRememberedUserSessionDuration()
      * @since 4.2.0
+     * @deprecated in 6.0.0. Configure `auth.guards.web.remember` in minutes instead.
      */
     public function rememberedUserSessionDuration(mixed $value): self
     {
@@ -6120,6 +5852,33 @@ class GeneralConfig extends BaseConfig
 
         $this->rememberedUserSessionDuration = $interval ? ConfigHelper::durationInSeconds($interval) : 0;
         $this->_rememberedUserSessionDuration = $interval ?: null;
+
+        Config::set('auth.guards.web.remember', floor($interval / 60));
+
+        return $this;
+    }
+
+    /**
+     * The amount of time Craft will remember a username and pre-populate it on the control panel’s Login page.
+     *
+     * Set to `0` to disable this feature altogether.
+     *
+     * See [[ConfigHelper::durationInSeconds()]] for a list of supported value types.
+     *
+     * ```php
+     * ->rememberUsernameDuration(0)
+     * ```
+     *
+     * @group Session
+     *
+     * @defaultAlt 1 year
+     *
+     * @see $rememberUsernameDuration
+     */
+    public function rememberUsernameDuration(mixed $value): self
+    {
+        $this->rememberUsernameDuration = ConfigHelper::durationInSeconds($value);
+
         return $this;
     }
 
@@ -6131,14 +5890,17 @@ class GeneralConfig extends BaseConfig
      * ```
      *
      * @group Session
-     * @param bool $value
-     * @return self
+     *
      * @see $requireMatchingUserAgentForSession
      * @since 4.2.0
+     * @deprecated in 6.0.0. This method no longer configures anything.
      */
     public function requireMatchingUserAgentForSession(bool $value = true): self
     {
+        // \Craft::$app->getDeprecator()->log('generalConfig.requireMatchingUserAgentForSession', 'Calling requireMatchingUserAgentForSession() is deprecated.');
+
         $this->requireMatchingUserAgentForSession = $value;
+
         return $this;
     }
 
@@ -6150,14 +5912,17 @@ class GeneralConfig extends BaseConfig
      * ```
      *
      * @group Session
-     * @param bool $value
-     * @return self
+     *
      * @see $requireUserAgentAndIpForSession
      * @since 4.2.0
+     * @deprecated in 6.0.0. This method no longer configures anything.
      */
     public function requireUserAgentAndIpForSession(bool $value = true): self
     {
+        // \Craft::$app->getDeprecator()->log('generalConfig.requireUserAgentAndIpForSession', 'Calling requireUserAgentAndIpForSession() is deprecated.');
+
         $this->requireUserAgentAndIpForSession = $value;
+
         return $this;
     }
 
@@ -6169,14 +5934,13 @@ class GeneralConfig extends BaseConfig
      * ```
      *
      * @group Environment
-     * @param string $value
-     * @return self
+     *
      * @see $resourceBasePath
-     * @since 4.2.0
      */
     public function resourceBasePath(string $value): self
     {
         $this->resourceBasePath = $value;
+
         return $this;
     }
 
@@ -6188,14 +5952,13 @@ class GeneralConfig extends BaseConfig
      * ```
      *
      * @group Environment
-     * @param string $value
-     * @return self
+     *
      * @see $resourceBaseUrl
-     * @since 4.2.0
      */
     public function resourceBaseUrl(string $value): self
     {
         $this->resourceBaseUrl = $value;
+
         return $this;
     }
 
@@ -6220,14 +5983,13 @@ class GeneralConfig extends BaseConfig
      * ```
      *
      * @group Environment
-     * @param string|null|false|Closure $value
-     * @return self
+     *
      * @see $restoreCommand
-     * @since 4.2.0
      */
     public function restoreCommand(string|null|false|Closure $value): self
     {
         $this->restoreCommand = $value;
+
         return $this;
     }
 
@@ -6239,14 +6001,13 @@ class GeneralConfig extends BaseConfig
      * ```
      *
      * @group Assets
-     * @param bool $value
-     * @return self
+     *
      * @see $revAssetUrls
-     * @since 4.2.0
      */
     public function revAssetUrls(bool $value = true): self
     {
         $this->revAssetUrls = $value;
+
         return $this;
     }
 
@@ -6258,14 +6019,13 @@ class GeneralConfig extends BaseConfig
      * ```
      *
      * @group Image Handling
-     * @param bool $value
-     * @return self
+     *
      * @see $rotateImagesOnUploadByExifData
-     * @since 4.2.0
      */
     public function rotateImagesOnUploadByExifData(bool $value = true): self
     {
         $this->rotateImagesOnUploadByExifData = $value;
+
         return $this;
     }
 
@@ -6290,14 +6050,13 @@ class GeneralConfig extends BaseConfig
      * ```
      *
      * @group System
-     * @param bool $value
-     * @return self
+     *
      * @see $runQueueAutomatically
-     * @since 4.2.0
      */
     public function runQueueAutomatically(bool $value = true): self
     {
         $this->runQueueAutomatically = $value;
+
         return $this;
     }
 
@@ -6311,33 +6070,13 @@ class GeneralConfig extends BaseConfig
      * ```
      *
      * @group System
-     * @param bool $value
-     * @return self
+     *
      * @see $safeMode
-     * @since 5.1.0
      */
     public function safeMode(bool $value = true): self
     {
         $this->safeMode = $value;
-        return $this;
-    }
 
-    /**
-     * Whether images uploaded via the control panel should be sanitized.
-     *
-     * ```php
-     * ->sanitizeCpImageUploads(false)
-     * ```
-     *
-     * @group Security
-     * @param bool $value
-     * @return self
-     * @see $sanitizeCpImageUploads
-     * @since 4.2.0
-     */
-    public function sanitizeCpImageUploads(bool $value = true): self
-    {
-        $this->sanitizeCpImageUploads = $value;
         return $this;
     }
 
@@ -6351,15 +6090,37 @@ class GeneralConfig extends BaseConfig
      * ```
      *
      * @group System
-     * @param string|null $value
+     *
      * @phpstan-param 'None'|'Lax'|'Strict'|null $value
-     * @return self
+     *
      * @see $sameSiteCookieValue
      * @since 4.2.0
+     * @deprecated in 6.0.0. Configure `cookie.same_site` or set `SESSION_SAME_SITE` environment variable instead.
      */
     public function sameSiteCookieValue(?string $value): self
     {
+        // \Craft::$app->getDeprecator()->log('generalConfig.sameSiteCookieValue', 'Calling sameSiteCookieValue() is deprecated. Configure `cookie.same_site` or set `SESSION_SAME_SITE` environment variable instead.');
+
         $this->sameSiteCookieValue = $value;
+
+        return $this;
+    }
+
+    /**
+     * Whether images uploaded via the control panel should be sanitized.
+     *
+     * ```php
+     * ->sanitizeCpImageUploads(false)
+     * ```
+     *
+     * @group Security
+     *
+     * @see $sanitizeCpImageUploads
+     */
+    public function sanitizeCpImageUploads(bool $value = true): self
+    {
+        $this->sanitizeCpImageUploads = $value;
+
         return $this;
     }
 
@@ -6373,197 +6134,13 @@ class GeneralConfig extends BaseConfig
      * ```
      *
      * @group Security
-     * @param bool $value
-     * @return self
+     *
      * @see $sanitizeSvgUploads
-     * @since 4.2.0
      */
     public function sanitizeSvgUploads(bool $value = true): self
     {
         $this->sanitizeSvgUploads = $value;
-        return $this;
-    }
 
-    /**
-     * A private, random, cryptographically-secure key that is used for hashing and encrypting data in [[\craft\services\Security]].
-     *
-     * ::: warning
-     * **Do not** share this key publicly. If exposed, it could lead to a compromised system.
-     * :::
-     *
-     * In the event that the key is compromised, a new secure key can be generated with the command:
-     *
-     * ```sh
-     * php craft setup/security-key
-     * ```
-     *
-     * Note that if the key changes, any data that is encrypted with it (e.g. user session cookies) will be inaccessible.
-     *
-     * ```php
-     * ->securityKey('2cf24dba5...')
-     * ```
-     *
-     * @group Security
-     * @param string $value
-     * @return self
-     * @see $securityKey
-     * @see https://craftcms.com/knowledge-base/securing-craft
-     * @since 4.2.0
-     */
-    public function securityKey(string $value): self
-    {
-        $this->securityKey = $value;
-        return $this;
-    }
-
-    /**
-     * Whether a `Content-Length` header should be sent with responses.
-     *
-     * ```php
-     * ->sendContentLengthHeader(true)
-     * ```
-     *
-     * @group System
-     * @param bool $value
-     * @return self
-     * @see $sendContentLengthHeader
-     * @since 4.2.0
-     */
-    public function sendContentLengthHeader(bool $value = true): self
-    {
-        $this->sendContentLengthHeader = $value;
-        return $this;
-    }
-
-    /**
-     * Whether an `X-Powered-By: Craft CMS` header should be sent, helping services like [BuiltWith](https://builtwith.com/) and
-     * [Wappalyzer](https://www.wappalyzer.com/) identify that the site is running on Craft.
-     *
-     * ```php
-     * ->sendPoweredByHeader(false)
-     * ```
-     *
-     * @group System
-     * @param bool $value
-     * @return self
-     * @see $sendPoweredByHeader
-     * @since 4.2.0
-     */
-    public function sendPoweredByHeader(bool $value = true): self
-    {
-        $this->sendPoweredByHeader = $value;
-        return $this;
-    }
-
-    /**
-     * The URI or URL that Craft should use for Set Password forms on the front end.
-     *
-     * See [[ConfigHelper::localizedValue()]] for a list of supported value types.
-     *
-     * ::: tip
-     * You might also want to set <config5:invalidUserTokenPath> in case a user clicks on an expired password reset link.
-     * :::
-     *
-     * ```php
-     * ->setPasswordPath('set-password')
-     * ```
-     *
-     * @group Routing
-     * @param mixed $value
-     * @return self
-     * @see $setPasswordPath
-     * @since 4.2.0
-     */
-    public function setPasswordPath(mixed $value): self
-    {
-        $this->setPasswordPath = $value;
-        return $this;
-    }
-
-    /**
-     * The URI to the page where users can request to change their password.
-     *
-     * See [[ConfigHelper::localizedValue()]] for a list of supported value types.
-     *
-     * If this is set, Craft will redirect [.well-known/change-password requests](https://w3c.github.io/webappsec-change-password-url/) to this URI.
-     *
-     * ::: tip
-     * You’ll also need to set [setPasswordPath](config5:setPasswordPath), which determines the URI and template path for the Set Password form
-     * where the user resets their password after following the link in the Password Reset email.
-     * :::
-     *
-     * ```php
-     * ->setPasswordRequestPath('request-password')
-     * ```
-     *
-     * @group Routing
-     * @param mixed $value
-     * @return self
-     * @see $setPasswordRequestPath
-     * @since 4.2.0
-     */
-    public function setPasswordRequestPath(mixed $value): self
-    {
-        $this->setPasswordRequestPath = $value;
-        return $this;
-    }
-
-    /**
-     * The URI Craft should redirect users to after setting their password from the front end.
-     *
-     * See [[ConfigHelper::localizedValue()]] for a list of supported value types.
-     *
-     * ```php
-     * ->setPasswordSuccessPath('password-set')
-     * ```
-     *
-     * @group Routing
-     * @param mixed $value
-     * @return self
-     * @see $setPasswordSuccessPath
-     * @since 4.2.0
-     */
-    public function setPasswordSuccessPath(mixed $value): self
-    {
-        $this->setPasswordSuccessPath = $value;
-        return $this;
-    }
-
-    /**
-     * The query string parameter name that site tokens should be set to.
-     *
-     * ```php
-     * ->siteToken('t')
-     * ```
-     *
-     * @group Routing
-     * @param string $value
-     * @return self
-     * @see $siteToken
-     * @since 4.2.0
-     */
-    public function siteToken(string $value): self
-    {
-        $this->siteToken = $value;
-        return $this;
-    }
-
-    /**
-     * The character(s) that should be used to separate words in slugs.
-     *
-     * ```php
-     * ->slugWordSeparator('.')
-     * ```
-     *
-     * @group System
-     * @param string $value
-     * @return self
-     * @see $slugWordSeparator
-     * @since 4.2.0
-     */
-    public function slugWordSeparator(string $value): self
-    {
-        $this->slugWordSeparator = $value;
         return $this;
     }
 
@@ -6586,14 +6163,39 @@ class GeneralConfig extends BaseConfig
      * ```
      *
      * @group Security
-     * @param array|null $value
-     * @return self
+     *
      * @see $secureHeaders
      * @since 4.2.0
+     * @deprecated in 6.0.0. [Configure trusted proxies instead](https://laravel.com/docs/12.x/requests#configuring-trusted-proxies).
      */
     public function secureHeaders(?array $value): self
     {
+        // \Craft::$app->getDeprecator()->log('generalConfig.secureHeaders', 'Calling secureHeaders() is deprecated. [Configure trusted proxies instead](https://laravel.com/docs/12.x/requests#configuring-trusted-proxies)');
+
         $this->secureHeaders = $value;
+
+        if (! $value) {
+            return $this;
+        }
+
+        $headerMap = [
+            'X-Forwarded-For' => Request::HEADER_X_FORWARDED_FOR,
+            'X-Forwarded-Host' => Request::HEADER_X_FORWARDED_HOST,
+            'X-Forwarded-Port' => Request::HEADER_X_FORWARDED_PORT,
+            'X-Forwarded-Proto' => Request::HEADER_X_FORWARDED_PROTO,
+            'X-Forwarded-Aws-ELB' => Request::HEADER_X_FORWARDED_AWS_ELB,
+            'X-Forwarded-Traefik' => Request::HEADER_X_FORWARDED_TRAEFIK,
+        ];
+
+        $bitmask = 0;
+        foreach ($value as $header) {
+            if (isset($headerMap[$header])) {
+                $bitmask |= $headerMap[$header];
+            }
+        }
+
+        TrustProxies::withHeaders($bitmask);
+
         return $this;
     }
 
@@ -6619,14 +6221,180 @@ class GeneralConfig extends BaseConfig
      * ```
      *
      * @group Security
-     * @param array|null $value
-     * @return self
+     *
      * @see $secureProtocolHeaders
      * @since 4.2.0
+     * @deprecated in 6.0.0. This method no longer configures anything.
      */
     public function secureProtocolHeaders(?array $value): self
     {
+        // \Craft::$app->getDeprecator()->log('generalConfig.secureProtocolHeaders', 'Calling secureProtocolHeaders() is deprecated.');
+
         $this->secureProtocolHeaders = $value;
+
+        return $this;
+    }
+
+    /**
+     * A private, random, cryptographically-secure key that is used for hashing and encrypting data in [[\craft\services\Security]].
+     *
+     * ::: warning
+     * **Do not** share this key publicly. If exposed, it could lead to a compromised system.
+     * :::
+     *
+     * In the event that the key is compromised, a new secure key can be generated with the command:
+     *
+     * ```sh
+     * php craft setup/security-key
+     * ```
+     *
+     * Note that if the key changes, any data that is encrypted with it (e.g. user session cookies) will be inaccessible.
+     *
+     * ```php
+     * ->securityKey('2cf24dba5...')
+     * ```
+     *
+     * @group Security
+     *
+     * @see $securityKey
+     * @see https://craftcms.com/knowledge-base/securing-craft
+     * @since 4.2.0
+     * @deprecated in 6.0.0. Configure `app.key` or set `APP_KEY` in your environment instead.
+     */
+    public function securityKey(string $value): self
+    {
+        // \Craft::$app->getDeprecator()->log('generalConfig.securityKey', 'Calling securityKey() is deprecated.');
+
+        $this->securityKey = $value;
+
+        Config::set('app.key', $value);
+
+        return $this;
+    }
+
+    /**
+     * Whether an `X-Powered-By: Craft CMS` header should be sent, helping services like [BuiltWith](https://builtwith.com/) and
+     * [Wappalyzer](https://www.wappalyzer.com/) identify that the site is running on Craft.
+     *
+     * ```php
+     * ->sendPoweredByHeader(false)
+     * ```
+     *
+     * @group System
+     *
+     * @see $sendPoweredByHeader
+     */
+    public function sendPoweredByHeader(bool $value = true): self
+    {
+        $this->sendPoweredByHeader = $value;
+
+        return $this;
+    }
+
+    /**
+     * The URI or URL that Craft should use for Set Password forms on the front end.
+     *
+     * See [[ConfigHelper::localizedValue()]] for a list of supported value types.
+     *
+     * ::: tip
+     * You might also want to set <config5:invalidUserTokenPath> in case a user clicks on an expired password reset link.
+     * :::
+     *
+     * ```php
+     * ->setPasswordPath('set-password')
+     * ```
+     *
+     * @group Routing
+     *
+     * @see $setPasswordPath
+     */
+    public function setPasswordPath(mixed $value): self
+    {
+        $this->setPasswordPath = $value;
+
+        return $this;
+    }
+
+    /**
+     * The URI to the page where users can request to change their password.
+     *
+     * See [[ConfigHelper::localizedValue()]] for a list of supported value types.
+     *
+     * If this is set, Craft will redirect [.well-known/change-password requests](https://w3c.github.io/webappsec-change-password-url/) to this URI.
+     *
+     * ::: tip
+     * You’ll also need to set [setPasswordPath](config5:setPasswordPath), which determines the URI and template path for the Set Password form
+     * where the user resets their password after following the link in the Password Reset email.
+     * :::
+     *
+     * ```php
+     * ->setPasswordRequestPath('request-password')
+     * ```
+     *
+     * @group Routing
+     *
+     * @see $setPasswordRequestPath
+     */
+    public function setPasswordRequestPath(mixed $value): self
+    {
+        $this->setPasswordRequestPath = $value;
+
+        return $this;
+    }
+
+    /**
+     * The URI Craft should redirect users to after setting their password from the front end.
+     *
+     * See [[ConfigHelper::localizedValue()]] for a list of supported value types.
+     *
+     * ```php
+     * ->setPasswordSuccessPath('password-set')
+     * ```
+     *
+     * @group Routing
+     *
+     * @see $setPasswordSuccessPath
+     */
+    public function setPasswordSuccessPath(mixed $value): self
+    {
+        $this->setPasswordSuccessPath = $value;
+
+        return $this;
+    }
+
+    /**
+     * The query string parameter name that site tokens should be set to.
+     *
+     * ```php
+     * ->siteToken('t')
+     * ```
+     *
+     * @group Routing
+     *
+     * @see $siteToken
+     */
+    public function siteToken(string $value): self
+    {
+        $this->siteToken = $value;
+
+        return $this;
+    }
+
+    /**
+     * The character(s) that should be used to separate words in slugs.
+     *
+     * ```php
+     * ->slugWordSeparator('.')
+     * ```
+     *
+     * @group System
+     *
+     * @see $slugWordSeparator
+     */
+    public function slugWordSeparator(string $value): self
+    {
+        $this->slugWordSeparator = $value;
+
         return $this;
     }
 
@@ -6638,14 +6406,13 @@ class GeneralConfig extends BaseConfig
      * ```
      *
      * @group Users
-     * @param bool $value
-     * @return self
+     *
      * @see $showFirstAndLastNameFields
-     * @since 4.6.0
      */
     public function showFirstAndLastNameFields(bool $value = true): self
     {
         $this->showFirstAndLastNameFields = $value;
+
         return $this;
     }
 
@@ -6661,15 +6428,15 @@ class GeneralConfig extends BaseConfig
      * ```
      *
      * @group Garbage Collection
+     *
      * @defaultAlt 30 days
-     * @param mixed $value
-     * @return self
+     *
      * @see $softDeleteDuration
-     * @since 4.2.0
      */
     public function softDeleteDuration(mixed $value): self
     {
         $this->softDeleteDuration = ConfigHelper::durationInSeconds($value);
+
         return $this;
     }
 
@@ -6687,14 +6454,13 @@ class GeneralConfig extends BaseConfig
      * :::
      *
      * @group System
-     * @param bool $value
-     * @return self
+     *
      * @see $staticStatuses
-     * @since 5.7.0
      */
     public function staticStatuses(bool $value = true): self
     {
         $this->staticStatuses = $value;
+
         return $this;
     }
 
@@ -6706,14 +6472,13 @@ class GeneralConfig extends BaseConfig
      * ```
      *
      * @group Security
-     * @param bool $value
-     * @return self
+     *
      * @see $storeUserIps
-     * @since 4.2.0
      */
     public function storeUserIps(bool $value = true): self
     {
         $this->storeUserIps = $value;
+
         return $this;
     }
 
@@ -6731,14 +6496,13 @@ class GeneralConfig extends BaseConfig
      * :::
      *
      * @group System
-     * @param string|null $value
-     * @return self
+     *
      * @see $systemTemplateCss
-     * @since 5.6.0
      */
     public function systemTemplateCss(?string $value): self
     {
         $this->systemTemplateCss = $value;
+
         return $this;
     }
 
@@ -6751,14 +6515,13 @@ class GeneralConfig extends BaseConfig
      *  ```
      *
      * @group Assets
-     * @param string|null $value
-     * @return self
+     *
      * @see $tempAssetUploadFs
-     * @since 5.0.0
      */
-    public function tempAssetUploadFs(string|null $value): self
+    public function tempAssetUploadFs(?string $value): self
     {
         $this->tempAssetUploadFs = $value;
+
         return $this;
     }
 
@@ -6774,14 +6537,13 @@ class GeneralConfig extends BaseConfig
      * ```
      *
      * @group System
-     * @param string|array|null|false $value
-     * @return self
+     *
      * @see $testToEmailAddress
-     * @since 4.2.0
      */
     public function testToEmailAddress(string|array|null|false $value): self
     {
         $this->testToEmailAddress = $value;
+
         return $this;
     }
 
@@ -6795,14 +6557,13 @@ class GeneralConfig extends BaseConfig
      * ```
      *
      * @group System
-     * @param string|null $value
-     * @return self
+     *
      * @see $timezone
-     * @since 4.2.0
      */
     public function timezone(?string $value): self
     {
         $this->timezone = $value;
+
         return $this;
     }
 
@@ -6814,14 +6575,13 @@ class GeneralConfig extends BaseConfig
      * ```
      *
      * @group Image Handling
-     * @param bool $value
-     * @return self
+     *
      * @see $transformGifs
-     * @since 4.2.0
      */
     public function transformGifs(bool $value = true): self
     {
         $this->transformGifs = $value;
+
         return $this;
     }
 
@@ -6833,14 +6593,13 @@ class GeneralConfig extends BaseConfig
      * ```
      *
      * @group Image Handling
-     * @param bool $value
-     * @return self
+     *
      * @see $transformSvgs
-     * @since 4.2.0
      */
     public function transformSvgs(bool $value = true): self
     {
         $this->transformSvgs = $value;
+
         return $this;
     }
 
@@ -6862,33 +6621,13 @@ class GeneralConfig extends BaseConfig
      * Translations _may_ be nested or surrounded by multiple symbols.
      *
      * @group System
-     * @param bool $value
-     * @return self
+     *
      * @see $translationDebugOutput
-     * @since 4.2.0
      */
     public function translationDebugOutput(bool $value = true): self
     {
         $this->translationDebugOutput = $value;
-        return $this;
-    }
 
-    /**
-     * The query string parameter name that Craft tokens should be set to.
-     *
-     * ```php
-     * ->tokenParam('t')
-     * ```
-     *
-     * @group Routing
-     * @param string $value
-     * @return self
-     * @see $tokenParam
-     * @since 4.2.0
-     */
-    public function tokenParam(string $value): self
-    {
-        $this->tokenParam = $value;
         return $this;
     }
 
@@ -6904,14 +6643,39 @@ class GeneralConfig extends BaseConfig
      * ```
      *
      * @group Security
-     * @param array $value
-     * @return self
+     *
      * @see $trustedHosts
      * @since 4.2.0
+     * @deprecated in 6.0.0. [Configure trusted proxies instead](https://laravel.com/docs/12.x/requests#configuring-trusted-proxies).
      */
     public function trustedHosts(array $value): self
     {
+        // \Craft::$app->getDeprecator()->log('generalConfig.trustedHosts', 'Calling secureProtocolHeaders() is deprecated. [Configure trusted proxies instead](https://laravel.com/docs/12.x/requests#configuring-trusted-proxies).');
+
         $this->trustedHosts = $value;
+
+        if (! empty($value)) {
+            TrustProxies::at($value);
+        }
+
+        return $this;
+    }
+
+    /**
+     * The query string parameter name that Craft tokens should be set to.
+     *
+     * ```php
+     * ->tokenParam('t')
+     * ```
+     *
+     * @group Routing
+     *
+     * @see $tokenParam
+     */
+    public function tokenParam(string $value): self
+    {
+        $this->tokenParam = $value;
+
         return $this;
     }
 
@@ -6923,14 +6687,13 @@ class GeneralConfig extends BaseConfig
      * ```
      *
      * @group Image Handling
-     * @param bool $value
-     * @return self
+     *
      * @see $upscaleImages
-     * @since 4.2.0
      */
     public function upscaleImages(bool $value = true): self
     {
         $this->upscaleImages = $value;
+
         return $this;
     }
 
@@ -6948,14 +6711,13 @@ class GeneralConfig extends BaseConfig
      * ```
      *
      * @group System
-     * @param bool $value
-     * @return self
+     *
      * @see $useEmailAsUsername
-     * @since 4.2.0
      */
     public function useEmailAsUsername(bool $value = true): self
     {
         $this->useEmailAsUsername = $value;
+
         return $this;
     }
 
@@ -6982,14 +6744,13 @@ class GeneralConfig extends BaseConfig
      * ```
      *
      * @group System
-     * @param bool $value
-     * @return self
+     *
      * @see $useIframeResizer
-     * @since 4.2.0
      */
     public function useIframeResizer(bool $value = true): self
     {
         $this->useIframeResizer = $value;
+
         return $this;
     }
 
@@ -7003,14 +6764,17 @@ class GeneralConfig extends BaseConfig
      * ```
      *
      * @group Routing
-     * @param bool $value
-     * @return self
+     *
      * @see $usePathInfo
      * @since 4.2.0
+     * @deprecated in 6.0.0. This setting no longer has any effect.
      */
     public function usePathInfo(bool $value = true): self
     {
+        // \Craft::$app->getDeprecator()->log('generalConfig.usePathInfo', 'Calling usePathInfo() is deprecated. This setting no longer has any effect.');
+
         $this->usePathInfo = $value;
+
         return $this;
     }
 
@@ -7025,14 +6789,19 @@ class GeneralConfig extends BaseConfig
      * ```
      *
      * @group Security
-     * @param bool|string $value
-     * @return self
+     *
      * @see $useSecureCookies
      * @since 4.2.0
+     * @deprecated in 6.0.0. Configure `session.secure` or set `SESSION_SECURE_COOKIE` in your environment instead.
      */
     public function useSecureCookies(string|bool $value): self
     {
+        // \Craft::$app->getDeprecator()->log('generalConfig.useSecureCookies', 'Calling useSecureCookies() is deprecated. Configure `session.secure` or set `SESSION_SECURE_COOKIE` in your environment instead.');
+
         $this->useSecureCookies = $value;
+
+        Config::set('session.secure', $value === 'auto' ? null : $value);
+
         return $this;
     }
 
@@ -7048,14 +6817,13 @@ class GeneralConfig extends BaseConfig
      * ```
      *
      * @group Routing
-     * @param bool|string $value
-     * @return self
+     *
      * @see $useSslOnTokenizedUrls
-     * @since 4.2.0
      */
     public function useSslOnTokenizedUrls(string|bool $value): self
     {
         $this->useSslOnTokenizedUrls = $value;
+
         return $this;
     }
 
@@ -7072,15 +6840,15 @@ class GeneralConfig extends BaseConfig
      * ```
      *
      * @group Session
+     *
      * @defaultAlt 1 hour
-     * @param mixed $value
-     * @return self
+     *
      * @see $userSessionDuration
-     * @since 4.2.0
      */
     public function userSessionDuration(mixed $value): self
     {
         $this->userSessionDuration = ConfigHelper::durationInSeconds($value);
+
         return $this;
     }
 
@@ -7096,15 +6864,14 @@ class GeneralConfig extends BaseConfig
      * ```
      *
      * @group System
-     * @param bool|null $value
-     * @return self
+     *
      * @see $useFileLocks
      * @see https://php.net/manual/en/function.file-put-contents.php
-     * @since 4.2.0
      */
     public function useFileLocks(?bool $value): self
     {
         $this->useFileLocks = $value;
+
         return $this;
     }
 
@@ -7119,15 +6886,15 @@ class GeneralConfig extends BaseConfig
      * ```
      *
      * @group Security
+     *
      * @defaultAlt 1 day
-     * @param mixed $value
-     * @return self
+     *
      * @see $verificationCodeDuration
-     * @since 4.2.0
      */
     public function verificationCodeDuration(mixed $value): self
     {
         $this->verificationCodeDuration = ConfigHelper::durationInSeconds($value);
+
         return $this;
     }
 
@@ -7141,15 +6908,14 @@ class GeneralConfig extends BaseConfig
      * ```
      *
      * @group Routing
-     * @param mixed $value
-     * @return self
+     *
      * @see $verifyEmailPath
      * @see getVerifyEmailPath()
-     * @since 4.2.0
      */
     public function verifyEmailPath(mixed $value): self
     {
         $this->verifyEmailPath = $value;
+
         return $this;
     }
 
@@ -7163,102 +6929,104 @@ class GeneralConfig extends BaseConfig
      * ```
      *
      * @group Routing
-     * @param mixed $value
-     * @return self
+     *
      * @see $verifyEmailSuccessPath
      * @see getVerifyEmailSuccessPath()
-     * @since 4.2.0
      */
     public function verifyEmailSuccessPath(mixed $value): self
     {
         $this->verifyEmailSuccessPath = $value;
+
         return $this;
     }
 
     /**
      * Returns the localized Activate Account Success Path value.
      *
-     * @param string|null $siteHandle The site handle the value should be defined for. Defaults to the current site.
-     * @return string
+     * @param  string|null  $siteHandle  The site handle the value should be defined for. Defaults to the current site.
+     *
      * @see activateAccountSuccessPath
      */
     public function getActivateAccountSuccessPath(?string $siteHandle = null): string
     {
         $path = ConfigHelper::localizedValue($this->activateAccountSuccessPath, $siteHandle);
+
         return is_string($path) ? trim($path, '/') : $path;
     }
 
     /**
      * Returns the localized Verify Email Path value.
      *
-     * @param string|null $siteHandle The site handle the value should be defined for. Defaults to the current site.
-     * @return string
+     * @param  string|null  $siteHandle  The site handle the value should be defined for. Defaults to the current site.
+     *
      * @see verifyEmailPath
-     * @since 3.4.0
      */
     public function getVerifyEmailPath(?string $siteHandle = null): string
     {
         $path = ConfigHelper::localizedValue($this->verifyEmailPath, $siteHandle);
+
         return is_string($path) ? trim($path, '/') : $path;
     }
 
     /**
      * Returns the localized Verify Email Success Path value.
      *
-     * @param string|null $siteHandle The site handle the value should be defined for. Defaults to the current site.
-     * @return string
+     * @param  string|null  $siteHandle  The site handle the value should be defined for. Defaults to the current site.
+     *
      * @see verifyEmailSuccessPath
-     * @since 3.1.20
      */
     public function getVerifyEmailSuccessPath(?string $siteHandle = null): string
     {
         $path = ConfigHelper::localizedValue($this->verifyEmailSuccessPath, $siteHandle);
+
         return is_string($path) ? trim($path, '/') : $path;
     }
 
     /**
      * Returns the localized Invalid User Token Path value.
      *
-     * @param string|null $siteHandle The site handle the value should be defined for. Defaults to the current site.
-     * @return string|null
+     * @param  string|null  $siteHandle  The site handle the value should be defined for. Defaults to the current site.
+     *
      * @see invalidUserTokenPath
      */
     public function getInvalidUserTokenPath(?string $siteHandle = null): ?string
     {
         $path = ConfigHelper::localizedValue($this->invalidUserTokenPath, $siteHandle);
+
         return is_string($path) ? trim($path, '/') : $path;
     }
 
     /**
      * Returns the localized Login Path value.
      *
-     * @param string|null $siteHandle The site handle the value should be defined for. Defaults to the current site.
-     * @return mixed
+     * @param  string|null  $siteHandle  The site handle the value should be defined for. Defaults to the current site.
+     *
      * @see loginPath
      */
     public function getLoginPath(?string $siteHandle = null): mixed
     {
         $path = ConfigHelper::localizedValue($this->loginPath, $siteHandle);
+
         return is_string($path) ? trim($path, '/') : $path;
     }
 
     /**
      * Returns the localized Logout Path value.
      *
-     * @param string|null $siteHandle The site handle the value should be defined for. Defaults to the current site.
-     * @return mixed
+     * @param  string|null  $siteHandle  The site handle the value should be defined for. Defaults to the current site.
+     *
      * @see logoutPath
      */
     public function getLogoutPath(?string $siteHandle = null): mixed
     {
         $path = ConfigHelper::localizedValue($this->logoutPath, $siteHandle);
+
         return is_string($path) ? trim($path, '/') : $path;
     }
 
     /**
      * Returns the localized Post-Login Redirect path for the control panel.
      *
-     * @return string
      * @see postCpLoginRedirect
      */
     public function getPostCpLoginRedirect(): string
@@ -7269,8 +7037,8 @@ class GeneralConfig extends BaseConfig
     /**
      * Returns the localized Post-Login Redirect path.
      *
-     * @param string|null $siteHandle The site handle the value should be defined for. Defaults to the current site.
-     * @return string
+     * @param  string|null  $siteHandle  The site handle the value should be defined for. Defaults to the current site.
+     *
      * @see postLoginRedirect
      */
     public function getPostLoginRedirect(?string $siteHandle = null): string
@@ -7281,8 +7049,8 @@ class GeneralConfig extends BaseConfig
     /**
      * Returns the localized Post-Logout Redirect path.
      *
-     * @param string|null $siteHandle The site handle the value should be defined for. Defaults to the current site.
-     * @return string
+     * @param  string|null  $siteHandle  The site handle the value should be defined for. Defaults to the current site.
+     *
      * @see postLogoutRedirect
      */
     public function getPostLogoutRedirect(?string $siteHandle = null): string
@@ -7291,61 +7059,69 @@ class GeneralConfig extends BaseConfig
     }
 
     /**
+     * Returns the remembered user session duration as a [[\DateInterval]] object, if it’s set.
+     *
+     * @since 4.2.1
+     */
+    public function getRememberedUserSessionDuration(): ?DateInterval
+    {
+        return $this->_rememberedUserSessionDuration ?: null;
+    }
+
+    /**
      * Returns the localized Set Password Path value.
      *
-     * @param string|null $siteHandle The site handle the value should be defined for. Defaults to the current site.
-     * @return string
+     * @param  string|null  $siteHandle  The site handle the value should be defined for. Defaults to the current site.
+     *
      * @see setPasswordPath
      */
     public function getSetPasswordPath(?string $siteHandle = null): string
     {
         $path = ConfigHelper::localizedValue($this->setPasswordPath, $siteHandle);
+
         return is_string($path) ? trim($path, '/') : $path;
     }
 
     /**
      * Returns the localized Set Password Request Path value.
      *
-     * @param string|null $siteHandle The site handle the value should be defined for. Defaults to the current site.
-     * @return string|null
+     * @param  string|null  $siteHandle  The site handle the value should be defined for. Defaults to the current site.
+     *
      * @see setPasswordRequestPath
-     * @since 3.5.14
      */
     public function getSetPasswordRequestPath(?string $siteHandle = null): ?string
     {
         $path = ConfigHelper::localizedValue($this->setPasswordRequestPath, $siteHandle);
+
         return is_string($path) ? trim($path, '/') : $path;
     }
 
     /**
      * Returns the localized Set Password Success Path value.
      *
-     * @param string|null $siteHandle The site handle the value should be defined for. Defaults to the current site.
-     * @return string
+     * @param  string|null  $siteHandle  The site handle the value should be defined for. Defaults to the current site.
+     *
      * @see setPasswordSuccessPath
      */
     public function getSetPasswordSuccessPath(?string $siteHandle = null): string
     {
         $path = ConfigHelper::localizedValue($this->setPasswordSuccessPath, $siteHandle);
+
         return is_string($path) ? trim($path, '/') : $path;
     }
 
     /**
      * Returns whether the DB should be backed up before running new migrations.
-     *
-     * @return bool
      */
     public function getBackupOnUpdate(): bool
     {
-        return ($this->backupOnUpdate && $this->backupCommand !== false);
+        return $this->backupOnUpdate && $this->backupCommand !== false;
     }
 
     /**
      * Returns the normalized page trigger.
      *
-     * @return string
      * @see pageTrigger
-     * @since 3.2.0
      */
     public function getPageTrigger(): string
     {
@@ -7359,12 +7135,7 @@ class GeneralConfig extends BaseConfig
         if (str_starts_with($pageTrigger, '?')) {
             $pageTrigger = trim($pageTrigger, '?=');
 
-            // Avoid conflict with the path param
-            if ($pageTrigger === $this->pathParam) {
-                $pageTrigger = $this->pathParam === 'p' ? 'pg' : 'p';
-            }
-
-            return '?' . $pageTrigger . '=';
+            return '?'.$pageTrigger.'=';
         }
 
         return $pageTrigger;
@@ -7372,33 +7143,20 @@ class GeneralConfig extends BaseConfig
 
     /**
      * Returns the normalized test email addresses.
-     *
-     * @return array
-     * @since 3.5.0
      */
     public function getTestToEmailAddress(): array
     {
         $to = [];
         if ($this->testToEmailAddress) {
-            foreach ((array)$this->testToEmailAddress as $key => $value) {
+            foreach ((array) $this->testToEmailAddress as $key => $value) {
                 if (is_numeric($key)) {
-                    $to[$value] = Craft::t('app', 'Test Recipient');
+                    $to[$value] = \Craft::t('app', 'Test Recipient');
                 } else {
                     $to[$key] = $value;
                 }
             }
         }
-        return $to;
-    }
 
-    /**
-     * Returns the remembered user session duration as a [[\DateInterval]] object, if it’s set.
-     *
-     * @return DateInterval|null
-     * @since 4.2.1
-     */
-    public function getRememberedUserSessionDuration(): ?DateInterval
-    {
-        return $this->_rememberedUserSessionDuration ?: null;
+        return $to;
     }
 }
