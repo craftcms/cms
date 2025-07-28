@@ -3380,6 +3380,35 @@ class GeneralConfig extends BaseConfig
 
     protected ?DateInterval $_rememberedUserSessionDuration = null;
 
+    public function __construct()
+    {
+        // (Re-)normalize everything.
+        $this
+            // file extensions
+            ->allowedFileExtensions($this->allowedFileExtensions)
+            ->extraAllowedFileExtensions($this->extraAllowedFileExtensions)
+            // durations
+            ->cacheDuration($this->cacheDuration)
+            ->cooldownDuration($this->cooldownDuration)
+            ->defaultTokenDuration($this->defaultTokenDuration)
+            ->elevatedSessionDuration($this->elevatedSessionDuration)
+            ->invalidLoginWindowDuration($this->invalidLoginWindowDuration)
+            ->previewTokenDuration($this->previewTokenDuration ?? $this->defaultTokenDuration)
+            ->purgePendingUsersDuration($this->purgePendingUsersDuration)
+            ->purgeUnsavedDraftsDuration($this->purgeUnsavedDraftsDuration)
+            ->rememberUsernameDuration($this->rememberUsernameDuration)
+            ->rememberedUserSessionDuration($this->rememberedUserSessionDuration)
+            ->softDeleteDuration($this->softDeleteDuration)
+            ->userSessionDuration($this->userSessionDuration)
+            ->verificationCodeDuration($this->verificationCodeDuration)
+            // locales
+            ->defaultCpLanguage($this->defaultCpLanguage)
+            ->extraAppLocales($this->extraAppLocales)
+            // misc
+            ->maxUploadFileSize($this->maxUploadFileSize)
+            ->disabledPlugins($this->disabledPlugins);
+    }
+
     /**
      * The default user accessibility preferences that should be applied to users that haven’t saved their preferences yet.
      *
@@ -5999,7 +6028,7 @@ class GeneralConfig extends BaseConfig
         $this->rememberedUserSessionDuration = $interval ? ConfigHelper::durationInSeconds($interval) : 0;
         $this->_rememberedUserSessionDuration = $interval ?: null;
 
-        Config::set('auth.guards.web.remember', floor($interval / 60));
+        Config::set('auth.guards.web.remember', floor($this->rememberedUserSessionDuration / 60));
 
         return $this;
     }

@@ -13,6 +13,7 @@ abstract class BaseConfig implements Arrayable, ArrayAccess
 
     public static function create(): static
     {
+        /** @phpstan-ignore new.static */
         return new static;
     }
 
@@ -77,7 +78,7 @@ abstract class BaseConfig implements Arrayable, ArrayAccess
      */
     public static function __set_state(array $stateData): static
     {
-        $object = new static;
+        $object = static::create();
 
         foreach ($stateData as $prop => $state) {
             if (! property_exists($object, $prop)) {

@@ -6,3 +6,6 @@
 - `craft\services\Elements::stopCollectingCacheInfo()` no longer sets the returned duration to the `cacheDuration` config setting if a duration wasn’t explicitly declared. ([#16796](https://github.com/craftcms/cms/pull/16796))
 - Deprecated `craft\helpers\ArrayHelper`. `CraftCms\Cms\Support\Arr` should be used instead.
 - Deprecated `craft\helpers\StringHelper`. `CraftCms\Cms\Support\Str` should be used instead.
+- Deprecated `Craft::$app->getConfig()->getGeneral()`. `CraftCms\Cms\Craft::generalConfig()` should be used instead.
+- Deprecated `craft.app.config.general` in Twig. `config.craft.general` should be used instead.
+- Deprecated `craft\helpers\App::env()`, `Illuminate\Support\Env` or `env()` should be used instead.
