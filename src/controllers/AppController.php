@@ -921,7 +921,7 @@ class AppController extends Controller
             $searchTerms = explode(' ', Search::normalizeKeywords($search));
         }
 
-        $indexPath = '@app/icons/index.php';
+        $indexPath = '@packageRoot/resources/icons/index.php';
         $icons = require Craft::getAlias($indexPath);
         $output = [];
         $scores = [];

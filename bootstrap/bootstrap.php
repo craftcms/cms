@@ -189,10 +189,6 @@ defined('CURLOPT_CONNECTTIMEOUT_MS') || define('CURLOPT_CONNECTTIMEOUT_MS', 156)
 $cmsPath = dirname(__DIR__);
 $libPath = $cmsPath . DIRECTORY_SEPARATOR . 'lib';
 $srcPath = $cmsPath . DIRECTORY_SEPARATOR . 'src';
-$iconsPath = $srcPath . DIRECTORY_SEPARATOR . 'icons';
-$brandIconsPath = $iconsPath . DIRECTORY_SEPARATOR . 'brands';
-$customIconsPath = $iconsPath . DIRECTORY_SEPARATOR . 'custom-icons';
-$solidIconsPath = $iconsPath . DIRECTORY_SEPARATOR . 'solid';
 require_once $libPath . DIRECTORY_SEPARATOR . 'yii2' . DIRECTORY_SEPARATOR . 'Yii.php';
 require_once $srcPath . DIRECTORY_SEPARATOR . 'Craft.php';
 
@@ -201,7 +197,6 @@ Craft::setAlias('@craftcms', $cmsPath);
 Craft::setAlias('@root', $rootPath);
 Craft::setAlias('@lib', $libPath);
 Craft::setAlias('@craft', $srcPath); // same as @app, but needed for the `help` command
-Craft::setAlias('@appicons', $solidIconsPath);
 Craft::setAlias('@dotenv', $dotenvPath);
 Craft::setAlias('@config', $configPath);
 Craft::setAlias('@contentMigrations', $contentMigrationsPath);
@@ -209,45 +204,6 @@ Craft::setAlias('@storage', $storagePath);
 Craft::setAlias('@templates', $templatesPath);
 Craft::setAlias('@translations', $translationsPath);
 Craft::setAlias('@tests', $testsPath);
-
-// Icons
-Craft::setAlias('@appicons/c-debug.svg', "$customIconsPath/c-debug.svg");
-Craft::setAlias('@appicons/c-outline.svg', "$customIconsPath/c-outline.svg");
-Craft::setAlias('@appicons/craft-cms.svg', "$customIconsPath/craft-cms.svg");
-Craft::setAlias('@appicons/craft-partners.svg', "$customIconsPath/craft-partners.svg");
-Craft::setAlias('@appicons/craft-stack-exchange.svg', "$customIconsPath/craft-stack-exchange.svg");
-Craft::setAlias('@appicons/default-plugin.svg', "$customIconsPath/default-plugin.svg");
-Craft::setAlias('@appicons/grip-dots.svg', "$customIconsPath/grip-dots.svg");
-require $iconsPath . DIRECTORY_SEPARATOR . 'aliases.php';
-
-// Renamed icon aliases
-Craft::setAlias('@appicons/alert.svg', "$solidIconsPath/triangle-exclamation.svg");
-Craft::setAlias('@appicons/broken-image', "$solidIconsPath/image-slash.svg");
-Craft::setAlias('@appicons/buoey.svg', "$solidIconsPath/life-ring.svg");
-Craft::setAlias('@appicons/draft.svg', "$solidIconsPath/scribble.svg");
-Craft::setAlias('@appicons/entry-types', "$solidIconsPath/files.svg");
-Craft::setAlias('@appicons/excite.svg', "$solidIconsPath/certificate.svg");
-Craft::setAlias('@appicons/feed.svg', "$solidIconsPath/rss.svg");
-Craft::setAlias('@appicons/field.svg', "$solidIconsPath/pen-to-square.svg");
-Craft::setAlias('@appicons/hash.svg', "$solidIconsPath/hashtag.svg");
-Craft::setAlias('@appicons/info-circle', "$solidIconsPath/circle-info.svg");
-Craft::setAlias('@appicons/info-circle.svg', "$solidIconsPath/circle-info.svg");
-Craft::setAlias('@appicons/info.svg', "$solidIconsPath/circle-info.svg");
-Craft::setAlias('@appicons/info.svg', "$solidIconsPath/circle-info.svg");
-Craft::setAlias('@appicons/location.svg', "$solidIconsPath/location-dot.svg");
-Craft::setAlias('@appicons/photo.svg', "$solidIconsPath/image.svg");
-Craft::setAlias('@appicons/plugin.svg', "$solidIconsPath/plug.svg");
-Craft::setAlias('@appicons/routes.svg', "$solidIconsPath/signs-post.svg");
-Craft::setAlias('@appicons/search.svg', "$solidIconsPath/magnifying-glass.svg");
-Craft::setAlias('@appicons/shopping-cart', "$solidIconsPath/cart-shopping.svg");
-Craft::setAlias('@appicons/template.svg', "$solidIconsPath/file-code.svg");
-Craft::setAlias('@appicons/template.svg', "$solidIconsPath/file-code.svg");
-Craft::setAlias('@appicons/tip.svg', "$solidIconsPath/lightbulb.svg");
-Craft::setAlias('@appicons/tools.svg', "$solidIconsPath/screwdriver-wrench.svg");
-Craft::setAlias('@appicons/tree.svg', "$solidIconsPath/sitemap.svg");
-Craft::setAlias('@appicons/upgrade.svg', "$solidIconsPath/square-arrow-up.svg");
-Craft::setAlias('@appicons/wand.svg', "$solidIconsPath/wand-magic-sparkles.svg");
-Craft::setAlias('@appicons/world.svg', "$solidIconsPath/earth-americas.svg");
 
 // Set any custom aliases
 foreach ($generalConfig->aliases as $name => $value) {

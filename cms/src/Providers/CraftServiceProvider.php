@@ -9,6 +9,7 @@ class CraftServiceProvider extends AggregateServiceProvider
 {
     protected $providers = [
         AppServiceProvider::class,
+        IconServiceProvider::class,
         ConsoleServiceProvider::class,
     ];
 }
