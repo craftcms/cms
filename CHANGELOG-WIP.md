@@ -8,4 +8,4 @@
 - Deprecated `craft\helpers\StringHelper`. `CraftCms\Cms\Support\Str` should be used instead.
 - Deprecated `Craft::$app->getConfig()->getGeneral()`. `CraftCms\Cms\Craft::generalConfig()` should be used instead.
 - Deprecated `craft.app.config.general` in Twig. `config.craft.general` should be used instead.
-- Deprecated `craft\helpers\App::env()`, `Illuminate\Support\Env` or `env()` should be used instead.
+- Deprecated `craft\helpers\App::env()`, `Illuminate\Support\Env::get()` or `env()` should be used instead.
