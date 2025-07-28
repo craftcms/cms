@@ -1,5 +1,6 @@
 <?php
 
+use CraftCms\Cms\Config\ConfigServiceProvider;
 use CraftCms\Cms\Config\GeneralConfig;
 
 it('can get from container', function () {
@@ -26,4 +27,13 @@ it('can set renamed settings', function () {
     expect($config->aliases)->toBe([
         '@webroot' => public_path(),
     ]);
+});
+
+test('env overrides get precedence over config', function () {
+    putenv('CRAFT_CP_TRIGGER=adminus');
+
+    // Simulate the application being loaded
+    app(ConfigServiceProvider::class, ['app' => app()])->boot();
+
+    expect(\CraftCms\Cms\Craft::generalConfig()->cpTrigger)->toBe('adminus');
 });
