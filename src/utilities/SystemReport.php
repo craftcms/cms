@@ -14,6 +14,7 @@ use craft\base\Utility;
 use craft\db\Connection;
 use craft\helpers\App;
 use craft\helpers\Db;
+use CraftCms\Aliases\Facades\Aliases;
 use OutOfBoundsException;
 use RequirementsChecker;
 use yii\base\Module;
@@ -72,7 +73,7 @@ class SystemReport extends Utility
         }
 
         $aliases = [];
-        foreach (Craft::$aliases as $alias => $value) {
+        foreach (Aliases::getAll() as $alias => $value) {
             if (is_array($value)) {
                 foreach ($value as $a => $v) {
                     $aliases[$a] = $v;
@@ -115,6 +116,7 @@ class SystemReport extends Utility
         }
 
         if (class_exists(InstalledVersions::class, false)) {
+            self::_addVersion($info, 'Laravel version', 'laravel/framework');
             self::_addVersion($info, 'Yii version', 'yiisoft/yii2');
             self::_addVersion($info, 'Twig version', 'twig/twig');
             self::_addVersion($info, 'Guzzle version', 'guzzlehttp/guzzle');

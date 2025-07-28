@@ -18,9 +18,9 @@ use craft\gql\resolvers\elements\Asset as AssetResolver;
 use craft\gql\resolvers\elements\Entry as EntryResolver;
 use craft\gql\resolvers\elements\GlobalSet as GlobalSetResolver;
 use craft\gql\resolvers\elements\User as UserResolver;
-use craft\helpers\StringHelper;
 use craft\test\mockclasses\elements\ExampleElement;
 use craft\test\TestCase;
+use CraftCms\Cms\Support\Str;
 use crafttests\fixtures\AssetFixture;
 use crafttests\fixtures\EntryFixture;
 use crafttests\fixtures\GlobalSetFixture;
@@ -74,23 +74,23 @@ class TypeResolverTest extends TestCase
             // Assets
             [Asset::class, ['filename' => 'shinybrad.png'], AssetResolver::class],
             [Asset::class, ['folderId' => 1000], AssetResolver::class],
-            [Asset::class, ['filename' => StringHelper::randomString(128)], AssetResolver::class],
+            [Asset::class, ['filename' => Str::random(128)], AssetResolver::class],
 
             // Entries
             [Entry::class, ['title' => 'Theories of life'], EntryResolver::class],
-            [Entry::class, ['title' => StringHelper::randomString(128)], EntryResolver::class],
+            [Entry::class, ['title' => Str::random(128)], EntryResolver::class],
 
             // Globals
             [GlobalSet::class, ['handle' => 'aGlobalSet'], GlobalSetResolver::class, true],
             [GlobalSet::class, ['handle' => ['aGlobalSet', 'aDifferentGlobalSet']], GlobalSetResolver::class, true],
             [GlobalSet::class, ['handle' => 'aDeletedGlobalSet'], GlobalSetResolver::class, true],
-            [GlobalSet::class, ['handle' => StringHelper::randomString(128)], GlobalSetResolver::class, true],
+            [GlobalSet::class, ['handle' => Str::random(128)], GlobalSetResolver::class, true],
 
             // Users
             [User::class, ['username' => 'user1'], UserResolver::class],
             [User::class, ['username' => ['user1', 'admin']], UserResolver::class],
             [User::class, ['username' => ['user1', 'admin', 'user2', 'user3']], UserResolver::class],
-            [User::class, ['username' => StringHelper::randomString(128)], UserResolver::class],
+            [User::class, ['username' => Str::random(128)], UserResolver::class],
         ];
 
         foreach ($data as $testData) {

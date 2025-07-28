@@ -8,7 +8,7 @@
 namespace craft\debug;
 
 use Craft;
-use craft\helpers\StringHelper;
+use CraftCms\Cms\Support\Str;
 
 /**
  * Debugger panel that collects and displays request data.
@@ -36,7 +36,7 @@ class RequestPanel extends \yii\debug\panels\RequestPanel
         foreach ($arr as &$value) {
             if (is_object($value)) {
                 $dump = trim(Craft::dump($value, 10, false, true));
-                $value = ltrim(StringHelper::indent($dump, str_repeat('    ', $indent)));
+                $value = ltrim(Str::indent($dump, str_repeat('    ', $indent)));
             } elseif (is_array($value)) {
                 $this->serializeObjects($value, $indent + 1);
             }

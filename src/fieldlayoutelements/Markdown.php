@@ -11,7 +11,7 @@ use Craft;
 use craft\base\ElementInterface;
 use craft\helpers\Cp;
 use craft\helpers\Html;
-use craft\helpers\StringHelper;
+use CraftCms\Cms\Support\Str;
 use yii\helpers\Markdown as MarkdownHelper;
 
 /**
@@ -37,7 +37,7 @@ class Markdown extends BaseUiElement
      */
     protected function selectorLabel(): string
     {
-        return StringHelper::firstLine($this->content) ?: 'Markdown';
+        return Str::firstLine($this->content) ?: 'Markdown';
     }
 
     /**

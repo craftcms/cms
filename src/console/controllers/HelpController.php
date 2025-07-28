@@ -201,7 +201,7 @@ class HelpController extends BaseHelpController
      * @throws Exception
      * @throws InvalidConfigException
      */
-    protected function allCommandsInfo(): array
+    public function allCommandsInfo(): array
     {
         $commandNames = [];
 

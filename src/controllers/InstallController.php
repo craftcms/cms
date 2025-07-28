@@ -8,7 +8,6 @@
 namespace craft\controllers;
 
 use Craft;
-use Craft\Cms\Support\Arr;
 use craft\config\DbConfig;
 use craft\db\Connection;
 use craft\elements\User;
@@ -17,12 +16,13 @@ use craft\errors\MigrationException;
 use craft\errors\OperationAbortedException;
 use craft\helpers\App;
 use craft\helpers\Install as InstallHelper;
-use craft\helpers\StringHelper;
 use craft\markdown\Markdown;
-use craft\migrations\Install;
 use craft\models\Site;
 use craft\web\assets\installer\InstallerAsset;
 use craft\web\Controller;
+use CraftCms\Cms\Migrations\Install;
+use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Support\Str;
 use PDOException;
 use Throwable;
 use yii\base\Exception;
@@ -137,20 +137,20 @@ class InstallController extends Controller
                 'attribute' => Craft::t('app', 'Database Name'),
             ]);
         }
-        if (strlen(StringHelper::ensureRight($dbConfig->tablePrefix, '_')) > 6) {
+        if (strlen(Str::finish($dbConfig->tablePrefix, '_')) > 6) {
             $errors['tablePrefix'][] = Craft::t('app', 'Prefix must be 5 or less characters long.');
         }
 
         if (empty($errors)) {
             // Test the connection
-            /** @var Connection $db */
+            /** @var \CraftCms\Yii2Adapter\DatabaseConnection $db */
             $db = Craft::createObject(App::dbConfig($dbConfig));
 
             try {
                 $db->open();
             } catch (DbConnectException $e) {
                 /** @var PDOException $pdoException */
-                $pdoException = $e->getPrevious()->getPrevious();
+                $pdoException = $e->getPrevious();
                 $attr = match ($pdoException->getCode()) {
                     1045 => 'user',
                     1049 => 'database',
@@ -244,19 +244,19 @@ class InstallController extends Controller
             $this->_populateDbConfig($dbConfig, 'db-');
 
             // If there's a DB_DSN environment variable, go with that
-            if (App::env('CRAFT_DB_DSN') !== null) {
-                $configService->setDotEnvVar('CRAFT_DB_DSN', $dbConfig->dsn);
+            if (App::env('DB_DSN') !== null) {
+                $configService->setDotEnvVar('DB_DSN', $dbConfig->dsn);
             } else {
-                $configService->setDotEnvVar('CRAFT_DB_DRIVER', $dbConfig->driver);
-                $configService->setDotEnvVar('CRAFT_DB_SERVER', $dbConfig->server);
-                $configService->setDotEnvVar('CRAFT_DB_PORT', (string)$dbConfig->port);
-                $configService->setDotEnvVar('CRAFT_DB_DATABASE', $dbConfig->database);
+                $configService->setDotEnvVar('DB_CONNECTION', $dbConfig->driver);
+                $configService->setDotEnvVar('DB_HOST', $dbConfig->server);
+                $configService->setDotEnvVar('DB_PORT', (string)$dbConfig->port);
+                $configService->setDotEnvVar('DB_DATABASE', $dbConfig->database);
             }
 
-            $configService->setDotEnvVar('CRAFT_DB_USER', $dbConfig->user);
-            $configService->setDotEnvVar('CRAFT_DB_PASSWORD', $dbConfig->password);
-            $configService->setDotEnvVar('CRAFT_DB_SCHEMA', $dbConfig->schema);
-            $configService->setDotEnvVar('CRAFT_DB_TABLE_PREFIX', $dbConfig->tablePrefix);
+            $configService->setDotEnvVar('DB_USERNAME', $dbConfig->user);
+            $configService->setDotEnvVar('DB_PASSWORD', $dbConfig->password);
+            $configService->setDotEnvVar('DB_SCHEMA', $dbConfig->schema);
+            $configService->setDotEnvVar('DB_TABLE_PREFIX', $dbConfig->tablePrefix);
 
             // Update the db component based on new values
             $db = Craft::$app->getDb();
@@ -295,12 +295,12 @@ class InstallController extends Controller
             'language' => $this->request->getBodyParam('site-language'),
         ]);
 
-        $migration = new Install([
-            'username' => $username,
-            'password' => $this->request->getBodyParam('account-password'),
-            'email' => $email,
-            'site' => $site,
-        ]);
+        $migration = new Install(
+            username: $username,
+            password: $this->request->getBodyParam('account-password'),
+            email: $email,
+            site: $site,
+        );
 
         try {
             $migrator->migrateUp($migration);

@@ -1,0 +1,20 @@
+<?php
+
+namespace CraftCms\Cms\Http\Middleware;
+
+use Closure;
+use Illuminate\Http\Request;
+
+class ExtractNamespace
+{
+    public function handle(Request $request, Closure $next): mixed
+    {
+        if (! $namespace = $request->header('X-Craft-Namespace')) {
+            return $next($request);
+        }
+
+        $request->merge($request->get($namespace));
+
+        return $next($request);
+    }
+}

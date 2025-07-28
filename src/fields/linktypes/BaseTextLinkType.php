@@ -8,11 +8,11 @@
 namespace craft\fields\linktypes;
 
 use Craft;
-use Craft\Cms\Support\Arr;
 use craft\fields\Link;
 use craft\helpers\Cp;
 use craft\helpers\Html;
-use craft\helpers\StringHelper;
+use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Support\Str;
 
 /**
  * Base text link type.
@@ -57,7 +57,7 @@ abstract class BaseTextLinkType extends BaseLinkType
     public function linkLabel(string $value): string
     {
         foreach ((array)$this->urlPrefix() as $prefix) {
-            $value = StringHelper::removeLeft($value, $prefix);
+            $value = Str::chopStart($value, $prefix);
         }
         if (preg_match('/^[^\/]+\/$/', $value)) {
             $value = rtrim($value, '/');

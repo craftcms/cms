@@ -6,8 +6,8 @@ use Craft;
 use craft\base\Component;
 use craft\helpers\Cp;
 use craft\helpers\Html;
-use craft\helpers\StringHelper;
 use craft\helpers\UrlHelper;
+use CraftCms\Cms\Support\Str;
 
 /**
  * BaseConditionRule provides a base implementation for condition rules.
@@ -95,7 +95,7 @@ abstract class BaseConditionRule extends Component implements ConditionRuleInter
         parent::init();
 
         if (!isset($this->uid)) {
-            $this->uid = StringHelper::UUID();
+            $this->uid = Str::uuid()->toString();
         }
     }
 

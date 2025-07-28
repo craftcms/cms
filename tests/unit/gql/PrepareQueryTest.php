@@ -17,7 +17,6 @@ use craft\gql\resolvers\elements\GlobalSet as GlobalSetResolver;
 use craft\gql\resolvers\elements\Tag as TagResolver;
 use craft\gql\resolvers\elements\User as UserResolver;
 use craft\helpers\Db;
-use craft\helpers\StringHelper;
 use craft\models\GqlSchema;
 use craft\records\CategoryGroup;
 use craft\records\Element;
@@ -30,6 +29,7 @@ use craft\records\UserGroup;
 use craft\records\Volume;
 use craft\services\Entries;
 use craft\test\TestCase;
+use CraftCms\Cms\Support\Str;
 use UnitTester;
 
 class PrepareQueryTest extends TestCase
@@ -210,8 +210,8 @@ class PrepareQueryTest extends TestCase
     {
         $this->_volume = new Volume([
             'uid' => self::VOLUME_UID,
-            'name' => StringHelper::randomString(),
-            'handle' => StringHelper::randomString(),
+            'name' => Str::random(),
+            'handle' => Str::random(),
             'fs' => 'fake',
         ]);
 
@@ -241,8 +241,8 @@ class PrepareQueryTest extends TestCase
 
         $this->_categoryGroup = new CategoryGroup([
             'uid' => self::CATEGORY_GROUP_UID,
-            'name' => StringHelper::randomString(),
-            'handle' => StringHelper::randomString(),
+            'name' => Str::random(),
+            'handle' => Str::random(),
             'structureId' => $this->_structure->id,
         ]);
 
@@ -270,16 +270,16 @@ class PrepareQueryTest extends TestCase
     {
         $this->_entryType = new EntryType([
             'uid' => self::ENTRY_TYPE_UID,
-            'name' => StringHelper::randomString(),
-            'handle' => StringHelper::randomString(),
+            'name' => Str::random(),
+            'handle' => Str::random(),
             'hasTitleField' => false,
         ]);
         $this->_entryType->save();
 
         $this->_section = new Section([
             'uid' => self::SECTION_UID,
-            'name' => StringHelper::randomString(),
-            'handle' => StringHelper::randomString(),
+            'name' => Str::random(),
+            'handle' => Str::random(),
             'type' => 'channel',
             'enableVersioning' => true,
             'propagationMethod' => PropagationMethod::All->value,
@@ -297,7 +297,7 @@ class PrepareQueryTest extends TestCase
     private function _setupGlobals()
     {
         $this->_element = new Element([
-            'type' => StringHelper::randomString(),
+            'type' => Str::random(),
             'enabled' => true,
             'archived' => false,
         ]);
@@ -305,8 +305,8 @@ class PrepareQueryTest extends TestCase
 
         $this->_globalSet = new GlobalSet([
             'uid' => self::GLOBAL_SET_UID,
-            'name' => StringHelper::randomString(),
-            'handle' => StringHelper::randomString(),
+            'name' => Str::random(),
+            'handle' => Str::random(),
             'id' => $this->_element->id,
         ]);
         $this->_globalSet->save();
@@ -316,8 +316,8 @@ class PrepareQueryTest extends TestCase
     {
         $this->_tagGroup = new TagGroup([
             'uid' => self::TAG_GROUP_UID,
-            'name' => StringHelper::randomString(),
-            'handle' => StringHelper::randomString(),
+            'name' => Str::random(),
+            'handle' => Str::random(),
         ]);
 
         $this->_tagGroup->save();
@@ -343,8 +343,8 @@ class PrepareQueryTest extends TestCase
     {
         $this->_userGroup = new UserGroup([
             'uid' => self::USER_GROUP_UID,
-            'name' => StringHelper::randomString(),
-            'handle' => StringHelper::randomString(),
+            'name' => Str::random(),
+            'handle' => Str::random(),
         ]);
 
         $this->_userGroup->save();

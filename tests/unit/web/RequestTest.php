@@ -58,6 +58,9 @@ class RequestTest extends TestCase
             'SCRIPT_NAME' => '/index.php',
             'SERVER_NAME' => 'craft.test',
         ]);
+        app()->bind('request', fn() => new \Illuminate\Http\Request(
+            server: $_SERVER,
+        ));
         $request = new Request();
         self::assertEquals(false, $request->getIsCpRequest());
         self::assertEquals('foo/bar/baz', $request->getPathInfo());
@@ -73,6 +76,9 @@ class RequestTest extends TestCase
             'language' => 'en-US',
             'baseUrl' => 'http://craft.test/foo',
         ]));
+        app()->bind('request', fn() => new \Illuminate\Http\Request(
+            server: $_SERVER,
+        ));
         $request = new Request([
             'isCpRequest' => false,
             'sites' => $sites,
@@ -88,6 +94,9 @@ class RequestTest extends TestCase
         ]);
         $generalConfig = clone Craft::$app->getConfig()->getGeneral();
         $generalConfig->cpTrigger = 'foo';
+        app()->bind('request', fn() => new \Illuminate\Http\Request(
+            server: $_SERVER,
+        ));
         $request = new Request([
             'generalConfig' => $generalConfig,
         ]);
@@ -102,6 +111,9 @@ class RequestTest extends TestCase
         ]);
         $generalConfig = clone Craft::$app->getConfig()->getGeneral();
         $generalConfig->cpTrigger = 'foo';
+        app()->bind('request', fn() => new \Illuminate\Http\Request(
+            server: $_SERVER,
+        ));
         $request = new Request([
             'isCpRequest' => true,
             'generalConfig' => $generalConfig,
@@ -117,6 +129,9 @@ class RequestTest extends TestCase
         ]);
         $generalConfig = clone Craft::$app->getConfig()->getGeneral();
         $generalConfig->cpTrigger = null;
+        app()->bind('request', fn() => new \Illuminate\Http\Request(
+            server: $_SERVER,
+        ));
         $request = new Request([
             'isCpRequest' => true,
             'generalConfig' => $generalConfig,
@@ -131,6 +146,9 @@ class RequestTest extends TestCase
             'SCRIPT_NAME' => '/foo/index.php',
             'SERVER_NAME' => 'craft.test',
         ]);
+        app()->bind('request', fn() => new \Illuminate\Http\Request(
+            server: $_SERVER,
+        ));
         $request = new Request();
         self::assertEquals(false, $request->getIsCpRequest());
         self::assertEquals('bar/baz', $request->getPathInfo());
@@ -147,6 +165,9 @@ class RequestTest extends TestCase
             'language' => 'en-US',
             'baseUrl' => 'http://craft.test/foo/bar',
         ]));
+        app()->bind('request', fn() => new \Illuminate\Http\Request(
+            server: $_SERVER,
+        ));
         $request = new Request([
             'isCpRequest' => false,
             'sites' => $sites,
@@ -162,6 +183,9 @@ class RequestTest extends TestCase
         ]);
         $generalConfig = clone Craft::$app->getConfig()->getGeneral();
         $generalConfig->cpTrigger = 'bar';
+        app()->bind('request', fn() => new \Illuminate\Http\Request(
+            server: $_SERVER,
+        ));
         $request = new Request([
             'generalConfig' => $generalConfig,
         ]);
@@ -176,6 +200,9 @@ class RequestTest extends TestCase
         ]);
         $generalConfig = clone Craft::$app->getConfig()->getGeneral();
         $generalConfig->cpTrigger = 'bar';
+        app()->bind('request', fn() => new \Illuminate\Http\Request(
+            server: $_SERVER,
+        ));
         $request = new Request([
             'isCpRequest' => true,
             'generalConfig' => $generalConfig,
@@ -191,6 +218,9 @@ class RequestTest extends TestCase
         ]);
         $generalConfig = clone Craft::$app->getConfig()->getGeneral();
         $generalConfig->cpTrigger = null;
+        app()->bind('request', fn() => new \Illuminate\Http\Request(
+            server: $_SERVER,
+        ));
         $request = new Request([
             'isCpRequest' => true,
             'generalConfig' => $generalConfig,
@@ -312,7 +342,7 @@ class RequestTest extends TestCase
      */
     public function testGetCsrfToken(): void
     {
-        $token = $this->request->getCsrfToken();
+        $token = $this->request->getCsrfToken(true);
 
         $otherToken = $this->request->getCsrfToken();
         self::assertSame($token, $otherToken);
@@ -330,35 +360,11 @@ class RequestTest extends TestCase
 
         $this->_setMockUser();
         $newToken = $this->_generateCsrfToken();
-        $tokenComponents = explode('|', $newToken);
 
         self::assertNotSame($newToken, $token);
 
         // Ensure that the data we want exists and is according to our desired specs
-        self::assertSame('1', $tokenComponents[2]);
-        self::assertSame(40, strlen($tokenComponents[0]));
-    }
-
-    /**
-     *
-     */
-    public function testCsrfTokenValidForCurrentUser(): void
-    {
-        $this->_setMockUser();
-        $token = $this->_generateCsrfToken();
-
-        self::assertTrue($this->_isCsrfValidForUser($token));
-    }
-
-    /**
-     *
-     */
-    public function testCsrfTokenValidFailure(): void
-    {
-        $token = $this->_generateCsrfToken();
-
-        self::assertTrue($this->_isCsrfValidForUser($token));
-        self::assertTrue($this->_isCsrfValidForUser('RANDOM'));
+        self::assertSame(40, strlen($newToken));
     }
 
     /**
@@ -536,16 +542,6 @@ class RequestTest extends TestCase
     private function _getParam(?string $name, mixed $defaultValue, array $params): mixed
     {
         return $this->invokeMethod($this->request, '_getParam', [$name, $defaultValue, $params]);
-    }
-
-    /**
-     * @param string $token
-     * @return mixed
-     * @throws ReflectionException
-     */
-    private function _isCsrfValidForUser(string $token): mixed
-    {
-        return $this->invokeMethod($this->request, 'csrfTokenValidForCurrentUser', [$token]);
     }
 
     /**

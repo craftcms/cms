@@ -100,7 +100,11 @@ class MigrationManager extends Component
 
         $file = $this->migrationPath . DIRECTORY_SEPARATOR . $name . '.php';
         $class = $this->migrationNamespace . '\\' . $name;
-        require_once $file;
+        $instance = require_once $file;
+
+        if (is_subclass_of($instance, MigrationInterface::class)) {
+            return $instance;
+        }
 
         return new $class();
     }
@@ -414,6 +418,11 @@ class MigrationManager extends Component
             $path = $this->migrationPath . DIRECTORY_SEPARATOR . $file;
 
             if (preg_match('/^(m\d{6}_\d{6}_.*?)\.php$/', $file, $matches) && is_file($path) && !isset($history[$matches[1]])) {
+                $migrations[] = $matches[1];
+            }
+
+            // Laravel formatted migrations
+            if (preg_match('/^(\d{4}_\d{2}_\d{2}_\d{6}_.*?)\.php$/', $file, $matches) && is_file($path) && !isset($history[$matches[1]])) {
                 $migrations[] = $matches[1];
             }
         }

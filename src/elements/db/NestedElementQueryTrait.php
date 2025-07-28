@@ -10,11 +10,11 @@ namespace craft\elements\db;
 use Craft;
 use craft\base\ElementContainerFieldInterface;
 use craft\base\ElementInterface;
-use Craft\Cms\Support\Arr;
 use craft\db\Query;
 use craft\db\QueryAbortedException;
 use craft\db\Table;
 use craft\helpers\Db;
+use CraftCms\Cms\Support\Arr;
 
 /**
  * Trait NestedElementQueryTrait

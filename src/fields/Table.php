@@ -19,12 +19,12 @@ use craft\helpers\Cp;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\Db;
 use craft\helpers\Json;
-use craft\helpers\StringHelper;
 use craft\validators\ColorValidator;
 use craft\validators\HandleValidator;
 use craft\validators\UrlValidator;
 use craft\web\assets\tablesettings\TableSettingsAsset;
 use craft\web\assets\timepicker\TimepickerAsset;
+use CraftCms\Cms\Support\Str;
 use DateTime;
 use GraphQL\Type\Definition\InputObjectType;
 use GraphQL\Type\Definition\Type;
@@ -544,9 +544,9 @@ class Table extends Field implements CrossSiteCopyableFieldInterface
                 $value = $row[$colId];
 
                 if (is_string($value)) {
-                    $value = StringHelper::escapeShortcodes($value);
+                    $value = Str::escapeShortcodes($value);
                     if (!$supportsMb4) {
-                        $value = StringHelper::emojiToShortcodes($value);
+                        $value = Str::emojiToShortcodes($value);
                     }
                 }
 
@@ -580,7 +580,7 @@ class Table extends Field implements CrossSiteCopyableFieldInterface
                 $value = $row[$colId];
 
                 if (is_string($value) && !$supportsMb4) {
-                    $value = StringHelper::emojiToShortcodes(StringHelper::escapeShortcodes($value));
+                    $value = Str::emojiToShortcodes(Str::escapeShortcodes($value));
                 }
 
                 // can't call parent::serializeValueForDb() here because that calls $this->serializeValue()
@@ -689,7 +689,7 @@ class Table extends Field implements CrossSiteCopyableFieldInterface
             case 'singleline':
                 if ($value !== null) {
                     if (!$fromRequest) {
-                        $value = StringHelper::unescapeShortcodes(StringHelper::shortcodesToEmoji($value));
+                        $value = Str::unescapeShortcodes(Str::shortcodesToEmoji($value));
                     }
                     return trim(preg_replace('/\R/u', "\n", $value));
                 }

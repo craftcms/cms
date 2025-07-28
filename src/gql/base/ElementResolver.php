@@ -11,12 +11,12 @@ use Craft;
 use craft\base\EagerLoadingFieldInterface;
 use craft\base\ElementInterface;
 use craft\base\GqlInlineFragmentFieldInterface;
-use Craft\Cms\Support\Arr;
 use craft\elements\db\ElementQuery;
 use craft\elements\ElementCollection;
 use craft\gql\ArgumentManager;
 use craft\gql\ElementQueryConditionBuilder;
 use craft\helpers\Gql as GqlHelper;
+use CraftCms\Cms\Support\Arr;
 use GraphQL\Type\Definition\ResolveInfo;
 
 /**

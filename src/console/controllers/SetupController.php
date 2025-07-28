@@ -8,7 +8,6 @@
 namespace craft\console\controllers;
 
 use Craft;
-use Craft\Cms\Support\Arr;
 use craft\config\DbConfig;
 use craft\console\Controller;
 use craft\db\Connection;
@@ -17,9 +16,10 @@ use craft\errors\DbConnectException;
 use craft\helpers\App;
 use craft\helpers\Console;
 use craft\helpers\FileHelper;
-use craft\helpers\StringHelper;
 use craft\migrations\CreateDbCacheTable;
 use craft\migrations\CreatePhpSessionTable;
+use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Support\Str;
 use m150207_210500_i18n_init;
 use PDOException;
 use Seld\CliPrompt\CliPrompt;
@@ -210,7 +210,7 @@ EOD;
     public function actionAppId(): int
     {
         $this->stdout('Generating an application ID ... ', Console::FG_YELLOW);
-        $key = 'CraftCMS--' . StringHelper::UUID();
+        $key = 'CraftCMS--' . Str::uuid()->toString();
         if (!$this->_setEnvVar('CRAFT_APP_ID', $key)) {
             return ExitCode::UNSPECIFIED_ERROR;
         }
@@ -248,7 +248,7 @@ EOD;
         top:
 
         // driver
-        $envDriver = App::env('CRAFT_DB_DRIVER');
+        $envDriver = App::env('DB_CONNECTION') ?? App::env('CRAFT_DB_DRIVER');
         $this->driver = $this->prompt('Which database driver are you using? (mysql or pgsql)', [
             'required' => true,
             'default' => $this->driver ?? $envDriver ?: 'mysql',
@@ -259,14 +259,14 @@ EOD;
         // server
         $this->server = $this->prompt('Database server name or IP address:', [
             'required' => true,
-            'default' => $this->server ?? $this->_envDefault('CRAFT_DB_SERVER') ?? '127.0.0.1',
+            'default' => $this->server ?? $this->_envDefault('DB_HOST') ?? $this->_envDefault('CRAFT_DB_SERVER') ?? '127.0.0.1',
         ]);
         $this->server = strtolower($this->server);
 
         // port
         $this->port = (int)$this->prompt('Database port:', [
             'required' => true,
-            'default' => $this->port ?? $this->_envDefault('CRAFT_DB_PORT') ?? ($this->driver === Connection::DRIVER_MYSQL ? 3306 : 5432),
+            'default' => $this->port ?? $this->_envDefault('DB_PORT') ?? $this->_envDefault('CRAFT_DB_PORT') ?? ($this->driver === Connection::DRIVER_MYSQL ? 3306 : 5432),
             'validator' => fn(string $input): bool => is_numeric($input),
         ]);
 
@@ -274,11 +274,11 @@ EOD;
 
         // user & password
         $this->user = $this->prompt('Database username:', [
-            'default' => $this->user ?? $this->_envDefault('CRAFT_DB_USER') ?? 'root',
+            'default' => $this->user ?? $this->_envDefault('DB_USERNAME') ?? $this->_envDefault('CRAFT_DB_USER') ?? 'root',
         ]);
 
         if (!$this->password && $this->interactive) {
-            $envPassword = App::env('CRAFT_DB_PASSWORD');
+            $envPassword = App::env('DB_PASSWORD') ?? App::env('CRAFT_DB_PASSWORD');
             if ($envPassword && $this->confirm('Use the password provided by $CRAFT_DB_PASSWORD?', true)) {
                 $this->password = $envPassword;
             } else {
@@ -300,14 +300,14 @@ EOD;
         }
         $this->database = $this->prompt('Database name:', [
             'required' => true,
-            'default' => $this->database ?? $this->_envDefault('CRAFT_DB_DATABASE') ?? null,
+            'default' => $this->database ?? $this->_envDefault('DB_DATABASE') ?? $this->_envDefault('CRAFT_DB_DATABASE') ?? null,
         ]);
 
         // tablePrefix
         $this->tablePrefix = $this->prompt('Database table prefix' . ($this->tablePrefix ? ' (type "none" for none)' : '') . ':', [
-            'default' => $this->tablePrefix ?? $this->_envDefault('CRAFT_DB_TABLE_PREFIX') ?? null,
+            'default' => $this->tablePrefix ?? $this->_envDefault('DB_TABLE_PREFIX') ?? $this->_envDefault('CRAFT_DB_TABLE_PREFIX') ?? null,
             'validator' => function(string $input): bool {
-                if (strlen(StringHelper::ensureRight($input, '_')) > 6) {
+                if (strlen(Str::finish($input, '_')) > 6) {
                     $this->stderr('The table prefix must be 5 or less characters long.' . PHP_EOL, Console::FG_RED);
                     return false;
                 }
@@ -315,7 +315,7 @@ EOD;
             },
         ]);
         if ($this->tablePrefix && $this->tablePrefix !== 'none') {
-            $this->tablePrefix = StringHelper::ensureRight($this->tablePrefix, '_');
+            $this->tablePrefix = Str::finish($this->tablePrefix, '_');
         } else {
             $this->tablePrefix = '';
         }
@@ -466,19 +466,19 @@ EOD;
                 return ExitCode::UNSPECIFIED_ERROR;
             }
         } elseif (
-            !$this->_setEnvVar('CRAFT_DB_DRIVER', $this->driver) ||
-            !$this->_setEnvVar('CRAFT_DB_SERVER', $this->server) ||
-            !$this->_setEnvVar('CRAFT_DB_PORT', $this->port) ||
-            !$this->_setEnvVar('CRAFT_DB_DATABASE', $this->database)
+            !$this->_setEnvVar('DB_CONNECTION', $this->driver) ||
+            !$this->_setEnvVar('DB_HOST', $this->server) ||
+            !$this->_setEnvVar('DB_PORT', $this->port) ||
+            !$this->_setEnvVar('DB_DATABASE', $this->database)
         ) {
             return ExitCode::UNSPECIFIED_ERROR;
         }
 
         if (
-            !$this->_setEnvVar('CRAFT_DB_USER', $this->user) ||
-            !$this->_setEnvVar('CRAFT_DB_PASSWORD', $this->password) ||
-            !$this->_setEnvVar('CRAFT_DB_SCHEMA', $this->schema) ||
-            !$this->_setEnvVar('CRAFT_DB_TABLE_PREFIX', $this->tablePrefix)
+            !$this->_setEnvVar('DB_USERNAME', $this->user) ||
+            !$this->_setEnvVar('DB_PASSWORD', $this->password) ||
+            !$this->_setEnvVar('DB_SCHEMA', $this->schema) ||
+            !$this->_setEnvVar('DB_TABLE_PREFIX', $this->tablePrefix)
         ) {
             return ExitCode::UNSPECIFIED_ERROR;
         }

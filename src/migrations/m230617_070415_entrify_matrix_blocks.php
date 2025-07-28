@@ -5,7 +5,6 @@ namespace craft\migrations;
 use Craft;
 use craft\base\PreviewableFieldInterface;
 use craft\base\ThumbableFieldInterface;
-use Craft\Cms\Support\Arr;
 use craft\db\Migration;
 use craft\db\Query;
 use craft\db\Table;
@@ -15,6 +14,7 @@ use craft\helpers\Json;
 use craft\models\EntryType;
 use craft\models\FieldLayout;
 use craft\services\ProjectConfig;
+use CraftCms\Cms\Support\Arr;
 use yii\db\Exception as DbException;
 use yii\helpers\Inflector;
 

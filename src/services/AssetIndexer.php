@@ -27,7 +27,6 @@ use craft\helpers\FileHelper;
 use craft\helpers\Image;
 use craft\helpers\ImageTransforms;
 use craft\helpers\Json;
-use craft\helpers\StringHelper;
 use craft\models\AssetIndexData;
 use craft\models\AssetIndexingSession;
 use craft\models\FsListing;
@@ -487,7 +486,7 @@ class AssetIndexer extends Component
             if ($session->listEmptyFolders && $hasAssets > 0) {
                 // if the folder contains as many assets as are listed in the $missingFiles
                 // allow this folder to be offered for deletion (with the assets in it)
-                if ($hasAssets == count(array_filter($missingFiles, fn($file) => StringHelper::startsWith($file['path'], $path)))) {
+                if ($hasAssets == count(array_filter($missingFiles, fn($file) => str_starts_with($file['path'], $path)))) {
                     $missing['folders'][$folderId] = $volumeName . '/' . $path;
                 }
             }

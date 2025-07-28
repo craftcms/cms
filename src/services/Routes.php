@@ -8,10 +8,10 @@
 namespace craft\services;
 
 use Craft;
-use Craft\Cms\Support\Arr;
 use craft\events\DeleteSiteEvent;
 use craft\events\RouteEvent;
-use craft\helpers\StringHelper;
+use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Support\Str;
 use Illuminate\Support\Collection;
 use yii\base\Component;
 
@@ -159,7 +159,7 @@ class Routes extends Component
         if ($routeUid !== null) {
             $sortOrder = $projectConfig->get(ProjectConfig::PATH_ROUTES . '.' . $routeUid . '.sortOrder') ?? $this->_getMaxSortOrder();
         } else {
-            $routeUid = StringHelper::UUID();
+            $routeUid = Str::uuid()->toString();
             $sortOrder = $this->_getMaxSortOrder();
         }
 

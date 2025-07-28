@@ -25,7 +25,6 @@ use craft\base\NestedElementInterface;
 use craft\base\Statusable;
 use craft\base\Thumbable;
 use craft\behaviors\DraftBehavior;
-use Craft\Cms\Support\Arr;
 use craft\elements\Address;
 use craft\enums\AttributeStatus;
 use craft\enums\CmsEdition;
@@ -45,6 +44,8 @@ use craft\utilities\ProjectConfig as ProjectConfigUtility;
 use craft\utilities\Updates;
 use craft\web\twig\TemplateLoaderException;
 use craft\web\View;
+use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Support\Str;
 use DateTime;
 use Illuminate\Support\Collection;
 use yii\base\Event;
@@ -793,11 +794,11 @@ JS, [
                 'icon' => 'edit',
                 'attributes' => [
                     'id' => $editId,
-                    'title' => StringHelper::upperCaseFirst(Craft::t('app', 'Edit {type}', [
+                    'title' => mb_ucfirst(Craft::t('app', 'Edit {type}', [
                         'type' => $element::lowerDisplayName(),
                     ])),
                     'aria' => [
-                        'label' => StringHelper::upperCaseFirst(Craft::t('app', 'Edit {type}', [
+                        'label' => mb_ucfirst(Craft::t('app', 'Edit {type}', [
                             'type' => $element::lowerDisplayName(),
                         ])),
                     ],
@@ -1748,7 +1749,7 @@ JS, [
             ($status
                 ? Html::beginTag('div', [
                     'id' => $statusId,
-                    'class' => ['status-badge', StringHelper::toString($status[0])],
+                    'class' => ['status-badge', Str::toString($status[0])],
                     'title' => $status[1],
                     'aria-hidden' => 'true',
                 ]) .
@@ -3017,7 +3018,7 @@ JS, [
 
         if (!$config['customizableTabs']) {
             $tab = array_shift($tabs) ?? new FieldLayoutTab([
-                'uid' => StringHelper::UUID(),
+                'uid' => Str::uuid()->toString(),
                 'layout' => $fieldLayout,
             ]);
             $tab->name = $config['pretendTabName'] ?? Craft::t('app', 'Content');
@@ -3039,13 +3040,11 @@ JS, [
         // get the impression that tabs/elements have persisting UUIDs if they don't.)
         foreach ($tabs as $tab) {
             if (!isset($tab->uid)) {
-                $tab->uid = StringHelper::UUID();
+                $tab->uid = Str::uuid()->toString();
             }
 
             foreach ($tab->getElements() as $layoutElement) {
-                if (!isset($layoutElement->uid)) {
-                    $layoutElement->uid = StringHelper::UUID();
-                }
+                $layoutElement->uid ??= Str::uuid()->toString();
             }
         }
 

@@ -10,7 +10,7 @@ namespace craft\console\controllers\utils;
 use Craft;
 use craft\console\Controller;
 use craft\helpers\Console;
-use craft\helpers\StringHelper;
+use CraftCms\Cms\Support\Str;
 use yii\console\ExitCode;
 
 /**
@@ -109,7 +109,7 @@ class FixFieldLayoutUidsController extends Controller
             return;
         }
 
-        $config['uid'] = StringHelper::UUID();
+        $config['uid'] = Str::uuid()->toString();
         $count++;
         $modified = true;
 

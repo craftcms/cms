@@ -12,7 +12,6 @@ use craft\auth\methods\AuthMethodInterface;
 use craft\base\Element;
 use craft\base\ModelInterface;
 use craft\base\NameTrait;
-use Craft\Cms\Support\Arr;
 use craft\elements\Address;
 use craft\elements\Asset;
 use craft\elements\Entry;
@@ -32,7 +31,6 @@ use craft\helpers\FileHelper;
 use craft\helpers\Html;
 use craft\helpers\Image;
 use craft\helpers\Json;
-use craft\helpers\StringHelper;
 use craft\helpers\UrlHelper;
 use craft\helpers\User as UserHelper;
 use craft\i18n\Locale;
@@ -48,6 +46,8 @@ use craft\web\Request;
 use craft\web\ServiceUnavailableHttpException;
 use craft\web\UploadedFile;
 use craft\web\View;
+use CraftCms\Cms\Announcement\Announcements;
+use CraftCms\Cms\Support\Arr;
 use DateTime;
 use Illuminate\Support\Collection;
 use Throwable;
@@ -770,7 +770,7 @@ class UsersController extends Controller
         $user->passwordResetRequired = true;
 
         if (!Craft::$app->getElements()->saveElement($user, false)) {
-            return $this->asFailure(StringHelper::upperCaseFirst(Craft::t('app', 'Couldn’t save {type}.', [
+            return $this->asFailure(mb_ucfirst(Craft::t('app', 'Couldn’t save {type}.', [
                 'type' => User::lowerDisplayName(),
             ])));
         }
@@ -800,7 +800,7 @@ class UsersController extends Controller
         $user->passwordResetRequired = false;
 
         if (!Craft::$app->getElements()->saveElement($user, false)) {
-            return $this->asFailure(StringHelper::upperCaseFirst(Craft::t('app', 'Couldn’t save {type}.', [
+            return $this->asFailure(mb_ucfirst(Craft::t('app', 'Couldn’t save {type}.', [
                 'type' => User::lowerDisplayName(),
             ])));
         }
@@ -1010,7 +1010,7 @@ class UsersController extends Controller
         $user->archived = false;
 
         if (!$elementsService->saveElement($user, false)) {
-            return $this->asFailure(StringHelper::upperCaseFirst(Craft::t('app', 'Couldn’t save {type}.', [
+            return $this->asFailure(mb_ucfirst(Craft::t('app', 'Couldn’t save {type}.', [
                 'type' => User::lowerDisplayName(),
             ])));
         }
@@ -1069,7 +1069,7 @@ class UsersController extends Controller
         $this->requirePermission('viewUsers');
         return $this->renderTemplate('users/_index.twig', [
             'title' => Craft::t('app', 'Users'),
-            'buttonLabel' => StringHelper::upperCaseFirst(Craft::t('app', 'New {type}', [
+            'buttonLabel' => mb_ucfirst(Craft::t('app', 'New {type}', [
                 'type' => User::lowerDisplayName(),
             ])),
             'source' => $source,
@@ -1095,7 +1095,7 @@ class UsersController extends Controller
 
         $user->setScenario(Element::SCENARIO_ESSENTIALS);
         if (!Craft::$app->getDrafts()->saveElementAsDraft($user, Craft::$app->getUser()->getId(), null, null, false)) {
-            $response = $this->asModelFailure($user, StringHelper::upperCaseFirst(Craft::t('app', 'Couldn’t create {type}.', [
+            $response = $this->asModelFailure($user, mb_ucfirst(Craft::t('app', 'Couldn’t create {type}.', [
                 'type' => User::lowerDisplayName(),
             ])), 'user');
             if ($response === null) {
@@ -1737,7 +1737,7 @@ JS);
 
             return $this->asModelFailure(
                 $user,
-                StringHelper::upperCaseFirst(Craft::t('app', 'Couldn’t save {type}.', [
+                mb_ucfirst(Craft::t('app', 'Couldn’t save {type}.', [
                     'type' => User::lowerDisplayName(),
                 ])),
                 $userVariable
@@ -2303,7 +2303,7 @@ JS);
         $address->setFieldValuesFromRequest($fieldsLocation);
 
         if (!$elementsService->saveElement($address)) {
-            return $this->asModelFailure($address, StringHelper::upperCaseFirst(Craft::t('app', 'Couldn’t save {type}.', [
+            return $this->asModelFailure($address, mb_ucfirst(Craft::t('app', 'Couldn’t save {type}.', [
                 'type' => Address::lowerDisplayName(),
             ])), 'address');
         }
@@ -3046,7 +3046,7 @@ JS);
     {
         $this->requirePostRequest();
         $ids = $this->request->getRequiredBodyParam('ids');
-        Craft::$app->getAnnouncements()->markAsRead($ids);
+        app(Announcements::class)->markAsRead($ids);
         return $this->asSuccess();
     }
 

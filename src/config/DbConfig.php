@@ -10,8 +10,9 @@ namespace craft\config;
 use Craft;
 use craft\db\Connection;
 use craft\helpers\Db;
-use craft\helpers\StringHelper;
 use craft\services\Config;
+use CraftCms\Cms\Support\Str;
+use Illuminate\Support\Facades\Config as ConfigFacade;
 use yii\base\InvalidConfigException;
 
 /**
@@ -572,7 +573,7 @@ class DbConfig extends BaseConfig
     public function tablePrefix(?string $value): self
     {
         if ($value) {
-            $value = StringHelper::ensureRight($value, '_');
+            $value = Str::finish($value, '_');
             if (strlen($value) > 6) {
                 throw new InvalidConfigException('tablePrefix must be 5 or less characters long: ' . $value);
             }
@@ -758,7 +759,13 @@ class DbConfig extends BaseConfig
     private function _updateDsn(): void
     {
         if (!$this->driver) {
-            $this->driver = Connection::DRIVER_MYSQL;
+            $laravelDriver = ConfigFacade::get('database.default');
+
+            if (!in_array($laravelDriver, [Connection::DRIVER_MYSQL, Connection::DRIVER_PGSQL], true)) {
+                $laravelDriver = Connection::DRIVER_MYSQL;
+            }
+
+            $this->driver = $laravelDriver;
         }
 
         if (!in_array($this->driver, [Connection::DRIVER_MYSQL, Connection::DRIVER_PGSQL], true)) {

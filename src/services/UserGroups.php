@@ -16,9 +16,9 @@ use craft\errors\WrongEditionException;
 use craft\events\ConfigEvent;
 use craft\events\UserGroupEvent;
 use craft\helpers\Db;
-use craft\helpers\StringHelper;
 use craft\models\UserGroup;
 use craft\records\UserGroup as UserGroupRecord;
+use CraftCms\Cms\Support\Str;
 use yii\base\Component;
 
 /**
@@ -312,7 +312,7 @@ class UserGroups extends Component
 
         if (!$group->uid) {
             if ($isNewGroup) {
-                $group->uid = StringHelper::UUID();
+                $group->uid = Str::uuid()->toString();
             } elseif (!$group->uid) {
                 $group->uid = Db::uidById(Table::USERGROUPS, $group->id);
             }

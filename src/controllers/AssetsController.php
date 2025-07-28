@@ -11,7 +11,6 @@ use Craft;
 use craft\assetpreviews\Image as ImagePreview;
 use craft\base\Element;
 use craft\base\LocalFsInterface;
-use Craft\Cms\Support\Arr;
 use craft\db\Query;
 use craft\db\Table;
 use craft\elements\Asset;
@@ -28,7 +27,6 @@ use craft\helpers\Assets;
 use craft\helpers\Db;
 use craft\helpers\FileHelper;
 use craft\helpers\ImageTransforms;
-use craft\helpers\StringHelper;
 use craft\helpers\UrlHelper;
 use craft\i18n\Formatter;
 use craft\imagetransforms\ImageTransformer;
@@ -36,6 +34,8 @@ use craft\models\ImageTransform;
 use craft\models\VolumeFolder;
 use craft\web\Controller;
 use craft\web\UploadedFile;
+use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Support\Str;
 use Throwable;
 use Twig\Error\LoaderError;
 use Twig\Error\RuntimeError;
@@ -205,7 +205,7 @@ class AssetsController extends Controller
         if (!Craft::$app->getElements()->saveElement($asset)) {
             return $this->asModelFailure(
                 $asset,
-                StringHelper::upperCaseFirst(Craft::t('app', 'Couldn’t save {type}.', [
+                mb_ucfirst(Craft::t('app', 'Couldn’t save {type}.', [
                     'type' => Asset::lowerDisplayName(),
                 ])),
                 $assetVariable
@@ -1066,7 +1066,7 @@ class AssetsController extends Controller
         }
 
         // Otherwise create a zip of all the selected assets
-        $zipPath = Craft::$app->getPath()->getTempPath() . '/' . StringHelper::UUID() . '.zip';
+        $zipPath = Craft::$app->getPath()->getTempPath() . '/' . Str::uuid()->toString() . '.zip';
         $zip = new ZipArchive();
 
         if ($zip->open($zipPath, ZipArchive::CREATE) !== true) {
@@ -1416,7 +1416,7 @@ class AssetsController extends Controller
         }
 
         // for a redirect response (e.g. element action menu items)
-        $uri = StringHelper::ensureLeft(UrlHelper::prependCpTrigger($sourcePath[0]['uri']), '/');
+        $uri = Str::start(UrlHelper::prependCpTrigger($sourcePath[0]['uri']), '/');
         $url = UrlHelper::urlWithParams($uri, [
             'search' => $asset->filename,
             'includeSubfolders' => '0',

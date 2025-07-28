@@ -7,9 +7,7 @@
 
 namespace crafttests\unit\services;
 
-use Codeception\Test\Unit;
 use Craft;
-use Craft\Cms\Support\Arr;
 use craft\db\Query;
 use craft\db\Table;
 use craft\elements\Entry;
@@ -17,6 +15,7 @@ use craft\elements\User;
 use craft\records\User as UserRecord;
 use craft\services\Gc;
 use craft\test\TestCase;
+use CraftCms\Cms\Support\Arr;
 use crafttests\fixtures\EntryFixture;
 use crafttests\fixtures\EntryTypeFixture;
 use crafttests\fixtures\SectionsFixture;

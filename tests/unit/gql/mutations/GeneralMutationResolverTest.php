@@ -18,10 +18,10 @@ use craft\gql\base\Mutation;
 use craft\gql\base\MutationResolver;
 use craft\gql\GqlEntityRegistry;
 use craft\gql\resolvers\mutations\Entry as EntryMutationResolver;
-use craft\helpers\StringHelper;
 use craft\models\GqlSchema;
 use craft\services\Elements;
 use craft\test\TestCase;
+use CraftCms\Cms\Support\Str;
 use GraphQL\Error\Error;
 use GraphQL\Error\UserError;
 use GraphQL\Type\Definition\InputObjectType;
@@ -58,7 +58,7 @@ class GeneralMutationResolverTest extends TestCase
     public function testStoringResolverData(): void
     {
         $testKey = 'someKey';
-        $testString = StringHelper::randomString();
+        $testString = Str::random();
         $testData = [
             'one' => 'two',
             'three' => ['four', 'five'],
@@ -145,8 +145,8 @@ class GeneralMutationResolverTest extends TestCase
     public function testImmutableAttributes(): void
     {
         $testId = random_int(1, 9999);
-        $testUid = StringHelper::UUID();
-        $testTitle = StringHelper::UUID();
+        $testUid = Str::uuid()->toString();
+        $testTitle = Str::uuid()->toString();
 
         $entry = $this->make(Entry::class, [
             'id' => $testId,
@@ -156,8 +156,8 @@ class GeneralMutationResolverTest extends TestCase
 
         $arguments = [
             'id' => random_int(1, 9999),
-            'uid' => StringHelper::UUID(),
-            'title' => StringHelper::UUID(),
+            'uid' => Str::uuid()->toString(),
+            'title' => Str::uuid()->toString(),
         ];
 
         $this->setInaccessibleProperty($this->resolver, 'immutableAttributes', ['id', 'uid', 'title']);
@@ -181,15 +181,15 @@ class GeneralMutationResolverTest extends TestCase
                     'otherField' => Type::string(),
                 ],
                 [
-                    'someField' => StringHelper::UUID(),
-                    'otherField' => StringHelper::UUID(),
-                    'title' => StringHelper::UUID(),
+                    'someField' => Str::uuid()->toString(),
+                    'otherField' => Str::uuid()->toString(),
+                    'title' => Str::uuid()->toString(),
                 ],
             ],
             [
                 [],
                 [
-                    'title' => StringHelper::UUID(),
+                    'title' => Str::uuid()->toString(),
                 ],
             ],
         ];

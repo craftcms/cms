@@ -9,7 +9,6 @@ namespace craft\test;
 
 use Codeception\PHPUnit\TestCase as CodeceptionTestCase;
 use Craft;
-use Craft\Cms\Support\Arr;
 use craft\console\Application as ConsoleApplication;
 use craft\db\Connection;
 use craft\db\Migration;
@@ -19,7 +18,6 @@ use craft\helpers\Db;
 use craft\helpers\FileHelper;
 use craft\i18n\Locale;
 use craft\mail\Mailer;
-use craft\migrations\Install;
 use craft\models\Site;
 use craft\queue\Queue;
 use craft\services\Api;
@@ -65,6 +63,8 @@ use craft\web\Response;
 use craft\web\Session;
 use craft\web\UploadedFile;
 use craft\web\User;
+use CraftCms\Cms\Migrations\Install;
+use CraftCms\Cms\Support\Arr;
 use Illuminate\Support\Collection;
 use PHPUnit\Framework\MockObject\MockObject;
 use yii\base\ErrorException;
@@ -91,7 +91,7 @@ class TestSetup
     /**
      * @since 3.6.0
      */
-    public const SITE_URL = 'https://test.craftcms.test/';
+    public const SITE_URL = 'https://localhost/';
 
     /**
      * @since 3.6.0
@@ -310,7 +310,7 @@ class TestSetup
      */
     public static function configureCraft(): bool
     {
-        define('YII_ENV', 'test');
+        !defined('YII_ENV') && define('YII_ENV', 'test');
 
         $vendorPath = realpath(CRAFT_VENDOR_PATH);
 
@@ -338,8 +338,8 @@ class TestSetup
         $libPath = $repoRoot . '/lib';
         $srcPath = $repoRoot . '/src';
 
-        require $libPath . '/yii2/Yii.php';
-        require $srcPath . '/Craft.php';
+        require_once $libPath . '/yii2/Yii.php';
+        require_once $srcPath . '/Craft.php';
 
         // Set aliases
         Craft::setAlias('@vendor', $vendorPath);
@@ -480,15 +480,14 @@ class TestSetup
 
         $site = new Site($siteConfig);
 
-        $migration = new Install([
-            'db' => $connection,
-            'username' => self::USERNAME,
-            'password' => 'craftcms2018!!',
-            'email' => 'support@craftcms.com',
-            'site' => $site,
-        ]);
+        $migration = new Install(
+            username: self::USERNAME,
+            password: 'craftcms2018!!',
+            email: 'support@craftcms.com',
+            site: $site,
+        );
 
-        $migration->up(true);
+        $migration->up();
     }
 
     /**
@@ -523,14 +522,20 @@ class TestSetup
 
             // Set the ServiceLocator::$object->getProperty()` get method.
             if ($accessMethod) {
-                $mockApp->expects($test->any())
+                $class = new \ReflectionClass($test);
+                $method = $class->getMethod('any');
+
+                $mockApp->expects($method->invoke($test))
                     ->method($accessMethod)
                     ->willReturn($mock);
             }
         }
 
+        $class = new \ReflectionClass($test);
+        $method = $class->getMethod('any');
+
         // Set the map
-        $mockApp->expects($test->any())
+        $mockApp->expects($method->invoke($test))
             ->method('__get')
             ->willReturnMap($mockMapForMagicGet);
 
@@ -546,7 +551,10 @@ class TestSetup
      */
     public static function getMock(CodeceptionTestCase $test, string $class)
     {
-        return $test->getMockBuilder($class)
+        $reflection = new \ReflectionClass($test);
+        $method = $reflection->getMethod('getMockBuilder');
+
+        return $method->invokeArgs($test, [$class])
             ->disableOriginalConstructor()
             ->getMock();
     }

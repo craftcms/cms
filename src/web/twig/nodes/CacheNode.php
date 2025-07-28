@@ -9,7 +9,7 @@ namespace craft\web\twig\nodes;
 
 use Craft;
 use craft\helpers\DateTimeHelper;
-use craft\helpers\StringHelper;
+use CraftCms\Cms\Support\Str;
 use Twig\Compiler;
 use Twig\Node\Node;
 
@@ -69,7 +69,7 @@ class CacheNode extends Node
         if ($key) {
             $compiler->subcompile($key);
         } else {
-            $compiler->raw('"' . StringHelper::randomString() . '"');
+            $compiler->raw('"' . Str::random(36) . '"');
         }
 
         $compiler

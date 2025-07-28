@@ -21,7 +21,6 @@ use craft\base\RelationalFieldInterface;
 use craft\base\ThumbableFieldInterface;
 use craft\behaviors\CustomFieldBehavior;
 use craft\behaviors\EventBehavior;
-use Craft\Cms\Support\Arr;
 use craft\db\FixedOrderExpression;
 use craft\db\Query;
 use craft\db\Table as DbTable;
@@ -40,12 +39,11 @@ use craft\fields\conditions\RelationalFieldConditionRule;
 use craft\helpers\Cp;
 use craft\helpers\Db;
 use craft\helpers\ElementHelper;
-use craft\helpers\Html;
 use craft\helpers\Queue;
-use craft\helpers\StringHelper;
 use craft\queue\jobs\LocalizeRelations;
-use craft\services\Elements;
 use craft\services\ElementSources;
+use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Support\Str;
 use DateTime;
 use GraphQL\Type\Definition\Type;
 use Illuminate\Support\Collection;
@@ -183,7 +181,7 @@ abstract class BaseRelationField extends Field implements
      */
     public static function existsQueryCondition(self $field, bool $enabledOnly = true, bool $inTargetSiteOnly = true): array
     {
-        $ns = sprintf('%s_%s', $field->handle, StringHelper::randomString(5));
+        $ns = sprintf('%s_%s', $field->handle, Str::random(5));
 
         $query = (new Query())
             ->from(["relations_$ns" => DbTable::RELATIONS])
@@ -727,7 +725,7 @@ JS, [
                 }
             }
 
-            $relationsAlias = sprintf('relations_%s', StringHelper::randomString(10));
+            $relationsAlias = sprintf('relations_%s', Str::random(10));
 
             $query->attachBehavior(self::class, new EventBehavior([
                 ElementQuery::EVENT_AFTER_PREPARE => function(
@@ -1418,7 +1416,7 @@ JS, [
                 'label' => Craft::t('app', 'Selectable {type} Condition', [
                     'type' => $elementType::pluralDisplayName(),
                 ]),
-                'instructions' => StringHelper::upperCaseFirst(Craft::t('app', 'Only allow {type} to be selected if they match the following rules:', [
+                'instructions' => mb_ucfirst(Craft::t('app', 'Only allow {type} to be selected if they match the following rules:', [
                     'type' => $elementType::pluralLowerDisplayName(),
                 ])),
             ]);

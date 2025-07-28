@@ -13,9 +13,9 @@ use craft\db\Table;
 use craft\elements\User;
 use craft\errors\InvalidElementException;
 use craft\helpers\Session;
-use craft\helpers\StringHelper;
 use craft\services\Users;
 use craft\test\TestCase;
+use CraftCms\Cms\Support\Str;
 use DateInterval;
 use DateTime;
 use DateTimeZone;
@@ -292,10 +292,10 @@ class UserElementTest extends TestCase
             ], [
                 [
                     $this->activeUser->id,
-                    StringHelper::randomString(32),
+                    Str::random(32),
                 ], [
                     $this->activeUser->id,
-                    StringHelper::randomString(32),
+                    Str::random(32),
                 ],
             ]);
 

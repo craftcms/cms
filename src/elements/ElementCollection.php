@@ -9,8 +9,8 @@ namespace craft\elements;
 
 use Craft;
 use craft\base\ElementInterface;
-use Craft\Cms\Support\Arr;
 use craft\helpers\ElementHelper;
+use CraftCms\Cms\Support\Arr;
 use Illuminate\Contracts\Support\Arrayable;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Enumerable;
@@ -177,7 +177,7 @@ class ElementCollection extends Collection
     public function map(callable $callback)
     {
         $result = parent::map($callback);
-        /** @phpstan-ignore instanceof.alwaysTrue */
+        /** @phpstan-ignore-next-line */
         return $result->contains(fn($item) => !$item instanceof ElementInterface) ? $result->toBase() : $result;
     }
 
@@ -191,11 +191,11 @@ class ElementCollection extends Collection
      *
      * @param callable(TElement,TKey):array<TMapWithKeysKey,TMapWithKeysValue> $callback
      * @return Collection<TMapWithKeysKey,TMapWithKeysValue>|static<TMapWithKeysKey,TMapWithKeysValue>
-     */
+    */
     public function mapWithKeys(callable $callback)
     {
         $result = parent::mapWithKeys($callback);
-        /** @phpstan-ignore instanceof.alwaysTrue */
+        /** @phpstan-ignore-next-line */
         return $result->contains(fn($item) => !$item instanceof ElementInterface) ? $result->toBase() : $result;
     }
 

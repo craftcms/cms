@@ -7,10 +7,10 @@
  * @license https://craftcms.github.io/license/
  */
 
-use Craft\Cms\Support\Arr;
 use craft\helpers\App;
 use craft\helpers\FileHelper;
 use craft\services\Config;
+use CraftCms\Cms\Support\Arr;
 use yii\base\ErrorException;
 
 // Get the last error at the earliest opportunity, so we can catch max_input_vars errors
@@ -193,8 +193,8 @@ $iconsPath = $srcPath . DIRECTORY_SEPARATOR . 'icons';
 $brandIconsPath = $iconsPath . DIRECTORY_SEPARATOR . 'brands';
 $customIconsPath = $iconsPath . DIRECTORY_SEPARATOR . 'custom-icons';
 $solidIconsPath = $iconsPath . DIRECTORY_SEPARATOR . 'solid';
-require $libPath . DIRECTORY_SEPARATOR . 'yii2' . DIRECTORY_SEPARATOR . 'Yii.php';
-require $srcPath . DIRECTORY_SEPARATOR . 'Craft.php';
+require_once $libPath . DIRECTORY_SEPARATOR . 'yii2' . DIRECTORY_SEPARATOR . 'Yii.php';
+require_once $srcPath . DIRECTORY_SEPARATOR . 'Craft.php';
 
 // Set aliases
 Craft::setAlias('@craftcms', $cmsPath);
@@ -300,6 +300,9 @@ $config = Arr::merge($config, $localConfig);
 if (function_exists('craft_modify_app_config')) {
     craft_modify_app_config($config, $appType);
 }
+
+Craft::$container = new \CraftCms\Yii2Adapter\Container();
+Craft::setLogger(new \CraftCms\Yii2Adapter\Log\Logger());
 
 // Initialize the application
 /** @var \craft\web\Application|craft\console\Application $app */

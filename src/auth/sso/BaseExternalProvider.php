@@ -9,7 +9,6 @@ namespace craft\auth\sso;
 
 use Craft;
 use craft\auth\sso\mapper\UserAttributesMapper;
-use Craft\Cms\Support\Arr;
 use craft\db\Query;
 use craft\db\Table;
 use craft\elements\User;
@@ -17,9 +16,10 @@ use craft\errors\SsoFailedException;
 use craft\events\SsoEvent;
 use craft\events\UserGroupsAssignEvent;
 use craft\helpers\Html;
-use craft\helpers\StringHelper;
 use craft\helpers\UrlHelper;
 use craft\services\Sso;
+use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Support\Str;
 
 /**
  * BaseExternalProvider provides a base implementation for external identity providers.
@@ -203,7 +203,7 @@ abstract class BaseExternalProvider extends BaseProvider
                 $user,
                 sprintf(
                     "Failed to save user: %s",
-                    StringHelper::toString($user->getFirstErrors(), ', ')
+                    Str::toString($user->getFirstErrors(), ', ')
                 )
             );
         }

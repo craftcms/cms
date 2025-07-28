@@ -10,7 +10,6 @@ namespace craft\web\twig\variables;
 use Craft;
 use craft\base\FsInterface;
 use craft\base\UtilityInterface;
-use Craft\Cms\Support\Arr;
 use craft\enums\CmsEdition;
 use craft\events\FormActionsEvent;
 use craft\events\RegisterCpNavItemsEvent;
@@ -18,15 +17,16 @@ use craft\events\RegisterCpSettingsEvent;
 use craft\helpers\App;
 use craft\helpers\Assets;
 use craft\helpers\Cp as CpHelper;
-use craft\helpers\Html;
 use craft\helpers\Inflector;
-use craft\helpers\StringHelper;
 use craft\helpers\UrlHelper;
 use craft\i18n\Locale;
 use craft\models\FieldLayout;
 use craft\models\Site;
 use craft\models\Volume;
 use craft\web\twig\TemplateLoaderException;
+use CraftCms\Aliases\Facades\Aliases;
+use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Support\Str;
 use DateTime;
 use DateTimeZone;
 use Illuminate\Support\Collection;
@@ -619,12 +619,12 @@ class Cp extends Component
         }
         $suggestions[] = [
             'label' => Craft::t('app', 'Environment Variables'),
-            'data' => Arr::sort($envSuggestions, 'name'),
+            'data' => array_values(Arr::sort($envSuggestions, 'name')),
         ];
 
         if ($includeAliases) {
             $aliasSuggestions = [];
-            foreach (Craft::$aliases as $alias => $path) {
+            foreach (Aliases::getAll() as $alias => $path) {
                 // Don't ever suggest @web
                 if ($alias === '@web' || str_starts_with($alias, '@web/')) {
                     continue;
@@ -649,7 +649,7 @@ class Cp extends Component
             }
             $suggestions[] = [
                 'label' => Craft::t('app', 'Aliases'),
-                'data' => Arr::sort($aliasSuggestions, 'name'),
+                'data' => array_values(Arr::sort($aliasSuggestions, 'name')),
             ];
         }
 
@@ -679,7 +679,7 @@ class Cp extends Component
         foreach (array_keys($_SERVER) as $var) {
             if (
                 is_string($var) &&
-                !StringHelper::startsWith($var, 'HTTP_') &&
+                !str_starts_with($var, 'HTTP_') &&
                 is_string($value = App::env($var)) &&
                 ($allowedValues === null || isset($allowedValues[$value]))
             ) {
@@ -953,7 +953,7 @@ class Cp extends Component
             return null;
         }
 
-        return StringHelper::asciiCharMap(true, $language);
+        return Str::asciiCharMap(true, $language);
     }
 
     /**
@@ -1046,7 +1046,7 @@ class Cp extends Component
         return [
             [
                 'label' => Craft::t('app', 'Templates'),
-                'data' => Arr::sort($suggestions, 'name'),
+                'data' => array_values(Arr::sort($suggestions, 'name')),
             ],
         ];
     }

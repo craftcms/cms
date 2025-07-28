@@ -8,14 +8,14 @@
 namespace craft\services;
 
 use Craft;
-use Craft\Cms\Support\Arr;
 use craft\config\BaseConfig;
 use craft\config\DbConfig;
 use craft\config\GeneralConfig;
 use craft\helpers\App;
 use craft\helpers\FileHelper;
-use craft\helpers\StringHelper;
 use craft\helpers\Typecast;
+use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Support\Str;
 use yii\base\Component;
 use yii\base\Exception;
 use yii\base\InvalidArgumentException;
@@ -306,7 +306,7 @@ class Config extends Component
 
         $mergedConfig = [];
         foreach ($config as $env => $envConfig) {
-            if ($env === '*' || StringHelper::contains($this->env, $env)) {
+            if ($env === '*' || str_contains($this->env, $env)) {
                 $mergedConfig = Arr::merge($mergedConfig, $envConfig);
             }
         }
@@ -363,7 +363,7 @@ class Config extends Component
             }
             $def = "$name=$slashedValue";
 
-            $token = StringHelper::randomString();
+            $token = Str::random(36);
             $contents = preg_replace("/^\s*$qName=.*/m", $token, $contents, -1, $count);
 
             if ($count !== 0) {

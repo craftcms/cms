@@ -8,10 +8,10 @@
 namespace craft\web;
 
 use Craft;
-use Craft\Cms\Support\Arr;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\Session;
 use craft\helpers\UrlHelper;
+use CraftCms\Cms\Support\Arr;
 use Throwable;
 use yii\base\Application as BaseApplication;
 use yii\web\Cookie;
@@ -24,7 +24,7 @@ use yii\web\HttpException;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
  */
-class Response extends \yii\web\Response
+class Response extends \CraftCms\Yii2Adapter\Web\Response
 {
     /**
      * @since 3.4.0
@@ -38,7 +38,7 @@ class Response extends \yii\web\Response
      *
      * ```php
      * use craft\helpers\App;
-     * use Craft\Cms\Support\Arr;
+     * use CraftCms\Cms\Support\Arr;
      * use craft\web\Response;
      *
      * return [

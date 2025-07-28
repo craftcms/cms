@@ -10,8 +10,8 @@ namespace craft\models;
 use Craft;
 use craft\events\ConfigEvent;
 use craft\helpers\ProjectConfig as ProjectConfigHelper;
-use craft\helpers\StringHelper;
 use craft\services\ProjectConfig as ProjectConfigService;
+use CraftCms\Cms\Support\Str;
 
 /**
  * ProjectConfigData model class represents a modifiable instance of a project config data structure that can be modified
@@ -152,7 +152,7 @@ class ProjectConfigData extends ReadOnlyProjectConfigData
         $newValue = is_array($newValue) ? $newValue : [];
         $oldValue = is_array($oldValue) ? $oldValue : [];
 
-        if (StringHelper::isUUID($lastPathSegment)) {
+        if (Str::isUuid($lastPathSegment)) {
             if (isset($newValue['name'])) {
                 // Set/update it
                 $this->projectConfig->setNameMapping($lastPathSegment, $newValue['name']);
@@ -183,7 +183,7 @@ class ProjectConfigData extends ReadOnlyProjectConfigData
      */
     protected function setContainedProjectConfigNames(string $lastPathSegment, array $data): void
     {
-        if (preg_match('/^' . StringHelper::UUID_PATTERN . '$/i', $lastPathSegment) && isset($data['name'])) {
+        if (preg_match('/^' . Str::uuidPattern() . '$/i', $lastPathSegment) && isset($data['name'])) {
             Craft::$app->getProjectConfig()->setNameMapping($lastPathSegment, $data['name']);
             $this->projectConfigNameChanges[$lastPathSegment] = $data['name'];
         }
@@ -205,7 +205,7 @@ class ProjectConfigData extends ReadOnlyProjectConfigData
      */
     protected function removeContainedProjectConfigNames(string $lastPathSegment, array $data): void
     {
-        if (preg_match('/^' . StringHelper::UUID_PATTERN . '$/i', $lastPathSegment)) {
+        if (preg_match('/^' . Str::uuidPattern() . '$/i', $lastPathSegment)) {
             Craft::$app->getProjectConfig()->removeNameMapping($lastPathSegment);
             $this->projectConfigNameChanges[$lastPathSegment] = null;
         }

@@ -15,8 +15,8 @@ use craft\elements\Entry;
 use craft\errors\InvalidElementException;
 use craft\fields\Matrix;
 use craft\helpers\ElementHelper;
-use craft\helpers\StringHelper;
 use craft\web\Controller;
+use CraftCms\Cms\Support\Str;
 use Throwable;
 use yii\web\BadRequestHttpException;
 use yii\web\ForbiddenHttpException;
@@ -106,7 +106,7 @@ class MatrixController extends Controller
 
         $attributes = [
             'siteId' => $siteId,
-            'uid' => StringHelper::UUID(),
+            'uid' => Str::uuid()->toString(),
             'typeId' => $entryType->id,
             'fieldId' => $fieldId,
             'primaryOwner' => $owner,
@@ -161,7 +161,7 @@ class MatrixController extends Controller
 
             $entry->setScenario(Element::SCENARIO_ESSENTIALS);
             if (!Craft::$app->getDrafts()->saveElementAsDraft($entry, $user->id, markAsSaved: false)) {
-                return $this->asFailure(StringHelper::upperCaseFirst(Craft::t('app', 'Couldn’t create {type}.', [
+                return $this->asFailure(mb_ucfirst(Craft::t('app', 'Couldn’t create {type}.', [
                     'type' => Entry::lowerDisplayName(),
                 ])));
             }

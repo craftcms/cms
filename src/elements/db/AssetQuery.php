@@ -9,7 +9,6 @@ namespace craft\elements\db;
 
 use Craft;
 use craft\base\ElementInterface;
-use Craft\Cms\Support\Arr;
 use craft\db\Query;
 use craft\db\QueryAbortedException;
 use craft\db\Table;
@@ -17,8 +16,8 @@ use craft\elements\Asset;
 use craft\elements\User;
 use craft\helpers\Assets;
 use craft\helpers\Db;
-use craft\helpers\StringHelper;
 use craft\models\Volume;
+use CraftCms\Cms\Support\Arr;
 use yii\base\InvalidArgumentException;
 use yii\db\Schema;
 
@@ -870,7 +869,7 @@ class AssetQuery extends ElementQuery
         if ($this->withTransforms && !$this->asArray) {
             $transforms = $this->withTransforms;
             if (!is_array($transforms)) {
-                $transforms = is_string($transforms) ? StringHelper::split($transforms) : [$transforms];
+                $transforms = is_string($transforms) ? str($transforms)->explode(',')->all() : [$transforms];
             }
 
             Craft::$app->getImageTransforms()->eagerLoadTransforms($elements, $transforms);

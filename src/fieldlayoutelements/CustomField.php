@@ -14,14 +14,14 @@ use craft\base\ElementInterface;
 use craft\base\FieldInterface;
 use craft\base\PreviewableFieldInterface;
 use craft\base\ThumbableFieldInterface;
-use Craft\Cms\Support\Arr;
 use craft\elements\conditions\users\UserCondition;
 use craft\elements\User;
 use craft\errors\FieldNotFoundException;
 use craft\helpers\Cp;
 use craft\helpers\Html;
 use craft\helpers\Inflector;
-use craft\helpers\StringHelper;
+use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Support\Str;
 
 /**
  * CustomField represents a custom field that can be included in field layouts.
@@ -391,7 +391,7 @@ class CustomField extends BaseField
     protected function statusClass(?ElementInterface $element = null, bool $static = false): ?string
     {
         if ($element && ($status = $this->_field->getStatus($element))) {
-            return StringHelper::toString($status[0]);
+            return Str::toString($status[0]);
         }
         return null;
     }

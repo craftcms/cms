@@ -9,16 +9,16 @@ namespace craft\controllers;
 
 use Craft;
 use craft\base\WidgetInterface;
-use Craft\Cms\Support\Arr;
 use craft\helpers\App;
 use craft\helpers\Cp;
 use craft\helpers\FileHelper;
 use craft\helpers\Json;
-use craft\helpers\StringHelper;
 use craft\models\CraftSupport;
 use craft\web\assets\dashboard\DashboardAsset;
 use craft\web\Controller;
 use craft\web\UploadedFile;
+use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Support\Str;
 use GuzzleHttp\RequestOptions;
 use Symfony\Component\Yaml\Yaml;
 use Throwable;
@@ -324,7 +324,7 @@ class DashboardController extends Controller
         $zipAttachment = $getHelpModel->attachment && $this->_shouldZipAttachment($getHelpModel->attachment);
 
         // Create the SupportAttachment zip
-        $zipPath = Craft::$app->getPath()->getTempPath() . '/' . StringHelper::UUID() . '.zip';
+        $zipPath = Craft::$app->getPath()->getTempPath() . '/' . Str::uuid()->toString() . '.zip';
         try {
             // Create the zip
             $zip = new ZipArchive();

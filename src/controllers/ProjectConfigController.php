@@ -11,9 +11,9 @@ use Craft;
 use craft\filters\UtilityAccess;
 use craft\helpers\FileHelper;
 use craft\helpers\ProjectConfig;
-use craft\helpers\StringHelper;
 use craft\utilities\ProjectConfig as ProjectConfigUtility;
 use craft\web\Controller;
+use CraftCms\Cms\Support\Str;
 use Symfony\Component\Yaml\Yaml;
 use yii\base\Exception;
 use yii\base\Response;
@@ -105,7 +105,7 @@ class ProjectConfigController extends Controller
         $config = Craft::$app->getProjectConfig()->get();
         $splitConfig = ProjectConfig::splitConfigIntoComponents($config);
         $zip = new ZipArchive();
-        $zipPath = Craft::$app->getPath()->getTempPath() . '/' . StringHelper::UUID() . '.zip';
+        $zipPath = Craft::$app->getPath()->getTempPath() . '/' . Str::uuid()->toString() . '.zip';
 
         if ($zip->open($zipPath, ZipArchive::CREATE) !== true) {
             throw new Exception('Cannot create zip at ' . $zipPath);

@@ -32,7 +32,6 @@ use craft\helpers\FileHelper;
 use craft\helpers\Image;
 use craft\helpers\Json;
 use craft\helpers\ProjectConfig as ProjectConfigHelper;
-use craft\helpers\StringHelper;
 use craft\helpers\Template;
 use craft\helpers\UrlHelper;
 use craft\models\FieldLayout;
@@ -40,6 +39,7 @@ use craft\models\UserGroup;
 use craft\models\Volume;
 use craft\records\User as UserRecord;
 use craft\web\Request;
+use CraftCms\Cms\Support\Str;
 use DateTime;
 use DateTimeZone;
 use Throwable;
@@ -1218,7 +1218,7 @@ class Users extends Component
         $unhashedCode = $securityService->generateRandomString(32);
 
         // Strip underscores so they don't get interpreted as italics markers in the Markdown parser
-        $unhashedCode = str_replace('_', StringHelper::randomString(1), $unhashedCode);
+        $unhashedCode = str_replace('_', Str::random(1), $unhashedCode);
         $issueDate = DateTimeHelper::currentUTCDateTime();
 
         $hashedCode = $securityService->hashPassword($unhashedCode);

@@ -9,7 +9,7 @@ paths:
 bootstrap: _bootstrap.php
 settings:
   colors: true
-  memory_limit: 2048M
+  memory_limit: 4096M
 coverage:
   enabled: true
   include:
@@ -35,7 +35,7 @@ modules:
   config:
     \craft\test\Craft:
       configFile: 'tests/_craft/config/test.php'
-      entryUrl: 'https://test.craftcms.test/index.php'
+      entryUrl: 'https://localhost/index.php'
       projectConfig: {}
       migrations: []
       plugins: []

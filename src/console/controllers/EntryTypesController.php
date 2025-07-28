@@ -11,15 +11,15 @@ use Craft;
 use craft\base\ElementContainerFieldInterface;
 use craft\base\FieldInterface;
 use craft\base\FieldLayoutElement;
-use Craft\Cms\Support\Arr;
 use craft\console\Controller;
 use craft\elements\Entry;
 use craft\helpers\Console;
 use craft\helpers\FileHelper;
-use craft\helpers\StringHelper;
 use craft\models\EntryType;
 use craft\models\FieldLayoutTab;
 use craft\models\Section;
+use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Support\Str;
 use Illuminate\Support\Collection;
 use yii\console\ExitCode;
 
@@ -206,7 +206,7 @@ MD));
 
                     // Make sure the same UUID doesn't already exist in the field layout, just to be safe
                     if (isset($uidIdx[$layoutElement->uid])) {
-                        $layoutElement->uid = StringHelper::UUID();
+                        $layoutElement->uid = Str::uuid()->toString();
                         $uidMap[$field->layoutElement->uid] = $layoutElement->uid;
                         $uidIdx[$layoutElement->uid] = true;
                     }

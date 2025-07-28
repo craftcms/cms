@@ -7,11 +7,11 @@
 
 namespace crafttests\unit\search;
 
-use Craft\Cms\Support\Arr;
 use craft\search\SearchQuery;
 use craft\search\SearchQueryTerm;
 use craft\search\SearchQueryTermGroup;
 use craft\test\TestCase;
+use CraftCms\Cms\Support\Arr;
 
 /**
  * Unit tests for SearchTest

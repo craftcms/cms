@@ -21,11 +21,11 @@ use craft\gql\GqlEntityRegistry;
 use craft\gql\types\elements\Asset as GqlAssetType;
 use craft\gql\types\elements\Entry as GqlEntryType;
 use craft\helpers\Json;
-use craft\helpers\StringHelper;
 use craft\services\Config;
 use craft\test\mockclasses\elements\ExampleElement;
 use craft\test\mockclasses\gql\MockDirective;
 use craft\test\TestCase;
+use CraftCms\Cms\Support\Str;
 use DateTime;
 use DateTimeZone;
 use GraphQL\Type\Definition\ResolveInfo;
@@ -75,7 +75,7 @@ class DirectiveTest extends TestCase
     {
         /** @var Asset $asset */
         $asset = $this->make(Asset::class, [
-            'filename' => StringHelper::randomString() . '.jpg',
+            'filename' => Str::random() . '.jpg',
             'getMimeType' => 'image/jpeg',
         ]);
 

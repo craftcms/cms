@@ -13,7 +13,6 @@ use craft\base\imagetransforms\EagerImageTransformerInterface;
 use craft\base\imagetransforms\ImageEditorTransformerInterface;
 use craft\base\imagetransforms\ImageTransformerInterface;
 use craft\base\LocalFsInterface;
-use Craft\Cms\Support\Arr;
 use craft\db\Query;
 use craft\db\Table;
 use craft\elements\Asset;
@@ -27,15 +26,15 @@ use craft\helpers\FileHelper;
 use craft\helpers\Image;
 use craft\helpers\ImageTransforms as TransformHelper;
 use craft\helpers\Queue;
-use craft\helpers\StringHelper;
 use craft\helpers\UrlHelper;
 use craft\image\Raster;
 use craft\models\ImageTransform;
 use craft\models\ImageTransformIndex;
 use craft\queue\jobs\GenerateImageTransform;
+use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Support\Str;
 use DateTime;
 use Exception;
-use Imagine\Image\Format;
 use Throwable;
 use yii\base\InvalidConfigException;
 use yii\base\NotSupportedException;
@@ -780,7 +779,7 @@ class ImageTransformer extends Component implements ImageTransformerInterface, E
     protected function getTransformBasePath(Asset $asset): string
     {
         $subPath = $asset->getVolume()->getTransformSubpath();
-        $subPath = StringHelper::removeRight($subPath, '/');
+        $subPath = Str::chopEnd($subPath, '/');
         return ($subPath ? $subPath . DIRECTORY_SEPARATOR : '') . $asset->folderPath;
     }
 

@@ -37,6 +37,7 @@
     "bacon/bacon-qr-code": "^2.0",
     "commerceguys/addressing": "^2.1.1",
     "composer/semver": "^3.3.2",
+    "craftcms/laravel-aliases": "^1.0",
     "craftcms/plugin-installer": "~1.6.0",
     "craftcms/server-check": "~5.0.1",
     "creocoder/yii2-nested-sets": "~0.9.0",
@@ -75,7 +76,7 @@
   },
   "require-dev": {
     "codeception/codeception": "^5.2.0",
-    "codeception/lib-innerbrowser": "4.0.1",
+    "codeception/lib-innerbrowser": "4.0.6",
     "codeception/module-asserts": "^3.0.0",
     "codeception/module-datafactory": "^3.0.0",
     "codeception/module-phpbrowser": "^3.0.0",
@@ -83,7 +84,13 @@
     "codeception/module-yii2": "^1.1.9",
     "craftcms/ecs": "dev-main",
     "fakerphp/faker": "^1.19.0",
+    "larastan/larastan": "^3.4",
+    "laravel/pint": "^1.22",
     "league/factory-muffin": "^3.3.0",
+    "orchestra/testbench": "^10.3",
+    "pestphp/pest": "^3.8",
+    "pestphp/pest-plugin-arch": "^3.1",
+    "pestphp/pest-plugin-laravel": "^3.2",
     "phpstan/phpstan": "^2.1",
     "rector/rector": "^2.0",
     "vlucas/phpdotenv": "^5.4.1",
@@ -103,15 +110,21 @@
   },
   "autoload": {
     "psr-4": {
-      "craft\\": "src/",
-      "Craft\\Cms\\": "cms/src/",
+      "craft\\": [
+        "src/",
+        "yii2-adapter/legacy/"
+      ],
+      "CraftCms\\Cms\\": "cms/src/",
+      "CraftCms\\Yii2Adapter\\": "yii2-adapter/src/",
       "yii2tech\\ar\\softdelete\\": "lib/ar-softdelete/src/"
     }
   },
   "autoload-dev": {
     "psr-4": {
-      "crafttests\\": "tests/",
-      "Craft\\Cms\\Tests\\": "cms/tests/"
+      "CraftCms\\Cms\\Tests\\": "cms/tests/",
+      "CraftCms\\Cms\\Database\\": "cms/database/",
+      "CraftCms\\Yii2Adapter\\Tests\\": "yii2-adapter/tests/",
+      "crafttests\\": "tests/"
     }
   },
   "scripts": {
@@ -120,7 +133,9 @@
     "fix-cs": "ecs check --ansi --fix",
     "codecept-build": "codecept build",
     "phpstan": "phpstan --memory-limit=1G",
-    "rector": "rector"
+    "rector": "rector",
+    "tests-cms": "./vendor/bin/pest --configuration ./cms/phpunit.xml.dist --test-directory ./cms/tests",
+    "tests-adapter": "./vendor/bin/pest --configuration ./yii2-adapter/phpunit.xml.dist --test-directory ./yii2-adapter/tests"
   },
   "config": {
     "sort-packages": true,
@@ -129,8 +144,26 @@
     },
     "platform-check": false,
     "allow-plugins": {
-      "yiisoft/yii2-composer": true,
-      "craftcms/plugin-installer": true
+      "craftcms/plugin-installer": true,
+      "pestphp/pest-plugin": true,
+      "yiisoft/yii2-composer": true
     }
-  }
+  },
+  "extra": {
+    "laravel": {
+      "providers": [
+        "CraftCms\\Cms\\Providers\\CraftServiceProvider",
+        "CraftCms\\Yii2Adapter\\Yii2ServiceProvider"
+      ]
+    }
+  },
+  "repositories": {
+    "packagist.org": false,
+    "private-packagist": {
+      "type": "composer",
+      "url": "https://repo.packagist.com/craftcms/"
+    }
+  },
+  "minimum-stability": "dev",
+  "prefer-stable": true
 }

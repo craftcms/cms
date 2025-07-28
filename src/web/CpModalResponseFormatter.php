@@ -9,8 +9,8 @@ namespace craft\web;
 
 use Craft;
 use craft\helpers\Html;
-use craft\helpers\StringHelper;
 use craft\web\assets\htmx\HtmxAsset;
+use CraftCms\Cms\Support\Str;
 use yii\base\Component;
 use yii\base\InvalidConfigException;
 use yii\web\BadRequestHttpException;
@@ -52,7 +52,7 @@ class CpModalResponseFormatter extends Component implements ResponseFormatterInt
     {
         $response->format = Response::FORMAT_JSON;
 
-        $namespace = StringHelper::randomString(10);
+        $namespace = Str::random(10);
         $view = Craft::$app->getView();
 
         if ($behavior->prepareModal) {

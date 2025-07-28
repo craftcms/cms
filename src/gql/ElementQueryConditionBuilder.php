@@ -22,8 +22,8 @@ use craft\fields\Entries as EntryField;
 use craft\fields\Users as UserField;
 use craft\gql\interfaces\elements\Asset as AssetInterface;
 use craft\helpers\Gql as GqlHelper;
-use craft\helpers\StringHelper;
 use craft\services\Gql;
+use CraftCms\Cms\Support\Str;
 use GraphQL\Language\AST\ArgumentNode;
 use GraphQL\Language\AST\FieldNode;
 use GraphQL\Language\AST\FragmentDefinitionNode;
@@ -556,7 +556,7 @@ class ElementQueryConditionBuilder extends Component
 
                         // Correct the handles and, maybe, aliases.
                         foreach ($plan->nested as $nestedPlan) {
-                            $newHandle = StringHelper::removeLeft($gqlFragmentEntity->getEagerLoadingPrefix() . ':' . $nestedPlan->handle, ':');
+                            $newHandle = Str::chopStart($gqlFragmentEntity->getEagerLoadingPrefix() . ':' . $nestedPlan->handle, ':');
                             if ($nestedPlan->handle === $nestedPlan->alias) {
                                 $nestedPlan->alias = $newHandle;
                             }

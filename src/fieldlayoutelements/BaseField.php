@@ -10,11 +10,11 @@ namespace craft\fieldlayoutelements;
 use Craft;
 use craft\base\ElementInterface;
 use craft\base\FieldLayoutElement;
-use Craft\Cms\Support\Arr;
 use craft\helpers\Cp;
 use craft\helpers\ElementHelper;
 use craft\helpers\Html;
-use craft\helpers\StringHelper;
+use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Support\Str;
 
 /**
  * BaseField is the base class for native and custom fields that can be included in field layouts.
@@ -397,7 +397,7 @@ abstract class BaseField extends FieldLayoutElement
                             'layout-element' => $this->uid,
                             'label' => $label,
                             'namespace' => ($namespace && $namespace !== 'fields')
-                                ? StringHelper::removeRight($namespace, '[fields]')
+                                ? Str::chopEnd($namespace, '[fields]')
                                 : null,
                         ],
                     ],
@@ -702,7 +702,7 @@ abstract class BaseField extends FieldLayoutElement
     protected function statusClass(?ElementInterface $element = null, bool $static = false): ?string
     {
         if ($element && ($status = $element->getAttributeStatus($this->attribute()))) {
-            return StringHelper::toString($status[0]);
+            return Str::toString($status[0]);
         }
         return null;
     }

@@ -9,7 +9,7 @@ namespace craft\fieldlayoutelements;
 
 use Craft;
 use craft\base\ElementInterface;
-use craft\helpers\StringHelper;
+use CraftCms\Cms\Support\Str;
 
 /**
  * TitleField represents a Title field that can be included in field layouts.
@@ -102,7 +102,7 @@ class TitleField extends TextField
 
             $language = $element->getSite()->language;
             $charMap = $language !== Craft::$app->language
-                ? StringHelper::asciiCharMap(true, $language)
+                ? Str::asciiCharMap(true, $language)
                 : null;
 
             $view->registerJsWithVars(fn($titleId, $slugId, $charMap) => <<<JS

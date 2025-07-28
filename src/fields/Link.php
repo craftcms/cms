@@ -16,7 +16,6 @@ use craft\base\InlineEditableFieldInterface;
 use craft\base\MergeableFieldInterface;
 use craft\base\RelationalFieldInterface;
 use craft\base\RelationalFieldTrait;
-use Craft\Cms\Support\Arr;
 use craft\elements\db\ElementQueryInterface;
 use craft\elements\Entry as EntryElement;
 use craft\events\RegisterComponentTypesEvent;
@@ -36,10 +35,11 @@ use craft\gql\types\generators\LinkDataType;
 use craft\helpers\Component;
 use craft\helpers\Cp;
 use craft\helpers\Html;
-use craft\helpers\StringHelper;
 use craft\helpers\Template;
 use craft\validators\ArrayValidator;
 use craft\validators\StringValidator;
+use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Support\Str;
 use GraphQL\Type\Definition\InputObjectType;
 use GraphQL\Type\Definition\Type;
 use Illuminate\Support\Collection;
@@ -566,7 +566,7 @@ class Link extends Field implements InlineEditableFieldInterface, RelationalFiel
             }
 
             if (isset($config['urlSuffix']) && !str_starts_with($config['urlSuffix'], '#')) {
-                $config['urlSuffix'] = StringHelper::ensureLeft($config['urlSuffix'], '?');
+                $config['urlSuffix'] = Str::start($config['urlSuffix'], '?');
             }
 
             if (isset($linkTypes[$typeId])) {

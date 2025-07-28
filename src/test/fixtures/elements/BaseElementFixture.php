@@ -10,13 +10,13 @@ namespace craft\test\fixtures\elements;
 use Craft;
 use craft\base\Element;
 use craft\base\ElementInterface;
-use Craft\Cms\Support\Arr;
 use craft\db\Table;
 use craft\elements\Entry;
 use craft\errors\InvalidElementException;
 use craft\helpers\Db;
 use craft\models\FieldLayout;
 use craft\test\DbFixtureTrait;
+use CraftCms\Cms\Support\Arr;
 use yii\test\DbFixture;
 use yii\test\FileFixtureTrait;
 

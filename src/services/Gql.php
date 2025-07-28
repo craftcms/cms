@@ -71,13 +71,13 @@ use craft\helpers\DateTimeHelper;
 use craft\helpers\Db;
 use craft\helpers\Gql as GqlHelper;
 use craft\helpers\ProjectConfig as ProjectConfigHelper;
-use craft\helpers\StringHelper;
 use craft\models\FieldLayout;
 use craft\models\GqlSchema;
 use craft\models\GqlToken;
 use craft\models\Section;
 use craft\records\GqlSchema as GqlSchemaRecord;
 use craft\records\GqlToken as GqlTokenRecord;
+use CraftCms\Cms\Support\Str;
 use GraphQL\Error\ClientAware;
 use GraphQL\Error\DebugFlag;
 use GraphQL\Error\Error;
@@ -974,7 +974,7 @@ class Gql extends Component
         }
 
         if ($isNewSchema && empty($schema->uid)) {
-            $schema->uid = StringHelper::UUID();
+            $schema->uid = Str::uuid()->toString();
         } elseif (empty($schema->uid)) {
             $schema->uid = Db::uidById(Table::GQLSCHEMAS, $schema->id);
         }
@@ -1937,7 +1937,7 @@ class Gql extends Component
      */
     private function _createPublicSchema(): GqlSchema
     {
-        $schemaUid = StringHelper::UUID();
+        $schemaUid = Str::uuid()->toString();
         $publicSchema = new GqlSchema([
             'name' => 'Public Schema',
             'uid' => $schemaUid,

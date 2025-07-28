@@ -14,7 +14,7 @@ use craft\db\Table;
 use craft\helpers\Console;
 use craft\helpers\Db;
 use craft\helpers\FileHelper;
-use craft\helpers\StringHelper;
+use CraftCms\Cms\Support\Str;
 use Throwable;
 use yii\base\NotSupportedException;
 use yii\console\ExitCode;
@@ -344,7 +344,7 @@ class DbController extends Controller
                 return ExitCode::UNSPECIFIED_ERROR;
             }
 
-            $tempDir = Craft::$app->getPath()->getTempPath() . DIRECTORY_SEPARATOR . StringHelper::randomString(10);
+            $tempDir = Craft::$app->getPath()->getTempPath() . DIRECTORY_SEPARATOR . Str::random(10);
             FileHelper::createDirectory($tempDir);
             $this->stdout("Extracting zip to a temp directory ... ");
             $zip->extractTo($tempDir);
@@ -492,7 +492,7 @@ class DbController extends Controller
             return ExitCode::UNSPECIFIED_ERROR;
         }
 
-        $prefix = StringHelper::ensureRight($prefix, '_');
+        $prefix = Str::finish($prefix, '_');
 
         $this->warning(<<<MD
 All database tables named `$prefix*` will be renamed to drop the table prefix.

@@ -8,8 +8,8 @@
 namespace crafttests\unit\helpers\FileHelper;
 
 use craft\helpers\FileHelper;
-use craft\helpers\StringHelper;
 use craft\test\TestCase;
+use CraftCms\Cms\Support\Str;
 use UnitTester;
 use yii\base\ErrorException;
 use yii\base\Exception;
@@ -500,7 +500,7 @@ class FileHelperTest extends TestCase
      */
     public static function uniqueNameDataProvider(): array
     {
-        $bigStr = StringHelper::randomString(300);
+        $bigStr = Str::random(300);
 
         return [
             ['{id}', ''],

@@ -1,6 +1,7 @@
 .idea
 .env
 .php-cs-fixer.cache
+.phpunit.cache
 Source/.idea/*
 *.log
 *.bak

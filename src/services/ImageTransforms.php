@@ -24,10 +24,10 @@ use craft\helpers\Assets as AssetsHelper;
 use craft\helpers\Db;
 use craft\helpers\FileHelper;
 use craft\helpers\ImageTransforms as TransformHelper;
-use craft\helpers\StringHelper;
 use craft\imagetransforms\ImageTransformer;
 use craft\models\ImageTransform;
 use craft\records\ImageTransform as ImageTransformRecord;
+use CraftCms\Cms\Support\Str;
 use DateTime;
 use Throwable;
 use yii\base\Component;
@@ -207,7 +207,7 @@ class ImageTransforms extends Component
         }
 
         if ($isNewTransform) {
-            $transform->uid = StringHelper::UUID();
+            $transform->uid = Str::uuid()->toString();
         } elseif (!$transform->uid) {
             $transform->uid = Db::uidById(Table::IMAGETRANSFORMS, $transform->id, $this->db);
         }

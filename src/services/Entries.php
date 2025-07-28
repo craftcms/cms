@@ -12,7 +12,6 @@ use craft\base\Element;
 use craft\base\ElementContainerFieldInterface;
 use craft\base\Field;
 use craft\base\MemoizableArray;
-use Craft\Cms\Support\Arr;
 use craft\db\Query;
 use craft\db\Table;
 use craft\elements\Entry;
@@ -33,7 +32,6 @@ use craft\helpers\Html;
 use craft\helpers\Json;
 use craft\helpers\ProjectConfig as ProjectConfigHelper;
 use craft\helpers\Queue;
-use craft\helpers\StringHelper;
 use craft\i18n\Translation;
 use craft\models\EntryType;
 use craft\models\FieldLayout;
@@ -46,6 +44,8 @@ use craft\queue\jobs\ResaveElements;
 use craft\records\EntryType as EntryTypeRecord;
 use craft\records\Section as SectionRecord;
 use craft\records\Section_SiteSettings as Section_SiteSettingsRecord;
+use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Support\Str;
 use DateTime;
 use Illuminate\Support\Collection;
 use Throwable;
@@ -573,9 +573,7 @@ class Entries extends Component
         }
 
         if ($isNewSection) {
-            if (!$section->uid) {
-                $section->uid = StringHelper::UUID();
-            }
+            $section->uid ??= Str::uuid()->toString();
         } elseif (!$section->uid) {
             $section->uid = Db::uidById(Table::SECTIONS, $section->id);
         }
@@ -1624,7 +1622,7 @@ SQL)->execute();
         }
 
         if ($isNewEntryType && !$entryType->uid) {
-            $entryType->uid = StringHelper::UUID();
+            $entryType->uid = Str::uuid()->toString();
         }
 
         $configPath = ProjectConfig::PATH_ENTRY_TYPES . '.' . $entryType->uid;

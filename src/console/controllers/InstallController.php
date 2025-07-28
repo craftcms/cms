@@ -15,8 +15,8 @@ use craft\errors\MigrationException;
 use craft\errors\OperationAbortedException;
 use craft\helpers\Console;
 use craft\helpers\Install as InstallHelper;
-use craft\migrations\Install;
 use craft\models\Site;
+use CraftCms\Cms\Migrations\Install;
 use yii\base\Exception;
 use yii\console\ExitCode;
 
@@ -205,12 +205,12 @@ class InstallController extends Controller
             }
         }
 
-        $migration = new Install([
-            'username' => $username,
-            'password' => $password,
-            'email' => $email,
-            'site' => $site,
-        ]);
+        $migration = new Install(
+            username: $username,
+            password: $password,
+            email: $email,
+            site: $site,
+        );
 
         // Run the install migration
         $this->stdout('*** installing Craft' . PHP_EOL, Console::FG_YELLOW);

@@ -8,16 +8,16 @@
 namespace craft\console\controllers;
 
 use Craft;
-use Craft\Cms\Support\Arr;
 use craft\console\Controller;
 use craft\elements\Entry;
-use craft\helpers\StringHelper;
 use craft\models\CategoryGroup_SiteSettings;
 use craft\models\EntryType;
 use craft\models\FieldLayout;
 use craft\models\Section;
 use craft\models\Section_SiteSettings;
 use craft\models\Site;
+use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Support\Str;
 use Illuminate\Support\Collection;
 use yii\base\InvalidArgumentException;
 use yii\base\InvalidConfigException;
@@ -219,7 +219,7 @@ class SectionsController extends Controller
         $section->handle = $this->handle ?? $this->prompt('Section handle:', [
             'required' => true,
             'validator' => fn(string $handle, ?string & $error = null) => $validateAttribute(compact('handle'), $error),
-            'default' => $section->handle ?? StringHelper::toHandle($section->name),
+            'default' => $section->handle ?? Str::toHandle($section->name),
         ]);
 
         if (isset($this->type)) {
@@ -299,7 +299,7 @@ class SectionsController extends Controller
                 ]);
                 $entryType->handle = $this->prompt('Entry type handle:', [
                     'validator' => fn(string $handle, ?string & $error = null) => $validateAttribute(compact('handle'), $error, EntryType::class),
-                    'default' => $getDefaultAttribute('handle', StringHelper::toHandle($entryType->name), EntryType::class),
+                    'default' => $getDefaultAttribute('handle', Str::toHandle($entryType->name), EntryType::class),
                 ]);
                 $saveEntryType = true;
             }

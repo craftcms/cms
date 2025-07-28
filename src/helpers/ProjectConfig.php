@@ -8,8 +8,9 @@
 namespace craft\helpers;
 
 use Craft;
-use Craft\Cms\Support\Arr;
 use craft\services\ProjectConfig as ProjectConfigService;
+use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Support\Str;
 use StdClass;
 use yii\base\InvalidArgumentException;
 use yii\base\InvalidConfigException;
@@ -606,7 +607,7 @@ class ProjectConfig
         }
 
         foreach ($item as $key => $value) {
-            if (!is_array($value) || !is_string($key) || !StringHelper::isUUID($key)) {
+            if (!is_array($value) || !is_string($key) || !Str::isUuid($key)) {
                 return false;
             }
         }

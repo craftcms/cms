@@ -9,13 +9,21 @@ define('CRAFT_ROOT_PATH', dirname(__DIR__));
 
 // Use the current installation of Craft
 const CRAFT_TESTS_PATH = __DIR__;
-const CRAFT_STORAGE_PATH = __DIR__ . DIRECTORY_SEPARATOR . '_craft' . DIRECTORY_SEPARATOR . 'storage';
-const CRAFT_TEMPLATES_PATH = __DIR__ . DIRECTORY_SEPARATOR . '_craft' . DIRECTORY_SEPARATOR . 'templates';
-const CRAFT_CONFIG_PATH = __DIR__ . DIRECTORY_SEPARATOR . '_craft' . DIRECTORY_SEPARATOR . 'config';
-const CRAFT_SECRETS_PATH = CRAFT_CONFIG_PATH . '/secrets.php';
-const CRAFT_MIGRATIONS_PATH = __DIR__ . DIRECTORY_SEPARATOR . '_craft' . DIRECTORY_SEPARATOR . 'migrations';
-const CRAFT_TRANSLATIONS_PATH = __DIR__ . DIRECTORY_SEPARATOR . '_craft' . DIRECTORY_SEPARATOR . 'translations';
-define('CRAFT_VENDOR_PATH', dirname(__DIR__) . DIRECTORY_SEPARATOR . 'vendor');
+!defined('CRAFT_STORAGE_PATH') && define('CRAFT_STORAGE_PATH', __DIR__ . DIRECTORY_SEPARATOR . '_craft' . DIRECTORY_SEPARATOR . 'storage');
+!defined('CRAFT_TEMPLATES_PATH') && define('CRAFT_TEMPLATES_PATH', __DIR__ . DIRECTORY_SEPARATOR . '_craft' . DIRECTORY_SEPARATOR . 'templates');
+!defined('CRAFT_CONFIG_PATH') && define('CRAFT_CONFIG_PATH', __DIR__ . DIRECTORY_SEPARATOR . '_craft' . DIRECTORY_SEPARATOR . 'config');
+!defined('CRAFT_SECRETS_PATH') && define('CRAFT_SECRETS_PATH', CRAFT_CONFIG_PATH . '/secrets.php');
+!defined('CRAFT_MIGRATIONS_PATH') && define('CRAFT_MIGRATIONS_PATH', __DIR__ . DIRECTORY_SEPARATOR . '_craft' . DIRECTORY_SEPARATOR . 'migrations');
+!defined('CRAFT_TRANSLATIONS_PATH') && define('CRAFT_TRANSLATIONS_PATH', __DIR__ . DIRECTORY_SEPARATOR . '_craft' . DIRECTORY_SEPARATOR . 'translations');
+!defined('CRAFT_VENDOR_PATH') && define('CRAFT_VENDOR_PATH', dirname(__DIR__) . DIRECTORY_SEPARATOR . 'vendor');
+
+/**
+ * Initialize the Laravel Craft Application
+ */
+(new \CraftCms\Cms\Tests\TestCase('laravel'))
+    ->createApplication();
+
+config()->set('database.default', env('DB_DRIVER'));
 
 $devMode = true;
 

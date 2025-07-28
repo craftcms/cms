@@ -8,7 +8,7 @@
 namespace craft\models;
 
 use craft\base\Model;
-use craft\helpers\StringHelper;
+use CraftCms\Cms\Support\Str;
 
 /**
  * The FsListings model class.
@@ -133,7 +133,7 @@ class FsListing extends Model
                 $uri = substr($uri, strlen($string));
             }
         } else {
-            $uri = ($string !== '' ? StringHelper::ensureRight($string, '/') : '') . $uri;
+            $uri = ($string !== '' ? Str::finish($string, '/') : '') . $uri;
         }
 
         return $uri;

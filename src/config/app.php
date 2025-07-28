@@ -1,10 +1,12 @@
 <?php
 
+use CraftCms\Yii2Adapter\Log\LogTarget;
+
 return [
     'id' => 'CraftCMS',
     'name' => 'Craft CMS',
-    'version' => '5.8.8',
-    'schemaVersion' => '5.8.0.3',
+    'version' => '6.0.0',
+    'schemaVersion' => '6.0.0.0',
     'minVersionRequired' => '4.5.0',
     'basePath' => dirname(__DIR__), // Defines the @app alias
     'runtimePath' => '@storage/runtime', // Defines the @runtime alias
@@ -14,9 +16,7 @@ return [
         'addresses' => [
             'class' => craft\services\Addresses::class,
         ],
-        'announcements' => [
-            'class' => craft\services\Announcements::class,
-        ],
+        'announcements' => \CraftCms\Cms\Announcement\Announcements::class,
         'api' => [
             'class' => craft\services\Api::class,
         ],
@@ -79,6 +79,11 @@ return [
         ],
         'log' => [
             'class' => craft\log\Dispatcher::class,
+            'targets' => [
+                [
+                    'class' => LogTarget::class,
+                ],
+            ],
         ],
         'mutex' => [
             'class' => craft\mutex\Mutex::class,
@@ -170,8 +175,8 @@ return [
         'migrator' => [
             'class' => craft\db\MigrationManager::class,
             'track' => craft\db\MigrationManager::TRACK_CRAFT,
-            'migrationNamespace' => 'craft\migrations',
-            'migrationPath' => '@app/migrations',
+            'migrationNamespace' => 'CraftCms\Cms\Migrations',
+            'migrationPath' => '@package/Migrations',
         ],
         'sites' => [
             'class' => craft\services\Sites::class,
@@ -180,7 +185,11 @@ return [
             'class' => craft\services\Sso::class,
         ],
         'i18n' => [
-            'class' => craft\i18n\I18N::class,
+            'class' => \CraftCms\Yii2Adapter\Localization::class,
+            'laravelCategories' => [
+                'auth',
+                'validation',
+            ],
             'messageFormatter' => [
                 'class' => craft\i18n\MessageFormatter::class,
             ],

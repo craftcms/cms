@@ -11,7 +11,6 @@ use Craft;
 use craft\base\Element;
 use craft\base\ElementInterface;
 use craft\base\NameTrait;
-use Craft\Cms\Support\Arr;
 use craft\db\Query;
 use craft\db\Table;
 use craft\elements\actions\DeleteUsers;
@@ -37,8 +36,6 @@ use craft\helpers\DateTimeHelper;
 use craft\helpers\Db;
 use craft\helpers\Html;
 use craft\helpers\Json;
-use craft\helpers\Session;
-use craft\helpers\StringHelper;
 use craft\helpers\Template;
 use craft\helpers\UrlHelper;
 use craft\i18n\Formatter;
@@ -52,6 +49,8 @@ use craft\validators\UniqueValidator;
 use craft\validators\UsernameValidator;
 use craft\validators\UserPasswordValidator;
 use craft\web\View;
+use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Support\Str;
 use DateInterval;
 use DateTime;
 use DateTimeZone;
@@ -836,10 +835,10 @@ class User extends Element implements IdentityInterface
 
         // Convert IDNA ASCII to Unicode
         if ($this->username) {
-            $this->username = StringHelper::idnToUtf8Email($this->username);
+            $this->username = Str::idnToUtf8Email($this->username);
         }
         if ($this->email) {
-            $this->email = StringHelper::idnToUtf8Email($this->email);
+            $this->email = Str::idnToUtf8Email($this->email);
         }
 
         if (empty($this->username) && Craft::$app->getConfig()->getGeneral()->useEmailAsUsername) {
@@ -1682,7 +1681,7 @@ class User extends Element implements IdentityInterface
         $color1 = self::$photoColors[$color1Index % $totalColors];
         $color2 = self::$photoColors[$color2Index % $totalColors];
 
-        $gradientId = sprintf('gradient-%s', StringHelper::randomString(10));
+        $gradientId = sprintf('gradient-%s', Str::random(10));
 
         return <<<XML
 <svg version="1.1" baseProfile="full" width="100" height="100" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
@@ -2172,7 +2171,7 @@ JS, [
                     $items[] = [
                         'id' => $deleteId,
                         'icon' => 'trash',
-                        'label' => StringHelper::upperCaseFirst(Craft::t('app', 'Delete {type}', [
+                        'label' => mb_ucfirst(Craft::t('app', 'Delete {type}', [
                             'type' => static::lowerDisplayName(),
                         ])),
                     ];

@@ -694,7 +694,7 @@ class UrlHelperTest extends TestCase
         if ($scheme === 'http') {
             $siteUrl = str_replace('https', 'http', $siteUrl);
         }
-        $cpUrl = rtrim($siteUrl, '/') . ":80/$this->cpTrigger";
+        $cpUrl = rtrim($siteUrl, '/') . "/$this->cpTrigger";
         return str_replace(['{siteUrl}', '{cpUrl}'], [$siteUrl, $cpUrl], $url);
     }
 }

@@ -9,12 +9,12 @@ namespace craft\helpers;
 
 use Craft;
 use craft\base\Serializable;
-use Craft\Cms\Support\Arr;
 use craft\db\Connection;
 use craft\db\mysql\Schema as MysqlSchema;
 use craft\db\pgsql\Schema as PgsqlSchema;
 use craft\db\Query;
 use craft\db\QueryParam;
+use CraftCms\Cms\Support\Arr;
 use DateTimeInterface;
 use DateTimeZone;
 use Money\Money;
@@ -1829,7 +1829,7 @@ class Db
         Connection|null $db = null,
     ): ?string {
         if (is_string($columns)) {
-            $columns = StringHelper::split($columns);
+            $columns = str($columns)->explode(',')->all();
         }
 
         if ($db === null) {
@@ -1862,7 +1862,7 @@ class Db
         Connection|null $db = null,
     ): ?string {
         if (is_string($columns)) {
-            $columns = StringHelper::split($columns);
+            $columns = str($columns)->explode(',')->all();
         }
 
         if ($db === null) {

@@ -8,10 +8,10 @@
 namespace craft\services;
 
 use Craft;
-use Craft\Cms\Support\Arr;
 use craft\helpers\Api as ApiHelper;
 use craft\helpers\Json;
 use craft\helpers\Session;
+use CraftCms\Cms\Support\Arr;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\GuzzleException;
 use GuzzleHttp\Exception\RequestException;

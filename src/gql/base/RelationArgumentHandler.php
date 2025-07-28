@@ -9,9 +9,8 @@ namespace craft\gql\base;
 
 use Craft;
 use craft\base\ElementInterface;
-use Craft\Cms\Support\Arr;
 use craft\elements\db\ElementQuery;
-use craft\helpers\StringHelper;
+use CraftCms\Cms\Support\Arr;
 
 /**
  * Class RelationArgumentHandler
@@ -130,7 +129,7 @@ abstract class RelationArgumentHandler extends ArgumentHandler
         }
 
         // If it begins with an "and" or an "or", just drop it, but keep note of it.
-        $firstOperand = StringHelper::toLowerCase($relatedTo[0]);
+        $firstOperand = mb_strtolower($relatedTo[0]);
         if ($firstOperand === 'or' || $firstOperand === 'and') {
             array_shift($relatedTo);
         }

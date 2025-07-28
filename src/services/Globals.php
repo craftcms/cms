@@ -18,9 +18,9 @@ use craft\events\ConfigEvent;
 use craft\events\GlobalSetEvent;
 use craft\helpers\Db;
 use craft\helpers\ProjectConfig as ProjectConfigHelper;
-use craft\helpers\StringHelper;
 use craft\models\FieldLayout;
 use craft\records\GlobalSet as GlobalSetRecord;
+use CraftCms\Cms\Support\Str;
 use Illuminate\Support\Collection;
 use Throwable;
 use yii\base\Component;
@@ -308,7 +308,7 @@ class Globals extends Component
         }
 
         if ($isNewSet) {
-            $globalSet->uid = $globalSet->uid ?: StringHelper::UUID();
+            $globalSet->uid = $globalSet->uid ?: Str::uuid()->toString();
             $globalSet->sortOrder = (new Query())
                     ->from([Table::GLOBALSETS])
                     ->max('[[sortOrder]]') + 1;

@@ -8,9 +8,9 @@
 namespace craft\models;
 
 use craft\base\Model;
-use craft\helpers\StringHelper;
 use craft\records\GqlSchema as GqlSchemaRecord;
 use craft\validators\UniqueValidator;
+use CraftCms\Cms\Support\Str;
 
 /**
  * GraphQL schema class
@@ -102,7 +102,7 @@ class GqlSchema extends Model
         foreach ((array)$this->scope as $permission) {
             if (preg_match('/:([\w-]+)$/', $permission, $matches)) {
                 $action = $matches[1];
-                $permission = StringHelper::removeRight($permission, ':' . $action);
+                $permission = Str::chopEnd($permission, ':' . $action);
                 $parts = explode('.', $permission);
                 if (count($parts) === 2) {
                     $this->_cachedPairs[$action][$parts[0]][] = $parts[1];

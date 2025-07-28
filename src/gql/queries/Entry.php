@@ -8,7 +8,6 @@
 namespace craft\gql\queries;
 
 use Craft;
-use Craft\Cms\Support\Arr;
 use craft\gql\arguments\elements\Entry as EntryArguments;
 use craft\gql\base\Query;
 use craft\gql\GqlEntityRegistry;
@@ -19,6 +18,7 @@ use craft\gql\types\generators\EntryType as EntryTypeGenerator;
 use craft\helpers\Gql as GqlHelper;
 use craft\models\EntryType;
 use craft\models\Section;
+use CraftCms\Cms\Support\Arr;
 use GraphQL\Type\Definition\ResolveInfo;
 use GraphQL\Type\Definition\Type;
 use yii\base\InvalidConfigException;

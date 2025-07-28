@@ -36,13 +36,13 @@ use craft\helpers\Db;
 use craft\helpers\FileHelper;
 use craft\helpers\Image;
 use craft\helpers\Json;
-use craft\helpers\StringHelper;
 use craft\imagetransforms\FallbackTransformer;
 use craft\models\FolderCriteria;
 use craft\models\ImageTransform;
 use craft\models\Volume;
 use craft\models\VolumeFolder;
 use craft\records\VolumeFolder as VolumeFolderRecord;
+use CraftCms\Cms\Support\Str;
 use yii\base\Component;
 use yii\base\Exception;
 use yii\base\InvalidArgumentException;
@@ -811,7 +811,7 @@ class Assets extends Component
         $potentialConflicts = [];
 
         foreach ($dbFileList as $filename) {
-            $potentialConflicts[StringHelper::toLowerCase($filename)] = true;
+            $potentialConflicts[mb_strtolower($filename)] = true;
         }
 
         // Check whether a filename we'd want to use does not exist
@@ -830,7 +830,7 @@ class Assets extends Component
         }
 
         // Append a random string at the end too, to avoid race-conditions
-        $base = $buildFilename($base, sprintf('_%s', StringHelper::randomString(4)));
+        $base = $buildFilename($base, sprintf('_%s', Str::random(4)));
 
         $increment = 0;
 

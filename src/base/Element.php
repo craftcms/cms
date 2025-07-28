@@ -13,7 +13,6 @@ use craft\behaviors\CustomFieldBehavior;
 use craft\behaviors\DraftBehavior;
 use craft\behaviors\RevisionBehavior;
 use craft\cache\ElementQueryTagDependency;
-use Craft\Cms\Support\Arr;
 use craft\controllers\ElementsController;
 use craft\db\CoalesceColumnsExpression;
 use craft\db\Command;
@@ -77,7 +76,6 @@ use craft\helpers\Cp;
 use craft\helpers\Db;
 use craft\helpers\ElementHelper;
 use craft\helpers\Html;
-use craft\helpers\StringHelper;
 use craft\helpers\Template;
 use craft\helpers\UrlHelper;
 use craft\i18n\Formatter;
@@ -90,6 +88,8 @@ use craft\validators\SlugValidator;
 use craft\validators\StringValidator;
 use craft\web\UploadedFile;
 use craft\web\View;
+use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Support\Str;
 use GraphQL\Type\Definition\Type;
 use Illuminate\Support\Collection;
 use ReflectionClass;
@@ -829,7 +829,7 @@ abstract class Element extends Component implements ElementInterface
      */
     public static function lowerDisplayName(): string
     {
-        return StringHelper::toLowerCase(static::displayName());
+        return mb_strtolower(static::displayName());
     }
 
     /**
@@ -845,7 +845,7 @@ abstract class Element extends Component implements ElementInterface
      */
     public static function pluralLowerDisplayName(): string
     {
-        return StringHelper::toLowerCase(static::pluralDisplayName());
+        return mb_strtolower(static::pluralDisplayName());
     }
 
     /**
@@ -1090,7 +1090,7 @@ abstract class Element extends Component implements ElementInterface
         if (!$hasActionType(Edit::class)) {
             $actions->prepend([
                 'type' => Edit::class,
-                'label' => StringHelper::upperCaseFirst(Craft::t('app', 'Edit {type}', [
+                'label' => mb_ucfirst(Craft::t('app', 'Edit {type}', [
                     'type' => static::lowerDisplayName(),
                 ])),
             ]);
@@ -1100,7 +1100,7 @@ abstract class Element extends Component implements ElementInterface
         if (static::hasUris() && !$hasActionType(ViewAction::class)) {
             $actions->prepend([
                 'type' => ViewAction::class,
-                'label' => StringHelper::upperCaseFirst(Craft::t('app', 'View {type}', [
+                'label' => mb_ucfirst(Craft::t('app', 'View {type}', [
                     'type' => static::lowerDisplayName(),
                 ])),
             ]);
@@ -3421,7 +3421,7 @@ abstract class Element extends Component implements ElementInterface
      */
     protected function searchKeywords(string $attribute): string
     {
-        return StringHelper::toString($this->$attribute);
+        return Str::toString($this->$attribute);
     }
 
     /**
@@ -3936,7 +3936,7 @@ abstract class Element extends Component implements ElementInterface
 
             if ($canSaveCanonical && $isUnpublishedDraft) {
                 $altActions[] = [
-                    'label' => StringHelper::upperCaseFirst(Craft::t('app', 'Save {type}', [
+                    'label' => mb_ucfirst(Craft::t('app', 'Save {type}', [
                         'type' => Craft::t('app', 'draft'),
                     ])),
                     'action' => 'elements/save-draft',
@@ -4073,7 +4073,7 @@ JS, [
             $items[] = [
                 'id' => $editId,
                 'icon' => 'edit',
-                'label' => StringHelper::upperCaseFirst(Craft::t('app', 'Edit {type}', [
+                'label' => mb_ucfirst(Craft::t('app', 'Edit {type}', [
                     'type' => static::lowerDisplayName(),
                 ])),
             ];
@@ -4101,7 +4101,7 @@ JS, [
                     'id' => $copyId,
                     'color' => Color::Fuchsia,
                     'icon' => 'clone-dashed',
-                    'label' => StringHelper::upperCaseFirst(Craft::t('app', 'Copy {type}', [
+                    'label' => mb_ucfirst(Craft::t('app', 'Copy {type}', [
                         'type' => static::lowerDisplayName(),
                     ])),
                 ];
@@ -4186,7 +4186,7 @@ JS, [
             if ($canDeleteForSite) {
                 $items[] = [
                     'icon' => 'remove',
-                    'label' => StringHelper::upperCaseFirst(Craft::t('app', 'Delete {type} for this site', [
+                    'label' => mb_ucfirst(Craft::t('app', 'Delete {type} for this site', [
                         'type' => $isUnpublishedDraft ? Craft::t('app', 'draft') : static::lowerDisplayName(),
                     ])),
                     'action' => 'elements/delete-for-site',
@@ -4206,7 +4206,7 @@ JS, [
             if ($canDeleteCanonical) {
                 $items[] = [
                     'icon' => 'trash',
-                    'label' => StringHelper::upperCaseFirst(Craft::t('app', 'Delete {type}', [
+                    'label' => mb_ucfirst(Craft::t('app', 'Delete {type}', [
                         'type' => $isUnpublishedDraft ? Craft::t('app', 'draft') : static::lowerDisplayName(),
                     ])),
                     'action' => $isUnpublishedDraft ? 'elements/delete-draft' : 'elements/delete',
@@ -4226,7 +4226,7 @@ JS, [
             if ($canDeleteForSite) {
                 $items[] = [
                     'icon' => 'remove',
-                    'label' => StringHelper::upperCaseFirst(Craft::t('app', 'Delete {type} for this site', [
+                    'label' => mb_ucfirst(Craft::t('app', 'Delete {type} for this site', [
                         'type' => Craft::t('app', 'draft'),
                     ])),
                     'action' => 'elements/delete-for-site',
@@ -4246,7 +4246,7 @@ JS, [
             // Delete draft
             $items[] = [
                 'icon' => 'trash',
-                'label' => StringHelper::upperCaseFirst(Craft::t('app', 'Delete {type}', [
+                'label' => mb_ucfirst(Craft::t('app', 'Delete {type}', [
                     'type' => Craft::t('app', 'draft'),
                 ])),
                 'action' => 'elements/delete-draft',

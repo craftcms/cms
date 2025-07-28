@@ -15,8 +15,8 @@ use craft\errors\FsObjectNotFoundException;
 use craft\helpers\App;
 use craft\helpers\FileHelper;
 use craft\helpers\Path;
-use craft\helpers\StringHelper;
 use craft\models\FsListing;
+use CraftCms\Cms\Support\Str;
 use DirectoryIterator;
 use FilesystemIterator;
 use Generator;
@@ -204,7 +204,7 @@ class Local extends Fs implements LocalFsInterface
                 continue;
             }
 
-            $filePath = FileHelper::normalizePath(StringHelper::removeLeft($listing->getRealPath(), $this->prefixPath()), '/');
+            $filePath = FileHelper::normalizePath(Str::chopStart($listing->getRealPath(), $this->prefixPath()), '/');
             $dirname = pathinfo($filePath, PATHINFO_DIRNAME);
             $basename = $listing->getFilename();
 
@@ -369,7 +369,7 @@ class Local extends Fs implements LocalFsInterface
      */
     public function createDirectory(string $path, array $config = []): void
     {
-        $dirPath = StringHelper::removeRight($this->prefixPath($path), '.');
+        $dirPath = Str::chopEnd($this->prefixPath($path), '.');
         FileHelper::createDirectory($dirPath, $this->resolveVisibility(self::VISIBILITY_DIR, $config), true);
     }
 

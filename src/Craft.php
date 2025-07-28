@@ -7,11 +7,11 @@
 
 use craft\base\FieldInterface;
 use craft\behaviors\CustomFieldBehavior;
-use Craft\Cms\Support\Arr;
 use craft\helpers\App;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\FileHelper;
-use craft\helpers\StringHelper;
+use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Support\Str;
 use GuzzleHttp\Client;
 use Symfony\Component\VarDumper\Cloner\VarCloner;
 use yii\base\ExitException;
@@ -228,7 +228,7 @@ class Craft extends Yii
 
         if (!$fieldVersionExists) {
             // Just make up a temporary one
-            $storedFieldVersion = StringHelper::randomString(12);
+            $storedFieldVersion = Str::random(12);
         }
 
         $filePath = $compiledClassesPath . DIRECTORY_SEPARATOR . "CustomFieldBehavior_$storedFieldVersion.php";

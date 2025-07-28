@@ -13,7 +13,6 @@ use craft\base\ElementActionInterface;
 use craft\base\ElementInterface;
 use craft\base\Field;
 use craft\base\NestedElementInterface;
-use Craft\Cms\Support\Arr;
 use craft\db\Query;
 use craft\db\Table;
 use craft\elements\User as UserElement;
@@ -21,6 +20,8 @@ use craft\errors\OperationAbortedException;
 use craft\fieldlayoutelements\CustomField;
 use craft\i18n\Locale;
 use craft\services\ElementSources;
+use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Support\Str;
 use DateTime;
 use Throwable;
 use Twig\Markup;
@@ -48,7 +49,7 @@ class ElementHelper
      */
     public static function tempSlug(): string
     {
-        return '__temp_' . StringHelper::randomString();
+        return '__temp_' . Str::random(36);
     }
 
     /**
@@ -85,7 +86,7 @@ class ElementHelper
         $slug = str_replace(['.', '_', '-'], ' ', $str);
 
         if ($ascii ?? Craft::$app->getConfig()->getGeneral()->limitAutoSlugsToAscii) {
-            $slug = StringHelper::toAscii($slug, $language);
+            $slug = Str::ascii($slug, $language);
         }
 
         return static::normalizeSlug($slug);
@@ -106,10 +107,10 @@ class ElementHelper
         }
 
         // Remove HTML tags
-        $slug = StringHelper::stripHtml($slug);
+        $slug = strip_tags($slug);
 
         // Remove inner-word punctuation
-        $slug = preg_replace('/[\'"‘’“”ʻ\[\]\(\)\{\}:]/u', '', $slug);
+        $slug = preg_replace('/[\'"‘’“”ʻ\[\](){}:]/u', '', $slug);
 
         // Make it lowercase
         $generalConfig = Craft::$app->getConfig()->getGeneral();
@@ -212,7 +213,7 @@ class ElementHelper
 
         // If the URI format contains {id}/{canonicalId}/{sourceId} but the element doesn't have one yet, preserve the tag
         if (!$element->id) {
-            $element->tempId = 'id-' . StringHelper::randomString(10);
+            $element->tempId = 'id-' . Str::random(10);
             if (str_contains($uriFormat, '{id')) {
                 $variables['id'] = $element->tempId;
             }
@@ -835,7 +836,7 @@ class ElementHelper
             return '';
         }
 
-        return Html::encode(StringHelper::stripHtml($value));
+        return Html::encode(strip_tags($value));
     }
 
     /**

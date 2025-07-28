@@ -8,14 +8,12 @@
 namespace craft\controllers;
 
 use Craft;
-use Craft\Cms\Support\Arr;
 use craft\elements\GlobalSet;
 use craft\errors\MissingComponentException;
 use craft\helpers\App;
 use craft\helpers\Component;
 use craft\helpers\Html;
 use craft\helpers\MailerHelper;
-use craft\helpers\StringHelper;
 use craft\helpers\UrlHelper;
 use craft\mail\transportadapters\BaseTransportAdapter;
 use craft\mail\transportadapters\Sendmail;
@@ -24,6 +22,7 @@ use craft\models\MailSettings;
 use craft\web\assets\admintable\AdminTableAsset;
 use craft\web\assets\generalsettings\GeneralSettingsAsset;
 use craft\web\Controller;
+use CraftCms\Cms\Support\Arr;
 use yii\base\Exception;
 use yii\web\ForbiddenHttpException;
 use yii\web\NotFoundHttpException;
@@ -284,7 +283,7 @@ class SystemSettingsController extends Controller
                 ],
             ],
             'globalSets' => Craft::$app->getGlobals()->getAllSets(),
-            'buttonLabel' => StringHelper::upperCaseFirst(Craft::t('app', 'New {type}', [
+            'buttonLabel' => mb_ucfirst(Craft::t('app', 'New {type}', [
                 'type' => GlobalSet::lowerDisplayName(),
             ])),
             'readOnly' => $this->readOnly,

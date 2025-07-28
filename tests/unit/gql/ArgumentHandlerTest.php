@@ -128,7 +128,7 @@ class ArgumentHandlerTest extends TestCase
         ];
 
         return [
-            [[], ['relatedToAll' => [1, 2, 3]], 'relatedTo' => ['and', ['element' => 1], ['element' => 2], ['element' => 3]]],
+            [[], ['relatedToAll' => [1, 2, 3]], ['and', ['element' => 1], ['element' => 2], ['element' => 3]]],
             [$handlers, ['relatedToAssets' => ['expected' => Asset::class, 'return' => [[1, 2]]]], ['and', ['element' => [1, 2]]]],
             [$handlers, ['relatedToEntries' => ['expected' => Entry::class, 'return' => [[3], [4]]]], ['and', ['element' => [3]], ['element' => [4]]]],
             [$handlers, ['relatedToCategories' => ['expected' => Category::class, 'return' => []]], ['and', ['element' => [0]]]],

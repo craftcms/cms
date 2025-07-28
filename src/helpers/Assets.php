@@ -11,7 +11,6 @@ use Craft;
 use craft\base\BaseFsInterface;
 use craft\base\FsInterface;
 use craft\base\LocalFsInterface;
-use Craft\Cms\Support\Arr;
 use craft\elements\Asset;
 use craft\enums\TimePeriod;
 use craft\errors\FsException;
@@ -20,6 +19,8 @@ use craft\events\SetAssetFilenameEvent;
 use craft\fs\Temp;
 use craft\helpers\ImageTransforms as TransformHelper;
 use craft\models\VolumeFolder;
+use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Support\Str;
 use DateTime;
 use Illuminate\Support\Collection;
 use yii\base\Event;
@@ -157,7 +158,7 @@ class Assets
                     return false;
                 }
                 $baseUrl = $fs->getRootUrl();
-                return $baseUrl !== null && StringHelper::startsWith($url, StringHelper::ensureRight($baseUrl, '/'));
+                return $baseUrl !== null && str_starts_with($url, Str::finish($baseUrl, '/'));
             });
             if (!$matchingFs) {
                 return $url;
@@ -252,7 +253,7 @@ class Assets
      */
     public static function filename2Title(string $filename): string
     {
-        $title = StringHelper::upperCaseFirst(implode(' ', StringHelper::toWords($filename, false, true)));
+        $title = mb_ucfirst(implode(' ', Str::toWords($filename, false, true)));
 
         if (strlen($title) > 255) {
             $title = rtrim(substr($title, 255), ' ');

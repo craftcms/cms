@@ -9,9 +9,9 @@ namespace craft\fieldlayoutelements;
 
 use Craft;
 use craft\base\FieldLayoutElement;
-use Craft\Cms\Support\Arr;
 use craft\helpers\Cp;
 use craft\helpers\Html;
+use CraftCms\Cms\Support\Arr;
 
 /**
  * BaseUiElement is the base class for UI elements that can be included in field layouts.

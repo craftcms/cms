@@ -30,7 +30,7 @@ use yii\web\IdentityInterface;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
  */
-class User extends \yii\web\User
+class User extends \CraftCms\Yii2Adapter\Web\User
 {
     /**
      * @var string The session variable name used to store the duration of the authenticated state.
@@ -590,7 +590,7 @@ class User extends \yii\web\User
 
         if (Craft::$app->getConfig()->getGeneral()->enableCsrfProtection) {
             // Let's keep the current nonce around.
-            Craft::$app->getRequest()->regenCsrfToken();
+            Craft::$app->getRequest()->getCsrfToken(true);
         }
 
         parent::afterLogout($identity);

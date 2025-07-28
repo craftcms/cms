@@ -11,7 +11,6 @@ use Closure;
 use Craft;
 use craft\attributes\EnvName;
 use craft\behaviors\SessionBehavior;
-use craft\cache\FileCache;
 use craft\config\DbConfig;
 use craft\db\Command;
 use craft\db\Connection;
@@ -33,9 +32,9 @@ use craft\web\AssetManager;
 use craft\web\Request;
 use craft\web\Request as WebRequest;
 use craft\web\Response as WebResponse;
-use craft\web\Session;
 use craft\web\User as WebUser;
 use craft\web\View;
+use CraftCms\Cms\Support\Str;
 use HTMLPurifier_Encoder;
 use ReflectionClass;
 use ReflectionFunction;
@@ -161,7 +160,7 @@ class App
      */
     public static function envConfig(string $class, ?string $envPrefix = null): array
     {
-        $envPrefix = $envPrefix !== null ? StringHelper::ensureRight($envPrefix, '_') : '';
+        $envPrefix = $envPrefix !== null ? Str::finish($envPrefix, '_') : '';
         $properties = (new ReflectionClass($class))->getProperties(ReflectionProperty::IS_PUBLIC);
         $envConfig = [];
 
@@ -180,7 +179,7 @@ class App
             }
 
             if (!$envName) {
-                $envName = strtoupper(StringHelper::toSnakeCase($prop->getName()));
+                $envName = str($prop->getName())->snake()->upper()->value();
             }
 
             $envValue = static::env(sprintf('%s%s', $envPrefix, $envName));
@@ -956,11 +955,8 @@ class App
         $generalConfig = Craft::$app->getConfig()->getGeneral();
 
         return [
-            'class' => FileCache::class,
+            'class' => \CraftCms\Yii2Adapter\Cache::class,
             'keyPrefix' => Craft::$app->id,
-            'cachePath' => Craft::$app->getPath()->getCachePath(),
-            'fileMode' => $generalConfig->defaultFileMode,
-            'dirMode' => $generalConfig->defaultDirMode,
             'defaultDuration' => $generalConfig->cacheDuration,
         ];
     }
@@ -995,6 +991,9 @@ class App
             'class' => Connection::class,
             'driverName' => $driver,
             'dsn' => $dbConfig->dsn,
+            'server' => $dbConfig->server,
+            'port' => $dbConfig->port,
+            'database' => $dbConfig->database,
             'username' => $dbConfig->user,
             'password' => $dbConfig->password,
             'charset' => $dbConfig->getCharset(),
@@ -1080,7 +1079,7 @@ class App
             return [
                 'class' => MysqlMutex::class,
                 'db' => 'db2',
-                'keyPrefix' => Craft::$app->getEnvId(),
+                //'keyPrefix' => Craft::$app->getEnvId(),
             ];
         }
 
@@ -1134,15 +1133,13 @@ class App
      */
     public static function sessionConfig(): array
     {
-        $stateKeyPrefix = md5('Craft.' . Session::class . '.' . Craft::$app->getEnvId());
+        $stateKeyPrefix = md5('Craft.' . \craft\web\Session::class . '.' . Craft::$app->getEnvId());
 
         return [
-            'class' => Session::class,
+            'class' => \craft\web\Session::class,
             'as session' => SessionBehavior::class,
             'flashParam' => $stateKeyPrefix . '__flash',
             'authAccessParam' => $stateKeyPrefix . '__auth_access',
-            'name' => Craft::$app->getConfig()->getGeneral()->phpSessionName,
-            'cookieParams' => Craft::cookieConfig(),
         ];
     }
 
@@ -1173,14 +1170,7 @@ class App
             'autoRenewCookie' => true,
             'loginUrl' => $loginUrl,
             'authTimeout' => $generalConfig->userSessionDuration ?: null,
-            'identityCookie' => Craft::cookieConfig(['name' => $stateKeyPrefix . '_identity']),
             'usernameCookie' => Craft::cookieConfig(['name' => $stateKeyPrefix . '_username']),
-            'absoluteAuthTimeoutParam' => $stateKeyPrefix . '__absoluteExpire',
-            'authTimeoutParam' => $stateKeyPrefix . '__expire',
-            'idParam' => $stateKeyPrefix . '__id',
-            'impersonatorIdParam' => $stateKeyPrefix . '__impersonator_id',
-            'returnUrlParam' => $stateKeyPrefix . '__returnUrl',
-            'tokenParam' => $stateKeyPrefix . '__token',
         ];
     }
 
@@ -1364,7 +1354,7 @@ class App
                 if (!str_starts_with($handle, 'plugin-')) {
                     continue;
                 }
-                $handle = StringHelper::removeLeft($handle, 'plugin-');
+                $handle = Str::chopStart($handle, 'plugin-');
 
                 try {
                     $pluginInfo = $pluginsService->getPluginInfo($handle);

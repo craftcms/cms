@@ -10,7 +10,6 @@ namespace craft\helpers;
 use Craft;
 use craft\base\Image as BaseImage;
 use craft\base\LocalFsInterface;
-use Craft\Cms\Support\Arr;
 use craft\elements\Asset;
 use craft\errors\AssetException;
 use craft\errors\AssetOperationException;
@@ -21,6 +20,8 @@ use craft\errors\ImageTransformException;
 use craft\image\Raster;
 use craft\models\ImageTransform;
 use craft\validators\ColorValidator;
+use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Support\Str;
 use Imagine\Image\Format;
 use yii\base\InvalidArgumentException;
 
@@ -319,7 +320,7 @@ class ImageTransforms
                 return self::createTransformFromString($transform);
             }
 
-            $transform = StringHelper::removeLeft($transform, '_');
+            $transform = Str::chopStart($transform, '_');
             if (($transformModel = Craft::$app->getImageTransforms()->getTransformByHandle($transform)) === null) {
                 throw new ImageTransformException(Craft::t('app', 'Invalid transform handle: {handle}', ['handle' => $transform]));
             }

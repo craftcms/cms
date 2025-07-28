@@ -10,12 +10,12 @@ namespace craft\controllers;
 use Craft;
 use craft\helpers\Cp;
 use craft\helpers\Json;
-use craft\helpers\StringHelper;
 use craft\helpers\UrlHelper;
 use craft\models\Site;
 use craft\models\SiteGroup;
 use craft\web\assets\sites\SitesAsset;
 use craft\web\Controller;
+use CraftCms\Cms\Support\Str;
 use yii\web\BadRequestHttpException;
 use yii\web\ForbiddenHttpException;
 use yii\web\NotFoundHttpException;
@@ -128,7 +128,7 @@ class SitesController extends Controller
             'value' => $this->request->getBodyParam('name') ?? '',
             'suggestEnvVars' => true,
             'required' => true,
-        ]), 'name' . StringHelper::randomString(10));
+        ]), 'name' . Str::random(10));
         $js = $view->clearJsBuffer();
 
         return $this->asJson(compact('html', 'js'));

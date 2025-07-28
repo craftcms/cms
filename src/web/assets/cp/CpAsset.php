@@ -18,7 +18,6 @@ use craft\helpers\Cp;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\Html;
 use craft\helpers\Json;
-use craft\helpers\StringHelper;
 use craft\helpers\UrlHelper;
 use craft\i18n\Locale;
 use craft\models\Section;
@@ -44,6 +43,8 @@ use craft\web\assets\theme\ThemeAsset;
 use craft\web\assets\velocity\VelocityAsset;
 use craft\web\assets\xregexp\XregexpAsset;
 use craft\web\View;
+use CraftCms\Cms\Announcement\Announcements;
+use CraftCms\Cms\Support\Str;
 use yii\web\JqueryAsset;
 
 /**
@@ -515,7 +516,7 @@ JS;
             'Enterprise' => CmsEdition::Enterprise->value,
             'actionTrigger' => $generalConfig->actionTrigger,
             'actionUrl' => UrlHelper::actionUrl(),
-            'asciiCharMap' => StringHelper::asciiCharMap(true, Craft::$app->language),
+            'asciiCharMap' => Str::asciiCharMap(true, Craft::$app->language),
             'baseApiUrl' => Craft::$app->baseApiUrl,
             'baseSiteUrl' => UrlHelper::siteUrl(),
             'baseUrl' => UrlHelper::url(),
@@ -549,7 +550,7 @@ JS;
 
         if ($request->getIsCpRequest()) {
             $data += [
-                'announcements' => $upToDate ? Craft::$app->getAnnouncements()->get() : [],
+                'announcements' => $upToDate ? app(Announcements::class)->get() : [],
                 'baseCpUrl' => UrlHelper::cpUrl(),
                 'cpTrigger' => $generalConfig->cpTrigger,
             ];

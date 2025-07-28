@@ -95,4 +95,23 @@ class BaseConfig extends Model
 
         return parent::__isset($name);
     }
+
+    /**
+     * Restores the state of an object from an array. This
+     * is used when the config is cached by Laravel.
+     */
+    public static function __set_state(array $stateData): static
+    {
+        $object = new static();
+
+        foreach ($stateData as $prop => $state) {
+            if (!property_exists($object, $prop)) {
+                continue;
+            }
+
+            $object->{$prop} = $state;
+        }
+
+        return $object;
+    }
 }
