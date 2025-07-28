@@ -4,9 +4,11 @@ namespace CraftCms\Cms\Config;
 
 use craft\helpers\App;
 use craft\helpers\Typecast;
+use Illuminate\Support\Env;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\ServiceProvider;
 use Throwable;
+
 class ConfigServiceProvider extends ServiceProvider
 {
     private array $configFiles = [
@@ -15,6 +17,8 @@ class ConfigServiceProvider extends ServiceProvider
 
     public function register(): void
     {
+        Env::extend(fn() => ConstAdapter::class);
+
         $this->app->bind(GeneralConfig::class, function () {
             return Config::get('craft.general');
         });
