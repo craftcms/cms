@@ -171,7 +171,7 @@ class TemplatesController extends Controller
         }
 
         // Cache the base path.
-        Cache::put('basePath', Craft::$app->getBasePath());
+        Cache::put('basePath', Craft::$app->getBasePath(), Craft::$app->getConfig()->getGeneral()->cacheDuration);
 
         return null;
     }

@@ -269,7 +269,7 @@ class DashboardController extends Controller
     {
         $url = $this->request->getRequiredBodyParam('url');
         $data = $this->request->getRequiredBodyParam('data');
-        Cache::put("feed:$url", $data);
+        Cache::put("feed:$url", $data, Craft::$app->getConfig()->getGeneral()->cacheDuration);
         return $this->asSuccess();
     }
 
