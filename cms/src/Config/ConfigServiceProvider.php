@@ -11,6 +11,9 @@ class ConfigServiceProvider extends ServiceProvider
 
     public function register(): void
     {
+        $this->app->bind(GeneralConfig::class, function () {
+            return Config::get('craft.general');
+        });
     }
     public function boot(): void
     {
