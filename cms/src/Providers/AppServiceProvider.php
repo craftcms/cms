@@ -21,10 +21,6 @@ class AppServiceProvider extends ServiceProvider
     public function register(): void
     {
         Aliases::set('@package', FileHelper::normalizePath($this->root.'/src'));
-
-        collect($this->configFiles)->each(function (string $file) {
-            $this->mergeConfigFrom("{$this->root}/config/$file.php", 'craftcms');
-        });
     }
 
     public function boot(): void
