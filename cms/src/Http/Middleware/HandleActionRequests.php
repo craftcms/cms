@@ -10,9 +10,7 @@ use League\FactoryMuffin\Exceptions\MethodNotFoundException;
 
 class HandleActionRequests
 {
-    public function __construct(private Application $app)
-    {
-    }
+    public function __construct(private Application $app) {}
 
     public function handle(Request $request, Closure $next): mixed
     {
@@ -23,12 +21,11 @@ class HandleActionRequests
         $action = $request->get('action');
         $uri = "actions/{$action}";
 
-        if(str_starts_with($request->path(), config('craft.general.cpTrigger', 'admin'))) {
-            $uri = config('craft.general.cpTrigger', 'admin') . '/' . $uri;
+        if (str_starts_with($request->path(), config('craft.general.cpTrigger', 'admin'))) {
+            $uri = config('craft.general.cpTrigger', 'admin').'/'.$uri;
         }
 
         try {
-            /** @var \Illuminate\Routing\Route $route */
             $internal = Request::create(
                 uri: $uri,
                 method: $request->method(),
@@ -39,14 +36,8 @@ class HandleActionRequests
             );
 
             try {
-                $response = $this->app->handle($internal);
-
-                if (is_null($response)) {
-                    // @todo: Null handling?
-                    return $response;
-                }
-
-                return $response;
+                // @todo null handling?
+                return $this->app->handle($internal);
             } catch (ValidationException $e) {
                 return redirect()->back()->withErrors($e->errors());
             }

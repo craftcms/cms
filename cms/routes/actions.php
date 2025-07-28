@@ -9,16 +9,14 @@ use CraftCms\Cms\Http\Controllers\Utilities\MigrationsController;
 /**
  * Actions that are accessible anonymously can be registered here.
  */
-Route::prefix(config('craft.general.actionTrigger', 'actions'))->group(function () {
-
-});
+Route::prefix(config('craft.general.actionTrigger', 'actions'))->group(function () {});
 
 /**
  * Actions that are accessible through the control panel can be registered here.
  */
 Route::prefix(implode('/', [
     config('craft.general.cpTrigger', 'admin'),
-    config('craft.general.actionTrigger', 'actions')
+    config('craft.general.actionTrigger', 'actions'),
 ]))->middleware(['auth', 'craft.cp'])->group(function () {
     // DeprecationErrors
     Route::post('utilities/get-deprecation-error-traces-modal', [DeprecationErrorsController::class, 'getDeprecationErrorTracesModal']);
@@ -38,6 +36,3 @@ Route::prefix(implode('/', [
     // Migrations
     Route::post('utilities/apply-new-migrations', MigrationsController::class);
 });
-
-
-

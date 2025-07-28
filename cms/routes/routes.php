@@ -1,6 +1,5 @@
 <?php
 
-
 Route::middleware(['web', 'craft', 'auth', 'craft.cp'])
     ->name('craft.cp.')
     ->prefix(config('craft.general.cpTrigger', 'admin'))
