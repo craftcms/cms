@@ -117,7 +117,10 @@
       "CraftCms\\Cms\\": "cms/src/",
       "CraftCms\\Yii2Adapter\\": "yii2-adapter/src/",
       "yii2tech\\ar\\softdelete\\": "lib/ar-softdelete/src/"
-    }
+    },
+    "files": [
+      "cms/src/helpers.php"
+    ]
   },
   "autoload-dev": {
     "psr-4": {

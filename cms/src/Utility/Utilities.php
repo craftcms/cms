@@ -11,6 +11,7 @@ namespace CraftCms\Cms\Utility;
 
 use craft\enums\CmsEdition;
 use craft\queue\QueueInterface;
+use craft\web\Application;
 use CraftCms\Cms\Utility\Events\RegisterUtilities;
 use CraftCms\Cms\Utility\Utilities\AssetIndexes;
 use CraftCms\Cms\Utility\Utilities\ClearCaches;
@@ -24,6 +25,7 @@ use CraftCms\Cms\Utility\Utilities\QueueManager;
 use CraftCms\Cms\Utility\Utilities\SystemMessages as SystemMessagesUtility;
 use CraftCms\Cms\Utility\Utilities\SystemReport;
 use CraftCms\Cms\Utility\Utilities\Updates as UpdatesUtility;
+use Illuminate\Container\Attributes\Give;
 use Illuminate\Container\Attributes\Singleton;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
@@ -39,6 +41,10 @@ use Illuminate\Support\Facades\Event;
 #[Singleton]
 class Utilities
 {
+    public function __construct(
+        #[Give('Craft')] protected Application $craft,
+    ) {}
+
     /**
      * Returns all available utility type classes.
      *
@@ -49,7 +55,7 @@ class Utilities
         /** @var \craft\web\Application $craft */
         $craft = app('Craft');
 
-        $generalConfig = $craft->getConfig()->getGeneral();
+        $generalConfig = $this->craft->getConfig()->getGeneral();
 
         $utilityTypes = Collection::make()
             ->push(
@@ -59,15 +65,15 @@ class Utilities
                 PhpInfo::class,
             )
             ->when(
-                $craft->edition->value >= CmsEdition::Pro->value,
+                $this->craft->edition->value >= CmsEdition::Pro->value,
                 fn (Collection $c) => $c->push(SystemMessagesUtility::class)
             )
             ->when(
-                ! empty($craft->getVolumes()->getAllVolumes()),
+                ! empty($this->craft->getVolumes()->getAllVolumes()),
                 fn (Collection $c) => $c->push(AssetIndexes::class)
             )
             ->when(
-                $craft->getQueue() instanceof QueueInterface,
+                $this->craft->getQueue() instanceof QueueInterface,
                 fn (Collection $c) => $c->push(QueueManager::class)
             )
             ->push(
@@ -113,9 +119,6 @@ class Utilities
      */
     public function checkAuthorization(string $class): bool
     {
-        /** @var \craft\web\Application $craft */
-        $craft = app('Craft');
-
         /** @var ?\CraftCms\Cms\User\Models\User $user */
         $user = Auth::user();
 
@@ -131,7 +134,7 @@ class Utilities
         }
 
         // Make sure the utility isn't disabled
-        if (in_array($utilityId, $craft->getConfig()->getGeneral()->disabledUtilities)) {
+        if (in_array($utilityId, $this->craft->getConfig()->getGeneral()->disabledUtilities)) {
             return false;
         }
 
