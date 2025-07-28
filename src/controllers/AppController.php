@@ -11,7 +11,6 @@ use Craft;
 use craft\base\Chippable;
 use craft\base\ElementInterface;
 use craft\base\Iconic;
-use craft\base\UtilityInterface;
 use craft\elements\db\NestedElementQueryInterface;
 use craft\enums\CmsEdition;
 use craft\enums\LicenseKeyStatus;
@@ -32,10 +31,11 @@ use craft\helpers\Update as UpdateHelper;
 use craft\helpers\UrlHelper;
 use craft\models\Update;
 use craft\models\Updates;
-use craft\utilities\Updates as UpdatesUtility;
 use craft\web\Controller;
 use craft\web\ServiceUnavailableHttpException;
 use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Utility\Utilities;
+use CraftCms\Cms\Utility\Utilities\Updates as UpdatesUtility;
 use CraftCms\DependencyAwareCache\Dependency\FileDependency;
 use CraftCms\DependencyAwareCache\Facades\DependencyCache;
 use DateInterval;
@@ -375,16 +375,8 @@ class AppController extends Controller
     {
         $this->requireAcceptsJson();
 
-        $badgeCount = 0;
-        $utilities = Craft::$app->getUtilities()->getAuthorizedUtilityTypes();
-
-        foreach ($utilities as $class) {
-            /** @var UtilityInterface $class */
-            $badgeCount += $class::badgeCount();
-        }
-
         return $this->asJson([
-            'badgeCount' => $badgeCount,
+            'badgeCount' => app(Utilities::class)->getUtilitiesBadgeCount(),
         ]);
     }
 

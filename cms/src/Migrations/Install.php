@@ -821,7 +821,7 @@ class Install extends Migration
             $table->jsonb('preferences')->nullable();
         });
 
-        Schema::create(Table::withoutYiiPlaceholder(Table::USERS), function (Blueprint $table) {
+        Schema::create('users', function (Blueprint $table) {
             $table->integer('id');
             $table->integer('photoId')->nullable();
             $table->integer('affiliatedSiteId')->nullable();

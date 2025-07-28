@@ -9,7 +9,6 @@ namespace craft\web\twig\variables;
 
 use Craft;
 use craft\base\FsInterface;
-use craft\base\UtilityInterface;
 use craft\enums\CmsEdition;
 use craft\events\FormActionsEvent;
 use craft\events\RegisterCpNavItemsEvent;
@@ -27,6 +26,7 @@ use craft\web\twig\TemplateLoaderException;
 use CraftCms\Aliases\Facades\Aliases;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Str;
+use CraftCms\Cms\Utility\Utilities;
 use DateTime;
 use DateTimeZone;
 use Illuminate\Support\Collection;
@@ -316,13 +316,13 @@ class Cp extends Component
             }
         }
 
-        $utilities = Craft::$app->getUtilities()->getAuthorizedUtilityTypes();
+        $utilities = app(Utilities::class)->getAuthorizedUtilityTypes();
 
         if (!empty($utilities)) {
             $badgeCount = 0;
 
             foreach ($utilities as $class) {
-                /** @var UtilityInterface $class */
+                /** @var \CraftCms\Cms\Utility\Utility $class */
                 $badgeCount += $class::badgeCount();
             }
 

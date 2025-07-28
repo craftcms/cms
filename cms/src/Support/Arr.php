@@ -12,7 +12,7 @@ use Illuminate\Support\Collection;
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  *
- * @since 6.x
+ * @since 6.0.0
  */
 class Arr extends \Illuminate\Support\Arr
 {

@@ -7,9 +7,8 @@
 
 namespace craft\filters;
 
-use Craft;
-use craft\base\UtilityInterface;
 use craft\web\Controller;
+use CraftCms\Cms\Utility\Utilities;
 use yii\base\ActionFilter;
 use yii\web\ForbiddenHttpException;
 
@@ -25,7 +24,7 @@ class UtilityAccess extends ActionFilter
     use ConditionalFilterTrait;
 
     /**
-     * @var class-string<UtilityInterface> The utility class
+     * @var class-string<\CraftCms\Cms\Utility\Utility> The utility class
      */
     public string $utility;
 
@@ -34,7 +33,7 @@ class UtilityAccess extends ActionFilter
      */
     public function beforeAction($action): bool
     {
-        if (!Craft::$app->getUtilities()->checkAuthorization($this->utility)) {
+        if (!app(Utilities::class)->checkAuthorization($this->utility)) {
             throw new ForbiddenHttpException('User is not authorized to perform this action.');
         }
 

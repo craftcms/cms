@@ -40,12 +40,13 @@ use craft\models\FieldLayout;
 use craft\models\FieldLayoutTab;
 use craft\models\Site;
 use craft\services\ElementSources;
-use craft\utilities\ProjectConfig as ProjectConfigUtility;
-use craft\utilities\Updates;
 use craft\web\twig\TemplateLoaderException;
 use craft\web\View;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Str;
+use CraftCms\Cms\Utility\Utilities;
+use CraftCms\Cms\Utility\Utilities\ProjectConfig as ProjectConfigUtility;
+use CraftCms\Cms\Utility\Utilities\Updates;
 use DateTime;
 use Illuminate\Support\Collection;
 use yii\base\Event;
@@ -179,7 +180,7 @@ class Cp
             ]);
         }
 
-        $utilitiesService = Craft::$app->getUtilities();
+        $utilitiesService = app(Utilities::class);
 
         // Critical update available?
         if (
