@@ -112,6 +112,7 @@ use craft\web\User as UserSession;
 use craft\web\View;
 use CraftCms\Cms\Announcement\Announcements;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Env;
 use Symfony\Component\VarDumper\Caster\ReflectionCaster;
 use Symfony\Component\VarDumper\Cloner\VarCloner;
 use Symfony\Component\VarDumper\Dumper\AbstractDumper;
@@ -743,7 +744,7 @@ trait ApplicationTrait
      */
     public function getCanTestEditions(): bool
     {
-        if (App::env('CRAFT_NO_TRIALS')) {
+        if (Env::get('CRAFT_NO_TRIALS')) {
             return false;
         }
 
@@ -1578,7 +1579,7 @@ trait ApplicationTrait
         });
 
         // Set the Craft edition
-        $edition = App::env('CRAFT_EDITION') ?? $this->getProjectConfig()->get('system.edition');
+        $edition = Env::get('CRAFT_EDITION') ?? $this->getProjectConfig()->get('system.edition');
         $this->edition = $edition ? CmsEdition::fromHandle($edition) : CmsEdition::Solo;
 
         // Load the request before anything else, so everything else can safely check Craft::$app->has('request', true)

@@ -26,6 +26,7 @@ use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Str;
 use DateTime;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Env;
 use ReflectionClass;
 use ReflectionException;
 use Throwable;
@@ -1181,7 +1182,7 @@ class Plugins extends Component
         // https://github.com/craftcms/cms/issues/12687 - check if the .env file exists first
         if (
             preg_match('/^\$(\w+)$/', $oldLicenseKey, $matches) &&
-            App::env($matches[1]) === '' &&
+            Env::get($matches[1]) === '' &&
             file_exists(Craft::$app->getConfig()->getDotEnvPath())
         ) {
             Craft::$app->getConfig()->setDotEnvVar($matches[1], $normalizedLicenseKey);

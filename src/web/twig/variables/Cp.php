@@ -30,6 +30,7 @@ use CraftCms\Cms\Support\Str;
 use DateTime;
 use DateTimeZone;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Env;
 use RecursiveCallbackFilterIterator;
 use RecursiveDirectoryIterator;
 use RecursiveIteratorIterator;
@@ -608,7 +609,7 @@ class Cp extends Component
             if (
                 is_string($var) &&
                 !str_starts_with($var, 'HTTP_') &&
-                is_scalar($env = App::env($var)) &&
+                is_scalar($env = Env::get($var)) &&
                 (!$filter || $filter($env))
             ) {
                 $envSuggestions[] = [
@@ -680,7 +681,7 @@ class Cp extends Component
             if (
                 is_string($var) &&
                 !str_starts_with($var, 'HTTP_') &&
-                is_string($value = App::env($var)) &&
+                is_string($value = Env::get($var)) &&
                 ($allowedValues === null || isset($allowedValues[$value]))
             ) {
                 $data = [];
@@ -713,7 +714,7 @@ class Cp extends Component
             if (!is_string($var)) {
                 continue;
             }
-            $value = App::env($var);
+            $value = Env::get($var);
             if ($value === null || $value === '') {
                 continue;
             }
@@ -752,7 +753,7 @@ class Cp extends Component
             if (!is_string($var)) {
                 continue;
             }
-            $value = App::env($var);
+            $value = Env::get($var);
             if ($value === null || $value === '') {
                 continue;
             }

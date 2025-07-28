@@ -9,6 +9,7 @@ use CraftCms\Cms\User\Models\User;
 use CraftCms\Yii2Adapter\Console\LegacyCraftCommand;
 use Exception;
 use Illuminate\Console\Application as ConsoleApplication;
+use Illuminate\Support\Env;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\ServiceProvider;
@@ -115,7 +116,7 @@ class Yii2ServiceProvider extends ServiceProvider
          * we set it here for backwards compatibility.
          */
         $connection = Config::get('database.default');
-        Config::set("database.connections.{$connection}.prefix", App::env('DB_TABLE_PREFIX'));
+        Config::set("database.connections.{$connection}.prefix", Env::get('DB_TABLE_PREFIX'));
 
         if (!$this->app->runningInConsole()) {
             return;

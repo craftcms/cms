@@ -16,6 +16,7 @@ use CraftCms\Cms\Config\BaseConfig;
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Str;
+use Illuminate\Support\Env;
 use yii\base\Component;
 use yii\base\Exception;
 use yii\base\InvalidArgumentException;
@@ -399,7 +400,7 @@ class Config extends Component
      */
     public function setBooleanDotEnvVar(string $name, bool $value): void
     {
-        $value = match (strtolower((string)App::env($name))) {
+        $value = match (strtolower((string)Env::get($name))) {
             'yes', 'no' => $value ? 'yes' : 'no',
             'on', 'off' => $value ? 'on' : 'off',
             '1', '0' => $value ? '1' : '0',

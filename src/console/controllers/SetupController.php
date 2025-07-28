@@ -20,6 +20,7 @@ use craft\migrations\CreateDbCacheTable;
 use craft\migrations\CreatePhpSessionTable;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Str;
+use Illuminate\Support\Env;
 use m150207_210500_i18n_init;
 use PDOException;
 use Seld\CliPrompt\CliPrompt;
@@ -184,7 +185,7 @@ EOD;
     {
         $didSomething = false;
 
-        if ((!Craft::$app->id || Craft::$app->id === 'CraftCMS') && !App::env('CRAFT_APP_ID')) {
+        if ((!Craft::$app->id || Craft::$app->id === 'CraftCMS') && !Env::get('CRAFT_APP_ID')) {
             $this->run('app-id');
             $didSomething = true;
         }
@@ -248,7 +249,7 @@ EOD;
         top:
 
         // driver
-        $envDriver = App::env('DB_CONNECTION') ?? App::env('CRAFT_DB_DRIVER');
+        $envDriver = Env::get('DB_CONNECTION') ?? Env::get('CRAFT_DB_DRIVER');
         $this->driver = $this->prompt('Which database driver are you using? (mysql or pgsql)', [
             'required' => true,
             'default' => $this->driver ?? $envDriver ?: 'mysql',
@@ -278,7 +279,7 @@ EOD;
         ]);
 
         if (!$this->password && $this->interactive) {
-            $envPassword = App::env('DB_PASSWORD') ?? App::env('CRAFT_DB_PASSWORD');
+            $envPassword = Env::get('DB_PASSWORD') ?? Env::get('CRAFT_DB_PASSWORD');
             if ($envPassword && $this->confirm('Use the password provided by $CRAFT_DB_PASSWORD?', true)) {
                 $this->password = $envPassword;
             } else {
@@ -404,7 +405,7 @@ EOD;
             if ($dbConfig->setSchemaOnConnect) {
                 $this->schema = $this->prompt('Database schema:', [
                     'required' => true,
-                    'default' => $this->schema ?? App::env('CRAFT_DB_SCHEMA') ?? 'public',
+                    'default' => $this->schema ?? Env::get('CRAFT_DB_SCHEMA') ?? 'public',
                 ]);
                 $db->createCommand("SET search_path TO $this->schema;")->execute();
             } elseif ($this->schema === null) {
@@ -461,7 +462,7 @@ EOD;
         $this->stdout('Saving database credentials to your .env file ... ', Console::FG_YELLOW);
 
         // If there's a DB_DSN environment variable, go with that
-        if (App::env('CRAFT_DB_DSN') !== null) {
+        if (Env::get('CRAFT_DB_DSN') !== null) {
             if (!$this->_setEnvVar('CRAFT_DB_DSN', $dbConfig->dsn)) {
                 return ExitCode::UNSPECIFIED_ERROR;
             }
@@ -638,7 +639,7 @@ EOD;
     private function _outputCommand(string $command): void
     {
         $script = FileHelper::normalizePath($this->request->getScriptFile());
-        if (!App::isWindows() && ($home = App::env('HOME')) !== null) {
+        if (!App::isWindows() && ($home = Env::get('HOME')) !== null) {
             $home = FileHelper::normalizePath($home);
             if (str_starts_with($script, $home . DIRECTORY_SEPARATOR)) {
                 $script = '~' . substr($script, strlen($home));
@@ -693,6 +694,6 @@ EOD;
      */
     private function _envDefault(string $name): ?string
     {
-        return $this->_useEnvDefaults ? App::env($name) : null;
+        return $this->_useEnvDefaults ? Env::get($name) : null;
     }
 }

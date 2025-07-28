@@ -23,6 +23,7 @@ use craft\web\Controller;
 use CraftCms\Cms\Migrations\Install;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Str;
+use Illuminate\Support\Env;
 use PDOException;
 use Throwable;
 use yii\base\Exception;
@@ -244,7 +245,7 @@ class InstallController extends Controller
             $this->_populateDbConfig($dbConfig, 'db-');
 
             // If there's a DB_DSN environment variable, go with that
-            if (App::env('DB_DSN') !== null) {
+            if (Env::get('DB_DSN') !== null) {
                 $configService->setDotEnvVar('DB_DSN', $dbConfig->dsn);
             } else {
                 $configService->setDotEnvVar('DB_CONNECTION', $dbConfig->driver);

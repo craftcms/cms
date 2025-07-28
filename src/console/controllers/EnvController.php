@@ -9,8 +9,8 @@ namespace craft\console\controllers;
 
 use Craft;
 use craft\console\Controller;
-use craft\helpers\App;
 use craft\helpers\Console;
+use Illuminate\Support\Env;
 use yii\base\Exception;
 use yii\console\ExitCode;
 
@@ -43,7 +43,7 @@ class EnvController extends Controller
             return $this->runAction('set', [$name, $value]);
         }
 
-        $value = App::env($name);
+        $value = Env::get($name);
         $dump = Craft::dump($value, return: true);
         $this->stdout(trim($dump) . "\n");
         return ExitCode::OK;
@@ -71,7 +71,7 @@ class EnvController extends Controller
             return ExitCode::UNSPECIFIED_ERROR;
         }
 
-        $dump = Craft::dump(App::env($name), return: true);
+        $dump = Craft::dump(Env::get($name), return: true);
         $this->stdout(sprintf("%s %s.\n", $this->markdownToAnsi("`$name` is now"), trim($dump)));
         return ExitCode::OK;
     }

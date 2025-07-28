@@ -10,6 +10,7 @@ namespace craft\services;
 use Craft;
 use craft\helpers\App;
 use craft\helpers\FileHelper;
+use Illuminate\Support\Env;
 use yii\base\Component;
 use yii\base\Exception;
 
@@ -216,7 +217,7 @@ class Path extends Component
      */
     public function getRebrandPath(bool $create = true): string
     {
-        $path = App::env('CRAFT_REBRAND_PATH')
+        $path = Env::get('CRAFT_REBRAND_PATH')
             ? App::parseEnv('$CRAFT_REBRAND_PATH')
             : $this->getStoragePath($create) . DIRECTORY_SEPARATOR . 'rebrand';
 

@@ -20,6 +20,7 @@ use craft\helpers\App;
 use craft\helpers\Db;
 use craft\helpers\FileHelper;
 use CraftCms\Cms\Support\Str;
+use Illuminate\Support\Env;
 use mikehaertl\shellcommand\Command as ShellCommand;
 use Throwable;
 use yii\base\Event;
@@ -170,7 +171,7 @@ class Connection extends \CraftCms\Yii2Adapter\DatabaseConnection
      */
     public function open(): void
     {
-        if (App::env('CRAFT_NO_DB')) {
+        if (Env::get('CRAFT_NO_DB')) {
             throw new DbConnectException('Craft CMS can’t connect to the database.');
         }
 

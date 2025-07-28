@@ -36,6 +36,7 @@ use craft\web\User as WebUser;
 use craft\web\View;
 use CraftCms\Cms\Support\Str;
 use HTMLPurifier_Encoder;
+use Illuminate\Support\Env;
 use ReflectionClass;
 use ReflectionFunction;
 use ReflectionNamedType;
@@ -108,38 +109,15 @@ class App
      * If the value cannot be found, `null` will be returned.
      *
      * @param string $name The name to search for.
+     *
      * @return mixed The value, or `null` if not found.
      * @throws Exception
      * @since 3.4.18
+     * @deprecated in 6.0.0. Use `\Illuminate\Support\Env::get()` instead.
      */
     public static function env(string $name): mixed
     {
-        if (!isset(self::$_secrets)) {
-            // set it to an empty array initially, so the nested env() call doesn’t cause infinite recursion
-            self::$_secrets = [];
-            $secretsPath = static::env('CRAFT_SECRETS_PATH');
-            if ($secretsPath && is_file($secretsPath)) {
-                self::$_secrets = require $secretsPath;
-            }
-        }
-
-        if (isset(self::$_secrets[$name])) {
-            return static::normalizeValue(self::$_secrets[$name]);
-        }
-
-        if (isset($_SERVER[$name])) {
-            return static::normalizeValue($_SERVER[$name]);
-        }
-
-        if (($env = getenv($name)) !== false) {
-            return static::normalizeValue($env);
-        }
-
-        if (defined($name)) {
-            return static::normalizeValue(constant($name));
-        }
-
-        return null;
+        return Env::get($name);
     }
 
     /**
@@ -182,7 +160,7 @@ class App
                 $envName = str($prop->getName())->snake()->upper()->value();
             }
 
-            $envValue = static::env(sprintf('%s%s', $envPrefix, $envName));
+            $envValue = Env::get(sprintf('%s%s', $envPrefix, $envName));
 
             if ($envValue !== null) {
                 $envConfig[$prop->getName()] = $envValue;
@@ -221,7 +199,7 @@ class App
         }
 
         if (preg_match('/^\$(\w+)(\/.*)?/', $value, $matches)) {
-            $env = static::env($matches[1]);
+            $env = Env::get($matches[1]);
 
             if ($env === null) {
                 // No env var or constant is defined here by that name
@@ -591,7 +569,7 @@ class App
             // Parse ${ENV_VAR}s
             try {
                 $path = preg_replace_callback('/\$\{(.*?)\}/', function($match) {
-                    $env = App::env($match[1]);
+                    $env = Env::get($match[1]);
                     if ($env === false) {
                         throw new InvalidValueException();
                     }
@@ -901,7 +879,7 @@ class App
 
         // detect msysgit/mingw and assume this is a tty because detection
         // does not work correctly, see https://github.com/composer/composer/issues/9690
-        if (in_array(strtoupper(self::env('MSYSTEM') ?: ''), ['MINGW32', 'MINGW64'], true)) {
+        if (in_array(strtoupper(Env::get('MSYSTEM') ?: ''), ['MINGW32', 'MINGW64'], true)) {
             return true;
         }
 

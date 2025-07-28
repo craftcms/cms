@@ -16,6 +16,7 @@ use craft\services\Sites;
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Str;
+use Illuminate\Support\Env;
 use yii\base\InvalidArgumentException;
 use yii\base\InvalidConfigException;
 use yii\di\Instance;
@@ -1399,7 +1400,7 @@ class Request extends \CraftCms\Yii2Adapter\Web\Request
         }
 
         // Is CRAFT_SITE or X-Craft-Site present?
-        $siteId = App::env('CRAFT_SITE') ?? $this->getHeaders()->get('X-Craft-Site');
+        $siteId = Env::get('CRAFT_SITE') ?? $this->getHeaders()->get('X-Craft-Site');
         if ($siteId !== null) {
             if (is_numeric($siteId)) {
                 $site = $this->sites->getSiteById($siteId, false);

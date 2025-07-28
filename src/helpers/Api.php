@@ -11,6 +11,7 @@ use Craft;
 use craft\enums\LicenseKeyStatus;
 use craft\errors\InvalidLicenseKeyException;
 use ErrorException;
+use Illuminate\Support\Env;
 use Imagick;
 
 /**
@@ -86,7 +87,7 @@ abstract class Api
         }
 
         // Craft Cloud
-        $craftCloudProjectId = App::env('CRAFT_CLOUD_PROJECT_ID');
+        $craftCloudProjectId = Env::get('CRAFT_CLOUD_PROJECT_ID');
         if ($craftCloudProjectId) {
             $headers['X-Craft-Cloud-Project-Id'] = $craftCloudProjectId;
         }

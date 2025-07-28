@@ -67,6 +67,7 @@ use DateTime;
 use DateTimeInterface;
 use DateTimeZone;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Env;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Stringable;
 use IteratorAggregate;
@@ -1410,7 +1411,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
             new TwigFunction('expression', [$this, 'expressionFunction']),
             new TwigFunction('fieldValueSql', [$this, 'fieldValueSqlFunction']),
             new TwigFunction('floor', 'floor'),
-            new TwigFunction('getenv', [App::class, 'env']),
+            new TwigFunction('getenv', [Env::class, 'get']),
             new TwigFunction('gql', [$this, 'gqlFunction']),
             new TwigFunction('parseEnv', [App::class, 'parseEnv']),
             new TwigFunction('parseBooleanEnv', [App::class, 'parseBooleanEnv']),

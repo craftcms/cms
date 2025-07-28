@@ -9,6 +9,7 @@ namespace craft\helpers;
 
 use Craft;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Env;
 
 /**
  * Install helper
@@ -64,7 +65,7 @@ class Install
         }
 
         // Is there a PRIMARY_SITE_URL environment variable set?
-        if ($envValue = App::env('PRIMARY_SITE_URL')) {
+        if ($envValue = Env::get('PRIMARY_SITE_URL')) {
             return $envValue;
         }
 

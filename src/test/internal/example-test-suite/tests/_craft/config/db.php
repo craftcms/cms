@@ -1,11 +1,11 @@
 <?php
 
-use craft\helpers\App;
+use Illuminate\Support\Env;
 
 return [
-    'dsn' => App::env('CRAFT_DB_DSN'),
-    'user' => App::env('CRAFT_DB_USER'),
-    'password' => App::env('CRAFT_DB_PASSWORD'),
-    'schema' => App::env('CRAFT_DB_SCHEMA'),
-    'tablePrefix' => App::env('CRAFT_DB_TABLE_PREFIX'),
+    'dsn' => Env::get('CRAFT_DB_DSN'),
+    'user' => Env::get('CRAFT_DB_USER'),
+    'password' => Env::get('CRAFT_DB_PASSWORD'),
+    'schema' => Env::get('CRAFT_DB_SCHEMA'),
+    'tablePrefix' => Env::get('CRAFT_DB_TABLE_PREFIX'),
 ];

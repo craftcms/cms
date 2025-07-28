@@ -11,6 +11,7 @@ use craft\helpers\App;
 use craft\helpers\FileHelper;
 use craft\services\Config;
 use CraftCms\Cms\Support\Arr;
+use Illuminate\Support\Env;
 use yii\base\ErrorException;
 
 // Get the last error at the earliest opportunity, so we can catch max_input_vars errors
@@ -35,7 +36,7 @@ $findConfig = function(string $cliName, string $envName) use ($appType) {
         }
     }
 
-    return App::env($envName);
+    return Env::get($envName);
 };
 
 // Set the vendor path. By default assume that it's 4 levels up from here
@@ -56,7 +57,7 @@ $testsPath = FileHelper::normalizePath($findConfig('--testsPath', 'CRAFT_TESTS_P
 // Set the environment
 // -----------------------------------------------------------------------------
 
-$environment = $findConfig('--env', 'CRAFT_ENVIRONMENT') ?? App::env('ENVIRONMENT') ?? $_SERVER['SERVER_NAME'] ?? null;
+$environment = $findConfig('--env', 'CRAFT_ENVIRONMENT') ?? Env::get('ENVIRONMENT') ?? $_SERVER['SERVER_NAME'] ?? null;
 
 // Load the general config
 // -----------------------------------------------------------------------------
@@ -66,7 +67,7 @@ $configService->appType = $appType;
 $configService->env = $environment;
 $configService->configDir = $configPath;
 $configService->appDefaultsDir = dirname(__DIR__) . DIRECTORY_SEPARATOR . 'src' . DIRECTORY_SEPARATOR . 'config' . DIRECTORY_SEPARATOR . 'defaults';
-$generalConfig = $configService->getGeneral();
+$generalConfig = \CraftCms\Cms\Craft::generalConfig();
 
 // Validation
 // -----------------------------------------------------------------------------
@@ -95,8 +96,8 @@ $ensureFolderIsReadable = function($path, $writableToo = false) {
 // Validate the paths
 // -----------------------------------------------------------------------------
 
-if (!App::env('CRAFT_LICENSE_KEY') && !App::isEphemeral()) {
-    $licenseKeyPath = App::env('CRAFT_LICENSE_KEY_PATH');
+if (!Env::get('CRAFT_LICENSE_KEY') && !App::isEphemeral()) {
+    $licenseKeyPath = Env::get('CRAFT_LICENSE_KEY_PATH');
 
     // Validate permissions on the license key file path (default config/) and storage/
     if ($licenseKeyPath) {
@@ -162,7 +163,7 @@ error_reporting($errorLevel);
 // Determine if Craft is running in Dev Mode
 // -----------------------------------------------------------------------------
 
-$devMode = App::env('CRAFT_DEV_MODE') ?? $generalConfig->devMode;
+$devMode = Env::get('CRAFT_DEV_MODE') ?? $generalConfig->devMode;
 
 if ($devMode) {
     ini_set('display_errors', '1');
@@ -256,12 +257,12 @@ foreach ($generalConfig->aliases as $name => $value) {
     }
 }
 
-$webUrl = App::env('CRAFT_WEB_URL');
+$webUrl = Env::get('CRAFT_WEB_URL');
 if ($webUrl) {
     Craft::setAlias('@web', $webUrl);
 }
 
-$webRoot = App::env('CRAFT_WEB_ROOT');
+$webRoot = Env::get('CRAFT_WEB_ROOT');
 if ($webRoot) {
     Craft::setAlias('@webroot', $webRoot);
 }
@@ -286,7 +287,7 @@ $localConfig = Arr::merge(
     $configService->getConfigFromFile("app.{$appType}")
 );
 
-$safeMode = App::env('CRAFT_SAFE_MODE') ?? $generalConfig->safeMode;
+$safeMode = Env::get('CRAFT_SAFE_MODE') ?? $generalConfig->safeMode;
 
 if ($safeMode) {
     Arr::forget($localConfig, 'bootstrap');
