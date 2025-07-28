@@ -36,6 +36,7 @@ use craft\web\User as WebUser;
 use craft\web\View;
 use CraftCms\Cms\Support\Str;
 use HTMLPurifier_Encoder;
+use Illuminate\Support\Facades\Cache;
 use ReflectionClass;
 use ReflectionFunction;
 use ReflectionNamedType;
@@ -1321,8 +1322,7 @@ class App
         }
 
         $updatesService = Craft::$app->getUpdates();
-        $cache = Craft::$app->getCache();
-        $isInfoCached = $cache->exists(App::CACHE_KEY_LICENSE_INFO) && $updatesService->getIsUpdateInfoCached();
+        $isInfoCached = Cache::has(App::CACHE_KEY_LICENSE_INFO) && $updatesService->getIsUpdateInfoCached();
 
         if (!$isInfoCached) {
             if (!$fetch) {
@@ -1334,8 +1334,8 @@ class App
 
         $issues = [];
 
-        $allLicenseInfo = $cache->get(App::CACHE_KEY_LICENSE_INFO) ?: [];
-        $licenseInfoHost = $cache->get(App::CACHE_KEY_LICENSE_INFO_HOST);
+        $allLicenseInfo = Cache::get(App::CACHE_KEY_LICENSE_INFO, []);
+        $licenseInfoHost = Cache::get(App::CACHE_KEY_LICENSE_INFO_HOST);
         $pluginsService = Craft::$app->getPlugins();
         $generalConfig = Craft::$app->getConfig()->getGeneral();
         $consoleUrl = rtrim(Craft::$app->getPluginStore()->craftIdEndpoint, '/');
@@ -1404,7 +1404,7 @@ class App
                         // wrong domain. ignore if the cache wasn't saved from the same host name we're currently on
                         $request = Craft::$app->getRequest();
                         if ($licenseInfoHost && $request->getIsWebRequest() && $request->getHostName() === $licenseInfoHost) {
-                            $licensedDomain = $cache->get('licensedDomain');
+                            $licensedDomain = Cache::get('licensedDomain');
                             $domainLink = Html::a($licensedDomain, "http://$licensedDomain", [
                                 'rel' => 'noopener',
                                 'target' => '_blank',

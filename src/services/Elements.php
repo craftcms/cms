@@ -69,6 +69,7 @@ use craft\validators\HandleValidator;
 use craft\validators\SlugValidator;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Str;
+use CraftCms\DependencyAwareCache\Dependency\TagDependency;
 use DateTime;
 use Illuminate\Support\Collection;
 use Throwable;
@@ -79,7 +80,6 @@ use yii\base\Exception;
 use yii\base\InvalidArgumentException;
 use yii\base\InvalidCallException;
 use yii\base\InvalidConfigException;
-use yii\caching\TagDependency;
 use yii\di\Instance;
 use yii\web\ForbiddenHttpException;
 
@@ -773,9 +773,7 @@ class Elements extends Component
             return [null, null];
         }
 
-        $dep = new TagDependency([
-            'tags' => array_keys($tags),
-        ]);
+        $dep = new TagDependency(array_keys($tags));
 
         return [$dep, $duration];
     }
@@ -801,7 +799,7 @@ class Elements extends Component
     public function invalidateAllCaches(): void
     {
         $tags = ['element'];
-        TagDependency::invalidate(Craft::$app->getCache(), $tags);
+        TagDependency::invalidate($tags);
 
         // Fire a 'invalidateCaches' event
         if ($this->hasEventHandlers(self::EVENT_INVALIDATE_CACHES)) {
@@ -820,7 +818,7 @@ class Elements extends Component
     public function invalidateCachesForElementType(string $elementType): void
     {
         $tags = ["element::$elementType"];
-        TagDependency::invalidate(Craft::$app->getCache(), $tags);
+        TagDependency::invalidate($tags);
 
         // Fire a 'invalidateCaches' event
         if ($this->hasEventHandlers(self::EVENT_INVALIDATE_CACHES)) {
@@ -877,7 +875,7 @@ class Elements extends Component
             }
         }
 
-        TagDependency::invalidate(Craft::$app->getCache(), $tags);
+        TagDependency::invalidate($tags);
 
         // Fire a 'invalidateCaches' event
         if ($this->hasEventHandlers(self::EVENT_INVALIDATE_CACHES)) {

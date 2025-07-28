@@ -15,6 +15,7 @@ use craft\helpers\App;
 use craft\helpers\FileHelper;
 use craft\models\Updates as UpdatesModel;
 use CraftCms\Cms\Support\Arr;
+use Illuminate\Support\Facades\Cache;
 use Throwable;
 use yii\base\Component;
 use yii\base\ErrorException;
@@ -60,7 +61,7 @@ class Updates extends Component
      */
     public function getIsUpdateInfoCached(): bool
     {
-        return (isset($this->_updates) || Craft::$app->getCache()->exists($this->cacheKey));
+        return (isset($this->_updates) || Cache::has($this->cacheKey));
     }
 
     /**
@@ -100,7 +101,7 @@ class Updates extends Component
                 return $this->_updates;
             }
 
-            if (($cached = Craft::$app->getCache()->get($this->cacheKey)) !== false) {
+            if ($cached = Cache::get($this->cacheKey)) {
                 return $this->_updates = new UpdatesModel($cached);
             }
         }
@@ -128,7 +129,7 @@ class Updates extends Component
         $updates = new UpdatesModel($updateData);
         // Cache for 5 minutes or 24 hours depending on whether we actually have results
         $cacheDuration = empty($updateData) ? 300 : 86400;
-        Craft::$app->getCache()->set($this->cacheKey, $updateData, $cacheDuration);
+        Cache::put($this->cacheKey, $updateData, $cacheDuration);
         return $this->_updates = $updates;
     }
 
@@ -373,7 +374,7 @@ class Updates extends Component
         $this->_isCraftUpdatePending = null;
 
         // Clear the license info cache
-        Craft::$app->getCache()->delete(App::CACHE_KEY_LICENSE_INFO);
+        Cache::forget(App::CACHE_KEY_LICENSE_INFO);
 
         return true;
     }

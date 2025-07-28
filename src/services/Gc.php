@@ -803,6 +803,8 @@ SQL;
 
     private function _gcCache(): void
     {
+        // @todo Not needed for Laravel?
+
         $cache = Craft::$app->getCache();
 
         // gc() isn't always implemented, or defined by an interface,

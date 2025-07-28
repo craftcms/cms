@@ -9,8 +9,8 @@ namespace craft\console\actions;
 
 use Craft;
 use craft\console\controllers\InvalidateTagsController;
+use CraftCms\DependencyAwareCache\Dependency\TagDependency;
 use yii\base\Action;
-use yii\caching\TagDependency;
 use yii\console\ExitCode;
 use yii\helpers\Console;
 
@@ -42,7 +42,7 @@ class InvalidateTagAction extends Action
         $this->controller->stdout(Craft::t('app', 'Invalidating cache tag:') . ' ', Console::FG_GREEN);
         $this->controller->stdout($this->tag . PHP_EOL, Console::FG_YELLOW);
 
-        TagDependency::invalidate(Craft::$app->getCache(), $this->tag);
+        TagDependency::invalidate($this->tag);
 
         return ExitCode::OK;
     }

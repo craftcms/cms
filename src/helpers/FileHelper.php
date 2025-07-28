@@ -12,6 +12,7 @@ use craft\errors\MutexException;
 use craft\errors\SiteNotFoundException;
 use CraftCms\Cms\Support\Str;
 use FilesystemIterator;
+use Illuminate\Support\Facades\Cache;
 use RecursiveDirectoryIterator;
 use RecursiveIteratorIterator;
 use Symfony\Component\Filesystem\Exception\IOException;
@@ -716,8 +717,7 @@ class FileHelper extends \yii\helpers\FileHelper
         }
 
         // Do we have it cached?
-        $cacheService = Craft::$app->getCache();
-        if (($cachedVal = $cacheService->get('useFileLocks')) !== false) {
+        if (($cachedVal = Cache::get('useFileLocks')) !== false) {
             return self::$_useFileLocks = ($cachedVal === 'y');
         }
 
@@ -740,7 +740,7 @@ class FileHelper extends \yii\helpers\FileHelper
 
         // Cache for two months
         $cachedValue = self::$_useFileLocks ? 'y' : 'n';
-        $cacheService->set('useFileLocks', $cachedValue, 5184000);
+        Cache::put('useFileLocks', $cachedValue, now()->addMonths(2));
 
         return self::$_useFileLocks;
     }

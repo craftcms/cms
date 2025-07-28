@@ -40,6 +40,7 @@ use craft\models\Volume;
 use craft\records\User as UserRecord;
 use craft\web\Request;
 use CraftCms\Cms\Support\Str;
+use CraftCms\DependencyAwareCache\Dependency\TagDependency;
 use DateTime;
 use DateTimeZone;
 use Throwable;
@@ -47,7 +48,6 @@ use yii\base\Component;
 use yii\base\Exception;
 use yii\base\InvalidArgumentException;
 use yii\base\UserException;
-use yii\caching\TagDependency;
 
 /**
  * The Users service provides APIs for managing users.
@@ -1713,8 +1713,6 @@ class Users extends Component
 
     private function invalidateIndexCaches(): void
     {
-        TagDependency::invalidate(Craft::$app->getCache(), [
-            sprintf('element-index-query::%s', User::class),
-        ]);
+        TagDependency::invalidate(sprintf('element-index-query::%s', User::class));
     }
 }

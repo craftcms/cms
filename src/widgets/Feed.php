@@ -11,6 +11,7 @@ use Craft;
 use craft\base\Widget;
 use craft\helpers\Json;
 use craft\web\assets\feed\FeedAsset;
+use Illuminate\Support\Facades\Cache;
 
 /**
  * Feed represents a Feed dashboard widget.
@@ -101,7 +102,7 @@ class Feed extends Widget
     public function getBodyHtml(): ?string
     {
         // See if it's already cached
-        $data = Craft::$app->getCache()->get("feed:$this->url");
+        $data = Cache::get("feed:$this->url");
 
         if ($data) {
             $data['items'] = array_slice($data['items'] ?? [], 0, $this->limit);
