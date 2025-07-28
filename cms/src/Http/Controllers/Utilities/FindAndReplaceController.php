@@ -21,16 +21,14 @@ class FindAndReplaceController
     {
         $params = $request->validate([
             'params' => ['required', 'array'],
-            'params.find' => ['string', 'nullable'],
-            'params.replace' => ['string', 'nullable'],
+            'params.find' => ['required', 'string'],
+            'params.replace' => ['required', 'string'],
         ])['params'];
 
-        if (! empty($params['find']) && ! empty($params['replace'])) {
-            Queue::push(new FindAndReplace([
-                'find' => $params['find'],
-                'replace' => $params['replace'],
-            ]));
-        }
+        Queue::push(new FindAndReplace([
+            'find' => $params['find'],
+            'replace' => $params['replace'],
+        ]));
 
         return new JsonResponse;
     }

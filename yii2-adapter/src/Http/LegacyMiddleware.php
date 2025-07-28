@@ -36,23 +36,6 @@ class LegacyMiddleware
             return app()->handle($internal);
         }
 
-        if ($action = $request->get('action')) {
-            $internal = Request::create(
-                uri: cp_url("actions/{$action}"),
-                method: $request->method(),
-                parameters: $request->except('action'),
-                cookies: $request->cookies->all(),
-                files: $request->allFiles(),
-                server: $request->server->all(),
-            );
-
-            $response = app()->handle($internal);
-
-            if ($response->getStatusCode() !== 404) {
-                return $response;
-            }
-        }
-
         /**
          * Laravel applies \Illuminate\Foundation\Http\Middleware\ConvertEmptyStringsToNull
          * globally, which causes issues in the legacy codebase. Here we restore all the

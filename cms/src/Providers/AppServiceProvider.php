@@ -5,6 +5,7 @@ namespace CraftCms\Cms\Providers;
 use craft\helpers\FileHelper;
 use CraftCms\Aliases\Facades\Aliases;
 use CraftCms\Cms\Http\Middleware\ExtractNamespace;
+use CraftCms\Cms\Http\Middleware\HandleActionRequests;
 use CraftCms\Cms\Http\Middleware\RequireCpRequest;
 use Illuminate\Foundation\Console\AboutCommand;
 use Illuminate\Routing\Router;
@@ -63,6 +64,7 @@ class AppServiceProvider extends ServiceProvider
 
         collect([
             ExtractNamespace::class,
+            HandleActionRequests::class,
         ])->each(fn ($middleware) => $router->pushMiddlewareToGroup('craft', $middleware));
 
         collect([
