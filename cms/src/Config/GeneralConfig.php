@@ -192,6 +192,7 @@ class GeneralConfig extends BaseConfig
      * :::
      *
      * @group GraphQL
+     *
      * @since 3.5.0
      * @deprecated in 4.11.0. [[\craft\filters\Cors]] should be used instead.
      * @see https://www.yiiframework.com/doc/api/2.0/yii-filters-cors
@@ -390,6 +391,7 @@ class GeneralConfig extends BaseConfig
      * :::
      *
      * @group System
+     *
      * @since 3.5.6
      * @deprecated in 4.0.0
      */
@@ -1071,6 +1073,7 @@ class GeneralConfig extends BaseConfig
      * :::
      *
      * @group Security
+     *
      * @since 3.5.0
      * @deprecated in 4.13.0. [[\craft\filters\BasicHttpAuthLogin]] should be used instead.
      */
@@ -2041,6 +2044,7 @@ class GeneralConfig extends BaseConfig
      * :::
      *
      * @group System
+     *
      * @since 3.6.14
      * @deprecated in 4.11.0. [[\craft\filters\Headers]] should be used instead.
      */
@@ -3592,8 +3596,7 @@ class GeneralConfig extends BaseConfig
      * ```
      *
      * @group GraphQL
-     * @param array|null|false $value
-     * @return self
+     *
      * @see $allowedGraphqlOrigins
      * @since 4.2.0
      * @deprecated in 4.11.0. [[\craft\filters\Cors]] should be used instead.
@@ -3602,6 +3605,7 @@ class GeneralConfig extends BaseConfig
     public function allowedGraphqlOrigins(array|null|false $value): self
     {
         $this->allowedGraphqlOrigins = $value;
+
         return $this;
     }
 
@@ -4448,14 +4452,14 @@ class GeneralConfig extends BaseConfig
      * ```
      *
      * @group Security
-     * @param bool $value
-     * @return self
+     *
      * @see $enableBasicHttpAuth
      * @since 4.2.0
      */
     public function enableBasicHttpAuth(bool $value = true): self
     {
         $this->enableBasicHttpAuth = $value;
+
         return $this;
     }
 
@@ -5535,8 +5539,7 @@ class GeneralConfig extends BaseConfig
      * ```
      *
      * @group System
-     * @param string|null $value
-     * @return self
+     *
      * @see $permissionsPolicyHeader
      * @since 4.2.0
      * @deprecated in 4.11.0. [[\craft\filters\Headers]] should be used instead.
@@ -5544,6 +5547,7 @@ class GeneralConfig extends BaseConfig
     public function permissionsPolicyHeader(?string $value): self
     {
         $this->permissionsPolicyHeader = $value;
+
         return $this;
     }
 

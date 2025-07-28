@@ -17,7 +17,7 @@ class ConfigServiceProvider extends ServiceProvider
 
     public function register(): void
     {
-        Env::extend(fn() => ConstAdapter::class);
+        Env::extend(fn () => ConstAdapter::class);
 
         $this->app->bind(GeneralConfig::class, function () {
             return Config::get('craft.general');
@@ -37,7 +37,7 @@ class ConfigServiceProvider extends ServiceProvider
         }
 
         collect($this->configFiles)->each(function ($file) {
-            $this->publishes([__DIR__ . "/../../config/$file.php" => config_path("craft/$file.php")], 'craftcms');
+            $this->publishes([__DIR__."/../../config/$file.php" => config_path("craft/$file.php")], 'craftcms');
         });
     }
 
