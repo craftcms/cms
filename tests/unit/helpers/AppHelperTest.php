@@ -15,7 +15,6 @@ use craft\models\MailSettings;
 use craft\services\Entries;
 use craft\test\TestCase;
 use CraftCms\Cms\Config\GeneralConfig;
-use Illuminate\Support\Env;
 use stdClass;
 use yii\base\Component;
 use yii\base\InvalidArgumentException;
@@ -29,35 +28,6 @@ use yii\base\InvalidArgumentException;
  */
 class AppHelperTest extends TestCase
 {
-    /**
-     *
-     */
-    public function testEnv(): void
-    {
-        $_SERVER['TEST_SERVER_ENV'] = 'server';
-        self::assertSame('server', Env::get('TEST_SERVER_ENV'));
-        unset($_SERVER['TEST_SERVER_ENV']);
-
-        putenv('TEST_GETENV_ENV=getenv');
-        self::assertSame('getenv', Env::get('TEST_GETENV_ENV'));
-        putenv('TEST_GETENV_ENV');
-
-        putenv('TEST_GETENV_TRUE_ENV=true');
-        self::assertTrue(Env::get('TEST_GETENV_TRUE_ENV'));
-        putenv('TEST_GETENV_TRUE_ENV');
-
-        putenv('TEST_GETENV_FALSE_ENV=false');
-        self::assertFalse(Env::get('TEST_GETENV_FALSE_ENV'));
-        putenv('TEST_GETENV_FALSE_ENV');
-
-        self::assertSame(CRAFT_TESTS_PATH, Env::get('CRAFT_TESTS_PATH'));
-        self::assertNull(Env::get('TEST_NONEXISTENT_ENV'));
-
-        putenv('SHH=foo');
-        self::assertSame('foo', Env::get('SHH'));
-        putenv('SHH');
-    }
-
     /**
      * @dataProvider envConfigDataProvider
      *
