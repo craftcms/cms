@@ -46,6 +46,7 @@ use craft\records\Section as SectionRecord;
 use craft\records\Section_SiteSettings as Section_SiteSettingsRecord;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Str;
+use CraftCms\DependencyAwareCache\Dependency\TagDependency;
 use DateTime;
 use Illuminate\Support\Collection;
 use Throwable;
@@ -53,7 +54,6 @@ use yii\base\Component;
 use yii\base\Exception;
 use yii\base\InvalidArgumentException;
 use yii\base\InvalidConfigException;
-use yii\caching\TagDependency;
 use yii\helpers\Markdown;
 
 /**
@@ -2302,7 +2302,7 @@ SQL)->execute();
 
                 // Invalidate caches for the old section
                 $tag = sprintf('element::%s::section:%s', Entry::class, $oldSection->id);
-                TagDependency::invalidate(Craft::$app->getCache(), $tag);
+                TagDependency::invalidate($tag);
             } catch (Throwable $e) {
                 $transaction->rollBack();
                 throw $e;

@@ -2256,6 +2256,7 @@ return [
     '{item} picked up.' => '{item}이(가) 픽업되었습니다.',
     '{max, plural, =1{Author} other {Authors}}' => '{max, plural, =1{작성자} other {작성자}}',
     '{names} {total, plural, =1{is installed as a trial} other{are installed as trials}}.' => '{names}은(는) {total, plural, =1{평가판으로 설치되었습니다} other{평가판으로 설치되었습니다}}.',
+    '{name} Settings' => '{name} Settings',
     '{name} Setup' => '{name} 설정',
     '{name} Translation Key Format' => '{name} 번역 키 형식',
     '{name} Translation Method' => '{name} 번역 방법',

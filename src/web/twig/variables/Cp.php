@@ -30,6 +30,7 @@ use CraftCms\Cms\Utility\Utilities;
 use DateTime;
 use DateTimeZone;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Cache;
 use RecursiveCallbackFilterIterator;
 use RecursiveDirectoryIterator;
 use RecursiveIteratorIterator;
@@ -411,75 +412,75 @@ class Cp extends Component
         $label = Craft::t('app', 'System');
 
         $settings[$label]['general'] = [
-            'iconMask' => '@app/icons/light/sliders.svg',
+            'iconMask' => '@packageRoot/resources/icons/light/sliders.svg',
             'label' => Craft::t('app', 'General'),
         ];
         $settings[$label]['sites'] = [
-            'iconMask' => sprintf('@app/icons/light/%s.svg', CpHelper::earthIcon()),
+            'iconMask' => sprintf('@packageRoot/resources/icons/light/%s.svg', CpHelper::earthIcon()),
             'label' => Craft::t('app', 'Sites'),
         ];
 
         if (!Craft::$app->getConfig()->getGeneral()->headlessMode) {
             $settings[$label]['routes'] = [
-                'iconMask' => '@app/icons/light/signs-post.svg',
+                'iconMask' => '@packageRoot/resources/icons/light/signs-post.svg',
                 'label' => Craft::t('app', 'Routes'),
             ];
         }
 
         $settings[$label]['users'] = [
-            'iconMask' => '@app/icons/light/user-group.svg',
+            'iconMask' => '@packageRoot/resources/icons/light/user-group.svg',
             'label' => Craft::t('app', 'Users'),
         ];
         if (Craft::$app->getConfig()->getGeneral()->allowAdminChanges) {
             $settings[$label]['addresses'] = [
-                'iconMask' => '@app/icons/light/map-location.svg',
+                'iconMask' => '@packageRoot/resources/icons/light/map-location.svg',
                 'label' => Craft::t('app', 'Addresses'),
             ];
         }
         $settings[$label]['email'] = [
-            'iconMask' => '@app/icons/light/envelope.svg',
+            'iconMask' => '@packageRoot/resources/icons/light/envelope.svg',
             'label' => Craft::t('app', 'Email'),
         ];
         $settings[$label]['plugins'] = [
-            'iconMask' => '@app/icons/light/plug.svg',
+            'iconMask' => '@packageRoot/resources/icons/light/plug.svg',
             'label' => Craft::t('app', 'Plugins'),
         ];
 
         $label = Craft::t('app', 'Content');
 
         $settings[$label]['sections'] = [
-            'iconMask' => '@app/icons/light/newspaper.svg',
+            'iconMask' => '@packageRoot/resources/icons/light/newspaper.svg',
             'label' => Craft::t('app', 'Sections'),
         ];
         $settings[$label]['entry-types'] = [
-            'iconMask' => '@app/icons/light/files.svg',
+            'iconMask' => '@packageRoot/resources/icons/light/files.svg',
             'label' => Craft::t('app', 'Entry Types'),
         ];
         $settings[$label]['fields'] = [
-            'iconMask' => '@app/icons/light/pen-to-square.svg',
+            'iconMask' => '@packageRoot/resources/icons/light/pen-to-square.svg',
             'label' => Craft::t('app', 'Fields'),
         ];
         $settings[$label]['globals'] = [
-            'iconMask' => '@app/icons/light/globe.svg',
+            'iconMask' => '@packageRoot/resources/icons/light/globe.svg',
             'label' => Craft::t('app', 'Globals'),
         ];
         $settings[$label]['categories'] = [
-            'iconMask' => '@app/icons/light/sitemap.svg',
+            'iconMask' => '@packageRoot/resources/icons/light/sitemap.svg',
             'label' => Craft::t('app', 'Categories'),
         ];
         $settings[$label]['tags'] = [
-            'iconMask' => '@app/icons/light/tags.svg',
+            'iconMask' => '@packageRoot/resources/icons/light/tags.svg',
             'label' => Craft::t('app', 'Tags'),
         ];
 
         $label = Craft::t('app', 'Media');
 
         $settings[$label]['assets'] = [
-            'iconMask' => '@app/icons/light/image.svg',
+            'iconMask' => '@packageRoot/resources/icons/light/image.svg',
             'label' => Craft::t('app', 'Assets'),
         ];
         $settings[$label]['filesystems'] = [
-            'iconMask' => '@app/icons/light/folder-open.svg',
+            'iconMask' => '@packageRoot/resources/icons/light/folder-open.svg',
             'label' => Craft::t('app', 'Filesystems'),
         ];
 
@@ -516,7 +517,7 @@ class Cp extends Component
     public function areAlertsCached(): bool
     {
         // The license key status gets cached on each Craftnet request
-        return (Craft::$app->getCache()->get(App::CACHE_KEY_LICENSE_INFO) !== false);
+        return !is_null(Cache::get(App::CACHE_KEY_LICENSE_INFO));
     }
 
     /**

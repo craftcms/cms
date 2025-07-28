@@ -8,7 +8,8 @@
 namespace craft\cache;
 
 use craft\elements\db\ElementQuery;
-use yii\caching\TagDependency;
+use CraftCms\DependencyAwareCache\Dependency\TagDependency;
+use Illuminate\Cache\Repository;
 
 /**
  * ElementQueryTagDependency is used to determine if an entry query’s cache tags have changed.
@@ -23,31 +24,23 @@ class ElementQueryTagDependency extends TagDependency
      */
     public ?ElementQuery $elementQuery = null;
 
-    /**
-     * Constructor
-     *
-     * @param ElementQuery $elementQuery
-     * @param array $config
-     */
-    public function __construct(ElementQuery $elementQuery, array $config = [])
+    public function __construct(ElementQuery $elementQuery, array|string $tags = [], public ?int $ttl = null)
     {
         $this->elementQuery = $elementQuery;
-        parent::__construct($config);
+        parent::__construct($tags, $ttl);
     }
 
     public function __sleep(): array
     {
-        return ['tags', 'data', 'reusable'];
+        return ['tags', 'data'];
     }
 
-    /**
-     * @inheritdoc
-     */
-    protected function generateDependencyData($cache)
+    protected function generateData(Repository $cache): array
     {
         if ($this->elementQuery) {
             $this->tags = array_unique(array_merge($this->tags, $this->elementQuery->getCacheTags()));
         }
-        return parent::generateDependencyData($cache);
+
+        return parent::generateData($cache);
     }
 }

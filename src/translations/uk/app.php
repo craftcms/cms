@@ -2256,6 +2256,7 @@ return [
     '{item} picked up.' => 'Елемент {item} захоплено.',
     '{max, plural, =1{Author} other {Authors}}' => '{max, plural, one {Автор} few {Автори} many {Автори}=1{Автор} other {Автори}}',
     '{names} {total, plural, =1{is installed as a trial} other{are installed as trials}}.' => '{names} {total, plural, one {установлено як пробну версію} few {установлено як пробні версії} many {установлено як пробні версії}=1{установлено як пробну версію} other{установлено як пробні версії}}.',
+    '{name} Settings' => '{name} Settings',
     '{name} Setup' => 'Налаштування {name}',
     '{name} Translation Key Format' => 'Формат ключа перекладу ({name})',
     '{name} Translation Method' => 'Метод перекладу ({name})',

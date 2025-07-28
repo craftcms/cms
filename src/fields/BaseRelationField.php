@@ -1538,7 +1538,7 @@ JS, [
      */
     protected function showSearchInput(?ElementInterface $element): bool
     {
-        if (!$this->showSearchInput) {
+        if (!$this->showSearchInput || $this->sources === '*') {
             return false;
         }
 

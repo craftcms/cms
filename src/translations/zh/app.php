@@ -2256,6 +2256,7 @@ return [
     '{item} picked up.' => '{item}已拾起。',
     '{max, plural, =1{Author} other {Authors}}' => '{max, plural, =1{作者} other {作者}}',
     '{names} {total, plural, =1{is installed as a trial} other{are installed as trials}}.' => '{names} {total, plural, =1{作为试用版安装} other{作为试用版安装}}。',
+    '{name} Settings' => '{name} Settings',
     '{name} Setup' => '{name}设置',
     '{name} Translation Key Format' => '{name}翻译键格式',
     '{name} Translation Method' => '{name}翻译方法',

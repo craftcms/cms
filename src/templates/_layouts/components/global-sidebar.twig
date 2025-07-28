@@ -101,7 +101,7 @@
                             {% if item.subnav %}
                                 <ul class="nav-item__subnav" id="{{ item.id }}-subnav" data-state="{{ item.sel ?  'expanded' : 'collapsed' }}">
                                     {% for itemId, item in item.subnav %}
-                                        {% set itemIsSelected = selectedSubnavItem is defined and selectedSubnavItem == itemId -%}
+                                        {% set itemIsSelected = selectedSubnavItem is defined and selectedSubnavItem == itemId and item.url in craft.app.request.fullPath -%}
 
                                         <li>
                                             <div class="nav-item nav-item--sub {% if itemIsSelected %}sel{% endif %}">

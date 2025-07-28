@@ -26,6 +26,9 @@ use craft\models\ProjectConfigData;
 use craft\models\ReadOnlyProjectConfigData;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Str;
+use CraftCms\DependencyAwareCache\Dependency\CallbackDependency;
+use CraftCms\DependencyAwareCache\Facades\DependencyCache;
+use Illuminate\Support\Facades\Cache;
 use Symfony\Component\Yaml\Yaml;
 use Throwable;
 use yii\base\Application;
@@ -35,7 +38,6 @@ use yii\base\Exception;
 use yii\base\InvalidArgumentException;
 use yii\base\InvalidConfigException;
 use yii\base\NotSupportedException;
-use yii\caching\ExpressionDependency;
 use yii\web\ServerErrorHttpException;
 
 /**
@@ -620,8 +622,7 @@ class ProjectConfig extends Component
         $this->reset();
 
         $this->_applyingExternalChanges = true;
-        $cache = Craft::$app->getCache();
-        $cache->delete(self::CACHE_KEY);
+        Cache::forget(self::CACHE_KEY);
 
         $changes = $this->_getPendingChanges();
 
@@ -629,7 +630,7 @@ class ProjectConfig extends Component
         $anyChangesApplied = (bool)(count($changes['newItems']) + count($changes['removedItems']) + count($changes['changedItems']));
 
         // Kill the cached config data
-        $cache->delete(self::STORED_CACHE_KEY);
+        Cache::forget(self::STORED_CACHE_KEY);
         if ($anyChangesApplied) {
             $this->updateConfigVersion();
         }
@@ -704,7 +705,7 @@ class ProjectConfig extends Component
 
         if (!$force) {
             // If the file modification date hasn't changed, then no need to check the contents
-            $cachedModifiedTime = Craft::$app->getCache()->get(self::CACHE_KEY);
+            $cachedModifiedTime = Cache::get(self::CACHE_KEY);
             if (
                 $cachedModifiedTime &&
                 $cachedModifiedTime === $this->_getConfigFileModifiedTime()
@@ -726,7 +727,7 @@ class ProjectConfig extends Component
         }
 
         // Clear the cached config, just in case it conflicts with what we've got here
-        Craft::$app->getCache()->delete(self::STORED_CACHE_KEY);
+        Cache::forget(self::STORED_CACHE_KEY);
         $this->_currentWorkingConfig = null;
         return true;
     }
@@ -779,7 +780,7 @@ class ProjectConfig extends Component
      */
     public function updateParsedConfigTimes(): bool
     {
-        return Craft::$app->getCache()->set(
+        return Cache::put(
             self::CACHE_KEY,
             $this->_getConfigFileModifiedTime(),
             self::CACHE_DURATION,
@@ -1638,7 +1639,7 @@ class ProjectConfig extends Component
                 FileHelper::writeToFile($filePath, $yamlContent);
             }
         } catch (Throwable $e) {
-            Craft::$app->getCache()->set(self::FILE_ISSUES_CACHE_KEY, true, self::CACHE_DURATION);
+            Cache::put(self::FILE_ISSUES_CACHE_KEY, true, self::CACHE_DURATION);
             if (isset($basePath)) {
                 // Try to delete everything (again?) so Craft doesn't apply half-baked project config data
                 try {
@@ -1652,7 +1653,7 @@ class ProjectConfig extends Component
             throw new Exception('Unable to write new project config files', 0, $e);
         }
 
-        Craft::$app->getCache()->delete(self::FILE_ISSUES_CACHE_KEY);
+        Cache::forget(self::FILE_ISSUES_CACHE_KEY);
 
         // Let plugins know about it
         $this->trigger(self::EVENT_AFTER_WRITE_YAML_FILES);
@@ -1697,7 +1698,7 @@ class ProjectConfig extends Component
      */
     public function getHadFileWriteIssues(): bool
     {
-        return $this->writeYamlAutomatically && Craft::$app->getCache()->get(self::FILE_ISSUES_CACHE_KEY);
+        return $this->writeYamlAutomatically && Cache::get(self::FILE_ISSUES_CACHE_KEY);
     }
 
     /**
@@ -1834,7 +1835,7 @@ class ProjectConfig extends Component
         }
 
         // See if we can get away with using the cached data
-        $data = Craft::$app->getCache()->getOrSet(self::STORED_CACHE_KEY, function() {
+        $data = DependencyCache::remember(self::STORED_CACHE_KEY, $this->cacheDuration, function() {
             $data = [];
             // Load the project config data
             $rows = $this->_createProjectConfigQuery()->orderBy('path')->pairs();
@@ -1856,7 +1857,7 @@ class ProjectConfig extends Component
                 $current = Json::decode(Str::decdec($value));
             }
             return ProjectConfigHelper::cleanupConfig($data);
-        }, $this->cacheDuration, $this->getCacheDependency());
+        }, $this->getCacheDependency());
 
         return Craft::createObject(ReadOnlyProjectConfigData::class, [
             'data' => $data,
@@ -1867,14 +1868,12 @@ class ProjectConfig extends Component
     /**
      * Returns the cache dependency that should be used for project config caches.
      *
-     * @return ExpressionDependency
-     * @since 3.5.8
+     * @return CallbackDependency
+     * @since 6.0.0
      */
-    public function getCacheDependency(): ExpressionDependency
+    public function getCacheDependency(): CallbackDependency
     {
-        return new ExpressionDependency([
-            'expression' => Craft::class . '::$app->getInfo()->configVersion',
-        ]);
+        return new CallbackDependency(fn() => Craft::$app->getInfo()->configVersion);
     }
 
     /**

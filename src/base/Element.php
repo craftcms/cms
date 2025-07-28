@@ -90,6 +90,7 @@ use craft\web\UploadedFile;
 use craft\web\View;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Str;
+use CraftCms\DependencyAwareCache\Facades\DependencyCache;
 use GraphQL\Type\Definition\Type;
 use Illuminate\Support\Collection;
 use ReflectionClass;
@@ -104,6 +105,7 @@ use yii\base\InvalidCallException;
 use yii\base\InvalidConfigException;
 use yii\base\NotSupportedException;
 use yii\base\UnknownPropertyException;
+use yii\caching\TagDependency;
 use yii\db\Expression;
 use yii\db\ExpressionInterface;
 use yii\validators\BooleanValidator;
@@ -1344,12 +1346,17 @@ abstract class Element extends Component implements ElementInterface
 
         // Only cache if there's no search term or relation param
         if ($elementQuery instanceof ElementQuery && !$elementQuery->search && !$elementQuery->relatedTo) {
-            $elementQuery->cache(dependency: new ElementQueryTagDependency($elementQuery, [
-                'tags' => [
-                    'element-index-query',
-                    sprintf('element-index-query::%s', static::class),
-                ],
-            ]));
+            /**
+             * Temporary solution as the ElementQueryTagDependency already relies on
+             * the new Laravel package but query cache relies on Yii's old one.
+             */
+            $dependency = new ElementQueryTagDependency($elementQuery, [
+                'element-index-query',
+                sprintf('element-index-query::%s', static::class),
+            ]);
+            $dependency->evaluate(DependencyCache::store());
+
+            $elementQuery->cache(dependency: new TagDependency(['tags' => $dependency->tags]));
         }
 
         $elements = static::indexElements($elementQuery, $sourceKey);
@@ -4296,7 +4303,7 @@ JS, [
                 // No URL, no preview target
                 continue;
             }
-            $previewTarget['url'] = UrlHelper::siteUrl($previewTarget['url']);
+            $previewTarget['url'] = UrlHelper::siteUrl($previewTarget['url'], siteId: $this->siteId);
             if (!isset($previewTarget['refresh'])) {
                 $previewTarget['refresh'] = true;
             }

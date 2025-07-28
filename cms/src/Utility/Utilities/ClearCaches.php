@@ -13,6 +13,7 @@ use CraftCms\Cms\Utility\Utility;
 use Exception;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\File;
+use Illuminate\Support\Facades\Cache;
 
 /**
  * ClearCaches represents a ClearCaches dashboard widget.
@@ -93,8 +94,8 @@ class ClearCaches extends Utility
             [
                 'key' => 'data',
                 'label' => Craft::t('app', 'Data caches'),
-                'info' => Craft::t('app', 'Anything cached with `Craft::$app->cache->set()`'),
-                'action' => [Craft::$app->getCache(), 'flush'],
+                'info' => Craft::t('app', 'Anything cached with `Cache::put`'),
+                'action' => [Cache::getFacadeRoot(), 'clear'],
             ],
             [
                 'key' => 'asset',

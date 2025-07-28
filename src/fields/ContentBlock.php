@@ -786,13 +786,7 @@ JS, [
      */
     public function afterElementPropagate(ElementInterface $element, bool $isNew): void
     {
-        // Only do anything if we're working with a saved content block
-        /** @var ContentBlockElement $value */
-        $value = $element->getFieldValue($this->handle);
-        if ($value->id) {
-            $this->contentBlockManager()->maintainNestedElements($element, $isNew);
-        }
-
+        $this->contentBlockManager()->maintainNestedElements($element, $isNew);
         parent::afterElementPropagate($element, $isNew);
     }
 

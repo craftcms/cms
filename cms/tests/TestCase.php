@@ -8,6 +8,7 @@ use craft\services\ProjectConfig;
 use craft\test\TestSetup;
 use CraftCms\Cms\Migrations\Install;
 use CraftCms\Cms\Providers\CraftServiceProvider;
+use CraftCms\DependencyAwareCache\CacheServiceProvider;
 use CraftCms\Yii2Adapter\Yii2ServiceProvider;
 use Illuminate\Contracts\Console\Kernel;
 use Illuminate\Database\Eloquent\Factories\Factory;
@@ -92,6 +93,7 @@ class TestCase extends Orchestra
     protected function getPackageProviders($app): array
     {
         return [
+            CacheServiceProvider::class,
             CraftServiceProvider::class,
             Yii2ServiceProvider::class,
         ];

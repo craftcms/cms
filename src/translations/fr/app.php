@@ -2256,6 +2256,7 @@ return [
     '{item} picked up.' => '{item} ramassé.',
     '{max, plural, =1{Author} other {Authors}}' => '{max, plural, one {}=1{Auteur} other {Auteurs}}',
     '{names} {total, plural, =1{is installed as a trial} other{are installed as trials}}.' => '{names} {total, plural, one {}=1{est installé en tant qu\'essai} other{sont installés en tant qu\'essais}}.',
+    '{name} Settings' => '{name} Settings',
     '{name} Setup' => 'Configuration de {name}',
     '{name} Translation Key Format' => 'Format de la clef de traduction de {name}',
     '{name} Translation Method' => 'Méthode de traduction de {name}',

@@ -2256,6 +2256,7 @@ return [
     '{item} picked up.' => '{item} tekið upp.',
     '{max, plural, =1{Author} other {Authors}}' => '{max, plural, =1{Höfundur} other{Höfundar}}',
     '{names} {total, plural, =1{is installed as a trial} other{are installed as trials}}.' => '{names} {total, plural, =1{er sett upp sem prufuútgáfa} other{er uppsett sem prufa}}.',
+    '{name} Settings' => '{name} Settings',
     '{name} Setup' => '{name} Uppsetning',
     '{name} Translation Key Format' => '{name} Þýðingarlyklasnið',
     '{name} Translation Method' => '{name} Þýðingaraðferð',

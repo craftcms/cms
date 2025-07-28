@@ -4278,7 +4278,8 @@ table {
   }
 
   // table views
-  .tableview {
+
+  &:not(.datatablesorthelper) .tableview {
     margin-block: calc(var(--pane-padding, var(--pane-y-padding-default)) * -1)
       calc(
         var(--pane-padding, var(--padding)) * -1 + var(--pane-padding, var(--m))

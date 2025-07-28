@@ -78,6 +78,8 @@ use craft\models\Section;
 use craft\records\GqlSchema as GqlSchemaRecord;
 use craft\records\GqlToken as GqlTokenRecord;
 use CraftCms\Cms\Support\Str;
+use CraftCms\DependencyAwareCache\Dependency\TagDependency;
+use CraftCms\DependencyAwareCache\Facades\DependencyCache;
 use GraphQL\Error\ClientAware;
 use GraphQL\Error\DebugFlag;
 use GraphQL\Error\Error;
@@ -91,12 +93,12 @@ use GraphQL\Validator\Rules\FieldsOnCorrectType;
 use GraphQL\Validator\Rules\KnownTypeNames;
 use GraphQL\Validator\Rules\QueryComplexity;
 use GraphQL\Validator\Rules\QueryDepth;
+use Illuminate\Support\Facades\Cache;
 use Throwable;
 use yii\base\Component;
 use yii\base\Exception;
 use yii\base\InvalidArgumentException;
 use yii\base\UnknownMethodException;
-use yii\caching\TagDependency;
 
 /**
  * GraphQL service.
@@ -577,7 +579,7 @@ class Gql extends Component
      */
     public function invalidateCaches(): void
     {
-        TagDependency::invalidate(Craft::$app->getCache(), self::CACHE_TAG);
+        TagDependency::invalidate(self::CACHE_TAG);
     }
 
     /**
@@ -589,7 +591,7 @@ class Gql extends Component
      */
     public function getCachedResult(string $cacheKey): ?array
     {
-        return Craft::$app->getCache()->get($cacheKey) ?: null;
+        return Cache::get($cacheKey) ?: null;
     }
 
     /**
@@ -610,7 +612,7 @@ class Gql extends Component
         // Add the global graphql cache tag
         $dependency->tags[] = self::CACHE_TAG;
 
-        Craft::$app->getCache()->set($cacheKey, $result, $duration, $dependency);
+        DependencyCache::put($cacheKey, $result, $duration, $dependency);
     }
 
     /**
@@ -1018,7 +1020,7 @@ class Gql extends Component
             // If we're updating to 3.4+, check if the old token info for this schema was cached
             if (
                 $isNew &&
-                ($allSchemas = Craft::$app->getCache()->get('migration:add_gql_project_config_support:schemas')) &&
+                ($allSchemas = Cache::get('migration:add_gql_project_config_support:schemas')) &&
                 !empty($allSchemas[$schemaUid])
             ) {
                 $migratedSchema = $allSchemas[$schemaUid];

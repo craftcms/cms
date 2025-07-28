@@ -187,28 +187,33 @@
 {% if field.allowMultipleSources %}
 {% js %}
 (() => {
-  const $inputs = $('#{{ 'sources-field'|namespaceInputId }} input');
+  const $sourcesField = $('#{{ 'sources-field'|namespaceInputId }}');
+  const $inputs = $sourcesField.find('input');
   const $searchField = $('#{{ 'show-search-input-field'|namespaceInputId }}');
 
   const updateSearchField = function() {
     let showSearchField = false;
-    let foundChecked = false;
-    for (let i = 0; i < $inputs.length; i++) {
-      const $input = $inputs.eq(i);
-      const val = $input.val();
-      const checked = $input.prop('checked');
-      if (val === '*') {
-        if (checked) {
-          showSearchField = false;
-          break;
+    if (!$sourcesField.is(':visible')) {
+      showSearchField = true;
+    } else {
+      let foundChecked = false;
+      for (let i = 0; i < $inputs.length; i++) {
+        const $input = $inputs.eq(i);
+        const val = $input.val();
+        const checked = $input.prop('checked');
+        if (val === '*') {
+          if (checked) {
+            showSearchField = false;
+            break;
+          }
+        } else if (checked) {
+          if (foundChecked) {
+            showSearchField = false;
+            break;
+          }
+          showSearchField = true;
+          foundChecked = true;
         }
-      } else if (checked) {
-        if (foundChecked) {
-          showSearchField = false;
-          break;
-        }
-        showSearchField = true;
-        foundChecked = true;
       }
     }
 

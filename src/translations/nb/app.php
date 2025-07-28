@@ -2258,6 +2258,7 @@ Gratulerer! Craft var i stand til å sende e-post. Her er innstillingene du beny
     '{item} picked up.' => '{item} plukket opp.',
     '{max, plural, =1{Author} other {Authors}}' => '{max, plural, =1{Forfatter} other {Forfattere}}',
     '{names} {total, plural, =1{is installed as a trial} other{are installed as trials}}.' => '{names} {total, plural, =1{er installert som prøveperiode} other{er installert som prøveperioder}}.',
+    '{name} Settings' => '{name} Settings',
     '{name} Setup' => '{name}-oppsett',
     '{name} Translation Key Format' => '{name}-format for oversettingsnøkkel',
     '{name} Translation Method' => '{name} oversettingsmetode',

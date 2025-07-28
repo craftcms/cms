@@ -2256,6 +2256,7 @@ return [
     '{item} picked up.' => 'تم التقاط {item}.',
     '{max, plural, =1{Author} other {Authors}}' => '{max, plural, zero {} one {المؤلف} two {المؤلفان} few {المؤلفون} many {المؤلفون}=1{المؤلف} other {المؤلفون}}',
     '{names} {total, plural, =1{is installed as a trial} other{are installed as trials}}.' => '{names} {total, plural, zero {} one {مثبَّت كإصدار تجريبي} two {مثبَّتان كإصدارَين تجريبيَّين} few {مثبَّتة كإصدارات تجريبية} many {مثبَّتة كإصدار تجريبي}=1{مثبَّت كإصدار تجريبي} other{مثبَّتة كإصدارات تجريبية}}.',
+    '{name} Settings' => '{name} Settings',
     '{name} Setup' => 'إعداد {name}',
     '{name} Translation Key Format' => 'تنسيق مفتاح الترجمة {name}',
     '{name} Translation Method' => 'طريقة الترجمة {name}',

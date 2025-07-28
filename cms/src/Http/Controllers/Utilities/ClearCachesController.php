@@ -3,17 +3,15 @@
 namespace CraftCms\Cms\Http\Controllers\Utilities;
 
 use craft\helpers\FileHelper;
-use craft\web\Application as Craft;
 use CraftCms\Cms\Utility\Utilities;
 use CraftCms\Cms\Utility\Utilities\ClearCaches;
-use Illuminate\Container\Attributes\Give;
 use Illuminate\Foundation\Application;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Throwable;
 use yii\base\InvalidArgumentException;
-use yii\caching\TagDependency;
+use CraftCms\DependencyAwareCache\Dependency\TagDependency;
 
 class ClearCachesController
 {
@@ -55,17 +53,15 @@ class ClearCachesController
         return new JsonResponse;
     }
 
-    public function invalidateTags(Request $request, #[Give('Craft')] Craft $craft): JsonResponse
+    public function invalidateTags(Request $request): JsonResponse
     {
         $tags = $request->validate([
             'tags' => ['required', 'array'],
             'tags.*' => ['string'],
         ])['tags'];
 
-        $cache = $craft->getCache();
-
         foreach ($tags as $tag) {
-            TagDependency::invalidate($cache, $tag);
+            TagDependency::invalidate($tag);
         }
 
         return new JsonResponse;

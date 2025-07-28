@@ -2258,6 +2258,7 @@ Glückwunsch! Craft konnte erfolgreich eine E-Mail versenden. Hier sind die von 
     '{item} picked up.' => '{item} aufgenommen.',
     '{max, plural, =1{Author} other {Authors}}' => '{max, plural, =1{Autor} other {Autoren}}',
     '{names} {total, plural, =1{is installed as a trial} other{are installed as trials}}.' => '{names} {total, plural, =1{ist als Testversion} other{sind als Testversionen}} installiert.',
+    '{name} Settings' => '{name} Settings',
     '{name} Setup' => '{name} Einrichtung',
     '{name} Translation Key Format' => 'Format des {name} Übersetzungsschlüssels',
     '{name} Translation Method' => '{name} Übersetzungsmethode',
