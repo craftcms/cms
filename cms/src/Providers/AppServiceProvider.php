@@ -14,10 +14,6 @@ class AppServiceProvider extends ServiceProvider
 {
     private string $root = __DIR__.'/../..';
 
-    private array $configFiles = [
-        'general',
-    ];
-
     public function register(): void
     {
         Aliases::set('@package', FileHelper::normalizePath($this->root.'/src'));
@@ -39,10 +35,6 @@ class AppServiceProvider extends ServiceProvider
         if (! $this->app->runningInConsole()) {
             return;
         }
-
-        collect($this->configFiles)->each(function ($file) {
-            $this->publishes(["{$this->root}/config/$file.php" => config_path("craft/$file.php")], 'craftcms');
-        });
 
         $this->publishes([
             "{$this->root}/resources/views" => resource_path('views/vendor/craftcms'),
