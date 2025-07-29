@@ -16,6 +16,7 @@ use craft\helpers\Template;
 use craft\web\Application;
 use craft\web\Controller;
 use craft\web\View;
+use CraftCms\Cms\Config\GeneralConfig;
 use ErrorException;
 use Illuminate\Support\Facades\Cache;
 use RequirementsChecker;
@@ -171,7 +172,7 @@ class TemplatesController extends Controller
         }
 
         // Cache the base path.
-        Cache::put('basePath', Craft::$app->getBasePath(), Craft::$app->getConfig()->getGeneral()->cacheDuration);
+        Cache::put('basePath', Craft::$app->getBasePath(), app(GeneralConfig::class)->cacheDuration);
 
         return null;
     }
