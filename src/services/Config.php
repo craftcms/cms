@@ -13,7 +13,6 @@ use craft\helpers\App;
 use craft\helpers\Typecast;
 use CraftCms\Cms\Config\BaseConfig;
 use CraftCms\Cms\Config\GeneralConfig;
-use Illuminate\Contracts\Filesystem\FileNotFoundException;
 use Illuminate\Support\Env;
 use Illuminate\Support\Facades\Config as ConfigFacade;
 use yii\base\Component;
@@ -300,7 +299,7 @@ class Config extends Component
      *
      * @param string $name The environment variable name
      * @param string|false $value The environment variable value, or `false` if it should be removed.
-     * @throws FileNotFoundException if the .env file doesn't exist
+     * @throws \RuntimeException if the .env file doesn't exist
      * @deprecated in 6.0.0. Use `\Illuminate\Support\Env::writeVariable()` or `\Illuminate\Support\Env::removeVariable()` instead.
      */
     public function setDotEnvVar(string $name, string|false $value): void
@@ -330,7 +329,7 @@ class Config extends Component
      * @param string $name The environment variable name
      * @param bool $value The environment variable value
      *
-     * @throws FileNotFoundException if the .env file doesn't exist
+     * @throws \RuntimeException if the .env file doesn't exist
      * @since 3.7.24
      */
     public function setBooleanDotEnvVar(string $name, bool $value): void
