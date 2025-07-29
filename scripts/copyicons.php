@@ -88,7 +88,7 @@ foreach ($meta as $name => $info) {
 
     if ($style !== 'solid') {
         $aliasesPhp .= <<<PHP
-Aliases::set('@appicons/$name.svg', "@packageRoot/resources/icons/$dir/$name.svg");
+Aliases::set('@appicons/$name.svg', "@icons/$dir/$name.svg");
 
 PHP;
     }
