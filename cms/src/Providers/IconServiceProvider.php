@@ -9,11 +9,10 @@ class IconServiceProvider extends ServiceProvider
 {
     public function boot(): void
     {
-        $iconsPath = Aliases::get('@packageRoot/resources/icons');
+        Aliases::set('@icons', '@packageRoot/resources/icons');
+        Aliases::set('@appicons', '@icons/solid');
 
-        Aliases::set('@appicons', "$iconsPath/solid");
-
-        $customIconsPath = $iconsPath.DIRECTORY_SEPARATOR.'custom-icons';
+        $customIconsPath = '@icons/custom-icons';
 
         // Icons
         Aliases::set('@appicons/c-debug.svg', "$customIconsPath/c-debug.svg");
@@ -24,9 +23,9 @@ class IconServiceProvider extends ServiceProvider
         Aliases::set('@appicons/default-plugin.svg', "$customIconsPath/default-plugin.svg");
         Aliases::set('@appicons/grip-dots.svg', "$customIconsPath/grip-dots.svg");
 
-        require Aliases::get("$iconsPath/aliases.php");
+        require Aliases::get('@icons/aliases.php');
 
-        $solidIconsPath = $iconsPath.DIRECTORY_SEPARATOR.'solid';
+        $solidIconsPath = '@icons/solid';
 
         // Renamed icon aliases
         Aliases::set('@appicons/alert.svg', "$solidIconsPath/triangle-exclamation.svg");
