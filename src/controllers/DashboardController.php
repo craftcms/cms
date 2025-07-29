@@ -17,6 +17,7 @@ use craft\models\CraftSupport;
 use craft\web\assets\dashboard\DashboardAsset;
 use craft\web\Controller;
 use craft\web\UploadedFile;
+use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Str;
 use GuzzleHttp\RequestOptions;
@@ -269,7 +270,7 @@ class DashboardController extends Controller
     {
         $url = $this->request->getRequiredBodyParam('url');
         $data = $this->request->getRequiredBodyParam('data');
-        Cache::put("feed:$url", $data, Craft::$app->getConfig()->getGeneral()->cacheDuration);
+        Cache::put("feed:$url", $data, app(GeneralConfig::class)->cacheDuration);
         return $this->asSuccess();
     }
 
