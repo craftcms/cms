@@ -10,15 +10,13 @@ namespace craft\services;
 use Craft;
 use craft\config\DbConfig;
 use craft\helpers\App;
-use craft\helpers\FileHelper;
 use craft\helpers\Typecast;
 use CraftCms\Cms\Config\BaseConfig;
 use CraftCms\Cms\Config\GeneralConfig;
-use CraftCms\Cms\Support\Str;
+use Illuminate\Contracts\Filesystem\FileNotFoundException;
 use Illuminate\Support\Env;
 use Illuminate\Support\Facades\Config as ConfigFacade;
 use yii\base\Component;
-use yii\base\Exception;
 use yii\base\InvalidArgumentException;
 
 /**
@@ -116,7 +114,7 @@ class Config extends Component
     private function _createConfigObj(string $category, string $filename, BaseConfig|\craft\config\BaseConfig|null $existingConfig): object
     {
         if ($category === self::CATEGORY_GENERAL) {
-            return app(\CraftCms\Cms\Config\GeneralConfig::class);
+            return app(GeneralConfig::class);
         }
 
         $config = ConfigFacade::get("craft.$filename", []);
@@ -240,7 +238,7 @@ class Config extends Component
     {
         Craft::$app->getDeprecator()->log('Craft::$app->config->general', 'Craft::$app->config->general is deprecated. Use `app(\CraftCms\Cms\Config\GeneralConfig::class)` (PHP) or `config.craft.general` (Twig) instead.');
 
-        return app(\CraftCms\Cms\Config\GeneralConfig::class);
+        return app(GeneralConfig::class);
     }
 
     /**
@@ -266,7 +264,9 @@ class Config extends Component
      * ```
      *
      * @param string $filename
+     *
      * @return array|callable|BaseConfig
+     * @deprecated in 6.0.0. Use `\Illuminate\Support\Facades\Config::get("craft.$filename")` instead.
      */
     public function getConfigFromFile(string $filename): array|callable|BaseConfig
     {
@@ -288,6 +288,7 @@ class Config extends Component
      * Returns the path to the .env file (regardless of whether it exists).
      *
      * @return string
+     * @deprecated in 6.0.0. Use `Craft::getAlias('@dotenv')` instead.
      */
     public function getDotEnvPath(): string
     {
@@ -299,41 +300,18 @@ class Config extends Component
      *
      * @param string $name The environment variable name
      * @param string|false $value The environment variable value, or `false` if it should be removed.
-     * @throws Exception if the .env file doesn't exist
+     * @throws FileNotFoundException if the .env file doesn't exist
+     * @deprecated in 6.0.0. Use `\Illuminate\Support\Env::writeVariable()` or `\Illuminate\Support\Env::removeVariable()` instead.
      */
     public function setDotEnvVar(string $name, string|false $value): void
     {
-        $path = $this->getDotEnvPath();
-
-        if (!file_exists($path)) {
-            throw new Exception("No .env file exists at $path");
-        }
-
-        $contents = file_get_contents($path);
-        $qName = preg_quote($name, '/');
+        $path = Craft::getAlias('@dotenv');
 
         if ($value === false) {
-            $contents = preg_replace("/\s*^\s*$qName=.*/m", '', $contents);
+            Env::removeVariable($name, $path);
         } else {
-            $slashedValue = addslashes($value);
-            // Only surround with quotes if the value contains a space
-            if (str_contains($slashedValue, ' ') || str_contains($slashedValue, '#')) {
-                $slashedValue = "\"$slashedValue\"";
-            }
-            $def = "$name=$slashedValue";
-
-            $token = Str::random(36);
-            $contents = preg_replace("/^\s*$qName=.*/m", $token, $contents, -1, $count);
-
-            if ($count !== 0) {
-                $contents = str_replace($token, $def, $contents);
-            } else {
-                $contents = rtrim($contents);
-                $contents = ($contents ? $contents . PHP_EOL . PHP_EOL : '') . $def . PHP_EOL;
-            }
+            Env::writeVariable($name, $value, $path, overwrite: true);
         }
-
-        FileHelper::writeToFile($path, $contents);
 
         // Now actually set the environment variable
         if ($value === false) {
@@ -351,7 +329,8 @@ class Config extends Component
      *
      * @param string $name The environment variable name
      * @param bool $value The environment variable value
-     * @throws Exception if the .env file doesn't exist
+     *
+     * @throws FileNotFoundException if the .env file doesn't exist
      * @since 3.7.24
      */
     public function setBooleanDotEnvVar(string $name, bool $value): void
@@ -363,6 +342,6 @@ class Config extends Component
             default => $value ? 'true' : 'false',
         };
 
-        $this->setDotEnvVar($name, $value);
+        Env::writeVariable($name, $value, Craft::getAlias('@dotenv'), true);
     }
 }

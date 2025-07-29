@@ -11,7 +11,6 @@ use Craft;
 use craft\console\Controller;
 use craft\helpers\Console;
 use Illuminate\Support\Env;
-use yii\base\Exception;
 use yii\console\ExitCode;
 
 /**
@@ -65,8 +64,8 @@ class EnvController extends Controller
         }
 
         try {
-            Craft::$app->getConfig()->setDotEnvVar(trim($name), trim($value));
-        } catch (Exception $e) {
+            Env::writeVariable(trim($name), trim($value), Craft::getAlias('@dotenv'));
+        } catch (\Exception $e) {
             $this->stderr($e->getMessage() . "\n", Console::FG_RED);
             return ExitCode::UNSPECIFIED_ERROR;
         }
@@ -87,8 +86,8 @@ class EnvController extends Controller
     public function actionRemove(string $name): int
     {
         try {
-            Craft::$app->getConfig()->setDotEnvVar($name, false);
-        } catch (Exception $e) {
+            Env::removeVariable($name, Craft::getAlias('@dotenv'));
+        } catch (\Exception $e) {
             $this->stderr($e->getMessage() . "\n", Console::FG_RED);
             return ExitCode::UNSPECIFIED_ERROR;
         }

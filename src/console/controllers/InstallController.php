@@ -17,6 +17,7 @@ use craft\helpers\Console;
 use craft\helpers\Install as InstallHelper;
 use craft\models\Site;
 use CraftCms\Cms\Migrations\Install;
+use Illuminate\Support\Env;
 use yii\base\Exception;
 use yii\console\ExitCode;
 
@@ -117,7 +118,6 @@ class InstallController extends Controller
 
         $this->run('setup/keys');
 
-        $configService = Craft::$app->getConfig();
         $generalConfig = app(\CraftCms\Cms\Config\GeneralConfig::class);
 
         $user = new User();
@@ -198,7 +198,7 @@ class InstallController extends Controller
         // if it’s not already set to an alias or environment variable
         if (!in_array($site->getBaseUrl(false)[0], ['@', '$'])) {
             try {
-                $configService->setDotEnvVar('PRIMARY_SITE_URL', $site->baseUrl);
+                Env::writeVariable('PRIMARY_SITE_URL', $site->baseUrl, Craft::getAlias('@dotenv'));
                 $site->baseUrl = '$PRIMARY_SITE_URL';
             } catch (Exception) {
                 // that's fine, we'll just store the entered URL

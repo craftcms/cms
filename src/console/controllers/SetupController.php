@@ -657,8 +657,7 @@ EOD;
      */
     private function _setEnvVar(string $name, mixed $value): bool
     {
-        $configService = Craft::$app->getConfig();
-        $path = $configService->getDotEnvPath();
+        $path = Craft::getAlias('@dotenv');
 
         if (!file_exists($path)) {
             if (!$this->interactive || $this->confirm(PHP_EOL . "A .env file doesn't exist at $path. Would you like to create one?", true)) {
@@ -677,7 +676,7 @@ EOD;
         }
 
         try {
-            $configService->setDotEnvVar($name, $value ?? '');
+            Env::writeVariable($name, $value ?? '', $path);
         } catch (Throwable $e) {
             $this->stderr("Unable to set $name on $path: {$e->getMessage()}" . PHP_EOL, Console::FG_RED);
             return false;

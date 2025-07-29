@@ -162,11 +162,9 @@ class SystemSettingsController extends Controller
 
         // See if it looks like config/app.php is overriding the mailer component
         $customMailerFiles = [];
-        $configService = Craft::$app->getConfig();
         foreach (['app', 'app.web', 'app.console'] as $file) {
-            $config = Config::get("craft.$file", []);
-            if (isset($config['components']) && array_key_exists('mailer', $config['components'])) {
-                $customMailerFiles[] = $configService->getConfigFilePath($file);
+            if (Config::has("craft.$file.components.mailer")) {
+                $customMailerFiles[] = config_path("$file.php");
             }
         }
 
