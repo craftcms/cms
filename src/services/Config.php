@@ -14,9 +14,9 @@ use craft\helpers\FileHelper;
 use craft\helpers\Typecast;
 use CraftCms\Cms\Config\BaseConfig;
 use CraftCms\Cms\Config\GeneralConfig;
-use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Str;
 use Illuminate\Support\Env;
+use Illuminate\Support\Facades\Config as ConfigFacade;
 use yii\base\Component;
 use yii\base\Exception;
 use yii\base\InvalidArgumentException;
@@ -119,7 +119,7 @@ class Config extends Component
             return app(\CraftCms\Cms\Config\GeneralConfig::class);
         }
 
-        $config = $this->getConfigFromFile($filename);
+        $config = ConfigFacade::get("craft.$filename", []);
 
         if ($existingConfig && empty($config)) {
             return $existingConfig;
@@ -270,51 +270,7 @@ class Config extends Component
      */
     public function getConfigFromFile(string $filename): array|callable|BaseConfig
     {
-        $path = $this->getConfigFilePath($filename);
-
-        if (!file_exists($path)) {
-            return [];
-        }
-
-        $loadingConfig = $this->_loadingConfigFile;
-        $this->_loadingConfigFile = $filename;
-
-        $config = $this->_configFromFileInternal($path);
-
-        $this->_loadingConfigFile = $loadingConfig;
-        return $config;
-    }
-
-    private function _configFromFileInternal(string $path): array|callable|BaseConfig
-    {
-        $config = @include $path;
-
-        if ($config instanceof BaseConfig || is_callable($config)) {
-            return $config;
-        }
-
-        if (!is_array($config)) {
-            return [];
-        }
-
-        // If it’s not a multi-environment config, return the whole thing
-        if (!array_key_exists('*', $config)) {
-            return $config;
-        }
-
-        // If no environment was specified, just look in the '*' array
-        if (!isset($this->env)) {
-            return $config['*'];
-        }
-
-        $mergedConfig = [];
-        foreach ($config as $env => $envConfig) {
-            if ($env === '*' || str_contains($this->env, $env)) {
-                $mergedConfig = Arr::merge($mergedConfig, $envConfig);
-            }
-        }
-
-        return $mergedConfig;
+        return ConfigFacade::get("craft.$filename", []);
     }
 
     /**

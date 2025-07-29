@@ -48,6 +48,8 @@ class Yii2ServiceProvider extends ServiceProvider
             defined('CRAFT_CONFIG_PATH') || define('CRAFT_CONFIG_PATH', config_path('craft'));
         }
 
+        $this->app->useConfigPath(CRAFT_CONFIG_PATH);
+
         if (in_array(DB::connection()->getDriverName(), ['pgsql', 'mysql'])) {
             defined('CRAFT_DB_DRIVER') || define('CRAFT_DB_DRIVER', DB::connection()->getDriverName());
         }

@@ -23,6 +23,7 @@ use craft\web\assets\admintable\AdminTableAsset;
 use craft\web\assets\generalsettings\GeneralSettingsAsset;
 use craft\web\Controller;
 use CraftCms\Cms\Support\Arr;
+use Illuminate\Support\Facades\Config;
 use yii\base\Exception;
 use yii\web\ForbiddenHttpException;
 use yii\web\NotFoundHttpException;
@@ -163,7 +164,7 @@ class SystemSettingsController extends Controller
         $customMailerFiles = [];
         $configService = Craft::$app->getConfig();
         foreach (['app', 'app.web', 'app.console'] as $file) {
-            $config = $configService->getConfigFromFile($file);
+            $config = Config::get("craft.$file", []);
             if (isset($config['components']) && array_key_exists('mailer', $config['components'])) {
                 $customMailerFiles[] = $configService->getConfigFilePath($file);
             }

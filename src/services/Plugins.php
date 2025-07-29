@@ -28,6 +28,7 @@ use DateTime;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Env;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Config;
 use ReflectionClass;
 use ReflectionException;
 use Throwable;
@@ -937,7 +938,7 @@ class Plugins extends Component
 
             $settings = array_merge(
                 $info['settings'] ?? [],
-                Craft::$app->getConfig()->getConfigFromFile($handle)
+                Config::get("craft.$handle", []),
             );
 
             if ($settings !== []) {

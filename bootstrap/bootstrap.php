@@ -240,8 +240,8 @@ $config = Arr::merge(
 );
 
 $localConfig = Arr::merge(
-    $configService->getConfigFromFile('app'),
-    $configService->getConfigFromFile("app.{$appType}")
+    \Illuminate\Support\Facades\Config::get('craft.app', []),
+    \Illuminate\Support\Facades\Config::get("app.{$appType}", []),
 );
 
 $safeMode = Env::get('CRAFT_SAFE_MODE') ?? $generalConfig->safeMode;

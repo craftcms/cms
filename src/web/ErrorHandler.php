@@ -14,6 +14,7 @@ use craft\helpers\App;
 use craft\helpers\Json;
 use craft\helpers\Template;
 use GuzzleHttp\Exception\ClientException;
+use Illuminate\Support\Facades\Config;
 use Throwable;
 use Twig\Error\Error as TwigError;
 use Twig\Error\LoaderError as TwigLoaderError;
@@ -64,7 +65,7 @@ class ErrorHandler extends \yii\web\ErrorHandler
 
         // 404?
         if ($exception instanceof HttpException && $exception->statusCode === 404) {
-            $redirectRules = Craft::$app->getConfig()->getConfigFromFile('redirects');
+            $redirectRules = Config::get('craft.redirects', []);
             if ($redirectRules) {
                 foreach ($redirectRules as $from => $rule) {
                     if (!$rule instanceof RedirectRule) {
