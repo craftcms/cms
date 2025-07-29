@@ -11,7 +11,6 @@ use Craft;
 use craft\base\Chippable;
 use craft\base\ElementInterface;
 use craft\base\Iconic;
-use craft\base\UtilityInterface;
 use craft\elements\db\NestedElementQueryInterface;
 use craft\enums\CmsEdition;
 use craft\enums\LicenseKeyStatus;
@@ -32,15 +31,18 @@ use craft\helpers\Update as UpdateHelper;
 use craft\helpers\UrlHelper;
 use craft\models\Update;
 use craft\models\Updates;
-use craft\utilities\Updates as UpdatesUtility;
 use craft\web\Controller;
 use craft\web\ServiceUnavailableHttpException;
 use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Utility\Utilities;
+use CraftCms\Cms\Utility\Utilities\Updates as UpdatesUtility;
+use CraftCms\DependencyAwareCache\Dependency\FileDependency;
+use CraftCms\DependencyAwareCache\Facades\DependencyCache;
 use DateInterval;
+use Illuminate\Support\Facades\Cache;
 use Throwable;
 use yii\base\InvalidArgumentException;
 use yii\base\InvalidConfigException;
-use yii\caching\FileDependency;
 use yii\web\BadRequestHttpException;
 use yii\web\Cookie;
 use yii\web\ForbiddenHttpException;
@@ -373,16 +375,8 @@ class AppController extends Controller
     {
         $this->requireAcceptsJson();
 
-        $badgeCount = 0;
-        $utilities = Craft::$app->getUtilities()->getAuthorizedUtilityTypes();
-
-        foreach ($utilities as $class) {
-            /** @var UtilityInterface $class */
-            $badgeCount += $class::badgeCount();
-        }
-
         return $this->asJson([
-            'badgeCount' => $badgeCount,
+            'badgeCount' => app(Utilities::class)->getUtilitiesBadgeCount(),
         ]);
     }
 
@@ -905,10 +899,10 @@ class AppController extends Controller
         $freeOnly = (bool)($this->request->getBodyParam('freeOnly') ?? false);
         $noSearch = $search === '';
 
+        $cacheKey = sprintf('icon-picker-options-list-html%s', $freeOnly ? ':free' : '');
+
         if ($noSearch) {
-            $cache = Craft::$app->getCache();
-            $cacheKey = sprintf('icon-picker-options-list-html%s', $freeOnly ? ':free' : '');
-            $listHtml = $cache->get($cacheKey);
+            $listHtml = Cache::get($cacheKey);
             if ($listHtml !== false) {
                 return $this->asJson([
                     'listHtml' => $listHtml,
@@ -919,7 +913,7 @@ class AppController extends Controller
             $searchTerms = explode(' ', Search::normalizeKeywords($search));
         }
 
-        $indexPath = '@app/icons/index.php';
+        $indexPath = '@packageRoot/resources/icons/index.php';
         $icons = require Craft::getAlias($indexPath);
         $output = [];
         $scores = [];
@@ -956,10 +950,11 @@ class AppController extends Controller
         $listHtml = implode('', $output);
 
         if ($noSearch) {
-            /** @phpstan-ignore-next-line */
-            $cache->set($cacheKey, $listHtml, dependency: new FileDependency([
-                'fileName' => $indexPath,
-            ]));
+            DependencyCache::put(
+                key: $cacheKey,
+                value: $listHtml,
+                dependency: new FileDependency($indexPath),
+            );
         }
 
         return $this->asJson([

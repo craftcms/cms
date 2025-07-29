@@ -28,9 +28,12 @@ use craft\search\SearchQueryTerm;
 use craft\search\SearchQueryTermGroup;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Str;
+use CraftCms\DependencyAwareCache\Facades\DependencyCache;
+use Illuminate\Support\Facades\Cache;
 use Throwable;
 use yii\base\Component;
 use yii\base\Exception;
+use yii\caching\TagDependency;
 use yii\db\Exception as DbException;
 use yii\db\Expression;
 use yii\db\Schema;
@@ -433,14 +436,19 @@ class Search extends Component
             return [];
         }
 
+        /**
+         * Temporary solution as the ElementQueryTagDependency already relies on
+         * the new Laravel package but query cache relies on Yii's old one.
+         */
+        $dependency = new ElementQueryTagDependency($elementQuery, [
+            'element-index-query',
+            sprintf('element-index-query::%s', $elementQuery->elementType),
+        ]);
+        $dependency->evaluate(DependencyCache::store());
+
         $results = $query
             ->andWhere(['elementId' => $elementQuery])
-            ->cache(true, new ElementQueryTagDependency($elementQuery, [
-                'tags' => [
-                    'element-index-query',
-                    sprintf('element-index-query::%s', $elementQuery->elementType),
-                ],
-            ]))
+            ->cache(true, new TagDependency(['tags' => $dependency->tags]))
             ->all();
 
         // Score the results

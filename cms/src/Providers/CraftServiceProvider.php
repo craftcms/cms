@@ -11,6 +11,7 @@ class CraftServiceProvider extends AggregateServiceProvider
     protected $providers = [
         ConfigServiceProvider::class,
         AppServiceProvider::class,
+        IconServiceProvider::class,
         ConsoleServiceProvider::class,
     ];
 }

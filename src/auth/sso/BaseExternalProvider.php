@@ -18,6 +18,7 @@ use craft\events\UserGroupsAssignEvent;
 use craft\helpers\Html;
 use craft\helpers\UrlHelper;
 use craft\services\Sso;
+use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Str;
 
@@ -191,7 +192,7 @@ abstract class BaseExternalProvider extends BaseProvider
 
         // If the user has an ID, don't mess with username/em
         if (!$user->getId()) {
-            if (!$user->username || \CraftCms\Cms\Craft::generalConfig()->useEmailAsUsername) {
+            if (!$user->username || app(GeneralConfig::class)->useEmailAsUsername) {
                 $user->username = $user->email;
             }
         }

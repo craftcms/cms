@@ -17,6 +17,7 @@ use craft\web\Application;
 use craft\web\Controller;
 use craft\web\View;
 use ErrorException;
+use Illuminate\Support\Facades\Cache;
 use RequirementsChecker;
 use yii\base\UserException;
 use yii\web\ErrorHandler;
@@ -170,7 +171,7 @@ class TemplatesController extends Controller
         }
 
         // Cache the base path.
-        Craft::$app->getCache()->set('basePath', Craft::$app->getBasePath());
+        Cache::put('basePath', Craft::$app->getBasePath(), Craft::$app->getConfig()->getGeneral()->cacheDuration);
 
         return null;
     }

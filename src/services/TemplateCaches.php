@@ -12,12 +12,14 @@ use craft\helpers\DateTimeHelper;
 use craft\helpers\Html;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Str;
+use CraftCms\DependencyAwareCache\Dependency\TagDependency;
+use CraftCms\DependencyAwareCache\Facades\DependencyCache;
 use DateTime;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Cache;
 use Throwable;
 use yii\base\Component;
 use yii\base\Exception;
-use yii\caching\TagDependency;
 use yii\web\AssetBundle;
 
 /**
@@ -65,9 +67,9 @@ class TemplateCaches extends Component
         }
 
         $cacheKey = $this->_cacheKey($key, $global);
-        $data = Craft::$app->getCache()->get($cacheKey);
+        $data = Cache::get($cacheKey);
 
-        if ($data === false) {
+        if (!$data) {
             return null;
         }
 
@@ -262,7 +264,7 @@ class TemplateCaches extends Component
         }
 
         /** @phpstan-ignore-next-line */
-        Craft::$app->getCache()->set($cacheKey, $cacheValue, $duration, $dep);
+        DependencyCache::put($cacheKey, $cacheValue, $duration, $dep);
     }
 
     private function _parseInlineResourceTags(array $tags): array

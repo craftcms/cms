@@ -113,6 +113,7 @@ use craft\web\View;
 use CraftCms\Cms\Announcement\Announcements;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Env;
+use Illuminate\Support\Facades\Cache as CacheFacade;
 use Symfony\Component\VarDumper\Caster\ReflectionCaster;
 use Symfony\Component\VarDumper\Cloner\VarCloner;
 use Symfony\Component\VarDumper\Dumper\AbstractDumper;
@@ -624,7 +625,7 @@ trait ApplicationTrait
      */
     public function getLicensedEdition(): ?CmsEdition
     {
-        $licenseInfo = $this->getCache()->get(App::CACHE_KEY_LICENSE_INFO) ?: [];
+        $licenseInfo = CacheFacade::get(App::CACHE_KEY_LICENSE_INFO, []);
 
         if (!isset($licenseInfo['craft']['edition'])) {
             return null;
@@ -752,14 +753,12 @@ trait ApplicationTrait
             return false;
         }
 
-        /** @var Cache $cache */
-        $cache = $this->getCache();
         $cacheKey = sprintf('editionTestableDomain@%s', $this->getRequest()->getHostName());
-        if (!$cache->exists($cacheKey)) {
+        if (!CacheFacade::has($cacheKey)) {
             // err on the side of allowing it
             return true;
         }
-        return (bool)$cache->get($cacheKey);
+        return (bool) CacheFacade::get($cacheKey);
     }
 
     /**
@@ -1520,6 +1519,7 @@ trait ApplicationTrait
     /**
      * Returns the utilities service.
      *
+     * @deprecated in 6.0.0. [[app(\CraftCms\Cms\Utility\Utilities)]] should be used instead.
      * @return Utilities The utilities service
      */
     public function getUtilities(): Utilities

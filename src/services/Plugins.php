@@ -27,6 +27,7 @@ use CraftCms\Cms\Support\Str;
 use DateTime;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Env;
+use Illuminate\Support\Facades\Cache;
 use ReflectionClass;
 use ReflectionException;
 use Throwable;
@@ -277,7 +278,7 @@ class Plugins extends Component
 
         if ($anyVersionsChanged) {
             // Clear the license info cache
-            Craft::$app->getCache()->delete(App::CACHE_KEY_LICENSE_INFO);
+            Cache::forget(App::CACHE_KEY_LICENSE_INFO);
         }
 
         // Sort enabled plugins by their names
@@ -870,7 +871,7 @@ class Plugins extends Component
         );
 
         // Clear the license info cache
-        Craft::$app->getCache()->delete(App::CACHE_KEY_LICENSE_INFO);
+        Cache::forget(App::CACHE_KEY_LICENSE_INFO);
     }
 
     /**
@@ -1017,7 +1018,7 @@ class Plugins extends Component
         $info['hasReadOnlyCpSettings'] = $plugin->hasReadOnlyCpSettings ?? false;
         $info['licenseKey'] = $pluginInfo['licenseKey'] ?? null;
 
-        $licenseInfo = Craft::$app->getCache()->get(App::CACHE_KEY_LICENSE_INFO) ?? [];
+        $licenseInfo = Cache::get(App::CACHE_KEY_LICENSE_INFO, []);
         $pluginCacheKey = Str::start($handle, 'plugin-');
         $info['licenseId'] = $licenseInfo[$pluginCacheKey]['id'] ?? null;
         $info['licensedEdition'] = $licenseInfo[$pluginCacheKey]['edition'] ?? null;
@@ -1198,7 +1199,7 @@ class Plugins extends Component
         }
 
         // Clear the license info cache
-        Craft::$app->getCache()->delete(App::CACHE_KEY_LICENSE_INFO);
+        Cache::forget(App::CACHE_KEY_LICENSE_INFO);
 
         return true;
     }

@@ -4,6 +4,9 @@ namespace CraftCms\Yii2Adapter;
 
 use craft\console\controllers\HelpController;
 use craft\helpers\App;
+use craft\services\Utilities;
+use craft\utilities\AssetIndexes;
+use craft\utilities\ClearCaches;
 use CraftCms\Aliases\Facades\Aliases;
 use CraftCms\Cms\User\Models\User;
 use CraftCms\Yii2Adapter\Console\LegacyCraftCommand;
@@ -73,18 +76,22 @@ class Yii2ServiceProvider extends ServiceProvider
             };
 
             if ($this->app->runningInConsole() && !$this->app->runningUnitTests()) {
-                return require $basePath . '/bootstrap/console.php';
+                $app = require $basePath . '/bootstrap/console.php';
+            } else {
+                /**
+                 * Yii seems weird about these
+                 */
+                $_SERVER = array_merge($_SERVER, [
+                    'SCRIPT_FILENAME' => public_path('index.php'),
+                    'SCRIPT_NAME' => '/index.php',
+                ]);
+
+                $app = require $basePath . '/bootstrap/web.php';
             }
 
-            /**
-             * Yii seems weird about these
-             */
-            $_SERVER = array_merge($_SERVER, [
-                'SCRIPT_FILENAME' => public_path('index.php'),
-                'SCRIPT_NAME' => '/index.php',
-            ]);
+            $this->bootEvents();
 
-            return require $basePath . '/bootstrap/web.php';
+            return $app;
         });
     }
 
@@ -94,8 +101,8 @@ class Yii2ServiceProvider extends ServiceProvider
          * When running in a Craft 5 upgraded project, the User model
          * won't exist. As such we need to use the base model.
          */
-        if (!class_exists(config('auth.providers.users.model'))) {
-            config()->set('auth.providers.users.model', User::class);
+        if (!class_exists(config('auth.providers.users.model')) || !Config::get('auth.providers.users.model') instanceof User) {
+            Config::set('auth.providers.users.model', User::class);
         }
 
         /**
@@ -201,5 +208,23 @@ class Yii2ServiceProvider extends ServiceProvider
         }
 
         return " {{$definitionSignature}}";
+    }
+
+    /**
+     * Every legacy class that fires Yii events should listen to
+     * the relevant Laravel event and trigger the Yii event.
+     */
+    private function bootEvents(): void
+    {
+        /**
+         * Services
+         */
+        Utilities::registerEvents();
+
+        /**
+         * Utilities
+         */
+        AssetIndexes::registerEvents();
+        ClearCaches::registerEvents();
     }
 }

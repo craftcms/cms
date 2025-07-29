@@ -26,6 +26,7 @@ use craft\helpers\Path;
 use craft\helpers\UrlHelper;
 use craft\queue\QueueLogBehavior;
 use CraftCms\Cms\Support\Arr;
+use Illuminate\Support\Facades\Cache;
 use IntlDateFormatter;
 use IntlException;
 use ReflectionClass;
@@ -567,7 +568,7 @@ class Application extends \yii\web\Application
         $this->end();
     }
 
-    private function resourceSourcePathByHash(string $hash): string|false
+    private function resourceSourcePathByHash(string $hash): string|null
     {
         try {
             return (new Query())
@@ -577,7 +578,7 @@ class Application extends \yii\web\Application
                 ->scalar();
         } catch (DbException) {
             // Craft isn't installed yet. See if it's cached as a fallback.
-            return Craft::$app->getCache()->get(Craft::$app->getAssetManager()->getCacheKeyForPathHash($hash));
+            return Cache::get(Craft::$app->getAssetManager()->getCacheKeyForPathHash($hash));
         }
     }
 
@@ -695,9 +696,9 @@ class Application extends \yii\web\Application
                 )
             )
         ) {
-            $cachedBasePath = $this->getCache()->get('basePath');
+            $cachedBasePath = Cache::get('basePath');
 
-            if ($cachedBasePath === false || $cachedBasePath !== $this->getBasePath()) {
+            if (is_null($cachedBasePath) || $cachedBasePath !== $this->getBasePath()) {
                 return $this->runAction('templates/requirements-check');
             }
         }

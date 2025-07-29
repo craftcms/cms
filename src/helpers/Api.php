@@ -12,6 +12,7 @@ use craft\enums\LicenseKeyStatus;
 use craft\errors\InvalidLicenseKeyException;
 use ErrorException;
 use Illuminate\Support\Env;
+use Illuminate\Support\Facades\Cache;
 use Imagick;
 
 /**
@@ -160,11 +161,10 @@ abstract class Api
         $headers = self::_normalizeHeaders(($headers));
 
         // cache license info from the response
-        $cache = Craft::$app->getCache();
-        $duration = 31536000;
+        $duration = now()->addYear();
         if (isset($headers['x-craft-allow-trials'])) {
             $cacheKey = sprintf('editionTestableDomain@%s', Craft::$app->getRequest()->getHostName());
-            $cache->set($cacheKey, (int)reset($headers['x-craft-allow-trials']), $duration);
+            Cache::put($cacheKey, (int)reset($headers['x-craft-allow-trials']), $duration);
         }
 
         // did we just get a new license key?
@@ -192,7 +192,7 @@ abstract class Api
         }
 
         if (isset($headers['x-craft-license-domain'])) {
-            $cache->set('licensedDomain', reset($headers['x-craft-license-domain']), $duration);
+            Cache::put('licensedDomain', reset($headers['x-craft-license-domain']), $duration);
         }
 
         // did we just get any new plugin license keys?
@@ -207,7 +207,7 @@ abstract class Api
 
         // license info
         if (isset($headers['x-craft-license-info'])) {
-            $oldLicenseInfo = $cache->get(App::CACHE_KEY_LICENSE_INFO) ?: [];
+            $oldLicenseInfo = Cache::get(App::CACHE_KEY_LICENSE_INFO, []);
             $licenseInfo = [];
             $allCombinedInfo = array_filter(explode(',', reset($headers['x-craft-license-info'])));
             foreach ($allCombinedInfo as $combinedInfo) {
@@ -237,12 +237,12 @@ abstract class Api
                 ];
             }
 
-            $cache->set(App::CACHE_KEY_LICENSE_INFO, $licenseInfo, $duration);
+            Cache::put(App::CACHE_KEY_LICENSE_INFO, $licenseInfo, $duration);
             $request = Craft::$app->getRequest();
             if ($request->getIsWebRequest()) {
-                $cache->set(App::CACHE_KEY_LICENSE_INFO_HOST, $request->getHostName(), $duration);
+                Cache::put(App::CACHE_KEY_LICENSE_INFO_HOST, $request->getHostName(), $duration);
             } else {
-                $cache->delete(App::CACHE_KEY_LICENSE_INFO_HOST);
+                Cache::forget(App::CACHE_KEY_LICENSE_INFO_HOST);
             }
         }
     }

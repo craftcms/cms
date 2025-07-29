@@ -11,11 +11,12 @@ use Craft;
 use craft\services\ProjectConfig as ProjectConfigService;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Str;
+use CraftCms\DependencyAwareCache\Dependency\AllDependencies;
+use CraftCms\DependencyAwareCache\Dependency\CallbackDependency;
+use CraftCms\DependencyAwareCache\Facades\DependencyCache;
 use StdClass;
 use yii\base\InvalidArgumentException;
 use yii\base\InvalidConfigException;
-use yii\caching\ChainedDependency;
-use yii\caching\ExpressionDependency;
 
 /**
  * Class ProjectConfig
@@ -627,7 +628,7 @@ class ProjectConfig
         $projectConfig = Craft::$app->getProjectConfig();
         $cacheKey = ProjectConfigService::DIFF_CACHE_KEY . ($invert ? ':reverse' : '');
 
-        return Craft::$app->getCache()->getOrSet($cacheKey, function() use ($projectConfig, $invert): string {
+        return DependencyCache::rememberForever($cacheKey, function() use ($projectConfig, $invert): string {
             $currentConfig = static::cleanupConfig($projectConfig->get());
             $pendingConfig = static::cleanupConfig($projectConfig->get(null, true));
 
@@ -635,13 +636,9 @@ class ProjectConfig
                 return Diff::diff($pendingConfig, $currentConfig);
             }
             return Diff::diff($currentConfig, $pendingConfig);
-        }, null, new ChainedDependency([
-            'dependencies' => [
-                $projectConfig->getCacheDependency(),
-                new ExpressionDependency([
-                    'expression' => 'md5(' . Json::class . '::encode(' . Craft::class . '::$app->getProjectConfig()->get(null, true)))',
-                ]),
-            ],
+        }, new AllDependencies([
+            $projectConfig->getCacheDependency(),
+            new CallbackDependency(fn(): string => md5(Json::encode(Craft::$app->getProjectConfig()->get(null, true)))),
         ]));
     }
 

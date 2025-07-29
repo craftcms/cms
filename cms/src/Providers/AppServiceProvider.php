@@ -5,6 +5,7 @@ namespace CraftCms\Cms\Providers;
 use craft\helpers\FileHelper;
 use CraftCms\Aliases\Facades\Aliases;
 use CraftCms\Cms\Http\Middleware\ExtractNamespace;
+use CraftCms\Cms\Http\Middleware\HandleActionRequests;
 use CraftCms\Cms\Http\Middleware\RequireCpRequest;
 use Illuminate\Foundation\Console\AboutCommand;
 use Illuminate\Routing\Router;
@@ -16,7 +17,8 @@ class AppServiceProvider extends ServiceProvider
 
     public function register(): void
     {
-        Aliases::set('@package', FileHelper::normalizePath($this->root.'/src'));
+        Aliases::set('@packageRoot', FileHelper::normalizePath($this->root));
+        Aliases::set('@package', '@packageRoot/src');
     }
 
     public function boot(): void
@@ -29,7 +31,7 @@ class AppServiceProvider extends ServiceProvider
 
         $this->bootMiddleware();
 
-        $this->loadRoutesFrom("{$this->root}/routes/web.php");
+        $this->loadRoutesFrom("{$this->root}/routes/routes.php");
         $this->loadViewsFrom("{$this->root}/resources/views", 'craftcms');
 
         if (! $this->app->runningInConsole()) {
@@ -51,6 +53,7 @@ class AppServiceProvider extends ServiceProvider
 
         collect([
             ExtractNamespace::class,
+            HandleActionRequests::class,
         ])->each(fn ($middleware) => $router->pushMiddlewareToGroup('craft', $middleware));
 
         collect([

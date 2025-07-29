@@ -35,5 +35,5 @@ test('env overrides get precedence over config', function () {
     // Simulate the application being loaded
     app(ConfigServiceProvider::class, ['app' => app()])->boot();
 
-    expect(\CraftCms\Cms\Craft::generalConfig()->cpTrigger)->toBe('adminus');
+    expect(app(GeneralConfig::class)->cpTrigger)->toBe('adminus');
 });

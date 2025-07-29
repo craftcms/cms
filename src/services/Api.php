@@ -16,6 +16,7 @@ use GuzzleHttp\Client;
 use GuzzleHttp\Exception\GuzzleException;
 use GuzzleHttp\Exception\RequestException;
 use GuzzleHttp\RequestOptions;
+use Illuminate\Support\Facades\Cache;
 use Psr\Http\Message\ResponseInterface;
 use yii\base\Component;
 
@@ -98,15 +99,14 @@ class Api extends Component
     public function getCountries(): array
     {
         $cacheKey = 'countries';
-        $cache = Craft::$app->getCache();
 
-        if ($cache->exists($cacheKey)) {
-            return $cache->get($cacheKey);
+        if (Cache::has($cacheKey)) {
+            return Cache::get($cacheKey);
         }
 
         $response = $this->request('GET', 'countries');
         $countries = Json::decode((string)$response->getBody())['countries'];
-        $cache->set($cacheKey, $countries, 60 * 60 * 24 * 7);
+        Cache::put($cacheKey, $countries, now()->addDays(7));
 
         return $countries;
     }
