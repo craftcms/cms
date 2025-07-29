@@ -116,7 +116,7 @@ class Config extends Component
     private function _createConfigObj(string $category, string $filename, BaseConfig|\craft\config\BaseConfig|null $existingConfig): object
     {
         if ($category === self::CATEGORY_GENERAL) {
-            return \CraftCms\Cms\Craft::generalConfig();
+            return app(\CraftCms\Cms\Config\GeneralConfig::class);
         }
 
         $config = $this->getConfigFromFile($filename);
@@ -234,13 +234,13 @@ class Config extends Component
      * ```
      *
      * @return GeneralConfig
-     * @deprecated in 6.0.0. Use `\CraftCms\Cms\Craft::generalConfig()` (PHP) or `config.craft.general` (Twig) instead.
+     * @deprecated in 6.0.0. Use `app(\CraftCms\Cms\Config\GeneralConfig::class)` (PHP) or `config.craft.general` (Twig) instead.
      */
     public function getGeneral(): GeneralConfig
     {
-        Craft::$app->getDeprecator()->log('Craft::$app->config->general', 'Craft::$app->config->general is deprecated. Use `\CraftCms\Cms\Craft::generalConfig()` (PHP) or `config.craft.general` (Twig) instead.');
+        Craft::$app->getDeprecator()->log('Craft::$app->config->general', 'Craft::$app->config->general is deprecated. Use `app(\CraftCms\Cms\Config\GeneralConfig::class)` (PHP) or `config.craft.general` (Twig) instead.');
 
-        return \CraftCms\Cms\Craft::generalConfig();
+        return app(\CraftCms\Cms\Config\GeneralConfig::class);
     }
 
     /**

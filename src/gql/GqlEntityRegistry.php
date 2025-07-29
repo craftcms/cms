@@ -41,7 +41,7 @@ class GqlEntityRegistry
 
         $rootTypes = ['Query', 'Mutation', 'Subscription'];
 
-        if (\CraftCms\Cms\Craft::generalConfig()->prefixGqlRootTypes || !in_array($typeName, $rootTypes)) {
+        if (app(\CraftCms\Cms\Config\GeneralConfig::class)->prefixGqlRootTypes || !in_array($typeName, $rootTypes)) {
             return $prefix . $typeName;
         }
 
@@ -57,7 +57,7 @@ class GqlEntityRegistry
     public static function getPrefix(): ?string
     {
         if (!isset(self::$_prefix)) {
-            self::$_prefix = \CraftCms\Cms\Craft::generalConfig()->gqlTypePrefix;
+            self::$_prefix = app(\CraftCms\Cms\Config\GeneralConfig::class)->gqlTypePrefix;
         }
 
         return self::$_prefix;

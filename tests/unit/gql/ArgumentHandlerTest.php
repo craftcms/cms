@@ -45,7 +45,7 @@ class ArgumentHandlerTest extends TestCase
     {
         $gql = Craft::$app->getGql();
         $gql->flushCaches();
-        \CraftCms\Cms\Craft::generalConfig()->enableGraphqlCaching = false;
+        app(\CraftCms\Cms\Config\GeneralConfig::class)->enableGraphqlCaching = false;
 
         Event::on(Gql::class, Gql::EVENT_REGISTER_GQL_QUERIES, function(RegisterGqlQueriesEvent $event) {
             $event->queries['integrationQuery'] = [

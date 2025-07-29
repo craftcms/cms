@@ -67,7 +67,7 @@ class FullNameField extends TextField
     {
         if (
             $element &&
-            \CraftCms\Cms\Craft::generalConfig()->showFirstAndLastNameFields &&
+            app(\CraftCms\Cms\Config\GeneralConfig::class)->showFirstAndLastNameFields &&
             count(array_intersect($element->safeAttributes(), ['firstName', 'lastName'])) === 2
         ) {
             return $this->firstAndLastNameFields($element, $static);
@@ -125,7 +125,7 @@ class FullNameField extends TextField
      */
     protected function settingsHtml(): ?string
     {
-        if (\CraftCms\Cms\Craft::generalConfig()->showFirstAndLastNameFields) {
+        if (app(\CraftCms\Cms\Config\GeneralConfig::class)->showFirstAndLastNameFields) {
             // can't know for sure if the element will support firstName and lastName, but probably?
             return null;
         }

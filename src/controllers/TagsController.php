@@ -42,7 +42,7 @@ class TagsController extends Controller
 
         return $this->renderTemplate('settings/tags/index.twig', [
             'tagGroups' => $tagGroups,
-            'readOnly' => !\CraftCms\Cms\Craft::generalConfig()->allowAdminChanges,
+            'readOnly' => !app(\CraftCms\Cms\Config\GeneralConfig::class)->allowAdminChanges,
         ]);
     }
 
@@ -58,7 +58,7 @@ class TagsController extends Controller
     {
         $this->requireAdmin(false);
 
-        $readOnly = !\CraftCms\Cms\Craft::generalConfig()->allowAdminChanges;
+        $readOnly = !app(\CraftCms\Cms\Config\GeneralConfig::class)->allowAdminChanges;
 
         if ($tagGroupId === null && $readOnly) {
             throw new ForbiddenHttpException('Administrative changes are disallowed in this environment.');
@@ -183,7 +183,7 @@ class TagsController extends Controller
         $search = trim($this->request->getBodyParam('search'));
         $tagGroupId = $this->request->getBodyParam('tagGroupId');
         $excludeIds = $this->request->getBodyParam('excludeIds', []);
-        $allowSimilarTags = \CraftCms\Cms\Craft::generalConfig()->allowSimilarTags;
+        $allowSimilarTags = app(\CraftCms\Cms\Config\GeneralConfig::class)->allowSimilarTags;
 
         /** @var Tag[] $tags */
         $tags = Tag::find()

@@ -150,7 +150,7 @@ class MailerTest extends TestCase
      */
     public function testToEmailAddress(): void
     {
-        \CraftCms\Cms\Craft::generalConfig()->testToEmailAddress = ['giel@yellowflash.net', 'info@craftcms.com'];
+        app(\CraftCms\Cms\Config\GeneralConfig::class)->testToEmailAddress = ['giel@yellowflash.net', 'info@craftcms.com'];
 
         $this->_sendMail();
         $lastMessage = $this->tester->grabLastSentEmail();
@@ -166,7 +166,7 @@ class MailerTest extends TestCase
      */
     public function testToEmailAddressWithCustomName(): void
     {
-        \CraftCms\Cms\Craft::generalConfig()->testToEmailAddress = ['giel@yellowflash.net' => 'Giel', 'info@craftcms.com' => 'Craft CMS'];
+        app(\CraftCms\Cms\Config\GeneralConfig::class)->testToEmailAddress = ['giel@yellowflash.net' => 'Giel', 'info@craftcms.com' => 'Craft CMS'];
 
         $this->_sendMail();
         $lastMessage = $this->tester->grabLastSentEmail();

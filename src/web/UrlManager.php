@@ -101,7 +101,7 @@ class UrlManager extends \yii\web\UrlManager
      */
     public function __construct(array $config = [])
     {
-        $config['showScriptName'] = !\CraftCms\Cms\Craft::generalConfig()->omitScriptNameInUrls;
+        $config['showScriptName'] = !app(\CraftCms\Cms\Config\GeneralConfig::class)->omitScriptNameInUrls;
 
         parent::__construct($config);
     }
@@ -174,7 +174,7 @@ class UrlManager extends \yii\web\UrlManager
         unset($params[0]);
 
         // Create the action URL manually here, so it doesn't get treated as a control panel request
-        $path = \CraftCms\Cms\Craft::generalConfig()->actionTrigger . '/' . $route;
+        $path = app(\CraftCms\Cms\Config\GeneralConfig::class)->actionTrigger . '/' . $route;
 
         return UrlHelper::siteUrl($path, $params, $scheme);
     }
@@ -401,7 +401,7 @@ class UrlManager extends \yii\web\UrlManager
         if (
             !Craft::$app->getIsInstalled() ||
             !$request->getIsSiteRequest() ||
-            \CraftCms\Cms\Craft::generalConfig()->headlessMode
+            app(\CraftCms\Cms\Config\GeneralConfig::class)->headlessMode
         ) {
             $this->setMatchedElement(false);
             return false;
@@ -471,7 +471,7 @@ class UrlManager extends \yii\web\UrlManager
     private function _getMatchedDiscoverableUrlRoute(Request $request): array|false
     {
         $redirectUri = $request->getPathInfo() === '.well-known/change-password'
-            ? \CraftCms\Cms\Craft::generalConfig()->getSetPasswordRequestPath(Craft::$app->getSites()->getCurrentSite()->handle)
+            ? app(\CraftCms\Cms\Config\GeneralConfig::class)->getSetPasswordRequestPath(Craft::$app->getSites()->getCurrentSite()->handle)
             : null;
 
         if (App::devMode()) {
@@ -503,7 +503,7 @@ class UrlManager extends \yii\web\UrlManager
      */
     private function _isPublicTemplatePath(Request $request): bool
     {
-        if ($request->getIsSiteRequest() && !\CraftCms\Cms\Craft::generalConfig()->privateTemplateTrigger) {
+        if ($request->getIsSiteRequest() && !app(\CraftCms\Cms\Config\GeneralConfig::class)->privateTemplateTrigger) {
             // If privateTemplateTrigger is set to an empty value, disable all public template routing
             return false;
         }
@@ -519,7 +519,7 @@ class UrlManager extends \yii\web\UrlManager
      */
     private function _getTemplateRoute(Request $request): array|false
     {
-        if ($request->getIsSiteRequest() && \CraftCms\Cms\Craft::generalConfig()->headlessMode) {
+        if ($request->getIsSiteRequest() && app(\CraftCms\Cms\Config\GeneralConfig::class)->headlessMode) {
             return false;
         }
 

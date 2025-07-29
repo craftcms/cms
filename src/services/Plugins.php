@@ -151,7 +151,7 @@ class Plugins extends Component
      */
     public function init(): void
     {
-        $generalConfig = \CraftCms\Cms\Craft::generalConfig();
+        $generalConfig = app(\CraftCms\Cms\Config\GeneralConfig::class);
 
         if ($generalConfig->safeMode) {
             $this->_forceDisabledPlugins = '*';

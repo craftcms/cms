@@ -118,7 +118,7 @@ class InstallController extends Controller
         $this->run('setup/keys');
 
         $configService = Craft::$app->getConfig();
-        $generalConfig = \CraftCms\Cms\Craft::generalConfig();
+        $generalConfig = app(\CraftCms\Cms\Config\GeneralConfig::class);
 
         $user = new User();
         $user->setScenario(User::SCENARIO_REGISTRATION);

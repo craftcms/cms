@@ -207,7 +207,7 @@ class MonologTarget extends PsrTarget
                 App::parseEnv(sprintf('@storage/logs/%s.log', $this->name)),
                 $this->maxFiles,
                 $this->level,
-                filePermission: \CraftCms\Cms\Craft::generalConfig()->defaultFileMode,
+                filePermission: app(\CraftCms\Cms\Config\GeneralConfig::class)->defaultFileMode,
             ))->setFormatter($this->formatter));
         }
 

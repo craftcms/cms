@@ -60,7 +60,7 @@ class GqlTest extends TestCase
         $gql->setActiveSchema(new GqlSchema());
 
         // NO CACHING
-        \CraftCms\Cms\Craft::generalConfig()->enableGraphqlCaching = false;
+        app(\CraftCms\Cms\Config\GeneralConfig::class)->enableGraphqlCaching = false;
     }
 
     protected function _after(): void
@@ -190,7 +190,7 @@ class GqlTest extends TestCase
             },
         ]);
 
-        \CraftCms\Cms\Craft::generalConfig()->enableGraphqlCaching = true;
+        app(\CraftCms\Cms\Config\GeneralConfig::class)->enableGraphqlCaching = true;
 
         $schema = $gql->getPublicSchema();
 

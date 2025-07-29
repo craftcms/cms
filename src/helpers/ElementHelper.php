@@ -85,7 +85,7 @@ class ElementHelper
         // to mimic the default JavaScript-based slug generation.
         $slug = str_replace(['.', '_', '-'], ' ', $str);
 
-        if ($ascii ?? \CraftCms\Cms\Craft::generalConfig()->limitAutoSlugsToAscii) {
+        if ($ascii ?? app(\CraftCms\Cms\Config\GeneralConfig::class)->limitAutoSlugsToAscii) {
             $slug = Str::ascii($slug, $language);
         }
 
@@ -113,7 +113,7 @@ class ElementHelper
         $slug = preg_replace('/[\'"‘’“”ʻ\[\](){}:]/u', '', $slug);
 
         // Make it lowercase
-        $generalConfig = \CraftCms\Cms\Craft::generalConfig();
+        $generalConfig = app(\CraftCms\Cms\Config\GeneralConfig::class);
         if (!$generalConfig->allowUppercaseInSlug) {
             $slug = mb_strtolower($slug);
         }
@@ -159,8 +159,8 @@ class ElementHelper
             return;
         }
 
-        $generalConfig = \CraftCms\Cms\Craft::generalConfig();
-        $maxSlugIncrement = \CraftCms\Cms\Craft::generalConfig()->maxSlugIncrement;
+        $generalConfig = app(\CraftCms\Cms\Config\GeneralConfig::class);
+        $maxSlugIncrement = app(\CraftCms\Cms\Config\GeneralConfig::class)->maxSlugIncrement;
         $originalSlug = $element->slug ?? '';
         $originalSlugLen = mb_strlen($originalSlug);
 
@@ -962,7 +962,7 @@ class ElementHelper
             }
         }
 
-        return $element->getPostEditUrl() ?? \CraftCms\Cms\Craft::generalConfig()->getPostCpLoginRedirect();
+        return $element->getPostEditUrl() ?? app(\CraftCms\Cms\Config\GeneralConfig::class)->getPostCpLoginRedirect();
     }
 
     /**

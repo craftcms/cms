@@ -300,7 +300,7 @@ class AuthController extends Controller
         $primarySite = Craft::$app->getSites()->getPrimarySite();
         $website = $primarySite->getBaseUrl() ?? $primarySite->getName();
         $user = Craft::$app->getUser()->getIdentity();
-        $generalConfig = \CraftCms\Cms\Craft::generalConfig();
+        $generalConfig = app(\CraftCms\Cms\Config\GeneralConfig::class);
         $username = !$generalConfig->useEmailAsUsername && $user->username ? $user->username : null;
         $account = $username ? sprintf('%s (%s)', $username, $user->email) : $user->email;
         $generated = Craft::$app->getFormatter()->asDate($dateCreated, Locale::LENGTH_SHORT);

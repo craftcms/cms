@@ -104,7 +104,7 @@ class Routes extends Component
 
         $this->_projectConfigRoutes = [];
 
-        if (\CraftCms\Cms\Craft::generalConfig()->headlessMode) {
+        if (app(\CraftCms\Cms\Config\GeneralConfig::class)->headlessMode) {
             return $this->_projectConfigRoutes;
         }
 

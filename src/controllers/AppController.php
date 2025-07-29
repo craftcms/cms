@@ -228,9 +228,11 @@ class AppController extends Controller
      */
     private function _updatesResponse(Updates $updates, bool $includeDetails): Response
     {
+        $generalConfig = app(\CraftCms\Cms\Config\GeneralConfig::class);
+
         $allowUpdates = (
-            \CraftCms\Cms\Craft::generalConfig()->allowUpdates &&
-            \CraftCms\Cms\Craft::generalConfig()->allowAdminChanges &&
+            $generalConfig->allowUpdates &&
+            $generalConfig->allowAdminChanges &&
             Craft::$app->getUser()->checkPermission('performUpdates')
         );
 
@@ -302,7 +304,7 @@ class AppController extends Controller
         Craft::$app->enableMaintenanceMode();
 
         // Backup the DB?
-        $backup = \CraftCms\Cms\Craft::generalConfig()->getBackupOnUpdate();
+        $backup = app(\CraftCms\Cms\Config\GeneralConfig::class)->getBackupOnUpdate();
         if ($backup) {
             try {
                 $backupPath = $db->backup();
@@ -621,7 +623,7 @@ class AppController extends Controller
             if ($update->abandoned) {
                 $arr['statusText'] = Html::tag('strong', Craft::t('app', 'This plugin is no longer maintained.'));
                 if ($update->replacementName) {
-                    if (Craft::$app->getUser()->getIsAdmin() && \CraftCms\Cms\Craft::generalConfig()->allowAdminChanges) {
+                    if (Craft::$app->getUser()->getIsAdmin() && app(\CraftCms\Cms\Config\GeneralConfig::class)->allowAdminChanges) {
                         $replacementUrl = UrlHelper::url("plugin-store/$update->replacementHandle");
                     } else {
                         $replacementUrl = $update->replacementUrl;
@@ -739,7 +741,7 @@ class AppController extends Controller
      */
     public function actionBrokenImage(): Response
     {
-        $generalConfig = \CraftCms\Cms\Craft::generalConfig();
+        $generalConfig = app(\CraftCms\Cms\Config\GeneralConfig::class);
         $imagePath = Craft::getAlias($generalConfig->brokenImagePath);
         if (!is_file($imagePath)) {
             throw new InvalidConfigException("Invalid broken image path: $generalConfig->brokenImagePath");

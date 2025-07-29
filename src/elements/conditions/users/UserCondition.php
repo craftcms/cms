@@ -28,7 +28,7 @@ class UserCondition extends ElementCondition
             LastNameConditionRule::class,
         ]);
 
-        if (!\CraftCms\Cms\Craft::generalConfig()->useEmailAsUsername) {
+        if (!app(\CraftCms\Cms\Config\GeneralConfig::class)->useEmailAsUsername) {
             $types[] = UsernameConditionRule::class;
         }
 

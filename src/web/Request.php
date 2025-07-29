@@ -196,7 +196,7 @@ class Request extends \CraftCms\Yii2Adapter\Web\Request
         parent::init();
 
         if (!isset($this->generalConfig)) {
-            $this->generalConfig = \CraftCms\Cms\Craft::generalConfig();
+            $this->generalConfig = app(\CraftCms\Cms\Config\GeneralConfig::class);
         }
         $this->generalConfig = Instance::ensure($this->generalConfig, GeneralConfig::class);
 

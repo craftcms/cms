@@ -501,7 +501,7 @@ JS;
     {
         $upToDate = Craft::$app->getIsInstalled() && !Craft::$app->getUpdates()->getAreMigrationsPending();
         $request = Craft::$app->getRequest();
-        $generalConfig = \CraftCms\Cms\Craft::generalConfig();
+        $generalConfig = app(\CraftCms\Cms\Config\GeneralConfig::class);
         $sitesService = Craft::$app->getSites();
         $formattingLocale = Craft::$app->getFormattingLocale();
         $locale = Craft::$app->getLocale();

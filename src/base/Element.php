@@ -5950,7 +5950,7 @@ JS, [
                         $find = ['/'];
                         $replace = ['/<wbr>'];
 
-                        $wordSeparator = \CraftCms\Cms\Craft::generalConfig()->slugWordSeparator;
+                        $wordSeparator = app(\CraftCms\Cms\Config\GeneralConfig::class)->slugWordSeparator;
 
                         if ($wordSeparator) {
                             $find[] = $wordSeparator;
@@ -6956,7 +6956,7 @@ JS, [
         }
 
         $templates = [];
-        $generalConfig = \CraftCms\Cms\Craft::generalConfig();
+        $generalConfig = app(\CraftCms\Cms\Config\GeneralConfig::class);
 
         $providerHandle = $this->getFieldLayout()?->provider?->getHandle();
         if ($providerHandle !== null) {

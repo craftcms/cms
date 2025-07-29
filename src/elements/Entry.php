@@ -2164,7 +2164,7 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
 
         if (
             Craft::$app->getUser()->getIsAdmin() &&
-            \CraftCms\Cms\Craft::generalConfig()->allowAdminChanges
+            app(\CraftCms\Cms\Config\GeneralConfig::class)->allowAdminChanges
         ) {
             // Entry type settings
             $entryTypeEditId = sprintf('edit-entry-type-%s', mt_rand());
@@ -3189,7 +3189,7 @@ JS;
             $templates[] = [
                 'template' => sprintf(
                     '%s/%s/%s',
-                    \CraftCms\Cms\Craft::generalConfig()->partialTemplatesPath,
+                    app(\CraftCms\Cms\Config\GeneralConfig::class)->partialTemplatesPath,
                     static::refHandle(),
                     $entryType->original->handle,
                 ),

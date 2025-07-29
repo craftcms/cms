@@ -83,7 +83,7 @@ class Transform extends Directive
                 }
             }
         } elseif ($source instanceof Asset) {
-            $generalConfig = \CraftCms\Cms\Craft::generalConfig();
+            $generalConfig = app(\CraftCms\Cms\Config\GeneralConfig::class);
             $allowTransform = match ($source->getMimeType()) {
                 'image/gif' => $generalConfig->transformGifs,
                 'image/svg+xml' => $generalConfig->transformSvgs,

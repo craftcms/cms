@@ -158,7 +158,7 @@ class Response extends \yii\web\Response
 
         $request = Yii::$app->getRequest();
 
-        $request->enableCookieValidation = !empty(\CraftCms\Cms\Craft::generalConfig()->securityKey);
+        $request->enableCookieValidation = !empty(app(\CraftCms\Cms\Config\GeneralConfig::class)->securityKey);
 
         if ($request->enableCookieValidation) {
             if ($request->cookieValidationKey == '') {

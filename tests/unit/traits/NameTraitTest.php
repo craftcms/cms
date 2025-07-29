@@ -34,7 +34,7 @@ class NameTraitTest extends TestCase
             $this->_class->$attr = $val;
         }
 
-        \CraftCms\Cms\Craft::generalConfig()
+        app(\CraftCms\Cms\Config\GeneralConfig::class)
             ->extraNameSuffixes($suffixes)
             ->extraNameSalutations($salutations)
             ->extraLastNamePrefixes($lastNamePrefixes);
@@ -125,7 +125,7 @@ class NameTraitTest extends TestCase
 
     protected function _after(): void
     {
-        \CraftCms\Cms\Craft::generalConfig()
+        app(\CraftCms\Cms\Config\GeneralConfig::class)
             ->extraNameSuffixes([])
             ->extraNameSalutations([])
             ->extraLastNamePrefixes([]);

@@ -435,7 +435,7 @@ class View extends \yii\web\View
             $twig->addExtension(new FeExtension());
             $twig->addExtension(new GlobalsExtension());
 
-            if (\CraftCms\Cms\Craft::generalConfig()->preloadSingles) {
+            if (app(\CraftCms\Cms\Config\GeneralConfig::class)->preloadSingles) {
                 $twig->addExtension(new SinglePreloaderExtension());
             }
         }
@@ -1794,7 +1794,7 @@ JS;
             $this->_privateTemplateTrigger = '_';
         } else {
             $this->setTemplatesPath(Craft::$app->getPath()->getSiteTemplatesPath());
-            $generalConfig = \CraftCms\Cms\Craft::generalConfig();
+            $generalConfig = app(\CraftCms\Cms\Config\GeneralConfig::class);
             $this->_defaultTemplateExtensions = $generalConfig->defaultTemplateExtensions;
             $this->_indexTemplateFilenames = $generalConfig->indexTemplateFilenames;
             $this->_privateTemplateTrigger = $generalConfig->privateTemplateTrigger;
@@ -2440,7 +2440,7 @@ JS;
             'charset' => Craft::$app->charset,
         ];
 
-        $generalConfig = \CraftCms\Cms\Craft::generalConfig();
+        $generalConfig = app(\CraftCms\Cms\Config\GeneralConfig::class);
 
         if ($generalConfig->headlessMode && Craft::$app->getRequest()->getIsSiteRequest()) {
             $this->_twigOptions['autoescape'] = 'js';

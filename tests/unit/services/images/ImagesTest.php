@@ -73,7 +73,7 @@ class ImagesTest extends TestCase
      */
     public function testDontCleanWithConfigSetting(): void
     {
-        \CraftCms\Cms\Craft::generalConfig()->sanitizeSvgUploads = false;
+        app(\CraftCms\Cms\Config\GeneralConfig::class)->sanitizeSvgUploads = false;
 
         $this->images->cleanImage(
             $this->sandboxPath . 'dirty-svg.svg'
@@ -122,14 +122,14 @@ class ImagesTest extends TestCase
     {
         $this->_skipIfNoImagick();
 
-        \CraftCms\Cms\Craft::generalConfig()->transformGifs = false;
+        app(\CraftCms\Cms\Config\GeneralConfig::class)->transformGifs = false;
 
         $oldContents = file_get_contents($this->sandboxPath . 'example-gif.gif');
 
         $this->images->cleanImage($this->sandboxPath . 'example-gif.gif');
         self::assertSame($oldContents, file_get_contents($this->sandboxPath . 'example-gif.gif'));
 
-        \CraftCms\Cms\Craft::generalConfig()->transformGifs = true;
+        app(\CraftCms\Cms\Config\GeneralConfig::class)->transformGifs = true;
         $this->images->cleanImage($this->sandboxPath . 'example-gif.gif');
         self::assertNotSame($oldContents, file_get_contents($this->sandboxPath . 'example-gif.gif'));
     }

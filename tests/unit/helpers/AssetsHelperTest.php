@@ -87,7 +87,7 @@ class AssetsHelperTest extends TestCase
      */
     public function testPrepareAssetNameAsciiRemove(): void
     {
-        \CraftCms\Cms\Craft::generalConfig()->convertFilenamesToAscii = true;
+        app(\CraftCms\Cms\Config\GeneralConfig::class)->convertFilenamesToAscii = true;
         self::assertSame('tesSSt.text', Assets::prepareAssetName('tes§t.text'));
     }
 
@@ -96,10 +96,10 @@ class AssetsHelperTest extends TestCase
      */
     public function testConfigSeparator(): void
     {
-        \CraftCms\Cms\Craft::generalConfig()->filenameWordSeparator = '||';
+        app(\CraftCms\Cms\Config\GeneralConfig::class)->filenameWordSeparator = '||';
         self::assertSame('te||st.notafile', Assets::prepareAssetName('te st.notafile'));
 
-        \CraftCms\Cms\Craft::generalConfig()->filenameWordSeparator = false;
+        app(\CraftCms\Cms\Config\GeneralConfig::class)->filenameWordSeparator = false;
         self::assertSame('t est.notafile', Assets::prepareAssetName('t est.notafile'));
     }
 
@@ -165,7 +165,7 @@ class AssetsHelperTest extends TestCase
      */
     public function testMaxUploadSize(): void
     {
-        \CraftCms\Cms\Craft::generalConfig()->maxUploadFileSize = 1;
+        app(\CraftCms\Cms\Config\GeneralConfig::class)->maxUploadFileSize = 1;
         self::assertSame(1, Assets::getMaxUploadSize());
     }
 

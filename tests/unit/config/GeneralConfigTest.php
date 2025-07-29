@@ -28,7 +28,7 @@ class GeneralConfigTest extends Unit
      */
     public function testRenamedSetting(string $oldProperty, string $newProperty, mixed $value): void
     {
-        $generalConfig = \CraftCms\Cms\Craft::generalConfig();
+        $generalConfig = app(\CraftCms\Cms\Config\GeneralConfig::class);
         $generalConfig->$oldProperty = $value;
 
         self::assertEquals($value, $generalConfig->$newProperty);

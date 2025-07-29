@@ -220,7 +220,7 @@ class Cp extends Component
     public function nav(): array
     {
         $isAdmin = Craft::$app->getUser()->getIsAdmin();
-        $generalConfig = \CraftCms\Cms\Craft::generalConfig();
+        $generalConfig = app(\CraftCms\Cms\Config\GeneralConfig::class);
 
         $navItems = [
             [
@@ -339,7 +339,7 @@ class Cp extends Component
             $navItems[] = [
                 'url' => 'settings',
                 'label' => Craft::t('app', 'Settings'),
-                'icon' => \CraftCms\Cms\Craft::generalConfig()->allowAdminChanges ? 'gear' : 'gear-slash',
+                'icon' => app(\CraftCms\Cms\Config\GeneralConfig::class)->allowAdminChanges ? 'gear' : 'gear-slash',
             ];
 
             $navItems[] = [
@@ -407,7 +407,7 @@ class Cp extends Component
      */
     public function settings(): array
     {
-        $readOnly = !\CraftCms\Cms\Craft::generalConfig()->allowAdminChanges;
+        $readOnly = !app(\CraftCms\Cms\Config\GeneralConfig::class)->allowAdminChanges;
         $settings = [];
 
         $label = Craft::t('app', 'System');
@@ -421,7 +421,7 @@ class Cp extends Component
             'label' => Craft::t('app', 'Sites'),
         ];
 
-        if (!\CraftCms\Cms\Craft::generalConfig()->headlessMode) {
+        if (!app(\CraftCms\Cms\Config\GeneralConfig::class)->headlessMode) {
             $settings[$label]['routes'] = [
                 'iconMask' => '@packageRoot/resources/icons/light/signs-post.svg',
                 'label' => Craft::t('app', 'Routes'),
@@ -432,7 +432,7 @@ class Cp extends Component
             'iconMask' => '@packageRoot/resources/icons/light/user-group.svg',
             'label' => Craft::t('app', 'Users'),
         ];
-        if (\CraftCms\Cms\Craft::generalConfig()->allowAdminChanges) {
+        if (app(\CraftCms\Cms\Config\GeneralConfig::class)->allowAdminChanges) {
             $settings[$label]['addresses'] = [
                 'iconMask' => '@packageRoot/resources/icons/light/map-location.svg',
                 'label' => Craft::t('app', 'Addresses'),

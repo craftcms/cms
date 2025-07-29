@@ -1727,7 +1727,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
     public function getGlobals(): array
     {
         $isInstalled = Craft::$app->getIsInstalled();
-        $generalConfig = \CraftCms\Cms\Craft::generalConfig();
+        $generalConfig = app(\CraftCms\Cms\Config\GeneralConfig::class);
         $setPasswordRequestPath = $generalConfig->getSetPasswordRequestPath();
 
         if ($isInstalled && !Craft::$app->getUpdates()->getIsCraftUpdatePending()) {

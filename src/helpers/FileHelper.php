@@ -158,11 +158,11 @@ class FileHelper extends \yii\helpers\FileHelper
     public static function copyDirectory($src, $dst, $options = []): void
     {
         if (!isset($options['fileMode'])) {
-            $options['fileMode'] = \CraftCms\Cms\Craft::generalConfig()->defaultFileMode;
+            $options['fileMode'] = app(\CraftCms\Cms\Config\GeneralConfig::class)->defaultFileMode;
         }
 
         if (!isset($options['dirMode'])) {
-            $options['dirMode'] = \CraftCms\Cms\Craft::generalConfig()->defaultDirMode;
+            $options['dirMode'] = app(\CraftCms\Cms\Config\GeneralConfig::class)->defaultDirMode;
         }
 
         parent::copyDirectory($src, $dst, $options);
@@ -174,7 +174,7 @@ class FileHelper extends \yii\helpers\FileHelper
     public static function createDirectory($path, $mode = null, $recursive = true): bool
     {
         if ($mode === null) {
-            $mode = \CraftCms\Cms\Craft::generalConfig()->defaultDirMode;
+            $mode = app(\CraftCms\Cms\Config\GeneralConfig::class)->defaultDirMode;
         }
 
         return parent::createDirectory($path, $mode, $recursive);
@@ -711,7 +711,7 @@ class FileHelper extends \yii\helpers\FileHelper
             return self::$_useFileLocks;
         }
 
-        $generalConfig = \CraftCms\Cms\Craft::generalConfig();
+        $generalConfig = app(\CraftCms\Cms\Config\GeneralConfig::class);
         if (is_bool($generalConfig->useFileLocks)) {
             return self::$_useFileLocks = $generalConfig->useFileLocks;
         }

@@ -91,7 +91,7 @@ class Paginate extends BaseObject
         if (!isset($this->pageTrigger)) {
             $this->pageTrigger = Craft::$app->getRequest()->getIsCpRequest()
                 ? 'p'
-                : \CraftCms\Cms\Craft::generalConfig()->getPageTrigger();
+                : app(\CraftCms\Cms\Config\GeneralConfig::class)->getPageTrigger();
         }
     }
 

@@ -62,7 +62,7 @@ trait NameTrait
                 return;
             }
 
-            $generalConfig = \CraftCms\Cms\Craft::generalConfig();
+            $generalConfig = app(\CraftCms\Cms\Config\GeneralConfig::class);
             $languages = [
                 // Load our custom language file first so config settings can override the defaults
                 new CustomLanguage(

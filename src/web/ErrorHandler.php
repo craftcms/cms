@@ -211,7 +211,7 @@ class ErrorHandler extends \yii\web\ErrorHandler
             $exception instanceof NotFoundHttpException &&
             $request &&
             $request->getAcceptsImage() &&
-            \CraftCms\Cms\Craft::generalConfig()->brokenImagePath
+            app(\CraftCms\Cms\Config\GeneralConfig::class)->brokenImagePath
         ) {
             $this->errorAction = 'app/broken-image';
         }

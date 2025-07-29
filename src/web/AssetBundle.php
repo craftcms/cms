@@ -21,7 +21,7 @@ class AssetBundle extends \yii\web\AssetBundle
     {
         parent::init();
 
-        if (\CraftCms\Cms\Craft::generalConfig()->devMode) {
+        if (app(\CraftCms\Cms\Config\GeneralConfig::class)->devMode) {
             $this->_updateResourcePaths();
         }
     }

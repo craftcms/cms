@@ -107,6 +107,6 @@ class Money extends Directive
      */
     public static function defaultTimeZone(): string
     {
-        return \CraftCms\Cms\Craft::generalConfig()->setGraphqlDatesToSystemTimeZone ? Craft::$app->getTimeZone() : FormatDateTime::DEFAULT_TIMEZONE;
+        return app(\CraftCms\Cms\Config\GeneralConfig::class)->setGraphqlDatesToSystemTimeZone ? Craft::$app->getTimeZone() : FormatDateTime::DEFAULT_TIMEZONE;
     }
 }

@@ -79,7 +79,7 @@ class QueueController extends Controller
         $this->response->content = '1';
 
         // Make sure Craft is configured to run queues over the web
-        if (!\CraftCms\Cms\Craft::generalConfig()->runQueueAutomatically) {
+        if (!app(\CraftCms\Cms\Config\GeneralConfig::class)->runQueueAutomatically) {
             return $this->response;
         }
 

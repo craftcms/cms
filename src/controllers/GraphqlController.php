@@ -58,7 +58,7 @@ class GraphqlController extends Controller
      */
     public function beforeAction($action): bool
     {
-        if (!\CraftCms\Cms\Craft::generalConfig()->enableGql) {
+        if (!app(\CraftCms\Cms\Config\GeneralConfig::class)->enableGql) {
             throw new NotFoundHttpException(Craft::t('yii', 'Page not found.'));
         }
 
@@ -88,7 +88,7 @@ class GraphqlController extends Controller
         $headers->setDefault('Access-Control-Allow-Credentials', 'true');
         $headers->setDefault('Access-Control-Allow-Headers', 'Authorization, Content-Type, X-Craft-Authorization, X-Craft-Token');
 
-        $generalConfig = \CraftCms\Cms\Craft::generalConfig();
+        $generalConfig = app(\CraftCms\Cms\Config\GeneralConfig::class);
         if (is_array($generalConfig->allowedGraphqlOrigins)) {
             if (($origins = $this->request->getOrigin()) !== null) {
                 $origins = Arr::whereNotEmpty(array_map('trim', explode(',', $origins)));
@@ -410,7 +410,7 @@ class GraphqlController extends Controller
      */
     public function actionCpIndex(): Response
     {
-        $generalConfig = \CraftCms\Cms\Craft::generalConfig();
+        $generalConfig = app(\CraftCms\Cms\Config\GeneralConfig::class);
         if (!$this->request->getIsCpRequest() || !$generalConfig->enableGql) {
             throw new NotFoundHttpException();
         }

@@ -113,7 +113,7 @@ class DateTimeHelperTest extends TestCase
      */
     public function testThisWeek(): void
     {
-        $generalConfig = \CraftCms\Cms\Craft::generalConfig();
+        $generalConfig = app(\CraftCms\Cms\Config\GeneralConfig::class);
         self::assertEquals(1, $generalConfig->defaultWeekStartDay);
         self::assertEquals(1, DateTimeHelper::firstWeekDay());
 
@@ -134,7 +134,7 @@ class DateTimeHelperTest extends TestCase
      */
     public function testNextWeek(): void
     {
-        $generalConfig = \CraftCms\Cms\Craft::generalConfig();
+        $generalConfig = app(\CraftCms\Cms\Config\GeneralConfig::class);
         self::assertEquals(1, $generalConfig->defaultWeekStartDay);
         self::assertEquals(1, DateTimeHelper::firstWeekDay());
 
@@ -155,7 +155,7 @@ class DateTimeHelperTest extends TestCase
      */
     public function testLastWeek(): void
     {
-        $generalConfig = \CraftCms\Cms\Craft::generalConfig();
+        $generalConfig = app(\CraftCms\Cms\Config\GeneralConfig::class);
         self::assertEquals(1, $generalConfig->defaultWeekStartDay);
         self::assertEquals(1, DateTimeHelper::firstWeekDay());
 

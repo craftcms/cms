@@ -100,7 +100,7 @@ class User extends \CraftCms\Yii2Adapter\Web\User
      */
     public function sendUsernameCookie(UserElement $user): void
     {
-        $generalConfig = \CraftCms\Cms\Craft::generalConfig();
+        $generalConfig = app(\CraftCms\Cms\Config\GeneralConfig::class);
 
         if ($generalConfig->rememberUsernameDuration !== 0) {
             $cookie = new Cookie($this->usernameCookie);
@@ -145,10 +145,10 @@ class User extends \CraftCms\Yii2Adapter\Web\User
     {
         // Is this a control panel request and can they access the control panel?
         if (Craft::$app->getRequest()->getIsCpRequest() && $this->checkPermission('accessCp')) {
-            return UrlHelper::cpUrl(\CraftCms\Cms\Craft::generalConfig()->getPostCpLoginRedirect());
+            return UrlHelper::cpUrl(app(\CraftCms\Cms\Config\GeneralConfig::class)->getPostCpLoginRedirect());
         }
 
-        return UrlHelper::siteUrl(\CraftCms\Cms\Craft::generalConfig()->getPostLoginRedirect());
+        return UrlHelper::siteUrl(app(\CraftCms\Cms\Config\GeneralConfig::class)->getPostLoginRedirect());
     }
 
     /**
@@ -368,7 +368,7 @@ class User extends \CraftCms\Yii2Adapter\Web\User
         }
 
         // If it has been disabled, return false.
-        if (\CraftCms\Cms\Craft::generalConfig()->elevatedSessionDuration === 0) {
+        if (app(\CraftCms\Cms\Config\GeneralConfig::class)->elevatedSessionDuration === 0) {
             return false;
         }
 
@@ -383,7 +383,7 @@ class User extends \CraftCms\Yii2Adapter\Web\User
     public function getHasElevatedSession(): bool
     {
         // If it's been disabled, just return true
-        if (\CraftCms\Cms\Craft::generalConfig()->elevatedSessionDuration === 0) {
+        if (app(\CraftCms\Cms\Config\GeneralConfig::class)->elevatedSessionDuration === 0) {
             return true;
         }
 
@@ -404,7 +404,7 @@ class User extends \CraftCms\Yii2Adapter\Web\User
 
         if ($success) {
             // Set the elevated session expiration date
-            $generalConfig = \CraftCms\Cms\Craft::generalConfig();
+            $generalConfig = app(\CraftCms\Cms\Config\GeneralConfig::class);
             if ($generalConfig->elevatedSessionDuration !== 0) {
                 $timeout = DateTimeHelper::currentTimeStamp() + $generalConfig->elevatedSessionDuration;
                 SessionHelper::set($this->elevatedSessionTimeoutParam, $timeout);
@@ -588,7 +588,7 @@ class User extends \CraftCms\Yii2Adapter\Web\User
 
         $this->_clearOtherSessionParams();
 
-        if (\CraftCms\Cms\Craft::generalConfig()->enableCsrfProtection) {
+        if (app(\CraftCms\Cms\Config\GeneralConfig::class)->enableCsrfProtection) {
             // Let's keep the current nonce around.
             Craft::$app->getRequest()->getCsrfToken(true);
         }
@@ -604,7 +604,7 @@ class User extends \CraftCms\Yii2Adapter\Web\User
      */
     private function _validateUserAgentAndIp(): bool
     {
-        if (!\CraftCms\Cms\Craft::generalConfig()->requireUserAgentAndIpForSession) {
+        if (!app(\CraftCms\Cms\Config\GeneralConfig::class)->requireUserAgentAndIpForSession) {
             return true;
         }
 

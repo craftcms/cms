@@ -63,7 +63,7 @@ class SystemSettingsController extends Controller
             $this->requireAdmin();
         }
 
-        $this->readOnly = !\CraftCms\Cms\Craft::generalConfig()->allowAdminChanges;
+        $this->readOnly = !app(\CraftCms\Cms\Config\GeneralConfig::class)->allowAdminChanges;
 
         return true;
     }
@@ -218,7 +218,7 @@ class SystemSettingsController extends Controller
      */
     public function actionTestEmailSettings(): void
     {
-        if (\CraftCms\Cms\Craft::generalConfig()->allowAdminChanges) {
+        if (app(\CraftCms\Cms\Config\GeneralConfig::class)->allowAdminChanges) {
             $this->requirePostRequest();
 
             $settings = $this->_createMailSettingsFromPost();

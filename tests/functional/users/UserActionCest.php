@@ -52,7 +52,7 @@ class UserActionCest
             ->one();
 
         $I->amLoggedInAs($this->currentUser);
-        $this->cpTrigger = \CraftCms\Cms\Craft::generalConfig()->cpTrigger;
+        $this->cpTrigger = app(\CraftCms\Cms\Config\GeneralConfig::class)->cpTrigger;
         $user = new User([
             'active' => true,
             'username' => 'craftcmsfunctionaltest',

@@ -569,7 +569,7 @@ abstract class Field extends SavableComponent implements FieldInterface, Iconic,
         if ($this->id && $userSessionService->getIsAdmin()) {
             $view = Craft::$app->getView();
 
-            if (\CraftCms\Cms\Craft::generalConfig()->allowAdminChanges) {
+            if (app(\CraftCms\Cms\Config\GeneralConfig::class)->allowAdminChanges) {
                 // Edit field
                 $editId = sprintf('action-edit-%s', mt_rand());
                 $items[] = [

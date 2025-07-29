@@ -47,7 +47,7 @@ class ElementHelperTest extends TestCase
      */
     public function testGenerateSlug(string $expected, string $input, ?bool $ascii = null, ?string $language = null): void
     {
-        $glue = \CraftCms\Cms\Craft::generalConfig()->slugWordSeparator;
+        $glue = app(\CraftCms\Cms\Config\GeneralConfig::class)->slugWordSeparator;
         $expected = str_replace('[separator-here]', $glue, $expected);
 
         self::assertSame($expected, ElementHelper::generateSlug($input, $ascii, $language));
@@ -60,7 +60,7 @@ class ElementHelperTest extends TestCase
      */
     public function testNormalizeSlug(string $expected, string $slug): void
     {
-        $glue = \CraftCms\Cms\Craft::generalConfig()->slugWordSeparator;
+        $glue = app(\CraftCms\Cms\Config\GeneralConfig::class)->slugWordSeparator;
         $expected = str_replace('[separator-here]', $glue, $expected);
 
         self::assertSame($expected, ElementHelper::normalizeSlug($slug));
@@ -71,7 +71,7 @@ class ElementHelperTest extends TestCase
      */
     public function testLowerRemoveFromCreateSlug(): void
     {
-        $general = \CraftCms\Cms\Craft::generalConfig();
+        $general = app(\CraftCms\Cms\Config\GeneralConfig::class);
         $general->allowUppercaseInSlug = false;
 
         self::assertSame('word' . $general->slugWordSeparator . 'word', ElementHelper::normalizeSlug('word WORD'));
@@ -108,8 +108,8 @@ class ElementHelperTest extends TestCase
      */
     public function testMaxSlugIncrementDoesntThrow(): void
     {
-        $oldValue = \CraftCms\Cms\Craft::generalConfig()->maxSlugIncrement;
-        \CraftCms\Cms\Craft::generalConfig()->maxSlugIncrement = 0;
+        $oldValue = app(\CraftCms\Cms\Config\GeneralConfig::class)->maxSlugIncrement;
+        app(\CraftCms\Cms\Config\GeneralConfig::class)->maxSlugIncrement = 0;
 
         $this->tester->expectThrowable(OperationAbortedException::class, function() {
             $el = new ExampleElement(['uriFormat' => 'test/{slug}']);
@@ -117,7 +117,7 @@ class ElementHelperTest extends TestCase
         });
 
         // reset
-        \CraftCms\Cms\Craft::generalConfig()->maxSlugIncrement = $oldValue;
+        app(\CraftCms\Cms\Config\GeneralConfig::class)->maxSlugIncrement = $oldValue;
     }
 
     /**

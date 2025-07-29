@@ -58,12 +58,12 @@ class AssetElementTest extends TestCase
             ]),
         ]);
 
-        $previousValue = \CraftCms\Cms\Craft::generalConfig()->generateTransformsBeforePageLoad;
-        \CraftCms\Cms\Craft::generalConfig()->generateTransformsBeforePageLoad = true;
+        $previousValue = app(\CraftCms\Cms\Config\GeneralConfig::class)->generateTransformsBeforePageLoad;
+        app(\CraftCms\Cms\Config\GeneralConfig::class)->generateTransformsBeforePageLoad = true;
         $url = $asset->getUrl(['transform' => 'mockedTransform', 'width' => 200]);
 
         self::assertSame('w=200&h=200', $url);
 
-        \CraftCms\Cms\Craft::generalConfig()->generateTransformsBeforePageLoad = $previousValue;
+        app(\CraftCms\Cms\Config\GeneralConfig::class)->generateTransformsBeforePageLoad = $previousValue;
     }
 }

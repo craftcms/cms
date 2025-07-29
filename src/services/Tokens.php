@@ -70,7 +70,7 @@ class Tokens extends Component
         }
 
         if (!$expiryDate) {
-            $generalConfig = \CraftCms\Cms\Craft::generalConfig();
+            $generalConfig = app(\CraftCms\Cms\Config\GeneralConfig::class);
             $interval = DateTimeHelper::secondsToInterval($generalConfig->defaultTokenDuration);
             $expiryDate = DateTimeHelper::currentUTCDateTime();
             $expiryDate->add($interval);
@@ -107,7 +107,7 @@ class Tokens extends Component
      */
     public function createPreviewToken(mixed $route, ?int $usageLimit = null, ?string $token = null): string|false
     {
-        $interval = DateTimeHelper::secondsToInterval(\CraftCms\Cms\Craft::generalConfig()->previewTokenDuration);
+        $interval = DateTimeHelper::secondsToInterval(app(\CraftCms\Cms\Config\GeneralConfig::class)->previewTokenDuration);
         $expiryDate = DateTimeHelper::currentUTCDateTime()->add($interval);
         return $this->createToken($route, $usageLimit, $expiryDate, $token);
     }

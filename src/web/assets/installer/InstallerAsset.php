@@ -49,7 +49,7 @@ class InstallerAsset extends AssetBundle
     {
         parent::registerAssetFiles($view);
 
-        $redirect = Json::encode(\CraftCms\Cms\Craft::generalConfig()->postCpLoginRedirect);
+        $redirect = Json::encode(app(\CraftCms\Cms\Config\GeneralConfig::class)->postCpLoginRedirect);
         $view->registerJs("window.postCpLoginRedirect = $redirect;");
     }
 }

@@ -197,7 +197,7 @@ class Revisions extends Component
         }
 
         // Prune any excess revisions
-        if (\CraftCms\Cms\Craft::generalConfig()->maxRevisions) {
+        if (app(\CraftCms\Cms\Config\GeneralConfig::class)->maxRevisions) {
             Queue::push(new PruneRevisions([
                 'elementType' => get_class($canonical),
                 'canonicalId' => $canonical->id,

@@ -47,7 +47,7 @@ class ImageTransformsController extends Controller
             $this->requireAdmin();
         }
 
-        $this->readOnly = !\CraftCms\Cms\Craft::generalConfig()->allowAdminChanges;
+        $this->readOnly = !app(\CraftCms\Cms\Config\GeneralConfig::class)->allowAdminChanges;
 
         return true;
     }

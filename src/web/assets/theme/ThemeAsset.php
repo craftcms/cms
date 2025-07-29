@@ -31,7 +31,7 @@ class ThemeAsset extends AssetBundle
             $this->css = ['cp.css'];
         } else {
             $this->css = ['fe.css'];
-            $generalConfig = \CraftCms\Cms\Craft::generalConfig();
+            $generalConfig = app(\CraftCms\Cms\Config\GeneralConfig::class);
             if ($generalConfig->systemTemplateCss) {
                 $this->css[] = $generalConfig->systemTemplateCss;
             }

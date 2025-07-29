@@ -98,7 +98,7 @@ class Assets
         $rootUrl = $volume->getRootUrl() ?? '';
         $url = $rootUrl . $path;
 
-        if (\CraftCms\Cms\Craft::generalConfig()->revAssetUrls) {
+        if (app(\CraftCms\Cms\Config\GeneralConfig::class)->revAssetUrls) {
             return self::revUrl($url, $asset, $dateUpdated);
         }
 
@@ -179,7 +179,7 @@ class Assets
      */
     public static function urlAppendix(Asset $asset, ?DateTime $dateUpdated = null): string
     {
-        if (!\CraftCms\Cms\Craft::generalConfig()->revAssetUrls) {
+        if (!app(\CraftCms\Cms\Config\GeneralConfig::class)->revAssetUrls) {
             return '';
         }
 
@@ -211,7 +211,7 @@ class Assets
             $extension = '';
         }
 
-        $generalConfig = \CraftCms\Cms\Craft::generalConfig();
+        $generalConfig = app(\CraftCms\Cms\Config\GeneralConfig::class);
         $separator = $generalConfig->filenameWordSeparator;
 
         if (!is_string($separator)) {
@@ -383,7 +383,7 @@ class Assets
         }
 
         self::$_allowedFileKinds = [];
-        $allowedExtensions = array_flip(\CraftCms\Cms\Craft::generalConfig()->allowedFileExtensions);
+        $allowedExtensions = array_flip(app(\CraftCms\Cms\Config\GeneralConfig::class)->allowedFileExtensions);
 
         foreach (static::getFileKinds() as $kind => $info) {
             foreach ($info['extensions'] as $extension) {
@@ -691,7 +691,7 @@ class Assets
             ];
 
             // Merge with the extraFileKinds setting
-            self::$_fileKinds = Arr::merge(self::$_fileKinds, \CraftCms\Cms\Craft::generalConfig()->extraFileKinds);
+            self::$_fileKinds = Arr::merge(self::$_fileKinds, app(\CraftCms\Cms\Config\GeneralConfig::class)->extraFileKinds);
 
             // Fire a 'registerFileKinds' event
             if (Event::hasHandlers(self::class, self::EVENT_REGISTER_FILE_KINDS)) {
@@ -762,7 +762,7 @@ class Assets
         // No existing resources we could use.
 
         // For remote files, check if maxCachedImageSizes setting would work for us.
-        $maxCachedSize = \CraftCms\Cms\Craft::generalConfig()->maxCachedCloudImageSize;
+        $maxCachedSize = app(\CraftCms\Cms\Config\GeneralConfig::class)->maxCachedCloudImageSize;
 
         if (!$volume->getFs() instanceof LocalFsInterface && $maxCachedSize > $size) {
             // For remote sources we get a transform source, if maxCachedImageSizes is not smaller than that.
@@ -795,7 +795,7 @@ class Assets
             $uploadInBytes = min($uploadInBytes, $memoryLimit);
         }
 
-        $configLimit = \CraftCms\Cms\Craft::generalConfig()->maxUploadFileSize;
+        $configLimit = app(\CraftCms\Cms\Config\GeneralConfig::class)->maxUploadFileSize;
 
         if ($configLimit) {
             $uploadInBytes = min($uploadInBytes, $configLimit);
@@ -976,7 +976,7 @@ class Assets
             return false;
         }
 
-        $handle = App::parseEnv(\CraftCms\Cms\Craft::generalConfig()->tempAssetUploadFs);
+        $handle = App::parseEnv(app(\CraftCms\Cms\Config\GeneralConfig::class)->tempAssetUploadFs);
         return $fs->handle === $handle;
     }
 }

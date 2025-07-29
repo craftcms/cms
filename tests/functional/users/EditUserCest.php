@@ -41,7 +41,7 @@ class EditUserCest
             ->one();
 
         $I->amLoggedInAs($this->currentUser);
-        $this->cpTrigger = \CraftCms\Cms\Craft::generalConfig()->cpTrigger;
+        $this->cpTrigger = app(\CraftCms\Cms\Config\GeneralConfig::class)->cpTrigger;
 
         Craft::$app->edition = CmsEdition::Pro;
     }

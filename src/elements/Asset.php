@@ -2224,7 +2224,7 @@ JS,[
             $transform = ImageTransforms::normalizeTransform($transform);
 
             if ($immediately === null) {
-                $immediately = \CraftCms\Cms\Craft::generalConfig()->generateTransformsBeforePageLoad;
+                $immediately = app(\CraftCms\Cms\Config\GeneralConfig::class)->generateTransformsBeforePageLoad;
             }
 
             // Fire a 'beforeGenerateTransform' event
@@ -3245,7 +3245,7 @@ JS;
                 Assets::getFileKindByExtension($this->tempFilePath) === static::KIND_IMAGE &&
                 ($this->sanitizeOnUpload ?? (
                     !Craft::$app->getRequest()->getIsCpRequest() ||
-                    \CraftCms\Cms\Craft::generalConfig()->sanitizeCpImageUploads
+                    app(\CraftCms\Cms\Config\GeneralConfig::class)->sanitizeCpImageUploads
                 ))
             ) {
                 Image::cleanImageByPath($this->tempFilePath);
@@ -3727,8 +3727,8 @@ JS;
     private function allowTransforms(): bool
     {
         return match ($this->getMimeType()) {
-            'image/gif' => \CraftCms\Cms\Craft::generalConfig()->transformGifs,
-            'image/svg+xml' => \CraftCms\Cms\Craft::generalConfig()->transformSvgs,
+            'image/gif' => app(\CraftCms\Cms\Config\GeneralConfig::class)->transformGifs,
+            'image/svg+xml' => app(\CraftCms\Cms\Config\GeneralConfig::class)->transformSvgs,
             default => true,
         };
     }
