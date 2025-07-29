@@ -7,7 +7,7 @@ use Illuminate\Support\ServiceProvider;
 
 class IconServiceProvider extends ServiceProvider
 {
-    public function register(): void
+    public function boot(): void
     {
         $iconsPath = Aliases::get('@packageRoot/resources/icons');
 

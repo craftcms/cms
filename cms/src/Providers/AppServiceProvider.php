@@ -21,9 +21,6 @@ class AppServiceProvider extends ServiceProvider
 
     public function register(): void
     {
-        Aliases::set('@packageRoot', FileHelper::normalizePath($this->root));
-        Aliases::set('@package', '@packageRoot/src');
-
         collect($this->configFiles)->each(function (string $file) {
             $this->mergeConfigFrom("{$this->root}/config/$file.php", 'craftcms');
         });
@@ -31,6 +28,9 @@ class AppServiceProvider extends ServiceProvider
 
     public function boot(): void
     {
+        Aliases::set('@packageRoot', FileHelper::normalizePath($this->root));
+        Aliases::set('@package', '@packageRoot/src');
+
         AboutCommand::add('Craft CMS', fn () => [
             'Edition' => \Craft::$app->edition->name,
             'Schema' => \Craft::$app->schemaVersion,
