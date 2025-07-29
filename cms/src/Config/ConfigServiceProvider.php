@@ -4,6 +4,7 @@ namespace CraftCms\Cms\Config;
 
 use craft\helpers\App;
 use craft\helpers\Typecast;
+use CraftCms\Aliases\Facades\Aliases;
 use Illuminate\Support\Env;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\ServiceProvider;
@@ -13,6 +14,8 @@ class ConfigServiceProvider extends ServiceProvider
 {
     private array $configFiles = [
         'general',
+        'redirects',
+        'routes',
     ];
 
     public function register(): void
@@ -74,6 +77,10 @@ class ConfigServiceProvider extends ServiceProvider
             }
 
             $generalConfig->$name = $value;
+        }
+
+        foreach ($generalConfig->aliases as $name => $value) {
+            Aliases::set($name, $value);
         }
     }
 }

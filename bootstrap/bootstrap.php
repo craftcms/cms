@@ -207,13 +207,6 @@ Craft::setAlias('@templates', $templatesPath);
 Craft::setAlias('@translations', $translationsPath);
 Craft::setAlias('@tests', $testsPath);
 
-// Set any custom aliases
-foreach ($generalConfig->aliases as $name => $value) {
-    if (is_string($value)) {
-        Craft::setAlias($name, $value);
-    }
-}
-
 $webUrl = Env::get('CRAFT_WEB_URL');
 if ($webUrl) {
     Craft::setAlias('@web', $webUrl);
