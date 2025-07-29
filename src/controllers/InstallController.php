@@ -236,7 +236,7 @@ class InstallController extends Controller
         $this->requirePostRequest();
         $this->requireAcceptsJson();
 
-        $path = Craft::getAlias('@dotenv');
+        $path = app()->environmentFilePath();
 
         // Should we set the new DB config values?
         if ($this->request->getBodyParam('db-driver') !== null) {
@@ -356,7 +356,7 @@ class InstallController extends Controller
         }
 
         // If the .env file doesn't exist, we definitely can't do anything about it
-        if (!file_exists(Craft::getAlias('@dotenv'))) {
+        if (!file_exists(app()->environmentFilePath())) {
             return false;
         }
 

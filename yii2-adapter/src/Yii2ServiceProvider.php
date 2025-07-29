@@ -46,9 +46,16 @@ class Yii2ServiceProvider extends ServiceProvider
         // Are we in a Laravel skeleton?
         if (is_dir(config_path('craft')) || file_exists(config_path('auth.php'))) {
             defined('CRAFT_CONFIG_PATH') || define('CRAFT_CONFIG_PATH', config_path('craft'));
+            defined('CRAFT_STORAGE_PATH') || define('CRAFT_STORAGE_PATH', storage_path());
+            defined('CRAFT_TRANSLATIONS_PATH') || define('CRAFT_TRANSLATIONS_PATH', lang_path());
+            defined('CRAFT_DOTENV_PATH') || define('CRAFT_DOTENV_PATH', base_path());
         }
 
-        $this->app->useConfigPath(CRAFT_CONFIG_PATH);
+        $this->app
+            ->useConfigPath(CRAFT_CONFIG_PATH)
+            ->useStoragePath(CRAFT_STORAGE_PATH)
+            ->useLangPath(CRAFT_TRANSLATIONS_PATH)
+            ->useEnvironmentPath(CRAFT_DOTENV_PATH);
 
         if (in_array(DB::connection()->getDriverName(), ['pgsql', 'mysql'])) {
             defined('CRAFT_DB_DRIVER') || define('CRAFT_DB_DRIVER', DB::connection()->getDriverName());

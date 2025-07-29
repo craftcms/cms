@@ -64,7 +64,7 @@ class EnvController extends Controller
         }
 
         try {
-            Env::writeVariable(trim($name), trim($value), Craft::getAlias('@dotenv'));
+            Env::writeVariable(trim($name), trim($value), app()->environmentPath());
         } catch (\Exception $e) {
             $this->stderr($e->getMessage() . "\n", Console::FG_RED);
             return ExitCode::UNSPECIFIED_ERROR;
@@ -86,7 +86,7 @@ class EnvController extends Controller
     public function actionRemove(string $name): int
     {
         try {
-            Env::removeVariable($name, Craft::getAlias('@dotenv'));
+            Env::removeVariable($name, app()->environmentFilePath());
         } catch (\Exception $e) {
             $this->stderr($e->getMessage() . "\n", Console::FG_RED);
             return ExitCode::UNSPECIFIED_ERROR;

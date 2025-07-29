@@ -198,7 +198,7 @@ class InstallController extends Controller
         // if it’s not already set to an alias or environment variable
         if (!in_array($site->getBaseUrl(false)[0], ['@', '$'])) {
             try {
-                Env::writeVariable('PRIMARY_SITE_URL', $site->baseUrl, Craft::getAlias('@dotenv'));
+                Env::writeVariable('PRIMARY_SITE_URL', $site->baseUrl, app()->environmentFilePath());
                 $site->baseUrl = '$PRIMARY_SITE_URL';
             } catch (Exception) {
                 // that's fine, we'll just store the entered URL

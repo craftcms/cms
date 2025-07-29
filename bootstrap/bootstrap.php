@@ -199,7 +199,7 @@ Craft::setAlias('@craftcms', $cmsPath);
 Craft::setAlias('@root', $rootPath);
 Craft::setAlias('@lib', $libPath);
 Craft::setAlias('@craft', $srcPath); // same as @app, but needed for the `help` command
-Craft::setAlias('@dotenv', $dotenvPath);
+Craft::setAlias('@dotenv', app()->environmentFilePath());
 Craft::setAlias('@config', $configPath);
 Craft::setAlias('@contentMigrations', $contentMigrationsPath);
 Craft::setAlias('@storage', $storagePath);

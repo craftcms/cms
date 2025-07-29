@@ -287,11 +287,11 @@ class Config extends Component
      * Returns the path to the .env file (regardless of whether it exists).
      *
      * @return string
-     * @deprecated in 6.0.0. Use `Craft::getAlias('@dotenv')` instead.
+     * @deprecated in 6.0.0. Use `app()->environmentFilePath()` instead.
      */
     public function getDotEnvPath(): string
     {
-        return $this->_dotEnvPath ?? ($this->_dotEnvPath = Craft::getAlias('@dotenv'));
+        return $this->_dotEnvPath ?? ($this->_dotEnvPath = app()->environmentFilePath());
     }
 
     /**
@@ -304,7 +304,7 @@ class Config extends Component
      */
     public function setDotEnvVar(string $name, string|false $value): void
     {
-        $path = Craft::getAlias('@dotenv');
+        $path = app()->environmentFilePath();
 
         if ($value === false) {
             Env::removeVariable($name, $path);
@@ -341,6 +341,6 @@ class Config extends Component
             default => $value ? 'true' : 'false',
         };
 
-        Env::writeVariable($name, $value, Craft::getAlias('@dotenv'), true);
+        Env::writeVariable($name, $value, app()->environmentFilePath(), true);
     }
 }

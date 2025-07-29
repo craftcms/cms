@@ -1185,9 +1185,9 @@ class Plugins extends Component
         if (
             preg_match('/^\$(\w+)$/', $oldLicenseKey, $matches) &&
             Env::get($matches[1]) === '' &&
-            file_exists(Craft::getAlias('@dotenv'))
+            file_exists(app()->environmentFilePath())
         ) {
-            Env::writeVariable($matches[1], $normalizedLicenseKey, Craft::getAlias('@dotenv'));
+            Env::writeVariable($matches[1], $normalizedLicenseKey, app()->environmentFilePath());
         } else {
             // Set the plugin's license key in the project config
             Craft::$app->getProjectConfig()->set(sprintf('%s.%s.licenseKey', ProjectConfig::PATH_PLUGINS, $handle), $normalizedLicenseKey, "Set license key for plugin “{$handle}”");

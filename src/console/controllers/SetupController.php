@@ -657,7 +657,7 @@ EOD;
      */
     private function _setEnvVar(string $name, mixed $value): bool
     {
-        $path = Craft::getAlias('@dotenv');
+        $path = app()->environmentFilePath();
 
         if (!file_exists($path)) {
             if (!$this->interactive || $this->confirm(PHP_EOL . "A .env file doesn't exist at $path. Would you like to create one?", true)) {
