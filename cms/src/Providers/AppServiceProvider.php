@@ -15,14 +15,13 @@ class AppServiceProvider extends ServiceProvider
 {
     private string $root = __DIR__.'/../..';
 
-    public function register(): void
-    {
-        Aliases::set('@packageRoot', FileHelper::normalizePath($this->root));
-        Aliases::set('@package', '@packageRoot/src');
-    }
+    public function register(): void {}
 
     public function boot(): void
     {
+        Aliases::set('@packageRoot', FileHelper::normalizePath($this->root));
+        Aliases::set('@package', '@packageRoot/src');
+
         AboutCommand::add('Craft CMS', fn () => [
             'Edition' => \Craft::$app->edition->name,
             'Schema' => \Craft::$app->schemaVersion,

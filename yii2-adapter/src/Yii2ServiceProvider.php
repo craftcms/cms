@@ -52,16 +52,6 @@ class Yii2ServiceProvider extends ServiceProvider
             defined('CRAFT_DB_DRIVER') || define('CRAFT_DB_DRIVER', DB::connection()->getDriverName());
         }
 
-        /**
-         * Register the base aliases that Yii sets, this has to be after
-         * the constants as composer will autoload the BaseYii class.
-         */
-        Aliases::set('@app', base_path());
-
-        foreach (BaseYii::$aliases as $alias => $path) {
-            Aliases::set($alias, $path);
-        }
-
         $this->app->singleton('Craft', function() {
             /**
              * When developing or when running tests, the working directory
@@ -97,6 +87,16 @@ class Yii2ServiceProvider extends ServiceProvider
 
     public function boot(): void
     {
+        /**
+         * Register the base aliases that Yii sets, this has to be after
+         * the constants as composer will autoload the BaseYii class.
+         */
+        Aliases::set('@app', base_path());
+
+        foreach (BaseYii::$aliases as $alias => $path) {
+            Aliases::set($alias, $path);
+        }
+
         /**
          * When running in a Craft 5 upgraded project, the User model
          * won't exist. As such we need to use the base model.
