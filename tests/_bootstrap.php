@@ -23,6 +23,12 @@ const CRAFT_TESTS_PATH = __DIR__;
 (new \CraftCms\Cms\Tests\TestCase('laravel'))
     ->createApplication();
 
+$generalConfig = app(\CraftCms\Cms\Config\GeneralConfig::class);
+foreach (require CRAFT_CONFIG_PATH . '/general.php' as $key => $value) {
+    $generalConfig->$key = $value;
+}
+
+config()->set('craft.general', $generalConfig);
 config()->set('database.default', env('DB_DRIVER'));
 
 $devMode = true;
