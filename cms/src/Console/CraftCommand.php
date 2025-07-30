@@ -2,7 +2,7 @@
 
 namespace CraftCms\Cms\Console;
 
-use Illuminate\Support\Str;
+use CraftCms\Cms\Support\Str;
 
 /**
  * @mixin \Illuminate\Console\Command

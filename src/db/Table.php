@@ -7,7 +7,7 @@
 
 namespace craft\db;
 
-use Illuminate\Support\Str;
+use CraftCms\Cms\Support\Str;
 
 /**
  * This class provides constants for defining Craft’s database table names.

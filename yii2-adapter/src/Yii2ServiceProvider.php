@@ -9,6 +9,7 @@ use craft\utilities\AssetIndexes;
 use craft\utilities\ClearCaches;
 use CraftCms\Aliases\Facades\Aliases;
 use CraftCms\Cms\Support\Env;
+use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\User\Models\User;
 use CraftCms\Yii2Adapter\Console\LegacyCraftCommand;
 use Exception;
@@ -16,7 +17,6 @@ use Illuminate\Console\Application as ConsoleApplication;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\ServiceProvider;
-use Illuminate\Support\Str;
 use yii\BaseYii;
 
 class Yii2ServiceProvider extends ServiceProvider
