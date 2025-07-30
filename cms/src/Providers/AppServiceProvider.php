@@ -5,7 +5,6 @@ namespace CraftCms\Cms\Providers;
 use craft\helpers\FileHelper;
 use CraftCms\Aliases\Facades\Aliases;
 use CraftCms\Cms\Http\Middleware\ExtractNamespace;
-use CraftCms\Cms\Http\Middleware\HandleActionRequests;
 use CraftCms\Cms\Http\Middleware\RequireCpRequest;
 use CraftCms\Cms\Support\Env;
 use Illuminate\Foundation\Console\AboutCommand;
