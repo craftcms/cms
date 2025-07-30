@@ -52,7 +52,7 @@ class ConfigServiceProvider extends ServiceProvider
          * When the configuration is a simple array config, load it into
          * the GeneralConfig object and replace the configuration key.
          */
-        if (! $generalConfig instanceof BaseConfig) {
+        if (! $generalConfig instanceof GeneralConfig) {
             $generalConfig = GeneralConfig::__set_state($generalConfig);
 
             Config::set('craft.general', $generalConfig);

@@ -54,7 +54,6 @@ class Yii2ServiceProvider extends ServiceProvider
             defined('CRAFT_TRANSLATIONS_PATH') || define('CRAFT_TRANSLATIONS_PATH', lang_path());
             defined('CRAFT_LICENSE_KEY_PATH') || define('CRAFT_LICENSE_KEY_PATH', config_path('craft'));
         } else {
-            defined('CRAFT_CONFIG_PATH') || define('CRAFT_CONFIG_PATH', base_path('config'));
             defined('CRAFT_TRANSLATIONS_PATH') || define('CRAFT_TRANSLATIONS_PATH', base_path('translations'));
             defined('CRAFT_LICENSE_KEY_PATH') || define('CRAFT_LICENSE_KEY_PATH', config_path());
 
@@ -63,7 +62,8 @@ class Yii2ServiceProvider extends ServiceProvider
              * folders defined by the Craft CMS constants.
              */
             $this->app
-                ->useConfigPath(CRAFT_CONFIG_PATH)
+                // When not in a Laravel skeleton, we don't want to conflict any config files.
+                ->useConfigPath(base_path('config/laravel'))
                 ->useStoragePath(CRAFT_STORAGE_PATH)
                 ->useLangPath(CRAFT_TRANSLATIONS_PATH)
                 ->useEnvironmentPath(CRAFT_DOTENV_PATH)
