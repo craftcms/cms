@@ -22,6 +22,7 @@ use craft\queue\jobs\Proxy;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Str;
 use DateTime;
+use Illuminate\Support\Facades\Cache;
 use yii\base\Exception;
 use yii\base\InvalidArgumentException;
 use yii\base\InvalidConfigException;
@@ -928,7 +929,8 @@ EOD;
         if ($acquireLock) {
             $channel = $this->channel();
             $mutexName = sprintf('%s::%s', self::class, $channel);
-            if (!$this->mutex->acquire($mutexName, $timeout ?? $this->mutexTimeout)) {
+            $mutex = Cache::lock($mutexName, $timeout ?? $this->mutexTimeout);
+            if (!$mutex->get()) {
                 if ($throwException) {
                     throw new MutexException($mutexName, "Could not acquire a mutex lock for the queue ($channel).");
                 }
@@ -941,7 +943,7 @@ EOD;
             $callback();
         } finally {
             if ($acquireLock) {
-                $this->mutex->release($mutexName);
+                $mutex->release();
                 $this->_locked = false;
             }
         }
