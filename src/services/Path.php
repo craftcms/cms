@@ -11,6 +11,7 @@ use Craft;
 use craft\helpers\App;
 use craft\helpers\FileHelper;
 use CraftCms\Cms\Support\Env;
+use CraftCms\Cms\Support\Str;
 use yii\base\Component;
 use yii\base\Exception;
 
@@ -61,7 +62,11 @@ class Path extends Component
             return $this->_configPath;
         }
 
-        $configPath = config_path();
+        /**
+         * If the config path is set to config/laravel (in a non-laravel project structure)
+         * we need to strip that off so we can get the correct config path.
+         */
+        $configPath = Str::before(config_path(), '/laravel');
 
         if ($configPath === false) {
             throw new Exception('There was a problem getting the config path.');
