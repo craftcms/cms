@@ -17,6 +17,7 @@ use craft\helpers\Db;
 use craft\helpers\Session;
 use craft\web\View;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 use Symfony\Component\BrowserKit\Response;
 use yii\base\ExitException;
 use yii\base\Module;
@@ -126,6 +127,7 @@ class CraftConnector extends Yii2
         parent::resetApplication($closeSession);
         Db::reset();
         Session::reset();
+        Cache::lock(\craft\services\ProjectConfig::MUTEX_NAME)->forceRelease();
     }
 
     /**
