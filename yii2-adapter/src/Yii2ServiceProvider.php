@@ -45,14 +45,23 @@ class Yii2ServiceProvider extends ServiceProvider
 
         defined('CRAFT_BASE_PATH') || define('CRAFT_BASE_PATH', base_path());
         defined('CRAFT_VENDOR_PATH') || define('CRAFT_VENDOR_PATH', base_path('vendor'));
+        defined('CRAFT_STORAGE_PATH') || define('CRAFT_STORAGE_PATH', storage_path());
+        defined('CRAFT_DOTENV_PATH') || define('CRAFT_DOTENV_PATH', base_path());
 
         // Are we in a Laravel skeleton?
         if (is_dir(config_path('craft')) || file_exists(config_path('auth.php'))) {
             defined('CRAFT_CONFIG_PATH') || define('CRAFT_CONFIG_PATH', config_path('craft'));
-            defined('CRAFT_STORAGE_PATH') || define('CRAFT_STORAGE_PATH', storage_path());
             defined('CRAFT_TRANSLATIONS_PATH') || define('CRAFT_TRANSLATIONS_PATH', lang_path());
-            defined('CRAFT_DOTENV_PATH') || define('CRAFT_DOTENV_PATH', base_path());
+            defined('CRAFT_LICENSE_KEY_PATH') || define('CRAFT_LICENSE_KEY_PATH', config_path('craft'));
         } else {
+            defined('CRAFT_CONFIG_PATH') || define('CRAFT_CONFIG_PATH', base_path('config'));
+            defined('CRAFT_TRANSLATIONS_PATH') || define('CRAFT_TRANSLATIONS_PATH', base_path('translations'));
+            defined('CRAFT_LICENSE_KEY_PATH') || define('CRAFT_LICENSE_KEY_PATH', config_path());
+
+            /**
+             * Configure the Laravel application to look into
+             * folders defined by the Craft CMS constants.
+             */
             $this->app
                 ->useConfigPath(CRAFT_CONFIG_PATH)
                 ->useStoragePath(CRAFT_STORAGE_PATH)
@@ -74,7 +83,12 @@ class Yii2ServiceProvider extends ServiceProvider
                 });
         }
 
+        /**
+         * Set some Laravel defaults
+         */
         Config::set('app.debug', Env::get('APP_DEBUG', Env::get('CRAFT_DEV_MODE', false)));
+        Config::set('session.driver', Env::get('SESSION_DRIVER', 'file'));
+        Config::set('cache.default', Env::get('CACHE_STORE', 'file'));
 
         if (in_array(DB::connection()->getDriverName(), ['pgsql', 'mysql'])) {
             defined('CRAFT_DB_DRIVER') || define('CRAFT_DB_DRIVER', DB::connection()->getDriverName());
@@ -88,7 +102,7 @@ class Yii2ServiceProvider extends ServiceProvider
                  * Yii seems weird about these
                  */
                 $_SERVER = array_merge($_SERVER, [
-                    'SCRIPT_FILENAME' => public_path('index.php'),
+                    'SCRIPT_FILENAME' => $this->app->publicPath('index.php'),
                     'SCRIPT_NAME' => '/index.php',
                 ]);
 
