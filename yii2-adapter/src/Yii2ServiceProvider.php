@@ -44,9 +44,14 @@ class Yii2ServiceProvider extends ServiceProvider
         }
 
         defined('CRAFT_BASE_PATH') || define('CRAFT_BASE_PATH', base_path());
+        $this->app->setBasePath(CRAFT_BASE_PATH);
+
         defined('CRAFT_VENDOR_PATH') || define('CRAFT_VENDOR_PATH', base_path('vendor'));
         defined('CRAFT_STORAGE_PATH') || define('CRAFT_STORAGE_PATH', storage_path());
+        $this->app->useStoragePath(CRAFT_STORAGE_PATH);
+
         defined('CRAFT_DOTENV_PATH') || define('CRAFT_DOTENV_PATH', base_path());
+        $this->app->useEnvironmentPath(CRAFT_DOTENV_PATH);
 
         // Are we in a Laravel skeleton?
         if (is_dir(config_path('craft')) || file_exists(config_path('auth.php'))) {
@@ -64,9 +69,7 @@ class Yii2ServiceProvider extends ServiceProvider
             $this->app
                 // When not in a Laravel skeleton, we don't want to conflict any config files.
                 ->useConfigPath(base_path('config/laravel'))
-                ->useStoragePath(CRAFT_STORAGE_PATH)
                 ->useLangPath(CRAFT_TRANSLATIONS_PATH)
-                ->useEnvironmentPath(CRAFT_DOTENV_PATH)
                 ->usePublicPath(Env::get('CRAFT_WEB_ROOT', $this->app->publicPath()))
                 ->detectEnvironment(function() {
                     foreach ([

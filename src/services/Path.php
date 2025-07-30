@@ -66,7 +66,11 @@ class Path extends Component
          * If the config path is set to config/laravel (in a non-laravel project structure)
          * we need to strip that off so we can get the correct config path.
          */
-        $configPath = Str::before(config_path(), '/laravel');
+        $configPath = config_path();
+
+        if (str_ends_with($configPath, '/laravel')) {
+            $configPath = Str::beforeLast($configPath, '/laravel');
+        }
 
         if ($configPath === false) {
             throw new Exception('There was a problem getting the config path.');

@@ -16,6 +16,7 @@ const CRAFT_TESTS_PATH = __DIR__;
 !defined('CRAFT_MIGRATIONS_PATH') && define('CRAFT_MIGRATIONS_PATH', __DIR__ . DIRECTORY_SEPARATOR . '_craft' . DIRECTORY_SEPARATOR . 'migrations');
 !defined('CRAFT_TRANSLATIONS_PATH') && define('CRAFT_TRANSLATIONS_PATH', __DIR__ . DIRECTORY_SEPARATOR . '_craft' . DIRECTORY_SEPARATOR . 'translations');
 !defined('CRAFT_VENDOR_PATH') && define('CRAFT_VENDOR_PATH', dirname(__DIR__) . DIRECTORY_SEPARATOR . 'vendor');
+!defined('CRAFT_DOTENV_PATH') && define('CRAFT_DOTENV_PATH', __DIR__);
 
 /**
  * Initialize the Laravel Craft Application
