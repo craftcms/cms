@@ -24,9 +24,6 @@ setlocale(
     'C.utf8' // different spelling
 );
 
-// Set default timezone to UTC
-date_default_timezone_set('UTC');
-
 // Load Craft
 // -----------------------------------------------------------------------------
 
