@@ -8,6 +8,7 @@ use craft\services\Utilities;
 use craft\utilities\AssetIndexes;
 use craft\utilities\ClearCaches;
 use CraftCms\Aliases\Facades\Aliases;
+use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Support\Env;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\User\Models\User;
@@ -16,6 +17,7 @@ use Exception;
 use Illuminate\Console\Application as ConsoleApplication;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\File;
 use Illuminate\Support\ServiceProvider;
 use yii\BaseYii;
 
@@ -38,10 +40,12 @@ class Yii2ServiceProvider extends ServiceProvider
 
         if (is_dir(resource_path('views'))) {
             defined('CRAFT_TEMPLATES_PATH') || define('CRAFT_TEMPLATES_PATH', resource_path('views'));
+        } else {
+            defined('CRAFT_TEMPLATES_PATH') || define('CRAFT_TEMPLATES_PATH', base_path('templates'));
         }
 
         defined('CRAFT_BASE_PATH') || define('CRAFT_BASE_PATH', base_path());
-        defined('CRAFT_VENDOR_PATH') || define('CRAFT_VENDOR_PATH', CRAFT_BASE_PATH . '/vendor');
+        defined('CRAFT_VENDOR_PATH') || define('CRAFT_VENDOR_PATH', base_path('vendor'));
 
         // Are we in a Laravel skeleton?
         if (is_dir(config_path('craft')) || file_exists(config_path('auth.php'))) {
@@ -49,13 +53,29 @@ class Yii2ServiceProvider extends ServiceProvider
             defined('CRAFT_STORAGE_PATH') || define('CRAFT_STORAGE_PATH', storage_path());
             defined('CRAFT_TRANSLATIONS_PATH') || define('CRAFT_TRANSLATIONS_PATH', lang_path());
             defined('CRAFT_DOTENV_PATH') || define('CRAFT_DOTENV_PATH', base_path());
+        } else {
+            $this->app
+                ->useConfigPath(CRAFT_CONFIG_PATH)
+                ->useStoragePath(CRAFT_STORAGE_PATH)
+                ->useLangPath(CRAFT_TRANSLATIONS_PATH)
+                ->useEnvironmentPath(CRAFT_DOTENV_PATH)
+                ->usePublicPath(Env::get('CRAFT_WEB_ROOT', $this->app->publicPath()))
+                ->detectEnvironment(function() {
+                    foreach ([
+                        'APP_ENV', // Laravel
+                        'CRAFT_ENVIRONMENT', // Craft
+                        'ENVIRONMENT', // Fallback
+                     ] as $key) {
+                        if ($env = Env::get($key)) {
+                            return $env;
+                        }
+                    }
+
+                    return 'production';
+                });
         }
 
-        $this->app
-            ->useConfigPath(CRAFT_CONFIG_PATH)
-            ->useStoragePath(CRAFT_STORAGE_PATH)
-            ->useLangPath(CRAFT_TRANSLATIONS_PATH)
-            ->useEnvironmentPath(CRAFT_DOTENV_PATH);
+        Config::set('app.debug', Env::get('APP_DEBUG', Env::get('CRAFT_DEV_MODE', false)));
 
         if (in_array(DB::connection()->getDriverName(), ['pgsql', 'mysql'])) {
             defined('CRAFT_DB_DRIVER') || define('CRAFT_DB_DRIVER', DB::connection()->getDriverName());
@@ -94,8 +114,10 @@ class Yii2ServiceProvider extends ServiceProvider
         });
     }
 
-    public function boot(): void
+    public function boot(GeneralConfig $generalConfig): void
     {
+        $this->ensureStorageFoldersExist($generalConfig);
+
         /**
          * Register the base aliases that Yii sets, this has to be after
          * the constants as composer will autoload the BaseYii class.
@@ -235,5 +257,20 @@ class Yii2ServiceProvider extends ServiceProvider
          */
         AssetIndexes::registerEvents();
         ClearCaches::registerEvents();
+    }
+
+    private function ensureStorageFoldersExist(GeneralConfig $generalConfig): void
+    {
+        $dirMode = $generalConfig->defaultDirMode ?? 0775;
+
+        File::ensureDirectoryExists($this->app->storagePath(), $dirMode);
+        File::ensureDirectoryExists($this->app->storagePath('framework/cache'), $dirMode);
+        File::ensureDirectoryExists($this->app->storagePath('framework/views'), $dirMode);
+        File::ensureDirectoryExists($this->app->storagePath('framework/sessions'), $dirMode);
+        File::ensureDirectoryExists($this->app->storagePath('runtime'), $dirMode);
+
+        if (!App::isStreamLog()) {
+            File::ensureDirectoryExists($this->app->storagePath('logs'), $dirMode);
+        }
     }
 }

@@ -7,6 +7,7 @@ use CraftCms\Aliases\Facades\Aliases;
 use CraftCms\Cms\Http\Middleware\ExtractNamespace;
 use CraftCms\Cms\Http\Middleware\HandleActionRequests;
 use CraftCms\Cms\Http\Middleware\RequireCpRequest;
+use CraftCms\Cms\Support\Env;
 use Illuminate\Foundation\Console\AboutCommand;
 use Illuminate\Routing\Router;
 use Illuminate\Support\ServiceProvider;
@@ -19,8 +20,14 @@ class AppServiceProvider extends ServiceProvider
 
     public function boot(): void
     {
-        Aliases::set('@packageRoot', FileHelper::normalizePath($this->root));
+        Aliases::set('@root', $this->app->basePath());
+        Aliases::set('@craftcms', FileHelper::normalizePath($this->root.'/../'));
+        Aliases::set('@packageRoot', '@craftcms/cms');
         Aliases::set('@package', '@packageRoot/src');
+
+        if ($webUrl = Env::get('CRAFT_WEB_URL')) {
+            Aliases::set('@web', $webUrl);
+        }
 
         AboutCommand::add('Craft CMS', fn () => [
             'Edition' => \Craft::$app->edition->name,

@@ -61,7 +61,7 @@ class Path extends Component
             return $this->_configPath;
         }
 
-        $configPath = Craft::getAlias('@config');
+        $configPath = config_path();
 
         if ($configPath === false) {
             throw new Exception('There was a problem getting the config path.');
