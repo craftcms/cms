@@ -14,6 +14,7 @@ use Illuminate\Contracts\Console\Kernel;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Foundation\Testing\RefreshDatabaseState;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\File;
@@ -28,7 +29,7 @@ class TestCase extends Orchestra
     {
         parent::setUp();
 
-        Craft::$app->mutex->release(ProjectConfig::MUTEX_NAME);
+        Cache::lock(ProjectConfig::MUTEX_NAME)->forceRelease();
 
         Factory::guessFactoryNamesUsing(
             fn (string $modelName) => 'CraftCms\\Cms\\Database\\Factories\\'.class_basename($modelName).'Factory'
