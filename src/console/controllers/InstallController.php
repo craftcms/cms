@@ -17,7 +17,7 @@ use craft\helpers\Console;
 use craft\helpers\Install as InstallHelper;
 use craft\models\Site;
 use CraftCms\Cms\Migrations\Install;
-use Illuminate\Support\Env;
+use CraftCms\Cms\Support\Env;
 use yii\base\Exception;
 use yii\console\ExitCode;
 

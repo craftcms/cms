@@ -10,7 +10,7 @@ namespace craft\services;
 use Craft;
 use craft\helpers\App;
 use craft\helpers\FileHelper;
-use Illuminate\Support\Env;
+use CraftCms\Cms\Support\Env;
 use yii\base\Component;
 use yii\base\Exception;
 

@@ -13,7 +13,7 @@ use craft\helpers\App;
 use craft\helpers\Typecast;
 use CraftCms\Cms\Config\BaseConfig;
 use CraftCms\Cms\Config\GeneralConfig;
-use Illuminate\Support\Env;
+use CraftCms\Cms\Support\Env;
 use Illuminate\Support\Facades\Config as ConfigFacade;
 use yii\base\Component;
 use yii\base\InvalidArgumentException;
@@ -300,7 +300,7 @@ class Config extends Component
      * @param string $name The environment variable name
      * @param string|false $value The environment variable value, or `false` if it should be removed.
      * @throws \RuntimeException if the .env file doesn't exist
-     * @deprecated in 6.0.0. Use `\Illuminate\Support\Env::writeVariable()` or `\Illuminate\Support\Env::removeVariable()` instead.
+     * @deprecated in 6.0.0. Use `\CraftCms\Cms\Support\Env::writeVariable()` or `\CraftCms\Cms\Support\Env::removeVariable()` instead.
      */
     public function setDotEnvVar(string $name, string|false $value): void
     {

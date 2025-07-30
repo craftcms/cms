@@ -34,9 +34,9 @@ use craft\web\Request as WebRequest;
 use craft\web\Response as WebResponse;
 use craft\web\User as WebUser;
 use craft\web\View;
+use CraftCms\Cms\Support\Env;
 use CraftCms\Cms\Support\Str;
 use HTMLPurifier_Encoder;
-use Illuminate\Support\Env;
 use Illuminate\Support\Facades\Cache;
 use ReflectionClass;
 use ReflectionFunction;
@@ -114,7 +114,7 @@ class App
      * @return mixed The value, or `null` if not found.
      * @throws Exception
      * @since 3.4.18
-     * @deprecated in 6.0.0. Use `\Illuminate\Support\Env::get()` instead.
+     * @deprecated in 6.0.0. Use `\CraftCms\Cms\Support\Env::get()` instead.
      */
     public static function env(string $name): mixed
     {

@@ -12,7 +12,7 @@ use craft\helpers\FileHelper;
 use craft\services\Config;
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Support\Arr;
-use Illuminate\Support\Env;
+use CraftCms\Cms\Support\Env;
 use yii\base\ErrorException;
 
 // Get the last error at the earliest opportunity, so we can catch max_input_vars errors

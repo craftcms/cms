@@ -1,6 +1,6 @@
 <?php
 
-use Illuminate\Support\Env;
+use CraftCms\Cms\Support\Env;
 
 return [
     'dsn' => Env::get('DB_DSN'),

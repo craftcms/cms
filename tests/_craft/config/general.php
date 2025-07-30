@@ -1,6 +1,6 @@
 <?php
 
-use Illuminate\Support\Env;
+use CraftCms\Cms\Support\Env;
 
 /**
  * General Configuration

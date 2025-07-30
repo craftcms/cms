@@ -8,8 +8,8 @@
 namespace craft\helpers;
 
 use Craft;
+use CraftCms\Cms\Support\Env;
 use Illuminate\Support\Collection;
-use Illuminate\Support\Env;
 
 /**
  * Install helper

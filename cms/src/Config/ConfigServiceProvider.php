@@ -5,7 +5,7 @@ namespace CraftCms\Cms\Config;
 use craft\helpers\App;
 use craft\helpers\Typecast;
 use CraftCms\Aliases\Facades\Aliases;
-use Illuminate\Support\Env;
+use CraftCms\Cms\Support\Env;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\ServiceProvider;
 use Throwable;
