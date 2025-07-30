@@ -246,8 +246,8 @@ class TestSetup
             ],
             require $srcPath . '/config/app.php',
             require $srcPath . '/config/app.' . $appType . '.php',
-            ConfigFacade::get("craft.app"),
-            ConfigFacade::get("craft.app.$appType"),
+            ConfigFacade::get("craft.app", []),
+            ConfigFacade::get("craft.app.$appType", []),
         );
 
         if (defined('CRAFT_SITE')) {
