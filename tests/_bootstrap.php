@@ -19,6 +19,11 @@ const CRAFT_TESTS_PATH = __DIR__;
 !defined('CRAFT_DOTENV_PATH') && define('CRAFT_DOTENV_PATH', __DIR__);
 
 /**
+ * Load .env from this folder as well.
+ */
+Dotenv\Dotenv::createImmutable(CRAFT_DOTENV_PATH)->load();
+
+/**
  * Initialize the Laravel Craft Application
  */
 (new \CraftCms\Cms\Tests\TestCase('laravel'))
