@@ -12,6 +12,7 @@ namespace CraftCms\Yii2Adapter\Http;
 use Closure;
 use Craft;
 use CraftCms\Yii2Adapter\Web\DummyResponse;
+use Illuminate\Foundation\Application;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Symfony\Component\HttpKernel\Exception\HttpException;
@@ -20,6 +21,11 @@ use yii\web\HttpException as YiiHttpException;
 
 class LegacyMiddleware
 {
+    public function __construct(
+        private Application $app,
+    ) {
+    }
+
     public function handle(Request $request, Closure $next): mixed
     {
         if ($request->uri()->path() === 'index.php' && $request->has('p')) {
@@ -33,7 +39,7 @@ class LegacyMiddleware
                 content: $request->getContent(),
             );
 
-            return app()->handle($internal);
+            return $this->app->handle($internal);
         }
 
         /**
@@ -45,7 +51,7 @@ class LegacyMiddleware
 
         try {
             /** @var \craft\web\Application $app */
-            $app = app('Craft');
+            $app = $this->app->get('Craft');
 
             /**
              * Reset the request as it could have been set before,
@@ -72,7 +78,7 @@ class LegacyMiddleware
             return $this->createResponse();
         } catch (YiiHttpException $e) {
             if ($e->statusCode === 404) {
-                if (app()->hasDebugModeEnabled()) {
+                if ($this->app->hasDebugModeEnabled()) {
                     throw $e;
                 }
 
@@ -118,13 +124,15 @@ class LegacyMiddleware
 
     protected function cleanup(): void
     {
-        Craft::$classMap = [];
+        $this->app->terminating(function() {
+            Craft::$classMap = [];
 
-        Craft::$app->getSession()->updateFlashCounters();
+            Craft::$app->getSession()->updateFlashCounters();
 
-        Craft::setLogger(null);
-        Craft::$app = null;
-        app()->forgetInstance('Craft');
+            Craft::setLogger(null);
+            Craft::$app = null;
+            $this->app->forgetInstance('Craft');
+        });
     }
 
     private function restoreEmptyStrings(Request $request): void

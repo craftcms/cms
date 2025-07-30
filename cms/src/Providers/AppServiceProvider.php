@@ -59,7 +59,6 @@ class AppServiceProvider extends ServiceProvider
 
         collect([
             ExtractNamespace::class,
-            HandleActionRequests::class,
         ])->each(fn ($middleware) => $router->pushMiddlewareToGroup('craft', $middleware));
 
         collect([
