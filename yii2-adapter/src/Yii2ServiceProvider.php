@@ -13,7 +13,6 @@ use CraftCms\Cms\Support\Env;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\User\Models\User;
 use CraftCms\Yii2Adapter\Console\LegacyCraftCommand;
-use Exception;
 use Illuminate\Console\Application as ConsoleApplication;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\DB;
@@ -82,20 +81,8 @@ class Yii2ServiceProvider extends ServiceProvider
         }
 
         $this->app->singleton('Craft', function() {
-            /**
-             * When developing or when running tests, the working directory
-             * will be different, and the yii-adapter will need to look
-             * in a different location for the bootstrap files.
-             */
-            $basePath = match (true) {
-                file_exists(getcwd() . '/bootstrap/console.php') => getcwd(),
-                file_exists(base_path() . '/vendor/craftcms/cms/bootstrap/console.php') => base_path() . '/vendor/craftcms/cms',
-                file_exists(getcwd() . '/vendor/craftcms/cms/bootstrap/console.php') => getcwd() . '/vendor/craftcms/cms',
-                default => throw new Exception("Bootstrap files could not be found.")
-            };
-
             if ($this->app->runningInConsole() && !$this->app->runningUnitTests()) {
-                $app = require $basePath . '/bootstrap/console.php';
+                $app = require __DIR__ . '/../bootstrap/console.php';
             } else {
                 /**
                  * Yii seems weird about these
@@ -105,7 +92,7 @@ class Yii2ServiceProvider extends ServiceProvider
                     'SCRIPT_NAME' => '/index.php',
                 ]);
 
-                $app = require $basePath . '/bootstrap/web.php';
+                $app = require __DIR__ . '/../bootstrap/web.php';
             }
 
             $this->bootEvents();
