@@ -1316,6 +1316,7 @@ trait ApplicationTrait
      * Returns the application’s mutex service.
      *
      * @return Mutex The application’s mutex service
+     * @deprecated in 6.0.0. Use `\Illuminate\Support\Facades\Cache::lock()` instead.
      */
     public function getMutex(): Mutex
     {

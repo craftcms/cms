@@ -10,15 +10,13 @@ namespace crafttests\unit\services;
 use Codeception\Stub\Expected;
 use Craft;
 use craft\models\ReadOnlyProjectConfigData;
-use craft\mutex\Mutex;
-use craft\mutex\NullMutex;
 use craft\services\ProjectConfig;
 use craft\test\TestCase;
 use CraftCms\Cms\Support\Str;
 use Exception;
+use Illuminate\Support\Facades\Cache;
 use UnitTester;
 use yii\base\NotSupportedException;
-use yii\mutex\Mutex as YiiMutex;
 
 /**
  * Unit tests for ProjectConfig service.
@@ -53,21 +51,16 @@ class ProjectConfigTest extends TestCase
         'f' => 'g',
     ];
 
-    private YiiMutex $_originalMutex;
-
     protected function _before(): void
     {
         parent::_before();
-        $this->_originalMutex = Craft::$app->getMutex();
-        Craft::$app->set('mutex', new Mutex([
-            'mutex' => new NullMutex(),
-        ]));
+        Cache::lock(ProjectConfig::MUTEX_NAME)->forceRelease();
     }
 
     protected function _after(): void
     {
         parent::_after();
-        Craft::$app->set('mutex', $this->_originalMutex);
+        Cache::lock(ProjectConfig::MUTEX_NAME)->forceRelease();
     }
 
     /**

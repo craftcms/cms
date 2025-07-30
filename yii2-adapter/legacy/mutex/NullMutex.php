@@ -14,6 +14,7 @@ use yii\mutex\Mutex as YiiMutex;
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.7.30
+ * @deprecated in 6.0.0. Use `\Illuminate\Support\Facades\Cache::lock()` instead.
  */
 class NullMutex extends YiiMutex
 {

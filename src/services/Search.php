@@ -145,10 +145,9 @@ class Search extends Component
     public function indexElementAttributes(ElementInterface $element, ?array $fieldHandles = null): bool
     {
         // Acquire a lock for this element/site ID
-        $mutex = Craft::$app->getMutex();
-        $lockKey = "searchindex:$element->id:$element->siteId";
+        $mutex = Cache::lock("searchindex:$element->id:$element->siteId", 30);
 
-        if (!$mutex->acquire($lockKey)) {
+        if (!$mutex->get()) {
             // Not worth waiting around; for all we know the other process has newer search attributes anyway
             return true;
         }
@@ -210,7 +209,7 @@ class Search extends Component
         }
 
         // Release the lock
-        $mutex->release($lockKey);
+        $mutex->release();
 
         return true;
     }
@@ -253,10 +252,9 @@ class Search extends Component
             }
 
             // get a lock on the job and make sure it still exists && is pending
-            $mutex = Craft::$app->getMutex();
-            $lockName = "searchqueue:$jobId";
+            $mutex = Cache::lock("searchqueue:$jobId", 30);
 
-            if ($mutex->acquire($lockName)) {
+            if ($mutex->get()) {
                 try {
                     if ($this->isIndexJobPending($jobId)) {
                         foreach ($fieldHandles as $fieldHandle) {
@@ -268,7 +266,7 @@ class Search extends Component
                         return;
                     }
                 } finally {
-                    $mutex->release($lockName);
+                    $mutex->release();
                 }
             }
         }
@@ -304,9 +302,8 @@ class Search extends Component
 
         // get a lock on the job and then mark it as reserved,
         // so there's no chance another process reserves it/modifies it, overlapping with this one
-        $mutex = Craft::$app->getMutex();
-        $lockName = "searchqueue:$jobId";
-        if (!$mutex->acquire($lockName, 5)) {
+        $mutex = Cache::lock("searchqueue:$jobId", 5);
+        if (!$mutex->get()) {
             throw new Exception("Unable to acquire a mutex lock for search queue job $jobId");
         }
 
@@ -329,7 +326,7 @@ class Search extends Component
                 }
             }
         } finally {
-            $mutex->release($lockName);
+            $mutex->release();
         }
 
         try {

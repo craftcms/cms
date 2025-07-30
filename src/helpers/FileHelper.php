@@ -474,13 +474,10 @@ class FileHelper extends \yii\helpers\FileHelper
         }
 
         if ($lock) {
-            $mutex = Craft::$app->getMutex();
-            $lockName = md5($file);
-            if (!$mutex->acquire($lockName, 3)) {
+            $mutex = Cache::lock(md5($file), 3);
+            if (!$mutex->get()) {
                 throw new ErrorException("Unable to acquire a lock for file \"$file\".");
             }
-        } else {
-            $lockName = $mutex = null;
         }
 
         $flags = 0;
@@ -496,7 +493,7 @@ class FileHelper extends \yii\helpers\FileHelper
         static::invalidate($file);
 
         if ($lock) {
-            $mutex->release($lockName);
+            $mutex->release();
         }
     }
 
@@ -725,12 +722,12 @@ class FileHelper extends \yii\helpers\FileHelper
         self::$_useFileLocks = false;
 
         try {
-            $mutex = Craft::$app->getMutex();
             $name = uniqid('test_lock', true);
-            if (!$mutex->acquire($name)) {
+            $mutex = Cache::lock($name);
+            if (!$mutex->get()) {
                 throw new MutexException($name, 'Unable to acquire test lock.');
             }
-            if (!$mutex->release($name)) {
+            if (!$mutex->release()) {
                 throw new MutexException($name, 'Unable to release test lock.');
             }
             self::$_useFileLocks = true;
