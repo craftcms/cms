@@ -17,6 +17,7 @@ const CRAFT_TESTS_PATH = __DIR__;
 !defined('CRAFT_TRANSLATIONS_PATH') && define('CRAFT_TRANSLATIONS_PATH', __DIR__ . DIRECTORY_SEPARATOR . '_craft' . DIRECTORY_SEPARATOR . 'translations');
 !defined('CRAFT_VENDOR_PATH') && define('CRAFT_VENDOR_PATH', dirname(__DIR__) . DIRECTORY_SEPARATOR . 'vendor');
 !defined('CRAFT_DOTENV_PATH') && define('CRAFT_DOTENV_PATH', __DIR__);
+!defined('CRAFT_LICENSE_KEY_PATH') && define('CRAFT_LICENSE_KEY_PATH', __DIR__ . DIRECTORY_SEPARATOR . '_craft' . DIRECTORY_SEPARATOR . 'config/license.key');
 
 /**
  * Load .env from this folder as well.
