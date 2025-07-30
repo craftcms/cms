@@ -15,7 +15,6 @@ use CraftCms\Cms\User\Models\User;
 use CraftCms\Yii2Adapter\Console\LegacyCraftCommand;
 use Illuminate\Console\Application as ConsoleApplication;
 use Illuminate\Support\Facades\Config;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\ServiceProvider;
 use yii\BaseYii;
@@ -24,8 +23,45 @@ class Yii2ServiceProvider extends ServiceProvider
 {
     public function register(): void
     {
+        $this->registerConstants();
+        $this->registerLegacyApp();
+
         $this->loadRoutesFrom(__DIR__ . '/../routes/web.php');
 
+        $this->app
+            ->setBasePath(CRAFT_BASE_PATH)
+            ->useStoragePath(CRAFT_STORAGE_PATH)
+            ->useEnvironmentPath(CRAFT_DOTENV_PATH);
+
+        if ($this->inLaravelSkeleton()) {
+            defined('CRAFT_CONFIG_PATH') || define('CRAFT_CONFIG_PATH', config_path('craft'));
+            defined('CRAFT_TRANSLATIONS_PATH') || define('CRAFT_TRANSLATIONS_PATH', lang_path());
+            defined('CRAFT_LICENSE_KEY_PATH') || define('CRAFT_LICENSE_KEY_PATH', config_path('craft'));
+        } else {
+            defined('CRAFT_TRANSLATIONS_PATH') || define('CRAFT_TRANSLATIONS_PATH', base_path('translations'));
+            defined('CRAFT_LICENSE_KEY_PATH') || define('CRAFT_LICENSE_KEY_PATH', config_path());
+
+            /**
+             * Configure the Laravel application to look into
+             * folders defined by the Craft CMS constants.
+             */
+            $this->app
+                // When not in a Laravel skeleton, we don't want to conflict any config files.
+                ->useConfigPath(base_path('config/laravel'))
+                ->useLangPath(CRAFT_TRANSLATIONS_PATH)
+                ->usePublicPath(Env::get('CRAFT_WEB_ROOT', $this->app->publicPath()));
+        }
+
+        $this->setLaravelDefaults();
+    }
+
+    protected function inLaravelSkeleton(): bool
+    {
+        return is_dir(config_path('craft')) || file_exists(config_path('auth.php'));
+    }
+
+    protected function registerConstants(): void
+    {
         /*
          * This is to prevent Yii from running exit(), we want to catch Yii
          * exiting when for example a redirect is executed.
@@ -44,59 +80,13 @@ class Yii2ServiceProvider extends ServiceProvider
         }
 
         defined('CRAFT_BASE_PATH') || define('CRAFT_BASE_PATH', base_path());
-        $this->app->setBasePath(CRAFT_BASE_PATH);
-
         defined('CRAFT_VENDOR_PATH') || define('CRAFT_VENDOR_PATH', base_path('vendor'));
         defined('CRAFT_STORAGE_PATH') || define('CRAFT_STORAGE_PATH', storage_path());
-        $this->app->useStoragePath(CRAFT_STORAGE_PATH);
-
         defined('CRAFT_DOTENV_PATH') || define('CRAFT_DOTENV_PATH', base_path());
-        $this->app->useEnvironmentPath(CRAFT_DOTENV_PATH);
+    }
 
-        // Are we in a Laravel skeleton?
-        if (is_dir(config_path('craft')) || file_exists(config_path('auth.php'))) {
-            defined('CRAFT_CONFIG_PATH') || define('CRAFT_CONFIG_PATH', config_path('craft'));
-            defined('CRAFT_TRANSLATIONS_PATH') || define('CRAFT_TRANSLATIONS_PATH', lang_path());
-            defined('CRAFT_LICENSE_KEY_PATH') || define('CRAFT_LICENSE_KEY_PATH', config_path('craft'));
-        } else {
-            defined('CRAFT_TRANSLATIONS_PATH') || define('CRAFT_TRANSLATIONS_PATH', base_path('translations'));
-            defined('CRAFT_LICENSE_KEY_PATH') || define('CRAFT_LICENSE_KEY_PATH', config_path());
-
-            /**
-             * Configure the Laravel application to look into
-             * folders defined by the Craft CMS constants.
-             */
-            $this->app
-                // When not in a Laravel skeleton, we don't want to conflict any config files.
-                ->useConfigPath(base_path('config/laravel'))
-                ->useLangPath(CRAFT_TRANSLATIONS_PATH)
-                ->usePublicPath(Env::get('CRAFT_WEB_ROOT', $this->app->publicPath()))
-                ->detectEnvironment(function() {
-                    foreach ([
-                        'APP_ENV', // Laravel
-                        'CRAFT_ENVIRONMENT', // Craft
-                        'ENVIRONMENT', // Fallback
-                     ] as $key) {
-                        if ($env = Env::get($key)) {
-                            return $env;
-                        }
-                    }
-
-                    return 'production';
-                });
-        }
-
-        /**
-         * Set some Laravel defaults
-         */
-        Config::set('app.debug', Env::get('APP_DEBUG', Env::get('CRAFT_DEV_MODE', false)));
-        Config::set('session.driver', Env::get('SESSION_DRIVER', 'file'));
-        Config::set('cache.default', Env::get('CACHE_STORE', 'file'));
-
-        if (in_array(DB::connection()->getDriverName(), ['pgsql', 'mysql'])) {
-            defined('CRAFT_DB_DRIVER') || define('CRAFT_DB_DRIVER', DB::connection()->getDriverName());
-        }
-
+    protected function registerLegacyApp(): void
+    {
         $this->app->singleton('Craft', function() {
             if ($this->app->runningInConsole() && !$this->app->runningUnitTests()) {
                 $app = require __DIR__ . '/../bootstrap/console.php';
@@ -116,6 +106,18 @@ class Yii2ServiceProvider extends ServiceProvider
 
             return $app;
         });
+    }
+
+    /**
+     * Set some compatible Laravel defaults if the environment variables aren't set.
+     */
+    protected function setLaravelDefaults(): void
+    {
+        Config::set('app.debug', Env::get('APP_DEBUG', Env::get('CRAFT_DEV_MODE', false)));
+        Config::set('app.env', Env::get('APP_ENV', Env::get('CRAFT_ENVIRONMENT', Env::get('ENVIRONMENT', 'local'))));
+        Config::set('session.driver', Env::get('SESSION_DRIVER', 'file'));
+        Config::set('cache.default', Env::get('CACHE_STORE', 'file'));
+        Config::set('database.default', Env::get('DB_CONNECTION', Env::get('CRAFT_DB_DRIVER', 'mysql')));
     }
 
     public function boot(GeneralConfig $generalConfig): void
