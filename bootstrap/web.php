@@ -15,8 +15,6 @@ if (!extension_loaded('mbstring') || ini_get('mbstring.func_overload') != 0) {
 // PHP environment normalization
 // -----------------------------------------------------------------------------
 
-mb_detect_order('auto');
-
 // https://github.com/craftcms/cms/issues/4239
 setlocale(
     LC_CTYPE,
