@@ -64,6 +64,7 @@ class Queue extends \yii\queue\cli\Queue implements QueueInterface
     /**
      * @var Mutex|array|string The mutex component to use
      * @since 3.4.0
+     * @deprecated in 6.0.0. Use `\Illuminate\Support\Facades\Cache::lock()` instead.
      */
     public Mutex|string|array $mutex = 'mutex';
 
@@ -140,7 +141,6 @@ class Queue extends \yii\queue\cli\Queue implements QueueInterface
         parent::init();
 
         $this->db = Instance::ensure($this->db, Connection::class);
-        $this->mutex = Instance::ensure($this->mutex, Mutex::class);
 
         if (isset($this->proxyQueue)) {
             $this->proxyQueue = Instance::ensure($this->proxyQueue, BaseQueue::class);
