@@ -12,7 +12,9 @@ use CraftCms\Aliases\Facades\Aliases;
 use CraftCms\Cms\User\Models\User;
 use CraftCms\Yii2Adapter\Console\LegacyCraftCommand;
 use Exception;
+use Illuminate\Auth\Middleware\Authenticate;
 use Illuminate\Console\Application as ConsoleApplication;
+use Illuminate\Contracts\Http\Kernel;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\ServiceProvider;
@@ -82,6 +84,10 @@ class Yii2ServiceProvider extends ServiceProvider
             $this->bootEvents();
 
             return $app;
+        });
+
+        $this->app->afterResolving(Kernel::class, function(Kernel $kernel) {
+            Authenticate::redirectUsing(fn() => app('Craft')->getConfig()->getGeneral()->loginPath);
         });
     }
 

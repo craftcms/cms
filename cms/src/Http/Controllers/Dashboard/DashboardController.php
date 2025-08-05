@@ -27,7 +27,7 @@ class DashboardController
         $this->view = $craft->getView();
     }
 
-    public function index()
+    public function __invoke()
     {
         /**
          * @var \Illuminate\Support\Collection<string, array{
