@@ -123,6 +123,14 @@ class EntryQuery extends ElementQuery implements NestedElementQueryInterface
     public mixed $authorId = null;
 
     /**
+     * @var bool A flag that forces the mapping of all custom fields regardless of $typeId or $sectionId
+     * .
+     * @used-by withAllFieldLayouts()
+     * @used-by fieldLayouts()
+     */
+    public mixed $withAllFieldLayouts = false;
+
+    /**
      * @var mixed The user group ID(s) that the resulting entries’ authors must be in.
      * ---
      * ```php
@@ -242,6 +250,9 @@ class EntryQuery extends ElementQuery implements NestedElementQueryInterface
                 break;
             case 'authorGroup':
                 $this->authorGroup($value);
+                break;
+            case 'withAllFieldLayouts':
+                $this->withAllFieldLayouts($value);
                 break;
             default:
                 $this->nestedTraitSet($name, $value);
@@ -523,6 +534,20 @@ class EntryQuery extends ElementQuery implements NestedElementQueryInterface
     public function authorId(mixed $value): static
     {
         $this->authorId = $value;
+        return $this;
+    }
+
+    /**
+     * Prevents narrowing of custom and generated fields based on type or section. This is useful for
+     * query resolvers with scopes on the query that may have varying entry types or sections set (some with
+     * a given field, some without).
+     *
+     * @param boolean $value
+     * @return $this
+     */
+    public function withAllFieldLayouts(bool $value): static
+    {
+        $this->withAllFieldLayouts = $value;
         return $this;
     }
 
@@ -1230,7 +1255,7 @@ class EntryQuery extends ElementQuery implements NestedElementQueryInterface
         $this->_normalizeTypeId();
         $this->_normalizeSectionId();
 
-        if ($this->typeId || $this->sectionId) {
+        if (($this->typeId || $this->sectionId) && !$this->withAllFieldLayouts) {
             $fieldLayouts = [];
             $sectionsService = Craft::$app->getEntries();
             if ($this->typeId) {
