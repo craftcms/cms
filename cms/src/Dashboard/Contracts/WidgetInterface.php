@@ -1,24 +1,28 @@
 <?php
+
 /**
  * @link https://craftcms.com/
+ *
  * @copyright Copyright (c) Pixel & Tonic, Inc.
  * @license https://craftcms.github.io/license/
  */
 
-namespace craft\base;
+namespace CraftCms\Cms\Dashboard\Contracts;
+
+use CraftCms\Cms\Dashboard\Widgets\Widget;
+use CraftCms\Cms\Support\Contracts\ComponentInterface;
 
 /**
  * WidgetInterface defines the common interface to be implemented by dashboard widget classes.
- * A class implementing this interface should also use [[SavableComponentTrait]] and [[WidgetTrait]].
+ * A class implementing this interface should extend [[Widget]].
  *
- * @mixin WidgetTrait
- * @mixin SavableComponentTrait
- * @mixin Model
  * @phpstan-require-extends Widget
+ *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0.0
+ *
+ * @since 6.0.0
  */
-interface WidgetInterface extends SavableComponentInterface
+interface WidgetInterface extends ComponentInterface
 {
     /**
      * Returns the widget’s SVG icon, if it has one.
@@ -27,9 +31,6 @@ interface WidgetInterface extends SavableComponentInterface
      * the path to an SVG file, or raw SVG markup.
      *
      * System icons can be found in `src/icons/solid/`.
-     *
-     * @return string|null
-     * @since 3.2.0
      */
     public static function icon(): ?string;
 
@@ -51,7 +52,6 @@ interface WidgetInterface extends SavableComponentInterface
      * Returns the widget’s subtitle.
      *
      * @return string|null The widget’s subtitle
-     * @since 3.4.0
      */
     public function getSubtitle(): ?string;
 
@@ -59,8 +59,17 @@ interface WidgetInterface extends SavableComponentInterface
      * Returns the widget's body HTML.
      *
      * @return string|null The widget’s body HTML, or `null` if the widget
-     * should not be visible. (If you don’t want the widget to be selectable in
-     * the first place, use [[isSelectable()]].)
+     *                     should not be visible. (If you don’t want the widget to be selectable in
+     *                     the first place, use [[isSelectable()]].)
      */
     public function getBodyHtml(): ?string;
+
+    public function getSettingsHtml(): ?string;
+
+    public function getSettings(): array;
+
+    /**
+     * Returns the validation rules for attributes.
+     */
+    public static function getSettingsRules(): array;
 }

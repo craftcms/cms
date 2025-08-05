@@ -8,23 +8,34 @@
 namespace craft\base;
 
 use Craft;
+use CraftCms\Cms\Dashboard\Dashboard;
 
 /**
  * Widget is the base class for classes representing dashboard widgets in terms of objects.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
+ * @deprecated in 6.0.0. Use `\CraftCms\Cms\Dashboard\Widgets\Widget` instead.
+ * @phpstan-ignore class.missingExtends
  */
 abstract class Widget extends SavableComponent implements WidgetInterface
 {
     use WidgetTrait;
 
     /**
+     * Old widgets will get validated by calling the ->validate() method.
+     */
+    public static function getSettingsRules(): array
+    {
+        return [];
+    }
+
+    /**
      * @inheritdoc
      */
     public static function isSelectable(): bool
     {
-        return (static::allowMultipleInstances() || !Craft::$app->getDashboard()->doesUserHaveWidget(static::class));
+        return (static::allowMultipleInstances() || !app(Dashboard::class)->doesUserHaveWidget(static::class));
     }
 
     /**

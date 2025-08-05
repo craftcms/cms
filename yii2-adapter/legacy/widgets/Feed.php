@@ -18,6 +18,8 @@ use Illuminate\Support\Facades\Cache;
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
+ * @deprecated in 6.0.0. Use `\CraftCms\Cms\Dashboard\Widgets\Feed` instead.
+ * @phpstan-ignore class.missingExtends
  */
 class Feed extends Widget
 {

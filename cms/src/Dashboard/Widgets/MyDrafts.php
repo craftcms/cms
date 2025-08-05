@@ -1,28 +1,31 @@
 <?php
+
 /**
  * @link https://craftcms.com/
+ *
  * @copyright Copyright (c) Pixel & Tonic, Inc.
  * @license https://craftcms.github.io/license/
  */
 
-namespace craft\widgets;
+namespace CraftCms\Cms\Dashboard\Widgets;
 
 use Craft;
-use craft\base\Widget;
 use craft\elements\Entry;
 use craft\helpers\Cp;
 use craft\helpers\Html;
+use Illuminate\Support\Facades\Session;
 
 /**
  * MyDrafts represents a My Drafts dashboard widget.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.6.5
+ *
+ * @since 6.0.0
  */
 class MyDrafts extends Widget
 {
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public static function displayName(): string
     {
@@ -30,7 +33,7 @@ class MyDrafts extends Widget
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     protected static function allowMultipleInstances(): bool
     {
@@ -43,25 +46,22 @@ class MyDrafts extends Widget
     public int $limit = 10;
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public static function icon(): ?string
     {
         return 'scribble';
     }
 
-    /**
-     * @inheritdoc
-     */
-    protected function defineRules(): array
+    public static function getSettingsRules(): array
     {
-        $rules = parent::defineRules();
-        $rules[] = [['limit'], 'number', 'integerOnly' => true];
-        return $rules;
+        return [
+            'limit' => ['required', 'integer', 'min:1'],
+        ];
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function getSettingsHtml(): ?string
     {
@@ -71,12 +71,12 @@ class MyDrafts extends Widget
             'name' => 'limit',
             'value' => $this->limit,
             'size' => 2,
-            'errors' => $this->getErrors('limit'),
+            'errors' => Session::get('errors.limit', []),
         ]);
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function getBodyHtml(): ?string
     {

@@ -1,27 +1,30 @@
 <?php
+
 /**
  * @link https://craftcms.com/
+ *
  * @copyright Copyright (c) Pixel & Tonic, Inc.
  * @license https://craftcms.github.io/license/
  */
 
-namespace craft\widgets;
+namespace CraftCms\Cms\Dashboard\Widgets;
 
 use Craft;
-use craft\base\Widget;
 use craft\helpers\App;
 use craft\web\assets\craftsupport\CraftSupportAsset;
+use Illuminate\Support\Facades\Auth;
 
 /**
  * CraftSupport represents a Craft Support dashboard widget.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0.0
+ *
+ * @since 6.0.0
  */
 class CraftSupport extends Widget
 {
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public static function displayName(): string
     {
@@ -29,16 +32,16 @@ class CraftSupport extends Widget
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public static function isSelectable(): bool
     {
         // Only admins get the Craft Support widget.
-        return (parent::isSelectable() && Craft::$app->getUser()->getIsAdmin());
+        return parent::isSelectable() && Auth::user()->isAdmin();
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     protected static function allowMultipleInstances(): bool
     {
@@ -46,7 +49,7 @@ class CraftSupport extends Widget
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public static function icon(): ?string
     {
@@ -54,7 +57,7 @@ class CraftSupport extends Widget
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function getTitle(): ?string
     {
@@ -62,37 +65,40 @@ class CraftSupport extends Widget
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function getBodyHtml(): ?string
     {
         // Only admins get the Craft Support widget.
-        if (!Craft::$app->getUser()->getIsAdmin()) {
+        if (! Auth::user()->isAdmin()) {
             return null;
         }
 
-        $view = Craft::$app->getView();
+        /** @var \craft\web\Application $craft */
+        $craft = app('Craft');
+
+        $view = $craft->getView();
         $assetBundle = $view->registerAssetBundle(CraftSupportAsset::class);
 
-        $cmsVersion = Craft::$app->getVersion();
-        $cmsMajorVersion = (int)$cmsVersion;
+        $cmsVersion = $craft->getVersion();
+        $cmsMajorVersion = (int) $cmsVersion;
 
         $pluginVersions = [];
-        foreach (Craft::$app->getPlugins()->getAllPlugins() as $plugin) {
+        foreach ($craft->getPlugins()->getAllPlugins() as $plugin) {
             $pluginVersions[] = sprintf('- %s %s', $plugin->name, $plugin->getVersion());
         }
 
-        $db = Craft::$app->getDb();
+        $db = $craft->getDb();
         $dbDriver = $db->getDriverLabel();
 
-        $imagesService = Craft::$app->getImages();
+        $imagesService = $craft->getImages();
         if ($imagesService->getIsGd()) {
             $imageDriver = 'GD';
         } else {
             $imageDriver = 'Imagick';
         }
 
-        $body = <<<EOD
+        $body = <<<'EOD'
 ### Description
 
 
@@ -110,15 +116,15 @@ class CraftSupport extends Widget
 
 EOD;
 
-        $view->registerJsWithVars(fn($id, $settings) => <<<JS
+        $view->registerJsWithVars(fn ($id, $settings) => <<<JS
 new Craft.CraftSupportWidget($id, $settings);
 JS, [
             $this->id,
             [
-                'issueTitlePrefix' => sprintf("[%s.x]: ", $cmsMajorVersion),
+                'issueTitlePrefix' => sprintf('[%s.x]: ', $cmsMajorVersion),
                 'issueParams' => [
-                    'labels' => sprintf("bug,craft%s", $cmsMajorVersion),
-                    'template' => sprintf("BUG-REPORT-V%s.yml", $cmsMajorVersion),
+                    'labels' => sprintf('bug,craft%s', $cmsMajorVersion),
+                    'template' => sprintf('BUG-REPORT-V%s.yml', $cmsMajorVersion),
                     'body' => $body,
                     'cmsVersion' => sprintf('%s (%s)', $cmsVersion, Craft::$app->edition->name),
                     'phpVersion' => App::phpVersion(),
@@ -129,8 +135,6 @@ JS, [
                 ],
             ],
         ]);
-
-        $iconsDir = Craft::getAlias('@appicons');
 
         // Only show the DB backup option if DB backups haven't been disabled
         $showBackupOption = (Craft::$app->getConfig()->getGeneral()->backupCommand !== false);

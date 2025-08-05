@@ -23,6 +23,7 @@ use yii\db\ActiveQueryInterface;
  * @property User $user User
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
+ * @deprecated in 6.0.0. Use `\CraftCms\Cms\Dashboard\Models\Widget` instead.
  */
 class Widget extends ActiveRecord
 {

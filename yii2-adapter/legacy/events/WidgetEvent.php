@@ -15,6 +15,7 @@ use craft\base\WidgetInterface;
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
+ * @deprecated in 6.0.0. Use `\CraftCms\Cms\Dashboard\Events\WidgetSaving`, `\CraftCms\Cms\Dashboard\Events\WidgetSaved`, `\CraftCms\Cms\Dashboard\Events\WidgetDeleting`, `\CraftCms\Cms\Dashboard\Events\WidgetDeleted` instead.
  */
 class WidgetEvent extends Event
 {

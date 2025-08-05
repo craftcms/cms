@@ -898,7 +898,7 @@ class Install extends Migration
             $table->char('uid', 36)->default('0');
         });
 
-        Schema::create(Table::withoutYiiPlaceholder(Table::WIDGETS), function (Blueprint $table) {
+        Schema::create('widgets', function (Blueprint $table) {
             $table->integer('id', true);
             $table->integer('userId');
             $table->string('type');

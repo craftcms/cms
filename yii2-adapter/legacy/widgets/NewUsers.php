@@ -19,6 +19,8 @@ use craft\web\assets\newusers\NewUsersAsset;
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
+ * @deprecated in 6.0.0. Use `\CraftCms\Cms\Dashboard\Widgets\NewUsers` instead.
+ * @phpstan-ignore class.missingExtends
  */
 class NewUsers extends Widget
 {

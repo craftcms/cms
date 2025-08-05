@@ -1,26 +1,28 @@
 <?php
+
 /**
  * @link https://craftcms.com/
+ *
  * @copyright Copyright (c) Pixel & Tonic, Inc.
  * @license https://craftcms.github.io/license/
  */
 
-namespace craft\widgets;
+namespace CraftCms\Cms\Dashboard\Widgets;
 
 use Craft;
-use craft\base\Widget;
 use craft\web\assets\updateswidget\UpdatesWidgetAsset;
 
 /**
  * Updates represents an Updates dashboard widget.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0.0
+ *
+ * @since 6.0.0
  */
 class Updates extends Widget
 {
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public static function displayName(): string
     {
@@ -28,16 +30,16 @@ class Updates extends Widget
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public static function isSelectable(): bool
     {
         // Gotta have update permission to get this widget
-        return (parent::isSelectable() && Craft::$app->getUser()->checkPermission('performUpdates'));
+        return parent::isSelectable() && Craft::$app->getUser()->checkPermission('performUpdates');
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     protected static function allowMultipleInstances(): bool
     {
@@ -45,7 +47,7 @@ class Updates extends Widget
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public static function icon(): ?string
     {
@@ -53,21 +55,21 @@ class Updates extends Widget
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function getBodyHtml(): ?string
     {
         // Make sure the user actually has permission to perform updates
-        if (!Craft::$app->getUser()->checkPermission('performUpdates')) {
+        if (! Craft::$app->getUser()->checkPermission('performUpdates')) {
             return null;
         }
 
         $view = Craft::$app->getView();
         $cached = Craft::$app->getUpdates()->getIsUpdateInfoCached();
 
-        if (!$cached || !Craft::$app->getUpdates()->getTotalAvailableUpdates()) {
+        if (! $cached || ! Craft::$app->getUpdates()->getTotalAvailableUpdates()) {
             $view->registerAssetBundle(UpdatesWidgetAsset::class);
-            $view->registerJs('new Craft.UpdatesWidget(' . $this->id . ', ' . ($cached ? 'true' : 'false') . ');');
+            $view->registerJs('new Craft.UpdatesWidget('.$this->id.', '.($cached ? 'true' : 'false').');');
         }
 
         if ($cached) {
@@ -77,6 +79,6 @@ class Updates extends Widget
                 ]);
         }
 
-        return '<p class="centeralign">' . Craft::t('app', 'Checking for updates…') . '</p>';
+        return '<p class="centeralign">'.Craft::t('app', 'Checking for updates…').'</p>';
     }
 }

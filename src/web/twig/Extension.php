@@ -67,6 +67,8 @@ use DateTime;
 use DateTimeInterface;
 use DateTimeZone;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Session;
+use Illuminate\Support\MessageBag;
 use Illuminate\Support\Stringable;
 use IteratorAggregate;
 use Money\Money;
@@ -1750,6 +1752,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
             'siteUrl' => $siteUrl,
             'systemName' => $systemName,
             'view' => $this->view,
+            'errors' => new MessageBag(Session::get('errors', [])),
 
             'devMode' => App::devMode(),
             'SORT_ASC' => SORT_ASC,

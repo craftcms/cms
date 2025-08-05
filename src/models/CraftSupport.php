@@ -47,7 +47,7 @@ class CraftSupport extends Model
     /**
      * @var UploadedFile|null Attachment
      */
-    public ?UploadedFile $attachment = null;
+    public UploadedFile|\Illuminate\Http\UploadedFile|null $attachment = null;
 
     /**
      * @inheritdoc
