@@ -5,15 +5,11 @@ namespace CraftCms\Cms\Dashboard\Widgets;
 use CraftCms\Cms\Dashboard\Contracts\WidgetInterface;
 use CraftCms\Cms\Dashboard\Dashboard;
 use CraftCms\Cms\Support\Arr;
-use DateTimeInterface;
+use Illuminate\Support\Facades\Validator;
 
 abstract class Widget implements WidgetInterface
 {
     public ?int $id = null;
-
-    public ?DateTimeInterface $dateCreated = null;
-
-    public ?DateTimeInterface $dateUpdated = null;
 
     /**
      * @var int|null The user’s chosen colspan for the widget
@@ -137,5 +133,43 @@ EOD;
         }
 
         return Arr::except($settings, 'id');
+    }
+
+    protected function getValidator(): \Illuminate\Validation\Validator
+    {
+        return Validator::make($this->getSettings(), static::getSettingsRules());
+    }
+
+    public function validate(array|string|null $attributeNames = null, bool $clearErrors = true): bool
+    {
+        return $this->getValidator()->passes();
+    }
+
+    public function hasErrors(?string $attribute = null): bool
+    {
+        if (! $attribute) {
+            return $this->getValidator()->fails();
+        }
+
+        return $this->getValidator()->errors()->has($attribute);
+    }
+
+    public function getErrors(?string $attribute = null): array
+    {
+        if (! $attribute) {
+            return $this->getValidator()->errors()->all();
+        }
+
+        return $this->getValidator()->errors()->get($attribute);
+    }
+
+    public function getFirstErrors(): array
+    {
+        return $this->getErrors();
+    }
+
+    public function getFirstError(string $attribute): ?string
+    {
+        return $this->getValidator()->errors()->first($attribute);
     }
 }

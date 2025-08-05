@@ -13,12 +13,4 @@ interface ValidatableInterface
     public function getFirstErrors(): array;
 
     public function getFirstError(string $attribute): ?string;
-
-    public function getErrorSummary(bool $showAllErrors): array;
-
-    public function addError($attribute, $error = ''): void;
-
-    public function addErrors(array $errors): void;
-
-    public function clearErrors(?string $attribute = null): void;
 }

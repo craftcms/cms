@@ -7,7 +7,7 @@
     name: 'url',
     value: widget.url,
     required: true,
-    errors: errors.get('url')
+    errors: widget.getErrors('url')
 }) }}
 
 
@@ -17,7 +17,7 @@
     name: 'title',
     value: widget.title,
     required: true,
-    errors: errors.get('title')
+    errors: widget.getErrors('title')
 }) }}
 
 
@@ -27,5 +27,5 @@
     name: 'limit',
     value: widget.limit,
     size: 2,
-    errors: errors.get('limit')
+    errors: widget.getErrors('limit')
 }) }}

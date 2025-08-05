@@ -79,8 +79,6 @@ class WidgetsController
 
         $widget = $this->dashboard->createWidget([
             'id' => $widget->id,
-            'dateCreated' => $widget->dateCreated,
-            'dateUpdated' => $widget->dateUpdated,
             'colspan' => $widget->colspan,
             'type' => $widget::class,
             'settings' => $settings,

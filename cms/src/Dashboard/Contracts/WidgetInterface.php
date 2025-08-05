@@ -11,6 +11,7 @@ namespace CraftCms\Cms\Dashboard\Contracts;
 
 use CraftCms\Cms\Dashboard\Widgets\Widget;
 use CraftCms\Cms\Support\Contracts\ComponentInterface;
+use CraftCms\Cms\Support\Contracts\ValidatableInterface;
 
 /**
  * WidgetInterface defines the common interface to be implemented by dashboard widget classes.
@@ -22,7 +23,7 @@ use CraftCms\Cms\Support\Contracts\ComponentInterface;
  *
  * @since 6.0.0
  */
-interface WidgetInterface extends ComponentInterface
+interface WidgetInterface extends ComponentInterface, ValidatableInterface
 {
     /**
      * Returns the widget’s SVG icon, if it has one.

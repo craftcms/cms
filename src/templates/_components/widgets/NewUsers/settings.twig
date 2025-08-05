@@ -23,7 +23,7 @@
         value: 'lastmonth',
     },
     ],
-    errors: errors.get('dateRange')
+    errors: widget.getErrors('dateRange')
 }) }}
 
 
@@ -42,7 +42,7 @@
         name: 'userGroupId',
         value: widget.userGroupId,
         options: userGroupsOptions,
-        errors: errors.get('userGroupId')
+        errors: widget.getErrors('userGroupId')
     }) }}
 
 {% endif %}

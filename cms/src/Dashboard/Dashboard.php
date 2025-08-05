@@ -16,7 +16,6 @@ use CraftCms\Cms\Dashboard\Widgets\NewUsers as NewUsersWidget;
 use CraftCms\Cms\Dashboard\Widgets\QuickPost as QuickPostWidget;
 use CraftCms\Cms\Dashboard\Widgets\RecentEntries as RecentEntriesWidget;
 use CraftCms\Cms\Dashboard\Widgets\Updates as UpdatesWidget;
-use CraftCms\Cms\Support\Contracts\ValidatableInterface;
 use Illuminate\Container\Attributes\Singleton;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
@@ -151,7 +150,10 @@ class Dashboard
             $widget = $event->widget;
         }
 
-        if ($runValidation && $widget instanceof ValidatableInterface && ! $widget->validate()) {
+        /**
+         * Legacy widgets run validation through the ->validate() method.
+         */
+        if ($runValidation && empty($widget::getSettingsRules()) && ! $widget->validate()) {
             Log::info('Widget not saved due to validation error.', ['widget' => $widget]);
 
             throw ValidationException::withMessages($widget->getFirstErrors());
