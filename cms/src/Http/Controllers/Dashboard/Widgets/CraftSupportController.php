@@ -22,7 +22,6 @@ use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
-use Illuminate\Validation\Rule;
 use RuntimeException;
 use Symfony\Component\Yaml\Yaml;
 use Throwable;
@@ -35,11 +34,7 @@ class CraftSupportController
         $view = $craft->getView();
 
         $request->validate([
-            'widgetId' => [
-                'required',
-                'integer',
-                Rule::exists('widgets', 'id')->where('userId', $request->user()->id),
-            ],
+            'widgetId' => ['required', 'integer'],
             'namespace' => ['nullable', 'string'],
         ]);
 
@@ -73,7 +68,7 @@ class CraftSupportController
             ],
             [
                 'name' => 'name',
-                'contents' => \Craft::$app->getUser()->getIdentity()->getName(),
+                'contents' => $request->user()->fullName,
             ],
             [
                 'name' => 'message',
@@ -115,9 +110,12 @@ class CraftSupportController
         }
 
         try {
-            \Craft::$app->getApi()->request('POST', 'support', [
-                RequestOptions::MULTIPART => $parts,
-            ]);
+            // @todo: Refactor this to use Laravel's HTTP fake after we replace Craft's API service
+            if (app()->environment() !== 'testing') {
+                \Craft::$app->getApi()->request('POST', 'support', [
+                    RequestOptions::MULTIPART => $parts,
+                ]);
+            }
 
             return $view->renderTemplate('_components/widgets/CraftSupport/response.twig', [
                 'widgetId' => $widgetId,
