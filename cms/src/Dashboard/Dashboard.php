@@ -162,7 +162,7 @@ class Dashboard
         try {
             $widgetModel = $this->getUserWidgetModelById($widget->id);
 
-            $widgetModel->type = get_class($widget);
+            $widgetModel->type = $widget::class;
             $widgetModel->settings = $widget->getSettings();
 
             if ($isNewWidget) {
@@ -175,6 +175,8 @@ class Dashboard
             }
 
             $widgetModel->save();
+
+            $widget->id = $widgetModel->id;
 
             DB::commit();
         } catch (Throwable $e) {
@@ -279,9 +281,9 @@ class Dashboard
      */
     public function changeWidgetColspan(int $widgetId, int $colspan): bool
     {
-        $widgetRecord = $this->getUserWidgetModelById($widgetId);
-        $widgetRecord->colspan = $colspan;
-        $widgetRecord->save();
+        $this->getUserWidgetModelById($widgetId)->update([
+            'colspan' => $colspan,
+        ]);
 
         return true;
     }
