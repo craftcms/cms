@@ -11,6 +11,7 @@ use CraftCms\Cms\Dashboard\Widgets\Feed;
 use CraftCms\Cms\Dashboard\Widgets\Widget;
 use CraftCms\Cms\User\Models\User;
 use Illuminate\Support\Facades\Event;
+
 use function Pest\Laravel\actingAs;
 
 beforeEach(function () {
