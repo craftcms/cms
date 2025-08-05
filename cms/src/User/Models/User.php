@@ -29,6 +29,8 @@ class User extends BaseModel implements AuthenticatableContract, AuthorizableCon
     use HasFactory;
     use MustVerifyEmail;
 
+    protected $guarded = [];
+
     /**
      * The attributes that should be hidden for serialization.
      *
