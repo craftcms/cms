@@ -7,6 +7,7 @@ use CraftCms\Cms\Dashboard\Widgets\Feed;
 use CraftCms\Cms\Http\Controllers\Dashboard\WidgetsController;
 use CraftCms\Cms\User\Models\User;
 use Illuminate\Support\Facades\Auth;
+
 use function Pest\Laravel\actingAs;
 use function Pest\Laravel\postJson;
 
@@ -34,7 +35,7 @@ it('can store a widget with settings', function () {
         'type' => Feed::class,
         'settings' => [
             'url' => 'https://craftcms.com/news.rss',
-        ]
+        ],
     ])->assertOk();
 
     expect($response->json('info'))->not()->toBeEmpty();
@@ -62,7 +63,7 @@ it('can store namespaced settings', function () {
         'test' => [
             'settings' => [
                 'url' => 'https://craftcms.com/news.rss',
-            ]
+            ],
         ],
     ])->assertOk();
 
@@ -81,7 +82,7 @@ it('can update a widget with settings', function () {
             'title' => 'Craft News',
             'limit' => 10,
             'url' => 'https://craftcms.com/news.rss',
-        ]
+        ],
     ])->assertOk();
 
     expect($response->json('info'))->not()->toBeEmpty();
@@ -99,7 +100,7 @@ it('validates when updating', function () {
 
     postJson(action([WidgetsController::class, 'update']), [
         'widgetId' => $widget->id,
-        "widget{$widget->id}-settings" => []
+        "widget{$widget->id}-settings" => [],
     ])
         ->assertJsonValidationErrorFor('title')
         ->assertJsonValidationErrorFor('url')
@@ -114,7 +115,7 @@ it('can update the colspan of a widget', function () {
 
     postJson(action([WidgetsController::class, 'updateColspan']), [
         'id' => $widget->id,
-        'colspan' => 2
+        'colspan' => 2,
     ])->assertOk();
 
     expect(WidgetModel::first()->colspan)->toBe(2);
