@@ -8,7 +8,6 @@ use CraftCms\Cms\Dashboard\Events\WidgetDeleted;
 use CraftCms\Cms\Dashboard\Events\WidgetDeleting;
 use CraftCms\Cms\Dashboard\Events\WidgetSaved;
 use CraftCms\Cms\Dashboard\Events\WidgetSaving;
-use CraftCms\Cms\Dashboard\Exceptions\WidgetNotFoundException;
 use CraftCms\Cms\Dashboard\Widgets\CraftSupport as CraftSupportWidget;
 use CraftCms\Cms\Dashboard\Widgets\Feed as FeedWidget;
 use CraftCms\Cms\Dashboard\Widgets\MyDrafts;
@@ -17,6 +16,7 @@ use CraftCms\Cms\Dashboard\Widgets\QuickPost as QuickPostWidget;
 use CraftCms\Cms\Dashboard\Widgets\RecentEntries as RecentEntriesWidget;
 use CraftCms\Cms\Dashboard\Widgets\Updates as UpdatesWidget;
 use CraftCms\Cms\Dashboard\Widgets\Widget;
+use Exception;
 use Illuminate\Container\Attributes\Singleton;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
@@ -25,7 +25,6 @@ use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\ValidationException;
 use Throwable;
-use Exception;
 
 #[Singleton]
 class Dashboard
@@ -115,6 +114,7 @@ class Dashboard
      *
      * @param  int  $id  The widget’s ID
      * @return WidgetInterface The widget
+     *
      * @throws \Illuminate\Database\Eloquent\ModelNotFoundException if it doesn't exist
      */
     public function getWidgetById(int $id): WidgetInterface
@@ -259,7 +259,7 @@ class Dashboard
             $cases .= " WHEN {$id} THEN {$index}";
         }
 
-        DB::table((new Models\Widget())->getTable())
+        DB::table((new Models\Widget)->getTable())
             ->whereIn('id', $widgetIds)
             ->update([
                 'sortOrder' => DB::raw("CASE id {$cases} END"),
@@ -292,7 +292,7 @@ class Dashboard
         $this->saveWidget($this->createWidget(RecentEntriesWidget::class));
 
         // Craft Support widget
-        if ($user->admin) {
+        if ($user->isAdmin()) {
             $this->saveWidget($this->createWidget(CraftSupportWidget::class));
         }
 
@@ -320,18 +320,10 @@ class Dashboard
         $userId = Auth::user()->getAuthIdentifier();
 
         if ($widgetId !== null) {
-            $widgetModel = Models\Widget::query()
+            return Models\Widget::query()
                 ->where('id', $widgetId)
                 ->where('userId', $userId)
-                ->first();
-
-            throw_if(
-                ! $widgetModel,
-                WidgetNotFoundException::class,
-                "No widget exists with the ID '$widgetId'"
-            );
-
-            return $widgetModel;
+                ->firstOrFail();
         }
 
         $widgetModel = new Models\Widget;
