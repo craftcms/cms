@@ -62,8 +62,6 @@ class Dashboard
      * @param class-string<T>|array{
      *     type:class-string<T>,
      *     id?:int,
-     *     dateCreated?:\DateTimeInterface,
-     *     dateUpdated?:\DateTimeInterface,
      *     colspan?:int,
      *     settings?:array|string
      * } $config  The widget’s class name, or its config, with a `type` value and optionally a `settings` value.
