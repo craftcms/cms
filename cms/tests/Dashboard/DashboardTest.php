@@ -222,6 +222,23 @@ it('can reorder widgets', function () {
     expect(WidgetModel::query()->orderBy('sortOrder')->pluck('id')->all())->toBe([$widget2->id, $widget1->id]);
 });
 
+it('ignores non existing ids', function () {
+    $this->dashboard->saveWidget($widget1 = $this->dashboard->createWidget([
+        'type' => Feed::class,
+        'settings' => [
+            'title' => 'Craft News',
+            'url' => 'https://craftcms.com/news.rss',
+        ],
+    ]));
+    $this->dashboard->saveWidget($widget2 = $this->dashboard->createWidget(CraftSupport::class));
+
+    expect(WidgetModel::query()->orderBy('sortOrder')->pluck('id')->all())->toBe([$widget1->id, $widget2->id]);
+
+    $this->dashboard->reorderWidgets([$widget2->id, $widget1->id, 10]);
+
+    expect(WidgetModel::query()->orderBy('sortOrder')->pluck('id')->all())->toBe([$widget2->id, $widget1->id]);
+});
+
 it('can change the colspan of a widget', function () {
     $this->dashboard->saveWidget($widget = $this->dashboard->createWidget([
         'type' => Feed::class,

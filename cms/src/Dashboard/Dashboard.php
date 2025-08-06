@@ -25,13 +25,13 @@ use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\ValidationException;
 use Throwable;
-use yii\base\Exception;
+use Exception;
 
 #[Singleton]
 class Dashboard
 {
     /**
-     * @return Collection<int, class-string<WidgetInterface>>
+     * @return Collection<class-string<WidgetInterface>>
      */
     public function getAllWidgetTypes(): Collection
     {
@@ -64,7 +64,7 @@ class Dashboard
      *     type:class-string<T>,
      *     id?:int,
      *     colspan?:int,
-     *     settings?:array|string
+     *     settings?:array<string,mixed>
      * } $config  The widget’s class name, or its config, with a `type` value and optionally a `settings` value.
      * @return T
      */
@@ -114,7 +114,8 @@ class Dashboard
      * Returns a widget by its ID.
      *
      * @param  int  $id  The widget’s ID
-     * @return WidgetInterface The widget, or null if it doesn’t exist
+     * @return WidgetInterface The widget
+     * @throws \Illuminate\Database\Eloquent\ModelNotFoundException if it doesn't exist
      */
     public function getWidgetById(int $id): WidgetInterface
     {
@@ -252,27 +253,17 @@ class Dashboard
      */
     public function reorderWidgets(array $widgetIds): bool
     {
-        DB::beginTransaction();
+        $cases = '';
 
-        try {
-            $widgets = Models\Widget::query()
-                ->where('userId', Auth::user()->getAuthIdentifier())
-                ->whereIn('id', $widgetIds)
-                ->get()
-                ->keyBy('id');
-
-            foreach ($widgetIds as $widgetOrder => $widgetId) {
-                $widgetModel = $widgets[$widgetId];
-                $widgetModel->sortOrder = $widgetOrder + 1;
-                $widgetModel->save();
-            }
-
-            DB::commit();
-        } catch (Throwable $e) {
-            DB::rollBack();
-
-            throw $e;
+        foreach ($widgetIds as $index => $id) {
+            $cases .= " WHEN {$id} THEN {$index}";
         }
+
+        DB::table((new Models\Widget())->getTable())
+            ->whereIn('id', $widgetIds)
+            ->update([
+                'sortOrder' => DB::raw("CASE id {$cases} END"),
+            ]);
 
         return true;
     }
