@@ -19,8 +19,8 @@ use craft\helpers\FileHelper;
 use craft\migrations\CreateDbCacheTable;
 use craft\migrations\CreatePhpSessionTable;
 use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Support\Env;
 use CraftCms\Cms\Support\Str;
-use Illuminate\Support\Env;
 use m150207_210500_i18n_init;
 use PDOException;
 use Seld\CliPrompt\CliPrompt;
@@ -657,8 +657,7 @@ EOD;
      */
     private function _setEnvVar(string $name, mixed $value): bool
     {
-        $configService = Craft::$app->getConfig();
-        $path = $configService->getDotEnvPath();
+        $path = app()->environmentFilePath();
 
         if (!file_exists($path)) {
             if (!$this->interactive || $this->confirm(PHP_EOL . "A .env file doesn't exist at $path. Would you like to create one?", true)) {
@@ -677,7 +676,7 @@ EOD;
         }
 
         try {
-            $configService->setDotEnvVar($name, $value ?? '');
+            Env::writeVariable($name, $value ?? '', $path);
         } catch (Throwable $e) {
             $this->stderr("Unable to set $name on $path: {$e->getMessage()}" . PHP_EOL, Console::FG_RED);
             return false;

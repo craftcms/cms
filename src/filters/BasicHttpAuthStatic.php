@@ -8,7 +8,7 @@
 namespace craft\filters;
 
 use Craft;
-use Illuminate\Support\Env;
+use CraftCms\Cms\Support\Env;
 use yii\base\InvalidConfigException;
 use yii\filters\auth\HttpBasicAuth;
 

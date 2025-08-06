@@ -1,6 +1,6 @@
 <?php
 
-use Illuminate\Support\Env;
+use CraftCms\Cms\Support\Env;
 
 /**
  * General Configuration
@@ -14,5 +14,5 @@ return [
     'cpTrigger' => 'adminustriggerus',
     'slugWordSeparator' => '--',
     'allowUppercaseInSlug' => true,
-    'securityKey' => Env::get('SECURITY_KEY'),
+    'securityKey' => Env::get('CRAFT_SECURITY_KEY'),
 ];

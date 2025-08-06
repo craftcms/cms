@@ -27,6 +27,7 @@ use craft\helpers\UrlHelper;
 use craft\queue\QueueLogBehavior;
 use CraftCms\Cms\Support\Arr;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Config;
 use IntlDateFormatter;
 use IntlException;
 use ReflectionClass;
@@ -497,7 +498,7 @@ class Application extends \yii\web\Application
         $module = $this->getModule('debug');
         $module->bootstrap($this);
 
-        if ($config = Craft::$app->getConfig()->getConfigFromFile('debug')) {
+        if ($config = Config::get('craft.debug', [])) {
             Craft::configure($module, $config);
         }
     }

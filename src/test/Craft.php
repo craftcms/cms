@@ -26,9 +26,10 @@ use craft\models\FieldLayout;
 use craft\queue\BaseJob;
 use craft\queue\Queue;
 use craft\web\Application as WebApplication;
+use CraftCms\Cms\Support\Env;
 use DateTime;
 use Exception;
-use Illuminate\Support\Env;
+use Illuminate\Support\Facades\Config;
 use PHPUnit\Framework\ExpectationFailedException;
 use PHPUnit\Framework\MockObject\MockObject;
 use ReflectionException;
@@ -669,8 +670,7 @@ class Craft extends Yii2
             $this->addModule($test, $moduleClass);
         }
 
-        $config = TestSetup::createConfigService();
-        foreach ($config->getConfigFromFile('app')['modules'] ?? [] as $class) {
+        foreach (Config::get('craft.app.modules', []) as $class) {
             $this->addModule($test, $class);
         }
     }

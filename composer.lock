@@ -535,16 +535,16 @@
         },
         {
             "name": "craftcms/laravel-dependency-aware-cache",
-            "version": "1.0.3",
+            "version": "1.0.4",
             "source": {
                 "type": "git",
                 "url": "git@github.com:craftcms/laravel-dependency-aware-cache.git",
-                "reference": "c78158f50cfc9d6cb0cc4ee4a35591d939be0999"
+                "reference": "0eaf62992af3db89e634de983d56bc6a44b5d7eb"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/craftcms/laravel-dependency-aware-cache/zipball/c78158f50cfc9d6cb0cc4ee4a35591d939be0999",
-                "reference": "c78158f50cfc9d6cb0cc4ee4a35591d939be0999",
+                "url": "https://api.github.com/repos/craftcms/laravel-dependency-aware-cache/zipball/0eaf62992af3db89e634de983d56bc6a44b5d7eb",
+                "reference": "0eaf62992af3db89e634de983d56bc6a44b5d7eb",
                 "shasum": "",
                 "mirrors": [
                     {
@@ -629,10 +629,10 @@
                 "laravel"
             ],
             "support": {
-                "source": "https://github.com/craftcms/laravel-dependency-aware-cache/tree/1.0.3",
+                "source": "https://github.com/craftcms/laravel-dependency-aware-cache/tree/1.0.4",
                 "issues": "https://github.com/craftcms/laravel-dependency-aware-cache/issues"
             },
-            "time": "2025-07-22T12:28:50+00:00"
+            "time": "2025-07-29T07:15:09+00:00"
         },
         {
             "name": "craftcms/plugin-installer",

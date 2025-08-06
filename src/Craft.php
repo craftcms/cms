@@ -13,6 +13,7 @@ use craft\helpers\FileHelper;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Str;
 use GuzzleHttp\Client;
+use Illuminate\Support\Facades\Config;
 use Symfony\Component\VarDumper\Cloner\VarCloner;
 use yii\base\ExitException;
 use yii\base\InvalidConfigException;
@@ -426,8 +427,7 @@ EOD;
         ];
 
         // Grab the config from config/guzzle.php that is used on every Guzzle request.
-        $configService = static::$app->getConfig();
-        $guzzleConfig = $configService->getConfigFromFile('guzzle');
+        $guzzleConfig = Config::get('craft.guzzle', []);
         $generalConfig = app(\CraftCms\Cms\Config\GeneralConfig::class);
 
         // Merge everything together

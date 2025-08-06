@@ -23,11 +23,12 @@ use craft\helpers\Db;
 use craft\helpers\FileHelper;
 use craft\helpers\ProjectConfig as ProjectConfigHelper;
 use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Support\Env;
 use CraftCms\Cms\Support\Str;
 use DateTime;
 use Illuminate\Support\Collection;
-use Illuminate\Support\Env;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Config;
 use ReflectionClass;
 use ReflectionException;
 use Throwable;
@@ -937,7 +938,7 @@ class Plugins extends Component
 
             $settings = array_merge(
                 $info['settings'] ?? [],
-                Craft::$app->getConfig()->getConfigFromFile($handle)
+                Config::get("craft.$handle", []),
             );
 
             if ($settings !== []) {
@@ -1184,9 +1185,9 @@ class Plugins extends Component
         if (
             preg_match('/^\$(\w+)$/', $oldLicenseKey, $matches) &&
             Env::get($matches[1]) === '' &&
-            file_exists(Craft::$app->getConfig()->getDotEnvPath())
+            file_exists(app()->environmentFilePath())
         ) {
-            Craft::$app->getConfig()->setDotEnvVar($matches[1], $normalizedLicenseKey);
+            Env::writeVariable($matches[1], $normalizedLicenseKey, app()->environmentFilePath());
         } else {
             // Set the plugin's license key in the project config
             Craft::$app->getProjectConfig()->set(sprintf('%s.%s.licenseKey', ProjectConfig::PATH_PLUGINS, $handle), $normalizedLicenseKey, "Set license key for plugin “{$handle}”");

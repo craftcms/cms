@@ -1,6 +1,6 @@
 <?php
 
-use Illuminate\Support\Env;
+use CraftCms\Cms\Support\Env;
 
 it('can get env', function () {
     $_SERVER['TEST_SERVER_ENV'] = 'server';

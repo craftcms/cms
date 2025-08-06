@@ -9,8 +9,8 @@ namespace craft\log;
 
 use Craft;
 use craft\helpers\App;
+use CraftCms\Cms\Support\Env;
 use Illuminate\Support\Collection;
-use Illuminate\Support\Env;
 use Psr\Log\LogLevel;
 
 /**

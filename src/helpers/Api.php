@@ -10,8 +10,8 @@ namespace craft\helpers;
 use Craft;
 use craft\enums\LicenseKeyStatus;
 use craft\errors\InvalidLicenseKeyException;
+use CraftCms\Cms\Support\Env;
 use ErrorException;
-use Illuminate\Support\Env;
 use Illuminate\Support\Facades\Cache;
 use Imagick;
 

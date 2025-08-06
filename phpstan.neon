@@ -7,7 +7,6 @@ parameters:
     paths:
         - cms
         - yii2-adapter
-        - bootstrap
         - src
         - tests
     excludePaths:

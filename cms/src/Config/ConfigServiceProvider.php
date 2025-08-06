@@ -4,7 +4,8 @@ namespace CraftCms\Cms\Config;
 
 use craft\helpers\App;
 use craft\helpers\Typecast;
-use Illuminate\Support\Env;
+use CraftCms\Aliases\Facades\Aliases;
+use CraftCms\Cms\Support\Env;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\ServiceProvider;
 use Throwable;
@@ -13,6 +14,8 @@ class ConfigServiceProvider extends ServiceProvider
 {
     private array $configFiles = [
         'general',
+        'redirects',
+        'routes',
     ];
 
     public function register(): void
@@ -49,7 +52,7 @@ class ConfigServiceProvider extends ServiceProvider
          * When the configuration is a simple array config, load it into
          * the GeneralConfig object and replace the configuration key.
          */
-        if (! $generalConfig instanceof BaseConfig) {
+        if (! $generalConfig instanceof GeneralConfig) {
             $generalConfig = GeneralConfig::__set_state($generalConfig);
 
             Config::set('craft.general', $generalConfig);
@@ -74,6 +77,10 @@ class ConfigServiceProvider extends ServiceProvider
             }
 
             $generalConfig->$name = $value;
+        }
+
+        foreach ($generalConfig->aliases as $name => $value) {
+            Aliases::set($name, $value);
         }
     }
 }

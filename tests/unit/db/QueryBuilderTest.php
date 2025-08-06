@@ -35,16 +35,7 @@ class QueryBuilderTest extends TestCase
             $this->markTestSkipped('MySQL only');
         }
 
-        $dbConfig = Craft::$app->getConfig()->getDb();
-        $charset = $dbConfig->getCharset();
-        $collation = $dbConfig->collation;
-        $dbConfig->charset = 'utf8';
-        $dbConfig->collation = null;
-
         $sql = $db->getQueryBuilder()->createTable('foo', ['id' => Schema::TYPE_PK], $options);
-
-        $dbConfig->charset = $charset;
-        $dbConfig->collation = $collation;
 
         if ($contains) {
             self::assertStringContainsString($needle, $sql);

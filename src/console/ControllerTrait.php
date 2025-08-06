@@ -12,7 +12,7 @@ use craft\base\Model;
 use craft\helpers\App;
 use craft\helpers\Console;
 use craft\mutex\Mutex as CraftMutex;
-use Illuminate\Support\Env;
+use CraftCms\Cms\Support\Env;
 use yii\base\Action;
 use yii\base\InvalidRouteException;
 use yii\console\Exception;

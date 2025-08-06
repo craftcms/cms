@@ -15,7 +15,7 @@ use craft\db\Table;
 use craft\errors\MissingComponentException;
 use craft\helpers\Console;
 use craft\queue\QueueLogBehavior;
-use Illuminate\Support\Env;
+use CraftCms\Cms\Support\Env;
 use IntlDateFormatter;
 use IntlException;
 use Throwable;

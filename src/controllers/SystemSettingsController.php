@@ -23,6 +23,7 @@ use craft\web\assets\admintable\AdminTableAsset;
 use craft\web\assets\generalsettings\GeneralSettingsAsset;
 use craft\web\Controller;
 use CraftCms\Cms\Support\Arr;
+use Illuminate\Support\Facades\Config;
 use yii\base\Exception;
 use yii\web\ForbiddenHttpException;
 use yii\web\NotFoundHttpException;
@@ -161,11 +162,9 @@ class SystemSettingsController extends Controller
 
         // See if it looks like config/app.php is overriding the mailer component
         $customMailerFiles = [];
-        $configService = Craft::$app->getConfig();
         foreach (['app', 'app.web', 'app.console'] as $file) {
-            $config = $configService->getConfigFromFile($file);
-            if (isset($config['components']) && array_key_exists('mailer', $config['components'])) {
-                $customMailerFiles[] = $configService->getConfigFilePath($file);
+            if (Config::has("craft.$file.components.mailer")) {
+                $customMailerFiles[] = config_path("$file.php");
             }
         }
 

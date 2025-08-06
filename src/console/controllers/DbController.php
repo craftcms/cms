@@ -15,6 +15,7 @@ use craft\helpers\Console;
 use craft\helpers\Db;
 use craft\helpers\FileHelper;
 use CraftCms\Cms\Support\Str;
+use Illuminate\Support\Facades\DB as DbFacade;
 use Throwable;
 use yii\base\NotSupportedException;
 use yii\console\ExitCode;
@@ -443,17 +444,17 @@ class DbController extends Controller
             return ExitCode::UNSPECIFIED_ERROR;
         }
 
-        $dbConfig = Craft::$app->getConfig()->getDb();
+        $connection = DbFacade::connection();
 
         if ($charset === null) {
             $charset = $this->prompt('Which character set should be used?', [
-                'default' => $dbConfig->getCharset(),
+                'default' => $connection->getConfig('charset'),
             ]);
         }
 
         if ($collation === null) {
             $collation = $this->prompt('Which collation should be used?', [
-                'default' => $dbConfig->collation ?? Db::defaultCollation($db),
+                'default' => $connection->getConfig('collation') ?? Db::defaultCollation($db),
             ]);
         }
 
