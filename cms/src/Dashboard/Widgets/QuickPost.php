@@ -15,6 +15,7 @@ use craft\helpers\Html;
 use craft\models\EntryType;
 use craft\models\Section;
 use CraftCms\Cms\Support\Arr;
+use Illuminate\Support\Facades\Auth;
 
 /**
  * QuickPost represents a Quick Post dashboard widget.
@@ -71,28 +72,31 @@ class QuickPost extends Widget
      */
     private EntryType|false $_entryType;
 
-    /**
-     * {@inheritdoc}
-     */
-    public function __construct($config = [])
+    public function __construct(array $config = [])
     {
+        $settings = Arr::get($config, 'settings', []);
+
         // If we're saving the widget settings, all of the section-specific
         // attributes will be tucked away in a 'sections' array
-        if (isset($config['sections'], $config['section'])) {
-            $sectionId = $config['section'];
+        if (isset($settings['sections'], $settings['section'])) {
+            $sectionId = $settings['section'];
 
-            if (isset($config['sections'][$sectionId])) {
-                $config = array_merge($config, $config['sections'][$sectionId]);
+            if (isset($settings['sections'][$sectionId])) {
+                $settings = array_merge($settings, $settings['sections'][$sectionId]);
             }
 
-            unset($config['sections']);
+            unset($settings['sections']);
         }
 
-        if (isset($config['customTitle']) && $config['customTitle'] === '') {
-            unset($config['customTitle']);
+        if (isset($settings['customTitle']) && $settings['customTitle'] === '') {
+            unset($settings['customTitle']);
         }
 
-        unset($config['fields']);
+        unset($settings['fields']);
+
+        $config['settings'] = $settings;
+
+        parent::__construct($config);
     }
 
     public static function getSettingsRules(): array
@@ -113,7 +117,7 @@ class QuickPost extends Widget
 
         foreach (Craft::$app->getEntries()->getAllSections() as $section) {
             if ($section->type !== Section::TYPE_SINGLE) {
-                if (Craft::$app->getUser()->checkPermission('createEntries:'.$section->uid)) {
+                if (Auth::user()->can('createEntries:'.$section->uid)) {
                     $sections[] = $section;
                 }
             }

@@ -11,6 +11,7 @@ namespace CraftCms\Cms\Dashboard\Widgets;
 
 use Craft;
 use craft\web\assets\updateswidget\UpdatesWidgetAsset;
+use Illuminate\Support\Facades\Auth;
 
 /**
  * Updates represents an Updates dashboard widget.
@@ -60,7 +61,7 @@ class Updates extends Widget
     public function getBodyHtml(): ?string
     {
         // Make sure the user actually has permission to perform updates
-        if (! Craft::$app->getUser()->checkPermission('performUpdates')) {
+        if (! Auth::user()->can('performUpdates')) {
             return null;
         }
 

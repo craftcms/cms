@@ -18,6 +18,20 @@ abstract class Widget implements WidgetInterface
      */
     public ?int $colspan = null;
 
+    public function __construct(array $config = [])
+    {
+        $this->id = $config['id'] ?? null;
+        $this->colspan = $config['colspan'] ?? null;
+
+        foreach (Arr::get($config, 'settings', []) as $key => $value) {
+            if (! property_exists($this, $key)) {
+                continue;
+            }
+
+            $this->{$key} = $value;
+        }
+    }
+
     /**
      * {@inheritdoc}
      */
@@ -187,23 +201,6 @@ EOD;
             throw new RuntimeException('The config passed into Widget::fromConfig() did not specify a type: '.json_encode($config));
         }
 
-        $widget = new $class;
-
-        if (! $widget instanceof WidgetInterface) {
-            throw new RuntimeException("$class must implement ".WidgetInterface::class.'.');
-        }
-
-        $widget->id = $config['id'] ?? null;
-        $widget->colspan = $config['colspan'] ?? null;
-
-        foreach (Arr::get($config, 'settings', []) as $key => $value) {
-            if (! property_exists($widget, $key)) {
-                continue;
-            }
-
-            $widget->{$key} = $value;
-        }
-
-        return $widget;
+        return new $class($config);
     }
 }

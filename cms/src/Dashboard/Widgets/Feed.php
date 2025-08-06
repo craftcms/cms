@@ -91,15 +91,13 @@ class Feed extends Widget
     /**
      * {@inheritdoc}
      */
-    public function getBodyHtml(): ?string
+    public function getBodyHtml(): string
     {
         // See if it's already cached
         if ($data = Cache::get("feed:$this->url")) {
             $data['items'] = array_slice($data['items'] ?? [], 0, $this->limit);
 
-            return Craft::$app->getView()->renderTemplate('_components/widgets/Feed/body.twig', [
-                'feed' => $data,
-            ]);
+            return $this->render($data);
         }
 
         // Fake it for now and fetch it later
@@ -120,6 +118,11 @@ class Feed extends Widget
             Json::encode($this->limit).');'
         );
 
+        return $this->render($data);
+    }
+
+    protected function render(mixed $data): string
+    {
         return Craft::$app->getView()->renderTemplate('_components/widgets/Feed/body.twig', [
             'feed' => $data,
         ]);

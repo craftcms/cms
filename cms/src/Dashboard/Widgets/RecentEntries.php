@@ -55,15 +55,11 @@ class RecentEntries extends Widget
      */
     public int $limit = 10;
 
-    /**
-     * {@inheritdoc}
-     */
-    public function __construct($config = [])
+    public function __construct(array $config = [])
     {
-        // Config normalization
-        if (empty($config['siteId'])) {
-            $config['siteId'] = Craft::$app->getSites()->getCurrentSite()->id;
-        }
+        parent::__construct($config);
+
+        $this->siteId ??= Craft::$app->getSites()->getCurrentSite()->id;
     }
 
     public static function getSettingsRules(): array
@@ -106,7 +102,7 @@ class RecentEntries extends Widget
         }
 
         // See if they are pulling entries from a different site
-        $targetSiteId = $this->_getTargetSiteId();
+        $targetSiteId = $this->getTargetSiteId();
 
         if ($targetSiteId !== null && $targetSiteId != Craft::$app->getSites()->getCurrentSite()->id) {
             $site = Craft::$app->getSites()->getSiteById($targetSiteId);
@@ -139,7 +135,7 @@ class RecentEntries extends Widget
         $js = 'new Craft.RecentEntriesWidget('.$this->id.', '.Json::encode($params).');';
         $view->registerJs($js);
 
-        $entries = $this->_getEntries();
+        $entries = $this->getEntries();
 
         return $view->renderTemplate('_components/widgets/RecentEntries/body.twig',
             [
@@ -152,9 +148,9 @@ class RecentEntries extends Widget
      *
      * @return Entry[]
      */
-    private function _getEntries(): array
+    private function getEntries(): array
     {
-        $targetSiteId = $this->_getTargetSiteId();
+        $targetSiteId = $this->getTargetSiteId();
 
         if ($targetSiteId === null) {
             // Hopeless
@@ -162,10 +158,10 @@ class RecentEntries extends Widget
         }
 
         // Normalize the target section ID value.
-        $editableSectionIds = $this->_getEditableSectionIds();
+        $editableSectionIds = $this->getEditableSectionIds();
         $targetSectionId = $this->section;
 
-        if (! $targetSectionId || $targetSectionId === '*' || ! in_array($targetSectionId, $editableSectionIds, false)) {
+        if (! $targetSectionId || $targetSectionId === '*' || ! in_array($targetSectionId, $editableSectionIds)) {
             $targetSectionId = array_merge($editableSectionIds);
         }
 
@@ -173,7 +169,6 @@ class RecentEntries extends Widget
             return [];
         }
 
-        /** @var Entry[] */
         return Entry::find()
             ->sectionId($targetSectionId)
             ->editable()
@@ -188,12 +183,12 @@ class RecentEntries extends Widget
     /**
      * Returns the Channel and Structure section IDs that the user is allowed to edit.
      */
-    private function _getEditableSectionIds(): array
+    private function getEditableSectionIds(): array
     {
         $sectionIds = [];
 
         foreach (Craft::$app->getEntries()->getEditableSections() as $section) {
-            if ($section->type != Section::TYPE_SINGLE) {
+            if ($section->type !== Section::TYPE_SINGLE) {
                 $sectionIds[] = $section->id;
             }
         }
@@ -204,7 +199,7 @@ class RecentEntries extends Widget
     /**
      * Returns the target site ID for the widget.
      */
-    private function _getTargetSiteId(): ?int
+    private function getTargetSiteId(): ?int
     {
         if (! Craft::$app->getIsMultiSite()) {
             return $this->siteId;
@@ -226,7 +221,7 @@ class RecentEntries extends Widget
 
         // Only use that site if it still exists and they're allowed to edit it.
         // Otherwise go with the first site that they are allowed to edit.
-        if (! in_array($targetSiteId, $editableSiteIds, false)) {
+        if (! in_array($targetSiteId, $editableSiteIds)) {
             $targetSiteId = $editableSiteIds[0];
         }
 
