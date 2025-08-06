@@ -123,8 +123,8 @@ class CraftSupportController
                 'errors' => [],
             ]);
         } catch (Throwable $requestException) {
-            \Craft::error("Unable to send support request: {$requestException->getMessage()}", __METHOD__);
-            \Craft::$app->getErrorHandler()->logException($requestException);
+            Log::error("Unable to send support request: {$requestException->getMessage()}", [__METHOD__]);
+            report($requestException);
 
             return $view->renderTemplate('_components/widgets/CraftSupport/response.twig', [
                 'widgetId' => $widgetId,
