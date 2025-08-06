@@ -11,8 +11,8 @@ use Craft;
 use craft\base\Widget;
 use craft\elements\User;
 use craft\enums\CmsEdition;
-use craft\helpers\Json;
 use craft\web\assets\newusers\NewUsersAsset;
+use CraftCms\Cms\Support\Json;
 
 /**
  * NewUsers represents a New Users dashboard widget.

@@ -10,7 +10,7 @@ namespace craft\console\controllers;
 use Craft;
 use craft\helpers\App;
 use craft\helpers\Console;
-use craft\helpers\Json;
+use CraftCms\Cms\Support\Json;
 use ReflectionFunctionAbstract;
 use Throwable;
 use yii\base\InvalidConfigException;

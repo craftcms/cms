@@ -10,7 +10,7 @@ namespace craft\services;
 use Craft;
 use craft\helpers\App;
 use craft\helpers\FileHelper;
-use craft\helpers\Json;
+use CraftCms\Cms\Support\Json;
 use Symfony\Component\Process\Exception\ProcessFailedException;
 use Symfony\Component\Process\Process;
 use Throwable;

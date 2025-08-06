@@ -8,9 +8,9 @@
 namespace craft\behaviors;
 
 use Craft;
-use craft\helpers\Json;
 use craft\web\Session;
 use craft\web\View;
+use CraftCms\Cms\Support\Json;
 use yii\base\Behavior;
 use yii\base\Exception;
 use yii\web\AssetBundle;

@@ -43,6 +43,7 @@ use craft\services\ElementSources;
 use craft\web\twig\TemplateLoaderException;
 use craft\web\View;
 use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Support\Json as JsonHelper;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Utility\Utilities;
 use CraftCms\Cms\Utility\Utilities\ProjectConfig as ProjectConfigUtility;
@@ -1316,7 +1317,7 @@ JS, [
                 'role' => 'button',
                 'onclick' => sprintf(
                     'const r=jQuery(%s);jQuery(this).replaceWith(r);Craft.cp.elementThumbLoader.load(r);',
-                    Json::encode($otherHtml),
+                    JsonHelper::encode($otherHtml),
                 ),
             ]);
         }
@@ -1354,7 +1355,7 @@ JS, [
                 'role' => 'button',
                 'onclick' => sprintf(
                     'const r=jQuery(%s);jQuery(this).replaceWith(r);',
-                    Json::encode($otherHtml),
+                    JsonHelper::encode($otherHtml),
                 ),
             ]);
         }
@@ -3050,7 +3051,7 @@ JS, [
         }
 
         $view = Craft::$app->getView();
-        $jsSettings = Json::encode([
+        $jsSettings = JsonHelper::encode([
             'elementType' => $fieldLayout->type,
             'customizableTabs' => $config['customizableTabs'],
             'customizableUi' => $config['customizableUi'],
@@ -3107,7 +3108,7 @@ JS;
                 'id' => $config['id'],
                 'class' => 'layoutdesigner',
             ]) .
-            Html::hiddenInput('fieldLayout', Json::encode($fieldLayoutConfig), [
+            Html::hiddenInput('fieldLayout', JsonHelper::encode($fieldLayoutConfig), [
                 'data' => ['config-input' => true],
             ]) .
             Html::beginTag('div', ['class' => 'fld-container']) .

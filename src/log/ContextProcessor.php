@@ -8,8 +8,8 @@
 namespace craft\log;
 
 use Craft;
-use craft\helpers\Json;
 use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Support\Json;
 use Illuminate\Support\Collection;
 use Monolog\LogRecord;
 use Monolog\Processor\ProcessorInterface;

@@ -8,7 +8,7 @@
 namespace craft\i18n;
 
 use Craft;
-use craft\helpers\Json;
+use CraftCms\Cms\Support\Json;
 use yii\base\InvalidArgumentException;
 
 /**

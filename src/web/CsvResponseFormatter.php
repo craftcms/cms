@@ -7,7 +7,7 @@
 
 namespace craft\web;
 
-use craft\helpers\Json;
+use CraftCms\Cms\Support\Json;
 use yii\base\Component;
 use yii\web\Response as YiiResponse;
 use yii\web\ResponseFormatterInterface;

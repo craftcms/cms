@@ -10,7 +10,7 @@ namespace craft\db\mysql;
 use Craft;
 use craft\db\Connection;
 use craft\helpers\Db;
-use craft\helpers\Json;
+use CraftCms\Cms\Support\Json;
 use yii\base\NotSupportedException;
 
 /**

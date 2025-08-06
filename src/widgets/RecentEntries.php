@@ -10,9 +10,9 @@ namespace craft\widgets;
 use Craft;
 use craft\base\Widget;
 use craft\elements\Entry;
-use craft\helpers\Json;
 use craft\models\Section;
 use craft\web\assets\recententries\RecentEntriesAsset;
+use CraftCms\Cms\Support\Json;
 
 /**
  * RecentEntries represents a Recent Entries dashboard widget.

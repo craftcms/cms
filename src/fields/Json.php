@@ -14,8 +14,8 @@ use craft\base\Field;
 use craft\base\MergeableFieldInterface;
 use craft\fields\data\JsonData;
 use craft\helpers\Html;
-use craft\helpers\Json as JsonHelper;
 use craft\web\assets\codemirror\CodeMirrorAsset;
+use CraftCms\Cms\Support\Json as JsonHelper;
 use yii\base\InvalidArgumentException;
 use yii\db\Schema;
 

@@ -9,6 +9,7 @@
 namespace craft\helpers;
 
 use BackedEnum;
+use CraftCms\Cms\Support\Json as JsonHelper;
 use DateTime;
 use ReflectionException;
 use ReflectionNamedType;
@@ -98,7 +99,7 @@ final class Typecast
                 }
                 if (is_string($value)) {
                     try {
-                        $decoded = Json::decode($value) ?? [];
+                        $decoded = JsonHelper::decode($value) ?? [];
                         if (is_array($decoded)) {
                             $value = $decoded;
                         }

@@ -9,9 +9,9 @@ namespace crafttests\fixtures;
 
 use Craft;
 use craft\helpers\FileHelper;
-use craft\helpers\Json;
 use craft\services\Fs;
 use craft\services\ProjectConfig;
+use CraftCms\Cms\Support\Json;
 use yii\base\ErrorException;
 use yii\test\ArrayFixture;
 

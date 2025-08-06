@@ -15,6 +15,7 @@ use craft\db\pgsql\Schema as PgsqlSchema;
 use craft\db\Query;
 use craft\db\QueryParam;
 use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Support\Json as JsonHelper;
 use DateTimeInterface;
 use DateTimeZone;
 use Money\Money;
@@ -141,7 +142,7 @@ class Db
             if (in_array($columnType, [Schema::TYPE_JSON, YiiPgqslSchema::TYPE_JSONB])) {
                 return Arr::toArray($value);
             }
-            return Json::encode($value);
+            return JsonHelper::encode($value);
         }
 
         if ($columnType && static::isNumericColumnType($columnType) && is_bool($value)) {

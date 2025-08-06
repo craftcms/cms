@@ -13,9 +13,9 @@ use craft\db\Query;
 use craft\db\QueryBatcher;
 use craft\db\Table;
 use craft\helpers\Db;
-use craft\helpers\Json;
 use craft\i18n\Translation;
 use craft\queue\BaseBatchedJob;
+use CraftCms\Cms\Support\Json;
 
 /**
  * FindAndReplace job

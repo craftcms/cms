@@ -13,6 +13,7 @@ use craft\base\ElementInterface;
 use craft\base\Model;
 use craft\errors\MissingComponentException;
 use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Support\Json as JsonHelper;
 use DateTime;
 use ReflectionClass;
 use ReflectionNamedType;
@@ -123,7 +124,7 @@ class Component
             $config = [];
         } else {
             if (empty($config['type'])) {
-                throw new InvalidConfigException('The config passed into Component::createComponent() did not specify a class: ' . Json::encode($config));
+                throw new InvalidConfigException('The config passed into Component::createComponent() did not specify a class: ' . JsonHelper::encode($config));
             }
 
             $class = $config['type'];
@@ -157,7 +158,7 @@ class Component
         }
 
         if (is_string($settings)) {
-            $settings = Json::decode($settings);
+            $settings = JsonHelper::decode($settings);
             if (!is_array($settings)) {
                 return $config;
             }

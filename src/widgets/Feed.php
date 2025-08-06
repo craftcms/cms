@@ -9,8 +9,8 @@ namespace craft\widgets;
 
 use Craft;
 use craft\base\Widget;
-use craft\helpers\Json;
 use craft\web\assets\feed\FeedAsset;
+use CraftCms\Cms\Support\Json;
 use Illuminate\Support\Facades\Cache;
 
 /**

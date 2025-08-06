@@ -11,9 +11,9 @@ use Craft;
 use craft\enums\CmsEdition;
 use craft\errors\AuthProviderNotFoundException;
 use craft\errors\SsoFailedException;
-use craft\helpers\Json;
 use craft\helpers\User as UserHelper;
 use craft\web\Controller;
+use CraftCms\Cms\Support\Json;
 use yii\web\HttpException;
 use yii\web\Response;
 

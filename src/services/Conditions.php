@@ -10,8 +10,9 @@ namespace craft\services;
 use Craft;
 use craft\base\conditions\ConditionInterface;
 use craft\base\conditions\ConditionRuleInterface;
-use craft\helpers\Json;
 use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Support\Json;
+use CraftCms\Cms\Support\Str;
 use ReflectionException;
 use ReflectionProperty;
 use yii\base\Component;
@@ -52,7 +53,7 @@ class Conditions extends Component
         }
 
         // The base config will be JSON-encoded within a `config` key if this came from a condition builder
-        if (isset($config['config']) && Json::isJsonObject($config['config'])) {
+        if (isset($config['config']) && Str::isJson($config['config'])) {
             $config = array_merge(
                 Json::decode(Arr::pull($config, 'config')),
                 $config
