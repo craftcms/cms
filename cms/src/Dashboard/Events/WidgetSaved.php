@@ -12,6 +12,9 @@ namespace CraftCms\Cms\Dashboard\Events;
 use CraftCms\Cms\Dashboard\Contracts\WidgetInterface;
 use CraftCms\Cms\Support\Concerns\ValidatableEvent;
 
+/**
+ * @event WidgetSaved The event that is triggered after a widget is saved.
+ */
 class WidgetSaved
 {
     use ValidatableEvent;

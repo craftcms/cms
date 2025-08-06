@@ -12,6 +12,21 @@ namespace CraftCms\Cms\Dashboard\Events;
 use CraftCms\Cms\Dashboard\Contracts\WidgetInterface;
 use Illuminate\Support\Collection;
 
+/**
+ * @event RegisterWidgetTypes The event that is triggered when registering Dashboard widget types.
+ *
+ * Dashboard widgets must implement [[WidgetInterface]]. [[Widget]] provides a base implementation.
+ *
+ * See [Widget Types](https://craftcms.com/docs/5.x/extend/widget-types.html) for documentation on creating Dashboard widgets.
+ * ---
+ * ```php
+ * use CraftCms\Cms\Dashboard\Events\RegisterWidgetTypes;
+ *
+ * Event::listen(RegisterWidgetTypes::class, function(RegisterWidgetTypes $event) {
+ *     $event->types->add(MyWidgetType::class);
+ * });
+ * ```
+ */
 class RegisterWidgetTypes
 {
     public function __construct(
