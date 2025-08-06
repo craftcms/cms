@@ -5,6 +5,7 @@ use CraftCms\Cms\Dashboard\Models\Widget as WidgetModel;
 use CraftCms\Cms\Dashboard\Widgets\CraftSupport;
 use CraftCms\Cms\Dashboard\Widgets\Feed;
 use CraftCms\Cms\Dashboard\Widgets\Updates;
+use CraftCms\Cms\Dashboard\Widgets\Widget;
 use CraftCms\Cms\Http\Controllers\Dashboard\WidgetsController;
 use CraftCms\Cms\User\Models\User;
 use Illuminate\Support\Facades\Auth;
@@ -46,7 +47,7 @@ it('can store a widget with settings', function () {
 
     expect(WidgetModel::count())->toBe(1);
     tap(WidgetModel::first(), function (WidgetModel $widget) {
-        expect($widget->toWidget()->url)->toBe('https://craftcms.com/news.rss');
+        expect(Widget::fromConfig($widget)->url)->toBe('https://craftcms.com/news.rss');
     });
 });
 
@@ -81,7 +82,7 @@ it('can update a widget with settings', function () {
         ],
     ]));
 
-    expect(WidgetModel::first()->toWidget()->url)->toBe('https://craftcms.com/news.rss');
+    expect(Widget::fromConfig(WidgetModel::first())->url)->toBe('https://craftcms.com/news.rss');
 
     $response = postJson(action([WidgetsController::class, 'update']), [
         'widgetId' => $widget->id,
@@ -96,7 +97,7 @@ it('can update a widget with settings', function () {
     expect($response->json('headHtml'))->not()->toBeEmpty();
     expect($response->json('bodyHtml'))->not()->toBeEmpty();
 
-    expect(WidgetModel::first()->toWidget()->url)->toBe('https://craftcms.com/feed.rss');
+    expect(Widget::fromConfig(WidgetModel::first())->url)->toBe('https://craftcms.com/feed.rss');
 });
 
 it('validates when updating', function () {

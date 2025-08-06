@@ -16,6 +16,7 @@ use CraftCms\Cms\Dashboard\Widgets\NewUsers as NewUsersWidget;
 use CraftCms\Cms\Dashboard\Widgets\QuickPost as QuickPostWidget;
 use CraftCms\Cms\Dashboard\Widgets\RecentEntries as RecentEntriesWidget;
 use CraftCms\Cms\Dashboard\Widgets\Updates as UpdatesWidget;
+use CraftCms\Cms\Dashboard\Widgets\Widget;
 use Illuminate\Container\Attributes\Singleton;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
@@ -73,7 +74,7 @@ class Dashboard
             return new $config;
         }
 
-        return (new Models\Widget($config))->toWidget();
+        return Widget::fromConfig($config);
     }
 
     /**
@@ -122,7 +123,7 @@ class Dashboard
             ->where('userId', Auth::user()->getAuthIdentifier())
             ->firstOrFail();
 
-        return $result->toWidget();
+        return Widget::fromConfig($result);
     }
 
     /**
@@ -312,8 +313,10 @@ class Dashboard
         // Craft News feed widget
         $this->saveWidget($this->createWidget([
             'type' => FeedWidget::class,
-            'url' => 'https://craftcms.com/news.rss',
-            'title' => 'Craft News',
+            'settings' => [
+                'url' => 'https://craftcms.com/news.rss',
+                'title' => 'Craft News',
+            ],
         ]));
 
         $user->update([
@@ -370,6 +373,6 @@ class Dashboard
             ->where('userId', $user->id)
             ->orderBy('sortOrder')
             ->get()
-            ->map(fn (Models\Widget $widget) => $widget->toWidget());
+            ->map(fn (Models\Widget $widget) => Widget::fromConfig($widget));
     }
 }

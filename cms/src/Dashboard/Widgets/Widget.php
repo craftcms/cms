@@ -4,8 +4,10 @@ namespace CraftCms\Cms\Dashboard\Widgets;
 
 use CraftCms\Cms\Dashboard\Contracts\WidgetInterface;
 use CraftCms\Cms\Dashboard\Dashboard;
+use CraftCms\Cms\Dashboard\Models\Widget as WidgetModel;
 use CraftCms\Cms\Support\Arr;
 use Illuminate\Support\Facades\Validator;
+use RuntimeException;
 
 abstract class Widget implements WidgetInterface
 {
@@ -171,5 +173,37 @@ EOD;
     public function getFirstError(string $attribute): ?string
     {
         return $this->getValidator()->errors()->first($attribute);
+    }
+
+    public static function fromConfig(array|WidgetModel $config): WidgetInterface
+    {
+        if ($config instanceof WidgetModel) {
+            $config = $config->toArray();
+        }
+
+        $class = $config['type'] ?? null;
+
+        if (! $class) {
+            throw new RuntimeException('The config passed into Widget::fromConfig() did not specify a type: '.json_encode($config));
+        }
+
+        $widget = new $class;
+
+        if (! $widget instanceof WidgetInterface) {
+            throw new RuntimeException("$class must implement ".WidgetInterface::class.'.');
+        }
+
+        $widget->id = $config['id'] ?? null;
+        $widget->colspan = $config['colspan'] ?? null;
+
+        foreach (Arr::get($config, 'settings', []) as $key => $value) {
+            if (! property_exists($widget, $key)) {
+                continue;
+            }
+
+            $widget->{$key} = $value;
+        }
+
+        return $widget;
     }
 }
