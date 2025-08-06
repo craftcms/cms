@@ -9,6 +9,13 @@
 
 ### Dashboard & Widgets
 
+#### Controllers
+- Removed `craft\controllers\DashboardController`. The following controllers now implement this functionality:
+  - `CraftCms\Cms\Http\Controllers\Dashboard\DashboardController`
+  - `CraftCms\Cms\Http\Controllers\Dashboard\WidgetsController`
+  - `CraftCms\Cms\Http\Controllers\Dashboard\Widgets\CraftSupportController`
+  - `CraftCms\Cms\Http\Controllers\Dashboard\Widgets\FeedController`
+
 #### Deprecations
 - Deprecated `Craft::$app->getDashboard()`. `app(\CraftCms\Cms\Dashboard\Dashboard::class)` should be used instead.
 - Deprecated `craft\services\Dashboard`. `CraftCms\Cms\Dashboard\Dashboard` should be used instead.
