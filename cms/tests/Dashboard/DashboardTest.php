@@ -54,7 +54,13 @@ it('can create a widget from config', function () {
 });
 
 it('can create a widget from type', function () {
-    $widget = $this->dashboard->createWidget(Feed::class);
+    $widget = $this->dashboard->createWidget([
+        'type' => Feed::class,
+        'settings' => [
+            'title' => 'Craft News',
+            'url' => 'https://craftcms.com/news.rss',
+        ],
+    ]);
     expect($widget)->toBeInstanceOf(Feed::class);
 });
 
@@ -69,7 +75,13 @@ it('can get all widgets and adds default widgets', function () {
 it('can test if a user has a widget', function () {
     expect($this->dashboard->doesUserHaveWidget(Feed::class))->toBeFalse();
 
-    $this->dashboard->saveWidget($this->dashboard->createWidget(Feed::class));
+    $this->dashboard->saveWidget($this->dashboard->createWidget([
+        'type' => Feed::class,
+        'settings' => [
+            'title' => 'Craft News',
+            'url' => 'https://craftcms.com/news.rss',
+        ],
+    ]));
 
     expect($this->dashboard->doesUserHaveWidget(Feed::class))->toBeTrue();
 });
@@ -81,7 +93,13 @@ it('can save a new widget for a user', function () {
 
     expect(WidgetModel::count())->toBe(0);
 
-    $widget = $this->dashboard->createWidget(Feed::class);
+    $widget = $this->dashboard->createWidget([
+        'type' => Feed::class,
+        'settings' => [
+            'title' => 'Craft News',
+            'url' => 'https://craftcms.com/news.rss',
+        ],
+    ]);
 
     expect(WidgetModel::count())->toBe(0);
 
@@ -100,7 +118,13 @@ it('can cancel saving a widget with the event', function () {
 
     expect(WidgetModel::count())->toBe(0);
 
-    $widget = $this->dashboard->createWidget(Feed::class);
+    $widget = $this->dashboard->createWidget([
+        'type' => Feed::class,
+        'settings' => [
+            'title' => 'Craft News',
+            'url' => 'https://craftcms.com/news.rss',
+        ],
+    ]);
 
     expect(WidgetModel::count())->toBe(0);
 
@@ -110,7 +134,13 @@ it('can cancel saving a widget with the event', function () {
 });
 
 it('can delete a widget by id', function () {
-    $this->dashboard->saveWidget($widget = $this->dashboard->createWidget(Feed::class));
+    $this->dashboard->saveWidget($widget = $this->dashboard->createWidget([
+        'type' => Feed::class,
+        'settings' => [
+            'title' => 'Craft News',
+            'url' => 'https://craftcms.com/news.rss',
+        ],
+    ]));
 
     expect(WidgetModel::count())->toBe(1);
 
@@ -124,7 +154,13 @@ it('can cancel deleting a widget by id', function () {
         $event->isValid = false;
     });
 
-    $this->dashboard->saveWidget($widget = $this->dashboard->createWidget(Feed::class));
+    $this->dashboard->saveWidget($widget = $this->dashboard->createWidget([
+        'type' => Feed::class,
+        'settings' => [
+            'title' => 'Craft News',
+            'url' => 'https://craftcms.com/news.rss',
+        ],
+    ]));
 
     expect(WidgetModel::count())->toBe(1);
 
@@ -134,7 +170,13 @@ it('can cancel deleting a widget by id', function () {
 });
 
 it('can delete a widget by instance', function () {
-    $this->dashboard->saveWidget($widget = $this->dashboard->createWidget(Feed::class));
+    $this->dashboard->saveWidget($widget = $this->dashboard->createWidget([
+        'type' => Feed::class,
+        'settings' => [
+            'title' => 'Craft News',
+            'url' => 'https://craftcms.com/news.rss',
+        ],
+    ]));
 
     expect(WidgetModel::count())->toBe(1);
 
@@ -148,7 +190,13 @@ it('can cancel deleting a widget by instance', function () {
         $event->isValid = false;
     });
 
-    $this->dashboard->saveWidget($widget = $this->dashboard->createWidget(Feed::class));
+    $this->dashboard->saveWidget($widget = $this->dashboard->createWidget([
+        'type' => Feed::class,
+        'settings' => [
+            'title' => 'Craft News',
+            'url' => 'https://craftcms.com/news.rss',
+        ],
+    ]));
 
     expect(WidgetModel::count())->toBe(1);
 
@@ -158,7 +206,13 @@ it('can cancel deleting a widget by instance', function () {
 });
 
 it('can reorder widgets', function () {
-    $this->dashboard->saveWidget($widget1 = $this->dashboard->createWidget(Feed::class));
+    $this->dashboard->saveWidget($widget1 = $this->dashboard->createWidget([
+        'type' => Feed::class,
+        'settings' => [
+            'title' => 'Craft News',
+            'url' => 'https://craftcms.com/news.rss',
+        ],
+    ]));
     $this->dashboard->saveWidget($widget2 = $this->dashboard->createWidget(CraftSupport::class));
 
     expect(WidgetModel::query()->orderBy('sortOrder')->pluck('id')->all())->toBe([$widget1->id, $widget2->id]);
@@ -169,7 +223,13 @@ it('can reorder widgets', function () {
 });
 
 it('can change the colspan of a widget', function () {
-    $this->dashboard->saveWidget($widget = $this->dashboard->createWidget(Feed::class));
+    $this->dashboard->saveWidget($widget = $this->dashboard->createWidget([
+        'type' => Feed::class,
+        'settings' => [
+            'title' => 'Craft News',
+            'url' => 'https://craftcms.com/news.rss',
+        ],
+    ]));
 
     expect(WidgetModel::first()->colspan)->toBeNull();
 

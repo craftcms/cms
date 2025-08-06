@@ -153,7 +153,7 @@ class Dashboard
         /**
          * Legacy widgets run validation through the ->validate() method.
          */
-        if ($runValidation && empty($widget::getSettingsRules()) && ! $widget->validate()) {
+        if ($runValidation && ! $widget->validate()) {
             Log::info('Widget not saved due to validation error.', ['widget' => $widget]);
 
             throw ValidationException::withMessages($widget->getFirstErrors());

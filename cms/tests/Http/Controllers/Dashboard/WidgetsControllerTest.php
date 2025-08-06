@@ -4,6 +4,7 @@ use CraftCms\Cms\Dashboard\Dashboard;
 use CraftCms\Cms\Dashboard\Models\Widget as WidgetModel;
 use CraftCms\Cms\Dashboard\Widgets\CraftSupport;
 use CraftCms\Cms\Dashboard\Widgets\Feed;
+use CraftCms\Cms\Dashboard\Widgets\Updates;
 use CraftCms\Cms\Http\Controllers\Dashboard\WidgetsController;
 use CraftCms\Cms\User\Models\User;
 use Illuminate\Support\Facades\Auth;
@@ -34,6 +35,7 @@ it('can store a widget with settings', function () {
     $response = postJson(action([WidgetsController::class, 'store']), [
         'type' => Feed::class,
         'settings' => [
+            'title' => 'Craft News',
             'url' => 'https://craftcms.com/news.rss',
         ],
     ])->assertOk();
@@ -61,9 +63,8 @@ it('can store namespaced settings', function () {
         'type' => Feed::class,
         'settingsNamespace' => 'test',
         'test' => [
-            'settings' => [
-                'url' => 'https://craftcms.com/news.rss',
-            ],
+            'title' => 'Craft News',
+            'url' => 'https://craftcms.com/news.rss',
         ],
     ])->assertOk();
 
@@ -72,16 +73,22 @@ it('can store namespaced settings', function () {
 
 it('can update a widget with settings', function () {
     $dashboard = app(Dashboard::class);
-    $dashboard->saveWidget($widget = $dashboard->createWidget(Feed::class));
+    $dashboard->saveWidget($widget = $dashboard->createWidget([
+        'type' => Feed::class,
+        'settings' => [
+            'title' => 'Craft News',
+            'url' => 'https://craftcms.com/news.rss',
+        ],
+    ]));
 
-    expect(WidgetModel::first()->toWidget()->url)->toBeNull();
+    expect(WidgetModel::first()->toWidget()->url)->toBe('https://craftcms.com/news.rss');
 
     $response = postJson(action([WidgetsController::class, 'update']), [
         'widgetId' => $widget->id,
         "widget{$widget->id}-settings" => [
             'title' => 'Craft News',
             'limit' => 10,
-            'url' => 'https://craftcms.com/news.rss',
+            'url' => 'https://craftcms.com/feed.rss',
         ],
     ])->assertOk();
 
@@ -89,14 +96,18 @@ it('can update a widget with settings', function () {
     expect($response->json('headHtml'))->not()->toBeEmpty();
     expect($response->json('bodyHtml'))->not()->toBeEmpty();
 
-    expect(WidgetModel::first()->toWidget()->url)->toBe('https://craftcms.com/news.rss');
+    expect(WidgetModel::first()->toWidget()->url)->toBe('https://craftcms.com/feed.rss');
 });
 
 it('validates when updating', function () {
     $dashboard = app(Dashboard::class);
-    $dashboard->saveWidget($widget = $dashboard->createWidget(Feed::class));
-
-    expect(WidgetModel::first()->toWidget()->url)->toBeNull();
+    $dashboard->saveWidget($widget = $dashboard->createWidget([
+        'type' => Feed::class,
+        'settings' => [
+            'title' => 'Craft News',
+            'url' => 'https://craftcms.com/news.rss',
+        ],
+    ]));
 
     postJson(action([WidgetsController::class, 'update']), [
         'widgetId' => $widget->id,
@@ -109,7 +120,7 @@ it('validates when updating', function () {
 
 it('can update the colspan of a widget', function () {
     $dashboard = app(Dashboard::class);
-    $dashboard->saveWidget($widget = $dashboard->createWidget(Feed::class));
+    $dashboard->saveWidget($widget = $dashboard->createWidget(Updates::class));
 
     expect(WidgetModel::first()->colspan)->toBeNull();
 
@@ -123,7 +134,7 @@ it('can update the colspan of a widget', function () {
 
 it('colspan must be between 1 and 3', function () {
     $dashboard = app(Dashboard::class);
-    $dashboard->saveWidget($widget = $dashboard->createWidget(Feed::class));
+    $dashboard->saveWidget($widget = $dashboard->createWidget(Updates::class));
 
     postJson(action([WidgetsController::class, 'updateColspan']), [
         'id' => $widget->id,
@@ -138,7 +149,7 @@ it('colspan must be between 1 and 3', function () {
 
 it('can reorder widgets', function () {
     $dashboard = app(Dashboard::class);
-    $dashboard->saveWidget($widget1 = $dashboard->createWidget(Feed::class));
+    $dashboard->saveWidget($widget1 = $dashboard->createWidget(Updates::class));
     $dashboard->saveWidget($widget2 = $dashboard->createWidget(CraftSupport::class));
 
     expect(WidgetModel::query()->orderBy('sortOrder')->pluck('id')->all())->toBe([$widget1->id, $widget2->id]);
@@ -153,7 +164,7 @@ it('can reorder widgets', function () {
 
 it('can delete a widget', function () {
     $dashboard = app(Dashboard::class);
-    $dashboard->saveWidget($widget1 = $dashboard->createWidget(Feed::class));
+    $dashboard->saveWidget($widget1 = $dashboard->createWidget(Updates::class));
 
     expect(WidgetModel::count())->toBe(1);
 
