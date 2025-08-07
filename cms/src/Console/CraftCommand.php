@@ -7,7 +7,7 @@ use Illuminate\Support\Str;
 /**
  * @mixin \Illuminate\Console\Command
  *
- * @phpstan-ignore trait.unused
+ * @since 6.0.0
  */
 trait CraftCommand
 {

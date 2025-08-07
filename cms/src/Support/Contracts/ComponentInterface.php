@@ -5,8 +5,6 @@ namespace CraftCms\Cms\Support\Contracts;
 /**
  * ComponentInterface defines the common interface to be implemented by Craft component classes.
  *
- * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- *
  * @since 6.0.0
  */
 interface ComponentInterface

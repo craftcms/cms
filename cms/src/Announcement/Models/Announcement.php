@@ -1,23 +1,19 @@
 <?php
 
-/**
- * @link https://craftcms.com/
- *
- * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license https://craftcms.github.io/license/
- */
-
 namespace CraftCms\Cms\Announcement\Models;
 
 use CraftCms\Cms\Plugin\Models\Plugin;
 use CraftCms\Cms\Support\BaseModel;
 use CraftCms\Cms\User\Models\User;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Facades\Date;
 
 class Announcement extends BaseModel
 {
+    use HasFactory;
+
     public const UPDATED_AT = null;
 
     protected function casts(): array

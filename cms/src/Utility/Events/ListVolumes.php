@@ -5,13 +5,11 @@ namespace CraftCms\Cms\Utility\Events;
 use craft\models\Volume;
 
 /**
- * ListVolumes class.
- *
- * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
+ * @event ListVolumes The event that is triggered when listing the available volumes to index.
  *
  * @since 6.0.0
  */
-class ListVolumes
+final class ListVolumes
 {
     public function __construct(
         /** @var Volume[] The volumes to be listed. */

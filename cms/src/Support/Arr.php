@@ -7,13 +7,7 @@ use DateTimeInterface;
 use Illuminate\Contracts\Support\Arrayable;
 use Illuminate\Support\Collection;
 
-/**
- * Class Arr
- *
- * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- *
- * @since 6.0.0
- */
+/** @since 6.0.0 */
 class Arr extends \Illuminate\Support\Arr
 {
     /**

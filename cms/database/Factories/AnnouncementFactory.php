@@ -1,19 +1,13 @@
 <?php
 
-/**
- * @link https://craftcms.com/
- *
- * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license https://craftcms.github.io/license/
- */
-
 namespace CraftCms\Cms\Database\Factories;
 
 use CraftCms\Cms\Announcement\Models\Announcement;
 use CraftCms\Cms\User\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
-class AnnouncementFactory extends Factory
+/** @since 6.0.0 */
+final class AnnouncementFactory extends Factory
 {
     protected $model = Announcement::class;
 

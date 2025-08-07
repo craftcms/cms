@@ -1,12 +1,5 @@
 <?php
 
-/**
- * @link https://craftcms.com/
- *
- * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license https://craftcms.github.io/license/
- */
-
 namespace CraftCms\Cms\Utility\Utilities;
 
 use Craft;
@@ -16,11 +9,9 @@ use CraftCms\Cms\Utility\Utility;
 /**
  * DbBackup represents a DbBackup dashboard widget.
  *
- * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- *
  * @since 6.0.0
  */
-class DbBackup extends Utility
+final readonly class DbBackup extends Utility
 {
     /**
      * {@inheritdoc}
@@ -41,7 +32,7 @@ class DbBackup extends Utility
     /**
      * {@inheritdoc}
      */
-    public static function icon(): ?string
+    public static function icon(): string
     {
         return 'database';
     }
