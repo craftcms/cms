@@ -20,7 +20,7 @@ use yii\base\InvalidConfigException;
  *
  * @since 6.0.0
  */
-final class GeneralConfig extends BaseConfig
+class GeneralConfig extends BaseConfig
 {
     public const IMAGE_DRIVER_AUTO = 'auto';
 
