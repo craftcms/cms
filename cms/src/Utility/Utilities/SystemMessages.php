@@ -1,12 +1,5 @@
 <?php
 
-/**
- * @link https://craftcms.com/
- *
- * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license https://craftcms.github.io/license/
- */
-
 namespace CraftCms\Cms\Utility\Utilities;
 
 use Craft;
@@ -17,11 +10,10 @@ use CraftCms\Cms\Utility\Utility;
 /**
  * SystemMessages represents a System Messages utility.
  *
- * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- *
+
  * @since 6.0.0
  */
-class SystemMessages extends Utility
+final readonly class SystemMessages extends Utility
 {
     /**
      * {@inheritdoc}
@@ -42,7 +34,7 @@ class SystemMessages extends Utility
     /**
      * {@inheritdoc}
      */
-    public static function icon(): ?string
+    public static function icon(): string
     {
         return 'envelope';
     }

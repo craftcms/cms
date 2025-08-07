@@ -12,7 +12,8 @@ use Illuminate\Container\Attributes\Give;
 use Illuminate\Support\Collection;
 use yii\base\InvalidArgumentException;
 
-class UtilitiesController
+/** @since 6.0.0 */
+final readonly class UtilitiesController
 {
     public function __construct(
         protected Utilities $utilitiesService,

@@ -6,7 +6,12 @@ use CraftCms\Yii2Adapter\Console\LegacyCraftCommand;
 use Illuminate\Console\Command;
 use Symfony\Component\Console\Command\Command as SymfonyCommand;
 
-class Application extends \Illuminate\Console\Application
+/**
+ * @since 6.0.0
+ *
+ * @internal
+ */
+final class Application extends \Illuminate\Console\Application
 {
     public function resolve($command): ?SymfonyCommand
     {

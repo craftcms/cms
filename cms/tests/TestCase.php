@@ -20,6 +20,7 @@ use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Schema;
 use Orchestra\Testbench\TestCase as Orchestra;
 
+/** @since 6.0.0 */
 class TestCase extends Orchestra
 {
     use RefreshDatabase;

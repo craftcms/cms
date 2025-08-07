@@ -1,12 +1,5 @@
 <?php
 
-/**
- * @link https://craftcms.com/
- *
- * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license https://craftcms.github.io/license/
- */
-
 namespace CraftCms\Cms\Utility\Utilities;
 
 use Craft;
@@ -16,11 +9,9 @@ use CraftCms\Cms\Utility\Utility;
 /**
  * DeprecationErrors represents a DeprecationErrors dashboard widget.
  *
- * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- *
  * @since 6.0.0
  */
-class DeprecationErrors extends Utility
+final readonly class DeprecationErrors extends Utility
 {
     /**
      * {@inheritdoc}
@@ -41,7 +32,7 @@ class DeprecationErrors extends Utility
     /**
      * {@inheritdoc}
      */
-    public static function icon(): ?string
+    public static function icon(): string
     {
         return 'bug';
     }

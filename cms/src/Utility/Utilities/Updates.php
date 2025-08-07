@@ -1,12 +1,5 @@
 <?php
 
-/**
- * @link https://craftcms.com/
- *
- * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license https://craftcms.github.io/license/
- */
-
 namespace CraftCms\Cms\Utility\Utilities;
 
 use Craft;
@@ -16,11 +9,10 @@ use CraftCms\Cms\Utility\Utility;
 /**
  * Updates represents a Updates dashboard widget.
  *
- * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- *
+
  * @since 6.0.0
  */
-class Updates extends Utility
+final readonly class Updates extends Utility
 {
     /**
      * {@inheritdoc}
@@ -41,7 +33,7 @@ class Updates extends Utility
     /**
      * {@inheritdoc}
      */
-    public static function icon(): ?string
+    public static function icon(): string
     {
         return 'certificate';
     }

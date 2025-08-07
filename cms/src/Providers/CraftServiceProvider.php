@@ -5,7 +5,8 @@ namespace CraftCms\Cms\Providers;
 use CraftCms\Cms\Console\ConsoleServiceProvider;
 use Illuminate\Support\AggregateServiceProvider;
 
-class CraftServiceProvider extends AggregateServiceProvider
+/** @since 6.0.0 */
+final class CraftServiceProvider extends AggregateServiceProvider
 {
     protected $providers = [
         AppServiceProvider::class,

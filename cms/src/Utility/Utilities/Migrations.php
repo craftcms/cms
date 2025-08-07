@@ -1,12 +1,5 @@
 <?php
 
-/**
- * @link https://craftcms.com/
- *
- * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license https://craftcms.github.io/license/
- */
-
 namespace CraftCms\Cms\Utility\Utilities;
 
 use Craft;
@@ -15,11 +8,9 @@ use CraftCms\Cms\Utility\Utility;
 /**
  * Migrations represents a Migrations utility.
  *
- * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- *
  * @since 3.0.0
  */
-class Migrations extends Utility
+final readonly class Migrations extends Utility
 {
     /**
      * {@inheritdoc}
@@ -40,7 +31,7 @@ class Migrations extends Utility
     /**
      * {@inheritdoc}
      */
-    public static function icon(): ?string
+    public static function icon(): string
     {
         return 'up';
     }

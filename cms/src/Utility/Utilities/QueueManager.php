@@ -1,12 +1,5 @@
 <?php
 
-/**
- * @link https://craftcms.com/
- *
- * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license https://craftcms.github.io/license/
- */
-
 namespace CraftCms\Cms\Utility\Utilities;
 
 use Craft;
@@ -16,12 +9,11 @@ use CraftCms\Cms\Utility\Utility;
 /**
  * Queue manager is a utility used for managing jobs in the Queue.
  *
- * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @author Global Network Group | Giel Tettelaar <giel@yellowflash.net>
+  @author Global Network Group | Giel Tettelaar <giel@yellowflash.net>
  *
  * @since 6.0.0
  */
-class QueueManager extends Utility
+final readonly class QueueManager extends Utility
 {
     /**
      * {@inheritdoc}
@@ -42,7 +34,7 @@ class QueueManager extends Utility
     /**
      * {@inheritdoc}
      */
-    public static function icon(): ?string
+    public static function icon(): string
     {
         return 'play';
     }

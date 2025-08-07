@@ -1,12 +1,5 @@
 <?php
 
-/**
- * @link https://craftcms.com/
- *
- * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license https://craftcms.github.io/license/
- */
-
 namespace CraftCms\Cms\Announcement;
 
 use Craft;
@@ -24,8 +17,11 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Date;
 use yii\helpers\Markdown;
 
+/**
+ * @since 6.0.0
+ */
 #[Singleton]
-class Announcements
+final readonly class Announcements
 {
     /**
      * Pushes a new announcement out to all control panel users.
