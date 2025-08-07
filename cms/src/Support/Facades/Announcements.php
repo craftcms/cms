@@ -10,7 +10,6 @@ use Illuminate\Support\Facades\Facade;
  * @method static void markAsRead(int[] $ids)
  *
  * @see \CraftCms\Cms\Announcement\Announcements
- * @since 6.0.0
  */
 class Announcements extends Facade
 {
