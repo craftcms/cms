@@ -13,6 +13,7 @@ use Ramsey\Uuid\Validator\GenericValidator;
 use voku\helper\ASCII;
 use yii\base\InvalidConfigException;
 
+/** @since 6.0.0 */
 class Str extends \Illuminate\Support\Str
 {
     /** @see asciiCharMap() */

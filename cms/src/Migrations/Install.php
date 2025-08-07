@@ -2,13 +2,6 @@
 
 /** @noinspection RepetitiveMethodCallsInspection */
 
-/**
- * @link https://craftcms.com/
- *
- * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license https://craftcms.github.io/license/
- */
-
 namespace CraftCms\Cms\Migrations;
 
 use Craft;
@@ -38,13 +31,7 @@ use Illuminate\Support\Facades\Schema;
 use Laravel\Prompts\Output\ConsoleOutput;
 use ReflectionClass;
 
-/**
- * Installation Migration
- *
- * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- *
- * @since 6.0.0
- */
+/** @since 6.0.0 */
 class Install extends Migration
 {
     private ConsoleOutput $output;

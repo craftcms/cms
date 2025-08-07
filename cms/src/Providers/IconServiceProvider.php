@@ -5,7 +5,8 @@ namespace CraftCms\Cms\Providers;
 use CraftCms\Aliases\Facades\Aliases;
 use Illuminate\Support\ServiceProvider;
 
-class IconServiceProvider extends ServiceProvider
+/** @since 6.0.0 */
+final class IconServiceProvider extends ServiceProvider
 {
     public function boot(): void
     {

@@ -1,12 +1,5 @@
 <?php
 
-/**
- * @link https://craftcms.com/
- *
- * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license https://craftcms.github.io/license/
- */
-
 namespace CraftCms\Cms\Utility\Utilities;
 
 use Craft;
@@ -22,11 +15,9 @@ use Illuminate\Support\Facades\Event;
 /**
  * AssetIndexes represents a AssetIndexes dashboard widget.
  *
- * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- *
  * @since 6.0.0
  */
-class AssetIndexes extends Utility
+final readonly class AssetIndexes extends Utility
 {
     /**
      * {@inheritdoc}
@@ -47,7 +38,7 @@ class AssetIndexes extends Utility
     /**
      * {@inheritdoc}
      */
-    public static function icon(): ?string
+    public static function icon(): string
     {
         return 'image';
     }
@@ -78,7 +69,7 @@ class AssetIndexes extends Utility
     {
         $volumeOptions = [];
 
-        foreach (static::volumes() as $volume) {
+        foreach (self::volumes() as $volume) {
             $volumeOptions[] = [
                 'label' => Html::encode($volume->name),
                 'value' => $volume->id,

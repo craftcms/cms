@@ -1,12 +1,5 @@
 <?php
 
-/**
- * @link https://craftcms.com/
- *
- * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license https://craftcms.github.io/license/
- */
-
 namespace CraftCms\Cms\Utility;
 
 use craft\enums\CmsEdition;
@@ -35,12 +28,11 @@ use Illuminate\Support\Facades\Event;
 /**
  * The Utilities service provides APIs for managing utilities.
  *
- * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- *
+
  * @since 6.0.0
  */
 #[Singleton]
-class Utilities
+final readonly class Utilities
 {
     public function __construct(
         #[Give('Craft')] protected Application $craft,

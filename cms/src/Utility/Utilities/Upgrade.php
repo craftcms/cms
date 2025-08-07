@@ -1,12 +1,5 @@
 <?php
 
-/**
- * @link https://craftcms.com/
- *
- * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license https://craftcms.github.io/license/
- */
-
 namespace CraftCms\Cms\Utility\Utilities;
 
 use Craft;
@@ -16,11 +9,9 @@ use CraftCms\Cms\Utility\Utility;
 /**
  * Upgrade utility
  *
- * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- *
  * @since 3.7.40
  */
-class Upgrade extends Utility
+final readonly class Upgrade extends Utility
 {
     /**
      * {@inheritdoc}
@@ -43,7 +34,7 @@ class Upgrade extends Utility
     /**
      * {@inheritdoc}
      */
-    public static function icon(): ?string
+    public static function icon(): string
     {
         return 'square-arrow-up';
     }

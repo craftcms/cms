@@ -6,7 +6,7 @@ use Dotenv\Repository\Adapter\AdapterInterface;
 use PhpOption\Option;
 use PhpOption\Some;
 
-class ConstAdapter implements AdapterInterface
+final class ConstAdapter implements AdapterInterface
 {
     /**
      * Create a new array adapter instance.

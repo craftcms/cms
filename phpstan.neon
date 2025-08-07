@@ -59,6 +59,8 @@ parameters:
         - '#^PHPDoc tag @mixin contains invalid type CraftTrait\.$#'
         - '#^Parameter \#2 \$callback of function usort expects#'
         - '#is never assigned craft\\base\\MemoizableArray#'
+        -
+            identifier: parameter.implicitlyNullable
     treatPhpDocTypesAsCertain: false
     databaseMigrationsPath:
         - cms/src/Migrations

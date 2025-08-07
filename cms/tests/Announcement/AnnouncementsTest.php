@@ -1,12 +1,5 @@
 <?php
 
-/**
- * @link https://craftcms.com/
- *
- * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license https://craftcms.github.io/license/
- */
-
 use CraftCms\Cms\Announcement\Models\Announcement;
 use CraftCms\Cms\Support\Facades\Announcements;
 use CraftCms\Cms\User\Models\User;

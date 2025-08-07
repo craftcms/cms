@@ -1,12 +1,5 @@
 <?php
 
-/**
- * @link https://craftcms.com/
- *
- * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license https://craftcms.github.io/license/
- */
-
 namespace CraftCms\Cms\Utility\Utilities;
 
 use Composer\InstalledVersions;
@@ -23,11 +16,9 @@ use yii\base\Module;
 /**
  * SystemReport represents a SystemReport dashboard widget.
  *
- * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- *
  * @since 6.0.0
  */
-class SystemReport extends Utility
+final readonly class SystemReport extends Utility
 {
     /**
      * {@inheritdoc}
@@ -48,7 +39,7 @@ class SystemReport extends Utility
     /**
      * {@inheritdoc}
      */
-    public static function icon(): ?string
+    public static function icon(): string
     {
         return 'list-check';
     }

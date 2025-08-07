@@ -23,7 +23,7 @@
     "rss": "https://github.com/craftcms/cms/releases.atom"
   },
   "require": {
-    "php": "^8.2",
+    "php": "^8.4",
     "ext-bcmath": "*",
     "ext-curl": "*",
     "ext-dom": "*",
@@ -67,7 +67,7 @@
     "symfony/yaml": "^7.0",
     "theiconic/name-parser": "^1.2",
     "twig/twig": "~3.21.0",
-    "voku/stringy": "^6.4.0",
+    "voku/stringy": "^6.5",
     "web-auth/webauthn-lib": "~4.9.0",
     "webonyx/graphql-php": "~14.11.10",
     "yiisoft/yii2": "~2.0.52.0",
@@ -144,7 +144,7 @@
   "config": {
     "sort-packages": true,
     "platform": {
-      "php": "8.2"
+      "php": "8.4"
     },
     "platform-check": false,
     "allow-plugins": {

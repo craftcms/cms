@@ -2,14 +2,17 @@
 
 namespace CraftCms\Cms\Console;
 
+use Illuminate\Console\Application as ConsoleApplication;
 use Symfony\Component\EventDispatcher\EventDispatcher;
 
 /**
- * @property Application|null $artisan
+ * @since 6.0.0
+ *
+ * @internal
  */
-class Kernel extends \Illuminate\Foundation\Console\Kernel
+final class Kernel extends \Illuminate\Foundation\Console\Kernel
 {
-    protected function getArtisan(): ?Application
+    protected function getArtisan(): ConsoleApplication
     {
         if (is_null($this->artisan)) {
             $this->artisan = (new Application($this->app, $this->events, ''))

@@ -10,7 +10,7 @@ use Illuminate\Support\Facades\Config;
 use Illuminate\Support\ServiceProvider;
 use Throwable;
 
-class ConfigServiceProvider extends ServiceProvider
+final class ConfigServiceProvider extends ServiceProvider
 {
     private array $configFiles = [
         'general',

@@ -7,7 +7,8 @@ use CraftCms\Cms\Console\ConsoleServiceProvider;
 use CraftCms\Cms\License\LicenseServiceProvider;
 use Illuminate\Support\AggregateServiceProvider;
 
-class CraftServiceProvider extends AggregateServiceProvider
+/** @since 6.0.0 */
+final class CraftServiceProvider extends AggregateServiceProvider
 {
     protected $providers = [
         ConfigServiceProvider::class,

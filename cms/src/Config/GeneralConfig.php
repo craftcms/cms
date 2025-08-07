@@ -18,11 +18,9 @@ use yii\base\InvalidConfigException;
 /**
  * General config class
  *
- * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- *
  * @since 6.0.0
  */
-class GeneralConfig extends BaseConfig
+final class GeneralConfig extends BaseConfig
 {
     public const IMAGE_DRIVER_AUTO = 'auto';
 
