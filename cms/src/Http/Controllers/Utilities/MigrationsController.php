@@ -10,7 +10,8 @@ use CraftCms\Cms\Utility\Utilities;
 use Illuminate\Container\Attributes\Give;
 use Illuminate\Http\Request;
 
-class MigrationsController
+/** @since 6.0.0 */
+final readonly class MigrationsController
 {
     public function __construct(Utilities $utilitiesService)
     {

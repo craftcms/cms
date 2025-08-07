@@ -2,12 +2,13 @@
 
 namespace CraftCms\Cms\Utility\Events;
 
+use CraftCms\Cms\Utility\Utility;
 use Illuminate\Support\Collection;
 
 /**
  * @event RegisterUtilities The event that is triggered when registering utilities.
  *
- * Utilities must implement [[UtilityInterface]]. [[\craft\base\Utility]] provides a base implementation.
+ * Utilities must extend {@see Utility}.
  *
  * Read more about creating utilities in the [documentation](https://craftcms.com/docs/5.x/extend/utilities.html).
  * ---
@@ -20,7 +21,7 @@ use Illuminate\Support\Collection;
  * });
  * ```
  */
-class RegisterUtilities
+final class RegisterUtilities
 {
     public function __construct(
         public Collection $types,

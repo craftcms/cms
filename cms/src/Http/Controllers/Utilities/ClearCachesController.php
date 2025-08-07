@@ -13,7 +13,8 @@ use Illuminate\Support\Facades\Log;
 use Throwable;
 use yii\base\InvalidArgumentException;
 
-class ClearCachesController
+/** @since 6.0.0 */
+final readonly class ClearCachesController
 {
     public function __construct(Utilities $utilitiesService)
     {

@@ -1,12 +1,5 @@
 <?php
 
-/**
- * @link https://craftcms.com/
- *
- * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license https://craftcms.github.io/license/
- */
-
 namespace CraftCms\Cms\Support\Facades;
 
 use Illuminate\Support\Facades\Facade;
@@ -17,6 +10,7 @@ use Illuminate\Support\Facades\Facade;
  * @method static void markAsRead(int[] $ids)
  *
  * @see \CraftCms\Cms\Announcement\Announcements
+ * @since 6.0.0
  */
 class Announcements extends Facade
 {

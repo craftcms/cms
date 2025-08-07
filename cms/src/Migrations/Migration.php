@@ -11,6 +11,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 use yii\db\MigrationInterface;
 
+/** @since 6.0.0 */
 abstract class Migration extends LaravelMigration implements MigrationInterface
 {
     /**

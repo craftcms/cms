@@ -1,12 +1,5 @@
 <?php
 
-/**
- * @link https://craftcms.com/
- *
- * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license https://craftcms.github.io/license/
- */
-
 namespace CraftCms\Cms\Utility\Utilities;
 
 use Craft;
@@ -15,11 +8,9 @@ use CraftCms\Cms\Utility\Utility;
 /**
  * PhpInfo represents a PhpInfo dashboard widget.
  *
- * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- *
  * @since 3.0.0
  */
-class PhpInfo extends Utility
+final readonly class PhpInfo extends Utility
 {
     /**
      * {@inheritdoc}
@@ -48,7 +39,7 @@ class PhpInfo extends Utility
     /**
      * {@inheritdoc}
      */
-    public static function icon(): ?string
+    public static function icon(): string
     {
         return 'circle-info';
     }

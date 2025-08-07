@@ -18,11 +18,10 @@ use Illuminate\Support\Facades\File;
 /**
  * ClearCaches represents a ClearCaches dashboard widget.
  *
- * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- *
+
  * @since 6.0.0
  */
-class ClearCaches extends Utility
+final readonly class ClearCaches extends Utility
 {
     /**
      * {@inheritdoc}
@@ -43,7 +42,7 @@ class ClearCaches extends Utility
     /**
      * {@inheritdoc}
      */
-    public static function icon(): ?string
+    public static function icon(): string
     {
         return 'trash';
     }
