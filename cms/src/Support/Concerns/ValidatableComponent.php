@@ -2,13 +2,16 @@
 
 namespace CraftCms\Cms\Support\Concerns;
 
-use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\Validator as ValidatorFacade;
+use Illuminate\Validation\Validator;
 
 /**
  * @since 6.0.0
  */
 trait ValidatableComponent
 {
+    private ?Validator $validator = null;
+
     public static function getRules(): array
     {
         return [];
@@ -19,9 +22,9 @@ trait ValidatableComponent
         return [];
     }
 
-    protected function getValidator(): \Illuminate\Validation\Validator
+    protected function getValidator(): Validator
     {
-        return Validator::make($this->getValidationData(), static::getRules());
+        return $this->validator ??= ValidatorFacade::make($this->getValidationData(), static::getRules());
     }
 
     public function validate(array|string|null $attributeNames = null, bool $clearErrors = true): bool
