@@ -11,6 +11,6 @@ final class ComponentEvent
 
     public function __construct(
         public SavableComponentInterface $component,
-        readonly bool $isNew = false,
+        public readonly bool $isNew = false,
     ) {}
 }
