@@ -1,12 +1,5 @@
 <?php
 
-/**
- * @link https://craftcms.com/
- *
- * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license https://craftcms.github.io/license/
- */
-
 namespace CraftCms\Cms\Dashboard\Widgets;
 
 use Craft;
@@ -14,14 +7,8 @@ use craft\helpers\Json;
 use craft\web\assets\feed\FeedAsset;
 use Illuminate\Support\Facades\Cache;
 
-/**
- * Feed represents a Feed dashboard widget.
- *
- * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- *
- * @since 6.0.0
- */
-class Feed extends Widget
+/** @since 6.0.0 */
+final class Feed extends Widget
 {
     /**
      * {@inheritdoc}

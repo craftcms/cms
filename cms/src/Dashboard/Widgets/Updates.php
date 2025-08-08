@@ -1,26 +1,13 @@
 <?php
 
-/**
- * @link https://craftcms.com/
- *
- * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license https://craftcms.github.io/license/
- */
-
 namespace CraftCms\Cms\Dashboard\Widgets;
 
 use Craft;
 use craft\web\assets\updateswidget\UpdatesWidgetAsset;
 use Illuminate\Support\Facades\Auth;
 
-/**
- * Updates represents an Updates dashboard widget.
- *
- * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- *
- * @since 6.0.0
- */
-class Updates extends Widget
+/** @since 6.0.0 */
+final class Updates extends Widget
 {
     /**
      * {@inheritdoc}
@@ -36,7 +23,7 @@ class Updates extends Widget
     public static function isSelectable(): bool
     {
         // Gotta have update permission to get this widget
-        return parent::isSelectable() && Craft::$app->getUser()->checkPermission('performUpdates');
+        return parent::isSelectable() && Auth::user()->can('performUpdates');
     }
 
     /**

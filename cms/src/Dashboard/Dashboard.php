@@ -27,7 +27,8 @@ use Illuminate\Validation\ValidationException;
 use Throwable;
 
 #[Singleton]
-class Dashboard
+/** @since 6.0.0 */
+final readonly class Dashboard
 {
     /**
      * @return Collection<class-string<WidgetInterface>>

@@ -13,9 +13,6 @@ abstract class Widget implements WidgetInterface
 {
     public ?int $id = null;
 
-    /**
-     * @var int|null The user’s chosen colspan for the widget
-     */
     public ?int $colspan = null;
 
     public function __construct(array $config = [])

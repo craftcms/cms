@@ -1,12 +1,5 @@
 <?php
 
-/**
- * @link https://craftcms.com/
- *
- * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license https://craftcms.github.io/license/
- */
-
 namespace CraftCms\Cms\Dashboard\Widgets;
 
 use Craft;
@@ -15,14 +8,8 @@ use craft\helpers\Json;
 use craft\models\Section;
 use craft\web\assets\recententries\RecentEntriesAsset;
 
-/**
- * RecentEntries represents a Recent Entries dashboard widget.
- *
- * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- *
- * @since 6.0.0
- */
-class RecentEntries extends Widget
+/** @since 6.0.0 */
+final class RecentEntries extends Widget
 {
     /**
      * {@inheritdoc}

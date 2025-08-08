@@ -1,12 +1,5 @@
 <?php
 
-/**
- * @link https://craftcms.com/
- *
- * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license https://craftcms.github.io/license/
- */
-
 namespace CraftCms\Cms\Dashboard\Widgets;
 
 use Craft;
@@ -15,14 +8,8 @@ use craft\enums\CmsEdition;
 use craft\helpers\Json;
 use craft\web\assets\newusers\NewUsersAsset;
 
-/**
- * NewUsers represents a New Users dashboard widget.
- *
- * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- *
- * @since 6.0.0
- */
-class NewUsers extends Widget
+/** @since 6.0.0 */
+final class NewUsers extends Widget
 {
     /**
      * {@inheritdoc}

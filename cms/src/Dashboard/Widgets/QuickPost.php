@@ -1,12 +1,5 @@
 <?php
 
-/**
- * @link https://craftcms.com/
- *
- * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license https://craftcms.github.io/license/
- */
-
 namespace CraftCms\Cms\Dashboard\Widgets;
 
 use Craft;
@@ -17,14 +10,8 @@ use craft\models\Section;
 use CraftCms\Cms\Support\Arr;
 use Illuminate\Support\Facades\Auth;
 
-/**
- * QuickPost represents a Quick Post dashboard widget.
- *
- * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- *
- * @since 6.0.0
- */
-class QuickPost extends Widget
+/** @since 6.0.0 */
+final class QuickPost extends Widget
 {
     /**
      * {@inheritdoc}
@@ -143,7 +130,7 @@ class QuickPost extends Widget
 
         $entryType = $this->entryType();
         if (! $entryType) {
-            return static::displayName();
+            return self::displayName();
         }
 
         return Craft::t('app', 'Create a new {section} entry', [

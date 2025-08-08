@@ -1,12 +1,5 @@
 <?php
 
-/**
- * @link https://craftcms.com/
- *
- * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license https://craftcms.github.io/license/
- */
-
 namespace CraftCms\Cms\Dashboard\Widgets;
 
 use Craft;
@@ -14,14 +7,8 @@ use craft\helpers\App;
 use craft\web\assets\craftsupport\CraftSupportAsset;
 use Illuminate\Support\Facades\Auth;
 
-/**
- * CraftSupport represents a Craft Support dashboard widget.
- *
- * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- *
- * @since 6.0.0
- */
-class CraftSupport extends Widget
+/** @since 6.0.0 */
+final class CraftSupport extends Widget
 {
     /**
      * {@inheritdoc}

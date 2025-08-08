@@ -1,12 +1,5 @@
 <?php
 
-/**
- * @link https://craftcms.com/
- *
- * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license https://craftcms.github.io/license/
- */
-
 namespace CraftCms\Cms\Dashboard\Widgets;
 
 use Craft;
@@ -15,14 +8,8 @@ use craft\helpers\Cp;
 use craft\helpers\Html;
 use Illuminate\Support\Facades\Session;
 
-/**
- * MyDrafts represents a My Drafts dashboard widget.
- *
- * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- *
- * @since 6.0.0
- */
-class MyDrafts extends Widget
+/** @since 6.0.0 */
+final class MyDrafts extends Widget
 {
     /**
      * {@inheritdoc}
