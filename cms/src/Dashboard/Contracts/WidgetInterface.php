@@ -1,30 +1,22 @@
 <?php
 
-/**
- * @link https://craftcms.com/
- *
- * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license https://craftcms.github.io/license/
- */
-
 namespace CraftCms\Cms\Dashboard\Contracts;
 
 use CraftCms\Cms\Dashboard\Widgets\Widget;
-use CraftCms\Cms\Support\Contracts\ComponentInterface;
+use CraftCms\Cms\Support\Contracts\ConfigurableComponentInterface;
+use CraftCms\Cms\Support\Contracts\SavableComponentInterface;
 use CraftCms\Cms\Support\Contracts\ValidatableInterface;
 
 /**
  * WidgetInterface defines the common interface to be implemented by dashboard widget classes.
- * A class implementing this interface should extend [[Widget]].
- *
- * @phpstan-require-extends Widget
- *
- * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
+ * A class implementing this interface should extend {@see Widget}.
  *
  * @since 6.0.0
  */
-interface WidgetInterface extends ComponentInterface, ValidatableInterface
+interface WidgetInterface extends ConfigurableComponentInterface, SavableComponentInterface, ValidatableInterface
 {
+    public ?int $colspan { get; set; }
+
     /**
      * Returns the widget’s SVG icon, if it has one.
      *
@@ -64,13 +56,4 @@ interface WidgetInterface extends ComponentInterface, ValidatableInterface
      *                     the first place, use [[isSelectable()]].)
      */
     public function getBodyHtml(): ?string;
-
-    public function getSettingsHtml(): ?string;
-
-    public function getSettings(): array;
-
-    /**
-     * Returns the validation rules for attributes.
-     */
-    public static function getSettingsRules(): array;
 }

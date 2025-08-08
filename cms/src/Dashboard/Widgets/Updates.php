@@ -37,7 +37,7 @@ final class Updates extends Widget
     /**
      * {@inheritdoc}
      */
-    public static function icon(): ?string
+    public static function icon(): string
     {
         return 'certificate';
     }

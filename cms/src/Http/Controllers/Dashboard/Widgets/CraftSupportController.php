@@ -10,7 +10,6 @@ use Exception;
 use GuzzleHttp\RequestOptions;
 use Illuminate\Container\Attributes\Give;
 use Illuminate\Http\Request;
-use Illuminate\Http\Response;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Log;
@@ -20,9 +19,9 @@ use Symfony\Component\Yaml\Yaml;
 use Throwable;
 use ZipArchive;
 
-class CraftSupportController
+final readonly class CraftSupportController
 {
-    public function __invoke(Request $request, #[Give('Craft')] Application $craft): Response|string
+    public function __invoke(Request $request, #[Give('Craft')] Application $craft): string
     {
         $view = $craft->getView();
 

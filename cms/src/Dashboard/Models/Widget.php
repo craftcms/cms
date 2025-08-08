@@ -20,7 +20,7 @@ class Widget extends BaseModel
         'colspan' => 'integer',
         'settings' => 'json',
         'enabled' => 'boolean',
-        'dateCreated' => 'datetime',
-        'dateUpdated' => 'datetime',
+        'dateCreated' => 'immutable_datetime',
+        'dateUpdated' => 'immutable_datetime',
     ];
 }

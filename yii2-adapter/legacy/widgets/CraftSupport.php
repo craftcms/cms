@@ -18,7 +18,6 @@ use craft\web\assets\craftsupport\CraftSupportAsset;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
  * @deprecated in 6.0.0. Use `\CraftCms\Cms\Dashboard\Widgets\CraftSupport` instead.
- * @phpstan-ignore class.missingExtends
  */
 class CraftSupport extends Widget
 {

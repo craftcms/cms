@@ -19,7 +19,6 @@ use craft\helpers\Html;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.6.5
  * @deprecated in 6.0.0. Use `\CraftCms\Cms\Dashboard\Widgets\MyDrafts` instead.
- * @phpstan-ignore class.missingExtends
  */
 class MyDrafts extends Widget
 {

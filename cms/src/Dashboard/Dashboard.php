@@ -151,6 +151,10 @@ final readonly class Dashboard
             $widget = $event->widget;
         }
 
+        if (! $widget->beforeSave($isNewWidget)) {
+            return false;
+        }
+
         /**
          * Legacy widgets run validation through the ->validate() method.
          */
@@ -180,6 +184,8 @@ final readonly class Dashboard
             $widgetModel->save();
 
             $widget->id = $widgetModel->id;
+
+            $widget->afterSave($isNewWidget);
 
             DB::commit();
         } catch (Throwable $e) {
@@ -225,11 +231,16 @@ final readonly class Dashboard
             }
         }
 
+        if (! $widget->beforeDelete()) {
+            return false;
+        }
+
         DB::beginTransaction();
 
         try {
             $widgetRecord = $this->getUserWidgetModelById($widget->id);
             $widgetRecord->delete();
+            $widget->afterDelete();
             DB::commit();
         } catch (Throwable $e) {
             DB::rollBack();

@@ -7,19 +7,15 @@
 
 namespace craft\base;
 
-use CraftCms\Cms\Support\Contracts\ValidatableInterface;
-
-/**
- * WidgetInterface defines the common interface to be implemented by dashboard widget classes.
- * A class implementing this interface should also use [[SavableComponentTrait]] and [[WidgetTrait]].
- *
- * @mixin WidgetTrait
- * @mixin SavableComponentTrait
- * @mixin Model
- * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0.0
- * @deprecated in 6.0.0. Use `\CraftCms\Cms\Dashboard\Contracts\WidgetInterface` instead.
- */
-interface WidgetInterface extends \CraftCms\Cms\Dashboard\Contracts\WidgetInterface, ValidatableInterface
-{
+/** @phpstan-ignore-next-line */
+if (false) {
+    /**
+     * @since 3.0.0
+     * @deprecated in 6.0.0
+     */
+    interface WidgetInterface
+    {
+    }
 }
+
+class_alias(\CraftCms\Cms\Dashboard\Contracts\WidgetInterface::class, WidgetInterface::class);

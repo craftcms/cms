@@ -12,7 +12,7 @@ use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
 
-class WidgetsController
+final readonly class WidgetsController
 {
     use InteractsWithWidgets;
 
@@ -68,7 +68,7 @@ class WidgetsController
         // Create a new widget model with the new settings
         $settings = $request->get("widget{$widget->id}-settings");
 
-        Validator::validate($settings, $widget::getSettingsRules());
+        Validator::validate($settings, $widget::getRules());
 
         $widget = $this->dashboard->createWidget([
             'id' => $widget->id,

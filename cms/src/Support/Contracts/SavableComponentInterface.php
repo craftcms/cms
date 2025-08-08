@@ -1,23 +1,11 @@
 <?php
-/**
- * @link https://craftcms.com/
- * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license https://craftcms.github.io/license/
- */
 
-namespace craft\base;
+namespace CraftCms\Cms\Support\Contracts;
 
-/**
- * SavableComponentInterface defines the common interface to be implemented by savable Craft component classes.
- *
- * A class implementing this interface should extend [[Model]] and also use [[SavableComponentTrait]].
- *
- * @mixin SavableComponentTrait
- * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0.0
- */
-interface SavableComponentInterface extends ConfigurableComponentInterface
+interface SavableComponentInterface extends ComponentInterface
 {
+    public int|string|null $id { get; set; }
+
     /**
      * Returns whether the component is new (unsaved).
      *
@@ -31,7 +19,7 @@ interface SavableComponentInterface extends ConfigurableComponentInterface
     /**
      * Performs actions before a component is saved.
      *
-     * @param bool $isNew Whether the component is brand new
+     * @param  bool  $isNew  Whether the component is brand new
      * @return bool Whether the component should be saved
      */
     public function beforeSave(bool $isNew): bool;
@@ -39,7 +27,7 @@ interface SavableComponentInterface extends ConfigurableComponentInterface
     /**
      * Performs actions after a component is saved.
      *
-     * @param bool $isNew Whether the component is brand new
+     * @param  bool  $isNew  Whether the component is brand new
      */
     public function afterSave(bool $isNew): void;
 

@@ -10,6 +10,12 @@ use Illuminate\Support\Facades\Cache;
 /** @since 6.0.0 */
 final class Feed extends Widget
 {
+    public ?string $url = null;
+
+    public ?string $title = null;
+
+    public int $limit = 5;
+
     /**
      * {@inheritdoc}
      */
@@ -21,33 +27,15 @@ final class Feed extends Widget
     /**
      * {@inheritdoc}
      */
-    public static function icon(): ?string
+    public static function icon(): string
     {
         return 'rss';
     }
 
     /**
-     * @var string|null The feed URL
-     */
-    public ?string $url = null;
-
-    /**
-     * @var string|null The feed title
-     */
-    public ?string $title = null;
-
-    /**
-     * @var int The maximum number of feed items to display
-     */
-    public int $limit = 5;
-
-    /**
      * {@inheritdoc}
      */
-    /**
-     * {@inheritdoc}
-     */
-    public static function getSettingsRules(): array
+    public static function getRules(): array
     {
         return [
             'title' => ['required'],
@@ -59,7 +47,7 @@ final class Feed extends Widget
     /**
      * {@inheritdoc}
      */
-    public function getSettingsHtml(): ?string
+    public function getSettingsHtml(): string
     {
         return Craft::$app->getView()->renderTemplate('_components/widgets/Feed/settings.twig',
             [

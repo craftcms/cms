@@ -6,18 +6,25 @@ use CraftCms\Cms\Dashboard\Contracts\WidgetInterface;
 use CraftCms\Cms\Dashboard\Dashboard;
 use CraftCms\Cms\Dashboard\Models\Widget as WidgetModel;
 use CraftCms\Cms\Support\Arr;
-use Illuminate\Support\Facades\Validator;
+use CraftCms\Cms\Support\Concerns\ConfigurableComponent;
+use CraftCms\Cms\Support\Concerns\SavableComponent;
+use CraftCms\Cms\Support\Concerns\ValidatableComponent;
+use Illuminate\Support\Facades\Date;
 use RuntimeException;
 
 abstract class Widget implements WidgetInterface
 {
-    public ?int $id = null;
+    use ConfigurableComponent;
+    use SavableComponent;
+    use ValidatableComponent;
 
     public ?int $colspan = null;
 
     public function __construct(array $config = [])
     {
         $this->id = $config['id'] ?? null;
+        $this->dateCreated = isset($config['dateCreated']) ? Date::parse($config['dateCreated']) : null;
+        $this->dateUpdated = isset($config['dateUpdated']) ? Date::parse($config['dateUpdated']) : null;
         $this->colspan = $config['colspan'] ?? null;
 
         foreach (Arr::get($config, 'settings', []) as $key => $value) {
@@ -71,14 +78,6 @@ abstract class Widget implements WidgetInterface
     }
 
     /**
-     * {@inheritdoc}
-     */
-    public static function getSettingsRules(): array
-    {
-        return [];
-    }
-
-    /**
      * Returns the display name of this class.
      *
      * @return string The display name of this class.
@@ -129,61 +128,9 @@ abstract class Widget implements WidgetInterface
 EOD;
     }
 
-    public function getSettingsHtml(): ?string
+    public function getValidationData(): array
     {
-        return null;
-    }
-
-    public function getSettings(): array
-    {
-        $settings = [];
-
-        $reflectionClass = new \ReflectionClass($this);
-        foreach ($reflectionClass->getProperties(\ReflectionProperty::IS_PUBLIC) as $property) {
-            if (! $property->isStatic() && ! $property->getDeclaringClass()->isAbstract()) {
-                $settings[$property->getName()] = $property->getValue($this);
-            }
-        }
-
-        return Arr::except($settings, 'id');
-    }
-
-    protected function getValidator(): \Illuminate\Validation\Validator
-    {
-        return Validator::make($this->getSettings(), static::getSettingsRules());
-    }
-
-    public function validate(array|string|null $attributeNames = null, bool $clearErrors = true): bool
-    {
-        return $this->getValidator()->passes();
-    }
-
-    public function hasErrors(?string $attribute = null): bool
-    {
-        if (! $attribute) {
-            return $this->getValidator()->fails();
-        }
-
-        return $this->getValidator()->errors()->has($attribute);
-    }
-
-    public function getErrors(?string $attribute = null): array
-    {
-        if (! $attribute) {
-            return $this->getValidator()->errors()->all();
-        }
-
-        return $this->getValidator()->errors()->get($attribute);
-    }
-
-    public function getFirstErrors(): array
-    {
-        return $this->getErrors();
-    }
-
-    public function getFirstError(string $attribute): ?string
-    {
-        return $this->getValidator()->errors()->first($attribute);
+        return $this->getSettings();
     }
 
     public static function fromConfig(array|WidgetModel $config): WidgetInterface

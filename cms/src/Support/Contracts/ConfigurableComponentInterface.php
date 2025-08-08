@@ -1,22 +1,8 @@
 <?php
-/**
- * @link https://craftcms.com/
- * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license https://craftcms.github.io/license/
- */
 
-namespace craft\base;
+namespace CraftCms\Cms\Support\Contracts;
 
-/**
- * ConfigurableComponentInterface defines the common interface to be implemented by Craft component classes which
- * are configurable.
- *
- * A class implementing this interface should extend [[Model]].
- *
- * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.5.0
- */
-interface ConfigurableComponentInterface extends ComponentInterface
+interface ConfigurableComponentInterface
 {
     /**
      * Returns the list of settings attribute names.
@@ -25,6 +11,7 @@ interface ConfigurableComponentInterface extends ComponentInterface
      * You may override this method to change the default behavior.
      *
      * @return string[] The list of settings attribute names
+     *
      * @see getSettings()
      */
     public function settingsAttributes(): array;
@@ -115,8 +102,6 @@ interface ConfigurableComponentInterface extends ComponentInterface
      *
      * The same principles also apply if you’re including your JavaScript code with
      * [[\craft\web\View::registerJs()]].
-     *
-     * @return string|null
      */
     public function getSettingsHtml(): ?string;
 
@@ -124,9 +109,6 @@ interface ConfigurableComponentInterface extends ComponentInterface
      * Returns a read-only version of the component’s settings HTML.
      *
      * This method is called to output settings when admin changes are disallowed.
-     *
-     * @return string|null
-     * @since 5.6.0
      */
     public function getReadOnlySettingsHtml(): ?string;
 }

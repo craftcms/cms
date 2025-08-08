@@ -8,7 +8,7 @@
 namespace craft\events;
 
 use craft\base\Event;
-use craft\base\WidgetInterface;
+use CraftCms\Cms\Dashboard\Contracts\WidgetInterface;
 
 /**
  * WidgetEvent class.

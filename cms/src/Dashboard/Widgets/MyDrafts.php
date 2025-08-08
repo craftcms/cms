@@ -35,12 +35,12 @@ final class MyDrafts extends Widget
     /**
      * {@inheritdoc}
      */
-    public static function icon(): ?string
+    public static function icon(): string
     {
         return 'scribble';
     }
 
-    public static function getSettingsRules(): array
+    public static function getRules(): array
     {
         return [
             'limit' => ['required', 'integer', 'min:1'],
@@ -50,7 +50,7 @@ final class MyDrafts extends Widget
     /**
      * {@inheritdoc}
      */
-    public function getSettingsHtml(): ?string
+    public function getSettingsHtml(): string
     {
         return Cp::textFieldHtml([
             'label' => Craft::t('app', 'Limit'),
@@ -65,7 +65,7 @@ final class MyDrafts extends Widget
     /**
      * {@inheritdoc}
      */
-    public function getBodyHtml(): ?string
+    public function getBodyHtml(): string
     {
         /** @var Entry[] $drafts */
         $drafts = Entry::find()

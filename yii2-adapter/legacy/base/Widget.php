@@ -16,16 +16,23 @@ use CraftCms\Cms\Dashboard\Dashboard;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
  * @deprecated in 6.0.0. Use `\CraftCms\Cms\Dashboard\Widgets\Widget` instead.
- * @phpstan-ignore class.missingExtends
  */
-abstract class Widget extends SavableComponent implements WidgetInterface
+abstract class Widget extends SavableComponent implements \CraftCms\Cms\Dashboard\Contracts\WidgetInterface
 {
     use WidgetTrait;
 
     /**
      * Old widgets will get validated by calling the ->validate() method.
      */
-    public static function getSettingsRules(): array
+    public static function getRules(): array
+    {
+        return [];
+    }
+
+    /**
+     * Old widgets will get validated by with Yii's rules.
+     */
+    public function getValidationData(): array
     {
         return [];
     }

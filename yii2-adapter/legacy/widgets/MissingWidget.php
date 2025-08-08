@@ -10,7 +10,7 @@ namespace craft\widgets;
 use craft\base\MissingComponentInterface;
 use craft\base\MissingComponentTrait;
 use craft\base\Widget;
-use craft\base\WidgetInterface;
+use CraftCms\Cms\Dashboard\Contracts\WidgetInterface;
 
 /**
  * MissingWidget represents a widget with an invalid class.
@@ -19,7 +19,6 @@ use craft\base\WidgetInterface;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
  * @deprecated in 6.0.0. Use `\CraftCms\Cms\Dashboard\Widgets\MissingWidget` instead.
- * @phpstan-ignore class.missingExtends
  */
 class MissingWidget extends Widget implements MissingComponentInterface
 {

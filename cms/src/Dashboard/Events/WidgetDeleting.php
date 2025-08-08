@@ -3,7 +3,7 @@
 namespace CraftCms\Cms\Dashboard\Events;
 
 use CraftCms\Cms\Dashboard\Contracts\WidgetInterface;
-use CraftCms\Cms\Support\Concerns\ValidatableEvent;
+use CraftCms\Cms\Support\Events\Concerns\ValidatableEvent;
 
 /**
  * @event WidgetDeleting The event that is triggered before a widget is deleted.

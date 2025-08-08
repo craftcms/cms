@@ -8,7 +8,6 @@
 namespace craft\services;
 
 use Craft;
-use craft\base\SavableComponent;
 use craft\events\RegisterComponentTypesEvent;
 use craft\events\WidgetEvent;
 use CraftCms\Cms\Dashboard\Contracts\WidgetInterface;
@@ -214,10 +213,6 @@ class Dashboard extends Component
                     'isNew' => $event->isNew,
                 ]));
 
-                if ($event->widget instanceof SavableComponent) {
-                    $event->widget->beforeSave($event->isNew);
-                }
-
                 $event->widget = $yiiEvent->widget;
             });
         }
@@ -229,10 +224,6 @@ class Dashboard extends Component
                     'widget' => $event->widget,
                     'isNew' => $event->isNew,
                 ]));
-
-                if ($event->widget instanceof SavableComponent) {
-                    $event->widget->afterSave($event->isNew);
-                }
             });
         }
 
@@ -242,12 +233,6 @@ class Dashboard extends Component
                 Craft::$app->getDashboard()->trigger(self::EVENT_BEFORE_DELETE_WIDGET, new WidgetEvent([
                     'widget' => $event->widget,
                 ]));
-
-                if ($event->widget instanceof SavableComponent) {
-                    if (!$event->widget->beforeDelete()) {
-                        $event->isValid = false;
-                    }
-                }
             });
         }
 

@@ -33,7 +33,7 @@ final class NewUsers extends Widget
     /**
      * {@inheritdoc}
      */
-    public static function icon(): ?string
+    public static function icon(): string
     {
         return 'user-group';
     }
@@ -90,7 +90,7 @@ final class NewUsers extends Widget
     /**
      * {@inheritdoc}
      */
-    public function getSettingsHtml(): ?string
+    public function getSettingsHtml(): string
     {
         return Craft::$app->getView()->renderTemplate('_components/widgets/NewUsers/settings.twig',
             [

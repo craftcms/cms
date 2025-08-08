@@ -38,6 +38,7 @@ use yii\web\Response;
  */
 interface ElementInterface extends
     ComponentInterface,
+    ModelInterface,
     Chippable,
     CpEditable,
     Thumbable,

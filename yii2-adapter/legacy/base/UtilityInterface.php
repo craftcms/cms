@@ -14,7 +14,7 @@ namespace craft\base;
  * @since 3.0.0
  * @deprecated in 6.0.0. Utilities should extend [[\CraftCms\Cms\Utility\Utility]] instead.
  */
-interface UtilityInterface extends ComponentInterface
+interface UtilityInterface extends ComponentInterface, ModelInterface
 {
     /**
      * Returns the utility’s unique identifier.

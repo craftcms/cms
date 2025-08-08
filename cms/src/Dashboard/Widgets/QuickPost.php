@@ -24,7 +24,7 @@ final class QuickPost extends Widget
     /**
      * {@inheritdoc}
      */
-    public static function icon(): ?string
+    public static function icon(): string
     {
         return 'file-circle-plus';
     }
@@ -86,7 +86,7 @@ final class QuickPost extends Widget
         parent::__construct($config);
     }
 
-    public static function getSettingsRules(): array
+    public static function getRules(): array
     {
         return [
             'section' => ['required', 'integer'],
@@ -97,7 +97,7 @@ final class QuickPost extends Widget
     /**
      * {@inheritdoc}
      */
-    public function getSettingsHtml(): ?string
+    public function getSettingsHtml(): string
     {
         // Find the sections the user has permission to create entries in
         $sections = [];
@@ -122,7 +122,7 @@ final class QuickPost extends Widget
     /**
      * {@inheritdoc}
      */
-    public function getTitle(): ?string
+    public function getTitle(): string
     {
         if (isset($this->customTitle)) {
             return Craft::t('site', $this->customTitle);
@@ -141,7 +141,7 @@ final class QuickPost extends Widget
     /**
      * {@inheritdoc}
      */
-    public function getBodyHtml(): ?string
+    public function getBodyHtml(): string
     {
         $section = $this->section();
         if (! $section) {

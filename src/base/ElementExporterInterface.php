@@ -15,7 +15,7 @@ use craft\elements\db\ElementQueryInterface;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.4.0
  */
-interface ElementExporterInterface extends ComponentInterface
+interface ElementExporterInterface extends ComponentInterface, ModelInterface
 {
     /**
      * Returns whether the response data can be formatted as CSV, JSON, or XML.

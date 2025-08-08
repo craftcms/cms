@@ -22,7 +22,7 @@ final class RecentEntries extends Widget
     /**
      * {@inheritdoc}
      */
-    public static function icon(): ?string
+    public static function icon(): string
     {
         return 'clock';
     }
@@ -49,7 +49,7 @@ final class RecentEntries extends Widget
         $this->siteId ??= Craft::$app->getSites()->getCurrentSite()->id;
     }
 
-    public static function getSettingsRules(): array
+    public static function getRules(): array
     {
         return [
             'siteId' => ['nullable', 'integer'],
@@ -60,7 +60,7 @@ final class RecentEntries extends Widget
     /**
      * {@inheritdoc}
      */
-    public function getSettingsHtml(): ?string
+    public function getSettingsHtml(): string
     {
         return Craft::$app->getView()->renderTemplate('_components/widgets/RecentEntries/settings.twig',
             [
@@ -71,7 +71,7 @@ final class RecentEntries extends Widget
     /**
      * {@inheritdoc}
      */
-    public function getTitle(): ?string
+    public function getTitle(): string
     {
         if (is_numeric($this->section)) {
             $section = Craft::$app->getEntries()->getSectionById((int) $this->section);
@@ -108,7 +108,7 @@ final class RecentEntries extends Widget
     /**
      * {@inheritdoc}
      */
-    public function getBodyHtml(): ?string
+    public function getBodyHtml(): string
     {
         $params = [];
 

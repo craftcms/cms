@@ -9,7 +9,7 @@ use CraftCms\Cms\Dashboard\Contracts\WidgetInterface;
 use CraftCms\Cms\Dashboard\Dashboard;
 use Illuminate\Container\Attributes\Give;
 
-class DashboardController
+final readonly class DashboardController
 {
     use InteractsWithWidgets;
 

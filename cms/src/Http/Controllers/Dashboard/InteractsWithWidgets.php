@@ -8,7 +8,7 @@ use CraftCms\Cms\Dashboard\Contracts\WidgetInterface;
 
 trait InteractsWithWidgets
 {
-    protected View $view;
+    protected readonly View $view;
 
     protected function getWidgetIconSvg(WidgetInterface $widget): ?string
     {
