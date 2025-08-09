@@ -322,6 +322,17 @@ abstract class Controller extends \yii\web\Controller
                 ]));
         }
 
+        $template = $this->request->getBodyParam('template');
+        if ($template) {
+            return $this->renderTemplate(
+                $template,
+                $data + array_filter([
+                    'message' => $message,
+                ]),
+                $this->request->getBodyParam('templateMode')
+            );
+        }
+
         $this->setFailFlash($message);
 
         if (!empty($routeParams)) {
@@ -362,6 +373,17 @@ abstract class Controller extends \yii\web\Controller
                 $response->getHeaders()->setDefault('X-CSRF-Token', $this->request->getCsrfToken());
             }
             return $response;
+        }
+
+        $template = $this->request->getBodyParam('template');
+        if ($template) {
+            return $this->renderTemplate(
+                $template,
+                $data + array_filter([
+                    'message' => $message,
+                ]),
+                $this->request->getBodyParam('templateMode')
+            );
         }
 
         $this->setSuccessFlash($message, $notificationSettings);
