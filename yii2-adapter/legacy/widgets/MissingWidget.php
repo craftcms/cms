@@ -8,27 +8,17 @@
 namespace craft\widgets;
 
 use craft\base\MissingComponentInterface;
-use craft\base\MissingComponentTrait;
 use craft\base\Widget;
-use CraftCms\Cms\Dashboard\Contracts\WidgetInterface;
 
-/**
- * MissingWidget represents a widget with an invalid class.
- *
- * @property class-string<WidgetInterface> $expectedType
- * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0.0
- * @deprecated in 6.0.0. Use `\CraftCms\Cms\Dashboard\Widgets\MissingWidget` instead.
- */
-class MissingWidget extends Widget implements MissingComponentInterface
-{
-    use MissingComponentTrait;
-
+/** @phpstan-ignore-next-line */
+if (false) {
     /**
-     * @inheritdoc
+     * @since 3.0.0
+     * @deprecated in 6.0.0. Use `\CraftCms\Cms\Dashboard\Widgets\MissingWidget` instead.
      */
-    public function getBodyHtml(): ?string
+    class MissingWidget extends Widget implements MissingComponentInterface
     {
-        return null;
     }
 }
+
+class_alias(\CraftCms\Cms\Dashboard\Widgets\MissingWidget::class, MissingWidget::class);
