@@ -8,11 +8,11 @@
 namespace craft\helpers;
 
 use Craft;
-use craft\base\ComponentInterface;
 use craft\base\ElementInterface;
 use craft\base\Model;
 use craft\errors\MissingComponentException;
 use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Support\Contracts\ComponentInterface;
 use DateTime;
 use ReflectionClass;
 use ReflectionNamedType;

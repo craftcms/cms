@@ -16,7 +16,7 @@ namespace craft\base;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 4.0.0
  */
-interface FsInterface extends BaseFsInterface, SavableComponentInterface, ConfigurableComponentInterface, ModelInterface
+interface FsInterface extends BaseFsInterface, \CraftCms\Cms\Support\Contracts\SavableComponentInterface, \CraftCms\Cms\Support\Contracts\ConfigurableComponentInterface, ModelInterface
 {
     /**
      * Returns whether the “Files in this filesystem have public URLs” setting should be shown.

@@ -17,7 +17,7 @@ use craft\events\ModelEvent;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
  */
-abstract class SavableComponent extends ConfigurableComponent implements SavableComponentInterface
+abstract class SavableComponent extends ConfigurableComponent implements \CraftCms\Cms\Support\Contracts\SavableComponentInterface
 {
     use SavableComponentTrait;
 

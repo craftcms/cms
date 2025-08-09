@@ -15,7 +15,7 @@ use CraftCms\Cms\Dashboard\Dashboard;
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
- * @deprecated in 6.0.0. Use `\CraftCms\Cms\Dashboard\Widgets\Widget` instead.
+ * @deprecated in 6.0.0. Extend `\CraftCms\Cms\Dashboard\Widgets\Widget` instead.
  */
 abstract class Widget extends SavableComponent implements \CraftCms\Cms\Dashboard\Contracts\WidgetInterface
 {

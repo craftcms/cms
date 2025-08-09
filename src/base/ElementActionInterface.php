@@ -15,7 +15,7 @@ use craft\elements\db\ElementQueryInterface;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
  */
-interface ElementActionInterface extends ConfigurableComponentInterface, ModelInterface
+interface ElementActionInterface extends \CraftCms\Cms\Support\Contracts\ConfigurableComponentInterface, \CraftCms\Cms\Support\Contracts\ComponentInterface, ModelInterface
 {
     /**
      * Returns whether this action is destructive in nature.

@@ -7,9 +7,9 @@
 
 namespace craft\auth\sso;
 
-use craft\base\ComponentInterface;
 use craft\base\ModelInterface;
 use craft\errors\SsoFailedException;
+use CraftCms\Cms\Support\Contracts\ComponentInterface;
 use yii\web\Request;
 use yii\web\Response;
 

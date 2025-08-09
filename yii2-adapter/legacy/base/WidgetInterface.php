@@ -11,7 +11,7 @@ namespace craft\base;
 if (false) {
     /**
      * @since 3.0.0
-     * @deprecated in 6.0.0
+     * @deprecated in 6.0.0 {@see \CraftCms\Cms\Dashboard\Contracts\WidgetInterface} should be used instead.
      */
     interface WidgetInterface
     {

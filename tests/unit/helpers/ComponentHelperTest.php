@@ -8,7 +8,6 @@
 namespace crafttests\unit\helpers;
 
 use Codeception\Test\Unit;
-use craft\base\ComponentInterface;
 use craft\base\FieldInterface;
 use craft\base\FieldLayoutElement;
 use craft\errors\MissingComponentException;
@@ -20,6 +19,7 @@ use craft\test\mockclasses\components\ComponentExample;
 use craft\test\mockclasses\components\DependencyHeavyComponentExample;
 use craft\test\mockclasses\components\ExtendedComponentExample;
 use craft\test\TestCase;
+use CraftCms\Cms\Support\Contracts\ComponentInterface;
 use Exception;
 use Throwable;
 use UnitTester;

@@ -7,9 +7,9 @@
 
 namespace craft\auth\methods;
 
-use craft\base\ComponentInterface;
 use craft\base\ModelInterface;
 use craft\elements\User;
+use CraftCms\Cms\Support\Contracts\ComponentInterface;
 
 /**
  * AuthMethodInterface defines the common interface to be implemented by

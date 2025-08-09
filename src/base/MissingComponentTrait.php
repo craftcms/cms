@@ -10,6 +10,7 @@ namespace craft\base;
 use Craft;
 use craft\errors\InvalidPluginException;
 use craft\helpers\Component as ComponentHelper;
+use CraftCms\Cms\Support\Contracts\ComponentInterface;
 use yii\base\Arrayable;
 
 /**

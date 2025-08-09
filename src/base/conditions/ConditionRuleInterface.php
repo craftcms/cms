@@ -2,8 +2,8 @@
 
 namespace craft\base\conditions;
 
-use craft\base\ComponentInterface;
 use craft\base\ModelInterface;
+use CraftCms\Cms\Support\Contracts\ComponentInterface;
 use yii\base\InvalidConfigException;
 
 /**

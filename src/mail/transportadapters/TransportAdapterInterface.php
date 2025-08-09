@@ -7,8 +7,9 @@
 
 namespace craft\mail\transportadapters;
 
-use craft\base\ConfigurableComponentInterface;
 use craft\base\ModelInterface;
+use CraftCms\Cms\Support\Contracts\ComponentInterface;
+use CraftCms\Cms\Support\Contracts\ConfigurableComponentInterface;
 use Symfony\Component\Mailer\Transport\AbstractTransport;
 
 /**
@@ -17,7 +18,7 @@ use Symfony\Component\Mailer\Transport\AbstractTransport;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
  */
-interface TransportAdapterInterface extends ConfigurableComponentInterface, ModelInterface
+interface TransportAdapterInterface extends ConfigurableComponentInterface, ComponentInterface, ModelInterface
 {
     /**
      * Returns the config array or an implementation of AbstractTransport object that should be passed to [[\craft\mail\Mailer::setTransport()]].

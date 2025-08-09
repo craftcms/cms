@@ -22,7 +22,7 @@ use ReflectionProperty;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.5.0
  */
-abstract class ConfigurableComponent extends Component implements ConfigurableComponentInterface
+abstract class ConfigurableComponent extends Component implements \CraftCms\Cms\Support\Contracts\ConfigurableComponentInterface
 {
     /**
      * @event DefineValueEvent The event that is triggered when defining the component’s settings attributes, as returned by [[settingsAttributes()]].
