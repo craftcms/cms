@@ -1,5 +1,9 @@
 # Release Notes for Craft CMS 5
 
+## Unreleased
+
+- Improved the accessibility of the Craft Support widget. ([#17718](https://github.com/craftcms/cms/pull/17718))
+
 ## 5.8.13.2 - 2025-08-07
 
 - Added `craft\services\UserPermissions::validatePermission()`.
