@@ -33,9 +33,8 @@ trait InteractsWithWidgets
         $settingsJs = $this->view->clearJsBuffer(false);
 
         // Get the colspan (limited to the widget type's max allowed colspan)
-        $colspan = ($widget->colspan ?: 1);
-
-        $colspan = min($colspan, $widget::maxColspan());
+        $colspan = $widget->colspan ?? 1;
+        $colspan = min($colspan, $widget::maxColspan() ?? 3);
 
         return [
             'id' => $widget->id,
