@@ -1,6 +1,6 @@
 <?php
 
-namespace CraftCms\Cms\Support\Concerns;
+namespace CraftCms\Cms\Component\Concerns;
 
 use Illuminate\Events\QueuedClosure;
 use Illuminate\Support\Facades\Event;

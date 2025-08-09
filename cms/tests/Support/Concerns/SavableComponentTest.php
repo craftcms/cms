@@ -1,7 +1,7 @@
 <?php
 
+use CraftCms\Cms\Component\Events\ComponentEvent;
 use CraftCms\Cms\Dashboard\Widgets\CraftSupport;
-use CraftCms\Cms\Support\Events\ComponentEvent;
 
 beforeEach(function () {
     $this->component = new CraftSupport;

@@ -17,7 +17,7 @@ use craft\enums\AttributeStatus;
 use craft\errors\InvalidFieldException;
 use craft\models\FieldLayout;
 use craft\models\Site;
-use CraftCms\Cms\Support\Contracts\ComponentInterface;
+use CraftCms\Cms\Component\Contracts\ComponentInterface;
 use GraphQL\Type\Definition\Type;
 use Twig\Markup;
 use yii\base\InvalidConfigException;

@@ -1,8 +1,8 @@
 <?php
 
-namespace CraftCms\Cms\Support\Events;
+namespace CraftCms\Cms\Component\Events;
 
-use CraftCms\Cms\Support\Contracts\ConfigurableComponentInterface;
+use CraftCms\Cms\Component\Contracts\ConfigurableComponentInterface;
 
 final class DefineSettingsAttributes
 {

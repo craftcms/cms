@@ -8,8 +8,8 @@
 namespace craft\mail\transportadapters;
 
 use craft\base\ModelInterface;
-use CraftCms\Cms\Support\Contracts\ComponentInterface;
-use CraftCms\Cms\Support\Contracts\ConfigurableComponentInterface;
+use CraftCms\Cms\Component\Contracts\ComponentInterface;
+use CraftCms\Cms\Component\Contracts\ConfigurableComponentInterface;
 use Symfony\Component\Mailer\Transport\AbstractTransport;
 
 /**

@@ -2,13 +2,13 @@
 
 namespace CraftCms\Cms\Dashboard\Widgets;
 
+use CraftCms\Cms\Component\Concerns\ConfigurableComponent;
+use CraftCms\Cms\Component\Concerns\SavableComponent;
+use CraftCms\Cms\Component\Concerns\ValidatableComponent;
 use CraftCms\Cms\Dashboard\Contracts\WidgetInterface;
 use CraftCms\Cms\Dashboard\Dashboard;
 use CraftCms\Cms\Dashboard\Models\Widget as WidgetModel;
 use CraftCms\Cms\Support\Arr;
-use CraftCms\Cms\Support\Concerns\ConfigurableComponent;
-use CraftCms\Cms\Support\Concerns\SavableComponent;
-use CraftCms\Cms\Support\Concerns\ValidatableComponent;
 use Illuminate\Support\Facades\Date;
 use RuntimeException;
 

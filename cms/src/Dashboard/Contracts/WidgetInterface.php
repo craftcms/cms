@@ -2,10 +2,10 @@
 
 namespace CraftCms\Cms\Dashboard\Contracts;
 
+use CraftCms\Cms\Component\Contracts\ConfigurableComponentInterface;
+use CraftCms\Cms\Component\Contracts\SavableComponentInterface;
+use CraftCms\Cms\Component\Contracts\ValidatableComponentInterface;
 use CraftCms\Cms\Dashboard\Widgets\Widget;
-use CraftCms\Cms\Support\Contracts\ConfigurableComponentInterface;
-use CraftCms\Cms\Support\Contracts\SavableComponentInterface;
-use CraftCms\Cms\Support\Contracts\ValidatableInterface;
 
 /**
  * WidgetInterface defines the common interface to be implemented by dashboard widget classes.
@@ -13,7 +13,7 @@ use CraftCms\Cms\Support\Contracts\ValidatableInterface;
  *
  * @since 6.0.0
  */
-interface WidgetInterface extends ConfigurableComponentInterface, SavableComponentInterface, ValidatableInterface
+interface WidgetInterface extends ConfigurableComponentInterface, SavableComponentInterface, ValidatableComponentInterface
 {
     public ?int $colspan { get; set; }
 

@@ -11,11 +11,11 @@ namespace craft\base;
 if (false) {
     /**
      * @since 3.5.0
-     * @deprecated 6.0.0 {@see \CraftCms\Cms\Support\Contracts\ConfigurableComponentInterface} should be used instead.
+     * @deprecated 6.0.0 {@see \CraftCms\Cms\Component\Contracts\ConfigurableComponentInterface} should be used instead.
      */
     interface ConfigurableComponentInterface extends ComponentInterface
     {
     }
 }
 
-class_alias(\CraftCms\Cms\Support\Contracts\ConfigurableComponentInterface::class, ConfigurableComponentInterface::class);
+class_alias(\CraftCms\Cms\Component\Contracts\ConfigurableComponentInterface::class, ConfigurableComponentInterface::class);

@@ -63,4 +63,4 @@ if (false) {
     }
 }
 
-class_alias(\CraftCms\Cms\Support\Concerns\SavableComponent::class, SavableComponentTrait::class);
+class_alias(\CraftCms\Cms\Component\Concerns\SavableComponent::class, SavableComponentTrait::class);

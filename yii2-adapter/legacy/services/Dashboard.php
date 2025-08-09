@@ -90,6 +90,7 @@ class Dashboard extends Component
      *
      * @template T of WidgetInterface
      * @param class-string<T>|array $config The widget’s class name, or its config, with a `type` value and optionally a `settings` value.
+     *
      * @phpstan-param class-string<T>|array{type:class-string<T>,id?:int,dateCreated?:DateTime,dateUpdated?:DateTime,colspan?:int,settings?:array|string} $config
      * @return T
      */
@@ -112,6 +113,7 @@ class Dashboard extends Component
      * Returns whether the current user has a widget of the given type.
      *
      * @param class-string<WidgetInterface> $type The widget type
+     *
      * @return bool Whether the current user has a widget of the given type
      */
     public function doesUserHaveWidget(string $type): bool
@@ -123,6 +125,7 @@ class Dashboard extends Component
      * Returns a widget by its ID.
      *
      * @param int $id The widget’s ID
+     *
      * @return WidgetInterface|null The widget, or null if it doesn’t exist
      */
     public function getWidgetById(int $id): ?WidgetInterface
@@ -135,6 +138,7 @@ class Dashboard extends Component
      *
      * @param WidgetInterface $widget The widget to be saved
      * @param bool $runValidation Whether the widget should be validated
+     *
      * @return bool Whether the widget was saved successfully
      * @throws Throwable if reasons
      */
@@ -158,6 +162,7 @@ class Dashboard extends Component
      * Deletes a widget.
      *
      * @param WidgetInterface $widget The widget to be deleted
+     *
      * @return bool Whether the widget was deleted successfully
      * @throws Throwable if reasons
      */

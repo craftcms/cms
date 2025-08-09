@@ -1,6 +1,6 @@
 <?php
 
-namespace CraftCms\Cms\Support\Concerns;
+namespace CraftCms\Cms\Component\Concerns;
 
 use Illuminate\Support\Facades\Validator as ValidatorFacade;
 use Illuminate\Validation\Validator;

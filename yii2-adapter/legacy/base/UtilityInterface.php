@@ -7,7 +7,7 @@
 
 namespace craft\base;
 
-use CraftCms\Cms\Support\Contracts\ComponentInterface;
+use CraftCms\Cms\Component\Contracts\ComponentInterface;
 
 /**
  * UtilityInterface defines the common interface to be implemented by utility classes.

@@ -1,8 +1,8 @@
 <?php
 
-namespace CraftCms\Cms\Support\Contracts;
+namespace CraftCms\Cms\Component\Contracts;
 
-interface ValidatableInterface
+interface ValidatableComponentInterface
 {
     public static function getRules(): array;
 

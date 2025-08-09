@@ -64,7 +64,9 @@ final readonly class Dashboard
      *     type:class-string<T>,
      *     id?:int,
      *     colspan?:int,
-     *     settings?:array<string,mixed>
+     *     settings?:array<string,mixed>,
+     *     dateCreated?:\DateTimeInterface,
+     *     dateUpdated?:\DateTimeInterface
      * } $config  The widget’s class name, or its config, with a `type` value and optionally a `settings` value.
      * @return T
      */

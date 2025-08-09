@@ -1,11 +1,11 @@
 <?php
 
-namespace CraftCms\Cms\Support\Concerns;
+namespace CraftCms\Cms\Component\Concerns;
 
 use BackedEnum;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\Html;
-use CraftCms\Cms\Support\Events\DefineSettingsAttributes;
+use CraftCms\Cms\Component\Events\DefineSettingsAttributes;
 use CraftCms\Cms\Support\Utils;
 use DateTimeInterface;
 use Illuminate\Support\Facades\Event;

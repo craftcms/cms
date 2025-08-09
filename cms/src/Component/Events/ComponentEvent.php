@@ -1,8 +1,8 @@
 <?php
 
-namespace CraftCms\Cms\Support\Events;
+namespace CraftCms\Cms\Component\Events;
 
-use CraftCms\Cms\Support\Contracts\SavableComponentInterface;
+use CraftCms\Cms\Component\Contracts\SavableComponentInterface;
 use CraftCms\Cms\Support\Events\Concerns\ValidatableEvent;
 
 final class ComponentEvent

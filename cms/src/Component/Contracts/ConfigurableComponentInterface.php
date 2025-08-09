@@ -1,6 +1,6 @@
 <?php
 
-namespace CraftCms\Cms\Support\Contracts;
+namespace CraftCms\Cms\Component\Contracts;
 
 interface ConfigurableComponentInterface
 {

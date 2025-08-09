@@ -1,8 +1,8 @@
 <?php
 
-namespace CraftCms\Cms\Support\Concerns;
+namespace CraftCms\Cms\Component\Concerns;
 
-use CraftCms\Cms\Support\Events\ComponentEvent;
+use CraftCms\Cms\Component\Events\ComponentEvent;
 use DateTimeInterface;
 use Illuminate\Events\QueuedClosure;
 use Illuminate\Support\Facades\Event;
