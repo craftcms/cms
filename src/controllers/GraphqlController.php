@@ -140,7 +140,7 @@ class GraphqlController extends Controller
             // Must be valid JSON
             try {
                 $variables = Json::decode($qVariables);
-            } catch (InvalidArgumentException $e) {
+            } catch (\InvalidArgumentException $e) {
                 throw new BadRequestHttpException('The variables param must be valid JSON', 0, $e);
             }
         }

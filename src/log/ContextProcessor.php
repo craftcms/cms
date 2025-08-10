@@ -13,7 +13,6 @@ use CraftCms\Cms\Support\Json;
 use Illuminate\Support\Collection;
 use Monolog\LogRecord;
 use Monolog\Processor\ProcessorInterface;
-use yii\base\InvalidArgumentException;
 use yii\helpers\VarDumper;
 use yii\web\Request;
 use yii\web\Session;
@@ -79,7 +78,7 @@ class ContextProcessor implements ProcessorInterface
                     $decoded = Craft::$app->getSecurity()->redactIfSensitive('', $decoded);
                 }
                 $body = Json::encode($decoded);
-            } catch (InvalidArgumentException) {
+            } catch (\InvalidArgumentException) {
                 // NBD
             }
 

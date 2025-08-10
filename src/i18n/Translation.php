@@ -9,7 +9,6 @@ namespace craft\i18n;
 
 use Craft;
 use CraftCms\Cms\Support\Json;
-use yii\base\InvalidArgumentException;
 
 /**
  * Translation helper
@@ -48,7 +47,7 @@ abstract class Translation
 
         try {
             $args = Json::decode(substr($translation, 4));
-        } catch (InvalidArgumentException) {
+        } catch (\InvalidArgumentException) {
             return $translation;
         }
 

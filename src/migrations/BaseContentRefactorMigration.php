@@ -14,7 +14,6 @@ use craft\models\FieldLayout;
 use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Support\Str;
 use Illuminate\Support\Collection;
-use yii\base\InvalidArgumentException;
 use yii\db\ColumnSchema;
 use yii\db\Expression;
 use yii\db\Query as YiiQuery;
@@ -297,7 +296,7 @@ class BaseContentRefactorMigration extends Migration
             if (Str::isJson($value)) {
                 try {
                     return Json::decode($value);
-                } catch (InvalidArgumentException) {
+                } catch (\InvalidArgumentException) {
                 }
             }
 

@@ -15,7 +15,6 @@ use ReflectionException;
 use ReflectionNamedType;
 use ReflectionProperty;
 use ReflectionUnionType;
-use yii\base\InvalidArgumentException;
 
 /**
  * Typecast Helper
@@ -103,7 +102,7 @@ final class Typecast
                         if (is_array($decoded)) {
                             $value = $decoded;
                         }
-                    } catch (InvalidArgumentException) {
+                    } catch (\InvalidArgumentException) {
                         $value = str($value)->explode(',')->all();
                     }
                     return;

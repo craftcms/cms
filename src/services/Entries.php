@@ -1560,7 +1560,7 @@ SQL)->execute();
         if (is_string($entryType)) {
             try {
                 $config = Json::decode($entryType);
-            } catch (InvalidArgumentException) {
+            } catch (\InvalidArgumentException) {
                 return $this->getEntryTypeByUid($entryType);
             }
         } else {
