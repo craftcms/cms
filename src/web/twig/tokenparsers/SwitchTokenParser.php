@@ -94,7 +94,7 @@ class SwitchTokenParser extends AbstractTokenParser
 
         $stream->expect(Token::BLOCK_END_TYPE);
 
-        return new SwitchNode($nodes, [], $lineno, $this->getTag());
+        return new SwitchNode($nodes, [], $lineno);
     }
 
     /**
