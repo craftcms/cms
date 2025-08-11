@@ -192,7 +192,7 @@ interface FieldInterface extends SavableComponentInterface, Chippable, Grippable
      *
      * If the field has a known status, an array should be returned with two elements:
      *
-     * - A [[\craft\enums\AttributeStatus]] case
+     * - An {@see AttributeStatus} case
      * - The status label
      *
      * For example:
