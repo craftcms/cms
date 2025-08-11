@@ -11,6 +11,7 @@ use Composer\Semver\Comparator;
 use Craft;
 use craft\errors\InvalidPluginException;
 use craft\helpers\App;
+use CraftCms\Cms\Support\Composer;
 use RequirementsChecker;
 use Symfony\Component\Process\Process;
 use Throwable;
@@ -115,7 +116,7 @@ class UpdaterController extends BaseUpdaterController
         $output = '';
 
         try {
-            Craft::$app->getComposer()->install($this->data['current'], function($type, $buffer) use (&$output) {
+            app(Composer::class)->install($this->data['current'], function($type, $buffer) use (&$output) {
                 if ($type === Process::OUT) {
                     $output .= $buffer;
                 }

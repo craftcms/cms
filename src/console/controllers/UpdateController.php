@@ -20,6 +20,7 @@ use craft\helpers\Update as UpdateHelper;
 use craft\models\Update;
 use craft\models\Updates;
 use craft\models\Updates as UpdatesModel;
+use CraftCms\Cms\Support\Composer;
 use Symfony\Component\Process\Exception\ProcessFailedException;
 use Symfony\Component\Process\Process;
 use Throwable;
@@ -234,7 +235,7 @@ class UpdateController extends Controller
         $output = '';
 
         try {
-            Craft::$app->getComposer()->install(null, function($type, $buffer) use (&$output) {
+            app(Composer::class)->install(null, function($type, $buffer) use (&$output) {
                 if ($type === Process::OUT) {
                     $output .= $buffer;
                 }
@@ -460,11 +461,10 @@ class UpdateController extends Controller
     private function _performUpdate(array $requirements): bool
     {
         $this->stdout('Performing update with Composer ... ');
-        $composerService = Craft::$app->getComposer();
         $output = '';
 
         try {
-            $composerService->install($requirements, function($type, $buffer) use (&$output) {
+            app(Composer::class)->install($requirements, function($type, $buffer) use (&$output) {
                 if ($type === Process::OUT) {
                     $output .= $buffer;
                 }
@@ -552,7 +552,7 @@ class UpdateController extends Controller
             return;
         }
 
-        $composerService = Craft::$app->getComposer();
+        $composerService = app(Composer::class);
         FileHelper::writeToFile($composerService->getJsonPath(), $jsonContents);
         FileHelper::writeToFile($composerService->getLockPath(), $lockContents);
 

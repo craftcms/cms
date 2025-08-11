@@ -11,6 +11,7 @@ use Craft;
 use craft\enums\LicenseKeyStatus;
 use craft\errors\InvalidLicenseKeyException;
 use CraftCms\Cms\Support\Env;
+use CraftCms\Cms\Support\Composer;
 use ErrorException;
 use Illuminate\Support\Facades\Cache;
 use Imagick;
@@ -138,7 +139,7 @@ abstract class Api
         }
 
         // Also include the Composer PHP requirement
-        $composerConfig = Craft::$app->getComposer()->getConfig();
+        $composerConfig = app(Composer::class)->getConfig();
         if (isset($composerConfig['config']['platform']['php'])) {
             $versions['composer-php'] = $composerConfig['config']['platform']['php'];
         }

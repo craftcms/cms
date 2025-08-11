@@ -19,6 +19,7 @@ use craft\web\Controller;
 use craft\web\UploadedFile;
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Support\Composer;
 use CraftCms\Cms\Support\Str;
 use GuzzleHttp\RequestOptions;
 use Illuminate\Support\Facades\Cache;
@@ -342,7 +343,7 @@ class DashboardController extends Controller
 
             // Composer files
             try {
-                $composerService = Craft::$app->getComposer();
+                $composerService = app(Composer::class);
                 $zip->addFile($composerService->getJsonPath(), 'composer.json');
                 if (($composerLockPath = $composerService->getLockPath()) !== null) {
                     $zip->addFile($composerLockPath, 'composer.lock');

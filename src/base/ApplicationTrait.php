@@ -65,7 +65,6 @@ use craft\services\AssetIndexer;
 use craft\services\Assets;
 use craft\services\Auth;
 use craft\services\Categories;
-use craft\services\Composer;
 use craft\services\Conditions;
 use craft\services\Config;
 use craft\services\Dashboard;
@@ -124,7 +123,6 @@ use yii\base\ErrorHandler;
 use yii\base\Event;
 use yii\base\Exception;
 use yii\base\InvalidConfigException;
-use yii\caching\Cache;
 use yii\db\ColumnSchemaBuilder;
 use yii\db\Exception as DbException;
 use yii\db\Expression;
@@ -145,7 +143,6 @@ use yii\web\ServerErrorHttpException;
  * @property-read Assets $assets The assets service
  * @property-read Auth $auth The user authentication service
  * @property-read Categories $categories The categories service
- * @property-read Composer $composer The Composer service
  * @property-read Conditions $conditions The conditions service
  * @property-read Config $config The config service
  * @property-read Connection $db The database connection component
@@ -1071,16 +1068,6 @@ trait ApplicationTrait
     public function getCategories(): Categories
     {
         return $this->get('categories');
-    }
-
-    /**
-     * Returns the Composer service.
-     *
-     * @return Composer The Composer service
-     */
-    public function getComposer(): Composer
-    {
-        return $this->get('composer');
     }
 
     /**
