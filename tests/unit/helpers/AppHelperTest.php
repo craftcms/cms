@@ -199,7 +199,7 @@ class AppHelperTest extends TestCase
     public function testEditionIdByHandle(int|false $expected, string $handle): void
     {
         if ($expected === false) {
-            self::expectException(InvalidArgumentException::class);
+            self::expectException(\InvalidArgumentException::class);
             App::editionIdByHandle($handle);
         } else {
             self::assertSame($expected, App::editionIdByHandle($handle));
