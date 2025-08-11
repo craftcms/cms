@@ -82,7 +82,7 @@ readonly class Api
                 ->join(',');
 
             $options[RequestOptions::QUERY] = [
-                'maxVersions' => implode(',', $maxVersionsStr),
+                'maxVersions' => $maxVersionsStr,
             ];
         }
 
