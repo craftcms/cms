@@ -13,6 +13,18 @@
 - Deprecated `craft\services\Api`. `CraftCms\Cms\Support\Api` should be used instead.
 - Deprecated `craft\helpers\Api`. `CraftCms\Cms\Support\Api` should be used instead.
 
+### Console commands
+- Added `php craft twig:cache` - Precompile Twig views
+- Added `php craft twig:clear` - Clear precompiled Twig views
+
+### Mutex
+
+Craft's Mutex classes have been deprecated. [Laravel's atomic locking](https://laravel.com/docs/12.x/cache#atomic-locks) should be used instead.
+
+- Deprecated `craft\mutex\Mutex`
+- Deprecated `craft\mutex\MutexTrait`
+- Deprecated `Craft::$app->getMutex()`
+
 ### Components
 - Deprecated `craft\base\ComponentInterface`. `CraftCms\Cms\Component\Contracts\ComponentInterface` should be used instead.
 - Deprecated `craft\base\ConfigurableComponentInterface`. `CraftCms\Cms\Component\Contracts\ConfigurableComponentInterface` should be used instead.
@@ -51,4 +63,3 @@
   - `craft\services\Dashboard::EVENT_AFTER_SAVE_WIDGET` => `CraftCms\Cms\Dashboard\Events\WidgetSaved`
   - `craft\services\Dashboard::EVENT_BEFORE_DELETE_WIDGET` => `CraftCms\Cms\Dashboard\Events\WidgetDeleting`
   - `craft\services\Dashboard::EVENT_AFTER_DELETE_WIDGET` => `CraftCms\Cms\Dashboard\Events\WidgetDeleted`
-
