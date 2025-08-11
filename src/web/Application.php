@@ -212,15 +212,6 @@ class Application extends \yii\web\Application
                 $headers->set('X-Content-Type-Options', 'nosniff');
             }
 
-            // Send the X-Powered-By header?
-            if ($generalConfig->sendPoweredByHeader) {
-                $original = $headers->get('X-Powered-By');
-                $headers->set('X-Powered-By', $original . ($original ? ',' : '') . $this->name);
-            } else {
-                // In case PHP is already setting one
-                header_remove('X-Powered-By');
-            }
-
             // Process install requests
             if (($response = $this->_processInstallRequest($request)) !== null) {
                 return $response;
