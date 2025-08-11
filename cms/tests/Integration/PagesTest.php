@@ -1,6 +1,6 @@
 <?php
 
-use CraftCms\Cms\CmsEdition;
+use CraftCms\Cms\Edition;
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\User\Models\User;
 
@@ -12,7 +12,7 @@ beforeEach(function () {
 
     $this->cpTrigger = app(GeneralConfig::class)->cpTrigger;
 
-    Craft::$app->setEdition(CmsEdition::Pro);
+    Craft::$app->setEdition(Edition::Pro);
 });
 
 it('renders pages', function (string $url, string $title, array $extraContent = []) {

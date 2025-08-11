@@ -13,7 +13,7 @@ use craft\errors\SsoFailedException;
 use craft\helpers\Json;
 use craft\helpers\User as UserHelper;
 use craft\web\Controller;
-use CraftCms\Cms\CmsEdition;
+use CraftCms\Cms\Edition;
 use yii\web\HttpException;
 use yii\web\Response;
 
@@ -45,7 +45,7 @@ class SsoController extends Controller
             return false;
         }
 
-        Craft::$app->requireEdition(CmsEdition::Enterprise);
+        Craft::$app->requireEdition(Edition::Enterprise);
         return true;
     }
 

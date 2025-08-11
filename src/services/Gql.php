@@ -76,7 +76,7 @@ use craft\models\GqlToken;
 use craft\models\Section;
 use craft\records\GqlSchema as GqlSchemaRecord;
 use craft\records\GqlToken as GqlTokenRecord;
-use CraftCms\Cms\CmsEdition;
+use CraftCms\Cms\Edition;
 use CraftCms\Cms\Support\Str;
 use CraftCms\DependencyAwareCache\Dependency\TagDependency;
 use CraftCms\DependencyAwareCache\Facades\DependencyCache;
@@ -1786,7 +1786,7 @@ class Gql extends Component
      */
     private function userSchemaComponents(): array
     {
-        if (Craft::$app->edition === CmsEdition::Solo) {
+        if (Craft::$app->edition === Edition::Solo) {
             return [[], []];
         }
 

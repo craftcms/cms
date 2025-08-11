@@ -5,11 +5,11 @@ namespace CraftCms\Cms;
 use InvalidArgumentException;
 
 /**
- * CmsEdition defines all available Craft CMS editions
+ * Edition defines all available Craft CMS editions
  *
  * @since 6.0.0
  */
-enum CmsEdition: int
+enum Edition: int
 {
     case Solo = 0;
     case Team = 1;

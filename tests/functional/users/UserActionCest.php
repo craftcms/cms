@@ -10,7 +10,7 @@ namespace crafttests\functional\users;
 use Craft;
 use craft\elements\User;
 use craft\errors\WrongEditionException;
-use CraftCms\Cms\CmsEdition;
+use CraftCms\Cms\Edition;
 use FunctionalTester;
 use Throwable;
 use yii\db\Exception;
@@ -59,7 +59,7 @@ class UserActionCest
             'email' => 'craft@cms.com',
         ]);
 
-        Craft::$app->edition = CmsEdition::Pro;
+        Craft::$app->edition = Edition::Pro;
         $I->saveElement($user);
         Craft::$app->getUsers()->activateUser($user);
         Craft::$app->getUserPermissions()->saveUserPermissions($user->id, ['accessCp']);

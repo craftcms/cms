@@ -14,7 +14,7 @@ use craft\events\RegisterUrlRulesEvent;
 use craft\helpers\App;
 use craft\helpers\UrlHelper;
 use craft\web\UrlRule as CraftUrlRule;
-use CraftCms\Cms\CmsEdition;
+use CraftCms\Cms\Edition;
 use CraftCms\Cms\Support\Arr;
 use yii\web\UrlRule as YiiUrlRule;
 
@@ -325,10 +325,10 @@ class UrlManager extends \yii\web\UrlManager
             /** @var array $rules */
             $rules = require $baseCpRoutesPath . DIRECTORY_SEPARATOR . 'common.php';
 
-            if (Craft::$app->edition->value >= CmsEdition::Team->value) {
+            if (Craft::$app->edition->value >= Edition::Team->value) {
                 $rules = array_merge($rules, require $baseCpRoutesPath . DIRECTORY_SEPARATOR . 'team.php');
 
-                if (Craft::$app->edition->value >= CmsEdition::Pro->value) {
+                if (Craft::$app->edition->value >= Edition::Pro->value) {
                     $rules = array_merge($rules, require $baseCpRoutesPath . DIRECTORY_SEPARATOR . 'pro.php');
                 }
             }

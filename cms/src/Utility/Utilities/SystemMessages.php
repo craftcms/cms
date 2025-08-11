@@ -4,7 +4,7 @@ namespace CraftCms\Cms\Utility\Utilities;
 
 use Craft;
 use craft\web\assets\systemmessages\SystemMessagesAsset;
-use CraftCms\Cms\CmsEdition;
+use CraftCms\Cms\Edition;
 use CraftCms\Cms\Utility\Utility;
 
 /**
@@ -44,7 +44,7 @@ final readonly class SystemMessages extends Utility
      */
     public static function contentHtml(): string
     {
-        Craft::$app->requireEdition(CmsEdition::Pro);
+        Craft::$app->requireEdition(Edition::Pro);
 
         $view = Craft::$app->getView();
         $view->registerAssetBundle(SystemMessagesAsset::class);

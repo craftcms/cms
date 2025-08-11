@@ -63,7 +63,7 @@ use craft\services\Structures;
 use craft\validators\ArrayValidator;
 use craft\validators\DateCompareValidator;
 use craft\validators\DateTimeValidator;
-use CraftCms\Cms\CmsEdition;
+use CraftCms\Cms\Edition;
 use CraftCms\Cms\Element\Enums\PropagationMethod;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Enums\Color;
@@ -636,7 +636,7 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
         ]);
 
         // Hide Author & Last Edited By from Craft Solo
-        if (Craft::$app->edition === CmsEdition::Solo) {
+        if (Craft::$app->edition === Edition::Solo) {
             unset($attributes['authors'], $attributes['revisionCreator']);
         }
 
@@ -720,7 +720,7 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
         ]);
 
         // Hide Author & Last Edited By from Craft Solo
-        if (Craft::$app->edition === CmsEdition::Solo) {
+        if (Craft::$app->edition === Edition::Solo) {
             unset($attributes['authors'], $attributes['revisionCreator']);
         }
 
@@ -2503,7 +2503,7 @@ JS, [
             // Author
             if (
                 $section->maxAuthors !== 0 &&
-                Craft::$app->edition !== CmsEdition::Solo &&
+                Craft::$app->edition !== Edition::Solo &&
                 $user->can("viewPeerEntries:$section->uid")
             ) {
                 $fields[] = (function() use ($static, $section) {

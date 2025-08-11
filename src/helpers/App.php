@@ -32,7 +32,7 @@ use craft\web\Request as WebRequest;
 use craft\web\Response as WebResponse;
 use craft\web\User as WebUser;
 use craft\web\View;
-use CraftCms\Cms\CmsEdition;
+use CraftCms\Cms\Edition;
 use CraftCms\Cms\Support\Enums\LicenseKeyStatus;
 use CraftCms\Cms\Support\Env;
 use CraftCms\Cms\Support\Str;
@@ -325,11 +325,11 @@ class App
      * Returns an array of all known Craft editions’ IDs.
      *
      * @return int[] All the known Craft editions’ IDs.
-     * @deprecated in 5.0.0. [[CmsEdition::cases()]] should be used instead.
+     * @deprecated in 5.0.0. [[Edition::cases()]] should be used instead.
      */
     public static function editions(): array
     {
-        return array_map(fn(CmsEdition $edition) => $edition->value, CmsEdition::cases());
+        return array_map(fn(Edition $edition) => $edition->value, Edition::cases());
     }
 
     /**
@@ -339,11 +339,11 @@ class App
      * @return string The edition’s handle.
      * @throws InvalidArgumentException if $edition is invalid
      * @since 3.1.0
-     * @deprecated in 5.0.0. [[CmsEdition::handle()]] should be used instead.
+     * @deprecated in 5.0.0. [[Edition::handle()]] should be used instead.
      */
     public static function editionHandle(int $edition): string
     {
-        $handle = CmsEdition::tryFrom($edition)?->handle();
+        $handle = Edition::tryFrom($edition)?->handle();
         if ($handle === null) {
             throw new InvalidArgumentException("Invalid edition ID: $edition");
         }
@@ -356,11 +356,11 @@ class App
      * @param int $edition An edition’s ID.
      * @return string The edition’s name.
      * @throws InvalidArgumentException if $edition is invalid
-     * @deprecated in 5.0.0. [[CmsEdition::name]] should be used instead.
+     * @deprecated in 5.0.0. [[Edition::name]] should be used instead.
      */
     public static function editionName(int $edition): string
     {
-        $name = CmsEdition::tryFrom($edition)?->name;
+        $name = Edition::tryFrom($edition)?->name;
         if ($name === null) {
             throw new InvalidArgumentException("Invalid edition ID: $edition");
         }
@@ -374,11 +374,11 @@ class App
      * @return int The edition’s ID
      * @throws \InvalidArgumentException if $handle is invalid
      * @since 3.1.0
-     * @deprecated in 5.0.0. [[CmsEdition::fromHandle()]] should be used instead.
+     * @deprecated in 5.0.0. [[Edition::fromHandle()]] should be used instead.
      */
     public static function editionIdByHandle(string $handle): int
     {
-        return CmsEdition::fromHandle($handle)->value;
+        return Edition::fromHandle($handle)->value;
     }
 
     /**
@@ -386,13 +386,13 @@ class App
      *
      * @param mixed $edition An edition’s ID (or is it?)
      * @return bool Whether $edition is a valid edition ID.
-     * @deprecated in 5.0.0. [[CmsEdition::tryFrom()]] should be used instead.
+     * @deprecated in 5.0.0. [[Edition::tryFrom()]] should be used instead.
      */
     public static function isValidEdition(mixed $edition): bool
     {
         return (
             is_numeric($edition) &&
-            CmsEdition::tryFrom((int)$edition) !== null
+            Edition::tryFrom((int)$edition) !== null
         );
     }
 
@@ -1321,10 +1321,10 @@ class App
             $isCraft = $handle === 'craft';
             if ($isCraft) {
                 $name = 'Craft';
-                $editions = array_map(fn(CmsEdition $edition) => $edition->handle(), CmsEdition::cases());
+                $editions = array_map(fn(Edition $edition) => $edition->handle(), Edition::cases());
                 $currentEdition = Craft::$app->edition->handle();
                 $currentEditionName = Craft::$app->edition->name;
-                $licensedEdition = isset($licenseInfo['edition']) ? CmsEdition::fromHandle($licenseInfo['edition']) : CmsEdition::Solo;
+                $licensedEdition = isset($licenseInfo['edition']) ? Edition::fromHandle($licenseInfo['edition']) : Edition::Solo;
                 $licenseEditionName = $licensedEdition->name;
                 $version = Craft::$app->getVersion();
             } else {

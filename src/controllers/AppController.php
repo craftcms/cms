@@ -31,7 +31,7 @@ use craft\models\Update;
 use craft\models\Updates;
 use craft\web\Controller;
 use craft\web\ServiceUnavailableHttpException;
-use CraftCms\Cms\CmsEdition;
+use CraftCms\Cms\Edition;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Enums\LicenseKeyStatus;
 use CraftCms\Cms\Utility\Utilities;
@@ -502,10 +502,10 @@ class AppController extends Controller
         $this->requireAdmin();
 
         $edition = $this->request->getRequiredBodyParam('edition');
-        $licensedEdition = Craft::$app->getLicensedEdition() ?? CmsEdition::Solo;
+        $licensedEdition = Craft::$app->getLicensedEdition() ?? Edition::Solo;
 
         try {
-            $edition = CmsEdition::fromHandle($edition);
+            $edition = Edition::fromHandle($edition);
         } catch (\InvalidArgumentException $e) {
             throw new BadRequestHttpException($e->getMessage(), previous: $e);
         }

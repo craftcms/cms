@@ -9,7 +9,7 @@ use craft\elements\conditions\ElementConditionRuleInterface;
 use craft\elements\db\ElementQueryInterface;
 use craft\elements\db\UserQuery;
 use craft\elements\User;
-use CraftCms\Cms\CmsEdition;
+use CraftCms\Cms\Edition;
 
 /**
  * Admin condition rule.
@@ -32,7 +32,7 @@ class AdminConditionRule extends BaseLightswitchConditionRule implements Element
      */
     public static function isSelectable(): bool
     {
-        return Craft::$app->edition->value >= CmsEdition::Pro->value;
+        return Craft::$app->edition->value >= Edition::Pro->value;
     }
 
     /**

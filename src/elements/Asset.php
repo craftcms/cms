@@ -68,7 +68,7 @@ use craft\services\ElementSources;
 use craft\validators\AssetLocationValidator;
 use craft\validators\DateTimeValidator;
 use craft\validators\StringValidator;
-use CraftCms\Cms\CmsEdition;
+use CraftCms\Cms\Edition;
 use CraftCms\Cms\Element\Enums\MenuItemType;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Str;
@@ -630,7 +630,7 @@ class Asset extends Element
         ]);
 
         // Hide Author from Craft Solo
-        if (Craft::$app->edition === CmsEdition::Solo) {
+        if (Craft::$app->edition === Edition::Solo) {
             unset($attributes['uploader']);
         }
 
@@ -717,7 +717,7 @@ class Asset extends Element
         ]);
 
         // Hide Author from Craft Solo
-        if (Craft::$app->edition === CmsEdition::Solo) {
+        if (Craft::$app->edition === Edition::Solo) {
             unset($attributes['uploader']);
         }
 

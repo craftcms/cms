@@ -17,7 +17,7 @@ use craft\errors\SsoFailedException;
 use craft\helpers\User as UserHelper;
 use craft\records\SsoIdentity;
 use craft\records\SsoIdentity as AuthRecord;
-use CraftCms\Cms\CmsEdition;
+use CraftCms\Cms\Edition;
 use yii\base\Component;
 use yii\base\InvalidConfigException;
 
@@ -92,7 +92,7 @@ class Sso extends Component
      */
     public function __construct(array $config = [])
     {
-        Craft::$app->requireEdition(CmsEdition::Enterprise);
+        Craft::$app->requireEdition(Edition::Enterprise);
         parent::__construct($config);
     }
 

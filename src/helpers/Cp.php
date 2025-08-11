@@ -38,7 +38,7 @@ use craft\models\Site;
 use craft\services\ElementSources;
 use craft\web\twig\TemplateLoaderException;
 use craft\web\View;
-use CraftCms\Cms\CmsEdition;
+use CraftCms\Cms\Edition;
 use CraftCms\Cms\Element\Enums\AttributeStatus;
 use CraftCms\Cms\Element\Enums\MenuItemType;
 use CraftCms\Cms\Support\Arr;
@@ -193,7 +193,7 @@ class Cp
         }
 
         // Do any plugins require a higher edition?
-        if (Craft::$app->edition < CmsEdition::Pro) {
+        if (Craft::$app->edition < Edition::Pro) {
             foreach (Craft::$app->getPlugins()->getAllPlugins() as $plugin) {
                 if ($plugin->minCmsEdition->value > Craft::$app->edition->value) {
                     $alerts[] = Craft::t('app', '{plugin} requires Craft CMS {edition} edition.', [

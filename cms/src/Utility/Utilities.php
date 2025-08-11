@@ -4,7 +4,7 @@ namespace CraftCms\Cms\Utility;
 
 use craft\queue\QueueInterface;
 use craft\web\Application;
-use CraftCms\Cms\CmsEdition;
+use CraftCms\Cms\Edition;
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Utility\Events\RegisterUtilities;
 use CraftCms\Cms\Utility\Utilities\AssetIndexes;
@@ -54,7 +54,7 @@ final readonly class Utilities
                 PhpInfo::class,
             )
             ->when(
-                $this->craft->edition->value >= CmsEdition::Pro->value,
+                $this->craft->edition->value >= Edition::Pro->value,
                 fn (Collection $c) => $c->push(SystemMessagesUtility::class)
             )
             ->when(

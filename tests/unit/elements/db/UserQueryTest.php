@@ -12,7 +12,7 @@ use craft\elements\User;
 use craft\helpers\Db;
 use craft\services\Users;
 use craft\test\TestCase;
-use CraftCms\Cms\CmsEdition;
+use CraftCms\Cms\Edition;
 use crafttests\fixtures\UserGroupsFixture;
 use DateTime;
 use UnitTester;
@@ -158,7 +158,7 @@ class UserQueryTest extends TestCase
      */
     public function testCan(): void
     {
-        Craft::$app->edition = CmsEdition::Pro;
+        Craft::$app->edition = Edition::Pro;
 
         /** @var User[] $users */
         $users = User::find()->status(null)->all();

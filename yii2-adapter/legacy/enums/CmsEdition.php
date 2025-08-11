@@ -6,11 +6,11 @@ namespace craft\enums;
 if (false) {
     /**
      * @since 5.0.0
-     * @deprecated 6.0.0. Use {@see \CraftCms\Cms\CmsEdition} instead.
+     * @deprecated 6.0.0. Use {@see \CraftCms\Cms\Edition} instead.
      */
-    enum CmsEdition: int
+    enum Edition: int
     {
     }
 }
 
-class_alias(\CraftCms\Cms\CmsEdition::class, CmsEdition::class);
+class_alias(\CraftCms\Cms\Edition::class, Edition::class);

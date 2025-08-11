@@ -6,7 +6,7 @@ use Craft;
 use craft\elements\User;
 use craft\helpers\Json;
 use craft\web\assets\newusers\NewUsersAsset;
-use CraftCms\Cms\CmsEdition;
+use CraftCms\Cms\Edition;
 
 /** @since 6.0.0 */
 final class NewUsers extends Widget
@@ -27,7 +27,7 @@ final class NewUsers extends Widget
     public static function isSelectable(): bool
     {
         // This widget is only available for Craft Pro
-        return Craft::$app->edition->value >= CmsEdition::Pro->value;
+        return Craft::$app->edition->value >= Edition::Pro->value;
     }
 
     /**
@@ -73,7 +73,7 @@ final class NewUsers extends Widget
      */
     public function getBodyHtml(): ?string
     {
-        if (Craft::$app->edition->value < CmsEdition::Pro->value) {
+        if (Craft::$app->edition->value < Edition::Pro->value) {
             return null;
         }
 

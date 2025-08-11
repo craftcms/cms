@@ -38,7 +38,7 @@ use craft\models\UserGroup;
 use craft\models\Volume;
 use craft\records\User as UserRecord;
 use craft\web\Request;
-use CraftCms\Cms\CmsEdition;
+use CraftCms\Cms\Edition;
 use CraftCms\Cms\Support\Str;
 use CraftCms\DependencyAwareCache\Dependency\TagDependency;
 use DateTime;
@@ -1653,7 +1653,7 @@ class Users extends Component
         $generalConfig = app(\CraftCms\Cms\Config\GeneralConfig::class);
 
         $cp = (
-            Craft::$app->edition->value < CmsEdition::Pro->value ||
+            Craft::$app->edition->value < Edition::Pro->value ||
             ($isCpRequest && $user->can('accessCp')) ||
             ($generalConfig->headlessMode && !UrlHelper::isAbsoluteUrl($fePath))
         );
@@ -1686,15 +1686,15 @@ class Users extends Component
     /**
      * Returns the maximum number of users the system can have, for the given Craft edition.
      *
-     * @param CmsEdition $edition
+     * @param Edition $edition
      * @return int|null
      * @since 5.5.0
      */
-    final public function getMaxUsers(CmsEdition $edition): ?int
+    final public function getMaxUsers(Edition $edition): ?int
     {
         return match ($edition) {
-            CmsEdition::Solo => 1,
-            CmsEdition::Team => 5,
+            Edition::Solo => 1,
+            Edition::Team => 5,
             default => null,
         };
     }

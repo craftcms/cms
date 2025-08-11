@@ -13,7 +13,7 @@ use craft\elements\User;
 use craft\helpers\Db;
 use craft\i18n\Translation;
 use craft\queue\BaseJob;
-use CraftCms\Cms\CmsEdition;
+use CraftCms\Cms\Edition;
 use DateTime;
 use yii\base\Exception;
 
@@ -66,7 +66,7 @@ class Announcement extends BaseJob
         // Fetch all of the control panel users
         $userQuery = User::find();
 
-        if (Craft::$app->edition->value >= CmsEdition::Pro->value) {
+        if (Craft::$app->edition->value >= Edition::Pro->value) {
             $userQuery->can('accessCp');
         }
 

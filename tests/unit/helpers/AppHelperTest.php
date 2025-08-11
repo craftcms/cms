@@ -13,8 +13,8 @@ use craft\mail\transportadapters\Sendmail;
 use craft\models\MailSettings;
 use craft\services\Entries;
 use craft\test\TestCase;
-use CraftCms\Cms\CmsEdition;
 use CraftCms\Cms\Config\GeneralConfig;
+use CraftCms\Cms\Edition;
 use stdClass;
 use yii\base\Component;
 use yii\base\InvalidArgumentException;
@@ -125,10 +125,10 @@ class AppHelperTest extends TestCase
     public function testEditions(): void
     {
         self::assertEquals([
-            CmsEdition::Solo->value,
-            CmsEdition::Team->value,
-            CmsEdition::Pro->value,
-            CmsEdition::Enterprise->value,
+            Edition::Solo->value,
+            Edition::Team->value,
+            Edition::Pro->value,
+            Edition::Enterprise->value,
         ], App::editions());
     }
 
@@ -421,10 +421,10 @@ class AppHelperTest extends TestCase
     public static function editionHandleDataProvider(): array
     {
         return [
-            ['solo', CmsEdition::Solo->value],
-            ['team', CmsEdition::Team->value],
-            ['pro', CmsEdition::Pro->value],
-            ['enterprise', CmsEdition::Enterprise->value],
+            ['solo', Edition::Solo->value],
+            ['team', Edition::Team->value],
+            ['pro', Edition::Pro->value],
+            ['enterprise', Edition::Enterprise->value],
             [false, -1],
         ];
     }
@@ -435,10 +435,10 @@ class AppHelperTest extends TestCase
     public static function editionNameDataProvider(): array
     {
         return [
-            ['Solo', CmsEdition::Solo->value],
-            ['Team', CmsEdition::Team->value],
-            ['Pro', CmsEdition::Pro->value],
-            ['Enterprise', CmsEdition::Enterprise->value],
+            ['Solo', Edition::Solo->value],
+            ['Team', Edition::Team->value],
+            ['Pro', Edition::Pro->value],
+            ['Enterprise', Edition::Enterprise->value],
             [false, -1],
         ];
     }
@@ -449,10 +449,10 @@ class AppHelperTest extends TestCase
     public static function editionIdByHandleDataProvider(): array
     {
         return [
-            [CmsEdition::Solo->value, 'solo'],
-            [CmsEdition::Team->value, 'team'],
-            [CmsEdition::Pro->value, 'pro'],
-            [CmsEdition::Enterprise->value, 'enterprise'],
+            [Edition::Solo->value, 'solo'],
+            [Edition::Team->value, 'team'],
+            [Edition::Pro->value, 'pro'],
+            [Edition::Enterprise->value, 'enterprise'],
             [false, 'personal'],
             [false, 'client'],
         ];
@@ -464,10 +464,10 @@ class AppHelperTest extends TestCase
     public static function validEditionsDataProvider(): array
     {
         return [
-            [true, CmsEdition::Solo->value],
-            [true, CmsEdition::Team->value],
-            [true, CmsEdition::Pro->value],
-            [true, CmsEdition::Enterprise->value],
+            [true, Edition::Solo->value],
+            [true, Edition::Team->value],
+            [true, Edition::Pro->value],
+            [true, Edition::Enterprise->value],
             [true, '1'],
             [true, 0],
             [true, 1],

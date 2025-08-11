@@ -15,7 +15,7 @@ use craft\events\UserGroupPermissionsEvent;
 use craft\events\UserPermissionsEvent;
 use craft\services\UserPermissions;
 use craft\test\TestCase;
-use CraftCms\Cms\CmsEdition;
+use CraftCms\Cms\Edition;
 use CraftCms\Cms\Support\Arr;
 use crafttests\fixtures\GlobalSetFixture;
 use crafttests\fixtures\SectionsFixture;
@@ -234,7 +234,7 @@ class UserPermissionsTest extends TestCase
      */
     protected function _before(): void
     {
-        Craft::$app->edition = CmsEdition::Pro;
+        Craft::$app->edition = Edition::Pro;
         Craft::$app->getProjectConfig()->rebuild();
         parent::_before();
 

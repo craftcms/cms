@@ -13,7 +13,7 @@ use craft\helpers\App;
 use craft\helpers\Template;
 use craft\models\Site;
 use craft\web\View;
-use CraftCms\Cms\CmsEdition;
+use CraftCms\Cms\Edition;
 use Throwable;
 use yii\base\InvalidConfigException;
 use yii\helpers\Markdown;
@@ -188,7 +188,7 @@ class Mailer extends \yii\symfonymailer\Mailer
                 $message->setTextBody($textBody);
 
                 // Is there a custom HTML template set?
-                if (Craft::$app->edition->value >= CmsEdition::Pro->value && $this->template) {
+                if (Craft::$app->edition->value >= Edition::Pro->value && $this->template) {
                     $template = $this->template;
                     $templateMode = View::TEMPLATE_MODE_SITE;
                 } else {

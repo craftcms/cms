@@ -24,7 +24,7 @@ use craft\models\UserGroup;
 use craft\records\WebAuthn as WebAuthnRecord;
 use craft\web\Session;
 use craft\web\View;
-use CraftCms\Cms\CmsEdition;
+use CraftCms\Cms\Edition;
 use DateTime;
 use GuzzleHttp\Psr7\ServerRequest;
 use Illuminate\Support\Collection;
@@ -382,7 +382,7 @@ class Auth extends Component
      */
     public function is2faRequired(User $user): bool
     {
-        if (Craft::$app->edition === CmsEdition::Solo) {
+        if (Craft::$app->edition === Edition::Solo) {
             return false;
         }
 

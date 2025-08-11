@@ -45,7 +45,7 @@ use craft\validators\UniqueValidator;
 use craft\validators\UsernameValidator;
 use craft\validators\UserPasswordValidator;
 use craft\web\View;
-use CraftCms\Cms\CmsEdition;
+use CraftCms\Cms\Edition;
 use CraftCms\Cms\Element\Enums\MenuItemType;
 use CraftCms\Cms\Element\Enums\PropagationMethod;
 use CraftCms\Cms\Support\Arr;
@@ -307,7 +307,7 @@ class User extends Element implements IdentityInterface
             ],
         ];
 
-        if (Craft::$app->edition->value >= CmsEdition::Pro->value) {
+        if (Craft::$app->edition->value >= Edition::Pro->value) {
             $sources = array_merge($sources, [
                 [
                     'key' => 'admins',
@@ -876,7 +876,7 @@ class User extends Element implements IdentityInterface
     public function getPostEditUrl(): ?string
     {
         if (
-            Craft::$app->edition === CmsEdition::Solo ||
+            Craft::$app->edition === Edition::Solo ||
             !Craft::$app->getUser()->checkPermission('editUsers')
         ) {
             return null;
@@ -890,7 +890,7 @@ class User extends Element implements IdentityInterface
      */
     protected function crumbs(): array
     {
-        if (Craft::$app->edition === CmsEdition::Solo) {
+        if (Craft::$app->edition === Edition::Solo) {
             return [];
         }
 
@@ -1082,7 +1082,7 @@ class User extends Element implements IdentityInterface
                 // are they allowed to set the email?
                 if ($this->getIsCurrent() || $userSession->checkPermission('administrateUsers')) {
                     if (
-                        Craft::$app->edition->value >= CmsEdition::Pro->value &&
+                        Craft::$app->edition->value >= Edition::Pro->value &&
                         Craft::$app->getProjectConfig()->get('users.requireEmailVerification') &&
                         !$userSession->checkPermission('administrateUsers')
                     ) {
@@ -1152,7 +1152,7 @@ class User extends Element implements IdentityInterface
      */
     public function getHasSsoIdentity(): bool
     {
-        if (Craft::$app->edition->value < CmsEdition::Enterprise->value) {
+        if (Craft::$app->edition->value < Edition::Enterprise->value) {
             return false;
         }
 
@@ -1460,7 +1460,7 @@ class User extends Element implements IdentityInterface
             return $this->_groups;
         }
 
-        if (Craft::$app->edition < CmsEdition::Pro || !isset($this->id)) {
+        if (Craft::$app->edition < Edition::Pro || !isset($this->id)) {
             return [];
         }
 
@@ -1474,7 +1474,7 @@ class User extends Element implements IdentityInterface
      */
     public function setGroups(array $groups): void
     {
-        if (Craft::$app->edition->value >= CmsEdition::Pro->value) {
+        if (Craft::$app->edition->value >= Edition::Pro->value) {
             $this->_groups = $groups;
         }
     }
@@ -1487,7 +1487,7 @@ class User extends Element implements IdentityInterface
      */
     public function isInGroup(UserGroup|int|string $group): bool
     {
-        if (Craft::$app->edition < CmsEdition::Pro) {
+        if (Craft::$app->edition < Edition::Pro) {
             return false;
         }
 
@@ -1800,7 +1800,7 @@ XML;
     {
         if (
             $this->admin ||
-            Craft::$app->edition === CmsEdition::Solo
+            Craft::$app->edition === Edition::Solo
         ) {
             return true;
         }
@@ -1834,7 +1834,7 @@ XML;
      */
     public function canAssignUserGroups(): bool
     {
-        if (Craft::$app->edition->value >= CmsEdition::Pro->value) {
+        if (Craft::$app->edition->value >= Edition::Pro->value) {
             foreach (Craft::$app->getUserGroups()->getAllGroups() as $group) {
                 if ($this->can("assignUserGroup:$group->uid")) {
                     return true;
@@ -1910,7 +1910,7 @@ XML;
             return UrlHelper::cpUrl('myaccount');
         }
 
-        if (Craft::$app->edition === CmsEdition::Solo) {
+        if (Craft::$app->edition === Edition::Solo) {
             return null;
         }
 
@@ -1940,7 +1940,7 @@ XML;
         $sessionItems = [];
         $miscItems = [];
 
-        if (Craft::$app->edition !== CmsEdition::Solo) {
+        if (Craft::$app->edition !== Edition::Solo) {
             $status = $this->getStatus();
 
             switch ($status) {
@@ -2137,7 +2137,7 @@ JS, [
 
         $items = [];
 
-        if (Craft::$app->edition !== CmsEdition::Solo) {
+        if (Craft::$app->edition !== Edition::Solo) {
             if (!$isCurrentUser) {
                 if ($usersService->canSuspend($currentUser, $this) && $this->active && !$this->suspended) {
                     $items[] = [
@@ -2192,7 +2192,7 @@ JS,
                         $view->namespaceInputId($deleteId),
                         $this->id,
                         /** @phpstan-ignore-next-line */
-                        Craft::$app->getSecurity()->hashData(Craft::$app->edition === CmsEdition::Solo ? 'dashboard' : 'users'),
+                        Craft::$app->getSecurity()->hashData(Craft::$app->edition === Edition::Solo ? 'dashboard' : 'users'),
                     ]);
                 }
             }
@@ -2514,7 +2514,7 @@ JS, [
      */
     public function afterSave(bool $isNew): void
     {
-        if ($isNew && Craft::$app->edition === CmsEdition::Solo) {
+        if ($isNew && Craft::$app->edition === Edition::Solo) {
             // Make sure they're an admin
             $this->admin = true;
         }
@@ -2601,7 +2601,7 @@ JS, [
 
         parent::afterSave($isNew);
 
-        if (Craft::$app->edition === CmsEdition::Team) {
+        if (Craft::$app->edition === Edition::Team) {
             // Make sure they're in the Team group
             $group = Craft::$app->getUserGroups()->getTeamGroup();
             if (!$this->isInGroup($group)) {

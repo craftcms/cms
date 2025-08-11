@@ -17,7 +17,7 @@ use craft\events\UserGroupEvent;
 use craft\helpers\Db;
 use craft\models\UserGroup;
 use craft\records\UserGroup as UserGroupRecord;
-use CraftCms\Cms\CmsEdition;
+use CraftCms\Cms\Edition;
 use CraftCms\Cms\Support\Str;
 use yii\base\Component;
 
@@ -70,9 +70,9 @@ class UserGroups extends Component
     public function getAllGroups(): array
     {
         switch (Craft::$app->edition) {
-            case CmsEdition::Solo:
+            case Edition::Solo:
                 return [];
-            case CmsEdition::Team:
+            case Edition::Team:
                 return [$this->getTeamGroup()];
             default:
                 $results = $this->_createUserGroupsQuery()
@@ -167,7 +167,7 @@ class UserGroups extends Component
      */
     public function getTeamGroup(): UserGroup
     {
-        Craft::$app->requireEdition(CmsEdition::Team, false);
+        Craft::$app->requireEdition(Edition::Team, false);
 
         $group = $this->getGroupByUid(self::TEAM_GROUP_UUID);
         if ($group) {
@@ -288,9 +288,9 @@ class UserGroups extends Component
     public function saveGroup(UserGroup $group, bool $runValidation = true): bool
     {
         if ($group->uid === self::TEAM_GROUP_UUID) {
-            Craft::$app->requireEdition(CmsEdition::Team);
+            Craft::$app->requireEdition(Edition::Team);
         } else {
-            Craft::$app->requireEdition(CmsEdition::Pro);
+            Craft::$app->requireEdition(Edition::Pro);
         }
 
         $isNewGroup = !$group->id;
@@ -406,7 +406,7 @@ class UserGroups extends Component
      */
     public function deleteGroupById(int $groupId): bool
     {
-        Craft::$app->requireEdition(CmsEdition::Pro);
+        Craft::$app->requireEdition(Edition::Pro);
 
         $group = $this->getGroupById($groupId);
 
@@ -427,7 +427,7 @@ class UserGroups extends Component
      */
     public function deleteGroup(UserGroup $group): bool
     {
-        Craft::$app->requireEdition(CmsEdition::Pro);
+        Craft::$app->requireEdition(Edition::Pro);
 
         // Fire a 'beforeDeleteUserGroup' event
         if ($this->hasEventHandlers(self::EVENT_BEFORE_DELETE_USER_GROUP)) {

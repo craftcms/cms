@@ -8,7 +8,7 @@ use craft\db\Table;
 use craft\elements\Entry;
 use craft\models\Section_SiteSettings;
 use craft\services\ProjectConfig;
-use CraftCms\Cms\CmsEdition;
+use CraftCms\Cms\Edition;
 use Illuminate\Support\Collection;
 
 /**
@@ -21,7 +21,7 @@ class m240302_212719_solo_preview_targets extends Migration
      */
     public function safeUp(): bool
     {
-        if (Craft::$app->edition === CmsEdition::Solo) {
+        if (Craft::$app->edition === Edition::Solo) {
             // Add a {url} preview target to all sections that have a URI format
             $entriesService = Craft::$app->getEntries();
             foreach ($entriesService->getAllSections() as $section) {

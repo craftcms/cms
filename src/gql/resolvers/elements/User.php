@@ -14,7 +14,7 @@ use craft\elements\ElementCollection;
 use craft\elements\User as UserElement;
 use craft\gql\base\ElementResolver;
 use craft\helpers\Gql as GqlHelper;
-use CraftCms\Cms\CmsEdition;
+use CraftCms\Cms\Edition;
 use CraftCms\Cms\Support\Arr;
 use yii\base\UnknownMethodException;
 
@@ -59,7 +59,7 @@ class User extends ElementResolver
             $pairs = GqlHelper::extractAllowedEntitiesFromSchema('read');
 
             $userGroupsService = Craft::$app->getUserGroups();
-            if (Craft::$app->edition < CmsEdition::Pro) {
+            if (Craft::$app->edition < Edition::Pro) {
                 $availableGroupUids = array_map(fn($group) => $group->uid, $userGroupsService->getAllGroups());
                 $pairs['usergroups'] = array_filter($pairs['usergroups'], fn($uid) => in_array($uid, $availableGroupUids));
             }

@@ -18,7 +18,7 @@ use craft\elements\User;
 use craft\helpers\Db;
 use craft\models\Site;
 use craft\models\UserGroup;
-use CraftCms\Cms\CmsEdition;
+use CraftCms\Cms\Edition;
 use yii\base\InvalidArgumentException;
 use yii\db\Expression;
 
@@ -1200,7 +1200,7 @@ class UserQuery extends ElementQuery
         $elements = parent::afterPopulate($elements);
 
         // Eager-load user groups?
-        if ($this->withGroups && !$this->asArray && Craft::$app->edition->value >= CmsEdition::Pro->value) {
+        if ($this->withGroups && !$this->asArray && Craft::$app->edition->value >= Edition::Pro->value) {
             Craft::$app->getUserGroups()->eagerLoadGroups($elements);
         }
 
