@@ -4,9 +4,9 @@ namespace CraftCms\Cms\Http\Middleware;
 
 use Closure;
 use CraftCms\Cms\Config\GeneralConfig;
-use Illuminate\Http\Response;
+use Symfony\Component\HttpFoundation\Response;
 
-class SendPoweredByHeader
+final readonly class SendPoweredByHeader
 {
     public function __construct(
         private GeneralConfig $generalConfig,
@@ -30,7 +30,7 @@ class SendPoweredByHeader
             ->filter()
             ->join(',');
 
-        $response->header('X-Powered-By', $header);
+        $response->headers->set('X-Powered-By', $header);
 
         return $response;
     }
