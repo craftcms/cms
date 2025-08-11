@@ -12,6 +12,7 @@ use craft\base\Model;
 use craft\helpers\App;
 use craft\helpers\Console;
 use craft\mutex\Mutex as CraftMutex;
+use CraftCms\Cms\Support\Env;
 use yii\base\Action;
 use yii\base\InvalidRouteException;
 use yii\console\Exception;
@@ -184,7 +185,7 @@ MD
      */
     protected function checkRootUser(): bool
     {
-        if (App::isWindows() || !function_exists('exec') || App::env('CRAFT_ALLOW_SUPERUSER')) {
+        if (App::isWindows() || !function_exists('exec') || Env::get('CRAFT_ALLOW_SUPERUSER')) {
             return true;
         }
 

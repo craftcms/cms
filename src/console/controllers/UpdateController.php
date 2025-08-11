@@ -258,7 +258,7 @@ class UpdateController extends Controller
      */
     private function _allowUpdates(): bool
     {
-        $generalConfig = Craft::$app->getConfig()->getGeneral();
+        $generalConfig = app(\CraftCms\Cms\Config\GeneralConfig::class);
         if (!$generalConfig->allowUpdates && !$this->force) {
             if (!$this->interactive) {
                 $this->stderr('Updates are disallowed for this environment. Pass --force to override.' . PHP_EOL . PHP_EOL, Console::FG_RED);

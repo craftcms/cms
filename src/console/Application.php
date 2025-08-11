@@ -13,9 +13,9 @@ use craft\console\controllers\HelpController;
 use craft\db\Query;
 use craft\db\Table;
 use craft\errors\MissingComponentException;
-use craft\helpers\App;
 use craft\helpers\Console;
 use craft\queue\QueueLogBehavior;
+use CraftCms\Cms\Support\Env;
 use IntlDateFormatter;
 use IntlException;
 use Throwable;
@@ -182,7 +182,7 @@ class Application extends \yii\console\Application
 
     private function _requireInfoTable(string $route, array &$params): bool
     {
-        $skipCheck = App::env('CRAFT_NO_DB') ?? false;
+        $skipCheck = Env::get('CRAFT_NO_DB') ?? false;
 
         if ($skipCheck || isset($params['help'])) {
             return false;

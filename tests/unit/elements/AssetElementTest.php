@@ -7,7 +7,6 @@
 
 namespace crafttests\unit\elements;
 
-use Craft;
 use craft\base\Fs;
 use craft\elements\Asset;
 use craft\imagetransforms\ImageTransformer;
@@ -59,12 +58,12 @@ class AssetElementTest extends TestCase
             ]),
         ]);
 
-        $previousValue = Craft::$app->getConfig()->getGeneral()->generateTransformsBeforePageLoad;
-        Craft::$app->getConfig()->getGeneral()->generateTransformsBeforePageLoad = true;
+        $previousValue = app(\CraftCms\Cms\Config\GeneralConfig::class)->generateTransformsBeforePageLoad;
+        app(\CraftCms\Cms\Config\GeneralConfig::class)->generateTransformsBeforePageLoad = true;
         $url = $asset->getUrl(['transform' => 'mockedTransform', 'width' => 200]);
 
         self::assertSame('w=200&h=200', $url);
 
-        Craft::$app->getConfig()->getGeneral()->generateTransformsBeforePageLoad = $previousValue;
+        app(\CraftCms\Cms\Config\GeneralConfig::class)->generateTransformsBeforePageLoad = $previousValue;
     }
 }

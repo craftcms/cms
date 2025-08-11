@@ -92,7 +92,7 @@ class RequestTest extends TestCase
             'SCRIPT_NAME' => '/index.php',
             'SERVER_NAME' => 'craft.test',
         ]);
-        $generalConfig = clone Craft::$app->getConfig()->getGeneral();
+        $generalConfig = clone app(\CraftCms\Cms\Config\GeneralConfig::class);
         $generalConfig->cpTrigger = 'foo';
         app()->bind('request', fn() => new \Illuminate\Http\Request(
             server: $_SERVER,
@@ -109,7 +109,7 @@ class RequestTest extends TestCase
             'SCRIPT_NAME' => '/index.php',
             'SERVER_NAME' => 'craft.test',
         ]);
-        $generalConfig = clone Craft::$app->getConfig()->getGeneral();
+        $generalConfig = clone app(\CraftCms\Cms\Config\GeneralConfig::class);
         $generalConfig->cpTrigger = 'foo';
         app()->bind('request', fn() => new \Illuminate\Http\Request(
             server: $_SERVER,
@@ -127,7 +127,7 @@ class RequestTest extends TestCase
             'SCRIPT_NAME' => '/index.php',
             'SERVER_NAME' => 'craft.test',
         ]);
-        $generalConfig = clone Craft::$app->getConfig()->getGeneral();
+        $generalConfig = clone app(\CraftCms\Cms\Config\GeneralConfig::class);
         $generalConfig->cpTrigger = null;
         app()->bind('request', fn() => new \Illuminate\Http\Request(
             server: $_SERVER,
@@ -181,7 +181,7 @@ class RequestTest extends TestCase
             'SCRIPT_NAME' => '/foo/index.php',
             'SERVER_NAME' => 'craft.test',
         ]);
-        $generalConfig = clone Craft::$app->getConfig()->getGeneral();
+        $generalConfig = clone app(\CraftCms\Cms\Config\GeneralConfig::class);
         $generalConfig->cpTrigger = 'bar';
         app()->bind('request', fn() => new \Illuminate\Http\Request(
             server: $_SERVER,
@@ -198,7 +198,7 @@ class RequestTest extends TestCase
             'SCRIPT_NAME' => '/foo/index.php',
             'SERVER_NAME' => 'craft.test',
         ]);
-        $generalConfig = clone Craft::$app->getConfig()->getGeneral();
+        $generalConfig = clone app(\CraftCms\Cms\Config\GeneralConfig::class);
         $generalConfig->cpTrigger = 'bar';
         app()->bind('request', fn() => new \Illuminate\Http\Request(
             server: $_SERVER,
@@ -216,7 +216,7 @@ class RequestTest extends TestCase
             'SCRIPT_NAME' => '/foo/index.php',
             'SERVER_NAME' => 'craft.test',
         ]);
-        $generalConfig = clone Craft::$app->getConfig()->getGeneral();
+        $generalConfig = clone app(\CraftCms\Cms\Config\GeneralConfig::class);
         $generalConfig->cpTrigger = null;
         app()->bind('request', fn() => new \Illuminate\Http\Request(
             server: $_SERVER,
@@ -385,7 +385,7 @@ class RequestTest extends TestCase
      */
     public function testCheckRequestTypeWithTokenParam(): void
     {
-        $this->request->setBodyParams([Craft::$app->getConfig()->getGeneral()->tokenParam => 'something']);
+        $this->request->setBodyParams([app(\CraftCms\Cms\Config\GeneralConfig::class)->tokenParam => 'something']);
         $this->request->checkIfActionRequest(true);
 
         self::assertTrue($this->getInaccessibleProperty($this->request, '_checkedRequestType'));

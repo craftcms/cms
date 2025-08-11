@@ -9,7 +9,6 @@
 
 namespace CraftCms\Yii2Adapter\Web;
 
-use Craft;
 use Illuminate\Http\Response as IlluminateResponse;
 use Symfony\Component\HttpFoundation\Cookie;
 use Yii;
@@ -159,7 +158,7 @@ class Response extends \yii\web\Response
 
         $request = Yii::$app->getRequest();
 
-        $request->enableCookieValidation = !empty(Craft::$app->getConfig()->getGeneral()->securityKey);
+        $request->enableCookieValidation = !empty(app(\CraftCms\Cms\Config\GeneralConfig::class)->securityKey);
 
         if ($request->enableCookieValidation) {
             if ($request->cookieValidationKey == '') {

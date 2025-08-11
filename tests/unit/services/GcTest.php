@@ -86,7 +86,7 @@ class GcTest extends TestCase
     public function testRunForDeletedEntriesWithCustomDuration(): void
     {
         // 5 Days
-        Craft::$app->getConfig()->getGeneral()->softDeleteDuration = 432000;
+        app(\CraftCms\Cms\Config\GeneralConfig::class)->softDeleteDuration = 432000;
 
         $this->_doEntryTest(2, [
             'Deleted 40 days ago',
@@ -134,7 +134,7 @@ class GcTest extends TestCase
     public function testRunForExpiringUsers(): void
     {
         // 2 days
-        Craft::$app->getConfig()->getGeneral()->purgePendingUsersDuration = 60 * 60 * 24 * 2;
+        app(\CraftCms\Cms\Config\GeneralConfig::class)->purgePendingUsersDuration = 60 * 60 * 24 * 2;
 
         $count = User::find()
             ->username(['user1', 'user2', 'user3', 'user4'])

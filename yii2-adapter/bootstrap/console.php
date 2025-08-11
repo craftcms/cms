@@ -18,17 +18,12 @@ if (!isset($_SERVER['SCRIPT_FILENAME'])) {
     }
 }
 
-mb_detect_order('auto');
-
 // https://github.com/craftcms/cms/issues/4239
 setlocale(
     LC_CTYPE,
     'C.UTF-8', // libc >= 2.13
     'C.utf8' // different spelling
 );
-
-// Set default timezone to UTC
-date_default_timezone_set('UTC');
 
 $appType = 'console';
 

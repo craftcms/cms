@@ -148,7 +148,7 @@ class UsersController extends Controller
             ->orderBy(['username' => SORT_ASC])
             ->all();
         $total = count($users);
-        $generalConfig = Craft::$app->getConfig()->getGeneral();
+        $generalConfig = app(\CraftCms\Cms\Config\GeneralConfig::class);
 
         $this->stdout("$total admin " . ($total === 1 ? 'user' : 'users') . ' found:' . PHP_EOL, Console::FG_YELLOW);
 
@@ -204,7 +204,7 @@ class UsersController extends Controller
             return ExitCode::USAGE;
         }
 
-        if (Craft::$app->getConfig()->getGeneral()->useEmailAsUsername) {
+        if (app(\CraftCms\Cms\Config\GeneralConfig::class)->useEmailAsUsername) {
             $user->username = $this->email ?: $this->prompt('Email:', [
                 'required' => true,
                 'validator' => $this->createAttributeValidator($user, 'email'),

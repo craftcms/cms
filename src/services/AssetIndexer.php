@@ -701,7 +701,7 @@ class AssetIndexer extends Component
             throw new AssetNotIndexableException("File “{$indexEntry->uri}” will not be indexed.");
         }
 
-        if (!in_array(strtolower($extension), Craft::$app->getConfig()->getGeneral()->allowedFileExtensions, true)) {
+        if (!in_array(strtolower($extension), app(\CraftCms\Cms\Config\GeneralConfig::class)->allowedFileExtensions, true)) {
             throw new AssetDisallowedExtensionException("File “{$indexEntry->uri}” was not indexed because extension “{$extension}” is not allowed.");
         }
 
@@ -808,7 +808,7 @@ class AssetIndexer extends Component
                 Craft::$app->getElements()->saveElement($asset);
 
                 // Now we definitely have an asset ID, so let's cover one last base.
-                $shouldCache = !$fs instanceof LocalFsInterface && $cacheImages && Craft::$app->getConfig()->getGeneral()->maxCachedCloudImageSize > 0;
+                $shouldCache = !$fs instanceof LocalFsInterface && $cacheImages && app(\CraftCms\Cms\Config\GeneralConfig::class)->maxCachedCloudImageSize > 0;
 
                 if ($shouldCache && $tempPath) {
                     $targetPath = $asset->getImageTransformSourcePath();
