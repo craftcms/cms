@@ -34,6 +34,7 @@ use craft\web\Controller;
 use craft\web\ServiceUnavailableHttpException;
 use CraftCms\Cms\Support\Api;
 use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Support\Facades\Http;
 use CraftCms\Cms\Utility\Utilities;
 use CraftCms\Cms\Utility\Utilities\Updates as UpdatesUtility;
 use CraftCms\DependencyAwareCache\Dependency\FileDependency;
@@ -125,7 +126,7 @@ class AppController extends Controller
         // Close the PHP session in case this takes a while
         Session::close();
 
-        $response = Craft::createGuzzleClient()->get($url);
+        $response = Http::create()->get($url);
         $this->response->setCacheHeaders();
         $this->response->getHeaders()->set('content-type', 'application/javascript');
         return $this->asRaw($response->getBody());

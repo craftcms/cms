@@ -19,10 +19,10 @@ use craft\helpers\FileHelper;
 use craft\helpers\UrlHelper;
 use craft\models\Volume;
 use craft\services\Assets;
+use CraftCms\Cms\Support\Facades\Http;
 use GraphQL\Error\Error;
 use GraphQL\Error\UserError;
 use GraphQL\Type\Definition\ResolveInfo;
-use GuzzleHttp\Client;
 use Throwable;
 use yii\base\Exception;
 use yii\base\InvalidArgumentException;
@@ -242,7 +242,7 @@ class Asset extends ElementMutationResolver
 
             // Download the file
             $tempPath = AssetsHelper::tempFilePath($extension);
-            $this->createGuzzleClient()->request('GET', $url, ['sink' => $tempPath]);
+            Http::create()->get($url, ['sink' => $tempPath]);
         }
 
         if (!$tempPath || !$filename) {
@@ -260,15 +260,5 @@ class Asset extends ElementMutationResolver
         $asset->avoidFilenameConflicts = true;
 
         return true;
-    }
-
-    /**
-     * Create the guzzle client.
-     *
-     * @return Client
-     */
-    protected function createGuzzleClient(): Client
-    {
-        return Craft::createGuzzleClient();
     }
 }

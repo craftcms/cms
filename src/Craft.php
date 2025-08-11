@@ -10,16 +10,14 @@ use craft\behaviors\CustomFieldBehavior;
 use craft\helpers\App;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\FileHelper;
-use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Support\Facades\Http;
 use CraftCms\Cms\Support\Str;
 use GuzzleHttp\Client;
-use Illuminate\Support\Facades\Config;
 use Symfony\Component\VarDumper\Cloner\VarCloner;
 use yii\base\ExitException;
 use yii\base\InvalidConfigException;
 use yii\helpers\VarDumper;
 use yii\web\Request;
-use function GuzzleHttp\default_user_agent;
 
 /**
  * Craft is helper class serving common Craft and Yii framework functionality.
@@ -416,28 +414,11 @@ EOD;
      *
      * @param array $config Guzzle client config settings
      * @return Client
+     * @deprecated 6.0.0 use {@see Http::create()} instead.
      */
     public static function createGuzzleClient(array $config = []): Client
     {
-        // Set the Craft header by default.
-        $defaultConfig = [
-            'headers' => [
-                'User-Agent' => 'Craft/' . static::$app->getVersion() . ' ' . default_user_agent(),
-            ],
-        ];
-
-        // Grab the config from config/guzzle.php that is used on every Guzzle request.
-        $guzzleConfig = Config::get('craft.guzzle', []);
-        $generalConfig = app(\CraftCms\Cms\Config\GeneralConfig::class);
-
-        // Merge everything together
-        $guzzleConfig = Arr::merge($defaultConfig, $guzzleConfig, $config);
-
-        if ($generalConfig->httpProxy) {
-            $guzzleConfig['proxy'] = $generalConfig->httpProxy;
-        }
-
-        return Craft::createObject(Client::class, [$guzzleConfig]);
+        return Http::create($config)->buildClient();
     }
 }
 

@@ -294,7 +294,7 @@ class EntriesController extends BaseEntriesController
         if ($isNotNew) {
             $mutex = Cache::lock("entry:$entry->id", 15);
             if (!$mutex->get()) {
-                throw new MutexException($lockKey, 'Could not acquire a lock to save the entry.');
+                throw new MutexException("entry:$entry->id", 'Could not acquire a lock to save the entry.');
             }
         }
 

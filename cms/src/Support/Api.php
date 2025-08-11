@@ -6,10 +6,10 @@ use craft\enums\LicenseKeyStatus;
 use craft\errors\InvalidLicenseKeyException;
 use craft\helpers\App;
 use craft\helpers\DateTimeHelper;
+use CraftCms\Cms\Support\Facades\Http;
 use GuzzleHttp\Exception\GuzzleException;
 use GuzzleHttp\Exception\RequestException;
 use GuzzleHttp\RequestOptions;
-use GuzzleHttp\Utils;
 use Illuminate\Cache\Repository;
 use Illuminate\Container\Attributes\Singleton;
 use Illuminate\Database\Connection;
@@ -18,14 +18,11 @@ use Illuminate\Http\Client\PendingRequest;
 use Illuminate\Http\Client\Response;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
-use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\File;
-use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Session;
 use Imagick;
 use Throwable;
-use function GuzzleHttp\default_user_agent;
 
 /**
  * The API service provides APIs for calling the Craft API (api.craftcms.com).
@@ -49,26 +46,11 @@ readonly class Api
         private Repository $cache,
         public string $baseApiUrl = 'https://api.craftcms.com/v1/',
         public array $apiParams = [],
-        private int $timeout = 15,
-        ?PendingRequest $client = null,
     ) {
-        $this->client = $client ?? Http::baseUrl($this->baseApiUrl)
-            ->timeout($this->timeout)
+        $this->client = Http::create()
+            ->baseUrl($this->baseApiUrl)
             ->asJson()
-            ->throw();
-    }
-
-    public static function createClient(array $config = [])
-    {
-        // Set the Craft header by default.
-        $defaultConfig = [
-            'headers' => [
-                'User-Agent' => 'Craft/' . \Craft::$app->getVersion() . ' ' . Utils::defaultUserAgent(),
-            ],
-        ];
-
-        $guzzleConfig = Config::get('craft.guzzle', []);
-
+            ->acceptJson();
     }
 
     /**
