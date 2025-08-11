@@ -143,7 +143,7 @@ class Sendmail extends BaseTransportAdapter
         $command = Craft::$app->getProjectConfig()->get('email.transportSettings.command');
 
         return array_unique(array_filter([
-            !str_starts_with($command, '$') ? $command : null,
+            !str_starts_with($command ?? '', '$') ? $command : null,
             ini_get('sendmail_path'),
             self::DEFAULT_COMMAND,
         ]));
