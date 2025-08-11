@@ -106,7 +106,7 @@ class Image
             return [$width, $height];
         }
 
-        if ($upscale ?? Craft::$app->getConfig()->getGeneral()->upscaleImages) {
+        if ($upscale ?? app(\CraftCms\Cms\Config\GeneralConfig::class)->upscaleImages) {
             // Special case for 'fit' since that's the only one whose dimensions vary from the transform dimensions
             if ($mode === 'fit') {
                 $width = (int)round($sourceWidth / $factor);
@@ -433,7 +433,7 @@ class Image
      */
     public static function cleanExifDataFromImagickImage(Imagick $imagick): void
     {
-        $config = Craft::$app->getConfig()->getGeneral();
+        $config = app(\CraftCms\Cms\Config\GeneralConfig::class);
 
         if (!$config->preserveExifData) {
             $iccProfiles = null;

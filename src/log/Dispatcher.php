@@ -9,6 +9,7 @@ namespace craft\log;
 
 use Craft;
 use craft\helpers\App;
+use CraftCms\Cms\Support\Env;
 use Illuminate\Support\Collection;
 use Psr\Log\LogLevel;
 
@@ -82,7 +83,7 @@ class Dispatcher extends \yii\log\Dispatcher
             static::TARGET_CONSOLE,
             static::TARGET_QUEUE,
         ])->mapWithKeys(function($name) use ($isConsoleRequest) {
-            $allowLineBreaks = (bool) (App::env('CRAFT_LOG_ALLOW_LINE_BREAKS') ?? App::devMode());
+            $allowLineBreaks = (bool) (Env::get('CRAFT_LOG_ALLOW_LINE_BREAKS') ?? App::devMode());
             $config = $this->monologTargetConfig + [
                 'class' => MonologTarget::class,
                 'name' => $name,

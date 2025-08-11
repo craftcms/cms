@@ -78,7 +78,7 @@ class ImageTransformer extends Component implements ImageTransformerInterface, E
     {
         $fs = $asset->getVolume()->getTransformFs();
         $mimeType = $asset->getMimeType();
-        $generalConfig = Craft::$app->getConfig()->getGeneral();
+        $generalConfig = app(\CraftCms\Cms\Config\GeneralConfig::class);
 
         if (!$fs->hasUrls) {
             throw new NotSupportedException('The asset’s volume’s transform filesystem doesn’t have URLs.');
@@ -167,7 +167,7 @@ class ImageTransformer extends Component implements ImageTransformerInterface, E
 
         $url = sprintf('%s/%s', rtrim($fs->getRootUrl() ?? '', '/'), $uri);
 
-        if (Craft::$app->getConfig()->getGeneral()->revAssetUrls) {
+        if (app(\CraftCms\Cms\Config\GeneralConfig::class)->revAssetUrls) {
             return AssetsHelper::revUrl($url, $asset, $index->dateUpdated);
         }
 

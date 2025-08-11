@@ -788,7 +788,7 @@ JS, [
             $drafts = [];
         }
 
-        $generalConfig = Craft::$app->getConfig()->getGeneral();
+        $generalConfig = app(\CraftCms\Cms\Config\GeneralConfig::class);
         $revisionsPageUrl = null;
         $hasMoreRevisions = false;
 

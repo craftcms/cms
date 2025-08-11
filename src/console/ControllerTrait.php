@@ -10,6 +10,7 @@ namespace craft\console;
 use craft\base\Model;
 use craft\helpers\App;
 use craft\helpers\Console;
+use CraftCms\Cms\Support\Env;
 use Illuminate\Support\Facades\Cache;
 use yii\base\Action;
 use yii\base\InvalidRouteException;
@@ -150,7 +151,7 @@ trait ControllerTrait
      */
     protected function checkRootUser(): bool
     {
-        if (App::isWindows() || !function_exists('exec') || App::env('CRAFT_ALLOW_SUPERUSER')) {
+        if (App::isWindows() || !function_exists('exec') || Env::get('CRAFT_ALLOW_SUPERUSER')) {
             return true;
         }
 

@@ -1104,6 +1104,6 @@ class DateTimeHelper
     public static function firstWeekDay(): int
     {
         $user = Craft::$app->getUser()->getIdentity();
-        return (int)(($user?->getPreference('weekStartDay')) ?? Craft::$app->getConfig()->getGeneral()->defaultWeekStartDay);
+        return (int)(($user?->getPreference('weekStartDay')) ?? app(\CraftCms\Cms\Config\GeneralConfig::class)->defaultWeekStartDay);
     }
 }

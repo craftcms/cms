@@ -2,4 +2,25 @@
 
 arch()
     ->expect('cms')
-    ->not->toUse(['die', 'dd', 'dump']);
+    ->not->toUse(['die', 'dd', 'dump', 'env']);
+
+/**
+ * We only want our own Env helpers to be used.
+ */
+arch()
+    ->expect(\Illuminate\Support\Env::class)
+    ->not
+    ->toBeUsed()
+    ->ignoring(\CraftCms\Cms\Support\Env::class);
+
+arch()
+    ->expect(\Illuminate\Support\Arr::class)
+    ->not
+    ->toBeUsed()
+    ->ignoring(\CraftCms\Cms\Support\Arr::class);
+
+arch()
+    ->expect(\Illuminate\Support\Str::class)
+    ->not
+    ->toBeUsed()
+    ->ignoring(\CraftCms\Cms\Support\Str::class);

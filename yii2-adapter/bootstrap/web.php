@@ -15,17 +15,12 @@ if (!extension_loaded('mbstring') || ini_get('mbstring.func_overload') != 0) {
 // PHP environment normalization
 // -----------------------------------------------------------------------------
 
-mb_detect_order('auto');
-
 // https://github.com/craftcms/cms/issues/4239
 setlocale(
     LC_CTYPE,
     'C.UTF-8', // libc >= 2.13
     'C.utf8' // different spelling
 );
-
-// Set default timezone to UTC
-date_default_timezone_set('UTC');
 
 // Load Craft
 // -----------------------------------------------------------------------------

@@ -19,6 +19,7 @@ use craft\events\RestoreEvent;
 use craft\helpers\App;
 use craft\helpers\Db;
 use craft\helpers\FileHelper;
+use CraftCms\Cms\Support\Env;
 use CraftCms\Cms\Support\Str;
 use mikehaertl\shellcommand\Command as ShellCommand;
 use Throwable;
@@ -170,7 +171,7 @@ class Connection extends \CraftCms\Yii2Adapter\DatabaseConnection
      */
     public function open(): void
     {
-        if (App::env('CRAFT_NO_DB')) {
+        if (Env::get('CRAFT_NO_DB')) {
             throw new DbConnectException('Craft CMS can’t connect to the database.');
         }
 
@@ -295,7 +296,7 @@ class Connection extends \CraftCms\Yii2Adapter\DatabaseConnection
         }
 
         // Determine the command that should be executed
-        $backupCommand = Craft::$app->getConfig()->getGeneral()->backupCommand;
+        $backupCommand = app(\CraftCms\Cms\Config\GeneralConfig::class)->backupCommand;
 
         if ($backupCommand === false) {
             throw new Exception('Database not backed up because the backup command is false.');
@@ -316,7 +317,7 @@ class Connection extends \CraftCms\Yii2Adapter\DatabaseConnection
             ]));
         }
 
-        $generalConfig = Craft::$app->getConfig()->getGeneral();
+        $generalConfig = app(\CraftCms\Cms\Config\GeneralConfig::class);
 
         if ($generalConfig->maxBackups) {
             $backupPath = Craft::$app->getPath()->getDbBackupPath();
@@ -358,7 +359,7 @@ class Connection extends \CraftCms\Yii2Adapter\DatabaseConnection
         }
 
         // Determine the command that should be executed
-        $restoreCommand = Craft::$app->getConfig()->getGeneral()->restoreCommand;
+        $restoreCommand = app(\CraftCms\Cms\Config\GeneralConfig::class)->restoreCommand;
 
         if ($restoreCommand === false) {
             throw new Exception('Database not restored because the restore command is false.');

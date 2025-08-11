@@ -193,7 +193,7 @@ class ImageTransforms
                     self::storeLocalSource($tempFilePath, $imageSourcePath);
 
                     // And delete it after the request, if nobody wants it.
-                    if (Craft::$app->getConfig()->getGeneral()->maxCachedCloudImageSize == 0) {
+                    if (app(\CraftCms\Cms\Config\GeneralConfig::class)->maxCachedCloudImageSize == 0) {
                         FileHelper::deleteFileAfterRequest($imageSourcePath);
                     }
 
@@ -344,7 +344,7 @@ class ImageTransforms
             $source = $destination;
         }
 
-        $maxCachedImageSize = Craft::$app->getConfig()->getGeneral()->maxCachedCloudImageSize;
+        $maxCachedImageSize = app(\CraftCms\Cms\Config\GeneralConfig::class)->maxCachedCloudImageSize;
 
         // Resize if constrained by maxCachedImageSizes setting
         if ($maxCachedImageSize > 0 && Image::canManipulateAsImage(pathinfo($source, PATHINFO_EXTENSION))) {
@@ -398,7 +398,7 @@ class ImageTransforms
             throw new ImageTransformException("The `$format` format is not supported on this server.");
         }
 
-        $generalConfig = Craft::$app->getConfig()->getGeneral();
+        $generalConfig = app(\CraftCms\Cms\Config\GeneralConfig::class);
         $imageSource = static::getLocalImageSource($asset);
 
         if ($ext === 'svg' && $format !== 'svg') {
@@ -421,7 +421,7 @@ class ImageTransforms
             $position = $transform->position;
         }
 
-        $scaleIfSmaller = $transform->upscale ?? Craft::$app->getConfig()->getGeneral()->upscaleImages;
+        $scaleIfSmaller = $transform->upscale ?? app(\CraftCms\Cms\Config\GeneralConfig::class)->upscaleImages;
 
         switch ($transform->mode) {
             case 'letterbox':

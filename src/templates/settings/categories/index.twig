@@ -1,6 +1,6 @@
 {% extends "_layouts/cp" %}
 {% set title = "Category Groups"|t('app') %}
-{% set readOnly = not craft.app.config.general.allowAdminChanges %}
+{% set readOnly = not config.craft.general.allowAdminChanges %}
 
 {% do view.registerAssetBundle('craft\\web\\assets\\admintable\\AdminTableAsset') -%}
 

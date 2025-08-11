@@ -27,6 +27,7 @@ use craft\helpers\UrlHelper;
 use craft\queue\QueueLogBehavior;
 use CraftCms\Cms\Support\Arr;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Config;
 use IntlDateFormatter;
 use IntlException;
 use ReflectionClass;
@@ -181,7 +182,7 @@ class Application extends \yii\web\Application
             $isCpRequest = $request->getIsCpRequest();
             $response = $this->getResponse();
             $headers = $response->getHeaders();
-            $generalConfig = $this->getConfig()->getGeneral();
+            $generalConfig = app(\CraftCms\Cms\Config\GeneralConfig::class);
 
             // Set no-cache headers for all action and CP requests
             if ($request->getIsActionRequest() || $request->getIsCpRequest()) {
@@ -209,15 +210,6 @@ class Application extends \yii\web\Application
                 $headers->add('Content-Security-Policy', "frame-ancestors 'self'");
                 $headers->set('X-Frame-Options', 'SAMEORIGIN');
                 $headers->set('X-Content-Type-Options', 'nosniff');
-            }
-
-            // Send the X-Powered-By header?
-            if ($generalConfig->sendPoweredByHeader) {
-                $original = $headers->get('X-Powered-By');
-                $headers->set('X-Powered-By', $original . ($original ? ',' : '') . $this->name);
-            } else {
-                // In case PHP is already setting one
-                header_remove('X-Powered-By');
             }
 
             // Process install requests
@@ -394,7 +386,7 @@ class Application extends \yii\web\Application
      */
     protected function ensureResourcePathExists(): void
     {
-        $generalConfig = $this->getConfig()->getGeneral();
+        $generalConfig = app(\CraftCms\Cms\Config\GeneralConfig::class);
 
         $resourceBasePath = Craft::getAlias($generalConfig->resourceBasePath);
 
@@ -415,7 +407,7 @@ class Application extends \yii\web\Application
      */
     protected function authenticate(): void
     {
-        if (!Craft::$app->getConfig()->getGeneral()->enableBasicHttpAuth) {
+        if (!app(\CraftCms\Cms\Config\GeneralConfig::class)->enableBasicHttpAuth) {
             return;
         }
 
@@ -497,7 +489,7 @@ class Application extends \yii\web\Application
         $module = $this->getModule('debug');
         $module->bootstrap($this);
 
-        if ($config = Craft::$app->getConfig()->getConfigFromFile('debug')) {
+        if ($config = Config::get('craft.debug', [])) {
             Craft::configure($module, $config);
         }
     }
@@ -523,7 +515,7 @@ class Application extends \yii\web\Application
      */
     private function _processResourceRequest(Request $request): void
     {
-        $generalConfig = $this->getConfig()->getGeneral();
+        $generalConfig = app(\CraftCms\Cms\Config\GeneralConfig::class);
 
         // Does this look like a resource request?
         $resourceBaseUri = parse_url(Craft::getAlias($generalConfig->resourceBaseUrl), PHP_URL_PATH);

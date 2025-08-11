@@ -165,7 +165,7 @@ class AssetManager extends \yii\web\AssetManager
 
     private function _addBuildIdParam($url): string
     {
-        $generalConfig = Craft::$app->getConfig()->getGeneral();
+        $generalConfig = app(\CraftCms\Cms\Config\GeneralConfig::class);
         if ($generalConfig->buildId) {
             return UrlHelper::urlWithParams($url, [
                 'buildId' => $generalConfig->buildId,

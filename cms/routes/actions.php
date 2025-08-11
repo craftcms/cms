@@ -1,5 +1,6 @@
 <?php
 
+use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Http\Controllers\Dashboard\Widgets\CraftSupportController;
 use CraftCms\Cms\Http\Controllers\Dashboard\Widgets\FeedController;
 use CraftCms\Cms\Http\Controllers\Dashboard\WidgetsController;
@@ -9,17 +10,19 @@ use CraftCms\Cms\Http\Controllers\Utilities\DeprecationErrorsController;
 use CraftCms\Cms\Http\Controllers\Utilities\FindAndReplaceController;
 use CraftCms\Cms\Http\Controllers\Utilities\MigrationsController;
 
+$generalConfig = app(GeneralConfig::class);
+
 /**
  * Actions that are accessible anonymously can be registered here.
  */
-Route::prefix(config('craft.general.actionTrigger', 'actions'))->group(function () {});
+Route::prefix($generalConfig->actionTrigger)->group(function () {});
 
 /**
  * Actions that are accessible through the control panel can be registered here.
  */
 Route::prefix(implode('/', [
-    config('craft.general.cpTrigger', 'admin'),
-    config('craft.general.actionTrigger', 'actions'),
+    $generalConfig->cpTrigger,
+    $generalConfig->actionTrigger,
 ]))->middleware(['auth', 'craft.cp'])->group(function () {
     // DeprecationErrors
     Route::post('utilities/get-deprecation-error-traces-modal', [DeprecationErrorsController::class, 'getDeprecationErrorTracesModal']);

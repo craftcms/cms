@@ -111,7 +111,7 @@ class PluginsController extends Controller
         }
 
         // Read-only?
-        if (!Craft::$app->getConfig()->getGeneral()->allowAdminChanges) {
+        if (!app(\CraftCms\Cms\Config\GeneralConfig::class)->allowAdminChanges) {
             if (!$plugin->hasReadOnlyCpSettings) {
                 throw new ForbiddenHttpException('Administrative changes are disallowed in this environment.');
             }

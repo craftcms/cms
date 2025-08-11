@@ -23,6 +23,7 @@ use craft\models\Section;
 use craft\models\Site;
 use craft\services\ProjectConfig;
 use craft\web\Response;
+use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Support\Str;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\DB;
@@ -1169,7 +1170,7 @@ class Install extends Migration
         ]));
         $this->output->writeln('done');
 
-        $generalConfig = Craft::$app->getConfig()->getGeneral();
+        $generalConfig = app(GeneralConfig::class);
         $projectConfig = Craft::$app->getProjectConfig();
 
         if ($this->applyProjectConfigYaml) {

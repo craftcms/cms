@@ -73,8 +73,7 @@ class BaseConfig extends Model
             $newName = static::$renamedSettings[$name];
 
             if (class_exists(Craft::class, false)) {
-                $configFilePath = $this->filename ? Craft::$app->getConfig()->getConfigFilePath($this->filename) : null;
-                Craft::$app->getDeprecator()->log(sprintf('%s::%s', static::class, $name), "`$name` has been renamed to `$newName`.", $configFilePath);
+                Craft::$app->getDeprecator()->log(sprintf('%s::%s', static::class, $name), "`$name` has been renamed to `$newName`.", config_path($this->filename));
             }
 
             $this->$newName = $value;
