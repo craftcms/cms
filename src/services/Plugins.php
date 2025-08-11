@@ -13,7 +13,6 @@ use craft\base\PluginInterface;
 use craft\db\MigrationManager;
 use craft\db\Query;
 use craft\db\Table;
-use craft\enums\LicenseKeyStatus;
 use craft\errors\InvalidLicenseKeyException;
 use craft\errors\InvalidPluginException;
 use craft\events\PluginEvent;
@@ -23,10 +22,13 @@ use craft\helpers\Db;
 use craft\helpers\FileHelper;
 use craft\helpers\ProjectConfig as ProjectConfigHelper;
 use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Support\Enums\LicenseKeyStatus;
+use CraftCms\Cms\Support\Env;
 use CraftCms\Cms\Support\Str;
 use DateTime;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Config;
 use ReflectionClass;
 use ReflectionException;
 use Throwable;
@@ -150,7 +152,7 @@ class Plugins extends Component
      */
     public function init(): void
     {
-        $generalConfig = Craft::$app->getConfig()->getGeneral();
+        $generalConfig = app(\CraftCms\Cms\Config\GeneralConfig::class);
 
         if ($generalConfig->safeMode) {
             $this->_forceDisabledPlugins = '*';
@@ -936,7 +938,7 @@ class Plugins extends Component
 
             $settings = array_merge(
                 $info['settings'] ?? [],
-                Craft::$app->getConfig()->getConfigFromFile($handle)
+                Config::get("craft.$handle", []),
             );
 
             if ($settings !== []) {
@@ -1182,10 +1184,10 @@ class Plugins extends Component
         // https://github.com/craftcms/cms/issues/12687 - check if the .env file exists first
         if (
             preg_match('/^\$(\w+)$/', $oldLicenseKey, $matches) &&
-            App::env($matches[1]) === '' &&
-            file_exists(Craft::$app->getConfig()->getDotEnvPath())
+            Env::get($matches[1]) === '' &&
+            file_exists(app()->environmentFilePath())
         ) {
-            Craft::$app->getConfig()->setDotEnvVar($matches[1], $normalizedLicenseKey);
+            Env::writeVariable($matches[1], $normalizedLicenseKey, app()->environmentFilePath());
         } else {
             // Set the plugin's license key in the project config
             Craft::$app->getProjectConfig()->set(sprintf('%s.%s.licenseKey', ProjectConfig::PATH_PLUGINS, $handle), $normalizedLicenseKey, "Set license key for plugin “{$handle}”");

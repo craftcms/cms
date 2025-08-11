@@ -9,12 +9,12 @@ namespace crafttests\unit\mail;
 
 use Craft;
 use craft\elements\User;
-use craft\enums\CmsEdition;
 use craft\errors\SiteNotFoundException;
 use craft\mail\Message;
 use craft\models\SystemMessage;
 use craft\test\TestCase;
 use craft\test\TestMailer;
+use CraftCms\Cms\Edition;
 use ReflectionException;
 use UnitTester;
 use yii\base\ErrorException;
@@ -136,7 +136,7 @@ class MailerTest extends TestCase
      */
     public function testSendMessageCustomTemplate(): void
     {
-        Craft::$app->edition = CmsEdition::Pro;
+        Craft::$app->edition = Edition::Pro;
         $this->mailer->template = 'withvar';
 
         $this->_sendMail('test@craft.test');
@@ -150,7 +150,7 @@ class MailerTest extends TestCase
      */
     public function testToEmailAddress(): void
     {
-        Craft::$app->getConfig()->getGeneral()->testToEmailAddress = ['giel@yellowflash.net', 'info@craftcms.com'];
+        app(\CraftCms\Cms\Config\GeneralConfig::class)->testToEmailAddress = ['giel@yellowflash.net', 'info@craftcms.com'];
 
         $this->_sendMail();
         $lastMessage = $this->tester->grabLastSentEmail();
@@ -166,7 +166,7 @@ class MailerTest extends TestCase
      */
     public function testToEmailAddressWithCustomName(): void
     {
-        Craft::$app->getConfig()->getGeneral()->testToEmailAddress = ['giel@yellowflash.net' => 'Giel', 'info@craftcms.com' => 'Craft CMS'];
+        app(\CraftCms\Cms\Config\GeneralConfig::class)->testToEmailAddress = ['giel@yellowflash.net' => 'Giel', 'info@craftcms.com' => 'Craft CMS'];
 
         $this->_sendMail();
         $lastMessage = $this->tester->grabLastSentEmail();

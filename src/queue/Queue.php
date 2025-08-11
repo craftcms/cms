@@ -22,6 +22,7 @@ use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Support\Str;
 use DateTime;
+use Illuminate\Support\Facades\Cache;
 use yii\base\Exception;
 use yii\base\InvalidArgumentException;
 use yii\base\InvalidConfigException;
@@ -63,6 +64,7 @@ class Queue extends \yii\queue\cli\Queue implements QueueInterface
     /**
      * @var Mutex|array|string The mutex component to use
      * @since 3.4.0
+     * @deprecated in 6.0.0. Use `\Illuminate\Support\Facades\Cache::lock()` instead.
      */
     public Mutex|string|array $mutex = 'mutex';
 
@@ -139,7 +141,6 @@ class Queue extends \yii\queue\cli\Queue implements QueueInterface
         parent::init();
 
         $this->db = Instance::ensure($this->db, Connection::class);
-        $this->mutex = Instance::ensure($this->mutex, Mutex::class);
 
         if (isset($this->proxyQueue)) {
             $this->proxyQueue = Instance::ensure($this->proxyQueue, BaseQueue::class);
@@ -272,7 +273,7 @@ class Queue extends \yii\queue\cli\Queue implements QueueInterface
         }
 
         // Have the response kick off a new queue runner if this is a site request
-        if (Craft::$app->getConfig()->getGeneral()->runQueueAutomatically && !$this->_listeningForResponse) {
+        if (app(\CraftCms\Cms\Config\GeneralConfig::class)->runQueueAutomatically && !$this->_listeningForResponse) {
             $request = Craft::$app->getRequest();
             if ($request->getIsSiteRequest() && !$request->getIsAjax()) {
                 Craft::$app->getResponse()->on(Response::EVENT_AFTER_PREPARE, [$this, 'handleResponse']);
@@ -928,7 +929,8 @@ EOD;
         if ($acquireLock) {
             $channel = $this->channel();
             $mutexName = sprintf('%s::%s', self::class, $channel);
-            if (!$this->mutex->acquire($mutexName, $timeout ?? $this->mutexTimeout)) {
+            $mutex = Cache::lock($mutexName, $timeout ?? $this->mutexTimeout);
+            if (!$mutex->get()) {
                 if ($throwException) {
                     throw new MutexException($mutexName, "Could not acquire a mutex lock for the queue ($channel).");
                 }
@@ -941,7 +943,7 @@ EOD;
             $callback();
         } finally {
             if ($acquireLock) {
-                $this->mutex->release($mutexName);
+                $mutex->release();
                 $this->_locked = false;
             }
         }

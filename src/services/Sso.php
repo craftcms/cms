@@ -12,12 +12,12 @@ use craft\auth\sso\ProviderInterface;
 use craft\base\MemoizableArray;
 use craft\db\Table;
 use craft\elements\User;
-use craft\enums\CmsEdition;
 use craft\errors\AuthProviderNotFoundException;
 use craft\errors\SsoFailedException;
 use craft\helpers\User as UserHelper;
 use craft\records\SsoIdentity;
 use craft\records\SsoIdentity as AuthRecord;
+use CraftCms\Cms\Edition;
 use yii\base\Component;
 use yii\base\InvalidConfigException;
 
@@ -92,7 +92,7 @@ class Sso extends Component
      */
     public function __construct(array $config = [])
     {
-        Craft::$app->requireEdition(CmsEdition::Enterprise);
+        Craft::$app->requireEdition(Edition::Enterprise);
         parent::__construct($config);
     }
 
@@ -277,7 +277,7 @@ class Sso extends Component
 
         if (empty($sessionDuration)) {
             // Get the session duration
-            $generalConfig = Craft::$app->getConfig()->getGeneral();
+            $generalConfig = app(\CraftCms\Cms\Config\GeneralConfig::class);
             if ($rememberMe && $generalConfig->rememberedUserSessionDuration !== 0) {
                 $sessionDuration = $generalConfig->rememberedUserSessionDuration;
             } else {

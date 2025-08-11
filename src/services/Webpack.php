@@ -12,6 +12,7 @@ use craft\helpers\App;
 use craft\helpers\FileHelper;
 use craft\helpers\Session;
 use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Support\Facades\Http;
 use CraftCms\Cms\Support\Str;
 use Exception;
 use GuzzleHttp\Exception\GuzzleException;
@@ -213,7 +214,7 @@ class Webpack extends Component
         Session::close();
 
         // Make sure the request isn't too strict for people running the dev server using https and outside the container
-        $client = Craft::createGuzzleClient(['verify' => false]);
+        $client = Http::create()->withoutVerifying();
         try {
             $res = $client->get(Str::finish($loopback, '/') . 'which-asset');
             if ($res->getStatusCode() !== 200) {

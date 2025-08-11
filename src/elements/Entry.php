@@ -41,9 +41,6 @@ use craft\elements\db\EagerLoadPlan;
 use craft\elements\db\ElementQuery;
 use craft\elements\db\ElementQueryInterface;
 use craft\elements\db\EntryQuery;
-use craft\enums\CmsEdition;
-use craft\enums\Color;
-use craft\enums\PropagationMethod;
 use craft\events\DefineEntryTypesEvent;
 use craft\events\ElementCriteriaEvent;
 use craft\fieldlayoutelements\entries\EntryTitleField;
@@ -66,7 +63,10 @@ use craft\services\Structures;
 use craft\validators\ArrayValidator;
 use craft\validators\DateCompareValidator;
 use craft\validators\DateTimeValidator;
+use CraftCms\Cms\Edition;
+use CraftCms\Cms\Element\Enums\PropagationMethod;
 use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Support\Enums\Color;
 use DateTime;
 use GraphQL\Type\Definition\Type;
 use Illuminate\Support\Collection;
@@ -636,7 +636,7 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
         ]);
 
         // Hide Author & Last Edited By from Craft Solo
-        if (Craft::$app->edition === CmsEdition::Solo) {
+        if (Craft::$app->edition === Edition::Solo) {
             unset($attributes['authors'], $attributes['revisionCreator']);
         }
 
@@ -720,7 +720,7 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
         ]);
 
         // Hide Author & Last Edited By from Craft Solo
-        if (Craft::$app->edition === CmsEdition::Solo) {
+        if (Craft::$app->edition === Edition::Solo) {
             unset($attributes['authors'], $attributes['revisionCreator']);
         }
 
@@ -2164,7 +2164,7 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
 
         if (
             Craft::$app->getUser()->getIsAdmin() &&
-            Craft::$app->getConfig()->getGeneral()->allowAdminChanges
+            app(\CraftCms\Cms\Config\GeneralConfig::class)->allowAdminChanges
         ) {
             // Entry type settings
             $entryTypeEditId = sprintf('edit-entry-type-%s', mt_rand());
@@ -2503,7 +2503,7 @@ JS, [
             // Author
             if (
                 $section->maxAuthors !== 0 &&
-                Craft::$app->edition !== CmsEdition::Solo &&
+                Craft::$app->edition !== Edition::Solo &&
                 $user->can("viewPeerEntries:$section->uid")
             ) {
                 $fields[] = (function() use ($static, $section) {
@@ -3189,7 +3189,7 @@ JS;
             $templates[] = [
                 'template' => sprintf(
                     '%s/%s/%s',
-                    Craft::$app->getConfig()->getGeneral()->partialTemplatesPath,
+                    app(\CraftCms\Cms\Config\GeneralConfig::class)->partialTemplatesPath,
                     static::refHandle(),
                     $entryType->original->handle,
                 ),

@@ -7,7 +7,6 @@
 
 namespace craft\web;
 
-use Craft;
 use craft\validators\HandleValidator;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Str;
@@ -28,7 +27,7 @@ class UrlRule extends \yii\web\UrlRule
     public static function regexTokens(): array
     {
         $slugChars = ['.', '_', '-'];
-        $slugWordSeparator = Craft::$app->getConfig()->getGeneral()->slugWordSeparator;
+        $slugWordSeparator = app(\CraftCms\Cms\Config\GeneralConfig::class)->slugWordSeparator;
         if ($slugWordSeparator !== '/' && !in_array($slugWordSeparator, $slugChars, true)) {
             $slugChars[] = $slugWordSeparator;
         }

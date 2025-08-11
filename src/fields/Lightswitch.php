@@ -15,12 +15,12 @@ use craft\base\InlineEditableFieldInterface;
 use craft\base\MergeableFieldInterface;
 use craft\base\SortableFieldInterface;
 use craft\elements\Entry;
-use craft\enums\Color as ColorEnum;
 use craft\fields\conditions\LightswitchFieldConditionRule;
 use craft\helpers\Cp;
 use craft\helpers\Db;
 use craft\helpers\Html;
 use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Support\Enums\Color as ColorEnum;
 use GraphQL\Type\Definition\Type;
 use yii\db\Schema;
 

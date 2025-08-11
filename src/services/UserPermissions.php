@@ -14,8 +14,6 @@ use craft\elements\Asset;
 use craft\elements\Category;
 use craft\elements\Entry;
 use craft\elements\User;
-use craft\enums\CmsEdition;
-use craft\enums\PropagationMethod;
 use craft\errors\WrongEditionException;
 use craft\events\ConfigEvent;
 use craft\events\RegisterUserPermissionsEvent;
@@ -26,6 +24,8 @@ use craft\helpers\ProjectConfig as ProjectConfigHelper;
 use craft\models\Section;
 use craft\models\UserGroup;
 use craft\records\UserPermission as UserPermissionRecord;
+use CraftCms\Cms\Edition;
+use CraftCms\Cms\Element\Enums\PropagationMethod;
 use CraftCms\Cms\Utility\Utilities;
 use CraftCms\Cms\Utility\Utilities\ProjectConfig as ProjectConfigUtility;
 use yii\base\Component;
@@ -170,7 +170,7 @@ class UserPermissions extends Component
      */
     public function getGroupPermissionsByUserId(int $userId): array
     {
-        if (Craft::$app->edition === CmsEdition::Team) {
+        if (Craft::$app->edition === Edition::Team) {
             $group = Craft::$app->getUserGroups()->getTeamGroup();
             return $this->getPermissionsByGroupId($group->id);
         }
@@ -207,7 +207,7 @@ class UserPermissions extends Component
      */
     public function saveGroupPermissions(int $groupId, array $permissions): bool
     {
-        Craft::$app->requireEdition(CmsEdition::Team);
+        Craft::$app->requireEdition(Edition::Team);
 
         // Lowercase the permissions
         $permissions = array_map('strtolower', $permissions);
@@ -245,7 +245,7 @@ class UserPermissions extends Component
         if (!isset($this->_permissionsByUserId[$userId])) {
             $groupPermissions = $this->getGroupPermissionsByUserId($userId);
 
-            if (Craft::$app->edition->value >= CmsEdition::Pro->value) {
+            if (Craft::$app->edition->value >= Edition::Pro->value) {
                 /** @var string[] $userPermissions */
                 $userPermissions = $this->_createUserPermissionsQuery()
                     ->innerJoin(['p_u' => Table::USERPERMISSIONS_USERS], '[[p_u.permissionId]] = [[p.id]]')
@@ -270,7 +270,7 @@ class UserPermissions extends Component
      */
     public function doesUserHavePermission(int $userId, string $checkPermission): bool
     {
-        if (strcasecmp($checkPermission, 'accessCp') === 0 && Craft::$app->edition === CmsEdition::Team) {
+        if (strcasecmp($checkPermission, 'accessCp') === 0 && Craft::$app->edition === Edition::Team) {
             return true;
         }
 
@@ -291,7 +291,7 @@ class UserPermissions extends Component
      */
     public function saveUserPermissions(int $userId, array $permissions): bool
     {
-        Craft::$app->requireEdition(CmsEdition::Pro);
+        Craft::$app->requireEdition(Edition::Pro);
 
         // Delete any existing user permissions
         Db::delete(Table::USERPERMISSIONS_USERS, [
@@ -396,11 +396,11 @@ class UserPermissions extends Component
         }
 
         switch (Craft::$app->edition) {
-            case CmsEdition::Team:
+            case Edition::Team:
                 $generalPermissions = array_merge($generalPermissions, $cpPermissions);
                 break;
-            case CmsEdition::Pro:
-            case CmsEdition::Enterprise:
+            case Edition::Pro:
+            case Edition::Enterprise:
                 $generalPermissions['accessCp'] = [
                     'label' => Craft::t('app', 'Access the control panel'),
                     'warning' => Craft::t('app', 'Includes read-only access to user data and most content, via element selector modals and other means.'),
@@ -419,7 +419,7 @@ class UserPermissions extends Component
     {
         $assignGroupPermissions = [];
 
-        if (Craft::$app->edition->value >= CmsEdition::Pro->value) {
+        if (Craft::$app->edition->value >= Edition::Pro->value) {
             foreach (Craft::$app->getUserGroups()->getAllGroups() as $group) {
                 $assignGroupPermissions["assignUserGroup:$group->uid"] = [
                     'label' => Craft::t('app', 'Assign users to “{group}”', [
@@ -453,14 +453,14 @@ class UserPermissions extends Component
                                     'administrateUsers' => [
                                         'label' => Craft::t('app', 'Administrate users'),
                                         'info' => Craft::t('app', 'Includes activating/deactivating user accounts, resetting passwords, and changing email addresses.'),
-                                        'warning' => Craft::$app->edition->value >= CmsEdition::Pro->value
+                                        'warning' => Craft::$app->edition->value >= Edition::Pro->value
                                             ? Craft::t('app', 'Accounts with this permission could use it to escalate their own permissions.')
                                             : null,
                                     ],
                                     'impersonateUsers' => [
                                         'label' => Craft::t('app', 'Impersonate users'),
                                     ],
-                                    'assignUserPermissions' => Craft::$app->edition->value >= CmsEdition::Pro->value
+                                    'assignUserPermissions' => Craft::$app->edition->value >= Edition::Pro->value
                                         ? [
                                             'label' => Craft::t('app', 'Assign user permissions'),
                                         ]

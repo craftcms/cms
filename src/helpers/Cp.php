@@ -26,10 +26,6 @@ use craft\base\Statusable;
 use craft\base\Thumbable;
 use craft\behaviors\DraftBehavior;
 use craft\elements\Address;
-use craft\enums\AttributeStatus;
-use craft\enums\CmsEdition;
-use craft\enums\Color;
-use craft\enums\MenuItemType;
 use craft\errors\InvalidHtmlTagException;
 use craft\events\DefineElementHtmlEvent;
 use craft\events\DefineElementInnerHtmlEvent;
@@ -42,7 +38,11 @@ use craft\models\Site;
 use craft\services\ElementSources;
 use craft\web\twig\TemplateLoaderException;
 use craft\web\View;
+use CraftCms\Cms\Edition;
+use CraftCms\Cms\Element\Enums\AttributeStatus;
+use CraftCms\Cms\Element\Enums\MenuItemType;
 use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Support\Enums\Color;
 use CraftCms\Cms\Support\Json as JsonHelper;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Utility\Utilities;
@@ -139,7 +139,7 @@ class Cp
     {
         $alerts = [];
         $user = Craft::$app->getUser()->getIdentity();
-        $generalConfig = Craft::$app->getConfig()->getGeneral();
+        $generalConfig = app(\CraftCms\Cms\Config\GeneralConfig::class);
         $consoleUrl = rtrim(Craft::$app->getPluginStore()->craftIdEndpoint, '/');
 
         if (!$user) {
@@ -194,7 +194,7 @@ class Cp
         }
 
         // Do any plugins require a higher edition?
-        if (Craft::$app->edition < CmsEdition::Pro) {
+        if (Craft::$app->edition < Edition::Pro) {
             foreach (Craft::$app->getPlugins()->getAllPlugins() as $plugin) {
                 if ($plugin->minCmsEdition->value > Craft::$app->edition->value) {
                     $alerts[] = Craft::t('app', '{plugin} requires Craft CMS {edition} edition.', [

@@ -20,7 +20,6 @@ use craft\i18n\Locale;
 use craft\mail\Mailer;
 use craft\models\Site;
 use craft\queue\Queue;
-use craft\services\Api;
 use craft\services\AssetIndexer;
 use craft\services\Assets;
 use craft\services\Categories;
@@ -62,9 +61,11 @@ use craft\web\Response;
 use craft\web\Session;
 use craft\web\UploadedFile;
 use craft\web\User;
+use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Migrations\Install;
 use CraftCms\Cms\Support\Arr;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Config as ConfigFacade;
 use PHPUnit\Framework\MockObject\MockObject;
 use yii\base\ErrorException;
 use yii\base\Event;
@@ -243,8 +244,8 @@ class TestSetup
             ],
             require $srcPath . '/config/app.php',
             require $srcPath . '/config/app.' . $appType . '.php',
-            $configService->getConfigFromFile('app'),
-            $configService->getConfigFromFile("app.$appType")
+            ConfigFacade::get("craft.app", []),
+            ConfigFacade::get("craft.app.$appType", []),
         );
 
         if (defined('CRAFT_SITE')) {
@@ -354,10 +355,10 @@ class TestSetup
         Craft::setAlias('@translations', $translationsPath);
 
         self::$_configService = self::createConfigService();
-        $generalConfig = self::$_configService->getConfigFromFile('general');
+        $generalConfig = app(GeneralConfig::class);
 
         // Set any custom aliases
-        $customAliases = $generalConfig['aliases'] ?? $generalConfig['environmentVariables'] ?? null;
+        $customAliases = $generalConfig->aliases ?? $generalConfig->environmentVariables ?? null;
         if (is_array($customAliases)) {
             foreach ($customAliases as $name => $value) {
                 if (is_string($value)) {
@@ -566,7 +567,6 @@ class TestSetup
     public static function getCraftServiceMap(): array
     {
         $map = [
-            [Api::class, ['getApi', 'api']],
             [Assets::class, ['getAssets', 'assets']],
             [AssetIndexer::class, ['getAssetIndexer', 'assetIndexer']],
             [ImageTransforms::class, ['getImageTransforms', 'imageTransforms']],

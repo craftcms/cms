@@ -1,8 +1,10 @@
 <?php
 
+use CraftCms\Cms\Config\GeneralConfig;
+
 Route::middleware(['web', 'craft', 'auth', 'craft.cp'])
     ->name('craft.cp.')
-    ->prefix(config('craft.general.cpTrigger', 'admin'))
+    ->prefix(app(GeneralConfig::class)->cpTrigger)
     ->group(__DIR__.'/cp.php');
 
 Route::middleware(['web', 'craft'])

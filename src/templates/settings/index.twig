@@ -3,7 +3,7 @@
 
 {% extends "_layouts/cp" %}
 {% set title = "Settings"|t('app') %}
-{% set readOnly = not craft.app.config.general.allowAdminChanges %}
+{% set readOnly = not config.craft.general.allowAdminChanges %}
 
 {% if readOnly %}
     {% set contentNotice = readOnlyNotice() %}

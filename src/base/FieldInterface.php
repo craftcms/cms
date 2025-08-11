@@ -8,8 +8,8 @@
 namespace craft\base;
 
 use craft\elements\db\ElementQueryInterface;
-use craft\enums\AttributeStatus;
 use craft\models\GqlSchema;
+use CraftCms\Cms\Element\Enums\AttributeStatus;
 use GraphQL\Type\Definition\Type;
 use yii\base\Component as YiiComponent;
 use yii\db\ExpressionInterface;
@@ -27,7 +27,7 @@ use yii\validators\Validator;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
  */
-interface FieldInterface extends SavableComponentInterface, Chippable, Grippable, CpEditable
+interface FieldInterface extends \CraftCms\Cms\Component\Contracts\SavableComponentInterface, ModelInterface, Chippable, Grippable, CpEditable
 {
     /**
      * Returns the field type’s SVG icon.
@@ -192,7 +192,7 @@ interface FieldInterface extends SavableComponentInterface, Chippable, Grippable
      *
      * If the field has a known status, an array should be returned with two elements:
      *
-     * - A [[\craft\enums\AttributeStatus]] case
+     * - An {@see AttributeStatus} case
      * - The status label
      *
      * For example:

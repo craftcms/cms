@@ -1,6 +1,7 @@
 <?php
 
-use craft\enums\CmsEdition;
+use CraftCms\Cms\Config\GeneralConfig;
+use CraftCms\Cms\Edition;
 use CraftCms\Cms\User\Models\User;
 
 use function Pest\Laravel\actingAs;
@@ -9,9 +10,9 @@ use function Pest\Laravel\get;
 beforeEach(function () {
     actingAs(User::first());
 
-    $this->cpTrigger = Craft::$app->getConfig()->getGeneral()->cpTrigger;
+    $this->cpTrigger = app(GeneralConfig::class)->cpTrigger;
 
-    Craft::$app->setEdition(CmsEdition::Pro);
+    Craft::$app->setEdition(Edition::Pro);
 });
 
 it('renders pages', function (string $url, string $title, array $extraContent = []) {

@@ -10,7 +10,6 @@ namespace craft\base;
 use Craft;
 use craft\db\Table as DbTable;
 use craft\elements\db\ElementQueryInterface;
-use craft\enums\AttributeStatus;
 use craft\events\DefineFieldHtmlEvent;
 use craft\events\DefineFieldKeywordsEvent;
 use craft\events\DefineMenuItemsEvent;
@@ -26,6 +25,7 @@ use craft\models\GqlSchema;
 use craft\records\Field as FieldRecord;
 use craft\validators\HandleValidator;
 use craft\validators\UniqueValidator;
+use CraftCms\Cms\Element\Enums\AttributeStatus;
 use CraftCms\Cms\Support\Str;
 use DateTime;
 use Exception;
@@ -569,7 +569,7 @@ abstract class Field extends SavableComponent implements FieldInterface, Iconic,
         if ($this->id && $userSessionService->getIsAdmin()) {
             $view = Craft::$app->getView();
 
-            if (Craft::$app->getConfig()->getGeneral()->allowAdminChanges) {
+            if (app(\CraftCms\Cms\Config\GeneralConfig::class)->allowAdminChanges) {
                 // Edit field
                 $editId = sprintf('action-edit-%s', mt_rand());
                 $items[] = [

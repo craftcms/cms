@@ -7,7 +7,7 @@
 
 namespace craft\base;
 
-use craft\enums\CmsEdition;
+use CraftCms\Cms\Edition;
 
 /**
  * PluginTrait implements the common methods and properties for plugin classes.
@@ -129,10 +129,10 @@ trait PluginTrait
     public string $minVersionRequired = '';
 
     /**
-     * @var CmsEdition The minimum required Craft CMS edition.
+     * @var Edition The minimum required Craft CMS edition.
      * @since 5.0.0
      */
-    public CmsEdition $minCmsEdition = CmsEdition::Solo;
+    public Edition $minCmsEdition = Edition::Solo;
 
     /**
      * @var string The active edition.

@@ -26,7 +26,7 @@ it('can restore empty strings', function() {
     expect($request->get('foo'))->toBeNull();
 
     try {
-        (new LegacyMiddleware())->handle($request, function() {
+        app(LegacyMiddleware::class)->handle($request, function() {
         });
     } catch (Throwable) {
         // We don't care about exceptions
@@ -64,7 +64,7 @@ it('can restore nested empty strings', function() {
     expect($request->get('foo')['bar']['baz'])->toBeNull();
 
     try {
-        (new LegacyMiddleware())->handle($request, function() {
+        app(LegacyMiddleware::class)->handle($request, function() {
         });
     } catch (Throwable) {
         // We don't care about exceptions

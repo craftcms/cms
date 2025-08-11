@@ -17,8 +17,6 @@ use craft\db\Connection;
 use craft\db\mysql\Schema as MysqlSchema;
 use craft\db\pgsql\Schema as PgsqlSchema;
 use craft\elements\User;
-use craft\enums\CmsEdition;
-use craft\enums\LicenseKeyStatus;
 use craft\errors\InvalidPluginException;
 use craft\errors\MissingComponentException;
 use craft\helpers\Session as SessionHelper;
@@ -34,6 +32,9 @@ use craft\web\Request as WebRequest;
 use craft\web\Response as WebResponse;
 use craft\web\User as WebUser;
 use craft\web\View;
+use CraftCms\Cms\Edition;
+use CraftCms\Cms\Support\Enums\LicenseKeyStatus;
+use CraftCms\Cms\Support\Env;
 use CraftCms\Cms\Support\Json as JsonHelper;
 use CraftCms\Cms\Support\Str;
 use HTMLPurifier_Encoder;
@@ -110,38 +111,15 @@ class App
      * If the value cannot be found, `null` will be returned.
      *
      * @param string $name The name to search for.
+     *
      * @return mixed The value, or `null` if not found.
      * @throws Exception
      * @since 3.4.18
+     * @deprecated in 6.0.0. Use `\CraftCms\Cms\Support\Env::get()` instead.
      */
     public static function env(string $name): mixed
     {
-        if (!isset(self::$_secrets)) {
-            // set it to an empty array initially, so the nested env() call doesn’t cause infinite recursion
-            self::$_secrets = [];
-            $secretsPath = static::env('CRAFT_SECRETS_PATH');
-            if ($secretsPath && is_file($secretsPath)) {
-                self::$_secrets = require $secretsPath;
-            }
-        }
-
-        if (isset(self::$_secrets[$name])) {
-            return static::normalizeValue(self::$_secrets[$name]);
-        }
-
-        if (isset($_SERVER[$name])) {
-            return static::normalizeValue($_SERVER[$name]);
-        }
-
-        if (($env = getenv($name)) !== false) {
-            return static::normalizeValue($env);
-        }
-
-        if (defined($name)) {
-            return static::normalizeValue(constant($name));
-        }
-
-        return null;
+        return Env::get($name);
     }
 
     /**
@@ -184,7 +162,7 @@ class App
                 $envName = str($prop->getName())->snake()->upper()->value();
             }
 
-            $envValue = static::env(sprintf('%s%s', $envPrefix, $envName));
+            $envValue = Env::get(sprintf('%s%s', $envPrefix, $envName));
 
             if ($envValue !== null) {
                 $envConfig[$prop->getName()] = $envValue;
@@ -223,7 +201,7 @@ class App
         }
 
         if (preg_match('/^\$(\w+)(\/.*)?/', $value, $matches)) {
-            $env = static::env($matches[1]);
+            $env = Env::get($matches[1]);
 
             if ($env === null) {
                 // No env var or constant is defined here by that name
@@ -348,11 +326,11 @@ class App
      * Returns an array of all known Craft editions’ IDs.
      *
      * @return int[] All the known Craft editions’ IDs.
-     * @deprecated in 5.0.0. [[CmsEdition::cases()]] should be used instead.
+     * @deprecated in 5.0.0. [[Edition::cases()]] should be used instead.
      */
     public static function editions(): array
     {
-        return array_map(fn(CmsEdition $edition) => $edition->value, CmsEdition::cases());
+        return array_map(fn(Edition $edition) => $edition->value, Edition::cases());
     }
 
     /**
@@ -362,11 +340,11 @@ class App
      * @return string The edition’s handle.
      * @throws InvalidArgumentException if $edition is invalid
      * @since 3.1.0
-     * @deprecated in 5.0.0. [[CmsEdition::handle()]] should be used instead.
+     * @deprecated in 5.0.0. [[Edition::handle()]] should be used instead.
      */
     public static function editionHandle(int $edition): string
     {
-        $handle = CmsEdition::tryFrom($edition)?->handle();
+        $handle = Edition::tryFrom($edition)?->handle();
         if ($handle === null) {
             throw new InvalidArgumentException("Invalid edition ID: $edition");
         }
@@ -379,11 +357,11 @@ class App
      * @param int $edition An edition’s ID.
      * @return string The edition’s name.
      * @throws InvalidArgumentException if $edition is invalid
-     * @deprecated in 5.0.0. [[CmsEdition::name]] should be used instead.
+     * @deprecated in 5.0.0. [[Edition::name]] should be used instead.
      */
     public static function editionName(int $edition): string
     {
-        $name = CmsEdition::tryFrom($edition)?->name;
+        $name = Edition::tryFrom($edition)?->name;
         if ($name === null) {
             throw new InvalidArgumentException("Invalid edition ID: $edition");
         }
@@ -395,13 +373,13 @@ class App
      *
      * @param string $handle An edition’s handle
      * @return int The edition’s ID
-     * @throws InvalidArgumentException if $handle is invalid
+     * @throws \InvalidArgumentException if $handle is invalid
      * @since 3.1.0
-     * @deprecated in 5.0.0. [[CmsEdition::fromHandle()]] should be used instead.
+     * @deprecated in 5.0.0. [[Edition::fromHandle()]] should be used instead.
      */
     public static function editionIdByHandle(string $handle): int
     {
-        return CmsEdition::fromHandle($handle)->value;
+        return Edition::fromHandle($handle)->value;
     }
 
     /**
@@ -409,13 +387,13 @@ class App
      *
      * @param mixed $edition An edition’s ID (or is it?)
      * @return bool Whether $edition is a valid edition ID.
-     * @deprecated in 5.0.0. [[CmsEdition::tryFrom()]] should be used instead.
+     * @deprecated in 5.0.0. [[Edition::tryFrom()]] should be used instead.
      */
     public static function isValidEdition(mixed $edition): bool
     {
         return (
             is_numeric($edition) &&
-            CmsEdition::tryFrom((int)$edition) !== null
+            Edition::tryFrom((int)$edition) !== null
         );
     }
 
@@ -593,7 +571,7 @@ class App
             // Parse ${ENV_VAR}s
             try {
                 $path = preg_replace_callback('/\$\{(.*?)\}/', function($match) {
-                    $env = App::env($match[1]);
+                    $env = Env::get($match[1]);
                     if ($env === false) {
                         throw new InvalidValueException();
                     }
@@ -758,7 +736,7 @@ class App
         // Don't mess with the memory_limit, even at the config's request, if it's already set to -1 or >= 1.5GB
         $memoryLimit = static::phpConfigValueInBytes('memory_limit');
         if ($memoryLimit !== -1 && $memoryLimit < 1024 * 1024 * 1536) {
-            $maxMemoryLimit = Craft::$app->getConfig()->getGeneral()->phpMaxMemoryLimit;
+            $maxMemoryLimit = app(\CraftCms\Cms\Config\GeneralConfig::class)->phpMaxMemoryLimit;
             @ini_set('memory_limit', $maxMemoryLimit ?: '1536M');
         }
 
@@ -903,7 +881,7 @@ class App
 
         // detect msysgit/mingw and assume this is a tty because detection
         // does not work correctly, see https://github.com/composer/composer/issues/9690
-        if (in_array(strtoupper(self::env('MSYSTEM') ?: ''), ['MINGW32', 'MINGW64'], true)) {
+        if (in_array(strtoupper(Env::get('MSYSTEM') ?: ''), ['MINGW32', 'MINGW64'], true)) {
             return true;
         }
 
@@ -934,7 +912,7 @@ class App
      */
     public static function assetManagerConfig(): array
     {
-        $generalConfig = Craft::$app->getConfig()->getGeneral();
+        $generalConfig = app(\CraftCms\Cms\Config\GeneralConfig::class);
 
         return [
             'class' => AssetManager::class,
@@ -954,7 +932,7 @@ class App
      */
     public static function cacheConfig(): array
     {
-        $generalConfig = Craft::$app->getConfig()->getGeneral();
+        $generalConfig = app(\CraftCms\Cms\Config\GeneralConfig::class);
 
         return [
             'class' => \CraftCms\Yii2Adapter\Cache::class,
@@ -1106,7 +1084,7 @@ class App
      */
     public static function mutexConfig(): array
     {
-        $generalConfig = Craft::$app->getConfig()->getGeneral();
+        $generalConfig = app(\CraftCms\Cms\Config\GeneralConfig::class);
 
         return [
             'class' => FileMutex::class,
@@ -1122,7 +1100,7 @@ class App
     {
         return [
             'class' => ProjectConfigService::class,
-            'readOnly' => Craft::$app->getIsInstalled() && !Craft::$app->getConfig()->getGeneral()->allowAdminChanges,
+            'readOnly' => Craft::$app->getIsInstalled() && !app(\CraftCms\Cms\Config\GeneralConfig::class)->allowAdminChanges,
             'writeYamlAutomatically' => !self::isEphemeral(),
         ];
     }
@@ -1153,8 +1131,7 @@ class App
      */
     public static function userConfig(): array
     {
-        $configService = Craft::$app->getConfig();
-        $generalConfig = $configService->getGeneral();
+        $generalConfig = app(\CraftCms\Cms\Config\GeneralConfig::class);
         $request = Craft::$app->getRequest();
 
         if ($request->getIsConsoleRequest() || $request->getIsSiteRequest()) {
@@ -1207,7 +1184,7 @@ class App
      */
     public static function webRequestConfig(): array
     {
-        $generalConfig = Craft::$app->getConfig()->getGeneral();
+        $generalConfig = app(\CraftCms\Cms\Config\GeneralConfig::class);
 
         $config = [
             'class' => WebRequest::class,
@@ -1257,7 +1234,7 @@ class App
         if (
             Craft::$app->has('request', true) &&
             Craft::$app->getRequest()->getIsSiteRequest() &&
-            Craft::$app->getConfig()->getGeneral()->headlessMode
+            app(\CraftCms\Cms\Config\GeneralConfig::class)->headlessMode
         ) {
             $config['format'] = WebResponse::FORMAT_JSON;
         }
@@ -1297,7 +1274,7 @@ class App
             }
 
             // If the defaultCpLocale setting is set, go with that
-            $generalConfig = Craft::$app->getConfig()->getGeneral();
+            $generalConfig = app(\CraftCms\Cms\Config\GeneralConfig::class);
             if ($generalConfig->defaultCpLocale) {
                 return $i18n->getLocaleById($generalConfig->defaultCpLocale);
             }
@@ -1338,17 +1315,17 @@ class App
         $allLicenseInfo = Cache::get(App::CACHE_KEY_LICENSE_INFO, []);
         $licenseInfoHost = Cache::get(App::CACHE_KEY_LICENSE_INFO_HOST);
         $pluginsService = Craft::$app->getPlugins();
-        $generalConfig = Craft::$app->getConfig()->getGeneral();
+        $generalConfig = app(\CraftCms\Cms\Config\GeneralConfig::class);
         $consoleUrl = rtrim(Craft::$app->getPluginStore()->craftIdEndpoint, '/');
 
         foreach ($allLicenseInfo as $handle => $licenseInfo) {
             $isCraft = $handle === 'craft';
             if ($isCraft) {
                 $name = 'Craft';
-                $editions = array_map(fn(CmsEdition $edition) => $edition->handle(), CmsEdition::cases());
+                $editions = array_map(fn(Edition $edition) => $edition->handle(), Edition::cases());
                 $currentEdition = Craft::$app->edition->handle();
                 $currentEditionName = Craft::$app->edition->name;
-                $licensedEdition = isset($licenseInfo['edition']) ? CmsEdition::fromHandle($licenseInfo['edition']) : CmsEdition::Solo;
+                $licensedEdition = isset($licenseInfo['edition']) ? Edition::fromHandle($licenseInfo['edition']) : Edition::Solo;
                 $licenseEditionName = $licensedEdition->name;
                 $version = Craft::$app->getVersion();
             } else {

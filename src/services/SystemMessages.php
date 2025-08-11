@@ -10,10 +10,10 @@ namespace craft\services;
 use Craft;
 use craft\db\Query;
 use craft\db\Table;
-use craft\enums\CmsEdition;
 use craft\events\RegisterEmailMessagesEvent;
 use craft\models\SystemMessage;
 use craft\records\SystemMessage as EmailMessageRecord;
+use CraftCms\Cms\Edition;
 use CraftCms\Cms\Support\Arr;
 use yii\base\Component;
 use yii\db\Expression;
@@ -213,7 +213,7 @@ class SystemMessages extends Component
             $languageId = $language;
         }
 
-        if (Craft::$app->edition->value >= CmsEdition::Pro->value) {
+        if (Craft::$app->edition->value >= Edition::Pro->value) {
             // Fetch the customization (if there is one)
             $override = $this->_createMessagesQuery()
                 ->select(['subject', 'body'])

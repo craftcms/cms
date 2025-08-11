@@ -21,7 +21,6 @@ use craft\elements\Category;
 use craft\elements\Entry;
 use craft\elements\Tag;
 use craft\elements\User;
-use craft\enums\CmsEdition;
 use craft\errors\DbConnectException;
 use craft\errors\SiteNotFoundException;
 use craft\errors\WrongEditionException;
@@ -60,7 +59,6 @@ use craft\models\FieldLayout;
 use craft\models\Info;
 use craft\queue\QueueInterface;
 use craft\services\Addresses;
-use craft\services\Api;
 use craft\services\AssetIndexer;
 use craft\services\Assets;
 use craft\services\Auth;
@@ -110,6 +108,8 @@ use craft\web\UrlManager;
 use craft\web\User as UserSession;
 use craft\web\View;
 use CraftCms\Cms\Announcement\Announcements;
+use CraftCms\Cms\Edition;
+use CraftCms\Cms\Support\Env;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Cache as CacheFacade;
 use Symfony\Component\VarDumper\Caster\ReflectionCaster;
@@ -136,7 +136,6 @@ use yii\web\ServerErrorHttpException;
  * @property bool $isInstalled Whether Craft is installed
  * @property-read Addresses $addresses The addresses service
  * @property-read Announcements $announcements The announcements service
- * @property-read Api $api The API service
  * @property-read AssetIndexer $assetIndexer The asset indexer service
  * @property-read AssetManager $assetManager The asset manager component
  * @property-read Assets $assets The assets service
@@ -232,24 +231,10 @@ trait ApplicationTrait
     public ?string $env = null;
 
     /**
-     * @var CmsEdition The installed Craft CMS edition.
+     * @var Edition The installed Craft CMS edition.
      * @since 5.0.0
      */
-    public CmsEdition $edition;
-
-    /**
-     * @var string The base Craftnet API URL to use.
-     * @since 3.3.16
-     * @internal
-     */
-    public string $baseApiUrl = 'https://api.craftcms.com/v1/';
-
-    /**
-     * @var string[]|null Query params that should be appended to Craftnet API requests.
-     * @since 3.3.16
-     * @internal
-     */
-    public ?array $apiParams = null;
+    public Edition $edition;
 
     /**
      * @var bool|null
@@ -400,7 +385,7 @@ trait ApplicationTrait
             }
 
             // Fall back on the default control panel language, if there is one, otherwise the browser language
-            return Craft::$app->getConfig()->getGeneral()->defaultCpLanguage ?? $this->_getFallbackLanguage();
+            return app(\CraftCms\Cms\Config\GeneralConfig::class)->defaultCpLanguage ?? $this->_getFallbackLanguage();
         }
 
         /** @noinspection PhpUnhandledExceptionInspection */
@@ -617,9 +602,9 @@ trait ApplicationTrait
     /**
      * Returns the edition Craft is actually licensed to run in.
      *
-     * @return CmsEdition|null
+     * @return Edition|null
      */
-    public function getLicensedEdition(): ?CmsEdition
+    public function getLicensedEdition(): ?Edition
     {
         $licenseInfo = CacheFacade::get(App::CACHE_KEY_LICENSE_INFO, []);
 
@@ -627,7 +612,7 @@ trait ApplicationTrait
             return null;
         }
 
-        return CmsEdition::fromHandle($licenseInfo['craft']['edition']);
+        return Edition::fromHandle($licenseInfo['craft']['edition']);
     }
 
     /**
@@ -659,16 +644,16 @@ trait ApplicationTrait
     /**
      * Sets the installed Craft CMS edition.
      *
-     * @param CmsEdition|int $edition The edition to set.
+     * @param Edition|int $edition The edition to set.
      * @return bool
      */
-    public function setEdition(CmsEdition|int $edition): bool
+    public function setEdition(Edition|int $edition): bool
     {
         if (is_int($edition)) {
-            $edition = CmsEdition::from($edition);
+            $edition = Edition::from($edition);
         }
 
-        $oldEdition = $this->edition ?? CmsEdition::Solo;
+        $oldEdition = $this->edition ?? Edition::Solo;
         $this->getProjectConfig()->set('system.edition', $edition->handle(), 'Craft CMS edition change');
         $this->edition = $edition;
 
@@ -688,14 +673,14 @@ trait ApplicationTrait
     /**
      * Requires that Craft is running an equal or better edition than what's passed in
      *
-     * @param CmsEdition|int $edition The Craft edition to require.
+     * @param Edition|int $edition The Craft edition to require.
      * @param bool $orBetter If true, makes $edition the minimum edition required.
      * @throws WrongEditionException if attempting to do something not allowed by the current Craft edition
      */
-    public function requireEdition(CmsEdition|int $edition, bool $orBetter = true): void
+    public function requireEdition(Edition|int $edition, bool $orBetter = true): void
     {
         if (is_int($edition)) {
-            $edition = CmsEdition::from($edition);
+            $edition = Edition::from($edition);
         }
 
         if ($this->getIsInstalled() && !$this->getProjectConfig()->getIsApplyingExternalChanges()) {
@@ -718,14 +703,14 @@ trait ApplicationTrait
         // Only admin accounts can upgrade Craft
         if (
             $this->getUser()->getIsAdmin() &&
-            Craft::$app->getConfig()->getGeneral()->allowAdminChanges
+            app(\CraftCms\Cms\Config\GeneralConfig::class)->allowAdminChanges
         ) {
             // Are they either *using* or *licensed to use* something < Craft Pro?
             $licensedEdition = $this->getLicensedEdition();
 
             return (
-                ($this->edition->value < CmsEdition::Pro->value) ||
-                ($licensedEdition !== null && $licensedEdition->value < CmsEdition::Pro->value)
+                ($this->edition->value < Edition::Pro->value) ||
+                ($licensedEdition !== null && $licensedEdition->value < Edition::Pro->value)
             );
         }
 
@@ -741,7 +726,7 @@ trait ApplicationTrait
      */
     public function getCanTestEditions(): bool
     {
-        if (App::env('CRAFT_NO_TRIALS')) {
+        if (Env::get('CRAFT_NO_TRIALS')) {
             return false;
         }
 
@@ -775,7 +760,7 @@ trait ApplicationTrait
      */
     public function getIsLive(): bool
     {
-        if (is_bool($live = $this->getConfig()->getGeneral()->isSystemLive)) {
+        if (is_bool($live = app(\CraftCms\Cms\Config\GeneralConfig::class)->isSystemLive)) {
             return $live;
         }
 
@@ -1009,16 +994,6 @@ trait ApplicationTrait
     }
 
     /**
-     * Returns the API service.
-     *
-     * @return Api The API service
-     */
-    public function getApi(): Api
-    {
-        return $this->get('api');
-    }
-
-    /**
      * Returns the assets service.
      *
      * @return Assets The assets service
@@ -1104,6 +1079,7 @@ trait ApplicationTrait
      * Returns the dashboard service.
      *
      * @return Dashboard The dashboard service
+     * @deprecated in 6.0.0. Use `app(\CraftCms\Cms\Dashboard\Dashboard::class)` instead.
      */
     public function getDashboard(): Dashboard
     {
@@ -1303,6 +1279,7 @@ trait ApplicationTrait
      * Returns the application’s mutex service.
      *
      * @return Mutex The application’s mutex service
+     * @deprecated in 6.0.0. Use `\Illuminate\Support\Facades\Cache::lock()` instead.
      */
     public function getMutex(): Mutex
     {
@@ -1565,8 +1542,8 @@ trait ApplicationTrait
         });
 
         // Set the Craft edition
-        $edition = App::env('CRAFT_EDITION') ?? $this->getProjectConfig()->get('system.edition');
-        $this->edition = $edition ? CmsEdition::fromHandle($edition) : CmsEdition::Solo;
+        $edition = Env::get('CRAFT_EDITION') ?? $this->getProjectConfig()->get('system.edition');
+        $this->edition = $edition ? Edition::fromHandle($edition) : Edition::Solo;
 
         // Load the request before anything else, so everything else can safely check Craft::$app->has('request', true)
         // to avoid possible recursive fatal errors in the request initialization
@@ -1634,7 +1611,7 @@ trait ApplicationTrait
      */
     private function _setTimeZone(): void
     {
-        $timeZone = $this->getConfig()->getGeneral()->timezone ?? $this->getProjectConfig()->get('system.timeZone');
+        $timeZone = app(\CraftCms\Cms\Config\GeneralConfig::class)->timezone ?? $this->getProjectConfig()->get('system.timeZone');
 
         if ($timeZone) {
             $this->setTimeZone(App::parseEnv($timeZone));
@@ -1707,7 +1684,7 @@ trait ApplicationTrait
                     $event->fields[] = EntryTitleField::class;
                     break;
                 case User::class:
-                    if (!$this->getConfig()->getGeneral()->useEmailAsUsername) {
+                    if (!app(\CraftCms\Cms\Config\GeneralConfig::class)->useEmailAsUsername) {
                         $event->fields[] = UsernameField::class;
                     }
                     $event->fields[] = UserFullNameField::class;

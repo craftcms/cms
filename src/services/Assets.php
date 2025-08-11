@@ -941,7 +941,7 @@ class Assets extends Component
      */
     public function getTempAssetUploadFs(): FsInterface
     {
-        $handle = App::parseEnv(Craft::$app->getConfig()->getGeneral()->tempAssetUploadFs);
+        $handle = App::parseEnv(app(\CraftCms\Cms\Config\GeneralConfig::class)->tempAssetUploadFs);
         if (!$handle) {
             return new Temp();
         }

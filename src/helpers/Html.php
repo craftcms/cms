@@ -148,7 +148,7 @@ class Html extends \yii\helpers\Html
     {
         $request = Craft::$app->getRequest();
         $async = Arr::pull($options, 'async')
-            ?? ($request->getIsSiteRequest() && Craft::$app->getConfig()->getGeneral()->asyncCsrfInputs);
+            ?? ($request->getIsSiteRequest() && app(\CraftCms\Cms\Config\GeneralConfig::class)->asyncCsrfInputs);
 
         if (!$async) {
             Craft::$app->getResponse()->setNoCacheHeaders();

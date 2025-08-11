@@ -23,10 +23,6 @@ use craft\elements\db\AddressQuery;
 use craft\elements\db\EagerLoadPlan;
 use craft\elements\db\ElementQueryInterface;
 use craft\elements\db\UserQuery;
-use craft\enums\CmsEdition;
-use craft\enums\Color;
-use craft\enums\MenuItemType;
-use craft\enums\PropagationMethod;
 use craft\events\AuthenticateUserEvent;
 use craft\events\DefineValueEvent;
 use craft\fieldlayoutelements\users\FullNameField;
@@ -48,7 +44,11 @@ use craft\validators\UniqueValidator;
 use craft\validators\UsernameValidator;
 use craft\validators\UserPasswordValidator;
 use craft\web\View;
+use CraftCms\Cms\Edition;
+use CraftCms\Cms\Element\Enums\MenuItemType;
+use CraftCms\Cms\Element\Enums\PropagationMethod;
 use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Support\Enums\Color;
 use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Support\Str;
 use DateInterval;
@@ -307,7 +307,7 @@ class User extends Element implements IdentityInterface
             ],
         ];
 
-        if (Craft::$app->edition->value >= CmsEdition::Pro->value) {
+        if (Craft::$app->edition->value >= Edition::Pro->value) {
             $sources = array_merge($sources, [
                 [
                     'key' => 'admins',
@@ -406,7 +406,7 @@ class User extends Element implements IdentityInterface
      */
     protected static function defineSortOptions(): array
     {
-        if (Craft::$app->getConfig()->getGeneral()->useEmailAsUsername) {
+        if (app(\CraftCms\Cms\Config\GeneralConfig::class)->useEmailAsUsername) {
             $attributes = [
                 'email' => Craft::t('app', 'Email'),
                 'fullName' => Craft::t('app', 'Full Name'),
@@ -827,7 +827,7 @@ class User extends Element implements IdentityInterface
         // Is this user in cooldown mode, and are they past their window?
         if (
             $this->locked &&
-            Craft::$app->getConfig()->getGeneral()->cooldownDuration &&
+            app(\CraftCms\Cms\Config\GeneralConfig::class)->cooldownDuration &&
             !$this->getRemainingCooldownTime()
         ) {
             Craft::$app->getUsers()->unlockUser($this);
@@ -841,7 +841,7 @@ class User extends Element implements IdentityInterface
             $this->email = Str::idnToUtf8Email($this->email);
         }
 
-        if (empty($this->username) && Craft::$app->getConfig()->getGeneral()->useEmailAsUsername) {
+        if (empty($this->username) && app(\CraftCms\Cms\Config\GeneralConfig::class)->useEmailAsUsername) {
             $this->username = $this->email;
         }
 
@@ -876,7 +876,7 @@ class User extends Element implements IdentityInterface
     public function getPostEditUrl(): ?string
     {
         if (
-            Craft::$app->edition === CmsEdition::Solo ||
+            Craft::$app->edition === Edition::Solo ||
             !Craft::$app->getUser()->checkPermission('editUsers')
         ) {
             return null;
@@ -890,7 +890,7 @@ class User extends Element implements IdentityInterface
      */
     protected function crumbs(): array
     {
-        if (Craft::$app->edition === CmsEdition::Solo) {
+        if (Craft::$app->edition === Edition::Solo) {
             return [];
         }
 
@@ -967,7 +967,7 @@ class User extends Element implements IdentityInterface
         if ($scenario === self::SCENARIO_LIVE) {
             $fullNameElement = $this->getFieldLayout()->getFirstVisibleElementByType(FullNameField::class, $this);
             if ($fullNameElement && $fullNameElement->required) {
-                if (Craft::$app->getConfig()->getGeneral()->showFirstAndLastNameFields) {
+                if (app(\CraftCms\Cms\Config\GeneralConfig::class)->showFirstAndLastNameFields) {
                     (new RequiredValidator(['attributes' => ['firstName', 'lastName']]))->validateAttributes($this, ['firstName', 'lastName']);
                 } else {
                     (new RequiredValidator())->validateAttribute($this, 'fullName');
@@ -999,7 +999,7 @@ class User extends Element implements IdentityInterface
         $rules[] = [['email'], 'required', 'when' => fn() => !$this->getIsDraft()];
         $rules[] = [['lastLoginAttemptIp'], 'string', 'max' => 45];
 
-        if (!Craft::$app->getConfig()->getGeneral()->useEmailAsUsername) {
+        if (!app(\CraftCms\Cms\Config\GeneralConfig::class)->useEmailAsUsername) {
             $rules[] = [['username'], 'required', 'when' => $treatAsActive];
             $rules[] = [['username'], UsernameValidator::class];
         }
@@ -1014,7 +1014,7 @@ class User extends Element implements IdentityInterface
                 'when' => $treatAsActive,
             ];
 
-            if (!Craft::$app->getConfig()->getGeneral()->useEmailAsUsername) {
+            if (!app(\CraftCms\Cms\Config\GeneralConfig::class)->useEmailAsUsername) {
                 $rules[] = [
                     ['username'],
                     UniqueValidator::class,
@@ -1082,7 +1082,7 @@ class User extends Element implements IdentityInterface
                 // are they allowed to set the email?
                 if ($this->getIsCurrent() || $userSession->checkPermission('administrateUsers')) {
                     if (
-                        Craft::$app->edition->value >= CmsEdition::Pro->value &&
+                        Craft::$app->edition->value >= Edition::Pro->value &&
                         Craft::$app->getProjectConfig()->get('users.requireEmailVerification') &&
                         !$userSession->checkPermission('administrateUsers')
                     ) {
@@ -1152,7 +1152,7 @@ class User extends Element implements IdentityInterface
      */
     public function getHasSsoIdentity(): bool
     {
-        if (Craft::$app->edition->value < CmsEdition::Enterprise->value) {
+        if (Craft::$app->edition->value < Edition::Enterprise->value) {
             return false;
         }
 
@@ -1342,7 +1342,7 @@ class User extends Element implements IdentityInterface
     {
         Craft::$app->getUsers()->handleInvalidLogin($this);
         // Was that one bad password/2fa code/passkey too many?
-        if ($this->locked && !Craft::$app->getConfig()->getGeneral()->preventUserEnumeration) {
+        if ($this->locked && !app(\CraftCms\Cms\Config\GeneralConfig::class)->preventUserEnumeration) {
             // Will set the authError to either AccountCooldown or AccountLocked
             $this->authError = $this->_getAuthError();
         } else {
@@ -1460,7 +1460,7 @@ class User extends Element implements IdentityInterface
             return $this->_groups;
         }
 
-        if (Craft::$app->edition < CmsEdition::Pro || !isset($this->id)) {
+        if (Craft::$app->edition < Edition::Pro || !isset($this->id)) {
             return [];
         }
 
@@ -1474,7 +1474,7 @@ class User extends Element implements IdentityInterface
      */
     public function setGroups(array $groups): void
     {
-        if (Craft::$app->edition->value >= CmsEdition::Pro->value) {
+        if (Craft::$app->edition->value >= Edition::Pro->value) {
             $this->_groups = $groups;
         }
     }
@@ -1487,7 +1487,7 @@ class User extends Element implements IdentityInterface
      */
     public function isInGroup(UserGroup|int|string $group): bool
     {
-        if (Craft::$app->edition < CmsEdition::Pro) {
+        if (Craft::$app->edition < Edition::Pro) {
             return false;
         }
 
@@ -1800,7 +1800,7 @@ XML;
     {
         if (
             $this->admin ||
-            Craft::$app->edition === CmsEdition::Solo
+            Craft::$app->edition === Edition::Solo
         ) {
             return true;
         }
@@ -1834,7 +1834,7 @@ XML;
      */
     public function canAssignUserGroups(): bool
     {
-        if (Craft::$app->edition->value >= CmsEdition::Pro->value) {
+        if (Craft::$app->edition->value >= Edition::Pro->value) {
             foreach (Craft::$app->getUserGroups()->getAllGroups() as $group) {
                 if ($this->can("assignUserGroup:$group->uid")) {
                     return true;
@@ -1871,7 +1871,7 @@ XML;
         // passed their cooldownDuration already, but there account status is still locked.
         // If that’s the case, just let it return null as if they are past the cooldownDuration.
         if ($this->locked && $this->lockoutDate) {
-            $generalConfig = Craft::$app->getConfig()->getGeneral();
+            $generalConfig = app(\CraftCms\Cms\Config\GeneralConfig::class);
             $interval = DateTimeHelper::secondsToInterval($generalConfig->cooldownDuration);
             $cooldownEnd = clone $this->lockoutDate;
             $cooldownEnd->add($interval);
@@ -1910,7 +1910,7 @@ XML;
             return UrlHelper::cpUrl('myaccount');
         }
 
-        if (Craft::$app->edition === CmsEdition::Solo) {
+        if (Craft::$app->edition === Edition::Solo) {
             return null;
         }
 
@@ -1940,7 +1940,7 @@ XML;
         $sessionItems = [];
         $miscItems = [];
 
-        if (Craft::$app->edition !== CmsEdition::Solo) {
+        if (Craft::$app->edition !== Edition::Solo) {
             $status = $this->getStatus();
 
             switch ($status) {
@@ -2137,7 +2137,7 @@ JS, [
 
         $items = [];
 
-        if (Craft::$app->edition !== CmsEdition::Solo) {
+        if (Craft::$app->edition !== Edition::Solo) {
             if (!$isCurrentUser) {
                 if ($usersService->canSuspend($currentUser, $this) && $this->active && !$this->suspended) {
                     $items[] = [
@@ -2192,7 +2192,7 @@ JS,
                         $view->namespaceInputId($deleteId),
                         $this->id,
                         /** @phpstan-ignore-next-line */
-                        Craft::$app->getSecurity()->hashData(Craft::$app->edition === CmsEdition::Solo ? 'dashboard' : 'users'),
+                        Craft::$app->getSecurity()->hashData(Craft::$app->edition === Edition::Solo ? 'dashboard' : 'users'),
                     ]);
                 }
             }
@@ -2447,7 +2447,7 @@ JS, [
             Craft::t('app', 'Cooldown Time Remaining') => function() use ($formatter) {
                 if (
                     !$this->locked ||
-                    !Craft::$app->getConfig()->getGeneral()->cooldownDuration ||
+                    !app(\CraftCms\Cms\Config\GeneralConfig::class)->cooldownDuration ||
                     ($duration = $this->getRemainingCooldownTime()) === null
                 ) {
                     return false;
@@ -2500,7 +2500,7 @@ JS, [
             return false;
         }
 
-        if (Craft::$app->getConfig()->getGeneral()->useEmailAsUsername) {
+        if (app(\CraftCms\Cms\Config\GeneralConfig::class)->useEmailAsUsername) {
             $this->username = $this->email;
         }
 
@@ -2514,7 +2514,7 @@ JS, [
      */
     public function afterSave(bool $isNew): void
     {
-        if ($isNew && Craft::$app->edition === CmsEdition::Solo) {
+        if ($isNew && Craft::$app->edition === Edition::Solo) {
             // Make sure they're an admin
             $this->admin = true;
         }
@@ -2601,7 +2601,7 @@ JS, [
 
         parent::afterSave($isNew);
 
-        if (Craft::$app->edition === CmsEdition::Team) {
+        if (Craft::$app->edition === Edition::Team) {
             // Make sure they're in the Team group
             $group = Craft::$app->getUserGroups()->getTeamGroup();
             if (!$this->isInGroup($group)) {
@@ -2690,7 +2690,7 @@ JS, [
      */
     private function _validateUserAgent(string $userAgent): bool
     {
-        if (!Craft::$app->getConfig()->getGeneral()->requireMatchingUserAgentForSession) {
+        if (!app(\CraftCms\Cms\Config\GeneralConfig::class)->requireMatchingUserAgentForSession) {
             return true;
         }
 
@@ -2728,7 +2728,7 @@ JS, [
             case self::STATUS_ACTIVE:
                 if ($this->locked) {
                     // Let them know how much time they have to wait (if any) before their account is unlocked.
-                    if (Craft::$app->getConfig()->getGeneral()->cooldownDuration) {
+                    if (app(\CraftCms\Cms\Config\GeneralConfig::class)->cooldownDuration) {
                         return self::AUTH_ACCOUNT_COOLDOWN;
                     }
                     return self::AUTH_ACCOUNT_LOCKED;

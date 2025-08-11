@@ -35,8 +35,6 @@ use craft\elements\conditions\ElementConditionInterface;
 use craft\elements\db\AssetQuery;
 use craft\elements\db\EagerLoadPlan;
 use craft\elements\db\ElementQueryInterface;
-use craft\enums\CmsEdition;
-use craft\enums\MenuItemType;
 use craft\errors\AssetException;
 use craft\errors\FileException;
 use craft\errors\FsException;
@@ -69,6 +67,8 @@ use craft\services\ElementSources;
 use craft\validators\AssetLocationValidator;
 use craft\validators\DateTimeValidator;
 use craft\validators\StringValidator;
+use CraftCms\Cms\Edition;
+use CraftCms\Cms\Element\Enums\MenuItemType;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Support\Str;
@@ -630,7 +630,7 @@ class Asset extends Element
         ]);
 
         // Hide Author from Craft Solo
-        if (Craft::$app->edition === CmsEdition::Solo) {
+        if (Craft::$app->edition === Edition::Solo) {
             unset($attributes['uploader']);
         }
 
@@ -717,7 +717,7 @@ class Asset extends Element
         ]);
 
         // Hide Author from Craft Solo
-        if (Craft::$app->edition === CmsEdition::Solo) {
+        if (Craft::$app->edition === Edition::Solo) {
             unset($attributes['uploader']);
         }
 
@@ -2224,7 +2224,7 @@ JS,[
             $transform = ImageTransforms::normalizeTransform($transform);
 
             if ($immediately === null) {
-                $immediately = Craft::$app->getConfig()->getGeneral()->generateTransformsBeforePageLoad;
+                $immediately = app(\CraftCms\Cms\Config\GeneralConfig::class)->generateTransformsBeforePageLoad;
             }
 
             // Fire a 'beforeGenerateTransform' event
@@ -3245,7 +3245,7 @@ JS;
                 Assets::getFileKindByExtension($this->tempFilePath) === static::KIND_IMAGE &&
                 ($this->sanitizeOnUpload ?? (
                     !Craft::$app->getRequest()->getIsCpRequest() ||
-                    Craft::$app->getConfig()->getGeneral()->sanitizeCpImageUploads
+                    app(\CraftCms\Cms\Config\GeneralConfig::class)->sanitizeCpImageUploads
                 ))
             ) {
                 Image::cleanImageByPath($this->tempFilePath);
@@ -3727,8 +3727,8 @@ JS;
     private function allowTransforms(): bool
     {
         return match ($this->getMimeType()) {
-            'image/gif' => Craft::$app->getConfig()->getGeneral()->transformGifs,
-            'image/svg+xml' => Craft::$app->getConfig()->getGeneral()->transformSvgs,
+            'image/gif' => app(\CraftCms\Cms\Config\GeneralConfig::class)->transformGifs,
+            'image/svg+xml' => app(\CraftCms\Cms\Config\GeneralConfig::class)->transformSvgs,
             default => true,
         };
     }

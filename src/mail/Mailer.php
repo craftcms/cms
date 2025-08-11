@@ -9,11 +9,11 @@ namespace craft\mail;
 
 use Craft;
 use craft\elements\User;
-use craft\enums\CmsEdition;
 use craft\helpers\App;
 use craft\helpers\Template;
 use craft\models\Site;
 use craft\web\View;
+use CraftCms\Cms\Edition;
 use Throwable;
 use yii\base\InvalidConfigException;
 use yii\helpers\Markdown;
@@ -102,7 +102,7 @@ class Mailer extends \yii\symfonymailer\Mailer
             'message' => $message,
         ]));
 
-        $generalConfig = Craft::$app->getConfig()->getGeneral();
+        $generalConfig = app(\CraftCms\Cms\Config\GeneralConfig::class);
         $sitesService = Craft::$app->getSites();
         $view = Craft::$app->getView();
         $currentSite = $messageSite = $twig = null;
@@ -188,7 +188,7 @@ class Mailer extends \yii\symfonymailer\Mailer
                 $message->setTextBody($textBody);
 
                 // Is there a custom HTML template set?
-                if (Craft::$app->edition->value >= CmsEdition::Pro->value && $this->template) {
+                if (Craft::$app->edition->value >= Edition::Pro->value && $this->template) {
                     $template = $this->template;
                     $templateMode = View::TEMPLATE_MODE_SITE;
                 } else {

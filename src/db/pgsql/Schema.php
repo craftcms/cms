@@ -160,7 +160,7 @@ class Schema extends \yii\db\pgsql\Schema
 
         $ignoreTables ??= Craft::$app->getDb()->getIgnoredBackupTables();
         $format = $this->getBackupFormat();
-        $commandFromConfig = Craft::$app->getConfig()->getGeneral()->backupCommand;
+        $commandFromConfig = app(\CraftCms\Cms\Config\GeneralConfig::class)->backupCommand;
 
         foreach ($ignoreTables as $table) {
             $table = $this->getRawTableName($table);
@@ -205,7 +205,7 @@ class Schema extends \yii\db\pgsql\Schema
                 ->addArg('{file}');
         }
 
-        $commandFromConfig = Craft::$app->getConfig()->getGeneral()->restoreCommand;
+        $commandFromConfig = app(\CraftCms\Cms\Config\GeneralConfig::class)->restoreCommand;
 
         if ($commandFromConfig instanceof \Closure) {
             $command = $commandFromConfig($command);
@@ -400,7 +400,7 @@ ORDER BY i.relname, k';
      */
     public function getBackupFormat(): ?string
     {
-        return $this->backupFormat ?? Craft::$app->getConfig()->getGeneral()->backupCommandFormat;
+        return $this->backupFormat ?? app(\CraftCms\Cms\Config\GeneralConfig::class)->backupCommandFormat;
     }
 
     /**

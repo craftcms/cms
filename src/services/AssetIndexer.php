@@ -35,6 +35,7 @@ use craft\records\AssetIndexingSession as AssetIndexingSessionRecord;
 use CraftCms\Cms\Support\Json;
 use DateTime;
 use Generator;
+use Illuminate\Support\Facades\Cache;
 use Throwable;
 use yii\base\Component;
 use yii\base\Exception;
@@ -297,10 +298,10 @@ class AssetIndexer extends Component
      */
     public function processIndexSession(AssetIndexingSession $indexingSession): AssetIndexingSession
     {
-        $mutex = Craft::$app->getMutex();
         $lockName = 'idx--' . $indexingSession->id . '--';
+        $mutex = Cache::lock($lockName, 3);
 
-        if (!$mutex->acquire($lockName, 3)) {
+        if (!$mutex->get()) {
             throw new MutexException($lockName, sprintf('Could not acquire a lock for the indexing session "%s".', $indexingSession->id));
         }
 
@@ -327,14 +328,14 @@ class AssetIndexer extends Component
                 }
             }
 
-            $mutex->release($lockName);
+            $mutex->release();
             return $indexingSession;
         }
 
         // Mark as started.
         if ($indexEntry) {
             $this->updateIndexEntry($indexEntry->id, ['inProgress' => true]);
-            $mutex->release($lockName);
+            $mutex->release();
 
             try {
                 if ($indexEntry->isDir) {
@@ -701,7 +702,7 @@ class AssetIndexer extends Component
             throw new AssetNotIndexableException("File “{$indexEntry->uri}” will not be indexed.");
         }
 
-        if (!in_array(strtolower($extension), Craft::$app->getConfig()->getGeneral()->allowedFileExtensions, true)) {
+        if (!in_array(strtolower($extension), app(\CraftCms\Cms\Config\GeneralConfig::class)->allowedFileExtensions, true)) {
             throw new AssetDisallowedExtensionException("File “{$indexEntry->uri}” was not indexed because extension “{$extension}” is not allowed.");
         }
 
@@ -808,7 +809,7 @@ class AssetIndexer extends Component
                 Craft::$app->getElements()->saveElement($asset);
 
                 // Now we definitely have an asset ID, so let's cover one last base.
-                $shouldCache = !$fs instanceof LocalFsInterface && $cacheImages && Craft::$app->getConfig()->getGeneral()->maxCachedCloudImageSize > 0;
+                $shouldCache = !$fs instanceof LocalFsInterface && $cacheImages && app(\CraftCms\Cms\Config\GeneralConfig::class)->maxCachedCloudImageSize > 0;
 
                 if ($shouldCache && $tempPath) {
                     $targetPath = $asset->getImageTransformSourcePath();
@@ -870,10 +871,10 @@ class AssetIndexer extends Component
     protected function incrementProcessedEntryCount(AssetIndexingSession $session): AssetIndexingSession
     {
         // Make SURE the counter proceeds correctly across multiple indexing jobs.
-        $mutex = Craft::$app->getMutex();
         $lockName = 'idx--update-' . $session->id . '--';
+        $mutex = Cache::lock($lockName, 5);
 
-        if (!$mutex->acquire($lockName, 5)) {
+        if (!$mutex->get()) {
             throw new MutexException($lockName, sprintf('Could not acquire a lock for the indexing session "%s".', $session->id));
         }
 
@@ -881,7 +882,7 @@ class AssetIndexer extends Component
         $record = AssetIndexingSessionRecord::findOne($session->id);
         $record->processedEntries++;
         $record->save();
-        $mutex->release($lockName);
+        $mutex->release();
 
         $session->processedEntries = (int)$record->processedEntries;
 

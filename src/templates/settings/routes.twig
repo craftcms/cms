@@ -2,7 +2,7 @@
 
 {% extends "_layouts/cp" %}
 {% set title = "Routes"|t('app') %}
-{% set readOnly = not craft.app.config.general.allowAdminChanges %}
+{% set readOnly = not config.craft.general.allowAdminChanges %}
 
 {% block actionButton %}
     {% if not readOnly %}

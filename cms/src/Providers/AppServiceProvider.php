@@ -5,8 +5,9 @@ namespace CraftCms\Cms\Providers;
 use craft\helpers\FileHelper;
 use CraftCms\Aliases\Facades\Aliases;
 use CraftCms\Cms\Http\Middleware\ExtractNamespace;
-use CraftCms\Cms\Http\Middleware\HandleActionRequests;
 use CraftCms\Cms\Http\Middleware\RequireCpRequest;
+use CraftCms\Cms\Http\Middleware\SendPoweredByHeader;
+use CraftCms\Cms\Support\Env;
 use Illuminate\Foundation\Console\AboutCommand;
 use Illuminate\Routing\Router;
 use Illuminate\Support\ServiceProvider;
@@ -16,21 +17,18 @@ final class AppServiceProvider extends ServiceProvider
 {
     private string $root = __DIR__.'/../..';
 
-    private array $configFiles = [
-        'general',
-    ];
-
-    public function register(): void
-    {
-        collect($this->configFiles)->each(function (string $file) {
-            $this->mergeConfigFrom("{$this->root}/config/$file.php", 'craftcms');
-        });
-    }
+    public function register(): void {}
 
     public function boot(): void
     {
-        Aliases::set('@packageRoot', FileHelper::normalizePath($this->root));
+        Aliases::set('@root', $this->app->basePath());
+        Aliases::set('@craftcms', FileHelper::normalizePath($this->root.'/../'));
+        Aliases::set('@packageRoot', '@craftcms/cms');
         Aliases::set('@package', '@packageRoot/src');
+
+        if ($webUrl = Env::get('CRAFT_WEB_URL')) {
+            Aliases::set('@web', $webUrl);
+        }
 
         AboutCommand::add('Craft CMS', fn () => [
             'Edition' => \Craft::$app->edition->name,
@@ -47,10 +45,6 @@ final class AppServiceProvider extends ServiceProvider
             return;
         }
 
-        collect($this->configFiles)->each(function ($file) {
-            $this->publishes(["{$this->root}/config/$file.php" => config_path("craft/$file.php")], 'craftcms');
-        });
-
         $this->publishes([
             "{$this->root}/resources/views" => resource_path('views/vendor/craftcms'),
         ], 'craftcms-views');
@@ -66,7 +60,7 @@ final class AppServiceProvider extends ServiceProvider
 
         collect([
             ExtractNamespace::class,
-            HandleActionRequests::class,
+            SendPoweredByHeader::class,
         ])->each(fn ($middleware) => $router->pushMiddlewareToGroup('craft', $middleware));
 
         collect([

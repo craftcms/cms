@@ -4,8 +4,8 @@ namespace CraftCms\Yii2Adapter\Console;
 
 use craft\console\Application;
 use CraftCms\Cms\Console\CraftCommand;
+use CraftCms\Cms\Support\Str;
 use Illuminate\Console\Command;
-use Illuminate\Support\Str;
 use Symfony\Component\Console\Input\ArgvInput;
 
 class LegacyCraftCommand extends Command

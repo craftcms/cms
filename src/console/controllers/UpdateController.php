@@ -19,6 +19,7 @@ use craft\helpers\Update as UpdateHelper;
 use craft\models\Update;
 use craft\models\Updates;
 use craft\models\Updates as UpdatesModel;
+use CraftCms\Cms\Support\Api;
 use CraftCms\Cms\Support\Composer;
 use CraftCms\Cms\Support\Json;
 use Symfony\Component\Process\Exception\ProcessFailedException;
@@ -258,7 +259,7 @@ class UpdateController extends Controller
      */
     private function _allowUpdates(): bool
     {
-        $generalConfig = Craft::$app->getConfig()->getGeneral();
+        $generalConfig = app(\CraftCms\Cms\Config\GeneralConfig::class);
         if (!$generalConfig->allowUpdates && !$this->force) {
             if (!$this->interactive) {
                 $this->stderr('Updates are disallowed for this environment. Pass --force to override.' . PHP_EOL . PHP_EOL, Console::FG_RED);
@@ -647,7 +648,7 @@ class UpdateController extends Controller
             }
 
             $this->stdout('Requesting license... ');
-            Craft::$app->getApi()->getLicenseInfo();
+            app(Api::class)->getLicenseInfo();
 
             if (!$user) {
                 $session->setIdentity(null);
@@ -673,7 +674,7 @@ class UpdateController extends Controller
     private function _getUpdates(array $constraints = []): Updates
     {
         $this->stdout('Fetching available updates ... ');
-        $updateData = Craft::$app->getApi()->getUpdates($constraints);
+        $updateData = app(Api::class)->getUpdates($constraints);
         $this->stdout('done' . PHP_EOL, Console::FG_GREEN);
         return new UpdatesModel($updateData);
     }

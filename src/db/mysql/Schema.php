@@ -204,7 +204,7 @@ class Schema extends \yii\db\mysql\Schema
             ->addArg('--dump-date')
             ->addArg('--no-autocommit')
             ->addArg('--routines')
-            ->addArg('--default-character-set=', Craft::$app->getConfig()->getDb()->getCharset())
+            ->addArg('--default-character-set=', \Illuminate\Support\Facades\DB::connection()->getConfig('charset'))
             ->addArg('--set-charset')
             ->addArg('--triggers')
             ->addArg('--no-tablespaces');
@@ -212,7 +212,7 @@ class Schema extends \yii\db\mysql\Schema
         $serverVersion = App::normalizeVersion(Craft::$app->getDb()->getServerVersion());
         $isMySQL8 = version_compare($serverVersion, '8', '>=');
         $ignoreTables ??= Craft::$app->getDb()->getIgnoredBackupTables();
-        $commandFromConfig = Craft::$app->getConfig()->getGeneral()->backupCommand;
+        $commandFromConfig = app(\CraftCms\Cms\Config\GeneralConfig::class)->backupCommand;
 
         // https://bugs.mysql.com/bug.php?id=109685
         $useSingleTransaction = $isMySQL8 && version_compare($serverVersion, '8.0.32', '<');
@@ -261,7 +261,7 @@ class Schema extends \yii\db\mysql\Schema
      */
     public function getDefaultRestoreCommand(): string
     {
-        $commandFromConfig = Craft::$app->getConfig()->getGeneral()->restoreCommand;
+        $commandFromConfig = app(\CraftCms\Cms\Config\GeneralConfig::class)->restoreCommand;
         $command = (new ShellCommand('mysql'))
             ->addArg('--defaults-file=', $this->_createDumpConfigFile())
             ->addArg('{database}');

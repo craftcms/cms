@@ -14,7 +14,6 @@ use craft\auth\methods\TOTP;
 use craft\auth\passkeys\CredentialRepository;
 use craft\auth\passkeys\WebauthnServer;
 use craft\elements\User;
-use craft\enums\CmsEdition;
 use craft\events\RegisterComponentTypesEvent;
 use craft\helpers\Component as ComponentHelper;
 use craft\helpers\DateTimeHelper;
@@ -24,6 +23,7 @@ use craft\models\UserGroup;
 use craft\records\WebAuthn as WebAuthnRecord;
 use craft\web\Session;
 use craft\web\View;
+use CraftCms\Cms\Edition;
 use CraftCms\Cms\Support\Json;
 use DateTime;
 use GuzzleHttp\Psr7\ServerRequest;
@@ -151,7 +151,7 @@ class Auth extends Component
     public function setUser(?User $user, ?int $sessionDuration = null): void
     {
         $this->_user = $user ?? false;
-        $this->_sessionDuration = $user ? ($sessionDuration ?? Craft::$app->getConfig()->getGeneral()->userSessionDuration) : false;
+        $this->_sessionDuration = $user ? ($sessionDuration ?? app(\CraftCms\Cms\Config\GeneralConfig::class)->userSessionDuration) : false;
 
         if ($user) {
             SessionHelper::set($this->userIdParam, $user->id);
@@ -382,7 +382,7 @@ class Auth extends Component
      */
     public function is2faRequired(User $user): bool
     {
-        if (Craft::$app->edition === CmsEdition::Solo) {
+        if (Craft::$app->edition === Edition::Solo) {
             return false;
         }
 

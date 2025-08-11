@@ -16,6 +16,13 @@ const CRAFT_TESTS_PATH = __DIR__;
 !defined('CRAFT_MIGRATIONS_PATH') && define('CRAFT_MIGRATIONS_PATH', __DIR__ . DIRECTORY_SEPARATOR . '_craft' . DIRECTORY_SEPARATOR . 'migrations');
 !defined('CRAFT_TRANSLATIONS_PATH') && define('CRAFT_TRANSLATIONS_PATH', __DIR__ . DIRECTORY_SEPARATOR . '_craft' . DIRECTORY_SEPARATOR . 'translations');
 !defined('CRAFT_VENDOR_PATH') && define('CRAFT_VENDOR_PATH', dirname(__DIR__) . DIRECTORY_SEPARATOR . 'vendor');
+!defined('CRAFT_DOTENV_PATH') && define('CRAFT_DOTENV_PATH', __DIR__);
+!defined('CRAFT_LICENSE_KEY_PATH') && define('CRAFT_LICENSE_KEY_PATH', __DIR__ . DIRECTORY_SEPARATOR . '_craft' . DIRECTORY_SEPARATOR . 'config/license.key');
+
+/**
+ * Load .env from this folder as well.
+ */
+Dotenv\Dotenv::createImmutable(CRAFT_DOTENV_PATH)->load();
 
 /**
  * Initialize the Laravel Craft Application
@@ -23,6 +30,12 @@ const CRAFT_TESTS_PATH = __DIR__;
 (new \CraftCms\Cms\Tests\TestCase('laravel'))
     ->createApplication();
 
+$generalConfig = app(\CraftCms\Cms\Config\GeneralConfig::class);
+foreach (require CRAFT_CONFIG_PATH . '/general.php' as $key => $value) {
+    $generalConfig->$key = $value;
+}
+
+config()->set('craft.general', $generalConfig);
 config()->set('database.default', env('DB_DRIVER'));
 
 $devMode = true;

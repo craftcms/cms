@@ -8,11 +8,11 @@
 namespace craft\controllers;
 
 use Craft;
-use craft\enums\CmsEdition;
 use craft\errors\AuthProviderNotFoundException;
 use craft\errors\SsoFailedException;
 use craft\helpers\User as UserHelper;
 use craft\web\Controller;
+use CraftCms\Cms\Edition;
 use CraftCms\Cms\Support\Json;
 use yii\web\HttpException;
 use yii\web\Response;
@@ -45,7 +45,7 @@ class SsoController extends Controller
             return false;
         }
 
-        Craft::$app->requireEdition(CmsEdition::Enterprise);
+        Craft::$app->requireEdition(Edition::Enterprise);
         return true;
     }
 
@@ -125,7 +125,7 @@ class SsoController extends Controller
                 'returnUrl' => $returnUrl,
             ];
 
-            if (Craft::$app->getConfig()->getGeneral()->enableCsrfProtection) {
+            if (app(\CraftCms\Cms\Config\GeneralConfig::class)->enableCsrfProtection) {
                 $return['csrfTokenValue'] = $this->request->getCsrfToken();
             }
 

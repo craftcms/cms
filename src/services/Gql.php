@@ -15,7 +15,6 @@ use craft\base\GqlInlineFragmentFieldInterface;
 use craft\behaviors\FieldLayoutBehavior;
 use craft\db\Query as DbQuery;
 use craft\db\Table;
-use craft\enums\CmsEdition;
 use craft\errors\GqlException;
 use craft\events\ConfigEvent;
 use craft\events\DefineGqlValidationRulesEvent;
@@ -77,6 +76,7 @@ use craft\models\GqlToken;
 use craft\models\Section;
 use craft\records\GqlSchema as GqlSchemaRecord;
 use craft\records\GqlToken as GqlTokenRecord;
+use CraftCms\Cms\Edition;
 use CraftCms\Cms\Support\Str;
 use CraftCms\DependencyAwareCache\Dependency\TagDependency;
 use CraftCms\DependencyAwareCache\Facades\DependencyCache;
@@ -437,7 +437,7 @@ class Gql extends Component
             );
         }
 
-        $generalConfig = Craft::$app->getConfig()->getGeneral();
+        $generalConfig = app(\CraftCms\Cms\Config\GeneralConfig::class);
 
         if (!$isIntrospectionQuery) {
             // Set complexity rule, if defined,
@@ -528,7 +528,7 @@ class Gql extends Component
                 $result = $cachedResult;
             } else {
                 $isIntrospectionQuery = GqlHelper::isIntrospectionQuery($query);
-                $prebuildSchema = $isIntrospectionQuery || !Craft::$app->getConfig()->getGeneral()->lazyGqlTypes;
+                $prebuildSchema = $isIntrospectionQuery || !app(\CraftCms\Cms\Config\GeneralConfig::class)->lazyGqlTypes;
                 $schemaDef = $this->getSchemaDef($schema, $prebuildSchema);
                 $elementsService = Craft::$app->getElements();
                 $elementsService->startCollectingCacheInfo();
@@ -870,7 +870,7 @@ class Gql extends Component
         $schema = $this->_getPublicSchema();
 
         if (!$schema) {
-            if (!Craft::$app->getConfig()->getGeneral()->allowAdminChanges) {
+            if (!app(\CraftCms\Cms\Config\GeneralConfig::class)->allowAdminChanges) {
                 return null;
             }
 
@@ -1326,7 +1326,7 @@ class Gql extends Component
      */
     public function handleQueryErrors(array $errors, callable $formatter): array
     {
-        $devMode = Craft::$app->getConfig()->getGeneral()->devMode;
+        $devMode = app(\CraftCms\Cms\Config\GeneralConfig::class)->devMode;
 
         foreach ($errors as &$error) {
             $originException = $nextException = $error;
@@ -1395,7 +1395,7 @@ class Gql extends Component
         ?string $operationName = null,
     ): ?string {
         // No cache key, if explicitly disabled
-        $generalConfig = Craft::$app->getConfig()->getGeneral();
+        $generalConfig = app(\CraftCms\Cms\Config\GeneralConfig::class);
 
         if (!$generalConfig->enableGraphqlCaching) {
             return null;
@@ -1543,7 +1543,7 @@ class Gql extends Component
             Trim::class,
         ];
 
-        if (!Craft::$app->getConfig()->getGeneral()->disableGraphqlTransformDirective) {
+        if (!app(\CraftCms\Cms\Config\GeneralConfig::class)->disableGraphqlTransformDirective) {
             $directiveClasses[] = Transform::class;
         }
 
@@ -1786,7 +1786,7 @@ class Gql extends Component
      */
     private function userSchemaComponents(): array
     {
-        if (Craft::$app->edition === CmsEdition::Solo) {
+        if (Craft::$app->edition === Edition::Solo) {
             return [[], []];
         }
 

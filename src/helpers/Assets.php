@@ -12,7 +12,6 @@ use craft\base\BaseFsInterface;
 use craft\base\FsInterface;
 use craft\base\LocalFsInterface;
 use craft\elements\Asset;
-use craft\enums\TimePeriod;
 use craft\errors\FsException;
 use craft\events\RegisterAssetFileKindsEvent;
 use craft\events\SetAssetFilenameEvent;
@@ -20,6 +19,7 @@ use craft\fs\Temp;
 use craft\helpers\ImageTransforms as TransformHelper;
 use craft\models\VolumeFolder;
 use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Support\Enums\TimePeriod;
 use CraftCms\Cms\Support\Str;
 use DateTime;
 use Illuminate\Support\Collection;
@@ -98,7 +98,7 @@ class Assets
         $rootUrl = $volume->getRootUrl() ?? '';
         $url = $rootUrl . $path;
 
-        if (Craft::$app->getConfig()->getGeneral()->revAssetUrls) {
+        if (app(\CraftCms\Cms\Config\GeneralConfig::class)->revAssetUrls) {
             return self::revUrl($url, $asset, $dateUpdated);
         }
 
@@ -179,7 +179,7 @@ class Assets
      */
     public static function urlAppendix(Asset $asset, ?DateTime $dateUpdated = null): string
     {
-        if (!Craft::$app->getConfig()->getGeneral()->revAssetUrls) {
+        if (!app(\CraftCms\Cms\Config\GeneralConfig::class)->revAssetUrls) {
             return '';
         }
 
@@ -211,7 +211,7 @@ class Assets
             $extension = '';
         }
 
-        $generalConfig = Craft::$app->getConfig()->getGeneral();
+        $generalConfig = app(\CraftCms\Cms\Config\GeneralConfig::class);
         $separator = $generalConfig->filenameWordSeparator;
 
         if (!is_string($separator)) {
@@ -383,7 +383,7 @@ class Assets
         }
 
         self::$_allowedFileKinds = [];
-        $allowedExtensions = array_flip(Craft::$app->getConfig()->getGeneral()->allowedFileExtensions);
+        $allowedExtensions = array_flip(app(\CraftCms\Cms\Config\GeneralConfig::class)->allowedFileExtensions);
 
         foreach (static::getFileKinds() as $kind => $info) {
             foreach ($info['extensions'] as $extension) {
@@ -691,7 +691,7 @@ class Assets
             ];
 
             // Merge with the extraFileKinds setting
-            self::$_fileKinds = Arr::merge(self::$_fileKinds, Craft::$app->getConfig()->getGeneral()->extraFileKinds);
+            self::$_fileKinds = Arr::merge(self::$_fileKinds, app(\CraftCms\Cms\Config\GeneralConfig::class)->extraFileKinds);
 
             // Fire a 'registerFileKinds' event
             if (Event::hasHandlers(self::class, self::EVENT_REGISTER_FILE_KINDS)) {
@@ -762,7 +762,7 @@ class Assets
         // No existing resources we could use.
 
         // For remote files, check if maxCachedImageSizes setting would work for us.
-        $maxCachedSize = Craft::$app->getConfig()->getGeneral()->maxCachedCloudImageSize;
+        $maxCachedSize = app(\CraftCms\Cms\Config\GeneralConfig::class)->maxCachedCloudImageSize;
 
         if (!$volume->getFs() instanceof LocalFsInterface && $maxCachedSize > $size) {
             // For remote sources we get a transform source, if maxCachedImageSizes is not smaller than that.
@@ -795,7 +795,7 @@ class Assets
             $uploadInBytes = min($uploadInBytes, $memoryLimit);
         }
 
-        $configLimit = Craft::$app->getConfig()->getGeneral()->maxUploadFileSize;
+        $configLimit = app(\CraftCms\Cms\Config\GeneralConfig::class)->maxUploadFileSize;
 
         if ($configLimit) {
             $uploadInBytes = min($uploadInBytes, $configLimit);
@@ -976,7 +976,7 @@ class Assets
             return false;
         }
 
-        $handle = App::parseEnv(Craft::$app->getConfig()->getGeneral()->tempAssetUploadFs);
+        $handle = App::parseEnv(app(\CraftCms\Cms\Config\GeneralConfig::class)->tempAssetUploadFs);
         return $fs->handle === $handle;
     }
 }

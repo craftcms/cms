@@ -12,13 +12,10 @@ use craft\base\Chippable;
 use craft\base\ElementInterface;
 use craft\base\Iconic;
 use craft\elements\db\NestedElementQueryInterface;
-use craft\enums\CmsEdition;
-use craft\enums\LicenseKeyStatus;
 use craft\errors\BusyResourceException;
 use craft\errors\InvalidPluginException;
 use craft\errors\StaleResourceException;
 use craft\filters\UtilityAccess;
-use craft\helpers\Api;
 use craft\helpers\App;
 use craft\helpers\Cp;
 use craft\helpers\DateTimeHelper;
@@ -32,7 +29,11 @@ use craft\models\Update;
 use craft\models\Updates;
 use craft\web\Controller;
 use craft\web\ServiceUnavailableHttpException;
+use CraftCms\Cms\Edition;
+use CraftCms\Cms\Support\Api;
 use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Support\Enums\LicenseKeyStatus;
+use CraftCms\Cms\Support\Facades\Http;
 use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Utility\Utilities;
 use CraftCms\Cms\Utility\Utilities\Updates as UpdatesUtility;
@@ -41,7 +42,6 @@ use CraftCms\DependencyAwareCache\Facades\DependencyCache;
 use DateInterval;
 use Illuminate\Support\Facades\Cache;
 use Throwable;
-use yii\base\InvalidArgumentException;
 use yii\base\InvalidConfigException;
 use yii\web\BadRequestHttpException;
 use yii\web\Cookie;
@@ -125,7 +125,7 @@ class AppController extends Controller
         // Close the PHP session in case this takes a while
         Session::close();
 
-        $response = Craft::createGuzzleClient()->get($url);
+        $response = Http::create()->get($url);
         $this->response->setCacheHeaders();
         $this->response->getHeaders()->set('content-type', 'application/javascript');
         return $this->asRaw($response->getBody());
@@ -157,7 +157,7 @@ class AppController extends Controller
     public function actionApiHeaders(): Response
     {
         $this->requireCpRequest();
-        return $this->asJson(Api::headers());
+        return $this->asJson(app(Api::class)->headers());
     }
 
     /**
@@ -171,10 +171,10 @@ class AppController extends Controller
     {
         $this->requireCpRequest();
         $headers = $this->request->getRequiredBodyParam('headers');
-        Api::processResponseHeaders($headers);
+        app(Api::class)->processResponseHeaders($headers);
 
         // return the updated headers
-        return $this->asJson(Api::headers());
+        return $this->asJson(app(Api::class)->headers());
     }
 
     /**
@@ -228,9 +228,11 @@ class AppController extends Controller
      */
     private function _updatesResponse(Updates $updates, bool $includeDetails): Response
     {
+        $generalConfig = app(\CraftCms\Cms\Config\GeneralConfig::class);
+
         $allowUpdates = (
-            Craft::$app->getConfig()->getGeneral()->allowUpdates &&
-            Craft::$app->getConfig()->getGeneral()->allowAdminChanges &&
+            $generalConfig->allowUpdates &&
+            $generalConfig->allowAdminChanges &&
             Craft::$app->getUser()->checkPermission('performUpdates')
         );
 
@@ -302,7 +304,7 @@ class AppController extends Controller
         Craft::$app->enableMaintenanceMode();
 
         // Backup the DB?
-        $backup = Craft::$app->getConfig()->getGeneral()->getBackupOnUpdate();
+        $backup = app(\CraftCms\Cms\Config\GeneralConfig::class)->getBackupOnUpdate();
         if ($backup) {
             try {
                 $backupPath = $db->backup();
@@ -501,11 +503,11 @@ class AppController extends Controller
         $this->requireAdmin();
 
         $edition = $this->request->getRequiredBodyParam('edition');
-        $licensedEdition = Craft::$app->getLicensedEdition() ?? CmsEdition::Solo;
+        $licensedEdition = Craft::$app->getLicensedEdition() ?? Edition::Solo;
 
         try {
-            $edition = CmsEdition::fromHandle($edition);
-        } catch (InvalidArgumentException $e) {
+            $edition = Edition::fromHandle($edition);
+        } catch (\InvalidArgumentException $e) {
             throw new BadRequestHttpException($e->getMessage(), previous: $e);
         }
 
@@ -621,7 +623,7 @@ class AppController extends Controller
             if ($update->abandoned) {
                 $arr['statusText'] = Html::tag('strong', Craft::t('app', 'This plugin is no longer maintained.'));
                 if ($update->replacementName) {
-                    if (Craft::$app->getUser()->getIsAdmin() && Craft::$app->getConfig()->getGeneral()->allowAdminChanges) {
+                    if (Craft::$app->getUser()->getIsAdmin() && app(\CraftCms\Cms\Config\GeneralConfig::class)->allowAdminChanges) {
                         $replacementUrl = UrlHelper::url("plugin-store/$update->replacementHandle");
                     } else {
                         $replacementUrl = $update->replacementUrl;
@@ -658,7 +660,7 @@ class AppController extends Controller
 
         if ($pluginLicenses === null) {
             // Update our records and get license info from the API
-            $licenseInfo = Craft::$app->getApi()->getLicenseInfo(['plugins']);
+            $licenseInfo = app(Api::class)->getLicenseInfo(['plugins']);
             $pluginLicenses = $licenseInfo['pluginLicenses'] ?? [];
         }
 
@@ -739,7 +741,7 @@ class AppController extends Controller
      */
     public function actionBrokenImage(): Response
     {
-        $generalConfig = Craft::$app->getConfig()->getGeneral();
+        $generalConfig = app(\CraftCms\Cms\Config\GeneralConfig::class);
         $imagePath = Craft::getAlias($generalConfig->brokenImagePath);
         if (!is_file($imagePath)) {
             throw new InvalidConfigException("Invalid broken image path: $generalConfig->brokenImagePath");

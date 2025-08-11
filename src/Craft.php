@@ -10,7 +10,7 @@ use craft\behaviors\CustomFieldBehavior;
 use craft\helpers\App;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\FileHelper;
-use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Support\Facades\Http;
 use CraftCms\Cms\Support\Str;
 use GuzzleHttp\Client;
 use Symfony\Component\VarDumper\Cloner\VarCloner;
@@ -18,7 +18,6 @@ use yii\base\ExitException;
 use yii\base\InvalidConfigException;
 use yii\helpers\VarDumper;
 use yii\web\Request;
-use function GuzzleHttp\default_user_agent;
 
 /**
  * Craft is helper class serving common Craft and Yii framework functionality.
@@ -30,9 +29,9 @@ use function GuzzleHttp\default_user_agent;
  */
 class Craft extends Yii
 {
-    /** @deprecated in 5.0.0. [[\craft\enums\CmsEdition::Solo]] should be used instead. */
+    /** @deprecated in 5.0.0. [[\craft\enums\Edition::Solo]] should be used instead. */
     public const Solo = 0;
-    /** @deprecated in 5.0.0. [[\craft\enums\CmsEdition::Pro]] should be used instead. */
+    /** @deprecated in 5.0.0. [[\craft\enums\Edition::Pro]] should be used instead. */
     public const Pro = 2;
 
     /**
@@ -172,7 +171,7 @@ class Craft extends Yii
     public static function cookieConfig(array $config = [], ?Request $request = null): array
     {
         if (!isset(self::$_baseCookieConfig)) {
-            $generalConfig = static::$app->getConfig()->getGeneral();
+            $generalConfig = app(\CraftCms\Cms\Config\GeneralConfig::class);
 
             if ($generalConfig->useSecureCookies === 'auto') {
                 $request ??= static::$app->getRequest();
@@ -415,29 +414,11 @@ EOD;
      *
      * @param array $config Guzzle client config settings
      * @return Client
+     * @deprecated 6.0.0 use {@see Http::create()} instead.
      */
     public static function createGuzzleClient(array $config = []): Client
     {
-        // Set the Craft header by default.
-        $defaultConfig = [
-            'headers' => [
-                'User-Agent' => 'Craft/' . static::$app->getVersion() . ' ' . default_user_agent(),
-            ],
-        ];
-
-        // Grab the config from config/guzzle.php that is used on every Guzzle request.
-        $configService = static::$app->getConfig();
-        $guzzleConfig = $configService->getConfigFromFile('guzzle');
-        $generalConfig = $configService->getGeneral();
-
-        // Merge everything together
-        $guzzleConfig = Arr::merge($defaultConfig, $guzzleConfig, $config);
-
-        if ($generalConfig->httpProxy) {
-            $guzzleConfig['proxy'] = $generalConfig->httpProxy;
-        }
-
-        return Craft::createObject(Client::class, [$guzzleConfig]);
+        return Http::create($config)->buildClient();
     }
 }
 

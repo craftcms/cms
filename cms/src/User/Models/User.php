@@ -3,7 +3,7 @@
 namespace CraftCms\Cms\User\Models;
 
 use Craft;
-use craft\enums\CmsEdition;
+use CraftCms\Cms\Edition;
 use CraftCms\Cms\Support\BaseModel;
 use Illuminate\Auth\Authenticatable;
 use Illuminate\Auth\MustVerifyEmail;
@@ -21,6 +21,8 @@ class User extends BaseModel implements AuthenticatableContract, AuthorizableCon
     use CanResetPassword;
     use HasFactory;
     use MustVerifyEmail;
+
+    protected $guarded = [];
 
     /**
      * The attributes that should be hidden for serialization.
@@ -52,7 +54,7 @@ class User extends BaseModel implements AuthenticatableContract, AuthorizableCon
     {
         if (
             $this->admin ||
-            Craft::$app->edition === CmsEdition::Solo
+            Craft::$app->edition === Edition::Solo
         ) {
             return true;
         }

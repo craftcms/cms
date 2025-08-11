@@ -20,6 +20,7 @@ use craft\helpers\Db;
 use craft\helpers\Queue;
 use craft\queue\jobs\PruneRevisions;
 use CraftCms\Cms\Support\Arr;
+use Illuminate\Support\Facades\Cache;
 use Throwable;
 use yii\base\Component;
 use yii\base\InvalidArgumentException;
@@ -83,8 +84,8 @@ class Revisions extends Component
         }
 
         $lockKey = 'revision:' . $canonical->id;
-        $mutex = Craft::$app->getMutex();
-        if (!$mutex->acquire($lockKey, 3)) {
+        $mutex = Cache::lock($lockKey, 3);
+        if (!$mutex->get()) {
             throw new MutexException($lockKey, sprintf('Could not acquire a lock to save a revision for element %s', $canonical->id));
         }
 
@@ -193,11 +194,11 @@ class Revisions extends Component
                 ]));
             }
         } finally {
-            $mutex->release($lockKey);
+            $mutex->release();
         }
 
         // Prune any excess revisions
-        if (Craft::$app->getConfig()->getGeneral()->maxRevisions) {
+        if (app(\CraftCms\Cms\Config\GeneralConfig::class)->maxRevisions) {
             Queue::push(new PruneRevisions([
                 'elementType' => get_class($canonical),
                 'canonicalId' => $canonical->id,

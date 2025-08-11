@@ -8,12 +8,14 @@ use craft\services\ProjectConfig;
 use craft\test\TestSetup;
 use CraftCms\Cms\Migrations\Install;
 use CraftCms\Cms\Providers\CraftServiceProvider;
+use CraftCms\Cms\Support\Facades\Http;
 use CraftCms\DependencyAwareCache\CacheServiceProvider;
 use CraftCms\Yii2Adapter\Yii2ServiceProvider;
 use Illuminate\Contracts\Console\Kernel;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Foundation\Testing\RefreshDatabaseState;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\File;
@@ -29,11 +31,13 @@ class TestCase extends Orchestra
     {
         parent::setUp();
 
-        Craft::$app->mutex->release(ProjectConfig::MUTEX_NAME);
+        Cache::lock(ProjectConfig::MUTEX_NAME)->forceRelease();
 
         Factory::guessFactoryNamesUsing(
             fn (string $modelName) => 'CraftCms\\Cms\\Database\\Factories\\'.class_basename($modelName).'Factory'
         );
+
+        Http::preventStrayRequests();
     }
 
     protected function tearDown(): void

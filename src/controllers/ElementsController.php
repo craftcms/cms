@@ -19,7 +19,6 @@ use craft\db\Table;
 use craft\elements\db\ElementQueryInterface;
 use craft\elements\db\NestedElementQueryInterface;
 use craft\elements\User;
-use craft\enums\MenuItemType;
 use craft\errors\InvalidElementException;
 use craft\errors\InvalidTypeException;
 use craft\errors\UnsupportedSiteException;
@@ -41,10 +40,12 @@ use craft\web\Controller;
 use craft\web\CpScreenResponseBehavior;
 use craft\web\UrlManager;
 use craft\web\View;
+use CraftCms\Cms\Element\Enums\MenuItemType;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Support\Str;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Cache;
 use Throwable;
 use yii\helpers\Markdown;
 use yii\web\BadRequestHttpException;
@@ -787,7 +788,7 @@ JS, [
             $drafts = [];
         }
 
-        $generalConfig = Craft::$app->getConfig()->getGeneral();
+        $generalConfig = app(\CraftCms\Cms\Config\GeneralConfig::class);
         $revisionsPageUrl = null;
         $hasMoreRevisions = false;
 
@@ -1406,9 +1407,8 @@ JS, [
 
         $isNotNew = $element->id;
         if ($isNotNew) {
-            $lockKey = "element:$element->id";
-            $mutex = Craft::$app->getMutex();
-            if (!$mutex->acquire($lockKey, 15)) {
+            $mutex = Cache::lock("element:$element->id", 15);
+            if (!$mutex->get()) {
                 throw new ServerErrorHttpException('Could not acquire a lock to save the element.');
             }
         }
@@ -1429,7 +1429,7 @@ JS, [
             $success = false;
         } finally {
             if ($isNotNew) {
-                $mutex->release($lockKey);
+                $mutex->release();
             }
         }
 
@@ -2118,9 +2118,8 @@ JS, [
         }
 
         if (!$isUnpublishedDraft) {
-            $lockKey = "element:$element->canonicalId";
-            $mutex = Craft::$app->getMutex();
-            if (!$mutex->acquire($lockKey, 15)) {
+            $mutex = Cache::lock("element:$element->canonicalId", 15);
+            if (!$mutex->get()) {
                 throw new ServerErrorHttpException('Could not acquire a lock to save the element.');
             }
         }
@@ -2136,7 +2135,7 @@ JS, [
             return $this->_asAppyDraftFailure($element);
         } finally {
             if (!$isUnpublishedDraft) {
-                $mutex->release($lockKey);
+                $mutex->release();
             }
         }
 

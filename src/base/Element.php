@@ -37,8 +37,6 @@ use craft\elements\Entry;
 use craft\elements\exporters\Expanded;
 use craft\elements\exporters\Raw;
 use craft\elements\User;
-use craft\enums\AttributeStatus;
-use craft\enums\Color;
 use craft\errors\InvalidFieldException;
 use craft\events\AuthorizationCheckEvent;
 use craft\events\DefineAltActionsEvent;
@@ -88,7 +86,9 @@ use craft\validators\SlugValidator;
 use craft\validators\StringValidator;
 use craft\web\UploadedFile;
 use craft\web\View;
+use CraftCms\Cms\Element\Enums\AttributeStatus;
 use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Support\Enums\Color;
 use CraftCms\Cms\Support\Str;
 use CraftCms\DependencyAwareCache\Facades\DependencyCache;
 use GraphQL\Type\Definition\Type;
@@ -2972,7 +2972,7 @@ abstract class Element extends Component implements ElementInterface
     /**
      * @inheritdoc
      */
-    public function validate($attributeNames = null, $clearErrors = true)
+    public function validate($attributeNames = null, $clearErrors = true): bool
     {
         $this->_attributeNames = $attributeNames ? array_flip((array)$attributeNames) : null;
         $this->_invalidNestedElementIds = [];
@@ -5950,7 +5950,7 @@ JS, [
                         $find = ['/'];
                         $replace = ['/<wbr>'];
 
-                        $wordSeparator = Craft::$app->getConfig()->getGeneral()->slugWordSeparator;
+                        $wordSeparator = app(\CraftCms\Cms\Config\GeneralConfig::class)->slugWordSeparator;
 
                         if ($wordSeparator) {
                             $find[] = $wordSeparator;
@@ -6956,7 +6956,7 @@ JS, [
         }
 
         $templates = [];
-        $generalConfig = Craft::$app->getConfig()->getGeneral();
+        $generalConfig = app(\CraftCms\Cms\Config\GeneralConfig::class);
 
         $providerHandle = $this->getFieldLayout()?->provider?->getHandle();
         if ($providerHandle !== null) {

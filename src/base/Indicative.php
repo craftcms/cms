@@ -7,7 +7,7 @@
 
 namespace craft\base;
 
-use craft\enums\Color;
+use CraftCms\Cms\Support\Enums\Color;
 
 /**
  * Indicative defines the common interface to be implemented by components that

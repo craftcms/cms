@@ -60,6 +60,7 @@ use craft\web\twig\tokenparsers\TagTokenParser;
 use craft\web\twig\variables\CraftVariable;
 use craft\web\View;
 use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Support\Env;
 use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Support\Str;
 use DateInterval;
@@ -67,6 +68,7 @@ use DateTime;
 use DateTimeInterface;
 use DateTimeZone;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Stringable;
 use IteratorAggregate;
 use Money\Money;
@@ -1409,7 +1411,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
             new TwigFunction('expression', [$this, 'expressionFunction']),
             new TwigFunction('fieldValueSql', [$this, 'fieldValueSqlFunction']),
             new TwigFunction('floor', 'floor'),
-            new TwigFunction('getenv', [App::class, 'env']),
+            new TwigFunction('getenv', [Env::class, 'get']),
             new TwigFunction('gql', [$this, 'gqlFunction']),
             new TwigFunction('parseEnv', [App::class, 'parseEnv']),
             new TwigFunction('parseBooleanEnv', [App::class, 'parseBooleanEnv']),
@@ -1725,7 +1727,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
     public function getGlobals(): array
     {
         $isInstalled = Craft::$app->getIsInstalled();
-        $generalConfig = Craft::$app->getConfig()->getGeneral();
+        $generalConfig = app(\CraftCms\Cms\Config\GeneralConfig::class);
         $setPasswordRequestPath = $generalConfig->getSetPasswordRequestPath();
 
         if ($isInstalled && !Craft::$app->getUpdates()->getIsCraftUpdatePending()) {
@@ -1743,6 +1745,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
 
         return [
             'craft' => new CraftVariable(),
+            'config' => Config::all(),
             'currentSite' => $currentSite,
             'currentUser' => $currentUser,
             'primarySite' => $primarySite,

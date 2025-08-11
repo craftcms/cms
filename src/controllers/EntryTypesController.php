@@ -12,7 +12,6 @@ use craft\base\ElementContainerFieldInterface;
 use craft\base\FieldInterface;
 use craft\base\FieldLayoutElement;
 use craft\elements\Entry;
-use craft\enums\Color;
 use craft\fieldlayoutelements\entries\EntryTitleField;
 use craft\helpers\Cp;
 use craft\helpers\Html;
@@ -20,6 +19,7 @@ use craft\models\EntryType;
 use craft\models\Section;
 use craft\web\Controller;
 use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Support\Enums\Color;
 use CraftCms\Cms\Support\Str;
 use yii\web\BadRequestHttpException;
 use yii\web\ForbiddenHttpException;
@@ -55,7 +55,7 @@ class EntryTypesController extends Controller
             $this->requireAdmin();
         }
 
-        $this->readOnly = !Craft::$app->getConfig()->getGeneral()->allowAdminChanges;
+        $this->readOnly = !app(\CraftCms\Cms\Config\GeneralConfig::class)->allowAdminChanges;
 
         return parent::beforeAction($action);
     }

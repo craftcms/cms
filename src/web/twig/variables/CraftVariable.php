@@ -24,9 +24,9 @@ use craft\elements\Entry;
 use craft\elements\GlobalSet;
 use craft\elements\Tag;
 use craft\elements\User;
-use craft\enums\CmsEdition;
 use craft\events\DefineBehaviorsEvent;
 use craft\web\Application as WebApplication;
+use CraftCms\Cms\Edition;
 use yii\di\ServiceLocator;
 
 /**
@@ -70,7 +70,7 @@ class CraftVariable extends ServiceLocator
             'routes' => Routes::class,
         ];
 
-        if (Craft::$app->edition !== CmsEdition::Solo) {
+        if (Craft::$app->edition !== Edition::Solo) {
             $components = array_merge($components, [
                 'rebrand' => Rebrand::class,
             ]);

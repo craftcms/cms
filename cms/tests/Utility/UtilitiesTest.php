@@ -1,6 +1,7 @@
 <?php
 
-use craft\enums\CmsEdition;
+use CraftCms\Cms\Config\GeneralConfig;
+use CraftCms\Cms\Edition;
 use CraftCms\Cms\User\Models\User;
 use CraftCms\Cms\Utility\Events\RegisterUtilities;
 use CraftCms\Cms\Utility\Utilities\AssetIndexes;
@@ -20,11 +21,11 @@ it('can get all utility types', function () {
 });
 
 it('contains system messages when craft is pro', function () {
-    Craft::$app->setEdition(CmsEdition::Solo);
+    Craft::$app->setEdition(Edition::Solo);
 
     expect($this->utilities->getAllUtilityTypes())->not()->toContain(SystemMessages::class);
 
-    Craft::$app->setEdition(CmsEdition::Pro);
+    Craft::$app->setEdition(Edition::Pro);
 
     expect($this->utilities->getAllUtilityTypes())->toContain(SystemMessages::class);
 });
@@ -56,7 +57,7 @@ test('disabled utilities are not included', function () {
 
     expect($this->utilities->getAuthorizedUtilityTypes())->toContain(SystemReport::class);
 
-    Craft::$app->getConfig()->getGeneral()->disabledUtilities[] = 'system-report';
+    app(GeneralConfig::class)->disabledUtilities[] = 'system-report';
 
     expect($this->utilities->getAuthorizedUtilityTypes())->not()->toContain(SystemReport::class);
 });

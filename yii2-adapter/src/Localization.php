@@ -10,7 +10,7 @@
 namespace CraftCms\Yii2Adapter;
 
 use craft\i18n\I18N;
-use Illuminate\Support\Str;
+use CraftCms\Cms\Support\Str;
 
 class Localization extends I18N
 {

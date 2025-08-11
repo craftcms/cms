@@ -22,12 +22,12 @@ use craft\base\Indicative;
 use craft\base\Model;
 use craft\behaviors\FieldLayoutBehavior;
 use craft\elements\Entry;
-use craft\enums\Color;
 use craft\helpers\Inflector;
 use craft\helpers\UrlHelper;
 use craft\records\EntryType as EntryTypeRecord;
 use craft\validators\HandleValidator;
 use craft\validators\UniqueValidator;
+use CraftCms\Cms\Support\Enums\Color;
 
 /**
  * EntryType model class.
@@ -287,7 +287,7 @@ class EntryType extends Model implements
         if (
             $this->id &&
             Craft::$app->getUser()->getIsAdmin() &&
-            Craft::$app->getConfig()->getGeneral()->allowAdminChanges
+            app(\CraftCms\Cms\Config\GeneralConfig::class)->allowAdminChanges
         ) {
             $editId = sprintf('action-edit-%s', mt_rand());
             $items[] = [
