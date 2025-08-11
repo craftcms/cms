@@ -17,6 +17,7 @@ use craft\helpers\Db;
 use craft\helpers\Session;
 use craft\web\View;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 use Symfony\Component\BrowserKit\Response;
 use yii\base\ExitException;
 use yii\base\Module;
@@ -55,15 +56,15 @@ class CraftConnector extends Yii2
      */
     public function findAndLoginUser(mixed $user, bool $disableRequiredUserAgent = true): void
     {
-        $oldRequirement = Craft::$app->getConfig()->getGeneral()->requireUserAgentAndIpForSession;
+        $oldRequirement = app(\CraftCms\Cms\Config\GeneralConfig::class)->requireUserAgentAndIpForSession;
         if ($disableRequiredUserAgent) {
-            Craft::$app->getConfig()->getGeneral()->requireUserAgentAndIpForSession = false;
+            app(\CraftCms\Cms\Config\GeneralConfig::class)->requireUserAgentAndIpForSession = false;
         }
 
         parent::findAndLoginUser($user);
 
         if ($disableRequiredUserAgent) {
-            Craft::$app->getConfig()->getGeneral()->requireUserAgentAndIpForSession = $oldRequirement;
+            app(\CraftCms\Cms\Config\GeneralConfig::class)->requireUserAgentAndIpForSession = $oldRequirement;
         }
     }
 
@@ -126,6 +127,7 @@ class CraftConnector extends Yii2
         parent::resetApplication($closeSession);
         Db::reset();
         Session::reset();
+        Cache::lock(\craft\services\ProjectConfig::MUTEX_NAME)->forceRelease();
     }
 
     /**

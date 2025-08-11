@@ -50,7 +50,7 @@ class SectionsController extends Controller
             $this->requireAdmin();
         }
 
-        $this->readOnly = !Craft::$app->getConfig()->getGeneral()->allowAdminChanges;
+        $this->readOnly = !app(\CraftCms\Cms\Config\GeneralConfig::class)->allowAdminChanges;
 
         return true;
     }

@@ -62,7 +62,7 @@ class Images extends Component
      */
     public function init(): void
     {
-        if (strtolower(Craft::$app->getConfig()->getGeneral()->imageDriver) === 'gd') {
+        if (strtolower(app(\CraftCms\Cms\Config\GeneralConfig::class)->imageDriver) === 'gd') {
             $this->_driver = self::DRIVER_GD;
         } elseif ($this->getCanUseImagick()) {
             $this->_driver = self::DRIVER_IMAGICK;
@@ -320,7 +320,7 @@ class Images extends Component
 
         // Special case for SVG files.
         if (FileHelper::isSvg($filePath)) {
-            if (!Craft::$app->getConfig()->getGeneral()->sanitizeSvgUploads) {
+            if (!app(\CraftCms\Cms\Config\GeneralConfig::class)->sanitizeSvgUploads) {
                 return;
             }
 
@@ -337,12 +337,12 @@ class Images extends Component
             return;
         }
 
-        if (FileHelper::isGif($filePath) && !Craft::$app->getConfig()->getGeneral()->transformGifs) {
+        if (FileHelper::isGif($filePath) && !app(\CraftCms\Cms\Config\GeneralConfig::class)->transformGifs) {
             return;
         }
 
         try {
-            if (Craft::$app->getConfig()->getGeneral()->rotateImagesOnUploadByExifData) {
+            if (app(\CraftCms\Cms\Config\GeneralConfig::class)->rotateImagesOnUploadByExifData) {
                 $cleanedByRotation = $this->rotateImageByExifData($filePath);
             }
 

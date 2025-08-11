@@ -167,7 +167,7 @@ class UpdaterController extends BaseUpdaterController
         $pendingHandles = Craft::$app->getUpdates()->getPendingMigrationHandles();
 
         if (!empty(array_intersect($pendingHandles, $installedHandles))) {
-            $backup = Craft::$app->getConfig()->getGeneral()->getBackupOnUpdate();
+            $backup = app(\CraftCms\Cms\Config\GeneralConfig::class)->getBackupOnUpdate();
             return $this->sendNextAction($backup ? self::ACTION_BACKUP : self::ACTION_MIGRATE);
         }
 
@@ -285,7 +285,7 @@ class UpdaterController extends BaseUpdaterController
         if (!empty($this->data['install'])) {
             $nextAction = self::ACTION_COMPOSER_INSTALL;
         } else {
-            $backup = Craft::$app->getConfig()->getGeneral()->getBackupOnUpdate();
+            $backup = app(\CraftCms\Cms\Config\GeneralConfig::class)->getBackupOnUpdate();
             $nextAction = $backup ? self::ACTION_BACKUP : self::ACTION_MIGRATE;
         }
 
@@ -314,7 +314,7 @@ class UpdaterController extends BaseUpdaterController
      */
     protected function returnUrl(): string
     {
-        return $this->data['returnUrl'] ?? Craft::$app->getConfig()->getGeneral()->getPostCpLoginRedirect();
+        return $this->data['returnUrl'] ?? app(\CraftCms\Cms\Config\GeneralConfig::class)->getPostCpLoginRedirect();
     }
 
     /**

@@ -22,6 +22,7 @@ use craft\models\Site;
 use craft\services\ProjectConfig;
 use craft\web\Response;
 use CraftCms\Cms\CmsEdition;
+use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Element\Enums\PropagationMethod;
 use CraftCms\Cms\Support\Str;
 use Illuminate\Database\Schema\Blueprint;
@@ -885,7 +886,7 @@ class Install extends Migration
             $table->char('uid', 36)->default('0');
         });
 
-        Schema::create(Table::withoutYiiPlaceholder(Table::WIDGETS), function (Blueprint $table) {
+        Schema::create('widgets', function (Blueprint $table) {
             $table->integer('id', true);
             $table->integer('userId');
             $table->string('type');
@@ -1169,7 +1170,7 @@ class Install extends Migration
         ]));
         $this->output->writeln('done');
 
-        $generalConfig = Craft::$app->getConfig()->getGeneral();
+        $generalConfig = app(GeneralConfig::class);
         $projectConfig = Craft::$app->getProjectConfig();
 
         if ($this->applyProjectConfigYaml) {

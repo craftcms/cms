@@ -27,7 +27,7 @@ use yii\validators\Validator;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
  */
-interface FieldInterface extends SavableComponentInterface, Chippable, Grippable, CpEditable
+interface FieldInterface extends \CraftCms\Cms\Component\Contracts\SavableComponentInterface, ModelInterface, Chippable, Grippable, CpEditable
 {
     /**
      * Returns the field type’s SVG icon.

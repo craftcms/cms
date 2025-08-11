@@ -13,6 +13,7 @@ use craft\helpers\FileHelper;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Str;
 use GuzzleHttp\Client;
+use Illuminate\Support\Facades\Config;
 use Symfony\Component\VarDumper\Cloner\VarCloner;
 use yii\base\ExitException;
 use yii\base\InvalidConfigException;
@@ -172,7 +173,7 @@ class Craft extends Yii
     public static function cookieConfig(array $config = [], ?Request $request = null): array
     {
         if (!isset(self::$_baseCookieConfig)) {
-            $generalConfig = static::$app->getConfig()->getGeneral();
+            $generalConfig = app(\CraftCms\Cms\Config\GeneralConfig::class);
 
             if ($generalConfig->useSecureCookies === 'auto') {
                 $request ??= static::$app->getRequest();
@@ -426,9 +427,8 @@ EOD;
         ];
 
         // Grab the config from config/guzzle.php that is used on every Guzzle request.
-        $configService = static::$app->getConfig();
-        $guzzleConfig = $configService->getConfigFromFile('guzzle');
-        $generalConfig = $configService->getGeneral();
+        $guzzleConfig = Config::get('craft.guzzle', []);
+        $generalConfig = app(\CraftCms\Cms\Config\GeneralConfig::class);
 
         // Merge everything together
         $guzzleConfig = Arr::merge($defaultConfig, $guzzleConfig, $config);

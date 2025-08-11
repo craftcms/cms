@@ -2,7 +2,8 @@
 
 namespace craft\base\conditions;
 
-use craft\base\ComponentInterface;
+use craft\base\ModelInterface;
+use CraftCms\Cms\Component\Contracts\ComponentInterface;
 use yii\base\InvalidConfigException;
 
 /**
@@ -18,7 +19,7 @@ use yii\base\InvalidConfigException;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 4.0.0
  */
-interface ConditionRuleInterface extends ComponentInterface
+interface ConditionRuleInterface extends ComponentInterface, ModelInterface
 {
     /**
      * Returns whether the rule is safe to include in conditions that are stored in the project config.

@@ -9,12 +9,13 @@ namespace craft\web;
 
 use Craft;
 use craft\base\RequestTrait;
-use craft\config\GeneralConfig;
 use craft\errors\SiteNotFoundException;
 use craft\helpers\App;
 use craft\models\Site;
 use craft\services\Sites;
+use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Support\Env;
 use CraftCms\Cms\Support\Str;
 use yii\base\InvalidArgumentException;
 use yii\base\InvalidConfigException;
@@ -195,7 +196,7 @@ class Request extends \CraftCms\Yii2Adapter\Web\Request
         parent::init();
 
         if (!isset($this->generalConfig)) {
-            $this->generalConfig = Craft::$app->getConfig()->getGeneral();
+            $this->generalConfig = app(\CraftCms\Cms\Config\GeneralConfig::class);
         }
         $this->generalConfig = Instance::ensure($this->generalConfig, GeneralConfig::class);
 
@@ -1399,7 +1400,7 @@ class Request extends \CraftCms\Yii2Adapter\Web\Request
         }
 
         // Is CRAFT_SITE or X-Craft-Site present?
-        $siteId = App::env('CRAFT_SITE') ?? $this->getHeaders()->get('X-Craft-Site');
+        $siteId = Env::get('CRAFT_SITE') ?? $this->getHeaders()->get('X-Craft-Site');
         if ($siteId !== null) {
             if (is_numeric($siteId)) {
                 $site = $this->sites->getSiteById($siteId, false);

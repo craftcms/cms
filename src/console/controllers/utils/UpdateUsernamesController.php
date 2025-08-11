@@ -30,7 +30,7 @@ class UpdateUsernamesController extends Controller
     public function actionIndex(): int
     {
         // Make sure useEmailAsUsername is enabled
-        if (!Craft::$app->getConfig()->getGeneral()->useEmailAsUsername) {
+        if (!app(\CraftCms\Cms\Config\GeneralConfig::class)->useEmailAsUsername) {
             $this->stderr('The useEmailAsUsername config setting is not enabled.' . PHP_EOL, Console::FG_RED);
             return ExitCode::UNSPECIFIED_ERROR;
         }

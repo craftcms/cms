@@ -16,8 +16,6 @@ use yii\base\Module;
 /**
  * SystemReport represents a SystemReport dashboard widget.
  *
- * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- *
  * @since 6.0.0
  */
 final readonly class SystemReport extends Utility

@@ -10,6 +10,7 @@ namespace craft\base;
 use Craft;
 use craft\errors\InvalidPluginException;
 use craft\helpers\Component as ComponentHelper;
+use CraftCms\Cms\Component\Contracts\ComponentInterface;
 use yii\base\Arrayable;
 
 /**
@@ -71,7 +72,7 @@ trait MissingComponentTrait
 
         if (
             Craft::$app->getUser()->getIsAdmin() &&
-            Craft::$app->getConfig()->getGeneral()->allowAdminChanges
+            app(\CraftCms\Cms\Config\GeneralConfig::class)->allowAdminChanges
         ) {
             $pluginsService = Craft::$app->getPlugins();
 

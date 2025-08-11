@@ -5,6 +5,7 @@ namespace CraftCms\Cms\Utility;
 use craft\queue\QueueInterface;
 use craft\web\Application;
 use CraftCms\Cms\CmsEdition;
+use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Utility\Events\RegisterUtilities;
 use CraftCms\Cms\Utility\Utilities\AssetIndexes;
 use CraftCms\Cms\Utility\Utilities\ClearCaches;
@@ -35,6 +36,7 @@ final readonly class Utilities
 {
     public function __construct(
         #[Give('Craft')] protected Application $craft,
+        protected GeneralConfig $generalConfig,
     ) {}
 
     /**
@@ -44,8 +46,6 @@ final readonly class Utilities
      */
     public function getAllUtilityTypes(): Collection
     {
-        $generalConfig = $this->craft->getConfig()->getGeneral();
-
         $utilityTypes = Collection::make()
             ->push(
                 UpdatesUtility::class,
@@ -70,7 +70,7 @@ final readonly class Utilities
                 DeprecationErrors::class,
             )
             ->when(
-                $generalConfig->backupCommand !== false,
+                $this->generalConfig->backupCommand !== false,
                 fn (Collection $c) => $c->push(DbBackup::class)
             )
             ->push(
@@ -83,7 +83,7 @@ final readonly class Utilities
             $utilityTypes = $event->types;
         }
 
-        $disabledUtilities = array_flip($generalConfig->disabledUtilities);
+        $disabledUtilities = array_flip($this->generalConfig->disabledUtilities);
 
         return $utilityTypes
             /** @var class-string<Utility> $class */
@@ -123,7 +123,7 @@ final readonly class Utilities
         }
 
         // Make sure the utility isn't disabled
-        if (in_array($utilityId, $this->craft->getConfig()->getGeneral()->disabledUtilities)) {
+        if (in_array($utilityId, $this->generalConfig->disabledUtilities)) {
             return false;
         }
 

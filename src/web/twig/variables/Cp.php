@@ -25,6 +25,7 @@ use craft\web\twig\TemplateLoaderException;
 use CraftCms\Aliases\Facades\Aliases;
 use CraftCms\Cms\CmsEdition;
 use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Support\Env;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Utility\Utilities;
 use DateTime;
@@ -219,7 +220,7 @@ class Cp extends Component
     public function nav(): array
     {
         $isAdmin = Craft::$app->getUser()->getIsAdmin();
-        $generalConfig = Craft::$app->getConfig()->getGeneral();
+        $generalConfig = app(\CraftCms\Cms\Config\GeneralConfig::class);
 
         $navItems = [
             [
@@ -338,7 +339,7 @@ class Cp extends Component
             $navItems[] = [
                 'url' => 'settings',
                 'label' => Craft::t('app', 'Settings'),
-                'icon' => Craft::$app->getConfig()->getGeneral()->allowAdminChanges ? 'gear' : 'gear-slash',
+                'icon' => app(\CraftCms\Cms\Config\GeneralConfig::class)->allowAdminChanges ? 'gear' : 'gear-slash',
             ];
 
             $navItems[] = [
@@ -406,7 +407,7 @@ class Cp extends Component
      */
     public function settings(): array
     {
-        $readOnly = !Craft::$app->getConfig()->getGeneral()->allowAdminChanges;
+        $readOnly = !app(\CraftCms\Cms\Config\GeneralConfig::class)->allowAdminChanges;
         $settings = [];
 
         $label = Craft::t('app', 'System');
@@ -420,7 +421,7 @@ class Cp extends Component
             'label' => Craft::t('app', 'Sites'),
         ];
 
-        if (!Craft::$app->getConfig()->getGeneral()->headlessMode) {
+        if (!app(\CraftCms\Cms\Config\GeneralConfig::class)->headlessMode) {
             $settings[$label]['routes'] = [
                 'iconMask' => '@packageRoot/resources/icons/light/signs-post.svg',
                 'label' => Craft::t('app', 'Routes'),
@@ -431,7 +432,7 @@ class Cp extends Component
             'iconMask' => '@packageRoot/resources/icons/light/user-group.svg',
             'label' => Craft::t('app', 'Users'),
         ];
-        if (Craft::$app->getConfig()->getGeneral()->allowAdminChanges) {
+        if (app(\CraftCms\Cms\Config\GeneralConfig::class)->allowAdminChanges) {
             $settings[$label]['addresses'] = [
                 'iconMask' => '@packageRoot/resources/icons/light/map-location.svg',
                 'label' => Craft::t('app', 'Addresses'),
@@ -609,7 +610,7 @@ class Cp extends Component
             if (
                 is_string($var) &&
                 !str_starts_with($var, 'HTTP_') &&
-                is_scalar($env = App::env($var)) &&
+                is_scalar($env = Env::get($var)) &&
                 (!$filter || $filter($env))
             ) {
                 $envSuggestions[] = [
@@ -681,7 +682,7 @@ class Cp extends Component
             if (
                 is_string($var) &&
                 !str_starts_with($var, 'HTTP_') &&
-                is_string($value = App::env($var)) &&
+                is_string($value = Env::get($var)) &&
                 ($allowedValues === null || isset($allowedValues[$value]))
             ) {
                 $data = [];
@@ -714,7 +715,7 @@ class Cp extends Component
             if (!is_string($var)) {
                 continue;
             }
-            $value = App::env($var);
+            $value = Env::get($var);
             if ($value === null || $value === '') {
                 continue;
             }
@@ -753,7 +754,7 @@ class Cp extends Component
             if (!is_string($var)) {
                 continue;
             }
-            $value = App::env($var);
+            $value = Env::get($var);
             if ($value === null || $value === '') {
                 continue;
             }
