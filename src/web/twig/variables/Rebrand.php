@@ -8,9 +8,9 @@
 namespace craft\web\twig\variables;
 
 use Craft;
-use craft\enums\CmsEdition;
 use craft\errors\WrongEditionException;
 use craft\helpers\Image as ImageHelper;
+use CraftCms\Cms\CmsEdition;
 use yii\base\Exception;
 
 /**

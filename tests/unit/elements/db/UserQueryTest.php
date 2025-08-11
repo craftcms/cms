@@ -9,10 +9,10 @@ namespace crafttests\unit\elements\db;
 
 use Craft;
 use craft\elements\User;
-use craft\enums\CmsEdition;
 use craft\helpers\Db;
 use craft\services\Users;
 use craft\test\TestCase;
+use CraftCms\Cms\CmsEdition;
 use crafttests\fixtures\UserGroupsFixture;
 use DateTime;
 use UnitTester;

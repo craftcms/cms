@@ -9,12 +9,12 @@ namespace crafttests\unit\mail;
 
 use Craft;
 use craft\elements\User;
-use craft\enums\CmsEdition;
 use craft\errors\SiteNotFoundException;
 use craft\mail\Message;
 use craft\models\SystemMessage;
 use craft\test\TestCase;
 use craft\test\TestMailer;
+use CraftCms\Cms\CmsEdition;
 use ReflectionException;
 use UnitTester;
 use yii\base\ErrorException;

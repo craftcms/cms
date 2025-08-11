@@ -6,9 +6,9 @@ use Craft;
 use craft\db\Migration;
 use craft\db\Table;
 use craft\elements\Entry;
-use craft\enums\CmsEdition;
 use craft\models\Section_SiteSettings;
 use craft\services\ProjectConfig;
+use CraftCms\Cms\CmsEdition;
 use Illuminate\Support\Collection;
 
 /**

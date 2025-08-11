@@ -11,7 +11,7 @@ use Craft;
 use craft\base\ElementAction;
 use craft\elements\db\ElementQueryInterface;
 use craft\elements\User;
-use craft\enums\CmsEdition;
+use CraftCms\Cms\CmsEdition;
 use yii\base\Exception;
 
 /**

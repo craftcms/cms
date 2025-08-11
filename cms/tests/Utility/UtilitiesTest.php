@@ -1,6 +1,6 @@
 <?php
 
-use craft\enums\CmsEdition;
+use CraftCms\Cms\CmsEdition;
 use CraftCms\Cms\User\Models\User;
 use CraftCms\Cms\Utility\Events\RegisterUtilities;
 use CraftCms\Cms\Utility\Utilities\AssetIndexes;

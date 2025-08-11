@@ -8,8 +8,8 @@
 namespace craft\web\twig;
 
 use Craft;
-use craft\enums\CmsEdition;
 use craft\helpers\Cp;
+use CraftCms\Cms\CmsEdition;
 use Twig\Extension\AbstractExtension;
 use Twig\Extension\GlobalsInterface;
 use Twig\TwigFilter;

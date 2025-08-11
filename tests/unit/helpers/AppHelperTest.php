@@ -9,12 +9,12 @@ namespace crafttests\unit\helpers;
 
 use Craft;
 use craft\config\GeneralConfig;
-use craft\enums\CmsEdition;
 use craft\helpers\App;
 use craft\mail\transportadapters\Sendmail;
 use craft\models\MailSettings;
 use craft\services\Entries;
 use craft\test\TestCase;
+use CraftCms\Cms\CmsEdition;
 use stdClass;
 use yii\base\Component;
 use yii\base\InvalidArgumentException;

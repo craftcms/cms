@@ -8,9 +8,9 @@
 namespace craft\controllers;
 
 use Craft;
-use craft\enums\CmsEdition;
 use craft\models\UserGroup;
 use craft\web\Controller;
+use CraftCms\Cms\CmsEdition;
 use yii\web\BadRequestHttpException;
 use yii\web\NotFoundHttpException;
 use yii\web\Response;

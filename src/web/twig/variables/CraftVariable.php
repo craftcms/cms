@@ -24,9 +24,9 @@ use craft\elements\Entry;
 use craft\elements\GlobalSet;
 use craft\elements\Tag;
 use craft\elements\User;
-use craft\enums\CmsEdition;
 use craft\events\DefineBehaviorsEvent;
 use craft\web\Application as WebApplication;
+use CraftCms\Cms\CmsEdition;
 use yii\di\ServiceLocator;
 
 /**

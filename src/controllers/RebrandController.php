@@ -8,12 +8,12 @@
 namespace craft\controllers;
 
 use Craft;
-use craft\enums\CmsEdition;
 use craft\helpers\Assets;
 use craft\helpers\FileHelper;
 use craft\helpers\Image;
 use craft\web\Controller;
 use craft\web\UploadedFile;
+use CraftCms\Cms\CmsEdition;
 use yii\web\Response;
 
 /**

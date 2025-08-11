@@ -9,7 +9,7 @@ namespace crafttests\functional\users;
 
 use Craft;
 use craft\elements\User;
-use craft\enums\CmsEdition;
+use CraftCms\Cms\CmsEdition;
 use FunctionalTester;
 
 /**

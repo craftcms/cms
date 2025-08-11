@@ -11,13 +11,13 @@ use Craft;
 use craft\db\Query;
 use craft\db\Table;
 use craft\elements\User;
-use craft\enums\CmsEdition;
 use craft\errors\WrongEditionException;
 use craft\events\ConfigEvent;
 use craft\events\UserGroupEvent;
 use craft\helpers\Db;
 use craft\models\UserGroup;
 use craft\records\UserGroup as UserGroupRecord;
+use CraftCms\Cms\CmsEdition;
 use CraftCms\Cms\Support\Str;
 use yii\base\Component;
 

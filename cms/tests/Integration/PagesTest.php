@@ -1,6 +1,6 @@
 <?php
 
-use craft\enums\CmsEdition;
+use CraftCms\Cms\CmsEdition;
 use CraftCms\Cms\User\Models\User;
 
 use function Pest\Laravel\actingAs;

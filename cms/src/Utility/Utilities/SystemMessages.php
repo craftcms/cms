@@ -3,7 +3,7 @@
 namespace CraftCms\Cms\Utility\Utilities;
 
 use Craft;
-use craft\enums\CmsEdition;
+use CraftCms\Cms\CmsEdition;
 use craft\web\assets\systemmessages\SystemMessagesAsset;
 use CraftCms\Cms\Utility\Utility;
 

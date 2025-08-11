@@ -3,7 +3,7 @@
 namespace CraftCms\Cms\User\Models;
 
 use Craft;
-use craft\enums\CmsEdition;
+use CraftCms\Cms\CmsEdition;
 use CraftCms\Cms\Support\BaseModel;
 use Illuminate\Auth\Authenticatable;
 use Illuminate\Auth\MustVerifyEmail;

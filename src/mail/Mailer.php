@@ -9,11 +9,11 @@ namespace craft\mail;
 
 use Craft;
 use craft\elements\User;
-use craft\enums\CmsEdition;
 use craft\helpers\App;
 use craft\helpers\Template;
 use craft\models\Site;
 use craft\web\View;
+use CraftCms\Cms\CmsEdition;
 use Throwable;
 use yii\base\InvalidConfigException;
 use yii\helpers\Markdown;

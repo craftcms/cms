@@ -9,7 +9,7 @@ namespace craft\auth\sso;
 
 use Craft;
 use craft\base\Component;
-use craft\enums\CmsEdition;
+use CraftCms\Cms\CmsEdition;
 
 /**
  * BaseProvider provides a base implementation for identity providers.

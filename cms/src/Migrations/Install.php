@@ -10,7 +10,7 @@ use craft\db\Table;
 use craft\elements\Asset;
 use craft\elements\Entry;
 use craft\elements\User;
-use craft\enums\CmsEdition;
+use CraftCms\Cms\CmsEdition;
 use craft\enums\PropagationMethod;
 use craft\errors\InvalidPluginException;
 use craft\errors\OperationAbortedException;

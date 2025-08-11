@@ -7,7 +7,7 @@
 
 namespace craft\base;
 
-use craft\enums\CmsEdition;
+use CraftCms\Cms\CmsEdition;
 
 /**
  * PluginTrait implements the common methods and properties for plugin classes.

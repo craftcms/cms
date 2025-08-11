@@ -9,7 +9,7 @@ use craft\elements\conditions\ElementConditionRuleInterface;
 use craft\elements\db\ElementQueryInterface;
 use craft\elements\db\UserQuery;
 use craft\elements\User;
-use craft\enums\CmsEdition;
+use CraftCms\Cms\CmsEdition;
 
 /**
  * Admin condition rule.

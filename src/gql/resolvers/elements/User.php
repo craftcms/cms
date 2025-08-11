@@ -12,9 +12,9 @@ use craft\elements\db\ElementQuery;
 use craft\elements\db\UserQuery;
 use craft\elements\ElementCollection;
 use craft\elements\User as UserElement;
-use craft\enums\CmsEdition;
 use craft\gql\base\ElementResolver;
 use craft\helpers\Gql as GqlHelper;
+use CraftCms\Cms\CmsEdition;
 use CraftCms\Cms\Support\Arr;
 use yii\base\UnknownMethodException;
 

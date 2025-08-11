@@ -12,12 +12,12 @@ use craft\auth\sso\ProviderInterface;
 use craft\base\MemoizableArray;
 use craft\db\Table;
 use craft\elements\User;
-use craft\enums\CmsEdition;
 use craft\errors\AuthProviderNotFoundException;
 use craft\errors\SsoFailedException;
 use craft\helpers\User as UserHelper;
 use craft\records\SsoIdentity;
 use craft\records\SsoIdentity as AuthRecord;
+use CraftCms\Cms\CmsEdition;
 use yii\base\Component;
 use yii\base\InvalidConfigException;
 

@@ -8,7 +8,6 @@
 namespace craft\controllers;
 
 use Craft;
-use craft\enums\CmsEdition;
 use craft\errors\InvalidLicenseKeyException;
 use craft\errors\InvalidPluginException;
 use craft\helpers\App;
@@ -17,6 +16,7 @@ use craft\helpers\UrlHelper;
 use craft\web\assets\pluginstore\PluginStoreAsset;
 use craft\web\Controller;
 use craft\web\View;
+use CraftCms\Cms\CmsEdition;
 use CraftCms\Cms\Support\Composer;
 use yii\base\InvalidConfigException;
 use yii\web\BadRequestHttpException;

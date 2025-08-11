@@ -17,7 +17,6 @@ use craft\db\Connection;
 use craft\db\mysql\Schema as MysqlSchema;
 use craft\db\pgsql\Schema as PgsqlSchema;
 use craft\elements\User;
-use craft\enums\CmsEdition;
 use craft\enums\LicenseKeyStatus;
 use craft\errors\InvalidPluginException;
 use craft\errors\MissingComponentException;
@@ -34,6 +33,7 @@ use craft\web\Request as WebRequest;
 use craft\web\Response as WebResponse;
 use craft\web\User as WebUser;
 use craft\web\View;
+use CraftCms\Cms\CmsEdition;
 use CraftCms\Cms\Support\Str;
 use HTMLPurifier_Encoder;
 use Illuminate\Support\Facades\Cache;
@@ -394,7 +394,7 @@ class App
      *
      * @param string $handle An edition’s handle
      * @return int The edition’s ID
-     * @throws InvalidArgumentException if $handle is invalid
+     * @throws \InvalidArgumentException if $handle is invalid
      * @since 3.1.0
      * @deprecated in 5.0.0. [[CmsEdition::fromHandle()]] should be used instead.
      */

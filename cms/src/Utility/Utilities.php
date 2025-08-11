@@ -2,7 +2,7 @@
 
 namespace CraftCms\Cms\Utility;
 
-use craft\enums\CmsEdition;
+use CraftCms\Cms\CmsEdition;
 use craft\queue\QueueInterface;
 use craft\web\Application;
 use CraftCms\Cms\Utility\Events\RegisterUtilities;

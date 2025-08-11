@@ -3,8 +3,8 @@
 namespace myprojecttests;
 
 use Craft;
-use craft\enums\CmsEdition;
 use craft\test\TestCase;
+use CraftCms\Cms\CmsEdition;
 use UnitTester;
 
 class ExampleUnitTest extends TestCase

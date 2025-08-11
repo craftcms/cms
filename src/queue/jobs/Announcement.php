@@ -10,10 +10,10 @@ namespace craft\queue\jobs;
 use Craft;
 use craft\db\Table;
 use craft\elements\User;
-use craft\enums\CmsEdition;
 use craft\helpers\Db;
 use craft\i18n\Translation;
 use craft\queue\BaseJob;
+use CraftCms\Cms\CmsEdition;
 use DateTime;
 use yii\base\Exception;
 
