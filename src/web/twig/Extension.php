@@ -71,6 +71,7 @@ use IteratorAggregate;
 use Money\Money;
 use Throwable;
 use Traversable;
+use Twig\DeprecatedCallableInfo;
 use Twig\Environment as TwigEnvironment;
 use Twig\Error\RuntimeError;
 use Twig\ExpressionParser;
@@ -172,7 +173,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
             new Profiler(),
             new GetAttrAdjuster(),
             new EventTagFinder(),
-            new EventTagAdder(),
+            new EventTagAdder($this->view),
         ];
     }
 
@@ -253,7 +254,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
             new TwigFilter('explodeStyle', [Html::class, 'explodeStyle']),
             new TwigFilter('filesize', [$this, 'filesizeFilter']),
             new TwigFilter('filter', [$this, 'filterFilter'], ['needs_environment' => true]),
-            new TwigFilter('filterByValue', [ArrayHelper::class, 'where'], ['deprecated' => '3.5.0', 'alternative' => 'where']),
+            new TwigFilter('filterByValue', [ArrayHelper::class, 'where'], ['deprecation_info' => new DeprecatedCallableInfo('craftcms/cms', '3.5.0', 'where')]),
             new TwigFilter('firstWhere', [ArrayHelper::class, 'firstWhere']),
             new TwigFilter('flatten', [Arr::class, 'flatten']),
             new TwigFilter('group', [$this, 'groupFilter']),

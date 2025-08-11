@@ -7,9 +7,9 @@
 
 namespace craft\web\twig\tokenparsers;
 
+use craft\web\twig\nodes\BaseNode;
 use craft\web\twig\nodes\SwitchNode;
 use Twig\Error\SyntaxError;
-use Twig\Node\Node;
 use Twig\Token;
 use Twig\TokenParser\AbstractTokenParser;
 
@@ -73,8 +73,8 @@ class SwitchTokenParser extends AbstractTokenParser
                     }
                     $stream->expect(Token::BLOCK_END_TYPE);
                     $body = $parser->subparse([$this, 'decideIfFork']);
-                    $cases[] = new Node([
-                        'values' => new Node($values),
+                    $cases[] = new BaseNode([
+                        'values' => new BaseNode($values),
                         'body' => $body,
                     ]);
                     break;
@@ -90,7 +90,7 @@ class SwitchTokenParser extends AbstractTokenParser
             }
         }
 
-        $nodes['cases'] = new Node($cases);
+        $nodes['cases'] = new BaseNode($cases);
 
         $stream->expect(Token::BLOCK_END_TYPE);
 

@@ -11,6 +11,7 @@
 - Control panel-defined routes now have action menus with “Move up”/“Move down” actions. ([#17706](https://github.com/craftcms/cms/pull/17706))
 
 ### Extensibility
+- Added `craft\web\twig\nodes\BaseNode`.
 - Added `Craft.BaseElementIndex::asyncSelectDefaultSource()`.
 - Added `Craft.BaseElementIndex::asyncSelectSource()`.
 - Added `Craft.BaseElementIndex::asyncSelectSourceByKey()`.
