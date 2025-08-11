@@ -13,12 +13,12 @@ use craft\elements\Address;
 use craft\elements\ElementCollection;
 use craft\elements\Entry;
 use craft\elements\User;
-use craft\enums\CmsEdition;
 use craft\fields\MissingField;
 use craft\fields\PlainText;
 use craft\test\TestCase;
 use craft\test\TestSetup;
 use craft\web\View;
+use CraftCms\Cms\Edition;
 use crafttests\fixtures\GlobalSetFixture;
 use DateInterval;
 use DateTime;
@@ -96,9 +96,9 @@ class ExtensionTest extends TestCase
      */
     public function testCraftSystemGlobals(): void
     {
-        Craft::$app->edition = CmsEdition::Pro;
+        Craft::$app->edition = Edition::Pro;
         $this->testRenderResult(
-            implode(',', [CmsEdition::Solo->value, CmsEdition::Team->value, CmsEdition::Pro->value]),
+            implode(',', [Edition::Solo->value, Edition::Team->value, Edition::Pro->value]),
             '{{ [CraftSolo, CraftTeam, CraftPro]|join(",") }}',
             templateMode: View::TEMPLATE_MODE_CP,
         );

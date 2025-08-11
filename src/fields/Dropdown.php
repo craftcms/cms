@@ -11,11 +11,11 @@ use Craft;
 use craft\base\ElementInterface;
 use craft\base\InlineEditableFieldInterface;
 use craft\base\SortableFieldInterface;
-use craft\enums\AttributeStatus;
 use craft\fields\data\MultiOptionsFieldData;
 use craft\fields\data\OptionData;
 use craft\fields\data\SingleOptionFieldData;
 use craft\helpers\Cp;
+use CraftCms\Cms\Element\Enums\AttributeStatus;
 
 /**
  * Dropdown represents a Dropdown field.

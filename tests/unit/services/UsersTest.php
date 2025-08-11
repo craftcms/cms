@@ -11,13 +11,13 @@ use Craft;
 use craft\db\Query;
 use craft\db\Table;
 use craft\elements\User;
-use craft\enums\CmsEdition;
 use craft\events\UserEvent;
 use craft\helpers\Db;
 use craft\mail\Message;
 use craft\services\Users;
 use craft\test\EventItem;
 use craft\test\TestCase;
+use CraftCms\Cms\Edition;
 use CraftCms\Cms\Support\Str;
 use crafttests\fixtures\UserGroupsFixture;
 use DateTime;
@@ -208,7 +208,7 @@ class UsersTest extends TestCase
      */
     public function testUserGroupAssignment(): void
     {
-        Craft::$app->edition = CmsEdition::Pro;
+        Craft::$app->edition = Edition::Pro;
 
         $this->users->assignUserToGroups(
             $this->activeUser->id,
@@ -224,7 +224,7 @@ class UsersTest extends TestCase
      */
     public function testUserGroupAssignmentInvalidation(): void
     {
-        Craft::$app->edition = CmsEdition::Pro;
+        Craft::$app->edition = Edition::Pro;
 
         $this->users->assignUserToGroups(
             $this->activeUser->id,
@@ -255,7 +255,7 @@ class UsersTest extends TestCase
      */
     public function testUserAssignmentToDefaultGroup(): void
     {
-        Craft::$app->edition = CmsEdition::Pro;
+        Craft::$app->edition = Edition::Pro;
         Craft::$app->getProjectConfig()->set('users.defaultGroup', 'usergroup-1002-------------------uid');
 
         $this->users->assignUserToDefaultGroup($this->activeUser);

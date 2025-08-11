@@ -9,7 +9,6 @@ namespace crafttests\unit\gql;
 
 use Craft;
 use craft\db\Table;
-use craft\enums\PropagationMethod;
 use craft\gql\resolvers\elements\Asset as AssetResolver;
 use craft\gql\resolvers\elements\Category as CategoryResolver;
 use craft\gql\resolvers\elements\Entry as EntryResolver;
@@ -29,6 +28,7 @@ use craft\records\UserGroup;
 use craft\records\Volume;
 use craft\services\Entries;
 use craft\test\TestCase;
+use CraftCms\Cms\Element\Enums\PropagationMethod;
 use CraftCms\Cms\Support\Str;
 use UnitTester;
 

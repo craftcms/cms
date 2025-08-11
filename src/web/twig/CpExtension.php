@@ -8,8 +8,8 @@
 namespace craft\web\twig;
 
 use Craft;
-use craft\enums\CmsEdition;
 use craft\helpers\Cp;
+use CraftCms\Cms\Edition;
 use Twig\Extension\AbstractExtension;
 use Twig\Extension\GlobalsInterface;
 use Twig\TwigFilter;
@@ -30,10 +30,10 @@ class CpExtension extends AbstractExtension implements GlobalsInterface
     {
         return [
             'CraftEdition' => Craft::$app->edition->value,
-            'CraftSolo' => CmsEdition::Solo->value,
-            'CraftTeam' => CmsEdition::Team->value,
-            'CraftPro' => CmsEdition::Pro->value,
-            'CraftEnterprise' => CmsEdition::Enterprise->value,
+            'CraftSolo' => Edition::Solo->value,
+            'CraftTeam' => Edition::Team->value,
+            'CraftPro' => Edition::Pro->value,
+            'CraftEnterprise' => Edition::Enterprise->value,
             'requestedSite' => Cp::requestedSite(),
         ];
     }

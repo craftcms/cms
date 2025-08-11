@@ -17,7 +17,6 @@ use craft\config\DbConfig;
 use craft\console\Application as ConsoleApplication;
 use craft\db\Query;
 use craft\db\Table;
-use craft\enums\CmsEdition;
 use craft\errors\ElementNotFoundException;
 use craft\errors\InvalidPluginException;
 use craft\helpers\App;
@@ -26,6 +25,7 @@ use craft\models\FieldLayout;
 use craft\queue\BaseJob;
 use craft\queue\Queue;
 use craft\web\Application as WebApplication;
+use CraftCms\Cms\Edition;
 use CraftCms\Cms\Support\Env;
 use DateTime;
 use Exception;
@@ -85,7 +85,7 @@ class Craft extends Yii2
         'dbSetup' => null,
         'projectConfig' => null,
         'fullMock' => false,
-        'edition' => CmsEdition::Pro->value,
+        'edition' => Edition::Pro->value,
     ];
 
     /**
@@ -289,7 +289,7 @@ class Craft extends Yii2
             throw $exception;
         }
 
-        \Craft::$app->setEdition(CmsEdition::Pro);
+        \Craft::$app->setEdition(Edition::Pro);
 
         // Avoid a "headers already sent" error
         ob_end_clean();

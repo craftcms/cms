@@ -11,11 +11,11 @@ namespace craft\controllers;
 use Craft;
 use craft\base\Event;
 use craft\elements\User;
-use craft\enums\CmsEdition;
 use craft\events\DefineEditUserScreensEvent;
 use craft\helpers\Cp;
 use craft\helpers\UrlHelper;
 use craft\web\Controller;
+use CraftCms\Cms\Edition;
 use yii\web\BadRequestHttpException;
 use yii\web\ForbiddenHttpException;
 use yii\web\Response;
@@ -186,10 +186,10 @@ trait EditUserTrait
     {
         $currentUser = static::currentUser();
         return (
-            Craft::$app->edition->value >= CmsEdition::Team->value &&
+            Craft::$app->edition->value >= Edition::Team->value &&
             (
-                (Craft::$app->edition === CmsEdition::Team && $currentUser->admin) ||
-                (Craft::$app->edition->value >= CmsEdition::Pro->value && $currentUser->can('assignUserPermissions')) ||
+                (Craft::$app->edition === Edition::Team && $currentUser->admin) ||
+                (Craft::$app->edition->value >= Edition::Pro->value && $currentUser->can('assignUserPermissions')) ||
                 $currentUser->canAssignUserGroups()
             )
         );

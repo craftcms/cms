@@ -21,7 +21,6 @@ use craft\elements\Category;
 use craft\elements\Entry;
 use craft\elements\Tag;
 use craft\elements\User;
-use craft\enums\CmsEdition;
 use craft\errors\DbConnectException;
 use craft\errors\SiteNotFoundException;
 use craft\errors\WrongEditionException;
@@ -109,6 +108,7 @@ use craft\web\UrlManager;
 use craft\web\User as UserSession;
 use craft\web\View;
 use CraftCms\Cms\Announcement\Announcements;
+use CraftCms\Cms\Edition;
 use CraftCms\Cms\Support\Env;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Cache as CacheFacade;
@@ -231,10 +231,10 @@ trait ApplicationTrait
     public ?string $env = null;
 
     /**
-     * @var CmsEdition The installed Craft CMS edition.
+     * @var Edition The installed Craft CMS edition.
      * @since 5.0.0
      */
-    public CmsEdition $edition;
+    public Edition $edition;
 
     /**
      * @var bool|null
@@ -602,9 +602,9 @@ trait ApplicationTrait
     /**
      * Returns the edition Craft is actually licensed to run in.
      *
-     * @return CmsEdition|null
+     * @return Edition|null
      */
-    public function getLicensedEdition(): ?CmsEdition
+    public function getLicensedEdition(): ?Edition
     {
         $licenseInfo = CacheFacade::get(App::CACHE_KEY_LICENSE_INFO, []);
 
@@ -612,7 +612,7 @@ trait ApplicationTrait
             return null;
         }
 
-        return CmsEdition::fromHandle($licenseInfo['craft']['edition']);
+        return Edition::fromHandle($licenseInfo['craft']['edition']);
     }
 
     /**
@@ -644,16 +644,16 @@ trait ApplicationTrait
     /**
      * Sets the installed Craft CMS edition.
      *
-     * @param CmsEdition|int $edition The edition to set.
+     * @param Edition|int $edition The edition to set.
      * @return bool
      */
-    public function setEdition(CmsEdition|int $edition): bool
+    public function setEdition(Edition|int $edition): bool
     {
         if (is_int($edition)) {
-            $edition = CmsEdition::from($edition);
+            $edition = Edition::from($edition);
         }
 
-        $oldEdition = $this->edition ?? CmsEdition::Solo;
+        $oldEdition = $this->edition ?? Edition::Solo;
         $this->getProjectConfig()->set('system.edition', $edition->handle(), 'Craft CMS edition change');
         $this->edition = $edition;
 
@@ -673,14 +673,14 @@ trait ApplicationTrait
     /**
      * Requires that Craft is running an equal or better edition than what's passed in
      *
-     * @param CmsEdition|int $edition The Craft edition to require.
+     * @param Edition|int $edition The Craft edition to require.
      * @param bool $orBetter If true, makes $edition the minimum edition required.
      * @throws WrongEditionException if attempting to do something not allowed by the current Craft edition
      */
-    public function requireEdition(CmsEdition|int $edition, bool $orBetter = true): void
+    public function requireEdition(Edition|int $edition, bool $orBetter = true): void
     {
         if (is_int($edition)) {
-            $edition = CmsEdition::from($edition);
+            $edition = Edition::from($edition);
         }
 
         if ($this->getIsInstalled() && !$this->getProjectConfig()->getIsApplyingExternalChanges()) {
@@ -709,8 +709,8 @@ trait ApplicationTrait
             $licensedEdition = $this->getLicensedEdition();
 
             return (
-                ($this->edition->value < CmsEdition::Pro->value) ||
-                ($licensedEdition !== null && $licensedEdition->value < CmsEdition::Pro->value)
+                ($this->edition->value < Edition::Pro->value) ||
+                ($licensedEdition !== null && $licensedEdition->value < Edition::Pro->value)
             );
         }
 
@@ -1543,7 +1543,7 @@ trait ApplicationTrait
 
         // Set the Craft edition
         $edition = Env::get('CRAFT_EDITION') ?? $this->getProjectConfig()->get('system.edition');
-        $this->edition = $edition ? CmsEdition::fromHandle($edition) : CmsEdition::Solo;
+        $this->edition = $edition ? Edition::fromHandle($edition) : Edition::Solo;
 
         // Load the request before anything else, so everything else can safely check Craft::$app->has('request', true)
         // to avoid possible recursive fatal errors in the request initialization

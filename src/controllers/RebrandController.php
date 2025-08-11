@@ -8,12 +8,12 @@
 namespace craft\controllers;
 
 use Craft;
-use craft\enums\CmsEdition;
 use craft\helpers\Assets;
 use craft\helpers\FileHelper;
 use craft\helpers\Image;
 use craft\web\Controller;
 use craft\web\UploadedFile;
+use CraftCms\Cms\Edition;
 use yii\web\Response;
 
 /**
@@ -40,7 +40,7 @@ class RebrandController extends Controller
             return false;
         }
 
-        Craft::$app->requireEdition(CmsEdition::Pro);
+        Craft::$app->requireEdition(Edition::Pro);
 
         return true;
     }

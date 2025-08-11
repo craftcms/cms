@@ -6,7 +6,7 @@ use Craft;
 use craft\db\Migration;
 use craft\db\Query;
 use craft\db\Table;
-use craft\enums\PropagationMethod;
+use CraftCms\Cms\Element\Enums\PropagationMethod;
 
 /**
  * m250522_090843_add_deleteEntriesForSite_and_deletePeerEntriesForSite_permissions migration.

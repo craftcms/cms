@@ -9,12 +9,12 @@ namespace craft\controllers;
 
 use Craft;
 use craft\base\Element;
-use craft\enums\PropagationMethod;
 use craft\helpers\Cp;
 use craft\models\Section;
 use craft\models\Section_SiteSettings;
 use craft\web\assets\editsection\EditSectionAsset;
 use craft\web\Controller;
+use CraftCms\Cms\Element\Enums\PropagationMethod;
 use yii\web\BadRequestHttpException;
 use yii\web\ForbiddenHttpException;
 use yii\web\NotFoundHttpException;

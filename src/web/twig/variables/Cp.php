@@ -9,7 +9,6 @@ namespace craft\web\twig\variables;
 
 use Craft;
 use craft\base\FsInterface;
-use craft\enums\CmsEdition;
 use craft\events\FormActionsEvent;
 use craft\events\RegisterCpNavItemsEvent;
 use craft\events\RegisterCpSettingsEvent;
@@ -24,6 +23,7 @@ use craft\models\Site;
 use craft\models\Volume;
 use craft\web\twig\TemplateLoaderException;
 use CraftCms\Aliases\Facades\Aliases;
+use CraftCms\Cms\Edition;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Env;
 use CraftCms\Cms\Support\Str;
@@ -263,7 +263,7 @@ class Cp extends Component
         }
 
         if (
-            Craft::$app->edition !== CmsEdition::Solo &&
+            Craft::$app->edition !== Edition::Solo &&
             Craft::$app->getUser()->checkPermission('viewUsers')
         ) {
             $navItems[] = [

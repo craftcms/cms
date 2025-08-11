@@ -2,10 +2,10 @@
 
 namespace CraftCms\Cms\Support;
 
-use craft\enums\LicenseKeyStatus;
 use craft\errors\InvalidLicenseKeyException;
 use craft\helpers\App;
 use craft\helpers\DateTimeHelper;
+use CraftCms\Cms\Support\Enums\LicenseKeyStatus;
 use CraftCms\Cms\Support\Facades\Http;
 use GuzzleHttp\Exception\GuzzleException;
 use GuzzleHttp\Exception\RequestException;
@@ -162,7 +162,7 @@ readonly class Api
         }
 
         // Craft Cloud
-        $craftCloudProjectId = App::env('CRAFT_CLOUD_PROJECT_ID');
+        $craftCloudProjectId = Env::get('CRAFT_CLOUD_PROJECT_ID');
         if ($craftCloudProjectId) {
             $headers['X-Craft-Cloud-Project-Id'] = $craftCloudProjectId;
         }

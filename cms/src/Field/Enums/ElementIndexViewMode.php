@@ -1,17 +1,11 @@
 <?php
-/**
- * @link https://craftcms.com/
- * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license https://craftcms.github.io/license/
- */
 
-namespace craft\enums;
+namespace CraftCms\Cms\Field\Enums;
 
 /**
  * ElementIndexViewMode defines the element index view modes supported in core.
  *
- * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 5.0.0
+ * @since 6.0.0
  */
 enum ElementIndexViewMode: string
 {

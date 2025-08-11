@@ -8,10 +8,10 @@
 namespace craft\controllers;
 
 use Craft;
-use craft\enums\CmsEdition;
 use craft\filters\UtilityAccess;
 use craft\models\SystemMessage;
 use craft\web\Controller;
+use CraftCms\Cms\Edition;
 use CraftCms\Cms\Utility\Utilities\SystemMessages;
 use yii\web\Response;
 
@@ -47,7 +47,7 @@ class SystemMessagesController extends Controller
             return false;
         }
 
-        Craft::$app->requireEdition(CmsEdition::Pro);
+        Craft::$app->requireEdition(Edition::Pro);
 
         return true;
     }

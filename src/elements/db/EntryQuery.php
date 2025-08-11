@@ -12,11 +12,11 @@ use craft\db\Query;
 use craft\db\QueryAbortedException;
 use craft\db\Table;
 use craft\elements\Entry;
-use craft\enums\CmsEdition;
 use craft\helpers\Db;
 use craft\models\EntryType;
 use craft\models\Section;
 use craft\models\UserGroup;
+use CraftCms\Cms\Edition;
 use CraftCms\Cms\Support\Arr;
 use DateTime;
 use Illuminate\Support\Collection;
@@ -889,7 +889,7 @@ class EntryQuery extends ElementQuery implements NestedElementQueryInterface
             $this->subQuery->andWhere(['entries.typeId' => $this->typeId]);
         }
 
-        if (Craft::$app->edition !== CmsEdition::Solo) {
+        if (Craft::$app->edition !== Edition::Solo) {
             if ($this->authorId) {
                 // Checking multiple authors?
                 if (

@@ -3,8 +3,8 @@
 namespace myprojecttests;
 
 use Craft;
-use craft\enums\CmsEdition;
 use craft\test\TestCase;
+use CraftCms\Cms\Edition;
 use UnitTester;
 
 class ExampleUnitTest extends TestCase
@@ -18,7 +18,7 @@ class ExampleUnitTest extends TestCase
      */
     public function testCraftEdition(): void
     {
-        Craft::$app->setEdition(CmsEdition::Pro);
-        $this->assertSame(CmsEdition::Pro, Craft::$app->edition);
+        Craft::$app->setEdition(Edition::Pro);
+        $this->assertSame(Edition::Pro, Craft::$app->edition);
     }
 }

@@ -29,9 +29,9 @@ use yii\web\Request;
  */
 class Craft extends Yii
 {
-    /** @deprecated in 5.0.0. [[\craft\enums\CmsEdition::Solo]] should be used instead. */
+    /** @deprecated in 5.0.0. [[\craft\enums\Edition::Solo]] should be used instead. */
     public const Solo = 0;
-    /** @deprecated in 5.0.0. [[\craft\enums\CmsEdition::Pro]] should be used instead. */
+    /** @deprecated in 5.0.0. [[\craft\enums\Edition::Pro]] should be used instead. */
     public const Pro = 2;
 
     /**

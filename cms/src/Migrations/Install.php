@@ -10,8 +10,6 @@ use craft\db\Table;
 use craft\elements\Asset;
 use craft\elements\Entry;
 use craft\elements\User;
-use craft\enums\CmsEdition;
-use craft\enums\PropagationMethod;
 use craft\errors\InvalidPluginException;
 use craft\errors\OperationAbortedException;
 use craft\helpers\DateTimeHelper;
@@ -24,6 +22,8 @@ use craft\models\Site;
 use craft\services\ProjectConfig;
 use craft\web\Response;
 use CraftCms\Cms\Config\GeneralConfig;
+use CraftCms\Cms\Edition;
+use CraftCms\Cms\Element\Enums\PropagationMethod;
 use CraftCms\Cms\Support\Str;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\DB;
@@ -1334,7 +1334,7 @@ class Install extends Migration
                 ],
             ],
             'system' => [
-                'edition' => CmsEdition::Solo->handle(),
+                'edition' => Edition::Solo->handle(),
                 'name' => $this->site->getName(),
                 'live' => true,
                 'schemaVersion' => Craft::$app->schemaVersion,

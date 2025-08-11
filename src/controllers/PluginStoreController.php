@@ -8,7 +8,6 @@
 namespace craft\controllers;
 
 use Craft;
-use craft\enums\CmsEdition;
 use craft\errors\InvalidLicenseKeyException;
 use craft\errors\InvalidPluginException;
 use craft\helpers\App;
@@ -17,6 +16,7 @@ use craft\helpers\UrlHelper;
 use craft\web\assets\pluginstore\PluginStoreAsset;
 use craft\web\Controller;
 use craft\web\View;
+use CraftCms\Cms\Edition;
 use CraftCms\Cms\Support\Composer;
 use yii\base\InvalidConfigException;
 use yii\web\BadRequestHttpException;
@@ -68,7 +68,7 @@ class PluginStoreController extends Controller
                 'edition' => Craft::$app->edition->handle(),
             ],
             'cmsLicenseKey' => App::licenseKey(),
-            'cmsEditions' => array_map(fn(CmsEdition $edition) => $edition->handle(), CmsEdition::cases()),
+            'cmsEditions' => array_map(fn(Edition $edition) => $edition->handle(), Edition::cases()),
             'craftIdAccessToken' => $this->getCraftIdAccessToken(),
             'phpVersion' => App::phpVersion(),
             'composerPhpVersion' => app(Composer::class)->getConfig()['config']['platform']['php'] ?? null,
@@ -105,10 +105,10 @@ class PluginStoreController extends Controller
         $data['licensedEdition'] = Craft::$app->getLicensedEdition()?->value;
         $data['canTestEditions'] = Craft::$app->getCanTestEditions();
         $data['CraftEdition'] = Craft::$app->edition->value;
-        $data['CraftSolo'] = CmsEdition::Solo->value;
-        $data['CraftTeam'] = CmsEdition::Team->value;
-        $data['CraftPro'] = CmsEdition::Pro->value;
-        $data['CraftEnterprise'] = CmsEdition::Enterprise->value;
+        $data['CraftSolo'] = Edition::Solo->value;
+        $data['CraftTeam'] = Edition::Team->value;
+        $data['CraftPro'] = Edition::Pro->value;
+        $data['CraftEnterprise'] = Edition::Enterprise->value;
 
         // Logos
         $data['craftLogo'] = Craft::$app->getAssetManager()->getPublishedUrl('@app/web/assets/pluginstore/dist/', true, 'images/craft.svg');

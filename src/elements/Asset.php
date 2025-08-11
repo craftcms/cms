@@ -35,8 +35,6 @@ use craft\elements\conditions\ElementConditionInterface;
 use craft\elements\db\AssetQuery;
 use craft\elements\db\EagerLoadPlan;
 use craft\elements\db\ElementQueryInterface;
-use craft\enums\CmsEdition;
-use craft\enums\MenuItemType;
 use craft\errors\AssetException;
 use craft\errors\FileException;
 use craft\errors\FsException;
@@ -70,6 +68,8 @@ use craft\services\ElementSources;
 use craft\validators\AssetLocationValidator;
 use craft\validators\DateTimeValidator;
 use craft\validators\StringValidator;
+use CraftCms\Cms\Edition;
+use CraftCms\Cms\Element\Enums\MenuItemType;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Str;
 use DateTime;
@@ -630,7 +630,7 @@ class Asset extends Element
         ]);
 
         // Hide Author from Craft Solo
-        if (Craft::$app->edition === CmsEdition::Solo) {
+        if (Craft::$app->edition === Edition::Solo) {
             unset($attributes['uploader']);
         }
 
@@ -717,7 +717,7 @@ class Asset extends Element
         ]);
 
         // Hide Author from Craft Solo
-        if (Craft::$app->edition === CmsEdition::Solo) {
+        if (Craft::$app->edition === Edition::Solo) {
             unset($attributes['uploader']);
         }
 

@@ -1,19 +1,11 @@
 <?php
-/**
- * @link https://craftcms.com/
- * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license https://craftcms.github.io/license/
- */
 
-namespace craft\enums;
+namespace CraftCms\Cms\Support\Enums;
 
-use yii\base\InvalidArgumentException;
+use InvalidArgumentException;
 
 /**
- * Color defines all possible colors for colorable components.
- *
- * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 5.0.0
+ * @since 6.0.0
  */
 enum Color: string
 {
@@ -40,10 +32,6 @@ enum Color: string
 
     /**
      * Returns the color associated with a given status name, if known.
-     *
-     * @param string $status
-     * @return self|null
-     * @since 5.2.0
      */
     public static function tryFromStatus(string $status): ?self
     {
@@ -59,20 +47,17 @@ enum Color: string
 
     /**
      * Returns the color’s CSS `var()` property for a given shade (50, 100, 200, ... 900).
-     *
-     * @param int $shade
-     * @return string
      */
     public function cssVar(int $shade): string
     {
         // make sure it's a valid shade
-        if (!in_array($shade, [50, ...range(100, 900, 100)])) {
+        if (! in_array($shade, [50, ...range(100, 900, 100)])) {
             throw new InvalidArgumentException("Invalid color shade: $shade");
         }
 
         return match ($this) {
             self::White, self::Gray, self::Black => sprintf('var(--%s)', $this->value),
-            default => sprintf('var(--%s-%s)', $this->value, str_pad((string)$shade, 3, '0', STR_PAD_LEFT)),
+            default => sprintf('var(--%s-%s)', $this->value, str_pad((string) $shade, 3, '0', STR_PAD_LEFT)),
         };
     }
 }

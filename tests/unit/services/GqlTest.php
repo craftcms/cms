@@ -11,7 +11,6 @@ use Craft;
 use craft\db\Table;
 use craft\elements\GlobalSet;
 use craft\elements\User;
-use craft\enums\CmsEdition;
 use craft\errors\GqlException;
 use craft\events\ExecuteGqlQueryEvent;
 use craft\events\RegisterGqlDirectivesEvent;
@@ -40,6 +39,7 @@ use craft\services\Volumes;
 use craft\test\mockclasses\gql\MockDirective;
 use craft\test\mockclasses\gql\MockType;
 use craft\test\TestCase;
+use CraftCms\Cms\Edition;
 use CraftCms\Cms\Support\Str;
 use GraphQL\Type\Definition\ObjectType;
 use UnitTester;
@@ -369,7 +369,7 @@ class GqlTest extends TestCase
         Craft::$app->set('userGroups', $userGroupService);
 
         $edition = Craft::$app->edition;
-        Craft::$app->edition = CmsEdition::Pro;
+        Craft::$app->edition = Edition::Pro;
         $allSchemaComponents = Craft::$app->getGql()->getAllSchemaComponents();
 
         self::assertNotEmpty($allSchemaComponents);

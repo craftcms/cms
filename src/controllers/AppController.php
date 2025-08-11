@@ -12,8 +12,6 @@ use craft\base\Chippable;
 use craft\base\ElementInterface;
 use craft\base\Iconic;
 use craft\elements\db\NestedElementQueryInterface;
-use craft\enums\CmsEdition;
-use craft\enums\LicenseKeyStatus;
 use craft\errors\BusyResourceException;
 use craft\errors\InvalidPluginException;
 use craft\errors\StaleResourceException;
@@ -32,8 +30,10 @@ use craft\models\Update;
 use craft\models\Updates;
 use craft\web\Controller;
 use craft\web\ServiceUnavailableHttpException;
+use CraftCms\Cms\Edition;
 use CraftCms\Cms\Support\Api;
 use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Support\Enums\LicenseKeyStatus;
 use CraftCms\Cms\Support\Facades\Http;
 use CraftCms\Cms\Utility\Utilities;
 use CraftCms\Cms\Utility\Utilities\Updates as UpdatesUtility;
@@ -42,7 +42,6 @@ use CraftCms\DependencyAwareCache\Facades\DependencyCache;
 use DateInterval;
 use Illuminate\Support\Facades\Cache;
 use Throwable;
-use yii\base\InvalidArgumentException;
 use yii\base\InvalidConfigException;
 use yii\web\BadRequestHttpException;
 use yii\web\Cookie;
@@ -504,11 +503,11 @@ class AppController extends Controller
         $this->requireAdmin();
 
         $edition = $this->request->getRequiredBodyParam('edition');
-        $licensedEdition = Craft::$app->getLicensedEdition() ?? CmsEdition::Solo;
+        $licensedEdition = Craft::$app->getLicensedEdition() ?? Edition::Solo;
 
         try {
-            $edition = CmsEdition::fromHandle($edition);
-        } catch (InvalidArgumentException $e) {
+            $edition = Edition::fromHandle($edition);
+        } catch (\InvalidArgumentException $e) {
             throw new BadRequestHttpException($e->getMessage(), previous: $e);
         }
 
