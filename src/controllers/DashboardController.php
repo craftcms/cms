@@ -17,6 +17,7 @@ use craft\models\CraftSupport;
 use craft\web\assets\dashboard\DashboardAsset;
 use craft\web\Controller;
 use craft\web\UploadedFile;
+use CraftCms\Cms\Support\Api;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Composer;
 use CraftCms\Cms\Support\Str;
@@ -419,7 +420,7 @@ class DashboardController extends Controller
         }
 
         try {
-            Craft::$app->getApi()->request('POST', 'support', [
+            app(Api::class)->request('POST', 'support', [
                 RequestOptions::MULTIPART => $parts,
             ]);
         } catch (Throwable $requestException) {

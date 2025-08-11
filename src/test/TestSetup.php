@@ -20,7 +20,6 @@ use craft\i18n\Locale;
 use craft\mail\Mailer;
 use craft\models\Site;
 use craft\queue\Queue;
-use craft\services\Api;
 use craft\services\AssetIndexer;
 use craft\services\Assets;
 use craft\services\Categories;
@@ -566,7 +565,6 @@ class TestSetup
     public static function getCraftServiceMap(): array
     {
         $map = [
-            [Api::class, ['getApi', 'api']],
             [Assets::class, ['getAssets', 'assets']],
             [AssetIndexer::class, ['getAssetIndexer', 'assetIndexer']],
             [ImageTransforms::class, ['getImageTransforms', 'imageTransforms']],

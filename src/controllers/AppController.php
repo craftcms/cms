@@ -18,7 +18,6 @@ use craft\errors\BusyResourceException;
 use craft\errors\InvalidPluginException;
 use craft\errors\StaleResourceException;
 use craft\filters\UtilityAccess;
-use craft\helpers\Api;
 use craft\helpers\App;
 use craft\helpers\Cp;
 use craft\helpers\DateTimeHelper;
@@ -33,6 +32,7 @@ use craft\models\Update;
 use craft\models\Updates;
 use craft\web\Controller;
 use craft\web\ServiceUnavailableHttpException;
+use CraftCms\Cms\Support\Api;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Utility\Utilities;
 use CraftCms\Cms\Utility\Utilities\Updates as UpdatesUtility;
@@ -157,7 +157,7 @@ class AppController extends Controller
     public function actionApiHeaders(): Response
     {
         $this->requireCpRequest();
-        return $this->asJson(Api::headers());
+        return $this->asJson(app(Api::class)->headers());
     }
 
     /**
@@ -171,10 +171,10 @@ class AppController extends Controller
     {
         $this->requireCpRequest();
         $headers = $this->request->getRequiredBodyParam('headers');
-        Api::processResponseHeaders($headers);
+        app(Api::class)->processResponseHeaders($headers);
 
         // return the updated headers
-        return $this->asJson(Api::headers());
+        return $this->asJson(app(Api::class)->headers());
     }
 
     /**
@@ -658,7 +658,7 @@ class AppController extends Controller
 
         if ($pluginLicenses === null) {
             // Update our records and get license info from the API
-            $licenseInfo = Craft::$app->getApi()->getLicenseInfo(['plugins']);
+            $licenseInfo = app(Api::class)->getLicenseInfo(['plugins']);
             $pluginLicenses = $licenseInfo['pluginLicenses'] ?? [];
         }
 

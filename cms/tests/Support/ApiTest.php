@@ -1,0 +1,36 @@
+<?php
+
+use CraftCms\Cms\Support\Api;
+use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\File;
+
+beforeEach(function () {
+    $this->api = app(Api::class);
+});
+
+it('can get headers', function () {
+    expect($this->api->headers())->not()->toBeEmpty();
+
+    tap($this->api->headers(), function (array $headers) {
+        expect($headers['Accept'])->toBe('application/json');
+        expect($headers['X-Craft-Env'])->toBe(config('app.env'));
+        expect($headers['X-Craft-System'])->toBe(sprintf('craft:%s;%s', \Craft::$app->getVersion(), \Craft::$app->edition->handle()));
+        expect($headers['X-Craft-Platform'])->toContain('php:', 'ext-');
+        expect($headers['X-Craft-License'])->toBe('__REQUEST__');
+    });
+});
+
+it('can process response headers', function () {
+    expect(Cache::has('editionTestableDomain@localhost'))->toBeFalse();
+    expect(File::exists(\Craft::$app->getPath()->getLicenseKeyPath()))->toBeTrue();
+
+    $this->api->processResponseHeaders([
+        'X-Craft-Allow-Trials' => true,
+        'X-Craft-License' => 'anewlicense',
+        'X-Craft-License-Domain' => 'foo.cloud',
+    ]);
+
+    expect(Cache::get('editionTestableDomain@localhost'))->toBe(1);
+    expect(File::get(\Craft::$app->getPath()->getLicenseKeyPath()))->toContain('anewlicense');
+    expect(Cache::get('licensedDomain'))->toBe('foo.cloud');
+});
