@@ -24,3 +24,9 @@ arch()
     ->not
     ->toBeUsed()
     ->ignoring(\CraftCms\Cms\Support\Str::class);
+
+arch()
+    ->expect(\Illuminate\Support\Facades\Http::class)
+    ->not
+    ->toBeUsed()
+    ->ignoring(\CraftCms\Cms\Support\Facades\Http::class);

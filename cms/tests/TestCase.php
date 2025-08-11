@@ -8,6 +8,7 @@ use craft\services\ProjectConfig;
 use craft\test\TestSetup;
 use CraftCms\Cms\Migrations\Install;
 use CraftCms\Cms\Providers\CraftServiceProvider;
+use CraftCms\Cms\Support\Facades\Http;
 use CraftCms\DependencyAwareCache\CacheServiceProvider;
 use CraftCms\Yii2Adapter\Yii2ServiceProvider;
 use Illuminate\Contracts\Console\Kernel;
@@ -35,6 +36,8 @@ class TestCase extends Orchestra
         Factory::guessFactoryNamesUsing(
             fn (string $modelName) => 'CraftCms\\Cms\\Database\\Factories\\'.class_basename($modelName).'Factory'
         );
+
+        Http::preventStrayRequests();
     }
 
     protected function tearDown(): void

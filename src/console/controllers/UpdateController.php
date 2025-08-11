@@ -20,6 +20,7 @@ use craft\helpers\Update as UpdateHelper;
 use craft\models\Update;
 use craft\models\Updates;
 use craft\models\Updates as UpdatesModel;
+use CraftCms\Cms\Support\Api;
 use CraftCms\Cms\Support\Composer;
 use Symfony\Component\Process\Exception\ProcessFailedException;
 use Symfony\Component\Process\Process;
@@ -647,7 +648,7 @@ class UpdateController extends Controller
             }
 
             $this->stdout('Requesting license... ');
-            Craft::$app->getApi()->getLicenseInfo();
+            app(Api::class)->getLicenseInfo();
 
             if (!$user) {
                 $session->setIdentity(null);
@@ -673,7 +674,7 @@ class UpdateController extends Controller
     private function _getUpdates(array $constraints = []): Updates
     {
         $this->stdout('Fetching available updates ... ');
-        $updateData = Craft::$app->getApi()->getUpdates($constraints);
+        $updateData = app(Api::class)->getUpdates($constraints);
         $this->stdout('done' . PHP_EOL, Console::FG_GREEN);
         return new UpdatesModel($updateData);
     }

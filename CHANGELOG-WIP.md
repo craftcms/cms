@@ -18,6 +18,9 @@
 - Deprecated `craft\enums\MenuItemType`. `CraftCms\Cms\Element\Enums\MenuItemType` should be used instead.
 - Deprecated `craft\enums\PropagationMethod`. `CraftCms\Cms\Element\Enums\PropagationMethod` should be used instead.
 - Deprecated `craft\enums\TimePeriod`. `CraftCms\Cms\Support\Enums\TimePeriod` should be used instead.
+- Deprecated `craft\services\Api`. `CraftCms\Cms\Support\Api` should be used instead.
+- Deprecated `craft\helpers\Api`. `CraftCms\Cms\Support\Api` should be used instead.
+- Deprecated `Craft::createGuzzleClient()`. `CraftCms\Cms\Support\Facades\Http::create()` should be used instead.
 
 ### Console commands
 - Added `php craft twig:cache` - Precompile Twig views

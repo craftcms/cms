@@ -17,9 +17,6 @@ return [
             'class' => craft\services\Addresses::class,
         ],
         'announcements' => \CraftCms\Cms\Announcement\Announcements::class,
-        'api' => [
-            'class' => craft\services\Api::class,
-        ],
         'assets' => [
             'class' => craft\services\Assets::class,
         ],

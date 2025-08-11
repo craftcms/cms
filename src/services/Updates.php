@@ -14,6 +14,7 @@ use craft\errors\MigrateException;
 use craft\helpers\App;
 use craft\helpers\FileHelper;
 use craft\models\Updates as UpdatesModel;
+use CraftCms\Cms\Support\Api;
 use CraftCms\Cms\Support\Arr;
 use Illuminate\Support\Facades\Cache;
 use Throwable;
@@ -107,7 +108,7 @@ class Updates extends Component
         }
 
         try {
-            $updateData = Craft::$app->getApi()->getUpdates();
+            $updateData = app(Api::class)->getUpdates();
         } catch (Throwable $e) {
             Craft::warning("Couldn't get updates: {$e->getMessage()}", __METHOD__);
             $updateData = [];

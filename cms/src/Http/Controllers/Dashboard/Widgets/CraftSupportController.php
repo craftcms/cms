@@ -5,6 +5,7 @@ namespace CraftCms\Cms\Http\Controllers\Dashboard\Widgets;
 use craft\helpers\App;
 use craft\helpers\FileHelper;
 use craft\web\Application;
+use CraftCms\Cms\Support\Api;
 use CraftCms\Cms\Support\Composer;
 use CraftCms\Cms\Support\Str;
 use Exception;
@@ -24,6 +25,7 @@ final readonly class CraftSupportController
 {
     public function __construct(
         private Composer $composer,
+        private Api $api,
     ) {}
 
     public function __invoke(Request $request, #[Give('Craft')] Application $craft): string
@@ -107,12 +109,9 @@ final readonly class CraftSupportController
         }
 
         try {
-            // @todo: Refactor this to use Laravel's HTTP fake after we replace Craft's API service
-            if (app()->environment() !== 'testing') {
-                \Craft::$app->getApi()->request('POST', 'support', [
-                    RequestOptions::MULTIPART => $parts,
-                ]);
-            }
+            $this->api->request('POST', 'support', [
+                RequestOptions::MULTIPART => $parts,
+            ]);
 
             return $view->renderTemplate('_components/widgets/CraftSupport/response.twig', [
                 'widgetId' => $widgetId,

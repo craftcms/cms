@@ -43,6 +43,7 @@ use craft\web\View;
 use CraftCms\Cms\Announcement\Announcements;
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Edition;
+use CraftCms\Cms\Support\Api;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Utility\Utilities;
 use CraftCms\Cms\Utility\Utilities\QueueManager;
@@ -518,7 +519,7 @@ JS;
             'actionTrigger' => $generalConfig->actionTrigger,
             'actionUrl' => UrlHelper::actionUrl(),
             'asciiCharMap' => Str::asciiCharMap(true, Craft::$app->language),
-            'baseApiUrl' => Craft::$app->baseApiUrl,
+            'baseApiUrl' => app(Api::class)->baseApiUrl,
             'baseSiteUrl' => UrlHelper::siteUrl(),
             'baseUrl' => UrlHelper::url(),
             'clientOs' => $request->getClientOs(),
@@ -584,7 +585,7 @@ JS;
             'allowAdminChanges' => $generalConfig->allowAdminChanges,
             'allowUpdates' => $generalConfig->allowUpdates,
             'allowUppercaseInSlug' => $generalConfig->allowUppercaseInSlug,
-            'apiParams' => Craft::$app->apiParams,
+            'apiParams' => app(Api::class)->apiParams,
             'appId' => Craft::$app->id,
             'autofocusPreferred' => $currentUser->getAutofocusPreferred(),
             'autosaveDrafts' => $generalConfig->autosaveDrafts,

@@ -16,7 +16,6 @@ use craft\errors\BusyResourceException;
 use craft\errors\InvalidPluginException;
 use craft\errors\StaleResourceException;
 use craft\filters\UtilityAccess;
-use craft\helpers\Api;
 use craft\helpers\App;
 use craft\helpers\Cp;
 use craft\helpers\DateTimeHelper;
@@ -32,8 +31,10 @@ use craft\models\Updates;
 use craft\web\Controller;
 use craft\web\ServiceUnavailableHttpException;
 use CraftCms\Cms\Edition;
+use CraftCms\Cms\Support\Api;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Enums\LicenseKeyStatus;
+use CraftCms\Cms\Support\Facades\Http;
 use CraftCms\Cms\Utility\Utilities;
 use CraftCms\Cms\Utility\Utilities\Updates as UpdatesUtility;
 use CraftCms\DependencyAwareCache\Dependency\FileDependency;
@@ -124,7 +125,7 @@ class AppController extends Controller
         // Close the PHP session in case this takes a while
         Session::close();
 
-        $response = Craft::createGuzzleClient()->get($url);
+        $response = Http::create()->get($url);
         $this->response->setCacheHeaders();
         $this->response->getHeaders()->set('content-type', 'application/javascript');
         return $this->asRaw($response->getBody());
@@ -156,7 +157,7 @@ class AppController extends Controller
     public function actionApiHeaders(): Response
     {
         $this->requireCpRequest();
-        return $this->asJson(Api::headers());
+        return $this->asJson(app(Api::class)->headers());
     }
 
     /**
@@ -170,10 +171,10 @@ class AppController extends Controller
     {
         $this->requireCpRequest();
         $headers = $this->request->getRequiredBodyParam('headers');
-        Api::processResponseHeaders($headers);
+        app(Api::class)->processResponseHeaders($headers);
 
         // return the updated headers
-        return $this->asJson(Api::headers());
+        return $this->asJson(app(Api::class)->headers());
     }
 
     /**
@@ -659,7 +660,7 @@ class AppController extends Controller
 
         if ($pluginLicenses === null) {
             // Update our records and get license info from the API
-            $licenseInfo = Craft::$app->getApi()->getLicenseInfo(['plugins']);
+            $licenseInfo = app(Api::class)->getLicenseInfo(['plugins']);
             $pluginLicenses = $licenseInfo['pluginLicenses'] ?? [];
         }
 

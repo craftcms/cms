@@ -59,7 +59,6 @@ use craft\models\FieldLayout;
 use craft\models\Info;
 use craft\queue\QueueInterface;
 use craft\services\Addresses;
-use craft\services\Api;
 use craft\services\AssetIndexer;
 use craft\services\Assets;
 use craft\services\Auth;
@@ -137,7 +136,6 @@ use yii\web\ServerErrorHttpException;
  * @property bool $isInstalled Whether Craft is installed
  * @property-read Addresses $addresses The addresses service
  * @property-read Announcements $announcements The announcements service
- * @property-read Api $api The API service
  * @property-read AssetIndexer $assetIndexer The asset indexer service
  * @property-read AssetManager $assetManager The asset manager component
  * @property-read Assets $assets The assets service
@@ -237,20 +235,6 @@ trait ApplicationTrait
      * @since 5.0.0
      */
     public Edition $edition;
-
-    /**
-     * @var string The base Craftnet API URL to use.
-     * @since 3.3.16
-     * @internal
-     */
-    public string $baseApiUrl = 'https://api.craftcms.com/v1/';
-
-    /**
-     * @var string[]|null Query params that should be appended to Craftnet API requests.
-     * @since 3.3.16
-     * @internal
-     */
-    public ?array $apiParams = null;
 
     /**
      * @var bool|null
@@ -1007,16 +991,6 @@ trait ApplicationTrait
     public function getAnnouncements(): Announcements
     {
         return $this->get('announcements');
-    }
-
-    /**
-     * Returns the API service.
-     *
-     * @return Api The API service
-     */
-    public function getApi(): Api
-    {
-        return $this->get('api');
     }
 
     /**
