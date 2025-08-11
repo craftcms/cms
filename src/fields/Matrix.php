@@ -28,7 +28,6 @@ use craft\elements\ElementCollection;
 use craft\elements\Entry;
 use craft\elements\NestedElementManager;
 use craft\elements\User;
-use craft\enums\ElementIndexViewMode;
 use craft\enums\PropagationMethod;
 use craft\errors\InvalidFieldException;
 use craft\events\BulkElementsEvent;
@@ -54,6 +53,7 @@ use craft\validators\StringValidator;
 use craft\validators\UriFormatValidator;
 use craft\web\assets\matrix\MatrixAsset;
 use craft\web\View;
+use CraftCms\Cms\Field\Enums\ElementIndexViewMode;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Str;
 use GraphQL\Type\Definition\Type;
@@ -919,7 +919,7 @@ JS, [
             $items[] = [
                 'id' => $copyAllId,
                 'icon' => 'clone-dashed',
-                'color' => \craft\enums\Color::Fuchsia,
+                'color' => \CraftCms\Cms\Support\Enums\Color::Fuchsia,
                 'label' => mb_ucfirst(Craft::t('app', 'Copy all {type}', [
                     'type' => Entry::pluralLowerDisplayName(),
                 ])),
