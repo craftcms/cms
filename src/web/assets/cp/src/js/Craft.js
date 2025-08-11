@@ -2112,6 +2112,7 @@ $.extend(Craft, {
     // menus last, since they can mess with the DOM
     $('.menubtn:not([data-disclosure-trigger])', $container).menubtn();
     $('[data-disclosure-trigger]', $container).disclosureMenu();
+    $('.expandable-button--collapsed', $container).expandableButton();
 
     /**
      * Swap any instruction text with info icons but avoid those with the class
@@ -3213,6 +3214,72 @@ $.extend($.fn, {
       if (!$trigger.data('trigger') && $trigger.attr('aria-controls')) {
         new Garnish.DisclosureMenu($trigger, settings);
       }
+    });
+  },
+
+  expandableButton: function () {
+    return this.each(function () {
+      const $collapsed = $(this);
+      let $expanded = $collapsed.next('.expandable-button--expanded');
+      if (!$expanded.length) {
+        $expanded = $collapsed.prev('.expandable-button--collapsed');
+      }
+      const $container = $collapsed.parent();
+      let containerWidth;
+      let isVisible = false;
+      let isExpanded = false;
+
+      const adjust = () => {
+        if (!containerWidth) {
+          return;
+        }
+
+        if (!isExpanded) {
+          $expanded.removeClass('hidden');
+        }
+        const expandedButtonWidth = $expanded[0].getBoundingClientRect().width;
+        if (
+          isExpanded !== (isExpanded = expandedButtonWidth <= containerWidth)
+        ) {
+          if (isExpanded) {
+            $collapsed.addClass('hidden');
+          } else {
+            $collapsed.removeClass('hidden');
+            $expanded.addClass('hidden');
+          }
+        } else if (!isExpanded) {
+          $expanded.addClass('hidden');
+        }
+      };
+
+      const intersectionObserver = new IntersectionObserver((entries) => {
+        // was the container just made visible?
+        if (
+          isVisible !== (isVisible = entries[0].intersectionRatio !== 0) &&
+          isVisible
+        ) {
+          adjust();
+        }
+      });
+      intersectionObserver.observe($container[0]);
+
+      const checkContainerWidth = () => {
+        if (
+          containerWidth !==
+            (containerWidth = $container[0].getBoundingClientRect().width) &&
+          containerWidth
+        ) {
+          adjust();
+        }
+      };
+      checkContainerWidth();
+
+      const resizeObserver = new ResizeObserver(() => {
+        Garnish.requestAnimationFrame(() => {
+          checkContainerWidth();
+        });
+      });
+      resizeObserver.observe($container[0]);
     });
   },
 

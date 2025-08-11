@@ -1,6 +1,7 @@
 # Release Notes for Craft CMS 5.9 (WIP)
 
 ### Content Management
+- Matrix fields using “Cards” or “Inline” view modes now show an “Add” button per entry type group, when the viewport is wide enough to support it. ([#17731](https://github.com/craftcms/cms/pull/17731))
 - Chips and cards are generally no longer hyperlinked. ([#17591](https://github.com/craftcms/cms/pull/17591))
 
 ### Accessibility

@@ -12,10 +12,6 @@
       inputNamePrefix: null,
       inputIdPrefix: null,
 
-      showingAddEntryMenu: false,
-      addEntryBtnGroupWidth: null,
-      addEntryBtnContainerWidth: null,
-
       $container: null,
       $form: null,
       $entriesContainer: null,
@@ -52,8 +48,8 @@
         this.$entriesContainer = this.$container.children('.blocks');
         this.$addEntryBtnContainer = this.$container.children('.buttons');
         this.$addEntryBtn =
-          this.$addEntryBtnContainer.children('.btn:not(.menubtn)');
-        this.$addEntryMenuBtn = this.$addEntryBtnContainer.children('.menubtn');
+          this.$addEntryBtnContainer.find('.btn:not(.menubtn)');
+        this.$addEntryMenuBtn = this.$addEntryBtnContainer.find('.menubtn');
         this.$statusMessage = this.$container.find('[data-status-message]');
 
         this.$container.data('matrix', this);
@@ -128,21 +124,22 @@
           }
         });
 
-        if (this.$addEntryMenuBtn.length) {
-          this.$addEntryMenuBtn
+        this.$addEntryMenuBtn.each((i, btn) => {
+          const $btn = $(btn);
+          $btn
             .disclosureMenu()
             .data('disclosureMenu')
             .$container.find('button')
             .on('activate', async (ev) => {
-              this.$addEntryMenuBtn.addClass('loading');
+              $btn.addClass('loading');
               Craft.cp.announce(Craft.t('app', 'Loading'));
               try {
                 await this.addEntry($(ev.currentTarget).data('type'));
               } finally {
-                this.$addEntryMenuBtn.removeClass('loading');
+                $btn.removeClass('loading');
               }
             });
-        }
+        });
 
         this.updateAddEntryBtn();
 
