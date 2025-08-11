@@ -1105,6 +1105,7 @@ trait ApplicationTrait
      * Returns the dashboard service.
      *
      * @return Dashboard The dashboard service
+     * @deprecated in 6.0.0. Use `app(\CraftCms\Cms\Dashboard\Dashboard::class)` instead.
      */
     public function getDashboard(): Dashboard
     {

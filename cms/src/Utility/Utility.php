@@ -2,7 +2,7 @@
 
 namespace CraftCms\Cms\Utility;
 
-use CraftCms\Cms\Support\Contracts\ComponentInterface;
+use CraftCms\Cms\Component\Contracts\ComponentInterface;
 
 abstract readonly class Utility implements ComponentInterface
 {

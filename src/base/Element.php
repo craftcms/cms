@@ -2972,7 +2972,7 @@ abstract class Element extends Component implements ElementInterface
     /**
      * @inheritdoc
      */
-    public function validate($attributeNames = null, $clearErrors = true)
+    public function validate($attributeNames = null, $clearErrors = true): bool
     {
         $this->_attributeNames = $attributeNames ? array_flip((array)$attributeNames) : null;
         $this->_invalidNestedElementIds = [];
