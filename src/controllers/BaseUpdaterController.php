@@ -15,6 +15,7 @@ use craft\helpers\Json;
 use craft\web\assets\updater\UpdaterAsset;
 use craft\web\Controller;
 use craft\web\Response as CraftResponse;
+use CraftCms\Cms\Support\Composer;
 use Symfony\Component\Process\Process;
 use Throwable;
 use yii\base\Exception;
@@ -170,7 +171,7 @@ abstract class BaseUpdaterController extends Controller
         $output = '';
 
         try {
-            Craft::$app->getComposer()->install($this->data['requirements'], function($type, $buffer) use (&$output) {
+            app(Composer::class)->install($this->data['requirements'], function($type, $buffer) use (&$output) {
                 if ($type === Process::OUT) {
                     $output .= $buffer;
                 }
@@ -203,7 +204,7 @@ abstract class BaseUpdaterController extends Controller
         $output = '';
 
         try {
-            Craft::$app->getComposer()->uninstall($packages, function($type, $buffer) use (&$output) {
+            app(Composer::class)->uninstall($packages, function($type, $buffer) use (&$output) {
                 if ($type === Process::OUT) {
                     $output .= $buffer;
                 }
@@ -321,7 +322,7 @@ abstract class BaseUpdaterController extends Controller
     protected function ensureComposerJson(): bool
     {
         try {
-            Craft::$app->getComposer()->getJsonPath();
+            app(Composer::class)->getJsonPath();
             return true;
         } catch (\Exception) {
             return false;
