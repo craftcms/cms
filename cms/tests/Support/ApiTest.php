@@ -3,6 +3,7 @@
 use CraftCms\Cms\Support\Api;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\File;
+use Illuminate\Support\Facades\Http;
 
 beforeEach(function () {
     $this->api = app(Api::class);
@@ -33,4 +34,20 @@ it('can process response headers', function () {
     expect(Cache::get('editionTestableDomain@localhost'))->toBe(1);
     expect(File::get(\Craft::$app->getPath()->getLicenseKeyPath()))->toContain('anewlicense');
     expect(Cache::get('licensedDomain'))->toBe('foo.cloud');
+});
+
+it('can get license info', function () {
+    Http::fake([
+        $this->api->baseApiUrl.'cms-licenses?include=' => Http::response([
+            'license' => [
+                'id' => 1234,
+            ],
+        ]),
+    ]);
+
+    app()->forgetInstance(Api::class);
+
+    expect(app(Api::class)->getLicenseInfo())->toBe([
+        'id' => 1234,
+    ]);
 });
