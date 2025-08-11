@@ -2,9 +2,9 @@
 
 namespace CraftCms\Cms\Utility;
 
-use CraftCms\Cms\CmsEdition;
 use craft\queue\QueueInterface;
 use craft\web\Application;
+use CraftCms\Cms\CmsEdition;
 use CraftCms\Cms\Utility\Events\RegisterUtilities;
 use CraftCms\Cms\Utility\Utilities\AssetIndexes;
 use CraftCms\Cms\Utility\Utilities\ClearCaches;

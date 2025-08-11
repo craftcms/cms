@@ -8,10 +8,10 @@
 namespace crafttests\unit\helpers;
 
 use Codeception\Test\Unit;
-use craft\enums\LicenseKeyStatus;
 use craft\helpers\StringHelper;
 use craft\test\mockclasses\ToString;
 use craft\test\TestCase;
+use CraftCms\Cms\Support\Enums\LicenseKeyStatus;
 use CraftCms\Cms\Support\Str;
 use stdClass;
 use yii\base\Exception;

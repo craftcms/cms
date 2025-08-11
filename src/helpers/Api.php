@@ -8,9 +8,9 @@
 namespace craft\helpers;
 
 use Craft;
-use craft\enums\LicenseKeyStatus;
 use craft\errors\InvalidLicenseKeyException;
 use CraftCms\Cms\Support\Composer;
+use CraftCms\Cms\Support\Enums\LicenseKeyStatus;
 use ErrorException;
 use Illuminate\Support\Facades\Cache;
 use Imagick;

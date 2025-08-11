@@ -1,6 +1,6 @@
 <?php
 
-use craft\enums\LicenseKeyStatus;
+use CraftCms\Cms\Support\Enums\LicenseKeyStatus;
 use CraftCms\Cms\Support\Str;
 use Illuminate\Support\Stringable;
 
