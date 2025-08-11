@@ -1,6 +1,7 @@
 <?php
 
 use CraftCms\Cms\Support\Api;
+use CraftCms\Cms\Support\Str;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Http;
@@ -23,16 +24,17 @@ it('can get headers', function () {
 
 it('can process response headers', function () {
     expect(Cache::has('editionTestableDomain@localhost'))->toBeFalse();
-    expect(File::exists(\Craft::$app->getPath()->getLicenseKeyPath()))->toBeTrue();
+
+    $key = Str::random();
 
     $this->api->processResponseHeaders([
         'X-Craft-Allow-Trials' => true,
-        'X-Craft-License' => 'anewlicense',
+        'X-Craft-License' => $key,
         'X-Craft-License-Domain' => 'foo.cloud',
     ]);
 
     expect(Cache::get('editionTestableDomain@localhost'))->toBe(1);
-    expect(File::get(\Craft::$app->getPath()->getLicenseKeyPath()))->toContain('anewlicense');
+    expect(File::get(\Craft::$app->getPath()->getLicenseKeyPath()))->toContain($key);
     expect(Cache::get('licensedDomain'))->toBe('foo.cloud');
 });
 
