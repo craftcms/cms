@@ -1,5 +1,9 @@
 # Release Notes for Craft CMS 4
 
+## Unreleased
+
+- Fixed PHP deprecation errors.
+
 ## 4.16.9.1 - 2025-08-07
 
 - Added `craft\services\UserPermissions::validatePermission()`.
