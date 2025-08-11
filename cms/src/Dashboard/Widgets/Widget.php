@@ -9,6 +9,7 @@ use CraftCms\Cms\Dashboard\Contracts\WidgetInterface;
 use CraftCms\Cms\Dashboard\Dashboard;
 use CraftCms\Cms\Dashboard\Models\Widget as WidgetModel;
 use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Support\Json;
 use Illuminate\Support\Facades\Date;
 use RuntimeException;
 
@@ -142,7 +143,7 @@ EOD;
         $class = $config['type'] ?? null;
 
         if (! $class) {
-            throw new RuntimeException('The config passed into Widget::fromConfig() did not specify a type: '.json_encode($config));
+            throw new RuntimeException('The config passed into Widget::fromConfig() did not specify a type: '.Json::encode($config));
         }
 
         return new $class($config);

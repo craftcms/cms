@@ -13,6 +13,7 @@ use craft\helpers\FileHelper;
 use craft\helpers\Session;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\Http;
+use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Support\Str;
 use Exception;
 use GuzzleHttp\Exception\GuzzleException;
@@ -223,7 +224,7 @@ class Webpack extends Component
 
             $body = $res->getBody();
             $contents = $body->getContents();
-            $json = json_decode($contents, true);
+            $json = Json::decode($contents);
 
             $this->_serverResponse[$loopback] = $json;
             $this->_isDevServerRunning[$class] = $this->_matchAsset($this->_serverResponse[$loopback], $class);

@@ -30,3 +30,12 @@ arch()
     ->not
     ->toBeUsed()
     ->ignoring(\CraftCms\Cms\Support\Facades\Http::class);
+
+arch('Only use JSON helper')
+    ->expect(['json_encode', 'json_decode'])
+    ->not
+    ->toBeUsed()
+    ->ignoring([
+        \CraftCms\Cms\Support\Json::class,
+        \craft\web\twig\Extension::class, // Depth argument needed
+    ]);
