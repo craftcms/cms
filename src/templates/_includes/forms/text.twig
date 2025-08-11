@@ -9,7 +9,7 @@
 {%- set descriptionId = descriptionId ?? "#{id}-desc" %}
 
 {%- set orientation = orientation ?? inputAttributes.dir ?? craft.app.locale.getOrientation() %}
-{%- set expanded = expanded ?? (role ?? false) == 'combobox' ? 'false' : false ?? false %}
+{%- set expanded = expanded ?? ((role ?? false) == 'combobox' ? 'false' : false) %}
 
 {%- set suffix = suffix ?? unit ?? false %}
 {%- set hasSuffix = suffix is not same as(false) %}
