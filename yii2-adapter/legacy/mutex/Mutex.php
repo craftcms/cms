@@ -16,6 +16,7 @@ use yii\mutex\Mutex as YiiMutex;
  * @inheritdoc
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.7.30
+ * @deprecated in 6.0.0. Use `\Illuminate\Support\Facades\Cache::lock()` instead.
  */
 class Mutex extends YiiMutex
 {

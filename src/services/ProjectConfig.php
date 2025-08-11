@@ -2186,9 +2186,9 @@ class ProjectConfig extends Component
             return;
         }
 
-        $mutex = Craft::$app->getMutex();
+        $mutex = Cache::lock(self::MUTEX_NAME, 30);
 
-        if (!$mutex->acquire(self::MUTEX_NAME)) {
+        if (!$mutex->get()) {
             throw new BusyResourceException('A lock could not be acquired to modify the project config.');
         }
 
@@ -2204,7 +2204,7 @@ class ProjectConfig extends Component
 
             if ($storedConfigVersion && $storedConfigVersion !== Craft::$app->getInfo()->configVersion) {
                 // Another request must have updated the project config after this request began
-                $mutex->release(self::MUTEX_NAME);
+                $mutex->release();
                 throw new StaleResourceException('The loaded project config is out-of-date.');
             }
         }
@@ -2221,7 +2221,7 @@ class ProjectConfig extends Component
             return;
         }
 
-        Craft::$app->getMutex()->release(self::MUTEX_NAME);
+        Cache::lock(self::MUTEX_NAME)->forceRelease();
         $this->_locked = false;
     }
 }

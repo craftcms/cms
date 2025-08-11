@@ -18,6 +18,7 @@ use craft\events\MoveElementEvent;
 use craft\models\Structure;
 use craft\records\Structure as StructureRecord;
 use craft\records\StructureElement;
+use Illuminate\Support\Facades\Cache;
 use Throwable;
 use yii\base\Component;
 use yii\base\Exception;
@@ -512,8 +513,8 @@ class Structures extends Component
     {
         // Get a lock or bust
         $lockName = 'structure:' . $structureId;
-        $mutex = Craft::$app->getMutex();
-        if (!$mutex->acquire($lockName, $this->mutexTimeout)) {
+        $mutex = Cache::lock($lockName, $this->mutexTimeout);
+        if (!$mutex->get()) {
             throw new MutexException($lockName, sprintf('Unable to acquire a lock for the structure %s', $structureId));
         }
 
@@ -555,14 +556,14 @@ class Structures extends Component
             ]);
             $this->trigger($beforeEvent, $event);
             if (!$event->isValid) {
-                $mutex->release($lockName);
+                $mutex->release();
                 return false;
             }
         }
 
         // Tell the element about it
         if (!$element->beforeMoveInStructure($structureId)) {
-            $mutex->release($lockName);
+            $mutex->release();
             return false;
         }
 
@@ -577,11 +578,11 @@ class Structures extends Component
         try {
             if (!$elementRecord->$method($targetElementRecord)) {
                 $transaction->rollBack();
-                $mutex->release($lockName);
+                $mutex->release();
                 return false;
             }
 
-            $mutex->release($lockName);
+            $mutex->release();
 
             // Update the element with the latest values.
             // todo: we should be able to pull these from $elementRecord - https://github.com/creocoder/yii2-nested-sets/issues/114
@@ -605,7 +606,7 @@ class Structures extends Component
             $transaction->commit();
         } catch (Throwable $e) {
             $transaction->rollBack();
-            $mutex->release($lockName);
+            $mutex->release();
             throw $e;
         }
 
