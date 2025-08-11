@@ -3,8 +3,8 @@
 namespace CraftCms\Cms\Dashboard\Widgets;
 
 use Craft;
-use craft\helpers\Json;
 use craft\web\assets\feed\FeedAsset;
+use CraftCms\Cms\Support\Json;
 use Illuminate\Support\Facades\Cache;
 
 /** @since 6.0.0 */

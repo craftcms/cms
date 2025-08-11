@@ -8,7 +8,7 @@
 namespace craft\db\pgsql;
 
 use craft\db\Connection;
-use craft\helpers\Json;
+use CraftCms\Cms\Support\Json;
 
 /**
  * @inheritdoc

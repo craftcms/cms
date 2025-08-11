@@ -10,6 +10,7 @@ namespace craft\addresses;
 use CommerceGuys\Addressing\Locale;
 use CommerceGuys\Addressing\Subdivision\SubdivisionRepository as BaseSubdivisionRepository;
 use Craft;
+use CraftCms\Cms\Support\Json;
 
 /**
  * Craft's extension of the commerceguys/addressing SubdivisionRepository.
@@ -52,7 +53,7 @@ class SubdivisionRepository extends BaseSubdivisionRepository
         $filePath = __DIR__ . '/data/' . $fileName . '.json';
 
         if (@file_exists($filePath) && $data = @file_get_contents($filePath)) {
-            $data = json_decode($data, true);
+            $data = Json::decode($data);
 
             if ($data['subdivisions']) {
                 $useLocalName = Locale::matchCandidates($lang, $data['extraLocale'] ?? null);

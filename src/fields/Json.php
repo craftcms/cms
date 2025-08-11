@@ -14,9 +14,8 @@ use craft\base\Field;
 use craft\base\MergeableFieldInterface;
 use craft\fields\data\JsonData;
 use craft\helpers\Html;
-use craft\helpers\Json as JsonHelper;
 use craft\web\assets\codemirror\CodeMirrorAsset;
-use yii\base\InvalidArgumentException;
+use CraftCms\Cms\Support\Json as JsonHelper;
 use yii\db\Schema;
 
 /**
@@ -86,7 +85,7 @@ class Json extends Field implements MergeableFieldInterface, CrossSiteCopyableFi
 
         try {
             $value = JsonHelper::decode($value);
-        } catch (InvalidArgumentException $e) {
+        } catch (\InvalidArgumentException $e) {
             $value = [
                 '__ERROR__' => $e->getMessage(),
                 '__VALUE__' => $value,

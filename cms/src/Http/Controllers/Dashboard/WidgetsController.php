@@ -5,6 +5,7 @@ namespace CraftCms\Cms\Http\Controllers\Dashboard;
 use craft\web\Application;
 use CraftCms\Cms\Dashboard\Contracts\WidgetInterface;
 use CraftCms\Cms\Dashboard\Dashboard;
+use CraftCms\Cms\Support\Json;
 use Illuminate\Container\Attributes\Give;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -98,7 +99,7 @@ final readonly class WidgetsController
 
     public function reorder(Request $request): JsonResponse
     {
-        $ids = json_decode($request->get('ids'), flags: JSON_THROW_ON_ERROR);
+        $ids = Json::decode($request->get('ids'));
 
         Validator::validate(['ids' => $ids], [
             'ids' => ['required', 'array'],

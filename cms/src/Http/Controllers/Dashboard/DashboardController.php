@@ -2,11 +2,11 @@
 
 namespace CraftCms\Cms\Http\Controllers\Dashboard;
 
-use craft\helpers\Json;
 use craft\web\Application;
 use craft\web\assets\dashboard\DashboardAsset;
 use CraftCms\Cms\Dashboard\Contracts\WidgetInterface;
 use CraftCms\Cms\Dashboard\Dashboard;
+use CraftCms\Cms\Support\Json;
 use Illuminate\Container\Attributes\Give;
 
 final readonly class DashboardController

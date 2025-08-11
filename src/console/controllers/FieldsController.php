@@ -17,9 +17,9 @@ use craft\fields\BaseRelationField;
 use craft\helpers\Console;
 use craft\helpers\Db;
 use craft\helpers\FileHelper;
-use craft\helpers\Json;
 use craft\models\FieldLayout;
 use craft\services\Fields;
+use CraftCms\Cms\Support\Json;
 use Illuminate\Support\Collection;
 use yii\console\ExitCode;
 

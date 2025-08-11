@@ -10,7 +10,7 @@ namespace craft\fields\data;
 use ArrayAccess;
 use ArrayIterator;
 use craft\base\Serializable;
-use craft\helpers\Json;
+use CraftCms\Cms\Support\Json;
 use IteratorAggregate;
 use Traversable;
 use yii\base\BaseObject;

@@ -9,6 +9,7 @@
 - Deprecated `Craft::$app->getConfig()->getGeneral()`. `CraftCms\Cms\Config\GeneralConfig` should be used instead. This can be used through dependency injection or through `app(CraftCms\Cms\Config\GeneralConfig::class)`.
 - Deprecated `craft.app.config.general` in Twig. `config.craft.general` should be used instead.
 - Deprecated `craft\helpers\App::env()`, `CraftCms\Cms\Support\Env::get()` should be used instead.
+- Deprecated `craft\helpers\Json`. `CraftCms\Cms\Support\Json` should be used instead.
 - Deprecated `craft\services\Composer`. `CraftCms\Cms\Support\Composer` should be used instead.
 - Deprecated `craft\enums\Color`. `CraftCms\Cms\Support\Enums\Color` should be used instead.
 - Deprecated `craft\enums\AttributeStatus`. `CraftCms\Cms\Element\Enums\AttributeStatus` should be used instead.

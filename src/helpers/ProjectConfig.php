@@ -10,6 +10,7 @@ namespace craft\helpers;
 use Craft;
 use craft\services\ProjectConfig as ProjectConfigService;
 use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Support\Json as JsonHelper;
 use CraftCms\Cms\Support\Str;
 use CraftCms\DependencyAwareCache\Dependency\AllDependencies;
 use CraftCms\DependencyAwareCache\Dependency\CallbackDependency;
@@ -35,7 +36,7 @@ class ProjectConfig
      */
     public static function encodeValueAsString(mixed $value): string
     {
-        return Json::encode($value, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_PRESERVE_ZERO_FRACTION);
+        return JsonHelper::encode($value, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_PRESERVE_ZERO_FRACTION);
     }
 
     /**
@@ -638,7 +639,7 @@ class ProjectConfig
             return Diff::diff($currentConfig, $pendingConfig);
         }, new AllDependencies([
             $projectConfig->getCacheDependency(),
-            new CallbackDependency(fn(): string => md5(Json::encode(Craft::$app->getProjectConfig()->get(null, true)))),
+            new CallbackDependency(fn(): string => md5(JsonHelper::encode(Craft::$app->getProjectConfig()->get(null, true)))),
         ]));
     }
 

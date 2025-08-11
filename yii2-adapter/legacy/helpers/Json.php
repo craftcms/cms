@@ -7,14 +7,15 @@
 
 namespace craft\helpers;
 
-use Craft;
-use yii\base\InvalidArgumentException;
+use CraftCms\Cms\Support\Str;
+use InvalidArgumentException;
 
 /**
  * Class Json
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
+ * @deprecated in 6.0.0. Use `\CraftCms\Cms\Support\Json` instead.
  */
 class Json extends \yii\helpers\Json
 {
@@ -22,12 +23,14 @@ class Json extends \yii\helpers\Json
      * Returns whether a string value looks like a JSON object or array.
      *
      * @param string $str
+     *
      * @return bool
      * @since 3.5.0
+     * @deprecated in 6.0.0. Use `\CraftCms\Cms\Support\Str::isJson` instead.
      */
     public static function isJsonObject(string $str): bool
     {
-        return (bool)preg_match('/^(?:\{.*\}|\[.*\])$/s', $str);
+        return Str::isJson($str);
     }
 
     /**
@@ -36,7 +39,7 @@ class Json extends \yii\helpers\Json
      */
     public static function encode($value, $options = JSON_UNESCAPED_UNICODE)
     {
-        return parent::encode($value, $options);
+        return \CraftCms\Cms\Support\Json::encode($value, $options);
     }
 
     /**
@@ -48,12 +51,7 @@ class Json extends \yii\helpers\Json
      */
     public static function decodeIfJson(mixed $str, bool $asArray = true): mixed
     {
-        try {
-            return static::decode($str, $asArray);
-        } catch (InvalidArgumentException) {
-            // Wasn't JSON
-            return $str;
-        }
+        return \CraftCms\Cms\Support\Json::decodeIfJson($str, $asArray);
     }
 
     /**
@@ -67,21 +65,7 @@ class Json extends \yii\helpers\Json
      */
     public static function decodeFromFile(string $file, bool $asArray = true): mixed
     {
-        $file = Craft::getAlias($file);
-
-        if (!file_exists($file)) {
-            throw new InvalidArgumentException("`$file` doesn’t exist.");
-        }
-
-        if (is_dir($file)) {
-            throw new InvalidArgumentException("`$file` is a directory.");
-        }
-
-        try {
-            return static::decode(file_get_contents($file), $asArray);
-        } catch (InvalidArgumentException) {
-            throw new InvalidArgumentException("`$file` doesn’t contain valid JSON.");
-        }
+        return \CraftCms\Cms\Support\Json::decodeFromFile($file, $asArray);
     }
 
     /**
@@ -93,10 +77,7 @@ class Json extends \yii\helpers\Json
      */
     public static function detectIndent(string $json): string
     {
-        if (!preg_match('/^\s*\{\s*[\r\n]+([ \t]+)"/', $json, $match)) {
-            return '  ';
-        }
-        return $match[1];
+        return \CraftCms\Cms\Support\Json::detectIndent($json);
     }
 
     /**
@@ -115,19 +96,7 @@ class Json extends \yii\helpers\Json
         int $options = JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT,
         string $defaultIndent = '  ',
     ): void {
-        $json = static::encode($value, $options);
-
-        if ($options & JSON_PRETTY_PRINT) {
-            if (file_exists($path)) {
-                $indent = static::detectIndent(file_get_contents($path));
-            } else {
-                $indent = $defaultIndent;
-            }
-
-            $json = static::reindent($json, $indent);
-        }
-
-        FileHelper::writeToFile($path, $json);
+        \CraftCms\Cms\Support\Json::encodeToFile($path, $value, $options, $defaultIndent);
     }
 
     /**
@@ -140,9 +109,6 @@ class Json extends \yii\helpers\Json
      */
     public static function reindent(string $json, string $indent = '  '): string
     {
-        if ($indent !== '    ') {
-            return preg_replace_callback('/^ {4,}/m', fn(array $match) => strtr($match[0], ['    ' => $indent]), $json);
-        }
-        return $json;
+        return \CraftCms\Cms\Support\Json::reindent($json, $indent);
     }
 }

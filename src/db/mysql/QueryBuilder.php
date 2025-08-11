@@ -9,7 +9,7 @@ namespace craft\db\mysql;
 
 use craft\db\Connection;
 use craft\helpers\Db;
-use craft\helpers\Json;
+use CraftCms\Cms\Support\Json;
 use Illuminate\Support\Facades\DB as DbFacade;
 use yii\base\NotSupportedException;
 

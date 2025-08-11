@@ -10,7 +10,7 @@ namespace craft\auth\sso\mapper;
 use Craft;
 use craft\base\FieldInterface;
 use craft\elements\User;
-use craft\helpers\Json;
+use CraftCms\Cms\Support\Json;
 
 /**
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>

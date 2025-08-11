@@ -4,7 +4,6 @@ namespace CraftCms\Cms\Support;
 
 use craft\helpers\App;
 use craft\helpers\FileHelper;
-use craft\helpers\Json;
 use CraftCms\Aliases\Facades\Aliases;
 use Illuminate\Container\Attributes\Singleton;
 use Illuminate\Contracts\Filesystem\FileNotFoundException;

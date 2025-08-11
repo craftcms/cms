@@ -35,6 +35,7 @@ use craft\web\View;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Support\Enums\LicenseKeyStatus;
 use CraftCms\Cms\Support\Env;
+use CraftCms\Cms\Support\Json as JsonHelper;
 use CraftCms\Cms\Support\Str;
 use HTMLPurifier_Encoder;
 use Illuminate\Support\Facades\Cache;
@@ -1486,7 +1487,7 @@ class App
      */
     public static function licensingIssuesHash(array $issues): string
     {
-        $resolveItems = array_map(fn($issue) => Json::encode($issue[2]), $issues);
+        $resolveItems = array_map(fn($issue) => JsonHelper::encode($issue[2]), $issues);
         sort($resolveItems);
         return md5(implode('', $resolveItems));
     }

@@ -12,7 +12,7 @@ use craft\gql\base\SingularTypeInterface;
 use craft\gql\directives\FormatDateTime;
 use craft\gql\GqlEntityRegistry;
 use craft\helpers\DateTimeHelper;
-use craft\helpers\Json;
+use CraftCms\Cms\Support\Json;
 use GraphQL\Language\AST\StringValueNode;
 use GraphQL\Type\Definition\ScalarType;
 

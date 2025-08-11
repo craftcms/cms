@@ -9,9 +9,9 @@ namespace craft\auth\methods;
 
 use Craft;
 use craft\helpers\DateTimeHelper;
-use craft\helpers\Json;
 use craft\records\RecoveryCodes as RecoveryCodesRecord;
 use craft\web\assets\recoverycodes\RecoveryCodesAsset;
+use CraftCms\Cms\Support\Json;
 use DateTime;
 use PragmaRX\Recovery\Recovery;
 use yii\base\InvalidArgumentException;

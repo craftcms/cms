@@ -31,7 +31,6 @@ use craft\helpers\Cp;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\Db;
 use craft\helpers\Html;
-use craft\helpers\Json;
 use craft\helpers\Template;
 use craft\helpers\UrlHelper;
 use craft\i18n\Formatter;
@@ -50,6 +49,7 @@ use CraftCms\Cms\Element\Enums\MenuItemType;
 use CraftCms\Cms\Element\Enums\PropagationMethod;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Enums\Color;
+use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Support\Str;
 use DateInterval;
 use DateTime;
@@ -1288,7 +1288,7 @@ class User extends Element implements IdentityInterface
         $userAgent = Craft::$app->getRequest()->getUserAgent();
 
         // The auth key is a combination of the hashed token, its row's UID, and the user agent string
-        return json_encode([
+        return Json::encode([
             $token,
             null,
             md5($userAgent),

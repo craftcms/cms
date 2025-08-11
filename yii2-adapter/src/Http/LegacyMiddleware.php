@@ -11,6 +11,7 @@ namespace CraftCms\Yii2Adapter\Http;
 
 use Closure;
 use Craft;
+use CraftCms\Cms\Support\Json;
 use CraftCms\Yii2Adapter\Web\DummyResponse;
 use Illuminate\Foundation\Application;
 use Illuminate\Http\Request;
@@ -138,7 +139,7 @@ class LegacyMiddleware
     private function restoreEmptyStrings(Request $request): void
     {
         $parameters = $request->isJson()
-            ? json_decode($request->getContent(), true)
+            ? Json::decode($request->getContent())
             : $_POST;
 
         foreach ($parameters as $key => $value) {

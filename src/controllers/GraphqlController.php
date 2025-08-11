@@ -13,7 +13,6 @@ use craft\errors\MissingComponentException;
 use craft\helpers\App;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\Gql as GqlHelper;
-use craft\helpers\Json;
 use craft\helpers\UrlHelper;
 use craft\models\GqlSchema;
 use craft\models\GqlToken;
@@ -23,6 +22,7 @@ use craft\web\assets\graphiql\GraphiqlAsset;
 use craft\web\Controller;
 use craft\web\ErrorHandler;
 use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Support\Json;
 use DateTimeZone;
 use Throwable;
 use yii\base\Exception;
@@ -140,7 +140,7 @@ class GraphqlController extends Controller
             // Must be valid JSON
             try {
                 $variables = Json::decode($qVariables);
-            } catch (InvalidArgumentException $e) {
+            } catch (\InvalidArgumentException $e) {
                 throw new BadRequestHttpException('The variables param must be valid JSON', 0, $e);
             }
         }

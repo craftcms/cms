@@ -7,9 +7,9 @@
 
 namespace craft\web\assets\installer;
 
-use craft\helpers\Json;
 use craft\web\AssetBundle;
 use craft\web\assets\cp\CpAsset;
+use CraftCms\Cms\Support\Json;
 
 /**
  * Asset bundle for the Installer

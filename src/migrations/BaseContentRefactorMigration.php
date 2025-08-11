@@ -10,10 +10,10 @@ use craft\db\Table;
 use craft\fieldlayoutelements\CustomField;
 use craft\fields\MissingField;
 use craft\helpers\Db;
-use craft\helpers\Json;
 use craft\models\FieldLayout;
+use CraftCms\Cms\Support\Json;
+use CraftCms\Cms\Support\Str;
 use Illuminate\Support\Collection;
-use yii\base\InvalidArgumentException;
 use yii\db\ColumnSchema;
 use yii\db\Expression;
 use yii\db\Query as YiiQuery;
@@ -293,10 +293,10 @@ class BaseContentRefactorMigration extends Migration
         if (is_array($dbType)) {
             // dbType() returned an array but there was only one field column,
             // so see if the field was storing JSON
-            if (Json::isJsonObject($value)) {
+            if (Str::isJson($value)) {
                 try {
                     return Json::decode($value);
-                } catch (InvalidArgumentException) {
+                } catch (\InvalidArgumentException) {
                 }
             }
 

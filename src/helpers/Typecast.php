@@ -9,12 +9,12 @@
 namespace craft\helpers;
 
 use BackedEnum;
+use CraftCms\Cms\Support\Json as JsonHelper;
 use DateTime;
 use ReflectionException;
 use ReflectionNamedType;
 use ReflectionProperty;
 use ReflectionUnionType;
-use yii\base\InvalidArgumentException;
 
 /**
  * Typecast Helper
@@ -98,11 +98,11 @@ final class Typecast
                 }
                 if (is_string($value)) {
                     try {
-                        $decoded = Json::decode($value) ?? [];
+                        $decoded = JsonHelper::decode($value) ?? [];
                         if (is_array($decoded)) {
                             $value = $decoded;
                         }
-                    } catch (InvalidArgumentException) {
+                    } catch (\InvalidArgumentException) {
                         $value = str($value)->explode(',')->all();
                     }
                     return;

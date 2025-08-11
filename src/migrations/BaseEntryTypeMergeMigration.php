@@ -6,10 +6,10 @@ use craft\db\Migration;
 use craft\db\Query;
 use craft\db\Table;
 use craft\helpers\Db;
-use craft\helpers\Json;
 use craft\models\Section;
 use craft\records\EntryType as EntryTypeRecord;
 use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Support\Json;
 
 /**
  * Base entry type merge migration class.

@@ -10,9 +10,9 @@ namespace craft\controllers;
 use Craft;
 use craft\filters\UtilityAccess;
 use craft\helpers\App;
-use craft\helpers\Json;
 use craft\queue\QueueInterface;
 use craft\web\Controller;
+use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Utility\Utilities\QueueManager;
 use yii\base\InvalidArgumentException;
 use yii\db\Exception as YiiDbException;
@@ -219,7 +219,7 @@ class QueueController extends Controller
         if (isset($details['job'])) {
             try {
                 $details['job'] = Json::encode($details['job'], JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT);
-            } catch (InvalidArgumentException) {
+            } catch (\InvalidArgumentException) {
                 // Just leave the message alone
             }
         }
