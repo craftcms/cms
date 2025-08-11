@@ -2,6 +2,8 @@
 
 namespace CraftCms\Cms\Console;
 
+use CraftCms\Cms\Console\Commands\TwigCacheCommand;
+use CraftCms\Cms\Console\Commands\TwigClearCommand;
 use Illuminate\Support\ServiceProvider;
 
 /**
@@ -12,7 +14,8 @@ use Illuminate\Support\ServiceProvider;
 final class ConsoleServiceProvider extends ServiceProvider
 {
     protected array $commands = [
-
+        TwigCacheCommand::class,
+        TwigClearCommand::class,
     ];
 
     public function boot(): void
@@ -22,6 +25,12 @@ final class ConsoleServiceProvider extends ServiceProvider
         }
 
         $this->commands($this->commands);
+
+        $this->optimizes(
+            optimize: 'craft:twig:cache',
+            clear: 'craft:twig:clear',
+            key: 'twig'
+        );
 
         $this->publishes([
             __DIR__.'/craft.stub' => base_path('craft'),
