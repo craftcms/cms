@@ -3,6 +3,7 @@
 ## Unreleased
 
 - Improved the accessibility of the Craft Support widget. ([#17718](https://github.com/craftcms/cms/pull/17718))
+- Fixed PHP deprecation errors.
 
 ## 5.8.13.2 - 2025-08-07
 
