@@ -58,14 +58,14 @@ class UserPermissions extends Component
     public const EVENT_AFTER_SAVE_GROUP_PERMISSIONS = 'afterSaveGroupPermissions';
 
     /**
-     * @var array
+     * @var array|null
      * @see getAllPermissions()
      */
     private array|null $_allPermissions = null;
 
     /**
-     * @var string[]
-     * @see filterInvalidPermissions()
+     * @var string[]|null
+     * @see validatePermission()
      */
     private array|null $_allPermissionNames = null;
 
@@ -101,25 +101,24 @@ class UserPermissions extends Component
     public function getAllPermissions(): array
     {
         if (!isset($this->_allPermissions)) {
-            $permissions = [];
+            $this->_allPermissions = [];
 
-            $this->_generalPermissions($permissions);
-            $this->_userPermissions($permissions);
-            $this->_sitePermissions($permissions);
-            $this->_entryPermissions($permissions);
-            $this->_globalSetPermissions($permissions);
-            $this->_categoryPermissions($permissions);
-            $this->_volumePermissions($permissions);
-            $this->_utilityPermissions($permissions);
+            $this->_generalPermissions($this->_allPermissions);
+            $this->_userPermissions($this->_allPermissions);
+            $this->_sitePermissions($this->_allPermissions);
+            $this->_entryPermissions($this->_allPermissions);
+            $this->_globalSetPermissions($this->_allPermissions);
+            $this->_categoryPermissions($this->_allPermissions);
+            $this->_volumePermissions($this->_allPermissions);
+            $this->_utilityPermissions($this->_allPermissions);
 
             // Let plugins customize them and add new ones
             // ---------------------------------------------------------------------
 
             $event = new RegisterUserPermissionsEvent([
-                'permissions' => $permissions,
+                'permissions' => $this->_allPermissions,
             ]);
             $this->trigger(self::EVENT_REGISTER_PERMISSIONS, $event);
-
             $this->_allPermissions = $event->permissions;
         }
 
@@ -166,14 +165,10 @@ class UserPermissions extends Component
     public function getPermissionsByGroupId(int $groupId): array
     {
         if (!isset($this->_permissionsByGroupId[$groupId])) {
-            /** @var string[] $groupPermissions */
-            $groupPermissions = $this->_createUserPermissionsQuery()
+            $this->_permissionsByGroupId[$groupId] = $this->_createUserPermissionsQuery()
                 ->innerJoin(['p_g' => Table::USERPERMISSIONS_USERGROUPS], '[[p_g.permissionId]] = [[p.id]]')
                 ->where(['p_g.groupId' => $groupId])
                 ->column();
-
-            // filter out any invalid permissions
-            $this->_permissionsByGroupId[$groupId] = $this->filterInvalidPermissions($groupPermissions);
         }
 
         return $this->_permissionsByGroupId[$groupId];
@@ -187,14 +182,11 @@ class UserPermissions extends Component
      */
     public function getGroupPermissionsByUserId(int $userId): array
     {
-        $permissions = $this->_createUserPermissionsQuery()
+        return $this->_createUserPermissionsQuery()
             ->innerJoin(['p_g' => Table::USERPERMISSIONS_USERGROUPS], '[[p_g.permissionId]] = [[p.id]]')
             ->innerJoin(['g_u' => Table::USERGROUPS_USERS], '[[g_u.groupId]] = [[p_g.groupId]]')
             ->where(['g_u.userId' => $userId])
             ->column();
-
-        // filter out any invalid permissions
-        return $this->filterInvalidPermissions($permissions);
     }
 
     /**
@@ -266,16 +258,18 @@ class UserPermissions extends Component
                 ->where(['p_u.userId' => $userId])
                 ->column();
 
-            // filter out any invalid permissions
-            $userPermissions = $this->filterInvalidPermissions($userPermissions);
-
             $this->_permissionsByUserId[$userId] = array_unique(array_merge($groupPermissions, $userPermissions));
         }
 
         return $this->_permissionsByUserId[$userId];
     }
 
-    private function filterInvalidPermissions(array $permissions): array
+    /**
+     * @param string $permission
+     * @return bool
+     * @since 4.16.9.1
+     */
+    public function validatePermission(string $permission): bool
     {
         if (!isset($this->_allPermissionNames)) {
             $this->_allPermissionNames = [];
@@ -284,9 +278,7 @@ class UserPermissions extends Component
             }
         }
 
-        return array_values(array_filter($permissions, function($permission) {
-            return isset($this->_allPermissionNames[strtolower($permission)]);
-        }));
+        return isset($this->_allPermissionNames[strtolower($permission)]);
     }
 
     private function collectPermissionNames(array &$permissions): void

@@ -1,5 +1,10 @@
 # Release Notes for Craft CMS 4
 
+## 4.16.9.1 - 2025-08-07
+
+- Added `craft\services\UserPermissions::validatePermission()`.
+- Fixed an authorization error that occurred when non-admin users attempted to modify content on multi-site installs with SEOmatic installed. ([#17716](https://github.com/craftcms/cms/issues/17716))
+
 ## 4.16.9 - 2025-08-05
 
 - Added `craft\services\UserPermissions::reset()`.
