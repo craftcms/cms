@@ -25,11 +25,10 @@ class HeaderTokenParser extends AbstractTokenParser
     public function parse(Token $token): HeaderNode
     {
         $lineno = $token->getLine();
-        $parser = $this->parser;
-        $stream = $parser->getStream();
+        $stream = $this->parser->getStream();
 
         $nodes = [
-            'header' => $parser->getExpressionParser()->parseExpression(),
+            'header' => $this->parser->parseExpression(),
         ];
         $stream->expect(Token::BLOCK_END_TYPE);
 

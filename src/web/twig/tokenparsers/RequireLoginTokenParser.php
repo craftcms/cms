@@ -25,8 +25,7 @@ class RequireLoginTokenParser extends AbstractTokenParser
     public function parse(Token $token): RequireLoginNode
     {
         $lineno = $token->getLine();
-        $parser = $this->parser;
-        $stream = $parser->getStream();
+        $stream = $this->parser->getStream();
 
         $stream->expect(Token::BLOCK_END_TYPE);
 

@@ -30,7 +30,7 @@ class DeprecatedTokenParser extends AbstractTokenParser
      */
     public function parse(Token $token): DeprecatedNode
     {
-        $expr = $this->parser->getExpressionParser()->parseExpression();
+        $expr = $this->parser->parseExpression();
         $this->parser->getStream()->expect(Token::BLOCK_END_TYPE);
         return new DeprecatedNode($expr, $token->getLine());
     }

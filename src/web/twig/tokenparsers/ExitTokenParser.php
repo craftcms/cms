@@ -25,16 +25,15 @@ class ExitTokenParser extends AbstractTokenParser
     public function parse(Token $token): ExitNode
     {
         $lineno = $token->getLine();
-        $parser = $this->parser;
-        $stream = $parser->getStream();
+        $stream = $this->parser->getStream();
 
         $nodes = [];
 
         if ($stream->test(Token::NUMBER_TYPE)) {
-            $nodes['status'] = $parser->getExpressionParser()->parseExpression();
+            $nodes['status'] = $this->parser->parseExpression();
 
             if (!$stream->test(Token::BLOCK_END_TYPE)) {
-                $nodes['message'] = $parser->getExpressionParser()->parseExpression();
+                $nodes['message'] = $this->parser->parseExpression();
             }
         }
 

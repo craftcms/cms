@@ -25,13 +25,12 @@ class DumpTokenParser extends AbstractTokenParser
     public function parse(Token $token): DumpNode
     {
         $lineno = $token->getLine();
-        $parser = $this->parser;
-        $stream = $parser->getStream();
+        $stream = $this->parser->getStream();
 
         $nodes = [];
 
         if (!$stream->test(Token::BLOCK_END_TYPE)) {
-            $nodes['var'] = $parser->getExpressionParser()->parseExpression();
+            $nodes['var'] = $this->parser->parseExpression();
         }
 
         $stream->expect(Token::BLOCK_END_TYPE);

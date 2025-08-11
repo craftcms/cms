@@ -35,15 +35,14 @@ class NavTokenParser extends AbstractTokenParser
     public function parse(Token $token): NavNode
     {
         $lineno = $token->getLine();
-        $parser = $this->parser;
-        $stream = $parser->getStream();
+        $stream = $this->parser->getStream();
 
-        $targets = $parser->getExpressionParser()->parseAssignmentExpression();
+        $targets = $this->parseAssignmentExpression();
         $stream->expect(Token::OPERATOR_TYPE, 'in');
-        $seq = $parser->getExpressionParser()->parseExpression();
+        $seq = $this->parser->parseExpression();
         $stream->expect(Token::BLOCK_END_TYPE);
 
-        $upperBody = $parser->subparse([$this, 'decideNavFork']);
+        $upperBody = $this->parser->subparse([$this, 'decideNavFork']);
         $lowerBody = new BaseNode();
         $indent = new BaseNode();
         $outdent = new BaseNode();
@@ -54,31 +53,31 @@ class NavTokenParser extends AbstractTokenParser
             $stream->expect(Token::BLOCK_END_TYPE);
 
             if ($nextValue === 'ifchildren') {
-                $indent = $parser->subparse([
+                $indent = $this->parser->subparse([
                     $this,
                     'decideChildrenFork',
                 ], true);
                 $stream->expect(Token::BLOCK_END_TYPE);
-                $outdent = $parser->subparse([
+                $outdent = $this->parser->subparse([
                     $this,
                     'decideChildrenEnd',
                 ], true);
                 $stream->expect(Token::BLOCK_END_TYPE);
             }
 
-            $lowerBody = $parser->subparse([$this, 'decideNavEnd'], true);
+            $lowerBody = $this->parser->subparse([$this, 'decideNavEnd'], true);
         }
 
         $stream->expect(Token::BLOCK_END_TYPE);
 
         if (count($targets) > 1) {
-            $keyTarget = $targets->getNode(0);
+            $keyTarget = $targets->getNode('0');
             $keyTarget = new AssignContextVariable($keyTarget->getAttribute('name'), $keyTarget->getTemplateLine());
-            $valueTarget = $targets->getNode(1);
+            $valueTarget = $targets->getNode('1');
             $valueTarget = new AssignContextVariable($valueTarget->getAttribute('name'), $valueTarget->getTemplateLine());
         } else {
             $keyTarget = new AssignContextVariable('_key', $lineno);
-            $valueTarget = $targets->getNode(0);
+            $valueTarget = $targets->getNode('0');
             $valueTarget = new AssignContextVariable($valueTarget->getAttribute('name'), $valueTarget->getTemplateLine());
         }
 

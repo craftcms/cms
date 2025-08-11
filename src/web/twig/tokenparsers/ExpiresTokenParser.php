@@ -26,8 +26,7 @@ class ExpiresTokenParser extends AbstractTokenParser
     public function parse(Token $token): ExpiresNode
     {
         $lineno = $token->getLine();
-        $parser = $this->parser;
-        $stream = $parser->getStream();
+        $stream = $this->parser->getStream();
 
         $nodes = [];
 
@@ -42,7 +41,7 @@ class ExpiresTokenParser extends AbstractTokenParser
             $attributes['durationUnit'] = $stream->expect(Token::NAME_TYPE, DateTimeHelper::RELATIVE_TIME_UNITS)->getValue();
         } elseif ($stream->test(Token::NAME_TYPE, 'on')) {
             $stream->next();
-            $nodes['expiration'] = $parser->getExpressionParser()->parseExpression();
+            $nodes['expiration'] = $this->parser->parseExpression();
         }
 
         $stream->expect(Token::BLOCK_END_TYPE);
