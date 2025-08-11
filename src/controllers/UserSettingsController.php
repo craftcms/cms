@@ -8,9 +8,9 @@
 namespace craft\controllers;
 
 use Craft;
-use craft\enums\CmsEdition;
 use craft\models\UserGroup;
 use craft\web\Controller;
+use CraftCms\Cms\Edition;
 use yii\web\BadRequestHttpException;
 use yii\web\NotFoundHttpException;
 use yii\web\Response;
@@ -49,7 +49,7 @@ class UserSettingsController extends Controller
         $this->readOnly = !app(\CraftCms\Cms\Config\GeneralConfig::class)->allowAdminChanges;
 
         if ($action->id !== 'save-user-settings') {
-            Craft::$app->requireEdition(CmsEdition::Team);
+            Craft::$app->requireEdition(Edition::Team);
         }
 
         return true;
@@ -67,7 +67,7 @@ class UserSettingsController extends Controller
     {
         $this->requireCpRequest();
 
-        if (Craft::$app->edition === CmsEdition::Team) {
+        if (Craft::$app->edition === Edition::Team) {
             if (!$group) {
                 $group = Craft::$app->getUserGroups()->getTeamGroup();
             }
@@ -129,7 +129,7 @@ class UserSettingsController extends Controller
     {
         $this->requirePostRequest();
 
-        if (Craft::$app->edition === CmsEdition::Team) {
+        if (Craft::$app->edition === Edition::Team) {
             $group = Craft::$app->getUserGroups()->getTeamGroup();
         } else {
             $groupId = $this->request->getBodyParam('groupId');
@@ -176,7 +176,7 @@ class UserSettingsController extends Controller
             }
         }
 
-        if (Craft::$app->edition === CmsEdition::Team) {
+        if (Craft::$app->edition === Edition::Team) {
             $permissions[] = 'accessCp';
         } elseif ($isNewGroup) {
             // assignNewUserGroup => assignUserGroup:<uid>
@@ -188,7 +188,7 @@ class UserSettingsController extends Controller
 
         Craft::$app->getUserPermissions()->saveGroupPermissions($group->id, $permissions);
 
-        $this->setSuccessFlash(Craft::$app->edition === CmsEdition::Team
+        $this->setSuccessFlash(Craft::$app->edition === Edition::Team
             ? Craft::t('app', 'Permissions saved.')
             : Craft::t('app', 'Group saved.'));
         return $this->redirectToPostedUrl($group);
@@ -227,11 +227,11 @@ class UserSettingsController extends Controller
         $settings['photoVolumeUid'] = $photoVolumeId ? Craft::$app->getVolumes()->getVolumeById($photoVolumeId)?->uid : null;
         $settings['photoSubpath'] = $this->request->getBodyParam('photoSubpath') ?: null;
 
-        if (Craft::$app->edition->value >= CmsEdition::Team->value) {
+        if (Craft::$app->edition->value >= Edition::Team->value) {
             $settings['require2fa'] = $this->request->getBodyParam('require2fa') ?: false;
         }
 
-        if (Craft::$app->edition->value >= CmsEdition::Pro->value) {
+        if (Craft::$app->edition->value >= Edition::Pro->value) {
             $settings['requireEmailVerification'] = (bool)$this->request->getBodyParam('requireEmailVerification');
             $settings['validateOnPublicRegistration'] = (bool)$this->request->getBodyParam('validateOnPublicRegistration');
             $settings['allowPublicRegistration'] = (bool)$this->request->getBodyParam('allowPublicRegistration');

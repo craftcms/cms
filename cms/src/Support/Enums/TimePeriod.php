@@ -1,17 +1,11 @@
 <?php
-/**
- * @link https://craftcms.com/
- * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license https://craftcms.github.io/license/
- */
 
-namespace craft\enums;
+namespace CraftCms\Cms\Support\Enums;
 
 /**
  * PeriodType defines time period units.
  *
- * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 5.0.0
+ * @since 6.0.0
  */
 enum TimePeriod: string
 {

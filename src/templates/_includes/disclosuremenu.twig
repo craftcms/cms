@@ -21,7 +21,7 @@
 {%- endmacro %}
 
 {% macro color(color) %}
-  {{- color is instance of ('craft\\enums\\Color') ? color.value : color -}}
+  {{- color is instance of ('CraftCms\\Cms\\Support\\Enums\\Color') ? color.value : color -}}
 {% endmacro %}
 
 {% macro item(item, menuId) %}

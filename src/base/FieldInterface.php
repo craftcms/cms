@@ -8,8 +8,8 @@
 namespace craft\base;
 
 use craft\elements\db\ElementQueryInterface;
-use craft\enums\AttributeStatus;
 use craft\models\GqlSchema;
+use CraftCms\Cms\Element\Enums\AttributeStatus;
 use GraphQL\Type\Definition\Type;
 use yii\base\Component as YiiComponent;
 use yii\db\ExpressionInterface;
@@ -192,7 +192,7 @@ interface FieldInterface extends \CraftCms\Cms\Component\Contracts\SavableCompon
      *
      * If the field has a known status, an array should be returned with two elements:
      *
-     * - A [[\craft\enums\AttributeStatus]] case
+     * - An {@see AttributeStatus} case
      * - The status label
      *
      * For example:

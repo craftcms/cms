@@ -11,7 +11,6 @@ use Craft;
 use craft\base\ElementInterface;
 use craft\base\FieldInterface;
 use craft\elements\User;
-use craft\enums\CmsEdition;
 use craft\helpers\Assets;
 use craft\helpers\Cp;
 use craft\helpers\DateTimeHelper;
@@ -43,6 +42,7 @@ use craft\web\assets\xregexp\XregexpAsset;
 use craft\web\View;
 use CraftCms\Cms\Announcement\Announcements;
 use CraftCms\Cms\Config\GeneralConfig;
+use CraftCms\Cms\Edition;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Utility\Utilities;
 use CraftCms\Cms\Utility\Utilities\QueueManager;
@@ -511,10 +511,10 @@ JS;
         $primarySite = $upToDate ? $sitesService->getPrimarySite() : null;
 
         $data = [
-            'Solo' => CmsEdition::Solo->value,
-            'Team' => CmsEdition::Team->value,
-            'Pro' => CmsEdition::Pro->value,
-            'Enterprise' => CmsEdition::Enterprise->value,
+            'Solo' => Edition::Solo->value,
+            'Team' => Edition::Team->value,
+            'Pro' => Edition::Pro->value,
+            'Enterprise' => Edition::Enterprise->value,
             'actionTrigger' => $generalConfig->actionTrigger,
             'actionUrl' => UrlHelper::actionUrl(),
             'asciiCharMap' => Str::asciiCharMap(true, Craft::$app->language),
