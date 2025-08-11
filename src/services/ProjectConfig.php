@@ -2186,7 +2186,7 @@ class ProjectConfig extends Component
             return;
         }
 
-        $mutex = Cache::lock(self::MUTEX_NAME);
+        $mutex = Cache::lock(self::MUTEX_NAME, 30);
 
         if (!$mutex->get()) {
             throw new BusyResourceException('A lock could not be acquired to modify the project config.');

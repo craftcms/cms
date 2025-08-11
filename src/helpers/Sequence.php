@@ -7,7 +7,6 @@
 
 namespace craft\helpers;
 
-use Craft;
 use craft\db\Query;
 use craft\db\Table;
 use craft\errors\MutexException;
