@@ -486,7 +486,6 @@ return [
     'Create assets in the “{volume}” volume' => 'Create assets in the “{volume}” volume',
     'Create entries in the “{section}” section' => 'Create entries in the “{section}” section',
     'Create entries in the “{section}” {type} field' => 'Create entries in the “{section}” {type} field',
-    'Create new {group} {type}' => 'Create new {group} {type}',
     'Create subfolders' => 'Create subfolders',
     'Create your account' => 'Create your account',
     'Create {type}' => 'Create {type}',
