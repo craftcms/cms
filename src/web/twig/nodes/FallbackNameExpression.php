@@ -43,7 +43,7 @@ class FallbackNameExpression extends NameExpression
 
         $compiler->addDebugInfo($this);
 
-        if ($this->getAttribute('is_defined_test')) {
+        if ($this->isDefinedTestEnabled()) {
             $compiler
                 ->raw('(array_key_exists(')
                 ->string($name)

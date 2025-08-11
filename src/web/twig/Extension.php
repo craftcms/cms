@@ -74,7 +74,7 @@ use Traversable;
 use Twig\DeprecatedCallableInfo;
 use Twig\Environment as TwigEnvironment;
 use Twig\Error\RuntimeError;
-use Twig\ExpressionParser;
+use Twig\ExpressionParser\Infix\BinaryOperatorExpressionParser;
 use Twig\Extension\AbstractExtension;
 use Twig\Extension\CoreExtension;
 use Twig\Extension\GlobalsInterface;
@@ -341,14 +341,11 @@ class Extension extends AbstractExtension implements GlobalsInterface
     /**
      * @inheritdoc
      */
-    public function getOperators(): array
+    public function getExpressionParsers(): array
     {
         return [
-            [],
-            [
-                'has some' => ['precedence' => 20, 'class' => HasSomeBinary::class, 'associativity' => ExpressionParser::OPERATOR_LEFT],
-                'has every' => ['precedence' => 20, 'class' => HasEveryBinary::class, 'associativity' => ExpressionParser::OPERATOR_LEFT],
-            ],
+            new BinaryOperatorExpressionParser(HasSomeBinary::class, 'has some', 20),
+            new BinaryOperatorExpressionParser(HasEveryBinary::class, 'has every', 20),
         ];
     }
 

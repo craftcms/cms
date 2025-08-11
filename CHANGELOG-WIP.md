@@ -22,4 +22,4 @@
 
 ### System
 - Improved element index performance. ([#17557](https://github.com/craftcms/cms/pull/17557))
-- Updated Twig to 3.20. ([#17603](https://github.com/craftcms/cms/discussions/17603))
+- Updated Twig to 3.21. ([#17603](https://github.com/craftcms/cms/discussions/17603))
