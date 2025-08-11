@@ -7,8 +7,9 @@
 
 namespace craft\auth\methods;
 
-use craft\base\ComponentInterface;
+use craft\base\ModelInterface;
 use craft\elements\User;
+use CraftCms\Cms\Component\Contracts\ComponentInterface;
 
 /**
  * AuthMethodInterface defines the common interface to be implemented by
@@ -19,7 +20,7 @@ use craft\elements\User;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 5.0.0
  */
-interface AuthMethodInterface extends ComponentInterface
+interface AuthMethodInterface extends ComponentInterface, ModelInterface
 {
     /**
      * Returns the description of this authentication method.

@@ -102,7 +102,7 @@ class Mailer extends \yii\symfonymailer\Mailer
             'message' => $message,
         ]));
 
-        $generalConfig = Craft::$app->getConfig()->getGeneral();
+        $generalConfig = app(\CraftCms\Cms\Config\GeneralConfig::class);
         $sitesService = Craft::$app->getSites();
         $view = Craft::$app->getView();
         $currentSite = $messageSite = $twig = null;

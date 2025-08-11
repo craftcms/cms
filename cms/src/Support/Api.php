@@ -9,6 +9,7 @@ use craft\helpers\DateTimeHelper;
 use GuzzleHttp\Exception\GuzzleException;
 use GuzzleHttp\Exception\RequestException;
 use GuzzleHttp\RequestOptions;
+use GuzzleHttp\Utils;
 use Illuminate\Cache\Repository;
 use Illuminate\Container\Attributes\Singleton;
 use Illuminate\Database\Connection;
@@ -17,12 +18,14 @@ use Illuminate\Http\Client\PendingRequest;
 use Illuminate\Http\Client\Response;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Session;
 use Imagick;
 use Throwable;
+use function GuzzleHttp\default_user_agent;
 
 /**
  * The API service provides APIs for calling the Craft API (api.craftcms.com).
@@ -53,6 +56,19 @@ readonly class Api
             ->timeout($this->timeout)
             ->asJson()
             ->throw();
+    }
+
+    public static function createClient(array $config = [])
+    {
+        // Set the Craft header by default.
+        $defaultConfig = [
+            'headers' => [
+                'User-Agent' => 'Craft/' . \Craft::$app->getVersion() . ' ' . Utils::defaultUserAgent(),
+            ],
+        ];
+
+        $guzzleConfig = Config::get('craft.guzzle', []);
+
     }
 
     /**

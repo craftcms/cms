@@ -7,10 +7,10 @@
 
 namespace craft\db\mysql;
 
-use Craft;
 use craft\db\Connection;
 use craft\helpers\Db;
 use craft\helpers\Json;
+use Illuminate\Support\Facades\DB as DbFacade;
 use yii\base\NotSupportedException;
 
 /**
@@ -47,12 +47,13 @@ class QueryBuilder extends \yii\db\mysql\QueryBuilder
         }
 
         // Use the default charset and collation
-        $dbConfig = Craft::$app->getConfig()->getDb();
+        $connection = DbFacade::connection();
+
         if (!preg_match('/\bCHARACTER +SET\b/i', $options)) {
-            $options .= " DEFAULT CHARACTER SET = {$dbConfig->getCharset()}";
+            $options .= " DEFAULT CHARACTER SET = {$connection->getConfig('charset')}";
         }
         if (!preg_match('/\bCOLLATE\b/i', $options)) {
-            $options .= sprintf(' DEFAULT COLLATE = %s', $dbConfig->collation ?? Db::defaultCollation($this->db));
+            $options .= sprintf(' DEFAULT COLLATE = %s', $connection->getConfig('collation') ?? Db::defaultCollation($this->db));
         }
 
         return parent::createTable($table, $columns, $options);

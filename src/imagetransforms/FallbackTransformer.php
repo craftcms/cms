@@ -30,8 +30,8 @@ class FallbackTransformer extends Component implements ImageTransformerInterface
     public function getTransformUrl(Asset $asset, ImageTransform $imageTransform, bool $immediately): string
     {
         if (match ($asset->getMimeType()) {
-            'image/gif' => Craft::$app->getConfig()->getGeneral()->transformGifs,
-            'image/svg+xml' => Craft::$app->getConfig()->getGeneral()->transformSvgs,
+            'image/gif' => app(\CraftCms\Cms\Config\GeneralConfig::class)->transformGifs,
+            'image/svg+xml' => app(\CraftCms\Cms\Config\GeneralConfig::class)->transformSvgs,
             default => true,
         }) {
             $transformString = ltrim(ImageTransforms::getTransformString($imageTransform, true), '_');

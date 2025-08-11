@@ -16,6 +16,7 @@ use craft\services\ProjectConfig;
 use craft\test\TestCase;
 use CraftCms\Cms\Support\Str;
 use Exception;
+use Illuminate\Support\Facades\Cache;
 use UnitTester;
 use yii\base\NotSupportedException;
 use yii\mutex\Mutex as YiiMutex;
@@ -58,6 +59,7 @@ class ProjectConfigTest extends TestCase
     protected function _before(): void
     {
         parent::_before();
+        Cache::lock(ProjectConfig::MUTEX_NAME)->forceRelease();
         $this->_originalMutex = Craft::$app->getMutex();
         Craft::$app->set('mutex', new Mutex([
             'mutex' => new NullMutex(),
@@ -67,6 +69,7 @@ class ProjectConfigTest extends TestCase
     protected function _after(): void
     {
         parent::_after();
+        Cache::lock(ProjectConfig::MUTEX_NAME)->forceRelease();
         Craft::$app->set('mutex', $this->_originalMutex);
     }
 

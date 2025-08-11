@@ -7,11 +7,11 @@
 
 namespace crafttests\unit\helpers;
 
-use craft\config\GeneralConfig;
 use craft\elements\Entry;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\Typecast;
 use craft\test\TestCase;
+use CraftCms\Cms\Config\GeneralConfig;
 use crafttests\unit\helpers\typecast\EnumModel;
 use crafttests\unit\helpers\typecast\Suit;
 use DateTime;

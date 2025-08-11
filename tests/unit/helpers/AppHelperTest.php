@@ -8,13 +8,13 @@
 namespace crafttests\unit\helpers;
 
 use Craft;
-use craft\config\GeneralConfig;
 use craft\enums\CmsEdition;
 use craft\helpers\App;
 use craft\mail\transportadapters\Sendmail;
 use craft\models\MailSettings;
 use craft\services\Entries;
 use craft\test\TestCase;
+use CraftCms\Cms\Config\GeneralConfig;
 use stdClass;
 use yii\base\Component;
 use yii\base\InvalidArgumentException;
@@ -28,35 +28,6 @@ use yii\base\InvalidArgumentException;
  */
 class AppHelperTest extends TestCase
 {
-    /**
-     *
-     */
-    public function testEnv(): void
-    {
-        $_SERVER['TEST_SERVER_ENV'] = 'server';
-        self::assertSame('server', App::env('TEST_SERVER_ENV'));
-        unset($_SERVER['TEST_SERVER_ENV']);
-
-        putenv('TEST_GETENV_ENV=getenv');
-        self::assertSame('getenv', App::env('TEST_GETENV_ENV'));
-        putenv('TEST_GETENV_ENV');
-
-        putenv('TEST_GETENV_TRUE_ENV=true');
-        self::assertTrue(App::env('TEST_GETENV_TRUE_ENV'));
-        putenv('TEST_GETENV_TRUE_ENV');
-
-        putenv('TEST_GETENV_FALSE_ENV=false');
-        self::assertFalse(App::env('TEST_GETENV_FALSE_ENV'));
-        putenv('TEST_GETENV_FALSE_ENV');
-
-        self::assertSame(CRAFT_TESTS_PATH, App::env('CRAFT_TESTS_PATH'));
-        self::assertNull(App::env('TEST_NONEXISTENT_ENV'));
-
-        putenv('SHH=foo');
-        self::assertSame('foo', App::env('SHH'));
-        putenv('SHH');
-    }
-
     /**
      * @dataProvider envConfigDataProvider
      *
@@ -298,7 +269,7 @@ class AppHelperTest extends TestCase
         $oldMemoryLimit = ini_get('memory_limit');
         $oldMaxExecution = ini_get('max_execution_time');
 
-        $generalConfig = Craft::$app->getConfig()->getGeneral();
+        $generalConfig = app(\CraftCms\Cms\Config\GeneralConfig::class);
         $generalConfig->phpMaxMemoryLimit = '512M';
 
         if (@ini_set('memory_limit', '256M') === false) {

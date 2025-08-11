@@ -70,7 +70,7 @@ trait BackupTrait
             return $flag;
         }
 
-        $backupOnUpdate = Craft::$app->getConfig()->getGeneral()->getBackupOnUpdate();
+        $backupOnUpdate = app(\CraftCms\Cms\Config\GeneralConfig::class)->getBackupOnUpdate();
 
         if (!$this->interactive) {
             return $backupOnUpdate;

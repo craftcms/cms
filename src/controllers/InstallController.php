@@ -22,6 +22,7 @@ use craft\web\assets\installer\InstallerAsset;
 use craft\web\Controller;
 use CraftCms\Cms\Migrations\Install;
 use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Support\Env;
 use CraftCms\Cms\Support\Str;
 use PDOException;
 use Throwable;
@@ -235,7 +236,7 @@ class InstallController extends Controller
         $this->requirePostRequest();
         $this->requireAcceptsJson();
 
-        $configService = Craft::$app->getConfig();
+        $path = app()->environmentFilePath();
 
         // Should we set the new DB config values?
         if ($this->request->getBodyParam('db-driver') !== null) {
@@ -244,19 +245,19 @@ class InstallController extends Controller
             $this->_populateDbConfig($dbConfig, 'db-');
 
             // If there's a DB_DSN environment variable, go with that
-            if (App::env('DB_DSN') !== null) {
-                $configService->setDotEnvVar('DB_DSN', $dbConfig->dsn);
+            if (Env::get('DB_DSN') !== null) {
+                Env::writeVariable('DB_DSN', $dbConfig->dsn, $path);
             } else {
-                $configService->setDotEnvVar('DB_CONNECTION', $dbConfig->driver);
-                $configService->setDotEnvVar('DB_HOST', $dbConfig->server);
-                $configService->setDotEnvVar('DB_PORT', (string)$dbConfig->port);
-                $configService->setDotEnvVar('DB_DATABASE', $dbConfig->database);
+                Env::writeVariable('DB_CONNECTION', $dbConfig->driver, $path);
+                Env::writeVariable('DB_HOST', $dbConfig->server, $path);
+                Env::writeVariable('DB_PORT', (string)$dbConfig->port, $path);
+                Env::writeVariable('DB_DATABASE', $dbConfig->database, $path);
             }
 
-            $configService->setDotEnvVar('DB_USERNAME', $dbConfig->user);
-            $configService->setDotEnvVar('DB_PASSWORD', $dbConfig->password);
-            $configService->setDotEnvVar('DB_SCHEMA', $dbConfig->schema);
-            $configService->setDotEnvVar('DB_TABLE_PREFIX', $dbConfig->tablePrefix);
+            Env::writeVariable('DB_USERNAME', $dbConfig->user, $path);
+            Env::writeVariable('DB_PASSWORD', $dbConfig->password, $path);
+            Env::writeVariable('DB_SCHEMA', $dbConfig->schema, $path);
+            Env::writeVariable('DB_TABLE_PREFIX', $dbConfig->tablePrefix, $path);
 
             // Update the db component based on new values
             $db = Craft::$app->getDb();
@@ -280,7 +281,7 @@ class InstallController extends Controller
         // if it’s not already set to an alias or environment variable
         if ($siteUrl[0] !== '@' && $siteUrl[0] !== '$' && !App::isEphemeral()) {
             try {
-                $configService->setDotEnvVar('PRIMARY_SITE_URL', $siteUrl);
+                Env::writeVariable('PRIMARY_SITE_URL', $siteUrl, $path);
                 $siteUrl = '$PRIMARY_SITE_URL';
             } catch (Exception) {
                 // that's fine, we'll just store the entered URL
@@ -355,7 +356,7 @@ class InstallController extends Controller
         }
 
         // If the .env file doesn't exist, we definitely can't do anything about it
-        if (!file_exists(Craft::$app->getConfig()->getDotEnvPath())) {
+        if (!file_exists(app()->environmentFilePath())) {
             return false;
         }
 

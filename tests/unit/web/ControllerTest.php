@@ -46,7 +46,7 @@ class ControllerTest extends TestCase
      */
     public function testBeforeAction(): void
     {
-        Craft::$app->getConfig()->getGeneral()->isSystemLive = true;
+        app(\CraftCms\Cms\Config\GeneralConfig::class)->isSystemLive = true;
 
         $this->tester->expectThrowable(ForbiddenHttpException::class, function() {
             // AllowAnonymous should redirect and Craft::$app->exit(); I.E. An exit exception

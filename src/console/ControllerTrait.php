@@ -12,6 +12,8 @@ use craft\base\Model;
 use craft\helpers\App;
 use craft\helpers\Console;
 use craft\mutex\Mutex as CraftMutex;
+use CraftCms\Cms\Support\Env;
+use Illuminate\Support\Facades\Cache;
 use yii\base\Action;
 use yii\base\InvalidRouteException;
 use yii\console\Exception;
@@ -89,7 +91,7 @@ trait ControllerTrait
             return $response ?? ExitCode::OK;
         } finally {
             if (isset($this->isolationMutexName)) {
-                Craft::$app->getMutex()->release($this->isolationMutexName);
+                Cache::lock($this->isolationMutexName)->release();
             }
         }
     }
@@ -117,46 +119,14 @@ trait ControllerTrait
             $uniqueId = $action->getUniqueId();
             $name = "isolated-command:$uniqueId";
 
-            $mutex = Craft::$app->getMutex();
-            if (!$mutex->acquire($name)) {
+            $mutex = Cache::lock($name, app()->runningInConsole() ? 900 : 30);
+            if (!$mutex->get()) {
                 $this->stderr("The $uniqueId command is already running.\n", Console::FG_RED);
                 return false;
             }
 
             // Remember the lock name for runAction()
             $this->isolationMutexName = $name;
-
-            // If they're using a Redis mutex, make sure it’s set to a 15 minute duration
-            if ($mutex instanceof RedisMutex) {
-                $expire = $mutex->expire;
-            } elseif ($mutex instanceof CraftMutex && $mutex->mutex instanceof RedisMutex) {
-                $expire = $mutex->mutex->expire;
-            } else {
-                $expire = false;
-            }
-
-            if ($expire !== false && $expire < 900) {
-                $this->warning(<<<MD
-The `mutex` component is configured to let locks expire after $expire seconds.
-To ensure `--isolated` works reliably, modify the component definition in
-`config/app.php` so `expire` is set to 900 seconds for console requests:
-
-```php
-'mutex' => function() {
-    \$config = [
-        'class' => craft\\mutex\\Mutex::class,
-        'mutex' => [
-            'class' => yii\\redis\\Mutex::class,
-            'expire' => Craft::\$app->request->isConsoleRequest ? 900 : 30,
-            // ...
-        ],
-    ];
-    return Craft::createObject(\$config);
-},
-```
-MD
-                );
-            }
         }
 
         return true;
@@ -184,7 +154,7 @@ MD
      */
     protected function checkRootUser(): bool
     {
-        if (App::isWindows() || !function_exists('exec') || App::env('CRAFT_ALLOW_SUPERUSER')) {
+        if (App::isWindows() || !function_exists('exec') || Env::get('CRAFT_ALLOW_SUPERUSER')) {
             return true;
         }
 

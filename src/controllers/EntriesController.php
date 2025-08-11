@@ -25,6 +25,7 @@ use craft\models\Section;
 use craft\models\Section_SiteSettings;
 use Exception;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Cache;
 use Throwable;
 use yii\web\BadRequestHttpException;
 use yii\web\ForbiddenHttpException;
@@ -291,9 +292,8 @@ class EntriesController extends BaseEntriesController
 
         $isNotNew = (bool)$entry->id;
         if ($isNotNew) {
-            $lockKey = "entry:$entry->id";
-            $mutex = Craft::$app->getMutex();
-            if (!$mutex->acquire($lockKey, 15)) {
+            $mutex = Cache::lock("entry:$entry->id", 15);
+            if (!$mutex->get()) {
                 throw new MutexException($lockKey, 'Could not acquire a lock to save the entry.');
             }
         }
@@ -305,7 +305,7 @@ class EntriesController extends BaseEntriesController
             $success = false;
         } finally {
             if ($isNotNew) {
-                $mutex->release($lockKey);
+                $mutex->release();
             }
         }
 

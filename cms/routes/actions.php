@@ -1,22 +1,28 @@
 <?php
 
+use CraftCms\Cms\Config\GeneralConfig;
+use CraftCms\Cms\Http\Controllers\Dashboard\Widgets\CraftSupportController;
+use CraftCms\Cms\Http\Controllers\Dashboard\Widgets\FeedController;
+use CraftCms\Cms\Http\Controllers\Dashboard\WidgetsController;
 use CraftCms\Cms\Http\Controllers\Utilities\ClearCachesController;
 use CraftCms\Cms\Http\Controllers\Utilities\DbBackupController;
 use CraftCms\Cms\Http\Controllers\Utilities\DeprecationErrorsController;
 use CraftCms\Cms\Http\Controllers\Utilities\FindAndReplaceController;
 use CraftCms\Cms\Http\Controllers\Utilities\MigrationsController;
 
+$generalConfig = app(GeneralConfig::class);
+
 /**
  * Actions that are accessible anonymously can be registered here.
  */
-Route::prefix(config('craft.general.actionTrigger', 'actions'))->group(function () {});
+Route::prefix($generalConfig->actionTrigger)->group(function () {});
 
 /**
  * Actions that are accessible through the control panel can be registered here.
  */
 Route::prefix(implode('/', [
-    config('craft.general.cpTrigger', 'admin'),
-    config('craft.general.actionTrigger', 'actions'),
+    $generalConfig->cpTrigger,
+    $generalConfig->actionTrigger,
 ]))->middleware(['auth', 'craft.cp'])->group(function () {
     // DeprecationErrors
     Route::post('utilities/get-deprecation-error-traces-modal', [DeprecationErrorsController::class, 'getDeprecationErrorTracesModal']);
@@ -35,4 +41,13 @@ Route::prefix(implode('/', [
 
     // Migrations
     Route::post('utilities/apply-new-migrations', MigrationsController::class);
+
+    // Widgets
+    Route::post('dashboard/create-widget', [WidgetsController::class, 'store']);
+    Route::post('dashboard/save-widget-settings', [WidgetsController::class, 'update']);
+    Route::post('dashboard/delete-user-widget', [WidgetsController::class, 'delete']);
+    Route::post('dashboard/change-widget-colspan', [WidgetsController::class, 'updateColspan']);
+    Route::post('dashboard/reorder-user-widgets', [WidgetsController::class, 'reorder']);
+    Route::post('dashboard/cache-feed-data', [FeedController::class, 'cacheData']);
+    Route::post('dashboard/send-support-request', CraftSupportController::class);
 });

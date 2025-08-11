@@ -250,7 +250,7 @@ class ConfigSyncController extends BaseUpdaterController
      */
     protected function returnUrl(): string
     {
-        return $this->data['returnUrl'] ?? Craft::$app->getConfig()->getGeneral()->getPostCpLoginRedirect();
+        return $this->data['returnUrl'] ?? app(\CraftCms\Cms\Config\GeneralConfig::class)->getPostCpLoginRedirect();
     }
 
     /**

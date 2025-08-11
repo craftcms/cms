@@ -2972,7 +2972,7 @@ abstract class Element extends Component implements ElementInterface
     /**
      * @inheritdoc
      */
-    public function validate($attributeNames = null, $clearErrors = true)
+    public function validate($attributeNames = null, $clearErrors = true): bool
     {
         $this->_attributeNames = $attributeNames ? array_flip((array)$attributeNames) : null;
         $this->_invalidNestedElementIds = [];
@@ -5950,7 +5950,7 @@ JS, [
                         $find = ['/'];
                         $replace = ['/<wbr>'];
 
-                        $wordSeparator = Craft::$app->getConfig()->getGeneral()->slugWordSeparator;
+                        $wordSeparator = app(\CraftCms\Cms\Config\GeneralConfig::class)->slugWordSeparator;
 
                         if ($wordSeparator) {
                             $find[] = $wordSeparator;
@@ -6956,7 +6956,7 @@ JS, [
         }
 
         $templates = [];
-        $generalConfig = Craft::$app->getConfig()->getGeneral();
+        $generalConfig = app(\CraftCms\Cms\Config\GeneralConfig::class);
 
         $providerHandle = $this->getFieldLayout()?->provider?->getHandle();
         if ($providerHandle !== null) {

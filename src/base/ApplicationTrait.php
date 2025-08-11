@@ -109,6 +109,7 @@ use craft\web\UrlManager;
 use craft\web\User as UserSession;
 use craft\web\View;
 use CraftCms\Cms\Announcement\Announcements;
+use CraftCms\Cms\Support\Env;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Cache as CacheFacade;
 use Symfony\Component\VarDumper\Caster\ReflectionCaster;
@@ -384,7 +385,7 @@ trait ApplicationTrait
             }
 
             // Fall back on the default control panel language, if there is one, otherwise the browser language
-            return Craft::$app->getConfig()->getGeneral()->defaultCpLanguage ?? $this->_getFallbackLanguage();
+            return app(\CraftCms\Cms\Config\GeneralConfig::class)->defaultCpLanguage ?? $this->_getFallbackLanguage();
         }
 
         /** @noinspection PhpUnhandledExceptionInspection */
@@ -702,7 +703,7 @@ trait ApplicationTrait
         // Only admin accounts can upgrade Craft
         if (
             $this->getUser()->getIsAdmin() &&
-            Craft::$app->getConfig()->getGeneral()->allowAdminChanges
+            app(\CraftCms\Cms\Config\GeneralConfig::class)->allowAdminChanges
         ) {
             // Are they either *using* or *licensed to use* something < Craft Pro?
             $licensedEdition = $this->getLicensedEdition();
@@ -725,7 +726,7 @@ trait ApplicationTrait
      */
     public function getCanTestEditions(): bool
     {
-        if (App::env('CRAFT_NO_TRIALS')) {
+        if (Env::get('CRAFT_NO_TRIALS')) {
             return false;
         }
 
@@ -759,7 +760,7 @@ trait ApplicationTrait
      */
     public function getIsLive(): bool
     {
-        if (is_bool($live = $this->getConfig()->getGeneral()->isSystemLive)) {
+        if (is_bool($live = app(\CraftCms\Cms\Config\GeneralConfig::class)->isSystemLive)) {
             return $live;
         }
 
@@ -1078,6 +1079,7 @@ trait ApplicationTrait
      * Returns the dashboard service.
      *
      * @return Dashboard The dashboard service
+     * @deprecated in 6.0.0. Use `app(\CraftCms\Cms\Dashboard\Dashboard::class)` instead.
      */
     public function getDashboard(): Dashboard
     {
@@ -1539,7 +1541,7 @@ trait ApplicationTrait
         });
 
         // Set the Craft edition
-        $edition = App::env('CRAFT_EDITION') ?? $this->getProjectConfig()->get('system.edition');
+        $edition = Env::get('CRAFT_EDITION') ?? $this->getProjectConfig()->get('system.edition');
         $this->edition = $edition ? CmsEdition::fromHandle($edition) : CmsEdition::Solo;
 
         // Load the request before anything else, so everything else can safely check Craft::$app->has('request', true)
@@ -1608,7 +1610,7 @@ trait ApplicationTrait
      */
     private function _setTimeZone(): void
     {
-        $timeZone = $this->getConfig()->getGeneral()->timezone ?? $this->getProjectConfig()->get('system.timeZone');
+        $timeZone = app(\CraftCms\Cms\Config\GeneralConfig::class)->timezone ?? $this->getProjectConfig()->get('system.timeZone');
 
         if ($timeZone) {
             $this->setTimeZone(App::parseEnv($timeZone));
@@ -1681,7 +1683,7 @@ trait ApplicationTrait
                     $event->fields[] = EntryTitleField::class;
                     break;
                 case User::class:
-                    if (!$this->getConfig()->getGeneral()->useEmailAsUsername) {
+                    if (!app(\CraftCms\Cms\Config\GeneralConfig::class)->useEmailAsUsername) {
                         $event->fields[] = UsernameField::class;
                     }
                     $event->fields[] = UserFullNameField::class;

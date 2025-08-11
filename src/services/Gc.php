@@ -10,7 +10,6 @@ namespace craft\services;
 use Craft;
 use craft\base\ElementInterface;
 use craft\base\NestedElementInterface;
-use craft\config\GeneralConfig;
 use craft\console\Application as ConsoleApplication;
 use craft\db\Connection;
 use craft\db\Query;
@@ -31,6 +30,7 @@ use craft\helpers\DateTimeHelper;
 use craft\helpers\Db;
 use craft\records\Volume;
 use craft\records\VolumeFolder;
+use CraftCms\Cms\Config\GeneralConfig;
 use DateTime;
 use ReflectionMethod;
 use yii\base\Component;
@@ -97,7 +97,7 @@ class Gc extends Component
     public function init()
     {
         $this->db = Instance::ensure($this->db, Connection::class);
-        $this->_generalConfig = Craft::$app->getConfig()->getGeneral();
+        $this->_generalConfig = app(\CraftCms\Cms\Config\GeneralConfig::class);
         parent::init();
     }
 

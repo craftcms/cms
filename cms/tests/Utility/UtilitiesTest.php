@@ -1,6 +1,7 @@
 <?php
 
 use craft\enums\CmsEdition;
+use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\User\Models\User;
 use CraftCms\Cms\Utility\Events\RegisterUtilities;
 use CraftCms\Cms\Utility\Utilities\AssetIndexes;
@@ -56,7 +57,7 @@ test('disabled utilities are not included', function () {
 
     expect($this->utilities->getAuthorizedUtilityTypes())->toContain(SystemReport::class);
 
-    Craft::$app->getConfig()->getGeneral()->disabledUtilities[] = 'system-report';
+    app(GeneralConfig::class)->disabledUtilities[] = 'system-report';
 
     expect($this->utilities->getAuthorizedUtilityTypes())->not()->toContain(SystemReport::class);
 });

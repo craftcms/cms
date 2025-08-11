@@ -1,6 +1,6 @@
 {% extends "_layouts/cp" %}
 {% import "_includes/forms" as forms %}
-{% set readOnly = not craft.app.config.general.allowAdminChanges %}
+{% set readOnly = not config.craft.general.allowAdminChanges %}
 {% set fullPageForm = not readOnly %}
 
 {% if readOnly %}

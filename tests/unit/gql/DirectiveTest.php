@@ -8,7 +8,6 @@
 namespace crafttests\unit\gql;
 
 use Craft;
-use craft\config\GeneralConfig;
 use craft\elements\Asset;
 use craft\gql\base\Directive;
 use craft\gql\directives\FormatDateTime;
@@ -25,6 +24,7 @@ use craft\services\Config;
 use craft\test\mockclasses\elements\ExampleElement;
 use craft\test\mockclasses\gql\MockDirective;
 use craft\test\TestCase;
+use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Support\Str;
 use DateTime;
 use DateTimeZone;

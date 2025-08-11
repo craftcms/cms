@@ -33,7 +33,7 @@ class AsciiFilenamesController extends Controller
     public function actionIndex(): int
     {
         // Make sure convertFilenamesToAscii is true now
-        if (!Craft::$app->getConfig()->getGeneral()->convertFilenamesToAscii) {
+        if (!app(\CraftCms\Cms\Config\GeneralConfig::class)->convertFilenamesToAscii) {
             $warning = <<<EOD
 The convertFilenamesToAscii config setting is set to false.
 To avoid saving assets with non-ASCII filenames in the future,

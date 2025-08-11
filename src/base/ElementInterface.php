@@ -17,6 +17,7 @@ use craft\enums\AttributeStatus;
 use craft\errors\InvalidFieldException;
 use craft\models\FieldLayout;
 use craft\models\Site;
+use CraftCms\Cms\Component\Contracts\ComponentInterface;
 use GraphQL\Type\Definition\Type;
 use Twig\Markup;
 use yii\base\InvalidConfigException;
@@ -38,6 +39,7 @@ use yii\web\Response;
  */
 interface ElementInterface extends
     ComponentInterface,
+    ModelInterface,
     Chippable,
     CpEditable,
     Thumbable,

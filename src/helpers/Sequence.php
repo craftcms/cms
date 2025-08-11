@@ -11,6 +11,7 @@ use Craft;
 use craft\db\Query;
 use craft\db\Table;
 use craft\errors\MutexException;
+use Illuminate\Support\Facades\Cache;
 use Throwable;
 use yii\db\Exception;
 
@@ -47,10 +48,10 @@ class Sequence
      */
     public static function next(string $name, ?int $length = null): int|string
     {
-        $mutex = Craft::$app->getMutex();
         $lockName = 'seq--' . str_replace(['/', '\\'], '-', $name);
+        $mutex = Cache::lock($lockName, 3);
 
-        if (!$mutex->acquire($lockName, 3)) {
+        if (!$mutex->get()) {
             throw new MutexException($lockName, sprintf('Could not acquire a lock for the sequence "%s".', $name));
         }
 
@@ -70,11 +71,11 @@ class Sequence
                 ]);
             }
         } catch (Throwable $e) {
-            $mutex->release($lockName);
+            $mutex->release();
             throw $e;
         }
 
-        $mutex->release($lockName);
+        $mutex->release();
         return self::_format($num, $length);
     }
 
