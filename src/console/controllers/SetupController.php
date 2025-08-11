@@ -19,6 +19,7 @@ use craft\helpers\FileHelper;
 use craft\migrations\CreateDbCacheTable;
 use craft\migrations\CreatePhpSessionTable;
 use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Support\Composer;
 use CraftCms\Cms\Support\Str;
 use m150207_210500_i18n_init;
 use PDOException;
@@ -593,7 +594,7 @@ EOD;
         ));
         $this->stdout(" → $message\n\n");
 
-        Craft::$app->getComposer()->install([
+        app(Composer::class)->install([
             'craftcms/cloud' => '*',
         ], function($type, $buffer) {
             if ($type === Process::ERR) {

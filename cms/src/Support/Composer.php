@@ -1,86 +1,74 @@
 <?php
-/**
- * @link https://craftcms.com/
- * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license https://craftcms.github.io/license/
- */
 
-namespace craft\services;
+namespace CraftCms\Cms\Support;
 
-use Craft;
 use craft\helpers\App;
 use craft\helpers\FileHelper;
-use CraftCms\Cms\Support\Json;
+use CraftCms\Aliases\Facades\Aliases;
+use Illuminate\Container\Attributes\Singleton;
+use Illuminate\Contracts\Filesystem\FileNotFoundException;
+use Illuminate\Support\Facades\File;
 use Symfony\Component\Process\Exception\ProcessFailedException;
 use Symfony\Component\Process\Process;
 use Throwable;
-use yii\base\Component;
-use yii\base\Exception;
 
 /**
- * Composer service.
+ * @internal
  *
- * An instance of the service is available via [[\craft\base\ApplicationTrait::getComposer()|`Craft::$app->getComposer()`]].
- *
- * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0.0
+ * @since 6.0.0
  */
-class Composer extends Component
+#[Singleton]
+final class Composer
 {
-    /**
-     * @var string
-     */
-    public string $composerRepoUrl = 'https://composer.craftcms.com';
-
-    /**
-     * @var int The maximum number of composer.json and composer.lock backups to store in storage/composer-backups/
-     * @since 3.0.38
-     */
-    public int $maxBackups = 50;
+    public function __construct(
+        public string $composerRepoUrl = 'https://composer.craftcms.com',
+        /** @var int The maximum number of composer.json and composer.lock backups to store in storage/composer-backups/ */
+        public int $maxBackups = 50,
+    ) {}
 
     /**
      * Returns the path to composer.json.
      *
-     * @return string
-     * @throws Exception if composer.json can't be located
+     * @throws FileNotFoundException if composer.json can't be located
      */
     public function getJsonPath(): string
     {
         if (defined('CRAFT_COMPOSER_PATH')) {
-            if (!is_file(CRAFT_COMPOSER_PATH)) {
-                throw new Exception(sprintf('No Composer config found at CRAFT_COMPOSER_PATH (%s).', CRAFT_COMPOSER_PATH));
+            if (! File::exists(CRAFT_COMPOSER_PATH)) {
+                throw new FileNotFoundException(sprintf('No Composer config found at CRAFT_COMPOSER_PATH (%s).', CRAFT_COMPOSER_PATH));
             }
+
             return CRAFT_COMPOSER_PATH;
         }
 
-        $jsonPath = Craft::getAlias('@root/composer.json');
-        if (!is_file($jsonPath)) {
-            throw new Exception("No Composer config found at $jsonPath.");
+        $jsonPath = Aliases::get('@root/composer.json');
+
+        if (! File::exists($jsonPath)) {
+            throw new FileNotFoundException("No Composer config found at $jsonPath.");
         }
+
         return $jsonPath;
     }
 
     /**
      * Returns the path to composer.lock, if it exists.
      *
-     * @return string|null
-     * @throws Exception if composer.json can't be located
+     * @throws FileNotFoundException if composer.json can't be located
      */
     public function getLockPath(): ?string
     {
         $jsonPath = $this->getJsonPath();
+
         // Logic based on \Composer\Factory::createComposer()
-        $lockPath = pathinfo($jsonPath, PATHINFO_EXTENSION) === 'json'
-            ? substr($jsonPath, 0, -4) . 'lock'
-            : $jsonPath . '.lock';
-        return file_exists($lockPath) ? $lockPath : null;
+        $lockPath = File::extension($jsonPath) === 'json'
+            ? Str::beforeLast($jsonPath, '.json').'.lock'
+            : $jsonPath.'.lock';
+
+        return File::exists($lockPath) ? $lockPath : null;
     }
 
     /**
      * Returns the Composer config defined by composer.json.
-     *
-     * @return array
-     * @since 3.5.15
      */
     public function getConfig(): array
     {
@@ -94,8 +82,9 @@ class Composer extends Component
     /**
      * Installs a given set of packages with Composer.
      *
-     * @param array|null $requirements Package name/version pairs, or set to null to run the equivalent of `composer install`
-     * @param callable|null $callback The callback that should be passed to `Process::run()`.
+     * @param  array|null  $requirements  Package name/version pairs, or set to null to run the equivalent of `composer install`
+     * @param  callable|null  $callback  The callback that should be passed to `Process::run()`.
+     *
      * @throws Throwable if something goes wrong
      */
     public function install(?array $requirements, ?callable $callback = null): void
@@ -108,7 +97,7 @@ class Composer extends Component
         $jsonPath = $this->getJsonPath();
 
         // Create a backup of composer.json in case something goes wrong
-        $backup = file_get_contents($jsonPath);
+        $backup = File::get($jsonPath);
 
         // Ensure composer.craftcms.com is listed as a repository
         $this->ensurePluginStoreRepo($jsonPath);
@@ -126,7 +115,8 @@ class Composer extends Component
         try {
             $this->runComposerCommand($jsonPath, $command, $callback);
         } catch (Throwable $e) {
-            file_put_contents($jsonPath, $backup);
+            File::put($jsonPath, $backup);
+
             throw $e;
         }
     }
@@ -134,8 +124,9 @@ class Composer extends Component
     /**
      * Uninstalls a given set of packages with Composer.
      *
-     * @param string[] $packages Package names
-     * @param callable|null $callback The callback that should be passed to `Process::run()`.
+     * @param  string[]  $packages  Package names
+     * @param  callable|null  $callback  The callback that should be passed to `Process::run()`.
+     *
      * @throws Throwable if something goes wrong
      */
     public function uninstall(array $packages, ?callable $callback = null): void
@@ -158,22 +149,23 @@ class Composer extends Component
         try {
             $this->runComposerCommand($jsonPath, $command, $callback);
         } catch (Throwable $e) {
-            file_put_contents($jsonPath, $backup);
+            File::put($jsonPath, $backup);
             throw $e;
         }
     }
 
     /**
-     * @param string $jsonPath
-     * @param string[] $command
-     * @param callable|null $callback
+     * @param  string[]  $command
+     *
      * @throws ProcessFailedException
      */
     private function runComposerCommand(string $jsonPath, array $command, ?callable $callback): void
     {
+        $runtimePath = \Craft::$app->getPath()->getRuntimePath();
+
         // Copy composer.phar into storage/
-        $pharPath = sprintf('%s/composer.phar', Craft::$app->getPath()->getRuntimePath());
-        copy(Craft::getAlias('@lib/composer.phar'), $pharPath);
+        $pharPath = sprintf('%s/composer.phar', $runtimePath);
+        copy(Aliases::get('@lib/composer.phar'), $pharPath);
 
         $command = array_merge([
             App::phpExecutable() ?? 'php',
@@ -186,8 +178,8 @@ class Composer extends Component
             '--no-interaction',
         ]);
 
-        $homePath = Craft::$app->getPath()->getRuntimePath() . DIRECTORY_SEPARATOR . 'composer';
-        FileHelper::createDirectory($homePath);
+        $homePath = $runtimePath.DIRECTORY_SEPARATOR.'composer';
+        File::ensureDirectoryExists($homePath);
 
         $process = new Process($command, null, [
             'COMPOSER_HOME' => $homePath,
@@ -197,7 +189,7 @@ class Composer extends Component
         try {
             $process->mustRun($callback);
         } finally {
-            unlink($pharPath);
+            File::delete($pharPath);
         }
 
         // Invalidate opcache
@@ -208,14 +200,12 @@ class Composer extends Component
 
     /**
      * Ensures composer.craftcms.com is listed as a repository in composer.json
-     *
-     * @param string $jsonPath
      */
     private function ensurePluginStoreRepo(string $jsonPath): void
     {
-        $json = file_get_contents($jsonPath);
+        $json = File::get($jsonPath);
         $config = Json::decode($json);
-        $craftRepoKey = $this->_findCraftRepo($config);
+        $craftRepoKey = $this->findCraftRepo($config);
 
         // If it already exists and is marked as non-canonical, we're done
         if (
@@ -243,13 +233,10 @@ class Composer extends Component
 
     /**
      * Ensures composer.json has the craftcms/plugin-installer plugin marked as allowed.
-     *
-     * @param string $jsonPath
-     * @since 3.7.42
      */
     private function ensurePluginInstallerIsAllowed(string $jsonPath): void
     {
-        $json = file_get_contents($jsonPath);
+        $json = File::get($jsonPath);
         $config = Json::decode($json);
         $allowPlugins = $config['config']['allow-plugins'] ?? [];
 
@@ -270,6 +257,7 @@ class Composer extends Component
                 break;
             }
         }
+
         if ($hasAllPlugins) {
             return;
         }
@@ -283,13 +271,10 @@ class Composer extends Component
 
     /**
      * Updates the composer.json file with new requirements
-     *
-     * @param string $jsonPath
-     * @param array $requirements
      */
     private function updateRequirements(string $jsonPath, array $requirements): void
     {
-        $json = file_get_contents($jsonPath);
+        $json = File::get($jsonPath);
         $config = Json::decode($json);
 
         foreach ($requirements as $package => $constraint) {
@@ -313,7 +298,7 @@ class Composer extends Component
     public function sortPackages(&$packages): void
     {
         // Adapted from JsonManipulator::sortPackages()
-        uksort($packages, fn($a, $b) => strnatcmp($this->prefixPackage($a), $this->prefixPackage($b)));
+        uksort($packages, fn ($a, $b) => strnatcmp($this->prefixPackage($a), $this->prefixPackage($b)));
     }
 
     private function prefixPackage(string $package): string
@@ -337,12 +322,11 @@ class Composer extends Component
     }
 
     /**
-     * @param array $config
      * @return int|string|false The key in `$config['repositories']` referencing composer.craftcms.com
      */
-    private function _findCraftRepo(array $config): int|string|false
+    private function findCraftRepo(array $config): int|string|false
     {
-        if (!isset($config['repositories'])) {
+        if (! isset($config['repositories'])) {
             return false;
         }
 
@@ -360,17 +344,17 @@ class Composer extends Component
      */
     private function backupComposerFiles(): void
     {
-        $backupsDir = Craft::$app->getPath()->getComposerBackupsPath();
-        $jsonBackupPath = $backupsDir . DIRECTORY_SEPARATOR . 'composer.json';
-        $lockBackupPath = $backupsDir . DIRECTORY_SEPARATOR . 'composer.lock';
+        $backupsDir = \Craft::$app->getPath()->getComposerBackupsPath();
+        $jsonBackupPath = $backupsDir.DIRECTORY_SEPARATOR.'composer.json';
+        $lockBackupPath = $backupsDir.DIRECTORY_SEPARATOR.'composer.lock';
         FileHelper::cycle($jsonBackupPath, $this->maxBackups);
         FileHelper::cycle($lockBackupPath, $this->maxBackups);
 
-        copy($this->getJsonPath(), $jsonBackupPath);
+        File::copy($this->getJsonPath(), $jsonBackupPath);
 
         $lockPath = $this->getLockPath();
-        if (is_file($lockPath)) {
-            copy($lockPath, $lockBackupPath);
+        if (File::exists($lockPath)) {
+            File::copy($lockPath, $lockBackupPath);
         } else {
             FileHelper::writeToFile($lockBackupPath, Json::encode([
                 '_readme' => [
