@@ -4,6 +4,7 @@ namespace CraftCms\Yii2Adapter;
 
 use craft\console\controllers\HelpController;
 use craft\helpers\App;
+use craft\services\Dashboard;
 use craft\services\Utilities;
 use craft\utilities\AssetIndexes;
 use craft\utilities\ClearCaches;
@@ -11,7 +12,9 @@ use CraftCms\Aliases\Facades\Aliases;
 use CraftCms\Cms\User\Models\User;
 use CraftCms\Yii2Adapter\Console\LegacyCraftCommand;
 use Exception;
+use Illuminate\Auth\Middleware\Authenticate;
 use Illuminate\Console\Application as ConsoleApplication;
+use Illuminate\Contracts\Http\Kernel;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\ServiceProvider;
@@ -81,6 +84,10 @@ class Yii2ServiceProvider extends ServiceProvider
             $this->bootEvents();
 
             return $app;
+        });
+
+        $this->app->afterResolving(Kernel::class, function(Kernel $kernel) {
+            Authenticate::redirectUsing(fn() => app('Craft')->getConfig()->getGeneral()->loginPath);
         });
     }
 
@@ -219,6 +226,7 @@ class Yii2ServiceProvider extends ServiceProvider
          * Services
          */
         Utilities::registerEvents();
+        Dashboard::registerEvents();
 
         /**
          * Utilities

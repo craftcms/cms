@@ -7,8 +7,9 @@
 
 namespace craft\auth\sso;
 
-use craft\base\ComponentInterface;
+use craft\base\ModelInterface;
 use craft\errors\SsoFailedException;
+use CraftCms\Cms\Component\Contracts\ComponentInterface;
 use yii\web\Request;
 use yii\web\Response;
 
@@ -17,7 +18,7 @@ use yii\web\Response;
  * @internal
  * @since 5.3.0
  */
-interface ProviderInterface extends ComponentInterface
+interface ProviderInterface extends ComponentInterface, ModelInterface
 {
     /**
      * Get the unique handle for the provider

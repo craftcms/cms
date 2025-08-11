@@ -13,7 +13,7 @@ namespace craft\base;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
  */
-abstract class Component extends Model implements ComponentInterface
+abstract class Component extends Model implements \CraftCms\Cms\Component\Contracts\ComponentInterface
 {
     /**
      * Returns the display name of this class.

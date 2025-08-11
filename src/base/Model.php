@@ -300,6 +300,67 @@ abstract class Model extends \yii\base\Model implements ModelInterface
     }
 
     /**
+     * {@inheritdoc}
+     */
+    public function addError($attribute, $error = ''): void
+    {
+        parent::addError($attribute, $error);
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function addErrors(array $items): void
+    {
+        parent::addErrors($items);
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getFirstError($attribute): ?string
+    {
+        return parent::getFirstError($attribute);
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getFirstErrors(): array
+    {
+        return parent::getFirstErrors();
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getErrors($attribute = null): array
+    {
+        return parent::getErrors($attribute);
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getErrorSummary($showAllErrors): array
+    {
+        return parent::getErrorSummary($showAllErrors);
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function clearErrors($attribute = null): void
+    {
+        parent::clearErrors($attribute);
+    }
+
+    public function validate($attributeNames = null, $clearErrors = true): bool
+    {
+        return parent::validate($attributeNames, $clearErrors);
+    }
+
+    /**
      * @inheritdoc
      */
     public function hasErrors($attribute = null): bool
