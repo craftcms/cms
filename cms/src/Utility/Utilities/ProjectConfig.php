@@ -1,12 +1,5 @@
 <?php
 
-/**
- * @link https://craftcms.com/
- *
- * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license https://craftcms.github.io/license/
- */
-
 namespace CraftCms\Cms\Utility\Utilities;
 
 use Craft;
@@ -17,11 +10,10 @@ use Symfony\Component\Yaml\Yaml;
 /**
  * ProjectConfig represents a ProjectConfig utility.
  *
- * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- *
+
  * @since 6.0.0
  */
-class ProjectConfig extends Utility
+final readonly class ProjectConfig extends Utility
 {
     /**
      * {@inheritdoc}
@@ -42,7 +34,7 @@ class ProjectConfig extends Utility
     /**
      * {@inheritdoc}
      */
-    public static function icon(): ?string
+    public static function icon(): string
     {
         return 'gear';
     }

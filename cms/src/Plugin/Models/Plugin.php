@@ -1,14 +1,12 @@
 <?php
 
-/**
- * @link https://craftcms.com/
- *
- * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license https://craftcms.github.io/license/
- */
-
 namespace CraftCms\Cms\Plugin\Models;
 
 use CraftCms\Cms\Support\BaseModel;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 
-class Plugin extends BaseModel {}
+/** @since 6.0.0 */
+class Plugin extends BaseModel
+{
+    use HasFactory;
+}

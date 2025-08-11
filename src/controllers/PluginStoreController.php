@@ -17,6 +17,7 @@ use craft\helpers\UrlHelper;
 use craft\web\assets\pluginstore\PluginStoreAsset;
 use craft\web\Controller;
 use craft\web\View;
+use CraftCms\Cms\Support\Composer;
 use yii\base\InvalidConfigException;
 use yii\web\BadRequestHttpException;
 use yii\web\Response;
@@ -70,7 +71,7 @@ class PluginStoreController extends Controller
             'cmsEditions' => array_map(fn(CmsEdition $edition) => $edition->handle(), CmsEdition::cases()),
             'craftIdAccessToken' => $this->getCraftIdAccessToken(),
             'phpVersion' => App::phpVersion(),
-            'composerPhpVersion' => Craft::$app->getComposer()->getConfig()['config']['platform']['php'] ?? null,
+            'composerPhpVersion' => app(Composer::class)->getConfig()['config']['platform']['php'] ?? null,
         ];
 
         $view->registerJsWithVars(

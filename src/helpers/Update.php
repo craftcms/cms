@@ -9,6 +9,7 @@ namespace craft\helpers;
 
 use Composer\Semver\Semver;
 use Craft;
+use CraftCms\Cms\Support\Composer;
 
 /**
  * Update helper
@@ -37,7 +38,7 @@ class Update
             return false;
         }
 
-        $composerVersion = Craft::$app->getComposer()->getConfig()['config']['platform']['php'] ?? null;
+        $composerVersion = app(Composer::class)->getConfig()['config']['platform']['php'] ?? null;
         if ($composerVersion && !Semver::satisfies($composerVersion, $constraint)) {
             $error = Craft::t('app', 'This update requires PHP {v1}, but your composer.json file is currently set to PHP {v2}.', [
                 'v1' => $constraint,

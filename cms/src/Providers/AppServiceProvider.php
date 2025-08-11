@@ -11,7 +11,8 @@ use Illuminate\Foundation\Console\AboutCommand;
 use Illuminate\Routing\Router;
 use Illuminate\Support\ServiceProvider;
 
-class AppServiceProvider extends ServiceProvider
+/** @since 6.0.0 */
+final class AppServiceProvider extends ServiceProvider
 {
     private string $root = __DIR__.'/../..';
 

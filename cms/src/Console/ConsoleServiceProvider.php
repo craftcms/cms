@@ -4,7 +4,12 @@ namespace CraftCms\Cms\Console;
 
 use Illuminate\Support\ServiceProvider;
 
-class ConsoleServiceProvider extends ServiceProvider
+/**
+ * @since 6.0.0
+ *
+ * @internal
+ */
+final class ConsoleServiceProvider extends ServiceProvider
 {
     protected array $commands = [
 
