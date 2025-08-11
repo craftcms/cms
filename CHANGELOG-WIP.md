@@ -7,3 +7,5 @@
 - Deprecated `craft\helpers\ArrayHelper`. `CraftCms\Cms\Support\Arr` should be used instead.
 - Deprecated `craft\helpers\StringHelper`. `CraftCms\Cms\Support\Str` should be used instead.
 - Deprecated `craft\services\Composer`. `CraftCms\Cms\Support\Composer` should be used instead.
+- Deprecated `craft\services\Api`. `CraftCms\Cms\Support\Api` should be used instead.
+- Deprecated `craft\helpers\Api`. `CraftCms\Cms\Support\Api` should be used instead.
