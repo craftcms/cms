@@ -7,9 +7,9 @@
 
 namespace craft\web\twig\tokenparsers;
 
+use craft\web\twig\nodes\BaseNode;
 use craft\web\twig\nodes\NavNode;
 use Twig\Node\Expression\Variable\AssignContextVariable;
-use Twig\Node\Node;
 use Twig\Token;
 use Twig\TokenParser\AbstractTokenParser;
 
@@ -44,9 +44,9 @@ class NavTokenParser extends AbstractTokenParser
         $stream->expect(Token::BLOCK_END_TYPE);
 
         $upperBody = $parser->subparse([$this, 'decideNavFork']);
-        $lowerBody = new Node();
-        $indent = new Node();
-        $outdent = new Node();
+        $lowerBody = new BaseNode();
+        $indent = new BaseNode();
+        $outdent = new BaseNode();
 
         $nextValue = $stream->next()->getValue();
 
