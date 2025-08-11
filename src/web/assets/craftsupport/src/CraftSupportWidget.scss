@@ -1,7 +1,8 @@
 @charset "UTF-8";
 @import '@craftcms/sass/mixins';
 
-.widget.craft\\widgets\\craftsupport {
+.widget.craft\\widgets\\craftsupport,
+.widget.craftcms\\cms\\dashboard\\widgets\\craftsupport {
   .front {
     .pane {
       padding: 0;
