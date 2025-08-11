@@ -119,17 +119,27 @@ Craft.NestedElementManager = Garnish.Base.extend(
               '<div class="expandable-button--expanded btngroup hidden"/>'
             ).insertAfter($collapsedContainer);
 
+            // Add a SR-only description for each disclosure button
+            const btngroupDescriptionId = `btngroup-desc-${Math.floor(
+              Math.random() * 100000
+            )}`;
+            const $btngroupDescription = $('<span>', {
+              id: btngroupDescriptionId,
+              hidden: true,
+              html: Craft.t('app', 'Create {type}', {
+                type:
+                  Craft.elementTypeNames[this.elementType][2] ??
+                  Craft.t('app', 'element'),
+              }),
+            });
+            $expandedContainer.append($btngroupDescription);
+
             groupOrder.forEach((group, i) => {
               const $groupCreateBtn = Craft.ui
                 .createButton({
                   icon: i === 0 ? 'plus' : null,
                   label: group,
-                  ariaLabel: Craft.t('app', 'Create new {group} {type}', {
-                    group,
-                    type:
-                      Craft.elementTypeNames[this.elementType][2] ??
-                      Craft.t('app', 'element'),
-                  }),
+                  ariaDescribedBy: btngroupDescriptionId,
                   spinner: true,
                 })
                 .addClass('icon disabled dashed')
@@ -572,6 +582,7 @@ Craft.NestedElementManager = Garnish.Base.extend(
         Craft.cp.displayError(e?.response?.data?.message);
       } finally {
         this.creatingElement = false;
+        Craft.cp.announce(Craft.t('app', 'Loading complete'));
       }
     },
 

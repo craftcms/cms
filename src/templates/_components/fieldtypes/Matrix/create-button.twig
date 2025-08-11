@@ -16,6 +16,7 @@
 {% else %}
   {% set groupedEntryTypes = collect(entryTypes).groupBy(et => et.group ?? 'General'|t('app')) %}
   {% if groupedEntryTypes.count() > 1 %}
+    {% set btngroupDescriptionId = "btngroup-desc-#{random()}" %}
     {% set items = groupedEntryTypes.map((entryTypes, group) => [
       {hr: true, padded: false},
       {
@@ -45,6 +46,13 @@
       }) }}
     </div>
     <div class="expandable-button--expanded btngroup hidden">
+      {{ tag('span', {
+        'id': btngroupDescriptionId,
+        'hidden': true,
+        'html': 'Create {type}'|t('app', {
+          type: 'entry'|t('app'),
+        })
+      }) }}
       {% for group, entryTypes in groupedEntryTypes %}
         {% set items = entryTypes|map(entryType => {
           icon: entryType.icon,
@@ -67,10 +75,7 @@
               icon: loop.first,
             }|filter|keys,
             aria: {
-              label: 'Create new {group} {type}'|t('app', {
-                group,
-                type: 'entry'|t('app'),
-              }),
+              describedby: btngroupDescriptionId,
             },
           },
         }) }}

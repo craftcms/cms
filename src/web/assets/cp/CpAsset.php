@@ -175,7 +175,6 @@ JS;
             'Couldn’t delete “{name}”.',
             'Couldn’t reorder items.',
             'Couldn’t save new order.',
-            'Create new {group} {type}',
             'Create {type}',
             'Create',
             'Custom',
