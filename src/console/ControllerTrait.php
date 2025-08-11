@@ -7,18 +7,15 @@
 
 namespace craft\console;
 
-use Craft;
 use craft\base\Model;
 use craft\helpers\App;
 use craft\helpers\Console;
-use craft\mutex\Mutex as CraftMutex;
 use CraftCms\Cms\Support\Env;
 use Illuminate\Support\Facades\Cache;
 use yii\base\Action;
 use yii\base\InvalidRouteException;
 use yii\console\Exception;
 use yii\console\ExitCode;
-use yii\redis\Mutex as RedisMutex;
 
 /**
  * ConsoleControllerTrait implements the common methods and properties for console controllers.

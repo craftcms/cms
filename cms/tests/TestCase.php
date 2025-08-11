@@ -8,6 +8,7 @@ use craft\services\ProjectConfig;
 use craft\test\TestSetup;
 use CraftCms\Cms\Migrations\Install;
 use CraftCms\Cms\Providers\CraftServiceProvider;
+use CraftCms\Cms\Support\Facades\Http;
 use CraftCms\DependencyAwareCache\CacheServiceProvider;
 use CraftCms\Yii2Adapter\Yii2ServiceProvider;
 use Illuminate\Contracts\Console\Kernel;
@@ -17,7 +18,6 @@ use Illuminate\Foundation\Testing\RefreshDatabaseState;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\File;
-use CraftCms\Cms\Support\Facades\Http;
 use Illuminate\Support\Facades\Schema;
 use Orchestra\Testbench\TestCase as Orchestra;
 
