@@ -5,6 +5,7 @@ namespace CraftCms\Cms\Http\Controllers\Dashboard\Widgets;
 use craft\helpers\App;
 use craft\helpers\FileHelper;
 use craft\web\Application;
+use CraftCms\Cms\Support\Composer;
 use CraftCms\Cms\Support\Str;
 use Exception;
 use GuzzleHttp\RequestOptions;
@@ -21,6 +22,11 @@ use ZipArchive;
 
 final readonly class CraftSupportController
 {
+    public function __construct(
+        private Composer $composer,
+    ) {
+    }
+
     public function __invoke(Request $request, #[Give('Craft')] Application $craft): string
     {
         $view = $craft->getView();
@@ -203,9 +209,8 @@ final readonly class CraftSupportController
 
         // Composer files
         try {
-            $composerService = \Craft::$app->getComposer();
-            $zip->addFile($composerService->getJsonPath(), 'composer.json');
-            if (($composerLockPath = $composerService->getLockPath()) !== null) {
+            $zip->addFile($this->composer->getJsonPath(), 'composer.json');
+            if (($composerLockPath = $this->composer->getLockPath()) !== null) {
                 $zip->addFile($composerLockPath, 'composer.lock');
             }
         } catch (Exception) {
