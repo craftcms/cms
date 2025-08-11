@@ -22,12 +22,12 @@ use craft\base\Indicative;
 use craft\base\Model;
 use craft\behaviors\FieldLayoutBehavior;
 use craft\elements\Entry;
-use craft\enums\Color;
 use craft\helpers\Inflector;
 use craft\helpers\UrlHelper;
 use craft\records\EntryType as EntryTypeRecord;
 use craft\validators\HandleValidator;
 use craft\validators\UniqueValidator;
+use CraftCms\Cms\Support\Enums\Color;
 
 /**
  * EntryType model class.
