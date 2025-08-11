@@ -211,7 +211,9 @@ import $ from 'jquery';
           }
 
           if (focusTarget) {
-            focusTarget.focus();
+            setTimeout(() => {
+              focusTarget.focus();
+            }, this.settings.focusTriggerDelay);
           }
         }
       },
@@ -268,6 +270,8 @@ import $ from 'jquery';
         closeOnEsc: true,
         closeOnShadeClick: true,
         triggerElement: null,
+        // Delay before focusing the trigger element after closing the slideout
+        focusTriggerDelay: 0,
       },
       instances: {},
       openPanels: [],

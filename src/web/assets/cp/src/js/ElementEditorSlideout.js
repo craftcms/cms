@@ -18,6 +18,7 @@ Craft.ElementEditorSlideout = Craft.CpScreenSlideout.extend(
         {
           showHeader: true,
           prevalidate: this.$element.parents('.prevalidate').length > 0,
+          focusTriggerDelay: 150,
         }
       );
       this.base('elements/edit', settings);
