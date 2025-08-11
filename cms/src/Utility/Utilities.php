@@ -4,8 +4,8 @@ namespace CraftCms\Cms\Utility;
 
 use craft\queue\QueueInterface;
 use craft\web\Application;
-use CraftCms\Cms\Edition;
 use CraftCms\Cms\Config\GeneralConfig;
+use CraftCms\Cms\Edition;
 use CraftCms\Cms\Utility\Events\RegisterUtilities;
 use CraftCms\Cms\Utility\Utilities\AssetIndexes;
 use CraftCms\Cms\Utility\Utilities\ClearCaches;

@@ -1,7 +1,7 @@
 <?php
 
-use CraftCms\Cms\Edition;
 use CraftCms\Cms\Config\GeneralConfig;
+use CraftCms\Cms\Edition;
 use CraftCms\Cms\User\Models\User;
 use CraftCms\Cms\Utility\Events\RegisterUtilities;
 use CraftCms\Cms\Utility\Utilities\AssetIndexes;

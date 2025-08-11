@@ -1,8 +1,8 @@
 <?php
 
-use CraftCms\Cms\Edition;
 use CraftCms\Cms\Dashboard\Dashboard;
 use CraftCms\Cms\Dashboard\Widgets\NewUsers;
+use CraftCms\Cms\Edition;
 
 it('can render', function () {
     $dashboard = app(Dashboard::class);
