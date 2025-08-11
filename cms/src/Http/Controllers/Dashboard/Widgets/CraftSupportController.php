@@ -24,8 +24,7 @@ final readonly class CraftSupportController
 {
     public function __construct(
         private Composer $composer,
-    ) {
-    }
+    ) {}
 
     public function __invoke(Request $request, #[Give('Craft')] Application $craft): string
     {
