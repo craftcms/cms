@@ -29,7 +29,7 @@
           },
         }) }}
       {% else %}
-        {% set groupedEntryTypes = collect(entryTypes).groupBy(et => et.group ?? 'General'|t('app')) %}
+        {% set groupedEntryTypes = collect(entryTypes).groupBy(et => (et.group ?? 'General'|t('app'))) %}
         {% if groupedEntryTypes.count() > 1 %}
           {% set items = groupedEntryTypes.map((entryTypes, group) => [
             {hr: true, padded: false},

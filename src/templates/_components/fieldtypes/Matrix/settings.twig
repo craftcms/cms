@@ -7,7 +7,7 @@
 } %}
   {% block input %}
     {% import "_includes/forms" as forms %}
-    {% set groupedEntryTypes = entryTypes.groupBy(et => et.group ?? 'General'|t('app')) %}
+    {% set groupedEntryTypes = entryTypes.groupBy(et => (et.group ?? 'General'|t('app'))) %}
     {% if not groupedEntryTypes|length %}
       {% set groupedEntryTypes = {
         ('General'|t('app')): [],
