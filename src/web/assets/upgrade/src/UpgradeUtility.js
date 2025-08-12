@@ -40,6 +40,13 @@ import './upgrade.scss';
       const missingPluginInfo = this.installedPlugins.filter((info) => {
         return !handles.includes(info.handle);
       });
+      const versions = {
+        craft: data.cms.latestVersion,
+        plugins: {},
+      };
+      if (data.cms.phpConstraint) {
+        versions.php = data.cms.phpConstraint.match(/[\d.]+/)[0];
+      }
 
       data.plugins.push(
         ...missingPluginInfo.map((info) => Object.assign(info, {unknown: true}))
@@ -81,6 +88,10 @@ import './upgrade.scss';
 
         const $tbody = $('<tbody/>').appendTo($table);
         for (const plugin of data.plugins) {
+          if (plugin.latestVersion) {
+            versions.plugins[plugin.handle] = plugin.latestVersion;
+          }
+
           const $tr = $('<tr/>').appendTo($tbody);
           const $th = $('<th/>').appendTo($tr);
           // const $infoContainer = $('<div class="plugin-info"/>').appendTo($th);
@@ -179,23 +190,39 @@ import './upgrade.scss';
         );
       }
 
-      $('<div class="readable centeralign pane"/>')
+      $('<div id="ready-to-upgrade" class="readable centeralign pane"/>')
         .append(
           $('<h2/>', {
             text: Craft.t('app', 'Ready to upgrade?'),
           })
         )
         .append(
-          $('<p/>', {
-            html: Craft.t('app', 'View the <a>upgrade guide</a>').replace(
-              '<a>',
-              `<a class="go" href="https://craftcms.com/docs/${this.version}.x/upgrade.html">`
-            ),
-          })
+          $('<ul/>')
+            .append(
+              $('<li/>').append(
+                Craft.ui.createButton({
+                  id: 'prep-composer-json',
+                  class: 'hairline',
+                  label: Craft.t('app', 'Prep {file}', {file: 'composer.json'}),
+                  spinner: true,
+                })
+              )
+            )
+            .append(
+              $('<li/>', {
+                html: Craft.t('app', 'View the <a>upgrade guide</a>').replace(
+                  '<a>',
+                  `<a class="go" href="https://craftcms.com/docs/${this.version}.x/upgrade.html">`
+                ),
+              })
+            )
         )
         .appendTo(this.$body);
 
       Craft.initUiElements(this.$body);
+      this.addListener($('#prep-composer-json'), 'activate', () => {
+        this.prepComposerJson(versions);
+      });
     },
 
     displayError: function () {
@@ -203,6 +230,38 @@ import './upgrade.scss';
       this.$status.text(
         Craft.t('app', 'Unable to fetch upgrade info at this time.')
       );
+    },
+
+    prepComposerJson: async function (versions) {
+      const $button = $('#prep-composer-json');
+
+      if ($button.hasClass('loading')) {
+        return;
+      }
+
+      $button.addClass('loading');
+
+      let response;
+
+      try {
+        response = await Craft.sendActionRequest(
+          'POST',
+          'upgrade/prep-composer-json',
+          {
+            data: {versions},
+          }
+        );
+      } finally {
+        $button.removeClass('loading');
+      }
+
+      Craft.ui.createCopyTextPrompt({
+        label: 'composer.json',
+        value: response.data.json,
+        textarea: true,
+        class: 'code',
+        rows: 10,
+      });
     },
   });
 })(jQuery);

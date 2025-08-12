@@ -90,6 +90,16 @@ abstract class BaseRelationField extends Field implements
     abstract public static function elementType(): string;
 
     /**
+     * Returns whether the “Show the site menu” setting should be shown for the field.
+     *
+     * @since 5.8.0
+     */
+    protected static function canShowSiteMenu(): bool
+    {
+        return static::elementType()::isLocalized();
+    }
+
+    /**
      * Returns the default [[selectionLabel]] value.
      *
      * @return string The default selection label
@@ -272,6 +282,12 @@ abstract class BaseRelationField extends Field implements
      * @since 4.0.0
      */
     public ?int $maxRelations = null;
+
+    /**
+     * @var bool Whether to show a search input.
+     * @since 5.8.0
+     */
+    public bool $showSearchInput = true;
 
     /**
      * @var string|null The label that should be used on the selection input
@@ -460,6 +476,7 @@ abstract class BaseRelationField extends Field implements
         $attributes[] = 'maxRelations';
         $attributes[] = 'minRelations';
         $attributes[] = 'selectionLabel';
+        $attributes[] = 'showSearchInput';
         $attributes[] = 'showSiteMenu';
         $attributes[] = 'source';
         $attributes[] = 'sources';
@@ -608,10 +625,13 @@ JS, [
         }
 
         if ($errorCount) {
-            $elementType = static::elementType();
-            $element->addError($this->handle, Craft::t('app', 'Validation errors found in {attribute} {type}; please fix them.', [
-                'type' => $errorCount === 1 ? $elementType::lowerDisplayName() : $elementType::pluralLowerDisplayName(),
-                'attribute' => Craft::t('site', $this->name),
+            $selectedCount = (int)$value->count();
+            $element->addError($this->handle, Craft::t('app', 'The selected {relatedType} {count, plural, =1{contains} other{contain}} validation errors, preventing this {type} from being saved. Edit the {relatedType} to fix them.', [
+                'relatedType' => $selectedCount === 1
+                    ? static::elementType()::lowerDisplayName()
+                    : static::elementType()::pluralLowerDisplayName(),
+                'count' => $selectedCount,
+                'type' => $element::lowerDisplayName(),
             ]));
         }
     }
@@ -863,6 +883,19 @@ JS, [
      */
     protected function inputHtml(mixed $value, ?ElementInterface $element, bool $inline): string
     {
+        return $this->_inputHtml($value, $element, $inline, false);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getStaticHtml(mixed $value, ElementInterface $element): string
+    {
+        return $this->_inputHtml($value, $element, false, true);
+    }
+
+    private function _inputHtml(mixed $value, ?ElementInterface $element, bool $inline, bool $static): string
+    {
         $value = $this->normalizeValueForInput($value, $element, $initialValue);
 
         /** @var ElementInterface[] $value */
@@ -873,18 +906,26 @@ JS, [
             $variables['viewMode'] = 'list';
         }
 
-        if ($initialValue !== null) {
-            // make sure the field gets updated on save, even if it hasn't changed
-            Craft::$app->getView()->setInitialDeltaValue($this->handle, $initialValue);
+        if ($static) {
+            $variables['disabled'] = true;
+            $variables['allowAdd'] = false;
+            $template = '_includes/forms/elementSelect.twig';
+        } else {
+            $template = $this->inputTemplate;
+
+            if ($initialValue !== null) {
+                // make sure the field gets updated on save, even if it hasn't changed
+                Craft::$app->getView()->setInitialDeltaValue($this->handle, $initialValue);
+            }
         }
 
-        return Craft::$app->getView()->renderTemplate($this->inputTemplate, $variables);
+        return Craft::$app->getView()->renderTemplate($template, $variables);
     }
 
     /**
      * @param ElementQueryInterface|ElementCollection $value
      * @param ElementInterface|null $element
-     * @param int[]|null $initialValue
+     * @param array<int|null>|null $initialValue
      * @return ElementInterface[]
      */
     private function normalizeValueForInput(mixed $value, ?ElementInterface $element, ?array &$initialValue = null): array
@@ -932,54 +973,6 @@ JS, [
         }
 
         return parent::searchKeywords($titles, $element);
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function getStaticHtml(mixed $value, ElementInterface $element): string
-    {
-        /** @var ElementQueryInterface|ElementCollection $value */
-        if ($value instanceof ElementCollection) {
-            $value = $value->all();
-        } else {
-            $value = $this->_all($value, $element)->all();
-        }
-
-        if (empty($value)) {
-            return '<p class="light">' . Craft::t('app', 'Nothing selected.') . '</p>';
-        }
-
-        if ($this->maintainHierarchy) {
-            $structuresService = Craft::$app->getStructures();
-            // Fill in any gaps
-            $structuresService->fillGapsInElements($value);
-
-            return Html::beginTag('div', ['class' => 'elementselect']) .
-                Craft::$app->getView()->renderTemplate('_elements/structurelist.twig', [
-                    'elements' => $value,
-                ]) .
-                Html::endTag('div');
-        }
-
-        $size = Cp::CHIP_SIZE_SMALL;
-        $viewMode = $this->viewMode();
-        if ($viewMode == 'large') {
-            $size = Cp::CHIP_SIZE_LARGE;
-        }
-
-        $id = $this->getInputId();
-        $html = "<div id='$id' class='elementselect noteditable'>" .
-            "<div class='elements chips" . ($size === Cp::CHIP_SIZE_LARGE ? ' inline-chips' : '') . "'>";
-
-        foreach ($value as $relatedElement) {
-            $html .= Cp::elementChipHtml($relatedElement, [
-                'size' => $size,
-            ]);
-        }
-
-        $html .= '</div></div>';
-        return $html;
     }
 
     /**
@@ -1219,8 +1212,6 @@ JS, [
 
         if ($this->maintainHierarchy) {
             $structuresService = Craft::$app->getStructures();
-
-            /** @var ElementInterface $class */
             $class = static::elementType();
 
             /** @var ElementInterface[] $structureElements */
@@ -1331,7 +1322,7 @@ JS, [
             ];
         }
 
-        return
+        $html =
             Cp::checkboxFieldHtml([
                 'checkboxLabel' => Craft::t('app', 'Relate {type} from a specific site?', ['type' => $pluralType]),
                 'name' => 'useTargetSite',
@@ -1346,8 +1337,10 @@ JS, [
                 'name' => 'targetSiteId',
                 'options' => $siteOptions,
                 'value' => $this->targetSiteId,
-            ]) .
-            Cp::checkboxFieldHtml([
+            ]);
+
+        if (static::canShowSiteMenu()) {
+            $html .= Cp::checkboxFieldHtml([
                 'fieldset' => true,
                 'fieldClass' => $showTargetSite ? ['hidden'] : null,
                 'checkboxLabel' => Craft::t('app', 'Show the site menu'),
@@ -1361,6 +1354,9 @@ JS, [
                 'name' => 'showSiteMenu',
                 'checked' => $this->showSiteMenu,
             ]);
+        }
+
+        return $html;
     }
 
     /**
@@ -1464,6 +1460,7 @@ JS, [
             }
         }
 
+        $elementType = static::elementType();
         $selectionCriteria = $this->getInputSelectionCriteria();
         $selectionCriteria['siteId'] = $this->targetSiteId($element);
 
@@ -1493,20 +1490,32 @@ JS, [
             $selectionCondition->referenceElement = $element;
         }
 
+        $sources = $this->getInputSources($element);
+        $searchCriteria = null;
+
+        if ($this->showSearchInput($element)) {
+            $source = ElementHelper::findSource($elementType, reset($sources), 'field');
+            if (!empty($source['criteria'])) {
+                $searchCriteria = $source['criteria'];
+            }
+        }
+
         return [
             'jsClass' => $this->inputJsClass,
-            'elementType' => static::elementType(),
+            'elementType' => $elementType,
             'id' => $this->getInputId(),
             'fieldId' => $this->id,
             'storageKey' => 'field.' . $this->id,
             'describedBy' => $this->describedBy,
+            'labelId' => $this->getLabelId(),
             'name' => $this->handle,
             'elements' => $value,
-            'sources' => $this->getInputSources($element),
+            'sources' => $sources,
+            'searchCriteria' => $searchCriteria,
             'condition' => $selectionCondition,
             'referenceElement' => $element,
             'criteria' => $selectionCriteria,
-            'showSiteMenu' => ($this->targetSiteId || !$this->showSiteMenu) ? false : 'auto',
+            'showSiteMenu' => ($this->targetSiteId || !$this->showSiteMenu || !static::canShowSiteMenu()) ? false : 'auto',
             'allowSelfRelations' => (bool)$this->allowSelfRelations,
             'maintainHierarchy' => (bool)$this->maintainHierarchy,
             'branchLimit' => $this->branchLimit,
@@ -1523,6 +1532,23 @@ JS, [
                 'defaultSiteId' => $element->siteId ?? null,
             ],
         ];
+    }
+
+    /**
+     * Returns whether the search input should be shown.
+     *
+     * @param ElementInterface|null $element
+     * @return bool
+     * @since 5.8.0
+     */
+    protected function showSearchInput(?ElementInterface $element): bool
+    {
+        if (!$this->showSearchInput || $this->sources === '*') {
+            return false;
+        }
+
+        $sources = $this->getInputSources($element);
+        return is_array($sources) && count($sources) === 1;
     }
 
     /**
@@ -1608,6 +1634,17 @@ JS, [
     protected function createSelectionCondition(): ?ElementConditionInterface
     {
         return null;
+    }
+
+    /**
+     * Returns whether the field is configured with a selection condition.
+     *
+     * @return bool
+     * @since 5.8.0
+     */
+    protected function hasSelectionCondition(): bool
+    {
+        return isset($this->_selectionCondition);
     }
 
     /**
@@ -1707,7 +1744,8 @@ JS, [
             ->status(null)
             ->site('*')
             ->limit(null)
-            ->unique();
+            ->unique()
+            ->eagerly(false);
         if ($element !== null) {
             $clone->preferSites([$this->targetSiteId($element)]);
         }

@@ -1,6 +1,6 @@
 {% import '_includes/forms.twig' as forms %}
 
-{% if name ?? false %}
+{% if (name ?? false) and (renderDefaultInput ?? true) %}
   {{ hiddenInput(name|replace('/\\[\\]$/', ''), '') }}
 {% endif -%}
 
@@ -10,10 +10,11 @@
 {% set limit = limit ?? null %}
 {% set showHandles = showHandles ?? false %}
 {% set showIndicators = showIndicators ?? false %}
+{% set showDescription = showDescription ?? false %}
 {% set sortable = (not limit or limit > 1) and (sortable ?? true) %}
 {% set showActionMenus = showActionMenus ?? true %}
 {% set hyperlinks = hyperlinks ?? true %}
-{% set withSearchInput = withSearchInput ?? true %}
+{% set withSearchInput = withSearchInput ?? (options|length > 5) %}
 {% set createAction = createAction ?? null %}
 {% set disabled = (disabled ?? false) ? true : false %}
 {% set registerJs = registerJs ?? true %}
@@ -52,6 +53,7 @@
               showActionMenu: showActionMenus,
               showHandle: showHandles,
               showIndicators: showIndicators,
+              showDescription: showDescription,
               hyperlink: hyperlinks,
             }) %}
             {% if disabled %}
@@ -67,10 +69,13 @@
   <div class="flex flex-nowrap">
     {% set valueIds = values|map(component => component.getId()) %}
 
+    {# the disclosureMenu already has support for description (shows below the label),
+    so the description that goes into the info icon needs to be keyed by something else - 'info' #}
     {{ disclosureMenu(options|map(component => {
       type: 'button',
       label: component.getUiLabel(),
       handle: showHandles and component is instance of('craft\\base\\Grippable') ? component.getHandle() : null,
+      info: showDescription and component is instance of('craft\\base\\Describable') ? component.getDescription() : null,
       icon: component is instance of('craft\\base\\Iconic') ? component.getIcon() : null,
       color: component is instance of('craft\\base\\Colorable') ? component.getColor() : null,
       attributes: {
@@ -111,6 +116,7 @@
     name: name|namespaceInputName,
     limit,
     showHandles,
+    showDescription,
     sortable,
     showActionMenus,
     hyperlinks,

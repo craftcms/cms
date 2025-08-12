@@ -1,0 +1,126 @@
+:root {
+  /*
+  Colors
+  */
+
+  /* Background */
+  --bg-primary: var(--red-600);
+  --bg-secondary: var(--gray-500);
+  --bg-selection-light: var(--gray-200);
+  --bg-selection-dark: var(--gray-500);
+  --bg-error: var(--red-100);
+  --bg-warning: var(--amber-100);
+  --bg-success: var(--teal-100);
+  --bg-notice: var(--sky-100);
+  --bg-enabled: var(--teal-550);
+  --bg-pending: var(--orange-400);
+  --bg-disabled: var(--red-600);
+
+  /* Foreground */
+  --fg-subtle: var(--gray-550);
+  --fg-error: #d81f23; // Pretty close to --red-600 but not quite
+  --fg-warning: var(--amber-700);
+  --fg-success: var(--teal-700);
+  --fg-notice: var(--sky-700);
+  --fg-input: hsl(212deg 25% 50%);
+
+  /* Borders */
+  --border-primary: var(--red-600);
+  --border-secondary: var(--gray-500);
+  --border-hairline: rgb(from var(--gray-800) r g b / 10%);
+  --border-hairline-medium: #cfd8e3;
+  --border-hairline-dark: rgb(from hsl(210deg 10% 53%) r g b / 50%);
+  --border-error: var(--red-300);
+  --border-warning: var(--amber-300);
+  --border-warning-emphasis: var(--amber-600);
+  --border-success: var(--teal-300);
+  --border-notice: var(--sky-300);
+
+  /* Focus */
+  --focus-outline-light: var(--blue-300);
+  --focus-outline-medium: var(--focus-ring-color, #0284c7);
+  --focus-outline-dark: #0f74b1;
+
+  /*
+  Focus Rings
+  */
+  --focus-ring-alpha: 0.85;
+  --focus-ring-light: 0 0 0 1px
+      hsl(from var(--focus-outline-light) h s calc(l + 10)),
+    0 0 0 3px rgb(from var(--focus-outline-light) r g b / 97%);
+  --focus-ring-medium: 0 0 0 1px
+      hsl(from var(--focus-outline-medium) h s calc(l + 10)),
+    0 0 0 3px rgb(from var(--focus-outline-medium) r g b / 97%);
+  --focus-ring-dark: 0 0 0 1px
+      hsl(from var(--focus-outline-dark) h s calc(l + 20)),
+    0 0 0 3px rgb(from var(--focus-outline-dark) r g b / 97%);
+  --focus-ring: var(--focus-ring-medium);
+  --focus-ring-outset: 0 0 0 1px currentcolor,
+    0 0 0 3px var(--focus-outline-medium),
+    0 0 6px 2px
+      hsl(from var(--focus-outline-medium) h s l / var(--focus-ring-alpha));
+  --focus-ring-inner: inset 0 0 0 1px var(--focus-outline-medium),
+    inset 0 0 0 3px
+      hsl(from var(--focus-outline-medium) h s l / var(--focus-ring-alpha));
+
+  /*
+  Border Radius
+   */
+  --radius-sm: 3px;
+  --radius-md: 4px;
+  --radius-lg: 5px;
+  --radius-full: calc(infinity * 1px);
+  --radius-circle: 50%;
+
+  /*
+  Sizing
+   */
+  --size-touch-target: calc(24rem / 16);
+  --size-icon: 1rem;
+  --size-line-height: 1.42em;
+
+  /*
+  Spacing
+   */
+  --2xs: calc(2rem / 16);
+  --xs: calc(4rem / 16);
+  --s: calc(8rem / 16);
+  --m: calc(14rem / 16);
+  --l: calc(18rem / 16);
+  --xl: calc(24rem / 16);
+  --padding: var(--xl);
+  --neg-padding: calc(var(--xl) * -1);
+
+  /*
+  Components
+   */
+
+  /* UI Controls */
+  --ui-control-fg: var(--fg-subtle);
+  --ui-control-fg-hover: var(--gray-600);
+  --ui-control-fg-active: var(--gray-700);
+  --ui-control-bg: rgb(from var(--fg-input) r g b / 25%);
+  --ui-control-bg-static: var(--ui-control-bg);
+  --ui-control-bg-hover: rgb(from var(--fg-input) r g b / 30%);
+  --ui-control-bg-active: rgb(from var(--fg-input) r g b / 50%);
+  --ui-control-border: var(--ui-control-fg);
+  --ui-control-radius: var(--radius-lg);
+  --ui-control-height: calc(34rem / 16);
+  --ui-control-height-small: calc(30rem / 16);
+
+  /* Sidebars */
+  --sidebar-bg: var(--gray-150);
+
+  /* Nav Item */
+  --nav-item-indicator-size: var(--xs);
+  --nav-item-badge-bg: var(--fg-subtle);
+  --nav-item-badge-fg: var(--white);
+  --nav-item-fg-active: var(--text-color);
+  --nav-item-fg-hover: var(--text-color);
+  --nav-item-bg-active: var(--gray-200);
+  --nav-item-bg-hover: var(--gray-200);
+  --nav-item-prefix-width: calc(30rem / 16);
+  --nav-item-prefix-ratio: 1;
+  --nav-item-trigger-size: var(--touch-target-size);
+  --nav-item-gutter-width: calc(10rem / 16); // Left and right padding
+}

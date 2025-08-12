@@ -319,7 +319,6 @@ class AssetIndexer extends Component
                     ->where([
                         'sessionId' => $indexingSession->id,
                         'completed' => false,
-                        'inProgress' => false,
                     ])
                     ->count();
 
@@ -730,6 +729,8 @@ class AssetIndexer extends Component
             $volume = $folder->getVolume();
         }
 
+        $fs = $volume->getFs();
+
         $folderId = $folder->id;
 
         /** @var Asset|null $asset */
@@ -758,13 +759,18 @@ class AssetIndexer extends Component
         $asset->setScenario(Asset::SCENARIO_INDEX);
 
         try {
+            if ($fs instanceof LocalFsInterface) {
+                // Have the asset store its MIME type, since it will be able to get it from its file info
+                $asset->setMimeType($asset->getMimeType());
+            }
+
             // All sorts of fun stuff for images.
             if ($asset->kind === Asset::KIND_IMAGE) {
                 $dimensions = null;
                 $tempPath = null;
 
                 // For local images it's easy - the image is right there, nothing to cache and the asset ID means nothing.
-                if ($volume->getFs() instanceof LocalFsInterface) {
+                if ($fs instanceof LocalFsInterface) {
                     $transformSourcePath = $asset->getImageTransformSourcePath();
                     $dimensions = Image::imageSize($transformSourcePath);
                 } else {
@@ -789,6 +795,9 @@ class AssetIndexer extends Component
                         $tempPath = AssetsHelper::tempFilePath(pathinfo($filename, PATHINFO_EXTENSION));
                         AssetsHelper::downloadFile($volume, $indexEntry->uri, $tempPath);
                         $dimensions = Image::imageSize($tempPath);
+
+                        // Store the MIME type on the asset so long as we have it downloaded
+                        $asset->setMimeType(FileHelper::getMimeType($tempPath));
                     }
                 }
 
@@ -800,7 +809,7 @@ class AssetIndexer extends Component
                 Craft::$app->getElements()->saveElement($asset);
 
                 // Now we definitely have an asset ID, so let's cover one last base.
-                $shouldCache = !$volume->getFs() instanceof LocalFsInterface && $cacheImages && Craft::$app->getConfig()->getGeneral()->maxCachedCloudImageSize > 0;
+                $shouldCache = !$fs instanceof LocalFsInterface && $cacheImages && Craft::$app->getConfig()->getGeneral()->maxCachedCloudImageSize > 0;
 
                 if ($shouldCache && $tempPath) {
                     $targetPath = $asset->getImageTransformSourcePath();

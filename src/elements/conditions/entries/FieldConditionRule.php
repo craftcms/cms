@@ -23,7 +23,7 @@ class FieldConditionRule extends BaseMultiSelectConditionRule implements Element
     /**
      * @inheritdoc
      */
-    protected bool $reloadOnOperatorChange = true;
+    protected bool $includeEmptyOperators = true;
 
     /**
      * @inheritdoc
@@ -39,17 +39,6 @@ class FieldConditionRule extends BaseMultiSelectConditionRule implements Element
     public function getExclusiveQueryParams(): array
     {
         return ['field', 'fieldId'];
-    }
-
-    /**
-     * @inheritdoc
-     */
-    protected function operators(): array
-    {
-        return [
-            ...parent::operators(),
-            self::OPERATOR_NOT_EMPTY,
-        ];
     }
 
     /**
@@ -71,6 +60,8 @@ class FieldConditionRule extends BaseMultiSelectConditionRule implements Element
         /** @var EntryQuery $query */
         if ($this->operator === self::OPERATOR_NOT_EMPTY) {
             $query->field($this->nestedEntryFields()->all());
+        } elseif ($this->operator === self::OPERATOR_EMPTY) {
+            $query->field(false);
         } else {
             $fieldsService = Craft::$app->getFields();
             $query->fieldId($this->paramValue(fn($uid) => $fieldsService->getFieldByUid($uid)->id ?? null));
@@ -83,11 +74,11 @@ class FieldConditionRule extends BaseMultiSelectConditionRule implements Element
     public function matchElement(ElementInterface $element): bool
     {
         /** @var Entry $element */
-        if ($this->operator === self::OPERATOR_NOT_EMPTY) {
-            return $element->getField() !== null;
-        }
-
-        return $this->matchValue($element->getField()?->uid);
+        return match ($this->operator) {
+            self::OPERATOR_NOT_EMPTY => $element->getField() !== null,
+            self::OPERATOR_EMPTY => $element->getField() === null,
+            default => $this->matchValue($element->getField()?->uid),
+        };
     }
 
     /**

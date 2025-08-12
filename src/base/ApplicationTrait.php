@@ -108,6 +108,7 @@ use craft\services\Webpack;
 use craft\web\Application as WebApplication;
 use craft\web\AssetManager;
 use craft\web\Request as WebRequest;
+use craft\web\UrlManager;
 use craft\web\User as UserSession;
 use craft\web\View;
 use Illuminate\Support\Collection;
@@ -186,6 +187,7 @@ use yii\web\ServerErrorHttpException;
  * @property-read TemplateCaches $templateCaches The template caches service
  * @property-read Tokens $tokens The tokens service
  * @property-read Updates $updates The updates service
+ * @property-read UrlManager $urlManager The URL manager for this application
  * @property-read UserGroups $userGroups The user groups service
  * @property-read UserPermissions $userPermissions The user permissions service
  * @property-read Users $users The users service
@@ -207,6 +209,7 @@ use yii\web\ServerErrorHttpException;
  * @method Formatter getFormatter() Returns the formatter component.
  * @method I18N getI18n() Returns the internationalization (i18n) component.
  * @method Security getSecurity() Returns the security component.
+ * @method UrlManager getUrlManager() Returns the URL manager for this application.
  * @method View getView() Returns the view component.
  * @mixin WebApplication
  * @mixin ConsoleApplication
@@ -1557,7 +1560,7 @@ trait ApplicationTrait
 
         // Register Collection::set() as an alias of put() - with support for bulk-setting values
         Collection::macro('set', function(mixed $values) {
-            /** @var Collection $this */
+            assert($this instanceof Collection);
             if (is_array($values)) {
                 foreach ($values as $key => $value) {
                     $this->put($key, $value);
@@ -1570,7 +1573,7 @@ trait ApplicationTrait
 
         // Register Collection::one() as an alias of first(), for consistency with yii\db\Query.
         Collection::macro('one', function() {
-            /** @var Collection $this */
+            assert($this instanceof Collection);
             return $this->first(...func_get_args());
         });
 
@@ -1644,7 +1647,6 @@ trait ApplicationTrait
      */
     private function _setTimeZone(): void
     {
-        /** @var WebApplication|ConsoleApplication $this */
         $timeZone = $this->getConfig()->getGeneral()->timezone ?? $this->getProjectConfig()->get('system.timeZone');
 
         if ($timeZone) {

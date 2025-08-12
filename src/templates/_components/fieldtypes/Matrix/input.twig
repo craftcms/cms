@@ -29,22 +29,46 @@
           },
         }) }}
       {% else %}
-        {{ disclosureMenu(entryTypes|map(entryType => {
-          icon: entryType.icon,
-          color: entryType.color,
-          label: entryType.name|t('site'),
-          value: entryType.handle,
-          attributes: {
-            data: {
-              type: entryType.handle,
+        {% set groupedEntryTypes = collect(entryTypes).groupBy(et => et.group ?? 'General'|t('app')) %}
+        {% if groupedEntryTypes.count() > 1 %}
+          {% set items = groupedEntryTypes.map((entryTypes, group) => [
+            {hr: true, padded: false},
+            {
+              heading: group|t('site'),
+              padded: false,
+              items: entryTypes|map(entryType => {
+                icon: entryType.icon,
+                color: entryType.color,
+                label: entryType.name|t('site'),
+                value: entryType.handle,
+                attributes: {
+                  data: {
+                    type: entryType.handle,
+                  },
+                },
+              }),
             },
-          },
-        }), {
+          ]).flatten(1).all() %}
+        {% else %}
+          {% set items = groupedEntryTypes.map((entryTypes) => entryTypes|map(entryType => {
+            icon: entryType.icon,
+            color: entryType.color,
+            label: entryType.name|t('site'),
+            value: entryType.handle,
+            attributes: {
+              data: {
+                type: entryType.handle,
+              },
+            },
+          })).flatten(1).all() %}
+        {% endif %}
+        {{ disclosureMenu(items, {
           buttonLabel: createButtonLabel,
           buttonSpinner: true,
           buttonAttributes: {
             class: ['dashed', 'add', 'icon'],
           },
+          withSearchInput: entryTypes|length > 5,
         }) }}
       {% endif %}
     </div>

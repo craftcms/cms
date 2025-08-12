@@ -16,3 +16,4 @@ vendor/
 /bower_components
 cpresources/*
 .ddev/
+test-results/

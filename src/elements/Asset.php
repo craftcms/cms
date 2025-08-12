@@ -1163,6 +1163,11 @@ class Asset extends Element
     private string $_filename;
 
     /**
+     * @var string|null
+     */
+    private ?string $_mimeType = null;
+
+    /**
      * @var int|null Width
      */
     private int|null $_width = null;
@@ -1241,7 +1246,7 @@ class Asset extends Element
     {
         return (
             parent::__isset($name) ||
-            strncmp($name, 'transform:', 10) === 0 ||
+            str_starts_with($name, 'transform:') ||
             Craft::$app->getImageTransforms()->getTransformByHandle($name)
         );
     }
@@ -1260,7 +1265,7 @@ class Asset extends Element
      */
     public function __get($name)
     {
-        if (strncmp($name, 'transform:', 10) === 0) {
+        if (str_starts_with($name, 'transform:')) {
             return $this->copyWithTransform(substr($name, 10));
         }
 
@@ -2425,7 +2430,10 @@ JS,[
     }
 
     /**
-     * Returns the file’s MIME type based on its extension, if it can be determined.
+     * Returns the file’s MIME type based, if it can be determined.
+     *
+     * If a transform is applied (either via the `$transform` argument or [[setTransform()]]),
+     * the MIME type will be based on the transform’s format.
      *
      * @param ImageTransform|string|array|null $transform A transform handle or configuration that should be applied to the mime type
      * @return string|null
@@ -2436,14 +2444,23 @@ JS,[
         $transform ??= $this->_transform;
         $transform = ImageTransforms::normalizeTransform($transform);
 
-        if (!Image::canManipulateAsImage($this->getExtension()) || !$transform || !$transform->format) {
-            // todo: maybe we should be passing this off to the filesystem
-            // so Local can call FileHelper::getMimeType() (uses magic file instead of ext)
-            return FileHelper::getMimeTypeByExtension($this->_filename);
+        if ($transform?->format) {
+            // Prepend with '.' to let pathinfo() work
+            return FileHelper::getMimeTypeByExtension('.' . $transform->format);
         }
 
-        // Prepend with '.' to let pathinfo() work
-        return FileHelper::getMimeTypeByExtension('.' . $transform->format);
+        return $this->_mimeType ?? FileHelper::getMimeTypeByExtension($this->_filename);
+    }
+
+    /**
+     * Sets the file’s MIME type.
+     *
+     * @param string|null $mimeType
+     * @since 5.8.0
+     */
+    public function setMimeType(?string $mimeType): void
+    {
+        $this->_mimeType = $mimeType;
     }
 
     /**
@@ -2462,7 +2479,7 @@ JS,[
         }
 
         $transform ??= $this->_transform;
-        return ImageTransforms::normalizeTransform($transform)?->format ?? $ext;
+        return ImageTransforms::normalizeTransform($transform)->format ?? $ext;
     }
 
     /**
@@ -2535,6 +2552,9 @@ JS,[
      */
     public function getFormattedSizeInBytes(bool $short = true): ?string
     {
+        if (!isset($this->size)) {
+            return null;
+        }
         $params = [
             'n' => $this->size,
             'nFormatted' => Craft::$app->getFormatter()->asDecimal($this->size),
@@ -3279,6 +3299,10 @@ JS;
             $record->width = (int)$this->_width ?: $fallbackWidth;
             $record->height = (int)$this->_height ?: $fallbackHeight;
             $record->dateModified = Db::prepareDateForDb($this->dateModified);
+
+            if (isset($this->_mimeType)) {
+                $record->mimeType = $this->_mimeType;
+            }
 
             if ($record->alt === null) {
                 $record->alt = $this->alt;

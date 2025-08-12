@@ -138,6 +138,17 @@
         }) }}
     {% endblock %}
 
+    {% block showSearchInputField %}
+        {{ forms.lightswitchField({
+            fieldClass: field.allowMultipleSources ? 'hidden' : null,
+            label: 'Show the search input'|t('app'),
+            id: 'show-search-input',
+            name: 'showSearchInput',
+            on: field.showSearchInput,
+            errors: field.getErrors('showSearchInput'),
+        }) }}
+    {% endblock %}
+
     {% block validateRelatedElementsField %}
         {{ forms.lightswitchField({
             label: 'Validate related {type}'|t('app', { type: pluralElementType }),
@@ -172,3 +183,52 @@
         </div>
     {% endblock %}
 {% endblock %}
+
+{% if field.allowMultipleSources %}
+{% js %}
+(() => {
+  const $sourcesField = $('#{{ 'sources-field'|namespaceInputId }}');
+  const $inputs = $sourcesField.find('input');
+  const $searchField = $('#{{ 'show-search-input-field'|namespaceInputId }}');
+
+  const updateSearchField = function() {
+    let showSearchField = false;
+    if (!$sourcesField.is(':visible')) {
+      showSearchField = true;
+    } else {
+      let foundChecked = false;
+      for (let i = 0; i < $inputs.length; i++) {
+        const $input = $inputs.eq(i);
+        const val = $input.val();
+        const checked = $input.prop('checked');
+        if (val === '*') {
+          if (checked) {
+            showSearchField = false;
+            break;
+          }
+        } else if (checked) {
+          if (foundChecked) {
+            showSearchField = false;
+            break;
+          }
+          showSearchField = true;
+          foundChecked = true;
+        }
+      }
+    }
+
+    if (showSearchField) {
+      $searchField.removeClass('hidden');
+    } else {
+      $searchField.addClass('hidden');
+    }
+  };
+
+  $inputs.on('change', () => {
+    updateSearchField();
+  });
+
+  updateSearchField();
+})();
+{% endjs %}
+{% endif %}

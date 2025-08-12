@@ -78,10 +78,12 @@ use craft\models\GqlToken;
 use craft\models\Section;
 use craft\records\GqlSchema as GqlSchemaRecord;
 use craft\records\GqlToken as GqlTokenRecord;
+use GraphQL\Error\ClientAware;
 use GraphQL\Error\DebugFlag;
 use GraphQL\Error\Error;
 use GraphQL\GraphQL;
 use GraphQL\Type\Definition\Directive as GqlDirective;
+use GraphQL\Type\Definition\Type;
 use GraphQL\Type\Schema;
 use GraphQL\Validator\DocumentValidator;
 use GraphQL\Validator\Rules\DisableIntrospection;
@@ -630,7 +632,6 @@ class Gql extends Component
      * Sets the active GraphQL schema.
      *
      * @param GqlSchema|null $schema The schema, or `null` to unset the active schema
-     * @throws Exception
      */
     public function setActiveSchema(?GqlSchema $schema = null): void
     {
@@ -1188,10 +1189,9 @@ class Gql extends Component
         }
 
         if (!isset($this->_fieldArguments[$fieldLayout->uid])) {
-            $this->_fieldArguments[$fieldLayout->uid] = $this->defineContentArgumentsForFields(
-                $fieldLayout->type,
-                $fieldLayout->getCustomFields(),
-            );
+            $this->_fieldArguments[$fieldLayout->uid] =
+                $this->defineContentArgumentsForFields($fieldLayout->type, $fieldLayout->getCustomFields()) +
+                $this->defineContentArgumentsForGeneratedFields($fieldLayout->type, $fieldLayout->getGeneratedFields());
         }
 
         return $this->_fieldArguments[$fieldLayout->uid];
@@ -1208,6 +1208,7 @@ class Gql extends Component
     public function defineContentArgumentsForFieldLayouts(string $elementType, array $fieldLayouts): array
     {
         $fields = [];
+        $generatedFields = [];
         $handledFieldLayouts = [];
 
         foreach ($fieldLayouts as $fieldLayout) {
@@ -1220,9 +1221,11 @@ class Gql extends Component
             }
 
             array_push($fields, ...$fieldLayout->getCustomFields());
+            array_push($generatedFields, ...$fieldLayout->getGeneratedFields());
         }
 
-        return $this->defineContentArgumentsForFields($elementType, $fields);
+        return $this->defineContentArgumentsForFields($elementType, $fields) +
+            $this->defineContentArgumentsForGeneratedFields($elementType, $generatedFields);
     }
 
     /**
@@ -1252,6 +1255,36 @@ class Gql extends Component
     }
 
     /**
+     * Returns the content arguments for a given element type and generated fields.
+     *
+     * @param class-string<BaseElementInterface> $elementType
+     * @param array $fields
+     * @return array
+     * @since 5.8.0
+     */
+    public function defineContentArgumentsForGeneratedFields(string $elementType, array $fields): array
+    {
+        $arguments = [];
+        $elementQuery = Craft::$app->getElements()->createElementQuery($elementType);
+
+        foreach ($fields as $field) {
+            $handle = $field['handle'] ?? '';
+            if (
+                $handle !== '' &&
+                !isset($arguments[$handle]) &&
+                !method_exists($elementQuery, $handle)
+            ) {
+                $arguments[$handle] = [
+                    'name' => $handle,
+                    'type' => Type::listOf(QueryArgument::getType()),
+                ];
+            }
+        }
+
+        return $arguments;
+    }
+
+    /**
      * Returns the content arguments for an element class based on the given contexts.
      *
      * @param array $contexts
@@ -1263,15 +1296,21 @@ class Gql extends Component
         /** @var FieldLayoutBehavior[] $contexts */
         return $this->getOrSetContentArguments($elementType, function() use ($contexts, $elementType): array {
             $fields = [];
+            $generatedFields = [];
+
             foreach ($contexts as $context) {
                 if (GqlHelper::isSchemaAwareOf($elementType::gqlScopesByContext($context))) {
+                    $layout = $context->getFieldLayout();
                     try {
-                        array_push($fields, ...$context->getCustomFields());
+                        array_push($fields, ...$layout->getCustomFields());
+                        array_push($generatedFields, ...$layout->getGeneratedFields());
                     } catch (UnknownMethodException) {
                     }
                 }
             }
-            return $this->defineContentArgumentsForFields($elementType, $fields);
+
+            return $this->defineContentArgumentsForFields($elementType, $fields) +
+                $this->defineContentArgumentsForGeneratedFields($elementType, $generatedFields);
         });
     }
 
@@ -1295,8 +1334,12 @@ class Gql extends Component
                 $originException = $nextException;
             }
 
-            // If devMode enabled, substitute the original exception here.
-            if ($devMode && !empty($originException->getMessage())) {
+            // If devMode enabled or exception is safe to show, substitute the original exception here.
+            if (
+                ($devMode || ($originException instanceof ClientAware && $originException->isClientSafe())
+                ) &&
+                !empty($originException->getMessage())
+            ) {
                 $error = $originException;
             } elseif (!$originException instanceof Error) {
                 // If devMode not enabled and the error seems to be originating from Craft, display a generic message

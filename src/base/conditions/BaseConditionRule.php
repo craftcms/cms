@@ -53,6 +53,14 @@ abstract class BaseConditionRule extends Component implements ConditionRuleInter
     }
 
     /**
+     * @inheritdoc
+     */
+    public function showLabelHint(): bool
+    {
+        return false;
+    }
+
+    /**
      * @var string|null UUID
      */
     public ?string $uid = null;

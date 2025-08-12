@@ -947,49 +947,6 @@ class EntryQuery extends ElementQuery implements NestedElementQueryInterface
     /**
      * @inheritdoc
      */
-    public function afterPopulate($elements): array
-    {
-        if (!$this->asArray && !empty($elements)) {
-            $this->loadAuthorIds($elements);
-        }
-
-        return parent::afterPopulate($elements);
-    }
-
-    private function loadAuthorIds(array $entries): void
-    {
-        $entries = array_filter($entries, fn(Entry $entry) => isset($entry->sectionId));
-        if (empty($entries)) {
-            return;
-        }
-
-        /** @var Entry[][] $indexedEntries */
-        $indexedEntries = ArrayHelper::index($entries, null, [
-            fn(Entry $entry) => $entry->id,
-        ]);
-        $indexedAuthorIds = [];
-
-        $results = (new Query())
-            ->select(['entryId', 'authorId'])
-            ->from(Table::ENTRIES_AUTHORS)
-            ->where(['entryId' => array_keys($indexedEntries)])
-            ->orderBy(['sortOrder' => SORT_ASC])
-            ->all();
-
-        foreach ($results as $result) {
-            $indexedAuthorIds[$result['entryId']][] = (int)$result['authorId'];
-        }
-
-        foreach ($indexedEntries as $entryId => $entriesOfId) {
-            foreach ($entriesOfId as $entry) {
-                $entry->setAuthorIds($indexedAuthorIds[$entryId] ?? []);
-            }
-        }
-    }
-
-    /**
-     * @inheritdoc
-     */
     protected function statusCondition(string $status): mixed
     {
         if (

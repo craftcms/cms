@@ -31,6 +31,16 @@
     disabled: readOnly,
 }) }}
 
+{{ forms.textareaField({
+    label: 'Description'|t('app'),
+    id: 'description',
+    class: 'nicetext',
+    name: 'description',
+    value: entryType.description ?? null,
+    errors: entryType.getErrors('description'),
+    disabled: readOnly,
+}) }}
+
 {{ forms.iconPickerField({
     label: 'Icon'|t('app'),
     id: 'icon',
@@ -187,6 +197,7 @@
 {{ forms.fieldLayoutDesignerField({
     id: 'field-layout',
     fieldLayout: entryType.getFieldLayout(),
+    withGeneratedFields: true,
     withCardViewDesigner: true,
     disabled: readOnly,
 }) }}

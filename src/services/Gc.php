@@ -19,6 +19,7 @@ use craft\db\TableSchema;
 use craft\elements\Address;
 use craft\elements\Asset;
 use craft\elements\Category;
+use craft\elements\ContentBlock;
 use craft\elements\Entry;
 use craft\elements\GlobalSet;
 use craft\elements\Tag;
@@ -146,6 +147,7 @@ class Gc extends Component
 
         $this->_deleteUnsupportedSiteEntries();
         $this->deleteOrphanedNestedElements(Address::class, Table::ADDRESSES);
+        $this->deleteOrphanedNestedElements(ContentBlock::class, Table::CONTENTBLOCKS);
         $this->deleteOrphanedNestedElements(Entry::class, Table::ENTRIES);
 
         // Fire a 'run' event

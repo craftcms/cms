@@ -14,6 +14,7 @@ use craft\base\PreviewableFieldInterface;
 use craft\base\SortableFieldInterface;
 use craft\db\CoalesceColumnsExpression;
 use craft\elements\conditions\ElementConditionInterface;
+use craft\errors\FieldNotFoundException;
 use craft\errors\SiteNotFoundException;
 use craft\events\DefineSourceSortOptionsEvent;
 use craft\events\DefineSourceTableAttributesEvent;
@@ -96,7 +97,7 @@ class ElementSources extends Component
                     }
                 } else {
                     if ($source['type'] === self::TYPE_CUSTOM) {
-                        if (!$this->_showCustomSource($source)) {
+                        if ($context === self::CONTEXT_INDEX && !$this->_showCustomSource($source)) {
                             continue;
                         }
                         $source = $elementType::modifyCustomSource($source);
@@ -147,6 +148,27 @@ class ElementSources extends Component
         }
 
         return $sources;
+    }
+
+    /**
+     * Returns whether the given source exists.
+     *
+     * @param class-string<ElementInterface> $elementType The element type class
+     * @param string $sourceKey The source key
+     * @param string $context The context
+     * @param bool $withDisabled Whether disabled sources should be included
+     * @return bool
+     * @since 5.7.11
+     */
+    public function sourceExists(string $elementType, string $sourceKey, string $context = self::CONTEXT_INDEX, bool $withDisabled = false): bool
+    {
+        foreach ($this->getSources($elementType, $context, $withDisabled) as $source) {
+            if (($source['key'] ?? null) === $sourceKey) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     /**
@@ -272,21 +294,21 @@ class ElementSources extends Component
      */
     public function getFieldLayoutsForSource(string $elementType, string $sourceKey): array
     {
-        // Don't bother the element type for custom sources
-        if (str_starts_with($sourceKey, 'custom:')) {
-            $source = $this->_sourceConfig($elementType, $sourceKey);
-            if (empty($source['condition'])) {
-                return Craft::$app->getFields()->getLayoutsByType($elementType);
-            }
-            /** @var ElementConditionInterface $condition */
-            $condition = Craft::$app->getConditions()->createCondition($source['condition']);
-            $query = $elementType::find();
-            $condition->modifyQuery($query);
-            return $query->getFieldLayouts();
-        }
-
         if (!isset($this->_fieldLayouts[$elementType][$sourceKey])) {
-            $this->_fieldLayouts[$elementType][$sourceKey] = $elementType::fieldLayouts($sourceKey);
+            // Don't bother the element type for custom sources
+            if (str_starts_with($sourceKey, 'custom:')) {
+                $source = $this->_sourceConfig($elementType, $sourceKey);
+                if (empty($source['condition'])) {
+                    return Craft::$app->getFields()->getLayoutsByType($elementType);
+                }
+                /** @var ElementConditionInterface $condition */
+                $condition = Craft::$app->getConditions()->createCondition($source['condition']);
+                $query = $elementType::find();
+                $condition->modifyQuery($query);
+                $this->_fieldLayouts[$elementType][$sourceKey] = $query->getFieldLayouts();
+            } else {
+                $this->_fieldLayouts[$elementType][$sourceKey] = $elementType::fieldLayouts($sourceKey);
+            }
         }
 
         return $this->_fieldLayouts[$elementType][$sourceKey];
@@ -423,7 +445,12 @@ class ElementSources extends Component
                         continue;
                     }
 
-                    $field = $layoutElement->getField();
+                    try {
+                        $field = $layoutElement->getField();
+                    } catch (FieldNotFoundException) {
+                        continue;
+                    }
+
                     if (
                         $field instanceof PreviewableFieldInterface &&
                         (!$user || $user->admin || ($layoutElement->getUserCondition()?->matchElement($user) ?? true))
@@ -435,7 +462,7 @@ class ElementSources extends Component
                         } else {
                             // The handle was overridden, so it gets its own table attribute
                             $attributes["fieldInstance:$layoutElement->uid"] = [
-                                'label' => Craft::t('site', $field->name),
+                                'label' => Craft::t('site', $layoutElement->label()),
                             ];
                         }
                     }

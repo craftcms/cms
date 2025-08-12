@@ -1600,7 +1600,7 @@ class Db
     }
 
     /**
-     * @var Connection|null;
+     * @var Connection|null
      */
     private static ?Connection $_db = null;
 

@@ -373,7 +373,7 @@ class ElementIndexesController extends BaseElementsController
                     break;
                 case Response::FORMAT_XML:
                     Craft::$app->language = 'en-US';
-                    $this->response->formatters[Response::FORMAT_XML]['rootTag'] = $this->elementType::pluralLowerDisplayName();
+                    $this->response->formatters[Response::FORMAT_XML]['rootTag'] = StringHelper::toCamelCase($this->elementType::pluralLowerDisplayName());
                     break;
             }
         } elseif (

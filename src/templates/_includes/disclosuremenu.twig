@@ -70,12 +70,15 @@
           {{ item.label ?? item.html|raw }}
           {% if item.description is defined %}
             <span class="menu-item-description mt-2xs smalltext light">{{ item.description }}</span>
-        {% elseif item.handle is defined %}
+          {% elseif item.handle is defined %}
             <span class="menu-item-description mt-2xs smalltext light code">{{ item.handle }}</span>
           {% endif %}
         </span>
         {% if selected %}
           <span class="visually-hidden">, selected</span>
+        {% endif %}
+        {% if item.info is defined and item.info is not empty %}
+          <span class="info">{{ item.info|e|cpmd }}</span>
         {% endif %}
       {% endapply -%}
     {% endtag %}
@@ -154,7 +157,9 @@
         {% endif %}
 
         {% if type == 'hr' %}
-          <hr class="padded">
+          {{ tag('hr', {
+            class: (item.padded ?? true) ? 'padded' : null,
+          }) }}
         {% else %}
           {% tag 'div' with {
             class: {
@@ -164,7 +169,10 @@
           } %}
             {% if item.heading is defined %}
               {% tag headingTag with {
-                class: ['h6', 'padded'],
+                class: {
+                  h6: true,
+                  padded: item.padded ?? true,
+                }|filter|keys,
               }|merge(item.headingAttributes ??{}, recursive=true) %}
                 {{ item.heading }}
               {% endtag %}

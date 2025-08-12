@@ -293,7 +293,8 @@ export default Base.extend(
     },
 
     updateRecords: function () {
-      var changed = false;
+      let changed = false;
+
       changed =
         this.windowWidth !== (this.windowWidth = Garnish.$win.width()) ||
         changed;
@@ -312,6 +313,21 @@ export default Base.extend(
       changed =
         this.mainHeight !== (this.mainHeight = this.$main.outerHeight()) ||
         changed;
+
+      const $scrollParent = this.$trigger.scrollParent();
+      if ($scrollParent.get(0) !== Garnish.$scrollContainer.get(0)) {
+        changed =
+          this.spWidth !== (this.spWidth = $scrollParent.width()) || changed;
+        changed =
+          this.spHeight !== (this.spHeight = $scrollParent.height()) || changed;
+        changed =
+          this.spScrollTop !== (this.spScrollTop = $scrollParent.scrollTop()) ||
+          changed;
+        changed =
+          this.spScrollLeft !==
+            (this.spScrollLeft = $scrollParent.scrollLeft()) || changed;
+      }
+
       return changed;
     },
 

@@ -94,7 +94,6 @@ class Schema extends \yii\db\pgsql\Schema
             parent::releaseSavepoint($name);
         } catch (Exception $e) {
             // Specifically look for a "No such savepoint" error.
-            /** @phpstan-ignore-next-line */
             if (in_array($e->getCode(), ['25P01', '3B001'], true)) {
                 Craft::warning('Tried to release a savepoint, but it does not exist: ' . $e->getMessage(), __METHOD__);
             } else {

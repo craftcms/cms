@@ -16,7 +16,6 @@ use craft\helpers\ArrayHelper;
 use craft\helpers\FileHelper;
 use craft\helpers\StringHelper;
 use craft\helpers\Typecast;
-use yii\base\BaseObject;
 use yii\base\Component;
 use yii\base\Exception;
 use yii\base\InvalidArgumentException;
@@ -172,7 +171,6 @@ class Config extends Component
             Craft::configure($existingConfig, $config);
             $config = $existingConfig;
         } else {
-            /** @var BaseObject $config */
             $config = new $configClass($config);
         }
 

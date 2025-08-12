@@ -342,7 +342,8 @@
           );
         }
 
-        await Craft.queue.push(async () => {
+        const queue = this.elementEditor?.queue ?? Craft.queue;
+        await queue.push(async () => {
           if (this.addingEntry) {
             // only one new entry at a time
             return;
@@ -1008,6 +1009,15 @@
 
         case 'moveDown': {
           this.moveDown();
+          break;
+        }
+
+        case 'editEntryType': {
+          new Craft.CpScreenSlideout('entry-types/edit', {
+            params: {
+              entryTypeId: this.$container.data('type-id'),
+            },
+          });
           break;
         }
 

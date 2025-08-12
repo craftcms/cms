@@ -14,6 +14,7 @@ use craft\base\ElementInterface;
 use craft\base\FieldInterface;
 use craft\base\NestedElementInterface;
 use craft\behaviors\DraftBehavior;
+use craft\db\Query;
 use craft\db\Table;
 use craft\elements\actions\ChangeSortOrder;
 use craft\elements\actions\MoveDown;
@@ -187,6 +188,10 @@ class NestedElementManager extends Component
 
         $query = $owner->getFieldValue($this->field->handle);
 
+        if ($query instanceof ElementCollection) {
+            return $query;
+        }
+
         if (!$query instanceof ElementQueryInterface) {
             $query = $this->nestedElementQuery($owner);
         }
@@ -226,7 +231,7 @@ class NestedElementManager extends Component
     {
         foreach ($elements as $element) {
             $element->setOwner($owner);
-            if ($element->id === $element->getPrimaryOwnerId()) {
+            if ($owner->id === $element->getPrimaryOwnerId()) {
                 $element->setPrimaryOwner($owner);
             }
         }
@@ -581,7 +586,7 @@ class NestedElementManager extends Component
 
         $authorizedOwnerId = $owner->id;
         if ($owner->isProvisionalDraft) {
-            /** @var ElementInterface|DraftBehavior $owner */
+            /** @var ElementInterface&DraftBehavior $owner */
             if ($owner->creatorId === Craft::$app->getUser()->getIdentity()?->id) {
                 $authorizedOwnerId = $owner->getCanonicalId();
             }
@@ -998,12 +1003,17 @@ JS, [
         bool $force = false,
     ): void {
         $elementsService = Craft::$app->getElements();
-        $value = $this->getValue($source, true);
-        if ($value instanceof ElementCollection) {
-            $elements = $value->all();
-        } else {
-            $elements = $value->getCachedResult() ?? $value->all();
+        $elements = $this->getValue($source, true);
+        if ($elements instanceof ElementQueryInterface) {
+            $elements = ElementCollection::make($elements->getCachedResult() ?? $elements->all());
         }
+
+        // Ignore any elements that don't have an ID yet
+        /** @var ElementCollection<NestedElementInterface> $elements */
+        $elements = $elements
+            ->filter(fn(ElementInterface $element) => isset($element->id))
+            ->values()
+            ->all();
 
         /** @var NestedElementInterface[] $elements */
         $this->setOwnerOnNestedElements($source, $elements);
@@ -1310,6 +1320,22 @@ JS, [
             $elements = $query->all();
 
             foreach ($elements as $element) {
+                // If the element is a revision, see if we can reassign it to a new primary owner
+                if ($element->getIsRevision() && !isset($element->dateDeleted)) {
+                    $newOwnerId = (new Query())
+                        ->select(['ownerId'])
+                        ->from(Table::ELEMENTS_OWNERS)
+                        ->where(['elementId' => $element->id])
+                        ->andWhere(['not', ['ownerId' => $owner->id]])
+                        ->orderBy(['ownerId' => SORT_ASC])
+                        ->scalar();
+                    if ($newOwnerId) {
+                        $element->setPrimaryOwnerId($newOwnerId);
+                        $elementsService->saveElement($element);
+                        continue;
+                    }
+                }
+
                 $element->deletedWithOwner = true;
                 $elementsService->deleteElement($element, $hardDelete);
             }

@@ -21,6 +21,7 @@ use craft\helpers\Component as ComponentHelper;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\Json;
 use craft\helpers\Session as SessionHelper;
+use craft\helpers\User as UserHelper;
 use craft\models\UserGroup;
 use craft\records\WebAuthn as WebAuthnRecord;
 use craft\web\Session;
@@ -204,6 +205,7 @@ class Auth extends Component
         $user = $this->getUser($sessionDuration);
 
         if (!$this->getMethod($methodClass, $user)->verify(...$args)) {
+            $user?->handleInvalidLoginParam();
             return false;
         }
 
@@ -222,6 +224,34 @@ class Auth extends Component
         }
 
         return true;
+    }
+
+    /**
+     * Returns an authentication error message based on the authentication error value.
+     * If a default message was passed and the authentication error value is for invalid credentials,
+     * that default message will be used.
+     *
+     * @param string|null $defaultMessage
+     * @return string
+     * @since 5.7.11
+     */
+    public function getAuthErrorMessage(?string $defaultMessage = null): string
+    {
+        $user = $this->getUser();
+        $authError = null;
+        if ($user) {
+            $authError = UserHelper::getAuthStatus($user);
+        }
+        if ($authError == User::AUTH_INVALID_CREDENTIALS || !$authError) {
+            if ($defaultMessage) {
+                return $defaultMessage;
+            }
+
+            return Craft::t('app', 'Invalid verification code.');
+        }
+
+        [, $message] = UserHelper::getLoginFailureInfo($authError, $user);
+        return $message;
     }
 
     /**

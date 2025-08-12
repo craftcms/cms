@@ -274,7 +274,7 @@ Craft.CP = Garnish.Base.extend(
       }
 
       // Announcements HUD
-      if (Craft.announcements.length) {
+      if (Craft.announcements?.length) {
         let $btn = $('#announcements-btn').removeClass('hidden');
         const hasUnreads = Craft.announcements.some((a) => a.unread);
         let $unreadMessage;
@@ -1306,7 +1306,7 @@ Craft.CP = Garnish.Base.extend(
       if (Array.isArray(alerts) && alerts.length) {
         this.$alerts = $('<ul id="alerts"/>').prependTo(this.$pageContainer);
 
-        for (let alert of alerts) {
+        for (const alert of alerts) {
           if (!$.isPlainObject(alert)) {
             alert = {
               content: alert,
@@ -1509,7 +1509,7 @@ Craft.CP = Garnish.Base.extend(
             const callbacks = this.checkForUpdatesFailureCallbacks;
             this.checkForUpdatesFailureCallbacks = null;
 
-            for (let callback of callbacks) {
+            for (const callback of callbacks) {
               callback();
             }
           }
@@ -1524,7 +1524,7 @@ Craft.CP = Garnish.Base.extend(
           const callbacks = this.checkForUpdatesCallbacks;
           this.checkForUpdatesCallbacks = null;
 
-          for (let callback of callbacks) {
+          for (const callback of callbacks) {
             callback(info);
           }
         }
@@ -1925,7 +1925,9 @@ Craft.CP = Garnish.Base.extend(
 
       // update the base URLs used get Craft.getUrl(), etc.
       Craft.actionUrl = Craft.getUrl(Craft.actionUrl, {site: site.handle});
-      Craft.baseCpUrl = Craft.getUrl(Craft.baseCpUrl, {site: site.handle});
+      if (Craft.baseCpUrl) {
+        Craft.baseCpUrl = Craft.getUrl(Craft.baseCpUrl, {site: site.handle});
+      }
       Craft.baseUrl = Craft.getUrl(Craft.baseUrl, {site: site.handle});
 
       // update the current URL
@@ -1933,7 +1935,7 @@ Craft.CP = Garnish.Base.extend(
       history.replaceState({}, '', url);
 
       // update the site--x body class
-      for (let className of document.body.classList) {
+      for (const className of document.body.classList) {
         if (className.match(/^site--/)) {
           document.body.classList.remove(className);
         }
@@ -1943,6 +1945,7 @@ Craft.CP = Garnish.Base.extend(
       // update other URLs on the page
       $('a').each(function () {
         if (
+          Craft.cpTrigger &&
           this.hostname.length &&
           this.hostname === location.hostname &&
           this.href.indexOf(Craft.cpTrigger) !== -1
@@ -1953,8 +1956,6 @@ Craft.CP = Garnish.Base.extend(
     },
   },
   {
-    //maxWidth: 1051, //1024,
-
     /**
      * @deprecated in 4.2.0. Use Craft.notificationDuration instead.
      */
@@ -1980,6 +1981,7 @@ Craft.CP.Notification = Garnish.Base.extend(
     $closeBtn: null,
     $main: null,
     $message: null,
+    $detailsContainer: null,
     originalActiveElement: null,
 
     init: function (type, message, settings = {}) {
@@ -2033,11 +2035,11 @@ Craft.CP.Notification = Garnish.Base.extend(
 
       const details = await this.getDetails();
       if (details) {
-        const $detailsContainer = $('<div class="notification-details"/>')
+        this.$detailsContainer = $('<div class="notification-details"/>')
           .append(details)
           .appendTo(this.$main);
 
-        if ($detailsContainer.find('button,input').length) {
+        if (this.$detailsContainer.find('button,input').length) {
           this.originalActiveElement = document.activeElement;
           this.$container.attr('tabindex', '-1').focus();
           this.addListener(this.$container, 'keydown', (ev) => {
@@ -2056,15 +2058,22 @@ Craft.CP.Notification = Garnish.Base.extend(
       this.$container.appendTo(Craft.cp.$notificationContainer);
 
       if (this.settings.animate) {
+        const prop = Craft.notificationPosition.startsWith('start-')
+          ? 'top'
+          : 'bottom';
         this.$container.css({
           opacity: 0,
-          'margin-bottom': this._negMargin(),
+          [`margin-${prop}`]: this._negMargin(),
         });
 
         await Craft.animate(this.$container, {
           opacity: 1,
-          'margin-bottom': 0,
+          [`margin-${prop}`]: 0,
         });
+      }
+
+      if (this.$detailsContainer) {
+        Craft.cp.elementThumbLoader.load(this.$detailsContainer);
       }
 
       if (Craft.notificationDuration && !this.settings.persist) {
@@ -2148,9 +2157,12 @@ Craft.CP.Notification = Garnish.Base.extend(
         $(this.originalActiveElement).focus();
       }
 
+      const prop = Craft.notificationPosition.startsWith('start-')
+        ? 'top'
+        : 'bottom';
       await Craft.animate(this.$container, {
         opacity: 0,
-        'margin-bottom': this._negMargin(),
+        [`margin-${prop}`]: this._negMargin(),
       });
 
       this.destroy();
@@ -2284,14 +2296,13 @@ Craft.CP.ElementCopyNotification = Craft.CP.Notification.extend({
     setTimeout(async () => {
       await Craft.appendHeadHtml(data.headHtml);
       await Craft.appendBodyHtml(data.bodyHtml);
-      Craft.cp.elementThumbLoader.load(this.$main);
     }, 1);
 
     const gap = 4;
     this.$copiedElements = $('<div class="copied-elements"/>');
     let $chips = $();
 
-    for (let elementInfo of this.elementInfo) {
+    for (const elementInfo of this.elementInfo) {
       for (const chip of data.elements[elementInfo.id] || []) {
         $chips = $chips.add(chip);
       }
@@ -2346,6 +2357,7 @@ Craft.cp = new Craft.CP();
  */
 var JobProgressIcon = Garnish.Base.extend({
   $li: null,
+  $container: null,
   $a: null,
   $label: null,
   $progressLabel: null,
@@ -2377,16 +2389,17 @@ var JobProgressIcon = Garnish.Base.extend({
   _progressBar: null,
 
   init: function () {
-    this.$li = $('<li/>', {
+    this.$li = $('<li/>').appendTo(Craft.cp.$nav.children('ul'));
+    this.$container = $('<div/>', {
       class: 'nav-item nav-item--job',
-    }).appendTo(Craft.cp.$nav.children('ul'));
+    }).appendTo(this.$li);
     this.$a = $('<a/>', {
       id: 'job-icon',
       class: 'sidebar-action sidebar-action--job',
       href: Craft.canAccessQueueManager
         ? Craft.getUrl('utilities/queue-manager')
         : null,
-    }).appendTo(this.$li);
+    }).appendTo(this.$container);
     const $prefixContainer = $('<span class="sidebar-action__prefix"/>');
     this.$canvasContainer = $('<span class="nav-icon"/>').appendTo(
       $prefixContainer
@@ -2417,8 +2430,14 @@ var JobProgressIcon = Garnish.Base.extend({
     this._lineWidth = 3 * m;
 
     this._$bgCanvas = this._createCanvas('bg', '#a3afbb');
-    this._$staticCanvas = this._createCanvas('static', this.$li.css('color'));
-    this._$hoverCanvas = this._createCanvas('hover', this.$li.css('color'));
+    this._$staticCanvas = this._createCanvas(
+      'static',
+      this.$container.css('color')
+    );
+    this._$hoverCanvas = this._createCanvas(
+      'hover',
+      this.$container.css('color')
+    );
     this._$failCanvas = this._createCanvas('fail', '#da5a47').hide();
 
     this._staticCtx = this._$staticCanvas[0].getContext('2d');

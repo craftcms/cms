@@ -17,20 +17,20 @@
   {{- color is instance of ('craft\\enums\\Color') ? color.value : color -}}
 {% endmacro %}
 
-{% set buttonLabelHtml %}
-  <div class="inline-flex">
-    {% if selectedOption.icon ?? false %}
-      {{ tag('div', {
-        class: [
-          'cp-icon',
-          _self.color(selectedOption.iconColor ?? null),
-        ]|filter,
-        html: iconSvg(selectedOption.icon),
-      }) }}
-    {% endif %}
-    <div class="label">{{ selectedOption ? (selectedOption.label ?? selectedOption.labelHtml|raw) : defaultButtonLabel ?? 'Choose'|t('app') }}</div>
-  </div>
-{% endset %}
+{% set buttonIconHtml = null %}
+{% if (selectedOption.icon ?? null) or (selectedOption.icon ?? null) is same as('0') %}
+    {% set buttonIconHtml %}
+        {{ tag('div', {
+            class: [
+                'cp-icon',
+                _self.color(selectedOption.iconColor ?? null),
+            ]|filter,
+            html: iconSvg(selectedOption.icon),
+        }) }}
+    {% endset %}
+{% endif %}
+
+{% set buttonLabel = selectedOption ? (selectedOption.label ?? selectedOption.labelHtml|raw) : defaultButtonLabel ?? 'Choose'|t('app')  %}
 
 {% tag 'div' with {
   class: {
@@ -42,7 +42,8 @@
 }|merge(attributes ?? {}, recursive=true) %}
   {{ forms.button({
     id: buttonId,
-    labelHtml: buttonLabelHtml ?? null,
+    iconHtml: buttonIconHtml,
+    label: buttonLabel,
     class: ['menubtn'],
     attributes: buttonAttributes ?? {},
   }) }}
@@ -64,7 +65,7 @@
                 value: option.value,
               },
             }|merge(option.attributes ?? {}, recursive=true) %}
-              {% if option.icon ?? false %}
+              {% if (option.icon ?? null) or (option.icon ?? null) is same as('0') %}
                 {{ tag('span', {
                   class: [
                     'icon',

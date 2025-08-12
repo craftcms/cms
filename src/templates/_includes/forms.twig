@@ -113,6 +113,11 @@
 {% endmacro %}
 
 
+{% macro buttonGroup(config) %}
+    {% include "_includes/forms/buttonGroup" with config only %}
+{% endmacro %}
+
+
 {% macro file(config) %}
     {% include "_includes/forms/file" with config only %}
 {% endmacro %}
@@ -332,6 +337,15 @@
 {% endmacro %}
 
 
+{% macro buttonGroupField(config) %}
+    {% set config = config|merge({
+        fieldset: true,
+        id: config.id ?? "buttongroup#{random()}",
+    }) %}
+    {{ _self.field(config, 'template:_includes/forms/buttonGroup') }}
+{% endmacro %}
+
+
 {% macro fileField(config) %}
     {% set config = config|merge({id: config.id ?? "file#{random()}"}) %}
     {{ _self.field(config, 'template:_includes/forms/file') }}
@@ -480,17 +494,26 @@
         {{ _self.field({
             label: 'Field Layout'|t('app'),
             fieldset: true,
-            errors: (config.fieldLayout ?? false) ? config.fieldLayout.getErrorSummary(true),
+            errors: config.fieldLayout.getErrors('customFields') ?? [],
+            data: {'error-key': 'fieldLayout.customFields'},
         }|merge(config), 'template:_includes/forms/fieldLayoutDesigner') }}
 
-        {% if config.withCardViewDesigner is defined and config.withCardViewDesigner %}
-            {# we need to unset the id or we'll have two fields with the same one #}
-            {% if config.id is defined %}
-                {% set config = config|filter((v, k) => k != 'id') %}
-            {% endif %}
+        {% if config.withGeneratedFields ?? false %}
+            {{ _self.field({
+                label: 'Generated Fields'|t('app'),
+                instructions: 'Define any additional values that should be saved on your elements.'|t('app'),
+                errors: config.fieldLayout.getErrors('generatedFields') ?? [],
+                data: {'error-key': 'fieldLayout.generatedFields'},
+                fieldLayout: config.fieldLayout ?? null,
+                disabled: config.disabled ?? false,
+            }, 'template:_includes/forms/generatedFieldsTable') }}
+        {% endif %}
 
-            {% include '_includes/forms/cardViewDesigner' with {'fieldLayout' : config.fieldLayout} %}
-
+        {% if config.withCardViewDesigner ?? false %}
+            {% include '_includes/forms/cardViewDesigner' with {
+                fieldLayout: config.fieldLayout,
+                disabled: config.disabled ?? false,
+            } only %}
         {% endif %}
     </div>
 {% endmacro %}

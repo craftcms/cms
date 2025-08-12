@@ -134,9 +134,7 @@ class TestSetup
         $_REQUEST = [];
 
         UploadedFile::reset();
-        if (method_exists(Event::class, 'offAll')) {
-            Event::offAll();
-        }
+        Event::offAll();
 
         Craft::setLogger(null);
 
@@ -169,7 +167,7 @@ class TestSetup
     }
 
     /**
-     * @param class-string<Migration> $class
+     * @param class-string<Migration>|string $class
      * @param array $params
      * @param bool $ignorePreviousMigrations
      * @return bool

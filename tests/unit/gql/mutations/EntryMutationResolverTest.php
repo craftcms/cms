@@ -80,8 +80,7 @@ class EntryMutationResolverTest extends TestCase
             'createElementQuery' => $query,
         ]));
 
-        $entry = $resolver->saveEntry(null, $arguments, null, $this->make(ResolveInfo::class));
-        self::assertIsObject($entry);
+        $resolver->saveEntry(null, $arguments, null, $this->make(ResolveInfo::class));
     }
 
     public static function saveEntryDataProvider(): array

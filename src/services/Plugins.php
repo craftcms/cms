@@ -908,7 +908,7 @@ class Plugins extends Component
             unset($config['aliases']);
         }
 
-        /** @var class-string<PluginInterface> $class */
+        /** @var class-string<PluginInterface>|class-string<object> $class */
         $class = $config['class'];
 
         // Make sure the class exists and it implements PluginInterface
@@ -1015,8 +1015,8 @@ class Plugins extends Component
         $info['moduleId'] = $handle;
         $info['edition'] = $edition;
         $info['hasMultipleEditions'] = count($editions) > 1;
-        $info['hasCpSettings'] = $plugin?->hasCpSettings ?? false;
-        $info['hasReadOnlyCpSettings'] = $plugin?->hasReadOnlyCpSettings ?? false;
+        $info['hasCpSettings'] = $plugin->hasCpSettings ?? false;
+        $info['hasReadOnlyCpSettings'] = $plugin->hasReadOnlyCpSettings ?? false;
         $info['licenseKey'] = $pluginInfo['licenseKey'] ?? null;
 
         $licenseInfo = Craft::$app->getCache()->get(App::CACHE_KEY_LICENSE_INFO) ?? [];

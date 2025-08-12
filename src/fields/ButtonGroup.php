@@ -12,7 +12,6 @@ use craft\base\ElementInterface;
 use craft\base\SortableFieldInterface;
 use craft\fields\data\SingleOptionFieldData;
 use craft\helpers\Cp;
-use craft\helpers\Html;
 
 /**
  * RadioButtons represents a Radio Buttons field.
@@ -94,78 +93,22 @@ class ButtonGroup extends BaseOptionsField implements SortableFieldInterface
         }
 
         $id = $this->getInputId();
+        $options = $this->translatedOptions(true, $value, $element);
 
-        $html = Html::beginTag('div', ['class' => 'btngroup-container']) .
-            Html::beginTag('div', [
-                'id' => $id,
-                'class' => ['btngroup', 'btngroup--exclusive'],
-                'aria' => [
-                    'labelledby' => $this->getLabelId(),
-                ],
-            ]);
-
-        $value = $this->encodeValue($value);
-
-        foreach ($this->translatedOptions(true, $value, $element) as $option) {
-            $selected = $option['value'] === $value;
-            $hasIcon = !empty($option['icon']) || ($option['icon'] ?? null) === '0';
-
-            if ($this->iconsOnly && $hasIcon) {
-                $labelHtml = Html::tag('div', Cp::iconSvg($option['icon']), [
-                    'class' => 'cp-icon',
-                    'aria' => [
-                        'label' => $option['label'],
-                    ],
-                ]);
-            } else {
-                $labelHtml = Html::encode($option['label']);
-                if ($hasIcon) {
-                    $labelHtml = Html::beginTag('div', ['class' => ['flex', 'flex-inline', 'gap-xs']]) .
-                        Html::tag('div', Cp::iconSvg($option['icon']), [
-                            'class' => 'cp-icon',
-                        ]) .
-                        Html::tag('div', $labelHtml) .
-                        Html::endTag('div');
+        if ($this->iconsOnly) {
+            foreach ($options as &$option) {
+                if (!empty($option['icon']) || ($option['icon'] ?? null) === '0') {
+                    $option['attributes']['title'] = $option['attributes']['aria']['label'] = $option['label'];
+                    unset($option['label']);
                 }
             }
-
-            $html .= Cp::buttonHtml([
-                'labelHtml' => $labelHtml,
-                'type' => 'button',
-                'class' => array_filter([
-                    $selected ? 'active' : null,
-                ]),
-                'disabled' => $static,
-                'attributes' => [
-                    'aria' => [
-                        'pressed' => $selected ? 'true' : 'false',
-                    ],
-                    'data' => [
-                        'value' => $option['value'],
-                    ],
-                ],
-            ]);
         }
 
-        $html .= Html::endTag('div') . // .btngroup
-            Html::endTag('div') . // .btngroup-container
-            Html::hiddenInput($this->handle, $value, [
-                'id' => "{$id}-input",
-            ]);
-
-        $view = Craft::$app->getView();
-        $view->registerJsWithVars(fn($id) => <<<JS
-(() => {
-  new Craft.Listbox($('#' + $id), {
-    onChange: (selectedOption) => {
-      $('#' + $id + '-input').val(selectedOption.data('value'));
-    },
-  });
-})();
-JS, [
-            $view->namespaceInputId($id),
+        return Cp::buttonGroupHtml([
+            'id' => $id,
+            'name' => $this->handle,
+            'options' => $options,
+            'value' => $this->encodeValue($value),
         ]);
-
-        return $html;
     }
 }

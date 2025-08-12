@@ -34,6 +34,7 @@ use craft\fields\ButtonGroup;
 use craft\fields\Categories as CategoriesField;
 use craft\fields\Checkboxes;
 use craft\fields\Color;
+use craft\fields\ContentBlock;
 use craft\fields\Country;
 use craft\fields\Date;
 use craft\fields\Dropdown;
@@ -228,6 +229,7 @@ class Fields extends Component
             CategoriesField::class,
             Checkboxes::class,
             Color::class,
+            ContentBlock::class,
             Country::class,
             Date::class,
             Dropdown::class,
@@ -896,29 +898,32 @@ class Fields extends Component
                 $layoutConfigs = [];
             }
 
-            $this->_layouts = new MemoizableArray($layoutConfigs, function($config) {
-                if (array_key_exists('config', $config)) {
-                    $nestedConfig = ArrayHelper::remove($config, 'config');
-                    if ($nestedConfig) {
-                        $config += is_string($nestedConfig) ? JsonHelper::decode($nestedConfig) : $nestedConfig;
-                    }
-                    $loadTabs = false;
-                } else {
-                    $loadTabs = true;
-                }
-
-                $layout = $this->createLayout($config);
-
-                // todo: remove after the next breakpoint
-                if ($loadTabs) {
-                    $this->_legacyTabsByLayoutId($layout);
-                }
-
-                return $layout;
-            });
+            $this->_layouts = new MemoizableArray($layoutConfigs, fn(array $config) => $this->_layoutFromConfig($config));
         }
 
         return $this->_layouts;
+    }
+
+    private function _layoutFromConfig(array $config): FieldLayout
+    {
+        if (array_key_exists('config', $config)) {
+            $nestedConfig = ArrayHelper::remove($config, 'config');
+            if ($nestedConfig) {
+                $config += is_string($nestedConfig) ? JsonHelper::decode($nestedConfig) : $nestedConfig;
+            }
+            $loadTabs = false;
+        } else {
+            $loadTabs = true;
+        }
+
+        $layout = $this->createLayout($config);
+
+        // todo: remove after the next breakpoint
+        if ($loadTabs) {
+            $this->_legacyTabsByLayoutId($layout);
+        }
+
+        return $layout;
     }
 
     private function _legacyTabsByLayoutId(FieldLayout $layout): void
@@ -1006,11 +1011,21 @@ class Fields extends Component
      * Returns a field layout by its ID.
      *
      * @param int $layoutId The field layout’s ID
+     * @param bool $withTrashed Whether to return the field layout even if it’s soft-deleted
      * @return FieldLayout|null The field layout, or null if it doesn’t exist
      */
-    public function getLayoutById(int $layoutId): ?FieldLayout
+    public function getLayoutById(int $layoutId, bool $withTrashed = false): ?FieldLayout
     {
-        return $this->_layouts()->firstWhere('id', $layoutId);
+        $layout = $this->_layouts()->firstWhere('id', $layoutId);
+
+        if ($layout === null && $withTrashed) {
+            $config = $this->_createLayoutQuery(true)->andWhere(['id' => $layoutId])->one();
+            if ($config) {
+                return $this->_layoutFromConfig($config);
+            }
+        }
+
+        return $layout;
     }
 
     /**
@@ -1110,9 +1125,11 @@ class Fields extends Component
     public function assembleLayoutFromPost(?string $namespace = null): FieldLayout
     {
         $paramPrefix = $namespace ? rtrim($namespace, '.') . '.' : '';
-        $config = JsonHelper::decode(Craft::$app->getRequest()->getBodyParam($paramPrefix . 'fieldLayout'));
-        $cardView = Craft::$app->getRequest()->getBodyParam($paramPrefix . 'cardView');
-        $config['cardView'] = empty($cardView) ? null : $cardView;
+        $request = Craft::$app->getRequest();
+        $config = JsonHelper::decode($request->getBodyParam("{$paramPrefix}fieldLayout"));
+        $config['generatedFields'] = $request->getBodyParam("{$paramPrefix}generatedFields") ?: null;
+        $config['cardView'] = $request->getBodyParam("{$paramPrefix}cardView") ?: null;
+        $config['cardThumbAlignment'] = Craft::$app->getRequest()->getBodyParam($paramPrefix . 'thumbAlignment');
         $layout = $this->createLayout($config);
 
         // Make sure all the elements have a dateAdded value set
@@ -1592,9 +1609,10 @@ class Fields extends Component
     /**
      * Returns a Query object prepped for retrieving layouts.
      *
+     * @param bool $withTrashed
      * @return Query
      */
-    private function _createLayoutQuery(): Query
+    private function _createLayoutQuery(bool $withTrashed = false): Query
     {
         $query = (new Query())
             ->select([
@@ -1602,8 +1620,11 @@ class Fields extends Component
                 'type',
                 'uid',
             ])
-            ->from([Table::FIELDLAYOUTS])
-            ->where(['dateDeleted' => null]);
+            ->from([Table::FIELDLAYOUTS]);
+
+        if (!$withTrashed) {
+            $query->where(['dateDeleted' => null]);
+        }
 
         // todo: remove after the next breakpoint
         if (Craft::$app->getDb()->columnExists(Table::FIELDLAYOUTS, 'config')) {

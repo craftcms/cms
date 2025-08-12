@@ -642,10 +642,6 @@ class DbHelperTest extends TestCase
         ];
     }
 
-    /**
-     * @return array
-     * @throws \Exception
-     */
     public static function prepareValueForDbDataProvider(): array
     {
         $jsonableArray = ['JsonArray' => 'SomeArray'];
@@ -761,10 +757,6 @@ class DbHelperTest extends TestCase
         ];
     }
 
-    /**
-     * @return array
-     * @throws \Exception
-     */
     public static function prepareValuesForDbDataProvider(): array
     {
         $jsonableArray = ['JsonArray' => 'SomeArray'];

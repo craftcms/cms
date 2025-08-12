@@ -124,6 +124,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
                 'file_get_contents',
                 'file_put_contents',
                 'popen',
+                'call_user_func',
             ])
         ) {
             throw new RuntimeError(sprintf('The "%s" %s does not support passing "%s".', $thing, $type, $arrow));
@@ -1195,7 +1196,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
     {
         $groups = [];
 
-        if (!is_string($arrow) && is_callable($arrow)) {
+        if (is_callable($arrow)) {
             foreach ($arr as $key => $item) {
                 $groupKey = (string)$arrow($item, $key);
                 $groups[$groupKey][] = $item;

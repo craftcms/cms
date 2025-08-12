@@ -68,7 +68,7 @@ class DraftsTest extends TestCase
      */
     public function testPublishDraft(): void
     {
-        /** @var Entry $entry */
+        /** @var ?Entry $entry */
         $entry = Entry::find()
             ->title('Pending 1')
             ->one();
@@ -85,7 +85,7 @@ class DraftsTest extends TestCase
         $this->drafts->applyDraft($draft);
 
         // Re-get the entry (By the same id)
-        /** @var Entry $newEntry */
+        /** @var ?Entry $newEntry */
         $newEntry = Entry::find()->id($entry->id)->one();
         self::assertNotNull($newEntry);
 
@@ -109,7 +109,7 @@ class DraftsTest extends TestCase
      */
     public function testEntryRevisions(): void
     {
-        /** @var Entry $entry */
+        /** @var ?Entry $entry */
         $entry = Entry::find()
             ->title('With versioning')
             ->one();
@@ -126,7 +126,7 @@ class DraftsTest extends TestCase
             throw new InvalidElementException($entry);
         }
 
-        /** @var Entry $revision */
+        /** @var ?Entry $revision */
         $revision = Entry::find()
             ->revisionOf($entry)
             ->siteId($entry->siteId)
@@ -159,7 +159,7 @@ class DraftsTest extends TestCase
 
         $this->revisions->revertToRevision($v1, 1);
 
-        /** @var Entry $newEntry */
+        /** @var ?Entry $newEntry */
         $newEntry = Entry::find()
             ->id($entry->id)
             ->one();
@@ -181,7 +181,7 @@ class DraftsTest extends TestCase
      */
     protected function _setupEntryRevert(string $entryTitle, array $changes = []): array
     {
-        /** @var Entry $entry */
+        /** @var ?Entry $entry */
         $entry = Entry::find()
             ->title($entryTitle)
             ->one();
@@ -199,7 +199,7 @@ class DraftsTest extends TestCase
             throw new InvalidElementException($entry);
         }
 
-        /** @var Entry $v1 */
+        /** @var ?Entry $v1 */
         $v1 = Entry::find()
             ->revisionOf($entry)
             ->siteId($entry->siteId)
@@ -224,7 +224,7 @@ class DraftsTest extends TestCase
         $draft = $this->drafts->createDraft($entry, 1, 'Test Draft');
         self::assertInstanceOf(Entry::class, $draft);
         self::assertNotNull($draft->draftId);
-        /** @var DraftBehavior $behavior */
+        /** @var ?DraftBehavior $behavior */
         $behavior = $draft->getBehavior('draft');
         self::assertNotNull($behavior);
         self::assertEquals($entry->id, $draft->getCanonicalId());

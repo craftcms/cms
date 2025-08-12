@@ -235,6 +235,16 @@ class HtmlHelperTest extends TestCase
     }
 
     /**
+     * @dataProvider decodeDoublesDataProvider
+     * @param string $expected
+     * @param string $html
+     */
+    public function testDecodeDoubles(string $expected, string $html): void
+    {
+        self::assertSame($expected, Html::decodeDoubles($html));
+    }
+
+    /**
      *
      */
     public function testUnwrapCondition(): void
@@ -689,6 +699,18 @@ class HtmlHelperTest extends TestCase
             ['foo&lt;p&gt;bar<br>baz', 'foo<p>bar<br>baz'],
             ['This text goes within the &lt;title&gt; tag in the &lt;head&gt; of the HTML file.', 'This text goes within the <title> tag in the <head> of the HTML file.'],
             ['Foo &lt;p&gt; bar <input type="hidden"', 'Foo <p> bar <input type="hidden"'],
+        ];
+    }
+
+    /**
+     * @return array
+     */
+    public static function decodeDoublesDataProvider(): array
+    {
+        return [
+            ['&lt;p&gt;', '&lt;p&gt;'],
+            ['&lt;p&gt;', '&amp;lt;p&amp;gt;'],
+            ['&amp;lt;p&amp;gt;', '&amp;amp;lt;p&amp;amp;gt;'],
         ];
     }
 }

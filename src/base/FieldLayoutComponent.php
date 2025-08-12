@@ -296,7 +296,7 @@ abstract class FieldLayoutComponent extends Model
         ]);
 
         // Do we know the element type?
-        /** @var ElementInterface|string|null $elementType */
+        /** @var class-string<ElementInterface>|string|null $elementType */
         $elementType = $this->elementType ?? $this->getLayout()->type;
 
         if ($elementType && is_subclass_of($elementType, ElementInterface::class)) {

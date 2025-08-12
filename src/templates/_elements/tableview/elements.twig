@@ -34,6 +34,7 @@
       }|filter|keys,
     } %}
         {% if selectable %}
+            {% set checkboxLabelId = "checkbox-label-#{random()}" %}
             <td class="checkbox-cell">
                 {{ tag('div', {
                     class: 'checkbox',
@@ -41,8 +42,16 @@
                     tabindex: '0',
                     aria: {
                         checked: 'false',
-                        label: elementTitle,
+                        labelledby: checkboxLabelId,
                     },
+                }) }}
+                {{ tag('span', {
+                    id: checkboxLabelId,
+                    class: 'visually-hidden',
+                    text: element.getUiLabel(),
+                    aria: {
+                        hidden: 'true',
+                    }
                 }) }}
             </td>
         {% endif %}

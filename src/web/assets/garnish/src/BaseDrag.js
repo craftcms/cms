@@ -238,6 +238,10 @@ export default Base.extend(
       for (const item of items) {
         // Make sure this element doesn't belong to another dragger
         if ($.data(item, 'drag')) {
+          if ($.data(item, 'drag') === this) {
+            continue;
+          }
+
           console.warn('Element was added to more than one dragger');
           $.data(item, 'drag').removeItems(item);
         }
@@ -272,6 +276,34 @@ export default Base.extend(
           this.$items.splice(index, 1);
         }
       }
+    },
+
+    getPrevItem: function (item) {
+      if (item instanceof jQuery) {
+        item = item[0];
+      }
+
+      this.$items = $().add(this.$items);
+      const index = $.inArray(item, this.$items);
+      if (index === -1 || index === 0) {
+        return null;
+      }
+
+      return this.$items.eq(index - 1);
+    },
+
+    getNextItem: function (item) {
+      if (item instanceof jQuery) {
+        item = item[0];
+      }
+
+      this.$items = $().add(this.$items);
+      const index = $.inArray(item, this.$items);
+      if (index === -1 || index === this.$items.length - 1) {
+        return null;
+      }
+
+      return this.$items.eq(index + 1);
     },
 
     /**

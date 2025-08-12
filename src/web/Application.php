@@ -60,12 +60,10 @@ use yii\web\UnauthorizedHttpException;
  * @property-read Request $request The request component
  * @property-read Response $response The response component
  * @property-read Session $session The session component
- * @property-read UrlManager $urlManager The URL manager for this application
  * @property-read User $user The user component
  * @method Request getRequest() Returns the request component.
  * @method Response getResponse() Returns the response component.
  * @method Session getSession() Returns the session component.
- * @method UrlManager getUrlManager() Returns the URL manager for this application.
  * @method User getUser() Returns the user component.
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
@@ -108,6 +106,10 @@ class Application extends \yii\web\Application
         }
 
         $this->_postInit();
+
+        // Process resource requests before we do anything to establish the user session
+        $this->_processResourceRequest();
+
         $this->authenticate();
         $this->debugBootstrap();
     }
@@ -159,9 +161,6 @@ class Application extends \yii\web\Application
     public function handleRequest($request, bool $skipSpecialHandling = false): BaseResponse
     {
         if (!$skipSpecialHandling) {
-            // Process resource requests before anything else
-            $this->_processResourceRequest($request);
-
             // Disable read/write splitting for most POST requests
             if (
                 $request->getIsPost() &&
@@ -518,13 +517,13 @@ class Application extends \yii\web\Application
     /**
      * Processes resource requests.
      *
-     * @param Request $request
      * @throws BadRequestHttpException
      * @throws NotFoundHttpException
      */
-    private function _processResourceRequest(Request $request): void
+    private function _processResourceRequest(): void
     {
         $generalConfig = $this->getConfig()->getGeneral();
+        $request = $this->getRequest();
 
         // Does this look like a resource request?
         $resourceBaseUri = parse_url(Craft::getAlias($generalConfig->resourceBaseUrl), PHP_URL_PATH);

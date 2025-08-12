@@ -61,15 +61,15 @@
     "symfony/property-access": "^7.0",
     "symfony/property-info": "^7.0",
     "symfony/serializer": "^6.4",
-    "symfony/var-dumper": "^5.0|^6.0",
-    "symfony/yaml": "^5.2.3|^6.0",
+    "symfony/var-dumper": "^5.0|^6.0|^7.0",
+    "symfony/yaml": "^5.2.3|^6.0|^7.0",
     "theiconic/name-parser": "^1.2",
     "twig/twig": "~3.15.0",
     "voku/stringy": "^6.4.0",
     "web-auth/webauthn-lib": "~4.9.0",
     "webonyx/graphql-php": "~14.11.10",
     "yiisoft/yii2": "~2.0.52.0",
-    "yiisoft/yii2-debug": "~2.1.26.0",
+    "yiisoft/yii2-debug": "~2.1.27.0",
     "yiisoft/yii2-queue": "~2.3.2",
     "yiisoft/yii2-symfonymailer": "^4.0.0"
   },
@@ -84,8 +84,8 @@
     "craftcms/ecs": "dev-main",
     "fakerphp/faker": "^1.19.0",
     "league/factory-muffin": "^3.3.0",
-    "phpstan/phpstan": "^1.10.56",
-    "rector/rector": "^1.2",
+    "phpstan/phpstan": "^2.1",
+    "rector/rector": "^2.0",
     "vlucas/phpdotenv": "^5.4.1",
     "yiisoft/yii2-redis": "^2.0"
   },
@@ -113,7 +113,7 @@
     }
   },
   "scripts": {
-    "copy-icons": "php ./scripts/copyicons.php && ecs check src/icons/index.php --fix",
+    "copy-icons": "php ./scripts/copyicons.php",
     "check-cs": "ecs check --ansi",
     "fix-cs": "ecs check --ansi --fix",
     "codecept-build": "codecept build",

@@ -67,16 +67,27 @@
   },
 ] %}
 
-{% if entry.id %}
-  {% set actionMenuItems = actionMenuItems|merge([
-    {hr: true},
-    {
+{% if entry.id or (currentUser.admin and craft.app.config.general.allowAdminChanges) %}
+  {% set actionMenuItems = actionMenuItems|push({hr: true}) %}
+
+  {% if entry.id %}
+    {% set actionMenuItems = actionMenuItems|push({
       icon: 'external',
       label: 'Open in a new tab'|t('app'),
       url: entry.getCpEditUrl(),
       attributes: {target: '_blank'},
-    },
-  ]) %}
+    }) %}
+  {% endif %}
+
+  {% if currentUser.admin and craft.app.config.general.allowAdminChanges %}
+    {% set actionMenuItems = actionMenuItems|push({
+      icon: 'gear',
+      label: 'Entry type settings'|t('app'),
+      attributes: {
+        data: {action: 'editEntryType'},
+      },
+    }) %}
+  {% endif %}
 {% endif %}
 
 {% if not staticEntries %}
@@ -207,15 +218,15 @@
     {% endtag %}
   {% endtag %}{# /.titlebar #}
 
-  {% if not static %}
-    <div class="actions">
-      <div class="status off" title="{{ 'Disabled'|t('app') }}">
-        {{ tag('span', {
-          class: 'visually-hidden',
-          html: 'Disabled'|t('app'),
-        }) }}
-      </div>
+  <div class="actions">
+    <div class="status off" title="{{ 'Disabled'|t('app') }}">
+      {{ tag('span', {
+        class: 'visually-hidden',
+        html: 'Disabled'|t('app'),
+      }) }}
+    </div>
 
+    {% if not static %}
       <div class="checkbox" title="{{ 'Select'|t('app') }}" aria-label="{{ 'Select'|t('app') }}" tabindex="0" role="checkbox" aria-checked="false"></div>
       {{ disclosureMenu(actionMenuItems, {
         hiddenLabel: 'Actions'|t('app'),
@@ -237,8 +248,8 @@
           tabindex: '-1',
         },
       }) }}
-    </div>
-  {% endif %}
+    {% endif %}
+  </div>
   <div class="fields">
     {% namespace baseInputName %}
       {{ form.render()|raw }}

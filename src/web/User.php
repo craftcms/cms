@@ -422,6 +422,7 @@ class User extends \yii\web\User
     {
         // Only allow the login if the request meets our user agent and IP requirements
         if (!$this->_validateUserAgentAndIp()) {
+            Craft::warning('Request didn’t meet the user agent and IP requirements for creating a user session.', __METHOD__);
             return false;
         }
 
@@ -510,7 +511,15 @@ class User extends \yii\web\User
     protected function renewAuthStatus(): void
     {
         // Only renew if the request meets our user agent and IP requirements
-        if (!Craft::$app->getIsInstalled() || !$this->_validateUserAgentAndIp()) {
+        if (!Craft::$app->getIsInstalled()) {
+            return;
+        }
+
+        if (!$this->_validateUserAgentAndIp()) {
+            // Only log a warning if a PHP session exists
+            if (Craft::$app->getSession()->getHasSessionId()) {
+                Craft::warning('Request didn’t meet the user agent and IP requirements for maintaining a user session.', __METHOD__);
+            }
             return;
         }
 
@@ -601,12 +610,7 @@ class User extends \yii\web\User
 
         $request = Craft::$app->getRequest();
 
-        if ($request->getUserAgent() === null || $request->getUserIP() === null) {
-            Craft::warning('Request didn’t meet the user agent and IP requirement for maintaining a user session.', __METHOD__);
-            return false;
-        }
-
-        return true;
+        return $request->getUserAgent() !== null && $request->getUserIP() !== null;
     }
 
     private function _clearOtherSessionParams(): void

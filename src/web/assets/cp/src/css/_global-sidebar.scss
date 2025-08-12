@@ -13,7 +13,7 @@
   padding: 0;
   -webkit-overflow-scrolling: touch;
   background-color: var(--gray-150);
-  border-inline-end: 1px solid var(--hairline-color);
+  border-inline-end: 1px solid var(--border-hairline);
   width: var(--global-sidebar-width);
   isolation: isolate;
   z-index: 1;
@@ -46,7 +46,7 @@
 
 .global-sidebar__footer {
   margin-block-start: auto;
-  border-block-start: 1px solid var(--hairline-color);
+  border-block-start: 1px solid var(--border-hairline);
 }
 
 .global-nav > ul {
@@ -91,8 +91,8 @@
   }
 
   &.sel {
-    color: var(--nav-item-fgColor-active);
-    background-color: var(--nav-item-bgColor-active);
+    color: var(--nav-item-fg-active);
+    background-color: var(--nav-item-bg-active);
   }
 }
 
@@ -118,7 +118,7 @@
     border: transparent;
 
     &:hover {
-      background-color: var(--nav-item-bgColor-hover);
+      background-color: var(--nav-item-bg-hover);
     }
 
     &[aria-expanded='true']:not(:hover) {
@@ -159,8 +159,8 @@
   padding-block: 0;
   padding-inline: var(--xs);
   border-radius: var(--s);
-  background-color: var(--nav-item-badge-bgColor);
-  color: var(--nav-item-badge-fgColor);
+  background-color: var(--nav-item-badge-bg);
+  color: var(--nav-item-badge-fg);
 }
 
 .sidebar-actions {
@@ -187,7 +187,7 @@
   align-items: center;
   position: relative;
   text-align: start;
-  border-radius: var(--medium-border-radius);
+  border-radius: var(--radius-md);
   color: currentcolor;
   cursor: pointer;
   min-height: 30px;
@@ -202,7 +202,7 @@
     transform: translateY(-50%) translateX(-150%);
     height: 95%;
     width: var(--nav-item-indicator-size);
-    border-radius: var(--small-border-radius);
+    border-radius: var(--radius-sm);
 
     // No logical properties for transforms
     .rtl & {
@@ -212,14 +212,14 @@
 
   &:focus-visible,
   &:hover {
-    color: var(--nav-item-fgColor-hover);
-    background-color: var(--nav-item-bgColor-hover);
+    color: var(--nav-item-fg-hover);
+    background-color: var(--nav-item-bg-hover);
   }
 
   &[aria-current='page'],
   &[aria-current='true'] {
     &::before {
-      background-color: var(--nav-item-fgColor-active);
+      background-color: var(--nav-item-fg-active);
     }
   }
 }
@@ -264,7 +264,7 @@
 
   .sidebar-action__label {
     flex-wrap: wrap;
-    padding-block: var(--2xs);
+    padding-block: calc((30px - var(--lh)) / 2);
     gap: var(--2xs);
   }
 
@@ -409,7 +409,7 @@ States
         height: 1px;
         margin-block: 0;
         margin-inline: auto;
-        background-color: var(--hairline-color);
+        background-color: var(--border-hairline);
       }
     }
   }

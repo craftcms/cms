@@ -12,7 +12,6 @@ use craft\helpers\ArrayHelper;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\FileHelper;
 use craft\helpers\StringHelper;
-use craft\models\FieldLayout;
 use GuzzleHttp\Client;
 use Symfony\Component\VarDumper\Cloner\VarCloner;
 use yii\base\ExitException;
@@ -218,7 +217,7 @@ class Craft extends Yii
 
         if (!static::$app->getIsInstalled()) {
             // Just load an empty CustomFieldBehavior into memory
-            self::_generateCustomFieldBehavior([], null, false, true);
+            self::_generateCustomFieldBehavior([], [], [], null, false, true);
             return;
         }
 
@@ -239,34 +238,38 @@ class Craft extends Yii
             return;
         }
 
-        $fields = self::_fields();
+        [$fields, $generatedFieldHandles] = self::_fields();
 
-        if (empty($fields)) {
-            // Write and load it simultaneously since there are no custom fields to worry about
-            self::_generateCustomFieldBehavior([], $filePath, true, true);
-        } else {
-            // First generate a basic version without real field value types, and load it into memory
-            $fieldHandles = [];
-            foreach ($fields as $field) {
-                $fieldHandles[$field->handle]['mixed'] = true;
-            }
-            self::_generateCustomFieldBehavior($fieldHandles, $filePath, false, true);
-
-            // Now generate it again, this time with the correct field value types
-            $fieldHandles = [];
-            foreach ($fields as $field) {
-                $types = explode('|', $field::phpType());
-                foreach ($types as $type) {
-                    $type = trim($type, ' \\');
-                    // Add a leading `\` if it’s not a variable, self-reference, or primitive type
-                    if (!preg_match('/^(\$.*|(self|static|bool|boolean|int|integer|float|double|string|array|object|callable|callback|iterable|resource|null|mixed|number|void)(\[\])?)$/i', $type)) {
-                        $type = '\\' . $type;
-                    }
-                    $fieldHandles[$field->handle][$type] = true;
-                }
-            }
-            self::_generateCustomFieldBehavior($fieldHandles, $filePath, true, false);
+        // First generate a basic version without real field value types, and load it into memory
+        $fieldHandles = [];
+        $fieldTypes = [];
+        foreach ($fields as $field) {
+            $fieldHandles[] = $field->handle;
+            $fieldTypes[$field->handle]['mixed'] = true;
         }
+        foreach ($generatedFieldHandles as $handle) {
+            $fieldTypes[$handle]['mixed'] = true;
+        }
+        self::_generateCustomFieldBehavior($fieldHandles, $generatedFieldHandles, $fieldTypes, $filePath, false, true);
+
+        // Now generate it again, this time with the correct field value types
+        $fieldTypes = [];
+        foreach ($fields as $field) {
+            $types = explode('|', $field::phpType());
+            foreach ($types as $type) {
+                $type = trim($type, ' \\');
+                // Add a leading `\` if it’s not a variable, self-reference, or primitive type
+                if (!preg_match('/^(\$.*|(self|static|bool|boolean|int|integer|float|double|string|array|object|callable|callback|iterable|resource|null|mixed|number|void)(\[\])?)$/i', $type)) {
+                    $type = '\\' . $type;
+                }
+                $fieldTypes[$field->handle][$type] = true;
+            }
+        }
+        foreach ($generatedFieldHandles as $handle) {
+            $fieldTypes[$handle]['string'] = true;
+            $fieldTypes[$handle]['null'] = true;
+        }
+        self::_generateCustomFieldBehavior($fieldHandles, $generatedFieldHandles, $fieldTypes, $filePath, true, false);
 
         // Generate a new field version if we need one
         if (!$fieldVersionExists) {
@@ -280,24 +283,41 @@ class Craft extends Yii
 
     /**
      * @param array $fieldHandles
+     * @param array $generatedFieldHandles
+     * @param array $fieldTypes
      * @param string|null $filePath
      * @param bool $write
      * @param bool $load
      * @throws \yii\base\ErrorException
      */
-    private static function _generateCustomFieldBehavior(array $fieldHandles, ?string $filePath, bool $write, bool $load): void
-    {
+    private static function _generateCustomFieldBehavior(
+        array $fieldHandles,
+        array $generatedFieldHandles,
+        array $fieldTypes,
+        ?string $filePath,
+        bool $write,
+        bool $load,
+    ): void {
         $methods = [];
-        $handles = [];
+        $fieldHandlesPhp = [];
+        $generatedFieldHandlesPhp = [];
         $properties = [];
 
-        foreach ($fieldHandles as $handle => $types) {
+        foreach ($fieldHandles as $handle) {
+            $fieldHandlesPhp[] = <<<EOD
+        '$handle' => true,
+EOD;
+        }
+
+        foreach ($generatedFieldHandles as $handle) {
+            $generatedFieldHandlesPhp[] = <<<EOD
+        '$handle' => true,
+EOD;
+        }
+
+        foreach ($fieldTypes as $handle => $types) {
             $methods[] = <<<EOD
  * @method \$this $handle(mixed \$value) Sets the [[$handle]] property
-EOD;
-
-            $handles[] = <<<EOD
-        '$handle' => true,
 EOD;
 
             $phpDocTypes = implode('|', array_keys($types));
@@ -319,11 +339,13 @@ EOD;
             [
                 '{METHOD_DOCS}',
                 '/* HANDLES */',
+                '/* GENERATED HANDLES */',
                 '/* PROPERTIES */',
             ],
             [
                 implode("\n", $methods),
-                implode("\n", $handles),
+                implode("\n", $fieldHandlesPhp),
+                implode("\n", $generatedFieldHandlesPhp),
                 implode("\n\n", $properties),
             ],
             $fileContents);
@@ -358,23 +380,34 @@ EOD;
     }
 
     /**
-     * @return FieldInterface[]
+     * @return array{0:FieldInterface[],1:string[]}
      */
     private static function _fields(): array
     {
-        // Return all fields merged with all layouts' field instances, to be sure we're not missing anything
-        $fields = array_merge(
-            static::$app->getFields()->getAllFields(false),
-            ...array_map(
-                fn(FieldLayout $fieldLayout) => $fieldLayout->getCustomFields(),
-                Craft::$app->getFields()->getAllLayouts(),
-            ),
-        );
+        $fieldsService = static::$app->getFields();
+        /** @var FieldInterface[] $fields */
+        $fields = $fieldsService->getAllFields(false);
+        $generatedFieldHandles = [];
 
-        // Sort by handle
+        foreach ($fieldsService->getAllLayouts() as $layout) {
+            foreach ($layout->getCustomFields() as $field) {
+                if ($field->handle !== $field->layoutElement->getOriginalHandle()) {
+                    $fields[] = $field;
+                }
+            }
+            foreach ($layout->getGeneratedFields() as $generatedField) {
+                $handle = $generatedField['handle'] ?? '';
+                if ($handle !== '') {
+                    $generatedFieldHandles[$handle] = true;
+                }
+            }
+        }
+
+        // Sort custom fields by handle
+        // Note: we can't use array_multisort here! https://github.com/craftcms/cms/issues/17556
         usort($fields, fn(FieldInterface $a, FieldInterface $b) => $a->handle <=> $b->handle);
 
-        return $fields;
+        return [$fields, array_keys($generatedFieldHandles)];
     }
 
     /**

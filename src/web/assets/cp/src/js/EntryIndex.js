@@ -268,11 +268,15 @@ Craft.EntryIndex = Craft.BaseElementIndex.extend({
             draftId: data.entry.draftId,
             params: {
               fresh: 1,
+              updateSearchIndexImmediately: 1,
             },
           });
-          slideout.on('submit', () => {
-            this.clearSearch();
-            this.setSelectedSortAttribute('dateCreated', 'desc');
+          slideout.on('submit', (ev) => {
+            this.clearSearch(false);
+            this.startSearching();
+            this.$search.val(ev.data.title);
+            this.searchText = ev.data.title;
+
             this.selectElementAfterUpdate(data.entry.id);
             this.updateElements();
           });

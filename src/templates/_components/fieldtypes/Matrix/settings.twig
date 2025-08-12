@@ -1,58 +1,83 @@
 {% import "_includes/forms" as forms %}
 
-{{ forms.entryTypeSelectField({
-    label: 'Entry Types'|t('app'),
-    instructions: 'Choose the types of entries that can be created in this field.'|t('app'),
-    id: 'entry-types',
-    name: 'entryTypes[]',
-    values: field.getEntryTypes(),
-    allowOverrides: true,
-    create: true,
-    errors: field.getErrors('entryTypes'),
-    data: {'error-key': 'entryTypes'},
-    disabled: readOnly,
-}) }}
+{% embed '_includes/forms/field.twig' with {
+  label: 'Entry Types'|t('app'),
+  instructions: 'Choose the types of entries that can be created in this field.'|t('app'),
+  id: 'entry-types',
+} %}
+  {% block input %}
+    {% import "_includes/forms" as forms %}
+    {% set groupedEntryTypes = entryTypes.groupBy(et => et.group ?? 'General'|t('app')) %}
+    {% if not groupedEntryTypes|length %}
+      {% set groupedEntryTypes = {
+        ('General'|t('app')): [],
+      } %}
+    {% endif %}
+    {{ hiddenInput('entryTypes', '') }}
+    <div id="entry-type-manager" class="entry-type-manager">
+      <ul class="entry-type-groups mb-s">
+        {% for groupName, entryTypes in groupedEntryTypes %}
+          {% tag 'li' with {
+            class: 'entry-type-group',
+            data: {
+              name: groupName,
+            },
+          } %}
+            <div class="entry-type-group--titlebar">
+              <span>{{ groupName }}</span>
+            </div>
+            {{ forms.entryTypeSelect(entryTypeSelectConfig|merge({
+              id: "entry-type-select-#{random()}",
+              values: entryTypes,
+              includeGroupInValues: true,
+            })) }}
+          {% endtag %}
+        {% endfor %}
+      </ul>
+    </div>
+  {% endblock %}
+{% endembed %}
 
 {% if craft.app.getIsMultiSite() %}
-    {{ forms.selectField({
-        label: 'Propagation Method'|t('app'),
-        instructions: 'Which sites should entries be saved to?'|t('app'),
-        id: 'propagationMethod',
-        name: 'propagationMethod',
-        options: [
-            { value: 'none', label: 'Only save entries to the site they were created in'|t('app') },
-            { value: 'siteGroup', label: 'Save entries to other sites in the same site group'|t('app') },
-            { value: 'language', label: 'Save entries to other sites with the same language'|t('app') },
-            { value: 'all', label: 'Save entries to all sites the owner element is saved in'|t('app') },
-            { value: 'custom', label: 'Custom…'|t('app') },
-        ],
-        value: field.propagationMethod.value,
-        toggle: true,
-        targetPrefix: 'propagation-method-',
-        disabled: readOnly,
+  {{ forms.selectField({
+    label: 'Propagation Method'|t('app'),
+    instructions: 'Which sites should entries be saved to?'|t('app'),
+    id: 'propagationMethod',
+    name: 'propagationMethod',
+    options: [
+      { value: 'none', label: 'Only save entries to the site they were created in'|t('app') },
+      { value: 'siteGroup', label: 'Save entries to other sites in the same site group'|t('app') },
+      { value: 'language', label: 'Save entries to other sites with the same language'|t('app') },
+      { value: 'all', label: 'Save entries to all sites the owner element is saved in'|t('app') },
+      { value: 'custom', label: 'Custom…'|t('app') },
+    ],
+    value: field.propagationMethod.value,
+    toggle: true,
+    targetPrefix: 'propagation-method-',
+    disabled: readOnly,
+  }) }}
+
+  {% tag 'div' with {
+    id: 'propagation-method-custom',
+    class: field.propagationMethod.value != 'custom' ? 'hidden' : null,
+  } %}
+    {{ forms.textField({
+      label: 'Propagation Key Format'|t('app'),
+      instructions: 'Template that defines the field’s custom “propagation key” format. Entries will be saved to all sites that produce the same key.'|t('app'),
+      id: 'propagation-key-format',
+      class: 'code',
+      name: 'propagationKeyFormat',
+      value: field.propagationKeyFormat,
+      errors: field.getErrors('propagationKeyFormat'),
+      disabled: readOnly,
     }) }}
+  {% endtag %}
 
-    {% tag 'div' with {
-        id: 'propagation-method-custom',
-        class: field.propagationMethod.value != 'custom' ? 'hidden' : null,
-    } %}
-        {{ forms.textField({
-            label: 'Propagation Key Format'|t('app'),
-            instructions: 'Template that defines the field’s custom “propagation key” format. Entries will be saved to all sites that produce the same key.'|t('app'),
-            id: 'propagation-key-format',
-            class: 'code',
-            name: 'propagationKeyFormat',
-            value: field.propagationKeyFormat,
-            errors: field.getErrors('propagationKeyFormat'),
-            disabled: readOnly,
-        }) }}
-    {% endtag %}
-
-    {% if field.id and field.propagationMethod.value != 'none' %}
-        {% js %}
-            (function() {
-                var showingWarning = false;
-                $("#{{ 'propagationMethod'|namespaceInputId }}").on('change', function() {
+  {% if field.id and field.propagationMethod.value != 'none' %}
+    {% js %}
+    (function() {
+      var showingWarning = false;
+      $("#{{ 'propagationMethod'|namespaceInputId }}").on('change', function() {
                     if ($(this).val() !== '{{ field.propagationMethod.value }}') {
                         if (!showingWarning) {
                             $('<p/>', {'class': 'warning', text: "{{ 'Applying this change to existing entries can take some time.'|t('app')|e('js') }}"})
@@ -66,7 +91,7 @@
                 });
             })();
         {% endjs %}
-    {% endif %}
+  {% endif %}
 {% endif %}
 
 {% set headlessMode = craft.app.config.general.headlessMode %}
@@ -74,214 +99,225 @@
 {% set siteErrors = [] %}
 
 {% for site in craft.app.sites.getAllSites() %}
-    {% set siteSettings = field.siteSettings[site.uid] ?? null %}
-    {% if siteSettings %}
-        {% for attribute, errors in siteSettings.errors ?? [] %}
-            {% set siteErrors = siteErrors|merge(errors) %}
-        {% endfor %}
-    {% endif %}
-    {% set siteRows = siteRows|merge({
-        (site.uid): {
-            heading: site.name|t('site')|e,
-            uriFormat: {
-                value: siteSettings.uriFormat ?? null,
-                hasErrors: siteSettings.errors.uriFormat is defined,
-            },
-            template: not headlessMode ? {
-                value: siteSettings.template ?? null,
-                hasErrors: siteSettings.errors.template is defined,
-            },
-        }|filter
-    }) %}
+  {% set siteSettings = field.siteSettings[site.uid] ?? null %}
+  {% if siteSettings %}
+    {% for attribute, errors in siteSettings.errors ?? [] %}
+      {% set siteErrors = siteErrors|merge(errors) %}
+    {% endfor %}
+  {% endif %}
+  {% set siteRows = siteRows|merge({
+    (site.uid): {
+      heading: site.name|t('site')|e,
+      uriFormat: {
+        value: siteSettings.uriFormat ?? null,
+        hasErrors: siteSettings.errors.uriFormat is defined,
+      },
+      template: not headlessMode ? {
+        value: siteSettings.template ?? null,
+        hasErrors: siteSettings.errors.template is defined,
+      },
+    }|filter
+  }) %}
 {% endfor %}
 
 {{ forms.editableTableField({
-    label: 'Site Settings'|t('app'),
-    instructions: 'Choose the site-specific settings for nested entries.'|t('app'),
-    id: 'site-settings',
-    name: 'siteSettings',
-    cols: {
-        heading: {
-            type: 'heading',
-            heading: 'Site'|t('app'),
-            thin: true
-        },
-        uriFormat: {
-            type: 'singleline',
-            heading: 'Entry URI Format'|t('app'),
-            info: 'What entry URIs should look like for the site. Leave blank if entries don’t have URLs.'|t('app'),
-            placeholder: 'Leave blank if entries don’t have URLs'|t('app'),
-            code: true,
-        },
-        template: not headlessMode ? {
-            type: 'template',
-            heading: 'Template'|t('app'),
-            info: 'Which template should be loaded when an entry’s URL is requested.'|t('app'),
-            code: true
-        },
-    }|filter,
-    rows: siteRows,
-    fullWidth: true,
-    allowAdd: false,
-    allowDelete: false,
-    allowReorder: false,
-    errors: siteErrors|unique,
-    data: {'error-key': 'siteSettings'},
-    static: readOnly,
+  label: 'Site Settings'|t('app'),
+  instructions: 'Choose the site-specific settings for nested entries.'|t('app'),
+  id: 'site-settings',
+  name: 'siteSettings',
+  cols: {
+    heading: {
+      type: 'heading',
+      heading: 'Site'|t('app'),
+      thin: true
+    },
+    uriFormat: {
+      type: 'singleline',
+      heading: 'Entry URI Format'|t('app'),
+      info: 'What entry URIs should look like for the site. Leave blank if entries don’t have URLs.'|t('app'),
+      placeholder: 'Leave blank if entries don’t have URLs'|t('app'),
+      code: true,
+    },
+    template: not headlessMode ? {
+      type: 'template',
+      heading: 'Template'|t('app'),
+      info: 'Which template should be loaded when an entry’s URL is requested.'|t('app'),
+      code: true
+    },
+  }|filter,
+  rows: siteRows,
+  fullWidth: true,
+  allowAdd: false,
+  allowDelete: false,
+  allowReorder: false,
+  errors: siteErrors|unique,
+  data: {'error-key': 'siteSettings'},
+  static: readOnly,
 }) }}
 
 {{ forms.textField({
-    label: 'Min {type}'|t('app', {
-        type: 'Entries'|t('app'),
-    }),
-    instructions: 'The minimum number of {type} the field is allowed to have.'|t('app', {
-        type: 'entries'|t('app'),
-    }),
-    id: 'min-entries',
-    name: 'minEntries',
-    value: field.minEntries,
-    size: 3,
-    errors: field.getErrors('minEntries'),
-    data: {'error-key': 'minEntries'},
-    disabled: readOnly,
+  label: 'Min {type}'|t('app', {
+    type: 'Entries'|t('app'),
+  }),
+  instructions: 'The minimum number of {type} the field is allowed to have.'|t('app', {
+    type: 'entries'|t('app'),
+  }),
+  id: 'min-entries',
+  name: 'minEntries',
+  value: field.minEntries,
+  size: 3,
+  errors: field.getErrors('minEntries'),
+  data: {'error-key': 'minEntries'},
+  disabled: readOnly,
 }) }}
 
 {{ forms.textField({
-    label: 'Max {type}'|t('app', {
-        type: 'Entries'|t('app'),
-    }),
-    instructions: 'The maximum number of {type} the field is allowed to have.'|t('app', {
-        type: 'entries'|t('app'),
-    }),
-    id: 'max-entries',
-    name: 'maxEntries',
-    value: field.maxEntries,
-    size: 3,
-    errors: field.getErrors('maxEntries'),
-    data: {'error-key': 'maxEntries'},
-    disabled: readOnly,
+  label: 'Max {type}'|t('app', {
+    type: 'Entries'|t('app'),
+  }),
+  instructions: 'The maximum number of {type} the field is allowed to have.'|t('app', {
+    type: 'entries'|t('app'),
+  }),
+  id: 'max-entries',
+  name: 'maxEntries',
+  value: field.maxEntries,
+  size: 3,
+  errors: field.getErrors('maxEntries'),
+  data: {'error-key': 'maxEntries'},
+  disabled: readOnly,
 }) }}
 
 {{ forms.lightswitchField({
-    label: 'Enable versioning for entries in this field'|t('app'),
-    id: 'enableVersioning',
-    name: 'enableVersioning',
-    on: field.enableVersioning,
-    errors: field.getErrors('enableVersioning'),
-    data: {'error-key': 'enableVersioning'},
-    disabled: readOnly,
+  label: 'Enable versioning for entries in this field'|t('app'),
+  id: 'enableVersioning',
+  name: 'enableVersioning',
+  on: field.enableVersioning,
+  errors: field.getErrors('enableVersioning'),
+  data: {'error-key': 'enableVersioning'},
+  disabled: readOnly,
 }) }}
 
 <hr>
 
 {{ forms.selectField({
-    label: 'View Mode'|t('app'),
-    instructions: 'Choose how nested {type} should be presented to authors.'|t('app', {
-        type: 'entries'|t('app'),
-    }),
-    id: 'view-mode',
-    name: 'viewMode',
-    options: [
-        {label: 'As cards'|t('app'), value: constant('VIEW_MODE_CARDS', field)},
-        {label: 'As inline-editable blocks'|t('app'), value: constant('VIEW_MODE_BLOCKS', field)},
-        {label: 'As an element index'|t('app'), value: constant('VIEW_MODE_INDEX', field)},
-    ],
-    value: field.viewMode,
-    toggle: true,
-    targetPrefix: 'view-mode--',
-    disabled: readOnly,
+  label: 'View Mode'|t('app'),
+  instructions: 'Choose how nested {type} should be presented to authors.'|t('app', {
+    type: 'entries'|t('app'),
+  }),
+  id: 'view-mode',
+  name: 'viewMode',
+  options: [
+    {label: 'As cards'|t('app'), value: constant('VIEW_MODE_CARDS', field)},
+    {label: 'As inline-editable blocks'|t('app'), value: constant('VIEW_MODE_BLOCKS', field)},
+    {label: 'As an element index'|t('app'), value: constant('VIEW_MODE_INDEX', field)},
+  ],
+  value: field.viewMode,
+  toggle: true,
+  targetPrefix: 'view-mode--',
+  disabled: readOnly,
 }) }}
 
 {% tag 'div' with {
-    id: "view-mode--#{constant('VIEW_MODE_CARDS', field)}",
-    class: field.viewMode != constant('VIEW_MODE_CARDS', field) ? 'hidden' : null,
+  id: "view-mode--#{constant('VIEW_MODE_CARDS', field)}",
+  class: field.viewMode != constant('VIEW_MODE_CARDS', field) ? 'hidden' : null,
 } %}
-    {{ forms.lightswitchField({
-        label: 'Show cards in a grid'|t('app'),
-        instructions: 'Whether cards should be shown in a multi-column grid on wide viewports.'|t('app'),
-        id: 'show-cards-in-grid',
-        name: 'showCardsInGrid',
-        on: field.showCardsInGrid,
-        disabled: readOnly,
-    }) }}
+  {{ forms.lightswitchField({
+    label: 'Show cards in a grid'|t('app'),
+    instructions: 'Whether cards should be shown in a multi-column grid on wide viewports.'|t('app'),
+    id: 'show-cards-in-grid',
+    name: 'showCardsInGrid',
+    on: field.showCardsInGrid,
+    disabled: readOnly,
+  }) }}
 {% endtag %}
 
 {% tag 'div' with {
-    id: "view-mode--#{constant('VIEW_MODE_INDEX', field)}",
-    class: field.viewMode != constant('VIEW_MODE_INDEX', field) ? 'hidden' : null,
+  id: "view-mode--#{constant('VIEW_MODE_INDEX', field)}",
+  class: field.viewMode != constant('VIEW_MODE_INDEX', field) ? 'hidden' : null,
 } %}
-    {{ forms.lightswitchField({
-        label: 'Include Table View'|t('app'),
-        instructions: 'Whether the element index should allow viewing nested {type} in a table.'|t('app', {
-            type: 'entries'|t('app'),
-        }),
-        id: 'include-table-view',
-        name: 'includeTableView',
-        on: field.includeTableView,
-        toggle: '#default-table-columns-container',
-        disabled: readOnly,
-    }) }}
+  {{ forms.lightswitchField({
+    label: 'Include Table View'|t('app'),
+    instructions: 'Whether the element index should allow viewing nested {type} in a table.'|t('app', {
+      type: 'entries'|t('app'),
+    }),
+    id: 'include-table-view',
+    name: 'includeTableView',
+    on: field.includeTableView,
+    toggle: '#default-table-columns-container',
+    disabled: readOnly,
+  }) }}
 
-    {% tag 'div' with {
-        id: 'default-table-columns-container',
-        class: not field.includeTableView ? 'hidden' : null,
+  {% tag 'div' with {
+    id: 'default-table-columns-container',
+    class: not field.includeTableView ? 'hidden' : null,
+  } %}
+    {% embed '_includes/forms/field.twig' with {
+      label: 'Default Table Columns'|t('app'),
+      instructions: 'Choose which table columns should be visible by default.'|t('app'),
+      id: 'default-table-columns',
     } %}
-        {% embed '_includes/forms/field.twig' with {
-            label: 'Default Table Columns'|t('app'),
-            instructions: 'Choose which table columns should be visible by default.'|t('app'),
-            id: 'default-table-columns',
-        } %}
-            {% block input %}
-                <div id="default-table-columns-input"></div>
-            {% endblock %}
-        {% endembed %}
+      {% block input %}
+        <div id="default-table-columns-input"></div>
+      {% endblock %}
+    {% endembed %}
 
-        {% set options = [] %}
-        {% for viewMode in indexViewModes %}
-            {% set options = options|merge([{
-                label: viewMode.title,
-                value: viewMode.mode,
-            }]) %}
-        {% endfor %}
-        {{ forms.selectField({
-            label: 'Default View Mode'|t('app'),
-            id: 'default-view-mode',
-            name: 'defaultIndexViewMode',
-            options: options,
-            value: field.defaultIndexViewMode,
-            disabled: readOnly,
-        }) }}
-    {% endtag %}
-
+    {% set options = [] %}
+    {% for viewMode in indexViewModes %}
+      {% set options = options|merge([{
+        label: viewMode.title,
+        value: viewMode.mode,
+      }]) %}
+    {% endfor %}
     {{ forms.selectField({
-        label: '{type} Per Page'|t('app', {
-            type: 'Entries'|t('app'),
-        }),
-        instructions: 'The total number of {type} to display per page within the element index.'|t('app', {
-            type: 'entries'|t('app'),
-        }),
-        id: 'page-size',
-        name: 'pageSize',
-        options: [10, 20, 50, 100]|map(num => {label: num, value: num}),
-        value: field.pageSize ?? 50,
-        disabled: readOnly,
+      label: 'Default View Mode'|t('app'),
+      id: 'default-view-mode',
+      name: 'defaultIndexViewMode',
+      options: options,
+      value: field.defaultIndexViewMode,
+      disabled: readOnly,
     }) }}
+  {% endtag %}
+
+  {{ forms.selectField({
+    label: '{type} Per Page'|t('app', {
+      type: 'Entries'|t('app'),
+    }),
+    instructions: 'The total number of {type} to display per page within the element index.'|t('app', {
+      type: 'entries'|t('app'),
+    }),
+    id: 'page-size',
+    name: 'pageSize',
+    options: [10, 20, 50, 100]|map(num => {label: num, value: num}),
+    value: field.pageSize ?? 50,
+    disabled: readOnly,
+  }) }}
 {% endtag %}
 
 {{ forms.textField({
-    label: '“New” Button Label'|t('app'),
-    instructions: 'The text label for the entry creation button.'|t('app'),
-    id: 'create-button-label',
-    name: 'createButtonLabel',
-    value: field.createButtonLabel,
-    placeholder: defaultCreateButtonLabel,
-    errors: field.getErrors('createButtonLabel'),
-    disabled: readOnly,
+  label: '“New” Button Label'|t('app'),
+  instructions: 'The text label for the entry creation button.'|t('app'),
+  id: 'create-button-label',
+  name: 'createButtonLabel',
+  value: field.createButtonLabel,
+  placeholder: defaultCreateButtonLabel,
+  errors: field.getErrors('createButtonLabel'),
+  disabled: readOnly,
 }) }}
 
 {% js %}
   (() => {
-    const $defaultColumnsContainer = $('#{{ 'default-table-columns-input'|namespaceInputId }}');
+    const $defaultColumnsContainer = $("#{{ 'default-table-columns-input'|namespaceInputId }}");
+
+    {% if not readOnly %}
+      const $entryTypesContainer = $("#{{ 'entry-type-manager'|namespaceInputId }}");
+      new Craft.GroupedEntryTypeManager($entryTypesContainer, {
+        $defaultColumnsContainer,
+        namespace: {{ view.getNamespace()|json_encode|raw }},
+        entryTypeSelectHtml: {{ entryTypeSelectHtml|json_encode|raw }},
+        entryTypeSelectJs: {{ entryTypeSelectJs|json_encode|raw }},
+      });
+    {% endif %}
+
     const config = {
       name: {{ 'defaultTableColumns'|namespaceInputName|json_encode|raw }},
       options: {{ defaultTableColumnOptions|json_encode|raw }},
@@ -289,32 +325,11 @@
     };
 
     {% if readOnly %}
-        config['disabled'] = true;
+      config['disabled'] = true;
     {% else %}
-        config['sortable'] = true;
+      config['sortable'] = true;
     {% endif %}
 
     Craft.ui.createCheckboxSelect(config).appendTo($defaultColumnsContainer);
-
-    const componentSelect = $('#{{ 'entry-types'|namespaceInputId }}').data('componentSelect');
-
-    componentSelect.on('change', () => {
-      const values = $defaultColumnsContainer.find('input:checked').toArray().map(input => input.value);
-      Craft.sendActionRequest('POST', 'matrix/default-table-column-options', {
-        data: {
-          entryTypeIds: componentSelect.getSelectedComponentIds(),
-        },
-      }).then(({data}) => {
-        $defaultColumnsContainer.empty().append(
-          Craft.ui.createCheckboxSelect({
-            name: {{ 'defaultTableColumns'|namespaceInputName|json_encode|raw }},
-            options: data.options,
-            values: values,
-            sortable: true,
-          })
-        );
-
-      });
-    });
   })();
 {% endjs %}

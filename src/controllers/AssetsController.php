@@ -308,6 +308,7 @@ class AssetsController extends Controller
         $asset = new Asset();
         $asset->tempFilePath = $tempPath;
         $asset->setFilename($filename);
+        $asset->setMimeType(FileHelper::getMimeType($tempPath, checkExtension: false) ?? $uploadedFile->type);
         $asset->newFolderId = $folder->id;
         $asset->setVolumeId($folder->volumeId);
         $asset->uploaderId = Craft::$app->getUser()->getId();
@@ -414,7 +415,7 @@ class AssetsController extends Controller
         if ($assetToReplace !== null && $uploadedFile) {
             $tempPath = $this->_getUploadedFileTempPath($uploadedFile);
             $filename = Assets::prepareAssetName($uploadedFile->name);
-            $assets->replaceAssetFile($assetToReplace, $tempPath, $filename);
+            $assets->replaceAssetFile($assetToReplace, $tempPath, $filename, $uploadedFile->type);
         } elseif ($sourceAsset !== null) {
             // Or replace using an existing Asset
 
@@ -436,7 +437,7 @@ class AssetsController extends Controller
             // If we have an actual asset for which to replace the file, just do it.
             if (!empty($assetToReplace)) {
                 $tempPath = $sourceAsset->getCopyOfFile();
-                $assets->replaceAssetFile($assetToReplace, $tempPath, $assetToReplace->getFilename());
+                $assets->replaceAssetFile($assetToReplace, $tempPath, $assetToReplace->getFilename(), $sourceAsset->getMimeType());
                 Craft::$app->getElements()->deleteElement($sourceAsset);
             } else {
                 // If all we have is the filename, then make sure that the destination is empty and go for it.
@@ -999,7 +1000,7 @@ class AssetsController extends Controller
 
             // Only replace file if it changed, otherwise just save changed focal points
             if ($imageChanged) {
-                $assets->replaceAssetFile($asset, $finalImage, $asset->getFilename());
+                $assets->replaceAssetFile($asset, $finalImage, $asset->getFilename(), $asset->getMimeType());
             } elseif ($focalChanged) {
                 Craft::$app->getElements()->saveElement($asset);
             }

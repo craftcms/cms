@@ -10,7 +10,6 @@ namespace craft\base;
 use craft\behaviors\CustomFieldBehavior;
 use craft\elements\conditions\ElementConditionInterface;
 use craft\elements\db\EagerLoadPlan;
-use craft\elements\db\ElementQuery;
 use craft\elements\db\ElementQueryInterface;
 use craft\elements\ElementCollection;
 use craft\elements\User;
@@ -20,6 +19,8 @@ use craft\models\FieldLayout;
 use craft\models\Site;
 use GraphQL\Type\Definition\Type;
 use Twig\Markup;
+use yii\base\InvalidConfigException;
+use yii\base\NotSupportedException;
 use yii\web\Response;
 
 /**
@@ -30,7 +31,8 @@ use yii\web\Response;
  * @mixin CustomFieldBehavior
  * @mixin Component
  * @phpstan-require-extends Element
- * @phpstan-type EagerLoadingMap array{elementType?:class-string<ElementInterface>,map:array{elementType?:class-string<ElementInterface>,source:int,target:int}[],criteria?:array,createElement?:callable}
+ * @phpstan-type EagerLoadingMapItem array{elementType?:class-string<ElementInterface>,source:int,target:int}
+ * @phpstan-type EagerLoadingMap array{elementType?:class-string<ElementInterface>,map:EagerLoadingMapItem[],criteria?:array,createElement?:callable}
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
  */
@@ -1621,6 +1623,22 @@ interface ElementInterface extends
     public function getFieldContext(): string;
 
     /**
+     * Returns the generated field values for the element, indexed by handle.
+     *
+     * @return array<string,string>
+     * @since 5.8.0
+     */
+    public function getGeneratedFieldValues(): array;
+
+    /**
+     * Sets the generated field values for the element, indexed by handle.
+     *
+     * @param array<string,string|null> $values
+     * @since 5.8.0
+     */
+    public function setGeneratedFieldValues(array $values): void;
+
+    /**
      * Returns the element’s invalid nested element IDs.
      *
      * @return int[]
@@ -1902,4 +1920,17 @@ interface ElementInterface extends
      * Returns the string representation of the element.
      */
     public function __toString(): string;
+
+    /**
+     * Renders the element using its partial template.
+     *
+     * If no partial template exists for the element, its string representation will be output instead.
+     *
+     * @param array $variables
+     * @return Markup
+     * @throws InvalidConfigException
+     * @throws NotSupportedException
+     * @since 5.8.0
+     */
+    public function render(array $variables = []): Markup;
 }

@@ -10,6 +10,7 @@ namespace craft\fields;
 use Craft;
 use craft\base\ElementInterface;
 use craft\elements\conditions\ElementCondition;
+use craft\elements\db\ElementQueryInterface;
 use craft\elements\db\EntryQuery;
 use craft\elements\ElementCollection;
 use craft\elements\Entry;
@@ -22,8 +23,10 @@ use craft\helpers\Gql;
 use craft\helpers\Gql as GqlHelper;
 use craft\models\EntryType;
 use craft\models\GqlSchema;
+use craft\services\ElementSources;
 use craft\services\Gql as GqlService;
 use GraphQL\Type\Definition\Type;
+use Illuminate\Support\Collection;
 
 /**
  * Entries represents an Entries field.
@@ -50,6 +53,11 @@ class Entries extends BaseRelationField
      * @inheritdoc
      */
     protected string $settingsTemplate = '_components/fieldtypes/Entries/settings.twig';
+
+    /**
+     * @inheritdoc
+     */
+    protected ?string $inputJsClass = 'Craft.EntrySelectInput';
 
     /**
      * @inheritdoc
@@ -103,6 +111,27 @@ class Entries extends BaseRelationField
         }
 
         parent::__construct($config);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    protected function inputTemplateVariables(array|ElementQueryInterface $value = null, ?ElementInterface $element = null): array
+    {
+        $variables = parent::inputTemplateVariables($value, $element);
+
+        if (!$this->hasSelectionCondition() && $this->showSearchInput($element)) {
+            /** @var string[] $sources */
+            $sources = $this->getInputSources($element);
+            if (preg_match('/^section:(.+)$/', reset($sources), $matches)) {
+                $section = Craft::$app->getEntries()->getSectionByUid($matches[1]);
+                if ($section) {
+                    $variables['jsSettings']['sectionId'] = $section->id;
+                }
+            }
+        }
+
+        return $variables;
     }
 
     /**
@@ -221,17 +250,25 @@ class Entries extends BaseRelationField
 
         // Enforce the showUnpermittedSections setting
         if (!$this->showUnpermittedSections) {
-            $userService = Craft::$app->getUser();
-            return ArrayHelper::where((array)$this->sources, function(string $source) use ($userService) {
-                // If it’s not a section, let it through
-                if (!str_starts_with($source, 'section:')) {
-                    return true;
-                }
-                // Only show it if they have permission to view it
-                $sectionUid = explode(':', $source)[1];
-                return $userService->checkPermission("viewEntries:$sectionUid");
-            }, true, true, false);
+            // get all the native & custom sources that user has permissions to view
+            $permittedSources = Collection::make(Craft::$app->getElementSources()->getSources(Entry::class))
+                ->filter(fn($source) => $source['type'] !== ElementSources::TYPE_HEADING)
+                ->pluck('key')
+                ->flip()
+                ->all();
+
+            // if the field is set to show all the sources
+            if ($this->sources === '*') {
+                // return all the native & custom sources that user has permissions to view
+                return array_keys($permittedSources);
+            }
+
+            // otherwise, go through all the selected sources and return ones that user has permissions to view
+            return ArrayHelper::where((array)$this->sources,
+                fn(string $sourceKey) => isset($permittedSources[$sourceKey]),
+                true, true, false);
         }
+
         return $this->sources;
     }
 }

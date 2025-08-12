@@ -108,6 +108,7 @@ class Json extends \yii\helpers\Json
      * @param int $options The encoding options. `JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT`
      * is used by default.
      * @param string $defaultIndent The default indentation sequence to use if the file doesn’t exist
+     * @since 5.0.0
      */
     public static function encodeToFile(
         string $path,

@@ -90,14 +90,14 @@ export default Drag.extend(
      * Returns whether the draggee can be inserted before a given item.
      */
     canInsertBefore: function ($item) {
-      return true;
+      return this.settings.canInsertBefore($item);
     },
 
     /**
      * Returns whether the draggee can be inserted after a given item.
      */
     canInsertAfter: function ($item) {
-      return true;
+      return this.settings.canInsertAfter($item);
     },
 
     // Events
@@ -225,7 +225,7 @@ export default Drag.extend(
     // ---------------------------------------------------------------------
 
     _getItemIndex: function (item) {
-      return $.inArray(item, this.$items);
+      return this.$items.index(item);
     },
 
     _getDraggeeIndexes: function () {
@@ -274,9 +274,11 @@ export default Drag.extend(
             : null;
       }
 
-      this._getClosestItem._$otherItem = this.$draggee.first().prev();
+      this._getClosestItem._$otherItem = this.getPrevItem(
+        this.$draggee.first()
+      );
 
-      while (this._getClosestItem._$otherItem.length) {
+      while (this._getClosestItem._$otherItem) {
         // See if we're just getting further away
         this._getClosestItem._midpoint = this._getItemMidpoint(
           this._getClosestItem._$otherItem[0]
@@ -293,31 +295,36 @@ export default Drag.extend(
         }
 
         if (
-          (this.settings.axis === Garnish.Y_AXIS ||
-            (this._getClosestItem._lastXDist !== null &&
-              this._getClosestItem._xDist > this._getClosestItem._lastXDist)) &&
-          (this.settings.axis === Garnish.X_AXIS ||
-            (this._getClosestItem._lastYDist !== null &&
-              this._getClosestItem._yDist > this._getClosestItem._lastYDist))
+          !(
+            (this.settings.axis === Garnish.Y_AXIS ||
+              (this._getClosestItem._lastXDist !== null &&
+                this._getClosestItem._xDist >
+                  this._getClosestItem._lastXDist)) &&
+            (this.settings.axis === Garnish.X_AXIS ||
+              (this._getClosestItem._lastYDist !== null &&
+                this._getClosestItem._yDist > this._getClosestItem._lastYDist))
+          )
         ) {
-          break;
-        }
+          if (this.settings.axis !== Garnish.Y_AXIS) {
+            this._getClosestItem._lastXDist = this._getClosestItem._xDist;
+          }
+          if (this.settings.axis !== Garnish.X_AXIS) {
+            this._getClosestItem._lastYDist = this._getClosestItem._yDist;
+          }
 
-        if (this.settings.axis !== Garnish.Y_AXIS) {
-          this._getClosestItem._lastXDist = this._getClosestItem._xDist;
-        }
-        if (this.settings.axis !== Garnish.X_AXIS) {
-          this._getClosestItem._lastYDist = this._getClosestItem._yDist;
-        }
-
-        // Give the extending class a chance to allow/disallow this item
-        if (this.canInsertBefore(this._getClosestItem._$otherItem)) {
-          this._testForClosestItem(this._getClosestItem._$otherItem[0]);
+          // Give the extending class a chance to allow/disallow this item
+          if (
+            this.canInsertBefore(this._getClosestItem._$otherItem) ||
+            this.canInsertAfter(this._getClosestItem._$otherItem)
+          ) {
+            this._testForClosestItem(this._getClosestItem._$otherItem[0]);
+          }
         }
 
         // Prep the next item
-        this._getClosestItem._$otherItem =
-          this._getClosestItem._$otherItem.prev();
+        this._getClosestItem._$otherItem = this.getPrevItem(
+          this._getClosestItem._$otherItem
+        );
       }
 
       // Check items after the draggee
@@ -328,9 +335,9 @@ export default Drag.extend(
         this._getClosestItem._lastYDist = this._getClosestItem._startYDist;
       }
 
-      this._getClosestItem._$otherItem = this.$draggee.last().next();
+      this._getClosestItem._$otherItem = this.getNextItem(this.$draggee.last());
 
-      while (this._getClosestItem._$otherItem.length) {
+      while (this._getClosestItem._$otherItem) {
         // See if we're just getting further away
         this._getClosestItem._midpoint = this._getItemMidpoint(
           this._getClosestItem._$otherItem[0]
@@ -347,31 +354,36 @@ export default Drag.extend(
         }
 
         if (
-          (this.settings.axis === Garnish.Y_AXIS ||
-            (this._getClosestItem._lastXDist !== null &&
-              this._getClosestItem._xDist > this._getClosestItem._lastXDist)) &&
-          (this.settings.axis === Garnish.X_AXIS ||
-            (this._getClosestItem._lastYDist !== null &&
-              this._getClosestItem._yDist > this._getClosestItem._lastYDist))
+          !(
+            (this.settings.axis === Garnish.Y_AXIS ||
+              (this._getClosestItem._lastXDist !== null &&
+                this._getClosestItem._xDist >
+                  this._getClosestItem._lastXDist)) &&
+            (this.settings.axis === Garnish.X_AXIS ||
+              (this._getClosestItem._lastYDist !== null &&
+                this._getClosestItem._yDist > this._getClosestItem._lastYDist))
+          )
         ) {
-          break;
-        }
+          if (this.settings.axis !== Garnish.Y_AXIS) {
+            this._getClosestItem._lastXDist = this._getClosestItem._xDist;
+          }
+          if (this.settings.axis !== Garnish.X_AXIS) {
+            this._getClosestItem._lastYDist = this._getClosestItem._yDist;
+          }
 
-        if (this.settings.axis !== Garnish.Y_AXIS) {
-          this._getClosestItem._lastXDist = this._getClosestItem._xDist;
-        }
-        if (this.settings.axis !== Garnish.X_AXIS) {
-          this._getClosestItem._lastYDist = this._getClosestItem._yDist;
-        }
-
-        // Give the extending class a chance to allow/disallow this item
-        if (this.canInsertAfter(this._getClosestItem._$otherItem)) {
-          this._testForClosestItem(this._getClosestItem._$otherItem[0]);
+          // Give the extending class a chance to allow/disallow this item
+          if (
+            this.canInsertBefore(this._getClosestItem._$otherItem) ||
+            this.canInsertAfter(this._getClosestItem._$otherItem)
+          ) {
+            this._testForClosestItem(this._getClosestItem._$otherItem[0]);
+          }
         }
 
         // Prep the next item
-        this._getClosestItem._$otherItem =
-          this._getClosestItem._$otherItem.next();
+        this._getClosestItem._$otherItem = this.getNextItem(
+          this._getClosestItem._$otherItem
+        );
       }
 
       // Return the result
@@ -410,6 +422,11 @@ export default Drag.extend(
             )
               .first()
               .prev();
+            this._$draggeeParent = (
+              this.insertionVisible ? this.$insertion : this.$draggee
+            )
+              .first()
+              .parent();
           }
 
           this._moveDraggeeToItem(item);
@@ -446,7 +463,7 @@ export default Drag.extend(
           if (this._$prevItem.length) {
             this.$draggee.insertAfter(this._$prevItem);
           } else {
-            this.$draggee.prependTo(this.$draggee.parent());
+            this.$draggee.prependTo(this._$draggeeParent);
           }
 
           this._placeInsertionWithDraggee();
@@ -465,21 +482,30 @@ export default Drag.extend(
         this._testForClosestItem._midpoint.y - this.draggeeVirtualMidpointY
       );
 
-      // Don't even consider items that are further away on the Y axis
+      switch (this.settings.axis) {
+        case Garnish.X_AXIS:
+          this._testForClosestItem._mouseDist =
+            this._testForClosestItem._mouseDistX;
+          break;
+        case Garnish.Y_AXIS:
+          this._testForClosestItem._mouseDist =
+            this._testForClosestItem._mouseDistY;
+          break;
+        default:
+          this._testForClosestItem._mouseDist = Math.sqrt(
+            this._testForClosestItem._mouseDistX ** 2 +
+              this._testForClosestItem._mouseDistY ** 2
+          );
+      }
+
       if (
         this._getClosestItem._closestItem === null ||
-        this._testForClosestItem._mouseDistY <
-          this._getClosestItem._closestItemMouseDistY ||
-        (this._testForClosestItem._mouseDistY ===
-          this._getClosestItem._closestItemMouseDistY &&
-          this._testForClosestItem._mouseDistX <=
-            this._getClosestItem._closestItemMouseDistX)
+        this._testForClosestItem._mouseDist <
+          this._getClosestItem._closestItemMouseDist
       ) {
         this._getClosestItem._closestItem = item;
-        this._getClosestItem._closestItemMouseDistX =
-          this._testForClosestItem._mouseDistX;
-        this._getClosestItem._closestItemMouseDistY =
-          this._testForClosestItem._mouseDistY;
+        this._getClosestItem._closestItemMouseDist =
+          this._testForClosestItem._mouseDist;
       }
     },
 
@@ -499,13 +525,18 @@ export default Drag.extend(
 
     _moveDraggeeToItem: function (item) {
       // Going down?
-      if (this.$draggee.index() < $(item).index()) {
+      if (
+        this.canInsertAfter($(item)) &&
+        this.$draggee.parent()[0] === $(item).parent()[0] &&
+        this.$draggee.index() < $(item).index()
+      ) {
         this.$draggee.insertAfter(item);
       } else {
         this.$draggee.insertBefore(item);
       }
 
       this._placeInsertionWithDraggee();
+      this.$items = $().add(this.$items);
     },
 
     _placeInsertionWithDraggee: function () {
@@ -533,6 +564,8 @@ export default Drag.extend(
       magnetStrength: 1,
       onInsertionPointChange: $.noop,
       onSortChange: $.noop,
+      canInsertBefore: () => true,
+      canInsertAfter: () => true,
     },
   }
 );

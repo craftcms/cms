@@ -12,6 +12,7 @@ use craft\base\Actionable;
 use craft\base\Chippable;
 use craft\base\Colorable;
 use craft\base\CpEditable;
+use craft\base\Describable;
 use craft\base\ElementContainerFieldInterface;
 use craft\base\Field;
 use craft\base\FieldLayoutProviderInterface;
@@ -43,7 +44,8 @@ class EntryType extends Model implements
     Iconic,
     Indicative,
     Colorable,
-    Actionable
+    Actionable,
+    Describable
 {
     /**
      * @inheritdoc
@@ -73,6 +75,12 @@ class EntryType extends Model implements
      * @var string|null Handle
      */
     public ?string $handle = null;
+
+    /**
+     * @var string|null Description
+     * @since 5.8.0
+     */
+    public ?string $description = null;
 
     /**
      * @var string|null Icon
@@ -146,6 +154,12 @@ class EntryType extends Model implements
     public bool $validateHandleUniqueness = true;
 
     /**
+     * @var string|null The group name
+     * @since 5.8.0
+     */
+    public ?string $group = null;
+
+    /**
      * @var ?self The original entry type without an overridden name and handle
      * @since 5.6.0
      */
@@ -214,6 +228,14 @@ class EntryType extends Model implements
     /**
      * @inheritdoc
      */
+    public function getDescription(): ?string
+    {
+        return $this->description;
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function getIcon(): ?string
     {
         return $this->icon;
@@ -230,6 +252,7 @@ class EntryType extends Model implements
             $attributes = array_values(array_filter([
                 $this->name !== $this->original->name ? Craft::t('app', 'Name') : null,
                 $this->handle !== $this->original->handle ? Craft::t('app', 'Handle') : null,
+                $this->description !== $this->original->description ? Craft::t('app', 'Description') : null,
             ]));
             if (!empty($attributes)) {
                 array_unshift($indicators, [
@@ -425,7 +448,8 @@ JS, [
         $config = [
             'name' => $this->name,
             'handle' => $this->handle,
-            'icon' => $this->icon ?: null,
+            'description' => $this->description ?: null,
+            'icon' => $this->icon || $this->icon === '0' ? $this->icon : null,
             'color' => $this->color?->value,
             'hasTitleField' => $this->hasTitleField,
             'titleTranslationMethod' => $this->titleTranslationMethod,
@@ -463,6 +487,12 @@ JS, [
             }
             if ($this->handle !== $this->original->handle) {
                 $config['handle'] = $this->handle;
+            }
+            if ($this->description !== $this->original->description) {
+                $config['description'] = $this->description;
+            }
+            if (isset($this->group)) {
+                $config['group'] = $this->group;
             }
         }
         return $config;

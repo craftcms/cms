@@ -151,11 +151,13 @@ class Request extends \yii\web\Request
 
     /**
      * @var bool|null
+     * @phpstan-ignore property.unusedType
      */
     private ?bool $_isMobileBrowser = null;
 
     /**
      * @var bool|null
+     * @phpstan-ignore property.unusedType
      */
     private ?bool $_isMobileOrTabletBrowser = null;
 
@@ -1065,6 +1067,32 @@ class Request extends \yii\web\Request
         }
 
         throw new BadRequestHttpException('Request missing required query param');
+    }
+
+    /**
+     * Validates and returns the named request query parameter value, or bails on the request with a 400 error if that parameter doesn’t pass validation.
+     *
+     * @param string $name The parameter name.
+     * @return string|null The parameter value
+     * @throws BadRequestHttpException if the param value doesn’t pass validation
+     * @see getQueryParam()
+     * @since 5.8.0
+     */
+    public function getValidatedQueryParam(string $name): ?string
+    {
+        $value = $this->getQueryParam($name);
+
+        if ($value === null) {
+            return null;
+        }
+
+        $value = Craft::$app->getSecurity()->validateData($value);
+
+        if ($value === false) {
+            throw new BadRequestHttpException('Request contained an invalid query param');
+        }
+
+        return $value;
     }
 
     /**

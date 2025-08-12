@@ -172,7 +172,7 @@ JS, [$containerId]);
 
     private function formatCode(string &$code): void
     {
-        $code = preg_replace('/[^a-z0-9]/i', '', $code);
+        $code = preg_replace('/[^a-z0-9]/i', '', $code) ?? '';
         if (strlen($code) !== 12) {
             throw new InvalidArgumentException("Invalid recovery code: $code");
         }

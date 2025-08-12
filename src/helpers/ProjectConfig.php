@@ -519,32 +519,35 @@ class ProjectConfig
 
         $nextSegment = array_shift($path);
 
-        // Last piece?
+        // Last segment?
         if (count($path) === 0) {
+            // Delete
             if ($delete) {
                 unset($data[$nextSegment]);
-            } elseif ($value === null) {
+                return null;
+            }
+
+            // Get
+            if ($value === null) {
                 return $data[$nextSegment] ?? null;
-            } else {
-                $data[$nextSegment] = $value;
-            }
-        } else {
-            if (!isset($data[$nextSegment])) {
-                // If the path doesn't exist, it's fine if we wanted to delete or read
-                if ($delete || $value === null) {
-                    return null;
-                }
-
-                $data[$nextSegment] = [];
-            } elseif (!is_array($data[$nextSegment])) {
-                // If the next part is not an array, but we have to travel further, make it an array.
-                $data[$nextSegment] = [];
             }
 
-            return self::traverseDataArray($data[$nextSegment], $path, $value, $delete);
+            // Set
+            $data[$nextSegment] = $value;
+            return null;
         }
 
-        return null;
+        // Make sure the next segment exists and is an array
+        if (!isset($data[$nextSegment]) || !is_array($data[$nextSegment])) {
+            // If we're just here to delete/get a value, return null
+            if ($delete || $value === null) {
+                return null;
+            }
+
+            $data[$nextSegment] = [];
+        }
+
+        return self::traverseDataArray($data[$nextSegment], $path, $value, $delete);
     }
 
     /**

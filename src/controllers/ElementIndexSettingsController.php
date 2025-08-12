@@ -243,7 +243,7 @@ class ElementIndexSettingsController extends BaseElementsController
         // Get the old source configs
         $projectConfig = Craft::$app->getProjectConfig();
         $oldSourceConfigs = $projectConfig->get(ProjectConfig::PATH_ELEMENT_SOURCES . ".$elementType") ?? [];
-        $oldSourceConfigs = ArrayHelper::index(array_filter($oldSourceConfigs, fn($s) => $s['type'] !== ElementSources::TYPE_HEADING), 'key');
+        $oldSourceConfigs = ArrayHelper::index($oldSourceConfigs, 'key');
 
         $conditionsService = Craft::$app->getConditions();
 
@@ -254,22 +254,26 @@ class ElementIndexSettingsController extends BaseElementsController
 
         // Normalize to the way it's stored in the DB
         foreach ($sourceOrder as $source) {
-            if (isset($source['heading'])) {
-                $newSourceConfigs[] = [
-                    'type' => ElementSources::TYPE_HEADING,
-                    'heading' => $source['heading'],
-                ];
-            } elseif (isset($source['key'])) {
-                $isCustom = str_starts_with($source['key'], 'custom:');
+            if (isset($source['key'])) {
+                $type = match (true) {
+                    str_starts_with($source['key'], 'custom:') => ElementSources::TYPE_CUSTOM,
+                    str_starts_with($source['key'], 'heading:') => ElementSources::TYPE_HEADING,
+                    default => ElementSources::TYPE_NATIVE,
+                };
+
+                $isCustom = $type === ElementSources::TYPE_CUSTOM;
                 $sourceConfig = [
-                    'type' => $isCustom ? ElementSources::TYPE_CUSTOM : ElementSources::TYPE_NATIVE,
+                    'type' => $type,
                     'key' => $source['key'],
                 ];
 
                 // Were new settings posted?
                 if (isset($sourceSettings[$source['key']])) {
                     $postedSettings = $sourceSettings[$source['key']];
-                    $sourceConfig['tableAttributes'] = array_values(array_filter($postedSettings['tableAttributes'] ?? [])) ?: '-';
+
+                    if ($type !== ElementSources::TYPE_HEADING) {
+                        $sourceConfig['tableAttributes'] = array_values(array_filter($postedSettings['tableAttributes'] ?? [])) ?: '-';
+                    }
 
                     if (isset($postedSettings['defaultSort'])) {
                         $sourceConfig['defaultSort'] = $postedSettings['defaultSort'];
@@ -292,6 +296,8 @@ class ElementIndexSettingsController extends BaseElementsController
                         if (isset($postedSettings['userGroups']) && $postedSettings['userGroups'] !== '*') {
                             $sourceConfig['userGroups'] = is_array($postedSettings['userGroups']) ? $postedSettings['userGroups'] : false;
                         }
+                    } elseif ($type === ElementSources::TYPE_HEADING) {
+                        $sourceConfig['heading'] = $postedSettings['heading'];
                     } elseif (isset($postedSettings['enabled'])) {
                         $sourceConfig['disabled'] = !$postedSettings['enabled'];
                         if ($sourceConfig['disabled']) {

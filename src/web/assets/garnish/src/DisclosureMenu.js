@@ -32,6 +32,8 @@ export default Base.extend(
     searchStr: '',
     clearSearchStrTimeout: null,
 
+    infoIconActivated: false,
+
     /**
      * Constructor
      */
@@ -136,11 +138,20 @@ export default Base.extend(
           });
           $matches.removeClass('filtered');
           $options.not($matches).addClass('filtered');
+
+          // also match the headings
+          this.$container.find('h3').each((i, heading) => {
+            const $heading = $(heading);
+            if ($heading.text().toLowerCase().includes(val)) {
+              $heading.next('ul').find('li.filtered').removeClass('filtered');
+            }
+          });
         } else {
           $clearBtn.addClass('hidden');
           $options.removeClass('filtered');
         }
 
+        this.updateVisibility();
         this.setContainerPosition();
       });
 
@@ -240,6 +251,18 @@ export default Base.extend(
 
     handleMousedown: function (event) {
       const newTarget = event.target;
+
+      // if the info icon was previously activated, reset the activation status,
+      // and don't count this mouse down as one in the disclosure menu
+      if (this.infoIconActivated) {
+        this.infoIconActivated = false;
+        return;
+      }
+
+      if (event.target.classList.contains('info')) {
+        this.infoIconActivated = true;
+      }
+
       const triggerButton = $(newTarget).closest('[data-disclosure-trigger]');
       const newTargetIsInsideDisclosure =
         this.$container[0] === event.target ||
@@ -653,7 +676,7 @@ export default Base.extend(
         el.setAttribute('data-redirect', item.redirect);
       }
       if (item.attributes) {
-        for (let name in item.attributes) {
+        for (const name in item.attributes) {
           el.setAttribute(name, item.attributes[name]);
         }
       }
@@ -691,9 +714,9 @@ export default Base.extend(
 
       this.addListener(el, 'activate', () => {
         if (item.onActivate) {
-          item.onActivate();
+          item.onActivate(el);
         } else if (item.callback) {
-          item.callback();
+          item.callback(el);
         }
         setTimeout(() => {
           this.hide();
@@ -720,6 +743,7 @@ export default Base.extend(
 
       // show or hide it (show, in case the UL is already hidden)
       this.toggleItem(el, !item.hidden);
+      this.updateVisibility();
 
       return el;
     },
@@ -755,9 +779,10 @@ export default Base.extend(
       const padded = this.isPadded();
 
       if (heading) {
-        const h6 = document.createElement('h6');
+        const h6 = document.createElement('h3');
+        h6.classList.add('h6');
         if (padded) {
-          h6.className = 'padded';
+          h6.classList.add('padded');
         }
         h6.textContent = heading;
 
@@ -782,7 +807,8 @@ export default Base.extend(
       if (addHrs) {
         if (
           ul.previousElementSibling &&
-          ul.previousElementSibling.nodeName !== 'HR'
+          ul.previousElementSibling.nodeName !== 'HR' &&
+          !ul.previousElementSibling.classList.contains('search-container')
         ) {
           this.addHr(ul);
         }
@@ -791,7 +817,7 @@ export default Base.extend(
         }
       }
 
-      this.updateHrVisibility();
+      this.updateVisibility();
 
       return ul;
     },
@@ -811,12 +837,8 @@ export default Base.extend(
     showItem(el) {
       const li = el.parentNode;
       li.classList.remove('hidden');
-      const ul = li.parentNode;
-      if (ul.classList.contains('hidden')) {
-        ul.classList.remove('hidden');
-      }
 
-      this.updateHrVisibility();
+      this.updateVisibility();
 
       if (this.isExpanded()) {
         this.setContainerPosition();
@@ -826,15 +848,19 @@ export default Base.extend(
     hideItem(el) {
       const li = el.parentNode;
       li.classList.add('hidden');
-      const ul = li.parentNode;
-      if (ul.querySelectorAll(':scope > li:not(.hidden)').length === 0) {
-        ul.classList.add('hidden');
-      }
 
-      this.updateHrVisibility();
+      this.updateVisibility();
 
       if (this.isExpanded()) {
         this.setContainerPosition();
+      }
+    },
+
+    toggleGroup(group) {
+      if (group.querySelectorAll('li:not(.hidden):not(.filtered)').length) {
+        group.classList.remove('hidden');
+      } else {
+        group.classList.add('hidden');
       }
     },
 
@@ -845,30 +871,45 @@ export default Base.extend(
       if (ul.querySelectorAll(':scope > li').length === 0) {
         ul.remove();
       }
-      if (ul.querySelectorAll(':scope > li:not(.hidden)').length === 0) {
-        ul.classList.add('hidden');
-      }
 
-      this.updateHrVisibility();
+      this.updateVisibility();
 
       if (this.isExpanded()) {
         this.setContainerPosition();
       }
     },
 
+    /**
+     * @deprecated
+     */
     updateHrVisibility() {
-      const $children = this.$container.children();
-      let foundVisibleGroup = false;
-      $children.each((i, child) => {
-        if (child.nodeName === 'HR') {
-          if (foundVisibleGroup) {
-            child.classList.remove('hidden');
-            foundVisibleGroup = false;
-          } else {
-            child.classList.add('hidden');
-          }
-        } else if (!child.classList.contains('hidden')) {
-          foundVisibleGroup = true;
+      this.updateVisibility();
+    },
+
+    updateVisibility() {
+      this.$container.children('ul,.menu-group').each((i, el) => {
+        this.toggleGroup(el);
+      });
+
+      this.$container.find('hr').each((i, el) => {
+        const $el = $(el);
+        const $prevVisibleItems = $el
+          .prevUntil('h3,hr')
+          .filter(':not(.hidden):not(.filtered)');
+        if (!$prevVisibleItems.length) {
+          $el.addClass('hidden');
+        }
+      });
+
+      this.$container.find('h3,hr').each((i, el) => {
+        const $el = $(el);
+        const $nextVisibleItems = $el
+          .nextUntil('h3,hr')
+          .filter(':not(.hidden):not(.filtered)');
+        if ($nextVisibleItems.length) {
+          $el.removeClass('hidden');
+        } else {
+          $el.addClass('hidden');
         }
       });
     },

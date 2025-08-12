@@ -46,7 +46,7 @@ class DeleteForSite extends ElementAction
         type: $type,
         validateSelection: (selectedItems, elementIndex) => {
             for (let i = 0; i < selectedItems.length; i++) {
-                if (!Garnish.hasAttr(selectedItems.eq(i).find('.element'), 'data-deletable')) {
+                if (!Garnish.hasAttr(selectedItems.eq(i).find('.element'), 'data-deletable-for-site')) {
                     return false;
                 }
             }

@@ -464,6 +464,7 @@ JS,
         if ($rule) {
             $label = $rule->getLabel();
             $hint = $rule->getLabelHint();
+            $showHint = $rule->showLabelHint();
             $key = $label . ($hint !== null ? " - $hint" : '');
             $groupLabel = $rule->getGroupLabel() ?? '__UNGROUPED__';
 
@@ -471,6 +472,7 @@ JS,
                 [
                     'label' => $label,
                     'hint' => $hint,
+                    'showHint' => $showHint,
                     'value' => $ruleValue,
                 ],
             ];
@@ -484,6 +486,7 @@ JS,
                 continue;
             }
             $hint = $selectableRule->getLabelHint();
+            $showHint = $selectableRule->showLabelHint();
             $key = $label . ($hint !== null ? " - $hint" : '');
             $groupLabel = $selectableRule->getGroupLabel() ?? '__UNGROUPED__';
 
@@ -491,6 +494,7 @@ JS,
                 $groupedRuleTypeOptions[$groupLabel][] = [
                     'label' => $label,
                     'hint' => $hint,
+                    'showHint' => $showHint,
                     'value' => $value,
                 ];
                 $labelsByGroup[$groupLabel][$key] = true;
@@ -518,7 +522,7 @@ JS,
                     $html = Html::beginTag('li');
 
                     $label = Html::encode($option['label']);
-                    if ($option['hint'] !== null) {
+                    if ($option['showHint'] && $option['hint'] !== null) {
                         $label .= ' ' .
                             Html::tag('span', sprintf('– %s', Html::encode($option['hint'])), [
                                 'class' => 'light',

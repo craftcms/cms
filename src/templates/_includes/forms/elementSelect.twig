@@ -9,6 +9,7 @@
 {% set sources = sources ?? null -%}
 {% set condition = condition ?? null -%}
 {% set criteria = criteria ?? null -%}
+{% set searchCriteria = searchCriteria ?? null %}
 {% set sourceElementId = sourceElementId ?? null -%}
 {% set storageKey = storageKey ?? null -%}
 {% set defaultPlacement = defaultPlacement ?? 'end' %}
@@ -38,6 +39,8 @@
 {%- if block('attr') is defined %}
     {%- set containerAttributes = containerAttributes|merge(('<div ' ~ block('attr') ~ '>')|parseAttr, recursive=true) %}
 {% endif %}
+
+{% from "_includes/forms" import text %}
 
 {% tag 'div' with containerAttributes %}
     {% if maintainHierarchy %}
@@ -86,6 +89,18 @@
                     describedby: describedBy ?? false,
                 }
             }) }}
+            {% if searchCriteria %}
+                <div class="texticon search icon elementselect__search-input-wrapper">
+                    {{ text({
+                        width: 'auto',
+                        placeholder: 'Search'|t('app'),
+                        describedBy: describedBy ?? false,
+                        role: 'combobox',
+                        labelledBy: labelId ?? false,
+                    }) }}
+                    <div class="spinner hidden"></div>
+                </div>
+            {% endif %}
         {% endif %}
         <div class="spinner hidden"></div>
     </div>
@@ -104,6 +119,7 @@
             : null,
         referenceElementSiteId: referenceElement.siteId ?? null,
         criteria: criteria,
+        searchCriteria,
         allowAdd: allowAdd,
         allowRemove: allowRemove,
         allowSelfRelations: allowSelfRelations ?? false,
@@ -122,7 +138,7 @@
         showActionMenu: showActionMenu,
         prevalidate: prevalidate,
         modalSettings: modalSettings ?? {},
-    } %}
+    }|merge(jsSettings ?? {}) %}
 
     {% js %}
         new {{ jsClass }}({{ jsSettings|json_encode|raw }});

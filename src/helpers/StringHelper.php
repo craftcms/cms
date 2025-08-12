@@ -414,11 +414,11 @@ class StringHelper extends \yii\helpers\StringHelper
      */
     public static function decdec(string $str): string
     {
-        if (strncmp($str, 'base64:', 7) === 0) {
+        if (str_starts_with($str, 'base64:')) {
             $str = base64_decode(substr($str, 7));
         }
 
-        if (strncmp($str, 'crypt:', 6) === 0) {
+        if (str_starts_with($str, 'crypt:')) {
             $str = Craft::$app->getSecurity()->decryptByKey(substr($str, 6));
         }
 

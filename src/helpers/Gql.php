@@ -350,27 +350,31 @@ class Gql
      */
     public static function applyDirectives(mixed $source, ResolveInfo $resolveInfo, mixed $value): mixed
     {
-        if (isset($resolveInfo->fieldNodes[0]->directives)) {
-            foreach ($resolveInfo->fieldNodes[0]->directives as $directive) {
-                /** @var Directive|false $directiveEntity */
-                $directiveEntity = GqlEntityRegistry::getEntity($directive->name->value);
-
-                // This can happen for built-in GraphQL directives in which case they will have been handled already, anyway
-                if (!$directiveEntity) {
-                    continue;
-                }
-
-                $arguments = [];
-
-                if (isset($directive->arguments[0])) {
-                    foreach ($directive->arguments as $argument) {
-                        $arguments[$argument->name->value] = self::_convertArgumentValue($argument->value, $resolveInfo->variableValues);
-                    }
-                }
-
-                $value = $directiveEntity::apply($source, $value, $arguments, $resolveInfo);
-            }
+        /** @phpstan-ignore-next-line */
+        if (!isset($resolveInfo->fieldNodes[0]->directives)) {
+            return $value;
         }
+        
+        foreach ($resolveInfo->fieldNodes[0]->directives as $directive) {
+            /** @var Directive|false $directiveEntity */
+            $directiveEntity = GqlEntityRegistry::getEntity($directive->name->value);
+
+            // This can happen for built-in GraphQL directives in which case they will have been handled already, anyway
+            if (!$directiveEntity) {
+                continue;
+            }
+
+            $arguments = [];
+
+            if (isset($directive->arguments[0])) {
+                foreach ($directive->arguments as $argument) {
+                    $arguments[$argument->name->value] = self::_convertArgumentValue($argument->value, $resolveInfo->variableValues);
+                }
+            }
+
+            $value = $directiveEntity::apply($source, $value, $arguments, $resolveInfo);
+        }
+
         return $value;
     }
 
@@ -646,7 +650,6 @@ class Gql
     public static function isIntrospectionQuery(string $query): bool
     {
         // strtok() won’t find a token if the string starts with it
-        /** @var string|false $tok */
         $tok = strtok(" $query", '{');
         if ($tok === false) {
             return false;

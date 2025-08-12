@@ -363,7 +363,11 @@ class FileHelper extends \yii\helpers\FileHelper
      */
     public static function getMimeType($file, $magicFile = null, $checkExtension = true): ?string
     {
-        $mimeType = parent::getMimeType($file, $magicFile, $checkExtension);
+        try {
+            $mimeType = parent::getMimeType($file, $magicFile, $checkExtension);
+        } catch (ErrorException $e) {
+            $mimeType = null;
+        }
 
         // Be forgiving of SVG files, etc., that don't have an XML declaration
         if ($checkExtension && ($mimeType === null || !static::canTrustMimeType($mimeType))) {
@@ -579,7 +583,7 @@ class FileHelper extends \yii\helpers\FileHelper
                         static::removeDirectory($path, $options);
                     } catch (UnexpectedValueException $e) {
                         // Ignore if the folder has already been removed.
-                        if (strpos($e->getMessage(), 'No such file or directory') === false) {
+                        if (!str_contains($e->getMessage(), 'No such file or directory')) {
                             Craft::warning("Tried to remove " . $path . ", but it doesn't exist.");
                             throw $e;
                         }

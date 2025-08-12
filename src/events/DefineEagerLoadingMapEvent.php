@@ -15,6 +15,7 @@ use craft\base\Event;
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.1.0
+ * @phpstan-import-type EagerLoadingMapItem from ElementInterface
  */
 class DefineEagerLoadingMapEvent extends Event
 {
@@ -34,7 +35,7 @@ class DefineEagerLoadingMapEvent extends Event
     public ?string $elementType = null;
 
     /**
-     * @var array|null An array of element ID mappings, where each element is a sub-array with `source` and `target` keys.
+     * @var EagerLoadingMapItem[]|null An array of element ID mappings, where each element is a sub-array with `source` and `target` keys.
      */
     public ?array $map = null;
 

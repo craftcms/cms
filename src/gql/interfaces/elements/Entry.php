@@ -134,7 +134,7 @@ class Entry extends Structure
             'ownerId' => [
                 'name' => 'ownerId',
                 'type' => Type::int(),
-                'description' => 'The ID of the entry’s owner elementt.',
+                'description' => 'The ID of the entry’s owner element.',
             ],
             'sortOrder' => [
                 'name' => 'sortOrder',
@@ -248,7 +248,7 @@ class Entry extends Structure
                 ],
                 'author' => [
                     'name' => 'author',
-                    'type' => Type::listOf(User::getType()),
+                    'type' => User::getType(),
                     'description' => 'The primary entry author.',
                     'complexity' => Gql::eagerLoadComplexity(),
                 ],

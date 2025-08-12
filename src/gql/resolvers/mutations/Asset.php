@@ -256,6 +256,7 @@ class Asset extends ElementMutationResolver
         } else {
             $asset->setFilename($filename);
         }
+        $asset->setMimeType(FileHelper::getMimeType($tempPath, checkExtension: false));
         $asset->avoidFilenameConflicts = true;
 
         return true;

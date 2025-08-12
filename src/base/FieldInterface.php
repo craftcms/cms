@@ -180,6 +180,14 @@ interface FieldInterface extends SavableComponentInterface, Chippable, Grippable
     public function getTranslationKey(ElementInterface $element): string;
 
     /**
+     * Returns whether the field should show a status indicator when modified.
+     *
+     * @return bool
+     * @since 5.8.0
+     */
+    public function showStatus(): bool;
+
+    /**
      * Returns the status of the field for a given element.
      *
      * If the field has a known status, an array should be returned with two elements:
@@ -463,6 +471,10 @@ interface FieldInterface extends SavableComponentInterface, Chippable, Grippable
 
     /**
      * Returns a SQL expression which extracts the field’s value from the `elements_sites.content` column.
+     *
+     * > [!NOTE]
+     * > This method expects the resulting SQL to be used within a query where the `elements_sites`
+     * > table has been explicitly aliased to `elements_sites`, in case the actual table name has a prefix.
      *
      * @param string|null $key The data key to fetch, if this field stores multiple values
      * @return string|null

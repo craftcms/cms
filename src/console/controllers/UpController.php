@@ -78,6 +78,9 @@ class UpController extends Controller
                     return $res;
                 }
                 $this->stdout("\n");
+
+                $projectConfig->flush();
+                $projectConfig->reset();
             }
 
             // Content migration
@@ -99,7 +102,7 @@ class UpController extends Controller
             return ExitCode::UNSPECIFIED_ERROR;
         }
 
-        if ($writeYamlAutomatically) {
+        if ($writeYamlAutomatically && !$projectConfig->readOnly) {
             $projectConfig->writeYamlFiles(true);
         }
 

@@ -30,6 +30,7 @@ class LocateUploadedFilesEvent extends Event
      *
      * - `type` – The upload time (`data`, `file`, or `upload`)
      * - `filename` – The filename the asset should have once saved
+     * - `mimeType` – The MIME type that was provided by the request
      * - `data` – The file data string, if `type` is `data`
      * - `path` – The path to the temp file, if `type` is `file` or `upload`
      *

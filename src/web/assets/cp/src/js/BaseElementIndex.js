@@ -111,9 +111,8 @@ Craft.BaseElementIndex = Garnish.Base.extend(
     nestedInputNamespace: null,
 
     get viewMode() {
-      if (this._viewMode === 'structure' && !this.canSort) {
-        // return the default
-        return this.validateViewMode(null);
+      if (this._viewMode === 'structure' && !this.canViewAsStructure) {
+        return this.doesSourceHaveViewMode('table') ? 'table' : 'cards';
       }
 
       return this.validateViewMode(this._viewMode);
@@ -142,6 +141,16 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 
     get sortable() {
       return this.settings.sortable && this.canSort && !this.inlineEditing;
+    },
+
+    get canViewAsStructure() {
+      return (
+        !this.status &&
+        !this.trashed &&
+        !this.drafts &&
+        !this.searching &&
+        !this.hasActiveFilter
+      );
     },
 
     get canSort() {
@@ -1264,6 +1273,10 @@ Craft.BaseElementIndex = Garnish.Base.extend(
         clearTimeout(this.searchTimeout);
       }
 
+      if (this.settings.context === 'index') {
+        Craft.setQueryParam('search', null);
+      }
+
       this.stopSearching();
 
       if (updateElements) {
@@ -1342,7 +1355,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
       }
 
       if (typeof key === 'object') {
-        for (let k in key) {
+        for (const k in key) {
           if (key.hasOwnProperty(k)) {
             if (key[k] !== null) {
               viewState[k] = key[k];
@@ -1530,15 +1543,28 @@ Craft.BaseElementIndex = Garnish.Base.extend(
       const baseCriteria = Object.assign(
         {
           status: null,
-          drafts: this.settings.canHaveDrafts ? null : false,
-          draftOf: this.settings.canHaveDrafts && this.drafts ? null : false,
-          savedDraftsOnly: true,
         },
         this.baseCriteria,
         {
           siteId: this.siteId,
         }
       );
+
+      // set drafts/draftOf/savedDraftsOnly params depending on the context
+      if (this.settings.context !== 'index') {
+        baseCriteria.drafts = this.settings.canHaveDrafts ? null : false;
+        baseCriteria.draftOf =
+          this.settings.canHaveDrafts && this.drafts ? null : false;
+        baseCriteria.savedDraftsOnly = true;
+      } else if (
+        this.settings.canHaveDrafts &&
+        (this.drafts || (this.settings.context === 'index' && !this.status))
+      ) {
+        baseCriteria.drafts = this.drafts || null;
+        baseCriteria.savedDraftsOnly = true;
+        baseCriteria.draftOf =
+          this.settings.canHaveDrafts && this.drafts ? null : false;
+      }
 
       const criteria = {
         offset: this.settings.batchSize * (this.page - 1),
@@ -1791,7 +1817,9 @@ Craft.BaseElementIndex = Garnish.Base.extend(
           : Craft.t('app', 'Descending');
       const sortLabel = this.getSortLabel(attribute);
 
-      if (!attribute && !direction && !sortLabel) return;
+      if (!attribute && !direction && !sortLabel) {
+        return;
+      }
 
       return Craft.t('app', '{name} sorted by {attribute}, {direction}', {
         name: this.getSourceLabel(),
@@ -1801,7 +1829,9 @@ Craft.BaseElementIndex = Garnish.Base.extend(
     },
 
     updateLiveRegion: function (message) {
-      if (!message) return;
+      if (!message) {
+        return;
+      }
 
       this.$srStatusContainer.empty().text(message);
 
@@ -1810,7 +1840,9 @@ Craft.BaseElementIndex = Garnish.Base.extend(
         const currentMessage = this.$srStatusContainer.text();
 
         // Check that this is the same message and hasn't been updated since
-        if (message !== currentMessage) return;
+        if (message !== currentMessage) {
+          return;
+        }
 
         this.$srStatusContainer.empty();
       }, 5000);
@@ -2025,7 +2057,9 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 
       try {
         const newElementInfo = await Craft.cp.pasteElements(
-          this.pasteAttributes()
+          Object.assign({}, this.pasteAttributes(), {
+            siteId: this.siteId,
+          })
         );
         if (!newElementInfo.length) {
           return;
@@ -2278,16 +2312,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
       this.sourceNav.selectItem($source);
 
       this.updateMainHeading();
-
-      if (this.searching) {
-        // Clear the search value without causing it to update elements
-        this.searchText = null;
-        this.$search.val('');
-        if (this.settings.context === 'index') {
-          Craft.setQueryParam('search', null);
-        }
-        this.stopSearching();
-      }
+      this.clearSearch(false);
 
       // Status menu
       // ----------------------------------------------------------------------
@@ -3090,7 +3115,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 
       for (let i = 0; i < $headings.length; i++) {
         $heading = $headings.eq(i);
-        if ($heading.has('> ul > li:not(.hidden)').length !== 0) {
+        if ($heading.has('> ul > li .source-item:not(.hidden)').length !== 0) {
           $heading.removeClass('hidden');
         } else {
           $heading.addClass('hidden');
@@ -3158,9 +3183,11 @@ Craft.BaseElementIndex = Garnish.Base.extend(
     // -------------------------------------------------------------------------
 
     _getSourcesInList: function ($list, topLevel) {
-      let $sources = $list.find('> li:not(.heading) > a');
+      let $sources = $list.find('> li:not(.heading) [data-source-item]');
       if (topLevel) {
-        $sources = $sources.add($list.find('> li.heading > ul > li > a'));
+        $sources = $sources.add(
+          $list.find('> li.heading > ul > li [data-source-item]')
+        );
       }
       return $sources;
     },
@@ -3235,7 +3262,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
         this.hideActionTriggers();
 
         if (this.triggers) {
-          for (let trigger of this.triggers) {
+          for (const trigger of this.triggers) {
             trigger.destroy();
           }
         }
@@ -3251,7 +3278,6 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 
       // Update the count text
       // -------------------------------------------------------------
-
       if (this.$countContainer.length) {
         this.$countSpinner.removeClass('hidden');
         this.$countContainer.html('');
@@ -3261,9 +3287,10 @@ Craft.BaseElementIndex = Garnish.Base.extend(
             this.$countSpinner.addClass('hidden');
             const itemLabel = this.getItemLabel();
             const itemsLabel = this.getItemsLabel();
+            let countLabel;
 
             if (!this.paginated) {
-              let countLabel = Craft.t(
+              countLabel = Craft.t(
                 'app',
                 '{total, number} {total, plural, =1{{item}} other{{items}}}',
                 {
@@ -3276,7 +3303,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
             } else {
               const first = this.getFirstItemNumber(total);
               const last = this.getLastItemNumber(first, total);
-              let countLabel = Craft.t(
+              countLabel = Craft.t(
                 'app',
                 '{first, number}-{last, number} of {total, number} {total, plural, =1{{item}} other{{items}}}',
                 {
@@ -3357,6 +3384,10 @@ Craft.BaseElementIndex = Garnish.Base.extend(
                   this.updateElements(true);
                 });
               }
+            }
+
+            if (this.settings.context === 'index') {
+              this._addPaginationContextToDocumentTitle(countLabel);
             }
           })
           .catch(() => {
@@ -3502,14 +3533,60 @@ Craft.BaseElementIndex = Garnish.Base.extend(
         this._autoSelectElements = null;
       }
 
+      if (this.settings.context === 'index') {
+        this._addSourceNameToDocumentTitle();
+      }
+
       // Trigger the event
       // -------------------------------------------------------------
 
       this.onUpdateElements();
     },
 
+    /**
+     * Updates the document title to include the source label if it exists.
+     * Example: "Blog - Entries - Craft CMS", where "Blog" is the source label.
+     * @private
+     */
+    _addSourceNameToDocumentTitle: function () {
+      const documentTitleIncludesSourceLabel = () => {
+        const elementIndexType = this.settings.elementTypePluralName;
+        const titleArr = document.title.split(' - ');
+        return titleArr[1] === elementIndexType;
+      };
+
+      const titleArr = document.title.split(' - ');
+
+      // Include source label in the document title if it exists
+      if (this.getSourceLabel()) {
+        const elementIndexType = this.settings.elementTypePluralName;
+        // If the first part of the title is the element type (i.e., "Entries - Craft CMS"), push the source label to the front
+        if (!documentTitleIncludesSourceLabel()) {
+          titleArr.unshift(this.getSourceLabel());
+        } else {
+          titleArr[0] = this.getSourceLabel();
+        }
+      }
+      document.querySelector('title').textContent = titleArr.join(' - ');
+    },
+
+    /**
+     * Appends context information to the document title after the specific source label.
+     * Example: "Blog, 1-100 of 250 entries - Craft CMS", where "1-100 of 250 entries" is the context info.
+     * @param text
+     * @private
+     */
+    _addPaginationContextToDocumentTitle: function (text) {
+      const titleArr = document.title.split(' - ');
+
+      if (titleArr[0] !== this.getSourceLabel()) return;
+
+      titleArr[0] = `${titleArr[0]}, ${text}`;
+      document.querySelector('title').textContent = titleArr.join(' - ');
+    },
+
     _updateBadgeCounts: function (badgeCounts) {
-      for (let sourceKey in badgeCounts) {
+      for (const sourceKey in badgeCounts) {
         if (badgeCounts.hasOwnProperty(sourceKey)) {
           const $source = this.getSourceByKey(sourceKey);
           if ($source) {
@@ -3805,7 +3882,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
       if (actions && actions.length) {
         const $ul = $('<ul/>');
 
-        for (let action of actions) {
+        for (const action of actions) {
           $('<li/>')
             .append(
               $('<a/>', {

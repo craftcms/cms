@@ -34,6 +34,12 @@ class Url extends BaseTextLinkType
         return parent::supports($value) || str_starts_with($value, '/') || str_starts_with($value, '#');
     }
 
+    public function normalizeValue(string $value): string
+    {
+        $value = str_replace(' ', '+', $value);
+        return parent::normalizeValue($value);
+    }
+
     /**
      * @var bool Whether root-relative URLs should be allowed.
      * @since 5.4.0
@@ -98,8 +104,7 @@ class Url extends BaseTextLinkType
 
     protected function pattern(): string
     {
-        // Don't use the URL validator's pattern, as that doesn't require a TLD
-        $pattern = 'https?:\/\/(([A-Z0-9][A-Z0-9_-]*)(\.[A-Z0-9][A-Z0-9_-]*)+)(?::\d{1,5})?(?:$|[?\/#])';
+        $pattern = 'https?:\/\/(([A-Z0-9][A-Z0-9_-]*)(\.[A-Z0-9][A-Z0-9_-]*)*)(?::\d{1,5})?(?:$|[?\/#])';
 
         if ($this->allowRootRelativeUrls) {
             $pattern .= '|\/';

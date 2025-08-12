@@ -136,6 +136,11 @@ class ElementQuery extends Query implements ElementQueryInterface
      */
     public ?array $customFields = null;
 
+    /**
+     * @var array|null The generated field handles that may be involved in this query.
+     */
+    public ?array $generatedFields = null;
+
     // Result formatting attributes
     // -------------------------------------------------------------------------
 
@@ -1646,8 +1651,22 @@ class ElementQuery extends Query implements ElementQueryInterface
             throw new QueryAbortedException();
         }
 
+        // Gather custom fields and generated field handles
+        $this->customFields = [];
+        $this->generatedFields = [];
+
+        if ($this->withCustomFields) {
+            foreach ($this->fieldLayouts() as $fieldLayout) {
+                foreach ($fieldLayout->getCustomFields() as $field) {
+                    $this->customFields[] = $field;
+                }
+                foreach ($fieldLayout->getGeneratedFields() as $field) {
+                    $this->generatedFields[] = $field;
+                }
+            }
+        }
+
         // Map custom field handles to their content values
-        $this->customFields = $this->customFields();
         $this->_addCustomFieldsToColumnMap($builder->db);
 
         $this->subQuery
@@ -1752,7 +1771,7 @@ class ElementQuery extends Query implements ElementQueryInterface
             } catch (ReflectionException) {
                 $ref = null;
             }
-            /** @var ReflectionClass|null $ref */
+            /** @phpstan-ignore-next-line */
             if ($ref && !$ref->isAbstract()) {
                 $this->subQuery->andWhere(['elements.type' => $this->elementType]);
             }
@@ -2323,7 +2342,7 @@ class ElementQuery extends Query implements ElementQueryInterface
         $content = ArrayHelper::remove($row, 'content');
         $row['fieldValues'] = [];
 
-        if (!empty($this->customFields) && !empty($content)) {
+        if (!empty($content) && (!empty($this->customFields) || !empty($this->generatedFields))) {
             if (is_string($content)) {
                 $content = Json::decode($content);
             }
@@ -2332,6 +2351,15 @@ class ElementQuery extends Query implements ElementQueryInterface
                 if ($field::dbType() !== null && isset($content[$field->layoutElement->uid])) {
                     $handle = $field->layoutElement->handle ?? $field->handle;
                     $row['fieldValues'][$handle] = $content[$field->layoutElement->uid];
+                }
+            }
+
+            foreach ($this->generatedFields as $field) {
+                if (isset($content[$field['uid']])) {
+                    $row['generatedFieldValues'][$field['uid']] = $content[$field['uid']];
+                    if (($field['handle'] ?? '') !== '') {
+                        $row['generatedFieldValues'][$field['handle']] = $content[$field['uid']];
+                    }
                 }
             }
         }
@@ -2534,6 +2562,7 @@ class ElementQuery extends Query implements ElementQueryInterface
      * Returns the fields that should take part in an upcoming elements query.
      *
      * @return FieldInterface[] The fields that should take part in the upcoming elements query
+     * @deprecated in 5.8.0.
      */
     protected function customFields(): array
     {
@@ -2705,14 +2734,7 @@ class ElementQuery extends Query implements ElementQueryInterface
                     $alias = $field->handle . ($key !== '*' ? ".$key" : '');
                     $resolver = fn() => $field->getValueSql($key !== '*' ? $key : null);
 
-                    if (isset($this->_columnMap[$alias])) {
-                        if (!is_array($this->_columnMap[$alias])) {
-                            $this->_columnMap[$alias] = [$this->_columnMap[$alias]];
-                        }
-                        $this->_columnMap[$alias][] = $resolver;
-                    } else {
-                        $this->_columnMap[$alias] = $resolver;
-                    }
+                    $this->_addToColumnMap($alias, $resolver);
 
                     // for mysql, we have to make sure text column type is cast to char, otherwise it won't be sorted correctly
                     // see https://github.com/craftcms/cms/issues/15609
@@ -2721,6 +2743,27 @@ class ElementQuery extends Query implements ElementQueryInterface
                     }
                 }
             }
+        }
+
+        if (!empty($this->generatedFields)) {
+            $qb = $db->getQueryBuilder();
+            foreach ($this->generatedFields as $field) {
+                if (($field['handle'] ?? '') !== '') {
+                    $this->_addToColumnMap($field['handle'], $qb->jsonExtract('elements_sites.content', [$field['uid']]));
+                }
+            }
+        }
+    }
+
+    private function _addToColumnMap(string $alias, string|callable $column): void
+    {
+        if (isset($this->_columnMap[$alias])) {
+            if (!is_array($this->_columnMap[$alias])) {
+                $this->_columnMap[$alias] = [$this->_columnMap[$alias]];
+            }
+            $this->_columnMap[$alias][] = $column;
+        } else {
+            $this->_columnMap[$alias] = $column;
         }
     }
 
@@ -2731,12 +2774,16 @@ class ElementQuery extends Query implements ElementQueryInterface
      */
     private function _applyCustomFieldParams(): void
     {
-        if (is_array($this->customFields)) {
-            $fieldAttributes = $this->getBehavior('customFields');
+        if (empty($this->customFields) && empty($this->generatedFields)) {
+            return;
+        }
 
+        $fieldAttributes = $this->getBehavior('customFields');
+        /** @var FieldInterface[][][] $fieldsByHandle */
+        $fieldsByHandle = [];
+
+        if (!empty($this->customFields)) {
             // Group the fields by handle and field UUID
-            /** @var FieldInterface[][][] $fieldsByHandle */
-            $fieldsByHandle = [];
             foreach ($this->customFields as $field) {
                 $fieldsByHandle[$field->handle][$field->uid][] = $field;
             }
@@ -2788,6 +2835,23 @@ class ElementQuery extends Query implements ElementQueryInterface
                         $this->subQuery->andWhere(['or', ...$conditions], $params);
                     }
                 }
+            }
+        }
+
+        if (!empty($this->generatedFields)) {
+            $qb = Craft::$app->getDb()->getQueryBuilder();
+            $generatedFieldColumns = [];
+            foreach ($this->generatedFields as $field) {
+                $handle = $field['handle'] ?? '';
+                if ($handle !== '' && isset($fieldAttributes->$handle) && !isset($fieldsByHandle[$handle])) {
+                    $generatedFieldColumns[$handle][] = $qb->jsonExtract('elements_sites.content', [$field['uid']]);
+                }
+            }
+            foreach ($generatedFieldColumns as $handle => $columns) {
+                $column = count($columns) === 1
+                    ? $columns[0]
+                    : (new CoalesceColumnsExpression($columns))->getSql($this->subQuery->params);
+                $this->subQuery->andWhere(Db::parseParam($column, $fieldAttributes->$handle));
             }
         }
     }

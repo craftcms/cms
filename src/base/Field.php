@@ -136,7 +136,6 @@ abstract class Field extends SavableComponent implements FieldInterface, Iconic,
      */
     public const EVENT_DEFINE_ACTION_MENU_ITEMS = 'defineActionMenuItems';
 
-
     /**
      * @event FieldEvent The event that is triggered after the field has been merged into another.
      * @see afterMergeInto()
@@ -159,6 +158,94 @@ abstract class Field extends SavableComponent implements FieldInterface, Iconic,
     public const TRANSLATION_METHOD_SITE_GROUP = 'siteGroup';
     public const TRANSLATION_METHOD_LANGUAGE = 'language';
     public const TRANSLATION_METHOD_CUSTOM = 'custom';
+
+    // Reserved handles
+    // -------------------------------------------------------------------------
+
+    /** @since 5.8.0 */
+    public const RESERVED_HANDLES = [
+        'ancestors',
+        'archived',
+        'attributeLabel',
+        'attributes',
+        'awaitingFieldValues',
+        'behavior',
+        'behaviors',
+        'canSetProperties',
+        'canonical',
+        'children',
+        'contentTable',
+        'dateCreated',
+        'dateDeleted',
+        'dateLastMerged',
+        'dateUpdated',
+        'descendants',
+        'draftId',
+        'duplicateOf',
+        'enabled',
+        'enabledForSite',
+        'error',
+        'errorSummary',
+        'errors',
+        'fieldLayoutId',
+        'fieldValue',
+        'fieldValues',
+        'firstSave',
+        'hardDelete',
+        'hasMethods',
+        'icon',
+        'id',
+        'isNewForSite',
+        'isProvisionalDraft',
+        'language',
+        'level',
+        'lft',
+        'link',
+        'localized',
+        'localized',
+        'mergingCanonicalChanges',
+        'newSiteIds',
+        'next',
+        'nextSibling',
+        'owner',
+        'parent',
+        'parents',
+        'prev',
+        'prevSibling',
+        'previewing',
+        'propagateAll',
+        'propagating',
+        'ref',
+        'relatedToAssets',
+        'relatedToCategories',
+        'relatedToEntries',
+        'relatedToTags',
+        'relatedToUsers',
+        'resaving',
+        'revisionId',
+        'rgt',
+        'root',
+        'scenario',
+        'searchKeywords',
+        'searchScore',
+        'siblings',
+        'site',
+        'siteId',
+        'siteSettingsId',
+        'slug',
+        'sortOrder',
+        'status',
+        'structureId',
+        'tempId',
+        'title',
+        'trashed',
+        'uid',
+        'updatingFromDerivative',
+        'uri',
+        'url',
+        'viewMode',
+        'where',
+    ];
 
     /**
      * @inheritdoc
@@ -386,92 +473,7 @@ abstract class Field extends SavableComponent implements FieldInterface, Iconic,
             ],
         ];
 
-        $rules[] = [
-            ['handle'],
-            HandleValidator::class,
-            'reservedWords' => [
-                'ancestors',
-                'archived',
-                'attributeLabel',
-                'attributes',
-                'awaitingFieldValues',
-                'behavior',
-                'behaviors',
-                'canSetProperties',
-                'canonical',
-                'children',
-                'contentTable',
-                'dateCreated',
-                'dateDeleted',
-                'dateLastMerged',
-                'dateUpdated',
-                'descendants',
-                'draftId',
-                'duplicateOf',
-                'enabled',
-                'enabledForSite',
-                'error',
-                'errorSummary',
-                'errors',
-                'fieldLayoutId',
-                'fieldValue',
-                'fieldValues',
-                'firstSave',
-                'hardDelete',
-                'hasMethods',
-                'icon',
-                'id',
-                'isNewForSite',
-                'isProvisionalDraft',
-                'language',
-                'level',
-                'lft',
-                'link',
-                'localized',
-                'localized',
-                'mergingCanonicalChanges',
-                'newSiteIds',
-                'next',
-                'nextSibling',
-                'owner',
-                'parent',
-                'parents',
-                'prev',
-                'prevSibling',
-                'previewing',
-                'propagateAll',
-                'propagating',
-                'ref',
-                'relatedToAssets',
-                'relatedToCategories',
-                'relatedToEntries',
-                'relatedToTags',
-                'relatedToUsers',
-                'resaving',
-                'revisionId',
-                'rgt',
-                'root',
-                'scenario',
-                'searchKeywords',
-                'searchScore',
-                'siblings',
-                'site',
-                'siteId',
-                'siteSettingsId',
-                'slug',
-                'sortOrder',
-                'status',
-                'structureId',
-                'tempId',
-                'title',
-                'trashed',
-                'uid',
-                'updatingFromDerivative',
-                'uri',
-                'url',
-                'viewMode',
-            ],
-        ];
+        $rules[] = [['handle'], HandleValidator::class, 'reservedWords' => self::RESERVED_HANDLES];
 
         if ($this->validateHandleUniqueness) {
             $rules[] = [
@@ -662,6 +664,14 @@ JS, [
     public function getTranslationKey(ElementInterface $element): string
     {
         return ElementHelper::translationKey($element, $this->translationMethod, $this->translationKeyFormat);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function showStatus(): bool
+    {
+        return true;
     }
 
     /**

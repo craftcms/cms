@@ -12,6 +12,7 @@ use craft\enums\CmsEdition;
 use craft\helpers\Cp;
 use Twig\Extension\AbstractExtension;
 use Twig\Extension\GlobalsInterface;
+use Twig\TwigFilter;
 use Twig\TwigFunction;
 
 /**
@@ -52,10 +53,21 @@ class CpExtension extends AbstractExtension implements GlobalsInterface
             new TwigFunction('elementIndex', [Cp::class, 'elementIndexHtml'], ['is_safe' => ['html']]),
             new TwigFunction('fieldLayoutDesigner', [Cp::class, 'fieldLayoutDesignerHtml'], ['is_safe' => ['html']]),
             new TwigFunction('findCrumb', fn(array $items) => $this->findCrumb($items)),
+            new TwigFunction('generatedFieldsTable', [Cp::class, 'generatedFieldsTableHtml'], ['is_safe' => ['html']]),
             new TwigFunction('iconSvg', [Cp::class, 'iconSvg'], ['is_safe' => ['html']]),
             new TwigFunction('siteMenuItems', [Cp::class, 'siteMenuItems']),
             new TwigFunction('statusIndicator', [Cp::class, 'statusIndicatorHtml'], ['is_safe' => ['html']]),
             new TwigFunction('readOnlyNotice', [Cp::class, 'readOnlyNoticeHtml'], ['is_safe' => ['html']]),
+        ];
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getFilters(): array
+    {
+        return [
+            new TwigFilter('cpmd', [Cp::class, 'parseMarkdown'], ['is_safe' => ['html']]),
         ];
     }
 
