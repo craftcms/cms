@@ -4,6 +4,7 @@
 
 - Relational fields’ search inputs no longer exclusively search for elements by their titles. ([#17733](https://github.com/craftcms/cms/discussions/17733))
 - Improved the accessibility of the Craft Support widget. ([#17718](https://github.com/craftcms/cms/pull/17718))
+- Fixed a bug where the `folderPath` asset query param required a trailing slash. ([craftcms/html-field#18](https://github.com/craftcms/html-field/pull/18))
 - Fixed a bug where the `_includes/forms/button.twig` template was HTML-encoding the `iconHtml` value.
 - Fixed PHP deprecation errors.
 
