@@ -8,8 +8,6 @@
 namespace craft\events;
 
 use Craft;
-use craft\db\Query;
-use craft\db\Table;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\Db;
 use craft\services\Elements;
@@ -57,16 +55,20 @@ class BulkOpEvent extends ElementQueryEvent
 
             Event::on(Elements::class, Elements::EVENT_AFTER_BULK_OP, function(self $event) {
                 $triggers = Arr::pull(self::$triggers, $event->key, []);
-                $db = Craft::$app->getElements()->bulkOpDb;
+                $connection = Craft::$app->getElements()->getBulkOpConnection();
 
                 // see if any events were fired for the same bulk op key from previous requests
-                $storedTriggers = (new Query())
+                $storedTriggers = $connection
+                    ->table(\CraftCms\Cms\Db\Table::BULKOPEVENTS)
                     ->select(['senderClass', 'eventName'])
-                    ->from(Table::BULKOPEVENTS)
-                    ->where(['key' => $event->key])
-                    ->all($db);
-                if (!empty($storedTriggers)) {
-                    Db::delete(Table::BULKOPEVENTS, ['key' => $event->key], db: $db);
+                    ->where('key', $event->key)
+                    ->get();
+
+                if ($storedTriggers->isNotEmpty()) {
+                    \Illuminate\Support\Facades\DB::table(\CraftCms\Cms\Db\Table::BULKOPEVENTS)
+                        ->where('key', $event->key)
+                        ->delete();
+
                     foreach ($storedTriggers as $trigger) {
                         $triggers[$trigger['senderClass']][$trigger['eventName']] = true;
                     }
@@ -87,16 +89,17 @@ class BulkOpEvent extends ElementQueryEvent
                 // keep track of any event triggers that haven’t been handled yet
                 if (!empty(self::$triggers)) {
                     $timestamp = Db::prepareDateForDb(DateTimeHelper::now());
-                    $db = Craft::$app->getElements()->bulkOpDb;
+                    $connection = Craft::$app->getElements()->getBulkOpConnection();
                     foreach (self::$triggers as $key => $triggers) {
                         foreach ($triggers as $class => $eventNames) {
                             foreach (array_keys($eventNames) as $eventName) {
-                                Db::upsert(Table::BULKOPEVENTS, [
-                                    'key' => $key,
-                                    'senderClass' => $class,
-                                    'eventName' => $eventName,
-                                    'timestamp' => $timestamp,
-                                ], db: $db);
+                                $connection->table(\CraftCms\Cms\Db\Table::BULKOPEVENTS)
+                                    ->upsert([
+                                        'key' => $key,
+                                        'senderClass' => $class,
+                                        'eventName' => $eventName,
+                                        'timestamp' => $timestamp,
+                                    ], ['key', 'senderClass', 'eventName']);
                             }
                         }
                     }

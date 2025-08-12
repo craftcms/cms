@@ -72,7 +72,9 @@ use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Support\Str;
 use CraftCms\DependencyAwareCache\Dependency\TagDependency;
 use DateTime;
+use Illuminate\Database\ConnectionInterface;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\DB as DbFacade;
 use Throwable;
 use UnitEnum;
 use yii\base\Behavior;
@@ -591,6 +593,7 @@ class Elements extends Component
      * @var Connection|array|string the DB connection object or the application component ID of the DB connection
      * that should be used to store element bulk op records.
      * @since 5.3.0
+     * @deprecated in 6.0.0 use {@see getBulkOpConnection()} instead.
      */
     public Connection|array|string $bulkOpDb = 'db2';
 
@@ -614,6 +617,16 @@ class Elements extends Component
     private array $_cacheDurationBuffers = [];
 
     private ?int $_cacheDuration = null;
+
+    /**
+     * Dynamically build up a new database connection for bulk operations.
+     */
+    public function getBulkOpConnection(): ConnectionInterface
+    {
+        return DbFacade::build(
+            Arr::except(DbFacade::connection()->getConfig(), ['name'])
+        );
+    }
 
     /**
      * Returns whether we are currently collecting element cache invalidation info.
@@ -1182,7 +1195,9 @@ class Elements extends Component
         }
 
         if (!$this->isMigrationRequest()) {
-            Db::delete(Table::ELEMENTS_BULKOPS, ['key' => $key], db: $this->bulkOpDb);
+            $this->getBulkOpConnection()->table(\CraftCms\Cms\Db\Table::ELEMENTS_BULKOPS)
+                ->where('key', $key)
+                ->delete();
         }
     }
 
@@ -1200,12 +1215,14 @@ class Elements extends Component
 
         $timestamp = Db::prepareDateForDb(DateTimeHelper::now());
 
+        $connection = $this->getBulkOpConnection();
         foreach (array_keys($this->bulkKeys) as $key) {
-            Db::upsert(Table::ELEMENTS_BULKOPS, [
-                'elementId' => $element->id,
-                'key' => $key,
-                'timestamp' => $timestamp,
-            ], db: $this->bulkOpDb);
+            $connection->table(\CraftCms\Cms\Db\Table::ELEMENTS_BULKOPS)
+                ->upsert([
+                    'elementId' => $element->id,
+                    'key' => $key,
+                    'timestamp' => $timestamp,
+                ], ['elementId', 'key']);
         }
     }
 
@@ -1388,7 +1405,7 @@ class Elements extends Component
         }
 
         $this->ensureBulkOp(function() use ($element, $supportedSites) {
-            \Illuminate\Support\Facades\DB::transaction(function() use ($element, $supportedSites) {
+            DbFacade::transaction(function() use ($element, $supportedSites) {
                 // Start with the other sites (if any), so we don't update dateLastMerged until the end
                 $otherSiteIds = array_keys(Arr::except($supportedSites, $element->siteId));
                 if (!empty($otherSiteIds)) {
@@ -1913,7 +1930,7 @@ class Elements extends Component
             $siteAttributes,
             $asUnpublishedDraft,
         ) {
-            \Illuminate\Support\Facades\DB::beginTransaction();
+            DbFacade::beginTransaction();
             try {
                 // Start with $element’s site
                 if (!$this->_saveElementInternal($mainClone, false, false, null, $supportedSites, saveContent: true)) {
@@ -2036,9 +2053,9 @@ class Elements extends Component
                 // It's now fully duplicated and propagated
                 $mainClone->afterPropagate(empty($newAttributes['id']));
 
-                \Illuminate\Support\Facades\DB::commit();
+                DbFacade::commit();
             } catch (Throwable $e) {
-                \Illuminate\Support\Facades\DB::rollBack();
+                DbFacade::rollBack();
                 throw $e;
             }
 
@@ -2219,7 +2236,7 @@ class Elements extends Component
      */
     public function mergeElements(ElementInterface $mergedElement, ElementInterface $prevailingElement): bool
     {
-        \Illuminate\Support\Facades\DB::beginTransaction();
+        DbFacade::beginTransaction();
         try {
             // Update any relations that point to the merged element
             $relations = (new Query())
@@ -2305,11 +2322,11 @@ class Elements extends Component
             // Now delete the merged element
             $success = $this->deleteElement($mergedElement);
 
-            \Illuminate\Support\Facades\DB::commit();
+            DbFacade::commit();
 
             return $success;
         } catch (Throwable $e) {
-            \Illuminate\Support\Facades\DB::rollBack();
+            DbFacade::rollBack();
             throw $e;
         }
     }
@@ -2384,7 +2401,7 @@ class Elements extends Component
         }
 
         $this->ensureBulkOp(function() use ($element) {
-            \Illuminate\Support\Facades\DB::beginTransaction();
+            DbFacade::beginTransaction();
             try {
                 // First delete any structure nodes with this element, so NestedSetBehavior can do its thing.
                 while (($record = StructureElementRecord::findOne(['elementId' => $element->id])) !== null) {
@@ -2430,9 +2447,9 @@ class Elements extends Component
                     $this->trackElementInBulkOps($element);
                 }
 
-                \Illuminate\Support\Facades\DB::commit();
+                DbFacade::commit();
             } catch (Throwable $e) {
-                \Illuminate\Support\Facades\DB::rollBack();
+                DbFacade::rollBack();
                 throw $e;
             } finally {
                 DateTimeHelper::resume();
@@ -2597,7 +2614,7 @@ class Elements extends Component
             }
         }
 
-        \Illuminate\Support\Facades\DB::beginTransaction();
+        DbFacade::beginTransaction();
         try {
             // Restore the elements
             foreach ($elements as $element) {
@@ -2629,7 +2646,7 @@ class Elements extends Component
                 $element->setScenario(Element::SCENARIO_ESSENTIALS);
                 if (!$element->validate()) {
                     Craft::warning("Unable to restore element $element->id: doesn't pass essential validation: " . print_r($element->errors, true), __METHOD__);
-                    \Illuminate\Support\Facades\DB::rollBack();
+                    DbFacade::rollBack();
                     return false;
                 }
 
@@ -2678,9 +2695,9 @@ class Elements extends Component
                 }
             }
 
-            \Illuminate\Support\Facades\DB::commit();
+            DbFacade::commit();
         } catch (Throwable $e) {
-            \Illuminate\Support\Facades\DB::rollBack();
+            DbFacade::rollBack();
             throw $e;
         }
 
@@ -3768,7 +3785,7 @@ class Elements extends Component
             $newSiteIds = $element->newSiteIds;
             $element->newSiteIds = [];
 
-            \Illuminate\Support\Facades\DB::beginTransaction();
+            DbFacade::beginTransaction();
 
             try {
                 // No need to save the element record multiple times
@@ -4010,9 +4027,9 @@ class Elements extends Component
                     $this->trackElementInBulkOps($element);
                 }
 
-                \Illuminate\Support\Facades\DB::commit();
+                DbFacade::commit();
             } catch (Throwable $e) {
-                \Illuminate\Support\Facades\DB::rollBack();
+                DbFacade::rollBack();
                 $element->firstSave = $originalFirstSave;
                 $element->isNewForSite = $originalIsNewForSite;
                 $element->propagateAll = $originalPropagateAll;
