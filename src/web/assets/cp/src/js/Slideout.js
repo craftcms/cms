@@ -16,6 +16,8 @@ import $ from 'jquery';
       isOpen: false,
       isOpening: false,
       useMobileStyles: null,
+      // Delay before focusing the trigger element after closing the slideout
+      focusTriggerDelay: 150,
 
       init: function (contents, settings) {
         this.setSettings(settings, Craft.Slideout.defaults);
@@ -213,7 +215,7 @@ import $ from 'jquery';
           if (focusTarget) {
             setTimeout(() => {
               focusTarget.focus();
-            }, this.settings.focusTriggerDelay);
+            }, this.focusTriggerDelay);
           }
         }
       },
@@ -270,8 +272,6 @@ import $ from 'jquery';
         closeOnEsc: true,
         closeOnShadeClick: true,
         triggerElement: null,
-        // Delay before focusing the trigger element after closing the slideout
-        focusTriggerDelay: 0,
       },
       instances: {},
       openPanels: [],
