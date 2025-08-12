@@ -1003,7 +1003,7 @@ class Gql extends Component
         $schemaUid = $event->tokenMatches[0];
         $data = $event->newValue;
 
-        $transaction = Craft::$app->getDb()->beginTransaction();
+        \Illuminate\Support\Facades\DB::beginTransaction();
 
         try {
             $schemaRecord = $this->_getSchemaRecord($schemaUid);
@@ -1035,9 +1035,9 @@ class Gql extends Component
                 $this->saveToken($token);
             }
 
-            $transaction->commit();
+            \Illuminate\Support\Facades\DB::commit();
         } catch (Throwable $e) {
-            $transaction->rollBack();
+            \Illuminate\Support\Facades\DB::rollBack();
             throw $e;
         }
 
@@ -1091,8 +1091,7 @@ class Gql extends Component
             return;
         }
 
-        $db = Craft::$app->getDb();
-        $transaction = $db->beginTransaction();
+        \Illuminate\Support\Facades\DB::beginTransaction();
 
         try {
             // Delete the schema
@@ -1100,9 +1099,9 @@ class Gql extends Component
                 'id' => $schemaRecord->id,
             ]);
 
-            $transaction->commit();
+            \Illuminate\Support\Facades\DB::commit();
         } catch (Throwable $e) {
-            $transaction->rollBack();
+            \Illuminate\Support\Facades\DB::rollBack();
             throw $e;
         }
 

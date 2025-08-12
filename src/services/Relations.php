@@ -89,7 +89,7 @@ class Relations extends Component
         }
 
         if (!empty($updateCommands) || !empty($deleteIds) || !empty($targetIds)) {
-            $transaction = $db->beginTransaction();
+            \Illuminate\Support\Facades\DB::beginTransaction();
             try {
                 foreach ($updateCommands as $command) {
                     $command->execute();
@@ -116,9 +116,9 @@ class Relations extends Component
                     ], [], $db);
                 }
 
-                $transaction->commit();
+                \Illuminate\Support\Facades\DB::commit();
             } catch (Throwable $e) {
-                $transaction->rollBack();
+                \Illuminate\Support\Facades\DB::rollBack();
                 throw $e;
             }
         }

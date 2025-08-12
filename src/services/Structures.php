@@ -574,10 +574,10 @@ class Structures extends Component
             self::ACTION_PLACE_AFTER => 'insertAfter',
         };
 
-        $transaction = Craft::$app->getDb()->beginTransaction();
+        \Illuminate\Support\Facades\DB::beginTransaction();
         try {
             if (!$elementRecord->$method($targetElementRecord)) {
-                $transaction->rollBack();
+                \Illuminate\Support\Facades\DB::rollBack();
                 $mutex->release();
                 return false;
             }
@@ -603,9 +603,9 @@ class Structures extends Component
             // Tell the element about it
             $element->afterMoveInStructure($structureId);
 
-            $transaction->commit();
+            \Illuminate\Support\Facades\DB::commit();
         } catch (Throwable $e) {
-            $transaction->rollBack();
+            \Illuminate\Support\Facades\DB::rollBack();
             $mutex->release();
             throw $e;
         }

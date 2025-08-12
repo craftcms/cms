@@ -2637,7 +2637,7 @@ JS, [
         $elementsService = Craft::$app->getElements();
 
         // Do all this stuff within a transaction
-        $transaction = Craft::$app->getDb()->beginTransaction();
+        \Illuminate\Support\Facades\DB::beginTransaction();
 
         try {
             // Should we transfer the content to a new user?
@@ -2676,9 +2676,9 @@ JS, [
                 }
             }
 
-            $transaction->commit();
+            \Illuminate\Support\Facades\DB::commit();
         } catch (Throwable $e) {
-            $transaction->rollBack();
+            \Illuminate\Support\Facades\DB::rollBack();
             throw $e;
         }
 

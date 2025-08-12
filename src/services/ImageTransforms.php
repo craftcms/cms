@@ -233,7 +233,7 @@ class ImageTransforms extends Component
         $transformUid = $event->tokenMatches[0];
         $data = $event->newValue;
 
-        $transaction = $this->db->beginTransaction();
+        \Illuminate\Support\Facades\DB::beginTransaction();
 
         try {
             $transformRecord = $this->_getTransformRecord($transformUid);
@@ -266,9 +266,9 @@ class ImageTransforms extends Component
 
             $transformRecord->save(false);
 
-            $transaction->commit();
+            \Illuminate\Support\Facades\DB::commit();
         } catch (Throwable $e) {
-            $transaction->rollBack();
+            \Illuminate\Support\Facades\DB::rollBack();
             throw $e;
         }
 

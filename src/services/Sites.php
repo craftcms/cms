@@ -783,7 +783,7 @@ class Sites extends Component
             $oldPrimarySiteId = null;
         }
 
-        $transaction = Craft::$app->getDb()->beginTransaction();
+        \Illuminate\Support\Facades\DB::beginTransaction();
 
         try {
             $siteRecord = $this->_getSiteRecord($siteUid, true);
@@ -808,9 +808,9 @@ class Sites extends Component
                 $siteRecord->save(false);
             }
 
-            $transaction->commit();
+            \Illuminate\Support\Facades\DB::commit();
         } catch (Throwable $e) {
-            $transaction->rollBack();
+            \Illuminate\Support\Facades\DB::rollBack();
             throw $e;
         }
 
@@ -1099,16 +1099,16 @@ class Sites extends Component
             ]));
         }
 
-        $transaction = Craft::$app->getDb()->beginTransaction();
+        \Illuminate\Support\Facades\DB::beginTransaction();
 
         try {
             Craft::$app->getDb()->createCommand()
                 ->softDelete(Table::SITES, ['id' => $siteRecord->id])
                 ->execute();
 
-            $transaction->commit();
+            \Illuminate\Support\Facades\DB::commit();
         } catch (Throwable $e) {
-            $transaction->rollBack();
+            \Illuminate\Support\Facades\DB::rollBack();
             throw $e;
         }
 
@@ -1310,7 +1310,7 @@ class Sites extends Component
         App::maxPowerCaptain();
 
         $db = Craft::$app->getDb();
-        $transaction = $db->beginTransaction();
+        \Illuminate\Support\Facades\DB::beginTransaction();
 
         try {
             Db::update(Table::SITES, [
@@ -1386,9 +1386,9 @@ SQL;
                 }
             }
 
-            $transaction->commit();
+            \Illuminate\Support\Facades\DB::commit();
         } catch (Throwable $e) {
-            $transaction->rollBack();
+            \Illuminate\Support\Facades\DB::rollBack();
             throw $e;
         }
 

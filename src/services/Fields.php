@@ -779,7 +779,7 @@ class Fields extends Component
             ]));
         }
 
-        $transaction = Craft::$app->getDb()->beginTransaction();
+        \Illuminate\Support\Facades\DB::beginTransaction();
 
         try {
             $field->beforeApplyDelete();
@@ -791,9 +791,9 @@ class Fields extends Component
 
             $field->afterDelete();
 
-            $transaction->commit();
+            \Illuminate\Support\Facades\DB::commit();
         } catch (Throwable $e) {
-            $transaction->rollBack();
+            \Illuminate\Support\Facades\DB::rollBack();
             throw $e;
         }
 
@@ -1379,8 +1379,7 @@ class Fields extends Component
             ]));
         }
 
-        $db = Craft::$app->getDb();
-        $transaction = $db->beginTransaction();
+        \Illuminate\Support\Facades\DB::beginTransaction();
 
         try {
             // Track whether we should remove the field’s search indexes after save
@@ -1414,9 +1413,9 @@ class Fields extends Component
                 $fieldRecord->save(false);
             }
 
-            $transaction->commit();
+            \Illuminate\Support\Facades\DB::commit();
         } catch (Throwable $e) {
-            $transaction->rollBack();
+            \Illuminate\Support\Facades\DB::rollBack();
             throw $e;
         }
 

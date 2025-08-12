@@ -330,7 +330,7 @@ class Volumes extends Component
         ProjectConfigHelper::ensureAllFilesystemsProcessed();
         ProjectConfigHelper::ensureAllFieldsProcessed();
 
-        $transaction = Craft::$app->getDb()->beginTransaction();
+        \Illuminate\Support\Facades\DB::beginTransaction();
         try {
             $volumeRecord = $this->_getVolumeRecord($volumeUid, true);
             $isNewVolume = $volumeRecord->getIsNewRecord();
@@ -389,9 +389,9 @@ class Volumes extends Component
                 $assetsService->storeFolderRecord($rootFolder);
             }
 
-            $transaction->commit();
+            \Illuminate\Support\Facades\DB::commit();
         } catch (Throwable $e) {
-            $transaction->rollBack();
+            \Illuminate\Support\Facades\DB::rollBack();
             throw $e;
         }
 
@@ -522,7 +522,7 @@ class Volumes extends Component
         }
 
         $db = Craft::$app->getDb();
-        $transaction = $db->beginTransaction();
+        \Illuminate\Support\Facades\DB::beginTransaction();
 
         try {
             // Delete the assets
@@ -549,9 +549,9 @@ class Volumes extends Component
                 ->softDelete(Table::VOLUMES, ['id' => $volumeRecord->id])
                 ->execute();
 
-            $transaction->commit();
+            \Illuminate\Support\Facades\DB::commit();
         } catch (Throwable $e) {
-            $transaction->rollBack();
+            \Illuminate\Support\Facades\DB::rollBack();
             throw $e;
         }
 

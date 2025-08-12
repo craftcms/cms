@@ -147,7 +147,7 @@ class Drafts extends Component
             $name = $this->generateDraftName($canonical->id);
         }
 
-        $transaction = $this->db->beginTransaction();
+        \Illuminate\Support\Facades\DB::beginTransaction();
         try {
             // Create the draft row
             $draftId = $this->insertDraftRow($name, $notes, $creatorId, $canonical->id, $canonical::trackChanges(), $provisional);
@@ -182,9 +182,9 @@ SQL,
                 ':canonicalId' => $canonical->id,
             ])->execute();
 
-            $transaction->commit();
+            \Illuminate\Support\Facades\DB::commit();
         } catch (Throwable $e) {
-            $transaction->rollBack();
+            \Illuminate\Support\Facades\DB::rollBack();
             throw $e;
         }
 
@@ -310,7 +310,7 @@ SQL,
         $elementsService = Craft::$app->getElements();
         $draftNotes = $draft->draftNotes;
 
-        $transaction = $this->db->beginTransaction();
+        \Illuminate\Support\Facades\DB::beginTransaction();
         try {
             if ($canonical !== $draft) {
                 // Merge in any attribute & field values that were updated in the canonical element, but not the draft
@@ -337,9 +337,9 @@ SQL,
                 $newCanonical = $draft;
             }
 
-            $transaction->commit();
+            \Illuminate\Support\Facades\DB::commit();
         } catch (Throwable $e) {
-            $transaction->rollBack();
+            \Illuminate\Support\Facades\DB::rollBack();
 
             if ($e instanceof InvalidElementException && $draft !== $e->element) {
                 // Add the errors from the duplicated element back onto the draft

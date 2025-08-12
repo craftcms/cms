@@ -239,8 +239,7 @@ class Updates extends Component
         $name = 'Craft CMS';
         $handle = 'craft';
 
-        $db = Craft::$app->getDb();
-        $transaction = $db->beginTransaction();
+        \Illuminate\Support\Facades\DB::beginTransaction();
 
         try {
             foreach ($handles as $handle) {
@@ -257,9 +256,9 @@ class Updates extends Component
                 }
             }
 
-            $transaction->commit();
+            \Illuminate\Support\Facades\DB::commit();
         } catch (Throwable $e) {
-            $transaction->rollBack();
+            \Illuminate\Support\Facades\DB::rollBack();
             throw new MigrateException($name, $handle, null, 0, $e);
         }
 

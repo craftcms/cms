@@ -41,6 +41,7 @@ use CraftCms\DependencyAwareCache\Dependency\FileDependency;
 use CraftCms\DependencyAwareCache\Facades\DependencyCache;
 use DateInterval;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\DB;
 use Throwable;
 use yii\base\InvalidConfigException;
 use yii\web\BadRequestHttpException;
@@ -314,7 +315,7 @@ class AppController extends Controller
             }
         }
 
-        $transaction = $db->beginTransaction();
+        DB::beginTransaction();
 
         try {
             // Run the migrations?
@@ -332,9 +333,9 @@ class AppController extends Controller
                 }
             }
 
-            $transaction->commit();
+            DB::commit();
         } catch (Throwable $e) {
-            $transaction->rollBack();
+            DB::rollBack();
 
             // MySQL may have implicitly committed the transaction
             $restored = $db->getIsPgsql();

@@ -151,7 +151,7 @@ class Revisions extends Component
 
             $elementsService = Craft::$app->getElements();
 
-            $transaction = $db->beginTransaction();
+            \Illuminate\Support\Facades\DB::beginTransaction();
             try {
                 // Create the revision row
                 Db::insert(Table::REVISIONS, [
@@ -177,9 +177,9 @@ class Revisions extends Component
 
                 $revision = $elementsService->duplicateElement($canonical, $newAttributes);
 
-                $transaction->commit();
+                \Illuminate\Support\Facades\DB::commit();
             } catch (Throwable $e) {
-                $transaction->rollBack();
+                \Illuminate\Support\Facades\DB::rollBack();
                 throw $e;
             }
 

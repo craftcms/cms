@@ -7,6 +7,7 @@
 
 namespace yii2tech\ar\softdelete;
 
+use Illuminate\Support\Facades\DB;
 use yii\base\Behavior;
 use yii\base\InvalidConfigException;
 use yii\base\ModelEvent;
@@ -226,13 +227,13 @@ class SoftDeleteBehavior extends Behavior
             return call_user_func($softDeleteCallback);
         }
 
-        $transaction = $this->beginTransaction();
+        DB::beginTransaction();
         try {
             $result = call_user_func($softDeleteCallback);
             if ($result === false) {
-                $transaction->rollBack();
+                DB::rollBack();
             } else {
-                $transaction->commit();
+                DB::commit();
             }
             return $result;
         } catch (\Exception $exception) {
@@ -241,7 +242,7 @@ class SoftDeleteBehavior extends Behavior
             // PHP >= 7.0
         }
 
-        $transaction->rollBack();
+        \Illuminate\Support\Facades\DB::rollBack();
         throw $exception;
     }
 
@@ -335,13 +336,13 @@ class SoftDeleteBehavior extends Behavior
             return call_user_func($restoreCallback);
         }
 
-        $transaction = $this->beginTransaction();
+        DB::beginTransaction();
         try {
             $result = call_user_func($restoreCallback);
             if ($result === false) {
-                $transaction->rollBack();
+                DB::rollBack();
             } else {
-                $transaction->commit();
+                DB::commit();
             }
             return $result;
         } catch (\Exception $exception) {
@@ -350,7 +351,7 @@ class SoftDeleteBehavior extends Behavior
             // PHP >= 7.0
         }
 
-        $transaction->rollBack();
+        \Illuminate\Support\Facades\DB::rollBack();
         throw $exception;
     }
 
@@ -418,12 +419,10 @@ class SoftDeleteBehavior extends Behavior
     public function safeDelete()
     {
         try {
-            $transaction = $this->beginTransaction();
+            DB::beginTransaction();
 
             $result = $this->owner->delete();
-            if (isset($transaction)) {
-                $transaction->commit();
-            }
+            DB::commit();
 
             return $result;
         } catch (\Exception $exception) {
@@ -432,9 +431,7 @@ class SoftDeleteBehavior extends Behavior
             // PHP >= 7.0
         }
 
-        if (isset($transaction)) {
-            $transaction->rollback();
-        }
+        DB::rollBack();
 
         $fallbackExceptionClass = $this->deleteFallbackException;
         if ($exception instanceof $fallbackExceptionClass) {
@@ -456,19 +453,6 @@ class SoftDeleteBehavior extends Behavior
         }
 
         return $this->owner->isTransactional($operation);
-    }
-
-    /**
-     * Begins new database transaction if owner allows it.
-     * @return \yii\db\Transaction|null transaction instance or `null` if not available.
-     */
-    private function beginTransaction()
-    {
-        $db = $this->owner->getDb();
-        if ($db->hasMethod('beginTransaction')) {
-            return $db->beginTransaction();
-        }
-        return null;
     }
 
     /**

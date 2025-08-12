@@ -1538,8 +1538,7 @@ JS, [
             ->scalar() ?: null;
         $element->setSortOrder($sortOrder);
 
-        $db = Craft::$app->getDb();
-        $transaction = $db->beginTransaction();
+        \Illuminate\Support\Facades\DB::beginTransaction();
 
         try {
             // Remove existing ownership data for the element within the canonical owner,
@@ -1579,7 +1578,7 @@ JS, [
             }
 
             if (!$success) {
-                $transaction->rollBack();
+                \Illuminate\Support\Facades\DB::rollBack();
                 return $this->_asFailure($element, mb_ucfirst(Craft::t('app', 'Couldn’t save {type}.', [
                     'type' => $element::lowerDisplayName(),
                 ])));
@@ -1589,9 +1588,9 @@ JS, [
                 Craft::$app->getDrafts()->removeDraftData($element);
             }
 
-            $transaction->commit();
+            \Illuminate\Support\Facades\DB::commit();
         } catch (Throwable $e) {
-            $transaction->rollBack();
+            \Illuminate\Support\Facades\DB::rollBack();
             throw $e;
         }
 
@@ -1929,8 +1928,7 @@ JS, [
             $draftElementUids[$event->canonical->uid] = $event->draft->uid;
         });
 
-        $db = Craft::$app->getDb();
-        $transaction = $db->beginTransaction();
+        \Illuminate\Support\Facades\DB::beginTransaction();
 
         try {
             // Are we creating the draft here?
@@ -1955,15 +1953,15 @@ JS, [
             $element->setScenario(Element::SCENARIO_ESSENTIALS);
 
             if (!$elementsService->saveElement($element)) {
-                $transaction->rollBack();
+                \Illuminate\Support\Facades\DB::rollBack();
                 return $this->_asFailure($element, mb_ucfirst(Craft::t('app', 'Couldn’t save {type}.', [
                     'type' => Craft::t('app', 'draft'),
                 ])));
             }
 
-            $transaction->commit();
+            \Illuminate\Support\Facades\DB::commit();
         } catch (Throwable $e) {
-            $transaction->rollBack();
+            \Illuminate\Support\Facades\DB::rollBack();
             throw $e;
         }
 

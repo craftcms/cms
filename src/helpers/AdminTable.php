@@ -10,6 +10,7 @@ namespace craft\helpers;
 use Craft;
 use craft\db\Query;
 use Exception;
+use Illuminate\Support\Facades\DB;
 use yii\db\Expression;
 
 /**
@@ -85,8 +86,7 @@ abstract class AdminTable
 
         $isGoingUp = $newSortOrder > $currentSortOrder;
 
-        $transaction = Craft::$app->getDb()->beginTransaction();
-
+        DB::beginTransaction();
         try {
             if ($isGoingUp) {
                 Craft::$app->getDb()->createCommand()
@@ -108,9 +108,9 @@ abstract class AdminTable
                 ->update($table, [$sortColumn => $newSortOrder], ['id' => $id])
                 ->execute();
 
-            $transaction->commit();
+            DB::commit();
         } catch (Exception) {
-            $transaction->rollBack();
+            DB::rollBack();
             return false;
         }
 

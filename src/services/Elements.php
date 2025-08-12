@@ -1913,7 +1913,7 @@ class Elements extends Component
             $siteAttributes,
             $asUnpublishedDraft,
         ) {
-            $transaction = Craft::$app->getDb()->beginTransaction();
+            \Illuminate\Support\Facades\DB::beginTransaction();
             try {
                 // Start with $element’s site
                 if (!$this->_saveElementInternal($mainClone, false, false, null, $supportedSites, saveContent: true)) {
@@ -2036,9 +2036,9 @@ class Elements extends Component
                 // It's now fully duplicated and propagated
                 $mainClone->afterPropagate(empty($newAttributes['id']));
 
-                $transaction->commit();
+                \Illuminate\Support\Facades\DB::commit();
             } catch (Throwable $e) {
-                $transaction->rollBack();
+                \Illuminate\Support\Facades\DB::rollBack();
                 throw $e;
             }
 
@@ -2219,7 +2219,7 @@ class Elements extends Component
      */
     public function mergeElements(ElementInterface $mergedElement, ElementInterface $prevailingElement): bool
     {
-        $transaction = Craft::$app->getDb()->beginTransaction();
+        \Illuminate\Support\Facades\DB::beginTransaction();
         try {
             // Update any relations that point to the merged element
             $relations = (new Query())
@@ -2305,11 +2305,11 @@ class Elements extends Component
             // Now delete the merged element
             $success = $this->deleteElement($mergedElement);
 
-            $transaction->commit();
+            \Illuminate\Support\Facades\DB::commit();
 
             return $success;
         } catch (Throwable $e) {
-            $transaction->rollBack();
+            \Illuminate\Support\Facades\DB::rollBack();
             throw $e;
         }
     }
@@ -2384,8 +2384,7 @@ class Elements extends Component
         }
 
         $this->ensureBulkOp(function() use ($element) {
-            $db = Craft::$app->getDb();
-            $transaction = $db->beginTransaction();
+            \Illuminate\Support\Facades\DB::beginTransaction();
             try {
                 // First delete any structure nodes with this element, so NestedSetBehavior can do its thing.
                 while (($record = StructureElementRecord::findOne(['elementId' => $element->id])) !== null) {
@@ -2431,9 +2430,9 @@ class Elements extends Component
                     $this->trackElementInBulkOps($element);
                 }
 
-                $transaction->commit();
+                \Illuminate\Support\Facades\DB::commit();
             } catch (Throwable $e) {
-                $transaction->rollBack();
+                \Illuminate\Support\Facades\DB::rollBack();
                 throw $e;
             } finally {
                 DateTimeHelper::resume();
@@ -2598,8 +2597,7 @@ class Elements extends Component
             }
         }
 
-        $db = Craft::$app->getDb();
-        $transaction = $db->beginTransaction();
+        \Illuminate\Support\Facades\DB::beginTransaction();
         try {
             // Restore the elements
             foreach ($elements as $element) {
@@ -2631,7 +2629,7 @@ class Elements extends Component
                 $element->setScenario(Element::SCENARIO_ESSENTIALS);
                 if (!$element->validate()) {
                     Craft::warning("Unable to restore element $element->id: doesn't pass essential validation: " . print_r($element->errors, true), __METHOD__);
-                    $transaction->rollBack();
+                    \Illuminate\Support\Facades\DB::rollBack();
                     return false;
                 }
 
@@ -2680,9 +2678,9 @@ class Elements extends Component
                 }
             }
 
-            $transaction->commit();
+            \Illuminate\Support\Facades\DB::commit();
         } catch (Throwable $e) {
-            $transaction->rollBack();
+            \Illuminate\Support\Facades\DB::rollBack();
             throw $e;
         }
 
@@ -3770,7 +3768,7 @@ class Elements extends Component
             $newSiteIds = $element->newSiteIds;
             $element->newSiteIds = [];
 
-            $transaction = Craft::$app->getDb()->beginTransaction();
+            \Illuminate\Support\Facades\DB::beginTransaction();
 
             try {
                 // No need to save the element record multiple times
@@ -4012,9 +4010,9 @@ class Elements extends Component
                     $this->trackElementInBulkOps($element);
                 }
 
-                $transaction->commit();
+                \Illuminate\Support\Facades\DB::commit();
             } catch (Throwable $e) {
-                $transaction->rollBack();
+                \Illuminate\Support\Facades\DB::rollBack();
                 $element->firstSave = $originalFirstSave;
                 $element->isNewForSite = $originalIsNewForSite;
                 $element->propagateAll = $originalPropagateAll;

@@ -250,7 +250,7 @@ class Tags extends Component
         // Make sure fields are processed
         ProjectConfigHelper::ensureAllFieldsProcessed();
 
-        $transaction = Craft::$app->getDb()->beginTransaction();
+        \Illuminate\Support\Facades\DB::beginTransaction();
         try {
             $tagGroupRecord = $this->_getTagGroupRecord($tagGroupUid, true);
             $isNewTagGroup = $tagGroupRecord->getIsNewRecord();
@@ -280,9 +280,9 @@ class Tags extends Component
                 $tagGroupRecord->save(false);
             }
 
-            $transaction->commit();
+            \Illuminate\Support\Facades\DB::commit();
         } catch (Throwable $e) {
-            $transaction->rollBack();
+            \Illuminate\Support\Facades\DB::rollBack();
             throw $e;
         }
 
@@ -379,7 +379,7 @@ class Tags extends Component
             ]));
         }
 
-        $transaction = Craft::$app->getDb()->beginTransaction();
+        \Illuminate\Support\Facades\DB::beginTransaction();
         try {
             // Delete the tags
             $elementsTable = Table::ELEMENTS;
@@ -428,9 +428,9 @@ SQL)->execute();
                 ->softDelete(Table::TAGGROUPS, ['id' => $tagGroupRecord->id])
                 ->execute();
 
-            $transaction->commit();
+            \Illuminate\Support\Facades\DB::commit();
         } catch (Throwable $e) {
-            $transaction->rollBack();
+            \Illuminate\Support\Facades\DB::rollBack();
             throw $e;
         }
 

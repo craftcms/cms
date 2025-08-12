@@ -787,7 +787,7 @@ JS, [
         $elementIds = [];
         $sortOrder = 0;
 
-        $transaction = Craft::$app->getDb()->beginTransaction();
+        \Illuminate\Support\Facades\DB::beginTransaction();
         try {
             /** @var NestedElementInterface[] $elements */
             foreach ($elements as $element) {
@@ -931,9 +931,9 @@ JS, [
                 }
             }
 
-            $transaction->commit();
+            \Illuminate\Support\Facades\DB::commit();
         } catch (Throwable $e) {
-            $transaction->rollBack();
+            \Illuminate\Support\Facades\DB::rollBack();
             throw $e;
         }
 
@@ -1019,7 +1019,7 @@ JS, [
 
         $newElementIds = [];
 
-        $transaction = Craft::$app->getDb()->beginTransaction();
+        \Illuminate\Support\Facades\DB::beginTransaction();
         try {
             $setCanonicalId = $target->getIsDerivative() && $target->getCanonical()->id !== $target->id;
 
@@ -1093,9 +1093,9 @@ JS, [
                 $this->deleteOtherNestedElements($target, array_values($newElementIds));
             }
 
-            $transaction->commit();
+            \Illuminate\Support\Facades\DB::commit();
         } catch (Throwable $e) {
-            $transaction->rollBack();
+            \Illuminate\Support\Facades\DB::rollBack();
             throw $e;
         }
 

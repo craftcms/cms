@@ -341,7 +341,7 @@ class Globals extends Component
         ProjectConfigHelper::ensureAllSitesProcessed();
         ProjectConfigHelper::ensureAllFieldsProcessed();
 
-        $transaction = Craft::$app->getDb()->beginTransaction();
+        \Illuminate\Support\Facades\DB::beginTransaction();
         try {
             $globalSetRecord = $this->_getGlobalSetRecord($globalSetUid, true);
             $isNewSet = $globalSetRecord->getIsNewRecord();
@@ -403,9 +403,9 @@ class Globals extends Component
             $globalSetRecord->id = $element->id;
             $globalSetRecord->save(false);
 
-            $transaction->commit();
+            \Illuminate\Support\Facades\DB::commit();
         } catch (Throwable $e) {
-            $transaction->rollBack();
+            \Illuminate\Support\Facades\DB::rollBack();
             throw $e;
         }
 
@@ -497,7 +497,7 @@ class Globals extends Component
             return;
         }
 
-        $transaction = Craft::$app->getDb()->beginTransaction();
+        \Illuminate\Support\Facades\DB::beginTransaction();
 
         try {
             // Get the field layout
@@ -518,9 +518,9 @@ class Globals extends Component
                 }
             }
 
-            $transaction->commit();
+            \Illuminate\Support\Facades\DB::commit();
         } catch (Throwable $e) {
-            $transaction->rollBack();
+            \Illuminate\Support\Facades\DB::rollBack();
             throw $e;
         }
 

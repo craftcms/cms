@@ -21,6 +21,7 @@ use craft\models\Section;
 use craft\records\StructureElement;
 use craft\services\ProjectConfig;
 use craft\services\Structures;
+use Illuminate\Support\Facades\DB;
 use Throwable;
 use yii\console\ExitCode;
 use yii\db\Expression;
@@ -155,7 +156,7 @@ class RepairController extends Controller
         $level = 0;
 
         if (!$this->dryRun) {
-            $transaction = Craft::$app->getDb()->beginTransaction();
+            DB::beginTransaction();
         }
 
         try {
@@ -265,12 +266,12 @@ class RepairController extends Controller
                 $level = $element->level;
             }
 
-            if (isset($transaction)) {
-                $transaction->commit();
+            if (! $this->dryRun) {
+                DB::commit();
             }
         } catch (Throwable $e) {
-            if (isset($transaction)) {
-                $transaction->rollBack();
+            if (! $this->dryRun) {
+                DB::rollBack();
             }
             throw $e;
         }

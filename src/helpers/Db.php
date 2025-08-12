@@ -1352,15 +1352,16 @@ class Db
         if ($db->getIsPgsql()) {
             // Rename the corresponding sequence if there is one
             // see https://www.postgresql.org/message-id/200308211224.06775.jgardner%40jonathangardner.net
-            $transaction = $db->beginTransaction();
+            \Illuminate\Support\Facades\DB::beginTransaction();
             try {
                 $db->createCommand()
                     ->renameSequence("{$rawOldName}_id_seq", "{$rawNewName}_id_seq")
                     ->execute();
-                $transaction->commit();
+
+                \Illuminate\Support\Facades\DB::commit();
             } catch (Throwable) {
                 // Silently fail. The sequence probably doesn't exist
-                $transaction->rollBack();
+                \Illuminate\Support\Facades\DB::rollBack();
             }
         }
     }

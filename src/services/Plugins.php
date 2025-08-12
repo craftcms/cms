@@ -521,7 +521,7 @@ class Plugins extends Component
         }
 
         $db = Craft::$app->getDb();
-        $transaction = $db->beginTransaction();
+        \Illuminate\Support\Facades\DB::beginTransaction();
         try {
             $info = [
                 'handle' => $handle,
@@ -546,9 +546,9 @@ class Plugins extends Component
 
             $this->_setPluginMigrator($plugin);
             $plugin->install();
-            $transaction->commit();
+            \Illuminate\Support\Facades\DB::commit();
         } catch (Throwable $e) {
-            $transaction->rollBack();
+            \Illuminate\Support\Facades\DB::rollBack();
 
             if ($db->getIsMysql()) {
                 // Explicitly remove the plugins row just in case the transaction was implicitly committed
@@ -628,7 +628,7 @@ class Plugins extends Component
             ]));
         }
 
-        $transaction = Craft::$app->getDb()->beginTransaction();
+        \Illuminate\Support\Facades\DB::beginTransaction();
         try {
             // Let the plugin uninstall itself first
             if ($plugin && $enabled) {
@@ -653,9 +653,9 @@ class Plugins extends Component
                 'track' => "plugin:$handle",
             ]);
 
-            $transaction->commit();
+            \Illuminate\Support\Facades\DB::commit();
         } catch (Throwable $e) {
-            $transaction->rollBack();
+            \Illuminate\Support\Facades\DB::rollBack();
             throw $e;
         }
 

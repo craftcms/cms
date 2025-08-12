@@ -589,7 +589,7 @@ class Entries extends Component
         // Do everything that follows in a transaction so no DB changes will be
         // saved if an exception occurs that ends up preventing the project config
         // changes from getting saved
-        $transaction = Craft::$app->getDb()->beginTransaction();
+        \Illuminate\Support\Facades\DB::beginTransaction();
 
         try {
             // Save the section config
@@ -611,9 +611,9 @@ class Entries extends Component
                 $this->_ensureSingleEntry($section, $configData['siteSettings']);
             }
 
-            $transaction->commit();
+            \Illuminate\Support\Facades\DB::commit();
         } catch (Throwable $e) {
-            $transaction->rollBack();
+            \Illuminate\Support\Facades\DB::rollBack();
             throw $e;
         }
 
@@ -635,8 +635,7 @@ class Entries extends Component
         $sectionUid = $event->tokenMatches[0];
         $data = $event->newValue;
 
-        $db = Craft::$app->getDb();
-        $transaction = $db->beginTransaction();
+        \Illuminate\Support\Facades\DB::beginTransaction();
 
         try {
             $siteSettingData = $data['siteSettings'];
@@ -839,9 +838,9 @@ class Entries extends Component
                 }
             }
 
-            $transaction->commit();
+            \Illuminate\Support\Facades\DB::commit();
         } catch (Throwable $e) {
-            $transaction->rollBack();
+            \Illuminate\Support\Facades\DB::rollBack();
             throw $e;
         }
 
@@ -1137,7 +1136,7 @@ class Entries extends Component
             ]));
         }
 
-        $transaction = Craft::$app->getDb()->beginTransaction();
+        \Illuminate\Support\Facades\DB::beginTransaction();
         try {
             // Delete the entries
             $elementsTable = Table::ELEMENTS;
@@ -1187,9 +1186,9 @@ SQL)->execute();
                 ->softDelete(Table::SECTIONS, ['id' => $sectionRecord->id])
                 ->execute();
 
-            $transaction->commit();
+            \Illuminate\Support\Facades\DB::commit();
         } catch (Throwable $e) {
-            $transaction->rollBack();
+            \Illuminate\Support\Facades\DB::rollBack();
             throw $e;
         }
 
@@ -1653,7 +1652,7 @@ SQL)->execute();
 
         $entryTypeRecord = $this->_getEntryTypeRecord($entryTypeUid, true);
 
-        $transaction = Craft::$app->getDb()->beginTransaction();
+        \Illuminate\Support\Facades\DB::beginTransaction();
 
         try {
             $isNewEntryType = $entryTypeRecord->getIsNewRecord();
@@ -1707,9 +1706,9 @@ SQL)->execute();
                 $entryTypeRecord->save(false);
             }
 
-            $transaction->commit();
+            \Illuminate\Support\Facades\DB::commit();
         } catch (Throwable $e) {
-            $transaction->rollBack();
+            \Illuminate\Support\Facades\DB::rollBack();
             throw $e;
         }
 
@@ -1851,7 +1850,7 @@ SQL)->execute();
             ]));
         }
 
-        $transaction = Craft::$app->getDb()->beginTransaction();
+        \Illuminate\Support\Facades\DB::beginTransaction();
 
         try {
             // Delete the entries
@@ -1901,9 +1900,9 @@ SQL)->execute();
                 ->softDelete(Table::ENTRYTYPES, ['id' => $entryTypeRecord->id])
                 ->execute();
 
-            $transaction->commit();
+            \Illuminate\Support\Facades\DB::commit();
         } catch (Throwable $e) {
-            $transaction->rollBack();
+            \Illuminate\Support\Facades\DB::rollBack();
             throw $e;
         }
 
@@ -2229,7 +2228,7 @@ SQL)->execute();
             $oldSection,
             $elementsService,
         ) {
-            $transaction = Craft::$app->getDb()->beginTransaction();
+            \Illuminate\Support\Facades\DB::beginTransaction();
             try {
                 // Start with $entry’s site
                 if (!$elementsService->saveElement($entry, false, false)) {
@@ -2298,13 +2297,13 @@ SQL)->execute();
                     ]);
                 }
 
-                $transaction->commit();
+                \Illuminate\Support\Facades\DB::commit();
 
                 // Invalidate caches for the old section
                 $tag = sprintf('element::%s::section:%s', Entry::class, $oldSection->id);
                 TagDependency::invalidate($tag);
             } catch (Throwable $e) {
-                $transaction->rollBack();
+                \Illuminate\Support\Facades\DB::rollBack();
                 throw $e;
             }
         });

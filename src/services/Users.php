@@ -870,7 +870,7 @@ class Users extends Component
             throw new InvalidElementException($user);
         }
 
-        $transaction = Craft::$app->getDb()->beginTransaction();
+        \Illuminate\Support\Facades\DB::beginTransaction();
         try {
             $userRecord = $this->_getUserRecordById($user->id);
             $userRecord->active = true;
@@ -890,9 +890,9 @@ class Users extends Component
             // If they have an unverified email address, now is the time to set it to their primary email address
             $this->verifyEmailForUser($user);
 
-            $transaction->commit();
+            \Illuminate\Support\Facades\DB::commit();
         } catch (Throwable $e) {
-            $transaction->rollBack();
+            \Illuminate\Support\Facades\DB::rollBack();
             throw $e;
         }
 
@@ -927,7 +927,7 @@ class Users extends Component
             }
         }
 
-        $transaction = Craft::$app->getDb()->beginTransaction();
+        \Illuminate\Support\Facades\DB::beginTransaction();
         try {
             $userRecord = $this->_getUserRecordById($user->id);
             $userRecord->active = false;
@@ -954,9 +954,9 @@ class Users extends Component
             $user->lastInvalidLoginDate = null;
             $user->lockoutDate = null;
 
-            $transaction->commit();
+            \Illuminate\Support\Facades\DB::commit();
         } catch (Throwable $e) {
-            $transaction->rollBack();
+            \Illuminate\Support\Facades\DB::rollBack();
             throw $e;
         }
 
@@ -1026,7 +1026,7 @@ class Users extends Component
             }
         }
 
-        $transaction = Craft::$app->getDb()->beginTransaction();
+        \Illuminate\Support\Facades\DB::beginTransaction();
         try {
             $userRecord = $this->_getUserRecordById($user->id);
             $userRecord->locked = false;
@@ -1037,9 +1037,9 @@ class Users extends Component
             $indexAttributesChanged = $userRecord->haveIndexAttributesChanged();
             $userRecord->save();
 
-            $transaction->commit();
+            \Illuminate\Support\Facades\DB::commit();
         } catch (Throwable $e) {
-            $transaction->rollBack();
+            \Illuminate\Support\Facades\DB::rollBack();
             throw $e;
         }
 
@@ -1116,7 +1116,7 @@ class Users extends Component
             }
         }
 
-        $transaction = Craft::$app->getDb()->beginTransaction();
+        \Illuminate\Support\Facades\DB::beginTransaction();
 
         try {
             $userRecord = $this->_getUserRecordById($user->id);
@@ -1125,9 +1125,9 @@ class Users extends Component
             $indexAttributesChanged = $userRecord->haveIndexAttributesChanged();
             $userRecord->save();
 
-            $transaction->commit();
+            \Illuminate\Support\Facades\DB::commit();
         } catch (Throwable $e) {
-            $transaction->rollBack();
+            \Illuminate\Support\Facades\DB::rollBack();
 
             throw $e;
         }
@@ -1230,7 +1230,7 @@ class Users extends Component
             $userRecord->pending = true;
         }
 
-        $transaction = Craft::$app->getDb()->beginTransaction();
+        \Illuminate\Support\Facades\DB::beginTransaction();
         $indexAttributesChanged = $userRecord->haveIndexAttributesChanged();
         $userRecord->save();
 
@@ -1241,14 +1241,14 @@ class Users extends Component
         $user->verificationCodeIssuedDate = $issueDate;
 
         if (!$user->validate()) {
-            $transaction->rollBack();
+            \Illuminate\Support\Facades\DB::rollBack();
             $user->pending = $originalUser->pending;
             $user->verificationCode = $originalUser->verificationCode;
             $user->verificationCodeIssuedDate = $originalUser->verificationCodeIssuedDate;
             throw new InvalidElementException($user);
         }
 
-        $transaction->commit();
+        \Illuminate\Support\Facades\DB::commit();
 
         if ($indexAttributesChanged) {
             $this->invalidateIndexCaches();
@@ -1357,7 +1357,7 @@ class Users extends Component
             return true;
         }
 
-        $transaction = $db->beginTransaction();
+        \Illuminate\Support\Facades\DB::beginTransaction();
         try {
             // Add the new groups
             if (!empty($newGroupIds)) {
@@ -1375,9 +1375,9 @@ class Users extends Component
                 ], [], $db);
             }
 
-            $transaction->commit();
+            \Illuminate\Support\Facades\DB::commit();
         } catch (Throwable $e) {
-            $transaction->rollBack();
+            \Illuminate\Support\Facades\DB::rollBack();
             throw $e;
         }
 
