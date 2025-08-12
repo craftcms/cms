@@ -266,11 +266,11 @@ class RepairController extends Controller
                 $level = $element->level;
             }
 
-            if (! $this->dryRun) {
+            if (!$this->dryRun) {
                 DB::commit();
             }
         } catch (Throwable $e) {
-            if (! $this->dryRun) {
+            if (!$this->dryRun) {
                 DB::rollBack();
             }
             throw $e;
