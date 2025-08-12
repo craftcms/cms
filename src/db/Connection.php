@@ -21,6 +21,7 @@ use craft\helpers\Db;
 use craft\helpers\FileHelper;
 use CraftCms\Cms\Support\Env;
 use CraftCms\Cms\Support\Str;
+use CraftCms\Yii2Adapter\LaravelTransaction;
 use mikehaertl\shellcommand\Command as ShellCommand;
 use Throwable;
 use yii\base\Event;
@@ -28,6 +29,7 @@ use yii\base\Exception;
 use yii\base\InvalidArgumentException;
 use yii\base\NotSupportedException;
 use yii\db\Exception as DbException;
+use yii\db\Transaction;
 
 /**
  * @inheritdoc
@@ -602,5 +604,15 @@ class Connection extends \CraftCms\Yii2Adapter\DatabaseConnection
 
             throw new ShellCommandException($execCommand, $command->getExitCode(), $command->getStdErr());
         }
+    }
+
+    public function beginTransaction($isolationLevel = null)
+    {
+        $this->open();
+
+        $transaction = new LaravelTransaction(['db' => $this]);
+        $transaction->begin($isolationLevel);
+
+        return $transaction;
     }
 }
