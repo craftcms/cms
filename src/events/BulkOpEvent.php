@@ -11,6 +11,7 @@ use Craft;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\Db;
 use craft\services\Elements;
+use CraftCms\Cms\Db\Table;
 use CraftCms\Cms\Support\Arr;
 use yii\base\Application;
 use yii\base\Event;
@@ -59,13 +60,13 @@ class BulkOpEvent extends ElementQueryEvent
 
                 // see if any events were fired for the same bulk op key from previous requests
                 $storedTriggers = $connection
-                    ->table(\CraftCms\Cms\Db\Table::BULKOPEVENTS)
+                    ->table(Table::BULKOPEVENTS)
                     ->select(['senderClass', 'eventName'])
                     ->where('key', $event->key)
                     ->get();
 
                 if ($storedTriggers->isNotEmpty()) {
-                    \Illuminate\Support\Facades\DB::table(\CraftCms\Cms\Db\Table::BULKOPEVENTS)
+                    \Illuminate\Support\Facades\DB::table(Table::BULKOPEVENTS)
                         ->where('key', $event->key)
                         ->delete();
 
@@ -93,7 +94,7 @@ class BulkOpEvent extends ElementQueryEvent
                     foreach (self::$triggers as $key => $triggers) {
                         foreach ($triggers as $class => $eventNames) {
                             foreach (array_keys($eventNames) as $eventName) {
-                                $connection->table(\CraftCms\Cms\Db\Table::BULKOPEVENTS)
+                                $connection->table(Table::BULKOPEVENTS)
                                     ->upsert([
                                         'key' => $key,
                                         'senderClass' => $class,

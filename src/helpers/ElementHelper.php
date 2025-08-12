@@ -21,9 +21,11 @@ use craft\errors\OperationAbortedException;
 use craft\fieldlayoutelements\CustomField;
 use craft\i18n\Locale;
 use craft\services\ElementSources;
+use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Str;
 use DateTime;
+use Illuminate\Database\Query\Builder;
 use Throwable;
 use Twig\Markup;
 use yii\base\Exception;
@@ -57,6 +59,7 @@ class ElementHelper
      * Returns whether the given slug is temporary.
      *
      * @param string $slug
+     *
      * @return bool
      * @since 3.2.2
      */
@@ -77,6 +80,7 @@ class ElementHelper
      * @param bool|null $ascii Whether the slug should be converted to ASCII. If null, it will depend on
      * the <config5:limitAutoSlugsToAscii> config setting value.
      * @param string|null $language The language to pull ASCII character mappings for, if needed
+     *
      * @return string
      * @since 3.5.0
      */
@@ -86,7 +90,7 @@ class ElementHelper
         // to mimic the default JavaScript-based slug generation.
         $slug = str_replace(['.', '_', '-'], ' ', $str);
 
-        if ($ascii ?? app(\CraftCms\Cms\Config\GeneralConfig::class)->limitAutoSlugsToAscii) {
+        if ($ascii ?? app(GeneralConfig::class)->limitAutoSlugsToAscii) {
             $slug = Str::ascii($slug, $language);
         }
 
@@ -97,6 +101,7 @@ class ElementHelper
      * Normalizes a slug.
      *
      * @param string $slug
+     *
      * @return string
      * @since 3.5.0
      */
@@ -114,7 +119,7 @@ class ElementHelper
         $slug = preg_replace('/[\'"‘’“”ʻ\[\](){}:]/u', '', $slug);
 
         // Make it lowercase
-        $generalConfig = app(\CraftCms\Cms\Config\GeneralConfig::class);
+        $generalConfig = app(GeneralConfig::class);
         if (!$generalConfig->allowUppercaseInSlug) {
             $slug = mb_strtolower($slug);
         }
@@ -130,6 +135,7 @@ class ElementHelper
      * Sets the URI on an element using a given URL format, tweaking its slug if necessary to ensure it's unique.
      *
      * @param ElementInterface $element
+     *
      * @throws OperationAbortedException if a unique URI could not be found
      */
     public static function setUniqueUri(ElementInterface $element): void
@@ -160,8 +166,8 @@ class ElementHelper
             return;
         }
 
-        $generalConfig = app(\CraftCms\Cms\Config\GeneralConfig::class);
-        $maxSlugIncrement = app(\CraftCms\Cms\Config\GeneralConfig::class)->maxSlugIncrement;
+        $generalConfig = app(GeneralConfig::class);
+        $maxSlugIncrement = app(GeneralConfig::class)->maxSlugIncrement;
         $originalSlug = $element->slug ?? '';
         $originalSlugLen = mb_strlen($originalSlug);
 
@@ -206,6 +212,7 @@ class ElementHelper
      *
      * @param string $uriFormat
      * @param ElementInterface $element
+     *
      * @return string
      */
     private static function _renderUriFormat(string $uriFormat, ElementInterface $element): string
@@ -239,49 +246,34 @@ class ElementHelper
      *
      * @param string $testUri
      * @param ElementInterface $element
+     *
      * @return bool
      */
     private static function _isUniqueUri(string $testUri, ElementInterface $element): bool
     {
-        $query = (new Query())
+        $info = \Illuminate\Support\Facades\DB::table(\CraftCms\Cms\Db\Table::ELEMENTS_SITES, 'elements_sites')
             ->select(['elements.id', 'elements.type'])
-            ->from(['elements_sites' => Table::ELEMENTS_SITES])
-            ->innerJoin(['elements' => Table::ELEMENTS], '[[elements.id]] = [[elements_sites.elementId]]')
-            ->where([
-                'elements_sites.siteId' => $element->siteId,
-                'elements.draftId' => null,
-                'elements.revisionId' => null,
-                'elements.dateDeleted' => null,
-            ]);
+            ->join(\CraftCms\Cms\Db\Table::ELEMENTS . ' as elements', 'elements.id', '=', 'elements_sites.elementId')
+            ->where('elements_sites.siteId', $element->siteId)
+            ->whereNull(['elements.draftId', 'elements.revisionId', 'elements.dateDeleted'])
+            ->when(
+                value: \Illuminate\Support\Facades\DB::connection()->getDriverName() === 'pgsql',
+                callback: fn(Builder $query) => $query->where(\Illuminate\Support\Facades\DB::raw('lower(elements_sites.uri)'), mb_strtolower($testUri)),
+                default: fn(Builder $query) => $query->where('elements_sites.uri', $testUri),
+            )
+            ->when(
+                value: $sourceId = $element->getCanonicalId(),
+                callback: fn(Builder $query) => $query->whereNot('elements.id', $sourceId),
+            )
+            ->get();
 
-        if (Craft::$app->getDb()->getIsMysql()) {
-            $query->andWhere([
-                'elements_sites.uri' => $testUri,
-            ]);
-        } else {
-            // Postgres is case-sensitive
-            $query->andWhere([
-                'lower([[elements_sites.uri]])' => mb_strtolower($testUri),
-            ]);
-        }
-
-        if (($sourceId = $element->getCanonicalId()) !== null) {
-            $query->andWhere([
-                'not', [
-                    'elements.id' => $sourceId,
-                ],
-            ]);
-        }
-
-        $info = $query->all();
-
-        if (empty($info)) {
+        if ($info->isEmpty()) {
             return true;
         }
 
         // Make sure the element(s) isn't owned by a draft/revision
         foreach ($info as $row) {
-            $conflictingElement = Craft::$app->getElements()->getElementById($row['id'], $row['type'], $element->siteId);
+            $conflictingElement = Craft::$app->getElements()->getElementById($row->id, $row->type, $element->siteId);
             if ($conflictingElement && !static::isDraftOrRevision($conflictingElement)) {
                 return false;
             }
@@ -294,6 +286,7 @@ class ElementHelper
      * Returns whether a given URL format has a proper {slug} tag.
      *
      * @param string $uriFormat
+     *
      * @return bool
      */
     public static function doesUriFormatHaveSlugTag(string $uriFormat): bool
@@ -308,11 +301,14 @@ class ElementHelper
      *
      * @param ElementInterface $element The element to return supported site info for
      * @param bool $withUnpropagatedSites Whether to include sites the element is currently not being propagated to
+     *
      * @return array[]
      * @throws Exception if any of the element’s supported sites are invalid
      */
-    public static function supportedSitesForElement(ElementInterface $element, bool $withUnpropagatedSites = false): array
-    {
+    public static function supportedSitesForElement(
+        ElementInterface $element,
+        bool $withUnpropagatedSites = false,
+    ): array {
         $sites = [];
         $siteUidMap = Arr::pluck(Craft::$app->getSites()->getAllSites(true), 'uid', 'id');
 
@@ -352,6 +348,7 @@ class ElementHelper
      *
      * @param ElementInterface $element The element to return site statuses for
      * @param bool $editableOnly Whether to only return statuses for sites the user has access to
+     *
      * @return array<int,bool> The site statuses, indexed by site ID
      * @since 4.4.7
      */
@@ -389,6 +386,7 @@ class ElementHelper
      * Returns whether changes should be tracked for the given element.
      *
      * @param ElementInterface $element
+     *
      * @return bool
      * @since 3.7.4
      */
@@ -408,6 +406,7 @@ class ElementHelper
      * Returns whether the given element is editable by the current user, taking user permissions into account.
      *
      * @param ElementInterface $element
+     *
      * @return bool
      */
     public static function isElementEditable(ElementInterface $element): bool
@@ -433,6 +432,7 @@ class ElementHelper
      * Returns the editable site IDs for a given element, taking user permissions into account.
      *
      * @param ElementInterface $element
+     *
      * @return array
      */
     public static function editableSiteIdsForElement(ElementInterface $element): array
@@ -459,6 +459,7 @@ class ElementHelper
      * Returns the root owner of a given element.
      *
      * @param ElementInterface $element
+     *
      * @return ElementInterface
      * @since 3.2.0
      * @deprecated in 5.4.0. Use [[ElementInterface::getRootOwner()]] instead.
@@ -472,6 +473,7 @@ class ElementHelper
      * Returns the root element of a given element, unless the element or any of its owners are not canonical.
      *
      * @param ElementInterface $element
+     *
      * @return ElementInterface|null
      * @since 5.0.0
      */
@@ -495,6 +497,7 @@ class ElementHelper
      * Returns whether the given element (or its root element if a block element) is a draft.
      *
      * @param ElementInterface $element
+     *
      * @return bool
      * @since 3.7.0
      */
@@ -519,6 +522,7 @@ class ElementHelper
      * Returns whether the given element (or its root element if a block element) is a revision.
      *
      * @param ElementInterface $element
+     *
      * @return bool
      * @since 3.7.0
      */
@@ -543,6 +547,7 @@ class ElementHelper
      * Returns whether the given element (or its root element if a block element) is a draft or revision.
      *
      * @param ElementInterface $element
+     *
      * @return bool
      * @since 3.2.0
      */
@@ -567,6 +572,7 @@ class ElementHelper
      * Returns whether the given element (or its root element if a block element) is a canonical element.
      *
      * @param ElementInterface $element
+     *
      * @return bool
      * @since 3.7.17
      */
@@ -579,6 +585,7 @@ class ElementHelper
      * Returns whether the given element (or its root element if a block element) is a derivative of another element.
      *
      * @param ElementInterface $element
+     *
      * @return bool
      * @since 3.7.17
      */
@@ -591,6 +598,7 @@ class ElementHelper
      * Returns whether the given derivative element is outdated compared to its canonical element.
      *
      * @param ElementInterface $element
+     *
      * @return bool
      * @since 3.7.12
      */
@@ -618,6 +626,7 @@ class ElementHelper
      *
      * @param ElementInterface $element The source/draft/revision element
      * @param bool $anySite Whether the source element can be retrieved in any site
+     *
      * @return ElementInterface
      * @since 3.3.0
      * @deprecated in 3.7.0. Use [[ElementInterface::getCanonical()]] instead.
@@ -656,6 +665,7 @@ class ElementHelper
      * Returns the root level source key for a given source key/path
      *
      * @param string $sourceKey
+     *
      * @return string
      * @since 3.7.25.1
      */
@@ -671,10 +681,14 @@ class ElementHelper
      * @param class-string<ElementInterface> $elementType The element type class
      * @param string $sourceKey The source key/path
      * @param string $context The context
+     *
      * @return array|null The source definition, or null if it cannot be found
      */
-    public static function findSource(string $elementType, string $sourceKey, string $context = ElementSources::CONTEXT_INDEX): ?array
-    {
+    public static function findSource(
+        string $elementType,
+        string $sourceKey,
+        string $context = ElementSources::CONTEXT_INDEX,
+    ): ?array {
         $path = explode('/', $sourceKey);
         $sources = Craft::$app->getElementSources()->getSources($elementType, $context);
         $rootSource = null;
@@ -728,6 +742,7 @@ class ElementHelper
      * Returns the description of a field’s translation support.
      *
      * @param string $translationMethod
+     *
      * @return string|null
      * @since 3.5.0
      */
@@ -748,11 +763,15 @@ class ElementHelper
      * @param ElementInterface $element
      * @param string $translationMethod
      * @param string|null $translationKeyFormat
+     *
      * @return string
      * @since 3.5.0
      */
-    public static function translationKey(ElementInterface $element, string $translationMethod, ?string $translationKeyFormat = null): string
-    {
+    public static function translationKey(
+        ElementInterface $element,
+        string $translationMethod,
+        ?string $translationKeyFormat = null,
+    ): string {
         switch ($translationMethod) {
             case Field::TRANSLATION_METHOD_NONE:
                 return '1';
@@ -776,6 +795,7 @@ class ElementHelper
      *
      * @param ElementInterface $element
      * @param string $attribute
+     *
      * @return bool
      * @since 4.2.6
      */
@@ -805,6 +825,7 @@ class ElementHelper
      * Returns the HTML for a given attribute value, to be shown in table and card views.
      *
      * @param mixed $value The field value
+     *
      * @return string
      * @since 5.0.0
      */
@@ -849,22 +870,23 @@ class ElementHelper
      * Returns the HTML for a link attribute based on provided URL.
      *
      * @param string|null $url
+     *
      * @return string
      * @since 5.5.0
      */
     public static function linkAttributeHtml(?string $url): string
     {
-        return Html::beginTag('a',  [
-            'href' => $url,
-            'rel' => 'noopener',
-            'target' => '_blank',
-            'title' => Craft::t('app', 'Visit webpage'),
-            'aria-label' => Craft::t('app', 'View'),
-        ]) .
-        Html::tag('span', Cp::iconSvg('world'), [
-            'class' => ['cp-icon', 'small', 'inline-flex'],
-        ]) .
-        Html::endTag('a');
+        return Html::beginTag('a', [
+                'href' => $url,
+                'rel' => 'noopener',
+                'target' => '_blank',
+                'title' => Craft::t('app', 'Visit webpage'),
+                'aria-label' => Craft::t('app', 'View'),
+            ]) .
+            Html::tag('span', Cp::iconSvg('world'), [
+                'class' => ['cp-icon', 'small', 'inline-flex'],
+            ]) .
+            Html::endTag('a');
     }
 
     /**
@@ -872,6 +894,7 @@ class ElementHelper
      *
      * @param string|null $value
      * @param string|null $url
+     *
      * @return string
      * @since 5.5.0
      */
@@ -890,6 +913,7 @@ class ElementHelper
      * Returns the searchable attributes for a given element, ensuring that `slug` and `title` are included.
      *
      * @param ElementInterface $element
+     *
      * @return string[]
      * @since 4.6.0
      */
@@ -908,6 +932,7 @@ class ElementHelper
      *
      * @param ElementInterface $element
      * @param bool $withParams Whether to include the necessary query string params
+     *
      * @return string
      * @since 5.0.0
      */
@@ -931,6 +956,7 @@ class ElementHelper
      *
      * @param string $url
      * @param ElementInterface $element
+     *
      * @return string
      * @since 5.0.0
      */
@@ -955,6 +981,7 @@ class ElementHelper
      * Returns the URL that users should be redirected to after editing the given element.
      *
      * @param ElementInterface $element
+     *
      * @return string
      * @since 5.2.0
      */
@@ -968,13 +995,14 @@ class ElementHelper
             }
         }
 
-        return $element->getPostEditUrl() ?? app(\CraftCms\Cms\Config\GeneralConfig::class)->getPostCpLoginRedirect();
+        return $element->getPostEditUrl() ?? app(GeneralConfig::class)->getPostCpLoginRedirect();
     }
 
     /**
      * Returns an element action’s JavaScript configuration.
      *
      * @param ElementActionInterface $action
+     *
      * @return array
      * @since 5.0.0
      */
@@ -998,6 +1026,7 @@ class ElementHelper
      *
      * @param ElementInterface[] $elements
      * @param array $variables
+     *
      * @return Markup
      * @throws InvalidConfigException
      * @throws NotSupportedException
@@ -1014,6 +1043,7 @@ class ElementHelper
      *
      * @template T of ElementInterface
      * @param T[] $elements
+     *
      * @since 5.2.0
      */
     public static function swapInProvisionalDrafts(array &$elements): void
@@ -1079,6 +1109,7 @@ class ElementHelper
      * Returns whether the given element is a multi-site element.
      *
      * @param ElementInterface $element
+     *
      * @return bool
      * @throws Exception
      * @since 5.8.0
@@ -1099,6 +1130,7 @@ class ElementHelper
      * Sets user to be used for swapping in provisional drafts.
      *
      * @param UserElement|null $user
+     *
      * @since 5.8.0
      */
     public static function setProvisionalDraftUser(?UserElement $user): void

@@ -34,13 +34,13 @@ use craft\gql\arguments\elements\Address as AddressArguments;
 use craft\gql\interfaces\elements\Address as AddressGqlInterface;
 use craft\gql\resolvers\elements\Address as AddressResolver;
 use craft\gql\types\input\Addresses as AddressesInput;
-use craft\helpers\Db;
 use craft\helpers\Gql;
 use craft\validators\ArrayValidator;
 use craft\web\assets\cp\CpAsset;
 use CraftCms\Cms\Field\Enums\ElementIndexViewMode;
 use CraftCms\Cms\Support\Str;
 use GraphQL\Type\Definition\Type;
+use Illuminate\Database\Query\JoinClause;
 use yii\base\InvalidConfigException;
 use yii\db\Expression;
 
@@ -801,19 +801,19 @@ class Addresses extends Field implements
         }
 
         // Return any relation data on these elements, defined with this field
-        $map = (new Query())
+        $map = \Illuminate\Support\Facades\DB::table(\CraftCms\Cms\Db\Table::ADDRESSES, 'addresses')
             ->select([
-                'source' => 'elements_owners.ownerId',
-                'target' => 'addresses.id',
+                'elements_owners.ownerId as source',
+                'addresses.id as target',
             ])
-            ->from(['addresses' => DbTable::ADDRESSES])
-            ->innerJoin(['elements_owners' => DbTable::ELEMENTS_OWNERS], [
-                'and',
-                '[[elements_owners.elementId]] = [[addresses.id]]',
-                ['elements_owners.ownerId' => $sourceElementIds],
-            ])
-            ->where(['addresses.fieldId' => $this->id])
-            ->orderBy(['elements_owners.sortOrder' => SORT_ASC])
+            ->join(\CraftCms\Cms\Db\Table::ELEMENTS_OWNERS . ' as elements_owners', function(JoinClause $join) use ($sourceElementIds) {
+                $join->where('elements_owners.elementId', 'addresses.id')
+                    ->whereIn('elements_owners.ownerId', $sourceElementIds);
+            })
+            ->where('addresses.fieldId', $this->id)
+            ->orderBy('elements_owners.sortOrder')
+            ->get()
+            ->map(fn(object $row) => (array) $row)
             ->all();
 
         return [
@@ -832,7 +832,10 @@ class Addresses extends Field implements
      */
     public function afterMergeFrom(FieldInterface $outgoingField): void
     {
-        Db::update(DbTable::ADDRESSES, ['fieldId' => $this->id], ['fieldId' => $outgoingField->id]);
+        \Illuminate\Support\Facades\DB::table(\CraftCms\Cms\Db\Table::ADDRESSES)
+            ->where('fieldId', $outgoingField->id)
+            ->update(['fieldId' => $this->id]);
+
         parent::afterMergeFrom($outgoingField);
     }
 

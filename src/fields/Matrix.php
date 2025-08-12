@@ -58,6 +58,7 @@ use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Support\Str;
 use GraphQL\Type\Definition\Type;
+use Illuminate\Database\Query\JoinClause;
 use Illuminate\Support\Collection;
 use yii\base\InvalidArgumentException;
 use yii\base\InvalidConfigException;
@@ -1377,19 +1378,19 @@ JS;
         }
 
         // Return any relation data on these elements, defined with this field
-        $map = (new Query())
+        $map = \Illuminate\Support\Facades\DB::table(\CraftCms\Cms\Db\Table::ENTRIES, 'entries')
             ->select([
-                'source' => 'elements_owners.ownerId',
-                'target' => 'entries.id',
+                'elements_owners.ownerId as source',
+                'entries.id as target',
             ])
-            ->from(['entries' => DbTable::ENTRIES])
-            ->innerJoin(['elements_owners' => DbTable::ELEMENTS_OWNERS], [
-                'and',
-                '[[elements_owners.elementId]] = [[entries.id]]',
-                ['elements_owners.ownerId' => $sourceElementIds],
-            ])
-            ->where(['entries.fieldId' => $this->id])
-            ->orderBy(['elements_owners.sortOrder' => SORT_ASC])
+            ->join(\CraftCms\Cms\Db\Table::ELEMENTS_OWNERS . ' as elements_owners', function(JoinClause $join) use ($sourceElementIds) {
+                $join->whereColumn('elements_owners.elementId', 'entries.id')
+                    ->whereIn('elements_owners.ownerId', $sourceElementIds);
+            })
+            ->where('entries.fieldId', $this->id)
+            ->orderBy('elements_owners.sortOrder')
+            ->get()
+            ->map(fn(object $row) => (array) $row)
             ->all();
 
         return [
@@ -1684,11 +1685,11 @@ JS;
                 ->keyBy(fn(Entry $entry) => $entry->getCanonicalId());
 
             if ($derivatives->isNotEmpty()) {
-                $canonicalUids = (new Query())
+                $canonicalUids = \Illuminate\Support\Facades\DB::table(\CraftCms\Cms\Db\Table::ELEMENTS)
                     ->select(['id', 'uid'])
-                    ->from(DbTable::ELEMENTS)
-                    ->where(['id' => $derivatives->keys()->all()])
-                    ->pairs();
+                    ->whereIn('id', $derivatives->keys())
+                    ->pluck('uid', 'id');
+
                 $derivativeUidMap = [];
                 $canonicalUidMap = [];
                 foreach ($canonicalUids as $canonicalId => $canonicalUid) {

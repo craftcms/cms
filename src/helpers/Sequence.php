@@ -7,10 +7,10 @@
 
 namespace craft\helpers;
 
-use craft\db\Query;
-use craft\db\Table;
 use craft\errors\MutexException;
+use CraftCms\Cms\Db\Table;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\DB as DbFacade;
 use Throwable;
 use yii\db\Exception;
 
@@ -58,16 +58,15 @@ class Sequence
             $num = self::_next($name);
 
             if ($num === 1) {
-                Db::insert(Table::SEQUENCES, [
-                    'name' => $name,
-                    'next' => $num + 1,
-                ]);
+                DbFacade::table(Table::SEQUENCES)
+                    ->insert([
+                        'name' => $name,
+                        'next' => $num + 1,
+                    ]);
             } else {
-                Db::update(Table::SEQUENCES, [
-                    'next' => $num + 1,
-                ], [
-                    'name' => $name,
-                ]);
+                DbFacade::table(Table::SEQUENCES)
+                    ->where('name', $name)
+                    ->increment('next');
             }
         } catch (Throwable $e) {
             $mutex->release();
@@ -86,11 +85,9 @@ class Sequence
      */
     private static function _next(string $name): int
     {
-        return (int)(new Query())
-            ->select(['next'])
-            ->from(Table::SEQUENCES)
-            ->where(['name' => $name])
-            ->scalar() ?: 1;
+        return (int) DbFacade::table(Table::SEQUENCES)
+            ->where('name', $name)
+            ->value('next') ?: 1;
     }
 
     /**
