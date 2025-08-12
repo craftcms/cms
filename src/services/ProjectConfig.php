@@ -798,7 +798,7 @@ class ProjectConfig extends Component
             $deltaChanges = [];
             $db = Craft::$app->getDb();
 
-            $db->transaction(function() use ($db, &$deltaChanges) {
+            \Illuminate\Support\Facades\DB::transaction(function() use ($db, &$deltaChanges) {
                 foreach ($this->_appliedChanges as $changeSet) {
                     // Allow modification of the array being looped over.
                     $currentSet = $changeSet;

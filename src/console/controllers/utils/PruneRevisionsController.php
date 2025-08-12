@@ -10,11 +10,12 @@ namespace craft\console\controllers\utils;
 use Craft;
 use craft\base\ElementInterface;
 use craft\console\Controller;
-use craft\db\Query;
-use craft\db\Table;
 use craft\helpers\Console;
+use CraftCms\Cms\Config\GeneralConfig;
+use CraftCms\Cms\Db\Table;
+use Illuminate\Database\Query\Builder;
+use Illuminate\Support\Facades\DB;
 use yii\console\ExitCode;
-use yii\db\Expression;
 
 /**
  * Prunes excess element revisions.
@@ -77,47 +78,45 @@ class PruneRevisionsController extends Controller
 
         if (!isset($this->maxRevisions)) {
             $this->maxRevisions = (int)$this->prompt('What is the max number of revisions an element can have?', [
-                'default' => app(\CraftCms\Cms\Config\GeneralConfig::class)->maxRevisions,
+                'default' => app(GeneralConfig::class)->maxRevisions,
                 'validator' => fn($input) => filter_var($input, FILTER_VALIDATE_INT, FILTER_NULL_ON_FAILURE) !== null && $input >= 0,
             ]);
         }
 
         // Get the elements with too many revisions
-        $subQuery = (new Query())
-            ->select(['canonicalId', 'count' => 'COUNT(*)'])
-            ->from(['r' => Table::REVISIONS])
-            ->groupBy(['canonicalId'])
-            ->having(['>', 'COUNT(*)', $this->maxRevisions]);
-
-        if (!empty($sectionIds)) {
-            $subQuery
-                ->innerJoin(['entries' => Table::ENTRIES], '[[entries.id]] = [[r.canonicalId]]')
-                ->andWhere(['entries.sectionId' => $sectionIds]);
-        } else {
-            $subQuery
-                ->leftJoin(['entries' => Table::ENTRIES], '[[entries.id]] = [[r.canonicalId]]')
-                ->andWhere([
-                    'or',
-                    ['entries.id' => null],
-                    ['not', ['entries.sectionId' => null]],
-                ]);
-        }
+        $subQuery = DB::table(Table::REVISIONS, 'r')
+            ->select(['canonicalId', DB::raw('COUNT(*) as count')])
+            ->groupBy('canonicalId')
+            ->havingRaw('COUNT(*) > ' . $this->maxRevisions)
+            ->when(
+                value: !empty($sectionIds),
+                callback: fn(Builder $query) => $query
+                    ->join(Table::ENTRIES . ' as entries', 'entries.id', '=', 'r.canonicalId')
+                    ->whereIn('entries.sectionId', $sectionIds),
+                default: fn(Builder $query) => $query
+                    ->leftJoin(Table::ENTRIES . ' as entries', 'entries.id', '=', 'r.canonicalId')
+                    ->where(function(Builder $query) {
+                        $query->whereNull('entries.id')
+                            ->orWhereNotNull('entries.sectionId');
+                    }),
+            );
 
         $this->stdout('Finding elements with too many revisions ... ');
-        $elements = (new Query())
-            ->select([
-                'id' => 's.canonicalId',
-                's.count',
-                'type' => (new Query())
-                    ->select(['type'])
-                    ->from([Table::ELEMENTS])
-                    ->where(new Expression('[[id]] = [[s.canonicalId]]')),
-            ])
-            ->from(['s' => $subQuery])
-            ->all();
+
+        $elements = DB::table(
+            table: $subQuery,
+            as: 's'
+        )->select([
+            's.canonicalId as id',
+            's.count',
+            'type' => DB::table(Table::ELEMENTS)
+                ->whereColumn('id', 's.canonicalId')
+                ->select('type'),
+        ])->get();
+
         $this->stdout('done' . PHP_EOL . PHP_EOL, Console::FG_GREEN);
 
-        if (empty($elements)) {
+        if ($elements->isEmpty()) {
             $this->stdout('Nothing to prune' . PHP_EOL . PHP_EOL, Console::FG_GREEN);
             return ExitCode::OK;
         }
@@ -127,18 +126,18 @@ class PruneRevisionsController extends Controller
         $elementsService = Craft::$app->getElements();
 
         foreach ($elements as $element) {
-            if (!class_exists($element['type'])) {
+            if (!class_exists($element->type)) {
                 continue;
             }
 
             /** @var class-string<ElementInterface> $elementType */
-            $elementType = $element['type'];
-            $deleteCount = $element['count'] - $this->maxRevisions;
+            $elementType = $element->type;
+            $deleteCount = $element->count - $this->maxRevisions;
 
-            $this->stdout('- ' . $elementType::displayName() . " {$element['id']} ($deleteCount revisions) ... ");
+            $this->stdout('- ' . $elementType::displayName() . " {$element->id} ($deleteCount revisions) ... ");
 
             $extraRevisions = $elementType::find()
-                ->revisionOf($element['id'])
+                ->revisionOf($element->id)
                 ->site('*')
                 ->unique()
                 ->status(null)

@@ -11,6 +11,7 @@ use Craft;
 use craft\db\Connection;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\Db;
+use CraftCms\Cms\Db\Table;
 use Exception;
 use PDO;
 use Throwable;

@@ -11,8 +11,6 @@ use Craft;
 use craft\assetpreviews\Image as ImagePreview;
 use craft\base\Element;
 use craft\base\LocalFsInterface;
-use craft\db\Query;
-use craft\db\Table;
 use craft\elements\Asset;
 use craft\elements\conditions\ElementCondition;
 use craft\errors\AssetException;
@@ -1454,15 +1452,12 @@ class AssetsController extends Controller
             }
         }
 
-        $query = (new Query())
-            ->from(Table::ASSETS)
-            ->where([
-                'or',
-                ['id' => $assetIds],
-                ['folderId' => array_unique($folderIds)],
-            ]);
-        $count = (int)$query->count();
-        $totalSize = (int)$query->sum('[[size]]');
+        $query = \Illuminate\Support\Facades\DB::table(\CraftCms\Cms\Db\Table::ASSETS)
+            ->whereIn('id', $assetIds)
+            ->orWhereIn('folderId', array_unique($folderIds));
+
+        $count = $query->count();
+        $totalSize = (int)$query->sum('size');
 
         return $this->asJson([
             'count' => $count,

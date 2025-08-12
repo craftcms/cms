@@ -32,6 +32,8 @@ use craft\records\Volume;
 use craft\records\VolumeFolder;
 use CraftCms\Cms\Config\GeneralConfig;
 use DateTime;
+use Illuminate\Database\QueryException;
+use Illuminate\Support\Facades\Schema;
 use ReflectionMethod;
 use yii\base\Component;
 use yii\base\Exception;
@@ -627,11 +629,9 @@ class Gc extends Component
 
         // Disable FK checks
         try {
-            $this->db->transaction(function() {
-                $this->db->createCommand()->checkIntegrity(false)->execute();
-            });
+            Schema::disableForeignKeyConstraints();
             $disabledFkChecks = true;
-        } catch (DbException) {
+        } catch (DbException|QueryException) {
             // the DB user probably didn't have permission
             // see https://github.com/craftcms/cms/issues/15063#issuecomment-2194059768
             $disabledFkChecks = false;
@@ -676,7 +676,7 @@ SQL;
 
         // Re-enable FK checks
         if ($disabledFkChecks) {
-            $this->db->createCommand()->checkIntegrity(true)->execute();
+            Schema::enableForeignKeyConstraints();
         }
 
         $this->_stdout("done\n", Console::FG_GREEN);

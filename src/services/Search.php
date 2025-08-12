@@ -272,7 +272,7 @@ class Search extends Component
         }
 
         $db = Craft::$app->getDb();
-        $db->transaction(function() use ($element, $fieldHandles, $db) {
+        \Illuminate\Support\Facades\DB::transaction(function() use ($element, $fieldHandles, $db) {
             Db::insert(Table::SEARCHINDEXQUEUE, [
                 'elementId' => $element->id,
                 'siteId' => $element->siteId,

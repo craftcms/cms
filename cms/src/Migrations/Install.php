@@ -6,7 +6,6 @@ namespace CraftCms\Cms\Migrations;
 
 use Craft;
 use craft\base\Field;
-use CraftCms\Cms\Db\Table;
 use craft\elements\Asset;
 use craft\elements\Entry;
 use craft\elements\User;
@@ -22,6 +21,7 @@ use craft\models\Site;
 use craft\services\ProjectConfig;
 use craft\web\Response;
 use CraftCms\Cms\Config\GeneralConfig;
+use CraftCms\Cms\Db\Table;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Element\Enums\PropagationMethod;
 use CraftCms\Cms\Support\Str;

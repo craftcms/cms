@@ -1388,7 +1388,7 @@ class Elements extends Component
         }
 
         $this->ensureBulkOp(function() use ($element, $supportedSites) {
-            Craft::$app->getDb()->transaction(function() use ($element, $supportedSites) {
+            \Illuminate\Support\Facades\DB::transaction(function() use ($element, $supportedSites) {
                 // Start with the other sites (if any), so we don't update dateLastMerged until the end
                 $otherSiteIds = array_keys(Arr::except($supportedSites, $element->siteId));
                 if (!empty($otherSiteIds)) {

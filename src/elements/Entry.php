@@ -2894,7 +2894,7 @@ JS;
 
             $this->setDirtyAttributes($dirtyAttributes);
 
-            $this->saveOwnership($isNew, Table::ENTRIES);
+            $this->saveOwnership($isNew, \CraftCms\Cms\Db\Table::ENTRIES);
 
             if (
                 (!$this->duplicateOf || $this->placeInStructure) &&

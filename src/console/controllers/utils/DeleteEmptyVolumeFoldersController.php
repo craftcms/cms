@@ -9,8 +9,8 @@ namespace craft\console\controllers\utils;
 
 use Craft;
 use craft\console\Controller;
-use craft\db\Query;
-use craft\db\Table;
+use CraftCms\Cms\Db\Table;
+use Illuminate\Support\Facades\DB;
 use yii\console\ExitCode;
 
 /**
@@ -44,17 +44,11 @@ class DeleteEmptyVolumeFoldersController extends Controller
      */
     public function actionIndex(): int
     {
-        $query = (new Query())
-            ->select(['folders.id'])
-            ->from(['folders' => Table::VOLUMEFOLDERS])
-            ->leftJoin(['assets' => Table::ASSETS], '[[assets.folderId]] = [[folders.id]]')
-            ->leftJoin(['subfolders' => Table::VOLUMEFOLDERS], '[[subfolders.parentId]] = [[folders.id]]')
-            ->where([
-                'assets.id' => null,
-                'subfolders.id' => null,
-            ])
-            ->andWhere(['not', ['folders.parentId' => null]])
-            ->andWhere(['not', ['folders.path' => null]]);
+        $query = DB::table(Table::VOLUMEFOLDERS, 'folders')
+            ->leftJoin(Table::ASSETS . ' as assets', 'assets.folderId', '=', 'folders.id')
+            ->leftJoin(Table::VOLUMEFOLDERS . ' as subfolders', 'subfolders.parentId', '=', 'folders.id')
+            ->whereNull(['assets.id', 'subfolders.id'])
+            ->whereNotNull(['folders.parentId', 'folders.path']);
 
         if ($this->volume) {
             $volumeHandles = explode(',', $this->volume);
@@ -69,10 +63,10 @@ class DeleteEmptyVolumeFoldersController extends Controller
                 $volumeIds[] = $volume->id;
             }
 
-            $query->andWhere(['folders.volumeId' => $volumeIds]);
+            $query->whereIn('folders.volumeId', $volumeIds);
         }
 
-        $emptyFolderIds = $query->column();
+        $emptyFolderIds = $query->pluck('folders.id')->all();
 
         if (empty($emptyFolderIds)) {
             $this->stdout("No empty folders found.\n");

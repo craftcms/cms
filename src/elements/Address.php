@@ -11,7 +11,6 @@ use craft\base\Element;
 use craft\base\NameTrait;
 use craft\base\NestedElementInterface;
 use craft\base\NestedElementTrait;
-use craft\db\Table;
 use craft\elements\actions\Copy;
 use craft\elements\conditions\addresses\AddressCondition;
 use craft\elements\conditions\ElementConditionInterface;
@@ -783,7 +782,7 @@ class Address extends Element implements AddressInterface, NestedElementInterfac
         $record->save(false);
         $this->setDirtyAttributes($dirtyAttributes);
 
-        $this->saveOwnership($isNew, Table::ADDRESSES);
+        $this->saveOwnership($isNew, \CraftCms\Cms\Db\Table::ADDRESSES);
 
         parent::afterSave($isNew);
     }

@@ -6578,6 +6578,7 @@ JS, [
 
         // Add the new ones
         if (!empty($relationData)) {
+            $now = Date::now();
             $values = [];
             foreach ($relationData as $fieldId => $targetIds) {
                 foreach ($targetIds as $targetId => $sortOrder) {
@@ -6587,8 +6588,9 @@ JS, [
                         'sourceSiteId' => $sourceSiteIds[$fieldId],
                         'targetId' => $targetId,
                         'sortOrder' => $sortOrder,
-                        'dateCreated' => Date::now(),
-                        'dateUpdated' => Date::now(),
+                        'dateCreated' => $now,
+                        'dateUpdated' => $now,
+                        'uid' => Str::uuid(),
                     ];
                 }
             }

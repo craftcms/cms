@@ -9,9 +9,9 @@
 
 namespace CraftCms\Yii2Adapter;
 
-use CraftCms\Cms\Support\Facades\DB;
 use Illuminate\Database\Connection as IlluminateConnection;
 use Illuminate\Support\Facades\Config;
+use Illuminate\Support\Facades\DB;
 use yii\db\Connection;
 
 class DatabaseConnection extends Connection

@@ -2,7 +2,7 @@
 
 namespace CraftCms\Yii2Adapter;
 
-use CraftCms\Cms\Support\Facades\DB;
+use Illuminate\Support\Facades\DB;
 use Yii;
 use yii\base\InvalidConfigException;
 use yii\db\Connection;

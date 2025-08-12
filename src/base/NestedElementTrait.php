@@ -9,10 +9,9 @@
 namespace craft\base;
 
 use Craft;
-use craft\db\Query;
 use craft\db\Table;
 use craft\elements\db\EagerLoadPlan;
-use craft\helpers\Db;
+use Illuminate\Support\Facades\DB;
 use yii\base\InvalidConfigException;
 
 /**
@@ -426,7 +425,7 @@ trait NestedElementTrait
         if (!$this->saveOwnership || !isset($this->fieldId)) {
             return;
         }
-        
+
         $ownerId = $this->getOwnerId();
         if (!$ownerId) {
             return;
@@ -449,26 +448,20 @@ trait NestedElementTrait
             }
 
             if ($elementId) {
-                $this->sortOrder = (new Query())
-                    ->select('sortOrder')
-                    ->from(Table::ELEMENTS_OWNERS)
-                    ->where([
-                        'elementId' => $elementId,
-                        'ownerId' => $ownerId,
-                    ])
-                    ->scalar() ?: null;
+                $this->sortOrder = DB::table(\CraftCms\Cms\Db\Table::ELEMENTS_OWNERS)
+                    ->where('elementId', $elementId)
+                    ->where('ownerId', $ownerId)
+                    ->value('sortOrder') ?: null;
             }
         }
 
         if (!isset($this->sortOrder)) {
-            $max = (new Query())
-                ->from(['eo' => Table::ELEMENTS_OWNERS])
-                ->innerJoin(['e' => $elementTable], '[[e.id]] = [[eo.elementId]]')
-                ->where([
-                    'eo.ownerId' => $ownerId,
-                    "e.$fieldIdColumn" => $this->fieldId,
-                ])
-                ->max('[[eo.sortOrder]]');
+            $max = DB::table(\CraftCms\Cms\Db\Table::ELEMENTS_OWNERS, 'eo')
+                ->join($elementTable . ' as e', 'e.id', '=', 'eo.elementId')
+                ->where('eo.ownerId', $ownerId)
+                ->where("e.$fieldIdColumn", $this->fieldId)
+                ->max('eo.sortOrder');
+
             $this->sortOrder = $max ? $max + 1 : 1;
         }
 
@@ -478,14 +471,14 @@ trait NestedElementTrait
         ]);
 
         if (!$isNew) {
-            Db::delete(Table::ELEMENTS_OWNERS, [
-                'elementId' => $this->id,
-                'ownerId' => $ownerIds,
-            ]);
+            DB::table(\CraftCms\Cms\Db\Table::ELEMENTS_OWNERS)
+                ->where('elementId', $this->id)
+                ->whereIn('ownerId', $ownerIds)
+                ->delete();
         }
 
         foreach ($ownerIds as $ownerId) {
-            Db::insert(Table::ELEMENTS_OWNERS, [
+            DB::table(\CraftCms\Cms\Db\Table::ELEMENTS_OWNERS)->insert([
                 'elementId' => $this->id,
                 'ownerId' => $ownerId,
                 'sortOrder' => $this->sortOrder,

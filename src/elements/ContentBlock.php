@@ -11,7 +11,6 @@ use Craft;
 use craft\base\Element;
 use craft\base\NestedElementInterface;
 use craft\base\NestedElementTrait;
-use craft\db\Table;
 use craft\elements\db\ContentBlockQuery;
 use craft\fields\ContentBlock as ContentBlockField;
 use craft\gql\interfaces\elements\ContentBlock as ContentBlockInterface;
@@ -223,7 +222,7 @@ class ContentBlock extends Element implements NestedElementInterface
 
             $this->setDirtyAttributes($dirtyAttributes);
 
-            $this->saveOwnership($isNew, Table::CONTENTBLOCKS);
+            $this->saveOwnership($isNew, \CraftCms\Cms\Db\Table::CONTENTBLOCKS);
         }
 
         parent::afterSave($isNew);

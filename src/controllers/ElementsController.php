@@ -14,8 +14,6 @@ use craft\base\FieldLayoutComponent;
 use craft\base\NestedElementInterface;
 use craft\behaviors\DraftBehavior;
 use craft\behaviors\RevisionBehavior;
-use craft\db\Query;
-use craft\db\Table;
 use craft\elements\db\ElementQueryInterface;
 use craft\elements\db\NestedElementQueryInterface;
 use craft\elements\User;
@@ -40,12 +38,14 @@ use craft\web\Controller;
 use craft\web\CpScreenResponseBehavior;
 use craft\web\UrlManager;
 use craft\web\View;
+use CraftCms\Cms\Db\Table;
 use CraftCms\Cms\Element\Enums\MenuItemType;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Support\Str;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\DB as DbFacade;
 use Throwable;
 use yii\helpers\Markdown;
 use yii\web\BadRequestHttpException;
@@ -1528,32 +1528,30 @@ JS, [
         }
 
         // Get the old sort order
-        $sortOrder = (new Query())
-            ->select('sortOrder')
-            ->from(Table::ELEMENTS_OWNERS)
-            ->where([
-                'elementId' => $element->id,
-                'ownerId' => $element->getOwnerId(),
-            ])
-            ->scalar() ?: null;
+        $sortOrder = DbFacade::table(Table::ELEMENTS_OWNERS)
+            ->where('elementId', $element->id)
+            ->where('ownerId', $element->getOwnerId())
+            ->value('sortOrder');
+
         $element->setSortOrder($sortOrder);
 
-        \Illuminate\Support\Facades\DB::beginTransaction();
+        DbFacade::beginTransaction();
 
         try {
             // Remove existing ownership data for the element within the canonical owner,
             // and for its canonical element within the derivative
-            Db::delete(Table::ELEMENTS_OWNERS, [
-                'or',
-                ['elementId' => $element->id, 'ownerId' => $owner->getCanonicalId()],
-                ['elementId' => $element->getCanonicalId(), 'ownerId' => $owner->id],
-            ]);
+            DbFacade::table(Table::ELEMENTS_OWNERS)
+                ->where(['elementId', $element->id, 'ownerId', $owner->getCanonicalId()])
+                ->orWhere(['elementId' => $element->getCanonicalId(), 'ownerId' => $owner->id])
+                ->delete();
 
             // Remove existing ownership data for the element within the canonical owner
-            Db::delete(Table::ELEMENTS_OWNERS, [
-                'elementId' => $element->id,
-                'ownerId' => $owner->getCanonicalId(),
-            ]);
+            DbFacade::table(Table::ELEMENTS_OWNERS)
+                ->where([
+                    'elementId' => $element->id,
+                    'ownerId' => $owner->getCanonicalId(),
+                ])
+                ->delete();
 
             // Remove the draft data, but preserve the canonicalId
             $element->setPrimaryOwner($owner);
@@ -1578,7 +1576,7 @@ JS, [
             }
 
             if (!$success) {
-                \Illuminate\Support\Facades\DB::rollBack();
+                DbFacade::rollBack();
                 return $this->_asFailure($element, mb_ucfirst(Craft::t('app', 'Couldn’t save {type}.', [
                     'type' => $element::lowerDisplayName(),
                 ])));
@@ -1588,9 +1586,9 @@ JS, [
                 Craft::$app->getDrafts()->removeDraftData($element);
             }
 
-            \Illuminate\Support\Facades\DB::commit();
+            DbFacade::commit();
         } catch (Throwable $e) {
-            \Illuminate\Support\Facades\DB::rollBack();
+            DbFacade::rollBack();
             throw $e;
         }
 
@@ -1689,7 +1687,7 @@ JS, [
 
         $newElementInfo = [];
 
-        Craft::$app->getDb()->transaction(function() use ($elementInfo, $newAttributes, &$newElementInfo) {
+        DbFacade::transaction(function() use ($elementInfo, $newAttributes, &$newElementInfo) {
             $elementsService = Craft::$app->getElements();
             $elementsService->ensureBulkOp(function() use ($elementInfo, $newAttributes, &$newElementInfo, $elementsService) {
                 foreach ($elementInfo as $info) {
@@ -1928,7 +1926,7 @@ JS, [
             $draftElementUids[$event->canonical->uid] = $event->draft->uid;
         });
 
-        \Illuminate\Support\Facades\DB::beginTransaction();
+        DbFacade::beginTransaction();
 
         try {
             // Are we creating the draft here?
@@ -1953,15 +1951,15 @@ JS, [
             $element->setScenario(Element::SCENARIO_ESSENTIALS);
 
             if (!$elementsService->saveElement($element)) {
-                \Illuminate\Support\Facades\DB::rollBack();
+                DbFacade::rollBack();
                 return $this->_asFailure($element, mb_ucfirst(Craft::t('app', 'Couldn’t save {type}.', [
                     'type' => Craft::t('app', 'draft'),
                 ])));
             }
 
-            \Illuminate\Support\Facades\DB::commit();
+            DbFacade::commit();
         } catch (Throwable $e) {
-            \Illuminate\Support\Facades\DB::rollBack();
+            DbFacade::rollBack();
             throw $e;
         }
 

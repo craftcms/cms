@@ -10,8 +10,6 @@ namespace craft\console\controllers;
 use Craft;
 use craft\base\Event;
 use craft\console\Controller;
-use craft\db\Query;
-use craft\db\Table;
 use craft\elements\Category;
 use craft\elements\Entry;
 use craft\elements\Tag;
@@ -26,7 +24,10 @@ use craft\models\Section;
 use craft\services\Entries as EntriesService;
 use craft\services\ProjectConfig;
 use craft\services\Structures;
+use CraftCms\Cms\Config\GeneralConfig;
+use CraftCms\Cms\Db\Table;
 use CraftCms\Cms\Support\Arr;
+use Illuminate\Support\Facades\DB as DbFacade;
 use yii\base\InvalidConfigException;
 use yii\console\ExitCode;
 use yii\helpers\Console;
@@ -171,30 +172,31 @@ class EntrifyController extends Controller
                     $category,
                     &$authorData,
                 ) {
-                    Db::insert(Table::ENTRIES, [
-                        'id' => $category->id,
-                        'sectionId' => $section->id,
-                        'typeId' => $entryType->id,
-                        'postDate' => Db::prepareDateForDb($category->dateCreated),
-                        'dateCreated' => Db::prepareDateForDb($category->dateCreated),
-                        'dateUpdated' => Db::prepareDateForDb($category->dateUpdated),
-                    ]);
+                    DbFacade::table(Table::ENTRIES)
+                        ->insert([
+                            'id' => $category->id,
+                            'sectionId' => $section->id,
+                            'typeId' => $entryType->id,
+                            'postDate' => $category->dateCreated,
+                            'dateCreated' => $category->dateCreated,
+                            'dateUpdated' => $category->dateUpdated,
+                        ]);
 
-                    Db::update(Table::ELEMENTS, [
-                        'type' => Entry::class,
-                        'dateDeleted' => null,
-                    ], [
-                        'id' => $category->id,
-                    ]);
+                    DbFacade::table(Table::ELEMENTS)
+                        ->where('id', $category->id)
+                        ->update([
+                            'type' => Entry::class,
+                            'dateDeleted' => null,
+                        ]);
 
-                    Db::delete(Table::CATEGORIES, [
-                        'id' => $category->id,
-                    ]);
+                    DbFacade::table(Table::CATEGORIES)
+                        ->where('id', $category->id)
+                        ->delete();
 
-                    Db::delete(Table::STRUCTUREELEMENTS, [
-                        'structureId' => $categoryGroup->structureId,
-                        'elementId' => $category->id,
-                    ]);
+                    DbFacade::table(Table::STRUCTUREELEMENTS)
+                        ->where('structureId', $categoryGroup->structureId)
+                        ->where('elementId', $category->id)
+                        ->delete();
 
                     if ($section->type === Section::TYPE_STRUCTURE) {
                         $entry = Entry::find()
@@ -220,11 +222,16 @@ class EntrifyController extends Controller
                         $entriesByLevel[$entry->level] = $entry;
                     }
 
-                    $authorData[] = [$category->id, $author->id, 1];
+                    $authorData[] = [
+                        'entryId' => $category->id,
+                        'authorId' => $author->id,
+                        'sortOrder' => 1,
+                    ];
                 });
             }
 
-            Db::batchInsert(Table::ENTRIES_AUTHORS, ['entryId', 'authorId', 'sortOrder'], $authorData);
+            DbFacade::table(Table::ENTRIES_AUTHORS)
+                ->insert($authorData);
         }
 
         $this->success('Categories converted.');
@@ -363,31 +370,37 @@ class EntrifyController extends Controller
                     $tag,
                     &$authorData
                 ) {
-                    Db::insert(Table::ENTRIES, [
-                        'id' => $tag->id,
-                        'sectionId' => $section->id,
-                        'typeId' => $entryType->id,
-                        'postDate' => Db::prepareDateForDb($tag->dateCreated),
-                        'dateCreated' => Db::prepareDateForDb($tag->dateCreated),
-                        'dateUpdated' => Db::prepareDateForDb($tag->dateUpdated),
-                    ]);
+                    DbFacade::table(Table::ENTRIES)
+                        ->insert([
+                            'id' => $tag->id,
+                            'sectionId' => $section->id,
+                            'typeId' => $entryType->id,
+                            'postDate' => $tag->dateCreated,
+                            'dateCreated' => $tag->dateCreated,
+                            'dateUpdated' => $tag->dateUpdated,
+                        ]);
 
-                    Db::update(Table::ELEMENTS, [
-                        'type' => Entry::class,
-                        'dateDeleted' => null,
-                    ], [
-                        'id' => $tag->id,
-                    ]);
+                    DbFacade::table(Table::ELEMENTS)
+                        ->where('id', $tag->id)
+                        ->update([
+                            'type' => Entry::class,
+                            'dateDeleted' => null,
+                        ]);
 
-                    Db::delete(Table::TAGS, [
-                        'id' => $tag->id,
-                    ]);
+                    DbFacade::table(Table::TAGS)
+                        ->where('id', $tag->id)
+                        ->delete();
 
-                    $authorData[] = [$tag->id, $author->id, 1];
+                    $authorData[] = [
+                        'entryId' => $tag->id,
+                        'authorId' => $author->id,
+                        'sortOrder' => 1,
+                    ];
                 });
             }
 
-            Db::batchInsert(Table::ENTRIES_AUTHORS, ['entryId', 'authorId', 'sortOrder'], $authorData);
+            DbFacade::table(Table::ENTRIES_AUTHORS)
+                ->insert($authorData);
         }
 
         $this->success('Tags converted.');
@@ -500,31 +513,32 @@ class EntrifyController extends Controller
                 Craft::$app->getElements()->deleteElement($oldEntry, true);
             }
 
-            Db::insert(Table::ENTRIES, [
-                'id' => $globalSet->id,
-                'sectionId' => $section->id,
-                'typeId' => $entryType->id,
-                'postDate' => Db::prepareDateForDb($globalSet->dateCreated),
-                'dateCreated' => Db::prepareDateForDb($globalSet->dateCreated),
-                'dateUpdated' => Db::prepareDateForDb($globalSet->dateUpdated),
-            ]);
+            DbFacade::table(Table::ENTRIES)
+                ->insert([
+                    'id' => $globalSet->id,
+                    'sectionId' => $section->id,
+                    'typeId' => $entryType->id,
+                    'postDate' => $globalSet->dateCreated,
+                    'dateCreated' => $globalSet->dateCreated,
+                    'dateUpdated' => $globalSet->dateUpdated,
+                ]);
 
-            Db::update(Table::ELEMENTS, [
-                'type' => Entry::class,
-                'dateDeleted' => null,
-            ], [
-                'id' => $globalSet->id,
-            ]);
+            DbFacade::table(Table::ELEMENTS)
+                ->where('id', $globalSet->id)
+                ->update([
+                    'type' => Entry::class,
+                    'dateDeleted' => null,
+                ]);
 
-            Db::update(Table::ELEMENTS_SITES, [
-                'title' => $globalSet->name,
-            ], [
-                'elementId' => $globalSet->id,
-            ]);
+            DbFacade::table(Table::ELEMENTS_SITES)
+                ->where('elementId', $globalSet->id)
+                ->update([
+                    'title' => $globalSet->name,
+                ]);
 
-            Db::delete(Table::GLOBALSETS, [
-                'id' => $globalSet->id,
-            ]);
+            DbFacade::table(Table::GLOBALSETS)
+                ->where('id', $globalSet->id)
+                ->delete();
         });
 
         $this->success('Global set converted.');
@@ -611,7 +625,7 @@ class EntrifyController extends Controller
                     throw new InvalidConfigException('The --author option is required when this command is run non-interactively.');
                 }
                 $usersService = Craft::$app->getUsers();
-                $generalConfig = app(\CraftCms\Cms\Config\GeneralConfig::class);
+                $generalConfig = app(GeneralConfig::class);
                 $what = $generalConfig->useEmailAsUsername ? 'email' : 'username or email';
                 $usernameOrEmail = $this->prompt("Enter the $what of the author that the entries should have:", [
                     'required' => true,
@@ -635,39 +649,40 @@ class EntrifyController extends Controller
 
         $this->do('Updating user permissions', function() use ($map, $updateUserGroups) {
             foreach ($map as $oldPermission => $newPermissions) {
-                $userIds = (new Query())
-                    ->select(['upu.userId'])
-                    ->from(['upu' => Table::USERPERMISSIONS_USERS])
-                    ->innerJoin(['up' => Table::USERPERMISSIONS], '[[up.id]] = [[upu.permissionId]]')
-                    ->where(['up.name' => $oldPermission])
-                    ->column();
+                $userIds = DbFacade::table(Table::USERPERMISSIONS_USERS, 'upu')
+                    ->join(Table::USERPERMISSIONS . ' as up', 'up.id', 'upu.permissionId')
+                    ->where('up.name', $oldPermission)
+                    ->pluck('upu.userId')
+                    ->unique();
 
-                $userIds = array_unique($userIds);
+                if ($userIds->isEmpty()) {
+                    continue;
+                }
 
-                if (!empty($userIds)) {
-                    $insert = [];
+                $insert = [];
 
-                    foreach ($newPermissions as $newPermission) {
-                        $newPermissionId = (new Query())
-                            ->select('id')
-                            ->from(Table::USERPERMISSIONS)
-                            ->where(['name' => $newPermission])
-                            ->scalar();
+                foreach ($newPermissions as $newPermission) {
+                    $newPermissionId = DbFacade::table(Table::USERPERMISSIONS)
+                        ->where('name', $newPermission)
+                        ->value('id');
 
-                        if (!$newPermissionId) {
-                            Db::insert(Table::USERPERMISSIONS, [
+                    if (!$newPermissionId) {
+                        $newPermissionId = DbFacade::table(Table::USERPERMISSIONS)
+                            ->insertGetId([
                                 'name' => $newPermission,
                             ]);
-                            $newPermissionId = Craft::$app->getDb()->getLastInsertID(Table::USERPERMISSIONS);
-                        }
-
-                        foreach ($userIds as $userId) {
-                            $insert[] = [$newPermissionId, $userId];
-                        }
                     }
 
-                    Db::batchInsert(Table::USERPERMISSIONS_USERS, ['permissionId', 'userId'], $insert);
+                    foreach ($userIds as $userId) {
+                        $insert[] = [
+                            'permissionId' => $newPermissionId,
+                            'userId' => $userId,
+                        ];
+                    }
                 }
+
+                DbFacade::table(Table::USERPERMISSIONS_USERS)
+                    ->insert($insert);
             }
 
             if ($updateUserGroups) {

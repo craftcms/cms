@@ -67,20 +67,20 @@ class SoftDeleteBehavior extends Behavior
      * @event ModelEvent an event that is triggered before deleting a record.
      * You may set {@see ModelEvent::$isValid} to be false to stop the deletion.
      */
-    const EVENT_BEFORE_SOFT_DELETE = 'beforeSoftDelete';
+    public const EVENT_BEFORE_SOFT_DELETE = 'beforeSoftDelete';
     /**
      * @event Event an event that is triggered after a record is deleted.
      */
-    const EVENT_AFTER_SOFT_DELETE = 'afterSoftDelete';
+    public const EVENT_AFTER_SOFT_DELETE = 'afterSoftDelete';
     /**
      * @event ModelEvent an event that is triggered before record is restored from "deleted" state.
      * You may set {@see ModelEvent::$isValid} to be false to stop the restoration.
      */
-    const EVENT_BEFORE_RESTORE = 'beforeRestore';
+    public const EVENT_BEFORE_RESTORE = 'beforeRestore';
     /**
      * @event Event an event that is triggered after a record is restored from "deleted" state.
      */
-    const EVENT_AFTER_RESTORE = 'afterRestore';
+    public const EVENT_AFTER_RESTORE = 'afterRestore';
 
     /**
      * @var array values of the owner attributes, which should be applied on soft delete, in format: [attributeName => attributeValue].
@@ -103,7 +103,7 @@ class SoftDeleteBehavior extends Behavior
      * ```
      */
     public $softDeleteAttributeValues = [
-        'isDeleted' => true
+        'isDeleted' => true,
     ];
     /**
      * @var array|null values of the owner attributes, which should be applied on restoration from "deleted" state,
@@ -209,7 +209,7 @@ class SoftDeleteBehavior extends Behavior
             return $this->owner->delete();
         }
 
-        $softDeleteCallback = function () {
+        $softDeleteCallback = function() {
             if ($this->invokeDeleteEvents && !$this->owner->beforeDelete()) {
                 return false;
             }
@@ -323,7 +323,7 @@ class SoftDeleteBehavior extends Behavior
      */
     public function restore()
     {
-        $restoreCallback = function () {
+        $restoreCallback = function() {
             $result = false;
             if ($this->beforeRestore()) {
                 $result = $this->restoreInternal();
@@ -452,6 +452,7 @@ class SoftDeleteBehavior extends Behavior
             return false;
         }
 
+        /** @phpstan-ignore-next-line */
         return $this->owner->isTransactional($operation);
     }
 

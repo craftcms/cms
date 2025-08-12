@@ -108,6 +108,7 @@ use CraftCms\Cms\Announcement\Announcements;
 use CraftCms\Cms\Db\Table;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Support\Env;
+use CraftCms\Cms\Support\Str;
 use Illuminate\Database\QueryException;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Cache as CacheFacade;
@@ -881,11 +882,14 @@ trait ApplicationTrait
 
         $attributes = $info->getAttributes($attributeNames);
 
-        DB::table(Table::INFO)
-            ->updateOrInsert(['id' => 1], array_merge($attributes, [
-                'dateCreated' => Date::now(),
-                'dateUpdated' => Date::now(),
-            ]));
+        DB::table(Table::INFO)->updateOrInsert(
+            ['id' => 1],
+            $attributes + [
+                'dateCreated' => $now = Date::now(),
+                'dateUpdated' => $now,
+                'uid' => Str::uuid(),
+            ],
+        );
 
         $this->setIsInstalled();
 
