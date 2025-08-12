@@ -1270,6 +1270,7 @@ return [
     'Prefix Text' => 'Prefixtext',
     'Prefix must be 5 or less characters long.' => 'Prefix måste vara 5 eller färre tecken långt.',
     'Prefix' => 'Prefix',
+    'Prep {file}' => 'Prep {file}',
     'Prettify query' => 'Prettify-förfrågan',
     'Prettify' => 'Prettify',
     'Prev' => 'Föregående',

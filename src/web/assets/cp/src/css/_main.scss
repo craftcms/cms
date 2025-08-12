@@ -2217,7 +2217,6 @@ ul.icons {
   z-index: 1;
   display: flex;
   white-space: nowrap;
-  align-items: center;
 
   .text {
     border-start-end-radius: 0;
@@ -7616,6 +7615,10 @@ $min2ColWidth: 400px;
           margin-inline-start: var(--s);
           font-size: 0.8em;
         }
+
+        .menu-item-description:empty {
+          display: none;
+        }
       }
     }
   }
@@ -7989,6 +7992,10 @@ textarea.text.fullwidth {
       cursor: not-allowed;
     }
   }
+}
+
+.json-field .CodeMirror-scroll {
+  max-height: 550px;
 }
 
 .link-input {
@@ -8638,14 +8645,18 @@ td.errors .text,
     padding-inline-start: calc(26rem / 16);
   }
 
+  .clear-btn,
+  .filter-btn {
+    width: var(--touch-target-size);
+    height: var(--touch-target-size);
+  }
+
   .clear-btn {
     position: absolute;
     inset-block-start: calc(
       (var(--touch-target-size) - 34px) / -2
     ); /* Responds to min-height of text input */
     inset-inline-end: 0;
-    width: var(--touch-target-size);
-    height: var(--touch-target-size);
   }
 
   &.has-filter-btn {
@@ -8659,7 +8670,6 @@ td.errors .text,
       transform: translateY(-50%);
       inset-inline-end: 4px;
       padding-block: 0 4px;
-      padding-inline: 7px;
       font-size: 14px;
       line-height: 22px;
       cursor: pointer;

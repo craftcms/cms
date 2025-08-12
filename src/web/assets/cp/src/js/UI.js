@@ -15,6 +15,9 @@ Craft.ui = {
     if (config.ariaLabel) {
       $btn.attr('aria-label', config.ariaLabel);
     }
+    if (config.ariaDescribedBy) {
+      $btn.attr('aria-describedby', config.ariaDescribedBy);
+    }
     if (config.role) {
       $btn.attr('role', config.role);
     }
@@ -199,11 +202,15 @@ Craft.ui = {
       class: 'copytext',
     });
 
-    let $input = this.createTextInput(
-      $.extend({}, config, {
-        readonly: true,
-      })
-    ).appendTo($container);
+    const inputConfig = $.extend({}, config, {
+      readonly: true,
+    });
+    if (config.textarea) {
+    }
+    const $input = config.textarea
+      ? this.createTextarea(inputConfig)
+      : this.createTextInput(inputConfig);
+    $input.appendTo($container);
 
     let $btn = $('<button/>', {
       type: 'button',

@@ -1270,6 +1270,7 @@ return [
     'Prefix Text' => 'Präfix-Text',
     'Prefix must be 5 or less characters long.' => 'Präfix darf maximal 5 Zeichen lang sein.',
     'Prefix' => 'Präfix',
+    'Prep {file}' => 'Prep {file}',
     'Prettify query' => 'Abfragestring formatieren',
     'Prettify' => 'Formatieren',
     'Prev' => 'Vorheriger',

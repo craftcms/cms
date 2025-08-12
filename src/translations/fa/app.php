@@ -1270,6 +1270,7 @@ return [
     'Prefix Text' => 'متن پیشوند',
     'Prefix must be 5 or less characters long.' => 'طول کاراکترهای پیشوند باید کمتر مساوی 5 کاراکتر باشد.',
     'Prefix' => 'پیشوند',
+    'Prep {file}' => 'Prep {file}',
     'Prettify query' => 'زیباسازی پرس‌وجو',
     'Prettify' => 'زیباسازی',
     'Prev' => 'قبلی',

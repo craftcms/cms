@@ -1270,6 +1270,7 @@ return [
     'Prefix Text' => 'טקסט קידומת',
     'Prefix must be 5 or less characters long.' => 'על הקידומת להיות באורך 5 תווים או פחות.',
     'Prefix' => 'קידומת',
+    'Prep {file}' => 'Prep {file}',
     'Prettify query' => 'שאילתת Prettify',
     'Prettify' => 'Prettify',
     'Prev' => 'קודם',

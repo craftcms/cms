@@ -846,7 +846,11 @@ class UsersController extends Controller
         // POST request. They've just set the password.
         $code = $this->request->getRequiredBodyParam('code');
         $uid = $this->request->getRequiredParam('id');
-        $user = Craft::$app->getUsers()->getUserByUid($uid);
+        $user = User::find()
+            ->uid($uid)
+            ->status(null)
+            ->addSelect(['users.password'])
+            ->one();
 
         if (!$user) {
             throw new BadRequestHttpException("Invalid user UUID: $uid");
@@ -2418,7 +2422,7 @@ JS);
      */
     private function _handleLoginFailure(?string $authError = null, ?User $user = null): ?Response
     {
-        $message = UserHelper::getLoginFailureMessage($authError, $user);
+        [$authError, $message] = UserHelper::getLoginFailureInfo($authError, $user);
 
         // Fire a 'loginFailure' event
         if ($this->hasEventHandlers(self::EVENT_LOGIN_FAILURE)) {
@@ -2430,7 +2434,6 @@ JS);
             $this->trigger(self::EVENT_LOGIN_FAILURE, $event);
             $message = $event->message;
         }
-
 
         return $this->asFailure(
             $message,

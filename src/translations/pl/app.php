@@ -1270,6 +1270,7 @@ return [
     'Prefix Text' => 'Tekst przedrostka',
     'Prefix must be 5 or less characters long.' => 'Prefiks musi mieć 5 lub mniej znaków.',
     'Prefix' => 'Prefiks',
+    'Prep {file}' => 'Prep {file}',
     'Prettify query' => 'Upiększ zapytanie',
     'Prettify' => 'Upiększ',
     'Prev' => 'Poprzedni',

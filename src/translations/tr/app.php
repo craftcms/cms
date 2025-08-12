@@ -1270,6 +1270,7 @@ return [
     'Prefix Text' => 'Ön Ek Metni',
     'Prefix must be 5 or less characters long.' => 'Ön ek uzunluğu en fazla 5 karakter olabilir.',
     'Prefix' => 'Ön ek',
+    'Prep {file}' => 'Prep {file}',
     'Prettify query' => 'Prettify sorgusu',
     'Prettify' => 'Prettify',
     'Prev' => 'Önceki',

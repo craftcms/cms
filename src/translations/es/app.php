@@ -1270,6 +1270,7 @@ return [
     'Prefix Text' => 'Texto de prefijo',
     'Prefix must be 5 or less characters long.' => 'La extensión del prefijo no puede superar los 5 caracteres.',
     'Prefix' => 'Prefijo',
+    'Prep {file}' => 'Prep {file}',
     'Prettify query' => 'Consulta de Prettify',
     'Prettify' => 'Prettify',
     'Prev' => 'Anterior',

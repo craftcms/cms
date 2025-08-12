@@ -1832,7 +1832,9 @@ Craft.ElementEditor = Garnish.Base.extend(
 
       if (this.settings.draftName !== null) {
         params.push(
-          `${this.namespaceInputName('draftName')}=${this.settings.draftName}`
+          `${this.namespaceInputName('draftName')}=${encodeURIComponent(
+            this.settings.draftName
+          )}`
         );
       }
 

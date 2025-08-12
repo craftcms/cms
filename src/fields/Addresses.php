@@ -37,6 +37,7 @@ use craft\gql\types\input\Addresses as AddressesInput;
 use craft\helpers\Db;
 use craft\helpers\Gql;
 use craft\validators\ArrayValidator;
+use craft\web\assets\cp\CpAsset;
 use CraftCms\Cms\Field\Enums\ElementIndexViewMode;
 use CraftCms\Cms\Support\Str;
 use GraphQL\Type\Definition\Type;
@@ -364,9 +365,12 @@ class Addresses extends Field implements
 
     private function settingsHtml(bool $readOnly): string
     {
+        $bundle = Craft::$app->getView()->registerAssetBundle(CpAsset::class);
+
         return Craft::$app->getView()->renderTemplate('_components/fieldtypes/Addresses/settings.twig', [
             'field' => $this,
             'readOnly' => $readOnly,
+            'baseImageUrl' => "$bundle->baseUrl/images/nested-view-modes",
         ]);
     }
 

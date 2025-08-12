@@ -46,7 +46,7 @@ final readonly class UtilitiesController
         }
 
         if ($this->utilitiesService->checkAuthorization($class) === false) {
-            abort(403, 'User not permitted to access the "'.$class::displayName().'".');
+            abort(403, sprintf('User not permitted to access the “%s” utility.', $class::displayName()));
         }
 
         $this->craft->getView()->registerAssetBundle(UtilitiesAsset::class);

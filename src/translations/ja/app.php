@@ -1270,6 +1270,7 @@ return [
     'Prefix Text' => 'プレフィックス',
     'Prefix must be 5 or less characters long.' => 'プレフィックスは 5 文字以内である必要があります。',
     'Prefix' => 'プレフィックス',
+    'Prep {file}' => 'Prep {file}',
     'Prettify query' => 'Prettify クエリ',
     'Prettify' => 'Prettify',
     'Prev' => '前',

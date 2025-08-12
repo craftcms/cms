@@ -141,9 +141,11 @@ JS, [
             $static,
         ]);
 
-        return Html::textarea($this->handle, $value?->getJson(true), [
-            'id' => $id,
-        ]);
+        return Html::beginTag('div', ['class' => 'json-field']) .
+            Html::textarea($this->handle, $value?->getJson(true), [
+                'id' => $id,
+            ]) .
+            Html::endTag('div');
     }
 
     /**

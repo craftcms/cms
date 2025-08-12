@@ -250,7 +250,8 @@ class Auth extends Component
             return Craft::t('app', 'Invalid verification code.');
         }
 
-        return UserHelper::getLoginFailureMessage($authError, $user);
+        [, $message] = UserHelper::getLoginFailureInfo($authError, $user);
+        return $message;
     }
 
     /**

@@ -34,7 +34,7 @@ class FallbackNameExpression extends NameExpression
     public function compile(Compiler $compiler): void
     {
         // no special handling for _self/etc.,or always-defined variables
-        if ($this->isSpecial() || $this->getAttribute('always_defined')) {
+        if (str_starts_with($this->getAttribute('name'), '_') || $this->getAttribute('always_defined')) {
             parent::compile($compiler);
             return;
         }
@@ -43,7 +43,7 @@ class FallbackNameExpression extends NameExpression
 
         $compiler->addDebugInfo($this);
 
-        if ($this->getAttribute('is_defined_test')) {
+        if ($this->isDefinedTestEnabled()) {
             $compiler
                 ->raw('(array_key_exists(')
                 ->string($name)

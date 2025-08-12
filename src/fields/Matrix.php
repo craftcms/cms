@@ -49,6 +49,7 @@ use craft\queue\jobs\ResaveElements;
 use craft\validators\ArrayValidator;
 use craft\validators\StringValidator;
 use craft\validators\UriFormatValidator;
+use craft\web\assets\cp\CpAsset;
 use craft\web\assets\matrix\MatrixAsset;
 use craft\web\View;
 use CraftCms\Cms\Element\Enums\PropagationMethod;
@@ -679,6 +680,8 @@ class Matrix extends Field implements
             $entryTypeSelectJs = $view->clearJsBuffer();
         }
 
+        $bundle = Craft::$app->getView()->registerAssetBundle(CpAsset::class);
+
         return $view->renderTemplate('_components/fieldtypes/Matrix/settings.twig', [
             'field' => $this,
             'entryTypes' => $entryTypes,
@@ -691,6 +694,7 @@ class Matrix extends Field implements
                 Entry::indexViewModes(),
                 fn(array $viewMode) => !($viewMode['structuresOnly'] ?? false),
             ),
+            'baseImageUrl' => "$bundle->baseUrl/images/nested-view-modes",
             'readOnly' => $readOnly,
         ]);
     }

@@ -1270,6 +1270,7 @@ return [
     'Prefix Text' => 'Præfikstekst',
     'Prefix must be 5 or less characters long.' => 'Præfikset skal være på 5 tegn eller mindre.',
     'Prefix' => 'Præfiks',
+    'Prep {file}' => 'Prep {file}',
     'Prettify query' => 'Gør forespørgsel pænere',
     'Prettify' => 'Gør pænere',
     'Prev' => 'Forrige',

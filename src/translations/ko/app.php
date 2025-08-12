@@ -1270,6 +1270,7 @@ return [
     'Prefix Text' => '접두사 텍스트',
     'Prefix must be 5 or less characters long.' => '접두사는 5자 이하여야 합니다.',
     'Prefix' => '접두사',
+    'Prep {file}' => 'Prep {file}',
     'Prettify query' => 'Prettify 쿼리',
     'Prettify' => 'Prettify',
     'Prev' => '이전',

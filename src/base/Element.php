@@ -28,6 +28,7 @@ use craft\elements\actions\SetStatus;
 use craft\elements\actions\View as ViewAction;
 use craft\elements\conditions\ElementCondition;
 use craft\elements\conditions\ElementConditionInterface;
+use craft\elements\ContentBlock;
 use craft\elements\db\EagerLoadPlan;
 use craft\elements\db\ElementQuery;
 use craft\elements\db\ElementQueryInterface;
@@ -37,6 +38,7 @@ use craft\elements\Entry;
 use craft\elements\exporters\Expanded;
 use craft\elements\exporters\Raw;
 use craft\elements\User;
+use craft\errors\FieldNotFoundException;
 use craft\errors\InvalidFieldException;
 use craft\events\AuthorizationCheckEvent;
 use craft\events\DefineAltActionsEvent;
@@ -250,7 +252,7 @@ abstract class Element extends Component implements ElementInterface
      *     Entry::class,
      *     Element::EVENT_REGISTER_TABLE_ATTRIBUTES,
      *     function(RegisterElementTableAttributesEvent $e) {
-     *         $e->attributes[] = 'authorExpertise';
+     *         $e->tableAttributes['authorExpertise'] = ['label' => 'Author Expertise'];
      *     }
      * );
      *
@@ -3535,6 +3537,7 @@ abstract class Element extends Component implements ElementInterface
                         'html' => Cp::elementChipHtml($owner, [
                             'showDraftName' => false,
                             'class' => 'chromeless',
+                            'hyperlink' => true,
                         ]),
                     ],
                 ];
@@ -5242,7 +5245,7 @@ JS, [
     private function clonedFieldValue(string $fieldHandle): mixed
     {
         $value = $this->getFieldValue($fieldHandle);
-        if (is_object($value) && !$value instanceof UnitEnum) {
+        if (is_object($value) && !$value instanceof UnitEnum && !$value instanceof ContentBlock) {
             return clone $value;
         }
         return $value;
@@ -6026,7 +6029,13 @@ JS, [
                         $field = Craft::$app->getFields()->getFieldByUid($uid);
                     } else {
                         $layoutElement = $this->getFieldLayout()?->getElementByUid($uid);
-                        $field = $layoutElement instanceof CustomField ? $layoutElement->getField() : null;
+                        if ($layoutElement instanceof CustomField) {
+                            try {
+                                $field = $layoutElement->getField();
+                            } catch (FieldNotFoundException) {
+                            }
+                        }
+                        $field ??= null;
                     }
 
                     if ($field instanceof PreviewableFieldInterface) {
@@ -6071,7 +6080,10 @@ JS, [
             $instanceUid = $matches[1];
             $layoutElement = $this->getFieldLayout()?->getElementByUid($instanceUid);
             if ($layoutElement instanceof CustomField) {
-                $field = $layoutElement->getField();
+                try {
+                    $field = $layoutElement->getField();
+                } catch (FieldNotFoundException) {
+                }
             }
         }
 

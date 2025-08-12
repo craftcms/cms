@@ -2733,14 +2733,7 @@ class ElementQuery extends Query implements ElementQueryInterface
                     $alias = $field->handle . ($key !== '*' ? ".$key" : '');
                     $resolver = fn() => $field->getValueSql($key !== '*' ? $key : null);
 
-                    if (isset($this->_columnMap[$alias])) {
-                        if (!is_array($this->_columnMap[$alias])) {
-                            $this->_columnMap[$alias] = [$this->_columnMap[$alias]];
-                        }
-                        $this->_columnMap[$alias][] = $resolver;
-                    } else {
-                        $this->_columnMap[$alias] = $resolver;
-                    }
+                    $this->_addToColumnMap($alias, $resolver);
 
                     // for mysql, we have to make sure text column type is cast to char, otherwise it won't be sorted correctly
                     // see https://github.com/craftcms/cms/issues/15609
@@ -2755,9 +2748,21 @@ class ElementQuery extends Query implements ElementQueryInterface
             $qb = $db->getQueryBuilder();
             foreach ($this->generatedFields as $field) {
                 if (($field['handle'] ?? '') !== '') {
-                    $this->_columnMap[$field['handle']] = $qb->jsonExtract('elements_sites.content', [$field['uid']]);
+                    $this->_addToColumnMap($field['handle'], $qb->jsonExtract('elements_sites.content', [$field['uid']]));
                 }
             }
+        }
+    }
+
+    private function _addToColumnMap(string $alias, string|callable $column): void
+    {
+        if (isset($this->_columnMap[$alias])) {
+            if (!is_array($this->_columnMap[$alias])) {
+                $this->_columnMap[$alias] = [$this->_columnMap[$alias]];
+            }
+            $this->_columnMap[$alias][] = $column;
+        } else {
+            $this->_columnMap[$alias] = $column;
         }
     }
 
@@ -2834,12 +2839,18 @@ class ElementQuery extends Query implements ElementQueryInterface
 
         if (!empty($this->generatedFields)) {
             $qb = Craft::$app->getDb()->getQueryBuilder();
+            $generatedFieldColumns = [];
             foreach ($this->generatedFields as $field) {
                 $handle = $field['handle'] ?? '';
                 if ($handle !== '' && isset($fieldAttributes->$handle) && !isset($fieldsByHandle[$handle])) {
-                    $column = $qb->jsonExtract('elements_sites.content', [$field['uid']]);
-                    $this->subQuery->andWhere(Db::parseParam($column, $fieldAttributes->$handle));
+                    $generatedFieldColumns[$handle][] = $qb->jsonExtract('elements_sites.content', [$field['uid']]);
                 }
+            }
+            foreach ($generatedFieldColumns as $handle => $columns) {
+                $column = count($columns) === 1
+                    ? $columns[0]
+                    : (new CoalesceColumnsExpression($columns))->getSql($this->subQuery->params);
+                $this->subQuery->andWhere(Db::parseParam($column, $fieldAttributes->$handle));
             }
         }
     }
