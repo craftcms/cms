@@ -15,11 +15,8 @@ use craft\behaviors\RevisionBehavior;
 use craft\cache\ElementQueryTagDependency;
 use craft\controllers\ElementsController;
 use craft\db\CoalesceColumnsExpression;
-use craft\db\Command;
 use craft\db\Connection;
 use craft\db\ExcludeDescendantIdsExpression;
-use craft\db\Query;
-use craft\db\Table;
 use craft\elements\actions\Delete;
 use craft\elements\actions\DeleteActionInterface;
 use craft\elements\actions\Duplicate;
@@ -34,7 +31,6 @@ use craft\elements\db\ElementQuery;
 use craft\elements\db\ElementQueryInterface;
 use craft\elements\db\NestedElementQueryInterface;
 use craft\elements\ElementCollection;
-use craft\elements\Entry;
 use craft\elements\exporters\Expanded;
 use craft\elements\exporters\Raw;
 use craft\elements\User;
@@ -73,7 +69,6 @@ use craft\fieldlayoutelements\CustomField;
 use craft\gql\interfaces\Element as ElementGqlType;
 use craft\helpers\App;
 use craft\helpers\Cp;
-use craft\helpers\Db;
 use craft\helpers\ElementHelper;
 use craft\helpers\Html;
 use craft\helpers\Template;
@@ -88,13 +83,17 @@ use craft\validators\SlugValidator;
 use craft\validators\StringValidator;
 use craft\web\UploadedFile;
 use craft\web\View;
+use CraftCms\Cms\Db\Table;
 use CraftCms\Cms\Element\Enums\AttributeStatus;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Enums\Color;
 use CraftCms\Cms\Support\Str;
 use CraftCms\DependencyAwareCache\Facades\DependencyCache;
 use GraphQL\Type\Definition\Type;
+use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Date;
+use Illuminate\Support\Facades\DB;
 use ReflectionClass;
 use Throwable;
 use Traversable;
@@ -999,6 +998,7 @@ abstract class Element extends Component implements ElementInterface
      * Defines the sources that elements of this type may belong to.
      *
      * @param string $context The context ('index', 'modal', 'field', or 'settings').
+     *
      * @return array The sources.
      * @see sources()
      */
@@ -1055,6 +1055,7 @@ abstract class Element extends Component implements ElementInterface
      * Defines the field layouts associated with elements for a given source.
      *
      * @param string|null $source The selected source’s key, or `null` if all known field layouts should be returned
+     *
      * @return FieldLayout[] The associated field layouts
      * @see fieldLayouts()
      * @since 3.5.0
@@ -1082,7 +1083,7 @@ abstract class Element extends Component implements ElementInterface
                     isset($action['type']) &&
                     ($action['type'] === $type || is_subclass_of($action['type'], $type))
                 )
-            )
+            ),
         );
 
         // Prepend Duplicate?
@@ -1150,6 +1151,7 @@ abstract class Element extends Component implements ElementInterface
      * Defines the available bulk element actions for a given source.
      *
      * @param string $source The selected source’s key, if any.
+     *
      * @return array The available bulk element actions.
      * @see actions()
      */
@@ -1182,6 +1184,7 @@ abstract class Element extends Component implements ElementInterface
      * Defines the available element exporters for a given source.
      *
      * @param string $source The selected source’s key
+     *
      * @return array The available element exporters
      * @see exporters()
      * @since 3.4.0
@@ -1291,7 +1294,10 @@ abstract class Element extends Component implements ElementInterface
                     $variables['structure'] = Craft::$app->getStructures()->getStructureById($source['structureId']);
 
                     // Are they allowed to make changes to this structure?
-                    if (in_array($context, ['index', 'embedded-index']) && $variables['structure'] && !empty($source['structureEditable'])) {
+                    if (in_array($context, [
+                            'index',
+                            'embedded-index',
+                        ]) && $variables['structure'] && !empty($source['structureEditable'])) {
                         $variables['structureEditable'] = true;
 
                         // Let StructuresController know that this user can make changes to the structure
@@ -1300,7 +1306,8 @@ abstract class Element extends Component implements ElementInterface
                 } else {
                     unset($viewState['order']);
                 }
-            } elseif ($orderBy = self::_indexOrderBy($sourceKey, $viewState['order'], $viewState['sort'] ?? 'asc', $db)) {
+            } elseif ($orderBy = self::_indexOrderBy($sourceKey, $viewState['order'], $viewState['sort'] ?? 'asc',
+                $db)) {
                 $elementQuery->orderBy($orderBy);
 
                 if ((!is_array($orderBy) || !isset($orderBy['score'])) && !empty($viewState['orderHistory'])) {
@@ -1320,7 +1327,7 @@ abstract class Element extends Component implements ElementInterface
             $variables['attributes'] = Craft::$app->getElementSources()->getTableAttributes(
                 static::class,
                 $sourceKey,
-                $viewState['tableColumns'] ?? null
+                $viewState['tableColumns'] ?? null,
             );
 
             // Prepare the element query for each of the table attributes
@@ -1414,8 +1421,10 @@ abstract class Element extends Component implements ElementInterface
      * @param ElementQueryInterface $elementQuery
      * @param string $attribute
      */
-    protected static function prepElementQueryForTableAttribute(ElementQueryInterface $elementQuery, string $attribute): void
-    {
+    protected static function prepElementQueryForTableAttribute(
+        ElementQueryInterface $elementQuery,
+        string $attribute,
+    ): void {
         switch ($attribute) {
             case 'ancestors':
                 $elementQuery->andWith(['ancestors', ['status' => null]]);
@@ -1446,6 +1455,7 @@ abstract class Element extends Component implements ElementInterface
      *
      * @param ElementQueryInterface $elementQuery
      * @param string|null $sourceKey
+     *
      * @return ElementInterface[]
      * @since 4.4.0
      */
@@ -1614,6 +1624,7 @@ abstract class Element extends Component implements ElementInterface
      * Returns the list of table attribute keys that should be shown by default.
      *
      * @param string $source The selected source’s key
+     *
      * @return string[] The table attributes.
      * @see defaultTableAttributes()
      * @see tableAttributes()
@@ -1701,7 +1712,7 @@ abstract class Element extends Component implements ElementInterface
             'link', 'uri' => $attribute['placeholder'],
             default => ElementHelper::attributeHtml(is_callable($attribute['placeholder'] ?? null)
                 ? $attribute['placeholder']()
-                : $attribute['placeholder'] ?? $attribute['label']
+                : $attribute['placeholder'] ?? $attribute['label'],
             ),
         };
     }
@@ -1805,7 +1816,7 @@ abstract class Element extends Component implements ElementInterface
                     array_filter($sourceElements, function($sourceElement) use ($field) {
                         $layoutField = $sourceElement->getFieldLayout()?->getFieldByHandle($field->handle);
                         return $layoutField && $layoutField->id === $field->id;
-                    })
+                    }),
                 );
 
                 if (!empty($fieldSourceElements)) {
@@ -1842,6 +1853,7 @@ abstract class Element extends Component implements ElementInterface
      *
      * @param ElementInterface[] $sourceElements An array of the source elements
      * @param bool $children Whether only direct children should be included
+     *
      * @return array|null The eager-loading element ID mappings, or null if the result should be ignored
      */
     private static function _mapDescendants(array $sourceElements, bool $children): ?array
@@ -1853,35 +1865,26 @@ abstract class Element extends Component implements ElementInterface
         }
 
         // Build the descendant condition & params
-        $condition = ['or'];
+        $descendantStructureQuery = DB::table(Table::STRUCTUREELEMENTS);
 
         foreach ($elementStructureData as $elementStructureDatum) {
-            $thisElementCondition = [
-                'and',
-                ['structureId' => $elementStructureDatum['structureId']],
-                ['>', 'lft', $elementStructureDatum['lft']],
-                ['<', 'rgt', $elementStructureDatum['rgt']],
-            ];
-
-            if ($children) {
-                $thisElementCondition[] = ['level' => $elementStructureDatum['level'] + 1];
-            }
-
-            $condition[] = $thisElementCondition;
+            $descendantStructureQuery->orWhere(function(Builder $query) use ($children, $elementStructureDatum) {
+                $query->where('structureId', $elementStructureDatum['structureId'])
+                    ->where('lft', '>', $elementStructureDatum['lft'])
+                    ->where('rgt', '<', $elementStructureDatum['rgt'])
+                    ->when($children, fn(Builder $query) => $query->where('level', $elementStructureDatum['level'] + 1));
+            });
         }
 
         // Fetch the descendant data
-        $descendantStructureQuery = (new Query())
+        $descendantStructureQuery
             ->select(['structureId', 'lft', 'rgt', 'elementId'])
-            ->from([Table::STRUCTUREELEMENTS])
-            ->where($condition)
-            ->orderBy(['lft' => SORT_ASC]);
+            ->when($children, fn(Builder $query) => $query->addSelect('level'))
+            ->orderBy('lft');
 
-        if ($children) {
-            $descendantStructureQuery->addSelect('level');
-        }
-
-        $descendantStructureData = $descendantStructureQuery->all();
+        $descendantStructureData = $descendantStructureQuery
+            ->get()
+            ->map(fn(object $data) => (array) $data);
 
         // Map the elements to their descendants
         $map = [];
@@ -1914,6 +1917,7 @@ abstract class Element extends Component implements ElementInterface
      *
      * @param ElementInterface[] $sourceElements An array of the source elements
      * @param bool $parents Whether only direct parents should be included
+     *
      * @return array|null The eager-loading element ID mappings, or null if the result should be ignored
      */
     private static function _mapAncestors(array $sourceElements, bool $parents): ?array
@@ -1924,36 +1928,28 @@ abstract class Element extends Component implements ElementInterface
             return null;
         }
 
+        $ancestorStructureQuery = DB::table(Table::STRUCTUREELEMENTS);
+
         // Build the ancestor condition & params
-        $condition = ['or'];
-
         foreach ($elementStructureData as $elementStructureDatum) {
-            $thisElementCondition = [
-                'and',
-                ['structureId' => $elementStructureDatum['structureId']],
-                ['<', 'lft', $elementStructureDatum['lft']],
-                ['>', 'rgt', $elementStructureDatum['rgt']],
-            ];
-
-            if ($parents) {
-                $thisElementCondition[] = ['level' => $elementStructureDatum['level'] - 1];
-            }
-
-            $condition[] = $thisElementCondition;
+            $ancestorStructureQuery->orWhere(function(Builder $query) use ($elementStructureDatum, $parents) {
+                $query->where('structureId', $elementStructureDatum['structureId'])
+                    ->where('lft', '<', $elementStructureDatum['lft'])
+                    ->where('rgt', '>', $elementStructureDatum['rgt'])
+                    ->when($parents, fn(Builder $query) => $query->where('level', $elementStructureDatum['level'] - 1));
+                ;
+            });
         }
 
         // Fetch the ancestor data
-        $ancestorStructureQuery = (new Query())
+        $ancestorStructureQuery
             ->select(['structureId', 'lft', 'rgt', 'elementId'])
-            ->from([Table::STRUCTUREELEMENTS])
-            ->where($condition)
-            ->orderBy(['lft' => SORT_ASC]);
+            ->when($parents, fn(Builder $query) => $query->addSelect('level'))
+            ->orderBy('lft');
 
-        if ($parents) {
-            $ancestorStructureQuery->addSelect('level');
-        }
-
-        $ancestorStructureData = $ancestorStructureQuery->all();
+        $ancestorStructureData = $ancestorStructureQuery
+            ->get()
+            ->map(fn(object $data) => (array) $data);
 
         // Map the elements to their ancestors
         $map = [];
@@ -1988,6 +1984,7 @@ abstract class Element extends Component implements ElementInterface
 
     /**
      * @param ElementInterface[] $elements
+     *
      * @return array
      */
     private static function _structureDataForElements(array $elements, bool $withLevel): array
@@ -2010,18 +2007,15 @@ abstract class Element extends Component implements ElementInterface
         }
 
         if (!empty($fetchDataForIds)) {
-            // Get the structure data for these elements
-            $selectColumns = ['structureId', 'elementId', 'lft', 'rgt'];
+            $fetched = DB::table(Table::STRUCTUREELEMENTS)
+                ->whereIn('elementId', $fetchDataForIds)
+                ->select(['structureId', 'elementId', 'lft', 'rgt'])
+                ->when($withLevel, fn(Builder $query) => $query->addSelect('level'))
+                ->get()
+                ->map(fn(object $data) => (array) $data)
+                ->all();
 
-            if ($withLevel) {
-                $selectColumns[] = 'level';
-            }
-
-            array_push($data, ...(new Query())
-                ->select($selectColumns)
-                ->from([Table::STRUCTUREELEMENTS])
-                ->where(['elementId' => $fetchDataForIds])
-                ->all());
+            array_push($data, ...$fetched);
         }
 
         return $data;
@@ -2031,6 +2025,7 @@ abstract class Element extends Component implements ElementInterface
      * Returns an eager-loading map for the source elements in other locales.
      *
      * @param ElementInterface[] $sourceElements An array of the source elements
+     *
      * @return array The eager-loading element ID mappings
      */
     private static function _mapLocalized(array $sourceElements): array
@@ -2070,6 +2065,7 @@ abstract class Element extends Component implements ElementInterface
      * Returns an eager-loading map for the source elements’ current revisions.
      *
      * @param ElementInterface[] $sourceElements An array of the source elements
+     *
      * @return array The eager-loading element ID mappings
      */
     private static function _mapCurrentRevisions(array $sourceElements): array
@@ -2077,17 +2073,17 @@ abstract class Element extends Component implements ElementInterface
         // Get the source element IDs
         $sourceElementIds = array_map(fn(ElementInterface $element) => $element->id, $sourceElements);
 
-        $map = (new Query())
+        $map = DB::table(Table::ELEMENTS, 're')
+            ->join(Table::REVISIONS . ' as r', 'r.id', '=', 're.revisionId')
+            ->join(Table::ELEMENTS . ' as se', 'se.id', '=', 'r.canonicalId')
+            ->whereColumn('re.dateCreated', '=', 'se.dateUpdated')
+            ->whereIn('se.id', $sourceElementIds)
             ->select([
-                'source' => 'se.id',
-                'target' => 're.id',
+                'se.id as source',
+                're.id as target',
             ])
-            ->from(['re' => Table::ELEMENTS])
-            ->innerJoin(['r' => Table::REVISIONS], '[[r.id]] = [[re.revisionId]]')
-            ->innerJoin(['se' => Table::ELEMENTS], '[[se.id]] = [[r.canonicalId]]')
-            ->where('[[re.dateCreated]] = [[se.dateUpdated]]')
-            ->andWhere(['se.id' => $sourceElementIds])
-            ->all();
+            ->get()
+            ->map(fn(object $data) => (array) $data);
 
         return [
             'elementType' => static::class,
@@ -2100,6 +2096,7 @@ abstract class Element extends Component implements ElementInterface
      * Returns an eager-loading map for the source elements’ current drafts.
      *
      * @param ElementInterface[] $sourceElements An array of the source elements
+     *
      * @return array The eager-loading element ID mappings
      */
     private static function _mapDrafts(array $sourceElements): array
@@ -2107,15 +2104,15 @@ abstract class Element extends Component implements ElementInterface
         // Get the source element IDs
         $sourceElementIds = array_map(fn(ElementInterface $element) => $element->id, $sourceElements);
 
-        $map = (new Query())
+        $map = DB::table(Table::DRAFTS, 'd')
+            ->join(Table::ELEMENTS . ' as e', 'e.draftId', '=', 'd.id')
+            ->whereIn('d.canonicalId', $sourceElementIds)
             ->select([
-                'source' => 'd.canonicalId',
-                'target' => 'e.id',
+                'd.canonicalId as source',
+                'e.id as target',
             ])
-            ->from(['d' => Table::DRAFTS])
-            ->innerJoin(['e' => Table::ELEMENTS], '[[e.draftId]] = [[d.id]]')
-            ->where(['d.canonicalId' => $sourceElementIds])
-            ->all();
+            ->get()
+            ->map(fn(object $data) => (array) $data);
 
         return [
             'elementType' => static::class,
@@ -2128,6 +2125,7 @@ abstract class Element extends Component implements ElementInterface
      * Returns an eager-loading map for the source elements’ current revisions.
      *
      * @param ElementInterface[] $sourceElements An array of the source elements
+     *
      * @return array The eager-loading element ID mappings
      */
     private static function _mapRevisions(array $sourceElements): array
@@ -2135,15 +2133,15 @@ abstract class Element extends Component implements ElementInterface
         // Get the source element IDs
         $sourceElementIds = array_map(fn(ElementInterface $element) => $element->id, $sourceElements);
 
-        $map = (new Query())
+        $map = DB::table(Table::REVISIONS, 'r')
+            ->join(Table::ELEMENTS . ' as e', 'e.revisionId', '=', 'r.id')
+            ->whereIn('r.canonicalId', $sourceElementIds)
             ->select([
-                'source' => 'r.canonicalId',
-                'target' => 'e.id',
+                'r.canonicalId as source',
+                'e.id as target',
             ])
-            ->from(['r' => Table::REVISIONS])
-            ->innerJoin(['e' => Table::ELEMENTS], '[[e.revisionId]] = [[r.id]]')
-            ->where(['r.canonicalId' => $sourceElementIds])
-            ->all();
+            ->get()
+            ->map(fn(object $data) => (array) $data);
 
         return [
             'elementType' => static::class,
@@ -2156,6 +2154,7 @@ abstract class Element extends Component implements ElementInterface
      * Returns an eager-loading map for the source elements’ draft creators.
      *
      * @param ElementInterface[] $sourceElements An array of the source elements
+     *
      * @return array The eager-loading element ID mappings
      */
     private static function _mapDraftCreators(array $sourceElements): array
@@ -2163,16 +2162,16 @@ abstract class Element extends Component implements ElementInterface
         // Get the source element IDs
         $sourceElementIds = array_map(fn(ElementInterface $element) => $element->id, $sourceElements);
 
-        $map = (new Query())
+        $map = DB::table(Table::ELEMENTS, 'e')
+            ->join(Table::DRAFTS . ' as d', 'd.id', '=', 'e.draftId')
+            ->whereIn('e.id', $sourceElementIds)
+            ->whereNotNull('d.creatorId')
             ->select([
-                'source' => 'e.id',
-                'target' => 'd.creatorId',
+                'e.id as source',
+                'd.creatorId as target',
             ])
-            ->from(['e' => Table::ELEMENTS])
-            ->innerJoin(['d' => Table::DRAFTS], '[[d.id]] = [[e.draftId]]')
-            ->where(['e.id' => $sourceElementIds])
-            ->andWhere(['not', ['d.creatorId' => null]])
-            ->all();
+            ->get()
+            ->map(fn(object $data) => (array) $data);
 
         return [
             'elementType' => User::class,
@@ -2184,6 +2183,7 @@ abstract class Element extends Component implements ElementInterface
      * Returns an eager-loading map for the source elements’ revision creators.
      *
      * @param ElementInterface[] $sourceElements An array of the source elements
+     *
      * @return array The eager-loading element ID mappings
      */
     private static function _mapRevisionCreators(array $sourceElements): array
@@ -2191,16 +2191,16 @@ abstract class Element extends Component implements ElementInterface
         // Get the source element IDs
         $sourceElementIds = array_map(fn(ElementInterface $element) => $element->id, $sourceElements);
 
-        $map = (new Query())
+        $map = DB::table(Table::ELEMENTS, 'e')
+            ->join(Table::REVISIONS . ' as r', 'r.id', '=', 'e.revisionId')
+            ->whereIn('e.id', $sourceElementIds)
+            ->whereNotNull('r.creatorId')
             ->select([
-                'source' => 'e.id',
-                'target' => 'r.creatorId',
+                'e.id as source',
+                'r.creatorId as target',
             ])
-            ->from(['e' => Table::ELEMENTS])
-            ->innerJoin(['r' => Table::REVISIONS], '[[r.id]] = [[e.revisionId]]')
-            ->where(['e.id' => $sourceElementIds])
-            ->andWhere(['not', ['r.creatorId' => null]])
-            ->all();
+            ->get()
+            ->map(fn(object $data) => (array) $data);
 
         return [
             'elementType' => User::class,
@@ -2233,6 +2233,7 @@ abstract class Element extends Component implements ElementInterface
      * @param string $attribute
      * @param string $dir `asc` or `desc`
      * @param Connection $db
+     *
      * @return array|ExpressionInterface|false
      */
     private static function _indexOrderBy(
@@ -2274,6 +2275,7 @@ abstract class Element extends Component implements ElementInterface
      * @param string $attribute
      * @param int $dir
      * @param Connection $db
+     *
      * @return bool|string|array|ExpressionInterface
      */
     private static function _indexOrderByColumns(
@@ -2615,6 +2617,7 @@ abstract class Element extends Component implements ElementInterface
      * - a custom field handle
      *
      * @param string $name The property name
+     *
      * @return bool Whether the property is set
      */
     public function __isset($name): bool
@@ -2916,14 +2919,23 @@ abstract class Element extends Component implements ElementInterface
     protected function defineRules(): array
     {
         $rules = parent::defineRules();
-        $rules[] = [['id', 'parentId', 'root', 'lft', 'rgt', 'level'], 'number', 'integerOnly' => true, 'on' => [self::SCENARIO_DEFAULT, self::SCENARIO_LIVE]];
+        $rules[] = [
+            ['id', 'parentId', 'root', 'lft', 'rgt', 'level'],
+            'number',
+            'integerOnly' => true,
+            'on' => [self::SCENARIO_DEFAULT, self::SCENARIO_LIVE],
+        ];
         $rules[] = [
             ['siteId'],
             SiteIdValidator::class,
             'allowDisabled' => true,
             'on' => [self::SCENARIO_DEFAULT, self::SCENARIO_LIVE, self::SCENARIO_ESSENTIALS],
         ];
-        $rules[] = [['dateCreated', 'dateUpdated'], DateTimeValidator::class, 'on' => [self::SCENARIO_DEFAULT, self::SCENARIO_LIVE]];
+        $rules[] = [
+            ['dateCreated', 'dateUpdated'],
+            DateTimeValidator::class,
+            'on' => [self::SCENARIO_DEFAULT, self::SCENARIO_LIVE],
+        ];
         $rules[] = [['isFresh'], BooleanValidator::class];
 
         $rules[] = [['title'], 'trim'];
@@ -2947,15 +2959,29 @@ abstract class Element extends Component implements ElementInterface
                 $language = null;
             }
 
-            $rules[] = [['slug'], SlugValidator::class, 'language' => $language, 'on' => [self::SCENARIO_DEFAULT, self::SCENARIO_LIVE, self::SCENARIO_ESSENTIALS]];
-            $rules[] = [['slug'], 'string', 'max' => 255, 'on' => [self::SCENARIO_DEFAULT, self::SCENARIO_LIVE, self::SCENARIO_ESSENTIALS]];
+            $rules[] = [
+                ['slug'],
+                SlugValidator::class,
+                'language' => $language,
+                'on' => [self::SCENARIO_DEFAULT, self::SCENARIO_LIVE, self::SCENARIO_ESSENTIALS],
+            ];
+            $rules[] = [
+                ['slug'],
+                'string',
+                'max' => 255,
+                'on' => [self::SCENARIO_DEFAULT, self::SCENARIO_LIVE, self::SCENARIO_ESSENTIALS],
+            ];
             $rules[] = [
                 ['slug'],
                 'required',
                 'when' => fn() => (bool)preg_match('/\bslug\b/', $this->getUriFormat() ?? ''),
                 'on' => [self::SCENARIO_DEFAULT, self::SCENARIO_LIVE],
             ];
-            $rules[] = [['uri'], ElementUriValidator::class, 'on' => [self::SCENARIO_DEFAULT, self::SCENARIO_LIVE, self::SCENARIO_ESSENTIALS]];
+            $rules[] = [
+                ['uri'],
+                ElementUriValidator::class,
+                'on' => [self::SCENARIO_DEFAULT, self::SCENARIO_LIVE, self::SCENARIO_ESSENTIALS],
+            ];
         }
 
         return $rules;
@@ -3044,11 +3070,16 @@ abstract class Element extends Component implements ElementInterface
      * @param mixed $rule
      * @param FieldInterface $field
      * @param callable $isEmpty
+     *
      * @return Validator
      * @throws InvalidConfigException
      */
-    private function _normalizeFieldValidator(string $attribute, mixed $rule, FieldInterface $field, callable $isEmpty): Validator
-    {
+    private function _normalizeFieldValidator(
+        string $attribute,
+        mixed $rule,
+        FieldInterface $field,
+        callable $isEmpty,
+    ): Validator {
         if ($rule instanceof Validator) {
             return $rule;
         }
@@ -3292,7 +3323,8 @@ abstract class Element extends Component implements ElementInterface
      */
     public function getSourceId(): ?int
     {
-        Craft::$app->getDeprecator()->log(__METHOD__, 'Elements’ `getSourceId()` method has been deprecated. Use `getCanonicalId()` instead.');
+        Craft::$app->getDeprecator()->log(__METHOD__,
+            'Elements’ `getSourceId()` method has been deprecated. Use `getCanonicalId()` instead.');
         return $this->getCanonicalId();
     }
 
@@ -3305,7 +3337,8 @@ abstract class Element extends Component implements ElementInterface
      */
     public function getSourceUid(): string
     {
-        Craft::$app->getDeprecator()->log(__METHOD__, 'Elements’ `getSourceUid()` method has been deprecated. Use `getCanonicalUid()` instead.');
+        Craft::$app->getDeprecator()->log(__METHOD__,
+            'Elements’ `getSourceUid()` method has been deprecated. Use `getCanonicalUid()` instead.');
         return $this->getCanonicalUid();
     }
 
@@ -3425,6 +3458,7 @@ abstract class Element extends Component implements ElementInterface
      * Returns the search keywords for a given search attribute.
      *
      * @param string $attribute
+     *
      * @return string
      * @since 3.5.0
      */
@@ -4396,6 +4430,7 @@ JS, [
      * Returns the URL to the element’s thumbnail, if it has one.
      *
      * @param int $size The maximum width and height the thumbnail should have.
+     *
      * @return string|null
      * @since 5.0.0
      */
@@ -4613,6 +4648,7 @@ JS, [
      * Sets the parent ID.
      *
      * @param int|int[]|string|false|null $parentId
+     *
      * @since 4.0.0
      */
     public function setParentId(mixed $parentId): void
@@ -4637,11 +4673,11 @@ JS, [
                 }
 
                 $this->_parent = static::find()
-                        ->id($this->_parentId)
-                        ->structureId($this->structureId)
-                        ->siteId($this->siteId)
-                        ->status(null)
-                        ->one() ?? false;
+                    ->id($this->_parentId)
+                    ->structureId($this->structureId)
+                    ->siteId($this->siteId)
+                    ->status(null)
+                    ->one() ?? false;
             } else {
                 $ancestors = $this->getAncestors(1);
                 // Eager-loaded?
@@ -4649,8 +4685,8 @@ JS, [
                     $this->_parent = $ancestors->first();
                 } else {
                     $this->_parent = $ancestors
-                            ->status(null)
-                            ->one() ?? false;
+                        ->status(null)
+                        ->one() ?? false;
                 }
             }
         }
@@ -5060,21 +5096,19 @@ JS, [
         }
 
         if (!isset($this->_outdatedAttributes)) {
-            $query = (new Query())
-                ->select(['attribute'])
-                ->from([Table::CHANGEDATTRIBUTES])
-                ->where([
-                    'elementId' => $this->getCanonicalId(),
-                    'siteId' => $this->siteId,
-                ]);
+            $attributes = DB::table(Table::CHANGEDATTRIBUTES)
+                ->where('elementId', $this->id)
+                ->where('siteId', $this->siteId)
+                ->when(
+                    value: $this->dateLastMerged,
+                    callback: fn(Builder $query) => $query->where('dateUpdate', '>=', $this->dateLastMerged),
+                    default: fn(Builder $query) => $query->where('dateUpdated', '>=', $this->dateCreated)
+                )
+                ->pluck('attribute')
+                ->flip()
+                ->all();
 
-            if ($this->dateLastMerged) {
-                $query->andWhere(['>=', 'dateUpdated', Db::prepareDateForDb($this->dateLastMerged)]);
-            } else {
-                $query->andWhere(['>=', 'dateUpdated', Db::prepareDateForDb($this->dateCreated)]);
-            }
-
-            $this->_outdatedAttributes = array_flip($query->column());
+            $this->_outdatedAttributes = $attributes;
         }
 
         return $this->_outdatedAttributes;
@@ -5090,14 +5124,12 @@ JS, [
         }
 
         if (!isset($this->_modifiedAttributes)) {
-            $this->_modifiedAttributes = array_flip((new Query())
-                ->select(['attribute'])
-                ->from([Table::CHANGEDATTRIBUTES])
-                ->where([
-                    'elementId' => $this->id,
-                    'siteId' => $this->siteId,
-                ])
-                ->column());
+            $this->_modifiedAttributes = DB::table(Table::CHANGEDATTRIBUTES)
+                ->where('elementId', $this->id)
+                ->where('siteId', $this->siteId)
+                ->pluck('attribute')
+                ->flip()
+                ->all();
         }
 
         return $this->_modifiedAttributes;
@@ -5351,21 +5383,18 @@ JS, [
         }
 
         if (!isset($this->_outdatedFields)) {
-            $query = (new Query())
-                ->select(['layoutElementUid'])
-                ->from(Table::CHANGEDFIELDS)
-                ->where([
-                    'elementId' => $this->getCanonicalId(),
-                    'siteId' => $this->siteId,
-                ]);
+            $fields = DB::table(Table::CHANGEDFIELDS)
+                ->where('elementId', $this->id)
+                ->where('siteId', $this->siteId)
+                ->when(
+                    value: $this->dateLastMerged,
+                    callback: fn(Builder $query) => $query->where('dateUpdate', '>=', $this->dateLastMerged),
+                    default: fn(Builder $query) => $query->where('dateUpdated', '>=', $this->dateCreated)
+                )
+                ->pluck('layoutElementUid')
+                ->all();
 
-            if ($this->dateLastMerged) {
-                $query->andWhere(['>=', 'dateUpdated', Db::prepareDateForDb($this->dateLastMerged)]);
-            } else {
-                $query->andWhere(['>=', 'dateUpdated', Db::prepareDateForDb($this->dateCreated)]);
-            }
-
-            $this->_outdatedFields = $this->_layoutElementUids2fieldHandles($query->column());
+            $this->_outdatedFields = $this->_layoutElementUids2fieldHandles($fields);
         }
 
         return $this->_outdatedFields;
@@ -5373,6 +5402,7 @@ JS, [
 
     /**
      * @param bool $anySite
+     *
      * @return array The field handles that have been modified for this element
      */
     private function _modifiedFields(bool $anySite): array
@@ -5384,16 +5414,13 @@ JS, [
         $key = $anySite ? 'any' : 'this';
 
         if (!isset($this->_modifiedFields[$key])) {
-            $query = (new Query())
-                ->select('layoutElementUid')
-                ->from(Table::CHANGEDFIELDS)
-                ->where(['elementId' => $this->id]);
+            $fields = DB::table(Table::CHANGEDFIELDS)
+                ->where('elementId', $this->id)
+                ->when(!$anySite, fn(Builder $query) => $query->where('siteId', $this->siteId))
+                ->pluck('layoutElementUid')
+                ->all();
 
-            if (!$anySite) {
-                $query->andWhere(['siteId' => $this->siteId]);
-            }
-
-            $this->_modifiedFields[$key] = $this->_layoutElementUids2fieldHandles($query->column());
+            $this->_modifiedFields[$key] = $this->_layoutElementUids2fieldHandles($fields);
         }
 
         return $this->_modifiedFields[$key];
@@ -5437,6 +5464,7 @@ JS, [
      * Returns field handles based on a list of field layout element UUIDs.
      *
      * @param string[] $uids
+     *
      * @return array
      */
     private function _layoutElementUids2fieldHandles(array $uids): array
@@ -5819,6 +5847,7 @@ JS, [
      * Returns any attributes that should be included in the element’s chips and cards.
      *
      * @param string $context The context that the element is being rendered in ('index', 'modal', 'field', or 'settings'.)
+     *
      * @return array
      * @see getHtmlAttributes()
      */
@@ -5888,6 +5917,7 @@ JS, [
      * - For anything else, it will output the attribute value as a string.
      *
      * @param string $attribute The attribute name.
+     *
      * @return string The HTML that should be shown for a given attribute in table and card views.
      * @throws InvalidConfigException
      * @see getAttributeHtml()
@@ -6065,6 +6095,7 @@ JS, [
      * Returns the HTML that should be shown for a given attribute’s inline input.
      *
      * @param string $attribute The attribute name.
+     *
      * @return string The HTML that should be shown for a given attribute’s inline input.
      * @see getInlineAttributeInputHtml()
      * @since 5.0.0
@@ -6149,6 +6180,7 @@ JS, [
      * Returns the HTML for any meta fields that should be shown within the editor sidebar.
      *
      * @param bool $static Whether the fields should be static (non-interactive)
+     *
      * @return string
      * @since 3.7.0
      */
@@ -6168,6 +6200,7 @@ JS, [
      * Returns the HTML for the element’s Slug field.
      *
      * @param bool $static Whether the fields should be static (non-interactive)
+     *
      * @return string
      * @since 3.7.0
      */
@@ -6217,7 +6250,8 @@ JS, [
         $propSites = array_values(array_filter($supportedSites, fn($site) => $site['propagate']));
         $propSiteIds = array_column($propSites, 'siteId');
         $propEditableSiteIds = array_intersect($propSiteIds, $allEditableSiteIds);
-        $addlEditableSites = array_values(array_filter($supportedSites, fn($site) => !$site['propagate'] && in_array($site['siteId'], $allEditableSiteIds)));
+        $addlEditableSites = array_values(array_filter($supportedSites,
+            fn($site) => !$site['propagate'] && in_array($site['siteId'], $allEditableSiteIds)));
 
         if (count($supportedSites) > 1) {
             $expandStatusBtn = (count($propEditableSiteIds) > 1 || $addlEditableSites)
@@ -6482,21 +6516,20 @@ JS, [
         }
 
         // Get the old relations
-        $db = Craft::$app->getDb();
-        $query = (new Query())
-            ->select(['id', 'fieldId', 'sourceSiteId', 'targetId', 'sortOrder'])
-            ->from([Table::RELATIONS])
-            ->where(['sourceId' => $this->id])
-            ->andWhere(['or', ['sourceSiteId' => null], ['sourceSiteId' => $this->siteId]]);
-        if (!empty(($skipFieldIds))) {
+        $oldRelations = DB::table(Table::RELATIONS)
+            ->where('sourceId', $this->id)
+            ->where(function(Builder $query) {
+                $query->whereNull('sourceSiteId')
+                    ->orWhere('sourceSiteId', $this->siteId);
+            })
             // Exclude the skipped fields rather than listing included fields,
             // so we also get any relations for fields that aren't part of the layout
             // (https://github.com/craftcms/cms/issues/13956)
-            $query->andWhere(['not', ['fieldId' => $skipFieldIds]]);
-        }
-        $oldRelations = $query->all($db);
+            ->when(!empty($skipFieldIds), fn(Builder $query) => $query->whereNotIn('fieldId', $skipFieldIds))
+            ->select(['id', 'fieldId', 'sourceSiteId', 'targetId', 'sortOrder'])
+            ->get()
+            ->map(fn(object $data) => (array) $data);
 
-        /** @var Command[] $updateCommands */
         $updateCommands = [];
         $deleteIds = [];
 
@@ -6513,10 +6546,11 @@ JS, [
             if (isset($relationData[$fieldId][$targetId])) {
                 // Anything to update?
                 if ($oldSourceSiteId != $sourceSiteIds[$fieldId] || $oldSortOrder != $relationData[$fieldId][$targetId]) {
-                    $updateCommands[] = $db->createCommand()->update(Table::RELATIONS, [
+                    $updateCommands[] = [
+                        'id' => $relationId,
                         'sourceSiteId' => $sourceSiteIds[$fieldId],
                         'sortOrder' => $relationData[$fieldId][$targetId],
-                    ], ['id' => $relationId]);
+                    ];
                 }
 
                 // Avoid re-inserting it
@@ -6534,34 +6568,42 @@ JS, [
             return;
         }
 
-        $db->transaction(function() use ($updateCommands, $deleteIds, $relationData, $sourceSiteIds, $db) {
-            foreach ($updateCommands as $command) {
-                $command->execute();
-            }
+        DB::beginTransaction();
 
-            // Add the new ones
-            if (!empty($relationData)) {
-                $values = [];
-                foreach ($relationData as $fieldId => $targetIds) {
-                    foreach ($targetIds as $targetId => $sortOrder) {
-                        $values[] = [
-                            $fieldId,
-                            $this->id,
-                            $sourceSiteIds[$fieldId],
-                            $targetId,
-                            $sortOrder,
-                        ];
-                    }
+        foreach ($updateCommands as $command) {
+            DB::table(Table::RELATIONS)
+                ->where('id', Arr::pull($command, 'id'))
+                ->update($command);
+        }
+
+        // Add the new ones
+        if (!empty($relationData)) {
+            $values = [];
+            foreach ($relationData as $fieldId => $targetIds) {
+                foreach ($targetIds as $targetId => $sortOrder) {
+                    $values[] = [
+                        'fieldId' => $fieldId,
+                        'sourceId' => $this->id,
+                        'sourceSiteId' => $sourceSiteIds[$fieldId],
+                        'targetId' => $targetId,
+                        'sortOrder' => $sortOrder,
+                        'dateCreated' => Date::now(),
+                        'dateUpdated' => Date::now(),
+                    ];
                 }
-                Db::batchInsert(Table::RELATIONS, ['fieldId', 'sourceId', 'sourceSiteId', 'targetId', 'sortOrder'], $values, $db);
             }
 
-            if (!empty($deleteIds)) {
-                Db::delete(Table::RELATIONS, [
-                    'id' => $deleteIds,
-                ], [], $db);
-            }
-        });
+            DB::table(Table::RELATIONS)
+                ->insert($values);
+        }
+
+        if (!empty($deleteIds)) {
+            DB::table(Table::RELATIONS)
+                ->whereIn('id', $deleteIds)
+                ->delete();
+        }
+
+        DB::commit();
     }
 
     /**
@@ -6666,10 +6708,10 @@ JS, [
     private function deleteSiteRelations(): void
     {
         if ($this->hasFieldLayout()) {
-            Db::delete(Table::RELATIONS, [
-                'sourceSiteId' => $this->siteId,
-                'sourceId' => $this->id,
-            ]);
+            DB::table(Table::RELATIONS)
+                ->where('sourceId', $this->id)
+                ->where('sourceSiteId', $this->siteId)
+                ->delete();
         }
     }
 
@@ -6746,6 +6788,7 @@ JS, [
      * Normalizes a field’s value.
      *
      * @param string $fieldHandle The field handle
+     *
      * @throws InvalidFieldException if the element doesn’t have a field with the handle specified by `$fieldHandle`
      */
     protected function normalizeFieldValue(string $fieldHandle): void
@@ -6773,6 +6816,7 @@ JS, [
      *
      * @param mixed $criteria Refer to [[findOne()]] and [[findAll()]] for the explanation of this parameter
      * @param bool $one Whether this method is called by [[findOne()]] or [[findAll()]]
+     *
      * @return static|static[]|null
      */
     protected static function findByCondition(mixed $criteria, bool $one): array|static|null
@@ -6799,6 +6843,7 @@ JS, [
      * Returns the field with a given handle.
      *
      * @param string $handle
+     *
      * @return FieldInterface|null
      */
     protected function fieldByHandle(string $handle): ?FieldInterface
@@ -6827,6 +6872,7 @@ JS, [
      *
      * @param bool $visibleOnly Whether to only return fields that are visible for this element
      * @param bool $editableOnly Whether to only return fields that the current user can edit
+     *
      * @return FieldInterface[] This element’s fields
      */
     protected function fieldLayoutFields(bool $visibleOnly = false, bool $editableOnly = false): array
@@ -6881,6 +6927,7 @@ JS, [
      *
      * @param mixed $criteria
      * @param int $dir
+     *
      * @return ElementInterface|null
      */
     private function _getRelativeElement(mixed $criteria, int $dir): ?ElementInterface
