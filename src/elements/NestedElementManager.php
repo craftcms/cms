@@ -14,8 +14,6 @@ use craft\base\ElementInterface;
 use craft\base\FieldInterface;
 use craft\base\NestedElementInterface;
 use craft\behaviors\DraftBehavior;
-use craft\db\Query;
-use craft\db\Table;
 use craft\elements\actions\ChangeSortOrder;
 use craft\elements\actions\MoveDown;
 use craft\elements\actions\MoveUp;
@@ -23,15 +21,16 @@ use craft\elements\db\ElementQueryInterface;
 use craft\events\BulkElementsEvent;
 use craft\events\DuplicateNestedElementsEvent;
 use craft\helpers\Cp;
-use craft\helpers\Db;
 use craft\helpers\ElementHelper;
 use craft\helpers\Html;
 use craft\models\Site;
+use CraftCms\Cms\Db\Table;
 use CraftCms\Cms\Element\Enums\PropagationMethod;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Enums\Color;
 use CraftCms\Cms\Support\Str;
 use Generator;
+use Illuminate\Support\Facades\DB;
 use Throwable;
 use yii\base\Component;
 use yii\base\InvalidConfigException;
@@ -647,7 +646,7 @@ class NestedElementManager extends Component
 
             $view->registerJsWithVars(fn($id, $elementType, $settings) => <<<JS
 (() => {
-  new Craft.NestedElementManager('#' + $id, $elementType, $settings);
+  new Craft.NestedElementManager('#' + $id, $elementType, $settings)
 })();
 JS, [
                 $view->namespaceInputId($id),
@@ -787,7 +786,7 @@ JS, [
         $elementIds = [];
         $sortOrder = 0;
 
-        \Illuminate\Support\Facades\DB::beginTransaction();
+        DB::beginTransaction();
         try {
             /** @var NestedElementInterface[] $elements */
             foreach ($elements as $element) {
@@ -820,10 +819,12 @@ JS, [
                         $canonical = $element->getCanonical(true);
                         if ($canonical->getPrimaryOwnerId() === $owner->getCanonicalId()) {
                             Craft::$app->getDrafts()->removeDraftData($element);
-                            Db::delete(Table::ELEMENTS_OWNERS, [
-                                'elementId' => $canonical->id,
-                                'ownerId' => $owner->id,
-                            ]);
+                            DB::table(Table::ELEMENTS_OWNERS)
+                                ->where([
+                                    'elementId' => $canonical->id,
+                                    'ownerId' => $owner->id,
+                                ])
+                                ->delete();
                         }
                     } elseif (
                         $element->getIsUnpublishedDraft() &&
@@ -834,12 +835,12 @@ JS, [
                 } elseif ((int)$element->getSortOrder() !== $sortOrder) {
                     // Just update its sortOrder
                     $element->setSortOrder($sortOrder);
-                    Db::update(Table::ELEMENTS_OWNERS, [
-                        'sortOrder' => $sortOrder,
-                    ], [
-                        'elementId' => $element->id,
-                        'ownerId' => $owner->id,
-                    ], [], false);
+                    DB::table(Table::ELEMENTS_OWNERS)
+                        ->where([
+                            'elementId' => $element->id,
+                            'ownerId' => $owner->id,
+                        ])
+                        ->update(['sortOrder' => $sortOrder]);
                 }
 
                 $elementIds[] = $element->id;
@@ -931,9 +932,9 @@ JS, [
                 }
             }
 
-            \Illuminate\Support\Facades\DB::commit();
+            DB::commit();
         } catch (Throwable $e) {
-            \Illuminate\Support\Facades\DB::rollBack();
+            DB::rollBack();
             throw $e;
         }
 
@@ -977,10 +978,12 @@ JS, [
         }
 
         if ($deleteOwnership) {
-            Db::delete(Table::ELEMENTS_OWNERS, [
-                'elementId' => $deleteOwnership,
-                'ownerId' => $owner->id,
-            ]);
+            DB::table(Table::ELEMENTS_OWNERS)
+                ->where([
+                    'elementId' => $deleteOwnership,
+                    'ownerId' => $owner->id,
+                ])
+                ->delete();
         }
     }
 
@@ -1019,7 +1022,7 @@ JS, [
 
         $newElementIds = [];
 
-        \Illuminate\Support\Facades\DB::beginTransaction();
+        DB::beginTransaction();
         try {
             $setCanonicalId = $target->getIsDerivative() && $target->getCanonical()->id !== $target->id;
 
@@ -1051,26 +1054,37 @@ JS, [
                         // this will happen if we add a nested element to the owner & save,
                         // then remove that nested element & save,
                         // and then revert to the revision that still has that nested element
-                        Db::upsert(Table::ELEMENTS_OWNERS, [
-                            'elementId' => $newElementId,
-                            'ownerId' => $target->id,
-                            'sortOrder' => $element->getSortOrder(),
-                        ], [
-                            'sortOrder' => $element->getSortOrder(),
-                        ], updateTimestamp: false);
+                        DB::table(Table::ELEMENTS_OWNERS)
+                            ->upsert(
+                                values: [
+                                    'elementId' => $newElementId,
+                                    'ownerId' => $target->id,
+                                    'sortOrder' => $element->getSortOrder(),
+                                ],
+                                uniqueBy: ['elementId', 'ownerId'],
+                                update: [
+                                    'sortOrder' => $element->getSortOrder(),
+                                ]
+                            );
                     } else {
                         $newElementId = $element->getCanonicalId();
                     }
                 } elseif (!$force && $element->getPrimaryOwnerId() === $target->id) {
                     // Only the element ownership was duplicated, so just update its sort order for the target element
                     // (use upsert in case the row doesn’t exist though)
-                    Db::upsert(Table::ELEMENTS_OWNERS, [
-                        'elementId' => $element->id,
-                        'ownerId' => $target->id,
-                        'sortOrder' => $element->getSortOrder(),
-                    ], [
-                        'sortOrder' => $element->getSortOrder(),
-                    ], updateTimestamp: false);
+                    DB::table(Table::ELEMENTS_OWNERS)
+                        ->upsert(
+                            values: [
+                                'elementId' => $element->id,
+                                'ownerId' => $target->id,
+                                'sortOrder' => $element->getSortOrder(),
+                            ],
+                            uniqueBy: ['elementId', 'ownerId'],
+                            update: [
+                                'sortOrder' => $element->getSortOrder(),
+                            ]
+                        );
+
                     $newElementId = $element->id;
                 } else {
                     $newElementId = $elementsService->duplicateElement($element, $newAttributes)->id;
@@ -1093,9 +1107,9 @@ JS, [
                 $this->deleteOtherNestedElements($target, array_values($newElementIds));
             }
 
-            \Illuminate\Support\Facades\DB::commit();
+            DB::commit();
         } catch (Throwable $e) {
-            \Illuminate\Support\Facades\DB::rollBack();
+            DB::rollBack();
             throw $e;
         }
 
@@ -1187,15 +1201,23 @@ JS, [
                 'primaryOwnerId' => $revision->id,
                 'saveOwnership' => false,
             ]);
-            $ownershipData[] = [$elementRevisionId, $revision->id, $element->getSortOrder()];
+            $ownershipData[] = [
+                'elementId' => $elementRevisionId,
+                'ownerId' => $revision->id,
+                'sortOrder' => $element->getSortOrder(),
+            ];
             $map[$element->id] = $elementRevisionId;
         }
 
-        Db::delete(Table::ELEMENTS_OWNERS, [
-            'ownerId' => $revision->id,
-            'elementId' => $elementRevisionIds,
-        ]);
-        Db::batchInsert(Table::ELEMENTS_OWNERS, ['elementId', 'ownerId', 'sortOrder'], $ownershipData);
+        DB::table(Table::ELEMENTS_OWNERS)
+            ->where([
+                'ownerId' => $revision->id,
+                'elementId' => $elementRevisionIds,
+            ])
+            ->delete();
+
+        DB::table(Table::ELEMENTS_OWNERS)
+            ->insert($ownershipData);
 
         // Fire a 'afterDuplicateNestedElements' event
         if (!empty($map) && $this->hasEventHandlers(self::EVENT_AFTER_CREATE_REVISIONS)) {
@@ -1321,13 +1343,12 @@ JS, [
             foreach ($elements as $element) {
                 // If the element is a revision, see if we can reassign it to a new primary owner
                 if ($element->getIsRevision() && !isset($element->dateDeleted)) {
-                    $newOwnerId = (new Query())
-                        ->select(['ownerId'])
-                        ->from(Table::ELEMENTS_OWNERS)
-                        ->where(['elementId' => $element->id])
-                        ->andWhere(['not', ['ownerId' => $owner->id]])
-                        ->orderBy(['ownerId' => SORT_ASC])
-                        ->scalar();
+                    $newOwnerId = DB::table(Table::ELEMENTS_OWNERS)
+                        ->where('elementId', $element->id)
+                        ->where('ownerId', '!=', $owner->id)
+                        ->orderBy('ownerId')
+                        ->value('ownerId');
+
                     if ($newOwnerId) {
                         $element->setPrimaryOwnerId($newOwnerId);
                         $elementsService->saveElement($element);

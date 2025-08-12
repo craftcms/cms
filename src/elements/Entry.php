@@ -22,7 +22,6 @@ use craft\behaviors\DraftBehavior;
 use craft\controllers\ElementIndexesController;
 use craft\db\Connection;
 use craft\db\FixedOrderExpression;
-use craft\db\Query;
 use craft\db\Table;
 use craft\elements\actions\Copy;
 use craft\elements\actions\Delete;
@@ -70,6 +69,8 @@ use CraftCms\Cms\Support\Enums\Color;
 use DateTime;
 use GraphQL\Type\Definition\Type;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Date;
+use Illuminate\Support\Facades\Schema;
 use Throwable;
 use yii\base\Exception;
 use yii\base\InvalidArgumentException;
@@ -747,14 +748,16 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
             case 'author':
             case 'authors':
                 $entryIds = array_map(fn(ElementInterface $entry) => $entry->id, $sourceElements);
-                $map = (new Query())
+
+                $map = \Illuminate\Support\Facades\DB::table(\CraftCms\Cms\Db\Table::ENTRIES_AUTHORS)
                     ->select([
                         'source' => 'entryId',
                         'target' => 'authorId',
                     ])
-                    ->from(Table::ENTRIES_AUTHORS)
-                    ->where(['entryId' => $entryIds])
-                    ->orderBy(['sortOrder' => SORT_ASC])
+                    ->whereIn('entryId', $entryIds)
+                    ->orderBy('sortOrder')
+                    ->get()
+                    ->map(fn(object $row) => (array) $row)
                     ->all();
 
                 return [
@@ -2869,7 +2872,7 @@ JS;
             $record->expiryDate = Db::prepareDateForDb($this->expiryDate);
 
             // todo: update after the next breakpoint
-            if (Craft::$app->getDb()->columnExists(Table::ENTRIES, 'status')) {
+            if (Schema::hasColumn(\CraftCms\Cms\Db\Table::ENTRIES, 'status')) {
                 $status = $this->_status();
                 $record->status = $status;
                 // only update $this->status if it's already set, indicating that staticStatuses is enabled
@@ -2927,23 +2930,30 @@ JS;
     {
         if (!isset($this->_oldAuthorIds)) {
             // Don't trust $this->_authors/_authorIds, as it may have been set to the updated value
-            $oldAuthorIds = (new Query())
-                ->select('authorId')
-                ->from(Table::ENTRIES_AUTHORS)
-                ->where(['entryId' => $this->duplicateOf->id ?? $this->id])
-                ->orderBy(['sortOrder' => SORT_ASC])
-                ->column();
-            $this->_oldAuthorIds = array_map(fn($id) => (int)$id, $oldAuthorIds);
+            $this->_oldAuthorIds = \Illuminate\Support\Facades\DB::table(\CraftCms\Cms\Db\Table::ENTRIES_AUTHORS)
+                ->where('entryId', $this->duplicateOf->id ?? $this->id)
+                ->orderBy('sortOrder')
+                ->pluck('authorId')
+                ->map(fn($id) => (int) $id)
+                ->all();
         }
 
-        Db::delete(Table::ENTRIES_AUTHORS, ['entryId' => $this->id]);
+        \Illuminate\Support\Facades\DB::table(\CraftCms\Cms\Db\Table::ENTRIES_AUTHORS)
+            ->where('entryId', $this->id)
+            ->delete();
 
         if (!empty($this->_authorIds)) {
             $data = [];
             foreach ($this->getAuthorIds() as $sortOrder => $authorId) {
-                $data[] = [$this->id, $authorId, $sortOrder + 1];
+                $data[] = [
+                    'entryId' => $this->id,
+                    'authorId' => $authorId,
+                    'sortOrder' => $sortOrder + 1,
+                ];
             }
-            Db::batchInsert(Table::ENTRIES_AUTHORS, ['entryId', 'authorId', 'sortOrder'], $data);
+
+            \Illuminate\Support\Facades\DB::table(\CraftCms\Cms\Db\Table::ENTRIES_AUTHORS)
+                ->insert($data);
         }
     }
 
@@ -3026,9 +3036,9 @@ JS;
             }
         }
 
-        Db::update(Table::ENTRIES, $data, [
-            'id' => $this->id,
-        ], [], false);
+        \Illuminate\Support\Facades\DB::table(\CraftCms\Cms\Db\Table::ENTRIES)
+            ->where('id', $this->id)
+            ->update($data);
 
         return true;
     }
@@ -3040,10 +3050,14 @@ JS;
     {
         $this->deletedWithEntryType = false;
         $this->deletedWithSection = false;
-        Db::update(Table::ENTRIES, [
-            'deletedWithEntryType' => null,
-            'deletedWithSection' => null,
-        ], ['id' => $this->id]);
+
+        \Illuminate\Support\Facades\DB::table(\CraftCms\Cms\Db\Table::ENTRIES)
+            ->where('id', $this->id)
+            ->update([
+                'deletedWithEntryType' => null,
+                'deletedWithSection' => null,
+                'dateUpdated' => Date::now(),
+            ]);
 
         $section = $this->getSection();
         if ($section?->type === Section::TYPE_STRUCTURE) {
