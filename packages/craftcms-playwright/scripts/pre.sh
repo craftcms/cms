@@ -17,6 +17,8 @@ PLAYWRIGHT_STATUS=$(docker compose ps --services --status=running playwright)
 # Boot docker container if required
 if [ "$PLAYWRIGHT_STATUS" != 'playwright' ]
 then
+  echo "Building image..."
+  BUILD=$REPO_PATH docker compose build
   echo "Booting docker…"
   PLAYWRIGHT_REPO_PATH=$REPO_PATH docker compose up -d
 else
