@@ -17,6 +17,7 @@ use CraftCms\Yii2Adapter\Console\LegacyCraftCommand;
 use Illuminate\Auth\Middleware\Authenticate;
 use Illuminate\Console\Application as ConsoleApplication;
 use Illuminate\Contracts\Http\Kernel;
+use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\ServiceProvider;
@@ -48,6 +49,16 @@ class Yii2ServiceProvider extends ServiceProvider
              * Configure the Laravel application to look into
              * folders defined by the Craft CMS constants.
              */
+            foreach (scandir(base_path('config')) as $file) {
+                if (!str_ends_with($file, '.php')) {
+                    continue;
+                }
+
+                $key = str_replace('.php', '', $file);
+
+                Config::set("craft.$key", require base_path("config/$file"));
+            }
+
             $this->app
                 // When not in a Laravel skeleton, we don't want to conflict any config files.
                 ->useConfigPath(base_path('config/laravel'))
