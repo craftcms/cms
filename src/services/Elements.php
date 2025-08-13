@@ -623,9 +623,10 @@ class Elements extends Component
      */
     public function getBulkOpConnection(): ConnectionInterface
     {
-        return DbFacade::build(
-            Arr::except(DbFacade::connection()->getConfig(), ['name'])
-        );
+        $config = DbFacade::connection()->getConfig();
+        $config['name'] = 'db2';
+
+        return DbFacade::build($config);
     }
 
     /**

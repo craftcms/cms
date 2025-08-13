@@ -1338,8 +1338,6 @@ class Users extends Component
         // Get the unique, indexed group IDs
         $newGroupIds = array_flip(array_unique(array_filter($groupIds)));
 
-        $db = Craft::$app->getDb();
-
         // Get the current groups
         $oldGroups = DB::table(Table::USERGROUPS_USERS)
             ->select(['id', 'groupId'])
@@ -1394,6 +1392,9 @@ class Users extends Component
                     ->insert(array_map(fn(int $groupId) => [
                         'userId' => $userId,
                         'groupId' => $groupId,
+                        'dateCreated' => $now = now(),
+                        'dateUpdated' => $now,
+                        'uid' => Str::uuid(),
                     ], $newGroupIds));
             }
 

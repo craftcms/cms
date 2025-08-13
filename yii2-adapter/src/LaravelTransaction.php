@@ -4,45 +4,28 @@ namespace CraftCms\Yii2Adapter;
 
 use Illuminate\Support\Facades\DB;
 use Yii;
-use yii\base\InvalidConfigException;
 use yii\db\Connection;
-use yii\db\Exception;
 use yii\db\Transaction;
 
 final class LaravelTransaction extends Transaction
 {
-    private $_level = 0;
-
     public function getIsActive()
     {
-        return $this->_level > 0 && $this->db && $this->db->isActive;
+        return DB::transactionLevel() > 0;
     }
 
     public function begin($isolationLevel = null)
     {
-        if ($this->db === null) {
-            throw new InvalidConfigException('Transaction::db must be set.');
-        }
-        $this->db->open();
-
-        if (DB::transactionLevel() === 0 && !is_null($isolationLevel)) {
-            DB::statement("SET TRANSACTION ISOLATION LEVEL $isolationLevel");
-        }
-
         Yii::debug('Begin transaction' . ($isolationLevel ? ' with isolation level ' . $isolationLevel : ''), __METHOD__);
         $this->db->trigger(Connection::EVENT_BEGIN_TRANSACTION);
         DB::beginTransaction();
-
-        $this->_level++;
     }
 
     public function commit()
     {
-        if (!$this->getIsActive()) {
-            throw new Exception('Failed to commit transaction: transaction was inactive.');
+        if (DB::transactionLevel() === 0) {
+            return;
         }
-
-        $this->_level--;
 
         $this->db->trigger(Connection::EVENT_COMMIT_TRANSACTION);
 
@@ -57,8 +40,6 @@ final class LaravelTransaction extends Transaction
             return;
         }
 
-        $this->_level--;
-
         $this->db->trigger(Connection::EVENT_ROLLBACK_TRANSACTION);
 
         DB::rollBack();
@@ -66,6 +47,6 @@ final class LaravelTransaction extends Transaction
 
     public function getLevel()
     {
-        return $this->_level;
+        return DB::transactionLevel();
     }
 }

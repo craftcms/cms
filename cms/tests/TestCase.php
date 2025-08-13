@@ -13,6 +13,7 @@ use CraftCms\DependencyAwareCache\CacheServiceProvider;
 use CraftCms\Yii2Adapter\Yii2ServiceProvider;
 use Illuminate\Contracts\Console\Kernel;
 use Illuminate\Database\Eloquent\Factories\Factory;
+use Illuminate\Foundation\Testing\LazilyRefreshDatabase;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Foundation\Testing\RefreshDatabaseState;
 use Illuminate\Support\Facades\Cache;
@@ -25,13 +26,14 @@ use Orchestra\Testbench\TestCase as Orchestra;
 /** @since 6.0.0 */
 class TestCase extends Orchestra
 {
-    use RefreshDatabase;
+    use LazilyRefreshDatabase;
 
     protected function setUp(): void
     {
         parent::setUp();
 
         Cache::lock(ProjectConfig::MUTEX_NAME)->forceRelease();
+        File::cleanDirectory(config_path('project'));
 
         Factory::guessFactoryNamesUsing(
             fn (string $modelName) => 'CraftCms\\Cms\\Database\\Factories\\'.class_basename($modelName).'Factory'
@@ -54,7 +56,7 @@ class TestCase extends Orchestra
         parent::tearDown();
     }
 
-    protected function refreshTestDatabase()
+    /*protected function refreshTestDatabase()
     {
         if (RefreshDatabaseState::$migrated) {
             return;
@@ -65,7 +67,7 @@ class TestCase extends Orchestra
         $this->app[Kernel::class]->setArtisan(null);
 
         RefreshDatabaseState::$migrated = true;
-    }
+    }*/
 
     protected function migrateDatabases()
     {

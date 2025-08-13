@@ -256,6 +256,7 @@ class UserGroups extends Component
             $groups = $this->_createUserGroupsQuery()
                 ->whereIn('id', $assignments->pluck('groupId')->unique())
                 ->get()
+                ->keyBy('id')
                 ->map(fn(object $result) => new UserGroup((array) $result))
                 ->all();
 

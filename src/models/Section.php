@@ -12,7 +12,6 @@ use craft\base\Chippable;
 use craft\base\CpEditable;
 use craft\base\Iconic;
 use craft\base\Model;
-use craft\db\Query;
 use craft\db\Table;
 use craft\elements\Entry;
 use craft\helpers\Db;
@@ -234,11 +233,10 @@ class Section extends Model implements Chippable, CpEditable, Iconic
         // If this is an existing section, make sure they aren't moving it to a
         // completely different set of sites in one fell swoop
         if ($this->id) {
-            $currentSiteIds = (new Query())
-                ->select(['siteId'])
-                ->from([Table::SECTIONS_SITES])
-                ->where(['sectionId' => $this->id])
-                ->column();
+            $currentSiteIds = \Illuminate\Support\Facades\DB::table(\CraftCms\Cms\Db\Table::SECTIONS_SITES)
+                ->where('sectionId', $this->id)
+                ->pluck('siteId')
+                ->all();
 
             if (empty(array_intersect($currentSiteIds, array_keys($this->getSiteSettings())))) {
                 $this->addError('siteSettings', Craft::t('app', 'At least one currently-enabled site must remain enabled.'));

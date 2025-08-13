@@ -9,6 +9,7 @@ namespace craft\db;
 
 use craft\errors\OperationAbortedException;
 use craft\helpers\Db;
+use Illuminate\Support\Facades\Schema;
 use Throwable;
 use yii\db\ColumnSchemaBuilder;
 

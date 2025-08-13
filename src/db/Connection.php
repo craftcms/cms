@@ -606,6 +606,23 @@ class Connection extends \CraftCms\Yii2Adapter\DatabaseConnection
         }
     }
 
+    /**
+     * @return \yii\db\Transaction|null
+     */
+    public function getTransaction(): ?Transaction
+    {
+        if (\Illuminate\Support\Facades\DB::transactionLevel() > 0) {
+            return new LaravelTransaction(['db' => $this]);
+        }
+
+        return null;
+    }
+
+    public function transaction(callable $callback, $isolationLevel = null)
+    {
+        return \Illuminate\Support\Facades\DB::transaction($callback);
+    }
+
     public function beginTransaction($isolationLevel = null)
     {
         $this->open();

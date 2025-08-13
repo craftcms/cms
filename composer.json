@@ -66,6 +66,7 @@
     "symfony/var-dumper": "^7.2",
     "symfony/yaml": "^7.0",
     "theiconic/name-parser": "^1.2",
+    "tpetry/laravel-query-expressions": "^1.5",
     "twig/twig": "~3.21.1",
     "voku/stringy": "^6.5",
     "web-auth/webauthn-lib": "~4.9.0",

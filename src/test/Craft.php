@@ -30,6 +30,7 @@ use CraftCms\Cms\Support\Env;
 use DateTime;
 use Exception;
 use Illuminate\Support\Facades\Config;
+use Illuminate\Support\Facades\DB;
 use PHPUnit\Framework\ExpectationFailedException;
 use PHPUnit\Framework\MockObject\MockObject;
 use ReflectionException;
@@ -716,5 +717,17 @@ class Craft extends Yii2
         ]);
 
         $this->configureClient($this->_getConfig());
+    }
+
+    protected function startTransactions(): void
+    {
+        if ($this->config['transaction']) {
+            DB::beginTransaction();
+        }
+    }
+
+    protected function rollbackTransactions(): void
+    {
+        DB::rollBack(0);
     }
 }

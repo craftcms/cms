@@ -36,6 +36,7 @@ use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 use ReflectionMethod;
+use Tpetry\QueryExpressions\Function\Conditional\Coalesce;
 use yii\base\Component;
 use yii\base\Exception;
 use yii\base\InvalidConfigException;
@@ -253,7 +254,7 @@ class Gc extends Component
         // first get nested elements which are not nested (owned) and that don't have any revisions
         $ids1 = $this->hardDeleteQuery(DB::table(Table::ELEMENTS, 'e'), 'e')
             ->leftJoin(Table::REVISIONS . ' as r', 'r.canonicalId','e.id')
-            ->leftJoin(Table::ELEMENTS_OWNERS . ' as eo', 'eo.elementId', '=', DB::raw('COALESCE(e."canonicalId", e.id)'))
+            ->leftJoin(Table::ELEMENTS_OWNERS . ' as eo', 'eo.elementId', '=', new Coalesce(['e.canonicalId', 'e.id']))
             ->whereIn('e.type', $nestedElementTypes)
             ->whereNull('r.id')
             ->whereNull('eo.elementId')
@@ -261,7 +262,7 @@ class Gc extends Component
 
         // then get any nested elements that don't have any revisions, including nested ones
         $ids2 = $this->hardDeleteQuery(DB::table(Table::ELEMENTS, 'e'), 'e')
-            ->leftJoin(Table::REVISIONS . ' as r', 'r.canonicalId', '=', DB::raw('COALESCE(e."canonicalId", e.id)'))
+            ->leftJoin(Table::REVISIONS . ' as r', 'r.canonicalId', '=', new Coalesce(['e.canonicalId', 'e.id']))
             ->whereIn('type', $nestedElementTypes)
             ->whereNull('r.id')
             ->pluck('e.id');
@@ -732,7 +733,7 @@ SQL;
         $structureIds = $this->hardDeleteQuery(DB::table($structuresTable, 's'), 's')
             ->leftJoin($structureElementsTable . ' as se', 's.id', 'se.structureId')
             ->leftJoin($elementsTable . ' as e', 'e.id', 'se.elementId')
-            ->leftJoin($revisionsTable . ' as r', 'r.canonicalId', '=', DB::raw('coalesce(e."canonicalId",e.id)'))
+            ->leftJoin($revisionsTable . ' as r', 'r.canonicalId', '=', new Coalesce(['e.canonicalId', 'e.id']))
             ->whereNotNull('se.elementId')
             ->whereNull('r.canonicalId')
             ->distinct()
