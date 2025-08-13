@@ -1,5 +1,10 @@
 # Release Notes for Craft CMS 4
 
+## Unreleased
+
+- Fixed a bug where the `folderPath` asset query param required a trailing slash. ([craftcms/html-field#18](https://github.com/craftcms/html-field/pull/18))
+- Fixed PHP deprecation errors.
+
 ## 4.16.9.1 - 2025-08-07
 
 - Added `craft\services\UserPermissions::validatePermission()`.
