@@ -121,6 +121,7 @@ abstract class BaseElementFixture extends DbFixture
     public function unload(): void
     {
         $this->checkIntegrity(true);
+        DB::connection()->getPdo()->setAttribute(\PDO::ATTR_EMULATE_PREPARES, false);
 
         foreach ($this->_elements as $element) {
             $this->deleteElement($element);

@@ -728,16 +728,4 @@ class Craft extends Yii2
 
         $this->configureClient($this->_getConfig());
     }
-
-    protected function startTransactions(): void
-    {
-        if ($this->config['transaction']) {
-            DB::beginTransaction();
-        }
-    }
-
-    protected function rollbackTransactions(): void
-    {
-        DB::rollBack(0);
-    }
 }
