@@ -64,9 +64,9 @@
         label: 'View Mode'|t('app')
     } %}
         {% block input %}
-            <div id="mode" class="flex flex-nowrap gap-l">
+            <div id="mode" class="flex items-start gap-l">
                 <label>
-                    <img class="mb-xs" src="{{ baseImageUrl }}/crop.svg" width="80" height="60" alt="">
+                    <img class="mb-xs" src="{{ baseIconsUrl }}/crop.svg" width="80" height="60" alt="">
                     {{ input('radio', 'mode', 'crop', {
                         checked: transform.mode == 'crop',
                         disabled: readOnly,
@@ -74,7 +74,7 @@
                     {{ "Crop"|t('app') }}
                 </label>
                 <label>
-                    <img class="mb-xs" src="{{ baseImageUrl }}/fit.svg" width="80" height="60" alt="">
+                    <img class="mb-xs" src="{{ baseIconsUrl }}/fit.svg" width="80" height="60" alt="">
                     {{ input('radio', 'mode', 'fit', {
                         checked: transform.mode == 'fit',
                         disabled: readOnly,
@@ -82,7 +82,7 @@
                     {{ "Fit"|t('app') }}
                 </label>
                 <label>
-                    <img class="mb-xs" src="{{ baseImageUrl }}/letterbox.svg" width="80" height="60" alt="">
+                    <img class="mb-xs" src="{{ baseIconsUrl }}/letterbox.svg" width="80" height="60" alt="">
                     {{ input('radio', 'mode', 'letterbox', {
                         checked: transform.mode == 'letterbox',
                         disabled: readOnly,
@@ -90,7 +90,7 @@
                     {{ "Letterbox"|t('app') }}
                 </label>
                 <label>
-                    <img class="mb-xs" src="{{ baseImageUrl }}/stretch.svg" width="80" height="60" alt="">
+                    <img class="mb-xs" src="{{ baseIconsUrl }}/stretch.svg" width="80" height="60" alt="">
                     {{ input('radio', 'mode', 'stretch', {
                         checked: transform.mode == 'stretch',
                         disabled: readOnly,

@@ -694,7 +694,7 @@ class Matrix extends Field implements
                 Entry::indexViewModes(),
                 fn(array $viewMode) => !($viewMode['structuresOnly'] ?? false),
             ),
-            'baseImageUrl' => "$bundle->baseUrl/images/nested-view-modes",
+            'baseIconsUrl' => "$bundle->baseUrl/images/view-modes",
             'readOnly' => $readOnly,
         ]);
     }

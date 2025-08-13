@@ -132,7 +132,7 @@ class ImageTransformsController extends Controller
             'qualityPickerOptions' => $qualityPickerOptions,
             'qualityPickerValue' => $qualityPickerValue,
             'readOnly' => $this->readOnly,
-            'baseImageUrl' => $bundle->baseUrl,
+            'baseIconsUrl' => $bundle->baseUrl,
         ]);
     }
 

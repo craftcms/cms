@@ -113,7 +113,7 @@
         {{ field.getViewModeFieldHtml()|raw }}
 
         {% tag 'div' with {
-            id: 'view-mode--cards',
+        id: 'view-mode--cards',
             class: field.viewMode != 'cards' ? 'hidden' : null,
         } %}
             {{ forms.lightswitchField({

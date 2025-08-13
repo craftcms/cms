@@ -371,7 +371,7 @@ class Addresses extends Field implements
         return Craft::$app->getView()->renderTemplate('_components/fieldtypes/Addresses/settings.twig', [
             'field' => $this,
             'readOnly' => $readOnly,
-            'baseImageUrl' => "$bundle->baseUrl/images/nested-view-modes",
+            'baseIconsUrl' => "$bundle->baseUrl/images/view-modes",
         ]);
     }
 
