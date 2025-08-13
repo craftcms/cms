@@ -8,6 +8,7 @@
 namespace craft\helpers;
 
 use Craft;
+use craft\behaviors\CustomFieldBehavior;
 use craft\services\ProjectConfig as ProjectConfigService;
 use StdClass;
 use yii\base\InvalidArgumentException;
@@ -114,6 +115,18 @@ class ProjectConfig
         foreach ($allFields as $fieldUid => $fieldData) {
             // Ensure field is processed
             $projectConfig->processConfigChanges(ProjectConfigService::PATH_FIELDS . '.' . $fieldUid);
+        }
+
+        // Now that all fields are processed, make sure that CustomFieldBehavior::$fieldHandles
+        // is up-to-date with any overridden field handles in field layouts.
+        // (This could not be the case if any Content Block fields define a field layout that reference
+        // fields which weren’t processed yet at the time their layout was saved, for example.)
+        foreach (Craft::$app->getFields()->getAllLayouts() as $layout) {
+            foreach ($layout->getCustomFieldElements() as $layoutElement) {
+                if (isset($layoutElement->handle)) {
+                    CustomFieldBehavior::$fieldHandles[$layoutElement->handle] = true;
+                }
+            }
         }
     }
 
