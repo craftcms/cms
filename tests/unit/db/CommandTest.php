@@ -15,6 +15,7 @@ use craft\db\Table;
 use craft\test\TestCase;
 use DateTime;
 use DateTimeZone;
+use Illuminate\Support\Facades\DB;
 use yii\db\Exception;
 
 /**
@@ -71,9 +72,7 @@ class CommandTest extends TestCase
      */
     public function clearSession()
     {
-        Craft::$app->getDb()->createCommand()
-            ->truncateTable(Table::SESSIONS)
-            ->execute();
+        DB::table(\CraftCms\Cms\Db\Table::SESSIONS)->truncate();
     }
 
     /**

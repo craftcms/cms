@@ -11,14 +11,14 @@ use Craft;
 use craft\auth\methods\AuthMethodInterface;
 use craft\auth\methods\RecoveryCodes;
 use craft\console\Controller;
-use craft\db\Table;
 use craft\elements\User;
 use craft\errors\InvalidElementException;
 use craft\helpers\Console;
-use craft\helpers\Db;
 use craft\helpers\UrlHelper;
+use CraftCms\Cms\Db\Table;
 use CraftCms\Cms\Support\Arr;
 use DateTime;
+use Illuminate\Support\Facades\DB;
 use Throwable;
 use yii\base\InvalidArgumentException;
 use yii\console\ExitCode;
@@ -484,7 +484,7 @@ class UsersController extends Controller
     public function actionLogoutAll(): int
     {
         $this->stdout('Logging all users out ... ');
-        Db::truncateTable(Table::SESSIONS);
+        DB::table(Table::SESSIONS)->truncate();
         $this->stdout("done\n", Console::FG_GREEN);
         return ExitCode::OK;
     }

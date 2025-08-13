@@ -426,9 +426,7 @@ class GqlTest extends TestCase
     {
         $gql = Craft::$app->getGql();
 
-        Craft::$app->getDb()->createCommand()
-            ->truncateTable(Table::GQLTOKENS)
-            ->execute();
+        \Illuminate\Support\Facades\DB::table(\CraftCms\Cms\Db\Table::GQLTOKENS)->truncate();
 
         $accessToken = Str::random();
         $tokenName = Str::random(15);
