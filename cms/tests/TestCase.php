@@ -14,7 +14,6 @@ use CraftCms\Yii2Adapter\Yii2ServiceProvider;
 use Illuminate\Contracts\Console\Kernel;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Foundation\Testing\LazilyRefreshDatabase;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Foundation\Testing\RefreshDatabaseState;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Config;
