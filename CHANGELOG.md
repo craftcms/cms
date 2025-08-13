@@ -1,6 +1,6 @@
 # Release Notes for Craft CMS 4
 
-## Unreleased
+## 4.16.11 - 2025-08-13
 
 - Improved the performance of element queries. ([#16401](https://github.com/craftcms/cms/issues/16401))
 - Updated svg-sanitizer to 0.22. ([#17738](https://github.com/craftcms/cms/issues/17738))
