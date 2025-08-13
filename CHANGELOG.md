@@ -3,6 +3,7 @@
 ## Unreleased
 
 - Updated svg-sanitizer to 0.22. ([#17738](https://github.com/craftcms/cms/issues/17738))
+- Improved the performance of element queries. ([#16401](https://github.com/craftcms/cms/issues/16401))
 
 ## 4.16.10 - 2025-08-12
 
