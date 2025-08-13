@@ -190,8 +190,7 @@ class EntrifyController extends Controller
                         ]);
 
                     DbFacade::table(Table::CATEGORIES)
-                        ->where('id', $category->id)
-                        ->delete();
+                        ->delete($category->id);
 
                     DbFacade::table(Table::STRUCTUREELEMENTS)
                         ->where('structureId', $categoryGroup->structureId)
@@ -387,9 +386,7 @@ class EntrifyController extends Controller
                             'dateDeleted' => null,
                         ]);
 
-                    DbFacade::table(Table::TAGS)
-                        ->where('id', $tag->id)
-                        ->delete();
+                    DbFacade::table(Table::TAGS)->delete($tag->id);
 
                     $authorData[] = [
                         'entryId' => $tag->id,
@@ -536,9 +533,7 @@ class EntrifyController extends Controller
                     'title' => $globalSet->name,
                 ]);
 
-            DbFacade::table(Table::GLOBALSETS)
-                ->where('id', $globalSet->id)
-                ->delete();
+            DbFacade::table(Table::GLOBALSETS)->delete($globalSet->id);
         });
 
         $this->success('Global set converted.');

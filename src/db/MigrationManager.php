@@ -10,10 +10,10 @@ namespace craft\db;
 use Craft;
 use craft\errors\MigrationException;
 use craft\helpers\App;
-use craft\helpers\Db;
 use craft\helpers\FileHelper;
-use DateTime;
 use Illuminate\Database\Query\Builder;
+use Illuminate\Support\Facades\Date;
+use Illuminate\Support\Facades\DB;
 use Throwable;
 use yii\base\Component;
 use yii\base\Exception;
@@ -358,11 +358,12 @@ class MigrationManager extends Component
      */
     public function addMigrationHistory(string $name): void
     {
-        Db::insert($this->migrationTable, [
-            'track' => $this->track,
-            'name' => $name,
-            'applyTime' => Db::prepareDateForDb(new DateTime()),
-        ]);
+        DB::table($this->migrationTable)
+            ->insert([
+                'track' => $this->track,
+                'name' => $name,
+                'applyTime' => Date::now(),
+            ]);
     }
 
     /**
@@ -372,10 +373,12 @@ class MigrationManager extends Component
      */
     public function removeMigrationHistory(string $name): void
     {
-        Db::delete($this->migrationTable, [
-            'track' => $this->track,
-            'name' => $name,
-        ]);
+        DB::table($this->migrationTable)
+            ->where([
+                'track' => $this->track,
+                'name' => $name,
+            ])
+            ->delete();
     }
 
     /**
@@ -385,9 +388,11 @@ class MigrationManager extends Component
      */
     public function truncateHistory(): void
     {
-        Db::delete($this->migrationTable, [
-            'track' => $this->track,
-        ]);
+        DB::table($this->migrationTable)
+            ->where([
+                'track' => $this->track,
+            ])
+            ->delete();
     }
 
     /**
@@ -473,7 +478,7 @@ class MigrationManager extends Component
      */
     private function _createMigrationQuery(): Builder
     {
-        return \Illuminate\Support\Facades\DB::table($this->migrationTable)
+        return DB::table($this->migrationTable)
             ->select(['name', 'applyTime'])
             ->orderByDesc('name')
             ->where('track', $this->track);

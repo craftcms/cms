@@ -158,9 +158,7 @@ class ElementsController extends Controller
             $message = sprintf('Deleting %s %s', $isValid ? $type::lowerDisplayName() : 'element', $elementId);
             $this->do($message, function() use ($elementId) {
                 if (!$this->dryRun) {
-                    DB::table(Table::ELEMENTS)
-                        ->where('id', $elementId)
-                        ->delete();
+                    DB::table(Table::ELEMENTS)->delete($elementId);
 
                     DB::table(Table::SEARCHINDEX)
                         ->where('elementId', $elementId)

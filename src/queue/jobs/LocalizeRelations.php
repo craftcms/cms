@@ -8,11 +8,12 @@
 namespace craft\queue\jobs;
 
 use Craft;
-use craft\db\Query;
-use craft\db\Table;
-use craft\helpers\Db;
 use craft\i18n\Translation;
 use craft\queue\BaseJob;
+use CraftCms\Cms\Db\Table;
+use CraftCms\Cms\Support\Str;
+use Illuminate\Support\Facades\Date;
+use Illuminate\Support\Facades\DB;
 
 /**
  * LocalizeRelations job
@@ -32,38 +33,41 @@ class LocalizeRelations extends BaseJob
      */
     public function execute($queue): void
     {
-        $relations = (new Query())
+        $relations = DB::table(Table::RELATIONS)
             ->select(['id', 'sourceId', 'sourceSiteId', 'targetId', 'sortOrder'])
-            ->from([Table::RELATIONS])
-            ->where([
-                'fieldId' => $this->fieldId,
-                'sourceSiteId' => null,
-            ])
-            ->all();
+            ->where('fieldId', $this->fieldId)
+            ->whereNull('sourceSiteId')
+            ->get();
 
         $totalRelations = count($relations);
         $allSiteIds = Craft::$app->getSites()->getAllSiteIds();
         $primarySiteId = array_shift($allSiteIds);
 
+        $now = Date::now();
         foreach ($relations as $i => $relation) {
             $this->setProgress($queue, $i / $totalRelations);
 
             // Set the existing relation to the primary site
-            Db::update(Table::RELATIONS, [
-                'sourceSiteId' => $primarySiteId,
-            ], [
-                'id' => $relation['id'],
-            ]);
+            DB::table(Table::RELATIONS)
+                ->where('id', $relation->id)
+                ->update([
+                    'sourceSiteId' => $primarySiteId,
+                    'dateUpdated' => $now,
+                ]);
 
             // Duplicate it for the other sites
             foreach ($allSiteIds as $siteId) {
-                Db::insert(Table::RELATIONS, [
-                    'fieldId' => $this->fieldId,
-                    'sourceId' => $relation['sourceId'],
-                    'sourceSiteId' => $siteId,
-                    'targetId' => $relation['targetId'],
-                    'sortOrder' => $relation['sortOrder'],
-                ]);
+                DB::table(Table::RELATIONS)
+                    ->insert([
+                        'fieldId' => $this->fieldId,
+                        'sourceId' => $relation->sourceId,
+                        'sourceSiteId' => $siteId,
+                        'targetId' => $relation->targetId,
+                        'sortOrder' => $relation->sortOrder,
+                        'uid' => Str::uuid(),
+                        'dateCreated' => $now,
+                        'dateUpdated' => $now,
+                    ]);
             }
         }
     }

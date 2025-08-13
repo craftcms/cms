@@ -10,17 +10,17 @@ namespace craft\services;
 use Craft;
 use craft\base\ElementInterface;
 use craft\behaviors\RevisionBehavior;
-use craft\db\Query;
-use craft\db\Table;
 use craft\errors\InvalidElementException;
 use craft\errors\MutexException;
 use craft\events\RevisionEvent;
-use craft\helpers\DateTimeHelper;
-use craft\helpers\Db;
 use craft\helpers\Queue;
 use craft\queue\jobs\PruneRevisions;
+use CraftCms\Cms\Config\GeneralConfig;
+use CraftCms\Cms\Db\Table;
 use CraftCms\Cms\Support\Arr;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Date;
+use Illuminate\Support\Facades\DB;
 use Throwable;
 use yii\base\Component;
 use yii\base\InvalidArgumentException;
@@ -89,36 +89,34 @@ class Revisions extends Component
             throw new MutexException($lockKey, sprintf('Could not acquire a lock to save a revision for element %s', $canonical->id));
         }
 
-        $db = Craft::$app->getDb();
-
         $num = Arr::pull($newAttributes, 'revisionNum');
         $lastRevisionInfo = null;
 
         try {
             if (!$force || !$num) {
-                $lastRevisionInfo = Craft::$app->getDb()->usePrimary(fn() => (new Query())
+                $lastRevisionInfo = DB::useWriteConnectionWhenReading()
+                    ->table(Table::ELEMENTS, 'e')
                     ->select(['e.id', 'r.num', 'e.dateCreated'])
-                    ->from(['e' => Table::ELEMENTS])
-                    ->innerJoin(['r' => Table::REVISIONS], '[[r.id]] = [[e.revisionId]]')
-                    ->where(['r.canonicalId' => $canonical->id])
-                    ->orderBy(['r.num' => SORT_DESC])
-                    ->one());
+                    ->join(Table::REVISIONS . ' as r', 'r.id', 'e.revisionId')
+                    ->where('r.canonicalId', $canonical->id)
+                    ->orderByDesc('r.num')
+                    ->first();
 
                 if (
                     !$force &&
                     $lastRevisionInfo &&
-                    DateTimeHelper::toDateTime($lastRevisionInfo['dateCreated'])->getTimestamp() === $canonical->dateUpdated->getTimestamp() &&
+                    Date::parse($lastRevisionInfo->dateCreated)->getTimestamp() === $canonical->dateUpdated->getTimestamp() &&
                     // Make sure all its data is in-tact
-                    $canonical::find()->id($lastRevisionInfo['id'])->revisions()->status(null)->siteId($canonical->siteId)->exists()
+                    $canonical::find()->id($lastRevisionInfo->id)->revisions()->status(null)->siteId($canonical->siteId)->exists()
                 ) {
                     // The canonical element hasn't been updated since the last revision's creation date,
                     // so there's no need to create a new one
-                    return $lastRevisionInfo['id'];
+                    return $lastRevisionInfo->id;
                 }
 
                 // Get the next revision number for this element
                 if ($lastRevisionInfo) {
-                    $num = $lastRevisionInfo['num'] + 1;
+                    $num = $lastRevisionInfo->num + 1;
                 } else {
                     $num = 1;
                 }
@@ -141,7 +139,7 @@ class Revisions extends Component
 
                 // only bail early if we have at least one revision
                 if ($event->handled && $lastRevisionInfo) {
-                    return $lastRevisionInfo['id'];
+                    return $lastRevisionInfo->id;
                 }
 
                 $notes = $event->revisionNotes;
@@ -151,19 +149,19 @@ class Revisions extends Component
 
             $elementsService = Craft::$app->getElements();
 
-            \Illuminate\Support\Facades\DB::beginTransaction();
+            DB::beginTransaction();
             try {
                 // Create the revision row
-                Db::insert(Table::REVISIONS, [
-                    'canonicalId' => $canonical->id,
-                    'creatorId' => $creatorId,
-                    'num' => $num,
-                    'notes' => $notes,
-                ]);
+                $newAttributes['revisionId'] = DB::table(Table::REVISIONS)
+                    ->insertGetId([
+                        'canonicalId' => $canonical->id,
+                        'creatorId' => $creatorId,
+                        'num' => $num,
+                        'notes' => $notes,
+                    ]);
 
                 // Duplicate the element
                 $newAttributes['canonicalId'] = $canonical->id;
-                $newAttributes['revisionId'] = $db->getLastInsertID(Table::REVISIONS);
                 $newAttributes['behaviors']['revision'] = [
                     'class' => RevisionBehavior::class,
                     'creatorId' => $creatorId,
@@ -177,9 +175,9 @@ class Revisions extends Component
 
                 $revision = $elementsService->duplicateElement($canonical, $newAttributes);
 
-                \Illuminate\Support\Facades\DB::commit();
+                DB::commit();
             } catch (Throwable $e) {
-                \Illuminate\Support\Facades\DB::rollBack();
+                DB::rollBack();
                 throw $e;
             }
 
@@ -198,7 +196,7 @@ class Revisions extends Component
         }
 
         // Prune any excess revisions
-        if (app(\CraftCms\Cms\Config\GeneralConfig::class)->maxRevisions) {
+        if (app(GeneralConfig::class)->maxRevisions) {
             Queue::push(new PruneRevisions([
                 'elementType' => get_class($canonical),
                 'canonicalId' => $canonical->id,

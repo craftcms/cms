@@ -12,14 +12,14 @@ use craft\base\Element;
 use craft\base\ElementInterface;
 use craft\behaviors\DraftBehavior;
 use craft\db\Connection;
-use craft\db\Query;
-use craft\db\Table;
 use craft\errors\InvalidElementException;
 use craft\events\DraftEvent;
 use craft\helpers\DateTimeHelper;
-use craft\helpers\Db;
 use craft\helpers\ElementHelper;
+use CraftCms\Cms\Config\GeneralConfig;
+use CraftCms\Cms\Db\Table;
 use CraftCms\Cms\Support\Arr;
+use Illuminate\Support\Facades\DB;
 use Throwable;
 use yii\base\Component;
 use yii\base\Exception;
@@ -147,7 +147,8 @@ class Drafts extends Component
             $name = $this->generateDraftName($canonical->id);
         }
 
-        \Illuminate\Support\Facades\DB::beginTransaction();
+        DB::beginTransaction();
+
         try {
             // Create the draft row
             $draftId = $this->insertDraftRow($name, $notes, $creatorId, $canonical->id, $canonical::trackChanges(), $provisional);
@@ -168,23 +169,16 @@ class Drafts extends Component
             $draft = Craft::$app->getElements()->duplicateElement($canonical, $newAttributes);
 
             // Duplicate nested element ownership
-            Craft::$app->getDb()->createCommand(sprintf(
-                <<<SQL
-INSERT INTO %s ([[elementId]], [[ownerId]], [[sortOrder]])
-SELECT [[o.elementId]], :draftId, [[o.sortOrder]]
-FROM %s AS [[o]]
-WHERE [[o.ownerId]] = :canonicalId
-SQL,
-                Table::ELEMENTS_OWNERS,
-                Table::ELEMENTS_OWNERS,
-            ), [
-                ':draftId' => $draft->id,
-                ':canonicalId' => $canonical->id,
-            ])->execute();
+            DB::table(Table::ELEMENTS_OWNERS)
+                ->insertUsing(['elementId', 'ownerId', 'sortOrder'],
+                    DB::table(Table::ELEMENTS_OWNERS, 'o')
+                        ->select('o.elementId', DB::raw($draft->id), 'o.sortOrder')
+                        ->where('o.ownerId', $canonical->id)
+                );
 
-            \Illuminate\Support\Facades\DB::commit();
+            DB::commit();
         } catch (Throwable $e) {
-            \Illuminate\Support\Facades\DB::rollBack();
+            DB::rollBack();
             throw $e;
         }
 
@@ -213,12 +207,10 @@ SQL,
     public function generateDraftName(int $canonicalId): string
     {
         // Get all of the canonical element’s current draft names
-        $draftNames = (new Query())
-            ->select(['name'])
-            ->from([Table::DRAFTS])
-            ->where(['canonicalId' => $canonicalId])
-            ->column();
-        $draftNames = array_flip($draftNames);
+        $draftNames = DB::table(Table::DRAFTS)
+            ->where('canonicalId', $canonicalId)
+            ->pluck('name')
+            ->flip();
 
         // Find one that isn't taken
         $num = count($draftNames);
@@ -310,7 +302,7 @@ SQL,
         $elementsService = Craft::$app->getElements();
         $draftNotes = $draft->draftNotes;
 
-        \Illuminate\Support\Facades\DB::beginTransaction();
+        DB::beginTransaction();
         try {
             if ($canonical !== $draft) {
                 // Merge in any attribute & field values that were updated in the canonical element, but not the draft
@@ -337,9 +329,9 @@ SQL,
                 $newCanonical = $draft;
             }
 
-            \Illuminate\Support\Facades\DB::commit();
+            DB::commit();
         } catch (Throwable $e) {
-            \Illuminate\Support\Facades\DB::rollBack();
+            DB::rollBack();
 
             if ($e instanceof InvalidElementException && $draft !== $e->element) {
                 // Add the errors from the duplicated element back onto the draft
@@ -402,9 +394,8 @@ SQL,
             if ($draft->hasErrors() || !Craft::$app->getElements()->saveElement($draft, false, false)) {
                 throw new InvalidElementException($draft, "Draft $draft->id could not be applied because it doesn't validate.");
             }
-            Db::delete(Table::DRAFTS, [
-                'id' => $draftId,
-            ]);
+
+            DB::table(Table::DRAFTS)->delete($draftId);
         } catch (Throwable $e) {
             // Put everything back
             $draft->draftId = $draftId;
@@ -421,7 +412,7 @@ SQL,
      */
     public function purgeUnsavedDrafts(): void
     {
-        $generalConfig = app(\CraftCms\Cms\Config\GeneralConfig::class);
+        $generalConfig = app(GeneralConfig::class);
 
         if ($generalConfig->purgeUnsavedDraftsDuration === 0) {
             return;
@@ -431,22 +422,21 @@ SQL,
         $expire = DateTimeHelper::currentUTCDateTime();
         $pastTime = $expire->sub($interval);
 
-        $drafts = (new Query())
-            ->select(['e.draftId', 'e.type'])
-            ->from(['e' => Table::ELEMENTS])
-            ->innerJoin(['d' => Table::DRAFTS], '[[d.id]] = [[e.draftId]]')
-            ->where(['d.saved' => false])
-            ->andWhere(['d.canonicalId' => null])
-            ->andWhere(['<', 'e.dateUpdated', Db::prepareDateForDb($pastTime)])
-            ->all();
+        $drafts = DB::table(Table::ELEMENTS, 'elements')
+            ->select('elements.draftId', 'elements.type')
+            ->join(Table::DRAFTS . ' as drafts', 'drafts.id', '=', 'elements.draftId')
+            ->where('drafts.saved', false)
+            ->whereNull('drafts.canonicalId')
+            ->where('elements.dateUpdated', '<', $pastTime)
+            ->get();
 
         $elementsService = Craft::$app->getElements();
 
         foreach ($drafts as $draftInfo) {
             /** @var class-string<ElementInterface> $elementType */
-            $elementType = $draftInfo['type'];
+            $elementType = $draftInfo->type;
             $draft = $elementType::find()
-                ->draftId($draftInfo['draftId'])
+                ->draftId($draftInfo->draftId)
                 ->status(null)
                 ->site('*')
                 ->one();
@@ -457,12 +447,10 @@ SQL,
                 // Perhaps the draft's row in the `entries` table was deleted manually or something.
                 // Just drop its row in the `drafts` table, and let that cascade to `elements` and whatever other tables
                 // still have rows for the draft.
-                Db::delete(Table::DRAFTS, [
-                    'id' => $draftInfo['draftId'],
-                ], [], $this->db);
+                DB::table(Table::DRAFTS)->delete($draftInfo->draftId);
             }
 
-            Craft::info("Deleted unsaved draft {$draftInfo['draftId']}", __METHOD__);
+            Craft::info("Deleted unsaved draft {$draftInfo->draftId}", __METHOD__);
         }
     }
 
@@ -487,14 +475,13 @@ SQL,
         bool $trackChanges = false,
         bool $provisional = false,
     ): int {
-        Db::insert(Table::DRAFTS, [
+        return DB::table(Table::DRAFTS)->insertGetId([
             'canonicalId' => $canonicalId,
             'creatorId' => $creatorId,
             'provisional' => $provisional,
             'name' => $name,
             'notes' => $notes,
             'trackChanges' => $trackChanges,
-        ], $this->db);
-        return (int)$this->db->getLastInsertID(Table::DRAFTS);
+        ]);
     }
 }

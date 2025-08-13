@@ -8,14 +8,12 @@
 namespace crafttests\unit\gql;
 
 use Craft;
-use craft\db\Table;
 use craft\gql\resolvers\elements\Asset as AssetResolver;
 use craft\gql\resolvers\elements\Category as CategoryResolver;
 use craft\gql\resolvers\elements\Entry as EntryResolver;
 use craft\gql\resolvers\elements\GlobalSet as GlobalSetResolver;
 use craft\gql\resolvers\elements\Tag as TagResolver;
 use craft\gql\resolvers\elements\User as UserResolver;
-use craft\helpers\Db;
 use craft\models\GqlSchema;
 use craft\records\CategoryGroup;
 use craft\records\Element;
@@ -28,8 +26,10 @@ use craft\records\UserGroup;
 use craft\records\Volume;
 use craft\services\Entries;
 use craft\test\TestCase;
+use CraftCms\Cms\Db\Table;
 use CraftCms\Cms\Element\Enums\PropagationMethod;
 use CraftCms\Cms\Support\Str;
+use Illuminate\Support\Facades\DB;
 use UnitTester;
 
 class PrepareQueryTest extends TestCase
@@ -287,7 +287,7 @@ class PrepareQueryTest extends TestCase
         $this->_section->save();
         Craft::$app->set('entries', new Entries());
 
-        Db::insert(Table::SECTIONS_ENTRYTYPES, [
+        DB::table(Table::SECTIONS_ENTRYTYPES)->insert([
             'sectionId' => $this->_section->id,
             'typeId' => $this->_entryType->id,
             'sortOrder' => 1,
