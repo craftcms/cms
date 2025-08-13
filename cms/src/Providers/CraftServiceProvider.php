@@ -4,6 +4,7 @@ namespace CraftCms\Cms\Providers;
 
 use CraftCms\Cms\Config\ConfigServiceProvider;
 use CraftCms\Cms\Console\ConsoleServiceProvider;
+use CraftCms\Cms\Db\DatabaseServiceProvider;
 use CraftCms\Cms\License\LicenseServiceProvider;
 use Illuminate\Support\AggregateServiceProvider;
 
@@ -12,6 +13,7 @@ final class CraftServiceProvider extends AggregateServiceProvider
 {
     protected $providers = [
         ConfigServiceProvider::class,
+        DatabaseServiceProvider::class,
         LicenseServiceProvider::class,
         AppServiceProvider::class,
         IconServiceProvider::class,

@@ -547,15 +547,6 @@ class Elements extends Component
     private ?bool $_updateSearchIndex = null;
 
     /**
-     * @inheritdoc
-     */
-    public function init()
-    {
-        parent::init();
-        $this->bulkOpDb = Instance::ensure($this->bulkOpDb, Connection::class);
-    }
-
-    /**
      * Creates an element with a given config.
      *
      * @template T of ElementInterface
@@ -590,12 +581,10 @@ class Elements extends Component
     }
 
     /**
-     * @var Connection|array|string the DB connection object or the application component ID of the DB connection
-     * that should be used to store element bulk op records.
+     * @var string the DB connection name that should be used to store element bulk op records.
      * @since 5.3.0
-     * @deprecated in 6.0.0 use {@see getBulkOpConnection()} instead.
      */
-    public Connection|array|string $bulkOpDb = 'db2';
+    public string $bulkOpDb = 'db2';
 
     // Element caches
     // -------------------------------------------------------------------------
@@ -623,10 +612,7 @@ class Elements extends Component
      */
     public function getBulkOpConnection(): ConnectionInterface
     {
-        $config = DbFacade::connection()->getConfig();
-        $config['name'] = 'db2';
-
-        return DbFacade::build($config);
+        return DbFacade::connection($this->bulkOpDb);
     }
 
     /**
