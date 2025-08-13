@@ -6,6 +6,7 @@
 - Improved the accessibility of the Craft Support widget. ([#17718](https://github.com/craftcms/cms/pull/17718))
 - Fixed a bug where the `folderPath` asset query param required a trailing slash. ([craftcms/html-field#18](https://github.com/craftcms/html-field/pull/18))
 - Fixed a bug where the `_includes/forms/button.twig` template was HTML-encoding the `iconHtml` value.
+- Fixed an error that could occur when installing Craft with existing project config data. ([#17587](https://github.com/craftcms/cms/issues/17587))
 - Fixed PHP deprecation errors.
 
 ## 5.8.13.2 - 2025-08-07
