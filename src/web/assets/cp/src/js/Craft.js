@@ -2488,6 +2488,14 @@ $.extend(Craft, {
     }
   },
 
+  /**
+   * Refreshes all DOM instances of an element with the given ID by re-rendering them via an AJAX request.
+   *
+   * Finds all `.element` divs with the specified `elementId` and updates their HTML using the server-rendered markup.
+   * Useful for keeping element displays in sync after edits or changes.
+   *
+   * @param {number|string} elementId The ID of the element to refresh.
+   */
   refreshElementInstances(elementId) {
     const $elements = $(`div.element[data-id="${elementId}"][data-settings]`);
     if (!$elements.length) {
