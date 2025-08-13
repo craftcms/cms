@@ -1449,10 +1449,10 @@ class Fields extends Component
 
         // If we just dropped `searchable`, delete the field’s search indexes immediately.
         if ($deleteSearchIndexes) {
-            Db::delete(Table::SEARCHINDEX, [
-                'attribute' => 'field',
-                'fieldId' => $field->id,
-            ]);
+            \Illuminate\Support\Facades\DB::table(\CraftCms\Cms\Db\Table::SEARCHINDEX)
+                ->where('attribute', 'field')
+                ->where('fieldId', $field->id)
+                ->delete();
         }
 
         // Invalidate all element caches

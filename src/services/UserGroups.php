@@ -8,7 +8,6 @@
 namespace craft\services;
 
 use Craft;
-use craft\db\Query;
 use craft\db\Table;
 use craft\elements\User;
 use craft\errors\WrongEditionException;
@@ -19,6 +18,7 @@ use craft\models\UserGroup;
 use craft\records\UserGroup as UserGroupRecord;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Support\Str;
+use Illuminate\Database\Query\Builder;
 use yii\base\Component;
 
 /**
@@ -75,10 +75,11 @@ class UserGroups extends Component
             case Edition::Team:
                 return [$this->getTeamGroup()];
             default:
-                $results = $this->_createUserGroupsQuery()
-                    ->orderBy(['name' => SORT_ASC])
+                return $this->_createUserGroupsQuery()
+                    ->orderBy('name')
+                    ->get()
+                    ->map(fn(object $group) => new UserGroup((array)$group))
                     ->all();
-                return array_map(fn(array $result) => new UserGroup($result), $results);
         }
     }
 
@@ -86,6 +87,7 @@ class UserGroups extends Component
      * Returns the user groups that the current user is allowed to assign to another user.
      *
      * @param User|null $user The recipient of the user groups. If set, their current groups will be included as well.
+     *
      * @return UserGroup[]
      */
     public function getAssignableGroups(?User $user = null): array
@@ -118,45 +120,48 @@ class UserGroups extends Component
      * Gets a user group by its ID.
      *
      * @param int $groupId
+     *
      * @return UserGroup|null
      */
     public function getGroupById(int $groupId): ?UserGroup
     {
         $result = $this->_createUserGroupsQuery()
-            ->where(['id' => $groupId])
-            ->one();
+            ->where('id', $groupId)
+            ->first();
 
-        return $result ? new UserGroup($result) : null;
+        return $result ? new UserGroup((array) $result) : null;
     }
 
     /**
      * Gets a user group by its UID.
      *
      * @param string $uid
+     *
      * @return UserGroup|null
      */
     public function getGroupByUid(string $uid): ?UserGroup
     {
         $result = $this->_createUserGroupsQuery()
-            ->where(['uid' => $uid])
-            ->one();
+            ->where('uid', $uid)
+            ->first();
 
-        return $result ? new UserGroup($result) : null;
+        return $result ? new UserGroup((array) $result) : null;
     }
 
     /**
      * Gets a user group by its handle.
      *
      * @param string $groupHandle
+     *
      * @return UserGroup|null
      */
     public function getGroupByHandle(string $groupHandle): ?UserGroup
     {
         $result = $this->_createUserGroupsQuery()
-            ->where(['handle' => $groupHandle])
-            ->one();
+            ->where('handle', $groupHandle)
+            ->first();
 
-        return $result ? new UserGroup($result) : null;
+        return $result ? new UserGroup((array) $result) : null;
     }
 
     /**
@@ -206,11 +211,12 @@ class UserGroups extends Component
      * Gets user groups by a user ID.
      *
      * @param int $userId
+     *
      * @return UserGroup[]
      */
     public function getGroupsByUserId(int $userId): array
     {
-        $groups = (new Query())
+        return \Illuminate\Support\Facades\DB::table(\CraftCms\Cms\Db\Table::USERGROUPS, 'g')
             ->select([
                 'g.id',
                 'g.name',
@@ -218,22 +224,18 @@ class UserGroups extends Component
                 'g.description',
                 'g.uid',
             ])
-            ->from(['g' => Table::USERGROUPS])
-            ->innerJoin(['gu' => Table::USERGROUPS_USERS], '[[gu.groupId]] = [[g.id]]')
-            ->where(['gu.userId' => $userId])
+            ->join(\CraftCms\Cms\Db\Table::USERGROUPS_USERS . ' as gu', 'gu.groupId', 'g.id')
+            ->where('gu.userId', $userId)
+            ->get()
+            ->map(fn(object $group) => new UserGroup((array)$group))
             ->all();
-
-        foreach ($groups as $key => $value) {
-            $groups[$key] = new UserGroup($value);
-        }
-
-        return $groups;
     }
 
     /**
      * Eager-loads user groups onto the given users.
      *
      * @param User[] $users The users to eager-load user groups onto
+     *
      * @since 3.6.0
      */
     public function eagerLoadGroups(array $users): void
@@ -242,27 +244,20 @@ class UserGroups extends Component
             return;
         }
 
-        $assignments = (new Query())
+        $assignments = \Illuminate\Support\Facades\DB::table(\CraftCms\Cms\Db\Table::USERGROUPS_USERS)
             ->select(['groupId', 'userId'])
-            ->from([Table::USERGROUPS_USERS])
-            ->where([
-                'userId' => array_unique(array_map(fn(User $user) => $user->id, $users)),
-            ])
-            ->all();
+            ->whereIn('userId', array_unique(array_map(fn(User $user) => $user->id, $users)))
+            ->get();
 
         $groupsByUserId = [];
 
-        if (!empty($assignments)) {
+        if ($assignments->isNotEmpty()) {
             // Get the user groups, indexed by their IDs
-            $groups = [];
-            $groupResults = $this->_createUserGroupsQuery()
-                ->where([
-                    'id' => array_unique(array_map(fn(array $assignment) => $assignment['groupId'], $assignments)),
-                ])
+            $groups = $this->_createUserGroupsQuery()
+                ->whereIn('id', $assignments->pluck('groupId')->unique())
+                ->get()
+                ->map(fn(object $result) => new UserGroup((array) $result))
                 ->all();
-            foreach ($groupResults as $result) {
-                $groups[$result['id']] = new UserGroup($result);
-            }
 
             // Create batches of user groups by user ID
             foreach ($assignments as $assignment) {
@@ -283,6 +278,7 @@ class UserGroups extends Component
      *
      * @param UserGroup $group The user group to be saved
      * @param bool $runValidation Whether the user group should be validated
+     *
      * @return bool
      * @throws WrongEditionException if this is called from Craft Solo edition
      */
@@ -383,9 +379,9 @@ class UserGroups extends Component
             ]));
         }
 
-        Db::delete(Table::USERGROUPS, [
-            'uid' => $uid,
-        ]);
+        \Illuminate\Support\Facades\DB::table(\CraftCms\Cms\Db\Table::USERGROUPS)
+            ->where('uid', $uid)
+            ->delete();
 
         // Fire an 'afterDeleteUserGroup' event
         if ($this->hasEventHandlers(self::EVENT_AFTER_DELETE_USER_GROUP)) {
@@ -402,6 +398,7 @@ class UserGroups extends Component
      * Deletes a user group by its ID.
      *
      * @param int $groupId The user group's ID
+     *
      * @return bool Whether the user group was deleted successfully
      * @throws WrongEditionException if this is called from Craft Solo edition
      */
@@ -422,6 +419,7 @@ class UserGroups extends Component
      * Deletes a user group.
      *
      * @param UserGroup $group The user group
+     *
      * @return bool Whether the user group was deleted successfully
      * @throws WrongEditionException if this is called from Craft Solo edition
      * @since 3.0.12
@@ -437,23 +435,20 @@ class UserGroups extends Component
             ]));
         }
 
-        Craft::$app->getProjectConfig()->remove(ProjectConfig::PATH_USER_GROUPS . '.' . $group->uid, "Delete the “{$group->handle}” user group");
+        Craft::$app->getProjectConfig()->remove(ProjectConfig::PATH_USER_GROUPS . '.' . $group->uid,
+            "Delete the “{$group->handle}” user group");
         return true;
     }
 
-    /**
-     * @return Query
-     */
-    private function _createUserGroupsQuery(): Query
+    private function _createUserGroupsQuery(): Builder
     {
-        return (new Query())
+        return \Illuminate\Support\Facades\DB::table(\CraftCms\Cms\Db\Table::USERGROUPS)
             ->select([
                 'id',
                 'name',
                 'handle',
                 'description',
                 'uid',
-            ])
-            ->from([Table::USERGROUPS]);
+            ]);
     }
 }

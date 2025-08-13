@@ -1095,9 +1095,7 @@ class Gql extends Component
 
         try {
             // Delete the schema
-            Db::delete(Table::GQLSCHEMAS, [
-                'id' => $schemaRecord->id,
-            ]);
+            \Illuminate\Support\Facades\DB::table(\CraftCms\Cms\Db\Table::GQLSCHEMAS)->delete($schemaRecord->id);
 
             \Illuminate\Support\Facades\DB::commit();
         } catch (Throwable $e) {

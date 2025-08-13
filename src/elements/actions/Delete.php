@@ -11,11 +11,11 @@ use Craft;
 use craft\base\ElementAction;
 use craft\base\ElementInterface;
 use craft\base\NestedElementInterface;
-use craft\db\Table;
 use craft\elements\db\ElementQueryInterface;
-use craft\helpers\Db;
 use craft\helpers\Html;
 use craft\services\Elements;
+use CraftCms\Cms\Db\Table;
+use Illuminate\Support\Facades\DB;
 
 /**
  * Delete represents a Delete element action.
@@ -92,7 +92,7 @@ class Delete extends ElementAction implements DeleteActionInterface
     afterActivate: async (selectedItems, elementIndex) => {
       await elementIndex.settings.onDeleteElements(selectedItems);
     },
-  });
+  })
 })();
 JS, [static::class]);
 
@@ -205,10 +205,10 @@ JS, [static::class]);
         }
 
         foreach ($deleteOwnership as $ownerId => $elementIds) {
-            Db::delete(Table::ELEMENTS_OWNERS, [
-                'elementId' => $elementIds,
-                'ownerId' => $ownerId,
-            ]);
+            DB::table(Table::ELEMENTS_OWNERS)
+                ->whereIn('elementId', $elementIds)
+                ->where('ownerId', $ownerId)
+                ->delete();
         }
 
         if (isset($this->successMessage)) {

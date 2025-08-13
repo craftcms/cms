@@ -30,6 +30,7 @@ use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Str;
 use CraftCms\DependencyAwareCache\Facades\DependencyCache;
+use Illuminate\Database\Query\Builder;
 use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
@@ -179,19 +180,14 @@ class Search extends Component
         }
 
         // Clear the element’s current search keywords
-        $deleteCondition = [
-            'elementId' => $element->id,
-            'siteId' => $element->siteId,
-        ];
-        if (!empty($ignoreFieldIds)) {
-            $ignoreFieldIds = array_map(fn(int $fieldId) => (string)$fieldId, array_keys($ignoreFieldIds));
-            $deleteCondition = [
-                'and',
-                $deleteCondition,
-                ['not', ['fieldId' => $ignoreFieldIds]],
-            ];
-        }
-        DbHelper::delete(Table::SEARCHINDEX, $deleteCondition);
+        DB::table(\CraftCms\Cms\Db\Table::SEARCHINDEX)
+            ->where('elementId', $element->id)
+            ->where('siteId', $element->siteId)
+            ->when(
+                !empty($ignoreFieldIds),
+                fn(Builder $query) => $query->whereNotIn('fieldId', array_map(fn(int $fieldId) => (string)$fieldId, array_keys($ignoreFieldIds)))
+            )
+            ->delete();
 
         // Update the element attributes' keywords
         foreach (ElementHelper::searchableAttributes($element) as $attribute) {

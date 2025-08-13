@@ -7,15 +7,15 @@
 
 namespace craft\services;
 
-use Craft;
 use craft\base\ElementInterface;
 use craft\db\Command;
-use craft\db\Query;
-use craft\db\Table;
 use craft\fieldlayoutelements\CustomField;
 use craft\fields\BaseRelationField;
-use craft\helpers\Db;
+use CraftCms\Cms\Db\Table;
+use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Str;
+use Illuminate\Database\Query\Builder;
+use Illuminate\Support\Facades\DB;
 use Throwable;
 use yii\base\Component;
 
@@ -36,6 +36,7 @@ class Relations extends Component
      * @param BaseRelationField $field
      * @param ElementInterface $source
      * @param array $targetIds
+     *
      * @throws Throwable
      */
     public function saveRelations(BaseRelationField $field, ElementInterface $source, array $targetIds): void
@@ -44,23 +45,18 @@ class Relations extends Component
         $targetIds = array_flip(array_values(array_unique(array_filter($targetIds))));
 
         // Get the current relations
-        $oldRelationCondition = ['fieldId' => $field->id, 'sourceId' => $source->id];
-
-        if ($field->localizeRelations) {
-            $oldRelationCondition = [
-                'and',
-                $oldRelationCondition,
-                ['or', ['sourceSiteId' => null], ['sourceSiteId' => $source->siteId]],
-            ];
-        }
-
-        $db = Craft::$app->getDb();
-
-        $oldRelations = (new Query())
+        $oldRelations = DB::table(Table::RELATIONS)
             ->select(['id', 'sourceSiteId', 'targetId', 'sortOrder'])
-            ->from([Table::RELATIONS])
-            ->where($oldRelationCondition)
-            ->all($db);
+            ->where('fieldId', $field->id)
+            ->where('sourceId', $source->id)
+            ->when(
+                $field->localizeRelations,
+                fn(Builder $query) => $query->where(function(Builder $query) use ($source) {
+                    $query->whereNull('sourceSiteId')
+                        ->orWhere('sourceSiteId', $source->siteId);
+                }),
+            )
+            ->get();
 
         /** @var Command[] $updateCommands */
         $updateCommands = [];
@@ -70,30 +66,35 @@ class Relations extends Component
 
         foreach ($oldRelations as $relation) {
             // Does this relation still exist?
-            if (isset($targetIds[$relation['targetId']])) {
+            if (isset($targetIds[$relation->targetId])) {
                 // Anything to update?
-                $sortOrder = $targetIds[$relation['targetId']] + 1;
+                $sortOrder = $targetIds[$relation->targetId] + 1;
                 // only update relations if the source is not being propagated
                 // https://github.com/craftcms/cms/issues/12702
-                if ((!$source->propagating && $relation['sourceSiteId'] != $sourceSiteId) || $relation['sortOrder'] != $sortOrder) {
-                    $updateCommands[] = $db->createCommand()->update(Table::RELATIONS, [
+                if ((!$source->propagating && $relation->sourceSiteId != $sourceSiteId) || $relation->sortOrder != $sortOrder) {
+                    $updateCommands[] = [
+                        'id' => $relation->id,
                         'sourceSiteId' => $sourceSiteId,
                         'sortOrder' => $sortOrder,
-                    ], ['id' => $relation['id']]);
+                    ];
                 }
 
                 // Avoid re-inserting it
-                unset($targetIds[$relation['targetId']]);
+                unset($targetIds[$relation->targetId]);
             } else {
-                $deleteIds[] = $relation['id'];
+                $deleteIds[] = $relation->id;
             }
         }
 
         if (!empty($updateCommands) || !empty($deleteIds) || !empty($targetIds)) {
-            \Illuminate\Support\Facades\DB::beginTransaction();
+            DB::beginTransaction();
             try {
                 foreach ($updateCommands as $command) {
-                    $command->execute();
+                    DB::table(Table::RELATIONS)
+                        ->where('id', Arr::pull($command, 'id'))
+                        ->update(array_merge([
+                            'dateUpdated' => now(),
+                        ], $command));
                 }
 
                 $now = now();
@@ -113,18 +114,18 @@ class Relations extends Component
                         ];
                     }
 
-                    \Illuminate\Support\Facades\DB::table(\CraftCms\Cms\Db\Table::RELATIONS)->insert($values);
+                    DB::table(Table::RELATIONS)->insert($values);
                 }
 
                 if (!empty($deleteIds)) {
-                    \Illuminate\Support\Facades\DB::table(\CraftCms\Cms\Db\Table::RELATIONS)
+                    DB::table(Table::RELATIONS)
                         ->whereIn('id', $deleteIds)
                         ->delete();
                 }
 
-                \Illuminate\Support\Facades\DB::commit();
+                DB::commit();
             } catch (Throwable $e) {
-                \Illuminate\Support\Facades\DB::rollBack();
+                DB::rollBack();
                 throw $e;
             }
         }
@@ -134,6 +135,7 @@ class Relations extends Component
      * Deletes relations that don’t belong to a relational field on the given element’s field layout.
      *
      * @param ElementInterface $element
+     *
      * @since 4.8.0
      */
     public function deleteLeftoverRelations(ElementInterface $element): void
@@ -160,20 +162,21 @@ class Relations extends Component
         }
 
         // get those relations for the element that don't belong to any relational fields that are in the layout
-        $query = (new Query())
-            ->select(['id'])
-            ->from(Table::RELATIONS)
-            ->where(['sourceId' => $element->id]);
+        $leftoverRelationIds = DB::table(Table::RELATIONS)
+            ->where('sourceId', $element->id)
+            ->when(
+                !empty($relationFieldIds),
+                fn(Builder $query) => $query->whereNotIn('fieldId', $relationFieldIds),
+            )
+            ->pluck('id');
 
-        if (!empty($relationFieldIds)) {
-            $query->andWhere(['not', ['fieldId' => $relationFieldIds]]);
+        if ($leftoverRelationIds->isEmpty()) {
+            return;
         }
-
-        $leftoverRelationIds = $query->column();
 
         // if relations were returned - delete them
-        if (!empty($leftoverRelationIds)) {
-            Db::delete(Table::RELATIONS, ['id' => $leftoverRelationIds]);
-        }
+        DB::table(Table::RELATIONS)
+            ->whereIn('id', $leftoverRelationIds)
+            ->delete();
     }
 }

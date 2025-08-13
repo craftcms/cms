@@ -74,7 +74,6 @@ use CraftCms\DependencyAwareCache\Dependency\TagDependency;
 use DateTime;
 use Illuminate\Database\ConnectionInterface;
 use Illuminate\Support\Collection;
-use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB as DbFacade;
 use Throwable;
 use UnitEnum;
@@ -2106,7 +2105,7 @@ class Elements extends Component
             ]));
         }
 
-        \Illuminate\Support\Facades\DB::table(\CraftCms\Cms\Db\Table::ELEMENTS_SITES)
+        DbFacade::table(\CraftCms\Cms\Db\Table::ELEMENTS_SITES)
             ->where('elementId', $element->id)
             ->where('siteId', $element->siteId)
             ->update([
@@ -2260,7 +2259,7 @@ class Elements extends Component
                     ->exists();
 
                 if (!$persistingElementIsRelatedToo) {
-                    \Illuminate\Support\Facades\DB::table(\CraftCms\Cms\Db\Table::RELATIONS)
+                    DbFacade::table(\CraftCms\Cms\Db\Table::RELATIONS)
                         ->where('id', $relation['id'])
                         ->update([
                             'targetId' => $prevailingElement->id,
@@ -2287,7 +2286,7 @@ class Elements extends Component
                     ->exists();
 
                 if (!$persistingElementIsInStructureToo) {
-                    \Illuminate\Support\Facades\DB::table(\CraftCms\Cms\Db\Table::STRUCTUREELEMENTS)
+                    DbFacade::table(\CraftCms\Cms\Db\Table::STRUCTUREELEMENTS)
                         ->where('id', $structureElement['id'])
                         ->update([
                             'elementId' => $prevailingElement->id,
@@ -2428,10 +2427,8 @@ class Elements extends Component
                 if ($element->hardDelete) {
                     DbFacade::table(\CraftCms\Cms\Db\Table::ELEMENTS)->delete($element->id);
                     DbFacade::table(\CraftCms\Cms\Db\Table::SEARCHINDEX)
-                        ->delete($element->id);
-                    Db::delete(Table::SEARCHINDEX, [
-                        'elementId' => $element->id,
-                    ]);
+                        ->where('elementId', $element->id)
+                        ->delete();
                 } else {
                     // Soft delete the elements table row
                     DbFacade::table(\CraftCms\Cms\Db\Table::ELEMENTS)
@@ -2544,10 +2541,10 @@ class Elements extends Component
             }
 
             // Delete the rows in elements_sites
-            Db::delete(Table::ELEMENTS_SITES, [
-                'elementId' => $multiSiteElementIds,
-                'siteId' => $firstElement->siteId,
-            ]);
+            DbFacade::table(\CraftCms\Cms\Db\Table::ELEMENTS_SITES)
+                ->whereIn('elementId', $multiSiteElementIds)
+                ->where('siteId', $firstElement->siteId)
+                ->delete();
 
             // Resave them
             $this->resaveElements(
@@ -2668,7 +2665,7 @@ class Elements extends Component
                 }
 
                 // Restore it
-                \Illuminate\Support\Facades\DB::table(\CraftCms\Cms\Db\Table::ELEMENTS)
+                DbFacade::table(\CraftCms\Cms\Db\Table::ELEMENTS)
                     ->where('id', $element->id)
                     ->update([
                         'dateDeleted' => null,
@@ -4057,14 +4054,10 @@ class Elements extends Component
             if (!$element->propagating) {
                 // Delete the rows that don't need to be there anymore
                 if (!$isNewElement) {
-                    Db::deleteIfExists(
-                        Table::ELEMENTS_SITES,
-                        [
-                            'and',
-                            ['elementId' => $element->id],
-                            ['not', ['siteId' => array_keys($supportedSites)]],
-                        ]
-                    );
+                    DbFacade::table(\CraftCms\Cms\Db\Table::ELEMENTS_SITES)
+                        ->where('elementId', $element->id)
+                        ->whereNotIn('siteId', array_keys($supportedSites))
+                        ->delete();
                 }
 
                 // Invalidate any caches involving this element

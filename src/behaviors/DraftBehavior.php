@@ -8,10 +8,10 @@
 namespace craft\behaviors;
 
 use craft\base\Element;
-use craft\db\Table;
-use craft\helpers\Db;
 use craft\helpers\ElementHelper;
+use CraftCms\Cms\Db\Table;
 use DateTime;
+use Illuminate\Support\Facades\DB;
 
 /**
  * DraftBehavior is applied to element drafts.
@@ -60,13 +60,13 @@ class DraftBehavior extends BaseRevisionBehavior
      */
     public function handleSave(): void
     {
-        \Illuminate\Support\Facades\DB::table(\CraftCms\Cms\Db\Table::DRAFTS)
+        DB::table(Table::DRAFTS)
             ->where('id', $this->owner->draftId)
             ->update([
                 'provisional' => $this->owner->isProvisionalDraft,
                 'name' => $this->draftName,
                 'notes' => $this->draftNotes,
-                'dateLastMerged' => Db::prepareDateForDb($this->owner->dateLastMerged),
+                'dateLastMerged' => $this->owner->dateLastMerged,
                 'saved' => $this->markAsSaved,
             ]);
     }
@@ -77,9 +77,7 @@ class DraftBehavior extends BaseRevisionBehavior
     public function handleDelete(): void
     {
         if ($this->owner->hardDelete) {
-            Db::delete(Table::DRAFTS, [
-                'id' => $this->owner->draftId,
-            ]);
+            DB::table(Table::DRAFTS)->delete($this->owner->draftId);
         }
     }
 

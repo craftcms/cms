@@ -9,8 +9,8 @@ namespace craft\behaviors;
 
 use Craft;
 use craft\base\Element;
-use craft\db\Table;
-use craft\helpers\Db;
+use CraftCms\Cms\Db\Table;
+use Illuminate\Support\Facades\DB;
 
 /**
  * RevisionBehavior is applied to element revisions.
@@ -46,9 +46,7 @@ class RevisionBehavior extends BaseRevisionBehavior
      */
     public function handleDelete(): void
     {
-        Db::delete(Table::REVISIONS, [
-            'id' => $this->owner->revisionId,
-        ]);
+        DB::table(Table::REVISIONS)->delete($this->owner->revisionId);
     }
 
     /**

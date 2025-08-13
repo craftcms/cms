@@ -891,9 +891,9 @@ class ProjectConfig extends Component
     {
         $chunks = array_chunk($paths, 1000);
         foreach ($chunks as $chunk) {
-            Db::delete(Table::PROJECTCONFIG, [
-                'path' => $chunk,
-            ]);
+            \Illuminate\Support\Facades\DB::table(\CraftCms\Cms\Db\Table::PROJECTCONFIG)
+                ->whereIn('path', $chunk)
+                ->delete();
         }
     }
 

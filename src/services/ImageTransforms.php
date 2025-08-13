@@ -348,9 +348,7 @@ class ImageTransforms extends Component
             ]));
         }
 
-        Db::delete(Table::IMAGETRANSFORMS, [
-            'uid' => $transformUid,
-        ], [], $this->db);
+        \Illuminate\Support\Facades\DB::table(\CraftCms\Cms\Db\Table::IMAGETRANSFORMS)->where('uid', $transformUid)->delete();
 
         // Clear caches
         $this->_transforms = null;
