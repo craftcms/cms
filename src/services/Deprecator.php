@@ -16,12 +16,14 @@ use craft\helpers\Db;
 use craft\helpers\Template;
 use craft\models\DeprecationError;
 use craft\web\twig\Extension;
+use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Support\Str;
 use DateTime;
+use Illuminate\Support\Facades\Date;
+use Throwable;
 use Twig\Template as TwigTemplate;
 use yii\base\Application;
 use yii\base\Component;
-use yii\db\Exception;
 
 /**
  * Deprecator service.
@@ -137,22 +139,25 @@ class Deprecator extends Component
      */
     public function storeLogs(): void
     {
-        $db = Craft::$app->getDb();
-        $tableSchema = $db->getSchema()->getTableSchema(Table::DEPRECATIONERRORS);
+        $now = Date::now();
 
         foreach ($this->_pendingRequestLogs as $log) {
             try {
-                Db::upsert(Table::DEPRECATIONERRORS, [
-                    'key' => $log->key,
-                    'fingerprint' => $log->fingerprint,
-                    'lastOccurrence' => Db::prepareDateForDb($log->lastOccurrence),
-                    'file' => $log->file,
-                    'line' => $log->line,
-                    'message' => $log->message,
-                    'traces' => Db::prepareValueForDb($log->traces, $tableSchema->columns['traces']->dbType),
-                ]);
-                $log->id = (int)$db->getLastInsertID();
-            } catch (Exception $e) {
+                \Illuminate\Support\Facades\DB::table(\CraftCms\Cms\Db\Table::DEPRECATIONERRORS)
+                    ->updateOrInsert([
+                        'key' => $log->key,
+                        'fingerprint' => $log->fingerprint,
+                    ], [
+                        'lastOccurrence' => Db::prepareDateForDb($log->lastOccurrence),
+                        'file' => $log->file,
+                        'line' => $log->line,
+                        'message' => $log->message,
+                        'traces' => Json::encode($log->traces),
+                        'dateCreated' => $now,
+                        'dateUpdated' => $now,
+                        'uid' => Str::uuid(),
+                    ]);
+            } catch (Throwable $e) {
                 Craft::warning("Couldn't save deprecation warning: {$e->getMessage()}", __METHOD__);
                 // Craft probably isn’t installed yet
                 break;

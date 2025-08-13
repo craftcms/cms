@@ -74,6 +74,7 @@ use CraftCms\DependencyAwareCache\Dependency\TagDependency;
 use DateTime;
 use Illuminate\Database\ConnectionInterface;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB as DbFacade;
 use Throwable;
 use UnitEnum;
@@ -1550,29 +1551,29 @@ class Elements extends Component
 
         Craft::$app->onAfterRequest(function() use ($canonical, $updatedCanonical, $changedAttributes, $changedFields) {
             // Update change tracking for the canonical element
-            $timestamp = Db::prepareDateForDb($updatedCanonical->dateUpdated);
-
             foreach ($changedAttributes as $attribute) {
-                Db::upsert(Table::CHANGEDATTRIBUTES, [
-                    'elementId' => $canonical->id,
-                    'siteId' => $attribute['siteId'],
-                    'attribute' => $attribute['attribute'],
-                    'dateUpdated' => $timestamp,
-                    'propagated' => $attribute['propagated'],
-                    'userId' => $attribute['userId'],
-                ]);
+                DbFacade::table(\CraftCms\Cms\Db\Table::CHANGEDATTRIBUTES)
+                    ->upsert([
+                        'elementId' => $canonical->id,
+                        'siteId' => $attribute['siteId'],
+                        'attribute' => $attribute['attribute'],
+                        'dateUpdated' => $updatedCanonical->dateUpdated,
+                        'propagated' => $attribute['propagated'],
+                        'userId' => $attribute['userId'],
+                    ], ['elementId', 'siteId', 'attribute']);
             }
 
             foreach ($changedFields as $field) {
-                Db::upsert(Table::CHANGEDFIELDS, [
-                    'elementId' => $canonical->id,
-                    'siteId' => $field['siteId'],
-                    'fieldId' => $field['fieldId'],
-                    'layoutElementUid' => $field['layoutElementUid'],
-                    'dateUpdated' => $timestamp,
-                    'propagated' => $field['propagated'],
-                    'userId' => $field['userId'],
-                ]);
+                DbFacade::table(\CraftCms\Cms\Db\Table::CHANGEDFIELDS)
+                    ->upsert([
+                        'elementId' => $canonical->id,
+                        'siteId' => $field['siteId'],
+                        'fieldId' => $field['fieldId'],
+                        'layoutElementUid' => $field['layoutElementUid'],
+                        'dateUpdated' => $updatedCanonical->dateUpdated,
+                        'propagated' => $field['propagated'],
+                        'userId' => $field['userId'],
+                    ], ['elementId', 'siteId', 'fieldId', 'layoutElementUid']);
             }
         });
 
@@ -2825,14 +2826,15 @@ class Elements extends Component
 
         $isCanonical = $element->getIsCanonical() || $element->isProvisionalDraft;
 
-        Db::upsert(Table::ELEMENTACTIVITY, [
-            'elementId' => $element->getCanonicalId(),
-            'userId' => $user->id,
-            'siteId' => $element->siteId,
-            'draftId' => $isCanonical ? null : $element->draftId,
-            'type' => $type,
-            'timestamp' => Db::prepareDateForDb(new DateTime()),
-        ]);
+        DbFacade::table(\CraftCms\Cms\Db\Table::ELEMENTACTIVITY)
+            ->upsert([
+                'elementId' => $element->getCanonicalId(),
+                'userId' => $user->id,
+                'siteId' => $element->siteId,
+                'draftId' => $isCanonical ? null : $element->draftId,
+                'type' => $type,
+                'timestamp' => Date::now(),
+            ], ['elementId', 'userId', 'type']);
     }
 
     // Element classes
@@ -4090,31 +4092,33 @@ class Elements extends Component
             // Update the changed attributes & fields
             if ($trackChanges) {
                 $userId = Craft::$app->getUser()->getId();
-                $timestamp = Db::prepareDateForDb(DateTimeHelper::now());
+                $timestamp = Date::now();
 
                 foreach ($dirtyAttributes as $attributeName) {
-                    Db::upsert(Table::CHANGEDATTRIBUTES, [
-                        'elementId' => $element->id,
-                        'siteId' => $element->siteId,
-                        'attribute' => $attributeName,
-                        'dateUpdated' => $timestamp,
-                        'propagated' => $element->propagating,
-                        'userId' => $userId,
-                    ]);
+                    DbFacade::table(\CraftCms\Cms\Db\Table::CHANGEDATTRIBUTES)
+                        ->upsert([
+                            'elementId' => $element->id,
+                            'siteId' => $element->siteId,
+                            'attribute' => $attributeName,
+                            'dateUpdated' => $timestamp,
+                            'propagated' => $element->propagating,
+                            'userId' => $userId,
+                        ], ['elementId', 'siteId', 'attribute']);
                 }
 
                 if ($fieldLayout) {
                     foreach ($dirtyFields as $fieldHandle) {
                         if (($field = $fieldLayout->getFieldByHandle($fieldHandle)) !== null) {
-                            Db::upsert(Table::CHANGEDFIELDS, [
-                                'elementId' => $element->id,
-                                'siteId' => $element->siteId,
-                                'fieldId' => $field->id,
-                                'layoutElementUid' => $field->layoutElement->uid,
-                                'dateUpdated' => $timestamp,
-                                'propagated' => $element->propagating,
-                                'userId' => $userId,
-                            ]);
+                            DbFacade::table(\CraftCms\Cms\Db\Table::CHANGEDFIELDS)
+                                ->upsert([
+                                    'elementId' => $element->id,
+                                    'siteId' => $element->siteId,
+                                    'fieldId' => $field->id,
+                                    'layoutElementUid' => $field->layoutElement->uid,
+                                    'dateUpdated' => $timestamp,
+                                    'propagated' => $element->propagating,
+                                    'userId' => $userId,
+                                ], ['elementId', 'siteId', 'fieldId', 'layoutElementUid']);
                         }
                     }
                 }

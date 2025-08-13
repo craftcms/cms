@@ -261,10 +261,11 @@ class Search extends Component
                 try {
                     if ($this->isIndexJobPending($jobId)) {
                         foreach ($fieldHandles as $fieldHandle) {
-                            DbHelper::upsert(Table::SEARCHINDEXQUEUE_FIELDS, [
-                                'jobId' => $jobId,
-                                'fieldHandle' => $fieldHandle,
-                            ]);
+                            DB::table(\CraftCms\Cms\Db\Table::SEARCHINDEXQUEUE_FIELDS)
+                                ->upsert([
+                                    'jobId' => $jobId,
+                                    'fieldHandle' => $fieldHandle,
+                                ], ['jobId', 'fieldHandle']);
                         }
                         return;
                     }
