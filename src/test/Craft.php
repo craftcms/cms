@@ -25,6 +25,7 @@ use craft\models\FieldLayout;
 use craft\queue\BaseJob;
 use craft\queue\Queue;
 use craft\web\Application as WebApplication;
+use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Support\Env;
 use DateTime;
@@ -143,6 +144,12 @@ class Craft extends Yii2
          */
         new \CraftCms\Cms\Tests\TestCase('laravel')->createApplication();
 
+        $generalConfig = app(GeneralConfig::class);
+        foreach (require CRAFT_CONFIG_PATH . '/general.php' as $key => $value) {
+            $generalConfig->$key = $value;
+        }
+        Config::set('craft.general', $generalConfig);
+
         File::cleanDirectory(config_path('project'));
         Cache::clear();
 
@@ -179,6 +186,8 @@ class Craft extends Yii2
 
         // transaction events are registered now, so it's ok to open the connection
         \Craft::$app->db->open();
+
+        DB::connection()->getPdo()->setAttribute(\PDO::ATTR_EMULATE_PREPARES, false);
 
         // If full mock, create the mock app and don't perform to any further actions
         if ($this->_getConfig('fullMock') === true) {

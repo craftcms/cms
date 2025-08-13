@@ -2,7 +2,6 @@
 
 use craft\services\ProjectConfig;
 use craft\test\TestSetup;
-use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Tests\TestCase;
 use Illuminate\Support\Facades\Cache;
 
@@ -34,11 +33,6 @@ Dotenv\Dotenv::createImmutable(CRAFT_DOTENV_PATH)->load();
 new TestCase('laravel')->createApplication();
 
 Cache::lock(ProjectConfig::MUTEX_NAME)->forceRelease();
-
-$generalConfig = app(GeneralConfig::class);
-foreach (require CRAFT_CONFIG_PATH . '/general.php' as $key => $value) {
-    $generalConfig->$key = $value;
-}
 
 $devMode = true;
 

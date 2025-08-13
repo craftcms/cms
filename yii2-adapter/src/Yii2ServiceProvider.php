@@ -49,7 +49,8 @@ class Yii2ServiceProvider extends ServiceProvider
              * Configure the Laravel application to look into
              * folders defined by the Craft CMS constants.
              */
-            foreach (scandir(base_path('config')) as $file) {
+            $configPath = defined(CRAFT_CONFIG_PATH) ? CRAFT_CONFIG_PATH : base_path('config');
+            foreach (scandir($configPath) as $file) {
                 if (!str_ends_with($file, '.php')) {
                     continue;
                 }

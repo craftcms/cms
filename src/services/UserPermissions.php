@@ -368,6 +368,9 @@ class UserPermissions extends Component
                 $userPermissionVals[] = [
                     'permissionId' => $permissionRecord->id,
                     'userId' => $userId,
+                    'dateCreated' => $now = now(),
+                    'dateUpdated' => $now,
+                    'uid' => Str::uuid(),
                 ];
             }
 
