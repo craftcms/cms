@@ -136,6 +136,11 @@ class Craft extends Yii2
     {
         parent::_beforeSuite($settings);
 
+        /**
+         * Initialize the Laravel Craft Application
+         */
+        new \CraftCms\Cms\Tests\TestCase('laravel')->createApplication();
+
         if ($this->_getConfig('fullMock') !== true) {
             $this->setupDb();
         }

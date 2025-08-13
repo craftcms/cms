@@ -1,6 +1,10 @@
 <?php
 
+use craft\services\ProjectConfig;
 use craft\test\TestSetup;
+use CraftCms\Cms\Config\GeneralConfig;
+use CraftCms\Cms\Tests\TestCase;
+use Illuminate\Support\Facades\Cache;
 
 ini_set('date.timezone', 'UTC');
 date_default_timezone_set('UTC');
@@ -27,16 +31,14 @@ Dotenv\Dotenv::createImmutable(CRAFT_DOTENV_PATH)->load();
 /**
  * Initialize the Laravel Craft Application
  */
-(new \CraftCms\Cms\Tests\TestCase('laravel'))
-    ->createApplication();
+new TestCase('laravel')->createApplication();
 
-$generalConfig = app(\CraftCms\Cms\Config\GeneralConfig::class);
+Cache::lock(ProjectConfig::MUTEX_NAME)->forceRelease();
+
+$generalConfig = app(GeneralConfig::class);
 foreach (require CRAFT_CONFIG_PATH . '/general.php' as $key => $value) {
     $generalConfig->$key = $value;
 }
-
-config()->set('craft.general', $generalConfig);
-config()->set('database.default', env('DB_DRIVER'));
 
 $devMode = true;
 

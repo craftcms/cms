@@ -607,9 +607,6 @@ class Elements extends Component
 
     private ?int $_cacheDuration = null;
 
-    /**
-     * Dynamically build up a new database connection for bulk operations.
-     */
     public function getBulkOpConnection(): ConnectionInterface
     {
         return DbFacade::connection($this->bulkOpDb);
