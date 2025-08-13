@@ -29,8 +29,10 @@ use CraftCms\Cms\Edition;
 use CraftCms\Cms\Support\Env;
 use DateTime;
 use Exception;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\File;
 use PHPUnit\Framework\ExpectationFailedException;
 use PHPUnit\Framework\MockObject\MockObject;
 use ReflectionException;
@@ -140,6 +142,9 @@ class Craft extends Yii2
          * Initialize the Laravel Craft Application
          */
         new \CraftCms\Cms\Tests\TestCase('laravel')->createApplication();
+
+        File::cleanDirectory(config_path('project'));
+        Cache::clear();
 
         if ($this->_getConfig('fullMock') !== true) {
             $this->setupDb();
