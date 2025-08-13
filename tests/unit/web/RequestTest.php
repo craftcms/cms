@@ -509,8 +509,9 @@ class RequestTest extends TestCase
             [false, 'application/json', ['text/html']],
             [true, 'application/json', ['application/json']],
             [true, 'application/json', ['application/*']],
-            [true, 'text/*', ['text/*']],
-            [false, 'text/*', ['text/html']],
+            [true, 'text/foo-bar', ['text/*']],
+            [true, 'text/*', ['text/html']],
+            [true, 'application/*+json', ['application/graphql-response+json']],
         ];
     }
 
