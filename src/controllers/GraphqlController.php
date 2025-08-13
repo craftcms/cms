@@ -180,15 +180,17 @@ class GraphqlController extends Controller
         $generalConfig->generateTransformsBeforePageLoad = true;
 
         // Check for the cache-bust header
-        $noCache = $this->request->getHeaders()->get('x-craft-gql-cache', null, true) === 'no-cache';
-        if ($noCache) {
+        $cacheHeader = $this->request->getHeaders()->get('x-craft-gql-cache');
+        if ($cacheHeader === 'no-cache') {
             $cacheSetting = $generalConfig->enableGraphqlCaching;
             $generalConfig->enableGraphqlCaching = false;
         }
 
         $result = [];
+        $hasMutations = false;
 
         foreach ($queries as $key => [$query, $variables, $operationName]) {
+            $query = trim($query);
             try {
                 if (empty($query)) {
                     throw new InvalidValueException('No GraphQL query was supplied');
@@ -214,14 +216,27 @@ class GraphqlController extends Controller
                     ],
                 ];
             }
+
+            if (str_starts_with($query, 'mutation')) {
+                $hasMutations = true;
+            }
         }
 
-        if ($noCache) {
+        if (isset($cacheSetting)) {
             $generalConfig->enableGraphqlCaching = $cacheSetting;
         }
 
         $this->response->format = Response::FORMAT_GQL;
         $this->response->data = $singleQuery ? reset($result) : $result;
+
+        // send cache headers
+        $cache = isset($cacheHeader) ? $cacheHeader === 'cache' : !$hasMutations;
+        if ($cache) {
+            $this->response->setCacheHeaders();
+        } else {
+            $this->response->setNoCacheHeaders();
+        }
+
         return $this->response;
     }
 

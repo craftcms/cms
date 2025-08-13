@@ -9,4 +9,5 @@
 
 ### System
 - GraphQL API responses now set their `Content-Type` header to `application/graphql-response+json`.
+- GraphQL API responses now set cache headers based on whether a mutation was performed, regardless of the request type.
 - Updated Twig to 3.19. ([#17603](https://github.com/craftcms/cms/discussions/17603))
