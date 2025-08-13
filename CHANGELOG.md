@@ -1,5 +1,10 @@
 # Release Notes for Craft CMS 5
 
+## Unreleased
+
+- Updated svg-sanitizer to 0.22. ([#17738](https://github.com/craftcms/cms/issues/17738))
+- Improved the performance of element queries. ([#16401](https://github.com/craftcms/cms/issues/16401))
+
 ## 5.8.14 - 2025-08-12
 
 - Relational fields’ search inputs no longer exclusively search for elements by their titles. ([#17733](https://github.com/craftcms/cms/discussions/17733))
