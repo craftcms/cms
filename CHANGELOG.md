@@ -8,6 +8,7 @@
 - Fixed a bug where the `_includes/forms/button.twig` template was HTML-encoding the `iconHtml` value.
 - Fixed an error that could occur when installing Craft with existing project config data. ([#17587](https://github.com/craftcms/cms/issues/17587))
 - Fixed a bug where slideouts’ trigger elements weren’t always refocused after the slideout was closed. ([#17736](https://github.com/craftcms/cms/pull/17736))
+- Fixed a bug where nested Matrix entries could lose their content if a validation error occurred. ([#17732](https://github.com/craftcms/cms/pull/17732))
 - Fixed PHP deprecation errors.
 
 ## 5.8.13.2 - 2025-08-07
