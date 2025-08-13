@@ -12,15 +12,21 @@
 - Control panel-defined routes now have action menus with “Move up”/“Move down” actions. ([#17706](https://github.com/craftcms/cms/pull/17706))
 
 ### Extensibility
-- Added `craft\web\twig\nodes\BaseNode`.
 - Added `Craft.BaseElementIndex::asyncSelectDefaultSource()`.
 - Added `Craft.BaseElementIndex::asyncSelectSource()`.
 - Added `Craft.BaseElementIndex::asyncSelectSourceByKey()`.
 - Added `Craft.BaseElementIndex::ensureSourceAttributeInfo()`.
+- Added `craft\web\GqlResponseFormatter`.
+- Added `craft\web\Response::FORMAT_GQL`.
+- Added `craft\web\twig\nodes\BaseNode`.
+- `craft\web\Request::accepts()` now accepts wildcard characters (`*`) in the `$contentType` argument, to check for a range of MIME types (e.g. `application/*+json`).
+- `craft\web\Request::getAcceptsJson()` now returns `true` for requests with `Content-Type` headers that match `application/*+json`, in addition to `application/json`.
 - Deprecated `Craft.BaseElementIndex::selectDefaultSource()`.
 - Deprecated `Craft.BaseElementIndex::selectSource()`.
 - Deprecated `Craft.BaseElementIndex::selectSourceByKey()`.
 
 ### System
+- GraphQL API responses now set their `Content-Type` header to `application/graphql-response+json`.
+- GraphQL API responses now set cache headers based on whether a mutation was performed, regardless of the request type.
 - Improved element index performance. ([#17557](https://github.com/craftcms/cms/pull/17557))
 - Updated Twig to 3.21. ([#17603](https://github.com/craftcms/cms/discussions/17603))
