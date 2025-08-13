@@ -496,7 +496,7 @@ class User extends \CraftCms\Yii2Adapter\Web\User
             ->insert([
                 'userId' => $userId,
                 'token' => $token,
-                'dateCreated' => $now = Date::now(),
+                'dateCreated' => $now = now(),
                 'dateUpdated' => $now,
                 'uid' => Str::uuid(),
             ]);

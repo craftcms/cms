@@ -9,7 +9,6 @@ namespace craft\elements;
 
 use Craft;
 use craft\base\Element;
-use craft\db\Table;
 use craft\elements\conditions\ElementConditionInterface;
 use craft\elements\conditions\tags\TagCondition;
 use craft\elements\db\TagQuery;
@@ -18,6 +17,7 @@ use craft\helpers\Db;
 use craft\models\FieldLayout;
 use craft\models\TagGroup;
 use craft\records\Tag as TagRecord;
+use CraftCms\Cms\Db\Table;
 use GraphQL\Type\Definition\Type;
 use yii\base\InvalidConfigException;
 use yii\validators\InlineValidator;
@@ -362,11 +362,11 @@ class Tag extends Element
         }
 
         // Update the tag record
-        Db::update(Table::TAGS, [
-            'deletedWithGroup' => $this->deletedWithGroup,
-        ], [
-            'id' => $this->id,
-        ], [], false);
+        \Illuminate\Support\Facades\DB::table(Table::TAGS)
+            ->where('id', $this->id)
+            ->update([
+                'deletedWithGroup' => $this->deletedWithGroup,
+            ]);
 
         return true;
     }

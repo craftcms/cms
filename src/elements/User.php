@@ -1325,7 +1325,7 @@ class User extends Element implements IdentityInterface
         DbFacade::table(Table::SESSIONS)
             ->where('id', $tokenId)
             ->update([
-                'dateUpdated' => Date::now(),
+                'dateUpdated' => now(),
             ]);
 
         return true;

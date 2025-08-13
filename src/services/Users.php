@@ -44,7 +44,6 @@ use CraftCms\DependencyAwareCache\Dependency\TagDependency;
 use DateTime;
 use DateTimeZone;
 use Illuminate\Database\Query\Builder;
-use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
 use Throwable;
 use yii\base\Component;
@@ -1226,7 +1225,7 @@ class Users extends Component
             ->where('message', $message)
             ->where(function(Builder $query) {
                 $query->whereNull('expiryDate')
-                    ->orWhere('expiryDate', '>', Date::now());
+                    ->orWhere('expiryDate', '>', now());
             })
             ->exists();
     }

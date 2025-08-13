@@ -16,7 +16,6 @@ use craft\fieldlayoutelements\CustomField;
 use craft\fields\BaseRelationField;
 use craft\helpers\Db;
 use CraftCms\Cms\Support\Str;
-use Illuminate\Support\Facades\Date;
 use Throwable;
 use yii\base\Component;
 
@@ -97,7 +96,7 @@ class Relations extends Component
                     $command->execute();
                 }
 
-                $now = Date::now();
+                $now = now();
                 // Add the new ones
                 if (!empty($targetIds)) {
                     $values = [];

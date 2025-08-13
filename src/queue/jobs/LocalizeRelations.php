@@ -12,7 +12,6 @@ use craft\i18n\Translation;
 use craft\queue\BaseJob;
 use CraftCms\Cms\Db\Table;
 use CraftCms\Cms\Support\Str;
-use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
 
 /**
@@ -43,7 +42,7 @@ class LocalizeRelations extends BaseJob
         $allSiteIds = Craft::$app->getSites()->getAllSiteIds();
         $primarySiteId = array_shift($allSiteIds);
 
-        $now = Date::now();
+        $now = now();
         foreach ($relations as $i => $relation) {
             $this->setProgress($queue, $i / $totalRelations);
 

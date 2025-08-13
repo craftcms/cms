@@ -6578,7 +6578,7 @@ JS, [
 
         // Add the new ones
         if (!empty($relationData)) {
-            $now = Date::now();
+            $now = now();
             $values = [];
             foreach ($relationData as $fieldId => $targetIds) {
                 foreach ($targetIds as $targetId => $sortOrder) {

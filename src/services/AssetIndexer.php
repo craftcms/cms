@@ -38,7 +38,6 @@ use Generator;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Database\Query\JoinClause;
 use Illuminate\Support\Facades\Cache;
-use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
 use Throwable;
 use yii\base\Component;
@@ -287,7 +286,7 @@ class AssetIndexer extends Component
     {
         $values = [];
         $fsSubpath = $volume->getSubpath();
-        $now = Date::now();
+        $now = now();
 
         /** @var FsListing $volumeListing */
         foreach ($indexList as $volumeListing) {
@@ -589,7 +588,7 @@ class AssetIndexer extends Component
         DB::table(Table::ASSETINDEXDATA)
             ->where('id', $entryId)
             ->update(array_merge([
-                'dateUpdated' => Date::now(),
+                'dateUpdated' => now(),
             ], $data));
     }
 
@@ -711,7 +710,7 @@ class AssetIndexer extends Component
      */
     protected function storeIndexEntry(AssetIndexData $indexEntry)
     {
-        $now = Date::now();
+        $now = now();
 
         $data = [
             'sessionId' => $indexEntry->sessionId,

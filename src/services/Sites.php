@@ -991,11 +991,12 @@ class Sites extends Component
             if ($transferContentTo !== null) {
                 $transferContentToSite = $this->getSiteById($transferContentTo);
 
-                Db::update(Table::SECTIONS_SITES, [
-                    'siteId' => $transferContentTo,
-                ], [
-                    'sectionId' => $soloSectionIds,
-                ]);
+                \Illuminate\Support\Facades\DB::table(\CraftCms\Cms\Db\Table::SECTIONS_SITES)
+                    ->whereIn('sectionId', $soloSectionIds)
+                    ->update([
+                        'siteId' => $transferContentTo,
+                        'dateUpdated' => now(),
+                    ]);
 
                 // Update the project config too
                 $muteEvents = $projectConfig->muteEvents;
@@ -1009,55 +1010,53 @@ class Sites extends Component
                 $projectConfig->muteEvents = $muteEvents;
 
                 // Get all of the entry IDs in those sections
-                $entryIds = (new Query())
-                    ->select(['id'])
-                    ->from([Table::ENTRIES])
-                    ->where(['sectionId' => $soloSectionIds])
-                    ->column();
+                $entryIds = \Illuminate\Support\Facades\DB::table(\CraftCms\Cms\Db\Table::ENTRIES)
+                    ->whereIn('sectionId', $soloSectionIds)
+                    ->pluck('id');
 
-                if (!empty($entryIds)) {
+                if ($entryIds->isNotEmpty()) {
                     // Update the entry tables
-                    Db::update(Table::ELEMENTS_SITES, [
-                        'siteId' => $transferContentTo,
-                    ], [
-                        'elementId' => $entryIds,
-                    ]);
+                    \Illuminate\Support\Facades\DB::table(\CraftCms\Cms\Db\Table::ELEMENTS_SITES)
+                        ->whereIn('elementId', $entryIds)
+                        ->update([
+                            'siteId' => $transferContentTo,
+                            'dateUpdated' => now(),
+                        ]);
 
-                    Db::update(Table::RELATIONS, [
-                        'sourceSiteId' => $transferContentTo,
-                    ], [
-                        'and',
-                        ['sourceId' => $entryIds],
-                        ['not', ['sourceSiteId' => null]],
-                    ]);
+                    \Illuminate\Support\Facades\DB::table(\CraftCms\Cms\Db\Table::RELATIONS)
+                        ->whereIn('sourceId', $entryIds)
+                        ->whereNotNull('sourceSiteId')
+                        ->update([
+                            'sourceSiteId' => $transferContentTo,
+                            'dateUpdated' => now(),
+                        ]);
 
                     // Nested entries
-                    $nestedEntryIds = (new Query())
-                        ->select(['id'])
-                        ->from([Table::ENTRIES])
-                        ->where(['primaryOwnerId' => $entryIds])
-                        ->column();
+                    $nestedEntryIds = \Illuminate\Support\Facades\DB::table(\CraftCms\Cms\Db\Table::ENTRIES)
+                        ->whereIn('primaryOwnerId', $entryIds)
+                        ->pluck('id');
 
-                    if (!empty($nestedEntryIds)) {
-                        Db::delete(Table::ELEMENTS_SITES, [
-                            'elementId' => $nestedEntryIds,
-                            'siteId' => $transferContentTo,
-                        ]);
+                    if ($nestedEntryIds->isNotEmpty()) {
+                        \Illuminate\Support\Facades\DB::table(\CraftCms\Cms\Db\Table::ELEMENTS_SITES)
+                            ->whereIn('elementId', $nestedEntryIds)
+                            ->where('siteId', $transferContentTo)
+                            ->delete();
 
-                        Db::update(Table::ELEMENTS_SITES, [
-                            'siteId' => $transferContentTo,
-                        ], [
-                            'elementId' => $nestedEntryIds,
-                            'siteId' => $site->id,
-                        ]);
+                        \Illuminate\Support\Facades\DB::table(\CraftCms\Cms\Db\Table::ELEMENTS_SITES)
+                            ->whereIn('elementId', $nestedEntryIds)
+                            ->where('siteId', $site->id)
+                            ->update([
+                                'siteId' => $transferContentTo,
+                                'dateUpdated' => now(),
+                            ]);
 
-                        Db::update(Table::RELATIONS, [
-                            'sourceSiteId' => $transferContentTo,
-                        ], [
-                            'and',
-                            ['sourceId' => $nestedEntryIds],
-                            ['not', ['sourceSiteId' => null]],
-                        ]);
+                        \Illuminate\Support\Facades\DB::table(\CraftCms\Cms\Db\Table::RELATIONS)
+                            ->whereIn('sourceId', $nestedEntryIds)
+                            ->whereNotNull('sourceSiteId')
+                            ->update([
+                                'sourceSiteId' => $transferContentTo,
+                                'dateUpdated' => now(),
+                            ]);
                     }
                 }
             } else {
@@ -1313,16 +1312,19 @@ class Sites extends Component
         \Illuminate\Support\Facades\DB::beginTransaction();
 
         try {
-            Db::update(Table::SITES, [
-                'primary' => false,
-            ], [
-                'id' => $oldPrimarySiteId,
-            ]);
-            Db::update(Table::SITES, [
-                'primary' => true,
-            ], [
-                'id' => $newPrimarySiteId,
-            ]);
+            \Illuminate\Support\Facades\DB::table(\CraftCms\Cms\Db\Table::SITES)
+                ->where('id', $oldPrimarySiteId)
+                ->update([
+                    'primary' => false,
+                    'dateUpdated' => now(),
+                ]);
+
+            \Illuminate\Support\Facades\DB::table(\CraftCms\Cms\Db\Table::SITES)
+                ->where('id', $newPrimarySiteId)
+                ->update([
+                    'primary' => true,
+                    'dateUpdated' => now(),
+                ]);
 
             // Update all of the non-localized elements
             $nonLocalizedElementTypes = [];

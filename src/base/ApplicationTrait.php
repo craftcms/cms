@@ -112,7 +112,6 @@ use CraftCms\Cms\Support\Str;
 use Illuminate\Database\QueryException;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Cache as CacheFacade;
-use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
 use Symfony\Component\VarDumper\Caster\ReflectionCaster;
 use Symfony\Component\VarDumper\Cloner\VarCloner;
@@ -885,7 +884,7 @@ trait ApplicationTrait
         DB::table(Table::INFO)->updateOrInsert(
             ['id' => 1],
             $attributes + [
-                'dateCreated' => $now = Date::now(),
+                'dateCreated' => $now = now(),
                 'dateUpdated' => $now,
                 'uid' => Str::uuid(),
             ],

@@ -10,11 +10,11 @@ namespace craft\controllers;
 use Craft;
 use craft\base\ElementInterface;
 use craft\base\NestedElementInterface;
-use craft\db\Table;
 use craft\elements\db\ElementQueryInterface;
 use craft\elements\ElementCollection;
-use craft\helpers\Db;
 use craft\web\Controller;
+use CraftCms\Cms\Db\Table;
+use Illuminate\Support\Facades\DB;
 use yii\web\BadRequestHttpException;
 use yii\web\ForbiddenHttpException;
 use yii\web\Response;
@@ -103,12 +103,12 @@ class NestedElementsController extends Controller
         foreach ($allIds as $i => $id) {
             $sortOrder = $i + 1;
             if (!isset($oldSortOrders[$id]) || $sortOrder !== $oldSortOrders[$id]) {
-                Db::update(Table::ELEMENTS_OWNERS, [
-                    'sortOrder' => $sortOrder,
-                ], [
-                    'ownerId' => $this->owner->id,
-                    'elementId' => $id,
-                ]);
+                DB::table(Table::ELEMENTS_OWNERS)
+                    ->where('ownerId', $this->owner->id)
+                    ->where('elementId', $id)
+                    ->update([
+                        'sortOrder' => $sortOrder,
+                    ]);
             }
         }
 
@@ -156,10 +156,10 @@ class NestedElementsController extends Controller
 
         // If the element primarily belongs to a different element, just delete the ownership
         if ($element->getPrimaryOwnerId() !== $this->owner->id) {
-            Db::delete(Table::ELEMENTS_OWNERS, [
-                'elementId' => $element->id,
-                'ownerId' => $this->owner->id,
-            ]);
+            DB::table(Table::ELEMENTS_OWNERS)
+                ->where('ownerId', $this->owner->id)
+                ->where('elementId', $element->id)
+                ->delete();
             $success = true;
         } else {
             $success = $elementsService->deleteElement($element);

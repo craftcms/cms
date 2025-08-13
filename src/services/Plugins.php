@@ -269,7 +269,7 @@ class Plugins extends Component
                         ->where('id', $row['id'])
                         ->update([
                             'version' => $plugin->getVersion(),
-                            'dateUpdated' => Date::now(),
+                            'dateUpdated' => now(),
                         ]);
 
                     $anyVersionsChanged = true;
@@ -538,7 +538,7 @@ class Plugins extends Component
                 'handle' => $handle,
                 'version' => $plugin->getVersion(),
                 'schemaVersion' => $plugin->schemaVersion,
-                'installDate' => $now = Date::now(),
+                'installDate' => $now = now(),
                 'dateCreated' => $now,
                 'dateUpdated' => $now,
                 'uid' => Str::uuid(),
@@ -881,7 +881,7 @@ class Plugins extends Component
             ->update([
                 'version' => $plugin->getVersion(),
                 'schemaVersion' => $plugin->schemaVersion,
-                'dateUpdated' => Date::now(),
+                'dateUpdated' => now(),
             ]);
 
         // Update our cache of the versions

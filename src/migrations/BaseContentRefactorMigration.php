@@ -155,10 +155,12 @@ class BaseContentRefactorMigration extends Migration
             }
 
             // don't call $this->update() so it doesn't mess with the CLI output
-            Db::update(Table::ELEMENTS_SITES, [
-                'title' => $element['title'] ?? null,
-                'content' => $content ?: null,
-            ], ['id' => $element['id']], updateTimestamp: false, db: $this->db);
+            \Illuminate\Support\Facades\DB::table(\CraftCms\Cms\Db\Table::ELEMENTS_SITES)
+                ->where('id', $element['id'])
+                ->update([
+                    'title' => $element['title'] ?? null,
+                    'content' => $content ?: null,
+                ]);
 
             echo " done\n";
         }

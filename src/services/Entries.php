@@ -2295,11 +2295,12 @@ SQL)->execute();
                 // now assign drafts & revisions to the new section too
                 $ids = array_merge($draftsQuery->ids(), $revisionsQuery->ids());
                 if (!empty($ids)) {
-                    Db::update(Table::ENTRIES, [
-                        'sectionId' => $section->id,
-                    ], [
-                        'id' => $ids,
-                    ]);
+                    \Illuminate\Support\Facades\DB::table(\CraftCms\Cms\Db\Table::ENTRIES)
+                        ->whereIn('id', $ids)
+                        ->update([
+                            'sectionId' => $section->id,
+                            'dateUpdated' => now(),
+                        ]);
                 }
 
                 \Illuminate\Support\Facades\DB::commit();

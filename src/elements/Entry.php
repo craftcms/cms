@@ -3056,7 +3056,7 @@ JS;
             ->update([
                 'deletedWithEntryType' => null,
                 'deletedWithSection' => null,
-                'dateUpdated' => Date::now(),
+                'dateUpdated' => now(),
             ]);
 
         $section = $this->getSection();

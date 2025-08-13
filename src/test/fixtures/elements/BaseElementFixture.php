@@ -10,13 +10,13 @@ namespace craft\test\fixtures\elements;
 use Craft;
 use craft\base\Element;
 use craft\base\ElementInterface;
-use craft\db\Table;
 use craft\elements\Entry;
 use craft\errors\InvalidElementException;
-use craft\helpers\Db;
 use craft\models\FieldLayout;
 use craft\test\DbFixtureTrait;
+use CraftCms\Cms\Db\Table;
 use CraftCms\Cms\Support\Arr;
+use Illuminate\Support\Facades\DB;
 use yii\test\DbFixture;
 use yii\test\FileFixtureTrait;
 
@@ -103,9 +103,9 @@ abstract class BaseElementFixture extends DbFixture
 
             if ($dateDeleted) {
                 // Now that the element exists, update its dateDeleted value
-                Db::update(Table::ELEMENTS, [
-                    'dateDeleted' => Db::prepareDateForDb($dateDeleted),
-                ], ['id' => $element->id], [], false);
+                DB::table(Table::ELEMENTS)
+                    ->where('id', $element->id)
+                    ->update(['dateDeleted' => $dateDeleted]);
             } else {
                 // Only need to index the search keywords if it’s not deleted
                 Craft::$app->getSearch()->indexElementAttributes($element);

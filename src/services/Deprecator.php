@@ -139,7 +139,7 @@ class Deprecator extends Component
      */
     public function storeLogs(): void
     {
-        $now = Date::now();
+        $now = now();
 
         foreach ($this->_pendingRequestLogs as $log) {
             try {

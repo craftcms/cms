@@ -38,7 +38,6 @@ use craft\gql\resolvers\elements\Entry as EntryResolver;
 use craft\gql\types\generators\EntryType as EntryTypeGenerator;
 use craft\gql\types\input\Matrix as MatrixInputType;
 use craft\helpers\Cp;
-use craft\helpers\Db;
 use craft\helpers\Gql;
 use craft\helpers\Html;
 use craft\helpers\Queue;
@@ -60,6 +59,7 @@ use CraftCms\Cms\Support\Str;
 use GraphQL\Type\Definition\Type;
 use Illuminate\Database\Query\JoinClause;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\DB;
 use yii\base\InvalidArgumentException;
 use yii\base\InvalidConfigException;
 use yii\db\Expression;
@@ -952,7 +952,7 @@ copyAllBtn.on('activate', () => {
         revisionId: element.data('revisionId'),
         ownerId: element.data('ownerId'),
         siteId: element.data('siteId'),
-      }, $baseInfo));
+      }, $baseInfo))
   });
   Craft.cp.copyElements(elementInfo);
 });
@@ -1097,7 +1097,7 @@ JS . "\n";
             $entryTypeJs = Json::encode($entryTypes[0]->handle);
             for ($i = count($value); $i < $this->minEntries; $i++) {
                 $js .= <<<JS
-  await input.addEntry($entryTypeJs, null, false);
+  await input.addEntry($entryTypeJs, null, false)
 JS . "\n";
             }
 
@@ -1107,7 +1107,7 @@ JS . "\n";
       input.elementEditor?.resume();
     });
   }, 100);
-});
+})
 JS;
         }
 
@@ -1378,7 +1378,7 @@ JS;
         }
 
         // Return any relation data on these elements, defined with this field
-        $map = \Illuminate\Support\Facades\DB::table(\CraftCms\Cms\Db\Table::ENTRIES, 'entries')
+        $map = DB::table(\CraftCms\Cms\Db\Table::ENTRIES, 'entries')
             ->select([
                 'elements_owners.ownerId as source',
                 'entries.id as target',
@@ -1434,7 +1434,12 @@ JS;
      */
     public function afterMergeFrom(FieldInterface $outgoingField)
     {
-        Db::update(DbTable::ENTRIES, ['fieldId' => $this->id], ['fieldId' => $outgoingField->id]);
+        DB::table(\CraftCms\Cms\Db\Table::ENTRIES)
+            ->where('fieldId', $outgoingField->id)
+            ->update([
+                'fieldId' => $this->id,
+                'dateUpdated' => now(),
+            ]);
         parent::afterMergeFrom($outgoingField);
     }
 
@@ -1685,7 +1690,7 @@ JS;
                 ->keyBy(fn(Entry $entry) => $entry->getCanonicalId());
 
             if ($derivatives->isNotEmpty()) {
-                $canonicalUids = \Illuminate\Support\Facades\DB::table(\CraftCms\Cms\Db\Table::ELEMENTS)
+                $canonicalUids = DB::table(\CraftCms\Cms\Db\Table::ELEMENTS)
                     ->select(['id', 'uid'])
                     ->whereIn('id', $derivatives->keys())
                     ->pluck('uid', 'id');

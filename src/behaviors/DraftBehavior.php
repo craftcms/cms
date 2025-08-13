@@ -60,15 +60,15 @@ class DraftBehavior extends BaseRevisionBehavior
      */
     public function handleSave(): void
     {
-        Db::update(Table::DRAFTS, [
-            'provisional' => $this->owner->isProvisionalDraft,
-            'name' => $this->draftName,
-            'notes' => $this->draftNotes,
-            'dateLastMerged' => Db::prepareDateForDb($this->owner->dateLastMerged),
-            'saved' => $this->markAsSaved,
-        ], [
-            'id' => $this->owner->draftId,
-        ], [], false);
+        \Illuminate\Support\Facades\DB::table(\CraftCms\Cms\Db\Table::DRAFTS)
+            ->where('id', $this->owner->draftId)
+            ->update([
+                'provisional' => $this->owner->isProvisionalDraft,
+                'name' => $this->draftName,
+                'notes' => $this->draftNotes,
+                'dateLastMerged' => Db::prepareDateForDb($this->owner->dateLastMerged),
+                'saved' => $this->markAsSaved,
+            ]);
     }
 
     /**

@@ -12,7 +12,6 @@ use craft\db\Connection;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\Db;
 use Exception;
-use Illuminate\Support\Facades\Date;
 use PDO;
 use Throwable;
 use yii\base\InvalidConfigException;
@@ -84,7 +83,7 @@ class DbCache extends YiiDbCache
         try {
             \Illuminate\Support\Facades\DB::table($this->cacheTable)->insert([
                 'id' => $key,
-                'expire' => $duration > 0 ? Date::now()->getTimestamp() + $duration : 0,
+                'expire' => $duration > 0 ? now()->getTimestamp() + $duration : 0,
                 'data' => new PdoValue($value, PDO::PARAM_LOB),
             ]);
             return true;

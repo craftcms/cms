@@ -12,7 +12,6 @@ use craft\errors\MigrationException;
 use craft\helpers\App;
 use craft\helpers\FileHelper;
 use Illuminate\Database\Query\Builder;
-use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
 use Throwable;
 use yii\base\Component;
@@ -362,7 +361,7 @@ class MigrationManager extends Component
             ->insert([
                 'track' => $this->track,
                 'name' => $name,
-                'applyTime' => Date::now(),
+                'applyTime' => now(),
             ]);
     }
 

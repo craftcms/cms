@@ -2106,13 +2106,14 @@ class Elements extends Component
             ]));
         }
 
-        Db::update(Table::ELEMENTS_SITES, [
-            'slug' => $element->slug,
-            'uri' => $element->uri,
-        ], [
-            'elementId' => $element->id,
-            'siteId' => $element->siteId,
-        ]);
+        \Illuminate\Support\Facades\DB::table(\CraftCms\Cms\Db\Table::ELEMENTS_SITES)
+            ->where('elementId', $element->id)
+            ->where('siteId', $element->siteId)
+            ->update([
+                'slug' => $element->slug,
+                'uri' => $element->uri,
+                'dateUpdated' => now(),
+            ]);
 
         // Fire a 'afterUpdateSlugAndUri' event
         if ($this->hasEventHandlers(self::EVENT_AFTER_UPDATE_SLUG_AND_URI)) {
@@ -2259,11 +2260,12 @@ class Elements extends Component
                     ->exists();
 
                 if (!$persistingElementIsRelatedToo) {
-                    Db::update(Table::RELATIONS, [
-                        'targetId' => $prevailingElement->id,
-                    ], [
-                        'id' => $relation['id'],
-                    ]);
+                    \Illuminate\Support\Facades\DB::table(\CraftCms\Cms\Db\Table::RELATIONS)
+                        ->where('id', $relation['id'])
+                        ->update([
+                            'targetId' => $prevailingElement->id,
+                            'dateUpdated' => now(),
+                        ]);
                 }
             }
 
@@ -2285,11 +2287,12 @@ class Elements extends Component
                     ->exists();
 
                 if (!$persistingElementIsInStructureToo) {
-                    Db::update(Table::STRUCTUREELEMENTS, [
-                        'elementId' => $prevailingElement->id,
-                    ], [
-                        'id' => $structureElement['id'],
-                    ]);
+                    \Illuminate\Support\Facades\DB::table(\CraftCms\Cms\Db\Table::STRUCTUREELEMENTS)
+                        ->where('id', $structureElement['id'])
+                        ->update([
+                            'elementId' => $prevailingElement->id,
+                            'dateUpdated' => now(),
+                        ]);
                 }
             }
 
@@ -2423,18 +2426,21 @@ class Elements extends Component
                 DateTimeHelper::pause();
 
                 if ($element->hardDelete) {
-                    Db::delete(Table::ELEMENTS, [
-                        'id' => $element->id,
-                    ]);
+                    DbFacade::table(\CraftCms\Cms\Db\Table::ELEMENTS)->delete($element->id);
+                    DbFacade::table(\CraftCms\Cms\Db\Table::SEARCHINDEX)
+                        ->delete($element->id);
                     Db::delete(Table::SEARCHINDEX, [
                         'elementId' => $element->id,
                     ]);
                 } else {
                     // Soft delete the elements table row
-                    Db::update(Table::ELEMENTS, [
-                        'dateDeleted' => Db::prepareDateForDb(new DateTime()),
-                        'deletedWithOwner' => $element->deletedWithOwner,
-                    ], ['id' => $element->id]);
+                    DbFacade::table(\CraftCms\Cms\Db\Table::ELEMENTS)
+                        ->where('id', $element->id)
+                        ->update([
+                            'dateUpdated' => $now = now(),
+                            'dateDeleted' => $now,
+                            'deletedWithOwner' => $element->deletedWithOwner,
+                        ]);
 
                     // Also soft delete the element’s drafts & revisions
                     $this->_cascadeDeleteDraftsAndRevisions($element->id);
@@ -2662,10 +2668,13 @@ class Elements extends Component
                 }
 
                 // Restore it
-                Db::update(Table::ELEMENTS, [
-                    'dateDeleted' => null,
-                    'deletedWithOwner' => null,
-                ], ['id' => $element->id]);
+                \Illuminate\Support\Facades\DB::table(\CraftCms\Cms\Db\Table::ELEMENTS)
+                    ->where('id', $element->id)
+                    ->update([
+                        'dateDeleted' => null,
+                        'dateUpdated' => now(),
+                        'deletedWithOwner' => null,
+                    ]);
 
                 // Also restore the element’s drafts & revisions
                 $this->_cascadeDeleteDraftsAndRevisions($element->id, false);
@@ -2833,7 +2842,7 @@ class Elements extends Component
                 'siteId' => $element->siteId,
                 'draftId' => $isCanonical ? null : $element->draftId,
                 'type' => $type,
-                'timestamp' => Date::now(),
+                'timestamp' => now(),
             ], ['elementId', 'userId', 'type']);
     }
 
@@ -4092,7 +4101,7 @@ class Elements extends Component
             // Update the changed attributes & fields
             if ($trackChanges) {
                 $userId = Craft::$app->getUser()->getId();
-                $timestamp = Date::now();
+                $timestamp = now();
 
                 foreach ($dirtyAttributes as $attributeName) {
                     DbFacade::table(\CraftCms\Cms\Db\Table::CHANGEDATTRIBUTES)

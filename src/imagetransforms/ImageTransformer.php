@@ -564,7 +564,7 @@ class ImageTransformer extends Component implements ImageTransformerInterface, E
             'assetId' => $asset->id,
             'format' => $transform->format,
             'transformer' => $transform->getTransformer(),
-            'dateIndexed' => Date::now(),
+            'dateIndexed' => now(),
             'transformString' => $transformString,
             'fileExists' => false,
             'inProgress' => false,
@@ -633,7 +633,7 @@ class ImageTransformer extends Component implements ImageTransformerInterface, E
             'dateIndexed',
         ], [], false);
 
-        $now = Date::now();
+        $now = now();
         if ($index->id !== null) {
             DB::table(Table::IMAGETRANSFORMINDEX)
                 ->where('id', $index->id)

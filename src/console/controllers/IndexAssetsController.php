@@ -9,7 +9,6 @@ namespace craft\console\controllers;
 
 use Craft;
 use craft\console\Controller;
-use craft\db\Table;
 use craft\elements\Asset;
 use craft\errors\AssetDisallowedExtensionException;
 use craft\errors\AssetNotIndexableException;
@@ -17,9 +16,10 @@ use craft\errors\FsObjectNotFoundException;
 use craft\errors\MissingAssetException;
 use craft\errors\MissingVolumeFolderException;
 use craft\helpers\App;
-use craft\helpers\Db;
 use craft\models\FsListing;
 use craft\models\Volume;
+use CraftCms\Cms\Db\Table;
+use Illuminate\Support\Facades\DB;
 use Throwable;
 use yii\console\ExitCode;
 use yii\db\Exception;
@@ -276,12 +276,13 @@ class IndexAssetsController extends Controller
                         continue;
                     }
                     $this->stdout("Relocating asset $assetId to {$e->volume->name}/{$e->indexEntry->uri} ... ");
-                    Db::update(Table::ASSETS, [
-                        'volumeId' => $e->volume->id,
-                        'folderId' => $e->folder->id,
-                    ], [
-                        'id' => $assetId,
-                    ]);
+                    DB::table(Table::ASSETS)
+                        ->where('id', $assetId)
+                        ->update([
+                            'volumeId' => $e->volume->id,
+                            'folderId' => $e->folder->id,
+                            'dateUpdated' => now(),
+                        ]);
                     $this->stdout('reindexing ... ');
                     $assetIndexer->indexFileByEntry($e->indexEntry, $this->cacheRemoteImages, false);
                     $this->stdout('done' . PHP_EOL, Console::FG_GREEN);

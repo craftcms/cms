@@ -73,14 +73,13 @@ class BaseEntryTypeMergeMigration extends Migration
         }
 
         echo '    > Reassigning entries … ';
-        Db::update(
-            Table::ENTRIES,
-            [
+        \Illuminate\Support\Facades\DB::table(\CraftCms\Cms\Db\Table::ENTRIES)
+            ->where('typeId', $outgoingEntryTypeRecord->id)
+            ->update([
                 'typeId' => $persistingEntryTypeRecord->id,
                 'deletedWithEntryType' => false,
-            ],
-            ['typeId' => $outgoingEntryTypeRecord->id],
-        );
+                'dateUpdated' => now(),
+            ]);
         echo "✓\n";
 
         return true;
@@ -112,11 +111,12 @@ class BaseEntryTypeMergeMigration extends Migration
             }
 
             if ($changed) {
-                Db::update(
-                    Table::ELEMENTS_SITES,
-                    ['content' => $content],
-                    ['id' => $row['id']],
-                );
+                \Illuminate\Support\Facades\DB::table(\CraftCms\Cms\Db\Table::ELEMENTS_SITES)
+                    ->where('id', $row['id'])
+                    ->update([
+                        'content' => $content,
+                        'dateUpdated' => now(),
+                    ]);
             }
 
             echo "✓\n";

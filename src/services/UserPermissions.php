@@ -28,7 +28,6 @@ use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Utility\Utilities;
 use CraftCms\Cms\Utility\Utilities\ProjectConfig as ProjectConfigUtility;
 use Illuminate\Database\Query\Builder;
-use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
 use yii\base\Component;
 use yii\db\Exception;
@@ -416,7 +415,7 @@ class UserPermissions extends Component
         $groupPermissionVals = [];
 
         if ($permissions) {
-            $now = Date::now();
+            $now = now();
 
             foreach ($permissions as $permissionName) {
                 $permissionRecord = $this->_getPermissionRecordByName($permissionName);

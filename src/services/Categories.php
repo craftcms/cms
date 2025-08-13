@@ -445,12 +445,13 @@ class Categories extends Component
                 if (!empty($siteData)) {
                     // Drop the old category URIs for any site settings that don't have URLs
                     if (!empty($sitesNowWithoutUrls)) {
-                        Db::update(Table::ELEMENTS_SITES, [
-                            'uri' => null,
-                        ], [
-                            'elementId' => $categoryIds,
-                            'siteId' => $sitesNowWithoutUrls,
-                        ]);
+                        \Illuminate\Support\Facades\DB::table(\CraftCms\Cms\Db\Table::ELEMENTS_SITES)
+                            ->whereIn('elementId', $categoryIds)
+                            ->whereIn('siteId', $sitesNowWithoutUrls)
+                            ->update([
+                                'uri' => null,
+                                'dateUpdated' => now(),
+                            ]);
                     } elseif (!empty($sitesWithNewUriFormats)) {
                         foreach ($categoryIds as $categoryId) {
                             App::maxPowerCaptain();

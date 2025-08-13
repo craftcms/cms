@@ -1272,7 +1272,7 @@ JS, [
                 $siteIds = Arr::where($siteIds, fn($siteId) => $siteId !== $element->siteId);
                 if (!empty($siteIds)) {
                     $userId = Craft::$app->getUser()->getId();
-                    $timestamp = \Illuminate\Support\Facades\Date::now();
+                    $timestamp = now();
 
                     foreach ($siteIds as $siteId) {
                         DB::table(\CraftCms\Cms\Db\Table::CHANGEDFIELDS)

@@ -32,7 +32,6 @@ use craft\services\ElementSources;
 use craft\services\Structures;
 use CraftCms\Cms\Support\Str;
 use GraphQL\Type\Definition\Type;
-use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
 use yii\base\Exception;
 use yii\base\InvalidConfigException;
@@ -1002,7 +1001,7 @@ class Category extends Element
                 ->where('targetId', $this->id)
                 ->get();
 
-            $now = Date::now();
+            $now = now();
 
             foreach ($sources as $source) {
                 $existingAncestorRelations = DB::table(\CraftCms\Cms\Db\Table::RELATIONS)
