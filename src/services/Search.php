@@ -322,11 +322,10 @@ class Search extends Component
                     ->update([
                         'reserved' => true,
                     ]);
-            }, 1_000, function(Throwable $e) {
+            }, 1_000, fn(Throwable $e) =>
                 // A gap lock was probably hit. Try again in one second
                 // https://github.com/craftcms/cms/issues/15221
-                return $e instanceof QueryException && str_contains($e->getMessage(), 'deadlock');
-            });
+                $e instanceof QueryException && str_contains($e->getMessage(), 'deadlock'));
         } finally {
             $mutex->release();
         }
@@ -667,11 +666,10 @@ class Search extends Component
         retry(3, function() use ($columns) {
             DB::table(\CraftCms\Cms\Db\Table::SEARCHINDEX)
                 ->insert($columns);
-        }, 1_000, function(Throwable $e) {
+        }, 1_000, fn(Throwable $e) =>
             // A gap lock was probably hit. Try again in one second
             // https://github.com/craftcms/cms/issues/15221
-            return $e instanceof QueryException && str_contains($e->getMessage(), 'deadlock');
-        });
+            $e instanceof QueryException && str_contains($e->getMessage(), 'deadlock'));
     }
 
     /**

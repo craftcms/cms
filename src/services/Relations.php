@@ -15,6 +15,8 @@ use craft\db\Table;
 use craft\fieldlayoutelements\CustomField;
 use craft\fields\BaseRelationField;
 use craft\helpers\Db;
+use CraftCms\Cms\Support\Str;
+use Illuminate\Support\Facades\Date;
 use Throwable;
 use yii\base\Component;
 
@@ -95,25 +97,30 @@ class Relations extends Component
                     $command->execute();
                 }
 
+                $now = Date::now();
                 // Add the new ones
                 if (!empty($targetIds)) {
                     $values = [];
                     foreach ($targetIds as $targetId => $sortOrder) {
                         $values[] = [
-                            $field->id,
-                            $source->id,
-                            $sourceSiteId,
-                            $targetId,
-                            $sortOrder + 1,
+                            'fieldId' => $field->id,
+                            'sourceId' => $source->id,
+                            'sourceSiteId' => $sourceSiteId,
+                            'targetId' => $targetId,
+                            'sortOrder' => $sortOrder + 1,
+                            'dateCreated' => $now,
+                            'dateUpdated' => $now,
+                            'uid' => Str::uuid(),
                         ];
                     }
-                    Db::batchInsert(Table::RELATIONS, ['fieldId', 'sourceId', 'sourceSiteId', 'targetId', 'sortOrder'], $values, $db);
+
+                    \Illuminate\Support\Facades\DB::table(\CraftCms\Cms\Db\Table::RELATIONS)->insert($values);
                 }
 
                 if (!empty($deleteIds)) {
-                    Db::delete(Table::RELATIONS, [
-                        'id' => $deleteIds,
-                    ], [], $db);
+                    \Illuminate\Support\Facades\DB::table(\CraftCms\Cms\Db\Table::RELATIONS)
+                        ->whereIn('id', $deleteIds)
+                        ->delete();
                 }
 
                 \Illuminate\Support\Facades\DB::commit();

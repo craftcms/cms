@@ -8,12 +8,13 @@
 namespace crafttests\fixtures;
 
 use Craft;
-use craft\db\Table;
-use craft\helpers\Db;
 use craft\records\Section;
 use craft\services\Entries;
 use craft\test\ActiveFixture;
+use CraftCms\Cms\Db\Table;
 use CraftCms\Cms\Support\Arr;
+use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\DB;
 
 /**
  * Class SectionsFixture
@@ -52,22 +53,21 @@ class SectionsFixture extends ActiveFixture
         Craft::$app->set('entries', $entriesService);
 
         foreach ($this->entryTypeIds as $key => $entryTypeIds) {
-            $data = [];
-            foreach ($entryTypeIds as $i => $id) {
-                $data[] = [$this->ids[$key], $id, $i + 1];
-            }
-            Db::batchInsert(
-                Table::SECTIONS_ENTRYTYPES,
-                ['sectionId', 'typeId', 'sortOrder'],
-                $data,
-            );
+            DB::table(Table::SECTIONS_ENTRYTYPES)
+                ->insert(Collection::make($entryTypeIds)->map(function($id, int $i) use ($key) {
+                    return [
+                        'sectionId' => $this->ids[$key],
+                        'typeId' => $id,
+                        'sortOrder' => $i + 1,
+                    ];
+                })->all());
         }
     }
 
     public function unload(): void
     {
         parent::unload();
-        Db::delete(Table::SECTIONS_ENTRYTYPES);
+        DB::table(Table::SECTIONS_ENTRYTYPES)->delete();
         $this->entryTypeIds = [];
     }
 

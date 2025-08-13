@@ -707,23 +707,24 @@ class Entries extends Component
             // Update the entry type relations
             // -----------------------------------------------------------------
 
-            Db::delete(Table::SECTIONS_ENTRYTYPES, ['sectionId' => $sectionRecord->id]);
-            Db::batchInsert(
-                Table::SECTIONS_ENTRYTYPES,
-                ['sectionId', 'typeId', 'sortOrder', 'name', 'handle', 'description'],
-                Collection::make($data['entryTypes'] ?? [])
+            \Illuminate\Support\Facades\DB::table(\CraftCms\Cms\Db\Table::SECTIONS_ENTRYTYPES)
+                ->where('sectionId', $sectionRecord->id)
+                ->delete();
+
+            \Illuminate\Support\Facades\DB::table(\CraftCms\Cms\Db\Table::SECTIONS_ENTRYTYPES)
+                ->insert(Collection::make($data['entryTypes'] ?? [])
                     ->map(fn($entryType) => $this->getEntryType($entryType))
                     ->filter()
                     ->map(fn(EntryType $entryType, int $i) => [
-                        $sectionRecord->id,
-                        $entryType->id,
-                        $i + 1,
-                        isset($entryType->original) && $entryType->name !== $entryType->original->name ? $entryType->name : null,
-                        isset($entryType->original) && $entryType->handle !== $entryType->original->handle ? $entryType->handle : null,
-                        isset($entryType->original) && $entryType->description !== $entryType->original->description ? $entryType->description : null,
+                        'sectionId' => $sectionRecord->id,
+                        'typeId' => $entryType->id,
+                        'sortOrder' => $i + 1,
+                        'name' => isset($entryType->original) && $entryType->name !== $entryType->original->name ? $entryType->name : null,
+                        'handle' => isset($entryType->original) && $entryType->handle !== $entryType->original->handle ? $entryType->handle : null,
+                        'description' => isset($entryType->original) && $entryType->description !== $entryType->original->description ? $entryType->description : null,
                     ])
-                    ->all(),
-            );
+                    ->all()
+                );
 
             // Update the site settings
             // -----------------------------------------------------------------
@@ -738,7 +739,11 @@ class Entries extends Component
                 $allOldSiteSettingsRecords = [];
             }
 
-            $siteIdMap = Db::idsByUids(Table::SITES, array_keys($siteSettingData));
+            $siteIdMap = \Illuminate\Support\Facades\DB::table(\CraftCms\Cms\Db\Table::SITES)
+                ->whereIn('uid', array_keys($siteSettingData))
+                ->pluck('id', 'uid')
+                ->all();
+
             $hasNewSite = false;
 
             foreach ($siteSettingData as $siteUid => $siteSettings) {

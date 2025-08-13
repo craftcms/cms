@@ -28,6 +28,7 @@ use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Support\Str;
 use CraftCms\DependencyAwareCache\Dependency\CallbackDependency;
 use CraftCms\DependencyAwareCache\Facades\DependencyCache;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Cache;
 use Symfony\Component\Yaml\Yaml;
 use Throwable;
@@ -904,13 +905,11 @@ class ProjectConfig extends Component
      */
     protected function persistInternalConfigValues(array $values): void
     {
-        $batch = [];
-
-        foreach ($values as $path => $value) {
-            $batch[] = [$path, $value];
-        }
-
-        Db::batchInsert(Table::PROJECTCONFIG, ['path', 'value'], $batch);
+        \Illuminate\Support\Facades\DB::table(\CraftCms\Cms\Db\Table::PROJECTCONFIG)
+            ->insert(Collection::make($values)->map(fn($value, $path) => [
+                'path' => $path,
+                'value' => $value,
+            ])->all());
     }
 
     /**

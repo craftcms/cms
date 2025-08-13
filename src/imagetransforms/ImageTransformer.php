@@ -828,9 +828,7 @@ class ImageTransformer extends Component implements ImageTransformerInterface, E
         return $this->_createTransformIndexQuery()
             ->where('assetId', $asset->id)
             ->get()
-            ->map(function(object $result) {
-                return new ImageTransformIndex((array) $result);
-            })
+            ->map(fn(object $result) => new ImageTransformIndex((array) $result))
             ->all();
     }
 

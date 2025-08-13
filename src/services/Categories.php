@@ -378,7 +378,10 @@ class Categories extends Component
                     ->all();
             }
 
-            $siteIdMap = Db::idsByUids(Table::SITES, array_keys($siteData));
+            $siteIdMap = \Illuminate\Support\Facades\DB::table(\CraftCms\Cms\Db\Table::SITES)
+                ->whereIn('uid', array_keys($siteData))
+                ->pluck('id', 'uid')
+                ->all();
 
             foreach ($siteData as $siteUid => $siteSettings) {
                 $siteId = $siteIdMap[$siteUid];
