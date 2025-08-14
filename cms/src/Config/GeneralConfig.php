@@ -3,6 +3,7 @@
 namespace CraftCms\Cms\Config;
 
 use Closure;
+use Craft;
 use craft\attributes\EnvName;
 use craft\helpers\ConfigHelper;
 use craft\helpers\DateTimeHelper;
@@ -4083,8 +4084,8 @@ class GeneralConfig extends BaseConfig
     {
         if (
             $value !== null &&
-            class_exists(\Craft::class, false) &&
-            isset(\Craft::$app)
+            class_exists(Craft::class, false) &&
+            isset(Craft::$app)
         ) {
             try {
                 $value = Localization::normalizeLanguage($value);
@@ -7325,7 +7326,7 @@ class GeneralConfig extends BaseConfig
         if ($this->testToEmailAddress) {
             foreach ((array) $this->testToEmailAddress as $key => $value) {
                 if (is_numeric($key)) {
-                    $to[$value] = \Craft::t('app', 'Test Recipient');
+                    $to[$value] = Craft::t('app', 'Test Recipient');
                 } else {
                     $to[$key] = $value;
                 }

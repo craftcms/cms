@@ -2,6 +2,7 @@
 
 namespace CraftCms\Cms\Support;
 
+use Craft;
 use craft\errors\InvalidLicenseKeyException;
 use craft\helpers\App;
 use craft\helpers\DateTimeHelper;
@@ -114,7 +115,7 @@ readonly class Api
         $headers = [
             'Accept' => 'application/json',
             'X-Craft-Env' => $this->app->environment(),
-            'X-Craft-System' => sprintf('craft:%s;%s', \Craft::$app->getVersion(), \Craft::$app->edition->handle()),
+            'X-Craft-System' => sprintf('craft:%s;%s', Craft::$app->getVersion(), Craft::$app->edition->handle()),
         ];
 
         // platform
@@ -145,7 +146,7 @@ readonly class Api
 
         // plugin info
         $pluginLicenses = [];
-        $pluginsService = \Craft::$app->getPlugins();
+        $pluginsService = Craft::$app->getPlugins();
         foreach ($pluginsService->getAllPluginInfo() as $pluginHandle => $pluginInfo) {
             if ($pluginInfo['isInstalled'] && ! $pluginInfo['private']) {
                 $headers['X-Craft-System'] .= ",plugin-$pluginHandle:{$pluginInfo['version']};{$pluginInfo['edition']}";
@@ -171,7 +172,7 @@ readonly class Api
     }
 
     /**
-     * @return \Illuminate\Support\Collection<string, string>
+     * @return Collection<string, string>
      */
     public function platformVersions(): Collection
     {
@@ -240,7 +241,7 @@ readonly class Api
         // did we just get a new license key?
         if (isset($headers['x-craft-license'])) {
             $license = reset($headers['x-craft-license']);
-            $path = \Craft::$app->getPath()->getLicenseKeyPath();
+            $path = Craft::$app->getPath()->getLicenseKeyPath();
 
             //  just in case there's some race condition where two licenses were requested simultaneously...
             if (App::licenseKey() !== null) {
@@ -266,7 +267,7 @@ readonly class Api
         }
 
         // did we just get any new plugin license keys?
-        $pluginsService = \Craft::$app->getPlugins();
+        $pluginsService = Craft::$app->getPlugins();
         if (isset($headers['x-craft-plugin-licenses'])) {
             $pluginLicenseKeys = explode(',', reset($headers['x-craft-plugin-licenses']));
             foreach ($pluginLicenseKeys as $key) {

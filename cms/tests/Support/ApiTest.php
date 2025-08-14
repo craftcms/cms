@@ -16,7 +16,7 @@ it('can get headers', function () {
     tap($this->api->headers(), function (array $headers) {
         expect($headers['Accept'])->toBe('application/json');
         expect($headers['X-Craft-Env'])->toBe(config('app.env'));
-        expect($headers['X-Craft-System'])->toBe(sprintf('craft:%s;%s', \Craft::$app->getVersion(), \Craft::$app->edition->handle()));
+        expect($headers['X-Craft-System'])->toBe(sprintf('craft:%s;%s', Craft::$app->getVersion(), Craft::$app->edition->handle()));
         expect($headers['X-Craft-Platform'])->toContain('php:', 'ext-');
         expect($headers['X-Craft-License'])->toBe('__REQUEST__');
     });
@@ -34,7 +34,7 @@ it('can process response headers', function () {
     ]);
 
     expect(Cache::get('editionTestableDomain@localhost'))->toBe(1);
-    expect(File::get(\Craft::$app->getPath()->getLicenseKeyPath()))->toContain($key);
+    expect(File::get(Craft::$app->getPath()->getLicenseKeyPath()))->toContain($key);
     expect(Cache::get('licensedDomain'))->toBe('foo.cloud');
 });
 

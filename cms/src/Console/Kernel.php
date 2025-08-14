@@ -32,6 +32,6 @@ final class Kernel extends \Illuminate\Foundation\Console\Kernel
 
     protected function shouldDiscoverCommands(): bool
     {
-        return get_class($this) === __CLASS__;
+        return get_class($this) === self::class;
     }
 }

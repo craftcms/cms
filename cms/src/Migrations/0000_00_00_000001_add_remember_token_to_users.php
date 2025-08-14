@@ -4,9 +4,10 @@ use CraftCms\Cms\Db\Table;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
+use yii\db\MigrationInterface;
 
 /** @since 6.0.0 */
-return new class extends Migration implements \yii\db\MigrationInterface
+return new class extends Migration implements MigrationInterface
 {
     public function up(): bool
     {

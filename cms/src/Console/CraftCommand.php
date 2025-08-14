@@ -3,9 +3,10 @@
 namespace CraftCms\Cms\Console;
 
 use CraftCms\Cms\Support\Str;
+use Illuminate\Console\Command;
 
 /**
- * @mixin \Illuminate\Console\Command
+ * @mixin Command
  *
  * @since 6.0.0
  */

@@ -9,6 +9,7 @@ use CraftCms\Cms\Component\Events\DefineSettingsAttributes;
 use CraftCms\Cms\Support\Utils;
 use DateTimeInterface;
 use Illuminate\Support\Facades\Event;
+use ReflectionProperty;
 
 /**
  * @since 6.0.0
@@ -24,9 +25,7 @@ trait ConfigurableComponent
 
     public function settingsAttributes(): array
     {
-        $attributes = Utils::getPublicProperties($this, function (\ReflectionProperty $property) {
-            return $property->class === static::class;
-        });
+        $attributes = Utils::getPublicProperties($this, fn (ReflectionProperty $property) => $property->class === static::class);
 
         if (Event::hasListeners(self::componentEventName(self::EVENT_DEFINE_SETTINGS_ATTRIBUTES))) {
             Event::dispatch(self::componentEventName(self::EVENT_DEFINE_SETTINGS_ATTRIBUTES), $event = new DefineSettingsAttributes(

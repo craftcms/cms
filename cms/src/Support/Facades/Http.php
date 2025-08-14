@@ -2,6 +2,7 @@
 
 namespace CraftCms\Cms\Support\Facades;
 
+use Craft;
 use CraftCms\Cms\Config\GeneralConfig;
 use GuzzleHttp\Utils;
 use Illuminate\Http\Client\PendingRequest;
@@ -13,7 +14,7 @@ final class Http extends \Illuminate\Support\Facades\Http
     {
         $generalConfig = app(GeneralConfig::class);
 
-        return self::withUserAgent('Craft/'.\Craft::$app->getVersion().' '.Utils::defaultUserAgent())
+        return self::withUserAgent('Craft/'.Craft::$app->getVersion().' '.Utils::defaultUserAgent())
             ->throw()
             ->when(
                 Config::has('craft.guzzle'),

@@ -10,7 +10,9 @@ use HTMLPurifier_Config;
 use InvalidArgumentException;
 use LitEmoji\LitEmoji;
 use Ramsey\Uuid\Validator\GenericValidator;
+use ReflectionClass;
 use voku\helper\ASCII;
+use yii\base\Exception;
 use yii\base\InvalidConfigException;
 
 /** @since 6.0.0 */
@@ -114,15 +116,15 @@ class Str extends \Illuminate\Support\Str
      * @param  string  $str  The string.
      *
      * @throws InvalidConfigException on OpenSSL not loaded
-     * @throws \yii\base\Exception on OpenSSL error
+     * @throws Exception on OpenSSL error
      */
     public static function decdec(string $str): string
     {
-        if (strncmp($str, 'base64:', 7) === 0) {
+        if (str_starts_with($str, 'base64:')) {
             $str = base64_decode(substr($str, 7));
         }
 
-        if (strncmp($str, 'crypt:', 6) === 0) {
+        if (str_starts_with($str, 'crypt:')) {
             $str = Craft::$app->getSecurity()->decryptByKey(substr($str, 6));
         }
 
@@ -153,7 +155,7 @@ class Str extends \Illuminate\Support\Str
      * @param  string  $str  the string
      *
      * @throws InvalidConfigException on OpenSSL not loaded
-     * @throws \yii\base\Exception on OpenSSL error
+     * @throws Exception on OpenSSL error
      *
      * @see decdec()
      */
@@ -405,7 +407,7 @@ class Str extends \Illuminate\Support\Str
             return self::$shortcodeEscapeMap;
         }
 
-        $reflectionClass = new \ReflectionClass(LitEmoji::class);
+        $reflectionClass = new ReflectionClass(LitEmoji::class);
         $reflectionMethod = $reflectionClass->getMethod('getShortcodes');
         $shortcodes = array_keys($reflectionMethod->invoke(null));
 

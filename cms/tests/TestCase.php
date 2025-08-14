@@ -11,6 +11,7 @@ use CraftCms\Cms\Providers\CraftServiceProvider;
 use CraftCms\Cms\Support\Facades\Http;
 use CraftCms\DependencyAwareCache\CacheServiceProvider;
 use CraftCms\Yii2Adapter\Yii2ServiceProvider;
+use Dotenv\Dotenv;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Foundation\Testing\LazilyRefreshDatabase;
 use Illuminate\Support\Facades\Cache;
@@ -98,7 +99,7 @@ class TestCase extends Orchestra
             return;
         }
 
-        $dotenv = \Dotenv\Dotenv::createImmutable(__DIR__.'/../../tests');
+        $dotenv = Dotenv::createImmutable(__DIR__.'/../../tests');
         $dotenv->load();
 
         $configKey = 'database.connections.'.env('DB_CONNECTION');

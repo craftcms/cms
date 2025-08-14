@@ -4,6 +4,7 @@ use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\User\Models\User;
 use CraftCms\Cms\Utility\Events\RegisterUtilities;
+use CraftCms\Cms\Utility\Utilities;
 use CraftCms\Cms\Utility\Utilities\AssetIndexes;
 use CraftCms\Cms\Utility\Utilities\SystemMessages;
 use CraftCms\Cms\Utility\Utilities\SystemReport;
@@ -13,7 +14,7 @@ use Illuminate\Support\Facades\Event;
 use function Pest\Laravel\actingAs;
 
 beforeEach(function () {
-    $this->utilities = app(\CraftCms\Cms\Utility\Utilities::class);
+    $this->utilities = app(Utilities::class);
 });
 
 it('can get all utility types', function () {

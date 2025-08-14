@@ -18,11 +18,11 @@ final class ConstAdapter implements AdapterInterface
     /**
      * Create a new instance of the adapter, if it is available.
      *
-     * @return \PhpOption\Option<\Dotenv\Repository\Adapter\AdapterInterface>
+     * @return Option<AdapterInterface>
      */
     public static function create()
     {
-        /** @var \PhpOption\Option<AdapterInterface> */
+        /** @var Option<AdapterInterface> */
         return Some::create(new self);
     }
 
@@ -30,7 +30,7 @@ final class ConstAdapter implements AdapterInterface
      * Read an environment variable, if it exists.
      *
      * @param  non-empty-string  $name
-     * @return \PhpOption\Option<string>
+     * @return Option<string>
      */
     public function read(string $name)
     {

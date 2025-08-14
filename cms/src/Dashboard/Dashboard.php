@@ -16,8 +16,11 @@ use CraftCms\Cms\Dashboard\Widgets\QuickPost as QuickPostWidget;
 use CraftCms\Cms\Dashboard\Widgets\RecentEntries as RecentEntriesWidget;
 use CraftCms\Cms\Dashboard\Widgets\Updates as UpdatesWidget;
 use CraftCms\Cms\Dashboard\Widgets\Widget;
+use CraftCms\Cms\User\Models\User;
+use DateTimeInterface;
 use Exception;
 use Illuminate\Container\Attributes\Singleton;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -60,14 +63,7 @@ final readonly class Dashboard
      *
      * @template T of WidgetInterface
      *
-     * @param class-string<T>|array{
-     *     type:class-string<T>,
-     *     id?:int,
-     *     colspan?:int,
-     *     settings?:array<string,mixed>,
-     *     dateCreated?:\DateTimeInterface,
-     *     dateUpdated?:\DateTimeInterface
-     * } $config  The widget’s class name, or its config, with a `type` value and optionally a `settings` value.
+     * @param  class-string<T>|array{type: class-string<T>, id?: int, colspan?: int, settings?: array<string, mixed>, dateCreated?: DateTimeInterface, dateUpdated?: DateTimeInterface}  $config  The widget’s class name, or its config, with a `type` value and optionally a `settings` value.
      * @return T
      */
     public function createWidget(string|array $config): WidgetInterface
@@ -118,7 +114,7 @@ final readonly class Dashboard
      * @param  int  $id  The widget’s ID
      * @return WidgetInterface The widget
      *
-     * @throws \Illuminate\Database\Eloquent\ModelNotFoundException if it doesn't exist
+     * @throws ModelNotFoundException if it doesn't exist
      */
     public function getWidgetById(int $id): WidgetInterface
     {
@@ -299,7 +295,7 @@ final readonly class Dashboard
      */
     private function addDefaultUserWidgets(): void
     {
-        /** @var \CraftCms\Cms\User\Models\User $user */
+        /** @var User $user */
         $user = Auth::user();
 
         // Recent Entries widget
@@ -355,7 +351,7 @@ final readonly class Dashboard
      */
     private function getUserWidgets(): Collection|false
     {
-        /** @var \CraftCms\Cms\User\Models\User $user */
+        /** @var User $user */
         $user = Auth::user();
 
         if (! $user) {

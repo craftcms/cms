@@ -4,7 +4,9 @@ namespace CraftCms\Cms\Dashboard\Widgets;
 
 use Craft;
 use craft\helpers\App;
+use craft\web\Application;
 use craft\web\assets\craftsupport\CraftSupportAsset;
+use CraftCms\Cms\Config\GeneralConfig;
 use Illuminate\Support\Facades\Auth;
 
 /** @since 6.0.0 */
@@ -61,7 +63,7 @@ final class CraftSupport extends Widget
             return null;
         }
 
-        /** @var \craft\web\Application $craft */
+        /** @var Application $craft */
         $craft = app('Craft');
 
         $view = $craft->getView();
@@ -124,7 +126,7 @@ JS, [
         ]);
 
         // Only show the DB backup option if DB backups haven't been disabled
-        $showBackupOption = (app(\CraftCms\Cms\Config\GeneralConfig::class)->backupCommand !== false);
+        $showBackupOption = (app(GeneralConfig::class)->backupCommand !== false);
 
         return $view->renderTemplate('_components/widgets/CraftSupport/body.twig', [
             'widget' => $this,
