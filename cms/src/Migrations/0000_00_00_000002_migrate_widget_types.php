@@ -1,22 +1,31 @@
 <?php
 
 use craft\db\Table;
+use craft\widgets\CraftSupport;
+use craft\widgets\Feed;
+use craft\widgets\MissingWidget;
+use craft\widgets\MyDrafts;
+use craft\widgets\NewUsers;
+use craft\widgets\QuickPost;
+use craft\widgets\RecentEntries;
+use craft\widgets\Updates;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
+use yii\db\MigrationInterface;
 
-return new class extends Migration implements \yii\db\MigrationInterface
+return new class extends Migration implements MigrationInterface
 {
     private array $map = [
-        \craft\widgets\CraftSupport::class => \CraftCms\Cms\Dashboard\Widgets\CraftSupport::class,
-        \craft\widgets\Feed::class => \CraftCms\Cms\Dashboard\Widgets\Feed::class,
-        \craft\widgets\MissingWidget::class => \CraftCms\Cms\Dashboard\Widgets\MissingWidget::class,
-        \craft\widgets\MyDrafts::class => \CraftCms\Cms\Dashboard\Widgets\MyDrafts::class,
-        \craft\widgets\NewUsers::class => \CraftCms\Cms\Dashboard\Widgets\NewUsers::class,
-        \craft\widgets\QuickPost::class => \CraftCms\Cms\Dashboard\Widgets\QuickPost::class,
-        \craft\widgets\RecentEntries::class => \CraftCms\Cms\Dashboard\Widgets\RecentEntries::class,
-        \craft\widgets\Updates::class => \CraftCms\Cms\Dashboard\Widgets\Updates::class,
+        CraftSupport::class => \CraftCms\Cms\Dashboard\Widgets\CraftSupport::class,
+        Feed::class => \CraftCms\Cms\Dashboard\Widgets\Feed::class,
+        MissingWidget::class => \CraftCms\Cms\Dashboard\Widgets\MissingWidget::class,
+        MyDrafts::class => \CraftCms\Cms\Dashboard\Widgets\MyDrafts::class,
+        NewUsers::class => \CraftCms\Cms\Dashboard\Widgets\NewUsers::class,
+        QuickPost::class => \CraftCms\Cms\Dashboard\Widgets\QuickPost::class,
+        RecentEntries::class => \CraftCms\Cms\Dashboard\Widgets\RecentEntries::class,
+        Updates::class => \CraftCms\Cms\Dashboard\Widgets\Updates::class,
     ];
 
     public function up(): bool

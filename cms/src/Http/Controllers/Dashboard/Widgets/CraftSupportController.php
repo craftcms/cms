@@ -2,6 +2,7 @@
 
 namespace CraftCms\Cms\Http\Controllers\Dashboard\Widgets;
 
+use Craft;
 use craft\helpers\App;
 use craft\helpers\FileHelper;
 use craft\web\Application;
@@ -92,7 +93,7 @@ final readonly class CraftSupportController
             $parts[] = [
                 'name' => 'attachments[0]',
                 'contents' => fopen($zipData['zipPath'], 'rb'),
-                'filename' => 'SupportAttachment-'.FileHelper::sanitizeFilename(\Craft::$app->getSites()->getPrimarySite()->getName()).'.zip',
+                'filename' => 'SupportAttachment-'.FileHelper::sanitizeFilename(Craft::$app->getSites()->getPrimarySite()->getName()).'.zip',
             ];
         } catch (Throwable $e) {
             Log::warning('Error creating support zip: '.$e->getMessage(), [__METHOD__]);
@@ -127,7 +128,7 @@ final readonly class CraftSupportController
                 'success' => false,
                 'errors' => [
                     'Support' => [
-                        \Craft::t('app', 'A server error occurred.'),
+                        Craft::t('app', 'A server error occurred.'),
                     ],
                 ],
             ]);
@@ -190,7 +191,7 @@ final readonly class CraftSupportController
         bool $attachTemplates,
         ?UploadedFile $attachment
     ): array {
-        $zipPath = \Craft::$app->getPath()->getTempPath().'/'.Str::uuid()->toString().'.zip';
+        $zipPath = Craft::$app->getPath()->getTempPath().'/'.Str::uuid()->toString().'.zip';
         $message = '';
 
         // Create the zip
@@ -216,12 +217,12 @@ final readonly class CraftSupportController
         }
 
         // project.yaml
-        $projectConfig = \Craft::$app->getProjectConfig()->get();
-        $projectConfig = \Craft::$app->getSecurity()->redactIfSensitive('', $projectConfig);
+        $projectConfig = Craft::$app->getProjectConfig()->get();
+        $projectConfig = Craft::$app->getSecurity()->redactIfSensitive('', $projectConfig);
         $zip->addFromString('project.yaml', Yaml::dump($projectConfig, 20, 2));
 
         // project.yaml backups
-        $configBackupPath = \Craft::$app->getPath()->getConfigBackupPath(false);
+        $configBackupPath = Craft::$app->getPath()->getConfigBackupPath(false);
         $zip->addGlob($configBackupPath.'/*', 0, [
             'remove_all_path' => true,
             'add_path' => 'config-backups/',
@@ -229,7 +230,7 @@ final readonly class CraftSupportController
 
         // Logs
         if ($attachLogs) {
-            $logPath = \Craft::$app->getPath()->getLogPath();
+            $logPath = Craft::$app->getPath()->getLogPath();
             FileHelper::addFilesToZip($zip, $logPath, 'logs', [
                 'only' => ['*.log'],
                 'except' => ['web-404s.log'],
@@ -242,7 +243,7 @@ final readonly class CraftSupportController
             // Make a fresh database backup of the current schema/data. We want all data from all tables
             // for debugging.
             try {
-                $backupPath = \Craft::$app->getDb()->backup();
+                $backupPath = Craft::$app->getDb()->backup();
                 $zip->addFile($backupPath, basename($backupPath));
             } catch (Throwable $e) {
                 Log::warning('Error adding database backup to support request: '.$e->getMessage(), [__METHOD__]);
@@ -252,7 +253,7 @@ final readonly class CraftSupportController
 
         // Templates
         if ($attachTemplates) {
-            $templatesPath = \Craft::$app->getPath()->getSiteTemplatesPath();
+            $templatesPath = Craft::$app->getPath()->getSiteTemplatesPath();
             FileHelper::addFilesToZip($zip, $templatesPath, 'templates');
         }
 

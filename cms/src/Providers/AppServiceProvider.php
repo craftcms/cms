@@ -2,6 +2,7 @@
 
 namespace CraftCms\Cms\Providers;
 
+use Craft;
 use craft\helpers\FileHelper;
 use CraftCms\Aliases\Facades\Aliases;
 use CraftCms\Cms\Http\Middleware\ExtractNamespace;
@@ -31,9 +32,9 @@ final class AppServiceProvider extends ServiceProvider
         }
 
         AboutCommand::add('Craft CMS', fn () => [
-            'Edition' => \Craft::$app->edition->name,
-            'Schema' => \Craft::$app->schemaVersion,
-            'Version' => \Craft::$app->getVersion(),
+            'Edition' => Craft::$app->edition->name,
+            'Schema' => Craft::$app->schemaVersion,
+            'Version' => Craft::$app->getVersion(),
         ]);
 
         $this->bootMiddleware();

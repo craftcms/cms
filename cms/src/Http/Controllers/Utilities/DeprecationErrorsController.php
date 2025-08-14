@@ -4,6 +4,7 @@ namespace CraftCms\Cms\Http\Controllers\Utilities;
 
 use craft\web\Application;
 use CraftCms\Cms\Utility\Utilities;
+use CraftCms\Cms\Utility\Utilities\DeprecationErrors;
 use Illuminate\Container\Attributes\Give;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -16,7 +17,7 @@ final readonly class DeprecationErrorsController
         Utilities $utilitiesService,
         #[Give('Craft')] protected Application $craft
     ) {
-        if (! $utilitiesService->checkAuthorization(Utilities\DeprecationErrors::class)) {
+        if (! $utilitiesService->checkAuthorization(DeprecationErrors::class)) {
             abort(403, 'User is not authorized to perform this action.');
         }
     }

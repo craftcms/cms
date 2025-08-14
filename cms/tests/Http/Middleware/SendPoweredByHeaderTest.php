@@ -28,9 +28,7 @@ it('will remove the header if the config is disabled', function () {
 it('will add the header if the config is enabled', function () {
     $this->generalConfig->sendPoweredByHeader();
 
-    $callback = function () {
-        return new Response;
-    };
+    $callback = (fn () => new Response);
 
     $response = $this->middleware->handle(Request::create('/'), $callback);
 

@@ -2,6 +2,7 @@
 
 namespace CraftCms\Cms\Dashboard\Widgets;
 
+use Craft;
 use CraftCms\Cms\Component\Concerns\ConfigurableComponent;
 use CraftCms\Cms\Component\Concerns\SavableComponent;
 use CraftCms\Cms\Component\Concerns\ValidatableComponent;
@@ -120,7 +121,7 @@ abstract class Widget implements WidgetInterface
      */
     public function getBodyHtml(): ?string
     {
-        $url = \Craft::$app->getAssetManager()->getPublishedUrl('@app/web/assets/cp/dist', true, 'images/prg.jpg');
+        $url = Craft::$app->getAssetManager()->getPublishedUrl('@app/web/assets/cp/dist', true, 'images/prg.jpg');
 
         return <<<EOD
 <div style="margin: 0 -24px -24px;">

@@ -7,6 +7,7 @@ use craft\errors\MigrationException;
 use craft\web\Application;
 use CraftCms\Cms\Support\Flash;
 use CraftCms\Cms\Utility\Utilities;
+use CraftCms\Cms\Utility\Utilities\Migrations;
 use Illuminate\Container\Attributes\Give;
 use Illuminate\Http\Request;
 
@@ -15,7 +16,7 @@ final readonly class MigrationsController
 {
     public function __construct(Utilities $utilitiesService)
     {
-        if (! $utilitiesService->checkAuthorization(Utilities\Migrations::class)) {
+        if (! $utilitiesService->checkAuthorization(Migrations::class)) {
             abort(403, 'User is not authorized to perform this action.');
         }
     }

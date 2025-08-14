@@ -1,5 +1,12 @@
 <?php
 
+use craft\web\twig\Extension;
+use CraftCms\Cms\Support\Json;
+use Illuminate\Support\Arr;
+use Illuminate\Support\Env;
+use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Str;
+
 arch()
     ->expect('cms')
     ->not->toUse(['die', 'dd', 'dump', 'env']);
@@ -8,25 +15,25 @@ arch()
  * We only want our own Env helpers to be used.
  */
 arch()
-    ->expect(\Illuminate\Support\Env::class)
+    ->expect(Env::class)
     ->not
     ->toBeUsed()
     ->ignoring(\CraftCms\Cms\Support\Env::class);
 
 arch()
-    ->expect(\Illuminate\Support\Arr::class)
+    ->expect(Arr::class)
     ->not
     ->toBeUsed()
     ->ignoring(\CraftCms\Cms\Support\Arr::class);
 
 arch()
-    ->expect(\Illuminate\Support\Str::class)
+    ->expect(Str::class)
     ->not
     ->toBeUsed()
     ->ignoring(\CraftCms\Cms\Support\Str::class);
 
 arch()
-    ->expect(\Illuminate\Support\Facades\Http::class)
+    ->expect(Http::class)
     ->not
     ->toBeUsed()
     ->ignoring(\CraftCms\Cms\Support\Facades\Http::class);
@@ -36,6 +43,6 @@ arch('Only use JSON helper')
     ->not
     ->toBeUsed()
     ->ignoring([
-        \CraftCms\Cms\Support\Json::class,
-        \craft\web\twig\Extension::class, // Depth argument needed
+        Json::class,
+        Extension::class, // Depth argument needed
     ]);

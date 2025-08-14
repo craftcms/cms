@@ -10,11 +10,14 @@ return RectorConfig::configure()
     ->withPaths([
         __DIR__ . '/lib',
         __DIR__ . '/src',
+        __DIR__ . '/cms/src',
+        __DIR__ . '/cms/tests',
         __DIR__ . '/tests/functional',
         __DIR__ . '/tests/unit',
     ])
     ->withSkip([
-        __DIR__ . '/src/icons/index.php',
+        __DIR__ . '/cms/resources/icons/index.php',
+        __DIR__ . '/cms/resources/icons/aliases.php',
 
         // somehow craft\web AssetManager refer with Yii parent AssetManager class
         // autoload may need to be bootstrapped to early load some child classes

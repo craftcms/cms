@@ -5,6 +5,7 @@ namespace CraftCms\Cms\Http\Controllers\Utilities;
 use craft\helpers\FileHelper;
 use craft\web\Application;
 use CraftCms\Cms\Utility\Utilities;
+use CraftCms\Cms\Utility\Utilities\DbBackup;
 use Exception;
 use Illuminate\Container\Attributes\Give;
 use Illuminate\Http\JsonResponse;
@@ -16,7 +17,7 @@ final readonly class DbBackupController
 {
     public function __construct(Utilities $utilitiesService)
     {
-        if (! $utilitiesService->checkAuthorization(Utilities\DbBackup::class)) {
+        if (! $utilitiesService->checkAuthorization(DbBackup::class)) {
             abort(403, 'User is not authorized to perform this action.');
         }
     }

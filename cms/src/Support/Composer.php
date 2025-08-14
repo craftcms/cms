@@ -2,6 +2,7 @@
 
 namespace CraftCms\Cms\Support;
 
+use Craft;
 use craft\helpers\App;
 use craft\helpers\FileHelper;
 use CraftCms\Aliases\Facades\Aliases;
@@ -161,7 +162,7 @@ final class Composer
      */
     private function runComposerCommand(string $jsonPath, array $command, ?callable $callback): void
     {
-        $runtimePath = \Craft::$app->getPath()->getRuntimePath();
+        $runtimePath = Craft::$app->getPath()->getRuntimePath();
 
         // Copy composer.phar into storage/
         $pharPath = sprintf('%s/composer.phar', $runtimePath);
@@ -344,7 +345,7 @@ final class Composer
      */
     private function backupComposerFiles(): void
     {
-        $backupsDir = \Craft::$app->getPath()->getComposerBackupsPath();
+        $backupsDir = Craft::$app->getPath()->getComposerBackupsPath();
         $jsonBackupPath = $backupsDir.DIRECTORY_SEPARATOR.'composer.json';
         $lockBackupPath = $backupsDir.DIRECTORY_SEPARATOR.'composer.lock';
         FileHelper::cycle($jsonBackupPath, $this->maxBackups);

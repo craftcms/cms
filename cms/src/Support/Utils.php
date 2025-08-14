@@ -10,9 +10,7 @@ final class Utils
     public static function getPublicProperties($target, $filter = null)
     {
         return collect(new ReflectionObject($target)->getProperties())
-            ->filter(function (ReflectionProperty $property) {
-                return $property->isPublic() && ! $property->isStatic() && $property->isDefault();
-            })
+            ->filter(fn (ReflectionProperty $property) => $property->isPublic() && ! $property->isStatic() && $property->isDefault())
             ->filter($filter ?? fn () => true)
             ->mapWithKeys(function (ReflectionProperty $property) use ($target) {
                 if (! $property->isInitialized($target)) {

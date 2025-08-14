@@ -8,6 +8,7 @@ use CraftCms\Cms\Dashboard\Contracts\WidgetInterface;
 use CraftCms\Cms\Dashboard\Dashboard;
 use CraftCms\Cms\Support\Json;
 use Illuminate\Container\Attributes\Give;
+use Illuminate\Support\Collection;
 
 final readonly class DashboardController
 {
@@ -23,14 +24,7 @@ final readonly class DashboardController
     public function __invoke()
     {
         /**
-         * @var \Illuminate\Support\Collection<string, array{
-         *      iconSvg: mixed,
-         *      name: string,
-         *      maxColspan: int|null,
-         *      settingsHtml?: string,
-         *      settingsJs?: mixed,
-         *      selectable: bool
-         *  }> $widgetTypeInfo
+         * @var Collection<string, array{iconSvg: mixed, name: string, maxColspan: int|null, settingsHtml?: string, settingsJs?: mixed, selectable: bool}> $widgetTypeInfo
          */
         $widgetTypeInfo = $this->dashboard->getAllWidgetTypes()
             /** @var class-string<WidgetInterface> $widgetType */
