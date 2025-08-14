@@ -126,8 +126,8 @@ class TestCase extends Orchestra
                 'database' => env('DB_DATABASE'),
                 'username' => env('DB_USERNAME'),
                 'password' => env('DB_PASSWORD'),
-                'charset' => env('DB_CHARSET', 'utf8mb4'),
-                'collation' => env('DB_COLLATION', 'utf8mb4_unicode_ci'),
+                'charset' => env('DB_CHARSET', $configKey === 'mysql' ? 'utf8mb4' : 'utf8'),
+                'collation' => env('DB_COLLATION', $configKey === 'mysql' ? 'utf8mb4_unicode_ci' : null),
                 'prefix' => env('DB_PREFIX'),
             ]),
         );
