@@ -21,6 +21,7 @@ use CraftCms\Cms\Config\GeneralConfig;
 use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\DB as DbFacade;
 use Symfony\Component\BrowserKit\Response;
 use yii\base\ExitException;
 use yii\base\Module;
@@ -130,6 +131,8 @@ class CraftConnector extends Yii2
     {
         parent::resetApplication($closeSession);
         Db::reset();
+        DbFacade::disconnect();
+        DbFacade::disconnect('db2');
         Session::reset();
         Cache::lock(ProjectConfig::MUTEX_NAME)->forceRelease();
     }

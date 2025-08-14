@@ -209,6 +209,14 @@ class Craft extends Yii2
         }
     }
 
+    public function _after(TestInterface $test): void
+    {
+        parent::_after($test);
+
+        DB::disconnect();
+        DB::disconnect('db2');
+    }
+
     /**
      * Reset's the project config.
      *
