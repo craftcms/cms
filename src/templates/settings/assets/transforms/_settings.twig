@@ -65,7 +65,7 @@
     } %}
         {% block input %}
             <div id="mode" class="flex items-start gap-l">
-                <label>
+                <label class="nowrap">
                     <img class="mb-xs" src="{{ baseIconsUrl }}/crop.svg" width="80" height="60" alt="">
                     {{ input('radio', 'mode', 'crop', {
                         checked: transform.mode == 'crop',
@@ -73,7 +73,7 @@
                     }) }}
                     {{ "Crop"|t('app') }}
                 </label>
-                <label>
+                <label class="nowrap">
                     <img class="mb-xs" src="{{ baseIconsUrl }}/fit.svg" width="80" height="60" alt="">
                     {{ input('radio', 'mode', 'fit', {
                         checked: transform.mode == 'fit',
@@ -81,7 +81,7 @@
                     }) }}
                     {{ "Fit"|t('app') }}
                 </label>
-                <label>
+                <label class="nowrap">
                     <img class="mb-xs" src="{{ baseIconsUrl }}/letterbox.svg" width="80" height="60" alt="">
                     {{ input('radio', 'mode', 'letterbox', {
                         checked: transform.mode == 'letterbox',
@@ -89,7 +89,7 @@
                     }) }}
                     {{ "Letterbox"|t('app') }}
                 </label>
-                <label>
+                <label class="nowrap">
                     <img class="mb-xs" src="{{ baseIconsUrl }}/stretch.svg" width="80" height="60" alt="">
                     {{ input('radio', 'mode', 'stretch', {
                         checked: transform.mode == 'stretch',

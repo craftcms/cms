@@ -13,7 +13,7 @@
 } %}
   {% block input %}
     <div class="flex items-start gap-l">
-      <label>
+      <label class="nowrap">
         <img class="mb-xs" src="{{ baseIconsUrl }}/grouped.svg" width="80" height="80" alt="">
         {{ input('radio', 'viewMode', 'grouped', {
           checked: field.viewMode == 'grouped',
@@ -21,7 +21,7 @@
         }) }}
         {{ 'Grouped'|t('app') }}
       </label>
-      <label>
+      <label class="nowrap">
         <img class="mb-xs" src="{{ baseIconsUrl }}/pane.svg" width="80" height="80" alt="">
         {{ input('radio', 'viewMode', 'pane', {
           checked: field.viewMode == 'pane',
@@ -29,7 +29,7 @@
         }) }}
         {{ 'In a pane'|t('app') }}
       </label>
-      <label>
+      <label class="nowrap">
         <img class="mb-xs" src="{{ baseIconsUrl }}/inline.svg" width="80" height="80" alt="">
         {{ input('radio', 'viewMode', 'inline', {
           checked: field.viewMode == 'inline',
