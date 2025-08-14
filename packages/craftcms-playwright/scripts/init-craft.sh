@@ -56,7 +56,7 @@ echo "backup DB"
 ./craft db/backup --interactive=0 --overwrite=1 backup/db.sql
 
 # Backup Project Config files
-echo "backup Project Congif files"
+echo "backup Project Config files"
 cp -vfrp config/project backup/
 
 # Switch to repo directory
