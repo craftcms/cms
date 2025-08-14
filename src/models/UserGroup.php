@@ -17,6 +17,7 @@ use craft\base\Model;
 use craft\records\UserGroup as UserGroupRecord;
 use craft\validators\HandleValidator;
 use craft\validators\UniqueValidator;
+use CraftCms\Cms\Config\GeneralConfig;
 
 /**
  * UserGroup model class.
@@ -115,7 +116,7 @@ class UserGroup extends Model implements Chippable, Grippable, Describable, CpEd
         if (
             $this->id &&
             Craft::$app->getUser()->getIsAdmin() &&
-            Craft::$app->getConfig()->getGeneral()->allowAdminChanges
+            app(GeneralConfig::class)->allowAdminChanges
         ) {
             $editId = sprintf('action-edit-%s', mt_rand());
             $items[] = [

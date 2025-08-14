@@ -167,7 +167,7 @@ class User
                 $message = Craft::t('app', 'You cannot access the site while the system is offline with that account.');
                 break;
             default:
-                if (Craft::$app->getConfig()->getGeneral()->useEmailAsUsername) {
+                if (app(GeneralConfig::class)->useEmailAsUsername) {
                     $message = Craft::t('app', 'Invalid email or password.');
                 } else {
                     $message = Craft::t('app', 'Invalid username or password.');
