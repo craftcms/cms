@@ -10,20 +10,21 @@ namespace craft\services;
 use Craft;
 use craft\base\Field;
 use craft\base\MemoizableArray;
-use craft\db\Query;
 use craft\db\Table;
 use craft\elements\Asset;
 use craft\events\ConfigEvent;
 use craft\events\VolumeEvent;
-use craft\helpers\Db;
 use craft\helpers\ProjectConfig as ProjectConfigHelper;
 use craft\models\FieldLayout;
 use craft\models\Volume;
 use craft\models\VolumeFolder;
 use craft\records\Volume as AssetVolumeRecord;
 use craft\records\VolumeFolder as VolumeFolderRecord;
+use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Str;
+use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\DB;
 use Throwable;
 use yii\base\Component;
 use yii\base\InvalidArgumentException;
@@ -163,8 +164,8 @@ class Volumes extends Component
     {
         if (!isset($this->_volumes)) {
             $this->_volumes = new MemoizableArray(
-                $this->_createVolumeQuery()->all(),
-                fn(array $result) => Craft::createObject(Volume::class, [$result]),
+                $this->_createVolumeQuery()->get()->all(),
+                fn($result) => Craft::createObject(Volume::class, [Arr::except((array) $result, ['dateCreated', 'dateUpdated', 'dateDeleted'])]),
             );
         }
 
@@ -185,6 +186,7 @@ class Volumes extends Component
      * Returns a volume by its ID.
      *
      * @param int $volumeId
+     *
      * @return Volume|null
      */
     public function getVolumeById(int $volumeId): ?Volume
@@ -225,6 +227,7 @@ class Volumes extends Component
      * Returns a volume by its UID.
      *
      * @param string $volumeUid
+     *
      * @return Volume|null
      */
     public function getVolumeByUid(string $volumeUid): ?Volume
@@ -236,6 +239,7 @@ class Volumes extends Component
      * Returns a volume by its handle.
      *
      * @param string $handle
+     *
      * @return Volume|null
      */
     public function getVolumeByHandle(string $handle): ?Volume
@@ -247,6 +251,7 @@ class Volumes extends Component
      * Returns the config for the given volume.
      *
      * @param Volume $volume
+     *
      * @return array
      * @since 3.5.0
      * @deprecated in 4.0.0. Use [[Volume::getConfig()]] instead.
@@ -277,6 +282,7 @@ class Volumes extends Component
      *
      * @param Volume $volume the volume to be saved.
      * @param bool $runValidation Whether the volume should be validated
+     *
      * @return bool Whether the volume was saved successfully
      * @throws Throwable
      */
@@ -299,19 +305,16 @@ class Volumes extends Component
 
         if ($isNewVolume) {
             $volume->uid ??= Str::uuid()->toString();
-
-            $volume->sortOrder = (new Query())
-                    ->from([Table::VOLUMES])
-                    ->max('[[sortOrder]]') + 1;
+            $volume->sortOrder = DB::table(\CraftCms\Cms\Db\Table::VOLUMES)->max('sortOrder') + 1;
         } elseif (!$volume->uid) {
-            $volume->uid = Db::uidById(Table::VOLUMES, $volume->id);
+            $volume->uid = DB::table(\CraftCms\Cms\Db\Table::VOLUMES)->uidById($volume->id);
         }
 
         $configPath = ProjectConfig::PATH_VOLUMES . '.' . $volume->uid;
         Craft::$app->getProjectConfig()->set($configPath, $volume->getConfig(), "Save the “{$volume->handle}” volume");
 
         if ($isNewVolume) {
-            $volume->id = Db::idByUid(Table::VOLUMES, $volume->uid);
+            $volume->id = DB::table(\CraftCms\Cms\Db\Table::VOLUMES)->idByUid($volume->uid);
         }
 
         return true;
@@ -330,7 +333,7 @@ class Volumes extends Component
         ProjectConfigHelper::ensureAllFilesystemsProcessed();
         ProjectConfigHelper::ensureAllFieldsProcessed();
 
-        $transaction = Craft::$app->getDb()->beginTransaction();
+        DB::beginTransaction();
         try {
             $volumeRecord = $this->_getVolumeRecord($volumeUid, true);
             $isNewVolume = $volumeRecord->getIsNewRecord();
@@ -389,9 +392,9 @@ class Volumes extends Component
                 $assetsService->storeFolderRecord($rootFolder);
             }
 
-            $transaction->commit();
+            DB::commit();
         } catch (Throwable $e) {
-            $transaction->rollBack();
+            DB::rollBack();
             throw $e;
         }
 
@@ -425,6 +428,7 @@ class Volumes extends Component
      * Reorders asset volumes.
      *
      * @param array $volumeIds
+     *
      * @return bool
      * @throws Throwable
      */
@@ -432,12 +436,13 @@ class Volumes extends Component
     {
         $projectConfig = Craft::$app->getProjectConfig();
 
-        $uidsByIds = Db::uidsByIds(Table::VOLUMES, $volumeIds);
+        $uidsByIds = DB::table(\CraftCms\Cms\Db\Table::VOLUMES)->uidsByIds($volumeIds);
 
         foreach ($volumeIds as $volumeOrder => $volumeId) {
             if (!empty($uidsByIds[$volumeId])) {
                 $volumeUid = $uidsByIds[$volumeId];
-                $projectConfig->set(ProjectConfig::PATH_VOLUMES . '.' . $volumeUid . '.sortOrder', $volumeOrder + 1, "Reorder volumes");
+                $projectConfig->set(ProjectConfig::PATH_VOLUMES . '.' . $volumeUid . '.sortOrder', $volumeOrder + 1,
+                    "Reorder volumes");
             }
         }
 
@@ -448,6 +453,7 @@ class Volumes extends Component
      * Ensures a top level folder exists that matches the model.
      *
      * @param Volume $volume
+     *
      * @return VolumeFolder
      * @deprecated in 4.5.0. [[Assets::getRootFolderByVolumeId()]] should be used instead.
      */
@@ -464,6 +470,7 @@ class Volumes extends Component
      * Deletes an asset volume by its ID.
      *
      * @param int $volumeId
+     *
      * @return bool
      * @throws Throwable
      */
@@ -482,6 +489,7 @@ class Volumes extends Component
      * Deletes an asset volume.
      *
      * @param Volume $volume The volume to delete
+     *
      * @return bool
      * @throws Throwable
      */
@@ -494,7 +502,8 @@ class Volumes extends Component
             ]));
         }
 
-        Craft::$app->getProjectConfig()->remove(ProjectConfig::PATH_VOLUMES . '.' . $volume->uid, "Delete the “{$volume->handle}” volume");
+        Craft::$app->getProjectConfig()->remove(ProjectConfig::PATH_VOLUMES . '.' . $volume->uid,
+            "Delete the “{$volume->handle}” volume");
         return true;
     }
 
@@ -522,7 +531,7 @@ class Volumes extends Component
         }
 
         $db = Craft::$app->getDb();
-        $transaction = $db->beginTransaction();
+        DB::beginTransaction();
 
         try {
             // Delete the assets
@@ -549,9 +558,9 @@ class Volumes extends Component
                 ->softDelete(Table::VOLUMES, ['id' => $volumeRecord->id])
                 ->execute();
 
-            $transaction->commit();
+            DB::commit();
         } catch (Throwable $e) {
-            $transaction->rollBack();
+            DB::rollBack();
             throw $e;
         }
 
@@ -576,41 +585,11 @@ class Volumes extends Component
     {
     }
 
-    /**
-     * Returns a DbCommand object prepped for retrieving volumes.
-     *
-     * @return Query
-     */
-    private function _createVolumeQuery(): Query
+    private function _createVolumeQuery(): Builder
     {
-        $query = (new Query())
-            ->select([
-                'id',
-                'name',
-                'handle',
-                'fs',
-                'transformFs',
-                'transformSubpath',
-                'titleTranslationMethod',
-                'titleTranslationKeyFormat',
-                'sortOrder',
-                'fieldLayoutId',
-                'uid',
-            ])
-            ->from([Table::VOLUMES])
-            ->where(['dateDeleted' => null])
-            ->orderBy(['sortOrder' => SORT_ASC]);
-
-        // todo: cleanup after next breakpoint
-        $db = Craft::$app->getDb();
-        if ($db->columnExists(Table::VOLUMES, 'subpath')) {
-            $query->addSelect(['subpath']);
-        }
-        if ($db->columnExists(Table::VOLUMES, 'altTranslationMethod')) {
-            $query->addSelect(['altTranslationMethod', 'altTranslationKeyFormat']);
-        }
-
-        return $query;
+        return DB::table(\CraftCms\Cms\Db\Table::VOLUMES)
+            ->whereNull('dateDeleted')
+            ->orderBy('sortOrder');
     }
 
     /**
@@ -618,6 +597,7 @@ class Volumes extends Component
      *
      * @param string $uid
      * @param bool $withTrashed Whether to include trashed volumes in search
+     *
      * @return AssetVolumeRecord
      */
     private function _getVolumeRecord(string $uid, bool $withTrashed = false): AssetVolumeRecord

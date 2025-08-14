@@ -18,6 +18,7 @@ use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Json as JsonHelper;
 use DateTimeInterface;
 use DateTimeZone;
+use Illuminate\Support\Facades\DB as DbFacade;
 use Money\Money;
 use PDO;
 use Throwable;
@@ -1234,13 +1235,7 @@ class Db
      */
     public static function truncateTable(string $table, ?Connection $db = null): void
     {
-        if ($db === null) {
-            $db = self::db();
-        }
-
-        $db->createCommand()
-            ->truncateTable($table)
-            ->execute();
+        DbFacade::table($table)->truncate();
     }
 
     /**
@@ -1352,15 +1347,16 @@ class Db
         if ($db->getIsPgsql()) {
             // Rename the corresponding sequence if there is one
             // see https://www.postgresql.org/message-id/200308211224.06775.jgardner%40jonathangardner.net
-            $transaction = $db->beginTransaction();
+            DbFacade::beginTransaction();
             try {
                 $db->createCommand()
                     ->renameSequence("{$rawOldName}_id_seq", "{$rawNewName}_id_seq")
                     ->execute();
-                $transaction->commit();
+
+                DbFacade::commit();
             } catch (Throwable) {
                 // Silently fail. The sequence probably doesn't exist
-                $transaction->rollBack();
+                DbFacade::rollBack();
             }
         }
     }
@@ -1376,17 +1372,7 @@ class Db
      */
     public static function idByUid(string $table, string $uid, ?Connection $db = null): ?int
     {
-        if ($db === null) {
-            $db = self::db();
-        }
-
-        $id = (new Query())
-            ->select(['id'])
-            ->from([$table])
-            ->where(['uid' => $uid])
-            ->scalar($db);
-
-        return (int)$id ?: null;
+        return DbFacade::table($table)->idByUid($uid);
     }
 
     /**
@@ -1400,15 +1386,7 @@ class Db
      */
     public static function idsByUids(string $table, array $uids, ?Connection $db = null): array
     {
-        if ($db === null) {
-            $db = self::db();
-        }
-
-        return (new Query())
-            ->select(['uid', 'id'])
-            ->from([$table])
-            ->where(['uid' => $uids])
-            ->pairs($db);
+        return DbFacade::table($table)->idsByUids($uids);
     }
 
     /**
@@ -1422,17 +1400,7 @@ class Db
      */
     public static function uidById(string $table, int $id, ?Connection $db = null): ?string
     {
-        if ($db === null) {
-            $db = self::db();
-        }
-
-        $uid = (new Query())
-            ->select(['uid'])
-            ->from([$table])
-            ->where(['id' => $id])
-            ->scalar($db);
-
-        return $uid ?: null;
+        return DbFacade::table($table)->uidById($id);
     }
 
     /**
@@ -1446,15 +1414,7 @@ class Db
      */
     public static function uidsByIds(string $table, array $ids, ?Connection $db = null): array
     {
-        if ($db === null) {
-            $db = self::db();
-        }
-
-        return (new Query())
-            ->select(['id', 'uid'])
-            ->from([$table])
-            ->where(['id' => $ids])
-            ->pairs($db);
+        return DbFacade::table($table)->uidsByIds($ids);
     }
 
     /**

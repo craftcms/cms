@@ -12,8 +12,6 @@ use craft\base\ElementInterface;
 use craft\base\NestedElementInterface;
 use craft\console\Application as ConsoleApplication;
 use craft\db\Connection;
-use craft\db\Query;
-use craft\db\Table;
 use craft\db\TableSchema;
 use craft\elements\Address;
 use craft\elements\Asset;
@@ -24,15 +22,21 @@ use craft\elements\GlobalSet;
 use craft\elements\Tag;
 use craft\elements\User;
 use craft\errors\FsException;
-use craft\fs\Temp;
 use craft\helpers\Console;
-use craft\helpers\DateTimeHelper;
-use craft\helpers\Db;
 use craft\records\Volume;
 use craft\records\VolumeFolder;
 use CraftCms\Cms\Config\GeneralConfig;
-use DateTime;
+use CraftCms\Cms\Db\Table;
+use CraftCms\Cms\Support\Arr;
+use Illuminate\Database\Query\Builder;
+use Illuminate\Database\Query\JoinClause;
+use Illuminate\Database\QueryException;
+use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 use ReflectionMethod;
+use Tpetry\QueryExpressions\Function\Conditional\Coalesce;
+use Tpetry\QueryExpressions\Language\Alias;
 use yii\base\Component;
 use yii\base\Exception;
 use yii\base\InvalidConfigException;
@@ -189,16 +193,17 @@ class Gc extends Component
         }
 
         $this->_stdout("    > deleting trashed volumes and their folders ... ");
-        $condition = $this->_hardDeleteCondition();
 
-        $volumes = (new Query())->select(['id'])->from([Table::VOLUMES])->where($condition)->all();
-        $volumeIds = [];
+        $volumeIds = $this
+            ->hardDeleteQuery(DB::table(Table::VOLUMES))
+            ->pluck('id');
 
-        foreach ($volumes as $volume) {
-            $volumeIds[] = $volume['id'];
-        }
+        $folders = DB::table(Table::VOLUMEFOLDERS)
+            ->whereIn('volumeId', $volumeIds)
+            ->select('id', 'path')
+            ->get()
+            ->all();
 
-        $folders = (new Query())->select(['id', 'path'])->from([Table::VOLUMEFOLDERS])->where(['volumeId' => $volumeIds])->all();
         usort($folders, fn($a, $b) => substr_count($a['path'], '/') < substr_count($b['path'], '/'));
 
         foreach ($folders as $folder) {
@@ -236,54 +241,40 @@ class Gc extends Component
         $this->_stdout('    > deleting trashed elements ... ');
 
         if ($normalElementTypes) {
-            Db::delete(Table::ELEMENTS, [
-                'and',
-                $this->_hardDeleteCondition(),
-                ['type' => $normalElementTypes],
-            ]);
+            $this->hardDeleteQuery(DB::table(Table::ELEMENTS))
+                ->whereIn('type', $normalElementTypes)
+                ->delete();
         }
 
-        if (!empty($nestedElementTypes)) {
-            // first get nested elements which are not nested (owned) and that don't have any revisions
-            $ids1 = (new Query())
-                ->select('e.id')
-                ->from(['e' => Table::ELEMENTS])
-                ->leftJoin(['r' => Table::REVISIONS], '[[r.canonicalId]] = [[e.id]]')
-                ->leftJoin(['eo' => Table::ELEMENTS_OWNERS], '[[eo.elementId]] = COALESCE([[e.canonicalId]], [[e.id]])')
-                ->where([
-                    'and',
-                    $this->_hardDeleteCondition('e'),
-                    [
-                        'e.type' => $nestedElementTypes,
-                        'r.id' => null,
-                        'eo.elementId' => null,
-                    ],
-                ])
-                ->column();
-
-            // then get any nested elements that don't have any revisions, including nested ones
-            $ids2 = (new Query())
-                ->select('e.id')
-                ->from(['e' => Table::ELEMENTS])
-                ->leftJoin(['r' => Table::REVISIONS], '[[r.canonicalId]] = COALESCE([[e.canonicalId]], [[e.id]])')
-                ->where([
-                    'and',
-                    $this->_hardDeleteCondition('e'),
-                    [
-                        'e.type' => $nestedElementTypes,
-                        'r.id' => null,
-                    ],
-                ])
-                ->column();
-
-            $ids = array_unique(array_merge($ids1, $ids2));
-
-            if (!empty($ids)) {
-                foreach (array_chunk($ids, self::CHUNK_SIZE) as $idsChunk) {
-                    Db::delete(Table::ELEMENTS, ['id' => $idsChunk]);
-                }
-            }
+        if (empty($nestedElementTypes)) {
+            $this->_stdout("done\n", Console::FG_GREEN);
+            return;
         }
+
+        // first get nested elements which are not nested (owned) and that don't have any revisions
+        $ids1 = $this->hardDeleteQuery(DB::table(Table::ELEMENTS, 'e'), 'e')
+            ->leftJoin(new Alias(Table::REVISIONS, 'r'), 'r.canonicalId','e.id')
+            ->leftJoin(new Alias(Table::ELEMENTS_OWNERS, 'eo'), 'eo.elementId', '=', new Coalesce(['e.canonicalId', 'e.id']))
+            ->whereIn('e.type', $nestedElementTypes)
+            ->whereNull('r.id')
+            ->whereNull('eo.elementId')
+            ->pluck('e.id');
+
+        // then get any nested elements that don't have any revisions, including nested ones
+        $ids2 = $this->hardDeleteQuery(DB::table(Table::ELEMENTS, 'e'), 'e')
+            ->leftJoin(new Alias(Table::REVISIONS, 'r'), 'r.canonicalId', '=', new Coalesce(['e.canonicalId', 'e.id']))
+            ->whereIn('type', $nestedElementTypes)
+            ->whereNull('r.id')
+            ->pluck('e.id');
+
+        $ids1
+            ->merge($ids2)
+            ->unique()
+            ->chunk(self::CHUNK_SIZE)->each(function($idsChunk) {
+                DB::table(Table::ELEMENTS)
+                    ->whereIn('id', $idsChunk)
+                    ->delete();
+            });
 
         $this->_stdout("done\n", Console::FG_GREEN);
     }
@@ -299,15 +290,11 @@ class Gc extends Component
             return;
         }
 
-        $condition = $this->_hardDeleteCondition();
-
-        if (!is_array($tables)) {
-            $tables = [$tables];
-        }
+        $tables = Arr::wrap($tables);
 
         foreach ($tables as $table) {
             $this->_stdout("    > deleting trashed rows in the `$table` table ... ");
-            Db::delete($table, $condition);
+            $this->hardDeleteQuery(DB::table($table))->delete();
             $this->_stdout("done\n", Console::FG_GREEN);
         }
     }
@@ -318,27 +305,24 @@ class Gc extends Component
      * @param class-string<ElementInterface> $elementType The element type
      * @param string $table The extension table name
      * @param string $fk The column name that contains the foreign key to `elements.id`
+     *
      * @since 3.6.6
      */
     public function deletePartialElements(string $elementType, string $table, string $fk): void
     {
         $this->_stdout(sprintf('    > deleting partial %s data ... ', $elementType::lowerDisplayName()));
 
-        $ids = (new Query())
-            ->select('e.id')
-            ->from(['e' => Table::ELEMENTS])
-            ->leftJoin(['t' => $table], "[[t.$fk]] = [[e.id]]")
-            ->where([
-                'e.type' => $elementType,
-                "t.$fk" => null,
-            ])
-            ->column();
-
-        if (!empty($ids)) {
-            foreach (array_chunk($ids, self::CHUNK_SIZE) as $idsChunk) {
-                Db::delete(Table::ELEMENTS, ['id' => $idsChunk]);
-            }
-        }
+        DB::table(Table::ELEMENTS, 'e')
+            ->leftJoin(new Alias($table, 't'), "t.$fk", 'e.id')
+            ->where('e.type', $elementType)
+            ->whereNull("t.$fk")
+            ->pluck('e.id')
+            ->chunk(self::CHUNK_SIZE)
+            ->each(function($idsChunk) {
+                DB::table(Table::ELEMENTS)
+                    ->whereIn('id', $idsChunk)
+                    ->delete();
+            });
 
         $this->_stdout("done\n", Console::FG_GREEN);
     }
@@ -377,20 +361,14 @@ class Gc extends Component
     {
         $this->_stdout('    > removing empty temp folders ... ');
 
-        $emptyFolderIds = (new Query())
-            ->select(['folders.id'])
-            ->from(['folders' => Table::VOLUMEFOLDERS])
-            ->leftJoin(['assets' => Table::ASSETS], '[[assets.folderId]] = [[folders.id]]')
-            ->where([
-                'folders.volumeId' => null,
-                'assets.id' => null,
-            ])
-            ->andWhere(['not', ['folders.parentId' => null]])
-            ->andWhere(['not', ['folders.path' => null]])
-            ->column();
+        $emptyFolderIds = DB::table(Table::VOLUMEFOLDERS, 'folders')
+            ->leftJoin(new Alias(Table::ASSETS, 'assets'), 'assets.folderId', 'folders.id')
+            ->whereNull(['folders.volumeId', 'assets.id'])
+            ->whereNotNull(['folders.parentId', 'folders.path'])
+            ->pluck('folders.id');
 
-        if (!empty($emptyFolderIds)) {
-            Craft::$app->getAssets()->deleteFoldersByIds($emptyFolderIds);
+        if ($emptyFolderIds->isNotEmpty()) {
+            Craft::$app->getAssets()->deleteFoldersByIds($emptyFolderIds->all());
         }
 
         $this->_stdout("done\n", Console::FG_GREEN);
@@ -416,10 +394,9 @@ class Gc extends Component
         }
 
         $this->_stdout('    > deleting stale user sessions ... ');
-        $interval = DateTimeHelper::secondsToInterval($this->_generalConfig->purgeStaleUserSessionDuration);
-        $expire = DateTimeHelper::currentUTCDateTime();
-        $pastTime = $expire->sub($interval);
-        Db::delete(Table::SESSIONS, ['<', 'dateUpdated', Db::prepareDateForDb($pastTime)]);
+        DB::table(Table::SESSIONS)
+            ->where('dateUpdated', '<', now()->subSeconds($this->_generalConfig->purgeStaleUserSessionDuration))
+            ->delete();
         $this->_stdout("done\n", Console::FG_GREEN);
     }
 
@@ -429,7 +406,9 @@ class Gc extends Component
     private function _deleteStaleAnnouncements(): void
     {
         $this->_stdout('    > deleting stale feature announcements ... ');
-        Db::delete(Table::ANNOUNCEMENTS, ['<', 'dateRead', Db::prepareDateForDb(new DateTime('7 days ago'))]);
+        DB::table(Table::ANNOUNCEMENTS)
+            ->where('dateRead', '<', now()->subDays(7))
+            ->delete();
         $this->_stdout("done\n", Console::FG_GREEN);
     }
 
@@ -439,7 +418,9 @@ class Gc extends Component
     private function _deleteStaleElementActivity(): void
     {
         $this->_stdout('    > deleting stale element activity records ... ');
-        Db::delete(Table::ELEMENTACTIVITY, ['<', 'timestamp', Db::prepareDateForDb(new DateTime('1 minute ago'))]);
+        DB::table(Table::ELEMENTACTIVITY)
+            ->where('timestamp', '<', now()->subMinute())
+            ->delete();
         $this->_stdout("done\n", Console::FG_GREEN);
     }
 
@@ -449,9 +430,10 @@ class Gc extends Component
     private function _deleteStaleBulkOpData(): void
     {
         $this->_stdout('    > deleting stale bulk operation data ... ');
-        $condition = ['<', 'timestamp', Db::prepareDateForDb(new DateTime('2 weeks ago'))];
         foreach ([Table::BULKOPEVENTS, Table::ELEMENTS_BULKOPS] as $table) {
-            Db::delete($table, $condition);
+            DB::table($table)
+                ->where('timestamp', '<', now()->subWeeks(2))
+                ->delete();
         }
         $this->_stdout("done\n", Console::FG_GREEN);
     }
@@ -468,33 +450,29 @@ class Gc extends Component
         $this->_stdout('    > deleting entries in unsupported sites ... ');
 
         $siteIds = Craft::$app->getSites()->getAllSiteIds(true);
-        $deleteIds = [];
+        $deleteIds = Collection::make();
 
         // get sections that are not enabled for given site
         foreach (Craft::$app->getEntries()->getAllSections() as $section) {
             $sectionSettings = $section->getSiteSettings();
             foreach ($siteIds as $siteId) {
                 if (!isset($sectionSettings[$siteId])) {
-                    $ids = (new Query())
-                        ->select('es.id')
-                        ->from(['es' => Table::ELEMENTS_SITES])
-                        ->leftJoin(['en' => Table::ENTRIES], '[[en.id]] = [[es.elementId]]')
-                        ->where([
-                            'en.sectionId' => $section->id,
-                            'es.siteId' => $siteId,
-                        ])
-                        ->column();
+                    $ids = DB::table(Table::ELEMENTS_SITES, 'es')
+                        ->leftJoin(new Alias(Table::ENTRIES, 'en'), 'en.id', 'es.elementId')
+                        ->where('en.sectionId', $section->id)
+                        ->where('es.siteId', $siteId)
+                        ->pluck('es.id');
 
-                    $deleteIds = array_merge($deleteIds, $ids);
+                    $deleteIds->merge($ids);
                 }
             }
         }
 
-        if (!empty($deleteIds)) {
-            foreach (array_chunk($deleteIds, self::CHUNK_SIZE) as $deleteIdsChunk) {
-                Db::delete(Table::ELEMENTS_SITES, ['id' => $deleteIdsChunk]);
-            }
-        }
+        $deleteIds->chunk(self::CHUNK_SIZE)->each(function($idsChunk) {
+            DB::table(Table::ELEMENTS_SITES)
+                ->whereIn('id', $idsChunk)
+                ->delete();
+        });
 
         $this->_stdout("done\n", Console::FG_GREEN);
     }
@@ -506,40 +484,33 @@ class Gc extends Component
      * @param class-string<ElementInterface> $elementType The element type
      * @param string $table The extension table name
      * @param string $fieldFk The column name that contains the foreign key to `fields.id`
+     *
      * @since 5.4.2
      */
     public function deleteOrphanedNestedElements(string $elementType, string $table, string $fieldFk = 'fieldId'): void
     {
         $this->_stdout(sprintf('    > deleting orphaned nested %s ... ', $elementType::pluralLowerDisplayName()));
 
-        $ids1 = (new Query())
-            ->select('el.id')
-            ->from(['el' => Table::ELEMENTS])
-            ->innerJoin(['t' => $table], '[[t.id]] = [[el.id]]')
-            ->leftJoin(['eo' => Table::ELEMENTS_OWNERS], '[[eo.elementId]] = [[el.id]]')
-            ->where([
-                'and',
-                ['not', ["t.$fieldFk" => null]],
-                ['eo.elementId' => null],
-            ])
-            ->column();
+        $ids1 = DB::table(Table::ELEMENTS, 'el')
+            ->join(new Alias($table, 't'), 't.id', 'el.id')
+            ->leftJoin(new Alias(Table::ELEMENTS_OWNERS, 'eo'), 'eo.elementId', 'el.id')
+            ->whereNotNull("t.$fieldFk")
+            ->whereNull('eo.elementId')
+            ->pluck('el.id');
 
-        $ids2 = (new Query())
-            ->select('el.id')
-            ->from(['el' => Table::ELEMENTS])
-            ->innerJoin(['t' => $table], '[[t.id]] = [[el.id]]')
-            ->leftJoin(['f' => Table::FIELDS], "[[f.id]] = [[t.$fieldFk]]")
-            ->where([
-                'and',
-                ['not', ["t.$fieldFk" => null]],
-                ['f.id' => null],
-            ])
-            ->column();
+        $ids2 = DB::table(Table::ELEMENTS, 'el')
+            ->join(new Alias($table, 't'), 't.id', 'el.id')
+            ->leftJoin(new Alias(Table::FIELDS, 'f'), 'f.id', "t.$fieldFk")
+            ->whereNotNull("t.$fieldFk")
+            ->whereNull('f.id')
+            ->pluck('el.id');
 
-        $ids = array_unique(array_merge($ids1, $ids2));
+        $ids = $ids1->merge($ids2)->unique();
 
-        if (!empty($ids)) {
-            Db::delete(Table::ELEMENTS, ['id' => $ids]);
+        if ($ids->isNotEmpty()) {
+            DB::table(Table::ELEMENTS)
+                ->whereIn('id', $ids)
+                ->delete();
         }
 
         $this->_stdout("done\n", Console::FG_GREEN);
@@ -552,19 +523,20 @@ class Gc extends Component
     {
         $this->_stdout('    > deleting orphaned drafts and revisions ... ');
 
-        foreach (['draftId' => Table::DRAFTS, 'revisionId' => Table::REVISIONS] as $fk => $table) {
-            $ids = (new Query())
-                ->select('t.id')
-                ->from(['t' => $table])
-                ->leftJoin(['e' => Table::ELEMENTS], "[[e.$fk]] = [[t.id]]")
-                ->where(['e.id' => null])
-                ->column();
-
-            if (!empty($ids)) {
-                foreach (array_chunk($ids, self::CHUNK_SIZE) as $idsChunk) {
-                    Db::delete($table, ['id' => $idsChunk]);
-                }
-            }
+        foreach ([
+                     'draftId' => Table::DRAFTS,
+                     'revisionId' => Table::REVISIONS,
+                 ] as $fk => $table) {
+            DB::table($table, 't')
+                ->leftJoin(new Alias(Table::ELEMENTS, 'e'), "e.$fk", "t.id")
+                ->whereNull('e.id')
+                ->pluck('t.id')
+                ->chunk(self::CHUNK_SIZE)
+                ->each(function($idsChunk) use ($table) {
+                    DB::table($table)
+                        ->whereIn('id', $idsChunk)
+                        ->delete();
+                });
         }
 
         $this->_stdout("done\n", Console::FG_GREEN);
@@ -581,18 +553,16 @@ class Gc extends Component
     {
         $this->_stdout('    > deleting orphaned relations ... ');
 
-        $ids = (new Query())
-            ->select('r.id')
-            ->from(['r' => Table::RELATIONS])
-            ->leftJoin(['e' => Table::ELEMENTS], '[[e.id]] = [[r.targetId]]')
-            ->where(['e.id' => null])
-            ->column();
-
-        if (!empty($ids)) {
-            foreach (array_chunk($ids, self::CHUNK_SIZE) as $idsChunk) {
-                Db::delete(Table::RELATIONS, ['id' => $idsChunk]);
-            }
-        }
+        DB::table(Table::RELATIONS, 'r')
+            ->leftJoin(new Alias(Table::ELEMENTS, 'e'), 'e.id', 'r.targetId')
+            ->whereNull('e.id')
+            ->pluck('r.id')
+            ->chunk(self::CHUNK_SIZE)
+            ->each(function($idsChunk) {
+                DB::table(Table::RELATIONS)
+                    ->whereIn('id', $idsChunk)
+                    ->delete();
+            });
 
         $this->_stdout("done\n", Console::FG_GREEN);
     }
@@ -601,22 +571,17 @@ class Gc extends Component
     {
         $this->_stdout('    > deleting orphaned structure elements ... ');
 
-        $ids = (new Query())
-            ->select('se.id')
-            ->from(['se' => Table::STRUCTUREELEMENTS])
-            ->leftJoin(['e' => Table::ELEMENTS], '[[e.id]] = [[se.elementId]]')
-            ->where([
-                'and',
-                ['not', ['se.elementId' => null]],
-                ['e.id' => null],
-            ])
-            ->column();
-
-        if (!empty($ids)) {
-            foreach (array_chunk($ids, self::CHUNK_SIZE) as $idsChunk) {
-                Db::delete(Table::STRUCTUREELEMENTS, ['id' => $idsChunk]);
-            }
-        }
+        DB::table(Table::STRUCTUREELEMENTS, 'se')
+            ->leftJoin(new Alias(Table::ELEMENTS, 'e'), 'e.id', 'se.elementId')
+            ->whereNotNull('se.elementId')
+            ->whereNull('e.id')
+            ->pluck('se.id')
+            ->chunk(self::CHUNK_SIZE)
+            ->each(function($idsChunk) {
+                DB::table(Table::STRUCTUREELEMENTS)
+                    ->whereIn('id', $idsChunk)
+                    ->delete();
+            });
 
         $this->_stdout("done\n", Console::FG_GREEN);
     }
@@ -627,11 +592,9 @@ class Gc extends Component
 
         // Disable FK checks
         try {
-            $this->db->transaction(function() {
-                $this->db->createCommand()->checkIntegrity(false)->execute();
-            });
+            Schema::disableForeignKeyConstraints();
             $disabledFkChecks = true;
-        } catch (DbException) {
+        } catch (DbException|QueryException) {
             // the DB user probably didn't have permission
             // see https://github.com/craftcms/cms/issues/15063#issuecomment-2194059768
             $disabledFkChecks = false;
@@ -676,7 +639,7 @@ SQL;
 
         // Re-enable FK checks
         if ($disabledFkChecks) {
-            $this->db->createCommand()->checkIntegrity(true)->execute();
+            Schema::enableForeignKeyConstraints();
         }
 
         $this->_stdout("done\n", Console::FG_GREEN);
@@ -687,27 +650,31 @@ SQL;
         $db = Craft::$app->getDb();
         $schema = $db->getSchema();
 
-        foreach ([Table::CHANGEDATTRIBUTES, Table::CHANGEDFIELDS] as $table) {
-            $this->_stdout(sprintf('    > deleting pointless rows in the %s table ... ', $schema->getRawTableName($table)));
+        foreach ([
+                     Table::CHANGEDATTRIBUTES,
+                     Table::CHANGEDFIELDS,
+                 ] as $table) {
+            $this->_stdout(sprintf('    > deleting pointless rows in the %s table ... ',
+                $schema->getRawTableName($table)));
 
             // fetch any rows in the table for canonical elements that don't have any drafts
-            $query = (new Query())
+            DB::table($table, 't')
+                ->join(new Alias(Table::ELEMENTS, 'e'), 'e.id', 't.elementId')
+                ->leftJoin(new Alias(Table::ELEMENTS, 'd'), function(JoinClause $join) {
+                    $join->whereColumn('d.canonicalId', 'e.id')
+                        ->whereNotNull('d.draftId');
+                })
+                ->whereNull('e.canonicalId')
+                ->whereNull('d.id')
+                ->groupBy('t.elementId')
                 ->select('t.elementId')
-                ->from(['t' => $table])
-                ->innerJoin(['e' => Table::ELEMENTS], '[[e.id]] = [[t.elementId]]')
-                ->leftJoin(['d' => Table::ELEMENTS], [
-                    'and',
-                    ['not', ['d.draftId' => null]],
-                    '[[d.canonicalId]] = [[e.id]]',
-                ])
-                ->where(['e.canonicalId' => null])
-                ->andWhere(['d.id' => null])
-                ->groupBy('t.elementId');
-
-            foreach (Db::batch($query) as $batch) {
-                $elementIds = array_column($batch, 'elementId');
-                Db::delete($table, ['elementId' => $elementIds]);
-            }
+                ->cursor()
+                ->chunk(100)
+                ->each(function($chunk) use ($table) {
+                    DB::table($table)
+                        ->whereIn('elementId', $chunk->pluck('elementId'))
+                        ->delete();
+                });
 
             $this->_stdout("done\n", Console::FG_GREEN);
         }
@@ -719,24 +686,24 @@ SQL;
      * @param class-string<ElementInterface> $elementType The element type
      * @param string $table The  table name that contains a foreign key to `fieldlayouts.id`
      * @param string $fk The column name that contains the foreign key to `fieldlayouts.id`
+     *
      * @since 5.5.0
      */
     public function deleteOrphanedFieldLayouts(string $elementType, string $table, string $fk = 'fieldLayoutId'): void
     {
         $this->_stdout(sprintf('    > deleting orphaned %s field layouts ... ', $elementType::lowerDisplayName()));
 
-        $ids = (new Query())
-            ->select('fl.id')
-            ->from(['fl' => Table::FIELDLAYOUTS])
-            ->leftJoin(['t' => $table], "[[t.$fk]] = [[fl.id]]")
-            ->where(['fl.type' => $elementType, "t.$fk" => null])
-            ->column();
-
-        if (!empty($ids)) {
-            foreach (array_chunk($ids, self::CHUNK_SIZE) as $idsChunk) {
-                Db::delete(Table::FIELDLAYOUTS, ['id' => $idsChunk]);
-            }
-        }
+        DB::table(Table::FIELDLAYOUTS, 'fl')
+            ->leftJoin(new Alias($table, 't'), "t.$fk", 'fl.id')
+            ->where('fl.type', $elementType)
+            ->whereNull("t.$fk")
+            ->pluck('fl.id')
+            ->chunk(self::CHUNK_SIZE)
+            ->each(function($idsChunk) {
+                DB::table(Table::FIELDLAYOUTS)
+                    ->whereIn('id', $idsChunk)
+                    ->delete();
+            });
 
         $this->_stdout("done\n", Console::FG_GREEN);
     }
@@ -757,48 +724,23 @@ SQL;
         $elementsTable = Table::ELEMENTS;
         $revisionsTable = Table::REVISIONS;
 
-        $params = [];
-
-        $structureIds = (new Query())
-            ->select('[[s.id]]')
+        $structureIds = $this->hardDeleteQuery(DB::table($structuresTable, 's'), 's')
+            ->leftJoin(new Alias($structureElementsTable, 'se'), 's.id', 'se.structureId')
+            ->leftJoin(new Alias($elementsTable, 'e'), 'e.id', 'se.elementId')
+            ->leftJoin(new Alias($revisionsTable, 'r'), 'r.canonicalId', '=', new Coalesce(['e.canonicalId', 'e.id']))
+            ->whereNotNull('se.elementId')
+            ->whereNull('r.canonicalId')
             ->distinct()
-            ->from(['s' => $structuresTable])
-            ->leftJoin(['se' => $structureElementsTable], '[[s.id]] = [[se.structureId]]')
-            ->leftJoin(['e' => $elementsTable], '[[e.id]] = [[se.elementId]]')
-            ->leftJoin(['r' => $revisionsTable], '[[r.canonicalId]] = coalesce([[e.canonicalId]],[[e.id]])')
-            ->where([
-                'and',
-                ['not', ['se.elementId' => null]],
-                $this->_hardDeleteCondition('s'),
-                [
-                    'r.canonicalId' => null,
-                ],
-            ])
-            ->column();
+            ->pluck('s.id');
 
-        if (!empty($structureIds)) {
-            $ids = implode(',', $structureIds);
-            $conditionSql = $this->db->getQueryBuilder()->buildCondition($this->_hardDeleteCondition('s'), $params);
-
-            // and now perform the actual deletion based on those IDs
-            if ($this->db->getIsMysql()) {
-                $sql = <<<SQL
-DELETE [[s]].* FROM $structuresTable [[s]]
-WHERE [[s.id]] IN ($ids)
-AND $conditionSql
-SQL;
-            } else {
-                $sql = <<<SQL
-DELETE FROM $structuresTable
-USING $structuresTable [[s]]
-WHERE 
-    $structuresTable.[[id]] = [[s.id]] AND 
-    [[s.id]] IN ($ids) AND
-    $conditionSql
-SQL;
-            }
-            $this->db->createCommand($sql, $params)->execute();
+        if ($structureIds->isEmpty()) {
+            return;
         }
+
+        // and now perform the actual deletion based on those IDs
+        $this->hardDeleteQuery(DB::table($structuresTable, 's'), 's')
+            ->whereIn('s.id', $structureIds)
+            ->delete();
     }
 
     private function _gcCache(): void
@@ -839,27 +781,23 @@ SQL;
         $this->_stdout("done\n", Console::FG_GREEN);
     }
 
-    /**
-     * @param string|null $tableAlias
-     * @return array
-     */
-    private function _hardDeleteCondition(?string $tableAlias = null): array
+    private function hardDeleteQuery(Builder $query, ?string $tableAlias = null): Builder
     {
         $tableAlias = $tableAlias ? "$tableAlias." : '';
-        $condition = ['not', ["{$tableAlias}dateDeleted" => null]];
 
-        if (!$this->deleteAllTrashed) {
-            $expire = DateTimeHelper::currentUTCDateTime();
-            $interval = DateTimeHelper::secondsToInterval($this->_generalConfig->softDeleteDuration);
-            $pastTime = $expire->sub($interval);
-            $condition = [
-                'and',
-                $condition,
-                ['<', "{$tableAlias}dateDeleted", Db::prepareDateForDb($pastTime)],
-            ];
+        $query->whereNotNull("{$tableAlias}dateDeleted");
+
+        if ($this->deleteAllTrashed) {
+            return $query;
         }
 
-        return $condition;
+        $query->where(
+            "{$tableAlias}dateDeleted",
+            '<',
+            now()->subSeconds($this->_generalConfig->softDeleteDuration),
+        );
+
+        return $query;
     }
 
     private function _stdout(string $string, ...$format): void

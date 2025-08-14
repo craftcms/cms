@@ -24,6 +24,7 @@ use crafttests\fixtures\GlobalSetFixture;
 use DateInterval;
 use DateTime;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Session;
 use Throwable;
 use Twig\Error\LoaderError;
 use Twig\Error\RuntimeError;
@@ -1114,6 +1115,8 @@ class ExtensionTest extends TestCase
     public function testCsrfInputFunction(): void
     {
         app(GeneralConfig::class)->enableCsrfProtection = true;
+        Session::start();
+
         $this->testRenderResult(
             '<input type="hidden" name="_token" value="' . Craft::$app->getRequest()->getCsrfToken() . '">',
             '{{ csrfInput() }}'

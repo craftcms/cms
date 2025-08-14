@@ -8,8 +8,6 @@
 namespace craft\services;
 
 use Craft;
-use craft\db\Query;
-use craft\db\Table;
 use craft\elements\Asset;
 use craft\elements\Category;
 use craft\elements\Entry;
@@ -19,16 +17,20 @@ use craft\events\ConfigEvent;
 use craft\events\RegisterUserPermissionsEvent;
 use craft\events\UserGroupPermissionsEvent;
 use craft\events\UserPermissionsEvent;
-use craft\helpers\Db;
 use craft\helpers\ProjectConfig as ProjectConfigHelper;
 use craft\models\Section;
 use craft\models\UserGroup;
 use craft\records\UserPermission as UserPermissionRecord;
+use CraftCms\Cms\Db\Table;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Element\Enums\PropagationMethod;
+use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Utility\Utilities;
 use CraftCms\Cms\Utility\Utilities\ProjectConfig as ProjectConfigUtility;
 use CraftCms\Cms\Utility\Utility;
+use Illuminate\Database\Query\Builder;
+use Illuminate\Support\Facades\DB;
+use Tpetry\QueryExpressions\Language\Alias;
 use yii\base\Component;
 use yii\db\Exception;
 
@@ -133,6 +135,7 @@ class UserPermissions extends Component
      * See [[getAllPermissions()]] for an explanation of what will be returned.
      *
      * @param User|null $user The recipient of the permissions. If set, their current permissions will be included as well.
+     *
      * @return array
      */
     public function getAssignablePermissions(?User $user = null): array
@@ -162,15 +165,17 @@ class UserPermissions extends Component
      * Returns all of a given user group's permissions.
      *
      * @param int $groupId
+     *
      * @return string[]
      */
     public function getPermissionsByGroupId(int $groupId): array
     {
         if (!isset($this->_permissionsByGroupId[$groupId])) {
             $this->_permissionsByGroupId[$groupId] = $this->_createUserPermissionsQuery()
-                ->innerJoin(['p_g' => Table::USERPERMISSIONS_USERGROUPS], '[[p_g.permissionId]] = [[p.id]]')
-                ->where(['p_g.groupId' => $groupId])
-                ->column();
+                ->join(new Alias(Table::USERPERMISSIONS_USERGROUPS, 'p_g'), 'p_g.permissionId', 'p.id')
+                ->where('p_g.groupId', $groupId)
+                ->pluck('p.name')
+                ->all();
         }
 
         return $this->_permissionsByGroupId[$groupId];
@@ -180,6 +185,7 @@ class UserPermissions extends Component
      * Returns all of the group permissions a given user has.
      *
      * @param int $userId
+     *
      * @return string[]
      */
     public function getGroupPermissionsByUserId(int $userId): array
@@ -190,10 +196,11 @@ class UserPermissions extends Component
         }
 
         return $this->_createUserPermissionsQuery()
-            ->innerJoin(['p_g' => Table::USERPERMISSIONS_USERGROUPS], '[[p_g.permissionId]] = [[p.id]]')
-            ->innerJoin(['g_u' => Table::USERGROUPS_USERS], '[[g_u.groupId]] = [[p_g.groupId]]')
-            ->where(['g_u.userId' => $userId])
-            ->column();
+            ->join(new Alias(Table::USERPERMISSIONS_USERGROUPS, 'p_g'), 'p_g.permissionId', 'p.id')
+            ->join(new Alias(Table::USERGROUPS_USERS, 'g_u'), 'g_u.groupId', 'p_g.groupId')
+            ->where('g_u.userId', $userId)
+            ->pluck('p.name')
+            ->all();
     }
 
     /**
@@ -201,6 +208,7 @@ class UserPermissions extends Component
      *
      * @param int $groupId
      * @param string $checkPermission
+     *
      * @return bool
      */
     public function doesGroupHavePermission(int $groupId, string $checkPermission): bool
@@ -216,6 +224,7 @@ class UserPermissions extends Component
      *
      * @param int $groupId
      * @param array $permissions
+     *
      * @return bool
      * @throws WrongEditionException if this is called from Craft Solo edition
      */
@@ -235,7 +244,8 @@ class UserPermissions extends Component
         /** @var UserGroup $group */
         $group = Craft::$app->getUserGroups()->getGroupById($groupId);
         $path = ProjectConfig::PATH_USER_GROUPS . '.' . $group->uid . '.permissions';
-        Craft::$app->getProjectConfig()->set($path, $permissions, "Update permissions for user group “{$group->handle}”");
+        Craft::$app->getProjectConfig()->set($path, $permissions,
+            "Update permissions for user group “{$group->handle}”");
 
         // Fire an 'afterSaveGroupPermissions' event
         if ($this->hasEventHandlers(self::EVENT_AFTER_SAVE_GROUP_PERMISSIONS)) {
@@ -252,6 +262,7 @@ class UserPermissions extends Component
      * Returns all of a given user’s permissions.
      *
      * @param int $userId
+     *
      * @return array
      */
     public function getPermissionsByUserId(int $userId): array
@@ -262,9 +273,10 @@ class UserPermissions extends Component
             if (Craft::$app->edition->value >= Edition::Pro->value) {
                 /** @var string[] $userPermissions */
                 $userPermissions = $this->_createUserPermissionsQuery()
-                    ->innerJoin(['p_u' => Table::USERPERMISSIONS_USERS], '[[p_u.permissionId]] = [[p.id]]')
-                    ->where(['p_u.userId' => $userId])
-                    ->column();
+                    ->join(new Alias(Table::USERPERMISSIONS_USERS, 'p_u'), 'p_u.permissionId', 'p.id')
+                    ->where('p_u.userId', $userId)
+                    ->pluck('p.name')
+                    ->all();
             } else {
                 $userPermissions = [];
             }
@@ -277,6 +289,7 @@ class UserPermissions extends Component
 
     /**
      * @param string $permission
+     *
      * @return bool
      * @since 5.8.13.2
      */
@@ -308,6 +321,7 @@ class UserPermissions extends Component
      *
      * @param int $userId
      * @param string $checkPermission
+     *
      * @return bool
      */
     public function doesUserHavePermission(int $userId, string $checkPermission): bool
@@ -327,6 +341,7 @@ class UserPermissions extends Component
      *
      * @param int $userId
      * @param array $permissions
+     *
      * @return bool
      * @throws WrongEditionException if this is called from Craft Solo edition
      * @throws Exception
@@ -336,9 +351,9 @@ class UserPermissions extends Component
         Craft::$app->requireEdition(Edition::Pro);
 
         // Delete any existing user permissions
-        Db::delete(Table::USERPERMISSIONS_USERS, [
-            'userId' => $userId,
-        ]);
+        DB::table(Table::USERPERMISSIONS_USERS)
+            ->where('userId', $userId)
+            ->delete();
 
         // Lowercase the permissions
         $permissions = array_map('strtolower', $permissions);
@@ -352,11 +367,17 @@ class UserPermissions extends Component
 
             foreach ($permissions as $permissionName) {
                 $permissionRecord = $this->_getPermissionRecordByName($permissionName);
-                $userPermissionVals[] = [$permissionRecord->id, $userId];
+                $userPermissionVals[] = [
+                    'permissionId' => $permissionRecord->id,
+                    'userId' => $userId,
+                    'dateCreated' => $now = now(),
+                    'dateUpdated' => $now,
+                    'uid' => Str::uuid(),
+                ];
             }
 
             // Add the new user permissions
-            Db::batchInsert(Table::USERPERMISSIONS_USERS, ['permissionId', 'userId'], $userPermissionVals);
+            DB::table(Table::USERPERMISSIONS_USERS)->insert($userPermissionVals);
         }
 
         // Cache the new permissions
@@ -392,20 +413,28 @@ class UserPermissions extends Component
         }
 
         // Delete any existing group permissions
-        Db::delete(Table::USERPERMISSIONS_USERGROUPS, [
-            'groupId' => $userGroup->id,
-        ]);
+        DB::table(Table::USERPERMISSIONS_USERGROUPS)
+            ->where('groupId', $userGroup->id)
+            ->delete();
 
         $groupPermissionVals = [];
 
         if ($permissions) {
+            $now = now();
+
             foreach ($permissions as $permissionName) {
                 $permissionRecord = $this->_getPermissionRecordByName($permissionName);
-                $groupPermissionVals[] = [$permissionRecord->id, $userGroup->id];
+                $groupPermissionVals[] = [
+                    'permissionId' => $permissionRecord->id,
+                    'groupId' => $userGroup->id,
+                    'dateCreated' => $now,
+                    'dateUpdated' => $now,
+                    'uid' => Str::uuid(),
+                ];
             }
 
             // Add the new group permissions
-            Db::batchInsert(Table::USERPERMISSIONS_USERGROUPS, ['permissionId', 'groupId'], $groupPermissionVals);
+            DB::table(Table::USERPERMISSIONS_USERGROUPS)->insert($groupPermissionVals);
         }
 
         // Update caches
@@ -445,7 +474,8 @@ class UserPermissions extends Component
             case Edition::Enterprise:
                 $generalPermissions['accessCp'] = [
                     'label' => Craft::t('app', 'Access the control panel'),
-                    'warning' => Craft::t('app', 'Includes read-only access to user data and most content, via element selector modals and other means.'),
+                    'warning' => Craft::t('app',
+                        'Includes read-only access to user data and most content, via element selector modals and other means.'),
                     'nested' => $cpPermissions,
                 ];
                 break;
@@ -490,13 +520,16 @@ class UserPermissions extends Component
                                     ],
                                     'moderateUsers' => [
                                         'label' => Craft::t('app', 'Moderate users'),
-                                        'info' => Craft::t('app', 'Includes suspending, unsuspending, and unlocking user accounts.'),
+                                        'info' => Craft::t('app',
+                                            'Includes suspending, unsuspending, and unlocking user accounts.'),
                                     ],
                                     'administrateUsers' => [
                                         'label' => Craft::t('app', 'Administrate users'),
-                                        'info' => Craft::t('app', 'Includes activating/deactivating user accounts, resetting passwords, and changing email addresses.'),
+                                        'info' => Craft::t('app',
+                                            'Includes activating/deactivating user accounts, resetting passwords, and changing email addresses.'),
                                         'warning' => Craft::$app->edition->value >= Edition::Pro->value
-                                            ? Craft::t('app', 'Accounts with this permission could use it to escalate their own permissions.')
+                                            ? Craft::t('app',
+                                                'Accounts with this permission could use it to escalate their own permissions.')
                                             : null,
                                     ],
                                     'impersonateUsers' => [
@@ -508,7 +541,7 @@ class UserPermissions extends Component
                                         ]
                                         : null,
                                 ]),
-                                $assignGroupPermissions
+                                $assignGroupPermissions,
                             ),
                         ],
                         'deleteUsers' => [
@@ -597,19 +630,24 @@ class UserPermissions extends Component
                         'nested' => array_filter([
                             "createEntries:$section->uid" => [
                                 'label' => mb_ucfirst(Craft::t('app', 'Create {type}', ['type' => $pluralType])),
-                                'info' => Craft::t('app', 'Allows creating drafts of new {type}.', ['type' => $pluralType]),
+                                'info' => Craft::t('app', 'Allows creating drafts of new {type}.',
+                                    ['type' => $pluralType]),
                             ],
                             "saveEntries:$section->uid" => [
                                 'label' => mb_ucfirst(Craft::t('app', 'Save {type}', ['type' => $pluralType])),
-                                'info' => Craft::t('app', 'Allows fully saving canonical {type} (directly or by applying drafts).', [
-                                    'type' => $pluralType,
-                                ]),
+                                'info' => Craft::t('app',
+                                    'Allows fully saving canonical {type} (directly or by applying drafts).', [
+                                        'type' => $pluralType,
+                                    ]),
                             ],
                             "deleteEntriesForSite:$section->uid" => $hasCustomPropagation ? [
-                                'label' => mb_ucfirst(Craft::t('app', 'Delete {type} for site', ['type' => $pluralType])),
-                                'info' => Craft::t('app', 'Allows deleting {type} for individual sites, provided the user has access to them.', [
-                                    'type' => $pluralType,
-                                ]),
+                                'label' => mb_ucfirst(Craft::t('app', 'Delete {type} for site',
+                                    ['type' => $pluralType])),
+                                'info' => Craft::t('app',
+                                    'Allows deleting {type} for individual sites, provided the user has access to them.',
+                                    [
+                                        'type' => $pluralType,
+                                    ]),
                             ] : null,
                             "deleteEntries:$section->uid" => [
                                 'label' => mb_ucfirst(Craft::t('app', 'Delete {type}', ['type' => $pluralType])),
@@ -618,22 +656,29 @@ class UserPermissions extends Component
                                 ]),
                             ],
                             "viewPeerEntries:$section->uid" => [
-                                'label' => mb_ucfirst(Craft::t('app', 'View other users’ {type}', ['type' => $pluralType])),
+                                'label' => mb_ucfirst(Craft::t('app', 'View other users’ {type}',
+                                    ['type' => $pluralType])),
                                 'nested' => array_filter([
                                     "savePeerEntries:$section->uid" => [
-                                        'label' => mb_ucfirst(Craft::t('app', 'Save other users’ {type}', ['type' => $pluralType])),
+                                        'label' => mb_ucfirst(Craft::t('app', 'Save other users’ {type}',
+                                            ['type' => $pluralType])),
                                     ],
                                     "deletePeerEntriesForSite:$section->uid" => $hasCustomPropagation ? [
-                                        'label' => Craft::t('app', 'Delete other users’ {type} for site', ['type' => $pluralType]),
-                                        'info' => Craft::t('app', 'Allows deleting other users’ {type} for individual sites, provided the user has access to them.', [
-                                            'type' => $pluralType,
-                                        ]),
+                                        'label' => Craft::t('app', 'Delete other users’ {type} for site',
+                                            ['type' => $pluralType]),
+                                        'info' => Craft::t('app',
+                                            'Allows deleting other users’ {type} for individual sites, provided the user has access to them.',
+                                            [
+                                                'type' => $pluralType,
+                                            ]),
                                     ] : null,
                                     "deletePeerEntries:$section->uid" => [
-                                        'label' => Craft::t('app', 'Delete other users’ {type}', ['type' => $pluralType]),
-                                        'info' => Craft::t('app', 'Allows deleting other users’ {type} for all sites.', [
-                                            'type' => $pluralType,
-                                        ]),
+                                        'label' => Craft::t('app', 'Delete other users’ {type}',
+                                            ['type' => $pluralType]),
+                                        'info' => Craft::t('app', 'Allows deleting other users’ {type} for all sites.',
+                                            [
+                                                'type' => $pluralType,
+                                            ]),
                                     ],
                                 ]),
                             ],
@@ -780,7 +825,8 @@ class UserPermissions extends Component
                                     ],
                                     "replacePeerFiles:$volume->uid" => [
                                         'label' => Craft::t('app', 'Replace files uploaded by other users'),
-                                        'warning' => Craft::t('app', 'When someone replaces a file, the record of who uploaded the file will be updated as well.'),
+                                        'warning' => Craft::t('app',
+                                            'When someone replaces a file, the record of who uploaded the file will be updated as well.'),
                                     ],
                                     "deletePeerAssets:$volume->uid" => [
                                         'label' => Craft::t('app', 'Remove files uploaded by other users'),
@@ -827,6 +873,7 @@ class UserPermissions extends Component
      *
      * @param array $permissions The original permissions
      * @param User|null $user The recipient of the permissions. If set, their current permissions will be included as well.
+     *
      * @return array The filtered permissions
      */
     private function _filterUnassignablePermissions(array $permissions, ?User $user = null): array
@@ -857,6 +904,7 @@ class UserPermissions extends Component
      * @param array $postedPermissions The posted permissions.
      * @param array $groupPermissions Permissions the user is already assigned
      * to via their group, if we’re saving a user’s permissions.
+     *
      * @return array The permissions we'll actually let them save.
      */
     private function _filterOrphanedPermissions(array $postedPermissions, array $groupPermissions = []): array
@@ -865,7 +913,8 @@ class UserPermissions extends Component
 
         if (!empty($postedPermissions)) {
             foreach ($this->getAllPermissions() as $group) {
-                $this->_findSelectedPermissions($group['permissions'], $postedPermissions, $groupPermissions, $filteredPermissions);
+                $this->_findSelectedPermissions($group['permissions'], $postedPermissions, $groupPermissions,
+                    $filteredPermissions);
             }
         }
 
@@ -879,19 +928,26 @@ class UserPermissions extends Component
      * @param array $postedPermissions
      * @param array $groupPermissions
      * @param array $filteredPermissions
+     *
      * @return bool Whether any permissions were added to $filteredPermissions
      */
-    private function _findSelectedPermissions(array $permissionsGroup, array $postedPermissions, array $groupPermissions, array &$filteredPermissions): bool
-    {
+    private function _findSelectedPermissions(
+        array $permissionsGroup,
+        array $postedPermissions,
+        array $groupPermissions,
+        array &$filteredPermissions,
+    ): bool {
         $hasAssignedPermissions = false;
 
         foreach ($permissionsGroup as $name => $data) {
             $name = strtolower($name);
             // Should the user have this permission (either directly or via their group)?
-            if (($inPostedPermissions = in_array($name, $postedPermissions, true)) || in_array($name, $groupPermissions, true)) {
+            if (($inPostedPermissions = in_array($name, $postedPermissions, true)) || in_array($name, $groupPermissions,
+                    true)) {
                 // First assign any nested permissions
                 if (!empty($data['nested'])) {
-                    $hasAssignedNestedPermissions = $this->_findSelectedPermissions($data['nested'], $postedPermissions, $groupPermissions, $filteredPermissions);
+                    $hasAssignedNestedPermissions = $this->_findSelectedPermissions($data['nested'], $postedPermissions,
+                        $groupPermissions, $filteredPermissions);
                 } else {
                     $hasAssignedNestedPermissions = false;
                 }
@@ -912,6 +968,7 @@ class UserPermissions extends Component
      * Returns a permission record based on its name. If a record doesn't exist, it will be created.
      *
      * @param string $permissionName
+     *
      * @return UserPermissionRecord
      */
     private function _getPermissionRecordByName(string $permissionName): UserPermissionRecord
@@ -930,14 +987,10 @@ class UserPermissions extends Component
         return $permissionRecord;
     }
 
-    /**
-     * @return Query
-     */
-    private function _createUserPermissionsQuery(): Query
+    private function _createUserPermissionsQuery(): Builder
     {
-        return (new Query())
-            ->select(['p.name'])
-            ->from(['p' => Table::USERPERMISSIONS]);
+        return DB::table(Table::USERPERMISSIONS, 'p')
+            ->select(['p.name']);
     }
 
     /**

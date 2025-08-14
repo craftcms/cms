@@ -14,7 +14,6 @@ use Illuminate\Container\Attributes\Singleton;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Date;
 use yii\helpers\Markdown;
 
 /**
@@ -121,7 +120,7 @@ final readonly class Announcements
             ->where('userId', $userId)
             ->update([
                 'unread' => false,
-                'dateRead' => Date::now(),
+                'dateRead' => now(),
             ]);
     }
 }

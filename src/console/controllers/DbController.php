@@ -10,10 +10,10 @@ namespace craft\console\controllers;
 use Craft;
 use craft\console\Controller;
 use craft\db\Connection;
-use craft\db\Table;
 use craft\helpers\Console;
 use craft\helpers\Db;
 use craft\helpers\FileHelper;
+use CraftCms\Cms\Db\Table;
 use CraftCms\Cms\Support\Str;
 use Illuminate\Support\Facades\DB as DbFacade;
 use Throwable;
@@ -540,12 +540,7 @@ MD);
         $this->stdout("Detecting the current table prefix …\n");
 
         $patterns = array_map(
-            function(string $name) {
-                // based on Schema::getRawTableName()
-                $name = preg_replace('/\\{\\{(.*?)}}/', '\1', $name);
-                $name = preg_replace_callback('/[^%]+/', fn($match) => preg_quote($match[0], '/'), $name);
-                return sprintf('/^%s$/', str_replace('%', '(\w+)_', $name));
-            },
+            fn(string $name) => "/^(\w+)_$name$/",
             [Table::ELEMENTS, Table::ENTRIES, Table::INFO, Table::SECTIONS],
         );
 

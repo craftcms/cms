@@ -10,6 +10,7 @@ namespace craft\helpers;
 use Craft;
 use craft\db\Query;
 use DateTime;
+use Illuminate\Database\Query\Builder;
 use yii\base\Exception;
 
 /**
@@ -32,7 +33,7 @@ class ChartHelper
      *  - `valueLabel`    - The label to use for the chart values. Defaults to "Value".
      *  - `valueType`     - The type of values that are being plotted ('number', 'currency', 'percent', 'time'). Defaults to 'number'.
      *
-     * @param Query $query The DB query that should be used. It will be executed for each time interval,
+     * @param Builder $query The DB query that should be used. It will be executed for each time interval,
      * with additional conditions on the $dateColumn, via [[\craft\db\Query::scalar()]].
      * @param DateTime $startDate The start of the time duration to select (inclusive)
      * @param DateTime $endDate The end of the time duration to select (exclusive)
@@ -40,11 +41,19 @@ class ChartHelper
      * @param string $func The aggregate function to call for each date interval ('count', 'sum', 'average', 'min', or 'max')
      * @param string $q The column name or expression to pass into the aggregate function (make sure column names are `[[quoted]]`)
      * @param array $options Any customizations that should be made over the default options
+     *
      * @return array
      * @throws Exception
      */
-    public static function getRunChartDataFromQuery(Query $query, DateTime $startDate, DateTime $endDate, string $dateColumn, string $func, string $q, array $options = []): array
-    {
+    public static function getRunChartDataFromQuery(
+        Builder $query,
+        DateTime $startDate,
+        DateTime $endDate,
+        string $dateColumn,
+        string $func,
+        string $q,
+        array $options = [],
+    ): array {
         // Setup
         $options = array_merge([
             'intervalUnit' => null,
@@ -78,8 +87,8 @@ class ChartHelper
             $cursorEndDate = clone $cursorDate;
             $cursorEndDate->modify('+1 ' . $intervalUnit);
             $total = (float)(clone $query)
-                ->andWhere(['>=', $dateColumn, Db::prepareDateForDb($cursorDate)])
-                ->andWhere(['<', $dateColumn, Db::prepareDateForDb($cursorEndDate)])
+                ->where($dateColumn, '>=', $cursorDate)
+                ->where($dateColumn, '<', $cursorEndDate)
                 ->$func($q);
             $rows[] = [$cursorDate->format($phpDateFormat), $total];
             $cursorDate = $cursorEndDate;
@@ -105,6 +114,7 @@ class ChartHelper
      *
      * @param DateTime $startDate
      * @param DateTime $endDate
+     *
      * @return string The unit that the chart should use ('hour', 'day', 'month', or 'year')
      */
     public static function getRunChartIntervalUnit(DateTime $startDate, DateTime $endDate): string
@@ -201,10 +211,22 @@ class ChartHelper
     public static function dateRanges(): array
     {
         return [
-            'd7' => ['label' => Craft::t('app', 'Last {num, number} {num, plural, =1{day} other{days}}', ['num' => 7]), 'startDate' => '-7 days', 'endDate' => null],
-            'd30' => ['label' => Craft::t('app', 'Last {num, number} {num, plural, =1{day} other{days}}', ['num' => 30]), 'startDate' => '-30 days', 'endDate' => null],
+            'd7' => [
+                'label' => Craft::t('app', 'Last {num, number} {num, plural, =1{day} other{days}}', ['num' => 7]),
+                'startDate' => '-7 days',
+                'endDate' => null,
+            ],
+            'd30' => [
+                'label' => Craft::t('app', 'Last {num, number} {num, plural, =1{day} other{days}}', ['num' => 30]),
+                'startDate' => '-30 days',
+                'endDate' => null,
+            ],
             'lastweek' => ['label' => Craft::t('app', 'Last Week'), 'startDate' => '-2 weeks', 'endDate' => '-1 week'],
-            'lastmonth' => ['label' => Craft::t('app', 'Last Month'), 'startDate' => '-2 months', 'endDate' => '-1 month'],
+            'lastmonth' => [
+                'label' => Craft::t('app', 'Last Month'),
+                'startDate' => '-2 months',
+                'endDate' => '-1 month',
+            ],
         ];
     }
 }

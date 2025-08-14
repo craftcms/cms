@@ -11,7 +11,6 @@ use Craft;
 use craft\config\DbConfig;
 use craft\console\Controller;
 use craft\db\Connection;
-use craft\db\Table;
 use craft\errors\DbConnectException;
 use craft\helpers\App;
 use craft\helpers\Console;
@@ -19,10 +18,12 @@ use craft\helpers\FileHelper;
 use craft\migrations\CreateDbCacheTable;
 use craft\migrations\CreatePhpSessionTable;
 use CraftCms\Cms\Config\GeneralConfig;
+use CraftCms\Cms\Db\Table;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Composer;
 use CraftCms\Cms\Support\Env;
 use CraftCms\Cms\Support\Str;
+use Illuminate\Support\Facades\Schema;
 use m150207_210500_i18n_init;
 use PDOException;
 use Seld\CliPrompt\CliPrompt;
@@ -508,7 +509,7 @@ EOD;
      */
     public function actionPhpSessionTable(): int
     {
-        if (Craft::$app->getDb()->tableExists(Table::PHPSESSIONS)) {
+        if (Schema::hasTable(Table::PHPSESSIONS)) {
             $this->stdout("The `phpsessions` table already exists.\n", Console::FG_YELLOW);
             return ExitCode::OK;
         }
@@ -562,7 +563,7 @@ EOD;
      */
     public function actionDbCacheTable(): int
     {
-        if (Craft::$app->getDb()->tableExists(Table::CACHE)) {
+        if (Schema::hasTable(Table::CACHE)) {
             $this->stdout('The `cache` table already exists.' . PHP_EOL . PHP_EOL, Console::FG_YELLOW);
             return ExitCode::OK;
         }

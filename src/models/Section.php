@@ -12,8 +12,6 @@ use craft\base\Chippable;
 use craft\base\CpEditable;
 use craft\base\Iconic;
 use craft\base\Model;
-use craft\db\Query;
-use craft\db\Table;
 use craft\elements\Entry;
 use craft\helpers\Db;
 use craft\helpers\ProjectConfig as ProjectConfigHelper;
@@ -21,6 +19,7 @@ use craft\helpers\UrlHelper;
 use craft\records\Section as SectionRecord;
 use craft\validators\HandleValidator;
 use craft\validators\UniqueValidator;
+use CraftCms\Cms\Db\Table;
 use CraftCms\Cms\Element\Enums\PropagationMethod;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Str;
@@ -234,11 +233,10 @@ class Section extends Model implements Chippable, CpEditable, Iconic
         // If this is an existing section, make sure they aren't moving it to a
         // completely different set of sites in one fell swoop
         if ($this->id) {
-            $currentSiteIds = (new Query())
-                ->select(['siteId'])
-                ->from([Table::SECTIONS_SITES])
-                ->where(['sectionId' => $this->id])
-                ->column();
+            $currentSiteIds = \Illuminate\Support\Facades\DB::table(Table::SECTIONS_SITES)
+                ->where('sectionId', $this->id)
+                ->pluck('siteId')
+                ->all();
 
             if (empty(array_intersect($currentSiteIds, array_keys($this->getSiteSettings())))) {
                 $this->addError('siteSettings', Craft::t('app', 'At least one currently-enabled site must remain enabled.'));
@@ -441,13 +439,13 @@ class Section extends Model implements Chippable, CpEditable, Iconic
 
         if ($this->type === self::TYPE_STRUCTURE) {
             $config['structure'] = [
-                'uid' => $this->structureId ? Db::uidById(Table::STRUCTURES, $this->structureId) : Str::uuid()->toString(),
+                'uid' => $this->structureId ? \Illuminate\Support\Facades\DB::table(Table::STRUCTURES)->uidById($this->structureId) : Str::uuid()->toString(),
                 'maxLevels' => (int)$this->maxLevels ?: null,
             ];
         }
 
         foreach ($this->getSiteSettings() as $siteId => $siteSettings) {
-            $siteUid = Db::uidById(Table::SITES, $siteId);
+            $siteUid = \Illuminate\Support\Facades\DB::table(Table::SITES)->uidById($siteId);
             $config['siteSettings'][$siteUid] = [
                 'enabledByDefault' => (bool)$siteSettings['enabledByDefault'],
                 'hasUrls' => (bool)$siteSettings['hasUrls'],

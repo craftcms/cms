@@ -8,9 +8,12 @@
 namespace craft\validators;
 
 use Craft;
-use craft\db\Query;
-use craft\db\Table;
 use craft\models\Section_SiteSettings;
+use CraftCms\Cms\Db\Table;
+use Illuminate\Database\Query\Builder;
+use Illuminate\Support\Facades\DB;
+use Tpetry\QueryExpressions\Function\String\Lower;
+use Tpetry\QueryExpressions\Language\Alias;
 use yii\base\Exception;
 use yii\base\InvalidConfigException;
 
@@ -37,31 +40,16 @@ class SingleSectionUriValidator extends UriFormatValidator
         $section = $model->getSection();
 
         // Make sure no other elements are using this URI already
-        $query = (new Query())
-            ->from(['elements_sites' => Table::ELEMENTS_SITES])
-            ->innerJoin(['elements' => Table::ELEMENTS], '[[elements.id]] = [[elements_sites.elementId]]')
-            ->where([
-                'elements_sites.siteId' => $model->siteId,
-                'elements.draftId' => null,
-                'elements.revisionId' => null,
-                'elements.dateDeleted' => null,
-            ]);
-
-        if (Craft::$app->getDb()->getIsMysql()) {
-            $query->andWhere([
-                'elements_sites.uri' => $model->uriFormat,
-            ]);
-        } else {
-            $query->andWhere([
-                'lower([[elements_sites.uri]])' => mb_strtolower($model->uriFormat),
-            ]);
-        }
-
-        if ($section->id) {
-            $query
-                ->innerJoin(['entries' => Table::ENTRIES], '[[entries.id]] = [[elements.id]]')
-                ->andWhere(['not', ['entries.sectionId' => $section->id]]);
-        }
+        $query = DB::table(Table::ELEMENTS_SITES, 'elements_sites')
+            ->join(new Alias(Table::ELEMENTS, 'elements'), 'elements.id', '=', 'elements_sites.elementId')
+            ->where('elements_sites.siteId', $model->siteId)
+            ->whereNull(['elements.draftId', 'elements.revisionId', 'elements.dateDeleted'])
+            ->where(new Lower('elements_sites.uri'), mb_strtolower($model->uriFormat))
+            ->when(
+                $section->id,
+                fn(Builder $query) => $query->join(new Alias(Table::ENTRIES, 'entries'), 'entries.id', '=', 'elements.id')
+                    ->whereNot('entries.sectionId', $section->id),
+            );
 
         if ($query->exists()) {
             $site = Craft::$app->getSites()->getSiteById($model->siteId);

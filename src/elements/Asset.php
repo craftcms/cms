@@ -18,7 +18,6 @@ use craft\controllers\ElementIndexesController;
 use craft\controllers\ElementSelectorModalsController;
 use craft\db\Query;
 use craft\db\QueryAbortedException;
-use craft\db\Table;
 use craft\elements\actions\CopyReferenceTag;
 use craft\elements\actions\CopyUrl;
 use craft\elements\actions\DeleteAssets;
@@ -68,6 +67,7 @@ use craft\validators\AssetLocationValidator;
 use craft\validators\DateTimeValidator;
 use craft\validators\StringValidator;
 use CraftCms\Cms\Config\GeneralConfig;
+use CraftCms\Cms\Db\Table;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Element\Enums\MenuItemType;
 use CraftCms\Cms\Support\Arr;
@@ -77,6 +77,7 @@ use DateInterval;
 use DateTime;
 use GraphQL\Type\Definition\Type;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\DB as DbFacade;
 use Throwable;
 use Twig\Markup;
 use yii\base\ErrorHandler;
@@ -310,10 +311,12 @@ class Asset extends Element
             // Get the source element IDs
             $sourceElementIds = array_map(fn(ElementInterface $element) => $element->id, $sourceElements);
 
-            $map = (new Query())
+            $map = DbFacade::table(Table::ASSETS)
                 ->select(['id as source', 'uploaderId as target'])
-                ->from([Table::ASSETS])
-                ->where(['and', ['id' => $sourceElementIds], ['not', ['uploaderId' => null]]])
+                ->whereIn('id', $sourceElementIds)
+                ->whereNotNull('uploaderId')
+                ->get()
+                ->map(fn(object $row) => (array) $row)
                 ->all();
 
             return [
@@ -3335,11 +3338,12 @@ JS;
             }
         }
 
-        Db::upsert(Table::ASSETS_SITES, [
-            'assetId' => $this->id,
-            'siteId' => $this->siteId,
-            'alt' => $this->alt,
-        ]);
+        DbFacade::table(Table::ASSETS_SITES)
+            ->upsert([
+                'assetId' => $this->id,
+                'siteId' => $this->siteId,
+                'alt' => $this->alt,
+            ], ['assetId', 'siteId']);
 
         parent::afterSave($isNew);
     }
@@ -3354,12 +3358,12 @@ JS;
         }
 
         // Update the asset record
-        Db::update(Table::ASSETS, [
-            'deletedWithVolume' => $this->deletedWithVolume,
-            'keptFile' => $this->keepFileOnDelete,
-        ], [
-            'id' => $this->id,
-        ], [], false);
+        DbFacade::table(Table::ASSETS)
+            ->where('id', $this->id)
+            ->update([
+                'deletedWithVolume' => $this->deletedWithVolume,
+                'keptFile' => $this->keepFileOnDelete,
+            ]);
 
         return true;
     }

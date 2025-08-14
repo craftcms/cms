@@ -9,6 +9,7 @@ namespace craft\db;
 
 use craft\errors\OperationAbortedException;
 use craft\helpers\Db;
+use Illuminate\Support\Facades\Schema;
 use Throwable;
 use yii\db\ColumnSchemaBuilder;
 
@@ -45,18 +46,18 @@ abstract class Migration extends \yii\db\Migration
     public function up(bool $throwExceptions = false): bool
     {
         // Copied from \yii\db\Migration::up(), but with added $e param
-        $transaction = $this->db->beginTransaction();
+        \Illuminate\Support\Facades\DB::beginTransaction();
         try {
             if ($this->safeUp() === false) {
-                $transaction->rollBack();
+                \Illuminate\Support\Facades\DB::rollBack();
                 return false;
             }
-            $transaction->commit();
+            \Illuminate\Support\Facades\DB::commit();
         } catch (Throwable $e) {
             if (!$e instanceof OperationAbortedException) {
                 $this->_printException($e);
             }
-            $transaction->rollBack();
+            \Illuminate\Support\Facades\DB::rollBack();
             if ($throwExceptions) {
                 throw $e;
             }
@@ -89,16 +90,16 @@ abstract class Migration extends \yii\db\Migration
     public function down(bool $throwExceptions = false): bool
     {
         // Copied from \yii\db\Migration::down(), but with added $e param
-        $transaction = $this->db->beginTransaction();
+        \Illuminate\Support\Facades\DB::beginTransaction();
         try {
             if ($this->safeDown() === false) {
-                $transaction->rollBack();
+                \Illuminate\Support\Facades\DB::rollBack();
                 return false;
             }
-            $transaction->commit();
+            \Illuminate\Support\Facades\DB::commit();
         } catch (Throwable $e) {
             $this->_printException($e);
-            $transaction->rollBack();
+            \Illuminate\Support\Facades\DB::rollBack();
             if ($throwExceptions) {
                 throw $e;
             }

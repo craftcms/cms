@@ -6,7 +6,6 @@ namespace CraftCms\Cms\Migrations;
 
 use Craft;
 use craft\base\Field;
-use craft\db\Table;
 use craft\elements\Asset;
 use craft\elements\Entry;
 use craft\elements\User;
@@ -22,6 +21,7 @@ use craft\models\Site;
 use craft\services\ProjectConfig;
 use craft\web\Response;
 use CraftCms\Cms\Config\GeneralConfig;
+use CraftCms\Cms\Db\Table;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Element\Enums\PropagationMethod;
 use CraftCms\Cms\Support\Str;
@@ -70,7 +70,7 @@ class Install extends Migration
      */
     public function createTables(): void
     {
-        Schema::create(Table::withoutYiiPlaceholder(Table::ADDRESSES), function (Blueprint $table) {
+        Schema::create(Table::ADDRESSES, function (Blueprint $table) {
             $table->integer('id', true);
             $table->integer('primaryOwnerId')->nullable();
             $table->integer('fieldId')->nullable();
@@ -105,7 +105,7 @@ class Install extends Migration
             $table->dateTime('dateCreated');
         });
 
-        Schema::create(Table::withoutYiiPlaceholder(Table::ASSETINDEXDATA), function (Blueprint $table) {
+        Schema::create(Table::ASSETINDEXDATA, function (Blueprint $table) {
             $table->integer('id', true);
             $table->integer('sessionId');
             $table->integer('volumeId');
@@ -122,7 +122,7 @@ class Install extends Migration
             $table->char('uid', 36)->default('0');
         });
 
-        Schema::create(Table::withoutYiiPlaceholder(Table::ASSETINDEXINGSESSIONS), function (Blueprint $table) {
+        Schema::create(Table::ASSETINDEXINGSESSIONS, function (Blueprint $table) {
             $table->integer('id', true);
             $table->text('indexedVolumes')->nullable();
             $table->integer('totalEntries')->nullable();
@@ -137,7 +137,7 @@ class Install extends Migration
             $table->char('uid', 36)->default('0');
         });
 
-        Schema::create(Table::withoutYiiPlaceholder(Table::ASSETS), function (Blueprint $table) {
+        Schema::create(Table::ASSETS, function (Blueprint $table) {
             $table->integer('id')->primary();
             $table->integer('volumeId')->nullable();
             $table->integer('folderId');
@@ -157,14 +157,14 @@ class Install extends Migration
             $table->dateTime('dateUpdated');
         });
 
-        Schema::create(Table::withoutYiiPlaceholder(Table::ASSETS_SITES), function (Blueprint $table) {
+        Schema::create(Table::ASSETS_SITES, function (Blueprint $table) {
             $table->integer('assetId');
             $table->integer('siteId');
             $table->text('alt')->nullable();
             $table->primary(['assetId', 'siteId']);
         });
 
-        Schema::create(Table::withoutYiiPlaceholder(Table::IMAGETRANSFORMINDEX), function (Blueprint $table) {
+        Schema::create(Table::IMAGETRANSFORMINDEX, function (Blueprint $table) {
             $table->integer('id', true);
             $table->integer('assetId');
             $table->string('transformer')->default(null)->nullable();
@@ -180,7 +180,7 @@ class Install extends Migration
             $table->char('uid', 36)->default('0');
         });
 
-        Schema::create(Table::withoutYiiPlaceholder(Table::IMAGETRANSFORMS), function (Blueprint $table) {
+        Schema::create(Table::IMAGETRANSFORMS, function (Blueprint $table) {
             $table->integer('id', true);
             $table->string('name');
             $table->string('handle');
@@ -199,7 +199,7 @@ class Install extends Migration
             $table->char('uid', 36)->default('0');
         });
 
-        Schema::create(Table::withoutYiiPlaceholder(Table::AUTHENTICATOR), function (Blueprint $table) {
+        Schema::create(Table::AUTHENTICATOR, function (Blueprint $table) {
             $table->integer('id', true);
             $table->integer('userId');
             $table->string('auth2faSecret')->default(null)->nullable();
@@ -208,7 +208,7 @@ class Install extends Migration
             $table->dateTime('dateUpdated');
         });
 
-        Schema::create(Table::withoutYiiPlaceholder(Table::BULKOPEVENTS), function (Blueprint $table) {
+        Schema::create(Table::BULKOPEVENTS, function (Blueprint $table) {
             $table->char('key', 10);
             $table->string('senderClass');
             $table->string('eventName');
@@ -216,7 +216,7 @@ class Install extends Migration
             $table->primary(['key', 'senderClass', 'eventName']);
         });
 
-        Schema::create(Table::withoutYiiPlaceholder(Table::CATEGORIES), function (Blueprint $table) {
+        Schema::create(Table::CATEGORIES, function (Blueprint $table) {
             $table->integer('id');
             $table->integer('groupId');
             $table->integer('parentId')->nullable();
@@ -226,7 +226,7 @@ class Install extends Migration
             $table->primary('id');
         });
 
-        Schema::create(Table::withoutYiiPlaceholder(Table::CATEGORYGROUPS), function (Blueprint $table) {
+        Schema::create(Table::CATEGORYGROUPS, function (Blueprint $table) {
             $table->integer('id', true);
             $table->integer('structureId');
             $table->integer('fieldLayoutId')->nullable();
@@ -239,7 +239,7 @@ class Install extends Migration
             $table->char('uid', 36)->default('0');
         });
 
-        Schema::create(Table::withoutYiiPlaceholder(Table::CATEGORYGROUPS_SITES), function (Blueprint $table) {
+        Schema::create(Table::CATEGORYGROUPS_SITES, function (Blueprint $table) {
             $table->integer('id', true);
             $table->integer('groupId');
             $table->integer('siteId');
@@ -251,7 +251,7 @@ class Install extends Migration
             $table->char('uid', 36)->default('0');
         });
 
-        Schema::create(Table::withoutYiiPlaceholder(Table::CHANGEDATTRIBUTES), function (Blueprint $table) {
+        Schema::create(Table::CHANGEDATTRIBUTES, function (Blueprint $table) {
             $table->integer('elementId');
             $table->integer('siteId');
             $table->string('attribute');
@@ -261,7 +261,7 @@ class Install extends Migration
             $table->primary(['elementId', 'siteId', 'attribute']);
         });
 
-        Schema::create(Table::withoutYiiPlaceholder(Table::CHANGEDFIELDS), function (Blueprint $table) {
+        Schema::create(Table::CHANGEDFIELDS, function (Blueprint $table) {
             $table->integer('elementId');
             $table->integer('siteId');
             $table->integer('fieldId');
@@ -272,13 +272,13 @@ class Install extends Migration
             $table->primary(['elementId', 'siteId', 'fieldId', 'layoutElementUid']);
         });
 
-        Schema::create(Table::withoutYiiPlaceholder(Table::CONTENTBLOCKS), function (Blueprint $table) {
+        Schema::create(Table::CONTENTBLOCKS, function (Blueprint $table) {
             $table->integer('id', true);
             $table->integer('primaryOwnerId')->nullable();
             $table->integer('fieldId')->nullable();
         });
 
-        Schema::create(Table::withoutYiiPlaceholder(Table::CRAFTIDTOKENS), function (Blueprint $table) {
+        Schema::create(Table::CRAFTIDTOKENS, function (Blueprint $table) {
             $table->integer('id', true);
             $table->integer('userId');
             $table->text('accessToken');
@@ -288,7 +288,7 @@ class Install extends Migration
             $table->char('uid', 36)->default('0');
         });
 
-        Schema::create(Table::withoutYiiPlaceholder(Table::DEPRECATIONERRORS), function (Blueprint $table) {
+        Schema::create(Table::DEPRECATIONERRORS, function (Blueprint $table) {
             $table->integer('id', true);
             $table->string('key');
             $table->string('fingerprint');
@@ -302,7 +302,7 @@ class Install extends Migration
             $table->char('uid', 36)->default('0');
         });
 
-        Schema::create(Table::withoutYiiPlaceholder(Table::DRAFTS), function (Blueprint $table) {
+        Schema::create(Table::DRAFTS, function (Blueprint $table) {
             $table->integer('id', true);
             $table->integer('canonicalId')->nullable();
             $table->integer('creatorId')->nullable();
@@ -314,7 +314,7 @@ class Install extends Migration
             $table->boolean('saved')->default(true);
         });
 
-        Schema::create(Table::withoutYiiPlaceholder(Table::ELEMENTACTIVITY), function (Blueprint $table) {
+        Schema::create(Table::ELEMENTACTIVITY, function (Blueprint $table) {
             $table->integer('elementId');
             $table->integer('userId');
             $table->integer('siteId');
@@ -324,7 +324,7 @@ class Install extends Migration
             $table->primary(['elementId', 'userId', 'type']);
         });
 
-        Schema::create(Table::withoutYiiPlaceholder(Table::ELEMENTS), function (Blueprint $table) {
+        Schema::create(Table::ELEMENTS, function (Blueprint $table) {
             $table->integer('id', true);
             $table->integer('canonicalId')->nullable();
             $table->integer('draftId')->nullable();
@@ -341,21 +341,21 @@ class Install extends Migration
             $table->char('uid', 36)->default('0');
         });
 
-        Schema::create(Table::withoutYiiPlaceholder(Table::ELEMENTS_BULKOPS), function (Blueprint $table) {
+        Schema::create(Table::ELEMENTS_BULKOPS, function (Blueprint $table) {
             $table->integer('elementId');
             $table->char('key', 10);
             $table->dateTime('timestamp');
             $table->primary(['elementId', 'key']);
         });
 
-        Schema::create(Table::withoutYiiPlaceholder(Table::ELEMENTS_OWNERS), function (Blueprint $table) {
+        Schema::create(Table::ELEMENTS_OWNERS, function (Blueprint $table) {
             $table->integer('elementId');
             $table->integer('ownerId');
             $table->unsignedSmallInteger('sortOrder');
             $table->primary(['elementId', 'ownerId']);
         });
 
-        Schema::create(Table::withoutYiiPlaceholder(Table::ELEMENTS_SITES), function (Blueprint $table) {
+        Schema::create(Table::ELEMENTS_SITES, function (Blueprint $table) {
             $table->integer('id', true);
             $table->integer('elementId');
             $table->integer('siteId');
@@ -369,13 +369,13 @@ class Install extends Migration
             $table->char('uid', 36)->default('0');
         });
 
-        Schema::create(Table::withoutYiiPlaceholder(Table::RESOURCEPATHS), function (Blueprint $table) {
+        Schema::create(Table::RESOURCEPATHS, function (Blueprint $table) {
             $table->string('hash');
             $table->string('path');
             $table->primary('hash');
         });
 
-        Schema::create(Table::withoutYiiPlaceholder(Table::REVISIONS), function (Blueprint $table) {
+        Schema::create(Table::REVISIONS, function (Blueprint $table) {
             $table->integer('id', true);
             $table->integer('canonicalId');
             $table->integer('creatorId')->nullable();
@@ -383,13 +383,13 @@ class Install extends Migration
             $table->text('notes')->nullable();
         });
 
-        Schema::create(Table::withoutYiiPlaceholder(Table::SEQUENCES), function (Blueprint $table) {
+        Schema::create(Table::SEQUENCES, function (Blueprint $table) {
             $table->string('name');
             $table->unsignedInteger('next')->default(1);
             $table->primary('name');
         });
 
-        Schema::create(Table::withoutYiiPlaceholder(Table::SYSTEMMESSAGES), function (Blueprint $table) {
+        Schema::create(Table::SYSTEMMESSAGES, function (Blueprint $table) {
             $table->integer('id', true);
             $table->string('language');
             $table->string('key');
@@ -400,7 +400,7 @@ class Install extends Migration
             $table->char('uid', 36)->default('0');
         });
 
-        Schema::create(Table::withoutYiiPlaceholder(Table::ENTRIES), function (Blueprint $table) {
+        Schema::create(Table::ENTRIES, function (Blueprint $table) {
             $table->integer('id');
             $table->integer('sectionId')->nullable();
             $table->integer('parentId')->nullable();
@@ -421,14 +421,14 @@ class Install extends Migration
             $table->primary('id');
         });
 
-        Schema::create(Table::withoutYiiPlaceholder(Table::ENTRIES_AUTHORS), function (Blueprint $table) {
+        Schema::create(Table::ENTRIES_AUTHORS, function (Blueprint $table) {
             $table->integer('entryId');
             $table->integer('authorId');
             $table->unsignedSmallInteger('sortOrder');
             $table->primary(['entryId', 'authorId']);
         });
 
-        Schema::create(Table::withoutYiiPlaceholder(Table::ENTRYTYPES), function (Blueprint $table) {
+        Schema::create(Table::ENTRYTYPES, function (Blueprint $table) {
             $table->integer('id', true);
             $table->integer('fieldLayoutId')->nullable();
             $table->string('name');
@@ -450,7 +450,7 @@ class Install extends Migration
             $table->char('uid', 36)->default('0');
         });
 
-        Schema::create(Table::withoutYiiPlaceholder(Table::FIELDLAYOUTS), function (Blueprint $table) {
+        Schema::create(Table::FIELDLAYOUTS, function (Blueprint $table) {
             $table->integer('id', true);
             $table->string('type');
             $table->jsonb('config')->nullable();
@@ -460,7 +460,7 @@ class Install extends Migration
             $table->char('uid', 36)->default('0');
         });
 
-        Schema::create(Table::withoutYiiPlaceholder(Table::FIELDS), function (Blueprint $table) {
+        Schema::create(Table::FIELDS, function (Blueprint $table) {
             $table->integer('id', true);
             $table->text('name');
             $table->string('handle', 64);
@@ -478,7 +478,7 @@ class Install extends Migration
             $table->char('uid', 36)->default('0');
         });
 
-        Schema::create(Table::withoutYiiPlaceholder(Table::GLOBALSETS), function (Blueprint $table) {
+        Schema::create(Table::GLOBALSETS, function (Blueprint $table) {
             $table->integer('id', true);
             $table->string('name');
             $table->string('handle');
@@ -489,7 +489,7 @@ class Install extends Migration
             $table->char('uid', 36)->default('0');
         });
 
-        Schema::create(Table::withoutYiiPlaceholder(Table::GQLTOKENS), function (Blueprint $table) {
+        Schema::create(Table::GQLTOKENS, function (Blueprint $table) {
             $table->integer('id', true);
             $table->string('name');
             $table->string('accessToken');
@@ -502,7 +502,7 @@ class Install extends Migration
             $table->char('uid', 36)->default('0');
         });
 
-        Schema::create(Table::withoutYiiPlaceholder(Table::GQLSCHEMAS), function (Blueprint $table) {
+        Schema::create(Table::GQLSCHEMAS, function (Blueprint $table) {
             $table->integer('id', true);
             $table->string('name');
             $table->jsonb('scope')->nullable();
@@ -512,7 +512,7 @@ class Install extends Migration
             $table->char('uid', 36)->default('0');
         });
 
-        Schema::create(Table::withoutYiiPlaceholder(Table::INFO), function (Blueprint $table) {
+        Schema::create(Table::INFO, function (Blueprint $table) {
             $table->integer('id', true);
             $table->string('version', 50);
             $table->string('schemaVersion', 15);
@@ -524,7 +524,7 @@ class Install extends Migration
             $table->char('uid', 36)->default('0');
         });
 
-        Schema::create(Table::withoutYiiPlaceholder(Table::MIGRATIONS), function (Blueprint $table) {
+        Schema::create(Table::MIGRATIONS, function (Blueprint $table) {
             $table->integer('id', true);
             $table->string('track');
             $table->string('name');
@@ -545,12 +545,12 @@ class Install extends Migration
             $table->char('uid', 36)->default('0');
         });
 
-        Schema::create(Table::withoutYiiPlaceholder(Table::PROJECTCONFIG), function (Blueprint $table) {
+        Schema::create(Table::PROJECTCONFIG, function (Blueprint $table) {
             $table->string('path')->primary();
             $table->text('value');
         });
 
-        Schema::create(Table::withoutYiiPlaceholder(Table::QUEUE), function (Blueprint $table) {
+        Schema::create(Table::QUEUE, function (Blueprint $table) {
             $table->integer('id', true);
             $table->string('channel')->default('queue');
             $table->binary('job');
@@ -569,7 +569,7 @@ class Install extends Migration
             $table->text('error')->nullable();
         });
 
-        Schema::create(Table::withoutYiiPlaceholder(Table::RECOVERYCODES), function (Blueprint $table) {
+        Schema::create(Table::RECOVERYCODES, function (Blueprint $table) {
             $table->integer('id', true);
             $table->integer('userId');
             $table->text('recoveryCodes')->nullable();
@@ -577,7 +577,7 @@ class Install extends Migration
             $table->dateTime('dateUpdated');
         });
 
-        Schema::create(Table::withoutYiiPlaceholder(Table::RELATIONS), function (Blueprint $table) {
+        Schema::create(Table::RELATIONS, function (Blueprint $table) {
             $table->integer('id', true);
             $table->integer('fieldId');
             $table->integer('sourceId');
@@ -589,21 +589,21 @@ class Install extends Migration
             $table->char('uid', 36)->default('0');
         });
 
-        Schema::create(Table::withoutYiiPlaceholder(Table::SEARCHINDEXQUEUE), function (Blueprint $table) {
+        Schema::create(Table::SEARCHINDEXQUEUE, function (Blueprint $table) {
             $table->integer('id', true);
             $table->integer('elementId');
             $table->integer('siteId');
             $table->boolean('reserved')->default(false);
         });
 
-        Schema::create(Table::withoutYiiPlaceholder(Table::SEARCHINDEXQUEUE_FIELDS), function (Blueprint $table) {
+        Schema::create(Table::SEARCHINDEXQUEUE_FIELDS, function (Blueprint $table) {
             $table->integer('jobId');
             $table->string('fieldHandle');
 
             $table->primary(['jobId', 'fieldHandle']);
         });
 
-        Schema::create(Table::withoutYiiPlaceholder(Table::SECTIONS), function (Blueprint $table) {
+        Schema::create(Table::SECTIONS, function (Blueprint $table) {
             $table->integer('id', true);
             $table->integer('structureId')->nullable();
             $table->string('name');
@@ -627,7 +627,7 @@ class Install extends Migration
             $table->char('uid', 36)->default('0');
         });
 
-        Schema::create(Table::withoutYiiPlaceholder(Table::SECTIONS_ENTRYTYPES), function (Blueprint $table) {
+        Schema::create(Table::SECTIONS_ENTRYTYPES, function (Blueprint $table) {
             $table->integer('sectionId');
             $table->integer('typeId');
             $table->unsignedSmallInteger('sortOrder');
@@ -638,7 +638,7 @@ class Install extends Migration
             $table->primary(['sectionId', 'typeId']);
         });
 
-        Schema::create(Table::withoutYiiPlaceholder(Table::SECTIONS_SITES), function (Blueprint $table) {
+        Schema::create(Table::SECTIONS_SITES, function (Blueprint $table) {
             $table->integer('id', true);
             $table->integer('sectionId');
             $table->integer('siteId');
@@ -651,7 +651,7 @@ class Install extends Migration
             $table->char('uid', 36)->default('0');
         });
 
-        Schema::create(Table::withoutYiiPlaceholder(Table::SESSIONS), function (Blueprint $table) {
+        Schema::create(Table::SESSIONS, function (Blueprint $table) {
             $table->integer('id', true);
             $table->integer('userId');
             $table->char('token', 100);
@@ -660,7 +660,7 @@ class Install extends Migration
             $table->char('uid', 36)->default('0');
         });
 
-        Schema::create(Table::withoutYiiPlaceholder(Table::SHUNNEDMESSAGES), function (Blueprint $table) {
+        Schema::create(Table::SHUNNEDMESSAGES, function (Blueprint $table) {
             $table->integer('id', true);
             $table->integer('userId');
             $table->string('message');
@@ -670,7 +670,7 @@ class Install extends Migration
             $table->char('uid', 36)->default('0');
         });
 
-        Schema::create(Table::withoutYiiPlaceholder(Table::SITES), function (Blueprint $table) {
+        Schema::create(Table::SITES, function (Blueprint $table) {
             $table->integer('id', true);
             $table->integer('groupId');
             $table->boolean('primary');
@@ -687,7 +687,7 @@ class Install extends Migration
             $table->char('uid', 36)->default('0');
         });
 
-        Schema::create(Table::withoutYiiPlaceholder(Table::SITEGROUPS), function (Blueprint $table) {
+        Schema::create(Table::SITEGROUPS, function (Blueprint $table) {
             $table->integer('id', true);
             $table->string('name');
             $table->dateTime('dateCreated');
@@ -696,7 +696,7 @@ class Install extends Migration
             $table->char('uid', 36)->default('0');
         });
 
-        Schema::create(Table::withoutYiiPlaceholder(Table::SSO_IDENTITIES), function (Blueprint $table) {
+        Schema::create(Table::SSO_IDENTITIES, function (Blueprint $table) {
             $table->string('provider');
             $table->string('identityId');
             $table->integer('userId');
@@ -706,7 +706,7 @@ class Install extends Migration
             $table->primary(['provider', 'identityId', 'userId']);
         });
 
-        Schema::create(Table::withoutYiiPlaceholder(Table::STRUCTUREELEMENTS), function (Blueprint $table) {
+        Schema::create(Table::STRUCTUREELEMENTS, function (Blueprint $table) {
             $table->integer('id', true);
             $table->integer('structureId');
             $table->integer('elementId')->nullable();
@@ -719,7 +719,7 @@ class Install extends Migration
             $table->char('uid', 36)->default('0');
         });
 
-        Schema::create(Table::withoutYiiPlaceholder(Table::STRUCTURES), function (Blueprint $table) {
+        Schema::create(Table::STRUCTURES, function (Blueprint $table) {
             $table->integer('id', true);
             $table->unsignedSmallInteger('maxLevels')->nullable();
             $table->dateTime('dateCreated');
@@ -728,7 +728,7 @@ class Install extends Migration
             $table->char('uid', 36)->default('0');
         });
 
-        Schema::create(Table::withoutYiiPlaceholder(Table::TAGGROUPS), function (Blueprint $table) {
+        Schema::create(Table::TAGGROUPS, function (Blueprint $table) {
             $table->integer('id', true);
             $table->string('name');
             $table->string('handle');
@@ -739,7 +739,7 @@ class Install extends Migration
             $table->char('uid', 36)->default('0');
         });
 
-        Schema::create(Table::withoutYiiPlaceholder(Table::TAGS), function (Blueprint $table) {
+        Schema::create(Table::TAGS, function (Blueprint $table) {
             $table->integer('id');
             $table->integer('groupId');
             $table->boolean('deletedWithGroup')->nullable();
@@ -747,7 +747,7 @@ class Install extends Migration
             $table->dateTime('dateUpdated');
         });
 
-        Schema::create(Table::withoutYiiPlaceholder(Table::TOKENS), function (Blueprint $table) {
+        Schema::create(Table::TOKENS, function (Blueprint $table) {
             $table->integer('id', true);
             $table->char('token', 32);
             $table->text('route')->nullable();
@@ -759,7 +759,7 @@ class Install extends Migration
             $table->char('uid', 36)->default('0');
         });
 
-        Schema::create(Table::withoutYiiPlaceholder(Table::USERGROUPS), function (Blueprint $table) {
+        Schema::create(Table::USERGROUPS, function (Blueprint $table) {
             $table->integer('id', true);
             $table->string('name');
             $table->string('handle');
@@ -769,7 +769,7 @@ class Install extends Migration
             $table->char('uid', 36)->default('0');
         });
 
-        Schema::create(Table::withoutYiiPlaceholder(Table::USERGROUPS_USERS), function (Blueprint $table) {
+        Schema::create(Table::USERGROUPS_USERS, function (Blueprint $table) {
             $table->integer('id', true);
             $table->integer('groupId');
             $table->integer('userId');
@@ -778,7 +778,7 @@ class Install extends Migration
             $table->char('uid', 36)->default('0');
         });
 
-        Schema::create(Table::withoutYiiPlaceholder(Table::USERPERMISSIONS), function (Blueprint $table) {
+        Schema::create(Table::USERPERMISSIONS, function (Blueprint $table) {
             $table->integer('id', true);
             $table->string('name');
             $table->dateTime('dateCreated');
@@ -786,7 +786,7 @@ class Install extends Migration
             $table->char('uid', 36)->default('0');
         });
 
-        Schema::create(Table::withoutYiiPlaceholder(Table::USERPERMISSIONS_USERGROUPS), function (Blueprint $table) {
+        Schema::create(Table::USERPERMISSIONS_USERGROUPS, function (Blueprint $table) {
             $table->integer('id', true);
             $table->integer('permissionId');
             $table->integer('groupId');
@@ -795,7 +795,7 @@ class Install extends Migration
             $table->char('uid', 36)->default('0');
         });
 
-        Schema::create(Table::withoutYiiPlaceholder(Table::USERPERMISSIONS_USERS), function (Blueprint $table) {
+        Schema::create(Table::USERPERMISSIONS_USERS, function (Blueprint $table) {
             $table->integer('id', true);
             $table->integer('permissionId');
             $table->integer('userId');
@@ -804,7 +804,7 @@ class Install extends Migration
             $table->char('uid', 36)->default('0');
         });
 
-        Schema::create(Table::withoutYiiPlaceholder(Table::USERPREFERENCES), function (Blueprint $table) {
+        Schema::create(Table::USERPREFERENCES, function (Blueprint $table) {
             $table->integer('userId')->primary();
             $table->jsonb('preferences')->nullable();
         });
@@ -843,7 +843,7 @@ class Install extends Migration
             $table->primary('id');
         });
 
-        Schema::create(Table::withoutYiiPlaceholder(Table::VOLUMEFOLDERS), function (Blueprint $table) {
+        Schema::create(Table::VOLUMEFOLDERS, function (Blueprint $table) {
             $table->integer('id', true);
             $table->integer('parentId')->nullable();
             $table->integer('volumeId')->nullable();
@@ -854,7 +854,7 @@ class Install extends Migration
             $table->char('uid', 36)->default('0');
         });
 
-        Schema::create(Table::withoutYiiPlaceholder(Table::VOLUMES), function (Blueprint $table) {
+        Schema::create(Table::VOLUMES, function (Blueprint $table) {
             $table->integer('id', true);
             $table->integer('fieldLayoutId')->nullable();
             $table->string('name');
@@ -874,7 +874,7 @@ class Install extends Migration
             $table->char('uid', 36)->default('0');
         });
 
-        Schema::create(Table::withoutYiiPlaceholder(Table::WEBAUTHN), function (Blueprint $table) {
+        Schema::create(Table::WEBAUTHN, function (Blueprint $table) {
             $table->integer('id', true);
             $table->integer('userId');
             $table->string('credentialId')->default(null)->nullable();
@@ -1029,7 +1029,7 @@ class Install extends Migration
         $this->createIndex(Table::VOLUMES, ['dateDeleted']);
         $this->createIndex(Table::WIDGETS, ['userId']);
 
-        Schema::create(Table::withoutYiiPlaceholder(Table::SEARCHINDEX), function (Blueprint $table) {
+        Schema::create(Table::SEARCHINDEX, function (Blueprint $table) {
             $table->integer('elementId');
             $table->string('attribute', 25);
             $table->integer('fieldId');
@@ -1044,21 +1044,21 @@ class Install extends Migration
             $this->createIndex(Table::USERS, ['email']);
             $this->createIndex(Table::USERS, ['username']);
 
-            Schema::table(Table::withoutYiiPlaceholder(Table::SEARCHINDEX), function (Blueprint $table) {
+            Schema::table(Table::SEARCHINDEX, function (Blueprint $table) {
                 $table->fullText('keywords');
             });
         } else {
             // Postgres is case-sensitive
-            DB::statement('CREATE INDEX sites_uri_siteid_index ON '.Craft::$app->getDb()->tablePrefix.Table::withoutYiiPlaceholder(Table::ELEMENTS_SITES).' (lower(uri), "siteId")');
-            DB::statement('CREATE INDEX users_email_index ON '.Craft::$app->getDb()->tablePrefix.Table::withoutYiiPlaceholder(Table::USERS).' (lower(email))');
-            DB::statement('CREATE INDEX users_username_index ON '.Craft::$app->getDb()->tablePrefix.Table::withoutYiiPlaceholder(Table::USERS).' (lower(username))');
+            DB::statement('CREATE INDEX sites_uri_siteid_index ON '.Craft::$app->getDb()->tablePrefix.Table::ELEMENTS_SITES.' (lower(uri), "siteId")');
+            DB::statement('CREATE INDEX users_email_index ON '.Craft::$app->getDb()->tablePrefix.Table::USERS.' (lower(email))');
+            DB::statement('CREATE INDEX users_username_index ON '.Craft::$app->getDb()->tablePrefix.Table::USERS.' (lower(username))');
 
-            Schema::table(Table::withoutYiiPlaceholder(Table::SEARCHINDEX), function (Blueprint $table) {
+            Schema::table(Table::SEARCHINDEX, function (Blueprint $table) {
                 $table->rawColumn('keywords_vector', 'tsvector');
             });
 
-            DB::statement('CREATE INDEX keywords_gin ON '.Craft::$app->getDb()->tablePrefix.Table::withoutYiiPlaceholder(Table::SEARCHINDEX).' USING GIN(keywords_vector) WITH (FASTUPDATE=YES)');
-            DB::statement('CREATE INDEX keywords_index ON '.Craft::$app->getDb()->tablePrefix.Table::withoutYiiPlaceholder(Table::SEARCHINDEX).' USING btree(keywords)');
+            DB::statement('CREATE INDEX keywords_gin ON '.Craft::$app->getDb()->tablePrefix.Table::SEARCHINDEX.' USING GIN(keywords_vector) WITH (FASTUPDATE=YES)');
+            DB::statement('CREATE INDEX keywords_index ON '.Craft::$app->getDb()->tablePrefix.Table::SEARCHINDEX.' USING btree(keywords)');
         }
     }
 

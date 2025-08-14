@@ -9,8 +9,6 @@ namespace craft\auth\sso;
 
 use Craft;
 use craft\auth\sso\mapper\UserAttributesMapper;
-use craft\db\Query;
-use craft\db\Table;
 use craft\elements\User;
 use craft\errors\ElementNotFoundException;
 use craft\errors\SsoFailedException;
@@ -20,8 +18,10 @@ use craft\helpers\Html;
 use craft\helpers\UrlHelper;
 use craft\services\Sso;
 use CraftCms\Cms\Config\GeneralConfig;
+use CraftCms\Cms\Db\Table;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Str;
+use Illuminate\Support\Facades\DB;
 use Throwable;
 use yii\base\Exception;
 use yii\base\InvalidConfigException;
@@ -230,14 +230,10 @@ abstract class BaseExternalProvider extends BaseProvider
      */
     private function assignUserToGroups(User $user, array $data): bool
     {
-        $db = Craft::$app->getDb();
-
         // Get the current groups
-        $groupIds = (new Query())
-            ->select(['groupId'])
-            ->from([Table::USERGROUPS_USERS])
-            ->where(['userId' => $user->getId()])
-            ->column($db);
+        $groupIds = DB::table(Table::USERGROUPS_USERS)
+            ->where('userId', $user->getId())
+            ->pluck('groupId');
 
         // Populate user via callable
         $assignUserGroups = $this->normalizeCallback($this->assignUserGroups);

@@ -1,6 +1,6 @@
 <?php
 
-use craft\db\Table;
+use CraftCms\Cms\Db\Table;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
@@ -11,7 +11,7 @@ return new class extends Migration implements MigrationInterface
 {
     public function up(): bool
     {
-        Schema::table(Table::withoutYiiPlaceholder(Table::USERS), function (Blueprint $table) {
+        Schema::table(Table::USERS, function (Blueprint $table) {
             $table->rememberToken();
         });
 
@@ -20,7 +20,7 @@ return new class extends Migration implements MigrationInterface
 
     public function down(): bool
     {
-        Schema::dropColumns(Table::withoutYiiPlaceholder(Table::USERS), 'remember_token');
+        Schema::dropColumns(Table::USERS, 'remember_token');
 
         return true;
     }

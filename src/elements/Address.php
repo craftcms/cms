@@ -11,7 +11,6 @@ use craft\base\Element;
 use craft\base\NameTrait;
 use craft\base\NestedElementInterface;
 use craft\base\NestedElementTrait;
-use craft\db\Table;
 use craft\elements\actions\Copy;
 use craft\elements\conditions\addresses\AddressCondition;
 use craft\elements\conditions\ElementConditionInterface;
@@ -25,6 +24,7 @@ use craft\models\FieldLayout;
 use craft\records\Address as AddressRecord;
 use craft\validators\StringValidator;
 use CraftCms\Cms\Config\GeneralConfig;
+use CraftCms\Cms\Db\Table;
 use yii\base\InvalidConfigException;
 
 /**

@@ -1212,7 +1212,7 @@ class EntryQuery extends ElementQuery implements NestedElementQueryInterface
                 $tags[] = "entryType:$typeId";
             }
         } elseif ($this->sectionId) {
-            foreach ($this->sectionId as $sectionId) {
+            foreach (Arr::wrap($this->sectionId) as $sectionId) {
                 $tags[] = "section:$sectionId";
             }
         }

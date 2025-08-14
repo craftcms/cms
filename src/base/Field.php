@@ -8,7 +8,6 @@
 namespace craft\base;
 
 use Craft;
-use craft\db\Table as DbTable;
 use craft\elements\db\ElementQueryInterface;
 use craft\events\DefineFieldHtmlEvent;
 use craft\events\DefineFieldKeywordsEvent;
@@ -26,6 +25,7 @@ use craft\records\Field as FieldRecord;
 use craft\validators\HandleValidator;
 use craft\validators\UniqueValidator;
 use CraftCms\Cms\Config\GeneralConfig;
+use CraftCms\Cms\Db\Table;
 use CraftCms\Cms\Element\Enums\AttributeStatus;
 use CraftCms\Cms\Support\Str;
 use DateTime;
@@ -962,7 +962,12 @@ JS, [
     public function afterMergeFrom(FieldInterface $outgoingField)
     {
         if ($this instanceof RelationalFieldInterface) {
-            Db::update(DbTable::RELATIONS, ['fieldId' => $this->id], ['fieldId' => $outgoingField->id]);
+            \Illuminate\Support\Facades\DB::table(Table::RELATIONS)
+                ->where('fieldId', $outgoingField->id)
+                ->update([
+                    'fieldId' => $this->id,
+                    'dateUpdated' => now(),
+                ]);
         }
 
         // Fire an 'afterMergeFrom' event

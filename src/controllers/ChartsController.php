@@ -8,14 +8,16 @@
 namespace craft\controllers;
 
 use Craft;
-use craft\db\Query;
-use craft\db\Table;
 use craft\elements\User;
 use craft\helpers\ChartHelper;
 use craft\helpers\DateTimeHelper;
 use craft\web\Controller;
+use CraftCms\Cms\Db\Table;
 use DateTime;
 use DateTimeZone;
+use Illuminate\Database\Query\Builder;
+use Illuminate\Support\Facades\DB;
+use Tpetry\QueryExpressions\Language\Alias;
 use yii\base\Exception;
 use yii\base\Response;
 
@@ -56,13 +58,12 @@ class ChartsController extends Controller
         $intervalUnit = 'day';
 
         // Prep the query
-        $query = (new Query())
-            ->from(['users' => Table::USERS]);
-
-        if ($userGroupId) {
-            $query->innerJoin(['usergroups_users' => Table::USERGROUPS_USERS], '[[usergroups_users.userId]] = [[users.id]]');
-            $query->where(['usergroups_users.groupId' => $userGroupId]);
-        }
+        $query = DB::table(Table::USERS)
+            ->when($userGroupId, fn(Builder $query, $userGroupId) => $query
+                ->join(new Alias(Table::USERGROUPS_USERS, 'usergroups_users'), 'usergroups_users.userId', 'users.id')
+                ->where('usergroups_users.groupId', $userGroupId),
+            )
+        ;
 
         // Get the chart data table
         $dataTable = ChartHelper::getRunChartDataFromQuery($query, $startDate, $endDate, 'users.dateCreated', 'count', '*', [

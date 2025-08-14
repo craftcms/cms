@@ -8,15 +8,16 @@
 namespace craft\web;
 
 use Craft;
-use craft\db\Table;
 use craft\errors\DbConnectException;
 use craft\helpers\App;
-use craft\helpers\Db;
 use craft\helpers\FileHelper;
 use craft\helpers\UrlHelper;
 use CraftCms\Cms\Config\GeneralConfig;
+use CraftCms\Cms\Db\Table;
 use CraftCms\DependencyAwareCache\Dependency\TagDependency;
 use CraftCms\DependencyAwareCache\Facades\DependencyCache;
+use Illuminate\Database\QueryException;
+use Illuminate\Support\Facades\DB;
 use yii\db\Exception as DbException;
 
 /**
@@ -97,11 +98,12 @@ class AssetManager extends \yii\web\AssetManager
             // Store the hash for later
             Craft::$app->onAfterRequest(function() use ($hash, $alias) {
                 try {
-                    Db::upsert(Table::RESOURCEPATHS, [
-                        'hash' => $hash,
-                        'path' => $alias,
-                    ]);
-                } catch (DbException|DbConnectException) {
+                    DB::table(Table::RESOURCEPATHS)
+                        ->upsert([
+                            'hash' => $hash,
+                            'path' => $alias,
+                        ], ['hash']);
+                } catch (DbException|DbConnectException|QueryException) {
                     // Craft is either not installed or not updated to 3.0.3+ yet,
                     // so cache the source path instead
                     DependencyCache::put(

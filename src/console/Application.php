@@ -10,12 +10,12 @@ namespace craft\console;
 use Craft;
 use craft\base\ApplicationTrait;
 use craft\console\controllers\HelpController;
-use craft\db\Query;
-use craft\db\Table;
 use craft\errors\MissingComponentException;
 use craft\helpers\Console;
 use craft\queue\QueueLogBehavior;
+use CraftCms\Cms\Db\Table;
 use CraftCms\Cms\Support\Env;
+use Illuminate\Support\Facades\DB;
 use IntlDateFormatter;
 use IntlException;
 use Throwable;
@@ -76,11 +76,11 @@ class Application extends \yii\console\Application
             if (!$this->getIsDbConnectionValid()) {
                 Console::outputWarning('Craft can’t connect to the database. Check your connection settings.');
             } else {
-                $infoTable = $this->getDb()->getSchema()->getRawTableName(Table::INFO);
+                $infoTable = Table::INFO;
                 // Figure out the exception that is getting thrown
                 $e = null;
                 try {
-                    (new Query())->from([Table::INFO])->where(['id' => 1])->one();
+                    DB::table($infoTable)->find(1);
                 } catch (Throwable $e) {
                     $e = $e->getPrevious() ?? $e;
                 }

@@ -8,11 +8,10 @@
 namespace craft\console\controllers\utils;
 
 use craft\console\Controller;
-use craft\db\Query;
-use craft\db\Table;
 use craft\helpers\Console;
-use craft\helpers\Db;
+use CraftCms\Cms\Db\Table;
 use CraftCms\Cms\Support\Str;
+use Illuminate\Support\Facades\DB;
 use yii\console\ExitCode;
 
 /**
@@ -31,43 +30,41 @@ class FixElementUidsController extends Controller
     public function actionIndex(): int
     {
         $uids = [];
-        $query = (new Query())
+
+        $query = DB::table(Table::ELEMENTS)
             ->select(['id', 'uid'])
-            ->from([Table::ELEMENTS])
-            ->where([
-                'in', 'uid', (new Query())
-                    ->select(['uid'])
-                    ->from([Table::ELEMENTS])
-                    ->groupBy(['uid'])
-                    ->having('count([[uid]]) > 1'),
-            ])
-            ->orderBy(['id' => SORT_ASC]);
+            ->whereIn('uid', DB::table(Table::ELEMENTS)
+                ->select('uid')
+                ->groupBy('uid')
+                ->havingRaw('count(uid) > 1')
+            )
+            ->orderBy('id');
 
         $total = $query->count();
-        if ($total == 0) {
+        if ($total === 0) {
             $this->stdout('No elements with duplicate UIDs found.' . PHP_EOL . PHP_EOL, Console::FG_GREEN);
             return ExitCode::OK;
         }
 
         $this->stdout("Found $total elements with duplicate UIDs." . PHP_EOL);
 
-        foreach (Db::each($query) as $result) {
-            if (!isset($uids[$result['uid']])) {
+        $query->each(function(object $result) use (&$uids) {
+            if (!isset($uids[$result->uid])) {
                 // This is the first time this UID was issued
-                $uids[$result['uid']] = true;
-                continue;
+                $uids[$result->uid] = true;
+                return;
             }
 
             // Duplicate! Give this element a unique UID
             $newUid = Str::uuid()->toString();
-            $this->stdout("- Changing {$result['uid']} ({$result['id']}) to $newUid ... ");
-            Db::update(Table::ELEMENTS, [
-                'uid' => $newUid,
-            ], [
-                'id' => $result['id'],
-            ], [], false);
+            $this->stdout("- Changing {$result->uid} ({$result->id}) to $newUid ... ");
+
+            DB::table(Table::ELEMENTS)
+                ->where('id', $result->id)
+                ->update(['uid' => $newUid]);
+
             $this->stdout('done' . PHP_EOL, Console::FG_GREEN);
-        }
+        });
 
         $this->stdout('Finished assigning unique UIDs to all elements.' . PHP_EOL . PHP_EOL, Console::FG_GREEN);
         return ExitCode::OK;

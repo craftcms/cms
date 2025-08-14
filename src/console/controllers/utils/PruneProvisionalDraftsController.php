@@ -10,11 +10,10 @@ namespace craft\console\controllers\utils;
 use Craft;
 use craft\base\ElementInterface;
 use craft\console\Controller;
-use craft\db\Query;
-use craft\db\Table;
 use craft\helpers\Console;
+use CraftCms\Cms\Db\Table;
+use Illuminate\Support\Facades\DB;
 use yii\console\ExitCode;
-use yii\db\Expression;
 
 /**
  * Prunes provisional drafts for elements that have more than one per user.
@@ -47,28 +46,26 @@ class PruneProvisionalDraftsController extends Controller
     public function actionIndex(): int
     {
         $this->stdout('Finding elements with multiple provisional drafts per user ... ');
-        $elements = (new Query())
-            ->select([
-                'id' => 's.canonicalId',
-                's.creatorId',
-                's.count',
-                'type' => (new Query())
-                    ->select(['type'])
-                    ->from([Table::ELEMENTS])
-                    ->where(new Expression('[[id]] = [[s.canonicalId]]')),
-            ])
-            ->from([
-                's' => (new Query())
-                    ->select(['canonicalId', 'creatorId', 'count' => 'COUNT(*)'])
-                    ->from([Table::DRAFTS])
-                    ->where(['provisional' => true])
-                    ->groupBy(['canonicalId', 'creatorId'])
-                    ->having('COUNT(*) > 1'),
-            ])
-            ->all();
+
+        $elements = DB::table(
+            table: DB::table(Table::DRAFTS)
+                ->select(['canonicalId', 'creatorId', DB::raw('COUNT(*) as count')])
+                ->where('provisional', true)
+                ->groupBy(['canonicalId', 'creatorId'])
+                ->havingRaw('COUNT(*) > 1'),
+            as: 's',
+        )->select([
+            's.canonicalId as id',
+            's.creatorId',
+            's.count',
+            'type' => DB::table(Table::ELEMENTS)
+                ->select('type')
+                ->whereColumn('id', 's.canonicalId'),
+        ])->get();
+
         $this->stdout('done' . PHP_EOL . PHP_EOL, Console::FG_GREEN);
 
-        if (empty($elements)) {
+        if ($elements->isEmpty()) {
             $this->stdout('Nothing to prune' . PHP_EOL . PHP_EOL, Console::FG_GREEN);
             return ExitCode::OK;
         }
@@ -78,20 +75,20 @@ class PruneProvisionalDraftsController extends Controller
         $elementsService = Craft::$app->getElements();
 
         foreach ($elements as $element) {
-            if (!class_exists($element['type'])) {
+            if (!class_exists($element->type)) {
                 continue;
             }
 
             /** @var class-string<ElementInterface> $elementType */
-            $elementType = $element['type'];
-            $deleteCount = $element['count'] - 1;
+            $elementType = $element->type;
+            $deleteCount = $element->count - 1;
 
-            $this->stdout('- ' . $elementType::displayName() . " {$element['id']} for user {$element['creatorId']} ($deleteCount provisional drafts) ... ");
+            $this->stdout('- ' . $elementType::displayName() . " {$element->id} for user {$element->creatorId} ($deleteCount provisional drafts) ... ");
 
             $extraDrafts = $elementType::find()
                 ->provisionalDrafts()
-                ->draftOf($element['id'])
-                ->draftCreator($element['creatorId'])
+                ->draftOf($element->id)
+                ->draftCreator($element->creatorId)
                 ->site('*')
                 ->unique()
                 ->status(null)

@@ -15,8 +15,6 @@ use Codeception\TestInterface;
 use craft\base\ElementInterface;
 use craft\config\DbConfig;
 use craft\console\Application as ConsoleApplication;
-use craft\db\Query;
-use craft\db\Table;
 use craft\errors\ElementNotFoundException;
 use craft\errors\InvalidPluginException;
 use craft\helpers\App;
@@ -25,11 +23,17 @@ use craft\models\FieldLayout;
 use craft\queue\BaseJob;
 use craft\queue\Queue;
 use craft\web\Application as WebApplication;
+use CraftCms\Cms\Config\GeneralConfig;
+use CraftCms\Cms\Db\Table;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Support\Env;
 use DateTime;
 use Exception;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Config;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\File;
+use PDO;
 use PHPUnit\Framework\ExpectationFailedException;
 use PHPUnit\Framework\MockObject\MockObject;
 use ReflectionException;
@@ -135,6 +139,20 @@ class Craft extends Yii2
     {
         parent::_beforeSuite($settings);
 
+        /**
+         * Initialize the Laravel Craft Application
+         */
+        new \CraftCms\Cms\Tests\TestCase('laravel')->createApplication();
+
+        $generalConfig = app(GeneralConfig::class);
+        foreach (require CRAFT_CONFIG_PATH . '/general.php' as $key => $value) {
+            $generalConfig->$key = $value;
+        }
+        Config::set('craft.general', $generalConfig);
+
+        File::cleanDirectory(config_path('project'));
+        Cache::clear();
+
         if ($this->_getConfig('fullMock') !== true) {
             $this->setupDb();
         }
@@ -169,6 +187,8 @@ class Craft extends Yii2
         // transaction events are registered now, so it's ok to open the connection
         \Craft::$app->db->open();
 
+        DB::connection()->getPdo()->setAttribute(PDO::ATTR_EMULATE_PREPARES, false);
+
         // If full mock, create the mock app and don't perform to any further actions
         if ($this->_getConfig('fullMock') === true) {
             /**
@@ -187,6 +207,14 @@ class Craft extends Yii2
         if ($this->_getConfig('dbSetup')['setupCraft']) {
             $this->resetProjectConfig();
         }
+    }
+
+    public function _after(TestInterface $test): void
+    {
+        parent::_after($test);
+
+        DB::disconnect();
+        DB::disconnect('db2');
     }
 
     /**
@@ -567,11 +595,10 @@ class Craft extends Yii2
     public function assertPushedToQueue(string $description): void
     {
         if (\Craft::$app->getQueue() instanceof Queue) {
-            $this->assertTrue((new Query())
-                ->select(['id'])
-                ->where(['description' => $description])
-                ->from([Table::QUEUE])
-                ->exists()
+            $this->assertTrue(
+                DB::table(Table::QUEUE)
+                    ->where('description', $description)
+                    ->exists()
             );
         }
     }
@@ -582,11 +609,10 @@ class Craft extends Yii2
     public function assertNotPushedToQueue(string $description)
     {
         if (\Craft::$app->getQueue() instanceof Queue) {
-            $this->assertFalse((new Query())
-                ->select(['id'])
-                ->where(['description' => $description])
-                ->from([Table::QUEUE])
-                ->exists()
+            $this->assertFalse(
+                DB::table(Table::QUEUE)
+                    ->where('description', $description)
+                    ->exists()
             );
         }
     }

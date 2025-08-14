@@ -13,8 +13,6 @@ use craft\base\ElementInterface as BaseElementInterface;
 use craft\base\FieldInterface;
 use craft\base\GqlInlineFragmentFieldInterface;
 use craft\behaviors\FieldLayoutBehavior;
-use craft\db\Query as DbQuery;
-use craft\db\Table;
 use craft\errors\GqlException;
 use craft\events\ConfigEvent;
 use craft\events\DefineGqlValidationRulesEvent;
@@ -67,7 +65,7 @@ use craft\gql\types\Number;
 use craft\gql\types\Query;
 use craft\gql\types\QueryArgument;
 use craft\helpers\DateTimeHelper;
-use craft\helpers\Db;
+use craft\helpers\Db as DbHelper;
 use craft\helpers\Gql as GqlHelper;
 use craft\helpers\ProjectConfig as ProjectConfigHelper;
 use craft\models\FieldLayout;
@@ -77,6 +75,7 @@ use craft\models\Section;
 use craft\records\GqlSchema as GqlSchemaRecord;
 use craft\records\GqlToken as GqlTokenRecord;
 use CraftCms\Cms\Config\GeneralConfig;
+use CraftCms\Cms\Db\Table;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Support\Str;
 use CraftCms\DependencyAwareCache\Dependency\TagDependency;
@@ -94,7 +93,9 @@ use GraphQL\Validator\Rules\FieldsOnCorrectType;
 use GraphQL\Validator\Rules\KnownTypeNames;
 use GraphQL\Validator\Rules\QueryComplexity;
 use GraphQL\Validator\Rules\QueryDepth;
+use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\DB;
 use Throwable;
 use yii\base\Component;
 use yii\base\Exception;
@@ -369,6 +370,7 @@ class Gql extends Component
      *
      * @param GqlSchema|null $schema
      * @param bool $prebuildSchema should the schema be deep-scanned and pre-built instead of lazy-loaded
+     *
      * @return Schema
      * @throws GqlException in case of invalid schema
      */
@@ -412,7 +414,8 @@ class Gql extends Component
                 $this->_schemaDef = new Schema($schemaConfig);
                 $this->_schemaDef->getTypeMap();
             } catch (Throwable $exception) {
-                throw new GqlException('Failed to validate the GQL Schema - ' . $exception->getMessage(), previous: $exception);
+                throw new GqlException('Failed to validate the GQL Schema - ' . $exception->getMessage(),
+                    previous: $exception);
             }
         }
 
@@ -424,6 +427,7 @@ class Gql extends Component
      *
      * @param bool $debug Whether debugging validation rules should be allowed.
      * @param bool $isIntrospectionQuery Whether this is an introspection query
+     *
      * @return array
      */
     public function getValidationRules(bool $debug = false, bool $isIntrospectionQuery = false): array
@@ -434,7 +438,7 @@ class Gql extends Component
             // Remove the rules which would generate a full schema just for a nice message, to avoid performance hit.
             unset(
                 $validationRules[KnownTypeNames::class],
-                $validationRules[FieldsOnCorrectType::class]
+                $validationRules[FieldsOnCorrectType::class],
             );
         }
 
@@ -477,6 +481,7 @@ class Gql extends Component
      * @param array|null $variables The variables to use.
      * @param string|null $operationName The operation name.
      * @param bool $debugMode Whether debug mode validations rules should be used for GraphQL.
+     *
      * @return array
      * @since 3.3.11
      */
@@ -542,7 +547,7 @@ class Gql extends Component
                     $variables,
                     $operationName,
                     null,
-                    $this->getValidationRules($debugMode, $isIntrospectionQuery)
+                    $this->getValidationRules($debugMode, $isIntrospectionQuery),
                 )
                     ->setErrorsHandler([$this, 'handleQueryErrors'])
                     ->toArray($debugMode ? DebugFlag::INCLUDE_DEBUG_MESSAGE | DebugFlag::INCLUDE_TRACE : false);
@@ -587,6 +592,7 @@ class Gql extends Component
      * Returns the cached result for a key.
      *
      * @param string $cacheKey
+     *
      * @return array|null
      * @since 3.3.12
      */
@@ -602,10 +608,15 @@ class Gql extends Component
      * @param array $result
      * @param TagDependency|null $dependency
      * @param int|null $duration
+     *
      * @since 3.3.12
      */
-    public function setCachedResult(string $cacheKey, array $result, ?TagDependency $dependency = null, ?int $duration = null): void
-    {
+    public function setCachedResult(
+        string $cacheKey,
+        array $result,
+        ?TagDependency $dependency = null,
+        ?int $duration = null,
+    ): void {
         if ($dependency === null) {
             $dependency = new TagDependency();
         }
@@ -649,12 +660,13 @@ class Gql extends Component
      */
     public function getTokens(): array
     {
-        $rows = $this->_createTokenQuery()->all();
+        $rows = $this->_createTokenQuery()->get();
+
         $schemas = [];
         $names = [];
 
         foreach ($rows as $row) {
-            $token = new GqlToken($row);
+            $token = new GqlToken((array) $row);
 
             if (!$token->getIsPublic()) {
                 $schemas[] = $token;
@@ -757,59 +769,59 @@ class Gql extends Component
      * Returns a GraphQL token by its ID.
      *
      * @param int $id
+     *
      * @return GqlToken|null
      * @since 3.4.0
      */
     public function getTokenById(int $id): ?GqlToken
     {
-        $result = $this->_createTokenQuery()
-            ->where(['id' => $id])
-            ->one();
+        $result = $this->_createTokenQuery()->find($id);
 
-        return $result ? new GqlToken($result) : null;
+        return $result ? new GqlToken((array) $result) : null;
     }
 
     /**
      * Returns a GraphQL token by its name.
      *
      * @param string $tokenName
+     *
      * @return GqlToken|null
      * @since 3.4.0
      */
     public function getTokenByName(string $tokenName): ?GqlToken
     {
         $result = $this->_createTokenQuery()
-            ->where(['name' => $tokenName])
-            ->one();
+            ->where('name', $tokenName)
+            ->first();
 
-        return $result ? new GqlToken($result) : null;
+        return $result ? new GqlToken((array) $result) : null;
     }
 
     /**
      * Returns a GraphQL token by its UID.
      *
      * @param string $uid
+     *
      * @return GqlToken
      * @throws InvalidArgumentException if $uid is invalid
      * @since 3.4.0
      */
     public function getTokenByUid(string $uid): GqlToken
     {
-        $result = $this->_createTokenQuery()
-            ->where(['uid' => $uid])
-            ->one();
+        $result = $this->_createTokenQuery()->where('uid', $uid)->first();
 
         if (!$result) {
             throw new InvalidArgumentException('Invalid UID');
         }
 
-        return new GqlToken($result);
+        return new GqlToken((array) $result);
     }
 
     /**
      * Returns a GraphQL token by its access token.
      *
      * @param string $token
+     *
      * @return GqlToken
      * @throws InvalidArgumentException if $token is invalid
      * @since 3.4.0
@@ -826,15 +838,13 @@ class Gql extends Component
             return $publicToken;
         }
 
-        $result = $this->_createTokenQuery()
-            ->where(['accessToken' => $token])
-            ->one();
+        $result = $this->_createTokenQuery()->where('accessToken', $token)->first();
 
         if (!$result) {
             throw new InvalidArgumentException('Invalid access token');
         }
 
-        return new GqlToken($result);
+        return new GqlToken((array) $result);
     }
 
     /**
@@ -851,9 +861,8 @@ class Gql extends Component
 
             if ($this->_publicToken) {
                 $this->_publicToken->id = $this->_createTokenQuery()
-                    ->select(['id'])
-                    ->where(['accessToken' => GqlToken::PUBLIC_TOKEN])
-                    ->scalar();
+                    ->where('accessToken', GqlToken::PUBLIC_TOKEN)
+                    ->value('id');
             }
         }
 
@@ -864,6 +873,7 @@ class Gql extends Component
      * Creates a public token with the given config.
      *
      * @param array $config
+     *
      * @return GqlToken|null
      */
     private function _createPublicToken(array $config): ?GqlToken
@@ -892,6 +902,7 @@ class Gql extends Component
      *
      * @param GqlToken $token the schema to save
      * @param bool $runValidation Whether the schema should be validated
+     *
      * @return bool Whether the schema was saved successfully
      * @throws Exception
      * @since 3.4.0
@@ -930,6 +941,7 @@ class Gql extends Component
      * Handle public token settings being updated.
      *
      * @param ConfigEvent $event
+     *
      * @since 3.5.0
      */
     public function handleChangedPublicToken(ConfigEvent $event): void
@@ -944,6 +956,7 @@ class Gql extends Component
      * Deletes a GraphQL token by its ID.
      *
      * @param int $id The schemas's ID
+     *
      * @return bool Whether the schema was deleted.
      * @since 3.4.0
      */
@@ -963,6 +976,7 @@ class Gql extends Component
      *
      * @param GqlSchema $schema the schema to save
      * @param bool $runValidation Whether the schema should be validated
+     *
      * @return bool Whether the schema was saved successfully
      * @throws Exception
      * @since 3.4.0
@@ -979,7 +993,7 @@ class Gql extends Component
         if ($isNewSchema && empty($schema->uid)) {
             $schema->uid = Str::uuid()->toString();
         } elseif (empty($schema->uid)) {
-            $schema->uid = Db::uidById(Table::GQLSCHEMAS, $schema->id);
+            $schema->uid = DB::table(Table::GQLSCHEMAS)->uidById($schema->id);
         }
 
         $configPath = ProjectConfig::PATH_GRAPHQL_SCHEMAS . '.' . $schema->uid;
@@ -987,7 +1001,7 @@ class Gql extends Component
         Craft::$app->getProjectConfig()->set($configPath, $configData, "Save GraphQL schema “{$schema->name}”");
 
         if ($isNewSchema) {
-            $schema->id = Db::idByUid(Table::GQLSCHEMAS, $schema->uid);
+            $schema->id = DB::table(Table::GQLSCHEMAS)->idByUid($schema->uid);
         }
 
         return true;
@@ -997,6 +1011,7 @@ class Gql extends Component
      * Handle schema change
      *
      * @param ConfigEvent $event
+     *
      * @since 3.4.0
      */
     public function handleChangedSchema(ConfigEvent $event): void
@@ -1004,7 +1019,7 @@ class Gql extends Component
         $schemaUid = $event->tokenMatches[0];
         $data = $event->newValue;
 
-        $transaction = Craft::$app->getDb()->beginTransaction();
+        DB::beginTransaction();
 
         try {
             $schemaRecord = $this->_getSchemaRecord($schemaUid);
@@ -1036,9 +1051,9 @@ class Gql extends Component
                 $this->saveToken($token);
             }
 
-            $transaction->commit();
+            DB::commit();
         } catch (Throwable $e) {
-            $transaction->rollBack();
+            DB::rollBack();
             throw $e;
         }
 
@@ -1049,6 +1064,7 @@ class Gql extends Component
      * Deletes a GraphQL schema by its ID.
      *
      * @param int $id The schema's ID
+     *
      * @return bool Whether the schema was deleted.
      * @since 3.4.0
      */
@@ -1067,12 +1083,14 @@ class Gql extends Component
      * Deletes a GraphQL schema.
      *
      * @param GqlSchema $schema
+     *
      * @return bool
      * @since 3.4.0
      */
     public function deleteSchema(GqlSchema $schema): bool
     {
-        Craft::$app->getProjectConfig()->remove(ProjectConfig::PATH_GRAPHQL_SCHEMAS . '.' . $schema->uid, "Delete the “{$schema->name}” GraphQL schema");
+        Craft::$app->getProjectConfig()->remove(ProjectConfig::PATH_GRAPHQL_SCHEMAS . '.' . $schema->uid,
+            "Delete the “{$schema->name}” GraphQL schema");
         return true;
     }
 
@@ -1081,6 +1099,7 @@ class Gql extends Component
      * Handle schema getting deleted
      *
      * @param ConfigEvent $event
+     *
      * @since 3.4.0
      */
     public function handleDeletedSchema(ConfigEvent $event): void
@@ -1092,18 +1111,15 @@ class Gql extends Component
             return;
         }
 
-        $db = Craft::$app->getDb();
-        $transaction = $db->beginTransaction();
+        DB::beginTransaction();
 
         try {
             // Delete the schema
-            Db::delete(Table::GQLSCHEMAS, [
-                'id' => $schemaRecord->id,
-            ]);
+            DB::table(Table::GQLSCHEMAS)->delete($schemaRecord->id);
 
-            $transaction->commit();
+            DB::commit();
         } catch (Throwable $e) {
-            $transaction->rollBack();
+            DB::rollBack();
             throw $e;
         }
 
@@ -1114,31 +1130,31 @@ class Gql extends Component
      * Get a schema by its ID.
      *
      * @param int $id The schema's ID
+     *
      * @return GqlSchema|null
      */
     public function getSchemaById(int $id): ?GqlSchema
     {
-        $result = $this->_createSchemaQuery()
-            ->where(['id' => $id])
-            ->one();
+        $result = $this->_createSchemaQuery()->find($id);
 
-        return $result ? new GqlSchema($result) : null;
+        return $result ? new GqlSchema((array) $result) : null;
     }
 
     /**
      * Get a schema by its UID.
      *
      * @param string $uid The schema's UID
+     *
      * @return GqlSchema|null
      * @since 3.4.0
      */
     public function getSchemaByUid(string $uid): ?GqlSchema
     {
         $result = $this->_createSchemaQuery()
-            ->where(['uid' => $uid])
-            ->one();
+            ->where('uid', $uid)
+            ->first();
 
-        return $result ? new GqlSchema($result) : null;
+        return $result ? new GqlSchema((array) $result) : null;
     }
 
     /**
@@ -1149,16 +1165,10 @@ class Gql extends Component
      */
     public function getSchemas(): array
     {
-        $rows = $this->_createSchemaQuery()
+        return $this->_createSchemaQuery()
+            ->get()
+            ->map(fn(object $result) => new GqlSchema((array) $result))
             ->all();
-
-        $schemas = [];
-
-        foreach ($rows as $row) {
-            $schemas[] = new GqlSchema($row);
-        }
-
-        return $schemas;
     }
 
     /**
@@ -1166,6 +1176,7 @@ class Gql extends Component
      *
      * @param class-string<BaseElementInterface> $elementType
      * @param callable $setter
+     *
      * @phpstan-param callable():array $setter
      * @return array
      * @since 5.0.0
@@ -1182,6 +1193,7 @@ class Gql extends Component
      * Returns arguments for fields in the given field layout.
      *
      * @param FieldLayout $fieldLayout
+     *
      * @return array
      * @since 5.6.0
      */
@@ -1205,6 +1217,7 @@ class Gql extends Component
      *
      * @param class-string<BaseElementInterface> $elementType
      * @param FieldLayout[] $fieldLayouts
+     *
      * @return array
      * @since 5.0.0
      */
@@ -1236,6 +1249,7 @@ class Gql extends Component
      *
      * @param class-string<BaseElementInterface> $elementType
      * @param FieldInterface[] $fields
+     *
      * @return array
      * @since 5.0.0
      */
@@ -1262,6 +1276,7 @@ class Gql extends Component
      *
      * @param class-string<BaseElementInterface> $elementType
      * @param array $fields
+     *
      * @return array
      * @since 5.8.0
      */
@@ -1292,6 +1307,7 @@ class Gql extends Component
      *
      * @param array $contexts
      * @param class-string<BaseElementInterface> $elementType
+     *
      * @return array
      */
     public function getContentArguments(array $contexts, string $elementType): array
@@ -1322,6 +1338,7 @@ class Gql extends Component
      *
      * @param Error[] $errors
      * @param callable $formatter
+     *
      * @return Error[]
      * @since 3.6.2
      */
@@ -1347,7 +1364,7 @@ class Gql extends Component
             } elseif (!$originException instanceof Error) {
                 // If devMode not enabled and the error seems to be originating from Craft, display a generic message
                 $error = new Error(
-                    Craft::t('app', 'Something went wrong when processing the GraphQL query.')
+                    Craft::t('app', 'Something went wrong when processing the GraphQL query.'),
                 );
             }
 
@@ -1363,6 +1380,7 @@ class Gql extends Component
      *
      * @param array $fields
      * @param string $typeName
+     *
      * @return array
      */
     public function prepareFieldDefinitions(array $fields, string $typeName): array
@@ -1386,6 +1404,7 @@ class Gql extends Component
      * @param mixed $rootValue
      * @param array|null $variables
      * @param string|null $operationName
+     *
      * @return string|null
      */
     private function _getCacheKey(
@@ -1667,8 +1686,10 @@ class Gql extends Component
             fn(string $type) => $fieldsService->getFieldsByType($type),
             $fieldsService->getNestedEntryFieldTypes(),
         ));
-        usort($fields, fn(ElementContainerFieldInterface $a, ElementContainerFieldInterface $b) =>
-            $a::displayName() <=> $b::displayName());
+        usort($fields, fn(
+            ElementContainerFieldInterface $a,
+            ElementContainerFieldInterface $b,
+        ) => $a::displayName() <=> $b::displayName());
 
         foreach ($fields as $field) {
             $name = Craft::t('site', $field->name);
@@ -1826,16 +1847,20 @@ class Gql extends Component
                 $name = Craft::t('site', $categoryGroup->name);
                 $prefix = "categorygroups.$categoryGroup->uid";
                 $queryComponents["$prefix:read"] = [
-                    'label' => Craft::t('app', 'Query for categories in the “{name}” category group', ['name' => $name]),
+                    'label' => Craft::t('app', 'Query for categories in the “{name}” category group',
+                        ['name' => $name]),
                 ];
                 $mutationComponents["$prefix:edit"] = [
-                    'label' => Craft::t('app', 'Edit categories in the “{categoryGroup}” category group', ['categoryGroup' => $name]),
+                    'label' => Craft::t('app', 'Edit categories in the “{categoryGroup}” category group',
+                        ['categoryGroup' => $name]),
                     'nested' => [
                         "$prefix:save" => [
-                            'label' => Craft::t('app', 'Save categories in the “{categoryGroup}” category group', ['categoryGroup' => $name]),
+                            'label' => Craft::t('app', 'Save categories in the “{categoryGroup}” category group',
+                                ['categoryGroup' => $name]),
                         ],
                         "$prefix:delete" => [
-                            'label' => Craft::t('app', 'Delete categories from the “{categoryGroup}” category group', ['categoryGroup' => $name]),
+                            'label' => Craft::t('app', 'Delete categories from the “{categoryGroup}” category group',
+                                ['categoryGroup' => $name]),
                         ],
                     ],
                 ];
@@ -1868,10 +1893,12 @@ class Gql extends Component
                     'label' => Craft::t('app', 'Edit tags in the “{tagGroup}” tag group', ['tagGroup' => $name]),
                     'nested' => [
                         "$prefix:save" => [
-                            'label' => Craft::t('app', 'Save tags in the “{tagGroup}” tag group', ['tagGroup' => $name]),
+                            'label' => Craft::t('app', 'Save tags in the “{tagGroup}” tag group',
+                                ['tagGroup' => $name]),
                         ],
                         "$prefix:delete" => [
-                            'label' => Craft::t('app', 'Delete tags from the “{tagGroup}” tag group', ['tagGroup' => $name]),
+                            'label' => Craft::t('app', 'Delete tags from the “{tagGroup}” tag group',
+                                ['tagGroup' => $name]),
                         ],
                     ],
                 ];
@@ -1881,14 +1908,9 @@ class Gql extends Component
         return [$queryComponents, $mutationComponents];
     }
 
-    /**
-     * Returns a DbCommand object prepped for retrieving tokens.
-     *
-     * @return DbQuery
-     */
-    private function _createTokenQuery(): DbQuery
+    private function _createTokenQuery(): Builder
     {
-        return (new DbQuery())
+        return DB::table(Table::GQLTOKENS)
             ->select([
                 'id',
                 'schemaId',
@@ -1899,26 +1921,19 @@ class Gql extends Component
                 'lastUsed',
                 'dateCreated',
                 'uid',
-            ])
-            ->from([Table::GQLTOKENS]);
+            ]);
     }
 
-    /**
-     * Returns a DbCommand object prepped for retrieving schemas.
-     *
-     * @return DbQuery
-     */
-    private function _createSchemaQuery(): DbQuery
+    private function _createSchemaQuery(): Builder
     {
-        return (new DbQuery())
+        return DB::table(Table::GQLSCHEMAS)
             ->select([
                 'id',
                 'name',
                 'scope',
                 'isPublic',
                 'uid',
-            ])
-            ->from([Table::GQLSCHEMAS]);
+            ]);
     }
 
     /**
@@ -1928,9 +1943,9 @@ class Gql extends Component
      */
     private function _getPublicSchema(): ?GqlSchema
     {
-        $result = $this->_createSchemaQuery()->where(['isPublic' => true])->one();
+        $result = $this->_createSchemaQuery()->where('isPublic', true)->first();
 
-        return $result ? new GqlSchema($result) : null;
+        return $result ? new GqlSchema((array) $result) : null;
     }
 
     /**
@@ -1956,6 +1971,7 @@ class Gql extends Component
      * Gets a schema's record by uid.
      *
      * @param string $uid
+     *
      * @return GqlSchemaRecord
      */
     private function _getSchemaRecord(string $uid): GqlSchemaRecord
@@ -1981,8 +1997,8 @@ class Gql extends Component
 
         $tokenRecord->name = $token->name;
         $tokenRecord->enabled = $token->enabled;
-        $tokenRecord->expiryDate = Db::prepareDateForDb($token->expiryDate);
-        $tokenRecord->lastUsed = Db::prepareDateForDb($token->lastUsed);
+        $tokenRecord->expiryDate = DbHelper::prepareDateForDb($token->expiryDate);
+        $tokenRecord->lastUsed = DbHelper::prepareDateForDb($token->lastUsed);
         $tokenRecord->schemaId = $token->schemaId;
 
         if ($token->accessToken) {

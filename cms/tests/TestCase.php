@@ -12,10 +12,8 @@ use CraftCms\Cms\Support\Facades\Http;
 use CraftCms\DependencyAwareCache\CacheServiceProvider;
 use CraftCms\Yii2Adapter\Yii2ServiceProvider;
 use Dotenv\Dotenv;
-use Illuminate\Contracts\Console\Kernel;
 use Illuminate\Database\Eloquent\Factories\Factory;
-use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Foundation\Testing\RefreshDatabaseState;
+use Illuminate\Foundation\Testing\LazilyRefreshDatabase;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\DB;
@@ -26,13 +24,14 @@ use Orchestra\Testbench\TestCase as Orchestra;
 /** @since 6.0.0 */
 class TestCase extends Orchestra
 {
-    use RefreshDatabase;
+    use LazilyRefreshDatabase;
 
     protected function setUp(): void
     {
         parent::setUp();
 
         Cache::lock(ProjectConfig::MUTEX_NAME)->forceRelease();
+        File::cleanDirectory(config_path('project'));
 
         Factory::guessFactoryNamesUsing(
             fn (string $modelName) => 'CraftCms\\Cms\\Database\\Factories\\'.class_basename($modelName).'Factory'
@@ -53,19 +52,6 @@ class TestCase extends Orchestra
         }
 
         parent::tearDown();
-    }
-
-    protected function refreshTestDatabase()
-    {
-        if (RefreshDatabaseState::$migrated) {
-            return;
-        }
-
-        $this->migrateDatabases();
-
-        $this->app[Kernel::class]->setArtisan(null);
-
-        RefreshDatabaseState::$migrated = true;
     }
 
     protected function migrateDatabases()
@@ -109,11 +95,11 @@ class TestCase extends Orchestra
     {
         File::cleanDirectory(config_path('craft/project'));
 
-        if (! file_exists(__DIR__.'/../.env')) {
+        if (! file_exists(__DIR__.'/../../tests/.env')) {
             return;
         }
 
-        $dotenv = Dotenv::createImmutable(__DIR__.'/../');
+        $dotenv = Dotenv::createImmutable(__DIR__.'/../../tests');
         $dotenv->load();
 
         $configKey = 'database.connections.'.env('DB_CONNECTION');
@@ -126,8 +112,9 @@ class TestCase extends Orchestra
                 'database' => env('DB_DATABASE'),
                 'username' => env('DB_USERNAME'),
                 'password' => env('DB_PASSWORD'),
+                'charset' => env('DB_CHARSET', $configKey === 'mysql' ? 'utf8mb4' : 'utf8'),
+                'collation' => env('DB_COLLATION', $configKey === 'mysql' ? 'utf8mb4_unicode_ci' : null),
                 'prefix' => env('DB_PREFIX'),
-                'charset' => env('DB_CHARSET'),
             ]),
         );
 

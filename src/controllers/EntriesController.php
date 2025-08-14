@@ -9,8 +9,6 @@ namespace craft\controllers;
 
 use Craft;
 use craft\base\Element;
-use craft\db\Query;
-use craft\db\Table;
 use craft\elements\Entry;
 use craft\errors\InvalidElementException;
 use craft\errors\MutexException;
@@ -22,11 +20,14 @@ use craft\helpers\Html;
 use craft\helpers\UrlHelper;
 use craft\models\Section;
 use craft\models\Section_SiteSettings;
+use CraftCms\Cms\Db\Table;
 use CraftCms\Cms\Element\Enums\PropagationMethod;
 use Exception;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\DB;
 use Throwable;
+use Tpetry\QueryExpressions\Language\Alias;
 use yii\web\BadRequestHttpException;
 use yii\web\ForbiddenHttpException;
 use yii\web\NotFoundHttpException;
@@ -379,14 +380,12 @@ class EntriesController extends BaseEntriesController
         $currentSectionUid = $this->request->getRequiredParam('currentSectionUid');
 
         // get entry types by entry IDs
-        $entryTypes = (new Query())
-            ->select(['et.id'])
-            ->from(['et' => Table::ENTRYTYPES])
-            ->leftJoin(['e' => Table::ENTRIES], '[[e.typeId]] = [[et.id]]')
-            ->where(['in', 'e.id', $entryIds])
+        $entryTypes = DB::table(Table::ENTRYTYPES, 'et')
             ->distinct()
+            ->leftJoin(new Alias(Table::ENTRIES, 'e'), 'e.typeId', 'et.id')
+            ->whereIn('e.id', $entryIds)
+            ->pluck('et.id')
             ->all();
-        $entryTypes = array_map(fn($item) => $item['id'], $entryTypes);
 
         $user = Craft::$app->getUser()->getIdentity();
 

@@ -30,6 +30,7 @@ use craft\services\ElementSources;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Str;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\DB;
 use Throwable;
 use yii\base\InvalidValueException;
 use yii\web\BadRequestHttpException;
@@ -612,8 +613,7 @@ class ElementIndexesController extends BaseElementsController
         }
 
         // now save everything
-        $db = Craft::$app->getDb();
-        $transaction = $db->beginTransaction();
+        DB::beginTransaction();
 
         try {
             foreach ($elements as $element) {
@@ -623,9 +623,9 @@ class ElementIndexesController extends BaseElementsController
                 }
             }
 
-            $transaction->commit();
+            DB::commit();
         } catch (Throwable $e) {
-            $transaction->rollBack();
+            DB::rollBack();
             throw $e;
         }
 

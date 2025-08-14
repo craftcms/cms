@@ -11,8 +11,6 @@ use Craft;
 use craft\base\Element;
 use craft\base\ElementInterface;
 use craft\base\NameTrait;
-use craft\db\Query;
-use craft\db\Table;
 use craft\elements\actions\DeleteUsers;
 use craft\elements\actions\Restore;
 use craft\elements\actions\SuspendUsers;
@@ -45,6 +43,7 @@ use craft\validators\UsernameValidator;
 use craft\validators\UserPasswordValidator;
 use craft\web\View;
 use CraftCms\Cms\Config\GeneralConfig;
+use CraftCms\Cms\Db\Table;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Element\Enums\MenuItemType;
 use CraftCms\Cms\Element\Enums\PropagationMethod;
@@ -56,6 +55,8 @@ use DateInterval;
 use DateTime;
 use DateTimeZone;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Date;
+use Illuminate\Support\Facades\DB as DbFacade;
 use Throwable;
 use Webauthn\PublicKeyCredentialRequestOptions;
 use yii\base\ErrorHandler;
@@ -580,14 +581,15 @@ class User extends Element implements IdentityInterface
         // Get the source element IDs
         $sourceElementIds = array_map(fn(ElementInterface $element) => $element->id, $sourceElements);
 
-        if ($handle == 'addresses') {
-            $map = (new Query())
+        if ($handle === 'addresses') {
+            $map = DbFacade::table(Table::ADDRESSES)
                 ->select([
-                    'source' => 'primaryOwnerId',
-                    'target' => 'id',
+                    'primaryOwnerId as source',
+                    'id as target',
                 ])
-                ->from([Table::ADDRESSES])
-                ->where(['primaryOwnerId' => $sourceElementIds])
+                ->where('primaryOwnerId', $sourceElementIds)
+                ->get()
+                ->map(fn(object $row) => (array) $row)
                 ->all();
 
             return [
@@ -601,11 +603,12 @@ class User extends Element implements IdentityInterface
         }
 
         if ($handle === 'photo') {
-            $map = (new Query())
+            $map = DbFacade::table(Table::USERS)
                 ->select(['id as source', 'photoId as target'])
-                ->from([Table::USERS])
-                ->where(['id' => $sourceElementIds])
-                ->andWhere(['not', ['photoId' => null]])
+                ->whereIn('id', $sourceElementIds)
+                ->whereNotNull('photoId')
+                ->get()
+                ->map(fn(object $row) => (array) $row)
                 ->all();
 
             return [
@@ -1031,11 +1034,9 @@ class User extends Element implements IdentityInterface
 
         if (isset($this->id) && $this->passwordResetRequired) {
             // Get the current password hash
-            $currentPassword = (new Query())
-                ->select(['password'])
-                ->from([Table::USERS])
-                ->where(['id' => $this->id])
-                ->scalar();
+            $currentPassword = DbFacade::table(Table::USERS)
+                ->where('id', $this->id)
+                ->value('password');
         } else {
             $currentPassword = null;
         }
@@ -1138,11 +1139,9 @@ class User extends Element implements IdentityInterface
             return true;
         }
 
-        return (bool)(new Query())
-            ->select('password')
-            ->from(Table::USERS)
-            ->where(['id' => $this->id])
-            ->scalar();
+        return DbFacade::table(Table::USERS)
+            ->where('id', $this->id)
+            ->value('password') !== null;
     }
 
     /**
@@ -1313,23 +1312,21 @@ class User extends Element implements IdentityInterface
             return false;
         }
 
-        $tokenId = (new Query())
-            ->select(['id'])
-            ->from([Table::SESSIONS])
-            ->where([
-                'token' => $token,
-                'userId' => $this->id,
-            ])
-            ->scalar();
+        $tokenId = DbFacade::table(Table::SESSIONS)
+            ->where('token', $token)
+            ->where('userId', $this->id)
+            ->value('id');
 
         if (!$tokenId) {
             return false;
         }
 
         // Update the session row's dateUpdated value so it doesn't get GC'd
-        Db::update(Table::SESSIONS, [
-            'dateUpdated' => Db::prepareDateForDb(new DateTime()),
-        ], ['id' => $tokenId]);
+        DbFacade::table(Table::SESSIONS)
+            ->where('id', $tokenId)
+            ->update([
+                'dateUpdated' => now(),
+            ]);
 
         return true;
     }
@@ -2617,12 +2614,16 @@ JS, [
         }
 
         if (!$isNew && $changePassword) {
+            $token = Craft::$app->getUser()->getToken();
+
             // Destroy all other sessions for this user
-            $condition = ['userId' => $this->id];
-            if ($this->getIsCurrent() && $token = Craft::$app->getUser()->getToken()) {
-                $condition = ['and', $condition, ['not', ['token' => $token]]];
-            }
-            Db::delete(Table::SESSIONS, $condition);
+            DbFacade::table(Table::SESSIONS)
+                ->where('userId', $this->id)
+                ->when(
+                    value: $this->getIsCurrent() && $token,
+                    callback: fn($query) => $query->where('token', '!=', $token),
+                )
+                ->delete();
         }
     }
 
@@ -2638,7 +2639,7 @@ JS, [
         $elementsService = Craft::$app->getElements();
 
         // Do all this stuff within a transaction
-        $transaction = Craft::$app->getDb()->beginTransaction();
+        DbFacade::beginTransaction();
 
         try {
             // Should we transfer the content to a new user?
@@ -2654,11 +2655,11 @@ JS, [
                 ];
 
                 foreach ($userRefs as $table => $column) {
-                    Db::update($table, [
-                        $column => $this->inheritorOnDelete->id,
-                    ], [
-                        $column => $this->id,
-                    ], [], false);
+                    DbFacade::table($table)
+                        ->where($column, $this->id)
+                        ->update([
+                            $column => $this->inheritorOnDelete->id,
+                        ]);
                 }
             } else {
                 // Delete the entries
@@ -2677,9 +2678,9 @@ JS, [
                 }
             }
 
-            $transaction->commit();
+            DbFacade::commit();
         } catch (Throwable $e) {
-            $transaction->rollBack();
+            DbFacade::rollBack();
             throw $e;
         }
 

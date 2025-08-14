@@ -37,16 +37,16 @@ use craft\events\ElementCriteriaEvent;
 use craft\fieldlayoutelements\CustomField;
 use craft\fields\conditions\RelationalFieldConditionRule;
 use craft\helpers\Cp;
-use craft\helpers\Db;
 use craft\helpers\ElementHelper;
 use craft\helpers\Queue;
 use craft\queue\jobs\LocalizeRelations;
 use craft\services\ElementSources;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Str;
-use DateTime;
 use GraphQL\Type\Definition\Type;
+use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\DB;
 use yii\base\Event;
 use yii\base\InvalidConfigException;
 use yii\db\Expression;
@@ -112,7 +112,8 @@ abstract class BaseRelationField extends Field implements
      */
     public static function phpType(): string
     {
-        return sprintf('\\%s|\\%s<\\%s>', ElementQueryInterface::class, ElementCollection::class, ElementInterface::class);
+        return sprintf('\\%s|\\%s<\\%s>', ElementQueryInterface::class, ElementCollection::class,
+            ElementInterface::class);
     }
 
     /**
@@ -176,17 +177,22 @@ abstract class BaseRelationField extends Field implements
      * @param self $field The relation field
      * @param bool $enabledOnly Whether to only
      * @param bool $inTargetSiteOnly
+     *
      * @return array
      * @since 5.2.0
      */
-    public static function existsQueryCondition(self $field, bool $enabledOnly = true, bool $inTargetSiteOnly = true): array
-    {
+    public static function existsQueryCondition(
+        self $field,
+        bool $enabledOnly = true,
+        bool $inTargetSiteOnly = true,
+    ): array {
         $ns = sprintf('%s_%s', $field->handle, Str::random(5));
 
         $query = (new Query())
             ->from(["relations_$ns" => DbTable::RELATIONS])
             ->innerJoin(["elements_$ns" => DbTable::ELEMENTS], "[[elements_$ns.id]] = [[relations_$ns.targetId]]")
-            ->leftJoin(["elements_sites_$ns" => DbTable::ELEMENTS_SITES], "[[elements_sites_$ns.elementId]] = [[elements_$ns.id]]")
+            ->leftJoin(["elements_sites_$ns" => DbTable::ELEMENTS_SITES],
+                "[[elements_sites_$ns.elementId]] = [[elements_$ns.id]]")
             ->where([
                 'and',
                 "[[relations_$ns.sourceId]] = [[elements.id]]",
@@ -426,6 +432,7 @@ abstract class BaseRelationField extends Field implements
      * Ensure only one structured source is selected when maintainHierarchy is true.
      *
      * @param string $attribute
+     *
      * @since 4.4.0
      */
     public function validateSources(string $attribute): void
@@ -520,16 +527,16 @@ abstract class BaseRelationField extends Field implements
         $view->registerJsWithVars(fn($args) => <<<JS
 new Craft.ElementFieldSettings(...$args);
 JS, [
-                [
-                    $this->allowMultipleSources,
-                    $view->namespaceInputId('maintain-hierarchy-field'),
-                    $view->namespaceInputId($this->allowMultipleSources ? 'sources-field' : 'source-field'),
-                    $view->namespaceInputId('branch-limit-field'),
-                    $view->namespaceInputId('min-relations-field'),
-                    $view->namespaceInputId('max-relations-field'),
-                    $view->namespaceInputId('default-placement-field'),
-                    $view->namespaceInputId('viewMode-field'),
-                ],
+            [
+                $this->allowMultipleSources,
+                $view->namespaceInputId('maintain-hierarchy-field'),
+                $view->namespaceInputId($this->allowMultipleSources ? 'sources-field' : 'source-field'),
+                $view->namespaceInputId('branch-limit-field'),
+                $view->namespaceInputId('min-relations-field'),
+                $view->namespaceInputId('max-relations-field'),
+                $view->namespaceInputId('default-placement-field'),
+                $view->namespaceInputId('viewMode-field'),
+            ],
         ]);
 
         return $view->renderTemplate($this->settingsTemplate, $variables);
@@ -569,14 +576,18 @@ JS, [
             $arrayValidator = new NumberValidator([
                 'min' => $this->minRelations,
                 'max' => $this->maxRelations,
-                'tooSmall' => $this->minRelations ? Craft::t('app', '{attribute} should contain at least {min, number} {min, plural, one{selection} other{selections}}.', [
-                    'attribute' => Craft::t('site', $this->name),
-                    'min' => $this->minRelations, // Need to pass this in now
-                ]) : null,
-                'tooBig' => $this->maxRelations ? Craft::t('app', '{attribute} should contain at most {max, number} {max, plural, one{selection} other{selections}}.', [
-                    'attribute' => Craft::t('site', $this->name),
-                    'max' => $this->maxRelations, // Need to pass this in now
-                ]) : null,
+                'tooSmall' => $this->minRelations ? Craft::t('app',
+                    '{attribute} should contain at least {min, number} {min, plural, one{selection} other{selections}}.',
+                    [
+                        'attribute' => Craft::t('site', $this->name),
+                        'min' => $this->minRelations, // Need to pass this in now
+                    ]) : null,
+                'tooBig' => $this->maxRelations ? Craft::t('app',
+                    '{attribute} should contain at most {max, number} {max, plural, one{selection} other{selections}}.',
+                    [
+                        'attribute' => Craft::t('site', $this->name),
+                        'max' => $this->maxRelations, // Need to pass this in now
+                    ]) : null,
                 'skipOnEmpty' => false,
             ]);
 
@@ -621,13 +632,15 @@ JS, [
 
         if ($errorCount) {
             $selectedCount = (int)$value->count();
-            $element->addError($this->handle, Craft::t('app', 'The selected {relatedType} {count, plural, =1{contains} other{contain}} validation errors, preventing this {type} from being saved. Edit the {relatedType} to fix them.', [
-                'relatedType' => $selectedCount === 1
-                    ? static::elementType()::lowerDisplayName()
-                    : static::elementType()::pluralLowerDisplayName(),
-                'count' => $selectedCount,
-                'type' => $element::lowerDisplayName(),
-            ]));
+            $element->addError($this->handle, Craft::t('app',
+                'The selected {relatedType} {count, plural, =1{contains} other{contain}} validation errors, preventing this {type} from being saved. Edit the {relatedType} to fix them.',
+                [
+                    'relatedType' => $selectedCount === 1
+                        ? static::elementType()::lowerDisplayName()
+                        : static::elementType()::pluralLowerDisplayName(),
+                    'count' => $selectedCount,
+                    'type' => $element::lowerDisplayName(),
+                ]));
         }
     }
 
@@ -636,6 +649,7 @@ JS, [
      *
      * @param ElementInterface $source
      * @param ElementInterface $target
+     *
      * @return bool
      */
     private static function _validateRelatedElement(ElementInterface $source, ElementInterface $target): bool
@@ -752,7 +766,7 @@ JS, [
                                         ["$relationsAlias.sourceSiteId" => null],
                                         ["$relationsAlias.sourceSiteId" => $element->siteId],
                                     ],
-                                ]
+                                ],
                             );
 
                             if (
@@ -921,10 +935,14 @@ JS, [
      * @param ElementQueryInterface|ElementCollection $value
      * @param ElementInterface|null $element
      * @param array<int|null>|null $initialValue
+     *
      * @return ElementInterface[]
      */
-    private function normalizeValueForInput(mixed $value, ?ElementInterface $element, ?array &$initialValue = null): array
-    {
+    private function normalizeValueForInput(
+        mixed $value,
+        ?ElementInterface $element,
+        ?array &$initialValue = null,
+    ): array {
         if ($element !== null && $element->hasEagerLoadedElements($this->handle)) {
             $value = $element->getEagerLoadedElements($this->handle)->all();
         } else {
@@ -1005,6 +1023,7 @@ JS, [
      * Returns the HTML that should be shown for this field in table and card views.
      *
      * @param ElementCollection $elements
+     *
      * @return string
      * @since 5.0.0
      */
@@ -1056,23 +1075,22 @@ JS, [
 
         // Are there any source elements that don't have hardcoded relation IDs yet?
         if (!empty($missingSourceElementIds)) {
-            $missingMappingsQuery = (new Query())
+            $missingMappingsQuery = DB::table(\CraftCms\Cms\Db\Table::RELATIONS)
                 ->select(['sourceId as source', 'targetId as target'])
-                ->from([DbTable::RELATIONS])
                 ->where([
-                    'and',
-                    [
-                        'fieldId' => $this->id,
-                        'sourceId' => $missingSourceElementIds,
-                    ],
-                    [
-                        'or',
-                        ['sourceSiteId' => $sourceSiteId],
-                        ['sourceSiteId' => null],
-                    ],
+                    'fieldId' => $this->id,
+                    'sourceId' => $missingSourceElementIds,
                 ])
-                ->orderBy(['sortOrder' => SORT_ASC]);
-            array_push($map, ...$missingMappingsQuery->all());
+                ->where(fn(Builder $query) => $query
+                    ->where('sourceSiteId', $sourceSiteId)
+                    ->orWhereNull('sourceSiteId')
+                )
+                ->orderBy('sortOrder')
+                ->get()
+                ->map(fn(object $row) => (array) $row)
+                ->all();
+
+            array_push($map, ...$missingMappingsQuery);
         }
 
         $criteria = [];
@@ -1254,18 +1272,19 @@ JS, [
                 $siteIds = Arr::where($siteIds, fn($siteId) => $siteId !== $element->siteId);
                 if (!empty($siteIds)) {
                     $userId = Craft::$app->getUser()->getId();
-                    $timestamp = Db::prepareDateForDb(new DateTime());
+                    $timestamp = now();
 
                     foreach ($siteIds as $siteId) {
-                        Db::upsert(DbTable::CHANGEDFIELDS, [
-                            'elementId' => $element->id,
-                            'siteId' => $siteId,
-                            'fieldId' => $this->id,
-                            'layoutElementUid' => $this->layoutElement->uid,
-                            'dateUpdated' => $timestamp,
-                            'propagated' => $element->propagating,
-                            'userId' => $userId,
-                        ]);
+                        DB::table(\CraftCms\Cms\Db\Table::CHANGEDFIELDS)
+                            ->upsert([
+                                'elementId' => $element->id,
+                                'siteId' => $siteId,
+                                'fieldId' => $this->id,
+                                'layoutElementUid' => $this->layoutElement->uid,
+                                'dateUpdated' => $timestamp,
+                                'propagated' => $element->propagating,
+                                'userId' => $userId,
+                            ], ['elementId', 'siteId', 'fieldId', 'layoutElementUid']);
                     }
                 }
             }
@@ -1339,12 +1358,15 @@ JS, [
                 'fieldset' => true,
                 'fieldClass' => $showTargetSite ? ['hidden'] : null,
                 'checkboxLabel' => Craft::t('app', 'Show the site menu'),
-                'instructions' => Craft::t('app', 'Whether the site menu should be shown for {type} selection modals.', [
-                    'type' => $type,
-                ]),
-                'warning' => Craft::t('app', 'Relations don’t store the selected site, so this should only be enabled if some {type} aren’t propagated to all sites.', [
-                    'type' => $pluralType,
-                ]),
+                'instructions' => Craft::t('app', 'Whether the site menu should be shown for {type} selection modals.',
+                    [
+                        'type' => $type,
+                    ]),
+                'warning' => Craft::t('app',
+                    'Relations don’t store the selected site, so this should only be enabled if some {type} aren’t propagated to all sites.',
+                    [
+                        'type' => $pluralType,
+                    ]),
                 'id' => 'show-site-menu',
                 'name' => 'showSiteMenu',
                 'checked' => $this->showSiteMenu,
@@ -1416,9 +1438,10 @@ JS, [
                 'label' => Craft::t('app', 'Selectable {type} Condition', [
                     'type' => $elementType::pluralDisplayName(),
                 ]),
-                'instructions' => mb_ucfirst(Craft::t('app', 'Only allow {type} to be selected if they match the following rules:', [
-                    'type' => $elementType::pluralLowerDisplayName(),
-                ])),
+                'instructions' => mb_ucfirst(Craft::t('app',
+                    'Only allow {type} to be selected if they match the following rules:', [
+                        'type' => $elementType::pluralLowerDisplayName(),
+                    ])),
             ]);
         }
 
@@ -1436,10 +1459,13 @@ JS, [
      *
      * @param ElementInterface[]|ElementQueryInterface|null $value
      * @param ElementInterface|null $element
+     *
      * @return array
      */
-    protected function inputTemplateVariables(array|ElementQueryInterface $value = null, ?ElementInterface $element = null): array
-    {
+    protected function inputTemplateVariables(
+        array|ElementQueryInterface $value = null,
+        ?ElementInterface $element = null,
+    ): array {
         if ($value instanceof ElementQueryInterface) {
             $value = $value->eagerly()->all();
         } elseif (!is_array($value)) {
@@ -1520,7 +1546,8 @@ JS, [
             'defaultPlacement' => $this->defaultPlacement,
             'viewMode' => $this->viewMode(),
             'showCardsInGrid' => $this->showCardsInGrid,
-            'selectionLabel' => $this->selectionLabel ? Craft::t('site', $this->selectionLabel) : static::defaultSelectionLabel(),
+            'selectionLabel' => $this->selectionLabel ? Craft::t('site',
+                $this->selectionLabel) : static::defaultSelectionLabel(),
             'sortable' => $this->sortable && !$this->maintainHierarchy,
             'prevalidate' => $this->validateRelatedElements,
             'modalSettings' => [
@@ -1533,6 +1560,7 @@ JS, [
      * Returns whether the search input should be shown.
      *
      * @param ElementInterface|null $element
+     *
      * @return bool
      * @since 5.8.0
      */
@@ -1550,6 +1578,7 @@ JS, [
      * Returns an array of the source keys the field should be able to select elements from.
      *
      * @param ElementInterface|null $element
+     *
      * @return array|string|null
      */
     public function getInputSources(?ElementInterface $element = null): array|string|null
@@ -1604,6 +1633,7 @@ JS, [
      * Sets the element condition that should be used to determine which elements are selectable by the field.
      *
      * @param ElementConditionInterface|string|array|null $condition
+     *
      * @phpstan-param ElementConditionInterface|string|array{class:string}|null $condition
      * @since 4.0.0
      */
@@ -1646,6 +1676,7 @@ JS, [
      * Returns the site ID that target elements should have.
      *
      * @param ElementInterface|null $element
+     *
      * @return int
      */
     protected function targetSiteId(?ElementInterface $element = null): int
@@ -1721,7 +1752,7 @@ JS, [
     {
         return Arr::where(
             Craft::$app->getElementSources()->getSources(static::elementType(), 'modal'),
-            fn($s) => $s['type'] !== ElementSources::TYPE_HEADING
+            fn($s) => $s['type'] !== ElementSources::TYPE_HEADING,
         );
     }
 
@@ -1730,6 +1761,7 @@ JS, [
      *
      * @param ElementQueryInterface $query
      * @param ElementInterface|null $element
+     *
      * @return ElementQueryInterface
      */
     private function _all(ElementQueryInterface $query, ?ElementInterface $element = null): ElementQueryInterface

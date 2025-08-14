@@ -8,14 +8,16 @@
 namespace craft\web;
 
 use Craft;
-use craft\db\Table;
 use craft\elements\User as UserElement;
 use craft\helpers\ConfigHelper;
 use craft\helpers\DateTimeHelper;
-use craft\helpers\Db;
 use craft\helpers\Session as SessionHelper;
 use craft\helpers\UrlHelper;
 use CraftCms\Cms\Config\GeneralConfig;
+use CraftCms\Cms\Db\Table;
+use CraftCms\Cms\Support\Str;
+use Illuminate\Support\Facades\Date;
+use Illuminate\Support\Facades\DB;
 use yii\web\Cookie;
 use yii\web\ForbiddenHttpException;
 use yii\web\IdentityInterface;
@@ -490,10 +492,14 @@ class User extends \CraftCms\Yii2Adapter\Web\User
     {
         $token = Craft::$app->getSecurity()->generateRandomString(100);
 
-        Db::insert(Table::SESSIONS, [
-            'userId' => $userId,
-            'token' => $token,
-        ]);
+        DB::table(Table::SESSIONS)
+            ->insert([
+                'userId' => $userId,
+                'token' => $token,
+                'dateCreated' => $now = now(),
+                'dateUpdated' => $now,
+                'uid' => Str::uuid(),
+            ]);
 
         SessionHelper::set($this->tokenParam, $token);
     }
@@ -568,10 +574,11 @@ class User extends \CraftCms\Yii2Adapter\Web\User
         $token = $this->getToken();
         if ($token !== null) {
             SessionHelper::remove($this->tokenParam);
-            Db::delete(Table::SESSIONS, [
-                'token' => $token,
-                'userId' => $identity->id,
-            ]);
+
+            DB::table(Table::SESSIONS)
+                ->where('token', $token)
+                ->where('userId', $identity->id)
+                ->delete();
         }
 
         return true;

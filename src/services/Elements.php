@@ -19,10 +19,7 @@ use craft\behaviors\DraftBehavior;
 use craft\console\controllers\MigrateController;
 use craft\console\controllers\UpController;
 use craft\controllers\AppController;
-use craft\db\Connection;
-use craft\db\Query;
 use craft\db\QueryAbortedException;
-use craft\db\Table;
 use craft\elements\Address;
 use craft\elements\Asset;
 use craft\elements\Category;
@@ -53,7 +50,7 @@ use craft\events\RegisterComponentTypesEvent;
 use craft\fieldlayoutelements\CustomField;
 use craft\helpers\Component as ComponentHelper;
 use craft\helpers\DateTimeHelper;
-use craft\helpers\Db;
+use craft\helpers\Db as DbHelper;
 use craft\helpers\ElementHelper;
 use craft\helpers\Html;
 use craft\helpers\Queue;
@@ -67,13 +64,19 @@ use craft\records\Element_SiteSettings as Element_SiteSettingsRecord;
 use craft\records\StructureElement as StructureElementRecord;
 use craft\validators\HandleValidator;
 use craft\validators\SlugValidator;
+use CraftCms\Cms\Db\Table;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Support\Str;
 use CraftCms\DependencyAwareCache\Dependency\TagDependency;
 use DateTime;
+use Illuminate\Database\ConnectionInterface;
+use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\DB;
 use Throwable;
+use Tpetry\QueryExpressions\Function\String\Lower;
+use Tpetry\QueryExpressions\Language\Alias;
 use UnitEnum;
 use yii\base\Behavior;
 use yii\base\Component;
@@ -81,7 +84,6 @@ use yii\base\Exception;
 use yii\base\InvalidArgumentException;
 use yii\base\InvalidCallException;
 use yii\base\InvalidConfigException;
-use yii\di\Instance;
 use yii\web\ForbiddenHttpException;
 
 /**
@@ -545,19 +547,11 @@ class Elements extends Component
     private ?bool $_updateSearchIndex = null;
 
     /**
-     * @inheritdoc
-     */
-    public function init()
-    {
-        parent::init();
-        $this->bulkOpDb = Instance::ensure($this->bulkOpDb, Connection::class);
-    }
-
-    /**
      * Creates an element with a given config.
      *
      * @template T of ElementInterface
      * @param class-string<T>|array $config The element’s class name, or its config, with a `type` value
+     *
      * @phpstan-param class-string<T>|array{type:class-string<T>} $config
      * @return T The element
      */
@@ -574,6 +568,7 @@ class Elements extends Component
      * Creates an element query for a given element type.
      *
      * @param class-string<ElementInterface> $elementType The element class
+     *
      * @return ElementQueryInterface The element query
      * @throws InvalidArgumentException if $elementType is not a valid element
      * @since 3.5.0
@@ -588,11 +583,10 @@ class Elements extends Component
     }
 
     /**
-     * @var Connection|array|string the DB connection object or the application component ID of the DB connection
-     * that should be used to store element bulk op records.
+     * @var string the DB connection name that should be used to store element bulk op records.
      * @since 5.3.0
      */
-    public Connection|array|string $bulkOpDb = 'db2';
+    public string $bulkOpDb = 'db2';
 
     // Element caches
     // -------------------------------------------------------------------------
@@ -614,6 +608,11 @@ class Elements extends Component
     private array $_cacheDurationBuffers = [];
 
     private ?int $_cacheDuration = null;
+
+    public function getBulkOpConnection(): ConnectionInterface
+    {
+        return DB::connection($this->bulkOpDb);
+    }
 
     /**
      * Returns whether we are currently collecting element cache invalidation info.
@@ -672,6 +671,7 @@ class Elements extends Component
      * Adds element cache invalidation tags to the current collection.
      *
      * @param string[] $tags
+     *
      * @since 3.5.0
      */
     public function collectCacheTags(array $tags): void
@@ -693,6 +693,7 @@ class Elements extends Component
      * The value will only be used if it is less than the currently stored expiration date.
      *
      * @param DateTime $expiryDate
+     *
      * @since 4.3.0
      */
     public function setCacheExpiryDate(DateTime $expiryDate): void
@@ -712,6 +713,7 @@ class Elements extends Component
      ** Stores cache invalidation info for a given element.
      *
      * @param ElementInterface $element
+     *
      * @since 4.5.0
      */
     public function collectCacheInfoForElement(ElementInterface $element): void
@@ -814,6 +816,7 @@ class Elements extends Component
      * Invalidates caches for the given element type.
      *
      * @param class-string<ElementInterface> $elementType
+     *
      * @since 3.5.0
      */
     public function invalidateCachesForElementType(string $elementType): void
@@ -833,6 +836,7 @@ class Elements extends Component
      * Invalidates caches for the given element.
      *
      * @param ElementInterface $element
+     *
      * @since 3.5.0
      */
     public function invalidateCachesForElement(ElementInterface $element): void
@@ -903,10 +907,15 @@ class Elements extends Component
      * @param int|string|int[]|null $siteId The site(s) to fetch the element in.
      * Defaults to the current site.
      * @param array $criteria
+     *
      * @return T|null The matching element, or `null`.
      */
-    public function getElementById(int $elementId, ?string $elementType = null, array|int|string $siteId = null, array $criteria = []): ?ElementInterface
-    {
+    public function getElementById(
+        int $elementId,
+        ?string $elementType = null,
+        array|int|string $siteId = null,
+        array $criteria = [],
+    ): ?ElementInterface {
         return $this->_elementById('id', $elementId, $elementType, $siteId, $criteria);
     }
 
@@ -923,11 +932,16 @@ class Elements extends Component
      * @param int|string|int[]|null $siteId The site(s) to fetch the element in.
      * Defaults to the current site.
      * @param array $criteria
+     *
      * @return T|null The matching element, or `null`.
      * @since 3.5.13
      */
-    public function getElementByUid(string $uid, ?string $elementType = null, array|int|string $siteId = null, array $criteria = []): ?ElementInterface
-    {
+    public function getElementByUid(
+        string $uid,
+        ?string $elementType = null,
+        array|int|string $siteId = null,
+        array $criteria = [],
+    ): ?ElementInterface {
         return $this->_elementById('uid', $uid, $elementType, $siteId, $criteria);
     }
 
@@ -941,10 +955,16 @@ class Elements extends Component
      * @param int|string|int[]|null $siteId The site(s) to fetch the element in.
      * Defaults to the current site.
      * @param array $criteria
+     *
      * @return T|null The matching element, or `null`.
      */
-    private function _elementById(string $property, int|string $elementId, ?string $elementType = null, array|int|string $siteId = null, array $criteria = []): ?ElementInterface
-    {
+    private function _elementById(
+        string $property,
+        int|string $elementId,
+        ?string $elementType = null,
+        array|int|string $siteId = null,
+        array $criteria = [],
+    ): ?ElementInterface {
         if (!$elementId) {
             return null;
         }
@@ -977,6 +997,7 @@ class Elements extends Component
      * @param int|null $siteId The site to look for the URI in, and to return the element in.
      * Defaults to the current site.
      * @param bool $enabledOnly Whether to only look for an enabled element. Defaults to `false`.
+     *
      * @return ElementInterface|null The matching element, or `null`.
      */
     public function getElementByUri(string $uri, ?int $siteId = null, bool $enabledOnly = false): ?ElementInterface
@@ -996,43 +1017,30 @@ class Elements extends Component
         }
 
         // First get the element ID and type
-        $query = (new Query())
+        $result = DB::table(new Alias(Table::ELEMENTS, 'elements'))
             ->select(['elements.id', 'elements.type'])
-            ->from(['elements' => Table::ELEMENTS])
-            ->innerJoin(['elements_sites' => Table::ELEMENTS_SITES], '[[elements_sites.elementId]] = [[elements.id]]')
-            ->where([
-                'elements.draftId' => null,
-                'elements.revisionId' => null,
-                'elements.dateDeleted' => null,
-                'elements_sites.siteId' => $siteId,
-            ]);
+            ->join(new Alias(Table::ELEMENTS_SITES, 'elements_sites'), 'elements_sites.elementId', 'elements.id')
+            ->where('elements_sites.siteId', $siteId)
+            ->whereNull(['elements.draftId', 'elements.revisionId', 'elements.dateDeleted'])
+            ->where(new Lower('elements_sites.uri'), mb_strtolower($uri))
+            ->when(
+                $enabledOnly,
+                fn(Builder $query) => $query->where([
+                    'elements_sites.enabled' => true,
+                    'elements.enabled' => true,
+                    'elements.archived' => false,
+                ]),
+            )
+            ->first();
 
-        if (Craft::$app->getDb()->getIsMysql()) {
-            $query->andWhere([
-                'elements_sites.uri' => $uri,
-            ]);
-        } else {
-            $query->andWhere([
-                'lower([[elements_sites.uri]])' => mb_strtolower($uri),
-            ]);
-        }
-
-        if ($enabledOnly) {
-            $query->andWhere([
-                'elements_sites.enabled' => true,
-                'elements.enabled' => true,
-                'elements.archived' => false,
-            ]);
-        }
-
-        $result = $query->one();
-        return $result ? $this->getElementById($result['id'], $result['type'], $siteId) : null;
+        return $result ? $this->getElementById($result->id, $result->type, $siteId) : null;
     }
 
     /**
      * Returns the class of an element with a given ID.
      *
      * @param int $elementId The element’s ID
+     *
      * @return class-string<ElementInterface>|null The element’s class, or null if it could not be found
      */
     public function getElementTypeById(int $elementId): ?string
@@ -1044,6 +1052,7 @@ class Elements extends Component
      * Returns the class of an element with a given UID.
      *
      * @param string $uid The element’s UID
+     *
      * @return string|null The element’s class, or null if it could not be found
      * @since 3.5.13
      */
@@ -1057,33 +1066,30 @@ class Elements extends Component
      *
      * @param string $property Either `id` or `uid`
      * @param int|string $elementId The element’s ID/UID
+     *
      * @return string|null The element’s class, or null if it could not be found
      */
     private function _elementTypeById(string $property, int|string $elementId): ?string
     {
-        $class = (new Query())
-            ->select(['type'])
-            ->from([Table::ELEMENTS])
-            ->where([$property => $elementId])
-            ->scalar();
-
-        return $class !== false ? $class : null;
+        return DB::table(Table::ELEMENTS)
+            ->where($property, $elementId)
+            ->value('type');
     }
 
     /**
      * Returns the classes of elements with the given IDs.
      *
      * @param int[] $elementIds The elements’ IDs
+     *
      * @return string[]
      */
     public function getElementTypesByIds(array $elementIds): array
     {
-        return (new Query())
-            ->select(['type'])
-            ->distinct(true)
-            ->from([Table::ELEMENTS])
-            ->where(['id' => $elementIds])
-            ->column();
+        return DB::table(Table::ELEMENTS)
+            ->whereIn('id', $elementIds)
+            ->distinct()
+            ->pluck('type')
+            ->all();
     }
 
     /**
@@ -1091,31 +1097,32 @@ class Elements extends Component
      *
      * @param int $elementId The element’s ID.
      * @param int $siteId The site to search for the element’s URI in.
-     * @return string|null|false The element’s URI or `null`, or `false` if the element doesn’t exist.
+     *
+     * @return string|null The element’s URI or `null`, or `false` if the element doesn’t exist.
      */
-    public function getElementUriForSite(int $elementId, int $siteId): string|null|false
+    public function getElementUriForSite(int $elementId, int $siteId): string|null
     {
-        return (new Query())
-            ->select(['uri'])
-            ->from([Table::ELEMENTS_SITES])
-            ->where(['elementId' => $elementId, 'siteId' => $siteId])
-            ->scalar();
+        return DB::table(Table::ELEMENTS)
+            ->where('elementId', $elementId)
+            ->where('siteId', $siteId)
+            ->value('uri');
     }
 
     /**
      * Returns the site IDs that a given element is enabled in.
      *
      * @param int $elementId The element’s ID.
+     *
      * @return int[] The site IDs that the element is enabled in. If the element could not be found, an empty array
      * will be returned.
      */
     public function getEnabledSiteIdsForElement(int $elementId): array
     {
-        return (new Query())
-            ->select(['siteId'])
-            ->from([Table::ELEMENTS_SITES])
-            ->where(['elementId' => $elementId, 'enabled' => true])
-            ->column();
+        return DB::table(Table::ELEMENTS_SITES)
+            ->where('elementId', $elementId)
+            ->where('enabled', true)
+            ->pluck('siteId')
+            ->all();
     }
 
     // Bulk ops
@@ -1158,6 +1165,7 @@ class Elements extends Component
      * Resumes tracking element saves and deletes as part of a bulk operation.
      *
      * @param string $key The bulk operation key returned by [[beginBulkOp()]].
+     *
      * @since 5.0.0
      */
     public function resumeBulkOp(string $key): void
@@ -1169,6 +1177,7 @@ class Elements extends Component
      * Finishes tracking element saves and deletes as part of a bulk operation.
      *
      * @param string $key The bulk operation key returned by [[beginBulkOp()]].
+     *
      * @since 5.0.0
      */
     public function endBulkOp(string $key): void
@@ -1182,7 +1191,9 @@ class Elements extends Component
         }
 
         if (!$this->isMigrationRequest()) {
-            Db::delete(Table::ELEMENTS_BULKOPS, ['key' => $key], db: $this->bulkOpDb);
+            $this->getBulkOpConnection()->table(Table::ELEMENTS_BULKOPS)
+                ->where('key', $key)
+                ->delete();
         }
     }
 
@@ -1190,6 +1201,7 @@ class Elements extends Component
      * Tracks an element as being affected by any active bulk operations.
      *
      * @param ElementInterface $element
+     *
      * @since 5.0.0
      */
     public function trackElementInBulkOps(ElementInterface $element): void
@@ -1198,14 +1210,16 @@ class Elements extends Component
             return;
         }
 
-        $timestamp = Db::prepareDateForDb(DateTimeHelper::now());
+        $timestamp = now();
 
+        $connection = $this->getBulkOpConnection();
         foreach (array_keys($this->bulkKeys) as $key) {
-            Db::upsert(Table::ELEMENTS_BULKOPS, [
-                'elementId' => $element->id,
-                'key' => $key,
-                'timestamp' => $timestamp,
-            ], db: $this->bulkOpDb);
+            $connection->table(Table::ELEMENTS_BULKOPS)
+                ->upsert([
+                    'elementId' => $element->id,
+                    'key' => $key,
+                    'timestamp' => $timestamp,
+                ], ['elementId', 'key']);
         }
     }
 
@@ -1226,6 +1240,7 @@ class Elements extends Component
      * callback function.
      *
      * @param callable $callback
+     *
      * @since 5.3.0
      */
     public function ensureBulkOp(callable $callback): void
@@ -1295,6 +1310,7 @@ class Elements extends Component
      * regardless of whether it’s being resaved
      * @param bool|null $crossSiteValidate Whether the element should be validated across all supported sites
      * @param bool $saveContent Whether all the element’s content should be saved. When false (default) only dirty fields will be saved.
+     *
      * @return bool
      * @throws ElementNotFoundException if $element has an invalid $id
      * @throws Exception if the $element doesn’t have any supported sites
@@ -1341,6 +1357,7 @@ class Elements extends Component
      * Sets the URI on an element.
      *
      * @param ElementInterface $element
+     *
      * @throws OperationAbortedException if a unique URI could not be found
      * @since 4.6.0
      */
@@ -1362,6 +1379,7 @@ class Elements extends Component
      * Merges recent canonical element changes into a given derivative, such as a draft.
      *
      * @param ElementInterface $element The derivative element
+     *
      * @since 3.7.0
      */
     public function mergeCanonicalChanges(ElementInterface $element): void
@@ -1388,7 +1406,7 @@ class Elements extends Component
         }
 
         $this->ensureBulkOp(function() use ($element, $supportedSites) {
-            Craft::$app->getDb()->transaction(function() use ($element, $supportedSites) {
+            DB::transaction(function() use ($element, $supportedSites) {
                 // Start with the other sites (if any), so we don't update dateLastMerged until the end
                 $otherSiteIds = array_keys(Arr::except($supportedSites, $element->siteId));
                 if (!empty($otherSiteIds)) {
@@ -1453,6 +1471,7 @@ class Elements extends Component
      * @template T of ElementInterface
      * @param T $element The derivative element
      * @param array $newAttributes Any attributes to apply to the canonical element
+     *
      * @return T The updated canonical element
      * @throws InvalidArgumentException if the element is already a canonical element
      * @since 3.7.0
@@ -1472,17 +1491,15 @@ class Elements extends Component
         // "Duplicate" the derivative element with the canonical element’s ID and UID
         $canonical = $element->getCanonical();
 
-        $changedAttributes = (new Query())
+        $changedAttributes = DB::table(Table::CHANGEDATTRIBUTES)
             ->select(['siteId', 'attribute', 'propagated', 'userId'])
-            ->from([Table::CHANGEDATTRIBUTES])
-            ->where(['elementId' => $element->id])
-            ->all();
+            ->where('elementId', $element->id)
+            ->get();
 
-        $changedFields = (new Query())
+        $changedFields = DB::table(Table::CHANGEDFIELDS)
             ->select(['siteId', 'fieldId', 'layoutElementUid', 'propagated', 'userId'])
-            ->from([Table::CHANGEDFIELDS])
-            ->where(['elementId' => $element->id])
-            ->all();
+            ->where('elementId', $element->id)
+            ->get();
 
         $newAttributes += [
             'id' => $canonical->id,
@@ -1506,18 +1523,18 @@ class Elements extends Component
         }
 
         foreach ($changedAttributes as $attribute) {
-            $newAttributes['siteAttributes'][$attribute['siteId']]['dirtyAttributes'][] = $attribute['attribute'];
+            $newAttributes['siteAttributes'][$attribute->siteId]['dirtyAttributes'][] = $attribute->attribute;
         }
 
         foreach ($changedFields as $changedField) {
-            $layoutElement = $element->getFieldLayout()?->getElementByUid($changedField['layoutElementUid']);
+            $layoutElement = $element->getFieldLayout()?->getElementByUid($changedField->layoutElementUid);
             if ($layoutElement instanceof CustomField) {
                 try {
                     $field = $layoutElement->getField();
                 } catch (FieldNotFoundException) {
                     continue;
                 }
-                $newAttributes['siteAttributes'][$changedField['siteId']]['dirtyFields'][] = $field->handle;
+                $newAttributes['siteAttributes'][$changedField->siteId]['dirtyFields'][] = $field->handle;
             }
         }
 
@@ -1531,31 +1548,36 @@ class Elements extends Component
 
         $updatedCanonical = $this->duplicateElement($element, $newAttributes);
 
-        Craft::$app->onAfterRequest(function() use ($canonical, $updatedCanonical, $changedAttributes, $changedFields) {
+        Craft::$app->onAfterRequest(function() use (
+            $canonical,
+            $updatedCanonical,
+            $changedAttributes,
+            $changedFields
+        ) {
             // Update change tracking for the canonical element
-            $timestamp = Db::prepareDateForDb($updatedCanonical->dateUpdated);
-
             foreach ($changedAttributes as $attribute) {
-                Db::upsert(Table::CHANGEDATTRIBUTES, [
-                    'elementId' => $canonical->id,
-                    'siteId' => $attribute['siteId'],
-                    'attribute' => $attribute['attribute'],
-                    'dateUpdated' => $timestamp,
-                    'propagated' => $attribute['propagated'],
-                    'userId' => $attribute['userId'],
-                ]);
+                DB::table(Table::CHANGEDATTRIBUTES)
+                    ->upsert([
+                        'elementId' => $canonical->id,
+                        'siteId' => $attribute->siteId,
+                        'attribute' => $attribute->attribute,
+                        'dateUpdated' => $updatedCanonical->dateUpdated,
+                        'propagated' => $attribute->propagated,
+                        'userId' => $attribute->userId,
+                    ], ['elementId', 'siteId', 'attribute']);
             }
 
             foreach ($changedFields as $field) {
-                Db::upsert(Table::CHANGEDFIELDS, [
-                    'elementId' => $canonical->id,
-                    'siteId' => $field['siteId'],
-                    'fieldId' => $field['fieldId'],
-                    'layoutElementUid' => $field['layoutElementUid'],
-                    'dateUpdated' => $timestamp,
-                    'propagated' => $field['propagated'],
-                    'userId' => $field['userId'],
-                ]);
+                DB::table(Table::CHANGEDFIELDS)
+                    ->upsert([
+                        'elementId' => $canonical->id,
+                        'siteId' => $field->siteId,
+                        'fieldId' => $field->fieldId,
+                        'layoutElementUid' => $field->layoutElementUid,
+                        'dateUpdated' => $updatedCanonical->dateUpdated,
+                        'propagated' => $field->propagated,
+                        'userId' => $field->userId,
+                    ], ['elementId', 'siteId', 'fieldId', 'layoutElementUid']);
             }
         });
 
@@ -1571,6 +1593,7 @@ class Elements extends Component
      * @param bool|null $updateSearchIndex Whether to update the element search index for the element
      * (this will happen via a background job if this is a web request)
      * @param bool $touch Whether to update the `dateUpdated` timestamps for the elements
+     *
      * @throws Throwable if reasons
      * @since 3.2.0
      */
@@ -1593,7 +1616,7 @@ class Elements extends Component
             $position = 0;
 
             try {
-                foreach (Db::each($query) as $element) {
+                foreach (DbHelper::each($query) as $element) {
                     /** @var ElementInterface $element */
                     $position++;
 
@@ -1614,17 +1637,21 @@ class Elements extends Component
                         // Make sure this isn't a revision
                         if ($skipRevisions) {
                             $label = $element->getUiLabel();
-                            $label = $label !== '' ? "$label ($element->id)" : sprintf('%s %s', $element::lowerDisplayName(), $element->id);
+                            $label = $label !== '' ? "$label ($element->id)" : sprintf('%s %s',
+                                $element::lowerDisplayName(), $element->id);
                             try {
                                 if (ElementHelper::isRevision($element)) {
-                                    throw new InvalidElementException($element, "Skipped resaving $label because it's a revision.");
+                                    throw new InvalidElementException($element,
+                                        "Skipped resaving $label because it's a revision.");
                                 }
                             } catch (Throwable $rootException) {
-                                throw new InvalidElementException($element, "Skipped resaving $label due to an error obtaining its root element: " . $rootException->getMessage());
+                                throw new InvalidElementException($element,
+                                    "Skipped resaving $label due to an error obtaining its root element: " . $rootException->getMessage());
                             }
                         }
 
-                        $this->_saveElementInternal($element, true, true, $updateSearchIndex, forceTouch: $touch, saveContent: true);
+                        $this->_saveElementInternal($element, true, true, $updateSearchIndex, forceTouch: $touch,
+                            saveContent: true);
                     } catch (Throwable $e) {
                         if (!$continueOnError) {
                             throw $e;
@@ -1661,12 +1688,16 @@ class Elements extends Component
      * @param ElementQueryInterface $query The element query to fetch elements with
      * @param int|int[]|null $siteIds The site ID(s) that the elements should be propagated to. If null, elements will be
      * @param bool $continueOnError Whether to continue going if an error occurs
+     *
      * @throws Throwable if reasons
      * propagated to all supported sites, except the one they were queried in.
      * @since 3.2.0
      */
-    public function propagateElements(ElementQueryInterface $query, array|int $siteIds = null, bool $continueOnError = false): void
-    {
+    public function propagateElements(
+        ElementQueryInterface $query,
+        array|int $siteIds = null,
+        bool $continueOnError = false,
+    ): void {
         /** @var ElementQuery $query */
         // Fire a 'beforePropagateElements' event
         if ($this->hasEventHandlers(self::EVENT_BEFORE_PROPAGATE_ELEMENTS)) {
@@ -1684,7 +1715,7 @@ class Elements extends Component
             $position = 0;
 
             try {
-                foreach (Db::each($query) as $element) {
+                foreach (DbHelper::each($query) as $element) {
                     /** @var ElementInterface $element */
                     $position++;
 
@@ -1700,7 +1731,8 @@ class Elements extends Component
                     $element->setScenario(Element::SCENARIO_ESSENTIALS);
                     $supportedSites = Arr::keyBy(ElementHelper::supportedSitesForElement($element), 'siteId');
                     $supportedSiteIds = array_keys($supportedSites);
-                    $elementSiteIds = $siteIds !== null ? array_intersect($siteIds, $supportedSiteIds) : $supportedSiteIds;
+                    $elementSiteIds = $siteIds !== null ? array_intersect($siteIds,
+                        $supportedSiteIds) : $supportedSiteIds;
                     $elementType = get_class($element);
 
                     $e = null;
@@ -1769,6 +1801,7 @@ class Elements extends Component
      * @param bool $asUnpublishedDraft whether the duplicate should be created as unpublished draft
      * @param bool $checkAuthorization whether to ensure the current user is authorized to save the new element,
      * once its new attributes have been applied to it
+     *
      * @return T the duplicated element
      * @throws UnsupportedSiteException if the element is being duplicated into a site it doesn’t support
      * @throws InvalidElementException if saveElement() returns false for any of the sites
@@ -1830,7 +1863,8 @@ class Elements extends Component
         // Make sure the element actually supports its own site ID
         $supportedSites = Arr::keyBy(ElementHelper::supportedSitesForElement($mainClone), 'siteId');
         if (!isset($supportedSites[$mainClone->siteId])) {
-            throw new UnsupportedSiteException($element, $mainClone->siteId, 'Attempting to duplicate an element in an unsupported site.');
+            throw new UnsupportedSiteException($element, $mainClone->siteId,
+                'Attempting to duplicate an element in an unsupported site.');
         }
 
         // Clone any field values that are objects (without affecting the dirty fields)
@@ -1866,7 +1900,7 @@ class Elements extends Component
                 null,
                 Craft::$app->getUser()->getId(),
                 $element->getCanonicalId(),
-                $draftBehavior->trackChanges
+                $draftBehavior->trackChanges,
             );
         }
 
@@ -1875,7 +1909,8 @@ class Elements extends Component
             /** @var ElementInterface&DraftBehavior $element */
             /** @var DraftBehavior $draftBehavior */
             // check if draftBehavior is attached - if not, attach it
-            $draftBehavior = $mainClone->getBehavior('draft') ?? $mainClone->attachBehavior('draft', new DraftBehavior());
+            $draftBehavior = $mainClone->getBehavior('draft') ?? $mainClone->attachBehavior('draft',
+                new DraftBehavior());
             $draftsService = Craft::$app->getDrafts();
             $draftBehavior->draftName = Craft::t('app', 'First draft');
             $draftBehavior->draftNotes = null;
@@ -1900,7 +1935,8 @@ class Elements extends Component
         }
 
         if ($mainClone->hasErrors()) {
-            throw new InvalidElementException($mainClone, 'Element ' . $element->id . ' could not be duplicated because it doesn\'t validate.');
+            throw new InvalidElementException($mainClone,
+                'Element ' . $element->id . ' could not be duplicated because it doesn\'t validate.');
         }
 
         $this->ensureBulkOp(function() use (
@@ -1913,11 +1949,12 @@ class Elements extends Component
             $siteAttributes,
             $asUnpublishedDraft,
         ) {
-            $transaction = Craft::$app->getDb()->beginTransaction();
+            DB::beginTransaction();
             try {
                 // Start with $element’s site
                 if (!$this->_saveElementInternal($mainClone, false, false, null, $supportedSites, saveContent: true)) {
-                    throw new InvalidElementException($mainClone, 'Element ' . $element->id . ' could not be duplicated for site ' . $element->siteId);
+                    throw new InvalidElementException($mainClone,
+                        'Element ' . $element->id . ' could not be duplicated for site ' . $element->siteId);
                 }
 
                 // Should we add the clone to the source element’s structure?
@@ -1996,7 +2033,8 @@ class Elements extends Component
                             // Make sure it has a valid slug
                             (new SlugValidator())->validateAttribute($siteClone, 'slug');
                             if ($siteClone->hasErrors('slug')) {
-                                throw new InvalidElementException($siteClone, "Element $element->id could not be duplicated for site $siteElement->siteId: " . $siteClone->getFirstError('slug'));
+                                throw new InvalidElementException($siteClone,
+                                    "Element $element->id could not be duplicated for site $siteElement->siteId: " . $siteClone->getFirstError('slug'));
                             }
 
                             // Set a unique URI on the site clone
@@ -2007,8 +2045,11 @@ class Elements extends Component
                             }
                         }
 
-                        if (!$this->_saveElementInternal($siteClone, false, false, supportedSites: $supportedSites, saveContent: true)) {
-                            throw new InvalidElementException($siteClone, "Element $element->id could not be duplicated for site $siteElement->siteId: " . implode(', ', $siteClone->getFirstErrors()));
+                        if (!$this->_saveElementInternal($siteClone, false, false, supportedSites: $supportedSites,
+                            saveContent: true)) {
+                            throw new InvalidElementException($siteClone,
+                                "Element $element->id could not be duplicated for site $siteElement->siteId: " . implode(', ',
+                                    $siteClone->getFirstErrors()));
                         }
 
                         $propagatedTo[$siteClone->siteId] = true;
@@ -2024,8 +2065,11 @@ class Elements extends Component
                             if (!$this->_propagateElement($mainClone, $supportedSites, $siteId, $siteClone)) {
                                 /** @phpstan-ignore-next-line */
                                 throw $siteClone
-                                    ? new InvalidElementException($siteClone, "Element $siteClone->id could not be propagated to site $siteId: " . implode(', ', $siteClone->getFirstErrors()))
-                                    : new InvalidElementException($mainClone, "Element $mainClone->id could not be propagated to site $siteId.");
+                                    ? new InvalidElementException($siteClone,
+                                        "Element $siteClone->id could not be propagated to site $siteId: " . implode(', ',
+                                            $siteClone->getFirstErrors()))
+                                    : new InvalidElementException($mainClone,
+                                        "Element $mainClone->id could not be propagated to site $siteId.");
                             }
                             $propagatedTo[$siteId] = true;
                             $mainClone->newSiteIds[] = $siteId;
@@ -2036,9 +2080,9 @@ class Elements extends Component
                 // It's now fully duplicated and propagated
                 $mainClone->afterPropagate(empty($newAttributes['id']));
 
-                $transaction->commit();
+                DB::commit();
             } catch (Throwable $e) {
-                $transaction->rollBack();
+                DB::rollBack();
                 throw $e;
             }
 
@@ -2061,10 +2105,15 @@ class Elements extends Component
      * @param bool $updateOtherSites Whether the element’s other sites should also be updated.
      * @param bool $updateDescendants Whether the element’s descendants should also be updated.
      * @param bool $queue Whether the element’s slug and URI should be updated via a job in the queue.
+     *
      * @throws OperationAbortedException if a unique URI can’t be generated based on the element’s URI format
      */
-    public function updateElementSlugAndUri(ElementInterface $element, bool $updateOtherSites = true, bool $updateDescendants = true, bool $queue = false): void
-    {
+    public function updateElementSlugAndUri(
+        ElementInterface $element,
+        bool $updateOtherSites = true,
+        bool $updateDescendants = true,
+        bool $queue = false,
+    ): void {
         if ($queue) {
             Queue::push(new UpdateElementSlugsAndUris([
                 'elementId' => $element->id,
@@ -2088,13 +2137,14 @@ class Elements extends Component
             ]));
         }
 
-        Db::update(Table::ELEMENTS_SITES, [
-            'slug' => $element->slug,
-            'uri' => $element->uri,
-        ], [
-            'elementId' => $element->id,
-            'siteId' => $element->siteId,
-        ]);
+        DB::table(Table::ELEMENTS_SITES)
+            ->where('elementId', $element->id)
+            ->where('siteId', $element->siteId)
+            ->update([
+                'slug' => $element->slug,
+                'uri' => $element->uri,
+                'dateUpdated' => now(),
+            ]);
 
         // Fire a 'afterUpdateSlugAndUri' event
         if ($this->hasEventHandlers(self::EVENT_AFTER_UPDATE_SLUG_AND_URI)) {
@@ -2144,8 +2194,11 @@ class Elements extends Component
      * @param bool $updateOtherSites Whether the element’s other sites should also be updated.
      * @param bool $queue Whether the descendants’ slugs and URIs should be updated via a job in the queue.
      */
-    public function updateDescendantSlugsAndUris(ElementInterface $element, bool $updateOtherSites = true, bool $queue = false): void
-    {
+    public function updateDescendantSlugsAndUris(
+        ElementInterface $element,
+        bool $updateOtherSites = true,
+        bool $queue = false,
+    ): void {
         $query = $this->createElementQuery(get_class($element))
             ->descendantOf($element)
             ->descendantDist(1)
@@ -2183,6 +2236,7 @@ class Elements extends Component
      *
      * @param int $mergedElementId The ID of the element that is going away.
      * @param int $prevailingElementId The ID of the element that is sticking around.
+     *
      * @return bool Whether the elements were merged successfully.
      * @throws ElementNotFoundException if one of the element IDs don’t exist.
      * @throws Throwable if reasons
@@ -2213,65 +2267,60 @@ class Elements extends Component
      *
      * @param ElementInterface $mergedElement The element that is going away.
      * @param ElementInterface $prevailingElement The element that is sticking around.
+     *
      * @return bool Whether the elements were merged successfully.
      * @throws Throwable if reasons
      * @since 3.1.31
      */
     public function mergeElements(ElementInterface $mergedElement, ElementInterface $prevailingElement): bool
     {
-        $transaction = Craft::$app->getDb()->beginTransaction();
+        DB::beginTransaction();
         try {
             // Update any relations that point to the merged element
-            $relations = (new Query())
+            $relations = DB::table(Table::RELATIONS)
                 ->select(['id', 'fieldId', 'sourceId', 'sourceSiteId'])
-                ->from([Table::RELATIONS])
-                ->where(['targetId' => $mergedElement->id])
-                ->all();
+                ->where('targetId', $mergedElement->id)
+                ->get();
 
             foreach ($relations as $relation) {
                 // Make sure the persisting element isn't already selected in the same field
-                $persistingElementIsRelatedToo = (new Query())
-                    ->from([Table::RELATIONS])
-                    ->where([
-                        'fieldId' => $relation['fieldId'],
-                        'sourceId' => $relation['sourceId'],
-                        'sourceSiteId' => $relation['sourceSiteId'],
-                        'targetId' => $prevailingElement->id,
-                    ])
+                $persistingElementIsRelatedToo = DB::table(Table::RELATIONS)
+                    ->where('fieldId', $relation->fieldId)
+                    ->where('sourceId', $relation->sourceId)
+                    ->where('sourceSiteId', $relation->sourceSiteId)
+                    ->where('targetId', $prevailingElement->id)
                     ->exists();
 
                 if (!$persistingElementIsRelatedToo) {
-                    Db::update(Table::RELATIONS, [
-                        'targetId' => $prevailingElement->id,
-                    ], [
-                        'id' => $relation['id'],
-                    ]);
+                    DB::table(Table::RELATIONS)
+                        ->where('id', $relation->id)
+                        ->update([
+                            'targetId' => $prevailingElement->id,
+                            'dateUpdated' => now(),
+                        ]);
                 }
             }
 
             // Update any structures that the merged element is in
-            $structureElements = (new Query())
+            $structureElements = DB::table(Table::STRUCTUREELEMENTS)
                 ->select(['id', 'structureId'])
-                ->from([Table::STRUCTUREELEMENTS])
-                ->where(['elementId' => $mergedElement->id])
-                ->all();
+                ->where('elementId', $mergedElement->id)
+                ->get();
 
             foreach ($structureElements as $structureElement) {
                 // Make sure the persisting element isn't already a part of that structure
-                $persistingElementIsInStructureToo = (new Query())
-                    ->from([Table::STRUCTUREELEMENTS])
-                    ->where([
-                        'structureId' => $structureElement['structureId'],
-                        'elementId' => $prevailingElement->id,
-                    ])
+                $persistingElementIsInStructureToo = DB::table(Table::STRUCTUREELEMENTS)
+                    ->where('structureId', $structureElement->structureId)
+                    ->where('elementId', $prevailingElement->id)
                     ->exists();
 
                 if (!$persistingElementIsInStructureToo) {
-                    Db::update(Table::STRUCTUREELEMENTS, [
-                        'elementId' => $prevailingElement->id,
-                    ], [
-                        'id' => $structureElement['id'],
-                    ]);
+                    DB::table(Table::STRUCTUREELEMENTS)
+                        ->where('id', $structureElement->id)
+                        ->update([
+                            'elementId' => $prevailingElement->id,
+                            'dateUpdated' => now(),
+                        ]);
                 }
             }
 
@@ -2305,11 +2354,11 @@ class Elements extends Component
             // Now delete the merged element
             $success = $this->deleteElement($mergedElement);
 
-            $transaction->commit();
+            DB::commit();
 
             return $success;
         } catch (Throwable $e) {
-            $transaction->rollBack();
+            DB::rollBack();
             throw $e;
         }
     }
@@ -2322,11 +2371,16 @@ class Elements extends Component
      * @param int|null $siteId The site to fetch the element in.
      * Defaults to the current site.
      * @param bool $hardDelete Whether the element should be hard-deleted immediately, instead of soft-deleted
+     *
      * @return bool Whether the element was deleted successfully
      * @throws Throwable
      */
-    public function deleteElementById(int $elementId, ?string $elementType = null, ?int $siteId = null, bool $hardDelete = false): bool
-    {
+    public function deleteElementById(
+        int $elementId,
+        ?string $elementType = null,
+        ?int $siteId = null,
+        bool $hardDelete = false,
+    ): bool {
         if ($elementType === null) {
             $elementType = $this->getElementTypeById($elementId);
 
@@ -2337,11 +2391,9 @@ class Elements extends Component
 
         if ($siteId === null && $elementType::isLocalized() && Craft::$app->getIsMultiSite()) {
             // Get a site this element is enabled in
-            $siteId = (int)(new Query())
-                ->select('siteId')
-                ->from(Table::ELEMENTS_SITES)
-                ->where(['elementId' => $elementId])
-                ->scalar();
+            $siteId = (int)DB::table(Table::ELEMENTS_SITES)
+                ->where('elementId', $elementId)
+                ->value('siteId');
 
             if ($siteId === 0) {
                 return false;
@@ -2362,6 +2414,7 @@ class Elements extends Component
      *
      * @param ElementInterface $element The element to be deleted
      * @param bool $hardDelete Whether the element should be hard-deleted immediately, instead of soft-deleted
+     *
      * @return bool Whether the element was deleted successfully
      * @throws Throwable
      */
@@ -2384,8 +2437,7 @@ class Elements extends Component
         }
 
         $this->ensureBulkOp(function() use ($element) {
-            $db = Craft::$app->getDb();
-            $transaction = $db->beginTransaction();
+            DB::beginTransaction();
             try {
                 // First delete any structure nodes with this element, so NestedSetBehavior can do its thing.
                 while (($record = StructureElementRecord::findOne(['elementId' => $element->id])) !== null) {
@@ -2406,18 +2458,19 @@ class Elements extends Component
                 DateTimeHelper::pause();
 
                 if ($element->hardDelete) {
-                    Db::delete(Table::ELEMENTS, [
-                        'id' => $element->id,
-                    ]);
-                    Db::delete(Table::SEARCHINDEX, [
-                        'elementId' => $element->id,
-                    ]);
+                    DB::table(Table::ELEMENTS)->delete($element->id);
+                    DB::table(Table::SEARCHINDEX)
+                        ->where('elementId', $element->id)
+                        ->delete();
                 } else {
                     // Soft delete the elements table row
-                    Db::update(Table::ELEMENTS, [
-                        'dateDeleted' => Db::prepareDateForDb(new DateTime()),
-                        'deletedWithOwner' => $element->deletedWithOwner,
-                    ], ['id' => $element->id]);
+                    DB::table(Table::ELEMENTS)
+                        ->where('id', $element->id)
+                        ->update([
+                            'dateUpdated' => $now = now(),
+                            'dateDeleted' => $now,
+                            'deletedWithOwner' => $element->deletedWithOwner,
+                        ]);
 
                     // Also soft delete the element’s drafts & revisions
                     $this->_cascadeDeleteDraftsAndRevisions($element->id);
@@ -2431,9 +2484,9 @@ class Elements extends Component
                     $this->trackElementInBulkOps($element);
                 }
 
-                $transaction->commit();
+                DB::commit();
             } catch (Throwable $e) {
-                $transaction->rollBack();
+                DB::rollBack();
                 throw $e;
             } finally {
                 DateTimeHelper::resume();
@@ -2454,6 +2507,7 @@ class Elements extends Component
      * Deletes an element in the site it’s loaded in.
      *
      * @param ElementInterface $element
+     *
      * @since 4.4.0
      */
     public function deleteElementForSite(ElementInterface $element): void
@@ -2465,6 +2519,7 @@ class Elements extends Component
      * Deletes elements in the site they are currently loaded in.
      *
      * @param ElementInterface[] $elements
+     *
      * @throws InvalidArgumentException if all elements don’t have the same type and site ID.
      * @since 4.4.0
      */
@@ -2521,10 +2576,10 @@ class Elements extends Component
             }
 
             // Delete the rows in elements_sites
-            Db::delete(Table::ELEMENTS_SITES, [
-                'elementId' => $multiSiteElementIds,
-                'siteId' => $firstElement->siteId,
-            ]);
+            DB::table(Table::ELEMENTS_SITES)
+                ->whereIn('elementId', $multiSiteElementIds)
+                ->where('siteId', $firstElement->siteId)
+                ->delete();
 
             // Resave them
             $this->resaveElements(
@@ -2535,7 +2590,7 @@ class Elements extends Component
                     ->site('*')
                     ->unique(),
                 true,
-                updateSearchIndex: false
+                updateSearchIndex: false,
             );
 
             foreach ($multiSiteElements as $element) {
@@ -2564,6 +2619,7 @@ class Elements extends Component
      * Restores an element.
      *
      * @param ElementInterface $element
+     *
      * @return bool Whether the element was restored successfully
      * @throws Exception if the $element doesn’t have any supported sites
      * @throws Throwable if reasons
@@ -2578,6 +2634,7 @@ class Elements extends Component
      * Restores multiple elements.
      *
      * @param ElementInterface[] $elements
+     *
      * @return bool Whether at least one element was restored successfully
      * @throws UnsupportedSiteException if an element is being restored for a site it doesn’t support
      * @throws Throwable if reasons
@@ -2598,20 +2655,21 @@ class Elements extends Component
             }
         }
 
-        $db = Craft::$app->getDb();
-        $transaction = $db->beginTransaction();
+        DB::beginTransaction();
         try {
             // Restore the elements
             foreach ($elements as $element) {
                 // Get the sites supported by this element
                 $supportedSites = Arr::keyBy(ElementHelper::supportedSitesForElement($element), 'siteId');
                 if (empty($supportedSites)) {
-                    throw new UnsupportedSiteException($element, $element->siteId, "Element $element->id has no supported sites.");
+                    throw new UnsupportedSiteException($element, $element->siteId,
+                        "Element $element->id has no supported sites.");
                 }
 
                 // Make sure the element actually supports the site it's being saved in
                 if (!isset($supportedSites[$element->siteId])) {
-                    throw new UnsupportedSiteException($element, $element->siteId, 'Attempting to restore an element in an unsupported site.');
+                    throw new UnsupportedSiteException($element, $element->siteId,
+                        'Attempting to restore an element in an unsupported site.');
                 }
 
                 // Get the element in each supported site
@@ -2630,8 +2688,9 @@ class Elements extends Component
                 // Make sure it still passes essential validation
                 $element->setScenario(Element::SCENARIO_ESSENTIALS);
                 if (!$element->validate()) {
-                    Craft::warning("Unable to restore element $element->id: doesn't pass essential validation: " . print_r($element->errors, true), __METHOD__);
-                    $transaction->rollBack();
+                    Craft::warning("Unable to restore element $element->id: doesn't pass essential validation: " . print_r($element->errors,
+                            true), __METHOD__);
+                    DB::rollBack();
                     return false;
                 }
 
@@ -2639,17 +2698,21 @@ class Elements extends Component
                     if ($siteElement !== $element) {
                         $siteElement->setScenario(Element::SCENARIO_ESSENTIALS);
                         if (!$siteElement->validate()) {
-                            Craft::warning("Unable to restore element $element->id: doesn't pass essential validation for site $element->siteId: " . print_r($element->errors, true), __METHOD__);
+                            Craft::warning("Unable to restore element $element->id: doesn't pass essential validation for site $element->siteId: " . print_r($element->errors,
+                                    true), __METHOD__);
                             throw new Exception("Element $element->id doesn't pass essential validation for site $element->siteId.");
                         }
                     }
                 }
 
                 // Restore it
-                Db::update(Table::ELEMENTS, [
-                    'dateDeleted' => null,
-                    'deletedWithOwner' => null,
-                ], ['id' => $element->id]);
+                DB::table(Table::ELEMENTS)
+                    ->where('id', $element->id)
+                    ->update([
+                        'dateDeleted' => null,
+                        'dateUpdated' => now(),
+                        'deletedWithOwner' => null,
+                    ]);
 
                 // Also restore the element’s drafts & revisions
                 $this->_cascadeDeleteDraftsAndRevisions($element->id, false);
@@ -2680,9 +2743,9 @@ class Elements extends Component
                 }
             }
 
-            $transaction->commit();
+            DB::commit();
         } catch (Throwable $e) {
-            $transaction->rollBack();
+            DB::rollBack();
             throw $e;
         }
 
@@ -2694,30 +2757,28 @@ class Elements extends Component
      *
      * @param ElementInterface $element
      * @param int|null $excludeUserId
+     *
      * @return ElementActivity[]
      * @since 4.5.0
      */
     public function getRecentActivity(ElementInterface $element, ?int $excludeUserId = null): array
     {
-        $query = (new Query())
+        $results = DB::table(Table::ELEMENTACTIVITY)
             ->select(['userId', 'siteId', 'draftId', 'type', 'timestamp'])
-            ->from(Table::ELEMENTACTIVITY)
-            ->where(['elementId' => $element->getCanonicalId()])
-            ->andWhere(['>', 'timestamp', Db::prepareDateForDb(DateTimeHelper::now()->modify('-1 minute'))])
-            ->orderBy(['timestamp' => SORT_DESC]);
+            ->where('elementId', $element->getCanonicalId())
+            ->where('timestamp', '>', now()->subMinute())
+            ->orderByDesc('timestamp')
+            ->when(
+                $excludeUserId,
+                fn(Builder $query) => $query->whereNot('userId', $excludeUserId),
+            )->get();
 
-        if ($excludeUserId) {
-            $query->andWhere(['not', ['userId' => $excludeUserId]]);
-        }
-
-        $results = $query->all();
-
-        if (empty($results)) {
+        if ($results->isEmpty()) {
             return [];
         }
 
         // get all the unique users
-        $userIds = array_unique(array_map(fn(array $result) => $result['userId'], $results));
+        $userIds = $results->pluck('userId')->unique()->all();
         $users = User::find()
             ->id($userIds)
             ->status(null)
@@ -2734,28 +2795,28 @@ class Elements extends Component
 
         foreach ($results as $result) {
             // do we already have an activity record for this user?
-            if (isset($activityByUserId[$result['userId']])) {
-                $newerRecord = $activityByUserId[$result['userId']];
+            if (isset($activityByUserId[$result->userId])) {
+                $newerRecord = $activityByUserId[$result->userId];
                 // edit/save trumps view
                 if (
                     $newerRecord->type === ElementActivity::TYPE_VIEW &&
-                    $result['type'] !== ElementActivity::TYPE_VIEW
+                    $result->type !== ElementActivity::TYPE_VIEW
                 ) {
                     $activity = $activity->filter(fn(ElementActivity $record) => $record !== $newerRecord);
-                    unset($activityByUserId[$result['userId']]);
+                    unset($activityByUserId[$result->userId]);
                 } else {
                     continue;
                 }
             }
 
             // fetch the element (draft)
-            $elementKey = $result['draftId'] ?: 0;
-            if (!isset($elements[$elementKey][$result['siteId']])) {
+            $elementKey = $result->draftId ?: 0;
+            if (!isset($elements[$elementKey][$result->siteId])) {
                 $resultElement = $element::find()
-                    ->id($result['draftId'] ? null : $element->getCanonicalId())
-                    ->draftId($result['draftId'])
+                    ->id($result->draftId ? null : $element->getCanonicalId())
+                    ->draftId($result->draftId)
                     ->site('*')
-                    ->preferSites([$result['siteId'], $element->siteId])
+                    ->preferSites([$result->siteId, $element->siteId])
                     ->status(null)
                     ->one();
 
@@ -2765,20 +2826,20 @@ class Elements extends Component
                         'Couldn’t load %s element %s%s for site %s',
                         $element::class,
                         $element->getCanonicalId(),
-                        $result['draftId'] ? " (draft {$result['draftId']})" : '',
-                        $result['siteId'],
+                        $result->draftId ? " (draft {$result->draftId})" : '',
+                        $result->siteId,
                     ), __METHOD__);
                     continue;
                 }
 
-                $elements[$elementKey][$result['siteId']] = $resultElement;
+                $elements[$elementKey][$result->siteId] = $resultElement;
             }
 
-            $record = $activityByUserId[$result['userId']] = new ElementActivity(
-                $users[$result['userId']],
-                $elements[$elementKey][$result['siteId']],
-                $result['type'],
-                DateTimeHelper::toDateTime($result['timestamp']),
+            $record = $activityByUserId[$result->userId] = new ElementActivity(
+                $users[$result->userId],
+                $elements[$elementKey][$result->siteId],
+                $result->type,
+                DateTimeHelper::toDateTime($result->timestamp),
             );
             $activity->push($record);
         }
@@ -2792,6 +2853,7 @@ class Elements extends Component
      * @param ElementInterface $element
      * @param ElementActivity::TYPE_* $type $type
      * @param User|null $user
+     *
      * @since 4.5.0
      */
     public function trackActivity(ElementInterface $element, string $type, ?User $user = null): void
@@ -2810,14 +2872,15 @@ class Elements extends Component
 
         $isCanonical = $element->getIsCanonical() || $element->isProvisionalDraft;
 
-        Db::upsert(Table::ELEMENTACTIVITY, [
-            'elementId' => $element->getCanonicalId(),
-            'userId' => $user->id,
-            'siteId' => $element->siteId,
-            'draftId' => $isCanonical ? null : $element->draftId,
-            'type' => $type,
-            'timestamp' => Db::prepareDateForDb(new DateTime()),
-        ]);
+        DB::table(Table::ELEMENTACTIVITY)
+            ->upsert([
+                'elementId' => $element->getCanonicalId(),
+                'userId' => $user->id,
+                'siteId' => $element->siteId,
+                'draftId' => $isCanonical ? null : $element->draftId,
+                'type' => $type,
+                'timestamp' => now(),
+            ], ['elementId', 'userId', 'type']);
     }
 
     // Element classes
@@ -2859,6 +2922,7 @@ class Elements extends Component
      *
      * @template T of ElementActionInterface
      * @param class-string<T>|array $config The element action’s class name, or its config, with a `type` value and optionally a `settings` value
+     *
      * @phpstan-param class-string<T>|array{type:class-string<T>} $config
      * @return T The element action
      */
@@ -2872,6 +2936,7 @@ class Elements extends Component
      *
      * @template T of ElementExporterInterface
      * @param class-string<T>|array $config The element exporter’s class name, or its config, with a `type` value and optionally a `settings` value
+     *
      * @phpstan-param class-string<T>|array{type:class-string<T>} $config
      * @return T The element exporter
      */
@@ -2887,6 +2952,7 @@ class Elements extends Component
      * Returns an element class by its handle.
      *
      * @param string $refHandle The element class handle
+     *
      * @return string|null The element class, or null if it could not be found
      */
     public function getElementTypeByRefHandle(string $refHandle): ?string
@@ -2933,6 +2999,7 @@ class Elements extends Component
      *
      * @param string $str The string to parse
      * @param int|null $defaultSiteId The default site ID to query the elements in
+     *
      * @return string The parsed string
      */
     public function parseRefs(string $str, ?int $defaultSiteId = null): string
@@ -3054,6 +3121,7 @@ class Elements extends Component
      * This is used by Live Preview and Sharing features.
      *
      * @param ElementInterface $element The element currently being edited by Live Preview.
+     *
      * @throws InvalidArgumentException if the element is missing an ID
      * @see getPlaceholderElement()
      */
@@ -3091,6 +3159,7 @@ class Elements extends Component
      *
      * @param int $sourceId The element’s ID
      * @param int $siteId The element’s site ID
+     *
      * @return ElementInterface|null The placeholder element if one exists, or null.
      * @see setPlaceholderElement()
      */
@@ -3103,6 +3172,7 @@ class Elements extends Component
      * Normalizes a `with` element query param into an array of eager-loading plans.
      *
      * @param string|array $with
+     *
      * @phpstan-param string|array<EagerLoadPlan|array|string> $with
      * @return EagerLoadPlan[]
      * @since 3.5.0
@@ -3156,7 +3226,8 @@ class Elements extends Component
             }
 
             // Get the handle & alias
-            if (preg_match('/^([a-zA-Z][a-zA-Z0-9_:]*)\s+as\s+(' . HandleValidator::$handlePattern . ')$/', $handle, $match)) {
+            if (preg_match('/^([a-zA-Z][a-zA-Z0-9_:]*)\s+as\s+(' . HandleValidator::$handlePattern . ')$/', $handle,
+                $match)) {
                 $handle = $match[1];
                 $alias = $match[2];
             } else {
@@ -3315,7 +3386,7 @@ class Elements extends Component
 
                         $criteria = array_merge(
                             $map['criteria'] ?? [],
-                            $plan->criteria
+                            $plan->criteria,
                         );
 
                         // Save the offset & limit params for later
@@ -3411,7 +3482,8 @@ class Elements extends Component
                                     $targetSiteId = $result['siteId'];
                                     if (!isset($targetElements[$targetSiteId][$elementId])) {
                                         if (isset($map['createElement'])) {
-                                            $targetElements[$targetSiteId][$elementId] = $map['createElement']($query, $result, $sourceElement);
+                                            $targetElements[$targetSiteId][$elementId] = $map['createElement']($query,
+                                                $result, $sourceElement);
                                         } else {
                                             $targetElements[$targetSiteId][$elementId] = $query->createElement($result);
                                         }
@@ -3442,7 +3514,8 @@ class Elements extends Component
                             $sourceElement->setEagerLoadedElements($plan->alias, $targetElementsForSource, $plan);
 
                             if ($plan->count) {
-                                $sourceElement->setEagerLoadedElementCount($plan->alias, count($targetElementsForSource));
+                                $sourceElement->setEagerLoadedElementCount($plan->alias,
+                                    count($targetElementsForSource));
                             }
                         }
                     }
@@ -3478,6 +3551,7 @@ class Elements extends Component
 
     /**
      * @param EagerLoadingMap|EagerLoadingMap[]|false $map
+     *
      * @return EagerLoadingMap[]|false[]
      */
     private function normalizeEagerLoadingMaps(array|false $map): array
@@ -3513,6 +3587,7 @@ class Elements extends Component
 
     /**
      * @param array{source:int,target:int,elementType?:class-string<ElementInterface>}[] $map
+     *
      * @return EagerLoadingMap[]
      */
     private function groupMapsByElementType(array $map): array
@@ -3540,11 +3615,10 @@ class Elements extends Component
             $elementTypesById = [];
 
             foreach (array_chunk($untypedTargetIds, 100) as $ids) {
-                $types = (new Query())
-                    ->select(['id', 'type'])
-                    ->from(Table::ELEMENTS)
-                    ->where(['id' => $ids])
-                    ->pairs();
+                $types = DB::table(Table::ELEMENTS)
+                    ->whereIn('id', $ids)
+                    ->pluck('type', 'id');
+
                 // we need to preserve the numeric keys, so array_merge() won't work here
                 foreach ($types as $id => $type) {
                     $elementTypesById[$id] = $type;
@@ -3571,6 +3645,7 @@ class Elements extends Component
      * @param int $siteId The site ID that the element should be propagated to
      * @param ElementInterface|false|null $siteElement The element loaded for the propagated site (only pass this if you
      * already had a reason to load it). Set to `false` if it is known to not exist yet.
+     *
      * @return ElementInterface The element in the target site
      * @throws Exception if the element couldn't be propagated
      * @throws UnsupportedSiteException if the element doesn’t support `$siteId`
@@ -3609,6 +3684,7 @@ class Elements extends Component
      * regardless of whether it’s being resaved
      * @param bool $crossSiteValidate Whether the element should be validated across all supported sites
      * @param bool $saveContent Whether all the element’s content should be saved. When false (default) only dirty fields will be saved.
+     *
      * @return bool
      * @throws ElementNotFoundException if $element has an invalid $id
      * @throws UnsupportedSiteException if the element is being saved for a site it doesn’t support
@@ -3677,7 +3753,8 @@ class Elements extends Component
             $element->firstSave = $originalFirstSave;
             $element->isNewForSite = $originalIsNewForSite;
             $element->propagateAll = $originalPropagateAll;
-            throw new UnsupportedSiteException($element, $element->siteId, 'Attempting to save an element in an unsupported site.');
+            throw new UnsupportedSiteException($element, $element->siteId,
+                'Attempting to save an element in an unsupported site.');
         }
 
         // If the element only supports a single site, ensure it's enabled for that site
@@ -3721,21 +3798,22 @@ class Elements extends Component
             // If we're propagating, only validate changed custom fields,
             // unless we're enabling this element
             if ($element->propagating && !(
-                $element->getIsDerivative() &&
-                $element->getIsDraft() &&
-                $element->getEnabledForSite() &&
-                !$element->getCanonical()->getEnabledForSite())
+                    $element->getIsDerivative() &&
+                    $element->getIsDraft() &&
+                    $element->getEnabledForSite() &&
+                    !$element->getCanonical()->getEnabledForSite())
             ) {
                 $names = array_map(
                     fn(string $handle) => "field:$handle",
-                    array_unique(array_merge($dirtyFields, $element->getModifiedFields()))
+                    array_unique(array_merge($dirtyFields, $element->getModifiedFields())),
                 );
             } else {
                 $names = null;
             }
 
             if (($names === null || !empty($names)) && !$element->validate($names)) {
-                Craft::info('Element not saved due to validation error: ' . print_r($element->errors, true), __METHOD__);
+                Craft::info('Element not saved due to validation error: ' . print_r($element->errors, true),
+                    __METHOD__);
                 $element->firstSave = $originalFirstSave;
                 $element->isNewForSite = $originalIsNewForSite;
                 $element->propagateAll = $originalPropagateAll;
@@ -3770,7 +3848,7 @@ class Elements extends Component
             $newSiteIds = $element->newSiteIds;
             $element->newSiteIds = [];
 
-            $transaction = Craft::$app->getDb()->beginTransaction();
+            DB::beginTransaction();
 
             try {
                 // No need to save the element record multiple times
@@ -3798,22 +3876,22 @@ class Elements extends Component
                     $elementRecord->fieldLayoutId = $element->fieldLayoutId = (int)($element->fieldLayoutId ?? $fieldLayout->id ?? 0) ?: null;
                     $elementRecord->enabled = (bool)$element->enabled;
                     $elementRecord->archived = (bool)$element->archived;
-                    $elementRecord->dateLastMerged = Db::prepareDateForDb($element->dateLastMerged);
-                    $elementRecord->dateDeleted = Db::prepareDateForDb($element->dateDeleted);
+                    $elementRecord->dateLastMerged = DbHelper::prepareDateForDb($element->dateLastMerged);
+                    $elementRecord->dateDeleted = DbHelper::prepareDateForDb($element->dateDeleted);
 
                     if ($isNewElement) {
                         if (isset($element->dateCreated)) {
-                            $elementRecord->dateCreated = Db::prepareValueForDb($element->dateCreated);
+                            $elementRecord->dateCreated = DbHelper::prepareValueForDb($element->dateCreated);
                         }
                         if (isset($element->dateUpdated)) {
-                            $elementRecord->dateUpdated = Db::prepareValueForDb($element->dateUpdated);
+                            $elementRecord->dateUpdated = DbHelper::prepareValueForDb($element->dateUpdated);
                         }
                     } elseif ($element->resaving && !$forceTouch) {
                         // Prevent ActiveRecord::prepareForDb() from changing the dateUpdated
                         $elementRecord->markAttributeDirty('dateUpdated');
                     } else {
                         // Force a new dateUpdated value
-                        $elementRecord->dateUpdated = Db::prepareValueForDb(DateTimeHelper::now());
+                        $elementRecord->dateUpdated = DbHelper::prepareValueForDb(DateTimeHelper::now());
                     }
 
                     // Update our list of dirty attributes
@@ -4012,9 +4090,9 @@ class Elements extends Component
                     $this->trackElementInBulkOps($element);
                 }
 
-                $transaction->commit();
+                DB::commit();
             } catch (Throwable $e) {
-                $transaction->rollBack();
+                DB::rollBack();
                 $element->firstSave = $originalFirstSave;
                 $element->isNewForSite = $originalIsNewForSite;
                 $element->propagateAll = $originalPropagateAll;
@@ -4031,14 +4109,10 @@ class Elements extends Component
             if (!$element->propagating) {
                 // Delete the rows that don't need to be there anymore
                 if (!$isNewElement) {
-                    Db::deleteIfExists(
-                        Table::ELEMENTS_SITES,
-                        [
-                            'and',
-                            ['elementId' => $element->id],
-                            ['not', ['siteId' => array_keys($supportedSites)]],
-                        ]
-                    );
+                    DB::table(Table::ELEMENTS_SITES)
+                        ->where('elementId', $element->id)
+                        ->whereNotIn('siteId', array_keys($supportedSites))
+                        ->delete();
                 }
 
                 // Invalidate any caches involving this element
@@ -4075,31 +4149,33 @@ class Elements extends Component
             // Update the changed attributes & fields
             if ($trackChanges) {
                 $userId = Craft::$app->getUser()->getId();
-                $timestamp = Db::prepareDateForDb(DateTimeHelper::now());
+                $timestamp = now();
 
                 foreach ($dirtyAttributes as $attributeName) {
-                    Db::upsert(Table::CHANGEDATTRIBUTES, [
-                        'elementId' => $element->id,
-                        'siteId' => $element->siteId,
-                        'attribute' => $attributeName,
-                        'dateUpdated' => $timestamp,
-                        'propagated' => $element->propagating,
-                        'userId' => $userId,
-                    ]);
+                    DB::table(Table::CHANGEDATTRIBUTES)
+                        ->upsert([
+                            'elementId' => $element->id,
+                            'siteId' => $element->siteId,
+                            'attribute' => $attributeName,
+                            'dateUpdated' => $timestamp,
+                            'propagated' => $element->propagating,
+                            'userId' => $userId,
+                        ], ['elementId', 'siteId', 'attribute']);
                 }
 
                 if ($fieldLayout) {
                     foreach ($dirtyFields as $fieldHandle) {
                         if (($field = $fieldLayout->getFieldByHandle($fieldHandle)) !== null) {
-                            Db::upsert(Table::CHANGEDFIELDS, [
-                                'elementId' => $element->id,
-                                'siteId' => $element->siteId,
-                                'fieldId' => $field->id,
-                                'layoutElementUid' => $field->layoutElement->uid,
-                                'dateUpdated' => $timestamp,
-                                'propagated' => $element->propagating,
-                                'userId' => $userId,
-                            ]);
+                            DB::table(Table::CHANGEDFIELDS)
+                                ->upsert([
+                                    'elementId' => $element->id,
+                                    'siteId' => $element->siteId,
+                                    'fieldId' => $field->id,
+                                    'layoutElementUid' => $field->layoutElement->uid,
+                                    'dateUpdated' => $timestamp,
+                                    'propagated' => $element->propagating,
+                                    'userId' => $userId,
+                                ], ['elementId', 'siteId', 'fieldId', 'layoutElementUid']);
                         }
                     }
                 }
@@ -4167,6 +4243,7 @@ class Elements extends Component
      * @param-out ElementInterface $siteElement
      * @param bool $crossSiteValidate Whether the element should be validated across all supported sites
      * @param bool $saveContent Whether the element’s content should be saved
+     *
      * @retrun bool
      * @throws Exception if the element couldn't be propagated
      */
@@ -4180,7 +4257,8 @@ class Elements extends Component
     ): bool {
         // Make sure the element actually supports the site it's being saved in
         if (!isset($supportedSites[$siteId])) {
-            throw new UnsupportedSiteException($element, $siteId, 'Attempting to propagate an element to an unsupported site.');
+            throw new UnsupportedSiteException($element, $siteId,
+                'Attempting to propagate an element to an unsupported site.');
         }
 
         $siteInfo = $supportedSites[$siteId];
@@ -4264,7 +4342,8 @@ class Elements extends Component
         }
 
         // Copy the dirty attributes (except title, slug and uri, which may be translatable)
-        $siteElement->setDirtyAttributes(array_filter($element->getDirtyAttributes(), fn(string $attribute): bool => $attribute !== 'title' && $attribute !== 'slug'));
+        $siteElement->setDirtyAttributes(array_filter($element->getDirtyAttributes(),
+            fn(string $attribute): bool => $attribute !== 'title' && $attribute !== 'slug'));
 
         if ($saveContent) {
             // Copy any non-translatable field values
@@ -4309,7 +4388,7 @@ class Elements extends Component
             $crossSiteValidate,
             false,
             supportedSites: $supportedSites,
-            saveContent: $saveContent
+            saveContent: $saveContent,
         );
 
         if (!$success) {
@@ -4333,6 +4412,7 @@ class Elements extends Component
     /**
      * @param ElementInterface $siteElement
      * @param ElementInterface $element
+     *
      * @return bool
      * @throws Throwable
      */
@@ -4356,10 +4436,10 @@ class Elements extends Component
             $queryParams = Arr::except(Craft::$app->getRequest()->getQueryParams(), 'site');
             $url = UrlHelper::url($siteElement->getCpEditUrl(), $queryParams + ['prevalidate' => 1]);
             $message = Html::beginTag('a', [
-                'href' => $url,
-                'class' => 'cross-site-validate',
-                'target' => '_blank',
-            ]) .
+                    'href' => $url,
+                    'class' => 'cross-site-validate',
+                    'target' => '_blank',
+                ]) .
                 $message .
                 Html::tag('span', '', [
                     'data-icon' => 'external',
@@ -4382,33 +4462,17 @@ class Elements extends Component
      */
     private function _cascadeDeleteDraftsAndRevisions(int $canonicalId, bool $delete = true): void
     {
-        $params = [
-            'dateDeleted' => $delete ? Db::prepareDateForDb(DateTimeHelper::now()) : null,
-            'canonicalId' => $canonicalId,
-        ];
-
-        $db = Craft::$app->getDb();
-        $elementsTable = Table::ELEMENTS;
-
         foreach (['draftId' => Table::DRAFTS, 'revisionId' => Table::REVISIONS] as $fk => $table) {
-            if ($db->getIsMysql()) {
-                $sql = <<<SQL
-UPDATE $elementsTable [[e]]
-INNER JOIN $table [[t]] ON [[t.id]] = [[e.$fk]]
-SET [[e.dateDeleted]] = :dateDeleted
-WHERE [[t.canonicalId]] = :canonicalId
-SQL;
-            } else {
-                $sql = <<<SQL
-UPDATE $elementsTable [[e]]
-SET [[dateDeleted]] = :dateDeleted
-FROM $table [[t]]
-WHERE [[t.id]] = [[e.$fk]]
-AND [[t.canonicalId]] = :canonicalId
-SQL;
-            }
-
-            $db->createCommand($sql, $params)->execute();
+            DB::table(new Alias(Table::ELEMENTS, 'e'))
+                ->whereIn(
+                    "e.$fk",
+                    DB::table(new Alias($table, 't'))
+                        ->select('t.id')
+                        ->where('t.canonicalId', $canonicalId)
+                )
+                ->update([
+                    'dateDeleted' => $delete ? now() : null,
+                ]);
         }
     }
 
@@ -4419,11 +4483,16 @@ SQL;
      * @param string|null $attribute
      * @param string $fallback
      * @param string $fullMatch
+     *
      * @return string
      * @see parseRefs()
      */
-    private function _getRefTokenReplacement(?ElementInterface $element, ?string $attribute, string $fallback, string $fullMatch): string
-    {
+    private function _getRefTokenReplacement(
+        ?ElementInterface $element,
+        ?string $attribute,
+        string $fallback,
+        string $fullMatch,
+    ): string {
         if ($element === null) {
             // Put the ref tag back
             return $fallback;
@@ -4444,7 +4513,8 @@ SQL;
             return $this->parseRefs((string)$value);
         } catch (Throwable $e) {
             // Log it
-            Craft::error("An exception was thrown when parsing the ref tag \"$fullMatch\":\n" . $e->getMessage(), __METHOD__);
+            Craft::error("An exception was thrown when parsing the ref tag \"$fullMatch\":\n" . $e->getMessage(),
+                __METHOD__);
 
             // Replace the token with the default value
             return $fallback;
@@ -4456,6 +4526,7 @@ SQL;
      *
      * @param ElementInterface $element
      * @param User|null $user
+     *
      * @return bool
      * @since 4.3.0
      */
@@ -4479,6 +4550,7 @@ SQL;
      *
      * @param ElementInterface $element
      * @param User|null $user
+     *
      * @return bool
      * @since 4.3.0
      */
@@ -4502,6 +4574,7 @@ SQL;
      *
      * @param ElementInterface $element
      * @param User|null $user
+     *
      * @return bool
      * @since 5.6.0
      */
@@ -4523,6 +4596,7 @@ SQL;
      *
      * @param ElementInterface $element
      * @param User|null $user
+     *
      * @return bool
      * @since 4.3.0
      */
@@ -4543,6 +4617,7 @@ SQL;
      *
      * @param ElementInterface $element
      * @param User|null $user
+     *
      * @return bool
      * @since 5.0.0
      */
@@ -4566,6 +4641,7 @@ SQL;
      *
      * @param ElementInterface $element
      * @param User|null $user
+     *
      * @return bool
      * @since 5.7.0
      */
@@ -4588,6 +4664,7 @@ SQL;
      *
      * @param ElementInterface $element
      * @param User|null $user
+     *
      * @return bool
      * @since 4.3.0
      */
@@ -4610,6 +4687,7 @@ SQL;
      *
      * @param ElementInterface $element
      * @param User|null $user
+     *
      * @return bool
      * @since 4.3.0
      */
@@ -4622,7 +4700,8 @@ SQL;
             }
         }
 
-        return $this->_authCheck($element, $user, self::EVENT_AUTHORIZE_DELETE_FOR_SITE) ?? $element->canDeleteForSite($user);
+        return $this->_authCheck($element, $user,
+            self::EVENT_AUTHORIZE_DELETE_FOR_SITE) ?? $element->canDeleteForSite($user);
     }
 
     /**
@@ -4632,6 +4711,7 @@ SQL;
      *
      * @param ElementInterface $element
      * @param User|null $user
+     *
      * @return bool
      * @since 4.3.0
      */
@@ -4644,7 +4724,8 @@ SQL;
             }
         }
 
-        return $this->_authCheck($element, $user, self::EVENT_AUTHORIZE_CREATE_DRAFTS) ?? $element->canCreateDrafts($user);
+        return $this->_authCheck($element, $user,
+            self::EVENT_AUTHORIZE_CREATE_DRAFTS) ?? $element->canCreateDrafts($user);
     }
 
     private function _authCheck(ElementInterface $element, User $user, string $eventName): ?bool

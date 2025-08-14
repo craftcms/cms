@@ -8,17 +8,16 @@
 namespace craft\services;
 
 use Craft;
-use craft\db\Query;
-use craft\db\Table;
 use craft\helpers\DateTimeHelper;
-use craft\helpers\Db;
+use craft\helpers\Db as DbHelper;
 use craft\records\Token as TokenRecord;
 use CraftCms\Cms\Config\GeneralConfig;
+use CraftCms\Cms\Db\Table;
 use CraftCms\Cms\Support\Json;
 use DateTime;
+use Illuminate\Support\Facades\DB;
 use yii\base\Component;
 use yii\base\InvalidArgumentException;
-use yii\db\Expression;
 
 /**
  * The Tokens service.
@@ -86,7 +85,7 @@ class Tokens extends Component
             $tokenRecord->usageLimit = $usageLimit;
         }
 
-        $tokenRecord->expiryDate = Db::prepareDateForDb($expiryDate);
+        $tokenRecord->expiryDate = DbHelper::prepareDateForDb($expiryDate);
         $success = $tokenRecord->save();
 
         if ($success) {
@@ -123,11 +122,10 @@ class Tokens extends Component
     {
         // Take the opportunity to delete any expired tokens
         $this->deleteExpiredTokens();
-        $result = (new Query())
+        $result = DB::table(Table::TOKENS)
             ->select(['id', 'route', 'usageLimit', 'usageCount'])
-            ->from([Table::TOKENS])
-            ->where(['token' => $token])
-            ->one();
+            ->where('token', $token)
+            ->first();
 
         if (!$result) {
             // Remove it from the request  so it doesn’t get added to generated URLs
@@ -137,21 +135,21 @@ class Tokens extends Component
         }
 
         // Usage limit enforcement (for future requests)
-        if ($result['usageLimit']) {
+        if ($result->usageLimit) {
             // Does it have any more life after this?
-            if ($result['usageCount'] < $result['usageLimit'] - 1) {
+            if ($result->usageCount < $result->usageLimit - 1) {
                 // Increment its count
-                $this->incrementTokenUsageCountById($result['id']);
+                $this->incrementTokenUsageCountById($result->id);
             } else {
                 // Just delete it
-                $this->deleteTokenById($result['id']);
+                $this->deleteTokenById($result->id);
 
                 // Remove it from the request as well so it doesn’t get added to generated URLs
                 Craft::$app->getRequest()->setToken(null);
             }
         }
 
-        return (array)Json::decodeIfJson($result['route']);
+        return (array)Json::decodeIfJson($result->route);
     }
 
     /**
@@ -162,11 +160,9 @@ class Tokens extends Component
      */
     public function incrementTokenUsageCountById(int $tokenId): bool
     {
-        return (bool)Db::update(Table::TOKENS, [
-            'usageCount' => new Expression('[[usageCount]] + 1'),
-        ], [
-            'id' => $tokenId,
-        ]);
+        return (bool) DB::table(Table::TOKENS)
+            ->where('id', $tokenId)
+            ->increment('usageCount');
     }
 
     /**
@@ -177,9 +173,7 @@ class Tokens extends Component
      */
     public function deleteTokenById(int $tokenId): bool
     {
-        Db::delete(Table::TOKENS, [
-            'id' => $tokenId,
-        ]);
+        DB::table(Table::TOKENS)->delete($tokenId);
 
         return true;
     }
@@ -196,7 +190,9 @@ class Tokens extends Component
             return false;
         }
 
-        $affectedRows = Db::delete(Table::TOKENS, ['<=', 'expiryDate', Db::prepareDateForDb(new DateTime())]);
+        $affectedRows = DB::table(Table::TOKENS)
+            ->where('expiryDate', '<=', now())
+            ->delete();
 
         $this->_deletedExpiredTokens = true;
 

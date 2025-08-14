@@ -12,13 +12,13 @@ use craft\base\Batchable;
 use craft\base\Element;
 use craft\base\ElementInterface;
 use craft\db\QueryBatcher;
-use craft\db\Table;
 use craft\errors\UnsupportedSiteException;
-use craft\helpers\Db;
 use craft\helpers\ElementHelper;
 use craft\i18n\Translation;
 use craft\queue\BaseBatchedElementJob;
 use craft\services\Structures;
+use CraftCms\Cms\Db\Table;
+use Illuminate\Support\Facades\DB;
 use Throwable;
 
 /**
@@ -122,11 +122,9 @@ class ApplyNewPropagationMethod extends BaseBatchedElementJob
         }
 
         // Remove their URIs so the duplicated elements can retain them w/out needing to increment them
-        Db::update(Table::ELEMENTS_SITES, [
-            'uri' => null,
-        ], [
-            'id' => array_map(fn(ElementInterface $element) => $element->siteSettingsId, $otherSiteElements),
-        ], [], false);
+        DB::table(Table::ELEMENTS_SITES)
+            ->whereIn('id', array_map(fn(ElementInterface $element) => $element->siteSettingsId, $otherSiteElements))
+            ->update(['uri' => null]);
 
         // Duplicate those elements so their content can live on
         while (!empty($otherSiteElements)) {

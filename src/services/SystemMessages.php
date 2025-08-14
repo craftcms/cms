@@ -8,15 +8,19 @@
 namespace craft\services;
 
 use Craft;
-use craft\db\Query;
-use craft\db\Table;
 use craft\events\RegisterEmailMessagesEvent;
 use craft\models\SystemMessage;
 use craft\records\SystemMessage as EmailMessageRecord;
+use CraftCms\Cms\Db\Table;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Support\Arr;
+use Illuminate\Database\Query\Builder;
+use Illuminate\Support\Facades\DB;
+use Tpetry\QueryExpressions\Language\CaseGroup;
+use Tpetry\QueryExpressions\Language\CaseRule;
+use Tpetry\QueryExpressions\Operator\Comparison\Equal;
+use Tpetry\QueryExpressions\Value\Value;
 use yii\base\Component;
-use yii\db\Expression;
 
 /**
  * System Messages service.
@@ -142,6 +146,7 @@ class SystemMessages extends Component
      * Returns a default system email messages by its key, without subject/body overrides.
      *
      * @param string $key
+     *
      * @return SystemMessage|null
      */
     public function getDefaultMessage(string $key): ?SystemMessage
@@ -153,6 +158,7 @@ class SystemMessages extends Component
      * Returns all of the system email messages in a given language, with subject/body overrides.
      *
      * @param string|null $language
+     *
      * @return SystemMessage[]
      */
     public function getAllMessages(?string $language = null): array
@@ -166,8 +172,9 @@ class SystemMessages extends Component
 
         // Fetch any custom messages
         $overrides = $this->_createMessagesQuery()
-            ->where(['language' => $language])
-            ->all();
+            ->where('language', $language)
+            ->get()
+            ->keyBy('key');
 
         // Combine them to create the final messages array
         $messages = [];
@@ -177,8 +184,8 @@ class SystemMessages extends Component
 
             // Has it been overridden?
             if (isset($overrides[$key])) {
-                $message->subject = $overrides[$key]['subject'];
-                $message->body = $overrides[$key]['body'];
+                $message->subject = $overrides[$key]->subject;
+                $message->body = $overrides[$key]->body;
             }
 
             $messages[] = $message;
@@ -192,6 +199,7 @@ class SystemMessages extends Component
      *
      * @param string $key
      * @param string|null $language
+     *
      * @return SystemMessage|null
      */
     public function getMessage(string $key, ?string $language = null): ?SystemMessage
@@ -217,21 +225,22 @@ class SystemMessages extends Component
             // Fetch the customization (if there is one)
             $override = $this->_createMessagesQuery()
                 ->select(['subject', 'body'])
-                ->where(['key' => $key])
-                ->andWhere([
-                    'or',
-                    ['language' => [$language, $languageId]],
-                    ['like', 'language', "$languageId%", false],
-                ])
-                ->orderBy(new Expression('case when ([[language]] = :language) then 0 when ([[language]] = :languageId) then 1 else 2 end', [
-                    'language' => $language,
-                    'languageId' => $languageId,
-                ]))
-                ->one();
+                ->where('key', $key)
+                ->where(fn(Builder $query) => $query
+                    ->whereIn('language', [$language, $languageId])
+                    ->orWhereLike('language', "$languageId%")
+                )
+                ->orderBy(
+                    new CaseGroup([
+                        new CaseRule(new Value(0), new Equal('language', new Value($language))),
+                        new CaseRule(new Value(1), new Equal('language', new Value($languageId))),
+                    ], new Value(2))
+                )
+                ->first();
 
             if ($override) {
-                $message->subject = $override['subject'];
-                $message->body = $override['body'];
+                $message->subject = $override->subject;
+                $message->body = $override->body;
             }
         }
 
@@ -243,6 +252,7 @@ class SystemMessages extends Component
      *
      * @param SystemMessage $message
      * @param string|null $language
+     *
      * @return bool
      */
     public function saveMessage(SystemMessage $message, ?string $language = null): bool
@@ -261,17 +271,10 @@ class SystemMessages extends Component
         return false;
     }
 
-    /**
-     * Returns a new Query prepped to return system email messages from the DB.
-     *
-     * @return Query
-     */
-    private function _createMessagesQuery(): Query
+    private function _createMessagesQuery(): Builder
     {
-        return (new Query())
-            ->select(['key', 'subject', 'body'])
-            ->from([Table::SYSTEMMESSAGES])
-            ->indexBy('key');
+        return DB::table(Table::SYSTEMMESSAGES)
+            ->select(['key', 'subject', 'body']);
     }
 
     /**
@@ -279,6 +282,7 @@ class SystemMessages extends Component
      *
      * @param string $key
      * @param string $language
+     *
      * @return EmailMessageRecord
      */
     private function _getMessageRecord(string $key, string $language): EmailMessageRecord

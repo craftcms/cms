@@ -17,6 +17,8 @@ use craft\models\FieldLayout;
 use craft\models\FieldLayoutTab;
 use craft\test\DbFixtureTrait;
 use CraftCms\Cms\Support\Arr;
+use Illuminate\Support\Facades\DB;
+use PDO;
 use Throwable;
 use yii\base\Exception as YiiBaseException;
 use yii\base\InvalidArgumentException;
@@ -137,6 +139,7 @@ abstract class FieldLayoutFixture extends DbFixture
     public function unload(): void
     {
         $this->checkIntegrity(true);
+        DB::connection()->getPdo()->setAttribute(PDO::ATTR_EMULATE_PREPARES, false);
 
         $fieldsService = Craft::$app->getFields();
 

@@ -49,7 +49,8 @@ class Yii2ServiceProvider extends ServiceProvider
              * Configure the Laravel application to look into
              * folders defined by the Craft CMS constants.
              */
-            foreach (scandir(base_path('config')) as $file) {
+            $configPath = defined(CRAFT_CONFIG_PATH) ? CRAFT_CONFIG_PATH : base_path('config');
+            foreach (scandir($configPath) as $file) {
                 if (!str_ends_with($file, '.php')) {
                     continue;
                 }
@@ -203,15 +204,19 @@ class Yii2ServiceProvider extends ServiceProvider
             $signature = str_replace('/', ':', $command['name']);
 
             foreach ($command['definition']['arguments'] as $definition) {
-                $signature .= $this->convertDefinition($definition);
+                $signature .= $this->convertDefinition($definition, 'argument');
             }
 
             foreach ($command['definition']['options'] as $definition) {
-                $signature .= $this->convertDefinition($definition);
+                $signature .= $this->convertDefinition($definition, 'option');
             }
 
             ConsoleApplication::starting(function(ConsoleApplication $artisan) use ($app, $command, $signature) {
                 $artisanName = explode(' ', $signature)[0];
+
+                if ($artisanName === 'help') {
+                    return;
+                }
 
                 if ($artisan->has("craft:{$artisanName}")) {
                     return;
@@ -238,7 +243,7 @@ class Yii2ServiceProvider extends ServiceProvider
         }
     }
 
-    public function convertDefinition(array $definition): string
+    public function convertDefinition(array $definition, string $type): string
     {
         if ($definition['name'] === '--help') {
             return '';
@@ -256,6 +261,8 @@ class Yii2ServiceProvider extends ServiceProvider
             }
 
             $definitionSignature .= "={$definition['default']}";
+        } elseif ($type === 'option' && ($definition['required'] ?? true)) {
+            $definitionSignature .= "=";
         }
 
         if ($definition['description']) {

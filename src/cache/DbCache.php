@@ -81,13 +81,11 @@ class DbCache extends YiiDbCache
         $this->gc();
 
         try {
-            $this->db->noCache(function(Connection $db) use ($key, $value, $duration) {
-                Db::insert($this->cacheTable, [
-                    'id' => $key,
-                    'expire' => $duration > 0 ? DateTimeHelper::currentTimeStamp() + $duration : 0,
-                    'data' => new PdoValue($value, PDO::PARAM_LOB),
-                ], $db);
-            });
+            \Illuminate\Support\Facades\DB::table($this->cacheTable)->insert([
+                'id' => $key,
+                'expire' => $duration > 0 ? now()->getTimestamp() + $duration : 0,
+                'data' => new PdoValue($value, PDO::PARAM_LOB),
+            ]);
             return true;
         } catch (Exception $e) {
             Craft::warning("Unable to insert cache data: {$e->getMessage()}", __METHOD__);

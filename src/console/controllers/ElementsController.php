@@ -10,13 +10,12 @@ namespace craft\console\controllers;
 use Craft;
 use craft\base\ElementInterface;
 use craft\console\Controller;
-use craft\db\Query;
-use craft\db\Table;
 use craft\elements\Entry;
 use craft\helpers\Component;
 use craft\helpers\Console;
-use craft\helpers\Db;
 use craft\models\Section;
+use CraftCms\Cms\Db\Table;
+use Illuminate\Support\Facades\DB;
 use Throwable;
 use yii\console\ExitCode;
 
@@ -113,10 +112,9 @@ class ElementsController extends Controller
     public function actionDeleteAllOfType(string $type): int
     {
         // get the elements of that type
-        $query = (new Query())
-            ->select('id')
-            ->from(Table::ELEMENTS)
-            ->where(['type' => $type]);
+        $query = DB::table(Table::ELEMENTS)
+            ->where('type', $type)
+            ->select('id');
 
         // exclude single entries
         if ($type === Entry::class) {
@@ -129,7 +127,7 @@ class ElementsController extends Controller
                     ->unique()
                     ->ids();
                 if (!empty($singleEntryIds)) {
-                    $query->andWhere(['not', ['id' => $singleEntryIds]]);
+                    $query->whereNotIn('id', $singleEntryIds);
                 }
             }
         }
@@ -138,9 +136,9 @@ class ElementsController extends Controller
 
         $isValid = Component::validateComponentClass($type, ElementInterface::class);
         if ($isValid) {
-            $typeLabel = $total == 1 ? $type::lowerDisplayName() : $type::pluralLowerDisplayName();
+            $typeLabel = $total === 1 ? $type::lowerDisplayName() : $type::pluralLowerDisplayName();
         } else {
-            $typeLabel = sprintf('`%s` %s', $type, $total == 1 ? 'element' : 'elements');
+            $typeLabel = sprintf('`%s` %s', $type, $total === 1 ? 'element' : 'elements');
         }
 
         if (!$total) {
@@ -155,20 +153,19 @@ class ElementsController extends Controller
             return ExitCode::OK;
         }
 
-        foreach (Db::each($query) as $element) {
-            $elementId = $element['id'];
+        $query->eachById(function(object $element) use ($type, $isValid) {
+            $elementId = $element->id;
             $message = sprintf('Deleting %s %s', $isValid ? $type::lowerDisplayName() : 'element', $elementId);
             $this->do($message, function() use ($elementId) {
                 if (!$this->dryRun) {
-                    Db::delete(Table::ELEMENTS, [
-                        'id' => $elementId,
-                    ]);
-                    Db::delete(Table::SEARCHINDEX, [
-                        'elementId' => $elementId,
-                    ]);
+                    DB::table(Table::ELEMENTS)->delete($elementId);
+
+                    DB::table(Table::SEARCHINDEX)
+                        ->where('elementId', $elementId)
+                        ->delete();
                 }
             });
-        }
+        });
 
         $dryRunLabel = $this->dryRun ? '**[DRY RUN]** ' : '';
         $this->stdout(sprintf("%s\n", $this->markdownToAnsi("$dryRunLabel$total $typeLabel deleted.")));

@@ -10,9 +10,10 @@ namespace craft\db;
 use Craft;
 use craft\errors\MigrationException;
 use craft\helpers\App;
-use craft\helpers\Db;
 use craft\helpers\FileHelper;
-use DateTime;
+use CraftCms\Cms\Db\Table;
+use Illuminate\Database\Query\Builder;
+use Illuminate\Support\Facades\DB;
 use Throwable;
 use yii\base\Component;
 use yii\base\Exception;
@@ -89,6 +90,7 @@ class MigrationManager extends Component
      * Creates a new migration instance.
      *
      * @param string $name The migration name
+     *
      * @return MigrationInterface|\yii\db\Migration The migration instance
      * @throws Exception if the migration folder doesn't exist
      */
@@ -114,6 +116,7 @@ class MigrationManager extends Component
      *
      * @param int $limit The number of new migrations to be applied. If 0, it means
      * applying all available new migrations.
+     *
      * @throws MigrationException on migrate failure
      */
     public function up(int $limit = 0): void
@@ -165,6 +168,7 @@ class MigrationManager extends Component
      *
      * @param int $limit The number of migrations to be reverted. Defaults to 1,
      * meaning the last applied migration will be reverted. If set to 0, all migrations will be reverted.
+     *
      * @throws MigrationException on migrate failure
      */
     public function down(int $limit = 1): void
@@ -204,6 +208,7 @@ class MigrationManager extends Component
      * Upgrades with the specified migration.
      *
      * @param \yii\db\Migration|string|MigrationInterface $migration The name of the migration to apply, or the migration itself
+     *
      * @throws InvalidConfigException if $migration is invalid
      * @throws MigrationException on migrate failure
      */
@@ -246,7 +251,8 @@ class MigrationManager extends Component
         // Clear the schema cache
         $schema->refresh();
 
-        $log = ($success ? 'Applied ' : 'Failed to apply ') . $migrationName . ' (time: ' . sprintf('%.3f', $time) . 's).';
+        $log = ($success ? 'Applied ' : 'Failed to apply ') . $migrationName . ' (time: ' . sprintf('%.3f',
+                $time) . 's).';
         if (!$isConsoleRequest) {
             $output = ob_get_clean();
             $log .= " Output:\n" . $output;
@@ -265,6 +271,7 @@ class MigrationManager extends Component
      * Downgrades with the specified migration.
      *
      * @param \yii\db\Migration|string|MigrationInterface $migration The name of the migration to revert, or the migration itself
+     *
      * @throws InvalidConfigException if $migration is invalid
      * @throws MigrationException on migrate failure
      */
@@ -307,7 +314,8 @@ class MigrationManager extends Component
         // Clear the schema cache
         $schema->refresh();
 
-        $log = ($success ? 'Reverted ' : 'Failed to revert ') . $migrationName . ' (time: ' . sprintf('%.3f', $time) . 's).';
+        $log = ($success ? 'Reverted ' : 'Failed to revert ') . $migrationName . ' (time: ' . sprintf('%.3f',
+                $time) . 's).';
         if (!$isConsoleRequest) {
             $output = ob_get_clean();
             $log .= " Output:\n" . $output;
@@ -326,6 +334,7 @@ class MigrationManager extends Component
      * Returns the migration history.
      *
      * @param int $limit The maximum number of records in the history to be returned. `null` for "no limit".
+     *
      * @return array The migration history
      */
     public function getMigrationHistory(int $limit = 0): array
@@ -334,7 +343,7 @@ class MigrationManager extends Component
         if ($limit !== 0) {
             $query->limit($limit);
         }
-        $history = $query->pairs($this->db);
+        $history = $query->pluck('applyTime', 'name')->all();
         unset($history[self::BASE_MIGRATION]);
 
         return $history;
@@ -344,15 +353,17 @@ class MigrationManager extends Component
      * Adds a new migration entry to the history.
      *
      * @param string $name The migration name
+     *
      * @throws NotSupportedException
      */
     public function addMigrationHistory(string $name): void
     {
-        Db::insert($this->migrationTable, [
-            'track' => $this->track,
-            'name' => $name,
-            'applyTime' => Db::prepareDateForDb(new DateTime()),
-        ]);
+        DB::table($this->migrationTable)
+            ->insert([
+                'track' => $this->track,
+                'name' => $name,
+                'applyTime' => now(),
+            ]);
     }
 
     /**
@@ -362,10 +373,12 @@ class MigrationManager extends Component
      */
     public function removeMigrationHistory(string $name): void
     {
-        Db::delete($this->migrationTable, [
-            'track' => $this->track,
-            'name' => $name,
-        ]);
+        DB::table($this->migrationTable)
+            ->where([
+                'track' => $this->track,
+                'name' => $name,
+            ])
+            ->delete();
     }
 
     /**
@@ -375,22 +388,25 @@ class MigrationManager extends Component
      */
     public function truncateHistory(): void
     {
-        Db::delete($this->migrationTable, [
-            'track' => $this->track,
-        ]);
+        DB::table($this->migrationTable)
+            ->where([
+                'track' => $this->track,
+            ])
+            ->delete();
     }
 
     /**
      * Returns whether a given migration has been applied.
      *
      * @param string $name The migration name
+     *
      * @return bool Whether the migration has been applied
      */
     public function hasRun(string $name): bool
     {
         return $this->_createMigrationQuery()
-            ->andWhere(['name' => $name])
-            ->exists($this->db);
+            ->where('name', $name)
+            ->exists();
     }
 
     /**
@@ -417,12 +433,14 @@ class MigrationManager extends Component
 
             $path = $this->migrationPath . DIRECTORY_SEPARATOR . $file;
 
-            if (preg_match('/^(m\d{6}_\d{6}_.*?)\.php$/', $file, $matches) && is_file($path) && !isset($history[$matches[1]])) {
+            if (preg_match('/^(m\d{6}_\d{6}_.*?)\.php$/', $file,
+                    $matches) && is_file($path) && !isset($history[$matches[1]])) {
                 $migrations[] = $matches[1];
             }
 
             // Laravel formatted migrations
-            if (preg_match('/^(\d{4}_\d{2}_\d{2}_\d{6}_.*?)\.php$/', $file, $matches) && is_file($path) && !isset($history[$matches[1]])) {
+            if (preg_match('/^(\d{4}_\d{2}_\d{2}_\d{6}_.*?)\.php$/', $file,
+                    $matches) && is_file($path) && !isset($history[$matches[1]])) {
                 $migrations[] = $matches[1];
             }
         }
@@ -437,6 +455,7 @@ class MigrationManager extends Component
      * Normalizes the $migration argument passed to [[migrateUp()]] and [[migrateDown()]].
      *
      * @param \yii\db\Migration|string|MigrationInterface $migration The name of the migration to apply, or the migration itself
+     *
      * @return array
      */
     private function _normalizeMigration(\yii\db\Migration|string|MigrationInterface $migration): array
@@ -455,14 +474,13 @@ class MigrationManager extends Component
     /**
      * Returns a Query object prepped for retrieving migrations.
      *
-     * @return Query The query
+     * @return Builder The query
      */
-    private function _createMigrationQuery(): Query
+    private function _createMigrationQuery(): Builder
     {
-        return (new Query())
+        return DB::table($this->migrationTable)
             ->select(['name', 'applyTime'])
-            ->from([$this->migrationTable])
-            ->orderBy(['name' => SORT_DESC])
-            ->where(['track' => $this->track]);
+            ->orderByDesc('name')
+            ->where('track', $this->track);
     }
 }

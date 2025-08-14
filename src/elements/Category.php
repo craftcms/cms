@@ -11,7 +11,6 @@ use Craft;
 use craft\base\Element;
 use craft\behaviors\DraftBehavior;
 use craft\controllers\ElementIndexesController;
-use craft\db\Query;
 use craft\db\Table;
 use craft\elements\actions\Delete;
 use craft\elements\actions\Duplicate;
@@ -24,7 +23,6 @@ use craft\elements\db\ElementQuery;
 use craft\elements\db\ElementQueryInterface;
 use craft\gql\interfaces\elements\Category as CategoryInterface;
 use craft\helpers\Cp;
-use craft\helpers\Db;
 use craft\helpers\Html;
 use craft\helpers\UrlHelper;
 use craft\models\CategoryGroup;
@@ -32,7 +30,9 @@ use craft\models\FieldLayout;
 use craft\records\Category as CategoryRecord;
 use craft\services\ElementSources;
 use craft\services\Structures;
+use CraftCms\Cms\Support\Str;
 use GraphQL\Type\Definition\Type;
+use Illuminate\Support\Facades\DB;
 use yii\base\Exception;
 use yii\base\InvalidConfigException;
 
@@ -948,9 +948,9 @@ class Category extends Element
             }
         }
 
-        Db::update(Table::CATEGORIES, $data, [
-            'id' => $this->id,
-        ], [], false);
+        DB::table(\CraftCms\Cms\Db\Table::CATEGORIES)
+            ->where('id', $this->id)
+            ->update($data);
 
         return true;
     }
@@ -996,38 +996,42 @@ class Category extends Element
                 ->status(null)
                 ->ids();
 
-            $sources = (new Query())
+            $sources = DB::table(\CraftCms\Cms\Db\Table::RELATIONS)
                 ->select(['fieldId', 'sourceId', 'sourceSiteId'])
-                ->from([Table::RELATIONS])
-                ->where(['targetId' => $this->id])
-                ->all();
+                ->where('targetId', $this->id)
+                ->get();
+
+            $now = now();
 
             foreach ($sources as $source) {
-                $existingAncestorRelations = (new Query())
-                    ->select(['targetId'])
-                    ->from([Table::RELATIONS])
+                $existingAncestorRelations = DB::table(\CraftCms\Cms\Db\Table::RELATIONS)
                     ->where([
-                        'fieldId' => $source['fieldId'],
-                        'sourceId' => $source['sourceId'],
-                        'sourceSiteId' => $source['sourceSiteId'],
+                        'fieldId' => $source->fieldId,
+                        'sourceId' => $source->sourceId,
+                        'sourceSiteId' => $source->sourceSiteId,
                         'targetId' => $ancestorIds,
                     ])
-                    ->column();
+                    ->pluck('targetId')
+                    ->all();
 
                 $missingAncestorRelations = array_diff($ancestorIds, $existingAncestorRelations);
 
                 foreach ($missingAncestorRelations as $categoryId) {
                     $newRelationValues[] = [
-                        $source['fieldId'],
-                        $source['sourceId'],
-                        $source['sourceSiteId'],
-                        $categoryId,
+                        'fieldId' => $source->fieldId,
+                        'sourceId' => $source->sourceId,
+                        'sourceSiteId' => $source->sourceSiteId,
+                        'targetId' => $categoryId,
+                        'dateCreated' => $now,
+                        'dateUpdated' => $now,
+                        'uid' => Str::uuid(),
                     ];
                 }
             }
 
             if (!empty($newRelationValues)) {
-                Db::batchInsert(Table::RELATIONS, ['fieldId', 'sourceId', 'sourceSiteId', 'targetId'], $newRelationValues);
+                DB::table(\CraftCms\Cms\Db\Table::RELATIONS)
+                    ->insert($newRelationValues);
             }
         }
 

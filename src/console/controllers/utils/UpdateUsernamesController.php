@@ -7,13 +7,12 @@
 
 namespace craft\console\controllers\utils;
 
-use Craft;
 use craft\console\Controller;
-use craft\db\Table;
 use craft\helpers\Console;
 use CraftCms\Cms\Config\GeneralConfig;
+use CraftCms\Cms\Db\Table;
+use Illuminate\Support\Facades\DB;
 use yii\console\ExitCode;
-use yii\db\Expression;
 
 /**
  * Updates all users’ usernames to ensure they match their email address.
@@ -36,11 +35,11 @@ class UpdateUsernamesController extends Controller
             return ExitCode::UNSPECIFIED_ERROR;
         }
 
-        $affected = Craft::$app->getDb()->createCommand()
-            ->update(Table::USERS, [
-                'username' => new Expression('[[email]]'),
-            ], new Expression('[[username]] <> [[email]]'), updateTimestamp: false)
-            ->execute();
+        $affected = DB::table(Table::USERS)
+            ->whereColumn('username', '!=', 'email')
+            ->update([
+                'username' => DB::raw('email'),
+            ]);
 
         $this->stdout("$affected usernames updated." . PHP_EOL);
 

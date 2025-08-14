@@ -44,6 +44,7 @@ use craft\records\VolumeFolder as VolumeFolderRecord;
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Support\Str;
+use Tpetry\QueryExpressions\Language\Alias;
 use yii\base\Component;
 use yii\base\Exception;
 use yii\base\InvalidArgumentException;
@@ -798,16 +799,12 @@ class Assets extends Component
 
         $baseFileName = $buildFilename(pathinfo($originalFilename, PATHINFO_FILENAME));
 
-        $dbFileList = (new Query())
-            ->select(['assets.filename'])
-            ->from(['assets' => Table::ASSETS])
-            ->innerJoin(['elements' => Table::ELEMENTS], '[[elements.id]] = [[assets.id]]')
-            ->where([
-                'assets.folderId' => $folderId,
-                'elements.dateDeleted' => null,
-            ])
-            ->andWhere(['like', 'assets.filename', $baseFileName . '%.' . $extension, false])
-            ->column();
+        $dbFileList = \Illuminate\Support\Facades\DB::table(new Alias(\CraftCms\Cms\Db\Table::ASSETS, 'assets'))
+            ->join(new Alias(\CraftCms\Cms\Db\Table::ELEMENTS, 'elements'), 'elements.id', 'assets.id')
+            ->where('assets.folderId', $folderId)
+            ->whereNull('elements.dateDeleted')
+            ->whereLike('assets.filename', $baseFileName . '%.' . $extension)
+            ->pluck('assets.filename');
 
         $potentialConflicts = [];
 

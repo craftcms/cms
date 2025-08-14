@@ -2,7 +2,6 @@
 
 namespace CraftCms\Cms\Migrations;
 
-use craft\db\Table;
 use Illuminate\Database\Migrations\Migration as LaravelMigration;
 use Illuminate\Database\Query\Expression;
 use Illuminate\Database\Schema\Blueprint;
@@ -24,7 +23,7 @@ abstract class Migration extends LaravelMigration implements MigrationInterface
      */
     public function createIndex(string $table, array|string|Expression $columns, ?string $name = null, bool $unique = false): void
     {
-        Schema::table(Table::withoutYiiPlaceholder($table), function (Blueprint $table) use ($name, $columns, $unique) {
+        Schema::table($table, function (Blueprint $table) use ($name, $columns, $unique) {
             $name ??= $this->generateIndexName($table->getTable(), $columns);
 
             if ($unique) {
@@ -55,10 +54,10 @@ abstract class Migration extends LaravelMigration implements MigrationInterface
         ?string $onDelete = null,
         ?string $onUpdate = null
     ): void {
-        Schema::table(Table::withoutYiiPlaceholder($table), function (Blueprint $table) use ($name, $columns, $refTable, $refColumns, $onDelete, $onUpdate) {
+        Schema::table($table, function (Blueprint $table) use ($name, $columns, $refTable, $refColumns, $onDelete, $onUpdate) {
             $table->foreign($columns, $name)
                 ->references($refColumns)
-                ->on(Table::withoutYiiPlaceholder($refTable))
+                ->on($refTable)
                 ->when($onDelete, fn (ForeignKeyDefinition $t) => $t->onDelete($onDelete))
                 ->when($onUpdate, fn (ForeignKeyDefinition $t) => $t->onUpdate($onUpdate));
         });

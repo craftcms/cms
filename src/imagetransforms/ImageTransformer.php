@@ -13,15 +13,12 @@ use craft\base\imagetransforms\EagerImageTransformerInterface;
 use craft\base\imagetransforms\ImageEditorTransformerInterface;
 use craft\base\imagetransforms\ImageTransformerInterface;
 use craft\base\LocalFsInterface;
-use craft\db\Query;
-use craft\db\Table;
 use craft\elements\Asset;
 use craft\errors\FsException;
 use craft\errors\ImageTransformException;
 use craft\events\ImageTransformerOperationEvent;
 use craft\helpers\App;
 use craft\helpers\Assets as AssetsHelper;
-use craft\helpers\Db;
 use craft\helpers\FileHelper;
 use craft\helpers\Image;
 use craft\helpers\ImageTransforms as TransformHelper;
@@ -32,10 +29,13 @@ use craft\models\ImageTransform;
 use craft\models\ImageTransformIndex;
 use craft\queue\jobs\GenerateImageTransform;
 use CraftCms\Cms\Config\GeneralConfig;
+use CraftCms\Cms\Db\Table;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Str;
-use DateTime;
 use Exception;
+use Illuminate\Database\Query\Builder;
+use Illuminate\Support\Facades\Date;
+use Illuminate\Support\Facades\DB;
 use Throwable;
 use yii\base\InvalidConfigException;
 use yii\base\NotSupportedException;
@@ -125,9 +125,10 @@ class ImageTransformer extends Component implements ImageTransformerInterface, E
             if ($index->inProgress) {
                 for ($try = 1; $try <= 30; $try++) {
                     if ($index->error) {
-                        throw new ImageTransformException(Craft::t('app', 'Failed to generate transform with id of {id}.', [
-                            'id' => $index->id,
-                        ]));
+                        throw new ImageTransformException(Craft::t('app',
+                            'Failed to generate transform with id of {id}.', [
+                                'id' => $index->id,
+                            ]));
                     }
 
                     // Wait a second and check again
@@ -192,6 +193,7 @@ class ImageTransformer extends Component implements ImageTransformerInterface, E
     /**
      * @param Asset $asset
      * @param ImageTransformIndex $transformIndex
+     *
      * @throws InvalidConfigException
      */
     public function deleteImageTransformFile(Asset $asset, ImageTransformIndex $transformIndex): void
@@ -220,67 +222,67 @@ class ImageTransformer extends Component implements ImageTransformerInterface, E
     {
         // Index the assets by ID
         $assetsById = Arr::keyBy($assets, 'id');
-        $indexCondition = ['or'];
         $transformsByFingerprint = [];
-
-        foreach ($transforms as $transform) {
-            $transformString = $fingerprint = TransformHelper::getTransformString($transform);
-
-            if ($transform->format !== null) {
-                $fingerprint .= ':' . $transform->format;
-            }
-
-            $transformsByFingerprint[$fingerprint] = $transform;
-            $transformCondition = ['and', ['transformString' => $transformString]];
-
-            if ($transform->format === null) {
-                $transformCondition[] = ['format' => null];
-            } else {
-                $transformCondition[] = ['format' => $transform->format];
-                $fingerprint .= ':' . $transform->format;
-            }
-
-            $indexCondition[] = $transformCondition;
-            $transformsByFingerprint[$fingerprint] = $transform;
-        }
 
         // Query for the indexes
         $results = $this->_createTransformIndexQuery()
-            ->where([
-                'and',
-                ['assetId' => array_keys($assetsById)],
-                $indexCondition,
-            ])
-            ->all();
+            ->whereIn('assetId', array_keys($assetsById))
+            ->where(function(Builder $query) use ($transforms, &$transformsByFingerprint) {
+                foreach ($transforms as $transform) {
+                    $transformString = $fingerprint = TransformHelper::getTransformString($transform);
+
+                    if ($transform->format !== null) {
+                        $fingerprint .= ':' . $transform->format;
+                    }
+
+                    $transformsByFingerprint[$fingerprint] = $transform;
+
+                    $query->orWhere(function(Builder $query) use ($transform, $transformString) {
+                        $query->where('transformString', $transformString)
+                            ->when(
+                                $transform->format !== null,
+                                fn(Builder $query) => $query->whereNull('format'),
+                                fn(Builder $query) => $query->where('format', $transform->format),
+                            );
+                    });
+
+                    if (!is_null($transform->format)) {
+                        $fingerprint .= ':' . $transform->format;
+                    }
+
+                    $transformsByFingerprint[$fingerprint] = $transform;
+                }
+            })
+            ->get();
 
         // Index the valid transform indexes by fingerprint, and capture the IDs of indexes that should be deleted
         $invalidIndexIds = [];
 
         foreach ($results as $result) {
             // Get the transform's fingerprint
-            $transformFingerprint = $result['transformString'];
+            $transformFingerprint = $result->transformString;
 
-            if ($result['format']) {
-                $transformFingerprint .= ':' . $result['format'];
+            if ($result->format) {
+                $transformFingerprint .= ':' . $result->format;
             }
 
             // Is it still valid?
             $transform = $transformsByFingerprint[$transformFingerprint];
-            $asset = $assetsById[$result['assetId']];
+            $asset = $assetsById[$result->assetId];
 
-            if ($this->validateTransformIndexResult($result, $transform, $asset)) {
-                $indexFingerprint = $result['assetId'] . ':' . $transformFingerprint;
-                $this->eagerLoadedTransformIndexes[$indexFingerprint] = $result;
+            if ($this->validateTransformIndexResult((array) $result, $transform, $asset)) {
+                $indexFingerprint = $result->assetId . ':' . $transformFingerprint;
+                $this->eagerLoadedTransformIndexes[$indexFingerprint] = (array) $result;
             } else {
-                $invalidIndexIds[] = $result['id'];
+                $invalidIndexIds[] = $result->id;
             }
         }
 
         // Delete any invalid indexes
         if (!empty($invalidIndexIds)) {
-            Db::delete(Table::IMAGETRANSFORMINDEX, [
-                'id' => $invalidIndexIds,
-            ], [], Craft::$app->getImageTransforms()->db);
+            DB::table(Table::IMAGETRANSFORMINDEX)
+                ->whereIn('id', $invalidIndexIds)
+                ->delete();
         }
     }
 
@@ -292,6 +294,7 @@ class ImageTransformer extends Component implements ImageTransformerInterface, E
      *
      * @param Asset $asset
      * @param ImageTransformIndex $transformIndex
+     *
      * @return string
      * @throws InvalidConfigException
      */
@@ -311,6 +314,7 @@ class ImageTransformer extends Component implements ImageTransformerInterface, E
      *
      * @param Asset $asset
      * @param ImageTransformIndex $transformIndex
+     *
      * @return string
      * @throws InvalidConfigException
      */
@@ -324,12 +328,14 @@ class ImageTransformer extends Component implements ImageTransformerInterface, E
      *
      * @param Asset $asset
      * @param ImageTransformIndex $transformIndex
+     *
      * @return string
      * @throws InvalidConfigException
      */
     protected function getTransformSubpath(Asset $asset, ImageTransformIndex $transformIndex): string
     {
-        return $this->getTransformSubfolder($asset, $transformIndex) . DIRECTORY_SEPARATOR . $this->getTransformFilename($asset, $transformIndex);
+        return $this->getTransformSubfolder($asset,
+                $transformIndex) . DIRECTORY_SEPARATOR . $this->getTransformFilename($asset, $transformIndex);
     }
 
     /**
@@ -337,6 +343,7 @@ class ImageTransformer extends Component implements ImageTransformerInterface, E
      *
      * @param Asset $asset
      * @param ImageTransformIndex $index
+     *
      * @return string
      */
     protected function getTransformUri(Asset $asset, ImageTransformIndex $index): string
@@ -350,6 +357,7 @@ class ImageTransformer extends Component implements ImageTransformerInterface, E
      *
      * @param Asset $asset
      * @param ImageTransformIndex $index
+     *
      * @throws ImageTransformException If a transform index has an invalid transform assigned.
      */
     protected function generateTransformedImage(Asset $asset, ImageTransformIndex $index): void
@@ -418,6 +426,7 @@ class ImageTransformer extends Component implements ImageTransformerInterface, E
      * Check if a transformed image exists. If it does not, attempt to generate it.
      *
      * @param ImageTransformIndex $index
+     *
      * @return bool true if transform exists for the index
      * @throws ImageTransformException
      * @deprecated in 4.4.0. [[generateTransform()]] should be used instead.
@@ -477,6 +486,7 @@ class ImageTransformer extends Component implements ImageTransformerInterface, E
      *
      * @param Asset $asset
      * @param ImageTransformIndex $index
+     *
      * @return string
      * @throws ImageTransformException If there was an error generating the transform.
      * @deprecated in 4.4.0. [[getTransformUrl()]] should be used instead.
@@ -491,6 +501,7 @@ class ImageTransformer extends Component implements ImageTransformerInterface, E
      *
      * @param Asset $asset
      * @param ImageTransform|string|array|null $transform
+     *
      * @return ImageTransformIndex
      * @throws ImageTransformException if the transform cannot be found by the handle
      */
@@ -513,26 +524,25 @@ class ImageTransformer extends Component implements ImageTransformerInterface, E
         }
 
         // Check if an entry exists already
-        $query = $this->_createTransformIndexQuery()
+        $result = $this->_createTransformIndexQuery()
             ->where([
                 'assetId' => $asset->id,
                 'transformString' => $transformString,
-            ]);
-
-        if ($transform->format === null) {
-            // A generated auto-transform will have its format set to null, but the filename will be populated.
-            $query->andWhere(['format' => null]);
-        } else {
-            $query->andWhere(['format' => $transform->format]);
-        }
-
-        if ($transform->indexId !== null) {
-            $query->andWhere(['id' => $transform->indexId]);
-        }
-
-        $result = $query->one();
+            ])
+            ->when(
+                $transform->format,
+                fn(Builder $query) => $query->where('format', $transform->format),
+                fn(Builder $query) => $query->whereNull('format'),
+            )
+            ->when(
+                $transform->indexId,
+                fn(Builder $query) => $query->where('id', $transform->indexId),
+            )
+            ->first();
 
         if ($result) {
+            $result = (array) $result;
+
             $existingIndex = new ImageTransformIndex($result);
 
             if ($this->validateTransformIndexResult($result, $transform, $asset)) {
@@ -540,9 +550,7 @@ class ImageTransformer extends Component implements ImageTransformerInterface, E
             }
 
             // Delete the out-of-date record
-            Db::delete(Table::IMAGETRANSFORMINDEX, [
-                'id' => $result['id'],
-            ], [], Craft::$app->getImageTransforms()->db);
+            DB::table(Table::IMAGETRANSFORMINDEX)->delete($result['id']);
 
             // And the generated transform itself, too
             $this->deleteImageTransformFile($asset, $existingIndex);
@@ -556,7 +564,7 @@ class ImageTransformer extends Component implements ImageTransformerInterface, E
             'assetId' => $asset->id,
             'format' => $transform->format,
             'transformer' => $transform->getTransformer(),
-            'dateIndexed' => Db::prepareDateForDb(new DateTime()),
+            'dateIndexed' => now(),
             'transformString' => $transformString,
             'fileExists' => false,
             'inProgress' => false,
@@ -574,6 +582,7 @@ class ImageTransformer extends Component implements ImageTransformerInterface, E
      * @param array $result
      * @param ImageTransform $transform
      * @param array|Asset $asset The asset object or a raw database result
+     *
      * @return bool Whether the index result is still valid
      */
     protected function validateTransformIndexResult(array $result, ImageTransform $transform, array|Asset $asset): bool
@@ -585,7 +594,7 @@ class ImageTransformer extends Component implements ImageTransformerInterface, E
 
         // If the asset has been modified since the time the index was created, it’s no longer valid
         $dateModified = Arr::get($asset, 'dateModified');
-        if ($result['dateIndexed'] < Db::prepareDateForDb($dateModified)) {
+        if ($result['dateIndexed'] < $dateModified) {
             return false;
         }
 
@@ -595,7 +604,7 @@ class ImageTransformer extends Component implements ImageTransformerInterface, E
         }
 
         // If the named transform's dimensions have changed since the time the index was created, it's no longer valid
-        if ($result['dateIndexed'] < Db::prepareDateForDb($transform->parameterChangeTime)) {
+        if ($result['dateIndexed'] < $transform->parameterChangeTime) {
             return false;
         }
 
@@ -606,33 +615,38 @@ class ImageTransformer extends Component implements ImageTransformerInterface, E
      * Store a transform index data by it's model.
      *
      * @param ImageTransformIndex $index
+     *
      * @return ImageTransformIndex
      */
     public function storeTransformIndexData(ImageTransformIndex $index): ImageTransformIndex
     {
-        $values = Db::prepareValuesForDb(
-            $index->toArray([
-                'assetId',
-                'transformer',
-                'filename',
-                'format',
-                'transformString',
-                'volumeId',
-                'fileExists',
-                'inProgress',
-                'error',
-                'dateIndexed',
-            ], [], false)
-        );
+        $values = $index->toArray([
+            'assetId',
+            'transformer',
+            'filename',
+            'format',
+            'transformString',
+            'volumeId',
+            'fileExists',
+            'inProgress',
+            'error',
+            'dateIndexed',
+        ], [], false);
 
-        $db = Craft::$app->getImageTransforms()->db;
+        $now = now();
         if ($index->id !== null) {
-            Db::update(Table::IMAGETRANSFORMINDEX, $values, [
-                'id' => $index->id,
-            ], [], true, $db);
+            DB::table(Table::IMAGETRANSFORMINDEX)
+                ->where('id', $index->id)
+                ->update(array_merge([
+                    'dateUpdated' => $now,
+                ], $values));
         } else {
-            Db::insert(Table::IMAGETRANSFORMINDEX, $values, $db);
-            $index->id = (int)$db->getLastInsertID(Table::IMAGETRANSFORMINDEX);
+            $index->id = DB::table(Table::IMAGETRANSFORMINDEX)
+                ->insertGetId(array_merge([
+                    'dateCreated' => $now,
+                    'dateUpdated' => $now,
+                    'uid' => Str::uuid(),
+                ], $values));
         }
 
         // todo: this should return void
@@ -647,24 +661,29 @@ class ImageTransformer extends Component implements ImageTransformerInterface, E
     public function getPendingTransformIndexIds(): array
     {
         return $this->_createTransformIndexQuery()
-            ->select(['id'])
-            ->where(['fileExists' => false, 'inProgress' => false, 'error' => false])
-            ->column();
+            ->where([
+                'fileExists' => false,
+                'inProgress' => false,
+                'error' => false,
+            ])
+            ->pluck('id')
+            ->all();
     }
 
     /**
      * Get a transform index model by a row id.
      *
      * @param int $transformId
+     *
      * @return ImageTransformIndex|null
      */
     public function getTransformIndexModelById(int $transformId): ?ImageTransformIndex
     {
         $result = $this->_createTransformIndexQuery()
-            ->where(['id' => $transformId])
-            ->one();
+            ->where('id', $transformId)
+            ->first();
 
-        return $result ? new ImageTransformIndex($result) : null;
+        return $result ? new ImageTransformIndex((array) $result) : null;
     }
 
     /**
@@ -774,6 +793,7 @@ class ImageTransformer extends Component implements ImageTransformerInterface, E
      * Get the transform base path for a given asset.
      *
      * @param Asset $asset
+     *
      * @return string
      * @throws InvalidConfigException
      */
@@ -791,28 +811,25 @@ class ImageTransformer extends Component implements ImageTransformerInterface, E
      */
     protected function deleteTransformIndexDataByAssetId(int $assetId): void
     {
-        Db::delete(Table::IMAGETRANSFORMINDEX, [
-            'assetId' => $assetId,
-        ], [], Craft::$app->getImageTransforms()->db);
+        DB::table(Table::IMAGETRANSFORMINDEX)
+            ->where('assetId', $assetId)
+            ->delete();
     }
 
     /**
      * Get an array of ImageTransformIndex models for all created transforms for an Asset.
      *
      * @param Asset $asset
+     *
      * @return ImageTransformIndex[]
      */
     protected function getAllCreatedTransformsForAsset(Asset $asset): array
     {
-        $results = $this->_createTransformIndexQuery()
-            ->where(['assetId' => $asset->id])
+        return $this->_createTransformIndexQuery()
+            ->where('assetId', $asset->id)
+            ->get()
+            ->map(fn(object $result) => new ImageTransformIndex((array) $result))
             ->all();
-
-        foreach ($results as $key => $result) {
-            $results[$key] = new ImageTransformIndex($result);
-        }
-
-        return $results;
     }
 
     /**
@@ -820,6 +837,7 @@ class ImageTransformer extends Component implements ImageTransformerInterface, E
      *
      * @param Asset $asset
      * @param ImageTransformIndex $index
+     *
      * @return ImageTransformIndex|null
      * @throws InvalidConfigException
      */
@@ -840,29 +858,24 @@ class ImageTransformer extends Component implements ImageTransformerInterface, E
             // the image for.
             $result = $this->_createTransformIndexQuery()
                 ->where([
-                    'and',
-                    [
-                        'assetId' => $asset->id,
-                        'fileExists' => true,
-                        'transformString' => $possibleLocations,
-                        'format' => $index->detectedFormat,
-                    ],
-                    ['not', ['id' => $index->id]],
+                    'assetId' => $asset->id,
+                    'fileExists' => true,
+                    'transformString' => $possibleLocations,
+                    'format' => $index->detectedFormat,
                 ])
-                ->one();
+                ->whereNot('id', $index->id)
+                ->first();
         }
 
-        return $result ? Craft::createObject(array_merge(['class' => ImageTransformIndex::class], $result)) : null;
+        return $result ? Craft::createObject(array_merge(['class' => ImageTransformIndex::class], (array) $result)) : null;
     }
 
     /**
      * Returns a Query object prepped for retrieving transform indexes.
-     *
-     * @return Query
      */
-    private function _createTransformIndexQuery(): Query
+    private function _createTransformIndexQuery(): Builder
     {
-        return (new Query())
+        return DB::table(Table::IMAGETRANSFORMINDEX)
             ->select([
                 'id',
                 'assetId',
@@ -875,7 +888,6 @@ class ImageTransformer extends Component implements ImageTransformerInterface, E
                 'dateIndexed',
                 'dateUpdated',
                 'dateCreated',
-            ])
-            ->from([Table::IMAGETRANSFORMINDEX]);
+            ]);
     }
 }

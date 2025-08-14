@@ -8,7 +8,6 @@ use CraftCms\Cms\User\Models\User;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Support\Facades\Date;
 
 class Announcement extends BaseModel
 {
@@ -39,7 +38,7 @@ class Announcement extends BaseModel
     {
         return $query->where(function (Builder $query) {
             $query->where('unread', true)
-                ->orWhere('dateRead', '>', Date::now()->subDays(7));
+                ->orWhere('dateRead', '>', now()->subDays(7));
         });
     }
 }

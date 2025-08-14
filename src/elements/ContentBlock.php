@@ -11,12 +11,12 @@ use Craft;
 use craft\base\Element;
 use craft\base\NestedElementInterface;
 use craft\base\NestedElementTrait;
-use craft\db\Table;
 use craft\elements\db\ContentBlockQuery;
 use craft\fields\ContentBlock as ContentBlockField;
 use craft\gql\interfaces\elements\ContentBlock as ContentBlockInterface;
 use craft\models\FieldLayout;
 use craft\records\ContentBlock as ContentBlockRecord;
+use CraftCms\Cms\Db\Table;
 use GraphQL\Type\Definition\Type;
 use yii\base\InvalidConfigException;
 

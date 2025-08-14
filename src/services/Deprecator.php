@@ -8,20 +8,21 @@
 namespace craft\services;
 
 use Craft;
-use craft\db\Query;
-use craft\db\Table;
 use craft\elements\db\ElementQuery;
 use craft\errors\DeprecationException;
-use craft\helpers\Db;
 use craft\helpers\Template;
 use craft\models\DeprecationError;
 use craft\web\twig\Extension;
+use CraftCms\Cms\Db\Table;
+use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Support\Str;
 use DateTime;
+use Illuminate\Database\Query\Builder;
+use Illuminate\Support\Facades\DB;
+use Throwable;
 use Twig\Template as TwigTemplate;
 use yii\base\Application;
 use yii\base\Component;
-use yii\db\Exception;
 
 /**
  * Deprecator service.
@@ -84,6 +85,7 @@ class Deprecator extends Component
      * @param string $message
      * @param string|null $file
      * @param int|null $line
+     *
      * @throws DeprecationException
      */
     public function log(string $key, string $message, ?string $file = null, ?int $line = null): void
@@ -137,22 +139,25 @@ class Deprecator extends Component
      */
     public function storeLogs(): void
     {
-        $db = Craft::$app->getDb();
-        $tableSchema = $db->getSchema()->getTableSchema(Table::DEPRECATIONERRORS);
+        $now = now();
 
         foreach ($this->_pendingRequestLogs as $log) {
             try {
-                Db::upsert(Table::DEPRECATIONERRORS, [
-                    'key' => $log->key,
-                    'fingerprint' => $log->fingerprint,
-                    'lastOccurrence' => Db::prepareDateForDb($log->lastOccurrence),
-                    'file' => $log->file,
-                    'line' => $log->line,
-                    'message' => $log->message,
-                    'traces' => Db::prepareValueForDb($log->traces, $tableSchema->columns['traces']->dbType),
-                ]);
-                $log->id = (int)$db->getLastInsertID();
-            } catch (Exception $e) {
+                DB::table(Table::DEPRECATIONERRORS)
+                    ->updateOrInsert([
+                        'key' => $log->key,
+                        'fingerprint' => $log->fingerprint,
+                    ], [
+                        'lastOccurrence' => $log->lastOccurrence,
+                        'file' => $log->file,
+                        'line' => $log->line,
+                        'message' => $log->message,
+                        'traces' => Json::encode($log->traces),
+                        'dateCreated' => $now,
+                        'dateUpdated' => $now,
+                        'uid' => Str::uuid(),
+                    ]);
+            } catch (Throwable $e) {
                 Craft::warning("Couldn't save deprecation warning: {$e->getMessage()}", __METHOD__);
                 // Craft probably isn’t installed yet
                 break;
@@ -179,15 +184,14 @@ class Deprecator extends Component
      */
     public function getTotalLogs(): int
     {
-        return (new Query())
-            ->from([Table::DEPRECATIONERRORS])
-            ->count('[[id]]');
+        return DB::table(Table::DEPRECATIONERRORS)->count();
     }
 
     /**
      * Get 'em all.
      *
      * @param int|null $limit
+     *
      * @return DeprecationError[]
      */
     public function getLogs(?int $limit = null): array
@@ -196,16 +200,12 @@ class Deprecator extends Component
             return $this->_allLogs;
         }
 
-        $this->_allLogs = [];
-
-        $results = $this->_createDeprecationErrorQuery()
+        $this->_allLogs = $this->_createDeprecationErrorQuery()
             ->limit($limit)
-            ->orderBy(['lastOccurrence' => SORT_DESC])
+            ->orderByDesc('lastOccurrence')
+            ->get()
+            ->map(fn(object $result) => new DeprecationError((array) $result))
             ->all();
-
-        foreach ($results as $result) {
-            $this->_allLogs[] = new DeprecationError($result);
-        }
 
         return $this->_allLogs;
     }
@@ -214,30 +214,27 @@ class Deprecator extends Component
      * Returns a log by its ID.
      *
      * @param int $logId
+     *
      * @return DeprecationError|null
      */
     public function getLogById(int $logId): ?DeprecationError
     {
         $log = $this->_createDeprecationErrorQuery()
-            ->where(['id' => $logId])
-            ->one();
+            ->find($logId);
 
-        return $log ? new DeprecationError($log) : null;
+        return $log ? new DeprecationError((array) $log) : null;
     }
 
     /**
      * Deletes a log by its ID.
      *
      * @param int $id
+     *
      * @return bool
      */
     public function deleteLogById(int $id): bool
     {
-        $affectedRows = Db::delete(Table::DEPRECATIONERRORS, [
-            'id' => $id,
-        ]);
-
-        return (bool)$affectedRows;
+        return (bool)DB::table(Table::DEPRECATIONERRORS)->delete($id);
     }
 
     /**
@@ -247,19 +244,12 @@ class Deprecator extends Component
      */
     public function deleteAllLogs(): bool
     {
-        $affectedRows = Db::delete(Table::DEPRECATIONERRORS);
-
-        return (bool)$affectedRows;
+        return (bool)DB::table(Table::DEPRECATIONERRORS)->delete();
     }
 
-    /**
-     * Returns a Query object prepped for retrieving deprecation logs.
-     *
-     * @return Query
-     */
-    private function _createDeprecationErrorQuery(): Query
+    private function _createDeprecationErrorQuery(): Builder
     {
-        return (new Query())
+        return DB::table(Table::DEPRECATIONERRORS)
             ->select([
                 'id',
                 'key',
@@ -269,14 +259,14 @@ class Deprecator extends Component
                 'line',
                 'message',
                 'traces',
-            ])
-            ->from([Table::DEPRECATIONERRORS]);
+            ]);
     }
 
     /**
      * Returns the file and line number that should be associated with the error.
      *
      * @param array $traces debug_backtrace() results leading up to [[log()]]
+     *
      * @return array [file, line]
      */
     private function _findOrigin(array $traces): array
@@ -349,6 +339,7 @@ class Deprecator extends Component
      *
      * @param array $traces debug_backtrace() results leading up to [[log()]]
      * @param int $index The trace index to check
+     *
      * @return bool
      */
     private function _isTemplateAttributeCall(array $traces, int $index): bool
@@ -368,6 +359,7 @@ class Deprecator extends Component
      * Returns a simplified version of the stack trace.
      *
      * @param array $traces debug_backtrace() results leading up to [[log()]]
+     *
      * @return array
      */
     private function _processStackTrace(array $traces): array
@@ -401,6 +393,7 @@ class Deprecator extends Component
      *
      * @param TwigTemplate $template
      * @param int|null $actualCodeLine
+     *
      * @return int|null
      */
     private function _findTemplateLine(TwigTemplate $template, ?int $actualCodeLine = null): ?int
@@ -425,6 +418,7 @@ class Deprecator extends Component
      * Adapted from [[\yii\web\ErrorHandler::argumentsToString()]], but this one's less destructive
      *
      * @param array $args
+     *
      * @return string
      */
     private function _argsToString(array $args): string

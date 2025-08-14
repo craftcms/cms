@@ -3,16 +3,16 @@
 namespace CraftCms\Cms\Utility\Utilities;
 
 use Craft;
-use craft\db\Table;
-use craft\helpers\Db;
 use craft\web\assets\clearcaches\ClearCachesAsset;
 use CraftCms\Cms\Config\GeneralConfig;
+use CraftCms\Cms\Db\Table;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Utility\Events\RegisterCacheOptions;
 use CraftCms\Cms\Utility\Events\RegisterTagOptions;
 use CraftCms\Cms\Utility\Utility;
 use Exception;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\File;
 
@@ -161,7 +161,7 @@ final readonly class ClearCaches extends Utility
                     }
 
                     // truncate the resourcepaths table while we're at it
-                    Db::truncateTable(Table::RESOURCEPATHS);
+                    DB::table(Table::RESOURCEPATHS)->truncate();
                 },
             ],
             [
@@ -177,18 +177,14 @@ final readonly class ClearCaches extends Utility
                 'label' => Craft::t('app', 'Asset transform index'),
                 'info' => Craft::t('app', 'Record of generated image transforms'),
                 'action' => function () {
-                    Craft::$app->getDb()->createCommand()
-                        ->truncateTable(Table::IMAGETRANSFORMINDEX)
-                        ->execute();
+                    DB::table(Table::IMAGETRANSFORMINDEX)->truncate();
                 },
             ],
             [
                 'key' => 'asset-indexing-data',
                 'label' => Craft::t('app', 'Asset indexing data'),
                 'action' => function () {
-                    Craft::$app->getDb()->createCommand()
-                        ->truncateTable(Table::ASSETINDEXDATA)
-                        ->execute();
+                    DB::table(Table::ASSETINDEXDATA)->truncate();
                 },
             ],
         ];

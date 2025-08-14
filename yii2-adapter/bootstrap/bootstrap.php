@@ -66,9 +66,6 @@ if ($app->hasDebugModeEnabled()) {
     ini_set('display_errors', '0');
     defined('YII_DEBUG') || define('YII_DEBUG', false);
     defined('YII_ENV') || define('YII_ENV', 'prod');
-
-    // don't let PHP warnings & notices halt execution
-    error_reporting($errorLevel & ~E_WARNING & ~E_NOTICE);
 }
 
 // Load the Composer dependencies and the app
@@ -94,7 +91,7 @@ Craft::setAlias('@config', $app->configPath());
 Craft::setAlias('@contentMigrations', Env::get('CRAFT_CONTENT_MIGRATIONS_PATH', $app->basePath('migrations')));
 Craft::setAlias('@storage', $app->storagePath());
 Craft::setAlias('@templates', CRAFT_TEMPLATES_PATH); // Defined in Yii2ServiceProvider
-Craft::setAlias('@translations', $app->langPath());
+Craft::setAlias('@translations', Env::get('CRAFT_TRANSLATIONS_PATH', $app->langPath()));
 Craft::setAlias('@tests', Env::get('CRAFT_TESTS_PATH', $app->basePath('tests')));
 
 // Load the config

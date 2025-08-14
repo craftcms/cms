@@ -6,10 +6,10 @@ use Craft;
 use craft\db\Migration;
 use craft\db\Query;
 use craft\db\Table;
-use craft\helpers\Db;
 use craft\services\ProjectConfig;
 use CraftCms\Cms\Support\Arr;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\DB;
 
 /**
  * m230524_220029_global_entry_types migration.
@@ -114,7 +114,7 @@ class m230524_220029_global_entry_types extends Migration
                 $projectConfig->set($entryTypePath, $entryTypeConfig);
 
                 // Preserve the original handle on the section
-                $entryTypeId = Db::idByUid(Table::ENTRYTYPES, $entryTypeUid);
+                $entryTypeId = DB::table(\CraftCms\Cms\Db\Table::ENTRYTYPES)->idByUid($entryTypeUid);
                 if ($entryTypeId) {
                     $this->update(Table::SECTIONS_ENTRYTYPES, [
                         'handle' => $originalHandle,

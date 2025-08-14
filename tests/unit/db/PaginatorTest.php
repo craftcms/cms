@@ -8,12 +8,12 @@
 namespace crafttests\unit\db;
 
 use Codeception\Test\Unit;
-use Craft;
 use craft\db\Paginator;
 use craft\db\Query;
 use craft\db\Table;
 use craft\records\Session;
 use craft\test\TestCase;
+use Illuminate\Support\Facades\DB;
 use UnitTester;
 use yii\db\Exception;
 
@@ -189,8 +189,6 @@ class PaginatorTest extends TestCase
      */
     protected function resetPaginator()
     {
-        Craft::$app->getDb()->createCommand()
-            ->truncateTable(Table::SESSIONS)
-            ->execute();
+        DB::table(\CraftCms\Cms\Db\Table::SESSIONS)->truncate();
     }
 }

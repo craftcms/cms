@@ -12,10 +12,10 @@ use craft\base\Batchable;
 use craft\db\Query;
 use craft\db\QueryBatcher;
 use craft\db\Table;
-use craft\helpers\Db;
 use craft\i18n\Translation;
 use craft\queue\BaseBatchedJob;
 use CraftCms\Cms\Support\Json;
+use Illuminate\Support\Facades\DB;
 
 /**
  * FindAndReplace job
@@ -66,12 +66,12 @@ class FindAndReplace extends BaseBatchedJob
         $this->replaceRecursive($item['title']);
         $this->replaceRecursive($item['content']);
 
-        Db::update(Table::ELEMENTS_SITES, [
-            'title' => $item['title'],
-            'content' => $item['content'],
-        ], [
-            'id' => $item['id'],
-        ], updateTimestamp: false);
+        DB::table(\CraftCms\Cms\Db\Table::ELEMENTS_SITES)
+            ->where('id', $item['id'])
+            ->update([
+                'title' => $item['title'],
+                'content' => $item['content'],
+            ]);
     }
 
     private function replaceRecursive(string|array|null &$value): void

@@ -8,12 +8,12 @@
 namespace craft\services;
 
 use Craft;
-use craft\db\Table;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\Db;
 use craft\helpers\Session;
 use craft\models\CraftIdToken;
 use craft\records\CraftIdToken as OauthTokenRecord;
+use CraftCms\Cms\Db\Table;
 use DateInterval;
 use DateTime;
 use yii\base\Component;
@@ -179,9 +179,7 @@ class PluginStore extends Component
             return false;
         }
 
-        Db::delete(Table::CRAFTIDTOKENS, [
-            'userId' => $userId,
-        ]);
+        \Illuminate\Support\Facades\DB::table(Table::CRAFTIDTOKENS)->where('userId', $userId)->delete();
 
         return true;
     }

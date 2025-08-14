@@ -13,8 +13,6 @@ use craft\console\Request as ConsoleRequest;
 use craft\db\Connection;
 use craft\db\MigrationManager;
 use craft\db\mysql\Schema;
-use craft\db\Query;
-use craft\db\Table;
 use craft\elements\Address;
 use craft\elements\Asset;
 use craft\elements\Category;
@@ -44,7 +42,6 @@ use craft\fieldlayoutelements\users\FullNameField as UserFullNameField;
 use craft\fieldlayoutelements\users\PhotoField;
 use craft\fieldlayoutelements\users\UsernameField;
 use craft\helpers\App;
-use craft\helpers\Db;
 use craft\helpers\Session;
 use craft\i18n\Formatter;
 use craft\i18n\I18N;
@@ -109,10 +106,14 @@ use craft\web\User as UserSession;
 use craft\web\View;
 use CraftCms\Cms\Announcement\Announcements;
 use CraftCms\Cms\Config\GeneralConfig;
+use CraftCms\Cms\Db\Table;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Support\Env;
+use CraftCms\Cms\Support\Str;
+use Illuminate\Database\QueryException;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Cache as CacheFacade;
+use Illuminate\Support\Facades\DB;
 use Symfony\Component\VarDumper\Caster\ReflectionCaster;
 use Symfony\Component\VarDumper\Cloner\VarCloner;
 use Symfony\Component\VarDumper\Dumper\AbstractDumper;
@@ -125,7 +126,6 @@ use yii\base\Exception;
 use yii\base\InvalidConfigException;
 use yii\db\ColumnSchemaBuilder;
 use yii\db\Exception as DbException;
-use yii\db\Expression;
 use yii\helpers\Markdown as MarkdownHelper;
 use yii\mutex\Mutex;
 use yii\queue\Queue;
@@ -417,16 +417,15 @@ trait ApplicationTrait
                 $db = Craft::$app->getDb();
                 if ($db->getIsPgsql()) {
                     // Look for the `info` row, explicitly in the default schema.
-                    return $this->_isInstalled = (new Query())
-                        ->from([sprintf('%s.%s', $db->getSchema()->defaultSchema, Table::INFO)])
-                        ->where(['id' => 1])
+                    return $this->_isInstalled = DB::table(Table::INFO)
+                        ->where('id', 1)
                         ->exists();
                 }
             }
 
             $info = $this->getInfo(true);
             return $this->_isInstalled = !empty($info->id);
-        } catch (DbException|ServerErrorHttpException $e) {
+        } catch (DbException|ServerErrorHttpException|QueryException $e) {
             // yii2-redis awkwardly throws yii\db\Exception's rather than their own exception class.
             if ($e instanceof DbException && str_contains($e->getMessage(), 'Redis')) {
                 throw $e;
@@ -550,14 +549,12 @@ trait ApplicationTrait
             // This is a ridiculous microoptimization for the `sites` table, but all we need to know is whether there is
             // 1 or "more than 1" rows, and this is the fastest way to do it.
             // (https://stackoverflow.com/a/14916838/1688568)
-            return $this->_isMultiSiteWithTrashed = (new Query())
-                    ->from([
-                        'x' => (new Query())
-                            ->select([new Expression('1')])
-                            ->from([Table::SITES])
-                            ->limit(2),
-                    ])
-                    ->count() != 1;
+            return $this->_isMultiSiteWithTrashed = DB::table(
+                    table: DB::table(Table::SITES)
+                        ->selectRaw('1')
+                        ->limit(2),
+                    as: 'x'
+                )->count() !== 1;
         }
 
         if (!$refresh && isset($this->_isMultiSite)) {
@@ -819,11 +816,8 @@ trait ApplicationTrait
         }
 
         try {
-            $row = (new Query())
-                ->from([Table::INFO])
-                ->where(['id' => 1])
-                ->one();
-        } catch (DbException|DbConnectException $e) {
+            $row = (array) DB::table(Table::INFO)->find(1);
+        } catch (DbException|DbConnectException|QueryException $e) {
             if ($throwException) {
                 throw $e;
             }
@@ -831,7 +825,7 @@ trait ApplicationTrait
         }
 
         if (!$row) {
-            $tableName = $this->getDb()->getSchema()->getRawTableName(Table::INFO);
+            $tableName = Table::INFO;
             throw new ServerErrorHttpException("The $tableName table is missing its row");
         }
 
@@ -888,20 +882,14 @@ trait ApplicationTrait
 
         $attributes = $info->getAttributes($attributeNames);
 
-        $infoRowExists = (new Query())
-            ->from([Table::INFO])
-            ->where(['id' => 1])
-            ->exists();
-
-        if ($infoRowExists) {
-            Db::update(Table::INFO, $attributes, [
-                'id' => 1,
-            ]);
-        } else {
-            Db::insert(Table::INFO, $attributes + [
-                    'id' => 1,
-                ]);
-        }
+        DB::table(Table::INFO)->updateOrInsert(
+            ['id' => 1],
+            $attributes + [
+                'dateCreated' => $now = now(),
+                'dateUpdated' => $now,
+                'uid' => Str::uuid(),
+            ],
+        );
 
         $this->setIsInstalled();
 
