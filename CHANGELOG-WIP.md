@@ -9,6 +9,8 @@
 
 ### Administration
 - Users’ User Groups settings now show a component select input, and support inline group editing/creation on environments that allow administrative changes.
+- Relational fields now have an “Inline list” view mode. ([#17744](https://github.com/craftcms/cms/pull/17744))
+- Relational fields and Matrx fields now have a “Card grid” view mode, replacing the “Show cards in a grid” setting. ([#17744](https://github.com/craftcms/cms/pull/17744))
 - Control panel-defined routes now have action menus with “Move up”/“Move down” actions. ([#17706](https://github.com/craftcms/cms/pull/17706))
 
 ### Extensibility
@@ -16,11 +18,19 @@
 - Added `Craft.BaseElementIndex::asyncSelectSource()`.
 - Added `Craft.BaseElementIndex::asyncSelectSourceByKey()`.
 - Added `Craft.BaseElementIndex::ensureSourceAttributeInfo()`.
+- Added `craft\fields\BaseRelationField::VIEW_MODE_CARDS_GRID`.
+- Added `craft\fields\BaseRelationField::VIEW_MODE_CARDS`.
+- Added `craft\fields\BaseRelationField::VIEW_MODE_LIST_INLINE`.
+- Added `craft\fields\BaseRelationField::VIEW_MODE_LIST`.
+- Added `craft\fields\BaseRelationField::VIEW_MODE_THUMBS`.
+- Added `craft\fields\Matrix::VIEW_MODE_CARDS_GRID`.
 - Added `craft\web\GqlResponseFormatter`.
 - Added `craft\web\Response::FORMAT_GQL`.
 - Added `craft\web\twig\nodes\BaseNode`.
 - `craft\web\Request::accepts()` now accepts wildcard characters (`*`) in the `$contentType` argument, to check for a range of MIME types (e.g. `application/*+json`).
 - `craft\web\Request::getAcceptsJson()` now returns `true` for requests with `Content-Type` headers that match `application/*+json`, in addition to `application/json`.
+- Deprecated `craft\fields\BaseRelationField::$showCardsInGrid`.
+- Deprecated `craft\fields\Matrix::$showCardsInGrid`.
 - Deprecated `Craft.BaseElementIndex::selectDefaultSource()`.
 - Deprecated `Craft.BaseElementIndex::selectSource()`.
 - Deprecated `Craft.BaseElementIndex::selectSourceByKey()`.
