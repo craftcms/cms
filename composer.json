@@ -135,7 +135,7 @@
   "scripts": {
     "copy-icons": "php ./scripts/copyicons.php",
     "check-cs": "ecs check --ansi && pint cms --test",
-    "fix-cs": "npx concurrently -c \"#93c5fd,#c4b5fd\" 'ecs check --ansi --fix' 'pint cms' --names=ecs,pint",
+    "fix-cs": "npx concurrently -c \"#93c5fd,#c4b5fd\" 'ecs check --ansi --fix' 'pint cms --parallel' --names=ecs,pint",
     "codecept-build": "codecept build",
     "phpstan": "phpstan --memory-limit=1G",
     "rector": "rector",
