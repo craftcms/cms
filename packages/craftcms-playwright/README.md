@@ -1,11 +1,14 @@
 # Playwright tests setup for Craft CMS
 
+At the moment, you can run the commands listed under Usage on your host machine. You'll need docker, node and ideally nvm.
+
 ## Installation
 - pull the branch
 - go to where your cms repo lives (e.g. packages/cms)
 - run `nvm use`
 - run `npm ci`
-- ??
+- run `npx playwright install`
+- go to your `cms` repo location and into `tests-playwright` directory, copy `.env.example` file to `.env` (and adjust if needed)
 
 ## Usage
 
