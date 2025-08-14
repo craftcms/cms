@@ -185,7 +185,7 @@ class Search extends Component
             ->where('siteId', $element->siteId)
             ->when(
                 !empty($ignoreFieldIds),
-                fn(Builder $query) => $query->whereNotIn('fieldId', array_map(fn(int $fieldId) => (string)$fieldId, array_keys($ignoreFieldIds)))
+                fn(Builder $query) => $query->whereNotIn('fieldId', array_map(fn(int $fieldId) => (string)$fieldId, array_keys($ignoreFieldIds))),
             )
             ->delete();
 
@@ -589,7 +589,7 @@ class Search extends Component
         DB::table(\CraftCms\Cms\Db\Table::SEARCHINDEX, 's')
             ->whereNotExists(
                 DB::table(\CraftCms\Cms\Db\Table::ELEMENTS, 'e')
-                    ->whereColumn('e.id', 's.elementId')
+                    ->whereColumn('e.id', 's.elementId'),
             )
             ->delete();
     }
@@ -1080,19 +1080,16 @@ class Search extends Component
      */
     private function _sqlSubSelect(string $where, array|int|null $siteId): string|false
     {
-        $query = (new Query())
-            ->select(['elementId'])
-            ->from([Table::SEARCHINDEX])
-            ->where($where);
+        $elementIds = DB::table(\CraftCms\Cms\Db\Table::SEARCHINDEX)
+            ->whereRaw($where)
+            ->when(
+                $siteId !== null,
+                fn(Builder $query) => $query->where('siteId', $siteId),
+            )
+            ->pluck('elementId');
 
-        if ($siteId !== null) {
-            $query->andWhere(['siteId' => $siteId]);
-        }
-
-        $elementIds = $query->column();
-
-        if (!empty($elementIds)) {
-            return Craft::$app->getDb()->quoteColumnName('elementId') . ' IN (' . implode(', ', $elementIds) . ')';
+        if ($elementIds->isNotEmpty()) {
+            return Craft::$app->getDb()->quoteColumnName('elementId') . ' IN (' . $elementIds->join(', ') . ')';
         }
 
         return false;

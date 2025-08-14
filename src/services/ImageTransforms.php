@@ -12,8 +12,6 @@ use craft\base\imagetransforms\EagerImageTransformerInterface;
 use craft\base\imagetransforms\ImageTransformerInterface;
 use craft\base\MemoizableArray;
 use craft\db\Connection;
-use craft\db\Query;
-use craft\db\Table;
 use craft\elements\Asset;
 use craft\errors\ImageTransformException;
 use craft\events\AssetEvent;
@@ -21,14 +19,17 @@ use craft\events\ConfigEvent;
 use craft\events\ImageTransformEvent;
 use craft\events\RegisterComponentTypesEvent;
 use craft\helpers\Assets as AssetsHelper;
-use craft\helpers\Db;
+use craft\helpers\Db as DbHelper;
 use craft\helpers\FileHelper;
 use craft\helpers\ImageTransforms as TransformHelper;
 use craft\imagetransforms\ImageTransformer;
 use craft\models\ImageTransform;
 use craft\records\ImageTransform as ImageTransformRecord;
+use CraftCms\Cms\Db\Table;
 use CraftCms\Cms\Support\Str;
 use DateTime;
+use Illuminate\Database\Query\Builder;
+use Illuminate\Support\Facades\DB;
 use Throwable;
 use yii\base\Component;
 use yii\base\InvalidArgumentException;
@@ -127,11 +128,14 @@ class ImageTransforms extends Component
     {
         if (!isset($this->_transforms)) {
             $this->_transforms = new MemoizableArray(
-                $this->_createTransformQuery()->all(),
-                fn(array $result) => Craft::createObject([
-                    'class' => ImageTransform::class,
-                    ...$result,
-                ]),
+                $this->_createTransformQuery()->get()->all(),
+                function(object $result) {
+                    $result = (array) $result;
+                    return Craft::createObject([
+                        'class' => ImageTransform::class,
+                        ...$result,
+                    ]);
+                },
             );
         }
 
@@ -152,6 +156,7 @@ class ImageTransforms extends Component
      * Returns an asset transform by its handle.
      *
      * @param string $handle
+     *
      * @return ImageTransform|null
      */
     public function getTransformByHandle(string $handle): ?ImageTransform
@@ -163,6 +168,7 @@ class ImageTransforms extends Component
      * Returns an asset transform by its ID.
      *
      * @param int $id
+     *
      * @return ImageTransform|null
      */
     public function getTransformById(int $id): ?ImageTransform
@@ -174,6 +180,7 @@ class ImageTransforms extends Component
      * Returns an asset transform by its UID.
      *
      * @param string $uid
+     *
      * @return ImageTransform|null
      */
     public function getTransformByUid(string $uid): ?ImageTransform
@@ -186,6 +193,7 @@ class ImageTransforms extends Component
      *
      * @param ImageTransform $transform The transform to be saved
      * @param bool $runValidation Whether the transform should be validated
+     *
      * @return bool
      * @throws ImageTransformException If attempting to update a non-existing transform.
      */
@@ -209,7 +217,7 @@ class ImageTransforms extends Component
         if ($isNewTransform) {
             $transform->uid = Str::uuid()->toString();
         } elseif (!$transform->uid) {
-            $transform->uid = \Illuminate\Support\Facades\DB::table(\CraftCms\Cms\Db\Table::IMAGETRANSFORMS)->uidById($transform->id);
+            $transform->uid = DB::table(Table::IMAGETRANSFORMS)->uidById($transform->id);
         }
 
         $projectConfig = Craft::$app->getProjectConfig();
@@ -217,7 +225,7 @@ class ImageTransforms extends Component
         $projectConfig->set($configPath, $transform->getConfig(), "Saving transform “{$transform->handle}”");
 
         if ($isNewTransform) {
-            $transform->id = \Illuminate\Support\Facades\DB::table(\CraftCms\Cms\Db\Table::IMAGETRANSFORMS)->idByUid($transform->uid);
+            $transform->id = DB::table(Table::IMAGETRANSFORMS)->idByUid($transform->uid);
         }
 
         return true;
@@ -233,7 +241,7 @@ class ImageTransforms extends Component
         $transformUid = $event->tokenMatches[0];
         $data = $event->newValue;
 
-        \Illuminate\Support\Facades\DB::beginTransaction();
+        DB::beginTransaction();
 
         try {
             $transformRecord = $this->_getTransformRecord($transformUid);
@@ -250,7 +258,7 @@ class ImageTransforms extends Component
             $upscaleChanged = ($transformRecord->upscale !== null ? (bool)$transformRecord->upscale : null) !== ($data['upscale'] ?? null);
 
             if ($heightChanged || $modeChanged || $qualityChanged || $interlaceChanged || $fillChanged || $upscaleChanged) {
-                $transformRecord->parameterChangeTime = Db::prepareDateForDb(new DateTime());
+                $transformRecord->parameterChangeTime = DbHelper::prepareDateForDb(new DateTime());
             }
 
             $transformRecord->mode = $data['mode'];
@@ -266,9 +274,9 @@ class ImageTransforms extends Component
 
             $transformRecord->save(false);
 
-            \Illuminate\Support\Facades\DB::commit();
+            DB::commit();
         } catch (Throwable $e) {
-            \Illuminate\Support\Facades\DB::rollBack();
+            DB::rollBack();
             throw $e;
         }
 
@@ -291,6 +299,7 @@ class ImageTransforms extends Component
      * Deletes an asset transform by its ID.
      *
      * @param int $transformId The transform's ID
+     *
      * @return bool Whether the transform was deleted.
      * @throws Exception on DB error
      */
@@ -311,6 +320,7 @@ class ImageTransforms extends Component
      * Note that passing an ID to this function is now deprecated. Use [[deleteTransformById()]] instead.
      *
      * @param ImageTransform $transform The transform
+     *
      * @return bool Whether the transform was deleted
      */
     public function deleteTransform(ImageTransform $transform): bool
@@ -322,7 +332,8 @@ class ImageTransforms extends Component
             ]));
         }
 
-        Craft::$app->getProjectConfig()->remove(ProjectConfig::PATH_IMAGE_TRANSFORMS . '.' . $transform->uid, "Delete transform “{$transform->handle}”");
+        Craft::$app->getProjectConfig()->remove(ProjectConfig::PATH_IMAGE_TRANSFORMS . '.' . $transform->uid,
+            "Delete transform “{$transform->handle}”");
         return true;
     }
 
@@ -348,7 +359,8 @@ class ImageTransforms extends Component
             ]));
         }
 
-        \Illuminate\Support\Facades\DB::table(\CraftCms\Cms\Db\Table::IMAGETRANSFORMS)->where('uid', $transformUid)->delete();
+        DB::table(Table::IMAGETRANSFORMS)->where('uid',
+            $transformUid)->delete();
 
         // Clear caches
         $this->_transforms = null;
@@ -415,7 +427,7 @@ class ImageTransforms extends Component
 
                 $transform = Craft::createObject([
                     'class' => ImageTransform::class,
-                        ...$refTransform->toArray(),
+                    ...$refTransform->toArray(),
                 ]);
 
                 unset($transform->name, $transform->handle);
@@ -457,6 +469,7 @@ class ImageTransforms extends Component
      * @template T of ImageTransformerInterface
      * @param class-string<T> $type
      * @param array $config
+     *
      * @return T
      * @throws InvalidConfigException
      */
@@ -483,7 +496,8 @@ class ImageTransforms extends Component
         $this->deleteResizedAssetVersion($asset);
         $this->deleteCreatedTransformsForAsset($asset);
 
-        $file = Craft::$app->getPath()->getAssetSourcesPath() . DIRECTORY_SEPARATOR . $asset->id . '.' . pathinfo($asset->getFilename(), PATHINFO_EXTENSION);
+        $file = Craft::$app->getPath()->getAssetSourcesPath() . DIRECTORY_SEPARATOR . $asset->id . '.' . pathinfo($asset->getFilename(),
+                PATHINFO_EXTENSION);
 
         if (file_exists($file)) {
             FileHelper::unlink($file);
@@ -563,14 +577,9 @@ class ImageTransforms extends Component
         return $transformers;
     }
 
-    /**
-     * Returns a Query object prepped for retrieving transforms.
-     *
-     * @return Query
-     */
-    private function _createTransformQuery(): Query
+    private function _createTransformQuery(): Builder
     {
-        return (new Query())
+        return DB::table(Table::IMAGETRANSFORMS)
             ->select([
                 'id',
                 'name',
@@ -587,14 +596,14 @@ class ImageTransforms extends Component
                 'parameterChangeTime',
                 'uid',
             ])
-            ->from([Table::IMAGETRANSFORMS])
-            ->orderBy(['name' => SORT_ASC]);
+            ->orderBy('name');
     }
 
     /**
      * Gets a transform's record by uid.
      *
      * @param string $uid
+     *
      * @return ImageTransformRecord
      */
     private function _getTransformRecord(string $uid): ImageTransformRecord

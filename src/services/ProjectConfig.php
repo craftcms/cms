@@ -8,8 +8,6 @@
 namespace craft\services;
 
 use Craft;
-use craft\db\Query;
-use craft\db\Table;
 use craft\elements\Address;
 use craft\elements\User;
 use craft\errors\BusyResourceException;
@@ -18,11 +16,11 @@ use craft\errors\StaleResourceException;
 use craft\events\ConfigEvent;
 use craft\events\RebuildConfigEvent;
 use craft\helpers\DateTimeHelper;
-use craft\helpers\Db;
 use craft\helpers\FileHelper;
 use craft\helpers\ProjectConfig as ProjectConfigHelper;
 use craft\models\ProjectConfigData;
 use craft\models\ReadOnlyProjectConfigData;
+use CraftCms\Cms\Db\Table;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Support\Str;
@@ -30,6 +28,7 @@ use CraftCms\DependencyAwareCache\Dependency\CallbackDependency;
 use CraftCms\DependencyAwareCache\Facades\DependencyCache;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\DB;
 use Symfony\Component\Yaml\Yaml;
 use Throwable;
 use yii\base\Application;
@@ -391,7 +390,8 @@ class ProjectConfig extends Component
     {
         if (isset($config['maxBackups'])) {
             $config['maxDeltas'] = Arr::pull($config, 'maxBackups');
-            Craft::$app->getDeprecator()->log(self::class . '::maxBackups', '`' . self::class . '::maxBackups` has been deprecated. Use `maxDeltas` instead.');
+            Craft::$app->getDeprecator()->log(self::class . '::maxBackups',
+                '`' . self::class . '::maxBackups` has been deprecated. Use `maxDeltas` instead.');
         }
 
         parent::__construct($config);
@@ -455,6 +455,7 @@ class ProjectConfig extends Component
      *
      * @param string|null $path The config item path, or `null` if the entire config should be returned
      * @param bool $getFromExternalConfig whether data should be fetched from the working config instead of the loaded config. Defaults to `false`.
+     *
      * @return mixed The config item value
      */
     public function get(?string $path = null, bool $getFromExternalConfig = false): mixed
@@ -477,6 +478,7 @@ class ProjectConfig extends Component
      *
      * @param callable $callback
      * @param bool $fromExternalConfig whether to find config items in the external config
+     *
      * @return array
      * @since 5.0.0
      */
@@ -515,6 +517,7 @@ class ProjectConfig extends Component
      * @param string|null $message A message describing the changes
      * @param bool $updateTimestamp Whether the `dateModified` value should be updated, if it hasn’t been updated yet for this request
      * @param bool $force Whether the update should be processed regardless of whether the value actually changed
+     *
      * @return bool Whether the project config was modified
      * @throws ErrorException
      * @throws Exception
@@ -524,8 +527,13 @@ class ProjectConfig extends Component
      * @throws BusyResourceException if a lock could not be acquired
      * @throws StaleResourceException if the loaded project config is out-of-date
      */
-    public function set(string $path, mixed $value, ?string $message = null, bool $updateTimestamp = true, bool $force = false): bool
-    {
+    public function set(
+        string $path,
+        mixed $value,
+        ?string $message = null,
+        bool $updateTimestamp = true,
+        bool $force = false,
+    ): bool {
         if (!$this->_setInternal($path, $value, $message, $updateTimestamp, $force)) {
             return false;
         }
@@ -534,8 +542,13 @@ class ProjectConfig extends Component
         return true;
     }
 
-    private function _setInternal(string $path, mixed $value, ?string $message = null, bool $updateTimestamp = true, bool $force = false): bool
-    {
+    private function _setInternal(
+        string $path,
+        mixed $value,
+        ?string $message = null,
+        bool $updateTimestamp = true,
+        bool $force = false,
+    ): bool {
         if (is_array($value)) {
             $value = ProjectConfigHelper::cleanupConfig($value);
         }
@@ -559,14 +572,16 @@ class ProjectConfig extends Component
 
         if ($updateTimestamp && !$this->_timestampUpdated && $valueHasChanged) {
             $this->_timestampUpdated = true;
-            $this->_setInternal(self::PATH_DATE_MODIFIED, DateTimeHelper::currentTimeStamp(), 'Update timestamp for project config', false, false);
+            $this->_setInternal(self::PATH_DATE_MODIFIED, DateTimeHelper::currentTimeStamp(),
+                'Update timestamp for project config', false, false);
         }
 
         if ($valueHasChanged) {
             $this->_acquireLock();
         }
 
-        $this->getCurrentWorkingConfig()->commitChanges($previousValue, $value, $path, $valueHasChanged, $message, true);
+        $this->getCurrentWorkingConfig()->commitChanges($previousValue, $value, $path, $valueHasChanged, $message,
+            true);
         return true;
     }
 
@@ -684,6 +699,7 @@ class ProjectConfig extends Component
      * If this is null, then `true` will be returned if there are *any* pending changes in external config.
      * @param bool $force Whether to check for changes even if it doesn’t look like anything has changed since
      * the last time [[ignorePendingChanges()]] has been called.
+     *
      * @return bool
      */
     public function areChangesPending(?string $path = null, bool $force = false): bool
@@ -745,7 +761,8 @@ class ProjectConfig extends Component
     public function processConfigChanges(string $path, bool $force = false): void
     {
         if ($force || $this->getIsApplyingExternalChanges()) {
-            $this->getCurrentWorkingConfig()->commitChanges($this->getInternalConfig()->get($path), $this->getExternalConfig()->get($path), $path, false, null, $force);
+            $this->getCurrentWorkingConfig()->commitChanges($this->getInternalConfig()->get($path),
+                $this->getExternalConfig()->get($path), $path, false, null, $force);
         }
     }
 
@@ -799,7 +816,7 @@ class ProjectConfig extends Component
             $deltaChanges = [];
             $db = Craft::$app->getDb();
 
-            \Illuminate\Support\Facades\DB::transaction(function() use ($db, &$deltaChanges) {
+            DB::transaction(function() use ($db, &$deltaChanges) {
                 foreach ($this->_appliedChanges as $changeSet) {
                     // Allow modification of the array being looped over.
                     $currentSet = $changeSet;
@@ -891,7 +908,7 @@ class ProjectConfig extends Component
     {
         $chunks = array_chunk($paths, 1000);
         foreach ($chunks as $chunk) {
-            \Illuminate\Support\Facades\DB::table(\CraftCms\Cms\Db\Table::PROJECTCONFIG)
+            DB::table(Table::PROJECTCONFIG)
                 ->whereIn('path', $chunk)
                 ->delete();
         }
@@ -901,11 +918,12 @@ class ProjectConfig extends Component
      * Persist an array of `$path => $value` to the internal config.
      *
      * @param array $values
+     *
      * @throws \yii\db\Exception
      */
     protected function persistInternalConfigValues(array $values): void
     {
-        \Illuminate\Support\Facades\DB::table(\CraftCms\Cms\Db\Table::PROJECTCONFIG)
+        DB::table(Table::PROJECTCONFIG)
             ->insert(Collection::make($values)->map(fn($value, $path) => [
                 'path' => $path,
                 'value' => $value,
@@ -955,6 +973,7 @@ class ProjectConfig extends Component
      *
      * @param array $issues Passed by reference and populated with issues on error in
      *                      the following format: `[$pluginName, $existingSchema, $incomingSchema]`
+     *
      * @return bool
      */
     public function getAreConfigSchemaVersionsCompatible(array &$issues = []): bool
@@ -1028,6 +1047,7 @@ class ProjectConfig extends Component
      * @param callable $handler The handler method.
      * @param mixed $data The data to be passed to the event handler when the event is triggered.
      * When the event handler is invoked, this data can be accessed via [[ConfigEvent::data]].
+     *
      * @return static self reference
      */
     public function onAdd(string $path, callable $handler, mixed $data = null): self
@@ -1060,6 +1080,7 @@ class ProjectConfig extends Component
      * @param callable $handler The handler method.
      * @param mixed $data The data to be passed to the event handler when the event is triggered.
      * When the event handler is invoked, this data can be accessed via [[ConfigEvent::data]].
+     *
      * @return static self reference
      */
     public function onUpdate(string $path, callable $handler, mixed $data = null): self
@@ -1091,6 +1112,7 @@ class ProjectConfig extends Component
      * @param callable $handler The handler method.
      * @param mixed $data The data to be passed to the event handler when the event is triggered.
      * When the event handler is invoked, this data can be accessed via [[ConfigEvent::data]].
+     *
      * @return static self reference
      */
     public function onRemove(string $path, callable $handler, mixed $data = null): self
@@ -1104,6 +1126,7 @@ class ProjectConfig extends Component
      *
      * @param ConfigEvent $event
      * @param callable $handler
+     *
      * @since 3.1.13
      */
     public function defer(ConfigEvent $event, callable $handler): void
@@ -1137,6 +1160,7 @@ class ProjectConfig extends Component
      * Handles a config change event.
      *
      * @param ConfigEvent $event
+     *
      * @since 3.4.0
      */
     public function handleChangeEvent(ConfigEvent $event): void
@@ -1190,6 +1214,7 @@ class ProjectConfig extends Component
      * Ensures that the config change event handlers are sorted by least-to-most specific.
      *
      * @param string $event The event name
+     *
      * @since 3.4.0
      */
     private function _sortChangeEventHandlers(string $event): void
@@ -1283,10 +1308,14 @@ class ProjectConfig extends Component
      * @param array $changes array nested array with keys `removedItems`, `changedItems` and `newItems`
      * @param ReadOnlyProjectConfigData $existingConfig The config data repository that holds the current data
      * @param ReadOnlyProjectConfigData $incomingConfig The config data repository that holds the incoming data
+     *
      * @throws OperationAbortedException
      */
-    private function _applyChanges(array $changes, ReadOnlyProjectConfigData $existingConfig, ReadOnlyProjectConfigData $incomingConfig): void
-    {
+    private function _applyChanges(
+        array $changes,
+        ReadOnlyProjectConfigData $existingConfig,
+        ReadOnlyProjectConfigData $incomingConfig,
+    ): void {
         Craft::info('Looking for pending changes', __METHOD__);
 
         $processChanges = function($path, $triggerUpdate = false) use ($existingConfig, $incomingConfig) {
@@ -1330,7 +1359,8 @@ class ProjectConfig extends Component
                     $paths[$deferredEvent->path] = true;
                 }
 
-                $message = "The following config paths could not be processed successfully:\n" . implode("\n", array_keys($paths));
+                $message = "The following config paths could not be processed successfully:\n" . implode("\n",
+                        array_keys($paths));
                 throw new OperationAbortedException($message);
             }
 
@@ -1428,6 +1458,7 @@ class ProjectConfig extends Component
      *
      * @param array|null $configData config data to use. If null, the config is fetched from the project config files.
      * @param bool $existsOnly whether to just return `true` or `false` depending on whether any changes are found.
+     *
      * @return array|bool
      */
     private function _getPendingChanges(?array $configData = null, bool $existsOnly = false): bool|array
@@ -1519,6 +1550,7 @@ class ProjectConfig extends Component
      * Finds all of the `.yaml` files in the `config/project/` folder.
      *
      * @param string|null $path
+     *
      * @return string[]
      */
     private function _findConfigFiles(?string $path = null): array
@@ -1552,6 +1584,7 @@ class ProjectConfig extends Component
      * Store yaml history
      *
      * @param array $configData config data to be saved as history
+     *
      * @throws Exception
      */
     protected function storeYamlHistory(array $configData): void
@@ -1574,18 +1607,6 @@ class ProjectConfig extends Component
     }
 
     /**
-     * Create a Query object ready to retrieve internal project config values.
-     *
-     * @return Query
-     */
-    private function _createProjectConfigQuery(): Query
-    {
-        return (new Query())
-            ->select(['path', 'value'])
-            ->from([Table::PROJECTCONFIG]);
-    }
-
-    /**
      * Updates the config version used for cache invalidation.
      */
     protected function updateConfigVersion(): void
@@ -1599,6 +1620,7 @@ class ProjectConfig extends Component
      * Update the config YAML files with the buffered changes.
      *
      * @param bool $force Whether to write out the YAML even if there aren’t any new changes
+     *
      * @throws Exception if something goes wrong
      * @since 5.0.0
      */
@@ -1667,6 +1689,7 @@ class ProjectConfig extends Component
      *
      * @param string $uid
      * @param string $name
+     *
      * @since 4.4.17
      */
     public function setNameMapping(string $uid, string $name): void
@@ -1678,6 +1701,7 @@ class ProjectConfig extends Component
      * Removes a UUID/name mapping on the working config.
      *
      * @param string $uid
+     *
      * @since 4.4.17
      */
     public function removeNameMapping(string $uid): void
@@ -1712,10 +1736,15 @@ class ProjectConfig extends Component
      * @param mixed $oldValue
      * @param mixed $newValue
      * @param string|null $message message describing the changes made.
+     *
      * @since 4.0.0
      */
-    public function rememberAppliedChanges(string $path, mixed $oldValue, mixed $newValue, ?string $message = null): void
-    {
+    public function rememberAppliedChanges(
+        string $path,
+        mixed $oldValue,
+        mixed $newValue,
+        ?string $message = null,
+    ): void {
         $appliedChanges = [];
 
         $modified = ProjectConfigHelper::encodeValueAsString($oldValue) !== ProjectConfigHelper::encodeValueAsString($newValue);
@@ -1814,10 +1843,7 @@ class ProjectConfig extends Component
         }
 
         if (version_compare(Craft::$app->getInfo()->schemaVersion, '3.4.4', '<')) {
-            $config = (new Query())
-                ->select(['config'])
-                ->from([Table::INFO])
-                ->scalar();
+            $config = DB::table(Table::INFO)->value('config');
 
             $data = [];
 
@@ -1841,7 +1867,7 @@ class ProjectConfig extends Component
         $data = DependencyCache::remember(self::STORED_CACHE_KEY, $this->cacheDuration, function() {
             $data = [];
             // Load the project config data
-            $rows = $this->_createProjectConfigQuery()->orderBy('path')->pairs();
+            $rows = DB::table(Table::PROJECTCONFIG)->orderBy('path')->pluck('value', 'path');
             foreach ($rows as $path => $value) {
                 $current = &$data;
                 $segments = explode('.', $path);
@@ -1883,6 +1909,7 @@ class ProjectConfig extends Component
      * Returns the system config array.
      *
      * @param array $data
+     *
      * @return array
      */
     private function _systemConfig(array $data): array
@@ -1937,6 +1964,7 @@ class ProjectConfig extends Component
      * Returns element source data.
      *
      * @param array $sourceConfigs
+     *
      * @return array
      */
     private function _getElementSourceData(array $sourceConfigs): array
@@ -2019,6 +2047,7 @@ class ProjectConfig extends Component
      * Return user data config array.
      *
      * @param array $data
+     *
      * @return array
      */
     private function _getUserData(array $data): array
@@ -2042,7 +2071,6 @@ class ProjectConfig extends Component
 
         return $data;
     }
-
 
 
     /**
@@ -2111,30 +2139,19 @@ class ProjectConfig extends Component
      * Return plugin data config array
      *
      * @param array $currentPluginData
+     *
      * @return array
      */
     private function _getPluginData(array $currentPluginData): array
     {
-        $plugins = (new Query())
-            ->select([
-                'handle',
-                'schemaVersion',
-            ])
-            ->from([Table::PLUGINS])
+        return DB::table(Table::PLUGINS)
+            ->select(['handle', 'schemaVersion'])
+            ->get()
+            ->mapWithKeys(fn(object $plugin) => [$plugin->handle => array_merge(
+                $currentPluginData[$plugin->handle] ?? [],
+                ['schemaVersion' => $plugin->schemaVersion],
+            )])
             ->all();
-
-        $pluginData = [];
-
-        foreach ($plugins as $plugin) {
-            $pluginData[$plugin['handle']] = array_merge(
-                $currentPluginData[$plugin['handle']] ?? [],
-                [
-                    'schemaVersion' => $plugin['schemaVersion'],
-                ]
-            );
-        }
-
-        return $pluginData;
     }
 
     /**
@@ -2197,10 +2214,7 @@ class ProjectConfig extends Component
 
         if (Craft::$app->getIsInstalled()) {
             try {
-                $storedConfigVersion = (new Query())
-                    ->select(['configVersion'])
-                    ->from([Table::INFO])
-                    ->scalar();
+                $storedConfigVersion = DB::table(Table::INFO)->value('configVersion');
             } catch (Throwable) {
                 $storedConfigVersion = null;
             }

@@ -12,7 +12,6 @@ use craft\base\ElementInterface;
 use craft\base\NestedElementInterface;
 use craft\console\Application as ConsoleApplication;
 use craft\db\Connection;
-use craft\db\Query;
 use craft\db\TableSchema;
 use craft\elements\Address;
 use craft\elements\Asset;
@@ -362,20 +361,14 @@ class Gc extends Component
     {
         $this->_stdout('    > removing empty temp folders ... ');
 
-        $emptyFolderIds = (new Query())
-            ->select(['folders.id'])
-            ->from(['folders' => Table::VOLUMEFOLDERS])
-            ->leftJoin(['assets' => Table::ASSETS], '[[assets.folderId]] = [[folders.id]]')
-            ->where([
-                'folders.volumeId' => null,
-                'assets.id' => null,
-            ])
-            ->andWhere(['not', ['folders.parentId' => null]])
-            ->andWhere(['not', ['folders.path' => null]])
-            ->column();
+        $emptyFolderIds = DB::table(Table::VOLUMEFOLDERS, 'folders')
+            ->leftJoin(new Alias(Table::ASSETS, 'assets'), 'assets.folderId', 'folders.id')
+            ->whereNull(['folders.volumeId', 'assets.id'])
+            ->whereNotNull(['folders.parentId', 'folders.path'])
+            ->pluck('folders.id');
 
-        if (!empty($emptyFolderIds)) {
-            Craft::$app->getAssets()->deleteFoldersByIds($emptyFolderIds);
+        if ($emptyFolderIds->isNotEmpty()) {
+            Craft::$app->getAssets()->deleteFoldersByIds($emptyFolderIds->all());
         }
 
         $this->_stdout("done\n", Console::FG_GREEN);

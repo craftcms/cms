@@ -9,8 +9,6 @@ namespace craft\services;
 
 use Craft;
 use craft\base\MemoizableArray;
-use craft\db\Query;
-use craft\db\Table;
 use craft\elements\GlobalSet;
 use craft\errors\ElementNotFoundException;
 use craft\errors\GlobalSetNotFoundException;
@@ -19,6 +17,7 @@ use craft\events\GlobalSetEvent;
 use craft\helpers\ProjectConfig as ProjectConfigHelper;
 use craft\models\FieldLayout;
 use craft\records\GlobalSet as GlobalSetRecord;
+use CraftCms\Cms\Db\Table;
 use CraftCms\Cms\Support\Str;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
@@ -309,11 +308,9 @@ class Globals extends Component
 
         if ($isNewSet) {
             $globalSet->uid = $globalSet->uid ?: Str::uuid()->toString();
-            $globalSet->sortOrder = (new Query())
-                    ->from([Table::GLOBALSETS])
-                    ->max('[[sortOrder]]') + 1;
+            $globalSet->sortOrder = DB::table(Table::GLOBALSETS)->max('sortOrder') + 1;
         } elseif (!$globalSet->uid) {
-            $globalSet->uid = DB::table(\CraftCms\Cms\Db\Table::GLOBALSETS)->uidById($globalSet->id);
+            $globalSet->uid = DB::table(Table::GLOBALSETS)->uidById($globalSet->id);
         }
 
         $configPath = ProjectConfig::PATH_GLOBAL_SETS . '.' . $globalSet->uid;
@@ -321,7 +318,7 @@ class Globals extends Component
         Craft::$app->getProjectConfig()->set($configPath, $configData, "Save global set “{$globalSet->handle}”");
 
         if ($isNewSet) {
-            $globalSet->id = DB::table(\CraftCms\Cms\Db\Table::GLOBALSETS)->idByUid($globalSet->uid);
+            $globalSet->id = DB::table(Table::GLOBALSETS)->idByUid($globalSet->uid);
         }
 
         return true;
@@ -437,7 +434,7 @@ class Globals extends Component
     {
         $projectConfig = Craft::$app->getProjectConfig();
 
-        $uidsByIds = DB::table(\CraftCms\Cms\Db\Table::GLOBALSETS)->uidsByIds($setIds);
+        $uidsByIds = DB::table(Table::GLOBALSETS)->uidsByIds($setIds);
 
         foreach ($setIds as $i => $setId) {
             if (!empty($uidsByIds[$setId])) {
@@ -501,11 +498,9 @@ class Globals extends Component
 
         try {
             // Get the field layout
-            $fieldLayoutId = (new Query())
-                ->select(['fieldLayoutId'])
-                ->from([Table::GLOBALSETS])
-                ->where(['id' => $globalSetRecord->id])
-                ->scalar();
+            $fieldLayoutId = DB::table(Table::GLOBALSETS)
+                ->where('id', $globalSetRecord->id)
+                ->value('fieldLayoutId');
 
             Craft::$app->getElements()->deleteElementById($globalSetRecord->id);
 
