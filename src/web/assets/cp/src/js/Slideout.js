@@ -211,7 +211,9 @@ import $ from 'jquery';
           }
 
           if (focusTarget) {
-            focusTarget.focus();
+            setTimeout(() => {
+              focusTarget.focus();
+            }, 150);
           }
         }
       },

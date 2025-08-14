@@ -1,11 +1,19 @@
 # Release Notes for Craft CMS 5
 
-## Unreleased
+## 5.8.15 - 2025-08-13
+
+- Improved the performance of element queries. ([#16401](https://github.com/craftcms/cms/issues/16401))
+- Updated svg-sanitizer to 0.22. ([#17738](https://github.com/craftcms/cms/issues/17738))
+
+## 5.8.14 - 2025-08-12
 
 - Relational fields’ search inputs no longer exclusively search for elements by their titles. ([#17733](https://github.com/craftcms/cms/discussions/17733))
 - Improved the accessibility of the Craft Support widget. ([#17718](https://github.com/craftcms/cms/pull/17718))
 - Fixed a bug where the `folderPath` asset query param required a trailing slash. ([craftcms/html-field#18](https://github.com/craftcms/html-field/pull/18))
 - Fixed a bug where the `_includes/forms/button.twig` template was HTML-encoding the `iconHtml` value.
+- Fixed an error that could occur when installing Craft with existing project config data. ([#17587](https://github.com/craftcms/cms/issues/17587))
+- Fixed a bug where slideouts’ trigger elements weren’t always refocused after the slideout was closed. ([#17736](https://github.com/craftcms/cms/pull/17736))
+- Fixed a bug where nested Matrix entries could lose their content if a validation error occurred. ([#17732](https://github.com/craftcms/cms/pull/17732))
 - Fixed PHP deprecation errors.
 
 ## 5.8.13.2 - 2025-08-07
