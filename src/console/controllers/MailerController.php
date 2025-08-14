@@ -12,6 +12,7 @@ use craft\console\Controller;
 use craft\elements\User;
 use craft\helpers\Console;
 use craft\helpers\MailerHelper;
+use CraftCms\Cms\Config\GeneralConfig;
 use yii\base\InvalidConfigException;
 use yii\console\ExitCode;
 
@@ -54,7 +55,7 @@ class MailerController extends Controller
         if (isset($this->to)) {
             $to = $this->to;
         } else {
-            $testToEmailAddress = app(\CraftCms\Cms\Config\GeneralConfig::class)->getTestToEmailAddress();
+            $testToEmailAddress = app(GeneralConfig::class)->getTestToEmailAddress();
             $to = $this->prompt('Which email address should the test email be sent to?', [
                 'default' => array_key_first($testToEmailAddress),
             ]);

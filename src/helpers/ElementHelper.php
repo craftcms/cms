@@ -21,6 +21,7 @@ use craft\errors\OperationAbortedException;
 use craft\fieldlayoutelements\CustomField;
 use craft\i18n\Locale;
 use craft\services\ElementSources;
+use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Str;
 use DateTime;
@@ -86,7 +87,7 @@ class ElementHelper
         // to mimic the default JavaScript-based slug generation.
         $slug = str_replace(['.', '_', '-'], ' ', $str);
 
-        if ($ascii ?? app(\CraftCms\Cms\Config\GeneralConfig::class)->limitAutoSlugsToAscii) {
+        if ($ascii ?? app(GeneralConfig::class)->limitAutoSlugsToAscii) {
             $slug = Str::ascii($slug, $language);
         }
 
@@ -114,7 +115,7 @@ class ElementHelper
         $slug = preg_replace('/[\'"‘’“”ʻ\[\](){}:]/u', '', $slug);
 
         // Make it lowercase
-        $generalConfig = app(\CraftCms\Cms\Config\GeneralConfig::class);
+        $generalConfig = app(GeneralConfig::class);
         if (!$generalConfig->allowUppercaseInSlug) {
             $slug = mb_strtolower($slug);
         }
@@ -160,8 +161,8 @@ class ElementHelper
             return;
         }
 
-        $generalConfig = app(\CraftCms\Cms\Config\GeneralConfig::class);
-        $maxSlugIncrement = app(\CraftCms\Cms\Config\GeneralConfig::class)->maxSlugIncrement;
+        $generalConfig = app(GeneralConfig::class);
+        $maxSlugIncrement = app(GeneralConfig::class)->maxSlugIncrement;
         $originalSlug = $element->slug ?? '';
         $originalSlugLen = mb_strlen($originalSlug);
 
@@ -968,7 +969,7 @@ class ElementHelper
             }
         }
 
-        return $element->getPostEditUrl() ?? app(\CraftCms\Cms\Config\GeneralConfig::class)->getPostCpLoginRedirect();
+        return $element->getPostEditUrl() ?? app(GeneralConfig::class)->getPostCpLoginRedirect();
     }
 
     /**

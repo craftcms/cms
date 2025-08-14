@@ -8,6 +8,7 @@
 namespace craft\i18n;
 
 use Craft;
+use CraftCms\Cms\Config\GeneralConfig;
 use ResourceBundle;
 use yii\base\Exception;
 
@@ -60,7 +61,7 @@ class I18N extends \yii\i18n\I18N
      */
     public function getLocaleById(string $localeId): Locale
     {
-        $generalConfig = app(\CraftCms\Cms\Config\GeneralConfig::class);
+        $generalConfig = app(GeneralConfig::class);
         return new Locale($localeId, $generalConfig->localeAliases[$localeId] ?? []);
     }
 
@@ -81,7 +82,7 @@ class I18N extends \yii\i18n\I18N
             }
 
             // Merge in any custom aliases
-            $generalConfig = app(\CraftCms\Cms\Config\GeneralConfig::class);
+            $generalConfig = app(GeneralConfig::class);
             if (!empty($generalConfig->localeAliases)) {
                 $this->_allLocaleIds = array_merge($this->_allLocaleIds, array_keys($generalConfig->localeAliases));
                 $this->_allLocaleIds = array_unique($this->_allLocaleIds);
@@ -102,7 +103,7 @@ class I18N extends \yii\i18n\I18N
     {
         $locales = [];
         $localeIds = $this->getAllLocaleIds();
-        $generalConfig = app(\CraftCms\Cms\Config\GeneralConfig::class);
+        $generalConfig = app(GeneralConfig::class);
 
         foreach ($localeIds as $localeId) {
             $locales[] = new Locale($localeId, $generalConfig->localeAliases[$localeId] ?? []);
@@ -128,7 +129,7 @@ class I18N extends \yii\i18n\I18N
         }
 
         $this->_appLocales = [];
-        $generalConfig = app(\CraftCms\Cms\Config\GeneralConfig::class);
+        $generalConfig = app(GeneralConfig::class);
 
         foreach ($this->getAppLocaleIds() as $localeId) {
             $this->_appLocales[] = new Locale($localeId, $generalConfig->localeAliases[$localeId] ?? []);
@@ -194,7 +195,7 @@ class I18N extends \yii\i18n\I18N
         ];
 
         // Add in any extra locales defined by the config
-        $generalConfig = app(\CraftCms\Cms\Config\GeneralConfig::class);
+        $generalConfig = app(GeneralConfig::class);
         if (!empty($generalConfig->extraAppLocales)) {
             foreach ($generalConfig->extraAppLocales as $localeId) {
                 $this->_appLocaleIds[$localeId] = true;
@@ -229,7 +230,7 @@ class I18N extends \yii\i18n\I18N
     public function getSiteLocales(): array
     {
         $locales = [];
-        $generalConfig = app(\CraftCms\Cms\Config\GeneralConfig::class);
+        $generalConfig = app(GeneralConfig::class);
 
         foreach ($this->getSiteLocaleIds() as $localeId) {
             $locales[] = new Locale($localeId, $generalConfig->localeAliases[$localeId] ?? []);
@@ -358,7 +359,7 @@ class I18N extends \yii\i18n\I18N
     private function _shouldAddTranslationDebugOutput(): bool
     {
         if (!isset($this->_translationDebugOutput)) {
-            $this->_translationDebugOutput = app(\CraftCms\Cms\Config\GeneralConfig::class)->translationDebugOutput;
+            $this->_translationDebugOutput = app(GeneralConfig::class)->translationDebugOutput;
         }
 
         return $this->_translationDebugOutput;

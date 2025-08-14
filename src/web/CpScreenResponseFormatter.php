@@ -16,6 +16,7 @@ use yii\base\Component;
 use yii\base\InvalidConfigException;
 use yii\web\BadRequestHttpException;
 use yii\web\JsonResponseFormatter;
+use yii\web\Request;
 use yii\web\Response as YiiResponse;
 use yii\web\ResponseFormatterInterface;
 
@@ -51,7 +52,7 @@ class CpScreenResponseFormatter extends Component implements ResponseFormatterIn
         }
     }
 
-    private function _formatJson(\yii\web\Request $request, YiiResponse $response, CpScreenResponseBehavior $behavior): void
+    private function _formatJson(Request $request, YiiResponse $response, CpScreenResponseBehavior $behavior): void
     {
         $response->format = Response::FORMAT_JSON;
 

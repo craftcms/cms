@@ -15,13 +15,17 @@ use craft\base\PluginInterface;
 use craft\errors\InvalidPluginException;
 use craft\helpers\Db;
 use craft\helpers\Session;
+use craft\services\ProjectConfig;
 use craft\web\View;
+use CraftCms\Cms\Config\GeneralConfig;
+use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 use Symfony\Component\BrowserKit\Response;
 use yii\base\ExitException;
 use yii\base\Module;
 use yii\base\UserException;
+use yii\log\Logger;
 use yii\mail\MessageInterface;
 use yii\web\Application;
 
@@ -56,15 +60,15 @@ class CraftConnector extends Yii2
      */
     public function findAndLoginUser(mixed $user, bool $disableRequiredUserAgent = true): void
     {
-        $oldRequirement = app(\CraftCms\Cms\Config\GeneralConfig::class)->requireUserAgentAndIpForSession;
+        $oldRequirement = app(GeneralConfig::class)->requireUserAgentAndIpForSession;
         if ($disableRequiredUserAgent) {
-            app(\CraftCms\Cms\Config\GeneralConfig::class)->requireUserAgentAndIpForSession = false;
+            app(GeneralConfig::class)->requireUserAgentAndIpForSession = false;
         }
 
         parent::findAndLoginUser($user);
 
         if ($disableRequiredUserAgent) {
-            app(\CraftCms\Cms\Config\GeneralConfig::class)->requireUserAgentAndIpForSession = $oldRequirement;
+            app(GeneralConfig::class)->requireUserAgentAndIpForSession = $oldRequirement;
         }
     }
 
@@ -127,7 +131,7 @@ class CraftConnector extends Yii2
         parent::resetApplication($closeSession);
         Db::reset();
         Session::reset();
-        Cache::lock(\craft\services\ProjectConfig::MUTEX_NAME)->forceRelease();
+        Cache::lock(ProjectConfig::MUTEX_NAME)->forceRelease();
     }
 
     /**
@@ -139,14 +143,14 @@ class CraftConnector extends Yii2
      *
      * @inheritDoc
      */
-    public function startApp(\yii\log\Logger $logger = null): void
+    public function startApp(Logger $logger = null): void
     {
         parent::startApp($logger);
 
-        \Craft::$app->db->close();
+        Craft::$app->db->close();
     }
 
-    public function doRequest(object $request): \Symfony\Component\BrowserKit\Response
+    public function doRequest(object $request): Response
     {
         /**
          * Fake Laravel request
@@ -226,7 +230,7 @@ class CraftConnector extends Yii2
             $response = $app->handleRequest($yiiRequest);
             $app->trigger($app::EVENT_AFTER_REQUEST);
             $response->send();
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             if ($e instanceof UserException) {
                 // Don't discard output and pass exception handling to Yii to be able
                 // to expect error response codes in tests.
@@ -255,7 +259,7 @@ class CraftConnector extends Yii2
 
         /** @phpstan-ignore-next-line */
         if (empty($content) && !empty($response->content) && !isset($response->stream)) {
-            throw new \Exception('No content was sent from Yii application');
+            throw new Exception('No content was sent from Yii application');
         }
 
         return new Response($content, $response->statusCode, $response->getHeaders()->toArray());

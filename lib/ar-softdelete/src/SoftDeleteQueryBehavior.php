@@ -7,6 +7,9 @@
 
 namespace yii2tech\ar\softdelete;
 
+use yii\db\ActiveQueryInterface;
+use yii\db\ActiveQueryTrait;
+use yii\db\BaseActiveRecord;
 use yii\base\Behavior;
 use yii\base\InvalidConfigException;
 
@@ -99,7 +102,7 @@ use yii\base\InvalidConfigException;
  *
  * @see SoftDeleteBehavior
  *
- * @property \yii\db\ActiveQueryInterface|\yii\db\ActiveQueryTrait $owner owner ActiveQuery instance.
+ * @property ActiveQueryInterface|ActiveQueryTrait $owner owner ActiveQuery instance.
  * @property array $deletedCondition filter condition for 'soft-deleted' records.
  * @property array $notDeletedCondition filter condition for not 'soft-deleted' records.
  *
@@ -159,7 +162,7 @@ class SoftDeleteQueryBehavior extends Behavior
 
     /**
      * Filters query to return only 'soft-deleted' records.
-     * @return \yii\db\ActiveQueryInterface|static query instance.
+     * @return ActiveQueryInterface|static query instance.
      */
     public function deleted()
     {
@@ -168,7 +171,7 @@ class SoftDeleteQueryBehavior extends Behavior
 
     /**
      * Filters query to return only not 'soft-deleted' records.
-     * @return \yii\db\ActiveQueryInterface|static query instance.
+     * @return ActiveQueryInterface|static query instance.
      */
     public function notDeleted()
     {
@@ -181,7 +184,7 @@ class SoftDeleteQueryBehavior extends Behavior
      * If value matching non empty int passed - only deleted records will be queried.
      * If non empty value matching int zero passed (e.g. `0`, `'0'`, `'all'`, `false`) - all records will be queried.
      * @param mixed $deleted filter value.
-     * @return \yii\db\ActiveQueryInterface|static
+     * @return ActiveQueryInterface|static
      */
     public function filterDeleted($deleted)
     {
@@ -199,7 +202,7 @@ class SoftDeleteQueryBehavior extends Behavior
     /**
      * Adds given filter condition to the owner query.
      * @param array $condition filter condition.
-     * @return \yii\db\ActiveQueryInterface|static owner query instance.
+     * @return ActiveQueryInterface|static owner query instance.
      */
     protected function addFilterCondition($condition)
     {
@@ -278,7 +281,7 @@ class SoftDeleteQueryBehavior extends Behavior
 
     /**
      * Returns static instance for the model, which owner query is related to.
-     * @return \yii\db\BaseActiveRecord|SoftDeleteBehavior
+     * @return BaseActiveRecord|SoftDeleteBehavior
      */
     protected function getModelInstance()
     {

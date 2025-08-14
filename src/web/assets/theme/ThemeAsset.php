@@ -9,6 +9,7 @@ namespace craft\web\assets\theme;
 
 use Craft;
 use craft\web\AssetBundle;
+use CraftCms\Cms\Config\GeneralConfig;
 
 /**
  * Asset bundle for the control panel
@@ -31,7 +32,7 @@ class ThemeAsset extends AssetBundle
             $this->css = ['cp.css'];
         } else {
             $this->css = ['fe.css'];
-            $generalConfig = app(\CraftCms\Cms\Config\GeneralConfig::class);
+            $generalConfig = app(GeneralConfig::class);
             if ($generalConfig->systemTemplateCss) {
                 $this->css[] = $generalConfig->systemTemplateCss;
             }

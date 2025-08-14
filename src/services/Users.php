@@ -37,6 +37,7 @@ use craft\models\UserGroup;
 use craft\models\Volume;
 use craft\records\User as UserRecord;
 use craft\web\Request;
+use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Support\Str;
@@ -345,7 +346,7 @@ class Users extends Component
 
         // Make sure the verification code isn't expired
         $minCodeIssueDate = DateTimeHelper::currentUTCDateTime();
-        $generalConfig = app(\CraftCms\Cms\Config\GeneralConfig::class);
+        $generalConfig = app(GeneralConfig::class);
         $interval = DateTimeHelper::secondsToInterval($generalConfig->verificationCodeDuration);
         $minCodeIssueDate->sub($interval);
 
@@ -520,7 +521,7 @@ class Users extends Component
      */
     public function getEmailVerifyUrl(User $user): string
     {
-        $fePath = app(\CraftCms\Cms\Config\GeneralConfig::class)->getVerifyEmailPath();
+        $fePath = app(GeneralConfig::class)->getVerifyEmailPath();
         return $this->_getUserUrl($user, $fePath, Request::CP_PATH_VERIFY_EMAIL);
     }
 
@@ -533,7 +534,7 @@ class Users extends Component
      */
     public function getPasswordResetUrl(User $user): string
     {
-        $fePath = app(\CraftCms\Cms\Config\GeneralConfig::class)->getSetPasswordPath();
+        $fePath = app(GeneralConfig::class)->getSetPasswordPath();
         return $this->_getUserUrl($user, $fePath, Request::CP_PATH_SET_PASSWORD);
     }
 
@@ -750,7 +751,7 @@ class Users extends Component
         $userRecord->invalidLoginWindowStart = null;
         $userRecord->invalidLoginCount = null;
 
-        if (app(\CraftCms\Cms\Config\GeneralConfig::class)->storeUserIps) {
+        if (app(GeneralConfig::class)->storeUserIps) {
             $userRecord->lastLoginAttemptIp = Craft::$app->getRequest()->getUserIP();
         }
 
@@ -778,12 +779,12 @@ class Users extends Component
 
         $userRecord->lastInvalidLoginDate = Db::prepareDateForDb($now);
 
-        if (app(\CraftCms\Cms\Config\GeneralConfig::class)->storeUserIps) {
+        if (app(GeneralConfig::class)->storeUserIps) {
             $userRecord->lastLoginAttemptIp = Craft::$app->getRequest()->getUserIP();
         }
 
         // Was that one too many?
-        $maxInvalidLogins = app(\CraftCms\Cms\Config\GeneralConfig::class)->maxInvalidLogins;
+        $maxInvalidLogins = app(GeneralConfig::class)->maxInvalidLogins;
         $alreadyLocked = $user->locked;
 
         if ($maxInvalidLogins) {
@@ -990,7 +991,7 @@ class Users extends Component
         $userRecord->email = $user->unverifiedEmail;
         $userRecord->unverifiedEmail = null;
 
-        if (app(\CraftCms\Cms\Config\GeneralConfig::class)->useEmailAsUsername) {
+        if (app(GeneralConfig::class)->useEmailAsUsername) {
             $userRecord->username = $user->unverifiedEmail;
         }
 
@@ -1269,7 +1270,7 @@ class Users extends Component
      */
     public function purgeExpiredPendingUsers(): void
     {
-        $generalConfig = app(\CraftCms\Cms\Config\GeneralConfig::class);
+        $generalConfig = app(GeneralConfig::class);
 
         if ($generalConfig->purgePendingUsersDuration === 0) {
             return;
@@ -1621,7 +1622,7 @@ class Users extends Component
             return false;
         }
 
-        $generalConfig = app(\CraftCms\Cms\Config\GeneralConfig::class);
+        $generalConfig = app(GeneralConfig::class);
         $interval = DateTimeHelper::secondsToInterval($generalConfig->invalidLoginWindowDuration);
         $invalidLoginWindowStart = DateTimeHelper::toDateTime($userRecord->invalidLoginWindowStart);
         $end = $invalidLoginWindowStart->add($interval);
@@ -1650,7 +1651,7 @@ class Users extends Component
         ];
 
         $isCpRequest = Craft::$app->getRequest()->getIsCpRequest();
-        $generalConfig = app(\CraftCms\Cms\Config\GeneralConfig::class);
+        $generalConfig = app(GeneralConfig::class);
 
         $cp = (
             Craft::$app->edition->value < Edition::Pro->value ||

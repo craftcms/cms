@@ -38,6 +38,7 @@ use craft\helpers\Html;
 use craft\helpers\Template;
 use craft\validators\ArrayValidator;
 use craft\validators\StringValidator;
+use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Str;
 use GraphQL\Type\Definition\InputObjectType;
@@ -480,7 +481,7 @@ class Link extends Field implements InlineEditableFieldInterface, RelationalFiel
                 'disabled' => $readOnly,
             ]);
 
-        if (app(\CraftCms\Cms\Config\GeneralConfig::class)->enableGql) {
+        if (app(GeneralConfig::class)->enableGql) {
             $html .=
                 Cp::selectFieldHtml([
                     'label' => Craft::t('app', 'GraphQL Mode'),

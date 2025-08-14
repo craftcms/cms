@@ -10,6 +10,7 @@ namespace craft\helpers;
 use Craft;
 use craft\errors\MutexException;
 use craft\errors\SiteNotFoundException;
+use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Support\Str;
 use FilesystemIterator;
 use Illuminate\Support\Facades\Cache;
@@ -158,11 +159,11 @@ class FileHelper extends \yii\helpers\FileHelper
     public static function copyDirectory($src, $dst, $options = []): void
     {
         if (!isset($options['fileMode'])) {
-            $options['fileMode'] = app(\CraftCms\Cms\Config\GeneralConfig::class)->defaultFileMode;
+            $options['fileMode'] = app(GeneralConfig::class)->defaultFileMode;
         }
 
         if (!isset($options['dirMode'])) {
-            $options['dirMode'] = app(\CraftCms\Cms\Config\GeneralConfig::class)->defaultDirMode;
+            $options['dirMode'] = app(GeneralConfig::class)->defaultDirMode;
         }
 
         parent::copyDirectory($src, $dst, $options);
@@ -174,7 +175,7 @@ class FileHelper extends \yii\helpers\FileHelper
     public static function createDirectory($path, $mode = null, $recursive = true): bool
     {
         if ($mode === null) {
-            $mode = app(\CraftCms\Cms\Config\GeneralConfig::class)->defaultDirMode;
+            $mode = app(GeneralConfig::class)->defaultDirMode;
         }
 
         return parent::createDirectory($path, $mode, $recursive);
@@ -708,7 +709,7 @@ class FileHelper extends \yii\helpers\FileHelper
             return self::$_useFileLocks;
         }
 
-        $generalConfig = app(\CraftCms\Cms\Config\GeneralConfig::class);
+        $generalConfig = app(GeneralConfig::class);
         if (is_bool($generalConfig->useFileLocks)) {
             return self::$_useFileLocks = $generalConfig->useFileLocks;
         }

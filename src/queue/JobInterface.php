@@ -7,6 +7,8 @@
 
 namespace craft\queue;
 
+use yii\queue\Queue;
+
 /**
  * JobInterface defines the common interface to be implemented by job classes.
  * A class implementing this interface should also use [[SavableComponentTrait]] and [[JobTrait]].
@@ -24,7 +26,7 @@ interface JobInterface extends \yii\queue\JobInterface
     public function getDescription(): ?string;
 
     /**
-     * @param \yii\queue\Queue|QueueInterface $queue The queue the job belongs to
+     * @param Queue|QueueInterface $queue The queue the job belongs to
      */
     public function execute($queue): void;
 }

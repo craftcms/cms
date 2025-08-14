@@ -34,6 +34,7 @@ use craft\models\ImageTransform;
 use craft\models\VolumeFolder;
 use craft\web\Controller;
 use craft\web\UploadedFile;
+use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Str;
 use Throwable;
@@ -48,6 +49,7 @@ use yii\base\UserException;
 use yii\web\BadRequestHttpException;
 use yii\web\ForbiddenHttpException;
 use yii\web\HttpException;
+use yii\web\MethodNotAllowedHttpException;
 use yii\web\NotFoundHttpException;
 use yii\web\RangeNotSatisfiableHttpException;
 use yii\web\Response;
@@ -940,7 +942,7 @@ class AssetsController extends Controller
             $transformer->flipImage(!empty($flipData['x']), !empty($flipData['y']));
         }
 
-        $generalConfig = app(\CraftCms\Cms\Config\GeneralConfig::class);
+        $generalConfig = app(GeneralConfig::class);
         $upscale = $generalConfig->upscaleImages;
         $generalConfig->upscaleImages = true;
 
@@ -1382,7 +1384,7 @@ class AssetsController extends Controller
      * @return Response
      * @throws BadRequestHttpException
      * @throws InvalidConfigException
-     * @throws \yii\web\MethodNotAllowedHttpException
+     * @throws MethodNotAllowedHttpException
      */
     public function actionShowInFolder(): Response
     {

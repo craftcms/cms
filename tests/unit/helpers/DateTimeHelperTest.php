@@ -11,6 +11,7 @@ use Codeception\Test\Unit;
 use Craft;
 use craft\helpers\DateTimeHelper;
 use craft\test\TestCase;
+use CraftCms\Cms\Config\GeneralConfig;
 use DateInterval;
 use DateTime;
 use DateTimeImmutable;
@@ -113,7 +114,7 @@ class DateTimeHelperTest extends TestCase
      */
     public function testThisWeek(): void
     {
-        $generalConfig = app(\CraftCms\Cms\Config\GeneralConfig::class);
+        $generalConfig = app(GeneralConfig::class);
         self::assertEquals(1, $generalConfig->defaultWeekStartDay);
         self::assertEquals(1, DateTimeHelper::firstWeekDay());
 
@@ -134,7 +135,7 @@ class DateTimeHelperTest extends TestCase
      */
     public function testNextWeek(): void
     {
-        $generalConfig = app(\CraftCms\Cms\Config\GeneralConfig::class);
+        $generalConfig = app(GeneralConfig::class);
         self::assertEquals(1, $generalConfig->defaultWeekStartDay);
         self::assertEquals(1, DateTimeHelper::firstWeekDay());
 
@@ -155,7 +156,7 @@ class DateTimeHelperTest extends TestCase
      */
     public function testLastWeek(): void
     {
-        $generalConfig = app(\CraftCms\Cms\Config\GeneralConfig::class);
+        $generalConfig = app(GeneralConfig::class);
         self::assertEquals(1, $generalConfig->defaultWeekStartDay);
         self::assertEquals(1, DateTimeHelper::firstWeekDay());
 

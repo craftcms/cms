@@ -8,6 +8,7 @@
 namespace craft\web;
 
 use Craft;
+use CraftCms\Cms\Config\GeneralConfig;
 
 /**
  * @inheritdoc
@@ -21,7 +22,7 @@ class AssetBundle extends \yii\web\AssetBundle
     {
         parent::init();
 
-        if (app(\CraftCms\Cms\Config\GeneralConfig::class)->devMode) {
+        if (app(GeneralConfig::class)->devMode) {
             $this->_updateResourcePaths();
         }
     }

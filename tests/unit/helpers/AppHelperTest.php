@@ -269,7 +269,7 @@ class AppHelperTest extends TestCase
         $oldMemoryLimit = ini_get('memory_limit');
         $oldMaxExecution = ini_get('max_execution_time');
 
-        $generalConfig = app(\CraftCms\Cms\Config\GeneralConfig::class);
+        $generalConfig = app(GeneralConfig::class);
         $generalConfig->phpMaxMemoryLimit = '512M';
 
         if (@ini_set('memory_limit', '256M') === false) {

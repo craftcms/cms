@@ -7,6 +7,7 @@
 
 namespace crafttests\unit\gql;
 
+use ArrayObject;
 use Craft;
 use craft\elements\Asset;
 use craft\gql\base\Directive;
@@ -58,7 +59,7 @@ class DirectiveTest extends TestCase
         $element = new ExampleElement();
         $element->someField = $in;
 
-        $fieldNodes = new \ArrayObject([Json::decode('{"directives":[' . implode(',', $directives) . ']}', false)]);
+        $fieldNodes = new ArrayObject([Json::decode('{"directives":[' . implode(',', $directives) . ']}', false)]);
 
         $resolveInfo = $this->make(ResolveInfo::class, [
             'fieldName' => 'someField',
@@ -82,7 +83,7 @@ class DirectiveTest extends TestCase
         /** @var GqlAssetType $type */
         $type = $this->make(GqlAssetType::class);
 
-        $fieldNodes = new \ArrayObject([Json::decode('{"directives":[' . self::_buildDirective(Transform::class, ['width' => 200]) . ']}', false)]);
+        $fieldNodes = new ArrayObject([Json::decode('{"directives":[' . self::_buildDirective(Transform::class, ['width' => 200]) . ']}', false)]);
 
         $resolveInfo = $this->make(ResolveInfo::class, [
             'fieldName' => 'filename',

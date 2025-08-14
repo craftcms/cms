@@ -17,6 +17,7 @@ use craft\errors\InvalidElementException;
 use craft\helpers\Console;
 use craft\helpers\Db;
 use craft\helpers\UrlHelper;
+use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Support\Arr;
 use DateTime;
 use Throwable;
@@ -148,7 +149,7 @@ class UsersController extends Controller
             ->orderBy(['username' => SORT_ASC])
             ->all();
         $total = count($users);
-        $generalConfig = app(\CraftCms\Cms\Config\GeneralConfig::class);
+        $generalConfig = app(GeneralConfig::class);
 
         $this->stdout("$total admin " . ($total === 1 ? 'user' : 'users') . ' found:' . PHP_EOL, Console::FG_YELLOW);
 
@@ -204,7 +205,7 @@ class UsersController extends Controller
             return ExitCode::USAGE;
         }
 
-        if (app(\CraftCms\Cms\Config\GeneralConfig::class)->useEmailAsUsername) {
+        if (app(GeneralConfig::class)->useEmailAsUsername) {
             $user->username = $this->email ?: $this->prompt('Email:', [
                 'required' => true,
                 'validator' => $this->createAttributeValidator($user, 'email'),

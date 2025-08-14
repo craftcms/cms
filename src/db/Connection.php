@@ -7,6 +7,7 @@
 
 namespace craft\db;
 
+use Closure;
 use Craft;
 use craft\db\mysql\QueryBuilder as MysqlQueryBuilder;
 use craft\db\mysql\Schema as MysqlSchema;
@@ -19,8 +20,10 @@ use craft\events\RestoreEvent;
 use craft\helpers\App;
 use craft\helpers\Db;
 use craft\helpers\FileHelper;
+use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Support\Env;
 use CraftCms\Cms\Support\Str;
+use CraftCms\Yii2Adapter\DatabaseConnection;
 use mikehaertl\shellcommand\Command as ShellCommand;
 use Throwable;
 use yii\base\Event;
@@ -41,7 +44,7 @@ use yii\db\Exception as DbException;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
  */
-class Connection extends \CraftCms\Yii2Adapter\DatabaseConnection
+class Connection extends DatabaseConnection
 {
     use PrimaryReplicaTrait;
 
@@ -296,11 +299,11 @@ class Connection extends \CraftCms\Yii2Adapter\DatabaseConnection
         }
 
         // Determine the command that should be executed
-        $backupCommand = app(\CraftCms\Cms\Config\GeneralConfig::class)->backupCommand;
+        $backupCommand = app(GeneralConfig::class)->backupCommand;
 
         if ($backupCommand === false) {
             throw new Exception('Database not backed up because the backup command is false.');
-        } elseif ($backupCommand === null || $backupCommand instanceof \Closure) {
+        } elseif ($backupCommand === null || $backupCommand instanceof Closure) {
             $backupCommand = $this->getSchema()->getDefaultBackupCommand($ignoreTables);
         }
 
@@ -317,7 +320,7 @@ class Connection extends \CraftCms\Yii2Adapter\DatabaseConnection
             ]));
         }
 
-        $generalConfig = app(\CraftCms\Cms\Config\GeneralConfig::class);
+        $generalConfig = app(GeneralConfig::class);
 
         if ($generalConfig->maxBackups) {
             $backupPath = Craft::$app->getPath()->getDbBackupPath();
@@ -359,11 +362,11 @@ class Connection extends \CraftCms\Yii2Adapter\DatabaseConnection
         }
 
         // Determine the command that should be executed
-        $restoreCommand = app(\CraftCms\Cms\Config\GeneralConfig::class)->restoreCommand;
+        $restoreCommand = app(GeneralConfig::class)->restoreCommand;
 
         if ($restoreCommand === false) {
             throw new Exception('Database not restored because the restore command is false.');
-        } elseif ($restoreCommand === null || $restoreCommand instanceof \Closure) {
+        } elseif ($restoreCommand === null || $restoreCommand instanceof Closure) {
             $restoreCommand = $this->getSchema()->getDefaultRestoreCommand();
         }
 

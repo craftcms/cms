@@ -7,6 +7,7 @@
 
 namespace craft\db\mysql;
 
+use Closure;
 use Craft;
 use craft\db\Connection;
 use craft\db\ExpressionBuilder;
@@ -15,6 +16,7 @@ use craft\db\TableSchema;
 use craft\helpers\App;
 use craft\helpers\Db;
 use craft\helpers\FileHelper;
+use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Support\Str;
 use mikehaertl\shellcommand\Command as ShellCommand;
 use PDO;
@@ -212,7 +214,7 @@ class Schema extends \yii\db\mysql\Schema
         $serverVersion = App::normalizeVersion(Craft::$app->getDb()->getServerVersion());
         $isMySQL8 = version_compare($serverVersion, '8', '>=');
         $ignoreTables ??= Craft::$app->getDb()->getIgnoredBackupTables();
-        $commandFromConfig = app(\CraftCms\Cms\Config\GeneralConfig::class)->backupCommand;
+        $commandFromConfig = app(GeneralConfig::class)->backupCommand;
 
         // https://bugs.mysql.com/bug.php?id=109685
         $useSingleTransaction = $isMySQL8 && version_compare($serverVersion, '8.0.32', '<');
@@ -241,7 +243,7 @@ class Schema extends \yii\db\mysql\Schema
 
         $dataDump->addArg('{database}');
 
-        if ($commandFromConfig instanceof \Closure) {
+        if ($commandFromConfig instanceof Closure) {
             $schemaDump = $commandFromConfig($schemaDump);
             $dataDump = $commandFromConfig($dataDump);
         }
@@ -261,12 +263,12 @@ class Schema extends \yii\db\mysql\Schema
      */
     public function getDefaultRestoreCommand(): string
     {
-        $commandFromConfig = app(\CraftCms\Cms\Config\GeneralConfig::class)->restoreCommand;
+        $commandFromConfig = app(GeneralConfig::class)->restoreCommand;
         $command = (new ShellCommand('mysql'))
             ->addArg('--defaults-file=', $this->_createDumpConfigFile())
             ->addArg('{database}');
 
-        if ($commandFromConfig instanceof \Closure) {
+        if ($commandFromConfig instanceof Closure) {
             $command = $commandFromConfig($command);
         }
 

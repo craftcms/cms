@@ -12,6 +12,7 @@ use craft\filters\UtilityAccess;
 use craft\helpers\App;
 use craft\queue\QueueInterface;
 use craft\web\Controller;
+use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Utility\Utilities\QueueManager;
 use yii\base\InvalidArgumentException;
@@ -79,7 +80,7 @@ class QueueController extends Controller
         $this->response->content = '1';
 
         // Make sure Craft is configured to run queues over the web
-        if (!app(\CraftCms\Cms\Config\GeneralConfig::class)->runQueueAutomatically) {
+        if (!app(GeneralConfig::class)->runQueueAutomatically) {
             return $this->response;
         }
 

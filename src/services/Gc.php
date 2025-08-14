@@ -97,7 +97,7 @@ class Gc extends Component
     public function init()
     {
         $this->db = Instance::ensure($this->db, Connection::class);
-        $this->_generalConfig = app(\CraftCms\Cms\Config\GeneralConfig::class);
+        $this->_generalConfig = app(GeneralConfig::class);
         parent::init();
     }
 

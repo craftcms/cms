@@ -11,6 +11,7 @@ use Craft;
 use craft\errors\ExitException;
 use craft\helpers\FileHelper;
 use craft\web\assets\iframeresizer\ContentWindowAsset;
+use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Support\Str;
 use Throwable;
 use yii\base\Component;
@@ -42,7 +43,7 @@ class TemplateResponseFormatter extends Component implements ResponseFormatterIn
         }
 
         $view = Craft::$app->getView();
-        $generalConfig = app(\CraftCms\Cms\Config\GeneralConfig::class);
+        $generalConfig = app(GeneralConfig::class);
 
         // If this is a preview request and `useIframeResizer` is enabled, register the iframe resizer script
         if (

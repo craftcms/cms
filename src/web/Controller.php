@@ -14,6 +14,7 @@ use craft\base\ModelInterface;
 use craft\elements\User;
 use craft\events\DefineBehaviorsEvent;
 use craft\helpers\Cp;
+use CraftCms\Cms\Config\GeneralConfig;
 use yii\base\Action;
 use yii\base\InvalidArgumentException;
 use yii\base\InvalidConfigException;
@@ -358,7 +359,7 @@ abstract class Controller extends \yii\web\Controller
                 ];
             }
             $response = $this->asJson($data);
-            if ($this->request->isCpRequest && app(\CraftCms\Cms\Config\GeneralConfig::class)->enableCsrfProtection) {
+            if ($this->request->isCpRequest && app(GeneralConfig::class)->enableCsrfProtection) {
                 $response->getHeaders()->setDefault('X-CSRF-Token', $this->request->getCsrfToken());
             }
             return $response;
@@ -493,7 +494,7 @@ abstract class Controller extends \yii\web\Controller
         }
 
         // Make sure admin changes are allowed
-        if ($requireAdminChanges && !app(\CraftCms\Cms\Config\GeneralConfig::class)->allowAdminChanges) {
+        if ($requireAdminChanges && !app(GeneralConfig::class)->allowAdminChanges) {
             throw new ForbiddenHttpException('Administrative changes are disallowed in this environment.');
         }
     }

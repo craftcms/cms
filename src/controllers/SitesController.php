@@ -14,6 +14,7 @@ use craft\models\Site;
 use craft\models\SiteGroup;
 use craft\web\assets\sites\SitesAsset;
 use craft\web\Controller;
+use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Support\Str;
 use yii\web\BadRequestHttpException;
@@ -52,7 +53,7 @@ class SitesController extends Controller
             $this->requireAdmin();
         }
 
-        $this->readOnly = !app(\CraftCms\Cms\Config\GeneralConfig::class)->allowAdminChanges;
+        $this->readOnly = !app(GeneralConfig::class)->allowAdminChanges;
 
         return true;
     }

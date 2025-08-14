@@ -39,6 +39,7 @@ use craft\models\Site;
 use craft\services\ElementSources;
 use craft\web\twig\TemplateLoaderException;
 use craft\web\View;
+use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Element\Enums\AttributeStatus;
 use CraftCms\Cms\Element\Enums\MenuItemType;
@@ -51,6 +52,7 @@ use CraftCms\Cms\Utility\Utilities\ProjectConfig as ProjectConfigUtility;
 use CraftCms\Cms\Utility\Utilities\Updates;
 use DateTime;
 use Illuminate\Support\Collection;
+use Throwable;
 use yii\base\Event;
 use yii\base\InvalidArgumentException;
 use yii\base\InvalidConfigException;
@@ -140,7 +142,7 @@ class Cp
     {
         $alerts = [];
         $user = Craft::$app->getUser()->getIdentity();
-        $generalConfig = app(\CraftCms\Cms\Config\GeneralConfig::class);
+        $generalConfig = app(GeneralConfig::class);
         $consoleUrl = rtrim(Craft::$app->getPluginStore()->craftIdEndpoint, '/');
 
         if (!$user) {
@@ -2914,7 +2916,7 @@ JS, [
      * @param FieldLayout $fieldLayout
      * @param array $cardElements
      * @return string
-     * @throws \Throwable
+     * @throws Throwable
      */
     public static function cardPreviewHtml(FieldLayout $fieldLayout, array $cardElements = [], $showThumb = false): string
     {

@@ -32,6 +32,7 @@ use craft\models\FsListing;
 use craft\models\Volume;
 use craft\models\VolumeFolder;
 use craft\records\AssetIndexingSession as AssetIndexingSessionRecord;
+use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Support\Json;
 use DateTime;
 use Generator;
@@ -702,7 +703,7 @@ class AssetIndexer extends Component
             throw new AssetNotIndexableException("File “{$indexEntry->uri}” will not be indexed.");
         }
 
-        if (!in_array(strtolower($extension), app(\CraftCms\Cms\Config\GeneralConfig::class)->allowedFileExtensions, true)) {
+        if (!in_array(strtolower($extension), app(GeneralConfig::class)->allowedFileExtensions, true)) {
             throw new AssetDisallowedExtensionException("File “{$indexEntry->uri}” was not indexed because extension “{$extension}” is not allowed.");
         }
 
@@ -809,7 +810,7 @@ class AssetIndexer extends Component
                 Craft::$app->getElements()->saveElement($asset);
 
                 // Now we definitely have an asset ID, so let's cover one last base.
-                $shouldCache = !$fs instanceof LocalFsInterface && $cacheImages && app(\CraftCms\Cms\Config\GeneralConfig::class)->maxCachedCloudImageSize > 0;
+                $shouldCache = !$fs instanceof LocalFsInterface && $cacheImages && app(GeneralConfig::class)->maxCachedCloudImageSize > 0;
 
                 if ($shouldCache && $tempPath) {
                     $targetPath = $asset->getImageTransformSourcePath();

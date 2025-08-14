@@ -1,12 +1,16 @@
 <?php
 
+use craft\helpers\App;
+use craft\web\Application;
+use craft\web\ErrorHandler;
+use craft\web\Request;
 use Symfony\Component\VarDumper\Dumper\HtmlDumper;
 
 return [
-    'class' => craft\web\Application::class,
+    'class' => Application::class,
     'components' => [
         'assetManager' => function() {
-            $config = craft\helpers\App::assetManagerConfig();
+            $config = App::assetManagerConfig();
             return Craft::createObject($config);
         },
         'dumper' => function() {
@@ -15,26 +19,26 @@ return [
             return $dumper;
         },
         'request' => function() {
-            $config = craft\helpers\App::webRequestConfig();
-            /** @var craft\web\Request $request */
+            $config = App::webRequestConfig();
+            /** @var Request $request */
             $request = Craft::createObject($config);
             $request->csrfCookie = Craft::cookieConfig([], $request);
             return $request;
         },
         'response' => function() {
-            $config = craft\helpers\App::webResponseConfig();
+            $config = App::webResponseConfig();
             return Craft::createObject($config);
         },
         'session' => function() {
-            $config = craft\helpers\App::sessionConfig();
+            $config = App::sessionConfig();
             return Craft::createObject($config);
         },
         'user' => function() {
-            $config = craft\helpers\App::userConfig();
+            $config = App::userConfig();
             return Craft::createObject($config);
         },
         'errorHandler' => [
-            'class' => craft\web\ErrorHandler::class,
+            'class' => ErrorHandler::class,
             'errorAction' => 'templates/render-error',
         ],
     ],

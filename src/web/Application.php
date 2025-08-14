@@ -24,6 +24,7 @@ use craft\helpers\FileHelper;
 use craft\helpers\Path;
 use craft\helpers\UrlHelper;
 use craft\queue\QueueLogBehavior;
+use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Json;
 use Illuminate\Support\Facades\Cache;
@@ -183,7 +184,7 @@ class Application extends \yii\web\Application
             $isCpRequest = $request->getIsCpRequest();
             $response = $this->getResponse();
             $headers = $response->getHeaders();
-            $generalConfig = app(\CraftCms\Cms\Config\GeneralConfig::class);
+            $generalConfig = app(GeneralConfig::class);
 
             // Set no-cache headers for all action and CP requests
             if ($request->getIsActionRequest() || $request->getIsCpRequest()) {
@@ -387,7 +388,7 @@ class Application extends \yii\web\Application
      */
     protected function ensureResourcePathExists(): void
     {
-        $generalConfig = app(\CraftCms\Cms\Config\GeneralConfig::class);
+        $generalConfig = app(GeneralConfig::class);
 
         $resourceBasePath = Craft::getAlias($generalConfig->resourceBasePath);
 
@@ -408,7 +409,7 @@ class Application extends \yii\web\Application
      */
     protected function authenticate(): void
     {
-        if (!app(\CraftCms\Cms\Config\GeneralConfig::class)->enableBasicHttpAuth) {
+        if (!app(GeneralConfig::class)->enableBasicHttpAuth) {
             return;
         }
 
@@ -515,7 +516,7 @@ class Application extends \yii\web\Application
      */
     private function _processResourceRequest(): void
     {
-        $generalConfig = app(\CraftCms\Cms\Config\GeneralConfig::class);
+        $generalConfig = app(GeneralConfig::class);
         $request = $this->getRequest();
 
         // Does this look like a resource request?

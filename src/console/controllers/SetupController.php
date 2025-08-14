@@ -18,6 +18,7 @@ use craft\helpers\Console;
 use craft\helpers\FileHelper;
 use craft\migrations\CreateDbCacheTable;
 use craft\migrations\CreatePhpSessionTable;
+use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Composer;
 use CraftCms\Cms\Support\Env;
@@ -191,7 +192,7 @@ EOD;
             $didSomething = true;
         }
 
-        if (!app(\CraftCms\Cms\Config\GeneralConfig::class)->securityKey) {
+        if (!app(GeneralConfig::class)->securityKey) {
             $this->run('security-key');
             $didSomething = true;
         }
@@ -233,7 +234,7 @@ EOD;
             return ExitCode::UNSPECIFIED_ERROR;
         }
 
-        app(\CraftCms\Cms\Config\GeneralConfig::class)->securityKey = $key;
+        app(GeneralConfig::class)->securityKey = $key;
         $this->stdout("done ($key)" . PHP_EOL, Console::FG_YELLOW);
         return ExitCode::OK;
     }

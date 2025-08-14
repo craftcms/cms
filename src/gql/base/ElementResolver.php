@@ -16,6 +16,7 @@ use craft\elements\ElementCollection;
 use craft\gql\ArgumentManager;
 use craft\gql\ElementQueryConditionBuilder;
 use craft\helpers\Gql as GqlHelper;
+use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Support\Arr;
 use GraphQL\Type\Definition\ResolveInfo;
 
@@ -127,7 +128,7 @@ abstract class ElementResolver extends Resolver
         }
 
         // Apply max result config
-        $maxGraphqlResults = app(\CraftCms\Cms\Config\GeneralConfig::class)->maxGraphqlResults;
+        $maxGraphqlResults = app(GeneralConfig::class)->maxGraphqlResults;
 
         // Reset negative limit to zero
         if ((int)$query->limit < 0) {

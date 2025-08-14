@@ -26,6 +26,7 @@ use craft\models\Section;
 use craft\services\Entries as EntriesService;
 use craft\services\ProjectConfig;
 use craft\services\Structures;
+use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Support\Arr;
 use yii\base\InvalidConfigException;
 use yii\console\ExitCode;
@@ -611,7 +612,7 @@ class EntrifyController extends Controller
                     throw new InvalidConfigException('The --author option is required when this command is run non-interactively.');
                 }
                 $usersService = Craft::$app->getUsers();
-                $generalConfig = app(\CraftCms\Cms\Config\GeneralConfig::class);
+                $generalConfig = app(GeneralConfig::class);
                 $what = $generalConfig->useEmailAsUsername ? 'email' : 'username or email';
                 $usernameOrEmail = $this->prompt("Enter the $what of the author that the entries should have:", [
                     'required' => true,

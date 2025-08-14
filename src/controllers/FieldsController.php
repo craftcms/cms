@@ -31,11 +31,13 @@ use craft\models\FieldLayout;
 use craft\models\FieldLayoutTab;
 use craft\web\assets\fieldsettings\FieldSettingsAsset;
 use craft\web\Controller;
+use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Str;
 use Illuminate\Support\Collection;
 use ReflectionException;
 use ReflectionProperty;
+use Throwable;
 use yii\web\BadRequestHttpException;
 use yii\web\ForbiddenHttpException;
 use yii\web\NotFoundHttpException;
@@ -71,7 +73,7 @@ class FieldsController extends Controller
             $this->requireAdmin();
         }
 
-        $this->readOnly = !app(\CraftCms\Cms\Config\GeneralConfig::class)->allowAdminChanges;
+        $this->readOnly = !app(GeneralConfig::class)->allowAdminChanges;
 
         return true;
     }
@@ -603,7 +605,7 @@ JS, [
      *
      * @return Response
      * @throws BadRequestHttpException
-     * @throws \Throwable
+     * @throws Throwable
      */
     public function actionRenderCardPreview()
     {

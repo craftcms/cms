@@ -20,6 +20,7 @@ use craft\gql\types\generators\IconDataType;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Cp;
 use craft\helpers\Html;
+use CraftCms\Cms\Config\GeneralConfig;
 use GraphQL\Type\Definition\Type;
 use yii\db\Schema;
 
@@ -147,7 +148,7 @@ class Icon extends Field implements InlineEditableFieldInterface, ThumbableField
             'disabled' => $readOnly,
         ]);
 
-        if (app(\CraftCms\Cms\Config\GeneralConfig::class)->enableGql) {
+        if (app(GeneralConfig::class)->enableGql) {
             $html .= Html::tag('hr') .
             Html::button(Craft::t('app', 'Advanced'), options: [
                 'class' => 'fieldtoggle',

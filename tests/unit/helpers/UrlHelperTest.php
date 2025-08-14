@@ -12,6 +12,7 @@ use Craft;
 use craft\helpers\UrlHelper;
 use craft\test\TestCase;
 use craft\test\TestSetup;
+use CraftCms\Cms\Config\GeneralConfig;
 use UnitTester;
 use yii\base\Exception;
 
@@ -133,7 +134,7 @@ class UrlHelperTest extends TestCase
      */
     public function testUrlWithToken(string $expected, string $url, string $token): void
     {
-        app(\CraftCms\Cms\Config\GeneralConfig::class)->useSslOnTokenizedUrls = true;
+        app(GeneralConfig::class)->useSslOnTokenizedUrls = true;
         self::assertSame($expected, UrlHelper::urlWithToken($url, $token));
     }
 
@@ -219,7 +220,7 @@ class UrlHelperTest extends TestCase
     public function testSchemeForTokenizedBasedOnConfig(): void
     {
         // Run down the logic to see what we will need to require.
-        $config = app(\CraftCms\Cms\Config\GeneralConfig::class);
+        $config = app(GeneralConfig::class);
 
         $config->useSslOnTokenizedUrls = true;
         self::assertSame('https', UrlHelper::getSchemeForTokenizedUrl());
@@ -677,7 +678,7 @@ class UrlHelperTest extends TestCase
      */
     protected function _before(): void
     {
-        $generalConfig = app(\CraftCms\Cms\Config\GeneralConfig::class);
+        $generalConfig = app(GeneralConfig::class);
         $this->cpTrigger = $generalConfig->cpTrigger;
     }
 

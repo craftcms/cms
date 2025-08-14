@@ -7,6 +7,9 @@
 
 namespace yii2tech\ar\softdelete;
 
+use Exception;
+use Throwable;
+use yii\db\Transaction;
 use yii\base\Behavior;
 use yii\base\InvalidConfigException;
 use yii\base\ModelEvent;
@@ -200,7 +203,7 @@ class SoftDeleteBehavior extends Behavior
      * @return int|false the number of rows marked as deleted, or false if the soft deletion is unsuccessful for some reason.
      * Note that it is possible the number of rows deleted is 0, even though the soft deletion execution is successful.
      * @throws StaleObjectException if optimistic locking is enabled and the data being updated is outdated.
-     * @throws \Throwable in case soft delete failed in transactional mode.
+     * @throws Throwable in case soft delete failed in transactional mode.
      */
     public function softDelete()
     {
@@ -235,9 +238,9 @@ class SoftDeleteBehavior extends Behavior
                 $transaction->commit();
             }
             return $result;
-        } catch (\Exception $exception) {
+        } catch (Exception $exception) {
             // PHP < 7.0
-        } catch (\Throwable $exception) {
+        } catch (Throwable $exception) {
             // PHP >= 7.0
         }
 
@@ -313,12 +316,11 @@ class SoftDeleteBehavior extends Behavior
     }
 
     // Restore :
-
     /**
      * Restores record from "deleted" state, after it has been "soft" deleted.
      * @return int|false the number of restored rows, or false if the restoration is unsuccessful for some reason.
      * @throws StaleObjectException if optimistic locking is enabled and the data being updated is outdated.
-     * @throws \Throwable in case restore failed in transactional mode.
+     * @throws Throwable in case restore failed in transactional mode.
      */
     public function restore()
     {
@@ -344,9 +346,9 @@ class SoftDeleteBehavior extends Behavior
                 $transaction->commit();
             }
             return $result;
-        } catch (\Exception $exception) {
+        } catch (Exception $exception) {
             // PHP < 7.0
-        } catch (\Throwable $exception) {
+        } catch (Throwable $exception) {
             // PHP >= 7.0
         }
 
@@ -413,7 +415,7 @@ class SoftDeleteBehavior extends Behavior
      * If owner database supports transactions, regular deleting attempt will be enclosed in transaction with rollback
      * in case of failure.
      * @return false|int number of affected rows.
-     * @throws \Throwable on failure.
+     * @throws Throwable on failure.
      */
     public function safeDelete()
     {
@@ -426,9 +428,9 @@ class SoftDeleteBehavior extends Behavior
             }
 
             return $result;
-        } catch (\Exception $exception) {
+        } catch (Exception $exception) {
             // PHP < 7.0
-        } catch (\Throwable $exception) {
+        } catch (Throwable $exception) {
             // PHP >= 7.0
         }
 
@@ -460,7 +462,7 @@ class SoftDeleteBehavior extends Behavior
 
     /**
      * Begins new database transaction if owner allows it.
-     * @return \yii\db\Transaction|null transaction instance or `null` if not available.
+     * @return Transaction|null transaction instance or `null` if not available.
      */
     private function beginTransaction()
     {

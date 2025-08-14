@@ -55,6 +55,7 @@ use craft\web\View;
 use CraftCms\Cms\Element\Enums\PropagationMethod;
 use CraftCms\Cms\Field\Enums\ElementIndexViewMode;
 use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Support\Enums\Color;
 use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Support\Str;
 use GraphQL\Type\Definition\Type;
@@ -923,7 +924,7 @@ JS, [
             $items[] = [
                 'id' => $copyAllId,
                 'icon' => 'clone-dashed',
-                'color' => \CraftCms\Cms\Support\Enums\Color::Fuchsia,
+                'color' => Color::Fuchsia,
                 'label' => mb_ucfirst(Craft::t('app', 'Copy all {type}', [
                     'type' => Entry::pluralLowerDisplayName(),
                 ])),

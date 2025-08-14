@@ -22,6 +22,7 @@ use craft\models\MailSettings;
 use craft\web\assets\admintable\AdminTableAsset;
 use craft\web\assets\generalsettings\GeneralSettingsAsset;
 use craft\web\Controller;
+use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Support\Arr;
 use Illuminate\Support\Facades\Config;
 use yii\base\Exception;
@@ -64,7 +65,7 @@ class SystemSettingsController extends Controller
             $this->requireAdmin();
         }
 
-        $this->readOnly = !app(\CraftCms\Cms\Config\GeneralConfig::class)->allowAdminChanges;
+        $this->readOnly = !app(GeneralConfig::class)->allowAdminChanges;
 
         return true;
     }
@@ -217,7 +218,7 @@ class SystemSettingsController extends Controller
      */
     public function actionTestEmailSettings(): void
     {
-        if (app(\CraftCms\Cms\Config\GeneralConfig::class)->allowAdminChanges) {
+        if (app(GeneralConfig::class)->allowAdminChanges) {
             $this->requirePostRequest();
 
             $settings = $this->_createMailSettingsFromPost();

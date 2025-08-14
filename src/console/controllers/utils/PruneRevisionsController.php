@@ -13,6 +13,7 @@ use craft\console\Controller;
 use craft\db\Query;
 use craft\db\Table;
 use craft\helpers\Console;
+use CraftCms\Cms\Config\GeneralConfig;
 use yii\console\ExitCode;
 use yii\db\Expression;
 
@@ -77,7 +78,7 @@ class PruneRevisionsController extends Controller
 
         if (!isset($this->maxRevisions)) {
             $this->maxRevisions = (int)$this->prompt('What is the max number of revisions an element can have?', [
-                'default' => app(\CraftCms\Cms\Config\GeneralConfig::class)->maxRevisions,
+                'default' => app(GeneralConfig::class)->maxRevisions,
                 'validator' => fn($input) => filter_var($input, FILTER_VALIDATE_INT, FILTER_NULL_ON_FAILURE) !== null && $input >= 0,
             ]);
         }

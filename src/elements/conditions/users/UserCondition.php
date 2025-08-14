@@ -4,6 +4,7 @@ namespace craft\elements\conditions\users;
 
 use Craft;
 use craft\elements\conditions\ElementCondition;
+use CraftCms\Cms\Config\GeneralConfig;
 
 /**
  * User query condition.
@@ -28,7 +29,7 @@ class UserCondition extends ElementCondition
             LastNameConditionRule::class,
         ]);
 
-        if (!app(\CraftCms\Cms\Config\GeneralConfig::class)->useEmailAsUsername) {
+        if (!app(GeneralConfig::class)->useEmailAsUsername) {
             $types[] = UsernameConditionRule::class;
         }
 

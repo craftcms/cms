@@ -7,6 +7,7 @@
 
 namespace crafttests\unit\gql;
 
+use ArrayObject;
 use Craft;
 use craft\base\ElementInterface;
 use craft\elements\Asset;
@@ -122,7 +123,7 @@ class TypeResolverTest extends TestCase
 
         $filterParameters = [];
 
-        $resolveInfo = $this->make(ResolveInfo::class, ['fieldName' => 'someField', 'fieldNodes' => new \ArrayObject([null])]);
+        $resolveInfo = $this->make(ResolveInfo::class, ['fieldName' => 'someField', 'fieldNodes' => new ArrayObject([null])]);
 
         $resolvedField = $resolverClass::resolve($sourceElement, $filterParameters, null, $resolveInfo);
 

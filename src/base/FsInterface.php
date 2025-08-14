@@ -7,6 +7,9 @@
 
 namespace craft\base;
 
+use CraftCms\Cms\Component\Contracts\ConfigurableComponentInterface;
+use CraftCms\Cms\Component\Contracts\SavableComponentInterface;
+
 /**
  * FsInterface defines the common interface to be implemented by filesystem classes.
  * A class implementing this interface should also use [[SavableComponentTrait]] and [[FsTrait]].
@@ -16,7 +19,7 @@ namespace craft\base;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 4.0.0
  */
-interface FsInterface extends BaseFsInterface, \CraftCms\Cms\Component\Contracts\SavableComponentInterface, \CraftCms\Cms\Component\Contracts\ConfigurableComponentInterface, ModelInterface
+interface FsInterface extends BaseFsInterface, SavableComponentInterface, ConfigurableComponentInterface, ModelInterface
 {
     /**
      * Returns whether the “Files in this filesystem have public URLs” setting should be shown.

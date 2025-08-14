@@ -8,6 +8,7 @@
 namespace craft\base;
 
 use craft\events\ModelEvent;
+use CraftCms\Cms\Component\Contracts\SavableComponentInterface;
 
 /**
  * SavableComponent is the base class for classes representing savable Craft components in terms of objects.
@@ -17,7 +18,7 @@ use craft\events\ModelEvent;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
  */
-abstract class SavableComponent extends ConfigurableComponent implements \CraftCms\Cms\Component\Contracts\SavableComponentInterface
+abstract class SavableComponent extends ConfigurableComponent implements SavableComponentInterface
 {
     use SavableComponentTrait;
 

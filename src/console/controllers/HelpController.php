@@ -13,6 +13,7 @@ use craft\helpers\Console;
 use CraftCms\Cms\Support\Json;
 use ReflectionFunctionAbstract;
 use Throwable;
+use Yii;
 use yii\base\InvalidConfigException;
 use yii\console\Controller;
 use yii\console\controllers\HelpController as BaseHelpController;
@@ -114,7 +115,7 @@ class HelpController extends BaseHelpController
             Console::ansiFormat('│ ', [Console::FG_RED]) . Console::ansiFormat('C', [Console::ITALIC]) . Console::ansiFormat(' │ ', [Console::FG_RED]) . Console::ansiFormat('Craft CMS', [Console::ITALIC, Console::FG_RED]),
             Console::ansiFormat('╰───╯', [Console::FG_RED]),
             '', // Blank line
-            sprintf('Welcome to Craft CMS version %s (Yii %s)', Console::ansiFormat(Craft::$app->getVersion(), [Console::FG_BLUE]), Console::ansiFormat(\Yii::getVersion(), [Console::FG_BLUE])),
+            sprintf('Welcome to Craft CMS version %s (Yii %s)', Console::ansiFormat(Craft::$app->getVersion(), [Console::FG_BLUE]), Console::ansiFormat(Yii::getVersion(), [Console::FG_BLUE])),
             '', // Blank line
             Console::ansiFormat('Getting Help', [Console::BOLD]),
             '', // Blank line

@@ -67,6 +67,7 @@ use CraftCms\Cms\Support\Arr;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Config as ConfigFacade;
 use PHPUnit\Framework\MockObject\MockObject;
+use ReflectionClass;
 use yii\base\ErrorException;
 use yii\base\Event;
 use yii\base\InvalidArgumentException;
@@ -522,7 +523,7 @@ class TestSetup
 
             // Set the ServiceLocator::$object->getProperty()` get method.
             if ($accessMethod) {
-                $class = new \ReflectionClass($test);
+                $class = new ReflectionClass($test);
                 $method = $class->getMethod('any');
 
                 $mockApp->expects($method->invoke($test))
@@ -531,7 +532,7 @@ class TestSetup
             }
         }
 
-        $class = new \ReflectionClass($test);
+        $class = new ReflectionClass($test);
         $method = $class->getMethod('any');
 
         // Set the map
@@ -551,7 +552,7 @@ class TestSetup
      */
     public static function getMock(CodeceptionTestCase $test, string $class)
     {
-        $reflection = new \ReflectionClass($test);
+        $reflection = new ReflectionClass($test);
         $method = $reflection->getMethod('getMockBuilder');
 
         return $method->invokeArgs($test, [$class])

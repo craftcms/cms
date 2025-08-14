@@ -17,6 +17,7 @@ use craft\helpers\UrlHelper;
 use craft\models\CategoryGroup;
 use craft\models\CategoryGroup_SiteSettings;
 use craft\web\Controller;
+use CraftCms\Cms\Config\GeneralConfig;
 use Throwable;
 use yii\web\BadRequestHttpException;
 use yii\web\ForbiddenHttpException;
@@ -60,7 +61,7 @@ class CategoriesController extends Controller
 
         return $this->renderTemplate('settings/categories/index.twig', [
             'categoryGroups' => $groups,
-            'readOnly' => !app(\CraftCms\Cms\Config\GeneralConfig::class)->allowAdminChanges,
+            'readOnly' => !app(GeneralConfig::class)->allowAdminChanges,
         ]);
     }
 
@@ -76,7 +77,7 @@ class CategoriesController extends Controller
     {
         $this->requireAdmin(false);
 
-        $readOnly = !app(\CraftCms\Cms\Config\GeneralConfig::class)->allowAdminChanges;
+        $readOnly = !app(GeneralConfig::class)->allowAdminChanges;
 
         if ($groupId === null && $readOnly) {
             throw new ForbiddenHttpException('Administrative changes are disallowed in this environment.');

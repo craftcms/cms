@@ -76,6 +76,7 @@ use craft\models\GqlToken;
 use craft\models\Section;
 use craft\records\GqlSchema as GqlSchemaRecord;
 use craft\records\GqlToken as GqlTokenRecord;
+use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Support\Str;
 use CraftCms\DependencyAwareCache\Dependency\TagDependency;
@@ -437,7 +438,7 @@ class Gql extends Component
             );
         }
 
-        $generalConfig = app(\CraftCms\Cms\Config\GeneralConfig::class);
+        $generalConfig = app(GeneralConfig::class);
 
         if (!$isIntrospectionQuery) {
             // Set complexity rule, if defined,
@@ -528,7 +529,7 @@ class Gql extends Component
                 $result = $cachedResult;
             } else {
                 $isIntrospectionQuery = GqlHelper::isIntrospectionQuery($query);
-                $prebuildSchema = $isIntrospectionQuery || !app(\CraftCms\Cms\Config\GeneralConfig::class)->lazyGqlTypes;
+                $prebuildSchema = $isIntrospectionQuery || !app(GeneralConfig::class)->lazyGqlTypes;
                 $schemaDef = $this->getSchemaDef($schema, $prebuildSchema);
                 $elementsService = Craft::$app->getElements();
                 $elementsService->startCollectingCacheInfo();
@@ -870,7 +871,7 @@ class Gql extends Component
         $schema = $this->_getPublicSchema();
 
         if (!$schema) {
-            if (!app(\CraftCms\Cms\Config\GeneralConfig::class)->allowAdminChanges) {
+            if (!app(GeneralConfig::class)->allowAdminChanges) {
                 return null;
             }
 
@@ -1326,7 +1327,7 @@ class Gql extends Component
      */
     public function handleQueryErrors(array $errors, callable $formatter): array
     {
-        $devMode = app(\CraftCms\Cms\Config\GeneralConfig::class)->devMode;
+        $devMode = app(GeneralConfig::class)->devMode;
 
         foreach ($errors as &$error) {
             $originException = $nextException = $error;
@@ -1395,7 +1396,7 @@ class Gql extends Component
         ?string $operationName = null,
     ): ?string {
         // No cache key, if explicitly disabled
-        $generalConfig = app(\CraftCms\Cms\Config\GeneralConfig::class);
+        $generalConfig = app(GeneralConfig::class);
 
         if (!$generalConfig->enableGraphqlCaching) {
             return null;
@@ -1543,7 +1544,7 @@ class Gql extends Component
             Trim::class,
         ];
 
-        if (!app(\CraftCms\Cms\Config\GeneralConfig::class)->disableGraphqlTransformDirective) {
+        if (!app(GeneralConfig::class)->disableGraphqlTransformDirective) {
             $directiveClasses[] = Transform::class;
         }
 

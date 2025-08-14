@@ -21,6 +21,7 @@ use craft\helpers\DateTimeHelper;
 use craft\helpers\Db;
 use craft\helpers\FileHelper;
 use craft\helpers\ProjectConfig as ProjectConfigHelper;
+use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Enums\LicenseKeyStatus;
 use CraftCms\Cms\Support\Env;
@@ -152,7 +153,7 @@ class Plugins extends Component
      */
     public function init(): void
     {
-        $generalConfig = app(\CraftCms\Cms\Config\GeneralConfig::class);
+        $generalConfig = app(GeneralConfig::class);
 
         if ($generalConfig->safeMode) {
             $this->_forceDisabledPlugins = '*';

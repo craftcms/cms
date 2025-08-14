@@ -19,6 +19,7 @@ use craft\helpers\DateTimeHelper;
 use craft\helpers\Db;
 use craft\helpers\Queue;
 use craft\queue\jobs\PruneRevisions;
+use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Support\Arr;
 use Illuminate\Support\Facades\Cache;
 use Throwable;
@@ -198,7 +199,7 @@ class Revisions extends Component
         }
 
         // Prune any excess revisions
-        if (app(\CraftCms\Cms\Config\GeneralConfig::class)->maxRevisions) {
+        if (app(GeneralConfig::class)->maxRevisions) {
             Queue::push(new PruneRevisions([
                 'elementType' => get_class($canonical),
                 'canonicalId' => $canonical->id,

@@ -11,6 +11,7 @@ use craft\htmlpurifier\RelAttrLinkTypeDef;
 use craft\htmlpurifier\VideoEmbedUrlDef;
 use HTMLPurifier_Config;
 use HTMLPurifier_Encoder;
+use HTMLPurifier_HTMLDefinition;
 
 /**
  * HtmlPurifier provides an ability to clean up HTML from any harmful code.
@@ -54,8 +55,7 @@ class HtmlPurifier extends \yii\helpers\HtmlPurifier
         // see https://gist.github.com/lluchs/3303693
         if ($def = $config->getDefinition('HTML', true)) {
 
-            /** @var \HTMLPurifier_HTMLDefinition $def */
-
+            /** @var HTMLPurifier_HTMLDefinition $def */
             // Content model actually excludes several tags, not modelled here
             $def->addElement('address', 'Block', 'Flow', 'Common');
             $def->addElement('hgroup', 'Block', 'Required: h1 | h2 | h3 | h4 | h5 | h6', 'Common');

@@ -14,7 +14,13 @@ use craft\helpers\Html;
 use craft\i18n\Locale;
 use craft\web\Controller;
 use craft\web\View;
+use CraftCms\Cms\Config\GeneralConfig;
+use Throwable;
 use yii\base\InvalidConfigException;
+use yii\web\BadRequestHttpException;
+use yii\web\ForbiddenHttpException;
+use yii\web\HttpException;
+use yii\web\RangeNotSatisfiableHttpException;
 use yii\web\Response;
 
 /** @noinspection ClassOverridesFieldOfSuperClassInspection */
@@ -99,8 +105,8 @@ class AuthController extends Controller
      * Remove auth type setup (for 2FA or Passkeys) from the database
      *
      * @return Response|null
-     * @throws \Throwable
-     * @throws \yii\web\BadRequestHttpException
+     * @throws Throwable
+     * @throws BadRequestHttpException
      */
     public function actionRemoveMethod(): ?Response
     {
@@ -276,11 +282,11 @@ class AuthController extends Controller
      * Downloads the user’s recovery codes as a text file.
      *
      * @return Response|null
-     * @throws \Throwable
-     * @throws \yii\web\BadRequestHttpException
-     * @throws \yii\web\ForbiddenHttpException
-     * @throws \yii\web\HttpException
-     * @throws \yii\web\RangeNotSatisfiableHttpException
+     * @throws Throwable
+     * @throws BadRequestHttpException
+     * @throws ForbiddenHttpException
+     * @throws HttpException
+     * @throws RangeNotSatisfiableHttpException
      */
     public function actionDownloadRecoveryCodes(): ?Response
     {
@@ -300,7 +306,7 @@ class AuthController extends Controller
         $primarySite = Craft::$app->getSites()->getPrimarySite();
         $website = $primarySite->getBaseUrl() ?? $primarySite->getName();
         $user = Craft::$app->getUser()->getIdentity();
-        $generalConfig = app(\CraftCms\Cms\Config\GeneralConfig::class);
+        $generalConfig = app(GeneralConfig::class);
         $username = !$generalConfig->useEmailAsUsername && $user->username ? $user->username : null;
         $account = $username ? sprintf('%s (%s)', $username, $user->email) : $user->email;
         $generated = Craft::$app->getFormatter()->asDate($dateCreated, Locale::LENGTH_SHORT);

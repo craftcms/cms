@@ -24,6 +24,7 @@ use CraftCms\Cms\Migrations\Install;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Env;
 use CraftCms\Cms\Support\Str;
+use CraftCms\Yii2Adapter\DatabaseConnection;
 use PDOException;
 use Throwable;
 use yii\base\Exception;
@@ -144,7 +145,7 @@ class InstallController extends Controller
 
         if (empty($errors)) {
             // Test the connection
-            /** @var \CraftCms\Yii2Adapter\DatabaseConnection $db */
+            /** @var DatabaseConnection $db */
             $db = Craft::createObject(App::dbConfig($dbConfig));
 
             try {

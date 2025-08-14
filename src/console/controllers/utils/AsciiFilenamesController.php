@@ -13,6 +13,7 @@ use craft\elements\Asset;
 use craft\errors\InvalidElementException;
 use craft\helpers\Console;
 use craft\helpers\FileHelper;
+use CraftCms\Cms\Config\GeneralConfig;
 use Throwable;
 use yii\console\ExitCode;
 use yii\db\Expression;
@@ -33,7 +34,7 @@ class AsciiFilenamesController extends Controller
     public function actionIndex(): int
     {
         // Make sure convertFilenamesToAscii is true now
-        if (!app(\CraftCms\Cms\Config\GeneralConfig::class)->convertFilenamesToAscii) {
+        if (!app(GeneralConfig::class)->convertFilenamesToAscii) {
             $warning = <<<EOD
 The convertFilenamesToAscii config setting is set to false.
 To avoid saving assets with non-ASCII filenames in the future,

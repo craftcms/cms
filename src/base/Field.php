@@ -25,6 +25,7 @@ use craft\models\GqlSchema;
 use craft\records\Field as FieldRecord;
 use craft\validators\HandleValidator;
 use craft\validators\UniqueValidator;
+use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Element\Enums\AttributeStatus;
 use CraftCms\Cms\Support\Str;
 use DateTime;
@@ -569,7 +570,7 @@ abstract class Field extends SavableComponent implements FieldInterface, Iconic,
         if ($this->id && $userSessionService->getIsAdmin()) {
             $view = Craft::$app->getView();
 
-            if (app(\CraftCms\Cms\Config\GeneralConfig::class)->allowAdminChanges) {
+            if (app(GeneralConfig::class)->allowAdminChanges) {
                 // Edit field
                 $editId = sprintf('action-edit-%s', mt_rand());
                 $items[] = [

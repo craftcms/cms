@@ -26,6 +26,7 @@ use craft\queue\jobs\UpdateSearchIndex;
 use craft\search\SearchQuery;
 use craft\search\SearchQueryTerm;
 use craft\search\SearchQueryTermGroup;
+use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Str;
 use CraftCms\DependencyAwareCache\Facades\DependencyCache;
@@ -574,12 +575,12 @@ class Search extends Component
         }
 
         if (is_string($searchQuery)) {
-            return new SearchQuery($searchQuery, app(\CraftCms\Cms\Config\GeneralConfig::class)->defaultSearchTermOptions);
+            return new SearchQuery($searchQuery, app(GeneralConfig::class)->defaultSearchTermOptions);
         }
 
         $options = array_merge($searchQuery);
         $searchQuery = Arr::pull($options, 'query');
-        $options = array_merge(app(\CraftCms\Cms\Config\GeneralConfig::class)->defaultSearchTermOptions, $options);
+        $options = array_merge(app(GeneralConfig::class)->defaultSearchTermOptions, $options);
         return new SearchQuery($searchQuery, $options);
     }
 

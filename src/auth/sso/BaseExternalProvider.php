@@ -12,6 +12,7 @@ use craft\auth\sso\mapper\UserAttributesMapper;
 use craft\db\Query;
 use craft\db\Table;
 use craft\elements\User;
+use craft\errors\ElementNotFoundException;
 use craft\errors\SsoFailedException;
 use craft\events\SsoEvent;
 use craft\events\UserGroupsAssignEvent;
@@ -21,6 +22,9 @@ use craft\services\Sso;
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Str;
+use Throwable;
+use yii\base\Exception;
+use yii\base\InvalidConfigException;
 
 /**
  * BaseExternalProvider provides a base implementation for external identity providers.
@@ -143,7 +147,7 @@ abstract class BaseExternalProvider extends BaseProvider
      * @param array $data
      * @param string|null $idpIdentifier
      * @return User|null
-     * @throws \yii\base\InvalidConfigException
+     * @throws InvalidConfigException
      */
     protected function findUser(array $data, ?string $idpIdentifier = null): ?User
     {
@@ -179,9 +183,9 @@ abstract class BaseExternalProvider extends BaseProvider
      * @param User $user
      * @param array $data
      * @return User
-     * @throws \Throwable
-     * @throws \craft\errors\ElementNotFoundException
-     * @throws \yii\base\Exception
+     * @throws Throwable
+     * @throws ElementNotFoundException
+     * @throws Exception
      */
     protected function syncUser(User $user, array $data, string $idpIdentifier): User
     {
@@ -222,7 +226,7 @@ abstract class BaseExternalProvider extends BaseProvider
      * @param User $user
      * @param array $data
      * @return bool
-     * @throws \Throwable
+     * @throws Throwable
      */
     private function assignUserToGroups(User $user, array $data): bool
     {
@@ -257,7 +261,7 @@ abstract class BaseExternalProvider extends BaseProvider
 
     /**
      * @param User $user
-     * @throws \Throwable
+     * @throws Throwable
      */
     private function enableUser(User $user): void
     {
@@ -287,9 +291,9 @@ abstract class BaseExternalProvider extends BaseProvider
      * @param array $data
      * @param string|null $idpIdentifier
      * @return User
-     * @throws \Throwable
-     * @throws \craft\errors\ElementNotFoundException
-     * @throws \yii\base\Exception
+     * @throws Throwable
+     * @throws ElementNotFoundException
+     * @throws Exception
      */
     protected function resolveUser(array $data, ?string $idpIdentifier = null): User
     {
@@ -338,7 +342,7 @@ abstract class BaseExternalProvider extends BaseProvider
      * @param mixed $callback
      * @param string|null $defaultClass
      * @return callable|null
-     * @throws \yii\base\InvalidConfigException
+     * @throws InvalidConfigException
      */
     protected function normalizeCallback(mixed $callback, string $defaultClass = null): ?callable
     {

@@ -19,6 +19,7 @@ use craft\events\DraftEvent;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\Db;
 use craft\helpers\ElementHelper;
+use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Support\Arr;
 use Throwable;
 use yii\base\Component;
@@ -421,7 +422,7 @@ SQL,
      */
     public function purgeUnsavedDrafts(): void
     {
-        $generalConfig = app(\CraftCms\Cms\Config\GeneralConfig::class);
+        $generalConfig = app(GeneralConfig::class);
 
         if ($generalConfig->purgeUnsavedDraftsDuration === 0) {
             return;

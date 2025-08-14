@@ -18,6 +18,7 @@ use craft\web\View;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Support\Composer;
 use CraftCms\Cms\Support\Json;
+use yii\base\Exception;
 use yii\base\InvalidConfigException;
 use yii\web\BadRequestHttpException;
 use yii\web\Response;
@@ -51,7 +52,7 @@ class PluginStoreController extends Controller
      * Plugin Store index.
      *
      * @return Response
-     * @throws \yii\base\Exception
+     * @throws Exception
      * @throws InvalidConfigException
      */
     public function actionIndex(): Response

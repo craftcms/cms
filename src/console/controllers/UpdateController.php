@@ -19,6 +19,7 @@ use craft\helpers\Update as UpdateHelper;
 use craft\models\Update;
 use craft\models\Updates;
 use craft\models\Updates as UpdatesModel;
+use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Support\Api;
 use CraftCms\Cms\Support\Composer;
 use CraftCms\Cms\Support\Json;
@@ -259,7 +260,7 @@ class UpdateController extends Controller
      */
     private function _allowUpdates(): bool
     {
-        $generalConfig = app(\CraftCms\Cms\Config\GeneralConfig::class);
+        $generalConfig = app(GeneralConfig::class);
         if (!$generalConfig->allowUpdates && !$this->force) {
             if (!$this->interactive) {
                 $this->stderr('Updates are disallowed for this environment. Pass --force to override.' . PHP_EOL . PHP_EOL, Console::FG_RED);

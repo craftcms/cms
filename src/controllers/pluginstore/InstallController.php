@@ -10,6 +10,7 @@ namespace craft\controllers\pluginstore;
 use Craft;
 use craft\controllers\BaseUpdaterController;
 use craft\web\Response;
+use CraftCms\Cms\Config\GeneralConfig;
 use Throwable;
 use yii\web\ForbiddenHttpException;
 use yii\web\Response as YiiResponse;
@@ -45,8 +46,8 @@ class InstallController extends BaseUpdaterController
         $this->requireAdmin();
 
         if (
-            !app(\CraftCms\Cms\Config\GeneralConfig::class)->allowUpdates ||
-            !app(\CraftCms\Cms\Config\GeneralConfig::class)->allowAdminChanges
+            !app(GeneralConfig::class)->allowUpdates ||
+            !app(GeneralConfig::class)->allowAdminChanges
         ) {
             throw new ForbiddenHttpException('Installation of plugins from the Plugin Store is disabled.');
         }

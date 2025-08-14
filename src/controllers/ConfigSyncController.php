@@ -12,6 +12,7 @@ use craft\errors\BusyResourceException;
 use craft\errors\InvalidPluginException;
 use craft\errors\StaleResourceException;
 use craft\services\ProjectConfig;
+use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Support\Arr;
 use Throwable;
 use yii\base\NotSupportedException;
@@ -250,7 +251,7 @@ class ConfigSyncController extends BaseUpdaterController
      */
     protected function returnUrl(): string
     {
-        return $this->data['returnUrl'] ?? app(\CraftCms\Cms\Config\GeneralConfig::class)->getPostCpLoginRedirect();
+        return $this->data['returnUrl'] ?? app(GeneralConfig::class)->getPostCpLoginRedirect();
     }
 
     /**

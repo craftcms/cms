@@ -15,6 +15,7 @@ use craft\errors\InvalidElementException;
 use craft\helpers\Session;
 use craft\services\Users;
 use craft\test\TestCase;
+use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Support\Str;
 use DateInterval;
 use DateTime;
@@ -195,7 +196,7 @@ class UserElementTest extends TestCase
             )
         );
 
-        app(\CraftCms\Cms\Config\GeneralConfig::class)->requireMatchingUserAgentForSession = true;
+        app(GeneralConfig::class)->requireMatchingUserAgentForSession = true;
 
         // Valid token, user agent, and json string
         $this->tester->mockCraftMethods('request', [
@@ -215,7 +216,7 @@ class UserElementTest extends TestCase
     {
         $validUserAgent = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/74.0.3729.169 Safari/537.36';
 
-        app(\CraftCms\Cms\Config\GeneralConfig::class)->requireMatchingUserAgentForSession = false;
+        app(GeneralConfig::class)->requireMatchingUserAgentForSession = false;
         $this->tester->mockCraftMethods('request', [
             'getUserAgent' => $validUserAgent,
         ]);
@@ -246,7 +247,7 @@ class UserElementTest extends TestCase
         self::assertNull($this->activeUser->getCooldownEndTime());
 
 
-        app(\CraftCms\Cms\Config\GeneralConfig::class)->cooldownDuration = 172800;
+        app(GeneralConfig::class)->cooldownDuration = 172800;
         $this->activeUser->locked = true;
         $this->activeUser->lockoutDate = new DateTime('now', new DateTimeZone('UTC'));
         $cooldown = $this->activeUser->getCooldownEndTime();
@@ -271,7 +272,7 @@ class UserElementTest extends TestCase
 
         $this->activeUser->locked = true;
         $this->activeUser->lockoutDate = new DateTime('now', new DateTimeZone('UTC'));
-        app(\CraftCms\Cms\Config\GeneralConfig::class)->cooldownDuration = (60 * 60 * 24 * 2) + 10; // 2 days and 10 seconds
+        app(GeneralConfig::class)->cooldownDuration = (60 * 60 * 24 * 2) + 10; // 2 days and 10 seconds
 
         self::assertInstanceOf(DateInterval::class, $interval = $this->activeUser->getRemainingCooldownTime());
         self::assertSame('2', (string)$interval->d);

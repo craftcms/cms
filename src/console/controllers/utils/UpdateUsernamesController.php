@@ -11,6 +11,7 @@ use Craft;
 use craft\console\Controller;
 use craft\db\Table;
 use craft\helpers\Console;
+use CraftCms\Cms\Config\GeneralConfig;
 use yii\console\ExitCode;
 use yii\db\Expression;
 
@@ -30,7 +31,7 @@ class UpdateUsernamesController extends Controller
     public function actionIndex(): int
     {
         // Make sure useEmailAsUsername is enabled
-        if (!app(\CraftCms\Cms\Config\GeneralConfig::class)->useEmailAsUsername) {
+        if (!app(GeneralConfig::class)->useEmailAsUsername) {
             $this->stderr('The useEmailAsUsername config setting is not enabled.' . PHP_EOL, Console::FG_RED);
             return ExitCode::UNSPECIFIED_ERROR;
         }

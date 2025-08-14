@@ -39,9 +39,13 @@ use craft\services\Volumes;
 use craft\test\mockclasses\gql\MockDirective;
 use craft\test\mockclasses\gql\MockType;
 use craft\test\TestCase;
+use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Support\Str;
+use GraphQL\Type\Definition\Directive;
 use GraphQL\Type\Definition\ObjectType;
+use GraphQL\Type\Definition\ScalarType;
+use GraphQL\Type\Schema;
 use UnitTester;
 use yii\base\Event;
 use yii\base\Exception;
@@ -60,7 +64,7 @@ class GqlTest extends TestCase
         $gql->setActiveSchema(new GqlSchema());
 
         // NO CACHING
-        app(\CraftCms\Cms\Config\GeneralConfig::class)->enableGraphqlCaching = false;
+        app(GeneralConfig::class)->enableGraphqlCaching = false;
     }
 
     protected function _after(): void
@@ -86,7 +90,7 @@ class GqlTest extends TestCase
     public function testCreatingSchemaSuccess(): void
     {
         $schema = Craft::$app->getGql()->getSchemaDef();
-        self::assertInstanceOf(\GraphQL\Type\Schema::class, $schema);
+        self::assertInstanceOf(Schema::class, $schema);
     }
 
     /**
@@ -190,7 +194,7 @@ class GqlTest extends TestCase
             },
         ]);
 
-        app(\CraftCms\Cms\Config\GeneralConfig::class)->enableGraphqlCaching = true;
+        app(GeneralConfig::class)->enableGraphqlCaching = true;
 
         $schema = $gql->getPublicSchema();
 
@@ -209,7 +213,7 @@ class GqlTest extends TestCase
         });
 
         $directive = Craft::$app->getGql()->getSchemaDef()->getDirective(MockDirective::name());
-        self::assertInstanceOf(\GraphQL\Type\Definition\Directive::class, $directive);
+        self::assertInstanceOf(Directive::class, $directive);
     }
 
     /**
@@ -225,7 +229,7 @@ class GqlTest extends TestCase
         MockType::getType();
 
         $mockType = Craft::$app->getGql()->getSchemaDef()->getType(MockType::getName());
-        self::assertInstanceOf(\GraphQL\Type\Definition\ScalarType::class, $mockType);
+        self::assertInstanceOf(ScalarType::class, $mockType);
     }
 
     /**

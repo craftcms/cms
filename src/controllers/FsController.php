@@ -13,6 +13,7 @@ use craft\base\FsInterface;
 use craft\helpers\Cp;
 use craft\helpers\Html;
 use craft\web\Controller;
+use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Support\Arr;
 use yii\web\BadRequestHttpException;
 use yii\web\ForbiddenHttpException;
@@ -50,7 +51,7 @@ class FsController extends Controller
             $this->requireAdmin();
         }
 
-        $this->readOnly = !app(\CraftCms\Cms\Config\GeneralConfig::class)->allowAdminChanges;
+        $this->readOnly = !app(GeneralConfig::class)->allowAdminChanges;
 
         return true;
     }

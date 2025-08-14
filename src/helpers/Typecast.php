@@ -11,6 +11,7 @@ namespace craft\helpers;
 use BackedEnum;
 use CraftCms\Cms\Support\Json as JsonHelper;
 use DateTime;
+use InvalidArgumentException;
 use ReflectionException;
 use ReflectionNamedType;
 use ReflectionProperty;
@@ -102,7 +103,7 @@ final class Typecast
                         if (is_array($decoded)) {
                             $value = $decoded;
                         }
-                    } catch (\InvalidArgumentException) {
+                    } catch (InvalidArgumentException) {
                         $value = str($value)->explode(',')->all();
                     }
                     return;

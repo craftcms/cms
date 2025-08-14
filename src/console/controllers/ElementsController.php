@@ -17,6 +17,7 @@ use craft\helpers\Component;
 use craft\helpers\Console;
 use craft\helpers\Db;
 use craft\models\Section;
+use Throwable;
 use yii\console\ExitCode;
 
 /**
@@ -89,7 +90,7 @@ class ElementsController extends Controller
 
         try {
             $success = Craft::$app->getElements()->deleteElement($element, $this->hard);
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             $this->stdout("error: {$e->getMessage()}\n", Console::FG_RED);
             return ExitCode::UNSPECIFIED_ERROR;
         }
@@ -198,7 +199,7 @@ class ElementsController extends Controller
 
         try {
             $success = Craft::$app->getElements()->restoreElement($element);
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             $this->stdout("error: {$e->getMessage()}\n", Console::FG_RED);
             return ExitCode::UNSPECIFIED_ERROR;
         }
