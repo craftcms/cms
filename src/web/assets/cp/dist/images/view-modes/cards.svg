@@ -8,6 +8,6 @@
         <use fill="#FFFFFF" xlink:href="#path-1"></use>
         <rect id="chip" stroke="#CDD8E4" stroke-width="1" fill="#F3F7FD" x="0.5" y="21.5" width="79" height="17" rx="5"></rect>
         <rect id="chip-copy" stroke="#CDD8E4" stroke-width="1" fill="#F3F7FD" x="0.5" y="0.5" width="79" height="17" rx="5"></rect>
-        <rect id="chip-copy-2" stroke="#CDD8E4" stroke-width="1" fill="#F3F7FD" x="0.5" y="43.5" width="79" height="16" rx="5"></rect>
+        <rect id="chip-copy-2" stroke="#CDD8E4" stroke-width="1" fill="#F3F7FD" x="0.5" y="42.5" width="79" height="17" rx="5"></rect>
     </g>
 </svg>
