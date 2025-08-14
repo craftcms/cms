@@ -55,19 +55,6 @@ class TestCase extends Orchestra
         parent::tearDown();
     }
 
-    /*protected function refreshTestDatabase()
-    {
-        if (RefreshDatabaseState::$migrated) {
-            return;
-        }
-
-        $this->migrateDatabases();
-
-        $this->app[Kernel::class]->setArtisan(null);
-
-        RefreshDatabaseState::$migrated = true;
-    }*/
-
     protected function migrateDatabases()
     {
         $this->artisan('migrate:fresh', $this->migrateFreshUsing());
