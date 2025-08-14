@@ -28,6 +28,7 @@ use DateTime;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Facades\DB;
 use Throwable;
+use Tpetry\QueryExpressions\Language\Alias;
 use Twig\Markup;
 use yii\base\Exception;
 use yii\base\InvalidConfigException;
@@ -254,7 +255,7 @@ class ElementHelper
     {
         $info = DB::table(\CraftCms\Cms\Db\Table::ELEMENTS_SITES, 'elements_sites')
             ->select(['elements.id', 'elements.type'])
-            ->join(\CraftCms\Cms\Db\Table::ELEMENTS . ' as elements', 'elements.id', '=', 'elements_sites.elementId')
+            ->join(new Alias(\CraftCms\Cms\Db\Table::ELEMENTS, 'elements'), 'elements.id', '=', 'elements_sites.elementId')
             ->where('elements_sites.siteId', $element->siteId)
             ->whereNull(['elements.draftId', 'elements.revisionId', 'elements.dateDeleted'])
             ->when(

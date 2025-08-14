@@ -22,6 +22,7 @@ use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
 use Throwable;
+use Tpetry\QueryExpressions\Language\Alias;
 use yii\base\Component;
 use yii\base\InvalidArgumentException;
 
@@ -97,7 +98,7 @@ class Revisions extends Component
                 $lastRevisionInfo = DB::useWriteConnectionWhenReading()
                     ->table(Table::ELEMENTS, 'e')
                     ->select(['e.id', 'r.num', 'e.dateCreated'])
-                    ->join(Table::REVISIONS . ' as r', 'r.id', 'e.revisionId')
+                    ->join(new Alias(Table::REVISIONS, 'r'), 'r.id', 'e.revisionId')
                     ->where('r.canonicalId', $canonical->id)
                     ->orderByDesc('r.num')
                     ->first();

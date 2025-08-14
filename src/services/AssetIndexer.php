@@ -41,6 +41,7 @@ use Illuminate\Database\Query\JoinClause;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Throwable;
+use Tpetry\QueryExpressions\Language\Alias;
 use yii\base\Component;
 use yii\base\Exception;
 use yii\base\InvalidConfigException;
@@ -457,7 +458,7 @@ class AssetIndexer extends Component
                 'volumes.id as volumeId',
                 'folders.id as folderId',
             ])
-            ->leftJoin(Table::VOLUMES . ' as volumes', 'volumes.id', 'folders.volumeId')
+            ->leftJoin(new Alias(Table::VOLUMES, 'volumes'), 'volumes.id', 'folders.volumeId')
             ->where('folders.dateCreated', '<', $cutoff)
             ->whereIn('folders.volumeId', $volumeList)
             ->whereNotNull('folders.parentId')
@@ -468,7 +469,7 @@ class AssetIndexer extends Component
             ->when(
                 !$session->listEmptyFolders,
                 fn(Builder $query) => $query
-                    ->leftJoin(Table::ASSETINDEXDATA . ' as indexData', function(JoinClause $join) {
+                    ->leftJoin(new Alias(Table::ASSETINDEXDATA, 'indexData'), function(JoinClause $join) {
                         $join->whereColumn('folders.id', 'indexData.recordId')
                             ->where('indexData.isDir', true);
                     })
@@ -484,10 +485,10 @@ class AssetIndexer extends Component
                 'assets.filename as filename',
                 'assets.id as assetId',
             ])
-            ->leftJoin(Table::ELEMENTS . ' as elements', 'elements.id', 'assets.id')
-            ->leftJoin(Table::VOLUMEFOLDERS . ' as folders', 'folders.id', 'assets.folderId')
-            ->leftJoin(Table::VOLUMES . ' as volumes', 'volumes.id', 'assets.volumeId')
-            ->leftJoin(Table::ASSETINDEXDATA . ' as indexData', function(JoinClause $join) {
+            ->leftJoin(new Alias(Table::ELEMENTS, 'elements'), 'elements.id', 'assets.id')
+            ->leftJoin(new Alias(Table::VOLUMEFOLDERS, 'folders'), 'folders.id', 'assets.folderId')
+            ->leftJoin(new Alias(Table::VOLUMES, 'volumes'), 'volumes.id', 'assets.volumeId')
+            ->leftJoin(new Alias(Table::ASSETINDEXDATA, 'indexData'), function(JoinClause $join) {
                 $join->whereColumn('assets.id', 'indexData.recordId')
                     ->where('indexData.isDir', false);
             })
@@ -508,8 +509,8 @@ class AssetIndexer extends Component
              * @link https://github.com/craftcms/cms/issues/11949
              */
             $hasAssets = DB::table(Table::ASSETS, 'assets')
-                ->join(Table::VOLUMEFOLDERS . ' as folders', 'folders.id', 'assets.folderId')
-                ->leftJoin(Table::ELEMENTS . ' as elements', 'elements.id', 'assets.id')
+                ->join(new Alias(Table::VOLUMEFOLDERS, 'folders'), 'folders.id', 'assets.folderId')
+                ->leftJoin(new Alias(Table::ELEMENTS, 'elements'), 'elements.id', 'assets.id')
                 ->where('assets.volumeId', $volumeId)
                 ->whereLike('folders.path', "$path%")
                 ->where(function(Builder $query) {

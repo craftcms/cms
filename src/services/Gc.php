@@ -37,6 +37,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 use ReflectionMethod;
 use Tpetry\QueryExpressions\Function\Conditional\Coalesce;
+use Tpetry\QueryExpressions\Language\Alias;
 use yii\base\Component;
 use yii\base\Exception;
 use yii\base\InvalidConfigException;
@@ -253,8 +254,8 @@ class Gc extends Component
 
         // first get nested elements which are not nested (owned) and that don't have any revisions
         $ids1 = $this->hardDeleteQuery(DB::table(Table::ELEMENTS, 'e'), 'e')
-            ->leftJoin(Table::REVISIONS . ' as r', 'r.canonicalId','e.id')
-            ->leftJoin(Table::ELEMENTS_OWNERS . ' as eo', 'eo.elementId', '=', new Coalesce(['e.canonicalId', 'e.id']))
+            ->leftJoin(new Alias(Table::REVISIONS, 'r'), 'r.canonicalId','e.id')
+            ->leftJoin(new Alias(Table::ELEMENTS_OWNERS, 'eo'), 'eo.elementId', '=', new Coalesce(['e.canonicalId', 'e.id']))
             ->whereIn('e.type', $nestedElementTypes)
             ->whereNull('r.id')
             ->whereNull('eo.elementId')
@@ -262,7 +263,7 @@ class Gc extends Component
 
         // then get any nested elements that don't have any revisions, including nested ones
         $ids2 = $this->hardDeleteQuery(DB::table(Table::ELEMENTS, 'e'), 'e')
-            ->leftJoin(Table::REVISIONS . ' as r', 'r.canonicalId', '=', new Coalesce(['e.canonicalId', 'e.id']))
+            ->leftJoin(new Alias(Table::REVISIONS, 'r'), 'r.canonicalId', '=', new Coalesce(['e.canonicalId', 'e.id']))
             ->whereIn('type', $nestedElementTypes)
             ->whereNull('r.id')
             ->pluck('e.id');
@@ -313,7 +314,7 @@ class Gc extends Component
         $this->_stdout(sprintf('    > deleting partial %s data ... ', $elementType::lowerDisplayName()));
 
         DB::table(Table::ELEMENTS, 'e')
-            ->leftJoin($table . ' as t', "t.$fk", 'e.id')
+            ->leftJoin(new Alias($table, 't'), "t.$fk", 'e.id')
             ->where('e.type', $elementType)
             ->whereNull("t.$fk")
             ->pluck('e.id')
@@ -464,7 +465,7 @@ class Gc extends Component
             foreach ($siteIds as $siteId) {
                 if (!isset($sectionSettings[$siteId])) {
                     $ids = DB::table(Table::ELEMENTS_SITES, 'es')
-                        ->leftJoin(Table::ENTRIES . ' as en', 'en.id', 'es.elementId')
+                        ->leftJoin(new Alias(Table::ENTRIES, 'en'), 'en.id', 'es.elementId')
                         ->where('en.sectionId', $section->id)
                         ->where('es.siteId', $siteId)
                         ->pluck('es.id');
@@ -498,15 +499,15 @@ class Gc extends Component
         $this->_stdout(sprintf('    > deleting orphaned nested %s ... ', $elementType::pluralLowerDisplayName()));
 
         $ids1 = DB::table(Table::ELEMENTS, 'el')
-            ->join($table . ' as t', 't.id', 'el.id')
-            ->leftJoin(Table::ELEMENTS_OWNERS . ' as eo', 'eo.elementId', 'el.id')
+            ->join(new Alias($table, 't'), 't.id', 'el.id')
+            ->leftJoin(new Alias(Table::ELEMENTS_OWNERS, 'eo'), 'eo.elementId', 'el.id')
             ->whereNotNull("t.$fieldFk")
             ->whereNull('eo.elementId')
             ->pluck('el.id');
 
         $ids2 = DB::table(Table::ELEMENTS, 'el')
-            ->join($table . ' as t', 't.id', 'el.id')
-            ->leftJoin(Table::FIELDS . ' as f', 'f.id', "t.$fieldFk")
+            ->join(new Alias($table, 't'), 't.id', 'el.id')
+            ->leftJoin(new Alias(Table::FIELDS, 'f'), 'f.id', "t.$fieldFk")
             ->whereNotNull("t.$fieldFk")
             ->whereNull('f.id')
             ->pluck('el.id');
@@ -534,7 +535,7 @@ class Gc extends Component
                      'revisionId' => Table::REVISIONS,
                  ] as $fk => $table) {
             DB::table($table, 't')
-                ->leftJoin(Table::ELEMENTS . ' as e', "e.$fk", "t.id")
+                ->leftJoin(new Alias(Table::ELEMENTS, 'e'), "e.$fk", "t.id")
                 ->whereNull('e.id')
                 ->pluck('t.id')
                 ->chunk(self::CHUNK_SIZE)
@@ -560,7 +561,7 @@ class Gc extends Component
         $this->_stdout('    > deleting orphaned relations ... ');
 
         DB::table(Table::RELATIONS, 'r')
-            ->leftJoin(Table::ELEMENTS . ' as e', 'e.id', 'r.targetId')
+            ->leftJoin(new Alias(Table::ELEMENTS, 'e'), 'e.id', 'r.targetId')
             ->whereNull('e.id')
             ->pluck('r.id')
             ->chunk(self::CHUNK_SIZE)
@@ -578,7 +579,7 @@ class Gc extends Component
         $this->_stdout('    > deleting orphaned structure elements ... ');
 
         DB::table(Table::STRUCTUREELEMENTS, 'se')
-            ->leftJoin(Table::ELEMENTS . ' as e', 'e.id', 'se.elementId')
+            ->leftJoin(new Alias(Table::ELEMENTS, 'e'), 'e.id', 'se.elementId')
             ->whereNotNull('se.elementId')
             ->whereNull('e.id')
             ->pluck('se.id')
@@ -665,8 +666,8 @@ SQL;
 
             // fetch any rows in the table for canonical elements that don't have any drafts
             DB::table($table, 't')
-                ->join(Table::ELEMENTS . ' as e', 'e.id', 't.elementId')
-                ->leftJoin(Table::ELEMENTS . ' as d', function(JoinClause $join) {
+                ->join(new Alias(Table::ELEMENTS, 'e'), 'e.id', 't.elementId')
+                ->leftJoin(new Alias(Table::ELEMENTS, 'd'), function(JoinClause $join) {
                     $join->whereColumn('d.canonicalId', 'e.id')
                         ->whereNotNull('d.draftId');
                 })
@@ -700,7 +701,7 @@ SQL;
         $this->_stdout(sprintf('    > deleting orphaned %s field layouts ... ', $elementType::lowerDisplayName()));
 
         DB::table(Table::FIELDLAYOUTS, 'fl')
-            ->leftJoin($table . ' as t', "t.$fk", 'fl.id')
+            ->leftJoin(new Alias($table, 't'), "t.$fk", 'fl.id')
             ->where('fl.type', $elementType)
             ->whereNull("t.$fk")
             ->pluck('fl.id')
@@ -731,9 +732,9 @@ SQL;
         $revisionsTable = Table::REVISIONS;
 
         $structureIds = $this->hardDeleteQuery(DB::table($structuresTable, 's'), 's')
-            ->leftJoin($structureElementsTable . ' as se', 's.id', 'se.structureId')
-            ->leftJoin($elementsTable . ' as e', 'e.id', 'se.elementId')
-            ->leftJoin($revisionsTable . ' as r', 'r.canonicalId', '=', new Coalesce(['e.canonicalId', 'e.id']))
+            ->leftJoin(new Alias($structureElementsTable, 'se'), 's.id', 'se.structureId')
+            ->leftJoin(new Alias($elementsTable, 'e'), 'e.id', 'se.elementId')
+            ->leftJoin(new Alias($revisionsTable, 'r'), 'r.canonicalId', '=', new Coalesce(['e.canonicalId', 'e.id']))
             ->whereNotNull('se.elementId')
             ->whereNull('r.canonicalId')
             ->distinct()

@@ -19,6 +19,7 @@ use CraftCms\Cms\Edition;
 use CraftCms\Cms\Support\Str;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Facades\DB;
+use Tpetry\QueryExpressions\Language\Alias;
 use yii\base\Component;
 
 /**
@@ -224,7 +225,7 @@ class UserGroups extends Component
                 'g.description',
                 'g.uid',
             ])
-            ->join(Table::USERGROUPS_USERS . ' as gu', 'gu.groupId', 'g.id')
+            ->join(new Alias(Table::USERGROUPS_USERS, 'gu'), 'gu.groupId', 'g.id')
             ->where('gu.userId', $userId)
             ->get()
             ->map(fn(object $group) => new UserGroup((array)$group))

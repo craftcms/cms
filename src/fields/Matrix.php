@@ -61,6 +61,7 @@ use GraphQL\Type\Definition\Type;
 use Illuminate\Database\Query\JoinClause;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
+use Tpetry\QueryExpressions\Language\Alias;
 use yii\base\InvalidArgumentException;
 use yii\base\InvalidConfigException;
 use yii\db\Expression;
@@ -1384,7 +1385,7 @@ JS;
                 'elements_owners.ownerId as source',
                 'entries.id as target',
             ])
-            ->join(\CraftCms\Cms\Db\Table::ELEMENTS_OWNERS . ' as elements_owners', function(JoinClause $join) use ($sourceElementIds) {
+            ->join(new Alias(\CraftCms\Cms\Db\Table::ELEMENTS_OWNERS, 'elements_owners'), function(JoinClause $join) use ($sourceElementIds) {
                 $join->whereColumn('elements_owners.elementId', 'entries.id')
                     ->whereIn('elements_owners.ownerId', $sourceElementIds);
             })

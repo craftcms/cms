@@ -23,7 +23,6 @@ use craft\events\ReorderSitesEvent;
 use craft\events\SiteEvent;
 use craft\events\SiteGroupEvent;
 use craft\helpers\App;
-use craft\helpers\Db;
 use craft\helpers\Queue;
 use craft\models\Site;
 use craft\models\SiteGroup;
@@ -33,7 +32,9 @@ use craft\records\SiteGroup as SiteGroupRecord;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Str;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\DB;
 use Throwable;
+use Tpetry\QueryExpressions\Language\Alias;
 use yii\base\Component;
 use yii\base\Exception;
 use yii\base\InvalidArgumentException;
@@ -277,7 +278,7 @@ class Sites extends Component
         if ($isNewGroup) {
             $group->uid = Str::uuid()->toString();
         } elseif (!$group->uid) {
-            $group->uid = \Illuminate\Support\Facades\DB::table(\CraftCms\Cms\Db\Table::SITEGROUPS)->uidById($group->id);
+            $group->uid = DB::table(\CraftCms\Cms\Db\Table::SITEGROUPS)->uidById($group->id);
         }
 
         $configPath = ProjectConfig::PATH_SITE_GROUPS . '.' . $group->uid;
@@ -286,7 +287,7 @@ class Sites extends Component
 
         // Now that we have an ID, save it on the model
         if ($isNewGroup) {
-            $group->id = \Illuminate\Support\Facades\DB::table(\CraftCms\Cms\Db\Table::SITEGROUPS)->idByUid($group->uid);
+            $group->id = DB::table(\CraftCms\Cms\Db\Table::SITEGROUPS)->idByUid($group->uid);
         }
 
         return true;
@@ -729,12 +730,11 @@ class Sites extends Component
 
         if ($isNewSite) {
             $site->uid = Str::uuid()->toString();
-            $site->sortOrder = ((int)(new Query())
-                    ->from([Table::SITES])
-                    ->where(['dateDeleted' => null])
-                    ->max('[[sortOrder]]')) + 1;
+            $site->sortOrder = DB::table(\CraftCms\Cms\Db\Table::SITES)
+                ->whereNull('dateDeleted')
+                ->max('sortOrder') + 1;
         } elseif (!$site->uid) {
-            $site->uid = \Illuminate\Support\Facades\DB::table(\CraftCms\Cms\Db\Table::SITES)->uidById($site->id);
+            $site->uid = DB::table(\CraftCms\Cms\Db\Table::SITES)->uidById($site->id);
         }
 
         $projectConfigService = Craft::$app->getProjectConfig();
@@ -746,7 +746,7 @@ class Sites extends Component
 
         // Now that we have a site ID, save it on the model
         if ($isNewSite) {
-            $site->id = \Illuminate\Support\Facades\DB::table(\CraftCms\Cms\Db\Table::SITES)->idByUid($site->uid);
+            $site->id = DB::table(\CraftCms\Cms\Db\Table::SITES)->idByUid($site->uid);
         }
 
         // If this just became the new primary site, update the old primary site's config
@@ -783,7 +783,7 @@ class Sites extends Component
             $oldPrimarySiteId = null;
         }
 
-        \Illuminate\Support\Facades\DB::beginTransaction();
+        DB::beginTransaction();
 
         try {
             $siteRecord = $this->_getSiteRecord($siteUid, true);
@@ -808,9 +808,9 @@ class Sites extends Component
                 $siteRecord->save(false);
             }
 
-            \Illuminate\Support\Facades\DB::commit();
+            DB::commit();
         } catch (Throwable $e) {
-            \Illuminate\Support\Facades\DB::rollBack();
+            DB::rollBack();
             throw $e;
         }
 
@@ -836,7 +836,7 @@ class Sites extends Component
         }
 
         if ($isNewSite && $oldPrimarySiteId) {
-            $oldPrimarySiteUid = \Illuminate\Support\Facades\DB::table(\CraftCms\Cms\Db\Table::SITES)->uidById($oldPrimarySiteId);
+            $oldPrimarySiteUid = DB::table(\CraftCms\Cms\Db\Table::SITES)->uidById($oldPrimarySiteId);
             $existingCategorySettings = $projectConfig->get(ProjectConfig::PATH_CATEGORY_GROUPS);
 
             if (!$projectConfig->getIsApplyingExternalChanges() && is_array($existingCategorySettings)) {
@@ -899,7 +899,7 @@ class Sites extends Component
 
         $projectConfig = Craft::$app->getProjectConfig();
 
-        $uidsByIds = \Illuminate\Support\Facades\DB::table(\CraftCms\Cms\Db\Table::SITES)->uidsByIds($siteIds);
+        $uidsByIds = DB::table(\CraftCms\Cms\Db\Table::SITES)->uidsByIds($siteIds);
 
         foreach ($siteIds as $sortOrder => $siteId) {
             if (!empty($uidsByIds[$siteId])) {
@@ -968,11 +968,9 @@ class Sites extends Component
 
         // TODO: Move this code into entries module, etc.
         // Get the section IDs that are enabled for this site
-        $sectionIds = (new Query())
-            ->select(['sectionId'])
-            ->from([Table::SECTIONS_SITES])
-            ->where(['siteId' => $site->id])
-            ->column();
+        $sectionIds = DB::table(\CraftCms\Cms\Db\Table::SECTIONS_SITES)
+            ->where('siteId', $site->id)
+            ->pluck('sectionId');
 
         // Figure out which ones are *only* enabled for this site
         $soloSectionIds = [];
@@ -991,7 +989,7 @@ class Sites extends Component
             if ($transferContentTo !== null) {
                 $transferContentToSite = $this->getSiteById($transferContentTo);
 
-                \Illuminate\Support\Facades\DB::table(\CraftCms\Cms\Db\Table::SECTIONS_SITES)
+                DB::table(\CraftCms\Cms\Db\Table::SECTIONS_SITES)
                     ->whereIn('sectionId', $soloSectionIds)
                     ->update([
                         'siteId' => $transferContentTo,
@@ -1010,20 +1008,20 @@ class Sites extends Component
                 $projectConfig->muteEvents = $muteEvents;
 
                 // Get all of the entry IDs in those sections
-                $entryIds = \Illuminate\Support\Facades\DB::table(\CraftCms\Cms\Db\Table::ENTRIES)
+                $entryIds = DB::table(\CraftCms\Cms\Db\Table::ENTRIES)
                     ->whereIn('sectionId', $soloSectionIds)
                     ->pluck('id');
 
                 if ($entryIds->isNotEmpty()) {
                     // Update the entry tables
-                    \Illuminate\Support\Facades\DB::table(\CraftCms\Cms\Db\Table::ELEMENTS_SITES)
+                    DB::table(\CraftCms\Cms\Db\Table::ELEMENTS_SITES)
                         ->whereIn('elementId', $entryIds)
                         ->update([
                             'siteId' => $transferContentTo,
                             'dateUpdated' => now(),
                         ]);
 
-                    \Illuminate\Support\Facades\DB::table(\CraftCms\Cms\Db\Table::RELATIONS)
+                    DB::table(\CraftCms\Cms\Db\Table::RELATIONS)
                         ->whereIn('sourceId', $entryIds)
                         ->whereNotNull('sourceSiteId')
                         ->update([
@@ -1032,17 +1030,17 @@ class Sites extends Component
                         ]);
 
                     // Nested entries
-                    $nestedEntryIds = \Illuminate\Support\Facades\DB::table(\CraftCms\Cms\Db\Table::ENTRIES)
+                    $nestedEntryIds = DB::table(\CraftCms\Cms\Db\Table::ENTRIES)
                         ->whereIn('primaryOwnerId', $entryIds)
                         ->pluck('id');
 
                     if ($nestedEntryIds->isNotEmpty()) {
-                        \Illuminate\Support\Facades\DB::table(\CraftCms\Cms\Db\Table::ELEMENTS_SITES)
+                        DB::table(\CraftCms\Cms\Db\Table::ELEMENTS_SITES)
                             ->whereIn('elementId', $nestedEntryIds)
                             ->where('siteId', $transferContentTo)
                             ->delete();
 
-                        \Illuminate\Support\Facades\DB::table(\CraftCms\Cms\Db\Table::ELEMENTS_SITES)
+                        DB::table(\CraftCms\Cms\Db\Table::ELEMENTS_SITES)
                             ->whereIn('elementId', $nestedEntryIds)
                             ->where('siteId', $site->id)
                             ->update([
@@ -1050,7 +1048,7 @@ class Sites extends Component
                                 'dateUpdated' => now(),
                             ]);
 
-                        \Illuminate\Support\Facades\DB::table(\CraftCms\Cms\Db\Table::RELATIONS)
+                        DB::table(\CraftCms\Cms\Db\Table::RELATIONS)
                             ->whereIn('sourceId', $nestedEntryIds)
                             ->whereNotNull('sourceSiteId')
                             ->update([
@@ -1098,16 +1096,14 @@ class Sites extends Component
             ]));
         }
 
-        \Illuminate\Support\Facades\DB::beginTransaction();
+        DB::beginTransaction();
 
         try {
-            Craft::$app->getDb()->createCommand()
-                ->softDelete(Table::SITES, ['id' => $siteRecord->id])
-                ->execute();
+            DB::table(\CraftCms\Cms\Db\Table::SITES)->softDelete($siteRecord->id);
 
-            \Illuminate\Support\Facades\DB::commit();
+            DB::commit();
         } catch (Throwable $e) {
-            \Illuminate\Support\Facades\DB::rollBack();
+            DB::rollBack();
             throw $e;
         }
 
@@ -1142,10 +1138,7 @@ class Sites extends Component
      */
     public function restoreSiteById(int $id): bool
     {
-        $affectedRows = Craft::$app->getDb()->createCommand()
-            ->restore(Table::SITES, ['id' => $id])
-            ->execute();
-        return (bool)$affectedRows;
+        return (bool) DB::table(\CraftCms\Cms\Db\Table::SITES)->restore($id);
     }
 
     /**
@@ -1179,7 +1172,7 @@ class Sites extends Component
             return;
         }
 
-        $results = (new Query())
+        $results = DB::table(\CraftCms\Cms\Db\Table::SITES, 's')
             ->select([
                 's.id',
                 's.groupId',
@@ -1195,25 +1188,27 @@ class Sites extends Component
                 's.dateCreated',
                 's.dateUpdated',
             ])
-            ->from(['s' => Table::SITES])
-            ->innerJoin(['sg' => Table::SITEGROUPS], '[[sg.id]] = [[s.groupId]]')
-            ->where(['s.dateDeleted' => null])
-            ->andWhere(['sg.dateDeleted' => null])
-            ->orderBy(['sg.name' => SORT_ASC, 's.sortOrder' => SORT_ASC, 's.id' => SORT_ASC])
-            ->all();
+            ->join(new Alias(\CraftCms\Cms\Db\Table::SITEGROUPS, 'sg'), 'sg.id', 's.groupId')
+            ->whereNull(['s.dateDeleted', 'sg.dateDeleted'])
+            ->orderBy('sg.name')
+            ->orderBy('s.sortOrder')
+            ->orderBy('s.id')
+            ->get();
 
         // Check for results because during installation, the transaction hasn't been committed yet.
-        if (!empty($results)) {
-            foreach ($results as $result) {
-                $site = new Site($result);
-                $this->_allSitesById[$site->id] = $site;
-                if ($site->getEnabled()) {
-                    $this->_enabledSitesById[$site->id] = $site;
-                }
+        if ($results->isEmpty()) {
+            return;
+        }
 
-                if ($site->primary) {
-                    $this->_primarySite = $site;
-                }
+        foreach ($results as $result) {
+            $site = new Site((array) $result);
+            $this->_allSitesById[$site->id] = $site;
+            if ($site->getEnabled()) {
+                $this->_enabledSitesById[$site->id] = $site;
+            }
+
+            if ($site->primary) {
+                $this->_primarySite = $site;
             }
         }
     }
@@ -1309,17 +1304,17 @@ class Sites extends Component
         App::maxPowerCaptain();
 
         $db = Craft::$app->getDb();
-        \Illuminate\Support\Facades\DB::beginTransaction();
+        DB::beginTransaction();
 
         try {
-            \Illuminate\Support\Facades\DB::table(\CraftCms\Cms\Db\Table::SITES)
+            DB::table(\CraftCms\Cms\Db\Table::SITES)
                 ->where('id', $oldPrimarySiteId)
                 ->update([
                     'primary' => false,
                     'dateUpdated' => now(),
                 ]);
 
-            \Illuminate\Support\Facades\DB::table(\CraftCms\Cms\Db\Table::SITES)
+            DB::table(\CraftCms\Cms\Db\Table::SITES)
                 ->where('id', $newPrimarySiteId)
                 ->update([
                     'primary' => true,
@@ -1388,9 +1383,9 @@ SQL;
                 }
             }
 
-            \Illuminate\Support\Facades\DB::commit();
+            DB::commit();
         } catch (Throwable $e) {
-            \Illuminate\Support\Facades\DB::rollBack();
+            DB::rollBack();
             throw $e;
         }
 

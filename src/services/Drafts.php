@@ -21,6 +21,7 @@ use CraftCms\Cms\Db\Table;
 use CraftCms\Cms\Support\Arr;
 use Illuminate\Support\Facades\DB;
 use Throwable;
+use Tpetry\QueryExpressions\Language\Alias;
 use yii\base\Component;
 use yii\base\Exception;
 use yii\base\InvalidArgumentException;
@@ -424,7 +425,7 @@ class Drafts extends Component
 
         $drafts = DB::table(Table::ELEMENTS, 'elements')
             ->select('elements.draftId', 'elements.type')
-            ->join(Table::DRAFTS . ' as drafts', 'drafts.id', '=', 'elements.draftId')
+            ->join(new Alias(Table::DRAFTS, 'drafts'), 'drafts.id', '=', 'elements.draftId')
             ->where('drafts.saved', false)
             ->whereNull('drafts.canonicalId')
             ->where('elements.dateUpdated', '<', $pastTime)

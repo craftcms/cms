@@ -28,6 +28,7 @@ use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Db\Table;
 use CraftCms\Cms\Support\Arr;
 use Illuminate\Support\Facades\DB as DbFacade;
+use Tpetry\QueryExpressions\Language\Alias;
 use yii\base\InvalidConfigException;
 use yii\console\ExitCode;
 use yii\helpers\Console;
@@ -645,7 +646,7 @@ class EntrifyController extends Controller
         $this->do('Updating user permissions', function() use ($map, $updateUserGroups) {
             foreach ($map as $oldPermission => $newPermissions) {
                 $userIds = DbFacade::table(Table::USERPERMISSIONS_USERS, 'upu')
-                    ->join(Table::USERPERMISSIONS . ' as up', 'up.id', 'upu.permissionId')
+                    ->join(new Alias(Table::USERPERMISSIONS, 'up'), 'up.id', 'upu.permissionId')
                     ->where('up.name', $oldPermission)
                     ->pluck('upu.userId')
                     ->unique();

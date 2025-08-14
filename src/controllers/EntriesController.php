@@ -27,6 +27,7 @@ use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Throwable;
+use Tpetry\QueryExpressions\Language\Alias;
 use yii\web\BadRequestHttpException;
 use yii\web\ForbiddenHttpException;
 use yii\web\NotFoundHttpException;
@@ -381,7 +382,7 @@ class EntriesController extends BaseEntriesController
         // get entry types by entry IDs
         $entryTypes = DB::table(Table::ENTRYTYPES, 'et')
             ->distinct()
-            ->leftJoin(Table::ENTRIES . ' as e', 'e.typeId', 'et.id')
+            ->leftJoin(new Alias(Table::ENTRIES, 'e'), 'e.typeId', 'et.id')
             ->whereIn('e.id', $entryIds)
             ->pluck('et.id')
             ->all();

@@ -42,6 +42,7 @@ use CraftCms\Cms\Support\Str;
 use GraphQL\Type\Definition\Type;
 use Illuminate\Database\Query\JoinClause;
 use Illuminate\Support\Facades\DB;
+use Tpetry\QueryExpressions\Language\Alias;
 use yii\base\InvalidConfigException;
 use yii\db\Expression;
 
@@ -807,7 +808,7 @@ class Addresses extends Field implements
                 'elements_owners.ownerId as source',
                 'addresses.id as target',
             ])
-            ->join(\CraftCms\Cms\Db\Table::ELEMENTS_OWNERS . ' as elements_owners', function(JoinClause $join) use ($sourceElementIds) {
+            ->join(new Alias(\CraftCms\Cms\Db\Table::ELEMENTS_OWNERS, 'elements_owners'), function(JoinClause $join) use ($sourceElementIds) {
                 $join->where('elements_owners.elementId', 'addresses.id')
                     ->whereIn('elements_owners.ownerId', $sourceElementIds);
             })

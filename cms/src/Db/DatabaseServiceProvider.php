@@ -17,6 +17,20 @@ final class DatabaseServiceProvider extends ServiceProvider
         Builder::macro('idsByUids', fn (array $uids): array => $this->whereIn('uid', $uids)->pluck('id', 'uid')->all());
         Builder::macro('uidById', fn (int $id): ?string => $this->where('id', $id)->value('uid') ?: null);
         Builder::macro('uidsByIds', fn (array $ids): array => $this->whereIn('id', $ids)->pluck('uid', 'id')->all());
+        Builder::macro('softDelete', function (?int $id = null): int {
+            if (! is_null($id)) {
+                $this->where($this->from.'.id', '=', $id);
+            }
+
+            return $this->update(['dateDeleted' => now()]);
+        });
+        Builder::macro('restore', function (?int $id = null): int {
+            if (! is_null($id)) {
+                $this->where($this->from.'.id', '=', $id);
+            }
+
+            return $this->update(['dateDeleted' => null]);
+        });
     }
 
     public function boot(Repository $config, Connection $db, \Illuminate\Cache\Repository $cache): void

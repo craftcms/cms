@@ -11,6 +11,7 @@ use Craft;
 use craft\console\Controller;
 use CraftCms\Cms\Db\Table;
 use Illuminate\Support\Facades\DB;
+use Tpetry\QueryExpressions\Language\Alias;
 use yii\console\ExitCode;
 
 /**
@@ -45,8 +46,8 @@ class DeleteEmptyVolumeFoldersController extends Controller
     public function actionIndex(): int
     {
         $query = DB::table(Table::VOLUMEFOLDERS, 'folders')
-            ->leftJoin(Table::ASSETS . ' as assets', 'assets.folderId', '=', 'folders.id')
-            ->leftJoin(Table::VOLUMEFOLDERS . ' as subfolders', 'subfolders.parentId', '=', 'folders.id')
+            ->leftJoin(new Alias(Table::ASSETS, 'assets'), 'assets.folderId', '=', 'folders.id')
+            ->leftJoin(new Alias(Table::VOLUMEFOLDERS, 'subfolders'), 'subfolders.parentId', '=', 'folders.id')
             ->whereNull(['assets.id', 'subfolders.id'])
             ->whereNotNull(['folders.parentId', 'folders.path']);
 

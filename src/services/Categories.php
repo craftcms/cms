@@ -9,15 +9,12 @@ namespace craft\services;
 
 use Craft;
 use craft\base\MemoizableArray;
-use craft\db\Query;
-use craft\db\Table;
 use craft\elements\Category;
 use craft\errors\CategoryGroupNotFoundException;
 use craft\events\CategoryGroupEvent;
 use craft\events\ConfigEvent;
 use craft\events\DeleteSiteEvent;
 use craft\helpers\App;
-use craft\helpers\Db;
 use craft\helpers\ProjectConfig as ProjectConfigHelper;
 use craft\models\CategoryGroup;
 use craft\models\CategoryGroup_SiteSettings;
@@ -26,10 +23,13 @@ use craft\models\Structure;
 use craft\records\CategoryGroup as CategoryGroupRecord;
 use craft\records\CategoryGroup_SiteSettings as CategoryGroup_SiteSettingsRecord;
 use craft\web\View;
+use CraftCms\Cms\Db\Table;
 use CraftCms\Cms\Support\Str;
-use DateTime;
+use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\DB;
 use Throwable;
+use Tpetry\QueryExpressions\Language\Alias;
 use yii\base\Component;
 use yii\base\Exception;
 
@@ -177,6 +177,7 @@ class Categories extends Component
      * Returns a group by its ID.
      *
      * @param int $groupId
+     *
      * @return CategoryGroup|null
      */
     public function getGroupById(int $groupId): ?CategoryGroup
@@ -188,6 +189,7 @@ class Categories extends Component
      * Returns a group by its UID.
      *
      * @param string $uid
+     *
      * @return CategoryGroup|null
      * @since 3.1.0
      */
@@ -201,6 +203,7 @@ class Categories extends Component
      *
      * @param string $groupHandle
      * @param bool $withTrashed
+     *
      * @return CategoryGroup|null
      */
     public function getGroupByHandle(string $groupHandle, bool $withTrashed = false): ?CategoryGroup
@@ -225,6 +228,7 @@ class Categories extends Component
      * Returns a group's site settings.
      *
      * @param int $groupId
+     *
      * @return CategoryGroup_SiteSettings[]
      */
     public function getGroupSiteSettings(int $groupId): array
@@ -254,6 +258,7 @@ class Categories extends Component
      *
      * @param CategoryGroup $group The category group to be saved
      * @param bool $runValidation Whether the category group should be validated
+     *
      * @return bool Whether the category group was saved successfully
      * @throws CategoryGroupNotFoundException if $group has an invalid ID
      * @throws Throwable if reasons
@@ -297,7 +302,7 @@ class Categories extends Component
         Craft::$app->getProjectConfig()->set($configPath, $configData, "Save category group “{$group->handle}”");
 
         if ($isNewCategoryGroup) {
-            $group->id = \Illuminate\Support\Facades\DB::table(\CraftCms\Cms\Db\Table::CATEGORYGROUPS)->idByUid($group->uid);
+            $group->id = DB::table(Table::CATEGORYGROUPS)->idByUid($group->uid);
         }
 
         return true;
@@ -317,7 +322,7 @@ class Categories extends Component
         ProjectConfigHelper::ensureAllSitesProcessed();
         ProjectConfigHelper::ensureAllFieldsProcessed();
 
-        \Illuminate\Support\Facades\DB::beginTransaction();
+        DB::beginTransaction();
 
         try {
             $structureData = $data['structure'];
@@ -335,7 +340,8 @@ class Categories extends Component
 
             // Structure
             $structuresService = Craft::$app->getStructures();
-            $structure = $structuresService->getStructureByUid($structureUid, true) ?? new Structure(['uid' => $structureUid]);
+            $structure = $structuresService->getStructureByUid($structureUid,
+                true) ?? new Structure(['uid' => $structureUid]);
             $structure->maxLevels = $structureData['maxLevels'];
             $structuresService->saveStructure($structure);
 
@@ -378,7 +384,7 @@ class Categories extends Component
                     ->all();
             }
 
-            $siteIdMap = \Illuminate\Support\Facades\DB::table(\CraftCms\Cms\Db\Table::SITES)
+            $siteIdMap = DB::table(Table::SITES)
                 ->whereIn('uid', array_keys($siteData))
                 ->pluck('id', 'uid')
                 ->all();
@@ -445,7 +451,7 @@ class Categories extends Component
                 if (!empty($siteData)) {
                     // Drop the old category URIs for any site settings that don't have URLs
                     if (!empty($sitesNowWithoutUrls)) {
-                        \Illuminate\Support\Facades\DB::table(\CraftCms\Cms\Db\Table::ELEMENTS_SITES)
+                        DB::table(Table::ELEMENTS_SITES)
                             ->whereIn('elementId', $categoryIds)
                             ->whereIn('siteId', $sitesNowWithoutUrls)
                             ->update([
@@ -474,9 +480,9 @@ class Categories extends Component
                 }
             }
 
-            \Illuminate\Support\Facades\DB::commit();
+            DB::commit();
         } catch (Throwable $e) {
-            \Illuminate\Support\Facades\DB::rollBack();
+            DB::rollBack();
             throw $e;
         }
 
@@ -510,6 +516,7 @@ class Categories extends Component
      * Deletes a category group by its ID.
      *
      * @param int $groupId The category group's ID
+     *
      * @return bool Whether the category group was deleted successfully
      * @throws Throwable if reasons
      * @since 3.0.12
@@ -533,6 +540,7 @@ class Categories extends Component
      * Deletes a category group.
      *
      * @param CategoryGroup $group The category group
+     *
      * @return bool Whether the category group was deleted successfully
      */
     public function deleteGroup(CategoryGroup $group): bool
@@ -544,7 +552,8 @@ class Categories extends Component
             ]));
         }
 
-        Craft::$app->getProjectConfig()->remove(ProjectConfig::PATH_CATEGORY_GROUPS . '.' . $group->uid, "Delete category group “{$group->handle}”");
+        Craft::$app->getProjectConfig()->remove(ProjectConfig::PATH_CATEGORY_GROUPS . '.' . $group->uid,
+            "Delete category group “{$group->handle}”");
         return true;
     }
 
@@ -553,6 +562,7 @@ class Categories extends Component
      *
      * @param CategoryGroup $group
      * @param int $siteId
+     *
      * @return bool
      */
     public function isGroupTemplateValid(CategoryGroup $group, int $siteId): bool
@@ -591,44 +601,27 @@ class Categories extends Component
             ]));
         }
 
-        \Illuminate\Support\Facades\DB::beginTransaction();
+        DB::beginTransaction();
         try {
             // Delete the categories
             $elementsTable = Table::ELEMENTS;
             $categoriesTable = Table::CATEGORIES;
-            $now = Db::prepareDateForDb(new DateTime());
-            $db = Craft::$app->getDb();
+            $now = now();
 
-            $conditionSql = <<<SQL
-[[categories.groupId]] = $group->id AND
-[[categories.id]] = [[elements.id]] AND
-[[elements.canonicalId]] IS NULL AND
-[[elements.revisionId]] IS NULL AND
-[[elements.dateDeleted]] IS NULL
-SQL;
+            $condition = fn(Builder $query): Builder => $query
+                ->where('categories.groupId', $group->id)
+                ->whereColumn('categories.id', 'elements.id')
+                ->whereNull(['elements.canonicalId', 'elements.revisionId', 'elements.dateDeleted']);
 
-            if ($db->getIsMysql()) {
-                $db->createCommand(<<<SQL
-UPDATE $elementsTable [[elements]], $categoriesTable [[categories]]
-SET [[elements.dateDeleted]] = '$now',
-  [[categories.deletedWithGroup]] = 1
-WHERE $conditionSql
-SQL)->execute();
-            } else {
-                // Not possible to update two tables simultaneously with Postgres
-                $db->createCommand(<<<SQL
-UPDATE $categoriesTable [[categories]]
-SET [[deletedWithGroup]] = TRUE
-FROM $elementsTable [[elements]]
-WHERE $conditionSql
-SQL)->execute();
-                $db->createCommand(<<<SQL
-UPDATE $elementsTable [[elements]]
-SET [[dateDeleted]] = '$now'
-FROM $categoriesTable [[categories]]
-WHERE $conditionSql
-SQL)->execute();
-            }
+            DB::table(new Alias($categoriesTable, 'categories'))
+                ->join(new Alias($elementsTable, 'elements'), 'elements.id', 'categories.id')
+                ->where($condition)
+                ->update(['deletedWithGroup' => true]);
+
+            DB::table(new Alias($elementsTable, 'elements'))
+                ->join(new Alias($categoriesTable, 'categories'), 'elements.id', 'categories.id')
+                ->where($condition)
+                ->update(['dateDeleted' => $now]);
 
             // Delete the structure
             Craft::$app->getStructures()->deleteStructureById($categoryGroupRecord->structureId);
@@ -639,13 +632,11 @@ SQL)->execute();
             }
 
             // Delete the category group
-            Craft::$app->getDb()->createCommand()
-                ->softDelete(Table::CATEGORYGROUPS, ['id' => $categoryGroupRecord->id])
-                ->execute();
+            DB::table(Table::CATEGORYGROUPS)->softDelete($categoryGroupRecord->id);
 
-            \Illuminate\Support\Facades\DB::commit();
+            DB::commit();
         } catch (Throwable $e) {
-            \Illuminate\Support\Facades\DB::rollBack();
+            DB::rollBack();
             throw $e;
         }
 
@@ -685,7 +676,8 @@ SQL)->execute();
         // Loop through the category groups and prune the UID from field layouts.
         if (is_array($categoryGroups)) {
             foreach ($categoryGroups as $categoryGroupUid => $categoryGroup) {
-                $projectConfig->remove(ProjectConfig::PATH_CATEGORY_GROUPS . '.' . $categoryGroupUid . '.siteSettings.' . $siteUid, 'Prune deleted site settings');
+                $projectConfig->remove(ProjectConfig::PATH_CATEGORY_GROUPS . '.' . $categoryGroupUid . '.siteSettings.' . $siteUid,
+                    'Prune deleted site settings');
             }
         }
     }
@@ -699,6 +691,7 @@ SQL)->execute();
      * @param int $categoryId
      * @param int|int[]|string|null $siteId
      * @param array $criteria
+     *
      * @return Category|null
      */
     public function getCategoryById(int $categoryId, mixed $siteId = null, array $criteria = []): ?Category
@@ -709,12 +702,12 @@ SQL)->execute();
 
         // Get the structure ID
         if (!isset($criteria['structureId'])) {
-            $criteria['structureId'] = (new Query())
-                ->select(['categorygroups.structureId'])
-                ->from(['categories' => Table::CATEGORIES])
-                ->innerJoin(['categorygroups' => Table::CATEGORYGROUPS], '[[categorygroups.id]] = [[categories.groupId]]')
-                ->where(['categories.id' => $categoryId])
-                ->scalar();
+            $criteria['structureId'] = DB::table(new Alias(Table::CATEGORIES,
+                'categories'))
+                ->join(new Alias(Table::CATEGORYGROUPS, 'categorygroups'), 'categorygroups.id',
+                    'categories.groupId')
+                ->where('categories.id', $categoryId)
+                ->value('categorygroups.structureId');
         }
 
         // All categories are part of a structure
@@ -729,6 +722,7 @@ SQL)->execute();
      * Patches an array of categories, filling in any gaps in the tree.
      *
      * @param Category[] $categories
+     *
      * @deprecated in 3.6.0. Use [[\craft\services\Structures::fillGapsInElements()]] instead.
      */
     public function fillGapsInCategories(array &$categories): void
@@ -741,6 +735,7 @@ SQL)->execute();
      *
      * @param Category[] $categories
      * @param int $branchLimit
+     *
      * @deprecated in 3.6.0. Use [[\craft\services\Structures::applyBranchLimitToElements()]] instead.
      */
     public function applyBranchLimitToCategories(array &$categories, int $branchLimit): void
@@ -752,6 +747,7 @@ SQL)->execute();
      * Creates a CategoryGroup with attributes from a CategoryGroupRecord.
      *
      * @param CategoryGroupRecord|null $groupRecord
+     *
      * @return CategoryGroup|null
      */
     private function _createCategoryGroupFromRecord(?CategoryGroupRecord $groupRecord = null): ?CategoryGroup
@@ -783,6 +779,7 @@ SQL)->execute();
      *
      * @param string $uid
      * @param bool $withTrashed Whether to include trashed category groups in search
+     *
      * @return CategoryGroupRecord
      */
     private function _getCategoryGroupRecord(string $uid, bool $withTrashed = false): CategoryGroupRecord

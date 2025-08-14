@@ -15,6 +15,7 @@ use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Db\Table;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Facades\DB;
+use Tpetry\QueryExpressions\Language\Alias;
 use yii\console\ExitCode;
 
 /**
@@ -91,10 +92,10 @@ class PruneRevisionsController extends Controller
             ->when(
                 value: !empty($sectionIds),
                 callback: fn(Builder $query) => $query
-                    ->join(Table::ENTRIES . ' as entries', 'entries.id', '=', 'r.canonicalId')
+                    ->join(new Alias(Table::ENTRIES, 'entries'), 'entries.id', '=', 'r.canonicalId')
                     ->whereIn('entries.sectionId', $sectionIds),
                 default: fn(Builder $query) => $query
-                    ->leftJoin(Table::ENTRIES . ' as entries', 'entries.id', '=', 'r.canonicalId')
+                    ->leftJoin(new Alias(Table::ENTRIES, 'entries'), 'entries.id', '=', 'r.canonicalId')
                     ->where(function(Builder $query) {
                         $query->whereNull('entries.id')
                             ->orWhereNotNull('entries.sectionId');

@@ -99,6 +99,7 @@ use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
 use ReflectionClass;
 use Throwable;
+use Tpetry\QueryExpressions\Language\Alias;
 use Traversable;
 use Twig\Markup;
 use UnitEnum;
@@ -2077,8 +2078,8 @@ abstract class Element extends Component implements ElementInterface
         $sourceElementIds = array_map(fn(ElementInterface $element) => $element->id, $sourceElements);
 
         $map = DB::table(Table::ELEMENTS, 're')
-            ->join(Table::REVISIONS . ' as r', 'r.id', '=', 're.revisionId')
-            ->join(Table::ELEMENTS . ' as se', 'se.id', '=', 'r.canonicalId')
+            ->join(new Alias(Table::REVISIONS, 'r'), 'r.id', '=', 're.revisionId')
+            ->join(new Alias(Table::ELEMENTS, 'se'), 'se.id', '=', 'r.canonicalId')
             ->whereColumn('re.dateCreated', '=', 'se.dateUpdated')
             ->whereIn('se.id', $sourceElementIds)
             ->select([
@@ -2108,7 +2109,7 @@ abstract class Element extends Component implements ElementInterface
         $sourceElementIds = array_map(fn(ElementInterface $element) => $element->id, $sourceElements);
 
         $map = DB::table(Table::DRAFTS, 'd')
-            ->join(Table::ELEMENTS . ' as e', 'e.draftId', '=', 'd.id')
+            ->join(new Alias(Table::ELEMENTS,'e'), 'e.draftId', '=', 'd.id')
             ->whereIn('d.canonicalId', $sourceElementIds)
             ->select([
                 'd.canonicalId as source',
@@ -2137,7 +2138,7 @@ abstract class Element extends Component implements ElementInterface
         $sourceElementIds = array_map(fn(ElementInterface $element) => $element->id, $sourceElements);
 
         $map = DB::table(Table::REVISIONS, 'r')
-            ->join(Table::ELEMENTS . ' as e', 'e.revisionId', '=', 'r.id')
+            ->join(new Alias(Table::ELEMENTS,'e'), 'e.revisionId', '=', 'r.id')
             ->whereIn('r.canonicalId', $sourceElementIds)
             ->select([
                 'r.canonicalId as source',
@@ -2166,7 +2167,7 @@ abstract class Element extends Component implements ElementInterface
         $sourceElementIds = array_map(fn(ElementInterface $element) => $element->id, $sourceElements);
 
         $map = DB::table(Table::ELEMENTS, 'e')
-            ->join(Table::DRAFTS . ' as d', 'd.id', '=', 'e.draftId')
+            ->join(new Alias(Table::DRAFTS,'d'), 'd.id', '=', 'e.draftId')
             ->whereIn('e.id', $sourceElementIds)
             ->whereNotNull('d.creatorId')
             ->select([
@@ -2195,7 +2196,7 @@ abstract class Element extends Component implements ElementInterface
         $sourceElementIds = array_map(fn(ElementInterface $element) => $element->id, $sourceElements);
 
         $map = DB::table(Table::ELEMENTS, 'e')
-            ->join(Table::REVISIONS . ' as r', 'r.id', '=', 'e.revisionId')
+            ->join(new Alias(Table::REVISIONS,'r'), 'r.id', '=', 'e.revisionId')
             ->whereIn('e.id', $sourceElementIds)
             ->whereNotNull('r.creatorId')
             ->select([

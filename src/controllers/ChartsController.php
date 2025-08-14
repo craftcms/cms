@@ -17,6 +17,7 @@ use DateTime;
 use DateTimeZone;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Facades\DB;
+use Tpetry\QueryExpressions\Language\Alias;
 use yii\base\Exception;
 use yii\base\Response;
 
@@ -59,7 +60,7 @@ class ChartsController extends Controller
         // Prep the query
         $query = DB::table(Table::USERS)
             ->when($userGroupId, fn(Builder $query, $userGroupId) => $query
-                ->join(Table::USERGROUPS_USERS . ' as usergroups_users', 'usergroups_users.userId', 'users.id')
+                ->join(new Alias(Table::USERGROUPS_USERS, 'usergroups_users'), 'usergroups_users.userId', 'users.id')
                 ->where('usergroups_users.groupId', $userGroupId),
             )
         ;

@@ -9,8 +9,6 @@ namespace craft\web;
 
 use Craft;
 use craft\base\ApplicationTrait;
-use craft\db\Query;
-use craft\db\Table;
 use craft\debug\DeprecatedPanel;
 use craft\debug\DumpPanel;
 use craft\debug\Module as DebugModule;
@@ -25,8 +23,10 @@ use craft\helpers\Path;
 use craft\helpers\UrlHelper;
 use craft\queue\QueueLogBehavior;
 use CraftCms\Cms\Config\GeneralConfig;
+use CraftCms\Cms\Db\Table;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Json;
+use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Config;
 use IntlDateFormatter;
@@ -40,7 +40,6 @@ use yii\base\ExitException as YiiExitException;
 use yii\base\InvalidArgumentException;
 use yii\base\InvalidConfigException;
 use yii\base\InvalidRouteException;
-use yii\db\Exception as DbException;
 use yii\debug\Module as YiiDebugModule;
 use yii\debug\panels\AssetPanel;
 use yii\debug\panels\DbPanel;
@@ -565,12 +564,10 @@ class Application extends \yii\web\Application
     private function resourceSourcePathByHash(string $hash): string|null
     {
         try {
-            return (new Query())
-                ->select(['path'])
-                ->from(Table::RESOURCEPATHS)
-                ->where(['hash' => $hash])
-                ->scalar();
-        } catch (DbException) {
+            return \Illuminate\Support\Facades\DB::table(Table::RESOURCEPATHS)
+                ->where('hash', $hash)
+                ->value('path');
+        } catch (QueryException) {
             // Craft isn't installed yet. See if it's cached as a fallback.
             return Cache::get(Craft::$app->getAssetManager()->getCacheKeyForPathHash($hash));
         }

@@ -30,6 +30,7 @@ use CraftCms\Cms\Utility\Utilities\ProjectConfig as ProjectConfigUtility;
 use CraftCms\Cms\Utility\Utility;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Facades\DB;
+use Tpetry\QueryExpressions\Language\Alias;
 use yii\base\Component;
 use yii\db\Exception;
 
@@ -171,7 +172,7 @@ class UserPermissions extends Component
     {
         if (!isset($this->_permissionsByGroupId[$groupId])) {
             $this->_permissionsByGroupId[$groupId] = $this->_createUserPermissionsQuery()
-                ->join(Table::USERPERMISSIONS_USERGROUPS . ' as p_g', 'p_g.permissionId', 'p.id')
+                ->join(new Alias(Table::USERPERMISSIONS_USERGROUPS, 'p_g'), 'p_g.permissionId', 'p.id')
                 ->where('p_g.groupId', $groupId)
                 ->pluck('p.name')
                 ->all();
@@ -195,8 +196,8 @@ class UserPermissions extends Component
         }
 
         return $this->_createUserPermissionsQuery()
-            ->join(Table::USERPERMISSIONS_USERGROUPS . ' as p_g', 'p_g.permissionId', 'p.id')
-            ->join(Table::USERGROUPS_USERS . ' as g_u', 'g_u.groupId', 'p_g.groupId')
+            ->join(new Alias(Table::USERPERMISSIONS_USERGROUPS, 'p_g'), 'p_g.permissionId', 'p.id')
+            ->join(new Alias(Table::USERGROUPS_USERS, 'g_u'), 'g_u.groupId', 'p_g.groupId')
             ->where('g_u.userId', $userId)
             ->pluck('p.name')
             ->all();
@@ -272,7 +273,7 @@ class UserPermissions extends Component
             if (Craft::$app->edition->value >= Edition::Pro->value) {
                 /** @var string[] $userPermissions */
                 $userPermissions = $this->_createUserPermissionsQuery()
-                    ->join(Table::USERPERMISSIONS_USERS . ' as p_u', 'p_u.permissionId', 'p.id')
+                    ->join(new Alias(Table::USERPERMISSIONS_USERS, 'p_u'), 'p_u.permissionId', 'p.id')
                     ->where('p_u.userId', $userId)
                     ->pluck('p.name')
                     ->all();

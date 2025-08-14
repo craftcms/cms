@@ -12,8 +12,6 @@ use craft\base\Element;
 use craft\base\ElementContainerFieldInterface;
 use craft\base\Field;
 use craft\base\MemoizableArray;
-use craft\db\Query;
-use craft\db\Table;
 use craft\elements\Entry;
 use craft\errors\EntryTypeNotFoundException;
 use craft\errors\InvalidElementException;
@@ -26,7 +24,7 @@ use craft\events\MoveEntryEvent;
 use craft\events\SectionEvent;
 use craft\helpers\AdminTable;
 use craft\helpers\Cp;
-use craft\helpers\Db;
+use craft\helpers\Db as DbHelper;
 use craft\helpers\Html;
 use craft\helpers\ProjectConfig as ProjectConfigHelper;
 use craft\helpers\Queue;
@@ -42,14 +40,18 @@ use craft\queue\jobs\ResaveElements;
 use craft\records\EntryType as EntryTypeRecord;
 use craft\records\Section as SectionRecord;
 use craft\records\Section_SiteSettings as Section_SiteSettingsRecord;
+use CraftCms\Cms\Db\Table;
 use CraftCms\Cms\Element\Enums\PropagationMethod;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Support\Str;
 use CraftCms\DependencyAwareCache\Dependency\TagDependency;
-use DateTime;
+use Illuminate\Database\Query\Builder;
+use Illuminate\Database\Query\JoinClause;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\DB;
 use Throwable;
+use Tpetry\QueryExpressions\Language\Alias;
 use yii\base\Component;
 use yii\base\Exception;
 use yii\base\InvalidArgumentException;
@@ -232,29 +234,31 @@ class Entries extends Component
     private function _sections(): MemoizableArray
     {
         if (!isset($this->_sections)) {
-            $results = $this->_createSectionQuery()->all();
+            $results = $this->_createSectionQuery()->get();
             $siteSettingsBySection = [];
 
-            if (!empty($results) && Craft::$app->getRequest()->getIsCpRequest()) {
+            if ($results->isNotEmpty() && Craft::$app->getRequest()->getIsCpRequest()) {
                 // Eager load the site settings
-                $sectionIds = array_map(fn(array $result) => $result['id'], $results);
-                $siteSettingsBySection = Collection::make($this->_createSectionSiteSettingsQuery()->where(['sections_sites.sectionId' => $sectionIds])->all())
+                $sectionIds = $results->pluck('id')->all();
+                $siteSettingsBySection = $this->_createSectionSiteSettingsQuery()
+                    ->whereIn('sections_sites.sectionId', $sectionIds)
+                    ->get()
                     ->groupBy('sectionId')
                     ->map(fn(Collection $collection) => $collection->all())
                     ->all();
             }
 
-            $this->_sections = new MemoizableArray($results, function(array $result) use (&$siteSettingsBySection) {
-                if (!empty($result['previewTargets']) && is_string($result['previewTargets'])) {
-                    $result['previewTargets'] = Json::decode($result['previewTargets']);
+            $this->_sections = new MemoizableArray($results->all(), function(object $result) use (&$siteSettingsBySection) {
+                if (!empty($result->previewTargets) && is_string($result->previewTargets)) {
+                    $result->previewTargets = Json::decode($result->previewTargets);
                 } else {
-                    $result['previewTargets'] = [];
+                    $result->previewTargets = [];
                 }
-                $section = new Section($result);
+                $section = new Section((array) $result);
                 $siteSettings = Arr::pull($siteSettingsBySection, $section->id);
                 if ($siteSettings !== null) {
                     $section->setSiteSettings(
-                        array_map(fn(array $config) => new Section_SiteSettings($config), $siteSettings),
+                        array_map(fn(object $config) => new Section_SiteSettings((array) $config), $siteSettings),
                     );
                 }
                 return $section;
@@ -264,14 +268,9 @@ class Entries extends Component
         return $this->_sections;
     }
 
-    /**
-     * Returns a Query object prepped for retrieving sections.
-     *
-     * @return Query
-     */
-    private function _createSectionQuery(): Query
+    private function _createSectionQuery(): Builder
     {
-        return (new Query())
+        return DB::table(Table::SECTIONS, 'sections')
             ->select([
                 'sections.id',
                 'sections.structureId',
@@ -286,14 +285,12 @@ class Entries extends Component
                 'sections.uid',
                 'structures.maxLevels',
             ])
-            ->leftJoin(['structures' => Table::STRUCTURES], [
-                'and',
-                '[[structures.id]] = [[sections.structureId]]',
-                ['structures.dateDeleted' => null],
-            ])
-            ->from(['sections' => Table::SECTIONS])
-            ->where(['sections.dateDeleted' => null])
-            ->orderBy(['name' => SORT_ASC]);
+            ->leftJoin(new Alias(Table::STRUCTURES, 'structures'), function(JoinClause $join) {
+                $join->whereColumn('structures.id', 'sections.structureId')
+                    ->whereNull('structures.dateDeleted');
+            })
+            ->whereNull('sections.dateDeleted')
+            ->orderBy('sections.name');
     }
 
     /**
@@ -364,6 +361,7 @@ class Entries extends Component
      * ```
      *
      * @param string $type The section type (`single`, `channel`, or `structure`)
+     *
      * @return Section[] All the sections of the given type.
      * @since 5.0.0
      */
@@ -425,6 +423,7 @@ class Entries extends Component
      * ```
      *
      * @param int $sectionId
+     *
      * @return Section|null
      * @since 5.0.0
      */
@@ -446,6 +445,7 @@ class Entries extends Component
      * ```
      *
      * @param string $uid
+     *
      * @return Section|null
      * @since 5.0.0
      */
@@ -467,6 +467,7 @@ class Entries extends Component
      * ```
      *
      * @param string $sectionHandle
+     *
      * @return Section|null
      * @since 5.0.0
      */
@@ -479,30 +480,22 @@ class Entries extends Component
      * Returns a section’s site-specific settings.
      *
      * @param int $sectionId
+     *
      * @return Section_SiteSettings[] The section’s site-specific settings.
      * @since 5.0.0
      */
     public function getSectionSiteSettings(int $sectionId): array
     {
-        $siteSettings = $this->_createSectionSiteSettingsQuery()
-            ->where(['sections_sites.sectionId' => $sectionId])
+        return $this->_createSectionSiteSettingsQuery()
+            ->where('sections_sites.sectionId', $sectionId)
+            ->get()
+            ->map(fn(object $result) => new Section_SiteSettings((array) $result))
             ->all();
-
-        foreach ($siteSettings as $key => $value) {
-            $siteSettings[$key] = new Section_SiteSettings($value);
-        }
-
-        return $siteSettings;
     }
 
-    /**
-     * Returns a new section site settings query.
-     *
-     * @return Query
-     */
-    private function _createSectionSiteSettingsQuery(): Query
+    private function _createSectionSiteSettingsQuery(): Builder
     {
-        return (new Query())
+        return DB::table(Table::SECTIONS_SITES, 'sections_sites')
             ->select([
                 'sections_sites.id',
                 'sections_sites.sectionId',
@@ -512,13 +505,11 @@ class Entries extends Component
                 'sections_sites.uriFormat',
                 'sections_sites.template',
             ])
-            ->from(['sections_sites' => Table::SECTIONS_SITES])
-            ->innerJoin(['sites' => Table::SITES], [
-                'and',
-                '[[sites.id]] = [[sections_sites.siteId]]',
-                ['sites.dateDeleted' => null],
-            ])
-            ->orderBy(['sites.sortOrder' => SORT_ASC]);
+            ->join(new Alias(Table::SITES, 'sites'), function(JoinClause $join) {
+                $join->whereColumn('sections_sites.siteId', 'sites.id')
+                    ->whereNull('sites.dateDeleted');
+            })
+            ->orderBy('sites.sortOrder');
     }
 
     /**
@@ -550,6 +541,7 @@ class Entries extends Component
      *
      * @param Section $section The section to be saved
      * @param bool $runValidation Whether the section should be validated
+     *
      * @return bool
      * @throws SectionNotFoundException if $section->id is invalid
      * @throws Throwable if reasons
@@ -575,7 +567,7 @@ class Entries extends Component
         if ($isNewSection) {
             $section->uid ??= Str::uuid()->toString();
         } elseif (!$section->uid) {
-            $section->uid = \Illuminate\Support\Facades\DB::table(\CraftCms\Cms\Db\Table::SECTIONS)->uidById($section->id);
+            $section->uid = DB::table(Table::SECTIONS)->uidById($section->id);
         }
 
         // Main section settings
@@ -589,7 +581,7 @@ class Entries extends Component
         // Do everything that follows in a transaction so no DB changes will be
         // saved if an exception occurs that ends up preventing the project config
         // changes from getting saved
-        \Illuminate\Support\Facades\DB::beginTransaction();
+        DB::beginTransaction();
 
         try {
             // Save the section config
@@ -600,7 +592,7 @@ class Entries extends Component
             Craft::$app->getProjectConfig()->set($configPath, $configData, "Save section “{$section->handle}”");
 
             if ($isNewSection) {
-                $section->id = \Illuminate\Support\Facades\DB::table(\CraftCms\Cms\Db\Table::SECTIONS)->idByUid($section->uid);
+                $section->id = DB::table(Table::SECTIONS)->idByUid($section->uid);
             }
 
             // Special handling for Single sections
@@ -611,9 +603,9 @@ class Entries extends Component
                 $this->_ensureSingleEntry($section, $configData['siteSettings']);
             }
 
-            \Illuminate\Support\Facades\DB::commit();
+            DB::commit();
         } catch (Throwable $e) {
-            \Illuminate\Support\Facades\DB::rollBack();
+            DB::rollBack();
             throw $e;
         }
 
@@ -624,6 +616,7 @@ class Entries extends Component
      * Handle section change
      *
      * @param ConfigEvent $event
+     *
      * @since 5.0.0
      */
     public function handleChangedSection(ConfigEvent $event): void
@@ -635,7 +628,7 @@ class Entries extends Component
         $sectionUid = $event->tokenMatches[0];
         $data = $event->newValue;
 
-        \Illuminate\Support\Facades\DB::beginTransaction();
+        DB::beginTransaction();
 
         try {
             $siteSettingData = $data['siteSettings'];
@@ -662,7 +655,8 @@ class Entries extends Component
 
                 // Save the structure
                 $structureUid = $data['structure']['uid'];
-                $structure = $structuresService->getStructureByUid($structureUid, true) ?? new Structure(['uid' => $structureUid]);
+                $structure = $structuresService->getStructureByUid($structureUid,
+                    true) ?? new Structure(['uid' => $structureUid]);
                 $isNewStructure = empty($structure->id);
                 $structure->maxLevels = $data['structure']['maxLevels'];
 
@@ -707,11 +701,11 @@ class Entries extends Component
             // Update the entry type relations
             // -----------------------------------------------------------------
 
-            \Illuminate\Support\Facades\DB::table(\CraftCms\Cms\Db\Table::SECTIONS_ENTRYTYPES)
+            DB::table(Table::SECTIONS_ENTRYTYPES)
                 ->where('sectionId', $sectionRecord->id)
                 ->delete();
 
-            \Illuminate\Support\Facades\DB::table(\CraftCms\Cms\Db\Table::SECTIONS_ENTRYTYPES)
+            DB::table(Table::SECTIONS_ENTRYTYPES)
                 ->insert(Collection::make($data['entryTypes'] ?? [])
                     ->map(fn($entryType) => $this->getEntryType($entryType))
                     ->filter()
@@ -723,7 +717,7 @@ class Entries extends Component
                         'handle' => isset($entryType->original) && $entryType->handle !== $entryType->original->handle ? $entryType->handle : null,
                         'description' => isset($entryType->original) && $entryType->description !== $entryType->original->description ? $entryType->description : null,
                     ])
-                    ->all()
+                    ->all(),
                 );
 
             // Update the site settings
@@ -739,7 +733,7 @@ class Entries extends Component
                 $allOldSiteSettingsRecords = [];
             }
 
-            $siteIdMap = \Illuminate\Support\Facades\DB::table(\CraftCms\Cms\Db\Table::SITES)
+            $siteIdMap = DB::table(Table::SITES)
                 ->whereIn('uid', array_keys($siteSettingData))
                 ->pluck('id', 'uid')
                 ->all();
@@ -843,9 +837,9 @@ class Entries extends Component
                 }
             }
 
-            \Illuminate\Support\Facades\DB::commit();
+            DB::commit();
         } catch (Throwable $e) {
-            \Illuminate\Support\Facades\DB::rollBack();
+            DB::rollBack();
             throw $e;
         }
 
@@ -902,6 +896,7 @@ class Entries extends Component
      * Adds existing entries to a newly-created structure, if the section type was just converted to Structure.
      *
      * @param SectionRecord $sectionRecord
+     *
      * @throws Exception if reasons
      * @see saveSection()
      */
@@ -920,7 +915,7 @@ class Entries extends Component
 
         $structuresService = Craft::$app->getStructures();
 
-        foreach (Db::each($query) as $entry) {
+        foreach (DbHelper::each($query) as $entry) {
             /** @var Entry $entry */
             $structuresService->appendToRoot($sectionRecord->structureId, $entry, Structures::MODE_INSERT);
         }
@@ -931,6 +926,7 @@ class Entries extends Component
      *
      * @param Section $section
      * @param array|null $siteSettings
+     *
      * @return Entry The
      * @throws Exception if reasons
      * @see saveSection()
@@ -1037,7 +1033,8 @@ class Entries extends Component
             $entry->hasErrors() ||
             !Craft::$app->getElements()->saveElement($entry, false)
         ) {
-            throw new Exception("Couldn’t save single entry for section $section->name due to validation errors: " . implode(', ', $entry->getFirstErrors()));
+            throw new Exception("Couldn’t save single entry for section $section->name due to validation errors: " . implode(', ',
+                    $entry->getFirstErrors()));
         }
 
         // Delete any other entries in the section
@@ -1053,7 +1050,7 @@ class Entries extends Component
             ->id(['not', $entry->id])
             ->status(null);
 
-        foreach (Db::each($otherEntriesQuery) as $entryToDelete) {
+        foreach (DbHelper::each($otherEntriesQuery) as $entryToDelete) {
             /** @var Entry $entryToDelete */
             if (!$entryToDelete->getIsDraft() || $entry->canonicalId != $entry->id) {
                 $elementsService->deleteElement($entryToDelete, true);
@@ -1073,6 +1070,7 @@ class Entries extends Component
      * ```
      *
      * @param int $sectionId
+     *
      * @return bool Whether the section was deleted successfully
      * @throws Throwable if reasons
      * @since 5.0.0
@@ -1098,6 +1096,7 @@ class Entries extends Component
      * ```
      *
      * @param Section $section
+     *
      * @return bool Whether the section was deleted successfully
      * @throws Throwable if reasons
      * @since 5.0.0
@@ -1112,7 +1111,8 @@ class Entries extends Component
         }
 
         // Remove the section from the project config
-        Craft::$app->getProjectConfig()->remove(ProjectConfig::PATH_SECTIONS . '.' . $section->uid, "Delete the “{$section->handle}” section");
+        Craft::$app->getProjectConfig()->remove(ProjectConfig::PATH_SECTIONS . '.' . $section->uid,
+            "Delete the “{$section->handle}” section");
         return true;
     }
 
@@ -1120,6 +1120,7 @@ class Entries extends Component
      * Handle a section getting deleted
      *
      * @param ConfigEvent $event
+     *
      * @since 5.0.0
      */
     public function handleDeletedSection(ConfigEvent $event): void
@@ -1141,45 +1142,33 @@ class Entries extends Component
             ]));
         }
 
-        \Illuminate\Support\Facades\DB::beginTransaction();
+        DB::beginTransaction();
         try {
             // Delete the entries
-            $elementsTable = Table::ELEMENTS;
-            $entriesTable = Table::ENTRIES;
-            $now = Db::prepareDateForDb(new DateTime());
-            $db = Craft::$app->getDb();
+            $now = now();
 
-            $conditionSql = <<<SQL
-[[entries.sectionId]] = $section->id AND
-[[elements.canonicalId]] IS NULL AND
-[[elements.revisionId]] IS NULL AND
-[[elements.dateDeleted]] IS NULL
-SQL;
+            $condition = fn(Builder $query) => $query
+                ->whereNull(['elements.canonicalId', 'elements.revisionId', 'elements.dateDeleted']);
 
+            DB::table(Table::ELEMENTS, 'elements')
+                ->whereIn(
+                    'elements.id',
+                    DB::table(Table::ENTRIES, 'entries')
+                        ->where('entries.sectionId', $section->id)
+                        ->select('entries.id')
+                )
+                ->where($condition)
+                ->update(['dateDeleted' => $now]);
 
-            if ($db->getIsMysql()) {
-                $db->createCommand(<<<SQL
-UPDATE $elementsTable [[elements]]
-INNER JOIN $entriesTable [[entries]] ON [[entries.id]] = [[elements.id]]
-SET [[elements.dateDeleted]] = '$now',
-  [[entries.deletedWithSection]] = 1
-WHERE $conditionSql
-SQL)->execute();
-            } else {
-                // Not possible to update two tables simultaneously with Postgres
-                $db->createCommand(<<<SQL
-UPDATE $entriesTable [[entries]]
-SET [[deletedWithSection]] = TRUE
-FROM $elementsTable [[elements]]
-WHERE [[entries.id]] = [[elements.id]] AND $conditionSql
-SQL)->execute();
-                $db->createCommand(<<<SQL
-UPDATE $elementsTable [[elements]]
-SET [[dateDeleted]] = '$now'
-FROM $entriesTable [[entries]]
-WHERE [[entries.id]] = [[elements.id]] AND $conditionSql
-SQL)->execute();
-            }
+            DB::table(Table::ENTRIES, 'entries')
+                ->whereIn(
+                    'entries.id',
+                    DB::table(Table::ELEMENTS, 'elements')
+                        ->where($condition)
+                        ->select('elements.id')
+                )
+                ->where('entries.sectionId', $section->id)
+                ->update(['deletedWithSection' => true]);
 
             // Delete the structure
             if ($sectionRecord->structureId) {
@@ -1187,13 +1176,11 @@ SQL)->execute();
             }
 
             // Delete the section
-            Craft::$app->getDb()->createCommand()
-                ->softDelete(Table::SECTIONS, ['id' => $sectionRecord->id])
-                ->execute();
+            DB::table(Table::SECTIONS)->softDelete($sectionRecord->id);
 
-            \Illuminate\Support\Facades\DB::commit();
+            DB::commit();
         } catch (Throwable $e) {
-            \Illuminate\Support\Facades\DB::rollBack();
+            DB::rollBack();
             throw $e;
         }
 
@@ -1216,6 +1203,7 @@ SQL)->execute();
      *
      * @param string $uid
      * @param bool $withTrashed Whether to include trashed sections in search
+     *
      * @return SectionRecord
      */
     private function _getSectionRecord(string $uid, bool $withTrashed = false): SectionRecord
@@ -1231,6 +1219,7 @@ SQL)->execute();
      * Prune a deleted site from section site settings.
      *
      * @param DeleteSiteEvent $event
+     *
      * @since 5.0.0
      */
     public function pruneDeletedSite(DeleteSiteEvent $event): void
@@ -1243,7 +1232,8 @@ SQL)->execute();
         // Loop through the sections and prune the UID from field layouts.
         if (is_array($sections)) {
             foreach ($sections as $sectionUid => $sectionGroup) {
-                $projectConfig->remove(ProjectConfig::PATH_SECTIONS . '.' . $sectionUid . '.siteSettings.' . $siteUid, 'Remove section settings that belong to a site being deleted');
+                $projectConfig->remove(ProjectConfig::PATH_SECTIONS . '.' . $sectionUid . '.siteSettings.' . $siteUid,
+                    'Remove section settings that belong to a site being deleted');
             }
         }
     }
@@ -1263,6 +1253,7 @@ SQL)->execute();
      * @param string|null $searchTerm
      * @param string $orderBy
      * @param int $sortDir
+     *
      * @return array
      * @since 5.5.0
      */
@@ -1273,12 +1264,14 @@ SQL)->execute();
         string $orderBy = 'name',
         int $sortDir = SORT_ASC,
     ): array {
-        [$results, $total] = $this->prepTableData($this->_createSectionQuery(), $page, $limit, $searchTerm, $orderBy, $sortDir);
+        [$results, $total] = $this->prepTableData($this->_createSectionQuery(), $page, $limit, $searchTerm, $orderBy,
+            $sortDir);
 
-        /** @var Section[] $sections */
-        $sections = array_values(array_filter(
-            array_map(fn(array $result) => $this->_sections()->firstWhere('id', $result['id']), $results)
-        ));
+        /** @var Collection<Section> $sections */
+        $sections = $results
+            ->map(fn(object $result) => $this->_sections()->firstWhere('id', $result->id))
+            ->filter()
+            ->values();
 
         $tableData = [];
 
@@ -1307,37 +1300,38 @@ SQL)->execute();
     /**
      * Returns query results needed for the VueAdminTable accounting for the pagination, search terms and sorting options.
      *
-     * @param Query $query
+     * @param Builder $query
      * @param int $page
      * @param int $limit
      * @param string|null $searchTerm
      * @param string $orderBy
      * @param int $sortDir
-     * @return array
+     *
+     * @return array{0: Collection, 1: int}
      * @since 5.5.0
      */
     private function prepTableData(
-        Query $query,
+        Builder $query,
         int $page,
         int $limit,
         ?string $searchTerm,
         string $orderBy = 'name',
         int $sortDir = SORT_ASC,
     ): array {
+        $sortDir = $sortDir === SORT_DESC ? 'desc' : 'asc';
         $searchTerm = $searchTerm ? trim($searchTerm) : $searchTerm;
 
         $offset = ($page - 1) * $limit;
-        $query = $query
-            ->orderBy([$orderBy => $sortDir]);
-
-        if ($orderBy === 'name') {
-            $query->addOrderBy(['name' => $sortDir]);
-        }
+        $query = $query->orderBy($orderBy, $sortDir);
 
         if ($searchTerm !== null && $searchTerm !== '') {
             $searchParams = $this->_getSearchParams($searchTerm);
             if (!empty($searchParams)) {
-                $query->andWhere(['or', ...$searchParams]);
+                $query->where(function(Builder $query) use ($searchParams) {
+                    foreach ($searchParams as $param) {
+                        $query->orWhere($param[0], $param[1], $param[2]);
+                    }
+                });
             }
         }
 
@@ -1346,7 +1340,7 @@ SQL)->execute();
         $query->limit($limit);
         $query->offset($offset);
 
-        return [$query->all(), $total];
+        return [$query->get(), $total];
     }
 
     // Entry Types
@@ -1362,40 +1356,21 @@ SQL)->execute();
      * ```
      *
      * @param int $sectionId
+     *
      * @return EntryType[]
      * @since 5.0.0
      */
     public function getEntryTypesBySectionId(int $sectionId): array
     {
-        // todo: remove this after the next breakpoint
-        $db = Craft::$app->getDb();
-        if ($db->columnExists(Table::ENTRYTYPES, 'sectionId')) {
-            $results = $this->_createEntryTypeQuery()
-                ->where([
-                    'sectionId' => $sectionId,
-                    'dateDeleted' => null,
-                ])
-                ->orderBy(['sortOrder' => SORT_DESC])
-                ->all();
-            return array_map(fn(array $result) => new EntryType($result), $results);
-        }
-
-        $query = (new Query())
-            ->select(['id' => 'typeId', 'name', 'handle'])
-            ->from(Table::SECTIONS_ENTRYTYPES)
-            ->where(['sectionId' => $sectionId])
-            ->orderBy(['sortOrder' => SORT_ASC]);
-
-        // todo: remove after the next breakpoint
-        if ($db->columnExists(Table::ENTRYTYPES, 'description')) {
-            $query->addSelect('description');
-        }
-
-        $entryTypes = $query->all();
-
-        return array_values(array_filter(
-            array_map(fn($entryType) => $this->getEntryType($entryType), $entryTypes),
-        ));
+        return DB::table(Table::SECTIONS_ENTRYTYPES)
+            ->select([new Alias('typeId', 'id'), 'name', 'description', 'handle'])
+            ->where('sectionId', $sectionId)
+            ->orderBy('sortOrder')
+            ->get()
+            ->map(fn(object $entryType) => $this->getEntryType((array)$entryType))
+            ->filter()
+            ->values()
+            ->all();
     }
 
     /**
@@ -1407,57 +1382,36 @@ SQL)->execute();
     {
         if (!isset($this->_entryTypes)) {
             $this->_entryTypes = new MemoizableArray(
-                $this->_createEntryTypeQuery()->all(),
-                fn(array $result) => new EntryType($result),
+                $this->_createEntryTypeQuery()->get()->all(),
+                fn(object $result) => new EntryType((array) $result),
             );
         }
 
         return $this->_entryTypes;
     }
 
-    /**
-     * @return Query
-     */
-    private function _createEntryTypeQuery(): Query
+    private function _createEntryTypeQuery(): Builder
     {
-        $query = (new Query())
+        return DB::table(Table::ENTRYTYPES)
             ->select([
                 'id',
                 'fieldLayoutId',
                 'name',
+                'description',
+                'icon',
+                'color',
                 'handle',
                 'hasTitleField',
                 'titleTranslationMethod',
                 'titleTranslationKeyFormat',
                 'titleFormat',
-                'uid',
-            ])
-            ->from([Table::ENTRYTYPES])
-            ->where(['dateDeleted' => null]);
-
-        // todo: remove after the next breakpoint
-        $db = Craft::$app->getDb();
-        if ($db->columnExists(Table::ENTRYTYPES, 'slugTranslationMethod')) {
-            $query->addSelect([
                 'slugTranslationMethod',
                 'slugTranslationKeyFormat',
                 'showStatusField',
-            ]);
-        }
-        if ($db->columnExists(Table::ENTRYTYPES, 'showSlugField')) {
-            $query->addSelect('showSlugField');
-        }
-        if ($db->columnExists(Table::ENTRYTYPES, 'description')) {
-            $query->addSelect('description');
-        }
-        if ($db->columnExists(Table::ENTRYTYPES, 'icon')) {
-            $query->addSelect('icon');
-        }
-        if ($db->columnExists(Table::ENTRYTYPES, 'color')) {
-            $query->addSelect('color');
-        }
-
-        return $query;
+                'showSlugField',
+                'uid',
+            ])
+            ->whereNull('dateDeleted');
     }
 
     /**
@@ -1488,6 +1442,7 @@ SQL)->execute();
      *
      * @param int $entryTypeId
      * @param bool $withTrashed
+     *
      * @return EntryType|null
      * @since 5.0.0
      */
@@ -1518,6 +1473,7 @@ SQL)->execute();
      * Returns an entry type by its UID.
      *
      * @param string $uid
+     *
      * @return EntryType|null
      * @since 5.0.0
      */
@@ -1536,6 +1492,7 @@ SQL)->execute();
      * ```
      *
      * @param string $entryTypeHandle
+     *
      * @return EntryType|null
      * @since 5.0.0
      */
@@ -1548,6 +1505,7 @@ SQL)->execute();
      * Returns an entry type by its usage config.
      *
      * @param EntryType|int|string|array{id?:int,uid?:string,name?:string,handle?:string} $entryType
+     *
      * @return EntryType|null
      * @since 5.6.0
      */
@@ -1601,6 +1559,7 @@ SQL)->execute();
      *
      * @param EntryType $entryType The entry type to be saved
      * @param bool $runValidation Whether the entry type should be validated
+     *
      * @return bool Whether the entry type was saved successfully
      * @throws EntryTypeNotFoundException if $entryType->id is invalid
      * @throws Throwable if reasons
@@ -1634,7 +1593,7 @@ SQL)->execute();
         Craft::$app->getProjectConfig()->set($configPath, $configData, "Save entry type “{$entryType->handle}”");
 
         if ($isNewEntryType) {
-            $entryType->id = \Illuminate\Support\Facades\DB::table(\CraftCms\Cms\Db\Table::ENTRYTYPES)->idByUid($entryType->uid);
+            $entryType->id = DB::table(Table::ENTRYTYPES)->idByUid($entryType->uid);
         }
 
         return true;
@@ -1644,6 +1603,7 @@ SQL)->execute();
      * Handle entry type change
      *
      * @param ConfigEvent $event
+     *
      * @since 5.0.0
      */
     public function handleChangedEntryType(ConfigEvent $event): void
@@ -1657,7 +1617,7 @@ SQL)->execute();
 
         $entryTypeRecord = $this->_getEntryTypeRecord($entryTypeUid, true);
 
-        \Illuminate\Support\Facades\DB::beginTransaction();
+        DB::beginTransaction();
 
         try {
             $isNewEntryType = $entryTypeRecord->getIsNewRecord();
@@ -1675,11 +1635,7 @@ SQL)->execute();
             $entryTypeRecord->slugTranslationKeyFormat = $data['slugTranslationKeyFormat'] ?? null;
             $entryTypeRecord->showStatusField = $data['showStatusField'] ?? true;
             $entryTypeRecord->uid = $entryTypeUid;
-
-            // todo: remove after the next breakpoint
-            if (Craft::$app->getDb()->columnExists(Table::ENTRYTYPES, 'description')) {
-                $entryTypeRecord->description = $data['description'] ?? null;
-            }
+            $entryTypeRecord->description = $data['description'] ?? null;
 
             if (!empty($data['fieldLayouts'])) {
                 // Save the field layout
@@ -1711,9 +1667,9 @@ SQL)->execute();
                 $entryTypeRecord->save(false);
             }
 
-            \Illuminate\Support\Facades\DB::commit();
+            DB::commit();
         } catch (Throwable $e) {
-            \Illuminate\Support\Facades\DB::rollBack();
+            DB::rollBack();
             throw $e;
         }
 
@@ -1788,6 +1744,7 @@ SQL)->execute();
      * ```
      *
      * @param int $entryTypeId
+     *
      * @return bool Whether the entry type was deleted successfully
      * @throws Throwable if reasons
      * @since 5.0.0
@@ -1813,6 +1770,7 @@ SQL)->execute();
      * ```
      *
      * @param EntryType $entryType
+     *
      * @return bool Whether the entry type was deleted successfully
      * @throws Throwable if reasons
      * @since 5.0.0
@@ -1826,7 +1784,8 @@ SQL)->execute();
             ]));
         }
 
-        Craft::$app->getProjectConfig()->remove(ProjectConfig::PATH_ENTRY_TYPES . '.' . $entryType->uid, "Delete the “{$entryType->handle}” entry type");
+        Craft::$app->getProjectConfig()->remove(ProjectConfig::PATH_ENTRY_TYPES . '.' . $entryType->uid,
+            "Delete the “{$entryType->handle}” entry type");
         return true;
     }
 
@@ -1834,6 +1793,7 @@ SQL)->execute();
      * Handle an entry type getting deleted
      *
      * @param ConfigEvent $event
+     *
      * @since 5.0.0
      */
     public function handleDeletedEntryType(ConfigEvent $event): void
@@ -1855,45 +1815,38 @@ SQL)->execute();
             ]));
         }
 
-        \Illuminate\Support\Facades\DB::beginTransaction();
+        DB::beginTransaction();
 
         try {
             // Delete the entries
-            $elementsTable = Table::ELEMENTS;
-            $entriesTable = Table::ENTRIES;
-            $now = Db::prepareDateForDb(new DateTime());
-            $db = Craft::$app->getDb();
+            $now = now();
 
-            $conditionSql = <<<SQL
-[[entries.typeId]] = $entryType->id AND
-[[entries.id]] = [[elements.id]] AND
-[[elements.canonicalId]] IS NULL AND
-[[elements.revisionId]] IS NULL AND
-[[elements.dateDeleted]] IS NULL
-SQL;
+            $condition = fn(Builder $query) => $query
+                ->whereNull(['elements.canonicalId', 'elements.revisionId', 'elements.dateDeleted']);
 
-            if ($db->getIsMysql()) {
-                $db->createCommand(<<<SQL
-UPDATE $elementsTable [[elements]], $entriesTable [[entries]]
-SET [[elements.dateDeleted]] = '$now',
-  [[entries.deletedWithEntryType]] = 1
-WHERE $conditionSql
-SQL)->execute();
-            } else {
-                // Not possible to update two tables simultaneously with Postgres
-                $db->createCommand(<<<SQL
-UPDATE $entriesTable [[entries]]
-SET [[deletedWithEntryType]] = TRUE
-FROM $elementsTable [[elements]]
-WHERE $conditionSql
-SQL)->execute();
-                $db->createCommand(<<<SQL
-UPDATE $elementsTable [[elements]]
-SET [[dateDeleted]] = '$now'
-FROM $entriesTable [[entries]]
-WHERE $conditionSql
-SQL)->execute();
-            }
+            DB::table(Table::ELEMENTS, 'elements')
+                ->whereIn(
+                    'elements.id',
+                    DB::table(Table::ENTRIES, 'entries')
+                        ->where('entries.typeId', $entryType->id)
+                        ->select('entries.id')
+                )
+                ->where($condition)
+                ->update([
+                    'dateDeleted' => $now,
+                ]);
+
+            DB::table(Table::ENTRIES, 'entries')
+                ->whereIn(
+                    'entries.id',
+                    DB::table(Table::ELEMENTS, 'elements')
+                        ->where($condition)
+                        ->select('elements.id')
+                )
+                ->where('entries.typeId', $entryType->id)
+                ->update([
+                    'deletedWithEntryType' => true,
+                ]);
 
             // Delete the field layout
             if ($entryTypeRecord->fieldLayoutId) {
@@ -1901,13 +1854,11 @@ SQL)->execute();
             }
 
             // Delete the entry type.
-            Craft::$app->getDb()->createCommand()
-                ->softDelete(Table::ENTRYTYPES, ['id' => $entryTypeRecord->id])
-                ->execute();
+            DB::table(Table::ENTRYTYPES)->softDelete($entryTypeRecord->id);
 
-            \Illuminate\Support\Facades\DB::commit();
+            DB::commit();
         } catch (Throwable $e) {
-            \Illuminate\Support\Facades\DB::rollBack();
+            DB::rollBack();
             throw $e;
         }
 
@@ -1943,6 +1894,7 @@ SQL)->execute();
      * @param string|null $searchTerm
      * @param string $orderBy
      * @param int $sortDir
+     *
      * @return array
      * @since 5.0.0
      * @internal
@@ -1954,12 +1906,11 @@ SQL)->execute();
         string $orderBy = 'name',
         int $sortDir = SORT_ASC,
     ): array {
-        [$results, $total] = $this->prepTableData($this->_createEntryTypeQuery(), $page, $limit, $searchTerm, $orderBy, $sortDir);
+        [$results, $total] = $this->prepTableData($this->_createEntryTypeQuery(), $page, $limit, $searchTerm, $orderBy,
+            $sortDir);
 
-        /** @var EntryType[] $entryTypes */
-        $entryTypes = array_values(array_filter(
-            array_map(fn(array $result) => $this->_entryTypes()->firstWhere('id', $result['id']), $results)
-        ));
+        /** @var Collection<EntryType> $entryTypes */
+        $entryTypes = $results->map(fn(object $result) => $this->_entryTypes()->firstWhere('id', $result->id))->filter()->values();
 
         $tableData = [];
         $usages = $this->allEntryTypeUsages();
@@ -1974,7 +1925,8 @@ SQL)->execute();
                 ]);
             if ($entryType->description) {
                 $chipCellContent .= Html::tag('span',
-                    Html::decodeDoubles(Markdown::process(Html::encodeInvalidTags(Html::encode($entryType->description)), 'gfm-comment')),
+                    Html::decodeDoubles(Markdown::process(Html::encodeInvalidTags(Html::encode($entryType->description)),
+                        'gfm-comment')),
                     ['class' => 'info']);
             }
             $chipCellContent .= Html::endTag('div');
@@ -2028,6 +1980,7 @@ SQL)->execute();
      * Returns the sql expression to be used in the 'where' param for the query.
      *
      * @param string $term
+     *
      * @return array
      */
     private function _getSearchParams(string $term): array
@@ -2037,7 +1990,7 @@ SQL)->execute();
 
         if ($term !== '') {
             foreach ($searchParams as $param) {
-                $searchQueries[] = ['like', $param, '%' . $term . '%', false];
+                $searchQueries[] = [$param, 'like', '%' . $term . '%'];
             }
         }
 
@@ -2049,6 +2002,7 @@ SQL)->execute();
      *
      * @param int|string $id
      * @param bool $withTrashed Whether to include trashed entry types in search
+     *
      * @return EntryTypeRecord
      */
     private function _getEntryTypeRecord(int|string $id, bool $withTrashed = false): EntryTypeRecord
@@ -2078,6 +2032,7 @@ SQL)->execute();
      * @param int|string|int[]|null $siteId The site(s) to fetch the entry in.
      * Defaults to the current site.
      * @param array $criteria
+     *
      * @return Entry|null The entry with the given ID, or `null` if an entry could not be found.
      */
     public function getEntryById(int $entryId, array|int|string $siteId = null, array $criteria = []): ?Entry
@@ -2088,12 +2043,10 @@ SQL)->execute();
 
         // Get the structure ID
         if (!isset($criteria['structureId'])) {
-            $criteria['structureId'] = (new Query())
-                ->select(['sections.structureId'])
-                ->from(['entries' => Table::ENTRIES])
-                ->innerJoin(['sections' => Table::SECTIONS], '[[sections.id]] = [[entries.sectionId]]')
-                ->where(['entries.id' => $entryId])
-                ->scalar();
+            $criteria['structureId'] = DB::table(Table::ENTRIES, 'entries')
+                ->join(new Alias(Table::SESSIONS, 'sections'), 'sections.id', 'entries.sectionId')
+                ->where('entries.id', $entryId)
+                ->value('sections.structureId');
         }
 
         return Craft::$app->getElements()->getElementById($entryId, Entry::class, $siteId, $criteria);
@@ -2103,6 +2056,7 @@ SQL)->execute();
      * Returns an array of Single section entries which match a given list of section handles.
      *
      * @param string[] $handles
+     *
      * @return array<string,Entry>
      * @since 4.4.0
      */
@@ -2168,6 +2122,7 @@ SQL)->execute();
      *
      * @param Entry $entry
      * @param Section $section
+     *
      * @return bool
      * @throws Exception
      * @throws InvalidElementException
@@ -2220,7 +2175,8 @@ SQL)->execute();
         }
 
         if ($entry->hasErrors()) {
-            throw new InvalidElementException($entry, 'Element ' . $entry->id . ' could not be moved because it doesn\'t validate.');
+            throw new InvalidElementException($entry,
+                'Element ' . $entry->id . ' could not be moved because it doesn\'t validate.');
         }
 
         // prevents revision from being created
@@ -2233,11 +2189,12 @@ SQL)->execute();
             $oldSection,
             $elementsService,
         ) {
-            \Illuminate\Support\Facades\DB::beginTransaction();
+            DB::beginTransaction();
             try {
                 // Start with $entry’s site
                 if (!$elementsService->saveElement($entry, false, false)) {
-                    throw new InvalidElementException($entry, 'Element ' . $entry->id . ' could not be moved for site ' . $entry->siteId);
+                    throw new InvalidElementException($entry,
+                        'Element ' . $entry->id . ' could not be moved for site ' . $entry->siteId);
                 }
 
                 $draftsQuery = Entry::find()
@@ -2264,14 +2221,14 @@ SQL)->execute();
                         $structuresService->remove($oldSection->structureId, $entry);
 
                         // remove drafts and revisions from the structure, too
-                        foreach (Db::each($draftsQuery) as $draft) {
+                        foreach (DbHelper::each($draftsQuery) as $draft) {
                             /** @var Entry $draft */
                             if ($draft->lft) {
                                 $structuresService->remove($oldSection->structureId, $draft);
                             }
                         }
 
-                        foreach (Db::each($revisionsQuery) as $revision) {
+                        foreach (DbHelper::each($revisionsQuery) as $revision) {
                             /** @var Entry $revision */
                             if ($revision->lft) {
                                 $structuresService->remove($oldSection->structureId, $revision);
@@ -2295,7 +2252,7 @@ SQL)->execute();
                 // now assign drafts & revisions to the new section too
                 $ids = array_merge($draftsQuery->ids(), $revisionsQuery->ids());
                 if (!empty($ids)) {
-                    \Illuminate\Support\Facades\DB::table(\CraftCms\Cms\Db\Table::ENTRIES)
+                    DB::table(Table::ENTRIES)
                         ->whereIn('id', $ids)
                         ->update([
                             'sectionId' => $section->id,
@@ -2303,13 +2260,13 @@ SQL)->execute();
                         ]);
                 }
 
-                \Illuminate\Support\Facades\DB::commit();
+                DB::commit();
 
                 // Invalidate caches for the old section
                 $tag = sprintf('element::%s::section:%s', Entry::class, $oldSection->id);
                 TagDependency::invalidate($tag);
             } catch (Throwable $e) {
-                \Illuminate\Support\Facades\DB::rollBack();
+                DB::rollBack();
                 throw $e;
             }
         });

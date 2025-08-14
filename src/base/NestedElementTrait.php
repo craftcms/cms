@@ -12,6 +12,7 @@ use Craft;
 use craft\db\Table;
 use craft\elements\db\EagerLoadPlan;
 use Illuminate\Support\Facades\DB;
+use Tpetry\QueryExpressions\Language\Alias;
 use yii\base\InvalidConfigException;
 
 /**
@@ -457,7 +458,7 @@ trait NestedElementTrait
 
         if (!isset($this->sortOrder)) {
             $max = DB::table(\CraftCms\Cms\Db\Table::ELEMENTS_OWNERS, 'eo')
-                ->join($elementTable . ' as e', 'e.id', '=', 'eo.elementId')
+                ->join(new Alias($elementTable, 'e'), 'e.id', '=', 'eo.elementId')
                 ->where('eo.ownerId', $ownerId)
                 ->where("e.$fieldIdColumn", $this->fieldId)
                 ->max('eo.sortOrder');

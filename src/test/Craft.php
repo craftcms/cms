@@ -15,8 +15,6 @@ use Codeception\TestInterface;
 use craft\base\ElementInterface;
 use craft\config\DbConfig;
 use craft\console\Application as ConsoleApplication;
-use craft\db\Query;
-use craft\db\Table;
 use craft\errors\ElementNotFoundException;
 use craft\errors\InvalidPluginException;
 use craft\helpers\App;
@@ -26,6 +24,7 @@ use craft\queue\BaseJob;
 use craft\queue\Queue;
 use craft\web\Application as WebApplication;
 use CraftCms\Cms\Config\GeneralConfig;
+use CraftCms\Cms\Db\Table;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Support\Env;
 use DateTime;
@@ -588,11 +587,10 @@ class Craft extends Yii2
     public function assertPushedToQueue(string $description): void
     {
         if (\Craft::$app->getQueue() instanceof Queue) {
-            $this->assertTrue((new Query())
-                ->select(['id'])
-                ->where(['description' => $description])
-                ->from([Table::QUEUE])
-                ->exists()
+            $this->assertTrue(
+                DB::table(Table::QUEUE)
+                    ->where('description', $description)
+                    ->exists()
             );
         }
     }
@@ -603,11 +601,10 @@ class Craft extends Yii2
     public function assertNotPushedToQueue(string $description)
     {
         if (\Craft::$app->getQueue() instanceof Queue) {
-            $this->assertFalse((new Query())
-                ->select(['id'])
-                ->where(['description' => $description])
-                ->from([Table::QUEUE])
-                ->exists()
+            $this->assertFalse(
+                DB::table(Table::QUEUE)
+                    ->where('description', $description)
+                    ->exists()
             );
         }
     }
