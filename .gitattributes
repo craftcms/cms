@@ -31,6 +31,7 @@
 /src/web/assets/**/src/ export-ignore
 /stubs/ export-ignore
 /tests/ export-ignore
+/tests-playwright/ export-ignore
 /tsconfig.json export-ignore
 /webpack.config.js export-ignore
 
