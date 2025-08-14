@@ -21,7 +21,7 @@ final class AppServiceProvider extends ServiceProvider
 
     public function boot(): void
     {
-        Aliases::set('@root', $this->app->basePath());
+        Aliases::set('@root', Env::get('CRAFT_ROOT_PATH', $this->app->basePath()));
         Aliases::set('@craftcms', FileHelper::normalizePath($this->root.'/../'));
         Aliases::set('@packageRoot', '@craftcms/cms');
         Aliases::set('@package', '@packageRoot/src');
