@@ -7,6 +7,7 @@
 
 namespace craft\elements;
 
+use Closure;
 use Craft;
 use craft\base\ElementInterface;
 use craft\helpers\ElementHelper;
@@ -446,9 +447,9 @@ class ElementCollection extends Collection
      *
      * @template TPluckValueReturn
      * @template TPluckKeyReturn of array-key
-     * @param  string|array<array-key, string>|(\Closure(TElement): TPluckValueReturn)|null $value
-     * @param  string|(\Closure(TElement): TPluckKeyReturn)|null $key
-     * @return ($value is \Closure ? ($key is \Closure ? \Illuminate\Support\Collection<TPluckKeyReturn, TPluckValueReturn> : \Illuminate\Support\Collection<array-key, TPluckValueReturn>) : ($key is \Closure ? \Illuminate\Support\Collection<TPluckKeyReturn, mixed> : \Illuminate\Support\Collection<array-key, mixed>))
+     * @param string|array<array-key, string>|Closure(TElement):TPluckValueReturn|null $value
+     * @param string|Closure(TElement):TPluckKeyReturn|null $key
+     * @return ($value is Closure ? ($key is Closure ? Collection<TPluckKeyReturn, TPluckValueReturn> : Collection<array-key, TPluckValueReturn>) : ($key is Closure ? Collection<TPluckKeyReturn, mixed> : Collection<array-key, mixed>))
      */
     public function pluck($value, $key = null)
     {

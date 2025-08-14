@@ -10,6 +10,7 @@ namespace craft\helpers;
 use Craft;
 use craft\errors\ImageException;
 use craft\image\Svg;
+use CraftCms\Cms\Config\GeneralConfig;
 use Imagick;
 use Imagine\Image\Format;
 use Throwable;
@@ -106,7 +107,7 @@ class Image
             return [$width, $height];
         }
 
-        if ($upscale ?? app(\CraftCms\Cms\Config\GeneralConfig::class)->upscaleImages) {
+        if ($upscale ?? app(GeneralConfig::class)->upscaleImages) {
             // Special case for 'fit' since that's the only one whose dimensions vary from the transform dimensions
             if ($mode === 'fit') {
                 $width = (int)round($sourceWidth / $factor);
@@ -433,7 +434,7 @@ class Image
      */
     public static function cleanExifDataFromImagickImage(Imagick $imagick): void
     {
-        $config = app(\CraftCms\Cms\Config\GeneralConfig::class);
+        $config = app(GeneralConfig::class);
 
         if (!$config->preserveExifData) {
             $iccProfiles = null;

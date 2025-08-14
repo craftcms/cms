@@ -8,6 +8,7 @@
 namespace craft\queue;
 
 use yii\base\BaseObject;
+use yii\queue\Queue;
 
 /**
  * Job is the base class for classes representing jobs in terms of objects.
@@ -85,11 +86,11 @@ abstract class BaseJob extends BaseObject implements JobInterface
      * so it can be lazy-translated for users’ preferred languages rather that the current app language.
      * :::
      *
-     * @param \yii\queue\Queue|QueueInterface $queue
+     * @param Queue|QueueInterface $queue
      * @param float $progress A number between 0 and 1
      * @param string|null $label The progress label
      */
-    protected function setProgress(\yii\queue\Queue|QueueInterface $queue, float $progress, ?string $label = null): void
+    protected function setProgress(Queue|QueueInterface $queue, float $progress, ?string $label = null): void
     {
         $progress = round(100 * $progress);
 

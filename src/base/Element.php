@@ -83,12 +83,15 @@ use craft\validators\SlugValidator;
 use craft\validators\StringValidator;
 use craft\web\UploadedFile;
 use craft\web\View;
+use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Db\Table;
 use CraftCms\Cms\Element\Enums\AttributeStatus;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Enums\Color;
 use CraftCms\Cms\Support\Str;
 use CraftCms\DependencyAwareCache\Facades\DependencyCache;
+use DateInterval;
+use DateTime;
 use GraphQL\Type\Definition\Type;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Collection;
@@ -1667,11 +1670,11 @@ abstract class Element extends Component implements ElementInterface
         $attributes = [
             'dateCreated' => [
                 'label' => Craft::t('app', 'Date Created'),
-                'placeholder' => fn() => (new \DateTime())->sub(new \DateInterval('P16D')),
+                'placeholder' => fn() => (new DateTime())->sub(new DateInterval('P16D')),
             ],
             'dateUpdated' => [
                 'label' => Craft::t('app', 'Date Updated'),
-                'placeholder' => fn() => (new \DateTime())->sub(new \DateInterval('P15D')),
+                'placeholder' => fn() => (new DateTime())->sub(new DateInterval('P15D')),
             ],
             'id' => [
                 'label' => Craft::t('app', 'ID'),
@@ -5983,7 +5986,7 @@ JS, [
                         $find = ['/'];
                         $replace = ['/<wbr>'];
 
-                        $wordSeparator = app(\CraftCms\Cms\Config\GeneralConfig::class)->slugWordSeparator;
+                        $wordSeparator = app(GeneralConfig::class)->slugWordSeparator;
 
                         if ($wordSeparator) {
                             $find[] = $wordSeparator;
@@ -7017,7 +7020,7 @@ JS, [
         }
 
         $templates = [];
-        $generalConfig = app(\CraftCms\Cms\Config\GeneralConfig::class);
+        $generalConfig = app(GeneralConfig::class);
 
         $providerHandle = $this->getFieldLayout()?->provider?->getHandle();
         if ($providerHandle !== null) {

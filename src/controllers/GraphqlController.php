@@ -10,6 +10,7 @@ namespace craft\controllers;
 use Craft;
 use craft\errors\GqlException;
 use craft\errors\MissingComponentException;
+use craft\errors\SiteNotFoundException;
 use craft\helpers\App;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\Gql as GqlHelper;
@@ -21,6 +22,7 @@ use craft\services\Gql as GqlService;
 use craft\web\assets\graphiql\GraphiqlAsset;
 use craft\web\Controller;
 use craft\web\ErrorHandler;
+use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Json;
 use DateTimeZone;
@@ -58,7 +60,7 @@ class GraphqlController extends Controller
      */
     public function beforeAction($action): bool
     {
-        if (!app(\CraftCms\Cms\Config\GeneralConfig::class)->enableGql) {
+        if (!app(GeneralConfig::class)->enableGql) {
             throw new NotFoundHttpException(Craft::t('yii', 'Page not found.'));
         }
 
@@ -88,7 +90,7 @@ class GraphqlController extends Controller
         $headers->setDefault('Access-Control-Allow-Credentials', 'true');
         $headers->setDefault('Access-Control-Allow-Headers', 'Authorization, Content-Type, X-Craft-Authorization, X-Craft-Token');
 
-        $generalConfig = app(\CraftCms\Cms\Config\GeneralConfig::class);
+        $generalConfig = app(GeneralConfig::class);
         if (is_array($generalConfig->allowedGraphqlOrigins)) {
             if (($origins = $this->request->getOrigin()) !== null) {
                 $origins = Arr::whereNotEmpty(array_map('trim', explode(',', $origins)));
@@ -318,7 +320,7 @@ class GraphqlController extends Controller
      * @param GqlSchema $schema
      * @return void
      * @throws ForbiddenHttpException
-     * @throws \craft\errors\SiteNotFoundException
+     * @throws SiteNotFoundException
      */
     private function _enforceSiteAccess(GqlSchema $schema): void
     {
@@ -410,7 +412,7 @@ class GraphqlController extends Controller
      */
     public function actionCpIndex(): Response
     {
-        $generalConfig = app(\CraftCms\Cms\Config\GeneralConfig::class);
+        $generalConfig = app(GeneralConfig::class);
         if (!$this->request->getIsCpRequest() || !$generalConfig->enableGql) {
             throw new NotFoundHttpException();
         }

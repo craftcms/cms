@@ -12,6 +12,7 @@ use Craft;
 use craft\helpers\FileHelper;
 use craft\services\Images;
 use craft\test\TestCase;
+use CraftCms\Cms\Config\GeneralConfig;
 use Imagick;
 use yii\base\Exception;
 
@@ -73,7 +74,7 @@ class ImagesTest extends TestCase
      */
     public function testDontCleanWithConfigSetting(): void
     {
-        app(\CraftCms\Cms\Config\GeneralConfig::class)->sanitizeSvgUploads = false;
+        app(GeneralConfig::class)->sanitizeSvgUploads = false;
 
         $this->images->cleanImage(
             $this->sandboxPath . 'dirty-svg.svg'
@@ -122,14 +123,14 @@ class ImagesTest extends TestCase
     {
         $this->_skipIfNoImagick();
 
-        app(\CraftCms\Cms\Config\GeneralConfig::class)->transformGifs = false;
+        app(GeneralConfig::class)->transformGifs = false;
 
         $oldContents = file_get_contents($this->sandboxPath . 'example-gif.gif');
 
         $this->images->cleanImage($this->sandboxPath . 'example-gif.gif');
         self::assertSame($oldContents, file_get_contents($this->sandboxPath . 'example-gif.gif'));
 
-        app(\CraftCms\Cms\Config\GeneralConfig::class)->transformGifs = true;
+        app(GeneralConfig::class)->transformGifs = true;
         $this->images->cleanImage($this->sandboxPath . 'example-gif.gif');
         self::assertNotSame($oldContents, file_get_contents($this->sandboxPath . 'example-gif.gif'));
     }

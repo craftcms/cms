@@ -16,6 +16,7 @@ use craft\validators\ColorValidator;
 use craft\validators\DateTimeValidator;
 use craft\validators\HandleValidator;
 use craft\validators\UniqueValidator;
+use CraftCms\Cms\Config\GeneralConfig;
 use DateTime;
 
 /**
@@ -144,7 +145,7 @@ class ImageTransform extends Model
         parent::init();
 
         if (!isset($this->upscale)) {
-            $this->upscale = app(\CraftCms\Cms\Config\GeneralConfig::class)->upscaleImages;
+            $this->upscale = app(GeneralConfig::class)->upscaleImages;
         }
     }
 
@@ -322,7 +323,7 @@ class ImageTransform extends Model
             'name' => $this->name,
             'position' => $this->position,
             'quality' => $this->quality,
-            'upscale' => $this->upscale ?? app(\CraftCms\Cms\Config\GeneralConfig::class)->upscaleImages,
+            'upscale' => $this->upscale ?? app(GeneralConfig::class)->upscaleImages,
             'width' => $this->width,
         ];
     }

@@ -62,10 +62,12 @@ use craft\services\Structures;
 use craft\validators\ArrayValidator;
 use craft\validators\DateCompareValidator;
 use craft\validators\DateTimeValidator;
+use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Element\Enums\PropagationMethod;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Enums\Color;
+use DateInterval;
 use DateTime;
 use GraphQL\Type\Definition\Type;
 use Illuminate\Support\Collection;
@@ -696,11 +698,11 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
             ],
             'postDate' => [
                 'label' => Craft::t('app', 'Post Date'),
-                'placeholder' => fn() => (new \DateTime())->sub(new \DateInterval('P15D')),
+                'placeholder' => fn() => (new DateTime())->sub(new DateInterval('P15D')),
             ],
             'expiryDate' => [
                 'label' => Craft::t('app', 'Expiry Date'),
-                'placeholder' => fn() => (new \DateTime())->add(new \DateInterval('P15D')),
+                'placeholder' => fn() => (new DateTime())->add(new DateInterval('P15D')),
             ],
             'revisionNotes' => [
                 'label' => Craft::t('app', 'Revision Notes'),
@@ -2167,7 +2169,7 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
 
         if (
             Craft::$app->getUser()->getIsAdmin() &&
-            app(\CraftCms\Cms\Config\GeneralConfig::class)->allowAdminChanges
+            app(GeneralConfig::class)->allowAdminChanges
         ) {
             // Entry type settings
             $entryTypeEditId = sprintf('edit-entry-type-%s', mt_rand());
@@ -3208,7 +3210,7 @@ JS;
             $templates[] = [
                 'template' => sprintf(
                     '%s/%s/%s',
-                    app(\CraftCms\Cms\Config\GeneralConfig::class)->partialTemplatesPath,
+                    app(GeneralConfig::class)->partialTemplatesPath,
                     static::refHandle(),
                     $entryType->original->handle,
                 ),

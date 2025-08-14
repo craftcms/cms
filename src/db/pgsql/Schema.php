@@ -7,12 +7,14 @@
 
 namespace craft\db\pgsql;
 
+use Closure;
 use Craft;
 use craft\db\Connection;
 use craft\db\ExpressionBuilder;
 use craft\db\ExpressionInterface;
 use craft\db\TableSchema;
 use craft\helpers\App;
+use CraftCms\Cms\Config\GeneralConfig;
 use mikehaertl\shellcommand\Command as ShellCommand;
 use yii\db\Exception;
 
@@ -160,7 +162,7 @@ class Schema extends \yii\db\pgsql\Schema
 
         $ignoreTables ??= Craft::$app->getDb()->getIgnoredBackupTables();
         $format = $this->getBackupFormat();
-        $commandFromConfig = app(\CraftCms\Cms\Config\GeneralConfig::class)->backupCommand;
+        $commandFromConfig = app(GeneralConfig::class)->backupCommand;
 
         foreach ($ignoreTables as $table) {
             $table = $this->getRawTableName($table);
@@ -171,7 +173,7 @@ class Schema extends \yii\db\pgsql\Schema
             $command->addArg('--format=', $format);
         }
 
-        if ($commandFromConfig instanceof \Closure) {
+        if ($commandFromConfig instanceof Closure) {
             $command = $commandFromConfig($command);
         }
 
@@ -205,9 +207,9 @@ class Schema extends \yii\db\pgsql\Schema
                 ->addArg('{file}');
         }
 
-        $commandFromConfig = app(\CraftCms\Cms\Config\GeneralConfig::class)->restoreCommand;
+        $commandFromConfig = app(GeneralConfig::class)->restoreCommand;
 
-        if ($commandFromConfig instanceof \Closure) {
+        if ($commandFromConfig instanceof Closure) {
             $command = $commandFromConfig($command);
         }
 
@@ -400,7 +402,7 @@ ORDER BY i.relname, k';
      */
     public function getBackupFormat(): ?string
     {
-        return $this->backupFormat ?? app(\CraftCms\Cms\Config\GeneralConfig::class)->backupCommandFormat;
+        return $this->backupFormat ?? app(GeneralConfig::class)->backupCommandFormat;
     }
 
     /**

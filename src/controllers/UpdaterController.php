@@ -11,6 +11,7 @@ use Composer\Semver\Comparator;
 use Craft;
 use craft\errors\InvalidPluginException;
 use craft\helpers\App;
+use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Support\Composer;
 use RequirementsChecker;
 use Symfony\Component\Process\Process;
@@ -167,7 +168,7 @@ class UpdaterController extends BaseUpdaterController
         $pendingHandles = Craft::$app->getUpdates()->getPendingMigrationHandles();
 
         if (!empty(array_intersect($pendingHandles, $installedHandles))) {
-            $backup = app(\CraftCms\Cms\Config\GeneralConfig::class)->getBackupOnUpdate();
+            $backup = app(GeneralConfig::class)->getBackupOnUpdate();
             return $this->sendNextAction($backup ? self::ACTION_BACKUP : self::ACTION_MIGRATE);
         }
 
@@ -285,7 +286,7 @@ class UpdaterController extends BaseUpdaterController
         if (!empty($this->data['install'])) {
             $nextAction = self::ACTION_COMPOSER_INSTALL;
         } else {
-            $backup = app(\CraftCms\Cms\Config\GeneralConfig::class)->getBackupOnUpdate();
+            $backup = app(GeneralConfig::class)->getBackupOnUpdate();
             $nextAction = $backup ? self::ACTION_BACKUP : self::ACTION_MIGRATE;
         }
 
@@ -314,7 +315,7 @@ class UpdaterController extends BaseUpdaterController
      */
     protected function returnUrl(): string
     {
-        return $this->data['returnUrl'] ?? app(\CraftCms\Cms\Config\GeneralConfig::class)->getPostCpLoginRedirect();
+        return $this->data['returnUrl'] ?? app(GeneralConfig::class)->getPostCpLoginRedirect();
     }
 
     /**

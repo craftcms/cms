@@ -1,6 +1,10 @@
 <?php
 
 use craft\console\Application;
+use craft\console\controllers\MigrateController;
+use craft\console\ErrorHandler;
+use craft\console\Request;
+use craft\console\User;
 use Symfony\Component\VarDumper\Dumper\CliDumper;
 use yii\console\Controller;
 
@@ -16,18 +20,18 @@ return [
             return $dumper;
         },
         'errorHandler' => [
-            'class' => craft\console\ErrorHandler::class,
+            'class' => ErrorHandler::class,
         ],
         'request' => [
-            'class' => craft\console\Request::class,
+            'class' => Request::class,
             'isConsoleRequest' => true,
         ],
         'user' => [
-            'class' => craft\console\User::class,
+            'class' => User::class,
         ],
     ],
     'controllerMap' => [
-        'migrate' => craft\console\controllers\MigrateController::class,
+        'migrate' => MigrateController::class,
     ],
     'controllerNamespace' => 'craft\\console\\controllers',
 ];

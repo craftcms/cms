@@ -66,12 +66,14 @@ use craft\services\ElementSources;
 use craft\validators\AssetLocationValidator;
 use craft\validators\DateTimeValidator;
 use craft\validators\StringValidator;
+use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Db\Table;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Element\Enums\MenuItemType;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Support\Str;
+use DateInterval;
 use DateTime;
 use GraphQL\Type\Definition\Type;
 use Illuminate\Support\Collection;
@@ -711,7 +713,7 @@ class Asset extends Element
             ],
             'dateModified' => [
                 'label' => Craft::t('app', 'File Modified Date'),
-                'placeholder' => fn() => (new \DateTime())->sub(new \DateInterval('P14D')),
+                'placeholder' => fn() => (new DateTime())->sub(new DateInterval('P14D')),
             ],
             'uploader' => [
                 'label' => Craft::t('app', 'Uploaded By'),
@@ -2227,7 +2229,7 @@ JS,[
             $transform = ImageTransforms::normalizeTransform($transform);
 
             if ($immediately === null) {
-                $immediately = app(\CraftCms\Cms\Config\GeneralConfig::class)->generateTransformsBeforePageLoad;
+                $immediately = app(GeneralConfig::class)->generateTransformsBeforePageLoad;
             }
 
             // Fire a 'beforeGenerateTransform' event
@@ -3251,7 +3253,7 @@ JS;
                 Assets::getFileKindByExtension($this->tempFilePath) === static::KIND_IMAGE &&
                 ($this->sanitizeOnUpload ?? (
                     !Craft::$app->getRequest()->getIsCpRequest() ||
-                    app(\CraftCms\Cms\Config\GeneralConfig::class)->sanitizeCpImageUploads
+                    app(GeneralConfig::class)->sanitizeCpImageUploads
                 ))
             ) {
                 Image::cleanImageByPath($this->tempFilePath);
@@ -3734,8 +3736,8 @@ JS;
     private function allowTransforms(): bool
     {
         return match ($this->getMimeType()) {
-            'image/gif' => app(\CraftCms\Cms\Config\GeneralConfig::class)->transformGifs,
-            'image/svg+xml' => app(\CraftCms\Cms\Config\GeneralConfig::class)->transformSvgs,
+            'image/gif' => app(GeneralConfig::class)->transformGifs,
+            'image/svg+xml' => app(GeneralConfig::class)->transformSvgs,
             default => true,
         };
     }

@@ -7,13 +7,14 @@ use craft\errors\ImageTransformException;
 use craft\helpers\ImageTransforms;
 use craft\models\ImageTransform;
 use CraftCms\Cms\Support\Arr;
+use UnitTester;
 
 class ImageTransformsTest extends Unit
 {
     /**
-     * @var \UnitTester
+     * @var UnitTester
      */
-    protected \UnitTester $tester;
+    protected UnitTester $tester;
 
     public array $fullTransform = [
         'id' => 123,

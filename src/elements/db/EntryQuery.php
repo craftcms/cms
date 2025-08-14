@@ -16,6 +16,7 @@ use craft\helpers\Db;
 use craft\models\EntryType;
 use craft\models\Section;
 use craft\models\UserGroup;
+use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Support\Arr;
 use DateTime;
@@ -861,7 +862,7 @@ class EntryQuery extends ElementQuery implements NestedElementQueryInterface
 
         // todo: update after the next breakpoint
         if (
-            app(\CraftCms\Cms\Config\GeneralConfig::class)->staticStatuses &&
+            app(GeneralConfig::class)->staticStatuses &&
             Craft::$app->getDb()->columnExists(Table::ENTRIES, 'status')
         ) {
             $this->query->addSelect(['entries.status']);
@@ -950,7 +951,7 @@ class EntryQuery extends ElementQuery implements NestedElementQueryInterface
     {
         if (
             in_array($status, [Entry::STATUS_LIVE, Entry::STATUS_PENDING, Entry::STATUS_EXPIRED]) &&
-            app(\CraftCms\Cms\Config\GeneralConfig::class)->staticStatuses
+            app(GeneralConfig::class)->staticStatuses
         ) {
             return [
                 'elements.enabled' => true,

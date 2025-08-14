@@ -10,6 +10,7 @@ namespace craft\services;
 use Craft;
 use craft\events\DeleteSiteEvent;
 use craft\events\RouteEvent;
+use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Str;
 use Illuminate\Support\Collection;
@@ -104,7 +105,7 @@ class Routes extends Component
 
         $this->_projectConfigRoutes = [];
 
-        if (app(\CraftCms\Cms\Config\GeneralConfig::class)->headlessMode) {
+        if (app(GeneralConfig::class)->headlessMode) {
             return $this->_projectConfigRoutes;
         }
 

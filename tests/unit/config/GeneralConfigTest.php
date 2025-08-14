@@ -8,6 +8,7 @@
 namespace crafttests\unit\config;
 
 use Codeception\Test\Unit;
+use CraftCms\Cms\Config\GeneralConfig;
 
 /**
  * Unit tests for ConfigTest
@@ -28,7 +29,7 @@ class GeneralConfigTest extends Unit
      */
     public function testRenamedSetting(string $oldProperty, string $newProperty, mixed $value): void
     {
-        $generalConfig = app(\CraftCms\Cms\Config\GeneralConfig::class);
+        $generalConfig = app(GeneralConfig::class);
         $generalConfig->$oldProperty = $value;
 
         self::assertEquals($value, $generalConfig->$newProperty);

@@ -17,6 +17,7 @@ use craft\mail\Message;
 use craft\services\Users;
 use craft\test\EventItem;
 use craft\test\TestCase;
+use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Support\Str;
 use crafttests\fixtures\UserGroupsFixture;
@@ -111,7 +112,7 @@ class UsersTest extends TestCase
     public function testUserActivationEmailAsUsernameWithAnUnverifedEmail(): void
     {
         // Set useEmailAsUsername to true and add an unverified email.
-        app(\CraftCms\Cms\Config\GeneralConfig::class)->useEmailAsUsername = true;
+        app(GeneralConfig::class)->useEmailAsUsername = true;
         $this->tester->saveElement($this->pendingUser);
 
         $this->users->activateUser($this->pendingUser);
@@ -121,7 +122,7 @@ class UsersTest extends TestCase
         self::assertSame(User::STATUS_ACTIVE, $user->getStatus());
         self::assertSame('jsmith@gmail.com', $user->username);
 
-        app(\CraftCms\Cms\Config\GeneralConfig::class)->useEmailAsUsername = false;
+        app(GeneralConfig::class)->useEmailAsUsername = false;
     }
 
     /**
@@ -130,7 +131,7 @@ class UsersTest extends TestCase
     public function testUserActivationEmailAsUsernameWithNoUnverifedEmail(): void
     {
         // Run the same test as above but without an unverified email.
-        app(\CraftCms\Cms\Config\GeneralConfig::class)->useEmailAsUsername = true;
+        app(GeneralConfig::class)->useEmailAsUsername = true;
 
         // Remove the unverifiedEmail property from the user record - meaning no username will be set.
         $this->pendingUser->unverifiedEmail = null;
@@ -142,7 +143,7 @@ class UsersTest extends TestCase
         self::assertSame(User::STATUS_ACTIVE, $user->getStatus());
         self::assertSame('jsmith', $user->username);
 
-        app(\CraftCms\Cms\Config\GeneralConfig::class)->useEmailAsUsername = false;
+        app(GeneralConfig::class)->useEmailAsUsername = false;
     }
 
     /**
@@ -285,7 +286,7 @@ class UsersTest extends TestCase
      */
     public function testHandleInvalidLoginUserIpStore(): void
     {
-        app(\CraftCms\Cms\Config\GeneralConfig::class)->storeUserIps = true;
+        app(GeneralConfig::class)->storeUserIps = true;
         $this->tester->mockCraftMethods('request', [
             'getUserIP' => '127.0.0.1',
         ]);
@@ -301,8 +302,8 @@ class UsersTest extends TestCase
      */
     public function testHandleInvalidLoginWithoutLimit(): void
     {
-        app(\CraftCms\Cms\Config\GeneralConfig::class)->maxInvalidLogins = false;
-        app(\CraftCms\Cms\Config\GeneralConfig::class)->storeUserIps = true;
+        app(GeneralConfig::class)->maxInvalidLogins = false;
+        app(GeneralConfig::class)->storeUserIps = true;
         $this->tester->mockCraftMethods('request', [
             'getUserIP' => '127.0.0.1',
         ]);
@@ -327,7 +328,7 @@ class UsersTest extends TestCase
         Craft::$app->getDb()->createCommand()
             ->update(Table::USERS, ['invalidLoginWindowStart' => null], ['id' => $this->activeUser->id])->execute();
 
-        app(\CraftCms\Cms\Config\GeneralConfig::class)->maxInvalidLogins = 1;
+        app(GeneralConfig::class)->maxInvalidLogins = 1;
         $this->users->handleInvalidLogin($this->activeUser);
 
         $user = $this->getUserQuery($this->activeUser->id);
@@ -354,8 +355,8 @@ class UsersTest extends TestCase
         ], ['id' => $this->activeUser->id]);
 
         // 3 max - that's important for a little bit later. Also a 2 day invalidLoginWindowDuration
-        app(\CraftCms\Cms\Config\GeneralConfig::class)->maxInvalidLogins = 3;
-        app(\CraftCms\Cms\Config\GeneralConfig::class)->invalidLoginWindowDuration = 172800;
+        app(GeneralConfig::class)->maxInvalidLogins = 3;
+        app(GeneralConfig::class)->invalidLoginWindowDuration = 172800;
 
         // 1 st invalid login.
         $this->users->handleInvalidLogin($this->activeUser);
@@ -411,7 +412,7 @@ class UsersTest extends TestCase
             'getUserIP' => '127.0.0.1',
         ]);
 
-        app(\CraftCms\Cms\Config\GeneralConfig::class)->storeUserIps = true;
+        app(GeneralConfig::class)->storeUserIps = true;
 
         $this->users->handleValidLogin($this->activeUser);
 
@@ -442,7 +443,7 @@ class UsersTest extends TestCase
     {
         // Ensure password validation is irrelevant
         $this->ensurePasswordValidationReturns(true);
-        app(\CraftCms\Cms\Config\GeneralConfig::class)->verificationCodeDuration = 172800;
+        app(GeneralConfig::class)->verificationCodeDuration = 172800;
 
         $this->updateUser([
             // The past.

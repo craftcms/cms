@@ -11,6 +11,7 @@ use BackedEnum;
 use craft\events\DefineValueEvent;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\Html;
+use CraftCms\Cms\Component\Contracts\ConfigurableComponentInterface;
 use DateTime;
 use ReflectionClass;
 use ReflectionProperty;
@@ -21,7 +22,7 @@ use ReflectionProperty;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.5.0
  */
-abstract class ConfigurableComponent extends Component implements \CraftCms\Cms\Component\Contracts\ConfigurableComponentInterface
+abstract class ConfigurableComponent extends Component implements ConfigurableComponentInterface
 {
     /**
      * @event DefineValueEvent The event that is triggered when defining the component’s settings attributes, as returned by [[settingsAttributes()]].

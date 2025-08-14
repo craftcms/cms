@@ -14,13 +14,14 @@ use CraftCms\Cms\Support\Env;
 use Illuminate\Support\Facades\Cache;
 use yii\base\Action;
 use yii\base\InvalidRouteException;
+use yii\console\Controller;
 use yii\console\Exception;
 use yii\console\ExitCode;
 
 /**
  * ConsoleControllerTrait implements the common methods and properties for console controllers.
  *
- * @mixin \yii\console\Controller
+ * @mixin Controller
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @author Global Network Group | Giel Tettelaar <giel@yellowflash.net>
  * @since 3.2.0

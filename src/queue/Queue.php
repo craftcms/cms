@@ -18,6 +18,7 @@ use craft\helpers\Queue as QueueHelper;
 use craft\helpers\UrlHelper;
 use craft\i18n\Translation;
 use craft\queue\jobs\Proxy;
+use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Support\Str;
@@ -273,7 +274,7 @@ class Queue extends \yii\queue\cli\Queue implements QueueInterface
         }
 
         // Have the response kick off a new queue runner if this is a site request
-        if (app(\CraftCms\Cms\Config\GeneralConfig::class)->runQueueAutomatically && !$this->_listeningForResponse) {
+        if (app(GeneralConfig::class)->runQueueAutomatically && !$this->_listeningForResponse) {
             $request = Craft::$app->getRequest();
             if ($request->getIsSiteRequest() && !$request->getIsAjax()) {
                 Craft::$app->getResponse()->on(Response::EVENT_AFTER_PREPARE, [$this, 'handleResponse']);

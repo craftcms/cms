@@ -14,6 +14,7 @@ use craft\mail\Message;
 use craft\models\SystemMessage;
 use craft\test\TestCase;
 use craft\test\TestMailer;
+use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Edition;
 use ReflectionException;
 use UnitTester;
@@ -150,7 +151,7 @@ class MailerTest extends TestCase
      */
     public function testToEmailAddress(): void
     {
-        app(\CraftCms\Cms\Config\GeneralConfig::class)->testToEmailAddress = ['giel@yellowflash.net', 'info@craftcms.com'];
+        app(GeneralConfig::class)->testToEmailAddress = ['giel@yellowflash.net', 'info@craftcms.com'];
 
         $this->_sendMail();
         $lastMessage = $this->tester->grabLastSentEmail();
@@ -166,7 +167,7 @@ class MailerTest extends TestCase
      */
     public function testToEmailAddressWithCustomName(): void
     {
-        app(\CraftCms\Cms\Config\GeneralConfig::class)->testToEmailAddress = ['giel@yellowflash.net' => 'Giel', 'info@craftcms.com' => 'Craft CMS'];
+        app(GeneralConfig::class)->testToEmailAddress = ['giel@yellowflash.net' => 'Giel', 'info@craftcms.com' => 'Craft CMS'];
 
         $this->_sendMail();
         $lastMessage = $this->tester->grabLastSentEmail();

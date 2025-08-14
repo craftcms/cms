@@ -10,6 +10,7 @@ namespace craft\console\controllers;
 use Craft;
 use craft\console\Controller;
 use craft\helpers\Console;
+use CraftCms\Cms\Config\GeneralConfig;
 use Throwable;
 
 /**
@@ -70,7 +71,7 @@ trait BackupTrait
             return $flag;
         }
 
-        $backupOnUpdate = app(\CraftCms\Cms\Config\GeneralConfig::class)->getBackupOnUpdate();
+        $backupOnUpdate = app(GeneralConfig::class)->getBackupOnUpdate();
 
         if (!$this->interactive) {
             return $backupOnUpdate;

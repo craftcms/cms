@@ -12,6 +12,7 @@ use Craft;
 use craft\records\Token;
 use craft\services\Tokens;
 use craft\test\TestCase;
+use CraftCms\Cms\Config\GeneralConfig;
 use DateInterval;
 use DateTime;
 use DateTimeZone;
@@ -57,7 +58,7 @@ class TokenTest extends TestCase
      */
     public function testCreateTokenDefaults(): void
     {
-        app(\CraftCms\Cms\Config\GeneralConfig::class)->defaultTokenDuration = 10000;
+        app(GeneralConfig::class)->defaultTokenDuration = 10000;
 
         // Determine what the expiry date is *supposed* to be
         $expiryDate = (new DateTime('now', new DateTimeZone('UTC')))->add(new DateInterval('PT10000S'));

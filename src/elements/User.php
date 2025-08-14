@@ -560,7 +560,7 @@ class User extends Element implements IdentityInterface
             ],
             'lastLoginDate' => [
                 'label' => Craft::t('app', 'Last Login'),
-                'placeholder' => fn() => (new \DateTime())->sub(new \DateInterval('P14D')),
+                'placeholder' => fn() => (new DateTime())->sub(new DateInterval('P14D')),
             ],
             'is2faEnabled' => [
                 'label' => Craft::t('app', 'Two-Step Verification'),

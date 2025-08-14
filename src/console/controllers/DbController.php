@@ -125,8 +125,8 @@ class DbController extends Controller
      * php craft db/drop-all-tables
      * ```
      *
-     * @throws \yii\base\NotSupportedException
-     * @throws \yii\db\Exception
+     * @throws NotSupportedException
+     * @throws Exception
      * @since 4.1.0
      */
     public function actionDropAllTables(): int

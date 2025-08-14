@@ -20,6 +20,7 @@ use craft\errors\ImageTransformException;
 use craft\image\Raster;
 use craft\models\ImageTransform;
 use craft\validators\ColorValidator;
+use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Str;
 use Imagine\Image\Format;
@@ -193,7 +194,7 @@ class ImageTransforms
                     self::storeLocalSource($tempFilePath, $imageSourcePath);
 
                     // And delete it after the request, if nobody wants it.
-                    if (app(\CraftCms\Cms\Config\GeneralConfig::class)->maxCachedCloudImageSize == 0) {
+                    if (app(GeneralConfig::class)->maxCachedCloudImageSize == 0) {
                         FileHelper::deleteFileAfterRequest($imageSourcePath);
                     }
 
@@ -344,7 +345,7 @@ class ImageTransforms
             $source = $destination;
         }
 
-        $maxCachedImageSize = app(\CraftCms\Cms\Config\GeneralConfig::class)->maxCachedCloudImageSize;
+        $maxCachedImageSize = app(GeneralConfig::class)->maxCachedCloudImageSize;
 
         // Resize if constrained by maxCachedImageSizes setting
         if ($maxCachedImageSize > 0 && Image::canManipulateAsImage(pathinfo($source, PATHINFO_EXTENSION))) {
@@ -398,7 +399,7 @@ class ImageTransforms
             throw new ImageTransformException("The `$format` format is not supported on this server.");
         }
 
-        $generalConfig = app(\CraftCms\Cms\Config\GeneralConfig::class);
+        $generalConfig = app(GeneralConfig::class);
         $imageSource = static::getLocalImageSource($asset);
 
         if ($ext === 'svg' && $format !== 'svg') {
@@ -421,7 +422,7 @@ class ImageTransforms
             $position = $transform->position;
         }
 
-        $scaleIfSmaller = $transform->upscale ?? app(\CraftCms\Cms\Config\GeneralConfig::class)->upscaleImages;
+        $scaleIfSmaller = $transform->upscale ?? app(GeneralConfig::class)->upscaleImages;
 
         switch ($transform->mode) {
             case 'letterbox':

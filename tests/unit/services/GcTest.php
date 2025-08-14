@@ -15,6 +15,7 @@ use craft\elements\User;
 use craft\records\User as UserRecord;
 use craft\services\Gc;
 use craft\test\TestCase;
+use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Support\Arr;
 use crafttests\fixtures\EntryFixture;
 use crafttests\fixtures\EntryTypeFixture;
@@ -86,7 +87,7 @@ class GcTest extends TestCase
     public function testRunForDeletedEntriesWithCustomDuration(): void
     {
         // 5 Days
-        app(\CraftCms\Cms\Config\GeneralConfig::class)->softDeleteDuration = 432000;
+        app(GeneralConfig::class)->softDeleteDuration = 432000;
 
         $this->_doEntryTest(2, [
             'Deleted 40 days ago',
@@ -134,7 +135,7 @@ class GcTest extends TestCase
     public function testRunForExpiringUsers(): void
     {
         // 2 days
-        app(\CraftCms\Cms\Config\GeneralConfig::class)->purgePendingUsersDuration = 60 * 60 * 24 * 2;
+        app(GeneralConfig::class)->purgePendingUsersDuration = 60 * 60 * 24 * 2;
 
         $count = User::find()
             ->username(['user1', 'user2', 'user3', 'user4'])

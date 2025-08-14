@@ -12,6 +12,7 @@ use craft\errors\DbConnectException;
 use craft\helpers\App;
 use craft\helpers\FileHelper;
 use craft\helpers\UrlHelper;
+use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Db\Table;
 use CraftCms\DependencyAwareCache\Dependency\TagDependency;
 use CraftCms\DependencyAwareCache\Facades\DependencyCache;
@@ -167,7 +168,7 @@ class AssetManager extends \yii\web\AssetManager
 
     private function _addBuildIdParam($url): string
     {
-        $generalConfig = app(\CraftCms\Cms\Config\GeneralConfig::class);
+        $generalConfig = app(GeneralConfig::class);
         if ($generalConfig->buildId) {
             return UrlHelper::urlWithParams($url, [
                 'buildId' => $generalConfig->buildId,

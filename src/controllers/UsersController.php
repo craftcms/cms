@@ -45,6 +45,7 @@ use craft\web\ServiceUnavailableHttpException;
 use craft\web\UploadedFile;
 use craft\web\View;
 use CraftCms\Cms\Announcement\Announcements;
+use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Json;
@@ -241,7 +242,7 @@ class UsersController extends Controller
         }
 
         // Get the session duration
-        $generalConfig = app(\CraftCms\Cms\Config\GeneralConfig::class);
+        $generalConfig = app(GeneralConfig::class);
         if ($rememberMe && $generalConfig->rememberedUserSessionDuration !== 0) {
             $duration = $generalConfig->rememberedUserSessionDuration;
         } else {
@@ -292,7 +293,7 @@ class UsersController extends Controller
         $this->requirePostRequest();
         $this->requireAcceptsJson();
 
-        $duration = app(\CraftCms\Cms\Config\GeneralConfig::class)->userSessionDuration;
+        $duration = app(GeneralConfig::class)->userSessionDuration;
 
         $requestOptions = $this->request->getRequiredBodyParam('requestOptions');
         $response = $this->request->getRequiredBodyParam('response');
@@ -530,8 +531,8 @@ class UsersController extends Controller
             'timeout' => $userSession->getRemainingSessionTime(),
         ];
 
-        if (app(\CraftCms\Cms\Config\GeneralConfig::class)->enableCsrfProtection) {
-            $return['csrfTokenName'] = app(\CraftCms\Cms\Config\GeneralConfig::class)->csrfTokenName;
+        if (app(GeneralConfig::class)->enableCsrfProtection) {
+            $return['csrfTokenName'] = app(GeneralConfig::class)->csrfTokenName;
             $return['csrfTokenValue'] = $this->request->getCsrfToken();
         }
 
@@ -608,7 +609,7 @@ class UsersController extends Controller
         $data = [];
 
         if ($this->request->getAcceptsJson()) {
-            if (app(\CraftCms\Cms\Config\GeneralConfig::class)->enableCsrfProtection) {
+            if (app(GeneralConfig::class)->enableCsrfProtection) {
                 $data['csrfTokenValue'] = $this->request->getCsrfToken();
             }
 
@@ -624,7 +625,7 @@ class UsersController extends Controller
 
         return $this->asSuccess(
             data: $data,
-            redirect: app(\CraftCms\Cms\Config\GeneralConfig::class)->getPostLogoutRedirect()
+            redirect: app(GeneralConfig::class)->getPostLogoutRedirect()
         );
     }
 
@@ -659,7 +660,7 @@ class UsersController extends Controller
 
             if (!$loginName) {
                 // If they didn't even enter a username/email, just bail now.
-                $errors[] = app(\CraftCms\Cms\Config\GeneralConfig::class)->useEmailAsUsername
+                $errors[] = app(GeneralConfig::class)->useEmailAsUsername
                     ? Craft::t('app', 'Email is required.')
                     : Craft::t('app', 'Username or email is required.');
 
@@ -672,7 +673,7 @@ class UsersController extends Controller
                 !$user?->getIsCredentialed() ||
                 (!$user->getHasPassword() && $user->getHasSsoIdentity())
             ) {
-                $errors[] = app(\CraftCms\Cms\Config\GeneralConfig::class)->useEmailAsUsername
+                $errors[] = app(GeneralConfig::class)->useEmailAsUsername
                     ? Craft::t('app', 'Invalid email.')
                     : Craft::t('app', 'Invalid username or email.');
             }
@@ -690,7 +691,7 @@ class UsersController extends Controller
             $errors[] = Craft::t('app', 'There was a problem sending the password reset email.');
         }
 
-        if (app(\CraftCms\Cms\Config\GeneralConfig::class)->preventUserEnumeration) {
+        if (app(GeneralConfig::class)->preventUserEnumeration) {
             // Randomly delay the response
             $this->_randomlyDelayResponse(microtime(true) - $time);
 
@@ -893,7 +894,7 @@ class UsersController extends Controller
             $return = [
                 'status' => $user->getStatus(),
             ];
-            if (!Craft::$app->getUser()->getIsGuest() && app(\CraftCms\Cms\Config\GeneralConfig::class)->enableCsrfProtection) {
+            if (!Craft::$app->getUser()->getIsGuest() && app(GeneralConfig::class)->enableCsrfProtection) {
                 $return['csrfTokenValue'] = $this->request->getCsrfToken();
             }
             return $this->asSuccess(data: $return);
@@ -904,7 +905,7 @@ class UsersController extends Controller
             $url = UrlHelper::cpUrl(Request::CP_PATH_LOGIN);
         } else {
             // Send them to the 'setPasswordSuccessPath' by default
-            $setPasswordSuccessPath = app(\CraftCms\Cms\Config\GeneralConfig::class)->getSetPasswordSuccessPath();
+            $setPasswordSuccessPath = app(GeneralConfig::class)->getSetPasswordSuccessPath();
             $url = UrlHelper::siteUrl($setPasswordSuccessPath);
         }
 
@@ -1328,7 +1329,7 @@ class UsersController extends Controller
             !$userLocale ||
             !Collection::make($i18n->getAllLocales())->contains(fn(Locale $locale) => $locale->id === App::parseEnv($userLocale))
         ) {
-            $userLocale = app(\CraftCms\Cms\Config\GeneralConfig::class)->defaultCpLocale;
+            $userLocale = app(GeneralConfig::class)->defaultCpLocale;
         }
 
         $response->action('users/save-preferences');
@@ -1516,7 +1517,7 @@ JS);
         $userSession = Craft::$app->getUser();
         $currentUser = $userSession->getIdentity();
         $canAdministrateUsers = $currentUser && $currentUser->can('administrateUsers');
-        $generalConfig = app(\CraftCms\Cms\Config\GeneralConfig::class);
+        $generalConfig = app(GeneralConfig::class);
         $userSettings = Craft::$app->getProjectConfig()->get('users') ?? [];
         $requireEmailVerification = (
             Craft::$app->edition->value >= Edition::Pro->value &&
@@ -2458,7 +2459,7 @@ JS);
 
         if (!$user) {
             if ($this->request->getIsSiteRequest()) {
-                $loginPath = app(\CraftCms\Cms\Config\GeneralConfig::class)->getLoginPath();
+                $loginPath = app(GeneralConfig::class)->getLoginPath();
                 if (!$loginPath) {
                     throw new InvalidConfigException('The loginPath config setting is disabled.');
                 }
@@ -2501,9 +2502,9 @@ JS);
         if (!$returnUrl) {
             if ($this->request->getIsCpRequest()) {
                 // explicitly set the default return URL here, since checkPermission('accessCp') will be false
-                $defaultReturnUrl = UrlHelper::cpUrl(app(\CraftCms\Cms\Config\GeneralConfig::class)->getPostCpLoginRedirect());
+                $defaultReturnUrl = UrlHelper::cpUrl(app(GeneralConfig::class)->getPostCpLoginRedirect());
             } else {
-                $defaultReturnUrl = UrlHelper::siteUrl(app(\CraftCms\Cms\Config\GeneralConfig::class)->getPostLoginRedirect());
+                $defaultReturnUrl = UrlHelper::siteUrl(app(GeneralConfig::class)->getPostLoginRedirect());
             }
             $returnUrl = $userSession->getReturnUrl($defaultReturnUrl);
         }
@@ -2551,7 +2552,7 @@ JS);
                 'returnUrl' => $returnUrl,
             ];
 
-            if (app(\CraftCms\Cms\Config\GeneralConfig::class)->enableCsrfProtection) {
+            if (app(GeneralConfig::class)->enableCsrfProtection) {
                 $return['csrfTokenValue'] = $this->request->getCsrfToken();
             }
 
@@ -2891,7 +2892,7 @@ JS);
 
         // If the invalidUserTokenPath config setting is set, send them there
         if ($this->request->getIsSiteRequest()) {
-            $generalConfig = app(\CraftCms\Cms\Config\GeneralConfig::class);
+            $generalConfig = app(GeneralConfig::class);
             $url = $generalConfig->getInvalidUserTokenPath() ?? $generalConfig->getLoginPath();
             return $this->redirect(UrlHelper::siteUrl($url));
         }
@@ -2925,7 +2926,7 @@ JS);
      */
     private function _maybeLoginUserAfterAccountActivation(User $user): bool
     {
-        $generalConfig = app(\CraftCms\Cms\Config\GeneralConfig::class);
+        $generalConfig = app(GeneralConfig::class);
         if (!$generalConfig->autoLoginAfterAccountActivation) {
             return false;
         }
@@ -2942,7 +2943,7 @@ JS);
     {
         // Can they access the control panel?
         if ($user->can('accessCp')) {
-            $postCpLoginRedirect = app(\CraftCms\Cms\Config\GeneralConfig::class)->getPostCpLoginRedirect();
+            $postCpLoginRedirect = app(GeneralConfig::class)->getPostCpLoginRedirect();
             $url = UrlHelper::cpUrl($postCpLoginRedirect);
             return $this->redirect($url);
         }
@@ -2958,7 +2959,7 @@ JS);
      */
     private function _redirectUserAfterAccountActivation(User $user): Response
     {
-        $activateAccountSuccessPath = app(\CraftCms\Cms\Config\GeneralConfig::class)->getActivateAccountSuccessPath();
+        $activateAccountSuccessPath = app(GeneralConfig::class)->getActivateAccountSuccessPath();
         $url = UrlHelper::siteUrl($activateAccountSuccessPath);
         return $this->redirectToPostedUrl($user, $url);
     }
@@ -2971,7 +2972,7 @@ JS);
      */
     private function _redirectUserAfterEmailVerification(User $user): Response
     {
-        $verifyEmailSuccessPath = app(\CraftCms\Cms\Config\GeneralConfig::class)->getVerifyEmailSuccessPath();
+        $verifyEmailSuccessPath = app(GeneralConfig::class)->getVerifyEmailSuccessPath();
         $url = UrlHelper::siteUrl($verifyEmailSuccessPath);
         return $this->redirectToPostedUrl($user, $url);
     }

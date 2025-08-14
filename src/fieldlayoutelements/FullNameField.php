@@ -11,6 +11,7 @@ use Craft;
 use craft\base\ElementInterface;
 use craft\helpers\Cp;
 use craft\helpers\Html as HtmlHelper;
+use CraftCms\Cms\Config\GeneralConfig;
 
 /**
  * Class FullNameField.
@@ -67,7 +68,7 @@ class FullNameField extends TextField
     {
         if (
             $element &&
-            app(\CraftCms\Cms\Config\GeneralConfig::class)->showFirstAndLastNameFields &&
+            app(GeneralConfig::class)->showFirstAndLastNameFields &&
             count(array_intersect($element->safeAttributes(), ['firstName', 'lastName'])) === 2
         ) {
             return $this->firstAndLastNameFields($element, $static);
@@ -125,7 +126,7 @@ class FullNameField extends TextField
      */
     protected function settingsHtml(): ?string
     {
-        if (app(\CraftCms\Cms\Config\GeneralConfig::class)->showFirstAndLastNameFields) {
+        if (app(GeneralConfig::class)->showFirstAndLastNameFields) {
             // can't know for sure if the element will support firstName and lastName, but probably?
             return null;
         }

@@ -27,6 +27,7 @@ use CraftCms\Cms\Element\Enums\PropagationMethod;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Utility\Utilities;
 use CraftCms\Cms\Utility\Utilities\ProjectConfig as ProjectConfigUtility;
+use CraftCms\Cms\Utility\Utility;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Facades\DB;
 use yii\base\Component;
@@ -849,7 +850,7 @@ class UserPermissions extends Component
         $utilityPermissions = [];
 
         foreach (app(Utilities::class)->getAllUtilityTypes() as $class) {
-            /** @var \CraftCms\Cms\Utility\Utility $class */
+            /** @var Utility $class */
             // Admins only
             if (ProjectConfigUtility::id() === $class::id()) {
                 continue;

@@ -11,6 +11,7 @@ use Craft;
 use craft\console\Controller;
 use craft\helpers\Console;
 use CraftCms\Cms\Support\Env;
+use Exception;
 use yii\console\ExitCode;
 
 /**
@@ -65,7 +66,7 @@ class EnvController extends Controller
 
         try {
             Env::writeVariable(trim($name), trim($value), app()->environmentPath());
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->stderr($e->getMessage() . "\n", Console::FG_RED);
             return ExitCode::UNSPECIFIED_ERROR;
         }
@@ -87,7 +88,7 @@ class EnvController extends Controller
     {
         try {
             Env::removeVariable($name, app()->environmentFilePath());
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->stderr($e->getMessage() . "\n", Console::FG_RED);
             return ExitCode::UNSPECIFIED_ERROR;
         }

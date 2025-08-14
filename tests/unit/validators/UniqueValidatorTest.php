@@ -7,6 +7,7 @@
 
 namespace crafttests\unit\validators;
 
+use Craft;
 use craft\models\UserGroup;
 use craft\records\UserGroup as UserGroupRecord;
 use craft\test\TestCase;
@@ -49,7 +50,7 @@ class UniqueValidatorTest extends TestCase
     {
         $uniqueValidator = new UniqueValidator($config);
         if ($id) {
-            $model = \Craft::$app->getUserGroups()->getGroupById($id);
+            $model = Craft::$app->getUserGroups()->getGroupById($id);
 
             if (!empty($modelConfig)) {
                 $model->setAttributes($modelConfig);

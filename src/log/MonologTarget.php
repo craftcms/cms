@@ -4,6 +4,7 @@ namespace craft\log;
 
 use Craft;
 use craft\helpers\App;
+use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Support\Arr;
 use DateTimeZone;
 use Illuminate\Support\Collection;
@@ -207,7 +208,7 @@ class MonologTarget extends PsrTarget
                 App::parseEnv(sprintf('@storage/logs/%s.log', $this->name)),
                 $this->maxFiles,
                 $this->level,
-                filePermission: app(\CraftCms\Cms\Config\GeneralConfig::class)->defaultFileMode,
+                filePermission: app(GeneralConfig::class)->defaultFileMode,
             ))->setFormatter($this->formatter));
         }
 

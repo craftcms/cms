@@ -9,11 +9,15 @@ namespace craft\controllers;
 
 use Craft;
 use craft\errors\AuthProviderNotFoundException;
+use craft\errors\MissingComponentException;
 use craft\errors\SsoFailedException;
 use craft\helpers\User as UserHelper;
 use craft\web\Controller;
+use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Support\Json;
+use Exception;
+use Throwable;
 use yii\web\HttpException;
 use yii\web\Response;
 
@@ -56,7 +60,7 @@ class SsoController extends Controller
      * @return Response|null
      * @throws AuthProviderNotFoundException
      * @throws HttpException
-     * @throws \craft\errors\MissingComponentException
+     * @throws MissingComponentException
      */
     public function actionRequest(?string $provider = null): ?Response
     {
@@ -125,7 +129,7 @@ class SsoController extends Controller
                 'returnUrl' => $returnUrl,
             ];
 
-            if (app(\CraftCms\Cms\Config\GeneralConfig::class)->enableCsrfProtection) {
+            if (app(GeneralConfig::class)->enableCsrfProtection) {
                 $return['csrfTokenValue'] = $this->request->getCsrfToken();
             }
 
@@ -143,10 +147,10 @@ class SsoController extends Controller
     }
 
     /**
-     * @param \Exception|null $exception
+     * @param Exception|null $exception
      * @throws HttpException
      */
-    protected function handleFailedResponse(\Throwable $exception = null)
+    protected function handleFailedResponse(Throwable $exception = null)
     {
         // Delay randomly between 0 and 1.5 seconds.
         usleep(random_int(0, 1500000));

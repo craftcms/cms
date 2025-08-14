@@ -4,16 +4,17 @@
  * @copyright Copyright (c) Pixel & Tonic, Inc.
  * @license https://craftcms.github.io/license/
  */
-
 use craft\base\FieldInterface;
 use craft\behaviors\CustomFieldBehavior;
 use craft\helpers\App;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\FileHelper;
+use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Support\Facades\Http;
 use CraftCms\Cms\Support\Str;
 use GuzzleHttp\Client;
 use Symfony\Component\VarDumper\Cloner\VarCloner;
+use yii\base\ErrorException;
 use yii\base\ExitException;
 use yii\base\InvalidConfigException;
 use yii\helpers\VarDumper;
@@ -171,7 +172,7 @@ class Craft extends Yii
     public static function cookieConfig(array $config = [], ?Request $request = null): array
     {
         if (!isset(self::$_baseCookieConfig)) {
-            $generalConfig = app(\CraftCms\Cms\Config\GeneralConfig::class);
+            $generalConfig = app(GeneralConfig::class);
 
             if ($generalConfig->useSecureCookies === 'auto') {
                 $request ??= static::$app->getRequest();
@@ -287,7 +288,7 @@ class Craft extends Yii
      * @param string|null $filePath
      * @param bool $write
      * @param bool $load
-     * @throws \yii\base\ErrorException
+     * @throws ErrorException
      */
     private static function _generateCustomFieldBehavior(
         array $fieldHandles,

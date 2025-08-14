@@ -13,6 +13,7 @@ use craft\helpers\App;
 use craft\helpers\Template;
 use craft\models\Site;
 use craft\web\View;
+use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Edition;
 use Throwable;
 use yii\base\InvalidConfigException;
@@ -102,7 +103,7 @@ class Mailer extends \yii\symfonymailer\Mailer
             'message' => $message,
         ]));
 
-        $generalConfig = app(\CraftCms\Cms\Config\GeneralConfig::class);
+        $generalConfig = app(GeneralConfig::class);
         $sitesService = Craft::$app->getSites();
         $view = Craft::$app->getView();
         $currentSite = $messageSite = $twig = null;

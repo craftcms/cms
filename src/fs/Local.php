@@ -16,12 +16,14 @@ use craft\helpers\App;
 use craft\helpers\FileHelper;
 use craft\helpers\Path;
 use craft\models\FsListing;
+use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Support\Str;
 use DirectoryIterator;
 use FilesystemIterator;
 use Generator;
 use RecursiveDirectoryIterator;
 use RecursiveIteratorIterator;
+use UnexpectedValueException;
 use yii\validators\InlineValidator;
 
 /**
@@ -89,7 +91,7 @@ class Local extends Fs implements LocalFsInterface
     {
         parent::init();
 
-        $generalConfig = app(\CraftCms\Cms\Config\GeneralConfig::class);
+        $generalConfig = app(GeneralConfig::class);
 
         if ($generalConfig->defaultFileMode) {
             $this->visibilityMap[self::VISIBILITY_FILE][self::VISIBILITY_DEFAULT] = $generalConfig->defaultFileMode;
@@ -193,7 +195,7 @@ class Local extends Fs implements LocalFsInterface
         $targetDir = $this->prefixPath($directory);
         try {
             $iterator = $recursive ? $this->getRecursiveIterator($targetDir) : new DirectoryIterator($targetDir);
-        } catch (\UnexpectedValueException $e) {
+        } catch (UnexpectedValueException $e) {
             Craft::$app->getErrorHandler()->logException($e);
             return;
         }

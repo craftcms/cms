@@ -10,6 +10,7 @@ namespace craft\web\twig\variables;
 use Craft;
 use craft\db\Paginator;
 use craft\helpers\UrlHelper;
+use CraftCms\Cms\Config\GeneralConfig;
 use yii\base\BaseObject;
 
 /**
@@ -91,7 +92,7 @@ class Paginate extends BaseObject
         if (!isset($this->pageTrigger)) {
             $this->pageTrigger = Craft::$app->getRequest()->getIsCpRequest()
                 ? 'p'
-                : app(\CraftCms\Cms\Config\GeneralConfig::class)->getPageTrigger();
+                : app(GeneralConfig::class)->getPageTrigger();
         }
     }
 

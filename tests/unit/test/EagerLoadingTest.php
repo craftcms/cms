@@ -14,6 +14,7 @@ use craft\fieldlayoutelements\CustomField;
 use craft\test\TestCase;
 use crafttests\fixtures\EntryWithMatrixFixture;
 use yii\base\ErrorException;
+use yii\base\Exception;
 
 /**
  * Unit tests for eager loading content
@@ -138,7 +139,7 @@ class EagerLoadingTest extends TestCase
      * returns empty results
      *
      * @return void
-     * @throws \yii\base\Exception
+     * @throws Exception
      */
     public function testEagerLoadingScenario4(): void
     {
@@ -161,7 +162,7 @@ class EagerLoadingTest extends TestCase
      * @param string $layoutUid
      * @param string $fieldHandle
      * @return void
-     * @throws \yii\base\Exception
+     * @throws Exception
      */
     private function _removeFieldFromLayout(string $layoutUid, string $fieldHandle): void
     {

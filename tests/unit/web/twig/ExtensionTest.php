@@ -18,12 +18,14 @@ use craft\fields\PlainText;
 use craft\test\TestCase;
 use craft\test\TestSetup;
 use craft\web\View;
+use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Edition;
 use crafttests\fixtures\GlobalSetFixture;
 use DateInterval;
 use DateTime;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Session;
+use Throwable;
 use Twig\Error\LoaderError;
 use Twig\Error\RuntimeError;
 use Twig\Error\SyntaxError;
@@ -138,7 +140,7 @@ class ExtensionTest extends TestCase
     /**
      * @throws LoaderError
      * @throws SyntaxError
-     * @throws \Throwable
+     * @throws Throwable
      */
     public function testElementGlobals(): void
     {
@@ -1112,7 +1114,7 @@ class ExtensionTest extends TestCase
      */
     public function testCsrfInputFunction(): void
     {
-        app(\CraftCms\Cms\Config\GeneralConfig::class)->enableCsrfProtection = true;
+        app(GeneralConfig::class)->enableCsrfProtection = true;
         Session::start();
 
         $this->testRenderResult(

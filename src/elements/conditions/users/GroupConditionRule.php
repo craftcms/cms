@@ -11,6 +11,7 @@ use craft\elements\db\UserQuery;
 use craft\elements\User;
 use craft\models\UserGroup;
 use CraftCms\Cms\Support\Arr;
+use yii\base\InvalidConfigException;
 
 /**
  * User group condition rule.
@@ -64,9 +65,9 @@ class GroupConditionRule extends BaseMultiSelectConditionRule implements Element
     }
 
     /**
-     * @param \craft\base\ElementInterface $element
+     * @param ElementInterface $element
      * @return bool
-     * @throws \yii\base\InvalidConfigException
+     * @throws InvalidConfigException
      */
     public function matchElement(ElementInterface $element): bool
     {

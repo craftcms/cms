@@ -8,9 +8,11 @@
 namespace craft\log;
 
 use Craft;
+use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Json;
 use Illuminate\Support\Collection;
+use InvalidArgumentException;
 use Monolog\LogRecord;
 use Monolog\Processor\ProcessorInterface;
 use yii\helpers\VarDumper;
@@ -42,7 +44,7 @@ class ContextProcessor implements ProcessorInterface
     {
         $data['environment'] = Craft::$app->env;
 
-        if (app(\CraftCms\Cms\Config\GeneralConfig::class)->storeUserIps) {
+        if (app(GeneralConfig::class)->storeUserIps) {
             $request = Craft::$app->getRequest();
 
             if ($request instanceof Request) {
@@ -78,7 +80,7 @@ class ContextProcessor implements ProcessorInterface
                     $decoded = Craft::$app->getSecurity()->redactIfSensitive('', $decoded);
                 }
                 $body = Json::encode($decoded);
-            } catch (\InvalidArgumentException) {
+            } catch (InvalidArgumentException) {
                 // NBD
             }
 

@@ -13,6 +13,7 @@ use craft\errors\ImageException;
 use craft\helpers\App;
 use craft\helpers\FileHelper;
 use craft\helpers\Image as ImageHelper;
+use CraftCms\Cms\Config\GeneralConfig;
 use Imagick;
 use ImagickException;
 use Imagine\Exception\NotSupportedException;
@@ -89,7 +90,7 @@ class Raster extends Image
      */
     public function __construct($config = [])
     {
-        $generalConfig = app(\CraftCms\Cms\Config\GeneralConfig::class);
+        $generalConfig = app(GeneralConfig::class);
 
         $extension = strtolower($generalConfig->imageDriver);
 
@@ -191,7 +192,7 @@ class Raster extends Image
         // For Imagick, convert CMYK to RGB, save and re-open.
         if (
             !Craft::$app->getImages()->getIsGd()
-            && !app(\CraftCms\Cms\Config\GeneralConfig::class)->preserveCmykColorspace
+            && !app(GeneralConfig::class)->preserveCmykColorspace
             && method_exists($this->_image->getImagick(), 'getImageColorspace')
             && $this->_image->getImagick()->getImageColorspace() === Imagick::COLORSPACE_CMYK
             && method_exists($this->_image->getImagick(), 'transformImageColorspace')
@@ -256,7 +257,7 @@ class Raster extends Image
         $width = $this->getWidth();
         $height = $this->getHeight();
 
-        $scaleIfSmaller ??= app(\CraftCms\Cms\Config\GeneralConfig::class)->upscaleImages;
+        $scaleIfSmaller ??= app(GeneralConfig::class)->upscaleImages;
 
         if ($scaleIfSmaller || $width > $targetWidth || $height > $targetHeight) {
             // go with the provided target dimensions if they both check out
@@ -288,7 +289,7 @@ class Raster extends Image
      */
     public function scaleToFitAndFill(?int $targetWidth, ?int $targetHeight, string $fill = null, string|array $position = 'center-center', bool $upscale = null): static
     {
-        $upscale ??= app(\CraftCms\Cms\Config\GeneralConfig::class)->upscaleImages;
+        $upscale ??= app(GeneralConfig::class)->upscaleImages;
 
         $this->normalizeDimensions($targetWidth, $targetHeight);
         $this->scaleToFit($targetWidth, $targetHeight, $upscale);
@@ -466,8 +467,8 @@ class Raster extends Image
 
             $this->_image = $gif;
         } else {
-            if (Craft::$app->getImages()->getIsImagick() && app(\CraftCms\Cms\Config\GeneralConfig::class)->optimizeImageFilesize) {
-                $keepImageProfiles = app(\CraftCms\Cms\Config\GeneralConfig::class)->preserveImageColorProfiles;
+            if (Craft::$app->getImages()->getIsImagick() && app(GeneralConfig::class)->optimizeImageFilesize) {
+                $keepImageProfiles = app(GeneralConfig::class)->preserveImageColorProfiles;
 
                 $this->_image->smartResize(new Box($targetWidth, $targetHeight), $keepImageProfiles, true, $this->_quality);
             } else {

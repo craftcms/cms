@@ -17,6 +17,7 @@ use craft\errors\SsoFailedException;
 use craft\helpers\User as UserHelper;
 use craft\records\SsoIdentity;
 use craft\records\SsoIdentity as AuthRecord;
+use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Edition;
 use yii\base\Component;
 use yii\base\InvalidConfigException;
@@ -277,7 +278,7 @@ class Sso extends Component
 
         if (empty($sessionDuration)) {
             // Get the session duration
-            $generalConfig = app(\CraftCms\Cms\Config\GeneralConfig::class);
+            $generalConfig = app(GeneralConfig::class);
             if ($rememberMe && $generalConfig->rememberedUserSessionDuration !== 0) {
                 $sessionDuration = $generalConfig->rememberedUserSessionDuration;
             } else {

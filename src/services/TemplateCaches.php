@@ -10,6 +10,7 @@ namespace craft\services;
 use Craft;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\Html;
+use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Str;
 use CraftCms\DependencyAwareCache\Dependency\TagDependency;
@@ -373,7 +374,7 @@ class TemplateCaches extends Component
     private function _isTemplateCachingEnabled(bool $global): bool
     {
         if (!isset($this->_enabled)) {
-            if (!app(\CraftCms\Cms\Config\GeneralConfig::class)->enableTemplateCaching) {
+            if (!app(GeneralConfig::class)->enableTemplateCaching) {
                 $this->_enabled = $this->_enabledGlobally = false;
             } else {
                 // Don't enable template caches for Live Preview/tokenized requests
@@ -440,7 +441,7 @@ class TemplateCaches extends Component
 
         $pageNum = $request->getPageNum();
         if ($pageNum !== 1) {
-            $pageTrigger = $isCpRequest ? 'p' : app(\CraftCms\Cms\Config\GeneralConfig::class)->getPageTrigger();
+            $pageTrigger = $isCpRequest ? 'p' : app(GeneralConfig::class)->getPageTrigger();
             $this->_path .= sprintf('/%s%s', $pageTrigger, $pageNum);
         }
 

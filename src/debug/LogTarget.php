@@ -4,6 +4,7 @@ namespace craft\debug;
 
 use craft\errors\FsException;
 use craft\models\FsListing;
+use Exception;
 use Illuminate\Support\Collection;
 use yii\base\InvalidConfigException;
 use yii\debug\FlattenException;
@@ -44,7 +45,7 @@ class LogTarget extends \yii\debug\LogTarget
                     $summary['processingTime'] = $panelData['time'];
                 }
                 $data[$id] = serialize($panelData);
-            } catch (\Exception $exception) {
+            } catch (Exception $exception) {
                 $exceptions[$id] = new FlattenException($exception);
             }
         }

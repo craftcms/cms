@@ -7,6 +7,7 @@
 
 namespace craft\base;
 
+use CraftCms\Cms\Component\Concerns\SavableComponent;
 use DateTime;
 
 /** @phpstan-ignore-next-line */
@@ -63,4 +64,4 @@ if (false) {
     }
 }
 
-class_alias(\CraftCms\Cms\Component\Concerns\SavableComponent::class, SavableComponentTrait::class);
+class_alias(SavableComponent::class, SavableComponentTrait::class);

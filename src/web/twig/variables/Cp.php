@@ -23,11 +23,13 @@ use craft\models\Site;
 use craft\models\Volume;
 use craft\web\twig\TemplateLoaderException;
 use CraftCms\Aliases\Facades\Aliases;
+use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Env;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Utility\Utilities;
+use CraftCms\Cms\Utility\Utility;
 use DateTime;
 use DateTimeZone;
 use Illuminate\Support\Collection;
@@ -220,7 +222,7 @@ class Cp extends Component
     public function nav(): array
     {
         $isAdmin = Craft::$app->getUser()->getIsAdmin();
-        $generalConfig = app(\CraftCms\Cms\Config\GeneralConfig::class);
+        $generalConfig = app(GeneralConfig::class);
 
         $navItems = [
             [
@@ -323,7 +325,7 @@ class Cp extends Component
             $badgeCount = 0;
 
             foreach ($utilities as $class) {
-                /** @var \CraftCms\Cms\Utility\Utility $class */
+                /** @var Utility $class */
                 $badgeCount += $class::badgeCount();
             }
 
@@ -339,7 +341,7 @@ class Cp extends Component
             $navItems[] = [
                 'url' => 'settings',
                 'label' => Craft::t('app', 'Settings'),
-                'icon' => app(\CraftCms\Cms\Config\GeneralConfig::class)->allowAdminChanges ? 'gear' : 'gear-slash',
+                'icon' => app(GeneralConfig::class)->allowAdminChanges ? 'gear' : 'gear-slash',
             ];
 
             $navItems[] = [
@@ -407,7 +409,7 @@ class Cp extends Component
      */
     public function settings(): array
     {
-        $readOnly = !app(\CraftCms\Cms\Config\GeneralConfig::class)->allowAdminChanges;
+        $readOnly = !app(GeneralConfig::class)->allowAdminChanges;
         $settings = [];
 
         $label = Craft::t('app', 'System');
@@ -421,7 +423,7 @@ class Cp extends Component
             'label' => Craft::t('app', 'Sites'),
         ];
 
-        if (!app(\CraftCms\Cms\Config\GeneralConfig::class)->headlessMode) {
+        if (!app(GeneralConfig::class)->headlessMode) {
             $settings[$label]['routes'] = [
                 'iconMask' => '@packageRoot/resources/icons/light/signs-post.svg',
                 'label' => Craft::t('app', 'Routes'),
@@ -432,7 +434,7 @@ class Cp extends Component
             'iconMask' => '@packageRoot/resources/icons/light/user-group.svg',
             'label' => Craft::t('app', 'Users'),
         ];
-        if (app(\CraftCms\Cms\Config\GeneralConfig::class)->allowAdminChanges) {
+        if (app(GeneralConfig::class)->allowAdminChanges) {
             $settings[$label]['addresses'] = [
                 'iconMask' => '@packageRoot/resources/icons/light/map-location.svg',
                 'label' => Craft::t('app', 'Addresses'),

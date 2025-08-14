@@ -9,6 +9,7 @@ namespace craft\services;
 
 use Craft;
 use craft\helpers\FileHelper;
+use CraftCms\Cms\Config\GeneralConfig;
 use yii\base\Exception;
 use yii\base\InvalidArgumentException;
 use yii\base\InvalidConfigException;
@@ -42,7 +43,7 @@ class Security extends \yii\base\Security
     {
         parent::init();
 
-        $this->_blowFishHashCost = app(\CraftCms\Cms\Config\GeneralConfig::class)->blowfishHashCost;
+        $this->_blowFishHashCost = app(GeneralConfig::class)->blowfishHashCost;
 
         // normalize the sensitive keywords
         $this->sensitiveKeywords = array_map(
@@ -96,7 +97,7 @@ class Security extends \yii\base\Security
     public function hashData($data, $key = null, $rawHash = false): string
     {
         if ($key === null) {
-            $key = app(\CraftCms\Cms\Config\GeneralConfig::class)->securityKey;
+            $key = app(GeneralConfig::class)->securityKey;
         }
 
         return parent::hashData($data, $key, $rawHash);
@@ -121,7 +122,7 @@ class Security extends \yii\base\Security
     public function validateData($data, $key = null, $rawHash = false): string|false
     {
         if ($key === null) {
-            $key = app(\CraftCms\Cms\Config\GeneralConfig::class)->securityKey;
+            $key = app(GeneralConfig::class)->securityKey;
         }
 
         return parent::validateData($data, $key, $rawHash);
@@ -141,7 +142,7 @@ class Security extends \yii\base\Security
     public function encryptByKey($data, $inputKey = null, $info = null): string
     {
         if ($inputKey === null) {
-            $inputKey = app(\CraftCms\Cms\Config\GeneralConfig::class)->securityKey;
+            $inputKey = app(GeneralConfig::class)->securityKey;
         }
 
         return parent::encryptByKey($data, $inputKey, $info);
@@ -160,7 +161,7 @@ class Security extends \yii\base\Security
     public function decryptByKey($data, $inputKey = null, $info = null): string|false
     {
         if ($inputKey === null) {
-            $inputKey = app(\CraftCms\Cms\Config\GeneralConfig::class)->securityKey;
+            $inputKey = app(GeneralConfig::class)->securityKey;
         }
 
         return parent::decryptByKey($data, $inputKey, $info);

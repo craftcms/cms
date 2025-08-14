@@ -29,6 +29,7 @@ use craft\models\Update;
 use craft\models\Updates;
 use craft\web\Controller;
 use craft\web\ServiceUnavailableHttpException;
+use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Support\Api;
 use CraftCms\Cms\Support\Arr;
@@ -42,6 +43,7 @@ use CraftCms\DependencyAwareCache\Facades\DependencyCache;
 use DateInterval;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
+use InvalidArgumentException;
 use Throwable;
 use yii\base\InvalidConfigException;
 use yii\web\BadRequestHttpException;
@@ -229,7 +231,7 @@ class AppController extends Controller
      */
     private function _updatesResponse(Updates $updates, bool $includeDetails): Response
     {
-        $generalConfig = app(\CraftCms\Cms\Config\GeneralConfig::class);
+        $generalConfig = app(GeneralConfig::class);
 
         $allowUpdates = (
             $generalConfig->allowUpdates &&
@@ -305,7 +307,7 @@ class AppController extends Controller
         Craft::$app->enableMaintenanceMode();
 
         // Backup the DB?
-        $backup = app(\CraftCms\Cms\Config\GeneralConfig::class)->getBackupOnUpdate();
+        $backup = app(GeneralConfig::class)->getBackupOnUpdate();
         if ($backup) {
             try {
                 $backupPath = $db->backup();
@@ -508,7 +510,7 @@ class AppController extends Controller
 
         try {
             $edition = Edition::fromHandle($edition);
-        } catch (\InvalidArgumentException $e) {
+        } catch (InvalidArgumentException $e) {
             throw new BadRequestHttpException($e->getMessage(), previous: $e);
         }
 
@@ -624,7 +626,7 @@ class AppController extends Controller
             if ($update->abandoned) {
                 $arr['statusText'] = Html::tag('strong', Craft::t('app', 'This plugin is no longer maintained.'));
                 if ($update->replacementName) {
-                    if (Craft::$app->getUser()->getIsAdmin() && app(\CraftCms\Cms\Config\GeneralConfig::class)->allowAdminChanges) {
+                    if (Craft::$app->getUser()->getIsAdmin() && app(GeneralConfig::class)->allowAdminChanges) {
                         $replacementUrl = UrlHelper::url("plugin-store/$update->replacementHandle");
                     } else {
                         $replacementUrl = $update->replacementUrl;
@@ -742,7 +744,7 @@ class AppController extends Controller
      */
     public function actionBrokenImage(): Response
     {
-        $generalConfig = app(\CraftCms\Cms\Config\GeneralConfig::class);
+        $generalConfig = app(GeneralConfig::class);
         $imagePath = Craft::getAlias($generalConfig->brokenImagePath);
         if (!is_file($imagePath)) {
             throw new InvalidConfigException("Invalid broken image path: $generalConfig->brokenImagePath");

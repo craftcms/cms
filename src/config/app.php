@@ -1,5 +1,57 @@
 <?php
 
+use craft\db\MigrationManager;
+use craft\helpers\App;
+use craft\i18n\MessageFormatter;
+use craft\i18n\PhpMessageSource;
+use craft\log\Dispatcher;
+use craft\mutex\Mutex;
+use craft\queue\Queue;
+use craft\services\Addresses;
+use craft\services\AssetIndexer;
+use craft\services\Assets;
+use craft\services\Auth;
+use craft\services\Categories;
+use craft\services\Conditions;
+use craft\services\Dashboard;
+use craft\services\Deprecator;
+use craft\services\Drafts;
+use craft\services\Elements;
+use craft\services\ElementSources;
+use craft\services\Entries;
+use craft\services\Fields;
+use craft\services\Fs;
+use craft\services\Gc;
+use craft\services\Globals;
+use craft\services\Gql;
+use craft\services\Images;
+use craft\services\ImageTransforms;
+use craft\services\Path;
+use craft\services\Plugins;
+use craft\services\PluginStore;
+use craft\services\Relations;
+use craft\services\Revisions;
+use craft\services\Routes;
+use craft\services\Search;
+use craft\services\Security;
+use craft\services\Sites;
+use craft\services\Sso;
+use craft\services\Structures;
+use craft\services\SystemMessages;
+use craft\services\Tags;
+use craft\services\TemplateCaches;
+use craft\services\Tokens;
+use craft\services\Updates;
+use craft\services\UserGroups;
+use craft\services\UserPermissions;
+use craft\services\Users;
+use craft\services\Utilities;
+use craft\services\Volumes;
+use craft\services\Webpack;
+use craft\web\UrlManager;
+use craft\web\UrlRule;
+use CraftCms\Cms\Announcement\Announcements;
+use CraftCms\Yii2Adapter\Localization;
 use CraftCms\Yii2Adapter\Log\LogTarget;
 
 return [
@@ -14,65 +66,65 @@ return [
 
     'components' => [
         'addresses' => [
-            'class' => craft\services\Addresses::class,
+            'class' => Addresses::class,
         ],
-        'announcements' => \CraftCms\Cms\Announcement\Announcements::class,
+        'announcements' => Announcements::class,
         'assets' => [
-            'class' => craft\services\Assets::class,
+            'class' => Assets::class,
         ],
         'assetIndexer' => [
-            'class' => craft\services\AssetIndexer::class,
+            'class' => AssetIndexer::class,
         ],
         'auth' => [
-            'class' => craft\services\Auth::class,
+            'class' => Auth::class,
         ],
         'categories' => [
-            'class' => craft\services\Categories::class,
+            'class' => Categories::class,
         ],
         'conditions' => [
-            'class' => craft\services\Conditions::class,
+            'class' => Conditions::class,
         ],
         'dashboard' => [
-            'class' => craft\services\Dashboard::class,
+            'class' => Dashboard::class,
         ],
         'deprecator' => [
-            'class' => craft\services\Deprecator::class,
+            'class' => Deprecator::class,
         ],
         'drafts' => [
-            'class' => craft\services\Drafts::class,
+            'class' => Drafts::class,
         ],
         'elementSources' => [
-            'class' => craft\services\ElementSources::class,
+            'class' => ElementSources::class,
         ],
         'elements' => [
-            'class' => craft\services\Elements::class,
+            'class' => Elements::class,
         ],
         'entries' => [
-            'class' => craft\services\Entries::class,
+            'class' => Entries::class,
         ],
         'fields' => [
-            'class' => craft\services\Fields::class,
+            'class' => Fields::class,
         ],
         'fs' => [
-            'class' => craft\services\Fs::class,
+            'class' => Fs::class,
         ],
         'gc' => [
-            'class' => craft\services\Gc::class,
+            'class' => Gc::class,
         ],
         'globals' => [
-            'class' => craft\services\Globals::class,
+            'class' => Globals::class,
         ],
         'gql' => [
-            'class' => craft\services\Gql::class,
+            'class' => Gql::class,
         ],
         'images' => [
-            'class' => craft\services\Images::class,
+            'class' => Images::class,
         ],
         'imageTransforms' => [
-            'class' => craft\services\ImageTransforms::class,
+            'class' => ImageTransforms::class,
         ],
         'log' => [
-            'class' => craft\log\Dispatcher::class,
+            'class' => Dispatcher::class,
             'targets' => [
                 [
                     'class' => LogTarget::class,
@@ -80,34 +132,34 @@ return [
             ],
         ],
         'mutex' => [
-            'class' => craft\mutex\Mutex::class,
+            'class' => Mutex::class,
         ],
         'path' => [
-            'class' => craft\services\Path::class,
+            'class' => Path::class,
         ],
         'plugins' => [
-            'class' => craft\services\Plugins::class,
+            'class' => Plugins::class,
         ],
         'pluginStore' => [
-            'class' => craft\services\PluginStore::class,
+            'class' => PluginStore::class,
         ],
         'queue' => [
-            'class' => craft\queue\Queue::class,
+            'class' => Queue::class,
         ],
         'relations' => [
-            'class' => craft\services\Relations::class,
+            'class' => Relations::class,
         ],
         'revisions' => [
-            'class' => craft\services\Revisions::class,
+            'class' => Revisions::class,
         ],
         'routes' => [
-            'class' => craft\services\Routes::class,
+            'class' => Routes::class,
         ],
         'search' => [
-            'class' => craft\services\Search::class,
+            'class' => Search::class,
         ],
         'security' => [
-            'class' => craft\services\Security::class,
+            'class' => Security::class,
             'sensitiveKeywords' => [
                 'key',
                 'pass',
@@ -120,90 +172,90 @@ return [
             ],
         ],
         'structures' => [
-            'class' => craft\services\Structures::class,
+            'class' => Structures::class,
         ],
         'systemMessages' => [
-            'class' => craft\services\SystemMessages::class,
+            'class' => SystemMessages::class,
         ],
         'tags' => [
-            'class' => craft\services\Tags::class,
+            'class' => Tags::class,
         ],
         'templateCaches' => [
-            'class' => craft\services\TemplateCaches::class,
+            'class' => TemplateCaches::class,
         ],
         'tokens' => [
-            'class' => craft\services\Tokens::class,
+            'class' => Tokens::class,
         ],
         'updates' => [
-            'class' => craft\services\Updates::class,
+            'class' => Updates::class,
         ],
         'urlManager' => [
-            'class' => craft\web\UrlManager::class,
+            'class' => UrlManager::class,
             'enablePrettyUrl' => true,
-            'ruleConfig' => ['class' => craft\web\UrlRule::class],
+            'ruleConfig' => ['class' => UrlRule::class],
         ],
         'users' => [
-            'class' => craft\services\Users::class,
+            'class' => Users::class,
         ],
         'volumes' => [
-            'class' => craft\services\Volumes::class,
+            'class' => Volumes::class,
         ],
         'userGroups' => [
-            'class' => craft\services\UserGroups::class,
+            'class' => UserGroups::class,
         ],
         'userPermissions' => [
-            'class' => craft\services\UserPermissions::class,
+            'class' => UserPermissions::class,
         ],
         'utilities' => [
-            'class' => \craft\services\Utilities::class,
+            'class' => Utilities::class,
         ],
         'webpack' => [
-            'class' => craft\services\Webpack::class,
+            'class' => Webpack::class,
         ],
         'contentMigrator' => [
-            'class' => craft\db\MigrationManager::class,
-            'track' => craft\db\MigrationManager::TRACK_CONTENT,
+            'class' => MigrationManager::class,
+            'track' => MigrationManager::TRACK_CONTENT,
             'migrationNamespace' => 'craft\contentmigrations',
             'migrationPath' => '@contentMigrations',
         ],
         'migrator' => [
-            'class' => craft\db\MigrationManager::class,
-            'track' => craft\db\MigrationManager::TRACK_CRAFT,
+            'class' => MigrationManager::class,
+            'track' => MigrationManager::TRACK_CRAFT,
             'migrationNamespace' => 'CraftCms\Cms\Migrations',
             'migrationPath' => '@package/Migrations',
         ],
         'sites' => [
-            'class' => craft\services\Sites::class,
+            'class' => Sites::class,
         ],
         'sso' => [
-            'class' => craft\services\Sso::class,
+            'class' => Sso::class,
         ],
         'i18n' => [
-            'class' => \CraftCms\Yii2Adapter\Localization::class,
+            'class' => Localization::class,
             'laravelCategories' => [
                 'auth',
                 'validation',
             ],
             'messageFormatter' => [
-                'class' => craft\i18n\MessageFormatter::class,
+                'class' => MessageFormatter::class,
             ],
             'translations' => [
                 'yii' => [
-                    'class' => craft\i18n\PhpMessageSource::class,
+                    'class' => PhpMessageSource::class,
                     'sourceLanguage' => 'en-US',
                     'basePath' => '@yii/messages',
                     'forceTranslation' => true,
                     'allowOverrides' => true,
                 ],
                 'app' => [
-                    'class' => craft\i18n\PhpMessageSource::class,
+                    'class' => PhpMessageSource::class,
                     'sourceLanguage' => 'en-US',
                     'basePath' => '@app/translations',
                     'forceTranslation' => true,
                     'allowOverrides' => true,
                 ],
                 'site' => [
-                    'class' => craft\i18n\PhpMessageSource::class,
+                    'class' => PhpMessageSource::class,
                     'sourceLanguage' => 'en-US',
                     'basePath' => '@translations',
                     'forceTranslation' => true,
@@ -215,38 +267,38 @@ return [
         // -------------------------------------------------------------------------
 
         'cache' => function() {
-            $config = craft\helpers\App::cacheConfig();
+            $config = App::cacheConfig();
             return Craft::createObject($config);
         },
 
         'db' => function() {
-            $config = craft\helpers\App::dbConfig();
+            $config = App::dbConfig();
             return Craft::createObject($config);
         },
 
         'db2' => function() {
-            $config = craft\helpers\App::dbConfig();
+            $config = App::dbConfig();
             return Craft::createObject($config);
         },
 
         'formatter' => fn() => Craft::$app->getFormattingLocale()->getFormatter(),
 
-        'formattingLocale' => fn() => craft\helpers\App::createFormattingLocale(),
+        'formattingLocale' => fn() => App::createFormattingLocale(),
 
         'locale' => fn() => Craft::$app->getI18n()->getLocaleById(Craft::$app->language),
 
         'mailer' => function() {
-            $config = craft\helpers\App::mailerConfig();
+            $config = App::mailerConfig();
             return Craft::createObject($config);
         },
 
         'projectConfig' => function() {
-            $config = craft\helpers\App::projectConfigConfig();
+            $config = App::projectConfigConfig();
             return Craft::createObject($config);
         },
 
         'view' => function() {
-            $config = craft\helpers\App::viewConfig();
+            $config = App::viewConfig();
             return Craft::createObject($config);
         },
     ],

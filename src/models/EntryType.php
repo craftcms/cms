@@ -27,6 +27,7 @@ use craft\helpers\UrlHelper;
 use craft\records\EntryType as EntryTypeRecord;
 use craft\validators\HandleValidator;
 use craft\validators\UniqueValidator;
+use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Support\Enums\Color;
 
 /**
@@ -287,7 +288,7 @@ class EntryType extends Model implements
         if (
             $this->id &&
             Craft::$app->getUser()->getIsAdmin() &&
-            app(\CraftCms\Cms\Config\GeneralConfig::class)->allowAdminChanges
+            app(GeneralConfig::class)->allowAdminChanges
         ) {
             $editId = sprintf('action-edit-%s', mt_rand());
             $items[] = [

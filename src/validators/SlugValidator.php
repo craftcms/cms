@@ -11,6 +11,7 @@ use Craft;
 use craft\base\Element;
 use craft\base\ElementInterface;
 use craft\helpers\ElementHelper;
+use CraftCms\Cms\Config\GeneralConfig;
 use yii\validators\Validator;
 
 /**
@@ -49,7 +50,7 @@ class SlugValidator extends Validator
         }
 
         if (!isset($this->limitAutoSlugsToAscii)) {
-            $this->limitAutoSlugsToAscii = app(\CraftCms\Cms\Config\GeneralConfig::class)->limitAutoSlugsToAscii;
+            $this->limitAutoSlugsToAscii = app(GeneralConfig::class)->limitAutoSlugsToAscii;
         }
     }
 

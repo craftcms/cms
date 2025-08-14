@@ -12,6 +12,7 @@ use craft\elements\Asset;
 use craft\errors\InvalidHtmlTagException;
 use craft\image\SvgAllowedAttributes;
 use craft\web\View;
+use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Str;
 use DOMElement;
@@ -148,7 +149,7 @@ class Html extends \yii\helpers\Html
     {
         $request = Craft::$app->getRequest();
         $async = Arr::pull($options, 'async')
-            ?? ($request->getIsSiteRequest() && app(\CraftCms\Cms\Config\GeneralConfig::class)->asyncCsrfInputs);
+            ?? ($request->getIsSiteRequest() && app(GeneralConfig::class)->asyncCsrfInputs);
 
         if (!$async) {
             Craft::$app->getResponse()->setNoCacheHeaders();

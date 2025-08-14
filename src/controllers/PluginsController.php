@@ -10,6 +10,7 @@ namespace craft\controllers;
 use Craft;
 use craft\base\PluginInterface;
 use craft\web\Controller;
+use CraftCms\Cms\Config\GeneralConfig;
 use yii\web\ForbiddenHttpException;
 use yii\web\NotFoundHttpException;
 use yii\web\Response;
@@ -111,7 +112,7 @@ class PluginsController extends Controller
         }
 
         // Read-only?
-        if (!app(\CraftCms\Cms\Config\GeneralConfig::class)->allowAdminChanges) {
+        if (!app(GeneralConfig::class)->allowAdminChanges) {
             if (!$plugin->hasReadOnlyCpSettings) {
                 throw new ForbiddenHttpException('Administrative changes are disallowed in this environment.');
             }

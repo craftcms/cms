@@ -59,6 +59,7 @@ use craft\web\twig\tokenparsers\SwitchTokenParser;
 use craft\web\twig\tokenparsers\TagTokenParser;
 use craft\web\twig\variables\CraftVariable;
 use craft\web\View;
+use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Env;
 use CraftCms\Cms\Support\Json;
@@ -1725,7 +1726,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
     public function getGlobals(): array
     {
         $isInstalled = Craft::$app->getIsInstalled();
-        $generalConfig = app(\CraftCms\Cms\Config\GeneralConfig::class);
+        $generalConfig = app(GeneralConfig::class);
         $setPasswordRequestPath = $generalConfig->getSetPasswordRequestPath();
 
         if ($isInstalled && !Craft::$app->getUpdates()->getIsCraftUpdatePending()) {

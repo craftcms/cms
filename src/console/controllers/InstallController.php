@@ -16,6 +16,7 @@ use craft\errors\OperationAbortedException;
 use craft\helpers\Console;
 use craft\helpers\Install as InstallHelper;
 use craft\models\Site;
+use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Migrations\Install;
 use CraftCms\Cms\Support\Env;
 use yii\base\Exception;
@@ -118,7 +119,7 @@ class InstallController extends Controller
 
         $this->run('setup/keys');
 
-        $generalConfig = app(\CraftCms\Cms\Config\GeneralConfig::class);
+        $generalConfig = app(GeneralConfig::class);
 
         $user = new User();
         $user->setScenario(User::SCENARIO_REGISTRATION);

@@ -17,6 +17,7 @@ use craft\events\PluginEvent;
 use craft\helpers\App;
 use craft\helpers\FileHelper;
 use craft\helpers\ProjectConfig as ProjectConfigHelper;
+use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Db\Table;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Enums\LicenseKeyStatus;
@@ -151,7 +152,7 @@ class Plugins extends Component
      */
     public function init(): void
     {
-        $generalConfig = app(\CraftCms\Cms\Config\GeneralConfig::class);
+        $generalConfig = app(GeneralConfig::class);
 
         if ($generalConfig->safeMode) {
             $this->_forceDisabledPlugins = '*';

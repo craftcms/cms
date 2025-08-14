@@ -9,6 +9,7 @@ namespace craft\fields\linktypes;
 
 use Craft;
 use craft\helpers\Cp;
+use Exception;
 use League\Uri\Uri;
 
 /**
@@ -97,7 +98,7 @@ class Url extends BaseTextLinkType
             // Leveraging Uri package to convert domains to punycode
             $value = Uri::new($value);
             return parent::validateValue($value, $error);
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             return false;
         }
     }
