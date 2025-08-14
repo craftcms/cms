@@ -109,11 +109,11 @@ class TestCase extends Orchestra
     {
         File::cleanDirectory(config_path('craft/project'));
 
-        if (! file_exists(__DIR__.'/../.env')) {
+        if (! file_exists(__DIR__.'/../../tests/.env')) {
             return;
         }
 
-        $dotenv = \Dotenv\Dotenv::createImmutable(__DIR__.'/../');
+        $dotenv = \Dotenv\Dotenv::createImmutable(__DIR__.'/../../tests');
         $dotenv->load();
 
         $configKey = 'database.connections.'.env('DB_CONNECTION');

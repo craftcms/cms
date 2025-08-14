@@ -1,9 +1,7 @@
 <?php
 
-use craft\services\ProjectConfig;
 use craft\test\TestSetup;
 use CraftCms\Cms\Tests\TestCase;
-use Illuminate\Support\Facades\Cache;
 
 ini_set('date.timezone', 'UTC');
 date_default_timezone_set('UTC');
@@ -23,16 +21,9 @@ const CRAFT_TESTS_PATH = __DIR__;
 !defined('CRAFT_LICENSE_KEY_PATH') && define('CRAFT_LICENSE_KEY_PATH', __DIR__ . DIRECTORY_SEPARATOR . '_craft' . DIRECTORY_SEPARATOR . 'config/license.key');
 
 /**
- * Load .env from this folder as well.
- */
-Dotenv\Dotenv::createImmutable(CRAFT_DOTENV_PATH)->load();
-
-/**
  * Initialize the Laravel Craft Application
  */
 new TestCase('laravel')->createApplication();
-
-Cache::lock(ProjectConfig::MUTEX_NAME)->forceRelease();
 
 $devMode = true;
 
