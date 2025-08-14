@@ -8,17 +8,17 @@
 namespace craft\services;
 
 use Craft;
-use craft\db\Table;
 use craft\elements\User;
 use craft\errors\WrongEditionException;
 use craft\events\ConfigEvent;
 use craft\events\UserGroupEvent;
-use craft\helpers\Db;
 use craft\models\UserGroup;
 use craft\records\UserGroup as UserGroupRecord;
+use CraftCms\Cms\Db\Table;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Support\Str;
 use Illuminate\Database\Query\Builder;
+use Illuminate\Support\Facades\DB;
 use yii\base\Component;
 
 /**
@@ -216,7 +216,7 @@ class UserGroups extends Component
      */
     public function getGroupsByUserId(int $userId): array
     {
-        return \Illuminate\Support\Facades\DB::table(\CraftCms\Cms\Db\Table::USERGROUPS, 'g')
+        return DB::table(Table::USERGROUPS, 'g')
             ->select([
                 'g.id',
                 'g.name',
@@ -224,7 +224,7 @@ class UserGroups extends Component
                 'g.description',
                 'g.uid',
             ])
-            ->join(\CraftCms\Cms\Db\Table::USERGROUPS_USERS . ' as gu', 'gu.groupId', 'g.id')
+            ->join(Table::USERGROUPS_USERS . ' as gu', 'gu.groupId', 'g.id')
             ->where('gu.userId', $userId)
             ->get()
             ->map(fn(object $group) => new UserGroup((array)$group))
@@ -244,7 +244,7 @@ class UserGroups extends Component
             return;
         }
 
-        $assignments = \Illuminate\Support\Facades\DB::table(\CraftCms\Cms\Db\Table::USERGROUPS_USERS)
+        $assignments = DB::table(Table::USERGROUPS_USERS)
             ->select(['groupId', 'userId'])
             ->whereIn('userId', array_unique(array_map(fn(User $user) => $user->id, $users)))
             ->get();
@@ -312,7 +312,7 @@ class UserGroups extends Component
             if ($isNewGroup) {
                 $group->uid = Str::uuid()->toString();
             } elseif (!$group->uid) {
-                $group->uid = Db::uidById(Table::USERGROUPS, $group->id);
+                $group->uid = DB::table(Table::USERGROUPS)->uidById($group->id);
             }
         }
 
@@ -322,7 +322,7 @@ class UserGroups extends Component
 
         // Now that we have a group ID, save it on the model
         if ($isNewGroup) {
-            $group->id = Db::idByUid(Table::USERGROUPS, $group->uid);
+            $group->id = DB::table(Table::USERGROUPS)->idByUid($group->uid);
         }
 
         return true;
@@ -380,7 +380,7 @@ class UserGroups extends Component
             ]));
         }
 
-        \Illuminate\Support\Facades\DB::table(\CraftCms\Cms\Db\Table::USERGROUPS)
+        DB::table(Table::USERGROUPS)
             ->where('uid', $uid)
             ->delete();
 
@@ -443,7 +443,7 @@ class UserGroups extends Component
 
     private function _createUserGroupsQuery(): Builder
     {
-        return \Illuminate\Support\Facades\DB::table(\CraftCms\Cms\Db\Table::USERGROUPS)
+        return DB::table(Table::USERGROUPS)
             ->select([
                 'id',
                 'name',

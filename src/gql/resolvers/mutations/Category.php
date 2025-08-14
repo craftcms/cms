@@ -8,14 +8,14 @@
 namespace craft\gql\resolvers\mutations;
 
 use Craft;
-use craft\db\Table;
 use craft\elements\Category as CategoryElement;
 use craft\gql\base\ElementMutationResolver;
 use craft\gql\base\StructureMutationTrait;
-use craft\helpers\Db;
 use craft\models\CategoryGroup;
+use CraftCms\Cms\Db\Table;
 use GraphQL\Error\Error;
 use GraphQL\Type\Definition\ResolveInfo;
+use Illuminate\Support\Facades\DB;
 use Throwable;
 
 /**
@@ -98,7 +98,7 @@ class Category extends ElementMutationResolver
             return false;
         }
 
-        $categoryGroupUid = Db::uidById(Table::CATEGORYGROUPS, $category->groupId);
+        $categoryGroupUid = DB::table(Table::CATEGORYGROUPS)->uidById($category->groupId);
         $this->requireSchemaAction('categorygroups.' . $categoryGroupUid, 'delete');
 
         return $elementService->deleteElementById($categoryId);

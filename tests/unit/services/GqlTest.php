@@ -8,7 +8,6 @@
 namespace crafttests\unit\services;
 
 use Craft;
-use craft\db\Table;
 use craft\elements\GlobalSet;
 use craft\elements\User;
 use craft\errors\GqlException;
@@ -21,7 +20,6 @@ use craft\fs\Local;
 use craft\gql\GqlEntityRegistry;
 use craft\gql\interfaces\elements\User as UserInterface;
 use craft\gql\TypeLoader;
-use craft\helpers\Db;
 use craft\models\CategoryGroup;
 use craft\models\EntryType;
 use craft\models\GqlSchema;
@@ -40,12 +38,14 @@ use craft\test\mockclasses\gql\MockDirective;
 use craft\test\mockclasses\gql\MockType;
 use craft\test\TestCase;
 use CraftCms\Cms\Config\GeneralConfig;
+use CraftCms\Cms\Db\Table;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Support\Str;
 use GraphQL\Type\Definition\Directive;
 use GraphQL\Type\Definition\ObjectType;
 use GraphQL\Type\Definition\ScalarType;
 use GraphQL\Type\Schema;
+use Illuminate\Support\Facades\DB;
 use UnitTester;
 use yii\base\Event;
 use yii\base\Exception;
@@ -430,7 +430,7 @@ class GqlTest extends TestCase
     {
         $gql = Craft::$app->getGql();
 
-        \Illuminate\Support\Facades\DB::table(\CraftCms\Cms\Db\Table::GQLTOKENS)->truncate();
+        DB::table(Table::GQLTOKENS)->truncate();
 
         $accessToken = Str::random();
         $tokenName = Str::random(15);
@@ -480,7 +480,7 @@ class GqlTest extends TestCase
         ]);
 
         $gql->saveSchema($schema);
-        $schemaId = Db::idByUid(Table::GQLSCHEMAS, $schemaUid);
+        $schemaId = DB::table(Table::GQLSCHEMAS)->idByUid($schemaUid);
 
         // Test fetching schema
         self::assertEquals($gql->getSchemaById($schemaId)->uid, $schemaUid);

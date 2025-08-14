@@ -19,6 +19,7 @@ use craft\models\Structure;
 use craft\records\Structure as StructureRecord;
 use craft\records\StructureElement;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\DB;
 use Throwable;
 use yii\base\Component;
 use yii\base\Exception;
@@ -574,10 +575,10 @@ class Structures extends Component
             self::ACTION_PLACE_AFTER => 'insertAfter',
         };
 
-        \Illuminate\Support\Facades\DB::beginTransaction();
+        DB::beginTransaction();
         try {
             if (!$elementRecord->$method($targetElementRecord)) {
-                \Illuminate\Support\Facades\DB::rollBack();
+                DB::rollBack();
                 $mutex->release();
                 return false;
             }
@@ -603,9 +604,9 @@ class Structures extends Component
             // Tell the element about it
             $element->afterMoveInStructure($structureId);
 
-            \Illuminate\Support\Facades\DB::commit();
+            DB::commit();
         } catch (Throwable $e) {
-            \Illuminate\Support\Facades\DB::rollBack();
+            DB::rollBack();
             $mutex->release();
             throw $e;
         }

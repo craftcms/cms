@@ -409,7 +409,7 @@ class Fields extends Component
         }
 
         if (!empty($config['id']) && empty($config['uid']) && is_numeric($config['id'])) {
-            $uid = Db::uidById(Table::FIELDS, $config['id']);
+            $uid = \Illuminate\Support\Facades\DB::table(\CraftCms\Cms\Db\Table::FIELDS)->uidById($config['id']);
             $config['uid'] = $uid;
         }
 
@@ -646,7 +646,7 @@ class Fields extends Component
         }
 
         if ($isNewField) {
-            $field->id = Db::idByUid(Table::FIELDS, $field->uid);
+            $field->id = \Illuminate\Support\Facades\DB::table(\CraftCms\Cms\Db\Table::FIELDS)->idByUid($field->uid);
         }
 
         return true;
@@ -673,7 +673,7 @@ class Fields extends Component
                 $field->uid = Str::uuid()->toString();
             }
         } elseif (!$field->uid) {
-            $field->uid = Db::uidById(Table::FIELDS, $field->id);
+            $field->uid = \Illuminate\Support\Facades\DB::table(\CraftCms\Cms\Db\Table::FIELDS)->uidById($field->id);
         }
 
         // Store with all the populated data for future reference.
@@ -1151,7 +1151,7 @@ class Fields extends Component
     {
         if (!$layout->id) {
             // Maybe the ID just wasn't known
-            $layout->id = Db::idByUid(Table::FIELDLAYOUTS, $layout->uid);
+            $layout->id = \Illuminate\Support\Facades\DB::table(\CraftCms\Cms\Db\Table::FIELDLAYOUTS)->idByUid($layout->uid);
         }
 
         $isNewLayout = !$layout->id;

@@ -5,11 +5,20 @@ namespace CraftCms\Cms\Db;
 use Illuminate\Cache\DatabaseStore;
 use Illuminate\Contracts\Config\Repository;
 use Illuminate\Database\Connection;
+use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\ServiceProvider;
 
 final class DatabaseServiceProvider extends ServiceProvider
 {
+    public function register(): void
+    {
+        Builder::macro('idByUid', fn (string $uid): ?int => (int) $this->where('uid', $uid)->value('id') ?: null);
+        Builder::macro('idsByUids', fn (array $uids): array => $this->whereIn('uid', $uids)->pluck('id', 'uid')->all());
+        Builder::macro('uidById', fn (int $id): ?string => $this->where('id', $id)->value('uid') ?: null);
+        Builder::macro('uidsByIds', fn (array $ids): array => $this->whereIn('id', $ids)->pluck('uid', 'id')->all());
+    }
+
     public function boot(Repository $config, Connection $db, \Illuminate\Cache\Repository $cache): void
     {
         /**

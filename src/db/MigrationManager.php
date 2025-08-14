@@ -11,6 +11,7 @@ use Craft;
 use craft\errors\MigrationException;
 use craft\helpers\App;
 use craft\helpers\FileHelper;
+use CraftCms\Cms\Db\Table;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Facades\DB;
 use Throwable;
@@ -67,7 +68,7 @@ class MigrationManager extends Component
     /**
      * @var string The migrations table name
      */
-    public string $migrationTable = \CraftCms\Cms\Db\Table::MIGRATIONS;
+    public string $migrationTable = Table::MIGRATIONS;
 
     /**
      * @inheritdoc

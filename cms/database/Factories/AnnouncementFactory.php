@@ -25,21 +25,17 @@ final class AnnouncementFactory extends Factory
 
     public function unread(): self
     {
-        return $this->state(function (array $attributes) {
-            return [
-                'unread' => true,
-                'dateRead' => null,
-            ];
-        });
+        return $this->state(fn (array $attributes) => [
+            'unread' => true,
+            'dateRead' => null,
+        ]);
     }
 
     public function read(): self
     {
-        return $this->state(function (array $attributes) {
-            return [
-                'unread' => false,
-                'dateRead' => fake()->dateTime(),
-            ];
-        });
+        return $this->state(fn (array $attributes) => [
+            'unread' => false,
+            'dateRead' => fake()->dateTime(),
+        ]);
     }
 }

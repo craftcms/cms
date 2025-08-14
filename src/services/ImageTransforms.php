@@ -209,7 +209,7 @@ class ImageTransforms extends Component
         if ($isNewTransform) {
             $transform->uid = Str::uuid()->toString();
         } elseif (!$transform->uid) {
-            $transform->uid = Db::uidById(Table::IMAGETRANSFORMS, $transform->id, $this->db);
+            $transform->uid = \Illuminate\Support\Facades\DB::table(\CraftCms\Cms\Db\Table::IMAGETRANSFORMS)->uidById($transform->id);
         }
 
         $projectConfig = Craft::$app->getProjectConfig();
@@ -217,7 +217,7 @@ class ImageTransforms extends Component
         $projectConfig->set($configPath, $transform->getConfig(), "Saving transform “{$transform->handle}”");
 
         if ($isNewTransform) {
-            $transform->id = Db::idByUid(Table::IMAGETRANSFORMS, $transform->uid, $this->db);
+            $transform->id = \Illuminate\Support\Facades\DB::table(\CraftCms\Cms\Db\Table::IMAGETRANSFORMS)->idByUid($transform->uid);
         }
 
         return true;

@@ -16,12 +16,12 @@ use craft\errors\ElementNotFoundException;
 use craft\errors\GlobalSetNotFoundException;
 use craft\events\ConfigEvent;
 use craft\events\GlobalSetEvent;
-use craft\helpers\Db;
 use craft\helpers\ProjectConfig as ProjectConfigHelper;
 use craft\models\FieldLayout;
 use craft\records\GlobalSet as GlobalSetRecord;
 use CraftCms\Cms\Support\Str;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\DB;
 use Throwable;
 use yii\base\Component;
 
@@ -313,7 +313,7 @@ class Globals extends Component
                     ->from([Table::GLOBALSETS])
                     ->max('[[sortOrder]]') + 1;
         } elseif (!$globalSet->uid) {
-            $globalSet->uid = Db::uidById(Table::GLOBALSETS, $globalSet->id);
+            $globalSet->uid = DB::table(\CraftCms\Cms\Db\Table::GLOBALSETS)->uidById($globalSet->id);
         }
 
         $configPath = ProjectConfig::PATH_GLOBAL_SETS . '.' . $globalSet->uid;
@@ -321,7 +321,7 @@ class Globals extends Component
         Craft::$app->getProjectConfig()->set($configPath, $configData, "Save global set “{$globalSet->handle}”");
 
         if ($isNewSet) {
-            $globalSet->id = Db::idByUid(Table::GLOBALSETS, $globalSet->uid);
+            $globalSet->id = DB::table(\CraftCms\Cms\Db\Table::GLOBALSETS)->idByUid($globalSet->uid);
         }
 
         return true;
@@ -341,7 +341,7 @@ class Globals extends Component
         ProjectConfigHelper::ensureAllSitesProcessed();
         ProjectConfigHelper::ensureAllFieldsProcessed();
 
-        \Illuminate\Support\Facades\DB::beginTransaction();
+        DB::beginTransaction();
         try {
             $globalSetRecord = $this->_getGlobalSetRecord($globalSetUid, true);
             $isNewSet = $globalSetRecord->getIsNewRecord();
@@ -403,9 +403,9 @@ class Globals extends Component
             $globalSetRecord->id = $element->id;
             $globalSetRecord->save(false);
 
-            \Illuminate\Support\Facades\DB::commit();
+            DB::commit();
         } catch (Throwable $e) {
-            \Illuminate\Support\Facades\DB::rollBack();
+            DB::rollBack();
             throw $e;
         }
 
@@ -437,7 +437,7 @@ class Globals extends Component
     {
         $projectConfig = Craft::$app->getProjectConfig();
 
-        $uidsByIds = Db::uidsByIds(Table::GLOBALSETS, $setIds);
+        $uidsByIds = DB::table(\CraftCms\Cms\Db\Table::GLOBALSETS)->uidsByIds($setIds);
 
         foreach ($setIds as $i => $setId) {
             if (!empty($uidsByIds[$setId])) {
@@ -497,7 +497,7 @@ class Globals extends Component
             return;
         }
 
-        \Illuminate\Support\Facades\DB::beginTransaction();
+        DB::beginTransaction();
 
         try {
             // Get the field layout
@@ -518,9 +518,9 @@ class Globals extends Component
                 }
             }
 
-            \Illuminate\Support\Facades\DB::commit();
+            DB::commit();
         } catch (Throwable $e) {
-            \Illuminate\Support\Facades\DB::rollBack();
+            DB::rollBack();
             throw $e;
         }
 

@@ -24,6 +24,7 @@ use craft\models\FieldLayout;
 use craft\records\Address as AddressRecord;
 use craft\validators\StringValidator;
 use CraftCms\Cms\Config\GeneralConfig;
+use CraftCms\Cms\Db\Table;
 use yii\base\InvalidConfigException;
 
 /**
@@ -783,7 +784,7 @@ class Address extends Element implements AddressInterface, NestedElementInterfac
         $record->save(false);
         $this->setDirtyAttributes($dirtyAttributes);
 
-        $this->saveOwnership($isNew, \CraftCms\Cms\Db\Table::ADDRESSES);
+        $this->saveOwnership($isNew, Table::ADDRESSES);
 
         parent::afterSave($isNew);
     }

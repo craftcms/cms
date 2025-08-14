@@ -33,6 +33,7 @@ use craft\models\VolumeFolder;
 use craft\web\Controller;
 use craft\web\UploadedFile;
 use CraftCms\Cms\Config\GeneralConfig;
+use CraftCms\Cms\Db\Table;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Str;
 use Throwable;
@@ -1454,7 +1455,7 @@ class AssetsController extends Controller
             }
         }
 
-        $query = \Illuminate\Support\Facades\DB::table(\CraftCms\Cms\Db\Table::ASSETS)
+        $query = \Illuminate\Support\Facades\DB::table(Table::ASSETS)
             ->whereIn('id', $assetIds)
             ->orWhereIn('folderId', array_unique($folderIds));
 

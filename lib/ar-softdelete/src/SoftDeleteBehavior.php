@@ -7,16 +7,16 @@
 
 namespace yii2tech\ar\softdelete;
 
-use Illuminate\Support\Facades\DB;
 use Exception;
+use Illuminate\Support\Facades\DB;
 use Throwable;
-use yii\db\Transaction;
 use yii\base\Behavior;
 use yii\base\InvalidConfigException;
 use yii\base\ModelEvent;
 use yii\db\ActiveRecord;
 use yii\db\BaseActiveRecord;
 use yii\db\StaleObjectException;
+use yii\db\Transaction;
 
 /**
  * SoftDeleteBehavior provides support for "soft" delete of ActiveRecord models as well as restoring them
@@ -245,7 +245,7 @@ class SoftDeleteBehavior extends Behavior
             // PHP >= 7.0
         }
 
-        \Illuminate\Support\Facades\DB::rollBack();
+        DB::rollBack();
         throw $exception;
     }
 
@@ -353,7 +353,7 @@ class SoftDeleteBehavior extends Behavior
             // PHP >= 7.0
         }
 
-        \Illuminate\Support\Facades\DB::rollBack();
+        DB::rollBack();
         throw $exception;
     }
 

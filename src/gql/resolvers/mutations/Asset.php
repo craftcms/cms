@@ -9,20 +9,20 @@ namespace craft\gql\resolvers\mutations;
 
 use Craft;
 use craft\base\ElementInterface;
-use craft\db\Table;
 use craft\elements\Asset as AssetElement;
 use craft\events\ReplaceAssetEvent;
 use craft\gql\base\ElementMutationResolver;
 use craft\helpers\Assets as AssetsHelper;
-use craft\helpers\Db;
 use craft\helpers\FileHelper;
 use craft\helpers\UrlHelper;
 use craft\models\Volume;
 use craft\services\Assets;
+use CraftCms\Cms\Db\Table;
 use CraftCms\Cms\Support\Facades\Http;
 use GraphQL\Error\Error;
 use GraphQL\Error\UserError;
 use GraphQL\Type\Definition\ResolveInfo;
+use Illuminate\Support\Facades\DB;
 use Throwable;
 use yii\base\Exception;
 use yii\base\InvalidArgumentException;
@@ -153,7 +153,7 @@ class Asset extends ElementMutationResolver
             return false;
         }
 
-        $volumeUid = Db::uidById(Table::VOLUMES, $asset->getVolumeId());
+        $volumeUid = DB::table(Table::VOLUMES)->uidById($asset->getVolumeId());
         $this->requireSchemaAction('volumes.' . $volumeUid, 'delete');
 
         return $elementService->deleteElementById($assetId);

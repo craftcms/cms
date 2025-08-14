@@ -8,13 +8,13 @@
 namespace craft\gql\resolvers\mutations;
 
 use Craft;
-use craft\db\Table;
 use craft\elements\Tag as TagElement;
 use craft\gql\base\ElementMutationResolver;
-use craft\helpers\Db;
 use craft\models\TagGroup;
+use CraftCms\Cms\Db\Table;
 use GraphQL\Error\Error;
 use GraphQL\Type\Definition\ResolveInfo;
+use Illuminate\Support\Facades\DB;
 use Throwable;
 
 /**
@@ -92,7 +92,7 @@ class Tag extends ElementMutationResolver
             return false;
         }
 
-        $tagGroupUid = Db::uidById(Table::TAGGROUPS, $tag->groupId);
+        $tagGroupUid = DB::table(Table::TAGGROUPS)->uidById($tag->groupId);
         $this->requireSchemaAction('taggroups.' . $tagGroupUid, 'delete');
 
         return $elementService->deleteElementById($tagId);

@@ -26,6 +26,7 @@ use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Str;
 use DateTime;
 use Illuminate\Database\Query\Builder;
+use Illuminate\Support\Facades\DB;
 use Throwable;
 use Twig\Markup;
 use yii\base\Exception;
@@ -251,14 +252,14 @@ class ElementHelper
      */
     private static function _isUniqueUri(string $testUri, ElementInterface $element): bool
     {
-        $info = \Illuminate\Support\Facades\DB::table(\CraftCms\Cms\Db\Table::ELEMENTS_SITES, 'elements_sites')
+        $info = DB::table(\CraftCms\Cms\Db\Table::ELEMENTS_SITES, 'elements_sites')
             ->select(['elements.id', 'elements.type'])
             ->join(\CraftCms\Cms\Db\Table::ELEMENTS . ' as elements', 'elements.id', '=', 'elements_sites.elementId')
             ->where('elements_sites.siteId', $element->siteId)
             ->whereNull(['elements.draftId', 'elements.revisionId', 'elements.dateDeleted'])
             ->when(
-                value: \Illuminate\Support\Facades\DB::connection()->getDriverName() === 'pgsql',
-                callback: fn(Builder $query) => $query->where(\Illuminate\Support\Facades\DB::raw('lower(elements_sites.uri)'), mb_strtolower($testUri)),
+                value: DB::connection()->getDriverName() === 'pgsql',
+                callback: fn(Builder $query) => $query->where(DB::raw('lower(elements_sites.uri)'), mb_strtolower($testUri)),
                 default: fn(Builder $query) => $query->where('elements_sites.uri', $testUri),
             )
             ->when(

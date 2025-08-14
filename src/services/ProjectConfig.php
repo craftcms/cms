@@ -1010,7 +1010,7 @@ class ProjectConfig extends Component
      *     $data = array_merge($event->newValue);
      *
      *     // See if the row already exists (maybe it was soft-deleted)
-     *     $id = Db::idByUid('{{%tablename}}', $uid);
+     *     $id = \Illuminate\Support\Facades\DB::table(\CraftCms\Cms\Db\'{{%tablename}}')->idByUid($uid);
      *
      *     if ($id) {
      *         $data['dateDeleted'] = null;

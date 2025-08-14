@@ -11,16 +11,16 @@ use Craft;
 use craft\base\FieldInterface;
 use craft\base\MergeableFieldInterface;
 use craft\console\Controller;
-use craft\db\Table;
 use craft\errors\InvalidFieldException;
 use craft\fields\BaseRelationField;
 use craft\helpers\Console;
-use craft\helpers\Db;
 use craft\helpers\FileHelper;
 use craft\models\FieldLayout;
 use craft\services\Fields;
+use CraftCms\Cms\Db\Table;
 use CraftCms\Cms\Support\Json;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\DB;
 use yii\console\ExitCode;
 
 /**
@@ -459,7 +459,7 @@ MD, $infoByField->join("\n"))));
                 if ($changed) {
                     if (!$layout->id) {
                         // Maybe the ID just wasn't known
-                        $layout->id = Db::idByUid(Table::FIELDLAYOUTS, $layout->uid);
+                        $layout->id = DB::table(Table::FIELDLAYOUTS)->idByUid($layout->uid);
                     }
                     if ($layout->id) {
                         $fieldsService->saveLayout($layout);

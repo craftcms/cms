@@ -41,6 +41,7 @@ use CraftCms\Cms\Field\Enums\ElementIndexViewMode;
 use CraftCms\Cms\Support\Str;
 use GraphQL\Type\Definition\Type;
 use Illuminate\Database\Query\JoinClause;
+use Illuminate\Support\Facades\DB;
 use yii\base\InvalidConfigException;
 use yii\db\Expression;
 
@@ -801,7 +802,7 @@ class Addresses extends Field implements
         }
 
         // Return any relation data on these elements, defined with this field
-        $map = \Illuminate\Support\Facades\DB::table(\CraftCms\Cms\Db\Table::ADDRESSES, 'addresses')
+        $map = DB::table(\CraftCms\Cms\Db\Table::ADDRESSES, 'addresses')
             ->select([
                 'elements_owners.ownerId as source',
                 'addresses.id as target',
@@ -832,7 +833,7 @@ class Addresses extends Field implements
      */
     public function afterMergeFrom(FieldInterface $outgoingField): void
     {
-        \Illuminate\Support\Facades\DB::table(\CraftCms\Cms\Db\Table::ADDRESSES)
+        DB::table(\CraftCms\Cms\Db\Table::ADDRESSES)
             ->where('fieldId', $outgoingField->id)
             ->update(['fieldId' => $this->id]);
 

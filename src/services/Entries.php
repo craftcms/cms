@@ -575,7 +575,7 @@ class Entries extends Component
         if ($isNewSection) {
             $section->uid ??= Str::uuid()->toString();
         } elseif (!$section->uid) {
-            $section->uid = Db::uidById(Table::SECTIONS, $section->id);
+            $section->uid = \Illuminate\Support\Facades\DB::table(\CraftCms\Cms\Db\Table::SECTIONS)->uidById($section->id);
         }
 
         // Main section settings
@@ -600,7 +600,7 @@ class Entries extends Component
             Craft::$app->getProjectConfig()->set($configPath, $configData, "Save section “{$section->handle}”");
 
             if ($isNewSection) {
-                $section->id = Db::idByUid(Table::SECTIONS, $section->uid);
+                $section->id = \Illuminate\Support\Facades\DB::table(\CraftCms\Cms\Db\Table::SECTIONS)->idByUid($section->uid);
             }
 
             // Special handling for Single sections
@@ -1634,7 +1634,7 @@ SQL)->execute();
         Craft::$app->getProjectConfig()->set($configPath, $configData, "Save entry type “{$entryType->handle}”");
 
         if ($isNewEntryType) {
-            $entryType->id = Db::idByUid(Table::ENTRYTYPES, $entryType->uid);
+            $entryType->id = \Illuminate\Support\Facades\DB::table(\CraftCms\Cms\Db\Table::ENTRYTYPES)->idByUid($entryType->uid);
         }
 
         return true;

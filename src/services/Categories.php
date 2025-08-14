@@ -297,7 +297,7 @@ class Categories extends Component
         Craft::$app->getProjectConfig()->set($configPath, $configData, "Save category group “{$group->handle}”");
 
         if ($isNewCategoryGroup) {
-            $group->id = Db::idByUid(Table::CATEGORYGROUPS, $group->uid);
+            $group->id = \Illuminate\Support\Facades\DB::table(\CraftCms\Cms\Db\Table::CATEGORYGROUPS)->idByUid($group->uid);
         }
 
         return true;

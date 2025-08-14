@@ -979,7 +979,7 @@ class Gql extends Component
         if ($isNewSchema && empty($schema->uid)) {
             $schema->uid = Str::uuid()->toString();
         } elseif (empty($schema->uid)) {
-            $schema->uid = Db::uidById(Table::GQLSCHEMAS, $schema->id);
+            $schema->uid = \Illuminate\Support\Facades\DB::table(\CraftCms\Cms\Db\Table::GQLSCHEMAS)->uidById($schema->id);
         }
 
         $configPath = ProjectConfig::PATH_GRAPHQL_SCHEMAS . '.' . $schema->uid;
@@ -987,7 +987,7 @@ class Gql extends Component
         Craft::$app->getProjectConfig()->set($configPath, $configData, "Save GraphQL schema “{$schema->name}”");
 
         if ($isNewSchema) {
-            $schema->id = Db::idByUid(Table::GQLSCHEMAS, $schema->uid);
+            $schema->id = \Illuminate\Support\Facades\DB::table(\CraftCms\Cms\Db\Table::GQLSCHEMAS)->idByUid($schema->uid);
         }
 
         return true;

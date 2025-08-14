@@ -25,6 +25,7 @@ use CraftCms\Cms\Support\Env;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Yii2Adapter\DatabaseConnection;
 use CraftCms\Yii2Adapter\LaravelTransaction;
+use Illuminate\Support\Facades\Schema;
 use mikehaertl\shellcommand\Command as ShellCommand;
 use Throwable;
 use yii\base\Event;
@@ -610,7 +611,7 @@ class Connection extends DatabaseConnection
     }
 
     /**
-     * @return \yii\db\Transaction|null
+     * @return Transaction|null
      */
     public function getTransaction(): ?Transaction
     {

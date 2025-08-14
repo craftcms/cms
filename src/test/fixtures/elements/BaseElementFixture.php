@@ -17,6 +17,7 @@ use craft\test\DbFixtureTrait;
 use CraftCms\Cms\Db\Table;
 use CraftCms\Cms\Support\Arr;
 use Illuminate\Support\Facades\DB;
+use PDO;
 use yii\test\DbFixture;
 use yii\test\FileFixtureTrait;
 
@@ -121,7 +122,7 @@ abstract class BaseElementFixture extends DbFixture
     public function unload(): void
     {
         $this->checkIntegrity(true);
-        DB::connection()->getPdo()->setAttribute(\PDO::ATTR_EMULATE_PREPARES, false);
+        DB::connection()->getPdo()->setAttribute(PDO::ATTR_EMULATE_PREPARES, false);
 
         foreach ($this->_elements as $element) {
             $this->deleteElement($element);

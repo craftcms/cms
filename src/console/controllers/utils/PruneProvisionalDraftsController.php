@@ -11,6 +11,7 @@ use Craft;
 use craft\base\ElementInterface;
 use craft\console\Controller;
 use craft\helpers\Console;
+use CraftCms\Cms\Db\Table;
 use Illuminate\Support\Facades\DB;
 use yii\console\ExitCode;
 
@@ -47,7 +48,7 @@ class PruneProvisionalDraftsController extends Controller
         $this->stdout('Finding elements with multiple provisional drafts per user ... ');
 
         $elements = DB::table(
-            table: DB::table(\CraftCms\Cms\Db\Table::DRAFTS)
+            table: DB::table(Table::DRAFTS)
                 ->select(['canonicalId', 'creatorId', DB::raw('COUNT(*) as count')])
                 ->where('provisional', true)
                 ->groupBy(['canonicalId', 'creatorId'])
@@ -57,7 +58,7 @@ class PruneProvisionalDraftsController extends Controller
             's.canonicalId as id',
             's.creatorId',
             's.count',
-            'type' => DB::table(\CraftCms\Cms\Db\Table::ELEMENTS)
+            'type' => DB::table(Table::ELEMENTS)
                 ->select('type')
                 ->whereColumn('id', 's.canonicalId'),
         ])->get();

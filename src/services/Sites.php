@@ -277,7 +277,7 @@ class Sites extends Component
         if ($isNewGroup) {
             $group->uid = Str::uuid()->toString();
         } elseif (!$group->uid) {
-            $group->uid = Db::uidById(Table::SITEGROUPS, $group->id);
+            $group->uid = \Illuminate\Support\Facades\DB::table(\CraftCms\Cms\Db\Table::SITEGROUPS)->uidById($group->id);
         }
 
         $configPath = ProjectConfig::PATH_SITE_GROUPS . '.' . $group->uid;
@@ -286,7 +286,7 @@ class Sites extends Component
 
         // Now that we have an ID, save it on the model
         if ($isNewGroup) {
-            $group->id = Db::idByUid(Table::SITEGROUPS, $group->uid);
+            $group->id = \Illuminate\Support\Facades\DB::table(\CraftCms\Cms\Db\Table::SITEGROUPS)->idByUid($group->uid);
         }
 
         return true;
@@ -734,7 +734,7 @@ class Sites extends Component
                     ->where(['dateDeleted' => null])
                     ->max('[[sortOrder]]')) + 1;
         } elseif (!$site->uid) {
-            $site->uid = Db::uidById(Table::SITES, $site->id);
+            $site->uid = \Illuminate\Support\Facades\DB::table(\CraftCms\Cms\Db\Table::SITES)->uidById($site->id);
         }
 
         $projectConfigService = Craft::$app->getProjectConfig();
@@ -746,7 +746,7 @@ class Sites extends Component
 
         // Now that we have a site ID, save it on the model
         if ($isNewSite) {
-            $site->id = Db::idByUid(Table::SITES, $site->uid);
+            $site->id = \Illuminate\Support\Facades\DB::table(\CraftCms\Cms\Db\Table::SITES)->idByUid($site->uid);
         }
 
         // If this just became the new primary site, update the old primary site's config
@@ -836,7 +836,7 @@ class Sites extends Component
         }
 
         if ($isNewSite && $oldPrimarySiteId) {
-            $oldPrimarySiteUid = Db::uidById(Table::SITES, $oldPrimarySiteId);
+            $oldPrimarySiteUid = \Illuminate\Support\Facades\DB::table(\CraftCms\Cms\Db\Table::SITES)->uidById($oldPrimarySiteId);
             $existingCategorySettings = $projectConfig->get(ProjectConfig::PATH_CATEGORY_GROUPS);
 
             if (!$projectConfig->getIsApplyingExternalChanges() && is_array($existingCategorySettings)) {
@@ -899,7 +899,7 @@ class Sites extends Component
 
         $projectConfig = Craft::$app->getProjectConfig();
 
-        $uidsByIds = Db::uidsByIds(Table::SITES, $siteIds);
+        $uidsByIds = \Illuminate\Support\Facades\DB::table(\CraftCms\Cms\Db\Table::SITES)->uidsByIds($siteIds);
 
         foreach ($siteIds as $sortOrder => $siteId) {
             if (!empty($uidsByIds[$siteId])) {

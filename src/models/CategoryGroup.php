@@ -13,16 +13,16 @@ use craft\base\CpEditable;
 use craft\base\FieldLayoutProviderInterface;
 use craft\base\Model;
 use craft\behaviors\FieldLayoutBehavior;
-use craft\db\Table;
 use craft\elements\Category;
-use craft\helpers\Db;
 use craft\helpers\UrlHelper;
 use craft\records\CategoryGroup as CategoryGroupRecord;
 use craft\validators\HandleValidator;
 use craft\validators\UniqueValidator;
+use CraftCms\Cms\Db\Table;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Str;
 use DateTime;
+use Illuminate\Support\Facades\DB;
 
 /**
  * CategoryGroup model.
@@ -276,7 +276,7 @@ class CategoryGroup extends Model implements
             'name' => $this->name,
             'handle' => $this->handle,
             'structure' => [
-                'uid' => $this->structureId ? Db::uidById(Table::STRUCTURES, $this->structureId) : Str::uuid()->toString(),
+                'uid' => $this->structureId ? DB::table(Table::STRUCTURES)->uidById($this->structureId) : Str::uuid()->toString(),
                 'maxLevels' => (int)$this->maxLevels ?: null,
             ],
             'siteSettings' => [],
@@ -292,7 +292,7 @@ class CategoryGroup extends Model implements
         }
 
         foreach ($this->getSiteSettings() as $siteId => $settings) {
-            $siteUid = Db::uidById(Table::SITES, $siteId);
+            $siteUid = DB::table(Table::SITES)->uidById($siteId);
             $config['siteSettings'][$siteUid] = [
                 'hasUrls' => (bool)$settings['hasUrls'],
                 'uriFormat' => $settings['uriFormat'] ?: null,

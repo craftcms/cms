@@ -16,6 +16,7 @@ use craft\fields\ContentBlock as ContentBlockField;
 use craft\gql\interfaces\elements\ContentBlock as ContentBlockInterface;
 use craft\models\FieldLayout;
 use craft\records\ContentBlock as ContentBlockRecord;
+use CraftCms\Cms\Db\Table;
 use GraphQL\Type\Definition\Type;
 use yii\base\InvalidConfigException;
 
@@ -222,7 +223,7 @@ class ContentBlock extends Element implements NestedElementInterface
 
             $this->setDirtyAttributes($dirtyAttributes);
 
-            $this->saveOwnership($isNew, \CraftCms\Cms\Db\Table::CONTENTBLOCKS);
+            $this->saveOwnership($isNew, Table::CONTENTBLOCKS);
         }
 
         parent::afterSave($isNew);

@@ -15,7 +15,6 @@ use craft\db\Table;
 use craft\elements\Asset;
 use craft\events\ConfigEvent;
 use craft\events\VolumeEvent;
-use craft\helpers\Db;
 use craft\helpers\ProjectConfig as ProjectConfigHelper;
 use craft\models\FieldLayout;
 use craft\models\Volume;
@@ -24,6 +23,7 @@ use craft\records\Volume as AssetVolumeRecord;
 use craft\records\VolumeFolder as VolumeFolderRecord;
 use CraftCms\Cms\Support\Str;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\DB;
 use Throwable;
 use yii\base\Component;
 use yii\base\InvalidArgumentException;
@@ -304,14 +304,14 @@ class Volumes extends Component
                     ->from([Table::VOLUMES])
                     ->max('[[sortOrder]]') + 1;
         } elseif (!$volume->uid) {
-            $volume->uid = Db::uidById(Table::VOLUMES, $volume->id);
+            $volume->uid = DB::table(\CraftCms\Cms\Db\Table::VOLUMES)->uidById($volume->id);
         }
 
         $configPath = ProjectConfig::PATH_VOLUMES . '.' . $volume->uid;
         Craft::$app->getProjectConfig()->set($configPath, $volume->getConfig(), "Save the “{$volume->handle}” volume");
 
         if ($isNewVolume) {
-            $volume->id = Db::idByUid(Table::VOLUMES, $volume->uid);
+            $volume->id = DB::table(\CraftCms\Cms\Db\Table::VOLUMES)->idByUid($volume->uid);
         }
 
         return true;
@@ -330,7 +330,7 @@ class Volumes extends Component
         ProjectConfigHelper::ensureAllFilesystemsProcessed();
         ProjectConfigHelper::ensureAllFieldsProcessed();
 
-        \Illuminate\Support\Facades\DB::beginTransaction();
+        DB::beginTransaction();
         try {
             $volumeRecord = $this->_getVolumeRecord($volumeUid, true);
             $isNewVolume = $volumeRecord->getIsNewRecord();
@@ -389,9 +389,9 @@ class Volumes extends Component
                 $assetsService->storeFolderRecord($rootFolder);
             }
 
-            \Illuminate\Support\Facades\DB::commit();
+            DB::commit();
         } catch (Throwable $e) {
-            \Illuminate\Support\Facades\DB::rollBack();
+            DB::rollBack();
             throw $e;
         }
 
@@ -432,7 +432,7 @@ class Volumes extends Component
     {
         $projectConfig = Craft::$app->getProjectConfig();
 
-        $uidsByIds = Db::uidsByIds(Table::VOLUMES, $volumeIds);
+        $uidsByIds = DB::table(\CraftCms\Cms\Db\Table::VOLUMES)->uidsByIds($volumeIds);
 
         foreach ($volumeIds as $volumeOrder => $volumeId) {
             if (!empty($uidsByIds[$volumeId])) {
@@ -522,7 +522,7 @@ class Volumes extends Component
         }
 
         $db = Craft::$app->getDb();
-        \Illuminate\Support\Facades\DB::beginTransaction();
+        DB::beginTransaction();
 
         try {
             // Delete the assets
@@ -549,9 +549,9 @@ class Volumes extends Component
                 ->softDelete(Table::VOLUMES, ['id' => $volumeRecord->id])
                 ->execute();
 
-            \Illuminate\Support\Facades\DB::commit();
+            DB::commit();
         } catch (Throwable $e) {
-            \Illuminate\Support\Facades\DB::rollBack();
+            DB::rollBack();
             throw $e;
         }
 

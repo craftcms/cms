@@ -17,6 +17,7 @@ use craft\models\Updates as UpdatesModel;
 use CraftCms\Cms\Support\Api;
 use CraftCms\Cms\Support\Arr;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\DB;
 use Throwable;
 use yii\base\Component;
 use yii\base\ErrorException;
@@ -239,7 +240,7 @@ class Updates extends Component
         $name = 'Craft CMS';
         $handle = 'craft';
 
-        \Illuminate\Support\Facades\DB::beginTransaction();
+        DB::beginTransaction();
 
         try {
             foreach ($handles as $handle) {
@@ -256,9 +257,9 @@ class Updates extends Component
                 }
             }
 
-            \Illuminate\Support\Facades\DB::commit();
+            DB::commit();
         } catch (Throwable $e) {
-            \Illuminate\Support\Facades\DB::rollBack();
+            DB::rollBack();
             throw new MigrateException($name, $handle, null, 0, $e);
         }
 

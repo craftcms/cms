@@ -20,6 +20,7 @@ use craft\helpers\Html;
 use craft\helpers\UrlHelper;
 use craft\models\Section;
 use craft\models\Section_SiteSettings;
+use CraftCms\Cms\Db\Table;
 use CraftCms\Cms\Element\Enums\PropagationMethod;
 use Exception;
 use Illuminate\Support\Collection;
@@ -378,9 +379,9 @@ class EntriesController extends BaseEntriesController
         $currentSectionUid = $this->request->getRequiredParam('currentSectionUid');
 
         // get entry types by entry IDs
-        $entryTypes = DB::table(\CraftCms\Cms\Db\Table::ENTRYTYPES, 'et')
+        $entryTypes = DB::table(Table::ENTRYTYPES, 'et')
             ->distinct()
-            ->leftJoin(\CraftCms\Cms\Db\Table::ENTRIES . ' as e', 'e.typeId', 'et.id')
+            ->leftJoin(Table::ENTRIES . ' as e', 'e.typeId', 'et.id')
             ->whereIn('e.id', $entryIds)
             ->pluck('et.id')
             ->all();
