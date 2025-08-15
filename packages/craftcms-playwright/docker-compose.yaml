@@ -13,10 +13,9 @@ services:
 #      interval: 5s
 #      retries: 3
   mysql:
-    env_file: ../../tests-playwright/.env
     image: mysql:8.0
     ports:
-      - ${PLAYWRIGHT_CRAFT_DB_PORT:-33069}:3306
+      - ${PLAYWRIGHT_MYSQL_EXTERNAL_PORT:-33069}:3306
     environment:
       MYSQL_ROOT_PASSWORD: ${PLAYWRIGHT_CRAFT_DB_PASSWORD:-craft}
       MYSQL_DATABASE: ${PLAYWRIGHT_CRAFT_DB_DATABASE:-craft_test}
@@ -33,7 +32,6 @@ services:
         '--collation-server=utf8mb4_unicode_ci',
       ]
   playwright:
-    env_file: ../../tests-playwright/.env
     build:
       context: ../../
       target: craft
@@ -70,6 +68,6 @@ services:
       mysql:
         condition: service_healthy
     volumes:
-      - ${PLAYWRIGHT_REPO_PATH:-../../.}:/app/repos/repo/
+      - ${PLAYWRIGHT_REPO_PATH}:/app/repos/repo/
       - ./webserver/nginx/default.conf:/etc/nginx/conf.d/default.conf
       - ./webserver/supervisord.d/nginx.ini:/etc/supervisord.d/nginx.ini

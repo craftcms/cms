@@ -12,30 +12,32 @@ then
 fi
 
 
-PLAYWRIGHT_STATUS=$(docker compose ps --services --status=running playwright)
+PLAYWRIGHT_STATUS=$(docker compose --env-file ../../tests-playwright/.env ps --services --status=running playwright)
 
 # Boot docker container if required
 if [ "$PLAYWRIGHT_STATUS" != 'playwright' ]
 then
   echo "Building image..."
-  BUILD=$REPO_PATH docker compose build
+  echo "$REPO_PATH"
+  ls -la $REPO_PATH
+  BUILD=$REPO_PATH docker compose --env-file ../../tests-playwright/.env build
   echo "Booting docker…"
-  PLAYWRIGHT_REPO_PATH=$REPO_PATH docker compose up -d
+  PLAYWRIGHT_REPO_PATH=$REPO_PATH docker compose --env-file ../../tests-playwright/.env up -d
 else
   echo "Container already running, shutting down…"
-  docker compose down -v
+  docker compose --env-file ../../tests-playwright/.env down -v
   echo "Booting docker…"
-  PLAYWRIGHT_REPO_PATH=$REPO_PATH docker compose up -d
+  PLAYWRIGHT_REPO_PATH=$REPO_PATH docker compose --env-file ../../tests-playwright/.env up -d
 fi
 
 # Check if init script has been run
-DB_BACKUP_DOESNT_EXIST=$(docker compose exec playwright sh -c "ls -la /app/backup | grep 'cannot access'")
+DB_BACKUP_DOESNT_EXIST=$(docker compose --env-file ../../tests-playwright/.env exec playwright sh -c "ls -la /app/backup | grep 'cannot access'")
 
 if [ "${#DB_BACKUP_DOESNT_EXIST}" ]
 then
   echo "Running init scripts…"
   echo $INIT_SCRIPT_PATH
-  docker compose exec playwright $INIT_SCRIPT_PATH
+  docker compose --env-file ../../tests-playwright/.env exec playwright $INIT_SCRIPT_PATH
 fi
 
 echo "Container ready!"
