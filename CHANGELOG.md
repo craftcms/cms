@@ -1,5 +1,9 @@
 # Release Notes for Craft CMS 4
 
+## Unreleased
+
+- Fixed a bug where volumes’ filesystem settings weren’t respecting static translations of filesystem names. ([#17749](https://github.com/craftcms/cms/issues/17749))
+
 ## 4.16.11 - 2025-08-13
 
 - Improved the performance of element queries. ([#16401](https://github.com/craftcms/cms/issues/16401))
