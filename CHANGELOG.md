@@ -1,5 +1,9 @@
 # Release Notes for Craft CMS 5
 
+## Unreleased
+
+- Fixed a bug where Link field condition rules’ “Is of type” operators weren’t getting saved correctly within field layout conditions. ([#17741](https://github.com/craftcms/cms/issues/17741))
+
 ## 5.8.15 - 2025-08-13
 
 - Improved the performance of element queries. ([#16401](https://github.com/craftcms/cms/issues/16401))
