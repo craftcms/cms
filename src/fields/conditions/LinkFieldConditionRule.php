@@ -4,6 +4,7 @@ namespace craft\fields\conditions;
 
 use Craft;
 use craft\db\CoalesceColumnsExpression;
+use craft\fields\data\LinkData;
 use craft\fields\Link;
 use craft\fields\linktypes\BaseLinkType;
 use craft\helpers\Cp;
@@ -29,6 +30,14 @@ class LinkFieldConditionRule extends TextFieldConditionRule
         return [
             ...parent::operators(),
             self::OPERATOR_TYPE,
+        ];
+    }
+
+    public function getConfig(): array
+    {
+        return [
+            ...parent::getConfig(),
+            'linkType' => $this->linkType,
         ];
     }
 
@@ -72,6 +81,20 @@ class LinkFieldConditionRule extends TextFieldConditionRule
         } else {
             parent::modifyQuery($query);
         }
+    }
+
+    protected function matchFieldValue($value): bool
+    {
+        if (!$this->field() instanceof Link) {
+            return true;
+        }
+
+        if ($this->operator === self::OPERATOR_TYPE) {
+            /** @var LinkData|null $value */
+            return $value?->getType() === $this->linkType;
+        }
+
+        return parent::matchFieldValue($value);
     }
 
     protected function defineRules(): array
