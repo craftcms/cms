@@ -90,4 +90,29 @@ return [
         'title' => 'Single entry',
     ],
 
+    // Element reference tags:
+    [
+        'authorId' => '1',
+        'sectionId' => '1000',
+        'typeId' => '1000',
+        'title' => 'Recursive Reference A',
+        'slug' => 'recursive-reference-a',
+        'plainTextField' => 'Substitution in A: [{entry:recursive-reference-b:title}]',
+    ],
+    [
+        'authorId' => '1',
+        'sectionId' => '1000',
+        'typeId' => '1000',
+        'title' => 'Recursive Reference B',
+        'slug' => 'recursive-reference-b',
+        'plainTextField' => 'Substitution in B: [{entry:recursive-reference-c:title}]',
+    ],
+    [
+        'authorId' => '1',
+        'sectionId' => '1000',
+        'typeId' => '1000',
+        'title' => 'Recursive Reference C',
+        'slug' => 'recursive-reference-c',
+        'plainTextField' => 'Value from C',
+    ],
 ];
