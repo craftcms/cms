@@ -3010,7 +3010,11 @@ class Elements extends Component
                 $allRefTagTokens[$siteId][$elementType][$refType][$ref][] = [$token, $attribute, $fallback, $fullMatch];
 
                 return $token;
-            }, $str, -1, $count);
+            },
+            $str,
+            -1,
+            $count
+        );
 
         if ($count === 0) {
             // No ref tags
