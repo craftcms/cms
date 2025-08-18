@@ -97,7 +97,7 @@ return [
         'typeId' => '1000',
         'title' => 'Recursive Reference A',
         'slug' => 'recursive-reference-a',
-        'plainTextField' => 'Substitution in A: [{entry:recursive-reference-b:title}]',
+        'plainTextField' => 'Substitution in A: [{entry:test1/recursive-reference-b:plainTextField}]',
     ],
     [
         'authorId' => '1',
@@ -105,7 +105,7 @@ return [
         'typeId' => '1000',
         'title' => 'Recursive Reference B',
         'slug' => 'recursive-reference-b',
-        'plainTextField' => 'Substitution in B: [{entry:recursive-reference-c:title}]',
+        'plainTextField' => 'Substitution in B: [{entry:test1/recursive-reference-c:plainTextField}]',
     ],
     [
         'authorId' => '1',
