@@ -81,18 +81,31 @@ class ElementsTest extends TestCase
         }
     }
 
+    /**
+     * @inheritdoc
+     */
     public function _fixtures(): array
     {
         return [
             // Address?
-            'assets' => AssetFixture::class,
+            'assets' => [
+                'class' => AssetFixture::class,
+            ],
             // Category?
             // ContentBlock?
-            'entries' => EntryFixture::class,
-            'globalSet' => GlobalSetFixture::class,
+            'entries' => [
+                'class' => EntryFixture::class,
+            ],
+            'globalSet' => [
+                'class' => GlobalSetFixture::class,
+            ],
             // Tag?
-            'users' => UserFixture::class,
-            'sites' => SitesFixture::class,
+            'users' => [
+                'class' => UserFixture::class,
+            ],
+            'sites' => [
+                'class' => SitesFixture::class,
+            ],
         ];
     }
 
