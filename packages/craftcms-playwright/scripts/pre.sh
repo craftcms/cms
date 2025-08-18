@@ -19,7 +19,7 @@ if [ "$PLAYWRIGHT_STATUS" != 'playwright' ]
 then
   echo "Building image..."
   echo "$REPO_PATH"
-  ls -la $REPO_PATH
+
   BUILD=$REPO_PATH docker compose --env-file ../../tests-playwright/.env build
   echo "Booting docker…"
   PLAYWRIGHT_REPO_PATH=$REPO_PATH docker compose --env-file ../../tests-playwright/.env up -d
