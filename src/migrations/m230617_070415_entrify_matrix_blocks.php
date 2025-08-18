@@ -62,13 +62,13 @@ class m230617_070415_entrify_matrix_blocks extends Migration
         // index entry handles
         $entryTypeHandles = [];
         foreach ($projectConfig->get(ProjectConfig::PATH_ENTRY_TYPES) ?? [] as $entryTypeConfig) {
-            $entryTypeHandles[$entryTypeConfig['handle']] = true;
+            $entryTypeHandles[strtolower($entryTypeConfig['handle'])] = true;
         }
 
         // index global field handles
         $fieldHandles = [];
         foreach ($projectConfig->get(ProjectConfig::PATH_FIELDS) ?? [] as $fieldConfig) {
-            $fieldHandles[$fieldConfig['handle']] = true;
+            $fieldHandles[strtolower($fieldConfig['handle'])] = true;
         }
 
         // get all the block type configs, grouped by field
@@ -300,8 +300,9 @@ SQL,
         $i = 1;
         do {
             $test = $handle . ($i !== 1 ? $i : '');
-            if (!isset($handles[$test])) {
-                $handles[$test] = true;
+            $lower = strtolower($test);
+            if (!isset($handles[$lower])) {
+                $handles[$lower] = true;
                 return $test;
             }
             $i++;
