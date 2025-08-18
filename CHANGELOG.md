@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- When searching for elements, partial matches within titles are now scored higher than exact matches in other fields. ([#17739](https://github.com/craftcms/cms/issues/17739))
 - Fixed a bug where volumes’ filesystem settings weren’t respecting static translations of filesystem names. ([#17749](https://github.com/craftcms/cms/issues/17749))
 - Fixed a bug where Link field condition rules’ “Is of type” operators weren’t getting saved correctly within field layout conditions. ([#17741](https://github.com/craftcms/cms/issues/17741))
 
