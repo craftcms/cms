@@ -83,6 +83,8 @@ composer config prefer-stable true && composer config minimum-stability "dev"
 # Run repositories command
 eval "$REPOSITORIES_CMD"
 
+rm -rf composer.lock
+
 # Composer require the current repo that is being worked on to create the symlink
 composer require $PACKAGE_NAME:*
 

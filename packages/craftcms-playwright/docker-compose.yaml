@@ -33,9 +33,7 @@ services:
       ]
   playwright:
     build:
-      context: ../../
       target: craft
-      dockerfile: ./node_modules/@craftcms/playwright/Dockerfile
     ports:
       - ${PLAYWRIGHT_SITE_PORT:-8089}:8080
     environment:
