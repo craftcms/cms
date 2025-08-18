@@ -1,17 +1,17 @@
 services:
-#  postgres:
-#    env_file: ../../tests-playwright/.env
-#    image: postgres:14-alpine
-#    ports:
-#      - ${PLAYWRIGHT_CRAFT_DB_PORT:-54329}:5432
-#    environment:
-#      POSTGRES_PASSWORD: ${PLAYWRIGHT_CRAFT_DB_PASSWORD:-craft}
-#      POSTGRES_USER: ${PLAYWRIGHT_CRAFT_DB_USER:-craft}
-#      POSTGRES_DB: ${PLAYWRIGHT_CRAFT_DB_DATABASE:-craft_test}
-#    healthcheck:
-#      test: ['CMD', 'pg_isready', '-U', 'craft', '-d', 'craft_test']
-#      interval: 5s
-#      retries: 3
+  #  postgres:
+  #    env_file: ../../tests-playwright/.env
+  #    image: postgres:14-alpine
+  #    ports:
+  #      - ${PLAYWRIGHT_CRAFT_DB_PORT:-54329}:5432
+  #    environment:
+  #      POSTGRES_PASSWORD: ${PLAYWRIGHT_CRAFT_DB_PASSWORD:-craft}
+  #      POSTGRES_USER: ${PLAYWRIGHT_CRAFT_DB_USER:-craft}
+  #      POSTGRES_DB: ${PLAYWRIGHT_CRAFT_DB_DATABASE:-craft_test}
+  #    healthcheck:
+  #      test: ['CMD', 'pg_isready', '-U', 'craft', '-d', 'craft_test']
+  #      interval: 5s
+  #      retries: 3
   mysql:
     image: mysql:8.0
     ports:
@@ -45,9 +45,9 @@ services:
       CRAFT_CP_TRIGGER: ${PLAYWRIGHT_CRAFT_CP_TRIGGER:-admin}
 
       # pgsql start
-#      CRAFT_DB_DRIVER: ${PLAYWRIGHT_CRAFT_DB_DRIVER:-pgsql}
-#      CRAFT_DB_SERVER: ${PLAYWRIGHT_CRAFT_DB_SERVER:-postgres}
-#      CRAFT_DB_PORT: ${PLAYWRIGHT_CRAFT_DB_PORT:-5432}
+      #      CRAFT_DB_DRIVER: ${PLAYWRIGHT_CRAFT_DB_DRIVER:-pgsql}
+      #      CRAFT_DB_SERVER: ${PLAYWRIGHT_CRAFT_DB_SERVER:-postgres}
+      #      CRAFT_DB_PORT: ${PLAYWRIGHT_CRAFT_DB_PORT:-5432}
       # pgsql end
 
       # mysql start
@@ -63,8 +63,8 @@ services:
       CRAFT_DB_TABLE_PREFIX: ${PLAYWRIGHT_CRAFT_DB_TABLE_PREFIX:-}
       PRIMARY_SITE_URL: ${PLAYWRIGHT_SITE_DOMAIN:-http://127.0.0.1/}
     depends_on:
-#      postgres:
-#        condition: service_healthy
+      #      postgres:
+      #        condition: service_healthy
       mysql:
         condition: service_healthy
     volumes:
