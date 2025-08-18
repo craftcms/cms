@@ -23,6 +23,7 @@ use craft\fieldlayoutelements\BaseNativeField;
 use craft\fieldlayoutelements\FullNameField;
 use craft\models\FieldLayout;
 use craft\records\Address as AddressRecord;
+use craft\validators\StringValidator;
 use yii\base\InvalidConfigException;
 
 /**
@@ -614,6 +615,27 @@ class Address extends Element implements AddressInterface, NestedElementInterfac
 
         $rules[] = [['fieldId', 'ownerId', 'primaryOwnerId'], 'number'];
         $rules[] = [['countryCode'], 'required'];
+
+        $stringFields = [
+            'countryCode',
+            'administrativeArea',
+            'locality',
+            'dependentLocality',
+            'postalCode',
+            'sortingCode',
+            'addressLine1',
+            'addressLine2',
+            'addressLine3',
+            'organization',
+            'organizationTaxId',
+            'fullName',
+            'firstName',
+            'lastName',
+            'latitude',
+            'longitude',
+        ];
+        $rules[] = [$stringFields, 'trim'];
+        $rules[] = [$stringFields, StringValidator::class, 'max' => 255, 'disallowMb4' => true];
 
         $addressesService = Craft::$app->getAddresses();
         $countryCodes = array_keys($addressesService->getCountryRepository()->getList());

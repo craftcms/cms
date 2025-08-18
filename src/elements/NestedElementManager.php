@@ -231,7 +231,7 @@ class NestedElementManager extends Component
     {
         foreach ($elements as $element) {
             $element->setOwner($owner);
-            if ($element->id === $element->getPrimaryOwnerId()) {
+            if ($owner->id === $element->getPrimaryOwnerId()) {
                 $element->setPrimaryOwner($owner);
             }
         }
@@ -402,7 +402,6 @@ class NestedElementManager extends Component
                     $elements = $value->getCachedResult() ?? $value
                         ->status(null)
                         ->limit(null)
-                        ->eagerly()
                         ->all();
                 }
 

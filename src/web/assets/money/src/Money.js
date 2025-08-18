@@ -48,12 +48,12 @@ import './Money.scss';
 
       onClearBtnClick: function (ev) {
         ev.preventDefault();
-        this.hideClearBtn();
         this.removeInputMask();
 
         this.$field.removeAttr('placeholder');
         this.$field.val('');
         this.$field.trigger('keyup');
+        this.$field.focus();
       },
 
       onFocus: function () {
@@ -63,6 +63,9 @@ import './Money.scss';
       onKeyUp: function () {
         if (this.$field.val() !== '') {
           this.$field.removeClass('money-placeholder');
+          this.showClearBtn();
+        } else {
+          this.hideClearBtn();
         }
       },
 
@@ -71,7 +74,6 @@ import './Money.scss';
       },
 
       updateInputMask: function () {
-        this.showClearBtn();
         const opts = {
           digits: this.settings.decimals,
           placeholder: this.settings.placeholder,

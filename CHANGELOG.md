@@ -1,5 +1,67 @@
 # Release Notes for Craft CMS 5
 
+## Unreleased
+
+- When searching for elements, partial matches within titles are now scored higher than exact matches in other fields. ([#17739](https://github.com/craftcms/cms/issues/17739))
+- Fixed a bug where volumes’ filesystem settings weren’t respecting static translations of filesystem names. ([#17749](https://github.com/craftcms/cms/issues/17749))
+- Fixed a bug where Link field condition rules’ “Is of type” operators weren’t getting saved correctly within field layout conditions. ([#17741](https://github.com/craftcms/cms/issues/17741))
+- Fixed a bug where two nested Matrix fields with the same handle but different casing weren’t being treated as identical when upgrading to Craft 5. ([#17751](https://github.com/craftcms/cms/issues/17751))
+
+## 5.8.15 - 2025-08-13
+
+- Improved the performance of element queries. ([#16401](https://github.com/craftcms/cms/issues/16401))
+- Updated svg-sanitizer to 0.22. ([#17738](https://github.com/craftcms/cms/issues/17738))
+
+## 5.8.14 - 2025-08-12
+
+- Relational fields’ search inputs no longer exclusively search for elements by their titles. ([#17733](https://github.com/craftcms/cms/discussions/17733))
+- Improved the accessibility of the Craft Support widget. ([#17718](https://github.com/craftcms/cms/pull/17718))
+- Fixed a bug where the `folderPath` asset query param required a trailing slash. ([craftcms/html-field#18](https://github.com/craftcms/html-field/pull/18))
+- Fixed a bug where the `_includes/forms/button.twig` template was HTML-encoding the `iconHtml` value.
+- Fixed an error that could occur when installing Craft with existing project config data. ([#17587](https://github.com/craftcms/cms/issues/17587))
+- Fixed a bug where slideouts’ trigger elements weren’t always refocused after the slideout was closed. ([#17736](https://github.com/craftcms/cms/pull/17736))
+- Fixed a bug where nested Matrix entries could lose their content if a validation error occurred. ([#17732](https://github.com/craftcms/cms/pull/17732))
+- Fixed PHP deprecation errors.
+
+## 5.8.13.2 - 2025-08-07
+
+- Added `craft\services\UserPermissions::validatePermission()`.
+- Fixed an error that occurred when saving entries. ([#17721](https://github.com/craftcms/cms/issues/17721))
+- Fixed a bug where GraphiQL’s query input had a 550px max height. ([#17723](https://github.com/craftcms/cms/issues/17723))
+- Fixed an authorization error that occurred when non-admin users attempted to modify content on multi-site installs with SEOmatic installed. ([#17716](https://github.com/craftcms/cms/issues/17716))
+
+## 5.8.13.1 - 2025-08-06
+
+- Fixed errors that could occur if a field layout was referencing an invalid field UUID. ([#17713](https://github.com/craftcms/cms/issues/17713))
+
+## 5.8.13 - 2025-08-05
+
+- Added `craft\services\UserPermissions::reset()`.
+- `craft\models\FieldLayout::EVENT_CREATE_FORM` event handlers can now control whether the form will be rendered statically, by setting `$event->static`. ([#17699](https://github.com/craftcms/cms/pull/17699))
+- Fixed a bug where reference tags that only referenced an entry’s slug weren’t resolving.
+- Fixed a race condition that could cause “User is not authorized” errors in the control panel. ([#17694](https://github.com/craftcms/cms/issues/17694))
+- Fixed a bug where `craft\elements\Asset::getFormattedSizeInBytes()` wasn’t returning `null` when the asset’s `size` property was `null`. ([#17695](https://github.com/craftcms/cms/issues/17695))
+- Fixed an error that could occur when saving an address, if any fields contained more than 255 characters, or emoji characters. ([#17696](https://github.com/craftcms/cms/issues/17696))
+- Fixed a bug where searches for phrases were only matching elements if the phrase exactly matched the indexed keywords on PostgreSQL.
+- Fixed a bug where it wasn’t possible for non-admins with “Impersonate users” permissions to impersonate users who had stale permissions. ([#17689](https://github.com/craftcms/cms/issues/17689))
+- Fixed an error that could occur when installing Craft with existing project config data. ([#17587](https://github.com/craftcms/cms/issues/17587))
+- Fixed a bug where entry authors could be changed to the current user when updating a provisional draft with upstream changes. ([#17693](https://github.com/craftcms/cms/issues/17693))
+- Fixed a bug where Money fields lost their focus when the clear button was activated.
+- Fixed a bug where focus wasn’t being managed properly when clicking on the image editor modal background. ([#17455](https://github.com/craftcms/cms/pull/17455))
+- Fixed a bug where custom sources that were hidden for certain user groups weren’t available within element selector modals either. ([#17703](https://github.com/craftcms/cms/issues/17703))
+- Fixed a bug where element queries weren’t returning any results if they had a param that resolved to multiple generated fields. ([#17709](https://github.com/craftcms/cms/issues/17709))
+- Fixed a bug where Link fields weren’t preserving spaces within Phone and SMS link labels. ([#17707](https://github.com/craftcms/cms/issues/17707))
+- Fixed a bug where disabled rows within element selector modals could contain nested focusable elements. ([#17053](https://github.com/craftcms/cms/pull/17053))
+- Fixed a bug where <kbd>Ctrl</kbd>/<kbd>Command</kbd> + <kbd>A</kbd> wasn’t selecting all elements within element indexes. ([#17033](https://github.com/craftcms/cms/pull/17033))
+
+## 5.8.12 - 2025-07-29
+
+- Added support for passing a hashed `returnUrl` param to standalone Live Preview URLs. ([#17684](https://github.com/craftcms/cms/discussions/17684))
+- Improved the performance of fetching nested values within content block fields. ([#17677](https://github.com/craftcms/cms/issues/17677))
+- Fixed a bug where embedded element indexes were manipulating the window title. ([#17679](https://github.com/craftcms/cms/issues/17679))
+- Fixed an error that could occur when rendering an Entries field. ([#17686](https://github.com/craftcms/cms/issues/17686))
+- Fixed a bug where element selection modals weren’t rendering elements in a structure view when they should have. ([#17678](https://github.com/craftcms/cms/issues/17678))
+
 ## 5.8.11 - 2025-07-25
 
 - Fixed a JavaScript error that occurred when applying a draft that had a percent sign in its name. ([#17674](https://github.com/craftcms/cms/issues/17674))

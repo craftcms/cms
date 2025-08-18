@@ -417,7 +417,14 @@ class ContentBlock extends Field implements
         bool $fromRequest,
     ): ContentBlockElement {
         if ($value instanceof ElementQueryInterface) {
-            return $value->one() ?? $this->createContentBlockElement($element);
+            $contentBlock = $value->one();
+
+            if ($contentBlock) {
+                $this->setOwnerOnContentBlockElement($element, $contentBlock);
+                return $contentBlock;
+            }
+
+            return $this->createContentBlockElement($element);
         }
 
         if ($value === '') {
@@ -427,11 +434,18 @@ class ContentBlock extends Field implements
         // Set the initially matched elements if $value is already set, which is the case if there was a validation
         // error or we're loading a revision.
         if ($value === '*') {
-            return $this->createContentBlockQuery($element)
+            $contentBlock = $this->createContentBlockQuery($element)
                 ->drafts(null)
                 ->savedDraftsOnly()
                 ->status(null)
-                ->one() ?? $this->createContentBlockElement($element);
+                ->one();
+
+            if ($contentBlock) {
+                $this->setOwnerOnContentBlockElement($element, $contentBlock);
+                return $contentBlock;
+            }
+
+            return $this->createContentBlockElement($element);
         }
 
         if ($element && is_array($value)) {
@@ -439,9 +453,16 @@ class ContentBlock extends Field implements
         }
 
         if (Craft::$app->getRequest()->getIsPreview()) {
-            return $this->createContentBlockQuery($element)
+            $contentBlock = $this->createContentBlockQuery($element)
                 ->withProvisionalDrafts()
-                ->one() ?? $this->createContentBlockElement($element);
+                ->one();
+
+            if ($contentBlock) {
+                $this->setOwnerOnContentBlockElement($element, $contentBlock);
+                return $contentBlock;
+            }
+
+            return $this->createContentBlockElement($element);
         }
 
         $handle = sprintf('content-block:%s', $this->layoutElement?->getOriginalHandle() ?? $this->handle);
@@ -466,6 +487,9 @@ class ContentBlock extends Field implements
 
                 foreach ($sameSiteElements as $e) {
                     $contentBlock = $contentBlocks[$e->id] ?? null;
+                    if ($contentBlock) {
+                        $this->setOwnerOnContentBlockElement($e, $contentBlock);
+                    }
                     $e->setEagerLoadedElements($handle, $contentBlock ? [$contentBlock] : [], new EagerLoadPlan([
                         'handle' => $handle,
                     ]));
@@ -476,7 +500,14 @@ class ContentBlock extends Field implements
             }
         }
 
-        return $this->createContentBlockQuery($element)->one() ?? $this->createContentBlockElement($element);
+        $contentBlock = $this->createContentBlockQuery($element)->one();
+
+        if ($contentBlock) {
+            $this->setOwnerOnContentBlockElement($element, $contentBlock);
+            return $contentBlock;
+        }
+
+        return $this->createContentBlockElement($element);
     }
 
     private function createContentBlockElement(?ElementInterface $owner): ContentBlockElement
@@ -527,6 +558,14 @@ class ContentBlock extends Field implements
             ->siteId($owner->siteId ?? null);
 
         return $query;
+    }
+
+    private function setOwnerOnContentBlockElement(ElementInterface $owner, ContentBlockElement $contentBlock): void
+    {
+        $contentBlock->setOwner($owner);
+        if ($owner->id === $contentBlock->getPrimaryOwnerId()) {
+            $contentBlock->setPrimaryOwner($owner);
+        }
     }
 
     /**
@@ -777,7 +816,7 @@ JS, [
      */
     public function afterSave(bool $isNew): void
     {
-        Craft::$app->getFields()->saveLayout($this->getFieldLayout());
+        Craft::$app->getFields()->saveLayout($this->getFieldLayout(), false);
         parent::afterSave($isNew);
     }
 

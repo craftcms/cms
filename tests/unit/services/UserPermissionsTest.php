@@ -239,5 +239,6 @@ class UserPermissionsTest extends TestCase
         parent::_before();
 
         $this->userPermissions = Craft::$app->getUserPermissions();
+        $this->userPermissions->reset();
     }
 }

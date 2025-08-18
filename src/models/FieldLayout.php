@@ -14,6 +14,7 @@ use craft\base\FieldInterface;
 use craft\base\FieldLayoutElement;
 use craft\base\FieldLayoutProviderInterface;
 use craft\base\Model;
+use craft\errors\FieldNotFoundException;
 use craft\events\CreateFieldLayoutFormEvent;
 use craft\events\DefineFieldLayoutCustomFieldsEvent;
 use craft\events\DefineFieldLayoutElementsEvent;
@@ -33,6 +34,7 @@ use craft\helpers\StringHelper;
 use craft\validators\HandleValidator;
 use Generator;
 use Illuminate\Support\Arr;
+use Illuminate\Support\Collection;
 use yii\base\InvalidArgumentException;
 use yii\base\InvalidConfigException;
 
@@ -423,8 +425,12 @@ class FieldLayout extends Model
         $missingFields = [];
 
         foreach ($this->getElementsByType(BaseField::class) as $field) {
-            /** @var BaseField $field */
-            $includedFields[$field->attribute()] = true;
+            try {
+                /** @var BaseField $field */
+                $includedFields[$field->attribute()] = true;
+            } catch (FieldNotFoundException) {
+                // move on
+            }
         }
 
         foreach ($this->getAvailableNativeFields() as $field) {
@@ -896,7 +902,17 @@ class FieldLayout extends Model
      */
     public function getCustomFieldElements(): array
     {
-        return $this->getElementsByType(CustomField::class);
+        return Collection::make($this->getElementsByType(CustomField::class))
+            ->filter(function(CustomField $layoutElement) {
+                try {
+                    $layoutElement->getField();
+                } catch (FieldNotFoundException) {
+                    return false;
+                }
+                return true;
+            })
+            ->values()
+            ->all();
     }
 
     /**
@@ -908,8 +924,19 @@ class FieldLayout extends Model
      */
     public function getVisibleCustomFieldElements(ElementInterface $element): array
     {
-        $filter = fn(FieldLayoutElement $layoutElement) => $layoutElement instanceof CustomField;
-        return iterator_to_array($this->_elements($filter, $element));
+        return iterator_to_array($this->_elements(function(FieldLayoutElement $layoutElement) {
+            if (!$layoutElement instanceof CustomField) {
+                return false;
+            }
+
+            try {
+                $layoutElement->getField();
+            } catch (FieldNotFoundException) {
+                return false;
+            }
+
+            return true;
+        }, $element));
     }
 
     /**
@@ -1130,13 +1157,23 @@ class FieldLayout extends Model
     {
         return array_map(
             fn(CustomField $layoutElement) => $layoutElement->getField(),
-            iterator_to_array($this->_elements(
-                fn(FieldLayoutElement $layoutElement) => (
-                    $layoutElement instanceof CustomField &&
-                    (!$filter || $filter($layoutElement))
-                ),
-                $element,
-            )),
+            iterator_to_array($this->_elements(function(FieldLayoutElement $layoutElement) use ($filter) {
+                if (
+                    !$layoutElement instanceof CustomField ||
+                    ($filter && !$filter($layoutElement))
+                ) {
+                    return false;
+                }
+
+                // make sure the field exists
+                try {
+                    $layoutElement->getField();
+                } catch (FieldNotFoundException) {
+                    return false;
+                }
+
+                return true;
+            }, $element)),
         );
     }
 
@@ -1237,6 +1274,7 @@ class FieldLayout extends Model
             ]);
             $this->trigger(self::EVENT_CREATE_FORM, $event);
             $tabs = $event->tabs;
+            $static = $event->static;
         }
 
         foreach ($tabs as $tab) {

@@ -111,7 +111,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
     nestedInputNamespace: null,
 
     get viewMode() {
-      if (this._viewMode === 'structure' && !this.canSort) {
+      if (this._viewMode === 'structure' && !this.canViewAsStructure) {
         return this.doesSourceHaveViewMode('table') ? 'table' : 'cards';
       }
 
@@ -141,6 +141,16 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 
     get sortable() {
       return this.settings.sortable && this.canSort && !this.inlineEditing;
+    },
+
+    get canViewAsStructure() {
+      return (
+        !this.status &&
+        !this.trashed &&
+        !this.drafts &&
+        !this.searching &&
+        !this.hasActiveFilter
+      );
     },
 
     get canSort() {
@@ -3277,6 +3287,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
             this.$countSpinner.addClass('hidden');
             const itemLabel = this.getItemLabel();
             const itemsLabel = this.getItemsLabel();
+            let countLabel;
 
             if (!this.paginated) {
               countLabel = Craft.t(
@@ -3375,7 +3386,9 @@ Craft.BaseElementIndex = Garnish.Base.extend(
               }
             }
 
-            this._addPaginationContextToDocumentTitle(countLabel);
+            if (this.settings.context === 'index') {
+              this._addPaginationContextToDocumentTitle(countLabel);
+            }
           })
           .catch(() => {
             this.$countSpinner.addClass('hidden');
@@ -3519,7 +3532,10 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 
         this._autoSelectElements = null;
       }
-      this._addSourceNameToDocumentTitle();
+
+      if (this.settings.context === 'index') {
+        this._addSourceNameToDocumentTitle();
+      }
 
       // Trigger the event
       // -------------------------------------------------------------

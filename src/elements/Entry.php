@@ -2815,7 +2815,7 @@ JS;
         }
 
         if (
-            (!isset($this->_authorIds) || empty($this->_authorIds)) &&
+            empty($this->getAuthors()) &&
             !isset($this->fieldId) &&
             $this->getSection()->type !== Section::TYPE_SINGLE
         ) {

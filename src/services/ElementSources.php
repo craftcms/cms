@@ -14,6 +14,7 @@ use craft\base\PreviewableFieldInterface;
 use craft\base\SortableFieldInterface;
 use craft\db\CoalesceColumnsExpression;
 use craft\elements\conditions\ElementConditionInterface;
+use craft\errors\FieldNotFoundException;
 use craft\errors\SiteNotFoundException;
 use craft\events\DefineSourceSortOptionsEvent;
 use craft\events\DefineSourceTableAttributesEvent;
@@ -96,7 +97,7 @@ class ElementSources extends Component
                     }
                 } else {
                     if ($source['type'] === self::TYPE_CUSTOM) {
-                        if (!$this->_showCustomSource($source)) {
+                        if ($context === self::CONTEXT_INDEX && !$this->_showCustomSource($source)) {
                             continue;
                         }
                         $source = $elementType::modifyCustomSource($source);
@@ -444,7 +445,12 @@ class ElementSources extends Component
                         continue;
                     }
 
-                    $field = $layoutElement->getField();
+                    try {
+                        $field = $layoutElement->getField();
+                    } catch (FieldNotFoundException) {
+                        continue;
+                    }
+
                     if (
                         $field instanceof PreviewableFieldInterface &&
                         (!$user || $user->admin || ($layoutElement->getUserCondition()?->matchElement($user) ?? true))

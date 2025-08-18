@@ -30,6 +30,7 @@ use craft\enums\AttributeStatus;
 use craft\enums\CmsEdition;
 use craft\enums\Color;
 use craft\enums\MenuItemType;
+use craft\errors\FieldNotFoundException;
 use craft\errors\InvalidHtmlTagException;
 use craft\events\DefineElementHtmlEvent;
 use craft\events\DefineElementInnerHtmlEvent;
@@ -2952,7 +2953,12 @@ JS, [
 
         foreach ($cardElements as $cardElement) {
             if ($cardElement instanceof CustomField) {
-                $previewHtml .= Html::tag('div', $cardElement->getField()->previewPlaceholderHtml(null, null));
+                try {
+                    $field = $cardElement->getField();
+                } catch (FieldNotFoundException) {
+                    continue;
+                }
+                $previewHtml .= Html::tag('div', $field->previewPlaceholderHtml(null, null));
             } elseif ($cardElement instanceof BaseField) {
                 $previewHtml .= Html::tag('div', $cardElement->previewPlaceholderHtml(null, null));
             } elseif (is_array($cardElement) && isset($cardElement['html'])) {
@@ -3237,6 +3243,15 @@ JS;
         bool $forLibrary = false,
         array $attributes = [],
     ): string {
+        // ignore invalid custom fields
+        if ($element instanceof CustomField) {
+            try {
+                $element->getField();
+            } catch (FieldNotFoundException) {
+                return '';
+            }
+        }
+
         if ($element instanceof BaseField) {
             $attributes = ArrayHelper::merge($attributes, [
                 'data' => [
@@ -3309,7 +3324,7 @@ JS;
             $field->isMultiInstance() ||
             !$fieldLayout->isFieldIncluded(function(BaseField $field) use ($attribute, $uid) {
                 if ($field instanceof CustomField) {
-                    return $field->getField()->uid === $uid;
+                    return $field->getFieldUid() === $uid;
                 }
                 return $field->attribute() === $attribute;
             })

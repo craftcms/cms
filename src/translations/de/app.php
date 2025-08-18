@@ -484,7 +484,7 @@ return [
     'Create a one-time password.' => 'Erstellen Sie ein einmaliges Passwort.',
     'Create and add another' => 'Erstellen und neuen hinzufügen',
     'Create and continue editing' => 'Erstellen und mit Bearbeitung fortfahren',
-    'Create and set permissions' => 'Zugangsrechte erstellen und setzen',
+    'Create and set permissions' => 'Erstellen und Zugangsrechte vergeben',
     'Create assets in the “{volume}” volume' => 'Dateien im Datenträger „{volume}“ erstellen',
     'Create entries in the “{section}” section' => 'Einträge in der Sektion „{section}“ erstellen',
     'Create entries in the “{section}” {type} field' => 'Einträge im {type}-Feld der Sektion „{section}“ erstellen',

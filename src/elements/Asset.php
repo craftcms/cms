@@ -2552,6 +2552,9 @@ JS,[
      */
     public function getFormattedSizeInBytes(bool $short = true): ?string
     {
+        if (!isset($this->size)) {
+            return null;
+        }
         $params = [
             'n' => $this->size,
             'nFormatted' => Craft::$app->getFormatter()->asDecimal($this->size),

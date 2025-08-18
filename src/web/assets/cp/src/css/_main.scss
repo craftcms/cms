@@ -7990,7 +7990,7 @@ textarea.text.fullwidth {
   }
 }
 
-.CodeMirror-scroll {
+.json-field .CodeMirror-scroll {
   max-height: 550px;
 }
 
@@ -8641,14 +8641,18 @@ td.errors .text,
     padding-inline-start: calc(26rem / 16);
   }
 
+  .clear-btn,
+  .filter-btn {
+    width: var(--touch-target-size);
+    height: var(--touch-target-size);
+  }
+
   .clear-btn {
     position: absolute;
     inset-block-start: calc(
       (var(--touch-target-size) - 34px) / -2
     ); /* Responds to min-height of text input */
     inset-inline-end: 0;
-    width: var(--touch-target-size);
-    height: var(--touch-target-size);
   }
 
   &.has-filter-btn {
@@ -8662,7 +8666,6 @@ td.errors .text,
       transform: translateY(-50%);
       inset-inline-end: 4px;
       padding-block: 0 4px;
-      padding-inline: 7px;
       font-size: 14px;
       line-height: 22px;
       cursor: pointer;

@@ -35,6 +35,7 @@ use craft\elements\GlobalSet;
 use craft\elements\Tag;
 use craft\elements\User;
 use craft\errors\ElementNotFoundException;
+use craft\errors\FieldNotFoundException;
 use craft\errors\InvalidElementException;
 use craft\errors\OperationAbortedException;
 use craft\errors\SiteNotFoundException;
@@ -1521,10 +1522,15 @@ class Elements extends Component
             $newAttributes['siteAttributes'][$attribute['siteId']]['dirtyAttributes'][] = $attribute['attribute'];
         }
 
-        foreach ($changedFields as $field) {
-            $layoutElement = $element->getFieldLayout()?->getElementByUid($field['layoutElementUid']);
+        foreach ($changedFields as $changedField) {
+            $layoutElement = $element->getFieldLayout()?->getElementByUid($changedField['layoutElementUid']);
             if ($layoutElement instanceof CustomField) {
-                $newAttributes['siteAttributes'][$field['siteId']]['dirtyFields'][] = $layoutElement->getField()->handle;
+                try {
+                    $field = $layoutElement->getField();
+                } catch (FieldNotFoundException) {
+                    continue;
+                }
+                $newAttributes['siteAttributes'][$changedField['siteId']]['dirtyFields'][] = $field->handle;
             }
         }
 
@@ -3040,7 +3046,17 @@ class Elements extends Component
                         $elementQuery->ref($refNames);
                     }
 
-                    $elements = ArrayHelper::index($elementQuery->all(), $refType);
+                    $elements = [];
+                    foreach ($elementQuery->all() as $element) {
+                        $ref = $refType === 'id' ? $element->id : $element->getRef();
+                        $elements[$ref] = $element;
+
+                        // if the reference contains a slash (e.g. section/slug),
+                        // also index it by just whatever comes after it
+                        if ($refType === 'ref' && ($slash = strrpos($ref, '/')) !== false) {
+                            $elements[substr($ref, $slash + 1)] ??= $element;
+                        }
+                    }
 
                     // Now append new token search/replace strings
                     foreach ($tokensByName as $refName => $tokens) {

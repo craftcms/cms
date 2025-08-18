@@ -16,6 +16,7 @@ use craft\base\NestedElementInterface;
 use craft\db\Query;
 use craft\db\Table;
 use craft\elements\User as UserElement;
+use craft\errors\FieldNotFoundException;
 use craft\errors\OperationAbortedException;
 use craft\fieldlayoutelements\CustomField;
 use craft\i18n\Locale;
@@ -784,7 +785,12 @@ class ElementHelper
             foreach ($fieldLayout->getTabs() as $tab) {
                 foreach ($tab->getElements() as $layoutElement) {
                     if ($layoutElement instanceof CustomField && $layoutElement->attribute() === $attribute) {
-                        return $layoutElement->getField()->isValueEmpty($element->getFieldValue($attribute), $element);
+                        try {
+                            $field = $layoutElement->getField();
+                        } catch (FieldNotFoundException) {
+                            continue;
+                        }
+                        return $field->isValueEmpty($element->getFieldValue($attribute), $element);
                     }
                 }
             }

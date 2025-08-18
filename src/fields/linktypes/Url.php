@@ -34,6 +34,12 @@ class Url extends BaseTextLinkType
         return parent::supports($value) || str_starts_with($value, '/') || str_starts_with($value, '#');
     }
 
+    public function normalizeValue(string $value): string
+    {
+        $value = str_replace(' ', '+', $value);
+        return parent::normalizeValue($value);
+    }
+
     /**
      * @var bool Whether root-relative URLs should be allowed.
      * @since 5.4.0
