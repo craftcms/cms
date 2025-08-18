@@ -55,10 +55,11 @@ class ElementsTest extends TestCase
             'invalid-type-class' => ['Invalid {craft\elements\Beeble:1234:property}', 'Invalid {craft\elements\Beeble:1234:property}'],
 
             // Entries + behaviors
-            'entry-default-property' => [TestSetup::SITE_URL . 'some-uri/With--URL--1', "{entry:$entryWithUrl->id}"],
+            'entry-default-property-id' => [TestSetup::SITE_URL . 'some-uri/With--URL--1', "{entry:$entryWithUrl->id}"],
             'entry-url' => [TestSetup::SITE_URL . 'some-uri/With--URL--1', "{entry:$entryWithUrl->id:url}"],
             'entry-title' => ['With URL 1', "{entry:$entryWithUrl->id:title}"],
-            'entry-custom-identifer' => ['With URL 1', '{entry:withUri1/With--URL--1:title}'],
+            'entry-custom-identifer-slug' => ['With URL 1', '{entry:With--URL--1:title}'],
+            'entry-custom-identifer-section-and-slug' => ['With URL 1', '{entry:withUri1/With--URL--1:title}'],
             'entry-custom-field' => ['foo', '{entry:test1/Theories--of--life:plainTextField}'],
             'entry-other-site-id' => ['Theories of life', '{entry:test1/Theories--of--life@1001:title}'],
             'entry-other-site-handle' => ['Theories of life', '{entry:test1/Theories--of--life@testSite2:title}'],
@@ -67,9 +68,9 @@ class ElementsTest extends TestCase
             // Things that should use fallback text:
             'fallback-invalid-type' => ['Fallback text', '{beeble:bobbing:bubbles||Fallback text}'],
             'fallback-nonexistent-element-id' => ['Fallback text', '{entry:999999999||Fallback text}'],
-            'fallback-nonexistent-element-custom-identifier' => ['Fallback text', "{entry:test1/$randomSlug||Fallback text}"],
+            'fallback-nonexistent-element-custom' => ['Fallback text', "{entry:test1/$randomSlug||Fallback text}"],
             'fallback-nonexistent-property-id' => ['Fallback text', "{entry:999999999:propertyThatIsNotDefined||Fallback text}"],
-            'fallback-nonexistent-property-custom-identifier' => ['Fallback text', "{entry:test1/$randomSlug:propertyThatIsNotDefined||Fallback text}"],
+            'fallback-nonexistent-property-custom' => ['Fallback text', "{entry:test1/$randomSlug:propertyThatIsNotDefined||Fallback text}"],
 
             // Recursive evaluation:
             'recursive-eval' => ['Substitution in A: [Substitution in B: [Value from C]]', '{entry:test1/recursive-reference-a:plainTextField}'],
