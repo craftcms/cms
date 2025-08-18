@@ -10,10 +10,11 @@ declare(strict_types=1);
 
 namespace crafttests\unit\services;
 
-use Codeception\Test\Unit;
 use Craft;
+use craft\elements\Entry;
 use craft\services\Elements;
 use craft\test\TestCase;
+use craft\test\TestSetup;
 use crafttests\fixtures\AssetFixture;
 use crafttests\fixtures\EntryFixture;
 use crafttests\fixtures\GlobalSetFixture;
@@ -35,21 +36,17 @@ class ElementsTest extends TestCase
     public $elements;
 
     /**
-     * @dataProvider parseRefsDataProvider
-     * @param string $expected
-     * @param string $text
      * @return void
      */
-    public function testParseRefs(string $expected, string $text): void
-    {
-        self::assertEquals($expected, $this->elements->parseRefs($text));
-    }
-
-    public function parseRefsDataProvider(): array
+    public function testParseRefs(): void
     {
         $randomSlug = Craft::$app->getSecurity()->generateRandomString(10);
 
-        return [
+        $entryWithUrl = Entry::find()
+            ->slug('With--URL--1')
+            ->one();
+
+        $strings = [
             // Things that should stay the same:
             'no-tags' => ['No tags here!', 'No tags here!'],
             'incomplete-closing' => ['Incomplete {tag.', 'Incomplete {tag.'],
@@ -58,23 +55,29 @@ class ElementsTest extends TestCase
             'invalid-type-class' => ['Invalid {craft\elements\Beeble:1234:property}', 'Invalid {craft\elements\Beeble:1234:property}'],
 
             // Entries + behaviors
-            'entry-default-property' => ['https://craftcms.com', '{entry:With--URL--1}'],
-            'entry-url' => ['https://craftcms.com', '{entry:With--URL--1:url}'],
-            'entry-title' => ['With URL 1', '{entry:With--URL--1:title}'],
-            'entry-section-scope' => ['With URL 1', '{entry:withUri1/With--URL--1:title}'],
-            'entry-custom-field' => ['foo', '{entry:Theories--of--life:plainTextField}'],
-            'entry-other-site-id' => ['Theories of life', '{entry:Theories-of-life@1001:title}'],
-            'entry-other-site-handle' => ['Theories of life', '{entry:Theories-of-life@testSite2:title}'],
-            'entry-other-site-uuid' => ['Theories of life', '{entry:Theories-of-life@09a48e85-2f12-2124-b82c-45b14b13d8ce:title}'],
+            'entry-default-property' => [TestSetup::SITE_URL . 'some-uri/With--URL--1', "{entry:$entryWithUrl->id}"],
+            'entry-url' => [TestSetup::SITE_URL . 'some-uri/With--URL--1', "{entry:$entryWithUrl->id:url}"],
+            'entry-title' => ['With URL 1', "{entry:$entryWithUrl->id:title}"],
+            'entry-custom-identifer' => ['With URL 1', '{entry:withUri1/With--URL--1:title}'],
+            'entry-custom-field' => ['foo', '{entry:test1/Theories--of--life:plainTextField}'],
+            'entry-other-site-id' => ['Theories of life', '{entry:test1/Theories--of--life@1001:title}'],
+            'entry-other-site-handle' => ['Theories of life', '{entry:test1/Theories--of--life@testSite2:title}'],
+            'entry-other-site-uuid' => ['Theories of life', '{entry:test1/Theories--of--life@e9c6ae73-c175-4a3c-afa4-1ee095aa4b55:title}'],
 
-            // Using fallbacks:
-            'fallback-invalid-type' => ['Fallback text', "{beeble:bobbing:bubbles||Fallback text}"],
-            'fallback-nonexistent-element' => ['Fallback text', "{entry:$randomSlug||Fallback text}"],
-            'fallback-nonexistent-property' => ['Fallback text', "{entry:$randomSlug:propertyThatIsNotDefined||Fallback text}"],
+            // Things that should use fallback text:
+            'fallback-invalid-type' => ['Fallback text', '{beeble:bobbing:bubbles||Fallback text}'],
+            'fallback-nonexistent-element-id' => ['Fallback text', '{entry:999999999||Fallback text}'],
+            'fallback-nonexistent-element-custom-identifier' => ['Fallback text', "{entry:test1/$randomSlug||Fallback text}"],
+            'fallback-nonexistent-property-id' => ['Fallback text', "{entry:999999999:propertyThatIsNotDefined||Fallback text}"],
+            'fallback-nonexistent-property-custom-identifier' => ['Fallback text', "{entry:test1/$randomSlug:propertyThatIsNotDefined||Fallback text}"],
 
             // Recursive evaluation:
-            'recursive-eval' => ['Substitution in A: [Substitution in B: [Value from C]]', '{entry:recursive-reference-a:plainTextField}'],
+            'recursive-eval' => ['Substitution in A: [Substitution in B: [Value from C]]', '{entry:test1/recursive-reference-a:plainTextField}'],
         ];
+
+        foreach ($strings as $label => [$expected, $text]) {
+            self::assertEquals($expected, $this->elements->parseRefs($text), );
+        }
     }
 
     public function _fixtures(): array
