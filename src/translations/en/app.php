@@ -779,6 +779,7 @@ return [
     'Generate recovery codes' => 'Generate recovery codes',
     'Generate' => 'Generate',
     'Generated Fields' => 'Generated Fields',
+    'Generating image transform for {file}' => 'Generating image transform for {file}',
     'Generating image transform' => 'Generating image transform',
     'Generating pending image transforms' => 'Generating pending image transforms',
     'Get help' => 'Get help',
