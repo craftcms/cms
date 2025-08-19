@@ -374,8 +374,6 @@ final class Plugins
             Event::dispatch(new PluginEnabled($plugin));
         }
 
-        $this->craft->getProjectConfig()->flush();
-
         return true;
     }
 
@@ -415,8 +413,6 @@ final class Plugins
         if (Event::hasListeners(PluginDisabled::class)) {
             Event::dispatch(new PluginDisabled($plugin));
         }
-
-        $this->craft->getProjectConfig()->flush();
 
         return true;
     }
@@ -527,8 +523,6 @@ final class Plugins
 
         $projectConfig->readOnly = $readOnly;
 
-        $this->craft->getProjectConfig()->flush();
-
         return true;
     }
 
@@ -621,8 +615,6 @@ final class Plugins
 
         $projectConfig->readOnly = $readOnly;
 
-        $this->craft->getProjectConfig()->flush();
-
         return true;
     }
 
@@ -665,7 +657,6 @@ final class Plugins
             $plugin->edition = $edition;
         }
 
-        $this->craft->getProjectConfig()->flush();
     }
 
     /**
@@ -707,8 +698,6 @@ final class Plugins
         if (Event::hasListeners(PluginSettingsSaved::class)) {
             Event::dispatch(new PluginSettingsSaved($plugin));
         }
-
-        $this->craft->getProjectConfig()->flush();
 
         return true;
     }
@@ -823,7 +812,6 @@ final class Plugins
         // Clear the license info cache
         $this->cache->forget(App::CACHE_KEY_LICENSE_INFO);
 
-        $this->craft->getProjectConfig()->flush();
     }
 
     /**
@@ -1155,8 +1143,6 @@ final class Plugins
 
         // Clear the license info cache
         $this->cache->forget(App::CACHE_KEY_LICENSE_INFO);
-
-        $this->craft->getProjectConfig()->flush();
 
         return true;
     }
