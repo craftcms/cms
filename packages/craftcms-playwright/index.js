@@ -3,6 +3,7 @@
 const baseConfig = require('./_config');
 const helpers = require('./helpers/generic');
 const {test, expect} = require('./_fixtures');
+const events = require('./_events');
 
 module.exports = {
   getConfig: (config = {}) => {
@@ -11,4 +12,5 @@ module.exports = {
   helpers,
   test,
   expect,
+  events,
 };

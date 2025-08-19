@@ -1,3 +1,3 @@
-const {getConfig} = require('@craftcms/playwright');
+const craftPlaywright = require('@craftcms/playwright');
 
-module.exports = getConfig();
+export default craftPlaywright.getConfig();
