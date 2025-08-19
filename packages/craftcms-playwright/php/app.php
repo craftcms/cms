@@ -21,6 +21,9 @@ use craft\helpers\App;
 
 return [
     'id' => App::env('CRAFT_APP_ID') ?: 'CraftCMS',
+    'aliases' => [
+        '@' . str_replace('\\', '/', App::env('PLAYWRIGHT_FIXTURES_NAMESPACE')) => App::env('PLAYWRIGHT_FIXTURES_PATH'),
+    ],
     'modules' => [
         /** @phpstan-ignore-next-line */
         'db-backup' => \modules\DbBackup::class,

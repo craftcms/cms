@@ -1,6 +1,8 @@
 /* jshint esversion: 9, strict: false */
 const path = require('path');
 const {devices} = require('@playwright/test');
+// const events = require('./_events');
+
 const testDir = './tests-playwright';
 require('dotenv').config({path: path.resolve(path.join(testDir, '.env'))});
 
@@ -11,6 +13,7 @@ let baseURL = process.env.PLAYWRIGHT_SITE ?? 'http://127.0.0.1:8089/';
 baseURL = new URL(cpTrigger, baseURL).href;
 const username = process.env.PW_AUTH_USERNAME ?? 'admin';
 const password = process.env.PW_AUTH_PASSWORD ?? 'NewPassword';
+const fixturesNamespace = process.env.PLAYWRIGHT_FIXTURES_NAMESPACE;
 
 module.exports = {
   globalSetup: require.resolve(path.join(__dirname, './_global-setup.js')),

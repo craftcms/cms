@@ -20,7 +20,6 @@ COPY ./craftcms/etc/supervisord.d/nginx.ini /etc/supervisord.d/nginx.ini
 RUN mkdir -p /var/log/nginx && chown -R appuser:appgroup /var/log/nginx
 RUN chown -R appuser:appgroup /var/lib/nginx && touch /run/nginx.pid && chown -R appuser:appgroup /run/nginx.pid
 
-
 RUN composer create-project -n craftcms/craft /tmp/app
 
 RUN sed -i "s/create()/create()\n    ->requireMatchingUserAgentForSession(false)/g" /tmp/app/config/general.php

@@ -1,3 +1,4 @@
+const config = require('./_config');
 const util = require('util');
 const nodeExec = util.promisify(require('child_process').exec);
 const path = require('path');
@@ -5,15 +6,29 @@ const packagePath =
   path.basename(__dirname) == 'craftcms-playwright'
     ? 'packages/craftcms-playwright'
     : 'node_modules/@craftcms/playwright';
+
 const dockerCli = `docker compose --file=./${packagePath}/docker-compose.yaml exec --user appuser playwright`;
 const craftCli = '/app/craft';
+const testDir = './tests-playwright';
+require('dotenv').config({path: path.resolve(path.join(testDir, '.env'))});
 
-const loadFixture = async (name) => {
-  process.stdout.write('Loading Fixture ' + name);
+const getNamespace = () => {
+  let ns = process.env.PLAYWRIGHT_FIXTURES_NAMESPACE;
+  // Escape the backslashes for use in cli commands
+
+  ns = ns ? ns.replace(/\\/g, '\\\\') : '';
+
+  return ns;
+};
+
+const loadFixture = async (name, namespace = null) => {
+  let ns = namespace ? namespace.replace(/\\/g, '\\\\') : getNamespace();
+
+  process.stdout.write('Loading Fixture ' + name + ' (' + ns + ')');
   process.stdout.write('\n');
   try {
     const {stdout, stderr} = await nodeExec(
-      `${dockerCli} ${craftCli} fixture/load ${name} --namespace=modules\\\\seeder\\\\fixtures`
+      `${dockerCli} ${craftCli} fixture/load ${name} --namespace="${ns}"`
     );
     return {stdout, stderr};
   } catch (e) {

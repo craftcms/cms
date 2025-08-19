@@ -34,17 +34,6 @@ composer dump-autoload
 
 cp -vfrp /app/repos/repo/node_modules/@craftcms/playwright/php/DbBackup.php /app/modules/
 
-if [ ! -d "modules/seeder" ]
-then
-  echo "creating modules/seeder dir"
-  mkdir modules/seeder
-fi
-
-cp -vfrp /app/repos/repo/tests/fixtures /app/modules/seeder/
-rm -fr /app/modules/seeder/fixtures/data
-sed -i "s/crafttests\\\\fixtures/modules\\\\seeder\\\\fixtures/g" /app/modules/seeder/fixtures/*Fixture.php
-cp -vfrp /app/repos/repo/node_modules/@craftcms/playwright/fixtures/data /app/modules/seeder/fixtures/
-
 cp -vfrp /app/repos/repo/node_modules/@craftcms/playwright/php/app.php /app/config/
 
 
