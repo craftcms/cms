@@ -19,7 +19,7 @@ final readonly class PluginsController
     use RespondsWithFlash;
 
     public function __construct(
-        protected Plugins $pluginsService,
+        protected Plugins $plugins,
         protected GeneralConfig $generalConfig,
         #[Give('Craft')] protected Application $craft,
     ) {}
@@ -29,7 +29,7 @@ final readonly class PluginsController
         $view = $this->craft->getView();
         $view->registerAssetBundle(PluginsAsset::class);
 
-        $info = $this->pluginsService
+        $info = $this->plugins
             ->getAllPluginInfo()
             ->sortBy([
                 ['isEnabled', 'desc'],
@@ -51,7 +51,7 @@ final readonly class PluginsController
             'edition' => ['nullable', 'string'],
         ]);
 
-        $success = $this->pluginsService->installPlugin(
+        $success = $this->plugins->installPlugin(
             handle: $data['pluginHandle'],
             edition: $data['edition'] ?? null,
         );
@@ -68,7 +68,7 @@ final readonly class PluginsController
             'edition' => ['required', 'string'],
         ]);
 
-        $this->pluginsService->switchEdition($data['pluginHandle'], $data['edition']);
+        $this->plugins->switchEdition($data['pluginHandle'], $data['edition']);
 
         return $this->asSuccess(Craft::t('app', 'Plugin edition changed.'));
     }
@@ -79,7 +79,7 @@ final readonly class PluginsController
             'pluginHandle' => ['required', 'string'],
         ])['pluginHandle'];
 
-        $success = $this->pluginsService->uninstallPlugin($pluginHandle);
+        $success = $this->plugins->uninstallPlugin($pluginHandle);
 
         return $success ?
             $this->asSuccess(Craft::t('app', 'Plugin uninstalled.')) :
@@ -92,7 +92,7 @@ final readonly class PluginsController
             'pluginHandle' => ['required', 'string'],
         ])['pluginHandle'];
 
-        $success = $this->pluginsService->enablePlugin($pluginHandle);
+        $success = $this->plugins->enablePlugin($pluginHandle);
 
         return $success ?
             $this->asSuccess(Craft::t('app', 'Plugin enabled.')) :
@@ -105,7 +105,7 @@ final readonly class PluginsController
             'pluginHandle' => ['required', 'string'],
         ])['pluginHandle'];
 
-        $success = $this->pluginsService->disablePlugin($pluginHandle);
+        $success = $this->plugins->disablePlugin($pluginHandle);
 
         return $success ?
             $this->asSuccess(Craft::t('app', 'Plugin disabled.')) :
@@ -114,7 +114,7 @@ final readonly class PluginsController
 
     public function editSettings(string $handle, ?PluginInterface $plugin = null): mixed
     {
-        if ($plugin === null && ($plugin = $this->pluginsService->getPlugin($handle)) === null) {
+        if ($plugin === null && ($plugin = $this->plugins->getPlugin($handle)) === null) {
             abort(404, 'Plugin not found.');
         }
 
@@ -143,11 +143,11 @@ final readonly class PluginsController
             'settings' => ['nullable', 'array'],
         ]);
 
-        $plugin = $this->pluginsService->getPlugin($data['pluginHandle']);
+        $plugin = $this->plugins->getPlugin($data['pluginHandle']);
 
         abort_if(is_null($plugin), 404, 'Plugin not found.');
 
-        $success = $this->pluginsService->savePluginSettings($plugin, $data['settings']);
+        $success = $this->plugins->savePluginSettings($plugin, $data['settings']);
 
         if ($success) {
             return $this->asSuccess(Craft::t('app', 'Plugin settings saved.'));
