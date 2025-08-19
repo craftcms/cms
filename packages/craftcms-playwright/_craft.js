@@ -42,6 +42,19 @@ const cleanAll = async () => {
   await composerRestore();
 };
 
+const installPlugin = async (handle) => {
+  process.stdout.write(`Installing Plugin "${handle}"`);
+    process.stdout.write('\n');
+    try {
+      const {stdout, stderr} = await nodeExec(
+        `${dockerCli} ${craftCli} plugin/install ${handle}`
+      );
+      return {stdout, stderr};
+    } catch (e) {
+      console.error(e);
+    }
+};
+
 const dbRestore = async () => {
   process.stdout.write('Restoring DB');
   process.stdout.write('\n');
@@ -104,4 +117,5 @@ module.exports = {
   composerRestore,
   loadFixture,
   cleanAll,
+  installPlugin,
 };
