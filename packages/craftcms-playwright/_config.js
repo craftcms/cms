@@ -21,6 +21,7 @@ module.exports = {
     path.join(__dirname, './_global-teardown.js')
   ),
   testDir: testDir,
+  fixturesNamespace,
   use: {
     baseURL,
     username,
