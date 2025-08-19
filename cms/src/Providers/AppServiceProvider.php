@@ -6,9 +6,11 @@ use Craft;
 use craft\helpers\FileHelper;
 use CraftCms\Aliases\Facades\Aliases;
 use CraftCms\Cms\Http\Middleware\ExtractNamespace;
+use CraftCms\Cms\Http\Middleware\HandleActionRequest;
 use CraftCms\Cms\Http\Middleware\RequireCpRequest;
 use CraftCms\Cms\Http\Middleware\SendPoweredByHeader;
 use CraftCms\Cms\Support\Env;
+use Illuminate\Contracts\Http\Kernel as HttpKernel;
 use Illuminate\Foundation\Console\AboutCommand;
 use Illuminate\Routing\Router;
 use Illuminate\Support\ServiceProvider;
@@ -18,7 +20,18 @@ final class AppServiceProvider extends ServiceProvider
 {
     private string $root = __DIR__.'/../..';
 
-    public function register(): void {}
+    public function register(): void
+    {
+        /**
+         * HandleActionRequest is special and needs to run
+         * before any other middleware as it rewrites
+         * which path needs to get used.
+         */
+        $kernel = $this->app->get(HttpKernel::class);
+        $kernel->setGlobalMiddleware(array_merge([
+            HandleActionRequest::class,
+        ], $kernel->getGlobalMiddleware()));
+    }
 
     public function boot(): void
     {

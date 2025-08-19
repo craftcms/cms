@@ -12,6 +12,7 @@ use craft\errors\MigrationException;
 use craft\helpers\App;
 use craft\helpers\FileHelper;
 use CraftCms\Cms\Db\Table;
+use CraftCms\Cms\Support\Str;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Facades\DB;
 use Throwable;
@@ -362,7 +363,10 @@ class MigrationManager extends Component
             ->insert([
                 'track' => $this->track,
                 'name' => $name,
-                'applyTime' => now(),
+                'applyTime' => $now = now(),
+                'dateCreated' => $now,
+                'dateUpdated' => $now,
+                'uid' => Str::uuid(),
             ]);
     }
 

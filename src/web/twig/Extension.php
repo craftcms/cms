@@ -69,6 +69,7 @@ use DateTime;
 use DateTimeInterface;
 use DateTimeZone;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Stringable;
 use IteratorAggregate;
@@ -1735,6 +1736,16 @@ class Extension extends AbstractExtension implements GlobalsInterface
             $primarySite = $sitesService->getPrimarySite();
 
             $currentUser = Craft::$app->getUser()->getIdentity();
+
+            if (!$currentUser) {
+                $user = Auth::user();
+
+                if ($user) {
+                    Craft::$app->getUser()->setIdentity(Craft::$app->getUsers()->getUserById($user->id));
+                    $currentUser = Craft::$app->getUser()->getIdentity();
+                }
+            }
+
             $siteName = Craft::t('site', $currentSite->getName());
             $siteUrl = $currentSite->getBaseUrl();
             $systemName = Craft::$app->getSystemName();

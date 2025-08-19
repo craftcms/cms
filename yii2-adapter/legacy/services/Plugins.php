@@ -490,108 +490,84 @@ class Plugins extends Component
     {
         $pluginService = Craft::$app->getPlugins();
 
-        if ($pluginService->hasEventHandlers(self::EVENT_BEFORE_LOAD_PLUGINS)) {
-            Event::listen(
-                LoadingPlugins::class,
-                fn() => $pluginService->trigger(self::EVENT_BEFORE_LOAD_PLUGINS),
-            );
-        }
+        Event::listen(
+            LoadingPlugins::class,
+            fn() => $pluginService->trigger(self::EVENT_BEFORE_LOAD_PLUGINS),
+        );
 
-        if ($pluginService->hasEventHandlers(self::EVENT_AFTER_LOAD_PLUGINS)) {
-            Event::listen(
-                PluginsLoaded::class,
-                fn() => $pluginService->trigger(self::EVENT_AFTER_LOAD_PLUGINS),
-            );
-        }
+        Event::listen(
+            PluginsLoaded::class,
+            fn() => $pluginService->trigger(self::EVENT_AFTER_LOAD_PLUGINS),
+        );
 
-        if ($pluginService->hasEventHandlers(self::EVENT_BEFORE_ENABLE_PLUGIN)) {
-            Event::listen(
-                EnablingPlugin::class,
-                fn(EnablingPlugin $event) => $pluginService->trigger(self::EVENT_BEFORE_ENABLE_PLUGIN, new PluginEvent([
-                    'plugin' => $event->plugin,
-                ])),
-            );
-        }
+        Event::listen(
+            EnablingPlugin::class,
+            fn(EnablingPlugin $event) => $pluginService->trigger(self::EVENT_BEFORE_ENABLE_PLUGIN, new PluginEvent([
+                'plugin' => $event->plugin,
+            ])),
+        );
 
-        if ($pluginService->hasEventHandlers(self::EVENT_AFTER_ENABLE_PLUGIN)) {
-            Event::listen(
-                PluginEnabled::class,
-                fn(PluginEnabled $event) => $pluginService->trigger(self::EVENT_AFTER_ENABLE_PLUGIN, new PluginEvent([
-                    'plugin' => $event->plugin,
-                ])),
-            );
-        }
+        Event::listen(
+            PluginEnabled::class,
+            fn(PluginEnabled $event) => $pluginService->trigger(self::EVENT_AFTER_ENABLE_PLUGIN, new PluginEvent([
+                'plugin' => $event->plugin,
+            ])),
+        );
 
-        if ($pluginService->hasEventHandlers(self::EVENT_BEFORE_DISABLE_PLUGIN)) {
-            Event::listen(
-                DisablingPlugin::class,
-                fn(DisablingPlugin $event) => $pluginService->trigger(self::EVENT_BEFORE_DISABLE_PLUGIN, new PluginEvent([
-                    'plugin' => $event->plugin,
-                ])),
-            );
-        }
+        Event::listen(
+            DisablingPlugin::class,
+            fn(DisablingPlugin $event) => $pluginService->trigger(self::EVENT_BEFORE_DISABLE_PLUGIN, new PluginEvent([
+                'plugin' => $event->plugin,
+            ])),
+        );
 
-        if ($pluginService->hasEventHandlers(self::EVENT_AFTER_DISABLE_PLUGIN)) {
-            Event::listen(
-                PluginDisabled::class,
-                fn(PluginDisabled $event) => $pluginService->trigger(self::EVENT_AFTER_DISABLE_PLUGIN, new PluginEvent([
-                    'plugin' => $event->plugin,
-                ])),
-            );
-        }
+        Event::listen(
+            PluginDisabled::class,
+            fn(PluginDisabled $event) => $pluginService->trigger(self::EVENT_AFTER_DISABLE_PLUGIN, new PluginEvent([
+                'plugin' => $event->plugin,
+            ])),
+        );
 
-        if ($pluginService->hasEventHandlers(self::EVENT_BEFORE_INSTALL_PLUGIN)) {
-            Event::listen(
-                InstallingPlugin::class,
-                fn(InstallingPlugin $event) => $pluginService->trigger(self::EVENT_BEFORE_INSTALL_PLUGIN, new PluginEvent([
-                    'plugin' => $event->plugin,
-                ])),
-            );
-        }
+        Event::listen(
+            InstallingPlugin::class,
+            fn(InstallingPlugin $event) => $pluginService->trigger(self::EVENT_BEFORE_INSTALL_PLUGIN, new PluginEvent([
+                'plugin' => $event->plugin,
+            ])),
+        );
 
-        if ($pluginService->hasEventHandlers(self::EVENT_AFTER_INSTALL_PLUGIN)) {
-            Event::listen(
-                PluginInstalled::class,
-                fn(PluginInstalled $event) => $pluginService->trigger(self::EVENT_AFTER_INSTALL_PLUGIN, new PluginEvent([
-                    'plugin' => $event->plugin,
-                ])),
-            );
-        }
+        Event::listen(
+            PluginInstalled::class,
+            fn(PluginInstalled $event) => $pluginService->trigger(self::EVENT_AFTER_INSTALL_PLUGIN, new PluginEvent([
+                'plugin' => $event->plugin,
+            ])),
+        );
 
-        if ($pluginService->hasEventHandlers(self::EVENT_BEFORE_UNINSTALL_PLUGIN)) {
-            Event::listen(
-                UninstallingPlugin::class,
-                fn(UninstallingPlugin $event) => $pluginService->trigger(self::EVENT_BEFORE_UNINSTALL_PLUGIN, new PluginEvent([
-                    'plugin' => $event->plugin,
-                ])),
-            );
-        }
+        Event::listen(
+            UninstallingPlugin::class,
+            fn(UninstallingPlugin $event) => $pluginService->trigger(self::EVENT_BEFORE_UNINSTALL_PLUGIN, new PluginEvent([
+                'plugin' => $event->plugin,
+            ])),
+        );
 
-        if ($pluginService->hasEventHandlers(self::EVENT_AFTER_UNINSTALL_PLUGIN)) {
-            Event::listen(
-                PluginUninstalled::class,
-                fn(PluginUninstalled $event) => $pluginService->trigger(self::EVENT_AFTER_UNINSTALL_PLUGIN, new PluginEvent([
-                    'plugin' => $event->plugin,
-                ])),
-            );
-        }
+        Event::listen(
+            PluginUninstalled::class,
+            fn(PluginUninstalled $event) => $pluginService->trigger(self::EVENT_AFTER_UNINSTALL_PLUGIN, new PluginEvent([
+                'plugin' => $event->plugin,
+            ])),
+        );
 
-        if ($pluginService->hasEventHandlers(self::EVENT_BEFORE_SAVE_PLUGIN_SETTINGS)) {
-            Event::listen(
-                SavingPluginSettings::class,
-                fn(SavingPluginSettings $event) => $pluginService->trigger(self::EVENT_BEFORE_SAVE_PLUGIN_SETTINGS, new PluginEvent([
-                    'plugin' => $event->plugin,
-                ])),
-            );
-        }
+        Event::listen(
+            SavingPluginSettings::class,
+            fn(SavingPluginSettings $event) => $pluginService->trigger(self::EVENT_BEFORE_SAVE_PLUGIN_SETTINGS, new PluginEvent([
+                'plugin' => $event->plugin,
+            ])),
+        );
 
-        if ($pluginService->hasEventHandlers(self::EVENT_AFTER_SAVE_PLUGIN_SETTINGS)) {
-            Event::listen(
-                PluginSettingsSaved::class,
-                fn(PluginSettingsSaved $event) => $pluginService->trigger(self::EVENT_AFTER_SAVE_PLUGIN_SETTINGS, new PluginEvent([
-                    'plugin' => $event->plugin,
-                ])),
-            );
-        }
+        Event::listen(
+            PluginSettingsSaved::class,
+            fn(PluginSettingsSaved $event) => $pluginService->trigger(self::EVENT_AFTER_SAVE_PLUGIN_SETTINGS, new PluginEvent([
+                'plugin' => $event->plugin,
+            ])),
+        );
     }
 }

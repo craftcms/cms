@@ -100,6 +100,8 @@ class Response extends \yii\web\Response
         }
 
         parent::send();
+
+        \Craft::$app->getSession()->updateFlashCounters();
     }
 
     /**

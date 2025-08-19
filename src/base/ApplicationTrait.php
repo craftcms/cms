@@ -1579,9 +1579,6 @@ trait ApplicationTrait
         // Register all the listeners for config items
         $this->_registerConfigListeners();
 
-        // Load the plugins
-        $this->getPlugins()->loadPlugins();
-
         $this->_isInitialized = true;
 
         // Fire an 'init' event

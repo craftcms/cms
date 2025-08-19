@@ -5,20 +5,21 @@ namespace CraftCms\Yii2Adapter;
 use craft\console\controllers\HelpController;
 use craft\helpers\App;
 use craft\services\Dashboard;
-use craft\services\Plugins;
+use craft\services\Plugins as LegacyPlugins;
 use craft\services\Utilities;
 use craft\utilities\AssetIndexes;
 use craft\utilities\ClearCaches;
 use CraftCms\Aliases\Facades\Aliases;
 use CraftCms\Cms\Config\GeneralConfig;
+use CraftCms\Cms\Plugin\Plugins;
 use CraftCms\Cms\Support\Env;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\User\Models\User;
 use CraftCms\Yii2Adapter\Console\LegacyCraftCommand;
+use CraftCms\Yii2Adapter\Http\Controller;
 use Illuminate\Auth\Middleware\Authenticate;
 use Illuminate\Console\Application as ConsoleApplication;
 use Illuminate\Contracts\Http\Kernel;
-use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\ServiceProvider;
@@ -104,6 +105,16 @@ class Yii2ServiceProvider extends ServiceProvider
     protected function registerLegacyApp(): void
     {
         $this->app->singleton('Craft', function() {
+            /**
+             * Register the base aliases that Yii sets, this has to be after
+             * the constants as composer will autoload the BaseYii class.
+             */
+            Aliases::set('@app', base_path());
+
+            foreach (BaseYii::$aliases as $alias => $path) {
+                Aliases::set($alias, $path);
+            }
+
             if ($this->app->runningInConsole() && !$this->app->runningUnitTests()) {
                 $app = require __DIR__ . '/../bootstrap/console.php';
             } else {
@@ -116,9 +127,17 @@ class Yii2ServiceProvider extends ServiceProvider
                 ]);
 
                 $app = require __DIR__ . '/../bootstrap/web.php';
+
+                if (!$app->controller) {
+                    $controller = new Controller('', $app);
+
+                    $app->controller = $controller;
+                }
             }
 
             $this->bootEvents();
+
+            \Craft::$app = $app;
 
             return $app;
         });
@@ -140,19 +159,11 @@ class Yii2ServiceProvider extends ServiceProvider
         Config::set('database.default', Env::get('DB_CONNECTION', Env::get('CRAFT_DB_DRIVER', 'mysql')));
     }
 
-    public function boot(GeneralConfig $generalConfig): void
-    {
+    public function boot(
+        GeneralConfig $generalConfig,
+        Plugins $pluginsService,
+    ): void {
         $this->ensureStorageFoldersExist($generalConfig);
-
-        /**
-         * Register the base aliases that Yii sets, this has to be after
-         * the constants as composer will autoload the BaseYii class.
-         */
-        Aliases::set('@app', base_path());
-
-        foreach (BaseYii::$aliases as $alias => $path) {
-            Aliases::set($alias, $path);
-        }
 
         /**
          * When running in a Craft 5 upgraded project, the User model
@@ -181,6 +192,13 @@ class Yii2ServiceProvider extends ServiceProvider
          */
         $connection = Config::get('database.default');
         Config::set("database.connections.{$connection}.prefix", Env::get('DB_TABLE_PREFIX'));
+
+        /**
+         * Load Craft
+         */
+        app('Craft');
+
+        $pluginsService->loadPlugins();
 
         if (!$this->app->runningInConsole()) {
             return;
@@ -284,7 +302,7 @@ class Yii2ServiceProvider extends ServiceProvider
          */
         Utilities::registerEvents();
         Dashboard::registerEvents();
-        Plugins::registerEvents();
+        LegacyPlugins::registerEvents();
 
         /**
          * Utilities
