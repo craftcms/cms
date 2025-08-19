@@ -3,13 +3,13 @@
 namespace CraftCms\Cms\Announcement;
 
 use Craft;
-use craft\base\PluginInterface;
 use craft\helpers\Html;
 use craft\helpers\Queue;
 use craft\i18n\Translation;
 use craft\queue\jobs\Announcement as AnnouncementJob;
 use CraftCms\Aliases\Facades\Aliases;
 use CraftCms\Cms\Announcement\Models\Announcement;
+use CraftCms\Cms\Plugin\Contracts\PluginInterface;
 use Illuminate\Container\Attributes\Singleton;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Collection;

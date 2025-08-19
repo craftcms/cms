@@ -281,7 +281,7 @@ class Cp extends Component
         foreach ($plugins as $plugin) {
             if (
                 $plugin->hasCpSection &&
-                Craft::$app->getUser()->checkPermission('accessPlugin-' . $plugin->id) &&
+                Craft::$app->getUser()->checkPermission('accessPlugin-' . $plugin->getHandle()) &&
                 ($pluginNavItem = $plugin->getCpNavItem()) !== null
             ) {
                 $navItems[] = $pluginNavItem;
@@ -493,9 +493,9 @@ class Cp extends Component
 
         foreach ($pluginsService->getAllPlugins() as $plugin) {
             if ($plugin->hasCpSettings && (!$readOnly || $plugin->hasReadOnlyCpSettings)) {
-                $settings[$label][$plugin->id] = [
-                    'url' => 'settings/plugins/' . $plugin->id,
-                    'icon' => $pluginsService->getPluginIconSvg($plugin->id),
+                $settings[$label][$plugin->getHandle()] = [
+                    'url' => 'settings/plugins/' . $plugin->getHandle(),
+                    'icon' => $pluginsService->getPluginIconSvg($plugin->getHandle()),
                     'label' => $plugin->name,
                 ];
             }

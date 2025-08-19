@@ -17,6 +17,12 @@ use CraftCms\Cms\Edition;
  */
 trait PluginTrait
 {
+    /** @var string The plugin's handle */
+    public string $handle;
+
+    /** @var string The plugin's version */
+    public string $version;
+
     /**
      * @var string|null The plugin’s package name
      */

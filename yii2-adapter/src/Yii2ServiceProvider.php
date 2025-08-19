@@ -5,6 +5,7 @@ namespace CraftCms\Yii2Adapter;
 use craft\console\controllers\HelpController;
 use craft\helpers\App;
 use craft\services\Dashboard;
+use craft\services\Plugins;
 use craft\services\Utilities;
 use craft\utilities\AssetIndexes;
 use craft\utilities\ClearCaches;
@@ -283,6 +284,7 @@ class Yii2ServiceProvider extends ServiceProvider
          */
         Utilities::registerEvents();
         Dashboard::registerEvents();
+        Plugins::registerEvents();
 
         /**
          * Utilities

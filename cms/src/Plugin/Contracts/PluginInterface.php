@@ -1,29 +1,147 @@
 <?php
-/**
- * @link https://craftcms.com/
- * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license https://craftcms.github.io/license/
- */
 
-namespace craft\base;
+namespace CraftCms\Cms\Plugin\Contracts;
 
 use craft\db\MigrationManager;
-use craft\web\twig\variables\Cp;
-use yii\base\Module;
+use CraftCms\Cms\Edition;
 
 /**
  * PluginInterface defines the common interface to be implemented by plugin classes.
- * A class implementing this interface should also use [[PluginTrait]].
  *
- * @mixin PluginTrait
- * @mixin Module
- * @phpstan-require-extends Module
- * @property string $handle The plugin’s handle (alias of [[id]])
- * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0.0
+ * @since 6.0.0
  */
 interface PluginInterface
 {
+    /**
+     * @var string The plugin's handle
+     */
+    public string $handle { get; set; }
+
+    /**
+     * @var string|null The plugin’s package name
+     */
+    public ?string $packageName { get; set; }
+
+    /**
+     * @var string|null The plugin’s display name
+     */
+    public ?string $name { get; set; }
+
+    /**
+     * @var string The plugin’s schema version number
+     */
+    public string $schemaVersion { get; set; }
+
+    /**
+     * @var string|null The plugin’s description
+     */
+    public ?string $description { get; set; }
+
+    /**
+     * @var string|null The plugin developer’s name
+     */
+    public ?string $developer { get; set; }
+
+    /**
+     * @var string|null The plugin developer’s website URL
+     */
+    public ?string $developerUrl { get; set; }
+
+    /**
+     * @var string|null The plugin developer’s support email
+     */
+    public ?string $developerEmail { get; set; }
+
+    /**
+     * @var string|null The plugin’s documentation URL
+     */
+    public ?string $documentationUrl { get; set; }
+
+    /**
+     * @var string|null The plugin’s changelog URL.
+     *
+     * The URL should begin with `https://` and point to a plain text Markdown-formatted changelog.
+     * Version headers must follow the general format:
+     *
+     * ```
+     * ## X.Y.Z - YYYY-MM-DD
+     * ```
+     *
+     * with the following possible deviations:
+     *
+     * - other text can come before the version number, like the plugin’s name
+     * - a 4th version number is allowed (e.g. `1.2.3.4`)
+     * - pre-release versions are allowed (e.g. `1.0.0-alpha.1`)
+     * - the version can start with `v` (e.g. `v1.2.3`)
+     * - the version can be hyperlinked (e.g. `[1.2.3]`)
+     * - dates can use dots as separators, rather than hyphens (e.g. `YYYY.MM.DD`)
+     * - a `[CRITICAL]` flag can be appended after the date to indicate a critical release
+     *
+     * More notes:
+     *
+     * - Releases should be listed in descending order (newest on top). Craft will stop parsing the changelog as soon as it hits a version that is older than or equal to the installed version.
+     * - Any content that does not follow a version header line will be ignored.
+     * - For consistency and clarity, release notes should follow [keepachangelog.com](http://keepachangelog.com/), but it’s not enforced.
+     * - Release notes can contain notes using the format `> {note} Some note`. `{warning}` and `{tip}` are also supported.
+     */
+    public ?string $changelogUrl { get; set; }
+
+    /**
+     * @var string|null The plugin’s download URL
+     */
+    public ?string $downloadUrl { get; set; }
+
+    /**
+     * @var string|null The translation category that this plugin’s translation messages should use. Defaults to the lowercased plugin handle.
+     */
+    public ?string $t9nCategory { get; set; }
+
+    /**
+     * @var string The language that the plugin’s messages were written in
+     */
+    public string $sourceLanguage { get; set; }
+
+    /**
+     * @var bool Whether the plugin has a settings page in the control panel
+     */
+    public bool $hasCpSettings { get; set; }
+
+    /**
+     * @var bool Whether the plugin supports a read-only settings page in the control panel, which
+     *           can be shown when admin changes are disallowed.
+     */
+    public bool $hasReadOnlyCpSettings { get; set; }
+
+    /**
+     * @var bool Whether the plugin has its own section in the control panel
+     */
+    public bool $hasCpSection { get; set; }
+
+    /**
+     * @var bool Whether the plugin is currently installed. (Will only be false when a plugin is currently being installed.)
+     */
+    public bool $isInstalled { get; set; }
+
+    /**
+     * @var string The current version of the plugin.
+     */
+    public string $version { get; set; }
+
+    /**
+     * @var string The minimum required version the plugin has to be so it can be updated.
+     */
+    public string $minVersionRequired { get; set; }
+
+    /**
+     * @var Edition The minimum required Craft CMS edition.
+     */
+    public Edition $minCmsEdition { get; set; }
+
+    /**
+     * @var string The active edition.
+     */
+    public string $edition { get; set; }
+
     /**
      * Returns the base config that the plugin should be instantiated with.
      *
@@ -64,9 +182,6 @@ interface PluginInterface
      * ```
      *
      * The resulting config will be passed to `\Craft::createObject()` to instantiate the plugin.
-     *
-     * @return array
-     * @since 4.0.0
      */
     public static function config(): array;
 
@@ -74,7 +189,6 @@ interface PluginInterface
      * Returns supported plugin editions (lowest to highest).
      *
      * @return string[]
-     * @since 3.1.0
      */
     public static function editions(): array;
 
@@ -87,13 +201,11 @@ interface PluginInterface
 
     /**
      * Installs the plugin.
-     *
      */
     public function install(): void;
 
     /**
      * Uninstalls the plugin.
-     *
      */
     public function uninstall(): void;
 
@@ -107,14 +219,14 @@ interface PluginInterface
     /**
      * Returns the model that the plugin’s settings should be stored on, if the plugin has settings.
      *
-     * @return Model|null The model that the plugin’s settings should be stored on, if the plugin has settings
+     * @return object|null The model that the plugin’s settings should be stored on, if the plugin has settings
      */
-    public function getSettings(): ?Model;
+    public function getSettings(): ?object;
 
     /**
      * Sets the plugin settings
      *
-     * @param array $settings The plugin settings that should be set on the settings model
+     * @param  array  $settings  The plugin settings that should be set on the settings model
      */
     public function setSettings(array $settings): void;
 
@@ -131,7 +243,6 @@ interface PluginInterface
      * This method is called when admin changes are disallowed, if [[$hasReadOnlyCpSettings]] is `true`.
      *
      * @return mixed The result that should be returned from [[\craft\controllers\PluginsController::actionEditPluginSettings()]]
-     * @since 5.6.0
      */
     public function getReadOnlySettingsResponse(): mixed;
 
@@ -172,7 +283,6 @@ interface PluginInterface
      * {% set selectedSubnavItem = 'orders' %}
      * ```
      *
-     * @return array|null
      * @see PluginTrait::$hasCpSection
      * @see Cp::nav()
      */
@@ -185,14 +295,26 @@ interface PluginInterface
      * Performs actions before the plugin’s settings are saved.
      *
      * @return bool Whether the plugin’s settings should be saved.
-     * @since 3.0.16
      */
     public function beforeSaveSettings(): bool;
 
     /**
      * Performs actions after the plugin’s settings are saved.
-     *
-     * @since 3.0.16
      */
     public function afterSaveSettings(): void;
+
+    /**
+     * Returns the root directory of the plugin.
+     * It defaults to the directory containing the plugin class file.
+     *
+     * @return string the root directory of the plugin.
+     */
+    public function getBasePath(): string;
+
+    /**
+     * Returns current plugin version.
+     *
+     * @return string the version of this plugin.
+     */
+    public function getVersion(): string;
 }

@@ -460,7 +460,7 @@ class UserPermissions extends Component
 
         foreach (Craft::$app->getPlugins()->getAllPlugins() as $plugin) {
             if ($plugin->hasCpSection) {
-                $cpPermissions["accessPlugin-$plugin->id"] = [
+                $cpPermissions["accessPlugin-$plugin->handle"] = [
                     'label' => Craft::t('app', 'Access {plugin}', ['plugin' => $plugin->name]),
                 ];
             }

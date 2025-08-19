@@ -8,13 +8,13 @@
 namespace craft\console\controllers;
 
 use Craft;
-use craft\base\PluginInterface;
 use craft\console\ControllerTrait;
 use craft\db\MigrationManager;
 use craft\errors\InvalidPluginException;
 use craft\errors\MigrateException;
 use craft\events\RegisterMigratorEvent;
 use craft\helpers\FileHelper;
+use CraftCms\Cms\Plugin\Contracts\PluginInterface;
 use CraftCms\Cms\Support\Arr;
 use yii\base\ErrorException;
 use yii\base\InvalidArgumentException;
@@ -316,7 +316,7 @@ class MigrateController extends BaseMigrateController
         foreach ($plugins as $plugin) {
             $pluginMigrations = $plugin->getMigrator()->getNewMigrations();
             if (!empty($pluginMigrations) || $pluginsService->isPluginUpdatePending($plugin)) {
-                $migrationsByTrack["plugin:$plugin->id"] = $pluginMigrations;
+                $migrationsByTrack["plugin:$plugin->handle"] = $pluginMigrations;
             }
         }
 

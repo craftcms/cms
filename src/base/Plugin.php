@@ -16,6 +16,7 @@ use craft\helpers\Html;
 use craft\i18n\PhpMessageSource;
 use craft\web\Controller;
 use craft\web\View;
+use CraftCms\Cms\Plugin\Contracts\PluginInterface;
 use CraftCms\Cms\Support\Arr;
 use ReflectionMethod;
 use yii\base\Event;
@@ -26,7 +27,6 @@ use yii\web\Response;
 /**
  * Plugin is the base class for classes representing plugins in terms of objects.
  *
- * @property string $handle The plugin’s handle (alias of [[id]])
  * @property MigrationManager $migrator The plugin’s migration manager
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
@@ -79,6 +79,9 @@ class Plugin extends Module implements PluginInterface
      */
     public function __construct($id, $parent = null, array $config = [])
     {
+        $this->handle = $id;
+        $this->version = $this->getVersion();
+
         // Set some things early in case there are any settings, and the settings model's
         // init() method needs to call Craft::t() or Plugin::getInstance().
 
@@ -425,5 +428,15 @@ class Plugin extends Module implements PluginInterface
         $path = $this->getBasePath() . DIRECTORY_SEPARATOR . 'icon-mask.svg';
 
         return is_file($path) ? $path : null;
+    }
+
+    public function getBasePath(): string
+    {
+        return parent::getBasePath();
+    }
+
+    public function getVersion(): string
+    {
+        return parent::getVersion();
     }
 }

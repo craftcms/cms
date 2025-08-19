@@ -8,12 +8,12 @@
 namespace craft\services;
 
 use Craft;
-use craft\base\PluginInterface;
 use craft\errors\InvalidPluginException;
 use craft\errors\MigrateException;
 use craft\helpers\App;
 use craft\helpers\FileHelper;
 use craft\models\Updates as UpdatesModel;
+use CraftCms\Cms\Plugin\Contracts\PluginInterface;
 use CraftCms\Cms\Support\Api;
 use CraftCms\Cms\Support\Arr;
 use Illuminate\Support\Facades\Cache;
@@ -203,7 +203,7 @@ class Updates extends Component
         $pluginsService = Craft::$app->getPlugins();
         foreach ($pluginsService->getAllPlugins() as $plugin) {
             if ($pluginsService->isPluginUpdatePending($plugin)) {
-                $handles[] = $plugin->id;
+                $handles[] = $plugin->handle;
             }
         }
 

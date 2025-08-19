@@ -8,9 +8,9 @@
 namespace craft\controllers;
 
 use Craft;
-use craft\base\PluginInterface;
 use craft\web\Controller;
 use CraftCms\Cms\Config\GeneralConfig;
+use CraftCms\Cms\Plugin\Contracts\PluginInterface;
 use yii\web\ForbiddenHttpException;
 use yii\web\NotFoundHttpException;
 use yii\web\Response;

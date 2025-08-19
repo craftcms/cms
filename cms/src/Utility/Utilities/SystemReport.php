@@ -4,9 +4,9 @@ namespace CraftCms\Cms\Utility\Utilities;
 
 use Composer\InstalledVersions;
 use Craft;
-use craft\base\PluginInterface;
 use craft\helpers\App;
 use CraftCms\Aliases\Facades\Aliases;
+use CraftCms\Cms\Plugin\Contracts\PluginInterface;
 use CraftCms\Cms\Utility\Utility;
 use Illuminate\Support\Facades\DB;
 use OutOfBoundsException;

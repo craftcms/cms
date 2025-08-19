@@ -8,10 +8,10 @@
 namespace craft\console\controllers;
 
 use Craft;
-use craft\base\PluginInterface;
 use craft\console\Controller;
 use craft\errors\InvalidPluginException;
 use craft\helpers\Console;
+use CraftCms\Cms\Plugin\Contracts\PluginInterface;
 use Illuminate\Support\Collection;
 use Throwable;
 use yii\console\ExitCode;

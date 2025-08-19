@@ -302,7 +302,7 @@ class UpdateController extends Controller
 
                 $pluginConstraint = $this->_constraint($version);
                 if ($pluginConstraint !== null) {
-                    $constraints[$plugin->id] = $pluginConstraint;
+                    $constraints[$plugin->handle] = $pluginConstraint;
                 }
             }
         }
