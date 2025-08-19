@@ -5,11 +5,13 @@ namespace CraftCms\Cms\Providers;
 use Craft;
 use craft\helpers\FileHelper;
 use CraftCms\Aliases\Facades\Aliases;
+use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Http\Middleware\ExtractNamespace;
 use CraftCms\Cms\Http\Middleware\HandleActionRequest;
 use CraftCms\Cms\Http\Middleware\RequireCpRequest;
 use CraftCms\Cms\Http\Middleware\SendPoweredByHeader;
 use CraftCms\Cms\Support\Env;
+use Illuminate\Auth\Middleware\Authenticate;
 use Illuminate\Contracts\Http\Kernel as HttpKernel;
 use Illuminate\Foundation\Console\AboutCommand;
 use Illuminate\Routing\Router;
@@ -31,6 +33,8 @@ final class AppServiceProvider extends ServiceProvider
         $kernel->setGlobalMiddleware(array_merge([
             HandleActionRequest::class,
         ], $kernel->getGlobalMiddleware()));
+
+        Authenticate::redirectUsing(fn () => app(GeneralConfig::class)->loginPath);
     }
 
     public function boot(): void
