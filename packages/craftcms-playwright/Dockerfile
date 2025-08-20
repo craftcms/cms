@@ -13,8 +13,8 @@ RUN curl -sS https://getcomposer.org/installer -o /tmp/composer-setup.php
 RUN php /tmp/composer-setup.php --install-dir=/usr/local/bin --filename=composer
 
 # copy the files from the host to the container that we need
-COPY ./craftcms/etc/nginx/nginx.conf /etc/nginx/nginx.conf
-COPY ./craftcms/etc/supervisord.d/nginx.ini /etc/supervisord.d/nginx.ini
+COPY ./docker/craftcms/etc/nginx/nginx.conf /etc/nginx/nginx.conf
+COPY ./docker/craftcms/etc/supervisord.d/nginx.ini /etc/supervisord.d/nginx.ini
 
 # set the sockets and pid files to be writable by the appuser
 RUN mkdir -p /var/log/nginx && chown -R appuser:appgroup /var/log/nginx
