@@ -1,39 +1,18 @@
 <?php
-/**
- * @link https://craftcms.com/
- * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license https://craftcms.github.io/license/
- */
 
-namespace crafttests\unit\helpers;
+namespace CraftCms\Yii2Adapter\Tests\Legacy\helpers;
 
-use Codeception\Test\Unit;
 use craft\helpers\StringHelper;
 use craft\test\mockclasses\ToString;
-use craft\test\TestCase;
+use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Support\Enums\LicenseKeyStatus;
 use CraftCms\Cms\Support\Str;
+use Orchestra\Testbench\PHPUnit\TestCase;
+use PHPUnit\Framework\Attributes\DataProvider;
 use stdClass;
-use yii\base\Exception;
-use yii\base\InvalidConfigException;
-use function base64_decode;
-use function mb_strlen;
-use function mb_strpos;
-use function serialize;
-use const ENT_QUOTES;
 
-/**
- * Unit tests for the String Helper class.
- *
- * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @author Global Network Group | Giel Tettelaar <giel@yellowflash.net>
- * @since 3.2
- */
 class StringHelperTest extends TestCase
 {
-    /**
-     *
-     */
     public function testAsciiCharMap(): void
     {
         $expected = [
@@ -59,47 +38,27 @@ class StringHelperTest extends TestCase
         }
     }
 
-    /**
-     * @dataProvider afterFirstDataProvider
-     * @param string $expected
-     * @param string $string
-     * @param string $separator
-     * @param bool $caseSensitive
-     */
+    #[DataProvider('afterFirstDataProvider')]
     public function testAfterFirst(string $expected, string $string, string $separator, bool $caseSensitive = true): void
     {
         $actual = StringHelper::afterFirst($string, $separator, $caseSensitive);
         self::assertSame($expected, $actual);
     }
 
-    /**
-     * @dataProvider afterLastDataProvider
-     * @param string $expected
-     * @param string $string
-     * @param string $separator
-     * @param bool $caseSensitive
-     */
+    #[DataProvider('afterLastDataProvider')]
     public function testAfterLast(string $expected, string $string, string $separator, bool $caseSensitive = true): void
     {
         $actual = StringHelper::afterLast($string, $separator, $caseSensitive);
         self::assertSame($expected, $actual);
     }
 
-    /**
-     * @dataProvider appendDataProvider
-     * @param string $expected
-     * @param string $string
-     * @param string $append
-     */
+    #[DataProvider('appendDataProvider')]
     public function testAppend(string $expected, string $string, string $append): void
     {
         $actual = StringHelper::append($string, $append);
         self::assertSame($expected, $actual);
     }
 
-    /**
-     *
-     */
     public function testAppendRandomString(): void
     {
         $testArray = [
@@ -116,9 +75,6 @@ class StringHelperTest extends TestCase
         }
     }
 
-    /**
-     *
-     */
     public function testAppendUniqueIdentifier(): void
     {
         $uniqueIds = [];
@@ -137,25 +93,14 @@ class StringHelperTest extends TestCase
         }
     }
 
-    /**
-     * @dataProvider atDataProvider
-     * @param string $expected
-     * @param string $string
-     * @param int $position
-     */
+    #[DataProvider('atDataProvider')]
     public function testAt(string $expected, string $string, int $position): void
     {
         $actual = StringHelper::at($string, $position);
         self::assertSame($expected, $actual);
     }
 
-    /**
-     * @dataProvider beforeFirstDataProvider
-     * @param string $expected
-     * @param string $string
-     * @param string $separator
-     * @param bool $caseSensitive
-     */
+    #[DataProvider('beforeFirstDataProvider')]
     public function testBeforeFirst(string $expected, string $string, string $separator, bool $caseSensitive = true): void
     {
         $actual = StringHelper::beforeFirst($string, $separator, $caseSensitive);
@@ -163,13 +108,7 @@ class StringHelperTest extends TestCase
         self::assertSame($expected, StringHelper::substringOf($string, 'b', true, $caseSensitive));
     }
 
-    /**
-     * @dataProvider beforeLastDataProvider
-     * @param string $expected
-     * @param string $string
-     * @param string $separator
-     * @param bool $caseSensitive
-     */
+    #[DataProvider('beforeLastDataProvider')]
     public function testBeforeLast(string $expected, string $string, string $separator, bool $caseSensitive = true): void
     {
         $actual = StringHelper::beforeLast($string, $separator, $caseSensitive);
@@ -177,198 +116,110 @@ class StringHelperTest extends TestCase
         self::assertSame($expected, StringHelper::lastSubstringOf($string, 'b', true, $caseSensitive));
     }
 
-    /**
-     * @dataProvider betweenDataProvider
-     * @param string $expected
-     * @param string $string
-     * @param string $firstChar
-     * @param string $secondChar
-     * @param int|null $offset
-     */
+    #[DataProvider('betweenDataProvider')]
     public function testBetween(string $expected, string $string, string $firstChar, string $secondChar, ?int $offset = null): void
     {
         $actual = StringHelper::between($string, $firstChar, $secondChar, $offset);
         self::assertSame($expected, $actual);
     }
 
-    /**
-     * @dataProvider camelCaseDataProvider
-     * @param string $expected
-     * @param string $string
-     */
+    #[DataProvider('camelCaseDataProvider')]
     public function testCamelCase(string $expected, string $string): void
     {
         $actual = StringHelper::camelCase($string);
         self::assertSame($expected, $actual);
     }
 
-    /**
-     * @dataProvider capitalizePersonalNameDataProvider
-     * @param string $expected
-     * @param string $string
-     */
+    #[DataProvider('capitalizePersonalNameDataProvider')]
     public function testCapitalizePersonalName(string $expected, string $string): void
     {
         $actual = StringHelper::capitalizePersonalName($string);
         self::assertSame($expected, $actual);
     }
 
-    /**
-     * @dataProvider charsAsArrayDataProvider
-     * @param string[] $expected
-     * @param string $string
-     */
+    #[DataProvider('charsAsArrayDataProvider')]
     public function testCharsAsArray(array $expected, string $string): void
     {
         $actual = StringHelper::charsAsArray($string);
         self::assertSame($expected, $actual);
     }
 
-    /**
-     * @dataProvider containsAllDataProvider
-     * @param bool $expected
-     * @param string $haystack
-     * @param string[] $needles
-     * @param bool $caseSensitive
-     */
+    #[DataProvider('containsAllDataProvider')]
     public function testContainsAll(bool $expected, string $haystack, array $needles, bool $caseSensitive = true): void
     {
         $actual = StringHelper::containsAll($haystack, $needles, $caseSensitive);
         self::assertSame($expected, $actual);
     }
 
-    /**
-     * @dataProvider containsAnyDataProvider
-     * @param bool $expected
-     * @param string $haystack
-     * @param string[] $needles
-     * @param bool $caseSensitive
-     */
+    #[DataProvider('containsAnyDataProvider')]
     public function testContainsAny(bool $expected, string $haystack, array $needles, bool $caseSensitive = true): void
     {
         $actual = StringHelper::containsAny($haystack, $needles, $caseSensitive);
         self::assertSame($expected, $actual);
     }
 
-    /**
-     * @dataProvider convertToUtf8DataProvider
-     * @param string $expected
-     * @param string $string
-     */
+    #[DataProvider('convertToUtf8DataProvider')]
     public function testConvertToUtf8(string $expected, string $string): void
     {
         $actual = StringHelper::convertToUtf8($string);
         self::assertSame($expected, $actual);
     }
 
-    /**
-     *
-     */
     public function testCount(): void
     {
         $actual = StringHelper::count('Fòô');
         self::assertSame(3, $actual);
     }
 
-    /**
-     * @dataProvider dasherizeDataProvider
-     * @param string $expected
-     * @param string $string
-     */
+    #[DataProvider('dasherizeDataProvider')]
     public function testDasherize(string $expected, string $string): void
     {
         $actual = StringHelper::dasherize($string);
         self::assertSame($expected, $actual);
     }
 
-    /**
-     * @dataProvider delimitDataProvider
-     * @param string $expected
-     * @param string $string
-     * @param string $delimiter
-     */
+    #[DataProvider('delimitDataProvider')]
     public function testDelimit(string $expected, string $string, string $delimiter): void
     {
         $actual = StringHelper::delimit($string, $delimiter);
         self::assertSame($expected, $actual);
     }
 
-    /**
-     * @dataProvider encDecDataProvider
-     * @param string $string
-     * @throws Exception
-     * @throws InvalidConfigException
-     */
-    public function testEncDec(string $string): void
-    {
-        $enc = StringHelper::encenc($string);
-        self::assertStringStartsWith('base64:', $enc);
-        self::assertSame($string, StringHelper::decdec($enc));
-    }
-
-    /**
-     * @dataProvider endsWithDataProvider
-     * @param bool $expected
-     * @param string $haystack
-     * @param string $needle
-     */
+    #[DataProvider('endsWithDataProvider')]
     public function testEndsWith(bool $expected, string $haystack, string $needle): void
     {
         $actual = StringHelper::endsWith($haystack, $needle);
         self::assertSame($expected, $actual);
     }
 
-    /**
-     * @dataProvider endsWithAnyDataProvider
-     * @param bool $expected
-     * @param string $haystack
-     * @param string[] $needles
-     * @param bool $caseSensitive
-     */
+    #[DataProvider('endsWithAnyDataProvider')]
     public function testEndsWithAny(bool $expected, string $haystack, array $needles, bool $caseSensitive = true): void
     {
         $actual = StringHelper::endsWithAny($haystack, $needles, $caseSensitive);
         self::assertSame($expected, $actual);
     }
 
-    /**
-     * @dataProvider ensureLeftDataProvider
-     * @param string $expected
-     * @param string $string
-     * @param string $prepend
-     */
+    #[DataProvider('ensureLeftDataProvider')]
     public function testEnsureLeft(string $expected, string $string, string $prepend): void
     {
         $actual = StringHelper::ensureLeft($string, $prepend);
         self::assertSame($expected, $actual);
     }
 
-    /**
-     * @dataProvider ensureRightDataProvider
-     * @param string $expected
-     * @param string $string
-     * @param string $append
-     */
+    #[DataProvider('ensureRightDataProvider')]
     public function testEnsureRight(string $expected, string $string, string $append): void
     {
         $actual = Str::finish($string, $append);
         self::assertSame($expected, $actual);
     }
 
-    /**
-     * @dataProvider escapeDataProvider
-     * @param string $expected
-     * @param string $string
-     */
+    #[DataProvider('escapeDataProvider')]
     public function testEscape(string $expected, string $string): void
     {
         $actual = StringHelper::escape($string);
         self::assertSame($expected, $actual);
     }
 
-    /**
-     *
-     */
     public function testExtractText(): void
     {
         $testArray = [
@@ -447,186 +298,111 @@ class StringHelperTest extends TestCase
         }
     }
 
-    /**
-     * @dataProvider firstDataProvider
-     * @param string $expected
-     * @param string $string
-     * @param int $number
-     */
+    #[DataProvider('firstDataProvider')]
     public function testFirst(string $expected, string $string, int $number): void
     {
         $actual = StringHelper::first($string, $number);
         self::assertSame($expected, $actual);
     }
 
-    /**
-     * @dataProvider hasLowerCaseDataProvider
-     * @param bool $expected
-     * @param string $string
-     */
+    #[DataProvider('hasLowerCaseDataProvider')]
     public function testHasLowerCase(bool $expected, string $string): void
     {
         $actual = StringHelper::hasLowerCase($string);
         self::assertSame($expected, $actual);
     }
 
-    /**
-     * @dataProvider hasUpperCaseDataProvider
-     * @param bool $expected
-     * @param string $string
-     */
+    #[DataProvider('hasUpperCaseDataProvider')]
     public function testHasUpperCase(bool $expected, string $string): void
     {
         $actual = StringHelper::hasUpperCase($string);
         self::assertSame($expected, $actual);
     }
 
-    /**
-     * @dataProvider htmlDecodeDataProvider
-     * @param string $expected
-     * @param string $string
-     * @param int $flags
-     */
+    #[DataProvider('htmlDecodeDataProvider')]
     public function testHtmlDecode(string $expected, string $string, int $flags = ENT_COMPAT): void
     {
         $actual = StringHelper::htmlDecode($string, $flags);
         self::assertSame($expected, $actual);
     }
 
-    /**
-     * @dataProvider htmlEncodeDataProvider
-     * @param string $expected
-     * @param string $string
-     * @param int $flags
-     */
+    #[DataProvider('htmlEncodeDataProvider')]
     public function testHtmlEncode(string $expected, string $string, int $flags = ENT_COMPAT): void
     {
         $actual = StringHelper::htmlEncode($string, $flags);
         self::assertSame($expected, $actual);
     }
 
-    /**
-     * @dataProvider humanizeDataProvider
-     * @param string $expected
-     * @param string $string
-     */
+    #[DataProvider('humanizeDataProvider')]
     public function testHumanize(string $expected, string $string): void
     {
         $actual = StringHelper::humanize($string);
         self::assertSame($expected, $actual);
     }
 
-    /**
-     * @dataProvider indexOfDataProvider
-     * @param int|false $expected
-     * @param string $haystack
-     * @param string $needle
-     * @param int $offset
-     * @param bool $caseSensitive
-     */
+    #[DataProvider('indexOfDataProvider')]
     public function testIndexOf(int|false $expected, string $haystack, string $needle, int $offset = 0, bool $caseSensitive = true): void
     {
         $actual = StringHelper::indexOf($haystack, $needle, $offset, $caseSensitive);
         self::assertSame($expected, $actual);
     }
 
-    /**
-     * @dataProvider indexOfLastDataProvider
-     * @param int|false $expected
-     * @param string $haystack
-     * @param string $needle
-     * @param int $offset
-     * @param bool $caseSensitive
-     */
+    #[DataProvider('indexOfLastDataProvider')]
     public function testIndexOfLast(int|false $expected, string $haystack, string $needle, int $offset = 0, bool $caseSensitive = true): void
     {
         $actual = StringHelper::indexOfLast($haystack, $needle, $offset, $caseSensitive);
         self::assertSame($expected, $actual);
     }
 
-    /**
-     * @dataProvider insertDataProvider
-     * @param string $expected
-     * @param string $string
-     * @param string $substring
-     * @param int $index
-     */
+    #[DataProvider('insertDataProvider')]
     public function testInsert(string $expected, string $string, string $substring, int $index): void
     {
         $actual = StringHelper::insert($string, $substring, $index);
         self::assertSame($expected, $actual);
     }
 
-    /**
-     * @dataProvider isDataProvider
-     * @param bool $expected
-     * @param string $string
-     * @param string $pattern
-     */
+    #[DataProvider('isDataProvider')]
     public function testIs(bool $expected, string $string, string $pattern): void
     {
         $actual = StringHelper::is($string, $pattern);
         self::assertSame($expected, $actual);
     }
 
-    /**
-     * @dataProvider isAlphaDataProvider
-     * @param bool $expected
-     * @param string $string
-     */
+    #[DataProvider('isAlphaDataProvider')]
     public function testIsAlpha(bool $expected, string $string): void
     {
         $actual = StringHelper::isAlpha($string);
         self::assertSame($expected, $actual);
     }
 
-    /**
-     * @dataProvider isAlphanumericDataProvider
-     * @param bool $expected
-     * @param string $string
-     */
+    #[DataProvider('isAlphanumericDataProvider')]
     public function testIsAlphanumeric(bool $expected, string $string): void
     {
         $actual = StringHelper::isAlphanumeric($string);
         self::assertSame($expected, $actual);
     }
 
-    /**
-     * @dataProvider isBase64DataProvider
-     * @param bool $expected
-     * @param string $string
-     */
+    #[DataProvider('isBase64DataProvider')]
     public function testIsBase64(bool $expected, string $string): void
     {
         $actual = StringHelper::isBase64($string);
         self::assertSame($expected, $actual);
     }
 
-    /**
-     * @dataProvider isBlankDataProvider
-     * @param bool $expected
-     * @param string $string
-     */
+    #[DataProvider('isBlankDataProvider')]
     public function testIsBlank(bool $expected, string $string): void
     {
         $actual = StringHelper::isBlank($string);
         self::assertSame($expected, $actual);
     }
 
-    /**
-     * @dataProvider isHexadecimalDataProvider
-     * @param bool $expected
-     * @param string $string
-     */
+    #[DataProvider('isHexadecimalDataProvider')]
     public function testIsHexadecimal(bool $expected, string $string): void
     {
         $actual = StringHelper::isHexadecimal($string);
         self::assertSame($expected, $actual);
     }
 
-    /**
-     *
-     */
     public function testIsHtml(): void
     {
         $testArray = [
@@ -648,108 +424,68 @@ class StringHelperTest extends TestCase
         }
     }
 
-    /**
-     * @dataProvider isJsonDataProvider
-     * @param bool $expected
-     * @param string $string
-     * @param bool $onlyArrayOrObjectResultsAreValid
-     */
+    #[DataProvider('isJsonDataProvider')]
     public function testIsJson(bool $expected, string $string, bool $onlyArrayOrObjectResultsAreValid): void
     {
         $actual = StringHelper::isJson($string, $onlyArrayOrObjectResultsAreValid);
         self::assertSame($expected, $actual);
     }
 
-    /**
-     * @dataProvider isLowerCaseDataProvider
-     * @param bool $expected
-     * @param string $string
-     */
+    #[DataProvider('isLowerCaseDataProvider')]
     public function testIsLowerCase(bool $expected, string $string): void
     {
         $actual = StringHelper::isLowerCase($string);
         self::assertSame($expected, $actual);
     }
 
-    /**
-     * @dataProvider mb4DataProvider
-     * @param bool $expected
-     * @param string $string
-     */
+    #[DataProvider('mb4DataProvider')]
     public function testIsMb4(bool $expected, string $string): void
     {
         $actual = Str::containsMb4($string);
         self::assertSame($expected, $actual);
     }
 
-    /**
-     * @dataProvider isSerializedDataProvider
-     * @param bool $expected
-     * @param string $string
-     */
+    #[DataProvider('isSerializedDataProvider')]
     public function testIsSerialized(bool $expected, string $string): void
     {
         $actual = StringHelper::isSerialized($string);
         self::assertSame($expected, $actual);
     }
 
-    /**
-     * @dataProvider isUpperCaseDataProvider
-     * @param bool $expected
-     * @param string $string
-     */
+    #[DataProvider('isUpperCaseDataProvider')]
     public function testIsUpperCase(bool $expected, string $string): void
     {
         $actual = StringHelper::isUpperCase($string);
         self::assertSame($expected, $actual);
     }
 
-    /**
-     * @dataProvider uuidDataProvider
-     * @param bool $expected
-     * @param string $string
-     */
+    #[DataProvider('uuidDataProvider')]
     public function testIsUUID(bool $expected, string $string): void
     {
         $actual = StringHelper::isUUID($string);
         self::assertSame($expected, $actual);
     }
 
-    /**
-     * @dataProvider whitespaceDataProvider
-     * @param bool $expected
-     * @param string $string
-     */
+    #[DataProvider('whitespaceDataProvider')]
     public function testIsWhitespace(bool $expected, string $string): void
     {
         $actual = StringHelper::isWhitespace($string);
         self::assertSame($expected, $actual);
     }
 
-    /**
-     * @dataProvider linesDataProvider
-     * @param int $expected
-     * @param string $string
-     */
+    #[DataProvider('linesDataProvider')]
     public function testLines(int $expected, string $string): void
     {
         $actual = StringHelper::lines($string);
         self::assertCount($expected, $actual);
     }
 
-    /**
-     * @dataProvider firstLineDataProvider
-     * @param string $expected
-     * @param string $string
-     */
+    #[DataProvider('firstLineDataProvider')]
     public function testFirstLine(string $expected, string $string): void
     {
         self::assertEquals($expected, StringHelper::firstLine($string));
     }
 
-    /**
-     *
-     */
     public function testLineWrapAfterWord(): void
     {
         $testArray = [
@@ -770,22 +506,14 @@ class StringHelperTest extends TestCase
         }
     }
 
-    /**
-     * @dataProvider lowerCaseFirstDataProvider
-     * @param string $expected
-     * @param string $string
-     */
+    #[DataProvider('lowerCaseFirstDataProvider')]
     public function testLowercaseFirst(string $expected, string $string): void
     {
         $actual = StringHelper::lowercaseFirst($string);
         self::assertSame($expected, $actual);
     }
 
-    /**
-     * @dataProvider mb4EncodingDataProvider
-     * @param string $expected
-     * @param string $string
-     */
+    #[DataProvider('mb4EncodingDataProvider')]
     public function testMb4Encoding(string $expected, string $string): void
     {
         $actual = StringHelper::encodeMb4($string);
@@ -794,76 +522,42 @@ class StringHelperTest extends TestCase
         self::assertFalse(Str::containsMb4($actual));
     }
 
-    /**
-     * @dataProvider padDataProvider
-     * @param string $expected
-     * @param string $string
-     * @param int $length
-     * @param string $padStr
-     * @param string $padType
-     */
+    #[DataProvider('padDataProvider')]
     public function testPad(string $expected, string $string, int $length, string $padStr = ' ', string $padType = 'right'): void
     {
         $actual = StringHelper::pad($string, $length, $padStr, $padType);
         self::assertSame($expected, $actual);
     }
 
-    /**
-     * @dataProvider padBothDataProvider
-     * @param string $expected
-     * @param string $string
-     * @param int $length
-     * @param string $padStr
-     */
+    #[DataProvider('padBothDataProvider')]
     public function testPadBoth(string $expected, string $string, int $length, string $padStr = ' '): void
     {
         $actual = StringHelper::padBoth($string, $length, $padStr);
         self::assertSame($expected, $actual);
     }
 
-    /**
-     * @dataProvider padLeftDataProvider
-     * @param string $expected
-     * @param string $string
-     * @param int $length
-     * @param string $padStr
-     */
+    #[DataProvider('padLeftDataProvider')]
     public function testPadLeft(string $expected, string $string, int $length, string $padStr = ' '): void
     {
         $actual = StringHelper::padLeft($string, $length, $padStr);
         self::assertSame($expected, $actual);
     }
 
-    /**
-     * @dataProvider padRightDataProvider
-     * @param string $expected
-     * @param string $string
-     * @param int $length
-     * @param string $padStr
-     */
+    #[DataProvider('padRightDataProvider')]
     public function testPadRight(string $expected, string $string, int $length, string $padStr = ' '): void
     {
         $actual = StringHelper::padRight($string, $length, $padStr);
         self::assertSame($expected, $actual);
     }
 
-    /**
-     * @dataProvider prependDataProvider
-     * @param string $expected
-     * @param string $string
-     * @param string $prependString
-     */
+    #[DataProvider('prependDataProvider')]
     public function testPrepend(string $expected, string $string, string $prependString): void
     {
         $actual = StringHelper::prepend($string, $prependString);
         self::assertSame($expected, $actual);
     }
 
-    /**
-     * @dataProvider randomStringWithCharsDataProvider
-     * @param string $string
-     * @param int $length
-     */
+    #[DataProvider('randomStringWithCharsDataProvider')]
     public function testRandomStringWithChars(string $string, int $length): void
     {
         $str = StringHelper::randomStringWithChars($string, $length);
@@ -879,12 +573,7 @@ class StringHelperTest extends TestCase
         }
     }
 
-    /**
-     * @dataProvider randomStringDataProvider
-     * @param int $length
-     * @param bool $extendedChars
-     * @throws \Exception
-     */
+    #[DataProvider('randomStringDataProvider')]
     public function testRandomString(int $length = 36, bool $extendedChars = false): void
     {
         $random = StringHelper::randomString($length, $extendedChars);
@@ -902,176 +591,98 @@ class StringHelperTest extends TestCase
         }
     }
 
-    /**
-     * @dataProvider regexReplaceDataProvider
-     * @param string $expected
-     * @param string $string
-     * @param string $pattern
-     * @param string $replacement
-     * @param string $options
-     */
+    #[DataProvider('regexReplaceDataProvider')]
     public function testRegexReplace(string $expected, string $string, string $pattern, string $replacement, string $options = 'msr'): void
     {
         $actual = StringHelper::regexReplace($string, $pattern, $replacement, $options);
         self::assertSame($expected, $actual);
     }
 
-    /**
-     * @dataProvider removeHtmlDataProvider
-     * @param string $expected
-     * @param string $string
-     * @param string|null $allowableTags
-     */
+    #[DataProvider('removeHtmlDataProvider')]
     public function testRemoveHtml(string $expected, string $string, ?string $allowableTags = null): void
     {
         $actual = StringHelper::removeHtml($string, $allowableTags);
         self::assertSame($expected, $actual);
     }
 
-    /**
-     * @dataProvider removeHtmlBreakDataProvider
-     * @param string $expected
-     * @param string $string
-     * @param string $replacement
-     */
+    #[DataProvider('removeHtmlBreakDataProvider')]
     public function testRemoveHtmlBreak(string $expected, string $string, string $replacement = ''): void
     {
         $actual = StringHelper::removeHtmlBreak($string, $replacement);
         self::assertSame($expected, $actual);
     }
 
-    /**
-     * @dataProvider removeLeftDataProvider
-     * @param string $expected
-     * @param string $string
-     * @param string $substring
-     */
+    #[DataProvider('removeLeftDataProvider')]
     public function testRemoveLeft(string $expected, string $string, string $substring): void
     {
         $actual = StringHelper::removeLeft($string, $substring);
         self::assertSame($expected, $actual);
     }
 
-    /**
-     * @dataProvider repeatDataProvider
-     * @param string $expected
-     * @param string $string
-     * @param int $multiplier
-     */
+    #[DataProvider('repeatDataProvider')]
     public function testRepeat(string $expected, string $string, int $multiplier): void
     {
         $actual = StringHelper::repeat($string, $multiplier);
         self::assertSame($expected, $actual);
     }
 
-    /**
-     * @dataProvider replaceAllDataProvider
-     * @param string $expected
-     * @param string $string
-     * @param string[] $search
-     * @param string|string[] $replacement
-     * @param bool $caseSensitive
-     */
+    #[DataProvider('replaceAllDataProvider')]
     public function testReplaceAll(string $expected, string $string, array $search, string|array $replacement, bool $caseSensitive = true): void
     {
         $actual = StringHelper::replaceAll($string, $search, $replacement, $caseSensitive);
         self::assertSame($expected, $actual);
     }
 
-    /**
-     * @dataProvider replaceBeginningDataProvider
-     * @param string $expected
-     * @param string $string
-     * @param string $search
-     * @param string $replacement
-     */
+    #[DataProvider('replaceBeginningDataProvider')]
     public function testReplaceBeginning(string $expected, string $string, string $search, string $replacement): void
     {
         $actual = StringHelper::replaceBeginning($string, $search, $replacement);
         self::assertSame($expected, $actual);
     }
 
-    /**
-     * @dataProvider replaceFirstDataProvider
-     * @param string $expected
-     * @param string $string
-     * @param string $search
-     * @param string $replacement
-     */
+    #[DataProvider('replaceFirstDataProvider')]
     public function testReplaceFirst(string $expected, string $string, string $search, string $replacement): void
     {
         $actual = StringHelper::replaceFirst($string, $search, $replacement);
         self::assertSame($expected, $actual);
     }
 
-    /**
-     * @dataProvider replaceLastDataProvider
-     * @param string $expected
-     * @param string $string
-     * @param string $search
-     * @param string $replacement
-     */
+    #[DataProvider('replaceLastDataProvider')]
     public function testReplaceLast(string $expected, string $string, string $search, string $replacement): void
     {
         $actual = StringHelper::replaceLast($string, $search, $replacement);
         self::assertSame($expected, $actual);
     }
 
-    /**
-     * @dataProvider replaceEndingDataProvider
-     * @param string $expected
-     * @param string $string
-     * @param string $search
-     * @param string $replacement
-     */
+    #[DataProvider('replaceEndingDataProvider')]
     public function testReplaceEnding(string $expected, string $string, string $search, string $replacement): void
     {
         $actual = StringHelper::replaceEnding($string, $search, $replacement);
         self::assertSame($expected, $actual);
     }
 
-    /**
-     * @dataProvider reverseDataProvider
-     * @param string $expected
-     * @param string $string
-     */
+    #[DataProvider('reverseDataProvider')]
     public function testReverse(string $expected, string $string): void
     {
         $actual = StringHelper::reverse($string);
         self::assertSame($expected, $actual);
     }
 
-    /**
-     * @dataProvider safeTruncateDataProvider
-     * @param string $expected
-     * @param string $string
-     * @param int $length
-     * @param string $substring
-     * @param bool $ignoreDoNotSplitWordsForOneWord
-     */
+    #[DataProvider('safeTruncateDataProvider')]
     public function testSafeTruncate(string $expected, string $string, int $length, string $substring = '', bool $ignoreDoNotSplitWordsForOneWord = true): void
     {
         $actual = StringHelper::safeTruncate($string, $length, $substring, $ignoreDoNotSplitWordsForOneWord);
         self::assertSame($expected, $actual);
     }
 
-    /**
-     * @dataProvider shortenAfterWordDataProvider
-     * @param string $expected
-     * @param string $string
-     * @param int $length
-     * @param string $strAddOn
-     */
+    #[DataProvider('shortenAfterWordDataProvider')]
     public function testShortenAfterWord(string $expected, string $string, int $length, string $strAddOn): void
     {
         $actual = StringHelper::shortenAfterWord($string, $length, $strAddOn);
         self::assertSame($expected, $actual);
     }
 
-    /**
-     * @dataProvider shuffleDataProvider
-     * @param string $string
-     */
+    #[DataProvider('shuffleDataProvider')]
     public function testShuffle(string $string): void
     {
         $encoding = mb_internal_encoding();
@@ -1092,47 +703,27 @@ class StringHelperTest extends TestCase
         }
     }
 
-    /**
-     * @dataProvider sliceDataProvider
-     * @param string $expected
-     * @param string $string
-     * @param int $start
-     * @param int|null $end
-     */
+    #[DataProvider('sliceDataProvider')]
     public function testSlice(string $expected, string $string, int $start, ?int $end = null): void
     {
         $actual = StringHelper::slice($string, $start, $end);
         self::assertSame($expected, $actual);
     }
 
-    /**
-     * @dataProvider slugifyDataProvider
-     * @param string $expected
-     * @param string $string
-     * @param string $replacement
-     * @param string|null $language
-     */
+    #[DataProvider('slugifyDataProvider')]
     public function testSlugify(string $expected, string $string, string $replacement = '-', ?string $language = null): void
     {
         $actual = StringHelper::slugify($string, $replacement, $language);
         self::assertSame($expected, $actual);
     }
 
-    /**
-     * @dataProvider splitDataProvider
-     * @param string[] $expected
-     * @param string $string
-     * @param string $splitter
-     */
+    #[DataProvider('splitDataProvider')]
     public function testSplit(array $expected, string $string, string $splitter = ','): void
     {
         $actual = StringHelper::split($string, $splitter);
         self::assertSame($expected, $actual);
     }
 
-    /**
-     *
-     */
     public function testStartsWith(): void
     {
         self::assertTrue(StringHelper::startsWith('thisisastring a', 't'));
@@ -1146,22 +737,13 @@ class StringHelperTest extends TestCase
         self::assertFalse(StringHelper::startsWith('29*@1*1209)*08231b**!@&712&(!&@', '!&@'));
     }
 
-    /**
-     * @dataProvider startsWithAnyDataProvider
-     * @param bool $expected
-     * @param string $string
-     * @param string[] $substrings
-     * @param bool $caseSensitive
-     */
+    #[DataProvider('startsWithAnyDataProvider')]
     public function testStartsWithAny(bool $expected, string $string, array $substrings, bool $caseSensitive = true): void
     {
         $actual = StringHelper::startsWithAny($string, $substrings, $caseSensitive);
         self::assertSame($expected, $actual);
     }
 
-    /**
-     *
-     */
     public function testStripCssMediaQueries(): void
     {
         $testArray = [
@@ -1178,9 +760,6 @@ class StringHelperTest extends TestCase
         }
     }
 
-    /**
-     *
-     */
     public function testStripEmptyHtmlTags(): void
     {
         $testArray = [
@@ -1202,44 +781,27 @@ class StringHelperTest extends TestCase
         }
     }
 
-    /**
-     * @dataProvider stripHtmlDataProvider
-     * @param string $expected
-     * @param string $string
-     */
+    #[DataProvider('stripHtmlDataProvider')]
     public function testStripHtml(string $expected, string $string): void
     {
         $actual = StringHelper::stripHtml($string);
         self::assertSame($expected, $actual);
     }
 
-    /**
-     * @dataProvider stripWhitespaceDataProvider
-     * @param string $expected
-     * @param string $string
-     */
+    #[DataProvider('stripWhitespaceDataProvider')]
     public function testStripWhitespace(string $expected, string $string): void
     {
         $actual = StringHelper::stripWhitespace($string);
         self::assertSame($expected, $actual);
     }
 
-    /**
-     * @dataProvider substrDataProvider
-     * @param string $expected
-     * @param string $string
-     * @param int $start
-     * @param int|null $length
-     */
+    #[DataProvider('substrDataProvider')]
     public function testSubstr(string $expected, string $string, int $start, ?int $length = null): void
     {
         $actual = StringHelper::substr($string, $start, $length);
         self::assertSame($expected, $actual);
     }
 
-    /**
-     *
-     */
     public function testSubstringCount(): void
     {
         self::assertSame(2, StringHelper::countSubstrings('hello', 'l'));
@@ -1248,365 +810,223 @@ class StringHelperTest extends TestCase
         self::assertSame(4, StringHelper::countSubstrings('    ', ' '));
     }
 
-    /**
-     * @dataProvider surroundDataProvider
-     * @param string $expected
-     * @param string $string
-     * @param string $subString
-     */
+    #[DataProvider('surroundDataProvider')]
     public function testSurround(string $expected, string $string, string $subString): void
     {
         $actual = StringHelper::surround($string, $subString);
         self::assertSame($expected, $actual);
     }
 
-    /**
-     * @dataProvider swapCaseDataProvider
-     * @param string $expected
-     * @param string $string
-     */
+    #[DataProvider('swapCaseDataProvider')]
     public function testSwapCase(string $expected, string $string): void
     {
         $actual = StringHelper::swapCase($string);
         self::assertSame($expected, $actual);
     }
 
-    /**
-     * @dataProvider tidyDataProvider
-     * @param string $expected
-     * @param string $string
-     */
+    #[DataProvider('tidyDataProvider')]
     public function testTidy(string $expected, string $string): void
     {
         $actual = StringHelper::tidy($string);
         self::assertSame($expected, $actual);
     }
 
-    /**
-     * @dataProvider titleizeDataProvider
-     * @param string $expected
-     * @param string $string
-     * @param string[]|null $ignore
-     */
+    #[DataProvider('titleizeDataProvider')]
     public function testTitleize(string $expected, string $string, ?array $ignore = null): void
     {
         $actual = StringHelper::titleize($string, $ignore);
         self::assertSame($expected, $actual);
     }
 
-    /**
-     * @dataProvider titleizeForHumansDataProvider
-     * @param string $expected
-     * @param string $string
-     * @param string[] $ignore
-     */
+    #[DataProvider('titleizeForHumansDataProvider')]
     public function testTitleizeForHumans(string $expected, string $string, array $ignore = []): void
     {
         $actual = StringHelper::titleizeForHumans($string, $ignore);
         self::assertSame($expected, $actual);
     }
 
-    /**
-     * @dataProvider toAsciiDataProvider
-     * @param string $expected
-     * @param string $string
-     * @param string|null $language
-     */
+    #[DataProvider('toAsciiDataProvider')]
     public function testToAscii(string $expected, string $string, ?string $language = null): void
     {
         $actual = StringHelper::toAscii($string, $language);
         self::assertSame($expected, $actual);
     }
 
-    /**
-     * @dataProvider toBooleanDataProvider
-     * @param bool $expected
-     * @param string $string
-     */
+    #[DataProvider('toBooleanDataProvider')]
     public function testToBoolean(bool $expected, string $string): void
     {
         $actual = StringHelper::toBoolean($string);
         self::assertSame($expected, $actual);
     }
 
-    /**
-     * @dataProvider toCamelCaseDataProvider
-     * @param string $expected
-     * @param string $string
-     */
+    #[DataProvider('toCamelCaseDataProvider')]
     public function testToCamelCase(string $expected, string $string): void
     {
         $actual = StringHelper::toCamelCase($string);
         self::assertSame($expected, $actual);
     }
 
-    /**
-     * @dataProvider toKebabCaseDataProvider
-     * @param string $expected
-     * @param string $string
-     */
+    #[DataProvider('toKebabCaseDataProvider')]
     public function testToKebabCase(string $expected, string $string): void
     {
         $actual = StringHelper::toKebabCase($string);
         self::assertSame($expected, $actual);
     }
 
-    /**
-     * @dataProvider toLowerCaseDataProvider
-     * @param string $expected
-     * @param string $string
-     */
+    #[DataProvider('toLowerCaseDataProvider')]
     public function testToLowerCase(string $expected, string $string): void
     {
         $actual = StringHelper::toLowerCase($string);
         self::assertSame($expected, $actual);
     }
 
-    /**
-     * @dataProvider toPascalCaseDataProvider
-     * @param string $expected
-     * @param string $string
-     */
+    #[DataProvider('toPascalCaseDataProvider')]
     public function testToPascalCase(string $expected, string $string): void
     {
         $actual = StringHelper::toPascalCase($string);
         self::assertSame($expected, $actual);
     }
 
-    /**
-     * @dataProvider snakeCaseDataProvider
-     * @param string $expected
-     * @param string $string
-     */
+    #[DataProvider('snakeCaseDataProvider')]
     public function testToSnakeCase(string $expected, string $string): void
     {
         $actual = StringHelper::toSnakeCase($string);
         self::assertSame($expected, $actual);
     }
 
-    /**
-     * @dataProvider toSpacesDataProvider
-     * @param string $expected
-     * @param string $string
-     * @param int $tabLength
-     */
+    #[DataProvider('toSpacesDataProvider')]
     public function testToSpaces(string $expected, string $string, int $tabLength = 4): void
     {
         $actual = StringHelper::toSpaces($string, $tabLength);
         self::assertSame($expected, $actual);
     }
 
-    /**
-     * @dataProvider toStringDataProvider
-     * @param string $expected
-     * @param mixed $object
-     * @param string $glue
-     */
+    #[DataProvider('toStringDataProvider')]
     public function testToString(string $expected, mixed $object, string $glue = ','): void
     {
         $actual = StringHelper::toString($object, $glue);
         self::assertSame($expected, $actual);
     }
 
-    /**
-     * @dataProvider toTabsDataProvider
-     * @param string $expected
-     * @param string $string
-     * @param int $tabLength
-     */
+    #[DataProvider('toTabsDataProvider')]
     public function testToTabs(string $expected, string $string, int $tabLength = 4): void
     {
         $actual = StringHelper::toTabs($string, $tabLength);
         self::assertSame($expected, $actual);
     }
 
-    /**
-     * @dataProvider toTitleCaseDataProvider
-     * @param string $expected
-     * @param string $string
-     */
+    #[DataProvider('toTitleCaseDataProvider')]
     public function testToTitleCase(string $expected, string $string): void
     {
         $actual = StringHelper::toTitleCase($string);
         self::assertSame($expected, $actual);
     }
 
-    /**
-     * @dataProvider toTransliterateDataProvider
-     * @param string $expected
-     * @param string $string
-     */
+    #[DataProvider('toTransliterateDataProvider')]
     public function testToTransliterate(string $expected, string $string): void
     {
         $actual = StringHelper::toTransliterate($string);
         self::assertSame($expected, $actual);
     }
 
-    /**
-     * @dataProvider toUppercaseDataProvider
-     * @param string $expected
-     * @param string $string
-     */
+    #[DataProvider('toUppercaseDataProvider')]
     public function testToUppercase(string $expected, string $string): void
     {
         $actual = StringHelper::toUpperCase($string);
         self::assertSame($expected, $actual);
     }
 
-    /**
-     * @dataProvider toHandleDataProvider
-     * @param string $expected
-     * @param string $str
-     */
+    #[DataProvider('toHandleDataProvider')]
     public function testToHandle(string $expected, string $str)
     {
         self::assertSame($expected, StringHelper::toHandle($str));
     }
 
-    /**
-     * @dataProvider trimDataProvider
-     * @param string $expected
-     * @param string $string
-     */
+    #[DataProvider('trimDataProvider')]
     public function testTrim(string $expected, string $string): void
     {
         $actual = StringHelper::trim($string);
         self::assertSame($expected, $actual);
     }
 
-    /**
-     * @dataProvider trimLeftDataProvider
-     * @param string $expected
-     * @param string $string
-     * @param string|null $chars
-     */
+    #[DataProvider('trimLeftDataProvider')]
     public function testTrimLeft(string $expected, string $string, ?string $chars = null): void
     {
         $actual = StringHelper::trimLeft($string, $chars);
         self::assertSame($expected, $actual);
     }
 
-    /**
-     * @dataProvider trimRightDataProvider
-     * @param string $expected
-     * @param string $string
-     * @param string|null $chars
-     */
+    #[DataProvider('trimRightDataProvider')]
     public function testTrimRight(string $expected, string $string, ?string $chars = null): void
     {
         $actual = StringHelper::trimRight($string, $chars);
         self::assertSame($expected, $actual);
     }
 
-    /**
-     * @dataProvider upperCamelizeDataProvider
-     * @param string $expected
-     * @param string $string
-     */
+    #[DataProvider('upperCamelizeDataProvider')]
     public function testUpperCamelize(string $expected, string $string): void
     {
         $actual = StringHelper::upperCamelize($string);
         self::assertSame($expected, $actual);
     }
 
-    /**
-     * @dataProvider uppercaseFirstDataProvider
-     * @param string $expected
-     * @param string $string
-     */
+    #[DataProvider('uppercaseFirstDataProvider')]
     public function testUppercaseFirst(string $expected, string $string): void
     {
         $actual = StringHelper::upperCaseFirst($string);
         self::assertSame($expected, $actual);
     }
 
-    /**
-     *
-     */
     public function testUtf8Definition(): void
     {
         self::assertSame('UTF-8', StringHelper::UTF8);
     }
 
-    /**
-     *
-     */
     public function testUUID(): void
     {
         $uuid = StringHelper::UUID();
-        self::assertRegExp('/^[0-9A-F]{8}-[0-9A-F]{4}-4[0-9A-F]{3}-[89AB][0-9A-F]{3}-[0-9A-F]{12}$/i', $uuid);
+        self::assertMatchesRegularExpression('/^[0-9A-F]{8}-[0-9A-F]{4}-4[0-9A-F]{3}-[89AB][0-9A-F]{3}-[0-9A-F]{12}$/i', $uuid);
         self::assertSame(36, strlen($uuid));
     }
 
-    /**
-     * @dataProvider collapseWhitespaceDataProvider
-     * @param string $expected
-     * @param string $string
-     */
+    #[DataProvider('collapseWhitespaceDataProvider')]
     public function testWhitespaceCollapse(string $expected, string $string): void
     {
         $actual = StringHelper::collapseWhitespace($string);
         self::assertSame($expected, $actual);
     }
 
-    /**
-     * @dataProvider idnToUtf8EmailDataProvider
-     * @param string $expected
-     * @param string $string
-     */
+    #[DataProvider('idnToUtf8EmailDataProvider')]
     public function testIdnToUtf8Email(string $expected, string $string): void
     {
         $actual = StringHelper::idnToUtf8Email($string);
         self::assertSame($expected, $actual);
     }
 
-    /**
-     * @dataProvider emojiToShortcodesDataProvider
-     *
-     * @param string $expected
-     * @param string $str
-     */
+    #[DataProvider('emojiToShortcodesDataProvider')]
     public function testEmojiToShortcodes(string $expected, string $str)
     {
         self::assertSame($expected, Str::emojiToShortcodes($str));
     }
 
-    /**
-     * @dataProvider shortcodesToEmojiDataProvider
-     *
-     * @param string $expected
-     * @param string $str
-     */
+    #[DataProvider('shortcodesToEmojiDataProvider')]
     public function testShortcodesToEmoji(string $expected, string $str)
     {
         self::assertSame($expected, Str::shortcodesToEmoji($str));
     }
 
-    /**
-     * @dataProvider escapeShortcodesDataProvider
-     *
-     * @param string $expected
-     * @param string $str
-     */
+    #[DataProvider('escapeShortcodesDataProvider')]
     public function testEscapeShortcodes(string $expected, string $str)
     {
         self::assertSame($expected, Str::escapeShortcodes($str));
     }
 
-    /**
-     * @dataProvider unescapeShortcodesDataProvider
-     *
-     * @param string $expected
-     * @param string $str
-     */
+    #[DataProvider('unescapeShortcodesDataProvider')]
     public function testUnescapeShortcodes(string $expected, string $str)
     {
         self::assertSame($expected, Str::unescapeShortcodes($str));
     }
 
-    /**
-     * @return array
-     */
     public static function substrDataDataProvider(): array
     {
         return [
@@ -1623,9 +1043,6 @@ class StringHelperTest extends TestCase
         ];
     }
 
-    /**
-     * @return array
-     */
     public static function swapCaseDataDataProvider(): array
     {
         return [
@@ -1642,9 +1059,6 @@ class StringHelperTest extends TestCase
         ];
     }
 
-    /**
-     * @return array
-     */
     public static function toTitleCaseDataProvider(): array
     {
         return [
@@ -1661,9 +1075,6 @@ class StringHelperTest extends TestCase
         ];
     }
 
-    /**
-     * @return array
-     */
     public static function toLowerCaseDataProvider(): array
     {
         return [
@@ -1680,9 +1091,6 @@ class StringHelperTest extends TestCase
         ];
     }
 
-    /**
-     * @return array
-     */
     public static function indexOfDataProvider(): array
     {
         return [
@@ -1709,9 +1117,6 @@ class StringHelperTest extends TestCase
         ];
     }
 
-    /**
-     * @return array
-     */
     public static function camelCaseDataProvider(): array
     {
         return [
@@ -1725,9 +1130,6 @@ class StringHelperTest extends TestCase
         ];
     }
 
-    /**
-     * @return array
-     */
     public static function endsWithDataProvider(): array
     {
         return [
@@ -1744,9 +1146,6 @@ class StringHelperTest extends TestCase
         ];
     }
 
-    /**
-     * @return array
-     */
     public static function uppercaseFirstDataProvider(): array
     {
         return [
@@ -1757,10 +1156,6 @@ class StringHelperTest extends TestCase
         ];
     }
 
-    /**
-     * @return array
-     * @throws \Exception
-     */
     public static function uuidDataProvider(): array
     {
         return [
@@ -1780,9 +1175,6 @@ class StringHelperTest extends TestCase
         ];
     }
 
-    /**
-     * @return array
-     */
     public static function stripHtmlDataProvider(): array
     {
         return [
@@ -1795,9 +1187,6 @@ class StringHelperTest extends TestCase
         ];
     }
 
-    /**
-     * @return array
-     */
     public static function firstDataProvider(): array
     {
         return [
@@ -1810,9 +1199,6 @@ class StringHelperTest extends TestCase
         ];
     }
 
-    /**
-     * @return array
-     */
     public static function toAsciiDataProvider(): array
     {
         return [
@@ -1826,9 +1212,6 @@ class StringHelperTest extends TestCase
         ];
     }
 
-    /**
-     * @return array
-     */
     public static function charsAsArrayDataProvider(): array
     {
         return [
@@ -1840,9 +1223,6 @@ class StringHelperTest extends TestCase
         ];
     }
 
-    /**
-     * @return array
-     */
     public static function mb4DataProvider(): array
     {
         return [
@@ -1858,9 +1238,6 @@ class StringHelperTest extends TestCase
         ];
     }
 
-    /**
-     * @return array
-     */
     public static function snakeCaseDataProvider(): array
     {
         return [
@@ -1872,9 +1249,6 @@ class StringHelperTest extends TestCase
         ];
     }
 
-    /**
-     * @return array
-     */
     public static function delimitDataProvider(): array
     {
         return [
@@ -1889,9 +1263,6 @@ class StringHelperTest extends TestCase
         ];
     }
 
-    /**
-     * @return array
-     */
     public static function splitDataProvider(): array
     {
         return [
@@ -1905,9 +1276,6 @@ class StringHelperTest extends TestCase
         ];
     }
 
-    /**
-     * @return array
-     */
     public static function whitespaceDataProvider(): array
     {
         return [
@@ -1925,9 +1293,6 @@ class StringHelperTest extends TestCase
         ];
     }
 
-    /**
-     * @return array
-     */
     public static function collapseWhitespaceDataProvider(): array
     {
         return [
@@ -1941,9 +1306,6 @@ class StringHelperTest extends TestCase
         ];
     }
 
-    /**
-     * @return array
-     */
     public static function randomStringWithCharsDataProvider(): array
     {
         return [
@@ -1957,9 +1319,6 @@ class StringHelperTest extends TestCase
         ];
     }
 
-    /**
-     * @return array
-     */
     public static function mb4EncodingDataProvider(): array
     {
         return [
@@ -1973,9 +1332,6 @@ class StringHelperTest extends TestCase
         ];
     }
 
-    /**
-     * @return array
-     */
     public static function convertToUtf8DataProvider(): array
     {
         return [
@@ -1988,9 +1344,6 @@ class StringHelperTest extends TestCase
         ];
     }
 
-    /**
-     * @return array
-     */
     public static function encDecDataProvider(): array
     {
         return [
@@ -2000,9 +1353,6 @@ class StringHelperTest extends TestCase
         ];
     }
 
-    /**
-     * @return array
-     */
     public static function afterFirstDataProvider(): array
     {
         return [
@@ -2035,9 +1385,6 @@ class StringHelperTest extends TestCase
         ];
     }
 
-    /**
-     * @return array
-     */
     public static function afterLastDataProvider(): array
     {
         return [
@@ -2067,9 +1414,6 @@ class StringHelperTest extends TestCase
         ];
     }
 
-    /**
-     * @return array
-     */
     public static function toStringDataProvider(): array
     {
         return [
@@ -2082,9 +1426,6 @@ class StringHelperTest extends TestCase
         ];
     }
 
-    /**
-     * @return array
-     */
     public static function randomStringDataProvider(): array
     {
         return [
@@ -2094,9 +1435,6 @@ class StringHelperTest extends TestCase
         ];
     }
 
-    /**
-     * @return array
-     */
     public static function toPascalCaseDataProvider(): array
     {
         return [
@@ -2113,9 +1451,6 @@ class StringHelperTest extends TestCase
         ];
     }
 
-    /**
-     * @return array
-     */
     public static function toCamelCaseDataProvider(): array
     {
         return [
@@ -2132,9 +1467,6 @@ class StringHelperTest extends TestCase
         ];
     }
 
-    /**
-     * @return array
-     */
     public static function toKebabCaseDataProvider(): array
     {
         return [
@@ -2152,9 +1484,6 @@ class StringHelperTest extends TestCase
         ];
     }
 
-    /**
-     * @return array
-     */
     public static function linesDataProvider(): array
     {
         return [
@@ -2186,9 +1515,6 @@ class StringHelperTest extends TestCase
         ];
     }
 
-    /**
-     * @return array
-     */
     public static function firstLineDataProvider(): array
     {
         return [
@@ -2221,9 +1547,6 @@ class StringHelperTest extends TestCase
         ];
     }
 
-    /**
-     * @return array
-     */
     public static function toUppercaseDataProvider(): array
     {
         return [
@@ -2240,9 +1563,6 @@ class StringHelperTest extends TestCase
         ];
     }
 
-    /**
-     * @return array
-     */
     public static function toHandleDataProvider(): array
     {
         return [
@@ -2258,9 +1578,6 @@ class StringHelperTest extends TestCase
         ];
     }
 
-    /**
-     * @return array
-     */
     public static function trimDataProvider(): array
     {
         return [
@@ -2273,9 +1590,6 @@ class StringHelperTest extends TestCase
         ];
     }
 
-    /**
-     * @return array
-     */
     public static function appendDataProvider(): array
     {
         return [
@@ -2284,9 +1598,6 @@ class StringHelperTest extends TestCase
         ];
     }
 
-    /**
-     * @return array
-     */
     public static function atDataProvider(): array
     {
         return [
@@ -2301,9 +1612,6 @@ class StringHelperTest extends TestCase
         ];
     }
 
-    /**
-     * @return array
-     */
     public static function betweenDataProvider(): array
     {
         return [
@@ -2326,9 +1634,6 @@ class StringHelperTest extends TestCase
         ];
     }
 
-    /**
-     * @return array
-     */
     public static function camelizeDataProvider(): array
     {
         return [
@@ -2354,9 +1659,6 @@ class StringHelperTest extends TestCase
         ];
     }
 
-    /**
-     * @return array
-     */
     public static function capitalizePersonalNameDataProvider(): array
     {
         return [
@@ -2406,9 +1708,6 @@ class StringHelperTest extends TestCase
         ];
     }
 
-    /**
-     * @return array
-     */
     public static function charsDataProvider(): array
     {
         return [
@@ -2418,9 +1717,6 @@ class StringHelperTest extends TestCase
         ];
     }
 
-    /**
-     * @return array
-     */
     public static function containsAllDataProvider(): array
     {
         // One needle
@@ -2461,9 +1757,6 @@ class StringHelperTest extends TestCase
         return array_merge($singleNeedle, $provider);
     }
 
-    /**
-     * @return array
-     */
     public static function containsAnyDataProvider(): array
     {
         // One needle
@@ -2507,9 +1800,6 @@ class StringHelperTest extends TestCase
         return array_merge($singleNeedle, $provider);
     }
 
-    /**
-     * @return array
-     */
     public static function containsDataProvider(): array
     {
         return [
@@ -2537,9 +1827,6 @@ class StringHelperTest extends TestCase
         ];
     }
 
-    /**
-     * @return array
-     */
     public static function countSubstrDataProvider(): array
     {
         return [
@@ -2561,9 +1848,6 @@ class StringHelperTest extends TestCase
         ];
     }
 
-    /**
-     * @return array
-     */
     public static function dasherizeDataProvider(): array
     {
         return [
@@ -2589,9 +1873,6 @@ class StringHelperTest extends TestCase
         ];
     }
 
-    /**
-     * @return array
-     */
     public static function endsWithAnyDataProvider(): array
     {
         return [
@@ -2609,9 +1890,6 @@ class StringHelperTest extends TestCase
         ];
     }
 
-    /**
-     * @return array
-     */
     public static function ensureLeftDataProvider(): array
     {
         return [
@@ -2628,9 +1906,6 @@ class StringHelperTest extends TestCase
         ];
     }
 
-    /**
-     * @return array
-     */
     public static function ensureRightDataProvider(): array
     {
         return [
@@ -2647,9 +1922,6 @@ class StringHelperTest extends TestCase
         ];
     }
 
-    /**
-     * @return array
-     */
     public static function escapeDataProvider(): array
     {
         return [
@@ -2662,9 +1934,6 @@ class StringHelperTest extends TestCase
         ];
     }
 
-    /**
-     * @return array
-     */
     public static function hasLowerCaseDataProvider(): array
     {
         return [
@@ -2683,9 +1952,6 @@ class StringHelperTest extends TestCase
         ];
     }
 
-    /**
-     * @return array
-     */
     public static function hasUpperCaseDataProvider(): array
     {
         return [
@@ -2704,9 +1970,6 @@ class StringHelperTest extends TestCase
         ];
     }
 
-    /**
-     * @return array
-     */
     public static function htmlDecodeDataProvider(): array
     {
         return [
@@ -2718,9 +1981,6 @@ class StringHelperTest extends TestCase
         ];
     }
 
-    /**
-     * @return array
-     */
     public static function htmlEncodeDataProvider(): array
     {
         return [
@@ -2732,9 +1992,6 @@ class StringHelperTest extends TestCase
         ];
     }
 
-    /**
-     * @return array
-     */
     public static function humanizeDataProvider(): array
     {
         return [
@@ -2744,9 +2001,6 @@ class StringHelperTest extends TestCase
         ];
     }
 
-    /**
-     * @return array
-     */
     public static function indexOfLastDataProvider(): array
     {
         return [
@@ -2773,9 +2027,6 @@ class StringHelperTest extends TestCase
         ];
     }
 
-    /**
-     * @return array
-     */
     public static function insertDataProvider(): array
     {
         return [
@@ -2790,9 +2041,6 @@ class StringHelperTest extends TestCase
         ];
     }
 
-    /**
-     * @return array
-     */
     public static function isAlphaDataProvider(): array
     {
         return [
@@ -2809,9 +2057,6 @@ class StringHelperTest extends TestCase
         ];
     }
 
-    /**
-     * @return array
-     */
     public static function isAlphanumericDataProvider(): array
     {
         return [
@@ -2831,9 +2076,6 @@ class StringHelperTest extends TestCase
         ];
     }
 
-    /**
-     * @return array
-     */
     public static function isBase64DataProvider(): array
     {
         return [
@@ -2846,9 +2088,6 @@ class StringHelperTest extends TestCase
         ];
     }
 
-    /**
-     * @return array
-     */
     public static function isBlankDataProvider(): array
     {
         return [
@@ -2870,9 +2109,6 @@ class StringHelperTest extends TestCase
         ];
     }
 
-    /**
-     * @return array
-     */
     public static function isHexadecimalDataProvider(): array
     {
         return [
@@ -2892,9 +2128,6 @@ class StringHelperTest extends TestCase
         ];
     }
 
-    /**
-     * @return array
-     */
     public static function isJsonDataProvider(): array
     {
         return [
@@ -2921,9 +2154,6 @@ class StringHelperTest extends TestCase
         ];
     }
 
-    /**
-     * @return array
-     */
     public static function isLowerCaseDataProvider(): array
     {
         return [
@@ -2938,9 +2168,6 @@ class StringHelperTest extends TestCase
         ];
     }
 
-    /**
-     * @return array
-     */
     public static function isDataProvider(): array
     {
         return [
@@ -2960,9 +2187,6 @@ class StringHelperTest extends TestCase
         ];
     }
 
-    /**
-     * @return array
-     */
     public static function isSerializedDataProvider(): array
     {
         return [
@@ -2976,9 +2200,6 @@ class StringHelperTest extends TestCase
         ];
     }
 
-    /**
-     * @return array
-     */
     public static function isUpperCaseDataProvider(): array
     {
         return [
@@ -2993,9 +2214,6 @@ class StringHelperTest extends TestCase
         ];
     }
 
-    /**
-     * @return array
-     */
     public static function lastDataProvider(): array
     {
         return [
@@ -3014,9 +2232,6 @@ class StringHelperTest extends TestCase
         ];
     }
 
-    /**
-     * @return array
-     */
     public static function lengthDataProvider(): array
     {
         return [
@@ -3027,9 +2242,6 @@ class StringHelperTest extends TestCase
         ];
     }
 
-    /**
-     * @return array
-     */
     public static function longestCommonPrefixDataProvider(): array
     {
         return [
@@ -3046,9 +2258,6 @@ class StringHelperTest extends TestCase
         ];
     }
 
-    /**
-     * @return array
-     */
     public static function longestCommonSubstringDataProvider(): array
     {
         return [
@@ -3065,9 +2274,6 @@ class StringHelperTest extends TestCase
         ];
     }
 
-    /**
-     * @return array
-     */
     public static function longestCommonSuffixDataProvider(): array
     {
         return [
@@ -3084,9 +2290,6 @@ class StringHelperTest extends TestCase
         ];
     }
 
-    /**
-     * @return array
-     */
     public static function lowerCaseFirstDataProvider(): array
     {
         return [
@@ -3098,9 +2301,6 @@ class StringHelperTest extends TestCase
         ];
     }
 
-    /**
-     * @return array
-     */
     public static function offsetExistsDataProvider(): array
     {
         return [
@@ -3113,9 +2313,6 @@ class StringHelperTest extends TestCase
         ];
     }
 
-    /**
-     * @return array
-     */
     public static function padBothDataProvider(): array
     {
         return [
@@ -3133,9 +2330,6 @@ class StringHelperTest extends TestCase
         ];
     }
 
-    /**
-     * @return array
-     */
     public static function padLeftDataProvider(): array
     {
         return [
@@ -3149,9 +2343,6 @@ class StringHelperTest extends TestCase
         ];
     }
 
-    /**
-     * @return array
-     */
     public static function padDataProvider(): array
     {
         return [
@@ -3177,9 +2368,6 @@ class StringHelperTest extends TestCase
         ];
     }
 
-    /**
-     * @return array
-     */
     public static function padRightDataProvider(): array
     {
         return [
@@ -3193,9 +2381,6 @@ class StringHelperTest extends TestCase
         ];
     }
 
-    /**
-     * @return array
-     */
     public static function prependDataProvider(): array
     {
         return [
@@ -3204,9 +2389,6 @@ class StringHelperTest extends TestCase
         ];
     }
 
-    /**
-     * @return array
-     */
     public static function regexReplaceDataProvider(): array
     {
         return [
@@ -3222,9 +2404,6 @@ class StringHelperTest extends TestCase
         ];
     }
 
-    /**
-     * @return array
-     */
     public static function removeHtmlBreakDataProvider(): array
     {
         return [
@@ -3241,9 +2420,6 @@ class StringHelperTest extends TestCase
         ];
     }
 
-    /**
-     * @return array
-     */
     public static function removeHtmlDataProvider(): array
     {
         return [
@@ -3256,9 +2432,6 @@ class StringHelperTest extends TestCase
         ];
     }
 
-    /**
-     * @return array
-     */
     public static function removeLeftDataProvider(): array
     {
         return [
@@ -3276,9 +2449,6 @@ class StringHelperTest extends TestCase
         ];
     }
 
-    /**
-     * @return array
-     */
     public static function removeRightDataProvider(): array
     {
         return [
@@ -3296,9 +2466,6 @@ class StringHelperTest extends TestCase
         ];
     }
 
-    /**
-     * @return array
-     */
     public static function removeXssDataProvider(): array
     {
         return [
@@ -3317,9 +2484,6 @@ class StringHelperTest extends TestCase
         ];
     }
 
-    /**
-     * @return array
-     */
     public static function emptyDataProvider(): array
     {
         return [
@@ -3343,9 +2507,6 @@ class StringHelperTest extends TestCase
         ];
     }
 
-    /**
-     * @return array
-     */
     public static function repeatDataProvider(): array
     {
         return [
@@ -3359,9 +2520,6 @@ class StringHelperTest extends TestCase
         ];
     }
 
-    /**
-     * @return array
-     */
     public static function replaceAllDataProvider(): array
     {
         return [
@@ -3393,9 +2551,6 @@ class StringHelperTest extends TestCase
         ];
     }
 
-    /**
-     * @return array
-     */
     public static function replaceBeginningDataProvider(): array
     {
         return [
@@ -3418,9 +2573,6 @@ class StringHelperTest extends TestCase
         ];
     }
 
-    /**
-     * @return array
-     */
     public static function replaceFirstDataProvider(): array
     {
         return [
@@ -3443,9 +2595,6 @@ class StringHelperTest extends TestCase
         ];
     }
 
-    /**
-     * @return array
-     */
     public static function replaceLastDataProvider(): array
     {
         return [
@@ -3467,9 +2616,6 @@ class StringHelperTest extends TestCase
         ];
     }
 
-    /**
-     * @return array
-     */
     public static function replaceEndingDataProvider(): array
     {
         return [
@@ -3492,9 +2638,6 @@ class StringHelperTest extends TestCase
         ];
     }
 
-    /**
-     * @return array
-     */
     public static function replaceDataProvider(): array
     {
         return [
@@ -3529,9 +2672,6 @@ class StringHelperTest extends TestCase
         ];
     }
 
-    /**
-     * @return array
-     */
     public static function reverseDataProvider(): array
     {
         return [
@@ -3543,9 +2683,6 @@ class StringHelperTest extends TestCase
         ];
     }
 
-    /**
-     * @return array
-     */
     public static function safeTruncateDataProvider(): array
     {
         return [
@@ -3573,9 +2710,6 @@ class StringHelperTest extends TestCase
         ];
     }
 
-    /**
-     * @return array
-     */
     public static function shortenAfterWordDataProvider(): array
     {
         return [
@@ -3586,9 +2720,6 @@ class StringHelperTest extends TestCase
         ];
     }
 
-    /**
-     * @return array
-     */
     public static function shuffleDataProvider(): array
     {
         return [
@@ -3598,9 +2729,6 @@ class StringHelperTest extends TestCase
         ];
     }
 
-    /**
-     * @return array
-     */
     public static function sliceDataProvider(): array
     {
         return [
@@ -3623,9 +2751,6 @@ class StringHelperTest extends TestCase
         ];
     }
 
-    /**
-     * @return array
-     */
     public static function slugifyDataProvider(): array
     {
         return [
@@ -3633,9 +2758,6 @@ class StringHelperTest extends TestCase
         ];
     }
 
-    /**
-     * @return array
-     */
     public static function snakeizeDataProvider(): array
     {
         return [
@@ -3662,9 +2784,6 @@ class StringHelperTest extends TestCase
         ];
     }
 
-    /**
-     * @return array
-     */
     public static function startsWithDataProvider(): array
     {
         return [
@@ -3682,9 +2801,6 @@ class StringHelperTest extends TestCase
         ];
     }
 
-    /**
-     * @return array
-     */
     public static function startsWithAnyDataProvider(): array
     {
         return [
@@ -3703,9 +2819,6 @@ class StringHelperTest extends TestCase
         ];
     }
 
-    /**
-     * @return array
-     */
     public static function stripWhitespaceDataProvider(): array
     {
         return [
@@ -3724,9 +2837,6 @@ class StringHelperTest extends TestCase
         ];
     }
 
-    /**
-     * @return array
-     */
     public static function substrDataProvider(): array
     {
         return [
@@ -3742,9 +2852,6 @@ class StringHelperTest extends TestCase
         ];
     }
 
-    /**
-     * @return array
-     */
     public static function surroundDataProvider(): array
     {
         return [
@@ -3756,9 +2863,6 @@ class StringHelperTest extends TestCase
         ];
     }
 
-    /**
-     * @return array
-     */
     public static function swapCaseDataProvider(): array
     {
         return [
@@ -3769,9 +2873,6 @@ class StringHelperTest extends TestCase
         ];
     }
 
-    /**
-     * @return array
-     */
     public static function tidyDataProvider(): array
     {
         return [
@@ -3782,9 +2883,6 @@ class StringHelperTest extends TestCase
         ];
     }
 
-    /**
-     * @return array
-     */
     public static function titleizeDataProvider(): array
     {
         $ignore = ['at', 'by', 'for', 'in', 'of', 'on', 'out', 'to', 'the'];
@@ -3798,9 +2896,6 @@ class StringHelperTest extends TestCase
         ];
     }
 
-    /**
-     * @return array
-     */
     public static function toTransliterateDataProvider(): array
     {
         return [
@@ -3823,9 +2918,6 @@ class StringHelperTest extends TestCase
         ];
     }
 
-    /**
-     * @return array
-     */
     public static function toBooleanDataProvider(): array
     {
         return [
@@ -3847,9 +2939,6 @@ class StringHelperTest extends TestCase
         ];
     }
 
-    /**
-     * @return array
-     */
     public static function toSpacesDataProvider(): array
     {
         return [
@@ -3862,9 +2951,6 @@ class StringHelperTest extends TestCase
         ];
     }
 
-    /**
-     * @return array
-     */
     public static function toTabsDataProvider(): array
     {
         return [
@@ -3876,9 +2962,6 @@ class StringHelperTest extends TestCase
         ];
     }
 
-    /**
-     * @return array
-     */
     public static function trimLeftDataProvider(): array
     {
         return [
@@ -3898,9 +2981,6 @@ class StringHelperTest extends TestCase
         ];
     }
 
-    /**
-     * @return array
-     */
     public static function trimRightDataProvider(): array
     {
         return [
@@ -3920,9 +3000,6 @@ class StringHelperTest extends TestCase
         ];
     }
 
-    /**
-     * @return array
-     */
     public static function truncateDataProvider(): array
     {
         return [
@@ -3951,9 +3028,6 @@ class StringHelperTest extends TestCase
         ];
     }
 
-    /**
-     * @return array
-     */
     public static function underscoredDataProvider(): array
     {
         return [
@@ -3976,9 +3050,6 @@ class StringHelperTest extends TestCase
         ];
     }
 
-    /**
-     * @return array
-     */
     public static function upperCamelizeDataProvider(): array
     {
         return [
@@ -3998,9 +3069,6 @@ class StringHelperTest extends TestCase
         ];
     }
 
-    /**
-     * @return array
-     */
     public static function strBeginsDataProvider(): array
     {
         $euc_jp = '0123この文字列は日本語です。EUC-JPを使っています。0123日本語は面倒臭い。';
@@ -4027,9 +3095,6 @@ class StringHelperTest extends TestCase
         ];
     }
 
-    /**
-     * @return array
-     */
     public static function strEndsDataProvider(): array
     {
         $euc_jp = '0123この文字列は日本語です。EUC-JPを使っています。0123日本語は面倒臭い。';
@@ -4056,9 +3121,6 @@ class StringHelperTest extends TestCase
         ];
     }
 
-    /**
-     * @return array
-     */
     public static function strIbeginsDataProvider(): array
     {
         $euc_jp = '0123この文字列は日本語です。EUC-JPを使っています。0123日本語は面倒臭い。';
@@ -4086,9 +3148,6 @@ class StringHelperTest extends TestCase
         ];
     }
 
-    /**
-     * @return array
-     */
     public static function strIendsDataProvider(): array
     {
         $euc_jp = '0123この文字列は日本語です。EUC-JPを使っています。0123日本語は面倒臭い。';
@@ -4116,9 +3175,6 @@ class StringHelperTest extends TestCase
         ];
     }
 
-    /**
-     * @return array
-     */
     public static function titleizeForHumansDataProvider(): array
     {
         return [
@@ -4199,9 +3255,6 @@ class StringHelperTest extends TestCase
         ];
     }
 
-    /**
-     *
-     */
     public static function beforeFirstDataProvider(): array
     {
         return [
@@ -4233,9 +3286,6 @@ class StringHelperTest extends TestCase
         ];
     }
 
-    /**
-     * @return array
-     */
     public static function beforeLastDataProvider(): array
     {
         return [
@@ -4267,9 +3317,6 @@ class StringHelperTest extends TestCase
         ];
     }
 
-    /**
-     * @return array
-     */
     public static function idnToUtf8EmailDataProvider(): array
     {
         return [
@@ -4278,9 +3325,6 @@ class StringHelperTest extends TestCase
         ];
     }
 
-    /**
-     * @return array
-     */
     public static function emojiToShortcodesDataProvider(): array
     {
         return [
@@ -4289,9 +3333,6 @@ class StringHelperTest extends TestCase
         ];
     }
 
-    /**
-     * @return array
-     */
     public static function shortcodesToEmojiDataProvider(): array
     {
         return [
@@ -4300,9 +3341,6 @@ class StringHelperTest extends TestCase
         ];
     }
 
-    /**
-     * @return array
-     */
     public static function escapeShortcodesDataProvider(): array
     {
         return [
@@ -4310,9 +3348,6 @@ class StringHelperTest extends TestCase
         ];
     }
 
-    /**
-     * @return array
-     */
     public static function unescapeShortcodesDataProvider(): array
     {
         return [
