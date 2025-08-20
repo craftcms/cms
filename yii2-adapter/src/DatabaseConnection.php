@@ -31,12 +31,9 @@ class DatabaseConnection extends Connection
             return;
         }
 
-        if (is_null($pdo = $this->getLaravelConnection()->getPdo())) {
-            $this->getLaravelConnection()->reconnect();
-            $pdo = $this->getLaravelConnection()->getPdo();
-        }
+        $this->getLaravelConnection()->reconnectIfMissingConnection();
 
-        $this->pdo = $pdo;
+        $this->pdo = $this->getLaravelConnection()->getPdo();
     }
 
     /**
