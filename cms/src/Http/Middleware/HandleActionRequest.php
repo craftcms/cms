@@ -5,6 +5,7 @@ namespace CraftCms\Cms\Http\Middleware;
 use Closure;
 use CraftCms\Cms\Config\GeneralConfig;
 use Illuminate\Http\Request;
+use Illuminate\Http\Response;
 
 final readonly class HandleActionRequest
 {
@@ -26,10 +27,23 @@ final readonly class HandleActionRequest
             $action,
         ]);
 
-        $request = $request->duplicate(server: array_merge($request->server->all(), [
+        $newRequest = $request->duplicate(server: array_merge($request->server->all(), [
             'REQUEST_URI' => $route,
         ]));
 
-        return $next($request);
+        /** @var Response $response */
+        $response = $next($newRequest);
+
+        /**
+         * If Yii returned with a Page not found. It needs to handle the
+         * original request with an action body parameter.
+         *
+         * @todo Remove when cms is fully ported.
+         */
+        if (str_contains($response->getContent(), 'Page not found.')) {
+            return $next($request);
+        }
+
+        return $response;
     }
 }
