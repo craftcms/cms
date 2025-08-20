@@ -22,7 +22,7 @@ test('Check customizing view', async ({page, baseURL}) => {
 
   let cols = [
     "Number Field",
-    "Plain Text Field",
+    "Plain Text Field5",
     "Entry Type",
     "ID",
   ];
@@ -55,7 +55,7 @@ test.describe('Sorting', () => {
       lastTitle: "Test sorting 10",
     },
     {
-      field: "Plain Text Field",
+      field: "Plain Text Field5",
       firstTitle: "Test sorting 1",
       lastTitle: "Test sorting 3",
     },

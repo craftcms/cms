@@ -19,7 +19,7 @@ test.describe('Cards', () => {
   const matrixCardsFieldLocator = '#fields-matrixCardsField-field';
   const firstCardLocator = matrixCardsFieldLocator + ' .cards > li:first-child .card';
   const slideoutLocator = '.slideout-container:not(.hidden)';
-  const textFieldLocator = '.so-content input[name$="[fields][plainTextField2]"]';
+  const textFieldLocator = '.so-content input[name$="[fields][plainTextField6]"]';
 
   // create new entry that contains matrix field in cards view mode
   // add nested entry to the matrix & save

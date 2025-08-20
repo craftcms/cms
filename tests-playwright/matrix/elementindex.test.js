@@ -20,7 +20,7 @@ test.describe('Element index', () => {
   const matrixElementIndexFieldLocator = matrixElementIndexContainerLocator + '-field';
   const firstCardLocator = matrixElementIndexFieldLocator + ' .card-grid > li:first-child .card';
   const slideoutLocator = '.slideout-container:not(.hidden)';
-  const textFieldLocator = '.so-content input[name$="[fields][plainTextField2]"]';
+  const textFieldLocator = '.so-content input[name$="[fields][plainTextField6]"]';
 
   // create new entry that contains matrix field in element index view mode
   // add nested entry to the matrix & save, check the card was added and has the modified indicator

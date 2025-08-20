@@ -18,7 +18,7 @@ test.describe('Blocks', () => {
   const titleFieldLocator = '#title';
   const matrixBlocksFieldLocator = '#fields-matrixBlocksField-field';
   const firstBlockLocator = matrixBlocksFieldLocator + ' .blocks > .matrixblock:first-child';
-  const textFieldLocator = ' input[name$="[fields][plainTextField2]"]';
+  const textFieldLocator = ' input[name$="[fields][plainTextField6]"]';
   const newBlockLocator = '.buttons button.add';
 
   // create new entry that contains matrix field in inline-editable blocks view mode

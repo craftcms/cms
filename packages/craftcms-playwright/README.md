@@ -14,12 +14,13 @@ At the moment, you can run the commands listed under Usage on your host machine.
 
 All commands should be run from the cms repo’s location
 - run `npx craft-playwright test` to boot up docker environment, install Craft CMS in it, run all the tests and shut down the docker environment
-- run `npx craft-playwright test mytestgroup` to boot up docker environment, install Craft CMS in it, run only “mytestgroup” tests and shut down the docker environment
+- run `npx craft-playwright test elementindex/sorting` to boot up docker environment, install Craft CMS in it, run only “elementindex/sorting” tests and shut down the docker environment
 - `npx craft-playwright boot` can be used to set up the docker env & install Craft CMS in it. 
   - After which you can run `npx playwright test` to run tests.
-  - You can add the `--ui` flag to tun tests in interactive UI mode
-  - You can add the `--debug` flag to tun tests in interactive UI mode with debugger that lets you step over the test line by line
+  - You can run specific tests via `npx playwright test elements/inituielements`
   - To shut down the testing environment, use `npx craft-playwright down`.
+- You can add the `--ui` flag to tun tests in interactive UI mode
+- You can add the `--debug` flag to tun tests in interactive UI mode with debugger that lets you step over the test line by line
 
 - to start test generator
   - run `npx craft-playwright boot`
