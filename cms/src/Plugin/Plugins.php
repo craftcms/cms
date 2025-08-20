@@ -667,15 +667,15 @@ final class Plugins
      */
     public function savePluginSettings(PluginInterface $plugin, array $settings): bool
     {
-        if (is_null($plugin->getSettings())) {
+        if (is_null($pluginSettings = $plugin->getSettings())) {
             return false;
         }
 
         // Save the settings on the plugin
-        $plugin->getSettings()->setAttributes($settings, false);
+        $pluginSettings->setAttributes($settings);
 
         // Validate them, now that it's a model
-        if ($plugin->getSettings()->validate() === false) {
+        if ($pluginSettings->validate() === false) {
             return false;
         }
 
@@ -692,8 +692,7 @@ final class Plugins
         }
 
         // Update the plugin’s settings in the project config
-        $pluginSettings = $plugin->getSettings();
-        $pluginSettings = $pluginSettings ? ProjectConfigHelper::packAssociativeArrays($pluginSettings->getAttributes()) : [];
+        $pluginSettings = ProjectConfigHelper::packAssociativeArrays($pluginSettings->getAttributes());
         $this->craft->getProjectConfig()->set(
             path: ProjectConfig::PATH_PLUGINS.'.'.$plugin->handle.'.settings',
             value: $pluginSettings,

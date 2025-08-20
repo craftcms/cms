@@ -150,7 +150,6 @@ abstract class Plugin implements PluginInterface
         public ?string $t9nCategory = null,
         public string $sourceLanguage = 'en-US',
         private ?string $basePath = null,
-        array $settings = [],
     ) {
         $this->t9nCategory ??= $this->handle;
 

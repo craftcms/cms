@@ -280,7 +280,7 @@ class Application extends \yii\web\Application
                     if ($userSession->getIsGuest()) {
                         return $userSession->loginRequired();
                     }
-                    if (!$userSession->checkPermission('accessPlugin-' . $plugin->getHandle())) {
+                    if (!$userSession->checkPermission('accessPlugin-' . $plugin->handle)) {
                         throw new ForbiddenHttpException();
                     }
                 }

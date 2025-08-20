@@ -69,7 +69,7 @@ final readonly class Announcements
 
         // Any enabled plugins?
         $enabledPluginHandles = Collection::make($this->plugins->getAllPlugins())
-            ->map(fn (PluginInterface $plugin) => $plugin->getHandle());
+            ->map(fn (PluginInterface $plugin) => $plugin->handle);
 
         $query->when(
             $enabledPluginHandles->isNotEmpty(),

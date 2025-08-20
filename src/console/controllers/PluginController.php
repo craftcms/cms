@@ -7,7 +7,6 @@
 
 namespace craft\console\controllers;
 
-use Craft;
 use craft\console\Controller;
 use craft\helpers\Console;
 use CraftCms\Cms\Plugin\Contracts\PluginInterface;
@@ -127,19 +126,20 @@ class PluginController extends Controller
 
         if ($this->all) {
             // get all plugins’ info
-            $pluginInfo = $pluginsService->getAllPluginInfo();
-
-            // filter out the ones that are already installed
-            $pluginInfo = array_filter($pluginInfo, fn(array $info) => !$info['isInstalled']);
+            $pluginInfo = $pluginsService
+                ->getAllPluginInfo()
+                // filter out the ones that are already installed
+                ->filter(fn(array $info) => !$info['isInstalled'])
+                ->keys();
 
             // if all plugins are already installed, we're done here
-            if (empty($pluginInfo)) {
+            if ($pluginInfo->isEmpty()) {
                 $this->stdout('There aren’t any uninstalled plugins present.' . PHP_EOL);
                 return ExitCode::OK;
             }
 
             // install them one by one
-            foreach (array_keys($pluginInfo) as $handle) {
+            foreach ($pluginInfo as $handle) {
                 $this->_installPluginByHandle($handle);
             }
         } else {
@@ -201,13 +201,14 @@ class PluginController extends Controller
 
         if ($this->all) {
             // get all plugins’ info
-            $pluginInfo = $pluginsService->getAllPluginInfo();
-
-            // filter out the ones that are uninstalled/disabled
-            $pluginInfo = array_filter($pluginInfo, fn(array $info) => $info['isInstalled'] && ($info['isEnabled'] || $this->force));
+            $pluginInfo = $pluginsService
+                ->getAllPluginInfo()
+                // filter out the ones that are uninstalled/disabled
+                ->filter(fn(array $info) => $info['isInstalled'] && ($info['isEnabled'] || $this->force))
+                ->keys();
 
             // if all plugins are already uninstalled/disabled, we're done here
-            if (empty($pluginInfo)) {
+            if ($pluginInfo->isEmpty()) {
                 if ($this->force) {
                     $this->stdout('There aren’t any installed plugins present.' . PHP_EOL);
                 } else {
@@ -217,7 +218,7 @@ class PluginController extends Controller
             }
 
             // uninstall them one by one
-            foreach (array_keys($pluginInfo) as $handle) {
+            foreach ($pluginInfo as $handle) {
                 $this->_uninstallPluginByHandle($handle);
             }
         } else {
@@ -243,19 +244,20 @@ class PluginController extends Controller
     {
         if ($this->all) {
             // get all plugins’ info
-            $pluginInfo = app(Plugins::class)->getAllPluginInfo();
-
-            // filter out the ones that are uninstalled/enabled
-            $pluginInfo = array_filter($pluginInfo, fn(array $info) => $info['isInstalled'] && !$info['isEnabled']);
+            $pluginInfo = app(Plugins::class)
+                ->getAllPluginInfo()
+                // filter out the ones that are uninstalled/enabled
+                ->filter(fn(array $info) => $info['isInstalled'] && !$info['isEnabled'])
+                ->keys();
 
             // if all plugins are already uninstalled/enabled, we're done here
-            if (empty($pluginInfo)) {
+            if ($pluginInfo->isEmpty()) {
                 $this->stdout('There aren’t any installed and disabled plugins present.' . PHP_EOL);
                 return ExitCode::OK;
             }
 
             // enable them one by one
-            foreach (array_keys($pluginInfo) as $handle) {
+            foreach ($pluginInfo as $handle) {
                 $this->_enablePluginByHandle($handle);
             }
         } else {
@@ -275,19 +277,20 @@ class PluginController extends Controller
     {
         if ($this->all) {
             // get all plugins’ info
-            $pluginInfo = app(Plugins::class)->getAllPluginInfo();
-
-            // filter out the ones that are uninstalled/disabled
-            $pluginInfo = array_filter($pluginInfo, fn(array $info) => $info['isInstalled'] && $info['isEnabled']);
+            $pluginInfo = app(Plugins::class)
+                ->getAllPluginInfo()
+                // filter out the ones that are uninstalled/disabled
+                ->filter(fn(array $info) => $info['isInstalled'] && $info['isEnabled'])
+                ->keys();
 
             // if all plugins are already uninstalled/enabled, we're done here
-            if (empty($pluginInfo)) {
+            if ($pluginInfo->isEmpty()) {
                 $this->stdout('There aren’t any installed and enabled plugins present.' . PHP_EOL);
                 return ExitCode::OK;
             }
 
             // disable them one by one
-            foreach (array_keys($pluginInfo) as $handle) {
+            foreach ($pluginInfo as $handle) {
                 $this->_disablePluginByHandle($handle);
             }
         } else {
@@ -360,7 +363,7 @@ class PluginController extends Controller
         $start = microtime(true);
 
         try {
-            $success = Craft::$app->plugins->uninstallPlugin($handle, $this->force);
+            $success = app(Plugins::class)->uninstallPlugin($handle, $this->force);
         } catch (Throwable $e) {
             $success = false;
         } finally {
@@ -403,7 +406,7 @@ class PluginController extends Controller
         $start = microtime(true);
 
         try {
-            $success = Craft::$app->plugins->enablePlugin($handle);
+            $success = app(Plugins::class)->enablePlugin($handle);
         } catch (Throwable $e) {
             $success = false;
         } finally {
@@ -442,7 +445,7 @@ class PluginController extends Controller
         $start = microtime(true);
 
         try {
-            $success = Craft::$app->plugins->disablePlugin($handle);
+            $success = app(Plugins::class)->disablePlugin($handle);
         } catch (Throwable $e) {
             $success = false;
         } finally {
@@ -471,10 +474,12 @@ class PluginController extends Controller
             return ExitCode::UNSPECIFIED_ERROR;
         }
 
-        $pluginInfo = app(Plugins::class)->getAllPluginInfo();
-        if ($filterCallback) {
-            $pluginInfo = array_filter($pluginInfo, $filterCallback);
-        }
+        $pluginInfo = app(Plugins::class)
+            ->getAllPluginInfo()
+            ->when(
+                $filterCallback,
+                fn(Collection $collection) => $collection->filter($filterCallback),
+            );
 
         foreach ($pluginInfo as $handle => $info) {
             $uninstalledPluginInfo[$handle] = [
