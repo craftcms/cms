@@ -28,8 +28,11 @@ then
   mkdir config
 fi
 
-# autoload modules via composer
-sed -i "s/\"prefer-stable\": true,/\"prefer-stable\": true,\n  \"autoload\": {\"psr-4\": {\"modules\\\\\\\\\": \"modules\/\"}},/g" composer.json
+# autoload modules and fixtures via composer
+FIXTURES_NAMESPACE=${PLAYWRIGHT_FIXTURES_NAMESPACE//\\/\\\\}
+FIXTURES_PATH="\/app\/repos\/repo\/src\/"${PLAYWRIGHT_FIXTURES_PATH//\//\\/}
+
+sed -i "s/\"prefer-stable\": true,/\"prefer-stable\": true,\n  \"autoload\": {\"psr-4\": {\"${FIXTURES_NAMESPACE//\\/\\\\}\\\\\\\\\": \"${FIXTURES_PATH}\",\"modules\\\\\\\\\": \"modules\/\"}},/g" composer.json
 composer dump-autoload
 
 cp -vfrp /app/repos/repo/node_modules/@craftcms/playwright/php/DbBackup.php /app/modules/
