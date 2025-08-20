@@ -32,11 +32,15 @@ function loadTestPlugin(): void
     $reflectionClass->getProperty('plugins')->setValue($plugins, [
         'test-plugin' => app()->make(TestPlugin::class, [
             'handle' => 'test-plugin',
+            'name' => 'Test Plugin',
             'version' => '1.0.1',
         ]),
     ]);
     $reflectionClass->getProperty('composerPluginInfo')->setValue($plugins, [
         'test-plugin' => [
+            'name' => 'Test Plugin',
+            'packageName' => 'craftcms/test-plugin',
+            'version' => '1.0.1',
             'class' => TestPlugin::class,
             'basePath' => dirname(__DIR__, 1).'/TestClasses',
         ],

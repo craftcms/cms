@@ -235,6 +235,10 @@ class Yii2ServiceProvider extends ServiceProvider
                     return;
                 }
 
+                if ($artisan->has($artisanName)) {
+                    return;
+                }
+
                 $artisan->resolve(new LegacyCraftCommand(
                     app: $app,
                     signature: "craft:{$signature}",

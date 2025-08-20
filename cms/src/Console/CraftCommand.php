@@ -2,6 +2,7 @@
 
 namespace CraftCms\Cms\Console;
 
+use craft\services\ProjectConfig;
 use CraftCms\Cms\Support\Str;
 use Illuminate\Console\Command;
 
@@ -21,5 +22,23 @@ trait CraftCommand
         $this->signature = Str::after($this->signature, 'craft:');
 
         parent::__construct();
+    }
+
+    protected function ensureProjectConfigFileExists(): void
+    {
+        /** @var ProjectConfig $projectConfig */
+        $projectConfig = app('Craft')->getProjectConfig();
+
+        if (! $projectConfig->writeYamlAutomatically) {
+            return;
+        }
+
+        if ($projectConfig->getDoesExternalConfigExist()) {
+            return;
+        }
+
+        $this->outputComponents()->warn('Generating project config files from the loaded project config ... ');
+        $projectConfig->regenerateExternalConfig();
+        $this->outputComponents()->success('done');
     }
 }

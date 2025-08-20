@@ -260,17 +260,15 @@ class Plugin extends Module implements PluginInterface
      */
     public function getMigrator(): MigrationManager
     {
-        if (!$this->has('migrator')) {
-            $ref = new ReflectionClass($this);
-            $ns = $ref->getNamespaceName();
+        $ref = new ReflectionClass($this);
+        $ns = $ref->getNamespaceName();
 
-            $this->set('migrator', [
-                'class' => MigrationManager::class,
-                'track' => "plugin:$this->handle",
-                'migrationNamespace' => ($ns ? $ns . '\\' : '') . 'migrations',
-                'migrationPath' => $this->getBasePath() . DIRECTORY_SEPARATOR . 'migrations',
-            ]);
-        }
+        $this->set('migrator', [
+            'class' => MigrationManager::class,
+            'track' => "plugin:$this->handle",
+            'migrationNamespace' => ($ns ? $ns . '\\' : '') . 'migrations',
+            'migrationPath' => $this->getBasePath() . DIRECTORY_SEPARATOR . 'migrations',
+        ]);
 
         return $this->get('migrator');
     }
