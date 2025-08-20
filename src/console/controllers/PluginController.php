@@ -9,9 +9,9 @@ namespace craft\console\controllers;
 
 use Craft;
 use craft\console\Controller;
-use craft\errors\InvalidPluginException;
 use craft\helpers\Console;
 use CraftCms\Cms\Plugin\Contracts\PluginInterface;
+use CraftCms\Cms\Plugin\Exceptions\InvalidPluginException;
 use CraftCms\Cms\Plugin\Plugins;
 use Illuminate\Support\Collection;
 use Throwable;

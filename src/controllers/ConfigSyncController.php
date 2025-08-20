@@ -9,10 +9,10 @@ namespace craft\controllers;
 
 use Craft;
 use craft\errors\BusyResourceException;
-use craft\errors\InvalidPluginException;
 use craft\errors\StaleResourceException;
 use craft\services\ProjectConfig;
 use CraftCms\Cms\Config\GeneralConfig;
+use CraftCms\Cms\Plugin\Exceptions\InvalidPluginException;
 use CraftCms\Cms\Plugin\Plugins;
 use CraftCms\Cms\Support\Arr;
 use Throwable;

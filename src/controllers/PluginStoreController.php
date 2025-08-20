@@ -9,13 +9,13 @@ namespace craft\controllers;
 
 use Craft;
 use craft\errors\InvalidLicenseKeyException;
-use craft\errors\InvalidPluginException;
 use craft\helpers\App;
 use craft\helpers\UrlHelper;
 use craft\web\assets\pluginstore\PluginStoreAsset;
 use craft\web\Controller;
 use craft\web\View;
 use CraftCms\Cms\Edition;
+use CraftCms\Cms\Plugin\Exceptions\InvalidPluginException;
 use CraftCms\Cms\Plugin\Plugins;
 use CraftCms\Cms\Support\Composer;
 use CraftCms\Cms\Support\Json;
