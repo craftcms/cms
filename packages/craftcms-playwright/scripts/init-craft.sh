@@ -30,7 +30,7 @@ fi
 
 # autoload modules and fixtures via composer
 FIXTURES_NAMESPACE=${PLAYWRIGHT_FIXTURES_NAMESPACE//\\/\\\\}
-FIXTURES_PATH="\/app\/repos\/repo\/src\/"${PLAYWRIGHT_FIXTURES_PATH//\//\\/}
+FIXTURES_PATH="\/app\/repos\/repo\/"${PLAYWRIGHT_FIXTURES_PATH//\//\\/}
 
 sed -i "s/\"prefer-stable\": true,/\"prefer-stable\": true,\n  \"autoload\": {\"psr-4\": {\"${FIXTURES_NAMESPACE//\\/\\\\}\\\\\\\\\": \"${FIXTURES_PATH}\",\"modules\\\\\\\\\": \"modules\/\"}},/g" composer.json
 composer dump-autoload
