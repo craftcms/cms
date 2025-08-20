@@ -74,7 +74,7 @@ final class CraftSupport extends Widget
 
         $pluginVersions = [];
         foreach ($craft->getPlugins()->getAllPlugins() as $plugin) {
-            $pluginVersions[] = sprintf('- %s %s', $plugin->name, $plugin->getVersion());
+            $pluginVersions[] = sprintf('- %s %s', $plugin->name, $plugin->version);
         }
 
         $db = $craft->getDb();

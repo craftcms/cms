@@ -4,12 +4,13 @@ namespace CraftCms\Cms\Plugin;
 
 use Craft;
 use craft\base\Plugin;
-use craft\db\MigrationManager;
+use craft\console\Application as CraftConsoleApplication;
 use craft\errors\InvalidLicenseKeyException;
 use craft\helpers\App;
 use craft\helpers\FileHelper;
 use craft\helpers\ProjectConfig as ProjectConfigHelper;
 use craft\services\ProjectConfig;
+use craft\web\Application as CraftWebApplication;
 use CraftCms\Aliases\Facades\Aliases;
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Db\Table;
@@ -98,7 +99,7 @@ final class Plugins
 
     public function __construct(
         #[Give('Craft')]
-        private readonly \craft\web\Application $craft,
+        private readonly CraftWebApplication|CraftConsoleApplication $craft,
         private readonly Repository $cache,
         Application $app,
         Filesystem $files,
@@ -130,7 +131,6 @@ final class Plugins
                     $plugin['basePath'] = FileHelper::normalizePath($basePath);
                 } else {
                     Log::warning("Invalid plugin base path: {$plugin['basePath']}", [__METHOD__]);
-                    ;
                     unset($plugin['basePath']);
                 }
             }
@@ -225,7 +225,7 @@ final class Plugins
                 DB::table(Table::PLUGINS)
                     ->where('id', $row['id'])
                     ->update([
-                        'version' => $plugin->getVersion(),
+                        'version' => $plugin->version,
                         'dateUpdated' => now(),
                     ]);
 
@@ -479,7 +479,7 @@ final class Plugins
 
             $info['id'] = DB::table(Table::PLUGINS)->insertGetId([
                 'handle' => $handle,
-                'version' => $plugin->getVersion(),
+                'version' => $plugin->version,
                 'schemaVersion' => $plugin->schemaVersion,
                 'installDate' => $now = now(),
                 'dateCreated' => $now,
@@ -489,7 +489,6 @@ final class Plugins
 
             $info['enabled'] = $projectConfig->get($configKey.'.enabled') ?? true;
 
-            $this->setPluginMigrator($plugin);
             $plugin->install();
             DB::commit();
         } catch (Throwable $e) {
@@ -668,6 +667,10 @@ final class Plugins
      */
     public function savePluginSettings(PluginInterface $plugin, array $settings): bool
     {
+        if (is_null($plugin->getSettings())) {
+            return false;
+        }
+
         // Save the settings on the plugin
         $plugin->getSettings()->setAttributes($settings, false);
 
@@ -677,7 +680,11 @@ final class Plugins
         }
 
         if (Event::hasListeners(SavingPluginSettings::class)) {
-            Event::dispatch(new SavingPluginSettings($plugin));
+            Event::dispatch($event = new SavingPluginSettings($plugin));
+
+            if (! $event->isValid) {
+                return false;
+            }
         }
 
         if (! $plugin->beforeSaveSettings()) {
@@ -686,7 +693,7 @@ final class Plugins
 
         // Update the plugin’s settings in the project config
         $pluginSettings = $plugin->getSettings();
-        $pluginSettings = $pluginSettings ? ProjectConfigHelper::packAssociativeArrays($pluginSettings->toArray()) : [];
+        $pluginSettings = $pluginSettings ? ProjectConfigHelper::packAssociativeArrays($pluginSettings->getAttributes()) : [];
         $this->craft->getProjectConfig()->set(
             path: ProjectConfig::PATH_PLUGINS.'.'.$plugin->handle.'.settings',
             value: $pluginSettings,
@@ -716,7 +723,7 @@ final class Plugins
             return false;
         }
 
-        return $plugin->getVersion() !== $info['version'];
+        return $plugin->version !== $info['version'];
     }
 
     /**
@@ -791,7 +798,7 @@ final class Plugins
         DB::table(Table::PLUGINS)
             ->where('handle', $plugin->handle)
             ->update([
-                'version' => $plugin->getVersion(),
+                'version' => $plugin->version,
                 'schemaVersion' => $plugin->schemaVersion,
                 'dateUpdated' => now(),
             ]);
@@ -799,7 +806,7 @@ final class Plugins
         // Update our cache of the versions
         $this->loadPlugins();
         if (isset($this->storedPluginInfo[$plugin->handle])) {
-            $this->storedPluginInfo[$plugin->handle]['version'] = $plugin->getVersion();
+            $this->storedPluginInfo[$plugin->handle]['version'] = $plugin->version;
             $this->storedPluginInfo[$plugin->handle]['schemaVersion'] = $plugin->schemaVersion;
         }
 
@@ -811,7 +818,6 @@ final class Plugins
 
         // Clear the license info cache
         $this->cache->forget(App::CACHE_KEY_LICENSE_INFO);
-
     }
 
     /**
@@ -862,9 +868,6 @@ final class Plugins
             return null;
         }
 
-        // Merge in the plugin’s dynamic config
-        $config = Arr::merge($config, $class::config());
-
         // Is it installed?
         if ($info !== null) {
             $config['isInstalled'] = true;
@@ -873,7 +876,7 @@ final class Plugins
             $config['edition'] = $info['edition'] ?? 'standard';
             $editions = $class::editions();
             if (! in_array($config['edition'], $editions, true)) {
-                $config['edition'] = reset($editions);
+                $config['edition'] = Arr::first($editions);
             }
 
             $settings = array_merge(
@@ -891,12 +894,9 @@ final class Plugins
             }
         }
 
-        // Create the plugin
-        /** @var PluginInterface $plugin */
-        $plugin = Craft::createObject($config, [$handle, $this->craft]);
-        $this->setPluginMigrator($plugin);
+        $config['handle'] = $handle;
 
-        return $plugin;
+        return $class::create($config);
     }
 
     /**
@@ -1224,25 +1224,6 @@ final class Plugins
         unset($this->plugins[$plugin->handle]);
 
         $this->craft->setModule($plugin->handle, null);
-    }
-
-    /**
-     * Sets the 'migrator' component on a plugin.
-     *
-     * @param  PluginInterface  $plugin  The plugin
-     */
-    private function setPluginMigrator(PluginInterface $plugin): void
-    {
-        /** @var Plugin $plugin */
-        $ref = new ReflectionClass($plugin);
-        $ns = $ref->getNamespaceName();
-
-        $plugin->set('migrator', [
-            'class' => MigrationManager::class,
-            'track' => "plugin:$plugin->handle",
-            'migrationNamespace' => ($ns ? $ns.'\\' : '').'migrations',
-            'migrationPath' => $plugin->getBasePath().DIRECTORY_SEPARATOR.'migrations',
-        ]);
     }
 
     /**

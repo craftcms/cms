@@ -18,6 +18,7 @@ use craft\web\Controller;
 use craft\web\View;
 use CraftCms\Cms\Plugin\Contracts\PluginInterface;
 use CraftCms\Cms\Support\Arr;
+use ReflectionClass;
 use ReflectionMethod;
 use yii\base\Event;
 use yii\base\InvalidArgumentException;
@@ -259,6 +260,18 @@ class Plugin extends Module implements PluginInterface
      */
     public function getMigrator(): MigrationManager
     {
+        if (!$this->has('migrator')) {
+            $ref = new ReflectionClass($this);
+            $ns = $ref->getNamespaceName();
+
+            $this->set('migrator', [
+                'class' => MigrationManager::class,
+                'track' => "plugin:$this->handle",
+                'migrationNamespace' => ($ns ? $ns . '\\' : '') . 'migrations',
+                'migrationPath' => $this->getBasePath() . DIRECTORY_SEPARATOR . 'migrations',
+            ]);
+        }
+
         return $this->get('migrator');
     }
 
@@ -282,18 +295,7 @@ class Plugin extends Module implements PluginInterface
     // Editions
     // -------------------------------------------------------------------------
 
-    /**
-     * Compares the active edition with the given edition.
-     *
-     * @param string $edition The edition to compare the active edition against
-     * @param string $operator The comparison operator to use. `=` by default,
-     * meaning the method will return `true` if the active edition is equal to
-     * the passed-in edition.
-     * @return bool
-     * @throws InvalidArgumentException if `$edition` is an unsupported edition,
-     * or if `$operator` is an invalid operator.
-     * @since 3.1.0
-     */
+    /** {@inheritdoc} */
     public function is(string $edition, string $operator = '='): bool
     {
         $editions = static::editions();
@@ -435,8 +437,14 @@ class Plugin extends Module implements PluginInterface
         return parent::getBasePath();
     }
 
-    public function getVersion(): string
+    /** {@inheritdoc} */
+    public static function create(array $config): PluginInterface
     {
-        return parent::getVersion();
+        // Merge in the plugin’s dynamic config
+        $config = Arr::merge($config, static::config());
+
+        $config['class'] = static::class;
+
+        return Craft::createObject($config, [$config['handle'], Craft::$app]);
     }
 }

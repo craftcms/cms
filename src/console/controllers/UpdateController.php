@@ -295,7 +295,7 @@ class UpdateController extends Controller
 
             foreach ($pluginsService->getAllPlugins() as $plugin) {
                 // don't update dev versions
-                $version = $plugin->getVersion();
+                $version = $plugin->version;
                 if (VersionParser::parseStability($version) === 'dev') {
                     continue;
                 }

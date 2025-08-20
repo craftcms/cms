@@ -3,7 +3,9 @@
 namespace CraftCms\Cms\Plugin\Contracts;
 
 use craft\db\MigrationManager;
+use CraftCms\Cms\Component\Contracts\ValidatableComponentInterface;
 use CraftCms\Cms\Edition;
+use InvalidArgumentException;
 
 /**
  * PluginInterface defines the common interface to be implemented by plugin classes.
@@ -143,70 +145,14 @@ interface PluginInterface
     public string $edition { get; set; }
 
     /**
-     * Returns the base config that the plugin should be instantiated with.
-     *
-     * It is recommended that plugins define their internal components from here:
-     *
-     * ```php
-     * public static function config(): array
-     * {
-     *     return [
-     *         'components' => [
-     *             'myComponent' => ['class' => MyComponent::class],
-     *             // ...
-     *         ],
-     *     ];
-     * }
-     * ```
-     *
-     * Doing that enables projects to customize the components as needed, by
-     * overriding `\craft\services\Plugins::$pluginConfigs` in `config/app.php`:
-     *
-     * ```php
-     * return [
-     *     'components' => [
-     *         'plugins' => [
-     *             'pluginConfigs' => [
-     *                 'my-plugin' => [
-     *                     'components' => [
-     *                         'myComponent' => [
-     *                             'myProperty' => 'foo',
-     *                             // ...
-     *                         ],
-     *                     ],
-     *                 ],
-     *             ],
-     *         ],
-     *     ],
-     * ];
-     * ```
-     *
-     * The resulting config will be passed to `\Craft::createObject()` to instantiate the plugin.
-     */
-    public static function config(): array;
-
-    /**
      * Returns supported plugin editions (lowest to highest).
      *
      * @return string[]
      */
     public static function editions(): array;
 
-    /**
-     * Returns the plugin’s handle (really just an alias of [[\yii\base\Module::id]]).
-     *
-     * @return string The plugin’s handle
-     */
-    public function getHandle(): string;
-
-    /**
-     * Installs the plugin.
-     */
     public function install(): void;
 
-    /**
-     * Uninstalls the plugin.
-     */
     public function uninstall(): void;
 
     /**
@@ -219,9 +165,11 @@ interface PluginInterface
     /**
      * Returns the model that the plugin’s settings should be stored on, if the plugin has settings.
      *
-     * @return object|null The model that the plugin’s settings should be stored on, if the plugin has settings
+     * @return ?ValidatableComponentInterface The model that the plugin’s settings should be stored on, if the plugin has settings
+     *
+     * @internal
      */
-    public function getSettings(): ?object;
+    public function getSettings(): ?ValidatableComponentInterface;
 
     /**
      * Sets the plugin settings
@@ -288,6 +236,22 @@ interface PluginInterface
      */
     public function getCpNavItem(): ?array;
 
+    // Editions
+    // -------------------------------------------------------------------------
+
+    /**
+     * Compares the active edition with the given edition.
+     *
+     * @param  string  $edition  The edition to compare the active edition against
+     * @param  string  $operator  The comparison operator to use. `=` by default,
+     *                            meaning the method will return `true` if the active edition is equal to
+     *                            the passed-in edition.
+     *
+     * @throws InvalidArgumentException if `$edition` is an unsupported edition,
+     *                                  or if `$operator` is an invalid operator.
+     */
+    public function is(string $edition, string $operator = '='): bool;
+
     // Events
     // -------------------------------------------------------------------------
 
@@ -312,9 +276,7 @@ interface PluginInterface
     public function getBasePath(): string;
 
     /**
-     * Returns current plugin version.
-     *
-     * @return string the version of this plugin.
+     * Creates and returns a new plugin instance based on a passed config
      */
-    public function getVersion(): string;
+    public static function create(array $config): self;
 }

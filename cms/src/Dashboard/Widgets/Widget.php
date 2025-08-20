@@ -130,7 +130,7 @@ abstract class Widget implements WidgetInterface
 EOD;
     }
 
-    public function getValidationData(): array
+    public function getAttributes(): array
     {
         return $this->getSettings();
     }

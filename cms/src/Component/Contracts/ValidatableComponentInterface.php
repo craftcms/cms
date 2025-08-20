@@ -6,8 +6,6 @@ interface ValidatableComponentInterface
 {
     public static function getRules(): array;
 
-    public function getValidationData(): array;
-
     public function validate(string|array|null $attributeNames = null, bool $clearErrors = true): bool;
 
     public function hasErrors(?string $attribute = null): bool;
@@ -17,4 +15,8 @@ interface ValidatableComponentInterface
     public function getFirstErrors(): array;
 
     public function getFirstError(string $attribute): ?string;
+
+    public function setAttributes(array $values): void;
+
+    public function getAttributes(): array;
 }

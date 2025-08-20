@@ -15,6 +15,7 @@ use craft\helpers\App;
 use craft\helpers\Component;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\Typecast;
+use CraftCms\Cms\Component\Contracts\ValidatableComponentInterface;
 use CraftCms\Cms\Support\Str;
 use yii\validators\Validator;
 
@@ -24,7 +25,7 @@ use yii\validators\Validator;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
  */
-abstract class Model extends \yii\base\Model implements ModelInterface
+abstract class Model extends \yii\base\Model implements ModelInterface, ValidatableComponentInterface
 {
     use ClonefixTrait;
 
@@ -232,6 +233,11 @@ abstract class Model extends \yii\base\Model implements ModelInterface
         parent::setAttributes($values, $safeOnly);
     }
 
+    public function getAttributes($names = null, $except = []): array
+    {
+        return parent::getAttributes($names, $except);
+    }
+
     /**
      * @inheritdoc
      */
@@ -387,5 +393,21 @@ abstract class Model extends \yii\base\Model implements ModelInterface
         }
 
         return false;
+    }
+
+    /**
+     * Legacy models are validated differently
+     */
+    public static function getRules(): array
+    {
+        return [];
+    }
+
+    /**
+     * Legacy models are validated differently
+     */
+    public function getValidationData(): array
+    {
+        return [];
     }
 }
