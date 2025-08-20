@@ -23,7 +23,7 @@ use craft\helpers\StringHelper;
 return [
     'id' => App::env('CRAFT_APP_ID') ?: 'CraftCMS',
     'aliases' => [
-        '@' . str_replace('\\', '/', App::env('PLAYWRIGHT_FIXTURES_NAMESPACE')) => '/app/repos/repo' . StringHelper::ensureLeft(App::env('PLAYWRIGHT_FIXTURES_PATH'), '/'),
+        '@' . str_replace('\\', '/', App::env('CODECEPTION_FIXTURES_NAMESPACE')) => '/app/repos/repo' . StringHelper::ensureLeft(App::env('CODECEPTION_FIXTURES_PATH'), '/'),
     ],
     'modules' => [
         /** @phpstan-ignore-next-line */

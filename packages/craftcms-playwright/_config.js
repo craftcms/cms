@@ -6,14 +6,14 @@ const {devices} = require('@playwright/test');
 const testDir = './tests-playwright';
 require('dotenv').config({path: path.resolve(path.join(testDir, '.env'))});
 
-let cpTrigger = process.env.PLAYWRIGHT_CRAFT_CP_TRIGGER ?? 'admin';
+let cpTrigger = process.env.CRAFT_CP_TRIGGER ?? 'admin';
 cpTrigger = `./${cpTrigger}/`;
 const storageStateFilename = '.authentication.json';
-let baseURL = process.env.PLAYWRIGHT_SITE ?? 'http://127.0.0.1:8089/';
+let baseURL = process.env.SITE ?? 'http://127.0.0.1:8089/';
 baseURL = new URL(cpTrigger, baseURL).href;
 const username = process.env.PW_AUTH_USERNAME ?? 'admin';
 const password = process.env.PW_AUTH_PASSWORD ?? 'NewPassword';
-const fixturesNamespace = process.env.PLAYWRIGHT_FIXTURES_NAMESPACE;
+const fixturesNamespace = process.env.CODECEPTION_FIXTURES_NAMESPACE;
 
 module.exports = {
   globalSetup: require.resolve(path.join(__dirname, './_global-setup.js')),

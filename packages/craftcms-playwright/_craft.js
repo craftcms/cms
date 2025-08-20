@@ -13,7 +13,7 @@ const testDir = './tests-playwright';
 require('dotenv').config({path: path.resolve(path.join(testDir, '.env'))});
 
 const getNamespace = () => {
-  let ns = process.env.PLAYWRIGHT_FIXTURES_NAMESPACE;
+  let ns = process.env.CODECEPTION_FIXTURES_NAMESPACE;
   // Escape the backslashes for use in cli commands
 
   ns = ns ? ns.replace(/\\/g, '\\\\') : '';
