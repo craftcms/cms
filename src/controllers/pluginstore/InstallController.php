@@ -11,6 +11,7 @@ use Craft;
 use craft\controllers\BaseUpdaterController;
 use craft\web\Response;
 use CraftCms\Cms\Config\GeneralConfig;
+use CraftCms\Cms\Plugin\Plugins;
 use Throwable;
 use yii\web\ForbiddenHttpException;
 use yii\web\Response as YiiResponse;
@@ -66,7 +67,7 @@ class InstallController extends BaseUpdaterController
         [$success, $tempResponse, $errorDetails] = $this->installPlugin($this->data['handle'], $this->data['edition']);
 
         if (!$success) {
-            $info = Craft::$app->getPlugins()->getComposerPluginInfo($this->data['handle']);
+            $info = app(Plugins::class)->getComposerPluginInfo($this->data['handle']);
             $pluginName = $info['name'] ?? $this->data['packageName'];
 
             return $this->send([
@@ -105,7 +106,7 @@ class InstallController extends BaseUpdaterController
      */
     public function actionEnable(): YiiResponse
     {
-        Craft::$app->getPlugins()->enablePlugin($this->data['handle']);
+        app(Plugins::class)->enablePlugin($this->data['handle']);
         return $this->sendNextAction(self::ACTION_MIGRATE);
     }
 
@@ -197,7 +198,7 @@ class InstallController extends BaseUpdaterController
         }
 
         // Is the plugin already Craft-installed?
-        $pluginsService = Craft::$app->getPlugins();
+        $pluginsService = app(Plugins::class);
         if ($pluginsService->isPluginInstalled($this->data['handle'])) {
             // Is it disabled?
             if (!$pluginsService->isPluginEnabled($this->data['handle'])) {
@@ -218,7 +219,7 @@ class InstallController extends BaseUpdaterController
         // Set the license key
         if ($this->data['licenseKey'] !== null) {
             try {
-                Craft::$app->getPlugins()->setPluginLicenseKey($this->data['handle'], $this->data['licenseKey']);
+                app(Plugins::class)->setPluginLicenseKey($this->data['handle'], $this->data['licenseKey']);
             } catch (Throwable $e) {
                 Craft::error("Could not set the license key on {$this->data['handle']}: {$e->getMessage()}", __METHOD__);
                 Craft::$app->getErrorHandler()->logException($e);

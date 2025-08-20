@@ -7,6 +7,7 @@ use Craft;
 use craft\helpers\App;
 use CraftCms\Aliases\Facades\Aliases;
 use CraftCms\Cms\Plugin\Contracts\PluginInterface;
+use CraftCms\Cms\Plugin\Plugins;
 use CraftCms\Cms\Utility\Utility;
 use Illuminate\Support\Facades\DB;
 use OutOfBoundsException;
@@ -85,7 +86,7 @@ final readonly class SystemReport extends Utility
 
         return Craft::$app->getView()->renderTemplate('_components/utilities/SystemReport.twig', [
             'appInfo' => self::appInfo(),
-            'plugins' => Craft::$app->getPlugins()->getAllPlugins(),
+            'plugins' => app(Plugins::class)->getAllPlugins(),
             'modules' => $modules,
             'aliases' => $aliases,
             'requirements' => self::requirementResults(),

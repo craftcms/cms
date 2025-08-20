@@ -1289,6 +1289,7 @@ trait ApplicationTrait
      * Returns the plugins service.
      *
      * @return Plugins The plugins service
+     * @deprecated 6.0.0 Use {@see \CraftCms\Cms\Plugin\Plugins} instead.
      */
     public function getPlugins(): Plugins
     {

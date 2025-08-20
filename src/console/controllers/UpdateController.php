@@ -11,7 +11,6 @@ use Composer\Semver\VersionParser;
 use Craft;
 use craft\console\Controller;
 use craft\elements\User;
-use craft\errors\InvalidPluginException;
 use craft\helpers\App;
 use craft\helpers\Console;
 use craft\helpers\FileHelper;
@@ -20,6 +19,8 @@ use craft\models\Update;
 use craft\models\Updates;
 use craft\models\Updates as UpdatesModel;
 use CraftCms\Cms\Config\GeneralConfig;
+use CraftCms\Cms\Plugin\Exceptions\InvalidPluginException;
+use CraftCms\Cms\Plugin\Plugins;
 use CraftCms\Cms\Support\Api;
 use CraftCms\Cms\Support\Composer;
 use CraftCms\Cms\Support\Json;
@@ -143,7 +144,7 @@ class UpdateController extends Controller
             $this->_outputUpdate('craft', Craft::$app->version, $updates->cms->getLatest()->version, $updates->cms->getHasCritical(), $updates->cms->status, $updates->cms->phpConstraint);
         }
 
-        $pluginsService = Craft::$app->getPlugins();
+        $pluginsService = app(Plugins::class);
 
         foreach ($updates->plugins as $pluginHandle => $pluginUpdate) {
             if ($pluginUpdate->getHasReleases()) {
@@ -285,7 +286,7 @@ class UpdateController extends Controller
     private function _getRequirements(string ...$handles): array
     {
         $constraints = [];
-        $pluginsService = Craft::$app->getPlugins();
+        $pluginsService = app(Plugins::class);
 
         if ($this->minorOnly || $this->patchOnly) {
             $cmsConstraint = $this->_constraint(Craft::$app->getVersion());

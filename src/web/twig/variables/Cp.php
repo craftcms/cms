@@ -25,6 +25,7 @@ use craft\web\twig\TemplateLoaderException;
 use CraftCms\Aliases\Facades\Aliases;
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Edition;
+use CraftCms\Cms\Plugin\Plugins;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Env;
 use CraftCms\Cms\Support\Str;
@@ -276,7 +277,7 @@ class Cp extends Component
         }
 
         // Add any Plugin nav items
-        $plugins = Craft::$app->getPlugins()->getAllPlugins();
+        $plugins = app(Plugins::class)->getAllPlugins();
 
         foreach ($plugins as $plugin) {
             if (
@@ -489,7 +490,7 @@ class Cp extends Component
 
         $label = Craft::t('app', 'Plugins');
 
-        $pluginsService = Craft::$app->getPlugins();
+        $pluginsService = app(Plugins::class);
 
         foreach ($pluginsService->getAllPlugins() as $plugin) {
             if ($plugin->hasCpSettings && (!$readOnly || $plugin->hasReadOnlyCpSettings)) {

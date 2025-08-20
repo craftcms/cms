@@ -24,6 +24,7 @@ use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Db\Table;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Element\Enums\PropagationMethod;
+use CraftCms\Cms\Plugin\Plugins;
 use CraftCms\Cms\Support\Str;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\DB;
@@ -1247,7 +1248,7 @@ class Install extends Migration
             return false;
         }
 
-        $pluginsService = Craft::$app->getPlugins();
+        $pluginsService = app(Plugins::class);
         $pluginConfigs = $projectConfig->get(ProjectConfig::PATH_PLUGINS, true) ?? [];
 
         /**
@@ -1285,7 +1286,7 @@ class Install extends Migration
     private function _installPlugins(): void
     {
         $projectConfig = Craft::$app->getProjectConfig();
-        $pluginsService = Craft::$app->getPlugins();
+        $pluginsService = app(Plugins::class);
         $pluginConfigs = $projectConfig->get(ProjectConfig::PATH_PLUGINS, true) ?? [];
 
         // Prevent the plugin from sending any headers, etc.

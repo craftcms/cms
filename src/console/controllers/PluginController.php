@@ -12,6 +12,7 @@ use craft\console\Controller;
 use craft\errors\InvalidPluginException;
 use craft\helpers\Console;
 use CraftCms\Cms\Plugin\Contracts\PluginInterface;
+use CraftCms\Cms\Plugin\Plugins;
 use Illuminate\Support\Collection;
 use Throwable;
 use yii\console\ExitCode;
@@ -80,7 +81,7 @@ class PluginController extends Controller
      */
     public function actionList(): int
     {
-        $pluginInfo = Collection::make(Craft::$app->getPlugins()->getAllPluginInfo())
+        $pluginInfo = Collection::make(app(Plugins::class)->getAllPluginInfo())
             ->sortBy(['isEnabled', 'isInstalled'], SORT_REGULAR, true)
             ->all();
 
@@ -122,7 +123,7 @@ class PluginController extends Controller
      */
     public function actionInstall(?string $handle = null, ?string $edition = null): int
     {
-        $pluginsService = Craft::$app->getPlugins();
+        $pluginsService = app(Plugins::class);
 
         if ($this->all) {
             // get all plugins’ info
@@ -196,7 +197,7 @@ class PluginController extends Controller
      */
     public function actionUninstall(?string $handle = null): int
     {
-        $pluginsService = Craft::$app->getPlugins();
+        $pluginsService = app(Plugins::class);
 
         if ($this->all) {
             // get all plugins’ info
@@ -242,7 +243,7 @@ class PluginController extends Controller
     {
         if ($this->all) {
             // get all plugins’ info
-            $pluginInfo = Craft::$app->getPlugins()->getAllPluginInfo();
+            $pluginInfo = app(Plugins::class)->getAllPluginInfo();
 
             // filter out the ones that are uninstalled/enabled
             $pluginInfo = array_filter($pluginInfo, fn(array $info) => $info['isInstalled'] && !$info['isEnabled']);
@@ -274,7 +275,7 @@ class PluginController extends Controller
     {
         if ($this->all) {
             // get all plugins’ info
-            $pluginInfo = Craft::$app->getPlugins()->getAllPluginInfo();
+            $pluginInfo = app(Plugins::class)->getAllPluginInfo();
 
             // filter out the ones that are uninstalled/disabled
             $pluginInfo = array_filter($pluginInfo, fn(array $info) => $info['isInstalled'] && $info['isEnabled']);
@@ -320,7 +321,7 @@ class PluginController extends Controller
         $start = microtime(true);
 
         try {
-            $success = Craft::$app->getPlugins()->installPlugin($handle, $edition);
+            $success = app(Plugins::class)->installPlugin($handle, $edition);
         } catch (Throwable $e) {
             $success = false;
         } finally {
@@ -470,7 +471,7 @@ class PluginController extends Controller
             return ExitCode::UNSPECIFIED_ERROR;
         }
 
-        $pluginInfo = Craft::$app->getPlugins()->getAllPluginInfo();
+        $pluginInfo = app(Plugins::class)->getAllPluginInfo();
         if ($filterCallback) {
             $pluginInfo = array_filter($pluginInfo, $filterCallback);
         }

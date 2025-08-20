@@ -4,6 +4,7 @@ namespace CraftCms\Cms\Utility\Utilities;
 
 use Craft;
 use craft\web\assets\upgrade\UpgradeAsset;
+use CraftCms\Cms\Plugin\Plugins;
 use CraftCms\Cms\Utility\Utility;
 
 /**
@@ -47,7 +48,7 @@ final readonly class Upgrade extends Utility
         $view = Craft::$app->getView();
         $view->registerAssetBundle(UpgradeAsset::class);
 
-        $pluginsService = Craft::$app->getPlugins();
+        $pluginsService = app(Plugins::class);
         $allPlugins = [];
         foreach ($pluginsService->getAllPluginInfo() as $handle => $info) {
             $allPlugins[] = [

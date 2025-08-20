@@ -2,7 +2,6 @@
 
 namespace CraftCms\Cms\Announcement;
 
-use Craft;
 use craft\helpers\Html;
 use craft\helpers\Queue;
 use craft\i18n\Translation;
@@ -10,6 +9,7 @@ use craft\queue\jobs\Announcement as AnnouncementJob;
 use CraftCms\Aliases\Facades\Aliases;
 use CraftCms\Cms\Announcement\Models\Announcement;
 use CraftCms\Cms\Plugin\Contracts\PluginInterface;
+use CraftCms\Cms\Plugin\Plugins;
 use Illuminate\Container\Attributes\Singleton;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Collection;
@@ -22,6 +22,10 @@ use yii\helpers\Markdown;
 #[Singleton]
 final readonly class Announcements
 {
+    public function __construct(
+        private Plugins $plugins,
+    ) {}
+
     /**
      * Pushes a new announcement out to all control panel users.
      *
@@ -64,8 +68,7 @@ final readonly class Announcements
             ->visible();
 
         // Any enabled plugins?
-        $pluginsService = Craft::$app->getPlugins();
-        $enabledPluginHandles = Collection::make($pluginsService->getAllPlugins())
+        $enabledPluginHandles = Collection::make($this->plugins->getAllPlugins())
             ->map(fn (PluginInterface $plugin) => $plugin->getHandle());
 
         $query->when(
@@ -74,13 +77,13 @@ final readonly class Announcements
             fn (Builder $query) => $query->whereNull('pluginId'),
         );
 
-        return $query->get()->map(function (Announcement $announcement) use ($pluginsService) {
+        return $query->get()->map(function (Announcement $announcement) {
             $plugin = ! empty($announcement->pluginId)
-                ? $pluginsService->getPlugin($announcement->plugin->handle)
+                ? $this->plugins->getPlugin($announcement->plugin->handle)
                 : null;
 
             if ($plugin) {
-                $icon = $pluginsService->getPluginIconSvg($plugin->getHandle());
+                $icon = $this->plugins->getPluginIconSvg($plugin->handle);
                 $label = $plugin->name;
             } else {
                 $icon = file_get_contents(Aliases::get('@appicons/craft-cms.svg'));

@@ -13,6 +13,7 @@ use craft\errors\InvalidPluginException;
 use craft\errors\StaleResourceException;
 use craft\services\ProjectConfig;
 use CraftCms\Cms\Config\GeneralConfig;
+use CraftCms\Cms\Plugin\Plugins;
 use CraftCms\Cms\Support\Arr;
 use Throwable;
 use yii\base\NotSupportedException;
@@ -93,7 +94,7 @@ class ConfigSyncController extends BaseUpdaterController
     public function actionUninstallPlugin(): Response
     {
         $handle = array_shift($this->data['uninstallPlugins']);
-        Craft::$app->getPlugins()->uninstallPlugin($handle, true);
+        app(Plugins::class)->uninstallPlugin($handle, true);
         return $this->sendNextAction($this->_nextApplyYamlAction());
     }
 
@@ -108,7 +109,7 @@ class ConfigSyncController extends BaseUpdaterController
         [$success, , $errorDetails] = $this->installPlugin($handle);
 
         if (!$success) {
-            $info = Craft::$app->getPlugins()->getComposerPluginInfo($handle);
+            $info = app(Plugins::class)->getComposerPluginInfo($handle);
             $pluginName = $info['name'] ?? "`$handle`";
             $email = $info['developerEmail'] ?? 'support@craftcms.com';
 
@@ -181,7 +182,7 @@ class ConfigSyncController extends BaseUpdaterController
         }
 
         if (!empty($this->data['installPlugins'])) {
-            $pluginsService = Craft::$app->getPlugins();
+            $pluginsService = app(Plugins::class);
 
             // Make sure that all to-be-installed plugins actually exist,
             // and that they have the same schema as project.yaml
@@ -307,7 +308,7 @@ class ConfigSyncController extends BaseUpdaterController
      */
     private function _pluginName(string $handle): string
     {
-        $pluginInfo = Craft::$app->getPlugins()->getAllPluginInfo();
+        $pluginInfo = app(Plugins::class)->getAllPluginInfo();
         return isset($pluginInfo[$handle]) ? $pluginInfo[$handle]['name'] : $handle;
     }
 }

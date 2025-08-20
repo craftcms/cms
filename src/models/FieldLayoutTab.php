@@ -16,6 +16,7 @@ use craft\fieldlayoutelements\BaseField;
 use craft\fieldlayoutelements\CustomField;
 use craft\helpers\Cp;
 use craft\helpers\Html;
+use CraftCms\Cms\Plugin\Plugins;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Support\Str;
@@ -274,7 +275,7 @@ class FieldLayoutTab extends FieldLayoutComponent
     public function setElements(array $elements): void
     {
         $fieldsService = Craft::$app->getFields();
-        $pluginsService = Craft::$app->getPlugins();
+        $pluginsService = app(Plugins::class);
         $this->_elements = [];
 
         foreach ($elements as $layoutElement) {

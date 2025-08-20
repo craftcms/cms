@@ -7,6 +7,7 @@ use craft\helpers\App;
 use craft\web\Application;
 use craft\web\assets\craftsupport\CraftSupportAsset;
 use CraftCms\Cms\Config\GeneralConfig;
+use CraftCms\Cms\Plugin\Plugins;
 use Illuminate\Support\Facades\Auth;
 
 /** @since 6.0.0 */
@@ -73,7 +74,7 @@ final class CraftSupport extends Widget
         $cmsMajorVersion = (int) $cmsVersion;
 
         $pluginVersions = [];
-        foreach ($craft->getPlugins()->getAllPlugins() as $plugin) {
+        foreach (app(Plugins::class)->getAllPlugins() as $plugin) {
             $pluginVersions[] = sprintf('- %s %s', $plugin->name, $plugin->version);
         }
 

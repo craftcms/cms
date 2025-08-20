@@ -31,6 +31,7 @@ use craft\web\Controller;
 use craft\web\ServiceUnavailableHttpException;
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Edition;
+use CraftCms\Cms\Plugin\Plugins;
 use CraftCms\Cms\Support\Api;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Enums\LicenseKeyStatus;
@@ -251,7 +252,7 @@ class AppController extends Controller
                 'plugins' => [],
             ];
 
-            $pluginsService = Craft::$app->getPlugins();
+            $pluginsService = app(Plugins::class);
             foreach ($updates->plugins as $pluginHandle => $pluginUpdate) {
                 try {
                     $pluginInfo = $pluginsService->getPluginInfo($pluginHandle);
@@ -576,7 +577,7 @@ class AppController extends Controller
         $newKey = $this->request->getRequiredBodyParam('key');
 
         // Get the current key and set the new one
-        $pluginsService = Craft::$app->getPlugins();
+        $pluginsService = app(Plugins::class);
         $pluginsService->setPluginLicenseKey($handle, $newKey ?: null);
 
         // Return the new plugin license info
@@ -667,7 +668,7 @@ class AppController extends Controller
             $pluginLicenses = $licenseInfo['pluginLicenses'] ?? [];
         }
 
-        $pluginsService = Craft::$app->getPlugins();
+        $pluginsService = app(Plugins::class);
         $allPluginInfo = $pluginsService->getAllPluginInfo();
 
         // Update our records & use all licensed plugins as a starting point

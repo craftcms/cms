@@ -12,6 +12,7 @@ use craft\base\ElementInterface;
 use craft\base\Model;
 use craft\errors\MissingComponentException;
 use CraftCms\Cms\Component\Contracts\ComponentInterface;
+use CraftCms\Cms\Plugin\Plugins;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Json as JsonHelper;
 use DateTime;
@@ -65,7 +66,7 @@ class Component
         }
 
         // If it comes from a plugin, make sure the plugin is installed
-        $pluginsService = Craft::$app->getPlugins();
+        $pluginsService = app(Plugins::class);
         $pluginHandle = $pluginsService->getPluginHandleByClass($class);
         if ($pluginHandle !== null && !$pluginsService->isPluginEnabled($pluginHandle)) {
             if (!$throwException) {

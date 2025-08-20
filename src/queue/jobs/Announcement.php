@@ -14,6 +14,7 @@ use craft\helpers\Db;
 use craft\i18n\Translation;
 use craft\queue\BaseJob;
 use CraftCms\Cms\Edition;
+use CraftCms\Cms\Plugin\Plugins;
 use DateTime;
 use yii\base\Exception;
 
@@ -53,7 +54,7 @@ class Announcement extends BaseJob
     public function execute($queue): void
     {
         if (isset($this->pluginHandle)) {
-            $pluginInfo = Craft::$app->getPlugins()->getStoredPluginInfo($this->pluginHandle);
+            $pluginInfo = app(Plugins::class)->getStoredPluginInfo($this->pluginHandle);
             if ($pluginInfo === null) {
                 Craft::warning("Couldn’t push announcement because the plugin handle was invalid: $this->pluginHandle", __METHOD__);
                 return;

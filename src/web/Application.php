@@ -24,6 +24,7 @@ use craft\helpers\UrlHelper;
 use craft\queue\QueueLogBehavior;
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Db\Table;
+use CraftCms\Cms\Plugin\Plugins;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Json;
 use Illuminate\Database\QueryException;
@@ -274,7 +275,7 @@ class Application extends \yii\web\Application
                 if (
                     $isCpRequest &&
                     ($firstSeg = $request->getSegment(1)) !== null &&
-                    ($plugin = $this->getPlugins()->getPlugin($firstSeg)) !== null
+                    ($plugin = app(Plugins::class)->getPlugin($firstSeg)) !== null
                 ) {
                     if ($userSession->getIsGuest()) {
                         return $userSession->loginRequired();

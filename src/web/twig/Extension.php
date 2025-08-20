@@ -60,6 +60,7 @@ use craft\web\twig\variables\CraftVariable;
 use craft\web\View;
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Plugin\Contracts\PluginInterface;
+use CraftCms\Cms\Plugin\Plugins;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Env;
 use CraftCms\Cms\Support\Json;
@@ -1614,7 +1615,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
      */
     public function pluginFunction(string $handle): ?PluginInterface
     {
-        return Craft::$app->getPlugins()->getPlugin($handle);
+        return app(Plugins::class)->getPlugin($handle);
     }
 
     /**

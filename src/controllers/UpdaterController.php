@@ -9,9 +9,10 @@ namespace craft\controllers;
 
 use Composer\Semver\Comparator;
 use Craft;
-use craft\errors\InvalidPluginException;
 use craft\helpers\App;
 use CraftCms\Cms\Config\GeneralConfig;
+use CraftCms\Cms\Plugin\Exceptions\InvalidPluginException;
+use CraftCms\Cms\Plugin\Plugins;
 use CraftCms\Cms\Support\Composer;
 use RequirementsChecker;
 use Symfony\Component\Process\Process;
@@ -217,7 +218,7 @@ class UpdaterController extends BaseUpdaterController
             ];
 
             // Convert update handles to Composer package names, and capture current versions
-            $pluginsService = Craft::$app->getPlugins();
+            $pluginsService = app(Plugins::class);
 
             foreach ($data['install'] as $handle => $version) {
                 $packageName = strip_tags($packageNames[$handle]);
@@ -381,7 +382,7 @@ class UpdaterController extends BaseUpdaterController
         } else {
             $pluginInfo = null;
             try {
-                $pluginInfo = Craft::$app->getPlugins()->getPluginInfo($handle);
+                $pluginInfo = app(Plugins::class)->getPluginInfo($handle);
             } catch (InvalidPluginException) {
             }
 
