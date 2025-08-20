@@ -192,8 +192,6 @@ class Yii2ServiceProvider extends ServiceProvider
          */
         app('Craft');
 
-        $pluginsService->loadPlugins();
-
         if (!$this->app->runningInConsole()) {
             return;
         }
