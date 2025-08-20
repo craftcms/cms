@@ -1,31 +1,19 @@
 <?php
-/**
- * @link https://craftcms.com/
- * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license https://craftcms.github.io/license/
- */
 
-namespace crafttests\unit\helpers;
+namespace CraftCms\Yii2Adapter\Tests\Legacy\helpers;
 
-use Codeception\Test\Unit;
 use craft\helpers\ArrayHelper;
-use craft\test\TestCase;
+use Orchestra\Testbench\PHPUnit\TestCase;
+use PHPUnit\Framework\Attributes\DataProvider;
 use stdClass;
 
-/**
- * Unit tests for the Array Helper class.
- *
- * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @author Global Network Group | Giel Tettelaar <giel@yellowflash.net>
- * @since 3.2
- */
 class ArrayHelperTest extends TestCase
 {
     /**
-     * @dataProvider toArrayDataProvider
      * @param array $expected
      * @param mixed $object
      */
+    #[DataProvider('toArrayDataProvider')]
     public function testToArray(array $expected, mixed $object): void
     {
         self::assertSame($expected, ArrayHelper::toArray($object));
@@ -84,12 +72,12 @@ class ArrayHelperTest extends TestCase
     }
 
     /**
-     * @dataProvider prependOrAppendDataProvider
      * @param array $expected
      * @param array $array
      * @param mixed $appendable
      * @param bool $prepend
      */
+    #[DataProvider('prependOrAppendDataProvider')]
     public function testPrependOrAppend(array $expected, array $array, mixed $appendable, bool $prepend): void
     {
         ArrayHelper::prependOrAppend($array, $appendable, $prepend);
@@ -352,20 +340,19 @@ class ArrayHelperTest extends TestCase
     }
 
     /**
-     * @dataProvider containsDataProvider
      * @param bool $expected
      * @param array $array
      * @param callable|string $key
      * @param mixed $value
      * @param bool $strict
      */
+    #[DataProvider('containsDataProvider')]
     public function testContains(bool $expected, array $array, callable|string $key, mixed $value = true, bool $strict = false): void
     {
         self::assertSame($expected, ArrayHelper::contains($array, $key, $value, $strict));
     }
 
     /**
-     * @dataProvider onlyContainsDataProvider
      *
      * @param bool $expected
      * @param array $array
@@ -373,6 +360,7 @@ class ArrayHelperTest extends TestCase
      * @param mixed $value
      * @param bool $strict
      */
+    #[DataProvider('onlyContainsDataProvider')]
     public function testOnlyContains(bool $expected, array $array, callable|string $key, mixed $value = true, bool $strict = false): void
     {
         self::assertSame($expected, ArrayHelper::onlyContains($array, $key, $value, $strict));
@@ -398,23 +386,23 @@ class ArrayHelperTest extends TestCase
     }
 
     /**
-     * @dataProvider firstValueDataProvider
      * @param mixed $expected
      * @param array $array
      */
+    #[DataProvider('firstValueDataProvider')]
     public function testFirstValue(mixed $expected, array $array): void
     {
         self::assertSame($expected, ArrayHelper::firstValue($array));
     }
 
     /**
-     * @dataProvider renameDataProvider
      * @param array $expected
      * @param array $array
      * @param string $oldKey
      * @param string $newKey
      * @param mixed $default
      */
+    #[DataProvider('renameDataProvider')]
     public function testRename(array $expected, array $array, string $oldKey, string $newKey, mixed $default = null): void
     {
         ArrayHelper::rename($array, $oldKey, $newKey, $default);
@@ -422,22 +410,22 @@ class ArrayHelperTest extends TestCase
     }
 
     /**
-     * @dataProvider withoutDataProvider
      * @param array $expected
      * @param array $array
      * @param string $key
      */
+    #[DataProvider('withoutDataProvider')]
     public function testWithout(array $expected, array $array, string $key): void
     {
         self::assertSame($expected, ArrayHelper::without($array, $key));
     }
 
     /**
-     * @dataProvider withoutValueDataProvider
      * @param array $expected
      * @param array $array
      * @param mixed $value
      */
+    #[DataProvider('withoutValueDataProvider')]
     public function testWithoutValue(array $expected, array $array, mixed $value): void
     {
         /**
@@ -448,10 +436,10 @@ class ArrayHelperTest extends TestCase
     }
 
     /**
-     * @dataProvider ensureNonAssociativeDataProvider
      * @param array $expected
      * @param array $array
      */
+    #[DataProvider('ensureNonAssociativeDataProvider')]
     public function testEnsureNonAssociative(array $expected, array $array): void
     {
         ArrayHelper::ensureNonAssociative($array);
@@ -459,31 +447,31 @@ class ArrayHelperTest extends TestCase
     }
 
     /**
-     * @dataProvider isOrderedDataProvider
      * @param bool $expected
      * @param array $array
      */
+    #[DataProvider('isOrderedDataProvider')]
     public function testIsOrdered(bool $expected, array $array): void
     {
         self::assertSame($expected, ArrayHelper::isOrdered($array));
     }
 
     /**
-     * @dataProvider isNumericDataProvider
      * @param bool $expected
      * @param array $array
      */
+    #[DataProvider('isNumericDataProvider')]
     public function testIsNumeric(bool $expected, array $array): void
     {
         self::assertSame($expected, ArrayHelper::isNumeric($array));
     }
 
     /**
-     * @dataProvider getValueDataProvider
      * @param string $expected
      * @param array $array
      * @param string $key
      */
+    #[DataProvider('getValueDataProvider')]
     public function testGetValue(string $expected, array $array, string $key): void
     {
         self::assertSame($expected, ArrayHelper::getValue($array, $key));
