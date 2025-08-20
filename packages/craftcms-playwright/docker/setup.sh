@@ -2,14 +2,14 @@
 
 cd "$(dirname "$0")/.."
 
-INIT_SCRIPT_PATH="/app/repos/repo/node_modules/@craftcms/playwright/scripts/init-craft.sh"
+INIT_SCRIPT_PATH="/app/repos/repo/node_modules/@craftcms/playwright/docker/init-craft.sh"
 REPO_PATH="../../../."
 
 DIRNAME=$(basename "$(pwd)")
 echo "Current directory: $DIRNAME"
 if [ "$DIRNAME" = 'craftcms-playwright' ]
 then
-  INIT_SCRIPT_PATH="/app/repos/repo/packages/craftcms-playwright/scripts/init-craft.sh"
+  INIT_SCRIPT_PATH="/app/repos/repo/packages/craftcms-playwright/docker/init-craft.sh"
   REPO_PATH="../../."
 fi
 
