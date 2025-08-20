@@ -11,8 +11,10 @@ use Illuminate\Support\ServiceProvider;
 
 final class PluginsServiceProvider extends ServiceProvider
 {
-    public function boot(): void
+    public function boot(Plugins $plugins): void
     {
+        $plugins->loadPlugins();
+
         if (! $this->app->runningInConsole()) {
             return;
         }

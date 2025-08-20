@@ -28,7 +28,6 @@ use CraftCms\Cms\Support\Str;
 use CraftCms\DependencyAwareCache\Dependency\CallbackDependency;
 use CraftCms\DependencyAwareCache\Facades\DependencyCache;
 use Illuminate\Support\Collection;
-use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Symfony\Component\Yaml\Yaml;
@@ -404,8 +403,6 @@ class ProjectConfig extends Component
      */
     public function init(): void
     {
-        App::terminating(fn() => $this->flush());
-
         $this->on(self::EVENT_ADD_ITEM, [$this, 'handleChangeEvent']);
         $this->on(self::EVENT_UPDATE_ITEM, [$this, 'handleChangeEvent']);
         $this->on(self::EVENT_REMOVE_ITEM, [$this, 'handleChangeEvent']);

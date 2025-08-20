@@ -7,6 +7,7 @@ use craft\helpers\FileHelper;
 use CraftCms\Aliases\Facades\Aliases;
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Http\Middleware\ExtractNamespace;
+use CraftCms\Cms\Http\Middleware\FlushProjectConfig;
 use CraftCms\Cms\Http\Middleware\HandleActionRequest;
 use CraftCms\Cms\Http\Middleware\RequireCpRequest;
 use CraftCms\Cms\Http\Middleware\SendPoweredByHeader;
@@ -84,6 +85,7 @@ final class AppServiceProvider extends ServiceProvider
         collect([
             ExtractNamespace::class,
             SendPoweredByHeader::class,
+            FlushProjectConfig::class,
         ])->each(fn ($middleware) => $router->pushMiddlewareToGroup('craft', $middleware));
 
         collect([
