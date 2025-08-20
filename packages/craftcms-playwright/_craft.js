@@ -1,4 +1,4 @@
-const config = require('./_config');
+const config = require('./playwright/config/_config');
 const util = require('util');
 const nodeExec = util.promisify(require('child_process').exec);
 const path = require('path');

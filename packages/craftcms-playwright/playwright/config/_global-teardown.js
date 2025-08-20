@@ -1,4 +1,4 @@
-const craft = require('./_craft');
+const craft = require('./../../_craft');
 
 module.exports = async (config) => {
   console.log('Tearing down');
