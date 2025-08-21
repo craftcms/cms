@@ -93,7 +93,7 @@ final class AppServiceProvider extends ServiceProvider
         ])->each(fn ($middleware) => $router->pushMiddlewareToGroup('craft.cp', $middleware));
 
         collect([
-            'web'
+            'web',
         ])->each(fn ($middleware) => $router->pushMiddlewareToGroup('craft.web', $middleware));
     }
 }
