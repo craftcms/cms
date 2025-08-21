@@ -123,7 +123,7 @@ abstract class PluginServiceProvider extends ServiceProvider
             /**
              * Get the first matching directory for views or templates.
              */
-            $baseDir = match(true) {
+            $baseDir = match (true) {
                 // Laravel Convention
                 is_dir($baseDir = dirname($basePath).'/resources/views') => $baseDir,
                 // Laravel Convention for resources, Twig convention for templates
@@ -149,7 +149,7 @@ abstract class PluginServiceProvider extends ServiceProvider
         $plugin->t9nCategory ??= $plugin->handle;
 
         $basePath = $plugin->getBasePath();
-        $translationsPath = match(true) {
+        $translationsPath = match (true) {
             // Laravel Convention - /lang
             is_dir($baseDir = dirname($basePath).'/lang') => $baseDir,
             // Craft 5 and earlier - src/translations

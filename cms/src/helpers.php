@@ -1,6 +1,5 @@
 <?php
 
-
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Support\Str;
 

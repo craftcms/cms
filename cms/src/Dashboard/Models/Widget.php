@@ -3,6 +3,7 @@
 /**
  * @since 6.0.0
  */
+
 namespace CraftCms\Cms\Dashboard\Models;
 
 use CraftCms\Cms\Support\BaseModel;
