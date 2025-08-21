@@ -21,6 +21,7 @@ use craft\validators\DateTimeValidator;
  * @property string $installDate Install date
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
+ * @deprecated 6.0.0 use {@see \CraftCms\Cms\Plugin\Models\Plugin} instead
  */
 class Plugin extends ActiveRecord
 {

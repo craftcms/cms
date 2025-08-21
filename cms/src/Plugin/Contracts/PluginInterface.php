@@ -279,4 +279,9 @@ interface PluginInterface
      * Creates and returns a new plugin instance based on a passed config
      */
     public static function create(array $config): self;
+
+    /**
+     * Get the instance of the plugin.
+     */
+    public static function getInstance(): self;
 }

@@ -40,7 +40,7 @@ final readonly class HandleActionRequest
          *
          * @todo Remove when cms is fully ported.
          */
-        if (str_contains($response->getContent(), 'Page not found.')) {
+        if ($response->getStatusCode() === 500 && str_contains($response->getContent(), 'Page not found.')) {
             return $next($request);
         }
 

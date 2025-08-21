@@ -47,6 +47,7 @@ use InvalidArgumentException;
 use ReflectionClass;
 use ReflectionException;
 use Throwable;
+use yii\base\Module;
 use yii\web\HttpException;
 
 /**
@@ -1209,8 +1210,10 @@ final class Plugins
     {
         $this->plugins[$plugin->handle] = $plugin;
 
-        /** @var Plugin $plugin */
-        $this->craft->setModule($plugin->handle, $plugin);
+        if ($plugin instanceof Module) {
+            /** @var Plugin $plugin */
+            $this->craft->setModule($plugin->handle, $plugin);
+        }
     }
 
     /**
@@ -1222,7 +1225,9 @@ final class Plugins
     {
         unset($this->plugins[$plugin->handle]);
 
-        $this->craft->setModule($plugin->handle, null);
+        if ($plugin instanceof Module) {
+            $this->craft->setModule($plugin->handle, null);
+        }
     }
 
     /**

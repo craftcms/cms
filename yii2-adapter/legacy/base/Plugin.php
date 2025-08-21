@@ -31,6 +31,7 @@ use yii\web\Response;
  * @property MigrationManager $migrator The plugin’s migration manager
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
+ * @deprecated 6.0.0 use {@see \CraftCms\Cms\Plugin\Plugin} instead.
  */
 class Plugin extends Module implements PluginInterface
 {
@@ -52,7 +53,7 @@ class Plugin extends Module implements PluginInterface
     public const EVENT_AFTER_SAVE_SETTINGS = 'afterSaveSettings';
 
     /**
-     * @inheritdoc
+     * Additional config the plugin should be instantiated with
      */
     public static function config(): array
     {
@@ -444,5 +445,10 @@ class Plugin extends Module implements PluginInterface
         $config['class'] = static::class;
 
         return Craft::createObject($config, [$config['handle'], Craft::$app]);
+    }
+
+    public static function getInstance(): PluginInterface
+    {
+        return parent::getInstance();
     }
 }

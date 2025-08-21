@@ -13,7 +13,7 @@ use craft\web\View;
 use CraftCms\Cms\Component\Concerns\HasComponentEvents;
 use CraftCms\Cms\Component\Contracts\ValidatableComponentInterface;
 use CraftCms\Cms\Component\Events\ComponentEvent;
-use CraftCms\Cms\Edition;
+use CraftCms\Cms\Plugin\Concerns\PluginTrait;
 use CraftCms\Cms\Plugin\Contracts\PluginInterface;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Log;
@@ -24,113 +24,19 @@ use yii\web\Response;
 abstract class Plugin implements PluginInterface
 {
     use HasComponentEvents;
+    use PluginTrait;
 
     /**
-     * @event ModelEvent The event that is triggered before the plugin’s settings are saved.
+     * @event ComponentEvent The event that is triggered before the plugin’s settings are saved.
      *
-     * You may set [[\yii\base\ModelEvent::$isValid]] to `false` to prevent the plugin’s settings from saving.
+     * You may set {@see ComponentEvent::$isValid} to `false` to prevent the plugin’s settings from saving.
      */
-    public const EVENT_BEFORE_SAVE_SETTINGS = 'beforeSaveSettings';
+    public const string EVENT_BEFORE_SAVE_SETTINGS = 'beforeSaveSettings';
 
     /**
-     * @event \yii\base\Event The event that is triggered after the plugin’s settings are saved.
+     * @event ComponentEvent The event that is triggered after the plugin’s settings are saved.
      */
-    public const EVENT_AFTER_SAVE_SETTINGS = 'afterSaveSettings';
-
-    /**
-     * @var string|null The plugin’s package name
-     */
-    public ?string $packageName = null;
-
-    /**
-     * @var string|null The plugin’s display name
-     */
-    public ?string $name = null;
-
-    /**
-     * @var string|null The plugin’s description
-     */
-    public ?string $description = null;
-
-    /**
-     * @var string|null The plugin developer’s name
-     */
-    public ?string $developer = null;
-
-    /**
-     * @var string|null The plugin developer’s website URL
-     */
-    public ?string $developerUrl = null;
-
-    /**
-     * @var string|null The plugin developer’s support email
-     */
-    public ?string $developerEmail = null;
-
-    /**
-     * @var string|null The plugin’s documentation URL
-     */
-    public ?string $documentationUrl = null;
-
-    /**
-     * @var string|null The plugin’s changelog URL.
-     *
-     * The URL should begin with `https://` and point to a plain text Markdown-formatted changelog.
-     * Version headers must follow the general format:
-     *
-     * ```
-     * ## X.Y.Z - YYYY-MM-DD
-     * ```
-     *
-     * with the following possible deviations:
-     *
-     * - other text can come before the version number, like the plugin’s name
-     * - a 4th version number is allowed (e.g. `1.2.3.4`)
-     * - pre-release versions are allowed (e.g. `1.0.0-alpha.1`)
-     * - the version can start with `v` (e.g. `v1.2.3`)
-     * - the version can be hyperlinked (e.g. `[1.2.3]`)
-     * - dates can use dots as separators, rather than hyphens (e.g. `YYYY.MM.DD`)
-     * - a `[CRITICAL]` flag can be appended after the date to indicate a critical release
-     *
-     * More notes:
-     *
-     * - Releases should be listed in descending order (newest on top). Craft will stop parsing the changelog as soon as it hits a version that is older than or equal to the installed version.
-     * - Any content that does not follow a version header line will be ignored.
-     * - For consistency and clarity, release notes should follow [keepachangelog.com](http://keepachangelog.com/), but it’s not enforced.
-     * - Release notes can contain notes using the format `> {note} Some note`. `{warning}` and `{tip}` are also supported.
-     */
-    public ?string $changelogUrl = null;
-
-    /**
-     * @var string|null The plugin’s download URL
-     */
-    public ?string $downloadUrl = null;
-
-    /**
-     * @var bool Whether the plugin has a settings page in the control panel
-     */
-    public bool $hasCpSettings = false;
-
-    /**
-     * @var bool Whether the plugin supports a read-only settings page in the control panel, which
-     *           can be shown when admin changes are disallowed.
-     */
-    public bool $hasReadOnlyCpSettings = false;
-
-    /**
-     * @var bool Whether the plugin has its own section in the control panel
-     */
-    public bool $hasCpSection = false;
-
-    /**
-     * @var string The minimum required version the plugin has to be so it can be updated.
-     */
-    public string $minVersionRequired = '';
-
-    /**
-     * @var Edition The minimum required Craft CMS edition.
-     */
-    public Edition $minCmsEdition = Edition::Solo;
+    public const string EVENT_AFTER_SAVE_SETTINGS = 'afterSaveSettings';
 
     /**
      * @var ValidatableComponentInterface|bool|null The model used to store the plugin’s settings
@@ -143,13 +49,7 @@ abstract class Plugin implements PluginInterface
 
     public function __construct(
         public string $handle,
-        public string $version = '1.0.0',
-        public string $schemaVersion = '1.0.0',
-        public string $edition = 'standard',
-        public bool $isInstalled = false,
-        public ?string $t9nCategory = null,
-        public string $sourceLanguage = 'en-US',
-        private ?string $basePath = null,
+        protected ?string $basePath = null,
     ) {
         $this->t9nCategory ??= $this->handle;
 
@@ -173,8 +73,6 @@ abstract class Plugin implements PluginInterface
                 $e->roots[$this->handle] = $baseDir;
             }
         });
-
-        app()->singleton(static::class, fn () => $this);
     }
 
     /** {@inheritdoc} */
@@ -422,6 +320,7 @@ abstract class Plugin implements PluginInterface
         return is_file($path) ? $path : null;
     }
 
+    /** {@inheritdoc} */
     public function getBasePath(): string
     {
         if ($this->basePath === null) {
@@ -435,6 +334,24 @@ abstract class Plugin implements PluginInterface
     /** {@inheritdoc} */
     public static function create(array $config): PluginInterface
     {
-        return app()->make(static::class, $config);
+        app()->singleton(static::class, function () use ($config) {
+            $plugin = new static($config['handle'], $config['basePath'] ?? null);
+
+            foreach ($config as $key => $value) {
+                if (property_exists($plugin, $key)) {
+                    $plugin->{$key} = $value;
+                }
+            }
+
+            return $plugin;
+        });
+
+        return static::getInstance();
+    }
+
+    /** {@inheritdoc} */
+    public static function getInstance(): PluginInterface
+    {
+        return app(static::class);
     }
 }

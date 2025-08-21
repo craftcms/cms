@@ -1,19 +1,11 @@
 <?php
-/**
- * @link https://craftcms.com/
- * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license https://craftcms.github.io/license/
- */
 
-namespace craft\base;
+namespace CraftCms\Cms\Plugin\Concerns;
 
 use CraftCms\Cms\Edition;
 
 /**
- * PluginTrait implements the common methods and properties for plugin classes.
- *
- * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0.0
+ * @since 6.0.0
  */
 trait PluginTrait
 {
@@ -136,7 +128,6 @@ trait PluginTrait
 
     /**
      * @var Edition The minimum required Craft CMS edition.
-     * @since 5.0.0
      */
     public Edition $minCmsEdition = Edition::Solo;
 
