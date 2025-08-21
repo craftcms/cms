@@ -104,6 +104,10 @@ abstract class PluginServiceProvider extends ServiceProvider
             return;
         }
 
+        if (! $this->plugins->isPluginEnabled($handle)) {
+            return;
+        }
+
         $this
             ->bootViews()
             ->bootI18n()
