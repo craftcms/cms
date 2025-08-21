@@ -1753,5 +1753,6 @@ class Users extends Component
     private function invalidateIndexCaches(): void
     {
         TagDependency::invalidate(sprintf('element-index-query::%s', User::class));
+        \yii\caching\TagDependency::invalidate(app('Craft')->getCache(), sprintf('element-index-query::%s', User::class));
     }
 }
