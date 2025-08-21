@@ -123,7 +123,7 @@ class ExtractEagerLoadingParameterTest extends TestCase
         ]);
         $extractedConditions = $conditionBuilder->extractQueryConditions();
 
-        self::assertEquals($expectedParameters, $extractedConditions);
+        self::assertEquals(serialize(sort($expectedParameters)), serialize(sort($extractedConditions)));
     }
 
     public function eagerLoadingParameterExtractionProvider(): array

@@ -102,15 +102,12 @@ class UrlHelperTest extends TestCase
     {
         $this->tester->mockCraftMethods('request', [
             'getIsSecureConnection' => false,
+            'getIsCpRequest' => true,
         ]);
 
         $expected = $this->_prepExpectedUrl($expected, $scheme);
 
         self::assertSame($expected, UrlHelper::cpUrl($path, $params, $scheme));
-
-        $this->tester->mockCraftMethods('request', [
-            'getIsCpRequest' => true,
-        ]);
 
         self::assertSame($expected, UrlHelper::url($path, $params, $scheme));
     }
