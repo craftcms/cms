@@ -8,7 +8,7 @@ use CraftCms\Cms\Utility\Utility;
 /**
  * PhpInfo represents a PhpInfo dashboard widget.
  *
- * @since 3.0.0
+ * @since 6.0.0
  */
 final readonly class PhpInfo extends Utility
 {

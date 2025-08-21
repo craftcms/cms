@@ -1,12 +1,8 @@
 <?php
 
 /**
- * @link https://craftcms.com/
- *
- * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license https://craftcms.github.io/license/
+ * @since 6.0.0
  */
-
 namespace CraftCms\Cms\Dashboard\Models;
 
 use CraftCms\Cms\Support\BaseModel;

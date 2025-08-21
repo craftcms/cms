@@ -7,7 +7,10 @@ use CraftCms\Cms\Config\GeneralConfig;
 use HttpException;
 use Illuminate\Http\Request;
 
-class RequireCpRequest
+/**
+ * @since 6.0.0
+ */
+final readonly class RequireCpRequest
 {
     public function __construct(
         protected GeneralConfig $generalConfig,

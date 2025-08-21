@@ -14,6 +14,11 @@ use CraftCms\Cms\Support\Json;
 use Illuminate\Support\Facades\Date;
 use RuntimeException;
 
+/**
+ * Provides a base implementation for dashboard widgets.
+ *
+ * @since 6.0.0
+ */
 abstract class Widget implements WidgetInterface
 {
     use ConfigurableComponent;

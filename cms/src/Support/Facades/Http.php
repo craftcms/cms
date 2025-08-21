@@ -8,6 +8,9 @@ use GuzzleHttp\Utils;
 use Illuminate\Http\Client\PendingRequest;
 use Illuminate\Support\Facades\Config;
 
+/**
+ * @since 6.0.0
+ */
 final class Http extends \Illuminate\Support\Facades\Http
 {
     public static function create(array $options = []): PendingRequest

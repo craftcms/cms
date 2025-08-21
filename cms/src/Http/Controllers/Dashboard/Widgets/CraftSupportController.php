@@ -22,6 +22,9 @@ use Symfony\Component\Yaml\Yaml;
 use Throwable;
 use ZipArchive;
 
+/**
+ * @since 6.0.0
+ */
 final readonly class CraftSupportController
 {
     public function __construct(

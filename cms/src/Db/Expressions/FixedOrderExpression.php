@@ -10,6 +10,9 @@ use Tpetry\QueryExpressions\Language\CaseRule;
 use Tpetry\QueryExpressions\Operator\Comparison\Equal;
 use Tpetry\QueryExpressions\Value\Value;
 
+/**
+ * @since 6.0.0
+ */
 final readonly class FixedOrderExpression implements Expression
 {
     use StringizeExpression;

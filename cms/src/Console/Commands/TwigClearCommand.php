@@ -9,6 +9,9 @@ use Illuminate\Container\Attributes\Give;
 use Illuminate\Support\Facades\File;
 use RuntimeException;
 
+/**
+ * @since 6.0.0
+ */
 final class TwigClearCommand extends Command
 {
     use CraftCommand;
