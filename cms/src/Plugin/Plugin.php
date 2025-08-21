@@ -61,7 +61,7 @@ abstract class Plugin implements PluginInterface
             $i18n->translations[$this->t9nCategory] = [
                 'class' => PhpMessageSource::class,
                 'sourceLanguage' => $this->sourceLanguage,
-                'basePath' => $this->getBasePath().DIRECTORY_SEPARATOR.'translations',
+                'basePath' => $this->getBasePath().'/translations',
                 'forceTranslation' => true,
                 'allowOverrides' => true,
             ];
@@ -69,7 +69,7 @@ abstract class Plugin implements PluginInterface
 
         // Base template directory
         \craft\base\Event::on(View::class, View::EVENT_REGISTER_CP_TEMPLATE_ROOTS, function (RegisterTemplateRootsEvent $e) {
-            if (is_dir($baseDir = $this->getBasePath().DIRECTORY_SEPARATOR.'templates')) {
+            if (is_dir($baseDir = $this->getBasePath().'/templates')) {
                 $e->roots[$this->handle] = $baseDir;
             }
         });
@@ -130,7 +130,7 @@ abstract class Plugin implements PluginInterface
         $this->migrator = new MigrationManager([
             'track' => "plugin:$this->handle",
             'migrationNamespace' => ($ns ? $ns.'\\' : '').'migrations',
-            'migrationPath' => $this->getBasePath().DIRECTORY_SEPARATOR.'migrations',
+            'migrationPath' => $this->getBasePath().'/migrations',
         ]);
 
         return $this->migrator;
@@ -258,7 +258,7 @@ abstract class Plugin implements PluginInterface
     {
         // See if there's an Install migration in the plugin’s migrations folder
         $migrator = $this->getMigrator();
-        $path = $migrator->migrationPath.DIRECTORY_SEPARATOR.'Install.php';
+        $path = $migrator->migrationPath.'/Install.php';
 
         if (! is_file($path)) {
             return null;
@@ -315,7 +315,7 @@ abstract class Plugin implements PluginInterface
      */
     protected function cpNavIconPath(): ?string
     {
-        $path = $this->getBasePath().DIRECTORY_SEPARATOR.'icon-mask.svg';
+        $path = $this->getBasePath().'/icon-mask.svg';
 
         return is_file($path) ? $path : null;
     }

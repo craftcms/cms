@@ -41,7 +41,7 @@ class LicenseServiceProvider extends ServiceProvider
             return;
         }
 
-        $licenseFullPath = $licensePath.DIRECTORY_SEPARATOR.$licenseKeyName;
+        $licenseFullPath = "$licensePath/$licenseKeyName";
 
         if (File::exists($licenseFullPath)) {
             return;

@@ -311,14 +311,14 @@ final class Plugins
         // Figure out the path to the folder that contains this class
         try {
             // Add a trailing slash so we don't get false positives
-            $classPath = FileHelper::normalizePath(dirname(new ReflectionClass($class)->getFileName())).DIRECTORY_SEPARATOR;
+            $classPath = Str::finish(FileHelper::normalizePath(dirname(new ReflectionClass($class)->getFileName())), '/');
         } catch (ReflectionException) {
             return $this->classPluginHandles[$class] = null;
         }
 
         // Find the plugin that contains this path (if any)
         foreach ($this->composerPluginInfo as $handle => $info) {
-            if (isset($info['basePath']) && str_starts_with($classPath, $info['basePath'].DIRECTORY_SEPARATOR)) {
+            if (isset($info['basePath']) && str_starts_with($classPath, Str::finish($info['basePath'], '/'))) {
                 return $this->classPluginHandles[$class] = $handle;
             }
         }
@@ -1079,7 +1079,7 @@ final class Plugins
             }
         }
 
-        $iconPath = ($basePath !== false) ? $basePath.DIRECTORY_SEPARATOR.'icon.svg' : false;
+        $iconPath = ($basePath !== false) ? $basePath.'/icon.svg' : false;
 
         if ($iconPath === false || ! is_file($iconPath) || ! FileHelper::isSvg($iconPath)) {
             $iconPath = Craft::getAlias('@appicons/default-plugin.svg');

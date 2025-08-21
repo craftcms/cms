@@ -179,7 +179,7 @@ final class Composer
             '--no-interaction',
         ]);
 
-        $homePath = $runtimePath.DIRECTORY_SEPARATOR.'composer';
+        $homePath = "$runtimePath/composer";
         File::ensureDirectoryExists($homePath);
 
         $process = new Process($command, null, [
@@ -346,8 +346,8 @@ final class Composer
     private function backupComposerFiles(): void
     {
         $backupsDir = Craft::$app->getPath()->getComposerBackupsPath();
-        $jsonBackupPath = $backupsDir.DIRECTORY_SEPARATOR.'composer.json';
-        $lockBackupPath = $backupsDir.DIRECTORY_SEPARATOR.'composer.lock';
+        $jsonBackupPath = $backupsDir.'/composer.json';
+        $lockBackupPath = $backupsDir.'/composer.lock';
         FileHelper::cycle($jsonBackupPath, $this->maxBackups);
         FileHelper::cycle($lockBackupPath, $this->maxBackups);
 
