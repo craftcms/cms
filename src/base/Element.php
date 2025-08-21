@@ -12,7 +12,6 @@ use Craft;
 use craft\behaviors\CustomFieldBehavior;
 use craft\behaviors\DraftBehavior;
 use craft\behaviors\RevisionBehavior;
-use craft\cache\ElementQueryTagDependency;
 use craft\controllers\ElementsController;
 use craft\db\CoalesceColumnsExpression;
 use craft\db\Connection;
@@ -89,7 +88,6 @@ use CraftCms\Cms\Element\Enums\AttributeStatus;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Enums\Color;
 use CraftCms\Cms\Support\Str;
-use CraftCms\DependencyAwareCache\Facades\DependencyCache;
 use DateInterval;
 use DateTime;
 use GraphQL\Type\Definition\Type;
@@ -110,7 +108,6 @@ use yii\base\InvalidCallException;
 use yii\base\InvalidConfigException;
 use yii\base\NotSupportedException;
 use yii\base\UnknownPropertyException;
-use yii\caching\TagDependency;
 use yii\db\Expression;
 use yii\db\ExpressionInterface;
 use yii\validators\BooleanValidator;
@@ -1358,18 +1355,8 @@ abstract class Element extends Component implements ElementInterface
         }
 
         // Only cache if there's no search term or relation param
-        if ($elementQuery instanceof ElementQuery && !$elementQuery->search && !$elementQuery->relatedTo) {
-            /**
-             * Temporary solution as the ElementQueryTagDependency already relies on
-             * the new Laravel package but query cache relies on Yii's old one.
-             */
-            $dependency = new ElementQueryTagDependency($elementQuery, [
-                'element-index-query',
-                sprintf('element-index-query::%s', static::class),
-            ]);
-            $dependency->evaluate(DependencyCache::store());
-
-            $elementQuery->cache(dependency: new TagDependency(['tags' => $dependency->tags]));
+        if (!$elementQuery->search) {
+            $elementQuery->cache();
         }
 
         $elements = static::indexElements($elementQuery, $sourceKey);

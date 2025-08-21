@@ -803,6 +803,7 @@ class Elements extends Component
     {
         $tags = ['element'];
         TagDependency::invalidate($tags);
+        \yii\caching\TagDependency::invalidate(app('Craft')->getCache(), $tags);
 
         // Fire a 'invalidateCaches' event
         if ($this->hasEventHandlers(self::EVENT_INVALIDATE_CACHES)) {
@@ -823,6 +824,7 @@ class Elements extends Component
     {
         $tags = ["element::$elementType"];
         TagDependency::invalidate($tags);
+        \yii\caching\TagDependency::invalidate(app('Craft')->getCache(), $tags);
 
         // Fire a 'invalidateCaches' event
         if ($this->hasEventHandlers(self::EVENT_INVALIDATE_CACHES)) {
@@ -881,6 +883,7 @@ class Elements extends Component
         }
 
         TagDependency::invalidate($tags);
+        \yii\caching\TagDependency::invalidate(app('Craft')->getCache(), $tags);
 
         // Fire a 'invalidateCaches' event
         if ($this->hasEventHandlers(self::EVENT_INVALIDATE_CACHES)) {
