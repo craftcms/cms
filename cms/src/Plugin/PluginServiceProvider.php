@@ -46,14 +46,14 @@ abstract class PluginServiceProvider extends ServiceProvider
     protected array $utilities = [];
 
     /**
-     * Array of utility classes to register.
+     * Array of element types to register.
      *
      * @var class-string<Element>[]
      */
     protected array $elementTypes = [];
 
     /**
-     * Array of utility classes to register.
+     * Array of field types to register.
      *
      * @var class-string<FieldInterface>[]
      */
