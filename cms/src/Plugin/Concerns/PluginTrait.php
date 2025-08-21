@@ -106,7 +106,8 @@ trait PluginTrait
 
     /**
      * @var bool Whether the plugin supports a read-only settings page in the control panel, which
-     * can be shown when admin changes are disallowed.
+     *           can be shown when admin changes are disallowed.
+     *
      * @since 5.6.0
      */
     public bool $hasReadOnlyCpSettings = false;

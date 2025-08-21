@@ -1757,6 +1757,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
         return [
             'craft' => new CraftVariable(),
             'config' => Config::all(),
+            'pluginsVite' => app(Plugins::class)->getViteHtml(),
             'currentSite' => $currentSite,
             'currentUser' => $currentUser,
             'primarySite' => $primarySite,

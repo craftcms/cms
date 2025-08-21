@@ -43,12 +43,13 @@ use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Vite;
 use InvalidArgumentException;
 use ReflectionClass;
 use ReflectionException;
+use Symfony\Component\HttpKernel\Exception\HttpException;
 use Throwable;
 use yii\base\Module;
-use yii\web\HttpException;
 
 /**
  * @since 6.0.0
@@ -97,6 +98,8 @@ final class Plugins
      * @var string[] Cache for [[getPluginHandleByClass()]]
      */
     private array $classPluginHandles = [];
+
+    private array $viteConfigs = [];
 
     public function __construct(
         #[Give('Craft')]
@@ -1185,6 +1188,25 @@ final class Plugins
         $info = $this->getStoredPluginInfo($handle);
 
         return LicenseKeyStatus::tryFrom($info['licenseKeyStatus'] ?? '') ?? LicenseKeyStatus::Unknown;
+    }
+
+    public function addViteConfig(string $name, array $config): void
+    {
+        $this->viteConfigs[$name] = $config;
+    }
+
+    public function getViteHtml(): string
+    {
+        $html = '';
+
+        foreach ($this->viteConfigs as $vite) {
+            $html .= Vite::useHotFile($vite['hotFile'])
+                ->useBuildDirectory($vite['buildDirectory'])
+                ->withEntryPoints($vite['input'])
+                ->toHtml();
+        }
+
+        return $html;
     }
 
     /**
