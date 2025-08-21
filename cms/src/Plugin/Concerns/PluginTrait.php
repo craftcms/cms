@@ -13,7 +13,7 @@ trait PluginTrait
     public string $handle;
 
     /** @var string The plugin's version */
-    public string $version;
+    public string $version = '1.0.0';
 
     /**
      * @var string|null The plugin’s package name
