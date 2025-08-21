@@ -5,6 +5,9 @@ namespace CraftCms\Cms\Support;
 use ReflectionObject;
 use ReflectionProperty;
 
+/**
+ * @since 6.0.0
+ */
 final class Utils
 {
     public static function getPublicProperties($target, $filter = null): array

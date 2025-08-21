@@ -6,6 +6,9 @@ use Closure;
 use CraftCms\Cms\Config\GeneralConfig;
 use Symfony\Component\HttpFoundation\Response;
 
+/**
+ * @since 6.0.0
+ */
 final readonly class SendPoweredByHeader
 {
     public function __construct(

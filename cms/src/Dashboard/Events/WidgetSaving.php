@@ -7,6 +7,7 @@ use CraftCms\Cms\Support\Events\Concerns\ValidatableEvent;
 
 /**
  * @event WidgetSaving The event that is triggered before a widget is saved.
+ * @since 6.0.0
  */
 final class WidgetSaving
 {

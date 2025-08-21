@@ -9,6 +9,9 @@ use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\ServiceProvider;
 
+/**
+ * @since 6.0.0
+ */
 final class DatabaseServiceProvider extends ServiceProvider
 {
     public function register(): void

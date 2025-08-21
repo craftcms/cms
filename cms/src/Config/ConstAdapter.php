@@ -6,6 +6,9 @@ use Dotenv\Repository\Adapter\AdapterInterface;
 use PhpOption\Option;
 use PhpOption\Some;
 
+/**
+ * @since 6.0.0
+ */
 final class ConstAdapter implements AdapterInterface
 {
     /**

@@ -5,7 +5,10 @@ namespace CraftCms\Cms\Http\Middleware;
 use Closure;
 use Illuminate\Http\Request;
 
-class ExtractNamespace
+/**
+ * @since 6.0.0
+ */
+final readonly class ExtractNamespace
 {
     public function handle(Request $request, Closure $next): mixed
     {

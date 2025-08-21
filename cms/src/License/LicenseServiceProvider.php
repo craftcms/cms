@@ -7,6 +7,9 @@ use CraftCms\Cms\Support\Env;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\ServiceProvider;
 
+/**
+ * @since 6.0.0
+ */
 class LicenseServiceProvider extends ServiceProvider
 {
     public function boot(): void

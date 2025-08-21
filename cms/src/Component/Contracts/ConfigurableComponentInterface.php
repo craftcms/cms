@@ -2,6 +2,9 @@
 
 namespace CraftCms\Cms\Component\Contracts;
 
+/**
+ * @since 6.0.0
+ */
 interface ConfigurableComponentInterface
 {
     /**

@@ -7,18 +7,11 @@ use Illuminate\Contracts\Filesystem\FileNotFoundException;
 use Illuminate\Filesystem\Filesystem;
 use RuntimeException;
 
+/**
+ * @since 6.0.0
+ */
 class Env extends \Illuminate\Support\Env
 {
-    /**
-     * @todo: This can be removed once Laravel releases https://github.com/laravel/framework/commit/d5b1e5fca50d25c1d4dc463eb93068c39593aa3a
-     */
-    public static function extend(Closure $callback, ?string $name = null): void
-    {
-        parent::extend($callback, $name);
-
-        static::$repository = null;
-    }
-
     /**
      * Remove a single key from the environment file.
      *

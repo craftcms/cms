@@ -8,7 +8,7 @@ use Illuminate\Support\Collection;
 /**
  * @event RegisterWidgetTypes The event that is triggered when registering Dashboard widget types.
  *
- * Dashboard widgets must implement [[WidgetInterface]]. [[Widget]] provides a base implementation.
+ * Dashboard widgets must implement {@see WidgetInterface}. {@see \CraftCms\Cms\Dashboard\Widgets\Widget} provides a base implementation.
  *
  * See [Widget Types](https://craftcms.com/docs/5.x/extend/widget-types.html) for documentation on creating Dashboard widgets.
  * ---
@@ -19,6 +19,7 @@ use Illuminate\Support\Collection;
  *     $event->types->add(MyWidgetType::class);
  * });
  * ```
+ * @since 6.0.0
  */
 final class RegisterWidgetTypes
 {
