@@ -2,7 +2,6 @@
 
 namespace CraftCms\Cms\Support;
 
-use Closure;
 use Illuminate\Contracts\Filesystem\FileNotFoundException;
 use Illuminate\Filesystem\Filesystem;
 use RuntimeException;

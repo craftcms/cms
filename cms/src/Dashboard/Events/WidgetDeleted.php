@@ -6,6 +6,7 @@ use CraftCms\Cms\Dashboard\Contracts\WidgetInterface;
 
 /**
  * @event WidgetDeleted The event that is triggered after a widget is deleted.
+ *
  * @since 6.0.0
  */
 final readonly class WidgetDeleted
