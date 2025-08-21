@@ -461,6 +461,25 @@ class FileHelper extends \yii\helpers\FileHelper
             }
         }
 
+        if (!static::isWritable($file)) {
+            throw new ErrorException("The file path \"$file\" is not writable.");
+        }
+
+        $freeBytes = disk_free_space($dir);
+        $bytes = StringHelper::byteLength($contents);
+
+        if ($freeBytes === false) {
+            Craft::warning("Could not determine the free disk space for \"$dir\".");
+        } else if ($bytes > $freeBytes) {
+            throw new ErrorException(
+                sprintf("Insufficient disk space to write \"%s\". %s bytes free, %s bytes required.",
+                    $file,
+                    $freeBytes,
+                    $bytes,
+                )
+            );
+        }
+
         if (isset($options['lock'])) {
             $lock = (bool)$options['lock'];
         } else {
