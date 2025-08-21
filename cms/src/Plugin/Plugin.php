@@ -73,8 +73,6 @@ abstract class Plugin implements PluginInterface
                 $e->roots[$this->handle] = $baseDir;
             }
         });
-
-        app()->singleton(static::class, fn () => $this);
     }
 
     /** {@inheritdoc} */
@@ -343,6 +341,8 @@ abstract class Plugin implements PluginInterface
                 $plugin->{$key} = $value;
             }
         }
+
+        app()->singleton(static::class, fn () => $plugin);
 
         return $plugin;
     }
