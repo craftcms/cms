@@ -147,7 +147,7 @@ final readonly class PluginsController
 
         abort_if(is_null($plugin), 404, 'Plugin not found.');
 
-        $success = $this->plugins->savePluginSettings($plugin, $data['settings']);
+        $success = $this->plugins->savePluginSettings($plugin, $data['settings'] ?? []);
 
         if ($success) {
             return $this->asSuccess(Craft::t('app', 'Plugin settings saved.'));
