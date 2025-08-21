@@ -5,11 +5,8 @@ namespace CraftCms\Cms\Plugin;
 use Craft;
 use craft\db\Migration;
 use craft\db\MigrationManager;
-use craft\events\RegisterTemplateRootsEvent;
 use craft\helpers\Html;
-use craft\i18n\PhpMessageSource;
 use craft\web\Controller;
-use craft\web\View;
 use CraftCms\Cms\Component\Concerns\HasComponentEvents;
 use CraftCms\Cms\Component\Contracts\ValidatableComponentInterface;
 use CraftCms\Cms\Component\Events\ComponentEvent;
@@ -47,33 +44,11 @@ abstract class Plugin implements PluginInterface
 
     private ?MigrationManager $migrator = null;
 
+    protected ?string $basePath = null;
+
     public function __construct(
         public string $handle,
-        protected ?string $basePath = null,
-    ) {
-        $this->t9nCategory ??= $this->handle;
-
-        // Translation category
-        $i18n = Craft::$app->getI18n();
-
-        /** @noinspection UnSafeIsSetOverArrayInspection */
-        if (! isset($i18n->translations[$this->t9nCategory]) && ! isset($i18n->translations[$this->t9nCategory.'*'])) {
-            $i18n->translations[$this->t9nCategory] = [
-                'class' => PhpMessageSource::class,
-                'sourceLanguage' => $this->sourceLanguage,
-                'basePath' => $this->getBasePath().'/translations',
-                'forceTranslation' => true,
-                'allowOverrides' => true,
-            ];
-        }
-
-        // Base template directory
-        \craft\base\Event::on(View::class, View::EVENT_REGISTER_CP_TEMPLATE_ROOTS, function (RegisterTemplateRootsEvent $e) {
-            if (is_dir($baseDir = $this->getBasePath().'/templates')) {
-                $e->roots[$this->handle] = $baseDir;
-            }
-        });
-    }
+    ) {}
 
     /** {@inheritdoc} */
     public static function editions(): array

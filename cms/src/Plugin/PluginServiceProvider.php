@@ -3,11 +3,15 @@
 namespace CraftCms\Cms\Plugin;
 
 use Closure;
+use Craft;
 use craft\base\Element;
 use craft\base\FieldInterface;
 use craft\events\RegisterComponentTypesEvent;
+use craft\events\RegisterTemplateRootsEvent;
+use craft\i18n\PhpMessageSource;
 use craft\services\Elements;
 use craft\services\Fields;
+use craft\web\View;
 use CraftCms\Cms\Dashboard\Contracts\WidgetInterface;
 use CraftCms\Cms\Dashboard\Events\RegisterWidgetTypes;
 use CraftCms\Cms\Plugin\Contracts\PluginInterface;
@@ -90,11 +94,13 @@ abstract class PluginServiceProvider extends ServiceProvider
     {
         $this->plugins = $plugins;
 
-        if (! $plugins->isPluginInstalled($plugins->getPluginHandleByClass(static::class))) {
+        if (! $this->getPlugin()->isInstalled) {
             return;
         }
 
         $this
+            ->bootViews()
+            ->bootI18n()
             ->bootEvents()
             ->bootWidgets()
             ->bootUtilities()
@@ -105,6 +111,41 @@ abstract class PluginServiceProvider extends ServiceProvider
             ->bootPublish()
             ->bootRoutes()
             ->bootPlugin();
+    }
+
+    public function bootViews(): self
+    {
+        // Base template directory
+        \craft\base\Event::on(View::class, View::EVENT_REGISTER_CP_TEMPLATE_ROOTS, function (RegisterTemplateRootsEvent $e) {
+            if (is_dir($baseDir = $this->getPlugin()->getBasePath().'/templates')) {
+                $e->roots[$this->getPlugin()->handle] = $baseDir;
+            }
+        });
+
+        return $this;
+    }
+
+    public function bootI18n(): self
+    {
+        // Translation category
+        $i18n = Craft::$app->getI18n();
+        $plugin = $this->getPlugin();
+        $plugin->t9nCategory ??= $plugin->handle;
+
+        /** @noinspection UnSafeIsSetOverArrayInspection */
+        if (! isset($i18n->translations[$plugin->t9nCategory]) && ! isset($i18n->translations[$plugin->t9nCategory.'*'])) {
+            $i18n->translations[$plugin->t9nCategory] = [
+                'class' => PhpMessageSource::class,
+                'sourceLanguage' => $plugin->sourceLanguage,
+                'basePath' => $plugin->getBasePath().'/translations',
+                'forceTranslation' => true,
+                'allowOverrides' => true,
+            ];
+        }
+
+        $this->loadTranslationsFrom($plugin->getBasePath().'/translations', $plugin->t9nCategory);
+
+        return $this;
     }
 
     public function bootEvents(): self
