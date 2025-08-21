@@ -1,6 +1,6 @@
 const {test, expect} = require('@craftcms/playwright');
 const craft = require('@craftcms/playwright/_craft');
-const entries = require('@craftcms/playwright/helpers/entries');
+const entries = require('@craftcms/playwright/playwright/helpers/entries');
 
 test.beforeAll(async ({}) => {
   await craft.cleanAll();
