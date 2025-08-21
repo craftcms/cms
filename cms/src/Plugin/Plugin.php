@@ -73,6 +73,8 @@ abstract class Plugin implements PluginInterface
                 $e->roots[$this->handle] = $baseDir;
             }
         });
+
+        app()->singleton(static::class, fn () => $this);
     }
 
     /** {@inheritdoc} */
@@ -334,19 +336,15 @@ abstract class Plugin implements PluginInterface
     /** {@inheritdoc} */
     public static function create(array $config): PluginInterface
     {
-        app()->singleton(static::class, function () use ($config) {
-            $plugin = new static($config['handle'], $config['basePath'] ?? null);
+        $plugin = app()->make(static::class, $config);
 
-            foreach ($config as $key => $value) {
-                if (property_exists($plugin, $key)) {
-                    $plugin->{$key} = $value;
-                }
+        foreach ($config as $key => $value) {
+            if (property_exists($plugin, $key)) {
+                $plugin->{$key} = $value;
             }
+        }
 
-            return $plugin;
-        });
-
-        return static::getInstance();
+        return $plugin;
     }
 
     /** {@inheritdoc} */

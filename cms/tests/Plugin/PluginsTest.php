@@ -15,9 +15,9 @@ beforeEach(function () {
     // Forget the instance as the service provider loads plugins
     app()->forgetInstance(Plugins::class);
 
-    $this->plugins = app(Plugins::class);
-
     loadTestPlugin();
+
+    $this->plugins = app(Plugins::class);
 });
 
 afterEach(function () {
@@ -30,7 +30,7 @@ function loadTestPlugin(): void
 
     $reflectionClass = new ReflectionClass($plugins);
     $reflectionClass->getProperty('plugins')->setValue($plugins, [
-        'test-plugin' => app()->make(TestPlugin::class, [
+        'test-plugin' => TestPlugin::create([
             'handle' => 'test-plugin',
             'name' => 'Test Plugin',
             'version' => '1.0.1',
@@ -76,6 +76,11 @@ it('can load plugins', function () {
     $this->plugins->loadPlugins();
 
     expect($this->plugins->arePluginsLoaded())->toBeTrue();
+});
+
+test('plugins are singletons', function () {
+    expect(TestPlugin::getInstance())
+        ->toBe(TestPlugin::getInstance());
 });
 
 it('dispatches a loading event', function () {
