@@ -470,7 +470,7 @@ class FileHelper extends \yii\helpers\FileHelper
 
         if ($freeBytes === false) {
             Craft::warning("Could not determine the free disk space for \"$dir\".");
-        } else if ($bytes > $freeBytes) {
+        } elseif ($bytes > $freeBytes) {
             throw new ErrorException(
                 sprintf("Insufficient disk space to write \"%s\". %s bytes free, %s bytes required.",
                     $file,
