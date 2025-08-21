@@ -1,9 +1,8 @@
 const {test, expect} = require('@craftcms/playwright');
-const craft = require('@craftcms/playwright/_craft');
 
-test.beforeAll(async ({}) => {
-  await craft.cleanAll();
-  await craft.loadFixture('Entry');
+test.beforeAll(async ({craftSetup}) => {
+  await craftSetup.cleanAll();
+  await craftSetup.loadFixture('Entry');
 });
 
 test.beforeEach(async ({page}) => {

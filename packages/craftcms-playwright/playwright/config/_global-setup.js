@@ -1,8 +1,8 @@
 const {exec} = require('child_process');
 const path = require('path');
 const {chromium, expect} = require('@playwright/test');
-const craft = require('./../../_craft');
 const events = require('./../_events');
+const {Setup} = require('./../fixtures/setup');
 
 module.exports = async (config) => {
   process.stdout.write('Running Global setup…');
@@ -31,7 +31,8 @@ module.exports = async (config) => {
   await browser.close();
 
   // Backup Craft database with saved session
-  await craft.dbBackup();
+  const setup = new Setup();
+  await setup.dbBackup();
 
   process.stdout.write('Calling after global setup event…');
   process.stdout.write('\n');

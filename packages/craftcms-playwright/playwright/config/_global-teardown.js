@@ -1,8 +1,10 @@
-const craft = require('./../../_craft');
+const {Setup} = require('./../fixtures/setup');
 
 module.exports = async (config) => {
   console.log('Tearing down');
-  await craft.dbRestore();
-  await craft.projectConfigRestore();
-  await craft.composerRestore();
+
+  const setup = new Setup();
+  await setup.dbRestore();
+  await setup.projectConfigRestore();
+  await setup.composerRestore();
 };
