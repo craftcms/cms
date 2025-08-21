@@ -1,6 +1,6 @@
 <?php
 
-namespace CraftCms\Cms\Http\Controllers\Plugins;
+namespace CraftCms\Cms\Http\Controllers;
 
 use Craft;
 use craft\web\Application;

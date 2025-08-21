@@ -1,7 +1,7 @@
 <?php
 
 use CraftCms\Cms\Http\Controllers\Dashboard\DashboardController;
-use CraftCms\Cms\Http\Controllers\Plugins\PluginsController;
+use CraftCms\Cms\Http\Controllers\PluginsController;
 use CraftCms\Cms\Http\Controllers\Utilities\UtilitiesController;
 use CraftCms\Cms\Http\Middleware\RequireAdmin;
 
