@@ -2,7 +2,7 @@ const {exec} = require('child_process');
 const path = require('path');
 const {chromium, expect} = require('@playwright/test');
 const craft = require('./../../_craft');
-const events = require('./../../_events');
+const events = require('./../_events');
 
 module.exports = async (config) => {
   process.stdout.write('Running Global setup…');
