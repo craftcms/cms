@@ -92,6 +92,8 @@ final class AppServiceProvider extends ServiceProvider
             RequireCpRequest::class,
         ])->each(fn ($middleware) => $router->pushMiddlewareToGroup('craft.cp', $middleware));
 
-        collect()->each(fn ($middleware) => $router->pushMiddlewareToGroup('craft.web', $middleware));
+        collect([
+            'web'
+        ])->each(fn ($middleware) => $router->pushMiddlewareToGroup('craft.web', $middleware));
     }
 }

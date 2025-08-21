@@ -94,7 +94,13 @@ abstract class PluginServiceProvider extends ServiceProvider
     {
         $this->plugins = $plugins;
 
-        if (! $this->getPlugin()->isInstalled) {
+        $handle = $this->plugins->getPluginHandleByClass(static::class);
+
+        if (! $handle) {
+            return;
+        }
+
+        if (! $this->plugins->isPluginInstalled($handle)) {
             return;
         }
 
