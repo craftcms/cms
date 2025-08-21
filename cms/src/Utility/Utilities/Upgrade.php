@@ -12,7 +12,7 @@ use CraftCms\Cms\Utility\Utility;
  *
  * @since 3.7.40
  */
-final readonly class Upgrade extends Utility
+final class Upgrade extends Utility
 {
     /**
      * {@inheritdoc}

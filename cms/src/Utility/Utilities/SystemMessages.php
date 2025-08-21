@@ -13,7 +13,7 @@ use CraftCms\Cms\Utility\Utility;
 
  * @since 6.0.0
  */
-final readonly class SystemMessages extends Utility
+final class SystemMessages extends Utility
 {
     /**
      * {@inheritdoc}

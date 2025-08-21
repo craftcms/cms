@@ -19,7 +19,7 @@ use yii\base\Module;
  *
  * @since 6.0.0
  */
-final readonly class SystemReport extends Utility
+final class SystemReport extends Utility
 {
     /**
      * {@inheritdoc}

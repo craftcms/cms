@@ -13,7 +13,7 @@ use Symfony\Component\Yaml\Yaml;
 
  * @since 6.0.0
  */
-final readonly class ProjectConfig extends Utility
+final class ProjectConfig extends Utility
 {
     /**
      * {@inheritdoc}
