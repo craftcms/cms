@@ -7,8 +7,8 @@
 
 namespace crafttests\unit\elements;
 
-use craft\base\Fs;
 use craft\elements\Asset;
+use craft\fs\Local;
 use craft\imagetransforms\ImageTransformer;
 use craft\models\ImageTransform;
 use craft\models\Volume;
@@ -39,10 +39,10 @@ class AssetElementTest extends TestCase
         // Set up asset to have an URL and a mock transform
         $asset = $this->make(Asset::class, [
             'getVolume' => $this->make(Volume::class, [
-                'getFs' => $this->make(Fs::class, [
+                'getFs' => $this->make(Local::class, [
                     'hasUrls' => true,
                 ]),
-                'getTransformFs' => $this->make(Fs::class, [
+                'getTransformFs' => $this->make(Local::class, [
                     'hasUrls' => true,
                 ]),
             ]),

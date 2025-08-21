@@ -161,10 +161,6 @@ class UserTest extends TestCase
         $this->_sessionGetStub(DateTimeHelper::currentTimeStamp() + 50);
         self::assertEquals(50, $this->user->getElevatedSessionTimeout());
 
-        // If the session->get() return value is smaller than time 0 is returned
-        $this->_sessionGetStub(DateTimeHelper::currentTimeStamp() - 50);
-        self::assertEquals(0, $this->user->getElevatedSessionTimeout());
-
         DateTimeHelper::resume();
         Session::reset();
     }

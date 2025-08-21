@@ -8,7 +8,6 @@
 namespace crafttests\unit\gql;
 
 use Craft;
-use craft\base\Fs;
 use craft\elements\Asset;
 use craft\elements\Asset as AssetElement;
 use craft\elements\Category as CategoryElement;
@@ -17,6 +16,7 @@ use craft\elements\Entry as EntryElement;
 use craft\elements\GlobalSet as GlobalSetElement;
 use craft\elements\User as UserElement;
 use craft\errors\GqlException;
+use craft\fs\Local;
 use craft\gql\base\ObjectType;
 use craft\gql\types\elements\Asset as AssetGqlType;
 use craft\gql\types\elements\Category as CategoryGqlType;
@@ -280,10 +280,10 @@ class ElementFieldResolverTest extends TestCase
 
         $asset = $this->make(Asset::class, [
             'getVolume' => $this->make(Volume::class, [
-                'getFs' => $this->make(Fs::class, [
+                'getFs' => $this->make(Local::class, [
                     'hasUrls' => true,
                 ]),
-                'getTransformFs' => $this->make(Fs::class, [
+                'getTransformFs' => $this->make(Local::class, [
                     'hasUrls' => true,
                 ]),
             ]),
