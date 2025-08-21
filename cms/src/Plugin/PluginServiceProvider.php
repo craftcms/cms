@@ -117,8 +117,24 @@ abstract class PluginServiceProvider extends ServiceProvider
     {
         // Base template directory
         \craft\base\Event::on(View::class, View::EVENT_REGISTER_CP_TEMPLATE_ROOTS, function (RegisterTemplateRootsEvent $e) {
-            if (is_dir($baseDir = $this->getPlugin()->getBasePath().'/templates')) {
-                $e->roots[$this->getPlugin()->handle] = $baseDir;
+            $basePath = $this->getPlugin()->getBasePath();
+            $handle = $this->getPlugin()->handle;
+
+            /**
+             * Get the first matching directory for views or templates.
+             */
+            $baseDir = match(true) {
+                // Laravel Convention
+                is_dir($baseDir = dirname($basePath).'/resources/views') => $baseDir,
+                // Laravel Convention for resources, Twig convention for templates
+                is_dir($baseDir = dirname($basePath).'/resources/templates') => $baseDir,
+                // Craft 5 and earlier
+                is_dir($baseDir = $basePath.'/templates') => $baseDir,
+                default => false,
+            };
+
+            if ($baseDir) {
+                $e->roots[$handle] = $baseDir;
             }
         });
 
@@ -132,18 +148,26 @@ abstract class PluginServiceProvider extends ServiceProvider
         $plugin = $this->getPlugin();
         $plugin->t9nCategory ??= $plugin->handle;
 
+        $basePath = $plugin->getBasePath();
+        $translationsPath = match(true) {
+            // Laravel Convention - /lang
+            is_dir($baseDir = dirname($basePath).'/lang') => $baseDir,
+            // Craft 5 and earlier - src/translations
+            default => $basePath.'/translations',
+        };
+
         /** @noinspection UnSafeIsSetOverArrayInspection */
         if (! isset($i18n->translations[$plugin->t9nCategory]) && ! isset($i18n->translations[$plugin->t9nCategory.'*'])) {
             $i18n->translations[$plugin->t9nCategory] = [
                 'class' => PhpMessageSource::class,
                 'sourceLanguage' => $plugin->sourceLanguage,
-                'basePath' => $plugin->getBasePath().'/translations',
+                'basePath' => $translationsPath,
                 'forceTranslation' => true,
                 'allowOverrides' => true,
             ];
         }
 
-        $this->loadTranslationsFrom($plugin->getBasePath().'/translations', $plugin->t9nCategory);
+        $this->loadTranslationsFrom($translationsPath, $plugin->t9nCategory);
 
         return $this;
     }
