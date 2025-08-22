@@ -6,8 +6,6 @@ git config --global --add safe.directory /app/repos/repo
 # Switch to /app directory
 cd /app || exit
 
-echo "$PWD"
-
 # Install Craft
 echo "install craft"
 ./craft install/craft --interactive=0 --username=admin --password=NewPassword --site-name=Playwright --email=playwright@craftcms.com --site-url=http://127.0.0.1/ --language=en_US
@@ -57,15 +55,12 @@ cd /app/repos/repo || exit
 # Get the latest tagged version from the repo
 REPO_VERSION=$(git describe --tags --abbrev=0)
 
-echo "$REPO_VERSION"
-
 # Switch to app directory
 cd /app || exit
 
 # Get the package name for the repo that is being worked on
 PACKAGE_NAME=$(cat /app/repos/repo/composer.json | grep -oE "\"name\": \"([a-zA-Z0-9\/\-]*?)\"" | sed -e "s/\"//g" | sed -e "s/name: //g")
 
-echo "$PACKAGE_NAME"
 ## Create composer CLI command to add the `repositories` key for symlinking
 REPOSITORIES_CMD="composer config repositories.repo '{\"type\": \"path\", \"url\": \"/app/repos/*\", \"options\": {\"versions\": {\""$PACKAGE_NAME"\": \""$REPO_VERSION"\"}}}'"
 

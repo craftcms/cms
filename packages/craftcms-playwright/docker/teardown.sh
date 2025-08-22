@@ -5,7 +5,7 @@ cd "$(dirname "$0")/.."
 REPO_PATH="../../../."
 
 DIRNAME=$(basename "$(pwd)")
-echo "Current directory: $DIRNAME"
+
 if [ "$DIRNAME" = 'craftcms-playwright' ]
 then
   REPO_PATH="../../."
