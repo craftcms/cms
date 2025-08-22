@@ -1,4 +1,3 @@
-const craft = require('./../../_craft');
 const util = require('util');
 const nodeExec = util.promisify(require('child_process').exec);
 const path = require('path');
@@ -8,8 +7,13 @@ require('dotenv').config({path: path.resolve(path.join(testDir, '.env'))});
 class Setup {
 
   constructor() {
-    this.dockerCli = craft.dockerCli;
-    this.craftCli = craft.craftCli;
+    this.packagePath =
+      path.basename(path.normalize(__dirname + '/../../')) == 'craftcms-playwright'
+        ? 'packages/craftcms-playwright'
+        : 'node_modules/@craftcms/playwright';
+
+    this.dockerCli = `docker compose --file=./${this.packagePath}/docker-compose.yaml exec --user appuser playwright`;
+    this.craftCli = '/app/craft';
 
   }
 
