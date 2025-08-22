@@ -633,6 +633,13 @@ class Db
                         [$column => null],
                         [$column => ''],
                     ];
+                } elseif ($columnType !== null && $columnType == Schema::TYPE_JSON) {
+                    $valCondition = [
+                        'or',
+                        [$column => null],
+                        [$column => '[]'],
+                        [$column => ''],
+                    ];
                 } else {
                     $valCondition = [$column => null];
                 }
