@@ -77,7 +77,7 @@ class ElementsTest extends TestCase
         ];
 
         foreach ($strings as $label => [$expected, $text]) {
-            self::assertEquals($expected, $this->elements->parseRefs($text), );
+            self::assertEquals($expected, $this->elements->parseRefs($text), $label);
         }
     }
 
