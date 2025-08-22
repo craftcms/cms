@@ -2,7 +2,9 @@ const {test, expect} = require('@craftcms/playwright');
 test.describe.configure({mode: 'serial'});
 
 test.describe('Plugin Actions', () => {
-  test.afterAll(async ({cleanAll}) => {});
+  test.afterAll(async ({craftSetup}) => {
+    await craftSetup.cleanAll();
+  });
 
   test('Install the plugin', async ({page, baseURL}) => {
     await page.goto('./plugin-store/seomatic');

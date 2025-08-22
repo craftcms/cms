@@ -1,10 +1,4 @@
 const {test, expect} = require('@craftcms/playwright');
-// const craft = require('@craftcms/playwright/_craft');
-//
-// test.beforeAll(async ({}) => {
-//   await craft.cleanAll();
-//   await craft.loadFixture('modules\\\\seeder\\\\fixtures\\\\UserFixture');
-// });
 
 test.beforeEach(async ({page}) => {
   await page.goto('./dashboard');
