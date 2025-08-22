@@ -112,7 +112,11 @@ abstract class BaseOptionsField extends Field implements PreviewableFieldInterfa
             $valueSql = static::valueSql($instances);
 
             foreach ($param->values as $value) {
-                $condition[] = $qb->jsonContains($valueSql, $value);
+                if (in_array($value, [':empty:', ':notempty:', 'not :empty:'])) {
+                    $condition[] = parent::queryCondition($instances, $value, $params);
+                } else {
+                    $condition[] = $qb->jsonContains($valueSql, $value);
+                }
             }
 
             return $negate ? ['not', $condition] : $condition;
