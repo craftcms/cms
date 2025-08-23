@@ -1,25 +1,32 @@
-const {test, expect} = require('@craftcms/playwright');
+const {test: base, expect} = require('@craftcms/playwright');
+const { DashboardPage } = require('../fixtures/dashboard');
 
-test.beforeEach(async ({page}) => {
-  await page.goto('./dashboard');
+const test = base.extend({
+  dashboardPage: async ({ page, baseURL }, use) => {
+    const dashboardPage = new DashboardPage(page, baseURL);
+    await dashboardPage.goTo();
+    await use(dashboardPage);
+  }
 });
 
 test.describe('Navigation', () => {
-  test('Check Items', async ({page, baseURL}) => {
-    const navItems = [
-      'Dashboard',
-      'Users',
-      ['Utilities', 'System Report'],
-      'Settings',
-      'Plugin Store',
-    ];
+  const navItems = [
+    'Dashboard',
+    'Users',
+    ['Utilities', 'System Report'],
+    'Settings',
+    'Plugin Store',
+  ];
 
+  test('Global navigation has expected links', async ({dashboardPage, page}) => {
     await expect(page.locator('#global-sidebar nav ul li a')).toContainText(
       navItems.map((item) => (Array.isArray(item) ? item[0] : item))
     );
+  });
 
+  test('Navigation items go to the correct pages', async ({dashboardPage, page}) => {
     for (let i = 0; i < navItems.length; i++) {
-      await page.goto('./dashboard');
+      await dashboardPage.goTo();
       let text = Array.isArray(navItems[i]) ? navItems[i][0] : navItems[i];
       let title = Array.isArray(navItems[i]) ? navItems[i][1] : text;
 
@@ -29,21 +36,20 @@ test.describe('Navigation', () => {
   });
 });
 
-test.describe('Bypass block', () => {
-  test('Skip link should be the first element in the focus order', async ({page, baseURL}) => {
+test.describe('Bypass blocks', () => {
+  test('Skip to main is the first element in the focus order', async ({dashboardPage, page}) => {
     // Focus the first element on the page
     await page.keyboard.press('Tab');
     // Check that the skip link is focused
-    const skipLink = page.locator('a[href="#main"]');
+    const skipLink = dashboardPage.skipLink;
     await expect(skipLink).toBeFocused();
     await expect(skipLink).toBeVisible();
     await expect(skipLink).toHaveText('Skip to main section');
   });
 
-  test('Skip link should move focus to the main container', async ({page, baseURL}) => {
+  test('Skip link moves focus to the main container', async ({dashboardPage, page}) => {
     // Focus the first element on the page
-    await page.keyboard.press('Tab');
-    await page.keyboard.press('Enter');
+    await dashboardPage.skipToMain();
     await expect(
       page.evaluate(() => document.activeElement.id === 'main')
     ).resolves.toBe(true);
