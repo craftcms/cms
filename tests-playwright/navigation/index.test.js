@@ -28,3 +28,24 @@ test.describe('Navigation', () => {
     }
   });
 });
+
+test.describe('Bypass block', () => {
+  test('Skip link should be the first element in the focus order', async ({page, baseURL}) => {
+    // Focus the first element on the page
+    await page.keyboard.press('Tab');
+    // Check that the skip link is focused
+    const skipLink = page.locator('a[href="#main"]');
+    await expect(skipLink).toBeFocused();
+    await expect(skipLink).toBeVisible();
+    await expect(skipLink).toHaveText('Skip to main section');
+  });
+
+  test('Skip link should move focus to the main container', async ({page, baseURL}) => {
+    // Focus the first element on the page
+    await page.keyboard.press('Tab');
+    await page.keyboard.press('Enter');
+    await expect(
+      page.evaluate(() => document.activeElement.id === 'main')
+    ).resolves.toBe(true);
+  });
+});
