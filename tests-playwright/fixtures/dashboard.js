@@ -1,4 +1,4 @@
-const { Page } = require('@craftcms/playwright');
+const {Page} = require('@craftcms/playwright');
 
 export class DashboardPage {
   constructor(page, baseURL) {
@@ -17,4 +17,4 @@ export class DashboardPage {
   }
 }
 
-module.exports = { DashboardPage };
+module.exports = {DashboardPage};

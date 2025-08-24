@@ -22,7 +22,7 @@ services:
       MYSQL_USER: ${CRAFT_DB_USER:-craft}
       MYSQL_PASSWORD: ${CRAFT_DB_PASSWORD:-craft}
     healthcheck:
-      test: [ 'CMD', 'mysqladmin', 'ping' ]
+      test: ['CMD', 'mysqladmin', 'ping']
       interval: 10s
       retries: 5
     command:

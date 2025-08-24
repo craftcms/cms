@@ -10,21 +10,20 @@ const {Entry} = require('@craftcms/playwright/playwright/fixtures/entry');
 // new way - worker fixture
 const test = base.extend({
   craftSetup: [
-    async ({ browser }, use, workerInfo) => {
+    async ({browser}, use, workerInfo) => {
       const setup = new Setup();
       await use(setup);
     },
-    { scope: 'worker' },
+    {scope: 'worker'},
   ],
   craftEntry: [
-    async ({ browser }, use, workerInfo) => {
+    async ({browser}, use, workerInfo) => {
       const entry = new Entry();
       await use(entry);
     },
-    { scope: 'worker' },
+    {scope: 'worker'},
   ],
 });
-
 
 module.exports = {
   getConfig: (config = {}) => {

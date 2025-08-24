@@ -5,25 +5,24 @@ const testDir = './tests-playwright';
 require('dotenv').config({path: path.resolve(path.join(testDir, '.env'))});
 
 class Setup {
-
   constructor() {
     this.packagePath =
-      path.basename(path.normalize(__dirname + '/../../')) == 'craftcms-playwright'
+      path.basename(path.normalize(__dirname + '/../../')) ==
+      'craftcms-playwright'
         ? 'packages/craftcms-playwright'
         : 'node_modules/@craftcms/playwright';
 
     this.dockerCli = `docker compose --file=./${this.packagePath}/docker-compose.yaml exec --user appuser playwright`;
     this.craftCli = '/app/craft';
-
   }
 
   async cleanAll() {
     await this.dbRestore();
     await this.projectConfigRestore();
     await this.composerRestore();
-  };
+  }
 
-  async installPlugin(handle){
+  async installPlugin(handle) {
     process.stdout.write(`Installing Plugin "${handle}"`);
     process.stdout.write('\n');
     try {
@@ -34,7 +33,7 @@ class Setup {
     } catch (e) {
       console.error(e);
     }
-  };
+  }
 
   async dbRestore() {
     process.stdout.write('Restoring DB');
@@ -47,7 +46,7 @@ class Setup {
     } catch (e) {
       console.error(e);
     }
-  };
+  }
 
   async dbBackup() {
     process.stdout.write('Backing up DB');
@@ -60,7 +59,7 @@ class Setup {
     } catch (e) {
       console.error(e);
     }
-  };
+  }
 
   async projectConfigRestore() {
     process.stdout.write('Restoring Project Config');
@@ -73,7 +72,7 @@ class Setup {
     } catch (e) {
       console.error(e);
     }
-  };
+  }
 
   async composerRestore() {
     process.stdout.write('Restoring Composer');
@@ -82,14 +81,18 @@ class Setup {
       let {stdout, stderr} = await nodeExec(
         `${this.dockerCli} cp -vfrp /app/backup/composer.json /app/.`
       );
-      await nodeExec(`${this.dockerCli} cp -vfrp /app/backup/composer.lock /app/.`);
+      await nodeExec(
+        `${this.dockerCli} cp -vfrp /app/backup/composer.lock /app/.`
+      );
       await nodeExec(`${this.dockerCli} composer install --working-dir=/app`);
-      await nodeExec(`${this.dockerCli} composer dump-autoload --working-dir=/app`);
+      await nodeExec(
+        `${this.dockerCli} composer dump-autoload --working-dir=/app`
+      );
       return {stdout, stderr};
     } catch (e) {
       console.error(e);
     }
-  };
+  }
 
   getNamespace() {
     let ns = process.env.CODECEPTION_FIXTURES_NAMESPACE;
@@ -98,7 +101,7 @@ class Setup {
     ns = ns ? ns.replace(/\\/g, '\\\\') : '';
 
     return ns;
-  };
+  }
 
   async loadFixture(name, namespace = null) {
     let ns = namespace ? namespace.replace(/\\/g, '\\\\') : this.getNamespace();
@@ -113,7 +116,7 @@ class Setup {
     } catch (e) {
       console.error(e);
     }
-  };
+  }
 }
 
-module.exports = { Setup };
+module.exports = {Setup};

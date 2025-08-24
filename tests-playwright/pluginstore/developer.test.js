@@ -18,7 +18,9 @@ test('Should show developer details', async ({page, baseURL}) => {
   await expect(title).toContainText('PutYourLightsOn');
 
   // Developer website
-  const website = page.locator('.developer-card .developer-buttons li:first-child a');
+  const website = page.locator(
+    '.developer-card .developer-buttons li:first-child a'
+  );
   await expect(website).toContainText('Website');
 
   // Plugins

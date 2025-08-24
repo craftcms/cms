@@ -1,12 +1,12 @@
 const {test: base, expect} = require('@craftcms/playwright');
-const { DashboardPage } = require('../fixtures/dashboard');
+const {DashboardPage} = require('../fixtures/dashboard');
 
 const test = base.extend({
-  dashboardPage: async ({ page, baseURL }, use) => {
+  dashboardPage: async ({page, baseURL}, use) => {
     const dashboardPage = new DashboardPage(page, baseURL);
     await dashboardPage.goTo();
     await use(dashboardPage);
-  }
+  },
 });
 
 test.describe('Navigation', () => {
@@ -18,13 +18,19 @@ test.describe('Navigation', () => {
     'Plugin Store',
   ];
 
-  test('Global navigation has expected links', async ({dashboardPage, page}) => {
+  test('Global navigation has expected links', async ({
+    dashboardPage,
+    page,
+  }) => {
     await expect(page.locator('#global-sidebar nav ul li a')).toContainText(
       navItems.map((item) => (Array.isArray(item) ? item[0] : item))
     );
   });
 
-  test('Navigation items go to the correct pages', async ({dashboardPage, page}) => {
+  test('Navigation items go to the correct pages', async ({
+    dashboardPage,
+    page,
+  }) => {
     for (let i = 0; i < navItems.length; i++) {
       await dashboardPage.goTo();
       let text = Array.isArray(navItems[i]) ? navItems[i][0] : navItems[i];
@@ -37,7 +43,10 @@ test.describe('Navigation', () => {
 });
 
 test.describe('Bypass blocks', () => {
-  test('Skip to main is the first element in the focus order', async ({dashboardPage, page}) => {
+  test('Skip to main is the first element in the focus order', async ({
+    dashboardPage,
+    page,
+  }) => {
     // Focus the first element on the page
     await page.keyboard.press('Tab');
     // Check that the skip link is focused
@@ -47,7 +56,10 @@ test.describe('Bypass blocks', () => {
     await expect(skipLink).toHaveText('Skip to main section');
   });
 
-  test('Skip link moves focus to the main container', async ({dashboardPage, page}) => {
+  test('Skip link moves focus to the main container', async ({
+    dashboardPage,
+    page,
+  }) => {
     // Focus the first element on the page
     await dashboardPage.skipToMain();
     await expect(

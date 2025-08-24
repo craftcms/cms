@@ -1,9 +1,7 @@
 const {Page, Locator} = require('@playwright/test');
 
 class Entry {
-  constructor() {
-  }
-
+  constructor() {}
 }
 
-module.exports = { Entry };
+module.exports = {Entry};
