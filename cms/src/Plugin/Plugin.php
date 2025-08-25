@@ -2,25 +2,43 @@
 
 namespace CraftCms\Cms\Plugin;
 
-use Craft;
-use craft\db\Migration;
-use craft\db\MigrationManager;
-use craft\helpers\Html;
-use craft\web\Controller;
-use CraftCms\Cms\Component\Concerns\HasComponentEvents;
-use CraftCms\Cms\Component\Contracts\ValidatableComponentInterface;
-use CraftCms\Cms\Component\Events\ComponentEvent;
-use CraftCms\Cms\Edition;
+use CraftCms\Cms\Plugin\Concerns\HasCommands;
+use CraftCms\Cms\Plugin\Concerns\HasEditions;
+use CraftCms\Cms\Plugin\Concerns\HasElementTypes;
+use CraftCms\Cms\Plugin\Concerns\HasFieldtypes;
+use CraftCms\Cms\Plugin\Concerns\HasListeners;
+use CraftCms\Cms\Plugin\Concerns\HasRoutes;
+use CraftCms\Cms\Plugin\Concerns\HasSettings;
+use CraftCms\Cms\Plugin\Concerns\HasTranslations;
+use CraftCms\Cms\Plugin\Concerns\HasUtilities;
+use CraftCms\Cms\Plugin\Concerns\HasViews;
+use CraftCms\Cms\Plugin\Concerns\HasViteAssets;
+use CraftCms\Cms\Plugin\Concerns\HasWidgets;
+use CraftCms\Cms\Plugin\Concerns\Installable;
+use CraftCms\Cms\Plugin\Concerns\PublishesFiles;
 use CraftCms\Cms\Plugin\Contracts\PluginInterface;
-use Illuminate\Support\Facades\Event;
-use Illuminate\Support\Facades\Log;
-use InvalidArgumentException;
+use Illuminate\Support\ServiceProvider;
 use ReflectionClass;
-use yii\web\Response;
 
-abstract class Plugin implements PluginInterface
+abstract class Plugin extends ServiceProvider implements PluginInterface
 {
-    use HasComponentEvents;
+    use HasCommands;
+    use HasEditions;
+    use HasElementTypes;
+    use HasFieldtypes;
+    use HasListeners;
+    use HasRoutes;
+    use HasSettings;
+    use HasTranslations;
+    use HasUtilities;
+    use HasViews;
+    use HasViteAssets;
+    use HasWidgets;
+    use Installable;
+    use PublishesFiles;
+
+    /** @var string The plugin's handle */
+    public string $handle;
 
     /** @var string The plugin's version */
     public string $version = '1.0.0';
@@ -81,179 +99,79 @@ abstract class Plugin implements PluginInterface
     /** @var string|null The plugin’s download URL */
     public ?string $downloadUrl = null;
 
-    /** @var string|null The translation category that this plugin’s translation messages should use. Defaults to the lowercased plugin handle. */
-    public ?string $t9nCategory = null;
-
-    /** @var string The language that the plugin’s messages were written in */
-    public string $sourceLanguage = 'en-US';
-
-    /** @var bool Whether the plugin has a settings page in the control panel */
-    public bool $hasCpSettings = false;
-
-    /**
-     * @var bool Whether the plugin supports a read-only settings page in the control panel, which
-     *           can be shown when admin changes are disallowed.
-     */
-    public bool $hasReadOnlyCpSettings = false;
-
     /** @var bool Whether the plugin has its own section in the control panel */
     public bool $hasCpSection = false;
-
-    /** @var bool Whether the plugin is currently installed. (Will only be false when a plugin is currently being installed.) */
-    public bool $isInstalled = false;
 
     /** @var string The minimum required version the plugin has to be so it can be updated. */
     public string $minVersionRequired = '';
 
-    /** @var Edition The minimum required Craft CMS edition. */
-    public Edition $minCmsEdition = Edition::Solo;
-
-    /** @var string The active edition. */
-    public string $edition = 'standard';
-
-    /**
-     * @event ComponentEvent The event that is triggered before the plugin’s settings are saved.
-     *
-     * You may set {@see ComponentEvent::$isValid} to `false` to prevent the plugin’s settings from saving.
-     */
-    public const string EVENT_BEFORE_SAVE_SETTINGS = 'beforeSaveSettings';
-
-    /**
-     * @event ComponentEvent The event that is triggered after the plugin’s settings are saved.
-     */
-    public const string EVENT_AFTER_SAVE_SETTINGS = 'afterSaveSettings';
-
-    /**
-     * @var ValidatableComponentInterface|bool|null The model used to store the plugin’s settings
-     *
-     * @see getSettings()
-     */
-    private bool|null|ValidatableComponentInterface $settings = null;
-
-    private ?MigrationManager $migrator = null;
+    private ?Plugins $pluginsService = null;
 
     protected ?string $basePath = null;
 
-    public function __construct(
-        public string $handle,
-    ) {}
-
-    /** {@inheritdoc} */
-    public static function editions(): array
+    /**
+     * @internal
+     */
+    public function register(): void
     {
-        return [
-            'standard',
-        ];
+        $this->registerTraits();
+        $this->registerPlugin();
     }
 
-    /** {@inheritdoc} */
-    public function install(): void
+    /**
+     * @internal
+     */
+    public function boot(Plugins $plugins): void
     {
-        $this->beforeInstall();
+        $this->pluginsService = $plugins;
 
-        $migrator = $this->getMigrator();
+        $handle = $this->pluginsService->getPluginHandleByClass(static::class);
 
-        // Run the install migration, if there is one
-        if (($migration = $this->createInstallMigration()) !== null) {
-            $migrator->migrateUp($migration);
-        }
-
-        // Mark all existing migrations as applied
-        foreach ($migrator->getNewMigrations() as $name) {
-            $migrator->addMigrationHistory($name);
-        }
-
-        $this->isInstalled = true;
-
-        $this->afterInstall();
-    }
-
-    /** {@inheritdoc} */
-    public function uninstall(): void
-    {
-        $this->beforeUninstall();
-
-        if (($migration = $this->createInstallMigration()) !== null) {
-            $this->getMigrator()->migrateDown($migration);
-        }
-
-        $this->afterUninstall();
-    }
-
-    /** {@inheritdoc} */
-    public function getMigrator(): MigrationManager
-    {
-        if (isset($this->migrator)) {
-            return $this->migrator;
-        }
-
-        $ref = new ReflectionClass($this);
-        $ns = $ref->getNamespaceName();
-
-        $this->migrator = new MigrationManager([
-            'track' => "plugin:$this->handle",
-            'migrationNamespace' => ($ns ? $ns.'\\' : '').'migrations',
-            'migrationPath' => $this->getBasePath().'/migrations',
-        ]);
-
-        return $this->migrator;
-    }
-
-    /** {@inheritdoc} */
-    public function getSettings(): ?ValidatableComponentInterface
-    {
-        if (! isset($this->settings)) {
-            $this->settings = $this->createSettingsModel() ?: false;
-        }
-
-        return $this->settings ?: null;
-    }
-
-    /** {@inheritdoc} */
-    public function setSettings(array $settings): void
-    {
-        if (($model = $this->getSettings()) === null) {
-            Log::warning('Attempting to set settings on a plugin that doesn\'t have settings: '.$this->handle);
-
+        if (! $handle) {
             return;
         }
 
-        $model->setAttributes($settings);
+        if (! $this->pluginsService->isPluginInstalled($handle)) {
+            return;
+        }
+
+        if (! $this->pluginsService->isPluginEnabled($handle)) {
+            return;
+        }
+
+        $this->bootTraits();
+        $this->bootPlugin();
     }
 
-    /** {@inheritdoc} */
-    public function getSettingsResponse(): mixed
+    protected function registerTraits(): void
     {
-        return $this->settingsResponse(false);
-    }
+        $uses = class_uses_recursive(static::class);
 
-    /** {@inheritdoc} */
-    public function getReadOnlySettingsResponse(): mixed
-    {
-        return $this->settingsResponse(true);
-    }
+        $conventionalRegisterMethods = array_map(static fn ($trait) => 'register'.class_basename($trait), $uses);
 
-    private function settingsResponse(bool $readOnly): Response
-    {
-        $view = Craft::$app->getView();
-        $settingsHtml = $view->namespaceInputs(function () use ($readOnly) {
-            if ($readOnly) {
-                // Just return the settings HTML with disabled inputs by default
-                return (string) Html::disableInputs(fn () => $this->settingsHtml());
+        foreach (new ReflectionClass(static::class)->getMethods() as $method) {
+            if (in_array($method->getName(), $conventionalRegisterMethods)) {
+                $this->{$method->getName()}();
             }
-
-            return (string) $this->settingsHtml();
-        }, 'settings');
-
-        /** @var Controller $controller */
-        $controller = Craft::$app->controller;
-
-        return $controller->renderTemplate('settings/plugins/_settings.twig', [
-            'plugin' => $this,
-            'settingsHtml' => $settingsHtml,
-            'readOnly' => $readOnly,
-        ]);
+        }
     }
+
+    protected function bootTraits(): void
+    {
+        $uses = class_uses_recursive(static::class);
+
+        $conventionalBootMethods = array_map(static fn ($trait) => 'boot'.class_basename($trait), $uses);
+
+        foreach (new ReflectionClass(static::class)->getMethods() as $method) {
+            if (in_array($method->getName(), $conventionalBootMethods)) {
+                $this->{$method->getName()}();
+            }
+        }
+    }
+
+    public function registerPlugin(): void {}
+
+    public function bootPlugin(): void {}
 
     /** {@inheritdoc} */
     public function getCpNavItem(): ?array
@@ -268,107 +186,6 @@ abstract class Plugin implements PluginInterface
         }
 
         return $ret;
-    }
-
-    /** {@inheritdoc} */
-    public function is(string $edition, string $operator = '='): bool
-    {
-        $editions = static::editions();
-        $activeIndex = array_search($this->edition, $editions, true);
-        $otherIndex = array_search($edition, $editions, true);
-
-        if ($otherIndex === false) {
-            throw new InvalidArgumentException('Unsupported edition: '.$edition);
-        }
-
-        return match ($operator) {
-            '<', 'lt' => $activeIndex < $otherIndex,
-            '<=', 'le' => $activeIndex <= $otherIndex,
-            '>', 'gt' => $activeIndex > $otherIndex,
-            '>=', 'ge' => $activeIndex >= $otherIndex,
-            '==', '=', 'eq' => $activeIndex === $otherIndex,
-            '!=', '<>', 'ne' => $activeIndex !== $otherIndex,
-            default => throw new InvalidArgumentException('Invalid edition comparison operator: '.$operator),
-        };
-    }
-
-    /** {@inheritdoc} */
-    public function beforeSaveSettings(): bool
-    {
-        if (Event::hasListeners(self::componentEventName(self::EVENT_BEFORE_SAVE_SETTINGS))) {
-            Event::dispatch(self::componentEventName(self::EVENT_BEFORE_SAVE_SETTINGS), $event = new ComponentEvent($this));
-
-            return $event->isValid;
-        }
-
-        return true;
-    }
-
-    /** {@inheritdoc} */
-    public function afterSaveSettings(): void
-    {
-        if (Event::hasListeners(self::componentEventName(self::EVENT_AFTER_SAVE_SETTINGS))) {
-            Event::dispatch(self::componentEventName(self::EVENT_AFTER_SAVE_SETTINGS), new ComponentEvent($this));
-        }
-    }
-
-    /**
-     * Instantiates and returns the plugin’s installation migration, if it has one.
-     *
-     * @return Migration|null The plugin’s installation migration
-     */
-    protected function createInstallMigration(): ?Migration
-    {
-        // See if there's an Install migration in the plugin’s migrations folder
-        $migrator = $this->getMigrator();
-        $path = $migrator->migrationPath.'/Install.php';
-
-        if (! is_file($path)) {
-            return null;
-        }
-
-        require_once $path;
-        $class = $migrator->migrationNamespace.'\\Install';
-
-        return new $class;
-    }
-
-    /**
-     * Performs actions before the plugin is installed.
-     */
-    protected function beforeInstall(): void {}
-
-    /**
-     * Performs actions after the plugin is installed.
-     */
-    protected function afterInstall(): void {}
-
-    /**
-     * Performs actions before the plugin is uninstalled.
-     */
-    protected function beforeUninstall(): void {}
-
-    /**
-     * Performs actions after the plugin is uninstalled.
-     */
-    protected function afterUninstall(): void {}
-
-    /**
-     * Creates and returns the model used to store the plugin’s settings.
-     */
-    protected function createSettingsModel(): ?ValidatableComponentInterface
-    {
-        return null;
-    }
-
-    /**
-     * Returns the rendered settings HTML, which will be inserted into the content block on the settings page.
-     *
-     * @return string|null The rendered settings HTML
-     */
-    protected function settingsHtml(): ?string
-    {
-        return null;
     }
 
     /**
@@ -397,7 +214,7 @@ abstract class Plugin implements PluginInterface
     /** {@inheritdoc} */
     public static function create(array $config): PluginInterface
     {
-        $plugin = app()->make(static::class, $config);
+        $plugin = app()->make(static::class, array_merge($config, ['app' => app()]));
 
         foreach ($config as $key => $value) {
             if (property_exists($plugin, $key)) {
