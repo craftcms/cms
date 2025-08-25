@@ -4,6 +4,7 @@ namespace CraftCms\Cms\Plugin\Concerns;
 
 use CraftCms\Cms\Plugin\Plugin;
 use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Support\Str;
 
 /**
  * @mixin Plugin
@@ -14,39 +15,44 @@ use CraftCms\Cms\Support\Arr;
  */
 trait HasViteAssets
 {
-    /** @var array - URLs of Vite entry points */
+    /**
+     * Vite configuration.
+     *
+     * @var array{
+     *     input: string[],
+     *     publicDirectory?: string,
+     *     buildDirectory?: string,
+     *     hotFile?: string,
+     * }|string[]
+     */
     protected array $vite = [];
 
     public function bootHasViteAssets(): void
     {
-        if (! $this->vite) {
+        if (! $config = $this->vite) {
             return;
         }
 
-        $config = $this->vite;
         $name = static::getInstance()->packageName;
-        $directory = dirname(static::getInstance()->getBasePath());
+        $directory = Str::finish(dirname(static::getInstance()->getBasePath()), '/');
 
         if (! Arr::isAssoc($config)) {
             $config = ['input' => $config];
         }
 
-        $publicDirectory = $config['publicDirectory'] ?? 'public';
-        $buildDirectory = $config['buildDirectory'] ?? 'build';
-        $hotFile = $config['hotFile'] ?? "{$directory}{$publicDirectory}/hot";
-        $input = $config['input'];
+        $publicDirectory = Str::finish($config['publicDirectory'] ?? 'public', '/');
+        $buildDirectory = Str::finish($config['buildDirectory'] ?? 'build', '/');
+        $hotFile = $config['hotFile'] ?? "{$directory}{$publicDirectory}hot";
 
-        $publishSource = "{$directory}/{$publicDirectory}/{$buildDirectory}/";
-        $publishTarget = public_path("vendor/{$name}/{$buildDirectory}/");
+        $source = "{$directory}{$publicDirectory}{$buildDirectory}";
+        $target = $this->app->publicPath("vendor/{$name}/{$buildDirectory}");
 
-        $this->publishes([
-            $publishSource => $publishTarget,
-        ], self::getInstance()->handle);
+        $this->publishes([$source => $target], self::getInstance()->handle);
 
         $this->pluginsService->addViteConfig($name, [
             'hotFile' => $hotFile,
             'buildDirectory' => "vendor/{$name}/{$buildDirectory}",
-            'input' => $input,
+            'input' => $config['input'],
         ]);
     }
 }
