@@ -45,13 +45,13 @@ trait HasViteAssets
         $hotFile = $config['hotFile'] ?? "{$directory}{$publicDirectory}hot";
 
         $source = "{$directory}{$publicDirectory}{$buildDirectory}";
-        $target = $this->app->publicPath("vendor/{$name}/{$buildDirectory}");
+        $target = "vendor/{$name}/{$buildDirectory}";
 
-        $this->publishes([$source => $target], self::getInstance()->handle);
+        $this->publishes([$source => $this->app->publicPath($target)], self::getInstance()->handle);
 
         $this->pluginsService->addViteConfig($name, [
             'hotFile' => $hotFile,
-            'buildDirectory' => "vendor/{$name}/{$buildDirectory}",
+            'buildDirectory' => $target,
             'input' => $config['input'],
         ]);
     }
