@@ -20,7 +20,7 @@ use Illuminate\Support\Facades\File;
  *
  * @since 6.0.0
  */
-trait HasViteAssets
+trait HasFrontendAssets
 {
     /**
      * Vite configuration.
@@ -34,7 +34,11 @@ trait HasViteAssets
      */
     protected array $vite = [];
 
-    public function registerHasViteAssets(): void
+    protected array $styles = [];
+
+    protected array $scripts = [];
+
+    public function registerHasFrontendAssets(): void
     {
         Event::listen(EnablingPlugin::class, function (EnablingPlugin $event) {
             if (! $event->plugin instanceof static) {
@@ -48,6 +52,12 @@ trait HasViteAssets
             [$source, $target] = $this->getSourceAndTarget($event->plugin, $config);
 
             File::copyDirectory($source, $this->app->publicPath($target));
+
+            foreach (array_merge($event->plugin->styles, $event->plugin->scripts) as $asset) {
+                $destination = Str::afterLast($asset, '/');
+
+                File::copy($asset, public_path("vendor/{$event->plugin->packageName}/{$destination}"));
+            }
         });
 
         Event::listen([DisablingPlugin::class, UninstallingPlugin::class], function (PluginEvent $event) {
@@ -59,7 +69,13 @@ trait HasViteAssets
         });
     }
 
-    public function bootHasViteAssets(): void
+    public function bootHasFrontendAssets(): void
+    {
+        $this->bootVite();
+        $this->bootAssets();
+    }
+
+    protected function bootVite(): void
     {
         if (! $config = $this->vite) {
             return;
@@ -84,6 +100,31 @@ trait HasViteAssets
             'buildDirectory' => $target,
             'input' => $config['input'],
         ]);
+    }
+
+    protected function bootAssets(): void
+    {
+        if (! $this->styles && ! $this->scripts) {
+            return;
+        }
+
+        $name = static::getInstance()->packageName;
+
+        $assets = collect(array_merge($this->styles, $this->scripts))->mapWithKeys(fn ($asset) => [$asset => $this->app->publicPath("vendor/{$name}/{$asset}")])->all();
+
+        foreach ($this->styles as $style) {
+            $style = Str::afterLast($style, '/');
+
+            $this->pluginsService->addStyle($name, asset("vendor/{$name}/{$style}"));
+        }
+
+        foreach ($this->scripts as $script) {
+            $script = Str::afterLast($script, '/');
+
+            $this->pluginsService->addScript($name, asset("vendor/{$name}/{$script}"));
+        }
+
+        $this->publishes($assets, static::getInstance()->handle);
     }
 
     private function getSourceAndTarget(PluginInterface $plugin, array $config): array

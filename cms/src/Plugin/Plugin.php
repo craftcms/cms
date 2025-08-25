@@ -12,13 +12,13 @@ abstract class Plugin extends ServiceProvider implements PluginInterface
     use Concerns\HasEditions;
     use Concerns\HasElementTypes;
     use Concerns\HasFieldtypes;
+    use Concerns\HasFrontendAssets;
     use Concerns\HasListeners;
     use Concerns\HasRoutes;
     use Concerns\HasSettings;
     use Concerns\HasTranslations;
     use Concerns\HasUtilities;
     use Concerns\HasViews;
-    use Concerns\HasViteAssets;
     use Concerns\HasWidgets;
     use Concerns\Installable;
     use Concerns\InteractsWithCp;

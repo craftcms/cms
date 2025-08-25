@@ -101,6 +101,10 @@ final class Plugins
 
     private array $viteConfigs = [];
 
+    private array $styles = [];
+
+    private array $scripts = [];
+
     public function __construct(
         #[Give('Craft')]
         private readonly CraftWebApplication|CraftConsoleApplication $craft,
@@ -1195,7 +1199,17 @@ final class Plugins
         $this->viteConfigs[$name] = $config;
     }
 
-    public function getViteHtml(): string
+    public function addStyle(string $name, string $path): void
+    {
+        $this->styles[$name] = $path;
+    }
+
+    public function addScript(string $name, string $path): void
+    {
+        $this->scripts[$name] = $path;
+    }
+
+    public function getAssetsHtml(): string
     {
         $html = '';
 
@@ -1204,6 +1218,14 @@ final class Plugins
                 ->useBuildDirectory(Str::chopEnd($vite['buildDirectory'], '/'))
                 ->withEntryPoints($vite['input'])
                 ->toHtml();
+        }
+
+        foreach ($this->styles as $path) {
+            $html .= '<link rel="stylesheet" href="'.$path.'">';
+        }
+
+        foreach ($this->scripts as $path) {
+            $html .= '<script src="'.$path.'"></script>';
         }
 
         return $html;
