@@ -109,17 +109,18 @@ trait HasFrontendAssets
         }
 
         $name = static::getInstance()->packageName;
+        $version = md5(static::getInstance()->version);
 
         $assets = collect(array_merge($this->styles, $this->scripts))->mapWithKeys(fn ($asset) => [$asset => $this->app->publicPath("vendor/{$name}/{$asset}")])->all();
 
         foreach ($this->styles as $style) {
-            $style = Str::afterLast($style, '/');
+            $style = Str::afterLast($style, '/')."?v=$version";
 
             $this->pluginsService->addStyle($name, asset("vendor/{$name}/{$style}"));
         }
 
         foreach ($this->scripts as $script) {
-            $script = Str::afterLast($script, '/');
+            $script = Str::afterLast($script, '/')."?v=$version";
 
             $this->pluginsService->addScript($name, asset("vendor/{$name}/{$script}"));
         }

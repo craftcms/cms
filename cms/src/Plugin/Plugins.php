@@ -1194,19 +1194,21 @@ final class Plugins
         return LicenseKeyStatus::tryFrom($info['licenseKeyStatus'] ?? '') ?? LicenseKeyStatus::Unknown;
     }
 
-    public function addViteConfig(string $name, array $config): void
+    public function addViteConfig(string $handle, array $config): void
     {
-        $this->viteConfigs[$name] = $config;
+        $this->viteConfigs[$handle] = $config;
     }
 
-    public function addStyle(string $name, string $path): void
+    public function addStyle(string $handle, string $path): void
     {
-        $this->styles[$name] = $path;
+        $this->styles[$handle] ??= [];
+        $this->styles[$handle][] = $path;
     }
 
-    public function addScript(string $name, string $path): void
+    public function addScript(string $handle, string $path): void
     {
-        $this->scripts[$name] = $path;
+        $this->scripts[$handle] ??= [];
+        $this->scripts[$handle][] = $path;
     }
 
     public function getAssetsHtml(): string
@@ -1220,12 +1222,16 @@ final class Plugins
                 ->toHtml();
         }
 
-        foreach ($this->styles as $path) {
-            $html .= '<link rel="stylesheet" href="'.$path.'">';
+        foreach ($this->styles as $styles) {
+            foreach ($styles as $style) {
+                $html .= '<link rel="stylesheet" href="'.$style.'">';
+            }
         }
 
-        foreach ($this->scripts as $path) {
-            $html .= '<script src="'.$path.'"></script>';
+        foreach ($this->scripts as $scripts) {
+            foreach ($scripts as $script) {
+                $html .= '<script src="'.$script.'" defer></script>';
+            }
         }
 
         return $html;
