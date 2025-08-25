@@ -17,6 +17,8 @@ final class DisableCommand extends Command
 
     protected $description = 'Disables a plugin.';
 
+    protected $aliases = ['plugin/disable'];
+
     private Plugins $plugins;
 
     public function handle(Plugins $plugins): int

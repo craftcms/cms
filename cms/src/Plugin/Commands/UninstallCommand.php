@@ -17,6 +17,8 @@ final class UninstallCommand extends Command
 
     protected $description = 'Uninstalls a plugin.';
 
+    protected $aliases = ['plugin/uninstall'];
+
     private Plugins $plugins;
 
     public function handle(Plugins $plugins): int

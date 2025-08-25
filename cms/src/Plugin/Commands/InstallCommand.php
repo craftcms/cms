@@ -21,6 +21,8 @@ final class InstallCommand extends Command
 
     protected $description = 'Installs a plugin.';
 
+    protected $aliases = ['plugin/install'];
+
     protected Plugins $plugins;
 
     public function handle(Plugins $plugins): int

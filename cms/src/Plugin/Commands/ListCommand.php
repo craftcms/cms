@@ -12,6 +12,8 @@ final class ListCommand extends Command
 
     protected $signature = 'craft:plugin:list';
 
+    protected $aliases = ['plugin', 'plugin/list'];
+
     protected $description = 'Installs a plugin.';
 
     public function handle(Plugins $plugins): void

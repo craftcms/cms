@@ -17,6 +17,8 @@ final class EnableCommand extends Command
 
     protected $description = 'Enables a plugin.';
 
+    protected $aliases = ['plugin/enable'];
+
     private Plugins $plugins;
 
     public function handle(Plugins $plugins): int
