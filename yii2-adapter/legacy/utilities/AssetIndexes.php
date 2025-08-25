@@ -73,10 +73,6 @@ class AssetIndexes extends Utility
 
     public static function registerEvents(): void
     {
-        if (!Event::hasHandlers(self::class, self::EVENT_LIST_VOLUMES)) {
-            return;
-        }
-
         EventFacade::listen(ListVolumes::class, function(ListVolumes $event) {
             $yiiEvent = new ListVolumesEvent(['volumes' => $event->volumes]);
 

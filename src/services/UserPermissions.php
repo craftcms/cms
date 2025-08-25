@@ -24,6 +24,7 @@ use craft\records\UserPermission as UserPermissionRecord;
 use CraftCms\Cms\Db\Table;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Element\Enums\PropagationMethod;
+use CraftCms\Cms\Plugin\Plugins;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Utility\Utilities;
 use CraftCms\Cms\Utility\Utilities\ProjectConfig as ProjectConfigUtility;
@@ -458,9 +459,9 @@ class UserPermissions extends Component
             ],
         ];
 
-        foreach (Craft::$app->getPlugins()->getAllPlugins() as $plugin) {
+        foreach (app(Plugins::class)->getAllPlugins() as $plugin) {
             if ($plugin->hasCpSection) {
-                $cpPermissions["accessPlugin-$plugin->id"] = [
+                $cpPermissions["accessPlugin-$plugin->handle"] = [
                     'label' => Craft::t('app', 'Access {plugin}', ['plugin' => $plugin->name]),
                 ];
             }

@@ -14,6 +14,7 @@ use craft\helpers\App;
 use craft\web\assets\updater\UpdaterAsset;
 use craft\web\Controller;
 use craft\web\Response as CraftResponse;
+use CraftCms\Cms\Plugin\Plugins;
 use CraftCms\Cms\Support\Composer;
 use CraftCms\Cms\Support\Json;
 use Symfony\Component\Process\Process;
@@ -525,7 +526,7 @@ abstract class BaseUpdaterController extends Controller
                 ],
             ];
 
-            if ($ownerHandle !== 'craft' && ($plugin = Craft::$app->getPlugins()->getPlugin($ownerHandle)) !== null) {
+            if ($ownerHandle !== 'craft' && ($plugin = app(Plugins::class)->getPlugin($ownerHandle)) !== null) {
                 $email = $plugin->developerEmail;
             }
             $email ??= 'support@craftcms.com';
@@ -566,7 +567,7 @@ abstract class BaseUpdaterController extends Controller
         $this->response = $tempResponse;
 
         try {
-            Craft::$app->getPlugins()->installPlugin($handle, $edition);
+            app(Plugins::class)->installPlugin($handle, $edition);
             $success = true;
             $errorDetails = null;
         } catch (Throwable $e) {

@@ -4,9 +4,10 @@ namespace CraftCms\Cms\Utility\Utilities;
 
 use Composer\InstalledVersions;
 use Craft;
-use craft\base\PluginInterface;
 use craft\helpers\App;
 use CraftCms\Aliases\Facades\Aliases;
+use CraftCms\Cms\Plugin\Contracts\PluginInterface;
+use CraftCms\Cms\Plugin\Plugins;
 use CraftCms\Cms\Utility\Utility;
 use Illuminate\Support\Facades\DB;
 use OutOfBoundsException;
@@ -18,7 +19,7 @@ use yii\base\Module;
  *
  * @since 6.0.0
  */
-final readonly class SystemReport extends Utility
+final class SystemReport extends Utility
 {
     /**
      * {@inheritdoc}
@@ -85,7 +86,7 @@ final readonly class SystemReport extends Utility
 
         return Craft::$app->getView()->renderTemplate('_components/utilities/SystemReport.twig', [
             'appInfo' => self::appInfo(),
-            'plugins' => Craft::$app->getPlugins()->getAllPlugins(),
+            'plugins' => app(Plugins::class)->getAllPlugins(),
             'modules' => $modules,
             'aliases' => $aliases,
             'requirements' => self::requirementResults(),

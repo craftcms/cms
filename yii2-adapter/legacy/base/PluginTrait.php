@@ -1,9 +1,4 @@
 <?php
-/**
- * @link https://craftcms.com/
- * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license https://craftcms.github.io/license/
- */
 
 namespace craft\base;
 
@@ -14,47 +9,38 @@ use CraftCms\Cms\Edition;
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
+ * @deprecated 6.0.0 extend {@see \CraftCms\Cms\Plugin\Plugin} instead.
  */
 trait PluginTrait
 {
-    /**
-     * @var string|null The plugin’s package name
-     */
+    /** @var string The plugin's handle */
+    public string $handle;
+
+    /** @var string The plugin's version */
+    public string $version = '1.0.0';
+
+    /** @var string|null The plugin’s package name */
     public ?string $packageName = null;
 
-    /**
-     * @var string|null The plugin’s display name
-     */
+    /** @var string|null The plugin’s display name */
     public ?string $name = null;
 
-    /**
-     * @var string The plugin’s schema version number
-     */
+    /** @var string The plugin’s schema version number */
     public string $schemaVersion = '1.0.0';
 
-    /**
-     * @var string|null The plugin’s description
-     */
+    /** @var string|null The plugin’s description */
     public ?string $description = null;
 
-    /**
-     * @var string|null The plugin developer’s name
-     */
+    /** @var string|null The plugin developer’s name */
     public ?string $developer = null;
 
-    /**
-     * @var string|null The plugin developer’s website URL
-     */
+    /** @var string|null The plugin developer’s website URL */
     public ?string $developerUrl = null;
 
-    /**
-     * @var string|null The plugin developer’s support email
-     */
+    /** @var string|null The plugin developer’s support email */
     public ?string $developerEmail = null;
 
-    /**
-     * @var string|null The plugin’s documentation URL
-     */
+    /** @var string|null The plugin’s documentation URL */
     public ?string $documentationUrl = null;
 
     /**
@@ -86,56 +72,38 @@ trait PluginTrait
      */
     public ?string $changelogUrl = null;
 
-    /**
-     * @var string|null The plugin’s download URL
-     */
+    /** @var string|null The plugin’s download URL */
     public ?string $downloadUrl = null;
 
-    /**
-     * @var string|null The translation category that this plugin’s translation messages should use. Defaults to the lowercased plugin handle.
-     */
+    /** @var string|null The translation category that this plugin’s translation messages should use. Defaults to the lowercased plugin handle. */
     public ?string $t9nCategory = null;
 
-    /**
-     * @var string The language that the plugin’s messages were written in
-     */
+    /** @var string The language that the plugin’s messages were written in */
     public string $sourceLanguage = 'en-US';
 
-    /**
-     * @var bool Whether the plugin has a settings page in the control panel
-     */
+    /** @var bool Whether the plugin has a settings page in the control panel */
     public bool $hasCpSettings = false;
 
     /**
      * @var bool Whether the plugin supports a read-only settings page in the control panel, which
      * can be shown when admin changes are disallowed.
+     *
      * @since 5.6.0
      */
     public bool $hasReadOnlyCpSettings = false;
 
-    /**
-     * @var bool Whether the plugin has its own section in the control panel
-     */
+    /** @var bool Whether the plugin has its own section in the control panel */
     public bool $hasCpSection = false;
 
-    /**
-     * @var bool Whether the plugin is currently installed. (Will only be false when a plugin is currently being installed.)
-     */
+    /** @var bool Whether the plugin is currently installed. (Will only be false when a plugin is currently being installed.) */
     public bool $isInstalled = false;
 
-    /**
-     * @var string The minimum required version the plugin has to be so it can be updated.
-     */
+    /** @var string The minimum required version the plugin has to be so it can be updated. */
     public string $minVersionRequired = '';
 
-    /**
-     * @var Edition The minimum required Craft CMS edition.
-     * @since 5.0.0
-     */
+    /** @var Edition The minimum required Craft CMS edition. */
     public Edition $minCmsEdition = Edition::Solo;
 
-    /**
-     * @var string The active edition.
-     */
+    /** @var string The active edition. */
     public string $edition = 'standard';
 }

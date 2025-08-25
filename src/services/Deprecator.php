@@ -16,7 +16,6 @@ use craft\web\twig\Extension;
 use CraftCms\Cms\Db\Table;
 use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Support\Str;
-use DateTime;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Facades\DB;
 use Throwable;
@@ -115,7 +114,7 @@ class Deprecator extends Component
         $this->_requestLogs["$key-$fingerprint"] = $this->_pendingRequestLogs["$key-$fingerprint"] = new DeprecationError([
             'key' => $key,
             'fingerprint' => $fingerprint,
-            'lastOccurrence' => new DateTime(),
+            'lastOccurrence' => now(),
             'file' => $file,
             'line' => $line,
             'message' => $message,

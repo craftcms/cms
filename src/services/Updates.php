@@ -8,12 +8,13 @@
 namespace craft\services;
 
 use Craft;
-use craft\base\PluginInterface;
-use craft\errors\InvalidPluginException;
 use craft\errors\MigrateException;
 use craft\helpers\App;
 use craft\helpers\FileHelper;
 use craft\models\Updates as UpdatesModel;
+use CraftCms\Cms\Plugin\Contracts\PluginInterface;
+use CraftCms\Cms\Plugin\Exceptions\InvalidPluginException;
+use CraftCms\Cms\Plugin\Plugins;
 use CraftCms\Cms\Support\Api;
 use CraftCms\Cms\Support\Arr;
 use Illuminate\Support\Facades\Cache;
@@ -143,7 +144,7 @@ class Updates extends Component
     public function setNewPluginInfo(PluginInterface $plugin): bool
     {
         try {
-            Craft::$app->getPlugins()->updatePluginVersionInfo($plugin);
+            app(Plugins::class)->updatePluginVersionInfo($plugin);
         } catch (InvalidPluginException $e) {
             Craft::warning("Couldn’t update plugin version info: {$e->getMessage()}", __METHOD__);
             Craft::$app->getErrorHandler()->logException($e);
@@ -166,7 +167,7 @@ class Updates extends Component
             return true;
         }
 
-        $pluginsService = Craft::$app->getPlugins();
+        $pluginsService = app(Plugins::class);
         foreach ($pluginsService->getAllPlugins() as $plugin) {
             if ($pluginsService->isPluginUpdatePending($plugin)) {
                 return true;
@@ -200,10 +201,10 @@ class Updates extends Component
             $handles[] = 'craft';
         }
 
-        $pluginsService = Craft::$app->getPlugins();
+        $pluginsService = app(Plugins::class);
         foreach ($pluginsService->getAllPlugins() as $plugin) {
             if ($pluginsService->isPluginUpdatePending($plugin)) {
-                $handles[] = $plugin->id;
+                $handles[] = $plugin->handle;
             }
         }
 
@@ -250,10 +251,10 @@ class Updates extends Component
                 } elseif ($handle === 'content') {
                     Craft::$app->getContentMigrator()->up();
                 } else {
-                    $plugin = Craft::$app->getPlugins()->getPlugin($handle);
+                    $plugin = app(Plugins::class)->getPlugin($handle);
                     $name = $plugin->name;
                     $plugin->getMigrator()->up();
-                    Craft::$app->getPlugins()->updatePluginVersionInfo($plugin);
+                    app(Plugins::class)->updatePluginVersionInfo($plugin);
                 }
             }
 
@@ -293,10 +294,10 @@ class Updates extends Component
      */
     public function getIsPluginUpdatePending(): bool
     {
-        $plugins = Craft::$app->getPlugins()->getAllPlugins();
+        $plugins = app(Plugins::class)->getAllPlugins();
 
         foreach ($plugins as $plugin) {
-            if (Craft::$app->getPlugins()->isPluginUpdatePending($plugin)) {
+            if (app(Plugins::class)->isPluginUpdatePending($plugin)) {
                 return true;
             }
         }

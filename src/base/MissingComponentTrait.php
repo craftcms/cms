@@ -8,10 +8,11 @@
 namespace craft\base;
 
 use Craft;
-use craft\errors\InvalidPluginException;
 use craft\helpers\Component as ComponentHelper;
 use CraftCms\Cms\Component\Contracts\ComponentInterface;
 use CraftCms\Cms\Config\GeneralConfig;
+use CraftCms\Cms\Plugin\Exceptions\InvalidPluginException;
+use CraftCms\Cms\Plugin\Plugins;
 use yii\base\Arrayable;
 
 /**
@@ -75,7 +76,7 @@ trait MissingComponentTrait
             Craft::$app->getUser()->getIsAdmin() &&
             app(GeneralConfig::class)->allowAdminChanges
         ) {
-            $pluginsService = Craft::$app->getPlugins();
+            $pluginsService = app(Plugins::class);
 
             // Special cases for removed 1st party components
             switch ($this->expectedType) {
@@ -119,7 +120,7 @@ trait MissingComponentTrait
 
             if ($showPlugin) {
                 try {
-                    $info = Craft::$app->getPlugins()->getPluginInfo($handle);
+                    $info = app(Plugins::class)->getPluginInfo($handle);
                     $isComposerInstalled = true;
                     $isInstalled = $info['isInstalled'];
                     $name = $info['name'];

@@ -6,6 +6,7 @@ use Craft;
 use craft\errors\InvalidLicenseKeyException;
 use craft\helpers\App;
 use craft\helpers\DateTimeHelper;
+use CraftCms\Cms\Plugin\Plugins;
 use CraftCms\Cms\Support\Enums\LicenseKeyStatus;
 use CraftCms\Cms\Support\Facades\Http;
 use GuzzleHttp\Exception\GuzzleException;
@@ -45,6 +46,7 @@ readonly class Api
         private Connection $db,
         private Request $request,
         private Repository $cache,
+        private Plugins $plugins,
         public string $baseApiUrl = 'https://api.craftcms.com/v1/',
         public array $apiParams = [],
     ) {
@@ -146,12 +148,11 @@ readonly class Api
 
         // plugin info
         $pluginLicenses = [];
-        $pluginsService = Craft::$app->getPlugins();
-        foreach ($pluginsService->getAllPluginInfo() as $pluginHandle => $pluginInfo) {
+        foreach ($this->plugins->getAllPluginInfo() as $pluginHandle => $pluginInfo) {
             if ($pluginInfo['isInstalled'] && ! $pluginInfo['private']) {
                 $headers['X-Craft-System'] .= ",plugin-$pluginHandle:{$pluginInfo['version']};{$pluginInfo['edition']}";
                 try {
-                    $licenseKey = $pluginsService->getPluginLicenseKey($pluginHandle);
+                    $licenseKey = $this->plugins->getPluginLicenseKey($pluginHandle);
                 } catch (InvalidLicenseKeyException) {
                     $licenseKey = '__INVALID__';
                 }
@@ -267,12 +268,11 @@ readonly class Api
         }
 
         // did we just get any new plugin license keys?
-        $pluginsService = Craft::$app->getPlugins();
         if (isset($headers['x-craft-plugin-licenses'])) {
             $pluginLicenseKeys = explode(',', reset($headers['x-craft-plugin-licenses']));
             foreach ($pluginLicenseKeys as $key) {
                 [$pluginHandle, $key] = explode(':', $key);
-                $pluginsService->setPluginLicenseKey($pluginHandle, $key);
+                $this->plugins->setPluginLicenseKey($pluginHandle, $key);
             }
         }
 

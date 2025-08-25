@@ -28,5 +28,4 @@ return RectorConfig::configure()
             __DIR__ . '/src/base/ApplicationTrait.php',
         ],
     ])
-    ->withImportNames()
     ->withPhpSets(php74: true);

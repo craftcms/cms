@@ -108,6 +108,7 @@ use CraftCms\Cms\Announcement\Announcements;
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Db\Table;
 use CraftCms\Cms\Edition;
+use CraftCms\Cms\Support\Composer;
 use CraftCms\Cms\Support\Env;
 use CraftCms\Cms\Support\Str;
 use Illuminate\Database\QueryException;
@@ -561,6 +562,14 @@ trait ApplicationTrait
             return $this->_isMultiSite;
         }
         return $this->_isMultiSite = count($this->getSites()->getAllSites(true)) > 1;
+    }
+
+    /**
+     * @deprecated in 6.0.0. Use Laravel's container instead
+     */
+    public function getComposer(): Composer
+    {
+        return app(Composer::class);
     }
 
     /**
@@ -1289,6 +1298,7 @@ trait ApplicationTrait
      * Returns the plugins service.
      *
      * @return Plugins The plugins service
+     * @deprecated 6.0.0 Use {@see \CraftCms\Cms\Plugin\Plugins} instead.
      */
     public function getPlugins(): Plugins
     {
@@ -1578,9 +1588,6 @@ trait ApplicationTrait
 
         // Register all the listeners for config items
         $this->_registerConfigListeners();
-
-        // Load the plugins
-        $this->getPlugins()->loadPlugins();
 
         $this->_isInitialized = true;
 

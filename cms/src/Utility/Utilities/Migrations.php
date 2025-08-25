@@ -10,7 +10,7 @@ use CraftCms\Cms\Utility\Utility;
  *
  * @since 6.0.0
  */
-final readonly class Migrations extends Utility
+final class Migrations extends Utility
 {
     /**
      * {@inheritdoc}

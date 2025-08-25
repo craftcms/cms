@@ -10,7 +10,7 @@ use CraftCms\Cms\Utility\Utility;
  *
  * @since 6.0.0
  */
-final readonly class PhpInfo extends Utility
+final class PhpInfo extends Utility
 {
     /**
      * {@inheritdoc}

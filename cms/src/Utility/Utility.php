@@ -7,7 +7,7 @@ use CraftCms\Cms\Component\Contracts\ComponentInterface;
 /**
  * @since 6.0.0
  */
-abstract readonly class Utility implements ComponentInterface
+abstract class Utility implements ComponentInterface
 {
     /**
      * Returns the utility’s unique identifier.

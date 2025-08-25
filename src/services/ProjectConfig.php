@@ -21,6 +21,7 @@ use craft\helpers\ProjectConfig as ProjectConfigHelper;
 use craft\models\ProjectConfigData;
 use craft\models\ReadOnlyProjectConfigData;
 use CraftCms\Cms\Db\Table;
+use CraftCms\Cms\Plugin\Plugins;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Support\Str;
@@ -402,8 +403,6 @@ class ProjectConfig extends Component
      */
     public function init(): void
     {
-        Craft::$app->on(Application::EVENT_AFTER_REQUEST, [$this, 'flush'], append: false);
-
         $this->on(self::EVENT_ADD_ITEM, [$this, 'handleChangeEvent']);
         $this->on(self::EVENT_UPDATE_ITEM, [$this, 'handleChangeEvent']);
         $this->on(self::EVENT_REMOVE_ITEM, [$this, 'handleChangeEvent']);
@@ -990,7 +989,7 @@ class ProjectConfig extends Component
             ];
         }
 
-        $plugins = Craft::$app->getPlugins()->getAllPlugins();
+        $plugins = app(Plugins::class)->getAllPlugins();
 
         foreach ($plugins as $plugin) {
             $incomingSchema = (string)$this->getExternalConfig()->get(self::PATH_PLUGINS . '.' . $plugin->handle . '.schemaVersion');

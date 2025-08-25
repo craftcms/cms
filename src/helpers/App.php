@@ -17,7 +17,6 @@ use craft\db\Connection;
 use craft\db\mysql\Schema as MysqlSchema;
 use craft\db\pgsql\Schema as PgsqlSchema;
 use craft\elements\User;
-use craft\errors\InvalidPluginException;
 use craft\errors\MissingComponentException;
 use craft\helpers\Session as SessionHelper;
 use craft\i18n\Locale;
@@ -34,6 +33,8 @@ use craft\web\User as WebUser;
 use craft\web\View;
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Edition;
+use CraftCms\Cms\Plugin\Exceptions\InvalidPluginException;
+use CraftCms\Cms\Plugin\Plugins;
 use CraftCms\Cms\Support\Enums\LicenseKeyStatus;
 use CraftCms\Cms\Support\Env;
 use CraftCms\Cms\Support\Json as JsonHelper;
@@ -1315,7 +1316,7 @@ class App
 
         $allLicenseInfo = Cache::get(App::CACHE_KEY_LICENSE_INFO, []);
         $licenseInfoHost = Cache::get(App::CACHE_KEY_LICENSE_INFO_HOST);
-        $pluginsService = Craft::$app->getPlugins();
+        $pluginsService = app(Plugins::class);
         $generalConfig = app(GeneralConfig::class);
         $consoleUrl = rtrim(Craft::$app->getPluginStore()->craftIdEndpoint, '/');
 

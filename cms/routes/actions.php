@@ -4,11 +4,13 @@ use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Http\Controllers\Dashboard\Widgets\CraftSupportController;
 use CraftCms\Cms\Http\Controllers\Dashboard\Widgets\FeedController;
 use CraftCms\Cms\Http\Controllers\Dashboard\WidgetsController;
+use CraftCms\Cms\Http\Controllers\PluginsController;
 use CraftCms\Cms\Http\Controllers\Utilities\ClearCachesController;
 use CraftCms\Cms\Http\Controllers\Utilities\DbBackupController;
 use CraftCms\Cms\Http\Controllers\Utilities\DeprecationErrorsController;
 use CraftCms\Cms\Http\Controllers\Utilities\FindAndReplaceController;
 use CraftCms\Cms\Http\Controllers\Utilities\MigrationsController;
+use CraftCms\Cms\Http\Middleware\RequireAdmin;
 
 $generalConfig = app(GeneralConfig::class);
 
@@ -50,4 +52,15 @@ Route::prefix(implode('/', [
     Route::post('dashboard/reorder-user-widgets', [WidgetsController::class, 'reorder']);
     Route::post('dashboard/cache-feed-data', [FeedController::class, 'cacheData']);
     Route::post('dashboard/send-support-request', CraftSupportController::class);
+
+    // Plugins
+    Route::middleware([RequireAdmin::class])->group(function () {
+        Route::post('plugins/install-plugin', [PluginsController::class, 'install']);
+        Route::post('plugins/uninstall-plugin', [PluginsController::class, 'uninstall']);
+        Route::post('plugins/switch-edition', [PluginsController::class, 'switchEdition']);
+        Route::post('plugins/disable-plugin', [PluginsController::class, 'disable']);
+        Route::post('plugins/enable-plugin', [PluginsController::class, 'enable']);
+
+        Route::post('plugins/save-plugin-settings', [PluginsController::class, 'saveSettings']);
+    });
 });

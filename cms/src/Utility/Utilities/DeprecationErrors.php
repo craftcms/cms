@@ -11,7 +11,7 @@ use CraftCms\Cms\Utility\Utility;
  *
  * @since 6.0.0
  */
-final readonly class DeprecationErrors extends Utility
+final class DeprecationErrors extends Utility
 {
     /**
      * {@inheritdoc}

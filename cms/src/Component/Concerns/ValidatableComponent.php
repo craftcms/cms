@@ -2,6 +2,8 @@
 
 namespace CraftCms\Cms\Component\Concerns;
 
+use craft\helpers\Typecast;
+use CraftCms\Cms\Support\Utils;
 use Illuminate\Support\Facades\Validator as ValidatorFacade;
 use Illuminate\Validation\Validator;
 
@@ -17,14 +19,9 @@ trait ValidatableComponent
         return [];
     }
 
-    public function getValidationData(): array
-    {
-        return [];
-    }
-
     protected function getValidator(): Validator
     {
-        return $this->validator ??= ValidatorFacade::make($this->getValidationData(), static::getRules());
+        return $this->validator ??= ValidatorFacade::make($this->getAttributes(), static::getRules());
     }
 
     public function validate(array|string|null $attributeNames = null, bool $clearErrors = true): bool
@@ -58,5 +55,19 @@ trait ValidatableComponent
     public function getFirstError(string $attribute): ?string
     {
         return $this->getValidator()->errors()->first($attribute);
+    }
+
+    public function setAttributes(array $values): void
+    {
+        Typecast::properties(static::class, $values);
+
+        foreach ($values as $name => $value) {
+            $this->$name = $value;
+        }
+    }
+
+    public function getAttributes(): array
+    {
+        return Utils::getPublicProperties($this);
     }
 }

@@ -22,7 +22,7 @@ use Illuminate\Support\Facades\File;
 
  * @since 6.0.0
  */
-final readonly class ClearCaches extends Utility
+final class ClearCaches extends Utility
 {
     /**
      * {@inheritdoc}

@@ -19,6 +19,7 @@ use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Schema;
+use Laravel\Tinker\TinkerServiceProvider;
 use Orchestra\Testbench\TestCase as Orchestra;
 
 /** @since 6.0.0 */
@@ -88,6 +89,7 @@ class TestCase extends Orchestra
             CacheServiceProvider::class,
             CraftServiceProvider::class,
             Yii2ServiceProvider::class,
+            TinkerServiceProvider::class, // phpstan fails without it?
         ];
     }
 

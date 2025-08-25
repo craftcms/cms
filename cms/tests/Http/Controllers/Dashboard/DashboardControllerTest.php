@@ -1,5 +1,6 @@
 <?php
 
+use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Http\Controllers\Dashboard\DashboardController;
 use CraftCms\Cms\User\Models\User;
 
@@ -8,7 +9,7 @@ use function Pest\Laravel\get;
 
 it('requires login', function () {
     get(action(DashboardController::class))
-        ->assertRedirect(app('Craft')->getConfig()->getGeneral()->loginPath);
+        ->assertRedirect(app(GeneralConfig::class)->loginPath);
 });
 
 it('can be rendered', function () {

@@ -198,56 +198,46 @@ class Dashboard extends Component
     public static function registerEvents(): void
     {
         // Fire a 'registerWidgetTypes' event
-        if (Craft::$app->getDashboard()->hasEventHandlers(self::EVENT_REGISTER_WIDGET_TYPES)) {
-            Event::listen(RegisterWidgetTypes::class, function(RegisterWidgetTypes $event) {
-                $yiiEvent = new RegisterComponentTypesEvent(['types' => $event->types->all()]);
-                Craft::$app->getDashboard()->trigger(self::EVENT_REGISTER_WIDGET_TYPES, $yiiEvent);
+        Event::listen(RegisterWidgetTypes::class, function(RegisterWidgetTypes $event) {
+            $yiiEvent = new RegisterComponentTypesEvent(['types' => $event->types->all()]);
+            Craft::$app->getDashboard()->trigger(self::EVENT_REGISTER_WIDGET_TYPES, $yiiEvent);
 
-                /** @var array<class-string<WidgetInterface>> $types */
-                $types = $yiiEvent->types;
+            /** @var array<class-string<WidgetInterface>> $types */
+            $types = $yiiEvent->types;
 
-                $event->types = Collection::make($types);
-            });
-        }
+            $event->types = Collection::make($types);
+        });
 
         // Fire a 'beforeSaveWidget' event
-        if (Craft::$app->getDashboard()->hasEventHandlers(self::EVENT_BEFORE_SAVE_WIDGET)) {
-            Event::listen(WidgetSaving::class, function(WidgetSaving $event) {
-                Craft::$app->getDashboard()->trigger(self::EVENT_BEFORE_SAVE_WIDGET, $yiiEvent = new WidgetEvent([
-                    'widget' => $event->widget,
-                    'isNew' => $event->isNew,
-                ]));
+        Event::listen(WidgetSaving::class, function(WidgetSaving $event) {
+            Craft::$app->getDashboard()->trigger(self::EVENT_BEFORE_SAVE_WIDGET, $yiiEvent = new WidgetEvent([
+                'widget' => $event->widget,
+                'isNew' => $event->isNew,
+            ]));
 
-                $event->widget = $yiiEvent->widget;
-            });
-        }
+            $event->widget = $yiiEvent->widget;
+        });
 
         // Fire a 'afterSaveWidget' event
-        if (Craft::$app->getDashboard()->hasEventHandlers(self::EVENT_AFTER_SAVE_WIDGET)) {
-            Event::listen(WidgetSaved::class, function(WidgetSaved $event) {
-                Craft::$app->getDashboard()->trigger(self::EVENT_AFTER_SAVE_WIDGET, $yiiEvent = new WidgetEvent([
-                    'widget' => $event->widget,
-                    'isNew' => $event->isNew,
-                ]));
-            });
-        }
+        Event::listen(WidgetSaved::class, function(WidgetSaved $event) {
+            Craft::$app->getDashboard()->trigger(self::EVENT_AFTER_SAVE_WIDGET, $yiiEvent = new WidgetEvent([
+                'widget' => $event->widget,
+                'isNew' => $event->isNew,
+            ]));
+        });
 
         // Fire a 'beforeDeleteWidget' event
-        if (Craft::$app->getDashboard()->hasEventHandlers(self::EVENT_BEFORE_DELETE_WIDGET)) {
-            Event::listen(WidgetSaved::class, function(WidgetSaved $event) {
-                Craft::$app->getDashboard()->trigger(self::EVENT_BEFORE_DELETE_WIDGET, new WidgetEvent([
-                    'widget' => $event->widget,
-                ]));
-            });
-        }
+        Event::listen(WidgetSaved::class, function(WidgetSaved $event) {
+            Craft::$app->getDashboard()->trigger(self::EVENT_BEFORE_DELETE_WIDGET, new WidgetEvent([
+                'widget' => $event->widget,
+            ]));
+        });
 
         // Fire an 'afterDeleteWidget' event
-        if (Craft::$app->getDashboard()->hasEventHandlers(self::EVENT_AFTER_DELETE_WIDGET)) {
-            Event::listen(WidgetSaved::class, function(WidgetSaved $event) {
-                Craft::$app->getDashboard()->trigger(self::EVENT_AFTER_DELETE_WIDGET, new WidgetEvent([
-                    'widget' => $event->widget,
-                ]));
-            });
-        }
+        Event::listen(WidgetSaved::class, function(WidgetSaved $event) {
+            Craft::$app->getDashboard()->trigger(self::EVENT_AFTER_DELETE_WIDGET, new WidgetEvent([
+                'widget' => $event->widget,
+            ]));
+        });
     }
 }

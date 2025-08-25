@@ -15,6 +15,7 @@ use craft\helpers\DateTimeHelper;
 use craft\helpers\FileHelper;
 use craft\helpers\ProjectConfig;
 use craft\services\ProjectConfig as ProjectConfigService;
+use CraftCms\Cms\Plugin\Plugins;
 use Symfony\Component\Yaml\Exception\ParseException;
 use Symfony\Component\Yaml\Yaml;
 use Throwable;
@@ -536,7 +537,7 @@ class ProjectConfigController extends Controller
      */
     private function _uninstallPlugins(array $handles): void
     {
-        $pluginsService = Craft::$app->getPlugins();
+        $pluginsService = app(Plugins::class);
 
         foreach ($handles as $handle) {
             $this->stdout('Uninstalling plugin ', Console::FG_YELLOW);
@@ -559,7 +560,7 @@ class ProjectConfigController extends Controller
      */
     private function _installPlugins(array $handles): bool
     {
-        $pluginsService = Craft::$app->getPlugins();
+        $pluginsService = app(Plugins::class);
 
         foreach ($handles as $handle) {
             $this->stdout('Installing plugin ', Console::FG_YELLOW);

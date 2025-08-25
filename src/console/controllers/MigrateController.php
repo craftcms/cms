@@ -8,13 +8,14 @@
 namespace craft\console\controllers;
 
 use Craft;
-use craft\base\PluginInterface;
 use craft\console\ControllerTrait;
 use craft\db\MigrationManager;
-use craft\errors\InvalidPluginException;
 use craft\errors\MigrateException;
 use craft\events\RegisterMigratorEvent;
 use craft\helpers\FileHelper;
+use CraftCms\Cms\Plugin\Contracts\PluginInterface;
+use CraftCms\Cms\Plugin\Exceptions\InvalidPluginException;
+use CraftCms\Cms\Plugin\Plugins;
 use CraftCms\Cms\Support\Arr;
 use yii\base\ErrorException;
 use yii\base\InvalidArgumentException;
@@ -311,12 +312,12 @@ class MigrateController extends BaseMigrateController
             $migrationsByTrack[MigrationManager::TRACK_CRAFT] = $craftMigrations;
         }
 
-        $pluginsService = Craft::$app->getPlugins();
+        $pluginsService = app(Plugins::class);
         $plugins = $pluginsService->getAllPlugins();
         foreach ($plugins as $plugin) {
             $pluginMigrations = $plugin->getMigrator()->getNewMigrations();
             if (!empty($pluginMigrations) || $pluginsService->isPluginUpdatePending($plugin)) {
-                $migrationsByTrack["plugin:$plugin->id"] = $pluginMigrations;
+                $migrationsByTrack["plugin:$plugin->handle"] = $pluginMigrations;
             }
         }
 
@@ -388,7 +389,7 @@ class MigrateController extends BaseMigrateController
             if ($track === MigrationManager::TRACK_CRAFT) {
                 Craft::$app->getUpdates()->updateCraftVersionInfo();
             } elseif ($track !== MigrationManager::TRACK_CONTENT) {
-                Craft::$app->getPlugins()->updatePluginVersionInfo($plugins[substr($track, 7)]);
+                app(Plugins::class)->updatePluginVersionInfo($plugins[substr($track, 7)]);
             }
         }
 
@@ -443,7 +444,7 @@ class MigrateController extends BaseMigrateController
             if ($this->track === MigrationManager::TRACK_CRAFT) {
                 Craft::$app->getUpdates()->updateCraftVersionInfo();
             } elseif ($this->plugin) {
-                Craft::$app->getPlugins()->updatePluginVersionInfo($this->plugin);
+                app(Plugins::class)->updatePluginVersionInfo($this->plugin);
             }
 
             $this->_clearCompiledTemplates();
@@ -461,7 +462,7 @@ class MigrateController extends BaseMigrateController
      */
     private function _plugin(string $handle): PluginInterface
     {
-        $pluginsService = Craft::$app->getPlugins();
+        $pluginsService = app(Plugins::class);
         if ($plugin = $pluginsService->getPlugin($handle)) {
             return $plugin;
         }

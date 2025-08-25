@@ -10,6 +10,7 @@ namespace craft\controllers;
 use Craft;
 use craft\utilities\Upgrade;
 use craft\web\Controller;
+use CraftCms\Cms\Plugin\Plugins;
 use CraftCms\Cms\Support\Composer;
 use CraftCms\Cms\Support\Json;
 use yii\web\ForbiddenHttpException;
@@ -49,7 +50,7 @@ class UpgradeController extends Controller
         }
 
         if (!empty($versions['plugins'])) {
-            $pluginsService = Craft::$app->getPlugins();
+            $pluginsService = app(Plugins::class);
             foreach ($versions['plugins'] as $handle => $version) {
                 $info = $pluginsService->getPluginInfo($handle);
                 $config['require'][$info['packageName']] = $version;

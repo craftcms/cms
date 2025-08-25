@@ -10,7 +10,7 @@ use ReflectionProperty;
  */
 final class Utils
 {
-    public static function getPublicProperties($target, $filter = null)
+    public static function getPublicProperties($target, $filter = null): array
     {
         return collect(new ReflectionObject($target)->getProperties())
             ->filter(fn (ReflectionProperty $property) => $property->isPublic() && ! $property->isStatic() && $property->isDefault())

@@ -16,7 +16,6 @@ use craft\base\ElementInterface;
 use craft\config\DbConfig;
 use craft\console\Application as ConsoleApplication;
 use craft\errors\ElementNotFoundException;
-use craft\errors\InvalidPluginException;
 use craft\helpers\App;
 use craft\helpers\ProjectConfig;
 use craft\models\FieldLayout;
@@ -26,6 +25,8 @@ use craft\web\Application as WebApplication;
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Db\Table;
 use CraftCms\Cms\Edition;
+use CraftCms\Cms\Plugin\Exceptions\InvalidPluginException;
+use CraftCms\Cms\Plugin\Plugins;
 use CraftCms\Cms\Support\Env;
 use DateTime;
 use Exception;
@@ -332,7 +333,7 @@ class Craft extends Yii2
      */
     public function installPlugin(array $plugin): void
     {
-        if (!\Craft::$app->getPlugins()->installPlugin($plugin['handle'])) {
+        if (!app(Plugins::class)->installPlugin($plugin['handle'])) {
             throw new InvalidConfigException('Invalid plugin handle: ' . $plugin['handle']);
         }
     }

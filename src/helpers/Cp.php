@@ -43,6 +43,7 @@ use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Element\Enums\AttributeStatus;
 use CraftCms\Cms\Element\Enums\MenuItemType;
+use CraftCms\Cms\Plugin\Plugins;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Enums\Color;
 use CraftCms\Cms\Support\Json as JsonHelper;
@@ -198,7 +199,7 @@ class Cp
 
         // Do any plugins require a higher edition?
         if (Craft::$app->edition < Edition::Pro) {
-            foreach (Craft::$app->getPlugins()->getAllPlugins() as $plugin) {
+            foreach (app(Plugins::class)->getAllPlugins() as $plugin) {
                 if ($plugin->minCmsEdition->value > Craft::$app->edition->value) {
                     $alerts[] = Craft::t('app', '{plugin} requires Craft CMS {edition} edition.', [
                         'plugin' => $plugin->name,

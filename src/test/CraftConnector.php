@@ -11,13 +11,14 @@ use Codeception\Exception\ConfigurationException;
 use Codeception\Lib\Connector\Yii2;
 use Codeception\Util\Debug;
 use Craft;
-use craft\base\PluginInterface;
-use craft\errors\InvalidPluginException;
 use craft\helpers\Db;
 use craft\helpers\Session;
 use craft\services\ProjectConfig;
 use craft\web\View;
 use CraftCms\Cms\Config\GeneralConfig;
+use CraftCms\Cms\Plugin\Contracts\PluginInterface;
+use CraftCms\Cms\Plugin\Exceptions\InvalidPluginException;
+use CraftCms\Cms\Plugin\Plugins;
 use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
@@ -106,7 +107,7 @@ class CraftConnector extends Yii2
             $moduleId = $module->id;
 
             if ($module instanceof PluginInterface) {
-                $plugins = Craft::$app->getPlugins();
+                $plugins = app(Plugins::class);
 
                 // Follow the same error handling as Craft does natively.
                 if (($info = $plugins->getStoredPluginInfo($moduleId)) === null) {

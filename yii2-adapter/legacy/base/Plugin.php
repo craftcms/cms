@@ -16,7 +16,9 @@ use craft\helpers\Html;
 use craft\i18n\PhpMessageSource;
 use craft\web\Controller;
 use craft\web\View;
+use CraftCms\Cms\Plugin\Contracts\PluginInterface;
 use CraftCms\Cms\Support\Arr;
+use ReflectionClass;
 use ReflectionMethod;
 use yii\base\Event;
 use yii\base\InvalidArgumentException;
@@ -26,10 +28,10 @@ use yii\web\Response;
 /**
  * Plugin is the base class for classes representing plugins in terms of objects.
  *
- * @property string $handle The plugin’s handle (alias of [[id]])
  * @property MigrationManager $migrator The plugin’s migration manager
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
+ * @deprecated 6.0.0 use {@see \CraftCms\Cms\Plugin\Plugin} instead.
  */
 class Plugin extends Module implements PluginInterface
 {
@@ -51,7 +53,7 @@ class Plugin extends Module implements PluginInterface
     public const EVENT_AFTER_SAVE_SETTINGS = 'afterSaveSettings';
 
     /**
-     * @inheritdoc
+     * Additional config the plugin should be instantiated with
      */
     public static function config(): array
     {
@@ -79,6 +81,9 @@ class Plugin extends Module implements PluginInterface
      */
     public function __construct($id, $parent = null, array $config = [])
     {
+        $this->handle = $id;
+        $this->version = $this->getVersion();
+
         // Set some things early in case there are any settings, and the settings model's
         // init() method needs to call Craft::t() or Plugin::getInstance().
 
@@ -256,6 +261,16 @@ class Plugin extends Module implements PluginInterface
      */
     public function getMigrator(): MigrationManager
     {
+        $ref = new ReflectionClass($this);
+        $ns = $ref->getNamespaceName();
+
+        $this->set('migrator', [
+            'class' => MigrationManager::class,
+            'track' => "plugin:$this->handle",
+            'migrationNamespace' => ($ns ? $ns . '\\' : '') . 'migrations',
+            'migrationPath' => $this->getBasePath() . DIRECTORY_SEPARATOR . 'migrations',
+        ]);
+
         return $this->get('migrator');
     }
 
@@ -279,18 +294,7 @@ class Plugin extends Module implements PluginInterface
     // Editions
     // -------------------------------------------------------------------------
 
-    /**
-     * Compares the active edition with the given edition.
-     *
-     * @param string $edition The edition to compare the active edition against
-     * @param string $operator The comparison operator to use. `=` by default,
-     * meaning the method will return `true` if the active edition is equal to
-     * the passed-in edition.
-     * @return bool
-     * @throws InvalidArgumentException if `$edition` is an unsupported edition,
-     * or if `$operator` is an invalid operator.
-     * @since 3.1.0
-     */
+    /** {@inheritdoc} */
     public function is(string $edition, string $operator = '='): bool
     {
         $editions = static::editions();
@@ -425,5 +429,26 @@ class Plugin extends Module implements PluginInterface
         $path = $this->getBasePath() . DIRECTORY_SEPARATOR . 'icon-mask.svg';
 
         return is_file($path) ? $path : null;
+    }
+
+    public function getBasePath(): string
+    {
+        return parent::getBasePath();
+    }
+
+    /** {@inheritdoc} */
+    public static function create(array $config): PluginInterface
+    {
+        // Merge in the plugin’s dynamic config
+        $config = Arr::merge($config, static::config());
+
+        $config['class'] = static::class;
+
+        return Craft::createObject($config, [$config['handle'], Craft::$app]);
+    }
+
+    public static function getInstance(): PluginInterface
+    {
+        return parent::getInstance();
     }
 }

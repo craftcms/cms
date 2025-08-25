@@ -12,7 +12,6 @@ use Craft;
 use craft\base\ElementInterface;
 use craft\base\FieldLayoutProviderInterface;
 use craft\base\MissingComponentInterface;
-use craft\base\PluginInterface;
 use craft\elements\Address;
 use craft\elements\Asset;
 use craft\elements\ElementCollection;
@@ -60,6 +59,8 @@ use craft\web\twig\tokenparsers\TagTokenParser;
 use craft\web\twig\variables\CraftVariable;
 use craft\web\View;
 use CraftCms\Cms\Config\GeneralConfig;
+use CraftCms\Cms\Plugin\Contracts\PluginInterface;
+use CraftCms\Cms\Plugin\Plugins;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Env;
 use CraftCms\Cms\Support\Json;
@@ -69,6 +70,7 @@ use DateTime;
 use DateTimeInterface;
 use DateTimeZone;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Stringable;
 use IteratorAggregate;
@@ -1613,7 +1615,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
      */
     public function pluginFunction(string $handle): ?PluginInterface
     {
-        return Craft::$app->getPlugins()->getPlugin($handle);
+        return app(Plugins::class)->getPlugin($handle);
     }
 
     /**
@@ -1735,6 +1737,16 @@ class Extension extends AbstractExtension implements GlobalsInterface
             $primarySite = $sitesService->getPrimarySite();
 
             $currentUser = Craft::$app->getUser()->getIdentity();
+
+            if (!$currentUser) {
+                $user = Auth::user();
+
+                if ($user) {
+                    Craft::$app->getUser()->setIdentity(Craft::$app->getUsers()->getUserById($user->id));
+                    $currentUser = Craft::$app->getUser()->getIdentity();
+                }
+            }
+
             $siteName = Craft::t('site', $currentSite->getName());
             $siteUrl = $currentSite->getBaseUrl();
             $systemName = Craft::$app->getSystemName();
@@ -1745,6 +1757,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
         return [
             'craft' => new CraftVariable(),
             'config' => Config::all(),
+            'pluginAssets' => app(Plugins::class)->getAssetsHtml(),
             'currentSite' => $currentSite,
             'currentUser' => $currentUser,
             'primarySite' => $primarySite,

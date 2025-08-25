@@ -69,7 +69,7 @@ it('can get badge count for all utilities', function () {
     expect($this->utilities->getUtilitiesBadgeCount())->toBeGreaterThan(0);
 });
 
-readonly class DummyUtility extends Utility
+class DummyUtility extends Utility
 {
     public static function displayName(): string
     {

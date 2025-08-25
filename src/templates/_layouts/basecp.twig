@@ -24,6 +24,11 @@
     </main>
 {% endmacro %}
 
+{% block head %}
+    {{ parent() }}
+    {{ pluginAssets | raw }}
+{% endblock %}
+
 {% block foot %}
     <form id="x" method="post" accept-charset="UTF-8">
         {{ csrfInput() }}

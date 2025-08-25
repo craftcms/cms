@@ -9,13 +9,14 @@ namespace craft\controllers;
 
 use Craft;
 use craft\errors\InvalidLicenseKeyException;
-use craft\errors\InvalidPluginException;
 use craft\helpers\App;
 use craft\helpers\UrlHelper;
 use craft\web\assets\pluginstore\PluginStoreAsset;
 use craft\web\Controller;
 use craft\web\View;
 use CraftCms\Cms\Edition;
+use CraftCms\Cms\Plugin\Exceptions\InvalidPluginException;
+use CraftCms\Cms\Plugin\Plugins;
 use CraftCms\Cms\Support\Composer;
 use CraftCms\Cms\Support\Json;
 use yii\base\Exception;
@@ -128,11 +129,11 @@ class PluginStoreController extends Controller
     {
         $payload = Json::decode($this->request->getRawBody(), true);
         $pluginLicenseKeys = ($payload['pluginLicenseKeys'] ?? []);
-        $plugins = Craft::$app->getPlugins()->getAllPlugins();
+        $plugins = app(Plugins::class)->getAllPlugins();
 
         foreach ($pluginLicenseKeys as $pluginLicenseKey) {
             if (isset($plugins[$pluginLicenseKey['handle']])) {
-                Craft::$app->getPlugins()->setPluginLicenseKey($pluginLicenseKey['handle'], $pluginLicenseKey['key']);
+                app(Plugins::class)->setPluginLicenseKey($pluginLicenseKey['handle'], $pluginLicenseKey['key']);
             }
         }
 

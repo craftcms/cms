@@ -5,10 +5,15 @@ namespace CraftCms\Cms\Providers;
 use Craft;
 use craft\helpers\FileHelper;
 use CraftCms\Aliases\Facades\Aliases;
+use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Http\Middleware\ExtractNamespace;
+use CraftCms\Cms\Http\Middleware\FlushProjectConfig;
+use CraftCms\Cms\Http\Middleware\HandleActionRequest;
 use CraftCms\Cms\Http\Middleware\RequireCpRequest;
 use CraftCms\Cms\Http\Middleware\SendPoweredByHeader;
 use CraftCms\Cms\Support\Env;
+use Illuminate\Auth\Middleware\Authenticate;
+use Illuminate\Contracts\Http\Kernel as HttpKernel;
 use Illuminate\Foundation\Console\AboutCommand;
 use Illuminate\Routing\Router;
 use Illuminate\Support\ServiceProvider;
@@ -18,7 +23,20 @@ final class AppServiceProvider extends ServiceProvider
 {
     private string $root = __DIR__.'/../..';
 
-    public function register(): void {}
+    public function register(): void
+    {
+        /**
+         * HandleActionRequest is special and needs to run
+         * before any other middleware as it rewrites
+         * which path needs to get used.
+         */
+        $kernel = $this->app->get(HttpKernel::class);
+        $kernel->setGlobalMiddleware(array_merge([
+            HandleActionRequest::class,
+        ], $kernel->getGlobalMiddleware()));
+
+        Authenticate::redirectUsing(fn () => app(GeneralConfig::class)->loginPath);
+    }
 
     public function boot(): void
     {
@@ -62,10 +80,15 @@ final class AppServiceProvider extends ServiceProvider
         collect([
             ExtractNamespace::class,
             SendPoweredByHeader::class,
+            FlushProjectConfig::class,
         ])->each(fn ($middleware) => $router->pushMiddlewareToGroup('craft', $middleware));
 
         collect([
             RequireCpRequest::class,
         ])->each(fn ($middleware) => $router->pushMiddlewareToGroup('craft.cp', $middleware));
+
+        collect([
+            'web',
+        ])->each(fn ($middleware) => $router->pushMiddlewareToGroup('craft.web', $middleware));
     }
 }

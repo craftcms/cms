@@ -1,23 +1,9 @@
-{% requireAdmin false %}
-
 {% extends "_layouts/cp" %}
 {% set title = "Plugins"|t('app') %}
-{% set readOnly = not config.craft.general.allowAdminChanges %}
-
-{% do view.registerAssetBundle("craft\\web\\assets\\plugins\\PluginsAsset") %}
 
 {% set crumbs = [
   { label: "Settings"|t('app'), url: url('settings') }
 ] %}
-
-
-{% set info = craft.app.plugins.getAllPluginInfo()|multisort(
-  ['isEnabled', 'isInstalled', 'name'],
-  [SORT_DESC, SORT_DESC, SORT_ASC],
-  [SORT_NUMERIC, SORT_NUMERIC, SORT_NATURAL]
-) %}
-
-{% set disabledPlugins = config.craft.general.disabledPlugins %}
 
 {% if readOnly %}
     {% set contentNotice = readOnlyNotice() %}
