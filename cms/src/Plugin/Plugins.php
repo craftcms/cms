@@ -1201,7 +1201,7 @@ final class Plugins
 
         foreach ($this->viteConfigs as $vite) {
             $html .= Vite::useHotFile($vite['hotFile'])
-                ->useBuildDirectory($vite['buildDirectory'])
+                ->useBuildDirectory(Str::chopEnd($vite['buildDirectory'], '/'))
                 ->withEntryPoints($vite['input'])
                 ->toHtml();
         }

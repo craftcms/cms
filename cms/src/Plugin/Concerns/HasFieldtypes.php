@@ -24,7 +24,7 @@ trait HasFieldtypes
      */
     protected array $fieldTypes = [];
 
-    public function bootFieldTypes(): void
+    public function bootHasFieldTypes(): void
     {
         if (! $this->fieldTypes) {
             return;
