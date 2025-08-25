@@ -3,6 +3,7 @@
 namespace CraftCms\Cms\Plugin\Testing;
 
 use CraftCms\Cms\Plugin\Plugins;
+use CraftCms\Cms\Support\Json;
 use Illuminate\Support\Facades\File;
 
 use function Orchestra\Testbench\package_path;
@@ -61,6 +62,6 @@ trait InstallsPlugin
 
     private function getComposerInfo(): array
     {
-        return once(fn () => json_decode(File::get(package_path('composer.json')), true));
+        return once(fn () => Json::decode(File::get(package_path('composer.json'))));
     }
 }
