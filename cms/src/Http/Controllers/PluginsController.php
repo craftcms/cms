@@ -46,14 +46,14 @@ final readonly class PluginsController
 
     public function install(Request $request): Response
     {
-        $data = $request->validate([
+        $request->validate([
             'pluginHandle' => ['required', 'string'],
             'edition' => ['nullable', 'string'],
         ]);
 
         $success = $this->plugins->installPlugin(
-            handle: $data['pluginHandle'],
-            edition: $data['edition'] ?? null,
+            handle: $request->string('pluginHandle'),
+            edition: $request->get('edition'),
         );
 
         return $success
@@ -63,23 +63,23 @@ final readonly class PluginsController
 
     public function switchEdition(Request $request): Response
     {
-        $data = $request->validate([
+        $request->validate([
             'pluginHandle' => ['required', 'string'],
             'edition' => ['required', 'string'],
         ]);
 
-        $this->plugins->switchEdition($data['pluginHandle'], $data['edition']);
+        $this->plugins->switchEdition($request->string('pluginHandle'), $request->get('edition'));
 
         return $this->asSuccess(Craft::t('app', 'Plugin edition changed.'));
     }
 
     public function uninstall(Request $request): Response
     {
-        $pluginHandle = $request->validate([
+        $request->validate([
             'pluginHandle' => ['required', 'string'],
-        ])['pluginHandle'];
+        ]);
 
-        $success = $this->plugins->uninstallPlugin($pluginHandle);
+        $success = $this->plugins->uninstallPlugin($request->string('pluginHandle'));
 
         return $success ?
             $this->asSuccess(Craft::t('app', 'Plugin uninstalled.')) :
@@ -101,11 +101,11 @@ final readonly class PluginsController
 
     public function disable(Request $request): Response
     {
-        $pluginHandle = $request->validate([
+        $request->validate([
             'pluginHandle' => ['required', 'string'],
-        ])['pluginHandle'];
+        ]);
 
-        $success = $this->plugins->disablePlugin($pluginHandle);
+        $success = $this->plugins->disablePlugin($request->string('pluginHandle'));
 
         return $success ?
             $this->asSuccess(Craft::t('app', 'Plugin disabled.')) :
@@ -138,21 +138,19 @@ final readonly class PluginsController
 
     public function saveSettings(Request $request): Response
     {
-        $data = $request->validate([
+        $request->validate([
             'pluginHandle' => ['required', 'string'],
             'settings' => ['nullable', 'array'],
         ]);
 
-        $plugin = $this->plugins->getPlugin($data['pluginHandle']);
+        $plugin = $this->plugins->getPlugin($request->string('pluginHandle'));
 
         abort_if(is_null($plugin), 404, 'Plugin not found.');
 
-        $success = $this->plugins->savePluginSettings($plugin, $data['settings'] ?? []);
+        $success = $this->plugins->savePluginSettings($plugin, $request->get('settings', []));
 
-        if ($success) {
-            return $this->asSuccess(Craft::t('app', 'Plugin settings saved.'));
-        }
-
-        return $this->editSettings($data['pluginHandle'], $plugin);
+        return $success
+            ? $this->asSuccess(Craft::t('app', 'Plugin settings saved.'))
+            : $this->editSettings($request->string('pluginHandle'), $plugin);
     }
 }
