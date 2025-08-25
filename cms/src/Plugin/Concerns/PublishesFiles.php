@@ -22,7 +22,7 @@ trait PublishesFiles
      */
     protected array $publishables = [];
 
-    public function bootPlublishesFiles(): void
+    public function bootPublishesFiles(): void
     {
         if (! $this->app->runningInConsole()) {
             return;
