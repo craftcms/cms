@@ -121,7 +121,7 @@ final class InstallCommand extends Command
 
     private function installPluginByHandle(string $handle, ?string $edition = null): int
     {
-        with(new TwoColumnDetail($this->getOutput()))->render(
+        new TwoColumnDetail($this->getOutput())->render(
             "Installing $handle",
         );
 
@@ -141,7 +141,7 @@ final class InstallCommand extends Command
 
         $time = number_format((microtime(true) - $start) * 1000);
 
-        with(new TwoColumnDetail($this->getOutput()))->render(
+        new TwoColumnDetail($this->getOutput())->render(
             "<fg=green>Installed $handle successfully</>",
             "<fg=gray>{$time}ms</>"
         );

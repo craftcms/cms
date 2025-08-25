@@ -62,7 +62,7 @@ final class EnableCommand extends Command
 
     private function enablePluginByHandle(string $handle): int
     {
-        with(new TwoColumnDetail($this->getOutput()))->render(
+        new TwoColumnDetail($this->getOutput())->render(
             "Enabling $handle",
         );
 
@@ -82,7 +82,7 @@ final class EnableCommand extends Command
 
         $time = number_format((microtime(true) - $start) * 1000);
 
-        with(new TwoColumnDetail($this->getOutput()))->render(
+        new TwoColumnDetail($this->getOutput())->render(
             "<fg=green>Enabled $handle successfully</>",
             "<fg=gray>{$time}ms</>"
         );

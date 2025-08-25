@@ -62,7 +62,7 @@ final class DisableCommand extends Command
 
     private function disablePluginByHandle(string $handle): int
     {
-        with(new TwoColumnDetail($this->getOutput()))->render(
+        new TwoColumnDetail($this->getOutput())->render(
             "Disabling $handle",
         );
 
@@ -82,7 +82,7 @@ final class DisableCommand extends Command
 
         $time = number_format((microtime(true) - $start) * 1000);
 
-        with(new TwoColumnDetail($this->getOutput()))->render(
+        new TwoColumnDetail($this->getOutput())->render(
             "<fg=green>Disabled $handle successfully</>",
             "<fg=gray>{$time}ms</>"
         );

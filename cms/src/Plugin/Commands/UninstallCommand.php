@@ -73,7 +73,7 @@ final class UninstallCommand extends Command
 
     private function uninstallPluginByHandle(string $handle): int
     {
-        with(new TwoColumnDetail($this->getOutput()))->render(
+        new TwoColumnDetail($this->getOutput())->render(
             "Uninstalling $handle",
         );
 
@@ -97,7 +97,7 @@ final class UninstallCommand extends Command
 
         $time = number_format((microtime(true) - $start) * 1000);
 
-        with(new TwoColumnDetail($this->getOutput()))->render(
+        new TwoColumnDetail($this->getOutput())->render(
             "<fg=green>Uninstalled $handle successfully</>",
             "<fg=gray>{$time}ms</>"
         );
