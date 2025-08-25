@@ -77,18 +77,26 @@ Craft's Mutex classes have been deprecated. [Laravel's atomic locking](https://l
 ### Plugins
 
 #### Added
-- Added `CraftCms\Cms\Plugin\PluginServiceProvider` which provides a new way to register components for your plugins.
-
-#### Controllers
-- Removed `craft\controllers\PluginsController`. Use `CraftCms\Cms\Http\Controllers\PluginsController` instead.
+- The base `CraftCms\Cms\Plugin\Plugin` class is now a [Laravel ServiceProvider](https://laravel.com/docs/12.x/providers) which provides a new way to register components for your plugins.
 
 #### Deprecations
 
 - Deprecated `craft\services\Plugins`. `CraftCms\Cms\Plugin\Plugins` should be used instead.
 - Deprecated `craft\base\Plugin`. `CraftCms\Cms\Plugin\Plugin` should be used instead.
-- Deprecated `craft\base\PluginTrait`. `CraftCms\Cms\Plugin\Concerns\PluginTrait` should be used instead.
+- Deprecated `craft\base\PluginTrait`.
 - Deprecated `craft\base\PluginInterface`. `CraftCms\Cms\Plugin\Contracts\PluginInterface` should be used instead.
 - Deprecated `craft\errors\InvalidPluginException`. `CraftCms\Cms\Plugin\Exceptions\InvalidPluginException` should be used instead.
+
+#### Controllers
+- Removed `craft\controllers\PluginsController`. Use `CraftCms\Cms\Http\Controllers\PluginsController` instead.
+
+#### Commands
+- Removed `craft\console\controllers\PluginController` in favor of:
+  - `CraftCms\Cms\Plugin\Commands\DisableCommand` -> `php craft plugin:disable` 
+  - `CraftCms\Cms\Plugin\Commands\EnableCommand` -> `php craft plugin:enable` 
+  - `CraftCms\Cms\Plugin\Commands\InstallCommand` -> `php craft plugin:install` 
+  - `CraftCms\Cms\Plugin\Commands\UninstallCommand` -> `php craft plugin:uninstall` 
+  - `CraftCms\Cms\Plugin\Commands\ListCommand` -> `php craft plugin:list` 
  
 #### Events
 - Deprecated `craft\events\PluginEvent` in favor of the following new events:
