@@ -25,7 +25,7 @@ trait RespondsWithFlash
         if (request()->expectsJson()) {
             return response()->json($data + array_filter([
                 'message' => $message,
-            ]), 400);
+            ]), 200);
         }
 
         Flash::success($message);
