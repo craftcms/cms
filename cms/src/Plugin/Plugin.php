@@ -160,6 +160,14 @@ abstract class Plugin extends ServiceProvider implements PluginInterface
         $plugin = app()->make(static::class, array_merge($config, ['app' => app()]));
 
         foreach ($config as $key => $value) {
+            if ($key === 'settings') {
+                $model = $plugin->createSettingsModel();
+                $model?->setAttributes($value);
+                $plugin->settings = $model;
+
+                continue;
+            }
+
             if (property_exists($plugin, $key)) {
                 $plugin->{$key} = $value;
             }
