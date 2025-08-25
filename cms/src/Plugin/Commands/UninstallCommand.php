@@ -5,6 +5,7 @@ namespace CraftCms\Cms\Plugin\Commands;
 use CraftCms\Cms\Console\CraftCommand;
 use CraftCms\Cms\Plugin\Plugins;
 use Illuminate\Console\Command;
+use Illuminate\Console\View\Components\TwoColumnDetail;
 use Throwable;
 
 final class UninstallCommand extends Command
@@ -62,6 +63,7 @@ final class UninstallCommand extends Command
 
         $pluginInfo->each(function (string $handle) {
             $this->uninstallPluginByHandle($handle);
+            $this->newLine();
         });
 
         return self::SUCCESS;
@@ -69,7 +71,10 @@ final class UninstallCommand extends Command
 
     private function uninstallPluginByHandle(string $handle): int
     {
-        $this->components->info("Uninstalling $handle...");
+        with(new TwoColumnDetail($this->getOutput()))->render(
+            "Uninstalling $handle",
+        );
+
         $start = microtime(true);
 
         try {
@@ -88,9 +93,12 @@ final class UninstallCommand extends Command
             }
         }
 
-        $time = sprintf('%.3f', microtime(true) - $start);
+        $time = number_format((microtime(true) - $start) * 1000);
 
-        $this->components->success("Uninstalled $handle successfully (time: {$time}s)");
+        with(new TwoColumnDetail($this->getOutput()))->render(
+            "<fg=green>Uninstalled $handle successfully</>",
+            "<fg=gray>{$time}ms</>"
+        );
 
         return self::SUCCESS;
     }

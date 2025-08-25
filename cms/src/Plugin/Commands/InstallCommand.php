@@ -7,6 +7,7 @@ use CraftCms\Cms\Plugin\Contracts\PluginInterface;
 use CraftCms\Cms\Plugin\Exceptions\InvalidPluginException;
 use CraftCms\Cms\Plugin\Plugins;
 use Illuminate\Console\Command;
+use Illuminate\Console\View\Components\TwoColumnDetail;
 use Throwable;
 
 use function Laravel\Prompts\select;
@@ -82,6 +83,7 @@ final class InstallCommand extends Command
 
         $pluginInfo->each(function (string $handle) {
             $this->installPluginByHandle($handle);
+            $this->newLine();
         });
 
         return self::SUCCESS;
@@ -117,7 +119,10 @@ final class InstallCommand extends Command
 
     private function installPluginByHandle(string $handle, ?string $edition = null): int
     {
-        $this->components->info("Installing $handle...");
+        with(new TwoColumnDetail($this->getOutput()))->render(
+            "Installing $handle",
+        );
+
         $start = microtime(true);
 
         try {
@@ -132,9 +137,12 @@ final class InstallCommand extends Command
             }
         }
 
-        $time = sprintf('%.3f', microtime(true) - $start);
+        $time = number_format((microtime(true) - $start) * 1000);
 
-        $this->components->success("installed $handle successfully (time: {$time}s)");
+        with(new TwoColumnDetail($this->getOutput()))->render(
+            "<fg=green>Installed $handle successfully</>",
+            "<fg=gray>{$time}ms</>"
+        );
 
         return self::SUCCESS;
     }

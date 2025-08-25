@@ -24,6 +24,10 @@ final class ConsoleServiceProvider extends ServiceProvider
             return;
         }
 
+        $this->app->terminating(function () {
+            app('Craft')->getProjectConfig()->flush();
+        });
+
         $this->commands($this->commands);
 
         $this->optimizes(

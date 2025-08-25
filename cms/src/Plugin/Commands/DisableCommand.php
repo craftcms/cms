@@ -5,6 +5,7 @@ namespace CraftCms\Cms\Plugin\Commands;
 use CraftCms\Cms\Console\CraftCommand;
 use CraftCms\Cms\Plugin\Plugins;
 use Illuminate\Console\Command;
+use Illuminate\Console\View\Components\TwoColumnDetail;
 use Throwable;
 
 final class DisableCommand extends Command
@@ -51,6 +52,7 @@ final class DisableCommand extends Command
         // disable them one by one
         foreach ($pluginInfo as $handle) {
             $this->disablePluginByHandle($handle);
+            $this->newLine();
         }
 
         return self::SUCCESS;
@@ -58,7 +60,10 @@ final class DisableCommand extends Command
 
     private function disablePluginByHandle(string $handle): int
     {
-        $this->components->info("Disabling $handle...");
+        with(new TwoColumnDetail($this->getOutput()))->render(
+            "Disabling $handle",
+        );
+
         $start = microtime(true);
 
         try {
@@ -73,9 +78,12 @@ final class DisableCommand extends Command
             }
         }
 
-        $time = sprintf('%.3f', microtime(true) - $start);
+        $time = number_format((microtime(true) - $start) * 1000);
 
-        $this->components->success("Disabled $handle successfully (time: {$time}s)");
+        with(new TwoColumnDetail($this->getOutput()))->render(
+            "<fg=green>Disabled $handle successfully</>",
+            "<fg=gray>{$time}ms</>"
+        );
 
         return self::SUCCESS;
     }
