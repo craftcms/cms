@@ -2,40 +2,27 @@
 
 namespace CraftCms\Cms\Plugin;
 
-use CraftCms\Cms\Plugin\Concerns\HasCommands;
-use CraftCms\Cms\Plugin\Concerns\HasEditions;
-use CraftCms\Cms\Plugin\Concerns\HasElementTypes;
-use CraftCms\Cms\Plugin\Concerns\HasFieldtypes;
-use CraftCms\Cms\Plugin\Concerns\HasListeners;
-use CraftCms\Cms\Plugin\Concerns\HasRoutes;
-use CraftCms\Cms\Plugin\Concerns\HasSettings;
-use CraftCms\Cms\Plugin\Concerns\HasTranslations;
-use CraftCms\Cms\Plugin\Concerns\HasUtilities;
-use CraftCms\Cms\Plugin\Concerns\HasViews;
-use CraftCms\Cms\Plugin\Concerns\HasViteAssets;
-use CraftCms\Cms\Plugin\Concerns\HasWidgets;
-use CraftCms\Cms\Plugin\Concerns\Installable;
-use CraftCms\Cms\Plugin\Concerns\PublishesFiles;
 use CraftCms\Cms\Plugin\Contracts\PluginInterface;
 use Illuminate\Support\ServiceProvider;
 use ReflectionClass;
 
 abstract class Plugin extends ServiceProvider implements PluginInterface
 {
-    use HasCommands;
-    use HasEditions;
-    use HasElementTypes;
-    use HasFieldtypes;
-    use HasListeners;
-    use HasRoutes;
-    use HasSettings;
-    use HasTranslations;
-    use HasUtilities;
-    use HasViews;
-    use HasViteAssets;
-    use HasWidgets;
-    use Installable;
-    use PublishesFiles;
+    use Concerns\HasCommands;
+    use Concerns\HasEditions;
+    use Concerns\HasElementTypes;
+    use Concerns\HasFieldtypes;
+    use Concerns\HasListeners;
+    use Concerns\HasRoutes;
+    use Concerns\HasSettings;
+    use Concerns\HasTranslations;
+    use Concerns\HasUtilities;
+    use Concerns\HasViews;
+    use Concerns\HasViteAssets;
+    use Concerns\HasWidgets;
+    use Concerns\Installable;
+    use Concerns\InteractsWithCp;
+    use Concerns\PublishesFiles;
 
     /** @var string The plugin's handle */
     public string $handle;
@@ -99,22 +86,17 @@ abstract class Plugin extends ServiceProvider implements PluginInterface
     /** @var string|null The plugin’s download URL */
     public ?string $downloadUrl = null;
 
-    /** @var bool Whether the plugin has its own section in the control panel */
-    public bool $hasCpSection = false;
-
     /** @var string The minimum required version the plugin has to be so it can be updated. */
     public string $minVersionRequired = '';
 
-    private ?Plugins $pluginsService = null;
-
-    protected ?string $basePath = null;
+    protected ?Plugins $pluginsService = null;
 
     /**
      * @internal
      */
     public function register(): void
     {
-        $this->registerTraits();
+        $this->setupTraits('register');
         $this->registerPlugin();
     }
 
@@ -139,34 +121,23 @@ abstract class Plugin extends ServiceProvider implements PluginInterface
             return;
         }
 
-        $this->bootTraits();
+        $this->setupTraits('boot');
         $this->bootPlugin();
     }
 
-    protected function registerTraits(): void
+    private function setupTraits(string $method): void
     {
-        $uses = class_uses_recursive(static::class);
+        $usesRecursive = once(fn () => class_uses_recursive(static::class));
 
-        $conventionalRegisterMethods = array_map(static fn ($trait) => 'register'.class_basename($trait), $uses);
+        collect($usesRecursive)
+            ->map(fn (string $trait) => class_basename($trait))
+            ->each(function (string $trait) use ($method) {
+                if (! method_exists($this, $method = "{$method}{$trait}")) {
+                    return;
+                }
 
-        foreach (new ReflectionClass(static::class)->getMethods() as $method) {
-            if (in_array($method->getName(), $conventionalRegisterMethods)) {
-                $this->{$method->getName()}();
-            }
-        }
-    }
-
-    protected function bootTraits(): void
-    {
-        $uses = class_uses_recursive(static::class);
-
-        $conventionalBootMethods = array_map(static fn ($trait) => 'boot'.class_basename($trait), $uses);
-
-        foreach (new ReflectionClass(static::class)->getMethods() as $method) {
-            if (in_array($method->getName(), $conventionalBootMethods)) {
-                $this->{$method->getName()}();
-            }
-        }
+                $this->$method();
+            });
     }
 
     public function registerPlugin(): void {}
@@ -174,41 +145,13 @@ abstract class Plugin extends ServiceProvider implements PluginInterface
     public function bootPlugin(): void {}
 
     /** {@inheritdoc} */
-    public function getCpNavItem(): ?array
-    {
-        $ret = [
-            'label' => $this->name,
-            'url' => $this->handle,
-        ];
-
-        if (($iconPath = $this->cpNavIconPath()) !== null) {
-            $ret['icon'] = $iconPath;
-        }
-
-        return $ret;
-    }
-
-    /**
-     * Returns the path to the SVG icon that should be used in the plugin’s nav item in the control panel.
-     *
-     * @see getCpNavItem()
-     */
-    protected function cpNavIconPath(): ?string
-    {
-        $path = $this->getBasePath().'/icon-mask.svg';
-
-        return is_file($path) ? $path : null;
-    }
-
-    /** {@inheritdoc} */
     public function getBasePath(): string
     {
-        if ($this->basePath === null) {
+        return once(function () {
             $class = new ReflectionClass($this);
-            $this->basePath = dirname($class->getFileName());
-        }
 
-        return $this->basePath;
+            return dirname($class->getFileName());
+        });
     }
 
     /** {@inheritdoc} */
