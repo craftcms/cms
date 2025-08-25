@@ -29,9 +29,10 @@ trait PublishesFiles
         }
 
         $handle = self::getInstance()->handle;
+        $name = self::getInstance()->packageName;
 
         $publishes = Collection::make($this->publishables)
-            ->map(fn (string $to) => public_path("vendor/{$handle}/{$to}"));
+            ->map(fn (string $to) => public_path("vendor/{$name}/{$to}"));
 
         if ($publishes->isNotEmpty()) {
             $this->publishes($publishes->all(), $handle);
