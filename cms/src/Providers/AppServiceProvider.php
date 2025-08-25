@@ -11,7 +11,6 @@ use CraftCms\Cms\Http\Middleware\FlushProjectConfig;
 use CraftCms\Cms\Http\Middleware\HandleActionRequest;
 use CraftCms\Cms\Http\Middleware\RequireCpRequest;
 use CraftCms\Cms\Http\Middleware\SendPoweredByHeader;
-use CraftCms\Cms\Plugin\Commands\InstallCommand;
 use CraftCms\Cms\Support\Env;
 use Illuminate\Auth\Middleware\Authenticate;
 use Illuminate\Contracts\Http\Kernel as HttpKernel;
@@ -64,10 +63,6 @@ final class AppServiceProvider extends ServiceProvider
         if (! $this->app->runningInConsole()) {
             return;
         }
-
-        $this->commands([
-            InstallCommand::class,
-        ]);
 
         $this->publishes([
             "{$this->root}/resources/views" => resource_path('views/vendor/craftcms'),

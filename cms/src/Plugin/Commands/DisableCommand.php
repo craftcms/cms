@@ -38,7 +38,6 @@ final class DisableCommand extends Command
 
     private function disableAll(): int
     {
-        // get all plugins’ info
         $pluginInfo = $this->plugins
             ->getAllPluginInfo()
             // filter out the ones that are uninstalled/disabled
@@ -51,7 +50,6 @@ final class DisableCommand extends Command
             return self::SUCCESS;
         }
 
-        // disable them one by one
         foreach ($pluginInfo as $handle) {
             $this->disablePluginByHandle($handle);
             $this->newLine();

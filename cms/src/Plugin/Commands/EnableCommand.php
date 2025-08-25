@@ -38,7 +38,6 @@ final class EnableCommand extends Command
 
     private function enableAll(): int
     {
-        // get all plugins’ info
         $pluginInfo = $this->plugins
             ->getAllPluginInfo()
             // filter out the ones that are uninstalled/enabled
@@ -51,7 +50,6 @@ final class EnableCommand extends Command
             return self::SUCCESS;
         }
 
-        // enable them one by one
         foreach ($pluginInfo as $handle) {
             $this->enablePluginByHandle($handle);
             $this->newLine();
