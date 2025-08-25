@@ -251,7 +251,7 @@ class Cp extends Component
             $navItems[] = [
                 'label' => Craft::t('app', 'Content'),
                 'url' => 'content',
-                'icon' => 'newspaper',
+                'icon' => 'pen-nib',
                 'subnav' => $subNavItems,
             ];
         }
