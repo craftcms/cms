@@ -325,10 +325,10 @@ class Matrix extends Field implements
             $config['maxEntries'] = ArrayHelper::remove($config, 'maxBlocks');
         }
 
-        if (!empty($config['showCardsInGrid']) && $config['viewMode'] === self::VIEW_MODE_CARDS) {
+        if (!empty($config['showCardsInGrid']) && ($config['viewMode'] ?? self::VIEW_MODE_CARDS) === self::VIEW_MODE_CARDS) {
             $config['viewMode'] = self::VIEW_MODE_CARDS_GRID;
         }
-        $config['showCardsInGrid'] = $config['viewMode'] === self::VIEW_MODE_CARDS_GRID;
+        $config['showCardsInGrid'] = ($config['viewMode'] ?? self::VIEW_MODE_CARDS) === self::VIEW_MODE_CARDS_GRID;
 
         parent::__construct($config);
     }
