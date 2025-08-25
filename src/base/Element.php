@@ -978,6 +978,14 @@ abstract class Element extends Component implements ElementInterface
     /**
      * @inheritdoc
      */
+    public static function multiPageSources(): bool
+    {
+        return false;
+    }
+
+    /**
+     * @inheritdoc
+     */
     public static function sources(string $context): array
     {
         $sources = static::defineSources($context);

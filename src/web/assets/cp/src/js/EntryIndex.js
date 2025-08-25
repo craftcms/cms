@@ -226,7 +226,7 @@ Craft.EntryIndex = Craft.BaseElementIndex.extend({
     // ---------------------------------------------------------------------
 
     if (this.settings.context === 'index') {
-      let uri = 'entries';
+      let uri = `content/${this.settings.page ?? 'entries'}`;
 
       if (sectionHandle) {
         uri += '/' + sectionHandle;

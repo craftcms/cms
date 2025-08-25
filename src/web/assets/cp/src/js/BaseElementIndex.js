@@ -1497,7 +1497,11 @@ Craft.BaseElementIndex = Garnish.Base.extend(
     getSourceActions: function () {
       let actions = [];
 
-      if (Craft.userIsAdmin && Craft.allowAdminChanges) {
+      if (
+        Craft.userIsAdmin &&
+        Craft.allowAdminChanges &&
+        !Garnish.isMobileBrowser(true)
+      ) {
         actions.push({
           label: Craft.t('app', 'Customize sources'),
           administrative: true,
@@ -2981,7 +2985,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
       var modal = new Craft.CustomizeSourcesModal(this, {
         hideOnEsc: false,
         hideOnShadeClick: false,
-        onHide: function () {
+        onFadeOut: function () {
           modal.destroy();
         },
       });
@@ -3571,6 +3575,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 
       const settings = Object.assign(
         {
+          page: null,
           context: this.settings.context,
           batchSize:
             this.isAdministrative || this.viewMode === 'structure'

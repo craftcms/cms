@@ -82,6 +82,7 @@
     Craft.elementIndex = Craft.createElementIndex('{{ elementType|e("js") }}', $('#page-container'), {
         elementTypeName: '{{ elementDisplayName|e("js") }}',
         elementTypePluralName: '{{ elementPluralDisplayName|e("js") }}',
+        page: {{ (page ?? null)|json_encode|raw }},
         context: '{{ context }}',
         storageKey: 'elementindex.{{ elementType|e("js") }}',
         criteria: Craft.defaultIndexCriteria,

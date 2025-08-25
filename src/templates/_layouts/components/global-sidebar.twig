@@ -100,12 +100,11 @@
 
                             {% if item.subnav %}
                                 <ul class="nav-item__subnav" id="{{ item.id }}-subnav" data-state="{{ item.sel ?  'expanded' : 'collapsed' }}">
-                                    {% for itemId, item in item.subnav %}
-                                        {% set itemIsSelected = selectedSubnavItem is defined and selectedSubnavItem == itemId and item.url in craft.app.request.fullPath -%}
-
+                                    {% for subItemId, subItem in item.subnav %}
+                                        {% set itemIsSelected = item.sel and (selectedSubnavItem ?? null) == subItemId -%}
                                         <li>
                                             <div class="nav-item nav-item--sub {% if itemIsSelected %}sel{% endif %}">
-                                                {{ _self.action(item|merge({
+                                                {{ _self.action(subItem|merge({
                                                     linkAttributes:  {
                                                         class: ['sidebar-action--sub'],
                                                         aria: {

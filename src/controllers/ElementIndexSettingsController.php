@@ -68,8 +68,13 @@ class ElementIndexSettingsController extends BaseElementsController
         // Get the source info
         $sourcesService = Craft::$app->getElementSources();
         $sources = $sourcesService->getSources($elementType, ElementSources::CONTEXT_INDEX, true);
+        $multiPage = $elementType::multiPageSources();
 
         foreach ($sources as &$source) {
+            if ($multiPage) {
+                $source['page'] ??= $elementType::pluralDisplayName();
+            }
+
             if ($source['type'] === ElementSources::TYPE_HEADING) {
                 continue;
             }
@@ -216,6 +221,7 @@ class ElementIndexSettingsController extends BaseElementsController
             ->all();
 
         return $this->asJson([
+            'multiPage' => $multiPage,
             'sources' => $sources,
             'viewModes' => $viewModes,
             'baseSortOptions' => $baseSortOptions,
@@ -239,6 +245,7 @@ class ElementIndexSettingsController extends BaseElementsController
     public function actionSaveCustomizeSourcesModalSettings(): Response
     {
         $elementType = $this->elementType();
+        $multiPage = $elementType::multiPageSources();
 
         // Get the old source configs
         $projectConfig = Craft::$app->getProjectConfig();
@@ -251,6 +258,10 @@ class ElementIndexSettingsController extends BaseElementsController
         $sourceSettings = $this->request->getBodyParam('sources', []);
         $newSourceConfigs = [];
         $disabledSourceKeys = [];
+
+        if ($multiPage) {
+            $sourcePages = $this->request->getBodyParam('sourcePages', []);
+        }
 
         // Normalize to the way it's stored in the DB
         foreach ($sourceOrder as $source) {
@@ -266,6 +277,10 @@ class ElementIndexSettingsController extends BaseElementsController
                     'type' => $type,
                     'key' => $source['key'],
                 ];
+
+                if (isset($sourcePages[$source['key']])) {
+                    $sourceConfig['page'] = $sourcePages[$source['key']];
+                }
 
                 // Were new settings posted?
                 if (isset($sourceSettings[$source['key']])) {
