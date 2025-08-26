@@ -21,6 +21,7 @@ class CodeMirrorAsset extends AssetBundle
     public $js = [
         'codemirror.js',
         'javascript.js',
+        'autorefresh.js',
     ];
 
     /** @inheritdoc */

@@ -132,6 +132,7 @@ class Json extends Field implements MergeableFieldInterface, CrossSiteCopyableFi
       'default',
       $static ? 'readonly' : null,
     ].filter(v => v).join(' '),
+    autoRefresh: true,
   });
   editor.on('change', (editor) => {
     editor.save();

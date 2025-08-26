@@ -25,6 +25,12 @@ module.exports = getConfig({
           {
             from: path.resolve(
               process.cwd(),
+              'node_modules/codemirror/addon/display/autorefresh.js'
+            ),
+          },
+          {
+            from: path.resolve(
+              process.cwd(),
               'node_modules/codemirror/lib/codemirror.css'
             ),
           },
