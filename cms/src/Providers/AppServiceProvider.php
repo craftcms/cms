@@ -12,10 +12,12 @@ use CraftCms\Cms\Http\Middleware\HandleActionRequest;
 use CraftCms\Cms\Http\Middleware\RequireCpRequest;
 use CraftCms\Cms\Http\Middleware\SendPoweredByHeader;
 use CraftCms\Cms\Support\Env;
+use CraftCms\Cms\User\Models\User;
 use Illuminate\Auth\Middleware\Authenticate;
 use Illuminate\Contracts\Http\Kernel as HttpKernel;
 use Illuminate\Foundation\Console\AboutCommand;
 use Illuminate\Routing\Router;
+use Illuminate\Support\Facades\Config;
 use Illuminate\Support\ServiceProvider;
 
 /** @since 6.0.0 */
@@ -25,6 +27,13 @@ final class AppServiceProvider extends ServiceProvider
 
     public function register(): void
     {
+        /**
+         * Make sure we're using Craft's User model
+         */
+        if (!class_exists(Config::get('auth.providers.users.model')) || !Config::get('auth.providers.users.model') instanceof User) {
+            Config::set('auth.providers.users.model', User::class);
+        }
+
         /**
          * HandleActionRequest is special and needs to run
          * before any other middleware as it rewrites

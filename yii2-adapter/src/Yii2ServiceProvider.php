@@ -14,7 +14,6 @@ use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Plugin\Plugins;
 use CraftCms\Cms\Support\Env;
 use CraftCms\Cms\Support\Str;
-use CraftCms\Cms\User\Models\User;
 use CraftCms\Yii2Adapter\Console\LegacyCraftCommand;
 use CraftCms\Yii2Adapter\Http\Controller;
 use Illuminate\Console\Application as ConsoleApplication;
@@ -158,14 +157,6 @@ class Yii2ServiceProvider extends ServiceProvider
         Plugins $pluginsService,
     ): void {
         $this->ensureStorageFoldersExist($generalConfig);
-
-        /**
-         * When running in a Craft 5 upgraded project, the User model
-         * won't exist. As such we need to use the base model.
-         */
-        if (!class_exists(config('auth.providers.users.model')) || !Config::get('auth.providers.users.model') instanceof User) {
-            Config::set('auth.providers.users.model', User::class);
-        }
 
         /**
          * In a Craft 5 upgraded project, the namespace won't be
