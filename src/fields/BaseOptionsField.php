@@ -112,8 +112,19 @@ abstract class BaseOptionsField extends Field implements PreviewableFieldInterfa
             $valueSql = static::valueSql($instances);
 
             foreach ($param->values as $value) {
-                if (in_array($value, [':empty:', ':notempty:', 'not :empty:'])) {
+                if (in_array($value, [':notempty:', 'not :empty:'])) {
+                    $condition[] = [
+                        'and',
+                        // this accounts for null and empty string
+                        parent::queryCondition($instances, $value, $params),
+                        // this accounts for empty array
+                        $qb->jsonLength($valueSql, 0, '>'),
+                    ];
+                } elseif ($value === ':empty:') {
+                    // this accounts for null and empty string
                     $condition[] = parent::queryCondition($instances, $value, $params);
+                    // this accounts for empty array
+                    $condition[] = parent::queryCondition($instances, '[]', $params);
                 } else {
                     $condition[] = $qb->jsonContains($valueSql, $value);
                 }
