@@ -73,7 +73,7 @@ class BaseEntryTypeMergeMigration extends Migration
         }
 
         echo '    > Reassigning entries … ';
-        \Illuminate\Support\Facades\DB::table(\CraftCms\Cms\Db\Table::ENTRIES)
+        \Illuminate\Support\Facades\DB::table(\CraftCms\Cms\Database\Table::ENTRIES)
             ->where('typeId', $outgoingEntryTypeRecord->id)
             ->update([
                 'typeId' => $persistingEntryTypeRecord->id,
@@ -111,7 +111,7 @@ class BaseEntryTypeMergeMigration extends Migration
             }
 
             if ($changed) {
-                \Illuminate\Support\Facades\DB::table(\CraftCms\Cms\Db\Table::ELEMENTS_SITES)
+                \Illuminate\Support\Facades\DB::table(\CraftCms\Cms\Database\Table::ELEMENTS_SITES)
                     ->where('id', $row['id'])
                     ->update([
                         'content' => $content,

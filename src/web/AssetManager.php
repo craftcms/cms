@@ -13,7 +13,7 @@ use craft\helpers\App;
 use craft\helpers\FileHelper;
 use craft\helpers\UrlHelper;
 use CraftCms\Cms\Config\GeneralConfig;
-use CraftCms\Cms\Db\Table;
+use CraftCms\Cms\Database\Table;
 use CraftCms\DependencyAwareCache\Dependency\TagDependency;
 use CraftCms\DependencyAwareCache\Facades\DependencyCache;
 use Illuminate\Database\QueryException;

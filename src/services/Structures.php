@@ -103,7 +103,7 @@ class Structures extends Component
      */
     public function getStructureById(int $structureId, bool $withTrashed = false): ?Structure
     {
-        $result = DB::table(\CraftCms\Cms\Db\Table::STRUCTURES)
+        $result = DB::table(\CraftCms\Cms\Database\Table::STRUCTURES)
             ->select([
                 'id',
                 'maxLevels',
@@ -128,7 +128,7 @@ class Structures extends Component
      */
     public function getStructureByUid(string $structureUid, bool $withTrashed = false): ?Structure
     {
-        $result = DB::table(\CraftCms\Cms\Db\Table::STRUCTURES)
+        $result = DB::table(\CraftCms\Cms\Database\Table::STRUCTURES)
             ->select([
                 'id',
                 'maxLevels',
@@ -622,7 +622,7 @@ class Structures extends Component
 
             // Update the element with the latest values.
             // todo: we should be able to pull these from $elementRecord - https://github.com/creocoder/yii2-nested-sets/issues/114
-            $values = (array) DB::table(\CraftCms\Cms\Db\Table::STRUCTUREELEMENTS)
+            $values = (array) DB::table(\CraftCms\Cms\Database\Table::STRUCTUREELEMENTS)
                 ->select(['root', 'lft', 'rgt', 'level'])
                 ->where('structureId', $structureId)
                 ->where('elementId', $element->id)

@@ -26,7 +26,7 @@ use craft\helpers\Console;
 use craft\records\Volume;
 use craft\records\VolumeFolder;
 use CraftCms\Cms\Config\GeneralConfig;
-use CraftCms\Cms\Db\Table;
+use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Support\Arr;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Database\Query\JoinClause;

@@ -449,7 +449,7 @@ trait NestedElementTrait
             }
 
             if ($elementId) {
-                $this->sortOrder = DB::table(\CraftCms\Cms\Db\Table::ELEMENTS_OWNERS)
+                $this->sortOrder = DB::table(\CraftCms\Cms\Database\Table::ELEMENTS_OWNERS)
                     ->where('elementId', $elementId)
                     ->where('ownerId', $ownerId)
                     ->value('sortOrder') ?: null;
@@ -457,7 +457,7 @@ trait NestedElementTrait
         }
 
         if (!isset($this->sortOrder)) {
-            $max = DB::table(\CraftCms\Cms\Db\Table::ELEMENTS_OWNERS, 'eo')
+            $max = DB::table(\CraftCms\Cms\Database\Table::ELEMENTS_OWNERS, 'eo')
                 ->join(new Alias($elementTable, 'e'), 'e.id', '=', 'eo.elementId')
                 ->where('eo.ownerId', $ownerId)
                 ->where("e.$fieldIdColumn", $this->fieldId)
@@ -472,14 +472,14 @@ trait NestedElementTrait
         ]);
 
         if (!$isNew) {
-            DB::table(\CraftCms\Cms\Db\Table::ELEMENTS_OWNERS)
+            DB::table(\CraftCms\Cms\Database\Table::ELEMENTS_OWNERS)
                 ->where('elementId', $this->id)
                 ->whereIn('ownerId', $ownerIds)
                 ->delete();
         }
 
         foreach ($ownerIds as $ownerId) {
-            DB::table(\CraftCms\Cms\Db\Table::ELEMENTS_OWNERS)->insert([
+            DB::table(\CraftCms\Cms\Database\Table::ELEMENTS_OWNERS)->insert([
                 'elementId' => $this->id,
                 'ownerId' => $ownerId,
                 'sortOrder' => $this->sortOrder,

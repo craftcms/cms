@@ -5,7 +5,7 @@ namespace CraftCms\Cms\Utility\Utilities;
 use Craft;
 use craft\web\assets\clearcaches\ClearCachesAsset;
 use CraftCms\Cms\Config\GeneralConfig;
-use CraftCms\Cms\Db\Table;
+use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Utility\Events\RegisterCacheOptions;
 use CraftCms\Cms\Utility\Events\RegisterTagOptions;

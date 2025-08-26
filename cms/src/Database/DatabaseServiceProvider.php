@@ -1,6 +1,6 @@
 <?php
 
-namespace CraftCms\Cms\Db;
+namespace CraftCms\Cms\Database;
 
 use Illuminate\Cache\DatabaseStore;
 use Illuminate\Contracts\Config\Repository;

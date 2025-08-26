@@ -799,8 +799,8 @@ class Assets extends Component
 
         $baseFileName = $buildFilename(pathinfo($originalFilename, PATHINFO_FILENAME));
 
-        $dbFileList = \Illuminate\Support\Facades\DB::table(new Alias(\CraftCms\Cms\Db\Table::ASSETS, 'assets'))
-            ->join(new Alias(\CraftCms\Cms\Db\Table::ELEMENTS, 'elements'), 'elements.id', 'assets.id')
+        $dbFileList = \Illuminate\Support\Facades\DB::table(new Alias(\CraftCms\Cms\Database\Table::ASSETS, 'assets'))
+            ->join(new Alias(\CraftCms\Cms\Database\Table::ELEMENTS, 'elements'), 'elements.id', 'assets.id')
             ->where('assets.folderId', $folderId)
             ->whereNull('elements.dateDeleted')
             ->whereLike('assets.filename', $baseFileName . '%.' . $extension)

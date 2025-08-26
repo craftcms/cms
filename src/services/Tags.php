@@ -223,7 +223,7 @@ class Tags extends Component
                 $tagGroup->uid = Str::uuid()->toString();
             }
         } elseif (!$tagGroup->uid) {
-            $tagGroup->uid = \Illuminate\Support\Facades\DB::table(\CraftCms\Cms\Db\Table::TAGGROUPS)->uidById($tagGroup->id);
+            $tagGroup->uid = \Illuminate\Support\Facades\DB::table(\CraftCms\Cms\Database\Table::TAGGROUPS)->uidById($tagGroup->id);
         }
 
         $configPath = ProjectConfig::PATH_TAG_GROUPS . '.' . $tagGroup->uid;
@@ -231,7 +231,7 @@ class Tags extends Component
         Craft::$app->getProjectConfig()->set($configPath, $configData, "Save the “{$tagGroup->handle}” tag group");
 
         if ($isNewTagGroup) {
-            $tagGroup->id = \Illuminate\Support\Facades\DB::table(\CraftCms\Cms\Db\Table::TAGGROUPS)->idByUid($tagGroup->uid);
+            $tagGroup->id = \Illuminate\Support\Facades\DB::table(\CraftCms\Cms\Database\Table::TAGGROUPS)->idByUid($tagGroup->uid);
         }
 
         return true;

@@ -948,7 +948,7 @@ class Category extends Element
             }
         }
 
-        DB::table(\CraftCms\Cms\Db\Table::CATEGORIES)
+        DB::table(\CraftCms\Cms\Database\Table::CATEGORIES)
             ->where('id', $this->id)
             ->update($data);
 
@@ -996,7 +996,7 @@ class Category extends Element
                 ->status(null)
                 ->ids();
 
-            $sources = DB::table(\CraftCms\Cms\Db\Table::RELATIONS)
+            $sources = DB::table(\CraftCms\Cms\Database\Table::RELATIONS)
                 ->select(['fieldId', 'sourceId', 'sourceSiteId'])
                 ->where('targetId', $this->id)
                 ->get();
@@ -1004,7 +1004,7 @@ class Category extends Element
             $now = now();
 
             foreach ($sources as $source) {
-                $existingAncestorRelations = DB::table(\CraftCms\Cms\Db\Table::RELATIONS)
+                $existingAncestorRelations = DB::table(\CraftCms\Cms\Database\Table::RELATIONS)
                     ->where([
                         'fieldId' => $source->fieldId,
                         'sourceId' => $source->sourceId,
@@ -1030,7 +1030,7 @@ class Category extends Element
             }
 
             if (!empty($newRelationValues)) {
-                DB::table(\CraftCms\Cms\Db\Table::RELATIONS)
+                DB::table(\CraftCms\Cms\Database\Table::RELATIONS)
                     ->insert($newRelationValues);
             }
         }

@@ -36,7 +36,7 @@ use craft\models\Volume;
 use craft\records\User as UserRecord;
 use craft\web\Request;
 use CraftCms\Cms\Config\GeneralConfig;
-use CraftCms\Cms\Db\Table;
+use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Support\Str;

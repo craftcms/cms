@@ -11,7 +11,7 @@ use Craft;
 use craft\errors\MigrationException;
 use craft\helpers\App;
 use craft\helpers\FileHelper;
-use CraftCms\Cms\Db\Table;
+use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Support\Str;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Facades\DB;

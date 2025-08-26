@@ -17,7 +17,7 @@ use craft\events\GlobalSetEvent;
 use craft\helpers\ProjectConfig as ProjectConfigHelper;
 use craft\models\FieldLayout;
 use craft\records\GlobalSet as GlobalSetRecord;
-use CraftCms\Cms\Db\Table;
+use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Support\Str;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;

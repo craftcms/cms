@@ -13,7 +13,7 @@ use craft\console\controllers\HelpController;
 use craft\errors\MissingComponentException;
 use craft\helpers\Console;
 use craft\queue\QueueLogBehavior;
-use CraftCms\Cms\Db\Table;
+use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Support\Env;
 use Illuminate\Support\Facades\DB;
 use IntlDateFormatter;

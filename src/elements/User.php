@@ -43,7 +43,7 @@ use craft\validators\UsernameValidator;
 use craft\validators\UserPasswordValidator;
 use craft\web\View;
 use CraftCms\Cms\Config\GeneralConfig;
-use CraftCms\Cms\Db\Table;
+use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Element\Enums\MenuItemType;
 use CraftCms\Cms\Element\Enums\PropagationMethod;

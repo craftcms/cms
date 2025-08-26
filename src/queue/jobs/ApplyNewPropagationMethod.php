@@ -17,7 +17,7 @@ use craft\helpers\ElementHelper;
 use craft\i18n\Translation;
 use craft\queue\BaseBatchedElementJob;
 use craft\services\Structures;
-use CraftCms\Cms\Db\Table;
+use CraftCms\Cms\Database\Table;
 use Illuminate\Support\Facades\DB;
 use Throwable;
 

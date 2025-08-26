@@ -177,7 +177,7 @@ class Search extends Component
         }
 
         // Clear the element’s current search keywords
-        DB::table(\CraftCms\Cms\Db\Table::SEARCHINDEX)
+        DB::table(\CraftCms\Cms\Database\Table::SEARCHINDEX)
             ->where('elementId', $element->id)
             ->where('siteId', $element->siteId)
             ->when(
@@ -254,7 +254,7 @@ class Search extends Component
                 try {
                     if ($this->isIndexJobPending($jobId)) {
                         foreach ($fieldHandles as $fieldHandle) {
-                            DB::table(\CraftCms\Cms\Db\Table::SEARCHINDEXQUEUE_FIELDS)
+                            DB::table(\CraftCms\Cms\Database\Table::SEARCHINDEXQUEUE_FIELDS)
                                 ->upsert([
                                     'jobId' => $jobId,
                                     'fieldHandle' => $fieldHandle,
@@ -269,7 +269,7 @@ class Search extends Component
         }
 
         DB::transaction(function() use ($element, $fieldHandles) {
-            $jobId = DB::table(\CraftCms\Cms\Db\Table::SEARCHINDEXQUEUE)
+            $jobId = DB::table(\CraftCms\Cms\Database\Table::SEARCHINDEXQUEUE)
                 ->insertGetId([
                     'elementId' => $element->id,
                     'siteId' => $element->siteId,
@@ -280,7 +280,7 @@ class Search extends Component
                 'fieldHandle' => $fieldHandle,
             ], $fieldHandles);
 
-            DB::table(\CraftCms\Cms\Db\Table::SEARCHINDEXQUEUE_FIELDS)
+            DB::table(\CraftCms\Cms\Database\Table::SEARCHINDEXQUEUE_FIELDS)
                 ->insert($fieldData);
         });
     }
@@ -311,7 +311,7 @@ class Search extends Component
 
         try {
             retry(3, function() use ($jobId) {
-                DB::table(\CraftCms\Cms\Db\Table::SEARCHINDEXQUEUE)
+                DB::table(\CraftCms\Cms\Database\Table::SEARCHINDEXQUEUE)
                     ->where('id', $jobId)
                     ->update([
                         'reserved' => true,
@@ -326,7 +326,7 @@ class Search extends Component
 
         try {
             // Figure out which fields need to be updated for the element
-            $fieldHandles = DB::table(\CraftCms\Cms\Db\Table::SEARCHINDEXQUEUE_FIELDS)
+            $fieldHandles = DB::table(\CraftCms\Cms\Database\Table::SEARCHINDEXQUEUE_FIELDS)
                 ->where('jobId', $jobId)
                 ->pluck('fieldHandle')
                 ->all();
@@ -347,9 +347,9 @@ class Search extends Component
                 }
             }
 
-            DB::table(\CraftCms\Cms\Db\Table::SEARCHINDEXQUEUE)->delete($jobId);
+            DB::table(\CraftCms\Cms\Database\Table::SEARCHINDEXQUEUE)->delete($jobId);
         } catch (Throwable $e) {
-            DB::table(\CraftCms\Cms\Db\Table::SEARCHINDEXQUEUE)
+            DB::table(\CraftCms\Cms\Database\Table::SEARCHINDEXQUEUE)
                 ->where('id', $jobId)
                 ->update(['reserved' => false]);
             throw $e;
@@ -358,7 +358,7 @@ class Search extends Component
 
     private function pendingIndexJobId(int $elementId, int $siteId): ?int
     {
-        return DB::table(\CraftCms\Cms\Db\Table::SEARCHINDEXQUEUE)
+        return DB::table(\CraftCms\Cms\Database\Table::SEARCHINDEXQUEUE)
             ->where([
                 'elementId' => $elementId,
                 'siteId' => $siteId,
@@ -370,7 +370,7 @@ class Search extends Component
     private function isIndexJobPending(int $jobId): bool
     {
         /** @var ?object{reserved: bool} $job */
-        $job = DB::table(\CraftCms\Cms\Db\Table::SEARCHINDEXQUEUE)
+        $job = DB::table(\CraftCms\Cms\Database\Table::SEARCHINDEXQUEUE)
             ->select('reserved')
             ->find($jobId);
 
@@ -573,9 +573,9 @@ class Search extends Component
      */
     public function deleteOrphanedIndexes(): void
     {
-        DB::table(\CraftCms\Cms\Db\Table::SEARCHINDEX, 's')
+        DB::table(\CraftCms\Cms\Database\Table::SEARCHINDEX, 's')
             ->whereNotExists(
-                DB::table(\CraftCms\Cms\Db\Table::ELEMENTS, 'e')
+                DB::table(\CraftCms\Cms\Database\Table::ELEMENTS, 'e')
                     ->whereColumn('e.id', 's.elementId'),
             )
             ->delete();
@@ -648,7 +648,7 @@ class Search extends Component
 
         // Insert/update the row in searchindex
         retry(3, function() use ($columns) {
-            DB::table(\CraftCms\Cms\Db\Table::SEARCHINDEX)
+            DB::table(\CraftCms\Cms\Database\Table::SEARCHINDEX)
                 ->insert($columns);
         }, 1_000, fn(Throwable $e) =>
             // A gap lock was probably hit. Try again in one second
@@ -1067,7 +1067,7 @@ class Search extends Component
      */
     private function _sqlSubSelect(string $where, array|int|null $siteId): string|false
     {
-        $elementIds = DB::table(\CraftCms\Cms\Db\Table::SEARCHINDEX)
+        $elementIds = DB::table(\CraftCms\Cms\Database\Table::SEARCHINDEX)
             ->whereRaw($where)
             ->when(
                 $siteId !== null,

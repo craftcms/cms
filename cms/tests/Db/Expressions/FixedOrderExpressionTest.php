@@ -1,6 +1,6 @@
 <?php
 
-use CraftCms\Cms\Db\Expressions\FixedOrderExpression;
+use CraftCms\Cms\Database\Expressions\FixedOrderExpression;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;

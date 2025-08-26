@@ -9,7 +9,7 @@ namespace craft\console\controllers\utils;
 
 use Craft;
 use craft\console\Controller;
-use CraftCms\Cms\Db\Table;
+use CraftCms\Cms\Database\Table;
 use Illuminate\Support\Facades\DB;
 use Tpetry\QueryExpressions\Language\Alias;
 use yii\console\ExitCode;

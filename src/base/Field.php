@@ -25,7 +25,7 @@ use craft\records\Field as FieldRecord;
 use craft\validators\HandleValidator;
 use craft\validators\UniqueValidator;
 use CraftCms\Cms\Config\GeneralConfig;
-use CraftCms\Cms\Db\Table;
+use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Enums\AttributeStatus;
 use CraftCms\Cms\Support\Str;
 use DateTime;

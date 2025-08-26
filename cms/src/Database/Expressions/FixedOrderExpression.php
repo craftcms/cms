@@ -1,6 +1,6 @@
 <?php
 
-namespace CraftCms\Cms\Db\Expressions;
+namespace CraftCms\Cms\Database\Expressions;
 
 use Illuminate\Contracts\Database\Query\Expression;
 use Illuminate\Database\Grammar;

@@ -106,7 +106,7 @@ use craft\web\User as UserSession;
 use craft\web\View;
 use CraftCms\Cms\Announcement\Announcements;
 use CraftCms\Cms\Config\GeneralConfig;
-use CraftCms\Cms\Db\Table;
+use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Support\Composer;
 use CraftCms\Cms\Support\Env;

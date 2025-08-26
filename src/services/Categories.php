@@ -23,7 +23,7 @@ use craft\models\Structure;
 use craft\records\CategoryGroup as CategoryGroupRecord;
 use craft\records\CategoryGroup_SiteSettings as CategoryGroup_SiteSettingsRecord;
 use craft\web\View;
-use CraftCms\Cms\Db\Table;
+use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Support\Str;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Collection;

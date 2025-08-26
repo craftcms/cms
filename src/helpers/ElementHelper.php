@@ -253,9 +253,9 @@ class ElementHelper
      */
     private static function _isUniqueUri(string $testUri, ElementInterface $element): bool
     {
-        $info = DB::table(\CraftCms\Cms\Db\Table::ELEMENTS_SITES, 'elements_sites')
+        $info = DB::table(\CraftCms\Cms\Database\Table::ELEMENTS_SITES, 'elements_sites')
             ->select(['elements.id', 'elements.type'])
-            ->join(new Alias(\CraftCms\Cms\Db\Table::ELEMENTS, 'elements'), 'elements.id', '=', 'elements_sites.elementId')
+            ->join(new Alias(\CraftCms\Cms\Database\Table::ELEMENTS, 'elements'), 'elements.id', '=', 'elements_sites.elementId')
             ->where('elements_sites.siteId', $element->siteId)
             ->whereNull(['elements.draftId', 'elements.revisionId', 'elements.dateDeleted'])
             ->when(

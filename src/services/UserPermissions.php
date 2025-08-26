@@ -21,7 +21,7 @@ use craft\helpers\ProjectConfig as ProjectConfigHelper;
 use craft\models\Section;
 use craft\models\UserGroup;
 use craft\records\UserPermission as UserPermissionRecord;
-use CraftCms\Cms\Db\Table;
+use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Element\Enums\PropagationMethod;
 use CraftCms\Cms\Plugin\Plugins;

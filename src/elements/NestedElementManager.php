@@ -24,7 +24,7 @@ use craft\helpers\Cp;
 use craft\helpers\ElementHelper;
 use craft\helpers\Html;
 use craft\models\Site;
-use CraftCms\Cms\Db\Table;
+use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Enums\PropagationMethod;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Enums\Color;

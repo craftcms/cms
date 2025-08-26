@@ -18,7 +18,7 @@ use craft\helpers\Html;
 use craft\helpers\UrlHelper;
 use craft\services\Sso;
 use CraftCms\Cms\Config\GeneralConfig;
-use CraftCms\Cms\Db\Table;
+use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Str;
 use Illuminate\Support\Facades\DB;

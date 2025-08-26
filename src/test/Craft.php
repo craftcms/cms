@@ -23,7 +23,7 @@ use craft\queue\BaseJob;
 use craft\queue\Queue;
 use craft\web\Application as WebApplication;
 use CraftCms\Cms\Config\GeneralConfig;
-use CraftCms\Cms\Db\Table;
+use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Plugin\Exceptions\InvalidPluginException;
 use CraftCms\Cms\Plugin\Plugins;

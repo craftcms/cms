@@ -13,7 +13,7 @@ use craft\base\NestedElementInterface;
 use craft\elements\db\ElementQueryInterface;
 use craft\elements\ElementCollection;
 use craft\web\Controller;
-use CraftCms\Cms\Db\Table;
+use CraftCms\Cms\Database\Table;
 use Illuminate\Support\Facades\DB;
 use yii\web\BadRequestHttpException;
 use yii\web\ForbiddenHttpException;

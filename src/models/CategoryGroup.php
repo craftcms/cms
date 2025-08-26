@@ -18,7 +18,7 @@ use craft\helpers\UrlHelper;
 use craft\records\CategoryGroup as CategoryGroupRecord;
 use craft\validators\HandleValidator;
 use craft\validators\UniqueValidator;
-use CraftCms\Cms\Db\Table;
+use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Str;
 use DateTime;

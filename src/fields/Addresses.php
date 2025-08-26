@@ -803,12 +803,12 @@ class Addresses extends Field implements
         }
 
         // Return any relation data on these elements, defined with this field
-        $map = DB::table(\CraftCms\Cms\Db\Table::ADDRESSES, 'addresses')
+        $map = DB::table(\CraftCms\Cms\Database\Table::ADDRESSES, 'addresses')
             ->select([
                 'elements_owners.ownerId as source',
                 'addresses.id as target',
             ])
-            ->join(new Alias(\CraftCms\Cms\Db\Table::ELEMENTS_OWNERS, 'elements_owners'), function(JoinClause $join) use ($sourceElementIds) {
+            ->join(new Alias(\CraftCms\Cms\Database\Table::ELEMENTS_OWNERS, 'elements_owners'), function(JoinClause $join) use ($sourceElementIds) {
                 $join->where('elements_owners.elementId', 'addresses.id')
                     ->whereIn('elements_owners.ownerId', $sourceElementIds);
             })
@@ -834,7 +834,7 @@ class Addresses extends Field implements
      */
     public function afterMergeFrom(FieldInterface $outgoingField): void
     {
-        DB::table(\CraftCms\Cms\Db\Table::ADDRESSES)
+        DB::table(\CraftCms\Cms\Database\Table::ADDRESSES)
             ->where('fieldId', $outgoingField->id)
             ->update(['fieldId' => $this->id]);
 

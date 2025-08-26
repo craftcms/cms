@@ -23,7 +23,7 @@ use craft\helpers\Path;
 use craft\helpers\UrlHelper;
 use craft\queue\QueueLogBehavior;
 use CraftCms\Cms\Config\GeneralConfig;
-use CraftCms\Cms\Db\Table;
+use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Plugin\Plugins;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Json;

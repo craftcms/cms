@@ -14,7 +14,7 @@ use craft\elements\Entry;
 use craft\helpers\Component;
 use craft\helpers\Console;
 use craft\models\Section;
-use CraftCms\Cms\Db\Table;
+use CraftCms\Cms\Database\Table;
 use Illuminate\Support\Facades\DB;
 use Throwable;
 use yii\console\ExitCode;

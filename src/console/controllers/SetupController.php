@@ -18,7 +18,7 @@ use craft\helpers\FileHelper;
 use craft\migrations\CreateDbCacheTable;
 use craft\migrations\CreatePhpSessionTable;
 use CraftCms\Cms\Config\GeneralConfig;
-use CraftCms\Cms\Db\Table;
+use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Composer;
 use CraftCms\Cms\Support\Env;

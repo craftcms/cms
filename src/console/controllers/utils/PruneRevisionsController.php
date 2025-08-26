@@ -12,7 +12,7 @@ use craft\base\ElementInterface;
 use craft\console\Controller;
 use craft\helpers\Console;
 use CraftCms\Cms\Config\GeneralConfig;
-use CraftCms\Cms\Db\Table;
+use CraftCms\Cms\Database\Table;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Facades\DB;
 use Tpetry\QueryExpressions\Language\Alias;

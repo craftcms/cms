@@ -39,7 +39,7 @@ use craft\web\CpScreenResponseBehavior;
 use craft\web\UrlManager;
 use craft\web\View;
 use CraftCms\Cms\Config\GeneralConfig;
-use CraftCms\Cms\Db\Table;
+use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Enums\MenuItemType;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Json;

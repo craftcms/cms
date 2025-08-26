@@ -11,7 +11,7 @@ use Craft;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\Db;
 use craft\services\Elements;
-use CraftCms\Cms\Db\Table;
+use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Support\Arr;
 use yii\base\Application;
 use yii\base\Event;

@@ -4,7 +4,7 @@ namespace CraftCms\Cms\Providers;
 
 use CraftCms\Cms\Config\ConfigServiceProvider;
 use CraftCms\Cms\Console\ConsoleServiceProvider;
-use CraftCms\Cms\Db\DatabaseServiceProvider;
+use CraftCms\Cms\Database\DatabaseServiceProvider;
 use CraftCms\Cms\License\LicenseServiceProvider;
 use CraftCms\Cms\Plugin\PluginsServiceProvider;
 use Illuminate\Support\AggregateServiceProvider;

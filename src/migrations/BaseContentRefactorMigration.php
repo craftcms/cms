@@ -156,7 +156,7 @@ class BaseContentRefactorMigration extends Migration
             }
 
             // don't call $this->update() so it doesn't mess with the CLI output
-            \Illuminate\Support\Facades\DB::table(\CraftCms\Cms\Db\Table::ELEMENTS_SITES)
+            \Illuminate\Support\Facades\DB::table(\CraftCms\Cms\Database\Table::ELEMENTS_SITES)
                 ->where('id', $element['id'])
                 ->update([
                     'title' => $element['title'] ?? null,

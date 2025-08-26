@@ -17,7 +17,7 @@ use craft\events\DraftEvent;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\ElementHelper;
 use CraftCms\Cms\Config\GeneralConfig;
-use CraftCms\Cms\Db\Table;
+use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Support\Arr;
 use Illuminate\Support\Facades\DB;
 use Throwable;

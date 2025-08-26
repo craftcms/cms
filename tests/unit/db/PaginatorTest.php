@@ -189,6 +189,6 @@ class PaginatorTest extends TestCase
      */
     protected function resetPaginator()
     {
-        DB::table(\CraftCms\Cms\Db\Table::SESSIONS)->truncate();
+        DB::table(\CraftCms\Cms\Database\Table::SESSIONS)->truncate();
     }
 }

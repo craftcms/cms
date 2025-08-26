@@ -75,7 +75,7 @@ use craft\models\Section;
 use craft\records\GqlSchema as GqlSchemaRecord;
 use craft\records\GqlToken as GqlTokenRecord;
 use CraftCms\Cms\Config\GeneralConfig;
-use CraftCms\Cms\Db\Table;
+use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Support\Str;
 use CraftCms\DependencyAwareCache\Dependency\TagDependency;

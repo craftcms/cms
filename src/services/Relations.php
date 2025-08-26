@@ -11,7 +11,7 @@ use craft\base\ElementInterface;
 use craft\db\Command;
 use craft\fieldlayoutelements\CustomField;
 use craft\fields\BaseRelationField;
-use CraftCms\Cms\Db\Table;
+use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Str;
 use Illuminate\Database\Query\Builder;

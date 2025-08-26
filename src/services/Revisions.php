@@ -16,7 +16,7 @@ use craft\events\RevisionEvent;
 use craft\helpers\Queue;
 use craft\queue\jobs\PruneRevisions;
 use CraftCms\Cms\Config\GeneralConfig;
-use CraftCms\Cms\Db\Table;
+use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Support\Arr;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Date;

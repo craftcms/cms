@@ -17,7 +17,7 @@ use craft\helpers\Console;
 use craft\helpers\FileHelper;
 use craft\models\FieldLayout;
 use craft\services\Fields;
-use CraftCms\Cms\Db\Table;
+use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Support\Json;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;

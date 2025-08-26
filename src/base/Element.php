@@ -83,7 +83,7 @@ use craft\validators\StringValidator;
 use craft\web\UploadedFile;
 use craft\web\View;
 use CraftCms\Cms\Config\GeneralConfig;
-use CraftCms\Cms\Db\Table;
+use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Enums\AttributeStatus;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Enums\Color;

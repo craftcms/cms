@@ -305,16 +305,16 @@ class Volumes extends Component
 
         if ($isNewVolume) {
             $volume->uid ??= Str::uuid()->toString();
-            $volume->sortOrder = DB::table(\CraftCms\Cms\Db\Table::VOLUMES)->max('sortOrder') + 1;
+            $volume->sortOrder = DB::table(\CraftCms\Cms\Database\Table::VOLUMES)->max('sortOrder') + 1;
         } elseif (!$volume->uid) {
-            $volume->uid = DB::table(\CraftCms\Cms\Db\Table::VOLUMES)->uidById($volume->id);
+            $volume->uid = DB::table(\CraftCms\Cms\Database\Table::VOLUMES)->uidById($volume->id);
         }
 
         $configPath = ProjectConfig::PATH_VOLUMES . '.' . $volume->uid;
         Craft::$app->getProjectConfig()->set($configPath, $volume->getConfig(), "Save the “{$volume->handle}” volume");
 
         if ($isNewVolume) {
-            $volume->id = DB::table(\CraftCms\Cms\Db\Table::VOLUMES)->idByUid($volume->uid);
+            $volume->id = DB::table(\CraftCms\Cms\Database\Table::VOLUMES)->idByUid($volume->uid);
         }
 
         return true;
@@ -436,7 +436,7 @@ class Volumes extends Component
     {
         $projectConfig = Craft::$app->getProjectConfig();
 
-        $uidsByIds = DB::table(\CraftCms\Cms\Db\Table::VOLUMES)->uidsByIds($volumeIds);
+        $uidsByIds = DB::table(\CraftCms\Cms\Database\Table::VOLUMES)->uidsByIds($volumeIds);
 
         foreach ($volumeIds as $volumeOrder => $volumeId) {
             if (!empty($uidsByIds[$volumeId])) {
@@ -587,7 +587,7 @@ class Volumes extends Component
 
     private function _createVolumeQuery(): Builder
     {
-        return DB::table(\CraftCms\Cms\Db\Table::VOLUMES)
+        return DB::table(\CraftCms\Cms\Database\Table::VOLUMES)
             ->whereNull('dateDeleted')
             ->orderBy('sortOrder');
     }

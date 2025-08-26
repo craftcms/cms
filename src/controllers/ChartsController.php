@@ -12,7 +12,7 @@ use craft\elements\User;
 use craft\helpers\ChartHelper;
 use craft\helpers\DateTimeHelper;
 use craft\web\Controller;
-use CraftCms\Cms\Db\Table;
+use CraftCms\Cms\Database\Table;
 use DateTime;
 use DateTimeZone;
 use Illuminate\Database\Query\Builder;

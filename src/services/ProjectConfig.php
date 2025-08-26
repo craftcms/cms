@@ -20,7 +20,7 @@ use craft\helpers\FileHelper;
 use craft\helpers\ProjectConfig as ProjectConfigHelper;
 use craft\models\ProjectConfigData;
 use craft\models\ReadOnlyProjectConfigData;
-use CraftCms\Cms\Db\Table;
+use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Plugin\Plugins;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Json;

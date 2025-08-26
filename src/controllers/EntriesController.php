@@ -20,7 +20,7 @@ use craft\helpers\Html;
 use craft\helpers\UrlHelper;
 use craft\models\Section;
 use craft\models\Section_SiteSettings;
-use CraftCms\Cms\Db\Table;
+use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Enums\PropagationMethod;
 use Exception;
 use Illuminate\Support\Collection;

@@ -10,7 +10,7 @@ namespace craft\queue\jobs;
 use Craft;
 use craft\i18n\Translation;
 use craft\queue\BaseJob;
-use CraftCms\Cms\Db\Table;
+use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Support\Str;
 use Illuminate\Support\Facades\DB;
 

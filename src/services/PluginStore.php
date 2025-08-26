@@ -13,7 +13,7 @@ use craft\helpers\Db;
 use craft\helpers\Session;
 use craft\models\CraftIdToken;
 use craft\records\CraftIdToken as OauthTokenRecord;
-use CraftCms\Cms\Db\Table;
+use CraftCms\Cms\Database\Table;
 use DateInterval;
 use DateTime;
 use yii\base\Component;

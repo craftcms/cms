@@ -16,7 +16,7 @@ use craft\errors\InvalidElementException;
 use craft\helpers\Console;
 use craft\helpers\UrlHelper;
 use CraftCms\Cms\Config\GeneralConfig;
-use CraftCms\Cms\Db\Table;
+use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Support\Arr;
 use DateTime;
 use Illuminate\Support\Facades\DB;

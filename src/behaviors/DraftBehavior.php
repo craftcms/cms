@@ -9,7 +9,7 @@ namespace craft\behaviors;
 
 use craft\base\Element;
 use craft\helpers\ElementHelper;
-use CraftCms\Cms\Db\Table;
+use CraftCms\Cms\Database\Table;
 use DateTime;
 use Illuminate\Support\Facades\DB;
 

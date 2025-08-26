@@ -14,7 +14,7 @@ use craft\events\ConfigEvent;
 use craft\events\UserGroupEvent;
 use craft\models\UserGroup;
 use craft\records\UserGroup as UserGroupRecord;
-use CraftCms\Cms\Db\Table;
+use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Support\Str;
 use Illuminate\Database\Query\Builder;

@@ -24,7 +24,7 @@ use craft\models\FieldLayout;
 use craft\records\Address as AddressRecord;
 use craft\validators\StringValidator;
 use CraftCms\Cms\Config\GeneralConfig;
-use CraftCms\Cms\Db\Table;
+use CraftCms\Cms\Database\Table;
 use yii\base\InvalidConfigException;
 
 /**

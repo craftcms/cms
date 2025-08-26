@@ -12,7 +12,7 @@ use craft\helpers\DateTimeHelper;
 use craft\helpers\Db as DbHelper;
 use craft\records\Token as TokenRecord;
 use CraftCms\Cms\Config\GeneralConfig;
-use CraftCms\Cms\Db\Table;
+use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Support\Json;
 use DateTime;
 use Illuminate\Support\Facades\DB;

@@ -25,7 +25,7 @@ use craft\helpers\ImageTransforms as TransformHelper;
 use craft\imagetransforms\ImageTransformer;
 use craft\models\ImageTransform;
 use craft\records\ImageTransform as ImageTransformRecord;
-use CraftCms\Cms\Db\Table;
+use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Support\Str;
 use DateTime;
 use Illuminate\Database\Query\Builder;

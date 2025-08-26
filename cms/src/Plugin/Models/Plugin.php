@@ -2,7 +2,7 @@
 
 namespace CraftCms\Cms\Plugin\Models;
 
-use CraftCms\Cms\Db\Table;
+use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Support\BaseModel;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 

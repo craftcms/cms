@@ -13,7 +13,7 @@ use craft\db\Connection;
 use craft\helpers\Console;
 use craft\helpers\Db;
 use craft\helpers\FileHelper;
-use CraftCms\Cms\Db\Table;
+use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Support\Str;
 use Illuminate\Support\Facades\DB as DbFacade;
 use Throwable;

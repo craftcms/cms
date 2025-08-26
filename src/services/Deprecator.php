@@ -13,7 +13,7 @@ use craft\errors\DeprecationException;
 use craft\helpers\Template;
 use craft\models\DeprecationError;
 use craft\web\twig\Extension;
-use CraftCms\Cms\Db\Table;
+use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Support\Str;
 use Illuminate\Database\Query\Builder;

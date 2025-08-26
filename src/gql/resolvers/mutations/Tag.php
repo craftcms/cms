@@ -11,7 +11,7 @@ use Craft;
 use craft\elements\Tag as TagElement;
 use craft\gql\base\ElementMutationResolver;
 use craft\models\TagGroup;
-use CraftCms\Cms\Db\Table;
+use CraftCms\Cms\Database\Table;
 use GraphQL\Error\Error;
 use GraphQL\Type\Definition\ResolveInfo;
 use Illuminate\Support\Facades\DB;

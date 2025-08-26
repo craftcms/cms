@@ -38,7 +38,7 @@ use craft\test\mockclasses\gql\MockDirective;
 use craft\test\mockclasses\gql\MockType;
 use craft\test\TestCase;
 use CraftCms\Cms\Config\GeneralConfig;
-use CraftCms\Cms\Db\Table;
+use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Support\Str;
 use GraphQL\Type\Definition\Directive;

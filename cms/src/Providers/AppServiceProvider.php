@@ -30,7 +30,7 @@ final class AppServiceProvider extends ServiceProvider
         /**
          * Make sure we're using Craft's User model
          */
-        if (!class_exists(Config::get('auth.providers.users.model')) || !Config::get('auth.providers.users.model') instanceof User) {
+        if (! class_exists(Config::get('auth.providers.users.model')) || ! Config::get('auth.providers.users.model') instanceof User) {
             Config::set('auth.providers.users.model', User::class);
         }
 

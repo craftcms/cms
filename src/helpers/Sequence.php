@@ -8,7 +8,7 @@
 namespace craft\helpers;
 
 use craft\errors\MutexException;
-use CraftCms\Cms\Db\Table;
+use CraftCms\Cms\Database\Table;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB as DbFacade;
 use Throwable;

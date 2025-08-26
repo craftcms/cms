@@ -11,7 +11,7 @@ use Craft;
 use craft\events\RegisterEmailMessagesEvent;
 use craft\models\SystemMessage;
 use craft\records\SystemMessage as EmailMessageRecord;
-use CraftCms\Cms\Db\Table;
+use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Support\Arr;
 use Illuminate\Database\Query\Builder;

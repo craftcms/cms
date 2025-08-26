@@ -751,7 +751,7 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
             case 'authors':
                 $entryIds = array_map(fn(ElementInterface $entry) => $entry->id, $sourceElements);
 
-                $map = \Illuminate\Support\Facades\DB::table(\CraftCms\Cms\Db\Table::ENTRIES_AUTHORS)
+                $map = \Illuminate\Support\Facades\DB::table(\CraftCms\Cms\Database\Table::ENTRIES_AUTHORS)
                     ->select([
                         'source' => 'entryId',
                         'target' => 'authorId',
@@ -2874,7 +2874,7 @@ JS;
             $record->expiryDate = Db::prepareDateForDb($this->expiryDate);
 
             // todo: update after the next breakpoint
-            if (Schema::hasColumn(\CraftCms\Cms\Db\Table::ENTRIES, 'status')) {
+            if (Schema::hasColumn(\CraftCms\Cms\Database\Table::ENTRIES, 'status')) {
                 $status = $this->_status();
                 $record->status = $status;
                 // only update $this->status if it's already set, indicating that staticStatuses is enabled
@@ -2899,7 +2899,7 @@ JS;
 
             $this->setDirtyAttributes($dirtyAttributes);
 
-            $this->saveOwnership($isNew, \CraftCms\Cms\Db\Table::ENTRIES);
+            $this->saveOwnership($isNew, \CraftCms\Cms\Database\Table::ENTRIES);
 
             if (
                 (!$this->duplicateOf || $this->placeInStructure) &&
@@ -2932,7 +2932,7 @@ JS;
     {
         if (!isset($this->_oldAuthorIds)) {
             // Don't trust $this->_authors/_authorIds, as it may have been set to the updated value
-            $this->_oldAuthorIds = \Illuminate\Support\Facades\DB::table(\CraftCms\Cms\Db\Table::ENTRIES_AUTHORS)
+            $this->_oldAuthorIds = \Illuminate\Support\Facades\DB::table(\CraftCms\Cms\Database\Table::ENTRIES_AUTHORS)
                 ->where('entryId', $this->duplicateOf->id ?? $this->id)
                 ->orderBy('sortOrder')
                 ->pluck('authorId')
@@ -2940,7 +2940,7 @@ JS;
                 ->all();
         }
 
-        \Illuminate\Support\Facades\DB::table(\CraftCms\Cms\Db\Table::ENTRIES_AUTHORS)
+        \Illuminate\Support\Facades\DB::table(\CraftCms\Cms\Database\Table::ENTRIES_AUTHORS)
             ->where('entryId', $this->id)
             ->delete();
 
@@ -2954,7 +2954,7 @@ JS;
                 ];
             }
 
-            \Illuminate\Support\Facades\DB::table(\CraftCms\Cms\Db\Table::ENTRIES_AUTHORS)
+            \Illuminate\Support\Facades\DB::table(\CraftCms\Cms\Database\Table::ENTRIES_AUTHORS)
                 ->insert($data);
         }
     }
@@ -3038,7 +3038,7 @@ JS;
             }
         }
 
-        \Illuminate\Support\Facades\DB::table(\CraftCms\Cms\Db\Table::ENTRIES)
+        \Illuminate\Support\Facades\DB::table(\CraftCms\Cms\Database\Table::ENTRIES)
             ->where('id', $this->id)
             ->update($data);
 
@@ -3053,7 +3053,7 @@ JS;
         $this->deletedWithEntryType = false;
         $this->deletedWithSection = false;
 
-        \Illuminate\Support\Facades\DB::table(\CraftCms\Cms\Db\Table::ENTRIES)
+        \Illuminate\Support\Facades\DB::table(\CraftCms\Cms\Database\Table::ENTRIES)
             ->where('id', $this->id)
             ->update([
                 'deletedWithEntryType' => null,

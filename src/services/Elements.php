@@ -64,7 +64,7 @@ use craft\records\Element_SiteSettings as Element_SiteSettingsRecord;
 use craft\records\StructureElement as StructureElementRecord;
 use craft\validators\HandleValidator;
 use craft\validators\SlugValidator;
-use CraftCms\Cms\Db\Table;
+use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Support\Str;

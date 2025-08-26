@@ -12,7 +12,7 @@ use craft\elements\Category as CategoryElement;
 use craft\gql\base\ElementMutationResolver;
 use craft\gql\base\StructureMutationTrait;
 use craft\models\CategoryGroup;
-use CraftCms\Cms\Db\Table;
+use CraftCms\Cms\Database\Table;
 use GraphQL\Error\Error;
 use GraphQL\Type\Definition\ResolveInfo;
 use Illuminate\Support\Facades\DB;

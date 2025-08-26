@@ -114,7 +114,7 @@ class m230524_220029_global_entry_types extends Migration
                 $projectConfig->set($entryTypePath, $entryTypeConfig);
 
                 // Preserve the original handle on the section
-                $entryTypeId = DB::table(\CraftCms\Cms\Db\Table::ENTRYTYPES)->idByUid($entryTypeUid);
+                $entryTypeId = DB::table(\CraftCms\Cms\Database\Table::ENTRYTYPES)->idByUid($entryTypeUid);
                 if ($entryTypeId) {
                     $this->update(Table::SECTIONS_ENTRYTYPES, [
                         'handle' => $originalHandle,

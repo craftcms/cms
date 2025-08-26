@@ -9,7 +9,7 @@ namespace craft\validators;
 
 use Craft;
 use craft\models\Section_SiteSettings;
-use CraftCms\Cms\Db\Table;
+use CraftCms\Cms\Database\Table;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Facades\DB;
 use Tpetry\QueryExpressions\Function\String\Lower;

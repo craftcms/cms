@@ -18,7 +18,7 @@ use craft\errors\MissingVolumeFolderException;
 use craft\helpers\App;
 use craft\models\FsListing;
 use craft\models\Volume;
-use CraftCms\Cms\Db\Table;
+use CraftCms\Cms\Database\Table;
 use Illuminate\Support\Facades\DB;
 use Throwable;
 use yii\console\ExitCode;

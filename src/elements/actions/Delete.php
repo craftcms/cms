@@ -14,7 +14,7 @@ use craft\base\NestedElementInterface;
 use craft\elements\db\ElementQueryInterface;
 use craft\helpers\Html;
 use craft\services\Elements;
-use CraftCms\Cms\Db\Table;
+use CraftCms\Cms\Database\Table;
 use Illuminate\Support\Facades\DB;
 
 /**

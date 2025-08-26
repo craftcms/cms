@@ -31,7 +31,7 @@ use craft\models\Volume;
 use craft\models\VolumeFolder;
 use craft\records\AssetIndexingSession as AssetIndexingSessionRecord;
 use CraftCms\Cms\Config\GeneralConfig;
-use CraftCms\Cms\Db\Table;
+use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Support\Str;
 use DateTime;

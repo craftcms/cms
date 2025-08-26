@@ -17,7 +17,7 @@ use craft\helpers\FileHelper;
 use craft\helpers\UrlHelper;
 use craft\models\Volume;
 use craft\services\Assets;
-use CraftCms\Cms\Db\Table;
+use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Support\Facades\Http;
 use GraphQL\Error\Error;
 use GraphQL\Error\UserError;

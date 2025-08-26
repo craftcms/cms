@@ -40,7 +40,7 @@ use craft\queue\jobs\ResaveElements;
 use craft\records\EntryType as EntryTypeRecord;
 use craft\records\Section as SectionRecord;
 use craft\records\Section_SiteSettings as Section_SiteSettingsRecord;
-use CraftCms\Cms\Db\Table;
+use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Enums\PropagationMethod;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Json;

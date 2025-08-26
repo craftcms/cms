@@ -66,7 +66,7 @@ class FindAndReplace extends BaseBatchedJob
         $this->replaceRecursive($item['title']);
         $this->replaceRecursive($item['content']);
 
-        DB::table(\CraftCms\Cms\Db\Table::ELEMENTS_SITES)
+        DB::table(\CraftCms\Cms\Database\Table::ELEMENTS_SITES)
             ->where('id', $item['id'])
             ->update([
                 'title' => $item['title'],

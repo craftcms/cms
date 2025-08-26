@@ -20,7 +20,7 @@ use craft\models\Site;
 use craft\services\ProjectConfig;
 use craft\web\Response;
 use CraftCms\Cms\Config\GeneralConfig;
-use CraftCms\Cms\Db\Table;
+use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Element\Enums\PropagationMethod;
 use CraftCms\Cms\Plugin\Exceptions\InvalidPluginException;

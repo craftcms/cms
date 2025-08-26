@@ -14,7 +14,7 @@ use craft\helpers\DateTimeHelper;
 use craft\helpers\Session as SessionHelper;
 use craft\helpers\UrlHelper;
 use CraftCms\Cms\Config\GeneralConfig;
-use CraftCms\Cms\Db\Table;
+use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Support\Str;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;

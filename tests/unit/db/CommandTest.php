@@ -72,7 +72,7 @@ class CommandTest extends TestCase
      */
     public function clearSession()
     {
-        DB::table(\CraftCms\Cms\Db\Table::SESSIONS)->truncate();
+        DB::table(\CraftCms\Cms\Database\Table::SESSIONS)->truncate();
     }
 
     /**

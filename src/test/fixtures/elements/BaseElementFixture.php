@@ -14,7 +14,7 @@ use craft\elements\Entry;
 use craft\errors\InvalidElementException;
 use craft\models\FieldLayout;
 use craft\test\DbFixtureTrait;
-use CraftCms\Cms\Db\Table;
+use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Support\Arr;
 use Illuminate\Support\Facades\DB;
 use PDO;

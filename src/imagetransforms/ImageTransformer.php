@@ -30,7 +30,7 @@ use craft\models\ImageTransform;
 use craft\models\ImageTransformIndex;
 use craft\queue\jobs\GenerateImageTransform;
 use CraftCms\Cms\Config\GeneralConfig;
-use CraftCms\Cms\Db\Table;
+use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Str;
 use Exception;

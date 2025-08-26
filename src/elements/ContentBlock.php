@@ -16,7 +16,7 @@ use craft\fields\ContentBlock as ContentBlockField;
 use craft\gql\interfaces\elements\ContentBlock as ContentBlockInterface;
 use craft\models\FieldLayout;
 use craft\records\ContentBlock as ContentBlockRecord;
-use CraftCms\Cms\Db\Table;
+use CraftCms\Cms\Database\Table;
 use GraphQL\Type\Definition\Type;
 use yii\base\InvalidConfigException;
 

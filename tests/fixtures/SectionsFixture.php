@@ -11,7 +11,7 @@ use Craft;
 use craft\records\Section;
 use craft\services\Entries;
 use craft\test\ActiveFixture;
-use CraftCms\Cms\Db\Table;
+use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Support\Arr;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;

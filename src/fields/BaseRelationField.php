@@ -1098,7 +1098,7 @@ JS, [
 
         // Are there any source elements that don't have hardcoded relation IDs yet?
         if (!empty($missingSourceElementIds)) {
-            $missingMappingsQuery = DB::table(\CraftCms\Cms\Db\Table::RELATIONS)
+            $missingMappingsQuery = DB::table(\CraftCms\Cms\Database\Table::RELATIONS)
                 ->select(['sourceId as source', 'targetId as target'])
                 ->where([
                     'fieldId' => $this->id,
@@ -1298,7 +1298,7 @@ JS, [
                     $timestamp = now();
 
                     foreach ($siteIds as $siteId) {
-                        DB::table(\CraftCms\Cms\Db\Table::CHANGEDFIELDS)
+                        DB::table(\CraftCms\Cms\Database\Table::CHANGEDFIELDS)
                             ->upsert([
                                 'elementId' => $element->id,
                                 'siteId' => $siteId,

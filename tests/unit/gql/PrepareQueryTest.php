@@ -26,7 +26,7 @@ use craft\records\UserGroup;
 use craft\records\Volume;
 use craft\services\Entries;
 use craft\test\TestCase;
-use CraftCms\Cms\Db\Table;
+use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Enums\PropagationMethod;
 use CraftCms\Cms\Support\Str;
 use Illuminate\Support\Facades\DB;

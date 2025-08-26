@@ -25,7 +25,7 @@ use craft\services\Entries as EntriesService;
 use craft\services\ProjectConfig;
 use craft\services\Structures;
 use CraftCms\Cms\Config\GeneralConfig;
-use CraftCms\Cms\Db\Table;
+use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Support\Arr;
 use Illuminate\Support\Facades\DB as DbFacade;
 use Tpetry\QueryExpressions\Language\Alias;

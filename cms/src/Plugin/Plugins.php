@@ -13,7 +13,7 @@ use craft\services\ProjectConfig;
 use craft\web\Application as CraftWebApplication;
 use CraftCms\Aliases\Facades\Aliases;
 use CraftCms\Cms\Config\GeneralConfig;
-use CraftCms\Cms\Db\Table;
+use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Plugin\Contracts\PluginInterface;
 use CraftCms\Cms\Plugin\Events\DisablingPlugin;
 use CraftCms\Cms\Plugin\Events\EnablingPlugin;

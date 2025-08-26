@@ -8,7 +8,7 @@ use craft\widgets\NewUsers;
 use craft\widgets\QuickPost;
 use craft\widgets\RecentEntries;
 use craft\widgets\Updates;
-use CraftCms\Cms\Db\Table;
+use CraftCms\Cms\Database\Table;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\DB;

@@ -27,7 +27,7 @@ use craft\models\SiteGroup;
 use craft\queue\jobs\PropagateElements;
 use craft\records\Site as SiteRecord;
 use craft\records\SiteGroup as SiteGroupRecord;
-use CraftCms\Cms\Db\Table;
+use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Str;
 use Illuminate\Database\Query\Builder;

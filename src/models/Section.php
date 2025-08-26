@@ -19,7 +19,7 @@ use craft\helpers\UrlHelper;
 use craft\records\Section as SectionRecord;
 use craft\validators\HandleValidator;
 use craft\validators\UniqueValidator;
-use CraftCms\Cms\Db\Table;
+use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Enums\PropagationMethod;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Str;
