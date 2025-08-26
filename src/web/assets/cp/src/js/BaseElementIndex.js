@@ -145,7 +145,6 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 
     get canViewAsStructure() {
       return (
-        !this.status &&
         !this.trashed &&
         !this.drafts &&
         !this.searching &&
