@@ -3538,6 +3538,11 @@ const ViewMenu = Garnish.Base.extend({
     this.updateTableColumnField();
     this.tidyTableColumnField();
 
+    if (this.elementIndex.settings.context === 'index') {
+      // Update the query string
+      Craft.setQueryParam('sort', null);
+    }
+
     this.$revertBtn.remove();
     this.$revertBtn = null;
 
