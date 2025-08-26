@@ -71,8 +71,6 @@ final class UninstallCommand extends Command
 
     private function uninstallPluginByHandle(string $handle): void
     {
-        $this->components->task("Uninstalling $handle", function () use ($handle) {
-            return $this->plugins->uninstallPlugin($handle, $this->option('force'));
-        });
+        $this->components->task("Uninstalling $handle", fn () => $this->plugins->uninstallPlugin($handle, $this->option('force')));
     }
 }

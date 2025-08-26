@@ -31,7 +31,9 @@ final class EnableCommand extends Command
 
         $handle = $this->getHandle(fn (array $info) => $info['isInstalled'] && ! $info['isEnabled']);
 
-        return $this->enablePluginByHandle($handle);
+        $this->enablePluginByHandle($handle);
+
+        return self::SUCCESS;
     }
 
     private function enableAll(): int
@@ -58,8 +60,6 @@ final class EnableCommand extends Command
 
     private function enablePluginByHandle(string $handle): void
     {
-        $this->components->task("Enabling $handle", function () use ($handle) {
-            return $this->plugins->enablePlugin($handle);
-        });
+        $this->components->task("Enabling $handle", fn () => $this->plugins->enablePlugin($handle));
     }
 }

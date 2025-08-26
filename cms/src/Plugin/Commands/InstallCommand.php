@@ -120,8 +120,6 @@ final class InstallCommand extends Command
 
     private function installPluginByHandle(string $handle, ?string $edition = null): void
     {
-        $this->components->task("Installing $handle", function () use ($handle, $edition) {
-            return $this->plugins->installPlugin($handle, $edition);
-        });
+        $this->components->task("Installing $handle", fn () => $this->plugins->installPlugin($handle, $edition));
     }
 }

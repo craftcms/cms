@@ -90,6 +90,7 @@ abstract class Migration extends LaravelMigration implements MigrationInterface
 
     protected function task(string $message, Closure $callable): void
     {
+        /** @phpstan-ignore-next-line */
         new Task($this->output)->render($message, $callable);
     }
 }

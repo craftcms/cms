@@ -31,7 +31,9 @@ final class DisableCommand extends Command
 
         $handle = $this->getHandle(fn (array $info) => $info['isInstalled'] && $info['isEnabled']);
 
-        return $this->disablePluginByHandle($handle);
+        $this->disablePluginByHandle($handle);
+
+        return self::SUCCESS;
     }
 
     private function disableAll(): int
@@ -58,8 +60,6 @@ final class DisableCommand extends Command
 
     private function disablePluginByHandle(string $handle): void
     {
-        $this->components->task("Disabling $handle", function () use ($handle) {
-            return $this->plugins->disablePlugin($handle);
-        });
+        $this->components->task("Disabling $handle", fn () => $this->plugins->disablePlugin($handle));
     }
 }
