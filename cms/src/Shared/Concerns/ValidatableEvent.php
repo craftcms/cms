@@ -1,6 +1,6 @@
 <?php
 
-namespace CraftCms\Cms\Support\Events\Concerns;
+namespace CraftCms\Cms\Shared\Concerns;
 
 /** @since 6.0.0 */
 trait ValidatableEvent

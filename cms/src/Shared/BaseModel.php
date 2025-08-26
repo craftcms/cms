@@ -1,6 +1,6 @@
 <?php
 
-namespace CraftCms\Cms\Support;
+namespace CraftCms\Cms\Shared;
 
 use Illuminate\Database\Eloquent\Model;
 

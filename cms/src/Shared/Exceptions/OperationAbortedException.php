@@ -7,7 +7,4 @@ use Exception;
 /**
  * @since 6.0.0
  */
-final class OperationAbortedException extends Exception
-{
-
-}
+final class OperationAbortedException extends Exception {}

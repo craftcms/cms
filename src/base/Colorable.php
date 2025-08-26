@@ -7,7 +7,7 @@
 
 namespace craft\base;
 
-use CraftCms\Cms\Support\Enums\Color;
+use CraftCms\Cms\Shared\Enums\Color;
 
 /**
  * Colorable defines the common interface to be implemented by components that

@@ -3,7 +3,7 @@
 namespace CraftCms\Cms\Dashboard\Events;
 
 use CraftCms\Cms\Dashboard\Contracts\WidgetInterface;
-use CraftCms\Cms\Support\Events\Concerns\ValidatableEvent;
+use CraftCms\Cms\Shared\Concerns\ValidatableEvent;
 
 /**
  * @event WidgetSaving The event that is triggered before a widget is saved.

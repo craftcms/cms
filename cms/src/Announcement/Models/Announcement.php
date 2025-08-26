@@ -3,7 +3,7 @@
 namespace CraftCms\Cms\Announcement\Models;
 
 use CraftCms\Cms\Plugin\Models\Plugin;
-use CraftCms\Cms\Support\BaseModel;
+use CraftCms\Cms\Shared\BaseModel;
 use CraftCms\Cms\User\Models\User;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;

@@ -1,6 +1,6 @@
 <?php
 
-use CraftCms\Cms\Support\Enums\Color;
+use CraftCms\Cms\Shared\Enums\Color;
 
 test('try from status', function (string $status, ?Color $expected) {
     expect(Color::tryFromStatus($status))->toBe($expected);

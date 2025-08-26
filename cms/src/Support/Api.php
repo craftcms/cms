@@ -7,7 +7,7 @@ use craft\errors\InvalidLicenseKeyException;
 use craft\helpers\App;
 use craft\helpers\DateTimeHelper;
 use CraftCms\Cms\Plugin\Plugins;
-use CraftCms\Cms\Support\Enums\LicenseKeyStatus;
+use CraftCms\Cms\Shared\Enums\LicenseKeyStatus;
 use CraftCms\Cms\Support\Facades\Http;
 use GuzzleHttp\Exception\GuzzleException;
 use GuzzleHttp\Exception\RequestException;

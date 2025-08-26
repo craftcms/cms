@@ -2,7 +2,7 @@
 
 namespace CraftCms\Cms\Component\Events;
 
-use CraftCms\Cms\Support\Events\Concerns\ValidatableEvent;
+use CraftCms\Cms\Shared\Concerns\ValidatableEvent;
 
 /**
  * @since 6.0.0

@@ -4,8 +4,7 @@ namespace CraftCms\Yii2Adapter\Tests\Legacy\helpers;
 
 use craft\helpers\StringHelper;
 use craft\test\mockclasses\ToString;
-use CraftCms\Cms\Config\GeneralConfig;
-use CraftCms\Cms\Support\Enums\LicenseKeyStatus;
+use CraftCms\Cms\Shared\Enums\LicenseKeyStatus;
 use CraftCms\Cms\Support\Str;
 use Orchestra\Testbench\PHPUnit\TestCase;
 use PHPUnit\Framework\Attributes\DataProvider;

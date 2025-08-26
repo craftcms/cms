@@ -26,7 +26,7 @@
   {% set options = options|unshift({label: 'No color'|t('app'), value: '__blank__', data: {color: ''}}) %}
 {% endif %}
 
-{% if value is instance of ('craft\\enums\\Color') %}
+{% if value is instance of ('CraftCms\\Cms\\Shared\\Enums\\Color') %}
   {% set value = value.value %}
 {% endif %}
 

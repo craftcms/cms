@@ -28,7 +28,7 @@ use craft\records\EntryType as EntryTypeRecord;
 use craft\validators\HandleValidator;
 use craft\validators\UniqueValidator;
 use CraftCms\Cms\Config\GeneralConfig;
-use CraftCms\Cms\Support\Enums\Color;
+use CraftCms\Cms\Shared\Enums\Color;
 
 /**
  * EntryType model class.

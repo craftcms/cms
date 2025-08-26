@@ -1,6 +1,6 @@
 <?php
 
-namespace CraftCms\Cms\Support\Enums;
+namespace CraftCms\Cms\Shared\Enums;
 
 /**
  * LicenseKeyStatus defines all possible license key statuses for Craft and plugins.

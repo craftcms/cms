@@ -6,11 +6,11 @@ namespace craft\enums;
 if (false) {
     /**
      * @since 5.0.0
-     * @deprecated 6.0.0. use {@see \CraftCms\Cms\Support\Enums\Color} instead.
+     * @deprecated 6.0.0. use {@see \CraftCms\Cms\Shared\Enums\Color} instead.
      */
     enum Color: string
     {
     }
 }
 
-class_alias(\CraftCms\Cms\Support\Enums\Color::class, Color::class);
+class_alias(\CraftCms\Cms\Shared\Enums\Color::class, Color::class);

@@ -10,8 +10,8 @@ namespace craft\console\controllers;
 use Craft;
 use craft\console\Controller;
 use craft\db\MigrationManager;
-use CraftCms\Cms\Shared\Exceptions\OperationAbortedException;
 use craft\helpers\Console;
+use CraftCms\Cms\Shared\Exceptions\OperationAbortedException;
 use Throwable;
 use yii\console\ExitCode;
 

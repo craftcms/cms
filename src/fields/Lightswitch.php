@@ -19,8 +19,8 @@ use craft\fields\conditions\LightswitchFieldConditionRule;
 use craft\helpers\Cp;
 use craft\helpers\Db;
 use craft\helpers\Html;
+use CraftCms\Cms\Shared\Enums\Color as ColorEnum;
 use CraftCms\Cms\Support\Arr;
-use CraftCms\Cms\Support\Enums\Color as ColorEnum;
 use GraphQL\Type\Definition\Type;
 use yii\db\Schema;
 

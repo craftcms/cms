@@ -11,11 +11,11 @@ use Craft;
 use craft\base\ElementInterface;
 use craft\elements\db\ElementQuery;
 use craft\elements\db\ElementQueryInterface;
-use CraftCms\Cms\Shared\Exceptions\OperationAbortedException;
 use craft\helpers\Db;
 use craft\i18n\Translation;
 use craft\queue\BaseJob;
 use craft\queue\QueueInterface;
+use CraftCms\Cms\Shared\Exceptions\OperationAbortedException;
 use yii\queue\Queue;
 
 /**

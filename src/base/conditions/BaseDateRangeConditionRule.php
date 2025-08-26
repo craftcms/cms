@@ -3,13 +3,12 @@
 namespace craft\base\conditions;
 
 use Craft;
-use craft\fields\Date;
 use craft\helpers\Cp;
 use craft\helpers\DateRange;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\Html;
 use craft\helpers\UrlHelper;
-use CraftCms\Cms\Support\Enums\TimePeriod;
+use CraftCms\Cms\Shared\Enums\TimePeriod;
 use DateTime;
 use Exception;
 

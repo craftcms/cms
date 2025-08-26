@@ -6,7 +6,7 @@
 
 namespace CraftCms\Cms\Dashboard\Models;
 
-use CraftCms\Cms\Support\BaseModel;
+use CraftCms\Cms\Shared\BaseModel;
 
 class Widget extends BaseModel
 {

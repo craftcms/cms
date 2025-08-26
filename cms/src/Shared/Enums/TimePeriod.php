@@ -1,6 +1,6 @@
 <?php
 
-namespace CraftCms\Cms\Support\Enums;
+namespace CraftCms\Cms\Shared\Enums;
 
 /**
  * PeriodType defines time period units.

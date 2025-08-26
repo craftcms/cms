@@ -4,7 +4,7 @@ namespace CraftCms\Cms\User\Models;
 
 use Craft;
 use CraftCms\Cms\Edition;
-use CraftCms\Cms\Support\BaseModel;
+use CraftCms\Cms\Shared\BaseModel;
 use Illuminate\Auth\Authenticatable;
 use Illuminate\Auth\MustVerifyEmail;
 use Illuminate\Auth\Passwords\CanResetPassword;

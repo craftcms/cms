@@ -23,7 +23,7 @@ interface Statusable
      * with the following keys:
      *
      * - **`label`** – The human-facing status label.
-     * - **`color`** – The status color. See {@see \CraftCms\Cms\Support\Enums\Color} for possible values.
+     * - **`color`** – The status color. See {@see \CraftCms\Cms\Shared\Enums\Color} for possible values.
      *
      * @return array
      */

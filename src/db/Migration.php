@@ -7,8 +7,8 @@
 
 namespace craft\db;
 
-use CraftCms\Cms\Shared\Exceptions\OperationAbortedException;
 use craft\helpers\Db;
+use CraftCms\Cms\Shared\Exceptions\OperationAbortedException;
 use Illuminate\Support\Facades\Schema;
 use Throwable;
 use yii\db\ColumnSchemaBuilder;
