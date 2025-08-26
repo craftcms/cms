@@ -7,8 +7,10 @@
     <g id="index" stroke="none" fill="none" xlink:href="#path-1">
         <use fill="#FFFFFF" fill-rule="evenodd" xlink:href="#path-1"></use>
         <rect id="pane" stroke="#CDD8E4" stroke-width="1" fill="#F3F7FD" fill-rule="evenodd" x="0.5" y="0.5" width="79" height="59" rx="5"></rect>
-        <rect id="chip" stroke="#CDD8E4" stroke-width="1" fill="#F3F7FD" fill-rule="evenodd" x="15" y="19" width="50" height="14" rx="5"></rect>
-        <rect id="chip-copy-2" stroke="#CDD8E4" stroke-width="1" fill="#F3F7FD" fill-rule="evenodd" x="15" y="38" width="50" height="14" rx="5"></rect>
+        <g id="Group" stroke-width="1" fill-rule="evenodd" transform="translate(15, 19)" fill="#F3F7FD" stroke="#CDD8E4">
+            <rect id="chip" x="0.5" y="0.5" width="49" height="13" rx="5"></rect>
+            <rect id="chip-copy-2" x="0.5" y="18.5" width="49" height="13" rx="5"></rect>
+        </g>
         <line x1="0.5" y1="11.5" x2="78.5" y2="11.5" id="Line" stroke="#CDD8E4" stroke-width="1" stroke-linecap="square"></line>
     </g>
 </svg>

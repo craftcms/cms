@@ -55,7 +55,7 @@ class ElementSearchController extends Controller
 
         $query = $elementType::find()
             ->siteId($siteId)
-            ->search(sprintf('title:"%s"', str_replace('"', '', $search)))
+            ->search($search)
             ->orderBy(['LENGTH([[title]])' => SORT_ASC])
             ->limit(5);
 

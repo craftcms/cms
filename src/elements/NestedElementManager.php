@@ -401,7 +401,6 @@ class NestedElementManager extends Component
                     $elements = $value->getCachedResult() ?? $value
                         ->status(null)
                         ->limit(null)
-                        ->eagerly()
                         ->all();
                 }
 

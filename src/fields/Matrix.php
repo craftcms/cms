@@ -88,6 +88,8 @@ class Matrix extends Field implements
     /** @since 5.0.0 */
     public const VIEW_MODE_CARDS = 'cards';
     /** @since 5.0.0 */
+    public const VIEW_MODE_CARDS_GRID = 'cards-grid';
+    /** @since 5.0.0 */
     public const VIEW_MODE_BLOCKS = 'blocks';
     /** @since 5.0.0 */
     public const VIEW_MODE_INDEX = 'index';
@@ -228,6 +230,7 @@ class Matrix extends Field implements
     /**
      * @var bool Whether cards should be shown in a multi-column grid
      * @since 5.0.0
+     * @deprecated in 5.9.0
      */
     public bool $showCardsInGrid = false;
 
@@ -325,6 +328,11 @@ class Matrix extends Field implements
             $config['maxEntries'] = Arr::pull($config, 'maxBlocks');
         }
 
+        if (!empty($config['showCardsInGrid']) && ($config['viewMode'] ?? self::VIEW_MODE_CARDS) === self::VIEW_MODE_CARDS) {
+            $config['viewMode'] = self::VIEW_MODE_CARDS_GRID;
+        }
+        $config['showCardsInGrid'] = ($config['viewMode'] ?? self::VIEW_MODE_CARDS) === self::VIEW_MODE_CARDS_GRID;
+
         parent::__construct($config);
     }
 
@@ -393,6 +401,7 @@ class Matrix extends Field implements
         $rules[] = [['minEntries', 'maxEntries'], 'integer', 'min' => 0];
         $rules[] = [['viewMode'], 'in', 'range' => [
             self::VIEW_MODE_CARDS,
+            self::VIEW_MODE_CARDS_GRID,
             self::VIEW_MODE_INDEX,
             self::VIEW_MODE_BLOCKS,
         ]];
@@ -697,7 +706,7 @@ class Matrix extends Field implements
                 Entry::indexViewModes(),
                 fn(array $viewMode) => !($viewMode['structuresOnly'] ?? false),
             ),
-            'baseImageUrl' => "$bundle->baseUrl/images/nested-view-modes",
+            'baseIconsUrl' => "$bundle->baseUrl/images/view-modes",
             'readOnly' => $readOnly,
         ]);
     }
@@ -932,7 +941,7 @@ JS, [
                 ])),
             ];
 
-            if ($this->viewMode === self::VIEW_MODE_CARDS) {
+            if (in_array($this->viewMode, [self::VIEW_MODE_CARDS, self::VIEW_MODE_CARDS_GRID])) {
                 $copyAllJs = <<<JS
 copyAllBtn.on('activate', () => {
   Craft.cp.copyElements(field.find('> .nested-element-cards > .elements > li > .element'));
@@ -1132,7 +1141,7 @@ JS;
     {
         $entryTypes = $this->getEntryTypes();
         $config = [
-            'showInGrid' => $this->showCardsInGrid,
+            'showInGrid' => $this->viewMode === self::VIEW_MODE_CARDS_GRID,
             'prevalidate' => false,
         ];
 
@@ -1171,7 +1180,7 @@ JS,
             }
         }
 
-        if ($this->viewMode === self::VIEW_MODE_CARDS) {
+        if (in_array($this->viewMode, [self::VIEW_MODE_CARDS, self::VIEW_MODE_CARDS_GRID])) {
             return $this->entryManager()->getCardsHtml($owner, $config);
         }
 

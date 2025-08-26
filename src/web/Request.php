@@ -1284,24 +1284,35 @@ class Request extends \CraftCms\Yii2Adapter\Web\Request
     }
 
     /**
-     * Returns whether the request will accept a given content type3
+     * Returns whether the request will accept a given content type.
      *
-     * @param string $contentType
+     * @param string $contentType The MIME type. Can include `*` as a wildcard character,
+     * to check for a range of MIME types, e.g. `application/*+json`.
      * @return bool
      */
     public function accepts(string $contentType): bool
     {
         $acceptableContentTypes = $this->getAcceptableContentTypes();
 
-        // then check if the actual key exists
         if (array_key_exists($contentType, $acceptableContentTypes)) {
             return true;
         }
 
         // check for cases where acceptable content type contains mimeType/*
-        foreach (array_keys($acceptableContentTypes) as $mime) {
+        $acceptableContentTypes = array_keys($acceptableContentTypes);
+        foreach ($acceptableContentTypes as $mime) {
             if (str_ends_with($mime, '/*') && str_starts_with($contentType, substr($mime, 0, -1))) {
                 return true;
+            }
+        }
+
+        if (str_contains($contentType, '*')) {
+            $parts = explode('*', $contentType);
+            $pattern = sprintf('/^%s$/', implode('.*', array_map(fn(string $part) => preg_quote($part, '/'), $parts)));
+            foreach ($acceptableContentTypes as $mime) {
+                if (preg_match($pattern, $mime)) {
+                    return true;
+                }
             }
         }
 
@@ -1315,7 +1326,7 @@ class Request extends \CraftCms\Yii2Adapter\Web\Request
      */
     public function getAcceptsJson(): bool
     {
-        return $this->accepts('application/json');
+        return $this->accepts('application/json') || $this->accepts('application/*+json');
     }
 
     /**

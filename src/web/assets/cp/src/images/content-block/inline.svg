@@ -6,8 +6,8 @@
     </defs>
     <g id="inline" stroke="none" fill="none" xlink:href="#path-1" fill-rule="evenodd">
         <use fill="#FFFFFF" xlink:href="#path-1"></use>
-        <rect id="chip" stroke="#CDD8E4" stroke-width="1" fill="#F3F7FD" x="15" y="33" width="50" height="14" rx="5"></rect>
-        <rect id="chip-copy" stroke="#CDD8E4" stroke-width="1" fill="#F3F7FD" x="15" y="14" width="50" height="14" rx="5"></rect>
-        <rect id="chip-copy-2" stroke="#CDD8E4" stroke-width="1" fill="#F3F7FD" x="15" y="52" width="50" height="14" rx="5"></rect>
+        <rect id="chip" stroke="#CDD8E4" stroke-width="1" fill="#F3F7FD" x="15.5" y="33.5" width="49" height="13" rx="5"></rect>
+        <rect id="chip-copy" stroke="#CDD8E4" stroke-width="1" fill="#F3F7FD" x="15.5" y="15.5" width="49" height="13" rx="5"></rect>
+        <rect id="chip-copy-2" stroke="#CDD8E4" stroke-width="1" fill="#F3F7FD" x="15.5" y="51.5" width="49" height="13" rx="5"></rect>
     </g>
 </svg>

@@ -920,11 +920,11 @@ class Cp extends Component
     {
         return Collection::make(Craft::$app->getFs()->getAllFilesystems())
             ->filter(fn(FsInterface $fs) => !Assets::isTempUploadFs($fs))
-            ->sortBy(fn(FsInterface $fs) => $fs->name)
             ->map(fn(FsInterface $fs) => [
-                'label' => $fs->name,
+                'label' => Craft::t('site', $fs->name),
                 'value' => $fs->handle,
             ])
+            ->sortBy(fn(array $option) => $option['label'])
             ->all();
     }
 

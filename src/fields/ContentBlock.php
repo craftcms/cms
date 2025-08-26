@@ -395,7 +395,7 @@ class ContentBlock extends Field implements
         return Craft::$app->getView()->renderTemplate('_components/fieldtypes/ContentBlock/settings.twig', [
             'field' => $this,
             'readOnly' => $readOnly,
-            'baseImageUrl' => "$bundle->baseUrl/images/content-block",
+            'baseIconsUrl' => "$bundle->baseUrl/images/content-block",
         ]);
     }
 

@@ -61,15 +61,13 @@ class m230617_070415_entrify_matrix_blocks extends Migration
         // index entry handles
         $entryTypeHandles = [];
         foreach ($projectConfig->get(ProjectConfig::PATH_ENTRY_TYPES) ?? [] as $entryTypeConfig) {
-            $entryTypeHandles[$entryTypeConfig['handle']] = true;
+            $entryTypeHandles[strtolower($entryTypeConfig['handle'])] = true;
         }
 
-        // index global field names and handles
-        $fieldNames = [];
+        // index global field handles
         $fieldHandles = [];
         foreach ($projectConfig->get(ProjectConfig::PATH_FIELDS) ?? [] as $fieldConfig) {
-            $fieldNames[$fieldConfig['name']] = true;
-            $fieldHandles[$fieldConfig['handle']] = true;
+            $fieldHandles[strtolower($fieldConfig['handle'])] = true;
         }
 
         // get all the block type configs, grouped by field
@@ -115,14 +113,14 @@ class m230617_070415_entrify_matrix_blocks extends Migration
                 foreach ($fieldLayout?->getCustomFieldElements() ?? [] as $layoutElement) {
                     $subField = $layoutElement->getField();
 
-                    // Set a unique name & label, and preserve the originals if needed
+                    // Set a name and unique handle, and preserve the originals if needed
                     $layoutElement->label = $subField->name;
-                    $subField->name = $this->uniqueName(sprintf(
+                    $subField->name = sprintf(
                         '%s - %s - %s',
                         $fieldConfig['name'],
                         $blockTypeConfig['name'],
                         $subField->name !== '__blank__' ? $subField->name : Inflector::camel2words($subField->handle),
-                    ), $fieldNames);
+                    );
 
                     $originalHandle = $subField->handle;
                     $subField->handle = $this->uniqueHandle($subField->handle, $fieldHandles);
@@ -296,26 +294,14 @@ SQL,
         return true;
     }
 
-    private function uniqueName(string $name, array &$names): string
-    {
-        $i = 1;
-        do {
-            $test = $name . ($i !== 1 ? " $i" : '');
-            if (!isset($names[$test])) {
-                $names[$test] = true;
-                return $test;
-            }
-            $i++;
-        } while (true);
-    }
-
     private function uniqueHandle(string $handle, array &$handles): string
     {
         $i = 1;
         do {
             $test = $handle . ($i !== 1 ? $i : '');
-            if (!isset($handles[$test])) {
-                $handles[$test] = true;
+            $lower = strtolower($test);
+            if (!isset($handles[$lower])) {
+                $handles[$lower] = true;
                 return $test;
             }
             $i++;

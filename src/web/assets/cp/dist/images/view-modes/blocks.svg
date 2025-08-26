@@ -6,9 +6,9 @@
     </defs>
     <g id="blocks" stroke="none" fill="none" xlink:href="#path-1" fill-rule="evenodd">
         <use fill="#FFFFFF" xlink:href="#path-1"></use>
-        <rect id="chip-copy" stroke="#CDD8E4" stroke-width="1" fill="#F3F7FD" x="0.5" y="0.5" width="79" height="26" rx="5"></rect>
-        <rect id="chip-copy-2" stroke="#CDD8E4" stroke-width="1" fill="#F3F7FD" x="0.5" y="33.5" width="79" height="26" rx="5"></rect>
-        <rect id="chip-copy-5" stroke="#CDD8E4" stroke-width="1" fill="#FFFFFF" x="15.5" y="43.5" width="49" height="7" rx="2"></rect>
+        <rect id="chip-copy" stroke="#CDD8E4" stroke-width="1" fill="#F3F7FD" x="0.5" y="0.5" width="79" height="27" rx="5"></rect>
+        <rect id="chip-copy-2" stroke="#CDD8E4" stroke-width="1" fill="#F3F7FD" x="0.5" y="32.5" width="79" height="27" rx="5"></rect>
+        <rect id="chip-copy-5" stroke="#CDD8E4" stroke-width="1" fill="#FFFFFF" x="15.5" y="42.5" width="49" height="7" rx="2"></rect>
         <rect id="chip-copy-6" stroke="#CDD8E4" stroke-width="1" fill="#FFFFFF" x="15.5" y="10.5" width="49" height="7" rx="2"></rect>
     </g>
 </svg>
