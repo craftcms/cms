@@ -145,7 +145,6 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 
     get canViewAsStructure() {
       return (
-        !this.status &&
         !this.trashed &&
         !this.drafts &&
         !this.searching &&
@@ -4439,6 +4438,11 @@ const ViewMenu = Garnish.Base.extend({
     this.updateSortField();
     this.updateTableColumnField();
     this.tidyTableColumnField();
+
+    if (this.elementIndex.settings.context === 'index') {
+      // Update the query string
+      Craft.setQueryParam('sort', null);
+    }
 
     this.$revertBtn.remove();
     this.$revertBtn = null;
