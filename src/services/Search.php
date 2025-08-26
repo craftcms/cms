@@ -756,9 +756,9 @@ SQL;
                 $mod = 50;
             }
 
-            // If this is a title, 5X it
+            // If this is a title, 100X it
             if ($row['attribute'] === 'title') {
-                $mod *= 5;
+                $mod *= 100;
             }
 
             $score = ($score / $wordCount) * $mod * $weight;

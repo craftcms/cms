@@ -203,7 +203,7 @@ class EntryQuery extends ElementQuery
      */
     protected array $defaultOrderBy = [
         'entries.postDate' => SORT_DESC,
-        'elements.id' => SORT_DESC,
+        'id' => SORT_DESC,
     ];
 
     /**

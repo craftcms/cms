@@ -1,5 +1,16 @@
 # Release Notes for Craft CMS 4
 
+## Unreleased
+
+- When searching for elements, partial matches within titles are now scored higher than exact matches in other fields. ([#17739](https://github.com/craftcms/cms/issues/17739))
+- Fixed a bug where volumes’ filesystem settings weren’t respecting static translations of filesystem names. ([#17749](https://github.com/craftcms/cms/issues/17749))
+- Fixed an error that could occur when applying project config changes. ([#15357](https://github.com/craftcms/cms/issues/15357))
+
+## 4.16.11 - 2025-08-13
+
+- Improved the performance of element queries. ([#16401](https://github.com/craftcms/cms/issues/16401))
+- Updated svg-sanitizer to 0.22. ([#17738](https://github.com/craftcms/cms/issues/17738))
+
 ## 4.16.10 - 2025-08-12
 
 - Fixed a bug where the `folderPath` asset query param required a trailing slash. ([craftcms/html-field#18](https://github.com/craftcms/html-field/pull/18))
