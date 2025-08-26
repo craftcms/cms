@@ -2,8 +2,11 @@
 
 namespace CraftCms\Cms\Console;
 
-use CraftCms\Cms\Console\Commands\TwigCacheCommand;
-use CraftCms\Cms\Console\Commands\TwigClearCommand;
+use CraftCms\Cms\Console\Commands\Env\EnvRemoveCommand;
+use CraftCms\Cms\Console\Commands\Env\EnvSetCommand;
+use CraftCms\Cms\Console\Commands\Env\EnvShowCommand;
+use CraftCms\Cms\Console\Commands\Twig\TwigCacheCommand;
+use CraftCms\Cms\Console\Commands\Twig\TwigClearCommand;
 use Illuminate\Support\ServiceProvider;
 
 /**
@@ -16,6 +19,10 @@ final class ConsoleServiceProvider extends ServiceProvider
     protected array $commands = [
         TwigCacheCommand::class,
         TwigClearCommand::class,
+
+        EnvShowCommand::class,
+        EnvSetCommand::class,
+        EnvRemoveCommand::class,
     ];
 
     public function boot(): void

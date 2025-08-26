@@ -1,6 +1,6 @@
 <?php
 
-namespace CraftCms\Cms\Console\Commands;
+namespace CraftCms\Cms\Console\Commands\Twig;
 
 use craft\console\Application;
 use CraftCms\Cms\Console\CraftCommand;

@@ -26,6 +26,11 @@
 ### Console commands
 - Added `php craft twig:cache` - Precompile Twig views
 - Added `php craft twig:clear` - Clear precompiled Twig views
+- `craft\console\controllers\EnvController` has been removed in favor of the classes below:
+  - `CraftCms\Cms\Console\Commands\Env\EnvRemoveCommand` => `php craft env:remove`
+  - `CraftCms\Cms\Console\Commands\Env\EnvSetCommand` => `php craft env:set`
+  - `CraftCms\Cms\Console\Commands\Env\EnvShowCommand` => `php craft env:show`
+  - The commands are fully compatible with the previous implementation.
 
 ### Mutex
 
