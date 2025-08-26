@@ -4,6 +4,7 @@
 
 namespace CraftCms\Cms\Migrations;
 
+use Closure;
 use Craft;
 use craft\base\Field;
 use craft\elements\Asset;
@@ -26,6 +27,7 @@ use CraftCms\Cms\Element\Enums\PropagationMethod;
 use CraftCms\Cms\Plugin\Exceptions\InvalidPluginException;
 use CraftCms\Cms\Plugin\Plugins;
 use CraftCms\Cms\Support\Str;
+use Illuminate\Console\View\Components\Task;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
@@ -57,9 +59,17 @@ class Install extends Migration
             throw new OperationAbortedException($message);
         }
 
-        $this->createTables();
-        $this->createIndexes();
-        $this->addForeignKeys();
+        $this->task('Creating tables', function () {
+            $this->createTables();
+        });
+
+        $this->task('Creating indexes', function () {
+            $this->createIndexes();
+        });
+
+        $this->task('Adding foreign keys', function () {
+            $this->addForeignKeys();
+        });
 
         $this->insertDefaultData();
 
@@ -1161,15 +1171,15 @@ class Install extends Migration
 
     public function insertDefaultData(): void
     {
-        $this->output->writeln('    > populating the info table ... ');
-        Craft::$app->saveInfo(new Info([
-            'version' => Craft::$app->getVersion(),
-            'schemaVersion' => Craft::$app->schemaVersion,
-            'maintenance' => false,
-            'configVersion' => Str::random(12),
-            'fieldVersion' => Str::random(12),
-        ]));
-        $this->output->writeln('done');
+        $this->task('Populating the info table', function () {
+            Craft::$app->saveInfo(new Info([
+                'version' => Craft::$app->getVersion(),
+                'schemaVersion' => Craft::$app->schemaVersion,
+                'maintenance' => false,
+                'configVersion' => Str::random(12),
+                'fieldVersion' => Str::random(12),
+            ]));
+        });
 
         $generalConfig = app(GeneralConfig::class);
         $projectConfig = Craft::$app->getProjectConfig();
@@ -1178,16 +1188,16 @@ class Install extends Migration
             // Make sure at least sites are processed
             ProjectConfigHelper::ensureAllSitesProcessed(true);
             $this->_installPlugins();
-            // Save the existing system settings
-            $this->output->writeln('    > applying the project config ... ');
-            $projectConfig->applyExternalChanges();
-            $this->output->writeln('done');
+
+            $this->task('Applying the project config', function () use ($projectConfig) {
+                // Save the existing system settings
+                $projectConfig->applyExternalChanges();
+            });
         } else {
-            // Save the default system settings
-            $this->output->writeln('    > saving default data ... ');
-            $configData = $this->_generateInitialConfig();
-            $projectConfig->applyConfigChanges($configData);
-            $this->output->writeln('done');
+            $this->task('Saving default data', function () use ($projectConfig) {
+                $configData = $this->_generateInitialConfig();
+                $projectConfig->applyConfigChanges($configData);
+            });
         }
 
         // Craft, you are installed now.
@@ -1206,24 +1216,24 @@ class Install extends Migration
 
         Craft::$app->language = $this->site->language;
 
-        $this->output->writeln('    > saving the first user ... ');
-        $user = new User([
-            'active' => true,
-            'admin' => true,
-            'username' => $this->username,
-            'newPassword' => $this->password,
-            'email' => $this->email,
-        ]);
-        Craft::$app->getElements()->saveElement($user);
-        $this->output->writeln('done');
+        $this->task('Saving the first user', function () use ($generalConfig) {
+            $user = new User([
+                'active' => true,
+                'admin' => true,
+                'username' => $this->username,
+                'newPassword' => $this->password,
+                'email' => $this->email,
+            ]);
+            Craft::$app->getElements()->saveElement($user);
 
-        Craft::$app->getUsers()->saveUserPreferences($user, [
-            'language' => $this->site->language,
-        ]);
+            Craft::$app->getUsers()->saveUserPreferences($user, [
+                'language' => $this->site->language,
+            ]);
 
-        if (! Craft::$app->getRequest()->getIsConsoleRequest()) {
-            Craft::$app->getUser()->login($user, $generalConfig->userSessionDuration);
-        }
+            if (! Craft::$app->getRequest()->getIsConsoleRequest()) {
+                Craft::$app->getUser()->login($user, $generalConfig->userSessionDuration);
+            }
+        });
     }
 
     private function _validateProjectConfig(?string &$error = null): bool
@@ -1296,9 +1306,9 @@ class Install extends Migration
 
         try {
             foreach ($pluginConfigs as $handle => $pluginConfig) {
-                $this->output->writeln("    > installing $handle ... ");
-                $pluginsService->installPlugin($handle);
-                $this->output->writeln('done');
+                $this->task("Installing $handle", function () use ($handle, $pluginsService) {
+                    $pluginsService->installPlugin($handle);
+                });
             }
         } finally {
             // Put the real response back
@@ -1357,5 +1367,10 @@ class Install extends Migration
         $this->output->writeln('Install migration cannot be reverted.');
 
         return false;
+    }
+
+    private function task(string $message, Closure $callable): void
+    {
+        new Task($this->output)->render($message, $callable);
     }
 }
