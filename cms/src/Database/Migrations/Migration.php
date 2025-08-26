@@ -2,6 +2,8 @@
 
 namespace CraftCms\Cms\Database\Migrations;
 
+use Closure;
+use Illuminate\Console\View\Components\Task;
 use Illuminate\Database\Migrations\Migration as LaravelMigration;
 use Illuminate\Database\Query\Expression;
 use Illuminate\Database\Schema\Blueprint;
@@ -84,5 +86,10 @@ abstract class Migration extends LaravelMigration implements MigrationInterface
         $index = strtolower($table.'_'.implode('_', $columns));
 
         return 'idx_'.md5($index);
+    }
+
+    protected function task(string $message, Closure $callable): void
+    {
+        new Task($this->output)->render($message, $callable);
     }
 }

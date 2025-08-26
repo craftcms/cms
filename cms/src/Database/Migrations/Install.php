@@ -4,7 +4,6 @@
 
 namespace CraftCms\Cms\Database\Migrations;
 
-use Closure;
 use Craft;
 use craft\base\Field;
 use craft\elements\Asset;
@@ -27,7 +26,6 @@ use CraftCms\Cms\Plugin\Exceptions\InvalidPluginException;
 use CraftCms\Cms\Plugin\Plugins;
 use CraftCms\Cms\Shared\Exceptions\OperationAbortedException;
 use CraftCms\Cms\Support\Str;
-use Illuminate\Console\View\Components\Task;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
@@ -1364,10 +1362,5 @@ class Install extends Migration
         $this->output->writeln('Install migration cannot be reverted.');
 
         return false;
-    }
-
-    private function task(string $message, Closure $callable): void
-    {
-        new Task($this->output)->render($message, $callable);
     }
 }
