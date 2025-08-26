@@ -376,6 +376,11 @@ class UserGroups extends Component
 
         $group = $this->getGroupByUid($uid);
 
+        if (!$group) {
+            // the group must already be deleted
+            return;
+        }
+
         // Fire a 'beforeApplyGroupDelete' event
         if ($this->hasEventHandlers(self::EVENT_BEFORE_APPLY_GROUP_DELETE)) {
             $this->trigger(self::EVENT_BEFORE_APPLY_GROUP_DELETE, new UserGroupEvent([
