@@ -10,6 +10,7 @@
 - Fixed a bug where two nested Matrix fields with the same handle but different casing weren’t being treated as identical when upgrading to Craft 5. ([#17751](https://github.com/craftcms/cms/issues/17751))
 - Fixed a bug where it wasn’t possible to view elements in structure view when a status was selected. ([#17759](https://github.com/craftcms/cms/issues/17759))
 - Fixed a bug where custom field values weren’t always retaining changes after changing an entry type. ([#17768](https://github.com/craftcms/cms/issues/17768))
+- Fixed a bug where JSON fields weren’t initializing properly when they weren’t on the initially-shown field layout tab. ([#17772](https://github.com/craftcms/cms/issues/17772))
 
 ## 5.8.15 - 2025-08-13
 
