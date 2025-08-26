@@ -63,7 +63,7 @@ parameters:
             identifier: parameter.implicitlyNullable
     treatPhpDocTypesAsCertain: false
     databaseMigrationsPath:
-        - cms/src/Migrations
+        - cms/src/Database/Migrations
     configDirectories:
         - tests
         - cms/tests
