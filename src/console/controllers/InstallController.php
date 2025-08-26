@@ -16,7 +16,7 @@ use craft\helpers\Console;
 use craft\helpers\Install as InstallHelper;
 use craft\models\Site;
 use CraftCms\Cms\Config\GeneralConfig;
-use CraftCms\Cms\Migrations\Install;
+use CraftCms\Cms\Database\Migrations\Install;
 use CraftCms\Cms\Shared\Exceptions\OperationAbortedException;
 use CraftCms\Cms\Support\Env;
 use yii\base\Exception;

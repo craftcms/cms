@@ -221,8 +221,8 @@ return [
         'migrator' => [
             'class' => MigrationManager::class,
             'track' => MigrationManager::TRACK_CRAFT,
-            'migrationNamespace' => 'CraftCms\Cms\Migrations',
-            'migrationPath' => '@package/Migrations',
+            'migrationNamespace' => 'CraftCms\Cms\Database\Migrations',
+            'migrationPath' => '@package/Database/Migrations',
         ],
         'sites' => [
             'class' => Sites::class,

@@ -1,13 +1,12 @@
 <?php
 
+use CraftCms\Cms\Database\Migrations\Migration;
 use CraftCms\Cms\Database\Table;
-use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
-use yii\db\MigrationInterface;
 
 /** @since 6.0.0 */
-return new class extends Migration implements MigrationInterface
+return new class extends Migration
 {
     public function up(): bool
     {

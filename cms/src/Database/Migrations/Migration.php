@@ -1,6 +1,6 @@
 <?php
 
-namespace CraftCms\Cms\Migrations;
+namespace CraftCms\Cms\Database\Migrations;
 
 use Illuminate\Database\Migrations\Migration as LaravelMigration;
 use Illuminate\Database\Query\Expression;
@@ -8,11 +8,19 @@ use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Schema\ForeignKeyDefinition;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
+use Symfony\Component\Console\Output\ConsoleOutput;
 use yii\db\MigrationInterface;
 
 /** @since 6.0.0 */
 abstract class Migration extends LaravelMigration implements MigrationInterface
 {
+    protected ConsoleOutput $output;
+
+    public function __construct()
+    {
+        $this->output = new ConsoleOutput;
+    }
+
     /**
      * @param  string  $table  the table that the new index will be created for. The table name will be properly quoted by the method.
      * @param  string|array|Expression  $columns  the column(s) that should be included in the index. If there are multiple columns, please separate them

@@ -19,7 +19,7 @@ use craft\markdown\Markdown;
 use craft\models\Site;
 use craft\web\assets\installer\InstallerAsset;
 use craft\web\Controller;
-use CraftCms\Cms\Migrations\Install;
+use CraftCms\Cms\Database\Migrations\Install;
 use CraftCms\Cms\Shared\Exceptions\OperationAbortedException;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Env;

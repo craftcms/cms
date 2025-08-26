@@ -2,7 +2,7 @@
 
 /** @noinspection RepetitiveMethodCallsInspection */
 
-namespace CraftCms\Cms\Migrations;
+namespace CraftCms\Cms\Database\Migrations;
 
 use Closure;
 use Craft;
@@ -31,14 +31,11 @@ use Illuminate\Console\View\Components\Task;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
-use Laravel\Prompts\Output\ConsoleOutput;
 use ReflectionClass;
 
 /** @since 6.0.0 */
 class Install extends Migration
 {
-    private ConsoleOutput $output;
-
     public function __construct(
         public ?string $username = null,
         public ?string $password = null,
@@ -46,7 +43,7 @@ class Install extends Migration
         public ?Site $site = null,
         public bool $applyProjectConfigYaml = true
     ) {
-        $this->output = new ConsoleOutput;
+        parent::__construct();
     }
 
     public function up(): bool

@@ -62,7 +62,7 @@ use craft\web\Session;
 use craft\web\UploadedFile;
 use craft\web\User;
 use CraftCms\Cms\Config\GeneralConfig;
-use CraftCms\Cms\Migrations\Install;
+use CraftCms\Cms\Database\Migrations\Install;
 use CraftCms\Cms\Support\Arr;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Config as ConfigFacade;

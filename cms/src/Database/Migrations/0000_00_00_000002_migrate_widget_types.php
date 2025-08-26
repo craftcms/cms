@@ -8,17 +8,16 @@ use craft\widgets\NewUsers;
 use craft\widgets\QuickPost;
 use craft\widgets\RecentEntries;
 use craft\widgets\Updates;
+use CraftCms\Cms\Database\Migrations\Migration;
 use CraftCms\Cms\Database\Table;
-use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
-use yii\db\MigrationInterface;
 
 /**
  * @since 6.0.0
  */
-return new class extends Migration implements MigrationInterface
+return new class extends Migration
 {
     private array $map = [
         CraftSupport::class => \CraftCms\Cms\Dashboard\Widgets\CraftSupport::class,
