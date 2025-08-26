@@ -36,7 +36,7 @@ class DumpTokenParser extends AbstractTokenParser
 
         $stream->expect(Token::BLOCK_END_TYPE);
 
-        return new DumpNode($nodes, [], $lineno, $this->getTag());
+        return new DumpNode($nodes, [], $lineno);
     }
 
     /**
