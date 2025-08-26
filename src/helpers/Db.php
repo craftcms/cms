@@ -14,6 +14,7 @@ use craft\db\mysql\Schema as MysqlSchema;
 use craft\db\pgsql\Schema as PgsqlSchema;
 use craft\db\Query;
 use craft\db\QueryParam;
+use craft\db\Table;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Json as JsonHelper;
 use DateTimeInterface;
@@ -1235,6 +1236,8 @@ class Db
      */
     public static function truncateTable(string $table, ?Connection $db = null): void
     {
+        $table = Table::withoutYiiPlaceholder($table);
+
         DbFacade::table($table)->truncate();
     }
 
