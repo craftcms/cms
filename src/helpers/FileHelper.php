@@ -467,18 +467,19 @@ class FileHelper extends \yii\helpers\FileHelper
 
         if (function_exists('disk_free_space')) {
             $freeBytes = disk_free_space($dir);
-            $bytes = StringHelper::byteLength($contents);
 
             if ($freeBytes === false) {
                 Craft::warning("Could not determine the free disk space for \"$dir\".");
-            } elseif ($bytes > $freeBytes) {
-                throw new ErrorException(
-                    sprintf("Insufficient disk space to write \"%s\". %s bytes free, %s bytes required.",
+            } else {
+                $bytes = StringHelper::byteLength($contents);
+                if ($bytes > $freeBytes) {
+                    throw new ErrorException(sprintf(
+                        "Insufficient disk space to write \"%s\". %s bytes free, %s bytes required.",
                         $file,
                         $freeBytes,
                         $bytes,
-                    )
-                );
+                    ));
+                }
             }
         }
 
