@@ -2,6 +2,7 @@
 
 namespace CraftCms\Cms\Providers;
 
+use CraftCms\Cms\Asset\AssetServiceProvider;
 use CraftCms\Cms\Config\ConfigServiceProvider;
 use CraftCms\Cms\Console\ConsoleServiceProvider;
 use CraftCms\Cms\Database\DatabaseServiceProvider;
@@ -20,5 +21,6 @@ final class CraftServiceProvider extends AggregateServiceProvider
         IconServiceProvider::class,
         ConsoleServiceProvider::class,
         PluginServiceProvider::class,
+        AssetServiceProvider::class,
     ];
 }

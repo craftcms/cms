@@ -643,6 +643,7 @@ class AssetIndexer extends Component
      * @throws AssetDisallowedExtensionException if attempting to index an asset with a disallowed extension
      * @throws VolumeException
      * @throws InvalidConfigException
+     * @throws MissingVolumeFolderException
      * @throws MissingAssetException if asset not found and `createIfMissing` set to `false`.
      * @since 4.0.0
      */
@@ -911,6 +912,7 @@ class AssetIndexer extends Component
      * @return VolumeFolder
      * @throws VolumeException
      * @throws AssetNotIndexableException
+     * @throws MissingVolumeFolderException
      * @since 4.0.0
      */
     public function indexFolderByEntry(AssetIndexData $indexEntry, bool $createIfMissing = true): VolumeFolder
