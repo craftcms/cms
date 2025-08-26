@@ -5,8 +5,6 @@ namespace CraftCms\Cms\Plugin\Commands;
 use CraftCms\Cms\Console\CraftCommand;
 use CraftCms\Cms\Plugin\Plugins;
 use Illuminate\Console\Command;
-use Illuminate\Console\View\Components\TwoColumnDetail;
-use Throwable;
 
 final class UninstallCommand extends Command
 {
@@ -71,37 +69,10 @@ final class UninstallCommand extends Command
         return self::SUCCESS;
     }
 
-    private function uninstallPluginByHandle(string $handle): int
+    private function uninstallPluginByHandle(string $handle): void
     {
-        new TwoColumnDetail($this->getOutput())->render(
-            "Uninstalling $handle",
-        );
-
-        $start = microtime(true);
-
-        try {
-            $success = $this->plugins->uninstallPlugin($handle, $this->option('force'));
-        } catch (Throwable $e) {
-            $success = false;
-        } finally {
-            if (! $success) {
-                $this->components->error("failed to uninstall $handle".(isset($e) ? ": {$e->getMessage()}" : '.'));
-
-                if (! $this->option('force')) {
-                    $this->components->error('Try again with --force');
-                }
-
-                return self::FAILURE;
-            }
-        }
-
-        $time = number_format((microtime(true) - $start) * 1000);
-
-        new TwoColumnDetail($this->getOutput())->render(
-            "<fg=green>Uninstalled $handle successfully</>",
-            "<fg=gray>{$time}ms</>"
-        );
-
-        return self::SUCCESS;
+        $this->components->task("Uninstalling $handle", function () use ($handle) {
+            return $this->plugins->uninstallPlugin($handle, $this->option('force'));
+        });
     }
 }

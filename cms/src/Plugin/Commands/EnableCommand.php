@@ -5,8 +5,6 @@ namespace CraftCms\Cms\Plugin\Commands;
 use CraftCms\Cms\Console\CraftCommand;
 use CraftCms\Cms\Plugin\Plugins;
 use Illuminate\Console\Command;
-use Illuminate\Console\View\Components\TwoColumnDetail;
-use Throwable;
 
 final class EnableCommand extends Command
 {
@@ -58,33 +56,10 @@ final class EnableCommand extends Command
         return self::SUCCESS;
     }
 
-    private function enablePluginByHandle(string $handle): int
+    private function enablePluginByHandle(string $handle): void
     {
-        new TwoColumnDetail($this->getOutput())->render(
-            "Enabling $handle",
-        );
-
-        $start = microtime(true);
-
-        try {
-            $success = $this->plugins->enablePlugin($handle);
-        } catch (Throwable $e) {
-            $success = false;
-        } finally {
-            if (! $success) {
-                $this->components->error("failed to enable $handle".(isset($e) ? ": {$e->getMessage()}" : '.'));
-
-                return self::FAILURE;
-            }
-        }
-
-        $time = number_format((microtime(true) - $start) * 1000);
-
-        new TwoColumnDetail($this->getOutput())->render(
-            "<fg=green>Enabled $handle successfully</>",
-            "<fg=gray>{$time}ms</>"
-        );
-
-        return self::SUCCESS;
+        $this->components->task("Enabling $handle", function () use ($handle) {
+            return $this->plugins->enablePlugin($handle);
+        });
     }
 }
