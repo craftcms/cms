@@ -9,7 +9,7 @@ use CraftCms\Cms\Plugin\Commands\ListCommand;
 use CraftCms\Cms\Plugin\Commands\UninstallCommand;
 use Illuminate\Support\ServiceProvider;
 
-final class PluginsServiceProvider extends ServiceProvider
+final class PluginServiceProvider extends ServiceProvider
 {
     public function boot(Plugins $plugins): void
     {

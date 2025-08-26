@@ -7,7 +7,7 @@
 
 namespace craft\db;
 
-use craft\errors\OperationAbortedException;
+use CraftCms\Cms\Shared\Exceptions\OperationAbortedException;
 use craft\helpers\Db;
 use Illuminate\Support\Facades\Schema;
 use Throwable;

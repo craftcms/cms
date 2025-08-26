@@ -3,7 +3,7 @@
 namespace CraftCms\Cms\Plugin\Testing;
 
 use craft\models\Site;
-use CraftCms\Cms\Migrations\Install;
+use CraftCms\Cms\Database\Migrations\Install;
 use Illuminate\Foundation\Testing\LazilyRefreshDatabase;
 use Illuminate\Support\Facades\Schema;
 use Orchestra\Testbench\TestCase as BaseTestCase;

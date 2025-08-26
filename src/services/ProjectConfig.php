@@ -11,7 +11,7 @@ use Craft;
 use craft\elements\Address;
 use craft\elements\User;
 use craft\errors\BusyResourceException;
-use craft\errors\OperationAbortedException;
+use CraftCms\Cms\Shared\Exceptions\OperationAbortedException;
 use craft\errors\StaleResourceException;
 use craft\events\ConfigEvent;
 use craft\events\RebuildConfigEvent;

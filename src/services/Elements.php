@@ -34,7 +34,7 @@ use craft\elements\User;
 use craft\errors\ElementNotFoundException;
 use craft\errors\FieldNotFoundException;
 use craft\errors\InvalidElementException;
-use craft\errors\OperationAbortedException;
+use CraftCms\Cms\Shared\Exceptions\OperationAbortedException;
 use craft\errors\SiteNotFoundException;
 use craft\errors\UnsupportedSiteException;
 use craft\events\AuthorizationCheckEvent;

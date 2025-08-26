@@ -7,7 +7,7 @@
 
 namespace crafttests\unit\helpers;
 
-use craft\errors\OperationAbortedException;
+use CraftCms\Cms\Shared\Exceptions\OperationAbortedException;
 use craft\helpers\ElementHelper;
 use craft\test\mockclasses\elements\ExampleElement;
 use craft\test\TestCase;

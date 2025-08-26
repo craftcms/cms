@@ -10,7 +10,7 @@ namespace craft\validators;
 use Craft;
 use craft\base\Element;
 use craft\base\ElementInterface;
-use craft\errors\OperationAbortedException;
+use CraftCms\Cms\Shared\Exceptions\OperationAbortedException;
 use yii\base\InvalidConfigException;
 
 /**

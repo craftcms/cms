@@ -12,7 +12,7 @@ use craft\console\Controller;
 use craft\elements\User;
 use craft\errors\DbConnectException;
 use craft\errors\MigrationException;
-use craft\errors\OperationAbortedException;
+use CraftCms\Cms\Shared\Exceptions\OperationAbortedException;
 use craft\helpers\Console;
 use craft\helpers\Install as InstallHelper;
 use craft\models\Site;

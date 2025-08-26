@@ -17,7 +17,7 @@ use craft\db\Query;
 use craft\db\Table;
 use craft\elements\User as UserElement;
 use craft\errors\FieldNotFoundException;
-use craft\errors\OperationAbortedException;
+use CraftCms\Cms\Shared\Exceptions\OperationAbortedException;
 use craft\fieldlayoutelements\CustomField;
 use craft\i18n\Locale;
 use craft\services\ElementSources;
