@@ -16,16 +16,22 @@ test.describe('Element index', () => {
   const editedText = originalText + ' edited';
   const titleFieldLocator = '#title';
   const matrixElementIndexContainerLocator = '#fields-matrixElementIndexField';
-  const matrixElementIndexFieldLocator = matrixElementIndexContainerLocator + '-field';
-  const firstCardLocator = matrixElementIndexFieldLocator + ' .card-grid > li:first-child .card';
+  const matrixElementIndexFieldLocator =
+    matrixElementIndexContainerLocator + '-field';
+  const firstCardLocator =
+    matrixElementIndexFieldLocator + ' .card-grid > li:first-child .card';
   const slideoutLocator = '.slideout-container:not(.hidden)';
-  const textFieldLocator = '.so-content input[name$="[fields][plainTextField6]"]';
+  const textFieldLocator =
+    '.so-content input[name$="[fields][plainTextField6]"]';
 
   // create new entry that contains matrix field in element index view mode
   // add nested entry to the matrix & save, check the card was added and has the modified indicator
   // check that the nested entry can be edited after being created
   // and save the root entry
-  test('Create new root entry with element index matrix field', async ({page, baseURL}) => {
+  test('Create new root entry with element index matrix field', async ({
+    page,
+    baseURL,
+  }) => {
     const slideout = page.locator(slideoutLocator);
 
     // create new entry that contains matrix field in cards view mode
@@ -34,22 +40,33 @@ test.describe('Element index', () => {
 
     // switch to the "With Matrix in Element Index mode" entry type
     await page.locator('#entryType-button').click();
-    await page.getByRole('button', {name: 'With Matrix in Element Index'}).click();
+    await page
+      .getByRole('button', {name: 'With Matrix in Element Index'})
+      .click();
 
     // wait for the autosave to complete
     await entries.waitForAutosaveToComplete(page);
-    await page.locator(matrixElementIndexContainerLocator).waitFor({state: 'visible'});
+    await page
+      .locator(matrixElementIndexContainerLocator)
+      .waitFor({state: 'visible'});
 
     // set the title
-    await page.locator(titleFieldLocator).pressSequentially(titleText, {delay: 50});
+    await page
+      .locator(titleFieldLocator)
+      .pressSequentially(titleText, {delay: 50});
     await entries.waitForAutosaveToComplete(page);
 
     // add nested entry to the matrix
-    await page.locator('#content').getByRole('button', {name: 'New entry'}).click();
+    await page
+      .locator('#content')
+      .getByRole('button', {name: 'New entry'})
+      .click();
     await entries.waitForAutosaveToComplete(page);
 
     // fill out the field
-    await slideout.locator(textFieldLocator).pressSequentially(originalText, {delay: 100});
+    await slideout
+      .locator(textFieldLocator)
+      .pressSequentially(originalText, {delay: 100});
     //await entries.waitForAutosaveToComplete(page);
 
     // check if the draft card was attached to the dom
@@ -67,10 +84,17 @@ test.describe('Element index', () => {
 
     // check the card was added and the field has the modified indicator
     await expect(page.locator('#' + firstCardId)).toContainText(originalText);
-    await expect(page.locator(matrixElementIndexFieldLocator).getByTitle(entries.fieldModifiedText)).toBeVisible();
+    await expect(
+      page
+        .locator(matrixElementIndexFieldLocator)
+        .getByTitle(entries.fieldModifiedText)
+    ).toBeVisible();
 
     // check that the nested entry can be edited after being created
-    await page.locator('#' + firstCardId).getByRole('button', {name: 'Edit entry'}).click();
+    await page
+      .locator('#' + firstCardId)
+      .getByRole('button', {name: 'Edit entry'})
+      .click();
     await expect(slideout.locator(textFieldLocator)).toHaveValue(originalText);
     await page.getByRole('button', {name: 'Cancel'}).click();
 
@@ -83,7 +107,10 @@ test.describe('Element index', () => {
   // update text field value & save
   // check that the modified indicators show
   // save root entry and check if the change is there
-  test('Edit nested entry, save and check if the value saved', async ({page, baseURL}) => {
+  test('Edit nested entry, save and check if the value saved', async ({
+    page,
+    baseURL,
+  }) => {
     const slideout = page.locator(slideoutLocator);
 
     // edit entry from previous test
@@ -94,26 +121,42 @@ test.describe('Element index', () => {
     let firstCardId = await firstCard.getAttribute('id');
 
     // check that the entry nested in a matrix can be edited
-    await page.locator('#' + firstCardId).getByRole('button', {name: 'Edit entry'}).click();
+    await page
+      .locator('#' + firstCardId)
+      .getByRole('button', {name: 'Edit entry'})
+      .click();
 
     // update text field value & save
     await slideout.locator(textFieldLocator).waitFor();
     await slideout.locator(textFieldLocator).clear();
-    await slideout.locator(textFieldLocator).pressSequentially(editedText, {delay: 100});
+    await slideout
+      .locator(textFieldLocator)
+      .pressSequentially(editedText, {delay: 100});
 
     // if we close the slideout, check that the card has the Edited status pill
     await slideout.locator('.so-footer .discard-changes-btn').waitFor();
     await slideout.getByRole('button', {name: 'Close'}).click();
-    await expect(firstCard.locator('.card-body ul:last-child li:last-child .status-label-text')).toContainText('Edited');
+    await expect(
+      firstCard.locator(
+        '.card-body ul:last-child li:last-child .status-label-text'
+      )
+    ).toContainText('Edited');
 
     // open the slideout again, and save
-    await page.locator('#' + firstCardId).getByRole('button', {name: 'Edit entry'}).click();
+    await page
+      .locator('#' + firstCardId)
+      .getByRole('button', {name: 'Edit entry'})
+      .click();
     await slideout.getByRole('button', {name: 'Save'}).click();
 
     await entries.waitForAutosaveToComplete(page);
 
     // check that the field modified indicator doesn't show and there's only one status pill
-    await expect(page.locator(matrixElementIndexFieldLocator).getByTitle(entries.fieldModifiedText)).not.toBeVisible();
+    await expect(
+      page
+        .locator(matrixElementIndexFieldLocator)
+        .getByTitle(entries.fieldModifiedText)
+    ).not.toBeVisible();
     await expect(firstCard.locator('.status-label')).toHaveCount(1);
 
     // save root entry
@@ -131,7 +174,10 @@ test.describe('Element index', () => {
   // check the card was added and that the blue indicators are there
   // discard root entry changes
   // check that there's no blue indicators and there's only one card in the matrix field
-  test('Check that added nested entry can be discarded', async ({page, baseURL}) => {
+  test('Check that added nested entry can be discarded', async ({
+    page,
+    baseURL,
+  }) => {
     const slideout = page.locator(slideoutLocator);
 
     // edit entry from previous test
@@ -144,10 +190,14 @@ test.describe('Element index', () => {
     // add a second nested entry to the matrix,
     await page.getByRole('button', {name: 'New entry'}).click();
     await slideout.locator(textFieldLocator).waitFor();
-    await slideout.locator(textFieldLocator).pressSequentially('card 2', {delay: 100});
+    await slideout
+      .locator(textFieldLocator)
+      .pressSequentially('card 2', {delay: 100});
 
     // wait for the draft card to be attached
-    const lastCard = page.locator(matrixElementIndexContainerLocator + ' .card-grid > li:last-child .card');
+    const lastCard = page.locator(
+      matrixElementIndexContainerLocator + ' .card-grid > li:last-child .card'
+    );
     await lastCard.waitFor({state: 'attached'});
 
     // save the second nested entry
@@ -159,7 +209,11 @@ test.describe('Element index', () => {
 
     // check the card was added and that the blue indicators are there
     await expect(lastCard).toContainText('card 2');
-    await expect(page.locator(matrixElementIndexFieldLocator).getByTitle(entries.fieldModifiedText)).toBeVisible();
+    await expect(
+      page
+        .locator(matrixElementIndexFieldLocator)
+        .getByTitle(entries.fieldModifiedText)
+    ).toBeVisible();
     await expect(lastCard.getByTitle(entries.newEntryText)).toBeVisible();
 
     // discard root entry changes
@@ -170,9 +224,15 @@ test.describe('Element index', () => {
     await page.waitForLoadState();
 
     // check that there's no blue indicators
-    await expect(page.locator(matrixElementIndexFieldLocator).getByTitle(entries.fieldModifiedText)).not.toBeVisible();
+    await expect(
+      page
+        .locator(matrixElementIndexFieldLocator)
+        .getByTitle(entries.fieldModifiedText)
+    ).not.toBeVisible();
 
     // and there's only one card in the matrix field
-    await expect(page.locator(matrixElementIndexContainerLocator + ' .card-grid .card')).toHaveCount(1);
+    await expect(
+      page.locator(matrixElementIndexContainerLocator + ' .card-grid .card')
+    ).toHaveCount(1);
   });
 });

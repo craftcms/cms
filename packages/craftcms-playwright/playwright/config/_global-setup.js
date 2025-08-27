@@ -19,9 +19,8 @@ module.exports = async (config) => {
   await page.fill('.login-username', username);
   await page.fill('.login-password', password);
 
-  await page.click('.login-form button[type="submit"]')
+  await page.click('.login-form button[type="submit"]');
   await page.waitForURL('**/admin/dashboard');
-
 
   const title = page.locator('h1');
   await expect(title).toHaveText('Dashboard');

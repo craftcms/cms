@@ -21,19 +21,21 @@ test('Custom color fields instantiation', async ({page, baseURL}) => {
   await page.waitForLoadState();
 
   // set the title
-  await page.locator(titleFieldLocator).pressSequentially(titleText, {delay: 50});
+  await page
+    .locator(titleFieldLocator)
+    .pressSequentially(titleText, {delay: 50});
   await entries.waitForAutosaveToComplete(page);
 
   // save root entry
   await page.keyboard.press('ControlOrMeta+s');
   await entries.waitForAutosaveToComplete(page);
 
-// preview
+  // preview
   const preview = page.locator('.lp-editor-container');
 
   // open preview
   await page.locator('#header .preview-btn').click();
-  await preview.waitFor({state:'visible'});
+  await preview.waitFor({state: 'visible'});
 
   await testCustomColour(page, preview, 'colour2');
 
@@ -41,13 +43,14 @@ test('Custom color fields instantiation', async ({page, baseURL}) => {
   await preview.locator('.lp-editor-header .lp-close-btn').click();
   await preview.waitFor({state: 'hidden'});
 
-// editor
+  // editor
   const editor = page.locator('#content');
   await testCustomColour(page, editor, 'colour2');
 
-// matrix block
+  // matrix block
   const matrixBlocksFieldLocator = '#fields-matrixBlocksField2-field';
-  const firstBlockLocator = matrixBlocksFieldLocator + ' .blocks > .matrixblock:first-child';
+  const firstBlockLocator =
+    matrixBlocksFieldLocator + ' .blocks > .matrixblock:first-child';
   const matrixBlocksField = page.locator(matrixBlocksFieldLocator);
   await matrixBlocksField.locator('.buttons button.add').click();
   await entries.waitForAutosaveToComplete(page);
@@ -58,13 +61,17 @@ test('Custom color fields instantiation', async ({page, baseURL}) => {
 
   await testCustomColour(page, firstBlock, 'colour');
 
-// matrix card
+  // matrix card
   const matrixCardsFieldLocator = '#fields-matrixCardsField2-field';
-  const firstCardLocator = matrixCardsFieldLocator + ' .cards > li:first-child .card';
+  const firstCardLocator =
+    matrixCardsFieldLocator + ' .cards > li:first-child .card';
   const slideoutLocator = '.slideout-container:not(.hidden)';
   const slideout = page.locator(slideoutLocator);
 
-  await page.locator('#content ' + matrixCardsFieldLocator).getByRole('button', {name: 'New entry'}).click();
+  await page
+    .locator('#content ' + matrixCardsFieldLocator)
+    .getByRole('button', {name: 'New entry'})
+    .click();
   await entries.waitForAutosaveToComplete(page);
   await testCustomColour(page, slideout, 'colour');
 });
@@ -72,14 +79,22 @@ test('Custom color fields instantiation', async ({page, baseURL}) => {
 const testCustomColour = async (page, container, fieldHandle) => {
   const colourFieldLocator = 'div[id$="fields-' + fieldHandle + '-field"]';
   // select "custom" color option
-  const selectizeInput = container.locator(colourFieldLocator + ' .selectize-input input');
+  const selectizeInput = container.locator(
+    colourFieldLocator + ' .selectize-input input'
+  );
   const selectizeOptions = await selectizeInput.getAttribute('aria-owns');
   await container.locator(colourFieldLocator + ' .selectize-input').click();
   // we have to use div[id="VAL"] here because selectizeOptions value can start with a number and CSS3 doesn't support ID selectors that start with a digit
   // alternatively, you can also use xpath, like so: //div[@id="VAL"]')
-  await page.locator('div[id="' + selectizeOptions + '"]').waitFor({state: 'visible'});
-  await page.locator('div[id="' + selectizeOptions + '"] div[data-value="__custom__"]').click();
+  await page
+    .locator('div[id="' + selectizeOptions + '"]')
+    .waitFor({state: 'visible'});
+  await page
+    .locator('div[id="' + selectizeOptions + '"] div[data-value="__custom__"]')
+    .click();
 
   // check that the extra field for specifying custom color is visible
-  await expect(container.locator('div[id$="fields-' + fieldHandle + '-custom-__custom__"]')).toBeVisible();
-}
+  await expect(
+    container.locator('div[id$="fields-' + fieldHandle + '-custom-__custom__"]')
+  ).toBeVisible();
+};

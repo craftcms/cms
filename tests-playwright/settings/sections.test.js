@@ -44,7 +44,9 @@ test.describe('Sections - New', () => {
     await page.goto('./settings/sections/new');
 
     await page.fill('#content input#name', sectionName);
-    await expect(page.locator('#content input#handle')).toHaveValue(sectionHandle);
+    await expect(page.locator('#content input#handle')).toHaveValue(
+      sectionHandle
+    );
     await expect(page.locator('#content select#type')).toHaveValue('channel');
     await expect(page.locator('#content #entry-types .components')).toBeEmpty();
 
@@ -52,7 +54,9 @@ test.describe('Sections - New', () => {
 
     await expect(page.locator('.cp-screen.slideout')).toBeVisible();
 
-    let slideoutId = await (page.locator('.cp-screen.slideout').getAttribute('id'));
+    let slideoutId = await page
+      .locator('.cp-screen.slideout')
+      .getAttribute('id');
     let slideout = page.locator('#' + slideoutId);
 
     await slideout.getByLabel('Name').fill('Channel Entry Type');
@@ -60,10 +64,14 @@ test.describe('Sections - New', () => {
 
     await page.click('#' + slideoutId + ' .so-footer .btn.submit');
 
-    await expect(page.locator('#content #entry-types .components')).toContainText('Channel Entry Type');
+    await expect(
+      page.locator('#content #entry-types .components')
+    ).toContainText('Channel Entry Type');
 
     await page.click('#action-buttons button.menubtn');
-    await page.click('#form-action-menu a:has-text("Save and continue editing")')
+    await page.click(
+      '#form-action-menu a:has-text("Save and continue editing")'
+    );
 
     const urlRegExp = new RegExp(/settings\/sections\/\d+?$/, 'i');
     await expect(page).toHaveURL(urlRegExp);
@@ -74,7 +82,9 @@ test.describe('Sections - New', () => {
   test('Check sections page with content', async ({page, baseURL}) => {
     await page.goto('./settings/sections');
 
-    let sectionsTable = page.locator('#content #sections-vue-admin-table .vuetable');
+    let sectionsTable = page.locator(
+      '#content #sections-vue-admin-table .vuetable'
+    );
     await expect(sectionsTable).toBeVisible();
     await expect(sectionsTable).toContainText(sectionName);
     await expect(sectionsTable).toContainText(sectionHandle);

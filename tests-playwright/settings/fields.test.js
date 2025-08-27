@@ -43,10 +43,14 @@ test.describe('Fields - New', () => {
     await page.goto('./settings/fields/new');
 
     await page.fill('#content input#name', fieldName);
-    await expect(page.locator('#content input#handle')).toHaveValue(fieldHandle);
+    await expect(page.locator('#content input#handle')).toHaveValue(
+      fieldHandle
+    );
 
     await page.click('#action-buttons button.menubtn');
-    await page.click('#form-action-menu a:has-text("Save and continue editing")')
+    await page.click(
+      '#form-action-menu a:has-text("Save and continue editing")'
+    );
 
     const urlRegExp = new RegExp(/settings\/fields\/edit\/\d+?$/, 'i');
     await expect(page).toHaveURL(urlRegExp);
@@ -62,7 +66,9 @@ test.describe('Fields - Page', () => {
 
   // Check if we can see the newly created field on the field page
   test('Check fields page with content', async ({page, baseURL}) => {
-    let fieldsTable = page.locator('#content #fields-vue-admin-table .vuetable');
+    let fieldsTable = page.locator(
+      '#content #fields-vue-admin-table .vuetable'
+    );
     await expect(fieldsTable).toBeVisible();
     await expect(fieldsTable).toContainText(fieldName);
     await expect(fieldsTable).toContainText(fieldHandle);
@@ -70,13 +76,19 @@ test.describe('Fields - Page', () => {
 
   // Check searching through fields
   test('Check searching', async ({page, baseURL}) => {
-    let searchInput = page.locator('#content #fields-vue-admin-table .search input[placeholder="Search"]');
+    let searchInput = page.locator(
+      '#content #fields-vue-admin-table .search input[placeholder="Search"]'
+    );
     await expect(searchInput).toBeVisible();
 
     await searchInput.fill('I dont exist');
-    await expect(page.locator('#content #fields-vue-admin-table .zilch:visible p')).toHaveText('No results.');
+    await expect(
+      page.locator('#content #fields-vue-admin-table .zilch:visible p')
+    ).toHaveText('No results.');
 
     await searchInput.fill(fieldName);
-    await expect(page.locator('#content #fields-vue-admin-table .vuetable')).toContainText(fieldHandle);
+    await expect(
+      page.locator('#content #fields-vue-admin-table .vuetable')
+    ).toContainText(fieldHandle);
   });
 });

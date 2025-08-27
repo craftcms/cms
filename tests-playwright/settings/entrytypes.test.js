@@ -42,10 +42,14 @@ test.describe('Entry Type - New', () => {
     await page.goto('./settings/entry-types/new');
 
     await page.fill('#content input#name', entryTypeName);
-    await expect(page.locator('#content input#handle')).toHaveValue(entryTypeHandle);
+    await expect(page.locator('#content input#handle')).toHaveValue(
+      entryTypeHandle
+    );
 
     await page.click('#action-buttons button.menubtn');
-    await page.click('#form-action-menu a:has-text("Save and continue editing")')
+    await page.click(
+      '#form-action-menu a:has-text("Save and continue editing")'
+    );
 
     const urlRegExp = new RegExp(/settings\/entry-types\/\d+?$/, 'i');
     await expect(page).toHaveURL(urlRegExp);
@@ -61,7 +65,9 @@ test.describe('Entry Type - Page', () => {
 
   // Check if we can see the newly created field on the field page
   test('Check entry types page with content', async ({page, baseURL}) => {
-    let fieldsTable = page.locator('#content #entrytypes-vue-admin-table .vuetable');
+    let fieldsTable = page.locator(
+      '#content #entrytypes-vue-admin-table .vuetable'
+    );
     await expect(fieldsTable).toBeVisible();
     await expect(fieldsTable).toContainText(entryTypeName);
     await expect(fieldsTable).toContainText(entryTypeHandle);
@@ -69,14 +75,20 @@ test.describe('Entry Type - Page', () => {
 
   // Check searching through fields
   test('Check searching', async ({page, baseURL}) => {
-    let searchInput = page.locator('#content #entrytypes-vue-admin-table .search input[placeholder="Search"]');
+    let searchInput = page.locator(
+      '#content #entrytypes-vue-admin-table .search input[placeholder="Search"]'
+    );
     await expect(searchInput).toBeVisible();
 
     await searchInput.fill('I dont exist');
-    await expect(page.locator('#content #entrytypes-vue-admin-table .zilch:visible p')).toHaveText('No results.');
+    await expect(
+      page.locator('#content #entrytypes-vue-admin-table .zilch:visible p')
+    ).toHaveText('No results.');
 
     await searchInput.fill(entryTypeName);
-    await expect(page.locator('#content #entrytypes-vue-admin-table .vuetable')).toContainText(entryTypeHandle);
+    await expect(
+      page.locator('#content #entrytypes-vue-admin-table .vuetable')
+    ).toContainText(entryTypeHandle);
   });
 });
 
@@ -85,21 +97,27 @@ test.describe('Entry Type - Edit', () => {
   test('Edit existing entry type', async ({page, baseURL}) => {
     await page.goto('./settings/entry-types');
 
-    await page.click('#content #entrytypes-vue-admin-table a:has-text("' + entryTypeName + '")');
+    await page.click(
+      '#content #entrytypes-vue-admin-table a:has-text("' + entryTypeName + '")'
+    );
     let urlRegExp = new RegExp(/settings\/entry-types\/\d+?$/, 'i');
     await expect(page).toHaveURL(urlRegExp);
 
     await page.fill('#content input#name', entryTypeName + ' Updated');
-    await expect(page.locator('#content input#handle')).toHaveValue(entryTypeHandle);
+    await expect(page.locator('#content input#handle')).toHaveValue(
+      entryTypeHandle
+    );
 
     await page.click('#action-buttons button:has-text("Save")');
 
     urlRegExp = new RegExp(/settings\/entry-types$/, 'i');
     await expect(page).toHaveURL(urlRegExp);
 
-    let fieldsTable = page.locator('#content #entrytypes-vue-admin-table .vuetable');
+    let fieldsTable = page.locator(
+      '#content #entrytypes-vue-admin-table .vuetable'
+    );
     await expect(fieldsTable).toBeVisible();
-    await expect(fieldsTable).toContainText(entryTypeName  + ' Updated');
+    await expect(fieldsTable).toContainText(entryTypeName + ' Updated');
     await expect(fieldsTable).toContainText(entryTypeHandle);
   });
 });
