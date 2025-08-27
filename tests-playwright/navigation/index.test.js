@@ -1,5 +1,5 @@
 const {test: base, expect} = require('@craftcms/playwright');
-const {DashboardPage} = require('../fixtures/dashboard');
+const {DashboardPage} = require('@craftcms/playwright/playwright/fixtures/dashboard');
 
 const test = base.extend({
   dashboardPage: async ({page, baseURL}, use) => {
