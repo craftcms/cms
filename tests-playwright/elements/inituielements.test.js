@@ -1,5 +1,4 @@
 const {test, expect} = require('@craftcms/playwright');
-const entries = require('@craftcms/playwright/playwright/helpers/entries');
 
 test.beforeAll(async ({craftSetup}) => {
   await craftSetup.cleanAll();
@@ -12,7 +11,7 @@ test.beforeEach(async ({page}) => {
 
 // check if UI Elements are getting instantiated at the right time (after appending head and body html)
 // details: https://github.com/craftcms/cms/issues/16554
-test('Custom color fields instantiation', async ({page, baseURL}) => {
+test('Custom color fields instantiation', async ({page, baseURL, craftEntry}) => {
   const titleFieldLocator = '#title';
   const titleText = 'Entry with colours';
 
@@ -24,11 +23,11 @@ test('Custom color fields instantiation', async ({page, baseURL}) => {
   await page
     .locator(titleFieldLocator)
     .pressSequentially(titleText, {delay: 50});
-  await entries.waitForAutosaveToComplete(page);
+  await craftEntry.waitForAutosaveToComplete(page);
 
   // save root entry
   await page.keyboard.press('ControlOrMeta+s');
-  await entries.waitForAutosaveToComplete(page);
+  await craftEntry.waitForAutosaveToComplete(page);
 
   // preview
   const preview = page.locator('.lp-editor-container');
@@ -53,7 +52,7 @@ test('Custom color fields instantiation', async ({page, baseURL}) => {
     matrixBlocksFieldLocator + ' .blocks > .matrixblock:first-child';
   const matrixBlocksField = page.locator(matrixBlocksFieldLocator);
   await matrixBlocksField.locator('.buttons button.add').click();
-  await entries.waitForAutosaveToComplete(page);
+  await craftEntry.waitForAutosaveToComplete(page);
 
   // check if the block was attached to the dom
   const firstBlock = page.locator(firstBlockLocator);
@@ -72,7 +71,7 @@ test('Custom color fields instantiation', async ({page, baseURL}) => {
     .locator('#content ' + matrixCardsFieldLocator)
     .getByRole('button', {name: 'New entry'})
     .click();
-  await entries.waitForAutosaveToComplete(page);
+  await craftEntry.waitForAutosaveToComplete(page);
   await testCustomColour(page, slideout, 'colour');
 });
 

@@ -1,5 +1,4 @@
 const {test, expect} = require('@craftcms/playwright');
-const entries = require('@craftcms/playwright/playwright/helpers/entries');
 
 test.beforeAll(async ({craftSetup}) => {
   await craftSetup.cleanAll();
@@ -28,6 +27,7 @@ test.describe('Blocks', () => {
   test('Create new root entry with inline-editable blocks matrix field', async ({
     page,
     baseURL,
+    craftEntry,
   }) => {
     const matrixBlocksField = page.locator(matrixBlocksFieldLocator);
 
@@ -42,18 +42,18 @@ test.describe('Blocks', () => {
       .click();
 
     // wait for the loader to disappear
-    await entries.waitForAutosaveToComplete(page);
+    await craftEntry.waitForAutosaveToComplete(page);
     await page.locator(matrixBlocksFieldLocator).waitFor({state: 'visible'});
 
     // set the title
     await page
       .locator(titleFieldLocator)
       .pressSequentially(titleText, {delay: 50});
-    await entries.waitForAutosaveToComplete(page);
+    await craftEntry.waitForAutosaveToComplete(page);
 
     // add entry block to the matrix,
     await matrixBlocksField.locator(newBlockLocator).click();
-    await entries.waitForAutosaveToComplete(page);
+    await craftEntry.waitForAutosaveToComplete(page);
 
     // check if the block was attached to the dom
     const firstBlock = page.locator(firstBlockLocator);
@@ -63,13 +63,13 @@ test.describe('Blocks', () => {
     await firstBlock
       .locator(textFieldLocator)
       .pressSequentially(originalText, {delay: 100});
-    await entries.waitForAutosaveToComplete(page);
+    await craftEntry.waitForAutosaveToComplete(page);
 
     // check the block was added and the field has the modified indicator
     await expect(
       page.locator(matrixBlocksFieldLocator + ' > .status-badge')
     ).toBeVisible();
-    //await expect(firstBlock.getByTitle(entries.fieldModifiedText)).not.toBeVisible();
+    //await expect(firstBlock.getByTitle(craftEntry.fieldModifiedText)).not.toBeVisible();
 
     // and save the root entry
     await page.getByRole('button', {name: 'Create entry'}).click();
@@ -83,9 +83,10 @@ test.describe('Blocks', () => {
   test('Edit nested entry, save and check if the value saved', async ({
     page,
     baseURL,
+    craftEntry,
   }) => {
     // edit entry from previous test
-    await entries.editFirstEntryInElementIndexTable(page);
+    await craftEntry.editFirstEntryInElementIndexTable(page);
 
     // check if the block was attached to the dom
     const firstBlock = page.locator(firstBlockLocator);
@@ -96,7 +97,7 @@ test.describe('Blocks', () => {
     await firstBlock
       .locator(textFieldLocator)
       .pressSequentially(editedText, {delay: 100});
-    await entries.waitForAutosaveToComplete(page);
+    await craftEntry.waitForAutosaveToComplete(page);
 
     // check that both modified indicators show
     await expect(
@@ -104,14 +105,14 @@ test.describe('Blocks', () => {
     ).toBeVisible();
     await expect(
       page.locator(matrixBlocksFieldLocator + ' > .status-badge')
-    ).toHaveAttribute('title', entries.fieldModifiedText);
+    ).toHaveAttribute('title', craftEntry.fieldModifiedText);
     await expect(
-      firstBlock.getByTitle(entries.fieldModifiedText)
+      firstBlock.getByTitle(craftEntry.fieldModifiedText)
     ).toBeVisible();
 
     // save root entry
     await page.keyboard.press('ControlOrMeta+s');
-    await entries.waitForAutosaveToComplete(page);
+    await craftEntry.waitForAutosaveToComplete(page);
 
     // and check if the change is there
     await expect(firstBlock.locator(textFieldLocator)).toHaveValue(editedText);
@@ -125,13 +126,14 @@ test.describe('Blocks', () => {
   test('Check that added nested entry can be discarded', async ({
     page,
     baseURL,
+    craftEntry,
   }) => {
     const matrixBlocksField = page.locator(matrixBlocksFieldLocator);
     const lastBlockLocator =
       matrixBlocksFieldLocator + ' .blocks > .matrixblock:last-child';
 
     // edit entry from previous test
-    await entries.editFirstEntryInElementIndexTable(page);
+    await craftEntry.editFirstEntryInElementIndexTable(page);
 
     // we need to turn the root entry into a draft or the second nested entry won't save against a draft via playwright in headless mode
     await page.locator('#slug').pressSequentially('test', {delay: 100});
@@ -139,7 +141,7 @@ test.describe('Blocks', () => {
 
     // add a second nested entry to the matrix,
     await matrixBlocksField.locator(newBlockLocator).click();
-    await entries.waitForAutosaveToComplete(page);
+    await craftEntry.waitForAutosaveToComplete(page);
 
     const secondBlock = page.locator(lastBlockLocator);
     await secondBlock.waitFor({state: 'attached'});
@@ -151,7 +153,7 @@ test.describe('Blocks', () => {
       .pressSequentially('card 2', {delay: 100});
 
     // wait till save is done
-    await entries.waitForAutosaveToComplete(page);
+    await craftEntry.waitForAutosaveToComplete(page);
 
     // check that the blue indicators are there
     await expect(
@@ -159,9 +161,9 @@ test.describe('Blocks', () => {
     ).toBeVisible();
     await expect(
       page.locator(matrixBlocksFieldLocator + ' > .status-badge')
-    ).toHaveAttribute('title', entries.fieldModifiedText);
+    ).toHaveAttribute('title', craftEntry.fieldModifiedText);
     await expect(
-      secondBlock.getByTitle(entries.fieldModifiedText)
+      secondBlock.getByTitle(craftEntry.fieldModifiedText)
     ).not.toBeVisible();
 
     // discard root entry changes
