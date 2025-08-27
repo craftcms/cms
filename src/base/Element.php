@@ -3532,6 +3532,7 @@ abstract class Element extends Component implements ElementInterface
                         'html' => Cp::elementChipHtml($owner, [
                             'showDraftName' => false,
                             'class' => 'chromeless',
+                            'hyperlink' => true,
                         ]),
                     ],
                 ];

@@ -7615,6 +7615,10 @@ $min2ColWidth: 400px;
           margin-inline-start: var(--s);
           font-size: 0.8em;
         }
+
+        .menu-item-description:empty {
+          display: none;
+        }
       }
     }
   }

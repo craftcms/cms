@@ -48,10 +48,34 @@
             <button type="button" class="focal-point btn icon leftalign">{{ 'Focal Point'|t('app') }}</button>
         </div>
 
-        <fieldset class="orientation" aria-label="{{ 'Orientation'|t('app') }}">
-            <input type="radio" aria-label="{{ 'Landscape'|t('app') }}" name="orientation" value="landscape" checked/>
-            <input type="radio" aria-label="{{ 'Portrait'|t('app') }}"  name="orientation" value="portrait"/>
-        </fieldset>
+        {{ forms.buttonGroupField({
+            id: 'orientation',
+            name: 'orientation',
+            label: 'Orientation'|t('app'),
+            value: 'landscape',
+            options: [
+                {
+                    icon: 'image-landscape',
+                    value: 'landscape',
+                    attributes: {
+                        title: 'Landscape'|t('app'),
+                        aria: {
+                            label: 'Landscape'|t('app'),
+                        },
+                    },
+                },
+                {
+                    icon: 'image-portrait',
+                    value: 'portrait',
+                    attributes: {
+                        title: 'Portrait'|t('app'),
+                        aria: {
+                            label: 'Portrait'|t('app'),
+                        },
+                    },
+                },
+            ],
+        }) }}
 
         {% set constraintOptions = [] %}
         {% for label, ratio in craft.app.config.general.imageEditorRatios %}

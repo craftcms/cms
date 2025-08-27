@@ -3929,7 +3929,11 @@ class Elements extends Component
                     $view = Craft::$app->getView();
 
                     if ($fieldLayout) {
+                        $validUids = [];
+
                         foreach ($fieldLayout->getCustomFields() as $field) {
+                            $validUids[$field->layoutElement->uid] = true;
+
                             if (($saveContent || in_array($field->handle, $dirtyFields)) && $field::dbType() !== null) {
                                 $value = $element->getFieldValue($field->handle);
                                 if ($element->isNewForSite && $field->isValueEmpty($value, $element)) {
@@ -3950,6 +3954,8 @@ class Elements extends Component
 
                         $generatedFieldValues = [];
                         foreach ($generatedFields as $field) {
+                            $validUids[$field['uid']] = true;
+
                             $value = $view->renderObjectTemplate($field['template'] ?? '', $element);
                             if ($value !== '') {
                                 $content[$field['uid']] = $value;
@@ -3963,9 +3969,14 @@ class Elements extends Component
                         $element->setGeneratedFieldValues($generatedFieldValues);
                     }
 
-                    // if we're only saving dirty fields, we need to merge the new dirty values with what's already in the db
+                    // if we're only saving dirty fields, merge in the existing values,
+                    // excluding any UUIDs that are no longer valid (see https://github.com/craftcms/cms/issues/17768)
                     if (!$saveContent && $oldContent) {
-                        $content = $content + $oldContent;
+                        foreach ($oldContent as $uid => $value) {
+                            if (!isset($content[$uid]) && isset($validUids[$uid])) {
+                                $content[$uid] = $value;
+                            }
+                        }
                     }
 
                     $siteSettingsRecord->content = $content ?: null;

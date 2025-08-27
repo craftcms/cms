@@ -1834,11 +1834,17 @@ XML;
      */
     public function canAssignUserGroups(): bool
     {
-        if (Craft::$app->edition->value >= CmsEdition::Pro->value) {
-            foreach (Craft::$app->getUserGroups()->getAllGroups() as $group) {
-                if ($this->can("assignUserGroup:$group->uid")) {
-                    return true;
-                }
+        if (Craft::$app->edition->value < CmsEdition::Pro->value) {
+            return false;
+        }
+
+        if ($this->admin) {
+            return true;
+        }
+
+        foreach (Craft::$app->getUserGroups()->getAllGroups() as $group) {
+            if ($this->can("assignUserGroup:$group->uid")) {
+                return true;
             }
         }
 

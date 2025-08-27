@@ -23,6 +23,7 @@ import './routes.scss';
       }
 
       this.sorter = new Garnish.DragSort($routes, {
+        handle: '.move',
         axis: Garnish.Y_AXIS,
         onSortChange: this.updateRouteOrder.bind(this),
       });
@@ -70,6 +71,9 @@ import './routes.scss';
     $uri: null,
     $template: null,
     modal: null,
+    $actionMenu: null,
+    actionDisclosure: null,
+    $actionMenuOptions: null,
 
     init: function (container) {
       this.$container = $(container);
@@ -82,6 +86,54 @@ import './routes.scss';
       if (Craft.allowAdminChanges) {
         this.addListener(this.$container, 'click', 'edit');
       }
+
+      const $actionMenuBtn = this.$container.find('> .actions > .action-btn');
+      const actionDisclosure =
+        $actionMenuBtn.data('disclosureMenu') ||
+        new Garnish.DisclosureMenu($actionMenuBtn);
+
+      this.$actionMenu = actionDisclosure.$container;
+      this.actionDisclosure = actionDisclosure;
+
+      actionDisclosure.on('show', () => {
+        this.$container.addClass('active');
+        const hideActions = [];
+
+        if (!this.$container.prev('.route').length) {
+          hideActions.push('moveUp');
+        }
+
+        if (!this.$container.next('.route').length) {
+          hideActions.push('moveDown');
+        }
+
+        const $buttons = this.$actionMenu.find('button[data-action]');
+        const $hideButtons = hideActions.length
+          ? $buttons.filter(
+              hideActions.map((a) => `[data-action=${a}]`).join(',')
+            )
+          : $();
+
+        const disclosureMenu = this.$actionMenu.data('disclosureMenu');
+        $hideButtons.each((i, button) => {
+          disclosureMenu.hideItem(button);
+        });
+        $buttons.not($hideButtons).each((i, button) => {
+          disclosureMenu.showItem(button);
+        });
+      });
+
+      actionDisclosure.on('hide', () => {
+        this.$container.removeClass('active');
+      });
+
+      this.$actionMenuOptions = this.$actionMenu.find('button[data-action]');
+
+      this.addListener(
+        this.$actionMenuOptions,
+        'activate',
+        this.handleActionClick
+      );
     },
 
     edit: function () {
@@ -89,6 +141,22 @@ import './routes.scss';
         this.modal = new RouteSettingsModal(this);
       } else {
         this.modal.show();
+      }
+    },
+
+    moveUp: function () {
+      let $prev = this.$container.prev('.route');
+      if ($prev.length) {
+        this.$container.insertBefore($prev);
+        Craft.routes.updateRouteOrder();
+      }
+    },
+
+    moveDown: function () {
+      let $next = this.$container.next('.route');
+      if ($next.length) {
+        this.$container.insertAfter($next);
+        Craft.routes.updateRouteOrder();
       }
     },
 
@@ -122,6 +190,29 @@ import './routes.scss';
 
       this.$uri.html(uriHtml);
       this.$template.text(this.modal.$templateInput.val());
+    },
+
+    handleActionClick: function (event) {
+      event.preventDefault();
+      this.onActionSelect(event.target);
+    },
+
+    onActionSelect: function (option) {
+      const $option = $(option);
+
+      switch ($option.data('action')) {
+        case 'moveUp': {
+          this.moveUp();
+          break;
+        }
+
+        case 'moveDown': {
+          this.moveDown();
+          break;
+        }
+      }
+
+      this.actionDisclosure?.hide();
     },
   });
 

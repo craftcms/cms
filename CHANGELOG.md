@@ -3,9 +3,15 @@
 ## Unreleased
 
 - When searching for elements, partial matches within titles are now scored higher than exact matches in other fields. ([#17739](https://github.com/craftcms/cms/issues/17739))
+- Date pickers’ year selects now have a range of 100 years in the past and future. ([#17782](https://github.com/craftcms/cms/pull/17782))
 - Fixed a bug where volumes’ filesystem settings weren’t respecting static translations of filesystem names. ([#17749](https://github.com/craftcms/cms/issues/17749))
+- Fixed an error that could occur when applying project config changes. ([#15357](https://github.com/craftcms/cms/issues/15357))
+- Fixed a bug where pressing the “Use defaults” button within element indexes’ View menus wasn’t removing the `sort` query string parameter, so the selected sort option could revert back if the window was reloaded. ([#17761](https://github.com/craftcms/cms/issues/17761))
 - Fixed a bug where Link field condition rules’ “Is of type” operators weren’t getting saved correctly within field layout conditions. ([#17741](https://github.com/craftcms/cms/issues/17741))
 - Fixed a bug where two nested Matrix fields with the same handle but different casing weren’t being treated as identical when upgrading to Craft 5. ([#17751](https://github.com/craftcms/cms/issues/17751))
+- Fixed a bug where it wasn’t possible to view elements in structure view when a status was selected or a filter was applied. ([#17759](https://github.com/craftcms/cms/issues/17759), [#17774](https://github.com/craftcms/cms/issues/17774))
+- Fixed a bug where custom field values weren’t always retaining changes after changing an entry type. ([#17768](https://github.com/craftcms/cms/issues/17768))
+- Fixed a bug where JSON fields weren’t initializing properly when they weren’t on the initially-shown field layout tab. ([#17772](https://github.com/craftcms/cms/issues/17772))
 
 ## 5.8.15 - 2025-08-13
 

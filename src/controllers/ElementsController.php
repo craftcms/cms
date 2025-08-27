@@ -757,6 +757,7 @@ JS, [
                 'html' => Cp::elementChipHtml($element, [
                     'showDraftName' => !$current,
                     'class' => 'chromeless',
+                    'hyperlink' => true,
                 ]),
                 'current' => $current,
             ],
