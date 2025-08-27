@@ -861,7 +861,7 @@ return [
     'Includes activating/deactivating user accounts, resetting passwords, and changing email addresses.' => 'Inkluderer aktivering/deaktivering av brukerkontoer, tilbakestilling av passord og endring av e-postadresse.',
     'Includes read-only access to user data and most content, via element selector modals and other means.' => 'Inkluderer skrivebeskyttet tilgang til brukerdata og det meste av innhold, via elementvelger-modaler og andre midler.',
     'Includes suspending, unsuspending, and unlocking user accounts.' => 'Inkluderer suspendering, opphevelse av suspendering og opplåsing av brukerkontoer.',
-    'Including a Content Block field recursively is not allowed.' => 'Including a Content Block field recursively is not allowed.',
+    'Including a Content Block field recursively is not allowed.' => 'Å inkludere et innholdsblokk-felt rekursivt er ikke tillatt.',
     'Incorrect current password.' => 'Feil nåværende passord tastet inn.',
     'Incorrect password.' => 'Feil passord.',
     'Indexing assets: {progress}' => 'Indeksering av eiendeler: {progress}',
