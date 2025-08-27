@@ -15,6 +15,9 @@
 - Control panel-defined routes now have action menus with “Move up”/“Move down” actions. ([#17706](https://github.com/craftcms/cms/pull/17706))
 - “Generate image transform” jobs now include the asset’s filename in the job description. ([#17753](https://github.com/craftcms/cms/issues/17753))
 
+### Development
+- Reference tags now support fallback values when no attribute is specified. ([#17688](https://github.com/craftcms/cms/pull/17688))
+
 ### Extensibility
 - Added `Craft.BaseElementIndex::asyncSelectDefaultSource()`.
 - Added `Craft.BaseElementIndex::asyncSelectSource()`.
