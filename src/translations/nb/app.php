@@ -121,6 +121,7 @@ return [
     'Already in your cart' => 'Allerede i handlekurven din',
     'Alternative Text' => 'Alternativ tekst',
     'Amber' => 'Rav',
+    'An elevated session is required to change a user’s email.' => 'An elevated session is required to change a user’s email.',
     'An error occurred when duplicating the category.' => 'Det oppsto en feil da kategorien skulle dupliseres.',
     'An error occurred when duplicating the entry.' => 'Det oppsto en feil da artikkelen skulle dupliseres.',
     'An error occurred when installing {name}.' => 'En feil oppstod under installering {name}.',
