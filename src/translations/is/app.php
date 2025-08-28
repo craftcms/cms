@@ -121,6 +121,7 @@ return [
     'Already in your cart' => 'Þegar í körfunni þinni',
     'Alternative Text' => 'Annar texti',
     'Amber' => 'Amber',
+    'An elevated session is required to change a user’s email.' => 'An elevated session is required to change a user’s email.',
     'An error occurred when duplicating the category.' => 'Villa kom upp þegar flokkurinn var afritaður.',
     'An error occurred when duplicating the entry.' => 'Villa kom upp við að afrita færsluna.',
     'An error occurred when installing {name}.' => 'Villa kom upp þegar {name} var sett upp.',
