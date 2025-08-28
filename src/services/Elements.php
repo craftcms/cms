@@ -3016,17 +3016,26 @@ class Elements extends Component
         $sitesService = Craft::$app->getSites();
         $allRefTagTokens = [];
         $str = preg_replace_callback(
-            '/\{([\w\\\\]+)\:([^@\:\}]+)(?:@([^\:\}]+))?(?:\:([^\}\| ]+))?(?: *\|\| *([^\}]+))?\}/',
+            '/
+                \{                                      # Tags always begin with a {
+                    (?P<elementType>[\w\\\\]+)          # Ref handle or element type class
+                    \:(?P<ref>[^@\:\}\|]+)              # Identifier (ID, or another format supported by the element type)
+                    (?:@(?P<site>[^\:\}\|]+))?          # [Optional] Site handle, ID, or UUID
+                    (?:\:(?P<attr>[^\}\| ]+))?          # [Optional] Attribute, property, or field
+                    (?:\ *\|\|\ *(?P<fallback>[^\}]+))? # [Optional] Fallback text (if the ref fails to resolve)
+                \}                                      # Tags always close with a }
+            /x',
             function(array $matches) use (
                 $defaultSiteId,
                 $sitesService,
                 &$allRefTagTokens
             ) {
-                $matches = array_pad($matches, 6, null);
-                [$fullMatch, $elementType, $ref, $siteId, $attribute, $fallback] = $matches;
-                if ($fallback === null) {
-                    $fallback = $fullMatch;
-                }
+                $fullMatch = $matches[0];
+                $elementType = $matches['elementType'];
+                $ref = $matches['ref'];
+                $siteId = $matches['site'] ?? null;
+                $attribute = $matches['attr'] ?? null;
+                $fallback = $matches['fallback'] ?? $fullMatch;
 
                 // Swap out the ref handle for the element type
                 $elementType = $this->getElementTypeByRefHandle($elementType);
@@ -3062,7 +3071,11 @@ class Elements extends Component
                 $allRefTagTokens[$siteId][$elementType][$refType][$ref][] = [$token, $attribute, $fallback, $fullMatch];
 
                 return $token;
-            }, $str, -1, $count);
+            },
+            $str,
+            -1,
+            $count
+        );
 
         if ($count === 0) {
             // No ref tags
@@ -3983,7 +3996,11 @@ class Elements extends Component
                     $view = Craft::$app->getView();
 
                     if ($fieldLayout) {
+                        $validUids = [];
+
                         foreach ($fieldLayout->getCustomFields() as $field) {
+                            $validUids[$field->layoutElement->uid] = true;
+
                             if (($saveContent || in_array($field->handle, $dirtyFields)) && $field::dbType() !== null) {
                                 $value = $element->getFieldValue($field->handle);
                                 if ($element->isNewForSite && $field->isValueEmpty($value, $element)) {
@@ -4004,6 +4021,8 @@ class Elements extends Component
 
                         $generatedFieldValues = [];
                         foreach ($generatedFields as $field) {
+                            $validUids[$field['uid']] = true;
+
                             $value = $view->renderObjectTemplate($field['template'] ?? '', $element);
                             if ($value !== '') {
                                 $content[$field['uid']] = $value;
@@ -4017,9 +4036,14 @@ class Elements extends Component
                         $element->setGeneratedFieldValues($generatedFieldValues);
                     }
 
-                    // if we're only saving dirty fields, we need to merge the new dirty values with what's already in the db
+                    // if we're only saving dirty fields, merge in the existing values,
+                    // excluding any UUIDs that are no longer valid (see https://github.com/craftcms/cms/issues/17768)
                     if (!$saveContent && $oldContent) {
-                        $content = $content + $oldContent;
+                        foreach ($oldContent as $uid => $value) {
+                            if (!isset($content[$uid]) && isset($validUids[$uid])) {
+                                $content[$uid] = $value;
+                            }
+                        }
                     }
 
                     $siteSettingsRecord->content = $content ?: null;

@@ -1,5 +1,8 @@
 # Release Notes for Craft CMS 6.0 (WIP)
 
+### Development
+- Reference tags now support fallback values when no attribute is specified. ([#17688](https://github.com/craftcms/cms/pull/17688))
+
 ### Extensibility
 - Added `CraftCms\Cms\Support\Arr`.
 - Added `CraftCms\Cms\Support\Str`.
