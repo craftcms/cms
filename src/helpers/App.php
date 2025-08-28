@@ -154,7 +154,6 @@ class App
             $value = static::env($m[1]);
             if ($value === null && $m[1] === 'CRAFT_SITE') {
                 return strtoupper(StringHelper::toSnakeCase(Craft::$app->getSites()->getCurrentSite()->handle));
-                ;
             }
             return $value;
         }, $value);
