@@ -1075,7 +1075,7 @@ class User extends Element implements IdentityInterface
             // make sure they have an elevated session
             $userSession = Craft::$app->getUser();
             if (!$userSession->getHasElevatedSession()) {
-                throw new BadRequestHttpException('An elevated session is required to change a user’s email.');
+                throw new BadRequestHttpException(Craft::t('app', 'An elevated session is required to change a user’s email.'));
             }
 
             if ($this->email !== null) {
