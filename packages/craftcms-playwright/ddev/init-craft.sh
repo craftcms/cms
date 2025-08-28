@@ -8,7 +8,7 @@ cd /var/www/html || exit
 
 # Install Craft
 echo "install craft"
-./craft install/craft --interactive=0 --username=admin --password=NewPassword --site-name=Playwright --email=playwright@craftcms.com --site-url=https://playwright.ddev.site/ --language=en_US
+./craft install/craft --interactive=0 --username="$AUTH_USERNAME" --password="$AUTH_PASSWORD" --site-name=Playwright --email=playwright@craftcms.com --site-url="$PRIMARY_SITE_URL" --language=en_US
 
 # Switch Craft's edition and apply changes
 sed -i "s/edition: solo/edition: pro/g" config/project/project.yaml
