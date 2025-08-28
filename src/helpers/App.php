@@ -133,7 +133,12 @@ class App
         }
 
         if (($env = getenv($name)) !== false) {
-            return static::normalizeValue($env);
+            $value = static::normalizeValue($env);
+            if (is_string($value)) {
+                // parse nested variables
+                $value = self::parseNestedEnv($value);
+            }
+            return $value;
         }
 
         if (defined($name)) {
@@ -141,6 +146,18 @@ class App
         }
 
         return null;
+    }
+
+    private static function parseNestedEnv(string $value): string
+    {
+        return preg_replace_callback('/\$\{(\w+)}/', function($m) {
+            $value = static::env($m[1]);
+            if ($value === null && $m[1] === 'CRAFT_SITE') {
+                return strtoupper(StringHelper::toSnakeCase(Craft::$app->getSites()->getCurrentSite()->handle));
+                ;
+            }
+            return $value;
+        }, $value);
     }
 
     /**
@@ -221,15 +238,14 @@ class App
             return null;
         }
 
-        if (preg_match('/^\$(\w+)(\/.*)?/', $value, $matches)) {
-            $env = static::env($matches[1]);
+        // parse nested variables (e.g. foo-${VAR}-bar)
+        $value = self::parseNestedEnv($value);
 
-            if ($env === null) {
-                // No env var or constant is defined here by that name
-                return null;
-            }
+        // parse inline variables (e.g. foo/$VAR/bar)
+        $value = preg_replace_callback('/(?<=^|\/)\$(\w+)(?=$|\/)?/', fn($m) => static::env($m[1]), $value);
 
-            $value = $env . ($matches[2] ?? '');
+        if ($value === '') {
+            return null;
         }
 
         if (str_starts_with($value, '@')) {
