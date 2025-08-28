@@ -121,6 +121,7 @@ return [
     'Already in your cart' => '이미 장바구니에 저장됨',
     'Alternative Text' => '대체 텍스트',
     'Amber' => '호박색',
+    'An elevated session is required to change a user’s email.' => 'An elevated session is required to change a user’s email.',
     'An error occurred when duplicating the category.' => '카테고리를 복제하는 동안 오류가 발생했습니다.',
     'An error occurred when duplicating the entry.' => '항목을 복제하는 동안 오류가 발생했습니다.',
     'An error occurred when installing {name}.' => '{name}을(를) 설치하는 동안 오류가 발생했습니다.',
