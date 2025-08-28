@@ -121,6 +121,7 @@ return [
     'Already in your cart' => 'Jest już w koszyku',
     'Alternative Text' => 'Tekst alternatywny',
     'Amber' => 'Bursztynowy',
+    'An elevated session is required to change a user’s email.' => 'An elevated session is required to change a user’s email.',
     'An error occurred when duplicating the category.' => 'Podczas duplikowania kategorii wystąpił błąd.',
     'An error occurred when duplicating the entry.' => 'Podczas duplikowania pozycji wystąpił błąd.',
     'An error occurred when installing {name}.' => 'Przy instalowaniu {name} wystąpił błąd.',

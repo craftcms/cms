@@ -121,6 +121,7 @@ return [
     'Already in your cart' => 'อยู่ในรถเข็นของคุณอยู่แล้ว',
     'Alternative Text' => 'ข้อความแสดงแทน',
     'Amber' => 'สีอำพัน',
+    'An elevated session is required to change a user’s email.' => 'An elevated session is required to change a user’s email.',
     'An error occurred when duplicating the category.' => 'เกิดข้อผิดพลาดขึ้นในขณะที่ทำซ้ำหมวดหมู่',
     'An error occurred when duplicating the entry.' => 'เกิดข้อผิดพลาดขึ้นในขณะที่ทำซ้ำรายการ',
     'An error occurred when installing {name}.' => 'เกิดข้อผิดพลาดขึ้นในขณะที่ติดตั้ง {name}',
