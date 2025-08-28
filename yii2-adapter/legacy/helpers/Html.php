@@ -22,26 +22,6 @@ use yii\base\InvalidConfigException;
 class Html extends \yii\helpers\Html
 {
     /**
-     * @since 5.6.0
-     */
-    public const TITLE_TAG_RE = '/<title(\s+([\s\S]*?))?>.*?<\/title>\s*/is';
-
-    /**
-     * @var array List of tag attributes that should be specially handled when their values are of array type.
-     * In particular, if the value of the `data` attribute is `['name' => 'xyz', 'age' => 13]`, two attributes
-     * will be generated instead of one: `data-name="xyz" data-age="13"`.
-     * @since 4.0.0
-     */
-    public static $dataAttributes = [
-        'aria',
-        'data',
-        'data-hx',
-        'data-ng',
-        'hx',
-        'ng',
-    ];
-
-    /**
      * Will take an HTML string and an associative array of key=>value pairs, HTML encode the values and swap them back
      * into the original string using the keys as tokens.
      *
