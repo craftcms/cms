@@ -11,7 +11,7 @@ use Craft;
 use craft\base\AssetPreviewHandler;
 use craft\elements\Asset;
 use craft\helpers\FileHelper;
-use craft\helpers\Html;
+use CraftCms\Cms\Support\Html;
 
 /**
  * Provides functionality to preview text files as HTML

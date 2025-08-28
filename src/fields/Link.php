@@ -34,12 +34,12 @@ use craft\gql\GqlEntityRegistry;
 use craft\gql\types\generators\LinkDataType;
 use craft\helpers\Component;
 use craft\helpers\Cp;
-use craft\helpers\Html;
 use craft\helpers\Template;
 use craft\validators\ArrayValidator;
 use craft\validators\StringValidator;
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Str;
 use GraphQL\Type\Definition\InputObjectType;
 use GraphQL\Type\Definition\Type;
@@ -459,7 +459,7 @@ class Link extends Field implements InlineEditableFieldInterface, RelationalFiel
                 'disabled' => $readOnly,
             ]) .
             Html::tag('hr') .
-            Html::button(Craft::t('app', 'Advanced'), options: [
+            Html::button(Craft::t('app', 'Advanced'), attributes: [
                 'class' => 'fieldtoggle',
                 'data' => ['target' => 'advanced'],
             ]) .
@@ -726,7 +726,7 @@ JS;
 
         if (!empty($this->advancedFields)) {
             $html .=
-                Html::button(Craft::t('app', 'Advanced'), options: [
+                Html::button(Craft::t('app', 'Advanced'), attributes: [
                     'class' => ['fieldtoggle', 'mb-0'],
                     'data' => ['target' => "$id-advanced"],
                 ]) .

@@ -6,9 +6,9 @@ use Craft;
 use craft\helpers\Cp;
 use craft\helpers\DateRange;
 use craft\helpers\DateTimeHelper;
-use craft\helpers\Html;
 use craft\helpers\UrlHelper;
 use CraftCms\Cms\Shared\Enums\TimePeriod;
+use CraftCms\Cms\Support\Html;
 use DateTime;
 use Exception;
 

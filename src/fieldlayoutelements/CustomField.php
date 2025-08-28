@@ -18,9 +18,9 @@ use craft\elements\conditions\users\UserCondition;
 use craft\elements\User;
 use craft\errors\FieldNotFoundException;
 use craft\helpers\Cp;
-use craft\helpers\Html;
 use craft\helpers\Inflector;
 use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Str;
 use yii\base\InvalidConfigException;
 

@@ -8,16 +8,15 @@
 namespace craft\web\twig\nodevisitors;
 
 use Craft;
-use craft\helpers\Html;
 use craft\web\twig\nodes\BaseNode;
 use craft\web\View;
+use CraftCms\Cms\Support\Html;
 use Twig\Environment;
 use Twig\Node\DoNode;
 use Twig\Node\Expression\FunctionExpression;
 use Twig\Node\Node;
 use Twig\Node\TextNode;
 use Twig\TwigFunction;
-use yii\base\InvalidArgumentException;
 
 /**
  * EventTagAdder adds missing `head()`, `beginBody()`, and `endBody()` event tags to templates as they’re being compiled.
@@ -142,7 +141,7 @@ class EventTagAdder extends BaseEventTagVisitor
         do {
             try {
                 $attribute = Html::parseTagAttribute($this->_bodyTag, $this->_bodyAttrOffset, $start, $end);
-            } catch (InvalidArgumentException) {
+            } catch (\InvalidArgumentException) {
                 // The tag is probably split between a couple text nodes. Keep trying on the next text node
                 break;
             }

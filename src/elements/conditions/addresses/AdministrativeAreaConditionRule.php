@@ -10,8 +10,8 @@ use craft\elements\conditions\ElementConditionRuleInterface;
 use craft\elements\db\AddressQuery;
 use craft\elements\db\ElementQueryInterface;
 use craft\helpers\Cp;
-use craft\helpers\Html;
 use craft\helpers\UrlHelper;
+use CraftCms\Cms\Support\Html;
 
 /**
  * Address Administrative Area condition rule.

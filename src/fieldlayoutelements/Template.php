@@ -10,10 +10,10 @@ namespace craft\fieldlayoutelements;
 use Craft;
 use craft\base\ElementInterface;
 use craft\helpers\Cp;
-use craft\helpers\Html;
 use craft\web\twig\CpExtension;
 use craft\web\twig\Environment;
 use craft\web\View;
+use CraftCms\Cms\Support\Html;
 use Throwable;
 
 /**

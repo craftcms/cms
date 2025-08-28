@@ -1,49 +1,43 @@
 <?php
-/**
- * @link https://craftcms.com/
- * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license https://craftcms.github.io/license/
- */
 
-namespace craft\helpers;
+namespace CraftCms\Cms\Support;
 
 use Craft;
 use craft\elements\Asset;
-use craft\errors\InvalidHtmlTagException;
+use craft\helpers\FileHelper;
+use craft\helpers\UrlHelper;
 use craft\image\SvgAllowedAttributes;
 use craft\web\View;
+use CraftCms\Aliases\Facades\Aliases;
 use CraftCms\Cms\Config\GeneralConfig;
-use CraftCms\Cms\Support\Arr;
-use CraftCms\Cms\Support\Str;
+use CraftCms\Cms\Support\Exceptions\InvalidHtmlTagException;
 use DOMElement;
 use enshrined\svgSanitize\Sanitizer;
+use Exception;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Log;
+use InvalidArgumentException;
 use Symfony\Component\DomCrawler\Crawler;
 use Throwable;
-use yii\base\Exception;
-use yii\base\InvalidArgumentException;
 use yii\base\InvalidConfigException;
+use Yiisoft\Html\Html as YiiHtml;
+use Yiisoft\Html\NoEncode;
 
 /**
- * Class Html
+ * @since 6.0.0
  *
- * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0.0
+ * @mixin YiiHtml
  */
-class Html extends \yii\helpers\Html
+final class Html
 {
-    /**
-     * @since 5.6.0
-     */
-    public const TITLE_TAG_RE = '/<title(\s+([\s\S]*?))?>.*?<\/title>\s*/is';
+    public const string TITLE_TAG_RE = '/<title(\s+([\s\S]*?))?>.*?<\/title>\s*/is';
 
     /**
      * @var array List of tag attributes that should be specially handled when their values are of array type.
-     * In particular, if the value of the `data` attribute is `['name' => 'xyz', 'age' => 13]`, two attributes
-     * will be generated instead of one: `data-name="xyz" data-age="13"`.
-     * @since 4.0.0
+     *            In particular, if the value of the `data` attribute is `['name' => 'xyz', 'age' => 13]`, two attributes
+     *            will be generated instead of one: `data-name="xyz" data-age="13"`.
      */
-    public static $dataAttributes = [
+    public static array $dataAttributes = [
         'aria',
         'data',
         'data-hx',
@@ -53,17 +47,47 @@ class Html extends \yii\helpers\Html
     ];
 
     /**
+     * List of void elements. These only have a start tag; end tags must not be specified.
+     *
+     * {@see https://www.w3.org/TR/html-markup/syntax.html#void-element}
+     */
+    private const array VOID_ELEMENTS = [
+        'area' => 1,
+        'base' => 1,
+        'br' => 1,
+        'col' => 1,
+        'command' => 1,
+        'embed' => 1,
+        'hr' => 1,
+        'img' => 1,
+        'input' => 1,
+        'keygen' => 1,
+        'link' => 1,
+        'meta' => 1,
+        'param' => 1,
+        'source' => 1,
+        'track' => 1,
+        'wbr' => 1,
+    ];
+
+    /**
      * @var string[]
+     *
      * @see _sortedDataAttributes()
      */
     private static array $_sortedDataAttributes;
+
+    public static function decode(string $content): string
+    {
+        return htmlspecialchars_decode($content, ENT_QUOTES);
+    }
 
     /**
      * Will take an HTML string and an associative array of key=>value pairs, HTML encode the values and swap them back
      * into the original string using the keys as tokens.
      *
-     * @param string $html The HTML string.
-     * @param array $variables An associative array of key => value pairs to be applied to the HTML string using `strtr`.
+     * @param  string  $html  The HTML string.
+     * @param  array  $variables  An associative array of key => value pairs to be applied to the HTML string using `strtr`.
      * @return string The HTML string with the encoded variable values swapped in.
      */
     public static function encodeParams(string $html, array $variables = []): string
@@ -72,8 +96,8 @@ class Html extends \yii\helpers\Html
         $normalizedVariables = [];
 
         foreach ($variables as $key => $value) {
-            $key = '{' . trim($key, '{}') . '}';
-            $normalizedVariables[$key] = static::encode($value);
+            $key = '{'.trim($key, '{}').'}';
+            $normalizedVariables[$key] = self::encode($value);
         }
 
         return strtr($html, $normalizedVariables);
@@ -81,10 +105,6 @@ class Html extends \yii\helpers\Html
 
     /**
      * Converts spaces into `%20` entities.
-     *
-     * @param string $str
-     * @return string
-     * @since 4.0.4
      */
     public static function encodeSpaces(string $str): string
     {
@@ -93,10 +113,6 @@ class Html extends \yii\helpers\Html
 
     /**
      * Disables any form inputs in the given HTML.
-     *
-     * @param callable|string|null $html
-     * @return string|null
-     * @since 5.6.0
      */
     public static function disableInputs(callable|string|null $html): ?string
     {
@@ -119,15 +135,20 @@ class Html extends \yii\helpers\Html
         $inputContainers = $crawler->filter('.field > .input');
         foreach ($inputContainers as $inputContainer) {
             /** @var DOMElement $inputContainer */
-            $class = array_filter(explode(' ', $inputContainer->getAttribute('class')));
-            $class = array_unique([...$class, 'disabled']);
-            $inputContainer->setAttribute('class', implode(' ', $class));
+            $class = Str::of($inputContainer->getAttribute('class'))
+                ->explode(' ')
+                ->filter()
+                ->add('disabled')
+                ->unique()
+                ->join(' ');
+
+            $inputContainer->setAttribute('class', $class);
         }
 
         $inputs = $crawler->filter('input,textarea,select,button:not(.fieldtoggle)');
         foreach ($inputs as $input) {
             /** @var DOMElement $input */
-            if (!$input->hasAttribute('disabled')) {
+            if (! $input->hasAttribute('disabled')) {
                 $input->setAttribute('disabled', '');
             }
         }
@@ -138,12 +159,11 @@ class Html extends \yii\helpers\Html
     /**
      * Generates a hidden CSRF input tag.
      *
-     * @param array $options The tag options in terms of name-value pairs. These will be rendered as
-     * the attributes of the resulting tag. The values will be HTML-encoded using [[encode()]].
-     * If a value is null, the corresponding attribute will not be rendered.
-     * See [[renderTagAttributes()]] for details on how attributes are being rendered.
+     * @param  array  $options  The tag options in terms of name-value pairs. These will be rendered as
+     *                          the attributes of the resulting tag. The values will be HTML-encoded using [[encode()]].
+     *                          If a value is null, the corresponding attribute will not be rendered.
+     *                          See [[renderTagAttributes()]] for details on how attributes are being rendered.
      * @return string The generated hidden input tag
-     * @since 3.3.0
      */
     public static function csrfInput(array $options = []): string
     {
@@ -151,9 +171,10 @@ class Html extends \yii\helpers\Html
         $async = Arr::pull($options, 'async')
             ?? ($request->getIsSiteRequest() && app(GeneralConfig::class)->asyncCsrfInputs);
 
-        if (!$async) {
+        if (! $async) {
             Craft::$app->getResponse()->setNoCacheHeaders();
-            return static::hiddenInput($request->csrfParam, $request->getCsrfToken(), $options);
+
+            return self::hiddenInput($request->csrfParam, $request->getCsrfToken(), $options);
         }
 
         Craft::$app->getView()->registerHtml(
@@ -166,111 +187,107 @@ class Html extends \yii\helpers\Html
             )
         );
 
-        return static::tag('craft-csrf-input');
+        return self::tag('craft-csrf-input');
     }
 
-    /**
-     * @inheritdoc
-     */
     public static function beginForm($action = '', $method = 'post', $options = []): string
     {
-        if (!isset($options['accept-charset'])) {
+        if (! isset($options['accept-charset'])) {
             $options['accept-charset'] = 'UTF-8';
         }
 
-        return parent::beginForm($action, $method, $options);
+        return YiiHtml::form($action, $method, $options)->open();
     }
 
     /**
      * Generates a hidden `action` input tag.
      *
-     * @param string $route The action route
-     * @param array $options The tag options in terms of name-value pairs. These will be rendered as
-     * the attributes of the resulting tag. The values will be HTML-encoded using [[encode()]].
-     * If a value is null, the corresponding attribute will not be rendered.
-     * See [[renderTagAttributes()]] for details on how attributes are being rendered.
+     * @param  string  $route  The action route
+     * @param  array  $options  The tag options in terms of name-value pairs. These will be rendered as
+     *                          the attributes of the resulting tag. The values will be HTML-encoded using [[encode()]].
+     *                          If a value is null, the corresponding attribute will not be rendered.
+     *                          See [[renderTagAttributes()]] for details on how attributes are being rendered.
      * @return string The generated hidden input tag
-     * @since 3.3.0
      */
     public static function actionInput(string $route, array $options = []): string
     {
-        return static::hiddenInput('action', $route, $options);
+        return self::hiddenInput('action', $route, $options);
     }
 
     /**
      * Generates a hidden `redirect` input tag.
      *
-     * @param string $url The URL to redirect to
-     * @param array $options The tag options in terms of name-value pairs. These will be rendered as
-     * the attributes of the resulting tag. The values will be HTML-encoded using [[encode()]].
-     * If a value is null, the corresponding attribute will not be rendered.
-     * See [[renderTagAttributes()]] for details on how attributes are being rendered.
+     * @param  string  $url  The URL to redirect to
+     * @param  array  $options  The tag options in terms of name-value pairs. These will be rendered as
+     *                          the attributes of the resulting tag. The values will be HTML-encoded using [[encode()]].
+     *                          If a value is null, the corresponding attribute will not be rendered.
+     *                          See [[renderTagAttributes()]] for details on how attributes are being rendered.
      * @return string The generated hidden input tag
-     * @throws Exception if the validation key could not be written
+     *
+     * @throws \yii\base\Exception if the validation key could not be written
      * @throws InvalidConfigException when HMAC generation fails
-     * @since 3.3.0
      */
     public static function redirectInput(string $url, array $options = []): string
     {
-        return static::hiddenInput('redirect', Craft::$app->getSecurity()->hashData($url), $options);
+        return self::hiddenInput('redirect', Craft::$app->getSecurity()->hashData($url), $options);
     }
 
     /**
      * Generates a hidden `failMessage` input tag.
      *
-     * @param string $message The flash message to shown on failure
-     * @param array $options The tag options in terms of name-value pairs. These will be rendered as
-     * the attributes of the resulting tag. The values will be HTML-encoded using [[encode()]].
-     * If a value is null, the corresponding attribute will not be rendered.
-     * See [[renderTagAttributes()]] for details on how attributes are being rendered.
+     * @param  string  $message  The flash message to shown on failure
+     * @param  array  $options  The tag options in terms of name-value pairs. These will be rendered as
+     *                          the attributes of the resulting tag. The values will be HTML-encoded using [[encode()]].
+     *                          If a value is null, the corresponding attribute will not be rendered.
+     *                          See [[renderTagAttributes()]] for details on how attributes are being rendered.
      * @return string The generated hidden input tag
+     *
      * @throws Exception if the validation key could not be written
      * @throws InvalidConfigException when HMAC generation fails
-     * @since 3.6.6
      */
     public static function failMessageInput(string $message, array $options = []): string
     {
-        return static::hiddenInput('failMessage', Craft::$app->getSecurity()->hashData($message), $options);
+        return self::hiddenInput('failMessage', Craft::$app->getSecurity()->hashData($message), $options);
     }
 
     /**
      * Generates a hidden `successMessage` input tag.
      *
-     * @param string $message The flash message to shown on success
-     * @param array $options The tag options in terms of name-value pairs. These will be rendered as
-     * the attributes of the resulting tag. The values will be HTML-encoded using [[encode()]].
-     * If a value is null, the corresponding attribute will not be rendered.
-     * See [[renderTagAttributes()]] for details on how attributes are being rendered.
+     * @param  string  $message  The flash message to shown on success
+     * @param  array  $options  The tag options in terms of name-value pairs. These will be rendered as
+     *                          the attributes of the resulting tag. The values will be HTML-encoded using [[encode()]].
+     *                          If a value is null, the corresponding attribute will not be rendered.
+     *                          See [[renderTagAttributes()]] for details on how attributes are being rendered.
      * @return string The generated hidden input tag
+     *
      * @throws Exception if the validation key could not be written
      * @throws InvalidConfigException when HMAC generation fails
-     * @since 3.6.6
      */
     public static function successMessageInput(string $message, array $options = []): string
     {
-        return static::hiddenInput('successMessage', Craft::$app->getSecurity()->hashData($message), $options);
+        return self::hiddenInput('successMessage', Craft::$app->getSecurity()->hashData($message), $options);
     }
 
-    /**
-     * @inheritdoc
-     */
-    public static function tag($name, $content = '', $options = [])
+    public static function tag($name, $content = '', $options = []): string
     {
-        return parent::tag($name, $content, static::normalizeTagAttributes($options));
+        return YiiHtml::tag($name)
+            ->content(NoEncode::string($content))
+            ->attributes(self::normalizeTagAttributes($options))
+            ->render();
     }
 
-    /**
-     * @inheritdoc
-     */
-    public static function beginTag($name, $options = [])
+    /** {@see \Yiisoft\Html\Html::openTag} */
+    public static function beginTag($name, $options = []): string
     {
-        return parent::beginTag($name, static::normalizeTagAttributes($options));
+        return YiiHtml::openTag($name, self::normalizeTagAttributes($options));
     }
 
-    /**
-     * @inheritdoc
-     * @since 3.3.0
-     */
+    /** {@see \Yiisoft\Html\Html::closeTag} */
+    public static function endTag(string $name): string
+    {
+        return YiiHtml::closeTag($name);
+    }
+
     public static function a($text, $url = null, $options = []): string
     {
         if ($url !== null) {
@@ -278,19 +295,18 @@ class Html extends \yii\helpers\Html
             $options['href'] = UrlHelper::url($url);
         }
 
-        return static::tag('a', $text, $options);
+        return self::tag('a', $text, $options);
     }
 
     /**
      * Appends HTML to the end of the given tag.
      *
-     * @param string $tag The HTML tag that `$html` should be appended to
-     * @param string $html The HTML to append to `$tag`.
-     * @param string|null $ifExists What to do if `$tag` already contains a child of the same type as the element
-     * defined by `$html`. Set to `'keep'` if no action should be taken, or `'replace'` if it should be replaced
-     * by `$tag`.
+     * @param  string  $tag  The HTML tag that `$html` should be appended to
+     * @param  string  $html  The HTML to append to `$tag`.
+     * @param  string|null  $ifExists  What to do if `$tag` already contains a child of the same type as the element
+     *                                 defined by `$html`. Set to `'keep'` if no action should be taken, or `'replace'` if it should be replaced
+     *                                 by `$tag`.
      * @return string The modified HTML
-     * @since 3.3.0
      */
     public static function appendToTag(string $tag, string $html, ?string $ifExists = null): string
     {
@@ -300,13 +316,12 @@ class Html extends \yii\helpers\Html
     /**
      * Prepends HTML to the beginning of given tag.
      *
-     * @param string $tag The HTML tag that `$html` should be prepended to
-     * @param string $html The HTML to prepend to `$tag`.
-     * @param string|null $ifExists What to do if `$tag` already contains a child of the same type as the element
-     * defined by `$html`. Set to `'keep'` if no action should be taken, or `'replace'` if it should be replaced
-     * by `$tag`.
+     * @param  string  $tag  The HTML tag that `$html` should be prepended to
+     * @param  string  $html  The HTML to prepend to `$tag`.
+     * @param  string|null  $ifExists  What to do if `$tag` already contains a child of the same type as the element
+     *                                 defined by `$html`. Set to `'keep'` if no action should be taken, or `'replace'` if it should be replaced
+     *                                 by `$tag`.
      * @return string The modified HTML
-     * @since 3.3.0
      */
     public static function prependToTag(string $tag, string $html, ?string $ifExists = null): string
     {
@@ -316,62 +331,64 @@ class Html extends \yii\helpers\Html
     /**
      * Parses an HTML tag and returns info about it and its children.
      *
-     * @param string $tag The HTML tag
-     * @param int $offset The offset to start looking for a tag
+     * @param  string  $tag  The HTML tag
+     * @param  int  $offset  The offset to start looking for a tag
      * @return array An array containing `type`, `attributes`, `children`, `start`, `end`, `htmlStart`, and `htmlEnd`
-     * properties. Nested text nodes will be represented as arrays within `children` with `type` set to `'text'`, and a
-     * `value` key containing the text value.
+     *               properties. Nested text nodes will be represented as arrays within `children` with `type` set to `'text'`, and a
+     *               `value` key containing the text value.
+     *
      * @throws InvalidHtmlTagException if `$tag` doesn't contain a valid HTML tag
-     * @since 3.3.0
      */
     public static function parseTag(string $tag, int $offset = 0): array
     {
         [$type, $start] = self::_findTag($tag, $offset);
-        $attributes = static::parseTagAttributes($tag, $start, $attrStart, $attrEnd);
+        $attributes = self::parseTagAttributes($tag, $start, $attrStart, $attrEnd);
         $end = strpos($tag, '>', $attrEnd) + 1;
-        $isVoid = $tag[$end - 2] === '/' || isset(static::$voidElements[$type]);
+        $isVoid = $tag[$end - 2] === '/' || isset(self::VOID_ELEMENTS[$type]);
         $children = [];
 
         // If this is a void element, we're done here
         if ($isVoid) {
             $htmlStart = $htmlEnd = null;
-        } else {
-            // Otherwise look for nested tags
-            $htmlStart = $cursor = $end;
 
-            if (!in_array($type, ['script', 'style'])) {
-                do {
-                    try {
-                        $subtag = static::parseTag($tag, $cursor);
-                        // Did we skip some text to get there?
-                        if ($subtag['start'] > $cursor) {
-                            $children[] = [
-                                'type' => 'text',
-                                'value' => substr($tag, $cursor, $subtag['start'] - $cursor),
-                            ];
-                        }
-                        $children[] = $subtag;
-                        $cursor = $subtag['end'];
-                    } catch (InvalidHtmlTagException) {
-                        // We must have just reached the end
-                        break;
+            return compact('type', 'attributes', 'children', 'start', 'htmlStart', 'htmlEnd', 'end');
+        }
+
+        // Otherwise look for nested tags
+        $htmlStart = $cursor = $end;
+
+        if (! in_array($type, ['script', 'style'])) {
+            do {
+                try {
+                    $subtag = self::parseTag($tag, $cursor);
+                    // Did we skip some text to get there?
+                    if ($subtag['start'] > $cursor) {
+                        $children[] = [
+                            'type' => 'text',
+                            'value' => substr($tag, $cursor, $subtag['start'] - $cursor),
+                        ];
                     }
-                } while (true);
-            }
+                    $children[] = $subtag;
+                    $cursor = $subtag['end'];
+                } catch (InvalidHtmlTagException) {
+                    // We must have just reached the end
+                    break;
+                }
+            } while (true);
+        }
 
-            // Find the closing tag
-            if (($htmlEnd = stripos($tag, "</$type>", $cursor)) === false) {
-                throw new InvalidHtmlTagException("Could not find a </$type> tag in string: $tag", $type, $attributes, $start, $htmlStart);
-            }
+        // Find the closing tag
+        if (($htmlEnd = stripos($tag, "</$type>", $cursor)) === false) {
+            throw new InvalidHtmlTagException("Could not find a </$type> tag in string: $tag", $type, $attributes, $start, $htmlStart);
+        }
 
-            $end = $htmlEnd + strlen($type) + 3;
+        $end = $htmlEnd + strlen($type) + 3;
 
-            if ($htmlEnd > $cursor) {
-                $children[] = [
-                    'type' => 'text',
-                    'value' => substr($tag, $cursor, $htmlEnd - $cursor),
-                ];
-            }
+        if ($htmlEnd > $cursor) {
+            $children[] = [
+                'type' => 'text',
+                'value' => substr($tag, $cursor, $htmlEnd - $cursor),
+            ];
         }
 
         return compact('type', 'attributes', 'children', 'start', 'htmlStart', 'htmlEnd', 'end');
@@ -380,17 +397,17 @@ class Html extends \yii\helpers\Html
     /**
      * Modifies a HTML tag’s attributes, supporting the same attribute definitions as [[renderTagAttributes()]].
      *
-     * @param string $tag The HTML tag whose attributes should be modified.
-     * @param array $attributes The attributes to be added to the tag.
+     * @param  string  $tag  The HTML tag whose attributes should be modified.
+     * @param  array  $attributes  The attributes to be added to the tag.
      * @return string The modified HTML tag.
-     * @throws InvalidArgumentException if `$tag` doesn't contain a valid HTML tag
-     * @since 3.3.0
+     *
+     * @throws \yii\base\InvalidArgumentException if `$tag` doesn't contain a valid HTML tag
      */
     public static function modifyTagAttributes(string $tag, array $attributes): string
     {
         // Normalize the attributes & merge with the old attributes
-        $attributes = static::normalizeTagAttributes($attributes);
-        $oldAttributes = static::parseTagAttributes($tag, 0, $start, $end, true);
+        $attributes = self::normalizeTagAttributes($attributes);
+        $oldAttributes = self::parseTagAttributes($tag, 0, $start, $end, true);
         $attributes = Arr::merge($oldAttributes, $attributes);
 
         // Ensure we don't have any duplicate classes
@@ -398,23 +415,25 @@ class Html extends \yii\helpers\Html
             $attributes['class'] = array_unique($attributes['class']);
         }
 
-        return substr($tag, 0, $start) .
-            static::renderTagAttributes($attributes) .
+        return substr($tag, 0, $start).
+            self::renderTagAttributes($attributes).
             substr($tag, $end);
     }
 
     /**
      * Parses an HTML tag to find its attributes.
      *
-     * @param string $tag The HTML tag to parse
-     * @param int $offset The offset to start looking for a tag
-     * @param int|null $start The start position of the first attribute in the given tag
+     * @param  string  $tag  The HTML tag to parse
+     * @param  int  $offset  The offset to start looking for a tag
+     * @param  int|null  $start  The start position of the first attribute in the given tag
+     *
      * @param-out int $start
-     * @param int|null $end The end position of the last attribute in the given tag
-     * @param bool $decode Whether the attributes should be HTML decoded in the process
+     *
+     * @param  int|null  $end  The end position of the last attribute in the given tag
+     * @param  bool  $decode  Whether the attributes should be HTML decoded in the process
      * @return array The parsed HTML tag attributes
+     *
      * @throws InvalidHtmlTagException if `$tag` doesn't contain a valid HTML tag
-     * @since 3.3.0
      */
     public static function parseTagAttributes(string $tag, int $offset = 0, ?int &$start = null, ?int &$end = null, bool $decode = false): array
     {
@@ -425,7 +444,7 @@ class Html extends \yii\helpers\Html
 
         do {
             try {
-                $attribute = static::parseTagAttribute($tag, $anchor, $attrStart, $attrEnd);
+                $attribute = self::parseTagAttribute($tag, $anchor, $attrStart, $attrEnd);
             } catch (InvalidArgumentException $e) {
                 throw new InvalidHtmlTagException($e->getMessage(), $type, null, $tagStart);
             }
@@ -441,12 +460,12 @@ class Html extends \yii\helpers\Html
             $anchor = $attrEnd;
         } while (true);
 
-        $attributes = static::normalizeTagAttributes($attributes);
+        $attributes = self::normalizeTagAttributes($attributes);
 
         if ($decode) {
             foreach ($attributes as &$value) {
                 if (is_string($value)) {
-                    $value = static::decode($value);
+                    $value = self::decode($value);
                 }
             }
         }
@@ -457,18 +476,18 @@ class Html extends \yii\helpers\Html
     /**
      * Parses the next HTML tag attribute in a given string.
      *
-     * @param string $html The HTML to parse
-     * @param int $offset The offset to start looking for an attribute
-     * @param int|null $start The start position of the attribute in the given HTML
-     * @param int|null $end The end position of the attribute in the given HTML
+     * @param  string  $html  The HTML to parse
+     * @param  int  $offset  The offset to start looking for an attribute
+     * @param  int|null  $start  The start position of the attribute in the given HTML
+     * @param  int|null  $end  The end position of the attribute in the given HTML
      * @return array|null The name and value of the attribute, or `false` if no complete attribute was found
+     *
      * @throws InvalidArgumentException if `$html` doesn't begin with a valid HTML attribute
-     * @since 3.7.0
      */
     public static function parseTagAttribute(string $html, int $offset = 0, ?int &$start = null, ?int &$end = null): ?array
     {
-        if (!preg_match('/\s*([^=\/>\s]+)/A', $html, $match, PREG_OFFSET_CAPTURE, $offset)) {
-            if (!preg_match('/(\s*)\/?>/A', $html, $m, 0, $offset)) {
+        if (! preg_match('/\s*([^=\/>\s]+)/A', $html, $match, PREG_OFFSET_CAPTURE, $offset)) {
+            if (! preg_match('/(\s*)\/?>/A', $html, $m, 0, $offset)) {
                 // No `>`
                 throw new InvalidArgumentException("Malformed HTML tag attribute in string: $html");
             }
@@ -488,18 +507,18 @@ class Html extends \yii\helpers\Html
             // Wrapped in quotes?
             if (isset($html[$offset]) && in_array($html[$offset], ['\'', '"'])) {
                 $q = preg_quote($html[$offset], '/');
-                if (!preg_match("/$q(.*?)$q/sA", $html, $m, 0, $offset)) {
+                if (! preg_match("/$q(.*?)$q/sA", $html, $m, 0, $offset)) {
                     // No matching end quote
                     throw new InvalidArgumentException("Malformed HTML tag attribute in string: $html");
                 }
 
                 $offset += strlen($m[0]);
                 if (isset($m[1]) && $m[1] !== '') {
-                    $value = static::decode($m[1]);
+                    $value = self::decode($m[1]);
                 }
             } elseif (preg_match('/[^\s>]+/A', $html, $m, 0, $offset)) {
                 $offset += strlen($m[0]);
-                $value = static::decode($m[0]);
+                $value = self::decode($m[0]);
             }
         }
 
@@ -511,10 +530,6 @@ class Html extends \yii\helpers\Html
 
     /**
      * Normalizes attributes.
-     *
-     * @param array $attributes
-     * @return array
-     * @since 3.3.0
      */
     public static function normalizeTagAttributes(array $attributes): array
     {
@@ -523,21 +538,22 @@ class Html extends \yii\helpers\Html
         foreach ($attributes as $name => $value) {
             if ($value === false || $value === null) {
                 $normalized[$name] = false;
+
                 continue;
             }
 
             switch ($name) {
                 case 'class':
                 case 'removeClass':
-                    $normalized[$name] = static::explodeClass($value);
+                    $normalized[$name] = self::explodeClass($value);
                     break;
                 case 'style':
-                    $normalized[$name] = static::explodeStyle($value);
+                    $normalized[$name] = self::explodeStyle($value);
                     break;
                 default:
                     // See if it's a data attribute
                     foreach (self::_sortedDataAttributes() as $dataAttribute) {
-                        if (str_starts_with($name, $dataAttribute . '-')) {
+                        if (str_starts_with($name, $dataAttribute.'-')) {
                             $n = substr($name, strlen($dataAttribute) + 1);
                             $normalized[$dataAttribute][$n] = $value;
                             break 2;
@@ -552,51 +568,59 @@ class Html extends \yii\helpers\Html
             $normalized['class'] = array_diff($normalized['class'] ?? [], $removeClasses);
         }
 
+        foreach ($normalized as &$value) {
+            if (is_array($value)) {
+                $value = array_filter($value);
+            }
+        }
+
         return $normalized;
     }
 
     /**
      * Explodes a `class` attribute into an array.
      *
-     * @param mixed $value
      * @return string[]
-     * @since 3.5.0
      */
     public static function explodeClass(mixed $value): array
     {
         if ($value === null || is_bool($value)) {
             return [];
         }
+
         if (is_array($value)) {
             return $value;
         }
+
         if (is_string($value)) {
             return Arr::whereNotEmpty(explode(' ', $value));
         }
+
         throw new InvalidArgumentException('Invalid class value');
     }
 
     /**
      * Explodes a `style` attribute into an array of property/value pairs.
      *
-     * @param mixed $value
      * @return string[]
-     * @since 3.5.0
      */
     public static function explodeStyle(mixed $value): array
     {
         if ($value === null || is_bool($value)) {
             return [];
         }
+
         if (is_array($value)) {
             return $value;
         }
+
         if (is_string($value)) {
             // first match any css properties that contain 'url()'
             $markers = [];
-            $value = preg_replace_callback('/\burl\(.*\)/i', function($match) use (&$markers) {
+            $value = preg_replace_callback('/\burl\(.*\)/i', function ($match) use (&$markers) {
                 $marker = sprintf('{marker:%s}', mt_rand());
                 $markers[$marker] = $match[0];
+
                 return $marker;
             }, $value);
 
@@ -609,23 +633,24 @@ class Html extends \yii\helpers\Html
                 [$n, $v] = array_pad(preg_split('/\s*:\s*/', $style, 2), 2, '');
                 $normalized[$n] = strtr($v, $markers);
             }
+
             return $normalized;
         }
+
         throw new InvalidArgumentException('Invalid style value');
     }
 
     /**
      * Finds the first tag defined in some HTML that isn't a comment or DTD.
      *
-     * @param string $html
-     * @param int $offset
      * @return array{non-empty-string, int} The tag type and starting position
+     *
      * @throws InvalidHtmlTagException
      */
     private static function _findTag(string $html, int $offset = 0): array
     {
         // Find the first HTML tag that isn't a DTD or a comment
-        if (!preg_match('/<(\/?[\w\-]+)/', $html, $match, PREG_OFFSET_CAPTURE, $offset) || $match[1][0][0] === '/') {
+        if (! preg_match('/<(\/?[\w\-]+)/', $html, $match, PREG_OFFSET_CAPTURE, $offset) || $match[1][0][0] === '/') {
             throw new InvalidHtmlTagException(
                 "Could not find an HTML tag in string: $html",
                 isset($match[1][0]) ? strtolower($match[1][0]) : null,
@@ -639,19 +664,13 @@ class Html extends \yii\helpers\Html
 
     /**
      * Appends or prepends HTML to the beginning of a string.
-     *
-     * @param string $tag
-     * @param string $html
-     * @param string $position
-     * @param string|null $ifExists
-     * @return string
      */
     private static function _addToTagInternal(string $tag, string $html, string $position, ?string $ifExists = null): string
     {
-        $info = static::parseTag($tag);
+        $info = self::parseTag($tag);
 
         // Make sure it’s not a void tag
-        if (!isset($info['htmlStart'])) {
+        if (! isset($info['htmlStart'])) {
             throw new InvalidArgumentException("<{$info['type']}> can't have children.");
         }
 
@@ -663,42 +682,42 @@ class Html extends \yii\helpers\Html
             if ($child) {
                 return match ($ifExists) {
                     'keep' => $tag,
-                    'replace' => substr($tag, 0, $child['start']) .
-                        $html .
+                    'replace' => substr($tag, 0, $child['start']).
+                        $html.
                         substr($tag, $child['end']),
-                    default => throw new InvalidArgumentException('Invalid $ifExists value: ' . $ifExists),
+                    default => throw new InvalidArgumentException('Invalid $ifExists value: '.$ifExists),
                 };
             }
         }
 
-        return substr($tag, 0, $info[$position]) .
-            $html .
+        return substr($tag, 0, $info[$position]).
+            $html.
             substr($tag, $info[$position]);
     }
 
     private static function _sortedDataAttributes(): array
     {
-        if (!isset(self::$_sortedDataAttributes)) {
-            self::$_sortedDataAttributes = array_merge(static::$dataAttributes);
-            usort(self::$_sortedDataAttributes, fn(string $a, string $b): int => strlen($b) - strlen($a));
+        if (! isset(self::$_sortedDataAttributes)) {
+            self::$_sortedDataAttributes = array_merge(self::$dataAttributes);
+            usort(self::$_sortedDataAttributes, fn (string $a, string $b): int => strlen($b) - strlen($a));
         }
+
         return self::$_sortedDataAttributes;
     }
 
     /**
      * Unwraps an IE conditional comment from the given HTML.
      *
-     * @param string $content
      * @return array[] An array containing the HTML content, and the condition (if there is one).
+     *
      * @phpstan-return array{string,string|null}
+     *
      * @see wrapIntoCondition()
-     * @since 4.0.0
      */
     public static function unwrapCondition(string $content): array
     {
         if (preg_match('/^<!--\[if (.*?)]>(?:<!-->)?\\n(.*)\\n<!(?:--<!)?\[endif]-->$/s', $content, $match)) {
-            $condition = $match[1];
-            $content = $match[2];
+            [, $condition, $content] = $match;
         } else {
             $condition = null;
         }
@@ -709,10 +728,9 @@ class Html extends \yii\helpers\Html
     /**
      * Unwraps a `<noscript>` tag from the given HTML.
      *
-     * @param string $content
      * @return array[] An array containing the HTML content, and whether a `<noscript>` tag was found.
+     *
      * @phpstan-return array{string,bool}
-     * @since 4.0.0
      */
     public static function unwrapNoscript(string $content): array
     {
@@ -728,10 +746,6 @@ class Html extends \yii\helpers\Html
 
     /**
      * Normalizes an element ID into only alphanumeric characters, underscores, and dashes, or generates one at random.
-     *
-     * @param string $id
-     * @return string
-     * @since 3.5.0
      */
     public static function id(string $id = ''): string
     {
@@ -742,16 +756,16 @@ class Html extends \yii\helpers\Html
         }
 
         $id = trim(preg_replace('/[^A-Za-z0-9_.]+/', '-', $id), '-');
+
         return $id ?: Str::random(10);
     }
 
     /**
      * Namespaces an input name.
      *
-     * @param string $inputName The input name
-     * @param string|null $namespace The namespace
+     * @param  string  $inputName  The input name
+     * @param  string|null  $namespace  The namespace
      * @return string The namespaced input name
-     * @since 3.5.0
      */
     public static function namespaceInputName(string $inputName, ?string $namespace): string
     {
@@ -759,24 +773,23 @@ class Html extends \yii\helpers\Html
             return $inputName;
         }
 
-        return preg_replace('/([^\'"\[\]]+)([^\'"]*)/', $namespace . '[$1]$2', $inputName);
+        return preg_replace('/([^\'"\[\]]+)([^\'"]*)/', $namespace.'[$1]$2', $inputName);
     }
 
     /**
      * Namespaces an ID.
      *
-     * @param string $id The ID
-     * @param string|null $namespace The namespace
+     * @param  string  $id  The ID
+     * @param  string|null  $namespace  The namespace
      * @return string The namespaced ID
-     * @since 3.5.0
      */
     public static function namespaceId(string $id, ?string $namespace): string
     {
         if ($namespace === null) {
-            return static::id($id);
+            return self::id($id);
         }
 
-        return static::id("$namespace-$id");
+        return self::id("$namespace-$id");
     }
 
     /**
@@ -784,17 +797,18 @@ class Html extends \yii\helpers\Html
      *
      * This is a shortcut for calling [[namespaceInputs()]] and [[namespaceAttributes()]].
      *
-     * @param string $html The HTML code
-     * @param string $namespace The namespace
-     * @param bool $withClasses Whether class names should be namespaced as well (affects both `class` attributes and class name CSS selectors)
+     * @param  string  $html  The HTML code
+     * @param  string  $namespace  The namespace
+     * @param  bool  $withClasses  Whether class names should be namespaced as well (affects both `class` attributes and class name CSS selectors)
      * @return string The HTML with namespaced attributes
-     * @since 3.5.0
      */
     public static function namespaceHtml(string $html, string $namespace, bool $withClasses = false): string
     {
         $markers = self::_escapeTextareas($html);
+
         self::_namespaceInputs($html, $namespace);
         self::_namespaceAttributes($html, $namespace, $withClasses);
+
         return self::_restoreTextareas($html, $markers);
     }
 
@@ -817,27 +831,24 @@ class Html extends \yii\helpers\Html
      * <textarea name="foo[fields][body]"></textarea>
      * ```
      *
-     * @param string $html The HTML code
-     * @param string $namespace The namespace
+     * @param  string  $html  The HTML code
+     * @param  string  $namespace  The namespace
      * @return string The HTML with namespaced input names
+     *
      * @see namespaceHtml()
      * @see namespaceAttributes()
-     * @since 3.5.0
      */
     public static function namespaceInputs(string $html, string $namespace): string
     {
         $markers = self::_escapeTextareas($html);
         self::_namespaceInputs($html, $namespace);
+
         return self::_restoreTextareas($html, $markers);
     }
 
-    /**
-     * @param string $html
-     * @param string $namespace
-     */
     private static function _namespaceInputs(string &$html, string $namespace): void
     {
-        $html = preg_replace('/(?<![\w\-])(name=(\'|"))([^\'"\[\]]+)([^\'"]*)\2/i', '${1}' . $namespace . '[$3]$4$2', $html) ?? '';
+        $html = preg_replace('/(?<![\w\-])(name=(\'|"))([^\'"\[\]]+)([^\'"]*)\2/i', '${1}'.$namespace.'[$3]$4$2', $html) ?? '';
     }
 
     /**
@@ -860,43 +871,41 @@ class Html extends \yii\helpers\Html
      * <p id="foo-summary">...</p>
      * ```
      *
-     * @param string $html The HTML code
-     * @param string $namespace The namespace
-     * @param bool $withClasses Whether class names should be namespaced as well (affects both `class` attributes and class name CSS selectors)
+     * @param  string  $html  The HTML code
+     * @param  string  $namespace  The namespace
+     * @param  bool  $withClasses  Whether class names should be namespaced as well (affects both `class` attributes and class name CSS selectors)
      * @return string The HTML with namespaced attributes
+     *
      * @see namespaceHtml()
      * @see namespaceInputs()
-     * @since 3.5.0
      */
     public static function namespaceAttributes(string $html, string $namespace, bool $withClasses = false): string
     {
         $markers = self::_escapeTextareas($html);
+
         self::_namespaceAttributes($html, $namespace, $withClasses);
+
         return self::_restoreTextareas($html, $markers);
     }
 
-    /**
-     * @param string $html
-     * @param string $namespace
-     * @param bool $withClasses
-     */
     private static function _namespaceAttributes(string &$html, string $namespace, bool $withClasses): void
     {
         // normalize the namespace
-        $namespace = static::id($namespace);
+        $namespace = self::id($namespace);
 
         // Namespace & capture the ID attributes
         $ids = [];
-        $html = preg_replace_callback('/(?<=\sid=)(\'|")([^\'"\s]*)\1/i', function($match) use ($namespace, &$ids): string {
+        $html = preg_replace_callback('/(?<=\sid=)(\'|")([^\'"\s]*)\1/i', function ($match) use ($namespace, &$ids): string {
             $ids[] = $match[2];
-            return $match[1] . $namespace . '-' . $match[2] . $match[1];
+
+            return $match[1].$namespace.'-'.$match[2].$match[1];
         }, $html) ?? '';
         $ids = array_flip($ids);
 
         // normal HTML attributes
         $html = preg_replace_callback(
             "/(?<=\\s)((for|list|xlink:href|href|aria\\-labelledby|aria\\-describedby|aria\\-controls|data\\-target|data\\-reverse\\-target|data\\-target\\-prefix)=('|\"))([^'\"]+)\\3/i",
-            function(array $match) use ($namespace, $ids): string {
+            function (array $match) use ($namespace, $ids): string {
                 $matchIds = preg_split('/([,\s+]+)/', $match[4], flags: PREG_SPLIT_DELIM_CAPTURE);
                 $namespacedIds = '';
                 foreach ($matchIds as $i => $id) {
@@ -922,53 +931,57 @@ class Html extends \yii\helpers\Html
 
                     $namespacedIds .= $id;
                 }
+
                 return sprintf('%s%s%s', $match[1], $namespacedIds, $match[3]);
             }, $html) ?? '';
 
         // ID references in url() calls
         $html = preg_replace_callback(
             "/(?<=url\\(#)[^'\"\s\)]*(?=\\))/i",
-            function(array $match) use ($namespace, $ids): string {
+            function (array $match) use ($namespace, $ids): string {
                 if (isset($ids[$match[0]])) {
-                    return $namespace . '-' . $match[0];
+                    return $namespace.'-'.$match[0];
                 }
+
                 return $match[0];
             }, $html) ?? '';
 
         // class attributes
         if ($withClasses) {
-            $html = preg_replace_callback('/(?<![\w\-])\bclass=(\'|")([^\'"]+)\\1/i', function($match) use ($namespace) {
+            $html = preg_replace_callback('/(?<![\w\-])\bclass=(\'|")([^\'"]+)\\1/i', function ($match) use ($namespace) {
                 $newClasses = [];
                 foreach (preg_split('/\s+/', $match[2]) as $class) {
                     $newClasses[] = "$namespace-$class";
                 }
-                return 'class=' . $match[1] . implode(' ', $newClasses) . $match[1];
+
+                return 'class='.$match[1].implode(' ', $newClasses).$match[1];
             }, $html) ?? '';
         }
 
         // CSS selectors
         $html = preg_replace_callback(
             '/(<style\b[^>]*>)(.*?)(<\/style>)/is',
-            function(array $match) use ($namespace, $withClasses, $ids) {
+            function (array $match) use ($namespace, $withClasses, $ids) {
                 $html = preg_replace_callback(
                     "/(?<![\w'\"])#([^'\"\s]*)(?=[,\\s\\{])/",
-                    function(array $match) use ($namespace, $ids): string {
+                    function (array $match) use ($namespace, $ids): string {
                         if (isset($ids[$match[1]])) {
-                            return '#' . $namespace . '-' . $match[1];
+                            return '#'.$namespace.'-'.$match[1];
                         }
+
                         return $match[0];
                     }, $match[2]);
                 if ($withClasses) {
                     $html = preg_replace("/(?<![\\w'\"])\\.([\\w\\-]+)(?=[,:\\s{])/", ".$namespace-$1", $match[2]);
                 }
-                return $match[1] . $html . $match[3];
+
+                return $match[1].$html.$match[3];
             }, $html) ?? '';
     }
 
     /**
      * Replaces textareas with markers
      *
-     * @param string $html
      * @return array<string, string>
      */
     private static function _escapeTextareas(string &$html): array
@@ -992,7 +1005,7 @@ class Html extends \yii\helpers\Html
 
             if ($innerHtml !== null && str_contains($innerHtml, '<')) {
                 $marker = sprintf('{marker:%s}', mt_rand());
-                $r .= substr($html, $offset, $innerHtmlPos - $offset) . $marker . substr($html, $closePos, 11);
+                $r .= substr($html, $offset, $innerHtmlPos - $offset).$marker.substr($html, $closePos, 11);
                 $markers[$marker] = $innerHtml;
             } else {
                 $r .= substr($html, $offset, $outerPos - $offset);
@@ -1002,7 +1015,7 @@ class Html extends \yii\helpers\Html
         }
 
         if ($offset !== 0) {
-            $html = $r . substr($html, $offset);
+            $html = $r.substr($html, $offset);
         }
 
         return $markers;
@@ -1011,8 +1024,7 @@ class Html extends \yii\helpers\Html
     /**
      * Replaces markers with textareas.
      *
-     * @param string $html
-     * @param array<string, string> $markers
+     * @param  array<string, string>  $markers
      */
     private static function _restoreTextareas(string $html, array $markers): string
     {
@@ -1026,52 +1038,49 @@ class Html extends \yii\helpers\Html
         foreach ($markers as $marker => $textarea) {
             $pos = strpos($html, $marker, $offset);
             if ($pos !== false) {
-                $r .= substr($html, $offset, $pos - $offset) . $textarea;
+                $r .= substr($html, $offset, $pos - $offset).$textarea;
                 $offset = $pos + strlen($marker);
             }
         }
 
-        return $r . substr($html, $offset);
+        return $r.substr($html, $offset);
     }
 
     /**
      * Sanitizes an SVG.
-     *
-     * @param string $svg
-     * @return string
-     * @since 3.5.0
      */
     public static function sanitizeSvg(string $svg): string
     {
-        $sanitizer = new Sanitizer();
-        $sanitizer->setAllowedAttrs(new SvgAllowedAttributes());
+        $sanitizer = new Sanitizer;
+        $sanitizer->setAllowedAttrs(new SvgAllowedAttributes);
         $svg = $sanitizer->sanitize($svg);
         // Remove comments, title & desc
         $svg = preg_replace('/<!--.*?-->\s*/s', '', $svg);
         $svg = preg_replace(self::TITLE_TAG_RE, '', $svg);
+
         return preg_replace('/<desc>.*?<\/desc>\s*/is', '', $svg);
     }
 
     /**
      * Generates a base64-encoded [data URL](https://developer.mozilla.org/en-US/docs/Web/HTTP/Basics_of_HTTP/Data_URIs) for the given file path.
      *
-     * @param string $file The file path
-     * @param string|null $mimeType The file’s MIME type. If `null` then it will be determined automatically.
+     * @param  string  $file  The file path
+     * @param  string|null  $mimeType  The file’s MIME type. If `null` then it will be determined automatically.
      * @return string The data URL
+     *
      * @throws InvalidArgumentException if `$file` is an invalid file path
-     * @since 3.5.13
      */
     public static function dataUrl(string $file, ?string $mimeType = null): string
     {
-        if (!is_file($file)) {
+        if (! is_file($file)) {
             throw new InvalidArgumentException("Invalid file path: $file");
         }
 
-        $file = FileHelper::absolutePath(Craft::getAlias($file), '/');
+        $file = FileHelper::absolutePath(Aliases::get($file), '/');
 
         // make sure it's contained within the project rot
-        $rootPath = FileHelper::absolutePath(Craft::getAlias('@root'), '/');
-        if (!str_starts_with($file, "$rootPath/")) {
+        $rootPath = FileHelper::absolutePath(Aliases::get('@root'), '/');
+        if (! str_starts_with($file, "$rootPath/")) {
             throw new InvalidArgumentException(sprintf('%s cannot be passed a path outside of the project root.', __METHOD__));
         }
 
@@ -1088,34 +1097,30 @@ class Html extends \yii\helpers\Html
             try {
                 $mimeType = FileHelper::getMimeType($file);
             } catch (Throwable $e) {
-                Craft::warning("Unable to determine the MIME type for $file: " . $e->getMessage(), __METHOD__);
-                Craft::$app->getErrorHandler()->logException($e);
+                Log::warning("Unable to determine the MIME type for $file: ".$e->getMessage(), [__METHOD__]);
+                report($e);
             }
         }
 
-        return static::dataUrlFromString(file_get_contents($file), $mimeType);
+        return self::dataUrlFromString(file_get_contents($file), $mimeType);
     }
 
     /**
      * Generates a base64-encoded [data URL](https://developer.mozilla.org/en-US/docs/Web/HTTP/Basics_of_HTTP/Data_URIs) based on the given file contents and MIME type.
      *
-     * @param string $contents The file path
-     * @param string|null $mimeType The file’s MIME type. If `null` then it will be determined automatically.
+     * @param  string  $contents  The file path
+     * @param  string|null  $mimeType  The file’s MIME type. If `null` then it will be determined automatically.
      * @return string The data URL
+     *
      * @throws InvalidArgumentException if `$file` is an invalid file path
-     * @since 3.5.13
      */
     public static function dataUrlFromString(string $contents, ?string $mimeType = null): string
     {
-        return 'data:' . ($mimeType ? "$mimeType;" : '') . 'base64,' . base64_encode($contents);
+        return 'data:'.($mimeType ? "$mimeType;" : '').'base64,'.base64_encode($contents);
     }
 
     /**
      * Inserts a non-breaking space between the last two words of a string.
-     *
-     * @param string $string
-     * @return string
-     * @since 3.7.0
      */
     public static function widont(string $string): string
     {
@@ -1124,28 +1129,19 @@ class Html extends \yii\helpers\Html
 
     /**
      * Returns a visually-hidden input label.
-     *
-     * @param string $content
-     * @param string|null $for
-     * @param array $options
-     * @return string
-     * @since 4.0.0
      */
     public static function hiddenLabel(string $content, ?string $for = null, array $options = []): string
     {
-        return static::label($content, $for, array_merge($options, [
-            'class' => array_merge(static::explodeClass($options['class'] ?? []), [
-                'visually-hidden',
-            ]),
-        ]));
+        return self::label($content, $for)
+            ->attributes(array_merge($options, [
+                'class' => array_merge(self::explodeClass($options['class'] ?? []), [
+                    'visually-hidden',
+                ]),
+            ]));
     }
 
     /**
      * Encodes invalid (unclosed) HTML tags so they appear as plain text.
-     *
-     * @param string $html
-     * @return string
-     * @since 3.7.27
      */
     public static function encodeInvalidTags(string $html): string
     {
@@ -1154,11 +1150,11 @@ class Html extends \yii\helpers\Html
 
         while (true) {
             try {
-                $tag = static::parseTag($html, $offset);
+                $tag = self::parseTag($html, $offset);
             } catch (InvalidHtmlTagException $e) {
                 if ($e->type === null) {
                     // No more HTML tags in the string
-                    return $return . substr($html, $offset);
+                    return $return.substr($html, $offset);
                 }
 
                 if ($e->htmlStart) {
@@ -1184,10 +1180,6 @@ class Html extends \yii\helpers\Html
 
     /**
      * Decodes any double-encoded entities.
-     *
-     * @param string $html
-     * @return string
-     * @since 5.8.3
      */
     public static function decodeDoubles(string $html): string
     {
@@ -1197,16 +1189,14 @@ class Html extends \yii\helpers\Html
     /**
      * Returns the contents of a given SVG file.
      *
-     * @param string|Asset $svg An SVG asset, a file path, or raw SVG markup
-     * @param bool|null $sanitize Whether the SVG should be sanitized of potentially
-     * malicious scripts. By default, the SVG will only be sanitized if an asset
-     * or markup is passed in. (File paths are assumed to be safe.)
-     * @param bool|null $namespace Whether class names and IDs within the SVG
-     * should be namespaced to avoid conflicts with other elements in the DOM.
-     * By default, the SVG will only be namespaced if an asset or markup is passed in.
-     * @param bool $throwException Whether to throw an exception on error
-     * @return string
-     * @since 4.3.0
+     * @param  string|Asset  $svg  An SVG asset, a file path, or raw SVG markup
+     * @param  bool|null  $sanitize  Whether the SVG should be sanitized of potentially
+     *                               malicious scripts. By default, the SVG will only be sanitized if an asset
+     *                               or markup is passed in. (File paths are assumed to be safe.)
+     * @param  bool|null  $namespace  Whether class names and IDs within the SVG
+     *                                should be namespaced to avoid conflicts with other elements in the DOM.
+     *                                By default, the SVG will only be namespaced if an asset or markup is passed in.
+     * @param  bool  $throwException  Whether to throw an exception on error
      */
     public static function svg(
         Asset|string $svg,
@@ -1221,27 +1211,30 @@ class Html extends \yii\helpers\Html
                 if ($throwException) {
                     throw $e;
                 }
-                Craft::error("Could not get the contents of {$svg->getPath()}: {$e->getMessage()}", __METHOD__);
-                Craft::$app->getErrorHandler()->logException($e);
+                Log::error("Could not get the contents of {$svg->getPath()}: {$e->getMessage()}", [__METHOD__]);
+                report($e);
+
                 return '';
             }
         } elseif (stripos($svg, '<svg') === false) {
             // No <svg> tag, so it's probably a file path
             try {
-                $svg = Craft::getAlias($svg);
+                $svg = Aliases::get($svg);
             } catch (InvalidArgumentException $e) {
                 if ($throwException) {
                     throw $e;
                 }
-                Craft::error("Could not get the contents of $svg: {$e->getMessage()}", __METHOD__);
-                Craft::$app->getErrorHandler()->logException($e);
+                Log::error("Could not get the contents of $svg: {$e->getMessage()}", [__METHOD__]);
+                report($e);
+
                 return '';
             }
-            if (!is_file($svg) || !FileHelper::isSvg($svg)) {
+            if (! is_file($svg) || ! FileHelper::isSvg($svg)) {
                 if ($throwException) {
                     throw new InvalidArgumentException("Invalid SVG path: $svg");
                 }
-                Craft::warning("Could not get the contents of $svg: The file doesn't exist", __METHOD__);
+                Log::warning("Could not get the contents of $svg: The file doesn't exist", [__METHOD__]);
+
                 return '';
             }
             $svg = file_get_contents($svg);
@@ -1257,7 +1250,7 @@ class Html extends \yii\helpers\Html
 
         // Sanitize?
         if ($sanitize) {
-            $svg = Html::sanitizeSvg($svg);
+            $svg = self::sanitizeSvg($svg);
         }
 
         // Remove the XML declaration
@@ -1266,9 +1259,24 @@ class Html extends \yii\helpers\Html
         // Namespace class names and IDs
         if ($namespace) {
             $ns = Str::random(10);
-            $svg = Html::namespaceAttributes($svg, $ns, true);
+            $svg = self::namespaceAttributes($svg, $ns, true);
         }
 
         return $svg;
+    }
+
+    public static function jsFile($url, $options = [])
+    {
+        return YiiHtml::javaScriptFile($url, $options);
+    }
+
+    public static function endForm(): string
+    {
+        return self::endTag('form');
+    }
+
+    public static function __callStatic(string $name, array $arguments)
+    {
+        return YiiHtml::$name(...$arguments);
     }
 }

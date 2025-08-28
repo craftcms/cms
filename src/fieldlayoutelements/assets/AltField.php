@@ -13,8 +13,8 @@ use craft\base\Field;
 use craft\elements\Asset;
 use craft\fieldlayoutelements\TextareaField;
 use craft\helpers\ElementHelper;
-use craft\helpers\Html;
 use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Support\Html;
 use yii\base\InvalidArgumentException;
 
 /**

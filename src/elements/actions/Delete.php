@@ -12,9 +12,9 @@ use craft\base\ElementAction;
 use craft\base\ElementInterface;
 use craft\base\NestedElementInterface;
 use craft\elements\db\ElementQueryInterface;
-use craft\helpers\Html;
 use craft\services\Elements;
 use CraftCms\Cms\Database\Table;
+use CraftCms\Cms\Support\Html;
 use Illuminate\Support\Facades\DB;
 
 /**

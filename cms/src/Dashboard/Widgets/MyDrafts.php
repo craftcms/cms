@@ -5,7 +5,7 @@ namespace CraftCms\Cms\Dashboard\Widgets;
 use Craft;
 use craft\elements\Entry;
 use craft\helpers\Cp;
-use craft\helpers\Html;
+use CraftCms\Cms\Support\Html;
 use Illuminate\Support\Facades\Session;
 
 /** @since 6.0.0 */

@@ -49,7 +49,6 @@ use craft\helpers\Cp;
 use craft\helpers\Db;
 use craft\helpers\ElementHelper;
 use craft\helpers\FileHelper;
-use craft\helpers\Html;
 use craft\helpers\Image;
 use craft\helpers\ImageTransforms;
 use craft\helpers\Template;
@@ -71,6 +70,7 @@ use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Element\Enums\MenuItemType;
 use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Support\Str;
 use DateInterval;
@@ -3096,10 +3096,9 @@ JS;
             }
         }
 
-        return Html::ul($items, [
-            'encode' => false,
-            'class' => 'path',
-        ]);
+        $items = array_map(fn($item) => Html::li($item)->encode(false), $items);
+
+        return Html::ul()->items(...$items)->class('path')->render();
     }
 
     /**

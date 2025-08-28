@@ -10,6 +10,7 @@ namespace craft\helpers;
 use Composer\Semver\Semver;
 use Craft;
 use CraftCms\Cms\Support\Composer;
+use CraftCms\Cms\Support\Html;
 
 /**
  * Update helper

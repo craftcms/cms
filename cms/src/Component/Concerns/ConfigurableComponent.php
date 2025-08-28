@@ -4,8 +4,8 @@ namespace CraftCms\Cms\Component\Concerns;
 
 use BackedEnum;
 use craft\helpers\DateTimeHelper;
-use craft\helpers\Html;
 use CraftCms\Cms\Component\Events\DefineSettingsAttributes;
+use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Utils;
 use DateTimeInterface;
 use Illuminate\Support\Facades\Event;

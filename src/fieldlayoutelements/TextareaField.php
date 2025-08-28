@@ -9,7 +9,7 @@ namespace craft\fieldlayoutelements;
 
 use Craft;
 use craft\base\ElementInterface;
-use craft\helpers\Html as HtmlHelper;
+use CraftCms\Cms\Support\Html as HtmlHelper;
 
 /**
  * TextareaField represents a textarea field that can be included in field layouts.

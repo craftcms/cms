@@ -9,7 +9,7 @@ namespace craft\fieldlayoutelements;
 
 use craft\base\ElementInterface;
 use craft\base\FieldLayoutElement;
-use craft\helpers\Html as HtmlHelper;
+use CraftCms\Cms\Support\Html as HtmlHelper;
 use yii\base\NotSupportedException;
 
 /**

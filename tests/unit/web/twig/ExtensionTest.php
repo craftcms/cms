@@ -1098,7 +1098,7 @@ class ExtensionTest extends TestCase
         );
 
         $this->testRenderResult(
-            '<p>&lt;script&gt;alert(&#039;Hello&#039;);&lt;/script&gt;</p>',
+            '<p>&lt;script&gt;alert(\'Hello\');&lt;/script&gt;</p>',
             '{{ tag("p", {text: "<script>alert(\'Hello\');</script>"}) }}'
         );
 

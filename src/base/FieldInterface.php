@@ -253,7 +253,7 @@ interface FieldInterface extends SavableComponentInterface, ModelInterface, Chip
      * ```
      *
      * If you need to tie any JavaScript code to your input, it’s important to know that any `name` and `id`
-     * attributes within the returned HTML will probably get [[\craft\helpers\Html::namespaceHtml()|namespaced]],
+     * attributes within the returned HTML will probably get [[\CraftCms\Cms\Support\Html::namespaceHtml()|namespaced]],
      * however your JavaScript code will be left untouched.
      * For example, if getInputHtml() returns the following HTML:
      *
@@ -281,7 +281,7 @@ interface FieldInterface extends SavableComponentInterface, ModelInterface, Chip
      *
      * Thankfully, Craft provides a couple handy methods that can help you deal with this:
      *
-     * - [[\craft\helpers\Html::id()]] will generate a valid element ID from an input name.
+     * - [[\CraftCms\Cms\Support\Html::id()]] will generate a valid element ID from an input name.
      * - [[\craft\web\View::namespaceInputId()]] will give you the namespaced version of a given ID.
      * - [[\craft\web\View::namespaceInputName()]] will give you the namespaced version of a given input name.
      *

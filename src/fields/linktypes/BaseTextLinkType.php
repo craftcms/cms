@@ -10,8 +10,8 @@ namespace craft\fields\linktypes;
 use Craft;
 use craft\fields\Link;
 use craft\helpers\Cp;
-use craft\helpers\Html;
 use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Str;
 
 /**

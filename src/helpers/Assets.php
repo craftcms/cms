@@ -21,6 +21,7 @@ use craft\models\VolumeFolder;
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Shared\Enums\TimePeriod;
 use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Str;
 use DateTime;
 use Illuminate\Support\Collection;

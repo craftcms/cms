@@ -5,8 +5,8 @@ namespace craft\base\conditions;
 use Craft;
 use craft\base\Component;
 use craft\helpers\Cp;
-use craft\helpers\Html;
 use craft\helpers\UrlHelper;
+use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Str;
 
 /**

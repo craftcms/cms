@@ -14,13 +14,13 @@ use craft\base\FieldLayoutElement;
 use craft\elements\Entry;
 use craft\fieldlayoutelements\entries\EntryTitleField;
 use craft\helpers\Cp;
-use craft\helpers\Html;
 use craft\models\EntryType;
 use craft\models\Section;
 use craft\web\Controller;
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Shared\Enums\Color;
 use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Str;
 use yii\web\BadRequestHttpException;
 use yii\web\ForbiddenHttpException;
@@ -175,9 +175,9 @@ class EntryTypesController extends Controller
                         // sort by label
                         array_multisort($labels, SORT_ASC, $items);
 
-                        return Html::ul($items, [
-                            'encode' => false,
-                        ]);
+                        $items = array_map(fn($item) => Html::li($item)->encode(false), $items);
+
+                        return Html::ul()->items(...$items)->render();
                     },
                 ]));
         }

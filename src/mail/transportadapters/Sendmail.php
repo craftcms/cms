@@ -10,7 +10,7 @@ namespace craft\mail\transportadapters;
 use Craft;
 use craft\behaviors\EnvAttributeParserBehavior;
 use craft\helpers\App;
-use craft\helpers\Html;
+use CraftCms\Cms\Support\Html;
 use Symfony\Component\Mailer\Transport\AbstractTransport;
 
 /**

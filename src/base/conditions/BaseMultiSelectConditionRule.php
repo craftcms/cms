@@ -4,8 +4,8 @@ namespace craft\base\conditions;
 
 use craft\helpers\Cp;
 use craft\helpers\Db;
-use craft\helpers\Html;
 use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Support\Html;
 use yii\base\InvalidConfigException;
 
 /**

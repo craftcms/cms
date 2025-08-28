@@ -10,7 +10,7 @@ namespace craft\models;
 use Craft;
 use craft\base\FsInterface;
 use craft\base\Model;
-use craft\helpers\Html;
+use CraftCms\Cms\Support\Html;
 use yii\base\InvalidConfigException;
 
 /**

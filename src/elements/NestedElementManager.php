@@ -22,12 +22,12 @@ use craft\events\BulkElementsEvent;
 use craft\events\DuplicateNestedElementsEvent;
 use craft\helpers\Cp;
 use craft\helpers\ElementHelper;
-use craft\helpers\Html;
 use craft\models\Site;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Enums\PropagationMethod;
 use CraftCms\Cms\Shared\Enums\Color;
 use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Str;
 use Generator;
 use Illuminate\Support\Facades\DB;
@@ -419,22 +419,19 @@ class NestedElementManager extends Component
                 $this->setOwnerOnNestedElements($owner, $elements);
 
                 if (!empty($elements)) {
-                    $html .= Html::ul(array_map(
-                        fn(ElementInterface $element) => Cp::elementCardHtml($element, [
+                    $html .= Html::ul()->items(...array_map(
+                        fn(ElementInterface $element) => Html::li(Cp::elementCardHtml($element, [
                             'context' => 'field',
                             'showActionMenu' => true,
                             'sortable' => $config['sortable'],
                             'showInGrid' => $config['showInGrid'] ?? false,
-                        ]),
+                        ]))->encode(false),
                         $elements,
-                    ), [
-                        'encode' => false,
-                        'class' => [
-                            'elements',
-                            $config['showInGrid'] ? 'card-grid' : 'cards',
-                            $config['prevalidate'] ? 'prevalidate' : '',
-                        ],
-                    ]);
+                    ))->class(
+                        'elements',
+                        $config['showInGrid'] ? 'card-grid' : 'cards',
+                        $config['prevalidate'] ? 'prevalidate' : ''
+                    )->render();
                 }
 
                 $html .=

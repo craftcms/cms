@@ -24,7 +24,6 @@ use craft\fields\MissingField;
 use craft\fields\PlainText;
 use craft\helpers\Component;
 use craft\helpers\Cp;
-use craft\helpers\Html;
 use craft\helpers\Typecast;
 use craft\helpers\UrlHelper;
 use craft\models\FieldLayout;
@@ -33,6 +32,7 @@ use craft\web\assets\fieldsettings\FieldSettingsAsset;
 use craft\web\Controller;
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Str;
 use Illuminate\Support\Collection;
 use ReflectionException;
@@ -337,9 +337,9 @@ JS, [
                         ]);
                     }
 
-                    return Html::ul($items, [
-                        'encode' => false,
-                    ]);
+                    $items = array_map(fn($item) => Html::li($item)->encode(false), $items);
+
+                    return Html::ul()->items(...$items)->render();
                 },
             ]));
         }

@@ -8,8 +8,8 @@
 namespace craft\web\twig\variables;
 
 use Craft;
-use craft\helpers\Html;
 use craft\services\ProjectConfig;
+use CraftCms\Cms\Support\Html;
 
 /**
  * Route functions.
