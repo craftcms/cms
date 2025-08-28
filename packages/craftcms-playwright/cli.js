@@ -24,7 +24,7 @@ const spawn = require('child_process').spawn;
     process.stdout.write('\n');
     const pre = spawn(
       '/bin/bash',
-      [path.resolve(__dirname, 'docker/setup.sh')],
+      [path.resolve(__dirname, 'ddev/setup.sh')],
       {
         cwd: path.resolve(__dirname),
         stdio: 'inherit',
@@ -43,7 +43,7 @@ const spawn = require('child_process').spawn;
       tests.on('close', (code) => {
         const down = spawn(
           '/bin/bash',
-          [path.resolve(__dirname, 'docker/teardown.sh')],
+          [path.resolve(__dirname, 'ddev/teardown.sh')],
           {
             cwd: path.resolve(__dirname),
             stdio: 'inherit',
@@ -54,7 +54,7 @@ const spawn = require('child_process').spawn;
   } else if (command == 'boot') {
     const boot = spawn(
       '/bin/bash',
-      [path.resolve(__dirname, 'docker/setup.sh')],
+      [path.resolve(__dirname, 'ddev/setup.sh')],
       {
         cwd: path.resolve(__dirname),
         stdio: 'inherit',
@@ -63,7 +63,7 @@ const spawn = require('child_process').spawn;
   } else if (command == 'down') {
     const down = spawn(
       '/bin/bash',
-      [path.resolve(__dirname, 'docker/teardown.sh')],
+      [path.resolve(__dirname, 'ddev/teardown.sh')],
       {
         cwd: path.resolve(__dirname),
         stdio: 'inherit',

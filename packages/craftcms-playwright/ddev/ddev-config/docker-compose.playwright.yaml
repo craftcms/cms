@@ -1,0 +1,4 @@
+services:
+  web:
+    volumes:
+      - ${REPO_PATH}:/var/www/repos/repo/

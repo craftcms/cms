@@ -9,7 +9,7 @@ require('dotenv').config({path: path.resolve(path.join(testDir, '.env'))});
 let cpTrigger = process.env.CRAFT_CP_TRIGGER ?? 'admin';
 cpTrigger = `./${cpTrigger}/`;
 const storageStateFilename = '.authentication.json';
-let baseURL = process.env.SITE ?? 'http://127.0.0.1:8089/';
+let baseURL = process.env.PRIMARY_SITE_URL ?? 'https://playwright.ddev.site/';
 baseURL = new URL(cpTrigger, baseURL).href;
 const username = process.env.PW_AUTH_USERNAME ?? 'admin';
 const password = process.env.PW_AUTH_PASSWORD ?? 'NewPassword';

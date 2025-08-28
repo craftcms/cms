@@ -12,8 +12,11 @@ class Setup {
         ? 'packages/craftcms-playwright'
         : 'node_modules/@craftcms/playwright';
 
-    this.dockerCli = `docker compose --file=./${this.packagePath}/docker-compose.yaml exec --user appuser playwright`;
-    this.craftCli = '/app/craft';
+    // this.dockerCli = `docker compose --file=./${this.packagePath}/docker-compose.yaml exec --user appuser playwright`;
+    // this.craftCli = '/app/craft';
+    this.dockerCli = 'ddev';
+    this.craftCli = 'craft';
+    this.cwd = `./${this.packagePath}`;
   }
 
   async cleanAll() {
@@ -27,7 +30,10 @@ class Setup {
     process.stdout.write('\n');
     try {
       const {stdout, stderr} = await nodeExec(
-        `${this.dockerCli} ${this.craftCli} plugin/install ${handle}`
+        `${this.dockerCli} ${this.craftCli} plugin/install ${handle}`,
+        {
+          cwd: this.cwd,
+        }
       );
       return {stdout, stderr};
     } catch (e) {
@@ -40,7 +46,10 @@ class Setup {
     process.stdout.write('\n');
     try {
       const {stdout, stderr} = await nodeExec(
-        `${this.dockerCli} ${this.craftCli} db/restore --interactive=0 /app/backup/db.sql`
+        `${this.dockerCli} ${this.craftCli} db/restore --interactive=0 /var/www/backup/db.sql`,
+        {
+          cwd: this.cwd,
+        }
       );
       return {stdout, stderr};
     } catch (e) {
@@ -53,7 +62,10 @@ class Setup {
     process.stdout.write('\n');
     try {
       const {stdout, stderr} = await nodeExec(
-        `${this.dockerCli} ${this.craftCli} db/backup --interactive=0 --overwrite=1 /app/backup/db.sql`
+        `${this.dockerCli} ${this.craftCli} db/backup --interactive=0 --overwrite=1 /var/www/backup/db.sql`,
+        {
+          cwd: this.cwd,
+        }
       );
       return {stdout, stderr};
     } catch (e) {
@@ -66,7 +78,10 @@ class Setup {
     process.stdout.write('\n');
     try {
       const {stdout, stderr} = await nodeExec(
-        `${this.dockerCli} cp -vfrp /app/backup/project /app/config/`
+        `${this.dockerCli} exec "cp -vfrp /var/www/backup/project /var/www/html/config/"`,
+        {
+          cwd: this.cwd,
+        }
       );
       return {stdout, stderr};
     } catch (e) {
@@ -79,14 +94,28 @@ class Setup {
     process.stdout.write('\n');
     try {
       let {stdout, stderr} = await nodeExec(
-        `${this.dockerCli} cp -vfrp /app/backup/composer.json /app/.`
+        `${this.dockerCli} exec "cp -vfrp /var/www/backup/composer.json /var/www/html/."`,
+        {
+          cwd: this.cwd,
+        }
       );
       await nodeExec(
-        `${this.dockerCli} cp -vfrp /app/backup/composer.lock /app/.`
+        `${this.dockerCli} exec "cp -vfrp /var/www/backup/composer.lock /var/www/html/."`,
+        {
+          cwd: this.cwd,
+        }
       );
-      await nodeExec(`${this.dockerCli} composer install --working-dir=/app`);
       await nodeExec(
-        `${this.dockerCli} composer dump-autoload --working-dir=/app`
+        `${this.dockerCli} composer install --working-dir=/var/www/html`,
+        {
+          cwd: this.cwd,
+        }
+      );
+      await nodeExec(
+        `${this.dockerCli} composer dump-autoload --working-dir=/var/www/html`,
+        {
+          cwd: this.cwd,
+        }
       );
       return {stdout, stderr};
     } catch (e) {
@@ -110,7 +139,10 @@ class Setup {
     process.stdout.write('\n');
     try {
       const {stdout, stderr} = await nodeExec(
-        `${this.dockerCli} ${this.craftCli} fixture/load ${name} --namespace="${ns}"`
+        `${this.dockerCli} ${this.craftCli} fixture/load ${name} --namespace="${ns}"`,
+        {
+          cwd: this.cwd,
+        }
       );
       return {stdout, stderr};
     } catch (e) {
