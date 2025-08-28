@@ -10,7 +10,7 @@ use craft\elements\conditions\ElementConditionRuleInterface;
 use craft\elements\db\AssetQuery;
 use craft\elements\db\ElementQueryInterface;
 use craft\helpers\Cp;
-use craft\helpers\Html;
+use CraftCms\Cms\Support\Html;
 use yii\base\InvalidValueException;
 
 /**

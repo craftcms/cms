@@ -16,9 +16,9 @@ use craft\base\MergeableFieldInterface;
 use craft\elements\Entry;
 use craft\fields\data\ColorData;
 use craft\helpers\Cp;
-use craft\helpers\Html;
 use craft\validators\ColorValidator;
 use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Str;
 use Illuminate\Support\Collection;
 use yii\db\Schema;
@@ -413,9 +413,8 @@ class Color extends Field implements InlineEditableFieldInterface, MergeableFiel
                         'padding-inline' => '9px',
                     ],
                 ]) .
-                Html::label(Craft::t('app', 'Custom color:'), "$id-custom-input", [
-                    'id' => $customLabelId,
-                ]) .
+                Html::label(Craft::t('app', 'Custom color:'), "$id-custom-input")
+                    ->id($customLabelId) .
                 Cp::colorHtml([
                     'id' => "$id-custom-input",
                     'labelledBy' => $customLabelId,

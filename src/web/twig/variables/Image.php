@@ -8,8 +8,8 @@
 namespace craft\web\twig\variables;
 
 use craft\helpers\FileHelper;
-use craft\helpers\Html;
 use craft\helpers\Image as ImageHelper;
+use CraftCms\Cms\Support\Html;
 
 /**
  * Class Image variable.

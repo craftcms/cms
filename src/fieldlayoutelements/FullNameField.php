@@ -10,8 +10,8 @@ namespace craft\fieldlayoutelements;
 use Craft;
 use craft\base\ElementInterface;
 use craft\helpers\Cp;
-use craft\helpers\Html as HtmlHelper;
 use CraftCms\Cms\Config\GeneralConfig;
+use CraftCms\Cms\Support\Html as HtmlHelper;
 
 /**
  * Class FullNameField.

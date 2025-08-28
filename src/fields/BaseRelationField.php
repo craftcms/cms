@@ -38,12 +38,12 @@ use craft\fieldlayoutelements\CustomField;
 use craft\fields\conditions\RelationalFieldConditionRule;
 use craft\helpers\Cp;
 use craft\helpers\ElementHelper;
-use craft\helpers\Html;
 use craft\helpers\Queue;
 use craft\queue\jobs\LocalizeRelations;
 use craft\services\ElementSources;
 use craft\web\assets\cp\CpAsset;
 use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Str;
 use GraphQL\Type\Definition\Type;
 use Illuminate\Database\Query\Builder;
@@ -1425,11 +1425,10 @@ JS, [
 
             foreach ($supportedViewModes as $key => $label) {
                 $html .= Html::beginTag('label', ['class' => 'nowrap']) .
-                    Html::img("$baseIconsUrl/$key.svg", [
+                    Html::img("$baseIconsUrl/$key.svg", '', [
                         'class' => 'mb-xs',
                         'width' => $key === self::VIEW_MODE_LIST ? 48 : 80,
                         'height' => 60,
-                        'alt' => '',
                     ]) .
                     Html::radio('viewMode', $key === $this->viewMode, [
                         'value' => $key,

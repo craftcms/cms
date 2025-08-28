@@ -9,9 +9,9 @@ namespace craft\services;
 
 use Craft;
 use craft\helpers\DateTimeHelper;
-use craft\helpers\Html;
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Str;
 use CraftCms\DependencyAwareCache\Dependency\TagDependency;
 use CraftCms\DependencyAwareCache\Facades\DependencyCache;

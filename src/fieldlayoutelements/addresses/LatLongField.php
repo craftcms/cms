@@ -12,7 +12,7 @@ use craft\base\ElementInterface;
 use craft\elements\Address;
 use craft\fieldlayoutelements\BaseNativeField;
 use craft\helpers\Cp;
-use craft\helpers\Html;
+use CraftCms\Cms\Support\Html;
 use yii\base\InvalidArgumentException;
 
 /**

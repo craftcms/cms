@@ -8,7 +8,7 @@
 namespace craft\web;
 
 use Craft;
-use craft\helpers\Html;
+use CraftCms\Cms\Support\Html;
 use yii\base\Behavior;
 
 /**

@@ -11,7 +11,6 @@ use CraftCms\Cms\Utility\Utilities\Upgrade;
 use CraftCms\Cms\Utility\Utility;
 use Illuminate\Container\Attributes\Give;
 use Illuminate\Support\Collection;
-use yii\base\InvalidArgumentException;
 
 /** @since 6.0.0 */
 final readonly class UtilitiesController
@@ -94,7 +93,7 @@ final readonly class UtilitiesController
             if ($svg !== '') {
                 return $svg;
             }
-        } catch (InvalidArgumentException) {
+        } catch (\InvalidArgumentException) {
         }
 
         return $this->defaultUtilityIconSvg($class);

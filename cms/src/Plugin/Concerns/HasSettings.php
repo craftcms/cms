@@ -3,12 +3,12 @@
 namespace CraftCms\Cms\Plugin\Concerns;
 
 use Craft;
-use craft\helpers\Html;
 use craft\web\Controller;
 use CraftCms\Cms\Component\Concerns\HasComponentEvents;
 use CraftCms\Cms\Component\Contracts\ValidatableComponentInterface;
 use CraftCms\Cms\Component\Events\ComponentEvent;
 use CraftCms\Cms\Plugin\Plugin;
+use CraftCms\Cms\Support\Html;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Log;
 use yii\web\Response;

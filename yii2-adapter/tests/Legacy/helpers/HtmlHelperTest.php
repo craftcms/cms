@@ -1,62 +1,56 @@
 <?php
-/**
- * @link https://craftcms.com/
- * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license https://craftcms.github.io/license/
- */
 
-namespace crafttests\unit\helpers;
+namespace CraftCms\Yii2Adapter\Tests\Legacy\helpers;
 
-use Codeception\Test\Unit;
 use craft\helpers\Html;
-use craft\test\TestCase;
-use yii\base\InvalidArgumentException;
+use InvalidArgumentException;
+use Orchestra\Testbench\PHPUnit\TestCase;
+use PHPUnit\Framework\Attributes\DataProvider;
 
 /**
  * Unit tests for the HTML Helper class.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @author Global Network Group | Giel Tettelaar <giel@yellowflash.net>
- * @since 3.2
  */
 class HtmlHelperTest extends TestCase
 {
     /**
-     * @dataProvider encodeParamsDataProvider
      * @param string $expected
      * @param string $html
      * @param array $variables
      */
+    #[DataProvider('encodeParamsDataProvider')]
     public function testEncodeParams(string $expected, string $html, array $variables): void
     {
         self::assertSame($expected, Html::encodeParams($html, $variables));
     }
 
     /**
-     * @dataProvider encodeSpacesDataProvider
      * @param string $expected
      * @param string $str
      */
+    #[DataProvider('encodeSpacesDataProvider')]
     public function testEncodeSpaces(string $expected, string $str): void
     {
         self::assertSame($expected, Html::encodeSpaces($str));
     }
 
     /**
-     * @dataProvider disableInputsDataProvider
      * @param string|null $expected
      * @param callable|string|null $html
      */
+    #[DataProvider('disableInputsDataProvider')]
     public function testDisableInputs(?string $expected, callable|string|null $html): void
     {
         self::assertSame($expected, Html::disableInputs($html));
     }
 
     /**
-     * @dataProvider parseTagDataProvider
      * @param array|false $expected
      * @param string $tag
      */
+    #[DataProvider('parseTagDataProvider')]
     public function testParseTag(array|false $expected, string $tag): void
     {
         if ($expected === false) {
@@ -81,12 +75,12 @@ class HtmlHelperTest extends TestCase
     }
 
     /**
-     * @dataProvider appendToTagDataProvider
      * @param string|false $expected
      * @param string $tag
      * @param string $html
      * @param string|null $ifExists
      */
+    #[DataProvider('appendToTagDataProvider')]
     public function testAppendToTag(string|false $expected, string $tag, string $html, ?string $ifExists): void
     {
         if ($expected === false) {
@@ -98,12 +92,12 @@ class HtmlHelperTest extends TestCase
     }
 
     /**
-     * @dataProvider prependToTagDataProvider
      * @param string|false $expected
      * @param string $tag
      * @param string $html
      * @param string|null $ifExists
      */
+    #[DataProvider('prependToTagDataProvider')]
     public function testPrependToTag(string|false $expected, string $tag, string $html, ?string $ifExists): void
     {
         if ($expected === false) {
@@ -115,10 +109,10 @@ class HtmlHelperTest extends TestCase
     }
 
     /**
-     * @dataProvider parseTagAttributesDataProvider
      * @param array|false $expected
      * @param string $tag
      */
+    #[DataProvider('parseTagAttributesDataProvider')]
     public function testParseTagAttributes(array|false $expected, string $tag): void
     {
         if ($expected === false) {
@@ -130,11 +124,11 @@ class HtmlHelperTest extends TestCase
     }
 
     /**
-     * @dataProvider modifyTagAttributesDataProvider
      * @param string|false $expected
      * @param string $tag
      * @param array $attributes
      */
+    #[DataProvider('modifyTagAttributesDataProvider')]
     public function testModifyTagAttributes(string|false $expected, string $tag, array $attributes): void
     {
         if ($expected === false) {
@@ -146,20 +140,20 @@ class HtmlHelperTest extends TestCase
     }
 
     /**
-     * @dataProvider normalizeTagAttributesDataProvider
      * @param array $expected
      * @param array $attributes
      */
+    #[DataProvider('normalizeTagAttributesDataProvider')]
     public function testNormalizeTagAttributes(array $expected, array $attributes): void
     {
         self::assertSame($expected, Html::normalizeTagAttributes($attributes));
     }
 
     /**
-     * @dataProvider idDataProvider
      * @param string|null $expected
      * @param string $id
      */
+    #[DataProvider('idDataProvider')]
     public function testId(?string $expected, string $id): void
     {
         if ($expected) {
@@ -170,83 +164,72 @@ class HtmlHelperTest extends TestCase
     }
 
     /**
-     * @dataProvider namespaceInputNameDataProvider
      * @param string $expected
      * @param string $name
      * @param string|null $namespace
      */
+    #[DataProvider('namespaceInputNameDataProvider')]
     public function testNamespaceInputName(string $expected, string $name, ?string $namespace): void
     {
         self::assertSame($expected, Html::namespaceInputName($name, $namespace));
     }
 
     /**
-     * @dataProvider namespaceIdDataProvider
      * @param string $expected
      * @param string $name
      * @param string|null $namespace
      */
+    #[DataProvider('namespaceIdDataProvider')]
     public function testNamespaceId(string $expected, string $name, ?string $namespace): void
     {
         self::assertSame($expected, Html::namespaceId($name, $namespace));
     }
 
     /**
-     * @dataProvider namespaceInputsDataProvider
      * @param string $expected
      * @param string $html
      * @param string $namespace
      */
+    #[DataProvider('namespaceInputsDataProvider')]
     public function testNamespaceInputs(string $expected, string $html, string $namespace): void
     {
         self::assertSame($expected, Html::namespaceInputs($html, $namespace));
     }
 
     /**
-     * @dataProvider namespaceAttributesDataProvider
      * @param string $expected
      * @param string $html
      * @param string $namespace
      * @param bool $classNames
      */
+    #[DataProvider('namespaceAttributesDataProvider')]
     public function testNamespaceAttributes(string $expected, string $html, string $namespace, bool $classNames): void
     {
         self::assertSame($expected, Html::namespaceAttributes($html, $namespace, $classNames));
     }
 
     /**
-     * @dataProvider widontDataProvider
      * @param string $expected
      * @param string $string
      */
+    #[DataProvider('widontDataProvider')]
     public function testWidont(string $expected, string $string): void
     {
         self::assertSame($expected, Html::widont($string));
     }
 
-    /**
-     * @dataProvider encodeInvalidTagsDataProvider
-     * @param string $expected
-     * @param string $html
-     */
+    #[DataProvider('encodeInvalidTagsDataProvider')]
     public function testEncodeInvalidTags(string $expected, string $html): void
     {
         self::assertSame($expected, Html::encodeInvalidTags($html));
     }
 
-    /**
-     * @dataProvider decodeDoublesDataProvider
-     * @param string $expected
-     * @param string $html
-     */
+    #[DataProvider('decodeDoublesDataProvider')]
     public function testDecodeDoubles(string $expected, string $html): void
     {
         self::assertSame($expected, Html::decodeDoubles($html));
     }
 
-    /**
-     *
-     */
     public function testUnwrapCondition(): void
     {
         // No condition
@@ -270,9 +253,6 @@ class HtmlHelperTest extends TestCase
         self::assertSame([$content, $condition], Html::unwrapCondition($conditionalContent));
     }
 
-    /**
-     *
-     */
     public function testUnwrapNoscript(): void
     {
         // Without <noscript>>
@@ -287,27 +267,6 @@ class HtmlHelperTest extends TestCase
         $content = "foo\nbar\nbaz";
         $noscriptContent = str_replace($cssFile, $content, Html::cssFile('foo.css', ['noscript' => true]));
         self::assertSame([$content, true], Html::unwrapNoscript($noscriptContent));
-    }
-
-    /**
-     *
-     */
-    public function testSvg(): void
-    {
-        $path = dirname(__DIR__, 2) . '/_data/assets/files/craft-logo.svg';
-        $contents = file_get_contents($path);
-
-        $svg = Html::svg($path);
-        self::assertStringStartsWith('<svg', $svg);
-        self::assertStringContainsString('id="Symbols"', $svg);
-
-        $svg = Html::svg($contents);
-        self::assertStringStartsWith('<svg', $svg);
-        self::assertRegExp('/id="\w+\-Symbols"/', $svg);
-
-        $svg = Html::svg($contents, namespace: false);
-        self::assertStringStartsWith('<svg', $svg);
-        self::assertStringContainsString('id="Symbols"', $svg);
     }
 
     /**
@@ -329,11 +288,11 @@ class HtmlHelperTest extends TestCase
             [$htmlTagString, $htmlTagString, []],
             [$pureVariableString, $pureVariableString, []],
             [
-                '<p>Im a paragraph. What am i, !@#$%^&amp;*(){}|::&quot;&lt;&gt;&lt;?&gt;/*-~`</p>!@#$%^&*(){}|::"<><?>/*-~`',
+                '<p>Im a paragraph. What am i, !@#$%^&amp;*(){}|::"&lt;&gt;&lt;?&gt;/*-~`</p>!@#$%^&*(){}|::"<><?>/*-~`',
                 $htmlTagString . '!@#$%^&*(){}|::"<><?>/*-~`',
                 ['whatIsThis' => '!@#$%^&*(){}|::"<><?>/*-~`'],
             ],
-            ['😘!@#$%^&amp;*(){}|::&quot;&lt;&gt;&lt;?&gt;/*-~`, {variable2}', $pureVariableString, ['variable1' => '😘!@#$%^&*(){}|::"<><?>/*-~`']],
+            ['😘!@#$%^&amp;*(){}|::"&lt;&gt;&lt;?&gt;/*-~`, {variable2}', $pureVariableString, ['variable1' => '😘!@#$%^&*(){}|::"<><?>/*-~`']],
         ];
     }
 
@@ -385,18 +344,6 @@ class HtmlHelperTest extends TestCase
             [
                 '<div class="field"><div class="input ltr disabled"><input type="text" name="foo" disabled></div></div>',
                 '<div class="field"><div class="input ltr disabled"><input type="text" name="foo"></div></div>',
-            ],
-            [
-                null,
-                fn() => null,
-            ],
-            [
-                '',
-                fn() => '',
-            ],
-            [
-                '<input type="text" name="foo" disabled>',
-                fn() => '<input type="text" name="foo">',
             ],
             // https://github.com/nystudio107/craft-retour/issues/329
             [

@@ -8,7 +8,7 @@
 namespace craft\web\twig\nodes;
 
 use Craft;
-use craft\helpers\Html;
+use CraftCms\Cms\Support\Html;
 use Twig\Compiler;
 use Twig\Node\Node;
 

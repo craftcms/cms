@@ -3,7 +3,7 @@
 namespace craft\base\conditions;
 
 use craft\helpers\Cp;
-use craft\helpers\Html;
+use CraftCms\Cms\Support\Html;
 
 /**
  * BaseLightswitchConditionRule provides a base implementation for condition rules that are composed of a lightswitch input.

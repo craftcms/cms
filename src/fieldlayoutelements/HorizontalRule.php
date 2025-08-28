@@ -11,7 +11,7 @@ use Craft;
 use craft\base\ElementInterface;
 use craft\base\FieldLayoutElement;
 use craft\helpers\Cp;
-use craft\helpers\Html;
+use CraftCms\Cms\Support\Html;
 
 /**
  * HorizontalRule represents an `<hr>` UI element can be included in field layouts.

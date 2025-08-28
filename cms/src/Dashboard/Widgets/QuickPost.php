@@ -4,10 +4,10 @@ namespace CraftCms\Cms\Dashboard\Widgets;
 
 use Craft;
 use craft\elements\Entry;
-use craft\helpers\Html;
 use craft\models\EntryType;
 use craft\models\Section;
 use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Support\Html;
 use Illuminate\Support\Facades\Auth;
 
 /** @since 6.0.0 */

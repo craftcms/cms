@@ -16,7 +16,6 @@ use craft\events\TemplateEvent;
 use craft\helpers\App;
 use craft\helpers\Cp;
 use craft\helpers\FileHelper;
-use craft\helpers\Html;
 use craft\helpers\Path;
 use craft\web\twig\CpExtension;
 use craft\web\twig\Environment;
@@ -27,6 +26,7 @@ use craft\web\twig\SafeHtml;
 use craft\web\twig\SinglePreloaderExtension;
 use craft\web\twig\TemplateLoader;
 use CraftCms\Cms\Config\GeneralConfig;
+use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Support\Str;
 use Illuminate\Support\Collection;
@@ -1114,7 +1114,7 @@ class View extends \yii\web\View
             }
 
             if ($scriptTag && !empty($js)) {
-                return Html::script($js, ['type' => 'text/javascript']);
+                return Html::script($js, ['type' => 'text/javascript'])->render();
             }
 
             return $js;
@@ -1122,7 +1122,7 @@ class View extends \yii\web\View
 
         if ($scriptTag) {
             foreach ($bufferedJs as $pos => $js) {
-                $bufferedJs[$pos] = Html::script(implode("\n", $js), ['type' => 'text/javascript']);
+                $bufferedJs[$pos] = Html::script(implode("\n", $js), ['type' => 'text/javascript'])->render();
             }
         }
 
@@ -1431,7 +1431,7 @@ class View extends \yii\web\View
     public function registerScript(string $script, int $position = self::POS_END, array $options = [], ?string $key = null): void
     {
         $key = $key ?: md5($script);
-        $this->_scripts[$position][$key] = Html::script($script, $options);
+        $this->_scripts[$position][$key] = Html::script($script, $options)->render();
     }
 
     /**

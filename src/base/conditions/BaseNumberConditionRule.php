@@ -5,7 +5,7 @@ namespace craft\base\conditions;
 use Craft;
 use craft\helpers\Cp;
 use craft\helpers\Db;
-use craft\helpers\Html;
+use CraftCms\Cms\Support\Html;
 
 /**
  * BaseNumberConditionRule provides a base implementation for condition rules that are composed of a number input.

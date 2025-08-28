@@ -22,7 +22,6 @@ use craft\helpers\ArrayHelper;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\Db;
 use craft\helpers\Gql;
-use craft\helpers\Html;
 use craft\helpers\HtmlPurifier;
 use craft\helpers\MoneyHelper;
 use craft\helpers\Sequence;
@@ -63,6 +62,7 @@ use CraftCms\Cms\Plugin\Contracts\PluginInterface;
 use CraftCms\Cms\Plugin\Plugins;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Env;
+use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Support\Str;
 use DateInterval;
@@ -798,14 +798,14 @@ class Extension extends AbstractExtension implements GlobalsInterface
      *
      * @param string $tag The HTML tag to parse
      * @return array The parsed HTML tag attributes
-     * @throws InvalidArgumentException if `$tag` doesn't contain a valid HTML tag
+     * @throws \InvalidArgumentException if `$tag` doesn't contain a valid HTML tag
      * @since 3.4.0
      */
     public function parseAttrFilter(string $tag): array
     {
         try {
             return Html::parseTagAttributes($tag, 0, $start, $end, true);
-        } catch (InvalidArgumentException $e) {
+        } catch (\InvalidArgumentException $e) {
             Craft::warning($e->getMessage(), __METHOD__);
             return [];
         }
@@ -838,7 +838,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
     {
         try {
             return Html::prependToTag($tag, $html, $ifExists);
-        } catch (InvalidArgumentException $e) {
+        } catch (\InvalidArgumentException $e) {
             Craft::warning($e->getMessage(), __METHOD__);
             return $tag;
         }
@@ -926,7 +926,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
                 $newTag = Html::modifyTagAttributes($newTag, ['class' => $newClasses]);
             }
             return $newTag;
-        } catch (InvalidArgumentException $e) {
+        } catch (\InvalidArgumentException $e) {
             Craft::warning($e->getMessage(), __METHOD__);
             return $tag;
         }
@@ -1044,7 +1044,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
     {
         try {
             return Html::appendToTag($tag, $html, $ifExists);
-        } catch (InvalidArgumentException $e) {
+        } catch (\InvalidArgumentException $e) {
             Craft::warning($e->getMessage(), __METHOD__);
             return $tag;
         }
@@ -1075,7 +1075,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
     {
         try {
             return Html::modifyTagAttributes($tag, $attributes);
-        } catch (InvalidArgumentException $e) {
+        } catch (\InvalidArgumentException $e) {
             Craft::warning($e->getMessage(), __METHOD__);
             return $tag;
         }
@@ -1501,7 +1501,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
             }
 
             return Html::dataUrl(Craft::getAlias($file), $mimeType);
-        } catch (InvalidArgumentException $e) {
+        } catch (\InvalidArgumentException $e) {
             Craft::warning($e->getMessage(), __METHOD__);
             return '';
         }
@@ -1692,7 +1692,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
                 $svg = Html::modifyTagAttributes($svg, [
                     'class' => $class,
                 ]);
-            } catch (InvalidArgumentException $e) {
+            } catch (\InvalidArgumentException $e) {
                 Craft::warning('Unable to add a class to the SVG: ' . $e->getMessage(), __METHOD__);
             }
         }

@@ -14,8 +14,8 @@ use craft\elements\conditions\users\UserCondition;
 use craft\elements\User;
 use craft\events\DefineShowFieldLayoutComponentInFormEvent;
 use craft\helpers\Cp;
-use craft\helpers\Html;
 use craft\models\FieldLayout;
+use CraftCms\Cms\Support\Html;
 
 /**
  * FieldLayoutComponent is the base class for classes representing field layout components (tabs or elements) in terms of objects.

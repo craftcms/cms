@@ -10,7 +10,7 @@ namespace craft\fieldlayoutelements;
 use Craft;
 use craft\base\ElementInterface;
 use craft\helpers\Cp;
-use craft\helpers\Html;
+use CraftCms\Cms\Support\Html;
 
 /**
  * Heading represents an `<h2>` UI element that can be included in field layouts.

@@ -23,6 +23,7 @@ use craft\services\ElementSources;
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Shared\Exceptions\OperationAbortedException;
 use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Str;
 use DateTime;
 use Illuminate\Database\Query\Builder;

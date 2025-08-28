@@ -16,7 +16,7 @@ use craft\base\MergeableFieldInterface;
 use craft\base\SortableFieldInterface;
 use craft\elements\Entry;
 use craft\fields\conditions\TextFieldConditionRule;
-use craft\helpers\Html;
+use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Str;
 
 /**

@@ -26,7 +26,6 @@ use craft\base\Thumbable;
 use craft\behaviors\DraftBehavior;
 use craft\elements\Address;
 use craft\errors\FieldNotFoundException;
-use craft\errors\InvalidHtmlTagException;
 use craft\events\DefineElementHtmlEvent;
 use craft\events\DefineElementInnerHtmlEvent;
 use craft\events\RegisterCpAlertsEvent;
@@ -45,6 +44,8 @@ use CraftCms\Cms\Element\Enums\MenuItemType;
 use CraftCms\Cms\Plugin\Plugins;
 use CraftCms\Cms\Shared\Enums\Color;
 use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Support\Exceptions\InvalidHtmlTagException;
+use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Json as JsonHelper;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Utility\Utilities;
@@ -171,9 +172,9 @@ class Cp
                     Html::tag('p', Craft::t('app', 'The following licensing {total, plural, =1{issue} other{issues}} can be resolved with a single purchase on Craft Console:', [
                         'total' => count($resolvableLicenseAlerts),
                     ])) .
-                    Html::ul($resolvableLicenseAlerts, [
-                        'class' => 'errors',
-                    ]) .
+                    Html::ul()
+                        ->items(...array_map(fn($alert) => Html::li($alert), $resolvableLicenseAlerts))
+                        ->class('errors') .
                     // can't use Html::a() because it's encoding &amp;'s, which is causing issues
                     Html::beginTag('p', [
                         'class' => ['flex', 'flex-nowrap', 'resolvable-alert-buttons'],
@@ -734,10 +735,10 @@ JS, [
         ]);
 
         if (!empty($labels)) {
-            $bodyContent .= Html::ul($labels, [
-                'class' => ['flex', 'gap-xs'],
-                'encode' => false,
-            ]);
+            $bodyContent .= Html::ul()
+                ->items(...array_map(fn($label) => Html::li($label)->encode(false), $labels))
+                ->class('flex gap-xs')
+                ->render();
         }
 
         // is this a nested element that will end up replacing its canonical
@@ -2979,10 +2980,10 @@ JS, [
         }
 
         if (!empty(array_filter($labels))) {
-            $previewHtml .= Html::ul($labels, [
-                'class' => ['flex', 'gap-xs'],
-                'encode' => false,
-            ]);
+            $previewHtml .= Html::ul()
+                ->items(...array_map(fn($label) => Html::li($label)->encode(false), $labels))
+                ->class('flex', 'gap-xs')
+                ->render();
         }
 
         $previewHtml .=
@@ -3807,7 +3808,7 @@ JS, [
             } else {
                 $svg = Html::svg($icon, true, throwException: true);
             }
-        } catch (InvalidArgumentException $e) {
+        } catch (InvalidArgumentException|\InvalidArgumentException $e) {
             Craft::warning("Could not load icon: {$e->getMessage()}", __METHOD__);
             if (!$fallbackLabel) {
                 return '';
@@ -3831,7 +3832,7 @@ JS, [
         // Add attributes for accessibility
         try {
             $svg = Html::modifyTagAttributes($svg, $attributes);
-        } catch (InvalidArgumentException) {
+        } catch (\InvalidArgumentException) {
         }
 
         return $svg;

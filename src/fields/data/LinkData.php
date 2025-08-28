@@ -12,8 +12,8 @@ use craft\base\Serializable;
 use craft\elements\db\ElementQueryInterface;
 use craft\fields\linktypes\BaseElementLinkType;
 use craft\fields\linktypes\BaseLinkType;
-use craft\helpers\Html;
 use craft\helpers\Template;
+use CraftCms\Cms\Support\Html;
 use Twig\Markup;
 use yii\base\BaseObject;
 

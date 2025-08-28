@@ -8,9 +8,9 @@
 namespace craft\web;
 
 use Craft;
-use craft\helpers\Html;
 use craft\helpers\UrlHelper;
 use craft\models\Site;
+use CraftCms\Cms\Support\Html;
 use yii\base\Behavior;
 
 /**

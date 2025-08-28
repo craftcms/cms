@@ -9,8 +9,8 @@ use craft\elements\db\ElementQueryInterface;
 use craft\elements\Entry;
 use craft\fields\BaseRelationField;
 use craft\helpers\Cp;
-use craft\helpers\Html;
 use craft\helpers\UrlHelper;
+use CraftCms\Cms\Support\Html;
 
 /**
  * Relation condition rule.

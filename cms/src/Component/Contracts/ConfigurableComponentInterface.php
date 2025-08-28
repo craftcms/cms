@@ -46,7 +46,7 @@ interface ConfigurableComponentInterface
      * ```
      *
      * If you need to tie any JavaScript code to your settings, it’s important to know that any `name` and `id`
-     * attributes within the returned HTML will probably get [[\craft\helpers\Html::namespaceHtml()|namespaced]],
+     * attributes within the returned HTML will probably get [[\CraftCms\Cms\Support\Html::namespaceHtml()|namespaced]],
      * however your JavaScript code will be left untouched.
      * For example, if getSettingsHtml() returns the following HTML:
      *
