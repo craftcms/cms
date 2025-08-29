@@ -19,6 +19,7 @@ use yii\base\ExitException;
 use yii\base\InvalidConfigException;
 use yii\helpers\VarDumper;
 use yii\web\Request;
+use function GuzzleHttp\default_user_agent;
 
 /**
  * Craft is helper class serving common Craft and Yii framework functionality.
@@ -419,7 +420,25 @@ EOD;
      */
     public static function createGuzzleClient(array $config = []): Client
     {
-        return Http::create($config)->buildClient();
+        // Set the Craft header by default.
+        $defaultConfig = [
+            'headers' => [
+                'User-Agent' => 'Craft/' . static::$app->getVersion() . ' ' . default_user_agent(),
+            ],
+        ];
+
+        // Grab the config from config/guzzle.php that is used on every Guzzle request.
+        $guzzleConfig = config('craft.guzzle', []);
+        $generalConfig = app(GeneralConfig::class);
+
+        // Merge everything together
+        $guzzleConfig = \CraftCms\Cms\Support\Arr::merge($defaultConfig, $guzzleConfig, $config);
+
+        if ($generalConfig->httpProxy) {
+            $guzzleConfig['proxy'] = $generalConfig->httpProxy;
+        }
+
+        return new Client($guzzleConfig);
     }
 }
 
