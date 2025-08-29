@@ -113,8 +113,9 @@ class AppHelperTest extends TestCase
         self::assertSame('footesting1bar', App::parseEnv('$TEST_2'));
         self::assertSame('footesting1bar', App::parseEnv('${TEST_2}'));
         self::assertSame('foo/footesting1bar/bar', App::parseEnv('foo/$TEST_2/bar'));
-        self::assertSame(null, App::parseEnv('$CRAFT_SITE'));
-        self::assertSame('abcdef', App::parseEnv('$TEST_${CRAFT_SITE}_API_KEY'));
+        self::assertSame('defaultSite', App::parseEnv('$CRAFT_SITE'));
+        self::assertSame('DEFAULT_SITE', App::parseEnv('$CRAFT_SITE_UPPER'));
+        self::assertSame('abcdef', App::parseEnv('$TEST_${CRAFT_SITE_UPPER}_API_KEY'));
         self::assertSame(CRAFT_TESTS_PATH, App::parseEnv('$CRAFT_TESTS_PATH'));
         self::assertSame(CRAFT_TESTS_PATH . '/foo/bar', App::parseEnv('$CRAFT_TESTS_PATH/foo/bar'));
         self::assertSame('CRAFT_TESTS_PATH', App::parseEnv('CRAFT_TESTS_PATH'));
