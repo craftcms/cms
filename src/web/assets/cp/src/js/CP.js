@@ -1955,7 +1955,7 @@ Craft.CP = Garnish.Base.extend(
       });
     },
 
-    previewCountBadge: function(event, item, thumbLoader = true) {
+    previewCountBadge: function (event, item, thumbLoader = true) {
       let e = event || window.event;
 
       if (e.type == 'click' || e.keyCode == 32 || e.keyCode == 13) {
