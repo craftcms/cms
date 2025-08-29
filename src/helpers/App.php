@@ -98,7 +98,7 @@ class App
      */
     public static function devMode(): bool
     {
-        return YII_DEBUG;
+        return app()->hasDebugModeEnabled();
     }
 
     /**
@@ -196,29 +196,11 @@ class App
      * @return string|bool|null The parsed value, or the original value if it didn’t
      * reference an environment variable and/or alias.
      * @since 3.7.29
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\Support\Env::parse()} instead.
      */
     public static function parseEnv(?string $value): bool|string|null
     {
-        if ($value === null) {
-            return null;
-        }
-
-        if (preg_match('/^\$(\w+)(\/.*)?/', $value, $matches)) {
-            $env = Env::get($matches[1]);
-
-            if ($env === null) {
-                // No env var or constant is defined here by that name
-                return null;
-            }
-
-            $value = $env . ($matches[2] ?? '');
-        }
-
-        if (str_starts_with($value, '@')) {
-            $value = Craft::getAlias($value, false) ?: $value;
-        }
-
-        return $value;
+        return Env::parse($value);
     }
 
     /**
@@ -234,26 +216,11 @@ class App
      * @param mixed $value
      * @return bool|null
      * @since 3.7.29
+     * @deprecated 6.0.0 use {@see Env::parseBoolean()} instead.
      */
     public static function parseBooleanEnv(mixed $value): ?bool
     {
-        if (is_bool($value)) {
-            return $value;
-        }
-
-        if ($value === 0 || $value === 1) {
-            return (bool)$value;
-        }
-
-        if (!is_string($value)) {
-            return null;
-        }
-
-        $value = static::parseEnv($value);
-        if ($value === null) {
-            return null;
-        }
-        return filter_var($value, FILTER_VALIDATE_BOOL, FILTER_NULL_ON_FAILURE);
+        return Env::parseBoolean($value);
     }
 
     /**
@@ -981,8 +948,8 @@ class App
             'password' => $dbConfig->password,
             'charset' => $dbConfig->getCharset(),
             'tablePrefix' => $dbConfig->tablePrefix ?? '',
-            'enableLogging' => static::devMode(),
-            'enableProfiling' => static::devMode(),
+            'enableLogging' => app()->hasDebugModeEnabled(),
+            'enableProfiling' => app()->hasDebugModeEnabled(),
             'schemaMap' => [
                 $driver => $schemaConfig,
             ],
@@ -990,7 +957,7 @@ class App
                 $driver => Command::class,
             ],
             'attributes' => $dbConfig->attributes,
-            'enableSchemaCache' => !static::devMode(),
+            'enableSchemaCache' => !app()->hasDebugModeEnabled(),
         ];
 
         if ($driver === Connection::DRIVER_PGSQL && $dbConfig->setSchemaOnConnect && $dbConfig->schema) {
@@ -1041,10 +1008,10 @@ class App
             'class' => Mailer::class,
             'messageClass' => Message::class,
             'from' => [
-                App::parseEnv($settings->fromEmail) => App::parseEnv($settings->fromName),
+                Env::parse($settings->fromEmail) => Env::parse($settings->fromName),
             ],
-            'replyTo' => App::parseEnv($settings->replyToEmail),
-            'template' => App::parseEnv($settings->template),
+            'replyTo' => Env::parse($settings->replyToEmail),
+            'template' => Env::parse($settings->template),
             'siteOverrides' => $settings->siteOverrides,
             'transport' => $adapter->defineTransport(),
         ];

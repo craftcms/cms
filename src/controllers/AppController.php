@@ -34,6 +34,7 @@ use CraftCms\Cms\Plugin\Plugins;
 use CraftCms\Cms\Shared\Enums\LicenseKeyStatus;
 use CraftCms\Cms\Support\Api;
 use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Support\Env;
 use CraftCms\Cms\Support\Facades\Http;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Json;
@@ -685,7 +686,7 @@ class AppController extends Controller
                     if (
                         !isset($allPluginInfo[$handle]) ||
                         !$allPluginInfo[$handle]['licenseKey'] ||
-                        $pluginsService->normalizePluginLicenseKey(App::parseEnv($allPluginInfo[$handle]['licenseKey'])) === $pluginLicenseInfo['key']
+                        $pluginsService->normalizePluginLicenseKey(Env::parse($allPluginInfo[$handle]['licenseKey'])) === $pluginLicenseInfo['key']
                     ) {
                         $result[$handle] = [
                             'edition' => null,
@@ -724,7 +725,7 @@ class AppController extends Controller
                 'version' => $pluginInfo['version'],
                 'hasMultipleEditions' => $pluginInfo['hasMultipleEditions'],
                 'edition' => $pluginInfo['edition'],
-                'licenseKey' => $pluginsService->normalizePluginLicenseKey(App::parseEnv($pluginInfo['licenseKey'])),
+                'licenseKey' => $pluginsService->normalizePluginLicenseKey(Env::parse($pluginInfo['licenseKey'])),
                 'licensedEdition' => $pluginInfo['licensedEdition'],
                 'licenseKeyStatus' => $pluginInfo['licenseKeyStatus'],
                 'licenseIssues' => $pluginInfo['licenseIssues'],

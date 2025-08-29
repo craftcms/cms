@@ -1766,7 +1766,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
             'systemName' => $systemName,
             'view' => $this->view,
 
-            'devMode' => App::devMode(),
+            'devMode' => app()->hasDebugModeEnabled(),
             'SORT_ASC' => SORT_ASC,
             'SORT_DESC' => SORT_DESC,
             'SORT_REGULAR' => SORT_REGULAR,

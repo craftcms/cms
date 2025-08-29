@@ -6,9 +6,9 @@ use Craft;
 use craft\base\ElementInterface;
 use craft\elements\conditions\ElementCondition;
 use craft\elements\conditions\ElementConditionInterface;
-use craft\helpers\App;
 use craft\helpers\Cp;
 use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Support\Env;
 use stdClass;
 
 /**
@@ -112,7 +112,7 @@ abstract class BaseElementSelectConditionRule extends BaseConditionRule
     public function getElementIds(bool $parse = true): array|string
     {
         if ($parse && is_string($this->_elementIds)) {
-            $elementIds = App::parseEnv($this->_elementIds);
+            $elementIds = Env::parse($this->_elementIds);
             if ($this->condition instanceof ElementCondition && isset($this->condition->referenceElement)) {
                 $referenceElement = $this->condition->referenceElement;
             } else {

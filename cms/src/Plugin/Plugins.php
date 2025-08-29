@@ -1104,7 +1104,7 @@ final class Plugins
     {
         $licenseKey = $this->getStoredPluginInfo($handle)['licenseKey'] ?? null;
 
-        return $this->normalizePluginLicenseKey(App::parseEnv($licenseKey));
+        return $this->normalizePluginLicenseKey(Env::parse($licenseKey));
     }
 
     /**

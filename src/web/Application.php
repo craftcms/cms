@@ -449,7 +449,7 @@ class Application extends \yii\web\Application
         $pref = $request->getIsCpRequest() ? 'enableDebugToolbarForCp' : 'enableDebugToolbarForSite';
         if (!(
             ($user && $user->admin && $user->getPreference($pref)) ||
-            (App::devMode() && $request->getHeaders()->get('X-Debug') === 'enable')
+            (app()->hasDebugModeEnabled() && $request->getHeaders()->get('X-Debug') === 'enable')
         )) {
             return;
         }
@@ -621,7 +621,7 @@ class Application extends \yii\web\Application
             }
 
             // Redirect to the installer if Dev Mode is enabled
-            if (App::devMode()) {
+            if (app()->hasDebugModeEnabled()) {
                 $url = UrlHelper::url('install');
                 $this->getResponse()->redirect($url);
                 $this->end();

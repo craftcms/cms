@@ -10,13 +10,13 @@ namespace craft\models;
 use Craft;
 use craft\base\Chippable;
 use craft\base\Model;
-use craft\helpers\App;
 use craft\i18n\Locale;
 use craft\records\Site as SiteRecord;
 use craft\validators\HandleValidator;
 use craft\validators\LanguageValidator;
 use craft\validators\UniqueValidator;
 use craft\validators\UrlValidator;
+use CraftCms\Cms\Support\Env;
 use DateTime;
 use yii\base\InvalidConfigException;
 
@@ -136,7 +136,7 @@ class Site extends Model implements Chippable
      */
     public function getName(bool $parse = true): string
     {
-        return ($parse ? App::parseEnv($this->_name) : $this->_name) ?? '';
+        return ($parse ? Env::parse($this->_name) : $this->_name) ?? '';
     }
 
     /**
@@ -161,7 +161,7 @@ class Site extends Model implements Chippable
     {
         if ($this->_baseUrl) {
             if ($parse) {
-                $parsed = App::parseEnv($this->_baseUrl);
+                $parsed = Env::parse($this->_baseUrl);
                 return $parsed ? rtrim($parsed, '/') . '/' : null;
             }
 
@@ -196,7 +196,7 @@ class Site extends Model implements Chippable
         }
 
         if ($parse) {
-            return App::parseBooleanEnv($this->_enabled) ?? true;
+            return Env::parseBoolean($this->_enabled) ?? true;
         }
         return $this->_enabled;
     }
@@ -221,7 +221,7 @@ class Site extends Model implements Chippable
      */
     public function getLanguage(bool $parse = true): string
     {
-        return ($parse ? App::parseEnv($this->_language) : $this->_language) ?? '';
+        return ($parse ? Env::parse($this->_language) : $this->_language) ?? '';
     }
 
     /**

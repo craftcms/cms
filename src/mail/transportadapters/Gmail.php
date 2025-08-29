@@ -9,7 +9,7 @@ namespace craft\mail\transportadapters;
 
 use Craft;
 use craft\behaviors\EnvAttributeParserBehavior;
-use craft\helpers\App;
+use CraftCms\Cms\Support\Env;
 use Symfony\Component\Mailer\Transport\AbstractTransport;
 
 /**
@@ -109,8 +109,8 @@ class Gmail extends BaseTransportAdapter
             'scheme' => 'smtp',
             'host' => 'smtp.gmail.com',
             'port' => 0,
-            'username' => App::parseEnv($this->username),
-            'password' => App::parseEnv($this->password),
+            'username' => Env::parse($this->username),
+            'password' => Env::parse($this->password),
         ];
     }
 }
