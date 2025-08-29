@@ -463,7 +463,7 @@ class AppHelperTest extends TestCase
             [false, '0'],
             [true, 'true'],
             [false, 'false'],
-            [false, ''],
+            [null, ''],
             [null, 'whatever'],
             [true, 1],
             [false, 0],
