@@ -150,13 +150,7 @@ class App
 
     private static function parseNestedEnv(string $value): string
     {
-        return preg_replace_callback('/\$\{(\w+)}/', function($m) {
-            $value = static::env($m[1]);
-            if ($value === null && $m[1] === 'CRAFT_SITE') {
-                return strtoupper(StringHelper::toSnakeCase(Craft::$app->getSites()->getCurrentSite()->handle));
-            }
-            return $value;
-        }, $value);
+        return preg_replace_callback('/\$\{(\w+)}/', fn(array $m) => static::env($m[1]), $value);
     }
 
     /**
@@ -237,10 +231,10 @@ class App
             return null;
         }
 
-        // parse nested variables (e.g. foo-${VAR}-bar)
+        // …${VAR}…
         $value = self::parseNestedEnv($value);
 
-        // parse inline variables (e.g. foo/$VAR/bar)
+        // …/$VAR/…
         $value = preg_replace_callback('/(?<=^|\/)\$(\w+)(?=$|\/)?/', fn($m) => static::env($m[1]), $value);
 
         if ($value === '') {
