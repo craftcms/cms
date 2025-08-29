@@ -1,5 +1,6 @@
 <?php
 
+use CraftCms\Aliases\Facades\Aliases;
 use CraftCms\Cms\Support\Env;
 use Illuminate\Filesystem\Filesystem;
 use Illuminate\Support\Facades\File;
@@ -41,3 +42,35 @@ it('can remove a variable from a file', function () {
         $filesystem->get($path)
     );
 });
+
+test('parse', function () {
+    define('CRAFT_TESTS_PATH', __DIR__);
+
+    expect(Env::parse(null))->toBeNull();
+    expect(Env::parse('$CRAFT_TESTS_PATH'))->toBe(CRAFT_TESTS_PATH);
+    expect(Env::parse('$CRAFT_TESTS_PATH/foo/bar'))->toBe(CRAFT_TESTS_PATH.'/foo/bar');
+    expect(Env::parse('CRAFT_TESTS_PATH'))->toBe('CRAFT_TESTS_PATH');
+    expect(Env::parse('$TEST_MISSING'))->toBeNull();
+    expect(Env::parse('@vendor/foo/bar'))->toBe(Aliases::get('@vendor/foo/bar'));
+});
+
+test('parseBoolean', function (?bool $expected, mixed $value) {
+    expect(Env::parseBoolean($value))->toBe($expected);
+})->with([
+    [true, true],
+    [false, false],
+    [true, 'yes'],
+    [false, 'no'],
+    [true, 'on'],
+    [false, 'off'],
+    [true, '1'],
+    [false, '0'],
+    [true, 'true'],
+    [false, 'false'],
+    [false, ''],
+    [null, 'whatever'],
+    [true, 1],
+    [false, 0],
+    [null, 2],
+    [null, '$TEST_MISSING'],
+]);
