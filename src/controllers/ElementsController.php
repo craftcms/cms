@@ -1542,7 +1542,7 @@ JS, [
             // Remove existing ownership data for the element within the canonical owner,
             // and for its canonical element within the derivative
             DbFacade::table(Table::ELEMENTS_OWNERS)
-                ->where(['elementId', $element->id, 'ownerId', $owner->getCanonicalId()])
+                ->where(['elementId' => $element->id, 'ownerId' => $owner->getCanonicalId()])
                 ->orWhere(['elementId' => $element->getCanonicalId(), 'ownerId' => $owner->id])
                 ->delete();
 
