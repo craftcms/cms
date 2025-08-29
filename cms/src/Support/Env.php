@@ -55,10 +55,10 @@ final class Env extends \Illuminate\Support\Env
      * $value2 = Env::parse('@webroot');
      * ```
      *
-     * @return string|bool|null The parsed value, or the original value if it didn’t
-     *                          reference an environment variable and/or alias.
+     * @return string|null The parsed value, or the original value if it didn’t
+     *                     reference an environment variable and/or alias.
      */
-    public static function parse(?string $value): bool|string|null
+    public static function parse(?string $value): ?string
     {
         if ($value === null) {
             return null;
