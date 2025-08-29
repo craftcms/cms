@@ -227,8 +227,8 @@ class App
      */
     public static function parseEnv(?string $value): bool|string|null
     {
-        if ($value === null) {
-            return null;
+        if ($value === null || $value === '') {
+            return $value;
         }
 
         // …${VAR}…
