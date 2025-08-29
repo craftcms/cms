@@ -2044,7 +2044,7 @@ class Entries extends Component
         // Get the structure ID
         if (!isset($criteria['structureId'])) {
             $criteria['structureId'] = DB::table(Table::ENTRIES, 'entries')
-                ->join(new Alias(Table::SESSIONS, 'sections'), 'sections.id', 'entries.sectionId')
+                ->join(new Alias(Table::SECTIONS, 'sections'), 'sections.id', 'entries.sectionId')
                 ->where('entries.id', $entryId)
                 ->value('sections.structureId');
         }
