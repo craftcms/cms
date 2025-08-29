@@ -9,7 +9,6 @@ namespace craft\helpers;
 
 use Closure;
 use Craft;
-use craft\attributes\EnvName;
 use craft\behaviors\SessionBehavior;
 use craft\config\DbConfig;
 use craft\db\Command;
@@ -42,10 +41,8 @@ use CraftCms\Cms\Support\Json as JsonHelper;
 use CraftCms\Cms\Support\Str;
 use HTMLPurifier_Encoder;
 use Illuminate\Support\Facades\Cache;
-use ReflectionClass;
 use ReflectionFunction;
 use ReflectionNamedType;
-use ReflectionProperty;
 use Symfony\Component\Process\PhpExecutableFinder;
 use yii\base\Event;
 use yii\base\Exception;
@@ -86,15 +83,11 @@ class App
     private static array $_basePaths;
 
     /**
-     * @var string[]
-     */
-    private static array $_secrets;
-
-    /**
      * Returns whether Dev Mode is enabled.
      *
      * @return bool
      * @since 4.0.0
+     * @deprecated 6.0.0 use `app()->hasDebugModeEnabled()` instead.
      */
     public static function devMode(): bool
     {
@@ -118,7 +111,7 @@ class App
      * @return mixed The value, or `null` if not found.
      * @throws Exception
      * @since 3.4.18
-     * @deprecated in 6.0.0. Use `\CraftCms\Cms\Support\Env::get()` instead.
+     * @deprecated in 6.0.0. Use {@see Env::get()} instead.
      */
     public static function env(string $name): mixed
     {
@@ -143,36 +136,7 @@ class App
      */
     public static function envConfig(string $class, ?string $envPrefix = null): array
     {
-        $envPrefix = $envPrefix !== null ? Str::finish($envPrefix, '_') : '';
-        $properties = (new ReflectionClass($class))->getProperties(ReflectionProperty::IS_PUBLIC);
-        $envConfig = [];
-
-        foreach ($properties as $prop) {
-            if ($prop->isStatic()) {
-                continue;
-            }
-
-            $envName = null;
-
-            foreach ($prop->getAttributes(EnvName::class) as $attribute) {
-                /** @var EnvName $envName */
-                $envName = $attribute->newInstance();
-                $envName = $envName->name;
-                break;
-            }
-
-            if (!$envName) {
-                $envName = str($prop->getName())->snake()->upper()->value();
-            }
-
-            $envValue = Env::get(sprintf('%s%s', $envPrefix, $envName));
-
-            if ($envValue !== null) {
-                $envConfig[$prop->getName()] = $envValue;
-            }
-        }
-
-        return $envConfig;
+        return Env::config($class, $envPrefix);
     }
 
     /**

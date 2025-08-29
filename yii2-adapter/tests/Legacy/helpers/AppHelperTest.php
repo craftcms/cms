@@ -2,8 +2,10 @@
 
 namespace CraftCms\Yii2Adapter\Tests\Legacy\helpers;
 
-use Craft;
 use craft\helpers\App;
+use CraftCms\Cms\Config\ConstAdapter;
+use CraftCms\Cms\Config\GeneralConfig;
+use CraftCms\Cms\Support\Env;
 use Orchestra\Testbench\PHPUnit\TestCase;
 use PHPUnit\Framework\Attributes\DataProvider;
 
@@ -11,7 +13,10 @@ final class AppHelperTest extends TestCase
 {
     public function testParseEnv(): void
     {
-        if (! defined('CRAFT_TESTS_PATH')) {
+        /** @see \CraftCms\Cms\Config\ConfigServiceProvider */
+        Env::extend(fn() => ConstAdapter::class);
+
+        if (!defined('CRAFT_TESTS_PATH')) {
             define('CRAFT_TESTS_PATH', __DIR__);
         }
 
@@ -20,7 +25,6 @@ final class AppHelperTest extends TestCase
         self::assertSame(CRAFT_TESTS_PATH . '/foo/bar', App::parseEnv('$CRAFT_TESTS_PATH/foo/bar'));
         self::assertSame('CRAFT_TESTS_PATH', App::parseEnv('CRAFT_TESTS_PATH'));
         self::assertSame(null, App::parseEnv('$TEST_MISSING'));
-        self::assertSame(Craft::getAlias('@vendor/foo/bar'), App::parseEnv('@vendor/foo/bar'));
     }
 
     #[DataProvider('parseBooleanEnvDataProvider')]
@@ -48,6 +52,77 @@ final class AppHelperTest extends TestCase
             [false, 0],
             [null, 2],
             [null, '$TEST_MISSING'],
+        ];
+    }
+
+    #[DataProvider('envConfigDataProvider')]
+    public function testEnvConfig(mixed $expected, string $paramName, string $overrideName, mixed $overrideValue): void
+    {
+        $envString = $overrideName;
+
+        if ($overrideValue !== null) {
+            $envString .= "=$overrideValue";
+        }
+
+        putenv($envString);
+
+        $config = App::envConfig(GeneralConfig::class, 'CRAFT_');
+        if ($expected === null) {
+            self::assertArrayNotHasKey($paramName, $config);
+        } else {
+            self::assertArrayHasKey($paramName, $config);
+            self::assertEquals($expected, $config[$paramName]);
+        }
+
+        // Cleanup env for subsequent tests
+        putenv($overrideName);
+    }
+
+    public static function envConfigDataProvider(): array
+    {
+        return [
+            [
+                false,
+                'allowAdminChanges',
+                'CRAFT_ALLOW_ADMIN_CHANGES',
+                'false',
+            ],
+            [
+                null,
+                'allowAdminChanges',
+                'CRAFT_ALLOW_ADMIN_CHANGES',
+                null,
+            ],
+            [
+                'foo,bar',
+                'disabledPlugins',
+                'CRAFT_DISABLED_PLUGINS',
+                'foo,bar',
+            ],
+            [
+                '*',
+                'disabledPlugins',
+                'CRAFT_DISABLED_PLUGINS',
+                '*',
+            ],
+            [
+                1,
+                'defaultWeekStartDay',
+                'CRAFT_DEFAULT_WEEK_START_DAY',
+                '1',
+            ],
+            [
+                'login,with,comma',
+                'loginPath',
+                'CRAFT_LOGIN_PATH',
+                'login,with,comma',
+            ],
+            [
+                false,
+                'loginPath',
+                'CRAFT_LOGIN_PATH',
+                'false',
+            ],
         ];
     }
 }

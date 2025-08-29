@@ -1,6 +1,7 @@
 <?php
 
 use CraftCms\Aliases\Facades\Aliases;
+use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Support\Env;
 use Illuminate\Filesystem\Filesystem;
 use Illuminate\Support\Facades\File;
@@ -73,4 +74,33 @@ test('parseBoolean', function (?bool $expected, mixed $value) {
     [false, 0],
     [null, 2],
     [null, '$TEST_MISSING'],
+]);
+
+test('config', function (mixed $expected, string $paramName, string $overrideName, mixed $overrideValue) {
+    $envString = $overrideName;
+
+    if ($overrideValue !== null) {
+        $envString .= "=$overrideValue";
+    }
+
+    putenv($envString);
+
+    $config = Env::config(GeneralConfig::class, 'CRAFT_');
+    if ($expected === null) {
+        expect($config)->not()->toHaveKey($paramName);
+    } else {
+        expect($config)->toHaveKey($paramName);
+        expect($config[$paramName])->toEqual($expected);
+    }
+
+    // Cleanup env for subsequent tests
+    putenv($overrideName);
+})->with([
+    [false, 'allowAdminChanges', 'CRAFT_ALLOW_ADMIN_CHANGES', 'false'],
+    [null, 'allowAdminChanges', 'CRAFT_ALLOW_ADMIN_CHANGES', null],
+    ['foo,bar', 'disabledPlugins', 'CRAFT_DISABLED_PLUGINS', 'foo,bar'],
+    ['*', 'disabledPlugins', 'CRAFT_DISABLED_PLUGINS', '*'],
+    [1, 'defaultWeekStartDay', 'CRAFT_DEFAULT_WEEK_START_DAY', '1'],
+    ['login,with,comma', 'loginPath', 'CRAFT_LOGIN_PATH', 'login,with,comma'],
+    [false, 'loginPath', 'CRAFT_LOGIN_PATH', 'false'],
 ]);

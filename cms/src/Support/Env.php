@@ -3,15 +3,17 @@
 namespace CraftCms\Cms\Support;
 
 use CraftCms\Aliases\Facades\Aliases;
+use CraftCms\Cms\Support\Attributes\EnvName;
 use Illuminate\Contracts\Filesystem\FileNotFoundException;
 use Illuminate\Filesystem\Filesystem;
 use InvalidArgumentException;
+use ReflectionProperty;
 use RuntimeException;
 
 /**
  * @since 6.0.0
  */
-class Env extends \Illuminate\Support\Env
+final class Env extends \Illuminate\Support\Env
 {
     /**
      * Remove a single key from the environment file.
@@ -63,7 +65,7 @@ class Env extends \Illuminate\Support\Env
         }
 
         if (preg_match('/^\$(\w+)(\/.*)?/', $value, $matches)) {
-            $env = Env::get($matches[1]);
+            $env = self::get($matches[1]);
 
             if ($env === null) {
                 // No env var or constant is defined here by that name
@@ -107,12 +109,46 @@ class Env extends \Illuminate\Support\Env
             return null;
         }
 
-        $value = static::parse($value);
+        $value = self::parse($value);
 
         if ($value === null) {
             return null;
         }
 
         return filter_var($value, FILTER_VALIDATE_BOOL, FILTER_NULL_ON_FAILURE);
+    }
+
+    /**
+     * Returns a config array for a given class, based on any environment variables or PHP constants named based on its
+     * public properties.
+     *
+     * Environment variable/PHP constant names must be capitalized, SNAKE_CASED versions of the object’s property names,
+     * possibly with a given prefix.
+     *
+     * For example, if an object has a `fooBar` property, and `X`/`X_` is passed as the prefix, the resulting array
+     * may contain a `fooBar` key set to an `X_FOO_BAR` environment variable value, if it exists.
+     *
+     * @param  class-string  $class  The class name
+     * @param  string|null  $prefix  The environment variable name prefix
+     *
+     * @phpstan-return array<string, mixed>
+     */
+    public static function config(string $class, ?string $prefix = null): array
+    {
+        $prefix = when(is_null($prefix), '', Str::finish($prefix, '_'));
+
+        return Utils::getPublicReflectionProperties($class)
+            ->mapWithKeys(function (ReflectionProperty $property) use ($prefix) {
+                $envName = str($property->getName())->snake()->upper()->value();
+
+                if ($attribute = Arr::first($property->getAttributes(EnvName::class))) {
+                    $envName = $attribute->newInstance();
+                    $envName = $envName->name;
+                }
+
+                return [$property->getName() => self::get($prefix.$envName)];
+            })
+            ->filter(fn (mixed $value) => ! is_null($value))
+            ->all();
     }
 }
