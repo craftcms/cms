@@ -2,15 +2,19 @@
 
 namespace CraftCms\Yii2Adapter\Tests\Legacy\helpers;
 
-use Codeception\Attribute\DataProvider;
 use Craft;
 use craft\helpers\App;
 use Orchestra\Testbench\PHPUnit\TestCase;
+use PHPUnit\Framework\Attributes\DataProvider;
 
 final class AppHelperTest extends TestCase
 {
     public function testParseEnv(): void
     {
+        if (! defined('CRAFT_TESTS_PATH')) {
+            define('CRAFT_TESTS_PATH', __DIR__);
+        }
+
         self::assertNull(App::parseEnv(null));
         self::assertSame(CRAFT_TESTS_PATH, App::parseEnv('$CRAFT_TESTS_PATH'));
         self::assertSame(CRAFT_TESTS_PATH . '/foo/bar', App::parseEnv('$CRAFT_TESTS_PATH/foo/bar'));
