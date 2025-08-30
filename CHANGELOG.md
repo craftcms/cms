@@ -1,6 +1,6 @@
 # Release Notes for Craft CMS 5
 
-## Unreleased
+## 5.8.16 - 2025-08-29
 
 - When searching for elements, partial matches within titles are now scored higher than exact matches in other fields. ([#17739](https://github.com/craftcms/cms/issues/17739))
 - Date pickers’ year selects now have a range of 100 years in the past and future. ([#17782](https://github.com/craftcms/cms/pull/17782))
