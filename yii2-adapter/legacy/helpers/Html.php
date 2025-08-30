@@ -18,6 +18,7 @@ use yii\base\InvalidConfigException;
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
+ * @deprecated 6.0.0 use {@see \CraftCms\Cms\Support\Html} instead.
  */
 class Html extends \yii\helpers\Html
 {
