@@ -9020,6 +9020,7 @@ body .selectize-dropdown {
     flex-direction: row;
     padding-block: 3px !important;
     padding-inline: 7px !important;
+    word-break: break-word;
 
     &.active {
       @include mixins.active-token-styles;
