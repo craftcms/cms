@@ -10,11 +10,8 @@ namespace crafttests\unit\helpers;
 use craft\helpers\App;
 use craft\mail\transportadapters\Sendmail;
 use craft\models\MailSettings;
-use craft\services\Entries;
 use craft\test\TestCase;
 use CraftCms\Cms\Config\GeneralConfig;
-use CraftCms\Cms\Edition;
-use stdClass;
 use yii\base\Component;
 use yii\base\InvalidArgumentException;
 
@@ -65,73 +62,6 @@ class AppHelperTest extends TestCase
         App::cliOption('no-dash');
     }
 
-    /**
-     *
-     */
-    public function testEditions(): void
-    {
-        self::assertEquals([
-            Edition::Solo->value,
-            Edition::Team->value,
-            Edition::Pro->value,
-            Edition::Enterprise->value,
-        ], App::editions());
-    }
-
-    /**
-     * @dataProvider editionHandleDataProvider
-     * @param string|false $expected
-     * @param int $edition
-     */
-    public function testEditionHandle(string|false $expected, int $edition): void
-    {
-        if ($expected === false) {
-            self::expectException(InvalidArgumentException::class);
-            App::editionHandle($edition);
-        } else {
-            self::assertSame($expected, App::editionHandle($edition));
-        }
-    }
-
-    /**
-     * @dataProvider editionNameDataProvider
-     * @param string|false $expected
-     * @param int $edition
-     */
-    public function testEditionName(string|false $expected, int $edition): void
-    {
-        if ($expected === false) {
-            self::expectException(InvalidArgumentException::class);
-            App::editionName($edition);
-        } else {
-            self::assertSame($expected, App::editionName($edition));
-        }
-    }
-
-    /**
-     * @dataProvider editionIdByHandleDataProvider
-     * @param int|false $expected
-     * @param string $handle
-     */
-    public function testEditionIdByHandle(int|false $expected, string $handle): void
-    {
-        if ($expected === false) {
-            self::expectException(\InvalidArgumentException::class);
-            App::editionIdByHandle($handle);
-        } else {
-            self::assertSame($expected, App::editionIdByHandle($handle));
-        }
-    }
-
-    /**
-     * @dataProvider validEditionsDataProvider
-     * @param bool $expected
-     * @param mixed $edition
-     */
-    public function testIsValidEdition(bool $expected, mixed $edition): void
-    {
-        self::assertSame($expected, App::isValidEdition($edition));
-    }
 
     /**
      * @dataProvider normalizeValueDataProvider
@@ -139,18 +69,6 @@ class AppHelperTest extends TestCase
     public function testNormalizeValue(mixed $expected, mixed $value): void
     {
         self::assertSame($expected, App::normalizeValue($value));
-    }
-
-
-    /**
-     * @dataProvider humanizeClassDataProvider
-     * @param string $expected
-     * @param string $class
-     * @phpstan-param class-string $class
-     */
-    public function testHumanizeClass(string $expected, string $class): void
-    {
-        self::assertSame($expected, App::humanizeClass($class));
     }
 
     /**
@@ -234,70 +152,6 @@ class AppHelperTest extends TestCase
     /**
      * @return array
      */
-    public static function editionHandleDataProvider(): array
-    {
-        return [
-            ['solo', Edition::Solo->value],
-            ['team', Edition::Team->value],
-            ['pro', Edition::Pro->value],
-            ['enterprise', Edition::Enterprise->value],
-            [false, -1],
-        ];
-    }
-
-    /**
-     * @return array
-     */
-    public static function editionNameDataProvider(): array
-    {
-        return [
-            ['Solo', Edition::Solo->value],
-            ['Team', Edition::Team->value],
-            ['Pro', Edition::Pro->value],
-            ['Enterprise', Edition::Enterprise->value],
-            [false, -1],
-        ];
-    }
-
-    /**
-     * @return array
-     */
-    public static function editionIdByHandleDataProvider(): array
-    {
-        return [
-            [Edition::Solo->value, 'solo'],
-            [Edition::Team->value, 'team'],
-            [Edition::Pro->value, 'pro'],
-            [Edition::Enterprise->value, 'enterprise'],
-            [false, 'personal'],
-            [false, 'client'],
-        ];
-    }
-
-    /**
-     * @return array
-     */
-    public static function validEditionsDataProvider(): array
-    {
-        return [
-            [true, Edition::Solo->value],
-            [true, Edition::Team->value],
-            [true, Edition::Pro->value],
-            [true, Edition::Enterprise->value],
-            [true, '1'],
-            [true, 0],
-            [true, 1],
-            [true, 2],
-            [false, true],
-            [false, null],
-            [false, false],
-            [false, 4],
-        ];
-    }
-
-    /**
-     * @return array
-     */
     public static function configsDataProvider(): array
     {
         return [
@@ -308,20 +162,6 @@ class AppHelperTest extends TestCase
             ['cacheConfig', ['class', 'keyPrefix', 'defaultDuration']],
             ['sessionConfig', ['class', 'as session', 'authAccessParam', 'flashParam']],
             ['userConfig', ['class', 'identityClass', 'enableAutoLogin', 'autoRenewCookie', 'loginUrl', 'authTimeout', 'usernameCookie']],
-        ];
-    }
-
-
-
-    /**
-     * @return array
-     */
-    public static function humanizeClassDataProvider(): array
-    {
-        return [
-            ['entries', Entries::class],
-            ['app helper test', self::class],
-            ['std class', stdClass::class],
         ];
     }
 

@@ -46,7 +46,6 @@ use ReflectionNamedType;
 use yii\base\Event;
 use yii\base\Exception;
 use yii\base\InvalidArgumentException;
-use yii\helpers\Inflector;
 use yii\mutex\FileMutex;
 use yii\mutex\MysqlMutex;
 use yii\mutex\PgsqlMutex;
@@ -489,12 +488,13 @@ class App
      *
      * @param class-string $class
      * @return string
+     * @deprecated 6.0.0
      */
     public static function humanizeClass(string $class): string
     {
         $classParts = explode('\\', $class);
 
-        return strtolower(Inflector::camel2words(array_pop($classParts)));
+        return strtolower(Str::headline(array_pop($classParts)));
     }
 
     /**

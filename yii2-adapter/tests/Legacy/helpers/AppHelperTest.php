@@ -3,11 +3,15 @@
 namespace CraftCms\Yii2Adapter\Tests\Legacy\helpers;
 
 use craft\helpers\App;
+use craft\services\Entries;
 use CraftCms\Cms\Config\ConstAdapter;
 use CraftCms\Cms\Config\GeneralConfig;
+use CraftCms\Cms\Edition;
 use CraftCms\Cms\Support\Env;
 use Orchestra\Testbench\PHPUnit\TestCase;
 use PHPUnit\Framework\Attributes\DataProvider;
+use stdClass;
+use yii\base\InvalidArgumentException;
 
 final class AppHelperTest extends TestCase
 {
@@ -200,6 +204,128 @@ final class AppHelperTest extends TestCase
             ['5.5.5', '5.5.5-ubuntu-20.04'],
             ['10.3.38', '5.5.5-10.3.38-ubuntu-20.04'],
             ['5.7.16', '5.7.16-0ubuntu0.16.04.1'],
+        ];
+    }
+
+    #[DataProvider('humanizeClassDataProvider')]
+    public function testHumanizeClass(string $expected, string $class): void
+    {
+        self::assertSame($expected, App::humanizeClass($class));
+    }
+
+    /**
+     * @return array
+     */
+    public static function humanizeClassDataProvider(): array
+    {
+        return [
+            ['entries', Entries::class],
+            ['app helper test', self::class],
+            ['std class', stdClass::class],
+        ];
+    }
+
+    /**
+     *
+     */
+    public function testEditions(): void
+    {
+        self::assertEquals([
+            Edition::Solo->value,
+            Edition::Team->value,
+            Edition::Pro->value,
+            Edition::Enterprise->value,
+        ], App::editions());
+    }
+
+    #[DataProvider('editionHandleDataProvider')]
+    public function testEditionHandle(string|false $expected, int $edition): void
+    {
+        if ($expected === false) {
+            $this->expectException(InvalidArgumentException::class);
+            App::editionHandle($edition);
+        } else {
+            self::assertSame($expected, App::editionHandle($edition));
+        }
+    }
+
+    public static function editionHandleDataProvider(): array
+    {
+        return [
+            ['solo', Edition::Solo->value],
+            ['team', Edition::Team->value],
+            ['pro', Edition::Pro->value],
+            ['enterprise', Edition::Enterprise->value],
+            [false, -1],
+        ];
+    }
+
+    #[DataProvider('editionNameDataProvider')]
+    public function testEditionName(string|false $expected, int $edition): void
+    {
+        if ($expected === false) {
+            $this->expectException(InvalidArgumentException::class);
+            App::editionName($edition);
+        } else {
+            self::assertSame($expected, App::editionName($edition));
+        }
+    }
+
+    public static function editionNameDataProvider(): array
+    {
+        return [
+            ['Solo', Edition::Solo->value],
+            ['Team', Edition::Team->value],
+            ['Pro', Edition::Pro->value],
+            ['Enterprise', Edition::Enterprise->value],
+            [false, -1],
+        ];
+    }
+
+    #[DataProvider('editionIdByHandleDataProvider')]
+    public function testEditionIdByHandle(int|false $expected, string $handle): void
+    {
+        if ($expected === false) {
+            self::expectException(\InvalidArgumentException::class);
+            App::editionIdByHandle($handle);
+        } else {
+            self::assertSame($expected, App::editionIdByHandle($handle));
+        }
+    }
+
+    public static function editionIdByHandleDataProvider(): array
+    {
+        return [
+            [Edition::Solo->value, 'solo'],
+            [Edition::Team->value, 'team'],
+            [Edition::Pro->value, 'pro'],
+            [Edition::Enterprise->value, 'enterprise'],
+            [false, 'personal'],
+            [false, 'client'],
+        ];
+    }
+
+    #[DataProvider('validEditionsDataProvider')]
+    public function testIsValidEdition(bool $expected, mixed $edition): void
+    {
+        self::assertSame($expected, App::isValidEdition($edition));
+    }
+
+    public static function validEditionsDataProvider(): array
+    {
+        return [
+            [true, Edition::Solo->value],
+            [true, Edition::Team->value],
+            [true, Edition::Pro->value],
+            [true, Edition::Enterprise->value],
+            [true, '1'],
+            [true, 0],
+            [true, 1],
+            [true, 2],
+            [false, true],
+            [false, null],
+            [false, false],
+            [false, 4],
         ];
     }
 }
