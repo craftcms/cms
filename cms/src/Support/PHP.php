@@ -65,9 +65,9 @@ final class PHP
      * Normalizes a PHP file size into bytes.
      *
      * @param  string  $value  The file size expressed in PHP config value notation
-     * @return int|float The value normalized into bytes.
+     * @return int The value normalized into bytes.
      */
-    public static function sizeToBytes(string $value): float|int
+    public static function sizeToBytes(string $value): int
     {
         $unit = strtolower(substr($value, -1, 1));
         $value = (int) $value;
