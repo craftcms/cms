@@ -43,6 +43,7 @@ use yii\mutex\FileMutex;
 use yii\mutex\MysqlMutex;
 use yii\mutex\PgsqlMutex;
 use yii\web\JsonParser;
+use function CraftCms\Cms\backTraceAsString;
 use function CraftCms\Cms\maxPowerCaptain;
 use function CraftCms\Cms\normalizeValue;
 use function CraftCms\Cms\normalizeVersion;
@@ -183,6 +184,7 @@ class App
      * @param bool $unset Whether the option should be removed from `argv` if found
      * @return string|float|int|bool|null
      * @since 4.0.0
+     * @deprecated 6.0.0
      */
     public static function cliOption(string $name, bool $unset = false): string|float|int|bool|null
     {
@@ -496,24 +498,11 @@ class App
      * @param int $limit The max number of stack frames to be included (0 means no limit)
      * @return string
      * @since 3.0.13
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\backTraceAsString()} instead.
      */
     public static function backtrace(int $limit = 0): string
     {
-        $frames = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, $limit ? $limit + 1 : 0);
-        array_shift($frames);
-        $trace = '';
-
-        foreach ($frames as $i => $frame) {
-            $trace .= ($i !== 0 ? "\n" : '') .
-                '#' . $i . ' ' .
-                (isset($frame['file']) ? sprintf('%s%s: ', $frame['file'], isset($frame['line']) ? "({$frame['line']})" : '') : '') .
-                ($frame['class'] ?? '') .
-                ($frame['type'] ?? '') .
-                /** @phpstan-ignore-next-line */
-                (isset($frame['function']) ? "{$frame['function']}()" : '');
-        }
-
-        return $trace;
+        return backTraceAsString($limit);
     }
 
     /**

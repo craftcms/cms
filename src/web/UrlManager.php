@@ -11,13 +11,13 @@ use Craft;
 use craft\base\Element;
 use craft\base\ElementInterface;
 use craft\events\RegisterUrlRulesEvent;
-use craft\helpers\App;
 use craft\helpers\UrlHelper;
 use craft\web\UrlRule as CraftUrlRule;
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Support\Arr;
 use yii\web\UrlRule as YiiUrlRule;
+use function CraftCms\Cms\backTraceAsString;
 
 /**
  * @inheritdoc
@@ -146,7 +146,7 @@ class UrlManager extends \yii\web\UrlManager
     {
         if (!Craft::$app->getIsInitialized()) {
             Craft::warning(__METHOD__ . "() was called before the application was fully initialized.\n" .
-                "Stack trace:\n" . App::backtrace(), __METHOD__);
+                "Stack trace:\n" . backTraceAsString(), __METHOD__);
         }
 
         $params = (array)$params;
@@ -165,7 +165,7 @@ class UrlManager extends \yii\web\UrlManager
     {
         if (!Craft::$app->getIsInitialized()) {
             Craft::warning(__METHOD__ . "() was called before the application was fully initialized.\n" .
-                "Stack trace:\n" . App::backtrace(), __METHOD__);
+                "Stack trace:\n" . backTraceAsString(), __METHOD__);
         }
 
         $params = (array)$params;
@@ -229,7 +229,7 @@ class UrlManager extends \yii\web\UrlManager
     {
         if (!Craft::$app->getIsInitialized()) {
             Craft::warning(__METHOD__ . "() was called before the application was fully initialized.\n" .
-                "Stack trace:\n" . App::backtrace(), __METHOD__);
+                "Stack trace:\n" . backTraceAsString(), __METHOD__);
         }
 
         if (isset($this->_matchedElement)) {

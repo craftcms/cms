@@ -2,6 +2,7 @@
 
 use CraftCms\Cms\Config\GeneralConfig;
 
+use function CraftCms\Cms\backTraceAsString;
 use function CraftCms\Cms\maxPowerCaptain;
 use function CraftCms\Cms\normalizeValue;
 use function CraftCms\Cms\normalizeVersion;
@@ -69,4 +70,9 @@ test('silence', function () {
     expect(silence(fn () => 'foo'))->toBe('foo');
     expect(silence(function () {}))->toBeNull();
     expect(silence(function (): void {}))->toBeNull();
+});
+
+test('backtraceAsString', function () {
+    expect(backtraceAsString())->toBeString();
+    expect(backtraceAsString())->toContain('backtraceAsString');
 });

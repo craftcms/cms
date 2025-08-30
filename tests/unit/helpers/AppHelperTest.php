@@ -12,7 +12,6 @@ use craft\mail\transportadapters\Sendmail;
 use craft\models\MailSettings;
 use craft\test\TestCase;
 use yii\base\Component;
-use yii\base\InvalidArgumentException;
 
 /**
  * Unit tests for the App Helper class.
@@ -23,44 +22,6 @@ use yii\base\InvalidArgumentException;
  */
 class AppHelperTest extends TestCase
 {
-    /**
-     *
-     */
-    public function testCliOption(): void
-    {
-        $argv = $_SERVER['argv'] ?? null;
-        $_SERVER['argv'] = [
-            'backup',
-            'some/path',
-            '--file-path=foo.sql',
-            '-f',
-            'bar.sql',
-            '--zip',
-            '--falsy=false',
-            '--empty=',
-        ];
-        $length = count($_SERVER['argv']);
-
-        self::assertSame('foo.sql', App::cliOption('--file-path'));
-        self::assertSame('bar.sql', App::cliOption('-f', true));
-        self::assertSame(true, App::cliOption('--zip'));
-        self::assertSame(false, App::cliOption('--falsy'));
-        self::assertSame('', App::cliOption('--empty'));
-        self::assertSame(null, App::cliOption('--nully'));
-
-        // `-f` and `bar.sql` should have been removed
-        self::assertSame($length - 2, count($_SERVER['argv']));
-
-        if ($argv !== null) {
-            $_SERVER['argv'] = $argv;
-        } else {
-            unset($_SERVER['argv']);
-        }
-
-        self::expectException(InvalidArgumentException::class);
-        App::cliOption('no-dash');
-    }
-
     /**
      * @dataProvider configsDataProvider
      * @param string $method

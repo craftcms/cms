@@ -35,6 +35,8 @@ function cp_redirect(string $url, int $status = 302, array $headers = [], ?bool 
  * - `'true'` → `true`
  * - `'false'` → `false`
  * - Numeric string → integer or float
+ *
+ * @since 6.0.0
  */
 function normalizeValue(mixed $value): mixed
 {
@@ -95,6 +97,8 @@ function normalizeVersion(string $version): string
  * Sets PHP’s memory limit to the maximum specified by the
  * <config5:phpMaxMemoryLimit> config setting, and gives the script an
  * unlimited amount of time to execute.
+ *
+ * @since 6.0.0
  */
 function maxPowerCaptain(): void
 {
@@ -116,6 +120,8 @@ function maxPowerCaptain(): void
  * Calls the given closure with all error reporting silenced, and returns its response.
  *
  * @param  int|null  $mask  Error levels to suppress, default value NULL indicates all warnings and below.
+ *
+ * @since 6.0.0
  */
 function silence(Closure|string $callable, ?int $mask = null): mixed
 {
@@ -132,4 +138,32 @@ function silence(Closure|string $callable, ?int $mask = null): mixed
     } finally {
         error_reporting($old);
     }
+}
+
+/**
+ * Returns the backtrace as a string (omitting the final frame where this method was called).
+ *
+ * @param  int  $limit  The max number of stack frames to be included (0 means no limit)
+ *
+ * @since 6.0.0
+ */
+function backTraceAsString(int $limit = 0): string
+{
+    $frames = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, $limit ? $limit + 1 : 0);
+
+    array_shift($frames);
+
+    $trace = '';
+
+    foreach ($frames as $i => $frame) {
+        $trace .= ($i !== 0 ? "\n" : '').
+            '#'.$i.' '.
+            (isset($frame['file']) ? sprintf('%s%s: ', $frame['file'], isset($frame['line']) ? "({$frame['line']})" : '') : '').
+            ($frame['class'] ?? '').
+            ($frame['type'] ?? '').
+            /** @phpstan-ignore-next-line */
+            (isset($frame['function']) ? "{$frame['function']}()" : '');
+    }
+
+    return $trace;
 }
