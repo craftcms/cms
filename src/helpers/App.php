@@ -50,6 +50,7 @@ use yii\mutex\FileMutex;
 use yii\mutex\MysqlMutex;
 use yii\mutex\PgsqlMutex;
 use yii\web\JsonParser;
+use function CraftCms\Cms\normalizeValue;
 use function CraftCms\Cms\normalizeVersion;
 
 /**
@@ -237,7 +238,7 @@ class App
                 $_SERVER['argv'] = array_values($_SERVER['argv']);
             }
 
-            return static::normalizeValue($value);
+            return normalizeValue($value);
         }
 
         return null;
@@ -337,40 +338,13 @@ class App
     }
 
     /**
-     * Normalizes an environment variable/constant name/CLI command option.
-     *
-     * It converts the following:
-     *
-     * - `'true'` → `true`
-     * - `'false'` → `false`
-     * - Numeric string → integer or float
-     *
-     * @param mixed $value
-     * @return mixed
+     * {@see \CraftCms\Cms\normalizeValue()}
      * @since 4.0.0
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\normalizeValue()} instead.
      */
     public static function normalizeValue(mixed $value): mixed
     {
-        if (is_string($value)) {
-            switch (strtolower($value)) {
-                case 'true':
-                    return true;
-                case 'false':
-                    return false;
-                case 'null':
-                    return null;
-            }
-
-            if (Number::isIntOrFloat($value)) {
-                $intOrFloat = Number::toIntOrFloat($value);
-                // make sure we didn't lose any precision
-                if ((string)$intOrFloat === $value) {
-                    return $intOrFloat;
-                }
-            }
-        }
-
-        return $value;
+        return normalizeValue($value);
     }
 
     /**

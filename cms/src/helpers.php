@@ -2,6 +2,7 @@
 
 namespace CraftCms\Cms;
 
+use craft\helpers\Number;
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Support\Str;
 use Illuminate\Http\RedirectResponse;
@@ -21,6 +22,41 @@ function cp_redirect(string $url, int $status = 302, array $headers = [], ?bool 
         headers: $headers,
         secure: $secure
     );
+}
+
+/**
+ * Normalizes an environment variable/constant name/CLI command option.
+ *
+ * It converts the following:
+ *
+ * - `'true'` → `true`
+ * - `'false'` → `false`
+ * - Numeric string → integer or float
+ */
+function normalizeValue(mixed $value): mixed
+{
+    if (! is_string($value)) {
+        return $value;
+    }
+
+    switch (strtolower($value)) {
+        case 'true':
+            return true;
+        case 'false':
+            return false;
+        case 'null':
+            return null;
+    }
+
+    if (Number::isIntOrFloat($value)) {
+        $intOrFloat = Number::toIntOrFloat($value);
+        // make sure we didn't lose any precision
+        if ((string) $intOrFloat === $value) {
+            return $intOrFloat;
+        }
+    }
+
+    return $value;
 }
 
 /**

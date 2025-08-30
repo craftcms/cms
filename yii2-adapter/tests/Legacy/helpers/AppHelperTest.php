@@ -328,4 +328,27 @@ final class AppHelperTest extends TestCase
             [false, 4],
         ];
     }
+
+    #[DataProvider('normalizeValueDataProvider')]
+    public function testNormalizeValue(mixed $expected, mixed $value): void
+    {
+        self::assertSame($expected, App::normalizeValue($value));
+    }
+
+    public static function normalizeValueDataProvider(): array
+    {
+        return [
+            [true, 'true'],
+            [true, 'TRUE'],
+            [false, 'false'],
+            [false, 'FALSE'],
+            [123, '123'],
+            ['123 ', '123 '],
+            [' 123', ' 123'],
+            [123.4, '123.4'],
+            ['foo', 'foo'],
+            [null, null],
+            ['2833563543.1341693581393', '2833563543.1341693581393'], // https://github.com/craftcms/cms/issues/15533
+        ];
+    }
 }

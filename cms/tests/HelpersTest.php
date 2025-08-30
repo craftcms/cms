@@ -1,5 +1,6 @@
 <?php
 
+use function CraftCms\Cms\normalizeValue;
 use function CraftCms\Cms\normalizeVersion;
 
 test('normalizeVersion', function (string $expected, string $version) {
@@ -22,4 +23,20 @@ test('normalizeVersion', function (string $expected, string $version) {
     ['5.5.5', '5.5.5-ubuntu-20.04'],
     ['10.3.38', '5.5.5-10.3.38-ubuntu-20.04'],
     ['5.7.16', '5.7.16-0ubuntu0.16.04.1'],
+]);
+
+test('normalizeValue', function (mixed $expected, mixed $value) {
+    expect(normalizeValue($value))->toBe($expected);
+})->with([
+    [true, 'true'],
+    [true, 'TRUE'],
+    [false, 'false'],
+    [false, 'FALSE'],
+    [123, '123'],
+    ['123 ', '123 '],
+    [' 123', ' 123'],
+    [123.4, '123.4'],
+    ['foo', 'foo'],
+    [null, null],
+    ['2833563543.1341693581393', '2833563543.1341693581393'], // https://github.com/craftcms/cms/issues/15533
 ]);

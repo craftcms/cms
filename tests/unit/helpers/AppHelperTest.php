@@ -62,15 +62,6 @@ class AppHelperTest extends TestCase
         App::cliOption('no-dash');
     }
 
-
-    /**
-     * @dataProvider normalizeValueDataProvider
-     */
-    public function testNormalizeValue(mixed $expected, mixed $value): void
-    {
-        self::assertSame($expected, App::normalizeValue($value));
-    }
-
     /**
      * @todo 3.1 added new functions to test.
      */
@@ -162,26 +153,6 @@ class AppHelperTest extends TestCase
             ['cacheConfig', ['class', 'keyPrefix', 'defaultDuration']],
             ['sessionConfig', ['class', 'as session', 'authAccessParam', 'flashParam']],
             ['userConfig', ['class', 'identityClass', 'enableAutoLogin', 'autoRenewCookie', 'loginUrl', 'authTimeout', 'usernameCookie']],
-        ];
-    }
-
-    /**
-     * @return array
-     */
-    public static function normalizeValueDataProvider(): array
-    {
-        return [
-            [true, 'true'],
-            [true, 'TRUE'],
-            [false, 'false'],
-            [false, 'FALSE'],
-            [123, '123'],
-            ['123 ', '123 '],
-            [' 123', ' 123'],
-            [123.4, '123.4'],
-            ['foo', 'foo'],
-            [null, null],
-            ['2833563543.1341693581393', '2833563543.1341693581393'], // https://github.com/craftcms/cms/issues/15533
         ];
     }
 
