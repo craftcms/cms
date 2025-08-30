@@ -272,7 +272,7 @@ class App
             return (bool)$value;
         }
 
-        if (!is_string($value)) {
+        if (!is_string($value) || $value === '') {
             return null;
         }
 
