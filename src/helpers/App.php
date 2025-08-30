@@ -51,6 +51,7 @@ use yii\mutex\FileMutex;
 use yii\mutex\MysqlMutex;
 use yii\mutex\PgsqlMutex;
 use yii\web\JsonParser;
+use function CraftCms\Cms\normalizeVersion;
 
 /**
  * App helper.
@@ -378,25 +379,11 @@ class App
      *
      * @param string $version
      * @return string
+     * @deprecated 6.0.0 use `CraftCms\Cms\normalizeVersion($version)` instead.
      */
     public static function normalizeVersion(string $version): string
     {
-        // Strip out the distribution info
-        $versionPattern = '\d[\d.]*(-(dev|alpha|beta|rc)(\.?\d[\d.]*)?)?';
-        if (!preg_match("/^((v|version\s*)?$versionPattern-?)+/i", $version, $match)) {
-            return '';
-        }
-        $version = $match[0];
-
-        // Return the highest version
-        preg_match_all("/$versionPattern/i", $version, $matches, PREG_SET_ORDER);
-        $versions = array_map(fn(array $match) => $match[0], $matches);
-        usort($versions, fn($a, $b) => match (true) {
-            version_compare($a, $b, '<') => 1,
-            version_compare($a, $b, '>') => -1,
-            default => 0,
-        });
-        return reset($versions) ?: '';
+        return normalizeVersion($version);
     }
 
     /**

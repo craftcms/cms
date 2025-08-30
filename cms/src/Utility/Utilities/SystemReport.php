@@ -4,7 +4,6 @@ namespace CraftCms\Cms\Utility\Utilities;
 
 use Composer\InstalledVersions;
 use Craft;
-use craft\helpers\App;
 use CraftCms\Aliases\Facades\Aliases;
 use CraftCms\Cms\Plugin\Contracts\PluginInterface;
 use CraftCms\Cms\Plugin\Plugins;
@@ -14,6 +13,8 @@ use Illuminate\Support\Facades\DB;
 use OutOfBoundsException;
 use RequirementsChecker;
 use yii\base\Module;
+
+use function CraftCms\Cms\normalizeVersion;
 
 /**
  * SystemReport represents a SystemReport dashboard widget.
@@ -145,7 +146,7 @@ final class SystemReport extends Utility
     private static function dbDriver(): string
     {
         $label = DB::getDriverTitle();
-        $version = App::normalizeVersion(DB::getServerVersion());
+        $version = normalizeVersion(DB::getServerVersion());
 
         return "$label $version";
     }

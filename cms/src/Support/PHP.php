@@ -2,11 +2,12 @@
 
 namespace CraftCms\Cms\Support;
 
-use craft\helpers\App;
 use craft\helpers\FileHelper;
 use HTMLPurifier_Encoder;
 use InvalidArgumentException;
 use Symfony\Component\Process\PhpExecutableFinder;
+
+use function CraftCms\Cms\normalizeVersion;
 
 /** @since 6.0.0 */
 final class PHP
@@ -30,7 +31,7 @@ final class PHP
     {
         $version = phpversion($name);
 
-        return App::normalizeVersion($version);
+        return normalizeVersion($version);
     }
 
     /**

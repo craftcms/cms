@@ -26,6 +26,8 @@ use Illuminate\Support\Facades\Session;
 use Imagick;
 use Throwable;
 
+use function CraftCms\Cms\normalizeVersion;
+
 /**
  * The API service provides APIs for calling the Craft API (api.craftcms.com).
  *
@@ -189,23 +191,23 @@ readonly class Api
 
             $extName = sprintf('ext-%s', str_replace(' ', '-', strtolower($name)));
             $extVersion = phpversion($name);
-            $versions[$extName] = App::normalizeVersion(is_string($extVersion) ? $extVersion : '0');
+            $versions[$extName] = normalizeVersion(is_string($extVersion) ? $extVersion : '0');
 
             switch ($name) {
                 case 'curl':
-                    $versions["lib-$name"] = App::normalizeVersion(curl_version()['version']);
+                    $versions["lib-$name"] = normalizeVersion(curl_version()['version']);
                     break;
                 case 'gd':
-                    $versions["lib-$name"] = App::normalizeVersion(GD_VERSION);
+                    $versions["lib-$name"] = normalizeVersion(GD_VERSION);
                     break;
                 case 'iconv':
-                    $versions["lib-$name"] = App::normalizeVersion(ICONV_VERSION);
+                    $versions["lib-$name"] = normalizeVersion(ICONV_VERSION);
                     break;
                 case 'intl':
-                    $versions['lib-icu'] = App::normalizeVersion(INTL_ICU_VERSION);
+                    $versions['lib-icu'] = normalizeVersion(INTL_ICU_VERSION);
                     break;
                 case 'imagick':
-                    $versions["lib-$name-imagemagick"] = App::normalizeVersion((new Imagick)->getVersion()['versionString']);
+                    $versions["lib-$name-imagemagick"] = normalizeVersion((new Imagick)->getVersion()['versionString']);
                     break;
             }
         }
@@ -217,7 +219,7 @@ readonly class Api
         }
 
         // Also include the DB driver/version
-        $versions[$this->db->getDriverName()] = App::normalizeVersion($this->db->getServerVersion());
+        $versions[$this->db->getDriverName()] = normalizeVersion($this->db->getServerVersion());
 
         return $versions;
     }

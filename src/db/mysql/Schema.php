@@ -25,6 +25,7 @@ use yii\base\ErrorException;
 use yii\base\InvalidArgumentException;
 use yii\base\NotSupportedException;
 use yii\db\Exception;
+use function CraftCms\Cms\normalizeVersion;
 
 /**
  * @inheritdoc
@@ -211,7 +212,7 @@ class Schema extends \yii\db\mysql\Schema
             ->addArg('--triggers')
             ->addArg('--no-tablespaces');
 
-        $serverVersion = App::normalizeVersion(Craft::$app->getDb()->getServerVersion());
+        $serverVersion = normalizeVersion(Craft::$app->getDb()->getServerVersion());
         $isMySQL8 = version_compare($serverVersion, '8', '>=');
         $ignoreTables ??= Craft::$app->getDb()->getIgnoredBackupTables();
         $commandFromConfig = app(GeneralConfig::class)->backupCommand;
