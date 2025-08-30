@@ -4,7 +4,6 @@ use CraftCms\Cms\License\License;
 use CraftCms\Cms\Support\Api;
 use CraftCms\Cms\Support\Str;
 use Illuminate\Support\Facades\Cache;
-use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Http;
 
 beforeEach(function () {
