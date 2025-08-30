@@ -15,9 +15,9 @@ use craft\base\InlineEditableFieldInterface;
 use craft\base\MergeableFieldInterface;
 use craft\elements\Entry;
 use craft\fields\conditions\TextFieldConditionRule;
-use craft\helpers\App;
 use craft\helpers\Cp;
 use CraftCms\Cms\Support\Html;
+use CraftCms\Cms\Support\PHP;
 use CraftCms\Cms\Support\Str;
 use yii\db\Schema;
 
@@ -145,7 +145,7 @@ class Email extends Field implements InlineEditableFieldInterface, MergeableFiel
     {
         return [
             ['trim'],
-            ['email', 'enableIDN' => App::supportsIdn(), 'enableLocalIDN' => false],
+            ['email', 'enableIDN' => PHP::supportsIdn(), 'enableLocalIDN' => false],
         ];
     }
 

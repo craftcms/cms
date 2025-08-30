@@ -178,7 +178,7 @@ readonly class Api
     public function platformVersions(): Collection
     {
         $versions = Collection::make([
-            'php' => App::phpVersion(),
+            'php' => PHP::version(),
         ]);
 
         // loosely based on Composer\Repository\PlatformRepository::initialize()

@@ -19,6 +19,7 @@ use CraftCms\Cms\Plugin\Exceptions\InvalidPluginException;
 use CraftCms\Cms\Plugin\Plugins;
 use CraftCms\Cms\Support\Composer;
 use CraftCms\Cms\Support\Json;
+use CraftCms\Cms\Support\PHP;
 use yii\base\Exception;
 use yii\base\InvalidConfigException;
 use yii\web\BadRequestHttpException;
@@ -72,7 +73,7 @@ class PluginStoreController extends Controller
             'cmsLicenseKey' => App::licenseKey(),
             'cmsEditions' => array_map(fn(Edition $edition) => $edition->handle(), Edition::cases()),
             'craftIdAccessToken' => $this->getCraftIdAccessToken(),
-            'phpVersion' => App::phpVersion(),
+            'phpVersion' => PHP::version(),
             'composerPhpVersion' => app(Composer::class)->getConfig()['config']['platform']['php'] ?? null,
         ];
 

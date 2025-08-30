@@ -8,6 +8,7 @@ use craft\helpers\App;
 use CraftCms\Aliases\Facades\Aliases;
 use CraftCms\Cms\Plugin\Contracts\PluginInterface;
 use CraftCms\Cms\Plugin\Plugins;
+use CraftCms\Cms\Support\PHP;
 use CraftCms\Cms\Utility\Utility;
 use Illuminate\Support\Facades\DB;
 use OutOfBoundsException;
@@ -99,7 +100,7 @@ final class SystemReport extends Utility
     private static function appInfo(): array
     {
         $info = [
-            'PHP version' => App::phpVersion(),
+            'PHP version' => PHP::version(),
             'OS version' => PHP_OS.' '.php_uname('r'),
             'Database driver & version' => self::dbDriver(),
             'Image driver & version' => self::imageDriver(),

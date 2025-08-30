@@ -50,6 +50,7 @@ use CraftCms\Cms\Shared\Enums\Color;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Json;
+use CraftCms\Cms\Support\PHP;
 use CraftCms\Cms\Support\Str;
 use DateInterval;
 use DateTime;
@@ -996,7 +997,7 @@ class User extends Element implements IdentityInterface
         $rules[] = [['lastLoginDate', 'lastInvalidLoginDate', 'lockoutDate', 'lastPasswordChangeDate', 'verificationCodeIssuedDate'], DateTimeValidator::class];
         $rules[] = [['invalidLoginCount', 'photoId', 'affiliatedSiteId'], 'number', 'integerOnly' => true];
         $rules[] = [['username', 'email', 'unverifiedEmail', 'fullName', 'firstName', 'lastName'], 'trim', 'skipOnEmpty' => true];
-        $rules[] = [['email', 'unverifiedEmail'], 'email', 'enableIDN' => App::supportsIdn(), 'enableLocalIDN' => false];
+        $rules[] = [['email', 'unverifiedEmail'], 'email', 'enableIDN' => PHP::supportsIdn(), 'enableLocalIDN' => false];
         $rules[] = [['email', 'username', 'fullName', 'firstName', 'lastName', 'password', 'unverifiedEmail'], 'string', 'max' => 255];
         $rules[] = [['verificationCode'], 'string', 'max' => 100];
         $rules[] = [['email'], 'required', 'when' => fn() => !$this->getIsDraft()];

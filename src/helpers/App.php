@@ -38,16 +38,14 @@ use CraftCms\Cms\Shared\Enums\LicenseKeyStatus;
 use CraftCms\Cms\Support\Env;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Json as JsonHelper;
+use CraftCms\Cms\Support\PHP;
 use CraftCms\Cms\Support\Str;
-use HTMLPurifier_Encoder;
 use Illuminate\Support\Facades\Cache;
 use ReflectionFunction;
 use ReflectionNamedType;
-use Symfony\Component\Process\PhpExecutableFinder;
 use yii\base\Event;
 use yii\base\Exception;
 use yii\base\InvalidArgumentException;
-use yii\base\InvalidValueException;
 use yii\helpers\Inflector;
 use yii\mutex\FileMutex;
 use yii\mutex\MysqlMutex;
@@ -70,17 +68,6 @@ class App
      * @internal
      */
     public const CACHE_KEY_LICENSE_INFO_HOST = 'licenseInfoHost';
-
-    /**
-     * @var bool
-     */
-    private static bool $_iconv;
-
-    /**
-     * @var string[]
-     * @see isPathAllowed()
-     */
-    private static array $_basePaths;
 
     /**
      * Returns whether Dev Mode is enabled.
@@ -332,25 +319,21 @@ class App
     }
 
     /**
-     * Returns the PHP version, without the distribution info.
-     *
-     * @return string
+     * {@see \CraftCms\Cms\Support\PHP::version}
+     * @deprecated 6.0.0 use {@see PHP::version()} instead.
      */
     public static function phpVersion(): string
     {
-        return PHP_MAJOR_VERSION . '.' . PHP_MINOR_VERSION . '.' . PHP_RELEASE_VERSION;
+        return PHP::version();
     }
 
     /**
-     * Returns a PHP extension version, without the distribution info.
-     *
-     * @param string $name The extension name
-     * @return string
-     */
+     * {@see \CraftCms\Cms\Support\PHP::extensionVersion}
+     * @deprecated 6.0.0 use {@see PHP::extensionVersion($name)} instead.
+    */
     public static function extensionVersion(string $name): string
     {
-        $version = phpversion($name);
-        return static::normalizeVersion($version);
+        return PHP::extensionVersion($name);
     }
 
     /**
@@ -417,234 +400,101 @@ class App
     }
 
     /**
-     * Retrieves a bool PHP config setting and normalizes it to an actual bool.
-     *
-     * @param string $var The PHP config setting to retrieve.
-     * @return bool Whether it is set to the php.ini equivalent of `true`.
+     * {@see \CraftCms\Cms\Support\PHP::configValueAsBool}
+     * @deprecated 6.0.0 use {@see PHP::configValueAsBool($var)} instead.
      */
     public static function phpConfigValueAsBool(string $var): bool
     {
-        $value = trim(ini_get($var));
-
-        // Supposedly “On” values will always be normalized to '1' but who can trust PHP...
-        return ($value === '1' || strtolower($value) === 'on');
+        return PHP::configValueAsBool($var);
     }
 
     /**
-     * Retrieves a disk size PHP config setting and normalizes it into bytes.
-     *
-     * @param string $var The PHP config setting to retrieve.
-     * @return int|float The value normalized into bytes.
+     * {@see \CraftCms\Cms\Support\PHP::phpConfigValueInBytes}
+     * @deprecated 6.0.0 use {@see PHP::phpConfigValueInBytes($var)} instead.
      * @since 3.0.38
      */
     public static function phpConfigValueInBytes(string $var): float|int
     {
-        $value = trim(ini_get($var));
-        return static::phpSizeToBytes($value);
+        return PHP::configValueInBytes($var);
     }
 
     /**
-     * Normalizes a PHP file size into bytes.
-     *
-     * @param string $value The file size expressed in PHP config value notation
-     * @return int|float The value normalized into bytes.
+     * {@see \CraftCms\Cms\Support\PHP::sizeToBytes()}
+     * @deprecated 6.0.0 use {@see PHP::sizeToBytes($value)} instead.
      * @since 3.6.0
      */
     public static function phpSizeToBytes(string $value): float|int
     {
-        $unit = strtolower(substr($value, -1, 1));
-        $value = (int)$value;
-
-        switch ($unit) {
-            case 'g':
-                $value *= 1024;
-            // no break
-            case 'm':
-                $value *= 1024;
-            // no break
-            case 'k':
-                $value *= 1024;
-        }
-
-        return $value;
+        return PHP::sizeToBytes($value);
     }
 
     /**
-     * Retrieves a file path PHP config setting and normalizes it to an array of paths.
-     *
-     * @param string $var The PHP config setting to retrieve
-     * @return string[] The normalized paths
+     * {@see \CraftCms\Cms\Support\PHP::configValueAsPaths()}
+     * @deprecated 6.0.0 use {@see PHP::configValueAsPaths($var)} instead.
      * @since 3.7.34
      */
     public static function phpConfigValueAsPaths(string $var): array
     {
-        return static::normalizePhpPaths(ini_get($var));
+        return PHP::configValueAsPaths($var);
     }
 
     /**
-     * Normalizes a PHP path setting to an array of paths
-     *
-     * @param string $value The PHP path setting value
-     * @return string[] The normalized paths
+     * {@see \CraftCms\Cms\Support\PHP::normalizePaths()}
+     * @deprecated 6.0.0 use {@see PHP::normalizePaths($value)} instead.
      * @since 3.7.34
      */
     public static function normalizePhpPaths(string $value): array
     {
-        // semicolons are used to separate paths on Windows; everything else uses colons
-        $value = str_replace(';', ':', trim($value));
-
-        if ($value === '') {
-            return [];
-        }
-
-        $paths = [];
-
-        foreach (explode(':', $value) as $path) {
-            $path = trim($path);
-
-            // Parse ${ENV_VAR}s
-            try {
-                $path = preg_replace_callback('/\$\{(.*?)\}/', function($match) {
-                    $env = Env::get($match[1]);
-                    if ($env === false) {
-                        throw new InvalidValueException();
-                    }
-                    return $env;
-                }, $path);
-            } catch (InvalidValueException) {
-                // References an env var that doesn’t exist
-                continue;
-            }
-
-            // '.' => working dir
-            if ($path === '.' || str_starts_with($path, './') || str_starts_with($path, '.\\')) {
-                $path = getcwd() . substr($path, 1);
-            }
-
-            // Normalize
-            $paths[] = FileHelper::normalizePath($path);
-        }
-
-        return $paths;
+        return PHP::normalizePaths($value);
     }
 
     /**
-     * Returns whether the given path is within PHP’s `open_basedir` setting.
-     *
-     * @param string $path
-     * @return bool
+     * {@see \CraftCms\Cms\Support\PHP::isPathAllowed()}
+     * @deprecated 6.0.0 use {@see PHP::isPathAllowed($path)} instead.
      * @since 3.7.34
      */
     public static function isPathAllowed(string $path): bool
     {
-        if (!isset(self::$_basePaths)) {
-            self::$_basePaths = static::phpConfigValueAsPaths('open_basedir');
-        }
-
-        if (!self::$_basePaths) {
-            return true;
-        }
-
-        $path = FileHelper::normalizePath($path);
-
-        foreach (self::$_basePaths as $basePath) {
-            if (str_starts_with($path, $basePath)) {
-                return true;
-            }
-        }
-
-        return false;
+        return PHP::isPathAllowed($path);
     }
 
     /**
-     * Returns the path to a PHP executable which should be used by sub processes.
-     *
-     * @return string|null The PHP executable path, or `null` if it can’t be determined.
+     * {@see \CraftCms\Cms\Support\PHP::executable()}
+     * @deprecated 6.0.0 use {@see PHP::executable()} instead.
      * @since 4.5.6
      */
     public static function phpExecutable(): ?string
     {
-        // If PHP_BINARY was set to $_SERVER, update the environment variable to match
-        if (isset($_SERVER['PHP_BINARY']) && $_SERVER['PHP_BINARY'] !== getenv('PHP_BINARY')) {
-            putenv(sprintf('PHP_BINARY=%s', $_SERVER['PHP_BINARY']));
-        }
-
-        if (
-            getenv('PHP_BINARY') === false &&
-            /** @phpstan-ignore-next-line */
-            PHP_BINARY &&
-            PHP_SAPI === 'cgi-fcgi' &&
-            str_ends_with(PHP_BINARY, 'php-cgi')
-        ) {
-            // See if a `php` file exists alongside `php-cgi`, and if so, use that
-            $file = dirname(PHP_BINARY) . DIRECTORY_SEPARATOR . 'php';
-            if (@is_executable($file) && !@is_dir($file)) {
-                return $file;
-            }
-        }
-
-        return (new PhpExecutableFinder())->find() ?: null;
+        return PHP::executable();
     }
 
     /**
-     * Tests whether ini_set() works.
-     *
-     * @return bool
+     * {@see \CraftCms\Cms\Support\PHP::testIniSet()}
+     * @deprecated 6.0.0 use {@see PHP::testIniSet()} instead.
      * @since 3.0.40
      */
     public static function testIniSet(): bool
     {
-        $oldValue = ini_get('memory_limit');
-        $oldBytes = static::phpConfigValueInBytes('memory_limit');
-
-        // When the old value is not equal to '-1', add 1MB to the limit set at the moment
-        if ($oldBytes === -1) {
-            $testBytes = 1024 * 1024 * 442;
-        } else {
-            $testBytes = $oldBytes + 1024 * 1024;
-        }
-
-        $testValue = sprintf('%sM', ceil($testBytes / (1024 * 1024)));
-        /** @phpstan-ignore-next-line */
-        set_error_handler(function() {
-        });
-        $result = ini_set('memory_limit', $testValue);
-        $newValue = ini_get('memory_limit');
-        ini_set('memory_limit', $oldValue);
-        restore_error_handler();
-
-        // ini_set can return false or an empty string depending on your php version / FastCGI.
-        // If ini_set has been disabled in php.ini, the value will be null because of our muted error handler
-        return (
-            /** @phpstan-ignore-next-line */
-            $result !== null &&
-            $result !== false &&
-            $result !== '' &&
-            $result !== $newValue
-        );
+        return PHP::testIniSet();
     }
 
     /**
-     * Returns whether the server has a valid version of the iconv extension installed.
-     *
-     * @return bool
-     */
+     * {@see \CraftCms\Cms\Support\PHP::checkForValidIconv()}
+     * @deprecated 6.0.0 use {@see PHP::checkForValidIconv()} instead.
+    */
     public static function checkForValidIconv(): bool
     {
-        // Check if iconv is installed. Note we can't just use HTMLPurifier_Encoder::iconvAvailable() because they
-        // don't consider iconv "installed" if it's there but "unusable".
-        return self::$_iconv ?? (self::$_iconv = (function_exists('iconv') && HTMLPurifier_Encoder::testIconvTruncateBug() === HTMLPurifier_Encoder::ICONV_OK));
+        return PHP::checkForValidIconv();
     }
 
     /**
-     * Returns whether the server supports IDNA ASCII strings.
-     *
-     * @return bool
+     * {@see \CraftCms\Cms\Support\PHP::supportsIdn()}
+     * @deprecated 6.0.0 use {@see PHP::supportsIdn()} instead.
      * @since 3.7.9
      */
     public static function supportsIdn(): bool
     {
-        return defined('INTL_IDNA_VARIANT_UTS46');
+        return PHP::supportsIdn();
     }
 
     /**
@@ -668,7 +518,7 @@ class App
     public static function maxPowerCaptain(): void
     {
         // Don't mess with the memory_limit, even at the config's request, if it's already set to -1 or >= 1.5GB
-        $memoryLimit = static::phpConfigValueInBytes('memory_limit');
+        $memoryLimit = PHP::configValueInBytes('memory_limit');
         if ($memoryLimit !== -1 && $memoryLimit < 1024 * 1024 * 1536) {
             $maxMemoryLimit = app(GeneralConfig::class)->phpMaxMemoryLimit;
             @ini_set('memory_limit', $maxMemoryLimit ?: '1536M');

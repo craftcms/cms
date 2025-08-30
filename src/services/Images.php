@@ -17,6 +17,7 @@ use craft\image\Raster;
 use craft\image\Svg;
 use craft\image\SvgAllowedAttributes;
 use CraftCms\Cms\Config\GeneralConfig;
+use CraftCms\Cms\Support\PHP;
 use enshrined\svgSanitize\Sanitizer;
 use Imagine\Gd\Imagine as GdImagine;
 use Imagine\Image\Format;
@@ -102,10 +103,10 @@ class Images extends Component
     public function getVersion(): string
     {
         if ($this->getIsGd()) {
-            return App::extensionVersion('gd');
+            return PHP::extensionVersion('gd');
         }
 
-        $version = App::extensionVersion('imagick');
+        $version = PHP::extensionVersion('imagick');
         try {
             $version .= ' (ImageMagick ' . $this->getImageMagickApiVersion() . ')';
         } catch (Throwable) {

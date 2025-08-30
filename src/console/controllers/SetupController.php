@@ -22,6 +22,7 @@ use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Composer;
 use CraftCms\Cms\Support\Env;
+use CraftCms\Cms\Support\PHP;
 use CraftCms\Cms\Support\Str;
 use Illuminate\Support\Facades\Schema;
 use m150207_210500_i18n_init;
@@ -621,7 +622,7 @@ EOD;
         }
 
         $process = new Process([
-            App::phpExecutable() ?? 'php',
+            PHP::executable() ?? 'php',
             $script,
             'cloud/setup',
         ]);

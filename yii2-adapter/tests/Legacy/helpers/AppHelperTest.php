@@ -125,4 +125,49 @@ final class AppHelperTest extends TestCase
             ],
         ];
     }
+
+    public function testPhpConfigValueAsBool(): void
+    {
+        $displayErrorsValue = ini_get('display_errors');
+        @ini_set('display_errors', '1');
+        self::assertTrue(App::phpConfigValueAsBool('display_errors'));
+        @ini_set('display_errors', $displayErrorsValue);
+
+        $timezoneValue = ini_get('date.timezone');
+        @ini_set('date.timezone', 'Europe/Amsterdam');
+        self::assertFalse(App::phpConfigValueAsBool('date.timezone'));
+        @ini_set('date.timezone', $timezoneValue);
+
+        self::assertFalse(App::phpConfigValueAsBool(''));
+        self::assertFalse(App::phpConfigValueAsBool('This is not a config value'));
+    }
+
+    public function testNormalizePhpPaths(): void
+    {
+        self::assertSame([getcwd()], App::normalizePhpPaths('.'));
+        self::assertSame([getcwd()], App::normalizePhpPaths('./'));
+        self::assertSame([getcwd() . DIRECTORY_SEPARATOR . 'foo'], App::normalizePhpPaths('./foo'));
+        self::assertSame([getcwd() . DIRECTORY_SEPARATOR . 'foo'], App::normalizePhpPaths('.\\foo'));
+
+        putenv('TEST_CONST=/foo/');
+        self::assertSame([getcwd(), DIRECTORY_SEPARATOR . 'foo'], App::normalizePhpPaths('.:${TEST_CONST}'));
+        self::assertSame([getcwd(), DIRECTORY_SEPARATOR . 'foo'], App::normalizePhpPaths(' . ; ${TEST_CONST} '));
+        putenv('TEST_CONST');
+    }
+
+    #[DataProvider('phpSizeToBytesDataProvider')]
+    public function testPhpSizeToBytes(int|float $expected, string $value): void
+    {
+        self::assertSame($expected, App::phpSizeToBytes($value));
+    }
+
+    public static function phpSizeToBytesDataProvider(): array
+    {
+        return [
+            [1, '1B'],
+            [1024, '1K'],
+            [1024 ** 2, '1M'],
+            [1024 ** 3, '1G'],
+        ];
+    }
 }

@@ -24,6 +24,7 @@ use CraftCms\Cms\Plugin\Plugins;
 use CraftCms\Cms\Support\Api;
 use CraftCms\Cms\Support\Composer;
 use CraftCms\Cms\Support\Json;
+use CraftCms\Cms\Support\PHP;
 use Symfony\Component\Process\Exception\ProcessFailedException;
 use Symfony\Component\Process\Process;
 use Throwable;
@@ -507,7 +508,7 @@ class UpdateController extends Controller
 
         $this->stdout('Applying new migrations ... ');
 
-        $php = App::phpExecutable() ?? 'php';
+        $php = PHP::executable() ?? 'php';
         $process = new Process([$php, $script, 'migrate/all', '--no-backup', '--no-content']);
         $process->setTimeout(null);
         try {
@@ -571,7 +572,7 @@ class UpdateController extends Controller
 
         $this->stdout('Reverting Composer changes ... ');
 
-        $php = App::phpExecutable() ?? 'php';
+        $php = PHP::executable() ?? 'php';
         $process = new Process([$php, $script, 'update/composer-install']);
         $process->setTimeout(null);
         try {
