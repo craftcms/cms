@@ -1,6 +1,6 @@
 # Release Notes for Craft CMS 4
 
-## Unreleased
+## 4.16.12 - 2025-08-29
 
 - When searching for elements, partial matches within titles are now scored higher than exact matches in other fields. ([#17739](https://github.com/craftcms/cms/issues/17739))
 - Fixed a bug where volumes’ filesystem settings weren’t respecting static translations of filesystem names. ([#17749](https://github.com/craftcms/cms/issues/17749))
