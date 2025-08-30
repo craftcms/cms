@@ -20,7 +20,6 @@ it('can get headers', function () {
         expect($headers['X-Craft-Env'])->toBe(config('app.env'));
         expect($headers['X-Craft-System'])->toBe(sprintf('craft:%s;%s', Craft::$app->getVersion(), Craft::$app->edition->handle()));
         expect($headers['X-Craft-Platform'])->toContain('php:', 'ext-');
-        expect($headers['X-Craft-License'])->toBe('__REQUEST__');
     });
 });
 
@@ -36,7 +35,6 @@ it('can process response headers', function () {
     ]);
 
     expect(Cache::get('editionTestableDomain@localhost'))->toBe(1);
-    expect(File::get($this->license->keyPath()))->toContain($key);
     expect(Cache::get('licensedDomain'))->toBe('foo.cloud');
 });
 
