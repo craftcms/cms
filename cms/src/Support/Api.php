@@ -6,6 +6,7 @@ use Craft;
 use craft\errors\InvalidLicenseKeyException;
 use craft\helpers\App;
 use craft\helpers\DateTimeHelper;
+use CraftCms\Cms\License\License;
 use CraftCms\Cms\Plugin\Plugins;
 use CraftCms\Cms\Shared\Enums\LicenseKeyStatus;
 use CraftCms\Cms\Support\Facades\Http;
@@ -49,6 +50,7 @@ readonly class Api
         private Request $request,
         private Repository $cache,
         private Plugins $plugins,
+        private License $license,
         public string $baseApiUrl = 'https://api.craftcms.com/v1/',
         public array $apiParams = [],
     ) {
@@ -143,7 +145,7 @@ readonly class Api
 
         // Craft license
         $headers['X-Craft-License'] = match (true) {
-            ! is_null(App::licenseKey()) => App::licenseKey(),
+            ! is_null($this->license->key()) => $this->license->key(),
             defined('CRAFT_LICENSE_KEY') => '__INVALID__',
             default => '__REQUEST__',
         };
@@ -244,10 +246,10 @@ readonly class Api
         // did we just get a new license key?
         if (isset($headers['x-craft-license'])) {
             $license = reset($headers['x-craft-license']);
-            $path = Craft::$app->getPath()->getLicenseKeyPath();
+            $path = $this->license->keyPath();
 
             //  just in case there's some race condition where two licenses were requested simultaneously...
-            if (App::licenseKey() !== null) {
+            if ($this->license->key() !== null) {
                 $i = 0;
                 do {
                     $newPath = "$path.".++$i;
@@ -280,7 +282,7 @@ readonly class Api
 
         // license info
         if (isset($headers['x-craft-license-info'])) {
-            $oldLicenseInfo = $this->cache->get(App::CACHE_KEY_LICENSE_INFO, []);
+            $oldLicenseInfo = $this->cache->get(License::CACHE_KEY_LICENSE_INFO, []);
             $licenseInfo = [];
             $allCombinedInfo = array_filter(explode(',', reset($headers['x-craft-license-info'])));
             foreach ($allCombinedInfo as $combinedInfo) {
@@ -310,11 +312,11 @@ readonly class Api
                 ];
             }
 
-            $this->cache->put(App::CACHE_KEY_LICENSE_INFO, $licenseInfo, $duration);
+            $this->cache->put(License::CACHE_KEY_LICENSE_INFO, $licenseInfo, $duration);
             if ($this->app->runningInConsole()) {
-                $this->cache->forget(App::CACHE_KEY_LICENSE_INFO_HOST);
+                $this->cache->forget(License::CACHE_KEY_LICENSE_INFO_HOST);
             } else {
-                $this->cache->put(App::CACHE_KEY_LICENSE_INFO_HOST, $this->request->host(), $duration);
+                $this->cache->put(License::CACHE_KEY_LICENSE_INFO_HOST, $this->request->host(), $duration);
             }
         }
     }

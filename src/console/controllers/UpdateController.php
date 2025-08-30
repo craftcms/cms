@@ -11,7 +11,6 @@ use Composer\Semver\VersionParser;
 use Craft;
 use craft\console\Controller;
 use craft\elements\User;
-use craft\helpers\App;
 use craft\helpers\Console;
 use craft\helpers\FileHelper;
 use craft\helpers\Update as UpdateHelper;
@@ -19,6 +18,7 @@ use craft\models\Update;
 use craft\models\Updates;
 use craft\models\Updates as UpdatesModel;
 use CraftCms\Cms\Config\GeneralConfig;
+use CraftCms\Cms\License\License;
 use CraftCms\Cms\Plugin\Exceptions\InvalidPluginException;
 use CraftCms\Cms\Plugin\Plugins;
 use CraftCms\Cms\Support\Api;
@@ -631,7 +631,7 @@ class UpdateController extends Controller
      */
     private function _checkCraftLicense(): ?int
     {
-        if (!App::licenseKey()) {
+        if (!app(License::class)->key()) {
             if (defined('CRAFT_LICENSE_KEY')) {
                 $this->stderr('The license key defined by the CRAFT_LICENSE_KEY PHP constant is invalid.' . PHP_EOL, Console::FG_RED);
                 return ExitCode::UNSPECIFIED_ERROR;
@@ -657,7 +657,7 @@ class UpdateController extends Controller
                 $session->setIdentity(null);
             }
 
-            if (App::licenseKey() === null) {
+            if (app(License::class)->key() === null) {
                 $this->stderr('License key creation was unsuccessful.' . PHP_EOL, Console::FG_RED);
                 return ExitCode::UNSPECIFIED_ERROR;
             }

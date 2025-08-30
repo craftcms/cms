@@ -52,9 +52,9 @@ final class PHP
      * Retrieves a disk size PHP config setting and normalizes it into bytes.
      *
      * @param  string  $var  The PHP config setting to retrieve.
-     * @return int|float The value normalized into bytes.
+     * @return int The value normalized into bytes.
      */
-    public static function configValueInBytes(string $var): float|int
+    public static function configValueInBytes(string $var): int
     {
         $value = trim(ini_get($var));
 

@@ -1,5 +1,6 @@
 <?php
 
+use CraftCms\Cms\License\License;
 use CraftCms\Cms\Support\Api;
 use CraftCms\Cms\Support\Str;
 use Illuminate\Support\Facades\Cache;
@@ -8,6 +9,7 @@ use Illuminate\Support\Facades\Http;
 
 beforeEach(function () {
     $this->api = app(Api::class);
+    $this->license = app(License::class);
 });
 
 it('can get headers', function () {
@@ -34,7 +36,7 @@ it('can process response headers', function () {
     ]);
 
     expect(Cache::get('editionTestableDomain@localhost'))->toBe(1);
-    expect(File::get(Craft::$app->getPath()->getLicenseKeyPath()))->toContain($key);
+    expect(File::get($this->license->keyPath()))->toContain($key);
     expect(Cache::get('licensedDomain'))->toBe('foo.cloud');
 });
 

@@ -3,9 +3,9 @@
 namespace CraftCms\Cms\Http\Controllers\Dashboard\Widgets;
 
 use Craft;
-use craft\helpers\App;
 use craft\helpers\FileHelper;
 use craft\web\Application;
+use CraftCms\Cms\License\License;
 use CraftCms\Cms\Support\Api;
 use CraftCms\Cms\Support\Composer;
 use CraftCms\Cms\Support\Str;
@@ -31,6 +31,7 @@ final readonly class CraftSupportController
 {
     public function __construct(
         private Composer $composer,
+        private License $license,
         private Api $api,
     ) {}
 
@@ -207,7 +208,7 @@ final readonly class CraftSupportController
         }
 
         // License key
-        if (($licenseKey = App::licenseKey()) !== null) {
+        if (($licenseKey = $this->license->key()) !== null) {
             $zip->addFromString('license.key', $licenseKey);
         }
 

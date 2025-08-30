@@ -25,6 +25,7 @@ use craft\web\twig\TemplateLoaderException;
 use CraftCms\Aliases\Facades\Aliases;
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Edition;
+use CraftCms\Cms\License\License;
 use CraftCms\Cms\Plugin\Plugins;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Env;
@@ -521,7 +522,7 @@ class Cp extends Component
     public function areAlertsCached(): bool
     {
         // The license key status gets cached on each Craftnet request
-        return !is_null(Cache::get(App::CACHE_KEY_LICENSE_INFO));
+        return !is_null(Cache::get(License::CACHE_KEY_LICENSE_INFO));
     }
 
     /**

@@ -9,8 +9,6 @@ use CraftCms\Cms\Support\PHP;
 use CraftCms\Cms\Support\Str;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Log;
-use ReflectionFunction;
-use ReflectionNamedType;
 
 /** @since 6.0.0 */
 function cp_url(string $url): string
@@ -117,14 +115,12 @@ function maxPowerCaptain(): void
 /**
  * Calls the given closure with all error reporting silenced, and returns its response.
  *
- * @param Closure|string $callable
- * @param int|null $mask Error levels to suppress, default value NULL indicates all warnings and below.
- * @return mixed
+ * @param  int|null  $mask  Error levels to suppress, default value NULL indicates all warnings and below.
  */
 function silence(Closure|string $callable, ?int $mask = null): mixed
 {
     // loosely based on Composer\Util\Silencer
-    if (!isset($mask)) {
+    if (! isset($mask)) {
         $mask = E_WARNING | E_NOTICE | E_USER_WARNING | E_USER_NOTICE | E_DEPRECATED | E_USER_DEPRECATED;
     }
 

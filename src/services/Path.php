@@ -8,8 +8,8 @@
 namespace craft\services;
 
 use Craft;
-use craft\helpers\App;
 use craft\helpers\FileHelper;
+use CraftCms\Cms\License\License;
 use CraftCms\Cms\Support\Env;
 use CraftCms\Cms\Support\Str;
 use yii\base\Component;
@@ -586,7 +586,7 @@ class Path extends Component
      */
     public function getLicenseKeyPath(): string
     {
-        return defined('CRAFT_LICENSE_KEY_PATH') ? CRAFT_LICENSE_KEY_PATH : $this->getConfigPath() . DIRECTORY_SEPARATOR . 'license.key';
+        return app(License::class)->keyPath();
     }
 
     /**

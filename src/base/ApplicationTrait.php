@@ -108,6 +108,7 @@ use CraftCms\Cms\Announcement\Announcements;
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Edition;
+use CraftCms\Cms\License\License;
 use CraftCms\Cms\Support\Composer;
 use CraftCms\Cms\Support\Env;
 use CraftCms\Cms\Support\Str;
@@ -613,7 +614,7 @@ trait ApplicationTrait
      */
     public function getLicensedEdition(): ?Edition
     {
-        $licenseInfo = CacheFacade::get(App::CACHE_KEY_LICENSE_INFO, []);
+        $licenseInfo = CacheFacade::get(License::CACHE_KEY_LICENSE_INFO, []);
 
         if (!isset($licenseInfo['craft']['edition'])) {
             return null;

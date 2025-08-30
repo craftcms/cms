@@ -9,12 +9,12 @@ namespace craft\controllers;
 
 use Craft;
 use craft\errors\InvalidLicenseKeyException;
-use craft\helpers\App;
 use craft\helpers\UrlHelper;
 use craft\web\assets\pluginstore\PluginStoreAsset;
 use craft\web\Controller;
 use craft\web\View;
 use CraftCms\Cms\Edition;
+use CraftCms\Cms\License\License;
 use CraftCms\Cms\Plugin\Exceptions\InvalidPluginException;
 use CraftCms\Cms\Plugin\Plugins;
 use CraftCms\Cms\Support\Composer;
@@ -70,7 +70,7 @@ class PluginStoreController extends Controller
                 'version' => Craft::$app->getVersion(),
                 'edition' => Craft::$app->edition->handle(),
             ],
-            'cmsLicenseKey' => App::licenseKey(),
+            'cmsLicenseKey' => app(License::class)->key(),
             'cmsEditions' => array_map(fn(Edition $edition) => $edition->handle(), Edition::cases()),
             'craftIdAccessToken' => $this->getCraftIdAccessToken(),
             'phpVersion' => PHP::version(),

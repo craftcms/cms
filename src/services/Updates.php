@@ -9,9 +9,9 @@ namespace craft\services;
 
 use Craft;
 use craft\errors\MigrateException;
-use craft\helpers\App;
 use craft\helpers\FileHelper;
 use craft\models\Updates as UpdatesModel;
+use CraftCms\Cms\License\License;
 use CraftCms\Cms\Plugin\Contracts\PluginInterface;
 use CraftCms\Cms\Plugin\Exceptions\InvalidPluginException;
 use CraftCms\Cms\Plugin\Plugins;
@@ -376,7 +376,7 @@ class Updates extends Component
         $this->_isCraftUpdatePending = null;
 
         // Clear the license info cache
-        Cache::forget(App::CACHE_KEY_LICENSE_INFO);
+        Cache::forget(License::CACHE_KEY_LICENSE_INFO);
 
         return true;
     }
