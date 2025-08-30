@@ -351,4 +351,13 @@ final class AppHelperTest extends TestCase
             ['2833563543.1341693581393', '2833563543.1341693581393'], // https://github.com/craftcms/cms/issues/15533
         ];
     }
+
+    public function testSilence(): void
+    {
+        self::assertSame('foo', App::silence(fn() => 'foo'));
+        self::assertNull(App::silence(function() {
+        }));
+        self::assertNull(App::silence(function(): void {
+        }));
+    }
 }

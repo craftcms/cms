@@ -1,7 +1,11 @@
 <?php
 
+use CraftCms\Cms\Config\GeneralConfig;
+
+use function CraftCms\Cms\maxPowerCaptain;
 use function CraftCms\Cms\normalizeValue;
 use function CraftCms\Cms\normalizeVersion;
+use function CraftCms\Cms\silence;
 
 test('normalizeVersion', function (string $expected, string $version) {
     expect(normalizeVersion($version))->toBe($expected);
@@ -40,3 +44,29 @@ test('normalizeValue', function (mixed $expected, mixed $value) {
     [null, null],
     ['2833563543.1341693581393', '2833563543.1341693581393'], // https://github.com/craftcms/cms/issues/15533
 ]);
+
+test('maxPowereCaptain', function () {
+    $oldMemoryLimit = ini_get('memory_limit');
+    $oldMaxExecution = ini_get('max_execution_time');
+
+    $generalConfig = app(GeneralConfig::class);
+    $generalConfig->phpMaxMemoryLimit = '512M';
+
+    if (@ini_set('memory_limit', '256M') === false) {
+        $this->markTestSkipped('Unable to set memory_limit');
+    }
+
+    maxPowerCaptain();
+
+    expect(ini_get('memory_limit'))->toBe($generalConfig->phpMaxMemoryLimit);
+    expect(ini_get('max_execution_time'))->toBe('0');
+
+    ini_set('memory_limit', $oldMemoryLimit);
+    ini_set('max_execution_time', $oldMaxExecution);
+});
+
+test('silence', function () {
+    expect(silence(fn () => 'foo'))->toBe('foo');
+    expect(silence(function () {}))->toBeNull();
+    expect(silence(function (): void {}))->toBeNull();
+});

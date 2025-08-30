@@ -22,6 +22,8 @@ use Symfony\Component\Yaml\Yaml;
 use Throwable;
 use ZipArchive;
 
+use function CraftCms\Cms\maxPowerCaptain;
+
 /**
  * @since 6.0.0
  */
@@ -41,7 +43,7 @@ final readonly class CraftSupportController
             'namespace' => ['nullable', 'string'],
         ]);
 
-        App::maxPowerCaptain();
+        maxPowerCaptain();
 
         $widgetId = $request->get('widgetId');
         $namespace = $request->has('namespace') ? $request->get('namespace').'.' : '';

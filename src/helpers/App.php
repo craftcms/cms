@@ -41,8 +41,6 @@ use CraftCms\Cms\Support\Json as JsonHelper;
 use CraftCms\Cms\Support\PHP;
 use CraftCms\Cms\Support\Str;
 use Illuminate\Support\Facades\Cache;
-use ReflectionFunction;
-use ReflectionNamedType;
 use yii\base\Event;
 use yii\base\Exception;
 use yii\base\InvalidArgumentException;
@@ -50,8 +48,10 @@ use yii\mutex\FileMutex;
 use yii\mutex\MysqlMutex;
 use yii\mutex\PgsqlMutex;
 use yii\web\JsonParser;
+use function CraftCms\Cms\maxPowerCaptain;
 use function CraftCms\Cms\normalizeValue;
 use function CraftCms\Cms\normalizeVersion;
+use function CraftCms\Cms\silence;
 
 /**
  * App helper.
@@ -475,20 +475,11 @@ class App
      * Sets PHP’s memory limit to the maximum specified by the
      * <config5:phpMaxMemoryLimit> config setting, and gives the script an
      * unlimited amount of time to execute.
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\maxPowerCaptain()} instead.
      */
     public static function maxPowerCaptain(): void
     {
-        // Don't mess with the memory_limit, even at the config's request, if it's already set to -1 or >= 1.5GB
-        $memoryLimit = PHP::configValueInBytes('memory_limit');
-        if ($memoryLimit !== -1 && $memoryLimit < 1024 * 1024 * 1536) {
-            $maxMemoryLimit = app(GeneralConfig::class)->phpMaxMemoryLimit;
-            @ini_set('memory_limit', $maxMemoryLimit ?: '1536M');
-        }
-
-        // Try to reset time limit
-        if (!function_exists('set_time_limit') || !@set_time_limit(0)) {
-            Craft::warning('set_time_limit() is not available', __METHOD__);
-        }
+        maxPowerCaptain();
     }
 
     /**
@@ -498,28 +489,11 @@ class App
      * @param int|null $mask Error levels to suppress, default value NULL indicates all warnings and below.
      * @return mixed
      * @since 5.0.0
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\silence()} instead.
      */
     public static function silence(Closure|string $callable, ?int $mask = null): mixed
     {
-        // loosely based on Composer\Util\Silencer
-        if (!isset($mask)) {
-            $mask = E_WARNING | E_NOTICE | E_USER_WARNING | E_USER_NOTICE | E_DEPRECATED | E_USER_DEPRECATED | E_STRICT;
-        }
-
-        $old = error_reporting();
-        error_reporting($old & ~$mask);
-
-        try {
-            $returnType = (new ReflectionFunction($callable))->getReturnType();
-            if ($returnType instanceof ReflectionNamedType && $returnType->getName() === 'void') {
-                $callable();
-                return null;
-            } else {
-                return $callable();
-            }
-        } finally {
-            error_reporting($old);
-        }
+        return silence($callable, $mask);
     }
 
     /**

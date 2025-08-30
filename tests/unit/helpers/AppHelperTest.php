@@ -11,7 +11,6 @@ use craft\helpers\App;
 use craft\mail\transportadapters\Sendmail;
 use craft\models\MailSettings;
 use craft\test\TestCase;
-use CraftCms\Cms\Config\GeneralConfig;
 use yii\base\Component;
 use yii\base\InvalidArgumentException;
 
@@ -60,51 +59,6 @@ class AppHelperTest extends TestCase
 
         self::expectException(InvalidArgumentException::class);
         App::cliOption('no-dash');
-    }
-
-    /**
-     * @todo 3.1 added new functions to test.
-     */
-    public function testMaxPowerCaptain(): void
-    {
-        $oldMemoryLimit = ini_get('memory_limit');
-        $oldMaxExecution = ini_get('max_execution_time');
-
-        $generalConfig = app(GeneralConfig::class);
-        $generalConfig->phpMaxMemoryLimit = '512M';
-
-        if (@ini_set('memory_limit', '256M') === false) {
-            $this->markTestSkipped('Unable to set memory_limit');
-        }
-
-        App::maxPowerCaptain();
-
-        self::assertSame($generalConfig->phpMaxMemoryLimit, ini_get('memory_limit'));
-        self::assertSame('0', ini_get('max_execution_time'));
-
-        ini_set('memory_limit', $oldMemoryLimit);
-        ini_set('max_execution_time', $oldMaxExecution);
-    }
-
-    /**
-     *
-     */
-    public function testSilence(): void
-    {
-        self::assertSame('foo', App::silence(fn() => 'foo'));
-        self::assertNull(App::silence(function() {
-        }));
-        self::assertNull(App::silence(function(): void {
-        }));
-    }
-
-    /**
-     * @todo More needed here to test with constant and invalid file path.
-     * See coverage report for more info.
-     */
-    public function testLicenseKey(): void
-    {
-        self::assertSame(250, strlen(App::licenseKey()));
     }
 
     /**

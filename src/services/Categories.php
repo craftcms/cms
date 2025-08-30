@@ -14,7 +14,6 @@ use craft\errors\CategoryGroupNotFoundException;
 use craft\events\CategoryGroupEvent;
 use craft\events\ConfigEvent;
 use craft\events\DeleteSiteEvent;
-use craft\helpers\App;
 use craft\helpers\ProjectConfig as ProjectConfigHelper;
 use craft\models\CategoryGroup;
 use craft\models\CategoryGroup_SiteSettings;
@@ -32,6 +31,7 @@ use Throwable;
 use Tpetry\QueryExpressions\Language\Alias;
 use yii\base\Component;
 use yii\base\Exception;
+use function CraftCms\Cms\maxPowerCaptain;
 
 /**
  * Categories service.
@@ -460,7 +460,7 @@ class Categories extends Component
                             ]);
                     } elseif (!empty($sitesWithNewUriFormats)) {
                         foreach ($categoryIds as $categoryId) {
-                            App::maxPowerCaptain();
+                            maxPowerCaptain();
 
                             // Loop through each of the changed sites and update all of the categories’ slugs and URIs
                             foreach ($sitesWithNewUriFormats as $siteId) {

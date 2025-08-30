@@ -10,7 +10,6 @@ namespace craft\image;
 use Craft;
 use craft\base\Image;
 use craft\errors\ImageException;
-use craft\helpers\App;
 use craft\helpers\FileHelper;
 use craft\helpers\Image as ImageHelper;
 use CraftCms\Cms\Config\GeneralConfig;
@@ -31,6 +30,7 @@ use Imagine\Image\Palette\RGB;
 use Imagine\Image\Point;
 use Imagine\Imagick\Imagine as ImagickImagine;
 use Throwable;
+use function CraftCms\Cms\maxPowerCaptain;
 
 /**
  * Raster class is used for raster image manipulations.
@@ -580,7 +580,7 @@ class Raster extends Image
         try {
             if ($autoQuality && in_array($extension, ['jpeg', 'jpg', 'png'], true)) {
                 clearstatcache();
-                App::maxPowerCaptain();
+                maxPowerCaptain();
 
                 if (Craft::$app->getImages()->getIsImagick() && method_exists(Imagick::class, 'getImageCompressionQuality')) {
                     try {
