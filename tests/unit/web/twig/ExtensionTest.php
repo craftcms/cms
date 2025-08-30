@@ -129,7 +129,7 @@ class ExtensionTest extends TestCase
     {
         Craft::$app->getProjectConfig()->set('system.name', 'Im a test system');
         $this->testRenderResult(
-            'Im a test system | default Craft test site ' . TestSetup::SITE_URL,
+            'Im a test system | defaultSite Craft test site ' . TestSetup::SITE_URL,
             '{{ systemName }} | {{ currentSite.handle }} {{ currentSite }} {{ siteUrl }}'
         );
     }

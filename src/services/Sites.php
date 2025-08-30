@@ -511,6 +511,14 @@ class Sites extends Component
         if (Craft::$app->has('request', true) && Craft::$app->getRequest()->getIsSiteRequest()) {
             Craft::$app->language = $this->_currentSite->language;
         }
+
+        // Set the CRAFT_SITE and CRAFT_SITE_UPPER env vars
+        if ($site->handle !== null) {
+            $_SERVER['CRAFT_SITE'] = $site->handle;
+            $_SERVER['CRAFT_SITE_UPPER'] = strtoupper(StringHelper::toSnakeCase($site->handle));
+        } else {
+            unset($_SERVER['CRAFT_SITE'], $_SERVER['CRAFT_SITE_UPPER']);
+        }
     }
 
     /**
