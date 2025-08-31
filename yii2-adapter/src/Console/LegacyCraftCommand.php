@@ -4,9 +4,11 @@ namespace CraftCms\Yii2Adapter\Console;
 
 use craft\console\Application;
 use CraftCms\Cms\Console\CraftCommand;
+use CraftCms\Cms\Deprecator\Deprecator;
 use CraftCms\Cms\Support\Str;
 use Illuminate\Console\Command;
 use Symfony\Component\Console\Input\ArgvInput;
+use function app;
 
 class LegacyCraftCommand extends Command
 {
@@ -38,7 +40,7 @@ class LegacyCraftCommand extends Command
         $tokens[0] = str_replace(':', '/', Str::after($tokens[0], 'craft:'));
 
         if ($this->deprecationMessage) {
-            \Craft::$app->getDeprecator()->log(__METHOD__, $this->deprecationMessage);
+            app(Deprecator::class)->log(__METHOD__, $this->deprecationMessage);
         }
 
         $_SERVER['argv'] = array_merge(['craft'], $tokens);

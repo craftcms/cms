@@ -13,6 +13,7 @@ use craft\helpers\App;
 use craft\helpers\Typecast;
 use CraftCms\Cms\Config\BaseConfig;
 use CraftCms\Cms\Config\GeneralConfig;
+use CraftCms\Cms\Deprecator\Deprecator;
 use CraftCms\Cms\Support\Env;
 use Illuminate\Support\Facades\Config as ConfigFacade;
 use RuntimeException;
@@ -237,7 +238,7 @@ class Config extends Component
      */
     public function getGeneral(): GeneralConfig
     {
-        Craft::$app->getDeprecator()->log('Craft::$app->config->general', 'Craft::$app->config->general is deprecated. Use `app(\CraftCms\Cms\Config\GeneralConfig::class)` (PHP) or `config.craft.general` (Twig) instead.');
+        app(Deprecator::class)->log('Craft::$app->config->general', 'Craft::$app->config->general is deprecated. Use `app(\CraftCms\Cms\Config\GeneralConfig::class)` (PHP) or `config.craft.general` (Twig) instead.');
 
         return app(GeneralConfig::class);
     }

@@ -1,169 +1,126 @@
 <?php
-/**
- * @link https://craftcms.com/
- * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license https://craftcms.github.io/license/
- */
 
-namespace craft\services;
+namespace CraftCms\Cms\Deprecator;
 
-use Craft;
+use craft\base\Component;
 use craft\elements\db\ElementQuery;
-use craft\errors\DeprecationException;
 use craft\helpers\Template;
-use craft\models\DeprecationError;
 use craft\web\twig\Extension;
-use CraftCms\Cms\Database\Table;
+use CraftCms\Cms\Deprecator\Exceptions\DeprecationException;
+use CraftCms\Cms\Deprecator\Models\DeprecationError;
 use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Support\Str;
-use Illuminate\Database\Query\Builder;
-use Illuminate\Support\Facades\DB;
+use Illuminate\Container\Attributes\Singleton;
+use Illuminate\Support\Facades\Log;
 use Throwable;
 use Twig\Template as TwigTemplate;
-use yii\base\Application;
-use yii\base\Component;
 
 /**
- * Deprecator service.
- * An instance of the service is available via [[\craft\base\ApplicationTrait::getDeprecator()|`Craft::$app->getDeprecator()`]].
- *
- * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0.0
+ * @since 6.0.0
  */
-class Deprecator extends Component
+#[Singleton]
+final class Deprecator
 {
     /**
      * @var bool Whether deprecation warnings should throw exceptions rather than being logged.
-     * @since 3.1.18
      */
-    public bool $throwExceptions = false;
+    public static bool $throwExceptions = false;
 
     /**
-     * @var string|false Whether deprecation warnings should be logged in the database ('db'),
-     * error logs ('logs'), or not at all (false).
+     * @var 'db'|'logs'|false Whether deprecation warnings should be logged in the database ('db'),
+     *                        error logs ('logs'), or not at all (false).
      *
      * Changing this will prevent deprecation warnings from showing up in the "Deprecation Warnings" utility
      * or in the "Deprecated" panel in the Debug Toolbar.
-     *
-     * @since 3.0.7
      */
-    public string|false $logTarget = 'db';
+    public static string|false $logTarget = 'db';
 
     /**
      * @var DeprecationError[] The deprecation warnings that were logged in the current request
      */
-    private array $_requestLogs = [];
+    private array $requestLogs = [];
 
     /**
      * @var DeprecationError[] The deprecation warnings that still need to be stored in the DB
      */
-    private array $_pendingRequestLogs = [];
+    private array $pendingRequestLogs = [];
 
     /**
      * @var DeprecationError[]|null All the unique deprecation warnings that have been logged
      */
-    private ?array $_allLogs = null;
-
-    /**
-     * @inheritdoc
-     * @since 3.4.12
-     */
-    public function init(): void
-    {
-        if ($this->_storeLogsInDb()) {
-            Craft::$app->on(Application::EVENT_AFTER_REQUEST, [$this, 'storeLogs'], null, false);
-        }
-
-        parent::init();
-    }
+    private ?array $allLogs = null;
 
     /**
      * Logs a new deprecation error.
      *
-     * @param string $key
-     * @param string $message
-     * @param string|null $file
-     * @param int|null $line
      *
      * @throws DeprecationException
      */
     public function log(string $key, string $message, ?string $file = null, ?int $line = null): void
     {
-        if ($this->logTarget === false) {
+        if (self::$logTarget === false) {
             return;
         }
 
-        if ($this->logTarget === 'logs') {
-            Craft::warning($message, 'deprecation-error');
+        if (self::$logTarget === 'logs') {
+            Log::warning($message, ['deprecation-error']);
         }
 
         // Get the debug backtrace
         $traces = debug_backtrace();
 
         if ($file === null) {
-            [$file, $line] = $this->_findOrigin($traces);
+            [$file, $line] = $this->findOrigin($traces);
         }
 
-        if ($this->throwExceptions) {
+        if (self::$throwExceptions) {
             throw new DeprecationException($message, $file, $line);
         }
 
-        $fingerprint = $file . ($line ? ':' . $line : '');
+        $fingerprint = $file.($line ? ':'.$line : '');
 
         // Don't log the same key/fingerprint twice in the same request
-        $this->_requestLogs["$key-$fingerprint"] = $this->_pendingRequestLogs["$key-$fingerprint"] = new DeprecationError([
+        $this->requestLogs["$key-$fingerprint"] = $this->pendingRequestLogs["$key-$fingerprint"] = new DeprecationError([
             'key' => $key,
             'fingerprint' => $fingerprint,
             'lastOccurrence' => now(),
             'file' => $file,
             'line' => $line,
             'message' => $message,
-            'traces' => $this->_processStackTrace($traces),
+            'traces' => $this->processStackTrace($traces),
         ]);
-
-        if ($this->_storeLogsInDb() && Craft::$app->state >= Application::STATE_AFTER_REQUEST) {
-            $this->storeLogs();
-        }
-    }
-
-    private function _storeLogsInDb(): bool
-    {
-        return !$this->throwExceptions && $this->logTarget === 'db';
     }
 
     /**
      * Stores all the deprecation warnings that were logged in this request.
-     *
-     * @since 3.4.12
      */
     public function storeLogs(): void
     {
-        $now = now();
+        if (! $this->storeLogsInDb()) {
+            return;
+        }
 
-        foreach ($this->_pendingRequestLogs as $log) {
+        foreach ($this->pendingRequestLogs as $log) {
             try {
-                DB::table(Table::DEPRECATIONERRORS)
-                    ->updateOrInsert([
-                        'key' => $log->key,
-                        'fingerprint' => $log->fingerprint,
-                    ], [
-                        'lastOccurrence' => $log->lastOccurrence,
-                        'file' => $log->file,
-                        'line' => $log->line,
-                        'message' => $log->message,
-                        'traces' => Json::encode($log->traces),
-                        'dateCreated' => $now,
-                        'dateUpdated' => $now,
-                        'uid' => Str::uuid(),
-                    ]);
+                DeprecationError::updateOrCreate([
+                    'key' => $log->key,
+                    'fingerprint' => $log->fingerprint,
+                ], [
+                    'lastOccurrence' => $log->lastOccurrence,
+                    'file' => $log->file,
+                    'line' => $log->line,
+                    'message' => $log->message,
+                    'traces' => Json::encode($log->traces),
+                    'uid' => Str::uuid(),
+                ]);
             } catch (Throwable $e) {
-                Craft::warning("Couldn't save deprecation warning: {$e->getMessage()}", __METHOD__);
+                Log::warning("Couldn't save deprecation warning: {$e->getMessage()}", [__METHOD__]);
                 // Craft probably isn’t installed yet
                 break;
             }
         }
 
-        $this->_pendingRequestLogs = [];
+        $this->pendingRequestLogs = [];
     }
 
     /**
@@ -173,111 +130,77 @@ class Deprecator extends Component
      */
     public function getRequestLogs(): array
     {
-        return $this->_requestLogs;
+        return $this->requestLogs;
     }
 
     /**
      * Returns the total number of deprecation warnings that have been logged.
-     *
-     * @return int
      */
     public function getTotalLogs(): int
     {
-        return DB::table(Table::DEPRECATIONERRORS)->count();
+        return DeprecationError::count();
     }
 
     /**
      * Get 'em all.
      *
-     * @param int|null $limit
      *
      * @return DeprecationError[]
      */
     public function getLogs(?int $limit = null): array
     {
-        if (isset($this->_allLogs)) {
-            return $this->_allLogs;
-        }
-
-        $this->_allLogs = $this->_createDeprecationErrorQuery()
+        return $this->allLogs ?? $this->allLogs = DeprecationError::query()
             ->limit($limit)
-            ->orderByDesc('lastOccurrence')
+            ->latest('lastOccurrence')
             ->get()
-            ->map(fn(object $result) => new DeprecationError((array) $result))
             ->all();
-
-        return $this->_allLogs;
     }
 
     /**
      * Returns a log by its ID.
-     *
-     * @param int $logId
-     *
-     * @return DeprecationError|null
      */
     public function getLogById(int $logId): ?DeprecationError
     {
-        $log = $this->_createDeprecationErrorQuery()
-            ->find($logId);
-
-        return $log ? new DeprecationError((array) $log) : null;
+        return DeprecationError::find($logId);
     }
 
     /**
      * Deletes a log by its ID.
-     *
-     * @param int $id
-     *
-     * @return bool
      */
     public function deleteLogById(int $id): bool
     {
-        return (bool)DB::table(Table::DEPRECATIONERRORS)->delete($id);
+        return (bool) DeprecationError::destroy($id);
     }
 
     /**
      * Deletes all logs.
-     *
-     * @return bool
      */
     public function deleteAllLogs(): bool
     {
-        return (bool)DB::table(Table::DEPRECATIONERRORS)->delete();
+        return (bool) DeprecationError::query()->delete();
     }
 
-    private function _createDeprecationErrorQuery(): Builder
+    private function storeLogsInDb(): bool
     {
-        return DB::table(Table::DEPRECATIONERRORS)
-            ->select([
-                'id',
-                'key',
-                'fingerprint',
-                'lastOccurrence',
-                'file',
-                'line',
-                'message',
-                'traces',
-            ]);
+        return ! self::$throwExceptions && self::$logTarget === 'db';
     }
 
     /**
      * Returns the file and line number that should be associated with the error.
      *
-     * @param array $traces debug_backtrace() results leading up to [[log()]]
-     *
-     * @return array [file, line]
+     * @param  array  $traces  debug_backtrace() results leading up to [[log()]]
+     * @return array{0: string, 1: ?int} [file, line]
      */
-    private function _findOrigin(array $traces): array
+    private function findOrigin(array $traces): array
     {
         // Should we be treating this as a template deprecation log?
         if (empty($traces[2]['class']) && isset($traces[2]['function']) && $traces[2]['function'] === 'twig_get_attribute') {
             // came through twig_get_attribute()
             $templateTrace = 3;
-        } elseif ($this->_isTemplateAttributeCall($traces, 4)) {
+        } elseif ($this->isTemplateAttributeCall($traces, 4)) {
             // came through Template::attribute()
             $templateTrace = 4;
-        } elseif ($this->_isTemplateAttributeCall($traces, 2)) {
+        } elseif ($this->isTemplateAttributeCall($traces, 2)) {
             // special case for "deprecated" date functions the Template helper pretends still exist
             $templateTrace = 2;
         } elseif (
@@ -314,8 +237,9 @@ class Deprecator extends Component
 
             if ($template instanceof TwigTemplate) {
                 $templateName = $template->getTemplateName();
-                $file = Craft::$app->getView()->resolveTemplate($templateName) ?: $templateName;
-                $line = $this->_findTemplateLine($template, $templateCodeLine);
+                $file = \Craft::$app->getView()->resolveTemplate($templateName) ?: $templateName;
+                $line = $this->findTemplateLine($template, $templateCodeLine);
+
                 return [$file, $line];
             }
         }
@@ -336,32 +260,29 @@ class Deprecator extends Component
     /**
      * Returns whether the given trace is a call to [[\craft\heplers\Template::attribute()]]
      *
-     * @param array $traces debug_backtrace() results leading up to [[log()]]
-     * @param int $index The trace index to check
-     *
-     * @return bool
+     * @param  array  $traces  debug_backtrace() results leading up to [[log()]]
+     * @param  int  $index  The trace index to check
      */
-    private function _isTemplateAttributeCall(array $traces, int $index): bool
+    private function isTemplateAttributeCall(array $traces, int $index): bool
     {
-        if (!isset($traces[$index])) {
+        if (! isset($traces[$index])) {
             return false;
         }
+
         $t = $traces[$index];
-        return (
+
+        return
             isset($t['class'], $t['function']) &&
             $t['class'] === Template::class &&
-            $t['function'] === 'attribute'
-        );
+            $t['function'] === 'attribute';
     }
 
     /**
      * Returns a simplified version of the stack trace.
      *
-     * @param array $traces debug_backtrace() results leading up to [[log()]]
-     *
-     * @return array
+     * @param  array  $traces  debug_backtrace() results leading up to [[log()]]
      */
-    private function _processStackTrace(array $traces): array
+    private function processStackTrace(array $traces): array
     {
         $logTraces = [];
 
@@ -375,12 +296,12 @@ class Deprecator extends Component
             }
 
             $logTraces[] = [
-                'objectClass' => !empty($trace['object']) ? get_class($trace['object']) : null,
+                'objectClass' => ! empty($trace['object']) ? get_class($trace['object']) : null,
                 'file' => $file,
                 'line' => $line,
-                'class' => !empty($trace['class']) ? $trace['class'] : null,
-                'method' => !empty($trace['function']) ? $trace['function'] : null,
-                'args' => !empty($trace['args']) ? $this->_argsToString($trace['args']) : null,
+                'class' => ! empty($trace['class']) ? $trace['class'] : null,
+                'method' => ! empty($trace['function']) ? $trace['function'] : null,
+                'args' => ! empty($trace['args']) ? $this->argsToString($trace['args']) : null,
             ];
         }
 
@@ -389,13 +310,8 @@ class Deprecator extends Component
 
     /**
      * Returns the Twig template that should be associated with the deprecation error, if any.
-     *
-     * @param TwigTemplate $template
-     * @param int|null $actualCodeLine
-     *
-     * @return int|null
      */
-    private function _findTemplateLine(TwigTemplate $template, ?int $actualCodeLine = null): ?int
+    private function findTemplateLine(TwigTemplate $template, ?int $actualCodeLine = null): ?int
     {
         if ($actualCodeLine === null) {
             return null;
@@ -415,12 +331,8 @@ class Deprecator extends Component
      * Converts an array of method arguments to a string.
      *
      * Adapted from [[\yii\web\ErrorHandler::argumentsToString()]], but this one's less destructive
-     *
-     * @param array $args
-     *
-     * @return string
      */
-    private function _argsToString(array $args): string
+    private function argsToString(array $args): string
     {
         $strArgs = [];
         $isAssoc = ($args !== array_values($args));
@@ -441,7 +353,7 @@ class Deprecator extends Component
             } elseif (is_string($value)) {
                 $strValue = Str::limit($value, 64);
             } elseif (is_array($value)) {
-                $strValue = '[' . $this->_argsToString($value) . ']';
+                $strValue = '['.$this->argsToString($value).']';
             } elseif ($value === null) {
                 $strValue = 'null';
             } elseif (is_resource($value)) {
@@ -451,9 +363,9 @@ class Deprecator extends Component
             }
 
             if (is_string($key)) {
-                $strArgs[] = '"' . $key . '" => ' . $strValue;
+                $strArgs[] = '"'.$key.'" => '.$strValue;
             } elseif ($isAssoc) {
-                $strArgs[] = $key . ' => ' . $strValue;
+                $strArgs[] = $key.' => '.$strValue;
             } else {
                 $strArgs[] = $strValue;
             }

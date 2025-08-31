@@ -14,7 +14,6 @@ use craft\base\LocalFsInterface;
 use craft\elements\Asset;
 use craft\elements\conditions\ElementCondition;
 use craft\errors\AssetException;
-use craft\errors\DeprecationException;
 use craft\errors\ElementNotFoundException;
 use craft\errors\FsException;
 use craft\errors\UploadFailedException;
@@ -34,6 +33,8 @@ use craft\web\Controller;
 use craft\web\UploadedFile;
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Database\Table;
+use CraftCms\Cms\Deprecator\Deprecator;
+use CraftCms\Cms\Deprecator\Exceptions\DeprecationException;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Str;
 use Throwable;
@@ -168,7 +169,7 @@ class AssetsController extends Controller
     public function actionSaveAsset(): ?Response
     {
         if (UploadedFile::getInstanceByName('assets-upload') !== null) {
-            Craft::$app->getDeprecator()->log(__METHOD__, 'Uploading new files via `assets/save-asset` has been deprecated. Use `assets/upload` instead.');
+            app(Deprecator::class)->log(__METHOD__, 'Uploading new files via `assets/save-asset` has been deprecated. Use `assets/upload` instead.');
             return $this->runAction('upload');
         }
 

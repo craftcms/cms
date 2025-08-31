@@ -7,9 +7,9 @@
 
 namespace craft\behaviors;
 
-use Craft;
 use craft\base\ElementInterface;
 use craft\elements\User;
+use CraftCms\Cms\Deprecator\Deprecator;
 use yii\base\Behavior;
 
 /**
@@ -75,7 +75,7 @@ abstract class BaseRevisionBehavior extends Behavior
      */
     public function getSource(): ?ElementInterface
     {
-        Craft::$app->getDeprecator()->log(__METHOD__, 'Elements’ `getSource()` method has been deprecated. Use `getCanonical()` instead.');
+        app(Deprecator::class)->log(__METHOD__, 'Elements’ `getSource()` method has been deprecated. Use `getCanonical()` instead.');
         if ($this->owner->getIsCanonical()) {
             return null;
         }
@@ -91,7 +91,7 @@ abstract class BaseRevisionBehavior extends Behavior
      */
     public function getSourceId(): int
     {
-        Craft::$app->getDeprecator()->log(__METHOD__, 'Elements’ `getSourceId()` method has been deprecated. Use `getCanonicalId()` instead.');
+        app(Deprecator::class)->log(__METHOD__, 'Elements’ `getSourceId()` method has been deprecated. Use `getCanonicalId()` instead.');
         return $this->owner->getCanonicalId();
     }
 }

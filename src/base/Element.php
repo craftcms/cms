@@ -83,6 +83,7 @@ use craft\web\UploadedFile;
 use craft\web\View;
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Database\Table;
+use CraftCms\Cms\Deprecator\Deprecator;
 use CraftCms\Cms\Element\Enums\AttributeStatus;
 use CraftCms\Cms\Shared\Enums\Color;
 use CraftCms\Cms\Support\Arr;
@@ -1927,7 +1928,6 @@ abstract class Element extends Component implements ElementInterface
                     ->where('lft', '<', $elementStructureDatum['lft'])
                     ->where('rgt', '>', $elementStructureDatum['rgt'])
                     ->when($parents, fn(Builder $query) => $query->where('level', $elementStructureDatum['level'] - 1));
-                ;
             });
         }
 
@@ -3313,7 +3313,7 @@ abstract class Element extends Component implements ElementInterface
      */
     public function getSourceId(): ?int
     {
-        Craft::$app->getDeprecator()->log(__METHOD__,
+        app(Deprecator::class)->log(__METHOD__,
             'Elements’ `getSourceId()` method has been deprecated. Use `getCanonicalId()` instead.');
         return $this->getCanonicalId();
     }
@@ -3327,7 +3327,7 @@ abstract class Element extends Component implements ElementInterface
      */
     public function getSourceUid(): string
     {
-        Craft::$app->getDeprecator()->log(__METHOD__,
+        app(Deprecator::class)->log(__METHOD__,
             'Elements’ `getSourceUid()` method has been deprecated. Use `getCanonicalUid()` instead.');
         return $this->getCanonicalUid();
     }
@@ -4114,7 +4114,7 @@ JS, [
 
             $view->registerJsWithVars(fn($id, $elementType, $settings) => <<<JS
 $('#' + $id).on('activate', () => {
-  Craft.createElementEditor($elementType, $settings);
+  Craft.createElementEditor($elementType, $settings)
 });
 JS, [
                 $view->namespaceInputId($editId),
@@ -4144,7 +4144,7 @@ JS, [
                 $view->registerJsWithVars(fn($id, $elementInfo) => <<<JS
 (() => {
   $('#' + $id).on('activate', () => {
-    Craft.cp.copyElements([$elementInfo]);
+    Craft.cp.copyElements([$elementInfo])
   });
 })();
 JS, [

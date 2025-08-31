@@ -6,6 +6,7 @@ use CraftCms\Cms\Asset\AssetServiceProvider;
 use CraftCms\Cms\Config\ConfigServiceProvider;
 use CraftCms\Cms\Console\ConsoleServiceProvider;
 use CraftCms\Cms\Database\DatabaseServiceProvider;
+use CraftCms\Cms\Deprecator\DeprecatorServiceProvider;
 use CraftCms\Cms\License\LicenseServiceProvider;
 use CraftCms\Cms\Plugin\PluginServiceProvider;
 use Illuminate\Support\AggregateServiceProvider;
@@ -16,6 +17,7 @@ final class CraftServiceProvider extends AggregateServiceProvider
     protected $providers = [
         ConfigServiceProvider::class,
         DatabaseServiceProvider::class,
+        DeprecatorServiceProvider::class,
         LicenseServiceProvider::class,
         AppServiceProvider::class,
         IconServiceProvider::class,

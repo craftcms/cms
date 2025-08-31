@@ -58,6 +58,7 @@ use craft\web\twig\tokenparsers\TagTokenParser;
 use craft\web\twig\variables\CraftVariable;
 use craft\web\View;
 use CraftCms\Cms\Config\GeneralConfig;
+use CraftCms\Cms\Deprecator\Deprecator;
 use CraftCms\Cms\Plugin\Contracts\PluginInterface;
 use CraftCms\Cms\Plugin\Plugins;
 use CraftCms\Cms\Support\Arr;
@@ -453,7 +454,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
      */
     public function ucfirstFilter(mixed $string): string
     {
-        Craft::$app->getDeprecator()->log('ucfirst', 'The `|ucfirst` filter has been deprecated. Use `|capitalize` instead.');
+        app(Deprecator::class)->log('ucfirst', 'The `|ucfirst` filter has been deprecated. Use `|capitalize` instead.');
         return mb_ucfirst((string)$string);
     }
 
@@ -467,7 +468,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
      */
     public function ucwordsFilter(TwigEnvironment $env, string $string): string
     {
-        Craft::$app->getDeprecator()->log('ucwords', 'The `|ucwords` filter has been deprecated. Use `|title` instead.');
+        app(Deprecator::class)->log('ucwords', 'The `|ucwords` filter has been deprecated. Use `|title` instead.');
         $charset = $env->getCharset();
         if ($charset) {
             return mb_convert_case($string, MB_CASE_TITLE, $charset);
@@ -1687,7 +1688,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
         $svg = Html::svg($svg, $sanitize, $namespace);
 
         if ($class !== null) {
-            Craft::$app->getDeprecator()->log('svg()-class', 'The `class` argument of the `svg()` Twig function has been deprecated. The `|attr` filter should be used instead.');
+            app(Deprecator::class)->log('svg()-class', 'The `class` argument of the `svg()` Twig function has been deprecated. The `|attr` filter should be used instead.');
             try {
                 $svg = Html::modifyTagAttributes($svg, [
                     'class' => $class,

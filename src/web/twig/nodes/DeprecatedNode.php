@@ -42,7 +42,7 @@ class DeprecatedNode extends Node
         $compiler->addDebugInfo($this);
 
         $compiler
-            ->write(sprintf('\Craft::$app->getDeprecator()->log(\'template:%s\', ', Str::random()))
+            ->write(sprintf('\app(\CraftCms\Cms\Deprecator\Deprecator::class)->log(\'template:%s\', ', Str::random()))
             ->subcompile($this->getNode('expr'))
             ->raw(sprintf(", '%s', %s);\n", $this->getTemplateName() ?: 'template', $this->getTemplateLine() ?: 'null'));
     }
