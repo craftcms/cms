@@ -121,6 +121,7 @@ return [
     'Already in your cart' => 'از قبل در سبد خرید شما وجود دارد',
     'Alternative Text' => 'متن جایگزین',
     'Amber' => 'کهربایی',
+    'An elevated session is required to change a user’s email.' => 'An elevated session is required to change a user’s email.',
     'An error occurred when duplicating the category.' => 'یک خطا در هنگام کپی کردن دسته بندی رخ داد.',
     'An error occurred when duplicating the entry.' => 'یک خطا در هنگام کپی کردن محتوا رخ داد.',
     'An error occurred when installing {name}.' => 'یک خطا در هنگام نصب {name} اتفاق افتاد.',
