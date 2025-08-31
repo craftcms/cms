@@ -13,7 +13,6 @@ use craft\db\Connection;
 use craft\db\ExpressionBuilder;
 use craft\db\ExpressionInterface;
 use craft\db\TableSchema;
-use craft\helpers\App;
 use craft\helpers\Db;
 use craft\helpers\FileHelper;
 use CraftCms\Cms\Config\GeneralConfig;
@@ -435,7 +434,7 @@ SQL;
         // Find out if the db/dump client supports column-statistics
         $shellCommand = new ShellCommand();
 
-        if (App::isWindows()) {
+        if (windows_os()) {
             $shellCommand->setCommand('mysqldump --help | findstr "column-statistics"');
         } else {
             $shellCommand->setCommand('mysqldump --help | grep "column-statistics"');

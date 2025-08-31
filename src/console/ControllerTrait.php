@@ -153,7 +153,7 @@ trait ControllerTrait
      */
     protected function checkRootUser(): bool
     {
-        if (App::isWindows() || !function_exists('exec') || Env::get('CRAFT_ALLOW_SUPERUSER')) {
+        if (windows_os() || !function_exists('exec') || Env::get('CRAFT_ALLOW_SUPERUSER')) {
             return true;
         }
 
