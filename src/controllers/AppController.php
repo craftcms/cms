@@ -15,7 +15,6 @@ use craft\elements\db\NestedElementQueryInterface;
 use craft\errors\BusyResourceException;
 use craft\errors\StaleResourceException;
 use craft\filters\UtilityAccess;
-use craft\helpers\App;
 use craft\helpers\Cp;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\ElementHelper;
@@ -29,6 +28,7 @@ use craft\web\Controller;
 use craft\web\ServiceUnavailableHttpException;
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Edition;
+use CraftCms\Cms\License\License;
 use CraftCms\Cms\Plugin\Exceptions\InvalidPluginException;
 use CraftCms\Cms\Plugin\Plugins;
 use CraftCms\Cms\Shared\Enums\LicenseKeyStatus;
@@ -441,7 +441,7 @@ class AppController extends Controller
             'items' => array_map(fn($issue) => $issue[2], $issues),
         ]);
 
-        $cookie = $this->request->getCookies()->get(App::licenseShunCookieName());
+        $cookie = $this->request->getCookies()->get(app(License::class)->shunCookieName());
         $data = $cookie ? Json::decode($cookie->value) : null;
         if (($data['hash'] ?? null) !== $hash) {
             $data = null;
@@ -477,7 +477,7 @@ class AppController extends Controller
      */
     public function actionSetLicenseShunCookie(): Response
     {
-        $cookieName = App::licenseShunCookieName();
+        $cookieName = app(License::class)->shunCookieName();
         $oldCookie = $this->request->getCookies()->get($cookieName);
         $data = $oldCookie ? Json::decode($oldCookie->value) : [];
 

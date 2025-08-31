@@ -543,7 +543,7 @@ class Cp extends Component
      */
     public function trialInfo(): ?array
     {
-        $issues = Collection::make(App::licensingIssues(false));
+        $issues = Collection::make(app(License::class)->issues(false));
 
         if ($issues->isEmpty()) {
             return null;

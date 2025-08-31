@@ -24,6 +24,7 @@ use craft\helpers\UrlHelper;
 use craft\queue\QueueLogBehavior;
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Database\Table;
+use CraftCms\Cms\License\License;
 use CraftCms\Cms\Plugin\Plugins;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Json;
@@ -297,9 +298,9 @@ class Application extends \yii\web\Application
 
                     if ($isCpRequest && !$this->getCanTestEditions()) {
                         // Are there are any licensing issues cached?
-                        $licenseIssues = App::licensingIssues(false);
+                        $licenseIssues = app(License::class)->issues(false);
                         if (!empty($licenseIssues)) {
-                            $hash = App::licensingIssuesHash($licenseIssues);
+                            $hash = app(License::class)->issuesHash($licenseIssues);
                             if ($this->_showLicensingIssuesScreen($hash)) {
                                 return $this->runAction('app/licensing-issues', [
                                     'issues' => $licenseIssues,
@@ -328,7 +329,7 @@ class Application extends \yii\web\Application
 
     private function _showLicensingIssuesScreen(string $hash = null): bool
     {
-        $cookie = $this->request->getCookies()->get(App::licenseShunCookieName());
+        $cookie = $this->request->getCookies()->get(app(License::class)->shunCookieName());
         if (!$cookie) {
             return true;
         }
