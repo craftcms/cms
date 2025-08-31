@@ -54,6 +54,7 @@ use function CraftCms\Cms\silence;
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
+ * @deprecated 6.0.0
  */
 class App
 {
@@ -520,10 +521,11 @@ class App
      * Returns whether Craft is running on a Windows environment
      *
      * @since 5.0.0
+     * @deprecated 6.0.0 use `windows_os()` instead.
      */
     public static function isWindows(): bool
     {
-        return defined('PHP_WINDOWS_VERSION_BUILD');
+        return windows_os();
     }
 
     /**
