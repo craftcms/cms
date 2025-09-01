@@ -31,6 +31,5 @@ module.exports = {
   },
   test: test,
   expect: base.expect,
-  // helpers,
   events,
 };
