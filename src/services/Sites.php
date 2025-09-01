@@ -40,6 +40,7 @@ use yii\base\Exception;
 use yii\base\InvalidArgumentException;
 use yii\base\NotSupportedException;
 use yii\db\Exception as DbException;
+use function CraftCms\Cms\maxPowerCaptain;
 
 /**
  * Sites service.
@@ -1326,7 +1327,7 @@ class Sites extends Component
      */
     private function _processNewPrimarySite(int $oldPrimarySiteId, int $newPrimarySiteId): void
     {
-        App::maxPowerCaptain();
+        maxPowerCaptain();
 
         $db = Craft::$app->getDb();
         DB::beginTransaction();

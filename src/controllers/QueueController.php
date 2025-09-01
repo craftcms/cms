@@ -9,7 +9,6 @@ namespace craft\controllers;
 
 use Craft;
 use craft\filters\UtilityAccess;
-use craft\helpers\App;
 use craft\queue\QueueInterface;
 use craft\web\Controller;
 use CraftCms\Cms\Config\GeneralConfig;
@@ -22,6 +21,7 @@ use yii\web\BadRequestHttpException;
 use yii\web\ForbiddenHttpException;
 use yii\web\Response;
 use yii\web\ServerErrorHttpException;
+use function CraftCms\Cms\maxPowerCaptain;
 
 /** @noinspection ClassOverridesFieldOfSuperClassInspection */
 
@@ -95,7 +95,7 @@ class QueueController extends Controller
         }
 
         // Run the queue
-        App::maxPowerCaptain();
+        maxPowerCaptain();
         $this->queue->run();
 
         return $this->response;

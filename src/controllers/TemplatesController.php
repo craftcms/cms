@@ -9,7 +9,6 @@ namespace craft\controllers;
 
 use Craft;
 use craft\db\Connection;
-use craft\helpers\App;
 use craft\helpers\Db;
 use craft\helpers\Path;
 use craft\helpers\Template;
@@ -17,6 +16,7 @@ use craft\web\Application;
 use craft\web\Controller;
 use craft\web\View;
 use CraftCms\Cms\Config\GeneralConfig;
+use CraftCms\Cms\Support\PHP;
 use ErrorException;
 use Illuminate\Support\Facades\Cache;
 use RequirementsChecker;
@@ -234,7 +234,7 @@ class TemplatesController extends Controller
 
         // If this is a PHP error and html_errors (https://php.net/manual/en/errorfunc.configuration.php#ini.html-errors)
         // is enabled, then allow the HTML not get encoded
-        if ($exception instanceof ErrorException && App::phpConfigValueAsBool('html_errors')) {
+        if ($exception instanceof ErrorException && PHP::configValueAsBool('html_errors')) {
             $variables['message'] = Template::raw($variables['message']);
         }
 

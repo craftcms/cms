@@ -1,13 +1,14 @@
 <?php
 
+use CraftCms\Cms\License\License;
 use CraftCms\Cms\Support\Api;
 use CraftCms\Cms\Support\Str;
 use Illuminate\Support\Facades\Cache;
-use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Http;
 
 beforeEach(function () {
     $this->api = app(Api::class);
+    $this->license = app(License::class);
 });
 
 it('can get headers', function () {
@@ -18,7 +19,6 @@ it('can get headers', function () {
         expect($headers['X-Craft-Env'])->toBe(config('app.env'));
         expect($headers['X-Craft-System'])->toBe(sprintf('craft:%s;%s', Craft::$app->getVersion(), Craft::$app->edition->handle()));
         expect($headers['X-Craft-Platform'])->toContain('php:', 'ext-');
-        expect($headers['X-Craft-License'])->toBe('__REQUEST__');
     });
 });
 
@@ -34,7 +34,6 @@ it('can process response headers', function () {
     ]);
 
     expect(Cache::get('editionTestableDomain@localhost'))->toBe(1);
-    expect(File::get(Craft::$app->getPath()->getLicenseKeyPath()))->toContain($key);
     expect(Cache::get('licensedDomain'))->toBe('foo.cloud');
 });
 

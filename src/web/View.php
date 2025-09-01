@@ -2447,7 +2447,7 @@ JS;
             $this->_twigOptions['autoescape'] = 'js';
         }
 
-        if (App::devMode()) {
+        if (app()->hasDebugModeEnabled()) {
             $this->_twigOptions['debug'] = true;
             $this->_twigOptions['strict_variables'] = true;
         }

@@ -8,7 +8,6 @@
 namespace craft\console\controllers;
 
 use Craft;
-use craft\helpers\App;
 use craft\helpers\Console;
 use CraftCms\Cms\Support\Json;
 use ReflectionFunctionAbstract;
@@ -99,7 +98,7 @@ class HelpController extends BaseHelpController
         }
 
         // Send the commands encoded as JSON to stdout
-        $jsonOptions = JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | (App::devMode() ? JSON_PRETTY_PRINT : 0);
+        $jsonOptions = JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | (app()->hasDebugModeEnabled() ? JSON_PRETTY_PRINT : 0);
         $this->stdout(Json::encode($data, $jsonOptions) . PHP_EOL);
         return ExitCode::OK;
     }

@@ -41,6 +41,7 @@ use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Element\Enums\AttributeStatus;
 use CraftCms\Cms\Element\Enums\MenuItemType;
+use CraftCms\Cms\License\License;
 use CraftCms\Cms\Plugin\Plugins;
 use CraftCms\Cms\Shared\Enums\Color;
 use CraftCms\Cms\Support\Arr;
@@ -154,7 +155,7 @@ class Cp
         $resolvableLicenseAlerts = [];
         $resolvableLicenseItems = [];
 
-        foreach (App::licensingIssues(fetch: $fetch) as [$name, $message, $resolveItem]) {
+        foreach (app(License::class)->issues(fetch: $fetch) as [$name, $message, $resolveItem]) {
             if (!$resolveItem) {
                 $alerts[] = $message;
             } elseif (!$canTestEditions) {

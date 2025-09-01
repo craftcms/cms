@@ -11,13 +11,13 @@ use Craft;
 use craft\base\Element;
 use craft\base\ElementInterface;
 use craft\events\RegisterUrlRulesEvent;
-use craft\helpers\App;
 use craft\helpers\UrlHelper;
 use craft\web\UrlRule as CraftUrlRule;
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Support\Arr;
 use yii\web\UrlRule as YiiUrlRule;
+use function CraftCms\Cms\backTraceAsString;
 
 /**
  * @inheritdoc
@@ -146,7 +146,7 @@ class UrlManager extends \yii\web\UrlManager
     {
         if (!Craft::$app->getIsInitialized()) {
             Craft::warning(__METHOD__ . "() was called before the application was fully initialized.\n" .
-                "Stack trace:\n" . App::backtrace(), __METHOD__);
+                "Stack trace:\n" . backTraceAsString(), __METHOD__);
         }
 
         $params = (array)$params;
@@ -165,7 +165,7 @@ class UrlManager extends \yii\web\UrlManager
     {
         if (!Craft::$app->getIsInitialized()) {
             Craft::warning(__METHOD__ . "() was called before the application was fully initialized.\n" .
-                "Stack trace:\n" . App::backtrace(), __METHOD__);
+                "Stack trace:\n" . backTraceAsString(), __METHOD__);
         }
 
         $params = (array)$params;
@@ -229,7 +229,7 @@ class UrlManager extends \yii\web\UrlManager
     {
         if (!Craft::$app->getIsInitialized()) {
             Craft::warning(__METHOD__ . "() was called before the application was fully initialized.\n" .
-                "Stack trace:\n" . App::backtrace(), __METHOD__);
+                "Stack trace:\n" . backTraceAsString(), __METHOD__);
         }
 
         if (isset($this->_matchedElement)) {
@@ -419,7 +419,7 @@ class UrlManager extends \yii\web\UrlManager
 
         $this->setMatchedElement($element ?: false);
 
-        if (App::devMode()) {
+        if (app()->hasDebugModeEnabled()) {
             Craft::debug([
                 'rule' => 'Element URI: ' . $path,
                 'match' => $this->_matchedElement instanceof ElementInterface,
@@ -443,7 +443,7 @@ class UrlManager extends \yii\web\UrlManager
         foreach ($this->rules as $rule) {
             $route = $rule->parseRequest($this, $request);
 
-            if (App::devMode()) {
+            if (app()->hasDebugModeEnabled()) {
                 Craft::debug([
                     'rule' => 'URL Rule: ' . (method_exists($rule, '__toString') ? $rule->__toString() : get_class($rule)),
                     'match' => $route !== false,
@@ -475,7 +475,7 @@ class UrlManager extends \yii\web\UrlManager
             ? app(GeneralConfig::class)->getSetPasswordRequestPath(Craft::$app->getSites()->getCurrentSite()->handle)
             : null;
 
-        if (App::devMode()) {
+        if (app()->hasDebugModeEnabled()) {
             Craft::debug([
                 'rule' => 'Discoverable change password URL',
                 'match' => $redirectUri !== null,
@@ -527,7 +527,7 @@ class UrlManager extends \yii\web\UrlManager
         $matches = $this->_isPublicTemplatePath($request);
         $path = $request->getPathInfo();
 
-        if (App::devMode()) {
+        if (app()->hasDebugModeEnabled()) {
             Craft::debug([
                 'rule' => 'Template: ' . $path,
                 'match' => $matches,
@@ -556,7 +556,7 @@ class UrlManager extends \yii\web\UrlManager
 
         $token = $request->getToken();
 
-        if (App::devMode()) {
+        if (app()->hasDebugModeEnabled()) {
             Craft::debug([
                 'rule' => 'Token' . ($token !== null ? ': ' . $token : ''),
                 'match' => $token !== null,

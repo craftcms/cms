@@ -29,7 +29,6 @@ use craft\events\AssetPreviewEvent;
 use craft\events\DefineAssetThumbUrlEvent;
 use craft\events\ReplaceAssetEvent;
 use craft\fs\Temp;
-use craft\helpers\App;
 use craft\helpers\Assets as AssetsHelper;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\Db;
@@ -42,6 +41,7 @@ use craft\models\Volume;
 use craft\models\VolumeFolder;
 use craft\records\VolumeFolder as VolumeFolderRecord;
 use CraftCms\Cms\Config\GeneralConfig;
+use CraftCms\Cms\Support\Env;
 use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Support\Str;
 use Tpetry\QueryExpressions\Language\Alias;
@@ -939,7 +939,7 @@ class Assets extends Component
      */
     public function getTempAssetUploadFs(): FsInterface
     {
-        $handle = App::parseEnv(app(GeneralConfig::class)->tempAssetUploadFs);
+        $handle = Env::parse(app(GeneralConfig::class)->tempAssetUploadFs);
         if (!$handle) {
             return new Temp();
         }

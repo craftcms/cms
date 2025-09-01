@@ -108,6 +108,7 @@ use CraftCms\Cms\Announcement\Announcements;
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Edition;
+use CraftCms\Cms\License\License;
 use CraftCms\Cms\Support\Composer;
 use CraftCms\Cms\Support\Env;
 use CraftCms\Cms\Support\Str;
@@ -613,7 +614,7 @@ trait ApplicationTrait
      */
     public function getLicensedEdition(): ?Edition
     {
-        $licenseInfo = CacheFacade::get(App::CACHE_KEY_LICENSE_INFO, []);
+        $licenseInfo = CacheFacade::get(License::CACHE_KEY_LICENSE_INFO, []);
 
         if (!isset($licenseInfo['craft']['edition'])) {
             return null;
@@ -771,7 +772,7 @@ trait ApplicationTrait
             return $live;
         }
 
-        return App::parseBooleanEnv($this->getProjectConfig()->get('system.live')) ?? false;
+        return Env::parseBoolean($this->getProjectConfig()->get('system.live')) ?? false;
     }
 
     /**
@@ -916,7 +917,7 @@ trait ApplicationTrait
      */
     public function getSystemName(): string
     {
-        $name = App::parseEnv(Craft::$app->getProjectConfig()->get('system.name'));
+        $name = Env::parse(Craft::$app->getProjectConfig()->get('system.name'));
         if ($name !== null) {
             return $name;
         }
@@ -1610,7 +1611,7 @@ trait ApplicationTrait
         $timeZone = app(GeneralConfig::class)->timezone ?? $this->getProjectConfig()->get('system.timeZone');
 
         if ($timeZone) {
-            $this->setTimeZone(App::parseEnv($timeZone));
+            $this->setTimeZone(Env::parse($timeZone));
         }
     }
 

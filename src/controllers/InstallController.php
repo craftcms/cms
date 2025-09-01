@@ -55,7 +55,7 @@ class InstallController extends Controller
     public function beforeAction($action): bool
     {
         // Return a 404 if Craft is already installed
-        if (!App::devMode() && Craft::$app->getIsInstalled()) {
+        if (!app()->hasDebugModeEnabled() && Craft::$app->getIsInstalled()) {
             throw new BadRequestHttpException('Craft is already installed');
         }
 

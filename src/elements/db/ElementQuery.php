@@ -54,6 +54,7 @@ use yii\db\Expression;
 use yii\db\ExpressionInterface;
 use yii\db\QueryBuilder;
 use yii\db\Schema;
+use function CraftCms\Cms\backTraceAsString;
 
 /**
  * ElementQuery represents a SELECT SQL statement for elements in a way that is independent of DBMS.
@@ -1562,7 +1563,7 @@ class ElementQuery extends Query implements ElementQueryInterface
         if (!Craft::$app->getIsInitialized()) {
             Craft::warning(
                 "Element query executed before Craft is fully initialized.\nStack trace:\n" .
-                App::backtrace(),
+                backTraceAsString(),
                 __METHOD__
             );
         }

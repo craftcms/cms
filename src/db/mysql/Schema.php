@@ -13,7 +13,6 @@ use craft\db\Connection;
 use craft\db\ExpressionBuilder;
 use craft\db\ExpressionInterface;
 use craft\db\TableSchema;
-use craft\helpers\App;
 use craft\helpers\Db;
 use craft\helpers\FileHelper;
 use CraftCms\Cms\Config\GeneralConfig;
@@ -25,6 +24,7 @@ use yii\base\ErrorException;
 use yii\base\InvalidArgumentException;
 use yii\base\NotSupportedException;
 use yii\db\Exception;
+use function CraftCms\Cms\normalizeVersion;
 
 /**
  * @inheritdoc
@@ -211,7 +211,7 @@ class Schema extends \yii\db\mysql\Schema
             ->addArg('--triggers')
             ->addArg('--no-tablespaces');
 
-        $serverVersion = App::normalizeVersion(Craft::$app->getDb()->getServerVersion());
+        $serverVersion = normalizeVersion(Craft::$app->getDb()->getServerVersion());
         $isMySQL8 = version_compare($serverVersion, '8', '>=');
         $ignoreTables ??= Craft::$app->getDb()->getIgnoredBackupTables();
         $commandFromConfig = app(GeneralConfig::class)->backupCommand;
@@ -434,7 +434,7 @@ SQL;
         // Find out if the db/dump client supports column-statistics
         $shellCommand = new ShellCommand();
 
-        if (App::isWindows()) {
+        if (windows_os()) {
             $shellCommand->setCommand('mysqldump --help | findstr "column-statistics"');
         } else {
             $shellCommand->setCommand('mysqldump --help | grep "column-statistics"');

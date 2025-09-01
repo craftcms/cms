@@ -9,7 +9,6 @@ namespace craft\services;
 
 use Craft;
 use craft\base\Image;
-use craft\helpers\App;
 use craft\helpers\ConfigHelper;
 use craft\helpers\FileHelper;
 use craft\helpers\Image as ImageHelper;
@@ -17,6 +16,7 @@ use craft\image\Raster;
 use craft\image\Svg;
 use craft\image\SvgAllowedAttributes;
 use CraftCms\Cms\Config\GeneralConfig;
+use CraftCms\Cms\Support\PHP;
 use enshrined\svgSanitize\Sanitizer;
 use Imagine\Gd\Imagine as GdImagine;
 use Imagine\Image\Format;
@@ -25,6 +25,7 @@ use Imagine\Imagick\Imagine as ImagickImagine;
 use Throwable;
 use yii\base\Component;
 use yii\base\Exception;
+use function CraftCms\Cms\maxPowerCaptain;
 
 /**
  * Images service.
@@ -102,10 +103,10 @@ class Images extends Component
     public function getVersion(): string
     {
         if ($this->getIsGd()) {
-            return App::extensionVersion('gd');
+            return PHP::extensionVersion('gd');
         }
 
-        $version = App::extensionVersion('imagick');
+        $version = PHP::extensionVersion('imagick');
         try {
             $version .= ' (ImageMagick ' . $this->getImageMagickApiVersion() . ')';
         } catch (Throwable) {
@@ -271,7 +272,7 @@ class Images extends Component
 
         if ($toTheMax) {
             // Turn it up to 11.
-            App::maxPowerCaptain();
+            maxPowerCaptain();
         }
 
         // If the file is 0bytes, we probably have enough memory

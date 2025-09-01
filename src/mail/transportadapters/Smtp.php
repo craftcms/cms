@@ -9,7 +9,7 @@ namespace craft\mail\transportadapters;
 
 use Craft;
 use craft\behaviors\EnvAttributeParserBehavior;
-use craft\helpers\App;
+use CraftCms\Cms\Support\Env;
 use Symfony\Component\Mailer\Transport\AbstractTransport;
 
 /**
@@ -112,7 +112,7 @@ class Smtp extends BaseTransportAdapter
             'required',
             'when' => fn($model) =>
                 /** @var self $model */
-                App::parseBooleanEnv($model->useAuthentication) ?? false,
+                Env::parseBoolean($model->useAuthentication) ?? false,
         ];
         return $rules;
     }
@@ -148,13 +148,13 @@ class Smtp extends BaseTransportAdapter
     {
         $config = [
             'scheme' => 'smtp',
-            'host' => App::parseEnv($this->host) ?? '',
-            'port' => $this->port ? (int) App::parseEnv($this->port) : null,
+            'host' => Env::parse($this->host) ?? '',
+            'port' => $this->port ? (int) Env::parse($this->port) : null,
         ];
 
-        if (App::parseBooleanEnv($this->useAuthentication) ?? false) {
-            $config['username'] = App::parseEnv($this->username);
-            $config['password'] = App::parseEnv($this->password);
+        if (Env::parseBoolean($this->useAuthentication) ?? false) {
+            $config['username'] = Env::parse($this->username);
+            $config['password'] = Env::parse($this->password);
         }
 
         return $config;

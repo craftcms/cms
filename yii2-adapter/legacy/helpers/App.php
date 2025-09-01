@@ -9,7 +9,6 @@ namespace craft\helpers;
 
 use Closure;
 use Craft;
-use craft\attributes\EnvName;
 use craft\behaviors\SessionBehavior;
 use craft\config\DbConfig;
 use craft\db\Command;
@@ -33,72 +32,42 @@ use craft\web\User as WebUser;
 use craft\web\View;
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Edition;
-use CraftCms\Cms\Plugin\Exceptions\InvalidPluginException;
-use CraftCms\Cms\Plugin\Plugins;
-use CraftCms\Cms\Shared\Enums\LicenseKeyStatus;
+use CraftCms\Cms\License\License;
 use CraftCms\Cms\Support\Env;
-use CraftCms\Cms\Support\Html;
-use CraftCms\Cms\Support\Json as JsonHelper;
+use CraftCms\Cms\Support\PHP;
 use CraftCms\Cms\Support\Str;
-use HTMLPurifier_Encoder;
-use Illuminate\Support\Facades\Cache;
-use ReflectionClass;
-use ReflectionFunction;
-use ReflectionNamedType;
-use ReflectionProperty;
-use Symfony\Component\Process\PhpExecutableFinder;
 use yii\base\Event;
 use yii\base\Exception;
 use yii\base\InvalidArgumentException;
-use yii\base\InvalidValueException;
-use yii\helpers\Inflector;
 use yii\mutex\FileMutex;
 use yii\mutex\MysqlMutex;
 use yii\mutex\PgsqlMutex;
 use yii\web\JsonParser;
+use function CraftCms\Cms\backTraceAsString;
+use function CraftCms\Cms\maxPowerCaptain;
+use function CraftCms\Cms\normalizeValue;
+use function CraftCms\Cms\normalizeVersion;
+use function CraftCms\Cms\silence;
 
 /**
  * App helper.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
+ * @deprecated 6.0.0
  */
 class App
 {
-    /**
-     * @internal
-     */
-    public const CACHE_KEY_LICENSE_INFO = 'licenseInfo';
-    /**
-     * @internal
-     */
-    public const CACHE_KEY_LICENSE_INFO_HOST = 'licenseInfoHost';
-
-    /**
-     * @var bool
-     */
-    private static bool $_iconv;
-
-    /**
-     * @var string[]
-     * @see isPathAllowed()
-     */
-    private static array $_basePaths;
-
-    /**
-     * @var string[]
-     */
-    private static array $_secrets;
-
     /**
      * Returns whether Dev Mode is enabled.
      *
      * @return bool
      * @since 4.0.0
+     * @deprecated 6.0.0 use `app()->hasDebugModeEnabled()` instead.
      */
     public static function devMode(): bool
     {
-        return YII_DEBUG;
+        return app()->hasDebugModeEnabled();
     }
 
     /**
@@ -118,7 +87,7 @@ class App
      * @return mixed The value, or `null` if not found.
      * @throws Exception
      * @since 3.4.18
-     * @deprecated in 6.0.0. Use `\CraftCms\Cms\Support\Env::get()` instead.
+     * @deprecated in 6.0.0. Use {@see Env::get()} instead.
      */
     public static function env(string $name): mixed
     {
@@ -143,36 +112,7 @@ class App
      */
     public static function envConfig(string $class, ?string $envPrefix = null): array
     {
-        $envPrefix = $envPrefix !== null ? Str::finish($envPrefix, '_') : '';
-        $properties = (new ReflectionClass($class))->getProperties(ReflectionProperty::IS_PUBLIC);
-        $envConfig = [];
-
-        foreach ($properties as $prop) {
-            if ($prop->isStatic()) {
-                continue;
-            }
-
-            $envName = null;
-
-            foreach ($prop->getAttributes(EnvName::class) as $attribute) {
-                /** @var EnvName $envName */
-                $envName = $attribute->newInstance();
-                $envName = $envName->name;
-                break;
-            }
-
-            if (!$envName) {
-                $envName = str($prop->getName())->snake()->upper()->value();
-            }
-
-            $envValue = Env::get(sprintf('%s%s', $envPrefix, $envName));
-
-            if ($envValue !== null) {
-                $envConfig[$prop->getName()] = $envValue;
-            }
-        }
-
-        return $envConfig;
+        return Env::config($class, $envPrefix);
     }
 
     /**
@@ -196,29 +136,11 @@ class App
      * @return string|bool|null The parsed value, or the original value if it didn’t
      * reference an environment variable and/or alias.
      * @since 3.7.29
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\Support\Env::parse()} instead.
      */
     public static function parseEnv(?string $value): bool|string|null
     {
-        if ($value === null) {
-            return null;
-        }
-
-        if (preg_match('/^\$(\w+)(\/.*)?/', $value, $matches)) {
-            $env = Env::get($matches[1]);
-
-            if ($env === null) {
-                // No env var or constant is defined here by that name
-                return null;
-            }
-
-            $value = $env . ($matches[2] ?? '');
-        }
-
-        if (str_starts_with($value, '@')) {
-            $value = Craft::getAlias($value, false) ?: $value;
-        }
-
-        return $value;
+        return Env::parse($value);
     }
 
     /**
@@ -234,26 +156,11 @@ class App
      * @param mixed $value
      * @return bool|null
      * @since 3.7.29
+     * @deprecated 6.0.0 use {@see Env::parseBoolean()} instead.
      */
     public static function parseBooleanEnv(mixed $value): ?bool
     {
-        if (is_bool($value)) {
-            return $value;
-        }
-
-        if ($value === 0 || $value === 1) {
-            return (bool)$value;
-        }
-
-        if (!is_string($value)) {
-            return null;
-        }
-
-        $value = static::parseEnv($value);
-        if ($value === null) {
-            return null;
-        }
-        return filter_var($value, FILTER_VALIDATE_BOOL, FILTER_NULL_ON_FAILURE);
+        return Env::parseBoolean($value);
     }
 
     /**
@@ -278,6 +185,7 @@ class App
      * @param bool $unset Whether the option should be removed from `argv` if found
      * @return string|float|int|bool|null
      * @since 4.0.0
+     * @deprecated 6.0.0
      */
     public static function cliOption(string $name, bool $unset = false): string|float|int|bool|null
     {
@@ -319,7 +227,7 @@ class App
                 $_SERVER['argv'] = array_values($_SERVER['argv']);
             }
 
-            return static::normalizeValue($value);
+            return normalizeValue($value);
         }
 
         return null;
@@ -401,62 +309,31 @@ class App
     }
 
     /**
-     * Returns the PHP version, without the distribution info.
-     *
-     * @return string
+     * {@see \CraftCms\Cms\Support\PHP::version}
+     * @deprecated 6.0.0 use {@see PHP::version()} instead.
      */
     public static function phpVersion(): string
     {
-        return PHP_MAJOR_VERSION . '.' . PHP_MINOR_VERSION . '.' . PHP_RELEASE_VERSION;
+        return PHP::version();
     }
 
     /**
-     * Returns a PHP extension version, without the distribution info.
-     *
-     * @param string $name The extension name
-     * @return string
-     */
+     * {@see \CraftCms\Cms\Support\PHP::extensionVersion}
+     * @deprecated 6.0.0 use {@see PHP::extensionVersion($name)} instead.
+    */
     public static function extensionVersion(string $name): string
     {
-        $version = phpversion($name);
-        return static::normalizeVersion($version);
+        return PHP::extensionVersion($name);
     }
 
     /**
-     * Normalizes an environment variable/constant name/CLI command option.
-     *
-     * It converts the following:
-     *
-     * - `'true'` → `true`
-     * - `'false'` → `false`
-     * - Numeric string → integer or float
-     *
-     * @param mixed $value
-     * @return mixed
+     * {@see \CraftCms\Cms\normalizeValue()}
      * @since 4.0.0
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\normalizeValue()} instead.
      */
     public static function normalizeValue(mixed $value): mixed
     {
-        if (is_string($value)) {
-            switch (strtolower($value)) {
-                case 'true':
-                    return true;
-                case 'false':
-                    return false;
-                case 'null':
-                    return null;
-            }
-
-            if (Number::isIntOrFloat($value)) {
-                $intOrFloat = Number::toIntOrFloat($value);
-                // make sure we didn't lose any precision
-                if ((string)$intOrFloat === $value) {
-                    return $intOrFloat;
-                }
-            }
-        }
-
-        return $value;
+        return normalizeValue($value);
     }
 
     /**
@@ -464,256 +341,109 @@ class App
      *
      * @param string $version
      * @return string
+     * @deprecated 6.0.0 use `CraftCms\Cms\normalizeVersion($version)` instead.
      */
     public static function normalizeVersion(string $version): string
     {
-        // Strip out the distribution info
-        $versionPattern = '\d[\d.]*(-(dev|alpha|beta|rc)(\.?\d[\d.]*)?)?';
-        if (!preg_match("/^((v|version\s*)?$versionPattern-?)+/i", $version, $match)) {
-            return '';
-        }
-        $version = $match[0];
-
-        // Return the highest version
-        preg_match_all("/$versionPattern/i", $version, $matches, PREG_SET_ORDER);
-        $versions = array_map(fn(array $match) => $match[0], $matches);
-        usort($versions, fn($a, $b) => match (true) {
-            version_compare($a, $b, '<') => 1,
-            version_compare($a, $b, '>') => -1,
-            default => 0,
-        });
-        return reset($versions) ?: '';
+        return normalizeVersion($version);
     }
 
     /**
-     * Retrieves a bool PHP config setting and normalizes it to an actual bool.
-     *
-     * @param string $var The PHP config setting to retrieve.
-     * @return bool Whether it is set to the php.ini equivalent of `true`.
+     * {@see \CraftCms\Cms\Support\PHP::configValueAsBool}
+     * @deprecated 6.0.0 use {@see PHP::configValueAsBool($var)} instead.
      */
     public static function phpConfigValueAsBool(string $var): bool
     {
-        $value = trim(ini_get($var));
-
-        // Supposedly “On” values will always be normalized to '1' but who can trust PHP...
-        return ($value === '1' || strtolower($value) === 'on');
+        return PHP::configValueAsBool($var);
     }
 
     /**
-     * Retrieves a disk size PHP config setting and normalizes it into bytes.
-     *
-     * @param string $var The PHP config setting to retrieve.
-     * @return int|float The value normalized into bytes.
+     * {@see \CraftCms\Cms\Support\PHP::phpConfigValueInBytes}
+     * @deprecated 6.0.0 use {@see PHP::phpConfigValueInBytes($var)} instead.
      * @since 3.0.38
      */
     public static function phpConfigValueInBytes(string $var): float|int
     {
-        $value = trim(ini_get($var));
-        return static::phpSizeToBytes($value);
+        return PHP::configValueInBytes($var);
     }
 
     /**
-     * Normalizes a PHP file size into bytes.
-     *
-     * @param string $value The file size expressed in PHP config value notation
-     * @return int|float The value normalized into bytes.
+     * {@see \CraftCms\Cms\Support\PHP::sizeToBytes()}
+     * @deprecated 6.0.0 use {@see PHP::sizeToBytes($value)} instead.
      * @since 3.6.0
      */
     public static function phpSizeToBytes(string $value): float|int
     {
-        $unit = strtolower(substr($value, -1, 1));
-        $value = (int)$value;
-
-        switch ($unit) {
-            case 'g':
-                $value *= 1024;
-            // no break
-            case 'm':
-                $value *= 1024;
-            // no break
-            case 'k':
-                $value *= 1024;
-        }
-
-        return $value;
+        return PHP::sizeToBytes($value);
     }
 
     /**
-     * Retrieves a file path PHP config setting and normalizes it to an array of paths.
-     *
-     * @param string $var The PHP config setting to retrieve
-     * @return string[] The normalized paths
+     * {@see \CraftCms\Cms\Support\PHP::configValueAsPaths()}
+     * @deprecated 6.0.0 use {@see PHP::configValueAsPaths($var)} instead.
      * @since 3.7.34
      */
     public static function phpConfigValueAsPaths(string $var): array
     {
-        return static::normalizePhpPaths(ini_get($var));
+        return PHP::configValueAsPaths($var);
     }
 
     /**
-     * Normalizes a PHP path setting to an array of paths
-     *
-     * @param string $value The PHP path setting value
-     * @return string[] The normalized paths
+     * {@see \CraftCms\Cms\Support\PHP::normalizePaths()}
+     * @deprecated 6.0.0 use {@see PHP::normalizePaths($value)} instead.
      * @since 3.7.34
      */
     public static function normalizePhpPaths(string $value): array
     {
-        // semicolons are used to separate paths on Windows; everything else uses colons
-        $value = str_replace(';', ':', trim($value));
-
-        if ($value === '') {
-            return [];
-        }
-
-        $paths = [];
-
-        foreach (explode(':', $value) as $path) {
-            $path = trim($path);
-
-            // Parse ${ENV_VAR}s
-            try {
-                $path = preg_replace_callback('/\$\{(.*?)\}/', function($match) {
-                    $env = Env::get($match[1]);
-                    if ($env === false) {
-                        throw new InvalidValueException();
-                    }
-                    return $env;
-                }, $path);
-            } catch (InvalidValueException) {
-                // References an env var that doesn’t exist
-                continue;
-            }
-
-            // '.' => working dir
-            if ($path === '.' || str_starts_with($path, './') || str_starts_with($path, '.\\')) {
-                $path = getcwd() . substr($path, 1);
-            }
-
-            // Normalize
-            $paths[] = FileHelper::normalizePath($path);
-        }
-
-        return $paths;
+        return PHP::normalizePaths($value);
     }
 
     /**
-     * Returns whether the given path is within PHP’s `open_basedir` setting.
-     *
-     * @param string $path
-     * @return bool
+     * {@see \CraftCms\Cms\Support\PHP::isPathAllowed()}
+     * @deprecated 6.0.0 use {@see PHP::isPathAllowed($path)} instead.
      * @since 3.7.34
      */
     public static function isPathAllowed(string $path): bool
     {
-        if (!isset(self::$_basePaths)) {
-            self::$_basePaths = static::phpConfigValueAsPaths('open_basedir');
-        }
-
-        if (!self::$_basePaths) {
-            return true;
-        }
-
-        $path = FileHelper::normalizePath($path);
-
-        foreach (self::$_basePaths as $basePath) {
-            if (str_starts_with($path, $basePath)) {
-                return true;
-            }
-        }
-
-        return false;
+        return PHP::isPathAllowed($path);
     }
 
     /**
-     * Returns the path to a PHP executable which should be used by sub processes.
-     *
-     * @return string|null The PHP executable path, or `null` if it can’t be determined.
+     * {@see \CraftCms\Cms\Support\PHP::executable()}
+     * @deprecated 6.0.0 use {@see PHP::executable()} instead.
      * @since 4.5.6
      */
     public static function phpExecutable(): ?string
     {
-        // If PHP_BINARY was set to $_SERVER, update the environment variable to match
-        if (isset($_SERVER['PHP_BINARY']) && $_SERVER['PHP_BINARY'] !== getenv('PHP_BINARY')) {
-            putenv(sprintf('PHP_BINARY=%s', $_SERVER['PHP_BINARY']));
-        }
-
-        if (
-            getenv('PHP_BINARY') === false &&
-            /** @phpstan-ignore-next-line */
-            PHP_BINARY &&
-            PHP_SAPI === 'cgi-fcgi' &&
-            str_ends_with(PHP_BINARY, 'php-cgi')
-        ) {
-            // See if a `php` file exists alongside `php-cgi`, and if so, use that
-            $file = dirname(PHP_BINARY) . DIRECTORY_SEPARATOR . 'php';
-            if (@is_executable($file) && !@is_dir($file)) {
-                return $file;
-            }
-        }
-
-        return (new PhpExecutableFinder())->find() ?: null;
+        return PHP::executable();
     }
 
     /**
-     * Tests whether ini_set() works.
-     *
-     * @return bool
+     * {@see \CraftCms\Cms\Support\PHP::testIniSet()}
+     * @deprecated 6.0.0 use {@see PHP::testIniSet()} instead.
      * @since 3.0.40
      */
     public static function testIniSet(): bool
     {
-        $oldValue = ini_get('memory_limit');
-        $oldBytes = static::phpConfigValueInBytes('memory_limit');
-
-        // When the old value is not equal to '-1', add 1MB to the limit set at the moment
-        if ($oldBytes === -1) {
-            $testBytes = 1024 * 1024 * 442;
-        } else {
-            $testBytes = $oldBytes + 1024 * 1024;
-        }
-
-        $testValue = sprintf('%sM', ceil($testBytes / (1024 * 1024)));
-        /** @phpstan-ignore-next-line */
-        set_error_handler(function() {
-        });
-        $result = ini_set('memory_limit', $testValue);
-        $newValue = ini_get('memory_limit');
-        ini_set('memory_limit', $oldValue);
-        restore_error_handler();
-
-        // ini_set can return false or an empty string depending on your php version / FastCGI.
-        // If ini_set has been disabled in php.ini, the value will be null because of our muted error handler
-        return (
-            /** @phpstan-ignore-next-line */
-            $result !== null &&
-            $result !== false &&
-            $result !== '' &&
-            $result !== $newValue
-        );
+        return PHP::testIniSet();
     }
 
     /**
-     * Returns whether the server has a valid version of the iconv extension installed.
-     *
-     * @return bool
-     */
+     * {@see \CraftCms\Cms\Support\PHP::checkForValidIconv()}
+     * @deprecated 6.0.0 use {@see PHP::checkForValidIconv()} instead.
+    */
     public static function checkForValidIconv(): bool
     {
-        // Check if iconv is installed. Note we can't just use HTMLPurifier_Encoder::iconvAvailable() because they
-        // don't consider iconv "installed" if it's there but "unusable".
-        return self::$_iconv ?? (self::$_iconv = (function_exists('iconv') && HTMLPurifier_Encoder::testIconvTruncateBug() === HTMLPurifier_Encoder::ICONV_OK));
+        return PHP::checkForValidIconv();
     }
 
     /**
-     * Returns whether the server supports IDNA ASCII strings.
-     *
-     * @return bool
+     * {@see \CraftCms\Cms\Support\PHP::supportsIdn()}
+     * @deprecated 6.0.0 use {@see PHP::supportsIdn()} instead.
      * @since 3.7.9
      */
     public static function supportsIdn(): bool
     {
-        return defined('INTL_IDNA_VARIANT_UTS46');
+        return PHP::supportsIdn();
     }
 
     /**
@@ -721,32 +451,24 @@ class App
      *
      * @param class-string $class
      * @return string
+     * @deprecated 6.0.0
      */
     public static function humanizeClass(string $class): string
     {
         $classParts = explode('\\', $class);
 
-        return strtolower(Inflector::camel2words(array_pop($classParts)));
+        return strtolower(Str::headline(array_pop($classParts)));
     }
 
     /**
      * Sets PHP’s memory limit to the maximum specified by the
      * <config5:phpMaxMemoryLimit> config setting, and gives the script an
      * unlimited amount of time to execute.
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\maxPowerCaptain()} instead.
      */
     public static function maxPowerCaptain(): void
     {
-        // Don't mess with the memory_limit, even at the config's request, if it's already set to -1 or >= 1.5GB
-        $memoryLimit = static::phpConfigValueInBytes('memory_limit');
-        if ($memoryLimit !== -1 && $memoryLimit < 1024 * 1024 * 1536) {
-            $maxMemoryLimit = app(GeneralConfig::class)->phpMaxMemoryLimit;
-            @ini_set('memory_limit', $maxMemoryLimit ?: '1536M');
-        }
-
-        // Try to reset time limit
-        if (!function_exists('set_time_limit') || !@set_time_limit(0)) {
-            Craft::warning('set_time_limit() is not available', __METHOD__);
-        }
+        maxPowerCaptain();
     }
 
     /**
@@ -756,55 +478,19 @@ class App
      * @param int|null $mask Error levels to suppress, default value NULL indicates all warnings and below.
      * @return mixed
      * @since 5.0.0
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\silence()} instead.
      */
     public static function silence(Closure|string $callable, ?int $mask = null): mixed
     {
-        // loosely based on Composer\Util\Silencer
-        if (!isset($mask)) {
-            $mask = E_WARNING | E_NOTICE | E_USER_WARNING | E_USER_NOTICE | E_DEPRECATED | E_USER_DEPRECATED | E_STRICT;
-        }
-
-        $old = error_reporting();
-        error_reporting($old & ~$mask);
-
-        try {
-            $returnType = (new ReflectionFunction($callable))->getReturnType();
-            if ($returnType instanceof ReflectionNamedType && $returnType->getName() === 'void') {
-                $callable();
-                return null;
-            } else {
-                return $callable();
-            }
-        } finally {
-            error_reporting($old);
-        }
+        return silence($callable, $mask);
     }
 
     /**
-     * @return string|null
+     * @deprecated 6.0.0 use {@see License::key()} instead.
      */
     public static function licenseKey(): ?string
     {
-        if (defined('CRAFT_LICENSE_KEY')) {
-            $licenseKey = CRAFT_LICENSE_KEY;
-        } else {
-            $path = Craft::$app->getPath()->getLicenseKeyPath();
-
-            // Check to see if the key exists
-            if (!is_file($path)) {
-                return null;
-            }
-
-            $licenseKey = file_get_contents($path);
-        }
-
-        $licenseKey = trim(preg_replace('/[\r\n]+/', '', $licenseKey));
-
-        if (strlen($licenseKey) !== 250) {
-            return null;
-        }
-
-        return $licenseKey;
+        return app(License::class)->key();
     }
 
     /**
@@ -813,24 +499,11 @@ class App
      * @param int $limit The max number of stack frames to be included (0 means no limit)
      * @return string
      * @since 3.0.13
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\backTraceAsString()} instead.
      */
     public static function backtrace(int $limit = 0): string
     {
-        $frames = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, $limit ? $limit + 1 : 0);
-        array_shift($frames);
-        $trace = '';
-
-        foreach ($frames as $i => $frame) {
-            $trace .= ($i !== 0 ? "\n" : '') .
-                '#' . $i . ' ' .
-                (isset($frame['file']) ? sprintf('%s%s: ', $frame['file'], isset($frame['line']) ? "({$frame['line']})" : '') : '') .
-                ($frame['class'] ?? '') .
-                ($frame['type'] ?? '') .
-                /** @phpstan-ignore-next-line */
-                (isset($frame['function']) ? "{$frame['function']}()" : '');
-        }
-
-        return $trace;
+        return backTraceAsString($limit);
     }
 
     /**
@@ -848,10 +521,11 @@ class App
      * Returns whether Craft is running on a Windows environment
      *
      * @since 5.0.0
+     * @deprecated 6.0.0 use `windows_os()` instead.
      */
     public static function isWindows(): bool
     {
-        return defined('PHP_WINDOWS_VERSION_BUILD');
+        return windows_os();
     }
 
     /**
@@ -981,8 +655,8 @@ class App
             'password' => $dbConfig->password,
             'charset' => $dbConfig->getCharset(),
             'tablePrefix' => $dbConfig->tablePrefix ?? '',
-            'enableLogging' => static::devMode(),
-            'enableProfiling' => static::devMode(),
+            'enableLogging' => app()->hasDebugModeEnabled(),
+            'enableProfiling' => app()->hasDebugModeEnabled(),
             'schemaMap' => [
                 $driver => $schemaConfig,
             ],
@@ -990,7 +664,7 @@ class App
                 $driver => Command::class,
             ],
             'attributes' => $dbConfig->attributes,
-            'enableSchemaCache' => !static::devMode(),
+            'enableSchemaCache' => !app()->hasDebugModeEnabled(),
         ];
 
         if ($driver === Connection::DRIVER_PGSQL && $dbConfig->setSchemaOnConnect && $dbConfig->schema) {
@@ -1041,10 +715,10 @@ class App
             'class' => Mailer::class,
             'messageClass' => Message::class,
             'from' => [
-                App::parseEnv($settings->fromEmail) => App::parseEnv($settings->fromName),
+                Env::parse($settings->fromEmail) => Env::parse($settings->fromName),
             ],
-            'replyTo' => App::parseEnv($settings->replyToEmail),
-            'template' => App::parseEnv($settings->template),
+            'replyTo' => Env::parse($settings->replyToEmail),
+            'template' => Env::parse($settings->template),
             'siteOverrides' => $settings->siteOverrides,
             'transport' => $adapter->defineTransport(),
         ];
@@ -1292,182 +966,14 @@ class App
      *
      * @param bool $withUnresolvables
      * @param bool $fetch
+     *
      * @return array{0:string,1:string,2:array|null}[]
      * @internal
+     * @deprecated 6.0.0 use {@see License::issues()} instead.
      */
     public static function licensingIssues(bool $withUnresolvables = true, bool $fetch = false): array
     {
-        $user = Craft::$app->getUser()->getIdentity();
-        if (!$user) {
-            return [];
-        }
-
-        $updatesService = Craft::$app->getUpdates();
-        $isInfoCached = Cache::has(App::CACHE_KEY_LICENSE_INFO) && $updatesService->getIsUpdateInfoCached();
-
-        if (!$isInfoCached) {
-            if (!$fetch) {
-                return [];
-            }
-
-            $updatesService->getUpdates(true);
-        }
-
-        $issues = [];
-
-        $allLicenseInfo = Cache::get(App::CACHE_KEY_LICENSE_INFO, []);
-        $licenseInfoHost = Cache::get(App::CACHE_KEY_LICENSE_INFO_HOST);
-        $pluginsService = app(Plugins::class);
-        $generalConfig = app(GeneralConfig::class);
-        $consoleUrl = rtrim(Craft::$app->getPluginStore()->craftIdEndpoint, '/');
-
-        foreach ($allLicenseInfo as $handle => $licenseInfo) {
-            $isCraft = $handle === 'craft';
-            if ($isCraft) {
-                $name = 'Craft';
-                $editions = array_map(fn(Edition $edition) => $edition->handle(), Edition::cases());
-                $currentEdition = Craft::$app->edition->handle();
-                $currentEditionName = Craft::$app->edition->name;
-                $licensedEdition = isset($licenseInfo['edition']) ? Edition::fromHandle($licenseInfo['edition']) : Edition::Solo;
-                $licenseEditionName = $licensedEdition->name;
-                $version = Craft::$app->getVersion();
-            } else {
-                if (!str_starts_with($handle, 'plugin-')) {
-                    continue;
-                }
-                $handle = Str::chopStart($handle, 'plugin-');
-
-                try {
-                    $pluginInfo = $pluginsService->getPluginInfo($handle);
-                } catch (InvalidPluginException) {
-                    continue;
-                }
-
-                $plugin = $pluginsService->getPlugin($handle);
-                if (!$plugin) {
-                    continue;
-                }
-
-                $name = $plugin->name;
-                $editions = $plugin::editions();
-                $currentEdition = $pluginInfo['edition'];
-                $currentEditionName = ucfirst($currentEdition);
-                $licenseEditionName = ucfirst($licenseInfo['edition'] ?? 'standard');
-                $version = $pluginInfo['version'];
-            }
-
-            $isMultiEdition = count($editions) > 1;
-
-            if ($licenseInfo['status'] === LicenseKeyStatus::Invalid->value) {
-                // invalid license
-                if ($withUnresolvables) {
-                    $issues[] = [
-                        $name,
-                        Craft::t('app', 'The {name} license is invalid.', ['name' => $name]),
-                        null,
-                    ];
-                }
-            } elseif ($licenseInfo['status'] === LicenseKeyStatus::Trial->value) {
-                // trial license
-                $issues[] = [
-                    $isMultiEdition ? sprintf('%s %s', $name, $currentEditionName) : $name,
-                    Craft::t('app', '{name} requires purchase.', ['name' => $name]),
-                    array_filter([
-                        'type' => $isCraft ? 'cms-edition' : 'plugin-edition',
-                        'plugin' => !$isCraft ? $handle : null,
-                        'licenseId' => $licenseInfo['id'],
-                        'edition' => $currentEdition,
-                    ]),
-                ];
-            } elseif ($licenseInfo['status'] === LicenseKeyStatus::Mismatched->value) {
-                if ($withUnresolvables) {
-                    if ($isCraft) {
-                        // wrong domain. ignore if the cache wasn't saved from the same host name we're currently on
-                        $request = Craft::$app->getRequest();
-                        if ($licenseInfoHost && $request->getIsWebRequest() && $request->getHostName() === $licenseInfoHost) {
-                            $licensedDomain = Cache::get('licensedDomain');
-                            $domainLink = Html::a($licensedDomain, "http://$licensedDomain", [
-                                'rel' => 'noopener',
-                                'target' => '_blank',
-                            ]);
-
-                            if (defined('CRAFT_LICENSE_KEY')) {
-                                $message = Craft::t('app', 'The Craft CMS license key in use belongs to {domain}', [
-                                    'domain' => $domainLink,
-                                ]);
-                            } else {
-                                $keyPath = Craft::$app->getPath()->getLicenseKeyPath();
-
-                                // If the license key path starts with the root project path, trim the project path off
-                                $rootPath = Craft::getAlias('@root');
-                                if (str_starts_with($keyPath, $rootPath . '/')) {
-                                    $keyPath = substr($keyPath, strlen($rootPath) + 1);
-                                }
-
-                                $message = Craft::t('app', 'The Craft CMS license located at {file} belongs to {domain}.', [
-                                    'file' => $keyPath,
-                                    'domain' => $domainLink,
-                                ]);
-                            }
-
-                            $learnMoreLink = Html::a(Craft::t('app', 'Learn more'), 'https://craftcms.com/support/resolving-mismatched-licenses', [
-                                'class' => 'go',
-                            ]);
-                            $issues[] = [$name, "$message $learnMoreLink", null];
-                        }
-                    } else {
-                        // wrong Craft install
-                        $issues[] = [
-                            $name,
-                            Craft::t('app', 'The {name} license is attached to a different Craft CMS license. You can <a class="go" href="{detachUrl}">detach it in Craft Console</a> or <a class="go" href="{buyUrl}">buy a new license</a>.', [
-                                'name' => $name,
-                                'detachUrl' => "$consoleUrl/licenses/plugins/{$licenseInfo['id']}",
-                                'buyUrl' => $user->admin && $generalConfig->allowAdminChanges
-                                    ? UrlHelper::cpUrl("plugin-store/buy/$handle/$currentEdition")
-                                    : "https://plugins.craftcms.com/$handle",
-                            ]),
-                            null,
-                        ];
-                    }
-                }
-            } elseif ($licenseInfo['edition'] !== $currentEdition) {
-                // wrong edition
-                $message = Craft::t('app', '{name} is licensed for the {licenseEdition} edition, but the {currentEdition} edition is installed.', [
-                    'name' => $name,
-                    'licenseEdition' => $licenseEditionName,
-                    'currentEdition' => $currentEditionName,
-                ]);
-                $currentEditionIdx = array_search($currentEdition, $editions);
-                $licenseEditionIdx = array_search($licenseInfo['edition'], $editions);
-                if ($currentEditionIdx !== false && $licenseEditionIdx !== false && $currentEditionIdx > $licenseEditionIdx) {
-                    $issues[] = [
-                        $isMultiEdition ? sprintf('%s %s', $name, $currentEditionName) : $name,
-                        $message,
-                        [
-                            'type' => $isCraft ? 'cms-edition' : 'plugin-edition',
-                            'edition' => $currentEdition,
-                            'licenseId' => $licenseInfo['id'],
-                        ],
-                    ];
-                }
-            } elseif ($licenseInfo['status'] === LicenseKeyStatus::Astray->value) {
-                // updated too far
-                $issues[] = [
-                    sprintf('%s %s', $name, $version),
-                    Craft::t('app', '{name} isn’t licensed to run version {version}.', [
-                        'name' => $name,
-                        'version' => $version,
-                    ]),
-                    array_filter([
-                        'type' => $isCraft ? 'cms-renewal' : 'plugin-renewal',
-                        'plugin' => !$isCraft ? $handle : null,
-                        'licenseId' => $licenseInfo['id'],
-                    ]),
-                ];
-            }
-        }
-
-        return $issues;
+        return app(License::class)->issues($withUnresolvables, $fetch);
     }
 
     /**
@@ -1475,24 +981,25 @@ class App
      *
      * @return string
      * @internal
+     * @deprecated 6.0.0 use {@see License::shunCookieName()} instead.
      */
     public static function licenseShunCookieName(): string
     {
-        return sprintf('%s_license_shun', md5('Craft.' . WebUser::class . '.' . Craft::$app->id));
+        return app(License::class)->shunCookieName();
     }
 
     /**
      * Returns a hash of the given licensing issues.
      *
      * @param array $issues
+     *
      * @return string
      * @internal
+     * @deprecated 6.0.0 use {@see License::issuesHash()} instead.
      */
     public static function licensingIssuesHash(array $issues): string
     {
-        $resolveItems = array_map(fn($issue) => JsonHelper::encode($issue[2]), $issues);
-        sort($resolveItems);
-        return md5(implode('', $resolveItems));
+        return app(License::class)->issuesHash($issues);
     }
 
     /**

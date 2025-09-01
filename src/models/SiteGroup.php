@@ -9,9 +9,9 @@ namespace craft\models;
 
 use Craft;
 use craft\base\Model;
-use craft\helpers\App;
 use craft\records\SiteGroup as SiteGroupRecord;
 use craft\validators\UniqueValidator;
+use CraftCms\Cms\Support\Env;
 
 /**
  * SiteGroup model class.
@@ -46,7 +46,7 @@ class SiteGroup extends Model
      */
     public function getName(bool $parse = true): string
     {
-        return ($parse ? App::parseEnv($this->_name) : $this->_name) ?? '';
+        return ($parse ? Env::parse($this->_name) : $this->_name) ?? '';
     }
 
     /**

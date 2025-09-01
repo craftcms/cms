@@ -11,7 +11,6 @@ use Craft;
 use craft\errors\GqlException;
 use craft\errors\MissingComponentException;
 use craft\errors\SiteNotFoundException;
-use craft\helpers\App;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\Gql as GqlHelper;
 use craft\helpers\UrlHelper;
@@ -197,7 +196,7 @@ class GraphqlController extends Controller
                 if (empty($query)) {
                     throw new InvalidValueException('No GraphQL query was supplied');
                 }
-                $result[$key] = $gqlService->executeQuery($schema, $query, $variables, $operationName, App::devMode());
+                $result[$key] = $gqlService->executeQuery($schema, $query, $variables, $operationName, app()->hasDebugModeEnabled());
             } catch (InvalidValueException $e) {
                 $result[$key] = [
                     'errors' => [

@@ -3,7 +3,6 @@
 namespace CraftCms\Cms\Support;
 
 use Craft;
-use craft\helpers\App;
 use craft\helpers\FileHelper;
 use CraftCms\Aliases\Facades\Aliases;
 use Illuminate\Container\Attributes\Singleton;
@@ -169,7 +168,7 @@ final class Composer
         copy(Aliases::get('@lib/composer.phar'), $pharPath);
 
         $command = array_merge([
-            App::phpExecutable() ?? 'php',
+            PHP::executable() ?? 'php',
             $pharPath,
         ], $command, [
             '--working-dir',
