@@ -3,6 +3,7 @@
 ## Unreleased
 
 - Fixed a bug where entries’ and categories’ descendants’ URIs weren’t always getting updated after a parent’s URI changed. ([#17804](https://github.com/craftcms/cms/discussions/17804))
+- Fixed a bug where addresses weren’t saving `firstName`, `lastName`, and `fullName` values properly. ([#17807](https://github.com/craftcms/cms/issues/17807))
 - Fixed a styling issue.
 
 ## 5.8.16 - 2025-08-29
