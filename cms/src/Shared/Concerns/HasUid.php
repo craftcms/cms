@@ -7,6 +7,7 @@ use CraftCms\Cms\Support\Str;
 
 /**
  * @property string $uid
+ *
  * @mixin BaseModel
  */
 trait HasUid
