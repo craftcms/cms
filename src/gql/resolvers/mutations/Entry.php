@@ -86,6 +86,14 @@ class Entry extends ElementMutationResolver
             }
         }
 
+        // draftId is required when not creating an unpublished draft
+        if (
+            (!array_key_exists('asUnpublishedDraft', $arguments) || !$arguments['asUnpublishedDraft']) &&
+            (!array_key_exists('draftId', $arguments) || !$arguments['draftId'])
+        ) {
+            throw new Error('draftId is required when not creating an unpublished draft.');
+        }
+
         // TODO refactor saving draft to its own method in 4.0
         if (array_key_exists('draftId', $arguments)) {
             $entry->setScenario(Element::SCENARIO_ESSENTIALS);
@@ -95,7 +103,7 @@ class Entry extends ElementMutationResolver
 
         $entry = $this->populateElementWithData($entry, $arguments, $resolveInfo);
 
-        if (array_key_exists('asUnpublishedDraft', $arguments)) {
+        if (array_key_exists('asUnpublishedDraft', $arguments) && $arguments['asUnpublishedDraft']) {
             $entry->setScenario(Element::SCENARIO_ESSENTIALS);
             Craft::$app->getDrafts()->saveElementAsDraft($entry);
         } else {
@@ -113,7 +121,7 @@ class Entry extends ElementMutationResolver
         if ($canIdentify) {
             $query = $this->identifyEntry($query, $arguments);
         } else {
-            if (array_key_exists('asUnpublishedDraft', $arguments)) {
+            if (array_key_exists('asUnpublishedDraft', $arguments) && $arguments['asUnpublishedDraft']) {
                 $query->drafts(null);
             }
             $query->id($entry->id);
