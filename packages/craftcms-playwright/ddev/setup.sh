@@ -13,13 +13,9 @@ then
   REPO_PATH="../../."
 fi
 
+TESTS_PATH="$REPO_PATH/tests-playwright"
 
-TESTS_ENV_PATH="$REPO_PATH/tests-playwright/.env"
-
-realpath $TESTS_ENV_PATH
-realpath $REPO_PATH
-
-ECHO "TESTS ENV PATH: $TESTS_ENV_PATH"
+echo "TESTS PATH: $TESTS_PATH"
 
 PLAYWRIGHT_STATUS=$(ddev list --active-only | grep 'playwright')
 
@@ -31,11 +27,18 @@ then
     ddev delete --omit-snapshot --yes
 fi
 
-# Boot ddev
-echo "Booting docker…"
+# prep to boot ddev - copy configs
 rm -fr .ddev
 cp -r ddev/ddev-config .ddev
-cp $TESTS_ENV_PATH .ddev/.env.web
+cp "$TESTS_PATH/.env" .ddev/.env.web
+
+# copy custom configs
+if [ -d "$TESTS_PATH/ddev-config" ]
+then
+  cp -r "$TESTS_PATH/ddev-config/." .ddev/
+fi
+
+echo "Booting ddev…"
 PLAYWRIGHT_REPO_PATH=$REPO_PATH ddev start
 
 # Check if init script has been run
