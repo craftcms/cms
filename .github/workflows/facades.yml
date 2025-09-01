@@ -55,7 +55,7 @@ jobs:
       - name: Update facade docblocks
         run: |
           php -f vendor/bin/facade.php -- \
-            CraftCms\\Cms\\Support\\Facades\\Announcements
+            CraftCms\\Cms\\Support\\Facades\\Announcements \
             CraftCms\\Cms\\Support\\Facades\\Deprecator
 
       - name: Commit facade docblocks
