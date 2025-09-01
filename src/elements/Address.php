@@ -568,7 +568,7 @@ class Address extends Element implements AddressInterface, BlockElementInterface
             'latitude',
             'longitude',
         ];
-        $rules[] = [$stringFields, 'trim'];
+        $rules[] = [$stringFields, 'trim', 'skipOnEmpty' => true];
         $rules[] = [$stringFields, StringValidator::class, 'max' => 255, 'disallowMb4' => true];
 
         $addressesService = Craft::$app->getAddresses();
