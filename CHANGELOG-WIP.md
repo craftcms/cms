@@ -27,6 +27,14 @@
 - Deprecated `craft\helpers\Api`. `CraftCms\Cms\Support\Api` should be used instead.
 - Deprecated `Craft::createGuzzleClient()`. `CraftCms\Cms\Support\Facades\Http::create()` should be used instead.
 
+### Deprecator
+- Added `CraftCms\Cms\Support\Facades\Deprecator`.
+- Added `CraftCms\Cms\Deprecator\Commands\ClearDeprecations`.
+- Removed `craft\console\controllers\ClearDeprecationsController.php`.
+- Deprecated `craft\services\Deprecator`. `CraftCms\Cms\Deprecator\Deprecator` should be used instead.
+- Deprecated `craft\models\DeprecationError`. `CraftCms\Cms\Deprecator\Models\DeprecationError` should be used instead.
+- Deprecated `craft\errors\DeprecationException`. `CraftCms\Cms\Deprecator\Exceptions\DeprecationException` should be used instead.
+
 ### Console commands
 - Added `php craft twig:cache` - Precompile Twig views
 - Added `php craft twig:clear` - Clear precompiled Twig views
