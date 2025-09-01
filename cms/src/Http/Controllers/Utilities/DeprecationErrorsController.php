@@ -3,6 +3,8 @@
 namespace CraftCms\Cms\Http\Controllers\Utilities;
 
 use craft\web\Application;
+use CraftCms\Cms\Database\Table;
+use CraftCms\Cms\Deprecator\Deprecator;
 use CraftCms\Cms\Utility\Utilities;
 use CraftCms\Cms\Utility\Utilities\DeprecationErrors;
 use Illuminate\Container\Attributes\Give;
@@ -15,7 +17,8 @@ final readonly class DeprecationErrorsController
 {
     public function __construct(
         Utilities $utilitiesService,
-        #[Give('Craft')] protected Application $craft
+        private Deprecator $deprecator,
+        #[Give('Craft')] private Application $craft
     ) {
         if (! $utilitiesService->checkAuthorization(DeprecationErrors::class)) {
             abort(403, 'User is not authorized to perform this action.');
@@ -24,12 +27,12 @@ final readonly class DeprecationErrorsController
 
     public function getDeprecationErrorTracesModal(Request $request): JsonResponse
     {
-        $logId = $request->validate([
-            'logId' => ['required', 'integer', Rule::exists('deprecationerrors', 'id')],
-        ])['logId'];
+        $request->validate([
+            'logId' => ['required', 'integer', Rule::exists(Table::DEPRECATIONERRORS, 'id')],
+        ]);
 
         $html = $this->craft->getView()->renderTemplate('_components/utilities/DeprecationErrors/traces_modal.twig', [
-            'log' => $this->craft->deprecator->getLogById($logId),
+            'log' => $this->craft->deprecator->getLogById($request->integer('logId')),
         ]);
 
         return new JsonResponse([
@@ -39,18 +42,18 @@ final readonly class DeprecationErrorsController
 
     public function deleteDeprecationError(Request $request): JsonResponse
     {
-        $logId = $request->validate([
-            'logId' => ['required', 'integer', Rule::exists('deprecationerrors', 'id')],
-        ])['logId'];
+        $request->validate([
+            'logId' => ['required', 'integer', Rule::exists(Table::DEPRECATIONERRORS, 'id')],
+        ]);
 
-        $this->craft->deprecator->deleteLogById($logId);
+        $this->deprecator->deleteLogById($request->integer('logId'));
 
         return new JsonResponse;
     }
 
     public function deleteAllDeprecationErrors(): JsonResponse
     {
-        $this->craft->deprecator->deleteAllLogs();
+        $this->deprecator->deleteAllLogs();
 
         return new JsonResponse;
     }
