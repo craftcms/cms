@@ -7,10 +7,10 @@
 
 namespace craft\gql;
 
-use Craft as Craft;
+use Craft;
 use craft\base\Component;
 use craft\events\DefineGqlTypeFieldsEvent;
-use CraftCms\Cms\Deprecator\Deprecator;
+use CraftCms\Cms\Support\Facades\Deprecator;
 
 /**
  * Class TypeManager
@@ -61,7 +61,7 @@ class TypeManager extends Component
      */
     public static function prepareFieldDefinitions(array $fields, string $typeName): array
     {
-        app(Deprecator::class)->log('TypeManager::prepareFieldDefinitions()', '`TypeManager::prepareFieldDefinitions()` has been deprecated. Use `craft\services\Gql::prepareFieldDefinition()` instead.');
+        Deprecator::log('TypeManager::prepareFieldDefinitions()', '`TypeManager::prepareFieldDefinitions()` has been deprecated. Use `craft\services\Gql::prepareFieldDefinition()` instead.');
         return Craft::$app->getGql()->prepareFieldDefinitions($fields, $typeName);
     }
 
@@ -72,7 +72,7 @@ class TypeManager extends Component
      */
     public static function flush(): void
     {
-        app(Deprecator::class)->log('TypeManager::flush()', '`TypeManager::flush()` has been deprecated and has no effect.');
+        Deprecator::log('TypeManager::flush()', '`TypeManager::flush()` has been deprecated and has no effect.');
     }
 
     /**

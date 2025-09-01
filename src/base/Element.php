@@ -83,10 +83,10 @@ use craft\web\UploadedFile;
 use craft\web\View;
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Database\Table;
-use CraftCms\Cms\Deprecator\Deprecator;
 use CraftCms\Cms\Element\Enums\AttributeStatus;
 use CraftCms\Cms\Shared\Enums\Color;
 use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Support\Facades\Deprecator;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Str;
 use DateInterval;
@@ -3313,7 +3313,7 @@ abstract class Element extends Component implements ElementInterface
      */
     public function getSourceId(): ?int
     {
-        app(Deprecator::class)->log(__METHOD__,
+        Deprecator::log(__METHOD__,
             'Elements’ `getSourceId()` method has been deprecated. Use `getCanonicalId()` instead.');
         return $this->getCanonicalId();
     }
@@ -3327,7 +3327,7 @@ abstract class Element extends Component implements ElementInterface
      */
     public function getSourceUid(): string
     {
-        app(Deprecator::class)->log(__METHOD__,
+        Deprecator::log(__METHOD__,
             'Elements’ `getSourceUid()` method has been deprecated. Use `getCanonicalUid()` instead.');
         return $this->getCanonicalUid();
     }

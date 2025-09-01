@@ -9,7 +9,7 @@ namespace craft\config;
 
 use Craft;
 use craft\base\Model;
-use CraftCms\Cms\Deprecator\Deprecator;
+use CraftCms\Cms\Support\Facades\Deprecator;
 
 /**
  * Base config class
@@ -74,7 +74,7 @@ class BaseConfig extends Model
             $newName = static::$renamedSettings[$name];
 
             if (class_exists(Craft::class, false)) {
-                app(Deprecator::class)->log(sprintf('%s::%s', static::class, $name), "`$name` has been renamed to `$newName`.", config_path($this->filename));
+                Deprecator::log(sprintf('%s::%s', static::class, $name), "`$name` has been renamed to `$newName`.", config_path($this->filename));
             }
 
             $this->$newName = $value;

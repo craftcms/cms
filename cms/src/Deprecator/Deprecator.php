@@ -110,8 +110,7 @@ final class Deprecator
                     'file' => $log->file,
                     'line' => $log->line,
                     'message' => $log->message,
-                    'traces' => Json::encode($log->traces),
-                    'uid' => Str::uuid(),
+                    'traces' => $log->traces,
                 ]);
             } catch (Throwable $e) {
                 Log::warning("Couldn't save deprecation warning: {$e->getMessage()}", [__METHOD__]);

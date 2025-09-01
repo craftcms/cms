@@ -58,11 +58,11 @@ use craft\web\twig\tokenparsers\TagTokenParser;
 use craft\web\twig\variables\CraftVariable;
 use craft\web\View;
 use CraftCms\Cms\Config\GeneralConfig;
-use CraftCms\Cms\Deprecator\Deprecator;
 use CraftCms\Cms\Plugin\Contracts\PluginInterface;
 use CraftCms\Cms\Plugin\Plugins;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Env;
+use CraftCms\Cms\Support\Facades\Deprecator;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Support\Str;
@@ -454,7 +454,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
      */
     public function ucfirstFilter(mixed $string): string
     {
-        app(Deprecator::class)->log('ucfirst', 'The `|ucfirst` filter has been deprecated. Use `|capitalize` instead.');
+        Deprecator::log('ucfirst', 'The `|ucfirst` filter has been deprecated. Use `|capitalize` instead.');
         return mb_ucfirst((string)$string);
     }
 
@@ -468,7 +468,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
      */
     public function ucwordsFilter(TwigEnvironment $env, string $string): string
     {
-        app(Deprecator::class)->log('ucwords', 'The `|ucwords` filter has been deprecated. Use `|title` instead.');
+        Deprecator::log('ucwords', 'The `|ucwords` filter has been deprecated. Use `|title` instead.');
         $charset = $env->getCharset();
         if ($charset) {
             return mb_convert_case($string, MB_CASE_TITLE, $charset);
@@ -1688,7 +1688,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
         $svg = Html::svg($svg, $sanitize, $namespace);
 
         if ($class !== null) {
-            app(Deprecator::class)->log('svg()-class', 'The `class` argument of the `svg()` Twig function has been deprecated. The `|attr` filter should be used instead.');
+            Deprecator::log('svg()-class', 'The `class` argument of the `svg()` Twig function has been deprecated. The `|attr` filter should be used instead.');
             try {
                 $svg = Html::modifyTagAttributes($svg, [
                     'class' => $class,

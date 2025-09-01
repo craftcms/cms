@@ -26,7 +26,7 @@ use craft\web\twig\SafeHtml;
 use craft\web\twig\SinglePreloaderExtension;
 use craft\web\twig\TemplateLoader;
 use CraftCms\Cms\Config\GeneralConfig;
-use CraftCms\Cms\Deprecator\Deprecator;
+use CraftCms\Cms\Support\Facades\Deprecator;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Support\Str;
@@ -2604,7 +2604,7 @@ JS;
      */
     private function _elementChipHtml(array $context): ?string
     {
-        app(Deprecator::class)->log('hook:cp.elements.element', 'The `_elements/element.twig` template and `cp.elements.element` template hook are deprecated. The `elementChip()` function should be used instead.');
+        Deprecator::log('hook:cp.elements.element', 'The `_elements/element.twig` template and `cp.elements.element` template hook are deprecated. The `elementChip()` function should be used instead.');
 
         if (!isset($context['element'])) {
             return null;

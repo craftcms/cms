@@ -4,7 +4,7 @@ namespace CraftCms\Cms\Utility\Utilities;
 
 use Craft;
 use craft\web\assets\deprecationerrors\DeprecationErrorsAsset;
-use CraftCms\Cms\Deprecator\Deprecator;
+use CraftCms\Cms\Support\Facades\Deprecator;
 use CraftCms\Cms\Utility\Utility;
 
 /**
@@ -43,7 +43,7 @@ final class DeprecationErrors extends Utility
      */
     public static function badgeCount(): int
     {
-        return app(Deprecator::class)->getTotalLogs();
+        return Deprecator::getTotalLogs();
     }
 
     /**
@@ -56,7 +56,7 @@ final class DeprecationErrors extends Utility
         $view->registerAssetBundle(DeprecationErrorsAsset::class);
 
         return $view->renderTemplate('_components/utilities/DeprecationErrors/index.twig', [
-            'logs' => app(Deprecator::class)->getLogs(),
+            'logs' => Deprecator::getLogs(),
         ]);
     }
 }
