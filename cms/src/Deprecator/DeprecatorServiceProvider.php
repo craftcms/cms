@@ -10,15 +10,10 @@ use Illuminate\Support\ServiceProvider;
  */
 final class DeprecatorServiceProvider extends ServiceProvider
 {
-    public function register(): void
+    public function boot(Deprecator $deprecator): void
     {
-        $this->app->terminating(function () {
-            $this->app->get(Deprecator::class)->storeLogs();
-        });
-    }
+        $this->app->terminating(fn () => $deprecator->storeLogs());
 
-    public function boot(): void
-    {
         $this->commands([
             ClearDeprecations::class,
         ]);

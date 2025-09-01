@@ -7,9 +7,6 @@ use Throwable;
 
 final class DeprecationException extends Exception
 {
-    /**
-     * Constructor
-     */
     public function __construct(string $message = '', ?string $file = null, ?int $line = null, int $code = 0, ?Throwable $previous = null)
     {
         if ($file !== null) {
