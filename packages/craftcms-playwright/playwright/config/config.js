@@ -11,8 +11,8 @@ cpTrigger = `./${cpTrigger}/`;
 const storageStateFilename = '.authentication.json';
 let baseURL = process.env.PRIMARY_SITE_URL ?? 'https://playwright.ddev.site/';
 baseURL = new URL(cpTrigger, baseURL).href;
-const username = process.env.PW_AUTH_USERNAME ?? 'admin';
-const password = process.env.PW_AUTH_PASSWORD ?? 'NewPassword';
+const username = process.env.AUTH_USERNAME ?? 'admin';
+const password = process.env.AUTH_PASSWORD ?? 'NewPassword';
 const fixturesNamespace = process.env.CODECEPTION_FIXTURES_NAMESPACE;
 
 module.exports = {
