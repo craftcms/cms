@@ -1,9 +1,8 @@
 /* jshint esversion: 9, strict: false */
 /* globals module, require */
 const base = require('@playwright/test');
-const baseConfig = require('./playwright/config/_config');
-//const helpers = require('./helpers/generic');
-const events = require('./playwright/_events');
+const baseConfig = require('./playwright/config/config');
+const events = require('./playwright/events');
 const {Setup} = require('@craftcms/playwright/playwright/fixtures/setup');
 const {Entry} = require('@craftcms/playwright/playwright/fixtures/entry');
 

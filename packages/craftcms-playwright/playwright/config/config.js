@@ -16,9 +16,9 @@ const password = process.env.PW_AUTH_PASSWORD ?? 'NewPassword';
 const fixturesNamespace = process.env.CODECEPTION_FIXTURES_NAMESPACE;
 
 module.exports = {
-  globalSetup: require.resolve(path.join(__dirname, './_global-setup.js')),
+  globalSetup: require.resolve(path.join(__dirname, './global-setup.js')),
   globalTeardown: require.resolve(
-    path.join(__dirname, './_global-teardown.js')
+    path.join(__dirname, './global-teardown.js')
   ),
   testDir: testDir,
   fixturesNamespace,

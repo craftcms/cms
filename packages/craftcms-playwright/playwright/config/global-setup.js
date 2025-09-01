@@ -1,7 +1,7 @@
 const {exec} = require('child_process');
 const path = require('path');
 const {chromium, expect} = require('@playwright/test');
-const events = require('./../_events');
+const events = require('./../events');
 const {Setup} = require('./../fixtures/setup');
 
 module.exports = async (config) => {
