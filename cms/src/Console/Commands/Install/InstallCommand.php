@@ -17,6 +17,7 @@ use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rules\Password;
 use Throwable;
+
 use function Laravel\Prompts\form;
 use function Laravel\Prompts\password;
 use function Laravel\Prompts\suggest;
@@ -46,6 +47,7 @@ final class InstallCommand extends Command
     ): int {
         if ($craft->getIsInstalled(true)) {
             $this->components->warn('Craft is already installed!');
+
             return self::SUCCESS;
         }
 
@@ -57,33 +59,33 @@ final class InstallCommand extends Command
         }
 
         // TODO
-        //$this->call('setup/keys');
+        // $this->call('setup/keys');
 
         $defaultSiteName = InstallHelper::defaultSiteName();
         $defaultSiteUrl = InstallHelper::defaultSiteUrl();
         $defaultSiteLanguage = InstallHelper::defaultSiteLanguage();
 
         $responses = form()
-            ->addIf(! $generalConfig->useEmailAsUsername && !$this->option('username'), fn($form) => text(
+            ->addIf(! $generalConfig->useEmailAsUsername && ! $this->option('username'), fn ($form) => text(
                 label: 'What is the username?',
                 required: true,
                 validate: ['alpha_dash']
             ), 'username')
-            ->addIf(! $this->option('email'), fn() => text(
+            ->addIf(! $this->option('email'), fn () => text(
                 label: 'What is the email address?',
                 required: true,
                 validate: [
                     'email:strict',
                 ]
             ), 'email')
-            ->addIf(! $this->option('password'), fn() => password(
+            ->addIf(! $this->option('password'), fn () => password(
                 label: 'What is the password?',
                 required: true,
                 validate: [
                     Password::required(),
                 ]
             ), 'password')
-            ->addIf(! $this->option('siteName'), fn() => text(
+            ->addIf(! $this->option('siteName'), fn () => text(
                 label: 'What is the site name?',
                 default: $defaultSiteName ?? '',
                 required: true,
@@ -91,7 +93,7 @@ final class InstallCommand extends Command
                     'max:255',
                 ]
             ), 'siteName')
-            ->addIf(! $this->option('siteUrl'), fn() => text(
+            ->addIf(! $this->option('siteUrl'), fn () => text(
                 label: 'What is the site url?',
                 default: $defaultSiteUrl,
                 required: true,
@@ -99,14 +101,11 @@ final class InstallCommand extends Command
                     'max:255',
                 ]
             ), 'siteUrl')
-            ->addIf(! $this->option('language'), fn() => suggest(
+            ->addIf(! $this->option('language'), fn () => suggest(
                 label: 'What is the site language?',
-                options: function (string $value) {
-                    return collect(\Craft::$app->getI18n()->getAllLocaleIds())
-                        ->filter(function (string $locale) use ($value) {
-                            return str_contains($locale, $value);
-                        });
-                },
+                options: fn (string $value) => collect(\Craft::$app->getI18n()->getAllLocaleIds())
+                    ->filter(fn (string $locale) => str_contains($locale, $value))
+                    ->all(),
                 default: $defaultSiteLanguage,
                 validate: function (string $value) {
                     try {
