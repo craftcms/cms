@@ -37,7 +37,7 @@ trait CraftCommand
             return;
         }
 
-        $this->outputComponents()->warn('Generating project config files from the loaded project config ... ');
+        $this->outputComponents()->info('Generating project config files from the loaded project config ... ');
         $projectConfig->regenerateExternalConfig();
         $this->outputComponents()->success('done');
     }

@@ -5,6 +5,8 @@ namespace CraftCms\Cms\Console;
 use CraftCms\Cms\Console\Commands\Env\EnvRemoveCommand;
 use CraftCms\Cms\Console\Commands\Env\EnvSetCommand;
 use CraftCms\Cms\Console\Commands\Env\EnvShowCommand;
+use CraftCms\Cms\Console\Commands\Install\InstallCheckCommand;
+use CraftCms\Cms\Console\Commands\Install\InstallCommand;
 use CraftCms\Cms\Console\Commands\Twig\TwigCacheCommand;
 use CraftCms\Cms\Console\Commands\Twig\TwigClearCommand;
 use CraftCms\Cms\Console\Commands\UpCommand;
@@ -19,6 +21,8 @@ final class ConsoleServiceProvider extends ServiceProvider
 {
     protected array $commands = [
         UpCommand::class,
+        InstallCommand::class,
+        InstallCheckCommand::class,
 
         EnvShowCommand::class,
         EnvSetCommand::class,
