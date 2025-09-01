@@ -6078,9 +6078,12 @@ $min2ColWidth: 400px;
         }
       }
 
-      #details &.lightswitch-field > .heading {
-        flex: 1;
-        border-inline-end: none;
+      #details &,
+      .so-sidebar.details & {
+        &.lightswitch-field > .heading {
+          flex: 1;
+          border-inline-end: none;
+        }
       }
 
       & > .input {
@@ -6159,7 +6162,8 @@ $min2ColWidth: 400px;
     & > .field.lightswitch-field > .input {
       padding-inline: 10px;
 
-      #details & {
+      #details &,
+      .so-sidebar.details & {
         flex: 0;
         width: auto;
       }
