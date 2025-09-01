@@ -28,8 +28,7 @@ final class Deprecator
     public static bool $throwExceptions = false;
 
     /**
-     * @var 'db'|'logs'|false Whether deprecation warnings should be logged in the database ('db'),
-     *                        error logs ('logs'), or not at all (false).
+     * @var 'db'|'logs'|false Whether deprecation warnings should be logged in the database ('db'), error logs ('logs'), or not at all (false).
      *
      * Changing this will prevent deprecation warnings from showing up in the "Deprecation Warnings" utility
      * or in the "Deprecated" panel in the Debug Toolbar.
@@ -51,12 +50,6 @@ final class Deprecator
      */
     private ?array $allLogs = null;
 
-    /**
-     * Logs a new deprecation error.
-     *
-     *
-     * @throws DeprecationException
-     */
     public function log(string $key, string $message, ?string $file = null, ?int $line = null): void
     {
         if (self::$logTarget === false) {
@@ -92,9 +85,6 @@ final class Deprecator
         ]);
     }
 
-    /**
-     * Stores all the deprecation warnings that were logged in this request.
-     */
     public function storeLogs(): void
     {
         if (! $this->storeLogsInDb()) {
@@ -123,30 +113,16 @@ final class Deprecator
         $this->pendingRequestLogs = [];
     }
 
-    /**
-     * Returns the deprecation warnings that were logged in the current request.
-     *
-     * @return DeprecationError[]
-     */
     public function getRequestLogs(): array
     {
         return $this->requestLogs;
     }
 
-    /**
-     * Returns the total number of deprecation warnings that have been logged.
-     */
     public function getTotalLogs(): int
     {
         return DeprecationError::count();
     }
 
-    /**
-     * Get 'em all.
-     *
-     *
-     * @return DeprecationError[]
-     */
     public function getLogs(?int $limit = null): array
     {
         return $this->allLogs ?? $this->allLogs = DeprecationError::query()
@@ -156,25 +132,16 @@ final class Deprecator
             ->all();
     }
 
-    /**
-     * Returns a log by its ID.
-     */
     public function getLogById(int $logId): ?DeprecationError
     {
         return DeprecationError::find($logId);
     }
 
-    /**
-     * Deletes a log by its ID.
-     */
     public function deleteLogById(int $id): bool
     {
         return (bool) DeprecationError::destroy($id);
     }
 
-    /**
-     * Deletes all logs.
-     */
     public function deleteAllLogs(): bool
     {
         return (bool) DeprecationError::query()->delete();
@@ -323,8 +290,6 @@ final class Deprecator
 
     /**
      * Converts an array of method arguments to a string.
-     *
-     * Adapted from [[\yii\web\ErrorHandler::argumentsToString()]], but this one's less destructive
      */
     private function argsToString(array $args): string
     {

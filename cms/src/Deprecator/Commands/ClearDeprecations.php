@@ -19,8 +19,9 @@ final class ClearDeprecations extends Command
 
     public function handle(Deprecator $deprecator): void
     {
-        $this->components->task('Clearing all deprecation logs', function () use ($deprecator) {
-            $deprecator->deleteAllLogs();
-        });
+        $this->components->task(
+            'Clearing all deprecation logs',
+            fn () => $deprecator->deleteAllLogs(),
+        );
     }
 }
