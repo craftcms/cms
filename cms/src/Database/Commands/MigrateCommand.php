@@ -1,0 +1,222 @@
+<?php
+
+namespace CraftCms\Cms\Database\Commands;
+
+use craft\services\Updates;
+use CraftCms\Cms\Console\CraftCommand;
+use CraftCms\Cms\Database\Migrator;
+use CraftCms\Cms\Plugin\Plugins;
+use CraftCms\Cms\Support\Str;
+use Illuminate\Console\Command;
+use Illuminate\Console\ConfirmableTrait;
+use Illuminate\Contracts\Console\Isolatable;
+use Illuminate\Support\Facades\File;
+use Illuminate\Support\Facades\Log;
+use Laravel\Prompts\Concerns\Colors;
+use Laravel\Prompts\Themes\Default\Concerns\DrawsBoxes;
+use Throwable;
+
+use function Laravel\Prompts\confirm;
+
+final class MigrateCommand extends Command implements Isolatable
+{
+    use BackupTrait;
+    use Colors;
+    use ConfirmableTrait;
+    use CraftCommand;
+    use DrawsBoxes;
+
+    protected $signature = 'craft:migrate:all
+        {--force : Force the operation to run when in production}
+        {--pretend : Dump the SQL queries that would be run}
+        {--step : Force the migrations to be run so they can be rolled back individually}
+        {--no-backup : Skip backing up the database.}
+        {--no-content : Exclude pending content migrations.}
+        {--track= : The migration track to work with (e.g. `craft`, `content`, `plugin:commerce`, etc.)}
+        {--graceful : Return a successful exit code even if an error occurs}';
+
+    protected $description = 'Run the database migrations';
+
+    protected $aliases = ['migrate/all', 'migrate:up', 'migrate/up'];
+
+    protected Updates $updates;
+
+    protected Plugins $plugins;
+
+    /**
+     * @var array<string, Migrator>
+     */
+    protected array $migrators = [];
+
+    public function handle(Plugins $plugins): int
+    {
+        if (! $this->confirmToProceed()) {
+            return self::SUCCESS;
+        }
+
+        $this->updates = \Craft::$app->getUpdates();
+        $this->plugins = $plugins;
+
+        try {
+            $this->runMigrations();
+        } catch (Throwable $e) {
+            if ($this->option('graceful')) {
+                $this->components->warn($e->getMessage());
+
+                return self::SUCCESS;
+            }
+
+            throw $e;
+        }
+
+        return self::SUCCESS;
+    }
+
+    protected function getMigrator(string $track): Migrator
+    {
+        if (str_starts_with($track, 'plugin')) {
+            $handle = substr($track, 7);
+
+            return $this->plugins->getPlugin($handle)
+                ->getMigrator()
+                ->setOutput($this->output);
+        }
+
+        return $this->migrators[$track] ??= app(Migrator::class)
+            ->setOutput($this->output)
+            ->track($track === 'content' ? null : $track);
+    }
+
+    protected function runMigrations(): void
+    {
+        $this->prepareDatabase();
+
+        $migrationsByTrack = [];
+        $plugins = [];
+
+        $message = match (true) {
+            (bool) $this->option('track') => "Checking for pending {$this->option('track')} migrations",
+            (bool) $this->option('no-content') => 'Checking for pending Craft and plugin migrations',
+            default => 'Checking for pending migrations',
+        };
+
+        $this->components->task(
+            $message,
+            function () use (&$migrationsByTrack, &$plugins) {
+                $this->gatherMigrationsByTrack($migrationsByTrack, $plugins);
+            },
+        );
+
+        if (empty($migrationsByTrack)) {
+            $this->components->success('No new migrations found. Your system is up to date.');
+
+            return;
+        }
+
+        $total = 0;
+        foreach ($migrationsByTrack as $track => $migrations) {
+            $n = count($migrations);
+
+            $which = match ($track) {
+                'craft' => 'Craft',
+                'content' => 'content',
+                default => $plugins[substr($track, 7)]->name,
+            };
+
+            $this->box(
+                $this->cyan("Total $n new $which ".Str::plural('migration', $n).' to be applied:'),
+                collect($migrations)
+                    ->map(fn (string $migration) => $this->getMigrator($track)->getMigrationName($migration))
+                    ->join("\n")
+            );
+            $this->newLine();
+
+            $total += $n;
+        }
+
+        if ($this->input->isInteractive() && ! confirm('Apply the above '.Str::plural('migration', $total).'?', true)) {
+            return;
+        }
+
+        $this->callSilent('down');
+
+        if (! $this->option('no-backup') && ! $this->option('pretend') && ! $this->backup()) {
+            $this->callSilent('up');
+
+            return;
+        }
+
+        foreach ($migrationsByTrack as $track => $migrations) {
+            $this->getMigrator($track === 'content' ? null : $track)
+                ->run(options: [
+                    'pretend' => $this->option('pretend'),
+                    'step' => $this->option('step'),
+                ]);
+
+            // Update version info
+            if ($track === 'craft') {
+                $this->updates->updateCraftVersionInfo();
+            } elseif ($track !== 'content') {
+                $this->plugins->updatePluginVersionInfo($plugins[substr($track, 7)]);
+            }
+        }
+
+        $this->callSilent('up');
+        $this->clearCompiledTemplates();
+    }
+
+    private function gatherMigrationsByTrack(array &$migrationsByTrack, array &$plugins): void
+    {
+        if (! $this->option('track') || $this->option('track') === 'craft') {
+            $craftMigrations = $this->getMigrator('craft')->getPendingMigrations();
+            if (! empty($craftMigrations) || $this->updates->getIsCraftUpdatePending()) {
+                $migrationsByTrack['craft'] = $craftMigrations;
+            }
+        }
+
+        $plugins = $this->plugins->getAllPlugins();
+        foreach ($plugins as $plugin) {
+            if ($this->option('track') && $this->option('track') !== "plugin:$plugin->handle") {
+                continue;
+            }
+
+            $pluginMigrations = $plugin->getMigrator()->getPendingMigrations();
+            if (! empty($pluginMigrations) || $this->plugins->isPluginUpdatePending($plugin)) {
+                $migrationsByTrack["plugin:$plugin->handle"] = $pluginMigrations;
+            }
+        }
+
+        if (! $this->option('no-content') && (! $this->option('track') || $this->option('track') === 'content')) {
+            $contentMigrations = $this->getMigrator('content')->getPendingMigrations();
+            if (! empty($contentMigrations)) {
+                $migrationsByTrack['content'] = $contentMigrations;
+            }
+        }
+    }
+
+    /**
+     * Prepare the migration database for running.
+     */
+    protected function prepareDatabase(): void
+    {
+        if ($this->getMigrator('craft')->repositoryExists()) {
+            return;
+        }
+
+        $this->components->info('Preparing database.');
+
+        $this->components->task('Creating migration table', fn () => $this->callSilent('migrate:install') === 0);
+
+        $this->newLine();
+    }
+
+    private function clearCompiledTemplates(): void
+    {
+        try {
+            File::cleanDirectory(\Craft::$app->getPath()->getCompiledTemplatesPath(false));
+        } catch (Throwable $e) {
+            Log::error('Could not delete compiled templates: '.$e->getMessage());
+            report($e);
+        }
+    }
+}

@@ -12,7 +12,6 @@ use craft\errors\MigrationException;
 use craft\helpers\App;
 use craft\helpers\FileHelper;
 use CraftCms\Cms\Database\Table;
-use CraftCms\Cms\Support\Str;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Facades\DB;
 use Throwable;
@@ -340,11 +339,11 @@ class MigrationManager extends Component
      */
     public function getMigrationHistory(int $limit = 0): array
     {
-        $query = $this->_createMigrationQuery();
+        $query = $this->createMigrationQuery();
         if ($limit !== 0) {
             $query->limit($limit);
         }
-        $history = $query->pluck('applyTime', 'name')->all();
+        $history = $query->pluck('migration')->all();
         unset($history[self::BASE_MIGRATION]);
 
         return $history;
@@ -362,11 +361,10 @@ class MigrationManager extends Component
         DB::table($this->migrationTable)
             ->insert([
                 'track' => $this->track,
-                'name' => $name,
-                'applyTime' => $now = now(),
-                'dateCreated' => $now,
-                'dateUpdated' => $now,
-                'uid' => Str::uuid(),
+                'migration' => $name,
+                'batch' => DB::table($this->migrationTable)
+                    ->where('track', $this->track)
+                    ->selectRaw('max(batch) + 1'),
             ]);
     }
 
@@ -408,8 +406,9 @@ class MigrationManager extends Component
      */
     public function hasRun(string $name): bool
     {
-        return $this->_createMigrationQuery()
+        return $this->createMigrationQuery()
             ->where('name', $name)
+            ->where('track', $this->track)
             ->exists();
     }
 
@@ -480,11 +479,12 @@ class MigrationManager extends Component
      *
      * @return Builder The query
      */
-    private function _createMigrationQuery(): Builder
+    private function createMigrationQuery(): Builder
     {
         return DB::table($this->migrationTable)
-            ->select(['name', 'applyTime'])
-            ->orderByDesc('name')
-            ->where('track', $this->track);
+            ->select(['id', 'migration', 'track', 'batch'])
+            ->where('track', $this->track)
+            ->orderByDesc('batch')
+            ->orderByDesc('migration');
     }
 }

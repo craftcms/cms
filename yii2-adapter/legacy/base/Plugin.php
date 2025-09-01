@@ -8,27 +8,27 @@
 namespace craft\base;
 
 use Craft;
-use craft\db\Migration;
-use craft\db\MigrationManager;
 use craft\events\ModelEvent;
 use craft\events\RegisterTemplateRootsEvent;
 use craft\i18n\PhpMessageSource;
 use craft\web\Controller;
 use craft\web\View;
+use CraftCms\Cms\Plugin\Concerns\HasEditions;
+use CraftCms\Cms\Plugin\Concerns\Installable;
 use CraftCms\Cms\Plugin\Contracts\PluginInterface;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Html;
-use ReflectionClass;
+use CraftCms\Yii2Adapter\Database\MigrationWrapper;
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Support\Facades\File;
 use ReflectionMethod;
 use yii\base\Event;
-use yii\base\InvalidArgumentException;
 use yii\base\Module;
 use yii\web\Response;
 
 /**
  * Plugin is the base class for classes representing plugins in terms of objects.
  *
- * @property MigrationManager $migrator The plugin’s migration manager
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
  * @deprecated 6.0.0 use {@see \CraftCms\Cms\Plugin\Plugin} instead.
@@ -36,6 +36,8 @@ use yii\web\Response;
 class Plugin extends Module implements PluginInterface
 {
     use PluginTrait;
+    use HasEditions;
+    use Installable;
 
     /**
      * @event ModelEvent The event that is triggered before the plugin’s settings are saved.
@@ -44,13 +46,13 @@ class Plugin extends Module implements PluginInterface
      *
      * @since 3.0.16
      */
-    public const EVENT_BEFORE_SAVE_SETTINGS = 'beforeSaveSettings';
+    public const string EVENT_BEFORE_SAVE_SETTINGS = 'beforeSaveSettings';
 
     /**
      * @event \yii\base\Event The event that is triggered after the plugin’s settings are saved.
      * @since 3.0.16
      */
-    public const EVENT_AFTER_SAVE_SETTINGS = 'afterSaveSettings';
+    public const string EVENT_AFTER_SAVE_SETTINGS = 'afterSaveSettings';
 
     /**
      * Additional config the plugin should be instantiated with
@@ -58,16 +60,6 @@ class Plugin extends Module implements PluginInterface
     public static function config(): array
     {
         return [];
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public static function editions(): array
-    {
-        return [
-            'standard',
-        ];
     }
 
     /**
@@ -158,44 +150,6 @@ class Plugin extends Module implements PluginInterface
     /**
      * @inheritdoc
      */
-    public function install(): void
-    {
-        $this->beforeInstall();
-
-        $migrator = $this->getMigrator();
-
-        // Run the install migration, if there is one
-        if (($migration = $this->createInstallMigration()) !== null) {
-            $migrator->migrateUp($migration);
-        }
-
-        // Mark all existing migrations as applied
-        foreach ($migrator->getNewMigrations() as $name) {
-            $migrator->addMigrationHistory($name);
-        }
-
-        $this->isInstalled = true;
-
-        $this->afterInstall();
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function uninstall(): void
-    {
-        $this->beforeUninstall();
-
-        if (($migration = $this->createInstallMigration()) !== null) {
-            $this->getMigrator()->migrateDown($migration);
-        }
-
-        $this->afterUninstall();
-    }
-
-    /**
-     * @inheritdoc
-     */
     public function getSettings(): ?Model
     {
         if (!isset($this->_settings)) {
@@ -259,24 +213,6 @@ class Plugin extends Module implements PluginInterface
     /**
      * @inheritdoc
      */
-    public function getMigrator(): MigrationManager
-    {
-        $ref = new ReflectionClass($this);
-        $ns = $ref->getNamespaceName();
-
-        $this->set('migrator', [
-            'class' => MigrationManager::class,
-            'track' => "plugin:$this->handle",
-            'migrationNamespace' => ($ns ? $ns . '\\' : '') . 'migrations',
-            'migrationPath' => $this->getBasePath() . DIRECTORY_SEPARATOR . 'migrations',
-        ]);
-
-        return $this->get('migrator');
-    }
-
-    /**
-     * @inheritdoc
-     */
     public function getCpNavItem(): ?array
     {
         $ret = [
@@ -289,31 +225,6 @@ class Plugin extends Module implements PluginInterface
         }
 
         return $ret;
-    }
-
-    // Editions
-    // -------------------------------------------------------------------------
-
-    /** {@inheritdoc} */
-    public function is(string $edition, string $operator = '='): bool
-    {
-        $editions = static::editions();
-        $activeIndex = array_search($this->edition, $editions, true);
-        $otherIndex = array_search($edition, $editions, true);
-
-        if ($otherIndex === false) {
-            throw new InvalidArgumentException('Unsupported edition: ' . $edition);
-        }
-
-        return match ($operator) {
-            '<', 'lt' => $activeIndex < $otherIndex,
-            '<=', 'le' => $activeIndex <= $otherIndex,
-            '>', 'gt' => $activeIndex > $otherIndex,
-            '>=', 'ge' => $activeIndex >= $otherIndex,
-            '==', '=', 'eq' => $activeIndex == $otherIndex,
-            '!=', '<>', 'ne' => $activeIndex != $otherIndex,
-            default => throw new InvalidArgumentException('Invalid edition comparison operator: ' . $operator),
-        };
     }
 
     // Events
@@ -343,59 +254,6 @@ class Plugin extends Module implements PluginInterface
         if ($this->hasEventHandlers(self::EVENT_AFTER_SAVE_SETTINGS)) {
             $this->trigger(self::EVENT_AFTER_SAVE_SETTINGS);
         }
-    }
-
-    /**
-     * Instantiates and returns the plugin’s installation migration, if it has one.
-     *
-     * @return Migration|null The plugin’s installation migration
-     */
-    protected function createInstallMigration(): ?Migration
-    {
-        // See if there's an Install migration in the plugin’s migrations folder
-        $migrator = $this->getMigrator();
-        $path = $migrator->migrationPath . DIRECTORY_SEPARATOR . 'Install.php';
-
-        if (!is_file($path)) {
-            return null;
-        }
-
-        require_once $path;
-        $class = $migrator->migrationNamespace . '\\Install';
-
-        return new $class();
-    }
-
-    /**
-     * Performs actions before the plugin is installed.
-     *
-     */
-    protected function beforeInstall(): void
-    {
-    }
-
-    /**
-     * Performs actions after the plugin is installed.
-     *
-     */
-    protected function afterInstall(): void
-    {
-    }
-
-    /**
-     * Performs actions before the plugin is uninstalled.
-     *
-     */
-    protected function beforeUninstall(): void
-    {
-    }
-
-    /**
-     * Performs actions after the plugin is uninstalled.
-     *
-     */
-    protected function afterUninstall(): void
-    {
     }
 
     /**
@@ -445,6 +303,22 @@ class Plugin extends Module implements PluginInterface
         $config['class'] = static::class;
 
         return Craft::createObject($config, [$config['handle'], Craft::$app]);
+    }
+
+    public function createInstallMigration(): ?object
+    {
+        if (!File::exists($this->getBasePath() . '/migrations/Install.php')) {
+            return null;
+        }
+
+        $namespace = substr(static::class, 0, strrpos(static::class, '\\'));
+        $class = $namespace . '\migrations\Install';
+
+        if (!is_a($class, Migration::class, true)) {
+            return new MigrationWrapper($class);
+        }
+
+        return app()->make($class);
     }
 
     public static function getInstance(): PluginInterface

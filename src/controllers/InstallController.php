@@ -12,15 +12,13 @@ use craft\config\DbConfig;
 use craft\db\Connection;
 use craft\elements\User;
 use craft\errors\DbConnectException;
-use craft\errors\MigrationException;
 use craft\helpers\App;
 use craft\helpers\Install as InstallHelper;
-use craft\markdown\Markdown;
 use craft\models\Site;
 use craft\web\assets\installer\InstallerAsset;
 use craft\web\Controller;
 use CraftCms\Cms\Database\Migrations\Install;
-use CraftCms\Cms\Shared\Exceptions\OperationAbortedException;
+use CraftCms\Cms\Database\Migrator;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Env;
 use CraftCms\Cms\Support\Str;
@@ -266,9 +264,6 @@ class InstallController extends Controller
             Craft::configure($db, Arr::except(App::dbConfig($dbConfig), 'class'));
         }
 
-        // Run the install migration
-        $migrator = Craft::$app->getMigrator();
-
         $email = $this->request->getBodyParam('account-email');
         $username = $this->request->getBodyParam('account-username', $email);
         $siteUrl = $this->request->getBodyParam('site-baseUrl');
@@ -304,23 +299,19 @@ class InstallController extends Controller
             site: $site,
         );
 
+        // Run the install migration
+        $migrator = app(Migrator::class)->track('craft');
+
         try {
-            $migrator->migrateUp($migration);
-        } catch (MigrationException $e) {
-            $data = [];
-            $previous = $e->getPrevious();
-            if ($previous instanceof OperationAbortedException) {
-                $message = $previous->getMessage();
-                $data['messageHtml'] = (new Markdown())->parse($message);
-            } else {
-                $message = $e->getMessage();
-            }
-            return $this->asFailure($message, $data);
+            $migrator->runMigration($migration, 'up');
+            $migrator->getRepository()->log('Install', 1);
+        } catch (Throwable $e) {
+            return $this->asFailure($e->getMessage());
         }
 
         // Mark all existing migrations as applied
-        foreach ($migrator->getNewMigrations() as $name) {
-            $migrator->addMigrationHistory($name);
+        foreach ($migrator->getPendingMigrations() as $file) {
+            $migrator->getRepository()->log($migrator->getMigrationName($file), 1);
         }
 
         return $this->asSuccess();

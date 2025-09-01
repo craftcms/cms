@@ -3,15 +3,25 @@
 namespace CraftCms\Cms\Http\Middleware;
 
 use Closure;
+use craft\web\Application;
+use Illuminate\Container\Attributes\Give;
 use Illuminate\Http\Request;
 
-final class FlushProjectConfig
+final readonly class FlushProjectConfig
 {
+    public function __construct(
+        #[Give('Craft')] private Application $craft,
+    ) {}
+
     public function handle(Request $request, Closure $next): mixed
     {
+        if (! $this->craft->getIsInstalled()) {
+            return $next($request);
+        }
+
         $response = $next($request);
 
-        app('Craft')->getProjectConfig()->flush();
+        $this->craft->getProjectConfig()->flush();
 
         return $response;
     }

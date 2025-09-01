@@ -1229,7 +1229,7 @@ class Elements extends Component
     private function isMigrationRequest(): bool
     {
         return (
-            Craft::$app->controller instanceof MigrateController ||
+            //Craft::$app->controller instanceof MigrateController ||
             Craft::$app->controller instanceof UpController ||
             (
                 Craft::$app->controller instanceof AppController &&

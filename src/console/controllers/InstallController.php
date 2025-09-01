@@ -17,6 +17,7 @@ use craft\helpers\Install as InstallHelper;
 use craft\models\Site;
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Database\Migrations\Install;
+use CraftCms\Cms\Database\Migrator;
 use CraftCms\Cms\Shared\Exceptions\OperationAbortedException;
 use CraftCms\Cms\Support\Env;
 use yii\base\Exception;
@@ -216,10 +217,11 @@ class InstallController extends Controller
         // Run the install migration
         $this->stdout('*** installing Craft' . PHP_EOL, Console::FG_YELLOW);
         $start = microtime(true);
-        $migrator = Craft::$app->getMigrator();
+        $migrator = app(Migrator::class)->track('craft');
 
         try {
-            $migrator->migrateUp($migration);
+            $migrator->runMigration($migration, 'up');
+            $migrator->getRepository()->log('Install', 1);
         } catch (MigrationException $e) {
             $previous = $e->getPrevious();
             if (!$previous instanceof OperationAbortedException) {
@@ -232,8 +234,8 @@ class InstallController extends Controller
         $this->stdout("*** installed Craft successfully (time: {$time}s)" . PHP_EOL . PHP_EOL, Console::FG_GREEN);
 
         // Mark all existing migrations as applied
-        foreach ($migrator->getNewMigrations() as $name) {
-            $migrator->addMigrationHistory($name);
+        foreach ($migrator->getPendingMigrations() as $file) {
+            $migrator->getRepository()->log($migrator->getMigrationName($file), 1);
         }
 
         Console::ensureProjectConfigFileExists();

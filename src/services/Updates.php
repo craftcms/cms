@@ -12,6 +12,7 @@ use craft\errors\MigrateException;
 use craft\helpers\App;
 use craft\helpers\FileHelper;
 use craft\models\Updates as UpdatesModel;
+use CraftCms\Cms\Database\Migrator;
 use CraftCms\Cms\Plugin\Contracts\PluginInterface;
 use CraftCms\Cms\Plugin\Exceptions\InvalidPluginException;
 use CraftCms\Cms\Plugin\Plugins;
@@ -243,18 +244,22 @@ class Updates extends Component
 
         DB::beginTransaction();
 
+        $migrator = app(Migrator::class);
+        $plugins = app(Plugins::class);
+
         try {
             foreach ($handles as $handle) {
                 if ($handle === 'craft') {
-                    Craft::$app->getMigrator()->up();
+                    $migrator->track('craft')->run();
+
                     Craft::$app->getUpdates()->updateCraftVersionInfo();
                 } elseif ($handle === 'content') {
-                    Craft::$app->getContentMigrator()->up();
+                    $migrator->track(null)->run();
                 } else {
-                    $plugin = app(Plugins::class)->getPlugin($handle);
+                    $plugin = $plugins->getPlugin($handle);
+                    $plugin->getMigrator()->run();
                     $name = $plugin->name;
-                    $plugin->getMigrator()->up();
-                    app(Plugins::class)->updatePluginVersionInfo($plugin);
+                    $plugins->updatePluginVersionInfo($plugin);
                 }
             }
 

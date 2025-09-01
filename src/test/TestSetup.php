@@ -184,7 +184,7 @@ class TestSetup
 
         $migration = new $class($params);
 
-        if (!$migration instanceof Migration) {
+        if (!$migration instanceof Migration && !$migration instanceof \CraftCms\Cms\Database\Migration) {
             throw new InvalidArgumentException(
                 'Migration class is not an instance of: ' . Migration::class
             );
