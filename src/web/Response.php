@@ -32,6 +32,11 @@ class Response extends \yii\web\Response
     public const FORMAT_CSV = 'csv';
 
     /**
+     * @since 4.16.10
+     */
+    public const FORMAT_GQL = 'gql';
+
+    /**
      * Default response formatter configurations.
      *
      * This could be set from `config/app.web.php` to append additional default response formatters, or modify existing ones.
@@ -61,7 +66,6 @@ class Response extends \yii\web\Response
      * @since 4.5.0
      */
     public array $defaultFormatters = [];
-
 
     /**
      * @var bool whether the response has been prepared.
@@ -94,6 +98,8 @@ class Response extends \yii\web\Response
                     return 'application/javascript';
                 case self::FORMAT_CSV:
                     return 'text/csv';
+                case self::FORMAT_GQL:
+                    return 'application/graphql-response+json';
             }
         }
 
@@ -325,9 +331,8 @@ class Response extends \yii\web\Response
         return ArrayHelper::merge(
             parent::defaultFormatters(),
             [
-                self::FORMAT_CSV => [
-                    'class' => CsvResponseFormatter::class,
-                ],
+                self::FORMAT_CSV => ['class' => CsvResponseFormatter::class],
+                self::FORMAT_GQL => ['class' => GqlResponseFormatter::class],
             ],
             $this->defaultFormatters,
         );

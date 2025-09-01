@@ -29,6 +29,7 @@ use craft\helpers\Html;
 use craft\helpers\StringHelper;
 use craft\models\FieldLayout;
 use craft\services\ElementSources;
+use Illuminate\Support\Collection;
 use Throwable;
 use yii\base\InvalidValueException;
 use yii\web\BadRequestHttpException;
@@ -164,6 +165,44 @@ class ElementIndexesController extends BaseElementsController
         ]);
     }
 
+    /**
+     * Returns attribute info for the current source.
+     *
+     * @since 5.9.0
+     */
+    public function actionSourceAttributeInfo(): Response
+    {
+        $elementSources = Craft::$app->getElementSources();
+
+        $sortOptions = Collection::make($elementSources->getSourceSortOptions($this->elementType, $this->sourceKey))
+            ->map(fn(array $option) => [
+                'label' => $option['label'],
+                'attr' => $option['attribute'] ?? $option['orderBy'],
+                'defaultDir' => $option['defaultDir'] ?? 'asc',
+            ])
+            ->values()
+            ->all();
+
+        $tableColumns = Collection::make($elementSources->getSourceTableAttributes($this->elementType, $this->sourceKey))
+            ->map(fn(array $attribute, string $key) => [
+                ...$attribute,
+                'key' => $key,
+            ])
+            ->values()
+            ->all();
+
+        $defaultTableColumns = Collection::make($elementSources->getTableAttributes($this->elementType, $this->sourceKey))
+            ->map(fn(array $attribute) => $attribute[0])
+            ->filter(fn(string $attribute) => $attribute !== 'title')
+            ->values()
+            ->all();
+
+        return $this->asJson(compact(
+            'sortOptions',
+            'tableColumns',
+            'defaultTableColumns',
+        ));
+    }
 
     /**
      * Renders and returns an element index container, plus its first batch of elements.

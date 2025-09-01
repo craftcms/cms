@@ -338,7 +338,7 @@ class Cp
             'autoReload' => true,
             'id' => sprintf('chip-%s', mt_rand()),
             'class' => null,
-            'hyperlink' => true,
+            'hyperlink' => false,
             'inputName' => null,
             'inputValue' => null,
             'labelHtml' => null,
@@ -629,7 +629,7 @@ class Cp
             'autoReload' => true,
             'context' => 'index',
             'id' => sprintf('card-%s', mt_rand()),
-            'hyperlink' => true,
+            'hyperlink' => false,
             'inputName' => null,
             'selectable' => false,
             'showEditButton' => true,
@@ -1129,7 +1129,7 @@ JS, [
         // the inner span is needed for `text-overflow: ellipsis` (e.g. within breadcrumbs)
         if ($content !== '') {
             if (
-                ($config['hyperlink'] ?? true) &&
+                ($config['hyperlink'] ?? false) &&
                 !$element->trashed &&
                 $config['context'] !== 'modal' &&
                 ($url = $attributes['data']['cp-url'] ?? null)

@@ -111,19 +111,6 @@
 
     {% block viewModeField %}
         {{ field.getViewModeFieldHtml()|raw }}
-
-        {% tag 'div' with {
-            id: 'view-mode--cards',
-            class: field.viewMode != 'cards' ? 'hidden' : null,
-        } %}
-            {{ forms.lightswitchField({
-                label: 'Show cards in a grid'|t('app'),
-                instructions: 'Whether cards should be shown in a multi-column grid on wide viewports.'|t('app'),
-                id: 'show-cards-in-grid',
-                name: 'showCardsInGrid',
-                on: field.showCardsInGrid,
-            }) }}
-        {% endtag %}
     {% endblock %}
 
     {% block selectionLabelField %}
