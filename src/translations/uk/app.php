@@ -121,6 +121,7 @@ return [
     'Already in your cart' => 'Уже в кошику',
     'Alternative Text' => 'Альтернативний текст',
     'Amber' => 'Бурштиновий',
+    'An elevated session is required to change a user’s email.' => 'An elevated session is required to change a user’s email.',
     'An error occurred when duplicating the category.' => 'Під час дублювання категорії сталася помилка.',
     'An error occurred when duplicating the entry.' => 'Під час дублювання запису сталася помилка.',
     'An error occurred when installing {name}.' => 'Під час установлення {name} сталася помилка.',

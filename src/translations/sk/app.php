@@ -121,6 +121,7 @@ return [
     'Already in your cart' => 'Už je v košíku',
     'Alternative Text' => 'Alternatívny text',
     'Amber' => 'Jantár',
+    'An elevated session is required to change a user’s email.' => 'An elevated session is required to change a user’s email.',
     'An error occurred when duplicating the category.' => 'Pri duplikovaní kategórie došlo k chybe.',
     'An error occurred when duplicating the entry.' => 'Pri duplikovaní vstupu došlo k chybe.',
     'An error occurred when installing {name}.' => 'Počas inštalácie programu {name} sa vyskytla chyba.',
