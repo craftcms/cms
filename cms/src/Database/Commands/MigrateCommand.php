@@ -147,11 +147,10 @@ final class MigrateCommand extends Command implements Isolatable
         }
 
         foreach ($migrationsByTrack as $track => $migrations) {
-            $this->getMigrator($track === 'content' ? null : $track)
-                ->run(options: [
-                    'pretend' => $this->option('pretend'),
-                    'step' => $this->option('step'),
-                ]);
+            $this->getMigrator($track)->run(options: [
+                'pretend' => $this->option('pretend'),
+                'step' => $this->option('step'),
+            ]);
 
             // Update version info
             if ($track === 'craft') {

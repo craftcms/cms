@@ -17,6 +17,12 @@ final class Migrator extends \Illuminate\Database\Migrations\Migrator
             $this->setPaths(['@migrations']);
         }
 
+        if (is_null($track)) {
+            $this->setPaths([
+                app()->databasePath().DIRECTORY_SEPARATOR.'migrations'
+            ]);
+        }
+
         return $this;
     }
 
