@@ -8,8 +8,10 @@ use craft\helpers\Template;
 use craft\web\twig\Extension;
 use CraftCms\Cms\Deprecator\Exceptions\DeprecationException;
 use CraftCms\Cms\Deprecator\Models\DeprecationError;
+use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Str;
 use Illuminate\Container\Attributes\Singleton;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Log;
 use Throwable;
 use Twig\Template as TwigTemplate;
@@ -316,13 +318,7 @@ final class Deprecator
         }
 
         // getDebugInfo() goes upward, so the first code line that's <= the trace line will be the match
-        foreach ($template->getDebugInfo() as $codeLine => $templateLine) {
-            if ($codeLine <= $actualCodeLine) {
-                return $templateLine;
-            }
-        }
-
-        return null;
+        return array_find($template->getDebugInfo(), fn ($codeLine) => $codeLine <= $actualCodeLine);
     }
 
     /**
@@ -332,43 +328,29 @@ final class Deprecator
      */
     private function argsToString(array $args): string
     {
-        $strArgs = [];
-        $isAssoc = ($args !== array_values($args));
+        $isAssoc = Arr::isAssoc($args);
+        $limit = 5;
 
-        $count = 0;
+        return Collection::make($args)
+            ->take($limit)
+            ->map(function ($value, $key) use ($isAssoc) {
+                $value = match (true) {
+                    is_object($value) => $value::class,
+                    is_bool($value) => $value ? 'true' : 'false',
+                    is_string($value) => Str::limit($value, 64),
+                    is_array($value) => '['.$this->argsToString($value).']',
+                    is_null($value) => 'null',
+                    is_resource($value) => 'resource',
+                    default => $value,
+                };
 
-        foreach ($args as $key => $value) {
-            // Cap it off at 5
-            if (++$count === 5) {
-                $strArgs[] = '...';
-                break;
-            }
-
-            if (is_object($value)) {
-                $strValue = get_class($value);
-            } elseif (is_bool($value)) {
-                $strValue = $value ? 'true' : 'false';
-            } elseif (is_string($value)) {
-                $strValue = Str::limit($value, 64);
-            } elseif (is_array($value)) {
-                $strValue = '['.$this->argsToString($value).']';
-            } elseif ($value === null) {
-                $strValue = 'null';
-            } elseif (is_resource($value)) {
-                $strValue = 'resource';
-            } else {
-                $strValue = $value;
-            }
-
-            if (is_string($key)) {
-                $strArgs[] = '"'.$key.'" => '.$strValue;
-            } elseif ($isAssoc) {
-                $strArgs[] = $key.' => '.$strValue;
-            } else {
-                $strArgs[] = $strValue;
-            }
-        }
-
-        return implode(', ', $strArgs);
+                return match (true) {
+                    is_string($key) => '"'.$key.'" => '.$value,
+                    $isAssoc => $key.' => '.$value,
+                    default => $value,
+                };
+            })
+            ->when(count($args) > $limit, fn (Collection $collection) => $collection->add('...'))
+            ->implode(', ');
     }
 }
