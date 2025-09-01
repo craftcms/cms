@@ -11,9 +11,6 @@ use Codeception\PHPUnit\TestCase as CodeceptionTestCase;
 use Craft;
 use craft\console\Application as ConsoleApplication;
 use craft\db\Connection;
-use craft\db\Migration;
-use craft\db\MigrationManager;
-use craft\errors\MigrationException;
 use craft\helpers\Db;
 use craft\helpers\FileHelper;
 use craft\i18n\Locale;
@@ -164,44 +161,6 @@ class TestSetup
         if ($tables !== []) {
             throw new Exception('Unable to setup test environment.');
         }
-
-        return true;
-    }
-
-    /**
-     * @param class-string<Migration>|string $class
-     * @param array $params
-     * @param bool $ignorePreviousMigrations
-     * @return bool
-     * @throws InvalidConfigException
-     * @throws MigrationException
-     */
-    public static function validateAndApplyMigration(string $class, array $params, bool $ignorePreviousMigrations = false): bool
-    {
-        if (!class_exists($class)) {
-            throw new InvalidArgumentException('Migration class: ' . $class . ' does not exist');
-        }
-
-        $migration = new $class($params);
-
-        if (!$migration instanceof Migration && !$migration instanceof \CraftCms\Cms\Database\Migration) {
-            throw new InvalidArgumentException(
-                'Migration class is not an instance of: ' . Migration::class
-            );
-        }
-
-        $contentMigrator = Craft::$app->getContentMigrator();
-        // Should we ignore this migration?
-        if ($ignorePreviousMigrations) {
-            $history = $contentMigrator->getMigrationHistory();
-
-            // Technically... This migration is applied.
-            if (isset($history[$class])) {
-                return true;
-            }
-        }
-
-        $contentMigrator->migrateUp($migration);
 
         return true;
     }
@@ -573,7 +532,6 @@ class TestSetup
             [ImageTransforms::class, ['getImageTransforms', 'imageTransforms']],
             [Categories::class, ['getCategories', 'categories']],
             [Config::class, ['getConfig', 'config']],
-            [MigrationManager::class, ['getContentMigrator', 'contentMigrator']],
             [Dashboard::class, ['getDashboard', 'dashboard']],
             [Deprecator::class, ['getDeprecator', 'deprecator']],
             [ElementSources::class, ['getElementSources', 'elementSources']],
@@ -585,7 +543,6 @@ class TestSetup
             [Images::class, ['getImages', 'images']],
             [Locale::class, ['getLocale', 'locale']],
             [Mailer::class, ['getMailer', 'mailer']],
-            [MigrationManager::class, ['getMigrator', 'migrator']],
             [Mutex::class, ['getMutex', 'mutex']],
             [Path::class, ['getPath', 'path']],
             [Plugins::class, ['getPlugins', 'plugins']],

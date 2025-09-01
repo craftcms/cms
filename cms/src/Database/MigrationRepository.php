@@ -6,6 +6,11 @@ use Illuminate\Database\Migrations\DatabaseMigrationRepository;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Database\Schema\Blueprint;
 
+/**
+ * @internal
+ *
+ * @since 6.0.0
+ */
 final class MigrationRepository extends DatabaseMigrationRepository
 {
     protected ?string $track = null;

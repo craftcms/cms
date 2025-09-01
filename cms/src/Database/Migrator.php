@@ -4,6 +4,11 @@ namespace CraftCms\Cms\Database;
 
 use CraftCms\Aliases\Facades\Aliases;
 
+/**
+ * @internal
+ *
+ * @since 6.0.0
+ */
 final class Migrator extends \Illuminate\Database\Migrations\Migrator
 {
     /** @var \CraftCms\Cms\Database\MigrationRepository */

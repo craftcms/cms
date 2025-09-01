@@ -290,17 +290,6 @@ class Craft extends Yii2
             // Ready to rock.
             \Craft::$app->setIsInstalled();
 
-            if (isset($dbSetupConfig['applyMigrations']) && $dbSetupConfig['applyMigrations'] === true) {
-                \Craft::$app->getContentMigrator()->up();
-            }
-
-            // Apply migrations
-            if ($migrations = $this->_getConfig('migrations')) {
-                foreach ($migrations as $migration) {
-                    TestSetup::validateAndApplyMigration($migration['class'], $migration['params'], true);
-                }
-            }
-
             // Add any plugins
             if ($plugins = $this->_getConfig('plugins')) {
                 foreach ($plugins as $plugin) {

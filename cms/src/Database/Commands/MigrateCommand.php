@@ -30,8 +30,8 @@ final class MigrateCommand extends Command implements Isolatable
         {--force : Force the operation to run when in production}
         {--pretend : Dump the SQL queries that would be run}
         {--step : Force the migrations to be run so they can be rolled back individually}
-        {--no-backup : Skip backing up the database.}
-        {--no-content : Exclude pending content migrations.}
+        {--noBackup : Skip backing up the database.}
+        {--noContent : Exclude pending content migrations.}
         {--track= : The migration track to work with (e.g. `craft`, `content`, `plugin:commerce`, etc.)}
         {--graceful : Return a successful exit code even if an error occurs}';
 
@@ -96,7 +96,7 @@ final class MigrateCommand extends Command implements Isolatable
 
         $message = match (true) {
             (bool) $this->option('track') => "Checking for pending {$this->option('track')} migrations",
-            (bool) $this->option('no-content') => 'Checking for pending Craft and plugin migrations',
+            (bool) $this->option('noContent') => 'Checking for pending Craft and plugin migrations',
             default => 'Checking for pending migrations',
         };
 
@@ -140,7 +140,7 @@ final class MigrateCommand extends Command implements Isolatable
 
         $this->callSilent('down');
 
-        if (! $this->option('no-backup') && ! $this->option('pretend') && ! $this->backup()) {
+        if (! $this->option('noBackup') && ! $this->option('pretend') && ! $this->backup()) {
             $this->callSilent('up');
 
             return;
@@ -185,7 +185,7 @@ final class MigrateCommand extends Command implements Isolatable
             }
         }
 
-        if (! $this->option('no-content') && (! $this->option('track') || $this->option('track') === 'content')) {
+        if (! $this->option('noContent') && (! $this->option('track') || $this->option('track') === 'content')) {
             $contentMigrations = $this->getMigrator('content')->getPendingMigrations();
             if (! empty($contentMigrations)) {
                 $migrationsByTrack['content'] = $contentMigrations;
