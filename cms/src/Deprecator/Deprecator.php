@@ -8,7 +8,6 @@ use craft\helpers\Template;
 use craft\web\twig\Extension;
 use CraftCms\Cms\Deprecator\Exceptions\DeprecationException;
 use CraftCms\Cms\Deprecator\Models\DeprecationError;
-use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Support\Str;
 use Illuminate\Container\Attributes\Singleton;
 use Illuminate\Support\Facades\Log;
