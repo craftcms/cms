@@ -32,7 +32,7 @@ final readonly class DeprecationErrorsController
         ]);
 
         $html = $this->craft->getView()->renderTemplate('_components/utilities/DeprecationErrors/traces_modal.twig', [
-            'log' => $this->craft->deprecator->getLogById($request->integer('logId')),
+            'log' => $this->deprecator->getLogById($request->integer('logId')),
         ]);
 
         return new JsonResponse([
