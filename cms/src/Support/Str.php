@@ -4,7 +4,6 @@ namespace CraftCms\Cms\Support;
 
 use BackedEnum;
 use Craft;
-use craft\helpers\App;
 use craft\helpers\HtmlPurifier;
 use HTMLPurifier_Config;
 use InvalidArgumentException;
@@ -101,7 +100,7 @@ class Str extends \Illuminate\Support\Str
         $str = HtmlPurifier::cleanUtf8($str);
 
         // Convert it to UTF8 if possible
-        if (App::checkForValidIconv()) {
+        if (PHP::checkForValidIconv()) {
             $str = HtmlPurifier::convertToUtf8($str, $config);
         } else {
             $str = mb_convert_encoding($str, 'UTF-8');
@@ -228,7 +227,7 @@ class Str extends \Illuminate\Support\Str
      */
     public static function idnToUtf8Email(string $email): string
     {
-        if (! App::supportsIdn()) {
+        if (! PHP::supportsIdn()) {
             return $email;
         }
 

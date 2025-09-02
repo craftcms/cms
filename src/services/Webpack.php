@@ -8,12 +8,12 @@
 namespace craft\services;
 
 use Craft;
-use craft\helpers\App;
 use craft\helpers\FileHelper;
 use craft\helpers\Session;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\Http;
 use CraftCms\Cms\Support\Json;
+use CraftCms\Cms\Support\PHP;
 use CraftCms\Cms\Support\Str;
 use Exception;
 use GuzzleHttp\Exception\GuzzleException;
@@ -75,7 +75,7 @@ class Webpack extends Component
 
             if (!isset($this->_checkedEnvDirs[$assetDir])) {
                 // Make sure it's within the allowed base paths
-                if (!App::isPathAllowed($assetDir)) {
+                if (!PHP::isPathAllowed($assetDir)) {
                     $this->_checkedEnvDirs[$assetDir] = false;
                     break;
                 }

@@ -11,7 +11,6 @@ use Craft;
 use craft\db\Connection;
 use craft\db\Table;
 use craft\errors\MutexException;
-use craft\helpers\App;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\Db;
 use craft\helpers\Queue as QueueHelper;
@@ -552,7 +551,7 @@ class Queue extends \yii\queue\cli\Queue implements QueueInterface
         $info = [];
 
         foreach ($results as $result) {
-            if (!App::devMode() && !Craft::$app->getUser()->getIsAdmin()) {
+            if (!app()->hasDebugModeEnabled() && !Craft::$app->getUser()->getIsAdmin()) {
                 $result['error'] = Craft::t('app', 'A server error occurred.');
             }
 

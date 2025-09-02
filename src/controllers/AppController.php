@@ -15,7 +15,6 @@ use craft\elements\db\NestedElementQueryInterface;
 use craft\errors\BusyResourceException;
 use craft\errors\StaleResourceException;
 use craft\filters\UtilityAccess;
-use craft\helpers\App;
 use craft\helpers\Cp;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\ElementHelper;
@@ -29,11 +28,13 @@ use craft\web\Controller;
 use craft\web\ServiceUnavailableHttpException;
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Edition;
+use CraftCms\Cms\License\License;
 use CraftCms\Cms\Plugin\Exceptions\InvalidPluginException;
 use CraftCms\Cms\Plugin\Plugins;
 use CraftCms\Cms\Shared\Enums\LicenseKeyStatus;
 use CraftCms\Cms\Support\Api;
 use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Support\Env;
 use CraftCms\Cms\Support\Facades\Http;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Json;
@@ -440,7 +441,7 @@ class AppController extends Controller
             'items' => array_map(fn($issue) => $issue[2], $issues),
         ]);
 
-        $cookie = $this->request->getCookies()->get(App::licenseShunCookieName());
+        $cookie = $this->request->getCookies()->get(app(License::class)->shunCookieName());
         $data = $cookie ? Json::decode($cookie->value) : null;
         if (($data['hash'] ?? null) !== $hash) {
             $data = null;
@@ -476,7 +477,7 @@ class AppController extends Controller
      */
     public function actionSetLicenseShunCookie(): Response
     {
-        $cookieName = App::licenseShunCookieName();
+        $cookieName = app(License::class)->shunCookieName();
         $oldCookie = $this->request->getCookies()->get($cookieName);
         $data = $oldCookie ? Json::decode($oldCookie->value) : [];
 
@@ -685,7 +686,7 @@ class AppController extends Controller
                     if (
                         !isset($allPluginInfo[$handle]) ||
                         !$allPluginInfo[$handle]['licenseKey'] ||
-                        $pluginsService->normalizePluginLicenseKey(App::parseEnv($allPluginInfo[$handle]['licenseKey'])) === $pluginLicenseInfo['key']
+                        $pluginsService->normalizePluginLicenseKey(Env::parse($allPluginInfo[$handle]['licenseKey'])) === $pluginLicenseInfo['key']
                     ) {
                         $result[$handle] = [
                             'edition' => null,
@@ -724,7 +725,7 @@ class AppController extends Controller
                 'version' => $pluginInfo['version'],
                 'hasMultipleEditions' => $pluginInfo['hasMultipleEditions'],
                 'edition' => $pluginInfo['edition'],
-                'licenseKey' => $pluginsService->normalizePluginLicenseKey(App::parseEnv($pluginInfo['licenseKey'])),
+                'licenseKey' => $pluginsService->normalizePluginLicenseKey(Env::parse($pluginInfo['licenseKey'])),
                 'licensedEdition' => $pluginInfo['licensedEdition'],
                 'licenseKeyStatus' => $pluginInfo['licenseKeyStatus'],
                 'licenseIssues' => $pluginInfo['licenseIssues'],

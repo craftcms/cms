@@ -18,13 +18,13 @@ use craft\base\Model;
 use craft\behaviors\FieldLayoutBehavior;
 use craft\elements\Asset;
 use craft\fs\MissingFs;
-use craft\helpers\App;
 use craft\helpers\UrlHelper;
 use craft\records\Volume as VolumeRecord;
 use craft\validators\HandleValidator;
 use craft\validators\UniqueValidator;
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Support\Env;
 use CraftCms\Cms\Support\Str;
 use Generator;
 use yii\base\InvalidConfigException;
@@ -260,7 +260,7 @@ class Volume extends Model implements
         $rules[] = [['fieldLayout'], 'validateFieldLayout'];
         $rules[] = [['subpath'], fn($attribute) => $this->validateUniqueSubpath($attribute), 'skipOnEmpty' => false];
 
-        $tempAssetUploadFs = App::parseEnv(app(GeneralConfig::class)->tempAssetUploadFs);
+        $tempAssetUploadFs = Env::parse(app(GeneralConfig::class)->tempAssetUploadFs);
         if ($tempAssetUploadFs) {
             $rules[] = [
                 ['fsHandle'],
@@ -403,7 +403,7 @@ class Volume extends Model implements
     public function getFsHandle(bool $parse = true): ?string
     {
         if ($this->_fsHandle) {
-            return $parse ? App::parseEnv($this->_fsHandle) : $this->_fsHandle;
+            return $parse ? Env::parse($this->_fsHandle) : $this->_fsHandle;
         }
         return null;
     }
@@ -467,7 +467,7 @@ class Volume extends Model implements
     public function getTransformFsHandle(bool $parse = true): ?string
     {
         if ($this->_transformFsHandle) {
-            return $parse ? App::parseEnv($this->_transformFsHandle) : $this->_transformFsHandle;
+            return $parse ? Env::parse($this->_transformFsHandle) : $this->_transformFsHandle;
         }
         return null;
     }
@@ -534,7 +534,7 @@ class Volume extends Model implements
      */
     public function getSubpath(bool $ensureTrailing = true, bool $parse = true): string
     {
-        $subpath = $parse ? App::parseEnv($this->_subpath) : $this->_subpath;
+        $subpath = $parse ? Env::parse($this->_subpath) : $this->_subpath;
 
         if ($ensureTrailing && $subpath !== '' && !str_ends_with($subpath, '/')) {
             $subpath .= '/';
@@ -563,7 +563,7 @@ class Volume extends Model implements
      */
     public function getTransformSubpath(bool $ensureTrailing = true, bool $parse = true): string
     {
-        $subpath = $parse ? App::parseEnv($this->_transformSubpath) : $this->_transformSubpath;
+        $subpath = $parse ? Env::parse($this->_transformSubpath) : $this->_transformSubpath;
 
         if ($ensureTrailing && $subpath !== '' && !str_ends_with($subpath, '/')) {
             $subpath .= '/';

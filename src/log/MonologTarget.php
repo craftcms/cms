@@ -6,6 +6,7 @@ use Craft;
 use craft\helpers\App;
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Support\Env;
 use DateTimeZone;
 use Illuminate\Support\Collection;
 use Monolog\Formatter\FormatterInterface;
@@ -205,7 +206,7 @@ class MonologTarget extends PsrTarget
             ))->setFormatter($this->formatter));
         } else {
             $logger->pushHandler((new RotatingFileHandler(
-                App::parseEnv(sprintf('@storage/logs/%s.log', $this->name)),
+                Env::parse(sprintf('@storage/logs/%s.log', $this->name)),
                 $this->maxFiles,
                 $this->level,
                 filePermission: app(GeneralConfig::class)->defaultFileMode,

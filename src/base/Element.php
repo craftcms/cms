@@ -66,7 +66,6 @@ use craft\events\SetElementRouteEvent;
 use craft\fieldlayoutelements\BaseField;
 use craft\fieldlayoutelements\CustomField;
 use craft\gql\interfaces\Element as ElementGqlType;
-use craft\helpers\App;
 use craft\helpers\Cp;
 use craft\helpers\ElementHelper;
 use craft\helpers\Template;
@@ -86,6 +85,7 @@ use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Enums\AttributeStatus;
 use CraftCms\Cms\Shared\Enums\Color;
 use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Support\Env;
 use CraftCms\Cms\Support\Facades\Deprecator;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Str;
@@ -4320,7 +4320,7 @@ JS, [
 
         foreach ($previewTargets as $previewTarget) {
             if (isset($previewTarget['urlFormat'])) {
-                $url = trim($view->renderObjectTemplate(App::parseEnv($previewTarget['urlFormat']), $this));
+                $url = trim($view->renderObjectTemplate(Env::parse($previewTarget['urlFormat']), $this));
                 if ($url !== '') {
                     $previewTarget['url'] = $url;
                     unset($previewTarget['urlFormat']);

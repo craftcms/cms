@@ -17,7 +17,6 @@ use craft\elements\Asset;
 use craft\elements\ElementCollection;
 use craft\elements\User;
 use craft\errors\AssetException;
-use craft\helpers\App;
 use craft\helpers\ArrayHelper;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\Db;
@@ -1415,8 +1414,8 @@ class Extension extends AbstractExtension implements GlobalsInterface
             new TwigFunction('floor', 'floor'),
             new TwigFunction('getenv', [Env::class, 'get']),
             new TwigFunction('gql', [$this, 'gqlFunction']),
-            new TwigFunction('parseEnv', [App::class, 'parseEnv']),
-            new TwigFunction('parseBooleanEnv', [App::class, 'parseBooleanEnv']),
+            new TwigFunction('parseEnv', [Env::class, 'parse']),
+            new TwigFunction('parseBooleanEnv', [Env::class, 'parseBoolean']),
             new TwigFunction('plugin', [$this, 'pluginFunction']),
             new TwigFunction('raw', [TemplateHelper::class, 'raw']),
             new TwigFunction('renderObjectTemplate', [$this, 'renderObjectTemplate']),
@@ -1767,7 +1766,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
             'systemName' => $systemName,
             'view' => $this->view,
 
-            'devMode' => App::devMode(),
+            'devMode' => app()->hasDebugModeEnabled(),
             'SORT_ASC' => SORT_ASC,
             'SORT_DESC' => SORT_DESC,
             'SORT_REGULAR' => SORT_REGULAR,

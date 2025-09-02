@@ -141,7 +141,7 @@ class Config extends Component
         }
 
         // Get any environment value overrides
-        $envConfig = App::envConfig($configClass, $envPrefix);
+        $envConfig = Env::config($configClass, $envPrefix);
 
         // If $config is already a BaseConfig object, assign the env overrides to it and return
         if ($config instanceof BaseConfig) {

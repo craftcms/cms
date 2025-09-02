@@ -15,6 +15,7 @@ use craft\models\Site;
 use craft\web\View;
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Edition;
+use CraftCms\Cms\Support\Env;
 use Throwable;
 use yii\base\InvalidConfigException;
 use yii\helpers\Markdown;
@@ -135,16 +136,16 @@ class Mailer extends \yii\symfonymailer\Mailer
                 $fromName = $overrides['fromName'] ?? reset($this->from);
                 /** @phpstan-ignore-next-line */
                 $this->from = [
-                    App::parseEnv($fromEmail) => App::parseEnv($fromName),
+                    Env::parse($fromEmail) => Env::parse($fromName),
                 ];
             }
             if (isset($overrides['replyToEmail'])) {
                 $originalSettings['replyTo'] = $this->replyTo;
-                $this->replyTo = App::parseEnv($overrides['replyToEmail']);
+                $this->replyTo = Env::parse($overrides['replyToEmail']);
             }
             if (isset($overrides['template'])) {
                 $originalSettings['template'] = $this->template;
-                $this->template = App::parseEnv($overrides['template']);
+                $this->template = Env::parse($overrides['template']);
             }
 
             if ($message instanceof Message && $message->key !== null) {
@@ -171,9 +172,9 @@ class Mailer extends \yii\symfonymailer\Mailer
                 $settings = App::mailSettings();
                 $variables = ($message->variables ?: []) + [
                         'emailKey' => $message->key,
-                        'fromEmail' => App::parseEnv($settings->fromEmail),
-                        'replyToEmail' => App::parseEnv($settings->replyToEmail),
-                        'fromName' => App::parseEnv($settings->fromName),
+                        'fromEmail' => Env::parse($settings->fromEmail),
+                        'replyToEmail' => Env::parse($settings->replyToEmail),
+                        'fromName' => Env::parse($settings->fromName),
                         'language' => $message->language,
                     ];
 

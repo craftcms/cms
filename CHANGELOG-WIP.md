@@ -25,6 +25,36 @@
 - Deprecated `craft\enums\TimePeriod`. `CraftCms\Cms\Support\Enums\TimePeriod` should be used instead.
 - Deprecated `craft\services\Api`. `CraftCms\Cms\Support\Api` should be used instead.
 - Deprecated `craft\helpers\Api`. `CraftCms\Cms\Support\Api` should be used instead.
+- Deprecated `craft\helpers\App`. The following classes/methods should be used instead:
+  - #### General helpers
+  - `App:devMode()` -> `app()->hasDebugModeEnabled()`
+  - `App:parseBooleanEnv()` --> `\CraftCms\Cms\Support\Env::parseBoolean()`
+  - `App:normalizeValue()` --> `\CraftCms\Cms\normalizeValue()`
+  - `App:maxPowerCaptain()` --> `\CraftCms\Cms\maxPowerCaptain()`
+  - `App:silence()` --> `\CraftCms\Cms\silence()`
+  - `App:backtrace()` --> `\CraftCms\Cms\backtraceAsString()`
+  - #### Env
+  - `App:env()` --> `\CraftCms\Cms\Support\Env::get()`
+  - `App:parseEnv()` --> `\CraftCms\Cms\Support\Env::parse()`
+  - #### PHP
+  - `App:phpVersion()` --> `\CraftCms\Cms\Support\PHP::version()`
+  - `App:extensionVersion()` --> `\CraftCms\Cms\Support\PHP::extensionVersion()`
+  - `App:phpConfigValueAsBool()` --> `\CraftCms\Cms\Support\PHP::configValueAsBool()`
+  - `App:phpConfigValueInBytes()` --> `\CraftCms\Cms\Support\PHP::configValueInBytes()`
+  - `App:phpSizeToBytes()` --> `\CraftCms\Cms\Support\PHP::sizeToBytes()`
+  - `App:phpConfigValueAsPaths()` --> `\CraftCms\Cms\Support\PHP::configValueAsPaths()`
+  - `App:normalizePhpPaths()` --> `\CraftCms\Cms\Support\PHP::normalizePaths()`
+  - `App:isPathAllowed()` --> `\CraftCms\Cms\Support\PHP::isPathAllowed()`
+  - `App:phpExecutable()` --> `\CraftCms\Cms\Support\PHP::executable()`
+  - `App:testIniSet()` --> `\CraftCms\Cms\Support\PHP::testIniSet()`
+  - `App:checkForValidIconv()` --> `\CraftCms\Cms\Support\PHP::checkForValidIconv()`
+  - `App:supportsIdn()` --> `\CraftCms\Cms\Support\PHP::supportsIdn()`
+  - #### License
+  - `App:licenseKey()` --> `app(\CraftCms\Cms\License\License::class)->key()`
+  - `App:licensingIssues()` --> `app(\CraftCms\Cms\License\License::class)->issues()`
+  - `App:licenseShunCookieName()` --> `app(\CraftCms\Cms\License\License::class)->shunCookieName()`
+  - `App:licensingIssuesHash()` --> `app(\CraftCms\Cms\License\License::class)->issuesHash()`
+  - 
 - Deprecated `Craft::createGuzzleClient()`. `CraftCms\Cms\Support\Facades\Http::create()` should be used instead.
 
 ### Deprecator

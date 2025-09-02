@@ -17,7 +17,6 @@ use craft\elements\Asset;
 use craft\errors\FsException;
 use craft\errors\ImageTransformException;
 use craft\events\ImageTransformerOperationEvent;
-use craft\helpers\App;
 use craft\helpers\Assets as AssetsHelper;
 use craft\helpers\FileHelper;
 use craft\helpers\Image;
@@ -40,6 +39,7 @@ use Illuminate\Support\Facades\DB;
 use Throwable;
 use yii\base\InvalidConfigException;
 use yii\base\NotSupportedException;
+use function CraftCms\Cms\maxPowerCaptain;
 
 /**
  * ImageTransformer transforms image assets using GD or ImageMagick.
@@ -136,7 +136,7 @@ class ImageTransformer extends Component implements ImageTransformerInterface, E
                     }
 
                     // Wait a second and check again
-                    App::maxPowerCaptain();
+                    maxPowerCaptain();
                     sleep(1);
                     $index = $this->getTransformIndexModelById($index->id);
                     if (!$index->inProgress) {

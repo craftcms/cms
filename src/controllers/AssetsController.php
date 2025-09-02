@@ -19,7 +19,6 @@ use craft\errors\FsException;
 use craft\errors\UploadFailedException;
 use craft\errors\VolumeException;
 use craft\fields\Assets as AssetsField;
-use craft\helpers\App;
 use craft\helpers\Assets;
 use craft\helpers\Db;
 use craft\helpers\FileHelper;
@@ -55,6 +54,7 @@ use yii\web\RangeNotSatisfiableHttpException;
 use yii\web\Response;
 use yii\web\ServerErrorHttpException;
 use ZipArchive;
+use function CraftCms\Cms\maxPowerCaptain;
 
 /** @noinspection ClassOverridesFieldOfSuperClassInspection */
 
@@ -1075,7 +1075,7 @@ class AssetsController extends Controller
             throw new Exception('Cannot create zip at ' . $zipPath);
         }
 
-        App::maxPowerCaptain();
+        maxPowerCaptain();
 
         foreach ($assets as $asset) {
             $path = $asset->getVolume()->name . '/' . $asset->getPath();

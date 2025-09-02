@@ -11,6 +11,7 @@ use Composer\Semver\Semver;
 use Craft;
 use CraftCms\Cms\Support\Composer;
 use CraftCms\Cms\Support\Html;
+use CraftCms\Cms\Support\PHP;
 
 /**
  * Update helper
@@ -30,7 +31,7 @@ class Update
      */
     public static function checkPhpConstraint(string $constraint, ?string &$error = null, bool $withLink = false): bool
     {
-        $installedVersion = App::phpVersion();
+        $installedVersion = PHP::version();
         if (!Semver::satisfies($installedVersion, $constraint)) {
             $error = Craft::t('app', 'This update requires PHP {v1}, but your environment is currently running PHP {v2}.', [
                 'v1' => $constraint,

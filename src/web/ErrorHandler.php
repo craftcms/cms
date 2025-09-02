@@ -10,7 +10,6 @@ namespace craft\web;
 use Craft;
 use craft\events\ExceptionEvent;
 use craft\events\RedirectEvent;
-use craft\helpers\App;
 use craft\helpers\Template;
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Support\Json;
@@ -301,7 +300,7 @@ class ErrorHandler extends \yii\web\ErrorHandler
      */
     public function showExceptionDetails(): bool
     {
-        if (App::devMode()) {
+        if (app()->hasDebugModeEnabled()) {
             return true;
         }
 

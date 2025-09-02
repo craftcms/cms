@@ -11,6 +11,8 @@ use CraftCms\Cms\Utility\Utilities\Migrations;
 use Illuminate\Container\Attributes\Give;
 use Illuminate\Http\Request;
 
+use function CraftCms\Cms\cp_redirect;
+
 /** @since 6.0.0 */
 final readonly class MigrationsController
 {

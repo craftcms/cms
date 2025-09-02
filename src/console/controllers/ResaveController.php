@@ -21,7 +21,6 @@ use craft\elements\Tag;
 use craft\elements\User;
 use craft\errors\InvalidElementException;
 use craft\events\MultiElementActionEvent;
-use craft\helpers\App;
 use craft\helpers\Console;
 use craft\helpers\ElementHelper;
 use craft\helpers\Inflector;
@@ -39,6 +38,7 @@ use ReflectionClass;
 use Throwable;
 use yii\console\Exception;
 use yii\console\ExitCode;
+use function CraftCms\Cms\normalizeValue;
 
 /**
  * Allows you to bulk-save elements.
@@ -332,7 +332,7 @@ class ResaveController extends Controller
         foreach (['drafts', 'provisionalDrafts', 'revisions'] as $property) {
             $this->$property ??= false;
             if (is_string($this->$property)) {
-                $value = App::normalizeValue($this->$property);
+                $value = normalizeValue($this->$property);
                 $this->$property = $value !== null ? (bool)$value : null;
             }
         }

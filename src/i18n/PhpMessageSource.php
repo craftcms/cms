@@ -8,7 +8,6 @@
 namespace craft\i18n;
 
 use Craft;
-use craft\helpers\App;
 use yii\base\Exception;
 
 /**
@@ -64,7 +63,7 @@ class PhpMessageSource extends \yii\i18n\PhpMessageSource
     {
         $messages = parent::loadMessagesFromFile($messageFile);
 
-        if ($messages === null && !App::devMode()) {
+        if ($messages === null && !app()->hasDebugModeEnabled()) {
             // avoid logs about missing translation files
             $messages = [];
         }

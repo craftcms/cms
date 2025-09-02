@@ -13,7 +13,6 @@ use craft\db\Connection;
 use craft\db\ExpressionBuilder;
 use craft\db\ExpressionInterface;
 use craft\db\TableSchema;
-use craft\helpers\App;
 use CraftCms\Cms\Config\GeneralConfig;
 use mikehaertl\shellcommand\Command as ShellCommand;
 use yii\db\Exception;
@@ -391,7 +390,7 @@ ORDER BY i.relname, k';
      */
     private function _pgpasswordCommand(): string
     {
-        return App::isWindows() ? "set PGPASSWORD='{password}' && " : "PGPASSWORD='{password}' ";
+        return windows_os() ? "set PGPASSWORD='{password}' && " : "PGPASSWORD='{password}' ";
     }
 
     /**

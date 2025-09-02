@@ -9,7 +9,6 @@ namespace craft\db;
 
 use Craft;
 use craft\errors\MigrationException;
-use craft\helpers\App;
 use craft\helpers\FileHelper;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Support\Str;
@@ -22,6 +21,7 @@ use yii\base\InvalidConfigException;
 use yii\base\NotSupportedException;
 use yii\db\MigrationInterface;
 use yii\di\Instance;
+use function CraftCms\Cms\maxPowerCaptain;
 
 /**
  * MigrationManager manages a set of migrations.
@@ -123,7 +123,7 @@ class MigrationManager extends Component
     public function up(int $limit = 0): void
     {
         // This might take a while
-        App::maxPowerCaptain();
+        maxPowerCaptain();
 
         $migrationNames = $this->getNewMigrations();
 
@@ -175,7 +175,7 @@ class MigrationManager extends Component
     public function down(int $limit = 1): void
     {
         // This might take a while
-        App::maxPowerCaptain();
+        maxPowerCaptain();
 
         $migrationNames = array_keys($this->getMigrationHistory($limit));
 

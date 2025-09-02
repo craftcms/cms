@@ -47,6 +47,7 @@ use yii\base\Exception as YiiBaseException;
 use yii\base\InvalidArgumentException;
 use yii\base\InvalidConfigException;
 use yii\base\Module;
+use function CraftCms\Cms\maxPowerCaptain;
 
 /**
  * Craft module for codeception
@@ -268,7 +269,7 @@ class Craft extends Yii2
             // Prevents a static properties bug
             ProjectConfig::reset();
 
-            App::maxPowerCaptain();
+            maxPowerCaptain();
 
             $dbSetupConfig = $this->_getConfig('dbSetup');
 

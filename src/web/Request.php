@@ -16,6 +16,7 @@ use craft\services\Sites;
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Env;
+use CraftCms\Cms\Support\PHP;
 use CraftCms\Cms\Support\Str;
 use yii\base\InvalidArgumentException;
 use yii\base\InvalidConfigException;
@@ -1506,7 +1507,7 @@ class Request extends \CraftCms\Yii2Adapter\Web\Request
             $hostName &&
             $parsed['host'] !== $hostName &&
             (
-                !App::supportsIdn() ||
+                !PHP::supportsIdn() ||
                 !defined('IDNA_NONTRANSITIONAL_TO_ASCII') ||
                 idn_to_ascii($parsed['host'], IDNA_NONTRANSITIONAL_TO_ASCII, INTL_IDNA_VARIANT_UTS46) !== $hostName
             )
