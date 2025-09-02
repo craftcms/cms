@@ -11,8 +11,8 @@ use Craft;
 use craft\errors\MigrateException;
 use craft\helpers\FileHelper;
 use craft\models\Updates as UpdatesModel;
-use CraftCms\Cms\License\License;
 use CraftCms\Cms\Database\Migrator;
+use CraftCms\Cms\License\License;
 use CraftCms\Cms\Plugin\Contracts\PluginInterface;
 use CraftCms\Cms\Plugin\Exceptions\InvalidPluginException;
 use CraftCms\Cms\Plugin\Plugins;
@@ -176,8 +176,8 @@ class Updates extends Component
         }
 
         if ($includeContent) {
-            $contentMigrator = Craft::$app->getContentMigrator();
-            if (!empty($contentMigrator->getNewMigrations())) {
+            $contentMigrator = app(Migrator::class)->track('content');
+            if (!empty($contentMigrator->getPendingMigrations())) {
                 return true;
             }
         }
@@ -210,8 +210,8 @@ class Updates extends Component
         }
 
         if ($includeContent) {
-            $contentMigrator = Craft::$app->getContentMigrator();
-            if (!empty($contentMigrator->getNewMigrations())) {
+            $contentMigrator = app(Migrator::class)->track('content');
+            if (!empty($contentMigrator->getPendingMigrations())) {
                 $handles[] = 'content';
             }
         }
@@ -254,7 +254,7 @@ class Updates extends Component
 
                     Craft::$app->getUpdates()->updateCraftVersionInfo();
                 } elseif ($handle === 'content') {
-                    $migrator->track(null)->run();
+                    $migrator->track('content')->run();
                 } else {
                     $plugin = $plugins->getPlugin($handle);
                     $plugin->getMigrator()->run();

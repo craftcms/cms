@@ -56,9 +56,9 @@ class Install extends Migration
             throw new OperationAbortedException($message);
         }
 
-        $this->task('Creating tables', fn () => $this->createTables());
-        $this->task('Creating indexes', fn () => $this->createIndexes());
-        $this->task('Adding foreign keys', fn () => $this->addForeignKeys());
+        $this->components->task('Creating tables', fn () => $this->createTables());
+        $this->components->task('Creating indexes', fn () => $this->createIndexes());
+        $this->components->task('Adding foreign keys', fn () => $this->addForeignKeys());
 
         DB::afterCommit(function () {
             $this->insertDefaultData();
@@ -1153,7 +1153,7 @@ class Install extends Migration
 
     public function insertDefaultData(): void
     {
-        $this->task('Populating the info table', function () {
+        $this->components->task('Populating the info table', function () {
             Craft::$app->saveInfo(new Info([
                 'version' => Craft::$app->getVersion(),
                 'schemaVersion' => Craft::$app->schemaVersion,
@@ -1171,12 +1171,12 @@ class Install extends Migration
             ProjectConfigHelper::ensureAllSitesProcessed(true);
             $this->_installPlugins();
 
-            $this->task('Applying the project config', function () use ($projectConfig) {
+            $this->components->task('Applying the project config', function () use ($projectConfig) {
                 // Save the existing system settings
                 $projectConfig->applyExternalChanges();
             });
         } else {
-            $this->task('Saving default data', function () use ($projectConfig) {
+            $this->components->task('Saving default data', function () use ($projectConfig) {
                 $configData = $this->_generateInitialConfig();
                 $projectConfig->applyConfigChanges($configData);
             });
@@ -1198,7 +1198,7 @@ class Install extends Migration
 
         Craft::$app->language = $this->site->language;
 
-        $this->task('Saving the first user', function () use ($generalConfig) {
+        $this->components->task('Saving the first user', function () use ($generalConfig) {
             $user = new User([
                 'active' => true,
                 'admin' => true,
@@ -1288,7 +1288,7 @@ class Install extends Migration
 
         try {
             foreach ($pluginConfigs as $handle => $pluginConfig) {
-                $this->task("Installing $handle", function () use ($handle, $pluginsService) {
+                $this->components->task("Installing $handle", function () use ($handle, $pluginsService) {
                     $pluginsService->installPlugin($handle);
                 });
             }

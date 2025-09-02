@@ -18,7 +18,7 @@
         <tr>
             <th>{{ 'Name'|t('app') }}</th>
             <th>{{ 'Status'|t('app') }}</th>
-            <th>{{ 'Apply Time'|t('app') }}</th>
+            <th>{{ 'Batch'|t('app') }}</th>
         </tr>
         </thead>
         <tbody>
@@ -31,11 +31,11 @@
                 </tr>
             {% endfor %}
 
-            {% for migrationName, migration in migrationHistory %}
+            {% for migration in migrationHistory %}
                 <tr>
-                    <td>{{ migrationName }}</td>
+                    <td>{{ migration.migration }}</td>
                     <td>{{ 'Applied'|t('app') }}</td>
-                    <td>{{ migration|datetime() }}</td>
+                    <td>{{ migration.batch }}</td>
                 </tr>
             {% endfor %}
         </tbody>

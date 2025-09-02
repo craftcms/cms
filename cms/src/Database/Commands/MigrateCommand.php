@@ -84,7 +84,7 @@ final class MigrateCommand extends Command implements Isolatable
 
         return $this->migrators[$track] ??= app(Migrator::class)
             ->setOutput($this->output)
-            ->track($track === 'content' ? null : $track);
+            ->track($track);
     }
 
     protected function runMigrations(): void

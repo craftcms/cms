@@ -261,6 +261,10 @@ class Yii2ServiceProvider extends ServiceProvider
             $definitionSignature .= '?';
         }
 
+        if (str_starts_with($definition['description'] ?? '', '...')) {
+            $definitionSignature .= '*';
+        }
+
         if ($definition['default']) {
             if (is_array($definition['default'])) {
                 $definition['default'] = implode(',', $definition['default']);

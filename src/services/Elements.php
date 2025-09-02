@@ -16,8 +16,6 @@ use craft\base\ExpirableElementInterface;
 use craft\base\FieldInterface;
 use craft\base\NestedElementInterface;
 use craft\behaviors\DraftBehavior;
-use craft\console\controllers\MigrateController;
-use craft\console\controllers\UpController;
 use craft\controllers\AppController;
 use craft\db\QueryAbortedException;
 use craft\elements\Address;
@@ -1229,8 +1227,9 @@ class Elements extends Component
     private function isMigrationRequest(): bool
     {
         return (
+            // TODO: Still necessary?
             //Craft::$app->controller instanceof MigrateController ||
-            Craft::$app->controller instanceof UpController ||
+            //Craft::$app->controller instanceof UpController ||
             (
                 Craft::$app->controller instanceof AppController &&
                 Craft::$app->controller->action?->id === 'update'

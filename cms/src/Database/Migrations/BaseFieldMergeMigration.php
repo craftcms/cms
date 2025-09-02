@@ -1,14 +1,14 @@
 <?php
 
-namespace craft\migrations;
+namespace CraftCms\Cms\Database\Migrations;
 
 use Craft;
 use craft\base\FieldInterface;
 use craft\base\MergeableFieldInterface;
-use craft\db\Migration;
 use craft\fields\MissingField;
-use craft\records\Field as FieldRecord;
-use craft\services\Fields;
+use CraftCms\Cms\Database\Migration;
+use CraftCms\Cms\Field\Models\Field;
+use RuntimeException;
 
 /**
  * Base field merge migration class.
@@ -20,89 +20,78 @@ use craft\services\Fields;
 class BaseFieldMergeMigration extends Migration
 {
     public string $persistingFieldUid;
+
     public string $outgoingFieldUid;
 
-    public function safeUp(): bool
+    public function up(): void
     {
-        /** @var FieldRecord|null $persistingFieldRecord */
-        $persistingFieldRecord = FieldRecord::findWithTrashed()
-            ->where(['uid' => $this->persistingFieldUid])
-            ->one();
-        if (!$persistingFieldRecord) {
-            echo "Couldn't find persisting field record ($this->persistingFieldUid)";
-            return false;
-        }
-
         /** @var MergeableFieldInterface|false $persistingField */
         $persistingField = $this->field($this->persistingFieldUid);
-        if (!$persistingField) {
-            return false;
+        if (! $persistingField) {
+            throw new RuntimeException;
         }
 
         /** @var MergeableFieldInterface|false $outgoingField */
         $outgoingField = $this->field($this->outgoingFieldUid);
-        if (!$outgoingField) {
-            return false;
+        if (! $outgoingField) {
+            throw new RuntimeException;
         }
 
         $reason = null;
-        if (!$outgoingField->canMergeInto($persistingField, $reason)) {
-            echo sprintf(
+        if (! $outgoingField->canMergeInto($persistingField, $reason)) {
+            $this->error(sprintf(
                 "%s (%s) doesn’t support merging into %s (%s)%s\n",
                 $outgoingField->name,
                 $outgoingField::displayName(),
                 $persistingField->name,
                 $persistingField::displayName(),
                 $reason ? ": $reason" : '.',
-            );
-            return false;
+            ));
+
+            throw new RuntimeException;
         }
 
         $reason = null;
-        if (!$persistingField->canMergeFrom($outgoingField, $reason)) {
-            echo sprintf(
+        if (! $persistingField->canMergeFrom($outgoingField, $reason)) {
+            $this->error(sprintf(
                 "%s (%s) doesn’t support being merged into from %s (%s)%s\n",
                 $persistingField->name,
                 $persistingField::displayName(),
                 $outgoingField->name,
                 $outgoingField::displayName(),
                 $reason ? ": $reason" : '.',
-            );
-            return false;
+            ));
+
+            throw new RuntimeException;
         }
 
         $outgoingField->afterMergeInto($persistingField);
         $persistingField->afterMergeFrom($outgoingField);
-
-        return true;
     }
 
     private function field(string $uid): FieldInterface|false
     {
         $fieldsService = Craft::$app->getFields();
         $field = $fieldsService->getFieldByUid($uid);
-        if (!$field) {
-            // maybe it's soft-deleted
-            /** @var FieldRecord|null $record */
-            $record = FieldRecord::findWithTrashed()
-                ->where(['uid' => $uid])
-                ->one();
 
-            if (!$record) {
-                echo "Couldn't find field record $uid.\n";
-                return false;
-            }
+        if (! $field) {
+            // maybe it's soft-deleted
+            $record = Field::withTrashed()
+                ->where('uid', $uid)
+                ->firstOrFail();
 
             $field = $fieldsService->createField($record->toArray());
         }
 
         if ($field instanceof MissingField) {
-            echo "$field->expectedType is missing.\n";
+            $this->error("$field->expectedType is missing.");
+
             return false;
         }
 
-        if (!$field instanceof MergeableFieldInterface) {
-            echo "$field->name doesn’t support merging.\n";
+        if (! $field instanceof MergeableFieldInterface) {
+            $this->error("$field->name doesn’t support merging.");
+
             return false;
         }
 

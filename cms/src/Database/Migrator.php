@@ -14,8 +14,12 @@ final class Migrator extends \Illuminate\Database\Migrations\Migrator
     /** @var \CraftCms\Cms\Database\MigrationRepository */
     protected $repository;
 
-    public function track(?string $track): self
+    public function track(string $track): self
     {
+        if ($track === 'content') {
+            $track = null;
+        }
+
         $this->repository->track($track);
 
         if ($track === 'craft') {
