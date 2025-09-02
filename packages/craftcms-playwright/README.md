@@ -24,7 +24,7 @@ All commands should be run from the cms repo’s location
 
 - to start test generator
   - run `npx craft-playwright boot`
-  - run `npx playwright codegen 127.0.0.1:8089/admin`
+  - run `npx playwright codegen playwright.ddev.site/admin`
 
 
 ## Notes
