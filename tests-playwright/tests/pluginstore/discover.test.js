@@ -1,7 +1,6 @@
 /* jshint esversion: 9, strict: false */
 /* globals module, require */
 const {test, expect} = require('../../index');
-const {waitForPluginStore} = require('./helpers/index.js');
 
 const waitForDiscoverPage = async ({page}) => {
   await Promise.all([
@@ -30,10 +29,10 @@ test('Shoud show the Discover page', async ({page, baseURL}) => {
   await expect(title).toHaveText('Plugin Store');
 });
 
-test('Should show featured plugins', async ({page, baseURL}) => {
+test('Should show featured plugins', async ({craftPluginStore, page, baseURL}) => {
   await page.goto('./plugin-store');
 
-  await waitForPluginStore({page});
+  await craftPluginStore.waitForPluginStore(page);
   await waitForDiscoverPage({page});
 
   // Check that the page shows featured sections
