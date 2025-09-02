@@ -946,7 +946,7 @@ class AppController extends Controller
                     'aria' => [
                         'label' => $name,
                     ],
-                ]) .
+                ])->encode(false) .
                 Html::endTag('li');
         }
 
