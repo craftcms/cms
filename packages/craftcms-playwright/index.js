@@ -6,12 +6,13 @@ const events = require('./playwright/events');
 const {Setup} = require('./playwright/fixtures/setup');
 const {Entry} = require('./playwright/fixtures/entry');
 const {Dashboard} = require('./playwright/fixtures/dashboard');
+const {PluginStore} = require('./playwright/fixtures/plugin-store');
 
 // new way - worker fixture
 const test = base.extend({
   // Craft Setup fixture
   craftSetup: [
-    async ({}, use, workerInfo) => {
+    async ({}, use) => {
       const setup = new Setup();
       await use(setup);
     },
@@ -20,7 +21,7 @@ const test = base.extend({
 
   // Craft Entry fixture
   craftEntry: [
-    async ({}, use, workerInfo) => {
+    async ({}, use) => {
       const entry = new Entry();
       await use(entry);
     },
@@ -28,10 +29,16 @@ const test = base.extend({
   ],
 
   // Craft Dashboard fixture
-  craftDashboard: async ({page}, use, workerInfo) => {
+  craftDashboard: async ({page}, use) => {
     const dashboard = new Dashboard(page);
     await use(dashboard);
   },
+
+  // Craft Plugin Store fixture
+  craftPluginStore: async ({}, use) => {
+    const pluginStore = new PluginStore();
+    await use(pluginStore);
+  }
 });
 
 module.exports = {
