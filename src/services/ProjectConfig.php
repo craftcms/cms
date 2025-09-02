@@ -23,6 +23,7 @@ use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Plugin\Plugins;
 use CraftCms\Cms\Shared\Exceptions\OperationAbortedException;
 use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Support\Facades\Deprecator;
 use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Support\Str;
 use CraftCms\DependencyAwareCache\Dependency\CallbackDependency;
@@ -391,7 +392,7 @@ class ProjectConfig extends Component
     {
         if (isset($config['maxBackups'])) {
             $config['maxDeltas'] = Arr::pull($config, 'maxBackups');
-            Craft::$app->getDeprecator()->log(self::class . '::maxBackups',
+            Deprecator::log(self::class . '::maxBackups',
                 '`' . self::class . '::maxBackups` has been deprecated. Use `maxDeltas` instead.');
         }
 

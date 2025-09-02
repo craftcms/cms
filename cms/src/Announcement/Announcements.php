@@ -65,7 +65,8 @@ final readonly class Announcements
 
         $query = Announcement::query()
             ->where('userId', $userId)
-            ->visible();
+            ->visible()
+            ->orderByDesc('dateCreated');
 
         // Any enabled plugins?
         $enabledPluginHandles = Collection::make($this->plugins->getAllPlugins())

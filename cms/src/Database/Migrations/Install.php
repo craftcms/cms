@@ -288,7 +288,8 @@ class Install extends Migration
             $table->char('uid', 36)->default('0');
         });
 
-        Schema::create(Table::DEPRECATIONERRORS, function (Blueprint $table) {
+        /** @todo change back to Table::DEPRECATIONERRORS once larastan is updated */
+        Schema::create('deprecationerrors', function (Blueprint $table) {
             $table->integer('id', true);
             $table->string('key');
             $table->string('fingerprint');

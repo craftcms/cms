@@ -20,6 +20,7 @@ use craft\gql\handlers\RelatedTags;
 use craft\gql\handlers\RelatedUsers;
 use craft\gql\handlers\Site;
 use craft\gql\handlers\SiteId;
+use CraftCms\Cms\Support\Facades\Deprecator;
 use CraftCms\Cms\Support\Str;
 use yii\base\InvalidConfigException;
 
@@ -141,7 +142,7 @@ class ArgumentManager extends Component
 
         // TODO remove in Craft 4.1
         if (isset($arguments['relatedToAll'])) {
-            Craft::$app->getDeprecator()->log('graphql.arguments.relatedToAll', 'The `relatedToAll` argument has been deprecated. Use the `relatedTo` argument with the `["and", ...ids]` syntax instead.');
+            Deprecator::log('graphql.arguments.relatedToAll', 'The `relatedToAll` argument has been deprecated. Use the `relatedTo` argument with the `["and", ...ids]` syntax instead.');
             $ids = (array)$arguments['relatedToAll'];
             $ids = array_map(fn($value) => ['element' => $value], $ids);
             $arguments['relatedTo'] = array_merge(['and'], $ids);

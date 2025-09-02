@@ -7,8 +7,8 @@
 
 namespace craft\helpers;
 
-use Craft;
 use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Support\Facades\Deprecator;
 use Illuminate\Support\Collection;
 
 /**
@@ -34,7 +34,7 @@ class ArrayHelper extends \yii\helpers\ArrayHelper
         }
 
         if (is_string($object) && str_contains($object, ',')) {
-            Craft::$app->getDeprecator()->log('ArrayHelper::toArray(string)', 'Passing a string to `ArrayHelper::toArray()` has been deprecated. Use `str($value)->explode(',')` instead.');
+            Deprecator::log('ArrayHelper::toArray(string)', 'Passing a string to `ArrayHelper::toArray()` has been deprecated. Use `str($value)->explode(',')` instead.');
 
             // Split it on the non-escaped commas
             $object = preg_split('/(?<!\\\),/', $object);
