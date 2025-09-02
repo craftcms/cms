@@ -1,14 +1,13 @@
-const {Page} = require('@craftcms/playwright');
-
-export class DashboardPage {
-  constructor(page, baseURL) {
+/* jshint esversion: 9, strict: false */
+/* globals module, require */
+class Dashboard {
+  constructor(page) {
     this.page = page;
-    this.baseURL = baseURL;
-    this.skipLink = page.locator('a[href="#main"]');
+    this.skipLink = 'a[href="#main"]';
   }
 
   async goTo() {
-    await this.page.goto(`${this.baseURL}/dashboard`);
+    await this.page.goto('./dashboard');
   }
 
   async skipToMain() {
@@ -17,4 +16,4 @@ export class DashboardPage {
   }
 }
 
-module.exports = {DashboardPage};
+module.exports = {Dashboard};

@@ -1,5 +1,3 @@
-const {Page, Locator} = require('@playwright/test');
-
 class Entry {
   constructor() {
     this.fieldModifiedText = 'This field has been modified.';

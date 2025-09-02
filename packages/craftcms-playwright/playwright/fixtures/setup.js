@@ -1,7 +1,10 @@
+/* jshint esversion: 9, strict: false */
+/* globals module, require, process */
 const util = require('util');
 const nodeExec = util.promisify(require('child_process').exec);
 const path = require('path');
 const testDir = './tests-playwright';
+const {cleanAll} = require('../events');
 require('dotenv').config({path: path.resolve(path.join(testDir, '.env'))});
 
 class Setup {
@@ -20,9 +23,13 @@ class Setup {
   }
 
   async cleanAll() {
+    cleanAll.emit('before');
+
     await this.dbRestore();
     await this.projectConfigRestore();
     await this.composerRestore();
+
+    cleanAll.emit('after');
   }
 
   async installPlugin(handle) {

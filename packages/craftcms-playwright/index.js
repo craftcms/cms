@@ -3,25 +3,35 @@
 const base = require('@playwright/test');
 const baseConfig = require('./playwright/config/config');
 const events = require('./playwright/events');
-const {Setup} = require('@craftcms/playwright/playwright/fixtures/setup');
-const {Entry} = require('@craftcms/playwright/playwright/fixtures/entry');
+const {Setup} = require('./playwright/fixtures/setup');
+const {Entry} = require('./playwright/fixtures/entry');
+const {Dashboard} = require('./playwright/fixtures/dashboard');
 
 // new way - worker fixture
 const test = base.extend({
+  // Craft Setup fixture
   craftSetup: [
-    async ({browser}, use, workerInfo) => {
+    async ({}, use, workerInfo) => {
       const setup = new Setup();
       await use(setup);
     },
     {scope: 'worker'},
   ],
+
+  // Craft Entry fixture
   craftEntry: [
-    async ({browser}, use, workerInfo) => {
+    async ({}, use, workerInfo) => {
       const entry = new Entry();
       await use(entry);
     },
     {scope: 'worker'},
   ],
+
+  // Craft Dashboard fixture
+  craftDashboard: async ({page}, use, workerInfo) => {
+    const dashboard = new Dashboard(page);
+    await use(dashboard);
+  },
 });
 
 module.exports = {
