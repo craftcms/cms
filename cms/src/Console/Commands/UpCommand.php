@@ -69,6 +69,8 @@ final class UpCommand extends Command implements Isolatable
                 throw $e;
             }
 
+            $this->error($e->getMessage());
+
             return self::FAILURE;
         }
 

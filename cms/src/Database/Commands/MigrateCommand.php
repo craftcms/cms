@@ -10,6 +10,8 @@ use CraftCms\Cms\Support\Str;
 use Illuminate\Console\Command;
 use Illuminate\Console\ConfirmableTrait;
 use Illuminate\Contracts\Console\Isolatable;
+use Illuminate\Foundation\Console\DownCommand;
+use Illuminate\Foundation\Console\UpCommand;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Log;
 use Laravel\Prompts\Concerns\Colors;
@@ -138,10 +140,10 @@ final class MigrateCommand extends Command implements Isolatable
             return;
         }
 
-        $this->callSilent('down');
+        $this->call(DownCommand::class);
 
         if (! $this->option('noBackup') && ! $this->option('pretend') && ! $this->backup()) {
-            $this->callSilent('up');
+            $this->call(UpCommand::class);
 
             return;
         }
@@ -160,7 +162,7 @@ final class MigrateCommand extends Command implements Isolatable
             }
         }
 
-        $this->callSilent('up');
+        $this->call(UpCommand::class);
         $this->clearCompiledTemplates();
     }
 
