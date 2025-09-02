@@ -43,7 +43,7 @@ $configService->appDefaultsDir = dirname(__DIR__) . DIRECTORY_SEPARATOR . 'src' 
 $generalConfig = app(GeneralConfig::class);
 
 // Log errors to storage/logs/phperrors.log or php://stderr
-if (App::parseBooleanEnv('$CRAFT_LOG_PHP_ERRORS') !== false) {
+if (\CraftCms\Cms\Support\Env::parseBoolean('$CRAFT_LOG_PHP_ERRORS') !== false) {
     ini_set('log_errors', '1');
 
     if (App::isStreamLog()) {

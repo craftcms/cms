@@ -9,7 +9,6 @@ namespace craft\controllers;
 
 use Composer\Semver\Comparator;
 use Craft;
-use craft\helpers\App;
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Plugin\Exceptions\InvalidPluginException;
 use CraftCms\Cms\Plugin\Plugins;
@@ -20,6 +19,7 @@ use Throwable;
 use yii\base\NotSupportedException;
 use yii\web\BadRequestHttpException;
 use yii\web\Response;
+use function CraftCms\Cms\normalizeVersion;
 
 /**
  * UpdaterController handles the Craft/plugin update workflow.
@@ -393,8 +393,8 @@ class UpdaterController extends BaseUpdaterController
         }
 
         // Normalize the versions in case only one of them starts with a 'v' or something
-        $toVersion = App::normalizeVersion($toVersion);
-        $fromVersion = App::normalizeVersion($fromVersion);
+        $toVersion = normalizeVersion($toVersion);
+        $fromVersion = normalizeVersion($fromVersion);
 
         return Comparator::greaterThan($toVersion, $fromVersion);
     }

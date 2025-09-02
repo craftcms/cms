@@ -2,7 +2,6 @@
 
 namespace CraftCms\Cms\Config;
 
-use craft\helpers\App;
 use craft\helpers\Typecast;
 use CraftCms\Aliases\Facades\Aliases;
 use CraftCms\Cms\Support\Env;
@@ -60,7 +59,7 @@ final class ConfigServiceProvider extends ServiceProvider
         }
 
         // Get any environment value overrides
-        $envConfig = App::envConfig(GeneralConfig::class, 'CRAFT_');
+        $envConfig = Env::config(GeneralConfig::class, 'CRAFT_');
 
         Typecast::properties(GeneralConfig::class, $envConfig);
 

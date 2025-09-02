@@ -21,6 +21,7 @@ use craft\models\VolumeFolder;
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Shared\Enums\TimePeriod;
 use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Support\Env;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Str;
 use DateTime;
@@ -978,7 +979,7 @@ class Assets
             return false;
         }
 
-        $handle = App::parseEnv(app(GeneralConfig::class)->tempAssetUploadFs);
+        $handle = Env::parse(app(GeneralConfig::class)->tempAssetUploadFs);
         return $fs->handle === $handle;
     }
 }

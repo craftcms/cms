@@ -17,6 +17,7 @@ use yii\base\InvalidRouteException;
 use yii\console\Controller;
 use yii\console\Exception;
 use yii\console\ExitCode;
+use function CraftCms\Cms\silence;
 
 /**
  * ConsoleControllerTrait implements the common methods and properties for console controllers.
@@ -152,7 +153,7 @@ trait ControllerTrait
      */
     protected function checkRootUser(): bool
     {
-        if (App::isWindows() || !function_exists('exec') || Env::get('CRAFT_ALLOW_SUPERUSER')) {
+        if (windows_os() || !function_exists('exec') || Env::get('CRAFT_ALLOW_SUPERUSER')) {
             return true;
         }
 
@@ -169,14 +170,14 @@ trait ControllerTrait
             if ($uid = (int)getenv('SUDO_UID')) {
                 // Silently clobber any sudo credentials on the invoking user to avoid privilege escalations later on
                 // ref. https://github.com/composer/composer/issues/5119
-                App::silence(function() use ($uid): void {
+                silence(function() use ($uid): void {
                     exec("sudo -u \\#$uid sudo -K > /dev/null 2>&1");
                 });
             }
         }
 
         // Silently clobber any remaining sudo leases on the current user as well to avoid privilege escalations
-        App::silence(function(): void {
+        silence(function(): void {
             exec('sudo -K > /dev/null 2>&1');
         });
 

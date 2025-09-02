@@ -10,13 +10,13 @@ namespace craft\controllers;
 use Craft;
 use craft\errors\MigrateException;
 use craft\errors\MigrationException;
-use craft\helpers\App;
 use craft\web\assets\updater\UpdaterAsset;
 use craft\web\Controller;
 use craft\web\Response as CraftResponse;
 use CraftCms\Cms\Plugin\Plugins;
 use CraftCms\Cms\Support\Composer;
 use CraftCms\Cms\Support\Json;
+use CraftCms\Cms\Support\PHP;
 use Symfony\Component\Process\Process;
 use Throwable;
 use yii\base\Exception;
@@ -113,7 +113,7 @@ abstract class BaseUpdaterController extends Controller
     {
         $postState = $this->data['postPrecheckState'];
 
-        if (!App::testIniSet()) {
+        if (!PHP::testIniSet()) {
             $errors = [];
 
             $timeLimit = (int)trim(ini_get('max_execution_time'));
@@ -124,7 +124,7 @@ abstract class BaseUpdaterController extends Controller
                 ]);
             }
 
-            $memoryLimit = App::phpConfigValueInBytes('memory_limit');
+            $memoryLimit = PHP::configValueInBytes('memory_limit');
             if ($memoryLimit !== -1 && $memoryLimit < 1024 * 1024 * 256) {
                 $errors[] = Craft::t('app', '{name} should be at least {value}.', [
                     'name' => '`memory_limit`',

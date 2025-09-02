@@ -23,7 +23,6 @@ use craft\events\FindLoginUserEvent;
 use craft\events\InvalidUserTokenEvent;
 use craft\events\LoginFailureEvent;
 use craft\events\UserEvent;
-use craft\helpers\App;
 use craft\helpers\Assets;
 use craft\helpers\Db;
 use craft\helpers\FileHelper;
@@ -47,6 +46,7 @@ use CraftCms\Cms\Announcement\Announcements;
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Support\Env;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Json;
 use DateTime;
@@ -1317,7 +1317,7 @@ class UsersController extends Controller
 
         if (
             !$userLanguage ||
-            !Collection::make($i18n->getAppLocales())->contains(fn(Locale $locale) => $locale->id === App::parseEnv($userLanguage))
+            !Collection::make($i18n->getAppLocales())->contains(fn(Locale $locale) => $locale->id === Env::parse($userLanguage))
         ) {
             $userLanguage = Craft::$app->language;
         }
@@ -1327,7 +1327,7 @@ class UsersController extends Controller
 
         if (
             !$userLocale ||
-            !Collection::make($i18n->getAllLocales())->contains(fn(Locale $locale) => $locale->id === App::parseEnv($userLocale))
+            !Collection::make($i18n->getAllLocales())->contains(fn(Locale $locale) => $locale->id === Env::parse($userLocale))
         ) {
             $userLocale = app(GeneralConfig::class)->defaultCpLocale;
         }

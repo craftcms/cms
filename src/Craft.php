@@ -10,6 +10,8 @@ use craft\helpers\App;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\FileHelper;
 use CraftCms\Cms\Config\GeneralConfig;
+use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Support\Env;
 use CraftCms\Cms\Support\Facades\Http;
 use CraftCms\Cms\Support\Str;
 use GuzzleHttp\Client;
@@ -89,11 +91,11 @@ class Craft extends Yii
      * @return string|null|false The parsed value, or the original value if it didn’t
      * reference an environment variable or alias.
      * @since 3.1.0
-     * @deprecated in 3.7.29. [[App::parseEnv()]] should be used instead.
+     * @deprecated in 3.7.29. [[\CraftCms\Cms\Support\Env::parse()]] should be used instead.
      */
     public static function parseEnv(?string $str = null): string|null|false
     {
-        return App::parseEnv($str);
+        return Env::parse($str);
     }
 
     /**
@@ -109,11 +111,11 @@ class Craft extends Yii
      * @param mixed $value
      * @return bool|null
      * @since 3.7.22
-     * @deprecated in 3.7.29. [[App::parseBooleanEnv()]] should be used instead.
+     * @deprecated in 3.7.29. [[\CraftCms\Cms\Support\Env::parseBoolean()]] should be used instead.
      */
     public static function parseBooleanEnv(mixed $value): ?bool
     {
-        return App::parseBooleanEnv($value);
+        return Env::parseBoolean($value);
     }
 
     /**
@@ -432,7 +434,7 @@ EOD;
         $generalConfig = app(GeneralConfig::class);
 
         // Merge everything together
-        $guzzleConfig = \CraftCms\Cms\Support\Arr::merge($defaultConfig, $guzzleConfig, $config);
+        $guzzleConfig = Arr::merge($defaultConfig, $guzzleConfig, $config);
 
         if ($generalConfig->httpProxy) {
             $guzzleConfig['proxy'] = $generalConfig->httpProxy;

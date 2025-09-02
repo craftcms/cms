@@ -8,8 +8,8 @@
 namespace craft\base;
 
 use Craft;
-use craft\helpers\App;
 use craft\validators\HandleValidator;
+use CraftCms\Cms\Support\Env;
 
 /**
  * Field is the base class for classes representing filesystems in terms of objects.
@@ -38,7 +38,7 @@ abstract class Fs extends SavableComponent implements FsInterface
             return null;
         }
 
-        $url = App::parseEnv($this->url);
+        $url = Env::parse($this->url);
         if (is_string($url)) {
             $url = rtrim($url, '/');
         }

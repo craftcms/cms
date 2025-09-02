@@ -17,7 +17,6 @@ use craft\errors\DbConnectException;
 use craft\errors\ShellCommandException;
 use craft\events\BackupEvent;
 use craft\events\RestoreEvent;
-use craft\helpers\App;
 use craft\helpers\Db;
 use craft\helpers\FileHelper;
 use CraftCms\Cms\Config\GeneralConfig;
@@ -588,7 +587,7 @@ class Connection extends DatabaseConnection
 
         // PostgreSQL specific cleanup.
         if ($this->getIsPgsql()) {
-            if (App::isWindows()) {
+            if (windows_os()) {
                 $envCommand = 'set PGPASSWORD=';
             } else {
                 $envCommand = 'unset PGPASSWORD';

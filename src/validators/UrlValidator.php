@@ -8,7 +8,7 @@
 namespace craft\validators;
 
 use Craft;
-use craft\helpers\App;
+use CraftCms\Cms\Support\PHP;
 use yii\validators\UrlValidator as YiiUrlValidator;
 
 /**
@@ -41,7 +41,7 @@ class UrlValidator extends YiiUrlValidator
         }
 
         // Enable support for validating international domain names if the server supports IDNA ASCII strings
-        if (!isset($config['enableIDN']) && App::supportsIdn()) {
+        if (!isset($config['enableIDN']) && PHP::supportsIdn()) {
             $config['enableIDN'] = true;
         }
 

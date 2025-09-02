@@ -3,12 +3,14 @@
 namespace CraftCms\Cms\Dashboard\Widgets;
 
 use Craft;
-use craft\helpers\App;
 use craft\web\Application;
 use craft\web\assets\craftsupport\CraftSupportAsset;
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Plugin\Plugins;
+use CraftCms\Cms\Support\PHP;
 use Illuminate\Support\Facades\Auth;
+
+use function CraftCms\Cms\normalizeVersion;
 
 /** @since 6.0.0 */
 final class CraftSupport extends Widget
@@ -117,9 +119,9 @@ JS, [
                     'template' => sprintf('BUG-REPORT-V%s.yml', $cmsMajorVersion),
                     'body' => $body,
                     'cmsVersion' => sprintf('%s (%s)', $cmsVersion, Craft::$app->edition->name),
-                    'phpVersion' => App::phpVersion(),
+                    'phpVersion' => PHP::version(),
                     'os' => sprintf('%s %s', PHP_OS, php_uname('r')),
-                    'db' => sprintf('%s %s', $dbDriver, App::normalizeVersion($db->getSchema()->getServerVersion())),
+                    'db' => sprintf('%s %s', $dbDriver, normalizeVersion($db->getSchema()->getServerVersion())),
                     'imageDriver' => sprintf('%s %s', $imageDriver, $imagesService->getVersion()),
                     'plugins' => implode("\n", $pluginVersions),
                 ],

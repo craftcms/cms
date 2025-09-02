@@ -260,7 +260,7 @@ class Template
             return self::$_shouldProfile;
         }
 
-        if (App::devMode()) {
+        if (app()->hasDebugModeEnabled()) {
             return self::$_shouldProfile = true;
         }
 

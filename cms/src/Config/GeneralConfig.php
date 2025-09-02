@@ -4,10 +4,10 @@ namespace CraftCms\Cms\Config;
 
 use Closure;
 use Craft;
-use craft\attributes\EnvName;
 use craft\helpers\ConfigHelper;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\Localization;
+use CraftCms\Cms\Support\Attributes\EnvName;
 use DateInterval;
 use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken;
 use Illuminate\Http\Middleware\TrustProxies;

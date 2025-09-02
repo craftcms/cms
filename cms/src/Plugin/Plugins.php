@@ -6,7 +6,6 @@ use Craft;
 use craft\base\Plugin;
 use craft\console\Application as CraftConsoleApplication;
 use craft\errors\InvalidLicenseKeyException;
-use craft\helpers\App;
 use craft\helpers\FileHelper;
 use craft\helpers\ProjectConfig as ProjectConfigHelper;
 use craft\services\ProjectConfig;
@@ -14,6 +13,7 @@ use craft\web\Application as CraftWebApplication;
 use CraftCms\Aliases\Facades\Aliases;
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Database\Table;
+use CraftCms\Cms\License\License;
 use CraftCms\Cms\Plugin\Contracts\PluginInterface;
 use CraftCms\Cms\Plugin\Events\DisablingPlugin;
 use CraftCms\Cms\Plugin\Events\EnablingPlugin;
@@ -245,7 +245,7 @@ final class Plugins
 
         if ($anyVersionsChanged) {
             // Clear the license info cache
-            $this->cache->forget(App::CACHE_KEY_LICENSE_INFO);
+            $this->cache->forget(License::CACHE_KEY_LICENSE_INFO);
         }
 
         // Sort enabled plugins by their names
@@ -824,7 +824,7 @@ final class Plugins
         );
 
         // Clear the license info cache
-        $this->cache->forget(App::CACHE_KEY_LICENSE_INFO);
+        $this->cache->forget(License::CACHE_KEY_LICENSE_INFO);
     }
 
     /**
@@ -964,7 +964,7 @@ final class Plugins
         $info['hasReadOnlyCpSettings'] = $plugin->hasReadOnlyCpSettings ?? false;
         $info['licenseKey'] = $pluginInfo['licenseKey'] ?? null;
 
-        $licenseInfo = $this->cache->get(App::CACHE_KEY_LICENSE_INFO, []);
+        $licenseInfo = $this->cache->get(License::CACHE_KEY_LICENSE_INFO, []);
         $pluginCacheKey = Str::start($handle, 'plugin-');
         $info['licenseId'] = $licenseInfo[$pluginCacheKey]['id'] ?? null;
         $info['licensedEdition'] = $licenseInfo[$pluginCacheKey]['edition'] ?? null;
@@ -1104,7 +1104,7 @@ final class Plugins
     {
         $licenseKey = $this->getStoredPluginInfo($handle)['licenseKey'] ?? null;
 
-        return $this->normalizePluginLicenseKey(App::parseEnv($licenseKey));
+        return $this->normalizePluginLicenseKey(Env::parse($licenseKey));
     }
 
     /**
@@ -1149,7 +1149,7 @@ final class Plugins
         }
 
         // Clear the license info cache
-        $this->cache->forget(App::CACHE_KEY_LICENSE_INFO);
+        $this->cache->forget(License::CACHE_KEY_LICENSE_INFO);
 
         return true;
     }

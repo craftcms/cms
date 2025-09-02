@@ -12,11 +12,11 @@ use craft\base\Fs;
 use craft\base\LocalFsInterface;
 use craft\errors\FsException;
 use craft\errors\FsObjectNotFoundException;
-use craft\helpers\App;
 use craft\helpers\FileHelper;
 use craft\helpers\Path;
 use craft\models\FsListing;
 use CraftCms\Cms\Config\GeneralConfig;
+use CraftCms\Cms\Support\Env;
 use CraftCms\Cms\Support\Str;
 use DirectoryIterator;
 use FilesystemIterator;
@@ -182,7 +182,7 @@ class Local extends Fs implements LocalFsInterface
      */
     public function getRootPath(): string
     {
-        $path = FileHelper::normalizePath(App::parseEnv($this->path) ?? '');
+        $path = FileHelper::normalizePath(Env::parse($this->path) ?? '');
         // Pass it through realpath() in case the path is symlinked
         return realpath($path) ?: $path;
     }
