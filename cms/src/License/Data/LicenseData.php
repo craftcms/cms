@@ -15,14 +15,14 @@ final readonly class LicenseData
 
     public function __construct(
         public bool $isCraft,
-        public string|int $id,
+        public string|int|null $id,
         public string $handle,
         public string $name,
         /** @var string[] */
         public array $editions,
         public string $currentEdition,
         public string $currentEditionName,
-        public string $licenseEdition,
+        public ?string $licenseEdition,
         public string $licenseEditionName,
         public string $version,
         string|LicenseKeyStatus $status,
