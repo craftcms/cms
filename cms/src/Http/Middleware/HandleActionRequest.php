@@ -28,9 +28,11 @@ final readonly class HandleActionRequest
             $action,
         ]);
 
-        $newRequest = $request->duplicate(server: array_merge($request->server->all(), [
-            'REQUEST_URI' => $route,
-        ]));
+        $newRequest = $request->duplicate(
+            server: array_merge($request->server->all(), [
+                'REQUEST_URI' => $route,
+            ]),
+        );
 
         try {
             /** @var Response $response */
