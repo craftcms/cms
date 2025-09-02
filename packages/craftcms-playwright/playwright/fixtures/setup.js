@@ -15,21 +15,19 @@ class Setup {
         ? 'packages/craftcms-playwright'
         : 'node_modules/@craftcms/playwright';
 
-    // this.dockerCli = `docker compose --file=./${this.packagePath}/docker-compose.yaml exec --user appuser playwright`;
-    // this.craftCli = '/app/craft';
     this.dockerCli = 'ddev';
     this.craftCli = 'craft';
     this.cwd = `./${this.packagePath}`;
   }
 
   async cleanAll() {
-    cleanAll.emit('before');
+    await cleanAll.emit('before', this);
 
     await this.dbRestore();
     await this.projectConfigRestore();
     await this.composerRestore();
 
-    cleanAll.emit('after');
+    await cleanAll.emit('after', this);
   }
 
   async installPlugin(handle) {
