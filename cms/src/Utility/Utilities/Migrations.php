@@ -53,17 +53,15 @@ final class Migrations extends Utility
      */
     public static function contentHtml(): string
     {
-        $view = Craft::$app->getView();
-
         $migrator = app(Migrator::class)->track('content');
 
-        $migrationHistory = $migrator->getRepository()->getMigrations(1000);
+        $migrationHistory = $migrator->getRepository()->getMigrations(1_000);
         $newMigrations = array_map(
             fn (string $migration) => Str::after($migration, database_path('migrations/')),
             $migrator->getPendingMigrations(),
         );
 
-        return $view->renderTemplate('_components/utilities/Migrations.twig', [
+        return Craft::$app->getView()->renderTemplate('_components/utilities/Migrations.twig', [
             'migrationHistory' => $migrationHistory,
             'newMigrations' => $newMigrations,
         ]);

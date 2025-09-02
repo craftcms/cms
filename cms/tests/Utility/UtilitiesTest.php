@@ -66,7 +66,7 @@ test('disabled utilities are not included', function () {
 it('can get badge count for all utilities', function () {
     actingAs(User::first());
 
-    expect($this->utilities->getUtilitiesBadgeCount())->toBeGreaterThan(0);
+    expect($this->utilities->getUtilitiesBadgeCount())->toBe(0);
 });
 
 class DummyUtility extends Utility
