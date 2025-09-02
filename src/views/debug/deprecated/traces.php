@@ -1,6 +1,6 @@
 <?php
 
-use craft\models\DeprecationError;
+use CraftCms\Cms\Deprecator\Models\DeprecationError;
 
 /** @var DeprecationError $log */
 /** @var craft\debug\DeprecatedPanel $panel */

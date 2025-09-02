@@ -47,6 +47,7 @@ use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Env;
+use CraftCms\Cms\Support\Facades\Deprecator;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Json;
 use DateTime;
@@ -1815,7 +1816,7 @@ JS);
         if ($isPublicRegistration) {
             if (($message = $this->request->getParam('userRegisteredNotice')) !== null) {
                 $default = Html::encode($message);
-                Craft::$app->getDeprecator()->log('userRegisteredNotice', 'The `userRegisteredNotice` param has been deprecated for `users/save-user` requests. Use a hashed `successMessage` param instead.');
+                Deprecator::log('userRegisteredNotice', 'The `userRegisteredNotice` param has been deprecated for `users/save-user` requests. Use a hashed `successMessage` param instead.');
             } else {
                 $default = Craft::t('app', 'User registered.');
             }

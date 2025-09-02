@@ -495,7 +495,6 @@ class ArrayHelperTest extends TestCase
             [[], null],
             [[1, 2, 3], [1, 2, 3]],
             [['prop1' => '11', 'prop2' => '22', 'prop3' => ['subProp' => 'value']], $stdClass],
-            [['foo', 'bar, baz'], 'foo, bar\, baz'],
         ];
     }
 

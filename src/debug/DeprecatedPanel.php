@@ -8,6 +8,7 @@
 namespace craft\debug;
 
 use Craft;
+use CraftCms\Cms\Support\Facades\Deprecator;
 use yii\debug\Panel;
 use yii\helpers\ArrayHelper;
 use yii\web\NotFoundHttpException;
@@ -47,13 +48,13 @@ class DeprecatedPanel extends Panel
         $request = Craft::$app->getRequest();
 
         if ($request->getQueryParam('clear')) {
-            Craft::$app->getDeprecator()->deleteAllLogs();
+            Deprecator::deleteAllLogs();
         }
 
         $logId = $request->getQueryParam('trace');
 
         if ($logId) {
-            $log = Craft::$app->getDeprecator()->getLogById($logId);
+            $log = Deprecator::getLogById($logId);
 
             if ($log === null) {
                 throw new NotFoundHttpException('The requested deprecation warning could not be found.');
@@ -75,6 +76,6 @@ class DeprecatedPanel extends Panel
      */
     public function save()
     {
-        return ArrayHelper::toArray(Craft::$app->getDeprecator()->getRequestLogs());
+        return ArrayHelper::toArray(Deprecator::getRequestLogs());
     }
 }

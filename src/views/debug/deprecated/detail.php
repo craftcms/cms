@@ -1,7 +1,9 @@
 <?php
 
 use craft\helpers\UrlHelper;
-use craft\models\DeprecationError;
+use CraftCms\Cms\Deprecator\Models\DeprecationError;
+use CraftCms\Cms\Support\Html;
+use yii\helpers\Markdown;
 
 /** @var craft\debug\DeprecatedPanel $panel */
 ?>
@@ -33,8 +35,8 @@ $logs = $panel->data;
             <tbody>
             <?php foreach ($logs as $log): ?>
                 <tr>
-                    <td><?= \yii\helpers\Markdown::processParagraph(\CraftCms\Cms\Support\Html::encode($log->message)) ?></td>
-                    <td><code><?= str_replace('/', '/<wbr>', \CraftCms\Cms\Support\Html::encode($log->file)) . ($log->line ? ':' . $log->line : '') ?></code>
+                    <td><?= Markdown::processParagraph(Html::encode($log->message)) ?></td>
+                    <td><code><?= str_replace('/', '/<wbr>', Html::encode($log->file)) . ($log->line ? ':' . $log->line : '') ?></code>
                     </td>
                     <td><?php if ($log->id): ?><a
                             href="<?= $panel->getUrl() . '&trace=' . $log->id ?>"><?= Craft::t('app', 'Stack Trace') ?></a><?php else: ?><?= Craft::t('app', 'See logs') ?><?php endif; ?>

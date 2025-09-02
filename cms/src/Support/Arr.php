@@ -2,7 +2,7 @@
 
 namespace CraftCms\Cms\Support;
 
-use Craft;
+use CraftCms\Cms\Support\Facades\Deprecator;
 use DateTimeInterface;
 use Illuminate\Contracts\Support\Arrayable;
 use Illuminate\Support\Collection;
@@ -52,7 +52,7 @@ class Arr extends \Illuminate\Support\Arr
         }
 
         if (is_string($object) && str_contains($object, ',')) {
-            Craft::$app->getDeprecator()->log('Arr::toArray(string)', 'Passing a string to `Arr::toArray()` has been deprecated. Use `StringHelper::split()` instead.');
+            Deprecator::log('Arr::toArray(string)', 'Passing a string to `Arr::toArray()` has been deprecated. Use `StringHelper::split()` instead.');
 
             // Split it on the non-escaped commas
             $object = preg_split('/(?<!\\\),/', $object);
