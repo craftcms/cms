@@ -1,4 +1,6 @@
-const {test, expect} = require('@playwright/test');
+/* jshint esversion: 9, strict: false */
+/* globals module, require */
+const {test, expect} = require('../../index');
 const {waitForPluginStore} = require('./helpers/index.js');
 
 const waitForDiscoverPage = async ({page}) => {

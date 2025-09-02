@@ -1,4 +1,6 @@
-const {test, expect} = require('@playwright/test');
+/* jshint esversion: 9, strict: false */
+/* globals module, require */
+const {test, expect} = require('../../index');
 
 test('Should show plugin details', async ({page, baseURL}) => {
   await page.goto('./plugin-store/sherlock');

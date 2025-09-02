@@ -1,4 +1,6 @@
-const {test, expect} = require('@playwright/test');
+/* jshint esversion: 9, strict: false */
+/* globals module, require */
+const {test, expect} = require('../../index');
 
 test('Shoud show a category page', async ({page, context, baseURL}) => {
   await page.goto('./plugin-store/categories/23');

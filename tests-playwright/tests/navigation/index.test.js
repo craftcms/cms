@@ -1,12 +1,9 @@
-const {test: base, expect} = require('@craftcms/playwright');
-const {DashboardPage} = require('@craftcms/playwright/playwright/fixtures/dashboard');
+/* jshint esversion: 9, strict: false */
+/* globals module, require */
+const {test, expect} = require('../../index');
 
-const test = base.extend({
-  dashboardPage: async ({page, baseURL}, use) => {
-    const dashboardPage = new DashboardPage(page, baseURL);
-    await dashboardPage.goTo();
-    await use(dashboardPage);
-  },
+test.beforeEach(async ({craftDashboard}) => {
+  await craftDashboard.goTo();
 });
 
 test.describe('Navigation', () => {
@@ -19,7 +16,6 @@ test.describe('Navigation', () => {
   ];
 
   test('Global navigation has expected links', async ({
-    dashboardPage,
     page,
   }) => {
     await expect(page.locator('#global-sidebar nav ul li a')).toContainText(
@@ -28,11 +24,11 @@ test.describe('Navigation', () => {
   });
 
   test('Navigation items go to the correct pages', async ({
-    dashboardPage,
+    craftDashboard,
     page,
   }) => {
     for (let i = 0; i < navItems.length; i++) {
-      await dashboardPage.goTo();
+      await craftDashboard.goTo();
       let text = Array.isArray(navItems[i]) ? navItems[i][0] : navItems[i];
       let title = Array.isArray(navItems[i]) ? navItems[i][1] : text;
 
@@ -44,24 +40,24 @@ test.describe('Navigation', () => {
 
 test.describe('Bypass blocks', () => {
   test('Skip to main is the first element in the focus order', async ({
-    dashboardPage,
+    craftDashboard,
     page,
   }) => {
     // Focus the first element on the page
     await page.keyboard.press('Tab');
     // Check that the skip link is focused
-    const skipLink = dashboardPage.skipLink;
+    const skipLink = page.locator(craftDashboard.skipLink);
     await expect(skipLink).toBeFocused();
     await expect(skipLink).toBeVisible();
     await expect(skipLink).toHaveText('Skip to main section');
   });
 
   test('Skip link moves focus to the main container', async ({
-    dashboardPage,
+    craftDashboard,
     page,
   }) => {
     // Focus the first element on the page
-    await dashboardPage.skipToMain();
+    await craftDashboard.skipToMain();
     await expect(
       page.evaluate(() => document.activeElement.id === 'main')
     ).resolves.toBe(true);

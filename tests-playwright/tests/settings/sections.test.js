@@ -1,4 +1,6 @@
-const {test, expect} = require('@craftcms/playwright');
+/* jshint esversion: 9, strict: false */
+/* globals module, require */
+const {test, expect} = require('../../index');
 
 let sectionName = 'My New Channel';
 let sectionHandle = 'myNewChannel';
