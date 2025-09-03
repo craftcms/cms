@@ -6,6 +6,7 @@
 - Fixed a bug where addresses weren’t saving `firstName`, `lastName`, and `fullName` values properly. ([#17807](https://github.com/craftcms/cms/issues/17807))
 - Fixed an n+1 query bug when working with Content Block fields. ([#17801](https://github.com/craftcms/cms/issues/17801))
 - Fixed a bug where element selector modals’ sidebars would go out of view if the browser had a custom font size. ([#17809](https://github.com/craftcms/cms/issues/17809))
+- Fixed a bug where relation field values weren’t getting updated properly when two elements were merged together. ([#17817](https://github.com/craftcms/cms/issues/17817))
 - Fixed a styling issue.
 
 ## 5.8.16 - 2025-08-29
