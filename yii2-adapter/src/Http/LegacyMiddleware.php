@@ -142,7 +142,7 @@ class LegacyMiddleware
             ? Json::decode($request->getContent())
             : $_POST;
 
-        foreach ($parameters as $key => $value) {
+        foreach ($parameters ?? [] as $key => $value) {
             $this->restoreValue($request, $key, $value);
         }
     }

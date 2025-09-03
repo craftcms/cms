@@ -44,7 +44,7 @@ trait IndexesAssets
      */
     protected function indexAssets(Application $craft, array $volumes, string $path = '', int $startAt = 0): void
     {
-        $this->cacheRemoteImages = $this->parseBooleanOption($this->option('cacheRemoteImages'));
+        $this->cacheRemoteImages = $this->hasOption('cacheRemoteImages') && $this->parseBooleanOption($this->option('cacheRemoteImages'));
         $this->deleteEmptyFolders = $this->parseBooleanOption($this->option('deleteEmptyFolders'));
         $this->deleteMissingAssets = $this->parseBooleanOption($this->option('deleteMissingAssets'));
         $this->createMissingAssets = $this->parseBooleanOption($this->option('createMissingAssets'));
