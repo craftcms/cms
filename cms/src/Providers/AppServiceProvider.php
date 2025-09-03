@@ -16,6 +16,7 @@ use CraftCms\Cms\User\Models\User;
 use Illuminate\Auth\Middleware\Authenticate;
 use Illuminate\Contracts\Http\Kernel as HttpKernel;
 use Illuminate\Foundation\Console\AboutCommand;
+use Illuminate\Http\Request;
 use Illuminate\Routing\Router;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\ServiceProvider;
@@ -48,6 +49,34 @@ final class AppServiceProvider extends ServiceProvider
         ], $kernel->getGlobalMiddleware()));
 
         Authenticate::redirectUsing(fn () => app(GeneralConfig::class)->loginPath);
+
+        Request::macro('isCpRequest', fn (): bool => $this->is(
+            app(GeneralConfig::class)->cpTrigger, // /admin
+            app(GeneralConfig::class)->cpTrigger.'/*' // /admin/foo
+            // NOT /adminsarefun
+        ));
+
+        Request::macro('isActionRequest', fn (): bool => ! empty($this->actionSegments()));
+
+        Request::macro('actionSegments', function (): array {
+            $actionTrigger = app(GeneralConfig::class)->actionTrigger;
+
+            $segmentIndex = $this->isCpRequest() ? 2 : 1;
+
+            if ($this->segment($segmentIndex) === $actionTrigger && count($this->segments()) > $segmentIndex) {
+                return array_slice($this->segments(), $segmentIndex);
+            }
+
+            if ($actionParam = $this->get('action')) {
+                if (! is_string($actionParam)) {
+                    abort(400, 'Invalid action param');
+                }
+
+                return array_values(array_filter(explode('/', $actionParam)));
+            }
+
+            return [];
+        });
     }
 
     public function boot(): void

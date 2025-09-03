@@ -5,7 +5,7 @@ namespace CraftCms\Cms\Http\Middleware;
 use Closure;
 use CraftCms\Cms\Config\GeneralConfig;
 use Illuminate\Http\Request;
-use Illuminate\Http\Response;
+use Symfony\Component\HttpFoundation\Response;
 use yii\web\NotFoundHttpException;
 
 final readonly class HandleActionRequest
@@ -16,23 +16,28 @@ final readonly class HandleActionRequest
 
     public function handle(Request $request, Closure $next): mixed
     {
-        if (! $request->has('action')) {
-            return $next($request);
+        $response = $next($request);
+
+        /** Laravel found this route */
+        if ($response instanceof Response && $response->getStatusCode() !== 404) {
+            return $response;
         }
 
-        $action = $request->string('action');
-        $route = implode('/', [
-            '',
-            $this->generalConfig->cpTrigger,
-            $this->generalConfig->actionTrigger,
-            $action,
-        ]);
+        if (! $request->isActionRequest()) {
+            return $response;
+        }
 
-        $newRequest = $request->duplicate(
-            server: array_merge($request->server->all(), [
-                'REQUEST_URI' => $route,
-            ]),
-        );
+        $actionSegments = $request->actionSegments();
+        $route = implode('/', array_filter([
+            '',
+            $request->isCpRequest() ? $this->generalConfig->cpTrigger : null,
+            $this->generalConfig->actionTrigger,
+            ...$actionSegments,
+        ], fn ($value) => ! is_null($value)));
+
+        $newRequest = $request->duplicate(server: array_merge($request->server->all(), [
+            'REQUEST_URI' => $route,
+        ]));
 
         try {
             /** @var Response $response */
