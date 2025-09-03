@@ -670,7 +670,7 @@ abstract class Controller extends \yii\web\Controller
             if ($default !== null) {
                 $url = $default;
             } else {
-                $url = $this->request->getPathInfo();
+                $url = $this->request->getReferrer();
             }
         }
 

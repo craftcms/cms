@@ -5,7 +5,7 @@ namespace CraftCms\Cms\Http\Middleware;
 use Closure;
 use CraftCms\Cms\Config\GeneralConfig;
 use Illuminate\Http\Request;
-use Illuminate\Http\Response;
+use Symfony\Component\HttpFoundation\Response;
 use yii\web\NotFoundHttpException;
 
 final readonly class HandleActionRequest
@@ -16,8 +16,15 @@ final readonly class HandleActionRequest
 
     public function handle(Request $request, Closure $next): mixed
     {
+        $response = $next($request);
+
+        /** Laravel found this route */
+        if ($response instanceof Response && $response->getStatusCode() !== 404) {
+            return $response;
+        }
+
         if (! $request->isActionRequest()) {
-            return $next($request);
+            return $response;
         }
 
         $actionSegments = $request->actionSegments();
