@@ -4,7 +4,6 @@ namespace CraftCms\Cms\Support;
 
 use Craft;
 use craft\errors\InvalidLicenseKeyException;
-use craft\helpers\App;
 use craft\helpers\DateTimeHelper;
 use CraftCms\Cms\License\License;
 use CraftCms\Cms\Plugin\Plugins;
@@ -39,7 +38,7 @@ use function CraftCms\Cms\normalizeVersion;
  * @internal
  */
 #[Singleton]
-readonly class Api
+final readonly class Api
 {
     private PendingRequest $client;
 
@@ -67,10 +66,11 @@ readonly class Api
      *
      * @throws GuzzleException if the API gave a non-2xx response
      */
-    public function getLicenseInfo(array $include = []): array
+    public function getLicenseInfo(array $include = [], array $headers = []): array
     {
         return $this->request('GET', 'cms-licenses', [
             'query' => ['include' => implode(',', $include)],
+            'headers' => $headers,
         ])->json('license');
     }
 
@@ -101,7 +101,7 @@ readonly class Api
 
         try {
             $response = $this->client
-                ->withHeaders($this->headers())
+                ->withHeaders(array_merge($this->headers(), Arr::pull($options, 'headers', [])))
                 ->send($method, $uri, $options);
         } catch (RequestException $e) {
             $response = $e->getResponse();
@@ -121,7 +121,7 @@ readonly class Api
         $headers = [
             'Accept' => 'application/json',
             'X-Craft-Env' => $this->app->environment(),
-            'X-Craft-System' => sprintf('craft:%s;%s', Craft::$app->getVersion(), Craft::$app->edition->handle()),
+            'X-Craft-System' => sprintf('craft:%s;%s', '5.8.0', Craft::$app->edition->handle()),
         ];
 
         // platform

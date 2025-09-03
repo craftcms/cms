@@ -43,7 +43,6 @@ use craft\services\SystemMessages;
 use craft\services\Tags;
 use craft\services\TemplateCaches;
 use craft\services\Tokens;
-use craft\services\Updates;
 use craft\services\UserGroups;
 use craft\services\UserPermissions;
 use craft\services\Users;
@@ -558,7 +557,6 @@ class TestSetup
             [Tags::class, ['getTags', 'tags']],
             [TemplateCaches::class, ['getTemplateCaches', 'templateCaches']],
             [Tokens::class, ['getTokens', 'tokens']],
-            [Updates::class, ['getUpdates', 'updates']],
             [UserGroups::class, ['getUserGroups', 'userGroups']],
             [UserPermissions::class, ['getUserPermissions', 'userPermissions']],
             [Users::class, ['getUsers', 'users']],

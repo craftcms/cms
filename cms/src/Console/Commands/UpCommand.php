@@ -5,6 +5,7 @@ namespace CraftCms\Cms\Console\Commands;
 use CraftCms\Cms\Console\CraftCommand;
 use CraftCms\Cms\Database\Commands\MigrateCommand;
 use CraftCms\Cms\Shared\Exceptions\OperationAbortedException;
+use CraftCms\Cms\Updates\Updates;
 use Illuminate\Console\Command;
 use Illuminate\Contracts\Console\Isolatable;
 use Throwable;
@@ -17,7 +18,7 @@ final class UpCommand extends Command implements Isolatable
 
     protected $description = 'Runs pending migrations and applies pending project config changes.';
 
-    public function handle(): int
+    public function handle(Updates $updates): int
     {
         try {
             $projectConfig = \Craft::$app->getProjectConfig();
@@ -61,8 +62,8 @@ final class UpCommand extends Command implements Isolatable
                 return $res;
             }
 
-            $this->components->task('Updating license info', function () {
-                \Craft::$app->getUpdates()->getUpdates(refresh: true);
+            $this->components->task('Updating license info', function () use ($updates) {
+                $updates->getUpdates(refresh: true);
             });
         } catch (Throwable $e) {
             if (! $e instanceof OperationAbortedException) {

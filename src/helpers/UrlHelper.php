@@ -13,6 +13,7 @@ use craft\errors\SiteNotFoundException;
 use craft\web\Request as WebRequest;
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Updates\Updates;
 use yii\base\Exception;
 
 /**
@@ -509,7 +510,7 @@ class UrlHelper
             }
         } catch (SiteNotFoundException $e) {
             // Fail silently if Craft isn't installed yet or is in the middle of updating
-            if (Craft::$app->getIsInstalled() && !Craft::$app->getUpdates()->getIsCraftUpdatePending()) {
+            if (Craft::$app->getIsInstalled() && !app(Updates::class)->isCraftUpdatePending()) {
                 throw $e;
             }
         }

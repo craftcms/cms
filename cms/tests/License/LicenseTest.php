@@ -3,6 +3,7 @@
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\License\License;
 use CraftCms\Cms\Shared\Enums\LicenseKeyStatus;
+use CraftCms\Cms\Updates\Updates;
 use CraftCms\Cms\User\Models\User;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Cache;
@@ -58,7 +59,7 @@ test('issues is empty when not logged in', function () {
 it('can get invalid license issues for craft', function () {
     actingAs(User::first());
 
-    Cache::put('updates', []);
+    Cache::put(Updates::class, []);
 
     Cache::put(License::CACHE_KEY_LICENSE_INFO, [
         'craft' => [
@@ -80,7 +81,7 @@ it('can get invalid license issues for craft', function () {
 it('can get trial license issues for craft', function () {
     actingAs(User::first());
 
-    Cache::put('updates', []);
+    Cache::put(Updates::class, []);
 
     Cache::put(License::CACHE_KEY_LICENSE_INFO, [
         'craft' => [
@@ -106,7 +107,7 @@ it('can get trial license issues for craft', function () {
 it('can get mismatched license issues for craft', function () {
     actingAs(User::first());
 
-    Cache::put('updates', []);
+    Cache::put(Updates::class, []);
 
     Cache::put(License::CACHE_KEY_LICENSE_INFO_HOST, 'localhost');
     Cache::put('licensedDomain', 'craftcms.com');
@@ -140,7 +141,7 @@ it('can get mismatched license issues for craft', function () {
 it('can get astray license issues for craft', function () {
     actingAs(User::first());
 
-    Cache::put('updates', []);
+    Cache::put(Updates::class, []);
 
     Cache::put(License::CACHE_KEY_LICENSE_INFO, [
         'craft' => [
@@ -167,7 +168,7 @@ it('can get astray license issues for craft', function () {
 it('can get wrong edition license issues for craft', function () {
     actingAs(User::first());
 
-    Cache::put('updates', []);
+    Cache::put(Updates::class, []);
 
     Cache::put(License::CACHE_KEY_LICENSE_INFO, [
         'craft' => [

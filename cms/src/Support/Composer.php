@@ -87,7 +87,7 @@ final class Composer
      *
      * @throws Throwable if something goes wrong
      */
-    public function install(?array $requirements, ?callable $callback = null): void
+    public function install(?array $requirements = null, ?callable $callback = null): void
     {
         if ($requirements !== null) {
             $this->backupComposerFiles();

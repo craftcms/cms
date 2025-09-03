@@ -5,6 +5,7 @@ use CraftCms\Cms\Http\Controllers\Dashboard\Widgets\CraftSupportController;
 use CraftCms\Cms\Http\Controllers\Dashboard\Widgets\FeedController;
 use CraftCms\Cms\Http\Controllers\Dashboard\WidgetsController;
 use CraftCms\Cms\Http\Controllers\PluginsController;
+use CraftCms\Cms\Http\Controllers\UpdatesController;
 use CraftCms\Cms\Http\Controllers\Utilities\ClearCachesController;
 use CraftCms\Cms\Http\Controllers\Utilities\DbBackupController;
 use CraftCms\Cms\Http\Controllers\Utilities\DeprecationErrorsController;
@@ -63,4 +64,7 @@ Route::prefix(implode('/', [
 
         Route::post('plugins/save-plugin-settings', [PluginsController::class, 'saveSettings']);
     });
+
+    Route::post('app/check-for-updates', [UpdatesController::class, 'check']);
+    Route::post('app/cache-updates', [UpdatesController::class, 'cache']);
 });

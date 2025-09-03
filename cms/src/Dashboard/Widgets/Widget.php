@@ -152,6 +152,6 @@ EOD;
             throw new RuntimeException('The config passed into Widget::fromConfig() did not specify a type: '.Json::encode($config));
         }
 
-        return new $class($config);
+        return app()->make($class, ['config' => $config]);
     }
 }

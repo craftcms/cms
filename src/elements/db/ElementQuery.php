@@ -1595,7 +1595,7 @@ class ElementQuery extends Query implements ElementQueryInterface
             }
         } catch (SiteNotFoundException $e) {
             // Fail silently if Craft isn't installed yet or is in the middle of updating
-            if (Craft::$app->getIsInstalled() && !Craft::$app->getUpdates()->getIsCraftUpdatePending()) {
+            if (Craft::$app->getIsInstalled() && !app(\CraftCms\Cms\Updates\Updates::class)->isCraftUpdatePending()) {
                 /** @noinspection PhpUnhandledExceptionInspection */
                 throw $e;
             }

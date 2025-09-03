@@ -2,9 +2,7 @@
 
 namespace CraftCms\Cms\License;
 
-use craft\console\Application as CraftConsole;
 use craft\helpers\UrlHelper;
-use craft\web\Application as CraftWeb;
 use CraftCms\Aliases\Facades\Aliases;
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Edition;
@@ -15,9 +13,9 @@ use CraftCms\Cms\Shared\Enums\LicenseKeyStatus;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Json as JsonHelper;
 use CraftCms\Cms\Support\Str;
+use CraftCms\Cms\Updates\Updates;
 use CraftCms\Cms\User\Models\User;
 use Illuminate\Auth\AuthManager;
-use Illuminate\Container\Attributes\Give;
 use Illuminate\Container\Attributes\Singleton;
 use Illuminate\Support\Facades\Cache;
 
@@ -34,8 +32,6 @@ final readonly class License
     public const string CACHE_KEY_LICENSE_INFO_HOST = 'licenseInfoHost';
 
     public function __construct(
-        #[Give('Craft')]
-        private CraftWeb|CraftConsole $craft,
         private GeneralConfig $generalConfig,
         private AuthManager $auth,
         private Plugins $plugins,
@@ -112,15 +108,14 @@ final readonly class License
             return [];
         }
 
-        $updatesService = $this->craft->getUpdates();
-        $isInfoCached = Cache::has(self::CACHE_KEY_LICENSE_INFO) && $updatesService->getIsUpdateInfoCached();
+        $isInfoCached = Cache::has(self::CACHE_KEY_LICENSE_INFO) && app(Updates::class)->isUpdateInfoCached();
 
         if (! $isInfoCached) {
             if (! $fetch) {
                 return [];
             }
 
-            $updatesService->getUpdates(true);
+            app(Updates::class)->getUpdates(true);
         }
 
         $issues = [];
@@ -162,11 +157,11 @@ final readonly class License
                 handle: $handle,
                 name: 'Craft',
                 editions: array_map(fn (Edition $edition) => $edition->handle(), Edition::cases()),
-                currentEdition: $this->craft->edition->handle(),
-                currentEditionName: $this->craft->edition->name,
+                currentEdition: app('Craft')->edition->handle(),
+                currentEditionName: app('Craft')->edition->name,
                 licenseEdition: $licenseInfo['edition'],
                 licenseEditionName: $licenseEdition->name,
-                version: $this->craft->getVersion(),
+                version: app('Craft')->getVersion(),
                 status: $licenseInfo['status'],
             );
         }
@@ -237,7 +232,7 @@ final readonly class License
             return [];
         }
 
-        $consoleUrl = rtrim($this->craft->getPluginStore()->craftIdEndpoint, '/');
+        $consoleUrl = rtrim(app('Craft')->getPluginStore()->craftIdEndpoint, '/');
 
         if (! $licenseData->isCraft) {
             // wrong Craft install

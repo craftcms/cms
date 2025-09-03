@@ -16,6 +16,7 @@ use craft\helpers\FileHelper;
 use craft\helpers\ProjectConfig;
 use craft\services\ProjectConfig as ProjectConfigService;
 use CraftCms\Cms\Plugin\Plugins;
+use CraftCms\Cms\Updates\Updates;
 use Symfony\Component\Yaml\Exception\ParseException;
 use Symfony\Component\Yaml\Yaml;
 use Throwable;
@@ -269,9 +270,9 @@ class ProjectConfigController extends Controller
      */
     public function actionApply(): int
     {
-        $updatesService = Craft::$app->getUpdates();
+        $updatesService = app(Updates::class);
 
-        if ($updatesService->getIsCraftUpdatePending() || $updatesService->getIsPluginUpdatePending()) {
+        if ($updatesService->isCraftUpdatePending() || $updatesService->isPluginUpdatePending()) {
             $this->stderr('Craft has pending migrations. Please run `craft migrate/all` first.' . PHP_EOL, Console::FG_RED);
             return ExitCode::UNSPECIFIED_ERROR;
         }

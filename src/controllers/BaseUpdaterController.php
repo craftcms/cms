@@ -17,6 +17,7 @@ use CraftCms\Cms\Plugin\Plugins;
 use CraftCms\Cms\Support\Composer;
 use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Support\PHP;
+use CraftCms\Cms\Updates\Updates;
 use Symfony\Component\Process\Process;
 use Throwable;
 use yii\base\Exception;
@@ -497,7 +498,7 @@ abstract class BaseUpdaterController extends Controller
     protected function runMigrations(array $handles): ?Response
     {
         try {
-            Craft::$app->getUpdates()->runMigrations($handles);
+            app(Updates::class)->runMigrations($handles);
         } catch (MigrateException $e) {
             $ownerName = $e->ownerName;
             $ownerHandle = $e->ownerHandle;

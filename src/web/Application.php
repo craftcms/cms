@@ -28,6 +28,7 @@ use CraftCms\Cms\License\License;
 use CraftCms\Cms\Plugin\Plugins;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Json;
+use CraftCms\Cms\Updates\Updates;
 use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Config;
@@ -228,7 +229,7 @@ class Application extends \yii\web\Application
             }
 
             // Makes sure that the uploaded files are compatible with the current database schema
-            if (!$this->getUpdates()->getIsCraftSchemaVersionCompatible()) {
+            if (!app(Updates::class)->isCraftSchemaVersionCompatible()) {
                 $this->_unregisterDebugModule();
 
                 if ($isCpRequest) {
@@ -244,13 +245,13 @@ class Application extends \yii\web\Application
 
             // getIsCraftDbMigrationNeeded will return true if we’re in the middle of a manual or auto-update for Craft itself.
             // If we’re in maintenance mode and it’s not a site request, show the manual update template.
-            if ($this->getUpdates()->getIsCraftUpdatePending()) {
+            if (app(Updates::class)->isCraftUpdatePending()) {
                 return $this->_processUpdateLogic($request) ?: $response;
             }
 
             // If there’s a new version, but the schema hasn’t changed, just update the info table
-            if ($this->getUpdates()->getHasCraftVersionChanged()) {
-                $this->getUpdates()->updateCraftVersionInfo();
+            if (app(Updates::class)->hasCraftVersionChanged()) {
+                app(Updates::class)->updateCraftVersionInfo();
 
                 // Delete all compiled templates
                 try {
@@ -264,7 +265,7 @@ class Application extends \yii\web\Application
             }
 
             // Check if a plugin needs to update the database.
-            if ($this->getUpdates()->getIsPluginUpdatePending()) {
+            if (app(Updates::class)->isPluginUpdatePending()) {
                 return $this->_processUpdateLogic($request) ?: $response;
             }
 
@@ -715,7 +716,7 @@ class Application extends \yii\web\Application
             (!$request->getIsActionRequest() || $request->getActionSegments() == ['users', 'login'])
         ) {
             // Did we skip a breakpoint?
-            if ($this->getUpdates()->getWasCraftBreakpointSkipped()) {
+            if (app(Updates::class)->wasCraftBreakpointSkipped()) {
                 throw new HttpException(200, Craft::t('app', 'You need to be on at least Craft CMS {version} before you can manually update to Craft CMS {targetVersion}.', [
                     'version' => $this->minVersionRequired,
                     'targetVersion' => Craft::$app->getVersion(),

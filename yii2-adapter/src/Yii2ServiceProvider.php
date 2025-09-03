@@ -11,7 +11,6 @@ use craft\utilities\AssetIndexes;
 use craft\utilities\ClearCaches;
 use CraftCms\Aliases\Facades\Aliases;
 use CraftCms\Cms\Config\GeneralConfig;
-use CraftCms\Cms\Plugin\Plugins;
 use CraftCms\Cms\Support\Env;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Yii2Adapter\Console\LegacyCraftCommand;
@@ -154,7 +153,6 @@ class Yii2ServiceProvider extends ServiceProvider
 
     public function boot(
         GeneralConfig $generalConfig,
-        Plugins $pluginsService,
     ): void {
         $this->ensureStorageFoldersExist($generalConfig);
 

@@ -4,12 +4,12 @@ namespace CraftCms\Cms\Utility\Utilities;
 
 use Craft;
 use craft\web\assets\updates\UpdatesAsset;
+use CraftCms\Cms\Updates\Updates as UpdatesService;
 use CraftCms\Cms\Utility\Utility;
 
 /**
  * Updates represents a Updates dashboard widget.
  *
-
  * @since 6.0.0
  */
 final class Updates extends Utility
@@ -43,7 +43,7 @@ final class Updates extends Utility
      */
     public static function badgeCount(): int
     {
-        return Craft::$app->getUpdates()->getTotalAvailableUpdates();
+        return app(UpdatesService::class)->totalAvailableUpdates();
     }
 
     /**

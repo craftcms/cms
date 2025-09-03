@@ -13,10 +13,10 @@ use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Plugin\Exceptions\InvalidPluginException;
 use CraftCms\Cms\Plugin\Plugins;
 use CraftCms\Cms\Support\Composer;
+use CraftCms\Cms\Updates\Updates;
 use RequirementsChecker;
 use Symfony\Component\Process\Process;
 use Throwable;
-use yii\base\NotSupportedException;
 use yii\web\BadRequestHttpException;
 use yii\web\Response;
 use function CraftCms\Cms\normalizeVersion;
@@ -34,8 +34,6 @@ class UpdaterController extends BaseUpdaterController
     public const ACTION_BACKUP = 'backup';
     public const ACTION_SERVER_CHECK = 'server-check';
     public const ACTION_REVERT = 'revert';
-    /** @deprecated in 5.8.4 */
-    public const ACTION_RESTORE_DB = 'restore-db';
     public const ACTION_MIGRATE = 'migrate';
 
     /**
@@ -98,17 +96,6 @@ class UpdaterController extends BaseUpdaterController
     }
 
     /**
-     * Restores the database.
-     *
-     * @return Response
-     * @deprecated in 5.8.4
-     */
-    public function actionRestoreDb(): Response
-    {
-        throw new NotSupportedException('Restoring the database is no longer supported.');
-    }
-
-    /**
      * Reverts the site to its previous Composer package versions.
      *
      * @return Response
@@ -166,7 +153,7 @@ class UpdaterController extends BaseUpdaterController
 
         // Are there any migrations to run?
         $installedHandles = array_keys($this->data['install']);
-        $pendingHandles = Craft::$app->getUpdates()->getPendingMigrationHandles();
+        $pendingHandles = app(Updates::class)->pendingMigrationHandles();
 
         if (!empty(array_intersect($pendingHandles, $installedHandles))) {
             $backup = app(GeneralConfig::class)->getBackupOnUpdate();
@@ -241,7 +228,7 @@ class UpdaterController extends BaseUpdaterController
         } else {
             // Figure out what needs to be updated, if any
             $data = [
-                'migrate' => Craft::$app->getUpdates()->getPendingMigrationHandles(),
+                'migrate' => app(Updates::class)->pendingMigrationHandles(),
             ];
         }
 
