@@ -46,3 +46,9 @@ arch('Only use JSON helper')
         Json::class,
         Extension::class, // Depth argument needed
     ]);
+
+arch('Don\'t use default migrator')
+    ->expect(\Illuminate\Database\Migrations\Migrator::class)
+    ->not
+    ->toBeUsed()
+    ->ignoring(\CraftCms\Cms\Database\Migrator::class);
