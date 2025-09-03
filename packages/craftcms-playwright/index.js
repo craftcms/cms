@@ -7,6 +7,7 @@ const {Setup} = require('./playwright/fixtures/setup');
 const {Entry} = require('./playwright/fixtures/entry');
 const {Dashboard} = require('./playwright/fixtures/dashboard');
 const {PluginStore} = require('./playwright/fixtures/plugin-store');
+const logger = require('./playwright/logger');
 
 // new way - worker fixture
 const test = base.extend({
@@ -48,4 +49,5 @@ module.exports = {
   test: test,
   expect: base.expect,
   events,
+  logger,
 };
