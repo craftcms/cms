@@ -7,9 +7,9 @@
 
 namespace craft\db;
 
-use craft\helpers\Db;
+use craft\helpers\Db as DbHelper;
 use CraftCms\Cms\Shared\Exceptions\OperationAbortedException;
-use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Facades\DB;
 use Throwable;
 use yii\db\ColumnSchemaBuilder;
 
@@ -46,18 +46,18 @@ abstract class Migration extends \yii\db\Migration
     public function up(bool $throwExceptions = false): bool
     {
         // Copied from \yii\db\Migration::up(), but with added $e param
-        \Illuminate\Support\Facades\DB::beginTransaction();
+        DB::beginTransaction();
         try {
             if ($this->safeUp() === false) {
-                \Illuminate\Support\Facades\DB::rollBack();
+                DB::rollBack();
                 return false;
             }
-            \Illuminate\Support\Facades\DB::commit();
+            DB::commit();
         } catch (Throwable $e) {
             if (!$e instanceof OperationAbortedException) {
                 $this->_printException($e);
             }
-            \Illuminate\Support\Facades\DB::rollBack();
+            DB::rollBack();
             if ($throwExceptions) {
                 throw $e;
             }
@@ -90,16 +90,16 @@ abstract class Migration extends \yii\db\Migration
     public function down(bool $throwExceptions = false): bool
     {
         // Copied from \yii\db\Migration::down(), but with added $e param
-        \Illuminate\Support\Facades\DB::beginTransaction();
+        DB::beginTransaction();
         try {
             if ($this->safeDown() === false) {
-                \Illuminate\Support\Facades\DB::rollBack();
+                DB::rollBack();
                 return false;
             }
-            \Illuminate\Support\Facades\DB::commit();
+            DB::commit();
         } catch (Throwable $e) {
             $this->_printException($e);
-            \Illuminate\Support\Facades\DB::rollBack();
+            DB::rollBack();
             if ($throwExceptions) {
                 throw $e;
             }
@@ -133,7 +133,7 @@ abstract class Migration extends \yii\db\Migration
      */
     public function tinyText(): ColumnSchemaBuilder
     {
-        if (Db::isTypeSupported('tinytext', $this->db)) {
+        if (DbHelper::isTypeSupported('tinytext', $this->db)) {
             return $this->db->getSchema()->createColumnSchemaBuilder('tinytext');
         }
 
@@ -147,7 +147,7 @@ abstract class Migration extends \yii\db\Migration
      */
     public function mediumText(): ColumnSchemaBuilder
     {
-        if (Db::isTypeSupported('mediumtext', $this->db)) {
+        if (DbHelper::isTypeSupported('mediumtext', $this->db)) {
             return $this->db->getSchema()->createColumnSchemaBuilder('mediumtext');
         }
 
@@ -161,7 +161,7 @@ abstract class Migration extends \yii\db\Migration
      */
     public function longText(): ColumnSchemaBuilder
     {
-        if (Db::isTypeSupported('longtext', $this->db)) {
+        if (DbHelper::isTypeSupported('longtext', $this->db)) {
             return $this->db->getSchema()->createColumnSchemaBuilder('longtext');
         }
 
@@ -177,7 +177,7 @@ abstract class Migration extends \yii\db\Migration
      */
     public function enum(string $columnName, array $values): ColumnSchemaBuilder
     {
-        if (Db::isTypeSupported('enum', $this->db)) {
+        if (DbHelper::isTypeSupported('enum', $this->db)) {
             return $this->db->getSchema()->createColumnSchemaBuilder('enum', $values);
         }
 
@@ -370,7 +370,7 @@ abstract class Migration extends \yii\db\Migration
     public function dropIndexIfExists(string $table, array|string $columns, bool $unique = false): void
     {
         $time = $this->beginCommand("dropping index on $table if it exists");
-        Db::dropIndexIfExists($table, $columns, $unique, $this->db);
+        DbHelper::dropIndexIfExists($table, $columns, $unique, $this->db);
         $this->endCommand($time);
     }
 
@@ -385,7 +385,7 @@ abstract class Migration extends \yii\db\Migration
     public function dropForeignKeyIfExists(string $table, array|string $columns): void
     {
         $time = $this->beginCommand("dropping foreign key on $table if it exists");
-        Db::dropForeignKeyIfExists($table, $columns, $this->db);
+        DbHelper::dropForeignKeyIfExists($table, $columns, $this->db);
         $this->endCommand($time);
     }
 
@@ -398,7 +398,7 @@ abstract class Migration extends \yii\db\Migration
     public function dropAllForeignKeysToTable(string $table): void
     {
         $time = $this->beginCommand("dropping all foreign keys to $table");
-        Db::dropAllForeignKeysToTable($table, $this->db);
+        DbHelper::dropAllForeignKeysToTable($table, $this->db);
         $this->endCommand($time);
     }
 
@@ -410,7 +410,7 @@ abstract class Migration extends \yii\db\Migration
     public function renameTable($table, $newName)
     {
         $time = $this->beginCommand("rename table $table to $newName");
-        Db::renameTable($table, $newName, $this->db);
+        DbHelper::renameTable($table, $newName, $this->db);
         $this->endCommand($time);
     }
 
@@ -480,7 +480,7 @@ abstract class Migration extends \yii\db\Migration
      */
     public function createIndexIfMissing(string $table, array|string $columns, bool $unique = false): void
     {
-        if (Db::findIndex($table, $columns, $unique, $this->db) === null) {
+        if (DbHelper::findIndex($table, $columns, $unique, $this->db) === null) {
             $this->createIndex(null, $table, $columns, $unique);
         }
     }

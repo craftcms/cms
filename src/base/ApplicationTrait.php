@@ -11,7 +11,6 @@ use Craft;
 use craft\console\Application as ConsoleApplication;
 use craft\console\Request as ConsoleRequest;
 use craft\db\Connection;
-use craft\db\MigrationManager;
 use craft\db\mysql\Schema;
 use craft\elements\Address;
 use craft\elements\Asset;
@@ -166,8 +165,6 @@ use yii\web\ServerErrorHttpException;
  * @property-read Locale $formattingLocale The Locale object that should be used to define the formatter
  * @property-read Locale $locale The Locale object for the target language
  * @property-read Mailer $mailer The mailer component
- * @property-read MigrationManager $contentMigrator The content migration manager
- * @property-read MigrationManager $migrator The application’s migration manager
  * @property-read Mutex $mutex The application’s mutex service
  * @property-read Path $path The path service
  * @property-read PluginStore $pluginStore The plugin store service
@@ -1065,16 +1062,6 @@ trait ApplicationTrait
     }
 
     /**
-     * Returns the content migration manager.
-     *
-     * @return MigrationManager The content migration manager
-     */
-    public function getContentMigrator(): MigrationManager
-    {
-        return $this->get('contentMigrator');
-    }
-
-    /**
      * Returns the dashboard service.
      *
      * @return Dashboard The dashboard service
@@ -1262,16 +1249,6 @@ trait ApplicationTrait
     public function getMailer(): Mailer
     {
         return $this->get('mailer');
-    }
-
-    /**
-     * Returns the application’s migration manager.
-     *
-     * @return MigrationManager The application’s migration manager
-     */
-    public function getMigrator(): MigrationManager
-    {
-        return $this->get('migrator');
     }
 
     /**

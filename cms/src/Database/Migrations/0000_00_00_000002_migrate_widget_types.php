@@ -8,11 +8,9 @@ use craft\widgets\NewUsers;
 use craft\widgets\QuickPost;
 use craft\widgets\RecentEntries;
 use craft\widgets\Updates;
-use CraftCms\Cms\Database\Migrations\Migration;
+use CraftCms\Cms\Database\Migration;
 use CraftCms\Cms\Database\Table;
-use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Schema;
 
 /**
  * @since 6.0.0
@@ -30,29 +28,21 @@ return new class extends Migration
         Updates::class => \CraftCms\Cms\Dashboard\Widgets\Updates::class,
     ];
 
-    public function up(): bool
+    public function up(): void
     {
-        Schema::table(Table::WIDGETS, function (Blueprint $table) {
-            $table->rememberToken();
-        });
-
         foreach ($this->map as $old => $new) {
             DB::table(Table::WIDGETS)
                 ->where('type', $old)
                 ->update(['type' => $new]);
         }
-
-        return true;
     }
 
-    public function down(): bool
+    public function down(): void
     {
         foreach ($this->map as $old => $new) {
             DB::table(Table::WIDGETS)
                 ->where('type', $new)
                 ->update(['type' => $old]);
         }
-
-        return true;
     }
 };

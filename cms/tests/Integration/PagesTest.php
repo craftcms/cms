@@ -177,7 +177,7 @@ it('renders pages', function (string $url, string $title, array $extraContent = 
         'url' => '/utilities/migrations',
         'title' => 'Migrations',
         'extraContent' => [
-            ['rendered' => '0001_01_01_000001_testbench_create_cache_table'],
+            ['rendered' => 'No pending content migrations.'],
         ],
     ],
     [

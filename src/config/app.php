@@ -1,6 +1,5 @@
 <?php
 
-use craft\db\MigrationManager;
 use craft\helpers\App;
 use craft\i18n\MessageFormatter;
 use craft\i18n\PhpMessageSource;
@@ -211,18 +210,6 @@ return [
         ],
         'webpack' => [
             'class' => Webpack::class,
-        ],
-        'contentMigrator' => [
-            'class' => MigrationManager::class,
-            'track' => MigrationManager::TRACK_CONTENT,
-            'migrationNamespace' => 'craft\contentmigrations',
-            'migrationPath' => '@contentMigrations',
-        ],
-        'migrator' => [
-            'class' => MigrationManager::class,
-            'track' => MigrationManager::TRACK_CRAFT,
-            'migrationNamespace' => 'CraftCms\Cms\Database\Migrations',
-            'migrationPath' => '@package/Database/Migrations',
         ],
         'sites' => [
             'class' => Sites::class,

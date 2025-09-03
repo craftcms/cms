@@ -11,6 +11,7 @@ use Craft;
 use craft\errors\MigrateException;
 use craft\helpers\FileHelper;
 use craft\models\Updates as UpdatesModel;
+use CraftCms\Cms\Database\Migrator;
 use CraftCms\Cms\License\License;
 use CraftCms\Cms\Plugin\Contracts\PluginInterface;
 use CraftCms\Cms\Plugin\Exceptions\InvalidPluginException;
@@ -175,8 +176,8 @@ class Updates extends Component
         }
 
         if ($includeContent) {
-            $contentMigrator = Craft::$app->getContentMigrator();
-            if (!empty($contentMigrator->getNewMigrations())) {
+            $contentMigrator = app(Migrator::class)->track('content');
+            if (!empty($contentMigrator->getPendingMigrations())) {
                 return true;
             }
         }
@@ -209,8 +210,8 @@ class Updates extends Component
         }
 
         if ($includeContent) {
-            $contentMigrator = Craft::$app->getContentMigrator();
-            if (!empty($contentMigrator->getNewMigrations())) {
+            $contentMigrator = app(Migrator::class)->track('content');
+            if (!empty($contentMigrator->getPendingMigrations())) {
                 $handles[] = 'content';
             }
         }
@@ -243,18 +244,22 @@ class Updates extends Component
 
         DB::beginTransaction();
 
+        $migrator = app(Migrator::class);
+        $plugins = app(Plugins::class);
+
         try {
             foreach ($handles as $handle) {
                 if ($handle === 'craft') {
-                    Craft::$app->getMigrator()->up();
+                    $migrator->track('craft')->run();
+
                     Craft::$app->getUpdates()->updateCraftVersionInfo();
                 } elseif ($handle === 'content') {
-                    Craft::$app->getContentMigrator()->up();
+                    $migrator->track('content')->run();
                 } else {
-                    $plugin = app(Plugins::class)->getPlugin($handle);
+                    $plugin = $plugins->getPlugin($handle);
+                    $plugin->getMigrator()->run();
                     $name = $plugin->name;
-                    $plugin->getMigrator()->up();
-                    app(Plugins::class)->updatePluginVersionInfo($plugin);
+                    $plugins->updatePluginVersionInfo($plugin);
                 }
             }
 

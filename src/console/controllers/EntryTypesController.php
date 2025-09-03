@@ -14,13 +14,15 @@ use craft\base\FieldLayoutElement;
 use craft\console\Controller;
 use craft\elements\Entry;
 use craft\helpers\Console;
-use craft\helpers\FileHelper;
 use craft\models\EntryType;
 use craft\models\FieldLayoutTab;
 use craft\models\Section;
+use CraftCms\Aliases\Facades\Aliases;
+use CraftCms\Cms\Database\Migrator;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Str;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\File;
 use yii\console\ExitCode;
 
 /**
@@ -245,36 +247,35 @@ MD));
             $entriesService->deleteEntryType($outgoingEntryType);
         });
 
-        $contentMigrator = Craft::$app->getContentMigrator();
-        $migrationName = sprintf('m%s_merge_%s_into_%s', gmdate('ymd_His'), $outgoingEntryType->handle, $persistingEntryType->handle);
-        $migrationPath = "$contentMigrator->migrationPath/$migrationName.php";
+        $migrationName = sprintf('%s_merge_%s_into_%s', gmdate('Y_m_d_His'), $outgoingEntryType->handle, $persistingEntryType->handle);
+        $migrationPath = database_path("migrations/{$migrationName}.php");
 
         $this->do("Generating content migration", function() use (
+            $migrationPath,
             $persistingEntryType,
             $outgoingEntryType,
-            &$uidMap,
-            $migrationName,
-            $migrationPath,
+            $uidMap,
         ) {
-            $content = $this->getView()->renderFile('@app/updates/entry-type-merge.php.template', [
-                'namespace' => Craft::$app->getContentMigrator()->migrationNamespace,
-                'className' => $migrationName,
+            ob_start();
+            File::getRequire(Aliases::get('@packageRoot/stubs/entry-type-merge.php.stub'), [
                 'persistingEntryTypeUid' => $persistingEntryType->uid,
                 'outgoingEntryTypeUid' => $outgoingEntryType->uid,
                 'layoutElementUidMap' => $uidMap,
-            ], $this);
-            FileHelper::writeToFile($migrationPath, $content);
+            ]);
+            $content = ob_get_clean();
+
+            File::put($migrationPath, $content);
         });
 
         $this->stdout(" → Running content migration …\n");
-        $contentMigrator->migrateUp($migrationName);
+        app(Migrator::class)->track('content')->run();
 
         $this->success(sprintf(<<<EOD
 Entry types merged. Commit `%s`
 and your project config changes, and run `craft up` on other environments
 for the changes to take effect.
 EOD,
-            FileHelper::relativePath($migrationPath)
+            Str::after($migrationPath, base_path('/'))
         ));
 
         return ExitCode::OK;

@@ -3,13 +3,12 @@
 namespace CraftCms\Cms\Http\Controllers\Utilities;
 
 use Craft;
-use craft\errors\MigrationException;
-use craft\web\Application;
+use CraftCms\Cms\Database\Migrator;
 use CraftCms\Cms\Support\Flash;
 use CraftCms\Cms\Utility\Utilities;
 use CraftCms\Cms\Utility\Utilities\Migrations;
-use Illuminate\Container\Attributes\Give;
 use Illuminate\Http\Request;
+use Throwable;
 
 use function CraftCms\Cms\cp_redirect;
 
@@ -23,14 +22,12 @@ final readonly class MigrationsController
         }
     }
 
-    public function __invoke(Request $request, #[Give('Craft')] Application $craft)
+    public function __invoke(Request $request, Migrator $migrator)
     {
-        $migrator = $craft->getContentMigrator();
-
         try {
-            $migrator->up();
+            $migrator->track('content')->run();
             Flash::success(Craft::t('app', 'Applied new migrations successfully.'));
-        } catch (MigrationException) {
+        } catch (Throwable) {
             Flash::fail(Craft::t('app', 'Couldn’t apply new migrations.'));
         }
 

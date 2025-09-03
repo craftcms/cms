@@ -2,8 +2,8 @@
 
 namespace CraftCms\Cms\Plugin\Contracts;
 
-use craft\db\MigrationManager;
 use CraftCms\Cms\Component\Contracts\ValidatableComponentInterface;
+use CraftCms\Cms\Database\Migrator;
 use CraftCms\Cms\Edition;
 use InvalidArgumentException;
 
@@ -156,11 +156,9 @@ interface PluginInterface
     public function uninstall(): void;
 
     /**
-     * Returns the plugin’s migration manager
-     *
-     * @return MigrationManager The plugin’s migration manager
+     * @return Migrator The plugin’s migrator
      */
-    public function getMigrator(): MigrationManager;
+    public function getMigrator(): Migrator;
 
     /**
      * Returns the model that the plugin’s settings should be stored on, if the plugin has settings.

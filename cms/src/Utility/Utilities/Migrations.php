@@ -3,6 +3,8 @@
 namespace CraftCms\Cms\Utility\Utilities;
 
 use Craft;
+use CraftCms\Cms\Database\Migrator;
+use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Utility\Utility;
 
 /**
@@ -41,7 +43,9 @@ final class Migrations extends Utility
      */
     public static function badgeCount(): int
     {
-        return count(Craft::$app->getContentMigrator()->getNewMigrations());
+        return count(app(Migrator::class)
+            ->track('content')
+            ->getPendingMigrations());
     }
 
     /**
@@ -49,14 +53,15 @@ final class Migrations extends Utility
      */
     public static function contentHtml(): string
     {
-        $view = Craft::$app->getView();
+        $migrator = app(Migrator::class)->track('content');
 
-        $migrator = Craft::$app->getContentMigrator();
+        $migrationHistory = $migrator->getRepository()->getMigrations(1_000);
+        $newMigrations = array_map(
+            fn (string $migration) => Str::after($migration, database_path('migrations/')),
+            $migrator->getPendingMigrations(),
+        );
 
-        $migrationHistory = $migrator->getMigrationHistory();
-        $newMigrations = $migrator->getNewMigrations();
-
-        return $view->renderTemplate('_components/utilities/Migrations.twig', [
+        return Craft::$app->getView()->renderTemplate('_components/utilities/Migrations.twig', [
             'migrationHistory' => $migrationHistory,
             'newMigrations' => $newMigrations,
         ]);

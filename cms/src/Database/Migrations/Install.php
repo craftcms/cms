@@ -19,6 +19,8 @@ use craft\models\Site;
 use craft\services\ProjectConfig;
 use craft\web\Response;
 use CraftCms\Cms\Config\GeneralConfig;
+use CraftCms\Cms\Database\Migration;
+use CraftCms\Cms\Database\Migrator;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Element\Enums\PropagationMethod;
@@ -44,7 +46,7 @@ class Install extends Migration
         parent::__construct();
     }
 
-    public function up(): bool
+    public function up(): void
     {
         if (! $this->_validateProjectConfig($error)) {
             $message = "Project config validation failed: $error Run `composer install` or remove your `config/project/` folder and try again.";
@@ -54,21 +56,13 @@ class Install extends Migration
             throw new OperationAbortedException($message);
         }
 
-        $this->task('Creating tables', function () {
-            $this->createTables();
+        $this->components->task('Creating tables', fn () => $this->createTables());
+        $this->components->task('Creating indexes', fn () => $this->createIndexes());
+        $this->components->task('Adding foreign keys', fn () => $this->addForeignKeys());
+
+        DB::afterCommit(function () {
+            $this->insertDefaultData();
         });
-
-        $this->task('Creating indexes', function () {
-            $this->createIndexes();
-        });
-
-        $this->task('Adding foreign keys', function () {
-            $this->addForeignKeys();
-        });
-
-        $this->insertDefaultData();
-
-        return true;
     }
 
     /**
@@ -531,15 +525,9 @@ class Install extends Migration
             $table->char('uid', 36)->default('0');
         });
 
-        Schema::create(Table::MIGRATIONS, function (Blueprint $table) {
-            $table->integer('id', true);
-            $table->string('track');
-            $table->string('name');
-            $table->dateTime('applyTime');
-            $table->dateTime('dateCreated');
-            $table->dateTime('dateUpdated');
-            $table->char('uid', 36)->default('0');
-        });
+        app(Migrator::class)
+            ->getRepository()
+            ->createRepository();
 
         Schema::create('plugins', function (Blueprint $table) {
             $table->integer('id', true);
@@ -909,132 +897,131 @@ class Install extends Migration
 
     public function createIndexes(): void
     {
-        $this->createIndex(Table::ANNOUNCEMENTS, ['userId', 'unread', 'dateRead', 'dateCreated']);
-        $this->createIndex(Table::ANNOUNCEMENTS, ['dateRead']);
-        $this->createIndex(Table::ASSETINDEXDATA, ['sessionId', 'volumeId']);
-        $this->createIndex(Table::ASSETINDEXDATA, ['volumeId']);
-        $this->createIndex(Table::ASSETS, ['filename', 'folderId']);
-        $this->createIndex(Table::ASSETS, ['folderId']);
-        $this->createIndex(Table::ASSETS, ['volumeId']);
-        $this->createIndex(Table::BULKOPEVENTS, ['timestamp']);
-        $this->createIndex(Table::CATEGORIES, ['groupId']);
-        $this->createIndex(Table::CATEGORYGROUPS, ['name']);
-        $this->createIndex(Table::CATEGORYGROUPS, ['handle']);
-        $this->createIndex(Table::CATEGORYGROUPS, ['structureId']);
-        $this->createIndex(Table::CATEGORYGROUPS, ['fieldLayoutId']);
-        $this->createIndex(Table::CATEGORYGROUPS, ['dateDeleted']);
-        $this->createIndex(Table::CATEGORYGROUPS_SITES, ['groupId', 'siteId'], unique: true);
-        $this->createIndex(Table::CATEGORYGROUPS_SITES, ['siteId']);
-        $this->createIndex(Table::CHANGEDATTRIBUTES, ['elementId', 'siteId', 'dateUpdated']);
-        $this->createIndex(Table::CHANGEDFIELDS, ['elementId', 'siteId', 'dateUpdated']);
-        $this->createIndex(Table::CONTENTBLOCKS, ['primaryOwnerId']);
-        $this->createIndex(Table::CONTENTBLOCKS, ['fieldId']);
-        $this->createIndex(Table::DEPRECATIONERRORS, ['key', 'fingerprint'], unique: true);
-        $this->createIndex(Table::DRAFTS, ['creatorId', 'provisional']);
-        $this->createIndex(Table::DRAFTS, ['saved']);
-        $this->createIndex(Table::ELEMENTACTIVITY, ['elementId', 'timestamp', 'userId']);
-        $this->createIndex(Table::ELEMENTS, ['dateDeleted']);
-        $this->createIndex(Table::ELEMENTS, ['fieldLayoutId']);
-        $this->createIndex(Table::ELEMENTS, ['type']);
-        $this->createIndex(Table::ELEMENTS, ['enabled']);
-        $this->createIndex(Table::ELEMENTS, ['canonicalId']);
-        $this->createIndex(Table::ELEMENTS, ['archived', 'dateCreated']);
-        $this->createIndex(Table::ELEMENTS, ['archived', 'dateDeleted', 'draftId', 'revisionId', 'canonicalId']);
-        $this->createIndex(Table::ELEMENTS, ['archived', 'dateDeleted', 'draftId', 'revisionId', 'canonicalId', 'enabled']);
-        $this->createIndex(Table::ELEMENTS_BULKOPS, ['timestamp']);
-        $this->createIndex(Table::ELEMENTS_SITES, ['elementId', 'siteId'], unique: true);
-        $this->createIndex(Table::ELEMENTS_SITES, ['siteId']);
-        $this->createIndex(Table::ELEMENTS_SITES, ['title', 'siteId']);
-        $this->createIndex(Table::ELEMENTS_SITES, ['slug', 'siteId']);
-        $this->createIndex(Table::ELEMENTS_SITES, ['enabled']);
-        $this->createIndex(Table::SYSTEMMESSAGES, ['key', 'language'], unique: true);
-        $this->createIndex(Table::SYSTEMMESSAGES, ['language']);
-        $this->createIndex(Table::ENTRIES, ['postDate']);
-        $this->createIndex(Table::ENTRIES, ['expiryDate']);
-        $this->createIndex(Table::ENTRIES, ['status']);
-        $this->createIndex(Table::ENTRIES, ['sectionId']);
-        $this->createIndex(Table::ENTRIES, ['typeId']);
-        $this->createIndex(Table::ENTRIES_AUTHORS, ['authorId']);
-        $this->createIndex(Table::ENTRIES_AUTHORS, ['entryId', 'sortOrder']);
-        $this->createIndex(Table::ENTRIES, ['primaryOwnerId']);
-        $this->createIndex(Table::ENTRIES, ['fieldId']);
-        $this->createIndex(Table::ENTRYTYPES, ['fieldLayoutId']);
-        $this->createIndex(Table::ENTRYTYPES, ['dateDeleted']);
-        $this->createIndex(Table::FIELDLAYOUTS, ['dateDeleted']);
-        $this->createIndex(Table::FIELDLAYOUTS, ['type']);
-        $this->createIndex(Table::FIELDS, ['handle', 'context']);
-        $this->createIndex(Table::FIELDS, ['context']);
-        $this->createIndex(Table::FIELDS, ['dateDeleted']);
-        $this->createIndex(Table::GLOBALSETS, ['name']);
-        $this->createIndex(Table::GLOBALSETS, ['handle']);
-        $this->createIndex(Table::GLOBALSETS, ['fieldLayoutId']);
-        $this->createIndex(Table::GLOBALSETS, ['sortOrder']);
-        $this->createIndex(Table::GQLTOKENS, ['accessToken'], unique: true);
-        $this->createIndex(Table::GQLTOKENS, ['name'], unique: true);
-        $this->createIndex(Table::IMAGETRANSFORMINDEX, ['assetId', 'transformString']);
-        $this->createIndex(Table::IMAGETRANSFORMS, ['name']);
-        $this->createIndex(Table::IMAGETRANSFORMS, ['handle']);
-        $this->createIndex(Table::MIGRATIONS, ['track', 'name'], unique: true);
-        $this->createIndex(Table::PLUGINS, ['handle'], unique: true);
-        $this->createIndex(Table::QUEUE, ['channel', 'fail', 'timeUpdated', 'timePushed']);
-        $this->createIndex(Table::QUEUE, ['channel', 'fail', 'timeUpdated', 'delay']);
-        $this->createIndex(Table::RELATIONS, ['fieldId', 'sourceId', 'sourceSiteId', 'targetId'], unique: true);
-        $this->createIndex(Table::RELATIONS, ['sourceId']);
-        $this->createIndex(Table::RELATIONS, ['targetId']);
-        $this->createIndex(Table::RELATIONS, ['sourceSiteId']);
-        $this->createIndex(Table::REVISIONS, ['canonicalId', 'num'], unique: true);
-        $this->createIndex(Table::SEARCHINDEXQUEUE, ['elementId', 'siteId', 'reserved']);
-        $this->createIndex(Table::SEARCHINDEXQUEUE_FIELDS, ['jobId', 'fieldHandle'], unique: true);
-        $this->createIndex(Table::SECTIONS, ['handle']);
-        $this->createIndex(Table::SECTIONS, ['name']);
-        $this->createIndex(Table::SECTIONS, ['structureId']);
-        $this->createIndex(Table::SECTIONS, ['dateDeleted']);
-        $this->createIndex(Table::SECTIONS_SITES, ['sectionId', 'siteId'], unique: true);
-        $this->createIndex(Table::SECTIONS_SITES, ['siteId']);
-        $this->createIndex(Table::SESSIONS, ['uid']);
-        $this->createIndex(Table::SESSIONS, ['token']);
-        $this->createIndex(Table::SESSIONS, ['dateUpdated']);
-        $this->createIndex(Table::SESSIONS, ['userId']);
-        $this->createIndex(Table::SHUNNEDMESSAGES, ['userId', 'message'], unique: true);
-        $this->createIndex(Table::SITES, ['dateDeleted']);
-        $this->createIndex(Table::SITES, ['handle']);
-        $this->createIndex(Table::SITES, ['sortOrder']);
-        $this->createIndex(Table::SITEGROUPS, ['name']);
-        $this->createIndex(Table::STRUCTUREELEMENTS, ['structureId', 'elementId'], unique: true);
-        $this->createIndex(Table::STRUCTUREELEMENTS, ['root']);
-        $this->createIndex(Table::STRUCTUREELEMENTS, ['lft']);
-        $this->createIndex(Table::STRUCTUREELEMENTS, ['rgt']);
-        $this->createIndex(Table::STRUCTUREELEMENTS, ['level']);
-        $this->createIndex(Table::STRUCTUREELEMENTS, ['elementId']);
-        $this->createIndex(Table::STRUCTURES, ['dateDeleted']);
-        $this->createIndex(Table::TAGGROUPS, ['name']);
-        $this->createIndex(Table::TAGGROUPS, ['handle']);
-        $this->createIndex(Table::TAGGROUPS, ['dateDeleted']);
-        $this->createIndex(Table::TAGS, ['groupId']);
-        $this->createIndex(Table::TOKENS, ['token'], unique: true);
-        $this->createIndex(Table::TOKENS, ['expiryDate']);
-        $this->createIndex(Table::USERGROUPS, ['handle']);
-        $this->createIndex(Table::USERGROUPS, ['name']);
-        $this->createIndex(Table::USERGROUPS_USERS, ['groupId', 'userId'], unique: true);
-        $this->createIndex(Table::USERGROUPS_USERS, ['userId']);
-        $this->createIndex(Table::USERPERMISSIONS, ['name'], unique: true);
-        $this->createIndex(Table::USERPERMISSIONS_USERGROUPS, ['permissionId', 'groupId'], unique: true);
-        $this->createIndex(Table::USERPERMISSIONS_USERGROUPS, ['groupId']);
-        $this->createIndex(Table::USERPERMISSIONS_USERS, ['permissionId', 'userId'], unique: true);
-        $this->createIndex(Table::USERPERMISSIONS_USERS, ['userId']);
-        $this->createIndex(Table::USERS, ['active']);
-        $this->createIndex(Table::USERS, ['locked']);
-        $this->createIndex(Table::USERS, ['pending']);
-        $this->createIndex(Table::USERS, ['suspended']);
-        $this->createIndex(Table::USERS, ['verificationCode']);
-        $this->createIndex(Table::VOLUMEFOLDERS, ['name', 'parentId', 'volumeId'], unique: true);
-        $this->createIndex(Table::VOLUMEFOLDERS, ['parentId']);
-        $this->createIndex(Table::VOLUMEFOLDERS, ['volumeId']);
-        $this->createIndex(Table::VOLUMES, ['name']);
-        $this->createIndex(Table::VOLUMES, ['handle']);
-        $this->createIndex(Table::VOLUMES, ['fieldLayoutId']);
-        $this->createIndex(Table::VOLUMES, ['dateDeleted']);
-        $this->createIndex(Table::WIDGETS, ['userId']);
+        Schema::createIndex(Table::ANNOUNCEMENTS, ['userId', 'unread', 'dateRead', 'dateCreated']);
+        Schema::createIndex(Table::ANNOUNCEMENTS, ['dateRead']);
+        Schema::createIndex(Table::ASSETINDEXDATA, ['sessionId', 'volumeId']);
+        Schema::createIndex(Table::ASSETINDEXDATA, ['volumeId']);
+        Schema::createIndex(Table::ASSETS, ['filename', 'folderId']);
+        Schema::createIndex(Table::ASSETS, ['folderId']);
+        Schema::createIndex(Table::ASSETS, ['volumeId']);
+        Schema::createIndex(Table::BULKOPEVENTS, ['timestamp']);
+        Schema::createIndex(Table::CATEGORIES, ['groupId']);
+        Schema::createIndex(Table::CATEGORYGROUPS, ['name']);
+        Schema::createIndex(Table::CATEGORYGROUPS, ['handle']);
+        Schema::createIndex(Table::CATEGORYGROUPS, ['structureId']);
+        Schema::createIndex(Table::CATEGORYGROUPS, ['fieldLayoutId']);
+        Schema::createIndex(Table::CATEGORYGROUPS, ['dateDeleted']);
+        Schema::createIndex(Table::CATEGORYGROUPS_SITES, ['groupId', 'siteId'], unique: true);
+        Schema::createIndex(Table::CATEGORYGROUPS_SITES, ['siteId']);
+        Schema::createIndex(Table::CHANGEDATTRIBUTES, ['elementId', 'siteId', 'dateUpdated']);
+        Schema::createIndex(Table::CHANGEDFIELDS, ['elementId', 'siteId', 'dateUpdated']);
+        Schema::createIndex(Table::CONTENTBLOCKS, ['primaryOwnerId']);
+        Schema::createIndex(Table::CONTENTBLOCKS, ['fieldId']);
+        Schema::createIndex(Table::DEPRECATIONERRORS, ['key', 'fingerprint'], unique: true);
+        Schema::createIndex(Table::DRAFTS, ['creatorId', 'provisional']);
+        Schema::createIndex(Table::DRAFTS, ['saved']);
+        Schema::createIndex(Table::ELEMENTACTIVITY, ['elementId', 'timestamp', 'userId']);
+        Schema::createIndex(Table::ELEMENTS, ['dateDeleted']);
+        Schema::createIndex(Table::ELEMENTS, ['fieldLayoutId']);
+        Schema::createIndex(Table::ELEMENTS, ['type']);
+        Schema::createIndex(Table::ELEMENTS, ['enabled']);
+        Schema::createIndex(Table::ELEMENTS, ['canonicalId']);
+        Schema::createIndex(Table::ELEMENTS, ['archived', 'dateCreated']);
+        Schema::createIndex(Table::ELEMENTS, ['archived', 'dateDeleted', 'draftId', 'revisionId', 'canonicalId']);
+        Schema::createIndex(Table::ELEMENTS, ['archived', 'dateDeleted', 'draftId', 'revisionId', 'canonicalId', 'enabled']);
+        Schema::createIndex(Table::ELEMENTS_BULKOPS, ['timestamp']);
+        Schema::createIndex(Table::ELEMENTS_SITES, ['elementId', 'siteId'], unique: true);
+        Schema::createIndex(Table::ELEMENTS_SITES, ['siteId']);
+        Schema::createIndex(Table::ELEMENTS_SITES, ['title', 'siteId']);
+        Schema::createIndex(Table::ELEMENTS_SITES, ['slug', 'siteId']);
+        Schema::createIndex(Table::ELEMENTS_SITES, ['enabled']);
+        Schema::createIndex(Table::SYSTEMMESSAGES, ['key', 'language'], unique: true);
+        Schema::createIndex(Table::SYSTEMMESSAGES, ['language']);
+        Schema::createIndex(Table::ENTRIES, ['postDate']);
+        Schema::createIndex(Table::ENTRIES, ['expiryDate']);
+        Schema::createIndex(Table::ENTRIES, ['status']);
+        Schema::createIndex(Table::ENTRIES, ['sectionId']);
+        Schema::createIndex(Table::ENTRIES, ['typeId']);
+        Schema::createIndex(Table::ENTRIES_AUTHORS, ['authorId']);
+        Schema::createIndex(Table::ENTRIES_AUTHORS, ['entryId', 'sortOrder']);
+        Schema::createIndex(Table::ENTRIES, ['primaryOwnerId']);
+        Schema::createIndex(Table::ENTRIES, ['fieldId']);
+        Schema::createIndex(Table::ENTRYTYPES, ['fieldLayoutId']);
+        Schema::createIndex(Table::ENTRYTYPES, ['dateDeleted']);
+        Schema::createIndex(Table::FIELDLAYOUTS, ['dateDeleted']);
+        Schema::createIndex(Table::FIELDLAYOUTS, ['type']);
+        Schema::createIndex(Table::FIELDS, ['handle', 'context']);
+        Schema::createIndex(Table::FIELDS, ['context']);
+        Schema::createIndex(Table::FIELDS, ['dateDeleted']);
+        Schema::createIndex(Table::GLOBALSETS, ['name']);
+        Schema::createIndex(Table::GLOBALSETS, ['handle']);
+        Schema::createIndex(Table::GLOBALSETS, ['fieldLayoutId']);
+        Schema::createIndex(Table::GLOBALSETS, ['sortOrder']);
+        Schema::createIndex(Table::GQLTOKENS, ['accessToken'], unique: true);
+        Schema::createIndex(Table::GQLTOKENS, ['name'], unique: true);
+        Schema::createIndex(Table::IMAGETRANSFORMINDEX, ['assetId', 'transformString']);
+        Schema::createIndex(Table::IMAGETRANSFORMS, ['name']);
+        Schema::createIndex(Table::IMAGETRANSFORMS, ['handle']);
+        Schema::createIndex(Table::PLUGINS, ['handle'], unique: true);
+        Schema::createIndex(Table::QUEUE, ['channel', 'fail', 'timeUpdated', 'timePushed']);
+        Schema::createIndex(Table::QUEUE, ['channel', 'fail', 'timeUpdated', 'delay']);
+        Schema::createIndex(Table::RELATIONS, ['fieldId', 'sourceId', 'sourceSiteId', 'targetId'], unique: true);
+        Schema::createIndex(Table::RELATIONS, ['sourceId']);
+        Schema::createIndex(Table::RELATIONS, ['targetId']);
+        Schema::createIndex(Table::RELATIONS, ['sourceSiteId']);
+        Schema::createIndex(Table::REVISIONS, ['canonicalId', 'num'], unique: true);
+        Schema::createIndex(Table::SEARCHINDEXQUEUE, ['elementId', 'siteId', 'reserved']);
+        Schema::createIndex(Table::SEARCHINDEXQUEUE_FIELDS, ['jobId', 'fieldHandle'], unique: true);
+        Schema::createIndex(Table::SECTIONS, ['handle']);
+        Schema::createIndex(Table::SECTIONS, ['name']);
+        Schema::createIndex(Table::SECTIONS, ['structureId']);
+        Schema::createIndex(Table::SECTIONS, ['dateDeleted']);
+        Schema::createIndex(Table::SECTIONS_SITES, ['sectionId', 'siteId'], unique: true);
+        Schema::createIndex(Table::SECTIONS_SITES, ['siteId']);
+        Schema::createIndex(Table::SESSIONS, ['uid']);
+        Schema::createIndex(Table::SESSIONS, ['token']);
+        Schema::createIndex(Table::SESSIONS, ['dateUpdated']);
+        Schema::createIndex(Table::SESSIONS, ['userId']);
+        Schema::createIndex(Table::SHUNNEDMESSAGES, ['userId', 'message'], unique: true);
+        Schema::createIndex(Table::SITES, ['dateDeleted']);
+        Schema::createIndex(Table::SITES, ['handle']);
+        Schema::createIndex(Table::SITES, ['sortOrder']);
+        Schema::createIndex(Table::SITEGROUPS, ['name']);
+        Schema::createIndex(Table::STRUCTUREELEMENTS, ['structureId', 'elementId'], unique: true);
+        Schema::createIndex(Table::STRUCTUREELEMENTS, ['root']);
+        Schema::createIndex(Table::STRUCTUREELEMENTS, ['lft']);
+        Schema::createIndex(Table::STRUCTUREELEMENTS, ['rgt']);
+        Schema::createIndex(Table::STRUCTUREELEMENTS, ['level']);
+        Schema::createIndex(Table::STRUCTUREELEMENTS, ['elementId']);
+        Schema::createIndex(Table::STRUCTURES, ['dateDeleted']);
+        Schema::createIndex(Table::TAGGROUPS, ['name']);
+        Schema::createIndex(Table::TAGGROUPS, ['handle']);
+        Schema::createIndex(Table::TAGGROUPS, ['dateDeleted']);
+        Schema::createIndex(Table::TAGS, ['groupId']);
+        Schema::createIndex(Table::TOKENS, ['token'], unique: true);
+        Schema::createIndex(Table::TOKENS, ['expiryDate']);
+        Schema::createIndex(Table::USERGROUPS, ['handle']);
+        Schema::createIndex(Table::USERGROUPS, ['name']);
+        Schema::createIndex(Table::USERGROUPS_USERS, ['groupId', 'userId'], unique: true);
+        Schema::createIndex(Table::USERGROUPS_USERS, ['userId']);
+        Schema::createIndex(Table::USERPERMISSIONS, ['name'], unique: true);
+        Schema::createIndex(Table::USERPERMISSIONS_USERGROUPS, ['permissionId', 'groupId'], unique: true);
+        Schema::createIndex(Table::USERPERMISSIONS_USERGROUPS, ['groupId']);
+        Schema::createIndex(Table::USERPERMISSIONS_USERS, ['permissionId', 'userId'], unique: true);
+        Schema::createIndex(Table::USERPERMISSIONS_USERS, ['userId']);
+        Schema::createIndex(Table::USERS, ['active']);
+        Schema::createIndex(Table::USERS, ['locked']);
+        Schema::createIndex(Table::USERS, ['pending']);
+        Schema::createIndex(Table::USERS, ['suspended']);
+        Schema::createIndex(Table::USERS, ['verificationCode']);
+        Schema::createIndex(Table::VOLUMEFOLDERS, ['name', 'parentId', 'volumeId'], unique: true);
+        Schema::createIndex(Table::VOLUMEFOLDERS, ['parentId']);
+        Schema::createIndex(Table::VOLUMEFOLDERS, ['volumeId']);
+        Schema::createIndex(Table::VOLUMES, ['name']);
+        Schema::createIndex(Table::VOLUMES, ['handle']);
+        Schema::createIndex(Table::VOLUMES, ['fieldLayoutId']);
+        Schema::createIndex(Table::VOLUMES, ['dateDeleted']);
+        Schema::createIndex(Table::WIDGETS, ['userId']);
 
         Schema::create(Table::SEARCHINDEX, function (Blueprint $table) {
             $table->integer('elementId');
@@ -1047,9 +1034,9 @@ class Install extends Migration
         });
 
         if (Craft::$app->getDb()->getIsMysql()) {
-            $this->createIndex(Table::ELEMENTS_SITES, ['uri', 'siteId']);
-            $this->createIndex(Table::USERS, ['email']);
-            $this->createIndex(Table::USERS, ['username']);
+            Schema::createIndex(Table::ELEMENTS_SITES, ['uri', 'siteId']);
+            Schema::createIndex(Table::USERS, ['email']);
+            Schema::createIndex(Table::USERS, ['username']);
 
             Schema::table(Table::SEARCHINDEX, function (Blueprint $table) {
                 $table->fullText('keywords');
@@ -1071,103 +1058,103 @@ class Install extends Migration
 
     public function addForeignKeys(): void
     {
-        $this->addForeignKey(Table::ADDRESSES, ['id'], Table::ELEMENTS, ['id'], onDelete: 'CASCADE');
-        $this->addForeignKey(Table::ADDRESSES, ['primaryOwnerId'], Table::ELEMENTS, ['id'], onDelete: 'CASCADE');
-        $this->addForeignKey(Table::ANNOUNCEMENTS, ['userId'], Table::USERS, ['id'], onDelete: 'CASCADE');
-        $this->addForeignKey(Table::ANNOUNCEMENTS, ['pluginId'], Table::PLUGINS, ['id'], onDelete: 'CASCADE');
-        $this->addForeignKey(Table::ASSETINDEXDATA, ['volumeId'], Table::VOLUMES, ['id'], onDelete: 'CASCADE');
-        $this->addForeignKey(Table::ASSETINDEXDATA, ['sessionId'], Table::ASSETINDEXINGSESSIONS, ['id'], onDelete: 'CASCADE');
-        $this->addForeignKey(Table::ASSETS, ['folderId'], Table::VOLUMEFOLDERS, ['id'], onDelete: 'CASCADE');
-        $this->addForeignKey(Table::ASSETS, ['id'], Table::ELEMENTS, ['id'], onDelete: 'CASCADE');
-        $this->addForeignKey(Table::ASSETS, ['uploaderId'], Table::USERS, ['id'], onDelete: 'SET NULL');
-        $this->addForeignKey(Table::ASSETS, ['volumeId'], Table::VOLUMES, ['id'], onDelete: 'CASCADE');
-        $this->addForeignKey(Table::ASSETS_SITES, ['assetId'], Table::ASSETS, ['id'], onDelete: 'CASCADE');
-        $this->addForeignKey(Table::ASSETS_SITES, ['siteId'], Table::SITES, ['id'], onDelete: 'CASCADE', onUpdate: 'CASCADE');
-        $this->addForeignKey(Table::AUTHENTICATOR, ['userId'], Table::USERS, ['id'], onDelete: 'CASCADE');
-        $this->addForeignKey(Table::CATEGORIES, ['groupId'], Table::CATEGORYGROUPS, ['id'], onDelete: 'CASCADE');
-        $this->addForeignKey(Table::CATEGORIES, ['id'], Table::ELEMENTS, ['id'], onDelete: 'CASCADE');
-        $this->addForeignKey(Table::CATEGORIES, ['parentId'], Table::CATEGORIES, ['id'], onDelete: 'SET NULL');
-        $this->addForeignKey(Table::CATEGORYGROUPS, ['fieldLayoutId'], Table::FIELDLAYOUTS, ['id'], onDelete: 'SET NULL');
-        $this->addForeignKey(Table::CATEGORYGROUPS, ['structureId'], Table::STRUCTURES, ['id'], onDelete: 'CASCADE');
-        $this->addForeignKey(Table::CATEGORYGROUPS_SITES, ['groupId'], Table::CATEGORYGROUPS, ['id'], onDelete: 'CASCADE');
-        $this->addForeignKey(Table::CATEGORYGROUPS_SITES, ['siteId'], Table::SITES, ['id'], onDelete: 'CASCADE', onUpdate: 'CASCADE');
-        $this->addForeignKey(Table::CHANGEDATTRIBUTES, ['elementId'], Table::ELEMENTS, ['id'], onDelete: 'CASCADE', onUpdate: 'CASCADE');
-        $this->addForeignKey(Table::CHANGEDATTRIBUTES, ['siteId'], Table::SITES, ['id'], onDelete: 'CASCADE', onUpdate: 'CASCADE');
-        $this->addForeignKey(Table::CHANGEDATTRIBUTES, ['userId'], Table::USERS, ['id'], onDelete: 'SET NULL', onUpdate: 'CASCADE');
-        $this->addForeignKey(Table::CHANGEDFIELDS, ['elementId'], Table::ELEMENTS, ['id'], onDelete: 'CASCADE', onUpdate: 'CASCADE');
-        $this->addForeignKey(Table::CONTENTBLOCKS, ['id'], Table::ELEMENTS, ['id'], onDelete: 'CASCADE');
-        $this->addForeignKey(Table::CONTENTBLOCKS, ['fieldId'], Table::FIELDS, ['id'], onDelete: 'CASCADE');
-        $this->addForeignKey(Table::CONTENTBLOCKS, ['primaryOwnerId'], Table::ELEMENTS, ['id'], onDelete: 'CASCADE');
-        $this->addForeignKey(Table::CHANGEDFIELDS, ['siteId'], Table::SITES, ['id'], onDelete: 'CASCADE', onUpdate: 'CASCADE');
-        $this->addForeignKey(Table::CHANGEDFIELDS, ['fieldId'], Table::FIELDS, ['id'], onDelete: 'CASCADE', onUpdate: 'CASCADE');
-        $this->addForeignKey(Table::CHANGEDFIELDS, ['userId'], Table::USERS, ['id'], onDelete: 'SET NULL', onUpdate: 'CASCADE');
-        $this->addForeignKey(Table::CRAFTIDTOKENS, ['userId'], Table::USERS, ['id'], onDelete: 'CASCADE');
-        $this->addForeignKey(Table::DRAFTS, ['creatorId'], Table::USERS, ['id'], onDelete: 'SET NULL');
-        $this->addForeignKey(Table::DRAFTS, ['canonicalId'], Table::ELEMENTS, ['id'], onDelete: 'CASCADE');
-        $this->addForeignKey(Table::ELEMENTACTIVITY, ['elementId'], Table::ELEMENTS, ['id'], onDelete: 'CASCADE');
-        $this->addForeignKey(Table::ELEMENTACTIVITY, ['userId'], Table::USERS, ['id'], onDelete: 'CASCADE');
-        $this->addForeignKey(Table::ELEMENTACTIVITY, ['siteId'], Table::SITES, ['id'], onDelete: 'CASCADE');
-        $this->addForeignKey(Table::ELEMENTACTIVITY, ['draftId'], Table::DRAFTS, ['id'], onDelete: 'CASCADE');
-        $this->addForeignKey(Table::ELEMENTS, ['canonicalId'], Table::ELEMENTS, ['id'], onDelete: 'SET NULL');
-        $this->addForeignKey(Table::ELEMENTS, ['draftId'], Table::DRAFTS, ['id'], onDelete: 'CASCADE');
-        $this->addForeignKey(Table::ELEMENTS, ['revisionId'], Table::REVISIONS, ['id'], onDelete: 'CASCADE');
-        $this->addForeignKey(Table::ELEMENTS, ['fieldLayoutId'], Table::FIELDLAYOUTS, ['id'], onDelete: 'SET NULL');
-        $this->addForeignKey(Table::ELEMENTS_OWNERS, ['elementId'], Table::ELEMENTS, ['id'], onDelete: 'CASCADE');
-        $this->addForeignKey(Table::ELEMENTS_OWNERS, ['ownerId'], Table::ELEMENTS, ['id'], onDelete: 'CASCADE');
-        $this->addForeignKey(Table::ELEMENTS_SITES, ['elementId'], Table::ELEMENTS, ['id'], onDelete: 'CASCADE');
-        $this->addForeignKey(Table::ELEMENTS_SITES, ['siteId'], Table::SITES, ['id'], onDelete: 'CASCADE', onUpdate: 'CASCADE');
-        $this->addForeignKey(Table::ENTRIES, ['id'], Table::ELEMENTS, ['id'], onDelete: 'CASCADE');
-        $this->addForeignKey(Table::ENTRIES, ['sectionId'], Table::SECTIONS, ['id'], onDelete: 'CASCADE');
-        $this->addForeignKey(Table::ENTRIES, ['parentId'], Table::ENTRIES, ['id'], onDelete: 'SET NULL');
-        $this->addForeignKey(Table::ENTRIES, ['typeId'], Table::ENTRYTYPES, ['id'], onDelete: 'CASCADE');
-        $this->addForeignKey(Table::ENTRIES_AUTHORS, ['entryId'], Table::ENTRIES, ['id'], onDelete: 'CASCADE');
-        $this->addForeignKey(Table::ENTRIES_AUTHORS, ['authorId'], Table::USERS, ['id'], onDelete: 'CASCADE');
-        $this->addForeignKey(Table::ENTRIES, ['fieldId'], Table::FIELDS, ['id'], onDelete: 'CASCADE');
-        $this->addForeignKey(Table::ENTRIES, ['primaryOwnerId'], Table::ELEMENTS, ['id'], onDelete: 'CASCADE');
-        $this->addForeignKey(Table::ENTRYTYPES, ['fieldLayoutId'], Table::FIELDLAYOUTS, ['id'], onDelete: 'SET NULL');
-        $this->addForeignKey(Table::GLOBALSETS, ['fieldLayoutId'], Table::FIELDLAYOUTS, ['id'], onDelete: 'SET NULL');
-        $this->addForeignKey(Table::GLOBALSETS, ['id'], Table::ELEMENTS, ['id'], onDelete: 'CASCADE');
-        $this->addForeignKey(Table::GQLTOKENS, 'schemaId', Table::GQLSCHEMAS, 'id', onDelete: 'SET NULL');
-        $this->addForeignKey(Table::RELATIONS, ['fieldId'], Table::FIELDS, ['id'], onDelete: 'CASCADE');
-        $this->addForeignKey(Table::RELATIONS, ['sourceId'], Table::ELEMENTS, ['id'], onDelete: 'CASCADE');
-        $this->addForeignKey(Table::RELATIONS, ['sourceSiteId'], Table::SITES, ['id'], onDelete: 'CASCADE', onUpdate: 'CASCADE');
-        $this->addForeignKey(Table::REVISIONS, ['creatorId'], Table::USERS, ['id'], onDelete: 'SET NULL');
-        $this->addForeignKey(Table::REVISIONS, ['canonicalId'], Table::ELEMENTS, ['id'], onDelete: 'CASCADE');
-        $this->addForeignKey(Table::SEARCHINDEXQUEUE, 'elementId', Table::ELEMENTS, 'id', onDelete: 'CASCADE');
-        $this->addForeignKey(Table::SEARCHINDEXQUEUE_FIELDS, 'jobId', Table::SEARCHINDEXQUEUE, 'id', onDelete: 'CASCADE');
-        $this->addForeignKey(Table::SECTIONS, ['structureId'], Table::STRUCTURES, ['id'], onDelete: 'SET NULL');
-        $this->addForeignKey(Table::SECTIONS_ENTRYTYPES, ['sectionId'], Table::SECTIONS, ['id'], onDelete: 'CASCADE');
-        $this->addForeignKey(Table::SECTIONS_ENTRYTYPES, ['typeId'], Table::ENTRYTYPES, ['id'], onDelete: 'CASCADE');
-        $this->addForeignKey(Table::SECTIONS_SITES, ['siteId'], Table::SITES, ['id'], onDelete: 'CASCADE', onUpdate: 'CASCADE');
-        $this->addForeignKey(Table::SECTIONS_SITES, ['sectionId'], Table::SECTIONS, ['id'], onDelete: 'CASCADE');
-        $this->addForeignKey(Table::SESSIONS, ['userId'], Table::USERS, ['id'], onDelete: 'CASCADE');
-        $this->addForeignKey(Table::SHUNNEDMESSAGES, ['userId'], Table::USERS, ['id'], onDelete: 'CASCADE');
-        $this->addForeignKey(Table::SITES, ['groupId'], Table::SITEGROUPS, ['id'], onDelete: 'CASCADE');
-        $this->addForeignKey(Table::SSO_IDENTITIES, ['userId'], Table::USERS, ['id'], onDelete: 'CASCADE');
-        $this->addForeignKey(Table::STRUCTUREELEMENTS, ['structureId'], Table::STRUCTURES, ['id'], onDelete: 'CASCADE');
-        $this->addForeignKey(Table::TAGGROUPS, ['fieldLayoutId'], Table::FIELDLAYOUTS, ['id'], onDelete: 'SET NULL');
-        $this->addForeignKey(Table::TAGS, ['groupId'], Table::TAGGROUPS, ['id'], onDelete: 'CASCADE');
-        $this->addForeignKey(Table::TAGS, ['id'], Table::ELEMENTS, ['id'], onDelete: 'CASCADE');
-        $this->addForeignKey(Table::USERGROUPS_USERS, ['groupId'], Table::USERGROUPS, ['id'], onDelete: 'CASCADE');
-        $this->addForeignKey(Table::USERGROUPS_USERS, ['userId'], Table::USERS, ['id'], onDelete: 'CASCADE');
-        $this->addForeignKey(Table::USERPERMISSIONS_USERGROUPS, ['groupId'], Table::USERGROUPS, ['id'], onDelete: 'CASCADE');
-        $this->addForeignKey(Table::USERPERMISSIONS_USERGROUPS, ['permissionId'], Table::USERPERMISSIONS, ['id'], onDelete: 'CASCADE');
-        $this->addForeignKey(Table::USERPERMISSIONS_USERS, ['permissionId'], Table::USERPERMISSIONS, ['id'], onDelete: 'CASCADE');
-        $this->addForeignKey(Table::USERPERMISSIONS_USERS, ['userId'], Table::USERS, ['id'], onDelete: 'CASCADE');
-        $this->addForeignKey(Table::USERPREFERENCES, ['userId'], Table::USERS, ['id'], onDelete: 'CASCADE');
-        $this->addForeignKey(Table::USERS, ['id'], Table::ELEMENTS, ['id'], onDelete: 'CASCADE');
-        $this->addForeignKey(Table::USERS, ['photoId'], Table::ASSETS, ['id'], onDelete: 'SET NULL');
-        $this->addForeignKey(Table::USERS, ['affiliatedSiteId'], Table::SITES, ['id'], onDelete: 'SET NULL');
-        $this->addForeignKey(Table::VOLUMEFOLDERS, ['parentId'], Table::VOLUMEFOLDERS, ['id'], onDelete: 'CASCADE');
-        $this->addForeignKey(Table::VOLUMEFOLDERS, ['volumeId'], Table::VOLUMES, ['id'], onDelete: 'CASCADE');
-        $this->addForeignKey(Table::VOLUMES, ['fieldLayoutId'], Table::FIELDLAYOUTS, ['id'], onDelete: 'SET NULL');
-        $this->addForeignKey(Table::WEBAUTHN, ['userId'], Table::USERS, ['id'], onDelete: 'CASCADE');
-        $this->addForeignKey(Table::WIDGETS, ['userId'], Table::USERS, ['id'], onDelete: 'CASCADE');
+        Schema::table(Table::ADDRESSES, fn (Blueprint $table) => $table->foreign('id')->references('id')->on(Table::ELEMENTS)->cascadeOnDelete());
+        Schema::table(Table::ADDRESSES, fn (Blueprint $table) => $table->foreign('primaryOwnerId')->references('id')->on(Table::ELEMENTS)->cascadeOnDelete());
+        Schema::table(Table::ANNOUNCEMENTS, fn (Blueprint $table) => $table->foreign('userId')->references('id')->on(Table::USERS)->cascadeOnDelete());
+        Schema::table(Table::ANNOUNCEMENTS, fn (Blueprint $table) => $table->foreign('pluginId')->references('id')->on(Table::PLUGINS)->cascadeOnDelete());
+        Schema::table(Table::ASSETINDEXDATA, fn (Blueprint $table) => $table->foreign('volumeId')->references('id')->on(Table::VOLUMES)->cascadeOnDelete());
+        Schema::table(Table::ASSETINDEXDATA, fn (Blueprint $table) => $table->foreign('sessionId')->references('id')->on(Table::ASSETINDEXINGSESSIONS)->cascadeOnDelete());
+        Schema::table(Table::ASSETS, fn (Blueprint $table) => $table->foreign('folderId')->references('id')->on(Table::VOLUMEFOLDERS)->cascadeOnDelete());
+        Schema::table(Table::ASSETS, fn (Blueprint $table) => $table->foreign('id')->references('id')->on(Table::ELEMENTS)->cascadeOnDelete());
+        Schema::table(Table::ASSETS, fn (Blueprint $table) => $table->foreign('uploaderId')->references('id')->on(Table::USERS)->nullOnDelete());
+        Schema::table(Table::ASSETS, fn (Blueprint $table) => $table->foreign('volumeId')->references('id')->on(Table::VOLUMES)->cascadeOnDelete());
+        Schema::table(Table::ASSETS_SITES, fn (Blueprint $table) => $table->foreign('assetId')->references('id')->on(Table::ASSETS)->cascadeOnDelete());
+        Schema::table(Table::ASSETS_SITES, fn (Blueprint $table) => $table->foreign('siteId')->references('id')->on(Table::SITES)->cascadeOnDelete()->cascadeOnUpdate());
+        Schema::table(Table::AUTHENTICATOR, fn (Blueprint $table) => $table->foreign('userId')->references('id')->on(Table::USERS)->cascadeOnDelete());
+        Schema::table(Table::CATEGORIES, fn (Blueprint $table) => $table->foreign('groupId')->references('id')->on(Table::CATEGORYGROUPS)->cascadeOnDelete());
+        Schema::table(Table::CATEGORIES, fn (Blueprint $table) => $table->foreign('id')->references('id')->on(Table::ELEMENTS)->cascadeOnDelete());
+        Schema::table(Table::CATEGORIES, fn (Blueprint $table) => $table->foreign('parentId')->references('id')->on(Table::CATEGORIES)->nullOnDelete());
+        Schema::table(Table::CATEGORYGROUPS, fn (Blueprint $table) => $table->foreign('fieldLayoutId')->references('id')->on(Table::FIELDLAYOUTS)->nullOnDelete());
+        Schema::table(Table::CATEGORYGROUPS, fn (Blueprint $table) => $table->foreign('structureId')->references('id')->on(Table::STRUCTURES)->cascadeOnDelete());
+        Schema::table(Table::CATEGORYGROUPS_SITES, fn (Blueprint $table) => $table->foreign('groupId')->references('id')->on(Table::CATEGORYGROUPS)->cascadeOnDelete());
+        Schema::table(Table::CATEGORYGROUPS_SITES, fn (Blueprint $table) => $table->foreign('siteId')->references('id')->on(Table::SITES)->cascadeOnDelete()->cascadeOnUpdate());
+        Schema::table(Table::CHANGEDATTRIBUTES, fn (Blueprint $table) => $table->foreign('elementId')->references('id')->on(Table::ELEMENTS)->cascadeOnDelete()->cascadeOnUpdate());
+        Schema::table(Table::CHANGEDATTRIBUTES, fn (Blueprint $table) => $table->foreign('siteId')->references('id')->on(Table::SITES)->cascadeOnDelete()->cascadeOnUpdate());
+        Schema::table(Table::CHANGEDATTRIBUTES, fn (Blueprint $table) => $table->foreign('userId')->references('id')->on(Table::USERS)->nullOnDelete()->cascadeOnUpdate());
+        Schema::table(Table::CHANGEDFIELDS, fn (Blueprint $table) => $table->foreign('elementId')->references('id')->on(Table::ELEMENTS)->cascadeOnDelete()->cascadeOnUpdate());
+        Schema::table(Table::CONTENTBLOCKS, fn (Blueprint $table) => $table->foreign('id')->references('id')->on(Table::ELEMENTS)->cascadeOnDelete());
+        Schema::table(Table::CONTENTBLOCKS, fn (Blueprint $table) => $table->foreign('fieldId')->references('id')->on(Table::FIELDS)->cascadeOnDelete());
+        Schema::table(Table::CONTENTBLOCKS, fn (Blueprint $table) => $table->foreign('primaryOwnerId')->references('id')->on(Table::ELEMENTS)->cascadeOnDelete());
+        Schema::table(Table::CHANGEDFIELDS, fn (Blueprint $table) => $table->foreign('siteId')->references('id')->on(Table::SITES)->cascadeOnDelete()->cascadeOnUpdate());
+        Schema::table(Table::CHANGEDFIELDS, fn (Blueprint $table) => $table->foreign('fieldId')->references('id')->on(Table::FIELDS)->cascadeOnDelete()->cascadeOnUpdate());
+        Schema::table(Table::CHANGEDFIELDS, fn (Blueprint $table) => $table->foreign('userId')->references('id')->on(Table::USERS)->nullOnDelete()->cascadeOnUpdate());
+        Schema::table(Table::CRAFTIDTOKENS, fn (Blueprint $table) => $table->foreign('userId')->references('id')->on(Table::USERS)->cascadeOnDelete());
+        Schema::table(Table::DRAFTS, fn (Blueprint $table) => $table->foreign('creatorId')->references('id')->on(Table::USERS)->nullOnDelete());
+        Schema::table(Table::DRAFTS, fn (Blueprint $table) => $table->foreign('canonicalId')->references('id')->on(Table::ELEMENTS)->cascadeOnDelete());
+        Schema::table(Table::ELEMENTACTIVITY, fn (Blueprint $table) => $table->foreign('elementId')->references('id')->on(Table::ELEMENTS)->cascadeOnDelete());
+        Schema::table(Table::ELEMENTACTIVITY, fn (Blueprint $table) => $table->foreign('userId')->references('id')->on(Table::USERS)->cascadeOnDelete());
+        Schema::table(Table::ELEMENTACTIVITY, fn (Blueprint $table) => $table->foreign('siteId')->references('id')->on(Table::SITES)->cascadeOnDelete());
+        Schema::table(Table::ELEMENTACTIVITY, fn (Blueprint $table) => $table->foreign('draftId')->references('id')->on(Table::DRAFTS)->cascadeOnDelete());
+        Schema::table(Table::ELEMENTS, fn (Blueprint $table) => $table->foreign('canonicalId')->references('id')->on(Table::ELEMENTS)->nullOnDelete());
+        Schema::table(Table::ELEMENTS, fn (Blueprint $table) => $table->foreign('draftId')->references('id')->on(Table::DRAFTS)->cascadeOnDelete());
+        Schema::table(Table::ELEMENTS, fn (Blueprint $table) => $table->foreign('revisionId')->references('id')->on(Table::REVISIONS)->cascadeOnDelete());
+        Schema::table(Table::ELEMENTS, fn (Blueprint $table) => $table->foreign('fieldLayoutId')->references('id')->on(Table::FIELDLAYOUTS)->nullOnDelete());
+        Schema::table(Table::ELEMENTS_OWNERS, fn (Blueprint $table) => $table->foreign('elementId')->references('id')->on(Table::ELEMENTS)->cascadeOnDelete());
+        Schema::table(Table::ELEMENTS_OWNERS, fn (Blueprint $table) => $table->foreign('ownerId')->references('id')->on(Table::ELEMENTS)->cascadeOnDelete());
+        Schema::table(Table::ELEMENTS_SITES, fn (Blueprint $table) => $table->foreign('elementId')->references('id')->on(Table::ELEMENTS)->cascadeOnDelete());
+        Schema::table(Table::ELEMENTS_SITES, fn (Blueprint $table) => $table->foreign('siteId')->references('id')->on(Table::SITES)->cascadeOnDelete()->cascadeOnUpdate());
+        Schema::table(Table::ENTRIES, fn (Blueprint $table) => $table->foreign('id')->references('id')->on(Table::ELEMENTS)->cascadeOnDelete());
+        Schema::table(Table::ENTRIES, fn (Blueprint $table) => $table->foreign('sectionId')->references('id')->on(Table::SECTIONS)->cascadeOnDelete());
+        Schema::table(Table::ENTRIES, fn (Blueprint $table) => $table->foreign('parentId')->references('id')->on(Table::ENTRIES)->nullOnDelete());
+        Schema::table(Table::ENTRIES, fn (Blueprint $table) => $table->foreign('typeId')->references('id')->on(Table::ENTRYTYPES)->cascadeOnDelete());
+        Schema::table(Table::ENTRIES_AUTHORS, fn (Blueprint $table) => $table->foreign('entryId')->references('id')->on(Table::ENTRIES)->cascadeOnDelete());
+        Schema::table(Table::ENTRIES_AUTHORS, fn (Blueprint $table) => $table->foreign('authorId')->references('id')->on(Table::USERS)->cascadeOnDelete());
+        Schema::table(Table::ENTRIES, fn (Blueprint $table) => $table->foreign('fieldId')->references('id')->on(Table::FIELDS)->cascadeOnDelete());
+        Schema::table(Table::ENTRIES, fn (Blueprint $table) => $table->foreign('primaryOwnerId')->references('id')->on(Table::ELEMENTS)->cascadeOnDelete());
+        Schema::table(Table::ENTRYTYPES, fn (Blueprint $table) => $table->foreign('fieldLayoutId')->references('id')->on(Table::FIELDLAYOUTS)->nullOnDelete());
+        Schema::table(Table::GLOBALSETS, fn (Blueprint $table) => $table->foreign('fieldLayoutId')->references('id')->on(Table::FIELDLAYOUTS)->nullOnDelete());
+        Schema::table(Table::GLOBALSETS, fn (Blueprint $table) => $table->foreign('id')->references('id')->on(Table::ELEMENTS)->cascadeOnDelete());
+        Schema::table(Table::GQLTOKENS, fn (Blueprint $table) => $table->foreign('schemaId')->references('id')->on(Table::GQLSCHEMAS)->nullOnDelete());
+        Schema::table(Table::RELATIONS, fn (Blueprint $table) => $table->foreign('fieldId')->references('id')->on(Table::FIELDS)->cascadeOnDelete());
+        Schema::table(Table::RELATIONS, fn (Blueprint $table) => $table->foreign('sourceId')->references('id')->on(Table::ELEMENTS)->cascadeOnDelete());
+        Schema::table(Table::RELATIONS, fn (Blueprint $table) => $table->foreign('sourceSiteId')->references('id')->on(Table::SITES)->cascadeOnDelete()->cascadeOnUpdate());
+        Schema::table(Table::REVISIONS, fn (Blueprint $table) => $table->foreign('creatorId')->references('id')->on(Table::USERS)->nullOnDelete());
+        Schema::table(Table::REVISIONS, fn (Blueprint $table) => $table->foreign('canonicalId')->references('id')->on(Table::ELEMENTS)->cascadeOnDelete());
+        Schema::table(Table::SEARCHINDEXQUEUE, fn (Blueprint $table) => $table->foreign('elementId')->references('id')->on(Table::ELEMENTS)->cascadeOnDelete());
+        Schema::table(Table::SEARCHINDEXQUEUE_FIELDS, fn (Blueprint $table) => $table->foreign('jobId')->references('id')->on(Table::SEARCHINDEXQUEUE)->cascadeOnDelete());
+        Schema::table(Table::SECTIONS, fn (Blueprint $table) => $table->foreign('structureId')->references('id')->on(Table::STRUCTURES)->nullOnDelete());
+        Schema::table(Table::SECTIONS_ENTRYTYPES, fn (Blueprint $table) => $table->foreign('sectionId')->references('id')->on(Table::SECTIONS)->cascadeOnDelete());
+        Schema::table(Table::SECTIONS_ENTRYTYPES, fn (Blueprint $table) => $table->foreign('typeId')->references('id')->on(Table::ENTRYTYPES)->cascadeOnDelete());
+        Schema::table(Table::SECTIONS_SITES, fn (Blueprint $table) => $table->foreign('siteId')->references('id')->on(Table::SITES)->cascadeOnDelete()->cascadeOnUpdate());
+        Schema::table(Table::SECTIONS_SITES, fn (Blueprint $table) => $table->foreign('sectionId')->references('id')->on(Table::SECTIONS)->cascadeOnDelete());
+        Schema::table(Table::SESSIONS, fn (Blueprint $table) => $table->foreign('userId')->references('id')->on(Table::USERS)->cascadeOnDelete());
+        Schema::table(Table::SHUNNEDMESSAGES, fn (Blueprint $table) => $table->foreign('userId')->references('id')->on(Table::USERS)->cascadeOnDelete());
+        Schema::table(Table::SITES, fn (Blueprint $table) => $table->foreign('groupId')->references('id')->on(Table::SITEGROUPS)->cascadeOnDelete());
+        Schema::table(Table::SSO_IDENTITIES, fn (Blueprint $table) => $table->foreign('userId')->references('id')->on(Table::USERS)->cascadeOnDelete());
+        Schema::table(Table::STRUCTUREELEMENTS, fn (Blueprint $table) => $table->foreign('structureId')->references('id')->on(Table::STRUCTURES)->cascadeOnDelete());
+        Schema::table(Table::TAGGROUPS, fn (Blueprint $table) => $table->foreign('fieldLayoutId')->references('id')->on(Table::FIELDLAYOUTS)->nullOnDelete());
+        Schema::table(Table::TAGS, fn (Blueprint $table) => $table->foreign('groupId')->references('id')->on(Table::TAGGROUPS)->cascadeOnDelete());
+        Schema::table(Table::TAGS, fn (Blueprint $table) => $table->foreign('id')->references('id')->on(Table::ELEMENTS)->cascadeOnDelete());
+        Schema::table(Table::USERGROUPS_USERS, fn (Blueprint $table) => $table->foreign('groupId')->references('id')->on(Table::USERGROUPS)->cascadeOnDelete());
+        Schema::table(Table::USERGROUPS_USERS, fn (Blueprint $table) => $table->foreign('userId')->references('id')->on(Table::USERS)->cascadeOnDelete());
+        Schema::table(Table::USERPERMISSIONS_USERGROUPS, fn (Blueprint $table) => $table->foreign('groupId')->references('id')->on(Table::USERGROUPS)->cascadeOnDelete());
+        Schema::table(Table::USERPERMISSIONS_USERGROUPS, fn (Blueprint $table) => $table->foreign('permissionId')->references('id')->on(Table::USERPERMISSIONS)->cascadeOnDelete());
+        Schema::table(Table::USERPERMISSIONS_USERS, fn (Blueprint $table) => $table->foreign('permissionId')->references('id')->on(Table::USERPERMISSIONS)->cascadeOnDelete());
+        Schema::table(Table::USERPERMISSIONS_USERS, fn (Blueprint $table) => $table->foreign('userId')->references('id')->on(Table::USERS)->cascadeOnDelete());
+        Schema::table(Table::USERPREFERENCES, fn (Blueprint $table) => $table->foreign('userId')->references('id')->on(Table::USERS)->cascadeOnDelete());
+        Schema::table(Table::USERS, fn (Blueprint $table) => $table->foreign('id')->references('id')->on(Table::ELEMENTS)->cascadeOnDelete());
+        Schema::table(Table::USERS, fn (Blueprint $table) => $table->foreign('photoId')->references('id')->on(Table::ASSETS)->nullOnDelete());
+        Schema::table(Table::USERS, fn (Blueprint $table) => $table->foreign('affiliatedSiteId')->references('id')->on(Table::SITES)->nullOnDelete());
+        Schema::table(Table::VOLUMEFOLDERS, fn (Blueprint $table) => $table->foreign('parentId')->references('id')->on(Table::VOLUMEFOLDERS)->cascadeOnDelete());
+        Schema::table(Table::VOLUMEFOLDERS, fn (Blueprint $table) => $table->foreign('volumeId')->references('id')->on(Table::VOLUMES)->cascadeOnDelete());
+        Schema::table(Table::VOLUMES, fn (Blueprint $table) => $table->foreign('fieldLayoutId')->references('id')->on(Table::FIELDLAYOUTS)->nullOnDelete());
+        Schema::table(Table::WEBAUTHN, fn (Blueprint $table) => $table->foreign('userId')->references('id')->on(Table::USERS)->cascadeOnDelete());
+        Schema::table(Table::WIDGETS, fn (Blueprint $table) => $table->foreign('userId')->references('id')->on(Table::USERS)->cascadeOnDelete());
     }
 
     public function insertDefaultData(): void
     {
-        $this->task('Populating the info table', function () {
+        $this->components->task('Populating the info table', function () {
             Craft::$app->saveInfo(new Info([
                 'version' => Craft::$app->getVersion(),
                 'schemaVersion' => Craft::$app->schemaVersion,
@@ -1185,12 +1172,12 @@ class Install extends Migration
             ProjectConfigHelper::ensureAllSitesProcessed(true);
             $this->_installPlugins();
 
-            $this->task('Applying the project config', function () use ($projectConfig) {
+            $this->components->task('Applying the project config', function () use ($projectConfig) {
                 // Save the existing system settings
                 $projectConfig->applyExternalChanges();
             });
         } else {
-            $this->task('Saving default data', function () use ($projectConfig) {
+            $this->components->task('Saving default data', function () use ($projectConfig) {
                 $configData = $this->_generateInitialConfig();
                 $projectConfig->applyConfigChanges($configData);
             });
@@ -1212,7 +1199,7 @@ class Install extends Migration
 
         Craft::$app->language = $this->site->language;
 
-        $this->task('Saving the first user', function () use ($generalConfig) {
+        $this->components->task('Saving the first user', function () use ($generalConfig) {
             $user = new User([
                 'active' => true,
                 'admin' => true,
@@ -1302,7 +1289,7 @@ class Install extends Migration
 
         try {
             foreach ($pluginConfigs as $handle => $pluginConfig) {
-                $this->task("Installing $handle", function () use ($handle, $pluginsService) {
+                $this->components->task("Installing $handle", function () use ($handle, $pluginsService) {
                     $pluginsService->installPlugin($handle);
                 });
             }
@@ -1358,10 +1345,8 @@ class Install extends Migration
         ];
     }
 
-    public function down(): bool
+    public function down(): void
     {
         $this->output->writeln('Install migration cannot be reverted.');
-
-        return false;
     }
 }

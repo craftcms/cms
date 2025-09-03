@@ -9,7 +9,9 @@ class BaseModel extends Model
 {
     protected $guarded = [];
 
-    public const CREATED_AT = 'dateCreated';
+    public const ?string CREATED_AT = 'dateCreated';
 
-    public const UPDATED_AT = 'dateUpdated';
+    public const ?string UPDATED_AT = 'dateUpdated';
+
+    public const ?string DELETED_AT = 'dateDeleted';
 }

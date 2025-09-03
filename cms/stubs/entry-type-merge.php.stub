@@ -1,0 +1,25 @@
+<?php
+/**
+ * This view is used by app/console/controllers/MigrateController.php.
+ *
+ * The following variables are available in this view:
+ */
+/** @var string $persistingEntryTypeUid */
+/** @var string $outgoingEntryTypeUid */
+/** @var array<string,string> $layoutElementUidMap */
+
+echo "<?php\n";
+?>
+
+use CraftCms\Cms\Database\Migrations\BaseEntryTypeMergeMigration;
+
+return new class extends BaseEntryTypeMergeMigration
+{
+    public string $persistingEntryTypeUid = '<?= $persistingEntryTypeUid ?>';
+    public string $outgoingEntryTypeUid = '<?= $outgoingEntryTypeUid ?>';
+    public array $layoutElementUidMap = [
+<?php foreach ($layoutElementUidMap as $old => $new): ?>
+        '<?= $old ?>' => '<?= $new ?>',
+<?php endforeach; ?>
+    ];
+};

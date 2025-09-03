@@ -54,7 +54,7 @@
   - `App:licensingIssues()` --> `app(\CraftCms\Cms\License\License::class)->issues()`
   - `App:licenseShunCookieName()` --> `app(\CraftCms\Cms\License\License::class)->shunCookieName()`
   - `App:licensingIssuesHash()` --> `app(\CraftCms\Cms\License\License::class)->issuesHash()`
-  - 
+  -
 - Deprecated `Craft::createGuzzleClient()`. `CraftCms\Cms\Support\Facades\Http::create()` should be used instead.
 
 ### Deprecator

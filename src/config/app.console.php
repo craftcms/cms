@@ -1,7 +1,6 @@
 <?php
 
 use craft\console\Application;
-use craft\console\controllers\MigrateController;
 use craft\console\ErrorHandler;
 use craft\console\Request;
 use craft\console\User;
@@ -29,9 +28,6 @@ return [
         'user' => [
             'class' => User::class,
         ],
-    ],
-    'controllerMap' => [
-        'migrate' => MigrateController::class,
     ],
     'controllerNamespace' => 'craft\\console\\controllers',
 ];

@@ -2,10 +2,9 @@
 
 namespace CraftCms\Cms\Plugin\Concerns;
 
-use craft\db\Migration;
-use craft\db\MigrationManager;
+use CraftCms\Cms\Database\Migrator;
 use CraftCms\Cms\Plugin\Plugin;
-use ReflectionClass;
+use Illuminate\Support\Facades\File;
 
 /**
  * @mixin Plugin
@@ -19,7 +18,7 @@ trait Installable
     /** @var bool Whether the plugin is currently installed. (Will only be false when a plugin is currently being installed.) */
     public bool $isInstalled = false;
 
-    private ?MigrationManager $migrator = null;
+    private ?Migrator $migrator = null;
 
     /** {@inheritdoc} */
     public function install(): void
@@ -28,14 +27,14 @@ trait Installable
 
         $migrator = $this->getMigrator();
 
-        // Run the install migration, if there is one
-        if (($migration = $this->createInstallMigration()) !== null) {
-            $migrator->migrateUp($migration);
+        if ($installMigration = $this->createInstallMigration()) {
+            $migrator->runMigration($installMigration, 'up');
+            $migrator->getRepository()->log('Install', 1);
         }
 
         // Mark all existing migrations as applied
-        foreach ($migrator->getNewMigrations() as $name) {
-            $migrator->addMigrationHistory($name);
+        foreach ($migrator->getPendingMigrations() as $file) {
+            $migrator->getRepository()->log($migrator->getMigrationName($file), 1);
         }
 
         $this->isInstalled = true;
@@ -48,51 +47,36 @@ trait Installable
     {
         $this->beforeUninstall();
 
-        if (($migration = $this->createInstallMigration()) !== null) {
-            $this->getMigrator()->migrateDown($migration);
+        if (File::exists($this->getBasePath().'/migrations/Install.php')) {
+            $this->getMigrator()->resetMigrations(
+                [$this->getBasePath().'/migrations/Install.php'],
+                [$this->getBasePath().'/migrations'],
+            );
         }
 
         $this->afterUninstall();
     }
 
-    /**
-     * Instantiates and returns the plugin’s installation migration, if it has one.
-     *
-     * @return Migration|null The plugin’s installation migration
-     */
-    protected function createInstallMigration(): ?Migration
+    public function createInstallMigration(): ?object
     {
-        // See if there's an Install migration in the plugin’s migrations folder
-        $migrator = $this->getMigrator();
-        $path = $migrator->migrationPath.'/Install.php';
-
-        if (! is_file($path)) {
+        if (! File::exists($this->getBasePath().'/migrations/Install.php')) {
             return null;
         }
 
-        require_once $path;
-        $class = $migrator->migrationNamespace.'\\Install';
+        $namespace = substr(static::class, 0, strrpos(static::class, '\\'));
+        $class = $namespace.'\migrations\Install';
 
-        return new $class;
+        return app()->make($class);
     }
 
     /** {@inheritdoc} */
-    public function getMigrator(): MigrationManager
+    public function getMigrator(): Migrator
     {
-        if (isset($this->migrator)) {
-            return $this->migrator;
-        }
-
-        $ref = new ReflectionClass($this);
-        $ns = $ref->getNamespaceName();
-
-        $this->migrator = new MigrationManager([
-            'track' => "plugin:$this->handle",
-            'migrationNamespace' => ($ns ? $ns.'\\' : '').'migrations',
-            'migrationPath' => $this->getBasePath().'/migrations',
-        ]);
-
-        return $this->migrator;
+        return $this->migrator ?? $this->migrator = app(Migrator::class)
+            ->track("plugin:$this->handle")
+            ->setPaths([
+                $this->getBasePath().'/migrations',
+            ]);
     }
 
     /**

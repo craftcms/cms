@@ -16,7 +16,7 @@ class Announcement extends BaseModel
 {
     use HasFactory;
 
-    public const UPDATED_AT = null;
+    public const ?string UPDATED_AT = null;
 
     protected function casts(): array
     {

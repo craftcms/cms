@@ -14,13 +14,15 @@ use craft\console\Controller;
 use craft\errors\InvalidFieldException;
 use craft\fields\BaseRelationField;
 use craft\helpers\Console;
-use craft\helpers\FileHelper;
 use craft\models\FieldLayout;
 use craft\services\Fields;
+use CraftCms\Aliases\Facades\Aliases;
+use CraftCms\Cms\Database\Migrator;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Support\Json;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\File;
 use yii\console\ExitCode;
 
 /**
@@ -480,27 +482,26 @@ MD, $infoByField->join("\n"))));
             $fieldsService->deleteField($outgoingField);
         });
 
-        $contentMigrator = Craft::$app->getContentMigrator();
-        $migrationName = sprintf('m%s_merge_%s_into_%s', gmdate('ymd_His'), $outgoingField->handle, $persistingField->handle);
-        $migrationPath = $migrationPaths[] = "$contentMigrator->migrationPath/$migrationName.php";
+        $migrationName = sprintf('%s_merge_%s_into_%s', gmdate('Y_m_d_His'), $outgoingField->handle, $persistingField->handle);
+        $migrationPath = database_path("migrations/{$migrationName}.php");
 
         $this->do("Generating content migration for `$outgoingField->handle`", function() use (
             $persistingField,
             $outgoingField,
-            $migrationName,
             $migrationPath,
         ) {
-            $content = $this->getView()->renderFile('@app/updates/field-merge.php.template', [
-                'namespace' => Craft::$app->getContentMigrator()->migrationNamespace,
-                'className' => $migrationName,
+            ob_start();
+            File::getRequire(Aliases::get('@packageRoot/stubs/field-merge.php.stub'), [
                 'persistingFieldUid' => $persistingField->uid,
                 'outgoingFieldUid' => $outgoingField->uid,
-            ], $this);
-            FileHelper::writeToFile($migrationPath, $content);
+            ]);
+            $content = ob_get_clean();
+
+            File::put($migrationPath, $content);
         });
 
         $this->output($this->markdownToAnsi(" → Running content migration for `$outgoingField->handle` …"));
-        Craft::$app->getContentMigrator()->migrateUp($migrationName);
+        app(Migrator::class)->track('content')->run();
     }
 
     private function layoutElementOverride(?string $persistingFieldValue, ?string $outgoingFieldValue, ?string $override): ?string

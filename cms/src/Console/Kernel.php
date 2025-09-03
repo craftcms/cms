@@ -12,14 +12,13 @@ use Symfony\Component\EventDispatcher\EventDispatcher;
  */
 final class Kernel extends \Illuminate\Foundation\Console\Kernel
 {
+    /** {@inheritdoc} */
     protected function getArtisan(): ConsoleApplication
     {
         if (is_null($this->artisan)) {
             $this->artisan = (new Application($this->app, $this->events, ''))
                 ->resolveCommands($this->commands)
                 ->setContainerCommandLoader();
-
-            $this->artisan->setName('Craft CMS');
 
             if ($this->symfonyDispatcher instanceof EventDispatcher) {
                 $this->artisan->setDispatcher($this->symfonyDispatcher);
@@ -32,6 +31,6 @@ final class Kernel extends \Illuminate\Foundation\Console\Kernel
 
     protected function shouldDiscoverCommands(): bool
     {
-        return get_class($this) === self::class;
+        return true;
     }
 }
