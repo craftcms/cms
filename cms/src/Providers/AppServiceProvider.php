@@ -70,19 +70,6 @@ final class AppServiceProvider extends ServiceProvider
         $this->bootMiddleware();
 
         $this->loadRoutesFrom("{$this->root}/routes/routes.php");
-        $this->loadViewsFrom("{$this->root}/resources/views", 'craftcms');
-
-        if (! $this->app->runningInConsole()) {
-            return;
-        }
-
-        $this->publishes([
-            "{$this->root}/resources/views" => resource_path('views/vendor/craftcms'),
-        ], 'craftcms-views');
-
-        $this->publishes([
-            "{$this->root}/../cpresources" => public_path('cpresources'),
-        ], 'craftcms-cpresources');
     }
 
     protected function bootMiddleware(): void
