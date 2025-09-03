@@ -7054,7 +7054,7 @@ $min2ColWidth: 400px;
       .sidebar {
         position: absolute;
         inset-block-start: 0;
-        margin-inline-start: -249px;
+        margin-inline-start: calc(-249rem / 16);
         height: 100%;
         overflow: auto;
         padding-block: var(--content-padding);
