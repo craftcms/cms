@@ -16,9 +16,12 @@ use CraftCms\Cms\Http\Middleware\RequireCpRequest;
 use CraftCms\Cms\Http\Middleware\SendPoweredByHeader;
 use CraftCms\Cms\Support\Env;
 use CraftCms\Cms\User\Models\User;
+use GuzzleHttp\Utils;
 use Illuminate\Auth\Middleware\Authenticate;
 use Illuminate\Contracts\Http\Kernel as HttpKernel;
 use Illuminate\Foundation\Console\AboutCommand;
+use Illuminate\Http\Client\Factory;
+use Illuminate\Http\Client\PendingRequest;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Router;
 use Illuminate\Support\Facades\Config;
@@ -79,6 +82,27 @@ final class AppServiceProvider extends ServiceProvider
             }
 
             return [];
+        });
+
+        Factory::macro('create', function (array $options = []) {
+            $generalConfig = app(GeneralConfig::class);
+
+            return $this->throw()
+                ->withUserAgent('Craft/'.Craft::$app->getVersion().' '.Utils::defaultUserAgent())
+                ->when(
+                    Config::has('craft.guzzle'),
+                    fn (PendingRequest $pendingRequest) => $pendingRequest->withOptions(Config::get('craft.guzzle')),
+                )
+                ->when(
+                    $options,
+                    fn (PendingRequest $pendingRequest) => $pendingRequest->withOptions($options),
+                )
+                ->when(
+                    $generalConfig->httpProxy,
+                    fn (PendingRequest $pendingRequest) => $pendingRequest->withOptions([
+                        'proxy' => $generalConfig->httpProxy,
+                    ]),
+                );
         });
     }
 

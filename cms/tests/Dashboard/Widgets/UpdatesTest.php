@@ -2,12 +2,21 @@
 
 use CraftCms\Cms\Dashboard\Dashboard;
 use CraftCms\Cms\Dashboard\Widgets\Updates;
+use CraftCms\Cms\Support\Api;
 use CraftCms\Cms\User\Models\User;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Session;
 
 use function Pest\Laravel\actingAs;
 
 it('can render', function () {
+    Http::fake([
+        app(Api::class)->baseApiUrl.'updates' => [
+            'cms' => [],
+            'plugins' => [],
+        ],
+    ]);
+
     actingAs(User::first());
     Session::start();
 

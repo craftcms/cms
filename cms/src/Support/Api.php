@@ -8,7 +8,6 @@ use craft\helpers\DateTimeHelper;
 use CraftCms\Cms\License\License;
 use CraftCms\Cms\Plugin\Plugins;
 use CraftCms\Cms\Shared\Enums\LicenseKeyStatus;
-use CraftCms\Cms\Support\Facades\Http;
 use GuzzleHttp\Exception\GuzzleException;
 use GuzzleHttp\Exception\RequestException;
 use GuzzleHttp\RequestOptions;
@@ -16,11 +15,11 @@ use Illuminate\Cache\Repository;
 use Illuminate\Container\Attributes\Singleton;
 use Illuminate\Database\Connection;
 use Illuminate\Foundation\Application;
-use Illuminate\Http\Client\PendingRequest;
 use Illuminate\Http\Client\Response;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\File;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Session;
 use Imagick;
@@ -40,8 +39,6 @@ use function CraftCms\Cms\normalizeVersion;
 #[Singleton]
 final readonly class Api
 {
-    private PendingRequest $client;
-
     public function __construct(
         private Application $app,
         private Composer $composer,
@@ -52,12 +49,7 @@ final readonly class Api
         private License $license,
         public string $baseApiUrl = 'https://api.craftcms.com/v1/',
         public array $apiParams = [],
-    ) {
-        $this->client = Http::create()
-            ->baseUrl($this->baseApiUrl)
-            ->asJson()
-            ->acceptJson();
-    }
+    ) {}
 
     /**
      * Returns info about the current Craft license.
@@ -100,7 +92,10 @@ final readonly class Api
         Session::save();
 
         try {
-            $response = $this->client
+            $response = Http::create()
+                ->baseUrl($this->baseApiUrl)
+                ->asJson()
+                ->acceptJson()
                 ->withHeaders(array_merge($this->headers(), Arr::pull($options, 'headers', [])))
                 ->send($method, $uri, $options);
         } catch (RequestException $e) {
