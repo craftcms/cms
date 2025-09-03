@@ -29,7 +29,11 @@ test('Shoud show the Discover page', async ({page, baseURL}) => {
   await expect(title).toHaveText('Plugin Store');
 });
 
-test('Should show featured plugins', async ({craftPluginStore, page, baseURL}) => {
+test('Should show featured plugins', async ({
+  craftPluginStore,
+  page,
+  baseURL,
+}) => {
   await page.goto('./plugin-store');
 
   await craftPluginStore.waitForPluginStore(page);

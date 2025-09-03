@@ -13,7 +13,11 @@ test.beforeEach(async ({page}) => {
 
 // check if UI Elements are getting instantiated at the right time (after appending head and body html)
 // details: https://github.com/craftcms/cms/issues/16554
-test('Custom color fields instantiation', async ({page, baseURL, craftEntry}) => {
+test('Custom color fields instantiation', async ({
+  page,
+  baseURL,
+  craftEntry,
+}) => {
   const titleFieldLocator = '#title';
   const titleText = 'Entry with colours';
 

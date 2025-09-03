@@ -15,9 +15,7 @@ test.describe('Navigation', () => {
     'Plugin Store',
   ];
 
-  test('Global navigation has expected links', async ({
-    page,
-  }) => {
+  test('Global navigation has expected links', async ({page}) => {
     await expect(page.locator('#global-sidebar nav ul li a')).toContainText(
       navItems.map((item) => (Array.isArray(item) ? item[0] : item))
     );

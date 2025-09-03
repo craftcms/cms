@@ -23,14 +23,10 @@ const logger = require('./playwright/logger');
   if (command == 'test') {
     logger.start('Running tests…');
 
-    const pre = spawn(
-      '/bin/bash',
-      [path.resolve(__dirname, 'ddev/setup.sh')],
-      {
-        cwd: path.resolve(__dirname),
-        stdio: 'inherit',
-      }
-    );
+    const pre = spawn('/bin/bash', [path.resolve(__dirname, 'ddev/setup.sh')], {
+      cwd: path.resolve(__dirname),
+      stdio: 'inherit',
+    });
 
     pre.on('close', (code) => {
       const tests = spawn('npx', ['playwright', 'test'].concat(args), {

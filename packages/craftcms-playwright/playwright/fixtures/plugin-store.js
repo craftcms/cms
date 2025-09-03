@@ -1,11 +1,9 @@
 /* jshint esversion: 9, strict: false */
 /* globals module, require */
 class PluginStore {
-  constructor() {
+  constructor() {}
 
-  }
-
-  async waitForPluginStore(page){
+  async waitForPluginStore(page) {
     // Make sure the Plugin Store is loading its initial state
     const statusMessage = page.locator('.status-message');
     await statusMessage.waitFor({state: 'visible'});

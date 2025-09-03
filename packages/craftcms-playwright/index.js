@@ -39,7 +39,7 @@ const test = base.extend({
   craftPluginStore: async ({}, use) => {
     const pluginStore = new PluginStore();
     await use(pluginStore);
-  }
+  },
 });
 
 module.exports = {

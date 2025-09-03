@@ -128,7 +128,9 @@ test.describe('Cards', () => {
         .locator(matrixCardsFieldLocator)
         .getByTitle(craftEntry.fieldModifiedText)
     ).toBeVisible();
-    await expect(firstCard.getByTitle(craftEntry.editedEntryText)).toBeVisible();
+    await expect(
+      firstCard.getByTitle(craftEntry.editedEntryText)
+    ).toBeVisible();
 
     // save root entry
     await page.keyboard.press('ControlOrMeta+s');
