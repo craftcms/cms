@@ -18,7 +18,7 @@ final readonly class RequireCpRequest
 
     public function handle(Request $request, Closure $next): mixed
     {
-        if (! $request->is($this->generalConfig->cpTrigger.'/*')) {
+        if (! $request->isCpRequest()) {
             throw new HttpException('Request must be a control panel request');
         }
 

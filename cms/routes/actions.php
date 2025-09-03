@@ -4,6 +4,7 @@ use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Http\Controllers\Dashboard\Widgets\CraftSupportController;
 use CraftCms\Cms\Http\Controllers\Dashboard\Widgets\FeedController;
 use CraftCms\Cms\Http\Controllers\Dashboard\WidgetsController;
+use CraftCms\Cms\Http\Controllers\MigrateController;
 use CraftCms\Cms\Http\Controllers\PluginsController;
 use CraftCms\Cms\Http\Controllers\UpdatesController;
 use CraftCms\Cms\Http\Controllers\Utilities\ClearCachesController;
@@ -18,7 +19,9 @@ $generalConfig = app(GeneralConfig::class);
 /**
  * Actions that are accessible anonymously can be registered here.
  */
-Route::prefix($generalConfig->actionTrigger)->group(function () {});
+Route::prefix($generalConfig->actionTrigger)->group(function () {
+    Route::post('migrate', MigrateController::class);
+});
 
 /**
  * Actions that are accessible through the control panel can be registered here.
@@ -65,6 +68,7 @@ Route::prefix(implode('/', [
         Route::post('plugins/save-plugin-settings', [PluginsController::class, 'saveSettings']);
     });
 
+    // Updates
     Route::post('app/check-for-updates', [UpdatesController::class, 'check']);
     Route::post('app/cache-updates', [UpdatesController::class, 'cache']);
 });

@@ -12,8 +12,6 @@ use craft\base\Chippable;
 use craft\base\ElementInterface;
 use craft\base\Iconic;
 use craft\elements\db\NestedElementQueryInterface;
-use craft\errors\BusyResourceException;
-use craft\errors\StaleResourceException;
 use craft\filters\UtilityAccess;
 use craft\helpers\Cp;
 use craft\helpers\DateTimeHelper;
@@ -22,7 +20,6 @@ use craft\helpers\Search;
 use craft\helpers\Session;
 use craft\helpers\UrlHelper;
 use craft\web\Controller;
-use craft\web\ServiceUnavailableHttpException;
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\License\License;
@@ -36,21 +33,17 @@ use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Updates\Data\Update;
 use CraftCms\Cms\Updates\Data\Updates;
-use CraftCms\Cms\Updates\Updates as UpdatesService;
 use CraftCms\Cms\Utility\Utilities;
 use CraftCms\Cms\Utility\Utilities\Updates as UpdatesUtility;
 use CraftCms\DependencyAwareCache\Dependency\FileDependency;
 use CraftCms\DependencyAwareCache\Facades\DependencyCache;
 use DateInterval;
 use Illuminate\Support\Facades\Cache;
-use Illuminate\Support\Facades\DB;
 use InvalidArgumentException;
-use Throwable;
 use yii\base\InvalidConfigException;
 use yii\web\BadRequestHttpException;
 use yii\web\Cookie;
 use yii\web\Response;
-use yii\web\ServerErrorHttpException;
 
 /**
  * The AppController class is a controller that handles various actions for Craft updates, control panel requests,
@@ -178,112 +171,6 @@ class AppController extends Controller
 
         // return the updated headers
         return $this->asJson(app(Api::class)->headers());
-    }
-
-    /**
-     * Creates a DB backup (if configured to do so), runs any pending Craft,
-     * plugin, & content migrations, and syncs `project.yaml` changes in one go.
-     *
-     * This action can be used as a post-deploy webhook with site deployment
-     * services (like [DeployBot](https://deploybot.com/) or [DeployPlace](https://deployplace.com/)) to minimize site
-     * downtime after a deployment.
-     *
-     * @param bool $applyProjectConfigChanges
-     * @return Response
-     * @throws ServerErrorHttpException
-     */
-    public function actionMigrate(bool $applyProjectConfigChanges = false): Response
-    {
-        $this->requirePostRequest();
-
-        $updatesService = app(UpdatesService::class);
-        $db = Craft::$app->getDb();
-
-        // Get the handles in need of an update
-        $handles = $updatesService->pendingMigrationHandles(true);
-        $runMigrations = !empty($handles);
-
-        $projectConfigService = Craft::$app->getProjectConfig();
-        if ($applyProjectConfigChanges) {
-            $applyProjectConfigChanges = $projectConfigService->areChangesPending(force: true);
-        }
-
-        if (!$runMigrations && !$applyProjectConfigChanges) {
-            // That was easy
-            return $this->response;
-        }
-
-        // Bail if Craft is already in maintenance mode
-        if (Craft::$app->getIsInMaintenanceMode()) {
-            throw new ServiceUnavailableHttpException('Craft is already being updated.');
-        }
-
-        // Enable maintenance mode
-        Craft::$app->enableMaintenanceMode();
-
-        // Backup the DB?
-        $backup = app(GeneralConfig::class)->getBackupOnUpdate();
-        if ($backup) {
-            try {
-                $backupPath = $db->backup();
-            } catch (Throwable $e) {
-                Craft::$app->disableMaintenanceMode();
-                throw new ServerErrorHttpException('Error backing up the database.', 0, $e);
-            }
-        }
-
-        DB::beginTransaction();
-
-        try {
-            // Run the migrations?
-            if ($runMigrations) {
-                $updatesService->runMigrations($handles);
-            }
-
-            // Sync project.yaml?
-            if ($applyProjectConfigChanges) {
-                try {
-                    $projectConfigService->applyExternalChanges();
-                } catch (BusyResourceException|StaleResourceException $e) {
-                    Craft::$app->getErrorHandler()->logException($e);
-                    Craft::warning("Couldn’t apply project config YAML changes: {$e->getMessage()}", __METHOD__);
-                }
-            }
-
-            DB::commit();
-        } catch (Throwable $e) {
-            DB::rollBack();
-
-            // MySQL may have implicitly committed the transaction
-            $restored = $db->getIsPgsql();
-
-            // Do we have a backup?
-            if (!$restored && !empty($backupPath)) {
-                // Attempt a restore
-                try {
-                    $db->restore($backupPath);
-                    $restored = true;
-                } catch (Throwable $restoreException) {
-                    // Just log it
-                    Craft::$app->getErrorHandler()->logException($restoreException);
-                }
-            }
-
-            $error = 'An error occurred running new migrations.';
-            if ($restored) {
-                $error .= ' The database has been restored to its previous state.';
-            } elseif (isset($restoreException)) {
-                $error .= ' The database could not be restored due to a separate error: ' . $restoreException->getMessage();
-            } else {
-                $error .= ' The database has not been restored.';
-            }
-
-            Craft::$app->disableMaintenanceMode();
-            throw new ServerErrorHttpException($error, 0, $e);
-        }
-
-        Craft::$app->disableMaintenanceMode();
-        return $this->response;
     }
 
     /**

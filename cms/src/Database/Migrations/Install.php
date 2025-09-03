@@ -513,7 +513,8 @@ class Install extends Migration
             $table->char('uid', 36)->default('0');
         });
 
-        Schema::create(Table::INFO, function (Blueprint $table) {
+        /** @todo Change when Larastan is updated */
+        Schema::create('info', function (Blueprint $table) {
             $table->integer('id', true);
             $table->string('version', 50);
             $table->string('schemaVersion', 15);

@@ -74,9 +74,7 @@ class InstallController extends Controller
      */
     public function actionIndex(): Response
     {
-        if (($response = Craft::$app->runAction('templates/requirements-check')) !== null) {
-            return $response;
-        }
+        // TODO: add CheckRequirements middleware
 
         // Can we establish a DB connection?
         try {

@@ -2,8 +2,8 @@
 
 namespace CraftCms\Cms\Updates\Commands;
 
-use craft\helpers\Update as UpdateHelper;
 use CraftCms\Cms\Support\Api;
+use CraftCms\Cms\Support\PHP;
 use CraftCms\Cms\Updates\Data\Update;
 use CraftCms\Cms\Updates\Data\Updates as UpdatesData;
 use CraftCms\Cms\Updates\Enums\UpdateStatus;
@@ -40,8 +40,7 @@ trait FetchesUpdates
                 $expired => $this->bold($color($this->red('EXPIRED'))),
                 default => '',
             }.(
-                $update->phpConstraint && ! UpdateHelper::checkPhpConstraint($update->phpConstraint,
-                    $phpConstraintError)
+                $update->phpConstraint && ($phpConstraintError = PHP::checkConstraint($update->phpConstraint))
                     ? $color($this->red(" ⚠️ $phpConstraintError"))
                     : ''
             ),

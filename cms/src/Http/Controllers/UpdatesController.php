@@ -3,12 +3,12 @@
 namespace CraftCms\Cms\Http\Controllers;
 
 use Craft;
-use craft\helpers\Update as UpdateHelper;
 use craft\helpers\UrlHelper;
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Plugin\Exceptions\InvalidPluginException;
 use CraftCms\Cms\Plugin\Plugins;
 use CraftCms\Cms\Support\Html;
+use CraftCms\Cms\Support\PHP;
 use CraftCms\Cms\Updates\Data\Update;
 use CraftCms\Cms\Updates\Data\Updates as UpdatesData;
 use CraftCms\Cms\Updates\Enums\UpdateStatus;
@@ -92,10 +92,9 @@ final readonly class UpdatesController
         $arr['latestVersion'] = $update->latest()->version ?? null;
 
         // Make sure that the platform & composer.json PHP version are compatible
-        $phpConstraintError = null;
         if (
             $update->phpConstraint &&
-            ! UpdateHelper::checkPhpConstraint($update->phpConstraint, $phpConstraintError, true)
+            $phpConstraintError = PHP::checkConstraint($update->phpConstraint, true)
         ) {
             $arr['status'] = 'phpIssue';
             $arr['statusText'] = $phpConstraintError;

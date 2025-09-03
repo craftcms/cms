@@ -4,7 +4,6 @@ namespace CraftCms\Cms\Updates\Commands;
 
 use Closure;
 use Composer\Semver\VersionParser;
-use craft\helpers\Update as UpdateHelper;
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Console\CraftCommand;
 use CraftCms\Cms\Database\Commands\BackupTrait;
@@ -13,6 +12,7 @@ use CraftCms\Cms\Plugin\Exceptions\InvalidPluginException;
 use CraftCms\Cms\Plugin\Plugins;
 use CraftCms\Cms\Support\Composer;
 use CraftCms\Cms\Support\Json;
+use CraftCms\Cms\Support\PHP;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Updates\Data\Update;
 use CraftCms\Cms\Updates\Data\UpdateRelease;
@@ -265,8 +265,7 @@ final class UpdateCommand extends Command
             return;
         }
 
-        $phpConstraintError = null;
-        if ($update->phpConstraint && ! UpdateHelper::checkPhpConstraint($update->phpConstraint, $phpConstraintError)) {
+        if ($update->phpConstraint && $phpConstraintError = PHP::checkConstraint($update->phpConstraint)) {
             $this->warn("Skipping `$handle`: $phpConstraintError");
 
             return;

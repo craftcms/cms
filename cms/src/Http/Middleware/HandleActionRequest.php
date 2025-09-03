@@ -16,17 +16,17 @@ final readonly class HandleActionRequest
 
     public function handle(Request $request, Closure $next): mixed
     {
-        if (! $request->has('action')) {
+        if (! $request->isActionRequest()) {
             return $next($request);
         }
 
-        $action = $request->string('action');
-        $route = implode('/', [
+        $actionSegments = $request->actionSegments();
+        $route = implode('/', array_filter([
             '',
-            $this->generalConfig->cpTrigger,
+            $request->isCpRequest() ? $this->generalConfig->cpTrigger : null,
             $this->generalConfig->actionTrigger,
-            $action,
-        ]);
+            ...$actionSegments,
+        ], fn ($value) => ! is_null($value)));
 
         $newRequest = $request->duplicate(server: array_merge($request->server->all(), [
             'REQUEST_URI' => $route,
