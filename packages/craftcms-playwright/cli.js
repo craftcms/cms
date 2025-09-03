@@ -3,6 +3,7 @@ const path = require('path');
 const util = require('util');
 const nodeExec = util.promisify(require('child_process').exec);
 const spawn = require('child_process').spawn;
+const logger = require('./playwright/logger');
 
 (async function main() {
   // Get args
@@ -10,8 +11,8 @@ const spawn = require('child_process').spawn;
 
   // If args is not an array or is empty, exit
   if (!Array.isArray(args) || args.length === 0) {
-    process.stdout.write('Please provide a command.');
-    process.stdout.write('\n');
+    logger.warning('Please provide a command.');
+
     process.exit(1);
   }
 
@@ -20,8 +21,8 @@ const spawn = require('child_process').spawn;
   args.shift();
 
   if (command == 'test') {
-    process.stdout.write('Running tests…');
-    process.stdout.write('\n');
+    logger.start('Running tests…');
+
     const pre = spawn(
       '/bin/bash',
       [path.resolve(__dirname, 'ddev/setup.sh')],
@@ -37,7 +38,7 @@ const spawn = require('child_process').spawn;
       });
 
       tests.on('error', (error) => {
-        console.error(error);
+        logger.fatal(error);
       });
 
       tests.on('close', (code) => {
@@ -52,6 +53,7 @@ const spawn = require('child_process').spawn;
       });
     });
   } else if (command == 'boot') {
+    logger.start('Booting test container…');
     const boot = spawn(
       '/bin/bash',
       [path.resolve(__dirname, 'ddev/setup.sh')],
@@ -61,6 +63,7 @@ const spawn = require('child_process').spawn;
       }
     );
   } else if (command == 'down') {
+    logger.start('Tearing down test container…');
     const down = spawn(
       '/bin/bash',
       [path.resolve(__dirname, 'ddev/teardown.sh')],
@@ -71,5 +74,5 @@ const spawn = require('child_process').spawn;
     );
   }
 })().catch((err) => {
-  console.log(err);
+  logger.fatal(err);
 });

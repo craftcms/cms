@@ -5,6 +5,7 @@ const nodeExec = util.promisify(require('child_process').exec);
 const path = require('path');
 const testDir = './tests-playwright';
 const {cleanAll} = require('../events');
+const logger = require('../logger');
 require('dotenv').config({path: path.resolve(path.join(testDir, '.env'))});
 
 class Setup {
@@ -31,8 +32,6 @@ class Setup {
   }
 
   async installPlugin(handle) {
-    process.stdout.write(`Installing Plugin "${handle}"`);
-    process.stdout.write('\n');
     try {
       const {stdout, stderr} = await nodeExec(
         `${this.dockerCli} ${this.craftCli} plugin/install ${handle}`,
@@ -40,15 +39,15 @@ class Setup {
           cwd: this.cwd,
         }
       );
+
+      logger.success(`Plugin "${handle}" installed.`);
       return {stdout, stderr};
     } catch (e) {
-      console.error(e);
+      logger.fatal(e);
     }
   }
 
   async dbRestore() {
-    process.stdout.write('Restoring DB');
-    process.stdout.write('\n');
     try {
       const {stdout, stderr} = await nodeExec(
         `${this.dockerCli} ${this.craftCli} db/restore --interactive=0 /var/www/backup/db.sql`,
@@ -56,15 +55,14 @@ class Setup {
           cwd: this.cwd,
         }
       );
+      logger.success('Craft DB restored.');
       return {stdout, stderr};
     } catch (e) {
-      console.error(e);
+      logger.fatal(e);
     }
   }
 
   async dbBackup() {
-    process.stdout.write('Backing up DB');
-    process.stdout.write('\n');
     try {
       const {stdout, stderr} = await nodeExec(
         `${this.dockerCli} ${this.craftCli} db/backup --interactive=0 --overwrite=1 /var/www/backup/db.sql`,
@@ -72,15 +70,15 @@ class Setup {
           cwd: this.cwd,
         }
       );
+
+      logger.success('Craft DB backed up.');
       return {stdout, stderr};
     } catch (e) {
-      console.error(e);
+      logger.fatal(e);
     }
   }
 
   async projectConfigRestore() {
-    process.stdout.write('Restoring Project Config');
-    process.stdout.write('\n');
     try {
       const {stdout, stderr} = await nodeExec(
         `${this.dockerCli} exec "cp -vfrp /var/www/backup/project /var/www/html/config/"`,
@@ -88,15 +86,15 @@ class Setup {
           cwd: this.cwd,
         }
       );
+
+      logger.success('Project config restored.');
       return {stdout, stderr};
     } catch (e) {
-      console.error(e);
+      logger.fatal(e);
     }
   }
 
   async composerRestore() {
-    process.stdout.write('Restoring Composer');
-    process.stdout.write('\n');
     try {
       let {stdout, stderr} = await nodeExec(
         `${this.dockerCli} exec "cp -vfrp /var/www/backup/composer.json /var/www/html/."`,
@@ -122,9 +120,11 @@ class Setup {
           cwd: this.cwd,
         }
       );
+
+      logger.success('Composer files restored.');
       return {stdout, stderr};
     } catch (e) {
-      console.error(e);
+      logger.fatal(e);
     }
   }
 
@@ -140,8 +140,6 @@ class Setup {
   async loadFixture(name, namespace = null) {
     let ns = namespace ? namespace.replace(/\\/g, '\\\\') : this.getNamespace();
 
-    process.stdout.write('Loading Fixture ' + name + ' (' + ns + ')');
-    process.stdout.write('\n');
     try {
       const {stdout, stderr} = await nodeExec(
         `${this.dockerCli} ${this.craftCli} fixture/load ${name} --namespace="${ns}"`,
@@ -149,9 +147,11 @@ class Setup {
           cwd: this.cwd,
         }
       );
+
+      logger.success(`Data fixture "${name}" loaded.`);
       return {stdout, stderr};
     } catch (e) {
-      console.error(e);
+      logger.fatal(e);
     }
   }
 }

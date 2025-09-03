@@ -1,5 +1,13 @@
 #!/bin/bash
 
+# Define color codes
+GRAY="\033[90m"
+GREEN="\033[32m"
+UNDERLINE="\033[4m"
+RESET="\033[0m"
+
+LOGGER_PREFIX="${GRAY}[Craft Playwright] › ${GREEN}✔  ${UNDERLINE}success${RESET}   "
+
 # Add safe directory to allow commands later in the process
 git config --global --add safe.directory /var/www/repos/repo
 
@@ -7,8 +15,8 @@ git config --global --add safe.directory /var/www/repos/repo
 cd /var/www/html || exit
 
 # Install Craft
-echo "install craft"
 ./craft install/craft --interactive=0 --username="$AUTH_USERNAME" --password="$AUTH_PASSWORD" --site-name=Playwright --email=playwright@craftcms.com --site-url="$PRIMARY_SITE_URL" --language=en_US
+echo -e "${LOGGER_PREFIX}Craft installed."
 
 # Switch Craft's edition and apply changes
 sed -i "s/edition: solo/edition: pro/g" config/project/project.yaml
@@ -16,14 +24,14 @@ sed -i "s/edition: solo/edition: pro/g" config/project/project.yaml
 
 if [ ! -d "modules" ]
 then
-  echo "creating modules dir"
   mkdir modules
+  echo -e "${LOGGER_PREFIX}Modules directory created."
 fi
 
 if [ ! -d "config" ]
 then
-  echo "creating config dir"
   mkdir config
+  echo -e "${LOGGER_PREFIX}Config directory created."
 fi
 
 # autoload modules and fixtures via composer
@@ -39,16 +47,16 @@ cp -vfrp /var/www/repos/repo/node_modules/@craftcms/playwright/php/app.php /var/
 
 
 # Create backup
-echo "create backup dir"
 mkdir /var/www/backup
+echo -e "${LOGGER_PREFIX}Backup directory created."
 
 # Backup DB
-echo "backup DB"
 ./craft db/backup --interactive=0 --overwrite=1 /var/www/backup/db.sql
+echo -e "${LOGGER_PREFIX}Database backup created."
 
 # Backup Project Config files
-echo "backup Project Config files"
 cp -vfrp config/project /var/www/backup/
+echo -e "${LOGGER_PREFIX}Project config files backed up."
 
 # Switch to repo directory
 cd /var/www/repos/repo || exit
@@ -77,5 +85,5 @@ rm -rf composer.lock
 composer require $PACKAGE_NAME:*
 
 ## Backup composer files
-echo "backup composer files"
 cp -vfrp composer.* /var/www/backup/
+echo -e "${LOGGER_PREFIX}Composer files backed up."

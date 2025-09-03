@@ -3,10 +3,10 @@ const path = require('path');
 const {chromium, expect} = require('@playwright/test');
 const events = require('./../events');
 const {Setup} = require('./../fixtures/setup');
+const logger = require('../logger');
 
 module.exports = async (config) => {
-  process.stdout.write('Running Global setup…');
-  process.stdout.write('\n');
+  logger.await('Running global setup...');
 
   const {baseURL, db, password, projectPath, storageState, testDir, username} =
     config.projects[0].use;
@@ -33,8 +33,7 @@ module.exports = async (config) => {
   const setup = new Setup();
   await setup.dbBackup();
 
-  process.stdout.write('Calling after global setup event…');
-  process.stdout.write('\n');
+  await events.globalSetup.emit('after');
 
-  events.globalSetup.emit('after');
+  logger.success('Global setup completed.');
 };
