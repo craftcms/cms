@@ -29,11 +29,9 @@ All commands should be run from the cms repo’s location
 
 ## Notes
 
-- it uses the same fixtures mechanism as our codeception tests (`*Fixture.php` files from `<cms repo directory>/tests/fixtures` are copied over to the docker env and have their namespace adjusted)
-  - I just had to make small tweaks so that logging works here too (`src/test/ActiveFixture.php`, `src/test/fixtures/elements/BaseElementFixture.php`; commit: https://github.com/craftcms/cms/commit/b6407e68ab63a21550f9367b1712311108c7a444)
-  - the fixture data for the playwright tests is separate to the data for the codeception tests, and it sits in `<cms repo directory>/packages/craft-playwright/fixtures`; at this point it's a copy of `<cms repo directory>/tests/fixtures/data` with some tweaks
-- it uses php alpine docker image and there's configuration for both mysql and pgsql; mysql is on by default, but you can switch to pgsql by editing `<cms repo directory>/tests-playwright/.env` and `<cms repo directory>/packages/craft-playwright/docker-compose.yaml`
-- tests are located here: `<cms repo directory>/tests-playwright/`
+- it uses the same fixtures mechanism as our Codeception tests (`*Fixture.php` files from `<cms repo directory>/tests/fixtures` are copied over to the ddev env and have their namespace adjusted)
+- it uses ddev with MySQL 8 as a default, but can be switched to PostgreSQL by editing `<cms repo directory>/tests-playwright/ddev-config/config.local.yaml` file
+- tests are located here: `<cms repo directory>/tests-playwright/tests`
 
 > [!TIP]
 > For tests on pages that use `ElementEditor`, use `.pressSequentially('text', { delay: 100 })` instead of `.fill('text')` because we have custom keyboard handling. Using `fill` will cause the tests to be flaky (the fact that text was written won't always be acknowledged). 
