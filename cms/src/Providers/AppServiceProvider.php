@@ -81,7 +81,7 @@ final class AppServiceProvider extends ServiceProvider
         ], 'craftcms-views');
 
         $this->publishes([
-            base_path('vendor/craftcms/cms/cpresources') => public_path('cpresources'),
+            "{$this->root}/../cpresources" => public_path('cpresources'),
         ], 'craftcms-cpresources');
     }
 
