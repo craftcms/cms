@@ -1,6 +1,8 @@
 <?php
+
 /**
  * @link https://craftcms.com/
+ *
  * @copyright Copyright (c) Pixel & Tonic, Inc.
  * @license https://craftcms.github.io/license/
  */
@@ -43,6 +45,7 @@ use yii\web\ServerErrorHttpException;
  * Note that all actions in the controller require an authenticated Craft session via [[allowAnonymous]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
+ *
  * @since 3.0.0
  */
 class ElementIndexesController extends BaseElementsController
@@ -52,39 +55,22 @@ class ElementIndexesController extends BaseElementsController
      */
     protected string $elementType;
 
-    /**
-     * @var string
-     */
     protected string $context;
 
-    /**
-     * @var string|null
-     */
     protected ?string $sourceKey = null;
 
-    /**
-     * @var array|null
-     */
     protected ?array $source = null;
 
     /**
-     * @var ElementConditionInterface|null
      * @since 4.0.0
      */
     protected ?ElementConditionInterface $condition = null;
 
-    /**
-     * @var array|null
-     */
     protected ?array $viewState = null;
 
-    /**
-     * @var ElementQueryInterface|null
-     */
     protected ?ElementQueryInterface $elementQuery = null;
 
     /**
-     * @var ElementQueryInterface|null
      * @since 5.0.0
      */
     protected ?ElementQueryInterface $unfilteredElementQuery = null;
@@ -100,15 +86,15 @@ class ElementIndexesController extends BaseElementsController
     protected ?array $exporters = null;
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function beforeAction($action): bool
     {
-        if (!parent::beforeAction($action)) {
+        if (! parent::beforeAction($action)) {
             return false;
         }
 
-        if (!in_array($action->id, ['export', 'perform-action'], true)) {
+        if (! in_array($action->id, ['export', 'perform-action'], true)) {
             $this->requireAcceptsJson();
         }
 
@@ -118,7 +104,7 @@ class ElementIndexesController extends BaseElementsController
         $this->source = $this->source();
         $this->condition = $this->condition();
 
-        if (!in_array($action->id, ['filter-hud', 'save-elements'])) {
+        if (! in_array($action->id, ['filter-hud', 'save-elements'])) {
             $this->viewState = $this->viewState();
             $this->elementQuery = $this->elementQuery();
 
@@ -143,8 +129,6 @@ class ElementIndexesController extends BaseElementsController
      * ```php
      * $criteria = Craft::$app->controller->getElementQuery();
      * ```
-     *
-     * @return ElementQueryInterface
      */
     public function getElementQuery(): ElementQueryInterface
     {
@@ -176,7 +160,7 @@ class ElementIndexesController extends BaseElementsController
         $elementSources = Craft::$app->getElementSources();
 
         $sortOptions = Collection::make($elementSources->getSourceSortOptions($this->elementType, $this->sourceKey))
-            ->map(fn(array $option) => [
+            ->map(fn (array $option) => [
                 'label' => $option['label'],
                 'attr' => $option['attribute'] ?? $option['orderBy'],
                 'defaultDir' => $option['defaultDir'] ?? 'asc',
@@ -185,16 +169,16 @@ class ElementIndexesController extends BaseElementsController
             ->all();
 
         $tableColumns = Collection::make($elementSources->getSourceTableAttributes($this->elementType, $this->sourceKey))
-            ->map(fn(array $attribute, string $key) => [
+            ->map(fn (array $attribute, string $key) => [
                 ...$attribute,
-                'key' => $key,
+                'attr' => $key,
             ])
             ->values()
             ->all();
 
         $defaultTableColumns = Collection::make($elementSources->getTableAttributes($this->elementType, $this->sourceKey))
-            ->map(fn(array $attribute) => $attribute[0])
-            ->filter(fn(string $attribute) => $attribute !== 'title')
+            ->map(fn (array $attribute) => $attribute[0])
+            ->filter(fn (string $attribute) => $attribute !== 'title')
             ->values()
             ->all();
 
@@ -207,30 +191,27 @@ class ElementIndexesController extends BaseElementsController
 
     /**
      * Renders and returns an element index container, plus its first batch of elements.
-     *
-     * @return Response
      */
     public function actionGetElements(): Response
     {
         $responseData = $this->elementResponseData(true, $this->isAdministrative());
+
         return $this->asJson($responseData);
     }
 
     /**
      * Renders and returns a subsequent batch of elements for an element index.
-     *
-     * @return Response
      */
     public function actionGetMoreElements(): Response
     {
         $responseData = $this->elementResponseData(false, false);
+
         return $this->asJson($responseData);
     }
 
     /**
      * Returns the total number of elements that match the current criteria.
      *
-     * @return Response
      * @since 3.4.6
      */
     public function actionCountElements(): Response
@@ -253,7 +234,6 @@ class ElementIndexesController extends BaseElementsController
     /**
      * Performs an action on one or more selected elements.
      *
-     * @return Response|null
      * @throws BadRequestHttpException if the requested element action is not supported by the element type, or its parameters didn’t validate
      */
     public function actionPerformAction(): ?Response
@@ -266,7 +246,7 @@ class ElementIndexesController extends BaseElementsController
         $elementIds = $this->request->getRequiredBodyParam('elementIds');
 
         // Find that action from the list of available actions for the source
-        if (!empty($this->actions)) {
+        if (! empty($this->actions)) {
             /** @var ElementAction $availableAction */
             foreach ($this->actions as $availableAction) {
                 if ($actionClass === get_class($availableAction)) {
@@ -277,7 +257,7 @@ class ElementIndexesController extends BaseElementsController
         }
 
         /** @noinspection UnSafeIsSetOverArrayInspection - FP */
-        if (!isset($action)) {
+        if (! isset($action)) {
             throw new BadRequestHttpException('Element action is not supported by the element type');
         }
 
@@ -291,7 +271,7 @@ class ElementIndexesController extends BaseElementsController
         }
 
         // Make sure the action validates
-        if (!$action->validate()) {
+        if (! $action->validate()) {
             throw new BadRequestHttpException('Element action params did not validate');
         }
 
@@ -333,7 +313,7 @@ class ElementIndexesController extends BaseElementsController
             return $this->response;
         }
 
-        if (!$success) {
+        if (! $success) {
             return $this->asFailure($message);
         }
 
@@ -357,8 +337,6 @@ class ElementIndexesController extends BaseElementsController
 
     /**
      * Returns the source tree HTML for an element index.
-     *
-     * @return Response
      */
     public function actionGetSourceTreeHtml(): Response
     {
@@ -377,8 +355,8 @@ class ElementIndexesController extends BaseElementsController
     /**
      * Exports element data.
      *
-     * @return Response
      * @throws BadRequestHttpException
+     *
      * @since 3.4.4
      */
     public function actionExport(): Response
@@ -390,7 +368,7 @@ class ElementIndexesController extends BaseElementsController
         $filename = $exporter->getFilename();
         if ($exporter::isFormattable()) {
             $this->response->format = $this->request->getBodyParam('format', 'csv');
-            $filename .= '.' . $this->response->format;
+            $filename .= '.'.$this->response->format;
         }
         $this->response->setDownloadHeaders($filename);
 
@@ -401,8 +379,8 @@ class ElementIndexesController extends BaseElementsController
             if (is_callable($export)) {
                 $export = $export();
             }
-            if (!is_iterable($export)) {
-                throw new InvalidValueException(get_class($exporter) . '::export() must return an array or generator function since isFormattable() returns true.');
+            if (! is_iterable($export)) {
+                throw new InvalidValueException(get_class($exporter).'::export() must return an array or generator function since isFormattable() returns true.');
             }
 
             $this->response->data = $export;
@@ -433,22 +411,21 @@ class ElementIndexesController extends BaseElementsController
     /**
      * Returns the exporter for the request.
      *
-     * @return ElementExporterInterface
      * @throws BadRequestHttpException
      */
     private function _exporter(): ElementExporterInterface
     {
-        if (!$this->sourceKey) {
+        if (! $this->sourceKey) {
             throw new BadRequestHttpException('Request missing required body param');
         }
 
-        if (!$this->isAdministrative()) {
+        if (! $this->isAdministrative()) {
             throw new BadRequestHttpException('Request missing index context');
         }
 
         // Find that exporter from the list of available exporters for the source
         $exporterClass = $this->request->getBodyParam('type', Raw::class);
-        if (!empty($this->exporters)) {
+        if (! empty($this->exporters)) {
             foreach ($this->exporters as $exporter) {
                 if ($exporterClass === get_class($exporter)) {
                     return $exporter;
@@ -486,8 +463,8 @@ class ElementIndexesController extends BaseElementsController
             $condition = $this->elementType()::createCondition();
         }
 
-        if (!empty($fieldLayouts)) {
-            $condition->setFieldLayouts(array_map(fn(array $config) => FieldLayout::createFromConfig($config), $fieldLayouts));
+        if (! empty($fieldLayouts)) {
+            $condition->setFieldLayouts(array_map(fn (array $config) => FieldLayout::createFromConfig($config), $fieldLayouts));
         }
 
         $condition->mainTag = 'div';
@@ -527,6 +504,7 @@ class ElementIndexesController extends BaseElementsController
         $html = $condition->getBuilderHtml();
 
         $view = Craft::$app->getView();
+
         return $this->asJson([
             'hudHtml' => $html,
             'headHtml' => $view->getHeadHtml(),
@@ -537,7 +515,6 @@ class ElementIndexesController extends BaseElementsController
     /**
      * Saves inline-edited elements.
      *
-     * @return Response
      * @since 5.0.0
      */
     public function actionSaveElements(): Response
@@ -555,7 +532,7 @@ class ElementIndexesController extends BaseElementsController
 
         // get all the elements
         $elementIds = array_map(
-            fn(string $key) => (int) Str::chopStart($key, 'element-'),
+            fn (string $key) => (int) Str::chopStart($key, 'element-'),
             array_keys($data),
         );
         $elements = $this->elementType()::find()
@@ -572,7 +549,7 @@ class ElementIndexesController extends BaseElementsController
 
         // make sure they're editable
         foreach ($elements as $element) {
-            if (!$elementsService->canSave($element, $user)) {
+            if (! $elementsService->canSave($element, $user)) {
                 throw new ForbiddenHttpException('User not authorized to save this element.');
             }
         }
@@ -581,7 +558,7 @@ class ElementIndexesController extends BaseElementsController
         $errors = [];
         foreach ($elements as $element) {
             $attributes = Arr::except($data["element-$element->id"], 'fields');
-            if (!empty($attributes)) {
+            if (! empty($attributes)) {
                 $scenario = $element->getScenario();
                 $element->setScenario(Element::SCENARIO_LIVE);
                 $element->setAttributes($attributes);
@@ -598,15 +575,15 @@ class ElementIndexesController extends BaseElementsController
 
             $names = array_merge(
                 array_keys($attributes),
-                array_map(fn(string $handle) => "field:$handle", array_keys($data["element-$element->id"]['fields'] ?? [])),
+                array_map(fn (string $handle) => "field:$handle", array_keys($data["element-$element->id"]['fields'] ?? [])),
             );
 
-            if (!$element->validate($names)) {
+            if (! $element->validate($names)) {
                 $errors[$element->getCanonicalId()] = $element->getErrors();
             }
         }
 
-        if (!empty($errors)) {
+        if (! empty($errors)) {
             return $this->asJson([
                 'errors' => $errors,
             ]);
@@ -617,8 +594,8 @@ class ElementIndexesController extends BaseElementsController
 
         try {
             foreach ($elements as $element) {
-                if (!$elementsService->saveElement($element)) {
-                    Craft::error("Couldn’t save element $element->id: " . implode(', ', $element->getFirstErrors()));
+                if (! $elementsService->saveElement($element)) {
+                    Craft::error("Couldn’t save element $element->id: ".implode(', ', $element->getFirstErrors()));
                     throw new ServerErrorHttpException("Couldn’t save element $element->id");
                 }
             }
@@ -635,7 +612,6 @@ class ElementIndexesController extends BaseElementsController
     /**
      * Returns whether the element index has an administrative context (`index` or `embedded-index`).
      *
-     * @return bool
      * @since 5.0.0
      */
     protected function isAdministrative(): bool
@@ -646,12 +622,11 @@ class ElementIndexesController extends BaseElementsController
     /**
      * Returns the selected source info.
      *
-     * @return array|null
      * @throws ForbiddenHttpException if the user is not permitted to access the requested source
      */
     protected function source(): ?array
     {
-        if (!isset($this->sourceKey)) {
+        if (! isset($this->sourceKey)) {
             return null;
         }
 
@@ -677,7 +652,6 @@ class ElementIndexesController extends BaseElementsController
     /**
      * Returns the condition that should be applied to the element query.
      *
-     * @return ElementConditionInterface|null
      * @since 4.0.0
      */
     protected function condition(): ?ElementConditionInterface
@@ -686,7 +660,7 @@ class ElementIndexesController extends BaseElementsController
         /** @phpstan-var array{class:class-string<ElementConditionInterface>}|null $conditionConfig */
         $conditionConfig = $this->request->getBodyParam('condition');
 
-        if (!$conditionConfig) {
+        if (! $conditionConfig) {
             return null;
         }
 
@@ -702,7 +676,7 @@ class ElementIndexesController extends BaseElementsController
                     $criteria['ownerId'] = $ownerId;
                 }
                 $condition->referenceElement = Craft::$app->getElements()->getElementById(
-                    (int)$referenceElementId,
+                    (int) $referenceElementId,
                     siteId: $siteId,
                     criteria: $criteria,
                 );
@@ -714,8 +688,6 @@ class ElementIndexesController extends BaseElementsController
 
     /**
      * Returns the current view state.
-     *
-     * @return array
      */
     protected function viewState(): array
     {
@@ -730,16 +702,15 @@ class ElementIndexesController extends BaseElementsController
 
     /**
      * Returns the element query based on the current params.
-     *
-     * @return ElementQueryInterface
      */
     protected function elementQuery(): ElementQueryInterface
     {
         $query = $this->elementType::find();
         $conditionsService = Craft::$app->getConditions();
 
-        if (!$this->source) {
+        if (! $this->source) {
             $query->id(false);
+
             return $query;
         }
 
@@ -750,8 +721,8 @@ class ElementIndexesController extends BaseElementsController
             $sourceCondition->modifyQuery($query);
         }
 
-        $applyCriteria = function(array $criteria) use ($query): bool {
-            if (!$criteria) {
+        $applyCriteria = function (array $criteria) use ($query): bool {
+            if (! $criteria) {
                 return false;
             }
 
@@ -763,13 +734,14 @@ class ElementIndexesController extends BaseElementsController
             }
             if (isset($criteria['draftOf'])) {
                 if (is_numeric($criteria['draftOf']) && $criteria['draftOf'] != 0) {
-                    $criteria['draftOf'] = (int)$criteria['draftOf'];
+                    $criteria['draftOf'] = (int) $criteria['draftOf'];
                 } else {
                     $criteria['draftOf'] = filter_var($criteria['draftOf'], FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE);
                 }
             }
 
             Craft::configure($query, Component::cleanseConfig($criteria));
+
             return true;
         };
 
@@ -791,7 +763,7 @@ class ElementIndexesController extends BaseElementsController
 
         // Override with the custom filters
         $filterConditionConfig = $this->request->getBodyParam('filterConfig');
-        if (!$filterConditionConfig) {
+        if (! $filterConditionConfig) {
             $filterConditionStr = $this->request->getBodyParam('filters');
             if ($filterConditionStr) {
                 parse_str($filterConditionStr, $filterConditionConfig);
@@ -823,7 +795,7 @@ class ElementIndexesController extends BaseElementsController
                 ->orderBy(['lft' => SORT_ASC])
                 ->all();
 
-            if (!empty($collapsedElements)) {
+            if (! empty($collapsedElements)) {
                 $descendantIds = [];
 
                 foreach ($collapsedElements as $element) {
@@ -839,7 +811,7 @@ class ElementIndexesController extends BaseElementsController
                     $descendantIds = array_merge($descendantIds, $elementDescendantIds);
                 }
 
-                if (!empty($descendantIds)) {
+                if (! empty($descendantIds)) {
                     /** @phpstan-ignore-next-line */
                     $query->andWhere(new ExcludeDescendantIdsExpression($descendantIds));
                     $hasFilters = true;
@@ -859,9 +831,8 @@ class ElementIndexesController extends BaseElementsController
     /**
      * Returns the element data to be returned to the client.
      *
-     * @param bool $includeContainer Whether the element container should be included in the response data
-     * @param bool $includeActions Whether info about the available actions should be included in the response data
-     * @return array
+     * @param  bool  $includeContainer  Whether the element container should be included in the response data
+     * @param  bool  $includeActions  Whether info about the available actions should be included in the response data
      */
     protected function elementResponseData(bool $includeContainer, bool $includeActions): array
     {
@@ -878,7 +849,7 @@ class ElementIndexesController extends BaseElementsController
 
         $disabledElementIds = $this->request->getParam('disabledElementIds', []);
         $selectable = (
-            (!empty($this->actions) || $this->request->getParam('selectable')) &&
+            (! empty($this->actions) || $this->request->getParam('selectable')) &&
             empty($this->viewState['inlineEditing'])
         );
         $sortable = $this->isAdministrative() && $this->request->getParam('sortable');
@@ -936,7 +907,7 @@ class ElementIndexesController extends BaseElementsController
             if ($this->elementQuery->trashed) {
                 if ($action instanceof DeleteActionInterface && $action->canHardDelete()) {
                     $action->setHardDelete();
-                } elseif (!$action instanceof Restore) {
+                } elseif (! $action instanceof Restore) {
                     unset($actions[$i]);
                 }
             } elseif ($action instanceof Restore) {
@@ -946,13 +917,14 @@ class ElementIndexesController extends BaseElementsController
 
         if ($this->elementQuery->trashed) {
             // Make sure Restore goes first
-            usort($actions, function($a, $b): int {
+            usort($actions, function ($a, $b): int {
                 if ($a instanceof Restore) {
                     return -1;
                 }
                 if ($b instanceof Restore) {
                     return 1;
                 }
+
                 return 0;
             });
         }
@@ -964,6 +936,7 @@ class ElementIndexesController extends BaseElementsController
      * Returns the available exporters for the current source.
      *
      * @return ElementExporterInterface[]|null
+     *
      * @since 3.4.0
      */
     protected function availableExporters(): ?array
@@ -992,8 +965,6 @@ class ElementIndexesController extends BaseElementsController
 
     /**
      * Returns the data for the available actions.
-     *
-     * @return array|null
      */
     protected function actionData(): ?array
     {
@@ -1014,7 +985,6 @@ class ElementIndexesController extends BaseElementsController
     /**
      * Returns the data for the available exporters.
      *
-     * @return array|null
      * @since 3.4.0
      */
     protected function exporterData(): ?array
@@ -1039,7 +1009,6 @@ class ElementIndexesController extends BaseElementsController
     /**
      * Returns the updated table attribute HTML for an element.
      *
-     * @return Response
      * @throws BadRequestHttpException
      * @throws ForbiddenHttpException
      */
@@ -1047,12 +1016,12 @@ class ElementIndexesController extends BaseElementsController
     {
         $this->requireAcceptsJson();
 
-        if (!$this->sourceKey) {
-            throw new BadRequestHttpException("Request missing required body param");
+        if (! $this->sourceKey) {
+            throw new BadRequestHttpException('Request missing required body param');
         }
 
         $id = $this->request->getRequiredBodyParam('id');
-        if (!$id || !is_numeric($id)) {
+        if (! $id || ! is_numeric($id)) {
             throw new BadRequestHttpException("Invalid element ID: $id");
         }
 
@@ -1065,7 +1034,7 @@ class ElementIndexesController extends BaseElementsController
             ->status(null)
             ->one();
 
-        if (!$element) {
+        if (! $element) {
             /** @var ElementInterface|null $element */
             $element = (clone $this->elementQuery)
                 ->id($id)
@@ -1073,7 +1042,7 @@ class ElementIndexesController extends BaseElementsController
                 ->one();
         }
 
-        if (!$element) {
+        if (! $element) {
             throw new BadRequestHttpException("Invalid element ID: $id");
         }
 

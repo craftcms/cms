@@ -38,6 +38,18 @@ final class Env extends \Illuminate\Support\Env
         $filesystem->put($pathToFile, implode(PHP_EOL, $lines));
     }
 
+    public static function get($key, $default = null): mixed
+    {
+        $value = parent::get($key, $default);
+
+        if (is_string($value)) {
+            // parse nested variables
+            $value = self::parseNested($value);
+        }
+
+        return $value;
+    }
+
     /**
      * Checks if a string references an environment variable (`$VARIABLE_NAME`)
      * and/or an alias (`@aliasName`), and returns the referenced value.
@@ -60,19 +72,21 @@ final class Env extends \Illuminate\Support\Env
      */
     public static function parse(?string $value): ?string
     {
-        if ($value === null) {
-            return null;
+        if ($value === null || $value === '') {
+            return $value;
         }
 
-        if (preg_match('/^\$(\w+)(\/.*)?/', $value, $matches)) {
-            $env = self::get($matches[1]);
+        // …${VAR}…
+        $value = self::parseNested($value);
 
-            if ($env === null) {
-                // No env var or constant is defined here by that name
-                return null;
-            }
+        // …/$VAR/…
+        $value = preg_replace_callback(
+            '/(?<=^|\/)\$(\w+)(?=$|\/)?/',
+            fn ($m) => self::get($m[1]), $value
+        );
 
-            $value = $env.($matches[2] ?? '');
+        if ($value === '') {
+            return null;
         }
 
         if (str_starts_with($value, '@')) {
@@ -83,6 +97,11 @@ final class Env extends \Illuminate\Support\Env
         }
 
         return $value;
+    }
+
+    private static function parseNested(string $value): string
+    {
+        return preg_replace_callback('/\$\{(\w+)}/', fn (array $m) => self::get($m[1]), $value);
     }
 
     /**
@@ -105,7 +124,7 @@ final class Env extends \Illuminate\Support\Env
             return (bool) $value;
         }
 
-        if (! is_string($value)) {
+        if (! is_string($value) || $value === '') {
             return null;
         }
 

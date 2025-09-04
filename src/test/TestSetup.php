@@ -1,6 +1,8 @@
 <?php
+
 /**
  * @link https://craftcms.com/
+ *
  * @copyright Copyright (c) Pixel & Tonic, Inc.
  * @license https://craftcms.github.io/license/
  */
@@ -82,6 +84,7 @@ use yii\mutex\Mutex;
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @author Global Network Group | Giel Tettelaar <giel@yellowflash.net>
+ *
  * @since 3.2
  */
 class TestSetup
@@ -109,7 +112,6 @@ class TestSetup
     /**
      * Creates a craft object to play with. Ensures the Craft::$app service locator is working.
      *
-     * @return mixed
      * @throws InvalidConfigException
      */
     public static function warmCraft(): mixed
@@ -141,8 +143,6 @@ class TestSetup
     }
 
     /**
-     * @param Connection $connection
-     * @return bool
      * @throws Exception
      */
     public static function cleanseDb(Connection $connection): bool
@@ -165,9 +165,6 @@ class TestSetup
         return true;
     }
 
-    /**
-     * @return array
-     */
     public static function createTestCraftObjectConfig(): array
     {
         $_SERVER['REMOTE_ADDR'] = '1.1.1.1';
@@ -175,16 +172,16 @@ class TestSetup
 
         $basePath = CraftTest::normalizePathSeparators(dirname(__DIR__, 2));
 
-        $srcPath = $basePath . '/src';
+        $srcPath = $basePath.'/src';
         $vendorPath = CRAFT_VENDOR_PATH;
 
         $appType = self::appType();
 
-        Craft::setAlias('@craftunitsupport', $srcPath . '/test');
-        Craft::setAlias('@craftunittemplates', $basePath . '/tests/_craft/templates');
-        Craft::setAlias('@craftunitfixtures', $basePath . '/tests/fixtures');
-        Craft::setAlias('@testsfolder', $basePath . '/tests');
-        Craft::setAlias('@crafttestsfolder', $basePath . '/tests/_craft');
+        Craft::setAlias('@craftunitsupport', $srcPath.'/test');
+        Craft::setAlias('@craftunittemplates', $basePath.'/tests/_craft/templates');
+        Craft::setAlias('@craftunitfixtures', $basePath.'/tests/fixtures');
+        Craft::setAlias('@testsfolder', $basePath.'/tests');
+        Craft::setAlias('@crafttestsfolder', $basePath.'/tests/_craft');
 
         // Normalize some Craft defined path aliases.
         Craft::setAlias('@lib', CraftTest::normalizePathSeparators(Craft::getAlias('@lib')));
@@ -202,9 +199,9 @@ class TestSetup
                     'config' => $configService,
                 ],
             ],
-            require $srcPath . '/config/app.php',
-            require $srcPath . '/config/app.' . $appType . '.php',
-            ConfigFacade::get("craft.app", []),
+            require $srcPath.'/config/app.php',
+            require $srcPath.'/config/app.'.$appType.'.php',
+            ConfigFacade::get('craft.app', []),
             ConfigFacade::get("craft.app.$appType", []),
         );
 
@@ -224,23 +221,18 @@ class TestSetup
         ]);
     }
 
-    /**
-     * @return Config
-     */
     public static function createConfigService(): Config
     {
-        $configService = new Config();
+        $configService = new Config;
         $configService->env = 'test';
         $configService->configDir = CRAFT_CONFIG_PATH;
-        $configService->appDefaultsDir = dirname(__DIR__) . DIRECTORY_SEPARATOR . 'config' . DIRECTORY_SEPARATOR . 'defaults';
+        $configService->appDefaultsDir = dirname(__DIR__).DIRECTORY_SEPARATOR.'config'.DIRECTORY_SEPARATOR.'defaults';
 
         return $configService;
     }
 
     /**
      * Determine the app type (console or web).
-     *
-     * @return string
      */
     public static function appType(): string
     {
@@ -253,24 +245,20 @@ class TestSetup
     }
 
     /**
-     * @param string $preDefinedAppType
      * @return class-string<ConsoleApplication|WebApplication>
      */
     public static function appClass(string $preDefinedAppType = ''): string
     {
-        if (!$preDefinedAppType) {
+        if (! $preDefinedAppType) {
             $preDefinedAppType = self::appType();
         }
 
         return $preDefinedAppType === 'console' ? ConsoleApplication::class : WebApplication::class;
     }
 
-    /**
-     * @return bool
-     */
     public static function configureCraft(): bool
     {
-        !defined('YII_ENV') && define('YII_ENV', 'test');
+        ! defined('YII_ENV') && define('YII_ENV', 'test');
 
         $vendorPath = realpath(CRAFT_VENDOR_PATH);
 
@@ -284,7 +272,7 @@ class TestSetup
 
         // Log errors to craft/storage/logs/phperrors.log
         ini_set('log_errors', '1');
-        ini_set('error_log', $storagePath . '/logs/phperrors.log');
+        ini_set('error_log', $storagePath.'/logs/phperrors.log');
 
         error_reporting(E_ALL & ~E_DEPRECATED & ~E_USER_DEPRECATED);
         ini_set('display_errors', '1');
@@ -295,17 +283,17 @@ class TestSetup
         defined('CURLOPT_CONNECTTIMEOUT_MS') || define('CURLOPT_CONNECTTIMEOUT_MS', 156);
 
         $repoRoot = dirname(__DIR__, 2);
-        $libPath = $repoRoot . '/lib';
-        $srcPath = $repoRoot . '/src';
+        $libPath = $repoRoot.'/lib';
+        $srcPath = $repoRoot.'/src';
 
-        require_once $libPath . '/yii2/Yii.php';
-        require_once $srcPath . '/Craft.php';
+        require_once $libPath.'/yii2/Yii.php';
+        require_once $srcPath.'/Craft.php';
 
         // Set aliases
         Craft::setAlias('@vendor', $vendorPath);
         Craft::setAlias('@craftcms', $repoRoot);
         Craft::setAlias('@lib', $libPath);
-        Craft::setAlias('@appicons', $srcPath . DIRECTORY_SEPARATOR . 'icons');
+        Craft::setAlias('@appicons', $srcPath.DIRECTORY_SEPARATOR.'icons');
         Craft::setAlias('@config', $configPath);
         Craft::setAlias('@contentMigrations', $contentMigrationsPath);
         Craft::setAlias('@root', $rootPath);
@@ -335,21 +323,22 @@ class TestSetup
     }
 
     /**
-     * @param string|null $projectConfigFolder - Whether to override the folder specified in codeception.yml with a custom folder.
+     * @param  string|null  $projectConfigFolder  - Whether to override the folder specified in codeception.yml with a custom folder.
+     *
      * @throws ErrorException
      */
     public static function setupProjectConfig(?string $projectConfigFolder = null): void
     {
-        if (!$projectConfigFolder) {
+        if (! $projectConfigFolder) {
             $config = \craft\test\Craft::$instance->_getConfig('projectConfig');
-            $projectConfigFolder = dirname(CRAFT_TESTS_PATH) . DIRECTORY_SEPARATOR . $config['folder'];
+            $projectConfigFolder = dirname(CRAFT_TESTS_PATH).DIRECTORY_SEPARATOR.$config['folder'];
         }
 
-        if (!is_dir($projectConfigFolder)) {
+        if (! is_dir($projectConfigFolder)) {
             throw new InvalidArgumentException('Project config folder does not exist.');
         }
 
-        $dest = CRAFT_CONFIG_PATH . DIRECTORY_SEPARATOR . 'project';
+        $dest = CRAFT_CONFIG_PATH.DIRECTORY_SEPARATOR.'project';
 
         // Remove any existing folders.
         self::removeProjectConfigFolders($dest);
@@ -359,7 +348,6 @@ class TestSetup
     }
 
     /**
-     * @param string $path
      * @throws ErrorException
      */
     public static function removeProjectConfigFolders(string $path): void
@@ -377,7 +365,7 @@ class TestSetup
      */
     public static function getSeedProjectConfigData(): array
     {
-        if (!empty(self::$_parsedProjectConfig)) {
+        if (! empty(self::$_parsedProjectConfig)) {
             return self::$_parsedProjectConfig;
         }
 
@@ -388,14 +376,12 @@ class TestSetup
      * Whether project config should be used in tests.
      *
      * Returns the projectConfig configuration array if yes - `false` if not.
-     *
-     * @return array|false
      */
     public static function useProjectConfig(): array|false
     {
         $config = \craft\test\Craft::$instance->_getConfig('projectConfig');
 
-        if (!isset($config['folder'])) {
+        if (! isset($config['folder'])) {
             return false;
         }
 
@@ -403,7 +389,6 @@ class TestSetup
     }
 
     /**
-     * @param Connection $connection
      * @throws Exception
      */
     public static function setupCraftDb(Connection $connection): void
@@ -414,7 +399,7 @@ class TestSetup
 
         $siteConfig = [
             'name' => 'Craft test site',
-            'handle' => 'default',
+            'handle' => 'defaultSite',
             'hasUrls' => true,
             'baseUrl' => self::SITE_URL,
             'language' => 'en-US',
@@ -452,10 +437,10 @@ class TestSetup
 
     /**
      * @template T of Module
-     * @param CodeceptionTestCase $test
-     * @param array $serviceMap
-     * @param class-string<T>|null $moduleClass
+     *
+     * @param  class-string<T>|null  $moduleClass
      * @return T
+     *
      * @credit https://github.com/nerds-and-company/schematic/blob/master/tests/_support/Helper/Unit.php
      */
     public static function getMockModule(CodeceptionTestCase $test, array $serviceMap = [], ?string $moduleClass = null): Module
@@ -504,9 +489,10 @@ class TestSetup
 
     /**
      * @template T
-     * @param CodeceptionTestCase $test
-     * @param class-string<T> $class
+     *
+     * @param  class-string<T>  $class
      * @return T|MockObject
+     *
      * @credit https://github.com/nerds-and-company/schematic/blob/master/tests/_support/Helper/Unit.php
      */
     public static function getMock(CodeceptionTestCase $test, string $class)
@@ -520,9 +506,7 @@ class TestSetup
     }
 
     /**
-     * @return array
      * @todo Missed any?
-     *
      */
     public static function getCraftServiceMap(): array
     {

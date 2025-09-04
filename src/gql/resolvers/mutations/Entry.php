@@ -1,6 +1,8 @@
 <?php
+
 /**
  * @link https://craftcms.com/
+ *
  * @copyright Copyright (c) Pixel & Tonic, Inc.
  * @license https://craftcms.github.io/license/
  */
@@ -27,23 +29,19 @@ use yii\base\InvalidConfigException;
  * Class Entry
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
+ *
  * @since 3.5.0
  */
 class Entry extends ElementMutationResolver
 {
     use StructureMutationTrait;
 
-    /** @inheritdoc */
+    /** {@inheritdoc} */
     protected array $immutableAttributes = ['id', 'uid', 'draftId'];
 
     /**
      * Save an entry or draft using the passed arguments.
      *
-     * @param mixed $source
-     * @param array $arguments
-     * @param mixed $context
-     * @param ResolveInfo $resolveInfo
-     * @return EntryElement
      * @throws Throwable if reasons.
      */
     public function saveEntry(mixed $source, array $arguments, mixed $context, ResolveInfo $resolveInfo): EntryElement
@@ -59,11 +57,11 @@ class Entry extends ElementMutationResolver
             }
 
             if ($showStatusField) {
-                if (!empty($arguments['siteId'])) {
+                if (! empty($arguments['siteId'])) {
                     $entry->setEnabledForSite([$arguments['siteId'] => $arguments['enabled']]);
                     // Set the global status to true if it's currently disabled,
                     // and we're enabling entry for a site
-                    if ($arguments['enabled'] && !$entry->enabled) {
+                    if ($arguments['enabled'] && ! $entry->enabled) {
                         $entry->enabled = $arguments['enabled'];
                     }
                 } else {
@@ -81,7 +79,7 @@ class Entry extends ElementMutationResolver
                 $showSlugField = true;
             }
 
-            if (!$showSlugField) {
+            if (! $showSlugField) {
                 unset($arguments['slug']);
             }
         }
@@ -91,10 +89,17 @@ class Entry extends ElementMutationResolver
             $entry->setScenario(Element::SCENARIO_ESSENTIALS);
         }
 
-        $canIdentify = !empty($arguments['id']) || !empty($arguments['uid']) || !empty($arguments['draftId']);
+        $canIdentify = ! empty($arguments['id']) || ! empty($arguments['uid']) || ! empty($arguments['draftId']);
 
         $entry = $this->populateElementWithData($entry, $arguments, $resolveInfo);
-        $entry = $this->saveElement($entry);
+
+        if (array_key_exists('asUnpublishedDraft', $arguments) && $arguments['asUnpublishedDraft']) {
+            $entry->setScenario(Element::SCENARIO_ESSENTIALS);
+            Craft::$app->getDrafts()->saveElementAsDraft($entry);
+        } else {
+            $entry = $this->saveElement($entry);
+        }
+
         $this->performStructureOperations($entry, $arguments);
 
         /** @var EntryQuery $query */
@@ -106,6 +111,9 @@ class Entry extends ElementMutationResolver
         if ($canIdentify) {
             $query = $this->identifyEntry($query, $arguments);
         } else {
+            if (array_key_exists('asUnpublishedDraft', $arguments) && $arguments['asUnpublishedDraft']) {
+                $query->drafts(null);
+            }
             $query->id($entry->id);
         }
 
@@ -115,11 +123,6 @@ class Entry extends ElementMutationResolver
     /**
      * Delete an entry identified by the passed arguments.
      *
-     * @param mixed $source
-     * @param array $arguments
-     * @param mixed $context
-     * @param ResolveInfo $resolveInfo
-     * @return bool
      * @throws Throwable if reasons.
      */
     public function deleteEntry(mixed $source, array $arguments, mixed $context, ResolveInfo $resolveInfo): bool
@@ -131,7 +134,7 @@ class Entry extends ElementMutationResolver
         /** @var EntryElement|null $entry */
         $entry = $elementService->getElementById($entryId, EntryElement::class, $siteId);
 
-        if (!$entry) {
+        if (! $entry) {
             return false;
         }
 
@@ -144,11 +147,6 @@ class Entry extends ElementMutationResolver
     /**
      * Create a new draft for the entry ID identified by the arguments
      *
-     * @param mixed $source
-     * @param array $arguments
-     * @param mixed $context
-     * @param ResolveInfo $resolveInfo
-     * @return mixed
      * @throws Throwable if reasons.
      */
     public function createDraft(mixed $source, array $arguments, mixed $context, ResolveInfo $resolveInfo): mixed
@@ -158,7 +156,7 @@ class Entry extends ElementMutationResolver
         /** @var EntryElement|null $entry */
         $entry = Craft::$app->getElements()->getElementById($entryId, EntryElement::class);
 
-        if (!$entry) {
+        if (! $entry) {
             throw new Error('Unable to perform the action.');
         }
 
@@ -187,11 +185,6 @@ class Entry extends ElementMutationResolver
     /**
      * Publish a draft identified by the arguments.
      *
-     * @param mixed $source
-     * @param array $arguments
-     * @param mixed $context
-     * @param ResolveInfo $resolveInfo
-     * @return int
      * @throws Throwable if reasons.
      */
     public function publishDraft(mixed $source, array $arguments, mixed $context, ResolveInfo $resolveInfo): int
@@ -204,7 +197,7 @@ class Entry extends ElementMutationResolver
             ->draftId($arguments['id'])
             ->one();
 
-        if (!$draft) {
+        if (! $draft) {
             throw new Error('Unable to perform the action.');
         }
 
@@ -228,8 +221,6 @@ class Entry extends ElementMutationResolver
     /**
      * Get the entry based on the arguments.
      *
-     * @param array $arguments
-     * @return EntryElement
      * @throws Exception if reasons
      */
     protected function getEntryElement(array $arguments): EntryElement
@@ -244,9 +235,9 @@ class Entry extends ElementMutationResolver
         // Figure out whether the mutation is about an already saved entry
         $canIdentify = (
             $section?->type === Section::TYPE_SINGLE ||
-            !empty($arguments['id']) ||
-            !empty($arguments['uid']) ||
-            !empty($arguments['draftId'])
+            ! empty($arguments['id']) ||
+            ! empty($arguments['uid']) ||
+            ! empty($arguments['draftId'])
         );
 
         // Check if relevant schema is present
@@ -270,7 +261,7 @@ class Entry extends ElementMutationResolver
 
             $entry = $entryQuery->one();
 
-            if (!$entry) {
+            if (! $entry) {
                 throw new Error('No such entry exists');
             }
         } else {
@@ -303,10 +294,6 @@ class Entry extends ElementMutationResolver
 
     /**
      * Identify the entry element.
-     *
-     * @param EntryQuery $entryQuery
-     * @param array $arguments
-     * @return EntryQuery
      */
     protected function identifyEntry(EntryQuery $entryQuery, array $arguments): EntryQuery
     {
@@ -321,7 +308,7 @@ class Entry extends ElementMutationResolver
             // nested entries won’t be queried if a field param isn’t set
             $entryQuery->fieldId($field->id);
         }
-        if (!empty($arguments['draftId'])) {
+        if (! empty($arguments['draftId'])) {
             $entryQuery->draftId($arguments['draftId']);
 
             if (array_key_exists('provisional', $arguments)) {
@@ -329,9 +316,9 @@ class Entry extends ElementMutationResolver
             }
         } elseif ($section?->type === Section::TYPE_SINGLE) {
             $entryQuery->typeId($entryType->id);
-        } elseif (!empty($arguments['uid'])) {
+        } elseif (! empty($arguments['uid'])) {
             $entryQuery->uid($arguments['uid']);
-        } elseif (!empty($arguments['id'])) {
+        } elseif (! empty($arguments['id'])) {
             $entryQuery->id($arguments['id']);
         } else {
             // Unable to identify, make sure nothing is returned.

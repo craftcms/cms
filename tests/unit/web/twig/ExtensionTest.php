@@ -1,6 +1,8 @@
 <?php
+
 /**
  * @link https://craftcms.com/
+ *
  * @copyright Copyright (c) Pixel & Tonic, Inc.
  * @license https://craftcms.github.io/license/
  */
@@ -40,13 +42,11 @@ use yii\web\ServerErrorHttpException;
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @author Global Network Group | Giel Tettelaar <giel@yellowflash.net>
+ *
  * @since 3.2
  */
 class ExtensionTest extends TestCase
 {
-    /**
-     * @var View
-     */
     protected View $view;
 
     public function _fixtures(): array
@@ -62,7 +62,7 @@ class ExtensionTest extends TestCase
      * @throws LoaderError
      * @throws SyntaxError
      */
-    public function testGlobals(): void
+    public function test_globals(): void
     {
         // We want web for this part.
         Craft::$app->getRequest()->setIsConsoleRequest(false);
@@ -97,7 +97,7 @@ class ExtensionTest extends TestCase
      * @throws SyntaxError
      * @throws Exception
      */
-    public function testCraftSystemGlobals(): void
+    public function test_craft_system_globals(): void
     {
         Craft::$app->edition = Edition::Pro;
         $this->testRenderResult(
@@ -111,7 +111,7 @@ class ExtensionTest extends TestCase
      * @throws LoaderError
      * @throws SyntaxError
      */
-    public function testGlobalsWithUninstalledCraft(): void
+    public function test_globals_with_uninstalled_craft(): void
     {
         Craft::$app->setIsInstalled(false);
         $this->testRenderResult(
@@ -128,11 +128,11 @@ class ExtensionTest extends TestCase
      * @throws NotSupportedException
      * @throws ServerErrorHttpException
      */
-    public function testSiteGlobals(): void
+    public function test_site_globals(): void
     {
         Craft::$app->getProjectConfig()->set('system.name', 'Im a test system');
         $this->testRenderResult(
-            'Im a test system | default Craft test site ' . TestSetup::SITE_URL,
+            'Im a test system | defaultSite Craft test site '.TestSetup::SITE_URL,
             '{{ systemName }} | {{ currentSite.handle }} {{ currentSite }} {{ siteUrl }}'
         );
     }
@@ -142,7 +142,7 @@ class ExtensionTest extends TestCase
      * @throws SyntaxError
      * @throws Throwable
      */
-    public function testElementGlobals(): void
+    public function test_element_globals(): void
     {
         $this->testRenderResult(
             'A global set | A different global set',
@@ -150,16 +150,13 @@ class ExtensionTest extends TestCase
         );
     }
 
-    /**
-     *
-     */
-    public function testInstanceOfTest(): void
+    public function test_instance_of_test(): void
     {
         $this->testRenderResult(
             'yes',
             '{{ foo is instance of(class) ? "yes" : "no" }}',
             [
-                'foo' => new PlainText(),
+                'foo' => new PlainText,
                 'class' => PlainText::class,
             ]
         );
@@ -167,37 +164,31 @@ class ExtensionTest extends TestCase
             'no',
             '{{ foo is instance of(class) ? "yes" : "no" }}',
             [
-                'foo' => new PlainText(),
+                'foo' => new PlainText,
                 'class' => 'foo\\bar\\Baz',
             ]
         );
     }
 
-    /**
-     *
-     */
-    public function testMissingTest(): void
+    public function test_missing_test(): void
     {
         $this->testRenderResult(
             'yes',
             '{{ foo is missing ? "yes" : "no" }}',
             [
-                'foo' => new MissingField(),
+                'foo' => new MissingField,
             ]
         );
         $this->testRenderResult(
             'no',
             '{{ foo is missing ? "yes" : "no" }}',
             [
-                'foo' => new PlainText(),
+                'foo' => new PlainText,
             ]
         );
     }
 
-    /**
-     *
-     */
-    public function testTranslateFilter(): void
+    public function test_translate_filter(): void
     {
         $this->testRenderResult(
             'Translated message',
@@ -235,10 +226,7 @@ class ExtensionTest extends TestCase
         $this->view->renderString('{{ "Source message"|t("invalidCategory") }}');
     }
 
-    /**
-     *
-     */
-    public function testTruncateFilter(): void
+    public function test_truncate_filter(): void
     {
         $this->testRenderResult(
             '',
@@ -250,10 +238,7 @@ class ExtensionTest extends TestCase
         );
     }
 
-    /**
-     *
-     */
-    public function testUcfirstFilter(): void
+    public function test_ucfirst_filter(): void
     {
         $this->testRenderResult(
             'Foo bar',
@@ -264,7 +249,7 @@ class ExtensionTest extends TestCase
     /**
      * @deprecated
      */
-    public function testUcwordsFilter(): void
+    public function test_ucwords_filter(): void
     {
         $this->testRenderResult(
             'Foo Bar',
@@ -272,10 +257,7 @@ class ExtensionTest extends TestCase
         );
     }
 
-    /**
-     *
-     */
-    public function testLcfirstFilter(): void
+    public function test_lcfirst_filter(): void
     {
         $this->testRenderResult(
             'foo Bar',
@@ -283,10 +265,7 @@ class ExtensionTest extends TestCase
         );
     }
 
-    /**
-     *
-     */
-    public function testKebabFilter(): void
+    public function test_kebab_filter(): void
     {
         $this->testRenderResult(
             'foo-bar',
@@ -294,10 +273,7 @@ class ExtensionTest extends TestCase
         );
     }
 
-    /**
-     *
-     */
-    public function testCamelFilter(): void
+    public function test_camel_filter(): void
     {
         $this->testRenderResult(
             'fooBar',
@@ -305,10 +281,7 @@ class ExtensionTest extends TestCase
         );
     }
 
-    /**
-     *
-     */
-    public function testPascalFilter(): void
+    public function test_pascal_filter(): void
     {
         $this->testRenderResult(
             'FooBar',
@@ -316,10 +289,7 @@ class ExtensionTest extends TestCase
         );
     }
 
-    /**
-     *
-     */
-    public function testSnakeFilter(): void
+    public function test_snake_filter(): void
     {
         $this->testRenderResult(
             'foo_bar',
@@ -327,10 +297,7 @@ class ExtensionTest extends TestCase
         );
     }
 
-    /**
-     *
-     */
-    public function testJsonEncodeFilter(): void
+    public function test_json_encode_filter(): void
     {
         $this->testRenderResult(
             '{"foo":true}',
@@ -345,7 +312,7 @@ class ExtensionTest extends TestCase
      * @throws LoaderError
      * @throws SyntaxError
      */
-    public function testWithoutFilter(): void
+    public function test_without_filter(): void
     {
         $this->testRenderResult(
             'foo,bar',
@@ -361,7 +328,7 @@ class ExtensionTest extends TestCase
      * @throws LoaderError
      * @throws SyntaxError
      */
-    public function testWithoutKeyFilter(): void
+    public function test_without_key_filter(): void
     {
         $this->testRenderResult(
             'foo,bar',
@@ -373,10 +340,7 @@ class ExtensionTest extends TestCase
         );
     }
 
-    /**
-     *
-     */
-    public function testAttrFilter(): void
+    public function test_attr_filter(): void
     {
         $this->testRenderResult(
             '<p class="foo">Hey</p>',
@@ -390,10 +354,7 @@ class ExtensionTest extends TestCase
         );
     }
 
-    /**
-     *
-     */
-    public function testBase64DecodeFilter(): void
+    public function test_base64_decode_filter(): void
     {
         $encoded = base64_encode('foo');
         $this->testRenderResult(
@@ -402,10 +363,7 @@ class ExtensionTest extends TestCase
         );
     }
 
-    /**
-     *
-     */
-    public function testBase64EncodeFilter(): void
+    public function test_base64_encode_filter(): void
     {
         $this->testRenderResult(
             base64_encode('foo'),
@@ -413,10 +371,7 @@ class ExtensionTest extends TestCase
         );
     }
 
-    /**
-     *
-     */
-    public function testParseAttrFilter(): void
+    public function test_parse_attr_filter(): void
     {
         $this->testRenderResult(
             '{"id":"foo","class":["bar","baz"]}',
@@ -430,10 +385,7 @@ class ExtensionTest extends TestCase
         );
     }
 
-    /**
-     *
-     */
-    public function testParseRefsFilter(): void
+    public function test_parse_refs_filter(): void
     {
         $this->testRenderResult(
             TestSetup::USERNAME,
@@ -441,10 +393,7 @@ class ExtensionTest extends TestCase
         );
     }
 
-    /**
-     *
-     */
-    public function testAppendFilter(): void
+    public function test_append_filter(): void
     {
         $this->testRenderResult(
             '<p><span>foo</span><span>bar</span></p>',
@@ -456,10 +405,7 @@ class ExtensionTest extends TestCase
         );
     }
 
-    /**
-     *
-     */
-    public function testPrependFilter(): void
+    public function test_prepend_filter(): void
     {
         $this->testRenderResult(
             '<p><span>foo</span><span>bar</span></p>',
@@ -471,10 +417,7 @@ class ExtensionTest extends TestCase
         );
     }
 
-    /**
-     *
-     */
-    public function testPurifyFilter(): void
+    public function test_purify_filter(): void
     {
         $this->testRenderResult(
             '<p>foo</p>',
@@ -482,10 +425,7 @@ class ExtensionTest extends TestCase
         );
     }
 
-    /**
-     *
-     */
-    public function testPushFilter(): void
+    public function test_push_filter(): void
     {
         $this->testRenderResult(
             '["foo","bar","baz"]',
@@ -493,10 +433,7 @@ class ExtensionTest extends TestCase
         );
     }
 
-    /**
-     *
-     */
-    public function testUnshiftFilter(): void
+    public function test_unshift_filter(): void
     {
         $this->testRenderResult(
             '["foo","bar","baz"]',
@@ -504,10 +441,7 @@ class ExtensionTest extends TestCase
         );
     }
 
-    /**
-     *
-     */
-    public function testRemoveClassFilter(): void
+    public function test_remove_class_filter(): void
     {
         $this->testRenderResult('<div>', '{{ \'<div class="foo">\'|removeClass("foo") }}');
         $this->testRenderResult('<div class="bar">', '{{ \'<div class="foo bar">\'|removeClass("foo") }}');
@@ -515,10 +449,7 @@ class ExtensionTest extends TestCase
         $this->testRenderResult('foo', '{{ \'foo\'|removeClass("foo") }}');
     }
 
-    /**
-     *
-     */
-    public function testReplaceFilter(): void
+    public function test_replace_filter(): void
     {
         $this->testRenderResult(
             'qux quux corge',
@@ -557,10 +488,7 @@ class ExtensionTest extends TestCase
         );
     }
 
-    /**
-     *
-     */
-    public function testDateFilter(): void
+    public function test_date_filter(): void
     {
         // DateInterval
         $this->testRenderResult(
@@ -593,10 +521,7 @@ class ExtensionTest extends TestCase
         );
     }
 
-    /**
-     *
-     */
-    public function testTimeFilter(): void
+    public function test_time_filter(): void
     {
         $d = new DateTime('2021-01-20 10:00:00');
 
@@ -620,10 +545,7 @@ class ExtensionTest extends TestCase
         );
     }
 
-    /**
-     *
-     */
-    public function testDatetimeFilter(): void
+    public function test_datetime_filter(): void
     {
         $d = new DateTime('2021-01-20 10:00:00');
 
@@ -647,12 +569,9 @@ class ExtensionTest extends TestCase
         );
     }
 
-    /**
-     *
-     */
-    public function testAtomFilter(): void
+    public function test_atom_filter(): void
     {
-        $d = new DateTime();
+        $d = new DateTime;
         $this->testRenderResult(
             $d->format(DateTime::ATOM),
             '{{ d|atom }}',
@@ -660,12 +579,9 @@ class ExtensionTest extends TestCase
         );
     }
 
-    /**
-     *
-     */
-    public function testRssFilter(): void
+    public function test_rss_filter(): void
     {
-        $d = new DateTime();
+        $d = new DateTime;
         $this->testRenderResult(
             $d->format(DateTime::RSS),
             '{{ d|rss }}',
@@ -673,12 +589,9 @@ class ExtensionTest extends TestCase
         );
     }
 
-    /**
-     *
-     */
-    public function testHttpdateFilter(): void
+    public function test_httpdate_filter(): void
     {
-        $d = new DateTime();
+        $d = new DateTime;
         $this->testRenderResult(
             $d->format(DateTime::RFC7231),
             '{{ d|httpdate }}',
@@ -686,19 +599,13 @@ class ExtensionTest extends TestCase
         );
     }
 
-    /**
-     *
-     */
-    public function testEncencFilter(): void
+    public function test_encenc_filter(): void
     {
         $enc = $this->view->renderString('{{ "foo"|encenc }}');
         self::assertStringStartsWith('base64:', $enc);
     }
 
-    /**
-     *
-     */
-    public function testFilterFilter(): void
+    public function test_filter_filter(): void
     {
         $this->testRenderResult(
             'foo bar baz',
@@ -711,10 +618,7 @@ class ExtensionTest extends TestCase
         );
     }
 
-    /**
-     *
-     */
-    public function testGroupFilter(): void
+    public function test_group_filter(): void
     {
         $this->testRenderResult(
             TestSetup::USERNAME,
@@ -735,7 +639,7 @@ class ExtensionTest extends TestCase
      * @throws LoaderError
      * @throws SyntaxError
      */
-    public function testIndexOfFilter(): void
+    public function test_index_of_filter(): void
     {
         $array = new ArrayObject(['John', 'Smith']);
 
@@ -762,10 +666,7 @@ class ExtensionTest extends TestCase
         );
     }
 
-    /**
-     *
-     */
-    public function testLiteralFilter(): void
+    public function test_literal_filter(): void
     {
         $this->testRenderResult(
             '\\*foo\\*',
@@ -773,10 +674,7 @@ class ExtensionTest extends TestCase
         );
     }
 
-    /**
-     *
-     */
-    public function testMarkdownFilter(): void
+    public function test_markdown_filter(): void
     {
         $this->testRenderResult(
             "<p><strong>Hello</strong></p>\n",
@@ -795,15 +693,12 @@ class ExtensionTest extends TestCase
     }
 
     /**
-     * @param string $renderString
-     * @param array $variables
-     * @param string $expected
-     * @return void
      * @throws LoaderError
      * @throws SyntaxError
+     *
      * @dataProvider addressFilterDataProvider
      */
-    public function testAddressFilter(string $renderString, array $variables, string $expected): void
+    public function test_address_filter(string $renderString, array $variables, string $expected): void
     {
         $this->testRenderResult($expected, $renderString, $variables);
     }
@@ -820,10 +715,7 @@ class ExtensionTest extends TestCase
         ];
     }
 
-    /**
-     *
-     */
-    public function testMergeFilter(): void
+    public function test_merge_filter(): void
     {
         $this->testRenderResult(
             'foo bar baz',
@@ -841,10 +733,7 @@ class ExtensionTest extends TestCase
         );
     }
 
-    /**
-     *
-     */
-    public function testMultisortFilter(): void
+    public function test_multisort_filter(): void
     {
         $this->testRenderResult(
             'bar baz foo',
@@ -852,10 +741,7 @@ class ExtensionTest extends TestCase
         );
     }
 
-    /**
-     *
-     */
-    public function testCurrencyFilter(): void
+    public function test_currency_filter(): void
     {
         $this->testRenderResult(
             '',
@@ -879,10 +765,7 @@ class ExtensionTest extends TestCase
         );
     }
 
-    /**
-     *
-     */
-    public function testFilesizeFilter(): void
+    public function test_filesize_filter(): void
     {
         $this->testRenderResult(
             '',
@@ -901,10 +784,7 @@ class ExtensionTest extends TestCase
         );
     }
 
-    /**
-     *
-     */
-    public function testNumberFilter(): void
+    public function test_number_filter(): void
     {
         $this->testRenderResult(
             '',
@@ -928,10 +808,7 @@ class ExtensionTest extends TestCase
         );
     }
 
-    /**
-     *
-     */
-    public function testPercentageFilter(): void
+    public function test_percentage_filter(): void
     {
         $this->testRenderResult(
             '',
@@ -955,18 +832,12 @@ class ExtensionTest extends TestCase
         );
     }
 
-    /**
-     *
-     */
-    public function testWidontFilter(): void
+    public function test_widont_filter(): void
     {
         $this->testRenderResult('foo bar&nbsp;baz', '{{ "foo bar baz"|widont }}');
     }
 
-    /**
-     *
-     */
-    public function testCloneFunction(): void
+    public function test_clone_function(): void
     {
         $this->testRenderResult(
             'yes',
@@ -977,17 +848,14 @@ class ExtensionTest extends TestCase
         );
     }
 
-    /**
-     *
-     */
-    public function testDataUrlFunction(): void
+    public function test_data_url_function(): void
     {
         $path = '@root/.github/workflows/ci.yml';
         $dataUrl = $this->view->renderString('{{ dataUrl(path) }}', compact('path'));
         self::assertStringStartsWith('data:application/x-yaml;base64,', $dataUrl);
     }
 
-    public function testEncodeUrlFunction(): void
+    public function test_encode_url_function(): void
     {
         $this->testRenderResult(
             'https://domain/fr/offices/gen%C3%AAve',
@@ -995,7 +863,7 @@ class ExtensionTest extends TestCase
         );
     }
 
-    public function testExpressionFunction(): void
+    public function test_expression_function(): void
     {
         $this->testRenderResult(
             'Im an expression | var | Im an expression',
@@ -1003,7 +871,7 @@ class ExtensionTest extends TestCase
         );
     }
 
-    public function testFieldValueSqlFunction(): void
+    public function test_field_value_sql_function(): void
     {
         $entryType = Craft::$app->getEntries()->getEntryTypeByHandle('test1');
         $field = $entryType->getFieldLayout()->getFieldByHandle('plainTextField');
@@ -1014,10 +882,7 @@ class ExtensionTest extends TestCase
         );
     }
 
-    /**
-     *
-     */
-    public function testGqlFunction(): void
+    public function test_gql_function(): void
     {
         $this->testRenderResult(
             '{"data":{"ping":"pong"}}',
@@ -1025,10 +890,7 @@ class ExtensionTest extends TestCase
         );
     }
 
-    /**
-     *
-     */
-    public function testPluginFunction(): void
+    public function test_plugin_function(): void
     {
         $this->testRenderResult(
             'invalid',
@@ -1040,7 +902,7 @@ class ExtensionTest extends TestCase
      * @throws LoaderError
      * @throws SyntaxError
      */
-    public function testShuffleFunction(): void
+    public function test_shuffle_function(): void
     {
         $array = [
             0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm',
@@ -1062,12 +924,9 @@ class ExtensionTest extends TestCase
         );
     }
 
-    /**
-     *
-     */
-    public function testSvgFunction(): void
+    public function test_svg_function(): void
     {
-        $path = dirname(__DIR__, 3) . '/_data/assets/files/craft-logo.svg';
+        $path = dirname(__DIR__, 3).'/_data/assets/files/craft-logo.svg';
         $contents = file_get_contents($path);
 
         $svg = $this->view->renderString('{{ svg(path) }}', compact('path'));
@@ -1087,10 +946,7 @@ class ExtensionTest extends TestCase
         self::assertStringContainsString('class="foobar"', $svg);
     }
 
-    /**
-     *
-     */
-    public function testTagFunction(): void
+    public function test_tag_function(): void
     {
         $this->testRenderResult(
             '<p class="foo">Hello</p>',
@@ -1112,20 +968,20 @@ class ExtensionTest extends TestCase
      * @throws LoaderError
      * @throws SyntaxError
      */
-    public function testCsrfInputFunction(): void
+    public function test_csrf_input_function(): void
     {
         app(GeneralConfig::class)->enableCsrfProtection = true;
         Session::start();
 
         $this->testRenderResult(
-            '<input type="hidden" name="_token" value="' . Craft::$app->getRequest()->getCsrfToken() . '">',
+            '<input type="hidden" name="_token" value="'.Craft::$app->getRequest()->getCsrfToken().'">',
             '{{ csrfInput() }}'
         );
 
         // Custom name - just to be sure.
         Craft::$app->getRequest()->csrfParam = 'HACKER_POOF';
         $this->testRenderResult(
-            '<input type="hidden" name="HACKER_POOF" value="' . Craft::$app->getRequest()->getCsrfToken() . '">',
+            '<input type="hidden" name="HACKER_POOF" value="'.Craft::$app->getRequest()->getCsrfToken().'">',
             '{{ csrfInput() }}'
         );
     }
@@ -1136,15 +992,15 @@ class ExtensionTest extends TestCase
      * @throws Exception
      * @throws InvalidConfigException
      */
-    public function testRedirectInputFunction(): void
+    public function test_redirect_input_function(): void
     {
         $this->testRenderResult(
-            '<input type="hidden" name="redirect" value="' . Craft::$app->getSecurity()->hashData('A URL') . '">',
+            '<input type="hidden" name="redirect" value="'.Craft::$app->getSecurity()->hashData('A URL').'">',
             '{{ redirectInput("A URL") }}'
         );
 
         $this->testRenderResult(
-            '<input type="hidden" name="redirect" value="' . Craft::$app->getSecurity()->hashData('A URL WITH CHARS !@#$%^*()😋') . '">',
+            '<input type="hidden" name="redirect" value="'.Craft::$app->getSecurity()->hashData('A URL WITH CHARS !@#$%^*()😋').'">',
             '{{ redirectInput("A URL WITH CHARS !@#$%^*()😋") }}'
         );
     }
@@ -1153,7 +1009,7 @@ class ExtensionTest extends TestCase
      * @throws LoaderError
      * @throws SyntaxError
      */
-    public function testActionInputFunction(): void
+    public function test_action_input_function(): void
     {
         $this->testRenderResult(
             '<input type="hidden" name="action" value="A URL">',
@@ -1170,7 +1026,7 @@ class ExtensionTest extends TestCase
      * @throws LoaderError
      * @throws SyntaxError
      */
-    public function testRenderObjectTemplateFunction(): void
+    public function test_render_object_template_function(): void
     {
         // This is some next level inception stuff IMO.....
         $this->testRenderResult(
@@ -1183,7 +1039,7 @@ class ExtensionTest extends TestCase
      * @throws LoaderError
      * @throws SyntaxError
      */
-    public function testGetenvFunction(): void
+    public function test_getenv_function(): void
     {
         $this->testRenderResult(
             'Craft CMS | info@craftcms.com',
@@ -1195,7 +1051,7 @@ class ExtensionTest extends TestCase
      * @throws LoaderError
      * @throws SyntaxError
      */
-    public function testParseEnvFunction(): void
+    public function test_parse_env_function(): void
     {
         $this->testRenderResult(
             'Craft CMS',
@@ -1210,15 +1066,12 @@ class ExtensionTest extends TestCase
 
     /**
      * @dataProvider collectFunctionDataProvider
-     *
-     * @param string $expectedClass
-     * @param array $items
      */
-    public function testCollectFunction(string $expectedClass, array $items): void
+    public function test_collect_function(string $expectedClass, array $items): void
     {
         $this->testRenderResult(
             Collection::class,
-            "{{ className(collect(items)) }}",
+            '{{ className(collect(items)) }}',
             ['items' => $items],
         );
     }
@@ -1226,6 +1079,7 @@ class ExtensionTest extends TestCase
     public static function collectFunctionDataProvider(): array
     {
         $users = User::find()->all();
+
         return [
             [Collection::class, []],
             [Collection::class, ['foo']],
@@ -1235,14 +1089,10 @@ class ExtensionTest extends TestCase
     }
 
     /**
-     * @param string $expectedString
-     * @param string $renderString
-     * @param array $variables
-     * @param string $templateMode
      * @throws LoaderError
      * @throws SyntaxError
      */
-    protected function testRenderResult(
+    protected function test_render_result(
         string $expectedString,
         string $renderString,
         array $variables = [],
@@ -1256,7 +1106,7 @@ class ExtensionTest extends TestCase
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     protected function _before(): void
     {

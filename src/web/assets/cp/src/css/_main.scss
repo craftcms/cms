@@ -6051,8 +6051,6 @@ $min2ColWidth: 400px;
       }
 
       &.add {
-        background-color: color.adjust(mixins.$grey050, $lightness: -2%);
-
         &::before {
           position: absolute;
           inset-block-start: var(--m);
@@ -6078,9 +6076,12 @@ $min2ColWidth: 400px;
         }
       }
 
-      #details &.lightswitch-field > .heading {
-        flex: 1;
-        border-inline-end: none;
+      #details &,
+      .so-sidebar.details & {
+        &.lightswitch-field > .heading {
+          flex: 1;
+          border-inline-end: none;
+        }
       }
 
       & > .input {
@@ -6159,7 +6160,8 @@ $min2ColWidth: 400px;
     & > .field.lightswitch-field > .input {
       padding-inline: 10px;
 
-      #details & {
+      #details &,
+      .so-sidebar.details & {
         flex: 0;
         width: auto;
       }
@@ -6306,10 +6308,6 @@ $min2ColWidth: 400px;
   border-radius: 0;
   box-shadow: none;
   background-color: transparent;
-
-  &::after {
-    inset-inline-end: 0;
-  }
 
   & + .spinner {
     position: absolute;
@@ -9024,6 +9022,7 @@ body .selectize-dropdown {
     flex-direction: row;
     padding-block: 3px !important;
     padding-inline: 7px !important;
+    word-break: break-word;
 
     &.active {
       @include mixins.active-token-styles;

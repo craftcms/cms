@@ -64,7 +64,7 @@ class TestCase extends Orchestra
 
         $siteConfig = [
             'name' => 'Craft test site',
-            'handle' => 'default',
+            'handle' => 'defaultSite',
             'hasUrls' => true,
             'baseUrl' => 'https://localhost/',
             'language' => 'en-US',

@@ -1,6 +1,8 @@
 <?php
+
 /**
  * @link https://craftcms.com/
+ *
  * @copyright Copyright (c) Pixel & Tonic, Inc.
  * @license https://craftcms.github.io/license/
  */
@@ -36,17 +38,15 @@ use yii\web\Application;
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @author Global Network Group | Giel Tettelaar <giel@yellowflash.net>
+ *
  * @since 3.2.0
  */
 class CraftConnector extends Yii2
 {
-    /**
-     * @var array
-     */
     protected array $emails = [];
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function getEmails(): array
     {
@@ -56,8 +56,6 @@ class CraftConnector extends Yii2
     /**
      * We override to prevent a bug with the matching of user agent and session.
      *
-     * @param mixed $user
-     * @param bool $disableRequiredUserAgent
      * @throws ConfigurationException
      */
     public function findAndLoginUser(mixed $user, bool $disableRequiredUserAgent = true): void
@@ -75,13 +73,13 @@ class CraftConnector extends Yii2
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     protected function mockMailer(array $config): array
     {
         $config = parent::mockMailer($config);
         $config['components']['mailer'] = array_merge($config['components']['mailer'], [
-            'class' => TestMailer::class, 'callback' => function(MessageInterface $message) {
+            'class' => TestMailer::class, 'callback' => function (MessageInterface $message) {
                 $this->emails[] = $message;
             },
         ]);
@@ -90,7 +88,6 @@ class CraftConnector extends Yii2
     }
 
     /**
-     * @param Application $app
      * @throws InvalidPluginException
      */
     protected function resetRequest(Application $app): void
@@ -99,7 +96,7 @@ class CraftConnector extends Yii2
         $app->getRequest()->setIsConsoleRequest(false);
 
         // Reset the view object
-        $app->set('view', new View());
+        $app->set('view', new View);
 
         /** @var Module $module */
         foreach (Craft::$app->getModules(true) as $module) {
@@ -126,7 +123,7 @@ class CraftConnector extends Yii2
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function resetApplication($closeSession = true): void
     {
@@ -135,6 +132,7 @@ class CraftConnector extends Yii2
         DbFacade::disconnect();
         DbFacade::disconnect('db2');
         Session::reset();
+        unset($_SERVER['CRAFT_SITE'], $_SERVER['CRAFT_SITE_UPPER']);
         Cache::lock(ProjectConfig::MUTEX_NAME)->forceRelease();
     }
 
@@ -145,9 +143,9 @@ class CraftConnector extends Yii2
      * We'll open the connection after all of the transaction listeners are
      * registered.
      *
-     * @inheritDoc
+     * {@inheritDoc}
      */
-    public function startApp(Logger $logger = null): void
+    public function startApp(?Logger $logger = null): void
     {
         parent::startApp($logger);
 
@@ -159,7 +157,7 @@ class CraftConnector extends Yii2
         /**
          * Fake Laravel request
          */
-        app()->bind('request', fn() => Request::create(
+        app()->bind('request', fn () => Request::create(
             uri: $request->getUri(),
             method: $request->getMethod(),
             parameters: $request->getParameters(),
@@ -187,9 +185,9 @@ class CraftConnector extends Yii2
 
         $pathString = parse_url($uri, PHP_URL_PATH);
         $queryString = parse_url($uri, PHP_URL_QUERY);
-        $_SERVER['REQUEST_URI'] = $queryString === null ? $pathString : $pathString . '?' . $queryString;
+        $_SERVER['REQUEST_URI'] = $queryString === null ? $pathString : $pathString.'?'.$queryString;
         $_SERVER['REQUEST_METHOD'] = strtoupper($request->getMethod());
-        $_SERVER['QUERY_STRING'] = (string)$queryString;
+        $_SERVER['QUERY_STRING'] = (string) $queryString;
 
         parse_str($queryString ?: '', $params);
         foreach ($params as $k => $v) {
@@ -201,17 +199,14 @@ class CraftConnector extends Yii2
         $this->beforeRequest();
 
         $app = $this->getApplication();
-        if (!$app instanceof Application) {
-            throw new ConfigurationException("Application is not a web application");
+        if (! $app instanceof Application) {
+            throw new ConfigurationException('Application is not a web application');
         }
 
         // disabling logging. Logs are slowing test execution down
         foreach ($app->log->targets as $target) {
             $target->enabled = false;
         }
-
-
-
 
         $yiiRequest = $app->getRequest();
         if ($request->getContent() !== null) {
@@ -240,7 +235,7 @@ class CraftConnector extends Yii2
                 // to expect error response codes in tests.
                 $app->errorHandler->discardExistingOutput = false;
                 $app->errorHandler->handleException($e);
-            } elseif (!$e instanceof ExitException) {
+            } elseif (! $e instanceof ExitException) {
                 // for exceptions not related to Http, we pass them to Codeception
                 throw $e;
             }
@@ -250,7 +245,7 @@ class CraftConnector extends Yii2
         $this->encodeCookies($response, $yiiRequest, $app->security);
 
         if ($response->isRedirection) {
-            Debug::debug("[Redirect with headers]" . print_r($response->getHeaders()->toArray(), true));
+            Debug::debug('[Redirect with headers]'.print_r($response->getHeaders()->toArray(), true));
         }
 
         $content = ob_get_clean();
@@ -262,7 +257,7 @@ class CraftConnector extends Yii2
         // /Addition
 
         /** @phpstan-ignore-next-line */
-        if (empty($content) && !empty($response->content) && !isset($response->stream)) {
+        if (empty($content) && ! empty($response->content) && ! isset($response->stream)) {
             throw new Exception('No content was sent from Yii application');
         }
 

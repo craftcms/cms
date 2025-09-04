@@ -121,6 +121,7 @@ return [
     'Already in your cart' => '已在购物车中',
     'Alternative Text' => '替代文本',
     'Amber' => '琥珀色',
+    'An elevated session is required to change a user’s email.' => 'An elevated session is required to change a user’s email.',
     'An error occurred when duplicating the category.' => '复制类别时出错。',
     'An error occurred when duplicating the entry.' => '复制条目时出错。',
     'An error occurred when installing {name}.' => '安装 {name} 时出错。',
