@@ -8,6 +8,11 @@ use CraftCms\Cms\Support\Api;
 use function Laravel\Prompts\spin;
 use function Laravel\Prompts\text;
 
+/**
+ * @internal
+ *
+ * @since 6.0.0
+ */
 trait ChecksLicense
 {
     protected function checkLicense(): ?int

@@ -2,6 +2,11 @@
 
 namespace CraftCms\Cms\Updates\Data;
 
+/**
+ * @internal
+ *
+ * @since 6.0.0
+ */
 final readonly class Updates
 {
     public function __construct(

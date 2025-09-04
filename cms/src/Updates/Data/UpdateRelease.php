@@ -6,6 +6,11 @@ use CraftCms\Cms\Updates\Events\CriticalUpdateReleased;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\Event;
 
+/**
+ * @internal
+ *
+ * @since 6.0.0
+ */
 final readonly class UpdateRelease
 {
     public function __construct(

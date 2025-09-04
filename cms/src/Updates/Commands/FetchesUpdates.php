@@ -10,6 +10,11 @@ use CraftCms\Cms\Updates\Enums\UpdateStatus;
 
 use function Laravel\Prompts\spin;
 
+/**
+ * @internal
+ *
+ * @since 6.0.0
+ */
 trait FetchesUpdates
 {
     protected function fetchUpdates(array $constraints = []): UpdatesData

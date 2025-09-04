@@ -9,6 +9,9 @@ use Throwable;
 
 use function Laravel\Prompts\spin;
 
+/**
+ * @since 6.0.0
+ */
 final class ComposerInstallCommand extends Command
 {
     use CraftCommand;

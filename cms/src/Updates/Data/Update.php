@@ -5,6 +5,11 @@ namespace CraftCms\Cms\Updates\Data;
 use CraftCms\Cms\Updates\Enums\UpdateStatus;
 use Illuminate\Contracts\Support\Arrayable;
 
+/**
+ * @internal
+ *
+ * @since 6.0.0
+ */
 final readonly class Update implements Arrayable
 {
     public function __construct(
