@@ -17,7 +17,7 @@ final class RequireAdmin
     public function handle(Request $request, Closure $next, string $requireAdminChanges = 'true'): mixed
     {
         /** Middleware parameters come in as string, so we have to cast it */
-        $requireAdminChanges = $requireAdminChanges === 'true';
+        $requireAdminChanges = filter_var($requireAdminChanges, FILTER_VALIDATE_BOOL);
 
         if (! $user = $request->user()) {
             throw new AuthenticationException('Unauthenticated.');

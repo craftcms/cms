@@ -1,13 +1,12 @@
 <?php
 
-namespace CraftCms\Cms\Http\Controllers\ProjectConfig;
+namespace CraftCms\Cms\Http\Controllers;
 
 use Craft;
 use craft\errors\BusyResourceException;
 use craft\errors\StaleResourceException;
 use craft\services\ProjectConfig;
 use CraftCms\Cms\Config\GeneralConfig;
-use CraftCms\Cms\Http\Controllers\BaseUpdaterController;
 use CraftCms\Cms\Plugin\Exceptions\InvalidPluginException;
 use CraftCms\Cms\Plugin\Plugins;
 use CraftCms\Cms\Support\Arr;

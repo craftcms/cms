@@ -2,12 +2,14 @@
 
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Http\Controllers\BaseUpdaterController;
+use CraftCms\Cms\Http\Controllers\ConfigSyncController;
 use CraftCms\Cms\Http\Controllers\Dashboard\Widgets\CraftSupportController;
 use CraftCms\Cms\Http\Controllers\Dashboard\Widgets\FeedController;
 use CraftCms\Cms\Http\Controllers\Dashboard\WidgetsController;
 use CraftCms\Cms\Http\Controllers\MigrateController;
 use CraftCms\Cms\Http\Controllers\PluginsController;
-use CraftCms\Cms\Http\Controllers\ProjectConfig\ConfigSyncController;
+use CraftCms\Cms\Http\Controllers\PluginStore\InstallController;
+use CraftCms\Cms\Http\Controllers\PluginStore\RemoveController;
 use CraftCms\Cms\Http\Controllers\Updates\UpdaterController;
 use CraftCms\Cms\Http\Controllers\Updates\UpdatesController;
 use CraftCms\Cms\Http\Controllers\Utilities\ClearCachesController;
@@ -99,9 +101,35 @@ Route::prefix(implode('/', [
         Route::post(UpdaterController::ACTION_REVERT, [UpdaterController::class, 'revert']);
         Route::post(UpdaterController::ACTION_MIGRATE, [UpdaterController::class, 'revert']);
         Route::post(BaseUpdaterController::ACTION_PRECHECK, [UpdaterController::class, 'precheck']);
-        Route::post(BaseUpdaterController::ACTION_RECHECK_COMPOSER, [ConfigSyncController::class, 'recheckComposer']);
-        Route::post(BaseUpdaterController::ACTION_COMPOSER_INSTALL, [ConfigSyncController::class, 'composerInstall']);
-        Route::post(BaseUpdaterController::ACTION_COMPOSER_REMOVE, [ConfigSyncController::class, 'composerRemove']);
-        Route::post(BaseUpdaterController::ACTION_FINISH, [ConfigSyncController::class, 'finish']);
+        Route::post(BaseUpdaterController::ACTION_RECHECK_COMPOSER, [UpdaterController::class, 'recheckComposer']);
+        Route::post(BaseUpdaterController::ACTION_COMPOSER_INSTALL, [UpdaterController::class, 'composerInstall']);
+        Route::post(BaseUpdaterController::ACTION_COMPOSER_REMOVE, [UpdaterController::class, 'composerRemove']);
+        Route::post(BaseUpdaterController::ACTION_FINISH, [UpdaterController::class, 'finish']);
+    });
+
+    // Pluginstore
+    Route::prefix('pluginstore/install')->middleware([
+        RequireAdmin::class,
+    ])->group(function () {
+        Route::post('/', [InstallController::class, 'index']);
+        Route::post(InstallController::ACTION_CRAFT_INSTALL, [InstallController::class, 'craftInstall']);
+        Route::post(InstallController::ACTION_ENABLE, [InstallController::class, 'enable']);
+        Route::post(InstallController::ACTION_MIGRATE, [InstallController::class, 'migrate']);
+        Route::post(BaseUpdaterController::ACTION_PRECHECK, [InstallController::class, 'precheck']);
+        Route::post(BaseUpdaterController::ACTION_RECHECK_COMPOSER, [InstallController::class, 'recheckComposer']);
+        Route::post(BaseUpdaterController::ACTION_COMPOSER_INSTALL, [InstallController::class, 'composerInstall']);
+        Route::post(BaseUpdaterController::ACTION_COMPOSER_REMOVE, [InstallController::class, 'composerRemove']);
+        Route::post(BaseUpdaterController::ACTION_FINISH, [InstallController::class, 'finish']);
+    });
+
+    Route::prefix('pluginstore/remove')->middleware([
+        RequireAdmin::class,
+    ])->group(function () {
+        Route::post('/', [RemoveController::class, 'index']);
+        Route::post(BaseUpdaterController::ACTION_PRECHECK, [RemoveController::class, 'precheck']);
+        Route::post(BaseUpdaterController::ACTION_RECHECK_COMPOSER, [RemoveController::class, 'recheckComposer']);
+        Route::post(BaseUpdaterController::ACTION_COMPOSER_INSTALL, [RemoveController::class, 'composerInstall']);
+        Route::post(BaseUpdaterController::ACTION_COMPOSER_REMOVE, [RemoveController::class, 'composerRemove']);
+        Route::post(BaseUpdaterController::ACTION_FINISH, [RemoveController::class, 'finish']);
     });
 });

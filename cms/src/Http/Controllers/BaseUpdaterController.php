@@ -52,17 +52,9 @@ abstract class BaseUpdaterController
         protected Plugins $plugins,
         protected Updates $updates,
     ) {
-        if ($this->request->segment(4)) {
-            $data = $this->request->validate([
-                'data' => 'required',
-            ])['data'];
+        $data = Craft::$app->getSecurity()->validateData($this->request->get('data', ''));
 
-            $data = Craft::$app->getSecurity()->validateData($data);
-
-            if ($data === false) {
-                throw new BadRequestHttpException('Invalid data');
-            }
-
+        if ($data !== false) {
             $this->data = Json::decode($data);
         }
     }
@@ -80,7 +72,9 @@ abstract class BaseUpdaterController
         $this->data = $this->initialData();
         $state = $this->realInitialState();
         $state['data'] = $this->hashedData();
-        $idJs = Json::encode($this->request->actionSegments()[0]);
+
+        $segments = $this->request->actionSegments();
+        $idJs = Json::encode(implode('/', $segments));
         $stateJs = Json::encode($state);
         $view->registerJs("Craft.updater = (new Craft.Updater($idJs)).setState($stateJs);");
 
