@@ -498,7 +498,15 @@ final class Plugins
             $info['enabled'] = $projectConfig->get($configKey.'.enabled') ?? true;
 
             $plugin->install();
-            DB::commit();
+
+            try {
+                DB::commit();
+            } catch (\PDOException $e) {
+                // The transaction could be implicitly committed by Mysql
+                if ($e->getMessage() !== 'There is no active transaction') {
+                    throw $e;
+                }
+            }
         } catch (Throwable $e) {
             DB::rollBack();
 
