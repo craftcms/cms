@@ -181,7 +181,7 @@ class HelpController extends BaseHelpController
                             'name' => '--' . $name,
                             'shortcut' => implode('|', $optionAliases[$name] ?? []),
                             'type' => $info['type'],
-                            'description' => $this->commentCleanup($info['comment']),
+                            'description' => $this->commentCleanup($info['comment'] ?? ''),
                             'default' => $info['default'],
                         ], $optionNames, array_values($options))
                     ),

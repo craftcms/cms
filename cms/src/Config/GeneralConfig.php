@@ -6028,7 +6028,9 @@ class GeneralConfig extends BaseConfig
         $this->rememberedUserSessionDuration = $interval ? ConfigHelper::durationInSeconds($interval) : 0;
         $this->_rememberedUserSessionDuration = $interval ?: null;
 
-        app()->get('config')->set('auth.guards.web.remember', floor($this->rememberedUserSessionDuration / 60));
+        if (app()->has('config')) {
+            app()->get('config')->set('auth.guards.web.remember', floor($this->rememberedUserSessionDuration / 60));
+        }
 
         return $this;
     }
