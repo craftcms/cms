@@ -45,6 +45,7 @@ use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Vite;
 use InvalidArgumentException;
+use PDOException;
 use ReflectionClass;
 use ReflectionException;
 use Symfony\Component\HttpKernel\Exception\HttpException;
@@ -501,14 +502,18 @@ final class Plugins
 
             try {
                 DB::commit();
-            } catch (\PDOException $e) {
+            } catch (PDOException $e) {
                 // The transaction could be implicitly committed by Mysql
                 if ($e->getMessage() !== 'There is no active transaction') {
                     throw $e;
                 }
             }
         } catch (Throwable $e) {
-            DB::rollBack();
+            try {
+                DB::rollBack();
+            } catch (PDOException $e) {
+                // Implicitly committed.
+            }
 
             if (DB::getDriverName() === 'mysql') {
                 // Explicitly remove the plugins row just in case the transaction was implicitly committed
