@@ -1,6 +1,8 @@
 <?php
+
 /**
  * @link https://craftcms.com/
+ *
  * @copyright Copyright (c) Pixel & Tonic, Inc.
  * @license https://craftcms.github.io/license/
  */
@@ -81,6 +83,7 @@ use yii\mutex\Mutex;
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @author Global Network Group | Giel Tettelaar <giel@yellowflash.net>
+ *
  * @since 3.2
  */
 class TestSetup
@@ -108,7 +111,6 @@ class TestSetup
     /**
      * Creates a craft object to play with. Ensures the Craft::$app service locator is working.
      *
-     * @return mixed
      * @throws InvalidConfigException
      */
     public static function warmCraft(): mixed
@@ -140,8 +142,6 @@ class TestSetup
     }
 
     /**
-     * @param Connection $connection
-     * @return bool
      * @throws Exception
      */
     public static function cleanseDb(Connection $connection): bool
@@ -164,9 +164,6 @@ class TestSetup
         return true;
     }
 
-    /**
-     * @return array
-     */
     public static function createTestCraftObjectConfig(): array
     {
         $_SERVER['REMOTE_ADDR'] = '1.1.1.1';
@@ -203,7 +200,7 @@ class TestSetup
             ],
             require $srcPath . '/config/app.php',
             require $srcPath . '/config/app.' . $appType . '.php',
-            ConfigFacade::get("craft.app", []),
+            ConfigFacade::get('craft.app', []),
             ConfigFacade::get("craft.app.$appType", []),
         );
 
@@ -223,9 +220,6 @@ class TestSetup
         ]);
     }
 
-    /**
-     * @return Config
-     */
     public static function createConfigService(): Config
     {
         $configService = new Config();
@@ -238,8 +232,6 @@ class TestSetup
 
     /**
      * Determine the app type (console or web).
-     *
-     * @return string
      */
     public static function appType(): string
     {
@@ -252,7 +244,6 @@ class TestSetup
     }
 
     /**
-     * @param string $preDefinedAppType
      * @return class-string<ConsoleApplication|WebApplication>
      */
     public static function appClass(string $preDefinedAppType = ''): string
@@ -264,9 +255,6 @@ class TestSetup
         return $preDefinedAppType === 'console' ? ConsoleApplication::class : WebApplication::class;
     }
 
-    /**
-     * @return bool
-     */
     public static function configureCraft(): bool
     {
         !defined('YII_ENV') && define('YII_ENV', 'test');
@@ -334,7 +322,8 @@ class TestSetup
     }
 
     /**
-     * @param string|null $projectConfigFolder - Whether to override the folder specified in codeception.yml with a custom folder.
+     * @param  string|null  $projectConfigFolder  - Whether to override the folder specified in codeception.yml with a custom folder.
+     *
      * @throws ErrorException
      */
     public static function setupProjectConfig(?string $projectConfigFolder = null): void
@@ -358,7 +347,6 @@ class TestSetup
     }
 
     /**
-     * @param string $path
      * @throws ErrorException
      */
     public static function removeProjectConfigFolders(string $path): void
@@ -387,8 +375,6 @@ class TestSetup
      * Whether project config should be used in tests.
      *
      * Returns the projectConfig configuration array if yes - `false` if not.
-     *
-     * @return array|false
      */
     public static function useProjectConfig(): array|false
     {
@@ -402,7 +388,6 @@ class TestSetup
     }
 
     /**
-     * @param Connection $connection
      * @throws Exception
      */
     public static function setupCraftDb(Connection $connection): void
@@ -413,7 +398,7 @@ class TestSetup
 
         $siteConfig = [
             'name' => 'Craft test site',
-            'handle' => 'default',
+            'handle' => 'defaultSite',
             'hasUrls' => true,
             'baseUrl' => self::SITE_URL,
             'language' => 'en-US',
@@ -451,10 +436,10 @@ class TestSetup
 
     /**
      * @template T of Module
-     * @param CodeceptionTestCase $test
-     * @param array $serviceMap
-     * @param class-string<T>|null $moduleClass
+     *
+     * @param  class-string<T>|null  $moduleClass
      * @return T
+     *
      * @credit https://github.com/nerds-and-company/schematic/blob/master/tests/_support/Helper/Unit.php
      */
     public static function getMockModule(CodeceptionTestCase $test, array $serviceMap = [], ?string $moduleClass = null): Module
@@ -503,9 +488,10 @@ class TestSetup
 
     /**
      * @template T
-     * @param CodeceptionTestCase $test
-     * @param class-string<T> $class
+     *
+     * @param  class-string<T>  $class
      * @return T|MockObject
+     *
      * @credit https://github.com/nerds-and-company/schematic/blob/master/tests/_support/Helper/Unit.php
      */
     public static function getMock(CodeceptionTestCase $test, string $class)
@@ -519,9 +505,7 @@ class TestSetup
     }
 
     /**
-     * @return array
      * @todo Missed any?
-     *
      */
     public static function getCraftServiceMap(): array
     {

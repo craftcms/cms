@@ -121,6 +121,7 @@ return [
     'Already in your cart' => 'Уже в корзине',
     'Alternative Text' => 'Альтернативный текст',
     'Amber' => 'Янтарный',
+    'An elevated session is required to change a user’s email.' => 'An elevated session is required to change a user’s email.',
     'An error occurred when duplicating the category.' => 'При дублировании категории произошла ошибка.',
     'An error occurred when duplicating the entry.' => 'При дублировании записи произошла ошибка.',
     'An error occurred when installing {name}.' => 'При установке {name} возникла ошибка.',

@@ -1,6 +1,8 @@
 <?php
+
 /**
  * @link https://craftcms.com/
+ *
  * @copyright Copyright (c) Pixel & Tonic, Inc.
  * @license https://craftcms.github.io/license/
  */
@@ -13,12 +15,13 @@ use GraphQL\Type\Definition\Type;
  * Class Draft
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
+ *
  * @since 3.5.0
  */
 class Draft extends Entry
 {
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public static function getArguments(): array
     {
@@ -28,13 +31,18 @@ class Draft extends Entry
         return array_merge($parentArguments, [
             'draftId' => [
                 'name' => 'draftId',
-                'type' => Type::nonNull(Type::id()),
-                'description' => 'The ID of the draft.',
+                'type' => Type::id(),
+                'description' => 'The ID of the draft. Can only be omitted if creating an unpublished draft',
             ],
             'provisional' => [
                 'name' => 'provisional',
                 'type' => Type::boolean(),
                 'description' => 'Whether a provisional draft should be looked up.',
+            ],
+            'asUnpublishedDraft' => [
+                'name' => 'asUnpublishedDraft',
+                'type' => Type::boolean(),
+                'description' => 'Whether an unpublished draft should be created.',
             ],
             'draftName' => [
                 'name' => 'draftName',

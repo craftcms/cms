@@ -1,6 +1,8 @@
 <?php
+
 /**
  * @link https://craftcms.com/
+ *
  * @copyright Copyright (c) Pixel & Tonic, Inc.
  * @license https://craftcms.github.io/license/
  */
@@ -40,6 +42,7 @@ use yii\base\Exception;
 use yii\base\InvalidArgumentException;
 use yii\base\NotSupportedException;
 use yii\db\Exception as DbException;
+
 use function CraftCms\Cms\maxPowerCaptain;
 
 /**
@@ -54,7 +57,9 @@ use function CraftCms\Cms\maxPowerCaptain;
  * @property Site $primarySite the primary site
  * @property int $totalSites the total number of sites
  * @property int $totalEditableSites the total number of sites that are editable by the current user
+ *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
+ *
  * @since 3.0.0
  */
 class Sites extends Component
@@ -76,6 +81,7 @@ class Sites extends Component
 
     /**
      * @event SiteGroupEvent The event that is triggered before a site group delete is applied to the database.
+     *
      * @since 3.1.0
      */
     public const EVENT_BEFORE_APPLY_GROUP_DELETE = 'beforeApplyGroupDelete';
@@ -119,6 +125,7 @@ class Sites extends Component
 
     /**
      * @event DeleteSiteEvent The event that is triggered before a site delete is applied to the database.
+     *
      * @since 3.1.0
      */
     public const EVENT_BEFORE_APPLY_SITE_DELETE = 'beforeApplySiteDelete';
@@ -137,43 +144,48 @@ class Sites extends Component
      * :::
      *
      * @var int The maximum number of sites that can be created.
+     *
      * @since 5.0.0
      */
     public int $maxSites = 100;
 
     /**
      * @var MemoizableArray<SiteGroup>|null
+     *
      * @see _groups()
      */
     private ?MemoizableArray $_groups = null;
 
     /**
      * @var int[]|null
+     *
      * @see getEditableSiteIds()
      */
     private ?array $_editableSiteIds = null;
 
     /**
      * @var Site[]|null
+     *
      * @see getSiteById()
      */
     private ?array $_allSitesById = null;
 
     /**
      * @var Site[]|null
+     *
      * @see getSiteById()
      */
     private ?array $_enabledSitesById = null;
 
     /**
      * @var Site|null the current site
+     *
      * @see getCurrentSite()
      * @see setCurrentSite()
      */
     private ?Site $_currentSite = null;
 
     /**
-     * @var Site|null
      * @see getPrimarySite()
      */
     private ?Site $_primarySite = null;
@@ -187,11 +199,12 @@ class Sites extends Component
     {
         $vars = get_object_vars($this);
         unset($vars['_groups']);
+
         return $vars;
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function init(): void
     {
@@ -232,8 +245,7 @@ class Sites extends Component
     /**
      * Returns a site group by its ID.
      *
-     * @param int $groupId The site group’s ID
-     *
+     * @param  int  $groupId  The site group’s ID
      * @return SiteGroup|null The site group, or null if it doesn’t exist
      */
     public function getGroupById(int $groupId): ?SiteGroup
@@ -244,9 +256,9 @@ class Sites extends Component
     /**
      * Returns a site group by its UID.
      *
-     * @param string $uid The site group’s UID
-     *
+     * @param  string  $uid  The site group’s UID
      * @return SiteGroup|null The site group, or null if it doesn’t exist
+     *
      * @since 3.5.8
      */
     public function getGroupByUid(string $uid): ?SiteGroup
@@ -257,9 +269,8 @@ class Sites extends Component
     /**
      * Saves a site group.
      *
-     * @param SiteGroup $group The site group to be saved
-     * @param bool $runValidation Whether the group should be validated
-     *
+     * @param  SiteGroup  $group  The site group to be saved
+     * @param  bool  $runValidation  Whether the group should be validated
      * @return bool Whether the site group was saved successfully
      */
     public function saveGroup(SiteGroup $group, bool $runValidation = true): bool
@@ -276,6 +287,7 @@ class Sites extends Component
 
         if ($runValidation && !$group->validate()) {
             Craft::info('Site group not saved due to validation error.', __METHOD__);
+
             return false;
         }
 
@@ -300,8 +312,6 @@ class Sites extends Component
 
     /**
      * Handle site group change
-     *
-     * @param ConfigEvent $event
      */
     public function handleChangedGroup(ConfigEvent $event): void
     {
@@ -338,8 +348,6 @@ class Sites extends Component
 
     /**
      * Handle site group getting deleted.
-     *
-     * @param ConfigEvent $event
      */
     public function handleDeletedGroup(ConfigEvent $event): void
     {
@@ -375,8 +383,7 @@ class Sites extends Component
     /**
      * Deletes a site group by its ID.
      *
-     * @param int $groupId The site group’s ID
-     *
+     * @param  int  $groupId  The site group’s ID
      * @return bool Whether the site group was deleted successfully
      */
     public function deleteGroupById(int $groupId): bool
@@ -393,14 +400,14 @@ class Sites extends Component
     /**
      * Deletes a site group.
      *
-     * @param SiteGroup $group The site group
-     *
+     * @param  SiteGroup  $group  The site group
      * @return bool Whether the site group was deleted successfully
      */
     public function deleteGroup(SiteGroup $group): bool
     {
         if ($this->getSitesByGroupId($group->id)) {
             Craft::warning('Attempted to delete a site group that still had sites assigned to it.', __METHOD__);
+
             return false;
         }
 
@@ -422,6 +429,7 @@ class Sites extends Component
 
         Craft::$app->getProjectConfig()->remove(ProjectConfig::PATH_SITE_GROUPS . '.' . $group->uid,
             "Delete the “{$group->getName(false)}” site group");
+
         return true;
     }
 
@@ -431,7 +439,6 @@ class Sites extends Component
     /**
      * Returns all of the site IDs.
      *
-     * @param bool|null $withDisabled
      *
      * @return int[] All the sites’ IDs
      */
@@ -443,10 +450,9 @@ class Sites extends Component
     /**
      * Returns a site by it's UID.
      *
-     * @param string $uid
-     * @param bool|null $withDisabled
      *
      * @return Site the site
+     *
      * @throws SiteNotFoundException if no sites exist
      */
     public function getSiteByUid(string $uid, ?bool $withDisabled = null): Site
@@ -455,13 +461,12 @@ class Sites extends Component
         if ($site === null) {
             throw new SiteNotFoundException('Site with UID ”' . $uid . '“ not found!');
         }
+
         return $site;
     }
 
     /**
      * Returns whether the current site has been set yet.
-     *
-     * @return bool
      */
     public function getHasCurrentSite(): bool
     {
@@ -476,6 +481,7 @@ class Sites extends Component
      * > is currently working with, based on the `site` query string param, use [[\craft\helpers\Cp::requestedSite()]].
      *
      * @return Site the current site
+     *
      * @throws SiteNotFoundException if no sites exist
      */
     public function getCurrentSite(): Site
@@ -487,7 +493,7 @@ class Sites extends Component
     /**
      * Sets the current site.
      *
-     * @param Site|string|int|null $site the current site, or its handle/ID, or null
+     * @param  Site|string|int|null  $site  the current site, or its handle/ID, or null
      *
      * @throws InvalidArgumentException if $site is invalid
      */
@@ -498,6 +504,7 @@ class Sites extends Component
 
         if ($site === null) {
             $this->_currentSite = null;
+
             return;
         }
 
@@ -515,6 +522,7 @@ class Sites extends Component
             if (Craft::$app->getIsInstalled() && !app(\CraftCms\Cms\Updates\Updates::class)->isCraftUpdatePending()) {
                 throw new InvalidArgumentException('Invalid site: ' . $site);
             }
+
             return;
         }
 
@@ -523,6 +531,14 @@ class Sites extends Component
         if (Craft::$app->has('request', true) && Craft::$app->getRequest()->getIsSiteRequest()) {
             Craft::$app->language = $this->_currentSite->language;
         }
+
+        // Set the CRAFT_SITE and CRAFT_SITE_UPPER env vars
+        if ($site->handle !== null) {
+            $_SERVER['CRAFT_SITE'] = $site->handle;
+            $_SERVER['CRAFT_SITE_UPPER'] = str($site->handle)->snake()->upper()->value();
+        } else {
+            unset($_SERVER['CRAFT_SITE'], $_SERVER['CRAFT_SITE_UPPER']);
+        }
     }
 
     /**
@@ -530,6 +546,7 @@ class Sites extends Component
      * control panel.
      *
      * @return Site The primary site
+     *
      * @throws SiteNotFoundException if no sites exist
      */
     public function getPrimarySite(): Site
@@ -571,7 +588,6 @@ class Sites extends Component
     /**
      * Returns all sites.
      *
-     * @param bool|null $withDisabled
      *
      * @return Site[] All the sites
      */
@@ -602,8 +618,6 @@ class Sites extends Component
     /**
      * Returns sites by a group ID.
      *
-     * @param int $groupId
-     * @param bool|null $withDisabled
      *
      * @return Site[]
      */
@@ -619,15 +633,15 @@ class Sites extends Component
     /**
      * Returns editable sites by a group ID.
      *
-     * @param int $groupId
-     * @param bool|null $withDisabled
      *
      * @return Site[]
+     *
      * @since 5.4.0
      */
     public function getEditableSitesByGroupId(int $groupId, ?bool $withDisabled = null): array
     {
         $editableSiteIds = array_flip($this->getEditableSiteIds());
+
         return Collection::make($this->getSitesByGroupId($groupId, $withDisabled))
             ->filter(fn(Site $site) => isset($editableSiteIds[$site->id]))
             ->values()
@@ -636,8 +650,6 @@ class Sites extends Component
 
     /**
      * Gets the total number of sites.
-     *
-     * @return int
      */
     public function getTotalSites(): int
     {
@@ -646,8 +658,6 @@ class Sites extends Component
 
     /**
      * Gets the total number of sites that are editable by the current user.
-     *
-     * @return int
      */
     public function getTotalEditableSites(): int
     {
@@ -656,11 +666,6 @@ class Sites extends Component
 
     /**
      * Returns a site by its ID.
-     *
-     * @param int $siteId
-     * @param bool|null $withDisabled
-     *
-     * @return Site|null
      */
     public function getSiteById(int $siteId, ?bool $withDisabled = null): ?Site
     {
@@ -669,11 +674,6 @@ class Sites extends Component
 
     /**
      * Returns a site by its handle.
-     *
-     * @param string $siteHandle
-     * @param bool|null $withDisabled
-     *
-     * @return Site|null
      */
     public function getSiteByHandle(string $siteHandle, ?bool $withDisabled = null): ?Site
     {
@@ -683,10 +683,9 @@ class Sites extends Component
     /**
      * Returns sites by their language.
      *
-     * @param string $language
-     * @param bool|null $withDisabled
      *
      * @return Site[]
+     *
      * @since 4.9.0
      */
     public function getSitesByLanguage(string $language, ?bool $withDisabled = null): array
@@ -699,7 +698,6 @@ class Sites extends Component
     /**
      * Returns the number of sites that can be created, based on [[$maxSites]].
      *
-     * @return int
      * @see $maxSites
      * @since 5.0.0
      */
@@ -711,10 +709,9 @@ class Sites extends Component
     /**
      * Saves a site.
      *
-     * @param Site $site The site to be saved
-     * @param bool $runValidation Whether the site should be validated
+     * @param  Site  $site  The site to be saved
+     * @param  bool  $runValidation  Whether the site should be validated
      *
-     * @return bool
      * @throws SiteNotFoundException if $site->id is invalid
      * @throws Throwable if reasons
      */
@@ -743,14 +740,15 @@ class Sites extends Component
 
         if ($runValidation && !$site->validate()) {
             Craft::info('Site not saved due to validation error.', __METHOD__);
+
             return false;
         }
 
         if ($isNewSite) {
             $site->uid = Str::uuid()->toString();
             $site->sortOrder = DB::table(Table::SITES)
-                    ->whereNull('dateDeleted')
-                    ->max('sortOrder') + 1;
+                ->whereNull('dateDeleted')
+                ->max('sortOrder') + 1;
         } elseif (!$site->uid) {
             $site->uid = DB::table(Table::SITES)->uidById($site->id);
         }
@@ -782,7 +780,6 @@ class Sites extends Component
     /**
      * Handle site changes.
      *
-     * @param ConfigEvent $event
      *
      * @throws Throwable
      */
@@ -904,9 +901,9 @@ class Sites extends Component
     /**
      * Reorders sites.
      *
-     * @param int[] $siteIds The site IDs in their new order
-     *
+     * @param  int[]  $siteIds  The site IDs in their new order
      * @return bool Whether the sites were reordered successfully
+     *
      * @throws Throwable if reasons
      */
     public function reorderSites(array $siteIds): bool
@@ -942,10 +939,10 @@ class Sites extends Component
     /**
      * Deletes a site by its ID.
      *
-     * @param int $siteId The site ID to be deleted
-     * @param int|null $transferContentTo The site ID that should take over the deleted site’s contents
-     *
+     * @param  int  $siteId  The site ID to be deleted
+     * @param  int|null  $transferContentTo  The site ID that should take over the deleted site’s contents
      * @return bool Whether the site was deleted successfully
+     *
      * @throws Throwable if reasons
      */
     public function deleteSiteById(int $siteId, ?int $transferContentTo = null): bool
@@ -962,10 +959,10 @@ class Sites extends Component
     /**
      * Deletes a site.
      *
-     * @param Site $site The site to be deleted
-     * @param int|null $transferContentTo The site ID that should take over the deleted site’s contents
-     *
+     * @param  Site  $site  The site to be deleted
+     * @param  int|null  $transferContentTo  The site ID that should take over the deleted site’s contents
      * @return bool Whether the site was deleted successfully
+     *
      * @throws Exception if $site is the primary site
      * @throws Throwable if reasons
      */
@@ -1092,13 +1089,13 @@ class Sites extends Component
         }
 
         $projectConfig->remove(ProjectConfig::PATH_SITES . '.' . $site->uid, "Delete the “{$site->handle}” site");
+
         return true;
     }
 
     /**
      * Handle a deleted Site.
      *
-     * @param ConfigEvent $event
      *
      * @throws DbException
      * @throws Throwable
@@ -1159,20 +1156,21 @@ class Sites extends Component
     /**
      * Restores a site by its ID.
      *
-     * @param int $id The site’s ID
-     *
+     * @param  int  $id  The site’s ID
      * @return bool Whether the site was restored successfully
+     *
      * @since 3.1.0
      */
     public function restoreSiteById(int $id): bool
     {
-        return (bool)DB::table(Table::SITES)->restore($id);
+        return (bool) DB::table(Table::SITES)->restore($id);
     }
 
     /**
      * Refresh the status of all sites based on the DB data.
      *
      * @throws DbException
+     *
      * @since 3.5.13
      */
     public function refreshSites(): void
@@ -1229,7 +1227,7 @@ class Sites extends Component
         }
 
         foreach ($results as $result) {
-            $site = new Site((array)$result);
+            $site = new Site((array) $result);
             $this->_allSitesById[$site->id] = $site;
             if ($site->getEnabled()) {
                 $this->_enabledSitesById[$site->id] = $site;
@@ -1256,10 +1254,8 @@ class Sites extends Component
     /**
      * Gets a site group record or creates a new one.
      *
-     * @param mixed $criteria ID or UID of the site group.
-     * @param bool $withTrashed Whether to include trashed site groups in search
-     *
-     * @return SiteGroupRecord
+     * @param  mixed  $criteria  ID or UID of the site group.
+     * @param  bool  $withTrashed  Whether to include trashed site groups in search
      */
     private function _getGroupRecord(mixed $criteria, bool $withTrashed = false): SiteGroupRecord
     {
@@ -1278,7 +1274,6 @@ class Sites extends Component
     /**
      * Returns all sites, or only enabled sites.
      *
-     * @param bool|null $withDisabled
      *
      * @return Site[]
      */
@@ -1298,10 +1293,8 @@ class Sites extends Component
     /**
      * Gets a site record or creates a new one.
      *
-     * @param mixed $criteria ID or UID of the site group.
-     * @param bool $withTrashed Whether to include trashed sites in search
-     *
-     * @return SiteRecord
+     * @param  mixed  $criteria  ID or UID of the site group.
+     * @param  bool  $withTrashed  Whether to include trashed sites in search
      */
     private function _getSiteRecord(mixed $criteria, bool $withTrashed = false): SiteRecord
     {
@@ -1320,8 +1313,6 @@ class Sites extends Component
     /**
      * Handles things that happen when there's a new primary site
      *
-     * @param int $oldPrimarySiteId
-     * @param int $newPrimarySiteId
      *
      * @throws Throwable
      */

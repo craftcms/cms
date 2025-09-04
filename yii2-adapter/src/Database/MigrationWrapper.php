@@ -22,7 +22,13 @@ final class MigrationWrapper extends Migration
             return;
         }
 
+        ob_start();
+
         $this->migration->up();
+
+        $output = ob_get_clean();
+
+        $this->output->write($output);
     }
 
     public function down(): void
@@ -31,6 +37,12 @@ final class MigrationWrapper extends Migration
             return;
         }
 
+        ob_start();
+
         $this->migration->down();
+
+        $output = ob_get_clean();
+
+        $this->output->write($output);
     }
 }

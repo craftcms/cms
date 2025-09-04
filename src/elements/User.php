@@ -1,6 +1,8 @@
 <?php
+
 /**
  * @link https://craftcms.com/
+ *
  * @copyright Copyright (c) Pixel & Tonic, Inc.
  * @license https://craftcms.github.io/license/
  */
@@ -87,6 +89,7 @@ use yii\web\IdentityInterface;
  * @property-read string|null $preferredLocale the user’s preferred formatting locale
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
+ *
  * @since 3.0.0
  */
 class User extends Element implements IdentityInterface
@@ -108,12 +111,14 @@ class User extends Element implements IdentityInterface
 
     /**
      * @event DefineValueEvent The event that is triggered when defining the user’s name, as returned by [[getName()]] or [[__toString()]].
+     *
      * @since 3.7.0
      */
     public const EVENT_DEFINE_NAME = 'defineName';
 
     /**
      * @event DefineValueEvent The event that is triggered when defining the user’s friendly name, as returned by [[getFriendlyName()]].
+     *
      * @since 3.7.0
      */
     public const EVENT_DEFINE_FRIENDLY_NAME = 'defineFriendlyName';
@@ -125,6 +130,7 @@ class User extends Element implements IdentityInterface
 
     /**
      * @event RegisterUserActionsEvent The event that is triggered when a user’s available actions are being registered
+     *
      * @deprecated in 5.6.0
      */
     public const EVENT_REGISTER_USER_ACTIONS = 'registerUserActions';
@@ -156,22 +162,34 @@ class User extends Element implements IdentityInterface
      * @since 4.0.0
      */
     public const STATUS_INACTIVE = 'inactive';
+
     public const STATUS_ACTIVE = 'active';
+
     public const STATUS_PENDING = 'pending';
+
     public const STATUS_SUSPENDED = 'suspended';
+
     public const STATUS_LOCKED = 'locked';
 
     // Authentication error codes
     // -------------------------------------------------------------------------
 
     public const AUTH_INVALID_CREDENTIALS = 'invalid_credentials';
+
     public const AUTH_PENDING_VERIFICATION = 'pending_verification';
+
     public const AUTH_ACCOUNT_LOCKED = 'account_locked';
+
     public const AUTH_ACCOUNT_COOLDOWN = 'account_cooldown';
+
     public const AUTH_PASSWORD_RESET_REQUIRED = 'password_reset_required';
+
     public const AUTH_ACCOUNT_SUSPENDED = 'account_suspended';
+
     public const AUTH_NO_CP_ACCESS = 'no_cp_access';
+
     public const AUTH_NO_CP_OFFLINE_ACCESS = 'no_cp_offline_access';
+
     public const AUTH_NO_SITE_OFFLINE_ACCESS = 'no_site_offline_access';
 
     // Validation scenarios
@@ -181,11 +199,13 @@ class User extends Element implements IdentityInterface
      * @since 4.4.8
      */
     public const SCENARIO_ACTIVATION = 'activation';
+
     public const SCENARIO_REGISTRATION = 'registration';
+
     public const SCENARIO_PASSWORD = 'password';
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public static function displayName(): string
     {
@@ -193,7 +213,7 @@ class User extends Element implements IdentityInterface
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public static function lowerDisplayName(): string
     {
@@ -201,7 +221,7 @@ class User extends Element implements IdentityInterface
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public static function pluralDisplayName(): string
     {
@@ -209,7 +229,7 @@ class User extends Element implements IdentityInterface
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public static function pluralLowerDisplayName(): string
     {
@@ -217,7 +237,7 @@ class User extends Element implements IdentityInterface
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public static function refHandle(): ?string
     {
@@ -225,7 +245,7 @@ class User extends Element implements IdentityInterface
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public static function trackChanges(): bool
     {
@@ -233,7 +253,7 @@ class User extends Element implements IdentityInterface
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public static function hasThumbs(): bool
     {
@@ -241,7 +261,7 @@ class User extends Element implements IdentityInterface
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public static function hasStatuses(): bool
     {
@@ -249,7 +269,7 @@ class User extends Element implements IdentityInterface
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public static function statuses(): array
     {
@@ -276,7 +296,8 @@ class User extends Element implements IdentityInterface
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
+     *
      * @return UserQuery The newly created [[UserQuery]] instance.
      */
     public static function find(): UserQuery
@@ -285,7 +306,8 @@ class User extends Element implements IdentityInterface
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
+     *
      * @return UserCondition
      */
     public static function createCondition(): ElementConditionInterface
@@ -294,7 +316,7 @@ class User extends Element implements IdentityInterface
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     protected static function defineSources(string $context): array
     {
@@ -370,7 +392,7 @@ class User extends Element implements IdentityInterface
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     protected static function defineActions(string $source): array
     {
@@ -396,7 +418,7 @@ class User extends Element implements IdentityInterface
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     protected static function defineSearchableAttributes(): array
     {
@@ -404,7 +426,7 @@ class User extends Element implements IdentityInterface
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     protected static function defineSortOptions(): array
     {
@@ -459,7 +481,7 @@ class User extends Element implements IdentityInterface
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     protected static function defineTableAttributes(): array
     {
@@ -480,7 +502,7 @@ class User extends Element implements IdentityInterface
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     protected static function defineDefaultTableAttributes(string $source): array
     {
@@ -494,7 +516,7 @@ class User extends Element implements IdentityInterface
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     protected static function prepElementQueryForTableAttribute(ElementQueryInterface $elementQuery, string $attribute): void
     {
@@ -507,7 +529,7 @@ class User extends Element implements IdentityInterface
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     protected static function defineCardAttributes(): array
     {
@@ -574,7 +596,7 @@ class User extends Element implements IdentityInterface
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public static function eagerLoadingMap(array $sourceElements, string $handle): array|null|false
     {
@@ -624,7 +646,7 @@ class User extends Element implements IdentityInterface
     // -------------------------------------------------------------------------
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public static function findIdentity($id): ?self
     {
@@ -651,7 +673,7 @@ class User extends Element implements IdentityInterface
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public static function findIdentityByAccessToken($token, $type = null): ?self
     {
@@ -665,6 +687,7 @@ class User extends Element implements IdentityInterface
 
     /**
      * @var bool Active
+     *
      * @since 4.0.0
      */
     public bool $active = false;
@@ -706,6 +729,7 @@ class User extends Element implements IdentityInterface
 
     /**
      * @var int|null Affiliated site ID
+     *
      * @since 5.6.0
      */
     public ?int $affiliatedSiteId = null;
@@ -732,6 +756,7 @@ class User extends Element implements IdentityInterface
 
     /**
      * @var bool Whether the user has a dashboard
+     *
      * @since 3.0.4
      */
     public bool $hasDashboard = false;
@@ -788,6 +813,7 @@ class User extends Element implements IdentityInterface
 
     /**
      * @var ElementCollection<Address> Addresses
+     *
      * @see getAddresses()
      */
     private ElementCollection $_addresses;
@@ -798,14 +824,12 @@ class User extends Element implements IdentityInterface
     private NestedElementManager $_addressManager;
 
     /**
-     * @var string|null
      * @see getName()
      * @see setName()
      */
     private ?string $_name = null;
 
     /**
-     * @var string|bool|null
      * @see getFriendlyName()
      * @see setFriendlyName()
      */
@@ -822,7 +846,7 @@ class User extends Element implements IdentityInterface
     private ?array $_groups = null;
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function init(): void
     {
@@ -858,8 +882,6 @@ class User extends Element implements IdentityInterface
 
     /**
      * Use the full name or username as the string representation.
-     *
-     * @return string
      */
     public function __toString(): string
     {
@@ -875,7 +897,7 @@ class User extends Element implements IdentityInterface
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function getPostEditUrl(): ?string
     {
@@ -890,7 +912,7 @@ class User extends Element implements IdentityInterface
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     protected function crumbs(): array
     {
@@ -907,7 +929,7 @@ class User extends Element implements IdentityInterface
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     protected function uiLabel(): ?string
     {
@@ -915,7 +937,7 @@ class User extends Element implements IdentityInterface
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function attributes(): array
     {
@@ -928,11 +950,12 @@ class User extends Element implements IdentityInterface
         $names[] = 'name';
         $names[] = 'preferredLanguage';
         $names[] = 'remainingCooldownTime';
+
         return $names;
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function extraFields(): array
     {
@@ -940,11 +963,12 @@ class User extends Element implements IdentityInterface
         $names[] = 'groups';
         $names[] = 'addresses';
         $names[] = 'photo';
+
         return $names;
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function attributeLabels(): array
     {
@@ -958,11 +982,12 @@ class User extends Element implements IdentityInterface
         $labels['password'] = Craft::t('app', 'Password');
         $labels['unverifiedEmail'] = Craft::t('app', 'Email');
         $labels['username'] = Craft::t('app', 'Username');
+
         return $labels;
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function afterValidate(): void
     {
@@ -983,7 +1008,7 @@ class User extends Element implements IdentityInterface
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     protected function defineRules(): array
     {
@@ -1060,7 +1085,7 @@ class User extends Element implements IdentityInterface
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function setAttributesFromRequest($values): void
     {
@@ -1077,7 +1102,7 @@ class User extends Element implements IdentityInterface
             // make sure they have an elevated session
             $userSession = Craft::$app->getUser();
             if (!$userSession->getHasElevatedSession()) {
-                throw new BadRequestHttpException('An elevated session is required to change a user’s email.');
+                throw new BadRequestHttpException(Craft::t('app', 'An elevated session is required to change a user’s email.'));
             }
 
             if ($this->email !== null) {
@@ -1101,7 +1126,7 @@ class User extends Element implements IdentityInterface
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function setAttributes($values, $safeOnly = true): void
     {
@@ -1119,7 +1144,6 @@ class User extends Element implements IdentityInterface
     /**
      * Returns whether the user account can be logged into.
      *
-     * @return bool
      * @since 4.0.0
      */
     public function getIsCredentialed(): bool
@@ -1130,7 +1154,6 @@ class User extends Element implements IdentityInterface
     /**
      * Returns whether the user has a password.
      *
-     * @return bool
      * @since 5.6.0
      */
     public function getHasPassword(): bool
@@ -1147,7 +1170,6 @@ class User extends Element implements IdentityInterface
     /**
      * Returns whether the user has an associated SSO identity.
      *
-     * @return bool
      * @since 5.7.8
      */
     public function getHasSsoIdentity(): bool
@@ -1161,10 +1183,6 @@ class User extends Element implements IdentityInterface
 
     /**
      * Validates the unverifiedEmail value is unique.
-     *
-     * @param string $attribute
-     * @param array|null $params
-     * @param InlineValidator $validator
      */
     public function validateUnverifiedEmail(string $attribute, ?array $params, InlineValidator $validator): void
     {
@@ -1194,7 +1212,7 @@ class User extends Element implements IdentityInterface
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function scenarios(): array
     {
@@ -1207,7 +1225,7 @@ class User extends Element implements IdentityInterface
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function getFieldLayout(): ?FieldLayout
     {
@@ -1218,6 +1236,7 @@ class User extends Element implements IdentityInterface
      * Gets the user’s addresses.
      *
      * @return ElementCollection<Address>
+     *
      * @since 4.0.0
      */
     public function getAddresses(): ElementCollection
@@ -1239,7 +1258,6 @@ class User extends Element implements IdentityInterface
     /**
      * Returns a nested element manager for the user’s addresses.
      *
-     * @return NestedElementManager
      * @since 5.0.0
      */
     public function getAddressManager(): NestedElementManager
@@ -1259,7 +1277,7 @@ class User extends Element implements IdentityInterface
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function afterRestore(): void
     {
@@ -1275,7 +1293,7 @@ class User extends Element implements IdentityInterface
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function getAuthKey(): ?string
     {
@@ -1296,7 +1314,7 @@ class User extends Element implements IdentityInterface
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function validateAuthKey($authKey): ?bool
     {
@@ -1333,8 +1351,6 @@ class User extends Element implements IdentityInterface
 
     /**
      * Handles an invalid login for a user and sets the authError param.
-     *
-     * @return void
      */
     public function handleInvalidLoginParam(): void
     {
@@ -1351,8 +1367,7 @@ class User extends Element implements IdentityInterface
     /**
      * Determines whether the user is allowed to be logged in with a given password.
      *
-     * @param string $password The user’s plain text password.
-     * @return bool
+     * @param  string  $password  The user’s plain text password.
      */
     public function authenticate(string $password): bool
     {
@@ -1379,19 +1394,21 @@ class User extends Element implements IdentityInterface
 
         if (!$passwordValid) {
             $this->handleInvalidLoginParam();
+
             return false;
         }
 
         $this->authError = $this->_getAuthError();
+
         return !isset($this->authError);
     }
 
     /**
      * Determines whether the user is allowed to be logged in with a security key.
      *
-     * @param PublicKeyCredentialRequestOptions|array|string $requestOptions The public key credential request options
-     * @param string $response The authentication response data
-     * @return bool
+     * @param  PublicKeyCredentialRequestOptions|array|string  $requestOptions  The public key credential request options
+     * @param  string  $response  The authentication response data
+     *
      * @since 5.0.0
      */
     public function authenticateWithPasskey(
@@ -1418,6 +1435,7 @@ class User extends Element implements IdentityInterface
         $credential = WebAuthnRecord::findOne(['credentialId' => Json::decode($response)['id']]);
         if (!$credential || $credential['userId'] != $this->id) {
             $this->authError = self::AUTH_INVALID_CREDENTIALS;
+
             return false;
         }
 
@@ -1430,17 +1448,17 @@ class User extends Element implements IdentityInterface
 
         if (!$keyValid) {
             $this->handleInvalidLoginParam();
+
             return false;
         }
 
         $this->authError = $this->_getAuthError();
+
         return !isset($this->authError);
     }
 
     /**
      * Returns the reference string to this element.
-     *
-     * @return string|null
      */
     public function getRef(): ?string
     {
@@ -1468,7 +1486,7 @@ class User extends Element implements IdentityInterface
     /**
      * Sets an array of user groups on the user.
      *
-     * @param UserGroup[] $groups An array of UserGroup objects.
+     * @param  UserGroup[]  $groups  An array of UserGroup objects.
      */
     public function setGroups(array $groups): void
     {
@@ -1480,8 +1498,7 @@ class User extends Element implements IdentityInterface
     /**
      * Returns whether the user is in a specific group.
      *
-     * @param int|string|UserGroup $group The user group model, its handle, or ID.
-     * @return bool
+     * @param  int|string|UserGroup  $group  The user group model, its handle, or ID.
      */
     public function isInGroup(UserGroup|int|string $group): bool
     {
@@ -1503,7 +1520,6 @@ class User extends Element implements IdentityInterface
     /**
      * Returns the user’s full name.
      *
-     * @return string|null
      * @deprecated in 4.0.0. [[fullName]] should be used instead.
      */
     public function getFullName(): ?string
@@ -1513,8 +1529,6 @@ class User extends Element implements IdentityInterface
 
     /**
      * Returns the user’s full name or username.
-     *
-     * @return string
      */
     public function getName(): string
     {
@@ -1525,9 +1539,6 @@ class User extends Element implements IdentityInterface
         return $this->_name;
     }
 
-    /**
-     * @return string
-     */
     private function _defineName(): string
     {
         // Fire a 'defineName' event
@@ -1539,13 +1550,12 @@ class User extends Element implements IdentityInterface
             }
         }
 
-        return $this->fullName ?? (string)$this->username;
+        return $this->fullName ?? (string) $this->username;
     }
 
     /**
      * Sets the user’s name.
      *
-     * @param string $name
      * @since 3.7.0
      */
     public function setName(string $name): void
@@ -1555,8 +1565,6 @@ class User extends Element implements IdentityInterface
 
     /**
      * Returns the user’s first name or username.
-     *
-     * @return string|null
      */
     public function getFriendlyName(): ?string
     {
@@ -1567,9 +1575,6 @@ class User extends Element implements IdentityInterface
         return $this->_friendlyName ?: null;
     }
 
-    /**
-     * @return string|null
-     */
     private function _defineFriendlyName(): ?string
     {
         // Fire a 'defineFriendlyName' event
@@ -1587,7 +1592,6 @@ class User extends Element implements IdentityInterface
     /**
      * Sets the user’s friendly name.
      *
-     * @param string $friendlyName
      * @since 3.7.0
      */
     public function setFriendlyName(string $friendlyName): void
@@ -1598,7 +1602,6 @@ class User extends Element implements IdentityInterface
     /**
      * Returns the user’s affiliated site, if they have one.
      *
-     * @return Site|null
      * @since 5.6.0
      */
     public function getAffiliatedSite(): ?Site
@@ -1611,7 +1614,7 @@ class User extends Element implements IdentityInterface
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function getStatus(): ?string
     {
@@ -1641,7 +1644,7 @@ class User extends Element implements IdentityInterface
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     protected function thumbUrl(int $size): ?string
     {
@@ -1655,7 +1658,7 @@ class User extends Element implements IdentityInterface
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     protected function thumbSvg(): ?string
     {
@@ -1696,7 +1699,7 @@ XML;
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     protected function thumbAlt(): ?string
     {
@@ -1704,7 +1707,7 @@ XML;
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     protected function hasRoundedThumb(): bool
     {
@@ -1712,7 +1715,7 @@ XML;
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function createAnother(): ?ElementInterface
     {
@@ -1720,7 +1723,7 @@ XML;
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function canView(User $user): bool
     {
@@ -1728,14 +1731,13 @@ XML;
             return true;
         }
 
-        return (
+        return
             $user->id === $this->id ||
-            $user->can('viewUsers')
-        );
+            $user->can('viewUsers');
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function canSave(User $user): bool
     {
@@ -1751,7 +1753,7 @@ XML;
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function canDuplicate(User $user): bool
     {
@@ -1759,7 +1761,7 @@ XML;
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function canDelete(User $user): bool
     {
@@ -1767,16 +1769,13 @@ XML;
             return true;
         }
 
-        return (
+        return
             $user->id !== $this->id &&
-            $user->can('deleteUsers')
-        );
+            $user->can('deleteUsers');
     }
 
     /**
      * Returns whether this is the current logged-in user.
-     *
-     * @return bool
      */
     public function getIsCurrent(): bool
     {
@@ -1785,14 +1784,12 @@ XML;
         }
 
         $currentUser = Craft::$app->getUser()->getIdentity();
+
         return $currentUser && $currentUser->id == $this->id;
     }
 
     /**
      * Returns whether the user has permission to perform a given action.
-     *
-     * @param string $permission
-     * @return bool
      */
     public function can(string $permission): bool
     {
@@ -1813,21 +1810,18 @@ XML;
     /**
      * Returns whether the user can register additional users.
      *
-     * @return bool
      * @since 5.0.0
      */
     final public function canRegisterUsers(): bool
     {
-        return (
+        return
             $this->can('registerUsers') &&
-            Craft::$app->getUsers()->canCreateUsers()
-        );
+            Craft::$app->getUsers()->canCreateUsers();
     }
 
     /**
      * Returns whether the user is authorized to assign any user groups to users.
      *
-     * @return bool
      * @since 4.0.0
      */
     public function canAssignUserGroups(): bool
@@ -1851,9 +1845,6 @@ XML;
 
     /**
      * Returns whether the user has shunned a given message.
-     *
-     * @param string $message
-     * @return bool
      */
     public function hasShunned(string $message): bool
     {
@@ -1866,8 +1857,6 @@ XML;
 
     /**
      * Returns the time when the user will be over their cooldown period.
-     *
-     * @return DateTime|null
      */
     public function getCooldownEndTime(): ?DateTime
     {
@@ -1888,8 +1877,6 @@ XML;
 
     /**
      * Returns the remaining cooldown time for this user, if they’ve entered their password incorrectly too many times.
-     *
-     * @return DateInterval|null
      */
     public function getRemainingCooldownTime(): ?DateInterval
     {
@@ -1906,7 +1893,7 @@ XML;
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     protected function cpEditUrl(): ?string
     {
@@ -1922,7 +1909,7 @@ XML;
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     protected function safeActionMenuItems(): array
     {
@@ -2121,7 +2108,7 @@ JS, [
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     protected function destructiveActionMenuItems(): array
     {
@@ -2192,12 +2179,12 @@ $('#' + $id).on('activate', () => {
   });
 });
 JS,
-                    [
-                        $view->namespaceInputId($deleteId),
-                        $this->id,
-                        /** @phpstan-ignore-next-line */
-                        Craft::$app->getSecurity()->hashData(Craft::$app->edition === Edition::Solo ? 'dashboard' : 'users'),
-                    ]);
+                        [
+                            $view->namespaceInputId($deleteId),
+                            $this->id,
+                            /** @phpstan-ignore-next-line */
+                            Craft::$app->getSecurity()->hashData(Craft::$app->edition === Edition::Solo ? 'dashboard' : 'users'),
+                        ]);
                 }
             }
         }
@@ -2250,8 +2237,8 @@ JS, [
     /**
      * Returns one of the user’s preferences by its key.
      *
-     * @param string $key The preference’s key
-     * @param mixed $default The default value, if the preference hasn’t been set
+     * @param  string  $key  The preference’s key
+     * @param  mixed  $default  The default value, if the preference hasn’t been set
      * @return mixed The user’s preference
      */
     public function getPreference(string $key, mixed $default = null): mixed
@@ -2277,6 +2264,7 @@ JS, [
      * If the user doesn’t have a preferred locale, their preferred language will be used instead.
      *
      * @return string|null The preferred locale
+     *
      * @since 3.5.0
      */
     public function getPreferredLocale(): ?string
@@ -2287,7 +2275,6 @@ JS, [
     /**
      * Returns whether the user prefers to have form fields autofocused on page load.
      *
-     * @return bool
      * @since 5.0.0
      */
     public function getAutofocusPreferred(): bool
@@ -2298,9 +2285,7 @@ JS, [
     /**
      * Validates and returns a locale ID.
      *
-     * @param string|null $locale
-     * @param bool $checkAllLocales Whether to check all known locale IDs, rather than just the app locales
-     * @return string|null
+     * @param  bool  $checkAllLocales  Whether to check all known locale IDs, rather than just the app locales
      */
     private function _validateLocale(?string $locale, bool $checkAllLocales): ?string
     {
@@ -2313,7 +2298,7 @@ JS, [
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function setEagerLoadedElements(string $handle, array $elements, EagerLoadPlan $plan): void
     {
@@ -2328,8 +2313,6 @@ JS, [
 
     /**
      * Returns the user’s photo.
-     *
-     * @return Asset|null
      */
     public function getPhoto(): ?Asset
     {
@@ -2346,8 +2329,6 @@ JS, [
 
     /**
      * Sets the user’s photo.
-     *
-     * @param Asset|null $photo
      */
     public function setPhoto(?Asset $photo = null): void
     {
@@ -2359,7 +2340,7 @@ JS, [
     // -------------------------------------------------------------------------
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     protected function attributeHtml(string $attribute): string
     {
@@ -2372,10 +2353,12 @@ JS, [
 
             case 'preferredLanguage':
                 $language = $this->getPreferredLanguage();
+
                 return $language ? Craft::$app->getI18n()->getLocaleById($language)->getDisplayName(Craft::$app->language) : '';
 
             case 'preferredLocale':
                 $locale = $this->getPreferredLocale();
+
                 return $locale ? Craft::$app->getI18n()->getLocaleById($locale)->getDisplayName(Craft::$app->language) : '';
 
             case 'is2faEnabled':
@@ -2417,7 +2400,7 @@ JS, [
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     protected function htmlAttributes(string $context): array
     {
@@ -2432,7 +2415,7 @@ JS, [
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     protected function statusFieldHtml(): string
     {
@@ -2440,7 +2423,7 @@ JS, [
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     protected function metadata(): array
     {
@@ -2456,6 +2439,7 @@ JS, [
                 ) {
                     return false;
                 }
+
                 return $formatter->asDuration($duration);
             },
             Craft::t('app', 'Created at') => $formatter->asDatetime($this->dateCreated, Formatter::FORMAT_WIDTH_SHORT),
@@ -2466,25 +2450,29 @@ JS, [
                 if (!$this->lastLoginDate) {
                     return Craft::t('app', 'Never');
                 }
+
                 return $formatter->asDatetime($this->lastLoginDate, Formatter::FORMAT_WIDTH_SHORT);
             },
             Craft::t('app', 'Last login fail') => function() use ($formatter) {
                 if (!$this->locked || !$this->lastInvalidLoginDate) {
                     return false;
                 }
+
                 return $formatter->asDatetime($this->lastInvalidLoginDate, Formatter::FORMAT_WIDTH_SHORT);
             },
             Craft::t('app', 'Login fail count') => function() use ($formatter) {
                 if (!$this->locked) {
                     return false;
                 }
+
                 return $formatter->asDecimal($this->invalidLoginCount, 0);
             },
         ];
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
+     *
      * @since 3.3.0
      */
     public function getGqlTypeName(): string
@@ -2496,7 +2484,7 @@ JS, [
     // -------------------------------------------------------------------------
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     final public function beforeSave(bool $isNew): bool
     {
@@ -2512,7 +2500,8 @@ JS, [
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
+     *
      * @throws InvalidConfigException
      * @throws Exception
      */
@@ -2628,7 +2617,7 @@ JS, [
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function beforeDelete(): bool
     {
@@ -2692,9 +2681,6 @@ JS, [
     /**
      * Validates a cookie's stored user agent against the current request's user agent string,
      * if the 'requireMatchingUserAgentForSession' config setting is enabled.
-     *
-     * @param string $userAgent
-     * @return bool
      */
     private function _validateUserAgent(string $userAgent): bool
     {
@@ -2710,6 +2696,7 @@ JS, [
 
         if (!hash_equals($userAgent, md5($requestUserAgent))) {
             Craft::warning('Tried to restore session from the the identity cookie, but the saved user agent (' . $userAgent . ') does not match the current request’s (' . $requestUserAgent . ').', __METHOD__);
+
             return false;
         }
 
@@ -2739,6 +2726,7 @@ JS, [
                     if (app(GeneralConfig::class)->cooldownDuration) {
                         return self::AUTH_ACCOUNT_COOLDOWN;
                     }
+
                     return self::AUTH_ACCOUNT_LOCKED;
                 }
                 // Is a password reset required?

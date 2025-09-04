@@ -121,6 +121,7 @@ return [
     'Already in your cart' => 'Allerede i din kurv',
     'Alternative Text' => 'Alternativ tekst',
     'Amber' => 'Rav',
+    'An elevated session is required to change a user’s email.' => 'An elevated session is required to change a user’s email.',
     'An error occurred when duplicating the category.' => 'Der skete en fejl ved duplikering af kategorien.',
     'An error occurred when duplicating the entry.' => 'Der skete en fejl under duplikering af posten.',
     'An error occurred when installing {name}.' => 'Der opstod en fejl under installationen af {name}.',
@@ -2123,11 +2124,11 @@ return [
     'You’re viewing a revision. None of the {type}’s fields are editable.' => 'Du ser en revision. Ingen af {type}s felter kan redigeres.',
     'Zip Code' => 'Postnummer',
     '`sectionId` and `fieldId` cannot both be set on an entry.' => '`sectionId` og `fieldId` kan ikke begge indstilles på en post.',
-    'account_activation_body' => "Hej {{user.friendlyName|e}}. Tak fordi du opretter en konto med {{siteName}}! Aktiver din konto ved at klikke på følgende link:
+    'account_activation_body' => 'Hej {{user.friendlyName|e}}. Tak fordi du opretter en konto med {{siteName}}! Aktiver din konto ved at klikke på følgende link:
 
 <{{link}}>
 
-Hvis du ikke forventede denne e-mail, bare ignorere den.",
+Hvis du ikke forventede denne e-mail, bare ignorere den.',
     'account_activation_heading' => 'Når nogen opretter en bruger:',
     'account_activation_subject' => 'Aktiver din bruger',
     'address' => 'adresse',
@@ -2217,11 +2218,11 @@ Hvis du ikke forventede denne e-mail, bare ignorere den.",
     'unknown' => 'ukendt',
     'user' => 'bruger',
     'users' => 'brugere',
-    'verify_new_email_body' => "Hej {{user.friendlyName|e}}. Bekræft din nye e-mailadresse ved at klikke på dette link:
+    'verify_new_email_body' => 'Hej {{user.friendlyName|e}}. Bekræft din nye e-mailadresse ved at klikke på dette link:
 
 <{{link}}>
 
-Hvis du ikke forventede denne e-mail, bare ignorere den.",
+Hvis du ikke forventede denne e-mail, bare ignorere den.',
     'verify_new_email_heading' => 'Når nogen ændrer deres e-mailadresse:',
     'verify_new_email_subject' => 'Bekræft din nye e-mailadresse',
     'week' => 'uge',

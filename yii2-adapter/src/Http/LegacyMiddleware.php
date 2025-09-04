@@ -79,10 +79,6 @@ class LegacyMiddleware
             return $this->createResponse();
         } catch (YiiHttpException $e) {
             if ($e->statusCode === 404) {
-                if ($this->app->hasDebugModeEnabled()) {
-                    throw $e;
-                }
-
                 $this->cleanup();
 
                 // If Yii indicates page does not exist - pass its resolving to Laravel

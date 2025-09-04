@@ -1,6 +1,8 @@
 <?php
+
 /**
  * @link https://craftcms.com/
+ *
  * @copyright Copyright (c) Pixel & Tonic, Inc.
  * @license https://craftcms.github.io/license/
  */
@@ -43,6 +45,7 @@ use yii\web\ServerErrorHttpException;
  * Note that all actions in the controller require an authenticated Craft session via [[allowAnonymous]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
+ *
  * @since 3.0.0
  */
 class ElementIndexesController extends BaseElementsController
@@ -52,39 +55,22 @@ class ElementIndexesController extends BaseElementsController
      */
     protected string $elementType;
 
-    /**
-     * @var string
-     */
     protected string $context;
 
-    /**
-     * @var string|null
-     */
     protected ?string $sourceKey = null;
 
-    /**
-     * @var array|null
-     */
     protected ?array $source = null;
 
     /**
-     * @var ElementConditionInterface|null
      * @since 4.0.0
      */
     protected ?ElementConditionInterface $condition = null;
 
-    /**
-     * @var array|null
-     */
     protected ?array $viewState = null;
 
-    /**
-     * @var ElementQueryInterface|null
-     */
     protected ?ElementQueryInterface $elementQuery = null;
 
     /**
-     * @var ElementQueryInterface|null
      * @since 5.0.0
      */
     protected ?ElementQueryInterface $unfilteredElementQuery = null;
@@ -100,7 +86,7 @@ class ElementIndexesController extends BaseElementsController
     protected ?array $exporters = null;
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function beforeAction($action): bool
     {
@@ -143,8 +129,6 @@ class ElementIndexesController extends BaseElementsController
      * ```php
      * $criteria = Craft::$app->controller->getElementQuery();
      * ```
-     *
-     * @return ElementQueryInterface
      */
     public function getElementQuery(): ElementQueryInterface
     {
@@ -187,7 +171,7 @@ class ElementIndexesController extends BaseElementsController
         $tableColumns = Collection::make($elementSources->getSourceTableAttributes($this->elementType, $this->sourceKey))
             ->map(fn(array $attribute, string $key) => [
                 ...$attribute,
-                'key' => $key,
+                'attr' => $key,
             ])
             ->values()
             ->all();
@@ -207,30 +191,27 @@ class ElementIndexesController extends BaseElementsController
 
     /**
      * Renders and returns an element index container, plus its first batch of elements.
-     *
-     * @return Response
      */
     public function actionGetElements(): Response
     {
         $responseData = $this->elementResponseData(true, $this->isAdministrative());
+
         return $this->asJson($responseData);
     }
 
     /**
      * Renders and returns a subsequent batch of elements for an element index.
-     *
-     * @return Response
      */
     public function actionGetMoreElements(): Response
     {
         $responseData = $this->elementResponseData(false, false);
+
         return $this->asJson($responseData);
     }
 
     /**
      * Returns the total number of elements that match the current criteria.
      *
-     * @return Response
      * @since 3.4.6
      */
     public function actionCountElements(): Response
@@ -253,7 +234,6 @@ class ElementIndexesController extends BaseElementsController
     /**
      * Performs an action on one or more selected elements.
      *
-     * @return Response|null
      * @throws BadRequestHttpException if the requested element action is not supported by the element type, or its parameters didn’t validate
      */
     public function actionPerformAction(): ?Response
@@ -357,8 +337,6 @@ class ElementIndexesController extends BaseElementsController
 
     /**
      * Returns the source tree HTML for an element index.
-     *
-     * @return Response
      */
     public function actionGetSourceTreeHtml(): Response
     {
@@ -377,8 +355,8 @@ class ElementIndexesController extends BaseElementsController
     /**
      * Exports element data.
      *
-     * @return Response
      * @throws BadRequestHttpException
+     *
      * @since 3.4.4
      */
     public function actionExport(): Response
@@ -433,7 +411,6 @@ class ElementIndexesController extends BaseElementsController
     /**
      * Returns the exporter for the request.
      *
-     * @return ElementExporterInterface
      * @throws BadRequestHttpException
      */
     private function _exporter(): ElementExporterInterface
@@ -527,6 +504,7 @@ class ElementIndexesController extends BaseElementsController
         $html = $condition->getBuilderHtml();
 
         $view = Craft::$app->getView();
+
         return $this->asJson([
             'hudHtml' => $html,
             'headHtml' => $view->getHeadHtml(),
@@ -537,7 +515,6 @@ class ElementIndexesController extends BaseElementsController
     /**
      * Saves inline-edited elements.
      *
-     * @return Response
      * @since 5.0.0
      */
     public function actionSaveElements(): Response
@@ -635,7 +612,6 @@ class ElementIndexesController extends BaseElementsController
     /**
      * Returns whether the element index has an administrative context (`index` or `embedded-index`).
      *
-     * @return bool
      * @since 5.0.0
      */
     protected function isAdministrative(): bool
@@ -646,7 +622,6 @@ class ElementIndexesController extends BaseElementsController
     /**
      * Returns the selected source info.
      *
-     * @return array|null
      * @throws ForbiddenHttpException if the user is not permitted to access the requested source
      */
     protected function source(): ?array
@@ -677,7 +652,6 @@ class ElementIndexesController extends BaseElementsController
     /**
      * Returns the condition that should be applied to the element query.
      *
-     * @return ElementConditionInterface|null
      * @since 4.0.0
      */
     protected function condition(): ?ElementConditionInterface
@@ -702,7 +676,7 @@ class ElementIndexesController extends BaseElementsController
                     $criteria['ownerId'] = $ownerId;
                 }
                 $condition->referenceElement = Craft::$app->getElements()->getElementById(
-                    (int)$referenceElementId,
+                    (int) $referenceElementId,
                     siteId: $siteId,
                     criteria: $criteria,
                 );
@@ -714,8 +688,6 @@ class ElementIndexesController extends BaseElementsController
 
     /**
      * Returns the current view state.
-     *
-     * @return array
      */
     protected function viewState(): array
     {
@@ -730,8 +702,6 @@ class ElementIndexesController extends BaseElementsController
 
     /**
      * Returns the element query based on the current params.
-     *
-     * @return ElementQueryInterface
      */
     protected function elementQuery(): ElementQueryInterface
     {
@@ -740,6 +710,7 @@ class ElementIndexesController extends BaseElementsController
 
         if (!$this->source) {
             $query->id(false);
+
             return $query;
         }
 
@@ -763,13 +734,14 @@ class ElementIndexesController extends BaseElementsController
             }
             if (isset($criteria['draftOf'])) {
                 if (is_numeric($criteria['draftOf']) && $criteria['draftOf'] != 0) {
-                    $criteria['draftOf'] = (int)$criteria['draftOf'];
+                    $criteria['draftOf'] = (int) $criteria['draftOf'];
                 } else {
                     $criteria['draftOf'] = filter_var($criteria['draftOf'], FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE);
                 }
             }
 
             Craft::configure($query, Component::cleanseConfig($criteria));
+
             return true;
         };
 
@@ -859,9 +831,8 @@ class ElementIndexesController extends BaseElementsController
     /**
      * Returns the element data to be returned to the client.
      *
-     * @param bool $includeContainer Whether the element container should be included in the response data
-     * @param bool $includeActions Whether info about the available actions should be included in the response data
-     * @return array
+     * @param  bool  $includeContainer  Whether the element container should be included in the response data
+     * @param  bool  $includeActions  Whether info about the available actions should be included in the response data
      */
     protected function elementResponseData(bool $includeContainer, bool $includeActions): array
     {
@@ -953,6 +924,7 @@ class ElementIndexesController extends BaseElementsController
                 if ($b instanceof Restore) {
                     return 1;
                 }
+
                 return 0;
             });
         }
@@ -964,6 +936,7 @@ class ElementIndexesController extends BaseElementsController
      * Returns the available exporters for the current source.
      *
      * @return ElementExporterInterface[]|null
+     *
      * @since 3.4.0
      */
     protected function availableExporters(): ?array
@@ -992,8 +965,6 @@ class ElementIndexesController extends BaseElementsController
 
     /**
      * Returns the data for the available actions.
-     *
-     * @return array|null
      */
     protected function actionData(): ?array
     {
@@ -1014,7 +985,6 @@ class ElementIndexesController extends BaseElementsController
     /**
      * Returns the data for the available exporters.
      *
-     * @return array|null
      * @since 3.4.0
      */
     protected function exporterData(): ?array
@@ -1039,7 +1009,6 @@ class ElementIndexesController extends BaseElementsController
     /**
      * Returns the updated table attribute HTML for an element.
      *
-     * @return Response
      * @throws BadRequestHttpException
      * @throws ForbiddenHttpException
      */
@@ -1048,7 +1017,7 @@ class ElementIndexesController extends BaseElementsController
         $this->requireAcceptsJson();
 
         if (!$this->sourceKey) {
-            throw new BadRequestHttpException("Request missing required body param");
+            throw new BadRequestHttpException('Request missing required body param');
         }
 
         $id = $this->request->getRequiredBodyParam('id');

@@ -121,6 +121,7 @@ return [
     'Already in your cart' => 'すでにカートに入っています',
     'Alternative Text' => '代替テキスト',
     'Amber' => 'アンバー',
+    'An elevated session is required to change a user’s email.' => 'An elevated session is required to change a user’s email.',
     'An error occurred when duplicating the category.' => 'カテゴリの複製時にエラーが発生しました。',
     'An error occurred when duplicating the entry.' => 'エントリの複製時にエラーが発生しました。',
     'An error occurred when installing {name}.' => '{name} のインストール時にエラーが発生しました。',

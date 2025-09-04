@@ -121,6 +121,7 @@ return [
     'Already in your cart' => 'Már a kosárban',
     'Alternative Text' => 'Alternatív szöveg',
     'Amber' => 'Borostyán',
+    'An elevated session is required to change a user’s email.' => 'An elevated session is required to change a user’s email.',
     'An error occurred when duplicating the category.' => 'Hiba történt a kategória többszörözése közben.',
     'An error occurred when duplicating the entry.' => 'Hiba történt a bejegyzés többszörözése közben.',
     'An error occurred when installing {name}.' => 'Hiba történt {name} telepítésekor.',
@@ -2123,11 +2124,11 @@ return [
     'You’re viewing a revision. None of the {type}’s fields are editable.' => 'Ön egy revíziót néz. A {type} egyik mezője sem szerkeszthető.',
     'Zip Code' => 'Zip-kód',
     '`sectionId` and `fieldId` cannot both be set on an entry.' => 'A „sectionId” és a „fieldId” nem lehet egyszerre beállítva egy bejegyzésben.',
-    'account_activation_body' => "Hello {{user.friendlyName|e}},
+    'account_activation_body' => 'Hello {{user.friendlyName|e}},
 
 Köszönjük, hogy regsiztráltál, a felhasználói filókod aktiváláshoz kattints az alábbi linkre:
 
-<{{link}}>",
+<{{link}}>',
     'account_activation_heading' => 'ha valaki készít egy fiókot:',
     'account_activation_subject' => 'Aktiváld a felhasználói fiókodat',
     'address' => 'cím',

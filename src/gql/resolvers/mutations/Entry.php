@@ -1,6 +1,8 @@
 <?php
+
 /**
  * @link https://craftcms.com/
+ *
  * @copyright Copyright (c) Pixel & Tonic, Inc.
  * @license https://craftcms.github.io/license/
  */
@@ -27,23 +29,19 @@ use yii\base\InvalidConfigException;
  * Class Entry
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
+ *
  * @since 3.5.0
  */
 class Entry extends ElementMutationResolver
 {
     use StructureMutationTrait;
 
-    /** @inheritdoc */
+    /** {@inheritdoc} */
     protected array $immutableAttributes = ['id', 'uid', 'draftId'];
 
     /**
      * Save an entry or draft using the passed arguments.
      *
-     * @param mixed $source
-     * @param array $arguments
-     * @param mixed $context
-     * @param ResolveInfo $resolveInfo
-     * @return EntryElement
      * @throws Throwable if reasons.
      */
     public function saveEntry(mixed $source, array $arguments, mixed $context, ResolveInfo $resolveInfo): EntryElement
@@ -94,7 +92,14 @@ class Entry extends ElementMutationResolver
         $canIdentify = !empty($arguments['id']) || !empty($arguments['uid']) || !empty($arguments['draftId']);
 
         $entry = $this->populateElementWithData($entry, $arguments, $resolveInfo);
-        $entry = $this->saveElement($entry);
+
+        if (array_key_exists('asUnpublishedDraft', $arguments) && $arguments['asUnpublishedDraft']) {
+            $entry->setScenario(Element::SCENARIO_ESSENTIALS);
+            Craft::$app->getDrafts()->saveElementAsDraft($entry);
+        } else {
+            $entry = $this->saveElement($entry);
+        }
+
         $this->performStructureOperations($entry, $arguments);
 
         /** @var EntryQuery $query */
@@ -106,6 +111,9 @@ class Entry extends ElementMutationResolver
         if ($canIdentify) {
             $query = $this->identifyEntry($query, $arguments);
         } else {
+            if (array_key_exists('asUnpublishedDraft', $arguments) && $arguments['asUnpublishedDraft']) {
+                $query->drafts(null);
+            }
             $query->id($entry->id);
         }
 
@@ -115,11 +123,6 @@ class Entry extends ElementMutationResolver
     /**
      * Delete an entry identified by the passed arguments.
      *
-     * @param mixed $source
-     * @param array $arguments
-     * @param mixed $context
-     * @param ResolveInfo $resolveInfo
-     * @return bool
      * @throws Throwable if reasons.
      */
     public function deleteEntry(mixed $source, array $arguments, mixed $context, ResolveInfo $resolveInfo): bool
@@ -144,11 +147,6 @@ class Entry extends ElementMutationResolver
     /**
      * Create a new draft for the entry ID identified by the arguments
      *
-     * @param mixed $source
-     * @param array $arguments
-     * @param mixed $context
-     * @param ResolveInfo $resolveInfo
-     * @return mixed
      * @throws Throwable if reasons.
      */
     public function createDraft(mixed $source, array $arguments, mixed $context, ResolveInfo $resolveInfo): mixed
@@ -187,11 +185,6 @@ class Entry extends ElementMutationResolver
     /**
      * Publish a draft identified by the arguments.
      *
-     * @param mixed $source
-     * @param array $arguments
-     * @param mixed $context
-     * @param ResolveInfo $resolveInfo
-     * @return int
      * @throws Throwable if reasons.
      */
     public function publishDraft(mixed $source, array $arguments, mixed $context, ResolveInfo $resolveInfo): int
@@ -228,8 +221,6 @@ class Entry extends ElementMutationResolver
     /**
      * Get the entry based on the arguments.
      *
-     * @param array $arguments
-     * @return EntryElement
      * @throws Exception if reasons
      */
     protected function getEntryElement(array $arguments): EntryElement
@@ -303,10 +294,6 @@ class Entry extends ElementMutationResolver
 
     /**
      * Identify the entry element.
-     *
-     * @param EntryQuery $entryQuery
-     * @param array $arguments
-     * @return EntryQuery
      */
     protected function identifyEntry(EntryQuery $entryQuery, array $arguments): EntryQuery
     {
