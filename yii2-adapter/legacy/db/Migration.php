@@ -19,6 +19,7 @@ use yii\db\ColumnSchemaBuilder;
  * @method Connection getDb() returns the connection the DB connection that this command is associated with
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
+ * @deprecated 6.0.0 extend {@see \CraftCms\Cms\Database\Migration} instead.
  */
 abstract class Migration extends \yii\db\Migration
 {
