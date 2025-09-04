@@ -222,10 +222,10 @@ class Sites extends Component
      */
     private function _groups(): MemoizableArray
     {
-        if (! isset($this->_groups)) {
+        if (!isset($this->_groups)) {
             $this->_groups = new MemoizableArray(
                 $this->_createGroupQuery()->get()->all(),
-                fn (object $result) => new SiteGroup((array) $result),
+                fn(object $result) => new SiteGroup((array) $result),
             );
         }
 
@@ -275,7 +275,7 @@ class Sites extends Component
      */
     public function saveGroup(SiteGroup $group, bool $runValidation = true): bool
     {
-        $isNewGroup = ! $group->id;
+        $isNewGroup = !$group->id;
 
         // Fire a 'beforeSaveSiteGroup' event
         if ($this->hasEventHandlers(self::EVENT_BEFORE_SAVE_SITE_GROUP)) {
@@ -285,7 +285,7 @@ class Sites extends Component
             ]));
         }
 
-        if ($runValidation && ! $group->validate()) {
+        if ($runValidation && !$group->validate()) {
             Craft::info('Site group not saved due to validation error.', __METHOD__);
 
             return false;
@@ -293,11 +293,11 @@ class Sites extends Component
 
         if ($isNewGroup) {
             $group->uid = Str::uuid()->toString();
-        } elseif (! $group->uid) {
+        } elseif (!$group->uid) {
             $group->uid = DB::table(Table::SITEGROUPS)->uidById($group->id);
         }
 
-        $configPath = ProjectConfig::PATH_SITE_GROUPS.'.'.$group->uid;
+        $configPath = ProjectConfig::PATH_SITE_GROUPS . '.' . $group->uid;
         $configData = $group->getConfig();
         Craft::$app->getProjectConfig()->set($configPath, $configData,
             "Save the “{$group->getName(false)}” site group");
@@ -322,7 +322,7 @@ class Sites extends Component
         $isNewGroup = $groupRecord->getIsNewRecord();
 
         // If this is a new group, set the UID we want.
-        if (! $groupRecord->id) {
+        if (!$groupRecord->id) {
             $groupRecord->uid = $uid;
         }
 
@@ -354,7 +354,7 @@ class Sites extends Component
         $uid = $event->tokenMatches[0];
         $groupRecord = $this->_getGroupRecord($uid);
 
-        if (! $groupRecord->id) {
+        if (!$groupRecord->id) {
             return;
         }
 
@@ -390,7 +390,7 @@ class Sites extends Component
     {
         $group = $this->getGroupById($groupId);
 
-        if (! $group) {
+        if (!$group) {
             return false;
         }
 
@@ -416,7 +416,7 @@ class Sites extends Component
             ->where(['id' => $group->id])
             ->one();
 
-        if (! $groupRecord) {
+        if (!$groupRecord) {
             return false;
         }
 
@@ -427,7 +427,7 @@ class Sites extends Component
             ]));
         }
 
-        Craft::$app->getProjectConfig()->remove(ProjectConfig::PATH_SITE_GROUPS.'.'.$group->uid,
+        Craft::$app->getProjectConfig()->remove(ProjectConfig::PATH_SITE_GROUPS . '.' . $group->uid,
             "Delete the “{$group->getName(false)}” site group");
 
         return true;
@@ -444,7 +444,7 @@ class Sites extends Component
      */
     public function getAllSiteIds(?bool $withDisabled = null): array
     {
-        return array_values(array_map(fn (Site $site) => $site->id, $this->_allSites($withDisabled)));
+        return array_values(array_map(fn(Site $site) => $site->id, $this->_allSites($withDisabled)));
     }
 
     /**
@@ -459,7 +459,7 @@ class Sites extends Component
     {
         $site = Collection::make($this->_allSites($withDisabled))->firstWhere('uid', $uid);
         if ($site === null) {
-            throw new SiteNotFoundException('Site with UID ”'.$uid.'“ not found!');
+            throw new SiteNotFoundException('Site with UID ”' . $uid . '“ not found!');
         }
 
         return $site;
@@ -517,10 +517,10 @@ class Sites extends Component
         }
 
         // Did something go wrong?
-        if (! $this->_currentSite) {
+        if (!$this->_currentSite) {
             // Fail silently if Craft isn't installed yet or is in the middle of updating
-            if (Craft::$app->getIsInstalled() && ! Craft::$app->getUpdates()->getIsCraftUpdatePending()) {
-                throw new InvalidArgumentException('Invalid site: '.$site);
+            if (Craft::$app->getIsInstalled() && !Craft::$app->getUpdates()->getIsCraftUpdatePending()) {
+                throw new InvalidArgumentException('Invalid site: ' . $site);
             }
 
             return;
@@ -551,7 +551,7 @@ class Sites extends Component
      */
     public function getPrimarySite(): Site
     {
-        if (! isset($this->_primarySite)) {
+        if (!isset($this->_primarySite)) {
             throw new SiteNotFoundException('No primary site exists');
         }
 
@@ -565,7 +565,7 @@ class Sites extends Component
      */
     public function getEditableSiteIds(): array
     {
-        if (! Craft::$app->getIsMultiSite()) {
+        if (!Craft::$app->getIsMultiSite()) {
             return $this->getAllSiteIds(true);
         }
 
@@ -643,7 +643,7 @@ class Sites extends Component
         $editableSiteIds = array_flip($this->getEditableSiteIds());
 
         return Collection::make($this->getSitesByGroupId($groupId, $withDisabled))
-            ->filter(fn (Site $site) => isset($editableSiteIds[$site->id]))
+            ->filter(fn(Site $site) => isset($editableSiteIds[$site->id]))
             ->values()
             ->all();
     }
@@ -717,13 +717,13 @@ class Sites extends Component
      */
     public function saveSite(Site $site, bool $runValidation = true): bool
     {
-        $isNewSite = ! $site->id;
+        $isNewSite = !$site->id;
 
-        if ($isNewSite && ! $this->getRemainingSites()) {
+        if ($isNewSite && !$this->getRemainingSites()) {
             throw new Exception("Maximum number of sites cannot exceed $this->maxSites.");
         }
 
-        if (! empty($this->_allSitesById)) {
+        if (!empty($this->_allSitesById)) {
             $primarySite = $this->getPrimarySite();
         } else {
             $primarySite = null;
@@ -738,7 +738,7 @@ class Sites extends Component
             ]));
         }
 
-        if ($runValidation && ! $site->validate()) {
+        if ($runValidation && !$site->validate()) {
             Craft::info('Site not saved due to validation error.', __METHOD__);
 
             return false;
@@ -749,13 +749,13 @@ class Sites extends Component
             $site->sortOrder = DB::table(Table::SITES)
                 ->whereNull('dateDeleted')
                 ->max('sortOrder') + 1;
-        } elseif (! $site->uid) {
+        } elseif (!$site->uid) {
             $site->uid = DB::table(Table::SITES)->uidById($site->id);
         }
 
         $projectConfigService = Craft::$app->getProjectConfig();
         $projectConfigService->set(
-            ProjectConfig::PATH_SITES.".$site->uid",
+            ProjectConfig::PATH_SITES . ".$site->uid",
             $site->getConfig(),
             "Save the “{$site->handle}” site",
         );
@@ -768,7 +768,7 @@ class Sites extends Component
         // If this just became the new primary site, update the old primary site's config
         if ($site->primary && $primarySite && $site->id != $primarySite->id) {
             $projectConfigService->set(
-                ProjectConfig::PATH_SITES.".$primarySite->uid.primary",
+                ProjectConfig::PATH_SITES . ".$primarySite->uid.primary",
                 false,
                 "Set the “{$primarySite->handle}” site not be primary",
             );
@@ -791,7 +791,7 @@ class Sites extends Component
 
         // Ensure we have the site group in place first
         $projectConfig = Craft::$app->getProjectConfig();
-        $projectConfig->processConfigChanges(ProjectConfig::PATH_SITE_GROUPS.'.'.$groupUid);
+        $projectConfig->processConfigChanges(ProjectConfig::PATH_SITE_GROUPS . '.' . $groupUid);
 
         try {
             $oldPrimarySiteId = $this->getPrimarySite()->id;
@@ -855,10 +855,10 @@ class Sites extends Component
             $oldPrimarySiteUid = DB::table(Table::SITES)->uidById($oldPrimarySiteId);
             $existingCategorySettings = $projectConfig->get(ProjectConfig::PATH_CATEGORY_GROUPS);
 
-            if (! $projectConfig->getIsApplyingExternalChanges() && is_array($existingCategorySettings)) {
+            if (!$projectConfig->getIsApplyingExternalChanges() && is_array($existingCategorySettings)) {
                 foreach ($existingCategorySettings as $categoryUid => $settings) {
                     $primarySiteSettings = $settings['siteSettings'][$oldPrimarySiteUid];
-                    $projectConfig->set(ProjectConfig::PATH_CATEGORY_GROUPS.'.'.$categoryUid.'.siteSettings.'.$site->uid,
+                    $projectConfig->set(ProjectConfig::PATH_CATEGORY_GROUPS . '.' . $categoryUid . '.siteSettings.' . $site->uid,
                         $primarySiteSettings, 'Copy site settings for category groups');
                 }
             }
@@ -920,9 +920,9 @@ class Sites extends Component
         $uidsByIds = DB::table(Table::SITES)->uidsByIds($siteIds);
 
         foreach ($siteIds as $sortOrder => $siteId) {
-            if (! empty($uidsByIds[$siteId])) {
+            if (!empty($uidsByIds[$siteId])) {
                 $siteUid = $uidsByIds[$siteId];
-                $projectConfig->set(ProjectConfig::PATH_SITES.'.'.$siteUid.'.sortOrder', $sortOrder + 1,
+                $projectConfig->set(ProjectConfig::PATH_SITES . '.' . $siteUid . '.sortOrder', $sortOrder + 1,
                     'Reorder sites');
             }
         }
@@ -949,7 +949,7 @@ class Sites extends Component
     {
         $site = $this->getSiteById($siteId);
 
-        if (! $site) {
+        if (!$site) {
             return false;
         }
 
@@ -980,7 +980,7 @@ class Sites extends Component
                 'transferContentTo' => $transferContentTo,
             ]);
             $this->trigger(self::EVENT_BEFORE_DELETE_SITE, $event);
-            if (! $event->isValid) {
+            if (!$event->isValid) {
                 return false;
             }
         }
@@ -1005,7 +1005,7 @@ class Sites extends Component
         }
 
         // Did we find any?
-        if (! empty($soloSectionIds)) {
+        if (!empty($soloSectionIds)) {
             // Should we enable those for a different site?
             if ($transferContentTo !== null) {
                 $transferContentToSite = $this->getSiteById($transferContentTo);
@@ -1024,7 +1024,7 @@ class Sites extends Component
                     if (count($sectionConfig['siteSettings']) === 1 && isset($sectionConfig['siteSettings'][$site->uid])) {
                         $sectionConfig['siteSettings'][$transferContentToSite->uid] = Arr::pull($sectionConfig['siteSettings'],
                             $site->uid);
-                        $projectConfig->set(ProjectConfig::PATH_SECTIONS.'.'.$sectionUid, $sectionConfig,
+                        $projectConfig->set(ProjectConfig::PATH_SECTIONS . '.' . $sectionUid, $sectionConfig,
                             'Prune site settings');
                     }
                 }
@@ -1088,7 +1088,7 @@ class Sites extends Component
             }
         }
 
-        $projectConfig->remove(ProjectConfig::PATH_SITES.'.'.$site->uid, "Delete the “{$site->handle}” site");
+        $projectConfig->remove(ProjectConfig::PATH_SITES . '.' . $site->uid, "Delete the “{$site->handle}” site");
 
         return true;
     }
@@ -1106,7 +1106,7 @@ class Sites extends Component
         $siteUid = $event->tokenMatches[0];
         $siteRecord = $this->_getSiteRecord($siteUid);
 
-        if (! $siteRecord->id) {
+        if (!$siteRecord->id) {
             return;
         }
 
@@ -1194,7 +1194,7 @@ class Sites extends Component
         $this->_allSitesById = [];
         $this->_enabledSitesById = [];
 
-        if (! Craft::$app->getIsInstalled()) {
+        if (!Craft::$app->getIsInstalled()) {
             return;
         }
 
@@ -1268,7 +1268,7 @@ class Sites extends Component
 
         /** @noinspection PhpIncompatibleReturnTypeInspection */
         /** @var SiteGroupRecord */
-        return $query->one() ?? new SiteGroupRecord;
+        return $query->one() ?? new SiteGroupRecord();
     }
 
     /**
@@ -1283,7 +1283,7 @@ class Sites extends Component
             $request = Craft::$app->getRequest();
             $withDisabled = (
                 $request->getIsConsoleRequest() ||
-                ($request->getIsCpRequest() && ! Craft::$app->getUser()->getIsGuest())
+                ($request->getIsCpRequest() && !Craft::$app->getUser()->getIsGuest())
             );
         }
 
@@ -1307,7 +1307,7 @@ class Sites extends Component
 
         /** @noinspection PhpIncompatibleReturnTypeInspection */
         /** @var SiteRecord */
-        return $query->one() ?? new SiteRecord;
+        return $query->one() ?? new SiteRecord();
     }
 
     /**
@@ -1343,12 +1343,12 @@ class Sites extends Component
 
             foreach (Craft::$app->getElements()->getAllElementTypes() as $elementType) {
                 /** @var class-string<ElementInterface> $elementType */
-                if (! $elementType::isLocalized()) {
+                if (!$elementType::isLocalized()) {
                     $nonLocalizedElementTypes[] = $elementType;
                 }
             }
 
-            if (! empty($nonLocalizedElementTypes)) {
+            if (!empty($nonLocalizedElementTypes)) {
                 // To be sure we don't hit any unique constraint database errors, first make sure there are no rows for
                 // these elements that don't currently use the old primary site ID
                 foreach ([Table::ELEMENTS_SITES, Table::SEARCHINDEX] as $table) {

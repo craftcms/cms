@@ -79,7 +79,7 @@ class CraftConnector extends Yii2
     {
         $config = parent::mockMailer($config);
         $config['components']['mailer'] = array_merge($config['components']['mailer'], [
-            'class' => TestMailer::class, 'callback' => function (MessageInterface $message) {
+            'class' => TestMailer::class, 'callback' => function(MessageInterface $message) {
                 $this->emails[] = $message;
             },
         ]);
@@ -96,7 +96,7 @@ class CraftConnector extends Yii2
         $app->getRequest()->setIsConsoleRequest(false);
 
         // Reset the view object
-        $app->set('view', new View);
+        $app->set('view', new View());
 
         /** @var Module $module */
         foreach (Craft::$app->getModules(true) as $module) {
@@ -157,7 +157,7 @@ class CraftConnector extends Yii2
         /**
          * Fake Laravel request
          */
-        app()->bind('request', fn () => Request::create(
+        app()->bind('request', fn() => Request::create(
             uri: $request->getUri(),
             method: $request->getMethod(),
             parameters: $request->getParameters(),
@@ -185,7 +185,7 @@ class CraftConnector extends Yii2
 
         $pathString = parse_url($uri, PHP_URL_PATH);
         $queryString = parse_url($uri, PHP_URL_QUERY);
-        $_SERVER['REQUEST_URI'] = $queryString === null ? $pathString : $pathString.'?'.$queryString;
+        $_SERVER['REQUEST_URI'] = $queryString === null ? $pathString : $pathString . '?' . $queryString;
         $_SERVER['REQUEST_METHOD'] = strtoupper($request->getMethod());
         $_SERVER['QUERY_STRING'] = (string) $queryString;
 
@@ -199,7 +199,7 @@ class CraftConnector extends Yii2
         $this->beforeRequest();
 
         $app = $this->getApplication();
-        if (! $app instanceof Application) {
+        if (!$app instanceof Application) {
             throw new ConfigurationException('Application is not a web application');
         }
 
@@ -235,7 +235,7 @@ class CraftConnector extends Yii2
                 // to expect error response codes in tests.
                 $app->errorHandler->discardExistingOutput = false;
                 $app->errorHandler->handleException($e);
-            } elseif (! $e instanceof ExitException) {
+            } elseif (!$e instanceof ExitException) {
                 // for exceptions not related to Http, we pass them to Codeception
                 throw $e;
             }
@@ -245,7 +245,7 @@ class CraftConnector extends Yii2
         $this->encodeCookies($response, $yiiRequest, $app->security);
 
         if ($response->isRedirection) {
-            Debug::debug('[Redirect with headers]'.print_r($response->getHeaders()->toArray(), true));
+            Debug::debug('[Redirect with headers]' . print_r($response->getHeaders()->toArray(), true));
         }
 
         $content = ob_get_clean();
@@ -257,7 +257,7 @@ class CraftConnector extends Yii2
         // /Addition
 
         /** @phpstan-ignore-next-line */
-        if (empty($content) && ! empty($response->content) && ! isset($response->stream)) {
+        if (empty($content) && !empty($response->content) && !isset($response->stream)) {
             throw new Exception('No content was sent from Yii application');
         }
 

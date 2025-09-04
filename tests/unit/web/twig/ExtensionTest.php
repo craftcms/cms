@@ -132,7 +132,7 @@ class ExtensionTest extends TestCase
     {
         Craft::$app->getProjectConfig()->set('system.name', 'Im a test system');
         $this->testRenderResult(
-            'Im a test system | defaultSite Craft test site '.TestSetup::SITE_URL,
+            'Im a test system | defaultSite Craft test site ' . TestSetup::SITE_URL,
             '{{ systemName }} | {{ currentSite.handle }} {{ currentSite }} {{ siteUrl }}'
         );
     }
@@ -156,7 +156,7 @@ class ExtensionTest extends TestCase
             'yes',
             '{{ foo is instance of(class) ? "yes" : "no" }}',
             [
-                'foo' => new PlainText,
+                'foo' => new PlainText(),
                 'class' => PlainText::class,
             ]
         );
@@ -164,7 +164,7 @@ class ExtensionTest extends TestCase
             'no',
             '{{ foo is instance of(class) ? "yes" : "no" }}',
             [
-                'foo' => new PlainText,
+                'foo' => new PlainText(),
                 'class' => 'foo\\bar\\Baz',
             ]
         );
@@ -176,14 +176,14 @@ class ExtensionTest extends TestCase
             'yes',
             '{{ foo is missing ? "yes" : "no" }}',
             [
-                'foo' => new MissingField,
+                'foo' => new MissingField(),
             ]
         );
         $this->testRenderResult(
             'no',
             '{{ foo is missing ? "yes" : "no" }}',
             [
-                'foo' => new PlainText,
+                'foo' => new PlainText(),
             ]
         );
     }
@@ -571,7 +571,7 @@ class ExtensionTest extends TestCase
 
     public function test_atom_filter(): void
     {
-        $d = new DateTime;
+        $d = new DateTime();
         $this->testRenderResult(
             $d->format(DateTime::ATOM),
             '{{ d|atom }}',
@@ -581,7 +581,7 @@ class ExtensionTest extends TestCase
 
     public function test_rss_filter(): void
     {
-        $d = new DateTime;
+        $d = new DateTime();
         $this->testRenderResult(
             $d->format(DateTime::RSS),
             '{{ d|rss }}',
@@ -591,7 +591,7 @@ class ExtensionTest extends TestCase
 
     public function test_httpdate_filter(): void
     {
-        $d = new DateTime;
+        $d = new DateTime();
         $this->testRenderResult(
             $d->format(DateTime::RFC7231),
             '{{ d|httpdate }}',
@@ -926,7 +926,7 @@ class ExtensionTest extends TestCase
 
     public function test_svg_function(): void
     {
-        $path = dirname(__DIR__, 3).'/_data/assets/files/craft-logo.svg';
+        $path = dirname(__DIR__, 3) . '/_data/assets/files/craft-logo.svg';
         $contents = file_get_contents($path);
 
         $svg = $this->view->renderString('{{ svg(path) }}', compact('path'));
@@ -974,14 +974,14 @@ class ExtensionTest extends TestCase
         Session::start();
 
         $this->testRenderResult(
-            '<input type="hidden" name="_token" value="'.Craft::$app->getRequest()->getCsrfToken().'">',
+            '<input type="hidden" name="_token" value="' . Craft::$app->getRequest()->getCsrfToken() . '">',
             '{{ csrfInput() }}'
         );
 
         // Custom name - just to be sure.
         Craft::$app->getRequest()->csrfParam = 'HACKER_POOF';
         $this->testRenderResult(
-            '<input type="hidden" name="HACKER_POOF" value="'.Craft::$app->getRequest()->getCsrfToken().'">',
+            '<input type="hidden" name="HACKER_POOF" value="' . Craft::$app->getRequest()->getCsrfToken() . '">',
             '{{ csrfInput() }}'
         );
     }
@@ -995,12 +995,12 @@ class ExtensionTest extends TestCase
     public function test_redirect_input_function(): void
     {
         $this->testRenderResult(
-            '<input type="hidden" name="redirect" value="'.Craft::$app->getSecurity()->hashData('A URL').'">',
+            '<input type="hidden" name="redirect" value="' . Craft::$app->getSecurity()->hashData('A URL') . '">',
             '{{ redirectInput("A URL") }}'
         );
 
         $this->testRenderResult(
-            '<input type="hidden" name="redirect" value="'.Craft::$app->getSecurity()->hashData('A URL WITH CHARS !@#$%^*()😋').'">',
+            '<input type="hidden" name="redirect" value="' . Craft::$app->getSecurity()->hashData('A URL WITH CHARS !@#$%^*()😋') . '">',
             '{{ redirectInput("A URL WITH CHARS !@#$%^*()😋") }}'
         );
     }
@@ -1092,7 +1092,7 @@ class ExtensionTest extends TestCase
      * @throws LoaderError
      * @throws SyntaxError
      */
-    protected function test_render_result(
+    protected function testRenderResult(
         string $expectedString,
         string $renderString,
         array $variables = [],

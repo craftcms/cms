@@ -57,11 +57,11 @@ class Entry extends ElementMutationResolver
             }
 
             if ($showStatusField) {
-                if (! empty($arguments['siteId'])) {
+                if (!empty($arguments['siteId'])) {
                     $entry->setEnabledForSite([$arguments['siteId'] => $arguments['enabled']]);
                     // Set the global status to true if it's currently disabled,
                     // and we're enabling entry for a site
-                    if ($arguments['enabled'] && ! $entry->enabled) {
+                    if ($arguments['enabled'] && !$entry->enabled) {
                         $entry->enabled = $arguments['enabled'];
                     }
                 } else {
@@ -79,7 +79,7 @@ class Entry extends ElementMutationResolver
                 $showSlugField = true;
             }
 
-            if (! $showSlugField) {
+            if (!$showSlugField) {
                 unset($arguments['slug']);
             }
         }
@@ -89,7 +89,7 @@ class Entry extends ElementMutationResolver
             $entry->setScenario(Element::SCENARIO_ESSENTIALS);
         }
 
-        $canIdentify = ! empty($arguments['id']) || ! empty($arguments['uid']) || ! empty($arguments['draftId']);
+        $canIdentify = !empty($arguments['id']) || !empty($arguments['uid']) || !empty($arguments['draftId']);
 
         $entry = $this->populateElementWithData($entry, $arguments, $resolveInfo);
 
@@ -134,7 +134,7 @@ class Entry extends ElementMutationResolver
         /** @var EntryElement|null $entry */
         $entry = $elementService->getElementById($entryId, EntryElement::class, $siteId);
 
-        if (! $entry) {
+        if (!$entry) {
             return false;
         }
 
@@ -156,7 +156,7 @@ class Entry extends ElementMutationResolver
         /** @var EntryElement|null $entry */
         $entry = Craft::$app->getElements()->getElementById($entryId, EntryElement::class);
 
-        if (! $entry) {
+        if (!$entry) {
             throw new Error('Unable to perform the action.');
         }
 
@@ -197,7 +197,7 @@ class Entry extends ElementMutationResolver
             ->draftId($arguments['id'])
             ->one();
 
-        if (! $draft) {
+        if (!$draft) {
             throw new Error('Unable to perform the action.');
         }
 
@@ -235,9 +235,9 @@ class Entry extends ElementMutationResolver
         // Figure out whether the mutation is about an already saved entry
         $canIdentify = (
             $section?->type === Section::TYPE_SINGLE ||
-            ! empty($arguments['id']) ||
-            ! empty($arguments['uid']) ||
-            ! empty($arguments['draftId'])
+            !empty($arguments['id']) ||
+            !empty($arguments['uid']) ||
+            !empty($arguments['draftId'])
         );
 
         // Check if relevant schema is present
@@ -261,7 +261,7 @@ class Entry extends ElementMutationResolver
 
             $entry = $entryQuery->one();
 
-            if (! $entry) {
+            if (!$entry) {
                 throw new Error('No such entry exists');
             }
         } else {
@@ -308,7 +308,7 @@ class Entry extends ElementMutationResolver
             // nested entries won’t be queried if a field param isn’t set
             $entryQuery->fieldId($field->id);
         }
-        if (! empty($arguments['draftId'])) {
+        if (!empty($arguments['draftId'])) {
             $entryQuery->draftId($arguments['draftId']);
 
             if (array_key_exists('provisional', $arguments)) {
@@ -316,9 +316,9 @@ class Entry extends ElementMutationResolver
             }
         } elseif ($section?->type === Section::TYPE_SINGLE) {
             $entryQuery->typeId($entryType->id);
-        } elseif (! empty($arguments['uid'])) {
+        } elseif (!empty($arguments['uid'])) {
             $entryQuery->uid($arguments['uid']);
-        } elseif (! empty($arguments['id'])) {
+        } elseif (!empty($arguments['id'])) {
             $entryQuery->id($arguments['id']);
         } else {
             // Unable to identify, make sure nothing is returned.

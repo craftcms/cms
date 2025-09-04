@@ -90,11 +90,11 @@ class ElementIndexesController extends BaseElementsController
      */
     public function beforeAction($action): bool
     {
-        if (! parent::beforeAction($action)) {
+        if (!parent::beforeAction($action)) {
             return false;
         }
 
-        if (! in_array($action->id, ['export', 'perform-action'], true)) {
+        if (!in_array($action->id, ['export', 'perform-action'], true)) {
             $this->requireAcceptsJson();
         }
 
@@ -104,7 +104,7 @@ class ElementIndexesController extends BaseElementsController
         $this->source = $this->source();
         $this->condition = $this->condition();
 
-        if (! in_array($action->id, ['filter-hud', 'save-elements'])) {
+        if (!in_array($action->id, ['filter-hud', 'save-elements'])) {
             $this->viewState = $this->viewState();
             $this->elementQuery = $this->elementQuery();
 
@@ -160,7 +160,7 @@ class ElementIndexesController extends BaseElementsController
         $elementSources = Craft::$app->getElementSources();
 
         $sortOptions = Collection::make($elementSources->getSourceSortOptions($this->elementType, $this->sourceKey))
-            ->map(fn (array $option) => [
+            ->map(fn(array $option) => [
                 'label' => $option['label'],
                 'attr' => $option['attribute'] ?? $option['orderBy'],
                 'defaultDir' => $option['defaultDir'] ?? 'asc',
@@ -169,7 +169,7 @@ class ElementIndexesController extends BaseElementsController
             ->all();
 
         $tableColumns = Collection::make($elementSources->getSourceTableAttributes($this->elementType, $this->sourceKey))
-            ->map(fn (array $attribute, string $key) => [
+            ->map(fn(array $attribute, string $key) => [
                 ...$attribute,
                 'attr' => $key,
             ])
@@ -177,8 +177,8 @@ class ElementIndexesController extends BaseElementsController
             ->all();
 
         $defaultTableColumns = Collection::make($elementSources->getTableAttributes($this->elementType, $this->sourceKey))
-            ->map(fn (array $attribute) => $attribute[0])
-            ->filter(fn (string $attribute) => $attribute !== 'title')
+            ->map(fn(array $attribute) => $attribute[0])
+            ->filter(fn(string $attribute) => $attribute !== 'title')
             ->values()
             ->all();
 
@@ -246,7 +246,7 @@ class ElementIndexesController extends BaseElementsController
         $elementIds = $this->request->getRequiredBodyParam('elementIds');
 
         // Find that action from the list of available actions for the source
-        if (! empty($this->actions)) {
+        if (!empty($this->actions)) {
             /** @var ElementAction $availableAction */
             foreach ($this->actions as $availableAction) {
                 if ($actionClass === get_class($availableAction)) {
@@ -257,7 +257,7 @@ class ElementIndexesController extends BaseElementsController
         }
 
         /** @noinspection UnSafeIsSetOverArrayInspection - FP */
-        if (! isset($action)) {
+        if (!isset($action)) {
             throw new BadRequestHttpException('Element action is not supported by the element type');
         }
 
@@ -271,7 +271,7 @@ class ElementIndexesController extends BaseElementsController
         }
 
         // Make sure the action validates
-        if (! $action->validate()) {
+        if (!$action->validate()) {
             throw new BadRequestHttpException('Element action params did not validate');
         }
 
@@ -313,7 +313,7 @@ class ElementIndexesController extends BaseElementsController
             return $this->response;
         }
 
-        if (! $success) {
+        if (!$success) {
             return $this->asFailure($message);
         }
 
@@ -368,7 +368,7 @@ class ElementIndexesController extends BaseElementsController
         $filename = $exporter->getFilename();
         if ($exporter::isFormattable()) {
             $this->response->format = $this->request->getBodyParam('format', 'csv');
-            $filename .= '.'.$this->response->format;
+            $filename .= '.' . $this->response->format;
         }
         $this->response->setDownloadHeaders($filename);
 
@@ -379,8 +379,8 @@ class ElementIndexesController extends BaseElementsController
             if (is_callable($export)) {
                 $export = $export();
             }
-            if (! is_iterable($export)) {
-                throw new InvalidValueException(get_class($exporter).'::export() must return an array or generator function since isFormattable() returns true.');
+            if (!is_iterable($export)) {
+                throw new InvalidValueException(get_class($exporter) . '::export() must return an array or generator function since isFormattable() returns true.');
             }
 
             $this->response->data = $export;
@@ -415,17 +415,17 @@ class ElementIndexesController extends BaseElementsController
      */
     private function _exporter(): ElementExporterInterface
     {
-        if (! $this->sourceKey) {
+        if (!$this->sourceKey) {
             throw new BadRequestHttpException('Request missing required body param');
         }
 
-        if (! $this->isAdministrative()) {
+        if (!$this->isAdministrative()) {
             throw new BadRequestHttpException('Request missing index context');
         }
 
         // Find that exporter from the list of available exporters for the source
         $exporterClass = $this->request->getBodyParam('type', Raw::class);
-        if (! empty($this->exporters)) {
+        if (!empty($this->exporters)) {
             foreach ($this->exporters as $exporter) {
                 if ($exporterClass === get_class($exporter)) {
                     return $exporter;
@@ -463,8 +463,8 @@ class ElementIndexesController extends BaseElementsController
             $condition = $this->elementType()::createCondition();
         }
 
-        if (! empty($fieldLayouts)) {
-            $condition->setFieldLayouts(array_map(fn (array $config) => FieldLayout::createFromConfig($config), $fieldLayouts));
+        if (!empty($fieldLayouts)) {
+            $condition->setFieldLayouts(array_map(fn(array $config) => FieldLayout::createFromConfig($config), $fieldLayouts));
         }
 
         $condition->mainTag = 'div';
@@ -532,7 +532,7 @@ class ElementIndexesController extends BaseElementsController
 
         // get all the elements
         $elementIds = array_map(
-            fn (string $key) => (int) Str::chopStart($key, 'element-'),
+            fn(string $key) => (int) Str::chopStart($key, 'element-'),
             array_keys($data),
         );
         $elements = $this->elementType()::find()
@@ -549,7 +549,7 @@ class ElementIndexesController extends BaseElementsController
 
         // make sure they're editable
         foreach ($elements as $element) {
-            if (! $elementsService->canSave($element, $user)) {
+            if (!$elementsService->canSave($element, $user)) {
                 throw new ForbiddenHttpException('User not authorized to save this element.');
             }
         }
@@ -558,7 +558,7 @@ class ElementIndexesController extends BaseElementsController
         $errors = [];
         foreach ($elements as $element) {
             $attributes = Arr::except($data["element-$element->id"], 'fields');
-            if (! empty($attributes)) {
+            if (!empty($attributes)) {
                 $scenario = $element->getScenario();
                 $element->setScenario(Element::SCENARIO_LIVE);
                 $element->setAttributes($attributes);
@@ -575,15 +575,15 @@ class ElementIndexesController extends BaseElementsController
 
             $names = array_merge(
                 array_keys($attributes),
-                array_map(fn (string $handle) => "field:$handle", array_keys($data["element-$element->id"]['fields'] ?? [])),
+                array_map(fn(string $handle) => "field:$handle", array_keys($data["element-$element->id"]['fields'] ?? [])),
             );
 
-            if (! $element->validate($names)) {
+            if (!$element->validate($names)) {
                 $errors[$element->getCanonicalId()] = $element->getErrors();
             }
         }
 
-        if (! empty($errors)) {
+        if (!empty($errors)) {
             return $this->asJson([
                 'errors' => $errors,
             ]);
@@ -594,8 +594,8 @@ class ElementIndexesController extends BaseElementsController
 
         try {
             foreach ($elements as $element) {
-                if (! $elementsService->saveElement($element)) {
-                    Craft::error("Couldn’t save element $element->id: ".implode(', ', $element->getFirstErrors()));
+                if (!$elementsService->saveElement($element)) {
+                    Craft::error("Couldn’t save element $element->id: " . implode(', ', $element->getFirstErrors()));
                     throw new ServerErrorHttpException("Couldn’t save element $element->id");
                 }
             }
@@ -626,7 +626,7 @@ class ElementIndexesController extends BaseElementsController
      */
     protected function source(): ?array
     {
-        if (! isset($this->sourceKey)) {
+        if (!isset($this->sourceKey)) {
             return null;
         }
 
@@ -660,7 +660,7 @@ class ElementIndexesController extends BaseElementsController
         /** @phpstan-var array{class:class-string<ElementConditionInterface>}|null $conditionConfig */
         $conditionConfig = $this->request->getBodyParam('condition');
 
-        if (! $conditionConfig) {
+        if (!$conditionConfig) {
             return null;
         }
 
@@ -708,7 +708,7 @@ class ElementIndexesController extends BaseElementsController
         $query = $this->elementType::find();
         $conditionsService = Craft::$app->getConditions();
 
-        if (! $this->source) {
+        if (!$this->source) {
             $query->id(false);
 
             return $query;
@@ -721,8 +721,8 @@ class ElementIndexesController extends BaseElementsController
             $sourceCondition->modifyQuery($query);
         }
 
-        $applyCriteria = function (array $criteria) use ($query): bool {
-            if (! $criteria) {
+        $applyCriteria = function(array $criteria) use ($query): bool {
+            if (!$criteria) {
                 return false;
             }
 
@@ -763,7 +763,7 @@ class ElementIndexesController extends BaseElementsController
 
         // Override with the custom filters
         $filterConditionConfig = $this->request->getBodyParam('filterConfig');
-        if (! $filterConditionConfig) {
+        if (!$filterConditionConfig) {
             $filterConditionStr = $this->request->getBodyParam('filters');
             if ($filterConditionStr) {
                 parse_str($filterConditionStr, $filterConditionConfig);
@@ -795,7 +795,7 @@ class ElementIndexesController extends BaseElementsController
                 ->orderBy(['lft' => SORT_ASC])
                 ->all();
 
-            if (! empty($collapsedElements)) {
+            if (!empty($collapsedElements)) {
                 $descendantIds = [];
 
                 foreach ($collapsedElements as $element) {
@@ -811,7 +811,7 @@ class ElementIndexesController extends BaseElementsController
                     $descendantIds = array_merge($descendantIds, $elementDescendantIds);
                 }
 
-                if (! empty($descendantIds)) {
+                if (!empty($descendantIds)) {
                     /** @phpstan-ignore-next-line */
                     $query->andWhere(new ExcludeDescendantIdsExpression($descendantIds));
                     $hasFilters = true;
@@ -849,7 +849,7 @@ class ElementIndexesController extends BaseElementsController
 
         $disabledElementIds = $this->request->getParam('disabledElementIds', []);
         $selectable = (
-            (! empty($this->actions) || $this->request->getParam('selectable')) &&
+            (!empty($this->actions) || $this->request->getParam('selectable')) &&
             empty($this->viewState['inlineEditing'])
         );
         $sortable = $this->isAdministrative() && $this->request->getParam('sortable');
@@ -907,7 +907,7 @@ class ElementIndexesController extends BaseElementsController
             if ($this->elementQuery->trashed) {
                 if ($action instanceof DeleteActionInterface && $action->canHardDelete()) {
                     $action->setHardDelete();
-                } elseif (! $action instanceof Restore) {
+                } elseif (!$action instanceof Restore) {
                     unset($actions[$i]);
                 }
             } elseif ($action instanceof Restore) {
@@ -917,7 +917,7 @@ class ElementIndexesController extends BaseElementsController
 
         if ($this->elementQuery->trashed) {
             // Make sure Restore goes first
-            usort($actions, function ($a, $b): int {
+            usort($actions, function($a, $b): int {
                 if ($a instanceof Restore) {
                     return -1;
                 }
@@ -1016,12 +1016,12 @@ class ElementIndexesController extends BaseElementsController
     {
         $this->requireAcceptsJson();
 
-        if (! $this->sourceKey) {
+        if (!$this->sourceKey) {
             throw new BadRequestHttpException('Request missing required body param');
         }
 
         $id = $this->request->getRequiredBodyParam('id');
-        if (! $id || ! is_numeric($id)) {
+        if (!$id || !is_numeric($id)) {
             throw new BadRequestHttpException("Invalid element ID: $id");
         }
 
@@ -1034,7 +1034,7 @@ class ElementIndexesController extends BaseElementsController
             ->status(null)
             ->one();
 
-        if (! $element) {
+        if (!$element) {
             /** @var ElementInterface|null $element */
             $element = (clone $this->elementQuery)
                 ->id($id)
@@ -1042,7 +1042,7 @@ class ElementIndexesController extends BaseElementsController
                 ->one();
         }
 
-        if (! $element) {
+        if (!$element) {
             throw new BadRequestHttpException("Invalid element ID: $id");
         }
 

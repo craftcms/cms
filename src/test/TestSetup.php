@@ -172,16 +172,16 @@ class TestSetup
 
         $basePath = CraftTest::normalizePathSeparators(dirname(__DIR__, 2));
 
-        $srcPath = $basePath.'/src';
+        $srcPath = $basePath . '/src';
         $vendorPath = CRAFT_VENDOR_PATH;
 
         $appType = self::appType();
 
-        Craft::setAlias('@craftunitsupport', $srcPath.'/test');
-        Craft::setAlias('@craftunittemplates', $basePath.'/tests/_craft/templates');
-        Craft::setAlias('@craftunitfixtures', $basePath.'/tests/fixtures');
-        Craft::setAlias('@testsfolder', $basePath.'/tests');
-        Craft::setAlias('@crafttestsfolder', $basePath.'/tests/_craft');
+        Craft::setAlias('@craftunitsupport', $srcPath . '/test');
+        Craft::setAlias('@craftunittemplates', $basePath . '/tests/_craft/templates');
+        Craft::setAlias('@craftunitfixtures', $basePath . '/tests/fixtures');
+        Craft::setAlias('@testsfolder', $basePath . '/tests');
+        Craft::setAlias('@crafttestsfolder', $basePath . '/tests/_craft');
 
         // Normalize some Craft defined path aliases.
         Craft::setAlias('@lib', CraftTest::normalizePathSeparators(Craft::getAlias('@lib')));
@@ -199,8 +199,8 @@ class TestSetup
                     'config' => $configService,
                 ],
             ],
-            require $srcPath.'/config/app.php',
-            require $srcPath.'/config/app.'.$appType.'.php',
+            require $srcPath . '/config/app.php',
+            require $srcPath . '/config/app.' . $appType . '.php',
             ConfigFacade::get('craft.app', []),
             ConfigFacade::get("craft.app.$appType", []),
         );
@@ -223,10 +223,10 @@ class TestSetup
 
     public static function createConfigService(): Config
     {
-        $configService = new Config;
+        $configService = new Config();
         $configService->env = 'test';
         $configService->configDir = CRAFT_CONFIG_PATH;
-        $configService->appDefaultsDir = dirname(__DIR__).DIRECTORY_SEPARATOR.'config'.DIRECTORY_SEPARATOR.'defaults';
+        $configService->appDefaultsDir = dirname(__DIR__) . DIRECTORY_SEPARATOR . 'config' . DIRECTORY_SEPARATOR . 'defaults';
 
         return $configService;
     }
@@ -249,7 +249,7 @@ class TestSetup
      */
     public static function appClass(string $preDefinedAppType = ''): string
     {
-        if (! $preDefinedAppType) {
+        if (!$preDefinedAppType) {
             $preDefinedAppType = self::appType();
         }
 
@@ -258,7 +258,7 @@ class TestSetup
 
     public static function configureCraft(): bool
     {
-        ! defined('YII_ENV') && define('YII_ENV', 'test');
+        !defined('YII_ENV') && define('YII_ENV', 'test');
 
         $vendorPath = realpath(CRAFT_VENDOR_PATH);
 
@@ -272,7 +272,7 @@ class TestSetup
 
         // Log errors to craft/storage/logs/phperrors.log
         ini_set('log_errors', '1');
-        ini_set('error_log', $storagePath.'/logs/phperrors.log');
+        ini_set('error_log', $storagePath . '/logs/phperrors.log');
 
         error_reporting(E_ALL & ~E_DEPRECATED & ~E_USER_DEPRECATED);
         ini_set('display_errors', '1');
@@ -283,17 +283,17 @@ class TestSetup
         defined('CURLOPT_CONNECTTIMEOUT_MS') || define('CURLOPT_CONNECTTIMEOUT_MS', 156);
 
         $repoRoot = dirname(__DIR__, 2);
-        $libPath = $repoRoot.'/lib';
-        $srcPath = $repoRoot.'/src';
+        $libPath = $repoRoot . '/lib';
+        $srcPath = $repoRoot . '/src';
 
-        require_once $libPath.'/yii2/Yii.php';
-        require_once $srcPath.'/Craft.php';
+        require_once $libPath . '/yii2/Yii.php';
+        require_once $srcPath . '/Craft.php';
 
         // Set aliases
         Craft::setAlias('@vendor', $vendorPath);
         Craft::setAlias('@craftcms', $repoRoot);
         Craft::setAlias('@lib', $libPath);
-        Craft::setAlias('@appicons', $srcPath.DIRECTORY_SEPARATOR.'icons');
+        Craft::setAlias('@appicons', $srcPath . DIRECTORY_SEPARATOR . 'icons');
         Craft::setAlias('@config', $configPath);
         Craft::setAlias('@contentMigrations', $contentMigrationsPath);
         Craft::setAlias('@root', $rootPath);
@@ -329,16 +329,16 @@ class TestSetup
      */
     public static function setupProjectConfig(?string $projectConfigFolder = null): void
     {
-        if (! $projectConfigFolder) {
+        if (!$projectConfigFolder) {
             $config = \craft\test\Craft::$instance->_getConfig('projectConfig');
-            $projectConfigFolder = dirname(CRAFT_TESTS_PATH).DIRECTORY_SEPARATOR.$config['folder'];
+            $projectConfigFolder = dirname(CRAFT_TESTS_PATH) . DIRECTORY_SEPARATOR . $config['folder'];
         }
 
-        if (! is_dir($projectConfigFolder)) {
+        if (!is_dir($projectConfigFolder)) {
             throw new InvalidArgumentException('Project config folder does not exist.');
         }
 
-        $dest = CRAFT_CONFIG_PATH.DIRECTORY_SEPARATOR.'project';
+        $dest = CRAFT_CONFIG_PATH . DIRECTORY_SEPARATOR . 'project';
 
         // Remove any existing folders.
         self::removeProjectConfigFolders($dest);
@@ -365,7 +365,7 @@ class TestSetup
      */
     public static function getSeedProjectConfigData(): array
     {
-        if (! empty(self::$_parsedProjectConfig)) {
+        if (!empty(self::$_parsedProjectConfig)) {
             return self::$_parsedProjectConfig;
         }
 
@@ -381,7 +381,7 @@ class TestSetup
     {
         $config = \craft\test\Craft::$instance->_getConfig('projectConfig');
 
-        if (! isset($config['folder'])) {
+        if (!isset($config['folder'])) {
             return false;
         }
 
