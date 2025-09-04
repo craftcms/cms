@@ -164,3 +164,20 @@ Craft's Mutex classes have been deprecated. [Laravel's atomic locking](https://l
   - `craft\services\Plugins::EVENT_AFTER_LOAD_PLUGINS` => `CraftCms\Cms\Plugin\Events\PluginsLoaded`;
   - `craft\services\Plugins::EVENT_AFTER_SAVE_PLUGIN_SETTINGS` => `CraftCms\Cms\Plugin\Events\PluginSettingsSaved`;
   - `craft\services\Plugins::EVENT_AFTER_UNINSTALL_PLUGIN` => `CraftCms\Cms\Plugin\Events\PluginUninstalled`;
+
+### Migrations
+
+Craft and Yii's migrations have been removed in favor of [Laravel migrations](https://laravel.com/docs/12.x/migrations).
+
+The `php craft fields:merge` and `php craft entry-types:merge` commands will now generate Laravel migrations.
+
+- Deprecated `craft\db\Migration`. `CraftCms\Cms\Database\Migration` should be used instead.
+- Deprecated `craft\db\MigrationManager`
+- Removed `craft\helpers\MigrationHelper` as it was deprecated since 4.0.0.
+- Removed `craft\console\controllers\InstallController` in favor of:
+  - `CraftCms\Cms\Console\Commands\InstallCommand`
+  - `CraftCms\Cms\Console\Commands\InstallCheckCommand`
+- Removed `craft\console\controllers\MigrateController` in favor of:
+  - `CraftCms\Cms\Database\Commands\MigrateCommand` 
+- Removed `craft\console\controllers\UpController` in favor of:
+  - `CraftCms\Cms\Console\Commands\UpCommand` 
