@@ -1092,7 +1092,7 @@ class ExtensionTest extends TestCase
      * @throws LoaderError
      * @throws SyntaxError
      */
-    protected function test_render_result(
+    protected function testRenderResult(
         string $expectedString,
         string $renderString,
         array $variables = [],
