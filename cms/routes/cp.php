@@ -2,6 +2,7 @@
 
 use CraftCms\Cms\Http\Controllers\Dashboard\DashboardController;
 use CraftCms\Cms\Http\Controllers\PluginsController;
+use CraftCms\Cms\Http\Controllers\Updates\UpdaterController;
 use CraftCms\Cms\Http\Controllers\Utilities\UtilitiesController;
 use CraftCms\Cms\Http\Middleware\RequireAdmin;
 
@@ -19,3 +20,5 @@ Route::middleware([
     Route::get('settings/plugins', [PluginsController::class, 'index']);
     Route::get('settings/plugins/{handle}', [PluginsController::class, 'editSettings']);
 });
+
+Route::post('updates', [UpdaterController::class, 'index']);

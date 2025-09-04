@@ -1,80 +1,44 @@
 <?php
-/**
- * @link https://craftcms.com/
- * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license https://craftcms.github.io/license/
- */
 
-namespace craft\controllers;
+namespace CraftCms\Cms\Http\Controllers\Updates;
 
 use Composer\Semver\Comparator;
 use Craft;
-use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Plugin\Exceptions\InvalidPluginException;
-use CraftCms\Cms\Plugin\Plugins;
-use CraftCms\Cms\Support\Composer;
-use CraftCms\Cms\Updates\Updates;
+use Illuminate\Support\Facades\Log;
 use RequirementsChecker;
+use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 use Symfony\Component\Process\Process;
 use Throwable;
-use yii\web\BadRequestHttpException;
-use yii\web\Response;
+
 use function CraftCms\Cms\normalizeVersion;
 
-/**
- * UpdaterController handles the Craft/plugin update workflow.
- *
- * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0.0
- * @internal
- */
-class UpdaterController extends BaseUpdaterController
+final class UpdaterController extends BaseUpdaterController
 {
-    public const ACTION_FORCE_UPDATE = 'force-update';
-    public const ACTION_BACKUP = 'backup';
-    public const ACTION_SERVER_CHECK = 'server-check';
-    public const ACTION_REVERT = 'revert';
-    public const ACTION_MIGRATE = 'migrate';
+    public const string ACTION_FORCE_UPDATE = 'force-update';
 
-    /**
-     * @inheritdoc
-     */
-    public function beforeAction($action): bool
+    public const string ACTION_BACKUP = 'backup';
+
+    public const string ACTION_SERVER_CHECK = 'server-check';
+
+    public const string ACTION_REVERT = 'revert';
+
+    public const string ACTION_MIGRATE = 'migrate';
+
+    public function forceUpdate(): Response
     {
-        if (!parent::beforeAction($action)) {
-            return false;
-        }
-
-        if ($action->id === 'index' && $this->request->getBodyParam('install') !== null) {
-            // Only users with performUpdates permission can install new versions
-            $this->requirePermission('performUpdates');
-        }
-
-        return true;
+        return $this->send($this->realInitialState(force: true));
     }
 
-    /**
-     * Forces the update even if Craft is already in Maintenance Mode.
-     *
-     * @return Response
-     */
-    public function actionForceUpdate(): Response
-    {
-        return $this->send($this->realInitialState(true));
-    }
-
-    /**
-     * Backup the database.
-     *
-     * @return Response
-     */
-    public function actionBackup(): Response
+    public function backup(): Response
     {
         try {
-            Craft::$app->getDb()->backup();
+            app('Craft')->getDb()->backup();
         } catch (Throwable $e) {
-            Craft::error('Error backing up the database: ' . $e->getMessage(), __METHOD__);
-            if (!empty($this->data['install'])) {
+            Log::error('Error backing up the database: '.$e->getMessage(), [__METHOD__]);
+
+            if (! empty($this->data['install'])) {
                 $firstAction = $this->actionOption(Craft::t('app', 'Revert the update'), self::ACTION_REVERT);
             } else {
                 $firstAction = $this->finishedState([
@@ -82,6 +46,7 @@ class UpdaterController extends BaseUpdaterController
                     'status' => Craft::t('app', 'Update aborted.'),
                 ]);
             }
+
             return $this->send([
                 'error' => Craft::t('app', 'Couldn’t backup the database. How would you like to proceed?'),
                 'options' => [
@@ -95,39 +60,30 @@ class UpdaterController extends BaseUpdaterController
         return $this->sendNextAction(self::ACTION_MIGRATE);
     }
 
-    /**
-     * Reverts the site to its previous Composer package versions.
-     *
-     * @return Response
-     */
-    public function actionRevert(): Response
+    public function revert(): Response
     {
         $output = '';
 
         try {
-            app(Composer::class)->install($this->data['current'], function($type, $buffer) use (&$output) {
+            $this->composer->install($this->data['current'], function ($type, $buffer) use (&$output) {
                 if ($type === Process::OUT) {
                     $output .= $buffer;
                 }
             });
-            Craft::info("Reverted Composer requirements.\nOutput: $output", __METHOD__);
+            Log::info("Reverted Composer requirements.\nOutput: $output", [__METHOD__]);
             $this->data['reverted'] = true;
         } catch (Throwable $e) {
-            Craft::error('Error reverting Composer requirements: ' . $e->getMessage() . "\nOutput: $output", __METHOD__);
+            Log::error('Error reverting Composer requirements: '.$e->getMessage()."\nOutput: $output", [__METHOD__]);
+
             return $this->sendComposerError(Craft::t('app', 'Composer was unable to revert the updates.'), $e, $output);
         }
 
         return $this->send($this->postComposerInstallState());
     }
 
-    /**
-     * Ensures Craft still meets the minimum system requirements
-     *
-     * @return Response
-     */
-    public function actionServerCheck(): Response
+    public function serverCheck(): Response
     {
-        $reqCheck = new RequirementsChecker();
+        $reqCheck = new RequirementsChecker;
         $reqCheck->checkCraft();
 
         $errors = [];
@@ -140,10 +96,11 @@ class UpdaterController extends BaseUpdaterController
             }
         }
 
-        if (!empty($errors)) {
-            Craft::warning("The server doesn't meet Craft's new requirements:\n - " . implode("\n - ", $errors), __METHOD__);
+        if (! empty($errors)) {
+            Log::warning("The server doesn't meet Craft's new requirements:\n - ".implode("\n - ", $errors), [__METHOD__]);
+
             return $this->send([
-                'error' => Craft::t('app', 'The server doesn’t meet Craft’s new requirements:') . ' ' . implode(', ', $errors),
+                'error' => Craft::t('app', 'The server doesn’t meet Craft’s new requirements:').' '.implode(', ', $errors),
                 'options' => [
                     $this->actionOption(Craft::t('app', 'Revert update'), self::ACTION_REVERT),
                     $this->actionOption(Craft::t('app', 'Check again'), self::ACTION_SERVER_CHECK),
@@ -153,10 +110,11 @@ class UpdaterController extends BaseUpdaterController
 
         // Are there any migrations to run?
         $installedHandles = array_keys($this->data['install']);
-        $pendingHandles = app(Updates::class)->pendingMigrationHandles();
+        $pendingHandles = $this->updates->pendingMigrationHandles();
 
-        if (!empty(array_intersect($pendingHandles, $installedHandles))) {
-            $backup = app(GeneralConfig::class)->getBackupOnUpdate();
+        if (! empty(array_intersect($pendingHandles, $installedHandles))) {
+            $backup = $this->generalConfig->getBackupOnUpdate();
+
             return $this->sendNextAction($backup ? self::ACTION_BACKUP : self::ACTION_MIGRATE);
         }
 
@@ -164,14 +122,9 @@ class UpdaterController extends BaseUpdaterController
         return $this->sendFinished();
     }
 
-    /**
-     * Runs pending migrations.
-     *
-     * @return Response
-     */
-    public function actionMigrate(): Response
+    public function migrate(): Response
     {
-        if (!empty($this->data['install'])) {
+        if (! empty($this->data['install'])) {
             $handles = array_keys($this->data['install']);
         } else {
             $handles = array_merge($this->data['migrate']);
@@ -181,7 +134,7 @@ class UpdaterController extends BaseUpdaterController
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     protected function pageTitle(): string
     {
@@ -189,59 +142,63 @@ class UpdaterController extends BaseUpdaterController
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     protected function initialData(): array
     {
-        // Set the things to install, if any
-        if (($install = $this->request->getBodyParam('install')) !== null) {
-            $packageNames = $this->request->getRequiredBodyParam('packageNames');
-
-            $data = [
-                'install' => $this->_parseInstallParam($install),
-                'current' => [],
-                'requirements' => [],
-                'reverted' => false,
-            ];
-
-            // Convert update handles to Composer package names, and capture current versions
-            $pluginsService = app(Plugins::class);
-
-            foreach ($data['install'] as $handle => $version) {
-                $packageName = strip_tags($packageNames[$handle]);
-                if ($handle === 'craft') {
-                    $oldPackageName = 'craftcms/cms';
-                    $current = Craft::$app->getVersion();
-                } else {
-                    $pluginInfo = $pluginsService->getPluginInfo($handle);
-                    $oldPackageName = $pluginInfo['packageName'];
-                    $current = $pluginInfo['version'];
-                }
-                $data['current'][$packageName] = $current;
-                $data['requirements'][$packageName] = $version;
-
-                // Has the package name changed?
-                if ($packageName !== $oldPackageName) {
-                    $data['requirements'][$oldPackageName] = false;
-                }
-            }
-        } else {
-            // Figure out what needs to be updated, if any
-            $data = [
-                'migrate' => app(Updates::class)->pendingMigrationHandles(),
-            ];
-        }
+        $data = [];
 
         // Set the return URL, if any
         if (($returnUrl = $this->findReturnUrl()) !== null) {
             $data['returnUrl'] = strip_tags($returnUrl);
         }
 
+        if (! $this->request->has('install')) {
+            // Figure out what needs to be updated, if any
+            $data['migrate'] = $this->updates->pendingMigrationHandles();
+
+            return $data;
+        }
+
+        $packageNames = $this->request->validate([
+            'packageNames' => ['required', 'array'],
+            'packageNames.*' => ['string'],
+        ]);
+
+        $data = array_merge($data, [
+            'install' => $this->parseInstallParam($this->request->get('install')),
+            'current' => [],
+            'requirements' => [],
+            'reverted' => false,
+        ]);
+
+        // Convert update handles to Composer package names, and capture current versions
+        foreach ($data['install'] as $handle => $version) {
+            $packageName = strip_tags($packageNames[$handle]);
+
+            if ($handle === 'craft') {
+                $oldPackageName = 'craftcms/cms';
+                $current = Craft::$app->getVersion();
+            } else {
+                $pluginInfo = $this->plugins->getPluginInfo($handle);
+                $oldPackageName = $pluginInfo['packageName'];
+                $current = $pluginInfo['version'];
+            }
+
+            $data['current'][$packageName] = $current;
+            $data['requirements'][$packageName] = $version;
+
+            // Has the package name changed?
+            if ($packageName !== $oldPackageName) {
+                $data['requirements'][$oldPackageName] = false;
+            }
+        }
+
         return $data;
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     protected function initialState(bool $force = false): array
     {
@@ -253,7 +210,7 @@ class UpdaterController extends BaseUpdaterController
         }
 
         // Is Craft already in Maintenance Mode?
-        if (!$force && Craft::$app->getIsInMaintenanceMode()) {
+        if (! $force && Craft::$app->getIsInMaintenanceMode()) {
             // Bail if Craft is already in maintenance mode
             return [
                 'error' => str_replace(['<br>', '<br/>'], "\n\n", Craft::t('app', 'It looks like someone is currently performing a system update.<br>Only continue if you’re sure that’s not the case.')),
@@ -264,17 +221,17 @@ class UpdaterController extends BaseUpdaterController
         }
 
         // If there's anything to install, make sure we can find composer.json
-        if (!empty($this->data['install']) && !$this->ensureComposerJson()) {
+        if (! empty($this->data['install']) && ! $this->ensureComposerJson()) {
             return $this->noComposerJsonState();
         }
 
         // Enable maintenance mode
         Craft::$app->enableMaintenanceMode();
 
-        if (!empty($this->data['install'])) {
+        if (! empty($this->data['install'])) {
             $nextAction = self::ACTION_COMPOSER_INSTALL;
         } else {
-            $backup = app(GeneralConfig::class)->getBackupOnUpdate();
+            $backup = $this->generalConfig->getBackupOnUpdate();
             $nextAction = $backup ? self::ACTION_BACKUP : self::ACTION_MIGRATE;
         }
 
@@ -282,7 +239,7 @@ class UpdaterController extends BaseUpdaterController
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     protected function postComposerInstallState(): array
     {
@@ -298,16 +255,14 @@ class UpdaterController extends BaseUpdaterController
 
     /**
      * Returns the return URL that should be passed with a finished state.
-     *
-     * @return string
      */
     protected function returnUrl(): string
     {
-        return $this->data['returnUrl'] ?? app(GeneralConfig::class)->getPostCpLoginRedirect();
+        return $this->data['returnUrl'] ?? $this->generalConfig->getPostCpLoginRedirect();
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     protected function actionStatus(string $action): string
     {
@@ -322,7 +277,7 @@ class UpdaterController extends BaseUpdaterController
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     protected function sendFinished(array $state = []): Response
     {
@@ -334,19 +289,16 @@ class UpdaterController extends BaseUpdaterController
 
     /**
      * Parses the 'install` param and returns handle => version pairs.
-     *
-     * @param array $installParam
-     * @return array
-     * @throws BadRequestHttpException
      */
-    private function _parseInstallParam(array $installParam): array
+    private function parseInstallParam(array $installParam): array
     {
         $install = [];
 
         foreach ($installParam as $handle => $version) {
             $handle = strip_tags($handle);
             $version = strip_tags($version);
-            if ($this->_canUpdate($handle, $version)) {
+
+            if ($this->canUpdate($handle, $version)) {
                 $install[$handle] = $version;
             }
         }
@@ -356,26 +308,22 @@ class UpdaterController extends BaseUpdaterController
 
     /**
      * Returns whether Craft/a plugin can be updated to a given version.
-     *
-     * @param string $handle
-     * @param string $toVersion
-     * @return bool
-     * @throws BadRequestHttpException if the handle is invalid
      */
-    private function _canUpdate(string $handle, string $toVersion): bool
+    private function canUpdate(string $handle, string $toVersion): bool
     {
         if ($handle === 'craft') {
             $fromVersion = Craft::$app->getVersion();
         } else {
             $pluginInfo = null;
             try {
-                $pluginInfo = app(Plugins::class)->getPluginInfo($handle);
+                $pluginInfo = $this->plugins->getPluginInfo($handle);
             } catch (InvalidPluginException) {
             }
 
-            if ($pluginInfo === null || !$pluginInfo['isInstalled']) {
-                throw new BadRequestHttpException('Invalid update handle: ' . $handle);
+            if ($pluginInfo === null || ! $pluginInfo['isInstalled']) {
+                throw new BadRequestHttpException('Invalid update handle: '.$handle);
             }
+
             $fromVersion = $pluginInfo['version'];
         }
 

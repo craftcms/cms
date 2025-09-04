@@ -1,6 +1,6 @@
 <?php
 
-namespace CraftCms\Cms\Http\Controllers;
+namespace CraftCms\Cms\Http\Controllers\Updates;
 
 use Craft;
 use craft\helpers\UrlHelper;

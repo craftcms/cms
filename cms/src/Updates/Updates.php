@@ -3,6 +3,7 @@
 namespace CraftCms\Cms\Updates;
 
 use craft\services\ProjectConfig;
+use CraftCms\Cms\Database\Exceptions\MigrateException;
 use CraftCms\Cms\Database\Migrator;
 use CraftCms\Cms\License\License;
 use CraftCms\Cms\Plugin\Plugins;
@@ -175,7 +176,9 @@ final class Updates
             $handles[] = 'content';
         }
 
-        DB::transaction(function () use ($handles) {
+        DB::beginTransaction();
+
+        try {
             foreach ($handles as $handle) {
                 if ($handle === 'craft') {
                     $this->migrator->track('craft')->run();
@@ -188,11 +191,17 @@ final class Updates
                         continue;
                     }
 
+                    $name = $plugin->name;
                     $plugin->getMigrator()->run();
                     $this->plugins->updatePluginVersionInfo($plugin);
                 }
             }
-        });
+        } catch (Throwable $e) {
+            DB::rollBack();
+            throw new MigrateException($name ?? 'Craft', $handle, null, 0, $e);
+        }
+
+        DB::commit();
 
         // Delete all compiled templates
         try {

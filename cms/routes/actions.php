@@ -6,7 +6,8 @@ use CraftCms\Cms\Http\Controllers\Dashboard\Widgets\FeedController;
 use CraftCms\Cms\Http\Controllers\Dashboard\WidgetsController;
 use CraftCms\Cms\Http\Controllers\MigrateController;
 use CraftCms\Cms\Http\Controllers\PluginsController;
-use CraftCms\Cms\Http\Controllers\UpdatesController;
+use CraftCms\Cms\Http\Controllers\Updates\UpdaterController;
+use CraftCms\Cms\Http\Controllers\Updates\UpdatesController;
 use CraftCms\Cms\Http\Controllers\Utilities\ClearCachesController;
 use CraftCms\Cms\Http\Controllers\Utilities\DbBackupController;
 use CraftCms\Cms\Http\Controllers\Utilities\DeprecationErrorsController;
@@ -71,4 +72,12 @@ Route::prefix(implode('/', [
     // Updates
     Route::post('app/check-for-updates', [UpdatesController::class, 'check']);
     Route::post('app/cache-updates', [UpdatesController::class, 'cache']);
+
+    // Updater
+    Route::post('updater', [UpdaterController::class, 'index']);
+    Route::post('updater/force-update', [UpdaterController::class, 'forceUpdate']);
+    Route::post('updater/backup', [UpdaterController::class, 'backup']);
+    Route::post('updater/server-check', [UpdaterController::class, 'serverCheck']);
+    Route::post('updater/revert', [UpdaterController::class, 'revert']);
+    Route::post('updater/migrate', [UpdaterController::class, 'migrate']);
 });
