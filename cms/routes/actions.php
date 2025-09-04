@@ -9,6 +9,7 @@ use CraftCms\Cms\Http\Controllers\Dashboard\WidgetsController;
 use CraftCms\Cms\Http\Controllers\MigrateController;
 use CraftCms\Cms\Http\Controllers\PluginsController;
 use CraftCms\Cms\Http\Controllers\PluginStore\InstallController;
+use CraftCms\Cms\Http\Controllers\PluginStore\PluginStoreController;
 use CraftCms\Cms\Http\Controllers\PluginStore\RemoveController;
 use CraftCms\Cms\Http\Controllers\Updates\UpdaterController;
 use CraftCms\Cms\Http\Controllers\Updates\UpdatesController;
@@ -108,6 +109,13 @@ Route::prefix(implode('/', [
     });
 
     // Pluginstore
+    Route::middleware([
+        RequireAdmin::class.':false',
+    ])->group(function () {
+        Route::get('plugin-store/craft-data', [PluginStoreController::class, 'craftData']);
+        Route::get('plugin-store/save-plugin-license-keys', [PluginStoreController::class, 'savePluginLicenseKeys']);
+    });
+
     Route::prefix('pluginstore/install')->middleware([
         RequireAdmin::class,
     ])->group(function () {
