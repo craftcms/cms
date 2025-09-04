@@ -271,7 +271,7 @@ final class Html
     public static function tag($name, $content = '', $options = []): string
     {
         return YiiHtml::tag($name)
-            ->content(NoEncode::string((string)$content))
+            ->content(NoEncode::string((string) $content))
             ->attributes(self::normalizeTagAttributes($options))
             ->render();
     }
