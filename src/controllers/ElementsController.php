@@ -2863,7 +2863,10 @@ JS, [
             return false;
         }
 
-        if ($element->isProvisionalDraft) {
+        if (
+            $element->isProvisionalDraft &&
+            (!$element instanceof NestedElementInterface || !$element->getOwnerId())
+        ) {
             $element = $element->getCanonical(true);
         }
 

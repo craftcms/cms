@@ -122,6 +122,15 @@ trait NestedElementTrait
         $this->ownerType = null;
     }
 
+    public function __get($name)
+    {
+        return match ($name) {
+            'ownerId' => $this->getOwnerId(),
+            'primaryOwnerId' => $this->getPrimaryOwnerId(),
+            default => parent::__get($name),
+        };
+    }
+
     /**
      * @inheritdoc
      */
