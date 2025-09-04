@@ -162,9 +162,7 @@ final class Composer
      */
     private function runComposerCommand(string $jsonPath, array $command, ?callable $callback): void
     {
-        $finder = new ExecutableFinder;
-        $composerPath = $finder->find('composer');
-
+        $composerPath = new ExecutableFinder()->find('composer');
         $pharPath = '';
 
         if (! $composerPath) {
