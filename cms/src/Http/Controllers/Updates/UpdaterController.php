@@ -4,6 +4,7 @@ namespace CraftCms\Cms\Http\Controllers\Updates;
 
 use Composer\Semver\Comparator;
 use Craft;
+use CraftCms\Cms\Http\Controllers\BaseUpdaterController;
 use CraftCms\Cms\Plugin\Exceptions\InvalidPluginException;
 use Illuminate\Support\Facades\Log;
 use RequirementsChecker;
@@ -14,6 +15,11 @@ use Throwable;
 
 use function CraftCms\Cms\normalizeVersion;
 
+/**
+ * @internal
+ *
+ * @since 6.0.0
+ */
 final class UpdaterController extends BaseUpdaterController
 {
     public const string ACTION_FORCE_UPDATE = 'force-update';

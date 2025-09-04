@@ -1,11 +1,13 @@
 <?php
 
 use CraftCms\Cms\Config\GeneralConfig;
+use CraftCms\Cms\Http\Controllers\BaseUpdaterController;
 use CraftCms\Cms\Http\Controllers\Dashboard\Widgets\CraftSupportController;
 use CraftCms\Cms\Http\Controllers\Dashboard\Widgets\FeedController;
 use CraftCms\Cms\Http\Controllers\Dashboard\WidgetsController;
 use CraftCms\Cms\Http\Controllers\MigrateController;
 use CraftCms\Cms\Http\Controllers\PluginsController;
+use CraftCms\Cms\Http\Controllers\ProjectConfig\ConfigSyncController;
 use CraftCms\Cms\Http\Controllers\Updates\UpdaterController;
 use CraftCms\Cms\Http\Controllers\Updates\UpdatesController;
 use CraftCms\Cms\Http\Controllers\Utilities\ClearCachesController;
@@ -69,15 +71,37 @@ Route::prefix(implode('/', [
         Route::post('plugins/save-plugin-settings', [PluginsController::class, 'saveSettings']);
     });
 
+    // Project Config
+    Route::prefix('config-sync')->group(function () {
+        Route::post('/', [ConfigSyncController::class, 'index']);
+        Route::post(ConfigSyncController::ACTION_RETRY, [ConfigSyncController::class, 'retry']);
+        Route::post(ConfigSyncController::ACTION_APPLY_YAML_CHANGES, [ConfigSyncController::class, 'applyYamlChanges']);
+        Route::post(ConfigSyncController::ACTION_REGENERATE_YAML, [ConfigSyncController::class, 'regenerateYaml']);
+        Route::post(ConfigSyncController::ACTION_UNINSTALL_PLUGIN, [ConfigSyncController::class, 'uninstallPlugin']);
+        Route::post(ConfigSyncController::ACTION_INSTALL_PLUGIN, [ConfigSyncController::class, 'installPlugin']);
+        Route::post(BaseUpdaterController::ACTION_PRECHECK, [ConfigSyncController::class, 'precheck']);
+        Route::post(BaseUpdaterController::ACTION_RECHECK_COMPOSER, [ConfigSyncController::class, 'recheckComposer']);
+        Route::post(BaseUpdaterController::ACTION_COMPOSER_INSTALL, [ConfigSyncController::class, 'composerInstall']);
+        Route::post(BaseUpdaterController::ACTION_COMPOSER_REMOVE, [ConfigSyncController::class, 'composerRemove']);
+        Route::post(BaseUpdaterController::ACTION_FINISH, [ConfigSyncController::class, 'finish']);
+    });
+
     // Updates
     Route::post('app/check-for-updates', [UpdatesController::class, 'check']);
     Route::post('app/cache-updates', [UpdatesController::class, 'cache']);
 
     // Updater
-    Route::post('updater', [UpdaterController::class, 'index']);
-    Route::post('updater/force-update', [UpdaterController::class, 'forceUpdate']);
-    Route::post('updater/backup', [UpdaterController::class, 'backup']);
-    Route::post('updater/server-check', [UpdaterController::class, 'serverCheck']);
-    Route::post('updater/revert', [UpdaterController::class, 'revert']);
-    Route::post('updater/migrate', [UpdaterController::class, 'migrate']);
+    Route::prefix('updater')->group(function () {
+        Route::post('/', [UpdaterController::class, 'index']);
+        Route::post(UpdaterController::ACTION_FORCE_UPDATE, [UpdaterController::class, 'forceUpdate']);
+        Route::post(UpdaterController::ACTION_BACKUP, [UpdaterController::class, 'backup']);
+        Route::post(UpdaterController::ACTION_SERVER_CHECK, [UpdaterController::class, 'serverCheck']);
+        Route::post(UpdaterController::ACTION_REVERT, [UpdaterController::class, 'revert']);
+        Route::post(UpdaterController::ACTION_MIGRATE, [UpdaterController::class, 'revert']);
+        Route::post(BaseUpdaterController::ACTION_PRECHECK, [UpdaterController::class, 'precheck']);
+        Route::post(BaseUpdaterController::ACTION_RECHECK_COMPOSER, [ConfigSyncController::class, 'recheckComposer']);
+        Route::post(BaseUpdaterController::ACTION_COMPOSER_INSTALL, [ConfigSyncController::class, 'composerInstall']);
+        Route::post(BaseUpdaterController::ACTION_COMPOSER_REMOVE, [ConfigSyncController::class, 'composerRemove']);
+        Route::post(BaseUpdaterController::ACTION_FINISH, [ConfigSyncController::class, 'finish']);
+    });
 });

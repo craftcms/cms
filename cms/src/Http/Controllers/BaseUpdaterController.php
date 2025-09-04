@@ -1,6 +1,6 @@
 <?php
 
-namespace CraftCms\Cms\Http\Controllers\Updates;
+namespace CraftCms\Cms\Http\Controllers;
 
 use Craft;
 use craft\web\Application;
@@ -23,6 +23,11 @@ use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 use Symfony\Component\Process\Process;
 use Throwable;
 
+/**
+ * @internal
+ *
+ * @since 6.0.0
+ */
 abstract class BaseUpdaterController
 {
     use AuthorizesRequests;
@@ -473,7 +478,7 @@ abstract class BaseUpdaterController
      *
      * @return array Array with installation results
      */
-    protected function installPlugin(string $handle, ?string $edition = null): array
+    protected function installPluginInternal(string $handle, ?string $edition = null): array
     {
         try {
             $this->plugins->installPlugin($handle, $edition);
