@@ -141,6 +141,15 @@ class LegacyMiddleware
         foreach ($parameters ?? [] as $key => $value) {
             $this->restoreValue($request, $key, $value);
         }
+
+        // in the ExtractNamespace middleware we're copying namespaced param values
+        // from their namespace key to the general parameters location
+        // (from request['parameters']['<namespace>'] to request['parameters'])
+        // the above method will only restore the values in the namespaced params
+        // now we should copy them over again
+        if ($namespace = $request->header('X-Craft-Namespace')) {
+            $request->merge($request->get($namespace));
+        }
     }
 
     private function restoreValue(Request $request, $key, $value): void
