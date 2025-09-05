@@ -473,21 +473,20 @@ abstract class BaseRelationField extends Field implements
     {
         $attributes = parent::settingsAttributes();
         $attributes[] = 'allowSelfRelations';
+        $attributes[] = 'branchLimit';
+        $attributes[] = 'defaultPlacement';
+        $attributes[] = 'maintainHierarchy';
         $attributes[] = 'maxRelations';
         $attributes[] = 'minRelations';
         $attributes[] = 'selectionLabel';
+        $attributes[] = 'showCardsInGrid';
         $attributes[] = 'showSearchInput';
         $attributes[] = 'showSiteMenu';
         $attributes[] = 'source';
         $attributes[] = 'sources';
         $attributes[] = 'targetSiteId';
         $attributes[] = 'validateRelatedElements';
-        $attributes[] = 'defaultPlacement';
         $attributes[] = 'viewMode';
-        $attributes[] = 'showCardsInGrid';
-        $attributes[] = 'allowSelfRelations';
-        $attributes[] = 'maintainHierarchy';
-        $attributes[] = 'branchLimit';
 
         return $attributes;
     }
