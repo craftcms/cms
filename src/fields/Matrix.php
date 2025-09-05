@@ -564,12 +564,7 @@ class Matrix extends Field implements
     public function canSaveElement(NestedElementInterface $element, User $user): ?bool
     {
         $owner = $element->getOwner();
-
-        if (!$owner || !Craft::$app->getElements()->canSave($owner, $user)) {
-            return false;
-        }
-
-        return true;
+        return $owner && Craft::$app->getElements()->canSave($owner, $user);
     }
 
     /**
