@@ -688,7 +688,7 @@ final class Plugins
         }
 
         // Save the settings on the plugin
-        $pluginSettings->setAttributes($settings);
+        $pluginSettings->setAttributes($settings, false);
 
         // Validate them, now that it's a model
         if ($pluginSettings->validate() === false) {

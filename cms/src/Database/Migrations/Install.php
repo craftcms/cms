@@ -1184,6 +1184,8 @@ class Install extends Migration
             });
         }
 
+        $projectConfig->flush();
+
         // Craft, you are installed now.
         Craft::$app->setIsInstalled();
 

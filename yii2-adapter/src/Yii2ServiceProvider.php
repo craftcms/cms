@@ -11,14 +11,19 @@ use craft\utilities\AssetIndexes;
 use craft\utilities\ClearCaches;
 use CraftCms\Aliases\Facades\Aliases;
 use CraftCms\Cms\Config\GeneralConfig;
+use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Support\Env;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Yii2Adapter\Console\LegacyCraftCommand;
+use CraftCms\Yii2Adapter\Console\MigrateMigrationTableCommand;
 use CraftCms\Yii2Adapter\Http\Controller;
 use Illuminate\Console\Application as ConsoleApplication;
+use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\File;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\ServiceProvider;
+use RuntimeException;
 use yii\BaseYii;
 
 class Yii2ServiceProvider extends ServiceProvider
@@ -154,6 +159,10 @@ class Yii2ServiceProvider extends ServiceProvider
     public function boot(
         GeneralConfig $generalConfig,
     ): void {
+        $this->commands([
+            MigrateMigrationTableCommand::class,
+        ]);
+
         $this->ensureStorageFoldersExist($generalConfig);
 
         /**
@@ -162,7 +171,7 @@ class Yii2ServiceProvider extends ServiceProvider
          */
         try {
             $this->app->getNamespace();
-        } catch (\RuntimeException) {
+        } catch (RuntimeException) {
             $reflectionClass = new \ReflectionClass($this->app);
             $reflectionProperty = $reflectionClass->getProperty('namespace');
             $reflectionProperty->setValue($this->app, 'App');
@@ -180,6 +189,8 @@ class Yii2ServiceProvider extends ServiceProvider
          * Load Craft
          */
         app('Craft');
+
+        $this->ensureNewMigrationTable();
 
         if (!$this->app->runningInConsole()) {
             return;
@@ -312,6 +323,29 @@ class Yii2ServiceProvider extends ServiceProvider
 
         if (!App::isStreamLog()) {
             File::ensureDirectoryExists($this->app->storagePath('logs'), $dirMode);
+        }
+    }
+
+    /**
+     * Check if we're dealing with an older migrations table.
+     * In that case we'll need to migrate this on the fly.
+     */
+    private function ensureNewMigrationTable(): void
+    {
+        try {
+            if (Schema::hasColumn(Table::MIGRATIONS, 'migration')) {
+                return;
+            }
+
+            if (!app(GeneralConfig::class)->allowAdminChanges) {
+                throw new RuntimeException('The migration table has the wrong schema structure and allowAdminChanges is disabled. Run `php craft migrate:migration-table` to migrate the table to the new format.');
+            }
+
+            Artisan::call('craft:migrate:migration-table', [
+                '--force' => true,
+            ]);
+        } catch (\PDOException) {
+            // No database connection
         }
     }
 }
