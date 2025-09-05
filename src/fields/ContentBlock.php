@@ -260,7 +260,7 @@ class ContentBlock extends Field implements
     public function setFieldLayouts(array $layouts): void
     {
         $config = reset($layouts);
-        $layout = Craft::$app->getFields()->createLayout($config);
+        $layout = Craft::$app->getFields()->createLayout($config ?: []);
         $layout->uid = array_key_first($layouts);
         $layout->type = ContentBlockElement::class;
 
