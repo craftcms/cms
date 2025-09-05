@@ -391,7 +391,9 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
     {
         $attributes = parent::settingsAttributes();
         $attributes[] = 'allowSelfRelations';
+        $attributes[] = 'branchLimit';
         $attributes[] = 'localizeRelations';
+        $attributes[] = 'maintainHierarchy';
         $attributes[] = 'maxRelations';
         $attributes[] = 'minRelations';
         $attributes[] = 'selectionLabel';
@@ -401,9 +403,6 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
         $attributes[] = 'targetSiteId';
         $attributes[] = 'validateRelatedElements';
         $attributes[] = 'viewMode';
-        $attributes[] = 'allowSelfRelations';
-        $attributes[] = 'maintainHierarchy';
-        $attributes[] = 'branchLimit';
 
         return $attributes;
     }
