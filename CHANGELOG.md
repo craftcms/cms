@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Added `craft\base\NestedElementInterface::getOwners()`.
+- Added `craft\base\NestedElementTrait::getOwners()`.
 - Fixed a bug where entries’ and categories’ descendants’ URIs weren’t always getting updated after a parent’s URI changed. ([#17804](https://github.com/craftcms/cms/discussions/17804))
 - Fixed a bug where addresses weren’t saving `firstName`, `lastName`, and `fullName` values properly. ([#17807](https://github.com/craftcms/cms/issues/17807))
 - Fixed an n+1 query bug when working with Content Block fields. ([#17801](https://github.com/craftcms/cms/issues/17801))
@@ -9,6 +11,7 @@
 - Fixed a bug where relation field values weren’t getting updated properly when two elements were merged together. ([#17817](https://github.com/craftcms/cms/issues/17817))
 - Fixed an authorization error that could occur when editing a provisional draft of a nested element.
 - Fixed a bug where custom field values could be lost when changing an entry type. ([#17821](https://github.com/craftcms/cms/issues/17821))
+- Fixed a bug where non-admin users couldn’t edit recursively-nested elements if they didn’t have save permissions for the top-level element.
 - Fixed a styling issue.
 
 ## 5.8.16 - 2025-08-29

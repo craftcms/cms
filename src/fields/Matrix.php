@@ -564,7 +564,26 @@ class Matrix extends Field implements
     public function canSaveElement(NestedElementInterface $element, User $user): ?bool
     {
         $owner = $element->getOwner();
-        return $owner && Craft::$app->getElements()->canSave($owner, $user);
+
+        if (!$owner) {
+            return false;
+        }
+
+        if (Craft::$app->getElements()->canSave($owner, $user)) {
+            return true;
+        }
+
+        // Check all the owners. Maybe the user can save one of the other ones?
+        /** @phpstan-ignore-next-line  */
+        if (!Craft::$app->getElements()->canSave($owner, $user) && !$owner->getIsRevision()) {
+            foreach ($element->getOwners(['revisions' => false]) as $o) {
+                if ($o->id !== $owner->id && Craft::$app->getElements()->canSave($o, $user)) {
+                    return true;
+                }
+            }
+        }
+
+        return false;
     }
 
     /**
