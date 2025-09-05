@@ -688,7 +688,6 @@ final class Plugins
         }
 
         // Save the settings on the plugin
-        /** @phpstan-ignore arguments.count */
         $pluginSettings->setAttributes($settings, false);
 
         // Validate them, now that it's a model

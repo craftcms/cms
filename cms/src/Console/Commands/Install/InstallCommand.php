@@ -3,7 +3,6 @@
 namespace CraftCms\Cms\Console\Commands\Install;
 
 use craft\console\Application;
-use craft\helpers\Install as InstallHelper;
 use craft\helpers\Localization;
 use craft\models\Site;
 use CraftCms\Cms\Config\GeneralConfig;
@@ -11,6 +10,7 @@ use CraftCms\Cms\Console\CraftCommand;
 use CraftCms\Cms\Database\Migrations\Install;
 use CraftCms\Cms\Database\Migrator;
 use CraftCms\Cms\Support\Env;
+use CraftCms\Cms\Support\Install as InstallHelper;
 use Illuminate\Console\Command;
 use Illuminate\Container\Attributes\Give;
 use Illuminate\Database\QueryException;

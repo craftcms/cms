@@ -4,7 +4,6 @@ namespace CraftCms\Cms\Http\Controllers;
 
 use Craft;
 use craft\helpers\App;
-use craft\helpers\Install;
 use craft\models\Site;
 use craft\web\assets\installer\InstallerAsset;
 use CraftCms\Aliases\Facades\Aliases;
@@ -13,6 +12,7 @@ use CraftCms\Cms\Database\Migrations\Install as InstallMigration;
 use CraftCms\Cms\Database\Migrator;
 use CraftCms\Cms\Shared\Rules\LanguageRule;
 use CraftCms\Cms\Support\Env;
+use CraftCms\Cms\Support\Install;
 use CraftCms\Cms\Support\Str;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -285,8 +285,6 @@ final readonly class InstallController
         $data[$prefix.'password'] ??= Config::get("database.connections.{$data[$prefix.'driver']}.password");
         $data[$prefix.'prefix'] ??= Config::get("database.connections.{$data[$prefix.'driver']}.prefix");
 
-        return collect($data)->mapWithKeys(function (mixed $value, string $key) use ($prefix) {
-            return [Str::after($key, $prefix) => $value];
-        })->all();
+        return collect($data)->mapWithKeys(fn (mixed $value, string $key) => [Str::after($key, $prefix) => $value])->all();
     }
 }
