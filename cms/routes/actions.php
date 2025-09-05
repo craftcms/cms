@@ -32,6 +32,23 @@ Route::prefix($generalConfig->actionTrigger)->group(function () {
 /**
  * Actions that are accessible through the control panel can be registered here.
  */
+
+/**
+ * Actions not needing auth
+ */
+Route::prefix(implode('/', [
+    $generalConfig->cpTrigger,
+    $generalConfig->actionTrigger,
+]))->middleware(['craft.cp'])->group(function () {
+    Route::post('install/validate-db', [\CraftCms\Cms\Http\Controllers\InstallController::class, 'validateDb']);
+    Route::post('install/validate-account', [\CraftCms\Cms\Http\Controllers\InstallController::class, 'validateAccount']);
+    Route::post('install/validate-site', [\CraftCms\Cms\Http\Controllers\InstallController::class, 'validateSite']);
+    Route::post('install/install', [\CraftCms\Cms\Http\Controllers\InstallController::class, 'install']);
+});
+
+/**
+ * Actions needing auth
+ */
 Route::prefix(implode('/', [
     $generalConfig->cpTrigger,
     $generalConfig->actionTrigger,

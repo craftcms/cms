@@ -1,8 +1,9 @@
 {% import "_includes/forms" as forms %}
 
-{% set dbConfig = craft.app.config.db %}
+{% set connection = config.database.default %}
+{% set dbConfig = config.database.connections[connection] %}
 
-<div id="db" class="screen hidden" data-inputs="driver,server,port,user,password,database,schema,tablePrefix">
+<div id="db" class="screen hidden" data-inputs="driver,host,port,username,password,database,schema,prefix">
     <h1>{{ "Connect the database"|t('app') }}</h1>
 
     <form accept-charset="UTF-8">
@@ -23,9 +24,9 @@
             </div>
             <div class="flex-grow">
                 {{ forms.textField({
-                    label: "Server"|t('app'),
-                    id: 'db-server',
-                    value: dbConfig.server != '127.0.0.1' ? dbConfig.server,
+                    label: "Host"|t('app'),
+                    id: 'db-host',
+                    value: dbConfig.host != '127.0.0.1' ? dbConfig.host,
                     placeholder: '127.0.0.1',
                 }) }}
             </div>
@@ -44,7 +45,7 @@
                 {{ forms.textField({
                     label: "Username"|t('app'),
                     id: 'db-user',
-                    value: dbConfig.user != 'root' ? dbConfig.user,
+                    value: dbConfig.username != 'root' ? dbConfig.username,
                     placeholder: 'root',
                 }) }}
             </div>
@@ -68,8 +69,8 @@
             <div>
                 {{ forms.textField({
                     label: "#{'Prefix'|t('app')} <span class='info'>#{'The table name prefix'|t('app')}</span>",
-                    id: 'db-tablePrefix',
-                    value: dbConfig.tablePrefix|trim('_'),
+                    id: 'db-prefix',
+                    value: dbConfig.prefix|trim('_'),
                     maxlength: 5,
                     size: 7
                 }) }}
