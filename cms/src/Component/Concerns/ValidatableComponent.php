@@ -57,7 +57,7 @@ trait ValidatableComponent
         return $this->getValidator()->errors()->first($attribute);
     }
 
-    public function setAttributes(array $values): void
+    public function setAttributes(array $values, bool $safeOnly = true): void
     {
         Typecast::properties(static::class, $values);
 
