@@ -19,6 +19,10 @@ final readonly class CheckForUpdates
 
     public function handle(Request $request, Closure $next): mixed
     {
+        if (! Craft::$app->getIsInstalled()) {
+            return $next($request);
+        }
+
         if ($this->updates->isCraftUpdatePending()) {
             return $this->processUpdate($request, $next);
         }
@@ -26,7 +30,7 @@ final readonly class CheckForUpdates
         if ($this->updates->hasCraftVersionChanged()) {
             $this->updates->updateCraftVersionInfo();
 
-            if (! File::cleanDirectory(\Craft::$app->getPath()->getCompiledTemplatesPath(false))) {
+            if (! File::cleanDirectory(Craft::$app->getPath()->getCompiledTemplatesPath(false))) {
                 Log::error('Could not delete compiled templates');
             }
         }
@@ -48,9 +52,9 @@ final readonly class CheckForUpdates
                 ]));
             }
 
-            File::cleanDirectory(\Craft::$app->getPath()->getCompiledTemplatesPath(false));
+            File::cleanDirectory(Craft::$app->getPath()->getCompiledTemplatesPath(false));
 
-            return response(\Craft::$app->getView()->renderPageTemplate('_special/dbupdate.twig'));
+            return response(Craft::$app->getView()->renderPageTemplate('_special/dbupdate.twig'));
         }
 
         if ($request->isActionRequest()) {
