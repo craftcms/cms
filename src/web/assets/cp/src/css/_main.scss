@@ -6591,7 +6591,7 @@ $min2ColWidth: 400px;
     position: relative;
     display: flex;
     gap: var(--s);
-    justify-content: space-between;
+    justify-content: flex-end;
     flex-wrap: wrap;
     margin-block: 0 -24px;
     margin-inline: var(--neg-padding);
@@ -6605,6 +6605,7 @@ $min2ColWidth: 400px;
     & > .so-notice {
       display: flex;
       align-items: center;
+      margin-inline-end: auto;
     }
 
     & > .so-extra {
