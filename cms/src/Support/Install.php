@@ -66,10 +66,8 @@ final class Install
 
     private static function primarySiteConfig(): ?array
     {
-        return once(function () {
-            return collect(
-                Craft::$app->getProjectConfig()->get('sites', true) ?? []
-            )->firstWhere('primary', true);
-        });
+        return once(fn () => collect(
+            Craft::$app->getProjectConfig()->get('sites', true) ?? []
+        )->firstWhere('primary', true));
     }
 }
