@@ -233,6 +233,9 @@ Craft.BaseElementIndexView = Garnish.Base.extend(
     },
 
     canSelectElement: function ($element) {
+      if ($element.hasClass('disabled')) {
+        return false;
+      }
       if (this.settings.canSelectElement) {
         return this.settings.canSelectElement($element);
       }
