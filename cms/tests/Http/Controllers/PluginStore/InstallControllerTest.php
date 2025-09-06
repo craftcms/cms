@@ -21,6 +21,18 @@ beforeEach(function () {
     ]));
 });
 
+dataset('routes', [
+    [InstallController::class, 'index'],
+    [InstallController::class, 'craftInstall'],
+    [InstallController::class, 'enable'],
+    [InstallController::class, 'migrate'],
+    [InstallController::class, 'precheck'],
+    [InstallController::class, 'recheckComposer'],
+    [InstallController::class, 'composerInstall'],
+    [InstallController::class, 'composerRemove'],
+    [InstallController::class, 'finish'],
+]);
+
 it('aborts when allow updates is false', function () {
     app(GeneralConfig::class)->allowUpdates(false);
 
@@ -42,17 +54,7 @@ it('requires authentication, adminChanges and admin for all routes', function (s
     app(GeneralConfig::class)->allowAdminChanges(false);
 
     postJson(action([$controller, $action]))->assertForbidden();
-})->with([
-    [InstallController::class, 'index'],
-    [InstallController::class, 'craftInstall'],
-    [InstallController::class, 'enable'],
-    [InstallController::class, 'migrate'],
-    [InstallController::class, 'precheck'],
-    [InstallController::class, 'recheckComposer'],
-    [InstallController::class, 'composerInstall'],
-    [InstallController::class, 'composerRemove'],
-    [InstallController::class, 'finish'],
-]);
+})->with('routes');
 
 test('all routes validate data', function (string $controller, string $action) {
     if ($action === 'index') {
@@ -71,17 +73,7 @@ test('all routes validate data', function (string $controller, string $action) {
         ->assertJsonValidationErrors([
             'data',
         ]);
-})->with([
-    [InstallController::class, 'index'],
-    [InstallController::class, 'craftInstall'],
-    [InstallController::class, 'enable'],
-    [InstallController::class, 'migrate'],
-    [InstallController::class, 'precheck'],
-    [InstallController::class, 'recheckComposer'],
-    [InstallController::class, 'composerInstall'],
-    [InstallController::class, 'composerRemove'],
-    [InstallController::class, 'finish'],
-]);
+})->with('routes');
 
 test('index', function () {
     postJson(action([InstallController::class, 'index']), [
