@@ -25,7 +25,7 @@ function loadTestPlugin(): void
             'packageName' => 'craftcms/test-plugin',
             'version' => '1.0.1',
             'class' => TestPlugin::class,
-            'basePath' => dirname(__DIR__, 1).'/TestClasses',
+            'basePath' => __DIR__.'/TestClasses',
         ],
     ]);
     $reflectionClass->getProperty('storedPluginInfo')->setValue($plugins, [
