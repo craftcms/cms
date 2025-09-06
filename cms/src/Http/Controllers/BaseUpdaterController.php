@@ -17,6 +17,7 @@ use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Validation\ValidationException;
 use RuntimeException;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
@@ -52,11 +53,19 @@ abstract class BaseUpdaterController
         protected Plugins $plugins,
         protected Updates $updates,
     ) {
+        if ($this->request->fullUrlIs(action([static::class, 'index']))) {
+            return;
+        }
+
         $data = Craft::$app->getSecurity()->validateData($this->request->get('data', ''));
 
-        if ($data !== false) {
-            $this->data = Json::decode($data);
+        if ($data === false) {
+            throw ValidationException::withMessages([
+                'data' => Craft::t('app', 'Invalid data.'),
+            ]);
         }
+
+        $this->data = Json::decode($data);
     }
 
     public function index(#[Give('Craft')] Application $craft): Response
@@ -83,7 +92,7 @@ abstract class BaseUpdaterController
         ]));
     }
 
-    public function precheck()
+    public function precheck(): Response
     {
         $postState = $this->data['postPrecheckState'];
 

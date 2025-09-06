@@ -91,9 +91,14 @@ final readonly class PluginStoreController
         $plugins = $pluginsService->getAllPlugins();
 
         foreach ($pluginLicenseKeys as $pluginLicenseKey) {
-            if (isset($plugins[$pluginLicenseKey['handle']])) {
-                $pluginsService->setPluginLicenseKey($pluginLicenseKey['handle'], $pluginLicenseKey['key']);
+            if (! isset($plugins[$pluginLicenseKey['handle']])) {
+                continue;
             }
+
+            $pluginsService->setPluginLicenseKey(
+                handle: $pluginLicenseKey['handle'],
+                licenseKey: $pluginLicenseKey['key'],
+            );
         }
 
         return response()->json();

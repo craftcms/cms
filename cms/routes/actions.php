@@ -126,7 +126,7 @@ Route::prefix(implode('/', [
             RequireAdmin::class.':false',
         ])->group(function () {
             Route::get('plugin-store/craft-data', [PluginStoreController::class, 'craftData']);
-            Route::get('plugin-store/save-plugin-license-keys', [PluginStoreController::class, 'savePluginLicenseKeys']);
+            Route::post('plugin-store/save-plugin-license-keys', [PluginStoreController::class, 'savePluginLicenseKeys']);
         });
 
         Route::prefix('pluginstore/install')->middleware([

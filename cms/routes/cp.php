@@ -30,7 +30,7 @@ Route::middleware('auth')->group(function () {
     ])->group(function () {
         Route::get('settings/plugins', [PluginsController::class, 'index']);
         Route::get('settings/plugins/{handle}', [PluginsController::class, 'editSettings']);
-        Route::get('plugin-store{any}', [PluginStoreController::class, 'index'])->where('any', '.*');
+        Route::get('plugin-store{any?}', [PluginStoreController::class, 'index'])->where('any', '.*');
     });
 
     Route::post('updates', [UpdaterController::class, 'index']);
