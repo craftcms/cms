@@ -116,8 +116,17 @@ test('migrate', function () {
 
     postJson(action([InstallController::class, 'migrate']), [
         'data' => $this->hashedData,
-    ])->dump()->assertJsonFragment([
+    ])->assertJsonFragment([
         'finished' => true,
         'status' => 'All done!',
+    ]);
+});
+
+test('finish', function () {
+    postJson(action([InstallController::class, 'finish']), [
+        'data' => $this->hashedData,
+    ])->assertJsonFragment([
+        'finished' => true,
+        'returnUrl' => 'plugin-store',
     ]);
 });
