@@ -7,10 +7,10 @@ use craft\errors\BusyResourceException;
 use craft\errors\StaleResourceException;
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Updates\Updates;
-use HttpException;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use Symfony\Component\HttpKernel\Exception\HttpException;
 use Symfony\Component\HttpKernel\Exception\ServiceUnavailableHttpException;
 use Throwable;
 
@@ -54,7 +54,7 @@ final class MigrateController
                 $backupPath = Craft::$app->getDb()->backup();
             } catch (Throwable $e) {
                 Craft::$app->disableMaintenanceMode();
-                throw new HttpException('Error backing up the database.', 0, $e);
+                throw new HttpException(500, 'Error backing up the database.', $e);
             }
         }
 
@@ -104,7 +104,7 @@ final class MigrateController
 
             Craft::$app->disableMaintenanceMode();
 
-            throw new HttpException($error, 0, $e);
+            throw new HttpException(500, $error, $e);
         }
 
         Craft::$app->disableMaintenanceMode();

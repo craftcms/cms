@@ -37,19 +37,20 @@ use Throwable;
  */
 final readonly class InstallController
 {
-    public function index(): Response
+    public function __construct()
     {
         // Return a 404 if Craft is already installed
         if (! app()->hasDebugModeEnabled() && Craft::$app->getIsInstalled()) {
-            abort(400, 'Craft is already installed');
+            abort(404, 'Craft is already installed');
         }
+    }
 
-        // Can we establish a DB connection?
+    public function index(): Response
+    {
         try {
             DB::reconnect()->getPdo();
             $showDbScreen = false;
         } catch (PDOException $e) {
-            // Can we control the settings?
             if ($this->canControlDbConfig()) {
                 $showDbScreen = true;
             } else {
@@ -146,9 +147,9 @@ final readonly class InstallController
                 'language' => ['required', 'string', 'max:255', new LanguageRule(onlySiteLanguages: false)],
             ]);
 
-            $url = Env::parse($request->get('baseUrl'));
+            $baseUrl = Env::parse($request->get('baseUrl'));
 
-            Validator::validate(compact('url'), ['url' => 'url']);
+            Validator::validate(compact('baseUrl'), ['baseUrl' => 'url']);
         } catch (ValidationException $e) {
             return new JsonResponse([
                 'errors' => $e->errors(),
