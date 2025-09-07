@@ -113,7 +113,7 @@ Route::prefix(implode('/', [
             Route::post(UpdaterController::ACTION_BACKUP, [UpdaterController::class, 'backup']);
             Route::post(UpdaterController::ACTION_SERVER_CHECK, [UpdaterController::class, 'serverCheck']);
             Route::post(UpdaterController::ACTION_REVERT, [UpdaterController::class, 'revert']);
-            Route::post(UpdaterController::ACTION_MIGRATE, [UpdaterController::class, 'revert']);
+            Route::post(UpdaterController::ACTION_MIGRATE, [UpdaterController::class, 'migrate']);
             Route::post(BaseUpdaterController::ACTION_PRECHECK, [UpdaterController::class, 'precheck']);
             Route::post(BaseUpdaterController::ACTION_RECHECK_COMPOSER, [UpdaterController::class, 'recheckComposer']);
             Route::post(BaseUpdaterController::ACTION_COMPOSER_INSTALL, [UpdaterController::class, 'composerInstall']);

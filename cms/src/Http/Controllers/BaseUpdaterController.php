@@ -70,10 +70,6 @@ abstract class BaseUpdaterController
 
     public function index(#[Give('Craft')] Application $craft): Response
     {
-        if ($this->request->has('install')) {
-            $this->authorize('performUpdates');
-        }
-
         // Load the updater JS
         $view = $craft->getView();
         $view->registerAssetBundle(UpdaterAsset::class);

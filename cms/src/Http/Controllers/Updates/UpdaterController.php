@@ -4,8 +4,13 @@ namespace CraftCms\Cms\Http\Controllers\Updates;
 
 use Composer\Semver\Comparator;
 use Craft;
+use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Http\Controllers\BaseUpdaterController;
 use CraftCms\Cms\Plugin\Exceptions\InvalidPluginException;
+use CraftCms\Cms\Plugin\Plugins;
+use CraftCms\Cms\Support\Composer;
+use CraftCms\Cms\Updates\Updates;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use RequirementsChecker;
 use Symfony\Component\HttpFoundation\Response;
@@ -31,6 +36,20 @@ final class UpdaterController extends BaseUpdaterController
     public const string ACTION_REVERT = 'revert';
 
     public const string ACTION_MIGRATE = 'migrate';
+
+    public function __construct(
+        Request $request,
+        GeneralConfig $generalConfig,
+        Composer $composer,
+        Plugins $plugins,
+        Updates $updates,
+    ) {
+        parent::__construct($request, $generalConfig, $composer, $plugins, $updates);
+
+        if ($request->has('install') && $this->request->fullUrlIs(action([self::class, 'index']))) {
+            abort_unless($request->user()->can('performUpdates'), 403, 'You do not have permission to perform updates.');
+        }
+    }
 
     public function forceUpdate(): Response
     {
@@ -169,7 +188,7 @@ final class UpdaterController extends BaseUpdaterController
         $packageNames = $this->request->validate([
             'packageNames' => ['required', 'array'],
             'packageNames.*' => ['string'],
-        ]);
+        ])['packageNames'];
 
         $data = array_merge($data, [
             'install' => $this->parseInstallParam($this->request->get('install')),
