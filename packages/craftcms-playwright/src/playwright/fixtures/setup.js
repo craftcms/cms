@@ -1,5 +1,4 @@
 /* jshint esversion: 9, strict: false */
-/* globals module, require, process */
 const util = require('util');
 const nodeExec = util.promisify(require('child_process').exec);
 const path = require('path');

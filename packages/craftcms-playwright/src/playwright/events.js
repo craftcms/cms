@@ -1,5 +1,4 @@
 /* jshint esversion: 11, strict: false */
-/* globals module, require */
 const EventEmitter = require('events');
 
 class AsyncEventEmitter extends EventEmitter {

@@ -1,5 +1,4 @@
 /* jshint esversion: 9, strict: false */
-/* globals module, require */
 class Dashboard {
   constructor(page) {
     this.page = page;

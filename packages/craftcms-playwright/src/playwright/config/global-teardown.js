@@ -1,6 +1,6 @@
 const {Setup} = require('./../fixtures/setup');
 
-module.exports = async (config) => {
+module.exports = async () => {
   const setup = new Setup();
   await setup.dbRestore();
   await setup.projectConfigRestore();

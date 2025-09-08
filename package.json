@@ -22,8 +22,8 @@
     "extends @craftcms/browserslist-config"
   ],
   "devDependencies": {
-    "@craftcms/webpack": "file:packages/craftcms-webpack",
     "@craftcms/playwright": "file:packages/craftcms-playwright",
+    "@craftcms/webpack": "file:packages/craftcms-webpack",
     "@playwright/test": "^1.19.2",
     "husky": "^8.0.3",
     "lint-staged": "^15.2.0",

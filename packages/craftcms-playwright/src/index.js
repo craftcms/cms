@@ -1,5 +1,4 @@
 /* jshint esversion: 9, strict: false */
-/* globals module, require */
 const base = require('@playwright/test');
 const baseConfig = require('./playwright/config/config');
 const events = require('./playwright/events');

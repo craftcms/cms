@@ -1,7 +1,5 @@
-/* jshint esversion: 9, strict: false */
 const path = require('path');
 const {devices} = require('@playwright/test');
-// const events = require('./_events');
 
 const testDir = './tests-playwright';
 require('dotenv').config({path: path.resolve(path.join(testDir, '.env'))});
@@ -15,8 +13,8 @@ const password = process.env.AUTH_PASSWORD ?? 'NewPassword';
 const fixturesNamespace = process.env.CODECEPTION_FIXTURES_NAMESPACE;
 
 module.exports = {
-  globalSetup: require.resolve(path.join(__dirname, './global-setup.js')),
-  globalTeardown: require.resolve(path.join(__dirname, './global-teardown.js')),
+  globalSetup: require.resolve('./global-setup.js'),
+  globalTeardown: require.resolve('./global-teardown.js'),
   testDir,
   fixturesNamespace,
   use: {

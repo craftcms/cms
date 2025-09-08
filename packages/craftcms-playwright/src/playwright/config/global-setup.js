@@ -1,5 +1,3 @@
-const {exec} = require('child_process');
-const path = require('path');
 const {chromium, expect} = require('@playwright/test');
 const events = require('./../events');
 const {Setup} = require('./../fixtures/setup');
@@ -8,8 +6,7 @@ const logger = require('../logger');
 module.exports = async (config) => {
   logger.await('Running global setup...');
 
-  const {baseURL, db, password, projectPath, storageState, testDir, username} =
-    config.projects[0].use;
+  const {baseURL, password, storageState, username} = config.projects[0].use;
 
   const browser = await chromium.launch({slowMo: 1000});
   const context = await browser.newContext();
