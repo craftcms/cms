@@ -2180,7 +2180,7 @@ Craft.CP.Notification = Garnish.Base.extend(
         this.closeTimeout = null;
 
         this.$container.on('mouseout', (ev) => {
-          if (ev.target == this.$container[0]) {
+          if (ev.currentTarget == this.$container[0]) {
             this.$container.off('mouseout');
             this.delayedClose();
           }
