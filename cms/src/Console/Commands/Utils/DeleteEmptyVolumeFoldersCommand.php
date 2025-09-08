@@ -30,11 +30,12 @@ final class DeleteEmptyVolumeFoldersCommand extends Command
         if ($volumes = $this->argument('volume')) {
             $volumeIds = [];
             $volumesService = Craft::$app->getVolumes();
+
             foreach ($volumes as $handle) {
                 $volume = $volumesService->getVolumeByHandle($handle);
 
                 if (! $volume) {
-                    $this->error("Invalid volume handle: $handle\n");
+                    $this->components->error("Invalid volume handle: $handle");
 
                     return self::FAILURE;
                 }
