@@ -10,6 +10,9 @@ use CraftCms\Cms\Updates\Updates;
 use Illuminate\Http\Request;
 use RuntimeException;
 
+/**
+ * @since 6.0.0
+ */
 final class CheckSchemaVersion
 {
     use FetchesInfo;

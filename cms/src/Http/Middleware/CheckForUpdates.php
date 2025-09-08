@@ -10,6 +10,9 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Log;
 
+/**
+ * @since 6.0.0
+ */
 final readonly class CheckForUpdates
 {
     public function __construct(

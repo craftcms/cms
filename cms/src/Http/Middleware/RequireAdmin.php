@@ -8,6 +8,9 @@ use CraftCms\Cms\User\Models\User;
 use Illuminate\Auth\AuthenticationException;
 use Illuminate\Http\Request;
 
+/**
+ * @since 6.0.0
+ */
 final class RequireAdmin
 {
     public function __construct(
