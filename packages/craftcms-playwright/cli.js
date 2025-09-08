@@ -11,7 +11,7 @@ const logger = require('./playwright/logger');
 
   // If args is not an array or is empty, exit
   if (!Array.isArray(args) || args.length === 0) {
-    logger.warning('Please provide a command.');
+    logger.warn('Please provide a command.');
 
     process.exit(1);
   }

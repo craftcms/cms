@@ -6,11 +6,10 @@ const {devices} = require('@playwright/test');
 const testDir = './tests-playwright';
 require('dotenv').config({path: path.resolve(path.join(testDir, '.env'))});
 
-let cpTrigger = process.env.CRAFT_CP_TRIGGER ?? 'admin';
-cpTrigger = `./${cpTrigger}/`;
+const cpTrigger = `./${process.env.CRAFT_CP_TRIGGER ?? 'admin'}/`;
 const storageStateFilename = '.authentication.json';
-let baseURL = process.env.PRIMARY_SITE_URL ?? 'https://playwright.ddev.site/';
-baseURL = new URL(cpTrigger, baseURL).href;
+const siteUrl = process.env.PRIMARY_SITE_URL ?? 'https://playwright.ddev.site/';
+const cpUrl = new URL(cpTrigger, siteUrl).href;
 const username = process.env.AUTH_USERNAME ?? 'admin';
 const password = process.env.AUTH_PASSWORD ?? 'NewPassword';
 const fixturesNamespace = process.env.CODECEPTION_FIXTURES_NAMESPACE;
@@ -18,10 +17,10 @@ const fixturesNamespace = process.env.CODECEPTION_FIXTURES_NAMESPACE;
 module.exports = {
   globalSetup: require.resolve(path.join(__dirname, './global-setup.js')),
   globalTeardown: require.resolve(path.join(__dirname, './global-teardown.js')),
-  testDir: testDir,
+  testDir,
   fixturesNamespace,
   use: {
-    baseURL,
+    baseURL: cpUrl,
     username,
     password,
     testDir,
