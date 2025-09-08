@@ -181,3 +181,17 @@ The `php craft fields:merge` and `php craft entry-types:merge` commands will now
   - `CraftCms\Cms\Database\Commands\MigrateCommand` 
 - Removed `craft\console\controllers\UpController` in favor of:
   - `CraftCms\Cms\Console\Commands\UpCommand` 
+
+### Users
+
+- Removed `craft\console\controllers\UsersController` in favor of the following commands (signatures are the same):
+  - `CraftCms\Cms\User\Commands\ActivationUrlCommand`
+  - `CraftCms\Cms\User\Commands\CreateCommand`
+  - `CraftCms\Cms\User\Commands\DeleteCommand`
+  - `CraftCms\Cms\User\Commands\ImpersonateCommand`
+  - `CraftCms\Cms\User\Commands\ListAdminsCommand`
+  - `CraftCms\Cms\User\Commands\LogoutAllCommand`
+  - `CraftCms\Cms\User\Commands\PasswordResetUrlCommand`
+  - `CraftCms\Cms\User\Commands\Remove2faCommand`
+  - `CraftCms\Cms\User\Commands\SetPasswordCommand`
+  - `CraftCms\Cms\User\Commands\UnlockCommand`
