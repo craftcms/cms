@@ -1,6 +1,6 @@
 # Release Notes for Craft CMS 5
 
-## Unreleased
+## 5.8.16 - 2025-08-29
 
 - When searching for elements, partial matches within titles are now scored higher than exact matches in other fields. ([#17739](https://github.com/craftcms/cms/issues/17739))
 - Date pickers’ year selects now have a range of 100 years in the past and future. ([#17782](https://github.com/craftcms/cms/pull/17782))
@@ -13,6 +13,8 @@
 - Fixed a bug where custom field values weren’t always retaining changes after changing an entry type. ([#17768](https://github.com/craftcms/cms/issues/17768))
 - Fixed a bug where JSON fields weren’t initializing properly when they weren’t on the initially-shown field layout tab. ([#17772](https://github.com/craftcms/cms/issues/17772))
 - Fixed a bug where the Live Preview drag bar’s hit area was only 2px wide. ([#17781](https://github.com/craftcms/cms/issues/17781))
+- Fixed a bug where multi-select Selectize inputs didn’t allow selected options’ labels to wrap. ([#17790](https://github.com/craftcms/cms/issues/17790))
+- Updated the bundled composer.phar to 2.7.7. ([#17796](https://github.com/craftcms/cms/issues/17796))
 
 ## 5.8.15 - 2025-08-13
 
