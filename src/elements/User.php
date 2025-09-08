@@ -2602,7 +2602,7 @@ JS, [
             }
         }
 
-        if (!$isNew && $changePassword) {
+        if (!$isNew && $changePassword && !app()->runningInConsole()) {
             $token = Craft::$app->getUser()->getToken();
 
             // Destroy all other sessions for this user

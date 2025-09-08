@@ -207,3 +207,17 @@ Moved the following controllers:
 - Removed `craft\models\Update`. `CraftCms\Cms\Updates\Data\Update` should be used instead.
 - Removed `craft\models\UpdateRelease`. `CraftCms\Cms\Updates\Data\UpdateRelease` should be used instead.
 - Removed `craft\models\Updates`. `CraftCms\Cms\Updates\Data\Updates` should be used instead.
+
+### Users
+
+- Removed `craft\console\controllers\UsersController` in favor of the following commands (signatures are the same):
+  - `CraftCms\Cms\User\Commands\ActivationUrlCommand`
+  - `CraftCms\Cms\User\Commands\CreateCommand`
+  - `CraftCms\Cms\User\Commands\DeleteCommand`
+  - `CraftCms\Cms\User\Commands\ImpersonateCommand`
+  - `CraftCms\Cms\User\Commands\ListAdminsCommand`
+  - `CraftCms\Cms\User\Commands\LogoutAllCommand`
+  - `CraftCms\Cms\User\Commands\PasswordResetUrlCommand`
+  - `CraftCms\Cms\User\Commands\Remove2faCommand`
+  - `CraftCms\Cms\User\Commands\SetPasswordCommand`
+  - `CraftCms\Cms\User\Commands\UnlockCommand`

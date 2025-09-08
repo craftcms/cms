@@ -19,7 +19,7 @@ interface ValidatableComponentInterface
 
     public function getFirstError(string $attribute): ?string;
 
-    public function setAttributes(array $values): void;
+    public function setAttributes(array $values, bool $safeOnly = true): void;
 
     public function getAttributes(): array;
 }
