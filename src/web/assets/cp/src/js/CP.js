@@ -1961,6 +1961,8 @@ Craft.CP = Garnish.Base.extend(
       if (e.type == 'click' || e.keyCode == 32 || e.keyCode == 13) {
         // prevent e.g. the space key from scrolling the page too
         e.preventDefault();
+        // Get the previous item so we can use that to figure out where to focus after removing the expand button
+        const $prevElement = $(e.target).prev();
 
         // get the item's parent so that the thumb loader can work as expected
         const parent = $(item).parent();
@@ -1974,6 +1976,12 @@ Craft.CP = Garnish.Base.extend(
             this.elementThumbLoader.load(parent);
           }
         }
+
+        // Find element to focus
+        const $nextFocusable = Garnish.firstFocusableElement(
+          $prevElement.next()
+        );
+        $nextFocusable.trigger('focus');
       }
     },
   },
