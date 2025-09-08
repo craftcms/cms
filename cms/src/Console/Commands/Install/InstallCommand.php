@@ -57,7 +57,7 @@ final class InstallCommand extends Command
 
         try {
             DB::statement('select 1');
-        } catch (QueryException) {
+        } catch (QueryException $e) {
             /** @todo Laravel command */
             return $this->call('setup/welcome');
         }

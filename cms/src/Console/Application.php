@@ -46,6 +46,17 @@ final class Application extends \Illuminate\Console\Application
     {
         return collect(parent::all($namespace))
             ->mapWithKeys(function (SymfonyCommand $command, string $name) {
+                // Allow some default commands to show up
+                if (in_array($command->getName(), [
+                    'list',
+                    'help',
+                    'make:cache-table',
+                    'make:sessions-table',
+                    'vendor:publish',
+                ])) {
+                    return [$name => $command];
+                }
+
                 if (! in_array(CraftCommand::class, class_uses($command))) {
                     $command->setHidden();
 
