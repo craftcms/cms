@@ -9,10 +9,7 @@
   "publishConfig": {
     "access": "public"
   },
-  "scripts": {
-    "format": "prettier --write ./src",
-    "lint": "eslint ./src"
-  },
+  "scripts": {},
   "dependencies": {
     "@playwright/test": "^1.47.0",
     "events": "^3.3.0",
@@ -20,12 +17,5 @@
   },
   "bin": {
     "craft-playwright": "./src/cli.js"
-  },
-  "devDependencies": {
-    "@eslint/js": "^9.35.0",
-    "eslint": "^9.35.0",
-    "eslint-config-prettier": "^10.1.8",
-    "globals": "^16.3.0",
-    "prettier": "^3.6.2"
   }
 }

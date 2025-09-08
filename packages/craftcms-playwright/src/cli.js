@@ -3,7 +3,6 @@ const path = require('path');
 const spawn = require('child_process').spawn;
 const logger = require('./playwright/logger');
 
-
 (async function main() {
   // Get args
   let [, , ...args] = process.argv;
