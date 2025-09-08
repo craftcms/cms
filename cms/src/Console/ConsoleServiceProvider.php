@@ -2,6 +2,7 @@
 
 namespace CraftCms\Cms\Console;
 
+use CraftCms\Cms\Console\Commands\ClearCachesCommand;
 use CraftCms\Cms\Console\Commands\Env\EnvRemoveCommand;
 use CraftCms\Cms\Console\Commands\Env\EnvSetCommand;
 use CraftCms\Cms\Console\Commands\Env\EnvShowCommand;
@@ -56,6 +57,14 @@ final class ConsoleServiceProvider extends ServiceProvider
         });
 
         $this->commands($this->commands);
+
+        foreach (ClearCachesCommand::signatures() as $signature) {
+            $this->commands(new ClearCachesCommand(
+                signature: $signature['signature'],
+                description: $signature['description'],
+                aliases: $signature['aliases'] ?? [],
+            ));
+        }
 
         $this->optimizes(
             optimize: 'craft:twig:cache',
