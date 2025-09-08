@@ -16,6 +16,7 @@ use CraftCms\Cms\Console\Commands\Setup\WelcomeCommand;
 use CraftCms\Cms\Console\Commands\Twig\TwigCacheCommand;
 use CraftCms\Cms\Console\Commands\Twig\TwigClearCommand;
 use CraftCms\Cms\Console\Commands\UpCommand;
+use CraftCms\Cms\Console\Commands\Utils\AsciiFilenamesCommand;
 use CraftCms\Cms\Console\Commands\Utils\UpdateUsernamesCommand;
 use Illuminate\Support\ServiceProvider;
 
@@ -48,6 +49,7 @@ final class ConsoleServiceProvider extends ServiceProvider
         TwigClearCommand::class,
 
         // Utils
+        AsciiFilenamesCommand::class,
         UpdateUsernamesCommand::class,
     ];
 
