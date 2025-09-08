@@ -1316,6 +1316,7 @@ JS, [
                 'data' => [
                     'other' => Json::encode($otherHtml),
                 ],
+                'aria-expanded' => 'false',
                 'onkeydown' => 'Craft.cp.previewCountBadge(event, this, true)', // have to use keydown or the page will scroll
                 'onclick' => 'Craft.cp.previewCountBadge(event, this, true)',
             ]);
