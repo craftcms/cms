@@ -8,6 +8,7 @@ use CraftCms\Cms\Console\Commands\Env\EnvSetCommand;
 use CraftCms\Cms\Console\Commands\Env\EnvShowCommand;
 use CraftCms\Cms\Console\Commands\Install\InstallCheckCommand;
 use CraftCms\Cms\Console\Commands\Install\InstallCommand;
+use CraftCms\Cms\Console\Commands\InvalidateTagsCommand;
 use CraftCms\Cms\Console\Commands\Setup\CloudCommand;
 use CraftCms\Cms\Console\Commands\Setup\DatabaseCredentialsCommand;
 use CraftCms\Cms\Console\Commands\Setup\SetupCommand;
@@ -60,6 +61,14 @@ final class ConsoleServiceProvider extends ServiceProvider
 
         foreach (ClearCachesCommand::signatures() as $signature) {
             $this->commands(new ClearCachesCommand(
+                signature: $signature['signature'],
+                description: $signature['description'],
+                aliases: $signature['aliases'] ?? [],
+            ));
+        }
+
+        foreach (InvalidateTagsCommand::signatures() as $signature) {
+            $this->commands(new InvalidateTagsCommand(
                 signature: $signature['signature'],
                 description: $signature['description'],
                 aliases: $signature['aliases'] ?? [],
