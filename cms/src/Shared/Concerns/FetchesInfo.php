@@ -6,6 +6,9 @@ use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Shared\Models\Info;
 use Throwable;
 
+/**
+ * @since 6.0.0
+ */
 trait FetchesInfo
 {
     private ?Info $info = null;

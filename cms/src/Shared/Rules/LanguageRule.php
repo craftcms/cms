@@ -6,6 +6,9 @@ use Closure;
 use Craft;
 use Illuminate\Contracts\Validation\ValidationRule;
 
+/**
+ * @since 6.0.0
+ */
 final readonly class LanguageRule implements ValidationRule
 {
     public function __construct(

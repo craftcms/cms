@@ -9,8 +9,8 @@ use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Console\CraftCommand;
 use CraftCms\Cms\Database\Migrations\Install;
 use CraftCms\Cms\Database\Migrator;
+use CraftCms\Cms\Site\Concerns\SiteDefaults;
 use CraftCms\Cms\Support\Env;
-use CraftCms\Cms\Support\Install as InstallHelper;
 use Illuminate\Console\Command;
 use Illuminate\Container\Attributes\Give;
 use Illuminate\Database\QueryException;
@@ -26,6 +26,7 @@ use function Laravel\Prompts\text;
 final class InstallCommand extends Command
 {
     use CraftCommand;
+    use SiteDefaults;
 
     protected $signature = 'craft:install
         {--email= : The default email address for the first user to create during install.}
@@ -61,9 +62,9 @@ final class InstallCommand extends Command
         // TODO
         // $this->call('setup/keys');
 
-        $defaultSiteName = InstallHelper::defaultSiteName();
-        $defaultSiteUrl = InstallHelper::defaultSiteUrl();
-        $defaultSiteLanguage = InstallHelper::defaultSiteLanguage();
+        $defaultSiteName = $this->defaultSiteName();
+        $defaultSiteUrl = $this->defaultSiteUrl();
+        $defaultSiteLanguage = $this->defaultSiteLanguage();
 
         $responses = form()
             ->addIf(! $generalConfig->useEmailAsUsername && ! $this->option('username'), fn ($form) => text(

@@ -1,19 +1,20 @@
 <?php
 
-namespace CraftCms\Cms\Support;
+namespace CraftCms\Cms\Site\Concerns;
 
 use Craft;
 use CraftCms\Aliases\Facades\Aliases;
+use CraftCms\Cms\Support\Env;
 
 /**
  * @since 6.0.0
  */
-final class Install
+trait SiteDefaults
 {
-    public static function defaultSiteName(): ?string
+    protected function defaultSiteName(): ?string
     {
         // Is there a project.yaml that defines a primary site?
-        $primarySite = self::primarySiteConfig();
+        $primarySite = $this->primarySiteConfig();
         if (! empty($primarySite['name'])) {
             return $primarySite['name'];
         }
@@ -31,10 +32,10 @@ final class Install
         return implode(' ', array_map('ucfirst', $words));
     }
 
-    public static function defaultSiteUrl(): ?string
+    protected function defaultSiteUrl(): ?string
     {
         // Is there a project.yaml that defines a primary site with a base URL?
-        $primarySite = self::primarySiteConfig();
+        $primarySite = $this->primarySiteConfig();
         if (! empty($primarySite['baseUrl'])) {
             return $primarySite['baseUrl'];
         }
@@ -53,10 +54,10 @@ final class Install
         return Aliases::get('@web');
     }
 
-    public static function defaultSiteLanguage(): string
+    protected function defaultSiteLanguage(): string
     {
         // Is there a project.yaml that defines a primary site?
-        $primarySite = self::primarySiteConfig();
+        $primarySite = $this->primarySiteConfig();
         if (! empty($primarySite['language'])) {
             return $primarySite['language'];
         }
@@ -64,7 +65,7 @@ final class Install
         return 'en';
     }
 
-    private static function primarySiteConfig(): ?array
+    private function primarySiteConfig(): ?array
     {
         return once(fn () => collect(
             Craft::$app->getProjectConfig()->get('sites', true) ?? []

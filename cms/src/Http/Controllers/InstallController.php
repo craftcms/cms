@@ -8,11 +8,11 @@ use craft\models\Site;
 use craft\web\assets\installer\InstallerAsset;
 use CraftCms\Aliases\Facades\Aliases;
 use CraftCms\Cms\Config\GeneralConfig;
-use CraftCms\Cms\Database\Migrations\Install as InstallMigration;
+use CraftCms\Cms\Database\Migrations\Install;
 use CraftCms\Cms\Database\Migrator;
 use CraftCms\Cms\Shared\Rules\LanguageRule;
+use CraftCms\Cms\Site\Concerns\SiteDefaults;
 use CraftCms\Cms\Support\Env;
-use CraftCms\Cms\Support\Install;
 use CraftCms\Cms\Support\Str;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -37,6 +37,8 @@ use Throwable;
  */
 final readonly class InstallController
 {
+    use SiteDefaults;
+
     public function __construct()
     {
         // Return a 404 if Craft is already installed
@@ -65,9 +67,9 @@ final readonly class InstallController
         $license = file_get_contents($licensePath);
 
         // Guess the site name based on the server name
-        $defaultSystemName = Install::defaultSiteName();
-        $defaultSiteUrl = Install::defaultSiteUrl();
-        $defaultSiteLanguage = Install::defaultSiteLanguage();
+        $defaultSystemName = $this->defaultSiteName();
+        $defaultSiteUrl = $this->defaultSiteUrl();
+        $defaultSiteLanguage = $this->defaultSiteLanguage();
 
         return response(Craft::$app->getView()->renderPageTemplate('_special/install/index.twig', compact(
             'showDbScreen',
@@ -222,7 +224,7 @@ final readonly class InstallController
             'language' => $request->string('site-language'),
         ]);
 
-        $migration = new InstallMigration(
+        $migration = new Install(
             username: $username,
             password: $request->string('account-password'),
             email: $email,
