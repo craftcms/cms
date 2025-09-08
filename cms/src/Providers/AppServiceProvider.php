@@ -6,6 +6,9 @@ use Craft;
 use craft\helpers\FileHelper;
 use CraftCms\Aliases\Facades\Aliases;
 use CraftCms\Cms\Config\GeneralConfig;
+use CraftCms\Cms\Http\Middleware\CheckForUpdates;
+use CraftCms\Cms\Http\Middleware\CheckRequirements;
+use CraftCms\Cms\Http\Middleware\CheckSchemaVersion;
 use CraftCms\Cms\Http\Middleware\ExtractNamespace;
 use CraftCms\Cms\Http\Middleware\FlushProjectConfig;
 use CraftCms\Cms\Http\Middleware\HandleActionRequest;
@@ -13,9 +16,12 @@ use CraftCms\Cms\Http\Middleware\RequireCpRequest;
 use CraftCms\Cms\Http\Middleware\SendPoweredByHeader;
 use CraftCms\Cms\Support\Env;
 use CraftCms\Cms\User\Models\User;
+use GuzzleHttp\Utils;
 use Illuminate\Auth\Middleware\Authenticate;
 use Illuminate\Contracts\Http\Kernel as HttpKernel;
 use Illuminate\Foundation\Console\AboutCommand;
+use Illuminate\Http\Client\Factory;
+use Illuminate\Http\Client\PendingRequest;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Router;
 use Illuminate\Support\Facades\Config;
@@ -77,6 +83,27 @@ final class AppServiceProvider extends ServiceProvider
 
             return [];
         });
+
+        Factory::macro('create', function (array $options = []) {
+            $generalConfig = app(GeneralConfig::class);
+
+            return $this->throw()
+                ->withUserAgent('Craft/'.Craft::$app->getVersion().' '.Utils::defaultUserAgent())
+                ->when(
+                    Config::has('craft.guzzle'),
+                    fn (PendingRequest $pendingRequest) => $pendingRequest->withOptions(Config::get('craft.guzzle')),
+                )
+                ->when(
+                    $options,
+                    fn (PendingRequest $pendingRequest) => $pendingRequest->withOptions($options),
+                )
+                ->when(
+                    $generalConfig->httpProxy,
+                    fn (PendingRequest $pendingRequest) => $pendingRequest->withOptions([
+                        'proxy' => $generalConfig->httpProxy,
+                    ]),
+                );
+        });
     }
 
     public function boot(): void
@@ -106,6 +133,8 @@ final class AppServiceProvider extends ServiceProvider
         $router = $this->app->make(Router::class);
 
         collect([
+            CheckSchemaVersion::class,
+            CheckForUpdates::class,
             ExtractNamespace::class,
             SendPoweredByHeader::class,
             FlushProjectConfig::class,
@@ -113,6 +142,7 @@ final class AppServiceProvider extends ServiceProvider
 
         collect([
             RequireCpRequest::class,
+            CheckRequirements::class,
         ])->each(fn ($middleware) => $router->pushMiddlewareToGroup('craft.cp', $middleware));
 
         collect([

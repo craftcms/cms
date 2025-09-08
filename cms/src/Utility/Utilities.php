@@ -3,7 +3,6 @@
 namespace CraftCms\Cms\Utility;
 
 use craft\queue\QueueInterface;
-use craft\web\Application;
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\User\Models\User;
@@ -20,7 +19,6 @@ use CraftCms\Cms\Utility\Utilities\QueueManager;
 use CraftCms\Cms\Utility\Utilities\SystemMessages as SystemMessagesUtility;
 use CraftCms\Cms\Utility\Utilities\SystemReport;
 use CraftCms\Cms\Utility\Utilities\Updates as UpdatesUtility;
-use Illuminate\Container\Attributes\Give;
 use Illuminate\Container\Attributes\Singleton;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
@@ -36,7 +34,6 @@ use Illuminate\Support\Facades\Event;
 final readonly class Utilities
 {
     public function __construct(
-        #[Give('Craft')] protected Application $craft,
         protected GeneralConfig $generalConfig,
     ) {}
 
@@ -55,15 +52,15 @@ final readonly class Utilities
                 PhpInfo::class,
             )
             ->when(
-                $this->craft->edition->value >= Edition::Pro->value,
+                app('Craft')->edition->value >= Edition::Pro->value,
                 fn (Collection $c) => $c->push(SystemMessagesUtility::class)
             )
             ->when(
-                ! empty($this->craft->getVolumes()->getAllVolumes()),
+                ! empty(app('Craft')->getVolumes()->getAllVolumes()),
                 fn (Collection $c) => $c->push(AssetIndexes::class)
             )
             ->when(
-                $this->craft->getQueue() instanceof QueueInterface,
+                app('Craft')->getQueue() instanceof QueueInterface,
                 fn (Collection $c) => $c->push(QueueManager::class)
             )
             ->push(

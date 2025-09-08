@@ -12,30 +12,22 @@ use craft\base\Chippable;
 use craft\base\ElementInterface;
 use craft\base\Iconic;
 use craft\elements\db\NestedElementQueryInterface;
-use craft\errors\BusyResourceException;
-use craft\errors\StaleResourceException;
 use craft\filters\UtilityAccess;
 use craft\helpers\Cp;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\ElementHelper;
 use craft\helpers\Search;
 use craft\helpers\Session;
-use craft\helpers\Update as UpdateHelper;
 use craft\helpers\UrlHelper;
-use craft\models\Update;
-use craft\models\Updates;
 use craft\web\Controller;
-use craft\web\ServiceUnavailableHttpException;
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\License\License;
-use CraftCms\Cms\Plugin\Exceptions\InvalidPluginException;
 use CraftCms\Cms\Plugin\Plugins;
 use CraftCms\Cms\Shared\Enums\LicenseKeyStatus;
 use CraftCms\Cms\Support\Api;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Env;
-use CraftCms\Cms\Support\Facades\Http;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Utility\Utilities;
@@ -44,15 +36,12 @@ use CraftCms\DependencyAwareCache\Dependency\FileDependency;
 use CraftCms\DependencyAwareCache\Facades\DependencyCache;
 use DateInterval;
 use Illuminate\Support\Facades\Cache;
-use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Http;
 use InvalidArgumentException;
-use Throwable;
 use yii\base\InvalidConfigException;
 use yii\web\BadRequestHttpException;
 use yii\web\Cookie;
-use yii\web\ForbiddenHttpException;
 use yii\web\Response;
-use yii\web\ServerErrorHttpException;
 
 /**
  * The AppController class is a controller that handles various actions for Craft updates, control panel requests,
@@ -180,197 +169,6 @@ class AppController extends Controller
 
         // return the updated headers
         return $this->asJson(app(Api::class)->headers());
-    }
-
-    /**
-     * Returns update info.
-     *
-     * @return Response
-     * @throws BadRequestHttpException if the request doesn't accept a JSON response
-     * @throws ForbiddenHttpException if the user doesn't have permission to perform updates or use the Updates utility
-     */
-    public function actionCheckForUpdates(): Response
-    {
-        $this->requireAcceptsJson();
-
-        $updatesService = Craft::$app->getUpdates();
-
-        if ($this->request->getParam('onlyIfCached') && !$updatesService->getIsUpdateInfoCached()) {
-            return $this->asJson(['cached' => false]);
-        }
-
-        $forceRefresh = (bool)$this->request->getParam('forceRefresh');
-        $includeDetails = (bool)$this->request->getParam('includeDetails');
-
-        $updates = $updatesService->getUpdates($forceRefresh);
-        return $this->_updatesResponse($updates, $includeDetails);
-    }
-
-    /**
-     * Caches new update info and then returns it.
-     *
-     * @return Response
-     * @throws ForbiddenHttpException
-     * @since 3.3.16
-     */
-    public function actionCacheUpdates(): Response
-    {
-        $this->requireAcceptsJson();
-
-        $updateData = $this->request->getBodyParam('updates');
-        $updatesService = Craft::$app->getUpdates();
-        $updates = $updatesService->cacheUpdates($updateData);
-        $includeDetails = (bool)$this->request->getParam('includeDetails');
-        return $this->_updatesResponse($updates, $includeDetails);
-    }
-
-    /**
-     * Returns updates info as JSON
-     *
-     * @param Updates $updates The updates model
-     * @param bool $includeDetails Whether to include update details
-     * @return Response
-     */
-    private function _updatesResponse(Updates $updates, bool $includeDetails): Response
-    {
-        $generalConfig = app(GeneralConfig::class);
-
-        $allowUpdates = (
-            $generalConfig->allowUpdates &&
-            $generalConfig->allowAdminChanges &&
-            Craft::$app->getUser()->checkPermission('performUpdates')
-        );
-
-        $res = [
-            'total' => $updates->getTotal(),
-            'critical' => $updates->getHasCritical(),
-            'allowUpdates' => $allowUpdates,
-        ];
-
-        if ($includeDetails) {
-            $res['updates'] = [
-                'cms' => $this->_transformUpdate($allowUpdates, $updates->cms, 'craft', 'Craft CMS'),
-                'plugins' => [],
-            ];
-
-            $pluginsService = app(Plugins::class);
-            foreach ($updates->plugins as $pluginHandle => $pluginUpdate) {
-                try {
-                    $pluginInfo = $pluginsService->getPluginInfo($pluginHandle);
-                } catch (InvalidPluginException) {
-                    continue;
-                }
-                $res['updates']['plugins'][] = $this->_transformUpdate($allowUpdates, $pluginUpdate, $pluginHandle, $pluginInfo['name']);
-            }
-        }
-
-        return $this->asJson($res);
-    }
-
-    /**
-     * Creates a DB backup (if configured to do so), runs any pending Craft,
-     * plugin, & content migrations, and syncs `project.yaml` changes in one go.
-     *
-     * This action can be used as a post-deploy webhook with site deployment
-     * services (like [DeployBot](https://deploybot.com/) or [DeployPlace](https://deployplace.com/)) to minimize site
-     * downtime after a deployment.
-     *
-     * @param bool $applyProjectConfigChanges
-     * @return Response
-     * @throws ServerErrorHttpException
-     */
-    public function actionMigrate(bool $applyProjectConfigChanges = false): Response
-    {
-        $this->requirePostRequest();
-
-        $updatesService = Craft::$app->getUpdates();
-        $db = Craft::$app->getDb();
-
-        // Get the handles in need of an update
-        $handles = $updatesService->getPendingMigrationHandles(true);
-        $runMigrations = !empty($handles);
-
-        $projectConfigService = Craft::$app->getProjectConfig();
-        if ($applyProjectConfigChanges) {
-            $applyProjectConfigChanges = $projectConfigService->areChangesPending(force: true);
-        }
-
-        if (!$runMigrations && !$applyProjectConfigChanges) {
-            // That was easy
-            return $this->response;
-        }
-
-        // Bail if Craft is already in maintenance mode
-        if (Craft::$app->getIsInMaintenanceMode()) {
-            throw new ServiceUnavailableHttpException('Craft is already being updated.');
-        }
-
-        // Enable maintenance mode
-        Craft::$app->enableMaintenanceMode();
-
-        // Backup the DB?
-        $backup = app(GeneralConfig::class)->getBackupOnUpdate();
-        if ($backup) {
-            try {
-                $backupPath = $db->backup();
-            } catch (Throwable $e) {
-                Craft::$app->disableMaintenanceMode();
-                throw new ServerErrorHttpException('Error backing up the database.', 0, $e);
-            }
-        }
-
-        DB::beginTransaction();
-
-        try {
-            // Run the migrations?
-            if ($runMigrations) {
-                $updatesService->runMigrations($handles);
-            }
-
-            // Sync project.yaml?
-            if ($applyProjectConfigChanges) {
-                try {
-                    $projectConfigService->applyExternalChanges();
-                } catch (BusyResourceException|StaleResourceException $e) {
-                    Craft::$app->getErrorHandler()->logException($e);
-                    Craft::warning("Couldn’t apply project config YAML changes: {$e->getMessage()}", __METHOD__);
-                }
-            }
-
-            DB::commit();
-        } catch (Throwable $e) {
-            DB::rollBack();
-
-            // MySQL may have implicitly committed the transaction
-            $restored = $db->getIsPgsql();
-
-            // Do we have a backup?
-            if (!$restored && !empty($backupPath)) {
-                // Attempt a restore
-                try {
-                    $db->restore($backupPath);
-                    $restored = true;
-                } catch (Throwable $restoreException) {
-                    // Just log it
-                    Craft::$app->getErrorHandler()->logException($restoreException);
-                }
-            }
-
-            $error = 'An error occurred running new migrations.';
-            if ($restored) {
-                $error .= ' The database has been restored to its previous state.';
-            } elseif (isset($restoreException)) {
-                $error .= ' The database could not be restored due to a separate error: ' . $restoreException->getMessage();
-            } else {
-                $error .= ' The database has not been restored.';
-            }
-
-            Craft::$app->disableMaintenanceMode();
-            throw new ServerErrorHttpException($error, 0, $e);
-        }
-
-        Craft::$app->disableMaintenanceMode();
-        return $this->response;
     }
 
     /**
@@ -583,74 +381,6 @@ class AppController extends Controller
 
         // Return the new plugin license info
         return $this->asJson(1);
-    }
-
-    /**
-     * Transforms an update for inclusion in [[actionCheckForUpdates()]] response JSON.
-     *
-     * Also sets an `allowed` key on the given update's releases, based on the `allowUpdates` config setting.
-     *
-     * @param bool $allowUpdates Whether updates are allowed
-     * @param Update $update The update model
-     * @param string $handle The handle of whatever this update is for
-     * @param string $name The name of whatever this update is for
-     * @return array
-     */
-    private function _transformUpdate(bool $allowUpdates, Update $update, string $handle, string $name): array
-    {
-        $arr = $update->toArray();
-        $arr['handle'] = $handle;
-        $arr['name'] = $name;
-        $arr['latestVersion'] = $update->getLatest()->version ?? null;
-
-        // Make sure that the platform & composer.json PHP version are compatible
-        $phpConstraintError = null;
-        if (
-            $update->phpConstraint &&
-            !UpdateHelper::checkPhpConstraint($update->phpConstraint, $phpConstraintError, true)
-        ) {
-            $arr['status'] = 'phpIssue';
-            $arr['statusText'] = $phpConstraintError;
-            $arr['ctaUrl'] = false;
-        } elseif ($update->status === Update::STATUS_EXPIRED) {
-            $arr['statusText'] = Craft::t('app', '<strong>Your license has expired!</strong> Renew your {name} license for another year of amazing updates.', [
-                'name' => $name,
-            ]);
-            $arr['ctaText'] = Craft::t('app', 'Renew for {price}', [
-                'price' => Craft::$app->getFormatter()->asCurrency($update->renewalPrice, $update->renewalCurrency),
-            ]);
-            $arr['ctaUrl'] = UrlHelper::url($update->renewalUrl);
-
-            if ($allowUpdates && Craft::$app->getCanTestEditions()) {
-                $arr['altCtaText'] = Craft::t('app', 'Update anyway');
-            }
-        } else {
-            if ($update->abandoned) {
-                $arr['statusText'] = Html::tag('strong', Craft::t('app', 'This plugin is no longer maintained.'));
-                if ($update->replacementName) {
-                    if (Craft::$app->getUser()->getIsAdmin() && app(GeneralConfig::class)->allowAdminChanges) {
-                        $replacementUrl = UrlHelper::url("plugin-store/$update->replacementHandle");
-                    } else {
-                        $replacementUrl = $update->replacementUrl;
-                    }
-                    $arr['statusText'] .= ' ' .
-                        Craft::t('app', 'The developer recommends using <a href="{url}">{name}</a> instead.', [
-                            'url' => $replacementUrl,
-                            'name' => $update->replacementName,
-                        ]);
-                }
-            } elseif ($update->status === Update::STATUS_BREAKPOINT) {
-                $arr['statusText'] = Craft::t('app', '<strong>You’ve reached a breakpoint!</strong> More updates will become available after you install {update}.', [
-                    'update' => $name . ' ' . ($update->getLatest()->version ?? ''),
-                ]);
-            }
-
-            if ($allowUpdates) {
-                $arr['ctaText'] = Craft::t('app', 'Update');
-            }
-        }
-
-        return $arr;
     }
 
     /**

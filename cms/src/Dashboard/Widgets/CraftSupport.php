@@ -15,6 +15,14 @@ use function CraftCms\Cms\normalizeVersion;
 /** @since 6.0.0 */
 final class CraftSupport extends Widget
 {
+    public function __construct(
+        private readonly GeneralConfig $generalConfig,
+        private readonly Plugins $plugins,
+        array $config = []
+    ) {
+        parent::__construct($config);
+    }
+
     /**
      * {@inheritdoc}
      */
@@ -76,7 +84,7 @@ final class CraftSupport extends Widget
         $cmsMajorVersion = (int) $cmsVersion;
 
         $pluginVersions = [];
-        foreach (app(Plugins::class)->getAllPlugins() as $plugin) {
+        foreach ($this->plugins->getAllPlugins() as $plugin) {
             $pluginVersions[] = sprintf('- %s %s', $plugin->name, $plugin->version);
         }
 
@@ -129,7 +137,7 @@ JS, [
         ]);
 
         // Only show the DB backup option if DB backups haven't been disabled
-        $showBackupOption = (app(GeneralConfig::class)->backupCommand !== false);
+        $showBackupOption = $this->generalConfig->backupCommand !== false;
 
         return $view->renderTemplate('_components/widgets/CraftSupport/body.twig', [
             'widget' => $this,

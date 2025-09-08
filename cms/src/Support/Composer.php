@@ -9,6 +9,7 @@ use Illuminate\Container\Attributes\Singleton;
 use Illuminate\Contracts\Filesystem\FileNotFoundException;
 use Illuminate\Support\Facades\File;
 use Symfony\Component\Process\Exception\ProcessFailedException;
+use Symfony\Component\Process\ExecutableFinder;
 use Symfony\Component\Process\Process;
 use Throwable;
 
@@ -87,7 +88,7 @@ final class Composer
      *
      * @throws Throwable if something goes wrong
      */
-    public function install(?array $requirements, ?callable $callback = null): void
+    public function install(?array $requirements = null, ?callable $callback = null): void
     {
         if ($requirements !== null) {
             $this->backupComposerFiles();
@@ -161,15 +162,23 @@ final class Composer
      */
     private function runComposerCommand(string $jsonPath, array $command, ?callable $callback): void
     {
-        $runtimePath = Craft::$app->getPath()->getRuntimePath();
+        $composerPath = new ExecutableFinder()->find('composer');
+        $pharPath = '';
 
-        // Copy composer.phar into storage/
-        $pharPath = sprintf('%s/composer.phar', $runtimePath);
-        copy(Aliases::get('@lib/composer.phar'), $pharPath);
+        if (! $composerPath) {
+            $runtimePath = Craft::$app->getPath()->getRuntimePath();
+
+            // Copy composer.phar into storage/
+            $pharPath = sprintf('%s/composer.phar', $runtimePath);
+            copy(Aliases::get('@lib/composer.phar'), $pharPath);
+
+            $homePath = $runtimePath.DIRECTORY_SEPARATOR.'composer';
+            File::ensureDirectoryExists($homePath);
+        }
 
         $command = array_merge([
             PHP::executable() ?? 'php',
-            $pharPath,
+            $composerPath ?? $pharPath,
         ], $command, [
             '--working-dir',
             dirname($jsonPath),
@@ -178,18 +187,16 @@ final class Composer
             '--no-interaction',
         ]);
 
-        $homePath = $runtimePath.DIRECTORY_SEPARATOR.'composer';
-        File::ensureDirectoryExists($homePath);
-
-        $process = new Process($command, null, [
-            'COMPOSER_HOME' => $homePath,
-        ]);
-        $process->setTimeout(null);
-
         try {
-            $process->mustRun($callback);
+            new Process($command, null, array_filter([
+                'COMPOSER_HOME' => $homePath ?? null,
+            ]))
+                ->setTimeout(null)
+                ->mustRun($callback);
         } finally {
-            File::delete($pharPath);
+            if ($pharPath && File::exists($pharPath)) {
+                File::delete($pharPath);
+            }
         }
 
         // Invalidate opcache

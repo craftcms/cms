@@ -86,6 +86,7 @@
     "codeception/module-rest": "^3.3.2",
     "codeception/module-yii2": "^1.1.9",
     "craftcms/ecs": "dev-main",
+    "dg/bypass-finals": "^1.9",
     "fakerphp/faker": "^1.19.0",
     "larastan/larastan": "^3.4",
     "laravel/pint": "^1.22",

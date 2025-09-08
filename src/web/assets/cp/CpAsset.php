@@ -45,6 +45,7 @@ use CraftCms\Cms\Support\Api;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Support\Str;
+use CraftCms\Cms\Updates\Updates;
 use CraftCms\Cms\Utility\Utilities;
 use CraftCms\Cms\Utility\Utilities\QueueManager;
 use yii\web\JqueryAsset;
@@ -500,7 +501,7 @@ JS;
 
     private function _craftData(): array
     {
-        $upToDate = Craft::$app->getIsInstalled() && !Craft::$app->getUpdates()->getAreMigrationsPending();
+        $upToDate = Craft::$app->getIsInstalled() && !app(Updates::class)->areMigrationsPending();
         $request = Craft::$app->getRequest();
         $generalConfig = app(GeneralConfig::class);
         $sitesService = Craft::$app->getSites();

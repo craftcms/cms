@@ -3,13 +3,13 @@
 namespace CraftCms\Cms\Console\Commands\Install;
 
 use craft\console\Application;
-use craft\helpers\Install as InstallHelper;
 use craft\helpers\Localization;
 use craft\models\Site;
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Console\CraftCommand;
 use CraftCms\Cms\Database\Migrations\Install;
 use CraftCms\Cms\Database\Migrator;
+use CraftCms\Cms\Site\Concerns\SiteDefaults;
 use CraftCms\Cms\Support\Env;
 use Illuminate\Console\Command;
 use Illuminate\Container\Attributes\Give;
@@ -23,9 +23,13 @@ use function Laravel\Prompts\password;
 use function Laravel\Prompts\suggest;
 use function Laravel\Prompts\text;
 
+/**
+ * @since 6.0.0
+ */
 final class InstallCommand extends Command
 {
     use CraftCommand;
+    use SiteDefaults;
 
     protected $signature = 'craft:install
         {--email= : The default email address for the first user to create during install.}
@@ -53,7 +57,7 @@ final class InstallCommand extends Command
 
         try {
             DB::statement('select 1');
-        } catch (QueryException) {
+        } catch (QueryException $e) {
             /** @todo Laravel command */
             return $this->call('setup/welcome');
         }
@@ -61,9 +65,9 @@ final class InstallCommand extends Command
         // TODO
         // $this->call('setup/keys');
 
-        $defaultSiteName = InstallHelper::defaultSiteName();
-        $defaultSiteUrl = InstallHelper::defaultSiteUrl();
-        $defaultSiteLanguage = InstallHelper::defaultSiteLanguage();
+        $defaultSiteName = $this->defaultSiteName();
+        $defaultSiteUrl = $this->defaultSiteUrl();
+        $defaultSiteLanguage = $this->defaultSiteLanguage();
 
         $responses = form()
             ->addIf(! $generalConfig->useEmailAsUsername && ! $this->option('username'), fn ($form) => text(

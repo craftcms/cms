@@ -147,7 +147,7 @@ class DbConfig extends BaseConfig
      * ```
      * :::
      */
-    public string $password = '';
+    public ?string $password = '';
 
     /**
      * @var string|null The schema that Postgres is configured to use by default (PostgreSQL only).

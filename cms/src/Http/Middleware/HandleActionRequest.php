@@ -8,6 +8,9 @@ use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
 use yii\web\NotFoundHttpException;
 
+/**
+ * @since 6.0.0
+ */
 final readonly class HandleActionRequest
 {
     public function __construct(
@@ -16,15 +19,8 @@ final readonly class HandleActionRequest
 
     public function handle(Request $request, Closure $next): mixed
     {
-        $response = $next($request);
-
-        /** Laravel found this route */
-        if ($response instanceof Response && $response->getStatusCode() !== 404) {
-            return $response;
-        }
-
         if (! $request->isActionRequest()) {
-            return $response;
+            return $next($request);
         }
 
         $actionSegments = $request->actionSegments();
@@ -34,6 +30,10 @@ final readonly class HandleActionRequest
             $this->generalConfig->actionTrigger,
             ...$actionSegments,
         ], fn ($value) => ! is_null($value)));
+
+        if ($request->path() === $route) {
+            return $next($request);
+        }
 
         $newRequest = $request->duplicate(server: array_merge($request->server->all(), [
             'REQUEST_URI' => $route,

@@ -40,7 +40,6 @@ use craft\fieldlayoutelements\users\EmailField;
 use craft\fieldlayoutelements\users\FullNameField as UserFullNameField;
 use craft\fieldlayoutelements\users\PhotoField;
 use craft\fieldlayoutelements\users\UsernameField;
-use craft\helpers\App;
 use craft\helpers\Session;
 use craft\i18n\Formatter;
 use craft\i18n\I18N;
@@ -90,7 +89,6 @@ use craft\services\SystemMessages;
 use craft\services\Tags;
 use craft\services\TemplateCaches;
 use craft\services\Tokens;
-use craft\services\Updates;
 use craft\services\UserGroups;
 use craft\services\UserPermissions;
 use craft\services\Users;
@@ -111,6 +109,7 @@ use CraftCms\Cms\License\License;
 use CraftCms\Cms\Support\Composer;
 use CraftCms\Cms\Support\Env;
 use CraftCms\Cms\Support\Str;
+use CraftCms\Cms\Updates\Updates;
 use Illuminate\Database\QueryException;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Cache as CacheFacade;
@@ -183,7 +182,6 @@ use yii\web\ServerErrorHttpException;
  * @property-read Tags $tags The tags service
  * @property-read TemplateCaches $templateCaches The template caches service
  * @property-read Tokens $tokens The tokens service
- * @property-read Updates $updates The updates service
  * @property-read UrlManager $urlManager The URL manager for this application
  * @property-read UserGroups $userGroups The user groups service
  * @property-read UserPermissions $userPermissions The user permissions service
@@ -365,7 +363,7 @@ trait ApplicationTrait
         if (
             $this instanceof ConsoleApplication ||
             !$this->getIsInstalled() ||
-            $this->getUpdates()->getIsCraftUpdatePending()
+            app(Updates::class)->isCraftUpdatePending()
         ) {
             return $this->_getFallbackLanguage();
         }
@@ -1417,16 +1415,6 @@ trait ApplicationTrait
     }
 
     /**
-     * Returns the updates service.
-     *
-     * @return Updates The updates service
-     */
-    public function getUpdates(): Updates
-    {
-        return $this->get('updates');
-    }
-
-    /**
      * Returns the user groups service.
      *
      * @return UserGroups The user groups service
@@ -1574,7 +1562,7 @@ trait ApplicationTrait
             $this->trigger(WebApplication::EVENT_INIT);
         }
 
-        if ($this->getIsInstalled() && !$this->getUpdates()->getIsCraftUpdatePending()) {
+        if ($this->getIsInstalled() && !app(Updates::class)->isCraftUpdatePending()) {
             // Possibly run garbage collection
             $this->getGc()->run();
         }

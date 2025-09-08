@@ -65,6 +65,7 @@ use CraftCms\Cms\Support\Facades\Deprecator;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Support\Str;
+use CraftCms\Cms\Updates\Updates;
 use DateInterval;
 use DateTime;
 use DateTimeInterface;
@@ -1730,8 +1731,9 @@ class Extension extends AbstractExtension implements GlobalsInterface
         $isInstalled = Craft::$app->getIsInstalled();
         $generalConfig = app(GeneralConfig::class);
         $setPasswordRequestPath = $generalConfig->getSetPasswordRequestPath();
+        $updates = app(Updates::class);
 
-        if ($isInstalled && !Craft::$app->getUpdates()->getIsCraftUpdatePending()) {
+        if ($isInstalled && !$updates->isCraftUpdatePending()) {
             $sitesService = Craft::$app->getSites();
             $currentSite = $sitesService->getCurrentSite();
             $primarySite = $sitesService->getPrimarySite();
@@ -1783,6 +1785,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
             'POS_LOAD' => View::POS_LOAD,
 
             'isInstalled' => $isInstalled,
+            'isUpdateInfoCached' => $updates->isUpdateInfoCached(),
             'loginUrl' => UrlHelper::siteUrl($generalConfig->getLoginPath()),
             'logoutUrl' => UrlHelper::siteUrl($generalConfig->getLogoutPath()),
             'setPasswordUrl' => $setPasswordRequestPath !== null ? UrlHelper::siteUrl($setPasswordRequestPath) : null,

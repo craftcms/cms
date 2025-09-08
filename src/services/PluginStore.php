@@ -120,7 +120,7 @@ class PluginStore extends Component
      */
     public function getToken(): ?CraftIdToken
     {
-        $userId = Craft::$app->getUser()->getIdentity()->id;
+        $userId = Craft::$app->getUser()->getIdentity()->id ?? \Illuminate\Support\Facades\Auth::user()?->id;
 
         // Get the token from the session
         $token = Session::get('pluginStore.token');

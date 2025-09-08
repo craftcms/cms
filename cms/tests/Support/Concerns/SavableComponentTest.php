@@ -4,7 +4,7 @@ use CraftCms\Cms\Component\Events\ComponentEvent;
 use CraftCms\Cms\Dashboard\Widgets\CraftSupport;
 
 beforeEach(function () {
-    $this->component = new CraftSupport;
+    $this->component = app(CraftSupport::class);
 });
 
 it('can determine if it is new', function (int|string|null $id, bool $expected) {

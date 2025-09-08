@@ -9,6 +9,7 @@ namespace craft\web\twig;
 
 use Craft;
 use craft\web\View;
+use CraftCms\Cms\Updates\Updates;
 use Twig\Loader\LoaderInterface;
 use Twig\Source;
 
@@ -82,7 +83,7 @@ class TemplateLoader implements LoaderInterface
         // If this is a control panel request and a DB update is needed, force a recompile.
         $request = Craft::$app->getRequest();
 
-        if ($request->getIsCpRequest() && Craft::$app->getUpdates()->getIsCraftUpdatePending()) {
+        if ($request->getIsCpRequest() && app(Updates::class)->isCraftUpdatePending()) {
             return false;
         }
 

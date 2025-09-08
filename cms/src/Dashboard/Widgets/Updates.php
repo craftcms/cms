@@ -4,11 +4,19 @@ namespace CraftCms\Cms\Dashboard\Widgets;
 
 use Craft;
 use craft\web\assets\updateswidget\UpdatesWidgetAsset;
+use CraftCms\Cms\Updates\Updates as UpdatesService;
 use Illuminate\Support\Facades\Auth;
 
 /** @since 6.0.0 */
 final class Updates extends Widget
 {
+    public function __construct(
+        private readonly UpdatesService $updates,
+        array $config = []
+    ) {
+        parent::__construct($config);
+    }
+
     /**
      * {@inheritdoc}
      */
@@ -53,9 +61,9 @@ final class Updates extends Widget
         }
 
         $view = Craft::$app->getView();
-        $cached = Craft::$app->getUpdates()->getIsUpdateInfoCached();
+        $cached = $this->updates->isUpdateInfoCached();
 
-        if (! $cached || ! Craft::$app->getUpdates()->getTotalAvailableUpdates()) {
+        if (! $cached || ! $this->updates->totalAvailableUpdates()) {
             $view->registerAssetBundle(UpdatesWidgetAsset::class);
             $view->registerJs('new Craft.UpdatesWidget('.$this->id.', '.($cached ? 'true' : 'false').');');
         }
@@ -63,7 +71,7 @@ final class Updates extends Widget
         if ($cached) {
             return $view->renderTemplate('_components/widgets/Updates/body.twig',
                 [
-                    'total' => Craft::$app->getUpdates()->getTotalAvailableUpdates(),
+                    'total' => $this->updates->totalAvailableUpdates(),
                 ]);
         }
 

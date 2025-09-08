@@ -18,6 +18,7 @@ use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Env;
 use CraftCms\Cms\Support\PHP;
 use CraftCms\Cms\Support\Str;
+use CraftCms\Cms\Updates\Updates;
 use yii\base\InvalidArgumentException;
 use yii\base\InvalidConfigException;
 use yii\di\Instance;
@@ -235,7 +236,7 @@ class Request extends \CraftCms\Yii2Adapter\Web\Request
             }
         } catch (SiteNotFoundException $e) {
             // Fail silently if Craft isn’t installed yet or is in the middle of updating
-            if (Craft::$app->getIsInstalled() && !Craft::$app->getUpdates()->getIsCraftUpdatePending()) {
+            if (Craft::$app->getIsInstalled() && !app(Updates::class)->isCraftUpdatePending()) {
                 /** @noinspection PhpUnhandledExceptionInspection */
                 throw $e;
             }
@@ -1419,7 +1420,7 @@ class Request extends \CraftCms\Yii2Adapter\Web\Request
             } else {
                 $site = $this->sites->getSiteByHandle($siteId, false);
             }
-            if (!$site && Craft::$app->getIsInstalled() && !Craft::$app->getUpdates()->getIsCraftUpdatePending()) {
+            if (!$site && Craft::$app->getIsInstalled() && !app(Updates::class)->isCraftUpdatePending()) {
                 throw new InvalidArgumentException("Invalid site: $siteId");
             }
             return $site;

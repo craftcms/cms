@@ -79,7 +79,7 @@ final readonly class Table
 
     public const string MIGRATIONS = 'migrations';
 
-    public const string PHPSESSIONS = 'phpsessions';
+    public const string PHPSESSIONS = 'sessions';
 
     public const string PLUGINS = 'plugins';
 

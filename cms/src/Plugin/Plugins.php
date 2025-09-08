@@ -4,12 +4,10 @@ namespace CraftCms\Cms\Plugin;
 
 use Craft;
 use craft\base\Plugin;
-use craft\console\Application as CraftConsoleApplication;
 use craft\errors\InvalidLicenseKeyException;
 use craft\helpers\FileHelper;
 use craft\helpers\ProjectConfig as ProjectConfigHelper;
 use craft\services\ProjectConfig;
-use craft\web\Application as CraftWebApplication;
 use CraftCms\Aliases\Facades\Aliases;
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Database\Table;
@@ -33,7 +31,6 @@ use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Env;
 use CraftCms\Cms\Support\Str;
 use Illuminate\Cache\Repository;
-use Illuminate\Container\Attributes\Give;
 use Illuminate\Container\Attributes\Singleton;
 use Illuminate\Filesystem\Filesystem;
 use Illuminate\Foundation\Application;
@@ -107,8 +104,6 @@ final class Plugins
     private array $scripts = [];
 
     public function __construct(
-        #[Give('Craft')]
-        private readonly CraftWebApplication|CraftConsoleApplication $craft,
         private readonly Repository $cache,
         Application $app,
         Filesystem $files,
@@ -154,7 +149,7 @@ final class Plugins
      */
     public function loadPlugins(): void
     {
-        if ($this->pluginsLoaded === true || $this->loadingPlugins === true || $this->craft->getIsInstalled() === false) {
+        if ($this->pluginsLoaded === true || $this->loadingPlugins === true || app('Craft')->getIsInstalled() === false) {
             return;
         }
 
@@ -229,7 +224,7 @@ final class Plugins
             }
 
             // If we're not updating, check if the plugin’s version number changed, but not its schema version.
-            if (! $this->craft->getIsInMaintenanceMode() && $hasVersionChanged && ! $this->isPluginUpdatePending($plugin)) {
+            if (! app('Craft')->getIsInMaintenanceMode() && $hasVersionChanged && ! $this->isPluginUpdatePending($plugin)) {
                 // Update our record of the plugin’s version number
                 DB::table(Table::PLUGINS)
                     ->where('id', $row['id'])
@@ -370,7 +365,7 @@ final class Plugins
         }
 
         // Enable the plugin in the project config
-        $this->craft->getProjectConfig()->set(
+        app('Craft')->getProjectConfig()->set(
             path: ProjectConfig::PATH_PLUGINS.'.'.$handle.'.enabled',
             value: true,
             message: "Enable plugin “{$handle}”"
@@ -413,7 +408,7 @@ final class Plugins
         }
 
         // Disable the plugin in the project config
-        $this->craft->getProjectConfig()->set(ProjectConfig::PATH_PLUGINS.'.'.$handle.'.enabled', false,
+        app('Craft')->getProjectConfig()->set(ProjectConfig::PATH_PLUGINS.'.'.$handle.'.enabled', false,
             "Disable plugin “{$handle}”");
 
         $this->storedPluginInfo[$handle]['enabled'] = false;
@@ -445,7 +440,7 @@ final class Plugins
         }
 
         // Temporarily allow changes to the project config even if it's supposed to be read only
-        $projectConfig = $this->craft->getProjectConfig();
+        $projectConfig = app('Craft')->getProjectConfig();
         $readOnly = $projectConfig->readOnly;
         $projectConfig->readOnly = false;
 
@@ -575,7 +570,7 @@ final class Plugins
         }
 
         // Temporarily allow changes to the project config even if it's supposed to be read only
-        $projectConfig = $this->craft->getProjectConfig();
+        $projectConfig = app('Craft')->getProjectConfig();
         $readOnly = $projectConfig->readOnly;
         $projectConfig->readOnly = false;
 
@@ -660,7 +655,7 @@ final class Plugins
         }
 
         // Update the project config
-        $this->craft->getProjectConfig()->set(
+        app('Craft')->getProjectConfig()->set(
             path: ProjectConfig::PATH_PLUGINS.'.'.$handle.'.edition',
             value: $edition,
             message: "Switch edition for plugin “{$handle}”",
@@ -714,7 +709,7 @@ final class Plugins
 
         // Update the plugin’s settings in the project config
         $pluginSettings = ProjectConfigHelper::packAssociativeArrays($pluginSettings->getAttributes());
-        $this->craft->getProjectConfig()->set(
+        app('Craft')->getProjectConfig()->set(
             path: ProjectConfig::PATH_PLUGINS.'.'.$plugin->handle.'.settings',
             value: $pluginSettings,
             message: "Change settings for plugin “{$plugin->handle}”",
@@ -830,7 +825,7 @@ final class Plugins
             $this->storedPluginInfo[$plugin->handle]['schemaVersion'] = $plugin->schemaVersion;
         }
 
-        $this->craft->getProjectConfig()->set(
+        app('Craft')->getProjectConfig()->set(
             path: sprintf('%s.%s.schemaVersion', ProjectConfig::PATH_PLUGINS, $plugin->handle),
             value: $plugin->schemaVersion,
             message: "Update plugin schema version for “{$plugin->handle}”",
@@ -1053,7 +1048,7 @@ final class Plugins
         $issues = [];
 
         // Make sure they're allowed to run the current edition
-        $canTestEditions = $this->craft->getCanTestEditions();
+        $canTestEditions = app('Craft')->getCanTestEditions();
         if (
             ! $canTestEditions &&
             isset($pluginInfo['edition'], $pluginInfo['licensedEdition']) &&
@@ -1148,7 +1143,7 @@ final class Plugins
             Env::writeVariable($matches[1], $normalizedLicenseKey, app()->environmentFilePath());
         } else {
             // Set the plugin's license key in the project config
-            $this->craft->getProjectConfig()->set(
+            app('Craft')->getProjectConfig()->set(
                 path: sprintf('%s.%s.licenseKey', ProjectConfig::PATH_PLUGINS, $handle),
                 value: $normalizedLicenseKey,
                 message: "Set license key for plugin “{$handle}”",
@@ -1275,7 +1270,7 @@ final class Plugins
 
         if ($plugin instanceof Module) {
             /** @var Plugin $plugin */
-            $this->craft->setModule($plugin->handle, $plugin);
+            app('Craft')->setModule($plugin->handle, $plugin);
         }
     }
 
@@ -1289,7 +1284,7 @@ final class Plugins
         unset($this->plugins[$plugin->handle]);
 
         if ($plugin instanceof Module) {
-            $this->craft->setModule($plugin->handle, null);
+            app('Craft')->setModule($plugin->handle, null);
         }
     }
 
@@ -1301,7 +1296,7 @@ final class Plugins
      */
     private function getPluginConfigData(string $handle): array
     {
-        $projectConfig = $this->craft->getProjectConfig();
+        $projectConfig = app('Craft')->getProjectConfig();
         $configKey = ProjectConfig::PATH_PLUGINS.'.'.$handle;
         $data = $projectConfig->get($configKey);
 

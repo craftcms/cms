@@ -7,6 +7,10 @@ use CraftCms\Cms\Console\Commands\Env\EnvSetCommand;
 use CraftCms\Cms\Console\Commands\Env\EnvShowCommand;
 use CraftCms\Cms\Console\Commands\Install\InstallCheckCommand;
 use CraftCms\Cms\Console\Commands\Install\InstallCommand;
+use CraftCms\Cms\Console\Commands\Setup\CloudCommand;
+use CraftCms\Cms\Console\Commands\Setup\DatabaseCredentialsCommand;
+use CraftCms\Cms\Console\Commands\Setup\SetupCommand;
+use CraftCms\Cms\Console\Commands\Setup\WelcomeCommand;
 use CraftCms\Cms\Console\Commands\Twig\TwigCacheCommand;
 use CraftCms\Cms\Console\Commands\Twig\TwigClearCommand;
 use CraftCms\Cms\Console\Commands\UpCommand;
@@ -20,14 +24,23 @@ use Illuminate\Support\ServiceProvider;
 final class ConsoleServiceProvider extends ServiceProvider
 {
     protected array $commands = [
+        // Install
         UpCommand::class,
         InstallCommand::class,
         InstallCheckCommand::class,
 
+        // Setup
+        WelcomeCommand::class,
+        DatabaseCredentialsCommand::class,
+        SetupCommand::class,
+        CloudCommand::class,
+
+        // Env
         EnvShowCommand::class,
         EnvSetCommand::class,
         EnvRemoveCommand::class,
 
+        // Twig
         TwigCacheCommand::class,
         TwigClearCommand::class,
     ];

@@ -519,7 +519,7 @@ class Sites extends Component
         // Did something go wrong?
         if (!$this->_currentSite) {
             // Fail silently if Craft isn't installed yet or is in the middle of updating
-            if (Craft::$app->getIsInstalled() && !Craft::$app->getUpdates()->getIsCraftUpdatePending()) {
+            if (Craft::$app->getIsInstalled() && !app(\CraftCms\Cms\Updates\Updates::class)->isCraftUpdatePending()) {
                 throw new InvalidArgumentException('Invalid site: ' . $site);
             }
 

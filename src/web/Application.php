@@ -26,7 +26,6 @@ use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\License\License;
 use CraftCms\Cms\Plugin\Plugins;
-use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Json;
 use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\Cache;
@@ -39,7 +38,6 @@ use yii\base\Component;
 use yii\base\ErrorException;
 use yii\base\Exception;
 use yii\base\ExitException as YiiExitException;
-use yii\base\InvalidArgumentException;
 use yii\base\InvalidConfigException;
 use yii\base\InvalidRouteException;
 use yii\debug\Module as YiiDebugModule;
@@ -51,7 +49,6 @@ use yii\debug\panels\ProfilingPanel;
 use yii\debug\panels\RouterPanel;
 use yii\web\BadRequestHttpException;
 use yii\web\ForbiddenHttpException;
-use yii\web\HttpException;
 use yii\web\NotFoundHttpException;
 use yii\web\Response as BaseResponse;
 use yii\web\UnauthorizedHttpException;
@@ -218,54 +215,6 @@ class Application extends \yii\web\Application
             // Process install requests
             if (($response = $this->_processInstallRequest($request)) !== null) {
                 return $response;
-            }
-
-            // Check if the app path has changed. If so, run the requirements check again.
-            if (($response = $this->_processRequirementsCheck($request)) !== null) {
-                $this->_unregisterDebugModule();
-
-                return $response;
-            }
-
-            // Makes sure that the uploaded files are compatible with the current database schema
-            if (!$this->getUpdates()->getIsCraftSchemaVersionCompatible()) {
-                $this->_unregisterDebugModule();
-
-                if ($isCpRequest) {
-                    $version = $this->getInfo()->version;
-
-                    throw new HttpException(200, Craft::t('app', 'Craft CMS does not support backtracking to this version. Please update to Craft CMS {version} or later.', [
-                        'version' => $version,
-                    ]));
-                }
-
-                throw new ServiceUnavailableHttpException();
-            }
-
-            // getIsCraftDbMigrationNeeded will return true if we’re in the middle of a manual or auto-update for Craft itself.
-            // If we’re in maintenance mode and it’s not a site request, show the manual update template.
-            if ($this->getUpdates()->getIsCraftUpdatePending()) {
-                return $this->_processUpdateLogic($request) ?: $response;
-            }
-
-            // If there’s a new version, but the schema hasn’t changed, just update the info table
-            if ($this->getUpdates()->getHasCraftVersionChanged()) {
-                $this->getUpdates()->updateCraftVersionInfo();
-
-                // Delete all compiled templates
-                try {
-                    FileHelper::clearDirectory($this->getPath()->getCompiledTemplatesPath(false));
-                } catch (InvalidArgumentException) {
-                    // Directory does not exist
-                } catch (ErrorException $e) {
-                    Craft::error('Could not delete compiled templates: ' . $e->getMessage());
-                    Craft::$app->getErrorHandler()->logException($e);
-                }
-            }
-
-            // Check if a plugin needs to update the database.
-            if ($this->getUpdates()->getIsPluginUpdatePending()) {
-                return $this->_processUpdateLogic($request) ?: $response;
             }
 
             if (!$request->getIsActionRequest()) {
@@ -666,89 +615,6 @@ class Application extends \yii\web\Application
         }
 
         return null;
-    }
-
-    /**
-     * If there is not cached app path or the existing cached app path does not match the current one, let’s run the
-     * requirement checker again. This should catch the case where an install is deployed to another server that doesn’t
-     * meet Craft’s minimum requirements.
-     *
-     * @param Request $request
-     * @return BaseResponse|null
-     */
-    private function _processRequirementsCheck(Request $request): ?BaseResponse
-    {
-        // Only run for control panel requests and if we’re not in the middle of an update.
-        if (
-            $request->getIsCpRequest() &&
-            !(
-                $request->getIsActionRequest() &&
-                (
-                    Arr::first($request->getActionSegments()) === 'updater' ||
-                    $request->getActionSegments() === ['app', 'migrate']
-                )
-            )
-        ) {
-            $cachedBasePath = Cache::get('basePath');
-
-            if (is_null($cachedBasePath) || $cachedBasePath !== $this->getBasePath()) {
-                return $this->runAction('templates/requirements-check');
-            }
-        }
-
-        return null;
-    }
-
-    /**
-     * @param Request $request
-     * @return BaseResponse|null
-     * @throws HttpException
-     * @throws ServiceUnavailableHttpException
-     */
-    private function _processUpdateLogic(Request $request): ?BaseResponse
-    {
-        $this->_unregisterDebugModule();
-
-        // Let all non-action control panel requests through.
-        if (
-            $request->getIsCpRequest() &&
-            (!$request->getIsActionRequest() || $request->getActionSegments() == ['users', 'login'])
-        ) {
-            // Did we skip a breakpoint?
-            if ($this->getUpdates()->getWasCraftBreakpointSkipped()) {
-                throw new HttpException(200, Craft::t('app', 'You need to be on at least Craft CMS {version} before you can manually update to Craft CMS {targetVersion}.', [
-                    'version' => $this->minVersionRequired,
-                    'targetVersion' => Craft::$app->getVersion(),
-                ]));
-            }
-
-            // Clear the template caches in case they've been compiled since this release was cut.
-            try {
-                FileHelper::clearDirectory($this->getPath()->getCompiledTemplatesPath(false));
-            } catch (InvalidArgumentException) {
-                // the directory doesn't exist
-            }
-
-            // Show the manual update notification template
-            return $this->runAction('templates/manual-update-notification');
-        }
-
-        // We'll also let update actions go through
-        if ($request->getIsActionRequest()) {
-            $actionSegments = $request->getActionSegments();
-            if (
-                Arr::first($actionSegments) === 'updater' ||
-                $actionSegments === ['app', 'health-check'] ||
-                $actionSegments === ['app', 'migrate'] ||
-                $actionSegments === ['pluginstore', 'install', 'migrate']
-            ) {
-                return $this->runAction(implode('/', $actionSegments));
-            }
-        }
-
-        // If an exception gets throw during the rendering of the 503 template, let
-        // TemplatesController->actionRenderError() take care of it.
-        throw new ServiceUnavailableHttpException();
     }
 
     /**

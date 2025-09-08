@@ -4,7 +4,6 @@ use craft\web\twig\Extension;
 use CraftCms\Cms\Support\Json;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Env;
-use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Str;
 
 arch()
@@ -31,12 +30,6 @@ arch()
     ->not
     ->toBeUsed()
     ->ignoring(\CraftCms\Cms\Support\Str::class);
-
-arch()
-    ->expect(Http::class)
-    ->not
-    ->toBeUsed()
-    ->ignoring(\CraftCms\Cms\Support\Facades\Http::class);
 
 arch('Only use JSON helper')
     ->expect(['json_encode', 'json_decode'])

@@ -24,49 +24,6 @@ afterEach(function () {
     app()->forgetInstance(Plugins::class);
 });
 
-function loadTestPlugin(): void
-{
-    $plugins = app(Plugins::class);
-
-    $reflectionClass = new ReflectionClass($plugins);
-    $reflectionClass->getProperty('plugins')->setValue($plugins, [
-        'test-plugin' => TestPlugin::create([
-            'handle' => 'test-plugin',
-            'name' => 'Test Plugin',
-            'version' => '1.0.1',
-        ]),
-    ]);
-    $reflectionClass->getProperty('composerPluginInfo')->setValue($plugins, [
-        'test-plugin' => [
-            'name' => 'Test Plugin',
-            'packageName' => 'craftcms/test-plugin',
-            'version' => '1.0.1',
-            'class' => TestPlugin::class,
-            'basePath' => dirname(__DIR__, 1).'/TestClasses',
-        ],
-    ]);
-    $reflectionClass->getProperty('storedPluginInfo')->setValue($plugins, [
-        'test-plugin' => [
-            'id' => 1,
-            'name' => 'Test Plugin',
-            'handle' => 'test-plugin',
-            'version' => '1.0.1',
-            'schemaVersion' => '1.0.0',
-            'installDate' => $now = now(),
-            'dateCreated' => $now,
-            'dateUpdated' => $now,
-            'uid' => Str::uuid(),
-            'edition' => 'standard',
-            'licensedEdition' => 'pro',
-            'licenseKeyStatus' => LicenseKeyStatus::Trial->value,
-            'settings' => [],
-            'licenseKey' => null,
-            'enabled' => false,
-        ],
-    ]);
-    $reflectionClass->getProperty('pluginsLoaded')->setValue($plugins, true);
-}
-
 it('can load plugins', function () {
     app()->forgetInstance(Plugins::class);
     $this->plugins = app(Plugins::class);

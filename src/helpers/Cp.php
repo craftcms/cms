@@ -192,7 +192,7 @@ class Cp
         if (
             $path !== 'utilities/updates' &&
             $utilitiesService->checkAuthorization(Updates::class) &&
-            Craft::$app->getUpdates()->getIsCriticalUpdateAvailable()
+            app(\CraftCms\Cms\Updates\Updates::class)->isCriticalUpdateAvailable()
         ) {
             $alerts[] = Craft::t('app', 'A critical update is available.') .
                 ' <a class="go nowrap" href="' . UrlHelper::url('utilities/updates') . '">' . Craft::t('app', 'Go to Updates') . '</a>';

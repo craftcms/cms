@@ -4,12 +4,10 @@ namespace CraftCms\Cms\Support;
 
 use Craft;
 use craft\errors\InvalidLicenseKeyException;
-use craft\helpers\App;
 use craft\helpers\DateTimeHelper;
 use CraftCms\Cms\License\License;
 use CraftCms\Cms\Plugin\Plugins;
 use CraftCms\Cms\Shared\Enums\LicenseKeyStatus;
-use CraftCms\Cms\Support\Facades\Http;
 use GuzzleHttp\Exception\GuzzleException;
 use GuzzleHttp\Exception\RequestException;
 use GuzzleHttp\RequestOptions;
@@ -17,11 +15,11 @@ use Illuminate\Cache\Repository;
 use Illuminate\Container\Attributes\Singleton;
 use Illuminate\Database\Connection;
 use Illuminate\Foundation\Application;
-use Illuminate\Http\Client\PendingRequest;
 use Illuminate\Http\Client\Response;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\File;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Session;
 use Imagick;
@@ -39,10 +37,8 @@ use function CraftCms\Cms\normalizeVersion;
  * @internal
  */
 #[Singleton]
-readonly class Api
+final readonly class Api
 {
-    private PendingRequest $client;
-
     public function __construct(
         private Application $app,
         private Composer $composer,
@@ -53,12 +49,7 @@ readonly class Api
         private License $license,
         public string $baseApiUrl = 'https://api.craftcms.com/v1/',
         public array $apiParams = [],
-    ) {
-        $this->client = Http::create()
-            ->baseUrl($this->baseApiUrl)
-            ->asJson()
-            ->acceptJson();
-    }
+    ) {}
 
     /**
      * Returns info about the current Craft license.
@@ -67,10 +58,11 @@ readonly class Api
      *
      * @throws GuzzleException if the API gave a non-2xx response
      */
-    public function getLicenseInfo(array $include = []): array
+    public function getLicenseInfo(array $include = [], array $headers = []): array
     {
         return $this->request('GET', 'cms-licenses', [
             'query' => ['include' => implode(',', $include)],
+            'headers' => $headers,
         ])->json('license');
     }
 
@@ -100,8 +92,11 @@ readonly class Api
         Session::save();
 
         try {
-            $response = $this->client
-                ->withHeaders($this->headers())
+            $response = Http::create()
+                ->baseUrl($this->baseApiUrl)
+                ->asJson()
+                ->acceptJson()
+                ->withHeaders(array_merge($this->headers(), Arr::pull($options, 'headers', [])))
                 ->send($method, $uri, $options);
         } catch (RequestException $e) {
             $response = $e->getResponse();

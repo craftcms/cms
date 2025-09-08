@@ -2,11 +2,11 @@
 
 namespace CraftCms\Cms\Database\Commands;
 
-use craft\services\Updates;
 use CraftCms\Cms\Console\CraftCommand;
 use CraftCms\Cms\Database\Migrator;
 use CraftCms\Cms\Plugin\Plugins;
 use CraftCms\Cms\Support\Str;
+use CraftCms\Cms\Updates\Updates;
 use Illuminate\Console\Command;
 use Illuminate\Console\ConfirmableTrait;
 use Illuminate\Contracts\Console\Isolatable;
@@ -32,8 +32,10 @@ final class MigrateCommand extends Command implements Isolatable
         {--force : Force the operation to run when in production}
         {--pretend : Dump the SQL queries that would be run}
         {--step : Force the migrations to be run so they can be rolled back individually}
-        {--noBackup : Skip backing up the database.}
-        {--noContent : Exclude pending content migrations.}
+        {--no-backup : Skip backing up the database.}
+        {--noBackup : Skip backing up the database. [DEPRECATED]}
+        {--no-content : Exclude pending content migrations.}
+        {--noContent : Exclude pending content migrations. [DEPRECATED]}
         {--track= : The migration track to work with (e.g. `craft`, `content`, `plugin:commerce`, etc.)}
         {--graceful : Return a successful exit code even if an error occurs}';
 
@@ -50,13 +52,13 @@ final class MigrateCommand extends Command implements Isolatable
      */
     protected array $migrators = [];
 
-    public function handle(Plugins $plugins): int
+    public function handle(Updates $updates, Plugins $plugins): int
     {
         if (! $this->confirmToProceed()) {
             return self::SUCCESS;
         }
 
-        $this->updates = \Craft::$app->getUpdates();
+        $this->updates = $updates;
         $this->plugins = $plugins;
 
         try {
@@ -142,7 +144,8 @@ final class MigrateCommand extends Command implements Isolatable
 
         $this->call(DownCommand::class);
 
-        if (! $this->option('noBackup') && ! $this->option('pretend') && ! $this->backup()) {
+        $noBackup = $this->option('no-backup') ?? $this->option('noBackup');
+        if (! $noBackup && ! $this->option('pretend') && ! $this->backup()) {
             $this->call(UpCommand::class);
 
             return;
@@ -170,7 +173,7 @@ final class MigrateCommand extends Command implements Isolatable
     {
         if (! $this->option('track') || $this->option('track') === 'craft') {
             $craftMigrations = $this->getMigrator('craft')->getPendingMigrations();
-            if (! empty($craftMigrations) || $this->updates->getIsCraftUpdatePending()) {
+            if (! empty($craftMigrations) || $this->updates->isCraftUpdatePending()) {
                 $migrationsByTrack['craft'] = $craftMigrations;
             }
         }
@@ -187,7 +190,8 @@ final class MigrateCommand extends Command implements Isolatable
             }
         }
 
-        if (! $this->option('noContent') && (! $this->option('track') || $this->option('track') === 'content')) {
+        $noContent = $this->option('no-content') ?? $this->option('noContent');
+        if (! $noContent && (! $this->option('track') || $this->option('track') === 'content')) {
             $contentMigrations = $this->getMigrator('content')->getPendingMigrations();
             if (! empty($contentMigrations)) {
                 $migrationsByTrack['content'] = $contentMigrations;
