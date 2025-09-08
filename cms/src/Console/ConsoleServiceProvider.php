@@ -16,6 +16,7 @@ use CraftCms\Cms\Console\Commands\Setup\WelcomeCommand;
 use CraftCms\Cms\Console\Commands\Twig\TwigCacheCommand;
 use CraftCms\Cms\Console\Commands\Twig\TwigClearCommand;
 use CraftCms\Cms\Console\Commands\UpCommand;
+use CraftCms\Cms\Console\Commands\Utils\UpdateUsernamesCommand;
 use Illuminate\Support\ServiceProvider;
 
 /**
@@ -45,6 +46,9 @@ final class ConsoleServiceProvider extends ServiceProvider
         // Twig
         TwigCacheCommand::class,
         TwigClearCommand::class,
+
+        // Utils
+        UpdateUsernamesCommand::class,
     ];
 
     public function boot(): void
