@@ -4,6 +4,15 @@ namespace CraftCms\Cms\ProjectConfig;
 
 use Closure;
 use Craft;
+use CraftCms\Cms\ProjectConfig\Commands\ApplyCommand;
+use CraftCms\Cms\ProjectConfig\Commands\DiffCommand;
+use CraftCms\Cms\ProjectConfig\Commands\ExportCommand;
+use CraftCms\Cms\ProjectConfig\Commands\GetCommand;
+use CraftCms\Cms\ProjectConfig\Commands\RebuildCommand;
+use CraftCms\Cms\ProjectConfig\Commands\RemoveCommand;
+use CraftCms\Cms\ProjectConfig\Commands\SetCommand;
+use CraftCms\Cms\ProjectConfig\Commands\TouchCommand;
+use CraftCms\Cms\ProjectConfig\Commands\WriteCommand;
 use Illuminate\Events\Dispatcher;
 use Illuminate\Events\QueuedClosure;
 use Illuminate\Support\Collection;
@@ -68,6 +77,18 @@ final class ProjectConfigServiceProvider extends ServiceProvider
 
     public function boot(ProjectConfig $projectConfig): void
     {
+        $this->commands([
+            ApplyCommand::class,
+            DiffCommand::class,
+            ExportCommand::class,
+            GetCommand::class,
+            SetCommand::class,
+            RebuildCommand::class,
+            RemoveCommand::class,
+            TouchCommand::class,
+            WriteCommand::class,
+        ]);
+
         $projectConfig
             // Address field layout
             ->onAdd(ProjectConfig::PATH_ADDRESS_FIELD_LAYOUTS, $this->proxy('addresses', 'handleChangedAddressFieldLayout'))
