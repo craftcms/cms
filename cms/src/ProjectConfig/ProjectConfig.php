@@ -33,6 +33,7 @@ use CraftCms\Cms\ProjectConfig\Events\ItemUpdated;
 use CraftCms\Cms\ProjectConfig\Events\RebuildConfig;
 use CraftCms\Cms\ProjectConfig\Events\YamlFilesWritten;
 use CraftCms\Cms\ProjectConfig\Exceptions\BusyResourceException;
+use CraftCms\Cms\ProjectConfig\Exceptions\ReadonlyException;
 use CraftCms\Cms\ProjectConfig\Exceptions\StaleResourceException;
 use CraftCms\Cms\Shared\Exceptions\OperationAbortedException;
 use CraftCms\Cms\Support\Json;
@@ -482,7 +483,7 @@ final class ProjectConfig
                 return true;
             }
 
-            throw new NotSupportedException('Changes to the project config are not possible while in read-only mode.');
+            throw new ReadonlyException('Changes to the project config are not possible while in read-only mode.');
         }
 
         if ($updateTimestamp && ! $this->_timestampUpdated && $valueHasChanged) {

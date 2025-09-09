@@ -530,7 +530,7 @@ class TestSetup
             [Path::class, ['getPath', 'path']],
             [Plugins::class, ['getPlugins', 'plugins']],
             [PluginStore::class, ['getPluginStore', 'pluginStore']],
-            [ProjectConfig::class, ['getProjectConfig', 'projectConfig']],
+            [\craft\services\ProjectConfig::class, ['getProjectConfig', 'projectConfig']],
             [Queue::class, ['getQueue', 'queue']],
             [Relations::class, ['getRelations', 'relations']],
             [Routes::class, ['getRoutes', 'routes']],
