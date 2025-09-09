@@ -22,16 +22,6 @@ final class ProjectConfigServiceProvider extends ServiceProvider
 {
     public function register(): void
     {
-        Dispatcher::macro('forgetListener', function ($event, $listener) {
-            /** @phpstan-ignore property.protected */
-            foreach ($this->listeners[$event] as $key => $value) {
-                if ($value === $listener) {
-                    /** @phpstan-ignore property.protected */
-                    unset($this->listeners[$event][$key]);
-                }
-            }
-        });
-
         Dispatcher::macro('prependListener', function ($events, $listener) {
             if ($events instanceof Closure) {
                 /** @phpstan-ignore method.protected */
