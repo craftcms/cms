@@ -1,5 +1,14 @@
 # Release Notes for Craft CMS 4
 
+## Unreleased
+
+> [!NOTE]  
+> If you rely on husky's git hooks and use a Git GUI (e.g. Tower), you may need to create a `~/.config/husky/init.sh` file.
+> See https://typicode.github.io/husky/how-to.html#node-version-managers-and-guis
+
+- Upgraded husky from to v9.1.7 (latest). 
+- Upgraded lint-staged from to v16.1.6 (latest).
+
 ## 4.16.13 - 2025-09-05
 
 - Fixed a bug where entries’ and categories’ descendants’ URIs weren’t always getting updated after a parent’s URI changed. ([#17804](https://github.com/craftcms/cms/discussions/17804))
