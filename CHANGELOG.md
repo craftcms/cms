@@ -1,5 +1,9 @@
 # Release Notes for Craft CMS 5
 
+## Unreleased
+
+- Fixed a styling issue.
+
 ## 5.8.17 - 2025-09-05
 
 - Added `craft\base\NestedElementInterface::getOwners()`.
