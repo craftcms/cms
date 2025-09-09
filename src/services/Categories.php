@@ -12,7 +12,6 @@ use craft\base\MemoizableArray;
 use craft\elements\Category;
 use craft\errors\CategoryGroupNotFoundException;
 use craft\events\CategoryGroupEvent;
-use craft\events\ConfigEvent;
 use craft\events\DeleteSiteEvent;
 use craft\helpers\ProjectConfig as ProjectConfigHelper;
 use craft\models\CategoryGroup;
@@ -23,6 +22,8 @@ use craft\records\CategoryGroup as CategoryGroupRecord;
 use craft\records\CategoryGroup_SiteSettings as CategoryGroup_SiteSettingsRecord;
 use craft\web\View;
 use CraftCms\Cms\Database\Table;
+use CraftCms\Cms\ProjectConfig\Events\ConfigEvent;
+use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\Support\Str;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Collection;
@@ -31,6 +32,7 @@ use Throwable;
 use Tpetry\QueryExpressions\Language\Alias;
 use yii\base\Component;
 use yii\base\Exception;
+
 use function CraftCms\Cms\maxPowerCaptain;
 
 /**
@@ -299,7 +301,7 @@ class Categories extends Component
 
         $configPath = ProjectConfig::PATH_CATEGORY_GROUPS . '.' . $group->uid;
         $configData = $group->getConfig();
-        Craft::$app->getProjectConfig()->set($configPath, $configData, "Save category group “{$group->handle}”");
+        app(ProjectConfig::class)->set($configPath, $configData, "Save category group “{$group->handle}”");
 
         if ($isNewCategoryGroup) {
             $group->id = DB::table(Table::CATEGORYGROUPS)->idByUid($group->uid);
@@ -552,8 +554,11 @@ class Categories extends Component
             ]));
         }
 
-        Craft::$app->getProjectConfig()->remove(ProjectConfig::PATH_CATEGORY_GROUPS . '.' . $group->uid,
-            "Delete category group “{$group->handle}”");
+        app(ProjectConfig::class)->remove(
+            ProjectConfig::PATH_CATEGORY_GROUPS . '.' . $group->uid,
+            "Delete category group “{$group->handle}”"
+        );
+
         return true;
     }
 
@@ -670,7 +675,7 @@ class Categories extends Component
     {
         $siteUid = $event->site->uid;
 
-        $projectConfig = Craft::$app->getProjectConfig();
+        $projectConfig = app(ProjectConfig::class);
         $categoryGroups = $projectConfig->get(ProjectConfig::PATH_CATEGORY_GROUPS);
 
         // Loop through the category groups and prune the UID from field layouts.

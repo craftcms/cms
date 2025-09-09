@@ -7,11 +7,10 @@
 
 namespace crafttests\unit\services;
 
-use Codeception\Test\Unit;
 use Craft;
 use craft\errors\ElementNotFoundException;
-use craft\events\ConfigEvent;
 use craft\test\TestCase;
+use CraftCms\Cms\ProjectConfig\Events\ItemUpdated;
 use CraftCms\Cms\Support\Str;
 use UnitTester;
 
@@ -39,15 +38,15 @@ class GlobalsTest extends TestCase
      */
     public function testAbortOnUnsavedElement(): void
     {
-        $configEvent = new ConfigEvent([
-            'path' => 'globalSets.testUid',
-            'tokenMatches' => ['testuid'],
-            'oldValue' => [],
-            'newValue' => [
+        $configEvent = new ItemUpdated(
+            path: 'globalSets.testUid',
+            oldValue: [],
+            newValue: [
                 'name' => 'Test ' . Str::uuid()->toString(),
                 'handle' => 'test' . Str::uuid()->toString(),
             ],
-        ]);
+            tokenMatches: ['testuid'],
+        );
 
         $this->tester->mockMethods(Craft::$app, 'elements', ['saveElement' => false]);
 

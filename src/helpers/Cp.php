@@ -43,6 +43,7 @@ use CraftCms\Cms\Element\Enums\AttributeStatus;
 use CraftCms\Cms\Element\Enums\MenuItemType;
 use CraftCms\Cms\License\License;
 use CraftCms\Cms\Plugin\Plugins;
+use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\Shared\Enums\Color;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Exceptions\InvalidHtmlTagException;
@@ -211,7 +212,7 @@ class Cp
         }
 
         // Display an alert if there are pending project config YAML changes
-        $projectConfig = Craft::$app->getProjectConfig();
+        $projectConfig = app(ProjectConfig::class);
         if (
             $path !== 'utilities/project-config' &&
             $utilitiesService->checkAuthorization(ProjectConfigUtility::class) &&

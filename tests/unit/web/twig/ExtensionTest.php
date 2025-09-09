@@ -22,6 +22,7 @@ use craft\test\TestSetup;
 use craft\web\View;
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Edition;
+use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use crafttests\fixtures\GlobalSetFixture;
 use DateInterval;
 use DateTime;
@@ -130,7 +131,7 @@ class ExtensionTest extends TestCase
      */
     public function test_site_globals(): void
     {
-        Craft::$app->getProjectConfig()->set('system.name', 'Im a test system');
+        app(ProjectConfig::class)->set('system.name', 'Im a test system');
         $this->testRenderResult(
             'Im a test system | defaultSite Craft test site ' . TestSetup::SITE_URL,
             '{{ systemName }} | {{ currentSite.handle }} {{ currentSite }} {{ siteUrl }}'

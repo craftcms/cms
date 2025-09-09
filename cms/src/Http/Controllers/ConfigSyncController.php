@@ -5,10 +5,10 @@ namespace CraftCms\Cms\Http\Controllers;
 use Craft;
 use craft\errors\BusyResourceException;
 use craft\errors\StaleResourceException;
-use craft\services\ProjectConfig;
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Plugin\Exceptions\InvalidPluginException;
 use CraftCms\Cms\Plugin\Plugins;
+use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Composer;
 use CraftCms\Cms\Updates\Updates;
@@ -33,18 +33,15 @@ final class ConfigSyncController extends BaseUpdaterController
 
     public const string ACTION_INSTALL_PLUGIN = 'install-plugin';
 
-    protected ProjectConfig $projectConfig;
-
     public function __construct(
         Request $request,
         GeneralConfig $generalConfig,
         Composer $composer,
         Plugins $plugins,
         Updates $updates,
+        protected ProjectConfig $projectConfig,
     ) {
         parent::__construct($request, $generalConfig, $composer, $plugins, $updates);
-
-        $this->projectConfig = Craft::$app->getProjectConfig();
     }
 
     /**

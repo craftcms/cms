@@ -35,7 +35,6 @@ use craft\services\ImageTransforms;
 use craft\services\Path;
 use craft\services\Plugins;
 use craft\services\PluginStore;
-use craft\services\ProjectConfig;
 use craft\services\Relations;
 use craft\services\Routes;
 use craft\services\Search;
@@ -61,6 +60,7 @@ use craft\web\UploadedFile;
 use craft\web\User;
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Database\Migrations\Install;
+use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\Support\Arr;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Config as ConfigFacade;
@@ -368,7 +368,7 @@ class TestSetup
             return self::$_parsedProjectConfig;
         }
 
-        return self::$_parsedProjectConfig = Craft::$app->getProjectConfig()->get(null, true);
+        return self::$_parsedProjectConfig = app(ProjectConfig::class)->get(null, true);
     }
 
     /**

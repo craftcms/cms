@@ -6,6 +6,7 @@ use Craft;
 use craft\helpers\FileHelper;
 use craft\web\Application;
 use CraftCms\Cms\License\License;
+use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\Support\Api;
 use CraftCms\Cms\Support\Composer;
 use CraftCms\Cms\Support\Str;
@@ -223,7 +224,7 @@ final readonly class CraftSupportController
         }
 
         // project.yaml
-        $projectConfig = Craft::$app->getProjectConfig()->get();
+        $projectConfig = app(ProjectConfig::class)->get();
         $projectConfig = Craft::$app->getSecurity()->redactIfSensitive('', $projectConfig);
         $zip->addFromString('project.yaml', Yaml::dump($projectConfig, 20, 2));
 

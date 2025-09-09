@@ -22,6 +22,7 @@ use craft\web\assets\admintable\AdminTableAsset;
 use craft\web\assets\generalsettings\GeneralSettingsAsset;
 use craft\web\Controller;
 use CraftCms\Cms\Config\GeneralConfig;
+use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Html;
 use Illuminate\Support\Facades\Config;
@@ -80,7 +81,7 @@ class SystemSettingsController extends Controller
         $this->getView()->registerAssetBundle(GeneralSettingsAsset::class);
 
         return $this->renderTemplate('settings/general/_index.twig', [
-            'system' => Craft::$app->getProjectConfig()->get('system') ?? [],
+            'system' => app(ProjectConfig::class)->get('system') ?? [],
             'readOnly' => $this->readOnly,
         ]);
     }
@@ -94,7 +95,7 @@ class SystemSettingsController extends Controller
     {
         $this->requirePostRequest();
 
-        $projectConfig = Craft::$app->getProjectConfig();
+        $projectConfig = app(ProjectConfig::class);
         $systemSettings = $projectConfig->get('system');
         $systemSettings['name'] = $this->request->getBodyParam('name');
         $systemSettings['live'] = $this->request->getBodyParam('live');
@@ -207,7 +208,7 @@ class SystemSettingsController extends Controller
             return null;
         }
 
-        Craft::$app->getProjectConfig()->set('email', $settings->toArray(), 'Update email settings.');
+        app(ProjectConfig::class)->set('email', $settings->toArray(), 'Update email settings.');
 
         $this->setSuccessFlash(Craft::t('app', 'Email settings saved.'));
         return $this->redirectToPostedUrl();

@@ -9,7 +9,7 @@ namespace craft\helpers;
 
 use Craft;
 use craft\behaviors\CustomFieldBehavior;
-use craft\services\ProjectConfig as ProjectConfigService;
+use CraftCms\Cms\ProjectConfig\ProjectConfig as ProjectConfigService;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Json as JsonHelper;
 use CraftCms\Cms\Support\Str;
@@ -89,7 +89,7 @@ class ProjectConfig
      */
     public static function ensureAllFilesystemsProcessed(): void
     {
-        $projectConfig = Craft::$app->getProjectConfig();
+        $projectConfig = app(ProjectConfigService::class);
 
         if (self::$_processedFilesystems || !$projectConfig->getIsApplyingExternalChanges()) {
             return;
@@ -106,7 +106,7 @@ class ProjectConfig
     {
         static::ensureAllFilesystemsProcessed();
 
-        $projectConfig = Craft::$app->getProjectConfig();
+        $projectConfig = app(ProjectConfigService::class);
 
         if (self::$_processedFields || !$projectConfig->getIsApplyingExternalChanges()) {
             return;
@@ -141,7 +141,7 @@ class ProjectConfig
      */
     public static function ensureAllSitesProcessed(bool $force = false): void
     {
-        $projectConfig = Craft::$app->getProjectConfig();
+        $projectConfig = app(ProjectConfigService::class);
 
         if (self::$_processedSites || (!$force && !$projectConfig->getIsApplyingExternalChanges())) {
             return;
@@ -168,7 +168,7 @@ class ProjectConfig
      */
     public static function ensureAllUserGroupsProcessed(): void
     {
-        $projectConfig = Craft::$app->getProjectConfig();
+        $projectConfig = app(ProjectConfigService::class);
 
         if (self::$_processedUserGroups || !$projectConfig->getIsApplyingExternalChanges()) {
             return;
@@ -194,7 +194,7 @@ class ProjectConfig
      */
     public static function ensureAllEntryTypesProcessed(): void
     {
-        $projectConfig = Craft::$app->getProjectConfig();
+        $projectConfig = app(ProjectConfigService::class);
 
         if (self::$_processedEntryTypes || !$projectConfig->getIsApplyingExternalChanges()) {
             return;
@@ -216,7 +216,7 @@ class ProjectConfig
      */
     public static function ensureAllSectionsProcessed(): void
     {
-        $projectConfig = Craft::$app->getProjectConfig();
+        $projectConfig = app(ProjectConfigService::class);
 
         if (self::$_processedSections || !$projectConfig->getIsApplyingExternalChanges()) {
             return;
@@ -240,7 +240,7 @@ class ProjectConfig
      */
     public static function ensureAllGqlSchemasProcessed(): void
     {
-        $projectConfig = Craft::$app->getProjectConfig();
+        $projectConfig = app(ProjectConfigService::class);
 
         if (self::$_processedGqlSchemas || !$projectConfig->getIsApplyingExternalChanges()) {
             return;
@@ -642,7 +642,7 @@ class ProjectConfig
      */
     public static function diff(bool $invert = false): string
     {
-        $projectConfig = Craft::$app->getProjectConfig();
+        $projectConfig = app(ProjectConfigService::class);
         $cacheKey = ProjectConfigService::DIFF_CACHE_KEY . ($invert ? ':reverse' : '');
 
         return DependencyCache::rememberForever($cacheKey, function() use ($projectConfig, $invert): string {
@@ -655,7 +655,7 @@ class ProjectConfig
             return Diff::diff($currentConfig, $pendingConfig);
         }, new AllDependencies([
             $projectConfig->getCacheDependency(),
-            new CallbackDependency(fn(): string => md5(JsonHelper::encode(Craft::$app->getProjectConfig()->get(null, true)))),
+            new CallbackDependency(fn(): string => md5(JsonHelper::encode(app(ProjectConfigService::class)->get(null, true)))),
         ]));
     }
 

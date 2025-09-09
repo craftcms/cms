@@ -4,6 +4,7 @@ namespace CraftCms\Cms\Http\Middleware;
 
 use Closure;
 use craft\web\Application;
+use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use Illuminate\Container\Attributes\Give;
 use Illuminate\Http\Request;
 
@@ -14,6 +15,7 @@ final readonly class FlushProjectConfig
 {
     public function __construct(
         #[Give('Craft')] private Application $craft,
+        private ProjectConfig $projectConfig,
     ) {}
 
     public function handle(Request $request, Closure $next): mixed
@@ -24,7 +26,7 @@ final readonly class FlushProjectConfig
 
         $response = $next($request);
 
-        $this->craft->getProjectConfig()->flush();
+        $this->projectConfig->flush();
 
         return $response;
     }

@@ -16,6 +16,7 @@ use craft\test\TestCase;
 use craft\test\TestMailer;
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Edition;
+use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use ReflectionException;
 use UnitTester;
 use yii\base\ErrorException;
@@ -115,7 +116,7 @@ class MailerTest extends TestCase
      */
     public function testMessageProperties(): void
     {
-        Craft::$app->getProjectConfig()->set('email', ['fromName' => '$FROM_EMAIL_NAME', 'fromEmail' => '$FROM_EMAIL_ADDRESS']);
+        app(ProjectConfig::class)->set('email', ['fromName' => '$FROM_EMAIL_NAME', 'fromEmail' => '$FROM_EMAIL_ADDRESS']);
         $this->tester->mockCraftMethods('systemMessages', [
             'getMessage' => new SystemMessage([
                 'body' => '{{fromEmail}} || {{fromName}}',

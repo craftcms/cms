@@ -241,13 +241,13 @@ class Craft extends Yii2
             // Tests just beginning. Reset the project config to its original state.
             TestSetup::setupProjectConfig();
 
-            \Craft::$app->getProjectConfig()->applyConfigChanges(
+            app(\CraftCms\Cms\ProjectConfig\ProjectConfig::class)->applyConfigChanges(
                 TestSetup::getSeedProjectConfigData()
             );
 
-            \Craft::$app->getProjectConfig()->flush();
+            app(\CraftCms\Cms\ProjectConfig\ProjectConfig::class)->flush();
         } else {
-            \Craft::$app->getProjectConfig()->rebuild();
+            app(\CraftCms\Cms\ProjectConfig\ProjectConfig::class)->rebuild();
 
             // We also manually set the edition if desired by the current config
             $edition = $this->_getConfig('edition');

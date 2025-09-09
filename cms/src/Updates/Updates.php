@@ -2,11 +2,11 @@
 
 namespace CraftCms\Cms\Updates;
 
-use craft\services\ProjectConfig;
 use CraftCms\Cms\Database\Exceptions\MigrateException;
 use CraftCms\Cms\Database\Migrator;
 use CraftCms\Cms\License\License;
 use CraftCms\Cms\Plugin\Plugins;
+use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\Support\Api;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Updates\Data\Updates as UpdatesData;
@@ -34,6 +34,7 @@ final class Updates
         private readonly Api $api,
         private readonly Migrator $migrator,
         private readonly Plugins $plugins,
+        private readonly ProjectConfig $projectConfig,
     ) {}
 
     public function isUpdateInfoCached(): bool
@@ -283,7 +284,7 @@ final class Updates
 
         \Craft::$app->saveInfo($info);
 
-        \Craft::$app->getProjectConfig()->set(
+        $this->projectConfig->set(
             ProjectConfig::PATH_SCHEMA_VERSION,
             $info->schemaVersion,
             'Update Craft schema version',

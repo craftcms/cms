@@ -25,6 +25,7 @@ use craft\web\Session;
 use craft\web\View;
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Edition;
+use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\Support\Json;
 use DateTime;
 use GuzzleHttp\Psr7\ServerRequest;
@@ -388,7 +389,7 @@ class Auth extends Component
             return false;
         }
 
-        $require2fa = Craft::$app->getProjectConfig()->get(sprintf('%s.require2fa', ProjectConfig::PATH_USERS));
+        $require2fa = app(ProjectConfig::class)->get(sprintf('%s.require2fa', ProjectConfig::PATH_USERS));
 
         if ($require2fa === 'all') {
             return true;

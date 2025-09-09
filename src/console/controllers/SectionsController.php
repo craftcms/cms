@@ -16,6 +16,7 @@ use craft\models\FieldLayout;
 use craft\models\Section;
 use craft\models\Section_SiteSettings;
 use craft\models\Site;
+use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Str;
 use Illuminate\Support\Collection;
@@ -96,7 +97,7 @@ class SectionsController extends Controller
             return false;
         }
 
-        $projectConfigService = Craft::$app->getProjectConfig();
+        $projectConfigService = app(ProjectConfig::class);
         if ($projectConfigService->readOnly) {
             $this->stdout("Project config changes aren’t allowed on this environment.\n", Console::FG_RED);
             if (!$this->confirm($this->ansiFormat('Continue anyway?', Console::FG_RED))) {

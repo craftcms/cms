@@ -9,14 +9,18 @@ namespace craft\console\controllers;
 
 use Craft;
 use craft\console\Controller;
-use craft\events\ConfigEvent;
 use craft\helpers\Console;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\FileHelper;
 use craft\helpers\ProjectConfig;
-use craft\services\ProjectConfig as ProjectConfigService;
 use CraftCms\Cms\Plugin\Plugins;
+use CraftCms\Cms\ProjectConfig\Events\ConfigEvent;
+use CraftCms\Cms\ProjectConfig\Events\ItemAdded;
+use CraftCms\Cms\ProjectConfig\Events\ItemRemoved;
+use CraftCms\Cms\ProjectConfig\Events\ItemUpdated;
+use CraftCms\Cms\ProjectConfig\ProjectConfig as ProjectConfigService;
 use CraftCms\Cms\Updates\Updates;
+use Illuminate\Support\Facades\Event;
 use Symfony\Component\Yaml\Exception\ParseException;
 use Symfony\Component\Yaml\Yaml;
 use Throwable;
@@ -137,7 +141,7 @@ class ProjectConfigController extends Controller
      */
     public function actionGet(string $path): int
     {
-        $projectConfig = Craft::$app->getProjectConfig();
+        $projectConfig = app(ProjectConfigService::class);
         $value = $projectConfig->get($path, $this->external);
         $this->stdout(Yaml::dump($value));
         $this->stdout(PHP_EOL);
@@ -174,7 +178,7 @@ class ProjectConfigController extends Controller
             return ExitCode::USAGE;
         }
 
-        $projectConfig = Craft::$app->getProjectConfig();
+        $projectConfig = app(ProjectConfigService::class);
         $projectConfig->set(
             $path,
             $parsedValue,
@@ -277,7 +281,7 @@ class ProjectConfigController extends Controller
             return ExitCode::UNSPECIFIED_ERROR;
         }
 
-        $projectConfig = Craft::$app->getProjectConfig();
+        $projectConfig = app(ProjectConfigService::class);
 
         $issues = [];
         if (!$projectConfig->getAreConfigSchemaVersionsCompatible($issues)) {
@@ -317,12 +321,12 @@ class ProjectConfigController extends Controller
 
                 if (!$this->quiet) {
                     $this->_processingPaths = [];
-                    $projectConfig->on(ProjectConfigService::EVENT_ADD_ITEM, [$this, 'onStartProcessingItem'], ['label' => 'adding'], false);
-                    $projectConfig->on(ProjectConfigService::EVENT_ADD_ITEM, [$this, 'onFinishProcessingItem'], ['label' => 'adding'], true);
-                    $projectConfig->on(ProjectConfigService::EVENT_REMOVE_ITEM, [$this, 'onStartProcessingItem'], ['label' => 'removing'], false);
-                    $projectConfig->on(ProjectConfigService::EVENT_REMOVE_ITEM, [$this, 'onFinishProcessingItem'], ['label' => 'removing'], true);
-                    $projectConfig->on(ProjectConfigService::EVENT_UPDATE_ITEM, [$this, 'onStartProcessingItem'], ['label' => 'updating'], false);
-                    $projectConfig->on(ProjectConfigService::EVENT_UPDATE_ITEM, [$this, 'onFinishProcessingItem'], ['label' => 'updating'], true);
+                    Event::prependListener(ItemAdded::class, [$this, 'onStartProcessingItem']);
+                    Event::listen(ItemAdded::class, [$this, 'onFinishProcessingItem']);
+                    Event::prependListener(ItemRemoved::class, [$this, 'onStartProcessingItem']);
+                    Event::listen(ItemRemoved::class, [$this, 'onFinishProcessingItem']);
+                    Event::prependListener(ItemUpdated::class, [$this, 'onStartProcessingItem']);
+                    Event::listen(ItemUpdated::class, [$this, 'onFinishProcessingItem']);
                 }
 
                 $projectConfig->applyExternalChanges();
@@ -334,12 +338,12 @@ class ProjectConfigController extends Controller
                 return ExitCode::UNSPECIFIED_ERROR;
             } finally {
                 if (!$this->quiet) {
-                    $projectConfig->off(ProjectConfigService::EVENT_ADD_ITEM, [$this, 'onStartProcessingItem']);
-                    $projectConfig->off(ProjectConfigService::EVENT_ADD_ITEM, [$this, 'onFinishProcessingItem']);
-                    $projectConfig->off(ProjectConfigService::EVENT_REMOVE_ITEM, [$this, 'onStartProcessingItem']);
-                    $projectConfig->off(ProjectConfigService::EVENT_REMOVE_ITEM, [$this, 'onFinishProcessingItem']);
-                    $projectConfig->off(ProjectConfigService::EVENT_UPDATE_ITEM, [$this, 'onStartProcessingItem']);
-                    $projectConfig->off(ProjectConfigService::EVENT_UPDATE_ITEM, [$this, 'onFinishProcessingItem']);
+                    Event::forgetListener(ItemAdded::class, [$this, 'onStartProcessingItem']);
+                    Event::forgetListener(ItemAdded::class, [$this, 'onFinishProcessingItem']);
+                    Event::forgetListener(ItemRemoved::class, [$this, 'onStartProcessingItem']);
+                    Event::forgetListener(ItemRemoved::class, [$this, 'onFinishProcessingItem']);
+                    Event::forgetListener(ItemUpdated::class, [$this, 'onStartProcessingItem']);
+                    Event::forgetListener(ItemUpdated::class, [$this, 'onFinishProcessingItem']);
                 }
             }
 
@@ -372,7 +376,14 @@ class ProjectConfigController extends Controller
             $this->stdout(str_repeat('  ', $otherPaths));
         }
 
-        $this->stdout("- {$event->data['label']} ");
+        $label = match ($event::class) {
+            ItemAdded::class => 'adding',
+            ItemRemoved::class => 'removing',
+            ItemUpdated::class => 'updating',
+            default => '',
+        };
+
+        $this->stdout("- {$label} ");
         $this->stdout($event->path, Console::FG_CYAN);
         $this->stdout(' ... ');
 
@@ -423,7 +434,7 @@ class ProjectConfigController extends Controller
     public function actionWrite(): int
     {
         $this->stdout('Writing out project config files ... ');
-        Craft::$app->getProjectConfig()->regenerateExternalConfig();
+        app(ProjectConfigService::class)->regenerateExternalConfig();
         $this->stdout('done' . PHP_EOL, Console::FG_GREEN);
         return ExitCode::OK;
     }
@@ -436,7 +447,7 @@ class ProjectConfigController extends Controller
      */
     public function actionRebuild(): int
     {
-        $projectConfig = Craft::$app->getProjectConfig();
+        $projectConfig = app(ProjectConfigService::class);
 
         if ($projectConfig->writeYamlAutomatically && !$projectConfig->getDoesExternalConfigExist()) {
             $this->stdout("No project config files found. Generating them from internal config ... ", Console::FG_YELLOW);
@@ -519,7 +530,7 @@ class ProjectConfigController extends Controller
 
         $this->stdout('Exporting the ' . ($this->external ? 'external' : 'loaded') . ' project config data ... ');
 
-        $config = Craft::$app->getProjectConfig()->get(null, $this->external);
+        $config = app(ProjectConfigService::class)->get(null, $this->external);
         $content = Yaml::dump(ProjectConfig::cleanupConfig($config), 20, 2);
         FileHelper::writeToFile($path, $content);
 

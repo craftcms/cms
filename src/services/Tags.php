@@ -12,13 +12,14 @@ use craft\base\MemoizableArray;
 use craft\db\Table;
 use craft\elements\Tag;
 use craft\errors\TagGroupNotFoundException;
-use craft\events\ConfigEvent;
 use craft\events\TagGroupEvent;
 use craft\helpers\Db;
 use craft\helpers\ProjectConfig as ProjectConfigHelper;
 use craft\models\FieldLayout;
 use craft\models\TagGroup;
 use craft\records\TagGroup as TagGroupRecord;
+use CraftCms\Cms\ProjectConfig\Events\ConfigEvent;
+use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\Support\Str;
 use DateTime;
 use Throwable;
@@ -228,7 +229,7 @@ class Tags extends Component
 
         $configPath = ProjectConfig::PATH_TAG_GROUPS . '.' . $tagGroup->uid;
         $configData = $tagGroup->getConfig();
-        Craft::$app->getProjectConfig()->set($configPath, $configData, "Save the “{$tagGroup->handle}” tag group");
+        app(ProjectConfig::class)->set($configPath, $configData, "Save the “{$tagGroup->handle}” tag group");
 
         if ($isNewTagGroup) {
             $tagGroup->id = \Illuminate\Support\Facades\DB::table(\CraftCms\Cms\Database\Table::TAGGROUPS)->idByUid($tagGroup->uid);
@@ -351,7 +352,7 @@ class Tags extends Component
             ]));
         }
 
-        Craft::$app->getProjectConfig()->remove(ProjectConfig::PATH_TAG_GROUPS . '.' . $tagGroup->uid, "Delete the “{$tagGroup->handle}” tag group");
+        app(ProjectConfig::class)->remove(ProjectConfig::PATH_TAG_GROUPS . '.' . $tagGroup->uid, "Delete the “{$tagGroup->handle}” tag group");
         return true;
     }
 

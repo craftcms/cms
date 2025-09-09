@@ -10,8 +10,8 @@ namespace crafttests\unit\services;
 use Codeception\Stub\Expected;
 use Craft;
 use craft\models\ReadOnlyProjectConfigData;
-use craft\services\ProjectConfig;
 use craft\test\TestCase;
+use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\Support\Str;
 use Exception;
 use Illuminate\Support\Facades\Cache;
@@ -93,7 +93,7 @@ class ProjectConfigTest extends TestCase
      */
     public function testRebuildIgnoresReadOnly(): void
     {
-        $projectConfig = Craft::$app->getProjectConfig();
+        $projectConfig = app(ProjectConfig::class);
         $readOnly = $projectConfig->readOnly;
         $projectConfig->readOnly = true;
 

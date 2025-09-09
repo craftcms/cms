@@ -2,7 +2,7 @@
 
 namespace CraftCms\Cms\Console;
 
-use craft\services\ProjectConfig;
+use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\Support\Str;
 use Illuminate\Console\Command;
 

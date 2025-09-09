@@ -13,6 +13,7 @@ use craft\models\UserGroup;
 use craft\web\Controller;
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Edition;
+use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use yii\web\BadRequestHttpException;
 use yii\web\NotFoundHttpException;
 use yii\web\Response;
@@ -231,7 +232,7 @@ JS, [
     public function actionSaveUserSettings(): ?Response
     {
         $this->requirePostRequest();
-        $projectConfig = Craft::$app->getProjectConfig();
+        $projectConfig = app(ProjectConfig::class);
         $settings = $projectConfig->get('users') ?? [];
 
         $photoVolumeId = $this->request->getBodyParam('photoVolumeId');

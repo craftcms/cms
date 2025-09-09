@@ -76,7 +76,6 @@ use craft\services\ImageTransforms;
 use craft\services\Path;
 use craft\services\Plugins;
 use craft\services\PluginStore;
-use craft\services\ProjectConfig;
 use craft\services\Relations;
 use craft\services\Revisions;
 use craft\services\Routes;
@@ -106,6 +105,7 @@ use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\License\License;
+use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\Support\Composer;
 use CraftCms\Cms\Support\Env;
 use CraftCms\Cms\Support\Str;
@@ -168,7 +168,7 @@ use yii\web\ServerErrorHttpException;
  * @property-read Path $path The path service
  * @property-read PluginStore $pluginStore The plugin store service
  * @property-read Plugins $plugins The plugins service
- * @property-read ProjectConfig $projectConfig The project config service
+ * @property-read \craft\services\ProjectConfig $projectConfig The project config service
  * @property-read Queue|QueueInterface $queue The job queue
  * @property-read Relations $relations The relations service (deprecated)
  * @property-read Revisions $revisions The revisions service
@@ -657,7 +657,7 @@ trait ApplicationTrait
         }
 
         $oldEdition = $this->edition ?? Edition::Solo;
-        $this->getProjectConfig()->set('system.edition', $edition->handle(), 'Craft CMS edition change');
+        app(ProjectConfig::class)->set('system.edition', $edition->handle(), 'Craft CMS edition change');
         $this->edition = $edition;
 
         // Fire an 'afterEditionChange' event
@@ -686,7 +686,7 @@ trait ApplicationTrait
             $edition = Edition::from($edition);
         }
 
-        if ($this->getIsInstalled() && !$this->getProjectConfig()->getIsApplyingExternalChanges()) {
+        if ($this->getIsInstalled() && !app(ProjectConfig::class)->getIsApplyingExternalChanges()) {
             if (!match ($orBetter) {
                 true => $this->edition->value >= $edition->value,
                 false => $this->edition === $edition
@@ -767,7 +767,7 @@ trait ApplicationTrait
             return $live;
         }
 
-        return Env::parseBoolean($this->getProjectConfig()->get('system.live')) ?? false;
+        return Env::parseBoolean(app(ProjectConfig::class)->get('system.live')) ?? false;
     }
 
     /**
@@ -912,7 +912,7 @@ trait ApplicationTrait
      */
     public function getSystemName(): string
     {
-        $name = Env::parse(Craft::$app->getProjectConfig()->get('system.name'));
+        $name = Env::parse(app(ProjectConfig::class)->get('system.name'));
         if ($name !== null) {
             return $name;
         }
@@ -1294,9 +1294,9 @@ trait ApplicationTrait
     /**
      * Returns the system config service.
      *
-     * @return ProjectConfig The system config service
+     * @return \craft\services\ProjectConfig The system config service
      */
-    public function getProjectConfig(): ProjectConfig
+    public function getProjectConfig(): \craft\services\ProjectConfig
     {
         return $this->get('projectConfig');
     }
@@ -1507,7 +1507,7 @@ trait ApplicationTrait
         });
 
         // Set the Craft edition
-        $edition = Env::get('CRAFT_EDITION') ?? $this->getProjectConfig()->get('system.edition');
+        $edition = Env::get('CRAFT_EDITION') ?? app(ProjectConfig::class)->get('system.edition');
         $this->edition = $edition ? Edition::fromHandle($edition) : Edition::Solo;
 
         // Load the request before anything else, so everything else can safely check Craft::$app->has('request', true)
@@ -1573,7 +1573,7 @@ trait ApplicationTrait
      */
     private function _setTimeZone(): void
     {
-        $timeZone = app(GeneralConfig::class)->timezone ?? $this->getProjectConfig()->get('system.timeZone');
+        $timeZone = app(GeneralConfig::class)->timezone ?? app(ProjectConfig::class)->get('system.timeZone');
 
         if ($timeZone) {
             $this->setTimeZone(Env::parse($timeZone));
@@ -1665,74 +1665,9 @@ trait ApplicationTrait
      */
     private function _registerConfigListeners(): void
     {
-        $this->getProjectConfig()
-            // Address field layout
-            ->onAdd(ProjectConfig::PATH_ADDRESS_FIELD_LAYOUTS, $this->_proxy('addresses', 'handleChangedAddressFieldLayout'))
-            ->onUpdate(ProjectConfig::PATH_ADDRESS_FIELD_LAYOUTS, $this->_proxy('addresses', 'handleChangedAddressFieldLayout'))
-            ->onRemove(ProjectConfig::PATH_ADDRESS_FIELD_LAYOUTS, $this->_proxy('addresses', 'handleChangedAddressFieldLayout'))
-            // Fields
-            ->onAdd(ProjectConfig::PATH_FIELDS . '.{uid}', $this->_proxy('fields', 'handleChangedField'))
-            ->onUpdate(ProjectConfig::PATH_FIELDS . '.{uid}', $this->_proxy('fields', 'handleChangedField'))
-            ->onRemove(ProjectConfig::PATH_FIELDS . '.{uid}', $this->_proxy('fields', 'handleDeletedField'))
-            // Volumes
-            ->onAdd(ProjectConfig::PATH_VOLUMES . '.{uid}', $this->_proxy('volumes', 'handleChangedVolume'))
-            ->onUpdate(ProjectConfig::PATH_VOLUMES . '.{uid}', $this->_proxy('volumes', 'handleChangedVolume'))
-            ->onRemove(ProjectConfig::PATH_VOLUMES . '.{uid}', $this->_proxy('volumes', 'handleDeletedVolume'))
-            // Transforms
-            ->onAdd(ProjectConfig::PATH_IMAGE_TRANSFORMS . '.{uid}', $this->_proxy('imageTransforms', 'handleChangedTransform'))
-            ->onUpdate(ProjectConfig::PATH_IMAGE_TRANSFORMS . '.{uid}', $this->_proxy('imageTransforms', 'handleChangedTransform'))
-            ->onRemove(ProjectConfig::PATH_IMAGE_TRANSFORMS . '.{uid}', $this->_proxy('imageTransforms', 'handleDeletedTransform'))
-            // Site groups
-            ->onAdd(ProjectConfig::PATH_SITE_GROUPS . '.{uid}', $this->_proxy('sites', 'handleChangedGroup'))
-            ->onUpdate(ProjectConfig::PATH_SITE_GROUPS . '.{uid}', $this->_proxy('sites', 'handleChangedGroup'))
-            ->onRemove(ProjectConfig::PATH_SITE_GROUPS . '.{uid}', $this->_proxy('sites', 'handleDeletedGroup'))
-            // Sites
-            ->onAdd(ProjectConfig::PATH_SITES . '.{uid}', $this->_proxy('sites', 'handleChangedSite'))
-            ->onUpdate(ProjectConfig::PATH_SITES . '.{uid}', $this->_proxy('sites', 'handleChangedSite'))
-            ->onRemove(ProjectConfig::PATH_SITES . '.{uid}', $this->_proxy('sites', 'handleDeletedSite'))
-            // Tags
-            ->onAdd(ProjectConfig::PATH_TAG_GROUPS . '.{uid}', $this->_proxy('tags', 'handleChangedTagGroup'))
-            ->onUpdate(ProjectConfig::PATH_TAG_GROUPS . '.{uid}', $this->_proxy('tags', 'handleChangedTagGroup'))
-            ->onRemove(ProjectConfig::PATH_TAG_GROUPS . '.{uid}', $this->_proxy('tags', 'handleDeletedTagGroup'))
-            // Categories
-            ->onAdd(ProjectConfig::PATH_CATEGORY_GROUPS . '.{uid}', $this->_proxy('categories', 'handleChangedCategoryGroup'))
-            ->onUpdate(ProjectConfig::PATH_CATEGORY_GROUPS . '.{uid}', $this->_proxy('categories', 'handleChangedCategoryGroup'))
-            ->onRemove(ProjectConfig::PATH_CATEGORY_GROUPS . '.{uid}', $this->_proxy('categories', 'handleDeletedCategoryGroup'))
-            // User group permissions
-            ->onAdd(ProjectConfig::PATH_USER_GROUPS . '.{uid}.permissions', $this->_proxy('userPermissions', 'handleChangedGroupPermissions'))
-            ->onUpdate(ProjectConfig::PATH_USER_GROUPS . '.{uid}.permissions', $this->_proxy('userPermissions', 'handleChangedGroupPermissions'))
-            ->onRemove(ProjectConfig::PATH_USER_GROUPS . '.{uid}.permissions', $this->_proxy('userPermissions', 'handleChangedGroupPermissions'))
-            // User groups
-            ->onAdd(ProjectConfig::PATH_USER_GROUPS . '.{uid}', $this->_proxy('userGroups', 'handleChangedUserGroup'))
-            ->onUpdate(ProjectConfig::PATH_USER_GROUPS . '.{uid}', $this->_proxy('userGroups', 'handleChangedUserGroup'))
-            ->onRemove(ProjectConfig::PATH_USER_GROUPS . '.{uid}', $this->_proxy('userGroups', 'handleDeletedUserGroup'))
-            // User field layout
-            ->onAdd(ProjectConfig::PATH_USER_FIELD_LAYOUTS, $this->_proxy('users', 'handleChangedUserFieldLayout'))
-            ->onUpdate(ProjectConfig::PATH_USER_FIELD_LAYOUTS, $this->_proxy('users', 'handleChangedUserFieldLayout'))
-            ->onRemove(ProjectConfig::PATH_USER_FIELD_LAYOUTS, $this->_proxy('users', 'handleChangedUserFieldLayout'))
-            // Global sets
-            ->onAdd(ProjectConfig::PATH_GLOBAL_SETS . '.{uid}', $this->_proxy('globals', 'handleChangedGlobalSet'))
-            ->onUpdate(ProjectConfig::PATH_GLOBAL_SETS . '.{uid}', $this->_proxy('globals', 'handleChangedGlobalSet'))
-            ->onRemove(ProjectConfig::PATH_GLOBAL_SETS . '.{uid}', $this->_proxy('globals', 'handleDeletedGlobalSet'))
-            // Sections
-            ->onAdd(ProjectConfig::PATH_SECTIONS . '.{uid}', $this->_proxy('entries', 'handleChangedSection'))
-            ->onUpdate(ProjectConfig::PATH_SECTIONS . '.{uid}', $this->_proxy('entries', 'handleChangedSection'))
-            ->onRemove(ProjectConfig::PATH_SECTIONS . '.{uid}', $this->_proxy('entries', 'handleDeletedSection'))
-            // Entry types
-            ->onAdd(ProjectConfig::PATH_ENTRY_TYPES . '.{uid}', $this->_proxy('entries', 'handleChangedEntryType'))
-            ->onUpdate(ProjectConfig::PATH_ENTRY_TYPES . '.{uid}', $this->_proxy('entries', 'handleChangedEntryType'))
-            ->onRemove(ProjectConfig::PATH_ENTRY_TYPES . '.{uid}', $this->_proxy('entries', 'handleDeletedEntryType'))
-            // GraphQL schemas
-            ->onAdd(ProjectConfig::PATH_GRAPHQL_SCHEMAS . '.{uid}', $this->_proxy('gql', 'handleChangedSchema'))
-            ->onUpdate(ProjectConfig::PATH_GRAPHQL_SCHEMAS . '.{uid}', $this->_proxy('gql', 'handleChangedSchema'))
-            ->onRemove(ProjectConfig::PATH_GRAPHQL_SCHEMAS . '.{uid}', $this->_proxy('gql', 'handleDeletedSchema'))
-            // GraphQL public token
-            ->onAdd(ProjectConfig::PATH_GRAPHQL_PUBLIC_TOKEN, $this->_proxy('gql', 'handleChangedPublicToken'))
-            ->onUpdate(ProjectConfig::PATH_GRAPHQL_PUBLIC_TOKEN, $this->_proxy('gql', 'handleChangedPublicToken'));
-
         // Prune deleted sites from site settings
         Event::on(Sites::class, Sites::EVENT_AFTER_DELETE_SITE, function(DeleteSiteEvent $event) {
-            if (!Craft::$app->getProjectConfig()->getIsApplyingExternalChanges()) {
+            if (!app(ProjectConfig::class)->getIsApplyingExternalChanges()) {
                 $this->getRoutes()->handleDeletedSite($event);
                 $this->getCategories()->pruneDeletedSite($event);
                 $this->getEntries()->pruneDeletedSite($event);

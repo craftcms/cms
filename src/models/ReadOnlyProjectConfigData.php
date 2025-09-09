@@ -7,10 +7,9 @@
 
 namespace craft\models;
 
-use Craft;
 use craft\base\Model;
 use craft\helpers\ProjectConfig as ProjectConfigHelper;
-use craft\services\ProjectConfig;
+use CraftCms\Cms\ProjectConfig\ProjectConfig;
 
 /**
  * ReadOnlyProjectConfigData model class represents an instance of a project config data structure that cannot be modified
@@ -28,7 +27,7 @@ class ReadOnlyProjectConfigData extends Model
     public function __construct(array $data = [], ?ProjectConfig $projectConfig = null, array $config = [])
     {
         $this->data = $data;
-        $this->projectConfig = $projectConfig ?? Craft::$app->getProjectConfig();
+        $this->projectConfig = $projectConfig ?? app(ProjectConfig::class);
 
         parent::__construct($config);
     }

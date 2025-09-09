@@ -10,6 +10,7 @@ namespace craft\services;
 use Craft;
 use craft\helpers\FileHelper;
 use CraftCms\Cms\License\License;
+use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\Support\Env;
 use CraftCms\Cms\Support\Str;
 use yii\base\Component;
@@ -100,7 +101,7 @@ class Path extends Component
      */
     public function getProjectConfigPath(bool $create = true): string
     {
-        $path = $this->getConfigPath() . DIRECTORY_SEPARATOR . Craft::$app->getProjectConfig()->folderName;
+        $path = $this->getConfigPath() . DIRECTORY_SEPARATOR . app(ProjectConfig::class)->folderName;
 
         if ($create) {
             FileHelper::createDirectory($path);

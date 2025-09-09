@@ -20,7 +20,6 @@ use Craft;
 use craft\addresses\SubdivisionRepository;
 use craft\base\FieldLayoutProviderInterface;
 use craft\elements\Address;
-use craft\events\ConfigEvent;
 use craft\events\DefineAddressCountriesEvent;
 use craft\events\DefineAddressFieldLabelEvent;
 use craft\events\DefineAddressFieldsEvent;
@@ -28,6 +27,8 @@ use craft\events\DefineAddressSubdivisionsEvent;
 use craft\helpers\ProjectConfig as ProjectConfigHelper;
 use craft\models\FieldLayout;
 use craft\models\FieldLayoutTab;
+use CraftCms\Cms\ProjectConfig\Events\ConfigEvent;
+use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use yii\base\Component;
 
 /**
@@ -417,7 +418,7 @@ class Addresses extends Component implements FieldLayoutProviderInterface
             return false;
         }
 
-        Craft::$app->getProjectConfig()->set(ProjectConfig::PATH_ADDRESS_FIELD_LAYOUTS, [
+        app(ProjectConfig::class)->set(ProjectConfig::PATH_ADDRESS_FIELD_LAYOUTS, [
             $layout->uid => $layout->getConfig(),
         ], 'Save the address field layout');
 

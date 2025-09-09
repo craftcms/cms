@@ -12,6 +12,7 @@ use craft\filters\UtilityAccess;
 use craft\helpers\FileHelper;
 use craft\helpers\ProjectConfig;
 use craft\web\Controller;
+use CraftCms\Cms\ProjectConfig\ProjectConfig as ProjectConfigService;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Utility\Utilities\ProjectConfig as ProjectConfigUtility;
 use Symfony\Component\Yaml\Yaml;
@@ -62,7 +63,7 @@ class ProjectConfigController extends Controller
     public function actionDiscard(): Response
     {
         $this->requirePostRequest();
-        $projectConfig = Craft::$app->getProjectConfig();
+        $projectConfig = app(ProjectConfigService::class);
 
         if ($projectConfig->readOnly) {
             throw new ForbiddenHttpException('Rebuilding the project config is not allowed while it’s in read-only mode.');
@@ -83,7 +84,7 @@ class ProjectConfigController extends Controller
     public function actionRebuild(): Response
     {
         $this->requirePostRequest();
-        $projectConfig = Craft::$app->getProjectConfig();
+        $projectConfig = app(ProjectConfigService::class);
 
         if ($projectConfig->readOnly) {
             throw new ForbiddenHttpException('Rebuilding the project config is not allowed while it’s in read-only mode.');
@@ -102,7 +103,7 @@ class ProjectConfigController extends Controller
      */
     public function actionDownload(): Response
     {
-        $config = Craft::$app->getProjectConfig()->get();
+        $config = app(ProjectConfigService::class)->get();
         $splitConfig = ProjectConfig::splitConfigIntoComponents($config);
         $zip = new ZipArchive();
         $zipPath = Craft::$app->getPath()->getTempPath() . '/' . Str::uuid()->toString() . '.zip';

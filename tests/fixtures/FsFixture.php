@@ -10,7 +10,7 @@ namespace crafttests\fixtures;
 use Craft;
 use craft\helpers\FileHelper;
 use craft\services\Fs;
-use craft\services\ProjectConfig;
+use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\Support\Json;
 use yii\base\ErrorException;
 use yii\test\ArrayFixture;
@@ -39,7 +39,7 @@ class FsFixture extends ArrayFixture
      */
     public function load(): void
     {
-        $projectConfig = Craft::$app->getProjectConfig();
+        $projectConfig = app(ProjectConfig::class);
         $this->_originalConfig = $projectConfig->get(ProjectConfig::PATH_FS);
         $this->_originalService = Craft::$app->getFs();
 
@@ -59,7 +59,7 @@ class FsFixture extends ArrayFixture
             FileHelper::removeDirectory($settings['path']);
         }
 
-        Craft::$app->getProjectConfig()->set(ProjectConfig::PATH_FS, $this->_originalConfig);
+        app(ProjectConfig::class)->set(ProjectConfig::PATH_FS, $this->_originalConfig);
         if (isset($this->_originalService)) {
             Craft::$app->set('fs', $this->_originalService);
         }

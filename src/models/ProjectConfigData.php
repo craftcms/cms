@@ -7,11 +7,13 @@
 
 namespace craft\models;
 
-use Craft;
-use craft\events\ConfigEvent;
 use craft\helpers\ProjectConfig as ProjectConfigHelper;
-use craft\services\ProjectConfig as ProjectConfigService;
+use CraftCms\Cms\ProjectConfig\Events\ItemAdded;
+use CraftCms\Cms\ProjectConfig\Events\ItemRemoved;
+use CraftCms\Cms\ProjectConfig\Events\ItemUpdated;
+use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\Support\Str;
+use Illuminate\Support\Facades\Event;
 
 /**
  * ProjectConfigData model class represents a modifiable instance of a project config data structure that can be modified
@@ -67,23 +69,17 @@ class ProjectConfigData extends ReadOnlyProjectConfigData
             ProjectConfigHelper::encodeValueAsString($oldValue) !== ProjectConfigHelper::encodeValueAsString($newValue)
         );
 
-        if (($valueChanged || $force) && !str_starts_with($path, ProjectConfigService::PATH_META_NAMES)) {
+        if (($valueChanged || $force) && !str_starts_with($path, ProjectConfig::PATH_META_NAMES)) {
             $this->updateContainedProjectConfigNames(pathinfo($path, PATHINFO_EXTENSION), $oldValue, $newValue);
         }
 
         if ($valueChanged) {
             if (!$this->projectConfig->muteEvents) {
-                $event = new ConfigEvent(compact('path', 'oldValue', 'newValue'));
-                if ($newValue === null && $oldValue !== null) {
-                    // Fire a 'removeItem' event
-                    $this->projectConfig->trigger(ProjectConfigService::EVENT_REMOVE_ITEM, $event);
-                } elseif ($oldValue === null && $newValue !== null) {
-                    // Fire an 'addItem' event
-                    $this->projectConfig->trigger(ProjectConfigService::EVENT_ADD_ITEM, $event);
-                } else {
-                    // Fire an 'updateItem' event
-                    $this->projectConfig->trigger(ProjectConfigService::EVENT_UPDATE_ITEM, $event);
-                }
+                Event::dispatch(match (true) {
+                    $newValue === null && $oldValue !== null => new ItemRemoved($path, $oldValue, $newValue),
+                    $oldValue === null && $newValue !== null => new ItemAdded($path, $oldValue, $newValue),
+                    default => new ItemUpdated($path, $oldValue, $newValue),
+                });
             }
         }
 
@@ -184,7 +180,7 @@ class ProjectConfigData extends ReadOnlyProjectConfigData
     protected function setContainedProjectConfigNames(string $lastPathSegment, array $data): void
     {
         if (preg_match('/^' . Str::uuidPattern() . '$/i', $lastPathSegment) && isset($data['name'])) {
-            Craft::$app->getProjectConfig()->setNameMapping($lastPathSegment, $data['name']);
+            app(ProjectConfig::class)->setNameMapping($lastPathSegment, $data['name']);
             $this->projectConfigNameChanges[$lastPathSegment] = $data['name'];
         }
 
@@ -206,7 +202,7 @@ class ProjectConfigData extends ReadOnlyProjectConfigData
     protected function removeContainedProjectConfigNames(string $lastPathSegment, array $data): void
     {
         if (preg_match('/^' . Str::uuidPattern() . '$/i', $lastPathSegment)) {
-            Craft::$app->getProjectConfig()->removeNameMapping($lastPathSegment);
+            app(ProjectConfig::class)->removeNameMapping($lastPathSegment);
             $this->projectConfigNameChanges[$lastPathSegment] = null;
         }
 

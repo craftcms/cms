@@ -16,7 +16,6 @@ use craft\models\CategoryGroup;
 use craft\models\Info;
 use craft\models\Section;
 use craft\models\Site;
-use craft\services\ProjectConfig;
 use craft\web\Response;
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Database\Migration;
@@ -26,6 +25,7 @@ use CraftCms\Cms\Edition;
 use CraftCms\Cms\Element\Enums\PropagationMethod;
 use CraftCms\Cms\Plugin\Exceptions\InvalidPluginException;
 use CraftCms\Cms\Plugin\Plugins;
+use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\Shared\Exceptions\OperationAbortedException;
 use CraftCms\Cms\Support\Str;
 use Illuminate\Database\Schema\Blueprint;
@@ -1166,7 +1166,7 @@ class Install extends Migration
         });
 
         $generalConfig = app(GeneralConfig::class);
-        $projectConfig = Craft::$app->getProjectConfig();
+        $projectConfig = app(ProjectConfig::class);
 
         if ($this->applyProjectConfigYaml) {
             // Make sure at least sites are processed
@@ -1228,14 +1228,13 @@ class Install extends Migration
             return true;
         }
 
-        $projectConfig = Craft::$app->getProjectConfig();
-        if (! $projectConfig->getDoesExternalConfigExist()) {
+        if (! app(ProjectConfig::class)->getDoesExternalConfigExist()) {
             $this->applyProjectConfigYaml = false;
 
             return true;
         }
 
-        $expectedSchemaVersion = (string) $projectConfig->get(ProjectConfig::PATH_SCHEMA_VERSION, true);
+        $expectedSchemaVersion = (string) app(ProjectConfig::class)->get(ProjectConfig::PATH_SCHEMA_VERSION, true);
         $craftSchemaVersion = Craft::$app->schemaVersion;
 
         if (! version_compare($craftSchemaVersion, $expectedSchemaVersion, '=')) {
@@ -1245,7 +1244,7 @@ class Install extends Migration
         }
 
         $pluginsService = app(Plugins::class);
-        $pluginConfigs = $projectConfig->get(ProjectConfig::PATH_PLUGINS, true) ?? [];
+        $pluginConfigs = app(ProjectConfig::class)->get(ProjectConfig::PATH_PLUGINS, true) ?? [];
 
         /**
          * Make sure that all to-be-installed plugins actually exist
@@ -1281,9 +1280,8 @@ class Install extends Migration
 
     private function _installPlugins(): void
     {
-        $projectConfig = Craft::$app->getProjectConfig();
         $pluginsService = app(Plugins::class);
-        $pluginConfigs = $projectConfig->get(ProjectConfig::PATH_PLUGINS, true) ?? [];
+        $pluginConfigs = app(ProjectConfig::class)->get(ProjectConfig::PATH_PLUGINS, true) ?? [];
 
         // Prevent the plugin from sending any headers, etc.
         $realResponse = Craft::$app->getResponse();

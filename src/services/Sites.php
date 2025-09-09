@@ -17,7 +17,6 @@ use craft\elements\Category;
 use craft\elements\GlobalSet;
 use craft\elements\Tag;
 use craft\errors\SiteNotFoundException;
-use craft\events\ConfigEvent;
 use craft\events\DeleteSiteEvent;
 use craft\events\ReorderSitesEvent;
 use craft\events\SiteEvent;
@@ -30,6 +29,8 @@ use craft\queue\jobs\PropagateElements;
 use craft\records\Site as SiteRecord;
 use craft\records\SiteGroup as SiteGroupRecord;
 use CraftCms\Cms\Database\Table;
+use CraftCms\Cms\ProjectConfig\Events\ConfigEvent;
+use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Str;
 use Illuminate\Database\Query\Builder;
@@ -41,8 +42,8 @@ use yii\base\Component;
 use yii\base\Exception;
 use yii\base\InvalidArgumentException;
 use yii\base\NotSupportedException;
-use yii\db\Exception as DbException;
 
+use yii\db\Exception as DbException;
 use function CraftCms\Cms\maxPowerCaptain;
 
 /**
@@ -299,7 +300,7 @@ class Sites extends Component
 
         $configPath = ProjectConfig::PATH_SITE_GROUPS . '.' . $group->uid;
         $configData = $group->getConfig();
-        Craft::$app->getProjectConfig()->set($configPath, $configData,
+        app(ProjectConfig::class)->set($configPath, $configData,
             "Save the “{$group->getName(false)}” site group");
 
         // Now that we have an ID, save it on the model
@@ -427,7 +428,7 @@ class Sites extends Component
             ]));
         }
 
-        Craft::$app->getProjectConfig()->remove(ProjectConfig::PATH_SITE_GROUPS . '.' . $group->uid,
+        app(ProjectConfig::class)->remove(ProjectConfig::PATH_SITE_GROUPS . '.' . $group->uid,
             "Delete the “{$group->getName(false)}” site group");
 
         return true;
@@ -753,7 +754,7 @@ class Sites extends Component
             $site->uid = DB::table(Table::SITES)->uidById($site->id);
         }
 
-        $projectConfigService = Craft::$app->getProjectConfig();
+        $projectConfigService = app(ProjectConfig::class);
         $projectConfigService->set(
             ProjectConfig::PATH_SITES . ".$site->uid",
             $site->getConfig(),
@@ -790,7 +791,7 @@ class Sites extends Component
         $groupUid = $data['siteGroup'];
 
         // Ensure we have the site group in place first
-        $projectConfig = Craft::$app->getProjectConfig();
+        $projectConfig = app(ProjectConfig::class);
         $projectConfig->processConfigChanges(ProjectConfig::PATH_SITE_GROUPS . '.' . $groupUid);
 
         try {
@@ -915,7 +916,7 @@ class Sites extends Component
             ]));
         }
 
-        $projectConfig = Craft::$app->getProjectConfig();
+        $projectConfig = app(ProjectConfig::class);
 
         $uidsByIds = DB::table(Table::SITES)->uidsByIds($siteIds);
 
@@ -985,7 +986,7 @@ class Sites extends Component
             }
         }
 
-        $projectConfig = Craft::$app->getProjectConfig();
+        $projectConfig = app(ProjectConfig::class);
 
         // TODO: Move this code into entries module, etc.
         // Get the section IDs that are enabled for this site

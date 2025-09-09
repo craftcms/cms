@@ -4,6 +4,7 @@ namespace CraftCms\Cms\Utility\Utilities;
 
 use Craft;
 use craft\web\assets\prismjs\PrismJsAsset;
+use CraftCms\Cms\ProjectConfig\ProjectConfig as ProjectConfigService;
 use CraftCms\Cms\Utility\Utility;
 use Symfony\Component\Yaml\Yaml;
 
@@ -44,7 +45,7 @@ final class ProjectConfig extends Utility
      */
     public static function contentHtml(): string
     {
-        $projectConfig = Craft::$app->getProjectConfig();
+        $projectConfig = app(ProjectConfigService::class);
         $areChangesPending = $projectConfig->areChangesPending(force: true);
         $view = Craft::$app->getView();
 

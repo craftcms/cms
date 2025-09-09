@@ -7,9 +7,9 @@
 
 namespace craft\console\controllers\utils;
 
-use Craft;
 use craft\console\Controller;
 use craft\helpers\Console;
+use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\Support\Str;
 use yii\console\ExitCode;
 
@@ -30,7 +30,7 @@ class FixFieldLayoutUidsController extends Controller
     {
         $this->stdout("Looking for duplicate UUIDs ...\n");
         $count = 0;
-        $this->_fixUids(Craft::$app->getProjectConfig()->get(), $count);
+        $this->_fixUids(app(ProjectConfig::class)->get(), $count);
 
         if ($count) {
             $summary = sprintf('Fixed %s duplicate or missing %s.', $count, $count === 1 ? 'UUID' : 'UUIDs');
@@ -54,7 +54,7 @@ class FixFieldLayoutUidsController extends Controller
                 $this->_fixUidsInLayout($fieldLayoutConfig, $count, $fieldLayoutPath, $uids, $modified);
             }
             if ($modified) {
-                Craft::$app->getProjectConfig()->set($path, $config);
+                app(ProjectConfig::class)->set($path, $config);
             }
             return;
         }
@@ -64,7 +64,7 @@ class FixFieldLayoutUidsController extends Controller
             $fieldLayoutPath = sprintf('%sfieldLayout', $path ? "$path." : '');
             $this->_fixUidsInLayout($config['fieldLayout'], $count, $fieldLayoutPath, $uids, $modified);
             if ($modified) {
-                Craft::$app->getProjectConfig()->set($path, $config);
+                app(ProjectConfig::class)->set($path, $config);
             }
             return;
         }

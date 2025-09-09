@@ -15,7 +15,6 @@ use craft\db\Connection;
 use craft\elements\Asset;
 use craft\errors\ImageTransformException;
 use craft\events\AssetEvent;
-use craft\events\ConfigEvent;
 use craft\events\ImageTransformEvent;
 use craft\events\RegisterComponentTypesEvent;
 use craft\helpers\Assets as AssetsHelper;
@@ -26,6 +25,8 @@ use craft\imagetransforms\ImageTransformer;
 use craft\models\ImageTransform;
 use craft\records\ImageTransform as ImageTransformRecord;
 use CraftCms\Cms\Database\Table;
+use CraftCms\Cms\ProjectConfig\Events\ConfigEvent;
+use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\Support\Str;
 use DateTime;
 use Illuminate\Database\Query\Builder;
@@ -220,7 +221,7 @@ class ImageTransforms extends Component
             $transform->uid = DB::table(Table::IMAGETRANSFORMS)->uidById($transform->id);
         }
 
-        $projectConfig = Craft::$app->getProjectConfig();
+        $projectConfig = app(ProjectConfig::class);
         $configPath = ProjectConfig::PATH_IMAGE_TRANSFORMS . '.' . $transform->uid;
         $projectConfig->set($configPath, $transform->getConfig(), "Saving transform “{$transform->handle}”");
 
@@ -332,7 +333,7 @@ class ImageTransforms extends Component
             ]));
         }
 
-        Craft::$app->getProjectConfig()->remove(ProjectConfig::PATH_IMAGE_TRANSFORMS . '.' . $transform->uid,
+        app(ProjectConfig::class)->remove(ProjectConfig::PATH_IMAGE_TRANSFORMS . '.' . $transform->uid,
             "Delete transform “{$transform->handle}”");
         return true;
     }

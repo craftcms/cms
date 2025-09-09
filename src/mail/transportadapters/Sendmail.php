@@ -9,6 +9,7 @@ namespace craft\mail\transportadapters;
 
 use Craft;
 use craft\behaviors\EnvAttributeParserBehavior;
+use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\Support\Env;
 use CraftCms\Cms\Support\Html;
 use Symfony\Component\Mailer\Transport\AbstractTransport;
@@ -140,7 +141,7 @@ class Sendmail extends BaseTransportAdapter
     {
         // Grab the current value from the project config rather than $this->command, so we don't risk
         // polluting the allowed commands with a tampered value that came from the post data
-        $command = Craft::$app->getProjectConfig()->get('email.transportSettings.command');
+        $command = app(ProjectConfig::class)->get('email.transportSettings.command');
 
         return array_unique(array_filter([
             !str_starts_with($command ?? '', '$') ? $command : null,

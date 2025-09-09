@@ -2,6 +2,7 @@
 
 use CraftCms\Cms\Http\Controllers\ConfigSyncController;
 use CraftCms\Cms\Plugin\Plugins;
+use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\User\Models\User;
 use Illuminate\Support\Facades\Cache;
@@ -18,7 +19,7 @@ beforeEach(function () {
     ]));
 
     // Reset anything that could have changed project config
-    Craft::$app->getProjectConfig()->rebuild();
+    app(ProjectConfig::class)->rebuild();
 });
 
 dataset('routes', [
