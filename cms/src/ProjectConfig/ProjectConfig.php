@@ -48,6 +48,7 @@ use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Log;
 use Symfony\Component\Yaml\Yaml;
 use Throwable;
+use yii\base\Application;
 use yii\base\ErrorException;
 use yii\base\Exception;
 use yii\base\InvalidArgumentException;
@@ -1429,6 +1430,11 @@ final class ProjectConfig
     private function _saveConfigAfterRequest(): void
     {
         $this->_updateYaml = true;
+
+        // Are we too late for EVENT_AFTER_REQUEST?
+        if (Craft::$app->state >= Application::STATE_AFTER_REQUEST) {
+            $this->flush();
+        }
     }
 
     /**
