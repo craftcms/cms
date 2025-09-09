@@ -466,9 +466,9 @@ class UrlHelperTest extends TestCase
                 ['someparam'],
             ],
             'query-string' => [
-                self::ABSOLUTE_URL_HTTPS_WWW . '?param1=value&param2=value2',
+                self::ABSOLUTE_URL_HTTPS_WWW . '?param1=value1&param2=value2',
                 self::ABSOLUTE_URL_HTTPS_WWW,
-                '?param1=value&param2=value2',
+                '?param1=value1&param2=value2',
             ],
             'query-string-with-token' => [
                 self::ABSOLUTE_URL_HTTPS_WWW . '?param1={value}',
@@ -486,9 +486,9 @@ class UrlHelperTest extends TestCase
                 '?param1[key]={value}&param1[key2]=value2&param2[key]={value3}',
             ],
             'query-string-with-with-non-indexed-array' => [
-                self::ABSOLUTE_URL_HTTPS_WWW . '?param1%5B0%5D=value&param1%5B1%5D=value2',
+                self::ABSOLUTE_URL_HTTPS_WWW . '?param1%5B0%5D=value1&param1%5B1%5D=value2',
                 self::ABSOLUTE_URL_HTTPS_WWW,
-                '?param1[]=value&param1[]=value2',
+                '?param1[]=value1&param1[]=value2',
             ],
             'query-string-with-forward-slash' => [
                 self::ABSOLUTE_URL_HTTPS_WWW . '?param1=some/path',
