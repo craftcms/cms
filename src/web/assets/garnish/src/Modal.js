@@ -228,7 +228,11 @@ export default Base.extend(
         }
       }
 
-      if ($focusTarget?.length) {
+      if ($focusTarget?.length === 0 || $focusTarget === null) {
+        console.error(
+          'There is no trigger element set for this modal. Set one with modal.$triggerElement = $(...)'
+        );
+      } else {
         $focusTarget.focus();
       }
 
