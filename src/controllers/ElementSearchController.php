@@ -109,8 +109,9 @@ class ElementSearchController extends Controller
                 'exclude' => $exclude,
             ];
 
-            $titleLengths[] = StringHelper::length($element->title);
-            $title = Search::normalizeKeywords($element->title);
+            $title = $element->title ?? (string)$element;
+            $titleLengths[] = StringHelper::length($title);
+            $title = Search::normalizeKeywords($title);
 
             if ($title == $search) {
                 $exactMatches[] = 1;
