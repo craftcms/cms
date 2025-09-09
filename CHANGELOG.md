@@ -1,10 +1,17 @@
 # Release Notes for Craft CMS 4
 
-## Unreleased
+## 4.16.13 - 2025-09-05
+
+- Fixed a bug where entries’ and categories’ descendants’ URIs weren’t always getting updated after a parent’s URI changed. ([#17804](https://github.com/craftcms/cms/discussions/17804))
+- Fixed a bug where addresses weren’t saving `firstName`, `lastName`, and `fullName` values properly. ([#17807](https://github.com/craftcms/cms/issues/17807))
+
+## 4.16.12 - 2025-08-29
 
 - When searching for elements, partial matches within titles are now scored higher than exact matches in other fields. ([#17739](https://github.com/craftcms/cms/issues/17739))
 - Fixed a bug where volumes’ filesystem settings weren’t respecting static translations of filesystem names. ([#17749](https://github.com/craftcms/cms/issues/17749))
 - Fixed an error that could occur when applying project config changes. ([#15357](https://github.com/craftcms/cms/issues/15357))
+- Fixed a bug where pressing the “Use defaults” button within element indexes’ View menus wasn’t removing the `sort` query string parameter, so the selected sort option could revert back if the window was reloaded. ([#17761](https://github.com/craftcms/cms/issues/17761))
+- Updated the bundled composer.phar to 2.7.7. ([#17796](https://github.com/craftcms/cms/issues/17796))
 
 ## 4.16.11 - 2025-08-13
 

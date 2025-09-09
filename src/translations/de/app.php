@@ -1186,7 +1186,7 @@ return [
     'Refresh' => 'Aktualisieren',
     'Regenerate' => 'Regenerieren',
     'Regenerating project config YAML files from the loaded project config…' => 'Projektkonfigurations-YAML-Dateien werden aus der geladenen Projektkonfiguration wiederhergestellt…',
-    'Register users' => 'Benutzer anmelden',
+    'Register users' => 'Benutzer erstellen',
     'Relate {type} from a specific site?' => 'Beziehung mit {type} von einer bestimmten Website herstellen?',
     'Related To' => 'Zugehörig zu',
     'Relations don’t store the selected site, so this should only be enabled if some {type} aren’t propagated to all sites.' => 'Beziehungen speichern die gewählte Website nicht, deshalb sollte das nur dann eingeschaltet sein, wenn ein {type} nicht zu allen Sites verbreitet wird.',
