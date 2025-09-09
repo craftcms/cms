@@ -441,14 +441,14 @@ class UrlHelperTest extends TestCase
                 '?param1=entry1&param2=entry2',
             ],
             '#' => [
-                self::ABSOLUTE_URL_HTTPS_WWW . '?param1=name&param2=name2#anchor',
+                self::ABSOLUTE_URL_HTTPS_WWW . '?param1=value&param2=value2#anchor',
                 self::ABSOLUTE_URL_HTTPS_WWW,
-                ['param1' => 'name', 'param2' => 'name2', '#' => 'anchor'],
+                ['param1' => 'value', 'param2' => 'value2', '#' => 'anchor'],
             ],
             'basic-array' => [
-                self::ABSOLUTE_URL_HTTPS_WWW . '?param1=name&param2=name2',
+                self::ABSOLUTE_URL_HTTPS_WWW . '?param1=value&param2=value2',
                 self::ABSOLUTE_URL_HTTPS_WWW,
-                ['param1' => 'name', 'param2' => 'name2'],
+                ['param1' => 'value', 'param2' => 'value2'],
             ],
             'empty-array' => [
                 self::ABSOLUTE_URL_HTTPS_WWW,
@@ -466,9 +466,24 @@ class UrlHelperTest extends TestCase
                 ['someparam'],
             ],
             'query-string' => [
-                self::ABSOLUTE_URL_HTTPS_WWW . '?param1=name&param2=name2',
+                self::ABSOLUTE_URL_HTTPS_WWW . '?param1=value&param2=value2',
                 self::ABSOLUTE_URL_HTTPS_WWW,
-                '?param1=name&param2=name2',
+                '?param1=value&param2=value2',
+            ],
+            'query-string-with-token' => [
+                self::ABSOLUTE_URL_HTTPS_WWW . '?param1={token}',
+                self::ABSOLUTE_URL_HTTPS_WWW,
+                '?param1={handle}',
+            ],
+            'query-string-with-array' => [
+                self::ABSOLUTE_URL_HTTPS_WWW . '?param1[]={value}&param1[]=value2&param2[key]={value3}',
+                self::ABSOLUTE_URL_HTTPS_WWW,
+                '?param1%5B%5D={value}&param1%5B%5D=value2&param2%5Bkey%5D={value3}',
+            ],
+            'query-string-with-forward-slash' => [
+                self::ABSOLUTE_URL_HTTPS_WWW . '?param1=some/path',
+                self::ABSOLUTE_URL_HTTPS_WWW,
+                '?param1=some/path',
             ],
             'pre-queried-url' => [
                 self::ABSOLUTE_URL_HTTPS_WWW . '?param3=name3&param1=name&param2=name2',
