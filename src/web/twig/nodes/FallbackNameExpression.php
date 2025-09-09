@@ -9,7 +9,7 @@ namespace craft\web\twig\nodes;
 
 use craft\helpers\Template;
 use Twig\Compiler;
-use Twig\Node\Expression\NameExpression;
+use Twig\Node\Expression\Variable\ContextVariable;
 use Twig\Node\Node;
 
 /**
@@ -18,7 +18,7 @@ use Twig\Node\Node;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 4.4.0
  */
-class FallbackNameExpression extends NameExpression
+class FallbackNameExpression extends ContextVariable
 {
     public function __construct(string $name, array $attributes = [], int $lineno = 0)
     {
