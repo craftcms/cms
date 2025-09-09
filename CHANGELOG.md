@@ -1,5 +1,22 @@
 # Release Notes for Craft CMS 5
 
+## 5.8.17 - 2025-09-05
+
+- Added `craft\base\NestedElementInterface::getOwners()`.
+- Added `craft\base\NestedElementTrait::getOwners()`.
+- Fixed a bug where entries’ and categories’ descendants’ URIs weren’t always getting updated after a parent’s URI changed. ([#17804](https://github.com/craftcms/cms/discussions/17804))
+- Fixed a bug where addresses weren’t saving `firstName`, `lastName`, and `fullName` values properly. ([#17807](https://github.com/craftcms/cms/issues/17807))
+- Fixed an n+1 query bug when working with Content Block fields. ([#17801](https://github.com/craftcms/cms/issues/17801))
+- Fixed a bug where element selector modals’ sidebars would go out of view if the browser had a custom font size. ([#17809](https://github.com/craftcms/cms/issues/17809))
+- Fixed a bug where relation field values weren’t getting updated properly when two elements were merged together. ([#17817](https://github.com/craftcms/cms/issues/17817))
+- Fixed an authorization error that could occur when editing a provisional draft of a nested element.
+- Fixed a bug where custom field values could be lost when changing an entry type. ([#17821](https://github.com/craftcms/cms/issues/17821))
+- Fixed a bug where non-admin users couldn’t edit recursively-nested elements if they didn’t have save permissions for the top-level element.
+- Fixed a bug where it was possible to select disabled elements within element select modals. ([#17824](https://github.com/craftcms/cms/issues/17824))
+- Fixed a bug where toast notifications weren’t always being dismissed automatically when they should have. ([#17825](https://github.com/craftcms/cms/issues/17825))
+- Fixed an error that could occur if a Content Block field was saved without any fields selected. ([#17829](https://github.com/craftcms/cms/issues/17829))
+- Fixed a styling issue.
+
 ## 5.8.16 - 2025-08-29
 
 - When searching for elements, partial matches within titles are now scored higher than exact matches in other fields. ([#17739](https://github.com/craftcms/cms/issues/17739))
