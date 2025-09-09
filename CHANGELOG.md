@@ -3,6 +3,7 @@
 ## Unreleased
 
 - Fixed a bug where inline search wasn’t working for Users fields. ([#17838](https://github.com/craftcms/cms/issues/17838))
+- Fixed a bug where “load more” buttons weren’t keyboard-accessible. ([#17797](https://github.com/craftcms/cms/pull/17797))
 - Fixed a styling issue.
 
 ## 5.8.17 - 2025-09-05
