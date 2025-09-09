@@ -26,6 +26,7 @@ use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Plugin\Exceptions\InvalidPluginException;
 use CraftCms\Cms\Plugin\Plugins;
+use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\ProjectConfig\ProjectConfigHelper;
 use CraftCms\Cms\Support\Env;
 use DateTime;
@@ -241,13 +242,13 @@ class Craft extends Yii2
             // Tests just beginning. Reset the project config to its original state.
             TestSetup::setupProjectConfig();
 
-            app(\CraftCms\Cms\ProjectConfig\ProjectConfig::class)->applyConfigChanges(
+            app(ProjectConfig::class)->applyConfigChanges(
                 TestSetup::getSeedProjectConfigData()
             );
 
-            app(\CraftCms\Cms\ProjectConfig\ProjectConfig::class)->flush();
+            app(ProjectConfig::class)->flush();
         } else {
-            app(\CraftCms\Cms\ProjectConfig\ProjectConfig::class)->rebuild();
+            app(ProjectConfig::class)->rebuild();
 
             // We also manually set the edition if desired by the current config
             $edition = $this->_getConfig('edition');

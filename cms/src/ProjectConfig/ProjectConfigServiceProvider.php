@@ -22,6 +22,10 @@ final class ProjectConfigServiceProvider extends ServiceProvider
 {
     public function register(): void
     {
+        $this->app->terminating(function (ProjectConfig $projectConfig) {
+            $projectConfig->flush();
+        });
+
         Dispatcher::macro('prependListener', function ($events, $listener) {
             if ($events instanceof Closure) {
                 /** @phpstan-ignore method.protected */
