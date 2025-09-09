@@ -11,7 +11,6 @@ use craft\elements\User;
 use craft\helpers\App;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\FileHelper;
-use craft\helpers\ProjectConfig as ProjectConfigHelper;
 use craft\models\CategoryGroup;
 use craft\models\EntryType;
 use craft\models\ImageTransform;

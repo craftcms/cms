@@ -17,7 +17,6 @@ use craft\config\DbConfig;
 use craft\console\Application as ConsoleApplication;
 use craft\errors\ElementNotFoundException;
 use craft\helpers\App;
-use craft\helpers\ProjectConfig;
 use craft\models\FieldLayout;
 use craft\queue\BaseJob;
 use craft\queue\Queue;
@@ -27,6 +26,7 @@ use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Plugin\Exceptions\InvalidPluginException;
 use CraftCms\Cms\Plugin\Plugins;
+use CraftCms\Cms\ProjectConfig\ProjectConfigHelper;
 use CraftCms\Cms\Support\Env;
 use DateTime;
 use Exception;
@@ -267,7 +267,7 @@ class Craft extends Yii2
         ob_start();
         try {
             // Prevents a static properties bug
-            ProjectConfig::reset();
+            ProjectConfigHelper::reset();
 
             maxPowerCaptain();
 

@@ -2,11 +2,11 @@
 
 namespace CraftCms\Cms\ProjectConfig\Data;
 
-use craft\helpers\ProjectConfig as ProjectConfigHelper;
 use CraftCms\Cms\ProjectConfig\Events\ItemAdded;
 use CraftCms\Cms\ProjectConfig\Events\ItemRemoved;
 use CraftCms\Cms\ProjectConfig\Events\ItemUpdated;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
+use CraftCms\Cms\ProjectConfig\ProjectConfigHelper;
 use CraftCms\Cms\Support\Str;
 use Illuminate\Support\Facades\Event;
 

@@ -2,8 +2,8 @@
 
 namespace CraftCms\Cms\ProjectConfig\Data;
 
-use craft\helpers\ProjectConfig as ProjectConfigHelper;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
+use CraftCms\Cms\ProjectConfig\ProjectConfigHelper;
 
 class ReadOnlyProjectConfigData
 {

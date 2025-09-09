@@ -10,9 +10,9 @@ namespace craft\controllers;
 use Craft;
 use craft\filters\UtilityAccess;
 use craft\helpers\FileHelper;
-use craft\helpers\ProjectConfig;
 use craft\web\Controller;
 use CraftCms\Cms\ProjectConfig\ProjectConfig as ProjectConfigService;
+use CraftCms\Cms\ProjectConfig\ProjectConfigHelper;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Utility\Utilities\ProjectConfig as ProjectConfigUtility;
 use Symfony\Component\Yaml\Yaml;
@@ -50,7 +50,7 @@ class ProjectConfigController extends Controller
      */
     public function actionDiff(bool $invert = false): string
     {
-        return ProjectConfig::diff($invert);
+        return ProjectConfigHelper::diff($invert);
     }
 
     /**
@@ -104,7 +104,7 @@ class ProjectConfigController extends Controller
     public function actionDownload(): Response
     {
         $config = app(ProjectConfigService::class)->get();
-        $splitConfig = ProjectConfig::splitConfigIntoComponents($config);
+        $splitConfig = ProjectConfigHelper::splitConfigIntoComponents($config);
         $zip = new ZipArchive();
         $zipPath = Craft::$app->getPath()->getTempPath() . '/' . Str::uuid()->toString() . '.zip';
 
@@ -113,7 +113,7 @@ class ProjectConfigController extends Controller
         }
 
         foreach ($splitConfig as $path => $pathConfig) {
-            $content = Yaml::dump(ProjectConfig::cleanupConfig($pathConfig), 20, 2);
+            $content = Yaml::dump(ProjectConfigHelper::cleanupConfig($pathConfig), 20, 2);
             $zip->addFromString($path, $content);
         }
 

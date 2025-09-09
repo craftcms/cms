@@ -12,13 +12,13 @@ use craft\console\Controller;
 use craft\helpers\Console;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\FileHelper;
-use craft\helpers\ProjectConfig;
 use CraftCms\Cms\Plugin\Plugins;
 use CraftCms\Cms\ProjectConfig\Events\ConfigEvent;
 use CraftCms\Cms\ProjectConfig\Events\ItemAdded;
 use CraftCms\Cms\ProjectConfig\Events\ItemRemoved;
 use CraftCms\Cms\ProjectConfig\Events\ItemUpdated;
 use CraftCms\Cms\ProjectConfig\ProjectConfig as ProjectConfigService;
+use CraftCms\Cms\ProjectConfig\ProjectConfigHelper;
 use CraftCms\Cms\Updates\Updates;
 use Illuminate\Support\Facades\Event;
 use Symfony\Component\Yaml\Exception\ParseException;
@@ -236,7 +236,7 @@ class ProjectConfigController extends Controller
      */
     public function actionDiff(): int
     {
-        $diff = ProjectConfig::diff($this->invert);
+        $diff = ProjectConfigHelper::diff($this->invert);
 
         if ($diff === '') {
             $this->stdout('No pending project config YAML changes.' . PHP_EOL, Console::FG_GREEN);
@@ -476,7 +476,7 @@ class ProjectConfigController extends Controller
     public function actionTouch(): int
     {
         $time = DateTimeHelper::currentTimeStamp();
-        ProjectConfig::touch($time);
+        ProjectConfigHelper::touch($time);
         $this->stdout("The dateModified value in project.yaml is now set to $time." . PHP_EOL, Console::FG_GREEN);
         return ExitCode::OK;
     }
@@ -531,7 +531,7 @@ class ProjectConfigController extends Controller
         $this->stdout('Exporting the ' . ($this->external ? 'external' : 'loaded') . ' project config data ... ');
 
         $config = app(ProjectConfigService::class)->get(null, $this->external);
-        $content = Yaml::dump(ProjectConfig::cleanupConfig($config), 20, 2);
+        $content = Yaml::dump(ProjectConfigHelper::cleanupConfig($config), 20, 2);
         FileHelper::writeToFile($path, $content);
 
         $this->stdout("done\n", Console::FG_GREEN);
