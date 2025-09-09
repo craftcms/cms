@@ -91,7 +91,7 @@ class ProjectConfig
     {
         $projectConfig = app(ProjectConfigService::class);
 
-        if (self::$_processedFilesystems || !$projectConfig->getIsApplyingExternalChanges()) {
+        if (self::$_processedFilesystems || !$projectConfig->isApplyingExternalChanges) {
             return;
         }
 
@@ -108,7 +108,7 @@ class ProjectConfig
 
         $projectConfig = app(ProjectConfigService::class);
 
-        if (self::$_processedFields || !$projectConfig->getIsApplyingExternalChanges()) {
+        if (self::$_processedFields || !$projectConfig->isApplyingExternalChanges) {
             return;
         }
 
@@ -143,7 +143,7 @@ class ProjectConfig
     {
         $projectConfig = app(ProjectConfigService::class);
 
-        if (self::$_processedSites || (!$force && !$projectConfig->getIsApplyingExternalChanges())) {
+        if (self::$_processedSites || (!$force && !$projectConfig->isApplyingExternalChanges)) {
             return;
         }
 
@@ -170,7 +170,7 @@ class ProjectConfig
     {
         $projectConfig = app(ProjectConfigService::class);
 
-        if (self::$_processedUserGroups || !$projectConfig->getIsApplyingExternalChanges()) {
+        if (self::$_processedUserGroups || !$projectConfig->isApplyingExternalChanges) {
             return;
         }
 
@@ -196,7 +196,7 @@ class ProjectConfig
     {
         $projectConfig = app(ProjectConfigService::class);
 
-        if (self::$_processedEntryTypes || !$projectConfig->getIsApplyingExternalChanges()) {
+        if (self::$_processedEntryTypes || !$projectConfig->isApplyingExternalChanges) {
             return;
         }
 
@@ -218,7 +218,7 @@ class ProjectConfig
     {
         $projectConfig = app(ProjectConfigService::class);
 
-        if (self::$_processedSections || !$projectConfig->getIsApplyingExternalChanges()) {
+        if (self::$_processedSections || !$projectConfig->isApplyingExternalChanges) {
             return;
         }
 
@@ -242,7 +242,7 @@ class ProjectConfig
     {
         $projectConfig = app(ProjectConfigService::class);
 
-        if (self::$_processedGqlSchemas || !$projectConfig->getIsApplyingExternalChanges()) {
+        if (self::$_processedGqlSchemas || !$projectConfig->isApplyingExternalChanges) {
             return;
         }
 

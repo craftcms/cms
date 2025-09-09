@@ -686,7 +686,7 @@ trait ApplicationTrait
             $edition = Edition::from($edition);
         }
 
-        if ($this->getIsInstalled() && !app(ProjectConfig::class)->getIsApplyingExternalChanges()) {
+        if ($this->getIsInstalled() && !app(ProjectConfig::class)->isApplyingExternalChanges) {
             if (!match ($orBetter) {
                 true => $this->edition->value >= $edition->value,
                 false => $this->edition === $edition
@@ -1667,7 +1667,7 @@ trait ApplicationTrait
     {
         // Prune deleted sites from site settings
         Event::on(Sites::class, Sites::EVENT_AFTER_DELETE_SITE, function(DeleteSiteEvent $event) {
-            if (!app(ProjectConfig::class)->getIsApplyingExternalChanges()) {
+            if (!app(ProjectConfig::class)->isApplyingExternalChanges) {
                 $this->getRoutes()->handleDeletedSite($event);
                 $this->getCategories()->pruneDeletedSite($event);
                 $this->getEntries()->pruneDeletedSite($event);

@@ -8,8 +8,6 @@
 namespace craft\services;
 
 use Craft;
-use craft\errors\BusyResourceException;
-use craft\errors\StaleResourceException;
 use craft\events\ConfigEvent;
 use craft\events\RebuildConfigEvent;
 use CraftCms\Cms\ProjectConfig\Events\ChangesApplied;
@@ -18,6 +16,8 @@ use CraftCms\Cms\ProjectConfig\Events\ItemRemoved;
 use CraftCms\Cms\ProjectConfig\Events\ItemUpdated;
 use CraftCms\Cms\ProjectConfig\Events\RebuildConfig;
 use CraftCms\Cms\ProjectConfig\Events\YamlFilesWritten;
+use CraftCms\Cms\ProjectConfig\Exceptions\BusyResourceException;
+use CraftCms\Cms\ProjectConfig\Exceptions\StaleResourceException;
 use CraftCms\DependencyAwareCache\Dependency\CallbackDependency;
 use Illuminate\Support\Facades\Event;
 use Throwable;
@@ -422,7 +422,7 @@ class ProjectConfig extends Component
      */
     public function getIsApplyingExternalChanges(): bool
     {
-        return app(\CraftCms\Cms\ProjectConfig\ProjectConfig::class)->getIsApplyingExternalChanges();
+        return app(\CraftCms\Cms\ProjectConfig\ProjectConfig::class)->isApplyingExternalChanges;
     }
 
     /**

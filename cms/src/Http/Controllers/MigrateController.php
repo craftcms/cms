@@ -3,9 +3,9 @@
 namespace CraftCms\Cms\Http\Controllers;
 
 use Craft;
-use craft\errors\BusyResourceException;
-use craft\errors\StaleResourceException;
 use CraftCms\Cms\Config\GeneralConfig;
+use CraftCms\Cms\ProjectConfig\Exceptions\BusyResourceException;
+use CraftCms\Cms\ProjectConfig\Exceptions\StaleResourceException;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\Updates\Updates;
 use Illuminate\Http\Request;

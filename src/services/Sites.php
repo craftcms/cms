@@ -856,7 +856,7 @@ class Sites extends Component
             $oldPrimarySiteUid = DB::table(Table::SITES)->uidById($oldPrimarySiteId);
             $existingCategorySettings = $projectConfig->get(ProjectConfig::PATH_CATEGORY_GROUPS);
 
-            if (!$projectConfig->getIsApplyingExternalChanges() && is_array($existingCategorySettings)) {
+            if (!$projectConfig->isApplyingExternalChanges && is_array($existingCategorySettings)) {
                 foreach ($existingCategorySettings as $categoryUid => $settings) {
                     $primarySiteSettings = $settings['siteSettings'][$oldPrimarySiteUid];
                     $projectConfig->set(ProjectConfig::PATH_CATEGORY_GROUPS . '.' . $categoryUid . '.siteSettings.' . $site->uid,

@@ -199,7 +199,7 @@ abstract class BaseCondition extends Component implements ConditionInterface
 
             // Don't validate the rule when we're applying project config changes.
             // The rule type might depend on something that hasn't been added yet.
-            if ($projectConfig->getIsApplyingExternalChanges() || $this->validateConditionRule($rule)) {
+            if ($projectConfig->isApplyingExternalChanges || $this->validateConditionRule($rule)) {
                 $this->_conditionRules->add($rule);
                 $rule->setCondition($this);
             }

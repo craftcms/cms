@@ -3,11 +3,11 @@
 namespace CraftCms\Cms\Http\Controllers;
 
 use Craft;
-use craft\errors\BusyResourceException;
-use craft\errors\StaleResourceException;
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Plugin\Exceptions\InvalidPluginException;
 use CraftCms\Cms\Plugin\Plugins;
+use CraftCms\Cms\ProjectConfig\Exceptions\BusyResourceException;
+use CraftCms\Cms\ProjectConfig\Exceptions\StaleResourceException;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Composer;

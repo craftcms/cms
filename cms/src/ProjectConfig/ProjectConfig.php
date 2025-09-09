@@ -8,8 +8,6 @@ use craft\base\FsInterface;
 use craft\elements\Address;
 use craft\elements\GlobalSet;
 use craft\elements\User;
-use craft\errors\BusyResourceException;
-use craft\errors\StaleResourceException;
 use craft\helpers\App;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\FileHelper;
@@ -35,6 +33,8 @@ use CraftCms\Cms\ProjectConfig\Events\ItemRemoved;
 use CraftCms\Cms\ProjectConfig\Events\ItemUpdated;
 use CraftCms\Cms\ProjectConfig\Events\RebuildConfig;
 use CraftCms\Cms\ProjectConfig\Events\YamlFilesWritten;
+use CraftCms\Cms\ProjectConfig\Exceptions\BusyResourceException;
+use CraftCms\Cms\ProjectConfig\Exceptions\StaleResourceException;
 use CraftCms\Cms\Shared\Exceptions\OperationAbortedException;
 use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Support\Str;
@@ -241,10 +241,8 @@ final class ProjectConfig
 
     /**
      * @var bool Whether external project config changes are currently being applied.
-     *
-     * @see getIsApplyingExternalChanges()
      */
-    private bool $_applyingExternalChanges = false;
+    public private(set) bool $isApplyingExternalChanges = false;
 
     /**
      * @var bool Whether the config's dateModified timestamp has been updated by this request.
@@ -360,7 +358,7 @@ final class ProjectConfig
         $this->_configFileList = [];
         $this->_updateYaml = false;
         $this->_appliedChanges = [];
-        $this->_applyingExternalChanges = false;
+        $this->isApplyingExternalChanges = false;
         $this->_timestampUpdated = false;
     }
 
@@ -481,7 +479,7 @@ final class ProjectConfig
 
         if ($this->readOnly && $valueHasChanged) {
             // If we're applying yaml changes that are coming in via external config, anyway, bail silently.
-            if ($this->getIsApplyingExternalChanges() && $value === $this->getExternalConfig()->get($path)) {
+            if ($this->isApplyingExternalChanges && $value === $this->getExternalConfig()->get($path)) {
                 return true;
             }
 
@@ -525,7 +523,7 @@ final class ProjectConfig
      */
     public function regenerateExternalConfig(): void
     {
-        $this->_applyingExternalChanges = false;
+        $this->isApplyingExternalChanges = false;
 
         // Ensure we have the working config
         $this->getCurrentWorkingConfig();
@@ -553,7 +551,7 @@ final class ProjectConfig
         // Start with a clean slate.
         $this->reset();
 
-        $this->_applyingExternalChanges = true;
+        $this->isApplyingExternalChanges = true;
         Cache::forget(self::CACHE_KEY);
 
         $changes = $this->_getPendingChanges();
@@ -573,20 +571,12 @@ final class ProjectConfig
      */
     public function applyConfigChanges(array $configData): void
     {
-        $this->_applyingExternalChanges = true;
+        $this->isApplyingExternalChanges = true;
 
         $changes = $this->_getPendingChanges($configData);
         $incomingConfig = new ReadOnlyProjectConfigData($configData, $this);
 
         $this->_applyChanges($changes, $this->getCurrentWorkingConfig(), $incomingConfig);
-    }
-
-    /**
-     * Returns whether external changes are currently being applied
-     */
-    public function getIsApplyingExternalChanges(): bool
-    {
-        return $this->_applyingExternalChanges;
     }
 
     /**
@@ -666,7 +656,7 @@ final class ProjectConfig
      */
     public function processConfigChanges(string $path, bool $force = false): void
     {
-        if ($force || $this->getIsApplyingExternalChanges()) {
+        if ($force || $this->isApplyingExternalChanges) {
             $this->getCurrentWorkingConfig()->commitChanges($this->getInternalConfig()->get($path),
                 $this->getExternalConfig()->get($path), $path, false, null, $force);
         }
@@ -1055,7 +1045,7 @@ final class ProjectConfig
             // Is this a nested path?
             if (isset($matches['extra'])) {
                 $path = $matches['path'];
-                $incomingConfig = $this->getIsApplyingExternalChanges() ? $this->getExternalConfig() : $this->getCurrentWorkingConfig();
+                $incomingConfig = $this->isApplyingExternalChanges ? $this->getExternalConfig() : $this->getCurrentWorkingConfig();
 
                 $oldValue = $this->getInternalConfig()->get($path);
 
@@ -1255,7 +1245,7 @@ final class ProjectConfig
         }
 
         $this->updateParsedConfigTimesAfterRequest();
-        $this->_applyingExternalChanges = false;
+        $this->isApplyingExternalChanges = false;
     }
 
     /**
