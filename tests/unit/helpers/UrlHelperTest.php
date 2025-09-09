@@ -471,9 +471,14 @@ class UrlHelperTest extends TestCase
                 '?param1=value&param2=value2',
             ],
             'query-string-with-token' => [
-                self::ABSOLUTE_URL_HTTPS_WWW . '?param1={token}',
+                self::ABSOLUTE_URL_HTTPS_WWW . '?param1={value}',
                 self::ABSOLUTE_URL_HTTPS_WWW,
-                '?param1={handle}',
+                '?param1={value}',
+            ],
+            'query-string-with-token-name' => [
+                self::ABSOLUTE_URL_HTTPS_WWW . '?param1[{key}]={value}',
+                self::ABSOLUTE_URL_HTTPS_WWW,
+                '?param1%5B%7Bkey%7D%5D%3D{value}',
             ],
             'query-string-with-array' => [
                 self::ABSOLUTE_URL_HTTPS_WWW . '?param1[]={value}&param1[]=value2&param2[key]={value3}',
