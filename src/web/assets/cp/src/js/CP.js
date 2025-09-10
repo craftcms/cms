@@ -1954,6 +1954,36 @@ Craft.CP = Garnish.Base.extend(
         }
       });
     },
+
+    previewCountBadge: function (event, item, thumbLoader = true) {
+      let e = event || window.event;
+
+      if (e.type == 'click' || e.keyCode == 32 || e.keyCode == 13) {
+        // prevent e.g. the space key from scrolling the page too
+        e.preventDefault();
+        // Get the previous item so we can use that to figure out where to focus after removing the expand button
+        const $prevElement = $(e.target).prev();
+
+        // get the item's parent so that the thumb loader can work as expected
+        const parent = $(item).parent();
+
+        let r = $(item).data('other');
+        if (r) {
+          r = JSON.parse(r);
+          $(item).replaceWith(r);
+
+          if (thumbLoader) {
+            this.elementThumbLoader.load(parent);
+          }
+        }
+
+        // Find element to focus
+        const $nextFocusable = Garnish.firstFocusableElement(
+          $prevElement.next()
+        );
+        $nextFocusable.trigger('focus');
+      }
+    },
   },
   {
     /**
