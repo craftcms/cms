@@ -4,6 +4,7 @@ namespace CraftCms\Yii2Adapter;
 
 use craft\console\controllers\HelpController;
 use craft\helpers\App;
+use craft\helpers\FileHelper;
 use craft\services\Dashboard;
 use craft\services\Plugins as LegacyPlugins;
 use craft\services\ProjectConfig;
@@ -322,9 +323,16 @@ class Yii2ServiceProvider extends ServiceProvider
         $dirMode = $generalConfig->defaultDirMode ?? 0775;
 
         File::ensureDirectoryExists($this->app->storagePath(), $dirMode);
+
         File::ensureDirectoryExists($this->app->storagePath('framework/cache'), $dirMode);
+        FileHelper::writeGitignoreFile($this->app->storagePath('framework/cache'));
+
         File::ensureDirectoryExists($this->app->storagePath('framework/views'), $dirMode);
+        FileHelper::writeGitignoreFile($this->app->storagePath('framework/views'));
+
         File::ensureDirectoryExists($this->app->storagePath('framework/sessions'), $dirMode);
+        FileHelper::writeGitignoreFile($this->app->storagePath('framework/sessions'));
+
         File::ensureDirectoryExists($this->app->storagePath('runtime'), $dirMode);
 
         if (!App::isStreamLog()) {
