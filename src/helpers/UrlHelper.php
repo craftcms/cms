@@ -96,10 +96,11 @@ class UrlHelper
         if ($query === '') {
             return '';
         }
-        // Decode a few select chars in param values
+        // Decode a few select chars
         $params = [];
         foreach (explode('&', $query) as $param) {
             [$n, $v] = array_pad(explode('=', $param, 2), 2, '');
+            $n = str_replace(['%2F', '%7B', '%7D'], ['/', '{', '}'], $n);
             $v = str_replace(['%2F', '%7B', '%7D'], ['/', '{', '}'], $v);
             $params[] = $v !== '' ? "$n=$v" : $n;
         }
