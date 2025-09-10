@@ -147,7 +147,6 @@ Craft.PasskeySetup = Garnish.Base.extend({
     const getTableRowArray = () => Array.from(tbody.querySelectorAll('tr'));
     let rowArray = getTableRowArray();
     const rowIndex = rowArray.indexOf(row);
-    console.log(rowIndex);
 
     if (
       !confirm(
