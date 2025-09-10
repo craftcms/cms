@@ -230,6 +230,10 @@ export default Base.extend(
 
       if ($focusTarget?.length) {
         $focusTarget.focus();
+      } else {
+        console.error(
+          'There is no trigger element set for this modal. Set one with modal.$triggerElement = $(...)'
+        );
       }
 
       this.visible = false;

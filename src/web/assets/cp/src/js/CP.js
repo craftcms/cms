@@ -39,6 +39,8 @@ Craft.CP = Garnish.Base.extend(
     $header: null,
     $mainContent: null,
     $details: null,
+    $detailsToggle: null,
+    $detailsSkipLink: null,
     $sidebarContainer: null,
     $sidebarToggle: null,
     $sidebar: null,
@@ -105,6 +107,8 @@ Craft.CP = Garnish.Base.extend(
       this.$header = $('#header');
       this.$mainContent = $('#main-content');
       this.$details = $('#details');
+      this.$detailsToggle = $('#details-toggle');
+      this.$detailsSkipLink = $('[href="#details-container"]');
       this.$detailsContainer = $('#details-container');
       this.$sidebarContainer = $('#sidebar-container');
       this.$sidebarToggle = $('#sidebar-toggle');
@@ -154,6 +158,15 @@ Craft.CP = Garnish.Base.extend(
       // Toggles
       this.addListener(this.$navToggle, 'click', 'toggleNav');
       this.addListener(this.$sidebarToggle, 'click', 'toggleSidebar');
+
+      // Update skip link target when details are opened/closed
+      this.addListener(this.$detailsToggle, 'open', () => {
+        this.$detailsSkipLink.attr('href', '#details-container');
+      });
+
+      this.addListener(this.$detailsToggle, 'close', () => {
+        this.$detailsSkipLink.attr('href', '#details-toggle-wrapper');
+      });
 
       // Layers
       Garnish.uiLayerManager.on('addLayer', () => {
@@ -1953,6 +1966,36 @@ Craft.CP = Garnish.Base.extend(
           this.href = Craft.getUrl(this.href, {site: site.handle});
         }
       });
+    },
+
+    previewCountBadge: function (event, item, thumbLoader = true) {
+      let e = event || window.event;
+
+      if (e.type == 'click' || e.keyCode == 32 || e.keyCode == 13) {
+        // prevent e.g. the space key from scrolling the page too
+        e.preventDefault();
+        // Get the previous item so we can use that to figure out where to focus after removing the expand button
+        const $prevElement = $(e.target).prev();
+
+        // get the item's parent so that the thumb loader can work as expected
+        const parent = $(item).parent();
+
+        let r = $(item).data('other');
+        if (r) {
+          r = JSON.parse(r);
+          $(item).replaceWith(r);
+
+          if (thumbLoader) {
+            this.elementThumbLoader.load(parent);
+          }
+        }
+
+        // Find element to focus
+        const $nextFocusable = Garnish.firstFocusableElement(
+          $prevElement.next()
+        );
+        $nextFocusable.trigger('focus');
+      }
     },
   },
   {
