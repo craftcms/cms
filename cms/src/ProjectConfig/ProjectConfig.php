@@ -1431,6 +1431,7 @@ final class ProjectConfig
     {
         $this->_updateYaml = true;
 
+        // @todo: Remove when all legacy tests are ported
         // Are we too late for EVENT_AFTER_REQUEST?
         if (Craft::$app->state >= Application::STATE_AFTER_REQUEST) {
             $this->flush();
