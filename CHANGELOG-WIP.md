@@ -50,4 +50,5 @@
 - GraphQL API responses now set cache headers based on whether a mutation was performed, regardless of the request type.
 - Global set queries no longer register cache tags.
 - Improved element index performance. ([#17557](https://github.com/craftcms/cms/pull/17557))
+- Improved element query performance. ([#17850](https://github.com/craftcms/cms/pull/17850))
 - Updated Twig to 3.21. ([#17603](https://github.com/craftcms/cms/discussions/17603))
