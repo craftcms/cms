@@ -19,6 +19,7 @@ use craft\test\EventItem;
 use craft\test\TestCase;
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Edition;
+use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\Support\Str;
 use crafttests\fixtures\UserGroupsFixture;
 use DateTime;
@@ -257,7 +258,7 @@ class UsersTest extends TestCase
     public function testUserAssignmentToDefaultGroup(): void
     {
         Craft::$app->edition = Edition::Pro;
-        Craft::$app->getProjectConfig()->set('users.defaultGroup', 'usergroup-1002-------------------uid');
+        app(ProjectConfig::class)->set('users.defaultGroup', 'usergroup-1002-------------------uid');
 
         $this->users->assignUserToDefaultGroup($this->activeUser);
 

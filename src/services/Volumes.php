@@ -12,14 +12,15 @@ use craft\base\Field;
 use craft\base\MemoizableArray;
 use craft\db\Table;
 use craft\elements\Asset;
-use craft\events\ConfigEvent;
 use craft\events\VolumeEvent;
-use craft\helpers\ProjectConfig as ProjectConfigHelper;
 use craft\models\FieldLayout;
 use craft\models\Volume;
 use craft\models\VolumeFolder;
 use craft\records\Volume as AssetVolumeRecord;
 use craft\records\VolumeFolder as VolumeFolderRecord;
+use CraftCms\Cms\ProjectConfig\Events\ConfigEvent;
+use CraftCms\Cms\ProjectConfig\ProjectConfig;
+use CraftCms\Cms\ProjectConfig\ProjectConfigHelper;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Str;
 use Illuminate\Database\Query\Builder;
@@ -219,7 +220,7 @@ class Volumes extends Component
      */
     public function getUserPhotoVolume(): ?Volume
     {
-        $uid = Craft::$app->getProjectConfig()->get('users.photoVolumeUid') ?? '';
+        $uid = app(ProjectConfig::class)->get('users.photoVolumeUid') ?? '';
         return $this->getVolumeByUid($uid);
     }
 
@@ -311,7 +312,7 @@ class Volumes extends Component
         }
 
         $configPath = ProjectConfig::PATH_VOLUMES . '.' . $volume->uid;
-        Craft::$app->getProjectConfig()->set($configPath, $volume->getConfig(), "Save the “{$volume->handle}” volume");
+        app(ProjectConfig::class)->set($configPath, $volume->getConfig(), "Save the “{$volume->handle}” volume");
 
         if ($isNewVolume) {
             $volume->id = DB::table(\CraftCms\Cms\Database\Table::VOLUMES)->idByUid($volume->uid);
@@ -434,7 +435,7 @@ class Volumes extends Component
      */
     public function reorderVolumes(array $volumeIds): bool
     {
-        $projectConfig = Craft::$app->getProjectConfig();
+        $projectConfig = app(ProjectConfig::class);
 
         $uidsByIds = DB::table(\CraftCms\Cms\Database\Table::VOLUMES)->uidsByIds($volumeIds);
 
@@ -502,7 +503,7 @@ class Volumes extends Component
             ]));
         }
 
-        Craft::$app->getProjectConfig()->remove(ProjectConfig::PATH_VOLUMES . '.' . $volume->uid,
+        app(ProjectConfig::class)->remove(ProjectConfig::PATH_VOLUMES . '.' . $volume->uid,
             "Delete the “{$volume->handle}” volume");
         return true;
     }

@@ -9,6 +9,7 @@ namespace craft\helpers;
 
 use Craft;
 use craft\console\MarkdownParser;
+use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\Support\Str;
 use Illuminate\Support\Collection;
 use yii\base\InvalidConfigException;
@@ -321,7 +322,7 @@ class Console extends \yii\helpers\Console
      */
     public static function ensureProjectConfigFileExists(): void
     {
-        $projectConfig = Craft::$app->getProjectConfig();
+        $projectConfig = app(ProjectConfig::class);
 
         if ($projectConfig->writeYamlAutomatically && !$projectConfig->getDoesExternalConfigExist()) {
             static::stdout('Generating project config files from the loaded project config ... ', static::FG_YELLOW);

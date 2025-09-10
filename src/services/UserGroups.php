@@ -10,12 +10,13 @@ namespace craft\services;
 use Craft;
 use craft\elements\User;
 use craft\errors\WrongEditionException;
-use craft\events\ConfigEvent;
 use craft\events\UserGroupEvent;
 use craft\models\UserGroup;
 use craft\records\UserGroup as UserGroupRecord;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Edition;
+use CraftCms\Cms\ProjectConfig\Events\ConfigEvent;
+use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\Support\Str;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Facades\DB;
@@ -307,7 +308,7 @@ class UserGroups extends Component
             return false;
         }
 
-        $projectConfig = Craft::$app->getProjectConfig();
+        $projectConfig = app(ProjectConfig::class);
 
         if (!$group->uid) {
             if ($isNewGroup) {
@@ -442,7 +443,7 @@ class UserGroups extends Component
             ]));
         }
 
-        Craft::$app->getProjectConfig()->remove(ProjectConfig::PATH_USER_GROUPS . '.' . $group->uid,
+        app(ProjectConfig::class)->remove(ProjectConfig::PATH_USER_GROUPS . '.' . $group->uid,
             "Delete the “{$group->handle}” user group");
         return true;
     }

@@ -221,3 +221,38 @@ Moved the following controllers:
   - `CraftCms\Cms\User\Commands\Remove2faCommand`
   - `CraftCms\Cms\User\Commands\SetPasswordCommand`
   - `CraftCms\Cms\User\Commands\UnlockCommand`
+
+## Project Config
+
+- Deprecated `craft\services\ProjectConfig`. `CraftCms\Cms\ProjectConfig\ProjectConfig` should be used instead.
+- Removed `craft\controllers\ProjectConfigController` in favor of `CraftCms\Cms\Http\Controllers\Utilities\ProjectConfigController`
+- Removed `craft\console\controllers\PcController` & `craft\console\controllers\ProjectConfigController` in favor of the following commands:
+  - `CraftCms\Cms\ProjectConfig\Commands\ApplyCommand`
+  - `CraftCms\Cms\ProjectConfig\Commands\DiffCommand`
+  - `CraftCms\Cms\ProjectConfig\Commands\ExportCommand`
+  - `CraftCms\Cms\ProjectConfig\Commands\GetCommand`
+  - `CraftCms\Cms\ProjectConfig\Commands\RebuildCommand`
+  - `CraftCms\Cms\ProjectConfig\Commands\RemoveCommand`
+  - `CraftCms\Cms\ProjectConfig\Commands\SetCommand`
+  - `CraftCms\Cms\ProjectConfig\Commands\TouchCommand`
+  - `CraftCms\Cms\ProjectConfig\Commands\WriteCommand`
+  - All commands can be called using either `php craft project-config` or `php craft pc`
+- Deprecated `craft\events\ConfigEvent` in favor of the following events:
+  - `CraftCms\Cms\ProjectConfig\Events\AddingItem`
+  - `CraftCms\Cms\ProjectConfig\Events\ItemAdded`
+  - `CraftCms\Cms\ProjectConfig\Events\UpdatingItem`
+  - `CraftCms\Cms\ProjectConfig\Events\ItemUpdated`
+  - `CraftCms\Cms\ProjectConfig\Events\RemovingItem`
+  - `CraftCms\Cms\ProjectConfig\Events\ItemRemoved`
+- Deprecated `craft\services\ProjectConfig::EVENT_AFTER_APPLY_CHANGES`
+  - Added `CraftCms\Cms\ProjectConfig\Events\ChangesApplied`
+- Deprecated `craft\services\ProjectConfig::EVENT_AFTER_WRITE_YAML_FILES`
+- Added `CraftCms\Cms\ProjectConfig\Events\YamlFilesWritten`
+- Deprecated `craft\services\ProjectConfig::EVENT_REBUILD`
+  - Added `CraftCms\Cms\ProjectConfig\Events\RebuildConfig`
+- Removed `craft\errors\BusyResourceException` in favor of `CraftCms\Cms\ProjectConfig\Exceptions\BusyResourceException`
+- Removed `craft\errors\StaleResourceException` in favor of `CraftCms\Cms\ProjectConfig\Exceptions\StaleResourceException`
+- Added `CraftCms\Cms\ProjectConfig\Exceptions\ReadonlyException`
+- Removed `craft\models\ProjectConfigData` in favor of `CraftCms\Cms\ProjectConfig\Data\ProjectConfigData`
+- Removed `craft\models\ReadOnlyProjectConfigData` in favor of `CraftCms\Cms\ProjectConfig\Data\ReadOnlyProjectConfigData`
+- Deprecated `craft\helpers\ProjectConfig`. `CraftCms\Cms\ProjectConfig\ProjectConfigHelper` should be used instead.

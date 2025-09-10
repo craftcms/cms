@@ -22,10 +22,10 @@ use craft\helpers\Db;
 use craft\models\EntryType;
 use craft\models\Section;
 use craft\services\Entries as EntriesService;
-use craft\services\ProjectConfig;
 use craft\services\Structures;
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Database\Table;
+use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\Support\Arr;
 use Illuminate\Support\Facades\DB as DbFacade;
 use Tpetry\QueryExpressions\Language\Alias;
@@ -107,7 +107,7 @@ class EntrifyController extends Controller
             return ExitCode::UNSPECIFIED_ERROR;
         }
 
-        $projectConfigService = Craft::$app->getProjectConfig();
+        $projectConfigService = app(ProjectConfig::class);
         $projectConfigChanged = false;
         $sectionCreated = false;
 
@@ -316,7 +316,7 @@ class EntrifyController extends Controller
             return ExitCode::UNSPECIFIED_ERROR;
         }
 
-        $projectConfigService = Craft::$app->getProjectConfig();
+        $projectConfigService = app(ProjectConfig::class);
         $projectConfigChanged = false;
 
         if (!isset($this->section)) {
@@ -484,7 +484,7 @@ class EntrifyController extends Controller
         } catch (InvalidConfigException $e) {
             $this->stderr($e->getMessage() . PHP_EOL, Console::FG_RED);
             if ($projectConfigChanged) {
-                Craft::$app->getProjectConfig()->saveModifiedConfigData();
+                app(ProjectConfig::class)->saveModifiedConfigData();
             }
             return ExitCode::UNSPECIFIED_ERROR;
         }
@@ -682,7 +682,7 @@ class EntrifyController extends Controller
             }
 
             if ($updateUserGroups) {
-                $projectConfig = Craft::$app->getProjectConfig();
+                $projectConfig = app(ProjectConfig::class);
 
                 foreach ($projectConfig->get('users.groups') ?? [] as $uid => $group) {
                     $groupPermissions = array_flip($group['permissions'] ?? []);

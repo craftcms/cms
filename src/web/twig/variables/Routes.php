@@ -7,8 +7,7 @@
 
 namespace craft\web\twig\variables;
 
-use Craft;
-use craft\services\ProjectConfig;
+use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\Support\Html;
 
 /**
@@ -29,7 +28,7 @@ class Routes
         $routes = [];
         $sortOrders = [];
 
-        $results = Craft::$app->getProjectConfig()->get(ProjectConfig::PATH_ROUTES) ?? [];
+        $results = app(ProjectConfig::class)->get(ProjectConfig::PATH_ROUTES) ?? [];
 
         foreach ($results as $routeUid => $route) {
             if (!array_key_exists('siteUid', $route)) {

@@ -45,6 +45,7 @@ use craft\web\View;
 use CraftCms\Cms\Announcement\Announcements;
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Edition;
+use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Env;
 use CraftCms\Cms\Support\Facades\Deprecator;
@@ -1519,7 +1520,7 @@ JS);
         $currentUser = $userSession->getIdentity();
         $canAdministrateUsers = $currentUser && $currentUser->can('administrateUsers');
         $generalConfig = app(GeneralConfig::class);
-        $userSettings = Craft::$app->getProjectConfig()->get('users') ?? [];
+        $userSettings = app(ProjectConfig::class)->get('users') ?? [];
         $requireEmailVerification = (
             Craft::$app->edition->value >= Edition::Pro->value &&
             ($userSettings['requireEmailVerification'] ?? true)

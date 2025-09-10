@@ -17,7 +17,6 @@ use craft\config\DbConfig;
 use craft\console\Application as ConsoleApplication;
 use craft\errors\ElementNotFoundException;
 use craft\helpers\App;
-use craft\helpers\ProjectConfig;
 use craft\models\FieldLayout;
 use craft\queue\BaseJob;
 use craft\queue\Queue;
@@ -27,6 +26,8 @@ use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Plugin\Exceptions\InvalidPluginException;
 use CraftCms\Cms\Plugin\Plugins;
+use CraftCms\Cms\ProjectConfig\ProjectConfig;
+use CraftCms\Cms\ProjectConfig\ProjectConfigHelper;
 use CraftCms\Cms\Support\Env;
 use DateTime;
 use Exception;
@@ -241,13 +242,13 @@ class Craft extends Yii2
             // Tests just beginning. Reset the project config to its original state.
             TestSetup::setupProjectConfig();
 
-            \Craft::$app->getProjectConfig()->applyConfigChanges(
+            app(ProjectConfig::class)->applyConfigChanges(
                 TestSetup::getSeedProjectConfigData()
             );
 
-            \Craft::$app->getProjectConfig()->flush();
+            app(ProjectConfig::class)->flush();
         } else {
-            \Craft::$app->getProjectConfig()->rebuild();
+            app(ProjectConfig::class)->rebuild();
 
             // We also manually set the edition if desired by the current config
             $edition = $this->_getConfig('edition');
@@ -267,7 +268,7 @@ class Craft extends Yii2
         ob_start();
         try {
             // Prevents a static properties bug
-            ProjectConfig::reset();
+            ProjectConfigHelper::reset();
 
             maxPowerCaptain();
 

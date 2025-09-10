@@ -16,7 +16,7 @@ trait HasUid
     {
         static::saving(function ($model) {
             if (! $model->uid) {
-                $model->uid = Str::uuid7();
+                $model->uid = Str::uuid7()->toString();
             }
         });
     }

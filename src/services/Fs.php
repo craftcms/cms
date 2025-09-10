@@ -16,7 +16,8 @@ use craft\events\RegisterComponentTypesEvent;
 use craft\fs\Local;
 use craft\fs\MissingFs;
 use craft\helpers\Component as ComponentHelper;
-use craft\helpers\ProjectConfig as ProjectConfigHelper;
+use CraftCms\Cms\ProjectConfig\ProjectConfig;
+use CraftCms\Cms\ProjectConfig\ProjectConfigHelper;
 use Throwable;
 use yii\base\Component;
 use yii\base\InvalidConfigException;
@@ -117,7 +118,7 @@ class Fs extends Component
     private function _filesystems(): MemoizableArray
     {
         if (!isset($this->_filesystems)) {
-            $configs = Craft::$app->getProjectConfig()->get(ProjectConfig::PATH_FS) ?? [];
+            $configs = app(ProjectConfig::class)->get(ProjectConfig::PATH_FS) ?? [];
             $configs = array_map(function(string $handle, array $config) {
                 $config['handle'] = $handle;
                 $config['settings'] = ProjectConfigHelper::unpackAssociativeArrays($config['settings'] ?? []);
@@ -160,7 +161,7 @@ class Fs extends Component
      */
     public function saveFilesystem(FsInterface $fs, bool $runValidation = true): bool
     {
-        $projectConfig = Craft::$app->getProjectConfig();
+        $projectConfig = app(ProjectConfig::class);
         $configPath = sprintf('%s.%s', ProjectConfig::PATH_FS, $fs->handle);
         $isNewFs = $projectConfig->get($configPath) !== null;
 
@@ -250,7 +251,7 @@ class Fs extends Component
             return false;
         }
 
-        Craft::$app->getProjectConfig()->remove(sprintf('%s.%s', ProjectConfig::PATH_FS, $fs->handle), "Remove the “{$fs->handle}” filesystem");
+        app(ProjectConfig::class)->remove(sprintf('%s.%s', ProjectConfig::PATH_FS, $fs->handle), "Remove the “{$fs->handle}” filesystem");
 
         // Clear caches
         $this->_filesystems = null;

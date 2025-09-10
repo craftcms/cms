@@ -11,6 +11,7 @@ use Craft;
 use craft\events\DeleteSiteEvent;
 use craft\events\RouteEvent;
 use CraftCms\Cms\Config\GeneralConfig;
+use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Str;
 use Illuminate\Support\Collection;
@@ -109,7 +110,7 @@ class Routes extends Component
             return $this->_projectConfigRoutes;
         }
 
-        $routes = Collection::make(Craft::$app->getProjectConfig()->get(ProjectConfig::PATH_ROUTES) ?? [])
+        $routes = Collection::make(app(ProjectConfig::class)->get(ProjectConfig::PATH_ROUTES) ?? [])
             ->sortBy('sortOrder', SORT_NUMERIC)
             ->all();
         $currentSiteUid = Craft::$app->getSites()->getCurrentSite()->uid;
@@ -155,7 +156,7 @@ class Routes extends Component
             ]));
         }
 
-        $projectConfig = Craft::$app->getProjectConfig();
+        $projectConfig = app(ProjectConfig::class);
 
         if ($routeUid !== null) {
             $sortOrder = $projectConfig->get(ProjectConfig::PATH_ROUTES . '.' . $routeUid . '.sortOrder') ?? $this->_getMaxSortOrder();
@@ -226,7 +227,7 @@ class Routes extends Component
      */
     public function deleteRouteByUid(string $routeUid): bool
     {
-        $route = Craft::$app->getProjectConfig()->get(ProjectConfig::PATH_ROUTES . '.' . $routeUid);
+        $route = app(ProjectConfig::class)->get(ProjectConfig::PATH_ROUTES . '.' . $routeUid);
 
         if ($route) {
             // Fire a 'beforeDeleteRoute' event
@@ -238,7 +239,7 @@ class Routes extends Component
                 ]));
             }
 
-            Craft::$app->getProjectConfig()->remove(ProjectConfig::PATH_ROUTES . '.' . $routeUid, "Delete route");
+            app(ProjectConfig::class)->remove(ProjectConfig::PATH_ROUTES . '.' . $routeUid, "Delete route");
 
             // Fire an 'afterDeleteRoute' event
             if ($this->hasEventHandlers(self::EVENT_AFTER_DELETE_ROUTE)) {
@@ -260,7 +261,7 @@ class Routes extends Component
      */
     public function handleDeletedSite(DeleteSiteEvent $event): void
     {
-        $projectConfig = Craft::$app->getProjectConfig();
+        $projectConfig = app(ProjectConfig::class);
         $routes = $projectConfig->get(ProjectConfig::PATH_ROUTES) ?? [];
 
         foreach ($routes as $routeUid => $route) {
@@ -278,7 +279,7 @@ class Routes extends Component
     public function updateRouteOrder(array $routeUids): void
     {
         foreach ($routeUids as $order => $routeUid) {
-            Craft::$app->getProjectConfig()->set(ProjectConfig::PATH_ROUTES . '.' . $routeUid . '.sortOrder', $order + 1, 'Reorder routes');
+            app(ProjectConfig::class)->set(ProjectConfig::PATH_ROUTES . '.' . $routeUid . '.sortOrder', $order + 1, 'Reorder routes');
         }
     }
 
@@ -289,7 +290,7 @@ class Routes extends Component
      */
     private function _getMaxSortOrder(): int
     {
-        $routes = Craft::$app->getProjectConfig()->get(ProjectConfig::PATH_ROUTES) ?? [];
+        $routes = app(ProjectConfig::class)->get(ProjectConfig::PATH_ROUTES) ?? [];
         $max = 0;
 
         foreach ($routes as $route) {

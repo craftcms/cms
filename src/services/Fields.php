@@ -17,7 +17,6 @@ use craft\base\MemoizableArray;
 use craft\behaviors\CustomFieldBehavior;
 use craft\errors\MissingComponentException;
 use craft\events\ApplyFieldSaveEvent;
-use craft\events\ConfigEvent;
 use craft\events\DefineCompatibleFieldTypesEvent;
 use craft\events\FieldEvent;
 use craft\events\FieldLayoutEvent;
@@ -57,12 +56,15 @@ use craft\helpers\AdminTable;
 use craft\helpers\Component as ComponentHelper;
 use craft\helpers\Cp;
 use craft\helpers\Db;
-use craft\helpers\ProjectConfig as ProjectConfigHelper;
 use craft\models\FieldLayout;
 use craft\records\Field as FieldRecord;
 use craft\records\FieldLayout as FieldLayoutRecord;
 use CraftCms\Cms\Database\Expressions\FixedOrderExpression;
 use CraftCms\Cms\Database\Table;
+use CraftCms\Cms\ProjectConfig\Events\ConfigEvent;
+use CraftCms\Cms\ProjectConfig\ProjectConfig;
+use CraftCms\Cms\ProjectConfig\ProjectConfigHelper;
+use CraftCms\Cms\Shared\Models\Info;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Json as JsonHelper;
 use CraftCms\Cms\Support\Str;
@@ -649,7 +651,7 @@ class Fields extends Component
         // Only store field data in the project config for global context
         if ($field->context === 'global') {
             $configPath = ProjectConfig::PATH_FIELDS . '.' . $field->uid;
-            $appliedConfig = Craft::$app->getProjectConfig()->set($configPath, $configData,
+            $appliedConfig = app(ProjectConfig::class)->set($configPath, $configData,
                 "Save field “{$field->handle}”");
         }
 
@@ -753,7 +755,7 @@ class Fields extends Component
         }
 
         if ($field->context === 'global') {
-            Craft::$app->getProjectConfig()->remove(ProjectConfig::PATH_FIELDS . '.' . $field->uid,
+            app(ProjectConfig::class)->remove(ProjectConfig::PATH_FIELDS . '.' . $field->uid,
                 "Delete the “{$field->handle}” field");
         } else {
             $this->applyFieldDelete($field->uid);
@@ -1274,7 +1276,7 @@ class Fields extends Component
      */
     public function getFieldVersion(): ?string
     {
-        $fieldVersion = Craft::$app->getInfo()->fieldVersion;
+        $fieldVersion = Info::fetch()->fieldVersion;
 
         // If it doesn't start with `3@`, then it needs to be updated
         if ($fieldVersion === null || !str_starts_with($fieldVersion, '3@')) {
@@ -1295,9 +1297,9 @@ class Fields extends Component
         // so the field version change won't be detected until the next request
         class_exists(CustomFieldBehavior::class);
 
-        $info = Craft::$app->getInfo();
-        $info->fieldVersion = '3@' . Str::random(10);
-        Craft::$app->saveInfo($info, ['fieldVersion']);
+        Info::fetch()->update([
+            'fieldVersion' => '3@' . Str::random(10),
+        ]);
     }
 
     /**

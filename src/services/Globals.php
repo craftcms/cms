@@ -12,12 +12,13 @@ use craft\base\MemoizableArray;
 use craft\elements\GlobalSet;
 use craft\errors\ElementNotFoundException;
 use craft\errors\GlobalSetNotFoundException;
-use craft\events\ConfigEvent;
 use craft\events\GlobalSetEvent;
-use craft\helpers\ProjectConfig as ProjectConfigHelper;
 use craft\models\FieldLayout;
 use craft\records\GlobalSet as GlobalSetRecord;
 use CraftCms\Cms\Database\Table;
+use CraftCms\Cms\ProjectConfig\Events\ConfigEvent;
+use CraftCms\Cms\ProjectConfig\ProjectConfig;
+use CraftCms\Cms\ProjectConfig\ProjectConfigHelper;
 use CraftCms\Cms\Support\Str;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
@@ -315,7 +316,7 @@ class Globals extends Component
 
         $configPath = ProjectConfig::PATH_GLOBAL_SETS . '.' . $globalSet->uid;
         $configData = $globalSet->getConfig();
-        Craft::$app->getProjectConfig()->set($configPath, $configData, "Save global set “{$globalSet->handle}”");
+        app(ProjectConfig::class)->set($configPath, $configData, "Save global set “{$globalSet->handle}”");
 
         if ($isNewSet) {
             $globalSet->id = DB::table(Table::GLOBALSETS)->idByUid($globalSet->uid);
@@ -432,7 +433,7 @@ class Globals extends Component
      */
     public function reorderSets(array $setIds): bool
     {
-        $projectConfig = Craft::$app->getProjectConfig();
+        $projectConfig = app(ProjectConfig::class);
 
         $uidsByIds = DB::table(Table::GLOBALSETS)->uidsByIds($setIds);
 
@@ -477,7 +478,7 @@ class Globals extends Component
      */
     public function deleteSet(GlobalSet $globalSet): void
     {
-        Craft::$app->getProjectConfig()->remove(ProjectConfig::PATH_GLOBAL_SETS . '.' . $globalSet->uid, "Delete the “{$globalSet->handle}” global set");
+        app(ProjectConfig::class)->remove(ProjectConfig::PATH_GLOBAL_SETS . '.' . $globalSet->uid, "Delete the “{$globalSet->handle}” global set");
     }
 
     /**

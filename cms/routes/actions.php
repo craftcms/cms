@@ -19,6 +19,8 @@ use CraftCms\Cms\Http\Controllers\Utilities\DbBackupController;
 use CraftCms\Cms\Http\Controllers\Utilities\DeprecationErrorsController;
 use CraftCms\Cms\Http\Controllers\Utilities\FindAndReplaceController;
 use CraftCms\Cms\Http\Controllers\Utilities\MigrationsController;
+use CraftCms\Cms\Http\Controllers\Utilities\ProjectConfigController;
+use CraftCms\Cms\Http\Middleware\AuthenticateIfLive;
 use CraftCms\Cms\Http\Middleware\RequireAdmin;
 
 $generalConfig = app(GeneralConfig::class);
@@ -46,7 +48,9 @@ Route::prefix(implode('/', [
     Route::post('install/install', [InstallController::class, 'install']);
 
     // Updater
-    Route::prefix('updater')->group(function () {
+    Route::prefix('updater')->middleware([
+        AuthenticateIfLive::class,
+    ])->group(function () {
         Route::post('/', [UpdaterController::class, 'index']);
         Route::post(UpdaterController::ACTION_FORCE_UPDATE, [UpdaterController::class, 'forceUpdate']);
         Route::post(UpdaterController::ACTION_BACKUP, [UpdaterController::class, 'backup']);
@@ -102,7 +106,13 @@ Route::prefix(implode('/', [
             Route::post('plugins/save-plugin-settings', [PluginsController::class, 'saveSettings']);
         });
 
-        // Project Config
+        // Project config utility
+        Route::post('project-config/rebuild', [ProjectConfigController::class, 'rebuild']);
+        Route::get('project-config/diff', [ProjectConfigController::class, 'diff']);
+        Route::post('project-config/discard', [ProjectConfigController::class, 'discard']);
+        Route::get('project-config/download', [ProjectConfigController::class, 'download']);
+
+        // Project Config sync
         Route::prefix('config-sync')->group(function () {
             Route::post('/', [ConfigSyncController::class, 'index']);
             Route::post(ConfigSyncController::ACTION_RETRY, [ConfigSyncController::class, 'retry']);

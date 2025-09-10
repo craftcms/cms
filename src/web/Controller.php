@@ -15,6 +15,7 @@ use craft\elements\User;
 use craft\events\DefineBehaviorsEvent;
 use craft\helpers\Cp;
 use CraftCms\Cms\Config\GeneralConfig;
+use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use yii\base\Action;
 use yii\base\InvalidArgumentException;
 use yii\base\InvalidConfigException;
@@ -192,7 +193,7 @@ abstract class Controller extends \yii\web\Controller
             return;
         }
 
-        $isLive = Craft::$app->getIsLive();
+        $isLive = app()->isLive();
         $test = $isLive ? self::ALLOW_ANONYMOUS_LIVE : self::ALLOW_ANONYMOUS_OFFLINE;
 
         if (is_int($this->allowAnonymous)) {
@@ -210,7 +211,7 @@ abstract class Controller extends \yii\web\Controller
                 if ($isLive) {
                     throw new ForbiddenHttpException();
                 } else {
-                    $retryDuration = Craft::$app->getProjectConfig()->get('system.retryDuration');
+                    $retryDuration = app(ProjectConfig::class)->get('system.retryDuration');
                     if ($retryDuration) {
                         $this->response->getHeaders()->setDefault('Retry-After', $retryDuration);
                     }

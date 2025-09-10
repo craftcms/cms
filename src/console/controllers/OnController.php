@@ -40,7 +40,7 @@ class OnController extends BaseSystemStatusController
             return ExitCode::UNSPECIFIED_ERROR;
         }
 
-        if (Craft::$app->getIsLive()) {
+        if (app()->isLive()) {
             $this->stdout('The system is already online.' . PHP_EOL, Console::FG_GREEN);
             return ExitCode::OK;
         }

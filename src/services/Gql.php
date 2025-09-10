@@ -14,7 +14,6 @@ use craft\base\FieldInterface;
 use craft\base\GqlInlineFragmentFieldInterface;
 use craft\behaviors\FieldLayoutBehavior;
 use craft\errors\GqlException;
-use craft\events\ConfigEvent;
 use craft\events\DefineGqlValidationRulesEvent;
 use craft\events\ExecuteGqlQueryEvent;
 use craft\events\RegisterGqlDirectivesEvent;
@@ -67,7 +66,6 @@ use craft\gql\types\QueryArgument;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\Db as DbHelper;
 use craft\helpers\Gql as GqlHelper;
-use craft\helpers\ProjectConfig as ProjectConfigHelper;
 use craft\models\FieldLayout;
 use craft\models\GqlSchema;
 use craft\models\GqlToken;
@@ -77,6 +75,10 @@ use craft\records\GqlToken as GqlTokenRecord;
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Edition;
+use CraftCms\Cms\ProjectConfig\Events\ConfigEvent;
+use CraftCms\Cms\ProjectConfig\ProjectConfig;
+use CraftCms\Cms\ProjectConfig\ProjectConfigHelper;
+use CraftCms\Cms\Shared\Models\Info;
 use CraftCms\Cms\Support\Str;
 use CraftCms\DependencyAwareCache\Dependency\TagDependency;
 use CraftCms\DependencyAwareCache\Facades\DependencyCache;
@@ -856,7 +858,7 @@ class Gql extends Component
     public function getPublicToken(): ?GqlToken
     {
         if (!isset($this->_publicToken)) {
-            $config = Craft::$app->getProjectConfig()->get(ProjectConfig::PATH_GRAPHQL_PUBLIC_TOKEN) ?? [];
+            $config = app(ProjectConfig::class)->get(ProjectConfig::PATH_GRAPHQL_PUBLIC_TOKEN) ?? [];
             $this->_publicToken = $this->_createPublicToken($config);
 
             if ($this->_publicToken) {
@@ -925,10 +927,10 @@ class Gql extends Component
                 'expiryDate' => $token->expiryDate?->getTimestamp(),
             ];
 
-            $projectConfigService = Craft::$app->getProjectConfig();
+            $projectConfigService = app(ProjectConfig::class);
             $muteEvents = $projectConfigService->muteEvents;
             $projectConfigService->muteEvents = false;
-            Craft::$app->getProjectConfig()->set(ProjectConfig::PATH_GRAPHQL_PUBLIC_TOKEN, $data);
+            app(ProjectConfig::class)->set(ProjectConfig::PATH_GRAPHQL_PUBLIC_TOKEN, $data);
             $projectConfigService->muteEvents = $muteEvents;
         }
 
@@ -998,7 +1000,7 @@ class Gql extends Component
 
         $configPath = ProjectConfig::PATH_GRAPHQL_SCHEMAS . '.' . $schema->uid;
         $configData = $schema->getConfig();
-        Craft::$app->getProjectConfig()->set($configPath, $configData, "Save GraphQL schema “{$schema->name}”");
+        app(ProjectConfig::class)->set($configPath, $configData, "Save GraphQL schema “{$schema->name}”");
 
         if ($isNewSchema) {
             $schema->id = DB::table(Table::GQLSCHEMAS)->idByUid($schema->uid);
@@ -1089,7 +1091,7 @@ class Gql extends Component
      */
     public function deleteSchema(GqlSchema $schema): bool
     {
-        Craft::$app->getProjectConfig()->remove(ProjectConfig::PATH_GRAPHQL_SCHEMAS . '.' . $schema->uid,
+        app(ProjectConfig::class)->remove(ProjectConfig::PATH_GRAPHQL_SCHEMAS . '.' . $schema->uid,
             "Delete the “{$schema->name}” GraphQL schema");
         return true;
     }
@@ -1437,7 +1439,7 @@ class Gql extends Component
                 '::' . $schema->uid .
                 '::' . md5($query) .
                 '::' . serialize($rootValue) .
-                '::' . Craft::$app->getInfo()->configVersion .
+                '::' . Info::fetch()->configVersion .
                 '::' . serialize($variables) .
                 ($operationName ? "::$operationName" : '');
         } catch (Throwable $e) {

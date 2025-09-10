@@ -7,6 +7,7 @@ use craft\helpers\App;
 use craft\helpers\FileHelper;
 use craft\services\Dashboard;
 use craft\services\Plugins as LegacyPlugins;
+use craft\services\ProjectConfig;
 use craft\services\Utilities;
 use craft\utilities\AssetIndexes;
 use craft\utilities\ClearCaches;
@@ -220,6 +221,10 @@ class Yii2ServiceProvider extends ServiceProvider
             }
 
             foreach ($command['definition']['options'] as $definition) {
+                if ($definition['name'] === '--quiet') {
+                    continue;
+                }
+
                 $signature .= $this->convertDefinition($definition, 'option');
             }
 
@@ -304,6 +309,7 @@ class Yii2ServiceProvider extends ServiceProvider
         Utilities::registerEvents();
         Dashboard::registerEvents();
         LegacyPlugins::registerEvents();
+        ProjectConfig::registerEvents();
 
         /**
          * Utilities

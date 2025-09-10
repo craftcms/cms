@@ -4,6 +4,7 @@ namespace CraftCms\Cms\Console\Commands;
 
 use CraftCms\Cms\Console\CraftCommand;
 use CraftCms\Cms\Database\Commands\MigrateCommand;
+use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\Shared\Exceptions\OperationAbortedException;
 use CraftCms\Cms\Updates\Updates;
 use Illuminate\Console\Command;
@@ -21,10 +22,9 @@ final class UpCommand extends Command implements Isolatable
 
     protected $description = 'Runs pending migrations and applies pending project config changes.';
 
-    public function handle(Updates $updates): int
+    public function handle(Updates $updates, ProjectConfig $projectConfig): int
     {
         try {
-            $projectConfig = \Craft::$app->getProjectConfig();
             $pendingChanges = $projectConfig->areChangesPending(force: true);
             $writeYamlAutomatically = $projectConfig->writeYamlAutomatically;
 

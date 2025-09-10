@@ -3,9 +3,10 @@
 namespace CraftCms\Cms\Http\Controllers;
 
 use Craft;
-use craft\errors\BusyResourceException;
-use craft\errors\StaleResourceException;
 use CraftCms\Cms\Config\GeneralConfig;
+use CraftCms\Cms\ProjectConfig\Exceptions\BusyResourceException;
+use CraftCms\Cms\ProjectConfig\Exceptions\StaleResourceException;
+use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\Updates\Updates;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -27,15 +28,13 @@ final class MigrateController
      * services (like [DeployBot](https://deploybot.com/) or [DeployPlace](https://deployplace.com/)) to minimize site
      * downtime after a deployment.
      */
-    public function __invoke(Request $request, GeneralConfig $generalConfig, Updates $updates)
+    public function __invoke(Request $request, GeneralConfig $generalConfig, Updates $updates, ProjectConfig $projectConfig)
     {
         $handles = $updates->pendingMigrationHandles(true);
         $runMigrations = ! empty($handles);
 
-        $projectConfigService = Craft::$app->getProjectConfig();
-
         if ($applyProjectConfigChanges = $request->boolean('applyProjectConfigChanges')) {
-            $applyProjectConfigChanges = $projectConfigService->areChangesPending(force: true);
+            $applyProjectConfigChanges = $projectConfig->areChangesPending(force: true);
         }
 
         if (! $runMigrations && ! $applyProjectConfigChanges) {
@@ -72,7 +71,7 @@ final class MigrateController
             // Sync project.yaml?
             if ($applyProjectConfigChanges) {
                 try {
-                    $projectConfigService->applyExternalChanges();
+                    $projectConfig->applyExternalChanges();
                 } catch (BusyResourceException|StaleResourceException $e) {
                     report($e);
                     Log::warning("Couldn’t apply project config YAML changes: {$e->getMessage()}", [__METHOD__]);

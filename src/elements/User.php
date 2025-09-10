@@ -48,6 +48,7 @@ use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Element\Enums\MenuItemType;
 use CraftCms\Cms\Element\Enums\PropagationMethod;
+use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\Shared\Enums\Color;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Html;
@@ -1110,7 +1111,7 @@ class User extends Element implements IdentityInterface
                 if ($this->getIsCurrent() || $userSession->checkPermission('administrateUsers')) {
                     if (
                         Craft::$app->edition->value >= Edition::Pro->value &&
-                        Craft::$app->getProjectConfig()->get('users.requireEmailVerification') &&
+                        app(ProjectConfig::class)->get('users.requireEmailVerification') &&
                         !$userSession->checkPermission('administrateUsers')
                     ) {
                         // set it as the unverified email instead, and
@@ -2740,13 +2741,13 @@ JS, [
                             return self::AUTH_NO_CP_ACCESS;
                         }
                         if (
-                            Craft::$app->getIsLive() === false &&
+                            app()->isLive() === false &&
                             $this->can('accessCpWhenSystemIsOff') === false
                         ) {
                             return self::AUTH_NO_CP_OFFLINE_ACCESS;
                         }
                     } elseif (
-                        Craft::$app->getIsLive() === false &&
+                        app()->isLive() === false &&
                         $this->can('accessSiteWhenSystemIsOff') === false
                     ) {
                         return self::AUTH_NO_SITE_OFFLINE_ACCESS;

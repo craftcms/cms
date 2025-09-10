@@ -10,13 +10,10 @@ use craft\elements\Asset;
 use craft\elements\Entry;
 use craft\elements\User;
 use craft\helpers\DateTimeHelper;
-use craft\helpers\ProjectConfig as ProjectConfigHelper;
 use craft\mail\transportadapters\Sendmail;
 use craft\models\CategoryGroup;
-use craft\models\Info;
 use craft\models\Section;
 use craft\models\Site;
-use craft\services\ProjectConfig;
 use craft\web\Response;
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Database\Migration;
@@ -26,7 +23,10 @@ use CraftCms\Cms\Edition;
 use CraftCms\Cms\Element\Enums\PropagationMethod;
 use CraftCms\Cms\Plugin\Exceptions\InvalidPluginException;
 use CraftCms\Cms\Plugin\Plugins;
+use CraftCms\Cms\ProjectConfig\ProjectConfig;
+use CraftCms\Cms\ProjectConfig\ProjectConfigHelper;
 use CraftCms\Cms\Shared\Exceptions\OperationAbortedException;
+use CraftCms\Cms\Shared\Models\Info;
 use CraftCms\Cms\Support\Str;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\DB;
@@ -1156,17 +1156,18 @@ class Install extends Migration
     public function insertDefaultData(): void
     {
         $this->components->task('Populating the info table', function () {
-            Craft::$app->saveInfo(new Info([
+            Info::create([
+                'id' => 1,
                 'version' => Craft::$app->getVersion(),
                 'schemaVersion' => Craft::$app->schemaVersion,
                 'maintenance' => false,
                 'configVersion' => Str::random(12),
                 'fieldVersion' => Str::random(12),
-            ]));
+            ]);
         });
 
         $generalConfig = app(GeneralConfig::class);
-        $projectConfig = Craft::$app->getProjectConfig();
+        $projectConfig = app(ProjectConfig::class);
 
         if ($this->applyProjectConfigYaml) {
             // Make sure at least sites are processed
@@ -1187,7 +1188,9 @@ class Install extends Migration
         $projectConfig->flush();
 
         // Craft, you are installed now.
-        Craft::$app->setIsInstalled();
+        Info::setIsInstalled();
+
+        Craft::$app->getSites()->refreshSites();
 
         if ($this->applyProjectConfigYaml) {
             // Update the primary site with the installer settings
@@ -1228,14 +1231,13 @@ class Install extends Migration
             return true;
         }
 
-        $projectConfig = Craft::$app->getProjectConfig();
-        if (! $projectConfig->getDoesExternalConfigExist()) {
+        if (! app(ProjectConfig::class)->getDoesExternalConfigExist()) {
             $this->applyProjectConfigYaml = false;
 
             return true;
         }
 
-        $expectedSchemaVersion = (string) $projectConfig->get(ProjectConfig::PATH_SCHEMA_VERSION, true);
+        $expectedSchemaVersion = (string) app(ProjectConfig::class)->get(ProjectConfig::PATH_SCHEMA_VERSION, true);
         $craftSchemaVersion = Craft::$app->schemaVersion;
 
         if (! version_compare($craftSchemaVersion, $expectedSchemaVersion, '=')) {
@@ -1245,7 +1247,7 @@ class Install extends Migration
         }
 
         $pluginsService = app(Plugins::class);
-        $pluginConfigs = $projectConfig->get(ProjectConfig::PATH_PLUGINS, true) ?? [];
+        $pluginConfigs = app(ProjectConfig::class)->get(ProjectConfig::PATH_PLUGINS, true) ?? [];
 
         /**
          * Make sure that all to-be-installed plugins actually exist
@@ -1281,9 +1283,8 @@ class Install extends Migration
 
     private function _installPlugins(): void
     {
-        $projectConfig = Craft::$app->getProjectConfig();
         $pluginsService = app(Plugins::class);
-        $pluginConfigs = $projectConfig->get(ProjectConfig::PATH_PLUGINS, true) ?? [];
+        $pluginConfigs = app(ProjectConfig::class)->get(ProjectConfig::PATH_PLUGINS, true) ?? [];
 
         // Prevent the plugin from sending any headers, etc.
         $realResponse = Craft::$app->getResponse();

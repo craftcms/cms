@@ -16,7 +16,6 @@ use craft\errors\InvalidElementException;
 use craft\errors\InvalidSubpathException;
 use craft\errors\UserNotFoundException;
 use craft\errors\VolumeException;
-use craft\events\ConfigEvent;
 use craft\events\DefineUserGroupsEvent;
 use craft\events\UserAssignGroupEvent;
 use craft\events\UserEvent;
@@ -27,7 +26,6 @@ use craft\helpers\DateTimeHelper;
 use craft\helpers\Db as DbHelper;
 use craft\helpers\FileHelper;
 use craft\helpers\Image;
-use craft\helpers\ProjectConfig as ProjectConfigHelper;
 use craft\helpers\Template;
 use craft\helpers\UrlHelper;
 use craft\models\FieldLayout;
@@ -38,6 +36,9 @@ use craft\web\Request;
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Edition;
+use CraftCms\Cms\ProjectConfig\Events\ConfigEvent;
+use CraftCms\Cms\ProjectConfig\ProjectConfig;
+use CraftCms\Cms\ProjectConfig\ProjectConfigHelper;
 use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Support\Str;
 use CraftCms\DependencyAwareCache\Dependency\TagDependency;
@@ -687,7 +688,7 @@ class Users extends Component
      */
     private function _userPhotoVolume(): Volume
     {
-        $uid = Craft::$app->getProjectConfig()->get('users.photoVolumeUid');
+        $uid = app(ProjectConfig::class)->get('users.photoVolumeUid');
         if (!$uid) {
             throw new VolumeException('No user photo volume is set.');
         }
@@ -712,7 +713,7 @@ class Users extends Component
      */
     private function _userPhotoFolderId(User $user, Volume $volume): int
     {
-        $subpath = (string)Craft::$app->getProjectConfig()->get('users.photoSubpath');
+        $subpath = (string)app(ProjectConfig::class)->get('users.photoSubpath');
 
         if ($subpath !== '') {
             try {
@@ -1437,7 +1438,7 @@ class Users extends Component
     public function getDefaultUserGroups(User $user): array
     {
         $groups = [];
-        $uid = Craft::$app->getProjectConfig()->get('users.defaultGroup');
+        $uid = app(ProjectConfig::class)->get('users.defaultGroup');
         if ($uid) {
             $group = Craft::$app->getUserGroups()->getGroupByUid($uid);
             if ($group) {
@@ -1548,7 +1549,7 @@ class Users extends Component
             return false;
         }
 
-        Craft::$app->getProjectConfig()->set(ProjectConfig::PATH_USER_FIELD_LAYOUTS, [
+        app(ProjectConfig::class)->set(ProjectConfig::PATH_USER_FIELD_LAYOUTS, [
             $layout->uid => $layout->getConfig(),
         ], 'Save the user field layout');
 

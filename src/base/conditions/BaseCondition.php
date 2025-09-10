@@ -7,6 +7,7 @@ use craft\base\Component;
 use craft\events\RegisterConditionRulesEvent;
 use craft\helpers\UrlHelper;
 use craft\web\assets\conditionbuilder\ConditionBuilderAsset;
+use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Json;
@@ -184,7 +185,7 @@ abstract class BaseCondition extends Component implements ConditionInterface
     public function setConditionRules(array $rules): void
     {
         $this->_conditionRules = Collection::make();
-        $projectConfig = Craft::$app->getProjectConfig();
+        $projectConfig = app(ProjectConfig::class);
 
         foreach ($rules as $rule) {
             if (!$rule instanceof ConditionRuleInterface) {

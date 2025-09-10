@@ -20,6 +20,7 @@ use craft\events\RestoreEvent;
 use craft\helpers\Db;
 use craft\helpers\FileHelper;
 use CraftCms\Cms\Config\GeneralConfig;
+use CraftCms\Cms\Shared\Models\Info;
 use CraftCms\Cms\Support\Env;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Yii2Adapter\DatabaseConnection;
@@ -232,7 +233,7 @@ class Connection extends DatabaseConnection
             'asciiOnly' => true,
         ]);
         $systemName = str_replace(['\'', '"'], '', strtolower($systemName));
-        $version = Craft::$app->getInfo()->version ?? Craft::$app->getVersion();
+        $version = Info::fetch()->version ?? Craft::$app->getVersion();
         $filename = ($systemName ? "$systemName--" : '') . gmdate('Y-m-d-His') . "--v$version";
         $backupPath = Craft::$app->getPath()->getDbBackupPath();
         $path = $backupPath . DIRECTORY_SEPARATOR . $filename . $this->_getDumpExtension();

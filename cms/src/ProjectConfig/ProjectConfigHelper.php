@@ -1,39 +1,30 @@
 <?php
-/**
- * @link https://craftcms.com/
- * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license https://craftcms.github.io/license/
- */
 
-namespace craft\helpers;
+namespace CraftCms\Cms\ProjectConfig;
 
 use Craft;
 use craft\behaviors\CustomFieldBehavior;
-use craft\services\ProjectConfig as ProjectConfigService;
+use craft\helpers\DateTimeHelper;
+use craft\helpers\Diff;
+use craft\helpers\FileHelper;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Json as JsonHelper;
 use CraftCms\Cms\Support\Str;
 use CraftCms\DependencyAwareCache\Dependency\AllDependencies;
 use CraftCms\DependencyAwareCache\Dependency\CallbackDependency;
 use CraftCms\DependencyAwareCache\Facades\DependencyCache;
+use Illuminate\Support\Facades\Log;
 use StdClass;
 use yii\base\InvalidArgumentException;
 use yii\base\InvalidConfigException;
 
 /**
- * Class ProjectConfig
- *
- * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.1.0
+ * @since 6.0.0
  */
-class ProjectConfig
+final class ProjectConfigHelper
 {
     /**
      * Returns a project config compatible value encoded for storage.
-     *
-     * @param mixed $value
-     * @return string
-     * @since 4.0.0
      */
     public static function encodeValueAsString(mixed $value): string
     {
@@ -42,61 +33,66 @@ class ProjectConfig
 
     /**
      * @var bool Whether we've already processed all filesystem configs.
+     *
      * @see ensureAllFilesystemsProcessed()
      */
     private static bool $_processedFilesystems = false;
 
     /**
      * @var bool Whether we've already processed all field configs.
+     *
      * @see ensureAllFieldsProcessed()
      */
     private static bool $_processedFields = false;
 
     /**
      * @var bool Whether we've already processed all site configs.
+     *
      * @see ensureAllSitesProcessed()
      */
     private static bool $_processedSites = false;
 
     /**
      * @var bool Whether we've already processed all user group configs.
+     *
      * @see ensureAllUserGroupsProcessed()
      */
     private static bool $_processedUserGroups = false;
 
     /**
      * @var bool Whether we've already processed all entry type configs.
+     *
      * @see ensureAllEntryTypesProcessed()
      */
     private static bool $_processedEntryTypes = false;
 
     /**
      * @var bool Whether we've already processed all section configs.
+     *
      * @see ensureAllSectionsProcessed()
      */
     private static bool $_processedSections = false;
 
     /**
      * @var bool Whether we've already processed all GraphQL schemas.
+     *
      * @see ensureAllGqlSchemasProcessed()
      */
     private static bool $_processedGqlSchemas = false;
 
     /**
      * Ensures all filesystem config changes are processed immediately in a safe manner.
-     *
-     * @since 4.1.2
      */
     public static function ensureAllFilesystemsProcessed(): void
     {
-        $projectConfig = Craft::$app->getProjectConfig();
+        $projectConfig = app(ProjectConfig::class);
 
-        if (self::$_processedFilesystems || !$projectConfig->getIsApplyingExternalChanges()) {
+        if (self::$_processedFilesystems || ! $projectConfig->isApplyingExternalChanges) {
             return;
         }
 
         self::$_processedFilesystems = true;
-        $projectConfig->processConfigChanges(ProjectConfigService::PATH_FS);
+        $projectConfig->processConfigChanges(ProjectConfig::PATH_FS);
     }
 
     /**
@@ -104,21 +100,21 @@ class ProjectConfig
      */
     public static function ensureAllFieldsProcessed(): void
     {
-        static::ensureAllFilesystemsProcessed();
+        self::ensureAllFilesystemsProcessed();
 
-        $projectConfig = Craft::$app->getProjectConfig();
+        $projectConfig = app(ProjectConfig::class);
 
-        if (self::$_processedFields || !$projectConfig->getIsApplyingExternalChanges()) {
+        if (self::$_processedFields || ! $projectConfig->isApplyingExternalChanges) {
             return;
         }
 
         self::$_processedFields = true;
 
-        $allFields = $projectConfig->get(ProjectConfigService::PATH_FIELDS, true) ?? [];
+        $allFields = $projectConfig->get(ProjectConfig::PATH_FIELDS, true) ?? [];
 
         foreach ($allFields as $fieldUid => $fieldData) {
             // Ensure field is processed
-            $projectConfig->processConfigChanges(ProjectConfigService::PATH_FIELDS . '.' . $fieldUid);
+            $projectConfig->processConfigChanges(ProjectConfig::PATH_FIELDS.'.'.$fieldUid);
         }
 
         // Now that all fields are processed, make sure that CustomFieldBehavior::$fieldHandles
@@ -137,29 +133,29 @@ class ProjectConfig
     /**
      * Ensure all site config changes are processed immediately in a safe manner.
      *
-     * @param bool $force Whether to proceed even if YAML changes are not currently being applied
+     * @param  bool  $force  Whether to proceed even if YAML changes are not currently being applied
      */
     public static function ensureAllSitesProcessed(bool $force = false): void
     {
-        $projectConfig = Craft::$app->getProjectConfig();
+        $projectConfig = app(ProjectConfig::class);
 
-        if (self::$_processedSites || (!$force && !$projectConfig->getIsApplyingExternalChanges())) {
+        if (self::$_processedSites || (! $force && ! $projectConfig->isApplyingExternalChanges)) {
             return;
         }
 
         self::$_processedSites = true;
 
-        $allGroups = $projectConfig->get(ProjectConfigService::PATH_SITE_GROUPS, true) ?? [];
-        $allSites = $projectConfig->get(ProjectConfigService::PATH_SITES, true) ?? [];
+        $allGroups = $projectConfig->get(ProjectConfig::PATH_SITE_GROUPS, true) ?? [];
+        $allSites = $projectConfig->get(ProjectConfig::PATH_SITES, true) ?? [];
 
         foreach ($allGroups as $groupUid => $groupData) {
             // Ensure group is processed
-            $projectConfig->processConfigChanges(ProjectConfigService::PATH_SITE_GROUPS . '.' . $groupUid, $force);
+            $projectConfig->processConfigChanges(ProjectConfig::PATH_SITE_GROUPS.'.'.$groupUid, $force);
         }
 
         foreach ($allSites as $siteUid => $siteData) {
             // Ensure site is processed
-            $projectConfig->processConfigChanges(ProjectConfigService::PATH_SITES . '.' . $siteUid, $force);
+            $projectConfig->processConfigChanges(ProjectConfig::PATH_SITES.'.'.$siteUid, $force);
         }
     }
 
@@ -168,69 +164,65 @@ class ProjectConfig
      */
     public static function ensureAllUserGroupsProcessed(): void
     {
-        $projectConfig = Craft::$app->getProjectConfig();
+        $projectConfig = app(ProjectConfig::class);
 
-        if (self::$_processedUserGroups || !$projectConfig->getIsApplyingExternalChanges()) {
+        if (self::$_processedUserGroups || ! $projectConfig->isApplyingExternalChanges) {
             return;
         }
 
         self::$_processedUserGroups = true;
 
-        $allGroups = $projectConfig->get(ProjectConfigService::PATH_USER_GROUPS, true);
+        $allGroups = $projectConfig->get(ProjectConfig::PATH_USER_GROUPS, true);
 
         if (is_array($allGroups)) {
             foreach ($allGroups as $groupUid => $groupData) {
-                $path = ProjectConfigService::PATH_USER_GROUPS . '.';
+                $path = ProjectConfig::PATH_USER_GROUPS.'.';
                 // Ensure group is processed
-                $projectConfig->processConfigChanges($path . $groupUid);
+                $projectConfig->processConfigChanges($path.$groupUid);
             }
         }
     }
 
     /**
      * Ensure all entry type config changes are processed immediately in a safe manner.
-     *
-     * @since 5.0.0
      */
     public static function ensureAllEntryTypesProcessed(): void
     {
-        $projectConfig = Craft::$app->getProjectConfig();
+        $projectConfig = app(ProjectConfig::class);
 
-        if (self::$_processedEntryTypes || !$projectConfig->getIsApplyingExternalChanges()) {
+        if (self::$_processedEntryTypes || ! $projectConfig->isApplyingExternalChanges) {
             return;
         }
 
         self::$_processedEntryTypes = true;
 
-        $configs = $projectConfig->get(ProjectConfigService::PATH_ENTRY_TYPES, true) ?? [];
+        $configs = $projectConfig->get(ProjectConfig::PATH_ENTRY_TYPES, true) ?? [];
         foreach ($configs as $uid => $config) {
-            $path = sprintf('%s.%s', ProjectConfigService::PATH_ENTRY_TYPES, $uid);
+            $path = sprintf('%s.%s', ProjectConfig::PATH_ENTRY_TYPES, $uid);
             $projectConfig->processConfigChanges($path);
         }
     }
 
     /**
      * Ensure all section config changes are processed immediately in a safe manner.
-     *
-     * @since 4.0.0
      */
     public static function ensureAllSectionsProcessed(): void
     {
-        $projectConfig = Craft::$app->getProjectConfig();
+        $projectConfig = app(ProjectConfig::class);
 
-        if (self::$_processedSections || !$projectConfig->getIsApplyingExternalChanges()) {
+        if (self::$_processedSections || ! $projectConfig->isApplyingExternalChanges) {
             return;
         }
 
         self::$_processedSections = true;
 
-        $allSections = $projectConfig->get(ProjectConfigService::PATH_SECTIONS, true);
+        $allSections = $projectConfig->get(ProjectConfig::PATH_SECTIONS, true);
 
         if (is_array($allSections)) {
             foreach ($allSections as $sectionUid => $sectionData) {
-                $path = ProjectConfigService::PATH_SECTIONS . '.';
+                $path = ProjectConfig::PATH_SECTIONS.'.';
                 // Ensure section is processed
-                $projectConfig->processConfigChanges($path . $sectionUid);
+                $projectConfig->processConfigChanges($path.$sectionUid);
             }
         }
     }
@@ -240,28 +232,27 @@ class ProjectConfig
      */
     public static function ensureAllGqlSchemasProcessed(): void
     {
-        $projectConfig = Craft::$app->getProjectConfig();
+        $projectConfig = app(ProjectConfig::class);
 
-        if (self::$_processedGqlSchemas || !$projectConfig->getIsApplyingExternalChanges()) {
+        if (self::$_processedGqlSchemas || ! $projectConfig->isApplyingExternalChanges) {
             return;
         }
 
         self::$_processedGqlSchemas = true;
 
-        $allSchemas = $projectConfig->get(ProjectConfigService::PATH_GRAPHQL_SCHEMAS, true);
+        $allSchemas = $projectConfig->get(ProjectConfig::PATH_GRAPHQL_SCHEMAS, true);
 
         if (is_array($allSchemas)) {
             foreach ($allSchemas as $schemaUid => $schema) {
-                $path = ProjectConfigService::PATH_GRAPHQL_SCHEMAS . '.';
+                $path = ProjectConfig::PATH_GRAPHQL_SCHEMAS.'.';
                 // Ensure schema is processed
-                $projectConfig->processConfigChanges($path . $schemaUid);
+                $projectConfig->processConfigChanges($path.$schemaUid);
             }
         }
     }
 
     /**
      * Resets the static memoization variables.
-     *
      */
     public static function reset(): void
     {
@@ -274,10 +265,9 @@ class ProjectConfig
     /**
      * Traverse and clean a config array, removing empty values and sorting keys.
      *
-     * @param array $config Config array to clean
-     * @return array
+     * @param  array  $config  Config array to clean
+     *
      * @throws InvalidConfigException if config contains unexpected data.
-     * @since 3.1.14
      */
     public static function cleanupConfig(array $config): array
     {
@@ -287,60 +277,59 @@ class ProjectConfig
             $value = self::_cleanupConfigValue($value);
 
             // Ignore empty arrays
-            if (!is_array($value) || !empty($value)) {
+            if (! is_array($value) || ! empty($value)) {
                 $cleanConfig[$key] = $value;
             }
         }
 
         ksort($cleanConfig, SORT_NATURAL);
+
         return $cleanConfig;
     }
 
     /**
      * Cleans a config value.
      *
-     * @param mixed $value
-     * @return mixed
      * @throws InvalidConfigException
      */
     private static function _cleanupConfigValue(mixed $value): mixed
     {
         // Only scalars, arrays and simple objects allowed.
         if ($value instanceof StdClass) {
-            $value = (array)$value;
+            $value = (array) $value;
         }
 
-        if (!empty($value) && !is_scalar($value) && !is_array($value)) {
-            Craft::info('Unexpected data encountered in config data - ' . print_r($value, true));
+        if (! empty($value) && ! is_scalar($value) && ! is_array($value)) {
+            Log::info('Unexpected data encountered in config data - '.print_r($value, true));
             throw new InvalidConfigException('Unexpected data encountered in config data');
         }
 
         if (is_array($value)) {
             // Is this a packed array?
-            if (isset($value[ProjectConfigService::ASSOC_KEY])) {
+            if (isset($value[ProjectConfig::ASSOC_KEY])) {
                 $cleanPackedArray = [];
 
-                foreach ($value[ProjectConfigService::ASSOC_KEY] as $pKey => $pArray) {
+                foreach ($value[ProjectConfig::ASSOC_KEY] as $pKey => $pArray) {
                     // Make sure it has a value
                     if (isset($pArray[1])) {
                         $pArray[1] = self::_cleanupConfigValue($pArray[1]);
 
                         // Ignore empty arrays
-                        if (!is_array($pArray[1]) || !empty($pArray[1])) {
+                        if (! is_array($pArray[1]) || ! empty($pArray[1])) {
                             $cleanPackedArray[$pKey] = $pArray;
                         }
                     }
                 }
 
-                if (!empty($cleanPackedArray)) {
+                if (! empty($cleanPackedArray)) {
                     ksort($cleanPackedArray, SORT_NATURAL);
-                    $value[ProjectConfigService::ASSOC_KEY] = $cleanPackedArray;
+                    $value[ProjectConfig::ASSOC_KEY] = $cleanPackedArray;
                 } else {
                     // Set $value to an empty array so it doesn't make it into the final config
                     $value = [];
                 }
             } else {
-                $value = static::cleanupConfig($value);
+                $value = self::cleanupConfig($value);
             }
         }
 
@@ -351,16 +340,13 @@ class ProjectConfig
      * Loops through an array, and prepares any nested associative arrays for storage in project config,
      * so that the order of its items will be remembered.
      *
-     * @param array $array
-     * @param bool $recursive Whether to process nested associative arrays as well
-     * @return array
-     * @since 3.4.0
+     * @param  bool  $recursive  Whether to process nested associative arrays as well
      */
     public static function packAssociativeArrays(array $array, bool $recursive = true): array
     {
         foreach ($array as &$value) {
             if (is_array($value)) {
-                $value = static::packAssociativeArray($value, $recursive);
+                $value = self::packAssociativeArray($value, $recursive);
             }
         }
 
@@ -389,10 +375,7 @@ class ProjectConfig
      * Craft::$app->projectConfig->set($configKey, $packedArray);
      * ```
      *
-     * @param array $array
-     * @param bool $recursive Whether to process nested associative arrays as well
-     * @return array
-     * @since 3.4.0
+     * @param  bool  $recursive  Whether to process nested associative arrays as well
      */
     public static function packAssociativeArray(array $array, bool $recursive = true): array
     {
@@ -400,7 +383,7 @@ class ProjectConfig
         if ($recursive) {
             foreach ($array as &$value) {
                 if (is_array($value)) {
-                    $value = static::packAssociativeArray($value, true);
+                    $value = self::packAssociativeArray($value, true);
                 }
             }
         }
@@ -412,8 +395,9 @@ class ProjectConfig
         }
 
         // Make sure this isn't already packed
-        if (isset($array[ProjectConfigService::ASSOC_KEY])) {
-            Craft::warning('Attempting to pack an already-packed associative array.');
+        if (isset($array[ProjectConfig::ASSOC_KEY])) {
+            Log::warning('Attempting to pack an already-packed associative array.');
+
             return $array;
         }
 
@@ -421,16 +405,13 @@ class ProjectConfig
         foreach ($array as $key => $value) {
             $packed[] = [$key, $value];
         }
-        return [ProjectConfigService::ASSOC_KEY => $packed];
+
+        return [ProjectConfig::ASSOC_KEY => $packed];
     }
 
     /**
      * Loops through an array, and restores any arrays that were prepared via [[packAssociativeArray()]]
      * to their original form.
-     *
-     * @param array $array
-     * @return array
-     * @since 3.4.0
      */
     public static function unpackAssociativeArrays(array $array): array
     {
@@ -446,19 +427,17 @@ class ProjectConfig
     /**
      * Restores an array that was prepared via [[packAssociativeArray()]] to its original form.
      *
-     * @param array $array
-     * @param bool $recursive Whether to process nested associative arrays as well
-     * @return array
-     * @since 3.4.0
+     * @param  bool  $recursive  Whether to process nested associative arrays as well
      */
     public static function unpackAssociativeArray(array $array, bool $recursive = true): array
     {
-        if (isset($array[ProjectConfigService::ASSOC_KEY])) {
+        if (isset($array[ProjectConfig::ASSOC_KEY])) {
             $associative = [];
-            if (!empty($array[ProjectConfigService::ASSOC_KEY])) {
-                foreach ($array[ProjectConfigService::ASSOC_KEY] as $items) {
-                    if (!array_key_exists(0, $items) || !array_key_exists(1, $items)) {
-                        Craft::warning('Skipping incomplete packed associative array data', __METHOD__);
+            if (! empty($array[ProjectConfig::ASSOC_KEY])) {
+                foreach ($array[ProjectConfig::ASSOC_KEY] as $items) {
+                    if (! array_key_exists(0, $items) || ! array_key_exists(1, $items)) {
+                        Log::warning('Skipping incomplete packed associative array data', [__METHOD__]);
+
                         continue;
                     }
                     $associative[$items[0]] = $items[1];
@@ -470,7 +449,7 @@ class ProjectConfig
         if ($recursive) {
             foreach ($array as &$value) {
                 if (is_array($value)) {
-                    $value = static::unpackAssociativeArray($value, true);
+                    $value = self::unpackAssociativeArray($value, true);
                 }
             }
         }
@@ -480,16 +459,11 @@ class ProjectConfig
 
     /**
      * Flatten a config array to a dot.based.key array.
-     *
-     * @param array $array
-     * @param string $path
-     * @param array $result
-     * @since 3.4.0
      */
     public static function flattenConfigArray(array $array, string $path, array &$result): void
     {
         foreach ($array as $key => $value) {
-            $thisPath = ltrim($path . '.' . $key, '.');
+            $thisPath = ltrim($path.'.'.$key, '.');
 
             if (is_array($value)) {
                 self::flattenConfigArray($value, $thisPath, $result);
@@ -503,9 +477,7 @@ class ProjectConfig
      * Take a project config array and split it into components.
      * Components are defined per each second-level config entry, where all the sibling entries are keyed by UIDs.
      *
-     * @param array $config
      * @return array in the form of [$file => $config], where `$file` is the relative config file path in Project Config folder
-     * @since 3.5.0
      */
     public static function splitConfigIntoComponents(array $config): array
     {
@@ -513,7 +485,7 @@ class ProjectConfig
         self::splitConfigIntoComponentsInternal($config, $splitConfig);
 
         // Store whatever's left in project.yaml
-        $splitConfig[ProjectConfigService::CONFIG_FILENAME] = $config;
+        $splitConfig[ProjectConfig::CONFIG_FILENAME] = $config;
 
         return $splitConfig;
     }
@@ -521,12 +493,10 @@ class ProjectConfig
     /**
      * Traverse a nested data array according to path and perform an action depending on parameters.
      *
-     * @param array $data A nested array of data to traverse
-     * @param string|string[] $path Path used to traverse the array. Either an array or a dot.based.path
-     * @param mixed $value Value to set at the destination. If null, will return the value, unless deleting
-     * @param bool $delete Whether to delete the value at the destination or not.
-     * @return mixed
-     * @since 4.0.0
+     * @param  array  $data  A nested array of data to traverse
+     * @param  string|string[]  $path  Path used to traverse the array. Either an array or a dot.based.path
+     * @param  mixed  $value  Value to set at the destination. If null, will return the value, unless deleting
+     * @param  bool  $delete  Whether to delete the value at the destination or not.
      */
     public static function traverseDataArray(array &$data, string|array $path, mixed $value = null, bool $delete = false): mixed
     {
@@ -541,6 +511,7 @@ class ProjectConfig
             // Delete
             if ($delete) {
                 unset($data[$nextSegment]);
+
                 return null;
             }
 
@@ -551,11 +522,12 @@ class ProjectConfig
 
             // Set
             $data[$nextSegment] = $value;
+
             return null;
         }
 
         // Make sure the next segment exists and is an array
-        if (!isset($data[$nextSegment]) || !is_array($data[$nextSegment])) {
+        if (! isset($data[$nextSegment]) || ! is_array($data[$nextSegment])) {
             // If we're just here to delete/get a value, return null
             if ($delete || $value === null) {
                 return null;
@@ -570,9 +542,6 @@ class ProjectConfig
     /**
      * Recursively looks for an array of component configs (sub-arrays indexed by UUIDs), within the given config array.
      *
-     * @param array $config
-     * @param array $splitConfig
-     * @param string|null $path
      * @return bool whether the config was split
      */
     private static function splitConfigIntoComponentsInternal(array &$config, array &$splitConfig, ?string $path = null): bool
@@ -589,18 +558,18 @@ class ProjectConfig
                         } else {
                             $filename = $uid;
                         }
-                        $file = ($path ? "$path/" : '') . "$key/$filename.yaml";
+                        $file = ($path ? "$path/" : '')."$key/$filename.yaml";
                         $splitConfig[$file] = $subConfig;
                     }
                     unset($config[$key]);
                     $split = true;
                 } elseif (Arr::isAssoc($configData)) {
                     // Look deeper
-                    $subpath = ($path ? "$path/" : '') . $key;
+                    $subpath = ($path ? "$path/" : '').$key;
                     if (self::splitConfigIntoComponentsInternal($configData, $splitConfig, $subpath)) {
                         $split = true;
                         // Store whatever's left in the same folder
-                        if (!empty($configData)) {
+                        if (! empty($configData)) {
                             $splitConfig["$subpath/$key.yaml"] = $configData;
                         }
                         unset($config[$key]);
@@ -614,9 +583,6 @@ class ProjectConfig
 
     /**
      * Returns whether the given project config item is an array of component configs, where each key is a UUID, and each item is a sub-array.
-     *
-     * @param array $item
-     * @return bool
      */
     private static function isComponentArray(array $item): bool
     {
@@ -625,7 +591,7 @@ class ProjectConfig
         }
 
         foreach ($item as $key => $value) {
-            if (!is_array($value) || !is_string($key) || !Str::isUuid($key)) {
+            if (! is_array($value) || ! is_string($key) || ! Str::isUuid($key)) {
                 return false;
             }
         }
@@ -636,26 +602,25 @@ class ProjectConfig
     /**
      * Returns a diff of the pending project config YAML changes, compared to the currently loaded project config.
      *
-     * @param bool $invert Whether to reverse the diff, so the loaded config is treated as the source of truth
-     * @return string
-     * @since 3.5.6
+     * @param  bool  $invert  Whether to reverse the diff, so the loaded config is treated as the source of truth
      */
     public static function diff(bool $invert = false): string
     {
-        $projectConfig = Craft::$app->getProjectConfig();
-        $cacheKey = ProjectConfigService::DIFF_CACHE_KEY . ($invert ? ':reverse' : '');
+        $projectConfig = app(ProjectConfig::class);
+        $cacheKey = ProjectConfig::DIFF_CACHE_KEY.($invert ? ':reverse' : '');
 
-        return DependencyCache::rememberForever($cacheKey, function() use ($projectConfig, $invert): string {
-            $currentConfig = static::cleanupConfig($projectConfig->get());
-            $pendingConfig = static::cleanupConfig($projectConfig->get(null, true));
+        return DependencyCache::rememberForever($cacheKey, function () use ($projectConfig, $invert): string {
+            $currentConfig = self::cleanupConfig($projectConfig->get());
+            $pendingConfig = self::cleanupConfig($projectConfig->get(null, true));
 
             if ($invert) {
                 return Diff::diff($pendingConfig, $currentConfig);
             }
+
             return Diff::diff($currentConfig, $pendingConfig);
         }, new AllDependencies([
             $projectConfig->getCacheDependency(),
-            new CallbackDependency(fn(): string => md5(JsonHelper::encode(Craft::$app->getProjectConfig()->get(null, true)))),
+            new CallbackDependency(fn (): string => md5(JsonHelper::encode(app(ProjectConfig::class)->get(null, true)))),
         ]));
     }
 
@@ -664,8 +629,7 @@ class ProjectConfig
      *
      * If a Git conflict is detected on the `dateModified` value, a conflict resolution will also be attempted.
      *
-     * @param int|null $timestamp The updated `dateModified` value. If `null`, the current time will be used.
-     * @since 3.5.14
+     * @param  int|null  $timestamp  The updated `dateModified` value. If `null`, the current time will be used.
      */
     public static function touch(?int $timestamp = null): void
     {
@@ -691,18 +655,20 @@ class ProjectConfig
             $isTimestamp = str_starts_with($line, 'dateModified:');
 
             if ($foundTimestamp) {
-                if (!$isTimestamp) {
+                if (! $isTimestamp) {
                     $newContents .= $line;
                 }
+
                 continue;
             }
 
-            if (!$isTimestamp) {
+            if (! $isTimestamp) {
                 if (str_starts_with($line, '<<<<<<<')) {
                     $mineMarker = $line;
                     $inMine = true;
                     $inTheirs = false;
                     $btMine = '';
+
                     continue;
                 }
 
@@ -710,6 +676,7 @@ class ProjectConfig
                     $inMine = false;
                     $inTheirs = true;
                     $btTheirs = '';
+
                     continue;
                 }
 
@@ -717,17 +684,18 @@ class ProjectConfig
                     $theirsMarker = $line;
                     // We've reached the end of the conflict
                     if ($btMine || $btTheirs) {
-                        $newContents .= $mineMarker . $btMine . $conflictDl . $btTheirs . $theirsMarker;
+                        $newContents .= $mineMarker.$btMine.$conflictDl.$btTheirs.$theirsMarker;
                     }
                     if ($foundTimestampInConflict) {
                         $newContents .= $timestampLine;
                         if ($atMine || $atTheirs) {
-                            $newContents .= $mineMarker . $atMine . $conflictDl . $atTheirs . $theirsMarker;
+                            $newContents .= $mineMarker.$atMine.$conflictDl.$atTheirs.$theirsMarker;
                         }
                         $foundTimestamp = true;
                     }
                     $inMine = $inTheirs = false;
                     $btMine = $atMine = $btTheirs = $atTheirs = null;
+
                     continue;
                 }
             }
@@ -764,7 +732,7 @@ class ProjectConfig
 
         fclose($handle);
 
-        if (!$foundTimestamp) {
+        if (! $foundTimestamp) {
             $newContents .= $timestampLine;
         }
 
@@ -774,45 +742,41 @@ class ProjectConfig
     /**
      * Returns an array of the individual segments in a given project config path.
      *
-     * @param string $path
      * @return string[]
+     *
      * @throws InvalidArgumentException if `$path` is an empty string
-     * @since 3.7.44
      */
     public static function pathSegments(string $path): array
     {
         if ($path === '') {
             throw new InvalidArgumentException('No project config path provided.');
         }
+
         return explode('.', $path);
     }
 
     /**
      * Returns the last segment in a given project config path.
      *
-     * @param string $path
-     * @return string|null
      * @throws InvalidArgumentException if `$path` is an empty string
-     * @since 3.7.44
      */
-    public static function lastPathSegment(string $path): ?string
+    public static function lastPathSegment(string $path): string
     {
-        $segments = static::pathSegments($path);
+        $segments = self::pathSegments($path);
+
         return end($segments);
     }
 
     /**
      * Returns the given project config path with all but its last segment, or `null` if the path only had one segment.
      *
-     * @param string $path
-     * @return string|null
      * @throws InvalidArgumentException if `$path` is an empty string
-     * @since 3.7.44
      */
     public static function pathWithoutLastSegment(string $path): ?string
     {
-        $segments = static::pathSegments($path);
+        $segments = self::pathSegments($path);
         array_pop($segments);
-        return !empty($segments) ? implode('.', $segments) : null;
+
+        return ! empty($segments) ? implode('.', $segments) : null;
     }
 }

@@ -4,9 +4,9 @@ namespace CraftCms\Cms\Tests;
 
 use Craft;
 use craft\models\Site;
-use craft\services\ProjectConfig;
 use craft\test\TestSetup;
 use CraftCms\Cms\Database\Migrations\Install;
+use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\Providers\CraftServiceProvider;
 use CraftCms\DependencyAwareCache\CacheServiceProvider;
 use CraftCms\Yii2Adapter\Yii2ServiceProvider;
@@ -44,7 +44,7 @@ class TestCase extends Orchestra
     protected function tearDown(): void
     {
         if (Craft::$app) {
-            Craft::$app->getProjectConfig()->flush();
+            app(ProjectConfig::class)->flush();
             Craft::$app->getDb()->close();
             Craft::$app->getDb2()->close();
             DB::disconnect();

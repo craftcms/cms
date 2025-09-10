@@ -52,13 +52,13 @@ class User
                             return UserElement::AUTH_NO_CP_ACCESS;
                         }
                         if (
-                            Craft::$app->getIsLive() === false &&
+                            app()->isLive() === false &&
                             $user->can('accessCpWhenSystemIsOff') === false
                         ) {
                             return UserElement::AUTH_NO_CP_OFFLINE_ACCESS;
                         }
                     } elseif (
-                        Craft::$app->getIsLive() === false &&
+                        app()->isLive() === false &&
                         $user->can('accessSiteWhenSystemIsOff') === false
                     ) {
                         return UserElement::AUTH_NO_SITE_OFFLINE_ACCESS;

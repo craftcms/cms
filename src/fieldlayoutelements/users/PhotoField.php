@@ -12,6 +12,7 @@ use craft\base\ElementInterface;
 use craft\elements\User;
 use craft\fieldlayoutelements\BaseNativeField;
 use craft\web\assets\userphoto\UserPhotoAsset;
+use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use yii\base\InvalidArgumentException;
 
 /**
@@ -81,7 +82,7 @@ class PhotoField extends BaseNativeField
             return null;
         }
 
-        $volumeUid = Craft::$app->getProjectConfig()->get('users.photoVolumeUid');
+        $volumeUid = app(ProjectConfig::class)->get('users.photoVolumeUid');
         if (!$volumeUid) {
             return null;
         }

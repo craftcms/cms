@@ -13,11 +13,9 @@ use craft\elements\Category;
 use craft\elements\Entry;
 use craft\elements\User;
 use craft\errors\WrongEditionException;
-use craft\events\ConfigEvent;
 use craft\events\RegisterUserPermissionsEvent;
 use craft\events\UserGroupPermissionsEvent;
 use craft\events\UserPermissionsEvent;
-use craft\helpers\ProjectConfig as ProjectConfigHelper;
 use craft\models\Section;
 use craft\models\UserGroup;
 use craft\records\UserPermission as UserPermissionRecord;
@@ -25,6 +23,9 @@ use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Element\Enums\PropagationMethod;
 use CraftCms\Cms\Plugin\Plugins;
+use CraftCms\Cms\ProjectConfig\Events\ConfigEvent;
+use CraftCms\Cms\ProjectConfig\ProjectConfig;
+use CraftCms\Cms\ProjectConfig\ProjectConfigHelper;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Utility\Utilities;
 use CraftCms\Cms\Utility\Utilities\ProjectConfig as ProjectConfigUtility;
@@ -245,7 +246,7 @@ class UserPermissions extends Component
         /** @var UserGroup $group */
         $group = Craft::$app->getUserGroups()->getGroupById($groupId);
         $path = ProjectConfig::PATH_USER_GROUPS . '.' . $group->uid . '.permissions';
-        Craft::$app->getProjectConfig()->set($path, $permissions,
+        app(ProjectConfig::class)->set($path, $permissions,
             "Update permissions for user group “{$group->handle}”");
 
         // Fire an 'afterSaveGroupPermissions' event

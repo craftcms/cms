@@ -21,6 +21,7 @@ use craft\events\DefineSourceTableAttributesEvent;
 use craft\fieldlayoutelements\CustomField;
 use craft\helpers\Cp;
 use craft\models\FieldLayout;
+use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Str;
 use Illuminate\Support\Collection;
@@ -535,7 +536,7 @@ class ElementSources extends Component
      */
     private function _sourceConfigs(string $elementType): ?array
     {
-        return Craft::$app->getProjectConfig()->get(ProjectConfig::PATH_ELEMENT_SOURCES . ".$elementType");
+        return app(ProjectConfig::class)->get(ProjectConfig::PATH_ELEMENT_SOURCES . ".$elementType");
     }
 
     /**

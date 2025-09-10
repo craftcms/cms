@@ -14,7 +14,7 @@ use craft\elements\conditions\ElementConditionInterface;
 use craft\helpers\Cp;
 use craft\models\UserGroup;
 use craft\services\ElementSources;
-use craft\services\ProjectConfig;
+use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\Support\Arr;
 use Illuminate\Support\Collection;
 use yii\web\Response;
@@ -241,7 +241,7 @@ class ElementIndexSettingsController extends BaseElementsController
         $elementType = $this->elementType();
 
         // Get the old source configs
-        $projectConfig = Craft::$app->getProjectConfig();
+        $projectConfig = app(ProjectConfig::class);
         $oldSourceConfigs = $projectConfig->get(ProjectConfig::PATH_ELEMENT_SOURCES . ".$elementType") ?? [];
         $oldSourceConfigs = Collection::make($oldSourceConfigs)
             ->keyBy('key')

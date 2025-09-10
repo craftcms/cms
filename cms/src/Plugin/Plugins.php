@@ -6,8 +6,6 @@ use Craft;
 use craft\base\Plugin;
 use craft\errors\InvalidLicenseKeyException;
 use craft\helpers\FileHelper;
-use craft\helpers\ProjectConfig as ProjectConfigHelper;
-use craft\services\ProjectConfig;
 use CraftCms\Aliases\Facades\Aliases;
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Database\Table;
@@ -26,7 +24,10 @@ use CraftCms\Cms\Plugin\Events\PluginUninstalled;
 use CraftCms\Cms\Plugin\Events\SavingPluginSettings;
 use CraftCms\Cms\Plugin\Events\UninstallingPlugin;
 use CraftCms\Cms\Plugin\Exceptions\InvalidPluginException;
+use CraftCms\Cms\ProjectConfig\ProjectConfig;
+use CraftCms\Cms\ProjectConfig\ProjectConfigHelper;
 use CraftCms\Cms\Shared\Enums\LicenseKeyStatus;
+use CraftCms\Cms\Shared\Models\Info;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Env;
 use CraftCms\Cms\Support\Str;
@@ -149,8 +150,7 @@ final class Plugins
      */
     public function loadPlugins(): void
     {
-        // TODO:  || app('Craft')->getIsInstalled() === false
-        if ($this->pluginsLoaded === true || $this->loadingPlugins === true) {
+        if ($this->pluginsLoaded === true || $this->loadingPlugins === true || ! Info::isInstalled()) {
             return;
         }
 
@@ -366,7 +366,7 @@ final class Plugins
         }
 
         // Enable the plugin in the project config
-        app('Craft')->getProjectConfig()->set(
+        app(ProjectConfig::class)->set(
             path: ProjectConfig::PATH_PLUGINS.'.'.$handle.'.enabled',
             value: true,
             message: "Enable plugin “{$handle}”"
@@ -409,8 +409,11 @@ final class Plugins
         }
 
         // Disable the plugin in the project config
-        app('Craft')->getProjectConfig()->set(ProjectConfig::PATH_PLUGINS.'.'.$handle.'.enabled', false,
-            "Disable plugin “{$handle}”");
+        app(ProjectConfig::class)->set(
+            ProjectConfig::PATH_PLUGINS.'.'.$handle.'.enabled',
+            false,
+            "Disable plugin “{$handle}”"
+        );
 
         $this->storedPluginInfo[$handle]['enabled'] = false;
         $this->unregisterPlugin($plugin);
@@ -441,7 +444,7 @@ final class Plugins
         }
 
         // Temporarily allow changes to the project config even if it's supposed to be read only
-        $projectConfig = app('Craft')->getProjectConfig();
+        $projectConfig = app(ProjectConfig::class);
         $readOnly = $projectConfig->readOnly;
         $projectConfig->readOnly = false;
 
@@ -571,7 +574,7 @@ final class Plugins
         }
 
         // Temporarily allow changes to the project config even if it's supposed to be read only
-        $projectConfig = app('Craft')->getProjectConfig();
+        $projectConfig = app(ProjectConfig::class);
         $readOnly = $projectConfig->readOnly;
         $projectConfig->readOnly = false;
 
@@ -656,7 +659,7 @@ final class Plugins
         }
 
         // Update the project config
-        app('Craft')->getProjectConfig()->set(
+        app(ProjectConfig::class)->set(
             path: ProjectConfig::PATH_PLUGINS.'.'.$handle.'.edition',
             value: $edition,
             message: "Switch edition for plugin “{$handle}”",
@@ -710,7 +713,7 @@ final class Plugins
 
         // Update the plugin’s settings in the project config
         $pluginSettings = ProjectConfigHelper::packAssociativeArrays($pluginSettings->getAttributes());
-        app('Craft')->getProjectConfig()->set(
+        app(ProjectConfig::class)->set(
             path: ProjectConfig::PATH_PLUGINS.'.'.$plugin->handle.'.settings',
             value: $pluginSettings,
             message: "Change settings for plugin “{$plugin->handle}”",
@@ -826,7 +829,7 @@ final class Plugins
             $this->storedPluginInfo[$plugin->handle]['schemaVersion'] = $plugin->schemaVersion;
         }
 
-        app('Craft')->getProjectConfig()->set(
+        app(ProjectConfig::class)->set(
             path: sprintf('%s.%s.schemaVersion', ProjectConfig::PATH_PLUGINS, $plugin->handle),
             value: $plugin->schemaVersion,
             message: "Update plugin schema version for “{$plugin->handle}”",
@@ -1144,7 +1147,7 @@ final class Plugins
             Env::writeVariable($matches[1], $normalizedLicenseKey, app()->environmentFilePath());
         } else {
             // Set the plugin's license key in the project config
-            app('Craft')->getProjectConfig()->set(
+            app(ProjectConfig::class)->set(
                 path: sprintf('%s.%s.licenseKey', ProjectConfig::PATH_PLUGINS, $handle),
                 value: $normalizedLicenseKey,
                 message: "Set license key for plugin “{$handle}”",
@@ -1297,7 +1300,7 @@ final class Plugins
      */
     private function getPluginConfigData(string $handle): array
     {
-        $projectConfig = app('Craft')->getProjectConfig();
+        $projectConfig = app(ProjectConfig::class);
         $configKey = ProjectConfig::PATH_PLUGINS.'.'.$handle;
         $data = $projectConfig->get($configKey);
 

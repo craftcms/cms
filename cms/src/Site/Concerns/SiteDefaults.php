@@ -2,8 +2,8 @@
 
 namespace CraftCms\Cms\Site\Concerns;
 
-use Craft;
 use CraftCms\Aliases\Facades\Aliases;
+use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\Support\Env;
 
 /**
@@ -68,7 +68,7 @@ trait SiteDefaults
     private function primarySiteConfig(): ?array
     {
         return once(fn () => collect(
-            Craft::$app->getProjectConfig()->get('sites', true) ?? []
+            app(ProjectConfig::class)->get('sites', true) ?? []
         )->firstWhere('primary', true));
     }
 }

@@ -7,8 +7,8 @@
 
 namespace craft\console\controllers;
 
-use Craft;
 use craft\console\Controller;
+use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use Throwable;
 
 /**
@@ -30,7 +30,7 @@ abstract class BaseSystemStatusController extends Controller
     {
         // Allow changes to the project config even if it’s supposed to be read only,
         // and prevent changes from getting written to YAML
-        $projectConfig = Craft::$app->getProjectConfig();
+        $projectConfig = app(ProjectConfig::class);
         $projectConfig->readOnly = false;
         $projectConfig->writeYamlAutomatically = false;
         $projectConfig->set($path, $value, null, false);

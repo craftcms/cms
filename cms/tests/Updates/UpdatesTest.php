@@ -1,5 +1,6 @@
 <?php
 
+use CraftCms\Cms\Shared\Models\Info;
 use CraftCms\Cms\Support\Api;
 use CraftCms\Cms\Updates\Data\Update;
 use CraftCms\Cms\Updates\Data\UpdateRelease;
@@ -79,9 +80,9 @@ it('can get updates', function () {
 it('can return if a craft update is pending', function () {
     expect($this->updates->isCraftUpdatePending())->toBe(false);
 
-    $info = Craft::$app->getInfo();
-    $info->schemaVersion = '0.0.0.0';
-    Craft::$app->saveInfo($info, ['schemaVersion']);
+    Info::fetch()->update([
+        'schemaVersion' => '0.0.0.0',
+    ]);
 
     app()->forgetInstance(Updates::class);
     $this->updates = app(Updates::class);
@@ -96,9 +97,9 @@ it('can return if migrations are pending', function () {
     /**
      * If a Craft update is pending, migrations are automatically pending
      */
-    $info = Craft::$app->getInfo();
-    $info->schemaVersion = '0.0.0.0';
-    Craft::$app->saveInfo($info, ['schemaVersion']);
+    Info::fetch()->update([
+        'schemaVersion' => '0.0.0.0',
+    ]);
 
     app()->forgetInstance(Updates::class);
     $this->updates = app(Updates::class);

@@ -9,9 +9,9 @@ namespace crafttests\unit\services;
 
 use Codeception\Test\Unit;
 use Craft;
-use craft\services\ProjectConfig;
 use craft\services\Routes;
 use craft\test\TestCase;
+use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\Support\Str;
 
 /**
@@ -41,7 +41,7 @@ class RoutesTest extends TestCase
     {
         $uid = $this->routes->saveRoute($uriParts, $template, $siteUid, $routeUid);
         self::assertTrue(Str::isUuid($uid));
-        self::assertSame($expected, Craft::$app->getProjectConfig()->get(ProjectConfig::PATH_ROUTES . '.' . $uid));
+        self::assertSame($expected, app(ProjectConfig::class)->get(ProjectConfig::PATH_ROUTES . '.' . $uid));
     }
 
     /**

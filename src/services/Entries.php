@@ -17,7 +17,6 @@ use craft\errors\EntryTypeNotFoundException;
 use craft\errors\InvalidElementException;
 use craft\errors\SectionNotFoundException;
 use craft\errors\UnsupportedSiteException;
-use craft\events\ConfigEvent;
 use craft\events\DeleteSiteEvent;
 use craft\events\EntryTypeEvent;
 use craft\events\MoveEntryEvent;
@@ -25,7 +24,6 @@ use craft\events\SectionEvent;
 use craft\helpers\AdminTable;
 use craft\helpers\Cp;
 use craft\helpers\Db as DbHelper;
-use craft\helpers\ProjectConfig as ProjectConfigHelper;
 use craft\helpers\Queue;
 use craft\i18n\Translation;
 use craft\models\EntryType;
@@ -41,6 +39,9 @@ use craft\records\Section as SectionRecord;
 use craft\records\Section_SiteSettings as Section_SiteSettingsRecord;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Enums\PropagationMethod;
+use CraftCms\Cms\ProjectConfig\Events\ConfigEvent;
+use CraftCms\Cms\ProjectConfig\ProjectConfig;
+use CraftCms\Cms\ProjectConfig\ProjectConfigHelper;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Json;
@@ -589,7 +590,7 @@ class Entries extends Component
 
             $configPath = ProjectConfig::PATH_SECTIONS . '.' . $section->uid;
             $configData = $section->getConfig();
-            Craft::$app->getProjectConfig()->set($configPath, $configData, "Save section “{$section->handle}”");
+            app(ProjectConfig::class)->set($configPath, $configData, "Save section “{$section->handle}”");
 
             if ($isNewSection) {
                 $section->id = DB::table(Table::SECTIONS)->idByUid($section->uid);
@@ -937,7 +938,7 @@ class Entries extends Component
         // ---------------------------------------------------------------------
 
         if ($siteSettings === null) {
-            $siteSettings = Craft::$app->getProjectConfig()->get(ProjectConfig::PATH_SECTIONS . '.' . $section->uid . '.siteSettings');
+            $siteSettings = app(ProjectConfig::class)->get(ProjectConfig::PATH_SECTIONS . '.' . $section->uid . '.siteSettings');
         }
 
         if (empty($siteSettings)) {
@@ -1111,7 +1112,7 @@ class Entries extends Component
         }
 
         // Remove the section from the project config
-        Craft::$app->getProjectConfig()->remove(ProjectConfig::PATH_SECTIONS . '.' . $section->uid,
+        app(ProjectConfig::class)->remove(ProjectConfig::PATH_SECTIONS . '.' . $section->uid,
             "Delete the “{$section->handle}” section");
         return true;
     }
@@ -1226,7 +1227,7 @@ class Entries extends Component
     {
         $siteUid = $event->site->uid;
 
-        $projectConfig = Craft::$app->getProjectConfig();
+        $projectConfig = app(ProjectConfig::class);
         $sections = $projectConfig->get(ProjectConfig::PATH_SECTIONS);
 
         // Loop through the sections and prune the UID from field layouts.
@@ -1590,7 +1591,7 @@ class Entries extends Component
 
         $configPath = ProjectConfig::PATH_ENTRY_TYPES . '.' . $entryType->uid;
         $configData = $entryType->getConfig();
-        Craft::$app->getProjectConfig()->set($configPath, $configData, "Save entry type “{$entryType->handle}”");
+        app(ProjectConfig::class)->set($configPath, $configData, "Save entry type “{$entryType->handle}”");
 
         if ($isNewEntryType) {
             $entryType->id = DB::table(Table::ENTRYTYPES)->idByUid($entryType->uid);
@@ -1784,7 +1785,7 @@ class Entries extends Component
             ]));
         }
 
-        Craft::$app->getProjectConfig()->remove(ProjectConfig::PATH_ENTRY_TYPES . '.' . $entryType->uid,
+        app(ProjectConfig::class)->remove(ProjectConfig::PATH_ENTRY_TYPES . '.' . $entryType->uid,
             "Delete the “{$entryType->handle}” entry type");
         return true;
     }

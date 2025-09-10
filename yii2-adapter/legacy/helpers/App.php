@@ -23,7 +23,6 @@ use craft\mail\Mailer;
 use craft\mail\Message;
 use craft\mail\transportadapters\Sendmail;
 use craft\models\MailSettings;
-use craft\services\ProjectConfig as ProjectConfigService;
 use craft\web\AssetManager;
 use craft\web\Request;
 use craft\web\Request as WebRequest;
@@ -33,6 +32,7 @@ use craft\web\View;
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\License\License;
+use CraftCms\Cms\ProjectConfig\ProjectConfig as ProjectConfigService;
 use CraftCms\Cms\Support\Env;
 use CraftCms\Cms\Support\PHP;
 use CraftCms\Cms\Support\Str;
@@ -686,7 +686,7 @@ class App
      */
     public static function mailSettings(): MailSettings
     {
-        $settings = Craft::$app->getProjectConfig()->get('email') ?? [];
+        $settings = app(ProjectConfigService::class)->get('email') ?? [];
         return new MailSettings($settings);
     }
 
@@ -776,7 +776,7 @@ class App
     public static function projectConfigConfig(): array
     {
         return [
-            'class' => ProjectConfigService::class,
+            'class' => \craft\services\ProjectConfig::class,
             'readOnly' => Craft::$app->getIsInstalled() && !app(GeneralConfig::class)->allowAdminChanges,
             'writeYamlAutomatically' => !self::isEphemeral(),
         ];

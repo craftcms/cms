@@ -19,6 +19,7 @@ use craft\services\Fields;
 use CraftCms\Aliases\Facades\Aliases;
 use CraftCms\Cms\Database\Migrator;
 use CraftCms\Cms\Database\Table;
+use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\Support\Json;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
@@ -440,7 +441,7 @@ MD, $infoByField->join("\n"))));
             $outgoingField,
             $outgoingLayouts,
         ) {
-            $projectConfigService = Craft::$app->getProjectConfig();
+            $projectConfigService = app(ProjectConfig::class);
             $muteEvents = $projectConfigService->muteEvents;
             $projectConfigService->muteEvents = true;
 

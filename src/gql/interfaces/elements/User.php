@@ -14,6 +14,7 @@ use craft\gql\interfaces\Element;
 use craft\gql\resolvers\elements\Address as AddressResolver;
 use craft\gql\types\generators\UserType;
 use craft\helpers\Gql;
+use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use GraphQL\Type\Definition\InterfaceType;
 use GraphQL\Type\Definition\Type;
 
@@ -141,7 +142,7 @@ class User extends Element
      */
     protected static function getConditionalFields(): array
     {
-        $volumeUid = Craft::$app->getProjectConfig()->get('users.photoVolumeUid');
+        $volumeUid = app(ProjectConfig::class)->get('users.photoVolumeUid');
 
         if (Gql::isSchemaAwareOf('volumes.' . $volumeUid)) {
             return [

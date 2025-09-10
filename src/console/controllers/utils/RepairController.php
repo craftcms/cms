@@ -19,8 +19,8 @@ use craft\helpers\Console;
 use craft\helpers\ElementHelper;
 use craft\models\Section;
 use craft\records\StructureElement;
-use craft\services\ProjectConfig;
 use craft\services\Structures;
+use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use Illuminate\Support\Facades\DB;
 use Throwable;
 use yii\console\ExitCode;
@@ -288,7 +288,7 @@ class RepairController extends Controller
      */
     public function actionProjectConfig(): int
     {
-        $projectConfigService = Craft::$app->getProjectConfig();
+        $projectConfigService = app(ProjectConfig::class);
         $config = $projectConfigService->get();
 
         $this->stdout('Repairing project config ...' . PHP_EOL);
