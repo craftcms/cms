@@ -302,6 +302,9 @@ class Plugin extends Module implements PluginInterface
 
         $config['class'] = static::class;
 
+        // Load legacy Craft if it hadn't yet loaded
+        app('Craft');
+
         return Craft::createObject($config, [$config['handle'], Craft::$app]);
     }
 

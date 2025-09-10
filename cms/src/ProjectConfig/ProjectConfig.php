@@ -36,6 +36,7 @@ use CraftCms\Cms\ProjectConfig\Exceptions\BusyResourceException;
 use CraftCms\Cms\ProjectConfig\Exceptions\ReadonlyException;
 use CraftCms\Cms\ProjectConfig\Exceptions\StaleResourceException;
 use CraftCms\Cms\Shared\Exceptions\OperationAbortedException;
+use CraftCms\Cms\Shared\Models\Info;
 use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Support\Str;
 use CraftCms\DependencyAwareCache\Dependency\CallbackDependency;
@@ -1662,16 +1663,21 @@ final class ProjectConfig
      */
     private function _loadInternalConfig(): ReadOnlyProjectConfigData
     {
-        if (! Craft::$app->getIsInstalled()) {
+        // @TODO
+        // if (! Craft::$app->getIsInstalled()) {
+        if (! $info = Info::find(1)) {
             return new ReadOnlyProjectConfigData([], $this);
         }
 
-        if (version_compare(Craft::$app->getInfo()->schemaVersion, '3.1.1', '<')) {
+        // @TODO Craft::$app->getInfo()->schemaVersion
+        if (version_compare($info->schemaVersion, '3.1.1', '<')) {
             return new ReadOnlyProjectConfigData([], $this);
         }
 
-        if (version_compare(Craft::$app->getInfo()->schemaVersion, '3.4.4', '<')) {
-            $config = DB::table(Table::INFO)->value('config');
+        // @TODO Craft::$app->getInfo()->schemaVersion
+        if (version_compare($info->schemaVersion, '3.4.4', '<')) {
+            /** @phpstan-ignore-next-line */
+            $config = $info->config;
 
             $data = [];
 
@@ -1723,7 +1729,7 @@ final class ProjectConfig
      */
     public function getCacheDependency(): CallbackDependency
     {
-        return new CallbackDependency(fn () => Craft::$app->getInfo()->configVersion);
+        return new CallbackDependency(fn () => Info::find(1)->configVersion);
     }
 
     /**
@@ -1731,7 +1737,7 @@ final class ProjectConfig
      */
     private function _systemConfig(array $data): array
     {
-        $data['schemaVersion'] = Craft::$app->schemaVersion;
+        $data['schemaVersion'] = Info::find(1)->schemaVersion;
 
         return $data;
     }

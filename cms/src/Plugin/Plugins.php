@@ -27,6 +27,7 @@ use CraftCms\Cms\Plugin\Exceptions\InvalidPluginException;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\ProjectConfig\ProjectConfigHelper;
 use CraftCms\Cms\Shared\Enums\LicenseKeyStatus;
+use CraftCms\Cms\Shared\Models\Info;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Env;
 use CraftCms\Cms\Support\Str;
@@ -149,7 +150,8 @@ final class Plugins
      */
     public function loadPlugins(): void
     {
-        if ($this->pluginsLoaded === true || $this->loadingPlugins === true || app('Craft')->getIsInstalled() === false) {
+        // TODO:  || app('Craft')->getIsInstalled() === false
+        if ($this->pluginsLoaded === true || $this->loadingPlugins === true || Info::find(1) === null) {
             return;
         }
 
