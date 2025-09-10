@@ -2,6 +2,9 @@
 
 namespace CraftCms\Cms\ProjectConfig\Events;
 
+/**
+ * @since 6.0.0
+ */
 abstract class ConfigEvent
 {
     public function __construct(

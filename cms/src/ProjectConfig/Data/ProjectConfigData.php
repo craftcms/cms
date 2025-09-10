@@ -10,6 +10,9 @@ use CraftCms\Cms\ProjectConfig\ProjectConfigHelper;
 use CraftCms\Cms\Support\Str;
 use Illuminate\Support\Facades\Event;
 
+/**
+ * @since 6.0.0
+ */
 final class ProjectConfigData extends ReadOnlyProjectConfigData
 {
     /**

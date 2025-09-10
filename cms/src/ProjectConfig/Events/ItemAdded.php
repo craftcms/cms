@@ -15,5 +15,7 @@ namespace CraftCms\Cms\ProjectConfig\Events;
  *     // Ensure the item is also added in the database...
  * });
  * ```
+ *
+ * @since 6.0.0
  */
 final class ItemAdded extends ConfigEvent {}

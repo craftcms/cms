@@ -16,6 +16,8 @@ namespace CraftCms\Cms\ProjectConfig\Events;
  *    $e->config['myPlugin']['key'] = $value;
  * });
  * ```
+ *
+ * @since 6.0.0
  */
 final class RebuildConfig
 {

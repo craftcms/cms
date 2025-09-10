@@ -18,6 +18,9 @@ use Illuminate\Events\QueuedClosure;
 use Illuminate\Support\Collection;
 use Illuminate\Support\ServiceProvider;
 
+/**
+ * @since 6.0.0
+ */
 final class ProjectConfigServiceProvider extends ServiceProvider
 {
     public function register(): void
