@@ -260,7 +260,7 @@ history.replaceState(undefined, undefined, window.location.href.match(/^[^#]*/)[
                             {% endif %}
 
                             {# content-container #}
-                            <div id="content-container">
+                            <div id="content-container" tabindex="-1">
                                 <div class="content-grid">
 
                                     {% block main %}
@@ -301,7 +301,7 @@ history.replaceState(undefined, undefined, window.location.href.match(/^[^#]*/)[
                                         </div>
 
                                         {% if details is not empty %}
-                                            <div class="content-grid__toggle">
+                                            <div id="details-toggle-wrapper" class="content-grid__toggle" tabindex="-1">
                                                 {% embed '_includes/disclosure-toggle' with {
                                                     id: 'details-toggle',
                                                     controls: 'details-container',
@@ -326,7 +326,7 @@ history.replaceState(undefined, undefined, window.location.href.match(/^[^#]*/)[
                             </div><!-- #content-container -->
 
                             {% if details is not empty %}
-                                <div id="details-container" data-state="{{  craft.app.request.rawCookies.value('Craft-' ~ craft.app.systemUid ~  ':sidebar-details')}}">
+                                <div id="details-container" tabindex="-1" data-state="{{  craft.app.request.rawCookies.value('Craft-' ~ craft.app.systemUid ~  ':sidebar-details')}}">
                                     <div id="details">
                                         <div class="details">
                                             {{ details|raw }}

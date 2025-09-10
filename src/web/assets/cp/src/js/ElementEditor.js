@@ -685,6 +685,9 @@ Craft.ElementEditor = Garnish.Base.extend(
           await Craft.appendBodyHtml(bodyHtml);
           Craft.initUiElements($newField);
 
+          // Set new focus target since the old one just got replaced
+          modal.$triggerElement = $newField.find('[data-disclosure-trigger]');
+
           Craft.cp.displaySuccess(message);
         } finally {
           $submitBtn.removeClass('loading');
