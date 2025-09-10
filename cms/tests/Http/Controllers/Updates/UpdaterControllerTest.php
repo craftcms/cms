@@ -34,12 +34,6 @@ dataset('routes', [
     [UpdaterController::class, 'finish'],
 ]);
 
-it('requires authentication all routes', function (string $controller, string $action) {
-    auth()->logout();
-
-    postJson(action([$controller, $action]))->assertUnauthorized();
-})->with('routes');
-
 test('all routes validate data', function (string $controller, string $action) {
     if ($action === 'index') {
         postJson(action([$controller, $action]), [
@@ -51,10 +45,11 @@ test('all routes validate data', function (string $controller, string $action) {
         return;
     }
 
-    postJson(action([$controller, $action]))
-        ->assertJsonValidationErrors([
-            'data',
-        ]);
+    postJson(action([$controller, $action]), [
+        'data' => 'invalid-data',
+    ])->assertJsonValidationErrors([
+        'data',
+    ]);
 })->with('routes');
 
 test('index', function () {

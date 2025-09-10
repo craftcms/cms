@@ -7,6 +7,7 @@ use CraftCms\Cms\Database\Migrator;
 use CraftCms\Cms\License\License;
 use CraftCms\Cms\Plugin\Plugins;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
+use CraftCms\Cms\Shared\Models\Info;
 use CraftCms\Cms\Support\Api;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Updates\Data\Updates as UpdatesData;
@@ -238,7 +239,7 @@ final class Updates
      */
     public function hasCraftVersionChanged(): bool
     {
-        return \Craft::$app->getVersion() != \Craft::$app->getInfo()->version;
+        return \Craft::$app->getVersion() != Info::fetch()->version;
     }
 
     /**
@@ -247,7 +248,7 @@ final class Updates
      */
     public function wasCraftBreakpointSkipped(): bool
     {
-        return version_compare(\Craft::$app->minVersionRequired, \Craft::$app->getInfo()->version, '>');
+        return version_compare(\Craft::$app->minVersionRequired, Info::fetch()->version, '>');
     }
 
     /**
@@ -255,7 +256,7 @@ final class Updates
      */
     public function isCraftSchemaVersionCompatible(): bool
     {
-        $storedSchemaVersion = \Craft::$app->getInfo()->schemaVersion;
+        $storedSchemaVersion = Info::fetch()->schemaVersion;
 
         return version_compare(\Craft::$app->schemaVersion, $storedSchemaVersion, '>=');
     }
@@ -266,7 +267,7 @@ final class Updates
     public function isCraftUpdatePending(): bool
     {
         if (! isset($this->isCraftUpdatePending)) {
-            $storedSchemaVersion = \Craft::$app->getInfo()->schemaVersion;
+            $storedSchemaVersion = Info::fetch()->schemaVersion;
             $this->isCraftUpdatePending = version_compare(\Craft::$app->schemaVersion, $storedSchemaVersion, '>');
         }
 
@@ -278,11 +279,11 @@ final class Updates
      */
     public function updateCraftVersionInfo(): bool
     {
-        $info = \Craft::$app->getInfo();
-        $info->version = \Craft::$app->getVersion();
-        $info->schemaVersion = \Craft::$app->schemaVersion;
-
-        \Craft::$app->saveInfo($info);
+        $info = Info::fetch();
+        $info->update([
+            'version' => \Craft::$app->getVersion(),
+            'schemaVersion' => \Craft::$app->schemaVersion,
+        ]);
 
         $this->projectConfig->set(
             ProjectConfig::PATH_SCHEMA_VERSION,

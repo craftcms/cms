@@ -2741,13 +2741,13 @@ JS, [
                             return self::AUTH_NO_CP_ACCESS;
                         }
                         if (
-                            Craft::$app->getIsLive() === false &&
+                            app()->isLive() === false &&
                             $this->can('accessCpWhenSystemIsOff') === false
                         ) {
                             return self::AUTH_NO_CP_OFFLINE_ACCESS;
                         }
                     } elseif (
-                        Craft::$app->getIsLive() === false &&
+                        app()->isLive() === false &&
                         $this->can('accessSiteWhenSystemIsOff') === false
                     ) {
                         return self::AUTH_NO_SITE_OFFLINE_ACCESS;

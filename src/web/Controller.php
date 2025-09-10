@@ -193,7 +193,7 @@ abstract class Controller extends \yii\web\Controller
             return;
         }
 
-        $isLive = Craft::$app->getIsLive();
+        $isLive = app()->isLive();
         $test = $isLive ? self::ALLOW_ANONYMOUS_LIVE : self::ALLOW_ANONYMOUS_OFFLINE;
 
         if (is_int($this->allowAnonymous)) {

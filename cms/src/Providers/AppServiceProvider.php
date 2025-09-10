@@ -14,11 +14,13 @@ use CraftCms\Cms\Http\Middleware\FlushProjectConfig;
 use CraftCms\Cms\Http\Middleware\HandleActionRequest;
 use CraftCms\Cms\Http\Middleware\RequireCpRequest;
 use CraftCms\Cms\Http\Middleware\SendPoweredByHeader;
+use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\Support\Env;
 use CraftCms\Cms\User\Models\User;
 use GuzzleHttp\Utils;
 use Illuminate\Auth\Middleware\Authenticate;
 use Illuminate\Contracts\Http\Kernel as HttpKernel;
+use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Console\AboutCommand;
 use Illuminate\Http\Client\Factory;
 use Illuminate\Http\Client\PendingRequest;
@@ -55,6 +57,14 @@ final class AppServiceProvider extends ServiceProvider
         ], $kernel->getGlobalMiddleware()));
 
         Authenticate::redirectUsing(fn () => app(GeneralConfig::class)->loginPath);
+
+        Application::macro('isLive', function (): bool {
+            if (is_bool($live = app(GeneralConfig::class)->isSystemLive)) {
+                return $live;
+            }
+
+            return Env::parseBoolean(app(ProjectConfig::class)->get('system.live')) ?? false;
+        });
 
         Request::macro('isCpRequest', fn (): bool => $this->is(
             app(GeneralConfig::class)->cpTrigger, // /admin

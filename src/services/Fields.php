@@ -64,6 +64,7 @@ use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\ProjectConfig\Events\ConfigEvent;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\ProjectConfig\ProjectConfigHelper;
+use CraftCms\Cms\Shared\Models\Info;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Json as JsonHelper;
 use CraftCms\Cms\Support\Str;
@@ -1275,7 +1276,7 @@ class Fields extends Component
      */
     public function getFieldVersion(): ?string
     {
-        $fieldVersion = Craft::$app->getInfo()->fieldVersion;
+        $fieldVersion = Info::fetch()->fieldVersion;
 
         // If it doesn't start with `3@`, then it needs to be updated
         if ($fieldVersion === null || !str_starts_with($fieldVersion, '3@')) {
@@ -1296,9 +1297,9 @@ class Fields extends Component
         // so the field version change won't be detected until the next request
         class_exists(CustomFieldBehavior::class);
 
-        $info = Craft::$app->getInfo();
-        $info->fieldVersion = '3@' . Str::random(10);
-        Craft::$app->saveInfo($info, ['fieldVersion']);
+        Info::fetch()->update([
+            'fieldVersion' => '3@' . Str::random(10),
+        ]);
     }
 
     /**

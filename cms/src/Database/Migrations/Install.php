@@ -12,7 +12,6 @@ use craft\elements\User;
 use craft\helpers\DateTimeHelper;
 use craft\mail\transportadapters\Sendmail;
 use craft\models\CategoryGroup;
-use craft\models\Info;
 use craft\models\Section;
 use craft\models\Site;
 use craft\web\Response;
@@ -1156,13 +1155,13 @@ class Install extends Migration
     public function insertDefaultData(): void
     {
         $this->components->task('Populating the info table', function () {
-            Craft::$app->saveInfo(new Info([
+            \CraftCms\Cms\Shared\Models\Info::create([
                 'version' => Craft::$app->getVersion(),
                 'schemaVersion' => Craft::$app->schemaVersion,
                 'maintenance' => false,
                 'configVersion' => Str::random(12),
                 'fieldVersion' => Str::random(12),
-            ]));
+            ]);
         });
 
         $generalConfig = app(GeneralConfig::class);

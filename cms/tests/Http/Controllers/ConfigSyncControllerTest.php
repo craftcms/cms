@@ -49,10 +49,11 @@ test('all routes validate data', function (string $controller, string $action) {
         return;
     }
 
-    postJson(action([$controller, $action]))
-        ->assertJsonValidationErrors([
-            'data',
-        ]);
+    postJson(action([$controller, $action]), [
+        'data' => 'invalid-data',
+    ])->assertJsonValidationErrors([
+        'data',
+    ]);
 })->with('routes');
 
 test('index', function () {

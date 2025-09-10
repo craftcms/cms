@@ -78,6 +78,7 @@ use CraftCms\Cms\Edition;
 use CraftCms\Cms\ProjectConfig\Events\ConfigEvent;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\ProjectConfig\ProjectConfigHelper;
+use CraftCms\Cms\Shared\Models\Info;
 use CraftCms\Cms\Support\Str;
 use CraftCms\DependencyAwareCache\Dependency\TagDependency;
 use CraftCms\DependencyAwareCache\Facades\DependencyCache;
@@ -1438,7 +1439,7 @@ class Gql extends Component
                 '::' . $schema->uid .
                 '::' . md5($query) .
                 '::' . serialize($rootValue) .
-                '::' . Craft::$app->getInfo()->configVersion .
+                '::' . Info::fetch()->configVersion .
                 '::' . serialize($variables) .
                 ($operationName ? "::$operationName" : '');
         } catch (Throwable $e) {

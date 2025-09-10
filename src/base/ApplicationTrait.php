@@ -108,9 +108,7 @@ use CraftCms\Cms\License\License;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\Support\Composer;
 use CraftCms\Cms\Support\Env;
-use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Updates\Updates;
-use Illuminate\Database\QueryException;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Cache as CacheFacade;
 use Illuminate\Support\Facades\DB;
@@ -235,11 +233,6 @@ trait ApplicationTrait
     public Edition $edition;
 
     /**
-     * @var bool|null
-     */
-    private ?bool $_isInstalled = null;
-
-    /**
      * @var bool Whether the application is fully initialized yet
      * @see getIsInitialized()
      */
@@ -256,11 +249,6 @@ trait ApplicationTrait
      * @see getIsMultiSite()
      */
     private bool $_isMultiSiteWithTrashed;
-
-    /**
-     * @var Info|null
-     */
-    private ?Info $_info = null;
 
     /**
      * @var bool
@@ -398,45 +386,7 @@ trait ApplicationTrait
      */
     public function getIsInstalled(bool $strict = false): bool
     {
-        if ($strict) {
-            $this->_isInstalled = null;
-            $this->_info = null;
-        } elseif (isset($this->_isInstalled)) {
-            return $this->_isInstalled;
-        }
-
-        if (!$this->getIsDbConnectionValid()) {
-            return $this->_isInstalled = false;
-        }
-
-        try {
-            if ($strict) {
-                $db = Craft::$app->getDb();
-                if ($db->getIsPgsql()) {
-                    // Look for the `info` row, explicitly in the default schema.
-                    return $this->_isInstalled = DB::table(Table::INFO)
-                        ->where('id', 1)
-                        ->exists();
-                }
-            }
-
-            $info = $this->getInfo(true);
-            return $this->_isInstalled = !empty($info->id);
-        } catch (DbException|ServerErrorHttpException|QueryException $e) {
-            // yii2-redis awkwardly throws yii\db\Exception's rather than their own exception class.
-            if ($e instanceof DbException && str_contains($e->getMessage(), 'Redis')) {
-                throw $e;
-            }
-
-            // Allow console requests to bypass error
-            if ($this instanceof WebApplication) {
-                Craft::error('There was a problem fetching the info row: ' . $e->getMessage(), __METHOD__);
-                /** @var ErrorHandler $errorHandler */
-                $errorHandler = $this->getErrorHandler();
-                $errorHandler->logException($e);
-            }
-            return $this->_isInstalled = false;
-        }
+        return \CraftCms\Cms\Shared\Models\Info::isInstalled($strict);
     }
 
     /**
@@ -446,7 +396,7 @@ trait ApplicationTrait
      */
     public function setIsInstalled(?bool $value = true): void
     {
-        $this->_isInstalled = $value;
+        \CraftCms\Cms\Shared\Models\Info::setIsInstalled($value);
     }
 
     /**
@@ -458,7 +408,7 @@ trait ApplicationTrait
      */
     public function getInstalledSchemaVersion(): string
     {
-        return $this->getInfo()->schemaVersion ?: $this->schemaVersion;
+        return \CraftCms\Cms\Shared\Models\Info::fetch()->schemaVersion ?: $this->schemaVersion;
     }
 
     /**
@@ -752,7 +702,7 @@ trait ApplicationTrait
      */
     public function getSystemUid(): ?string
     {
-        return $this->getInfo()->uid;
+        return \CraftCms\Cms\Shared\Models\Info::fetch()->uid;
     }
 
     /**
@@ -760,14 +710,11 @@ trait ApplicationTrait
      *
      * @return bool
      * @since 3.1.0
+     * @deprecated 6.0.0 use `app()->isLive()` instead.
      */
     public function getIsLive(): bool
     {
-        if (is_bool($live = app(GeneralConfig::class)->isSystemLive)) {
-            return $live;
-        }
-
-        return Env::parseBoolean(app(ProjectConfig::class)->get('system.live')) ?? false;
+        return app()->isLive();
     }
 
     /**
@@ -779,7 +726,7 @@ trait ApplicationTrait
      */
     public function getIsInMaintenanceMode(): bool
     {
-        return $this->getInfo()->maintenance;
+        return \CraftCms\Cms\Shared\Models\Info::fetch()->maintenance;
     }
 
     /**
@@ -816,25 +763,9 @@ trait ApplicationTrait
      */
     public function getInfo(bool $throwException = false): Info
     {
-        if (isset($this->_info)) {
-            return $this->_info;
-        }
+        $info = \CraftCms\Cms\Shared\Models\Info::fetch($throwException);
 
-        try {
-            $row = (array) DB::table(Table::INFO)->find(1);
-        } catch (DbException|DbConnectException|QueryException $e) {
-            if ($throwException) {
-                throw $e;
-            }
-            return $this->_info = new Info();
-        }
-
-        if (!$row) {
-            $tableName = Table::INFO;
-            throw new ServerErrorHttpException("The $tableName table is missing its row");
-        }
-
-        return $this->_info = new Info($row);
+        return new Info($info->toArray());
     }
 
     /**
@@ -861,10 +792,12 @@ trait ApplicationTrait
      */
     public function saveInfoAfterRequestHandler(): void
     {
-        $info = $this->getInfo();
-        if (!$this->saveInfo($info)) {
-            throw new Exception("Unable to save new application info: " . implode(', ', $info->getErrorSummary(true)));
+        $info = \CraftCms\Cms\Shared\Models\Info::fetch();
+
+        if (!$info->save()) {
+            throw new Exception("Unable to save new application info");
         }
+
         $this->_waitingToSaveInfo = false;
     }
 
@@ -887,19 +820,12 @@ trait ApplicationTrait
 
         $attributes = $info->getAttributes($attributeNames);
 
-        DB::table(Table::INFO)->updateOrInsert(
+        \CraftCms\Cms\Shared\Models\Info::updateOrCreate(
             ['id' => 1],
-            $attributes + [
-                'dateCreated' => $now = now(),
-                'dateUpdated' => $now,
-                'uid' => Str::uuid(),
-            ],
+            $attributes,
         );
 
         $this->setIsInstalled();
-
-        // Use this as the new cached Info
-        $this->_info = $info;
 
         return true;
     }
@@ -1589,12 +1515,12 @@ trait ApplicationTrait
      */
     private function _setMaintenanceMode(bool $value): bool
     {
-        $info = $this->getInfo();
+        $info = \CraftCms\Cms\Shared\Models\Info::fetch();
         if ($info->maintenance === $value) {
             return true;
         }
         $info->maintenance = $value;
-        return $this->saveInfo($info);
+        return $info->save();
     }
 
     /**

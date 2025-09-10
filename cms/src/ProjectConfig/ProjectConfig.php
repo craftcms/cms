@@ -1474,9 +1474,9 @@ final class ProjectConfig
      */
     protected function updateConfigVersion(): void
     {
-        $info = Craft::$app->getInfo();
-        $info->configVersion = Str::random(12);
-        Craft::$app->saveInfo($info, ['configVersion']);
+        Info::fetch()->update([
+            'configVersion' => Str::random(12),
+        ]);
     }
 
     /**
@@ -1663,21 +1663,17 @@ final class ProjectConfig
      */
     private function _loadInternalConfig(): ReadOnlyProjectConfigData
     {
-        // @TODO
-        // if (! Craft::$app->getIsInstalled()) {
-        if (! $info = Info::find(1)) {
+        if (! Info::isInstalled()) {
             return new ReadOnlyProjectConfigData([], $this);
         }
 
-        // @TODO Craft::$app->getInfo()->schemaVersion
-        if (version_compare($info->schemaVersion, '3.1.1', '<')) {
+        if (version_compare(Info::fetch()->schemaVersion, '3.1.1', '<')) {
             return new ReadOnlyProjectConfigData([], $this);
         }
 
-        // @TODO Craft::$app->getInfo()->schemaVersion
-        if (version_compare($info->schemaVersion, '3.4.4', '<')) {
+        if (version_compare(Info::fetch()->schemaVersion, '3.4.4', '<')) {
             /** @phpstan-ignore-next-line */
-            $config = $info->config;
+            $config = Info::fetch()->config;
 
             $data = [];
 
@@ -1729,7 +1725,7 @@ final class ProjectConfig
      */
     public function getCacheDependency(): CallbackDependency
     {
-        return new CallbackDependency(fn () => Info::find(1)->configVersion);
+        return new CallbackDependency(fn () => Info::fetch()->configVersion);
     }
 
     /**
@@ -1737,7 +1733,7 @@ final class ProjectConfig
      */
     private function _systemConfig(array $data): array
     {
-        $data['schemaVersion'] = Info::find(1)->schemaVersion;
+        $data['schemaVersion'] = Info::fetch()->schemaVersion;
 
         return $data;
     }
@@ -1978,14 +1974,14 @@ final class ProjectConfig
             throw new BusyResourceException('A lock could not be acquired to modify the project config.');
         }
 
-        if (Craft::$app->getIsInstalled()) {
+        if (Info::isInstalled()) {
             try {
                 $storedConfigVersion = DB::table(Table::INFO)->value('configVersion');
             } catch (Throwable) {
                 $storedConfigVersion = null;
             }
 
-            if ($storedConfigVersion && $storedConfigVersion !== Craft::$app->getInfo()->configVersion) {
+            if ($storedConfigVersion && $storedConfigVersion !== Info::fetch()->configVersion) {
                 // Another request must have updated the project config after this request began
                 $mutex->release();
                 throw new StaleResourceException('The loaded project config is out-of-date.');

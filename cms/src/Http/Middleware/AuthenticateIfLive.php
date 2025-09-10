@@ -1,0 +1,18 @@
+<?php
+
+namespace CraftCms\Cms\Http\Middleware;
+
+use Closure;
+use Illuminate\Auth\Middleware\Authenticate;
+
+final class AuthenticateIfLive extends Authenticate
+{
+    public function handle($request, Closure $next, ...$guards): mixed
+    {
+        if (app()->isLive()) {
+            return parent::handle($request, $next, ...$guards);
+        }
+
+        return $next($request);
+    }
+}
