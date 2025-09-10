@@ -4,10 +4,13 @@ namespace CraftCms\Cms\ProjectConfig\Commands;
 
 use CraftCms\Cms\Console\CraftCommand;
 use CraftCms\Cms\Plugin\Plugins;
+use CraftCms\Cms\ProjectConfig\Events\AddingItem;
 use CraftCms\Cms\ProjectConfig\Events\ConfigEvent;
 use CraftCms\Cms\ProjectConfig\Events\ItemAdded;
 use CraftCms\Cms\ProjectConfig\Events\ItemRemoved;
 use CraftCms\Cms\ProjectConfig\Events\ItemUpdated;
+use CraftCms\Cms\ProjectConfig\Events\RemovingItem;
+use CraftCms\Cms\ProjectConfig\Events\UpdatingItem;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\Updates\Updates;
 use Illuminate\Console\Command;
@@ -96,11 +99,11 @@ final class ApplyCommand extends Command
         if (! $this->option('quiet')) {
             $this->processingPaths = [];
 
-            Event::prependListener(ItemAdded::class, [$this, 'onStartProcessingItem']);
+            Event::listen(AddingItem::class, [$this, 'onStartProcessingItem']);
             Event::listen(ItemAdded::class, [$this, 'onFinishProcessingItem']);
-            Event::prependListener(ItemRemoved::class, [$this, 'onStartProcessingItem']);
+            Event::listen(RemovingItem::class, [$this, 'onStartProcessingItem']);
             Event::listen(ItemRemoved::class, [$this, 'onFinishProcessingItem']);
-            Event::prependListener(ItemUpdated::class, [$this, 'onStartProcessingItem']);
+            Event::listen(UpdatingItem::class, [$this, 'onStartProcessingItem']);
             Event::listen(ItemUpdated::class, [$this, 'onFinishProcessingItem']);
         }
 

@@ -2,7 +2,6 @@
 
 namespace CraftCms\Cms\ProjectConfig;
 
-use Closure;
 use Craft;
 use CraftCms\Cms\ProjectConfig\Commands\ApplyCommand;
 use CraftCms\Cms\ProjectConfig\Commands\DiffCommand;
@@ -13,9 +12,6 @@ use CraftCms\Cms\ProjectConfig\Commands\RemoveCommand;
 use CraftCms\Cms\ProjectConfig\Commands\SetCommand;
 use CraftCms\Cms\ProjectConfig\Commands\TouchCommand;
 use CraftCms\Cms\ProjectConfig\Commands\WriteCommand;
-use Illuminate\Events\Dispatcher;
-use Illuminate\Events\QueuedClosure;
-use Illuminate\Support\Collection;
 use Illuminate\Support\ServiceProvider;
 
 /**
@@ -27,48 +23,6 @@ final class ProjectConfigServiceProvider extends ServiceProvider
     {
         $this->app->terminating(function (ProjectConfig $projectConfig) {
             $projectConfig->flush();
-        });
-
-        Dispatcher::macro('prependListener', function ($events, $listener) {
-            if ($events instanceof Closure) {
-                /** @phpstan-ignore method.protected */
-                return new Collection($this->firstClosureParameterTypes($events))
-                    ->each(function ($event) use ($events) {
-                        $this->prependListener($event, $events);
-                    });
-            }
-
-            if ($events instanceof QueuedClosure) {
-                /** @phpstan-ignore method.protected */
-                return new Collection($this->firstClosureParameterTypes($events->closure))
-                    ->each(function ($event) use ($events) {
-                        $this->prependListener($event, $events->resolve());
-                    });
-            }
-
-            if ($listener instanceof QueuedClosure) {
-                $listener = $listener->resolve();
-            }
-
-            foreach ((array) $events as $event) {
-                if (str_contains($event, '*')) {
-                    $this->setupWildcardPrependListen($event, $listener);
-                } else {
-                    /** @phpstan-ignore property.protected */
-                    $this->listeners[$event] ??= [];
-                    /** @phpstan-ignore property.protected */
-                    array_unshift($this->listeners[$event], $listener);
-                }
-            }
-        });
-
-        Dispatcher::macro('setupWildcardPrependListen', function ($event, $listener) {
-            /** @phpstan-ignore property.protected */
-            $this->wildcards[$event] ??= [];
-            /** @phpstan-ignore property.protected */
-            array_unshift($this->wildcards[$event], $listener);
-            /** @phpstan-ignore property.protected */
-            $this->wildcardsCache = [];
         });
     }
 

@@ -2,9 +2,12 @@
 
 namespace CraftCms\Cms\ProjectConfig\Data;
 
+use CraftCms\Cms\ProjectConfig\Events\AddingItem;
 use CraftCms\Cms\ProjectConfig\Events\ItemAdded;
 use CraftCms\Cms\ProjectConfig\Events\ItemRemoved;
 use CraftCms\Cms\ProjectConfig\Events\ItemUpdated;
+use CraftCms\Cms\ProjectConfig\Events\RemovingItem;
+use CraftCms\Cms\ProjectConfig\Events\UpdatingItem;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\ProjectConfig\ProjectConfigHelper;
 use CraftCms\Cms\Support\Str;
@@ -57,6 +60,14 @@ final class ProjectConfigData extends ReadOnlyProjectConfigData
             $this->projectConfig->forceUpdate ||
             ProjectConfigHelper::encodeValueAsString($oldValue) !== ProjectConfigHelper::encodeValueAsString($newValue)
         );
+
+        if ($valueChanged && ! $this->projectConfig->muteEvents) {
+            Event::dispatch(match (true) {
+                $newValue === null && $oldValue !== null => new RemovingItem($path, $oldValue, $newValue),
+                $oldValue === null && $newValue !== null => new AddingItem($path, $oldValue, $newValue),
+                default => new UpdatingItem($path, $oldValue, $newValue),
+            });
+        }
 
         if (($valueChanged || $force) && ! str_starts_with($path, ProjectConfig::PATH_META_NAMES)) {
             $this->updateContainedProjectConfigNames(pathinfo($path, PATHINFO_EXTENSION), $oldValue, $newValue);

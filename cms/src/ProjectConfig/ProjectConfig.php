@@ -564,6 +564,8 @@ final class ProjectConfig
         if ($anyChangesApplied) {
             $this->updateConfigVersion();
         }
+
+        $this->_releaseLock();
     }
 
     /**
@@ -696,6 +698,8 @@ final class ProjectConfig
     public function saveModifiedConfigData(): void
     {
         if (empty($this->_appliedChanges)) {
+            $this->_releaseLock();
+
             return;
         }
 
