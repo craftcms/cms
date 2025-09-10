@@ -53,19 +53,21 @@ abstract class BaseUpdaterController
         protected Plugins $plugins,
         protected Updates $updates,
     ) {
-        if ($this->request->fullUrlIs(action([static::class, 'index']))) {
+        if ($this->request->route()->getActionMethod() === 'index') {
             return;
         }
 
-        $data = Craft::$app->getSecurity()->validateData($this->request->get('data', ''));
+        if (! is_null($data = $this->request->get('data'))) {
+            $data = Craft::$app->getSecurity()->validateData($this->request->get('data', ''));
 
-        if ($data === false) {
-            throw ValidationException::withMessages([
-                'data' => Craft::t('app', 'Invalid data.'),
-            ]);
+            if ($data === false) {
+                throw ValidationException::withMessages([
+                    'data' => Craft::t('app', 'Invalid data.'),
+                ]);
+            }
+
+            $this->data = Json::decode($data);
         }
-
-        $this->data = Json::decode($data);
     }
 
     public function index(#[Give('Craft')] Application $craft): Response

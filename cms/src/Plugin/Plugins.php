@@ -149,7 +149,8 @@ final class Plugins
      */
     public function loadPlugins(): void
     {
-        if ($this->pluginsLoaded === true || $this->loadingPlugins === true || app('Craft')->getIsInstalled() === false) {
+        // TODO:  || app('Craft')->getIsInstalled() === false
+        if ($this->pluginsLoaded === true || $this->loadingPlugins === true) {
             return;
         }
 
