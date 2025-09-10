@@ -536,6 +536,10 @@ final class Html
         $normalized = [];
 
         foreach ($attributes as $name => $value) {
+            if (empty($name)) {
+                continue;
+            }
+
             if ($value === false || $value === null) {
                 $normalized[$name] = false;
 

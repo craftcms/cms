@@ -46,6 +46,21 @@ Route::prefix(implode('/', [
     Route::post('install/validate-site', [InstallController::class, 'validateSite']);
     Route::post('install/install', [InstallController::class, 'install']);
 
+    // Updater
+    Route::prefix('updater')->group(function () {
+        Route::post('/', [UpdaterController::class, 'index']);
+        Route::post(UpdaterController::ACTION_FORCE_UPDATE, [UpdaterController::class, 'forceUpdate']);
+        Route::post(UpdaterController::ACTION_BACKUP, [UpdaterController::class, 'backup']);
+        Route::post(UpdaterController::ACTION_SERVER_CHECK, [UpdaterController::class, 'serverCheck']);
+        Route::post(UpdaterController::ACTION_REVERT, [UpdaterController::class, 'revert']);
+        Route::post(UpdaterController::ACTION_MIGRATE, [UpdaterController::class, 'migrate']);
+        Route::post(BaseUpdaterController::ACTION_PRECHECK, [UpdaterController::class, 'precheck']);
+        Route::post(BaseUpdaterController::ACTION_RECHECK_COMPOSER, [UpdaterController::class, 'recheckComposer']);
+        Route::post(BaseUpdaterController::ACTION_COMPOSER_INSTALL, [UpdaterController::class, 'composerInstall']);
+        Route::post(BaseUpdaterController::ACTION_COMPOSER_REMOVE, [UpdaterController::class, 'composerRemove']);
+        Route::post(BaseUpdaterController::ACTION_FINISH, [UpdaterController::class, 'finish']);
+    });
+
     /**
      * Actions needing auth
      */
@@ -112,21 +127,6 @@ Route::prefix(implode('/', [
         // Updates
         Route::post('app/check-for-updates', [UpdatesController::class, 'check']);
         Route::post('app/cache-updates', [UpdatesController::class, 'cache']);
-
-        // Updater
-        Route::prefix('updater')->group(function () {
-            Route::post('/', [UpdaterController::class, 'index']);
-            Route::post(UpdaterController::ACTION_FORCE_UPDATE, [UpdaterController::class, 'forceUpdate']);
-            Route::post(UpdaterController::ACTION_BACKUP, [UpdaterController::class, 'backup']);
-            Route::post(UpdaterController::ACTION_SERVER_CHECK, [UpdaterController::class, 'serverCheck']);
-            Route::post(UpdaterController::ACTION_REVERT, [UpdaterController::class, 'revert']);
-            Route::post(UpdaterController::ACTION_MIGRATE, [UpdaterController::class, 'migrate']);
-            Route::post(BaseUpdaterController::ACTION_PRECHECK, [UpdaterController::class, 'precheck']);
-            Route::post(BaseUpdaterController::ACTION_RECHECK_COMPOSER, [UpdaterController::class, 'recheckComposer']);
-            Route::post(BaseUpdaterController::ACTION_COMPOSER_INSTALL, [UpdaterController::class, 'composerInstall']);
-            Route::post(BaseUpdaterController::ACTION_COMPOSER_REMOVE, [UpdaterController::class, 'composerRemove']);
-            Route::post(BaseUpdaterController::ACTION_FINISH, [UpdaterController::class, 'finish']);
-        });
 
         // Pluginstore
         Route::middleware([

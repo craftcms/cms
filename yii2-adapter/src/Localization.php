@@ -53,8 +53,12 @@ class Localization extends I18N
      * @param  array  $params  the parameters that will be used for the replacement.
      * @return string the formatted message.
      */
-    protected function makeReplacements(string $message, array $params): string
+    protected function makeReplacements(?string $message, array $params): string
     {
+        if (!$message) {
+            return '';
+        }
+
         if (empty($params)) {
             return $message;
         }

@@ -1103,7 +1103,7 @@ class Elements extends Component
      */
     public function getElementUriForSite(int $elementId, int $siteId): string|null
     {
-        return DB::table(Table::ELEMENTS)
+        return DB::table(Table::ELEMENTS_SITES)
             ->where('elementId', $elementId)
             ->where('siteId', $siteId)
             ->value('uri');
