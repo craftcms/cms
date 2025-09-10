@@ -26,6 +26,7 @@ use CraftCms\Cms\Plugin\Plugins;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\ProjectConfig\ProjectConfigHelper;
 use CraftCms\Cms\Shared\Exceptions\OperationAbortedException;
+use CraftCms\Cms\Shared\Models\Info;
 use CraftCms\Cms\Support\Str;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\DB;
@@ -1155,7 +1156,8 @@ class Install extends Migration
     public function insertDefaultData(): void
     {
         $this->components->task('Populating the info table', function () {
-            \CraftCms\Cms\Shared\Models\Info::create([
+            Info::create([
+                'id' => 1,
                 'version' => Craft::$app->getVersion(),
                 'schemaVersion' => Craft::$app->schemaVersion,
                 'maintenance' => false,
@@ -1186,7 +1188,9 @@ class Install extends Migration
         $projectConfig->flush();
 
         // Craft, you are installed now.
-        Craft::$app->setIsInstalled();
+        Info::setIsInstalled();
+
+        Craft::$app->getSites()->refreshSites();
 
         if ($this->applyProjectConfigYaml) {
             // Update the primary site with the installer settings

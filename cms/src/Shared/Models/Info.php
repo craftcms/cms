@@ -42,7 +42,7 @@ final class Info extends BaseModel
         });
     }
 
-    public static function setIsInstalled(bool $isInstalled): void
+    public static function setIsInstalled(bool $isInstalled = true): void
     {
         Context::add('craft.isInstalled', $isInstalled);
     }

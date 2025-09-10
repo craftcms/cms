@@ -31,6 +31,7 @@ use craft\records\SiteGroup as SiteGroupRecord;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\ProjectConfig\Events\ConfigEvent;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
+use CraftCms\Cms\Shared\Models\Info;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Str;
 use Illuminate\Database\Query\Builder;
@@ -1195,7 +1196,7 @@ class Sites extends Component
         $this->_allSitesById = [];
         $this->_enabledSitesById = [];
 
-        if (!Craft::$app->getIsInstalled()) {
+        if (!Info::isInstalled()) {
             return;
         }
 
