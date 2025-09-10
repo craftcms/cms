@@ -142,9 +142,11 @@ Craft.PasskeySetup = Garnish.Base.extend({
     const row = this.$passkeysTable[0]
       .querySelector(`[role="button"][data-uid="${uid}"]`)
       .closest('tr');
-    const tbody = this.$passkeysTable[0].querySelector('tbody');
 
-    const getTableRowArray = () => Array.from(tbody.querySelectorAll('tr'));
+    const getTableRowArray = () => {
+      const tbody = this.$passkeysTable[0].querySelector('tbody');
+      return Array.from(tbody.querySelectorAll('tr'));
+    };
     let rowArray = getTableRowArray();
     const rowIndex = rowArray.indexOf(row);
 
@@ -187,7 +189,10 @@ Craft.PasskeySetup = Garnish.Base.extend({
 
       // Get new array of rows
       rowArray = getTableRowArray();
-      rowArray[newRowIndex].querySelector(['[role="button"]']).focus();
+      const targetBtn = rowArray[newRowIndex].querySelector([
+        '[role="button"]',
+      ]);
+      targetBtn.focus();
     } else {
       // If there are no more rows, focus on the container instead
       document.querySelector('#passkeys').focus();
