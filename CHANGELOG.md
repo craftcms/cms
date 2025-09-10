@@ -4,6 +4,7 @@
 
 - Fixed a bug where inline search wasn’t working for Users fields. ([#17838](https://github.com/craftcms/cms/issues/17838))
 - Fixed a bug where “load more” buttons weren’t keyboard-accessible. ([#17797](https://github.com/craftcms/cms/pull/17797))
+- Fixed a bug where the skip link target wasn’t able to be focused after the right sidebar was closed. ([#17847](https://github.com/craftcms/cms/pull/17847))
 - Fixed a styling issue.
 
 ## 5.8.17 - 2025-09-05

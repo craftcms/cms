@@ -39,6 +39,8 @@ Craft.CP = Garnish.Base.extend(
     $header: null,
     $mainContent: null,
     $details: null,
+    $detailsToggle: null,
+    $detailsSkipLink: null,
     $sidebarContainer: null,
     $sidebarToggle: null,
     $sidebar: null,
@@ -105,6 +107,8 @@ Craft.CP = Garnish.Base.extend(
       this.$header = $('#header');
       this.$mainContent = $('#main-content');
       this.$details = $('#details');
+      this.$detailsToggle = $('#details-toggle');
+      this.$detailsSkipLink = $('[href="#details-container"]');
       this.$detailsContainer = $('#details-container');
       this.$sidebarContainer = $('#sidebar-container');
       this.$sidebarToggle = $('#sidebar-toggle');
@@ -154,6 +158,15 @@ Craft.CP = Garnish.Base.extend(
       // Toggles
       this.addListener(this.$navToggle, 'click', 'toggleNav');
       this.addListener(this.$sidebarToggle, 'click', 'toggleSidebar');
+
+      // Update skip link target when details are opened/closed
+      this.addListener(this.$detailsToggle, 'open', () => {
+        this.$detailsSkipLink.attr('href', '#details-container');
+      });
+
+      this.addListener(this.$detailsToggle, 'close', () => {
+        this.$detailsSkipLink.attr('href', '#details-toggle-wrapper');
+      });
 
       // Layers
       Garnish.uiLayerManager.on('addLayer', () => {
