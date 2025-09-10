@@ -236,7 +236,7 @@ Moved the following controllers:
   - `CraftCms\Cms\ProjectConfig\Commands\SetCommand`
   - `CraftCms\Cms\ProjectConfig\Commands\TouchCommand`
   - `CraftCms\Cms\ProjectConfig\Commands\WriteCommand`
-  - All commands can be called using either `php craft projectconfig` or `php craft pc`
+  - All commands can be called using either `php craft project-config` or `php craft pc`
 - Deprecated `craft\events\ConfigEvent` in favor of the following events:
   - `CraftCms\Cms\ProjectConfig\Events\AddingItem`
   - `CraftCms\Cms\ProjectConfig\Events\ItemAdded`
