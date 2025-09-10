@@ -149,6 +149,7 @@ class ProjectConfig extends Component
      *     // Ensure the item is also added in the database...
      * });
      * ```
+     * @deprecated 6.0.0 use {@see ItemAdded} instead.
      */
     public const EVENT_ADD_ITEM = 'addItem';
 
@@ -166,6 +167,7 @@ class ProjectConfig extends Component
      *     // Ensure the item is also updated in the database...
      * });
      * ```
+     * @deprecated 6.0.0 use {@see ItemUpdated} instead.
      */
     public const EVENT_UPDATE_ITEM = 'updateItem';
 
@@ -183,17 +185,20 @@ class ProjectConfig extends Component
      *     // Ensure the item is also removed in the database...
      * });
      * ```
+     * @deprecated 6.0.0 use {@see ItemRemoved} instead.
      */
     public const EVENT_REMOVE_ITEM = 'removeItem';
 
     /**
      * @event Event The event that is triggered after pending project config file changes have been applied.
+     * @deprecated 6.0.0 use {@see ChangesApplied} instead.
      */
     public const EVENT_AFTER_APPLY_CHANGES = 'afterApplyChanges';
 
     /**
      * @event Event The event that is triggered after the YAML files have been written out.
      * @since 4.8.0
+     * @deprecated 6.0.0 use {@see YamlFilesWritten} instead.
      */
     public const EVENT_AFTER_WRITE_YAML_FILES = 'afterWriteYamlFiles';
 
@@ -214,6 +219,7 @@ class ProjectConfig extends Component
      * ```
      *
      * @since 3.1.20
+     * @deprecated 6.0.0 use {@see RebuildConfig} instead.
      */
     public const EVENT_REBUILD = 'rebuild';
 

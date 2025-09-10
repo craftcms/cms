@@ -1295,6 +1295,7 @@ trait ApplicationTrait
      * Returns the system config service.
      *
      * @return \craft\services\ProjectConfig The system config service
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\ProjectConfig\ProjectConfig} instead.
      */
     public function getProjectConfig(): \craft\services\ProjectConfig
     {
