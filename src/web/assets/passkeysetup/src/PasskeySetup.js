@@ -138,6 +138,17 @@ Craft.PasskeySetup = Garnish.Base.extend({
   },
 
   async deletePasskey(uid, name) {
+    // Store a reference to the row
+    const row = this.$passkeysTable[0]
+      .querySelector(`[role="button"][data-uid="${uid}"]`)
+      .closest('tr');
+    const tbody = this.$passkeysTable[0].querySelector('tbody');
+
+    const getTableRowArray = () => Array.from(tbody.querySelectorAll('tr'));
+    let rowArray = getTableRowArray();
+    const rowIndex = rowArray.indexOf(row);
+    console.log(rowIndex);
+
     if (
       !confirm(
         Craft.t(
@@ -168,6 +179,20 @@ Craft.PasskeySetup = Garnish.Base.extend({
 
     Craft.cp.displaySuccess(data.message);
     this.updateTable(data.tableHtml);
+
+    // Manage focus
+    if (rowArray.length > 1) {
+      // If this was now the first row, move focus to the previous row
+      // If it was the first row, keep the index the same (it will now be the next row)
+      const newRowIndex = rowIndex - 1 >= 0 ? rowIndex - 1 : rowIndex;
+
+      // Get new array of rows
+      rowArray = getTableRowArray();
+      rowArray[newRowIndex].querySelector(['[role="button"]']).focus();
+    } else {
+      // If there are no more rows, focus on the container instead
+      document.querySelector('#passkeys').focus();
+    }
   },
 
   platformName() {
