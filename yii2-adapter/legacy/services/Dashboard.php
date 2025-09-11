@@ -12,6 +12,8 @@ use craft\events\RegisterComponentTypesEvent;
 use craft\events\WidgetEvent;
 use CraftCms\Cms\Dashboard\Contracts\WidgetInterface;
 use CraftCms\Cms\Dashboard\Events\RegisterWidgetTypes;
+use CraftCms\Cms\Dashboard\Events\WidgetDeleted;
+use CraftCms\Cms\Dashboard\Events\WidgetDeleting;
 use CraftCms\Cms\Dashboard\Events\WidgetSaved;
 use CraftCms\Cms\Dashboard\Events\WidgetSaving;
 use CraftCms\Cms\Dashboard\Widgets\Widget;
@@ -227,14 +229,14 @@ class Dashboard extends Component
         });
 
         // Fire a 'beforeDeleteWidget' event
-        Event::listen(WidgetSaved::class, function(WidgetSaved $event) {
+        Event::listen(WidgetDeleting::class, function(WidgetDeleting $event) {
             Craft::$app->getDashboard()->trigger(self::EVENT_BEFORE_DELETE_WIDGET, new WidgetEvent([
                 'widget' => $event->widget,
             ]));
         });
 
         // Fire an 'afterDeleteWidget' event
-        Event::listen(WidgetSaved::class, function(WidgetSaved $event) {
+        Event::listen(WidgetDeleted::class, function(WidgetDeleted $event) {
             Craft::$app->getDashboard()->trigger(self::EVENT_AFTER_DELETE_WIDGET, new WidgetEvent([
                 'widget' => $event->widget,
             ]));
