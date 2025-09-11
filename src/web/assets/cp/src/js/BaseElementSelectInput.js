@@ -696,6 +696,9 @@ Craft.BaseElementSelectInput = Garnish.Base.extend(
 
       // Remove our record of them all at once
       this.removeElements($elements);
+      let listItemRemovedIndex;
+      let $nextListItem;
+      let $prevListItem;
 
       if (this.settings.maintainHierarchy) {
         for (let i = 0; i < $elements.length; i++) {
@@ -705,9 +708,32 @@ Craft.BaseElementSelectInput = Garnish.Base.extend(
         for (let i = 0; i < $elements.length; i++) {
           const $element = $elements.eq(i);
           const $li = $element.parent('li');
+          const $ul = $li.parent('ul');
           this.animateElementAway($element);
+
+          if (i === $elements.length - 1) {
+            listItemRemovedIndex = $li.index();
+            $nextListItem = $li.next();
+            $prevListItem = $li.prev();
+          }
           $li.remove();
         }
+      }
+
+      let $focusTarget;
+
+      if (listItemRemovedIndex) {
+        const $listItems = this.$elementsContainer.children('li');
+        if ($listItems.length) {
+          $focusTarget = $nextListItem.length ? $nextListItem.find('.action-btn') : $prevListItem.find('.action-btn');
+        }
+      } else {
+        $focusTarget = this.$elementsContainer;
+        this.$elementsContainer.attr('tabindex', -1);
+      }
+
+      if ($focusTarget?.length) {
+        $focusTarget.focus();
       }
     },
 
