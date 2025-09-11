@@ -335,7 +335,7 @@ class Entries extends Component
             return $this->getAllSections();
         }
 
-        $user = Craft::$app->getUser()->getIdentity();
+        $user = Craft::$app->getUser()->getIdentity() ?? \Illuminate\Support\Facades\Auth::user();
 
         if (!$user) {
             return [];

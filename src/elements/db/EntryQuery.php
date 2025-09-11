@@ -21,6 +21,7 @@ use CraftCms\Cms\Edition;
 use CraftCms\Cms\Support\Arr;
 use DateTime;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Auth;
 use yii\base\InvalidConfigException;
 
 /**
@@ -1019,7 +1020,7 @@ class EntryQuery extends ElementQuery implements NestedElementQueryInterface
             return;
         }
 
-        $user = Craft::$app->getUser()->getIdentity();
+        $user = Craft::$app->getUser()->getIdentity() ?? Auth::user();
 
         if (!$user) {
             throw new QueryAbortedException();
