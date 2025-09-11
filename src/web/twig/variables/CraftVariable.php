@@ -28,6 +28,7 @@ use craft\events\DefineBehaviorsEvent;
 use craft\web\Application as WebApplication;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Support\Facades\Deprecator;
+use Illuminate\Support\Facades\Config;
 use yii\di\ServiceLocator;
 
 /**
@@ -139,6 +140,11 @@ class CraftVariable extends ServiceLocator
         }
 
         return parent::canGetProperty($name, $checkVars, $checkBehaviors);
+    }
+
+    public function config(): array
+    {
+        return Config::all();
     }
 
     // Queries

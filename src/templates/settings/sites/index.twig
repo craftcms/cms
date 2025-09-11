@@ -1,6 +1,6 @@
 {% extends "_layouts/cp" %}
 {% set title = "Sites"|t('app') %}
-{% set readOnly = not config.craft.general.allowAdminChanges %}
+{% set readOnly = not app.config.craft.general.allowAdminChanges %}
 
 {% set multiple = (sites|length > 1) and not readOnly %}
 {% set canSort = group and multiple and not readOnly %}

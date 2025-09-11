@@ -14,7 +14,7 @@
 
 {% import '_includes/forms.twig' as forms %}
 
-{% set headlessMode = config.craft.general.headlessMode %}
+{% set headlessMode = app.config.craft.general.headlessMode %}
 
 {% if readOnly %}
     {% set contentNotice = readOnlyNotice() %}

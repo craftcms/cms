@@ -1756,9 +1756,11 @@ class Extension extends AbstractExtension implements GlobalsInterface
             $currentSite = $primarySite = $currentUser = $siteName = $siteUrl = $systemName = null;
         }
 
+        $variable = new CraftVariable();
+
         return [
-            'craft' => new CraftVariable(),
-            'config' => Config::all(),
+            'app' => $variable,
+            'craft' => $variable,
             'pluginAssets' => app(Plugins::class)->getAssetsHtml(),
             'currentSite' => $currentSite,
             'currentUser' => $currentUser,

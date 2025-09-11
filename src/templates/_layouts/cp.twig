@@ -185,7 +185,7 @@ history.replaceState(undefined, undefined, window.location.href.match(/^[^#]*/)[
                                     {% endif %}
                                     <div class="flex-grow">
                                         <div>{{ currentUser.username }}</div>
-                                        {% if not config.craft.general.useEmailAsUsername %}
+                                        {% if not app.config.craft.general.useEmailAsUsername %}
                                             <div class="smalltext">{{ currentUser.email }}</div>
                                         {% endif %}
                                     </div>

@@ -234,11 +234,11 @@ class Config extends Component
      * ```
      *
      * @return GeneralConfig
-     * @deprecated in 6.0.0. Use `app(\CraftCms\Cms\Config\GeneralConfig::class)` (PHP) or `config.craft.general` (Twig) instead.
+     * @deprecated in 6.0.0. Use `app(\CraftCms\Cms\Config\GeneralConfig::class)` (PHP) or `app.config.craft.general` (Twig) instead.
      */
     public function getGeneral(): GeneralConfig
     {
-        Deprecator::log('Craft::$app->config->general', 'Craft::$app->config->general is deprecated. Use `app(\CraftCms\Cms\Config\GeneralConfig::class)` (PHP) or `config.craft.general` (Twig) instead.');
+        Deprecator::log('Craft::$app->config->general', 'Craft::$app->config->general is deprecated. Use `app(\CraftCms\Cms\Config\GeneralConfig::class)` (PHP) or `app.config.craft.general` (Twig) instead.');
 
         return app(GeneralConfig::class);
     }

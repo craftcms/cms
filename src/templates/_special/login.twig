@@ -4,7 +4,7 @@
 {% set showRememberMeCheckbox = showRememberMeCheckbox ?? false %}
 {% set staticEmail = staticEmail ?? null %}
 
-{% set generalConfig = config.craft.general %}
+{% set generalConfig = app.config.craft.general %}
 {% set username = staticEmail ?? (generalConfig.rememberUsernameDuration ? craft.app.user.getRememberedUsername(): '') %}
 
 {% if generalConfig.useEmailAsUsername %}

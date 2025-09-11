@@ -28,7 +28,7 @@
     id: 'weekStartDay',
     name: 'weekStartDay',
     options: craft.app.locale.getWeekDayNames(),
-    value: currentUser.getPreference('weekStartDay', config.craft.general.defaultWeekStartDay)
+    value: currentUser.getPreference('weekStartDay', app.config.craft.general.defaultWeekStartDay)
   }) }}
 </div>
 
@@ -37,7 +37,7 @@
 <div>
   <h2>{{ 'Accessibility'|t('app') }}</h2>
 
-  {% set a11yDefaults = config.craft.general.accessibilityDefaults %}
+  {% set a11yDefaults = app.config.craft.general.accessibilityDefaults %}
   {{ forms.checkboxGroupField({
     label: 'Display Settings'|t('app'),
     options: [
