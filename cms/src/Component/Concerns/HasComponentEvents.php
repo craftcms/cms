@@ -20,7 +20,7 @@ trait HasComponentEvents
         Event::listen(self::componentEventName($event), $callback);
     }
 
-    protected static function componentEventName(string $event): string
+    public static function componentEventName(string $event): string
     {
         return "component.{$event}: ".static::class;
     }
