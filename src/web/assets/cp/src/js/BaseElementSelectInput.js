@@ -313,22 +313,29 @@ Craft.BaseElementSelectInput = Garnish.Base.extend(
     },
 
     focusNextLogicalElement: function () {
+      let $focusTarget;
       if (this.canAddMoreElements()) {
         // If can add more elements, focus on search input or add button
         if (
           this.$searchContainer.length &&
           !this.$searchContainer.hasClass('hidden')
         ) {
-          this.$searchInput.focus();
+          $focusTarget = this.$searchInput;
         } else if (
           this.$addElementBtn.length &&
           !this.$addElementBtn.hasClass('hidden')
         ) {
-          this.$addElementBtn.focus();
+          $focusTarget = this.$addElementBtn;
         }
       } else {
-        // If can't add more elements, focus on the final remove
-        this.focusLastRemoveBtn();
+        $focusTarget = this.$container;
+        this.$container.attr('tabindex', '-1');
+      }
+
+      if ($focusTarget?.length) {
+        $focusTarget.focus();
+      } else {
+        console.warn('No logical element to focus on.');
       }
     },
 
@@ -656,13 +663,21 @@ Craft.BaseElementSelectInput = Garnish.Base.extend(
       $elements.children('input').prop('disabled', true);
 
       // Move the focus to the next element in the list, if there is one
-      let $nextElement;
+      let $nextElement, $prevElement;
+      let $lastElement = $elements.last();
       if (this.settings.selectable) {
         const lastElementIndex = this.$elements.index($elements.last());
         $nextElement = this.$elements.eq(lastElementIndex + 1);
+        $prevElement = this.$elements.eq(lastElementIndex - 1);
       }
-      if ($nextElement?.length) {
-        $nextElement.focus();
+      if ($nextElement?.length || $prevElement?.length) {
+        let $target;
+        if ($nextElement?.length) {
+          $target = this.getElementFocusTarget($nextElement);
+        } else {
+          $target = this.getElementFocusTarget($prevElement);
+        }
+        $target?.focus();
       } else {
         setTimeout(() => {
           this.focusNextLogicalElement();
@@ -673,6 +688,20 @@ Craft.BaseElementSelectInput = Garnish.Base.extend(
       this.updateAddElementsBtn();
       this.onSortChange();
       this.onRemoveElements();
+    },
+
+    /**
+     * Determine which part of an element should receive focus
+     * @param $element
+     */
+    getElementFocusTarget: function ($element) {
+      if ($element.is(':focusable')) {
+        return $element;
+      } else if (Garnish.firstFocusableElement($element).length) {
+        return Garnish.firstFocusableElement($element);
+      } else {
+        return null;
+      }
     },
 
     /**
@@ -718,22 +747,6 @@ Craft.BaseElementSelectInput = Garnish.Base.extend(
           }
           $li.remove();
         }
-      }
-
-      let $focusTarget;
-
-      if (listItemRemovedIndex) {
-        const $listItems = this.$elementsContainer.children('li');
-        if ($listItems.length) {
-          $focusTarget = $nextListItem.length ? $nextListItem.find('.action-btn') : $prevListItem.find('.action-btn');
-        }
-      } else {
-        $focusTarget = this.$elementsContainer;
-        this.$elementsContainer.attr('tabindex', -1);
-      }
-
-      if ($focusTarget?.length) {
-        $focusTarget.focus();
       }
     },
 
