@@ -574,7 +574,7 @@ final class Html
 
         foreach ($normalized as &$value) {
             if (is_array($value)) {
-                $value = array_filter($value);
+                $value = array_filter($value, fn ($v) => $v !== null && $v !== false);
             }
         }
 
