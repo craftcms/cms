@@ -314,6 +314,7 @@ Craft.BaseElementSelectInput = Garnish.Base.extend(
       let $focusTarget;
       if (this.canAddMoreElements()) {
         // If can add more elements, focus on search input or add button
+        // Focus on the container if neither of those are available
         if (
           this.$searchContainer.length &&
           !this.$searchContainer.hasClass('hidden')
@@ -324,10 +325,12 @@ Craft.BaseElementSelectInput = Garnish.Base.extend(
           !this.$addElementBtn.hasClass('hidden')
         ) {
           $focusTarget = this.$addElementBtn;
+        } else {
+          $focusTarget = this.$container;
+          this.$container.attr('tabindex', '-1');
         }
       } else {
-        $focusTarget = this.$container;
-        this.$container.attr('tabindex', '-1');
+        this.focusLastRemoveBtn();
       }
 
       if ($focusTarget?.length) {
@@ -659,11 +662,10 @@ Craft.BaseElementSelectInput = Garnish.Base.extend(
 
       // Move the focus to the next element in the list, if there is one
       let $nextElement, $prevElement;
-      let $lastElement = $elements.last();
       if (this.settings.selectable) {
         const lastElementIndex = this.$elements.index($elements.last());
         $nextElement = this.$elements.eq(lastElementIndex + 1);
-        $prevElement = this.$elements.eq(lastElementIndex - 1);
+        $prevElement = lastElementIndex - 1 >= 0 ? this.$elements.eq(lastElementIndex - 1) : null;
       }
       if ($nextElement?.length || $prevElement?.length) {
         let $target;
@@ -720,9 +722,6 @@ Craft.BaseElementSelectInput = Garnish.Base.extend(
 
       // Remove our record of them all at once
       this.removeElements($elements);
-      let listItemRemovedIndex;
-      let $nextListItem;
-      let $prevListItem;
 
       if (this.settings.maintainHierarchy) {
         for (let i = 0; i < $elements.length; i++) {
@@ -732,14 +731,7 @@ Craft.BaseElementSelectInput = Garnish.Base.extend(
         for (let i = 0; i < $elements.length; i++) {
           const $element = $elements.eq(i);
           const $li = $element.parent('li');
-          const $ul = $li.parent('ul');
           this.animateElementAway($element);
-
-          if (i === $elements.length - 1) {
-            listItemRemovedIndex = $li.index();
-            $nextListItem = $li.next();
-            $prevListItem = $li.prev();
-          }
           $li.remove();
         }
       }
