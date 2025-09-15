@@ -108,6 +108,10 @@ class CraftVariable extends ServiceLocator
             return $this->get($name);
         }
 
+        if (method_exists(app(), $name)) {
+            return app()->$name(...$params);
+        }
+
         return parent::__call($name, $params);
     }
 

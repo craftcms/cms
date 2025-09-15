@@ -1395,6 +1395,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
     public function getFunctions(): array
     {
         return [
+            new TwigFunction('app', [$this, 'appFunction']),
             new TwigFunction('actionUrl', [UrlHelper::class, 'actionUrl']),
             new TwigFunction('alias', [Craft::class, 'getAlias']),
             new TwigFunction('ceil', 'ceil'),
@@ -1452,6 +1453,19 @@ class Extension extends AbstractExtension implements GlobalsInterface
             new TwigFunction('beginBody', [$this->view, 'beginBody']),
             new TwigFunction('endBody', [$this->view, 'endBody']),
         ];
+    }
+
+    /**
+     * Get the available container instance.
+     *
+     * @template TClass of object
+     *
+     * @param  string|class-string<TClass>|null  $abstract
+     * @return ($abstract is class-string<TClass> ? TClass : ($abstract is null ? \Illuminate\Foundation\Application : mixed))
+     */
+    public function appFunction(?string $abstract = null): mixed
+    {
+        return app($abstract);
     }
 
     /**
