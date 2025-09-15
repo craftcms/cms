@@ -2788,6 +2788,17 @@ class ElementQuery extends Query implements ElementQueryInterface
         /** @var FieldInterface[][][] $fieldsByHandle */
         $fieldsByHandle = [];
 
+        $generatedFieldsByHandle = [];
+        if (!empty($this->generatedFields)) {
+            // Group the fields by handle and field UUID
+            foreach ($this->generatedFields as $field) {
+                if (!empty($field['handle'])) {
+                    $generatedFieldsByHandle[$field['handle']][$field['uid']] = $field;
+                }
+            }
+        }
+
+
         if (!empty($this->customFields)) {
             // Group the fields by handle and field UUID
             foreach ($this->customFields as $field) {
@@ -2800,8 +2811,8 @@ class ElementQuery extends Query implements ElementQueryInterface
                     continue;
                 }
 
-                // Make sure the custom field exists in one of the field layouts
-                if (!isset($fieldsByHandle[$handle])) {
+                // Make sure the custom field exists in one of the field layouts or there's a generated field with that handle
+                if (!isset($fieldsByHandle[$handle]) && !isset($generatedFieldsByHandle[$handle])) {
                     // If it looks like null/:empty: is a valid option, let it slide
                     $value = is_array($fieldAttributes->$handle) && isset($fieldAttributes->$handle['value'])
                         ? $fieldAttributes->$handle['value']
@@ -2814,7 +2825,7 @@ class ElementQuery extends Query implements ElementQueryInterface
                         }
                     }
 
-                    throw new QueryAbortedException("No custom field with the handle \"$handle\" exists in the field layouts involved with this element query.");
+                    throw new QueryAbortedException("No custom or generated field with the handle \"$handle\" exists in the field layouts involved with this element query.");
                 }
 
                 $conditions = [];
