@@ -78,7 +78,7 @@ final class ProjectConfigController
 
         return response()->streamDownload(function () use ($contents) {
             echo $contents;
-        }, $filename, [
+        }, 'project.zip', [
             'content-type' => 'application/zip',
         ]);
     }
