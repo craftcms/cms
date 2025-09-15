@@ -13,9 +13,9 @@ use CraftCms\Cms\Site\Concerns\SiteDefaults;
 use CraftCms\Cms\Support\Env;
 use Illuminate\Console\Command;
 use Illuminate\Container\Attributes\Give;
-use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rules\Password;
+use PDOException;
 use Throwable;
 
 use function Laravel\Prompts\form;
@@ -57,9 +57,8 @@ final class InstallCommand extends Command
 
         try {
             DB::clearResolvedInstances();
-            DB::reconnect();
-            DB::statement('select 1');
-        } catch (QueryException $e) {
+            DB::reconnect()->getPdo();
+        } catch (PDOException) {
             return $this->call('craft:setup:welcome');
         }
 
@@ -97,7 +96,7 @@ final class InstallCommand extends Command
             ), 'siteName')
             ->addIf(! $this->option('siteUrl'), fn () => text(
                 label: 'What is the site url?',
-                default: $defaultSiteUrl,
+                default: $defaultSiteUrl ?? '',
                 required: true,
                 validate: [
                     'max:255',
