@@ -56,14 +56,12 @@ final class InstallCommand extends Command
         }
 
         try {
+            DB::clearResolvedInstances();
+            DB::reconnect();
             DB::statement('select 1');
         } catch (QueryException $e) {
-            /** @todo Laravel command */
-            return $this->call('setup/welcome');
+            return $this->call('craft:setup:welcome');
         }
-
-        // TODO
-        // $this->call('setup/keys');
 
         $defaultSiteName = $this->defaultSiteName();
         $defaultSiteUrl = $this->defaultSiteUrl();

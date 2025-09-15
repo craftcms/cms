@@ -28,7 +28,7 @@ final class WelcomeCommand extends Command
  |  |     |      /      /  /_\  \   |   __|      |  |
  |  `----.|  |\  \----./  _____  \  |  |         |  |
   \______|| _| `._____/__/     \__\ |__|         |__|
- 
+
      A       N   E   W       I   N   S   T   A   L   L
                ______ .___  ___.      _______.
               /      ||   \/   |     /       |
@@ -50,6 +50,10 @@ EOD;
 
         if (! $this->input->isInteractive() || ! confirm('Are you ready to begin the setup?')) {
             $this->info('Run the following command if you want to setup Craft from your terminal: <fg=cyan>php craft setup</>');
+
+            return;
         }
+
+        $this->call('craft:setup');
     }
 }
