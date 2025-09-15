@@ -2,6 +2,7 @@
 
 namespace CraftCms\Cms\Plugin;
 
+use CraftCms\Cms\Support\Json;
 use Illuminate\Foundation\PackageManifest;
 use Illuminate\Support\Collection;
 use Illuminate\Support\ServiceProvider;
@@ -13,12 +14,15 @@ use Illuminate\Support\ServiceProvider;
  */
 final class PluginPackageManifest extends PackageManifest
 {
+    /**
+     * {@inheritdoc}
+     */
     public function build(): void
     {
         $packages = [];
 
         if ($this->files->exists($path = $this->vendorPath.'/composer/installed.json')) {
-            $installed = json_decode($this->files->get($path), true);
+            $installed = Json::decode($this->files->get($path));
 
             $packages = $installed['packages'] ?? $installed;
         }
@@ -41,9 +45,7 @@ final class PluginPackageManifest extends PackageManifest
             return [$this->format($package['name']) => $laravelConfig];
         })->each(function ($configuration) use (&$ignore) {
             $ignore = array_merge($ignore, $configuration['dont-discover'] ?? []);
-        })->reject(function ($configuration, $package) use ($ignore, $ignoreAll) {
-            return $ignoreAll || in_array($package, $ignore);
-        })->filter()->all());
+        })->reject(fn ($configuration, $package) => $ignoreAll || in_array($package, $ignore))->filter()->all());
     }
 
     private function determinePluginClass(array $package): ?string
