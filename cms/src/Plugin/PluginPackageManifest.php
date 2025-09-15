@@ -1,0 +1,71 @@
+<?php
+
+namespace CraftCms\Cms\Plugin;
+
+use Illuminate\Foundation\PackageManifest;
+use Illuminate\Support\Collection;
+use Illuminate\Support\ServiceProvider;
+
+/**
+ * @internal
+ *
+ * @since 6.0.0
+ */
+final class PluginPackageManifest extends PackageManifest
+{
+    public function build(): void
+    {
+        $packages = [];
+
+        if ($this->files->exists($path = $this->vendorPath.'/composer/installed.json')) {
+            $installed = json_decode($this->files->get($path), true);
+
+            $packages = $installed['packages'] ?? $installed;
+        }
+
+        $ignoreAll = in_array('*', $ignore = $this->packagesToIgnore());
+
+        $this->write(new Collection($packages)->mapWithKeys(function ($package) {
+            $laravelConfig = $package['extra']['laravel'] ?? [];
+
+            if (! $laravelConfig && $package['type'] === 'craft-plugin') {
+                $pluginClass = $this->determinePluginClass($package);
+
+                if (is_subclass_of($pluginClass, ServiceProvider::class)) {
+                    return [$this->format($package['name']) => [
+                        'providers' => [$pluginClass],
+                    ]];
+                }
+            }
+
+            return [$this->format($package['name']) => $laravelConfig];
+        })->each(function ($configuration) use (&$ignore) {
+            $ignore = array_merge($ignore, $configuration['dont-discover'] ?? []);
+        })->reject(function ($configuration, $package) use ($ignore, $ignoreAll) {
+            return $ignoreAll || in_array($package, $ignore);
+        })->filter()->all());
+    }
+
+    private function determinePluginClass(array $package): ?string
+    {
+        if (isset($package['extra']['class'])) {
+            return $package['extra']['class'];
+        }
+
+        foreach ($package['autoload']['psr-4'] ?? [] as $namespace => $path) {
+            if (is_array($path)) {
+                // Don't support aliases that point to multiple base paths
+                continue;
+            }
+
+            $path = base_path('vendor/'.$package['name'].'/'.$path);
+
+            // If we're still looking for the primary Plugin class, see if it's in here
+            if (file_exists($path.'/Plugin.php')) {
+                return $namespace.'Plugin';
+            }
+        }
+
+        return null;
+    }
+}
