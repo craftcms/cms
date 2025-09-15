@@ -3,13 +3,13 @@
 namespace CraftCms\Cms\Http\Controllers\Utilities;
 
 use Craft;
-use craft\helpers\FileHelper;
 use CraftCms\Cms\Http\RespondsWithFlash;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\ProjectConfig\ProjectConfigHelper;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Utility\Utilities;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 use RuntimeException;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Yaml\Yaml;
@@ -58,7 +58,8 @@ final class ProjectConfigController
         $splitConfig = ProjectConfigHelper::splitConfigIntoComponents($config);
 
         $zip = new ZipArchive;
-        $zipPath = Craft::$app->getPath()->getTempPath().'/'.Str::uuid()->toString().'.zip';
+        $filename = Str::uuid()->toString().'.zip';
+        $zipPath = Storage::disk('craft-tmp')->path($filename);
 
         if ($zip->open($zipPath, ZipArchive::CREATE) !== true) {
             throw new RuntimeException('Cannot create zip at '.$zipPath);
@@ -71,8 +72,14 @@ final class ProjectConfigController
 
         $zip->close();
 
-        app()->terminating(fn () => FileHelper::unlink($zipPath));
+        $contents = Storage::disk('craft-tmp')->get($filename);
 
-        return response()->download($zipPath, 'project.zip');
+        Storage::disk('craft-tmp')->delete($filename);
+
+        return response()->streamDownload(function () use ($contents) {
+            echo $contents;
+        }, $filename, [
+            'content-type' => 'application/zip',
+        ]);
     }
 }

@@ -28,6 +28,10 @@ final readonly class FlushProjectConfig
 
         $this->projectConfig->flush();
 
+        if ($this->projectConfig->waitingToUpdateParsedConfigTimes) {
+            $this->projectConfig->updateParsedConfigTimes();
+        }
+
         return $response;
     }
 }

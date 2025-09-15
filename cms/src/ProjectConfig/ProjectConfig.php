@@ -238,7 +238,7 @@ final class ProjectConfig
      *
      * @see updateParsedConfigTimes()
      */
-    private bool $_waitingToUpdateParsedConfigTimes = false;
+    public private(set) bool $waitingToUpdateParsedConfigTimes = false;
 
     /**
      * @var bool Whether external project config changes are currently being applied.
@@ -670,15 +670,11 @@ final class ProjectConfig
      */
     public function updateParsedConfigTimesAfterRequest(): void
     {
-        if ($this->_waitingToUpdateParsedConfigTimes) {
+        if ($this->waitingToUpdateParsedConfigTimes) {
             return;
         }
 
-        $this->_waitingToUpdateParsedConfigTimes = true;
-
-        app()->terminating(function () {
-            $this->updateParsedConfigTimes();
-        });
+        $this->waitingToUpdateParsedConfigTimes = true;
     }
 
     /**

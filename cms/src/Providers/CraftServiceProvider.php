@@ -19,6 +19,7 @@ final class CraftServiceProvider extends AggregateServiceProvider
 {
     protected $providers = [
         ConfigServiceProvider::class,
+        FilesystemServiceProvider::class,
         DatabaseServiceProvider::class,
         ProjectConfigServiceProvider::class,
         DeprecatorServiceProvider::class,
