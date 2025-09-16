@@ -10,13 +10,13 @@ namespace craft\services;
 use Craft;
 use craft\base\Element;
 use craft\base\ElementInterface;
-use craft\db\Table;
 use craft\errors\MutexException;
 use craft\errors\StructureNotFoundException;
 use craft\events\MoveElementEvent;
 use craft\models\Structure;
 use craft\records\Structure as StructureRecord;
 use craft\records\StructureElement;
+use CraftCms\Cms\Database\Table;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
@@ -103,7 +103,7 @@ class Structures extends Component
      */
     public function getStructureById(int $structureId, bool $withTrashed = false): ?Structure
     {
-        $result = DB::table(\CraftCms\Cms\Database\Table::STRUCTURES)
+        $result = DB::table(Table::STRUCTURES)
             ->select([
                 'id',
                 'maxLevels',
@@ -128,7 +128,7 @@ class Structures extends Component
      */
     public function getStructureByUid(string $structureUid, bool $withTrashed = false): ?Structure
     {
-        $result = DB::table(\CraftCms\Cms\Database\Table::STRUCTURES)
+        $result = DB::table(Table::STRUCTURES)
             ->select([
                 'id',
                 'maxLevels',
@@ -279,13 +279,7 @@ class Structures extends Component
             return false;
         }
 
-        $affectedRows = Craft::$app->getDb()->createCommand()
-            ->softDelete(Table::STRUCTURES, [
-                'id' => $structureId,
-            ])
-            ->execute();
-
-        return (bool)$affectedRows;
+        return (bool) DB::table(Table::STRUCTURES)->softDelete($structureId);
     }
 
     /**
@@ -622,7 +616,7 @@ class Structures extends Component
 
             // Update the element with the latest values.
             // todo: we should be able to pull these from $elementRecord - https://github.com/creocoder/yii2-nested-sets/issues/114
-            $values = (array) DB::table(\CraftCms\Cms\Database\Table::STRUCTUREELEMENTS)
+            $values = (array) DB::table(Table::STRUCTUREELEMENTS)
                 ->select(['root', 'lft', 'rgt', 'level'])
                 ->where('structureId', $structureId)
                 ->where('elementId', $element->id)

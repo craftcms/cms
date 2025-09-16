@@ -10,7 +10,6 @@ namespace craft\services;
 use Craft;
 use craft\base\Field;
 use craft\base\MemoizableArray;
-use craft\db\Table;
 use craft\elements\Asset;
 use craft\events\VolumeEvent;
 use craft\models\FieldLayout;
@@ -18,6 +17,7 @@ use craft\models\Volume;
 use craft\models\VolumeFolder;
 use craft\records\Volume as AssetVolumeRecord;
 use craft\records\VolumeFolder as VolumeFolderRecord;
+use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\ProjectConfig\Events\ConfigEvent;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\ProjectConfig\ProjectConfigHelper;
@@ -306,16 +306,16 @@ class Volumes extends Component
 
         if ($isNewVolume) {
             $volume->uid ??= Str::uuid()->toString();
-            $volume->sortOrder = DB::table(\CraftCms\Cms\Database\Table::VOLUMES)->max('sortOrder') + 1;
+            $volume->sortOrder = DB::table(Table::VOLUMES)->max('sortOrder') + 1;
         } elseif (!$volume->uid) {
-            $volume->uid = DB::table(\CraftCms\Cms\Database\Table::VOLUMES)->uidById($volume->id);
+            $volume->uid = DB::table(Table::VOLUMES)->uidById($volume->id);
         }
 
         $configPath = ProjectConfig::PATH_VOLUMES . '.' . $volume->uid;
         app(ProjectConfig::class)->set($configPath, $volume->getConfig(), "Save the “{$volume->handle}” volume");
 
         if ($isNewVolume) {
-            $volume->id = DB::table(\CraftCms\Cms\Database\Table::VOLUMES)->idByUid($volume->uid);
+            $volume->id = DB::table(Table::VOLUMES)->idByUid($volume->uid);
         }
 
         return true;
@@ -437,7 +437,7 @@ class Volumes extends Component
     {
         $projectConfig = app(ProjectConfig::class);
 
-        $uidsByIds = DB::table(\CraftCms\Cms\Database\Table::VOLUMES)->uidsByIds($volumeIds);
+        $uidsByIds = DB::table(Table::VOLUMES)->uidsByIds($volumeIds);
 
         foreach ($volumeIds as $volumeOrder => $volumeId) {
             if (!empty($uidsByIds[$volumeId])) {
@@ -555,9 +555,7 @@ class Volumes extends Component
             }
 
             // Delete the volume
-            $db->createCommand()
-                ->softDelete(Table::VOLUMES, ['id' => $volumeRecord->id])
-                ->execute();
+            DB::table(Table::VOLUMES)->softDelete($volumeRecord->id);
 
             DB::commit();
         } catch (Throwable $e) {
@@ -588,7 +586,7 @@ class Volumes extends Component
 
     private function _createVolumeQuery(): Builder
     {
-        return DB::table(\CraftCms\Cms\Database\Table::VOLUMES)
+        return DB::table(Table::VOLUMES)
             ->whereNull('dateDeleted')
             ->orderBy('sortOrder');
     }

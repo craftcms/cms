@@ -425,9 +425,7 @@ SQL)->execute();
             }
 
             // Delete the tag group
-            Craft::$app->getDb()->createCommand()
-                ->softDelete(Table::TAGGROUPS, ['id' => $tagGroupRecord->id])
-                ->execute();
+            \Illuminate\Support\Facades\DB::table(\CraftCms\Cms\Database\Table::TAGGROUPS)->softDelete($tagGroupRecord->id);
 
             \Illuminate\Support\Facades\DB::commit();
         } catch (Throwable $e) {
