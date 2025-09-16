@@ -513,7 +513,7 @@ class Sites extends Component
         }
 
         // Set the CRAFT_SITE and CRAFT_SITE_UPPER env vars
-        if ($site instanceof Site && isset($site->handle)) {
+        if (isset($this->_currentSite->handle)) {
             $_SERVER['CRAFT_SITE'] = $site->handle;
             $_SERVER['CRAFT_SITE_UPPER'] = strtoupper(StringHelper::toSnakeCase($site->handle));
         } else {
