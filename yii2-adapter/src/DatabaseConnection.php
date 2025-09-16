@@ -48,22 +48,6 @@ class DatabaseConnection extends Connection
 
     public function getLaravelConnection(): IlluminateConnection
     {
-        if ($this->server) {
-            Config::set("database.connections.$this->driverName", array_merge(
-                Config::array("database.connections.$this->driverName"),
-                [
-                    'host' => $this->server,
-                    'port' => $this->port,
-                    'database' => $this->database,
-                    'username' => $this->username,
-                    'password' => $this->password,
-                    'prefix' => $this->tablePrefix,
-                ]
-            ));
-
-            DB::purge($this->driverName);
-        }
-
         $this->dsn = implode('', [
             $this->driverName,
             ':host=',

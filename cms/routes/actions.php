@@ -20,7 +20,6 @@ use CraftCms\Cms\Http\Controllers\Utilities\DeprecationErrorsController;
 use CraftCms\Cms\Http\Controllers\Utilities\FindAndReplaceController;
 use CraftCms\Cms\Http\Controllers\Utilities\MigrationsController;
 use CraftCms\Cms\Http\Controllers\Utilities\ProjectConfigController;
-use CraftCms\Cms\Http\Middleware\AuthenticateIfLive;
 use CraftCms\Cms\Http\Middleware\RequireAdmin;
 
 $generalConfig = app(GeneralConfig::class);
@@ -48,9 +47,7 @@ Route::prefix(implode('/', [
     Route::post('install/install', [InstallController::class, 'install']);
 
     // Updater
-    Route::prefix('updater')->middleware([
-        AuthenticateIfLive::class,
-    ])->group(function () {
+    Route::prefix('updater')->group(function () {
         Route::post('/', [UpdaterController::class, 'index']);
         Route::post(UpdaterController::ACTION_FORCE_UPDATE, [UpdaterController::class, 'forceUpdate']);
         Route::post(UpdaterController::ACTION_BACKUP, [UpdaterController::class, 'backup']);
