@@ -37,13 +37,22 @@ test('normalizePaths', function () {
     putenv('TEST_CONST');
 });
 
-test('sizeToBytes', function (int|float $expected, string $value) {
+test('sizeToBytes', function (int|float $expected, string|int $value) {
     expect(PHP::sizeToBytes($value))->toBe($expected);
 })->with([
     [1, '1B'],
     [1024, '1K'],
     [1024 ** 2, '1M'],
     [1024 ** 3, '1G'],
+    [5368709120, '5G'],
+    [5242880, '5M'],
+    [5120, '5K'],
+    [5120, 'ABCDEFHIJFLKNOPQRSTUVWXYZ5K'],
+    [5, '5ABCDEFHIJFKLKNOPQRSTUVWXYZ'],
+    [5120, '!@#$%^5K&*()'],
+    [4, '4'],
+    [5, 5],
+    [0, 'M5'],
 ]);
 
 test('executable', function () {

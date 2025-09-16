@@ -23,6 +23,7 @@ use CraftCms\Cms\Shared\Enums\TimePeriod;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Env;
 use CraftCms\Cms\Support\Html;
+use CraftCms\Cms\Support\PHP;
 use CraftCms\Cms\Support\Str;
 use DateTime;
 use Illuminate\Support\Collection;
@@ -788,9 +789,9 @@ class Assets
      */
     public static function getMaxUploadSize(): float|int
     {
-        $maxUpload = ConfigHelper::sizeInBytes(ini_get('upload_max_filesize'));
-        $maxPost = ConfigHelper::sizeInBytes(ini_get('post_max_size'));
-        $memoryLimit = ConfigHelper::sizeInBytes(ini_get('memory_limit'));
+        $maxUpload = PHP::sizeToBytes(ini_get('upload_max_filesize'));
+        $maxPost = PHP::sizeToBytes(ini_get('post_max_size'));
+        $memoryLimit = PHP::sizeToBytes(ini_get('memory_limit'));
 
         $uploadInBytes = min($maxUpload, $maxPost);
 

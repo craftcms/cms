@@ -66,15 +66,20 @@ final class PHP
     /**
      * Normalizes a PHP file size into bytes.
      *
-     * @param  string  $value  The file size expressed in PHP config value notation
+     * @param  string|int  $value  The file size expressed in PHP config value notation
      * @return int The value normalized into bytes.
      */
-    public static function sizeToBytes(string $value): int
+    public static function sizeToBytes(string|int $value): int
     {
-        $unit = strtolower(substr($value, -1, 1));
-        $value = (int) $value;
+        // See if we can recognize that.
+        if (is_numeric($value) || ! preg_match('/(\d+)(K|M|G)/i', $value, $matches)) {
+            return (int) $value;
+        }
 
-        switch ($unit) {
+        $value = (int) $matches[1];
+
+        // Multiply!
+        switch (strtolower($matches[2])) {
             case 'g':
                 $value *= 1024;
                 // no break

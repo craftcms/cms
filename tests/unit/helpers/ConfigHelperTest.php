@@ -29,16 +29,6 @@ class ConfigHelperTest extends TestCase
     protected UnitTester $tester;
 
     /**
-     * @dataProvider sizeInBytesDataProvider
-     * @param int|float $expected
-     * @param int|string $value
-     */
-    public function testSizeInBytes(int|float $expected, int|string $value): void
-    {
-        self::assertSame($expected, ConfigHelper::sizeInBytes($value));
-    }
-
-    /**
      * @dataProvider durationInSecondsDataProvider
      * @param int $expected
      * @param mixed $value
@@ -112,24 +102,6 @@ class ConfigHelperTest extends TestCase
             [true, true],
             [12345678901234567890, 12345678901234567890],
 
-        ];
-    }
-
-    /**
-     * @return array
-     */
-    public static function sizeInBytesDataProvider(): array
-    {
-        return [
-            [5368709120, '5G'],
-            [5242880, '5M'],
-            [5120, '5K'],
-            [5120, 'ABCDEFHIJFLKNOPQRSTUVWXYZ5K'],
-            [5, '5ABCDEFHIJFKLKNOPQRSTUVWXYZ'],
-            [5120, '!@#$%^5K&*()'],
-            [4, '4'],
-            [5, 5],
-            [0, 'M5'],
         ];
     }
 

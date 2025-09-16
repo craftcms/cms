@@ -8,6 +8,7 @@
 namespace craft\helpers;
 
 use Craft;
+use CraftCms\Cms\Support\PHP;
 use DateInterval;
 use yii\base\InvalidConfigException;
 
@@ -62,29 +63,11 @@ class ConfigHelper
      *
      * @param int|string $value The size
      * @return int|float The size in bytes
+     * @deprecated 6.0.0 use {@see PHP::sizeToBytes()} instead.
      */
     public static function sizeInBytes(int|string $value): float|int
     {
-        // See if we can recognize that.
-        if (is_numeric($value) || !preg_match('/(\d+)(K|M|G)/i', $value, $matches)) {
-            return (int)$value;
-        }
-
-        $value = (int)$matches[1];
-
-        // Multiply!
-        switch (strtolower($matches[2])) {
-            case 'g':
-                $value *= 1024;
-            // no break
-            case 'm':
-                $value *= 1024;
-            // no break
-            case 'k':
-                $value *= 1024;
-        }
-
-        return $value;
+        return PHP::sizeToBytes($value);
     }
 
     /**

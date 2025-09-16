@@ -8,6 +8,7 @@ use craft\helpers\ConfigHelper;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\Localization;
 use CraftCms\Cms\Support\Attributes\EnvName;
+use CraftCms\Cms\Support\PHP;
 use DateInterval;
 use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken;
 use Illuminate\Http\Middleware\TrustProxies;
@@ -1877,7 +1878,7 @@ class GeneralConfig extends BaseConfig
     /**
      * @var int|string The maximum upload file size allowed.
      *
-     * See [[ConfigHelper::sizeInBytes()]] for a list of supported value types.
+     * See [[PHP::sizeToBytes()]] for a list of supported value types.
      *
      * ::: code
      * ```php Static Config
@@ -5393,7 +5394,7 @@ class GeneralConfig extends BaseConfig
     /**
      * The maximum upload file size allowed.
      *
-     * See [[ConfigHelper::sizeInBytes()]] for a list of supported value types.
+     * See [[PHP::sizeToBytes()]] for a list of supported value types.
      *
      * ```php
      * // 25MB
@@ -5408,7 +5409,7 @@ class GeneralConfig extends BaseConfig
      */
     public function maxUploadFileSize(string|int $value): self
     {
-        $this->maxUploadFileSize = ConfigHelper::sizeInBytes($value);
+        $this->maxUploadFileSize = PHP::sizeToBytes($value);
 
         return $this;
     }

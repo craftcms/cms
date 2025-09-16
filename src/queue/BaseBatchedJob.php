@@ -9,9 +9,9 @@ namespace craft\queue;
 
 use Craft;
 use craft\base\Batchable;
-use craft\helpers\ConfigHelper;
 use craft\helpers\Queue as QueueHelper;
 use craft\i18n\Translation;
+use CraftCms\Cms\Support\PHP;
 use yii\queue\RetryableJobInterface;
 
 /**
@@ -128,7 +128,7 @@ abstract class BaseBatchedJob extends BaseJob
     {
         $items = $this->data()->getSlice($this->itemOffset, $this->batchSize);
 
-        $memoryLimit = ConfigHelper::sizeInBytes(ini_get('memory_limit'));
+        $memoryLimit = PHP::sizeToBytes(ini_get('memory_limit'));
         $startMemory = $memoryLimit != -1 ? memory_get_usage() : null;
         $start = microtime(true);
 
