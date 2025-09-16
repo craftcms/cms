@@ -439,10 +439,10 @@ class HtmlHelperTest extends TestCase
             [['type' => 'text'], "<input type = text\n>"],
             [['x-foo' => '<bar>'], '<div x-foo="<bar>">'],
             [['x-foo' => '"<bar>"'], "<div x-foo='\"<bar>\"'>"],
-            [['data' => ['foo' => '1', 'bar' => '2']], '<div data-foo="1" data-bar="2">'],
-            [['data-ng' => ['foo' => '1', 'bar' => '2']], '<div data-ng-foo="1" data-ng-bar="2">'],
-            [['ng' => ['foo' => '1', 'bar' => '2']], '<div ng-foo="1" ng-bar="2">'],
-            [['data' => ['foo' => true]], '<div data-foo>'],
+            [['data-foo' => '1', 'data-bar' => '2'], '<div data-foo="1" data-bar="2">'],
+            [['data-ng-foo' => '1', 'data-ng-bar' => '2'], '<div data-ng-foo="1" data-ng-bar="2">'],
+            [['ng-foo' => '1', 'ng-bar' => '2'], '<div ng-foo="1" ng-bar="2">'],
+            [['data-foo' => true], '<div data-foo>'],
             [['class' => ['foo', 'bar']], '<div class="foo bar">'],
             [['style' => ['color' => 'black', 'background' => 'red']], '<div style="color: black; background: red">'],
             // https://github.com/craftcms/cms/issues/12887
@@ -453,7 +453,7 @@ class HtmlHelperTest extends TestCase
             [false, '<!-- comment -->'],
             [false, '<?xml?>'],
             // https://github.com/craftcms/cms/issues/14498
-            [['data' => ['label' => "foo\n\nbar"]], "<div data-label=\"foo\n\nbar\">"],
+            [['data-label' => "foo\n\nbar"], "<div data-label=\"foo\n\nbar\">"],
         ];
     }
 
@@ -491,13 +491,34 @@ class HtmlHelperTest extends TestCase
     public static function normalizeTagAttributesDataProvider(): array
     {
         return [
-            [['type' => 'text', 'disabled' => true], ['type' => 'text', 'disabled' => true]],
-            [['class' => ['foo', 'bar']], ['class' => 'foo bar']],
-            [['style' => ['color' => 'black', 'background' => 'red']], ['style' => 'color: black; background: red;']],
-            [['data' => ['foo' => '1', 'bar' => '2']], ['data-foo' => '1', 'data-bar' => '2']],
-            [['data-ng' => ['foo' => '1', 'bar' => '2']], ['data-ng-foo' => '1', 'data-ng-bar' => '2']],
-            [['ng' => ['foo' => '1', 'bar' => '2']], ['ng-foo' => '1', 'ng-bar' => '2']],
-            [['data' => ['foo' => true]], ['data-foo' => true]],
+            [
+                ['type' => 'text', 'disabled' => true],
+                ['type' => 'text', 'disabled' => true],
+            ],
+            [
+                ['class' => ['foo', 'bar']],
+                ['class' => 'foo bar'],
+            ],
+            [
+                ['style' => ['color' => 'black', 'background' => 'red']],
+                ['style' => 'color: black; background: red;'],
+            ],
+            [
+                ['data-foo' => '1', 'data-bar' => '2'],
+                ['data' => ['foo' => '1', 'bar' => '2']],
+            ],
+            [
+                ['data-ng-foo' => '1', 'data-ng-bar' => '2'],
+                ['data-ng' => ['foo' => '1', 'bar' => '2']],
+            ],
+            [
+                ['ng-foo' => '1', 'ng-bar' => '2'],
+                ['ng' => ['foo' => '1', 'bar' => '2']],
+            ],
+            [
+                ['data-foo' => true],
+                ['data' => ['foo' => true]],
+            ],
             // https://github.com/craftcms/cms/issues/7234
             [['class' => false], ['class' => false]],
             [['class' => false], ['class' => null]],
