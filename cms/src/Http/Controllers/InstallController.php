@@ -197,7 +197,7 @@ final readonly class InstallController
         }
 
         $email = $request->string('account-email');
-        $username = $request->string('account-email', $email);
+        $username = $request->string('account-username', $email);
         $siteUrl = $request->string('site-baseUrl');
 
         // Don't save @web even if they chose it
