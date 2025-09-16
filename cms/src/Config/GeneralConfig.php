@@ -1926,7 +1926,7 @@ class GeneralConfig extends BaseConfig
      *
      * @group Routing
      */
-    public bool $omitScriptNameInUrls = false;
+    public bool $omitScriptNameInUrls = true;
 
     /**
      * @var bool Whether Craft should optimize images for reduced file sizes without noticeably reducing image quality. (Only supported when
@@ -2028,7 +2028,7 @@ class GeneralConfig extends BaseConfig
      *
      * @group Routing
      */
-    public ?string $pathParam = 'p';
+    public ?string $pathParam = null;
 
     /**
      * @var string|null The `Permissions-Policy` header that should be sent for site responses.
