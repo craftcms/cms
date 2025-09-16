@@ -1354,7 +1354,7 @@ return [
     'Regenerate' => 'Regenerieren',
     'Regenerating project config YAML files from the loaded project config…' => 'Projektkonfigurations-YAML-Dateien werden aus der geladenen Projektkonfiguration wiederhergestellt…',
     'Region' => 'Region',
-    'Register users' => 'Benutzer anmelden',
+    'Register users' => 'Benutzer erstellen',
     'Relate {type} from a specific site?' => 'Beziehung mit {type} von einer bestimmten Website herstellen?',
     'Related To' => 'Zugehörig zu',
     'Related {type} Title' => 'Zugehöriger {type}-Titel',

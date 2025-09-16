@@ -1321,10 +1321,13 @@ JS, [
                 'title' => implode(', ', array_map(fn(ElementInterface $element) => $element->id, $elements)),
                 'class' => 'btn small',
                 'role' => 'button',
-                'onclick' => sprintf(
-                    'const r=jQuery(%s);jQuery(this).replaceWith(r);Craft.cp.elementThumbLoader.load(r);',
-                    JsonHelper::encode($otherHtml),
-                ),
+                'tabindex' => 0,
+                'data' => [
+                    'other' => JsonHelper::encode($otherHtml),
+                ],
+                'aria-expanded' => 'false',
+                'onkeydown' => 'Craft.cp.previewCountBadge(event, this, true)', // have to use keydown or the page will scroll
+                'onclick' => 'Craft.cp.previewCountBadge(event, this, true)',
             ]);
         }
 
@@ -1359,10 +1362,12 @@ JS, [
                 'title' => implode(', ', array_map(fn(Chippable $component) => $component->getId(), $components)),
                 'class' => 'btn small',
                 'role' => 'button',
-                'onclick' => sprintf(
-                    'const r=jQuery(%s);jQuery(this).replaceWith(r);',
-                    JsonHelper::encode($otherHtml),
-                ),
+                'tabindex' => '0',
+                'data' => [
+                    'other' => JsonHelper::encode($otherHtml),
+                ],
+                'onkeydown' => 'Craft.cp.previewCountBadge(event, this, false)', // have to use keydown or the page will scroll
+                'onclick' => 'Craft.cp.previewCountBadge(event, this, false)',
             ]);
         }
 
