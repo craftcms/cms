@@ -261,7 +261,7 @@ class UrlHelperTest extends TestCase
     public function testActionUrl(): void
     {
         $expected = Craft::getAlias('@web/index.php?p=actions/endpoint');
-        self::assertSame($expected, UrlHelper::actionUrl('endpoint'));
+        self::assertSame($expected, UrlHelper::actionUrl('endpoint', null, null, true));
 
         $expected = Craft::getAlias('@web/actions/endpoint');
         self::assertSame($expected, UrlHelper::actionUrl('endpoint', null, null, false));
