@@ -931,7 +931,7 @@ class Install extends Migration
         Schema::createIndex(Table::ELEMENTS, ['archived', 'dateDeleted', 'draftId', 'revisionId', 'canonicalId']);
         Schema::createIndex(Table::ELEMENTS, ['archived', 'dateDeleted', 'draftId', 'revisionId', 'canonicalId', 'enabled']);
         Schema::createIndex(Table::ELEMENTS_BULKOPS, ['timestamp']);
-        Schema::createIndex(Table::ELEMENTS_BULKOPS, ['sortOrder']);
+        Schema::createIndex(Table::ELEMENTS_OWNERS, ['sortOrder']);
         Schema::createIndex(Table::ELEMENTS_SITES, ['elementId', 'siteId'], unique: true);
         Schema::createIndex(Table::ELEMENTS_SITES, ['siteId']);
         Schema::createIndex(Table::ELEMENTS_SITES, ['title', 'siteId']);
