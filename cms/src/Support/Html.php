@@ -557,12 +557,14 @@ final class Html
                 default:
                     // See if it's a data attribute
                     foreach (self::_sortedDataAttributes() as $dataAttribute) {
-                        if (str_starts_with($name, $dataAttribute.'-')) {
-                            $n = substr($name, strlen($dataAttribute) + 1);
-                            $normalized[$dataAttribute][$n] = $value;
+                        if (is_array($value) && str_starts_with($name, $dataAttribute)) {
+                            foreach ($value as $n => $v) {
+                                $normalized[$name.'-'.$n] = $v;
+                            }
                             break 2;
                         }
                     }
+
                     $normalized[$name] = $value;
             }
         }
