@@ -308,7 +308,7 @@ trait NestedElementTrait
     }
 
     /**
-     * @@inheritdoc
+     * @inheritdoc
      */
     public function getOwners(array $criteria = []): array
     {
