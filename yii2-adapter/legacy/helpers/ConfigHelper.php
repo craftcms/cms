@@ -7,16 +7,15 @@
 
 namespace craft\helpers;
 
-use Craft;
+use CraftCms\Cms\Support\Config;
 use CraftCms\Cms\Support\PHP;
-use DateInterval;
-use yii\base\InvalidConfigException;
 
 /**
  * Config helper
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
+ * @deprecated 6.0.0 use {@see Config} instead.
  */
 class ConfigHelper
 {
@@ -31,27 +30,11 @@ class ConfigHelper
      *
      * @param mixed $value
      * @return int The time duration in seconds
-     * @throws InvalidConfigException if the duration can't be determined
+     * @throws \Exception if the duration can't be determined
      */
     public static function durationInSeconds(mixed $value): int
     {
-        if (!$value) {
-            return 0;
-        }
-
-        if (is_int($value)) {
-            return $value;
-        }
-
-        if (is_string($value)) {
-            $value = new DateInterval($value);
-        }
-
-        if (!$value instanceof DateInterval) {
-            throw new InvalidConfigException("Unable to convert to seconds.");
-        }
-
-        return DateTimeHelper::intervalToSeconds($value);
+        return Config::durationInSeconds($value);
     }
 
     /**
@@ -84,28 +67,6 @@ class ConfigHelper
      */
     public static function localizedValue(mixed $value, ?string $siteHandle = null): mixed
     {
-        if (is_scalar($value)) {
-            return $value;
-        }
-
-        if (empty($value)) {
-            return null;
-        }
-
-        if ($siteHandle === null) {
-            /** @noinspection PhpUnhandledExceptionInspection */
-            $siteHandle = Craft::$app->getSites()->getCurrentSite()->handle;
-        }
-
-        if (is_callable($value, true)) {
-            return $value($siteHandle);
-        }
-
-        if (array_key_exists($siteHandle, $value)) {
-            return $value[$siteHandle];
-        }
-
-        // Just return the first value
-        return reset($value);
+        return Config::localizedValue($value, $siteHandle);
     }
 }

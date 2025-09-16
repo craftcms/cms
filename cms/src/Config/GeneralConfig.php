@@ -4,10 +4,10 @@ namespace CraftCms\Cms\Config;
 
 use Closure;
 use Craft;
-use craft\helpers\ConfigHelper;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\Localization;
 use CraftCms\Cms\Support\Attributes\EnvName;
+use CraftCms\Cms\Support\Config as ConfigHelper;
 use CraftCms\Cms\Support\PHP;
 use DateInterval;
 use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken;
@@ -102,7 +102,7 @@ class GeneralConfig extends BaseConfig
     /**
      * @var mixed The URI that users without access to the control panel should be redirected to after activating their account.
      *
-     * See [[ConfigHelper::localizedValue()]] for a list of supported value types.
+     * See {@see ConfigHelper::localizedValue()} for a list of supported value types.
      *
      * ::: code
      * ```php Static Config
@@ -558,7 +558,7 @@ class GeneralConfig extends BaseConfig
      *
      * If set to `0`, data and RSS feed caches will be stored indefinitely.
      *
-     * See [[ConfigHelper::durationInSeconds()]] for a list of supported value types.
+     * See {@see ConfigHelper::durationInSeconds()} for a list of supported value types.
      *
      * ::: code
      * ```php Static Config
@@ -601,7 +601,7 @@ class GeneralConfig extends BaseConfig
      *
      * Set to `0` to keep the account locked indefinitely, requiring an admin to manually unlock the account.
      *
-     * See [[ConfigHelper::durationInSeconds()]] for a list of supported value types.
+     * See {@see ConfigHelper::durationInSeconds()} for a list of supported value types.
      *
      * ::: code
      * ```php Static Config
@@ -854,7 +854,7 @@ class GeneralConfig extends BaseConfig
     /**
      * @var mixed The default amount of time tokens can be used before expiring.
      *
-     * See [[ConfigHelper::durationInSeconds()]] for a list of supported value types.
+     * See {@see ConfigHelper::durationInSeconds()} for a list of supported value types.
      *
      * ::: code
      * ```php Static Config
@@ -1157,7 +1157,7 @@ class GeneralConfig extends BaseConfig
      *
      * Set to `0` to disable elevated session support.
      *
-     * See [[ConfigHelper::durationInSeconds()]] for a list of supported value types.
+     * See {@see ConfigHelper::durationInSeconds()} for a list of supported value types.
      *
      * ::: code
      * ```php Static Config
@@ -1543,7 +1543,7 @@ class GeneralConfig extends BaseConfig
     /**
      * @var mixed The amount of time to track invalid login attempts for a user, for determining if Craft should lock an account.
      *
-     * See [[ConfigHelper::durationInSeconds()]] for a list of supported value types.
+     * See {@see ConfigHelper::durationInSeconds()} for a list of supported value types.
      *
      * ::: code
      * ```php Static Config
@@ -1566,7 +1566,7 @@ class GeneralConfig extends BaseConfig
      * @var mixed The URI Craft should redirect to when user token validation fails. User tokens are used for
      *            email verification and password resets. If `null`, <config5:loginPath> will be used by default.
      *
-     * See [[ConfigHelper::localizedValue()]] for a list of supported value types.
+     * See {@see ConfigHelper::localizedValue()} for a list of supported value types.
      *
      * Note that this only affects front-end site requests.
      *
@@ -1689,7 +1689,7 @@ class GeneralConfig extends BaseConfig
      *
      * This can be set to `false` to disable front-end login.
      *
-     * See [[ConfigHelper::localizedValue()]] for a list of supported value types.
+     * See {@see ConfigHelper::localizedValue()} for a list of supported value types.
      *
      * ::: code
      * ```php Static Config
@@ -1711,7 +1711,7 @@ class GeneralConfig extends BaseConfig
      *
      * This can be set to `false` to disable front-end logout.
      *
-     * See [[ConfigHelper::localizedValue()]] for a list of supported value types.
+     * See {@see ConfigHelper::localizedValue()} for a list of supported value types.
      *
      * ::: code
      * ```php Static Config
@@ -2093,7 +2093,7 @@ class GeneralConfig extends BaseConfig
      * This setting will also come into effect if a user visits the control panel’s login page (`/admin/login`) or the control panel’s
      * root URL (`/admin`) when they are already logged in.
      *
-     * See [[ConfigHelper::localizedValue()]] for a list of supported value types.
+     * See {@see ConfigHelper::localizedValue()} for a list of supported value types.
      *
      * ::: code
      * ```php Static Config
@@ -2116,7 +2116,7 @@ class GeneralConfig extends BaseConfig
      * This setting will also come into effect if the user visits the login page (as specified by the <config5:loginPath> config setting) when
      * they are already logged in.
      *
-     * See [[ConfigHelper::localizedValue()]] for a list of supported value types.
+     * See {@see ConfigHelper::localizedValue()} for a list of supported value types.
      *
      * ::: code
      * ```php Static Config
@@ -2136,7 +2136,7 @@ class GeneralConfig extends BaseConfig
     /**
      * @var mixed The path that users should be redirected to after logging out from the front-end site.
      *
-     * See [[ConfigHelper::localizedValue()]] for a list of supported value types.
+     * See {@see ConfigHelper::localizedValue()} for a list of supported value types.
      *
      * ::: code
      * ```php Static Config
@@ -2288,7 +2288,7 @@ class GeneralConfig extends BaseConfig
      *
      * Defaults to <config5:defaultTokenDuration> value.
      *
-     * See [[ConfigHelper::durationInSeconds()]] for a list of supported value types.
+     * See {@see ConfigHelper::durationInSeconds()} for a list of supported value types.
      *
      * ::: code
      * ```php Static Config
@@ -2333,7 +2333,7 @@ class GeneralConfig extends BaseConfig
      *
      * Set to `0` to disable this feature.
      *
-     * See [[ConfigHelper::durationInSeconds()]] for a list of supported value types.
+     * See {@see ConfigHelper::durationInSeconds()} for a list of supported value types.
      *
      * ::: tip
      * Users will only be purged when [garbage collection](https://craftcms.com/docs/5.x/system/gc.html) is run.
@@ -2359,7 +2359,7 @@ class GeneralConfig extends BaseConfig
      *
      * Set to `0` to disable this feature.
      *
-     * See [[ConfigHelper::durationInSeconds()]] for a list of supported value types.
+     * See {@see ConfigHelper::durationInSeconds()} for a list of supported value types.
      *
      * ::: code
      * ```php Static Config
@@ -2381,7 +2381,7 @@ class GeneralConfig extends BaseConfig
      *
      * Set to `0` to disable this feature.
      *
-     * See [[ConfigHelper::durationInSeconds()]] for a list of supported value types.
+     * See {@see ConfigHelper::durationInSeconds()} for a list of supported value types.
      *
      * ::: code
      * ```php Static Config
@@ -2425,7 +2425,7 @@ class GeneralConfig extends BaseConfig
      *
      * Set to `0` to disable this feature altogether.
      *
-     * See [[ConfigHelper::durationInSeconds()]] for a list of supported value types.
+     * See {@see ConfigHelper::durationInSeconds()} for a list of supported value types.
      *
      * ::: code
      * ```php Static Config
@@ -2447,7 +2447,7 @@ class GeneralConfig extends BaseConfig
      *
      * Set to `0` to disable the “Remember Me” feature altogether.
      *
-     * See [[ConfigHelper::durationInSeconds()]] for a list of supported value types.
+     * See {@see ConfigHelper::durationInSeconds()} for a list of supported value types.
      *
      * ::: code
      * ```php Static Config
@@ -2807,7 +2807,7 @@ class GeneralConfig extends BaseConfig
     /**
      * @var mixed The URI or URL that Craft should use for Set Password forms on the front end.
      *
-     * See [[ConfigHelper::localizedValue()]] for a list of supported value types.
+     * See {@see ConfigHelper::localizedValue()} for a list of supported value types.
      *
      * ::: tip
      * You might also want to set <config5:invalidUserTokenPath> in case a user clicks on an expired password reset link.
@@ -2831,7 +2831,7 @@ class GeneralConfig extends BaseConfig
     /**
      * @var mixed The URI to the page where users can request to change their password.
      *
-     * See [[ConfigHelper::localizedValue()]] for a list of supported value types.
+     * See {@see ConfigHelper::localizedValue()} for a list of supported value types.
      *
      * If this is set, Craft will redirect [.well-known/change-password requests](https://w3c.github.io/webappsec-change-password-url/) to this URI.
      *
@@ -2858,7 +2858,7 @@ class GeneralConfig extends BaseConfig
     /**
      * @var mixed The URI Craft should redirect users to after setting their password from the front end.
      *
-     * See [[ConfigHelper::localizedValue()]] for a list of supported value types.
+     * See {@see ConfigHelper::localizedValue()} for a list of supported value types.
      *
      * ::: code
      * ```php Static Config
@@ -2928,7 +2928,7 @@ class GeneralConfig extends BaseConfig
      *
      * Set to `0` if you don’t ever want to delete soft-deleted items.
      *
-     * See [[ConfigHelper::durationInSeconds()]] for a list of supported value types.
+     * See {@see ConfigHelper::durationInSeconds()} for a list of supported value types.
      *
      * ::: code
      * ```php Static Config
@@ -3276,7 +3276,7 @@ class GeneralConfig extends BaseConfig
      *
      * Set to `0` if you want users to stay logged in as long as their browser is open rather than a predetermined amount of time.
      *
-     * See [[ConfigHelper::durationInSeconds()]] for a list of supported value types.
+     * See {@see ConfigHelper::durationInSeconds()} for a list of supported value types.
      *
      * ::: code
      * ```php Static Config
@@ -3320,7 +3320,7 @@ class GeneralConfig extends BaseConfig
     /**
      * @var mixed The amount of time a user verification code can be used before expiring.
      *
-     * See [[ConfigHelper::durationInSeconds()]] for a list of supported value types.
+     * See {@see ConfigHelper::durationInSeconds()} for a list of supported value types.
      *
      * ::: code
      * ```php Static Config
@@ -3342,7 +3342,7 @@ class GeneralConfig extends BaseConfig
     /**
      * @var mixed The URI or URL that Craft should use for email verification links on the front end.
      *
-     * See [[ConfigHelper::localizedValue()]] for a list of supported value types.
+     * See {@see ConfigHelper::localizedValue()} for a list of supported value types.
      *
      * ::: code
      * ```php Static Config
@@ -3362,7 +3362,7 @@ class GeneralConfig extends BaseConfig
     /**
      * @var mixed The URI that users without access to the control panel should be redirected to after verifying a new email address.
      *
-     * See [[ConfigHelper::localizedValue()]] for a list of supported value types.
+     * See {@see ConfigHelper::localizedValue()} for a list of supported value types.
      *
      * ::: code
      * ```php Static Config
@@ -3460,7 +3460,7 @@ class GeneralConfig extends BaseConfig
     /**
      * The URI that users without access to the control panel should be redirected to after activating their account.
      *
-     * See [[ConfigHelper::localizedValue()]] for a list of supported value types.
+     * See {@see ConfigHelper::localizedValue()} for a list of supported value types.
      *
      * ```php
      * ->activateAccountSuccessPath('welcome')
@@ -3869,7 +3869,7 @@ class GeneralConfig extends BaseConfig
      *
      * If set to `0`, data and RSS feed caches will be stored indefinitely.
      *
-     * See [[ConfigHelper::durationInSeconds()]] for a list of supported value types.
+     * See {@see ConfigHelper::durationInSeconds()} for a list of supported value types.
      *
      * ```php
      * ->cacheDuration(0)
@@ -3916,7 +3916,7 @@ class GeneralConfig extends BaseConfig
      *
      * Set to `0` to keep the account locked indefinitely, requiring an admin to manually unlock the account.
      *
-     * See [[ConfigHelper::durationInSeconds()]] for a list of supported value types.
+     * See {@see ConfigHelper::durationInSeconds()} for a list of supported value types.
      *
      * ```php
      * ->cooldownDuration(0)
@@ -4231,7 +4231,7 @@ class GeneralConfig extends BaseConfig
     /**
      * The default amount of time tokens can be used before expiring.
      *
-     * See [[ConfigHelper::durationInSeconds()]] for a list of supported value types.
+     * See {@see ConfigHelper::durationInSeconds()} for a list of supported value types.
      *
      * ```php
      * // One week
@@ -4586,7 +4586,7 @@ class GeneralConfig extends BaseConfig
      *
      * Set to `0` to disable elevated session support.
      *
-     * See [[ConfigHelper::durationInSeconds()]] for a list of supported value types.
+     * See {@see ConfigHelper::durationInSeconds()} for a list of supported value types.
      *
      * ```php
      * ->elevatedSessionDuration(0)
@@ -5037,7 +5037,7 @@ class GeneralConfig extends BaseConfig
     /**
      * The amount of time to track invalid login attempts for a user, for determining if Craft should lock an account.
      *
-     * See [[ConfigHelper::durationInSeconds()]] for a list of supported value types.
+     * See {@see ConfigHelper::durationInSeconds()} for a list of supported value types.
      *
      * ```php
      * // 1 day
@@ -5061,7 +5061,7 @@ class GeneralConfig extends BaseConfig
      * The URI Craft should redirect to when user token validation fails. User tokens are used for
      * email verification and password resets. If `null`, <config5:loginPath> will be used by default.
      *
-     * See [[ConfigHelper::localizedValue()]] for a list of supported value types.
+     * See {@see ConfigHelper::localizedValue()} for a list of supported value types.
      *
      * Note that this only affects front-end site requests.
      *
@@ -5187,7 +5187,7 @@ class GeneralConfig extends BaseConfig
      *
      * This can be set to `false` to disable front-end login.
      *
-     * See [[ConfigHelper::localizedValue()]] for a list of supported value types.
+     * See {@see ConfigHelper::localizedValue()} for a list of supported value types.
      *
      * ```php
      * ->loginPath(false)
@@ -5209,7 +5209,7 @@ class GeneralConfig extends BaseConfig
      *
      * This can be set to `false` to disable front-end logout.
      *
-     * See [[ConfigHelper::localizedValue()]] for a list of supported value types.
+     * See {@see ConfigHelper::localizedValue()} for a list of supported value types.
      *
      * ```php
      * ->logoutPath(false)
@@ -5633,7 +5633,7 @@ class GeneralConfig extends BaseConfig
      * This setting will also come into effect if a user visits the control panel’s login page (`/admin/login`) or the control panel’s
      * root URL (`/admin`) when they are already logged in.
      *
-     * See [[ConfigHelper::localizedValue()]] for a list of supported value types.
+     * See {@see ConfigHelper::localizedValue()} for a list of supported value types.
      *
      * ```php
      * ->postCpLoginRedirect('entries')
@@ -5656,7 +5656,7 @@ class GeneralConfig extends BaseConfig
      * This setting will also come into effect if the user visits the login page (as specified by the <config5:loginPath> config setting) when
      * they are already logged in.
      *
-     * See [[ConfigHelper::localizedValue()]] for a list of supported value types.
+     * See {@see ConfigHelper::localizedValue()} for a list of supported value types.
      *
      * ```php
      * ->postLoginRedirect('welcome')
@@ -5676,7 +5676,7 @@ class GeneralConfig extends BaseConfig
     /**
      * The path that users should be redirected to after logging out from the front-end site.
      *
-     * See [[ConfigHelper::localizedValue()]] for a list of supported value types.
+     * See {@see ConfigHelper::localizedValue()} for a list of supported value types.
      *
      * ```php
      * ->postLogoutRedirect('goodbye')
@@ -5852,7 +5852,7 @@ class GeneralConfig extends BaseConfig
      *
      * Defaults to <config5:defaultTokenDuration> value.
      *
-     * See [[ConfigHelper::durationInSeconds()]] for a list of supported value types.
+     * See {@see ConfigHelper::durationInSeconds()} for a list of supported value types.
      *
      * ```php
      * // 1 hour
@@ -5900,7 +5900,7 @@ class GeneralConfig extends BaseConfig
      *
      * Set to `0` to disable this feature.
      *
-     * See [[ConfigHelper::durationInSeconds()]] for a list of supported value types.
+     * See {@see ConfigHelper::durationInSeconds()} for a list of supported value types.
      *
      * ::: tip
      * Users will only be purged when [garbage collection](https://craftcms.com/docs/5.x/system/gc.html) is run.
@@ -5927,7 +5927,7 @@ class GeneralConfig extends BaseConfig
      *
      * Set to `0` to disable this feature.
      *
-     * See [[ConfigHelper::durationInSeconds()]] for a list of supported value types.
+     * See {@see ConfigHelper::durationInSeconds()} for a list of supported value types.
      *
      * ```php
      * // 1 week
@@ -5956,7 +5956,7 @@ class GeneralConfig extends BaseConfig
      *
      * Set to `0` to disable this feature.
      *
-     * See [[ConfigHelper::durationInSeconds()]] for a list of supported value types.
+     * See {@see ConfigHelper::durationInSeconds()} for a list of supported value types.
      *
      * ```php
      * ->purgeUnsavedDraftsDuration(0)
@@ -6000,7 +6000,7 @@ class GeneralConfig extends BaseConfig
      *
      * Set to `0` to disable the “Remember Me” feature altogether.
      *
-     * See [[ConfigHelper::durationInSeconds()]] for a list of supported value types.
+     * See {@see ConfigHelper::durationInSeconds()} for a list of supported value types.
      *
      * ```php
      * ->rememberedUserSessionDuration(0)
@@ -6041,7 +6041,7 @@ class GeneralConfig extends BaseConfig
      *
      * Set to `0` to disable this feature altogether.
      *
-     * See [[ConfigHelper::durationInSeconds()]] for a list of supported value types.
+     * See {@see ConfigHelper::durationInSeconds()} for a list of supported value types.
      *
      * ```php
      * ->rememberUsernameDuration(0)
@@ -6472,7 +6472,7 @@ class GeneralConfig extends BaseConfig
     /**
      * The URI or URL that Craft should use for Set Password forms on the front end.
      *
-     * See [[ConfigHelper::localizedValue()]] for a list of supported value types.
+     * See {@see ConfigHelper::localizedValue()} for a list of supported value types.
      *
      * ::: tip
      * You might also want to set <config5:invalidUserTokenPath> in case a user clicks on an expired password reset link.
@@ -6496,7 +6496,7 @@ class GeneralConfig extends BaseConfig
     /**
      * The URI to the page where users can request to change their password.
      *
-     * See [[ConfigHelper::localizedValue()]] for a list of supported value types.
+     * See {@see ConfigHelper::localizedValue()} for a list of supported value types.
      *
      * If this is set, Craft will redirect [.well-known/change-password requests](https://w3c.github.io/webappsec-change-password-url/) to this URI.
      *
@@ -6523,7 +6523,7 @@ class GeneralConfig extends BaseConfig
     /**
      * The URI Craft should redirect users to after setting their password from the front end.
      *
-     * See [[ConfigHelper::localizedValue()]] for a list of supported value types.
+     * See {@see ConfigHelper::localizedValue()} for a list of supported value types.
      *
      * ```php
      * ->setPasswordSuccessPath('password-set')
@@ -6599,7 +6599,7 @@ class GeneralConfig extends BaseConfig
      *
      * Set to `0` if you don’t ever want to delete soft-deleted items.
      *
-     * See [[ConfigHelper::durationInSeconds()]] for a list of supported value types.
+     * See {@see ConfigHelper::durationInSeconds()} for a list of supported value types.
      *
      * ```php
      * ->softDeleteDuration(0)
@@ -7011,7 +7011,7 @@ class GeneralConfig extends BaseConfig
      *
      * Set to `0` if you want users to stay logged in as long as their browser is open rather than a predetermined amount of time.
      *
-     * See [[ConfigHelper::durationInSeconds()]] for a list of supported value types.
+     * See {@see ConfigHelper::durationInSeconds()} for a list of supported value types.
      *
      * ```php
      * // 3 hours
@@ -7057,7 +7057,7 @@ class GeneralConfig extends BaseConfig
     /**
      * The amount of time a user verification code can be used before expiring.
      *
-     * See [[ConfigHelper::durationInSeconds()]] for a list of supported value types.
+     * See {@see ConfigHelper::durationInSeconds()} for a list of supported value types.
      *
      * ```php
      * // 1 hour
@@ -7080,7 +7080,7 @@ class GeneralConfig extends BaseConfig
     /**
      * The URI or URL that Craft should use for email verification links on the front end.
      *
-     * See [[ConfigHelper::localizedValue()]] for a list of supported value types.
+     * See {@see ConfigHelper::localizedValue()} for a list of supported value types.
      *
      * ```php
      * ->verifyEmailPath('verify-email')
@@ -7101,7 +7101,7 @@ class GeneralConfig extends BaseConfig
     /**
      * The URI that users without access to the control panel should be redirected to after verifying a new email address.
      *
-     * See [[ConfigHelper::localizedValue()]] for a list of supported value types.
+     * See {@see ConfigHelper::localizedValue()} for a list of supported value types.
      *
      * ```php
      * ->verifyEmailSuccessPath('verified-email')

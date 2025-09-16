@@ -9,14 +9,13 @@ namespace craft\web;
 
 use Craft;
 use craft\elements\User as UserElement;
-use craft\helpers\ConfigHelper;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\Session as SessionHelper;
 use craft\helpers\UrlHelper;
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Database\Table;
+use CraftCms\Cms\Support\Config;
 use CraftCms\Cms\Support\Str;
-use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
 use yii\web\Cookie;
 use yii\web\ForbiddenHttpException;
@@ -108,7 +107,7 @@ class User extends \CraftCms\Yii2Adapter\Web\User
         if ($generalConfig->rememberUsernameDuration !== 0) {
             $cookie = new Cookie($this->usernameCookie);
             $cookie->value = $user->username;
-            $seconds = ConfigHelper::durationInSeconds($generalConfig->rememberUsernameDuration);
+            $seconds = Config::durationInSeconds($generalConfig->rememberUsernameDuration);
             $cookie->expire = DateTimeHelper::currentTimeStamp() + $seconds;
             Craft::$app->getResponse()->getCookies()->add($cookie);
         } else {
