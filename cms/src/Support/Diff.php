@@ -1,31 +1,19 @@
 <?php
-/**
- * @link https://craftcms.com/
- * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license https://craftcms.github.io/license/
- */
 
-namespace craft\helpers;
+namespace CraftCms\Cms\Support;
 
-use CraftCms\Cms\Support\Arr;
 use Symfony\Component\Yaml\Yaml;
 
 /**
- * Diff helper
- *
- * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.6.0
+ * @since 6.0.0
  */
-class Diff
+final class Diff
 {
     /**
      * Generates a diff for two values, represented as YAML.
      *
-     * @param mixed $from
-     * @param mixed $to
-     * @param int $indent The indent size that nested values should have
-     * @param int $contextLines The number of lines to show before and after changes
-     * @return string
+     * @param  int  $indent  The indent size that nested values should have
+     * @param  int  $contextLines  The number of lines to show before and after changes
      */
     public static function diff(mixed $from, mixed $to, int $indent = 2, int $contextLines = 3): string
     {
@@ -42,26 +30,26 @@ class Diff
             if ($contextLines > 0) {
                 if ($lastChange === null) {
                     for ($j = max($i - $contextLines, 0); $j < $i; $j++) {
-                        $diff .= '  ' . $lines[$j][1] . "\n";
+                        $diff .= '  '.$lines[$j][1]."\n";
                     }
                 } elseif ($lastChange < $i - $contextLines * 2 + 2) {
                     // More than 2X the context size
                     for ($j = $lastChange + 1; $j < $lastChange + $contextLines + 1; $j++) {
-                        $diff .= '  ' . $lines[$j][1] . "\n";
+                        $diff .= '  '.$lines[$j][1]."\n";
                     }
                     $diff .= "...\n";
                     for ($j = $i - $contextLines; $j < $i; $j++) {
-                        $diff .= '  ' . $lines[$j][1] . "\n";
+                        $diff .= '  '.$lines[$j][1]."\n";
                     }
                 } else {
                     // Within two contexts so just show the whole chunk
                     for ($j = $lastChange + 1; $j < $i; $j++) {
-                        $diff .= '  ' . $lines[$j][1] . "\n";
+                        $diff .= '  '.$lines[$j][1]."\n";
                     }
                 }
             }
 
-            $diff .= $line[0] . ' ' . $line[1] . "\n";
+            $diff .= $line[0].' '.$line[1]."\n";
             $lastChange = $i;
         }
 
@@ -69,35 +57,29 @@ class Diff
         if ($lastChange !== null && $contextLines > 0) {
             $max = min($lastChange + $contextLines, count($lines) - 1);
             for ($i = $lastChange + 1; $i < $max; $i++) {
-                $diff .= '  ' . $lines[$i][1] . "\n";
+                $diff .= '  '.$lines[$i][1]."\n";
             }
         }
 
         return rtrim($diff);
     }
 
-    /**
-     * @param mixed$from
-     * @param mixed $to
-     * @param int $indent
-     * @param int $level
-     * @return array[]
-     */
     private static function _diff(mixed $from, mixed $to, int $indent, int $level): array
     {
         // Are we done doing recursion?
         if (
-            (!is_array($from) || !Arr::isAssoc($from)) ||
-            (!is_array($to) || !Arr::isAssoc($to))
+            (! is_array($from) || ! Arr::isAssoc($from)) ||
+            (! is_array($to) || ! Arr::isAssoc($to))
         ) {
-            if (static::compare($from, $to)) {
+            if (self::compare($from, $to)) {
                 return self::_buildLinesForValue($from, $indent, $level);
-            } else {
-                $lines = [];
-                array_push($lines, ...self::_buildLinesForValue($from, $indent, $level, '-'));
-                array_push($lines, ...self::_buildLinesForValue($to, $indent, $level, '+'));
-                return $lines;
             }
+
+            $lines = [];
+            array_push($lines, ...self::_buildLinesForValue($from, $indent, $level, '-'));
+            array_push($lines, ...self::_buildLinesForValue($to, $indent, $level, '+'));
+
+            return $lines;
         }
 
         $lines = [];
@@ -125,7 +107,7 @@ class Diff
 
         // Output any remaining $to keys
         $newKeys = array_slice($toKeys, $toCursor);
-        if (!empty($newKeys)) {
+        if (! empty($newKeys)) {
             array_push($lines, ...self::_buildLinesForValue(Arr::only($to, $newKeys), $indent, $level, '+'));
         }
 
@@ -134,17 +116,16 @@ class Diff
 
     private static function _buildLinesForValue($value, int $indent, int $level, ?string $char = null): array
     {
-        $lines = [];
-        $yamlLines = explode("\n", rtrim(Yaml::dump($value, 20 - $level, $indent)));
-        foreach ($yamlLines as $line) {
-            $lines[] = self::_buildLine($line, $indent, $level, $char);
-        }
-        return $lines;
+        return str(Yaml::dump($value, 20 - $level, $indent))
+            ->rtrim()
+            ->explode("\n")
+            ->map(fn (string $line) => self::_buildLine($line, $indent, $level, $char))
+            ->all();
     }
 
     private static function _buildLine(string $line, int $indent, int $level, ?string $char = null): array
     {
-        return [$char, str_repeat(' ', $indent * $level) . $line];
+        return [$char, str_repeat(' ', $indent * $level).$line];
     }
 
     /**
@@ -152,15 +133,11 @@ class Diff
      *
      * If the values are both arrays, they will be compared recursively.
      *
-     * @param mixed $a
-     * @param mixed $b
-     * @param bool $strict Whether strict comparisons should be used
-     * @return bool
-     * @since 3.6.0
+     * @param  bool  $strict  Whether strict comparisons should be used
      */
     public static function compare(mixed $a, mixed $b, bool $strict = true): bool
     {
-        if (!is_array($a) || !is_array($b)) {
+        if (! is_array($a) || ! is_array($b)) {
             return $strict ? $a === $b : $a == $b;
         }
 
@@ -168,12 +145,6 @@ class Diff
             return false;
         }
 
-        foreach ($a as $key => $value) {
-            if (!static::compare($value, $b[$key], $strict)) {
-                return false;
-            }
-        }
-
-        return true;
+        return array_all($a, fn ($value, $key) => self::compare($value, $b[$key], $strict));
     }
 }
