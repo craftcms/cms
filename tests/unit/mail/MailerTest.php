@@ -21,11 +21,7 @@ use CraftCms\Cms\SystemMessage\Models\SystemMessage;
 use Illuminate\Support\Facades\Event;
 use ReflectionException;
 use UnitTester;
-use yii\base\ErrorException;
-use yii\base\Exception;
 use yii\base\InvalidConfigException;
-use yii\base\NotSupportedException;
-use yii\web\ServerErrorHttpException;
 
 /**
  * Unit tests for MailerTest
@@ -110,35 +106,29 @@ class MailerTest extends TestCase
         self::assertSame('https://craftcms.com', $variables['link']);
     }
 
-    /**
-     * @throws ErrorException
-     * @throws Exception
-     * @throws NotSupportedException
-     * @throws ServerErrorHttpException
-     */
     public function testMessageProperties(): void
     {
         $this->markTestSkipped('TODO: Rework for Laravel with system messages');
 
-        app(ProjectConfig::class)->set('email', ['fromName' => '$FROM_EMAIL_NAME', 'fromEmail' => '$FROM_EMAIL_ADDRESS']);
+        // app(ProjectConfig::class)->set('email', ['fromName' => '$FROM_EMAIL_NAME', 'fromEmail' => '$FROM_EMAIL_ADDRESS']);
 
-        Event::listen(RegisterSystemMessages::class, function(RegisterSystemMessages $event) {
-            $event->messages = collect([
-                new SystemMessage([
-                    'key' => 'account_activation',
-                    'body' => '{{fromEmail}} || {{fromName}}',
-                    'subject' => '{{fromName}} || {{fromEmail}}',
-                ]),
-            ]);
-        });
+        // Event::listen(RegisterSystemMessages::class, function(RegisterSystemMessages $event) {
+        //     $event->messages = collect([
+        //         new SystemMessage([
+        //             'key' => 'account_activation',
+        //             'body' => '{{fromEmail}} || {{fromName}}',
+        //             'subject' => '{{fromName}} || {{fromEmail}}',
+        //         ]),
+        //     ]);
+        // });
 
-        $this->_sendMail('test@craft.test');
+        // $this->_sendMail('test@craft.test');
 
-        /* @var Message $lastMessage */
-        $lastMessage = $this->tester->grabLastSentEmail();
+        // /* @var Message $lastMessage */
+        // $lastMessage = $this->tester->grabLastSentEmail();
 
-        self::assertSame('Craft CMS || info@craftcms.com', $lastMessage->getSubject());
-        self::assertStringContainsString('info@craftcms.com || Craft CMS', $lastMessage->toString());
+        // self::assertSame('Craft CMS || info@craftcms.com', $lastMessage->getSubject());
+        // self::assertStringContainsString('info@craftcms.com || Craft CMS', $lastMessage->toString());
     }
 
     /**
