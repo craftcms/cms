@@ -123,6 +123,7 @@ class MailerTest extends TestCase
         Event::listen(RegisterSystemMessages::class, function(RegisterSystemMessages $event) {
             $event->messages = collect([
                 new SystemMessage([
+                    'key' => 'account_activation',
                     'body' => '{{fromEmail}} || {{fromName}}',
                     'subject' => '{{fromName}} || {{fromEmail}}',
                 ]),
