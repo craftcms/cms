@@ -40,7 +40,7 @@ final class ConfigServiceProvider extends ServiceProvider
         }
 
         collect($this->configFiles)->each(function ($file) {
-            $this->publishes([__DIR__."/../../config/$file.php" => config_path("craft/$file.php")], 'craftcms');
+            $this->publishes([__DIR__."/../../config/$file.php" => config_path("craft/$file.php")], 'craftcms-config');
         });
     }
 
