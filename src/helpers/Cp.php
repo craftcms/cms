@@ -45,6 +45,7 @@ use CraftCms\Cms\License\License;
 use CraftCms\Cms\Plugin\Plugins;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\Shared\Enums\Color;
+use CraftCms\Cms\Support\Api;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Exceptions\InvalidHtmlTagException;
 use CraftCms\Cms\Support\Html;
@@ -146,7 +147,7 @@ class Cp
         $alerts = [];
         $user = Craft::$app->getUser()->getIdentity();
         $generalConfig = app(GeneralConfig::class);
-        $consoleUrl = rtrim(Craft::$app->getPluginStore()->craftIdEndpoint, '/');
+        $consoleUrl = rtrim(Api::craftIdEndpoint(), '/');
 
         if (!$user) {
             return $alerts;

@@ -234,7 +234,7 @@ class AppController extends Controller
     {
         $this->requireCpRequest();
 
-        $consoleUrl = rtrim(Craft::$app->getPluginStore()->craftIdEndpoint, '/');
+        $consoleUrl = rtrim(Api::craftIdEndpoint(), '/');
         $cartUrl = UrlHelper::urlWithParams("$consoleUrl/cart/new", [
             'items' => array_map(fn($issue) => $issue[2], $issues),
         ]);

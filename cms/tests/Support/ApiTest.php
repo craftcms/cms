@@ -39,7 +39,7 @@ it('can process response headers', function () {
 
 it('can get license info', function () {
     Http::fake([
-        $this->api->baseApiUrl.'cms-licenses?include=' => Http::response([
+        Api::craftApiEndpoint().'/cms-licenses?include=' => Http::response([
             'license' => [
                 'id' => 1234,
             ],
