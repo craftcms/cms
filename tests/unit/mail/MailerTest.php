@@ -11,12 +11,14 @@ use Craft;
 use craft\elements\User;
 use craft\errors\SiteNotFoundException;
 use craft\mail\Message;
-use craft\models\SystemMessage;
 use craft\test\TestCase;
 use craft\test\TestMailer;
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
+use CraftCms\Cms\SystemMessage\Events\RegisterSystemMessages;
+use CraftCms\Cms\SystemMessage\Models\SystemMessage;
+use Illuminate\Support\Facades\Event;
 use ReflectionException;
 use UnitTester;
 use yii\base\ErrorException;
@@ -117,12 +119,15 @@ class MailerTest extends TestCase
     public function testMessageProperties(): void
     {
         app(ProjectConfig::class)->set('email', ['fromName' => '$FROM_EMAIL_NAME', 'fromEmail' => '$FROM_EMAIL_ADDRESS']);
-        $this->tester->mockCraftMethods('systemMessages', [
-            'getMessage' => new SystemMessage([
-                'body' => '{{fromEmail}} || {{fromName}}',
-                'subject' => '{{fromName}} || {{fromEmail}}',
-            ]),
-        ]);
+
+        Event::listen(RegisterSystemMessages::class, function(RegisterSystemMessages $event) {
+            $event->messages = collect([
+                new SystemMessage([
+                    'body' => '{{fromEmail}} || {{fromName}}',
+                    'subject' => '{{fromName}} || {{fromEmail}}',
+                ]),
+            ]);
+        });
 
         $this->_sendMail('test@craft.test');
 
