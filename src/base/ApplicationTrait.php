@@ -1064,6 +1064,7 @@ trait ApplicationTrait
      * Returns the system email messages service.
      *
      * @return SystemMessages The system email messages service
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\SystemMessage\SystemMessages} instead.
      */
     public function getSystemMessages(): SystemMessages
     {

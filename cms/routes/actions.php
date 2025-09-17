@@ -20,6 +20,7 @@ use CraftCms\Cms\Http\Controllers\Utilities\DeprecationErrorsController;
 use CraftCms\Cms\Http\Controllers\Utilities\FindAndReplaceController;
 use CraftCms\Cms\Http\Controllers\Utilities\MigrationsController;
 use CraftCms\Cms\Http\Controllers\Utilities\ProjectConfigController;
+use CraftCms\Cms\Http\Controllers\Utilities\SystemMessagesController;
 use CraftCms\Cms\Http\Middleware\RequireAdmin;
 
 $generalConfig = app(GeneralConfig::class);
@@ -123,6 +124,10 @@ Route::prefix(implode('/', [
             Route::post(BaseUpdaterController::ACTION_COMPOSER_REMOVE, [ConfigSyncController::class, 'composerRemove']);
             Route::post(BaseUpdaterController::ACTION_FINISH, [ConfigSyncController::class, 'finish']);
         });
+
+        // SystemMessages
+        Route::post('system-messages/get-message-modal', [SystemMessagesController::class, 'show']);
+        Route::post('system-messages/save-message', [SystemMessagesController::class, 'store']);
 
         // Updates
         Route::post('app/check-for-updates', [UpdatesController::class, 'check']);

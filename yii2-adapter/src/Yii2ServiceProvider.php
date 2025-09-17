@@ -8,6 +8,7 @@ use craft\helpers\FileHelper;
 use craft\services\Dashboard;
 use craft\services\Plugins as LegacyPlugins;
 use craft\services\ProjectConfig;
+use craft\services\SystemMessages;
 use craft\services\Utilities;
 use craft\utilities\AssetIndexes;
 use craft\utilities\ClearCaches;
@@ -310,6 +311,7 @@ class Yii2ServiceProvider extends ServiceProvider
         Dashboard::registerEvents();
         LegacyPlugins::registerEvents();
         ProjectConfig::registerEvents();
+        SystemMessages::registerEvents();
 
         /**
          * Utilities

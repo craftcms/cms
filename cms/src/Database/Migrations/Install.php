@@ -380,7 +380,8 @@ class Install extends Migration
             $table->primary('name');
         });
 
-        Schema::create(Table::SYSTEMMESSAGES, function (Blueprint $table) {
+        /** @todo Change when Larastan is updated */
+        Schema::create('systemmessages', function (Blueprint $table) {
             $table->integer('id', true);
             $table->string('language');
             $table->string('key');
