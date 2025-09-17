@@ -16,6 +16,7 @@ final class QuickPost extends Widget
     /**
      * {@inheritdoc}
      */
+    #[\Override]
     public static function displayName(): string
     {
         return Craft::t('app', 'Quick Post');
@@ -24,6 +25,7 @@ final class QuickPost extends Widget
     /**
      * {@inheritdoc}
      */
+    #[\Override]
     public static function icon(): string
     {
         return 'file-circle-plus';
@@ -86,6 +88,7 @@ final class QuickPost extends Widget
         parent::__construct($config);
     }
 
+    #[\Override]
     public static function getRules(): array
     {
         return [
@@ -97,6 +100,7 @@ final class QuickPost extends Widget
     /**
      * {@inheritdoc}
      */
+    #[\Override]
     public function getSettingsHtml(): string
     {
         // Find the sections the user has permission to create entries in
@@ -122,6 +126,7 @@ final class QuickPost extends Widget
     /**
      * {@inheritdoc}
      */
+    #[\Override]
     public function getTitle(): string
     {
         if (isset($this->customTitle)) {
@@ -134,13 +139,14 @@ final class QuickPost extends Widget
         }
 
         return Craft::t('app', 'Create a new {section} entry', [
-            'section' => Craft::t('site', $this->section()->name),
+            'section' => Craft::t('site', $this->section()?->name),
         ]);
     }
 
     /**
      * {@inheritdoc}
      */
+    #[\Override]
     public function getBodyHtml(): string
     {
         $section = $this->section();

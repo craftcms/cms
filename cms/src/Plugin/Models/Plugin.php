@@ -13,6 +13,7 @@ class Plugin extends BaseModel
 
     protected $table = Table::PLUGINS;
 
+    #[\Override]
     protected function casts(): array
     {
         return [

@@ -90,6 +90,7 @@ final class InstallController extends BaseUpdaterController
     /**
      * {@inheritdoc}
      */
+    #[\Override]
     protected function pageTitle(): string
     {
         return Craft::t('app', 'Plugin Installer');
@@ -98,6 +99,7 @@ final class InstallController extends BaseUpdaterController
     /**
      * {@inheritdoc}
      */
+    #[\Override]
     protected function initialData(): array
     {
         $this->request->validate([
@@ -136,6 +138,7 @@ final class InstallController extends BaseUpdaterController
     /**
      * {@inheritdoc}
      */
+    #[\Override]
     protected function actionStatus(string $action): string
     {
         return match ($action) {
@@ -149,6 +152,7 @@ final class InstallController extends BaseUpdaterController
     /**
      * {@inheritdoc}
      */
+    #[\Override]
     protected function initialState(bool $force = false): array
     {
         // Make sure we can find composer.json
@@ -162,6 +166,7 @@ final class InstallController extends BaseUpdaterController
     /**
      * {@inheritdoc}
      */
+    #[\Override]
     protected function postComposerInstallState(): array
     {
         // Was this after a remove?
@@ -187,6 +192,7 @@ final class InstallController extends BaseUpdaterController
     /**
      * {@inheritdoc}
      */
+    #[\Override]
     protected function sendFinished(array $state = []): Response
     {
         // Set the license key
@@ -205,6 +211,7 @@ final class InstallController extends BaseUpdaterController
     /**
      * {@inheritdoc}
      */
+    #[\Override]
     protected function returnUrl(): string
     {
         return $this->data['returnUrl'] ?? 'plugin-store';

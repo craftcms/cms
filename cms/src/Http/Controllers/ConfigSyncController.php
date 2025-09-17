@@ -124,6 +124,7 @@ final class ConfigSyncController extends BaseUpdaterController
     /**
      * {@inheritdoc}
      */
+    #[\Override]
     protected function pageTitle(): string
     {
         return Craft::t('app', 'Project Config Sync');
@@ -132,6 +133,7 @@ final class ConfigSyncController extends BaseUpdaterController
     /**
      * {@inheritdoc}
      */
+    #[\Override]
     protected function initialData(): array
     {
         $data = [
@@ -155,6 +157,7 @@ final class ConfigSyncController extends BaseUpdaterController
     /**
      * {@inheritdoc}
      */
+    #[\Override]
     protected function initialState(bool $force = false): array
     {
         $incompatibilities = [];
@@ -227,6 +230,7 @@ final class ConfigSyncController extends BaseUpdaterController
     /**
      * {@inheritdoc}
      */
+    #[\Override]
     protected function postComposerInstallState(): array
     {
         throw new RuntimeException('postComposerInstallState() is not supported by '.self::class);
@@ -235,6 +239,7 @@ final class ConfigSyncController extends BaseUpdaterController
     /**
      * {@inheritdoc}
      */
+    #[\Override]
     protected function returnUrl(): string
     {
         return $this->data['returnUrl'] ?? $this->generalConfig->getPostCpLoginRedirect();
@@ -243,6 +248,7 @@ final class ConfigSyncController extends BaseUpdaterController
     /**
      * {@inheritdoc}
      */
+    #[\Override]
     protected function actionStatus(string $action): string
     {
         switch ($action) {

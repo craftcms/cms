@@ -16,6 +16,7 @@ final readonly class LanguageRule implements ValidationRule
         private ?string $message = null
     ) {}
 
+    #[\Override]
     public function validate(string $attribute, mixed $value, Closure $fail): void
     {
         if (! $value) {

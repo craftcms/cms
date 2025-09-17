@@ -15,6 +15,7 @@ final class DeprecationError extends BaseModel
 
     protected $table = Table::DEPRECATIONERRORS;
 
+    #[\Override]
     protected function casts(): array
     {
         return [

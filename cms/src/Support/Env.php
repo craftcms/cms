@@ -38,6 +38,7 @@ final class Env extends \Illuminate\Support\Env
         $filesystem->put($pathToFile, implode(PHP_EOL, $lines));
     }
 
+    #[\Override]
     public static function get($key, $default = null): mixed
     {
         $value = parent::get($key, $default);

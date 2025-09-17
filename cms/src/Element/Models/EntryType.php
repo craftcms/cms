@@ -15,6 +15,7 @@ final class EntryType extends BaseModel
 
     protected $table = Table::ENTRYTYPES;
 
+    #[\Override]
     protected function casts(): array
     {
         return [

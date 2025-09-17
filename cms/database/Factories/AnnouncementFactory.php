@@ -11,6 +11,7 @@ final class AnnouncementFactory extends Factory
 {
     protected $model = Announcement::class;
 
+    #[\Override]
     public function definition(): array
     {
         return [

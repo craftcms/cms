@@ -17,6 +17,7 @@ final class Migrations extends Utility
     /**
      * {@inheritdoc}
      */
+    #[\Override]
     public static function displayName(): string
     {
         return Craft::t('app', 'Migrations');
@@ -25,6 +26,7 @@ final class Migrations extends Utility
     /**
      * {@inheritdoc}
      */
+    #[\Override]
     public static function id(): string
     {
         return 'migrations';
@@ -33,6 +35,7 @@ final class Migrations extends Utility
     /**
      * {@inheritdoc}
      */
+    #[\Override]
     public static function icon(): string
     {
         return 'up';
@@ -41,6 +44,7 @@ final class Migrations extends Utility
     /**
      * {@inheritdoc}
      */
+    #[\Override]
     public static function badgeCount(): int
     {
         return count(app(Migrator::class)
@@ -51,6 +55,7 @@ final class Migrations extends Utility
     /**
      * {@inheritdoc}
      */
+    #[\Override]
     public static function contentHtml(): string
     {
         $migrator = app(Migrator::class)->track('content');

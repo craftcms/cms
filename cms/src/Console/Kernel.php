@@ -13,6 +13,7 @@ use Symfony\Component\EventDispatcher\EventDispatcher;
 final class Kernel extends \Illuminate\Foundation\Console\Kernel
 {
     /** {@inheritdoc} */
+    #[\Override]
     protected function getArtisan(): ConsoleApplication
     {
         if (is_null($this->artisan)) {
@@ -29,6 +30,7 @@ final class Kernel extends \Illuminate\Foundation\Console\Kernel
         return $this->artisan;
     }
 
+    #[\Override]
     protected function shouldDiscoverCommands(): bool
     {
         return true;

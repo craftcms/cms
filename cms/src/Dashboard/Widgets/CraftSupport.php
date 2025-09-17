@@ -26,6 +26,7 @@ final class CraftSupport extends Widget
     /**
      * {@inheritdoc}
      */
+    #[\Override]
     public static function displayName(): string
     {
         return Craft::t('app', 'Craft Support');
@@ -34,6 +35,7 @@ final class CraftSupport extends Widget
     /**
      * {@inheritdoc}
      */
+    #[\Override]
     public static function isSelectable(): bool
     {
         // Only admins get the Craft Support widget.
@@ -43,6 +45,7 @@ final class CraftSupport extends Widget
     /**
      * {@inheritdoc}
      */
+    #[\Override]
     protected static function allowMultipleInstances(): bool
     {
         return false;
@@ -51,6 +54,7 @@ final class CraftSupport extends Widget
     /**
      * {@inheritdoc}
      */
+    #[\Override]
     public static function icon(): string
     {
         return 'life-ring';
@@ -59,6 +63,7 @@ final class CraftSupport extends Widget
     /**
      * {@inheritdoc}
      */
+    #[\Override]
     public function getTitle(): ?string
     {
         return null;
@@ -67,6 +72,7 @@ final class CraftSupport extends Widget
     /**
      * {@inheritdoc}
      */
+    #[\Override]
     public function getBodyHtml(): ?string
     {
         // Only admins get the Craft Support widget.

@@ -28,6 +28,7 @@ final class Info extends BaseModel
         'configVersion' => '000000000000',
     ];
 
+    #[\Override]
     protected function casts(): array
     {
         return [
@@ -35,6 +36,7 @@ final class Info extends BaseModel
         ];
     }
 
+    #[\Override]
     protected static function booted(): void
     {
         self::saved(function ($model) {

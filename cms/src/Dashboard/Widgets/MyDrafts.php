@@ -14,6 +14,7 @@ final class MyDrafts extends Widget
     /**
      * {@inheritdoc}
      */
+    #[\Override]
     public static function displayName(): string
     {
         return Craft::t('app', 'My Drafts');
@@ -22,6 +23,7 @@ final class MyDrafts extends Widget
     /**
      * {@inheritdoc}
      */
+    #[\Override]
     protected static function allowMultipleInstances(): bool
     {
         return false;
@@ -35,11 +37,13 @@ final class MyDrafts extends Widget
     /**
      * {@inheritdoc}
      */
+    #[\Override]
     public static function icon(): string
     {
         return 'scribble';
     }
 
+    #[\Override]
     public static function getRules(): array
     {
         return [
@@ -50,6 +54,7 @@ final class MyDrafts extends Widget
     /**
      * {@inheritdoc}
      */
+    #[\Override]
     public function getSettingsHtml(): string
     {
         return Cp::textFieldHtml([
@@ -65,6 +70,7 @@ final class MyDrafts extends Widget
     /**
      * {@inheritdoc}
      */
+    #[\Override]
     public function getBodyHtml(): string
     {
         /** @var Entry[] $drafts */

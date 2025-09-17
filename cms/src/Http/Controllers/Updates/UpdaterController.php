@@ -161,6 +161,7 @@ final class UpdaterController extends BaseUpdaterController
     /**
      * {@inheritdoc}
      */
+    #[\Override]
     protected function pageTitle(): string
     {
         return Craft::t('app', 'Updater');
@@ -169,6 +170,7 @@ final class UpdaterController extends BaseUpdaterController
     /**
      * {@inheritdoc}
      */
+    #[\Override]
     protected function initialData(): array
     {
         $data = [];
@@ -225,6 +227,7 @@ final class UpdaterController extends BaseUpdaterController
     /**
      * {@inheritdoc}
      */
+    #[\Override]
     protected function initialState(bool $force = false): array
     {
         // Is there anything to install/update?
@@ -266,6 +269,7 @@ final class UpdaterController extends BaseUpdaterController
     /**
      * {@inheritdoc}
      */
+    #[\Override]
     protected function postComposerInstallState(): array
     {
         // Was this after a revert?
@@ -281,6 +285,7 @@ final class UpdaterController extends BaseUpdaterController
     /**
      * Returns the return URL that should be passed with a finished state.
      */
+    #[\Override]
     protected function returnUrl(): string
     {
         return $this->data['returnUrl'] ?? $this->generalConfig->getPostCpLoginRedirect();
@@ -289,6 +294,7 @@ final class UpdaterController extends BaseUpdaterController
     /**
      * {@inheritdoc}
      */
+    #[\Override]
     protected function actionStatus(string $action): string
     {
         return match ($action) {
@@ -304,6 +310,7 @@ final class UpdaterController extends BaseUpdaterController
     /**
      * {@inheritdoc}
      */
+    #[\Override]
     protected function sendFinished(array $state = []): Response
     {
         // Disable maintenance mode

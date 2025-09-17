@@ -215,6 +215,7 @@ class Str extends \Illuminate\Support\Str
         return static::lines($str)[0];
     }
 
+    #[\Override]
     public static function flushCache(): void
     {
         parent::flushCache();
@@ -340,6 +341,7 @@ class Str extends \Illuminate\Support\Str
      * @param  bool  $extendedChars  Whether to include symbols in the random string.
      * @return string The randomly generated string.
      */
+    #[\Override]
     public static function random($length = 36, bool $extendedChars = false): string
     {
         $validChars = $extendedChars

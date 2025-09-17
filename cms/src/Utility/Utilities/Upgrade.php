@@ -17,6 +17,7 @@ final class Upgrade extends Utility
     /**
      * {@inheritdoc}
      */
+    #[\Override]
     public static function displayName(): string
     {
         return Craft::t('app', 'Craft {version} Upgrade', [
@@ -27,6 +28,7 @@ final class Upgrade extends Utility
     /**
      * {@inheritdoc}
      */
+    #[\Override]
     public static function id(): string
     {
         return 'upgrade';
@@ -35,6 +37,7 @@ final class Upgrade extends Utility
     /**
      * {@inheritdoc}
      */
+    #[\Override]
     public static function icon(): string
     {
         return 'square-arrow-up';
@@ -43,6 +46,7 @@ final class Upgrade extends Utility
     /**
      * {@inheritdoc}
      */
+    #[\Override]
     public static function contentHtml(): string
     {
         $view = Craft::$app->getView();

@@ -94,6 +94,7 @@ abstract class Plugin extends ServiceProvider implements PluginInterface
     /**
      * @internal
      */
+    #[\Override]
     public function register(): void
     {
         $this->setupTraits('register');
@@ -145,6 +146,7 @@ abstract class Plugin extends ServiceProvider implements PluginInterface
     public function bootPlugin(): void {}
 
     /** {@inheritdoc} */
+    #[\Override]
     public function getBasePath(): string
     {
         return once(function () {
@@ -155,6 +157,7 @@ abstract class Plugin extends ServiceProvider implements PluginInterface
     }
 
     /** {@inheritdoc} */
+    #[\Override]
     public static function create(array $config): PluginInterface
     {
         $plugin = app()->make(static::class, array_merge($config, ['app' => app()]));
@@ -179,6 +182,7 @@ abstract class Plugin extends ServiceProvider implements PluginInterface
     }
 
     /** {@inheritdoc} */
+    #[\Override]
     public static function getInstance(): PluginInterface
     {
         return app(static::class);

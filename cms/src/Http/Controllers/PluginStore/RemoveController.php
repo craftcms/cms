@@ -15,6 +15,7 @@ final class RemoveController extends BaseUpdaterController
     /**
      * {@inheritdoc}
      */
+    #[\Override]
     protected function pageTitle(): string
     {
         return Craft::t('app', 'Plugin Uninstaller');
@@ -23,6 +24,7 @@ final class RemoveController extends BaseUpdaterController
     /**
      * {@inheritdoc}
      */
+    #[\Override]
     protected function initialData(): array
     {
         $data = $this->request->validate([
@@ -37,6 +39,7 @@ final class RemoveController extends BaseUpdaterController
     /**
      * {@inheritdoc}
      */
+    #[\Override]
     protected function initialState(bool $force = false): array
     {
         if (! $this->ensureComposerJson()) {
@@ -49,6 +52,7 @@ final class RemoveController extends BaseUpdaterController
     /**
      * {@inheritdoc}
      */
+    #[\Override]
     protected function postComposerInstallState(): array
     {
         return $this->actionState(self::ACTION_FINISH, [
@@ -59,6 +63,7 @@ final class RemoveController extends BaseUpdaterController
     /**
      * {@inheritdoc}
      */
+    #[\Override]
     protected function returnUrl(): string
     {
         return 'settings/plugins';

@@ -23,6 +23,7 @@ final class ConstAdapter implements AdapterInterface
      *
      * @return Option<AdapterInterface>
      */
+    #[\Override]
     public static function create()
     {
         /** @var Option<AdapterInterface> */
@@ -35,6 +36,7 @@ final class ConstAdapter implements AdapterInterface
      * @param  non-empty-string  $name
      * @return Option<string>
      */
+    #[\Override]
     public function read(string $name)
     {
         return Option::fromValue(defined($name) ? constant($name) : null);
@@ -46,6 +48,7 @@ final class ConstAdapter implements AdapterInterface
      * @param  non-empty-string  $name
      * @return bool
      */
+    #[\Override]
     public function write(string $name, string $value)
     {
         define($name, $value);
@@ -59,6 +62,7 @@ final class ConstAdapter implements AdapterInterface
      * @param  non-empty-string  $name
      * @return bool
      */
+    #[\Override]
     public function delete(string $name)
     {
         return false;

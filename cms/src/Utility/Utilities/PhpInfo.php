@@ -15,6 +15,7 @@ final class PhpInfo extends Utility
     /**
      * {@inheritdoc}
      */
+    #[\Override]
     public static function displayName(): string
     {
         return Craft::t('app', 'PHP Info');
@@ -23,6 +24,7 @@ final class PhpInfo extends Utility
     /**
      * {@inheritdoc}
      */
+    #[\Override]
     public static function id(): string
     {
         return 'php-info';
@@ -31,6 +33,7 @@ final class PhpInfo extends Utility
     /**
      * {@inheritdoc}
      */
+    #[\Override]
     public static function isSelectable(): bool
     {
         return function_exists('phpinfo');
@@ -39,6 +42,7 @@ final class PhpInfo extends Utility
     /**
      * {@inheritdoc}
      */
+    #[\Override]
     public static function icon(): string
     {
         return 'circle-info';
@@ -47,6 +51,7 @@ final class PhpInfo extends Utility
     /**
      * {@inheritdoc}
      */
+    #[\Override]
     public static function contentHtml(): string
     {
         return Craft::$app->getView()->renderTemplate('_components/utilities/PhpInfo.twig', [

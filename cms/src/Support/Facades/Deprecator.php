@@ -18,6 +18,7 @@ use Illuminate\Support\Facades\Facade;
  */
 final class Deprecator extends Facade
 {
+    #[\Override]
     protected static function getFacadeAccessor(): string
     {
         return \CraftCms\Cms\Deprecator\Deprecator::class;

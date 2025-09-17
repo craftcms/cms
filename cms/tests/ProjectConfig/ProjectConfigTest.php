@@ -41,31 +41,37 @@ class FakeProjectConfig extends CraftCms\Cms\ProjectConfig\ProjectConfig
         'dateModified' => 1609452000,
     ];
 
+    #[\Override]
     public function getExternalConfig(): ReadOnlyProjectConfigData
     {
         return new ReadOnlyProjectConfigData($this->external, $this);
     }
 
+    #[\Override]
     protected function getInternalConfig(): ReadOnlyProjectConfigData
     {
         return new ReadOnlyProjectConfigData($this->internal, $this);
     }
 
+    #[\Override]
     protected function persistInternalConfigValues(array $values): void
     {
         // Do nothing
     }
 
+    #[\Override]
     protected function removeInternalConfigValuesByPaths(array $paths): void
     {
         // Do nothing
     }
 
+    #[\Override]
     public function writeYamlFiles(bool $force = false): void
     {
         // Do nothing
     }
 
+    #[\Override]
     protected function updateConfigVersion(): void
     {
         // Do nothing

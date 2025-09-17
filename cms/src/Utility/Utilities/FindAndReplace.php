@@ -17,6 +17,7 @@ final class FindAndReplace extends Utility
     /**
      * {@inheritdoc}
      */
+    #[\Override]
     public static function displayName(): string
     {
         return Craft::t('app', 'Find and Replace');
@@ -25,6 +26,7 @@ final class FindAndReplace extends Utility
     /**
      * {@inheritdoc}
      */
+    #[\Override]
     public static function id(): string
     {
         return 'find-replace';
@@ -33,6 +35,7 @@ final class FindAndReplace extends Utility
     /**
      * {@inheritdoc}
      */
+    #[\Override]
     public static function icon(): string
     {
         return 'wand-magic-sparkles';
@@ -41,6 +44,7 @@ final class FindAndReplace extends Utility
     /**
      * {@inheritdoc}
      */
+    #[\Override]
     public static function contentHtml(): string
     {
         $view = Craft::$app->getView();

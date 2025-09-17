@@ -51,6 +51,7 @@ class User extends BaseModel implements AuthenticatableContract, AuthorizableCon
      *
      * @todo Permissions to Laravel Gates
      */
+    #[\Override]
     public function can($abilities, $arguments = []): bool
     {
         if (

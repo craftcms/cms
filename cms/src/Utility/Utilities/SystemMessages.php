@@ -18,6 +18,7 @@ final class SystemMessages extends Utility
     /**
      * {@inheritdoc}
      */
+    #[\Override]
     public static function displayName(): string
     {
         return Craft::t('app', 'System Messages');
@@ -26,6 +27,7 @@ final class SystemMessages extends Utility
     /**
      * {@inheritdoc}
      */
+    #[\Override]
     public static function id(): string
     {
         return 'system-messages';
@@ -34,6 +36,7 @@ final class SystemMessages extends Utility
     /**
      * {@inheritdoc}
      */
+    #[\Override]
     public static function icon(): string
     {
         return 'envelope';
@@ -42,6 +45,7 @@ final class SystemMessages extends Utility
     /**
      * {@inheritdoc}
      */
+    #[\Override]
     public static function contentHtml(): string
     {
         Craft::$app->requireEdition(Edition::Pro);

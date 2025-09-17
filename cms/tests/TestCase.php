@@ -27,6 +27,7 @@ class TestCase extends Orchestra
 {
     use LazilyRefreshDatabase;
 
+    #[\Override]
     protected function setUp(): void
     {
         parent::setUp();
@@ -41,6 +42,7 @@ class TestCase extends Orchestra
         Http::preventStrayRequests();
     }
 
+    #[\Override]
     protected function tearDown(): void
     {
         if (Craft::$app) {
@@ -83,6 +85,7 @@ class TestCase extends Orchestra
         $migration->up();
     }
 
+    #[\Override]
     protected function getPackageProviders($app): array
     {
         return [
@@ -93,6 +96,7 @@ class TestCase extends Orchestra
         ];
     }
 
+    #[\Override]
     protected function getEnvironmentSetUp($app)
     {
         File::cleanDirectory(config_path('craft/project'));

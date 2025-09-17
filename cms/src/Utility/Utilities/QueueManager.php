@@ -18,6 +18,7 @@ final class QueueManager extends Utility
     /**
      * {@inheritdoc}
      */
+    #[\Override]
     public static function displayName(): string
     {
         return Craft::t('app', 'Queue Manager');
@@ -26,6 +27,7 @@ final class QueueManager extends Utility
     /**
      * {@inheritdoc}
      */
+    #[\Override]
     public static function id(): string
     {
         return 'queue-manager';
@@ -34,6 +36,7 @@ final class QueueManager extends Utility
     /**
      * {@inheritdoc}
      */
+    #[\Override]
     public static function icon(): string
     {
         return 'play';
@@ -42,6 +45,7 @@ final class QueueManager extends Utility
     /**
      * {@inheritdoc}
      */
+    #[\Override]
     public static function toolbarHtml(): string
     {
         return Craft::$app->getView()->renderTemplate('_components/utilities/QueueManager/toolbar.twig');
@@ -50,6 +54,7 @@ final class QueueManager extends Utility
     /**
      * {@inheritdoc}
      */
+    #[\Override]
     public static function footerHtml(): string
     {
         return Craft::$app->getView()->renderTemplate('_components/utilities/QueueManager/footer.twig');
@@ -58,6 +63,7 @@ final class QueueManager extends Utility
     /**
      * {@inheritdoc}
      */
+    #[\Override]
     public static function contentHtml(): string
     {
         $view = Craft::$app->getView();

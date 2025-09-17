@@ -13,6 +13,7 @@ final class MissingWidget extends Widget implements MissingComponentInterface
     /**
      * {@inheritdoc}
      */
+    #[\Override]
     public function getBodyHtml(): ?string
     {
         return null;

@@ -41,6 +41,7 @@ abstract class PluginTestCase extends BaseTestCase
         $migration->up();
     }
 
+    #[\Override]
     protected function getPackageProviders($app): array
     {
         return [

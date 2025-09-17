@@ -71,16 +71,19 @@ it('can get badge count for all utilities', function () {
 
 class DummyUtility extends Utility
 {
+    #[\Override]
     public static function displayName(): string
     {
         return 'Dummy';
     }
 
+    #[\Override]
     public static function id(): string
     {
         return 'dummy';
     }
 
+    #[\Override]
     public static function contentHtml(): string
     {
         return '';

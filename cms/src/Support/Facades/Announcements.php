@@ -13,6 +13,7 @@ use Illuminate\Support\Facades\Facade;
  */
 class Announcements extends Facade
 {
+    #[\Override]
     protected static function getFacadeAccessor(): string
     {
         return \CraftCms\Cms\Announcement\Announcements::class;

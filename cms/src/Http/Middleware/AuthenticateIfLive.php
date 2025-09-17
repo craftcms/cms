@@ -7,6 +7,7 @@ use Illuminate\Auth\Middleware\Authenticate;
 
 final class AuthenticateIfLive extends Authenticate
 {
+    #[\Override]
     public function handle($request, Closure $next, ...$guards): mixed
     {
         if (app()->isLive()) {

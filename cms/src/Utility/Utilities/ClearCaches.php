@@ -27,6 +27,7 @@ final class ClearCaches extends Utility
     /**
      * {@inheritdoc}
      */
+    #[\Override]
     public static function displayName(): string
     {
         return Craft::t('app', 'Caches');
@@ -35,6 +36,7 @@ final class ClearCaches extends Utility
     /**
      * {@inheritdoc}
      */
+    #[\Override]
     public static function id(): string
     {
         return 'clear-caches';
@@ -43,6 +45,7 @@ final class ClearCaches extends Utility
     /**
      * {@inheritdoc}
      */
+    #[\Override]
     public static function icon(): string
     {
         return 'trash';
@@ -51,6 +54,7 @@ final class ClearCaches extends Utility
     /**
      * {@inheritdoc}
      */
+    #[\Override]
     public static function contentHtml(): string
     {
         $cacheOptions = [];

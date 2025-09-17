@@ -127,6 +127,7 @@ test('install-plugin', function () {
 
 class PluginsFake extends Plugins
 {
+    #[\Override]
     public function installPlugin(string $handle, ?string $edition = null): bool
     {
         Cache::put('test-installed-plugin', $handle);
@@ -134,6 +135,7 @@ class PluginsFake extends Plugins
         return true;
     }
 
+    #[\Override]
     public function uninstallPlugin(string $handle, bool $force = false): bool
     {
         Cache::put('test-uninstalled-plugin', $handle);

@@ -16,6 +16,7 @@ final class TestPlugin extends Plugin
 
     public ?string $packageName = 'craftcms/test-plugin';
 
+    #[\Override]
     public static function editions(): array
     {
         return [
@@ -24,6 +25,7 @@ final class TestPlugin extends Plugin
         ];
     }
 
+    #[\Override]
     protected function createSettingsModel(): ?ValidatableComponentInterface
     {
         if (! self::$useSettings) {
@@ -33,11 +35,13 @@ final class TestPlugin extends Plugin
         return new TestPluginSettings;
     }
 
+    #[\Override]
     public function beforeSaveSettings(): bool
     {
         return self::$beforeSaveSettings;
     }
 
+    #[\Override]
     public function afterSaveSettings(): void
     {
         if ($closure = self::$onAfterSaveSettings) {

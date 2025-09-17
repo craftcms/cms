@@ -34,6 +34,7 @@ final class AppServiceProvider extends ServiceProvider
 {
     private string $root = __DIR__.'/../..';
 
+    #[\Override]
     public function register(): void
     {
         /**

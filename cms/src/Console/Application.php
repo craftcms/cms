@@ -28,6 +28,7 @@ final class Application extends \Illuminate\Console\Application
      * name get run before any Laravel native commands
      * when running through `php craft`.
      */
+    #[\Override]
     public function find(string $name): SymfonyCommand
     {
         if ($this->has("craft:{$name}")) {
@@ -42,6 +43,7 @@ final class Application extends \Illuminate\Console\Application
      * all the command names of their `craft:` prefix
      * and sets any non-CraftCommand to hidden.
      */
+    #[\Override]
     public function all(?string $namespace = null): array
     {
         return collect(parent::all($namespace))

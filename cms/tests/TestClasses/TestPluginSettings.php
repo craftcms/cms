@@ -8,6 +8,7 @@ final class TestPluginSettings extends PluginSettings
 {
     public ?string $foo = null;
 
+    #[\Override]
     public static function getRules(): array
     {
         return [

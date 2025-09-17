@@ -39,7 +39,7 @@ trait FetchesUpdates
         return [
             'handle' => $color($this->cyan($handle)),
             'from' => $color($this->cyan($from)),
-            'to' => $color($this->cyan($update->latest()->version)),
+            'to' => $color($this->cyan($update->latest()?->version)),
             'status' => match (true) {
                 $update->hasCritical() => $this->bold($color($this->red('CRITICAL'))),
                 $expired => $this->bold($color($this->red('EXPIRED'))),

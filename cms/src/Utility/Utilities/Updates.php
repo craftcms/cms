@@ -17,6 +17,7 @@ final class Updates extends Utility
     /**
      * {@inheritdoc}
      */
+    #[\Override]
     public static function displayName(): string
     {
         return Craft::t('app', 'Updates');
@@ -25,6 +26,7 @@ final class Updates extends Utility
     /**
      * {@inheritdoc}
      */
+    #[\Override]
     public static function id(): string
     {
         return 'updates';
@@ -33,6 +35,7 @@ final class Updates extends Utility
     /**
      * {@inheritdoc}
      */
+    #[\Override]
     public static function icon(): string
     {
         return 'certificate';
@@ -41,6 +44,7 @@ final class Updates extends Utility
     /**
      * {@inheritdoc}
      */
+    #[\Override]
     public static function badgeCount(): int
     {
         return app(UpdatesService::class)->totalAvailableUpdates();
@@ -49,6 +53,7 @@ final class Updates extends Utility
     /**
      * {@inheritdoc}
      */
+    #[\Override]
     public static function contentHtml(): string
     {
         $view = Craft::$app->getView();

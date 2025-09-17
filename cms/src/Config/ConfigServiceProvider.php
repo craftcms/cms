@@ -20,6 +20,7 @@ final class ConfigServiceProvider extends ServiceProvider
         'routes',
     ];
 
+    #[\Override]
     public function register(): void
     {
         Env::extend(fn () => ConstAdapter::class);

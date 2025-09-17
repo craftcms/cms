@@ -50,26 +50,31 @@ abstract class BaseConfig implements Arrayable, ArrayAccess
         return false;
     }
 
+    #[\Override]
     public function offsetGet(mixed $offset): mixed
     {
         return $this->$offset;
     }
 
+    #[\Override]
     public function offsetExists(mixed $offset): bool
     {
         return isset($this->$offset);
     }
 
+    #[\Override]
     public function offsetSet(mixed $offset, mixed $value): void
     {
         $this->$offset = $value;
     }
 
+    #[\Override]
     public function offsetUnset(mixed $offset): void
     {
         unset($this->$offset);
     }
 
+    #[\Override]
     public function toArray(): array
     {
         return get_object_vars($this);

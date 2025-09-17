@@ -16,6 +16,7 @@ final class DbBackup extends Utility
     /**
      * {@inheritdoc}
      */
+    #[\Override]
     public static function displayName(): string
     {
         return Craft::t('app', 'Database Backup');
@@ -24,6 +25,7 @@ final class DbBackup extends Utility
     /**
      * {@inheritdoc}
      */
+    #[\Override]
     public static function id(): string
     {
         return 'db-backup';
@@ -32,6 +34,7 @@ final class DbBackup extends Utility
     /**
      * {@inheritdoc}
      */
+    #[\Override]
     public static function icon(): string
     {
         return 'database';
@@ -40,6 +43,7 @@ final class DbBackup extends Utility
     /**
      * {@inheritdoc}
      */
+    #[\Override]
     public static function contentHtml(): string
     {
         $view = Craft::$app->getView();

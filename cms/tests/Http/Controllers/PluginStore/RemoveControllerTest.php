@@ -75,6 +75,7 @@ test('composer-remove', function () {
     // Fake the composer uninstall call
     swap(Composer::class, new class extends Composer
     {
+        #[\Override]
         public function uninstall(array $packages, ?callable $callback = null): void
         {
             $callback('', '');

@@ -18,6 +18,7 @@ class Announcement extends BaseModel
 
     public const ?string UPDATED_AT = null;
 
+    #[\Override]
     protected function casts(): array
     {
         return [

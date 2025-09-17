@@ -40,6 +40,7 @@ final class Migrator extends \Illuminate\Database\Migrations\Migrator
         return $this;
     }
 
+    #[\Override]
     public function run($paths = [], array $options = []): array
     {
         if (empty($paths)) {
@@ -55,11 +56,13 @@ final class Migrator extends \Illuminate\Database\Migrations\Migrator
         return parent::run($paths, $options);
     }
 
+    #[\Override]
     public function runMigration($migration, $method): void
     {
         parent::runMigration($migration, $method);
     }
 
+    #[\Override]
     public function resetMigrations(array $migrations, array $paths, $pretend = false): array
     {
         return parent::resetMigrations($migrations, $paths, $pretend);

@@ -17,6 +17,7 @@ final class DeprecationErrors extends Utility
     /**
      * {@inheritdoc}
      */
+    #[\Override]
     public static function displayName(): string
     {
         return Craft::t('app', 'Deprecation Warnings');
@@ -25,6 +26,7 @@ final class DeprecationErrors extends Utility
     /**
      * {@inheritdoc}
      */
+    #[\Override]
     public static function id(): string
     {
         return 'deprecation-errors';
@@ -33,6 +35,7 @@ final class DeprecationErrors extends Utility
     /**
      * {@inheritdoc}
      */
+    #[\Override]
     public static function icon(): string
     {
         return 'bug';
@@ -41,6 +44,7 @@ final class DeprecationErrors extends Utility
     /**
      * {@inheritdoc}
      */
+    #[\Override]
     public static function badgeCount(): int
     {
         return Deprecator::getTotalLogs();
@@ -49,6 +53,7 @@ final class DeprecationErrors extends Utility
     /**
      * {@inheritdoc}
      */
+    #[\Override]
     public static function contentHtml(): string
     {
         $view = Craft::$app->getView();

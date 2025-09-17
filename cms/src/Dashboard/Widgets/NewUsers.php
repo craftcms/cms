@@ -14,6 +14,7 @@ final class NewUsers extends Widget
     /**
      * {@inheritdoc}
      */
+    #[\Override]
     public static function displayName(): string
     {
         return Craft::t('app', 'New {type}', [
@@ -24,6 +25,7 @@ final class NewUsers extends Widget
     /**
      * {@inheritdoc}
      */
+    #[\Override]
     public static function isSelectable(): bool
     {
         // This widget is only available for Craft Pro
@@ -33,6 +35,7 @@ final class NewUsers extends Widget
     /**
      * {@inheritdoc}
      */
+    #[\Override]
     public static function icon(): string
     {
         return 'user-group';
@@ -51,6 +54,7 @@ final class NewUsers extends Widget
     /**
      * {@inheritdoc}
      */
+    #[\Override]
     public function getTitle(): ?string
     {
         if ($groupId = $this->userGroupId) {
@@ -71,6 +75,7 @@ final class NewUsers extends Widget
     /**
      * {@inheritdoc}
      */
+    #[\Override]
     public function getBodyHtml(): ?string
     {
         if (Craft::$app->edition->value < Edition::Pro->value) {
@@ -90,6 +95,7 @@ final class NewUsers extends Widget
     /**
      * {@inheritdoc}
      */
+    #[\Override]
     public function getSettingsHtml(): string
     {
         return Craft::$app->getView()->renderTemplate('_components/widgets/NewUsers/settings.twig',

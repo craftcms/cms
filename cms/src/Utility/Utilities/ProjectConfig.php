@@ -19,6 +19,7 @@ final class ProjectConfig extends Utility
     /**
      * {@inheritdoc}
      */
+    #[\Override]
     public static function displayName(): string
     {
         return Craft::t('app', 'Project Config');
@@ -27,6 +28,7 @@ final class ProjectConfig extends Utility
     /**
      * {@inheritdoc}
      */
+    #[\Override]
     public static function id(): string
     {
         return 'project-config';
@@ -35,6 +37,7 @@ final class ProjectConfig extends Utility
     /**
      * {@inheritdoc}
      */
+    #[\Override]
     public static function icon(): string
     {
         return 'gear';
@@ -43,6 +46,7 @@ final class ProjectConfig extends Utility
     /**
      * {@inheritdoc}
      */
+    #[\Override]
     public static function contentHtml(): string
     {
         $projectConfig = app(ProjectConfigService::class);

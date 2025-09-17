@@ -26,6 +26,7 @@ final class SystemReport extends Utility
     /**
      * {@inheritdoc}
      */
+    #[\Override]
     public static function displayName(): string
     {
         return Craft::t('app', 'System Report');
@@ -34,6 +35,7 @@ final class SystemReport extends Utility
     /**
      * {@inheritdoc}
      */
+    #[\Override]
     public static function id(): string
     {
         return 'system-report';
@@ -42,6 +44,7 @@ final class SystemReport extends Utility
     /**
      * {@inheritdoc}
      */
+    #[\Override]
     public static function icon(): string
     {
         return 'list-check';
@@ -50,6 +53,7 @@ final class SystemReport extends Utility
     /**
      * {@inheritdoc}
      */
+    #[\Override]
     public static function contentHtml(): string
     {
         $modules = collect(Craft::$app->getModules())

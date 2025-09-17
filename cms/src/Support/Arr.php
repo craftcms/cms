@@ -171,6 +171,7 @@ class Arr extends \Illuminate\Support\Arr
      * If the key is specified in square bracket notation (e.g. `x[y][z]`), it will automatically be converted
      * to dot notation (`x.y.z`).
      */
+    #[\Override]
     public static function get($array, $key, $default = null)
     {
         // Normalize the key into dot notation

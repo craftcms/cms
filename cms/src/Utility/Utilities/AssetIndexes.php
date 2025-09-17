@@ -22,6 +22,7 @@ final class AssetIndexes extends Utility
     /**
      * {@inheritdoc}
      */
+    #[\Override]
     public static function displayName(): string
     {
         return Craft::t('app', 'Asset Indexes');
@@ -30,6 +31,7 @@ final class AssetIndexes extends Utility
     /**
      * {@inheritdoc}
      */
+    #[\Override]
     public static function id(): string
     {
         return 'asset-indexes';
@@ -38,6 +40,7 @@ final class AssetIndexes extends Utility
     /**
      * {@inheritdoc}
      */
+    #[\Override]
     public static function icon(): string
     {
         return 'image';
@@ -65,6 +68,7 @@ final class AssetIndexes extends Utility
     /**
      * {@inheritdoc}
      */
+    #[\Override]
     public static function contentHtml(): string
     {
         $volumeOptions = [];

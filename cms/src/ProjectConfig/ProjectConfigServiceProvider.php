@@ -19,6 +19,7 @@ use Illuminate\Support\ServiceProvider;
  */
 final class ProjectConfigServiceProvider extends ServiceProvider
 {
+    #[\Override]
     public function register(): void
     {
         $this->app->terminating(function (ProjectConfig $projectConfig) {

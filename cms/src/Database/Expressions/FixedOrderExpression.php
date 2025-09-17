@@ -22,6 +22,7 @@ final readonly class FixedOrderExpression implements Expression
         private array $values,
     ) {}
 
+    #[\Override]
     public function getValue(Grammar $grammar): string
     {
         $cases = [];

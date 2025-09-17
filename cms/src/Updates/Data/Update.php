@@ -56,6 +56,7 @@ final readonly class Update implements Arrayable
         return new self(...$data);
     }
 
+    #[\Override]
     public function toArray(): array
     {
         return [

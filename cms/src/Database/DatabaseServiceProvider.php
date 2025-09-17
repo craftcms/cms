@@ -20,6 +20,7 @@ use Illuminate\Support\ServiceProvider;
  */
 final class DatabaseServiceProvider extends ServiceProvider
 {
+    #[\Override]
     public function register(): void
     {
         $this->app

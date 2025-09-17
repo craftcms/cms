@@ -30,6 +30,7 @@ final class MigrationRepository extends DatabaseMigrationRepository
     /**
      * {@inheritdoc}
      */
+    #[\Override]
     public function log($file, $batch): void
     {
         $record = ['migration' => $file, 'batch' => $batch, 'track' => $this->track];
@@ -37,6 +38,7 @@ final class MigrationRepository extends DatabaseMigrationRepository
         $this->table()->insert($record);
     }
 
+    #[\Override]
     protected function table(): Builder
     {
         return parent::table()->where('track', $this->track);
@@ -45,6 +47,7 @@ final class MigrationRepository extends DatabaseMigrationRepository
     /**
      * Create the migration repository data store.
      */
+    #[\Override]
     public function createRepository(): void
     {
         parent::createRepository();

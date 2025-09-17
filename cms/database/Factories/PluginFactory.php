@@ -10,6 +10,7 @@ final class PluginFactory extends Factory
 {
     protected $model = Plugin::class;
 
+    #[\Override]
     public function definition()
     {
         return [

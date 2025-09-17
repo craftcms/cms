@@ -14,6 +14,7 @@ final class RecentEntries extends Widget
     /**
      * {@inheritdoc}
      */
+    #[\Override]
     public static function displayName(): string
     {
         return Craft::t('app', 'Recent Entries');
@@ -22,6 +23,7 @@ final class RecentEntries extends Widget
     /**
      * {@inheritdoc}
      */
+    #[\Override]
     public static function icon(): string
     {
         return 'clock';
@@ -49,6 +51,7 @@ final class RecentEntries extends Widget
         $this->siteId ??= Craft::$app->getSites()->getCurrentSite()->id;
     }
 
+    #[\Override]
     public static function getRules(): array
     {
         return [
@@ -60,6 +63,7 @@ final class RecentEntries extends Widget
     /**
      * {@inheritdoc}
      */
+    #[\Override]
     public function getSettingsHtml(): string
     {
         return Craft::$app->getView()->renderTemplate('_components/widgets/RecentEntries/settings.twig',
@@ -71,6 +75,7 @@ final class RecentEntries extends Widget
     /**
      * {@inheritdoc}
      */
+    #[\Override]
     public function getTitle(): string
     {
         if (is_numeric($this->section)) {
@@ -108,6 +113,7 @@ final class RecentEntries extends Widget
     /**
      * {@inheritdoc}
      */
+    #[\Override]
     public function getBodyHtml(): string
     {
         $params = [];

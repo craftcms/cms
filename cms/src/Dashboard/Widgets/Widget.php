@@ -46,6 +46,7 @@ abstract class Widget implements WidgetInterface
     /**
      * {@inheritdoc}
      */
+    #[\Override]
     public static function isSelectable(): bool
     {
         return static::allowMultipleInstances() || ! app(Dashboard::class)->doesUserHaveWidget(static::class);
@@ -69,6 +70,7 @@ abstract class Widget implements WidgetInterface
      *
      * System icons can be found in `src/icons/solid/`.
      */
+    #[\Override]
     public static function icon(): ?string
     {
         return null;
@@ -79,6 +81,7 @@ abstract class Widget implements WidgetInterface
      *
      * @return int|null The widget’s maximum colspan, if it has one
      */
+    #[\Override]
     public static function maxColspan(): ?int
     {
         return null;
@@ -89,6 +92,7 @@ abstract class Widget implements WidgetInterface
      *
      * @return string The display name of this class.
      */
+    #[\Override]
     public static function displayName(): string
     {
         $classNameParts = explode('\\', static::class);
@@ -101,6 +105,7 @@ abstract class Widget implements WidgetInterface
      *
      * @return string|null The widget’s title.
      */
+    #[\Override]
     public function getTitle(): ?string
     {
         // Default to the widget's display name
@@ -112,6 +117,7 @@ abstract class Widget implements WidgetInterface
      *
      * @return string|null The widget’s subtitle
      */
+    #[\Override]
     public function getSubtitle(): ?string
     {
         return null;
@@ -124,6 +130,7 @@ abstract class Widget implements WidgetInterface
      *                     should not be visible. (If you don’t want the widget to be selectable in
      *                     the first place, use [[isSelectable()]].)
      */
+    #[\Override]
     public function getBodyHtml(): ?string
     {
         $url = Craft::$app->getAssetManager()->getPublishedUrl('@app/web/assets/cp/dist', true, 'images/prg.jpg');
@@ -135,6 +142,7 @@ abstract class Widget implements WidgetInterface
 EOD;
     }
 
+    #[\Override]
     public function getAttributes(): array
     {
         return $this->getSettings();

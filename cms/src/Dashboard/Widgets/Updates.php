@@ -20,6 +20,7 @@ final class Updates extends Widget
     /**
      * {@inheritdoc}
      */
+    #[\Override]
     public static function displayName(): string
     {
         return Craft::t('app', 'Updates');
@@ -28,6 +29,7 @@ final class Updates extends Widget
     /**
      * {@inheritdoc}
      */
+    #[\Override]
     public static function isSelectable(): bool
     {
         // Gotta have update permission to get this widget
@@ -37,6 +39,7 @@ final class Updates extends Widget
     /**
      * {@inheritdoc}
      */
+    #[\Override]
     protected static function allowMultipleInstances(): bool
     {
         return false;
@@ -45,6 +48,7 @@ final class Updates extends Widget
     /**
      * {@inheritdoc}
      */
+    #[\Override]
     public static function icon(): string
     {
         return 'certificate';
@@ -53,6 +57,7 @@ final class Updates extends Widget
     /**
      * {@inheritdoc}
      */
+    #[\Override]
     public function getBodyHtml(): ?string
     {
         // Make sure the user actually has permission to perform updates

@@ -19,6 +19,7 @@ final class Feed extends Widget
     /**
      * {@inheritdoc}
      */
+    #[\Override]
     public static function displayName(): string
     {
         return Craft::t('app', 'Feed');
@@ -27,6 +28,7 @@ final class Feed extends Widget
     /**
      * {@inheritdoc}
      */
+    #[\Override]
     public static function icon(): string
     {
         return 'rss';
@@ -35,6 +37,7 @@ final class Feed extends Widget
     /**
      * {@inheritdoc}
      */
+    #[\Override]
     public static function getRules(): array
     {
         return [
@@ -47,6 +50,7 @@ final class Feed extends Widget
     /**
      * {@inheritdoc}
      */
+    #[\Override]
     public function getSettingsHtml(): string
     {
         return Craft::$app->getView()->renderTemplate('_components/widgets/Feed/settings.twig',
@@ -58,6 +62,7 @@ final class Feed extends Widget
     /**
      * {@inheritdoc}
      */
+    #[\Override]
     public function getTitle(): ?string
     {
         return $this->title;
@@ -66,6 +71,7 @@ final class Feed extends Widget
     /**
      * {@inheritdoc}
      */
+    #[\Override]
     public function getBodyHtml(): string
     {
         // See if it's already cached
