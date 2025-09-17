@@ -138,7 +138,7 @@ final class SystemMessages
                 $message->body = $overrides[$key]->body;
             }
 
-            $messages[] = $message;
+            $messages[$key] = $message;
         }
 
         return $messages;
