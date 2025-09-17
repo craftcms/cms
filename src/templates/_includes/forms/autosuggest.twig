@@ -21,7 +21,7 @@
     not (size ?? false) ? 'fullwidth' : null,
 ]|filter) %}
 
-<div id="{{ containerId }}" class="autosuggest-container">
+<div id="{{ containerId }}" class="autosuggest-container" tabindex="-1">
     {{ forms.text({
         id: previewInputId,
         class: class|join(' '),
@@ -164,7 +164,7 @@ new Vue({
         },
         onBlur(e) {
             // Clear out the autosuggestions if the focus has shifted to a new element
-            if (e.relatedTarget) {
+            if (e.relatedTarget && !e.relatedTarget.contains(e.currentTarget)) {
                 this.filteredOptions = [];
             }
         },
