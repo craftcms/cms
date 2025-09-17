@@ -12,7 +12,7 @@ beforeEach(function () {
     $this->updates = app(Updates::class);
 
     Http::fake([
-        app(Api::class)->baseApiUrl.'updates' => [
+        Api::craftApiEndpoint().'/updates' => [
             'cms' => [],
             'plugins' => [],
         ],

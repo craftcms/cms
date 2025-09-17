@@ -39,8 +39,6 @@ final readonly class Table
 
     public const string CONTENTBLOCKS = 'contentblocks';
 
-    public const string CRAFTIDTOKENS = 'craftidtokens';
-
     public const string DEPRECATIONERRORS = 'deprecationerrors';
 
     public const string DRAFTS = 'drafts';

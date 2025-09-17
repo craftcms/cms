@@ -10,6 +10,7 @@ use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\License\License;
 use CraftCms\Cms\Plugin\Plugins;
+use CraftCms\Cms\Support\Api;
 use CraftCms\Cms\Support\Composer;
 use CraftCms\Cms\Support\PHP;
 use Illuminate\Container\Attributes\Give;
@@ -34,8 +35,8 @@ final readonly class PluginStoreController
         $view->registerJsFile('https://js.stripe.com/v2/');
 
         $variables = [
-            'craftIdEndpoint' => $this->craft->getPluginStore()->craftIdEndpoint,
-            'craftApiEndpoint' => $this->craft->getPluginStore()->craftApiEndpoint,
+            'craftIdEndpoint' => Api::craftIdEndpoint(),
+            'craftApiEndpoint' => Api::craftApiEndpoint(),
             'pluginStoreAppBaseUrl' => $generalConfig->cpTrigger.'/plugin-store',
             'cmsInfo' => [
                 'version' => $this->craft->getVersion(),
@@ -43,7 +44,6 @@ final readonly class PluginStoreController
             ],
             'cmsLicenseKey' => $license->key(),
             'cmsEditions' => array_map(fn (Edition $edition) => $edition->handle(), Edition::cases()),
-            'craftIdAccessToken' => $this->getCraftIdAccessToken(),
             'phpVersion' => PHP::version(),
             'composerPhpVersion' => $composer->getConfig()['config']['platform']['php'] ?? null,
         ];
@@ -102,21 +102,5 @@ final readonly class PluginStoreController
         }
 
         return response()->json();
-    }
-
-    /**
-     * Returns the Craft Console access token.
-     */
-    private function getCraftIdAccessToken(): ?string
-    {
-        $craftIdAccessToken = null;
-        $pluginStoreService = Craft::$app->getPluginStore();
-        $craftIdToken = $pluginStoreService->getToken();
-
-        if ($craftIdToken && $craftIdToken->accessToken !== null) {
-            $craftIdAccessToken = $craftIdToken->accessToken;
-        }
-
-        return $craftIdAccessToken;
     }
 }

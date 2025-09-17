@@ -34,7 +34,6 @@ use craft\services\Images;
 use craft\services\ImageTransforms;
 use craft\services\Path;
 use craft\services\Plugins;
-use craft\services\PluginStore;
 use craft\services\Relations;
 use craft\services\Routes;
 use craft\services\Search;
@@ -529,7 +528,6 @@ class TestSetup
             [Mutex::class, ['getMutex', 'mutex']],
             [Path::class, ['getPath', 'path']],
             [Plugins::class, ['getPlugins', 'plugins']],
-            [PluginStore::class, ['getPluginStore', 'pluginStore']],
             [\craft\services\ProjectConfig::class, ['getProjectConfig', 'projectConfig']],
             [Queue::class, ['getQueue', 'queue']],
             [Relations::class, ['getRelations', 'relations']],

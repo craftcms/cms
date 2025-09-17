@@ -11,7 +11,7 @@ it('has tracks', function () {
     $migrator->track('craft')->getRepository()->log('track_craft', 1);
     $migrator->track('plugin:commerce')->getRepository()->log('track_plugin', 1);
 
-    expect(DB::table(Table::MIGRATIONS)->whereNull('track')->value('migration'))->toBe('track_content');
-    expect(DB::table(Table::MIGRATIONS)->where('track', 'craft')->value('migration'))->toBe('track_craft');
-    expect(DB::table(Table::MIGRATIONS)->where('track', 'plugin:commerce')->value('migration'))->toBe('track_plugin');
+    expect(DB::table(Table::MIGRATIONS)->whereNull('track')->latest('id')->value('migration'))->toBe('track_content');
+    expect(DB::table(Table::MIGRATIONS)->where('track', 'craft')->latest('id')->value('migration'))->toBe('track_craft');
+    expect(DB::table(Table::MIGRATIONS)->where('track', 'plugin:commerce')->latest('id')->value('migration'))->toBe('track_plugin');
 });

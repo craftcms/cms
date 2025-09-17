@@ -27,7 +27,6 @@ use craft\services\Images;
 use craft\services\ImageTransforms;
 use craft\services\Path;
 use craft\services\Plugins;
-use craft\services\PluginStore;
 use craft\services\Relations;
 use craft\services\Revisions;
 use craft\services\Routes;
@@ -137,9 +136,6 @@ return [
         ],
         'plugins' => [
             'class' => Plugins::class,
-        ],
-        'pluginStore' => [
-            'class' => PluginStore::class,
         ],
         'queue' => [
             'class' => Queue::class,

@@ -10,6 +10,7 @@ use CraftCms\Cms\License\Data\LicenseData;
 use CraftCms\Cms\Plugin\Exceptions\InvalidPluginException;
 use CraftCms\Cms\Plugin\Plugins;
 use CraftCms\Cms\Shared\Enums\LicenseKeyStatus;
+use CraftCms\Cms\Support\Api;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Json as JsonHelper;
 use CraftCms\Cms\Support\Str;
@@ -232,7 +233,7 @@ final readonly class License
             return [];
         }
 
-        $consoleUrl = rtrim(app('Craft')->getPluginStore()->craftIdEndpoint, '/');
+        $consoleUrl = rtrim(Api::craftIdEndpoint(), '/');
 
         if (! $licenseData->isCraft) {
             // wrong Craft install

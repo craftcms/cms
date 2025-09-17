@@ -27,6 +27,7 @@ use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\License\License;
 use CraftCms\Cms\Plugin\Plugins;
+use CraftCms\Cms\Support\Api;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Env;
 use CraftCms\Cms\Support\Str;
@@ -178,7 +179,7 @@ class Cp extends Component
      */
     public function craftIdAccountUrl(): string
     {
-        return Craft::$app->getPluginStore()->craftIdEndpoint . '/account';
+        return Api::craftIdEndpoint() . '/account';
     }
 
     /**
@@ -581,7 +582,7 @@ class Cp extends Component
             'total' => $issues->count(),
         ]);
 
-        $consoleUrl = rtrim(Craft::$app->getPluginStore()->craftIdEndpoint, '/');
+        $consoleUrl = rtrim(Api::craftIdEndpoint(), '/');
         $cartUrl = UrlHelper::urlWithParams("$consoleUrl/cart/new", [
             'items' => $issues->map(fn($issue) => $issue[2])->all(),
         ]);

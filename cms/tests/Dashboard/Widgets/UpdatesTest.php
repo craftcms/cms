@@ -11,7 +11,7 @@ use function Pest\Laravel\actingAs;
 
 it('can render', function () {
     Http::fake([
-        app(Api::class)->baseApiUrl.'updates' => [
+        Api::craftApiEndpoint().'/updates' => [
             'cms' => [],
             'plugins' => [],
         ],

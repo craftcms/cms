@@ -520,7 +520,7 @@ JS;
             'actionTrigger' => $generalConfig->actionTrigger,
             'actionUrl' => UrlHelper::actionUrl(),
             'asciiCharMap' => Str::asciiCharMap(true, Craft::$app->language),
-            'baseApiUrl' => app(Api::class)->baseApiUrl,
+            'baseApiUrl' => Api::craftApiEndpoint(),
             'baseSiteUrl' => UrlHelper::siteUrl(),
             'baseUrl' => UrlHelper::url(),
             'clientOs' => $request->getClientOs(),

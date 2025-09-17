@@ -37,19 +37,32 @@ use function CraftCms\Cms\normalizeVersion;
  * @internal
  */
 #[Singleton]
-final readonly class Api
+final class Api
 {
+    private static string $craftApiEndpoint;
+
+    private static string $craftIdEndpoint;
+
     public function __construct(
-        private Application $app,
-        private Composer $composer,
-        private Connection $db,
-        private Request $request,
-        private Repository $cache,
-        private Plugins $plugins,
-        private License $license,
-        public string $baseApiUrl = 'https://api.craftcms.com/v1/',
+        private readonly Application $app,
+        private readonly Composer $composer,
+        private readonly Connection $db,
+        private readonly Request $request,
+        private readonly Repository $cache,
+        private readonly Plugins $plugins,
+        private readonly License $license,
         public array $apiParams = [],
     ) {}
+
+    public static function craftApiEndpoint(): string
+    {
+        return self::$craftApiEndpoint ??= Env::get('CRAFT_API_ENDPOINT', 'https://api.craftcms.com/v1');
+    }
+
+    public static function craftIdEndpoint(): string
+    {
+        return self::$craftIdEndpoint ??= Env::get('CRAFT_ID_ENDPOINT', 'https://console.craftcms.com');
+    }
 
     /**
      * Returns info about the current Craft license.
@@ -93,7 +106,7 @@ final readonly class Api
 
         try {
             $response = Http::create()
-                ->baseUrl($this->baseApiUrl)
+                ->baseUrl(self::craftApiEndpoint())
                 ->asJson()
                 ->acceptJson()
                 ->withHeaders(array_merge($this->headers(), Arr::pull($options, 'headers', [])))
@@ -204,7 +217,7 @@ final readonly class Api
                     $versions['lib-icu'] = normalizeVersion(INTL_ICU_VERSION);
                     break;
                 case 'imagick':
-                    $versions["lib-$name-imagemagick"] = normalizeVersion((new Imagick)->getVersion()['versionString']);
+                    $versions["lib-$name-imagemagick"] = normalizeVersion(Imagick::getVersion()['versionString']);
                     break;
             }
         }

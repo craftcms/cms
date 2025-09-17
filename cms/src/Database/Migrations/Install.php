@@ -278,16 +278,6 @@ class Install extends Migration
             $table->integer('fieldId')->nullable();
         });
 
-        Schema::create(Table::CRAFTIDTOKENS, function (Blueprint $table) {
-            $table->integer('id', true);
-            $table->integer('userId');
-            $table->text('accessToken');
-            $table->dateTime('expiryDate')->nullable();
-            $table->dateTime('dateCreated');
-            $table->dateTime('dateUpdated');
-            $table->char('uid', 36)->default('0');
-        });
-
         /** @todo change back to Table::DEPRECATIONERRORS once larastan is updated */
         Schema::create('deprecationerrors', function (Blueprint $table) {
             $table->integer('id', true);
@@ -1090,7 +1080,6 @@ class Install extends Migration
         Schema::table(Table::CHANGEDFIELDS, fn (Blueprint $table) => $table->foreign('siteId')->references('id')->on(Table::SITES)->cascadeOnDelete()->cascadeOnUpdate());
         Schema::table(Table::CHANGEDFIELDS, fn (Blueprint $table) => $table->foreign('fieldId')->references('id')->on(Table::FIELDS)->cascadeOnDelete()->cascadeOnUpdate());
         Schema::table(Table::CHANGEDFIELDS, fn (Blueprint $table) => $table->foreign('userId')->references('id')->on(Table::USERS)->nullOnDelete()->cascadeOnUpdate());
-        Schema::table(Table::CRAFTIDTOKENS, fn (Blueprint $table) => $table->foreign('userId')->references('id')->on(Table::USERS)->cascadeOnDelete());
         Schema::table(Table::DRAFTS, fn (Blueprint $table) => $table->foreign('creatorId')->references('id')->on(Table::USERS)->nullOnDelete());
         Schema::table(Table::DRAFTS, fn (Blueprint $table) => $table->foreign('canonicalId')->references('id')->on(Table::ELEMENTS)->cascadeOnDelete());
         Schema::table(Table::ELEMENTACTIVITY, fn (Blueprint $table) => $table->foreign('elementId')->references('id')->on(Table::ELEMENTS)->cascadeOnDelete());

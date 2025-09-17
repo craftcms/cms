@@ -75,7 +75,6 @@ use craft\services\Images;
 use craft\services\ImageTransforms;
 use craft\services\Path;
 use craft\services\Plugins;
-use craft\services\PluginStore;
 use craft\services\Relations;
 use craft\services\Revisions;
 use craft\services\Routes;
@@ -164,7 +163,6 @@ use yii\web\ServerErrorHttpException;
  * @property-read Mailer $mailer The mailer component
  * @property-read Mutex $mutex The application’s mutex service
  * @property-read Path $path The path service
- * @property-read PluginStore $pluginStore The plugin store service
  * @property-read Plugins $plugins The plugins service
  * @property-read \craft\services\ProjectConfig $projectConfig The project config service
  * @property-read Queue|QueueInterface $queue The job queue
@@ -1205,16 +1203,6 @@ trait ApplicationTrait
     public function getPlugins(): Plugins
     {
         return $this->get('plugins');
-    }
-
-    /**
-     * Returns the plugin store service.
-     *
-     * @return PluginStore The plugin store service
-     */
-    public function getPluginStore(): PluginStore
-    {
-        return $this->get('pluginStore');
     }
 
     /**
