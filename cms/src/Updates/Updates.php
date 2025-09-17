@@ -16,6 +16,7 @@ use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Log;
+use PDOException;
 use Throwable;
 
 /**
@@ -203,7 +204,14 @@ final class Updates
             throw new MigrateException($name ?? 'Craft', $handle, null, 0, $e);
         }
 
-        DB::commit();
+        try {
+            DB::commit();
+        } catch (PdoException $e) {
+            // The transaction could be implicitly committed by Mysql
+            if ($e->getMessage() !== 'There is no active transaction') {
+                throw $e;
+            }
+        }
 
         // Delete all compiled templates
         try {
