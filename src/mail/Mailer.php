@@ -16,6 +16,7 @@ use craft\web\View;
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Support\Env;
+use CraftCms\Cms\SystemMessage\SystemMessages;
 use Throwable;
 use yii\base\InvalidConfigException;
 use yii\helpers\Markdown;
@@ -167,7 +168,7 @@ class Mailer extends \yii\symfonymailer\Mailer
                 // Temporarily disable lazy transform generation
                 $generalConfig->generateTransformsBeforePageLoad = true;
 
-                $systemMessage = Craft::$app->getSystemMessages()->getMessage($message->key, $message->language);
+                $systemMessage = app(SystemMessages::class)->getMessage($message->key, $message->language);
 
                 $settings = App::mailSettings();
                 $variables = ($message->variables ?: []) + [

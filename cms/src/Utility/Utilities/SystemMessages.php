@@ -5,6 +5,7 @@ namespace CraftCms\Cms\Utility\Utilities;
 use Craft;
 use craft\web\assets\systemmessages\SystemMessagesAsset;
 use CraftCms\Cms\Edition;
+use CraftCms\Cms\SystemMessage\SystemMessages as SystemMessagesService;
 use CraftCms\Cms\Utility\Utility;
 
 /**
@@ -49,10 +50,8 @@ final class SystemMessages extends Utility
         $view = Craft::$app->getView();
         $view->registerAssetBundle(SystemMessagesAsset::class);
 
-        $messages = Craft::$app->getSystemMessages()->getAllMessages();
-
         return $view->renderTemplate('_components/utilities/SystemMessages/index.twig', [
-            'messages' => $messages,
+            'messages' => app(SystemMessagesService::class)->getAllMessages(),
         ]);
     }
 }
