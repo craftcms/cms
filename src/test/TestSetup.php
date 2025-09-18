@@ -453,7 +453,7 @@ class TestSetup
 
         $siteConfig = [
             'name' => 'Craft test site',
-            'handle' => 'default',
+            'handle' => 'defaultSite',
             'hasUrls' => true,
             'baseUrl' => self::SITE_URL,
             'language' => 'en-US',

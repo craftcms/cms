@@ -121,6 +121,7 @@ return [
     'Already in your cart' => 'Is al in uw winkelwagen',
     'Alternative Text' => 'Alternatieve tekst',
     'Amber' => 'Amber',
+    'An elevated session is required to change a user’s email.' => 'An elevated session is required to change a user’s email.',
     'An error occurred when duplicating the category.' => 'Er is een fout opgetreden bij het dupliceren van de categorie.',
     'An error occurred when duplicating the entry.' => 'Er is een fout opgetreden bij het dupliceren van de invoer.',
     'An error occurred when installing {name}.' => 'Er is een fout opgetreden bij het installeren van {name}.',

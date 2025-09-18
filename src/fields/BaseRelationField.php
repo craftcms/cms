@@ -497,6 +497,9 @@ abstract class BaseRelationField extends Field implements
     {
         $attributes = parent::settingsAttributes();
         $attributes[] = 'allowSelfRelations';
+        $attributes[] = 'branchLimit';
+        $attributes[] = 'defaultPlacement';
+        $attributes[] = 'maintainHierarchy';
         $attributes[] = 'maxRelations';
         $attributes[] = 'minRelations';
         $attributes[] = 'selectionLabel';
@@ -506,11 +509,7 @@ abstract class BaseRelationField extends Field implements
         $attributes[] = 'sources';
         $attributes[] = 'targetSiteId';
         $attributes[] = 'validateRelatedElements';
-        $attributes[] = 'defaultPlacement';
         $attributes[] = 'viewMode';
-        $attributes[] = 'allowSelfRelations';
-        $attributes[] = 'maintainHierarchy';
-        $attributes[] = 'branchLimit';
 
         return $attributes;
     }
@@ -1569,8 +1568,8 @@ JS, [
             'referenceElement' => $element,
             'criteria' => $selectionCriteria,
             'showSiteMenu' => ($this->targetSiteId || !$this->showSiteMenu || !static::canShowSiteMenu()) ? false : 'auto',
-            'allowSelfRelations' => (bool)$this->allowSelfRelations,
-            'maintainHierarchy' => (bool)$this->maintainHierarchy,
+            'allowSelfRelations' => $this->allowSelfRelations,
+            'maintainHierarchy' => $this->maintainHierarchy,
             'branchLimit' => $this->branchLimit,
             'sourceElementId' => !empty($element->id) ? $element->id : null,
             'disabledElementIds' => $disabledElementIds,

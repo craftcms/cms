@@ -186,7 +186,7 @@ class ElementIndexesController extends BaseElementsController
         $tableColumns = Collection::make($elementSources->getSourceTableAttributes($this->elementType, $this->sourceKey))
             ->map(fn(array $attribute, string $key) => [
                 ...$attribute,
-                'key' => $key,
+                'attr' => $key,
             ])
             ->values()
             ->all();

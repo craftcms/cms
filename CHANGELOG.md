@@ -2,10 +2,46 @@
 
 ## Unreleased
 
+- Fixed an error that could occur when running the `utils/fix-field-layout-uids` command. ([#17848](https://github.com/craftcms/cms/issues/17848))
+- Fixed a bug where inline search wasn’t working for Users fields. ([#17838](https://github.com/craftcms/cms/issues/17838))
+- Fixed a bug where inline search wasn’t returning results ordered by search score.
+- Fixed a bug where “load more” buttons weren’t keyboard-accessible. ([#17797](https://github.com/craftcms/cms/pull/17797))
+- Fixed a bug where the skip link target wasn’t able to be focused after the right sidebar was closed. ([#17847](https://github.com/craftcms/cms/pull/17847))
+- Fixed a bug where focus was dropped after deleting a passkey. ([#17853](https://github.com/craftcms/cms/pull/17853))
+- Fixed a styling issue.
+
+## 5.8.17 - 2025-09-05
+
+- Added `craft\base\NestedElementInterface::getOwners()`.
+- Added `craft\base\NestedElementTrait::getOwners()`.
+- Fixed a bug where entries’ and categories’ descendants’ URIs weren’t always getting updated after a parent’s URI changed. ([#17804](https://github.com/craftcms/cms/discussions/17804))
+- Fixed a bug where addresses weren’t saving `firstName`, `lastName`, and `fullName` values properly. ([#17807](https://github.com/craftcms/cms/issues/17807))
+- Fixed an n+1 query bug when working with Content Block fields. ([#17801](https://github.com/craftcms/cms/issues/17801))
+- Fixed a bug where element selector modals’ sidebars would go out of view if the browser had a custom font size. ([#17809](https://github.com/craftcms/cms/issues/17809))
+- Fixed a bug where relation field values weren’t getting updated properly when two elements were merged together. ([#17817](https://github.com/craftcms/cms/issues/17817))
+- Fixed an authorization error that could occur when editing a provisional draft of a nested element.
+- Fixed a bug where custom field values could be lost when changing an entry type. ([#17821](https://github.com/craftcms/cms/issues/17821))
+- Fixed a bug where non-admin users couldn’t edit recursively-nested elements if they didn’t have save permissions for the top-level element.
+- Fixed a bug where it was possible to select disabled elements within element select modals. ([#17824](https://github.com/craftcms/cms/issues/17824))
+- Fixed a bug where toast notifications weren’t always being dismissed automatically when they should have. ([#17825](https://github.com/craftcms/cms/issues/17825))
+- Fixed an error that could occur if a Content Block field was saved without any fields selected. ([#17829](https://github.com/craftcms/cms/issues/17829))
+- Fixed a styling issue.
+
+## 5.8.16 - 2025-08-29
+
 - When searching for elements, partial matches within titles are now scored higher than exact matches in other fields. ([#17739](https://github.com/craftcms/cms/issues/17739))
+- Date pickers’ year selects now have a range of 100 years in the past and future. ([#17782](https://github.com/craftcms/cms/pull/17782))
 - Fixed a bug where volumes’ filesystem settings weren’t respecting static translations of filesystem names. ([#17749](https://github.com/craftcms/cms/issues/17749))
+- Fixed an error that could occur when applying project config changes. ([#15357](https://github.com/craftcms/cms/issues/15357))
+- Fixed a bug where pressing the “Use defaults” button within element indexes’ View menus wasn’t removing the `sort` query string parameter, so the selected sort option could revert back if the window was reloaded. ([#17761](https://github.com/craftcms/cms/issues/17761))
 - Fixed a bug where Link field condition rules’ “Is of type” operators weren’t getting saved correctly within field layout conditions. ([#17741](https://github.com/craftcms/cms/issues/17741))
 - Fixed a bug where two nested Matrix fields with the same handle but different casing weren’t being treated as identical when upgrading to Craft 5. ([#17751](https://github.com/craftcms/cms/issues/17751))
+- Fixed a bug where it wasn’t possible to view elements in structure view when a status was selected or a filter was applied. ([#17759](https://github.com/craftcms/cms/issues/17759), [#17774](https://github.com/craftcms/cms/issues/17774))
+- Fixed a bug where custom field values weren’t always retaining changes after changing an entry type. ([#17768](https://github.com/craftcms/cms/issues/17768))
+- Fixed a bug where JSON fields weren’t initializing properly when they weren’t on the initially-shown field layout tab. ([#17772](https://github.com/craftcms/cms/issues/17772))
+- Fixed a bug where the Live Preview drag bar’s hit area was only 2px wide. ([#17781](https://github.com/craftcms/cms/issues/17781))
+- Fixed a bug where multi-select Selectize inputs didn’t allow selected options’ labels to wrap. ([#17790](https://github.com/craftcms/cms/issues/17790))
+- Updated the bundled composer.phar to 2.7.7. ([#17796](https://github.com/craftcms/cms/issues/17796))
 
 ## 5.8.15 - 2025-08-13
 

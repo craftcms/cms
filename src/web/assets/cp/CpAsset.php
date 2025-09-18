@@ -661,6 +661,7 @@ JS;
             'monthNamesShort' => $locale->getMonthNames(Locale::LENGTH_ABBREVIATED),
             'nextText' => Craft::t('app', 'Next'),
             'prevText' => Craft::t('app', 'Prev'),
+            'yearRange' => 'c-100:c+100',
         ];
     }
 

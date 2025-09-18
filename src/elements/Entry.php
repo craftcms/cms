@@ -2926,7 +2926,7 @@ JS;
             $this->saveOwnership($isNew, Table::ENTRIES);
 
             if (
-                (!$this->duplicateOf || $this->placeInStructure) &&
+                (!$this->duplicateOf || $this->updatingFromDerivative || $this->placeInStructure) &&
                 isset($this->sectionId) &&
                 $section->type == Section::TYPE_STRUCTURE
             ) {

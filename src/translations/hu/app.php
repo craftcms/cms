@@ -121,6 +121,7 @@ return [
     'Already in your cart' => 'Már a kosárban',
     'Alternative Text' => 'Alternatív szöveg',
     'Amber' => 'Borostyán',
+    'An elevated session is required to change a user’s email.' => 'An elevated session is required to change a user’s email.',
     'An error occurred when duplicating the category.' => 'Hiba történt a kategória többszörözése közben.',
     'An error occurred when duplicating the entry.' => 'Hiba történt a bejegyzés többszörözése közben.',
     'An error occurred when installing {name}.' => 'Hiba történt {name} telepítésekor.',

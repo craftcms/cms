@@ -121,6 +121,7 @@ return [
     'Already in your cart' => 'Redan i din kundvagn',
     'Alternative Text' => 'Alternativ text',
     'Amber' => 'Bärnsten',
+    'An elevated session is required to change a user’s email.' => 'An elevated session is required to change a user’s email.',
     'An error occurred when duplicating the category.' => 'Det uppstod ett fel när kategorin duplicerades.',
     'An error occurred when duplicating the entry.' => 'Det uppstod ett fel när posten duplicerades.',
     'An error occurred when installing {name}.' => 'Ett fel inträffade när {name} installerades.',

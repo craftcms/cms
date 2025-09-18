@@ -556,6 +556,8 @@ import './routes.scss';
 
             $route.appendTo('#routes');
 
+            this.addNewRouteActions($route);
+
             this.route = new Route($route);
             this.route.modal = this;
 
@@ -581,6 +583,73 @@ import './routes.scss';
           this.$spinner.hide();
           this.loading = false;
         });
+    },
+
+    addNewRouteActions: function ($route) {
+      let $actionsContainer = $route.find('.actions');
+
+      Craft.ui
+        .createButton({
+          class: 'chromeless small edit-btn',
+          icon: 'edit',
+        })
+        .attr({
+          title: Craft.t('app', 'Edit'),
+          'aria-label': Craft.t('app', 'Edit'),
+          role: 'none',
+        })
+        .appendTo($actionsContainer);
+      $(' ').appendTo($actionsContainer);
+
+      const menuId = `menu-${Math.floor(Math.random() * 1000000)}`;
+      const $menuButton = Craft.ui
+        .createButton({
+          class: 'menubtn action-btn small',
+          controls: menuId,
+          ariaLabel: Craft.t('app', 'Actions'),
+        })
+        .attr({
+          'data-disclosure-trigger': 'true',
+          title: Craft.t('app', 'Actions'),
+        })
+        .appendTo($actionsContainer);
+      $('<div/>', {
+        id: menuId,
+        class: 'menu menu--disclosure',
+      }).appendTo($actionsContainer);
+
+      const disclosureMenu = $menuButton
+        .disclosureMenu()
+        .data('disclosureMenu');
+
+      disclosureMenu.addItem({
+        icon: async () => await Craft.ui.icon('arrow-up'),
+        label: Craft.t('app', 'Move up'),
+        onActivate: () => {
+          this.route.moveUp();
+        },
+        attributes: {
+          'data-action': 'moveUp',
+        },
+      });
+
+      disclosureMenu.addItem({
+        icon: async () => await Craft.ui.icon('arrow-down'),
+        label: Craft.t('app', 'Move down'),
+        onActivate: () => {
+          this.route.moveDown();
+        },
+        attributes: {
+          'data-action': 'moveDown',
+        },
+      });
+
+      $('<a />', {
+        class: 'move icon',
+        title: Craft.t('app', 'Reorder'),
+        'aria-label': Craft.t('app', 'Reorder'),
+        tabindex: '-1',
+      }).appendTo($actionsContainer);
     },
 
     addUriError: function (error) {

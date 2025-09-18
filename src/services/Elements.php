@@ -15,6 +15,7 @@ use craft\base\ElementInterface;
 use craft\base\ExpirableElementInterface;
 use craft\base\FieldInterface;
 use craft\base\NestedElementInterface;
+use craft\behaviors\CustomFieldBehavior;
 use craft\behaviors\DraftBehavior;
 use craft\console\controllers\MigrateController;
 use craft\console\controllers\UpController;
@@ -30,6 +31,7 @@ use craft\elements\db\EagerLoadInfo;
 use craft\elements\db\EagerLoadPlan;
 use craft\elements\db\ElementQuery;
 use craft\elements\db\ElementQueryInterface;
+use craft\elements\ElementCollection;
 use craft\elements\Entry;
 use craft\elements\GlobalSet;
 use craft\elements\Tag;
@@ -51,6 +53,7 @@ use craft\events\MergeElementsEvent;
 use craft\events\MultiElementActionEvent;
 use craft\events\RegisterComponentTypesEvent;
 use craft\fieldlayoutelements\CustomField;
+use craft\fields\BaseRelationField;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Component as ComponentHelper;
 use craft\helpers\DateTimeHelper;
@@ -2234,7 +2237,62 @@ class Elements extends Component
     {
         $transaction = Craft::$app->getDb()->beginTransaction();
         try {
-            // Update any relations that point to the merged element
+            // Find elements that relate to the merged element
+            $data = (new Query())
+                ->select(['r.sourceId', 'r.sourceSiteId', 'e.type'])
+                ->innerJoin(['e' => Table::ELEMENTS], '[[e.id]] = [[r.sourceId]]')
+                ->from(['r' => Table::RELATIONS])
+                ->where(['r.targetId' => $mergedElement->id])
+                ->collect()
+                ->groupBy(['type', fn($r) => $r['sourceSiteId'] ?? '*']);
+
+            foreach ($data as $elementType => $typeData) {
+                foreach ($typeData as $siteId => $relations) {
+                    /** @var class-string<ElementInterface> $elementType */
+                    /** @var ElementCollection $relations */
+                    $query = $elementType::find()
+                        ->id($relations->pluck('sourceId'))
+                        ->siteId($siteId)
+                        ->drafts(null)
+                        ->revisions(null)
+                        ->trashed(null)
+                        ->status(null);
+
+                    if ($siteId === '*') {
+                        $query->unique();
+                    }
+
+                    foreach (Db::each($query) as $element) {
+                        /** @var ElementInterface $element */
+                        /** @var CustomFieldBehavior $behavior */
+                        $behavior = $element->getBehavior('customFields');
+                        foreach ($element->getFieldLayout()?->getCustomFields() ?? [] as $field) {
+                            if (
+                                $field instanceof BaseRelationField &&
+                                isset($behavior->{$field->handle}) &&
+                                is_array($behavior->{$field->handle}) &&
+                                in_array($mergedElement->id, $behavior->{$field->handle})
+                            ) {
+                                // see if the prevailing element is related too
+                                if (in_array($prevailingElement->id, $behavior->{$field->handle})) {
+                                    $value = array_values(array_filter($behavior->{$field->handle}, fn($v) => $v != $mergedElement->id));
+                                } else {
+                                    $value = array_map(fn($v) => $v == $mergedElement->id ? $prevailingElement->id : $v, $behavior->{$field->handle});
+                                }
+                                $element->setFieldValue($field->handle, $value);
+                            }
+                        }
+                        if (!empty($element->getDirtyFields())) {
+                            $element->resaving = true;
+                            $this->saveElement($element, false);
+                        }
+                    }
+                }
+            }
+
+            // Deal with any remaining relation values
+            // (Not all relation field values have been saved since 5.3.0 when relation fields
+            // started saving the target element IDs in the content JSON.)
             $relations = (new Query())
                 ->select(['id', 'fieldId', 'sourceId', 'sourceSiteId'])
                 ->from([Table::RELATIONS])
@@ -2959,17 +3017,26 @@ class Elements extends Component
         $sitesService = Craft::$app->getSites();
         $allRefTagTokens = [];
         $str = preg_replace_callback(
-            '/\{([\w\\\\]+)\:([^@\:\}]+)(?:@([^\:\}]+))?(?:\:([^\}\| ]+))?(?: *\|\| *([^\}]+))?\}/',
+            '/
+                \{                                      # Tags always begin with a {
+                    (?P<elementType>[\w\\\\]+)          # Ref handle or element type class
+                    \:(?P<ref>[^@\:\}\|]+)              # Identifier (ID, or another format supported by the element type)
+                    (?:@(?P<site>[^\:\}\|]+))?          # [Optional] Site handle, ID, or UUID
+                    (?:\:(?P<attr>[^\}\| ]+))?          # [Optional] Attribute, property, or field
+                    (?:\ *\|\|\ *(?P<fallback>[^\}]+))? # [Optional] Fallback text (if the ref fails to resolve)
+                \}                                      # Tags always close with a }
+            /x',
             function(array $matches) use (
                 $defaultSiteId,
                 $sitesService,
                 &$allRefTagTokens
             ) {
-                $matches = array_pad($matches, 6, null);
-                [$fullMatch, $elementType, $ref, $siteId, $attribute, $fallback] = $matches;
-                if ($fallback === null) {
-                    $fallback = $fullMatch;
-                }
+                $fullMatch = $matches[0];
+                $elementType = $matches['elementType'];
+                $ref = $matches['ref'];
+                $siteId = $matches['site'] ?? null;
+                $attribute = $matches['attr'] ?? null;
+                $fallback = $matches['fallback'] ?? $fullMatch;
 
                 // Swap out the ref handle for the element type
                 $elementType = $this->getElementTypeByRefHandle($elementType);
@@ -3007,7 +3074,11 @@ class Elements extends Component
                 $allRefTagTokens[$siteId][$elementType][$refType][$ref][] = [$token, $attribute, $fallback, $fullMatch];
 
                 return $token;
-            }, $str, -1, $count);
+            },
+            $str,
+            -1,
+            $count
+        );
 
         if ($count === 0) {
             // No ref tags
@@ -3916,7 +3987,11 @@ class Elements extends Component
                     $view = Craft::$app->getView();
 
                     if ($fieldLayout) {
+                        $validUids = [];
+
                         foreach ($fieldLayout->getCustomFields() as $field) {
+                            $validUids[$field->layoutElement->uid] = true;
+
                             if (($saveContent || in_array($field->handle, $dirtyFields)) && $field::dbType() !== null) {
                                 $value = $element->getFieldValue($field->handle);
                                 if ($element->isNewForSite && $field->isValueEmpty($value, $element)) {
@@ -3937,6 +4012,8 @@ class Elements extends Component
 
                         $generatedFieldValues = [];
                         foreach ($generatedFields as $field) {
+                            $validUids[$field['uid']] = true;
+
                             $value = $view->renderObjectTemplate($field['template'] ?? '', $element);
                             if ($value !== '') {
                                 $content[$field['uid']] = $value;
@@ -3950,9 +4027,14 @@ class Elements extends Component
                         $element->setGeneratedFieldValues($generatedFieldValues);
                     }
 
-                    // if we're only saving dirty fields, we need to merge the new dirty values with what's already in the db
+                    // if we're only saving dirty fields, merge in the existing values,
+                    // excluding any UUIDs that are no longer valid (see https://github.com/craftcms/cms/issues/17768)
                     if (!$saveContent && $oldContent) {
-                        $content = $content + $oldContent;
+                        foreach ($oldContent as $uid => $value) {
+                            if (!isset($content[$uid]) && isset($validUids[$uid])) {
+                                $content[$uid] = $value;
+                            }
+                        }
                     }
 
                     $siteSettingsRecord->content = $content ?: null;

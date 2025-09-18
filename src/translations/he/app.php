@@ -121,6 +121,7 @@ return [
     'Already in your cart' => 'כבר בעגלה שלך',
     'Alternative Text' => 'טקסט חלופי',
     'Amber' => 'ענבר',
+    'An elevated session is required to change a user’s email.' => 'An elevated session is required to change a user’s email.',
     'An error occurred when duplicating the category.' => 'אירעה שגיאה בעת שכפול הקטגוריה.',
     'An error occurred when duplicating the entry.' => 'אירעה שגיאה בעת שכפול הערך.',
     'An error occurred when installing {name}.' => 'אירעה שגיאה בעת התקנת {name}.',

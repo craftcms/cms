@@ -121,6 +121,7 @@ return [
     'Already in your cart' => 'Zaten sepetinizde',
     'Alternative Text' => 'Alternatif Metin',
     'Amber' => 'Kehribar',
+    'An elevated session is required to change a user’s email.' => 'An elevated session is required to change a user’s email.',
     'An error occurred when duplicating the category.' => 'Kategori kopyalanırken bir hata oluştu.',
     'An error occurred when duplicating the entry.' => 'Giriş çoğaltılırken bir hata oluştu.',
     'An error occurred when installing {name}.' => '{name} yüklenirken bir hata oluştu.',

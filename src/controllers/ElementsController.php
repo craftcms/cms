@@ -1942,6 +1942,9 @@ JS, [
                 $element = $this->element = $draft;
             }
 
+            // keep track of the original field layout ID, in case it changes here
+            $oldFieldLayoutId = $element->getFieldLayout()?->id;
+
             $this->_applyParamsToElement($element);
 
             // Make sure nothing just changed that would prevent the user from saving
@@ -1955,7 +1958,10 @@ JS, [
 
             $element->setScenario(Element::SCENARIO_ESSENTIALS);
 
-            if (!$elementsService->saveElement($element)) {
+            // If the field layout ID changed, save all content
+            $saveContent = $element->getFieldLayout()?->id !== $oldFieldLayoutId;
+
+            if (!$elementsService->saveElement($element, saveContent: $saveContent)) {
                 $transaction->rollBack();
                 return $this->_asFailure($element, StringHelper::upperCaseFirst(Craft::t('app', 'Couldn’t save {type}.', [
                     'type' => Craft::t('app', 'draft'),

@@ -6072,8 +6072,6 @@ $min2ColWidth: 400px;
       }
 
       &.add {
-        background-color: color.adjust(mixins.$grey050, $lightness: -2%);
-
         &::before {
           position: absolute;
           inset-block-start: var(--m);
@@ -6099,9 +6097,12 @@ $min2ColWidth: 400px;
         }
       }
 
-      #details &.lightswitch-field > .heading {
-        flex: 1;
-        border-inline-end: none;
+      #details &,
+      .so-sidebar.details & {
+        &.lightswitch-field > .heading {
+          flex: 1;
+          border-inline-end: none;
+        }
       }
 
       & > .input {
@@ -6180,7 +6181,8 @@ $min2ColWidth: 400px;
     & > .field.lightswitch-field > .input {
       padding-inline: 10px;
 
-      #details & {
+      #details &,
+      .so-sidebar.details & {
         flex: 0;
         width: auto;
       }
@@ -6327,10 +6329,6 @@ $min2ColWidth: 400px;
   border-radius: 0;
   box-shadow: none;
   background-color: transparent;
-
-  &::after {
-    inset-inline-end: 0;
-  }
 
   & + .spinner {
     position: absolute;
@@ -6608,7 +6606,7 @@ $min2ColWidth: 400px;
     position: relative;
     display: flex;
     gap: var(--s);
-    justify-content: space-between;
+    justify-content: flex-end;
     flex-wrap: wrap;
     margin-block: 0 -24px;
     margin-inline: var(--neg-padding);
@@ -6622,6 +6620,7 @@ $min2ColWidth: 400px;
     & > .so-notice {
       display: flex;
       align-items: center;
+      margin-inline-end: auto;
     }
 
     & > .so-extra {
@@ -7071,7 +7070,7 @@ $min2ColWidth: 400px;
       .sidebar {
         position: absolute;
         inset-block-start: 0;
-        margin-inline-start: -249px;
+        margin-inline-start: calc(-249rem / 16);
         height: 100%;
         overflow: auto;
         padding-block: var(--content-padding);
@@ -7726,6 +7725,7 @@ $min2ColWidth: 400px;
     }
 
     .chip {
+      display: flex;
       margin-block: -4px;
     }
   }
@@ -9045,6 +9045,7 @@ body .selectize-dropdown {
     flex-direction: row;
     padding-block: 3px !important;
     padding-inline: 7px !important;
+    word-break: break-word;
 
     &.active {
       @include mixins.active-token-styles;
