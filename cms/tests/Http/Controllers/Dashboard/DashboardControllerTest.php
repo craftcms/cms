@@ -9,7 +9,7 @@ use function Pest\Laravel\get;
 
 it('requires login', function () {
     get(action(DashboardController::class))
-        ->assertRedirect(app(GeneralConfig::class)->loginPath);
+        ->assertRedirect(app(GeneralConfig::class)->cpTrigger . '/login');
 });
 
 it('can be rendered', function () {
