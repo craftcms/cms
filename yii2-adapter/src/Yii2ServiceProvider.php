@@ -38,47 +38,7 @@ class Yii2ServiceProvider extends ServiceProvider
 
         $this->loadRoutesFrom(__DIR__ . '/../routes/web.php');
 
-        $this->app
-            ->setBasePath(CRAFT_BASE_PATH)
-            ->useStoragePath(CRAFT_STORAGE_PATH)
-            ->useEnvironmentPath(CRAFT_DOTENV_PATH);
-
-        if ($this->inLaravelSkeleton()) {
-            defined('CRAFT_CONFIG_PATH') || define('CRAFT_CONFIG_PATH', config_path('craft'));
-            defined('CRAFT_TRANSLATIONS_PATH') || define('CRAFT_TRANSLATIONS_PATH', lang_path());
-            defined('CRAFT_LICENSE_KEY_PATH') || define('CRAFT_LICENSE_KEY_PATH', config_path('craft/license.key'));
-        } else {
-            defined('CRAFT_TRANSLATIONS_PATH') || define('CRAFT_TRANSLATIONS_PATH', base_path('translations'));
-            defined('CRAFT_LICENSE_KEY_PATH') || define('CRAFT_LICENSE_KEY_PATH', config_path('license.key'));
-
-            /**
-             * Configure the Laravel application to look into
-             * folders defined by the Craft CMS constants.
-             */
-            $configPath = defined('CRAFT_CONFIG_PATH') ? CRAFT_CONFIG_PATH : base_path('config');
-            foreach (scandir($configPath) as $file) {
-                if (!str_ends_with($file, '.php')) {
-                    continue;
-                }
-
-                $key = str_replace('.php', '', $file);
-
-                Config::set("craft.$key", require base_path("config/$file"));
-            }
-
-            $this->app
-                // When not in a Laravel skeleton, we don't want to conflict any config files.
-                ->useConfigPath(base_path('config/laravel'))
-                ->useLangPath(CRAFT_TRANSLATIONS_PATH)
-                ->usePublicPath(Env::get('CRAFT_WEB_ROOT', $this->app->publicPath()));
-        }
-
         $this->setLaravelDefaults();
-    }
-
-    protected function inLaravelSkeleton(): bool
-    {
-        return is_dir(config_path('craft')) || file_exists(config_path('auth.php'));
     }
 
     protected function registerConstants(): void
@@ -94,16 +54,19 @@ class Yii2ServiceProvider extends ServiceProvider
          */
         defined('YII_DEBUG') || define('YII_DEBUG', config('app.debug'));
 
+        defined('CRAFT_CONFIG_PATH') || define('CRAFT_CONFIG_PATH', config_path('craft'));
+        defined('CRAFT_TRANSLATIONS_PATH') || define('CRAFT_TRANSLATIONS_PATH', lang_path());
+        defined('CRAFT_LICENSE_KEY_PATH') || define('CRAFT_LICENSE_KEY_PATH', config_path('craft/license.key'));
+        defined('CRAFT_BASE_PATH') || define('CRAFT_BASE_PATH', base_path());
+        defined('CRAFT_STORAGE_PATH') || define('CRAFT_STORAGE_PATH', storage_path());
+        defined('CRAFT_DOTENV_PATH') || define('CRAFT_DOTENV_PATH', app()->environmentPath());
+        defined('CRAFT_VENDOR_PATH') || define('CRAFT_VENDOR_PATH', base_path('vendor'));
+
         if (is_dir(resource_path('views'))) {
             defined('CRAFT_TEMPLATES_PATH') || define('CRAFT_TEMPLATES_PATH', resource_path('views'));
         } else {
             defined('CRAFT_TEMPLATES_PATH') || define('CRAFT_TEMPLATES_PATH', base_path('templates'));
         }
-
-        defined('CRAFT_BASE_PATH') || define('CRAFT_BASE_PATH', base_path());
-        defined('CRAFT_VENDOR_PATH') || define('CRAFT_VENDOR_PATH', base_path('vendor'));
-        defined('CRAFT_STORAGE_PATH') || define('CRAFT_STORAGE_PATH', storage_path());
-        defined('CRAFT_DOTENV_PATH') || define('CRAFT_DOTENV_PATH', base_path());
     }
 
     protected function registerLegacyApp(): void
