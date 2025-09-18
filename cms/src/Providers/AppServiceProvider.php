@@ -28,6 +28,8 @@ use Illuminate\Http\Request;
 use Illuminate\Routing\Router;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\ServiceProvider;
+use ReflectionClass;
+use RuntimeException;
 
 /** @since 6.0.0 */
 final class AppServiceProvider extends ServiceProvider
@@ -37,6 +39,8 @@ final class AppServiceProvider extends ServiceProvider
     #[\Override]
     public function register(): void
     {
+        $this->registerMacros();
+
         /**
          * Make sure we're using Craft's User model
          *
@@ -57,8 +61,32 @@ final class AppServiceProvider extends ServiceProvider
             HandleActionRequest::class,
         ], $kernel->getGlobalMiddleware()));
 
-        Authenticate::redirectUsing(fn () => app(GeneralConfig::class)->loginPath);
+        Authenticate::redirectUsing(function () {
+            if (\request()->isCpRequest()) {
+                return app(GeneralConfig::class)->cpTrigger.'/login';
+            }
 
+            return app(GeneralConfig::class)->loginPath;
+        });
+    }
+
+    public function boot(): void
+    {
+        AboutCommand::add('Craft CMS', fn () => [
+            'Edition' => Craft::$app->edition->name,
+            'Schema' => Craft::$app->schemaVersion,
+            'Version' => Craft::$app->getVersion(),
+        ]);
+
+        $this->setNamespace();
+        $this->bootAliases();
+        $this->bootMiddleware();
+
+        $this->loadRoutesFrom("{$this->root}/routes/routes.php");
+    }
+
+    private function registerMacros(): void
+    {
         Application::macro('isLive', function (): bool {
             if (is_bool($live = app(GeneralConfig::class)->isSystemLive)) {
                 return $live;
@@ -117,28 +145,6 @@ final class AppServiceProvider extends ServiceProvider
         });
     }
 
-    public function boot(): void
-    {
-        Aliases::set('@root', Env::get('CRAFT_ROOT_PATH', $this->app->basePath()));
-        Aliases::set('@craftcms', FileHelper::normalizePath($this->root.'/../'));
-        Aliases::set('@packageRoot', '@craftcms/cms');
-        Aliases::set('@package', '@packageRoot/src');
-
-        if ($webUrl = Env::get('CRAFT_WEB_URL')) {
-            Aliases::set('@web', $webUrl);
-        }
-
-        AboutCommand::add('Craft CMS', fn () => [
-            'Edition' => Craft::$app->edition->name,
-            'Schema' => Craft::$app->schemaVersion,
-            'Version' => Craft::$app->getVersion(),
-        ]);
-
-        $this->bootMiddleware();
-
-        $this->loadRoutesFrom("{$this->root}/routes/routes.php");
-    }
-
     protected function bootMiddleware(): void
     {
         $router = $this->app->make(Router::class);
@@ -159,5 +165,32 @@ final class AppServiceProvider extends ServiceProvider
         collect([
             'web',
         ])->each(fn ($middleware) => $router->pushMiddlewareToGroup('craft.web', $middleware));
+    }
+
+    private function setNamespace(): void
+    {
+        /**
+         * In a Craft 5 upgraded project, the namespace won't be
+         * detected automatically, we set it to "App" here.
+         */
+        try {
+            $this->app->getNamespace();
+        } catch (RuntimeException) {
+            $reflectionClass = new ReflectionClass($this->app);
+            $reflectionProperty = $reflectionClass->getProperty('namespace');
+            $reflectionProperty->setValue($this->app, 'App');
+        }
+    }
+
+    private function bootAliases(): void
+    {
+        Aliases::set('@root', Env::get('CRAFT_ROOT_PATH', $this->app->basePath()));
+        Aliases::set('@craftcms', FileHelper::normalizePath($this->root.'/../'));
+        Aliases::set('@packageRoot', '@craftcms/cms');
+        Aliases::set('@package', '@packageRoot/src');
+
+        if ($webUrl = Env::get('CRAFT_WEB_URL')) {
+            Aliases::set('@web', $webUrl);
+        }
     }
 }
