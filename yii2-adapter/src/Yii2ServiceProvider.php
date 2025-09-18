@@ -3,8 +3,6 @@
 namespace CraftCms\Yii2Adapter;
 
 use craft\console\controllers\HelpController;
-use craft\helpers\App;
-use craft\helpers\FileHelper;
 use craft\services\Dashboard;
 use craft\services\Plugins as LegacyPlugins;
 use craft\services\ProjectConfig;
@@ -23,7 +21,6 @@ use CraftCms\Yii2Adapter\Http\Controller;
 use Illuminate\Console\Application as ConsoleApplication;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Config;
-use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\ServiceProvider;
 use RuntimeException;
@@ -122,26 +119,11 @@ class Yii2ServiceProvider extends ServiceProvider
         Config::set('database.default', Env::get('DB_CONNECTION', Env::get('CRAFT_DB_DRIVER', 'mysql')));
     }
 
-    public function boot(
-        GeneralConfig $generalConfig,
-    ): void {
+    public function boot(): void
+    {
         $this->commands([
             MigrateMigrationTableCommand::class,
         ]);
-
-        $this->ensureStorageFoldersExist($generalConfig);
-
-        /**
-         * In a Craft 5 upgraded project, the namespace won't be
-         * detected automatically, we set it to "App" here.
-         */
-        try {
-            $this->app->getNamespace();
-        } catch (RuntimeException) {
-            $reflectionClass = new \ReflectionClass($this->app);
-            $reflectionProperty = $reflectionClass->getProperty('namespace');
-            $reflectionProperty->setValue($this->app, 'App');
-        }
 
         /**
          * Prefix is not generally a configuration variable that
@@ -281,28 +263,6 @@ class Yii2ServiceProvider extends ServiceProvider
          */
         AssetIndexes::registerEvents();
         ClearCaches::registerEvents();
-    }
-
-    private function ensureStorageFoldersExist(GeneralConfig $generalConfig): void
-    {
-        $dirMode = $generalConfig->defaultDirMode ?? 0775;
-
-        File::ensureDirectoryExists($this->app->storagePath(), $dirMode);
-
-        File::ensureDirectoryExists($this->app->storagePath('framework/cache'), $dirMode);
-        FileHelper::writeGitignoreFile($this->app->storagePath('framework/cache'));
-
-        File::ensureDirectoryExists($this->app->storagePath('framework/views'), $dirMode);
-        FileHelper::writeGitignoreFile($this->app->storagePath('framework/views'));
-
-        File::ensureDirectoryExists($this->app->storagePath('framework/sessions'), $dirMode);
-        FileHelper::writeGitignoreFile($this->app->storagePath('framework/sessions'));
-
-        File::ensureDirectoryExists($this->app->storagePath('runtime'), $dirMode);
-
-        if (!App::isStreamLog()) {
-            File::ensureDirectoryExists($this->app->storagePath('logs'), $dirMode);
-        }
     }
 
     /**
