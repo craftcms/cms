@@ -54,7 +54,6 @@ class Yii2ServiceProvider extends ServiceProvider
         defined('CRAFT_CONFIG_PATH') || define('CRAFT_CONFIG_PATH', config_path('craft'));
         defined('CRAFT_TRANSLATIONS_PATH') || define('CRAFT_TRANSLATIONS_PATH', lang_path());
         defined('CRAFT_LICENSE_KEY_PATH') || define('CRAFT_LICENSE_KEY_PATH', config_path('craft/license.key'));
-        defined('CRAFT_BASE_PATH') || define('CRAFT_BASE_PATH', base_path());
         defined('CRAFT_STORAGE_PATH') || define('CRAFT_STORAGE_PATH', storage_path());
         defined('CRAFT_DOTENV_PATH') || define('CRAFT_DOTENV_PATH', app()->environmentPath());
         defined('CRAFT_VENDOR_PATH') || define('CRAFT_VENDOR_PATH', base_path('vendor'));

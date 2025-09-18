@@ -89,7 +89,7 @@ Craft::setAlias('@craft', $srcPath); // same as @app, but needed for the `help` 
 Craft::setAlias('@dotenv', $app->environmentFilePath());
 Craft::setAlias('@config', $app->configPath());
 Craft::setAlias('@contentMigrations', Env::get('CRAFT_CONTENT_MIGRATIONS_PATH', $app->basePath('migrations')));
-Craft::setAlias('@storage', $app->storagePath());
+Craft::setAlias('@storage', defined('CRAFT_STORAGE_PATH') ? CRAFT_STORAGE_PATH : $app->storagePath());
 Craft::setAlias('@templates', CRAFT_TEMPLATES_PATH); // Defined in Yii2ServiceProvider
 Craft::setAlias('@translations', Env::get('CRAFT_TRANSLATIONS_PATH', $app->langPath()));
 Craft::setAlias('@tests', Env::get('CRAFT_TESTS_PATH', $app->basePath('tests')));
