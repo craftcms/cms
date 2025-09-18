@@ -15,7 +15,6 @@ use craft\errors\InvalidTypeException;
 use craft\helpers\Component;
 use craft\helpers\Cp;
 use craft\helpers\Search;
-use craft\helpers\StringHelper;
 use craft\web\Controller;
 use yii\web\BadRequestHttpException;
 use yii\web\Response;
@@ -56,7 +55,7 @@ class ElementSearchController extends Controller
         $query = $elementType::find()
             ->siteId($siteId)
             ->search($search)
-            ->orderBy(['LENGTH([[title]])' => SORT_ASC])
+            ->orderBy(['score' => SORT_DESC])
             ->limit(5);
 
         if ($criteria) {
@@ -91,7 +90,6 @@ class ElementSearchController extends Controller
         $return = [];
         $exactMatches = [];
         $excludes = [];
-        $titleLengths = [];
         $exactMatch = false;
 
         $search = Search::normalizeKeywords($search);
@@ -110,7 +108,6 @@ class ElementSearchController extends Controller
             ];
 
             $title = $element->title ?? (string)$element;
-            $titleLengths[] = StringHelper::length($title);
             $title = Search::normalizeKeywords($title);
 
             if ($title == $search) {
@@ -123,7 +120,10 @@ class ElementSearchController extends Controller
             $excludes[] = $exclude ? 1 : 0;
         }
 
-        array_multisort($excludes, SORT_ASC, $exactMatches, SORT_DESC, $titleLengths, $return);
+        // prevent the default sort order from changing beyond $excludes + $exactMatches
+        $range = range(1, count($return));
+
+        array_multisort($excludes, SORT_ASC, $exactMatches, SORT_DESC, $range, $return);
 
         return $this->asJson([
             'elements' => $return,
