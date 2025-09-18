@@ -16,8 +16,8 @@ use Illuminate\Container\Attributes\Singleton;
 use Illuminate\Database\Connection;
 use Illuminate\Foundation\Application;
 use Illuminate\Http\Client\Response;
-use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
@@ -47,7 +47,6 @@ final class Api
         private readonly Application $app,
         private readonly Composer $composer,
         private readonly Connection $db,
-        private readonly Request $request,
         private readonly Repository $cache,
         private readonly Plugins $plugins,
         private readonly License $license,
@@ -139,15 +138,15 @@ final class Api
 
         // request info
         if (! $this->app->runningInConsole()) {
-            $headers['X-Craft-Host'] = $this->request->host();
+            $headers['X-Craft-Host'] = request()->host();
 
-            if ($ip = $this->request->ip()) {
+            if ($ip = request()->ip()) {
                 $headers['X-Craft-User-Ip'] = $ip;
             }
         }
 
-        // email
-        if ($user = $this->request->user()) {
+        if ($user = Auth::getUser()) {
+            /** @var \CraftCms\Cms\User\Models\User $user */
             $headers['X-Craft-User-Email'] = $user->email;
         }
 
@@ -247,7 +246,7 @@ final class Api
         // cache license info from the response
         $duration = now()->addYear();
         if (isset($headers['x-craft-allow-trials'])) {
-            $cacheKey = sprintf('editionTestableDomain@%s', $this->request->host());
+            $cacheKey = sprintf('editionTestableDomain@%s', request()->host());
             $this->cache->put($cacheKey, (int) reset($headers['x-craft-allow-trials']), $duration);
         }
 
@@ -324,7 +323,7 @@ final class Api
             if ($this->app->runningInConsole()) {
                 $this->cache->forget(License::CACHE_KEY_LICENSE_INFO_HOST);
             } else {
-                $this->cache->put(License::CACHE_KEY_LICENSE_INFO_HOST, $this->request->host(), $duration);
+                $this->cache->put(License::CACHE_KEY_LICENSE_INFO_HOST, request()->host(), $duration);
             }
         }
     }
