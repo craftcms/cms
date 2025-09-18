@@ -21,7 +21,7 @@ it('requires login', function () {
     auth()->logout();
 
     get(action([PluginStoreController::class, 'index']))
-        ->assertRedirect(app(GeneralConfig::class)->cpTrigger . '/login');
+        ->assertRedirect(app(GeneralConfig::class)->cpTrigger.'/login');
 });
 
 it('renders the plugin store', function () {
