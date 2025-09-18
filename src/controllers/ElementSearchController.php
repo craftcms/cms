@@ -92,38 +92,40 @@ class ElementSearchController extends Controller
         $excludes = [];
         $exactMatch = false;
 
-        $search = Search::normalizeKeywords($search);
+        if (!empty($elements)) {
+            $search = Search::normalizeKeywords($search);
 
-        foreach ($elements as $element) {
-            $exclude = in_array($element->id, $excludeIds, false);
+            foreach ($elements as $element) {
+                $exclude = in_array($element->id, $excludeIds, false);
 
-            $return[] = [
-                'id' => $element->id,
-                'title' => $element->title,
-                'html' => Cp::chipHtml($element, [
-                    'hyperlink' => false,
-                    'class' => 'chromeless',
-                ]),
-                'exclude' => $exclude,
-            ];
+                $return[] = [
+                    'id' => $element->id,
+                    'title' => $element->title,
+                    'html' => Cp::chipHtml($element, [
+                        'hyperlink' => false,
+                        'class' => 'chromeless',
+                    ]),
+                    'exclude' => $exclude,
+                ];
 
-            $title = $element->title ?? (string)$element;
-            $title = Search::normalizeKeywords($title);
+                $title = $element->title ?? (string)$element;
+                $title = Search::normalizeKeywords($title);
 
-            if ($title == $search) {
-                $exactMatches[] = 1;
-                $exactMatch = true;
-            } else {
-                $exactMatches[] = 0;
+                if ($title == $search) {
+                    $exactMatches[] = 1;
+                    $exactMatch = true;
+                } else {
+                    $exactMatches[] = 0;
+                }
+
+                $excludes[] = $exclude ? 1 : 0;
             }
 
-            $excludes[] = $exclude ? 1 : 0;
+            // prevent the default sort order from changing beyond $excludes + $exactMatches
+            $range = range(1, count($return));
+
+            array_multisort($excludes, SORT_ASC, $exactMatches, SORT_DESC, $range, $return);
         }
-
-        // prevent the default sort order from changing beyond $excludes + $exactMatches
-        $range = range(1, count($return));
-
-        array_multisort($excludes, SORT_ASC, $exactMatches, SORT_DESC, $range, $return);
 
         return $this->asJson([
             'elements' => $return,
