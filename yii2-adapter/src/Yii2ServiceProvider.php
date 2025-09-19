@@ -18,9 +18,12 @@ use CraftCms\Cms\Support\Str;
 use CraftCms\Yii2Adapter\Console\LegacyCraftCommand;
 use CraftCms\Yii2Adapter\Console\MigrateMigrationTableCommand;
 use CraftCms\Yii2Adapter\Http\Controller;
+use Illuminate\Auth\Events\Login;
+use Illuminate\Auth\Events\Logout;
 use Illuminate\Console\Application as ConsoleApplication;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Config;
+use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\ServiceProvider;
 use RuntimeException;
@@ -98,9 +101,9 @@ class Yii2ServiceProvider extends ServiceProvider
                 }
             }
 
-            $this->bootEvents();
-
             \Craft::$app = $app;
+
+            $this->bootEvents();
 
             return $app;
         });
@@ -262,6 +265,16 @@ class Yii2ServiceProvider extends ServiceProvider
          */
         AssetIndexes::registerEvents();
         ClearCaches::registerEvents();
+
+        Event::listen(Login::class, function(Login $event) {
+            $user = app('Craft')->getUsers()->getUserById($event->user->getAuthIdentifier());
+
+            app('Craft')->getUser()->setIdentity($user);
+        });
+
+        Event::listen(Logout::class, function() {
+            app('Craft')->getUser()->setIdentity(null);
+        });
     }
 
     /**
