@@ -3,7 +3,9 @@
 namespace CraftCms\Cms\Dashboard\Widgets;
 
 use Craft;
+use craft\helpers\App;
 use craft\helpers\Component;
+use craft\helpers\Typecast;
 use CraftCms\Cms\Component\Concerns\ConfigurableComponent;
 use CraftCms\Cms\Component\Concerns\SavableComponent;
 use CraftCms\Cms\Component\Concerns\ValidatableComponent;
@@ -12,7 +14,6 @@ use CraftCms\Cms\Dashboard\Dashboard;
 use CraftCms\Cms\Dashboard\Models\Widget as WidgetModel;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Json;
-use Illuminate\Support\Facades\Date;
 use RuntimeException;
 
 /**
@@ -30,18 +31,8 @@ abstract class Widget implements WidgetInterface
 
     public function __construct(array $config = [])
     {
-        $this->id = $config['id'] ?? null;
-        $this->dateCreated = isset($config['dateCreated']) ? Date::parse($config['dateCreated']) : null;
-        $this->dateUpdated = isset($config['dateUpdated']) ? Date::parse($config['dateUpdated']) : null;
-        $this->colspan = $config['colspan'] ?? null;
-
-        foreach (Arr::get($config, 'settings', []) as $key => $value) {
-            if (! property_exists($this, $key)) {
-                continue;
-            }
-
-            $this->{$key} = $value;
-        }
+        Typecast::properties(static::class, $config);
+        App::configure($this, $config);
     }
 
     /**
@@ -156,11 +147,12 @@ EOD;
         }
 
         $class = Arr::pull($config, 'type');
-        $config = Component::mergeSettings($config);
 
         if (! $class || ! Component::validateComponentClass($class, WidgetInterface::class)) {
             throw new RuntimeException('The config passed into Widget::fromConfig() did not specify a valid type: '.Json::encode($config));
         }
+
+        $config = Component::mergeSettings($config);
 
         return app()->make($class, ['config' => $config]);
     }

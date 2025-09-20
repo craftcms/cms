@@ -18,4 +18,18 @@ class Widget extends BaseModel
         'dateCreated' => 'immutable_datetime',
         'dateUpdated' => 'immutable_datetime',
     ];
+
+    public static function query()
+    {
+        /** @phpstan-ignore-next-line */
+        return parent::query()
+            ->select([
+                'id',
+                'dateCreated',
+                'dateUpdated',
+                'colspan',
+                'type',
+                'settings',
+            ]);
+    }
 }

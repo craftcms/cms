@@ -63,27 +63,23 @@ final class QuickPost extends Widget
 
     public function __construct(array $config = [])
     {
-        $settings = Arr::get($config, 'settings', []);
-
         // If we're saving the widget settings, all of the section-specific
         // attributes will be tucked away in a 'sections' array
-        if (isset($settings['sections'], $settings['section'])) {
-            $sectionId = $settings['section'];
+        if (isset($config['sections'], $config['section'])) {
+            $sectionId = $config['section'];
 
-            if (isset($settings['sections'][$sectionId])) {
-                $settings = array_merge($settings, $settings['sections'][$sectionId]);
+            if (isset($config['sections'][$sectionId])) {
+                $config = array_merge($config, $config['sections'][$sectionId]);
             }
 
-            unset($settings['sections']);
+            unset($config['sections']);
         }
 
-        if (isset($settings['customTitle']) && $settings['customTitle'] === '') {
-            unset($settings['customTitle']);
+        if (isset($config['customTitle']) && $config['customTitle'] === '') {
+            unset($config['customTitle']);
         }
 
-        unset($settings['fields']);
-
-        $config['settings'] = $settings;
+        unset($config['fields']);
 
         parent::__construct($config);
     }

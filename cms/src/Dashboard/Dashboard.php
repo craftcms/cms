@@ -363,14 +363,6 @@ final readonly class Dashboard
         }
 
         return Models\Widget::query()
-            ->select([
-                'id',
-                'dateCreated',
-                'dateUpdated',
-                'colspan',
-                'type',
-                'settings',
-            ])
             ->where('userId', $user->id)
             ->orderBy('sortOrder')
             ->get()
