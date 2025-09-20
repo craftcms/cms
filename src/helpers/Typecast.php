@@ -11,6 +11,7 @@ namespace craft\helpers;
 use BackedEnum;
 use CraftCms\Cms\Support\Json as JsonHelper;
 use DateTime;
+use DateTimeInterface;
 use InvalidArgumentException;
 use ReflectionException;
 use ReflectionNamedType;
@@ -34,6 +35,7 @@ final class Typecast
     private const TYPE_ARRAY = 'array';
     private const TYPE_NULL = 'null';
     private const TYPE_DATETIME = DateTime::class;
+    private const TYPE_DATETIMEINTERFACE = DateTimeInterface::class;
 
     private static array $types = [];
 
@@ -113,7 +115,13 @@ final class Typecast
                 }
                 return;
             case self::TYPE_DATETIME:
-                if ($value instanceof DateTime) {
+            case self::TYPE_DATETIMEINTERFACE:
+                /** @phpstan-ignore-next-line */
+                $expected = match ($typeName) {
+                    self::TYPE_DATETIME => DateTime::class,
+                    self::TYPE_DATETIMEINTERFACE => DateTimeInterface::class,
+                };
+                if ($value instanceof $expected) {
                     return;
                 }
                 $date = DateTimeHelper::toDateTime($value);

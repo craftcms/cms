@@ -131,7 +131,7 @@ class Json
             $json = static::reindent($json, $indent);
         }
 
-        FileHelper::writeToFile($path, $json);
+        FileHelper::writeToFile($path, $json."\n");
     }
 
     /**
