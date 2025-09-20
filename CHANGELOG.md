@@ -8,6 +8,7 @@
 - Fixed a bug where “load more” buttons weren’t keyboard-accessible. ([#17797](https://github.com/craftcms/cms/pull/17797))
 - Fixed a bug where the skip link target wasn’t able to be focused after the right sidebar was closed. ([#17847](https://github.com/craftcms/cms/pull/17847))
 - Fixed a bug where focus was dropped after deleting a passkey. ([#17853](https://github.com/craftcms/cms/pull/17853))
+- Fixed a bug where `craft\helpers\Typecast` wasn’t typecasting `DateTimeInterface` property values.
 - Fixed a styling issue.
 
 ## 5.8.17 - 2025-09-05
