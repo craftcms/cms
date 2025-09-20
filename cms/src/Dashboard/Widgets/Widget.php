@@ -3,6 +3,7 @@
 namespace CraftCms\Cms\Dashboard\Widgets;
 
 use Craft;
+use craft\helpers\Component;
 use CraftCms\Cms\Component\Concerns\ConfigurableComponent;
 use CraftCms\Cms\Component\Concerns\SavableComponent;
 use CraftCms\Cms\Component\Concerns\ValidatableComponent;
@@ -154,10 +155,11 @@ EOD;
             $config = $config->toArray();
         }
 
-        $class = $config['type'] ?? null;
+        $class = Arr::pull($config, 'type');
+        $config = Component::mergeSettings($config);
 
-        if (! $class) {
-            throw new RuntimeException('The config passed into Widget::fromConfig() did not specify a type: '.Json::encode($config));
+        if (! $class || ! Component::validateComponentClass($class, WidgetInterface::class)) {
+            throw new RuntimeException('The config passed into Widget::fromConfig() did not specify a valid type: '.Json::encode($config));
         }
 
         return app()->make($class, ['config' => $config]);
