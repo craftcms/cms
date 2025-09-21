@@ -22,7 +22,7 @@ trait PublishesFiles
 {
     /**
      * Map of path on disk to name in the public directory. The file will be published
-     * as `vendor/{pluginHandle}/{value}`.
+     * as `vendor/{package/name}/{value}`.
      *
      * @var array<string, string>
      */
