@@ -3,7 +3,6 @@
 namespace CraftCms\Cms\Dashboard\Widgets;
 
 use Craft;
-use craft\helpers\App;
 use craft\helpers\Component;
 use craft\helpers\Typecast;
 use CraftCms\Cms\Component\Concerns\ConfigurableComponent;
@@ -32,7 +31,14 @@ abstract class Widget implements WidgetInterface
     public function __construct(array $config = [])
     {
         Typecast::properties(static::class, $config);
-        App::configure($this, $config);
+
+        foreach ($config as $name => $value) {
+            if (! property_exists($this, $name)) {
+                continue;
+            }
+
+            $this->$name = $value;
+        }
     }
 
     /**
@@ -143,7 +149,7 @@ EOD;
     public static function fromConfig(array|WidgetModel $config): WidgetInterface
     {
         if ($config instanceof WidgetModel) {
-            $config = $config->toArray();
+            $config = Arr::except($config->toArray(), ['userId']);
         }
 
         $class = Arr::pull($config, 'type');
