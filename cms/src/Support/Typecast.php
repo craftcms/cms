@@ -5,12 +5,11 @@ namespace CraftCms\Cms\Support;
 use BackedEnum;
 use Carbon\Carbon;
 use Carbon\CarbonInterface;
-use Carbon\Exceptions\InvalidFormatException;
+use craft\helpers\DateTimeHelper;
 use craft\helpers\Number;
 use CraftCms\Cms\Support\Json as JsonHelper;
 use DateTime;
 use DateTimeInterface;
-use Illuminate\Support\Facades\Date;
 use InvalidArgumentException;
 use ReflectionException;
 use ReflectionNamedType;
@@ -142,11 +141,7 @@ final class Typecast
                     return;
                 }
 
-                try {
-                    $date = Date::parse($value);
-                } catch (InvalidFormatException) {
-                    $date = null;
-                }
+                $date = DateTimeHelper::toDateTime($value);
 
                 if ($date || $allowsNull) {
                     $value = $date ?: null;
