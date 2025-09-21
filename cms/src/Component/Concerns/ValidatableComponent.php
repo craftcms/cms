@@ -2,7 +2,7 @@
 
 namespace CraftCms\Cms\Component\Concerns;
 
-use craft\helpers\Typecast;
+use CraftCms\Cms\Support\Typecast;
 use CraftCms\Cms\Support\Utils;
 use Illuminate\Support\Facades\Validator as ValidatorFacade;
 use Illuminate\Validation\Validator;

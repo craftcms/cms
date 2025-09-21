@@ -9,12 +9,11 @@ namespace craft\services;
 
 use Craft;
 use craft\config\DbConfig;
-use craft\helpers\App;
-use craft\helpers\Typecast;
 use CraftCms\Cms\Config\BaseConfig;
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Support\Env;
 use CraftCms\Cms\Support\Facades\Deprecator;
+use CraftCms\Cms\Support\Typecast;
 use Illuminate\Support\Facades\Config as ConfigFacade;
 use RuntimeException;
 use Throwable;

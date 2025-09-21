@@ -4,7 +4,6 @@ namespace CraftCms\Cms\Dashboard\Widgets;
 
 use Craft;
 use craft\helpers\Component;
-use craft\helpers\Typecast;
 use CraftCms\Cms\Component\Concerns\ConfigurableComponent;
 use CraftCms\Cms\Component\Concerns\SavableComponent;
 use CraftCms\Cms\Component\Concerns\ValidatableComponent;
@@ -13,6 +12,7 @@ use CraftCms\Cms\Dashboard\Dashboard;
 use CraftCms\Cms\Dashboard\Models\Widget as WidgetModel;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Json;
+use CraftCms\Cms\Support\Typecast;
 use RuntimeException;
 
 /**
