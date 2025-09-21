@@ -181,7 +181,9 @@ abstract class Plugin extends ServiceProvider implements PluginInterface
         return $plugin;
     }
 
-    /** {@inheritdoc} */
+    /**
+     * @return static
+     */
     #[\Override]
     public static function getInstance(): PluginInterface
     {
