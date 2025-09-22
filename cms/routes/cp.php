@@ -1,6 +1,7 @@
 <?php
 
 use CraftCms\Cms\Http\Controllers\Dashboard\DashboardController;
+use CraftCms\Cms\Http\Controllers\FilesystemsController;
 use CraftCms\Cms\Http\Controllers\InstallController;
 use CraftCms\Cms\Http\Controllers\PluginsController;
 use CraftCms\Cms\Http\Controllers\PluginStore\PluginStoreController;
@@ -31,6 +32,22 @@ Route::middleware('auth')->group(function () {
         Route::get('settings/plugins', [PluginsController::class, 'index']);
         Route::get('settings/plugins/{handle}', [PluginsController::class, 'editSettings']);
         Route::get('plugin-store{any?}', [PluginStoreController::class, 'index'])->where('any', '.*');
+    });
+
+    Route::prefix('settings/filesystems')->group(function () {
+        Route::middleware([
+            RequireAdmin::class.':false',
+        ])->group(function () {
+            Route::get('/', [FilesystemsController::class, 'index']);
+            Route::get('new', [FilesystemsController::class, 'create']);
+            Route::get('{handle}/edit', [FilesystemsController::class, 'edit']);
+        });
+
+        Route::middleware([
+            RequireAdmin::class.':true',
+        ])->group(function () {
+            Route::post('{handle}', [FilesystemsController::class, 'save']);
+        });
     });
 
     Route::post('updates', [UpdaterController::class, 'index']);

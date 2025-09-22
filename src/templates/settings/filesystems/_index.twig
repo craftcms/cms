@@ -39,7 +39,7 @@
     {% set tableData = tableData|merge([{
         id: filesystem.handle,
         title: filesystem.name|t('site'),
-        url: url('settings/filesystems/' ~ filesystem.handle),
+        url: url('settings/filesystems/' ~ filesystem.handle ~ '/edit'),
         name: filesystem.name|t('site')|e,
         handle: filesystem.handle,
         type: {
