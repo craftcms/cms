@@ -11,13 +11,13 @@ use function Pest\Laravel\postJson;
 beforeEach(function () {
     actingAs(User::first());
 
-    $this->edition = Craft::$app->edition;
+    $this->edition = Edition::get();
 
-    Craft::$app->setEdition(Edition::Pro);
+    Edition::set(Edition::Pro);
 });
 
 afterEach(function () {
-    Craft::$app->setEdition($this->edition);
+    Edition::set($this->edition);
 });
 
 it('needs authentication for the routes', function (string $method, array $route) {

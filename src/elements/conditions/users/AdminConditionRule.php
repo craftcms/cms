@@ -32,7 +32,7 @@ class AdminConditionRule extends BaseLightswitchConditionRule implements Element
      */
     public static function isSelectable(): bool
     {
-        return Craft::$app->edition->value >= Edition::Pro->value;
+        return Edition::get()->value >= Edition::Pro->value;
     }
 
     /**

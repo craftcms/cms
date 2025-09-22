@@ -178,8 +178,8 @@ it('can get wrong edition license issues for craft', function () {
         ],
     ]);
 
-    $edition = \Craft::$app->edition;
-    \Craft::$app->setEdition(Edition::Pro);
+    $edition = Edition::get();
+    Edition::set(Edition::Pro);
 
     expect($this->license->issues())->toBe([
         [
@@ -193,5 +193,5 @@ it('can get wrong edition license issues for craft', function () {
         ],
     ]);
 
-    \Craft::$app->setEdition($edition);
+    Edition::set($edition);
 });

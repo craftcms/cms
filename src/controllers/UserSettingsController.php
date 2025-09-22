@@ -52,7 +52,7 @@ class UserSettingsController extends Controller
         $this->readOnly = !app(GeneralConfig::class)->allowAdminChanges;
 
         if ($action->id !== 'save-user-settings') {
-            Craft::$app->requireEdition(Edition::Team);
+            Edition::require(Edition::Team);
         }
 
         return true;
@@ -70,7 +70,7 @@ class UserSettingsController extends Controller
     {
         $this->requireCpRequest();
 
-        if (Craft::$app->edition === Edition::Team) {
+        if (Edition::get() === Edition::Team) {
             if (!$group) {
                 $group = Craft::$app->getUserGroups()->getTeamGroup();
             }
@@ -148,7 +148,7 @@ JS, [
     {
         $this->requirePostRequest();
 
-        if (Craft::$app->edition === Edition::Team) {
+        if (Edition::get() === Edition::Team) {
             $group = Craft::$app->getUserGroups()->getTeamGroup();
         } else {
             $groupId = $this->request->getBodyParam('groupId');
@@ -188,7 +188,7 @@ JS, [
             }
         }
 
-        if (Craft::$app->edition === Edition::Team) {
+        if (Edition::get() === Edition::Team) {
             $permissions[] = 'accessCp';
         } elseif ($isNewGroup) {
             // assignNewUserGroup => assignUserGroup:<uid>
@@ -200,7 +200,7 @@ JS, [
 
         Craft::$app->getUserPermissions()->saveGroupPermissions($group->id, $permissions);
 
-        $message = Craft::$app->edition === Edition::Team
+        $message = Edition::get() === Edition::Team
             ? Craft::t('app', 'Permissions saved.')
             : Craft::t('app', 'Group saved.');
 
@@ -240,11 +240,11 @@ JS, [
         $settings['photoVolumeUid'] = $photoVolumeId ? Craft::$app->getVolumes()->getVolumeById($photoVolumeId)?->uid : null;
         $settings['photoSubpath'] = $this->request->getBodyParam('photoSubpath') ?: null;
 
-        if (Craft::$app->edition->value >= Edition::Team->value) {
+        if (Edition::get()->value >= Edition::Team->value) {
             $settings['require2fa'] = $this->request->getBodyParam('require2fa') ?: false;
         }
 
-        if (Craft::$app->edition->value >= Edition::Pro->value) {
+        if (Edition::get()->value >= Edition::Pro->value) {
             $settings['requireEmailVerification'] = (bool)$this->request->getBodyParam('requireEmailVerification');
             $settings['validateOnPublicRegistration'] = (bool)$this->request->getBodyParam('validateOnPublicRegistration');
             $settings['allowPublicRegistration'] = (bool)$this->request->getBodyParam('allowPublicRegistration');

@@ -306,7 +306,7 @@ class AppController extends Controller
         $this->requireAdmin();
 
         $edition = $this->request->getRequiredBodyParam('edition');
-        $licensedEdition = Craft::$app->getLicensedEdition() ?? Edition::Solo;
+        $licensedEdition = Edition::getLicensed() ?? Edition::Solo;
 
         try {
             $edition = Edition::fromHandle($edition);
@@ -315,13 +315,11 @@ class AppController extends Controller
         }
 
         // If this is actually an upgrade, make sure that they are allowed to test edition upgrades
-        if ($edition->value > $licensedEdition->value && !Craft::$app->getCanTestEditions()) {
+        if ($edition->value > $licensedEdition->value && !Edition::canTest()) {
             throw new BadRequestHttpException('Craft is not permitted to test edition upgrades from this server');
         }
 
-        if (!Craft::$app->setEdition($edition)) {
-            return $this->asFailure();
-        }
+        Edition::set($edition);
 
         return $this->asSuccess();
     }
@@ -336,15 +334,11 @@ class AppController extends Controller
         $this->requirePostRequest();
         $this->requireAcceptsJson();
 
-        if (Craft::$app->getHasWrongEdition()) {
-            $licensedEdition = Craft::$app->getLicensedEdition();
-            $success = Craft::$app->setEdition($licensedEdition);
-        } else {
-            // Just fake it
-            $success = true;
+        if (Edition::isWrong()) {
+            Edition::set(Edition::getLicensed());
         }
 
-        return $success ? $this->asSuccess() : $this->asFailure();
+        return $this->asSuccess();
     }
 
     /**

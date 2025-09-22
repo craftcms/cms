@@ -37,9 +37,9 @@ it('can add additional messages through an event', function () {
 });
 
 it('can get messages including overrides', function () {
-    $edition = \Craft::$app->edition;
+    $edition = Edition::get();
 
-    \Craft::$app->setEdition(Edition::Pro);
+    Edition::set(Edition::Pro);
 
     expect($this->systemMessages->getAllMessages()->has('account_activation'))->toBeTrue();
 
@@ -56,5 +56,5 @@ it('can get messages including overrides', function () {
     expect($this->systemMessages->getAllMessages()['account_activation']->subject)->toBe('Overridden subject');
     expect($this->systemMessages->getMessage('account_activation')->subject)->toBe('Overridden subject');
 
-    \Craft::$app->setEdition($edition);
+    Edition::set($edition);
 });

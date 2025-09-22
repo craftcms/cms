@@ -6,6 +6,7 @@ use CraftCms\Cms\Http\Controllers\ConfigSyncController;
 use CraftCms\Cms\Http\Controllers\Dashboard\Widgets\CraftSupportController;
 use CraftCms\Cms\Http\Controllers\Dashboard\Widgets\FeedController;
 use CraftCms\Cms\Http\Controllers\Dashboard\WidgetsController;
+use CraftCms\Cms\Http\Controllers\FilesystemsController;
 use CraftCms\Cms\Http\Controllers\InstallController;
 use CraftCms\Cms\Http\Controllers\MigrateController;
 use CraftCms\Cms\Http\Controllers\PluginsController;
@@ -32,9 +33,6 @@ Route::prefix($generalConfig->actionTrigger)->group(function () {
     Route::post('migrate', MigrateController::class);
 });
 
-/**
- * Actions that are accessible through the control panel can be registered here.
- */
 Route::prefix(implode('/', [
     $generalConfig->cpTrigger,
     $generalConfig->actionTrigger,
@@ -92,6 +90,13 @@ Route::prefix(implode('/', [
         Route::post('dashboard/reorder-user-widgets', [WidgetsController::class, 'reorder']);
         Route::post('dashboard/cache-feed-data', [FeedController::class, 'cacheData']);
         Route::post('dashboard/send-support-request', CraftSupportController::class);
+
+        // Filesystems
+        Route::middleware([RequireAdmin::class])->group(function () {
+            Route::get('fs/edit', [FilesystemsController::class, 'edit']);
+            Route::post('fs/save', [FilesystemsController::class, 'save']);
+            Route::post('fs/remove', [FilesystemsController::class, 'delete']);
+        });
 
         // Plugins
         Route::middleware([RequireAdmin::class])->group(function () {

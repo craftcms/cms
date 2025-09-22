@@ -41,7 +41,7 @@ class RebrandController extends Controller
             return false;
         }
 
-        Craft::$app->requireEdition(Edition::Pro);
+        Edition::require(Edition::Pro);
 
         return true;
     }

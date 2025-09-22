@@ -56,7 +56,7 @@ class User extends BaseModel implements AuthenticatableContract, AuthorizableCon
     {
         if (
             $this->admin ||
-            Craft::$app->edition === Edition::Solo
+            Edition::get() === Edition::Solo
         ) {
             return true;
         }

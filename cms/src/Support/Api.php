@@ -5,6 +5,7 @@ namespace CraftCms\Cms\Support;
 use Craft;
 use craft\errors\InvalidLicenseKeyException;
 use craft\helpers\DateTimeHelper;
+use CraftCms\Cms\Edition;
 use CraftCms\Cms\License\License;
 use CraftCms\Cms\Plugin\Plugins;
 use CraftCms\Cms\Shared\Enums\LicenseKeyStatus;
@@ -128,7 +129,7 @@ final class Api
         $headers = [
             'Accept' => 'application/json',
             'X-Craft-Env' => $this->app->environment(),
-            'X-Craft-System' => sprintf('craft:%s;%s', Craft::$app->getVersion(), Craft::$app->edition->handle()),
+            'X-Craft-System' => sprintf('craft:%s;%s', Craft::$app->getVersion(), Edition::get()->handle()),
         ];
 
         // platform

@@ -9,7 +9,6 @@ namespace craft\base;
 
 use Craft;
 use craft\console\Application as ConsoleApplication;
-use craft\console\Request as ConsoleRequest;
 use craft\db\Connection;
 use craft\db\mysql\Schema;
 use craft\elements\Address;
@@ -20,10 +19,8 @@ use craft\elements\Tag;
 use craft\elements\User;
 use craft\errors\DbConnectException;
 use craft\errors\SiteNotFoundException;
-use craft\errors\WrongEditionException;
 use craft\events\DefineFieldLayoutFieldsEvent;
 use craft\events\DeleteSiteEvent;
-use craft\events\EditionChangeEvent;
 use craft\fieldlayoutelements\addresses\AddressField;
 use craft\fieldlayoutelements\addresses\CountryCodeField;
 use craft\fieldlayoutelements\addresses\LabelField;
@@ -95,7 +92,6 @@ use craft\services\Volumes;
 use craft\services\Webpack;
 use craft\web\Application as WebApplication;
 use craft\web\AssetManager;
-use craft\web\Request as WebRequest;
 use craft\web\UrlManager;
 use craft\web\User as UserSession;
 use craft\web\View;
@@ -103,13 +99,11 @@ use CraftCms\Cms\Announcement\Announcements;
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Edition;
-use CraftCms\Cms\License\License;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\Support\Composer;
 use CraftCms\Cms\Support\Env;
 use CraftCms\Cms\Updates\Updates;
 use Illuminate\Support\Collection;
-use Illuminate\Support\Facades\Cache as CacheFacade;
 use Illuminate\Support\Facades\DB;
 use Symfony\Component\VarDumper\Caster\ReflectionCaster;
 use Symfony\Component\VarDumper\Cloner\VarCloner;
@@ -227,8 +221,11 @@ trait ApplicationTrait
     /**
      * @var Edition The installed Craft CMS edition.
      * @since 5.0.0
+     * @deprecated 6.0.0 use `Edition::get()` instead.
      */
-    public Edition $edition;
+    public Edition $edition {
+        get => Edition::get();
+    }
 
     /**
      * @var bool Whether the application is fully initialized yet
@@ -519,23 +516,22 @@ trait ApplicationTrait
     /**
      * Returns the installed Craft CMS edition’s ID.
      *
-     * @return int
-     * @deprecated in 5.0.0. [[$edition]] should be used instead.
+     * @deprecated in 6.0.0. `Edition::get()` should be used instead.
      */
-    public function getEdition(): int
+    public function getEdition(): Edition
     {
-        return $this->edition->value;
+        return Edition::get();
     }
 
     /**
      * Returns the name of the Craft edition.
      *
      * @return string
-     * @deprecated in 5.0.0. [[$edition]] should be used instead.
+     * @deprecated in 6.0.0. `Edition::get()->name` should be used instead.
      */
     public function getEditionName(): string
     {
-        return $this->edition->name;
+        return Edition::get()->name;
     }
 
     /**
@@ -543,80 +539,56 @@ trait ApplicationTrait
      *
      * @return string
      * @since 4.4.0
-     * @deprecated in 5.0.0. [[$edition]] should be used instead.
+     * @deprecated in 6.0.0. `Edition::get()->handle()` should be used instead.
      */
     public function getEditionHandle(): string
     {
-        return $this->edition->handle();
+        return Edition::get()->handle();
     }
 
     /**
      * Returns the edition Craft is actually licensed to run in.
      *
      * @return Edition|null
+     * @deprecated in 6.0.0. `Edition::getLicensed()` should be used instead.
      */
     public function getLicensedEdition(): ?Edition
     {
-        $licenseInfo = CacheFacade::get(License::CACHE_KEY_LICENSE_INFO, []);
-
-        if (!isset($licenseInfo['craft']['edition'])) {
-            return null;
-        }
-
-        return Edition::fromHandle($licenseInfo['craft']['edition']);
+        return Edition::getLicensed();
     }
 
     /**
      * Returns the name of the edition Craft is actually licensed to run in.
      *
      * @return string|null
-     * @deprecated in 5.0.0. [[getLicensedEdition()]] should be used instead.
+     * @deprecated in 6.0.0. `Edition::getLicensed()?->name` should be used instead.
      */
     public function getLicensedEditionName(): ?string
     {
-        return $this->getLicensedEdition()?->name;
+        return Edition::getLicensed()?->name;
     }
 
     /**
      * Returns whether Craft is running with the wrong edition.
      *
      * @return bool
+     * @deprecated in 6.0.0. `Edition::isWrong()` should be used instead.
      */
     public function getHasWrongEdition(): bool
     {
-        $licensedEdition = $this->getLicensedEdition();
-        return (
-            $licensedEdition !== null &&
-            $licensedEdition !== $this->edition &&
-            !$this->getCanTestEditions()
-        );
+        return Edition::isWrong();
     }
 
     /**
      * Sets the installed Craft CMS edition.
      *
      * @param Edition|int $edition The edition to set.
-     * @return bool
+     *
+     * @deprecated in 6.0.0. `Edition::set($edition)` should be used instead.
      */
     public function setEdition(Edition|int $edition): bool
     {
-        if (is_int($edition)) {
-            $edition = Edition::from($edition);
-        }
-
-        $oldEdition = $this->edition ?? Edition::Solo;
-        app(ProjectConfig::class)->set('system.edition', $edition->handle(), 'Craft CMS edition change');
-        $this->edition = $edition;
-
-        // Fire an 'afterEditionChange' event
-        /** @var WebRequest|ConsoleRequest $request */
-        $request = $this->getRequest();
-        if (!$request->getIsConsoleRequest() && $this->hasEventHandlers(WebApplication::EVENT_AFTER_EDITION_CHANGE)) {
-            $this->trigger(WebApplication::EVENT_AFTER_EDITION_CHANGE, new EditionChangeEvent([
-                'oldEdition' => $oldEdition->value,
-                'newEdition' => $edition->value,
-            ]));
-        }
+        Edition::set($edition);
 
         return true;
     }
@@ -626,46 +598,23 @@ trait ApplicationTrait
      *
      * @param Edition|int $edition The Craft edition to require.
      * @param bool $orBetter If true, makes $edition the minimum edition required.
-     * @throws WrongEditionException if attempting to do something not allowed by the current Craft edition
+     *
+     * @deprecated in 6.0.0. {@see Edition::require()} should be used instead.
      */
     public function requireEdition(Edition|int $edition, bool $orBetter = true): void
     {
-        if (is_int($edition)) {
-            $edition = Edition::from($edition);
-        }
-
-        if ($this->getIsInstalled() && !app(ProjectConfig::class)->isApplyingExternalChanges) {
-            if (!match ($orBetter) {
-                true => $this->edition->value >= $edition->value,
-                false => $this->edition === $edition
-            }) {
-                throw new WrongEditionException("Craft $edition->name is required for this.");
-            }
-        }
+        Edition::require($edition, $orBetter);
     }
 
     /**
      * Returns whether Craft is eligible to be upgraded to a different edition.
      *
      * @return bool
+     * @deprecated in 6.0.0. {@see Edition::canUpgrade()} should be used instead.
      */
     public function getCanUpgradeEdition(): bool
     {
-        // Only admin accounts can upgrade Craft
-        if (
-            $this->getUser()->getIsAdmin() &&
-            app(GeneralConfig::class)->allowAdminChanges
-        ) {
-            // Are they either *using* or *licensed to use* something < Craft Pro?
-            $licensedEdition = $this->getLicensedEdition();
-
-            return (
-                ($this->edition->value < Edition::Pro->value) ||
-                ($licensedEdition !== null && $licensedEdition->value < Edition::Pro->value)
-            );
-        }
-
-        return false;
+        return Edition::canUpgrade();
     }
 
     /**
@@ -674,23 +623,11 @@ trait ApplicationTrait
      *
      * @return bool
      * @internal
+     * @deprecated in 6.0.0. {@see Edition::canTest()} should be used instead.
      */
     public function getCanTestEditions(): bool
     {
-        if (Env::get('CRAFT_NO_TRIALS')) {
-            return false;
-        }
-
-        if (!$this instanceof WebApplication) {
-            return false;
-        }
-
-        $cacheKey = sprintf('editionTestableDomain@%s', $this->getRequest()->getHostName());
-        if (!CacheFacade::has($cacheKey)) {
-            // err on the side of allowing it
-            return true;
-        }
-        return (bool) CacheFacade::get($cacheKey);
+        return Edition::canTest();
     }
 
     /**
@@ -1421,10 +1358,6 @@ trait ApplicationTrait
             assert($this instanceof Collection);
             return $this->first(...func_get_args());
         });
-
-        // Set the Craft edition
-        $edition = Env::get('CRAFT_EDITION') ?? app(ProjectConfig::class)->get('system.edition');
-        $this->edition = $edition ? Edition::fromHandle($edition) : Edition::Solo;
 
         // Load the request before anything else, so everything else can safely check Craft::$app->has('request', true)
         // to avoid possible recursive fatal errors in the request initialization

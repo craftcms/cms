@@ -6,6 +6,7 @@ use Craft;
 use craft\helpers\FileHelper;
 use CraftCms\Aliases\Facades\Aliases;
 use CraftCms\Cms\Config\GeneralConfig;
+use CraftCms\Cms\Edition;
 use CraftCms\Cms\Http\Middleware\CheckForUpdates;
 use CraftCms\Cms\Http\Middleware\CheckRequirements;
 use CraftCms\Cms\Http\Middleware\CheckSchemaVersion;
@@ -58,6 +59,7 @@ final class AppServiceProvider extends ServiceProvider
          */
         $kernel = $this->app->get(HttpKernel::class);
         $kernel->setGlobalMiddleware(array_merge([
+            ExtractNamespace::class,
             HandleActionRequest::class,
         ], $kernel->getGlobalMiddleware()));
 
@@ -73,7 +75,7 @@ final class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         AboutCommand::add('Craft CMS', fn () => [
-            'Edition' => Craft::$app->edition->name,
+            'Edition' => Edition::get()->name,
             'Schema' => Craft::$app->schemaVersion,
             'Version' => Craft::$app->getVersion(),
         ]);
@@ -152,7 +154,6 @@ final class AppServiceProvider extends ServiceProvider
         collect([
             CheckSchemaVersion::class,
             CheckForUpdates::class,
-            ExtractNamespace::class,
             SendPoweredByHeader::class,
             FlushProjectConfig::class,
         ])->each(fn ($middleware) => $router->pushMiddlewareToGroup('craft', $middleware));

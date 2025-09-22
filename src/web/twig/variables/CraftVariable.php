@@ -72,7 +72,7 @@ class CraftVariable extends ServiceLocator
             'routes' => Routes::class,
         ];
 
-        if (Craft::$app->edition !== Edition::Solo) {
+        if (Edition::get() !== Edition::Solo) {
             $components = array_merge($components, [
                 'rebrand' => Rebrand::class,
             ]);

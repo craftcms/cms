@@ -6,6 +6,7 @@ use Craft;
 use craft\web\Application;
 use craft\web\assets\craftsupport\CraftSupportAsset;
 use CraftCms\Cms\Config\GeneralConfig;
+use CraftCms\Cms\Edition;
 use CraftCms\Cms\Plugin\Plugins;
 use CraftCms\Cms\Support\PHP;
 use Illuminate\Support\Facades\Auth;
@@ -132,7 +133,7 @@ JS, [
                     'labels' => sprintf('bug,craft%s', $cmsMajorVersion),
                     'template' => sprintf('BUG-REPORT-V%s.yml', $cmsMajorVersion),
                     'body' => $body,
-                    'cmsVersion' => sprintf('%s (%s)', $cmsVersion, Craft::$app->edition->name),
+                    'cmsVersion' => sprintf('%s (%s)', $cmsVersion, Edition::get()->name),
                     'phpVersion' => PHP::version(),
                     'os' => sprintf('%s %s', PHP_OS, php_uname('r')),
                     'db' => sprintf('%s %s', $dbDriver, normalizeVersion($db->getSchema()->getServerVersion())),

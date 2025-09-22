@@ -28,7 +28,7 @@ final readonly class SystemMessagesController
             abort(403, 'User is not authorized to perform this action.');
         }
 
-        $craft->requireEdition(Edition::Pro);
+        Edition::require(Edition::Pro);
     }
 
     public function show(Request $request): Response

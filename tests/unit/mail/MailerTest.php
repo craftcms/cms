@@ -136,7 +136,7 @@ class MailerTest extends TestCase
      */
     public function testSendMessageCustomTemplate(): void
     {
-        Craft::$app->edition = Edition::Pro;
+        Edition::set(Edition::Pro);
         $this->mailer->template = 'withvar';
 
         $this->_sendMail('test@craft.test');

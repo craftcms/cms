@@ -638,7 +638,7 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
         ]);
 
         // Hide Author & Last Edited By from Craft Solo
-        if (Craft::$app->edition === Edition::Solo) {
+        if (Edition::get() === Edition::Solo) {
             unset($attributes['authors'], $attributes['revisionCreator']);
         }
 
@@ -722,7 +722,7 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
         ]);
 
         // Hide Author & Last Edited By from Craft Solo
-        if (Craft::$app->edition === Edition::Solo) {
+        if (Edition::get() === Edition::Solo) {
             unset($attributes['authors'], $attributes['revisionCreator']);
         }
 
@@ -2507,7 +2507,7 @@ JS, [
             // Author
             if (
                 $section->maxAuthors !== 0 &&
-                Craft::$app->edition !== Edition::Solo &&
+                Edition::get() !== Edition::Solo &&
                 $user->can("viewPeerEntries:$section->uid")
             ) {
                 $fields[] = (function() use ($static, $section) {

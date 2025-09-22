@@ -29,7 +29,7 @@ final class NewUsers extends Widget
     public static function isSelectable(): bool
     {
         // This widget is only available for Craft Pro
-        return Craft::$app->edition->value >= Edition::Pro->value;
+        return Edition::get()->value >= Edition::Pro->value;
     }
 
     /**
@@ -78,7 +78,7 @@ final class NewUsers extends Widget
     #[\Override]
     public function getBodyHtml(): ?string
     {
-        if (Craft::$app->edition->value < Edition::Pro->value) {
+        if (Edition::get()->value < Edition::Pro->value) {
             return null;
         }
 

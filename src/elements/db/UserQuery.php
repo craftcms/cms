@@ -1200,7 +1200,7 @@ class UserQuery extends ElementQuery
         $elements = parent::afterPopulate($elements);
 
         // Eager-load user groups?
-        if ($this->withGroups && !$this->asArray && Craft::$app->edition->value >= Edition::Pro->value) {
+        if ($this->withGroups && !$this->asArray && Edition::get()->value >= Edition::Pro->value) {
             Craft::$app->getUserGroups()->eagerLoadGroups($elements);
         }
 

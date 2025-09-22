@@ -253,7 +253,7 @@ class Craft extends Yii2
             // We also manually set the edition if desired by the current config
             $edition = $this->_getConfig('edition');
             if (is_int($edition)) {
-                \Craft::$app->setEdition($edition);
+                Edition::set($edition);
             }
         }
 
@@ -309,7 +309,7 @@ class Craft extends Yii2
             throw $exception;
         }
 
-        \Craft::$app->setEdition(Edition::Pro);
+        Edition::set(Edition::Pro);
 
         // Avoid a "headers already sent" error
         ob_end_clean();

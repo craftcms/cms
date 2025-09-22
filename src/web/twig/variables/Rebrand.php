@@ -8,9 +8,9 @@
 namespace craft\web\twig\variables;
 
 use Craft;
-use craft\errors\WrongEditionException;
 use craft\helpers\Image as ImageHelper;
 use CraftCms\Cms\Edition;
+use CraftCms\Cms\Edition\Exceptions\WrongEditionException;
 use yii\base\Exception;
 
 /**
@@ -36,7 +36,7 @@ class Rebrand
      */
     public function __construct()
     {
-        Craft::$app->requireEdition(Edition::Pro);
+        Edition::require(Edition::Pro);
     }
 
     /**
