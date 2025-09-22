@@ -67,4 +67,9 @@ trait PublishesFiles
             $this->publishes($publishes->all(), $handle);
         }
     }
+
+    public function asset(string $path): string
+    {
+        return asset("vendor/$this->packageName/$path");
+    }
 }
