@@ -15,6 +15,7 @@ use CraftCms\Cms\Component\Contracts\ComponentInterface;
 use CraftCms\Cms\Plugin\Plugins;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Json as JsonHelper;
+use CraftCms\Cms\Support\Typecast;
 use DateTime;
 use ReflectionClass;
 use ReflectionNamedType;
