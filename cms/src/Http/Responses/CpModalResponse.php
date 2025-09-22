@@ -156,7 +156,6 @@ final class CpModalResponse implements Responsable
             $containerId = $request->header('X-Craft-Container-Id');
 
             abort_unless((bool) $containerId, 400, 'Request missing the X-Craft-Container-Id header.');
-            ;
 
             $view->setNamespace($namespace);
             call_user_func($this->prepareModal, $this, $containerId);
