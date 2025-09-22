@@ -569,6 +569,11 @@ final class ProjectConfig
         $this->_releaseLock();
     }
 
+    public function isApplyingExternalChanges(): bool
+    {
+        return $this->isApplyingExternalChanges;
+    }
+
     /**
      * Applies given changes to the project config.
      */

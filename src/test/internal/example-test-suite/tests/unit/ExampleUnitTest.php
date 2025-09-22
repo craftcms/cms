@@ -2,7 +2,6 @@
 
 namespace myprojecttests;
 
-use Craft;
 use craft\test\TestCase;
 use CraftCms\Cms\Edition;
 use UnitTester;
@@ -18,7 +17,7 @@ class ExampleUnitTest extends TestCase
      */
     public function testCraftEdition(): void
     {
-        Craft::$app->setEdition(Edition::Pro);
-        $this->assertSame(Edition::Pro, Craft::$app->edition);
+        Edition::set(Edition::Pro);
+        $this->assertSame(Edition::Pro, Edition::get());
     }
 }

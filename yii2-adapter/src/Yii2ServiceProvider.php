@@ -3,6 +3,7 @@
 namespace CraftCms\Yii2Adapter;
 
 use craft\console\controllers\HelpController;
+use craft\events\EditionChangeEvent;
 use craft\services\Dashboard;
 use craft\services\Plugins as LegacyPlugins;
 use craft\services\ProjectConfig;
@@ -13,6 +14,7 @@ use craft\utilities\ClearCaches;
 use CraftCms\Aliases\Facades\Aliases;
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Database\Table;
+use CraftCms\Cms\Edition\Events\EditionChanged;
 use CraftCms\Cms\Support\Env;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Yii2Adapter\Console\LegacyCraftCommand;
@@ -265,6 +267,21 @@ class Yii2ServiceProvider extends ServiceProvider
          */
         AssetIndexes::registerEvents();
         ClearCaches::registerEvents();
+
+        Event::listen(EditionChanged::class, function(EditionChanged $event) {
+            /** @var \craft\web\Application $craft */
+            $craft = app('Craft');
+
+            // Fire an 'afterEditionChange' event
+            if (!$craft->hasEventHandlers(\craft\web\Application::EVENT_AFTER_EDITION_CHANGE)) {
+                return;
+            }
+
+            $craft->trigger(\craft\web\Application::EVENT_AFTER_EDITION_CHANGE, new EditionChangeEvent([
+                'oldEdition' => $event->oldEdition->value,
+                'newEdition' => $event->newEdition->value,
+            ]));
+        });
 
         Event::listen(Login::class, function(Login $event) {
             $user = app('Craft')->getUsers()->getUserById($event->user->getAuthIdentifier());

@@ -6,6 +6,7 @@ use Craft;
 use craft\models\Site;
 use craft\test\TestSetup;
 use CraftCms\Cms\Database\Migrations\Install;
+use CraftCms\Cms\Edition;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\Providers\CraftServiceProvider;
 use CraftCms\DependencyAwareCache\CacheServiceProvider;
@@ -31,6 +32,8 @@ class TestCase extends Orchestra
     protected function setUp(): void
     {
         parent::setUp();
+
+        Edition::set(Edition::Solo);
 
         Cache::lock(ProjectConfig::MUTEX_NAME)->forceRelease();
         File::cleanDirectory(config_path('project'));

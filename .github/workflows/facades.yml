@@ -56,7 +56,8 @@ jobs:
         run: |
           php -f vendor/bin/facade.php -- \
             CraftCms\\Cms\\Support\\Facades\\Announcements \
-            CraftCms\\Cms\\Support\\Facades\\Deprecator
+            CraftCms\\Cms\\Support\\Facades\\Deprecator \
+            CraftCms\\Cms\\Support\\Facades\\ProjectConfig
 
       - name: Commit facade docblocks
         uses: stefanzweifel/git-auto-commit-action@v5

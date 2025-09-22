@@ -635,7 +635,7 @@ class Asset extends Element
         ]);
 
         // Hide Author from Craft Solo
-        if (Craft::$app->edition === Edition::Solo) {
+        if (Edition::get() === Edition::Solo) {
             unset($attributes['uploader']);
         }
 
@@ -722,7 +722,7 @@ class Asset extends Element
         ]);
 
         // Hide Author from Craft Solo
-        if (Craft::$app->edition === Edition::Solo) {
+        if (Edition::get() === Edition::Solo) {
             unset($attributes['uploader']);
         }
 

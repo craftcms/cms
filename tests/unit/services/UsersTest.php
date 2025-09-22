@@ -210,7 +210,7 @@ class UsersTest extends TestCase
      */
     public function testUserGroupAssignment(): void
     {
-        Craft::$app->edition = Edition::Pro;
+        Edition::set(Edition::Pro);
 
         $this->users->assignUserToGroups(
             $this->activeUser->id,
@@ -226,7 +226,7 @@ class UsersTest extends TestCase
      */
     public function testUserGroupAssignmentInvalidation(): void
     {
-        Craft::$app->edition = Edition::Pro;
+        Edition::set(Edition::Pro);
 
         $this->users->assignUserToGroups(
             $this->activeUser->id,
@@ -257,7 +257,7 @@ class UsersTest extends TestCase
      */
     public function testUserAssignmentToDefaultGroup(): void
     {
-        Craft::$app->edition = Edition::Pro;
+        Edition::set(Edition::Pro);
         app(ProjectConfig::class)->set('users.defaultGroup', 'usergroup-1002-------------------uid');
 
         $this->users->assignUserToDefaultGroup($this->activeUser);

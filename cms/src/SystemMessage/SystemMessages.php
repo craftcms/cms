@@ -166,7 +166,7 @@ final class SystemMessages
             $languageId = $language;
         }
 
-        if ($this->craft->edition->value >= Edition::Pro->value) {
+        if (Edition::get()->value >= Edition::Pro->value) {
             // Fetch the customization (if there is one)
             $override = SystemMessage::query()
                 ->select(['subject', 'body'])

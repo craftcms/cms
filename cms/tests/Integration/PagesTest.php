@@ -12,7 +12,7 @@ beforeEach(function () {
 
     $this->cpTrigger = app(GeneralConfig::class)->cpTrigger;
 
-    Craft::$app->setEdition(Edition::Pro);
+    Edition::set(Edition::Pro);
 });
 
 it('renders pages', function (string $url, string $title, array $extraContent = []) {

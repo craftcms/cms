@@ -6,6 +6,7 @@ use Craft;
 use craft\helpers\FileHelper;
 use CraftCms\Aliases\Facades\Aliases;
 use CraftCms\Cms\Config\GeneralConfig;
+use CraftCms\Cms\Edition;
 use CraftCms\Cms\Http\Middleware\CheckForUpdates;
 use CraftCms\Cms\Http\Middleware\CheckRequirements;
 use CraftCms\Cms\Http\Middleware\CheckSchemaVersion;
@@ -74,7 +75,7 @@ final class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         AboutCommand::add('Craft CMS', fn () => [
-            'Edition' => Craft::$app->edition->name,
+            'Edition' => Edition::get()->name,
             'Schema' => Craft::$app->schemaVersion,
             'Version' => Craft::$app->getVersion(),
         ]);

@@ -1,14 +1,12 @@
 <?php
-/**
- * @link https://craftcms.com/
- * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license https://craftcms.github.io/license/
- */
 
-
-namespace craft\helpers;
+namespace CraftCms\Cms\Support;
 
 use BackedEnum;
+use Carbon\Carbon;
+use Carbon\CarbonInterface;
+use craft\helpers\DateTimeHelper;
+use craft\helpers\Number;
 use CraftCms\Cms\Support\Json as JsonHelper;
 use DateTime;
 use DateTimeInterface;
@@ -18,32 +16,40 @@ use ReflectionNamedType;
 use ReflectionProperty;
 use ReflectionUnionType;
 
-/**
- * Typecast Helper
- *
- * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 4.0.0
- */
+/** @since 6.0.0 */
 final class Typecast
 {
-    private const TYPE_BOOL = 'bool';
-    private const TYPE_FLOAT = 'float';
-    private const TYPE_INT = 'int';
-    private const TYPE_INT_FLOAT = 'int|float';
-    private const TYPE_INT_STRING = 'int|string';
-    private const TYPE_STRING = 'string';
-    private const TYPE_ARRAY = 'array';
-    private const TYPE_NULL = 'null';
-    private const TYPE_DATETIME = DateTime::class;
-    private const TYPE_DATETIMEINTERFACE = DateTimeInterface::class;
+    private const string TYPE_BOOL = 'bool';
+
+    private const string TYPE_FLOAT = 'float';
+
+    private const string TYPE_INT = 'int';
+
+    private const string TYPE_INT_FLOAT = 'int|float';
+
+    private const string TYPE_INT_STRING = 'int|string';
+
+    private const string TYPE_STRING = 'string';
+
+    private const string TYPE_ARRAY = 'array';
+
+    private const string TYPE_NULL = 'null';
+
+    private const string TYPE_CARBON = Carbon::class;
+
+    private const string TYPE_CARBONINTERFACE = CarbonInterface::class;
+
+    private const string TYPE_DATETIME = DateTime::class;
+
+    private const string TYPE_DATETIMEINTERFACE = DateTimeInterface::class;
 
     private static array $types = [];
 
     /**
      * Typecasts the given property values based on their type declarations.
      *
-     * @param class-string $class The class name
-     * @param array $properties The property values
+     * @param  class-string  $class  The class name
+     * @param  array  $properties  The property values
      */
     public static function properties(string $class, array &$properties): void
     {
@@ -55,14 +61,15 @@ final class Typecast
     /**
      * Typecasts the given property value based on its type declaration.
      *
-     * @param class-string $class The class name
-     * @param string $property The property name
-     * @param mixed $value The property value
+     * @param  class-string  $class  The class name
+     * @param  string  $property  The property name
+     * @param  mixed  $value  The property value
      */
     private static function property(string $class, string $property, mixed &$value): void
     {
         $type = self::propertyType($class, $property);
-        if (!$type) {
+
+        if (! $type) {
             return;
         }
 
@@ -70,6 +77,7 @@ final class Typecast
 
         if ($allowsNull && ($value === null || $value === '')) {
             $value = null;
+
             return;
         }
 
@@ -83,14 +91,15 @@ final class Typecast
                 if ($value === null || is_scalar($value)) {
                     /** @phpstan-var self::TYPE_BOOL|self::TYPE_FLOAT|self::TYPE_INT|self::TYPE_INT_FLOAT|self::TYPE_INT_STRING|self::TYPE_STRING $typeName */
                     $value = match ($typeName) {
-                        self::TYPE_BOOL => (bool)$value,
-                        self::TYPE_FLOAT => (float)$value,
-                        self::TYPE_INT => (int)$value,
+                        self::TYPE_BOOL => (bool) $value,
+                        self::TYPE_FLOAT => (float) $value,
+                        self::TYPE_INT => (int) $value,
                         self::TYPE_INT_FLOAT => Number::toIntOrFloat($value ?? 0),
-                        self::TYPE_INT_STRING => is_int($value) || ($value === (string)(int)$value) ? (int)$value : $value,
-                        self::TYPE_STRING => (string)$value,
+                        self::TYPE_INT_STRING => is_int($value) || ($value === (string) (int) $value) ? (int) $value : $value,
+                        self::TYPE_STRING => (string) $value,
                     };
                 }
+
                 return;
             case self::TYPE_ARRAY:
                 if ($value === null) {
@@ -108,26 +117,36 @@ final class Typecast
                     } catch (InvalidArgumentException) {
                         $value = str($value)->explode(',')->all();
                     }
+
                     return;
                 }
                 if (is_iterable($value)) {
                     $value = iterator_to_array($value);
                 }
+
                 return;
+            case self::TYPE_CARBON:
+            case self::TYPE_CARBONINTERFACE:
             case self::TYPE_DATETIME:
             case self::TYPE_DATETIMEINTERFACE:
                 /** @phpstan-ignore-next-line */
                 $expected = match ($typeName) {
+                    self::TYPE_CARBON => Carbon::class,
+                    self::TYPE_CARBONINTERFACE => CarbonInterface::class,
                     self::TYPE_DATETIME => DateTime::class,
                     self::TYPE_DATETIMEINTERFACE => DateTimeInterface::class,
                 };
+
                 if ($value instanceof $expected) {
                     return;
                 }
+
                 $date = DateTimeHelper::toDateTime($value);
+
                 if ($date || $allowsNull) {
                     $value = $date ?: null;
                 }
+
                 return;
             default:
                 if (
@@ -142,7 +161,7 @@ final class Typecast
 
     private static function propertyType(string $class, string $property): array|false
     {
-        if (!isset(self::$types[$class][$property])) {
+        if (! isset(self::$types[$class][$property])) {
             self::$types[$class][$property] = self::_propertyType($class, $property);
         }
 
@@ -158,7 +177,7 @@ final class Typecast
             return false;
         }
 
-        if (!$ref->isPublic() || $ref->isStatic()) {
+        if (! $ref->isPublic() || $ref->isStatic()) {
             return false;
         }
 
@@ -169,7 +188,7 @@ final class Typecast
         }
 
         if ($type instanceof ReflectionUnionType) {
-            $names = array_map(fn(ReflectionNamedType $type) => $type->getName(), $type->getTypes());
+            $names = array_map(fn (ReflectionNamedType $type) => $type->getName(), $type->getTypes());
             sort($names);
             // Special case for int|float
             if ($names === [self::TYPE_FLOAT, self::TYPE_INT] || $names === [self::TYPE_FLOAT, self::TYPE_INT, self::TYPE_NULL]) {

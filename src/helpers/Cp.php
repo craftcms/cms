@@ -153,14 +153,13 @@ class Cp
             return $alerts;
         }
 
-        $canTestEditions = Craft::$app->getCanTestEditions();
         $resolvableLicenseAlerts = [];
         $resolvableLicenseItems = [];
 
         foreach (app(License::class)->issues(fetch: $fetch) as [$name, $message, $resolveItem]) {
             if (!$resolveItem) {
                 $alerts[] = $message;
-            } elseif (!$canTestEditions) {
+            } elseif (!Edition::canTest()) {
                 $resolvableLicenseAlerts[] = $message;
                 $resolvableLicenseItems[] = $resolveItem;
             }
@@ -201,9 +200,9 @@ class Cp
         }
 
         // Do any plugins require a higher edition?
-        if (Craft::$app->edition < Edition::Pro) {
+        if (Edition::get() < Edition::Pro) {
             foreach (app(Plugins::class)->getAllPlugins() as $plugin) {
-                if ($plugin->minCmsEdition->value > Craft::$app->edition->value) {
+                if ($plugin->minCmsEdition->value > Edition::get()->value) {
                     $alerts[] = Craft::t('app', '{plugin} requires Craft CMS {edition} edition.', [
                         'plugin' => $plugin->name,
                         'edition' => $plugin->minCmsEdition->name,

@@ -8,8 +8,8 @@
 namespace craft\auth\sso\mapper;
 
 use Craft;
-use craft\helpers\Typecast;
 use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Support\Typecast;
 use yii\base\InvalidConfigException;
 
 /**

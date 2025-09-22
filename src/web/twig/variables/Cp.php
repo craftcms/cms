@@ -268,7 +268,7 @@ class Cp extends Component
         }
 
         if (
-            Craft::$app->edition !== Edition::Solo &&
+            Edition::get() !== Edition::Solo &&
             Craft::$app->getUser()->checkPermission('viewUsers')
         ) {
             $navItems[] = [

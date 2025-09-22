@@ -49,7 +49,7 @@ class SsoController extends Controller
             return false;
         }
 
-        Craft::$app->requireEdition(Edition::Enterprise);
+        Edition::require(Edition::Enterprise);
         return true;
     }
 

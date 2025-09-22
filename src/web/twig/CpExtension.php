@@ -7,7 +7,6 @@
 
 namespace craft\web\twig;
 
-use Craft;
 use craft\helpers\Cp;
 use CraftCms\Cms\Edition;
 use Twig\Extension\AbstractExtension;
@@ -29,7 +28,7 @@ class CpExtension extends AbstractExtension implements GlobalsInterface
     public function getGlobals(): array
     {
         return [
-            'CraftEdition' => Craft::$app->edition->value,
+            'CraftEdition' => Edition::get()->value,
             'CraftSolo' => Edition::Solo->value,
             'CraftTeam' => Edition::Team->value,
             'CraftPro' => Edition::Pro->value,

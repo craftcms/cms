@@ -9,6 +9,7 @@ use craft\helpers\FileHelper;
 use CraftCms\Aliases\Facades\Aliases;
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Database\Table;
+use CraftCms\Cms\Edition;
 use CraftCms\Cms\License\License;
 use CraftCms\Cms\Plugin\Contracts\PluginInterface;
 use CraftCms\Cms\Plugin\Events\DisablingPlugin;
@@ -1052,7 +1053,7 @@ final class Plugins
         $issues = [];
 
         // Make sure they're allowed to run the current edition
-        $canTestEditions = app('Craft')->getCanTestEditions();
+        $canTestEditions = Edition::canTest();
         if (
             ! $canTestEditions &&
             isset($pluginInfo['edition'], $pluginInfo['licensedEdition']) &&

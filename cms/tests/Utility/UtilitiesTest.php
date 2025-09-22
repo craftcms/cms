@@ -22,11 +22,11 @@ it('can get all utility types', function () {
 });
 
 it('contains system messages when craft is pro', function () {
-    Craft::$app->setEdition(Edition::Solo);
+    Edition::set(Edition::Solo);
 
     expect($this->utilities->getAllUtilityTypes())->not()->toContain(SystemMessages::class);
 
-    Craft::$app->setEdition(Edition::Pro);
+    Edition::set(Edition::Pro);
 
     expect($this->utilities->getAllUtilityTypes())->toContain(SystemMessages::class);
 });

@@ -49,7 +49,7 @@ final class SystemMessages extends Utility
     #[\Override]
     public static function contentHtml(): string
     {
-        Craft::$app->requireEdition(Edition::Pro);
+        Edition::require(Edition::Pro);
 
         $view = Craft::$app->getView();
         $view->registerAssetBundle(SystemMessagesAsset::class);

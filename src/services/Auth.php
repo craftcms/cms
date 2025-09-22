@@ -385,7 +385,7 @@ class Auth extends Component
      */
     public function is2faRequired(User $user): bool
     {
-        if (Craft::$app->edition === Edition::Solo) {
+        if (Edition::get() === Edition::Solo) {
             return false;
         }
 

@@ -1091,7 +1091,7 @@ class UsersController extends Controller
      */
     public function actionCreate(): Response
     {
-        Craft::$app->requireEdition(Edition::Team);
+        Edition::require(Edition::Team);
 
         $user = Craft::createObject(User::class);
 
@@ -1257,7 +1257,7 @@ class UsersController extends Controller
             }
         }
 
-        if (Craft::$app->edition->value >= Edition::Pro->value) {
+        if (Edition::get()->value >= Edition::Pro->value) {
             // Fire an 'beforeAssignGroupsAndPermissions' event
             if ($this->hasEventHandlers(self::EVENT_BEFORE_ASSIGN_GROUPS_AND_PERMISSIONS)) {
                 $this->trigger(self::EVENT_BEFORE_ASSIGN_GROUPS_AND_PERMISSIONS, new UserEvent([
@@ -1522,7 +1522,7 @@ JS);
         $generalConfig = app(GeneralConfig::class);
         $userSettings = app(ProjectConfig::class)->get('users') ?? [];
         $requireEmailVerification = (
-            Craft::$app->edition->value >= Edition::Pro->value &&
+            Edition::get()->value >= Edition::Pro->value &&
             ($userSettings['requireEmailVerification'] ?? true)
         );
         $deactivateByDefault = $userSettings['deactivateByDefault'] ?? false;
@@ -1558,7 +1558,7 @@ JS);
             }
         } else {
             // Make sure this is Craft Pro, since that's required for having multiple user accounts
-            Craft::$app->requireEdition(Edition::Team);
+            Edition::require(Edition::Team);
 
             // Is someone logged in?
             if ($currentUser) {
@@ -1768,7 +1768,7 @@ JS);
         // Save the user’s photo, if it was submitted
         $this->_processUserPhoto($user);
 
-        if (Craft::$app->edition->value >= Edition::Pro->value) {
+        if (Edition::get()->value >= Edition::Pro->value) {
             // If this is public registration, assign the user to the default user group
             if ($isPublicRegistration) {
                 // Assign them to the default user group
@@ -2580,7 +2580,7 @@ JS);
         // If this is a site request, try handling the request like normal
         if ($this->request->getIsSiteRequest()) {
             // No special handling for Craft < Pro
-            if (Craft::$app->edition->value < Edition::Pro->value) {
+            if (Edition::get()->value < Edition::Pro->value) {
                 return null;
             }
 

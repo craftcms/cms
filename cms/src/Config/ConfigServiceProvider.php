@@ -2,9 +2,9 @@
 
 namespace CraftCms\Cms\Config;
 
-use craft\helpers\Typecast;
 use CraftCms\Aliases\Facades\Aliases;
 use CraftCms\Cms\Support\Env;
+use CraftCms\Cms\Support\Typecast;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\ServiceProvider;
 use Throwable;

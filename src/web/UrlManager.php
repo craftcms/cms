@@ -326,10 +326,10 @@ class UrlManager extends \yii\web\UrlManager
             /** @var array $rules */
             $rules = require $baseCpRoutesPath . DIRECTORY_SEPARATOR . 'common.php';
 
-            if (Craft::$app->edition->value >= Edition::Team->value) {
+            if (Edition::get()->value >= Edition::Team->value) {
                 $rules = array_merge($rules, require $baseCpRoutesPath . DIRECTORY_SEPARATOR . 'team.php');
 
-                if (Craft::$app->edition->value >= Edition::Pro->value) {
+                if (Edition::get()->value >= Edition::Pro->value) {
                     $rules = array_merge($rules, require $baseCpRoutesPath . DIRECTORY_SEPARATOR . 'pro.php');
                 }
             }
