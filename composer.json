@@ -56,6 +56,7 @@
     "pragmarx/recovery": "^0.2.1",
     "samdark/yii2-psr-log-target": "^1.1.3",
     "seld/cli-prompt": "^1.0.4",
+    "spatie/laravel-data": "^4.17",
     "symfony/css-selector": "^6.0|^7.0",
     "symfony/dom-crawler": "^6.0|^7.0",
     "symfony/filesystem": "^6.3",
