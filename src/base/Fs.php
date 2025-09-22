@@ -95,6 +95,7 @@ abstract class Fs extends SavableComponent implements FsInterface
                 'dateUpdated',
                 'edit',
                 'id',
+                'new',
                 'title',
                 'uid',
             ],
