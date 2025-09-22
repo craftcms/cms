@@ -34,6 +34,7 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
     image: null,
     viewport: null,
     focalPoint: null,
+    prevFocalPoint: null,
     focalPointInnerCircle: null,
     focalPointOuterCircle: null,
     focalPointPickedIndicator: null,
@@ -663,7 +664,9 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
     toggleFocalPoint: function () {
       if (!this.focalPoint) {
         this._createFocalPoint();
+        this.prevFocalPoint = null;
       } else {
+        this.prevFocalPoint = this.focalPoint;
         this.canvas.remove(this.focalPoint);
         this.focalPoint = null;
       }
@@ -2788,6 +2791,15 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
     _dropFabricElement: function (element) {
       const $btn = this._getFabricElementEditBtnFromElementHandle(element);
       const itemName = $btn.attr('data-item-name');
+      console.log(itemName);
+      if (element === 'rectangle') {
+        positionMessage = this._getRelativePositionMessage(this.clipper);
+      } else if (element === 'focalpoint') {
+        // Use the prev focal point, since the current one should be null after toggle
+        positionMessage = this._getRelativePositionMessage(this.prevFocalPoint);
+      } else {
+        positionMessage = this._getRelativePositionMessage(this.clipper);
+      }
 
       // Defaults
       this.cropperPickedUp = false;
