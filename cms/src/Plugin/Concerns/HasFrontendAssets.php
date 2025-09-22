@@ -114,13 +114,13 @@ trait HasFrontendAssets
         $assets = collect(array_merge($this->styles, $this->scripts))->mapWithKeys(fn ($public, $resource) => [$resource => $this->app->publicPath("vendor/{$name}/{$public}")])->all();
 
         foreach ($this->styles as $resource => $public) {
-            $public = Str::afterLast($public, '/')."?v=$version";
+            $public = "$public?v=$version";
 
             $this->pluginsService->addStyle($name, asset("vendor/{$name}/{$public}"));
         }
 
         foreach ($this->scripts as $resource => $public) {
-            $public = Str::afterLast($public, '/')."?v=$version";
+            $public = "$public?v=$version";
 
             $this->pluginsService->addScript($name, asset("vendor/{$name}/{$public}"));
         }
