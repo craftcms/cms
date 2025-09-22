@@ -900,8 +900,8 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
         this._handleFabricElementEditBtnClick(ev);
       });
       this.addListener(this.$fabricElementEditBtn, 'keydown', (ev) => {
-        this._handleKeydownOnFabricElementEditBtn(ev);
         this.dragEditMode = false;
+        this._handleKeydownOnFabricElementEditBtn(ev);
       });
       this.addListener(this.$cropperEditBtn, 'focus', (ev) => {
         this.cropperEditBtnFocused = $(ev.target);
@@ -2664,7 +2664,7 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
       if (btnPressed) {
         this._dropFabricElement(itemPicked);
       } else {
-        this.nonDragEditMode = true;
+        this.dragEditMode = false;
         this._pickUpFabricElement(itemPicked);
       }
     },
@@ -2908,7 +2908,6 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
      * @param {Object} ev
      */
     _handleMouseMove: function (ev) {
-      if (this.nonDragEditMode) return;
 
       if (this.mouseMoveEvent !== null) {
         Garnish.requestAnimationFrame(this._handleMouseMoveInternal.bind(this));
