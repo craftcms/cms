@@ -5,6 +5,7 @@ namespace CraftCms\Cms\Http\Controllers\Updates;
 use Craft;
 use craft\helpers\UrlHelper;
 use CraftCms\Cms\Config\GeneralConfig;
+use CraftCms\Cms\Edition;
 use CraftCms\Cms\Plugin\Exceptions\InvalidPluginException;
 use CraftCms\Cms\Plugin\Plugins;
 use CraftCms\Cms\Support\Html;
@@ -114,7 +115,7 @@ final readonly class UpdatesController
 
             $arr['ctaUrl'] = UrlHelper::url($update->renewalUrl);
 
-            if ($allowUpdates && Craft::$app->getCanTestEditions()) {
+            if ($allowUpdates && Edition::canTest()) {
                 $arr['altCtaText'] = Craft::t('app', 'Update anyway');
             }
 

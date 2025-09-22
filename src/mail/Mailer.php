@@ -191,7 +191,7 @@ class Mailer extends \yii\symfonymailer\Mailer
                 $message->setTextBody($textBody);
 
                 // Is there a custom HTML template set?
-                if (Craft::$app->edition->value >= Edition::Pro->value && $this->template) {
+                if (Edition::get()->value >= Edition::Pro->value && $this->template) {
                     $template = $this->template;
                     $templateMode = View::TEMPLATE_MODE_SITE;
                 } else {

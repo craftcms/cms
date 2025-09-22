@@ -158,7 +158,7 @@ class UserQueryTest extends TestCase
      */
     public function testCan(): void
     {
-        Craft::$app->edition = Edition::Pro;
+        Edition::set(Edition::Pro);
 
         /** @var User[] $users */
         $users = User::find()->status(null)->all();

@@ -40,7 +40,7 @@ final readonly class PluginStoreController
             'pluginStoreAppBaseUrl' => $generalConfig->cpTrigger.'/plugin-store',
             'cmsInfo' => [
                 'version' => $this->craft->getVersion(),
-                'edition' => $this->craft->edition->handle(),
+                'edition' => Edition::get()->handle(),
             ],
             'cmsLicenseKey' => $license->key(),
             'cmsEditions' => array_map(fn (Edition $edition) => $edition->handle(), Edition::cases()),
@@ -67,9 +67,9 @@ final readonly class PluginStoreController
         $data['currentUser'] = $request->user()->email;
 
         // Craft license/edition info
-        $data['licensedEdition'] = $this->craft->getLicensedEdition()?->value;
-        $data['canTestEditions'] = $this->craft->getCanTestEditions();
-        $data['CraftEdition'] = $this->craft->edition->value;
+        $data['licensedEdition'] = Edition::getLicensed()?->value;
+        $data['canTestEditions'] = Edition::canTest();
+        $data['CraftEdition'] = Edition::get()->value;
         $data['CraftSolo'] = Edition::Solo->value;
         $data['CraftTeam'] = Edition::Team->value;
         $data['CraftPro'] = Edition::Pro->value;

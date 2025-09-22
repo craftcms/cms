@@ -1810,7 +1810,7 @@ class Gql extends Component
      */
     private function userSchemaComponents(): array
     {
-        if (Craft::$app->edition === Edition::Solo) {
+        if (Edition::get() === Edition::Solo) {
             return [[], []];
         }
 

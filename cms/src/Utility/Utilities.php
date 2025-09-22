@@ -52,7 +52,7 @@ final readonly class Utilities
                 PhpInfo::class,
             )
             ->when(
-                app('Craft')->edition->value >= Edition::Pro->value,
+                Edition::get()->value >= Edition::Pro->value,
                 fn (Collection $c) => $c->push(SystemMessagesUtility::class)
             )
             ->when(

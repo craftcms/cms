@@ -100,7 +100,7 @@ class ExtensionTest extends TestCase
      */
     public function test_craft_system_globals(): void
     {
-        Craft::$app->edition = Edition::Pro;
+        Edition::set(Edition::Pro);
         $this->testRenderResult(
             implode(',', [Edition::Solo->value, Edition::Team->value, Edition::Pro->value]),
             '{{ [CraftSolo, CraftTeam, CraftPro]|join(",") }}',

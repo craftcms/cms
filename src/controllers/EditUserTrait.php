@@ -186,10 +186,10 @@ trait EditUserTrait
     {
         $currentUser = static::currentUser();
         return (
-            Craft::$app->edition->value >= Edition::Team->value &&
+            Edition::get()->value >= Edition::Team->value &&
             (
-                (Craft::$app->edition === Edition::Team && $currentUser->admin) ||
-                (Craft::$app->edition->value >= Edition::Pro->value && $currentUser->can('assignUserPermissions')) ||
+                (Edition::get() === Edition::Team && $currentUser->admin) ||
+                (Edition::get()->value >= Edition::Pro->value && $currentUser->can('assignUserPermissions')) ||
                 $currentUser->canAssignUserGroups()
             )
         );

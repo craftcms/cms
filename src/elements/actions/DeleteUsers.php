@@ -118,7 +118,7 @@ JS,
             [
                 static::class,
                 $this->_getUndeletableUserIds(),
-                Craft::$app->getSecurity()->hashData(Craft::$app->edition === Edition::Solo ? 'dashboard' : 'users'),
+                Craft::$app->getSecurity()->hashData(Edition::get() === Edition::Solo ? 'dashboard' : 'users'),
             ]);
 
         return null;

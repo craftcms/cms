@@ -891,7 +891,7 @@ class EntryQuery extends ElementQuery implements NestedElementQueryInterface
             $this->subQuery->andWhere(['entries.typeId' => $this->typeId]);
         }
 
-        if (Craft::$app->edition !== Edition::Solo) {
+        if (Edition::get() !== Edition::Solo) {
             if ($this->authorId) {
                 // Checking multiple authors?
                 if (

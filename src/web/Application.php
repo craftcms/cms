@@ -24,6 +24,7 @@ use craft\helpers\UrlHelper;
 use craft\queue\QueueLogBehavior;
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Database\Table;
+use CraftCms\Cms\Edition;
 use CraftCms\Cms\License\License;
 use CraftCms\Cms\Plugin\Plugins;
 use CraftCms\Cms\Support\Json;
@@ -245,7 +246,7 @@ class Application extends \yii\web\Application
                         }
                     }
 
-                    if ($isCpRequest && !$this->getCanTestEditions()) {
+                    if ($isCpRequest && !Edition::canTest()) {
                         // Are there are any licensing issues cached?
                         $licenseIssues = app(License::class)->issues(false);
                         if (!empty($licenseIssues)) {

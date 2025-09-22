@@ -1692,7 +1692,7 @@ class Users extends Component
         $generalConfig = app(GeneralConfig::class);
 
         $cp = (
-            Craft::$app->edition->value < Edition::Pro->value ||
+            Edition::get()->value < Edition::Pro->value ||
             ($isCpRequest && $user->can('accessCp')) ||
             ($generalConfig->headlessMode && !UrlHelper::isAbsoluteUrl($fePath))
         );
@@ -1747,7 +1747,7 @@ class Users extends Component
      */
     final public function canCreateUsers(): bool
     {
-        $maxUsers = $this->getMaxUsers(Craft::$app->edition);
+        $maxUsers = $this->getMaxUsers(Edition::get());
         return !$maxUsers || $maxUsers > User::find()->status(null)->count();
     }
 

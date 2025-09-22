@@ -599,7 +599,7 @@ JS;
                 ?? false
             ),
             'editableCategoryGroups' => $upToDate ? $this->_editableCategoryGroups() : [],
-            'edition' => Craft::$app->edition->value,
+            'edition' => Edition::get()->value,
             'elementTypeNames' => $elementTypeNames,
             'elevatedSessionDuration' => $generalConfig->elevatedSessionDuration,
             'fieldsWithoutContent' => array_map(fn(FieldInterface $field) => $field->handle, Craft::$app->getFields()->getFieldsWithoutContent(false)),
