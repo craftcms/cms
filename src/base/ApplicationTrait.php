@@ -516,11 +516,11 @@ trait ApplicationTrait
     /**
      * Returns the installed Craft CMS edition’s ID.
      *
-     * @deprecated in 6.0.0. `Edition::get()` should be used instead.
+     * @deprecated in 6.0.0. `Edition::get()->value` should be used instead.
      */
-    public function getEdition(): Edition
+    public function getEdition(): int
     {
-        return Edition::get();
+        return Edition::get()->value;
     }
 
     /**
