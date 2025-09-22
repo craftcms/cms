@@ -14,10 +14,13 @@ use CraftCms\Cms\Support\Str;
 use Illuminate\Contracts\Support\Responsable;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Traits\Conditionable;
 use Symfony\Component\HttpFoundation\Response;
 
 final class CpScreenResponse implements Responsable
 {
+    use Conditionable;
+
     /**
      * @var callable|null Callable that will be called before other properties are added to the screen.
      *

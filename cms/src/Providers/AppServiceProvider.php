@@ -58,6 +58,7 @@ final class AppServiceProvider extends ServiceProvider
          */
         $kernel = $this->app->get(HttpKernel::class);
         $kernel->setGlobalMiddleware(array_merge([
+            ExtractNamespace::class,
             HandleActionRequest::class,
         ], $kernel->getGlobalMiddleware()));
 
@@ -152,7 +153,6 @@ final class AppServiceProvider extends ServiceProvider
         collect([
             CheckSchemaVersion::class,
             CheckForUpdates::class,
-            ExtractNamespace::class,
             SendPoweredByHeader::class,
             FlushProjectConfig::class,
         ])->each(fn ($middleware) => $router->pushMiddlewareToGroup('craft', $middleware));
