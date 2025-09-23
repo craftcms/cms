@@ -21,7 +21,6 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
     $editorContainer: null,
     $straighten: null,
     $croppingCanvas: null,
-    $cropperMoveBtn: null,
     $rectangleEditBtn: null,
     $fabricElementEditBtn: null,
     $spinner: null,
@@ -33,6 +32,7 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
     canvas: null,
     image: null,
     viewport: null,
+    handle: null,
     focalPoint: null,
     prevFocalPoint: null,
     focalPointInnerCircle: null,
@@ -213,7 +213,6 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
       this.editorWidth = this.$editorContainer.innerWidth();
 
       // Keyboard accessibility
-      this.$cropperMoveBtn = $('#cropper-handle', this.$body);
       this.$rectangleEditBtn = $('[data-edit-rectangle]', this.$body);
       this.$fabricElementEditBtn = $('[data-fabric-element]', this.$body);
 
@@ -2404,7 +2403,7 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
       if (!this.focusedEditButton) return;
 
       // Check button properties. If rectangle, use rectangle styles
-      if (this._getFabricElementFromEditBtn(this.focusedEditButton) === 'rectangle') {
+      if (this._getElementHandleFromButton(this.focusedEditButton) === 'rectangle') {
         return true;
       }
 
@@ -2418,7 +2417,7 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
     _getHandleButtonIsFocused: function () {
       if (this.focusedEditButton) {
         // Check button properties. If rectangle, use rectangle styles
-        const cropperElement = this._getFabricElementFromEditBtn(
+        const cropperElement = this._getElementHandleFromButton(
           this.focusedEditButton
         );
 
@@ -2520,7 +2519,7 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 
       const handle = this.handlePicked
         ? this.handlePicked
-        : this._getFabricElementFromEditBtn(this.focusedEditButton);
+        : this._getElementHandleFromButton(this.focusedEditButton);
 
       let handleCoordinates = this._getClipperHandlePosition(handle);
       const size = 12;
@@ -2660,19 +2659,19 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
     _handleEditButtonClick: function (ev) {
       const $btn = $(ev.target.closest('button'));
       const btnPressed = $btn.attr('aria-pressed') === 'true';
-      const itemPicked = this._getFabricElementFromEditBtn($btn);
+      const elementHandle = this._getElementHandleFromButton($btn);
 
-      if (itemPicked === 'focalpoint') {
+      if (elementHandle === 'focalpoint') {
         this.toggleFocalPoint();
       }
 
       // TODO: Make sure we're dropping the currently picked item, not just any item
 
       if (btnPressed) {
-        this._dropFabricElement(itemPicked);
+        this._dropFabricElement(elementHandle);
       } else {
         this.dragEditMode = false;
-        this._pickUpFabricElement(itemPicked);
+        this._pickUpFabricElement(elementHandle);
       }
     },
 
@@ -2730,7 +2729,7 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
      * @param $btn
      * @returns {'rectangle'|'tl'|'t'|'tr'|'l'|'r'|'bl'|'b'|'br'}
      */
-    _getFabricElementFromEditBtn: function ($btn) {
+    _getElementHandleFromButton: function ($btn) {
       return $($btn).attr('data-fabric-element');
     },
 
@@ -2739,7 +2738,7 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
      * @param {string} element - The fabric element handle, e.g. 'rectangle', 'tl', 't', etc.
      * @returns {jQuery}
      */
-    _getFabricElementEditBtnFromElementHandle: function (element) {
+    _getEditButtonFromElementHandle: function (element) {
       return this.$fabricElementEditBtn.filter(
         `[data-fabric-element="${element}"]`
       );
@@ -2749,26 +2748,25 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
      * Pick up a fabric element given its handle.
      * @param {string} element - The fabric element handle, e.g. 'rectangle', 'tl', 't', etc.
      */
-    _pickUpFabricElement: function (element) {
+    _pickUpFabricElement: function (handle) {
       this._resetEditState();
 
       let stateMessage = '';
       let positionMessage = '';
       let instructionMessage = '';
 
-      const $btn = this._getFabricElementEditBtnFromElementHandle(element);
+      const $btn = this._getEditButtonFromElementHandle(handle);
       $btn.attr('aria-pressed', 'true');
       const itemName = $btn.attr('data-item-name');
 
-      if (element === 'rectangle') {
+      if (handle === 'rectangle') {
         this.cropperPickedUp = true;
         positionMessage = this._getRelativePositionMessage(this.clipper);
-      } else if (element === 'focalpoint') {
+      } else if (handle === 'focalpoint') {
         this.focalPickedUp = true;
         positionMessage = this._getRelativePositionMessage(this.focalPoint);
       } else {
-        $btn.attr('aria-pressed', 'true');
-        this.handlePicked = element;
+        this.handlePicked = handle;
       }
 
       stateMessage = Craft.t('app', '{item} picked up.', {
@@ -2793,17 +2791,16 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
      * Drops a fabric element given its handle.
      * @param {string} element - The fabric element handle, e.g. 'rectangle', 'tl', 't', etc.
      */
-    _dropFabricElement: function (element) {
-      const $btn = this._getFabricElementEditBtnFromElementHandle(element);
+    _dropFabricElement: function (handle) {
+      const $btn = this._getEditButtonFromElementHandle(handle);
       const itemName = $btn.attr('data-item-name');
+      let positionMessage = '';
 
-      if (element === 'rectangle') {
+      if (handle === 'rectangle') {
         positionMessage = this._getRelativePositionMessage(this.clipper);
-      } else if (element === 'focalpoint') {
+      } else if (handle === 'focalpoint') {
         // Use the prev focal point, since the current one should be null after toggle
         positionMessage = this._getRelativePositionMessage(this.prevFocalPoint);
-      } else {
-        positionMessage = this._getRelativePositionMessage(this.clipper);
       }
 
       // Defaults
