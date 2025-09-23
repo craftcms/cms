@@ -241,10 +241,7 @@ class Yii2ServiceProvider extends ServiceProvider
         }
 
         if ($definition['description']) {
-            $description = $definition['description'];
-            $description = str_replace("\e[0m\e[36", "\n", $description);
-
-            $definitionSignature .= " : {$description}";
+            $definitionSignature .= " : {$definition['description']}";
         }
 
         return " {{$definitionSignature}}";
