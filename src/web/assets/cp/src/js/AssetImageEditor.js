@@ -68,7 +68,7 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
     handlePicked: false,
     draggingFocal: false,
     cropperPickedUp: false,
-    cropperEditBtnFocused: null,
+    focusedEditButton: null,
     focalPickedUp: false,
     focalClicked: false,
     cropperClicked: false,
@@ -904,7 +904,8 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
         this._handleKeydownOnFabricElementEditBtn(ev);
       });
       this.addListener(this.$cropperEditBtn, 'focus', (ev) => {
-        this.cropperEditBtnFocused = $(ev.target);
+        this.focusedEditButton = $(ev.target);
+        console.log('in focus event');
         this._redrawCropperElements();
         this.renderCropper();
       });
@@ -2245,9 +2246,9 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
         this.croppingCanvas.remove(this.croppingRectangle);
       }
 
-      if (this.cropperHandleIndicator) {
-        this.croppingCanvas.remove(this.cropperHandleIndicator);
-        this.cropperHandleIndicator = null;
+      if (this.handleFocusIndicator) {
+        this.croppingCanvas.remove(this.handleFocusIndicator);
+        this.handleFocusIndicator = null;
       }
 
       this._redrawCropperElements._.lineOptions = {
@@ -2313,7 +2314,7 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
         }
       );
 
-      this.cropperHandleIndicator = this._getCropperHandleIndicator();
+      this.handleFocusIndicator = this._getHandleFocusIndicator();
 
       // Don't forget the rectangle
       this.croppingRectangle = this._getCroppingRectangle();
@@ -2383,8 +2384,8 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
       this.croppingCanvas.add(this.cropperHandles);
       this.croppingCanvas.add(this.cropperGrid);
 
-      if (this.cropperHandleIndicator) {
-        this.croppingCanvas.add(this.cropperHandleIndicator);
+      if (this.handleFocusIndicator) {
+        this.croppingCanvas.add(this.handleFocusIndicator);
       }
     },
 
@@ -2393,29 +2394,25 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
      * @returns {boolean}
      */
     _getCroppingRectangleEditBtnIsFocused: function () {
-      if (this.cropperEditBtnFocused) {
-        // Check button properties. If rectangle, use rectangle styles
-        const cropperElement = this._getFabricElementFromEditBtn(
-          this.cropperEditBtnFocused
-        );
+      if (!this.focusedEditButton) return;
 
-        if (cropperElement === 'rectangle') {
-          return true;
-        }
-
-        return false;
+      // Check button properties. If rectangle, use rectangle styles
+      if (this._getFabricElementFromEditBtn(this.focusedEditButton) === 'rectangle') {
+        return true;
       }
+
+      return false;
     },
 
     /**
      * Whether one of the handle edit buttons is focused.
      * @returns {boolean}
      */
-    _getCropperHandleEditBtnIsFocused: function () {
-      if (this.cropperEditBtnFocused) {
+    _getHandleEditBtnIsFocused: function () {
+      if (this.focusedEditButton) {
         // Check button properties. If rectangle, use rectangle styles
         const cropperElement = this._getFabricElementFromEditBtn(
-          this.cropperEditBtnFocused
+          this.focusedEditButton
         );
 
         if (cropperElement !== 'rectangle') {
@@ -2509,13 +2506,13 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
      * Creates and returns a cropper handle indicator group.
      * @returns {fabric.Group} The created cropper handle indicator group.
      */
-    _getCropperHandleIndicator: function () {
-      if (!this._getCropperHandleEditBtnIsFocused() && !this.handlePicked)
+    _getHandleFocusIndicator: function () {
+      if (!this._getHandleEditBtnIsFocused() && !this.handlePicked)
         return;
 
       const handle = this.handlePicked
         ? this.handlePicked
-        : this._getFabricElementFromEditBtn(this.cropperEditBtnFocused);
+        : this._getFabricElementFromEditBtn(this.focusedEditButton);
 
       let handleCoordinates = this._getClipperHandlePosition(handle);
       const size = 12;
@@ -2860,19 +2857,6 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
       if (isDirectionalKey) {
         event.preventDefault();
         this._handleFabricElementKeyboardEdit(ev);
-      }
-    },
-
-    _handleCropperEditBtnBlur: function (ev) {
-      const $btn = $(ev.target.closest('button'));
-      const btnPressed = $btn.attr('aria-pressed') !== 'false';
-
-      this.cropperEditBtnFocused = null;
-      this.nonDragEditMode = false;
-
-      if (btnPressed) {
-        const elementToDrop = this._getFabricElementFromEditBtn($btn);
-        this._dropFabricElement(elementToDrop);
       }
     },
 
