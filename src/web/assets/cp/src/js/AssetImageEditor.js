@@ -903,25 +903,12 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
         this.dragEditMode = false;
         this._handleKeydownOnFabricElementEditBtn(ev);
       });
-      this.addListener(this.$rectangleEditBtn, 'focus', (ev) => {
+      this.addListener(this.$fabricElementEditBtn, 'focus', (ev) => {
         this._resetEditState();
         this.focusedEditButton = $(ev.target);
+
         this._redrawCropperElements();
         this.renderCropper();
-      });
-
-      // If a blur bubbles up and the new active element is NOT a rectangle button, clear all the focus outlines
-      this.addListener(this.$rectangleEditBtn, 'blur', (ev) => {
-        const $buttonLosingFocus = $(ev.currentTarget);
-        const $elementGainingFocus = $(ev.relatedTarget);
-
-        const newTargetIsRectangleButton = $elementGainingFocus.is('[data-edit-rectangle]');
-
-        if (!newTargetIsRectangleButton) {
-          console.log('trigger redraw');
-          this._redrawCropperElements();
-          this.renderCropper();
-        }
       });
 
       // Straighten slider
@@ -2407,6 +2394,7 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
       this.cropperPickedUp = false;
       this.handlePicked = false;
       this.focalPickedUp = false;
+
     },
 
     /**
@@ -2435,7 +2423,7 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
           this.focusedEditButton
         );
 
-        if (cropperElement !== 'rectangle') {
+        if (cropperElement !== 'rectangle' && cropperElement !== 'focalpoint') {
           return true;
         }
 
@@ -2529,8 +2517,9 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
     _getHandleFocusIndicator: function () {
       if (this.dragEditMode || (!this._getHandleButtonIsFocused() && !this.handlePicked)) {
         return;
-
       }
+
+      console.log('in handle focus indicator fxn');
 
       const handle = this.handlePicked
         ? this.handlePicked
