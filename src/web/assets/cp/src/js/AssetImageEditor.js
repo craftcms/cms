@@ -41,7 +41,7 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
     grid: null,
     croppingCanvas: null,
     clipper: null,
-    cropperHandleIndicator: null,
+    handleFocusIndicator: null,
     croppingRectangle: null,
     cropperHandles: null,
     cropperGrid: null,
@@ -904,8 +904,10 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
         this._handleKeydownOnFabricElementEditBtn(ev);
       });
       this.addListener(this.$cropperEditBtn, 'focus', (ev) => {
+        // Reset state
+        this._resetEditState();
+
         this.focusedEditButton = $(ev.target);
-        console.log('in focus event');
         this._redrawCropperElements();
         this.renderCropper();
       });
@@ -2389,11 +2391,17 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
       }
     },
 
+    _resetEditState: function() {
+      this.cropperPickedUp = false;
+      this.handlePicked = false;
+      this.focalPickedUp = false;
+    },
+
     /**
      * Whether the cropping rectangle edit button is focused.
      * @returns {boolean}
      */
-    _getCroppingRectangleEditBtnIsFocused: function () {
+    _getRectangleButtonIsFocused: function () {
       if (!this.focusedEditButton) return;
 
       // Check button properties. If rectangle, use rectangle styles
@@ -2408,7 +2416,7 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
      * Whether one of the handle edit buttons is focused.
      * @returns {boolean}
      */
-    _getHandleEditBtnIsFocused: function () {
+    _getHandleButtonIsFocused: function () {
       if (this.focusedEditButton) {
         // Check button properties. If rectangle, use rectangle styles
         const cropperElement = this._getFabricElementFromEditBtn(
@@ -2473,7 +2481,7 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 
       if (
         this.cropperPickedUp ||
-        this._getCroppingRectangleEditBtnIsFocused()
+        this._getRectangleButtonIsFocused()
       ) {
         outerOutline.set({
           stroke: this.settings.colors.white,
@@ -2507,12 +2515,17 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
      * @returns {fabric.Group} The created cropper handle indicator group.
      */
     _getHandleFocusIndicator: function () {
-      if (!this._getHandleEditBtnIsFocused() && !this.handlePicked)
+      if (!this._getHandleButtonIsFocused() && !this.handlePicked) {
+        console.log('not updating indicator');
         return;
+
+      }
 
       const handle = this.handlePicked
         ? this.handlePicked
         : this._getFabricElementFromEditBtn(this.focusedEditButton);
+      
+      console.log(handle);
 
       let handleCoordinates = this._getClipperHandlePosition(handle);
       const size = 12;
