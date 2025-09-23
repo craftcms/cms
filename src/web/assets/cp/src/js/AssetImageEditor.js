@@ -22,7 +22,7 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
     $straighten: null,
     $croppingCanvas: null,
     $cropperMoveBtn: null,
-    $cropperEditBtn: null,
+    $rectangleEditBtn: null,
     $fabricElementEditBtn: null,
     $spinner: null,
     $constraintContainer: null,
@@ -214,7 +214,7 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 
       // Keyboard accessibility
       this.$cropperMoveBtn = $('#cropper-handle', this.$body);
-      this.$cropperEditBtn = $('[data-crop-editor]', this.$body);
+      this.$rectangleEditBtn = $('[data-edit-rectangle]', this.$body);
       this.$fabricElementEditBtn = $('[data-fabric-element]', this.$body);
 
       // Get SVG to use for move/active indicator
@@ -903,7 +903,7 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
         this.dragEditMode = false;
         this._handleKeydownOnFabricElementEditBtn(ev);
       });
-      this.addListener(this.$cropperEditBtn, 'focus', (ev) => {
+      this.addListener(this.$rectangleEditBtn, 'focus', (ev) => {
         // Reset state
         this._resetEditState();
 
@@ -911,6 +911,9 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
         this._redrawCropperElements();
         this.renderCropper();
       });
+
+      // If a blur bubbles up and the new active element is NOT a rectangle button, clear all the focus outlines
+      this.addListener()
 
       // Straighten slider
       this.straighteningInput = new Craft.SlideRuleInput('slide-rule', {
