@@ -32,7 +32,6 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
     canvas: null,
     image: null,
     viewport: null,
-    handle: null,
     focalPoint: null,
     prevFocalPoint: null,
     focalPointInnerCircle: null,
