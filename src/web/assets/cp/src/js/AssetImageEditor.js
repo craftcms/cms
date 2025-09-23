@@ -905,8 +905,10 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
         this._resetEditState();
         this.focusedEditButton = $(ev.target);
 
-        this._redrawCropperElements();
-        this.renderCropper();
+        if (this.clipper) {
+          this._redrawCropperElements();
+          this.renderCropper();
+        }
       });
 
       // Straighten slider
