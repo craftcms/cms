@@ -3818,7 +3818,7 @@ class GeneralConfig extends BaseConfig
 
         $this->blowfishHashCost = $value;
 
-        Config::set('hashing.bcrypt.rounds', $value);
+        config()->set('hashing.bcrypt.rounds', $value);
 
         return $this;
     }
@@ -4039,7 +4039,7 @@ class GeneralConfig extends BaseConfig
     {
         $this->defaultCookieDomain = $value;
 
-        Config::set('session.domain', $value);
+        config()->set('session.domain', $value);
 
         return $this;
     }
@@ -4320,7 +4320,7 @@ class GeneralConfig extends BaseConfig
 
         $this->devMode = $value;
 
-        Config::set('app.debug', $value);
+        config()->set('app.debug', $value);
 
         return $this;
     }
@@ -5622,7 +5622,7 @@ class GeneralConfig extends BaseConfig
 
         $this->phpSessionName = $value;
 
-        Config::set('session.cookie', $value);
+        config()->set('session.cookie', $value);
 
         return $this;
     }
@@ -6445,7 +6445,7 @@ class GeneralConfig extends BaseConfig
 
         $this->securityKey = $value;
 
-        Config::set('app.key', $value);
+        config()->set('app.key', $value);
 
         return $this;
     }
@@ -6979,7 +6979,7 @@ class GeneralConfig extends BaseConfig
 
         $this->useSecureCookies = $value;
 
-        Config::set('session.secure', $value === 'auto' ? null : $value);
+        config()->set('session.secure', $value === 'auto' ? null : $value);
 
         return $this;
     }
