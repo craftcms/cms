@@ -1375,7 +1375,7 @@ class Db
      */
     public static function idByUid(string $table, string $uid, ?Connection $db = null): ?int
     {
-        return DbFacade::table($table)->idByUid($uid);
+        return DbFacade::table(Table::withoutYiiPlaceholder($table))->idByUid($uid);
     }
 
     /**
@@ -1389,7 +1389,7 @@ class Db
      */
     public static function idsByUids(string $table, array $uids, ?Connection $db = null): array
     {
-        return DbFacade::table($table)->idsByUids($uids);
+        return DbFacade::table(Table::withoutYiiPlaceholder($table))->idsByUids($uids);
     }
 
     /**
@@ -1403,7 +1403,7 @@ class Db
      */
     public static function uidById(string $table, int $id, ?Connection $db = null): ?string
     {
-        return DbFacade::table($table)->uidById($id);
+        return DbFacade::table(Table::withoutYiiPlaceholder($table))->uidById($id);
     }
 
     /**
@@ -1417,7 +1417,7 @@ class Db
      */
     public static function uidsByIds(string $table, array $ids, ?Connection $db = null): array
     {
-        return DbFacade::table($table)->uidsByIds($ids);
+        return DbFacade::table(Table::withoutYiiPlaceholder($table))->uidsByIds($ids);
     }
 
     /**
