@@ -897,7 +897,7 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 
       // FabricJS canvas
       this.addListener(this.$fabricElementEditBtn, 'click', (ev) => {
-        this._handleFabricElementEditBtnClick(ev);
+        this._handleEditButtonClick(ev);
       });
       this.addListener(this.$fabricElementEditBtn, 'keydown', (ev) => {
         this.dragEditMode = false;
@@ -2515,8 +2515,7 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
      * @returns {fabric.Group} The created cropper handle indicator group.
      */
     _getHandleFocusIndicator: function () {
-      if (!this._getHandleButtonIsFocused() && !this.handlePicked) {
-        console.log('not updating indicator');
+      if (this.dragEditMode || (!this._getHandleButtonIsFocused() && !this.handlePicked)) {
         return;
 
       }
@@ -2662,7 +2661,7 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
      * Handle click events on the cropper rectangle or cropper handle edit buttons.
      * @param ev
      */
-    _handleFabricElementEditBtnClick: function (ev) {
+    _handleEditButtonClick: function (ev) {
       const $btn = $(ev.target.closest('button'));
       const btnPressed = $btn.attr('aria-pressed') === 'true';
       const itemPicked = this._getFabricElementFromEditBtn($btn);
