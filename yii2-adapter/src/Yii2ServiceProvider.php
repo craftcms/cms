@@ -116,11 +116,22 @@ class Yii2ServiceProvider extends ServiceProvider
      */
     protected function setLaravelDefaults(): void
     {
-        Config::set('app.debug', Env::get('APP_DEBUG', Env::get('CRAFT_DEV_MODE', false)));
-        Config::set('app.env', Env::get('APP_ENV', Env::get('CRAFT_ENVIRONMENT', Env::get('ENVIRONMENT', 'local'))));
-        Config::set('session.driver', Env::get('SESSION_DRIVER', 'file'));
-        Config::set('cache.default', Env::get('CACHE_STORE', 'file'));
-        Config::set('database.default', Env::get('DB_CONNECTION', Env::get('CRAFT_DB_DRIVER', 'mysql')));
+        if (!file_exists(config_path('app.php'))) {
+            Config::set('app.debug', Env::get('APP_DEBUG', Env::get('CRAFT_DEV_MODE', false)));
+            Config::set('app.env', Env::get('APP_ENV', Env::get('CRAFT_ENVIRONMENT', Env::get('ENVIRONMENT', 'local'))));
+        }
+
+        if (!file_exists(config_path('session.php'))) {
+            Config::set('session.driver', Env::get('SESSION_DRIVER', 'file'));
+        }
+
+        if (!file_exists(config_path('cache.php'))) {
+            Config::set('cache.default', Env::get('CACHE_STORE', 'file'));
+        }
+
+        if (!file_exists(config_path('database.php'))) {
+            Config::set('database.default', Env::get('DB_CONNECTION', Env::get('CRAFT_DB_DRIVER', 'mysql')));
+        }
     }
 
     public function boot(): void
