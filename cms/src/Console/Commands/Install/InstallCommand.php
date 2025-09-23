@@ -147,12 +147,12 @@ final class InstallCommand extends Command
             'language' => $language,
         ]);
 
-        // Try to save the site URL to a PRIMARY_SITE_URL environment variable
+        // Try to save the site URL to a APP_URL environment variable
         // if it’s not already set to an alias or environment variable
         if (! in_array($site->getBaseUrl(false)[0], ['@', '$'])) {
             try {
-                Env::writeVariable('PRIMARY_SITE_URL', $site->baseUrl, app()->environmentFilePath());
-                $site->baseUrl = '$PRIMARY_SITE_URL';
+                Env::writeVariable('APP_URL', $site->baseUrl, app()->environmentFilePath());
+                $site->baseUrl = '$APP_URL';
             } catch (Throwable) {
                 // that's fine, we'll just store the entered URL
             }

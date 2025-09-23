@@ -40,8 +40,8 @@ trait SiteDefaults
             return $primarySite['baseUrl'];
         }
 
-        // Is there a PRIMARY_SITE_URL environment variable set?
-        if ($envValue = Env::get('PRIMARY_SITE_URL')) {
+        // Is there a APP_URL environment variable set?
+        if ($envValue = Env::get('APP_URL')) {
             return $envValue;
         }
 

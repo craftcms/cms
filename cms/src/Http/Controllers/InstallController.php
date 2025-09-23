@@ -205,12 +205,12 @@ final readonly class InstallController
             $siteUrl = Craft::getAlias($siteUrl);
         }
 
-        // Try to save the site URL to a PRIMARY_SITE_URL environment variable
+        // Try to save the site URL to a APP_URL environment variable
         // if it’s not already set to an alias or environment variable
         if ($siteUrl[0] !== '@' && $siteUrl[0] !== '$' && ! App::isEphemeral()) {
             try {
-                Env::writeVariable('PRIMARY_SITE_URL', $siteUrl, $path);
-                $siteUrl = '$PRIMARY_SITE_URL';
+                Env::writeVariable('APP_URL', $siteUrl, $path);
+                $siteUrl = '$APP_URL';
             } catch (Throwable) {
                 // that's fine, we'll just store the entered URL
             }
