@@ -2390,7 +2390,7 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
       }
     },
 
-    _resetEditState: function() {
+    _resetEditState: function () {
       this.cropperPickedUp = false;
       this.handlePicked = false;
       this.focalPickedUp = false;
@@ -2404,7 +2404,9 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
       if (!this.focusedEditButton) return;
 
       // Check button properties. If rectangle, use rectangle styles
-      if (this._getElementHandleFromButton(this.focusedEditButton) === 'rectangle') {
+      if (
+        this._getElementHandleFromButton(this.focusedEditButton) === 'rectangle'
+      ) {
         return true;
       }
 
@@ -2478,10 +2480,7 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
         }
       );
 
-      if (
-        this.cropperPickedUp ||
-        this._getRectangleButtonIsFocused()
-      ) {
+      if (this.cropperPickedUp || this._getRectangleButtonIsFocused()) {
         outerOutline.set({
           stroke: this.settings.colors.white,
         });
@@ -2514,7 +2513,10 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
      * @returns {fabric.Group} The created cropper handle indicator group.
      */
     _getHandleFocusIndicator: function () {
-      if (this.dragEditMode || (!this._getHandleButtonIsFocused() && !this.handlePicked)) {
+      if (
+        this.dragEditMode ||
+        (!this._getHandleButtonIsFocused() && !this.handlePicked)
+      ) {
         return;
       }
 
@@ -2896,7 +2898,6 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
      * @param {Object} ev
      */
     _handleMouseMove: function (ev) {
-
       if (this.mouseMoveEvent !== null) {
         Garnish.requestAnimationFrame(this._handleMouseMoveInternal.bind(this));
       }
