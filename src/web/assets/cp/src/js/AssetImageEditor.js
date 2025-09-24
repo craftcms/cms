@@ -21,7 +21,6 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
     $editorContainer: null,
     $straighten: null,
     $croppingCanvas: null,
-    $rectangleEditBtn: null,
     $fabricElementEditBtn: null,
     $spinner: null,
     $constraintContainer: null,
@@ -87,6 +86,7 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
     croppingConstraint: false,
     constraintOrientation: 'landscape',
     showingCustomConstraint: false,
+    rectangleHasFocusOutline: false,
     saving: false,
     dragEditMode: true,
 
@@ -212,7 +212,6 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
       this.editorWidth = this.$editorContainer.innerWidth();
 
       // Keyboard accessibility
-      this.$rectangleEditBtn = $('[data-edit-rectangle]', this.$body);
       this.$fabricElementEditBtn = $('[data-fabric-element]', this.$body);
 
       // Get SVG to use for move/active indicator
@@ -901,13 +900,28 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
         this.dragEditMode = false;
         this._handleKeydownOnFabricElementEditBtn(ev);
       });
-      this.addListener(this.$fabricElementEditBtn, 'focus', (ev) => {
-        this._resetEditState();
-        this.focusedEditButton = $(ev.target);
 
-        if (this.clipper) {
-          this._redrawCropperElements();
-          this.renderCropper();
+      this.addListener(Garnish.$doc, 'focusin', (ev) => {
+        const targetIsEditButton = $(ev.target).is(this.$fabricElementEditBtn);
+
+        const showingEditorFocusOutlines =
+          this.handleFocusIndicator || this.rectangleHasFocusOutline;
+        const outlinesShouldBeErased =
+          showingEditorFocusOutlines && !targetIsEditButton;
+
+        if (targetIsEditButton || outlinesShouldBeErased) {
+          if (targetIsEditButton) {
+            this.focusedEditButton = $(ev.target);
+          } else {
+            this.focusedEditButton = null;
+          }
+
+          this._resetEditState();
+
+          if (this.clipper) {
+            this._redrawCropperElements();
+            this.renderCropper();
+          }
         }
       });
 
@@ -2440,6 +2454,7 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
       const strokeWidth = 2;
       const width = this.clipper.width;
       const height = this.clipper.height;
+      this.rectangleHasFocusOutline = false;
       const rectangleOptions = {
         fill: this.settings.colors.transparent,
         top: 0,
@@ -2481,6 +2496,7 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
       );
 
       if (this.cropperPickedUp || this._getRectangleButtonIsFocused()) {
+        this.rectangleHasFocusOutline = true;
         outerOutline.set({
           stroke: this.settings.colors.white,
         });
@@ -2717,7 +2733,6 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
      * @param {string} message
      */
     _announce: function (message) {
-      console.log(message);
       if (this.announceTimeout) {
         clearTimeout(this.announceTimeout);
       }
