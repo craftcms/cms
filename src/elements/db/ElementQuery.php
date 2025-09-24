@@ -2784,11 +2784,6 @@ class ElementQuery extends Query implements ElementQueryInterface
             return;
         }
 
-        /** @var CustomFieldBehavior $fieldAttributes */
-        $fieldAttributes = $this->getBehavior('customFields');
-        /** @var FieldInterface[][][] $fieldsByHandle */
-        $fieldsByHandle = [];
-
         $generatedFieldsByHandle = [];
         if (!empty($this->generatedFields)) {
             // Group the generated fields by handle and field UUID
@@ -2798,6 +2793,11 @@ class ElementQuery extends Query implements ElementQueryInterface
                 }
             }
         }
+
+        /** @var CustomFieldBehavior $fieldAttributes */
+        $fieldAttributes = $this->getBehavior('customFields');
+        /** @var FieldInterface[][][] $fieldsByHandle */
+        $fieldsByHandle = [];
 
         if (!empty($this->customFields)) {
             // Group the fields by handle and field UUID
@@ -2830,11 +2830,6 @@ class ElementQuery extends Query implements ElementQueryInterface
 
                 $conditions = [];
                 $params = [];
-                $glue = QueryParam::OR;
-                // if we're querying for empty, we need to glue the conditions with 'and'
-                if ($fieldAttributes->$handle === ':empty:') {
-                    $glue = QueryParam::AND;
-                }
 
                 if (isset($fieldsByHandle[$handle])) {
                     foreach ($fieldsByHandle[$handle] as $instances) {
@@ -2866,6 +2861,8 @@ class ElementQuery extends Query implements ElementQueryInterface
                         if (count($conditions) === 1) {
                             $this->subQuery->andWhere(reset($conditions), $params);
                         } else {
+                            // if we're querying for empty, we need to glue the conditions with 'and'
+                            $glue = $fieldAttributes->$handle === ':empty:' ? QueryParam::AND : QueryParam::OR;
                             $this->subQuery->andWhere([$glue, ...$conditions], $params);
                         }
                     }
@@ -2903,6 +2900,7 @@ class ElementQuery extends Query implements ElementQueryInterface
         $qb = Craft::$app->getDb()->getQueryBuilder();
         $conditions = [];
         $generatedFieldColumns = [];
+
         foreach ($generatedFieldsByHandle as $handle => $fields) {
             if (isset($fieldAttributes->$handle) && (!$checkCustomField || !isset($fieldsByHandle[$handle]))) {
                 foreach ($fields as $field) {
@@ -2910,6 +2908,7 @@ class ElementQuery extends Query implements ElementQueryInterface
                 }
             }
         }
+
         foreach ($generatedFieldColumns as $handle => $columns) {
             $column = count($columns) === 1
                 ? $columns[0]
