@@ -47,14 +47,14 @@ enum Edition: int
      */
     public static function get(): self
     {
-        if ($edition = Context::get(self::class)) {
+        if ($edition = Context::getHidden(self::class)) {
             return $edition;
         }
 
         $edition = Env::get('CRAFT_EDITION') ?? ProjectConfig::get('system.edition');
         $edition = $edition ? self::fromHandle($edition) : self::Solo;
 
-        Context::add(self::class, $edition);
+        Context::addHidden(self::class, $edition);
 
         return $edition;
     }
@@ -100,7 +100,7 @@ enum Edition: int
 
         ProjectConfig::set('system.edition', $edition->handle(), 'Craft CMS edition change');
 
-        Context::add(self::class, $edition);
+        Context::addHidden(self::class, $edition);
 
         if (Event::hasListeners(EditionChanged::class)) {
             Event::dispatch(new EditionChanged($oldEdition, $edition));

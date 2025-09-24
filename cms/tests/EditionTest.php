@@ -28,7 +28,7 @@ it('can get the current edition', function () {
     /**
      * It gets from project config
      */
-    Context::forget(Edition::class);
+    Context::forgetHidden(Edition::class);
     ProjectConfig::set('system.edition', 'pro');
     expect(Edition::get())->toBe(Edition::Pro);
 
@@ -37,7 +37,7 @@ it('can get the current edition', function () {
     /**
      * It gets from env
      */
-    Context::forget(Edition::class);
+    Context::forgetHidden(Edition::class);
     $_SERVER['CRAFT_EDITION'] = 'team';
 
     expect(Edition::get())->toBe(Edition::Team);

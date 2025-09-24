@@ -40,22 +40,22 @@ final class Info extends BaseModel
     protected static function booted(): void
     {
         self::saved(function ($model) {
-            Context::add('craft.info', $model);
+            Context::addHidden('craft.info', $model);
         });
     }
 
     public static function setIsInstalled(bool $isInstalled = true): void
     {
-        Context::add('craft.isInstalled', $isInstalled);
+        Context::addHidden('craft.isInstalled', $isInstalled);
     }
 
     public static function isInstalled(bool $strict = false): bool
     {
         if ($strict) {
-            Context::forget('craft.isInstalled');
-            Context::forget('craft.info');
-        } elseif (Context::has('craft.isInstalled')) {
-            return Context::get('craft.isInstalled');
+            Context::forgetHidden('craft.isInstalled');
+            Context::forgetHidden('craft.info');
+        } elseif (Context::hasHidden('craft.isInstalled')) {
+            return Context::getHidden('craft.isInstalled');
         }
 
         try {
@@ -66,7 +66,7 @@ final class Info extends BaseModel
                 report($e);
             }
 
-            Context::add('craft.isInstalled', false);
+            Context::addHidden('craft.isInstalled', false);
 
             return false;
         }
@@ -77,21 +77,21 @@ final class Info extends BaseModel
                     ->where('id', 1)
                     ->exists();
 
-                Context::add('craft.isInstalled', $isInstalled);
+                Context::addHidden('craft.isInstalled', $isInstalled);
 
                 return $isInstalled;
             }
 
             $isInstalled = ! empty(self::fetch(true)->id);
 
-            Context::add('craft.isInstalled', $isInstalled);
+            Context::addHidden('craft.isInstalled', $isInstalled);
 
             return $isInstalled;
         } catch (Throwable $e) {
             Log::error('There was a problem fetching the info row: '.$e->getMessage(), [__METHOD__]);
             report($e);
 
-            Context::add('craft.isInstalled', false);
+            Context::addHidden('craft.isInstalled', false);
 
             return false;
         }
@@ -99,8 +99,8 @@ final class Info extends BaseModel
 
     public static function fetch(bool $throwException = false): self
     {
-        if (Context::has('craft.info')) {
-            return Context::get('craft.info');
+        if (Context::hasHidden('craft.info')) {
+            return Context::getHidden('craft.info');
         }
 
         try {
@@ -112,7 +112,7 @@ final class Info extends BaseModel
 
             $info = new self;
 
-            Context::add('craft.info', $info);
+            Context::addHidden('craft.info', $info);
 
             return $info;
         }
@@ -122,7 +122,7 @@ final class Info extends BaseModel
             abort(500, "The $tableName table is missing its row");
         }
 
-        Context::add('craft.info', $info);
+        Context::addHidden('craft.info', $info);
 
         return $info;
     }
