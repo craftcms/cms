@@ -705,7 +705,7 @@ class ProjectConfig extends Component
             return;
         }
 
-        app(\CraftCms\Cms\ProjectConfig\ProjectConfig::class)->defer($newEvent, $handler);
+        app(\CraftCms\Cms\ProjectConfig\ProjectConfig::class)->defer($newEvent, fn() => $handler($event));
     }
 
     /**
