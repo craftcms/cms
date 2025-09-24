@@ -254,6 +254,8 @@ MD, $fields->keys()->join(',')));
             return ExitCode::OK;
         }
 
+        $projectConfig = Craft::$app->getProjectConfig();
+
         $migrationPaths = [];
         $relationFieldHandles = [];
 
@@ -337,6 +339,10 @@ MD, $fields->keys()->join(',')));
                     $this->mergeFields($persistentField, $outgoingField, $usagesByField[$outgoingField->id], $migrationPaths);
                     $this->output();
                 });
+
+            // flush out the project config in case the command is aborted early
+            // (https://github.com/craftcms/cms/issues/16198)
+            $projectConfig->flush();
         }
 
         if (!empty($migrationPaths)) {
