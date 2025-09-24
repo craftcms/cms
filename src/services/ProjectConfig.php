@@ -854,6 +854,7 @@ class ProjectConfig extends Component
 
         if ($this->_updateYaml && ($writeExternalConfig ?? $this->writeYamlAutomatically)) {
             $this->updateYamlFiles();
+            $this->_updateYaml = false;
         }
     }
 
