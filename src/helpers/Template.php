@@ -12,6 +12,7 @@ use craft\base\ElementInterface;
 use craft\db\Paginator;
 use craft\web\twig\variables\Paginate;
 use craft\web\View;
+use CraftCms\Cms\Shared\BaseModel;
 use Twig\Environment;
 use Twig\Error\RuntimeError;
 use Twig\Extension\CoreExtension;
@@ -127,6 +128,20 @@ class Template
             $type !== TwigTemplate::METHOD_CALL &&
             $object instanceof BaseObject &&
             $object->canGetProperty($item)
+        ) {
+            if ($isDefinedTest) {
+                return true;
+            }
+            if ($sandboxed) {
+                $env->getExtension(SandboxExtension::class)->checkPropertyAllowed($object, $item, $lineno, $source);
+            }
+            return $object->$item;
+        }
+
+        if (
+            $type !== TwigTemplate::METHOD_CALL &&
+            $object instanceof BaseModel &&
+            $object->hasAttribute($item)
         ) {
             if ($isDefinedTest) {
                 return true;

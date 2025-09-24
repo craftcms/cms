@@ -24,4 +24,13 @@ final class DeprecationError extends BaseModel
             'traces' => 'json',
         ];
     }
+
+    /**
+     * Laravel tries to determine this automatically by checking the database connection.
+     * However, we don't always have a connection yet when logging deprecation errors.
+     */
+    public function getDateFormat(): string
+    {
+        return 'Y-m-d H:i:s';
+    }
 }
