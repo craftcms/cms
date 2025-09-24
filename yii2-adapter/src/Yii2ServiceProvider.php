@@ -15,7 +15,9 @@ use CraftCms\Aliases\Aliases;
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Edition\Events\EditionChanged;
+use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Env;
+use CraftCms\Cms\Support\Facades\Deprecator;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Yii2Adapter\Console\LegacyCraftCommand;
 use CraftCms\Yii2Adapter\Console\MigrateMigrationTableCommand;
@@ -29,18 +31,46 @@ use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\ServiceProvider;
 use RuntimeException;
+use Symfony\Component\Finder\Finder;
 use yii\BaseYii;
 
 class Yii2ServiceProvider extends ServiceProvider
 {
     public function register(): void
     {
+        $this->registerMultiEnvironmentConfigs();
         $this->registerConstants();
         $this->registerLegacyApp();
 
         $this->loadRoutesFrom(__DIR__ . '/../routes/web.php');
 
         $this->setLaravelDefaults();
+    }
+
+    protected function registerMultiEnvironmentConfigs(): void
+    {
+        $files = new Finder()->files()->in(config_path('craft'))->name('*.php');
+        $environment = $this->app->environment();
+
+        foreach ($files as $file) {
+            $key = "craft.{$file->getFilenameWithoutExtension()}";
+            $config = Config::get($key);
+
+            if (!is_array($config)) {
+                Config::set($key, []);
+                continue;
+            }
+
+            if (!array_key_exists('*', $config)) {
+                continue;
+            }
+
+            Deprecator::log("config-{$file}", "Using multi-environment config files is deprecated.", $file->getPathname());
+
+            $merged = Arr::merge($config['*'], $config[$environment] ?? []);
+
+            Config::set($key, $merged);
+        }
     }
 
     protected function registerConstants(): void
