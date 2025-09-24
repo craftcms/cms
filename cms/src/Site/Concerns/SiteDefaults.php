@@ -2,7 +2,7 @@
 
 namespace CraftCms\Cms\Site\Concerns;
 
-use CraftCms\Aliases\Facades\Aliases;
+use CraftCms\Aliases\Aliases;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\Support\Env;
 

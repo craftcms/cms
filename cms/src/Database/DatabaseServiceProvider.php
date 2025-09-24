@@ -2,7 +2,7 @@
 
 namespace CraftCms\Cms\Database;
 
-use CraftCms\Aliases\Facades\Aliases;
+use CraftCms\Aliases\Aliases;
 use CraftCms\Cms\Database\Commands\MigrateCommand;
 use Illuminate\Cache\DatabaseStore;
 use Illuminate\Contracts\Config\Repository;

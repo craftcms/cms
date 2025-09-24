@@ -2,7 +2,7 @@
 
 namespace CraftCms\Cms\Config;
 
-use CraftCms\Aliases\Facades\Aliases;
+use CraftCms\Aliases\Aliases;
 use CraftCms\Cms\Support\Env;
 use CraftCms\Cms\Support\Typecast;
 use Illuminate\Support\Facades\Config;

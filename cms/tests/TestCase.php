@@ -5,6 +5,7 @@ namespace CraftCms\Cms\Tests;
 use Craft;
 use craft\models\Site;
 use craft\test\TestSetup;
+use CraftCms\Aliases\AliasesServiceProvider;
 use CraftCms\Cms\Database\Migrations\Install;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
@@ -92,6 +93,7 @@ class TestCase extends Orchestra
     protected function getPackageProviders($app): array
     {
         return [
+            AliasesServiceProvider::class,
             CacheServiceProvider::class,
             CraftServiceProvider::class,
             Yii2ServiceProvider::class,

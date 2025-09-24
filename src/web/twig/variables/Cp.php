@@ -22,7 +22,7 @@ use craft\models\FieldLayout;
 use craft\models\Site;
 use craft\models\Volume;
 use craft\web\twig\TemplateLoaderException;
-use CraftCms\Aliases\Facades\Aliases;
+use CraftCms\Aliases\Aliases;
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\License\License;

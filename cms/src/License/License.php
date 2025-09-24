@@ -3,7 +3,7 @@
 namespace CraftCms\Cms\License;
 
 use craft\helpers\UrlHelper;
-use CraftCms\Aliases\Facades\Aliases;
+use CraftCms\Aliases\Aliases;
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\License\Data\LicenseData;

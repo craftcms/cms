@@ -4,7 +4,7 @@ namespace CraftCms\Cms\Utility\Utilities;
 
 use Composer\InstalledVersions;
 use Craft;
-use CraftCms\Aliases\Facades\Aliases;
+use CraftCms\Aliases\Aliases;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Plugin\Contracts\PluginInterface;
 use CraftCms\Cms\Plugin\Plugins;

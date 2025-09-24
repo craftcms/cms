@@ -2,11 +2,10 @@
 
 namespace CraftCms\Cms\Support;
 
-use CraftCms\Aliases\Facades\Aliases;
+use CraftCms\Aliases\Aliases;
 use CraftCms\Cms\Support\Attributes\EnvName;
 use Illuminate\Contracts\Filesystem\FileNotFoundException;
 use Illuminate\Filesystem\Filesystem;
-use InvalidArgumentException;
 use ReflectionProperty;
 use RuntimeException;
 
@@ -90,11 +89,8 @@ final class Env extends \Illuminate\Support\Env
             return null;
         }
 
-        if (str_starts_with($value, '@')) {
-            try {
-                $value = Aliases::get($value);
-            } catch (InvalidArgumentException) {
-            }
+        if (str_starts_with($value, '@') && $alias = Aliases::get($value)) {
+            $value = $alias;
         }
 
         return $value;

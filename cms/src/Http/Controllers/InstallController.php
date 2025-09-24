@@ -6,7 +6,7 @@ use Craft;
 use craft\helpers\App;
 use craft\models\Site;
 use craft\web\assets\installer\InstallerAsset;
-use CraftCms\Aliases\Facades\Aliases;
+use CraftCms\Aliases\Aliases;
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Database\Migrations\Install;
 use CraftCms\Cms\Database\Migrator;

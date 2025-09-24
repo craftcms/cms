@@ -16,7 +16,7 @@ use craft\fields\BaseRelationField;
 use craft\helpers\Console;
 use craft\models\FieldLayout;
 use craft\services\Fields;
-use CraftCms\Aliases\Facades\Aliases;
+use CraftCms\Aliases\Aliases;
 use CraftCms\Cms\Database\Migrator;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;

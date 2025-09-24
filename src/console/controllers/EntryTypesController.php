@@ -17,7 +17,7 @@ use craft\helpers\Console;
 use craft\models\EntryType;
 use craft\models\FieldLayoutTab;
 use craft\models\Section;
-use CraftCms\Aliases\Facades\Aliases;
+use CraftCms\Aliases\Aliases;
 use CraftCms\Cms\Database\Migrator;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Str;

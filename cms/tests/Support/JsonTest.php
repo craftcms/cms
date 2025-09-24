@@ -1,6 +1,6 @@
 <?php
 
-use CraftCms\Aliases\Facades\Aliases;
+use CraftCms\Aliases\Aliases;
 use CraftCms\Cms\Support\Json;
 use Illuminate\Support\Facades\File;
 

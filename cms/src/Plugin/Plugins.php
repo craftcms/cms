@@ -6,7 +6,7 @@ use Craft;
 use craft\base\Plugin;
 use craft\errors\InvalidLicenseKeyException;
 use craft\helpers\FileHelper;
-use CraftCms\Aliases\Facades\Aliases;
+use CraftCms\Aliases\Aliases;
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Edition;

@@ -4,7 +4,7 @@ namespace CraftCms\Cms\Support;
 
 use Craft;
 use craft\helpers\FileHelper;
-use CraftCms\Aliases\Facades\Aliases;
+use CraftCms\Aliases\Aliases;
 use Illuminate\Container\Attributes\Singleton;
 use Illuminate\Contracts\Filesystem\FileNotFoundException;
 use Illuminate\Support\Facades\File;

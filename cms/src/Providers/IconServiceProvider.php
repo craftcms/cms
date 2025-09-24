@@ -2,7 +2,7 @@
 
 namespace CraftCms\Cms\Providers;
 
-use CraftCms\Aliases\Facades\Aliases;
+use CraftCms\Aliases\Aliases;
 use Illuminate\Support\ServiceProvider;
 
 /** @since 6.0.0 */

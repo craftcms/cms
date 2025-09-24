@@ -1,6 +1,6 @@
 <?php
 
-use CraftCms\Aliases\Facades\Aliases;
+use CraftCms\Aliases\Aliases;
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Support\Env;
 use Illuminate\Filesystem\Filesystem;
