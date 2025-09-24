@@ -12,6 +12,7 @@
 - Fixed a bug where focus was dropped after deleting a passkey. ([#17853](https://github.com/craftcms/cms/pull/17853))
 - Fixed a bug where `craft\helpers\Typecast` wasn’t typecasting `DateTimeInterface` property values.
 - Fixed a bug where nested elements could get duplicated when canonical changes were merged into a draft. ([#17740](https://github.com/craftcms/cms/issues/17740))
+- Fixed an error that could occur when executing GraphQL queries if the `lazyGqlTypes` config setting was enabled. ([#17858](https://github.com/craftcms/cms/issues/17858))
 - Fixed a styling issue.
 
 ## 5.8.17 - 2025-09-05
