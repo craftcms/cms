@@ -52,7 +52,18 @@ class Session extends \yii\web\Session
 
     public function getIlluminateSession(): Store
     {
-        return $this->_illuminateSession ??= session()->driver();
+        if (! is_null($this->_illuminateSession)) {
+            return $this->_illuminateSession;
+        }
+
+        /** @var Store $store */
+        $store = session()->driver();
+
+        if ($store->handlerNeedsRequest()) {
+            $store->setRequestOnHandler(request());
+        }
+
+        return $store;
     }
 
     /**
