@@ -49,6 +49,10 @@ class Yii2ServiceProvider extends ServiceProvider
 
     protected function registerMultiEnvironmentConfigs(): void
     {
+        if (!is_dir(config_path('craft'))) {
+            return;
+        }
+
         $files = new Finder()->files()->in(config_path('craft'))->name('*.php');
         $environment = $this->app->environment();
 
