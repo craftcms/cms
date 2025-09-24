@@ -215,7 +215,7 @@ MD, $fields->keys()->join(',')));
     public function actionAutoMerge(): int
     {
         if (!$this->interactive) {
-            $this->stderr("The fields/merge command must be run interactively.\n");
+            $this->stderr("The fields/auto-merge command must be run interactively.\n");
             return ExitCode::UNSPECIFIED_ERROR;
         }
 
