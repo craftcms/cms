@@ -588,7 +588,15 @@ class ProjectConfig extends Component
      */
     public function onAdd(string $path, callable $handler, mixed $data = null): self
     {
-        app(\CraftCms\Cms\ProjectConfig\ProjectConfig::class)->onAdd($path, $handler, $data);
+        app(\CraftCms\Cms\ProjectConfig\ProjectConfig::class)->onAdd($path, function(ItemAdded $event) use ($handler) {
+            $yiiEvent = new ConfigEvent([
+                'path' => $event->path,
+                'oldValue' => $event->oldValue,
+                'newValue' => $event->newValue,
+            ]);
+
+            return $handler($yiiEvent);
+        }, $data);
 
         return $this;
     }
@@ -622,7 +630,16 @@ class ProjectConfig extends Component
      */
     public function onUpdate(string $path, callable $handler, mixed $data = null): self
     {
-        app(\CraftCms\Cms\ProjectConfig\ProjectConfig::class)->onUpdate($path, $handler, $data);
+        app(\CraftCms\Cms\ProjectConfig\ProjectConfig::class)->onUpdate($path, function(ItemUpdated $event) use ($handler) {
+            $yiiEvent = new ConfigEvent([
+                'path' => $event->path,
+                'oldValue' => $event->oldValue,
+                'newValue' => $event->newValue,
+            ]);
+
+            return $handler($yiiEvent);
+        }, $data);
+
         return $this;
     }
 
@@ -654,7 +671,16 @@ class ProjectConfig extends Component
      */
     public function onRemove(string $path, callable $handler, mixed $data = null): self
     {
-        app(\CraftCms\Cms\ProjectConfig\ProjectConfig::class)->onRemove($path, $handler, $data);
+        app(\CraftCms\Cms\ProjectConfig\ProjectConfig::class)->onRemove($path, function(ItemRemoved $event) use ($handler) {
+            $yiiEvent = new ConfigEvent([
+                'path' => $event->path,
+                'oldValue' => $event->oldValue,
+                'newValue' => $event->newValue,
+            ]);
+
+            return $handler($yiiEvent);
+        }, $data);
+
         return $this;
     }
 
