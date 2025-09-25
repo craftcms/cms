@@ -21,8 +21,8 @@ use craft\fieldlayoutelements\addresses\OrganizationTaxIdField;
 use craft\fieldlayoutelements\BaseNativeField;
 use craft\fieldlayoutelements\FullNameField;
 use craft\models\FieldLayout;
-use craft\records\Address as AddressRecord;
 use craft\validators\StringValidator;
+use CraftCms\Cms\Addresses\Models\Address as AddressModel;
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Database\Table;
 use yii\base\InvalidConfigException;
@@ -748,40 +748,40 @@ class Address extends Element implements AddressInterface, NestedElementInterfac
     public function afterSave(bool $isNew): void
     {
         if (!$isNew) {
-            $record = AddressRecord::findOne($this->id);
+            $model = AddressModel::find($this->id);
 
-            if (!$record) {
+            if (!$model) {
                 throw new InvalidConfigException("Invalid address ID: $this->id");
             }
         } else {
-            $record = new AddressRecord();
-            $record->id = $this->id;
+            $model = new AddressModel();
+            $model->id = $this->id;
         }
 
         $this->prepareNamesForSave();
 
-        $record->fieldId = $this->fieldId;
-        $record->primaryOwnerId = $this->getPrimaryOwnerId();
-        $record->countryCode = $this->countryCode;
-        $record->administrativeArea = $this->administrativeArea;
-        $record->locality = $this->locality;
-        $record->dependentLocality = $this->dependentLocality;
-        $record->postalCode = $this->postalCode;
-        $record->sortingCode = $this->sortingCode;
-        $record->addressLine1 = $this->addressLine1;
-        $record->addressLine2 = $this->addressLine2;
-        $record->addressLine3 = $this->addressLine3;
-        $record->organization = $this->organization;
-        $record->organizationTaxId = $this->organizationTaxId;
-        $record->fullName = $this->fullName;
-        $record->firstName = $this->firstName;
-        $record->lastName = $this->lastName;
-        $record->latitude = $this->latitude;
-        $record->longitude = $this->longitude;
+        $model->fieldId = $this->fieldId;
+        $model->primaryOwnerId = $this->getPrimaryOwnerId();
+        $model->countryCode = $this->countryCode;
+        $model->administrativeArea = $this->administrativeArea;
+        $model->locality = $this->locality;
+        $model->dependentLocality = $this->dependentLocality;
+        $model->postalCode = $this->postalCode;
+        $model->sortingCode = $this->sortingCode;
+        $model->addressLine1 = $this->addressLine1;
+        $model->addressLine2 = $this->addressLine2;
+        $model->addressLine3 = $this->addressLine3;
+        $model->organization = $this->organization;
+        $model->organizationTaxId = $this->organizationTaxId;
+        $model->fullName = $this->fullName;
+        $model->firstName = $this->firstName;
+        $model->lastName = $this->lastName;
+        $model->latitude = $this->latitude;
+        $model->longitude = $this->longitude;
 
         // Capture the dirty attributes from the record
-        $dirtyAttributes = array_keys($record->getDirtyAttributes());
-        $record->save(false);
+        $dirtyAttributes = array_keys($model->getDirty());
+        $model->save();
         $this->setDirtyAttributes($dirtyAttributes);
 
         $this->saveOwnership($isNew, Table::ADDRESSES);

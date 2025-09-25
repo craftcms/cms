@@ -1,15 +1,11 @@
 <?php
-/**
- * @link https://craftcms.com/
- * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license https://craftcms.github.io/license/
- */
 
-namespace craft\addresses;
+namespace CraftCms\Cms\Addresses\Repositories;
 
 use CommerceGuys\Addressing\Locale;
 use CommerceGuys\Addressing\Subdivision\SubdivisionRepository as BaseSubdivisionRepository;
 use Craft;
+use CraftCms\Cms\Addresses\Addresses;
 use CraftCms\Cms\Support\Json;
 
 /**
@@ -17,14 +13,11 @@ use CraftCms\Cms\Support\Json;
  * Its main purpose is to allow addition of data that's not returned by the commerceguys/addressing library,
  * like the GB counties data. It also triggers an event which allows developers to modify the subdivisions further.
  *
- * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 4.5.0
+ * @since 6.0.0
  */
 class SubdivisionRepository extends BaseSubdivisionRepository
 {
-    /**
-     * @inheritdoc
-     */
+    /** {@inheritdoc} */
     public function getList(array $parents, $locale = null): array
     {
         // get the list of subdivisions from commerceguys/addressing
@@ -32,25 +25,21 @@ class SubdivisionRepository extends BaseSubdivisionRepository
 
         // if the list is empty (like in case of GB), get the extra options from our files
         if (empty($options)) {
-            $options = $this->_getExtraOptions($parents, Craft::$app->language);
+            $options = $this->getExtraOptions($parents, Craft::$app->language);
         }
 
         // trigger the event to give devs a chance to modify further, and return the list
-        return Craft::$app->getAddresses()->defineAddressSubdivisions($parents, $options);
+        return app(Addresses::class)->defineAddressSubdivisions($parents, $options);
     }
 
     /**
      * Get a list of extra subdivision options
-     *
-     * @param array $parents
-     * @param string|null $lang
-     * @return array
      */
-    private function _getExtraOptions(array $parents, string $lang = null): array
+    private function getExtraOptions(array $parents, ?string $lang = null): array
     {
         $list = [];
         $fileName = implode('-', $parents);
-        $filePath = __DIR__ . '/data/' . $fileName . '.json';
+        $filePath = __DIR__.'/data/'.$fileName.'.json';
 
         if (@file_exists($filePath) && $data = @file_get_contents($filePath)) {
             $data = Json::decode($data);
