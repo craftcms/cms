@@ -71,6 +71,7 @@ use CraftCms\Cms\Support\Str;
 use DateTime;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Request;
 use Throwable;
 use yii\base\Component;
 use yii\base\Exception;
@@ -1070,11 +1071,10 @@ class Fields extends Component
     public function assembleLayoutFromPost(?string $namespace = null): FieldLayout
     {
         $paramPrefix = $namespace ? rtrim($namespace, '.') . '.' : '';
-        $request = Craft::$app->getRequest();
-        $config = JsonHelper::decode($request->getBodyParam("{$paramPrefix}fieldLayout"));
-        $config['generatedFields'] = $request->getBodyParam("{$paramPrefix}generatedFields") ?: null;
-        $config['cardView'] = $request->getBodyParam("{$paramPrefix}cardView") ?: null;
-        $config['cardThumbAlignment'] = Craft::$app->getRequest()->getBodyParam($paramPrefix . 'thumbAlignment');
+        $config = JsonHelper::decode(Request::get("{$paramPrefix}fieldLayout"));
+        $config['generatedFields'] = Request::get("{$paramPrefix}generatedFields") ?: null;
+        $config['cardView'] = Request::get("{$paramPrefix}cardView") ?: null;
+        $config['cardThumbAlignment'] = Request::get($paramPrefix . 'thumbAlignment');
         $layout = $this->createLayout($config);
 
         // Make sure all the elements have a dateAdded value set

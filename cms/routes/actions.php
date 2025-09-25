@@ -1,6 +1,7 @@
 <?php
 
 use CraftCms\Cms\Config\GeneralConfig;
+use CraftCms\Cms\Http\Controllers\AddressesController;
 use CraftCms\Cms\Http\Controllers\BaseUpdaterController;
 use CraftCms\Cms\Http\Controllers\ConfigSyncController;
 use CraftCms\Cms\Http\Controllers\Dashboard\Widgets\CraftSupportController;
@@ -64,6 +65,10 @@ Route::prefix(implode('/', [
      * Actions needing auth
      */
     Route::middleware(['auth'])->group(function () {
+        // Addresses
+        Route::post('addresses/fields', [AddressesController::class, 'fields']);
+        Route::middleware(RequireAdmin::class)->post('addresses/save-field-layout', [AddressesController::class, 'saveFieldLayout']);
+
         // DeprecationErrors
         Route::post('utilities/get-deprecation-error-traces-modal', [DeprecationErrorsController::class, 'getDeprecationErrorTracesModal']);
         Route::post('utilities/delete-deprecation-error', [DeprecationErrorsController::class, 'deleteDeprecationError']);
