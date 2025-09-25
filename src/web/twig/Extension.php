@@ -56,6 +56,7 @@ use craft\web\twig\tokenparsers\SwitchTokenParser;
 use craft\web\twig\tokenparsers\TagTokenParser;
 use craft\web\twig\variables\CraftVariable;
 use craft\web\View;
+use CraftCms\Cms\Addresses\Addresses;
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Plugin\Contracts\PluginInterface;
 use CraftCms\Cms\Plugin\Plugins;
@@ -369,7 +370,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
             return '';
         }
 
-        return Craft::$app->getAddresses()->formatAddress($address, $options, $formatter);
+        return app(Addresses::class)->formatAddress($address, $options, $formatter);
     }
 
     /**

@@ -217,7 +217,7 @@ class Addresses extends Field implements
     public function getFieldLayoutProviders(): array
     {
         return [
-            Craft::$app->getAddresses(),
+            app(\CraftCms\Cms\Addresses\Addresses::class),
         ];
     }
 

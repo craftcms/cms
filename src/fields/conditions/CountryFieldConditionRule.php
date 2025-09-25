@@ -5,6 +5,7 @@ namespace craft\fields\conditions;
 use Craft;
 use craft\base\conditions\BaseMultiSelectConditionRule;
 use craft\fields\Country;
+use CraftCms\Cms\Addresses\Addresses;
 use yii\base\InvalidConfigException;
 
 /**
@@ -22,7 +23,7 @@ class CountryFieldConditionRule extends BaseMultiSelectConditionRule implements 
      */
     protected function options(): array
     {
-        return Craft::$app->getAddresses()->getCountryList(Craft::$app->language);
+        return app(Addresses::class)->getCountryList(Craft::$app->language);
     }
 
     /**

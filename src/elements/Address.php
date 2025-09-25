@@ -22,6 +22,7 @@ use craft\fieldlayoutelements\BaseNativeField;
 use craft\fieldlayoutelements\FullNameField;
 use craft\models\FieldLayout;
 use craft\validators\StringValidator;
+use CraftCms\Cms\Addresses\Addresses;
 use CraftCms\Cms\Addresses\Models\Address as AddressModel;
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Database\Table;
@@ -227,7 +228,7 @@ class Address extends Element implements AddressInterface, NestedElementInterfac
             return null;
         }
         /** @phpstan-var AddressField::* $attribute */
-        return Craft::$app->getAddresses()->getFieldLabel($attribute, $countryCode);
+        return app(Addresses::class)->getFieldLabel($attribute, $countryCode);
     }
 
     /**
@@ -339,7 +340,7 @@ class Address extends Element implements AddressInterface, NestedElementInterfac
     {
         if (AddressField::exists($attribute)) {
             /** @phpstan-var AddressField::* $attribute */
-            return Craft::$app->getAddresses()->getFieldLabel($attribute, $this->countryCode);
+            return app(Addresses::class)->getFieldLabel($attribute, $this->countryCode);
         }
 
         return match ($attribute) {
@@ -466,7 +467,7 @@ class Address extends Element implements AddressInterface, NestedElementInterfac
      */
     public function getCountry(): Country
     {
-        return Craft::$app->getAddresses()->getCountryRepository()->get($this->countryCode, Craft::$app->language);
+        return app(Addresses::class)->getCountryRepository()->get($this->countryCode, Craft::$app->language);
     }
 
     /**
@@ -588,7 +589,7 @@ class Address extends Element implements AddressInterface, NestedElementInterfac
     public function beforeValidate(): bool
     {
         $usedFields = array_unique([
-            ...Craft::$app->getAddresses()->getUsedFields($this->countryCode),
+            ...app(Addresses::class)->getUsedFields($this->countryCode),
             'fullName',
             'latLong',
             'organizationTaxId',
@@ -638,7 +639,7 @@ class Address extends Element implements AddressInterface, NestedElementInterfac
         $rules[] = [$stringFields, 'trim', 'skipOnEmpty' => true];
         $rules[] = [$stringFields, StringValidator::class, 'max' => 255, 'disallowMb4' => true];
 
-        $addressesService = Craft::$app->getAddresses();
+        $addressesService = app(Addresses::class);
         $countryCodes = array_keys($addressesService->getCountryRepository()->getList());
         $rules[] = [['countryCode'], 'in', 'range' => $countryCodes];
 
@@ -794,6 +795,6 @@ class Address extends Element implements AddressInterface, NestedElementInterfac
      */
     public function getFieldLayout(): ?FieldLayout
     {
-        return Craft::$app->getAddresses()->getFieldLayout();
+        return app(Addresses::class)->getFieldLayout();
     }
 }

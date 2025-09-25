@@ -9,6 +9,7 @@ use craft\elements\Address;
 use craft\elements\conditions\ElementConditionRuleInterface;
 use craft\elements\db\AddressQuery;
 use craft\elements\db\ElementQueryInterface;
+use CraftCms\Cms\Addresses\Addresses;
 
 /**
  * Address country condition rule.
@@ -39,7 +40,7 @@ class CountryConditionRule extends BaseMultiSelectConditionRule implements Eleme
      */
     protected function options(): array
     {
-        return Craft::$app->getAddresses()->getCountryList();
+        return app(Addresses::class)->getCountryList();
     }
 
     /**

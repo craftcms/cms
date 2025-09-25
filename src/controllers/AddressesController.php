@@ -11,6 +11,7 @@ use Craft;
 use craft\elements\Address;
 use craft\helpers\Cp;
 use craft\web\Controller;
+use CraftCms\Cms\Addresses\Addresses;
 use yii\web\Response;
 
 /** @noinspection ClassOverridesFieldOfSuperClassInspection */
@@ -76,7 +77,7 @@ class AddressesController extends Controller
             'organizationTaxId',
         ];
 
-        if (!Craft::$app->getAddresses()->saveFieldLayout($fieldLayout)) {
+        if (!app(Addresses::class)->saveFieldLayout($fieldLayout)) {
             Craft::$app->getUrlManager()->setRouteParams([
                 'variables' => [
                     'fieldLayout' => $fieldLayout,
