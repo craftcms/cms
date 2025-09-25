@@ -10,6 +10,7 @@ use CraftCms\Cms\Deprecator\DeprecatorServiceProvider;
 use CraftCms\Cms\License\LicenseServiceProvider;
 use CraftCms\Cms\Plugin\PluginServiceProvider;
 use CraftCms\Cms\ProjectConfig\ProjectConfigServiceProvider;
+use CraftCms\Cms\Twig\TwigServiceProvider;
 use CraftCms\Cms\Updates\UpdatesServiceProvider;
 use CraftCms\Cms\User\UserServiceProvider;
 use Illuminate\Support\AggregateServiceProvider;
@@ -21,6 +22,7 @@ final class CraftServiceProvider extends AggregateServiceProvider
         ConfigServiceProvider::class,
         FilesystemServiceProvider::class,
         DatabaseServiceProvider::class,
+        TwigServiceProvider::class,
         ProjectConfigServiceProvider::class,
         DeprecatorServiceProvider::class,
         LicenseServiceProvider::class,
