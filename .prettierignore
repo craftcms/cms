@@ -1,11 +1,11 @@
 *.md
 *.php
 composer.lock
-cpresources/*
-lib/*
-src/templates/*
-src/web/assets/**/dist/*
 packages/**/dist/*
-tests/_craft/*
 vendor/*
 .ddev/*
+yii2-adapter/cpresources/*
+yii2-adapter/lib/*
+yii2-adapter/legacy/templates/*
+yii2-adapter/legacy/web/assets/**/dist/*
+yii2-adapter/legacy-tests/_craft/*

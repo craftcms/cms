@@ -77,9 +77,9 @@ defined('CURLOPT_TIMEOUT_MS') || define('CURLOPT_TIMEOUT_MS', 155);
 defined('CURLOPT_CONNECTTIMEOUT_MS') || define('CURLOPT_CONNECTTIMEOUT_MS', 156);
 
 // Load the files
-$cmsPath = dirname(__DIR__ . '/../../src');
+$cmsPath = dirname(__DIR__);
 $libPath = $cmsPath . DIRECTORY_SEPARATOR . 'lib';
-$srcPath = $cmsPath . DIRECTORY_SEPARATOR . 'src';
+$srcPath = $cmsPath . DIRECTORY_SEPARATOR . 'legacy';
 require_once $libPath . DIRECTORY_SEPARATOR . 'yii2' . DIRECTORY_SEPARATOR . 'Yii.php';
 require_once $srcPath . DIRECTORY_SEPARATOR . 'Craft.php';
 

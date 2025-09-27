@@ -1,6 +1,6 @@
 {
   "*.php": ["./vendor/bin/phpstan analyse --memory-limit=1G"],
-  "!(cms)/**/*.php": ["./vendor/bin/ecs check --ansi --fix"],
+  "yii2-adapter/**/*.php": ["./vendor/bin/ecs check --ansi --fix"],
   "cms/**/*.php": ["./vendor/bin/pint cms --parallel"],
   "*.scss": ["stylelint --fix --allow-empty-input"],
   "*.{html,json,css,scss}": "prettier --ignore-unknown --write"
