@@ -69,6 +69,7 @@
     "yiisoft/html": "^3.11"
   },
   "require-dev": {
+    "dg/bypass-finals": "^1.9",
     "fakerphp/faker": "^1.19.0",
     "larastan/larastan": "^3.4",
     "laravel/pint": "^1.22",
@@ -119,7 +120,8 @@
     "platform-check": false,
     "allow-plugins": {
       "craftcms/plugin-installer": true,
-      "pestphp/pest-plugin": true
+      "pestphp/pest-plugin": true,
+      "yiisoft/yii2-composer": true
     }
   },
   "extra": {

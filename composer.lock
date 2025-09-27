@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "d7945a2bdc7e27c69227eef0eb1847e2",
+    "content-hash": "b9d3fe3202d8eab164b241064fc66602",
     "packages": [
         {
             "name": "bacon/bacon-qr-code",
@@ -637,7 +637,7 @@
             "dist": {
                 "type": "path",
                 "url": "./yii2-adapter",
-                "reference": "5eab591f22124138ee6e0c73a57573ef22dc5807"
+                "reference": "8c2b417f8176fea3e4e98e55d6ca37dd50a70023"
             },
             "require": {
                 "creocoder/yii2-nested-sets": "~0.9.0",
@@ -680,7 +680,6 @@
                 "codeception/module-rest": "^3.3.2",
                 "codeception/module-yii2": "^1.1.9",
                 "craftcms/ecs": "dev-main",
-                "dg/bypass-finals": "^1.9",
                 "league/factory-muffin": "^3.3.0",
                 "phpstan/phpstan": "^2.1",
                 "rector/rector": "^2.0",
@@ -697,15 +696,15 @@
             },
             "autoload": {
                 "psr-4": {
-                    "craft\\": "yii2-adapter/legacy/",
-                    "CraftCms\\Yii2Adapter\\": "yii2-adapter/src/",
-                    "yii2tech\\ar\\softdelete\\": "yii2-adapter/lib/ar-softdelete/src/"
+                    "craft\\": "legacy/",
+                    "CraftCms\\Yii2Adapter\\": "src/",
+                    "yii2tech\\ar\\softdelete\\": "lib/ar-softdelete/src/"
                 }
             },
             "autoload-dev": {
                 "psr-4": {
-                    "CraftCms\\Yii2Adapter\\Tests\\": "yii2-adapter/tests/",
-                    "crafttests\\": "yii2-adapter/legacy-tests/"
+                    "CraftCms\\Yii2Adapter\\Tests\\": "tests/",
+                    "crafttests\\": "legacy-tests/"
                 }
             },
             "scripts": {
@@ -11293,6 +11292,59 @@
                 }
             ],
             "time": "2025-08-29T05:28:31+00:00"
+        },
+        {
+            "name": "dg/bypass-finals",
+            "version": "v1.9.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/dg/bypass-finals.git",
+                "reference": "920a7da2f3c1422fd83f9ec4df007af53dc4018b"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/dg/bypass-finals/zipball/920a7da2f3c1422fd83f9ec4df007af53dc4018b",
+                "reference": "920a7da2f3c1422fd83f9ec4df007af53dc4018b",
+                "shasum": ""
+            },
+            "require": {
+                "php": ">=7.1"
+            },
+            "require-dev": {
+                "nette/tester": "^2.3",
+                "phpstan/phpstan": "^0.12"
+            },
+            "type": "library",
+            "autoload": {
+                "classmap": [
+                    "src/"
+                ]
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "BSD-3-Clause",
+                "GPL-2.0-only",
+                "GPL-3.0-only"
+            ],
+            "authors": [
+                {
+                    "name": "David Grudl",
+                    "homepage": "https://davidgrudl.com"
+                }
+            ],
+            "description": "Removes final keyword from source code on-the-fly and allows mocking of final methods and classes",
+            "keywords": [
+                "finals",
+                "mocking",
+                "phpunit",
+                "testing",
+                "unit"
+            ],
+            "support": {
+                "issues": "https://github.com/dg/bypass-finals/issues",
+                "source": "https://github.com/dg/bypass-finals/tree/v1.9.0"
+            },
+            "time": "2025-01-16T00:46:05+00:00"
         },
         {
             "name": "fakerphp/faker",
