@@ -2,7 +2,7 @@
 
 use craft\helpers\Search;
 
-require dirname(__DIR__) . '/vendor/autoload.php';
+require dirname(__DIR__).'/vendor/autoload.php';
 
 $lightIcons = [
     'earth-africa',
@@ -31,9 +31,9 @@ $styles = [
     'grip-dots' => 'custom',
 ];
 
-$kitDir = dirname(__DIR__) . '/node_modules/@awesome.me/kit-ddaed3f5c5';
+$kitDir = dirname(__DIR__).'/node_modules/@awesome.me/kit-ddaed3f5c5';
 $kitSvgsDir = "$kitDir/icons/svgs";
-$iconsDir = dirname(__DIR__) . '/resources/icons';
+$iconsDir = dirname(__DIR__).'/resources/icons';
 $metaPath = "$kitDir/icons/metadata/icons.json";
 $meta = json_decode(file_get_contents($metaPath), true);
 $index = [];
@@ -79,8 +79,8 @@ foreach ($meta as $name => $info) {
     if ($style !== 'custom') {
         $terms = $meta[$name]['search']['terms'] ?? [];
         $index[$name] = [
-            'name' => sprintf(" %s ", Search::normalizeKeywords($name, language: 'en-US')),
-            'terms' => sprintf(" %s ", Search::normalizeKeywords($terms, language: 'en-US')),
+            'name' => sprintf(' %s ', Search::normalizeKeywords($name, language: 'en-US')),
+            'terms' => sprintf(' %s ', Search::normalizeKeywords($terms, language: 'en-US')),
             'pro' => empty($meta[$name]['free']),
             'styles' => $meta[$name]['styles'] ?? [],
         ];
