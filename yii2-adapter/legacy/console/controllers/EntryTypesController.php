@@ -257,7 +257,7 @@ MD));
             $uidMap,
         ) {
             ob_start();
-            File::getRequire(Aliases::get('@packageRoot/stubs/entry-type-merge.php.stub'), [
+            File::getRequire(Aliases::get('@craftcms/stubs/entry-type-merge.php.stub'), [
                 'persistingEntryTypeUid' => $persistingEntryType->uid,
                 'outgoingEntryTypeUid' => $outgoingEntryType->uid,
                 'layoutElementUidMap' => $uidMap,

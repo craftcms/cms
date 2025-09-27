@@ -492,7 +492,7 @@ MD, $infoByField->join("\n"))));
             $migrationPath,
         ) {
             ob_start();
-            File::getRequire(Aliases::get('@packageRoot/stubs/field-merge.php.stub'), [
+            File::getRequire(Aliases::get('@craftcms/stubs/field-merge.php.stub'), [
                 'persistingFieldUid' => $persistingField->uid,
                 'outgoingFieldUid' => $outgoingField->uid,
             ]);

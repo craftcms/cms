@@ -10,7 +10,7 @@ final class IconServiceProvider extends ServiceProvider
 {
     public function boot(): void
     {
-        Aliases::set('@icons', '@packageRoot/resources/icons');
+        Aliases::set('@icons', '@craftcms/resources/icons');
         Aliases::set('@appicons', '@icons/solid');
 
         $customIconsPath = '@icons/custom-icons';

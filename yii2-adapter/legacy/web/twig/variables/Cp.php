@@ -418,75 +418,75 @@ class Cp extends Component
         $label = Craft::t('app', 'System');
 
         $settings[$label]['general'] = [
-            'iconMask' => '@packageRoot/resources/icons/light/sliders.svg',
+            'iconMask' => '@craftcms/resources/icons/light/sliders.svg',
             'label' => Craft::t('app', 'General'),
         ];
         $settings[$label]['sites'] = [
-            'iconMask' => sprintf('@packageRoot/resources/icons/light/%s.svg', CpHelper::earthIcon()),
+            'iconMask' => sprintf('@craftcms/resources/icons/light/%s.svg', CpHelper::earthIcon()),
             'label' => Craft::t('app', 'Sites'),
         ];
 
         if (!app(GeneralConfig::class)->headlessMode) {
             $settings[$label]['routes'] = [
-                'iconMask' => '@packageRoot/resources/icons/light/signs-post.svg',
+                'iconMask' => '@craftcms/resources/icons/light/signs-post.svg',
                 'label' => Craft::t('app', 'Routes'),
             ];
         }
 
         $settings[$label]['users'] = [
-            'iconMask' => '@packageRoot/resources/icons/light/user-group.svg',
+            'iconMask' => '@craftcms/resources/icons/light/user-group.svg',
             'label' => Craft::t('app', 'Users'),
         ];
         if (app(GeneralConfig::class)->allowAdminChanges) {
             $settings[$label]['addresses'] = [
-                'iconMask' => '@packageRoot/resources/icons/light/map-location.svg',
+                'iconMask' => '@craftcms/resources/icons/light/map-location.svg',
                 'label' => Craft::t('app', 'Addresses'),
             ];
         }
         $settings[$label]['email'] = [
-            'iconMask' => '@packageRoot/resources/icons/light/envelope.svg',
+            'iconMask' => '@craftcms/resources/icons/light/envelope.svg',
             'label' => Craft::t('app', 'Email'),
         ];
         $settings[$label]['plugins'] = [
-            'iconMask' => '@packageRoot/resources/icons/light/plug.svg',
+            'iconMask' => '@craftcms/resources/icons/light/plug.svg',
             'label' => Craft::t('app', 'Plugins'),
         ];
 
         $label = Craft::t('app', 'Content');
 
         $settings[$label]['sections'] = [
-            'iconMask' => '@packageRoot/resources/icons/light/newspaper.svg',
+            'iconMask' => '@craftcms/resources/icons/light/newspaper.svg',
             'label' => Craft::t('app', 'Sections'),
         ];
         $settings[$label]['entry-types'] = [
-            'iconMask' => '@packageRoot/resources/icons/light/files.svg',
+            'iconMask' => '@craftcms/resources/icons/light/files.svg',
             'label' => Craft::t('app', 'Entry Types'),
         ];
         $settings[$label]['fields'] = [
-            'iconMask' => '@packageRoot/resources/icons/light/pen-to-square.svg',
+            'iconMask' => '@craftcms/resources/icons/light/pen-to-square.svg',
             'label' => Craft::t('app', 'Fields'),
         ];
         $settings[$label]['globals'] = [
-            'iconMask' => '@packageRoot/resources/icons/light/globe.svg',
+            'iconMask' => '@craftcms/resources/icons/light/globe.svg',
             'label' => Craft::t('app', 'Globals'),
         ];
         $settings[$label]['categories'] = [
-            'iconMask' => '@packageRoot/resources/icons/light/sitemap.svg',
+            'iconMask' => '@craftcms/resources/icons/light/sitemap.svg',
             'label' => Craft::t('app', 'Categories'),
         ];
         $settings[$label]['tags'] = [
-            'iconMask' => '@packageRoot/resources/icons/light/tags.svg',
+            'iconMask' => '@craftcms/resources/icons/light/tags.svg',
             'label' => Craft::t('app', 'Tags'),
         ];
 
         $label = Craft::t('app', 'Media');
 
         $settings[$label]['assets'] = [
-            'iconMask' => '@packageRoot/resources/icons/light/image.svg',
+            'iconMask' => '@craftcms/resources/icons/light/image.svg',
             'label' => Craft::t('app', 'Assets'),
         ];
         $settings[$label]['filesystems'] = [
-            'iconMask' => '@packageRoot/resources/icons/light/folder-open.svg',
+            'iconMask' => '@craftcms/resources/icons/light/folder-open.svg',
             'label' => Craft::t('app', 'Filesystems'),
         ];
 

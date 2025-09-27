@@ -63,7 +63,7 @@ final readonly class InstallController
         Craft::$app->getView()->registerAssetBundle(InstallerAsset::class);
 
         // Grab the license text
-        $licensePath = Aliases::get('@packageRoot/../LICENSE.md');
+        $licensePath = Aliases::get('@craftcms/../LICENSE.md');
         $license = file_get_contents($licensePath);
 
         // Guess the site name based on the server name
