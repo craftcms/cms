@@ -231,38 +231,38 @@ class StringHelperTest extends TestCase
         ];
 
         foreach ($testArray as $testString => $testExpected) {
-            self::assertSame($testExpected, StringHelper::extractText($testString), 'tested: '.$testString);
+            self::assertSame($testExpected, StringHelper::extractText($testString), 'tested: ' . $testString);
         }
 
         // ----------------
 
         $testString = 'this is only a Fork of Stringy';
-        self::assertSame('…a Fork of Stringy', StringHelper::extractText($testString, 'Fork', 5), 'tested: '.$testString);
+        self::assertSame('…a Fork of Stringy', StringHelper::extractText($testString, 'Fork', 5), 'tested: ' . $testString);
 
         // ----------------
 
         $testString = 'This is only a Fork of Stringy, take a look at the new features.';
-        self::assertSame('…Fork of Stringy…', StringHelper::extractText($testString, 'Stringy', 15), 'tested: '.$testString);
+        self::assertSame('…Fork of Stringy…', StringHelper::extractText($testString, 'Stringy', 15), 'tested: ' . $testString);
 
         // ----------------
 
         $testString = 'This is only a Fork of Stringy, take a look at the new features.';
-        self::assertSame('…only a Fork of Stringy, take a…', StringHelper::extractText($testString, 'Stringy'), 'tested: '.$testString);
+        self::assertSame('…only a Fork of Stringy, take a…', StringHelper::extractText($testString, 'Stringy'), 'tested: ' . $testString);
 
         // ----------------
 
         $testString = 'This is only a Fork of Stringy, take a look at the new features.';
-        self::assertSame('This is only a Fork of Stringy…', StringHelper::extractText($testString), 'tested: '.$testString);
+        self::assertSame('This is only a Fork of Stringy…', StringHelper::extractText($testString), 'tested: ' . $testString);
 
         // ----------------
 
         $testString = 'This is only a Fork of Stringy, take a look at the new features.';
-        self::assertSame('This…', StringHelper::extractText($testString, '', 0), 'tested: '.$testString);
+        self::assertSame('This…', StringHelper::extractText($testString, '', 0), 'tested: ' . $testString);
 
         // ----------------
 
         $testString = 'This is only a Fork of Stringy, take a look at the new features.';
-        self::assertSame('…Stringy, take a look at the new features.', StringHelper::extractText($testString, 'Stringy', 0), 'tested: '.$testString);
+        self::assertSame('…Stringy, take a look at the new features.', StringHelper::extractText($testString, 'Stringy', 0), 'tested: ' . $testString);
 
         // ----------------
 
@@ -276,8 +276,8 @@ class StringHelperTest extends TestCase
         $searchString = 'garden';
         foreach ($testArray as $testString => $testExpected) {
             $result = StringHelper::extractText($testString, $searchString);
-            $result = StringHelper::replace($result, $searchString, '<strong>'.$searchString.'</strong>');
-            self::assertSame($testExpected, $result, 'tested: '.$testString);
+            $result = StringHelper::replace($result, $searchString, '<strong>' . $searchString . '</strong>');
+            self::assertSame($testExpected, $result, 'tested: ' . $testString);
         }
 
         // ----------------
@@ -292,8 +292,8 @@ class StringHelperTest extends TestCase
         $searchString = 'The fox is jumping in the garden';
         foreach ($testArray as $testString => $testExpected) {
             $result = StringHelper::extractText($testString, $searchString);
-            $result = StringHelper::replace($result, $searchString, '<strong>'.$searchString.'</strong>');
-            self::assertSame($testExpected, $result, 'tested: '.$testString);
+            $result = StringHelper::replace($result, $searchString, '<strong>' . $searchString . '</strong>');
+            self::assertSame($testExpected, $result, 'tested: ' . $testString);
         }
     }
 
@@ -489,14 +489,14 @@ class StringHelperTest extends TestCase
     {
         $testArray = [
             '' => "\n",
-            ' ' => ' '."\n",
-            'http:// moelleken.org' => 'http://'."\n".'moelleken.org'."\n",
-            'http://test.de' => 'http://test.de'."\n",
-            'http://öäü.de' => 'http://öäü.de'."\n",
-            'http://menadwork.com' => 'http://menadwork.com'."\n",
-            'test.de' => 'test.de'."\n",
-            'test' => 'test'."\n",
-            '0123456 789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789' => '0123456'."\n".'789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789'."\n",
+            ' ' => ' ' . "\n",
+            'http:// moelleken.org' => 'http://' . "\n" . 'moelleken.org' . "\n",
+            'http://test.de' => 'http://test.de' . "\n",
+            'http://öäü.de' => 'http://öäü.de' . "\n",
+            'http://menadwork.com' => 'http://menadwork.com' . "\n",
+            'test.de' => 'test.de' . "\n",
+            'test' => 'test' . "\n",
+            '0123456 789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789' => '0123456' . "\n" . '789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789' . "\n",
         ];
 
         foreach ($testArray as $testString => $testResult) {
@@ -1163,7 +1163,7 @@ class StringHelperTest extends TestCase
             [true, 'c74e8f78-c052-4978-b0e8-77a307f7b946'],
             [true, '469e6ed2-f270-458a-a80e-173821fee715'],
             [true, '00000000-0000-0000-0000-000000000000'],
-            [false, StringHelper::UUID().StringHelper::UUID()],
+            [false, StringHelper::UUID() . StringHelper::UUID()],
             [false, 'abc'],
             [false, '123'],
             [false, ''],
@@ -1417,7 +1417,7 @@ class StringHelperTest extends TestCase
     {
         return [
             ['test', 'test'],
-            ['', new stdClass],
+            ['', new stdClass()],
             ['ima string', new ToString('ima string')],
             ['t,e,s,t', ['t', 'e', 's', 't']],
             ['t|e|s|t', ['t', 'e', 's', 't'], '|'],
@@ -1720,7 +1720,7 @@ class StringHelperTest extends TestCase
     {
         // One needle
         $singleNeedle = array_map(
-            static function ($array) {
+            static function($array) {
                 $array[2] = [$array[2]];
 
                 return $array;
@@ -1761,7 +1761,7 @@ class StringHelperTest extends TestCase
     {
         // One needle
         $singleNeedle = array_map(
-            static function ($array) {
+            static function($array) {
                 $array[2] = [$array[2]];
 
                 return $array;
@@ -2415,7 +2415,7 @@ class StringHelperTest extends TestCase
                 'řàb <ô>òf\', ô<br/>foo <a href="#">lall</a>',
                 '<br><br/>',
             ],
-            ['<∂∆ onerror="alert(xss)">˚åß', '<∂∆ onerror="alert(xss)">'."\n".'˚åß'],
+            ['<∂∆ onerror="alert(xss)">˚åß', '<∂∆ onerror="alert(xss)">' . "\n" . '˚åß'],
             ['\'œ … \'’)', '\'œ … \'’)'],
         ];
     }

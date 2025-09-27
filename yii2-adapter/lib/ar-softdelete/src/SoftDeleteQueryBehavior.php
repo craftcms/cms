@@ -7,11 +7,11 @@
 
 namespace yii2tech\ar\softdelete;
 
+use yii\base\Behavior;
+use yii\base\InvalidConfigException;
 use yii\db\ActiveQueryInterface;
 use yii\db\ActiveQueryTrait;
 use yii\db\BaseActiveRecord;
-use yii\base\Behavior;
-use yii\base\InvalidConfigException;
 
 /**
  * SoftDeleteQueryBehavior provides support for querying "soft" deleted ActiveRecord models.

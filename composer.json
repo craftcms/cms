@@ -69,6 +69,7 @@
     "yiisoft/html": "^3.11"
   },
   "require-dev": {
+    "craftcms/ecs": "dev-main",
     "dg/bypass-finals": "^1.9",
     "fakerphp/faker": "^1.19.0",
     "larastan/larastan": "^3.4",
