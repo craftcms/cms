@@ -5,14 +5,13 @@ use Symplify\EasyCodingStandard\Config\ECSConfig;
 
 return static function (ECSConfig $ecsConfig): void {
     $ecsConfig->paths([
-        __DIR__.'/yii2-adapter/bootstrap',
-        __DIR__.'/yii2-adapter/legacy',
-        __DIR__.'/yii2-adapter/legacy-tests',
-        __DIR__.'/scripts',
+        __DIR__.'/bootstrap',
+        __DIR__.'/legacy',
+        __DIR__.'/legacy-tests',
         __FILE__,
     ]);
     $ecsConfig->skip([
-        __DIR__.'/yii2-adapter/legacy-tests/unit/helpers/typecast',
+        __DIR__.'/legacy-tests/unit/helpers/typecast',
     ]);
 
     $ecsConfig->parallel();
