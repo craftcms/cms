@@ -1,11 +1,11 @@
 actor: Tester
 paths:
-  tests: tests
-  log: tests/_output
-  data: tests/_data
-  support: tests/_support
-  output: tests/_output
-  envs: tests/_envs
+  tests: legacy-tests
+  log: legacy-tests/_output
+  data: legacy-tests/_data
+  support: legacy-tests/_support
+  output: legacy-tests/_output
+  envs: legacy-tests/_envs
 bootstrap: _bootstrap.php
 settings:
   colors: true
@@ -15,26 +15,26 @@ coverage:
   include:
     - src/*
   exclude:
-    - src/config/*
-    - src/icons/*
-    - src/test/internal/*
-    - src/test/templates/*
-    - src/migrations/*
-    - src/templates/*
-    - src/translations/*
-    - src/views/*
-    - src/web/assets/*
+    - legacy/config/*
+    - legacy/icons/*
+    - legacy/test/internal/*
+    - legacy/test/templates/*
+    - legacy/migrations/*
+    - legacy/templates/*
+    - legacy/translations/*
+    - legacy/views/*
+    - legacy/web/assets/*
     - bootstrap/*
     - lib/*
-    - tests/*
+    - legacy-tests/*
     - vendor/*
 params:
   - env
-  - tests/.env
+  - legacy-tests/.env
 modules:
   config:
     \craft\test\Craft:
-      configFile: 'tests/_craft/config/test.php'
+      configFile: 'legacy-tests/_craft/config/test.php'
       entryUrl: 'https://localhost/index.php'
       projectConfig: {}
       migrations: []
@@ -44,23 +44,23 @@ modules:
       dbSetup: {clean: true, setupCraft: true} # What DB setup work do we need to do.
       fullMock: false
   DataFactory:
-    factories: tests/_craft/config/factories
+    factories: legacy-tests/_craft/config/factories
     depends: \craft\test\Craft
 groups:
-  base: [tests/unit/base]
-  behaviors: [tests/unit/behaviors]
-  db: [tests/unit/db]
-  elements: [tests/unit/elements]
-  helpers: [tests/unit/helpers]
-  mail: [tests/unit/mail]
-  search: [tests/unit/search]
-  services: [tests/unit/services]
-  test: [tests/unit/test]
-  validators: [tests/unit/validators]
-  web: [tests/unit/web]
-  app: [tests/unit/AppTest.php]
+  base: [legacy-tests/unit/base]
+  behaviors: [legacy-tests/unit/behaviors]
+  db: [legacy-tests/unit/db]
+  elements: [legacy-tests/unit/elements]
+  helpers: [legacy-tests/unit/helpers]
+  mail: [legacy-tests/unit/mail]
+  search: [legacy-tests/unit/search]
+  services: [legacy-tests/unit/services]
+  test: [legacy-tests/unit/test]
+  validators: [legacy-tests/unit/validators]
+  web: [legacy-tests/unit/web]
+  app: [legacy-tests/unit/AppTest.php]
   gql:
-    - 'tests/unit/gql'
-    - 'tests/unit/services/GqlTest.php'
-    - 'tests/unit/helpers/GqlHelperTest.php'
-    - 'tests/gql'
+    - 'legacy-tests/unit/gql'
+    - 'legacy-tests/unit/services/GqlTest.php'
+    - 'legacy-tests/unit/helpers/GqlHelperTest.php'
+    - 'legacy-tests/gql'

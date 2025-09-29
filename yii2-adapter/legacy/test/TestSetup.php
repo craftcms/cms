@@ -170,7 +170,7 @@ class TestSetup
 
         $basePath = CraftTest::normalizePathSeparators(dirname(__DIR__, 2));
 
-        $srcPath = $basePath . '/src';
+        $srcPath = $basePath . '/legacy';
         $vendorPath = CRAFT_VENDOR_PATH;
 
         $appType = self::appType();
@@ -282,7 +282,7 @@ class TestSetup
 
         $repoRoot = dirname(__DIR__, 2);
         $libPath = $repoRoot . '/lib';
-        $srcPath = $repoRoot . '/src';
+        $srcPath = $repoRoot . '/legacy';
 
         require_once $libPath . '/yii2/Yii.php';
         require_once $srcPath . '/Craft.php';

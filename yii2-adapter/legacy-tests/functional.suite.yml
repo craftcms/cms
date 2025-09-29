@@ -9,5 +9,5 @@ modules:
   enabled:
     - Asserts
     - \craft\test\Craft:
-        projectConfig: {file: 'tests/_data/project.yaml'}
+        projectConfig: {file: 'legacy-tests/_data/project.yaml'}
     - \Helper\Functional

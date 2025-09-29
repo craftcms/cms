@@ -34,6 +34,7 @@
     "ext-pcre": "*",
     "ext-pdo": "*",
     "ext-zip": "*",
+    "craftcms/cms": "*",
     "creocoder/yii2-nested-sets": "~0.9.0",
     "mikehaertl/php-shellcommand": "^1.6.3",
     "moneyphp/money": "^4.0",
@@ -57,11 +58,18 @@
     "codeception/module-yii2": "^1.1.9",
     "craftcms/ecs": "dev-main",
     "league/factory-muffin": "^3.3.0",
+    "orchestra/testbench": "^10.6",
     "phpstan/phpstan": "^2.1",
     "rector/rector": "^2.0",
     "vlucas/phpdotenv": "^5.4.1",
     "yiisoft/yii2-redis": "^2.0"
   },
+  "repositories": [
+    {
+      "type": "path",
+      "url": "../"
+    }
+  ],
   "provide": {
     "bower-asset/inputmask": "5.0.9",
     "bower-asset/jquery": "3.6.1",
@@ -78,6 +86,7 @@
   },
   "autoload-dev": {
     "psr-4": {
+      "CraftCms\\Cms\\Tests\\": "../tests/",
       "CraftCms\\Yii2Adapter\\Tests\\": "tests/",
       "crafttests\\": "legacy-tests/"
     }
