@@ -670,7 +670,10 @@ Craft.BaseElementSelectInput = Garnish.Base.extend(
       if (this.settings.selectable) {
         const lastElementIndex = this.$elements.index($elements.last());
         $nextElement = this.$elements.eq(lastElementIndex + 1);
-        $prevElement = lastElementIndex - 1 >= 0 ? this.$elements.eq(lastElementIndex - 1) : null;
+        $prevElement =
+          lastElementIndex - 1 >= 0
+            ? this.$elements.eq(lastElementIndex - 1)
+            : null;
       }
       if ($nextElement?.length || $prevElement?.length) {
         let $target;
