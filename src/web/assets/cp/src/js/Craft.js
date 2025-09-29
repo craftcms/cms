@@ -2576,7 +2576,12 @@ $.extend(Craft, {
     );
   },
 
-  refreshComponentInstances(type, id) {
+  refreshComponentInstances(
+    type,
+    id,
+    checkOverrides = false,
+    overridesPattern = false
+  ) {
     const $chips = $(
       `div.chip[data-type="${$.escapeSelector(
         type
@@ -2587,7 +2592,23 @@ $.extend(Craft, {
     }
     const instances = [];
     for (let i = 0; i < $chips.length; i++) {
-      instances.push($chips.eq(i).data('settings'));
+      let settings = $chips.eq(i).data('settings');
+
+      if (checkOverrides && overridesPattern) {
+        let inputs = $chips.eq(i).find('input,button').get();
+        let regex = new RegExp(overridesPattern);
+        for (let i = 0; i < inputs.length; i++) {
+          if (regex.test(inputs[i].name)) {
+            let overrides = inputs[i].value;
+            if (overrides.length) {
+              overrides = JSON.parse(overrides);
+              settings['overrides'] = overrides;
+            }
+          }
+        }
+      }
+
+      instances.push(settings);
     }
     const data = {
       components: [{type, id, instances}],
@@ -2613,6 +2634,8 @@ $.extend(Craft, {
           if ($inputs.length) {
             $inputs.appendTo($chip);
           }
+
+          Craft.initUiElements($chip);
         }
       }
     );

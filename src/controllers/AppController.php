@@ -858,6 +858,15 @@ class AppController extends Controller
             $component = $componentType::get($id);
             if ($component) {
                 foreach ($componentInfo['instances'] as $config) {
+                    if (!empty($config['overrides'])) {
+                        if (property_exists($component::class, 'original')) {
+                            /** @phpstan-ignore-next-line */
+                            $component->original = clone $component;
+                        }
+                        Craft::configure($component, $config['overrides']);
+                        $config['showIndicators'] = true;
+                        unset($config['overrides']);
+                    }
                     $componentHtml[$componentType][$id][] = Cp::chipHtml($component, $config);
                 }
 

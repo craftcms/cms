@@ -608,7 +608,12 @@ Craft.CpScreenSlideout = Craft.Slideout.extend(
         Craft.cp.displaySuccess(data.message, data.notificationSettings);
       }
       if (data.modelClass && data.modelId) {
-        Craft.refreshComponentInstances(data.modelClass, data.modelId);
+        Craft.refreshComponentInstances(
+          data.modelClass,
+          data.modelId,
+          this.settings.params.checkOverrides ?? false,
+          this.settings.params.overridesPattern ?? false
+        );
       }
       const ev = {
         response: response,
