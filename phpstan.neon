@@ -6,20 +6,17 @@ parameters:
     phpVersion: 80400
     level: 5
     paths:
-        - cms
-        - yii2-adapter
+        - src
+        - config
+        - yii2-adapter/src
+        - yii2-adapter/legacy
     excludePaths:
+        - yii2-adapter/legacy/test
         - yii2-adapter/legacy/config/mimeTypes.php
         - yii2-adapter/legacy/image/*
         - yii2-adapter/legacy/services/Images.php
         - yii2-adapter/legacy/test/internal/*
         - yii2-adapter/legacy/views/debug/*
-        - yii2-adapter/legacy-tests/_craft/*
-        - yii2-adapter/legacy-tests/_data/*
-        - yii2-adapter/legacy-tests/_output/*
-        - yii2-adapter/legacy-tests/_support/_generated/
-        - cms/tests
-        - yii2-adapter/tests
     scanFiles:
         - yii2-adapter/lib/craft/behaviors/CustomFieldBehavior.php
         - yii2-adapter/legacy-tests/_support/_generated/AcceptanceTesterActions.php
@@ -62,8 +59,8 @@ parameters:
             identifier: parameter.implicitlyNullable
     treatPhpDocTypesAsCertain: false
     databaseMigrationsPath:
-        - cms/src/Database/Migrations
+        - src/Database/Migrations
     configDirectories:
-        - cms/tests
+        - tests
         - yii2-adapter/legacy-tests
         - yii2-adapter/tests

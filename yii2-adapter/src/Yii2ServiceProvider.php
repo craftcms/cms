@@ -356,6 +356,10 @@ class Yii2ServiceProvider extends ServiceProvider
                 throw new RuntimeException('The migration table has the wrong schema structure and allowAdminChanges is disabled. Run `php craft migrate:migration-table` to migrate the table to the new format.');
             }
 
+            if (app()->environment('workbench')) {
+                return;
+            }
+
             Artisan::call('craft:migrate:migration-table', [
                 '--force' => true,
             ]);
