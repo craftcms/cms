@@ -33,7 +33,7 @@ jobs:
         run: composer global require laravel/pint
 
       - name: Run Pint
-        run: pint cms --parallel --test --verbose
+        run: pint --parallel --test --verbose
 
   tests:
     needs: [pint]
