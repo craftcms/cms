@@ -1,9 +1,11 @@
 /** global: Craft */
 /** global: Garnish */
 
+import {Circle, FabricImage, Group, Line, loadSVGFromString, Path, Rect, StaticCanvas,} from 'fabric';
+
 /**
  * Asset image editor class
- * @property {fabric.Rect|null} croppingRectangle The rectangle representing the cropping area on the image within the image editor
+ * @property {Rect|null} croppingRectangle The rectangle representing the cropping area on the image within the image editor
  * @property {Object} imageVerticeCoords - The corner coordinates of the image being edited
  */
 
@@ -189,7 +191,7 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
      *
      * @param {Object} data
      */
-    loadEditor: function (data) {
+    loadEditor: async function (data) {
       if (!data.html) {
         Craft.cp.displayError(
           Craft.t('app', 'Could not load the image editor.')
@@ -220,8 +222,13 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
       const $moveSvg = $('#move-icon-wrapper svg').prop('outerHTML');
 
       // Store move icon for later use
-      fabric.loadSVGFromString($moveSvg, (objects, options) => {
-        var obj = fabric.util.groupSVGElements(objects, options);
+      try {
+        const result = await loadSVGFromString($moveSvg);
+        const obj =
+          result.objects.length > 1
+            ? new Group(result.objects)
+            : result.objects[0];
+
         obj.set({
           left: 0,
           top: 0,
@@ -233,24 +240,27 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
         });
 
         this.moveIcon = obj;
-      });
+      } catch (error) {
+        console.error('Failed to load SVG icon:', error);
+      }
 
       this._showSpinner();
 
       this.updateSizeAndPosition();
 
-      $customConstraintWrapper = this.$constraintRadioInputs
+      this.$customConstraintWrapper = this.$constraintRadioInputs
         .filter('[value="custom"]')
         .parent();
 
-      $customConstraintGroupLabel = $customConstraintWrapper.find('label');
+      this.$customConstraintGroupLabel =
+        this.$customConstraintWrapper.find('label');
 
       // Add custom constraint inputs to fieldset
       this.$customConstraints = $('<div/>', {
         class: 'constraint custom hidden',
         'data-constraint': 'custom',
         role: 'group',
-        'aria-labelledby': $customConstraintGroupLabel.attr('id'),
+        'aria-labelledby': this.$customConstraintGroupLabel.attr('id'),
       })
         .append(
           $('<input/>', {
@@ -277,7 +287,7 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
             'aria-label': Craft.t('app', 'Height unit'),
           })
         )
-        .appendTo($customConstraintWrapper);
+        .appendTo(this.$customConstraintWrapper);
 
       // Specify which get flipped on orientation change
       this.$constraintRadioInputs
@@ -289,7 +299,7 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
         .addClass('flip');
 
       // Load the canvas on which we'll host our image and set up the proxy render function
-      this.canvas = new fabric.StaticCanvas('image-canvas');
+      this.canvas = new StaticCanvas('image-canvas');
 
       // Set up the cropping canvas jquery element for tracking all the nice events
       this.$croppingCanvas = $('#cropping-canvas', this.$editorContainer);
@@ -309,8 +319,8 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
       });
 
       // Load image and set up the initial properties
-      fabric.Image.fromURL(imageUrl, (imageObject) => {
-        this.image = imageObject;
+      try {
+        this.image = await FabricImage.fromURL(imageUrl);
         this.image.set({
           originX: 'center',
           originY: 'center',
@@ -319,8 +329,8 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
         });
         this.canvas.add(this.image);
 
-        this.originalHeight = this.image.getHeight();
-        this.originalWidth = this.image.getWidth();
+        this.originalHeight = this.image.height;
+        this.originalWidth = this.image.width;
         this.zoomRatio = 1;
 
         this.lastLoadedDimensions = this.getScaledImageDimensions();
@@ -393,7 +403,12 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 
         // Make sure verything gets fired for the first tab
         this.$tabs.first().trigger('click');
-      });
+      } catch (error) {
+        console.error('Failed to load image:', error);
+        Craft.cp.displayError(
+          Craft.t('app', 'Could not load the image for editing.')
+        );
+      }
     },
 
     /**
@@ -415,11 +430,11 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
       });
 
       this.image.setSrc(imageUrl, (imageObject) => {
-        this.originalHeight = imageObject.getHeight();
-        this.originalWidth = imageObject.getWidth();
+        this.originalHeight = imageObject.height;
+        this.originalWidth = imageObject.width;
         this.lastLoadedDimensions = {
-          width: this.originalHeight,
-          height: this.originalWidth,
+          width: this.originalWidth,
+          height: this.originalHeight,
         };
         this.updateSizeAndPosition();
         this.renderImage();
@@ -540,7 +555,7 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
      * Create the viewport for image editor.
      */
     _createViewport: function () {
-      this.viewport = new fabric.Rect({
+      this.viewport = new Rect({
         width: this.image.width,
         height: this.image.height,
         fill: 'rgba(127,0,0,1)',
@@ -607,7 +622,7 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
           deltaY / (sizeFactor * this.zoomRatio * this.scaleFactor);
       }
 
-      this.focalPointOuterCircle = new fabric.Circle({
+      this.focalPointOuterCircle = new Circle({
         radius: 8,
         fill: 'rgba(0,0,0,0.5)',
         strokeWidth: 2,
@@ -618,7 +633,7 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
         originY: 'center',
       });
 
-      this.focalPointInnerCircle = new fabric.Circle({
+      this.focalPointInnerCircle = new Circle({
         radius: 1,
         fill: 'rgba(255,255,255,0)',
         strokeWidth: 2,
@@ -629,7 +644,7 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
         originY: 'center',
       });
 
-      this.focalPointPickedIndicator = new fabric.Circle({
+      this.focalPointPickedIndicator = new Circle({
         radius: 12,
         strokeWidth: 0,
         stroke: 'rgba(255,255,255,0.8)',
@@ -639,7 +654,7 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
         originY: 'center',
       });
 
-      this.focalPoint = new fabric.Group(
+      this.focalPoint = new Group(
         [
           this.focalPointPickedIndicator,
           this.focalPointOuterCircle,
@@ -790,14 +805,9 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
      * Set the image dimensions to reflect the current zoom ratio.
      */
     _zoomImage: function () {
-      if (typeof this._zoomImage._ === 'undefined') {
-        this._zoomImage._ = {};
-      }
-
-      this._zoomImage._.imageDimensions = this.getScaledImageDimensions();
       this.image.set({
-        width: this._zoomImage._.imageDimensions.width * this.zoomRatio,
-        height: this._zoomImage._.imageDimensions.height * this.zoomRatio,
+        scaleX: this.zoomRatio,
+        scaleY: this.zoomRatio,
       });
     },
 
@@ -1349,17 +1359,23 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
             this.viewport.height = this.viewport.width * scaleFactor;
             this.viewport.width = temp;
             this.viewport.set({angle: 0});
+            this.canvas.renderAll();
           },
         });
 
         // Animate the rotation and dimension change
         this.image.animate(imageProperties, {
-          onChange: this.canvas.renderAll.bind(this.canvas),
           duration: this.settings.animationDuration,
+          onChange: this.canvas.renderAll.bind(this.canvas),
           onComplete: () => {
             var cleanAngle = parseFloat((this.image.angle + 360) % 360);
             this.image.set({angle: cleanAngle});
             this.animationInProgress = false;
+
+            // Recalculate canvas bounds after rotation
+            this.canvas.calcOffset();
+            this.canvas.renderAll();
+
             if (this.focalPoint) {
               this._adjustFocalPointByAngle(degrees);
               this.straighten(this.straighteningInput);
@@ -1460,21 +1476,34 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
             ? parseFloat(slider.value)
             : Math.round(parseFloat(slider.value))) % 360;
 
-        // Straighten the image
+        // Calculate the target angle and ensure origins are set to center
+        var targetAngle = this.viewportRotation + this.imageStraightenAngle;
+
+        // First set origins to center
         this.image.set({
-          angle: this.viewportRotation + this.imageStraightenAngle,
+          originX: 'center',
+          originY: 'center',
         });
 
-        // Set the new zoom ratio
+        // Calculate zoom ratio needed for the rotated image to cover canvas
         this.zoomRatio =
           this.getZoomToCoverRatio(this.getScaledImageDimensions()) *
           this.scaleFactor;
+
+        // Apply rotation and ensure it stays centered
+        this.image.set({
+          angle: targetAngle,
+        });
+
+        // Apply the zoom to cover the canvas
         this._zoomImage();
 
         if (this.cropperState) {
           this._adjustEditorElementsOnStraighten(previousAngle);
         }
 
+        // Recalculate canvas bounds and force render
+        this.canvas.calcOffset();
         this.renderImage();
 
         this.animationInProgress = false;
@@ -1861,7 +1890,7 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
         var yStep = gridHeight / (lineCount + 1);
 
         var grid = [
-          new fabric.Rect({
+          new Rect({
             strokeWidth: 2,
             stroke: this.settings.colors.white,
             originX: 'center',
@@ -1877,19 +1906,16 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
         var i;
         for (i = 1; i <= lineCount; i++) {
           grid.push(
-            new fabric.Line(
-              [i * xStep, 0, i * xStep, gridHeight],
-              strokeOptions
-            )
+            new Line([i * xStep, 0, i * xStep, gridHeight], strokeOptions)
           );
         }
         for (i = 1; i <= lineCount; i++) {
           grid.push(
-            new fabric.Line([0, i * yStep, gridWidth, i * yStep], strokeOptions)
+            new Line([0, i * yStep, gridWidth, i * yStep], strokeOptions)
           );
         }
 
-        this.grid = new fabric.Group(grid, {
+        this.grid = new Group(grid, {
           left: this.editorWidth / 2,
           top: this.editorHeight / 2,
           originX: 'center',
@@ -2153,6 +2179,7 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
         this.croppingCanvas.remove(this.cropperGrid);
         this.croppingCanvas.remove(this.croppingRectangle);
 
+        this.croppingCanvas.dispose();
         this.croppingCanvas = null;
         this.renderCropper = null;
       }
@@ -2164,8 +2191,14 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
      * @param {Object} clipperData
      */
     _setupCropperLayer: function (clipperData) {
+      // Clean up existing canvas if it exists
+      if (this.croppingCanvas) {
+        this.croppingCanvas.dispose();
+        this.croppingCanvas = null;
+      }
+
       // Set up the canvas for cropper
-      this.croppingCanvas = new fabric.StaticCanvas('cropping-canvas', {
+      this.croppingCanvas = new StaticCanvas('cropping-canvas', {
         backgroundColor: this.settings.colors.transparent,
         hoverCursor: 'default',
         selection: false,
@@ -2187,7 +2220,7 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
         left: 0,
       });
 
-      this.croppingShade = new fabric.Rect({
+      this.croppingShade = new Rect({
         left: this.editorWidth / 2,
         top: this.editorHeight / 2,
         originX: 'center',
@@ -2213,7 +2246,7 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
       }
 
       // Set up the cropping viewport rectangle
-      this.clipper = new fabric.Rect({
+      this.clipper = new Rect({
         left: this.editorWidth / 2,
         top: this.editorHeight / 2,
         originX: 'center',
@@ -2267,11 +2300,11 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 
       // Draw the handles
       this._redrawCropperElements._.pathGroup = [
-        new fabric.Path(
+        new Path(
           'M 0,10 L 0,0 L 10,0',
           this._redrawCropperElements._.lineOptions
         ),
-        new fabric.Path(
+        new Path(
           'M ' +
             (this.clipper.width - 8) +
             ',0 L ' +
@@ -2281,7 +2314,7 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
             ',10',
           this._redrawCropperElements._.lineOptions
         ),
-        new fabric.Path(
+        new Path(
           'M ' +
             (this.clipper.width + 4) +
             ',' +
@@ -2296,7 +2329,7 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
             (this.clipper.height + 4),
           this._redrawCropperElements._.lineOptions
         ),
-        new fabric.Path(
+        new Path(
           'M 10,' +
             (this.clipper.height + 4) +
             ' L 0,' +
@@ -2307,24 +2340,21 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
         ),
       ];
 
-      this.cropperHandles = new fabric.Group(
-        this._redrawCropperElements._.pathGroup,
-        {
-          left: this.clipper.left,
-          top: this.clipper.top,
-          originX: 'center',
-          originY: 'center',
-        }
-      );
+      this.cropperHandles = new Group(this._redrawCropperElements._.pathGroup, {
+        left: this.clipper.left,
+        top: this.clipper.top,
+        originX: 'center',
+        originY: 'center',
+      });
 
       this.cropperHandleIndicator = this._getCropperHandleIndicator();
 
       // Don't forget the rectangle
       this.croppingRectangle = this._getCroppingRectangle();
 
-      this.cropperGrid = new fabric.Group(
+      this.cropperGrid = new Group(
         [
-          new fabric.Line(
+          new Line(
             [
               this.clipper.width * 0.33,
               0,
@@ -2333,7 +2363,7 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
             ],
             this._redrawCropperElements._.gridOptions
           ),
-          new fabric.Line(
+          new Line(
             [
               this.clipper.width * 0.66,
               0,
@@ -2342,7 +2372,7 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
             ],
             this._redrawCropperElements._.gridOptions
           ),
-          new fabric.Line(
+          new Line(
             [
               0,
               this.clipper.height * 0.33,
@@ -2351,7 +2381,7 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
             ],
             this._redrawCropperElements._.gridOptions
           ),
-          new fabric.Line(
+          new Line(
             [
               0,
               this.clipper.height * 0.66,
@@ -2432,7 +2462,7 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 
     /**
      * Creates and returns a cropping rectangle group.
-     * @returns {fabric.Group} The created rectangle group.
+     * @returns {Group} The created rectangle group.
      */
     _getCroppingRectangle: function () {
       const strokeWidth = 2;
@@ -2447,36 +2477,33 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
         originY: 'center',
       };
 
-      const outerOutline = new fabric.Rect({
+      const outerOutline = new Rect({
         width: width + strokeWidth * 4,
         height: height + strokeWidth * 4,
         stroke: null,
         ...rectangleOptions,
       });
 
-      const innerOutline = new fabric.Rect({
+      const innerOutline = new Rect({
         width: width + strokeWidth * 2,
         height: height + strokeWidth * 2,
         stroke: null,
         ...rectangleOptions,
       });
 
-      const cropperRectangle = new fabric.Rect({
+      const cropperRectangle = new Rect({
         width: width,
         height: height,
         stroke: this.settings.colors.white,
         ...rectangleOptions,
       });
 
-      const group = new fabric.Group(
-        [outerOutline, innerOutline, cropperRectangle],
-        {
-          originX: 'center',
-          originY: 'center',
-          left: this.clipper.left,
-          top: this.clipper.top,
-        }
-      );
+      const group = new Group([outerOutline, innerOutline, cropperRectangle], {
+        originX: 'center',
+        originY: 'center',
+        left: this.clipper.left,
+        top: this.clipper.top,
+      });
 
       if (
         this.cropperPickedUp ||
@@ -2491,7 +2518,7 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 
         if (this.cropperPickedUp) {
           // Create a background for the move icon to exist on
-          const moveIconBackground = new fabric.Circle({
+          const moveIconBackground = new Circle({
             fill: this.settings.colors.black,
             top: 0,
             left: 0,
@@ -2511,7 +2538,7 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 
     /**
      * Creates and returns a cropper handle indicator group.
-     * @returns {fabric.Group} The created cropper handle indicator group.
+     * @returns {Group} The created cropper handle indicator group.
      */
     _getCropperHandleIndicator: function () {
       if (!this._getCropperHandleEditBtnIsFocused() && !this.handlePicked)
@@ -2533,25 +2560,25 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
         originY: 'center',
       };
 
-      const innerRing = new fabric.Circle({
+      const innerRing = new Circle({
         radius: size,
         stroke: this.mediumBlueColor,
         ...commonProps,
       });
 
-      const centerRing = new fabric.Circle({
+      const centerRing = new Circle({
         radius: size + width,
         stroke: this.settings.colors.white,
         ...commonProps,
       });
 
-      const outerRing = new fabric.Circle({
+      const outerRing = new Circle({
         radius: size + width * 2,
         stroke: this.mediumBlueColor,
         ...commonProps,
       });
 
-      const focusRing = new fabric.Group([outerRing, centerRing, innerRing], {
+      const focusRing = new Group([outerRing, centerRing, innerRing], {
         originX: 'center',
         originY: 'center',
         left: handleCoordinates.x,
