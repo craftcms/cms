@@ -130,6 +130,20 @@
       },
     }) %}
   {% endfor %}
+{% else %}
+  {# copy action should be available even for the "static" field - one entry type with min and max entries set to the same value #}
+  {% set actionMenuItems = actionMenuItems|merge([
+    {hr: true},
+    {
+      icon: 'clone-dashed',
+      color: 'fuchsia',
+      label: 'Copy'|t('app'),
+      attributes: {
+        data: {action: 'copy'},
+      },
+    },
+    {hr: true},
+  ]) %}
 {% endif %}
 
 {% namespace baseInputName %}
