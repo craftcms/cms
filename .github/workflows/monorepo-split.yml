@@ -6,6 +6,7 @@ on:
     branches:
       - main
       - 6.x
+      - feature/split-packages
     tags: '*'
 
 jobs:
