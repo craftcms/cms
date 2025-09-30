@@ -125,5 +125,10 @@ jobs:
       - name: Execute CMS tests
         run: vendor/bin/pest
 
+      - name: Install yii2-adapter dependencies
+        uses: ramsey/composer-install@v3
+        with:
+          working-directory: yii2-adapter
+        
       - name: Execute Yii2 Adapter tests
         run: vendor/bin/pest --ci --configuration ./yii2-adapter/phpunit.xml.dist --test-directory ./yii2-adapter/tests
