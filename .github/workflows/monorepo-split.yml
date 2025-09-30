@@ -20,7 +20,7 @@ jobs:
         if: "!startsWith(github.ref, 'refs/tags/')"
         uses: danharrin/monorepo-split-github-action@v2.4.0
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GH_ACCESS_TOKEN }}
         with:
           package_directory: 'yii2-adapter'
           repository_organization: 'craftcms'
@@ -33,7 +33,7 @@ jobs:
         if: "startsWith(github.ref, 'refs/tags/')"
         uses: danharrin/monorepo-split-github-action@v2.4.0
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GH_ACCESS_TOKEN }}
         with:
           tag: ${GITHUB_REF#refs/tags/}
           package_directory: 'yii2-adapter'
