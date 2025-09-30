@@ -4,6 +4,7 @@
 
 - `new` is now a reserved filesystem handle.
 - Fixed an error that could occur when running the `utils/fix-field-layout-uids` command. ([#17848](https://github.com/craftcms/cms/issues/17848))
+- Fixed a bug where the `EVENT_DEFINE_EXTRA_FIELDS` event wasn’t getting triggered for elements. ([#17866](https://github.com/craftcms/cms/issues/17866))
 
 ## 4.16.13 - 2025-09-05
 

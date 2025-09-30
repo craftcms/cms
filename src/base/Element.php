@@ -2377,6 +2377,7 @@ abstract class Element extends Component implements ElementInterface
     public function extraFields(): array
     {
         return [
+            ...parent::extraFields(),
             'ancestors',
             'canonical',
             'canonicalUid',
