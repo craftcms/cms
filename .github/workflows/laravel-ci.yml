@@ -51,7 +51,7 @@ jobs:
       - name: Install composer dependencies
         uses: ramsey/composer-install@v3
         env:
-          COMPOSER_ROOT_VERSION: 6
+          COMPOSER_ROOT_VERSION: 6.x-dev
 
       - name: Run PHPStan
         run: ./vendor/bin/phpstan --error-format=github
@@ -124,7 +124,7 @@ jobs:
       - name: Install dependencies
         uses: ramsey/composer-install@v3
         env:
-          COMPOSER_ROOT_VERSION: 6
+          COMPOSER_ROOT_VERSION: 6.x-dev
 
       - name: Execute CMS tests
         run: vendor/bin/pest
@@ -134,7 +134,7 @@ jobs:
         with:
           working-directory: yii2-adapter
         env:
-          COMPOSER_ROOT_VERSION: 6
+          COMPOSER_ROOT_VERSION: 6.x-dev
 
       - name: Execute Yii2 Adapter tests
         run: vendor/bin/pest --ci --configuration ./yii2-adapter/phpunit.xml.dist --test-directory ./yii2-adapter/tests-laravel
