@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- `new` is now a reserved filesystem handle.
 - Fixed an error that could occur when running the `utils/fix-field-layout-uids` command. ([#17848](https://github.com/craftcms/cms/issues/17848))
 
 ## 4.16.13 - 2025-09-05
