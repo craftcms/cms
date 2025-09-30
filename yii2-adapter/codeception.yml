@@ -30,7 +30,7 @@ coverage:
     - vendor/*
 params:
   - env
-  - legacy-tests/.env
+  - tests/.env
 modules:
   config:
     \craft\test\Craft:
