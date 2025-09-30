@@ -109,27 +109,32 @@ abstract class ElementArguments extends Arguments
             ],
             'relatedToAssets' => [
                 'name' => 'relatedToAssets',
-                'type' => fn() => Type::listOf(AssetRelation::getType()),
+                // don't lazy load the type (see https://github.com/craftcms/cms/issues/17858)
+                'type' => Type::listOf(AssetRelation::getType()),
                 'description' => 'Narrows the query results to elements that relate to an asset list defined with this argument.',
             ],
             'relatedToEntries' => [
                 'name' => 'relatedToEntries',
-                'type' => fn() => Type::listOf(EntryRelation::getType()),
+                // don't lazy load the type (see https://github.com/craftcms/cms/issues/17858)
+                'type' => Type::listOf(EntryRelation::getType()),
                 'description' => 'Narrows the query results to elements that relate to an entry list defined with this argument.',
             ],
             'relatedToUsers' => [
                 'name' => 'relatedToUsers',
-                'type' => fn() => Type::listOf(UserRelation::getType()),
+                // don't lazy load the type (see https://github.com/craftcms/cms/issues/17858)
+                'type' => Type::listOf(UserRelation::getType()),
                 'description' => 'Narrows the query results to elements that relate to a use list defined with this argument.',
             ],
             'relatedToCategories' => [
                 'name' => 'relatedToCategories',
-                'type' => fn() => Type::listOf(CategoryRelation::getType()),
+                // don't lazy load the type (see https://github.com/craftcms/cms/issues/17858)
+                'type' => Type::listOf(CategoryRelation::getType()),
                 'description' => 'Narrows the query results to elements that relate to a category list defined with this argument.',
             ],
             'relatedToTags' => [
                 'name' => 'relatedToTags',
-                'type' => fn() => Type::listOf(TagRelation::getType()),
+                // don't lazy load the type (see https://github.com/craftcms/cms/issues/17858)
+                'type' => Type::listOf(TagRelation::getType()),
                 'description' => 'Narrows the query results to elements that relate to a tag list defined with this argument.',
             ],
             'relatedToAll' => [

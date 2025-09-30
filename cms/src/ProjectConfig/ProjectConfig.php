@@ -1545,6 +1545,8 @@ final class ProjectConfig
 
         // Let plugins know about it
         Event::dispatch(new YamlFilesWritten);
+
+        $this->_updateYaml = false;
     }
 
     /**
