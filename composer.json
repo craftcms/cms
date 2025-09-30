@@ -103,7 +103,7 @@
     "psr-4": {
       "CraftCms\\Cms\\Tests\\": "tests/",
       "CraftCms\\Cms\\Database\\": "database/",
-      "CraftCms\\Yii2Adapter\\Tests\\": "yii2-adapter/tests/"
+      "CraftCms\\Yii2Adapter\\Tests\\": "yii2-adapter/tests-laravel/"
     }
   },
   "scripts": {
@@ -112,7 +112,7 @@
     "phpstan": "phpstan --memory-limit=1G",
     "rector": "rector",
     "tests": "./vendor/bin/pest",
-    "tests-adapter": "./vendor/bin/pest --configuration ./yii2-adapter/phpunit.xml.dist --test-directory ./yii2-adapter/tests"
+    "tests-adapter": "./vendor/bin/pest --configuration ./yii2-adapter/phpunit.xml.dist --test-directory ./yii2-adapter/tests-laravel"
   },
   "config": {
     "sort-packages": true,

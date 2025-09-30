@@ -8,4 +8,4 @@ cpresources/*
 lib/*
 legacy/templates/*
 legacy/web/assets/**/dist/*
-legacy-tests/_craft/*
+tests/_craft/*

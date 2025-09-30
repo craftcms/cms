@@ -9,5 +9,5 @@ modules:
     - \Helper\Unit
     - \craft\test\Craft
     - DataFactory:
-        factories: legacy-tests/_craft/config/factories
+        factories: tests/_craft/config/factories
         depends: \craft\test\Craft

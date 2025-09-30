@@ -9,7 +9,7 @@
 >
     <testsuites>
         <testsuite name="Tests">
-            <directory>./tests</directory>
+            <directory>./tests-laravel</directory>
         </testsuite>
     </testsuites>
     <php>

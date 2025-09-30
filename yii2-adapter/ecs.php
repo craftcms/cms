@@ -7,11 +7,11 @@ return static function(ECSConfig $ecsConfig): void {
     $ecsConfig->paths([
         __DIR__ . '/bootstrap',
         __DIR__ . '/legacy',
-        __DIR__ . '/legacy-tests',
+        __DIR__ . '/tests',
         __FILE__,
     ]);
     $ecsConfig->skip([
-        __DIR__ . '/legacy-tests/unit/helpers/typecast',
+        __DIR__ . '/tests/unit/helpers/typecast',
     ]);
 
     $ecsConfig->parallel();
