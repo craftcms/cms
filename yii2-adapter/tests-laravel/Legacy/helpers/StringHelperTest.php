@@ -1488,8 +1488,8 @@ class StringHelperTest extends TestCase
         return [
             [
                 4, 'test
-
-
+                .
+                .
              test',
             ],
             [1, 'test <br> test'],
@@ -1500,15 +1500,15 @@ class StringHelperTest extends TestCase
             ],
             [
                 11, '
-
-
-
-
-
-
-
-
-
+                .
+                .
+                .
+                .
+                .
+                .
+                .
+                .
+                .
             ',
             ],
         ];
