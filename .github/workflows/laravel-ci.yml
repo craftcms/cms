@@ -129,6 +129,11 @@ jobs:
       - name: Execute CMS tests
         run: vendor/bin/pest
 
+      - name: Set version
+        run: composer config version "6.x-dev"
+        with:
+          working-directory: yii2-adapter
+
       - name: Install yii2-adapter dependencies
         uses: ramsey/composer-install@v3
         with:
