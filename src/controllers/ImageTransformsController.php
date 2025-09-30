@@ -94,7 +94,7 @@ class ImageTransformsController extends Controller
             }
         }
 
-        $this->getView()->registerAssetBundle(EditTransformAsset::class);
+        $bundle = $this->getView()->registerAssetBundle(EditTransformAsset::class);
 
         if ($transform->id) {
             $title = trim($transform->name) ?: Craft::t('app', 'Edit Image Transform');
@@ -132,6 +132,7 @@ class ImageTransformsController extends Controller
             'qualityPickerOptions' => $qualityPickerOptions,
             'qualityPickerValue' => $qualityPickerValue,
             'readOnly' => $this->readOnly,
+            'baseIconsUrl' => $bundle->baseUrl,
         ]);
     }
 

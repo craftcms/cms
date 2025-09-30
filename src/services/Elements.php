@@ -3017,17 +3017,26 @@ class Elements extends Component
         $sitesService = Craft::$app->getSites();
         $allRefTagTokens = [];
         $str = preg_replace_callback(
-            '/\{([\w\\\\]+)\:([^@\:\}]+)(?:@([^\:\}]+))?(?:\:([^\}\| ]+))?(?: *\|\| *([^\}]+))?\}/',
+            '/
+                \{                                      # Tags always begin with a {
+                    (?P<elementType>[\w\\\\]+)          # Ref handle or element type class
+                    \:(?P<ref>[^@\:\}\|]+)              # Identifier (ID, or another format supported by the element type)
+                    (?:@(?P<site>[^\:\}\|]+))?          # [Optional] Site handle, ID, or UUID
+                    (?:\:(?P<attr>[^\}\| ]+))?          # [Optional] Attribute, property, or field
+                    (?:\ *\|\|\ *(?P<fallback>[^\}]+))? # [Optional] Fallback text (if the ref fails to resolve)
+                \}                                      # Tags always close with a }
+            /x',
             function(array $matches) use (
                 $defaultSiteId,
                 $sitesService,
                 &$allRefTagTokens
             ) {
-                $matches = array_pad($matches, 6, null);
-                [$fullMatch, $elementType, $ref, $siteId, $attribute, $fallback] = $matches;
-                if ($fallback === null) {
-                    $fallback = $fullMatch;
-                }
+                $fullMatch = $matches[0];
+                $elementType = $matches['elementType'];
+                $ref = $matches['ref'];
+                $siteId = $matches['site'] ?? null;
+                $attribute = $matches['attr'] ?? null;
+                $fallback = $matches['fallback'] ?? $fullMatch;
 
                 // Swap out the ref handle for the element type
                 $elementType = $this->getElementTypeByRefHandle($elementType);
@@ -3065,7 +3074,11 @@ class Elements extends Component
                 $allRefTagTokens[$siteId][$elementType][$refType][$ref][] = [$token, $attribute, $fallback, $fullMatch];
 
                 return $token;
-            }, $str, -1, $count);
+            },
+            $str,
+            -1,
+            $count
+        );
 
         if ($count === 0) {
             // No ref tags
@@ -3864,7 +3877,8 @@ class Elements extends Component
 
                     // Set the attributes
                     $elementRecord->uid = $element->uid;
-                    $elementRecord->canonicalId = $element->getIsDerivative() ? $element->getCanonicalId() : null;
+                    $canonicalId = $element->getCanonicalId();
+                    $elementRecord->canonicalId = $canonicalId !== $element->id ? $canonicalId : null;
                     $elementRecord->draftId = (int)$element->draftId ?: null;
                     $elementRecord->revisionId = (int)$element->revisionId ?: null;
                     $elementRecord->fieldLayoutId = $element->fieldLayoutId = (int)($element->fieldLayoutId ?? $fieldLayout->id ?? 0) ?: null;

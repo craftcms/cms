@@ -426,7 +426,6 @@ class NestedElementManager extends Component
                             'showActionMenu' => true,
                             'sortable' => $config['sortable'],
                             'showInGrid' => $config['showInGrid'] ?? false,
-                            'hyperlink' => false,
                         ]),
                         $elements,
                     ), [

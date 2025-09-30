@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="80px" height="60px" viewBox="0 0 80 60" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <title>cards</title>
+    <defs>
+        <path d="M0,0 L80,0 L80,60 L0,60 L0,0 Z" id="path-1"></path>
+    </defs>
+    <g id="cards" stroke="none" fill="none" xlink:href="#path-1" fill-rule="evenodd">
+        <use fill="#FFFFFF" xlink:href="#path-1"></use>
+        <rect id="chip" stroke="#CDD8E4" stroke-width="1" fill="#F3F7FD" x="0.5" y="21.5" width="79" height="17" rx="5"></rect>
+        <rect id="chip-copy" stroke="#CDD8E4" stroke-width="1" fill="#F3F7FD" x="0.5" y="0.5" width="79" height="17" rx="5"></rect>
+        <rect id="chip-copy-2" stroke="#CDD8E4" stroke-width="1" fill="#F3F7FD" x="0.5" y="42.5" width="79" height="17" rx="5"></rect>
+    </g>
+</svg>

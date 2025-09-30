@@ -50,11 +50,10 @@
             context: 'field',
             sortable: false,
         }) }}
-    {% elseif viewMode == 'cards' %}
+    {% elseif viewMode in ['cards', 'cards-grid'] %}
         {{ include('_elements/cards.twig', {
             elements,
-            viewMode,
-            showInGrid: showCardsInGrid ?? false,
+            showInGrid: showInGrid ?? (viewMode == 'cards-grid'),
             disabled,
             context: 'field',
             sortable: false,
@@ -62,7 +61,8 @@
     {% else %}
         {{ include('_elements/list.twig', {
             elements,
-            viewMode,
+            size: size ?? (viewMode in ['thumbs', 'large'] ? 'large' : 'small'),
+            inline: inline ?? (viewMode in ['list-inline', 'thumbs', 'large']),
             disabled,
             context: 'field',
             sortable: false,
