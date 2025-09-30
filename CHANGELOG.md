@@ -16,6 +16,7 @@
 - Fixed an error that could occur when executing GraphQL queries if the `lazyGqlTypes` config setting was enabled. ([#17858](https://github.com/craftcms/cms/issues/17858))
 - Fixed a bug where focus was moved to the top of the body after the final tag in a Tags field was removed. ([#17861](https://github.com/craftcms/cms/pull/17861))
 - Fixed a bug where element queries weren’t handling generated field params properly, for generated fields with the same handle as custom fields. ([#17851](https://github.com/craftcms/cms/issues/17851), [#17855](https://github.com/craftcms/cms/issues/17855))
+- Fixed a bug where it wasn’t possible to choose autosuggest inputs’ suggestions via mouse click. ([#17869](https://github.com/craftcms/cms/pull/17869))
 - Fixed a styling issue.
 
 ## 5.8.17 - 2025-09-05
