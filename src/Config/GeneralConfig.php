@@ -5135,7 +5135,7 @@ class GeneralConfig extends BaseConfig
      *
      * @see $lazyGqlTypes
      */
-    public function lazyGqlTypes(bool $value): self
+    public function lazyGqlTypes(bool $value = true): self
     {
         $this->lazyGqlTypes = $value;
 
