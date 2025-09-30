@@ -3,15 +3,15 @@
 use craft\ecs\SetList;
 use Symplify\EasyCodingStandard\Config\ECSConfig;
 
-return static function (ECSConfig $ecsConfig): void {
+return static function(ECSConfig $ecsConfig): void {
     $ecsConfig->paths([
-        __DIR__.'/bootstrap',
-        __DIR__.'/legacy',
-        __DIR__.'/legacy-tests',
+        __DIR__ . '/bootstrap',
+        __DIR__ . '/legacy',
+        __DIR__ . '/legacy-tests',
         __FILE__,
     ]);
     $ecsConfig->skip([
-        __DIR__.'/legacy-tests/unit/helpers/typecast',
+        __DIR__ . '/legacy-tests/unit/helpers/typecast',
     ]);
 
     $ecsConfig->parallel();
