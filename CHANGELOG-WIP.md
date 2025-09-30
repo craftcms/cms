@@ -1,5 +1,8 @@
 # Release Notes for Craft CMS 4.17 (WIP)
 
+### Administration
+- Added the “View user” GraphQL schema option for Craft Solo. ([#17863](https://github.com/craftcms/cms/pull/17863))
+
 ### Extensibility
 - Added `craft\web\GqlResponseFormatter`.
 - Added `craft\web\Response::FORMAT_GQL`.
