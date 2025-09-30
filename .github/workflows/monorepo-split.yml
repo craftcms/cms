@@ -25,6 +25,7 @@ jobs:
           package_directory: 'yii2-adapter'
           repository_organization: 'craftcms'
           repository_name: 'yii2-adapter'
+          branch: ${{ github.head_ref || github.ref_name }}
           user_name: 'shinybrad'
           user_email: 'shinybrad@pixelandtonic.com'
       
