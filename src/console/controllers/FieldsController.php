@@ -218,7 +218,7 @@ MD, $fields->keys()->join(',')));
     public function actionAutoMerge(): int
     {
         if (!$this->interactive) {
-            $this->stderr("The fields/merge command must be run interactively.\n");
+            $this->stderr("The fields/auto-merge command must be run interactively.\n");
             return ExitCode::UNSPECIFIED_ERROR;
         }
 
@@ -253,6 +253,8 @@ MD, $fields->keys()->join(',')));
             $this->success('No fields with identical settings could be found.');
             return ExitCode::OK;
         }
+
+        $projectConfig = app(ProjectConfig::class);
 
         $migrationPaths = [];
         $relationFieldHandles = [];
@@ -337,6 +339,10 @@ MD, $fields->keys()->join(',')));
                     $this->mergeFields($persistentField, $outgoingField, $usagesByField[$outgoingField->id], $migrationPaths);
                     $this->output();
                 });
+
+            // flush out the project config in case the command is aborted early
+            // (https://github.com/craftcms/cms/issues/16198)
+            $projectConfig->flush();
         }
 
         if (!empty($migrationPaths)) {
