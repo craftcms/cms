@@ -5,13 +5,9 @@ namespace CraftCms\Cms\Tests;
 use Craft;
 use craft\models\Site;
 use craft\test\TestSetup;
-use CraftCms\Aliases\AliasesServiceProvider;
 use CraftCms\Cms\Database\Migrations\Install;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
-use CraftCms\Cms\Providers\CraftServiceProvider;
-use CraftCms\DependencyAwareCache\CacheServiceProvider;
-use CraftCms\Yii2Adapter\Yii2ServiceProvider;
 use Dotenv\Dotenv;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Foundation\Testing\LazilyRefreshDatabase;
@@ -21,13 +17,14 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Schema;
-use Laravel\Tinker\TinkerServiceProvider;
+use Orchestra\Testbench\Concerns\WithWorkbench;
 use Orchestra\Testbench\TestCase as Orchestra;
 
 /** @since 6.0.0 */
 class TestCase extends Orchestra
 {
     use LazilyRefreshDatabase;
+    use WithWorkbench;
 
     #[\Override]
     protected function setUp(): void
@@ -65,8 +62,11 @@ class TestCase extends Orchestra
     {
         $this->artisan('migrate:fresh', $this->migrateFreshUsing());
 
-        /** Install migration adds their own */
+        /** Drop Laravel migrations */
         Schema::drop('migrations');
+        Schema::drop('cache');
+        Schema::drop('sessions');
+        Schema::drop('users');
 
         $siteConfig = [
             'name' => 'Craft test site',
@@ -87,18 +87,6 @@ class TestCase extends Orchestra
         );
 
         $migration->up();
-    }
-
-    #[\Override]
-    protected function getPackageProviders($app): array
-    {
-        return [
-            AliasesServiceProvider::class,
-            CacheServiceProvider::class,
-            CraftServiceProvider::class,
-            Yii2ServiceProvider::class,
-            TinkerServiceProvider::class, // phpstan fails without it?
-        ];
     }
 
     #[\Override]

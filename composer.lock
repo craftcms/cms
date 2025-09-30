@@ -637,9 +637,10 @@
             "dist": {
                 "type": "path",
                 "url": "./yii2-adapter",
-                "reference": "8c2b417f8176fea3e4e98e55d6ca37dd50a70023"
+                "reference": "516a1a37f3daf5b99825f8208f351c5fbe74ca7b"
             },
             "require": {
+                "craftcms/cms": "*",
                 "creocoder/yii2-nested-sets": "~0.9.0",
                 "ext-bcmath": "*",
                 "ext-curl": "*",
@@ -680,7 +681,9 @@
                 "codeception/module-rest": "^3.3.2",
                 "codeception/module-yii2": "^1.1.9",
                 "craftcms/ecs": "dev-main",
+                "larastan/larastan": "^3.7",
                 "league/factory-muffin": "^3.3.0",
+                "orchestra/testbench": "^10.6",
                 "phpstan/phpstan": "^2.1",
                 "rector/rector": "^2.0",
                 "vlucas/phpdotenv": "^5.4.1",
@@ -703,6 +706,7 @@
             },
             "autoload-dev": {
                 "psr-4": {
+                    "CraftCms\\Cms\\Tests\\": "../tests/",
                     "CraftCms\\Yii2Adapter\\Tests\\": "tests/",
                     "crafttests\\": "legacy-tests/"
                 }

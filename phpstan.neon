@@ -8,24 +8,6 @@ parameters:
     paths:
         - src
         - config
-        - yii2-adapter/src
-        - yii2-adapter/legacy
-    excludePaths:
-        - yii2-adapter/legacy/test
-        - yii2-adapter/legacy/config/mimeTypes.php
-        - yii2-adapter/legacy/image/*
-        - yii2-adapter/legacy/services/Images.php
-        - yii2-adapter/legacy/test/internal/*
-        - yii2-adapter/legacy/views/debug/*
-    scanFiles:
-        - yii2-adapter/lib/craft/behaviors/CustomFieldBehavior.php
-        - yii2-adapter/legacy-tests/_support/_generated/AcceptanceTesterActions.php
-        - yii2-adapter/legacy-tests/_support/_generated/FunctionalTesterActions.php
-        - yii2-adapter/legacy-tests/_support/_generated/GqlTesterActions.php
-        - yii2-adapter/legacy-tests/_support/_generated/UnitTesterActions.php
-        - vendor/twig/twig/src/Extension/CoreExtension.php
-    bootstrapFiles:
-        - yii2-adapter/legacy-tests/_bootstrap.php
     stubFiles:
         - yii2-adapter/stubs/_generated.stub
         - yii2-adapter/stubs/GraphQL/Type/Definition/FieldDefinition.stub
@@ -42,25 +24,8 @@ parameters:
         - yii2-adapter/stubs/yii/helpers/BaseArrayHelper.stub
         - yii2-adapter/stubs/yii/validators/UniqueValidator.stub
         - yii2-adapter/stubs/yii/validators/Validator.stub
-    earlyTerminatingMethodCalls:
-        Craft:
-            - dd
-        yii\base\Application:
-            - end
-        yii\base\ErrorHandler:
-            - convertExceptionToError
-    ignoreErrors:
-        - '#PHPDoc tag @mixin contains invalid type craft\\base\\+[a-zA-Z0-9]#'
-        - '#^Dead catch#'
-        - '#^PHPDoc tag @mixin contains invalid type CraftTrait\.$#'
-        - '#^Parameter \#2 \$callback of function usort expects#'
-        - '#is never assigned craft\\base\\MemoizableArray#'
-        -
-            identifier: parameter.implicitlyNullable
     treatPhpDocTypesAsCertain: false
     databaseMigrationsPath:
         - src/Database/Migrations
     configDirectories:
         - tests
-        - yii2-adapter/legacy-tests
-        - yii2-adapter/tests

@@ -1,7 +1,7 @@
 <?php
 
 use craft\test\TestSetup;
-use CraftCms\Cms\Tests\TestCase;
+use CraftCms\Yii2Adapter\Tests\TestCase;
 
 ini_set('date.timezone', 'UTC');
 date_default_timezone_set('UTC');

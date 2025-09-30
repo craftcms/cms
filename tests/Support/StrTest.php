@@ -158,8 +158,8 @@ test('lines', function (int $expected, string $string) {
 })->with([
     [
         4, 'test
-
-
+             .
+             .
              test',
     ],
     [1, 'test <br> test'],
@@ -170,15 +170,15 @@ test('lines', function (int $expected, string $string) {
     ],
     [
         11, '
-
-
-
-
-
-
-
-
-
+            .
+            .
+            .
+            .
+            .
+            .
+            .
+            .
+            .
             ',
     ],
 ]);

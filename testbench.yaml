@@ -1,0 +1,5 @@
+providers:
+  - CraftCms\Aliases\AliasesServiceProvider
+  - CraftCms\DependencyAwareCache\CacheServiceProvider
+  - CraftCms\Cms\Providers\CraftServiceProvider
+  - CraftCms\Yii2Adapter\Yii2ServiceProvider

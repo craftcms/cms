@@ -26,6 +26,7 @@ jobs:
       - name: Setup PHP
         uses: shivammathur/setup-php@v2
         with:
+          php-version: '8.4'
           extensions: json, dom, curl, libxml, mbstring
           coverage: none
 
@@ -35,8 +36,26 @@ jobs:
       - name: Run Pint
         run: pint --parallel --test --verbose
 
+  phpstan:
+    name: 'Code Quality / Phpstan'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.4'
+          coverage: none
+
+      - name: Install composer dependencies
+        uses: ramsey/composer-install@v3
+
+      - name: Run PHPStan
+        run: ./vendor/bin/phpstan --error-format=github
+
   tests:
-    needs: [pint]
+    needs: [pint, phpstan]
     name: Tests / PHP ${{ matrix.php }} on ${{ matrix.db }}
     runs-on: ubuntu-latest
     strategy:
