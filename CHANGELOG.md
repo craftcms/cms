@@ -5,6 +5,7 @@
 - The `fields/auto-merge` command now writes updated project config YAML files after each merge. ([#16198](https://github.com/craftcms/cms/issues/16198))
 - `new` is now a reserved filesystem handle.
 - Fixed an error that could occur when running the `utils/fix-field-layout-uids` command. ([#17848](https://github.com/craftcms/cms/issues/17848))
+- Fixed a bug where the `EVENT_DEFINE_EXTRA_FIELDS` event wasn’t getting triggered for elements. ([#17866](https://github.com/craftcms/cms/issues/17866))
 - Fixed a bug where inline search wasn’t working for Users fields. ([#17838](https://github.com/craftcms/cms/issues/17838))
 - Fixed a bug where inline search wasn’t returning results ordered by search score.
 - Fixed a bug where “load more” buttons weren’t keyboard-accessible. ([#17797](https://github.com/craftcms/cms/pull/17797))
