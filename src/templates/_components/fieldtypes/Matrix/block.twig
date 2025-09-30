@@ -90,9 +90,12 @@
   {% endif %}
 {% endif %}
 
+{% set actionMenuItems = actionMenuItems|merge([
+  {hr: true},
+]) %}
+
 {% if not staticEntries %}
   {% set actionMenuItems = actionMenuItems|merge([
-    {hr: true},
     {
       icon: 'trash',
       label: 'Delete'|t('app'),
@@ -109,17 +112,22 @@
         data: {action: 'duplicate'},
       },
     },
-    {
-      icon: 'clone-dashed',
-      color: 'fuchsia',
-      label: 'Copy'|t('app'),
-      attributes: {
-        data: {action: 'copy'},
-      },
-    },
-    {hr: true},
   ]) %}
+{% endif %}
 
+{% set actionMenuItems = actionMenuItems|merge([
+  {
+    icon: 'clone-dashed',
+    color: 'fuchsia',
+    label: 'Copy'|t('app'),
+    attributes: {
+      data: {action: 'copy'},
+    },
+  },
+  {hr: true},
+]) %}
+
+{% if not staticEntries %}
   {% for entryType in entryTypes %}
     {% set actionMenuItems = actionMenuItems|push({
       icon: entryType.icon ?? 'plus',
@@ -130,20 +138,6 @@
       },
     }) %}
   {% endfor %}
-{% else %}
-  {# copy action should be available even for the "static" field - one entry type with min and max entries set to the same value #}
-  {% set actionMenuItems = actionMenuItems|merge([
-    {hr: true},
-    {
-      icon: 'clone-dashed',
-      color: 'fuchsia',
-      label: 'Copy'|t('app'),
-      attributes: {
-        data: {action: 'copy'},
-      },
-    },
-    {hr: true},
-  ]) %}
 {% endif %}
 
 {% namespace baseInputName %}
