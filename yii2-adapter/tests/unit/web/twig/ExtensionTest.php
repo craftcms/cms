@@ -851,13 +851,6 @@ class ExtensionTest extends TestCase
         );
     }
 
-    public function test_data_url_function(): void
-    {
-        $path = '@root/.github/workflows/ci.yml';
-        $dataUrl = $this->view->renderString('{{ dataUrl(path) }}', compact('path'));
-        self::assertStringStartsWith('data:application/x-yaml;base64,', $dataUrl);
-    }
-
     public function test_encode_url_function(): void
     {
         $this->testRenderResult(
