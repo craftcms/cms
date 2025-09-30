@@ -48,10 +48,11 @@ jobs:
           php-version: '8.4'
           coverage: none
 
+      - name: Set version
+        run: composer config version "6.x-dev"
+
       - name: Install composer dependencies
         uses: ramsey/composer-install@v3
-        env:
-          COMPOSER_ROOT_VERSION: 6.x-dev
 
       - name: Run PHPStan
         run: ./vendor/bin/phpstan --error-format=github
@@ -121,10 +122,11 @@ jobs:
           cp ./tests/.env.example.${{ matrix.db }} ./tests/.env
           sed -i 's/DB_PASSWORD=/DB_PASSWORD=mysecretpassword/' tests/.env
 
+      - name: Set version
+        run: composer config version "6.x-dev"
+
       - name: Install dependencies
         uses: ramsey/composer-install@v3
-        env:
-          COMPOSER_ROOT_VERSION: 6.x-dev
 
       - name: Execute CMS tests
         run: vendor/bin/pest
@@ -133,8 +135,6 @@ jobs:
         uses: ramsey/composer-install@v3
         with:
           working-directory: yii2-adapter
-        env:
-          COMPOSER_ROOT_VERSION: 6.x-dev
 
       - name: Execute Yii2 Adapter tests
         run: vendor/bin/pest --ci --configuration ./yii2-adapter/phpunit.xml.dist --test-directory ./yii2-adapter/tests-laravel

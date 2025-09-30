@@ -15,8 +15,6 @@ jobs:
   ci:
     name: ci
     uses: craftcms/.github/.github/workflows/ci.yml@v3
-    env:
-      COMPOSER_ROOT_VERSION: 6.x-dev
     with:
       php_version: '8.4'
       craft_version: '6'
