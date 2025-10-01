@@ -12,7 +12,7 @@ use craft\base\Actionable;
 use CraftCms\Cms\Field\Contracts\CrossSiteCopyableFieldInterface;
 use craft\base\ElementInterface;
 use CraftCms\Cms\Field\Contracts\PreviewableFieldInterface;
-use craft\base\ThumbableFieldInterface;
+use CraftCms\Cms\Field\Contracts\ThumbableFieldInterface;
 use craft\elements\conditions\users\UserCondition;
 use craft\elements\User;
 use craft\errors\FieldNotFoundException;

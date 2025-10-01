@@ -13,7 +13,7 @@ use craft\base\ElementInterface;
 use craft\base\Field;
 use CraftCms\Cms\Field\Contracts\InlineEditableFieldInterface;
 use CraftCms\Cms\Field\Contracts\MergeableFieldInterface;
-use craft\base\ThumbableFieldInterface;
+use CraftCms\Cms\Field\Contracts\ThumbableFieldInterface;
 use craft\elements\Entry;
 use craft\fields\data\IconData;
 use craft\gql\types\generators\IconDataType;
