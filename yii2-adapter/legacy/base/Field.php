@@ -41,6 +41,7 @@ use yii\base\NotSupportedException;
 use yii\db\ExpressionInterface;
 use yii\db\Schema;
 use CraftCms\Cms\Field\Contracts\PreviewableFieldInterface;
+use CraftCms\Cms\Field\Contracts\RelationalFieldInterface;
 
 /**
  * Field is the base class for classes representing fields in terms of objects.

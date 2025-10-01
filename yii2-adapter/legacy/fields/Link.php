@@ -14,7 +14,7 @@ use craft\base\Event;
 use craft\base\Field;
 use craft\base\InlineEditableFieldInterface;
 use craft\base\MergeableFieldInterface;
-use craft\base\RelationalFieldInterface;
+use CraftCms\Cms\Field\Contracts\RelationalFieldInterface;
 use craft\base\RelationalFieldTrait;
 use craft\elements\db\ElementQueryInterface;
 use craft\elements\Entry as EntryElement;
