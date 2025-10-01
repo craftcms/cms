@@ -108,7 +108,10 @@ class Asset extends ElementMutationResolver
         $asset = $this->populateElementWithData($asset, $arguments, $resolveInfo);
         $triggerReplaceEvents = (
             $asset->getScenario() === AssetElement::SCENARIO_REPLACE &&
-            $assetService->hasEventHandlers(Assets::EVENT_BEFORE_REPLACE_ASSET)
+            (
+                $assetService->hasEventHandlers(Assets::EVENT_BEFORE_REPLACE_ASSET) ||
+                $assetService->hasEventHandlers(Assets::EVENT_AFTER_REPLACE_ASSET)
+            )
         );
 
         if ($triggerReplaceEvents) {
