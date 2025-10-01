@@ -7,7 +7,7 @@
 
 namespace craft\console\controllers;
 
-use craft\base\MergeableFieldInterface;
+use CraftCms\Cms\Field\Contracts\MergeableFieldInterface;
 use craft\console\Controller;
 use craft\errors\InvalidFieldException;
 use craft\fields\BaseRelationField;

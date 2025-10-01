@@ -12,7 +12,7 @@ use CraftCms\Cms\Field\Contracts\CrossSiteCopyableFieldInterface;
 use craft\base\ElementInterface;
 use craft\base\Field;
 use CraftCms\Cms\Field\Contracts\InlineEditableFieldInterface;
-use craft\base\MergeableFieldInterface;
+use CraftCms\Cms\Field\Contracts\MergeableFieldInterface;
 use craft\elements\Entry;
 use craft\fields\data\ColorData;
 use craft\helpers\Cp;

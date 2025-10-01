@@ -11,7 +11,7 @@ use Craft;
 use craft\base\ElementInterface;
 use craft\base\Field;
 use CraftCms\Cms\Field\Contracts\InlineEditableFieldInterface;
-use craft\base\MergeableFieldInterface;
+use CraftCms\Cms\Field\Contracts\MergeableFieldInterface;
 use craft\base\SortableFieldInterface;
 use craft\elements\Entry;
 use craft\fields\conditions\NumberFieldConditionRule;

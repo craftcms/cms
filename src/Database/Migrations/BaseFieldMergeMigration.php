@@ -2,7 +2,7 @@
 
 namespace CraftCms\Cms\Database\Migrations;
 
-use craft\base\MergeableFieldInterface;
+use CraftCms\Cms\Field\Contracts\MergeableFieldInterface;
 use craft\fields\MissingField;
 use CraftCms\Cms\Database\Migration;
 use CraftCms\Cms\Field\Contracts\FieldInterface;

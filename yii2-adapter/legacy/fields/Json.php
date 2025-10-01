@@ -11,7 +11,7 @@ use Craft;
 use CraftCms\Cms\Field\Contracts\CrossSiteCopyableFieldInterface;
 use craft\base\ElementInterface;
 use craft\base\Field;
-use craft\base\MergeableFieldInterface;
+use CraftCms\Cms\Field\Contracts\MergeableFieldInterface;
 use craft\fields\data\JsonData;
 use craft\web\assets\codemirror\CodeMirrorAsset;
 use CraftCms\Cms\Support\Html;

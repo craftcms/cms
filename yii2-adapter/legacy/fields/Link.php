@@ -13,7 +13,7 @@ use craft\base\ElementInterface;
 use craft\base\Event;
 use craft\base\Field;
 use CraftCms\Cms\Field\Contracts\InlineEditableFieldInterface;
-use craft\base\MergeableFieldInterface;
+use CraftCms\Cms\Field\Contracts\MergeableFieldInterface;
 use CraftCms\Cms\Field\Contracts\RelationalFieldInterface;
 use craft\base\RelationalFieldTrait;
 use craft\elements\db\ElementQueryInterface;
