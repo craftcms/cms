@@ -13,7 +13,7 @@ use craft\base\Colorable;
 use craft\base\CpEditable;
 use craft\base\ElementInterface;
 use craft\base\Field;
-use craft\base\FieldInterface;
+use CraftCms\Cms\Field\Contracts\FieldInterface;
 use craft\base\FieldLayoutComponent;
 use craft\base\FieldLayoutElement;
 use craft\base\FieldLayoutProviderInterface;

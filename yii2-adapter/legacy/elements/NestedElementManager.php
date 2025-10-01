@@ -11,7 +11,7 @@ use Closure;
 use Craft;
 use craft\base\Element;
 use craft\base\ElementInterface;
-use craft\base\FieldInterface;
+use CraftCms\Cms\Field\Contracts\FieldInterface;
 use craft\base\NestedElementInterface;
 use craft\behaviors\DraftBehavior;
 use craft\elements\actions\ChangeSortOrder;

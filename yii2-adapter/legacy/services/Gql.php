@@ -10,7 +10,7 @@ namespace craft\services;
 use Craft;
 use craft\base\ElementContainerFieldInterface;
 use craft\base\ElementInterface as BaseElementInterface;
-use craft\base\FieldInterface;
+use CraftCms\Cms\Field\Contracts\FieldInterface;
 use craft\base\GqlInlineFragmentFieldInterface;
 use craft\behaviors\FieldLayoutBehavior;
 use craft\elements\User;

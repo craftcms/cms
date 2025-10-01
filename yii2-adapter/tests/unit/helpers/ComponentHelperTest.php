@@ -7,7 +7,7 @@
 
 namespace crafttests\unit\helpers;
 
-use craft\base\FieldInterface;
+use CraftCms\Cms\Field\Contracts\FieldInterface;
 use craft\base\FieldLayoutElement;
 use craft\errors\MissingComponentException;
 use craft\fieldlayoutelements\HorizontalRule;

@@ -9,7 +9,7 @@ namespace craft\fields;
 
 use craft\base\ElementInterface;
 use craft\base\Field;
-use craft\base\FieldInterface;
+use CraftCms\Cms\Field\Contracts\FieldInterface;
 use craft\base\MissingComponentInterface;
 use craft\base\MissingComponentTrait;
 

@@ -9,7 +9,7 @@ namespace craft\behaviors;
 
 use Craft;
 use craft\base\ElementInterface;
-use craft\base\FieldInterface;
+use CraftCms\Cms\Field\Contracts\FieldInterface;
 use craft\base\FieldLayoutProviderInterface;
 use craft\models\EntryType;
 use craft\models\FieldLayout;

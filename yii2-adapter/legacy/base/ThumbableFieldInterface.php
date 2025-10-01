@@ -7,6 +7,8 @@
 
 namespace craft\base;
 
+use CraftCms\Cms\Field\Contracts\FieldInterface;
+
 /**
  * ThumbableFieldInterface defines the common interface to be implemented by field classes
  * that can provide a thumbnail for element card views.

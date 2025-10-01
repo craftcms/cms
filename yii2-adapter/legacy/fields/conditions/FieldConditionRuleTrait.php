@@ -9,7 +9,7 @@ namespace craft\fields\conditions;
 
 use Craft;
 use craft\base\ElementInterface;
-use craft\base\FieldInterface;
+use CraftCms\Cms\Field\Contracts\FieldInterface;
 use craft\elements\conditions\ElementConditionInterface;
 use yii\base\InvalidConfigException;
 use yii\db\QueryInterface;

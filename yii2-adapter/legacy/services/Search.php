@@ -9,7 +9,7 @@ namespace craft\services;
 
 use Craft;
 use craft\base\ElementInterface;
-use craft\base\FieldInterface;
+use CraftCms\Cms\Field\Contracts\FieldInterface;
 use craft\base\MemoizableArray;
 use craft\db\Query;
 use craft\db\Table;

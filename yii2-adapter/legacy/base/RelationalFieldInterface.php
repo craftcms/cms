@@ -7,6 +7,8 @@
 
 namespace craft\base;
 
+use CraftCms\Cms\Field\Contracts\FieldInterface;
+
 /**
  * RelationalFieldInterface defines the common interface to be implemented by field classes
  * which can store relation data.

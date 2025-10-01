@@ -9,6 +9,7 @@ namespace craft\base;
 
 use craft\elements\User;
 use yii\base\Component as YiiComponent;
+use CraftCms\Cms\Field\Contracts\FieldInterface;
 
 /**
  * ElementContainerFieldInterface defines the common interface to be implemented by field classes

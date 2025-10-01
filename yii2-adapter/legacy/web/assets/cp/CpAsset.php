@@ -9,7 +9,7 @@ namespace craft\web\assets\cp;
 
 use Craft;
 use craft\base\ElementInterface;
-use craft\base\FieldInterface;
+use CraftCms\Cms\Field\Contracts\FieldInterface;
 use craft\elements\User;
 use craft\helpers\Assets;
 use craft\helpers\Cp;

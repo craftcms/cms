@@ -12,7 +12,7 @@ use Craft;
 use craft\base\Component;
 use craft\base\EagerLoadingFieldInterface;
 use craft\base\Element;
-use craft\base\FieldInterface;
+use CraftCms\Cms\Field\Contracts\FieldInterface;
 use craft\base\GqlInlineFragmentFieldInterface;
 use craft\elements\db\EagerLoadPlan;
 use craft\events\RegisterGqlEagerLoadableFields;

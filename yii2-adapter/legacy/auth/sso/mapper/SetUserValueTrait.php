@@ -8,7 +8,7 @@
 namespace craft\auth\sso\mapper;
 
 use Craft;
-use craft\base\FieldInterface;
+use CraftCms\Cms\Field\Contracts\FieldInterface;
 use craft\elements\User;
 use CraftCms\Cms\Support\Json;
 

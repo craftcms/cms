@@ -7,6 +7,8 @@
 
 namespace craft\base;
 
+use CraftCms\Cms\Field\Contracts\FieldInterface;
+
 /**
  * PreviewableFieldInterface defines the common interface to be implemented by field classes
  * that wish to be previewable in element table and card views.
