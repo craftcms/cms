@@ -22,6 +22,7 @@ use craft\fields\Users as UserField;
 use craft\gql\interfaces\elements\Asset as AssetInterface;
 use craft\helpers\Gql as GqlHelper;
 use craft\services\Gql;
+use CraftCms\Cms\Field\Contracts\EagerLoadingFieldInterface;
 use CraftCms\Cms\Field\Contracts\FieldInterface;
 use CraftCms\Cms\Field\Fields;
 use CraftCms\Cms\Support\Str;
@@ -39,7 +40,6 @@ use GraphQL\Language\AST\VariableNode;
 use GraphQL\Type\Definition\ResolveInfo;
 use GraphQL\Type\Definition\WrappingType;
 use yii\base\InvalidArgumentException;
-use CraftCms\Cms\Field\Contracts\EagerLoadingFieldInterface;
 
 /**
  * Class ElementQueryConditionBuilder.

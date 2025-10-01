@@ -8,7 +8,6 @@
 namespace craft\controllers;
 
 use Craft;
-use CraftCms\Cms\Field\Contracts\ElementContainerFieldInterface;
 use craft\base\FieldLayoutElement;
 use craft\elements\Entry;
 use craft\fieldlayoutelements\entries\EntryTitleField;
@@ -17,6 +16,7 @@ use craft\models\EntryType;
 use craft\models\Section;
 use craft\web\Controller;
 use CraftCms\Cms\Config\GeneralConfig;
+use CraftCms\Cms\Field\Contracts\ElementContainerFieldInterface;
 use CraftCms\Cms\Field\Contracts\FieldInterface;
 use CraftCms\Cms\Field\Fields;
 use CraftCms\Cms\Shared\Enums\Color;

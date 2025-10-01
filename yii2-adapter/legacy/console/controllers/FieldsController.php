@@ -7,7 +7,6 @@
 
 namespace craft\console\controllers;
 
-use CraftCms\Cms\Field\Contracts\MergeableFieldInterface;
 use craft\console\Controller;
 use craft\errors\InvalidFieldException;
 use craft\fields\BaseRelationField;
@@ -17,6 +16,7 @@ use CraftCms\Aliases\Aliases;
 use CraftCms\Cms\Database\Migrator;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Field\Contracts\FieldInterface;
+use CraftCms\Cms\Field\Contracts\MergeableFieldInterface;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\Support\Json;
 use Illuminate\Support\Collection;

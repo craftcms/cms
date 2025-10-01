@@ -8,6 +8,7 @@ use craft\base\ElementInterface;
  * EagerLoadingFieldInterface defines the common interface to be implemented by field classes that support eager-loading.
  *
  * @phpstan-import-type EagerLoadingMap from ElementInterface
+ *
  * @since 6.0.0
  */
 interface EagerLoadingFieldInterface
@@ -34,9 +35,10 @@ interface EagerLoadingFieldInterface
      * Alternatively, the method can return an array of multiple sets of mappings, each with their own nested `map`,
      * `elementType`, `criteria`, and `createElement` keys.
      *
-     * @param ElementInterface[] $sourceElements An array of the source elements
+     * @param  ElementInterface[]  $sourceElements  An array of the source elements
      * @return EagerLoadingMap|EagerLoadingMap[]|null|false The eager-loading element ID mappings, false if no mappings exist, or null if the result
-     * should be ignored.
+     *                                                      should be ignored.
+     *
      * @see ElementInterface::eagerLoadingMap()
      */
     public function getEagerLoadingMap(array $sourceElements): array|null|false;
@@ -44,8 +46,6 @@ interface EagerLoadingFieldInterface
     /**
      * Returns an array that lists the scopes this custom field allows when eager-loading or null if eager-loading
      * should not be allowed in the GraphQL context.
-     *
-     * @return array|null
      */
     public function getEagerLoadingGqlConditions(): ?array;
 }

@@ -4,9 +4,9 @@ namespace craft\fields\conditions;
 
 use craft\base\conditions\BaseMultiSelectConditionRule;
 use craft\fields\BaseOptionsField;
-use craft\fields\data\MultiOptionsFieldData;
-use craft\fields\data\OptionData;
-use craft\fields\data\SingleOptionFieldData;
+use CraftCms\Cms\Field\Data\MultiOptionsFieldData;
+use CraftCms\Cms\Field\Data\OptionData;
+use CraftCms\Cms\Field\Data\SingleOptionFieldData;
 use Illuminate\Support\Collection;
 use yii\base\InvalidConfigException;
 

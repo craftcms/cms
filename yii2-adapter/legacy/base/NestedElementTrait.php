@@ -11,11 +11,11 @@ namespace craft\base;
 use Craft;
 use craft\elements\db\EagerLoadPlan;
 use CraftCms\Cms\Database\Table;
+use CraftCms\Cms\Field\Contracts\ElementContainerFieldInterface;
 use CraftCms\Cms\Field\Fields;
 use Illuminate\Support\Facades\DB;
 use Tpetry\QueryExpressions\Language\Alias;
 use yii\base\InvalidConfigException;
-use CraftCms\Cms\Field\Contracts\ElementContainerFieldInterface;
 
 /**
  * NestedElementTrait

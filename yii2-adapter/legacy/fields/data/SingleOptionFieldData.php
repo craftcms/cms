@@ -7,36 +7,15 @@
 
 namespace craft\fields\data;
 
-/**
- * Single-select option field data class.
- *
- * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0.0
- */
-class SingleOptionFieldData extends OptionData
-{
+/** @phpstan-ignore-next-line **/
+if (false) {
     /**
-     * @var OptionData[]
+     * @since 3.0.0
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\Field\Data\SingleOptionFieldData} instead.
      */
-    private array $_options = [];
-
-    /**
-     * Returns the options.
-     *
-     * @return OptionData[]
-     */
-    public function getOptions(): array
+    class SingleOptionFieldData
     {
-        return $this->_options;
-    }
-
-    /**
-     * Sets the options.
-     *
-     * @param OptionData[] $options
-     */
-    public function setOptions(array $options): void
-    {
-        $this->_options = $options;
     }
 }
+
+class_alias(\CraftCms\Cms\Field\Data\SingleOptionFieldData::class, SingleOptionFieldData::class);

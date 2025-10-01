@@ -12,7 +12,6 @@ if (false) {
      */
     interface ElementContainerFieldInterface extends FieldInterface
     {
-
     }
 }
 

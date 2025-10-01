@@ -8,8 +8,8 @@
 namespace crafttests\unit\fields\data;
 
 use Codeception\Test\Unit;
-use craft\fields\data\ColorData;
 use craft\test\TestCase;
+use CraftCms\Cms\Field\Data\ColorData;
 
 /**
  * Unit tests for the ColorData class.

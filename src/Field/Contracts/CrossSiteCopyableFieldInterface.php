@@ -14,9 +14,6 @@ interface CrossSiteCopyableFieldInterface
 {
     /**
      * Copies the field’s value from one site to another.
-     *
-     * @param ElementInterface $from
-     * @param ElementInterface $to
      */
     public function copyCrossSiteValue(ElementInterface $from, ElementInterface $to): void;
 }

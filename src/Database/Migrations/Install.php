@@ -452,7 +452,7 @@ class Install extends Migration
             $table->char('uid', 36)->default('0');
         });
 
-        Schema::create(Table::FIELDS, function (Blueprint $table) {
+        Schema::create('fields', function (Blueprint $table) {
             $table->integer('id', true);
             $table->text('name');
             $table->string('handle', 64);

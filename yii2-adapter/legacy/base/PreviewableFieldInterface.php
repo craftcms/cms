@@ -17,7 +17,6 @@ if (false) {
      */
     interface PreviewableFieldInterface extends FieldInterface
     {
-
     }
 }
 

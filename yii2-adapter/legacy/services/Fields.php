@@ -8,7 +8,6 @@
 namespace craft\services;
 
 use Craft;
-use CraftCms\Cms\Field\Contracts\ElementContainerFieldInterface;
 use craft\base\ElementInterface;
 use craft\base\FieldLayoutElement;
 use craft\events\ApplyFieldSaveEvent;
@@ -17,6 +16,7 @@ use craft\events\FieldEvent;
 use craft\events\RegisterComponentTypesEvent;
 use craft\fields\BaseRelationField;
 use craft\models\FieldLayout;
+use CraftCms\Cms\Field\Contracts\ElementContainerFieldInterface;
 use CraftCms\Cms\Field\Contracts\FieldInterface;
 use CraftCms\Cms\Field\Events\ApplyingFieldDelete;
 use CraftCms\Cms\Field\Events\ApplyingFieldSave;

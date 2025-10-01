@@ -23,4 +23,3 @@ if (false) {
 }
 
 class_alias(\CraftCms\Cms\Field\Contracts\InlineEditableFieldInterface::class, InlineEditableFieldInterface::class);
-

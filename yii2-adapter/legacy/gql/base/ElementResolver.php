@@ -8,7 +8,6 @@
 namespace craft\gql\base;
 
 use Craft;
-use CraftCms\Cms\Field\Contracts\EagerLoadingFieldInterface;
 use craft\base\ElementInterface;
 use craft\base\GqlInlineFragmentFieldInterface;
 use craft\elements\db\ElementQuery;
@@ -17,6 +16,7 @@ use craft\gql\ArgumentManager;
 use craft\gql\ElementQueryConditionBuilder;
 use craft\helpers\Gql as GqlHelper;
 use CraftCms\Cms\Config\GeneralConfig;
+use CraftCms\Cms\Field\Contracts\EagerLoadingFieldInterface;
 use CraftCms\Cms\Field\Fields;
 use CraftCms\Cms\Support\Arr;
 use GraphQL\Type\Definition\ResolveInfo;

@@ -15,8 +15,8 @@ interface PreviewableFieldInterface extends FieldInterface
     /**
      * Returns the HTML that should be shown for this field in table and card views.
      *
-     * @param mixed $value The field’s value
-     * @param ElementInterface $element The element the field is associated with
+     * @param  mixed  $value  The field’s value
+     * @param  ElementInterface  $element  The element the field is associated with
      * @return string The HTML that should be shown for this field in table and card views
      */
     public function getPreviewHtml(mixed $value, ElementInterface $element): string;
@@ -24,10 +24,6 @@ interface PreviewableFieldInterface extends FieldInterface
     /**
      * Return the HTML that should be shown for the field in the card preview.
      * It can be used outside an element context, e.g. in a card view designer.
-     *
-     * @param mixed $value
-     * @param ElementInterface|null $element
-     * @return string
      */
     public function previewPlaceholderHtml(mixed $value, ?ElementInterface $element): string;
 }

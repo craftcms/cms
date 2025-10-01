@@ -17,7 +17,6 @@ if (false) {
      */
     interface MergeableFieldInterface extends FieldInterface
     {
-
     }
 }
 

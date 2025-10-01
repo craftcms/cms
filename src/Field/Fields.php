@@ -11,35 +11,6 @@ use craft\behaviors\CustomFieldBehavior;
 use craft\errors\MissingComponentException;
 use craft\fieldlayoutelements\BaseField;
 use craft\fieldlayoutelements\CustomField;
-use craft\fields\Addresses as AddressesField;
-use craft\fields\Assets as AssetsField;
-use craft\fields\BaseRelationField;
-use craft\fields\ButtonGroup;
-use craft\fields\Categories as CategoriesField;
-use craft\fields\Checkboxes;
-use craft\fields\Color;
-use craft\fields\ContentBlock;
-use craft\fields\Country;
-use craft\fields\Date;
-use craft\fields\Dropdown;
-use craft\fields\Email;
-use craft\fields\Entries as EntriesField;
-use craft\fields\Icon;
-use craft\fields\Json;
-use craft\fields\Lightswitch;
-use craft\fields\Link;
-use craft\fields\Matrix as MatrixField;
-use craft\fields\MissingField;
-use craft\fields\Money;
-use craft\fields\MultiSelect;
-use craft\fields\Number;
-use craft\fields\PlainText;
-use craft\fields\RadioButtons;
-use craft\fields\Range;
-use craft\fields\Table as TableField;
-use craft\fields\Tags as TagsField;
-use craft\fields\Time;
-use craft\fields\Users as UsersField;
 use craft\helpers\AdminTable;
 use craft\helpers\Component as ComponentHelper;
 use craft\helpers\Cp;
@@ -48,8 +19,12 @@ use craft\models\FieldLayout;
 use craft\records\FieldLayout as FieldLayoutRecord;
 use CraftCms\Cms\Database\Expressions\FixedOrderExpression;
 use CraftCms\Cms\Database\Table;
+use CraftCms\Cms\Field\Addresses as AddressesField;
+use CraftCms\Cms\Field\Assets as AssetsField;
+use CraftCms\Cms\Field\Categories as CategoriesField;
 use CraftCms\Cms\Field\Contracts\ElementContainerFieldInterface;
 use CraftCms\Cms\Field\Contracts\FieldInterface;
+use CraftCms\Cms\Field\Entries as EntriesField;
 use CraftCms\Cms\Field\Events\ApplyingFieldDelete;
 use CraftCms\Cms\Field\Events\ApplyingFieldSave;
 use CraftCms\Cms\Field\Events\DefineCompatibleFieldTypes;
@@ -63,6 +38,10 @@ use CraftCms\Cms\Field\Events\FieldSaved;
 use CraftCms\Cms\Field\Events\FieldSaving;
 use CraftCms\Cms\Field\Events\RegisterFieldTypes;
 use CraftCms\Cms\Field\Events\RegisterNestedEntryFieldTypes;
+use CraftCms\Cms\Field\Matrix as MatrixField;
+use CraftCms\Cms\Field\Table as TableField;
+use CraftCms\Cms\Field\Tags as TagsField;
+use CraftCms\Cms\Field\Users as UsersField;
 use CraftCms\Cms\ProjectConfig\Events\ConfigEvent;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\ProjectConfig\ProjectConfigHelper;
@@ -693,7 +672,7 @@ final class Fields
             return new Collection;
         }
 
-        return $this->getAllLayouts()->filter(fn(FieldLayout $layout) => ComponentHelper::validateComponentClass($layout->type, ElementInterface::class) &&
+        return $this->getAllLayouts()->filter(fn (FieldLayout $layout) => ComponentHelper::validateComponentClass($layout->type, ElementInterface::class) &&
             $layout->isFieldIncluded(fn (BaseField $layoutField) => (
                 $layoutField instanceof CustomField &&
                 $layoutField->getFieldUid() === $field->uid
@@ -1105,8 +1084,8 @@ final class Fields
     public function applyFieldSave(string $fieldUid, array $data, string $context): void
     {
         $fieldRecord = $this->_getFieldModel($fieldUid, true);
-        $isNewField = $fieldRecord->getIsNewRecord();
-        $oldSettings = $fieldRecord->getOldAttribute('settings');
+        $isNewField = ! $fieldRecord->exists;
+        $oldSettings = $fieldRecord->getOriginal('settings');
         $oldField = ! $isNewField ? $this->getFieldById($fieldRecord->id) : null;
 
         // For control panel save requests, make sure we have all the custom data already saved on the object.

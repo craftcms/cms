@@ -8,7 +8,7 @@
 namespace craft\gql\types\input;
 
 use craft\base\Field;
-use craft\fields\Matrix as MatrixField;
+use CraftCms\Cms\Field\Matrix as MatrixField;
 use craft\gql\GqlEntityRegistry;
 use craft\gql\types\QueryArgument;
 use CraftCms\Cms\Support\Arr;

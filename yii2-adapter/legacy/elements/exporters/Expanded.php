@@ -8,7 +8,6 @@
 namespace craft\elements\exporters;
 
 use Craft;
-use CraftCms\Cms\Field\Contracts\EagerLoadingFieldInterface;
 use craft\base\ElementExporter;
 use craft\base\ElementInterface;
 use craft\elements\db\ElementQuery;
@@ -16,6 +15,7 @@ use craft\elements\db\ElementQueryInterface;
 use craft\helpers\Component;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\Db;
+use CraftCms\Cms\Field\Contracts\EagerLoadingFieldInterface;
 use CraftCms\Cms\Field\Fields;
 
 /**

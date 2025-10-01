@@ -8,7 +8,6 @@
 namespace craft\console\controllers;
 
 use Craft;
-use CraftCms\Cms\Field\Contracts\ElementContainerFieldInterface;
 use craft\base\FieldLayoutElement;
 use craft\console\Controller;
 use craft\elements\Entry;
@@ -18,6 +17,7 @@ use craft\models\FieldLayoutTab;
 use craft\models\Section;
 use CraftCms\Aliases\Aliases;
 use CraftCms\Cms\Database\Migrator;
+use CraftCms\Cms\Field\Contracts\ElementContainerFieldInterface;
 use CraftCms\Cms\Field\Contracts\FieldInterface;
 use CraftCms\Cms\Field\Fields;
 use CraftCms\Cms\Support\Arr;
