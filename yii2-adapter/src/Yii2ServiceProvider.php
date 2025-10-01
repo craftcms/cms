@@ -6,6 +6,7 @@ use craft\console\controllers\HelpController;
 use craft\events\EditionChangeEvent;
 use craft\services\Addresses;
 use craft\services\Dashboard;
+use craft\services\Fields;
 use craft\services\Plugins as LegacyPlugins;
 use craft\services\ProjectConfig;
 use craft\services\SystemMessages;
@@ -303,6 +304,7 @@ class Yii2ServiceProvider extends ServiceProvider
          * Services
          */
         Addresses::registerEvents();
+        Fields::registerEvents();
         Utilities::registerEvents();
         Dashboard::registerEvents();
         LegacyPlugins::registerEvents();

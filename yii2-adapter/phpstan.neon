@@ -60,4 +60,3 @@ parameters:
         - vendor/craftcms/cms/src/Database/Migrations
     configDirectories:
         - tests
-        - tests

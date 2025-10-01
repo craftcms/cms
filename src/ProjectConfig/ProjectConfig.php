@@ -3,7 +3,6 @@
 namespace CraftCms\Cms\ProjectConfig;
 
 use Craft;
-use craft\base\FieldInterface;
 use craft\base\FsInterface;
 use craft\elements\Address;
 use craft\elements\GlobalSet;
@@ -22,6 +21,8 @@ use craft\models\Volume;
 use craft\services\ElementSources;
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Database\Table;
+use CraftCms\Cms\Field\Contracts\FieldInterface;
+use CraftCms\Cms\Field\Fields;
 use CraftCms\Cms\Plugin\Plugins;
 use CraftCms\Cms\ProjectConfig\Data\ProjectConfigData;
 use CraftCms\Cms\ProjectConfig\Data\ReadOnlyProjectConfigData;
@@ -1820,9 +1821,10 @@ final class ProjectConfig
      */
     private function _getFieldData(): array
     {
-        $fieldsService = Craft::$app->getFields();
+        $fieldsService = app(Fields::class);
 
-        return collect($fieldsService->getAllFields('global'))
+        return $fieldsService
+            ->getAllFields('global')
             ->mapWithKeys(fn (FieldInterface $field) => [$field->uid => $fieldsService->createFieldConfig($field)])
             ->all();
     }

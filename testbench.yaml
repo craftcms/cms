@@ -1,4 +1,5 @@
 providers:
+  - Laravel\Tinker\TinkerServiceProvider
   - CraftCms\Aliases\AliasesServiceProvider
   - CraftCms\DependencyAwareCache\CacheServiceProvider
   - CraftCms\Cms\Providers\CraftServiceProvider
