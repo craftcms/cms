@@ -48,7 +48,7 @@ trait SiteFilterTrait
     private function getSiteId(int|string|Site $value): int
     {
         if (is_string($value)) {
-            $site = Craft::$app->getSites()->getSiteByHandle($value);
+            $site = Craft::$app->getSites()->getSiteByHandle($value, true);
 
             if ($site === null) {
                 throw new InvalidArgumentException("Invalid site handle: $value");
