@@ -9,7 +9,7 @@ namespace craft\fields;
 
 use Craft;
 use craft\base\ElementInterface;
-use craft\base\SortableFieldInterface;
+use CraftCms\Cms\Field\Contracts\SortableFieldInterface;
 use craft\fields\data\SingleOptionFieldData;
 
 /**

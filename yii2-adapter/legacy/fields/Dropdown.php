@@ -10,7 +10,7 @@ namespace craft\fields;
 use Craft;
 use craft\base\ElementInterface;
 use CraftCms\Cms\Field\Contracts\InlineEditableFieldInterface;
-use craft\base\SortableFieldInterface;
+use CraftCms\Cms\Field\Contracts\SortableFieldInterface;
 use craft\fields\data\MultiOptionsFieldData;
 use craft\fields\data\OptionData;
 use craft\fields\data\SingleOptionFieldData;

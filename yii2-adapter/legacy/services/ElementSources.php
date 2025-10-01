@@ -11,7 +11,7 @@ use Craft;
 use craft\base\conditions\ConditionInterface;
 use craft\base\ElementInterface;
 use CraftCms\Cms\Field\Contracts\PreviewableFieldInterface;
-use craft\base\SortableFieldInterface;
+use CraftCms\Cms\Field\Contracts\SortableFieldInterface;
 use craft\db\CoalesceColumnsExpression;
 use craft\elements\conditions\ElementConditionInterface;
 use craft\errors\FieldNotFoundException;

@@ -12,7 +12,7 @@ use craft\base\ElementInterface;
 use craft\base\Field;
 use CraftCms\Cms\Field\Contracts\InlineEditableFieldInterface;
 use CraftCms\Cms\Field\Contracts\MergeableFieldInterface;
-use craft\base\SortableFieldInterface;
+use CraftCms\Cms\Field\Contracts\SortableFieldInterface;
 use craft\elements\Entry;
 use craft\fields\conditions\NumberFieldConditionRule;
 use craft\gql\types\Number as NumberType;
