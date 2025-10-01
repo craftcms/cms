@@ -7,6 +7,7 @@
 
 ### Accessibility
 - Improved the accessibility of the Orientation setting within the Image Editor’s crop tool. ([#17690](https://github.com/craftcms/cms/pull/17690))
+- The Image Editor’s focal point tool is now keyboard accessible. ([#17880](https://github.com/craftcms/cms/pull/17880))
 
 ### Administration
 - Added the “View user” GraphQL schema option for Craft Solo. ([#17863](https://github.com/craftcms/cms/pull/17863))
