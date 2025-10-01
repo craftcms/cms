@@ -8,7 +8,7 @@
 namespace craft\gql\mutations;
 
 use Craft;
-use craft\base\ElementContainerFieldInterface;
+use CraftCms\Cms\Field\Contracts\ElementContainerFieldInterface;
 use craft\gql\arguments\mutations\Draft as DraftMutationArguments;
 use craft\gql\arguments\mutations\Entry as EntryMutationArguments;
 use craft\gql\arguments\mutations\NestedEntry;

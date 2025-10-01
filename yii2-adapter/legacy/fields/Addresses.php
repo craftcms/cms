@@ -10,7 +10,7 @@ namespace craft\fields;
 use Craft;
 use craft\base\EagerLoadingFieldInterface;
 use craft\base\Element;
-use craft\base\ElementContainerFieldInterface;
+use CraftCms\Cms\Field\Contracts\ElementContainerFieldInterface;
 use craft\base\ElementInterface;
 use craft\base\Field;
 use craft\base\MergeableFieldInterface;

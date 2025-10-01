@@ -8,7 +8,7 @@
 namespace craft\services;
 
 use Craft;
-use craft\base\ElementContainerFieldInterface;
+use CraftCms\Cms\Field\Contracts\ElementContainerFieldInterface;
 use craft\base\ElementInterface;
 use craft\base\FieldLayoutElement;
 use craft\events\ApplyFieldSaveEvent;

@@ -9,7 +9,7 @@ namespace craft\services;
 
 use Craft;
 use craft\base\Element;
-use craft\base\ElementContainerFieldInterface;
+use CraftCms\Cms\Field\Contracts\ElementContainerFieldInterface;
 use craft\base\Field;
 use craft\base\MemoizableArray;
 use craft\elements\Entry;

@@ -8,7 +8,7 @@
 namespace craft\gql\types\generators;
 
 use Craft;
-use craft\base\ElementContainerFieldInterface;
+use CraftCms\Cms\Field\Contracts\ElementContainerFieldInterface;
 use craft\elements\Entry as EntryElement;
 use craft\gql\base\Generator;
 use craft\gql\base\GeneratorInterface;

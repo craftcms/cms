@@ -8,7 +8,7 @@
 namespace craft\helpers;
 
 use Craft;
-use craft\base\ElementContainerFieldInterface;
+use CraftCms\Cms\Field\Contracts\ElementContainerFieldInterface;
 use craft\base\ElementInterface;
 use craft\errors\GqlException;
 use craft\gql\base\Directive;

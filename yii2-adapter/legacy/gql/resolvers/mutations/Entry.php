@@ -11,7 +11,7 @@ namespace craft\gql\resolvers\mutations;
 
 use Craft;
 use craft\base\Element;
-use craft\base\ElementContainerFieldInterface;
+use CraftCms\Cms\Field\Contracts\ElementContainerFieldInterface;
 use craft\behaviors\DraftBehavior;
 use craft\elements\db\EntryQuery;
 use craft\elements\Entry as EntryElement;

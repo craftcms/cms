@@ -8,6 +8,7 @@
 namespace craft\base;
 
 use yii\base\InvalidConfigException;
+use CraftCms\Cms\Field\Contracts\ElementContainerFieldInterface;
 
 /**
  * NestedElementInterface defines the common interface to be implemented by elements that can be

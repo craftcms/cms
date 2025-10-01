@@ -2,6 +2,7 @@
 
 namespace CraftCms\Cms\Field\Events;
 
+use CraftCms\Cms\Field\Contracts\ElementContainerFieldInterface;
 use Illuminate\Support\Collection;
 
 /**
@@ -14,7 +15,7 @@ use Illuminate\Support\Collection;
 final class RegisterNestedEntryFieldTypes
 {
     public function __construct(
-        /** @var Collection<class-string<\craft\base\ElementContainerFieldInterface>> */
+        /** @var Collection<class-string<ElementContainerFieldInterface>> */
         public Collection $types,
     ) {}
 }

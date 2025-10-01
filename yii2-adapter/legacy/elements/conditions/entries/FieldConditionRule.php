@@ -4,7 +4,7 @@ namespace craft\elements\conditions\entries;
 
 use Craft;
 use craft\base\conditions\BaseMultiSelectConditionRule;
-use craft\base\ElementContainerFieldInterface;
+use CraftCms\Cms\Field\Contracts\ElementContainerFieldInterface;
 use craft\base\ElementInterface;
 use craft\elements\conditions\ElementConditionRuleInterface;
 use craft\elements\db\ElementQueryInterface;

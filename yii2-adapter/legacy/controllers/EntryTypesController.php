@@ -8,7 +8,7 @@
 namespace craft\controllers;
 
 use Craft;
-use craft\base\ElementContainerFieldInterface;
+use CraftCms\Cms\Field\Contracts\ElementContainerFieldInterface;
 use craft\base\FieldLayoutElement;
 use craft\elements\Entry;
 use craft\fieldlayoutelements\entries\EntryTitleField;

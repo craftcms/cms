@@ -13,7 +13,7 @@ use craft\base\Chippable;
 use craft\base\Colorable;
 use craft\base\CpEditable;
 use craft\base\Describable;
-use craft\base\ElementContainerFieldInterface;
+use CraftCms\Cms\Field\Contracts\ElementContainerFieldInterface;
 use craft\base\Field;
 use craft\base\FieldLayoutProviderInterface;
 use craft\base\GqlInlineFragmentInterface;

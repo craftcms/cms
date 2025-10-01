@@ -48,6 +48,7 @@ use craft\models\FieldLayout;
 use craft\records\FieldLayout as FieldLayoutRecord;
 use CraftCms\Cms\Database\Expressions\FixedOrderExpression;
 use CraftCms\Cms\Database\Table;
+use CraftCms\Cms\Field\Contracts\ElementContainerFieldInterface;
 use CraftCms\Cms\Field\Contracts\FieldInterface;
 use CraftCms\Cms\Field\Events\ApplyingFieldDelete;
 use CraftCms\Cms\Field\Events\ApplyingFieldSave;
@@ -239,7 +240,7 @@ final class Fields
     /**
      * Returns all field types which manage nested entries.
      *
-     * @return Collection<class-string<\craft\base\ElementContainerFieldInterface>> The field type classes which manage nested entries
+     * @return Collection<class-string<ElementContainerFieldInterface>> The field type classes which manage nested entries
      */
     public function getNestedEntryFieldTypes(): Collection
     {
