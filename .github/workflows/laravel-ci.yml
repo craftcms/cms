@@ -131,8 +131,7 @@ jobs:
 
       - name: Set version
         run: composer config version "6.x-dev"
-        with:
-          working-directory: yii2-adapter
+        working-directory: yii2-adapter
 
       - name: Install yii2-adapter dependencies
         uses: ramsey/composer-install@v3
