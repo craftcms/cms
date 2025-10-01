@@ -26,6 +26,7 @@ use craft\validators\UniqueValidator;
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Enums\AttributeStatus;
+use CraftCms\Cms\Field\Fields;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Str;
 use DateTime;
@@ -254,7 +255,7 @@ abstract class Field extends SavableComponent implements FieldInterface, Iconic,
     public static function get(int|string $id): ?static
     {
         /** @phpstan-ignore-next-line */
-        return Craft::$app->getFields()->getFieldById($id);
+        return app(Fields::class)->getFieldById($id);
     }
 
     /**
@@ -930,7 +931,7 @@ JS, [
     public function canMergeInto(FieldInterface $persistingField, ?string &$reason): bool
     {
         // Go with whether the DB types are compatible by default
-        return Craft::$app->getFields()->areFieldTypesCompatible(static::class, $persistingField::class);
+        return app(Fields::class)->areFieldTypesCompatible(static::class, $persistingField::class);
     }
 
     /**
@@ -940,7 +941,7 @@ JS, [
     public function canMergeFrom(FieldInterface $outgoingField, ?string &$reason): bool
     {
         // Go with whether the DB types are compatible by default
-        return Craft::$app->getFields()->areFieldTypesCompatible(static::class, $outgoingField::class);
+        return app(Fields::class)->areFieldTypesCompatible(static::class, $outgoingField::class);
     }
 
     /**
@@ -1211,7 +1212,7 @@ JS, [
     {
         // Set the field context if it’s not set
         if (!$this->context) {
-            $this->context = Craft::$app->getFields()->fieldContext;
+            $this->context = app(Fields::class)->fieldContext;
         }
 
         return parent::beforeSave($isNew);

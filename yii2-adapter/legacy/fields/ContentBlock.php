@@ -34,6 +34,7 @@ use craft\helpers\Gql;
 use craft\models\FieldLayout;
 use craft\web\assets\cp\CpAsset;
 use CraftCms\Cms\Element\Enums\PropagationMethod;
+use CraftCms\Cms\Field\Fields;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Json as JsonHelper;
 use DateTime;
@@ -238,7 +239,7 @@ class ContentBlock extends Field implements
         }
 
         if (is_array($layout)) {
-            $layout = Craft::$app->getFields()->createLayout($layout);
+            $layout = app(Fields::class)->createLayout($layout);
             $layout->type = ContentBlockElement::class;
 
             // Make sure all the elements have a dateAdded value set
@@ -261,7 +262,7 @@ class ContentBlock extends Field implements
     public function setFieldLayouts(array $layouts): void
     {
         $config = reset($layouts);
-        $layout = Craft::$app->getFields()->createLayout($config ?: []);
+        $layout = app(Fields::class)->createLayout($config ?: []);
         $layout->uid = array_key_first($layouts);
         $layout->type = ContentBlockElement::class;
 
@@ -304,7 +305,7 @@ class ContentBlock extends Field implements
      */
     public function setFieldLayoutUid(string $uid): void
     {
-        $layout = Craft::$app->getFields()->getLayoutByUid($uid);
+        $layout = app(Fields::class)->getLayoutByUid($uid);
         if (!$layout) {
             throw new InvalidArgumentException("Invalid field layout UUID: $uid");
         }
@@ -839,7 +840,7 @@ JS, [
      */
     public function afterSave(bool $isNew): void
     {
-        Craft::$app->getFields()->saveLayout($this->getFieldLayout(), false);
+        app(Fields::class)->saveLayout($this->getFieldLayout(), false);
         parent::afterSave($isNew);
     }
 

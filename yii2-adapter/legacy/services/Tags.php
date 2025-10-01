@@ -17,6 +17,7 @@ use craft\helpers\Db;
 use craft\models\FieldLayout;
 use craft\models\TagGroup;
 use craft\records\TagGroup as TagGroupRecord;
+use CraftCms\Cms\Field\Fields;
 use CraftCms\Cms\ProjectConfig\Events\ConfigEvent;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\ProjectConfig\ProjectConfigHelper;
@@ -266,11 +267,11 @@ class Tags extends Component
                 $layout->id = $tagGroupRecord->fieldLayoutId;
                 $layout->type = Tag::class;
                 $layout->uid = key($data['fieldLayouts']);
-                Craft::$app->getFields()->saveLayout($layout, false);
+                app(Fields::class)->saveLayout($layout, false);
                 $tagGroupRecord->fieldLayoutId = $layout->id;
             } elseif ($tagGroupRecord->fieldLayoutId) {
                 // Delete the field layout
-                Craft::$app->getFields()->deleteLayoutById($tagGroupRecord->fieldLayoutId);
+                app(Fields::class)->deleteLayoutById($tagGroupRecord->fieldLayoutId);
                 $tagGroupRecord->fieldLayoutId = null;
             }
 
@@ -421,7 +422,7 @@ SQL)->execute();
 
             // Delete the field layout
             if ($tagGroupRecord->fieldLayoutId) {
-                Craft::$app->getFields()->deleteLayoutById($tagGroupRecord->fieldLayoutId);
+                app(Fields::class)->deleteLayoutById($tagGroupRecord->fieldLayoutId);
             }
 
             // Delete the tag group

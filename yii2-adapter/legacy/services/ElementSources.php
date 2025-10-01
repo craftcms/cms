@@ -21,6 +21,7 @@ use craft\events\DefineSourceTableAttributesEvent;
 use craft\fieldlayoutelements\CustomField;
 use craft\helpers\Cp;
 use craft\models\FieldLayout;
+use CraftCms\Cms\Field\Fields;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Str;
@@ -303,7 +304,7 @@ class ElementSources extends Component
             if (str_starts_with($sourceKey, 'custom:')) {
                 $source = $this->_sourceConfig($elementType, $sourceKey);
                 if (empty($source['condition'])) {
-                    return Craft::$app->getFields()->getLayoutsByType($elementType);
+                    return app(Fields::class)->getLayoutsByType($elementType);
                 }
                 /** @var ElementConditionInterface $condition */
                 $condition = Craft::$app->getConditions()->createCondition($source['condition']);

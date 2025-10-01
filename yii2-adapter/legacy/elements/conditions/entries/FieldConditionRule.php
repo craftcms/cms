@@ -10,6 +10,7 @@ use craft\elements\conditions\ElementConditionRuleInterface;
 use craft\elements\db\ElementQueryInterface;
 use craft\elements\db\EntryQuery;
 use craft\elements\Entry;
+use CraftCms\Cms\Field\Fields;
 use Illuminate\Support\Collection;
 
 /**
@@ -63,7 +64,7 @@ class FieldConditionRule extends BaseMultiSelectConditionRule implements Element
         } elseif ($this->operator === self::OPERATOR_EMPTY) {
             $query->field(false);
         } else {
-            $fieldsService = Craft::$app->getFields();
+            $fieldsService = app(Fields::class);
             $query->fieldId($this->paramValue(fn($uid) => $fieldsService->getFieldByUid($uid)->id ?? null));
         }
     }
@@ -86,8 +87,9 @@ class FieldConditionRule extends BaseMultiSelectConditionRule implements Element
      */
     private function nestedEntryFields(): Collection
     {
-        $fieldsService = Craft::$app->getFields();
-        return Collection::make($fieldsService->getNestedEntryFieldTypes())
+        $fieldsService = app(Fields::class);
+
+        return $fieldsService->getNestedEntryFieldTypes()
             ->map(fn(string $class) => $fieldsService->getFieldsByType($class))
             ->flatten(1);
     }

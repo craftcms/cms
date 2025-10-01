@@ -28,6 +28,7 @@ use craft\records\EntryType as EntryTypeRecord;
 use craft\validators\HandleValidator;
 use craft\validators\UniqueValidator;
 use CraftCms\Cms\Config\GeneralConfig;
+use CraftCms\Cms\Field\Fields;
 use CraftCms\Cms\Shared\Enums\Color;
 
 /**
@@ -524,7 +525,7 @@ JS, [
         }
 
         // Fields
-        $fieldsService = Craft::$app->getFields();
+        $fieldsService = app(Fields::class);
         foreach ($fieldsService->getNestedEntryFieldTypes() as $type) {
             /** @var ElementContainerFieldInterface[] $fields */
             $fields = $fieldsService->getFieldsByType($type);

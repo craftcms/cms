@@ -15,6 +15,7 @@ use craft\db\Table;
 use craft\fields\BaseRelationField;
 use craft\fields\Matrix;
 use craft\models\Site;
+use CraftCms\Cms\Field\Fields;
 use CraftCms\Cms\Support\Arr;
 use Illuminate\Support\Collection;
 use yii\base\BaseObject;
@@ -516,7 +517,7 @@ class ElementRelationParamParser extends BaseObject
     {
         if (is_numeric($field)) {
             $fieldHandleParts = null;
-            return Craft::$app->getFields()->getFieldById($field);
+            return app(Fields::class)->getFieldById($field);
         }
 
         $fieldHandleParts = explode('.', $field);
@@ -526,6 +527,6 @@ class ElementRelationParamParser extends BaseObject
             return $this->fields[$fieldHandle] ?? null;
         }
 
-        return Craft::$app->getFields()->getFieldByHandle($fieldHandle);
+        return app(Fields::class)->getFieldByHandle($fieldHandle);
     }
 }

@@ -19,6 +19,7 @@ use craft\elements\User;
 use craft\errors\FieldNotFoundException;
 use craft\helpers\Cp;
 use craft\helpers\Inflector;
+use CraftCms\Cms\Field\Fields;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Str;
@@ -237,7 +238,7 @@ class CustomField extends BaseField
             if (!isset($this->_fieldUid)) {
                 throw new InvalidConfigException('No field UUID set.');
             }
-            if (($field = Craft::$app->getFields()->getFieldByUid($this->_fieldUid)) === null) {
+            if (($field = app(Fields::class)->getFieldByUid($this->_fieldUid)) === null) {
                 throw new FieldNotFoundException($this->_fieldUid);
             }
             $this->setField($field);

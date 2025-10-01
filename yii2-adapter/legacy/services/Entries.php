@@ -39,6 +39,7 @@ use craft\records\Section as SectionRecord;
 use craft\records\Section_SiteSettings as Section_SiteSettingsRecord;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Enums\PropagationMethod;
+use CraftCms\Cms\Field\Fields;
 use CraftCms\Cms\ProjectConfig\Events\ConfigEvent;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\ProjectConfig\ProjectConfigHelper;
@@ -1644,11 +1645,11 @@ class Entries extends Component
                 $layout->id = $entryTypeRecord->fieldLayoutId;
                 $layout->type = Entry::class;
                 $layout->uid = key($data['fieldLayouts']);
-                Craft::$app->getFields()->saveLayout($layout, false);
+                app(Fields::class)->saveLayout($layout, false);
                 $entryTypeRecord->fieldLayoutId = $layout->id;
             } elseif ($entryTypeRecord->fieldLayoutId) {
                 // Delete the field layout
-                Craft::$app->getFields()->deleteLayoutById($entryTypeRecord->fieldLayoutId);
+                app(Fields::class)->deleteLayoutById($entryTypeRecord->fieldLayoutId);
                 $entryTypeRecord->fieldLayoutId = null;
             }
 
@@ -1851,7 +1852,7 @@ class Entries extends Component
 
             // Delete the field layout
             if ($entryTypeRecord->fieldLayoutId) {
-                Craft::$app->getFields()->deleteLayoutById($entryTypeRecord->fieldLayoutId);
+                app(Fields::class)->deleteLayoutById($entryTypeRecord->fieldLayoutId);
             }
 
             // Delete the entry type.
@@ -1961,7 +1962,7 @@ class Entries extends Component
         }
 
         // Fields
-        $fieldsService = Craft::$app->getFields();
+        $fieldsService = app(Fields::class);
         foreach ($fieldsService->getNestedEntryFieldTypes() as $type) {
             /** @var ElementContainerFieldInterface[] $fields */
             $fields = $fieldsService->getFieldsByType($type);

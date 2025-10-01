@@ -6,6 +6,7 @@ use Craft;
 use craft\behaviors\CustomFieldBehavior;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\FileHelper;
+use CraftCms\Cms\Field\Fields;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Diff;
 use CraftCms\Cms\Support\Json as JsonHelper;
@@ -121,7 +122,7 @@ final class ProjectConfigHelper
         // is up-to-date with any overridden field handles in field layouts.
         // (This could not be the case if any Content Block fields define a field layout that reference
         // fields which weren’t processed yet at the time their layout was saved, for example.)
-        foreach (Craft::$app->getFields()->getAllLayouts() as $layout) {
+        foreach (app(Fields::class)->getAllLayouts() as $layout) {
             foreach ($layout->getCustomFieldElements() as $layoutElement) {
                 if (isset($layoutElement->handle)) {
                     CustomFieldBehavior::$fieldHandles[$layoutElement->handle] = true;

@@ -42,6 +42,7 @@ use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Element\Enums\AttributeStatus;
 use CraftCms\Cms\Element\Enums\MenuItemType;
+use CraftCms\Cms\Field\Fields;
 use CraftCms\Cms\License\License;
 use CraftCms\Cms\Plugin\Plugins;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
@@ -3274,7 +3275,7 @@ JS;
         }
 
         if ($element instanceof CustomField) {
-            $originalField = Craft::$app->getFields()->getFieldByUid($element->getFieldUid());
+            $originalField = app(Fields::class)->getFieldByUid($element->getFieldUid());
             if ($originalField) {
                 $attributes['data']['default-handle'] = $originalField->handle;
             }

@@ -17,6 +17,7 @@ use craft\gql\base\SingleGeneratorInterface;
 use craft\gql\GqlEntityRegistry;
 use craft\gql\interfaces\elements\ContentBlock as ContentBlockInterface;
 use craft\gql\types\elements\ContentBlock as ContentBlockType;
+use CraftCms\Cms\Field\Fields;
 
 /**
  * Class ContentBlock
@@ -34,7 +35,7 @@ class ContentBlock extends Generator implements GeneratorInterface, SingleGenera
         if ($context instanceof ContentBlockField) {
             $fields = [$context];
         } else {
-            $fields = Craft::$app->getFields()->getFieldsByType(ContentBlockField::class);
+            $fields = app(Fields::class)->getFieldsByType(ContentBlockField::class);
         }
 
         $gqlTypes = [];

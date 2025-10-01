@@ -2,11 +2,10 @@
 
 namespace CraftCms\Cms\Plugin\Concerns;
 
-use craft\base\Event as YiiEvent;
-use craft\base\FieldInterface;
-use craft\events\RegisterComponentTypesEvent;
-use craft\services\Fields;
+use CraftCms\Cms\Field\Contracts\FieldInterface;
+use CraftCms\Cms\Field\Events\RegisterFieldTypes;
 use CraftCms\Cms\Plugin\Plugin;
+use Illuminate\Support\Facades\Event;
 
 /**
  * @mixin Plugin
@@ -30,13 +29,8 @@ trait HasFieldtypes
             return;
         }
 
-        /** @todo: Laravelize */
-        YiiEvent::on(
-            Fields::class,
-            Fields::EVENT_REGISTER_FIELD_TYPES,
-            function (RegisterComponentTypesEvent $event) {
-                array_push($event->types, ...$this->fieldTypes);
-            }
-        );
+        Event::listen(RegisterFieldTypes::class, function (RegisterFieldTypes $event) {
+            $event->types->push(...$this->fieldTypes);
+        });
     }
 }

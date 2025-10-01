@@ -10,6 +10,7 @@ use craft\helpers\App;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\FileHelper;
 use CraftCms\Cms\Config\GeneralConfig;
+use CraftCms\Cms\Field\Fields;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Env;
 use CraftCms\Cms\Support\Str;
@@ -224,7 +225,7 @@ class Craft extends Yii
             return;
         }
 
-        $fieldsService = Craft::$app->getFields();
+        $fieldsService = app(Fields::class);
         $storedFieldVersion = $fieldsService->getFieldVersion();
         $compiledClassesPath = static::$app->getPath()->getCompiledClassesPath();
         $fieldVersionExists = $storedFieldVersion !== null;
@@ -387,7 +388,7 @@ EOD;
      */
     private static function _fields(): array
     {
-        $fieldsService = static::$app->getFields();
+        $fieldsService = app(Fields::class);
         /** @var FieldInterface[] $fields */
         $fields = $fieldsService->getAllFields(false);
         $generatedFieldHandles = [];

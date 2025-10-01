@@ -1844,7 +1844,7 @@ final class ProjectConfig
      */
     private function _getUserData(array $data): array
     {
-        $fieldLayout = Craft::$app->getFields()->getLayoutByType(User::class, false);
+        $fieldLayout = app(Fields::class)->getLayoutByType(User::class, false);
         $fieldLayoutConfig = $fieldLayout?->getConfig();
 
         if ($fieldLayoutConfig) {
@@ -1870,7 +1870,7 @@ final class ProjectConfig
     private function _getAddressesData(): array
     {
         $data = [];
-        $fieldLayout = Craft::$app->getFields()->getLayoutByType(Address::class, false);
+        $fieldLayout = app(Fields::class)->getLayoutByType(Address::class, false);
         $fieldLayoutConfig = $fieldLayout?->getConfig();
 
         if ($fieldLayoutConfig) {

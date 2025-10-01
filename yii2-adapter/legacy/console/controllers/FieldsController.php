@@ -8,14 +8,13 @@
 namespace craft\console\controllers;
 
 use Craft;
-use craft\base\FieldInterface;
+use CraftCms\Cms\Field\Contracts\FieldInterface;
 use craft\base\MergeableFieldInterface;
 use craft\console\Controller;
 use craft\errors\InvalidFieldException;
 use craft\fields\BaseRelationField;
 use craft\helpers\Console;
 use craft\models\FieldLayout;
-use craft\services\Fields;
 use CraftCms\Aliases\Aliases;
 use CraftCms\Cms\Database\Migrator;
 use CraftCms\Cms\Database\Table;
@@ -47,7 +46,7 @@ class FieldsController extends Controller
             return ExitCode::UNSPECIFIED_ERROR;
         }
 
-        $fieldsService = Craft::$app->getFields();
+        $fieldsService = app(Fields::class);
 
         $handles = Collection::make($handles)
             ->map(function(string $handle) use ($fieldsService) {
@@ -222,10 +221,10 @@ MD, $fields->keys()->join(',')));
             return ExitCode::UNSPECIFIED_ERROR;
         }
 
-        $fieldsService = Craft::$app->getFields();
+        $fieldsService = app(\CraftCms\Cms\Field\Fields::class);
 
         /** @var Collection<Collection<FieldInterface>> $groups */
-        $groups = Collection::make($fieldsService->getAllFields())
+        $groups = $fieldsService->getAllFields()
             ->filter(fn($field) => $field instanceof MergeableFieldInterface)
             ->groupBy(fn(FieldInterface $field) => implode(',', [
                 $field::class,
@@ -439,7 +438,7 @@ MD, $infoByField->join("\n"))));
         array $outgoingLayouts,
         array &$migrationPaths,
     ): void {
-        $fieldsService = Craft::$app->getFields();
+        $fieldsService = app(Fields::class);
 
         $this->do("Updating usages for `$outgoingField->handle`", function() use (
             $fieldsService,
@@ -531,7 +530,7 @@ MD, $infoByField->join("\n"))));
     {
         /** @var FieldInterface[] $fields */
         $fields = [];
-        $fieldsService = Craft::$app->getFields();
+        $fieldsService = app(Fields::class);
 
         foreach ($handles as $handle) {
             $field = $fieldsService->getFieldByHandle($handle);

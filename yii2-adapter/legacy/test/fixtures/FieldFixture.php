@@ -46,7 +46,7 @@ class FieldFixture extends ActiveFixture
                 $field->$key = $value;
             }
 
-            if (!Craft::$app->getFields()->saveField($field)) {
+            if (!app(\CraftCms\Cms\Field\Fields::class)->saveField($field)) {
                 throw new InvalidArgumentException('Unable to save field');
             }
         }
@@ -63,9 +63,9 @@ class FieldFixture extends ActiveFixture
         $fieldsThatDidntSave = [];
 
         foreach ($this->getData() as $toBeDeletedRow) {
-            $field = Craft::$app->getFields()->getFieldByHandle($toBeDeletedRow['handle']);
+            $field = app(\CraftCms\Cms\Field\Fields::class)->getFieldByHandle($toBeDeletedRow['handle']);
 
-            if ($field && !Craft::$app->getFields()->deleteField($field)) {
+            if ($field && !app(\CraftCms\Cms\Field\Fields::class)->deleteField($field)) {
                 $fieldsThatDidntSave[$field->handle] = $field->name;
             }
         }

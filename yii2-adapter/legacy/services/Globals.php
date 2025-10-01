@@ -16,6 +16,7 @@ use craft\events\GlobalSetEvent;
 use craft\models\FieldLayout;
 use craft\records\GlobalSet as GlobalSetRecord;
 use CraftCms\Cms\Database\Table;
+use CraftCms\Cms\Field\Fields;
 use CraftCms\Cms\ProjectConfig\Events\ConfigEvent;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\ProjectConfig\ProjectConfigHelper;
@@ -355,11 +356,11 @@ class Globals extends Component
                 $layout->id = $globalSetRecord->fieldLayoutId;
                 $layout->type = GlobalSet::class;
                 $layout->uid = key($data['fieldLayouts']);
-                Craft::$app->getFields()->saveLayout($layout, false);
+                app(Fields::class)->saveLayout($layout, false);
                 $globalSetRecord->fieldLayoutId = $layout->id;
             } elseif ($globalSetRecord->fieldLayoutId) {
                 // Delete the field layout
-                Craft::$app->getFields()->deleteLayoutById($globalSetRecord->fieldLayoutId);
+                app(Fields::class)->deleteLayoutById($globalSetRecord->fieldLayoutId);
                 $globalSetRecord->fieldLayoutId = null;
             }
 
@@ -506,11 +507,11 @@ class Globals extends Component
             Craft::$app->getElements()->deleteElementById($globalSetRecord->id);
 
             if ($fieldLayoutId) {
-                $fieldLayout = Craft::$app->getFields()->getLayoutById($fieldLayoutId);
+                $fieldLayout = app(Fields::class)->getLayoutById($fieldLayoutId);
 
                 // Delete the field layout after the element has been deleted
                 if ($fieldLayout) {
-                    Craft::$app->getFields()->deleteLayout($fieldLayout);
+                    app(Fields::class)->deleteLayout($fieldLayout);
                 }
             }
 

@@ -18,6 +18,7 @@ use craft\models\VolumeFolder;
 use craft\records\Volume as AssetVolumeRecord;
 use craft\records\VolumeFolder as VolumeFolderRecord;
 use CraftCms\Cms\Database\Table;
+use CraftCms\Cms\Field\Fields;
 use CraftCms\Cms\ProjectConfig\Events\ConfigEvent;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\ProjectConfig\ProjectConfigHelper;
@@ -358,11 +359,11 @@ class Volumes extends Component
                 $layout->id = $volumeRecord->fieldLayoutId;
                 $layout->type = Asset::class;
                 $layout->uid = key($data['fieldLayouts']);
-                Craft::$app->getFields()->saveLayout($layout, false);
+                app(Fields::class)->saveLayout($layout, false);
                 $volumeRecord->fieldLayoutId = $layout->id;
             } elseif ($volumeRecord->fieldLayoutId) {
                 // Delete the field layout
-                Craft::$app->getFields()->deleteLayoutById($volumeRecord->fieldLayoutId);
+                app(Fields::class)->deleteLayoutById($volumeRecord->fieldLayoutId);
                 $volumeRecord->fieldLayoutId = null;
             }
 
@@ -551,7 +552,7 @@ class Volumes extends Component
 
             // Delete the field layout
             if ($volumeRecord->fieldLayoutId) {
-                Craft::$app->getFields()->deleteLayoutById($volumeRecord->fieldLayoutId);
+                app(Fields::class)->deleteLayoutById($volumeRecord->fieldLayoutId);
             }
 
             // Delete the volume

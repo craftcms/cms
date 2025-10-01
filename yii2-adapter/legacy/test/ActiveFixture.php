@@ -10,6 +10,7 @@ namespace craft\test;
 use Craft;
 use craft\elements\Entry;
 use craft\models\FieldLayout;
+use CraftCms\Cms\Field\Fields;
 use CraftCms\Cms\Support\Arr;
 use yii\base\InvalidArgumentException;
 use yii\db\ActiveRecord;
@@ -40,7 +41,7 @@ class ActiveFixture extends YiiActiveFixture
         $tableSchema = $this->getTableSchema();
         $this->data = [];
 
-        $fieldsService = Craft::$app->getFields();
+        $fieldsService = app(Fields::class);
 
         foreach ($this->getData() as $key => $row) {
             $modelClass = $this->modelClass;

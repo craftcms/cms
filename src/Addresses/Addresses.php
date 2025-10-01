@@ -22,6 +22,7 @@ use CraftCms\Cms\Addresses\Events\DefineAddressSubdivisions;
 use CraftCms\Cms\Addresses\Events\DefineAddressUsedFields;
 use CraftCms\Cms\Addresses\Events\DefineAddressUsedSubdivisionFields;
 use CraftCms\Cms\Addresses\Repositories\SubdivisionRepository;
+use CraftCms\Cms\Field\Fields;
 use CraftCms\Cms\ProjectConfig\Events\ConfigEvent;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\ProjectConfig\ProjectConfigHelper;
@@ -39,6 +40,7 @@ final class Addresses implements FieldLayoutProviderInterface
         private readonly CountryRepository $countryRepository,
         private readonly SubdivisionRepository $subdivisionRepository,
         private readonly AddressFormatRepository $addressFormatRepository,
+        private readonly Fields $fields,
         ?FormatterInterface $formatter = null,
     ) {
         $this->formatter = $formatter ?? new DefaultFormatter(
@@ -240,12 +242,13 @@ final class Addresses implements FieldLayoutProviderInterface
      */
     public function getFieldLayout(): FieldLayout
     {
-        $fieldLayout = Craft::$app->getFields()->getLayoutByType(Address::class);
+        $fieldLayout = $this->fields->getLayoutByType(Address::class);
 
         // Ensure it has at least one tab.
         // (The only reason this could possibly be null is if a module is removing all our own native fields
         // via EVENT_DEFINE_NATIVE_FIELDS.)
         $firstTab = $fieldLayout->getTabs()[0] ?? null;
+
         if (! $firstTab) {
             $firstTab = new FieldLayoutTab([
                 'layout' => $fieldLayout,
@@ -284,10 +287,8 @@ final class Addresses implements FieldLayoutProviderInterface
     {
         $data = $event->newValue;
 
-        $fieldsService = Craft::$app->getFields();
-
         if (empty($data) || empty($config = reset($data))) {
-            $fieldsService->deleteLayoutsByType(Address::class);
+            $this->fields->deleteLayoutsByType(Address::class);
 
             return;
         }
@@ -300,7 +301,7 @@ final class Addresses implements FieldLayoutProviderInterface
         $layout->id = $this->getFieldLayout()->id;
         $layout->type = Address::class;
         $layout->uid = key($data);
-        $fieldsService->saveLayout($layout);
+        $this->fields->saveLayout($layout);
 
         // Invalidate user caches
         Craft::$app->getElements()->invalidateCachesForElementType(Address::class);

@@ -327,7 +327,7 @@ class Fields extends Component
      * ---
      *
      * ```php
-     * $body = Craft::$app->fields->getFieldByHandle('body');
+     * $body = app(Fields::class)->getFieldByHandle('body');
      * ```
      * ```twig
      * {% set body = craft.app.fields.getFieldByHandle('body') %}

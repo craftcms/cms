@@ -15,6 +15,7 @@ use craft\errors\InvalidElementException;
 use craft\models\FieldLayout;
 use craft\test\DbFixtureTrait;
 use CraftCms\Cms\Database\Table;
+use CraftCms\Cms\Field\Fields;
 use CraftCms\Cms\Support\Arr;
 use Illuminate\Support\Facades\DB;
 use PDO;
@@ -61,7 +62,7 @@ abstract class BaseElementFixture extends DbFixture
      */
     public function load(): void
     {
-        $fieldsService = Craft::$app->getFields();
+        $fieldsService = app(Fields::class);
 
         foreach ($this->loadData($this->dataFile) as $key => $data) {
             $element = $this->createElement();

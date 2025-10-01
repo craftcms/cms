@@ -64,6 +64,7 @@ use craft\validators\DateTimeValidator;
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Element\Enums\PropagationMethod;
+use CraftCms\Cms\Field\Fields;
 use CraftCms\Cms\Shared\Enums\Color;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Html;
@@ -3179,7 +3180,7 @@ JS;
 
         $newFields = $this->getType()->getFieldLayout()->getCustomFields();
         $oldFields = Arr::keyBy($oldLayout->getCustomFields(), fn(FieldInterface $field) => $field->handle);
-        $fieldsService = Craft::$app->getFields();
+        $fieldsService = app(Fields::class);
 
         foreach ($newFields as $newField) {
             if (isset($oldFields[$newField->handle])) {

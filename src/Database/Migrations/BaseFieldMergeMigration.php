@@ -7,6 +7,7 @@ use craft\base\FieldInterface;
 use craft\base\MergeableFieldInterface;
 use craft\fields\MissingField;
 use CraftCms\Cms\Database\Migration;
+use CraftCms\Cms\Field\Fields;
 use CraftCms\Cms\Field\Models\Field;
 use RuntimeException;
 
@@ -71,7 +72,7 @@ class BaseFieldMergeMigration extends Migration
 
     private function field(string $uid): FieldInterface|false
     {
-        $fieldsService = Craft::$app->getFields();
+        $fieldsService = app(Fields::class);
         $field = $fieldsService->getFieldByUid($uid);
 
         if (! $field) {

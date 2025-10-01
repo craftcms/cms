@@ -19,6 +19,7 @@ use craft\models\FieldLayoutTab;
 use craft\models\Section;
 use CraftCms\Aliases\Aliases;
 use CraftCms\Cms\Database\Migrator;
+use CraftCms\Cms\Field\Fields;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Str;
 use Illuminate\Support\Collection;
@@ -43,7 +44,7 @@ class EntryTypesController extends Controller
     public function actionMerge(string $handleA, string $handleB): int
     {
         $entriesService = Craft::$app->getEntries();
-        $fieldsService = Craft::$app->getFields();
+        $fieldsService = app(Fields::class);
 
         $entryTypeA = $entriesService->getEntryTypeByHandle($handleA);
         if (!$entryTypeA) {

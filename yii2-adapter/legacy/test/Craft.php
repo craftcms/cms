@@ -24,6 +24,7 @@ use craft\web\Application as WebApplication;
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Edition;
+use CraftCms\Cms\Field\Fields;
 use CraftCms\Cms\Plugin\Exceptions\InvalidPluginException;
 use CraftCms\Cms\Plugin\Plugins;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
@@ -615,7 +616,7 @@ class Craft extends Yii2
      */
     public function getFieldLayoutByFieldHandle(string $fieldHandle): ?FieldLayout
     {
-        foreach (\Craft::$app->getFields()->getAllLayouts() as $fieldLayout) {
+        foreach (app(Fields::class)->getAllLayouts() as $fieldLayout) {
             foreach ($fieldLayout->getCustomFields() as $field) {
                 if ($field->handle === $fieldHandle) {
                     return $fieldLayout;

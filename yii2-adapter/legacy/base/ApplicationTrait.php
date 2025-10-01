@@ -1023,6 +1023,7 @@ trait ApplicationTrait
      * Returns the fields service.
      *
      * @return Fields The fields service
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\Field\Fields} instead.
      */
     public function getFields(): Fields
     {

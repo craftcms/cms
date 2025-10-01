@@ -18,6 +18,7 @@ use craft\models\CategoryGroup;
 use craft\models\CategoryGroup_SiteSettings;
 use craft\web\Controller;
 use CraftCms\Cms\Config\GeneralConfig;
+use CraftCms\Cms\Field\Fields;
 use Throwable;
 use yii\web\BadRequestHttpException;
 use yii\web\ForbiddenHttpException;
@@ -174,7 +175,7 @@ class CategoriesController extends Controller
         $group->setSiteSettings($allSiteSettings);
 
         // Group the field layout
-        $fieldLayout = Craft::$app->getFields()->assembleLayoutFromPost();
+        $fieldLayout = app(Fields::class)->assembleLayoutFromPost();
         $fieldLayout->type = Category::class;
         $group->setFieldLayout($fieldLayout);
 

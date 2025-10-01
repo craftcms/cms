@@ -83,6 +83,7 @@ use craft\web\View;
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Enums\AttributeStatus;
+use CraftCms\Cms\Field\Fields;
 use CraftCms\Cms\Shared\Enums\Color;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Env;
@@ -1064,7 +1065,7 @@ abstract class Element extends Component implements ElementInterface
     protected static function defineFieldLayouts(?string $source): array
     {
         // Default to all the field layouts associated with this element type
-        return Craft::$app->getFields()->getLayoutsByType(static::class);
+        return app(Fields::class)->getLayoutsByType(static::class);
     }
 
     /**
@@ -1436,7 +1437,7 @@ abstract class Element extends Component implements ElementInterface
                 // Is this a custom field?
                 if (preg_match('/^field:(.+)/', $attribute, $matches)) {
                     $fieldUid = $matches[1];
-                    Craft::$app->getFields()->getFieldByUid($fieldUid)?->modifyElementIndexQuery($elementQuery);
+                    app(Fields::class)->getFieldByUid($fieldUid)?->modifyElementIndexQuery($elementQuery);
                 }
         }
     }
@@ -3372,7 +3373,7 @@ abstract class Element extends Component implements ElementInterface
     public function getFieldLayout(): ?FieldLayout
     {
         if ($this->fieldLayoutId) {
-            return Craft::$app->getFields()->getLayoutById($this->fieldLayoutId);
+            return app(Fields::class)->getLayoutById($this->fieldLayoutId);
         }
 
         return null;
@@ -5571,7 +5572,7 @@ JS, [
      */
     public function getFieldContext(): string
     {
-        return Craft::$app->getFields()->fieldContext;
+        return app(Fields::class)->fieldContext;
     }
 
     /**
@@ -6046,7 +6047,7 @@ JS, [
                 if (preg_match('/^(field|fieldInstance):(.+)/', $attribute, $matches)) {
                     $uid = $matches[2];
                     if ($matches[1] === 'field') {
-                        $field = Craft::$app->getFields()->getFieldByUid($uid);
+                        $field = app(Fields::class)->getFieldByUid($uid);
                     } else {
                         $layoutElement = $this->getFieldLayout()?->getElementByUid($uid);
                         if ($layoutElement instanceof CustomField) {
@@ -6096,7 +6097,7 @@ JS, [
         $field = null;
         if (preg_match('/^field:(.+)/', $attribute, $matches)) {
             $fieldUid = $matches[1];
-            $field = Craft::$app->getFields()->getFieldByUid($fieldUid);
+            $field = app(Fields::class)->getFieldByUid($fieldUid);
         } elseif (preg_match('/^fieldInstance:(.+)/', $attribute, $matches)) {
             $instanceUid = $matches[1];
             $layoutElement = $this->getFieldLayout()?->getElementByUid($instanceUid);

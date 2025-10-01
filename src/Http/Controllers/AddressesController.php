@@ -7,6 +7,7 @@ use craft\elements\Address;
 use craft\helpers\Cp;
 use craft\web\Application;
 use CraftCms\Cms\Addresses\Addresses;
+use CraftCms\Cms\Field\Fields;
 use CraftCms\Cms\Http\RespondsWithFlash;
 use Illuminate\Container\Attributes\Give;
 use Illuminate\Http\JsonResponse;
@@ -21,6 +22,7 @@ final readonly class AddressesController
     public function __construct(
         #[Give('Craft')]
         private Application $craft,
+        private Fields $fields,
     ) {}
 
     public function fields(Request $request): Response
@@ -52,7 +54,7 @@ final readonly class AddressesController
     public function saveFieldLayout(Addresses $addresses): Response
     {
         // Set the field layout
-        $fieldLayout = $this->craft->getFields()->assembleLayoutFromPost();
+        $fieldLayout = $this->fields->assembleLayoutFromPost();
         $fieldLayout->type = Address::class;
         $fieldLayout->reservedFieldHandles = [
             'address',

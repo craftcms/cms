@@ -12,6 +12,7 @@ use craft\base\Element;
 use craft\elements\GlobalSet;
 use craft\helpers\Cp;
 use craft\web\Controller;
+use CraftCms\Cms\Field\Fields;
 use CraftCms\Cms\Support\Json;
 use yii\web\BadRequestHttpException;
 use yii\web\ForbiddenHttpException;
@@ -73,7 +74,7 @@ class GlobalsController extends Controller
         $globalSet->handle = $this->request->getBodyParam('handle');
 
         // Set the field layout
-        $fieldLayout = Craft::$app->getFields()->assembleLayoutFromPost();
+        $fieldLayout = app(Fields::class)->assembleLayoutFromPost();
         $fieldLayout->type = GlobalSet::class;
         $globalSet->setFieldLayout($fieldLayout);
 

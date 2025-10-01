@@ -24,6 +24,7 @@ use craft\fields\Users as UserField;
 use craft\gql\interfaces\elements\Asset as AssetInterface;
 use craft\helpers\Gql as GqlHelper;
 use craft\services\Gql;
+use CraftCms\Cms\Field\Fields;
 use CraftCms\Cms\Support\Str;
 use GraphQL\Language\AST\ArgumentNode;
 use GraphQL\Language\AST\FieldNode;
@@ -105,7 +106,7 @@ class ElementQueryConditionBuilder extends Component
         parent::__construct($config);
 
         // Cache all eager-loadable fields by context
-        $allFields = Craft::$app->getFields()->getAllFields(false);
+        $allFields = app(Fields::class)->getAllFields(false);
 
         foreach ($allFields as $field) {
             if ($field instanceof EagerLoadingFieldInterface) {

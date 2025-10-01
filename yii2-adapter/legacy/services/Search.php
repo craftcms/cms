@@ -26,6 +26,7 @@ use craft\search\SearchQuery;
 use craft\search\SearchQueryTerm;
 use craft\search\SearchQueryTermGroup;
 use CraftCms\Cms\Config\GeneralConfig;
+use CraftCms\Cms\Field\Fields;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Str;
 use Illuminate\Database\Query\Builder;
@@ -997,7 +998,7 @@ class Search extends Component
             );
         }
 
-        $field = Craft::$app->getFields()->getFieldByHandle($attribute);
+        $field = app(Fields::class)->getFieldByHandle($attribute);
         return $field->id ?? null;
     }
 

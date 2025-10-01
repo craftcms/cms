@@ -30,6 +30,7 @@ use craft\models\FieldLayoutTab;
 use craft\web\assets\fieldsettings\FieldSettingsAsset;
 use craft\web\Controller;
 use CraftCms\Cms\Config\GeneralConfig;
+use CraftCms\Cms\Field\Fields;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Str;
@@ -95,7 +96,7 @@ class FieldsController extends Controller
             throw new ForbiddenHttpException('Administrative changes are disallowed in this environment.');
         }
 
-        $fieldsService = Craft::$app->getFields();
+        $fieldsService = app(Fields::class);
 
         // The field
         // ---------------------------------------------------------------------
@@ -360,7 +361,7 @@ JS, [
 
         /** @var class-string<FieldInterface> $type */
         $type = $this->request->getRequiredBodyParam('type');
-        $field = Craft::$app->getFields()->createField($type);
+        $field = app(Fields::class)->createField($type);
 
         /** @var class-string<FieldInterface>|null $oldType */
         $oldType = $this->request->getBodyParam('oldType');
@@ -408,12 +409,12 @@ JS, [
     {
         $this->requirePostRequest();
 
-        $fieldsService = Craft::$app->getFields();
+        $fieldsService = app(Fields::class);
         $type = $this->request->getRequiredBodyParam('type');
         $fieldId = $this->request->getBodyParam('fieldId') ?: null;
 
         if ($fieldId) {
-            $oldField = clone Craft::$app->getFields()->getFieldById($fieldId);
+            $oldField = clone app(Fields::class)->getFieldById($fieldId);
             if (!$oldField) {
                 throw new BadRequestHttpException("Invalid field ID: $fieldId");
             }
@@ -465,7 +466,7 @@ JS, [
         $this->requirePostRequest();
 
         $fieldId = $this->request->getBodyParam('fieldId') ?? $this->request->getRequiredBodyParam('id');
-        $fieldsService = Craft::$app->getFields();
+        $fieldsService = app(Fields::class);
         /** @var FieldInterface|Field|null $field */
         $field = $fieldsService->getFieldById($fieldId);
 
@@ -577,7 +578,7 @@ JS, [
     {
         $this->requireAcceptsJson();
 
-        $fieldsService = Craft::$app->getFields();
+        $fieldsService = app(Fields::class);
 
         $page = (int)$this->request->getParam('page', 1);
         $limit = (int)$this->request->getParam('per_page', 100);
@@ -624,7 +625,7 @@ JS, [
             ]);
             $fieldLayout->type = $fieldLayoutConfig['type'];
         } else {
-            $fieldLayout = Craft::$app->getFields()->getLayoutById($fieldLayoutConfig['id']);
+            $fieldLayout = app(Fields::class)->getLayoutById($fieldLayoutConfig['id']);
         }
 
         if (!$fieldLayout) {
@@ -688,7 +689,7 @@ JS, [
             }
         }
 
-        $layout = Craft::$app->getFields()->createLayout($layoutConfig);
+        $layout = app(Fields::class)->createLayout($layoutConfig);
 
         if ($isTab) {
             foreach ($layout->getTabs() as $tab) {
