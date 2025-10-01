@@ -390,7 +390,7 @@ EOD;
     {
         $fieldsService = app(Fields::class);
         /** @var FieldInterface[] $fields */
-        $fields = $fieldsService->getAllFields(false);
+        $fields = $fieldsService->getAllFields(false)->all();
         $generatedFieldHandles = [];
 
         foreach ($fieldsService->getAllLayouts() as $layout) {
