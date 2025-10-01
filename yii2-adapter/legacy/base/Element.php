@@ -118,6 +118,7 @@ use yii\validators\Validator;
 use yii\web\Response;
 use CraftCms\Cms\Field\Contracts\PreviewableFieldInterface;
 use CraftCms\Cms\Field\Contracts\RelationalFieldInterface;
+use CraftCms\Cms\Field\Contracts\InlineEditableFieldInterface;
 
 /**
  * Element is the base class for classes representing elements in terms of objects.

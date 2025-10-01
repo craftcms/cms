@@ -10,7 +10,7 @@ namespace craft\fields;
 use Craft;
 use craft\base\ElementInterface;
 use craft\base\Field;
-use craft\base\InlineEditableFieldInterface;
+use CraftCms\Cms\Field\Contracts\InlineEditableFieldInterface;
 use craft\base\MergeableFieldInterface;
 use craft\base\SortableFieldInterface;
 use craft\elements\Entry;

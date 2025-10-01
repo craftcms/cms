@@ -14,7 +14,7 @@ use craft\base\EagerLoadingFieldInterface;
 use craft\base\Element;
 use craft\base\ElementInterface;
 use craft\base\Field;
-use craft\base\InlineEditableFieldInterface;
+use CraftCms\Cms\Field\Contracts\InlineEditableFieldInterface;
 use craft\base\MergeableFieldInterface;
 use craft\base\NestedElementInterface;
 use craft\base\ThumbableFieldInterface;
