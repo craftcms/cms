@@ -191,12 +191,4 @@ class Categories extends BaseRelationField
             'groupId' => $groupIds,
         ];
     }
-
-    /**
-     * @inheritdoc
-     */
-    protected function showSearchInput(?ElementInterface $element): bool
-    {
-        return $this->showSearchInput;
-    }
 }
