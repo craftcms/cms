@@ -883,7 +883,7 @@ class View extends \yii\web\View
      * - TemplateName/default.htm
      *
      * The actual directory that those files will depend on the current [[setTemplateMode()|template mode]]
-     * (probably `templates/` if it’s a front-end site request, and `vendor/craftcms/cms/src/templates/` if it’s a Control
+     * (probably `templates/` if it’s a front-end site request, and `vendor/craftcms/cms/resources/templates/` if it’s a Control
      * Panel request).
      *
      * If this is a front-end site request, a folder named after the current site handle will be checked first.

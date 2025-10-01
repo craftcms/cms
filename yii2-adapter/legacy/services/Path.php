@@ -9,6 +9,7 @@ namespace craft\services;
 
 use Craft;
 use craft\helpers\FileHelper;
+use CraftCms\Aliases\Aliases;
 use CraftCms\Cms\License\License;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\Support\Env;
@@ -489,7 +490,7 @@ class Path extends Component
      */
     public function getCpTemplatesPath(): string
     {
-        return Craft::$app->getBasePath() . DIRECTORY_SEPARATOR . 'templates';
+        return Aliases::get('@craftcms/resources/templates');
     }
 
     /**

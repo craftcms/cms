@@ -37,7 +37,7 @@ interface ConfigurableComponentInterface
      *
      * For more complex settings, you might prefer to create a template, and render it via
      * [[\craft\web\View::renderTemplate()]]. For example, the following code would render a template located at
-     * `src/templates/_settings.html`, passing the settings to it:
+     * `resources/templates/_settings.html`, passing the settings to it:
      *
      * ```php
      * return Craft::$app->view->renderTemplate('plugin-handle/_widget-settings', [
