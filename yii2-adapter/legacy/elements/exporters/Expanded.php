@@ -8,7 +8,7 @@
 namespace craft\elements\exporters;
 
 use Craft;
-use craft\base\EagerLoadingFieldInterface;
+use CraftCms\Cms\Field\Contracts\EagerLoadingFieldInterface;
 use craft\base\ElementExporter;
 use craft\base\ElementInterface;
 use craft\elements\db\ElementQuery;

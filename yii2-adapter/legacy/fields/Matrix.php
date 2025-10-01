@@ -8,7 +8,7 @@
 namespace craft\fields;
 
 use Craft;
-use craft\base\EagerLoadingFieldInterface;
+use CraftCms\Cms\Field\Contracts\EagerLoadingFieldInterface;
 use craft\base\Element;
 use CraftCms\Cms\Field\Contracts\ElementContainerFieldInterface;
 use craft\base\ElementInterface;

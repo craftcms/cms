@@ -10,7 +10,7 @@ namespace craft\fields;
 use Craft;
 use craft\base\conditions\ConditionInterface;
 use CraftCms\Cms\Field\Contracts\CrossSiteCopyableFieldInterface;
-use craft\base\EagerLoadingFieldInterface;
+use CraftCms\Cms\Field\Contracts\EagerLoadingFieldInterface;
 use craft\base\Element;
 use craft\base\ElementInterface;
 use craft\base\Field;

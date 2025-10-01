@@ -8,7 +8,7 @@
 namespace craft\gql\base;
 
 use Craft;
-use craft\base\EagerLoadingFieldInterface;
+use CraftCms\Cms\Field\Contracts\EagerLoadingFieldInterface;
 use craft\base\ElementInterface;
 use craft\base\GqlInlineFragmentFieldInterface;
 use craft\elements\db\ElementQuery;

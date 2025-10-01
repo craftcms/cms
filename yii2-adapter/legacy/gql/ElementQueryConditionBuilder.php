@@ -10,7 +10,6 @@ namespace craft\gql;
 use ArrayObject;
 use Craft;
 use craft\base\Component;
-use craft\base\EagerLoadingFieldInterface;
 use craft\base\Element;
 use craft\base\GqlInlineFragmentFieldInterface;
 use craft\elements\db\EagerLoadPlan;
@@ -40,6 +39,7 @@ use GraphQL\Language\AST\VariableNode;
 use GraphQL\Type\Definition\ResolveInfo;
 use GraphQL\Type\Definition\WrappingType;
 use yii\base\InvalidArgumentException;
+use CraftCms\Cms\Field\Contracts\EagerLoadingFieldInterface;
 
 /**
  * Class ElementQueryConditionBuilder.
