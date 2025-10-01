@@ -1,7 +1,9 @@
 {% set elements = elements ?? [] %}
 {% set disabled = disabled ?? null %}
 {% set viewMode = viewMode ?? null %}
-{% set size = size ?? (viewMode == 'large' ? 'large' : 'small') %}
+{% set size = size ?? (viewMode in ['thumbs', 'large'] ? 'large' : 'small') %}
+
+{% dump {viewMode, inline: inline ?? null} %}
 
 {% apply spaceless %}
   {% tag 'ul' with {

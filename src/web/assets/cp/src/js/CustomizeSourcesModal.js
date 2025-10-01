@@ -466,7 +466,7 @@ Craft.CustomizeSourcesModal = Garnish.Modal.extend({
           `&elementType=${this.elementIndex.elementType}`,
       }
     )
-      .then(({data}) => {
+      .then(async ({data}) => {
         // Figure out which source to select
         let sourceKey = null;
         if (
@@ -480,7 +480,7 @@ Craft.CustomizeSourcesModal = Garnish.Modal.extend({
         }
 
         if (sourceKey) {
-          this.elementIndex.selectSourceByKey(sourceKey);
+          await this.elementIndex.asyncSelectSourceByKey(sourceKey);
         }
 
         window.location.reload();

@@ -25,6 +25,7 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
     $spinner: null,
     $constraintContainer: null,
     $constraintRadioInputs: null,
+    $orientationField: null,
     $customConstraints: null,
 
     // FabricJS objects
@@ -207,6 +208,7 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
         '[name="constraint"]',
         this.$constraintContainer
       );
+      this.$orientationField = $('#orientation', this.$body);
       this.$focalPointBtn = $('.focal-point', this.$body);
       this.editorHeight = this.$editorContainer.innerHeight();
       this.editorWidth = this.$editorContainer.innerWidth();
@@ -956,11 +958,11 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
         'change',
         this._handleConstraintChange
       );
-      this.addListener(
-        $('.orientation input', this.$container),
-        'click',
-        this._handleOrientationClick
-      );
+      this.orientationBtnGroup = new Craft.Listbox(this.$orientationField, {
+        onChange: ($option) => {
+          this._handleOrientationClick($option);
+        },
+      });
       this.addListener(
         $('.constraint-group .custom input', this.$container),
         'keyup',
@@ -1016,11 +1018,11 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
      *
      * @param {Object} ev
      */
-    _handleOrientationClick: function (ev) {
-      if (ev.currentTarget.value === this.constraintOrientation) {
+    _handleOrientationClick: function ($option) {
+      if ($option.data('value') === this.constraintOrientation) {
         return;
       }
-      this.constraintOrientation = ev.currentTarget.value;
+      this.constraintOrientation = $option.data('value');
 
       const $constraints = $('.flip', this.$constraintContainer);
 

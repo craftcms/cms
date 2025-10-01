@@ -24,7 +24,7 @@
             {% if icon %}
               <span data-icon="{{ icon }}" aria-hidden="true"></span>
               <span class="visually-hidden">{{ attribute[1].label }}</span>
-            {% elseif not loop.first or showHeaderColumn ?? true %}
+            {% elseif not loop.first or (showHeaderColumn ?? true) %}
               {{ attribute[1].label|t('site') }}
             {% endif %}
             <div class="spinner"></div>
