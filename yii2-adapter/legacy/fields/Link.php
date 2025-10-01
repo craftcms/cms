@@ -8,6 +8,7 @@
 namespace craft\fields;
 
 use Craft;
+use CraftCms\Cms\Field\Concerns\RelationalField;
 use CraftCms\Cms\Field\Contracts\CrossSiteCopyableFieldInterface;
 use craft\base\ElementInterface;
 use craft\base\Event;
@@ -15,7 +16,6 @@ use craft\base\Field;
 use CraftCms\Cms\Field\Contracts\InlineEditableFieldInterface;
 use CraftCms\Cms\Field\Contracts\MergeableFieldInterface;
 use CraftCms\Cms\Field\Contracts\RelationalFieldInterface;
-use craft\base\RelationalFieldTrait;
 use craft\elements\db\ElementQueryInterface;
 use craft\elements\Entry as EntryElement;
 use craft\events\RegisterComponentTypesEvent;
@@ -55,7 +55,7 @@ use yii\db\Schema;
  */
 class Link extends Field implements InlineEditableFieldInterface, RelationalFieldInterface, MergeableFieldInterface, CrossSiteCopyableFieldInterface
 {
-    use RelationalFieldTrait;
+    use RelationalField;
 
     /**
      * @event RegisterComponentTypesEvent The event that is triggered when registering the link types for Link fields.
