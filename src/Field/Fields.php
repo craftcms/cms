@@ -45,7 +45,6 @@ use craft\helpers\Component as ComponentHelper;
 use craft\helpers\Cp;
 use craft\helpers\Db as DbHelper;
 use craft\models\FieldLayout;
-use craft\records\Field as FieldRecord;
 use craft\records\FieldLayout as FieldLayoutRecord;
 use CraftCms\Cms\Database\Expressions\FixedOrderExpression;
 use CraftCms\Cms\Database\Table;
@@ -73,6 +72,7 @@ use CraftCms\Cms\Support\Json as JsonHelper;
 use CraftCms\Cms\Support\Str;
 use Exception;
 use Illuminate\Container\Attributes\Singleton;
+use Illuminate\Database\Eloquent\Builder as EloquentBuilder;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
@@ -164,21 +164,22 @@ final class Fields
     {
         return $this->getAllFieldTypes()
             /** @var class-string<FieldInterface> $class */
-            ->filter(fn (string $class) => $class::dbType() !== null)
+            ->filter(fn(string $class) => $class::dbType() !== null)
             ->values();
     }
 
     /**
      * Returns all field types whose column types are considered compatible with a given field.
      *
-     * @param  FieldInterface  $field  The current field to base compatible fields on
-     * @param  bool  $includeCurrent  Whether $field's class should be included
+     * @param FieldInterface $field The current field to base compatible fields on
+     * @param bool $includeCurrent Whether $field's class should be included
+     *
      * @return Collection<class-string<FieldInterface>>
      */
     public function getCompatibleFieldTypes(FieldInterface $field, bool $includeCurrent = true): Collection
     {
         // If the field has any validation errors and has an ID, swap it with the saved field
-        if (! $field->getIsNew() && $field->hasErrors()) {
+        if (!$field->getIsNew() && $field->hasErrors()) {
             $field = $this->getFieldById($field->id);
         }
 
@@ -199,7 +200,7 @@ final class Fields
 
         // Make sure the current field class is in there if it's supposed to be
         /** @var FieldInterface $field */
-        if ($includeCurrent && ! $types->contains($field::class)) {
+        if ($includeCurrent && !$types->contains($field::class)) {
             $types->add($field::class);
         }
 
@@ -215,8 +216,8 @@ final class Fields
     /**
      * Returns whether the two given field types are considered compatible with each other.
      *
-     * @param  class-string<FieldInterface>  $fieldA
-     * @param  class-string<FieldInterface>  $fieldB
+     * @param class-string<FieldInterface> $fieldA
+     * @param class-string<FieldInterface> $fieldB
      */
     public function areFieldTypesCompatible(string $fieldA, string $fieldB): bool
     {
@@ -225,12 +226,12 @@ final class Fields
         }
 
         $dbTypeA = $fieldA::dbType();
-        if (! is_string($dbTypeA)) {
+        if (!is_string($dbTypeA)) {
             return false;
         }
 
         $dbTypeB = $fieldB::dbType();
-        if (! is_string($dbTypeB)) {
+        if (!is_string($dbTypeB)) {
             return false;
         }
 
@@ -265,7 +266,7 @@ final class Fields
     public function getRelationalFieldTypes(): Collection
     {
         return $this->getAllFieldTypes()->filter(
-            fn (string $class) => is_subclass_of($class, BaseRelationField::class),
+            fn(string $class) => is_subclass_of($class, BaseRelationField::class),
         );
     }
 
@@ -274,7 +275,7 @@ final class Fields
      *
      * @template T of FieldInterface
      *
-     * @param  class-string<T>|array  $config  The field’s class name, or its config, with a `type` value and optionally a `settings` value
+     * @param class-string<T>|array $config The field’s class name, or its config, with a `type` value and optionally a `settings` value
      *
      * @phpstan-param class-string<T>|array{type:class-string<T>,id?:int|string,uid?:string} $config
      *
@@ -286,7 +287,7 @@ final class Fields
             $config = ['type' => $config];
         }
 
-        if (! empty($config['id']) && empty($config['uid']) && is_numeric($config['id'])) {
+        if (!empty($config['id']) && empty($config['uid']) && is_numeric($config['id'])) {
             $uid = DB::table(Table::FIELDS)->uidById($config['id']);
             $config['uid'] = $uid;
         }
@@ -307,8 +308,9 @@ final class Fields
     /**
      * Returns a memoizable array of fields.
      *
-     * @param  string|string[]|false|null  $context  The field context(s) to fetch fields from. Defaults to [[\craft\services\Fields::$fieldContext]].
+     * @param string|string[]|false|null $context The field context(s) to fetch fields from. Defaults to [[\craft\services\Fields::$fieldContext]].
      *                                               Set to `false` to get all fields regardless of context.
+     *
      * @return MemoizableArray<FieldInterface>
      */
     private function _fields(mixed $context = null): MemoizableArray
@@ -317,7 +319,7 @@ final class Fields
 
         $this->_fields ??= new MemoizableArray(
             $this->_createFieldQuery()->get()->all(),
-            fn (object $config) => $this->createField((array) $config),
+            fn(object $config) => $this->createField((array)$config),
         );
 
         if ($context === false) {
@@ -334,8 +336,9 @@ final class Fields
     /**
      * Returns all fields within a field context(s).
      *
-     * @param  string|string[]|false|null  $context  The field context(s) to fetch fields from. Defaults to [[\craft\services\Fields::$fieldContext]].
+     * @param string|string[]|false|null $context The field context(s) to fetch fields from. Defaults to [[\craft\services\Fields::$fieldContext]].
      *                                               Set to `false` to get all fields regardless of context.
+     *
      * @return Collection<FieldInterface> The fields
      */
     public function getAllFields(mixed $context = null): Collection
@@ -346,47 +349,51 @@ final class Fields
     /**
      * Returns all fields that store content in the `elements_sites.content` table.
      *
-     * @param  string|string[]|false|null  $context  The field context(s) to fetch fields from. Defaults to [[\craft\services\Fields::$fieldContext]].
+     * @param string|string[]|false|null $context The field context(s) to fetch fields from. Defaults to [[\craft\services\Fields::$fieldContext]].
      *                                               Set to `false` to get all fields regardless of context.
+     *
      * @return Collection<FieldInterface> The fields
      */
     public function getFieldsWithContent(mixed $context = null): Collection
     {
         return $this->getAllFields($context)
-            ->filter(fn (FieldInterface $field) => $field::dbType() !== null);
+            ->filter(fn(FieldInterface $field) => $field::dbType() !== null);
     }
 
     /**
      * Returns all fields that don’t store content in the `elements_sites.content` table.
      *
-     * @param  string|string[]|false|null  $context  The field context(s) to fetch fields from. Defaults to [[\craft\services\Fields::$fieldContext]].
+     * @param string|string[]|false|null $context The field context(s) to fetch fields from. Defaults to [[\craft\services\Fields::$fieldContext]].
      *                                               Set to `false` to get all fields regardless of context.
+     *
      * @return Collection<FieldInterface> The fields
      */
     public function getFieldsWithoutContent(mixed $context = null): Collection
     {
         return $this->getAllFields($context)
-            ->filter(fn (FieldInterface $field) => $field::dbType() === null);
+            ->filter(fn(FieldInterface $field) => $field::dbType() === null);
     }
 
     /**
      * Returns all fields of a certain type.
      *
-     * @param  class-string<FieldInterface>  $type  The field type
-     * @param  string|string[]|false|null  $context  The field context(s) to fetch fields from. Defaults to [[\craft\services\Fields::$fieldContext]].
+     * @param class-string<FieldInterface> $type The field type
+     * @param string|string[]|false|null $context The field context(s) to fetch fields from. Defaults to [[\craft\services\Fields::$fieldContext]].
      *                                               Set to `false` to get all fields regardless of context.
+     *
      * @return Collection<FieldInterface> The fields
      */
     public function getFieldsByType(string $type, mixed $context = null): Collection
     {
         return $this->getAllFields($context)
-            ->filter(fn (FieldInterface $field) => $field instanceof $type);
+            ->filter(fn(FieldInterface $field) => $field instanceof $type);
     }
 
     /**
      * Returns a field by its ID.
      *
-     * @param  int  $fieldId  The field’s ID
+     * @param int $fieldId The field’s ID
+     *
      * @return FieldInterface|null The field, or null if it doesn’t exist
      */
     public function getFieldById(int $fieldId): ?FieldInterface
@@ -397,7 +404,8 @@ final class Fields
     /**
      * Returns a field by its UID.
      *
-     * @param  string  $fieldUid  The field’s UID
+     * @param string $fieldUid The field’s UID
+     *
      * @return FieldInterface|null The field, or null if it doesn’t exist
      */
     public function getFieldByUid(string $fieldUid): ?FieldInterface
@@ -418,9 +426,10 @@ final class Fields
      * {{ body.instructions }}
      * ```
      *
-     * @param  string  $handle  The field’s handle
-     * @param  string|string[]|false|null  $context  The field context(s) to fetch fields from. Defaults to [[\craft\services\Fields::$fieldContext]].
+     * @param string $handle The field’s handle
+     * @param string|string[]|false|null $context The field context(s) to fetch fields from. Defaults to [[\craft\services\Fields::$fieldContext]].
      *                                               Set to `false` to get all fields regardless of context.
+     *
      * @return FieldInterface|null The field, or null if it doesn’t exist
      */
     public function getFieldByHandle(string $handle, mixed $context = null): ?FieldInterface
@@ -431,8 +440,9 @@ final class Fields
     /**
      * Returns whether a field exists with a given handle and context.
      *
-     * @param  string  $handle  The field handle
-     * @param  string|null  $context  The field context (defauts to [[\craft\services\Fields::$fieldContext]])
+     * @param string $handle The field handle
+     * @param string|null $context The field context (defauts to [[\craft\services\Fields::$fieldContext]])
+     *
      * @return bool Whether a field with that handle exists
      */
     public function doesFieldWithHandleExist(string $handle, ?string $context = null): bool
@@ -461,8 +471,9 @@ final class Fields
     /**
      * Saves a field.
      *
-     * @param  FieldInterface  $field  The Field to be saved
-     * @param  bool  $runValidation  Whether the field should be validated
+     * @param FieldInterface $field The Field to be saved
+     * @param bool $runValidation Whether the field should be validated
+     *
      * @return bool Whether the field was saved successfully
      *
      * @throws Throwable if reasons
@@ -482,11 +493,11 @@ final class Fields
             Event::dispatch(new FieldSaving($field, $isNewField));
         }
 
-        if (! $field->beforeSave($isNewField)) {
+        if (!$field->beforeSave($isNewField)) {
             return false;
         }
 
-        if ($runValidation && ! $field->validate()) {
+        if ($runValidation && !$field->validate()) {
             Log::info('Field not saved due to validation error.', [__METHOD__]);
 
             return false;
@@ -498,7 +509,7 @@ final class Fields
 
         // Only store field data in the project config for global context
         if ($field->context === 'global') {
-            $configPath = ProjectConfig::PATH_FIELDS.'.'.$field->uid;
+            $configPath = ProjectConfig::PATH_FIELDS . '.' . $field->uid;
             $appliedConfig = ProjectConfigFacade::set(
                 path: $configPath,
                 value: $configData,
@@ -506,7 +517,7 @@ final class Fields
             );
         }
 
-        if (! $appliedConfig) {
+        if (!$appliedConfig) {
             // If it’s not a global field, or there weren't any changes in the main field settings, apply the save to the DB + call afterSave()
             $this->applyFieldSave($field->uid, $configData, $field->context);
         }
@@ -535,7 +546,7 @@ final class Fields
             if (empty($field->uid)) {
                 $field->uid = Str::uuid7()->toString();
             }
-        } elseif (! $field->uid) {
+        } elseif (!$field->uid) {
             $field->uid = DB::table(Table::FIELDS)->uidById($field->id);
         }
 
@@ -554,7 +565,7 @@ final class Fields
         $data = $event->newValue;
         $fieldUid = $event->tokenMatches[0];
 
-        if (! is_array($data)) {
+        if (!is_array($data)) {
             return;
         }
 
@@ -564,14 +575,15 @@ final class Fields
     /**
      * Deletes a field by its ID.
      *
-     * @param  int  $fieldId  The field’s ID
+     * @param int $fieldId The field’s ID
+     *
      * @return bool Whether the field was deleted successfully
      */
     public function deleteFieldById(int $fieldId): bool
     {
         $field = $this->getFieldById($fieldId);
 
-        if (! $field) {
+        if (!$field) {
             return false;
         }
 
@@ -581,7 +593,8 @@ final class Fields
     /**
      * Deletes a field.
      *
-     * @param  FieldInterface  $field  The field
+     * @param FieldInterface $field The field
+     *
      * @return bool Whether the field was deleted successfully
      *
      * @throws Throwable if reasons
@@ -592,13 +605,13 @@ final class Fields
             Event::dispatch(new FieldDeleting($field));
         }
 
-        if (! $field->beforeDelete()) {
+        if (!$field->beforeDelete()) {
             return false;
         }
 
         if ($field->context === 'global') {
             ProjectConfigFacade::remove(
-                path: ProjectConfig::PATH_FIELDS.'.'.$field->uid,
+                path: ProjectConfig::PATH_FIELDS . '.' . $field->uid,
                 message: "Delete the “{$field->handle}” field",
             );
         } else {
@@ -626,7 +639,7 @@ final class Fields
      */
     public function applyFieldDelete(string $fieldUid): void
     {
-        $fieldRecord = $this->_getFieldRecord($fieldUid);
+        $fieldRecord = $this->_getFieldModel($fieldUid);
 
         if (! $fieldRecord->id) {
             return;
@@ -689,13 +702,13 @@ final class Fields
      */
     public function findFieldUsages(FieldInterface $field): Collection
     {
-        if (! isset($field->id)) {
+        if (!isset($field->id)) {
             return new Collection;
         }
 
         return $this->getAllLayouts()->filter(function (FieldLayout $layout) use ($field) {
             return ComponentHelper::validateComponentClass($layout->type, ElementInterface::class) &&
-                $layout->isFieldIncluded(fn (BaseField $layoutField) => (
+                $layout->isFieldIncluded(fn(BaseField $layoutField) => (
                     $layoutField instanceof CustomField &&
                     $layoutField->getFieldUid() === $field->uid
                 ));
@@ -748,7 +761,7 @@ final class Fields
          */
         $layouts = new MemoizableArray(
             elements: $layoutConfigs,
-            normalizer: fn (object $config) => $this->_layoutFromConfig((array) $config),
+            normalizer: fn(object $config) => $this->_layoutFromConfig((array)$config),
         );
 
         return $this->_layouts = $layouts;
@@ -778,8 +791,9 @@ final class Fields
     /**
      * Returns a field layout by its ID.
      *
-     * @param  int  $layoutId  The field layout’s ID
-     * @param  bool  $withTrashed  Whether to return the field layout even if it’s soft-deleted
+     * @param int $layoutId The field layout’s ID
+     * @param bool $withTrashed Whether to return the field layout even if it’s soft-deleted
+     *
      * @return FieldLayout|null The field layout, or null if it doesn’t exist
      */
     public function getLayoutById(int $layoutId, bool $withTrashed = false): ?FieldLayout
@@ -789,7 +803,7 @@ final class Fields
         if ($layout === null && $withTrashed) {
             $config = $this->_createLayoutQuery(true)->where('id', $layoutId)->first();
             if ($config) {
-                return $this->_layoutFromConfig((array) $config);
+                return $this->_layoutFromConfig((array)$config);
             }
         }
 
@@ -799,7 +813,8 @@ final class Fields
     /**
      * Returns a field layout by its UUID.
      *
-     * @param  string  $uid  The field layout’s UUID
+     * @param string $uid The field layout’s UUID
+     *
      * @return FieldLayout|null The field layout, or null if it doesn’t exist
      */
     public function getLayoutByUid(string $uid): ?FieldLayout
@@ -810,7 +825,8 @@ final class Fields
     /**
      * Returns field layouts by their IDs.
      *
-     * @param  int[]  $layoutIds  The field layouts’ IDs
+     * @param int[] $layoutIds The field layouts’ IDs
+     *
      * @return Collection<FieldLayout> The field layouts
      */
     public function getLayoutsByIds(array $layoutIds): Collection
@@ -821,15 +837,16 @@ final class Fields
     /**
      * Returns a field layout by its associated element type.
      *
-     * @param  class-string<ElementInterface>  $type  The associated element type
-     * @param  bool  $create  Whether to create a field layout if one doesn’t exist
+     * @param class-string<ElementInterface> $type The associated element type
+     * @param bool $create Whether to create a field layout if one doesn’t exist
+     *
      * @return FieldLayout|null The field layout
      */
     public function getLayoutByType(string $type, bool $create = true): ?FieldLayout
     {
         $layout = $this->_layouts()->firstWhere('type', $type);
 
-        if (! $layout && $create) {
+        if (!$layout && $create) {
             return new FieldLayout(['type' => $type]);
         }
 
@@ -839,7 +856,8 @@ final class Fields
     /**
      * Returns all of the field layouts associated with a given element type.
      *
-     * @param  class-string<ElementInterface>  $type
+     * @param class-string<ElementInterface> $type
+     *
      * @return Collection<FieldLayout> The field layouts
      */
     public function getLayoutsByType(string $type): Collection
@@ -872,7 +890,7 @@ final class Fields
     {
         $type = Arr::pull($config, 'type');
 
-        if (! $type || ! is_subclass_of($type, FieldLayoutElement::class)) {
+        if (!$type || !is_subclass_of($type, FieldLayoutElement::class)) {
             throw new InvalidArgumentException("Invalid field layout element class: $type");
         }
 
@@ -885,17 +903,18 @@ final class Fields
     /**
      * Assembles a field layout from post data.
      *
-     * @param  string|null  $namespace  The namespace that the form data was posted in, if any
+     * @param string|null $namespace The namespace that the form data was posted in, if any
+     *
      * @return FieldLayout The field layout
      */
     public function assembleLayoutFromPost(?string $namespace = null): FieldLayout
     {
-        $paramPrefix = $namespace ? rtrim($namespace, '.').'.' : '';
+        $paramPrefix = $namespace ? rtrim($namespace, '.') . '.' : '';
 
         $config = JsonHelper::decode(Request::get("{$paramPrefix}fieldLayout"));
         $config['generatedFields'] = Request::get("{$paramPrefix}generatedFields") ?: null;
         $config['cardView'] = Request::get("{$paramPrefix}cardView") ?: null;
-        $config['cardThumbAlignment'] = Request::get($paramPrefix.'thumbAlignment');
+        $config['cardThumbAlignment'] = Request::get($paramPrefix . 'thumbAlignment');
 
         $layout = $this->createLayout($config);
 
@@ -912,40 +931,41 @@ final class Fields
     /**
      * Saves a field layout.
      *
-     * @param  FieldLayout  $layout  The field layout
-     * @param  bool  $runValidation  Whether the layout should be validated
+     * @param FieldLayout $layout The field layout
+     * @param bool $runValidation Whether the layout should be validated
+     *
      * @return bool Whether the field layout was saved successfully
      *
      * @throws Exception if $layout->id is set to an invalid layout ID
      */
     public function saveLayout(FieldLayout $layout, bool $runValidation = true): bool
     {
-        if (! $layout->id) {
+        if (!$layout->id) {
             // Maybe the ID just wasn't known
             $layout->id = DB::table(Table::FIELDLAYOUTS)->idByUid($layout->uid);
         }
 
-        $isNewLayout = ! $layout->id;
+        $isNewLayout = !$layout->id;
 
         if (Event::hasListeners(FieldLayoutSaving::class)) {
             Event::dispatch(new FieldLayoutSaving($layout, $isNewLayout));
         }
 
-        if ($runValidation && ! $layout->validate()) {
+        if ($runValidation && !$layout->validate()) {
             Log::info('Field layout not saved due to validation error.', [__METHOD__]);
 
             return false;
         }
 
-        if (! $isNewLayout) {
+        if (!$isNewLayout) {
             // Get the current layout
             /** @var FieldLayoutRecord|null $layoutRecord */
             $layoutRecord = FieldLayoutRecord::findWithTrashed()
                 ->andWhere(['id' => $layout->id])
                 ->one();
 
-            if (! $layoutRecord) {
-                throw new Exception('Invalid field layout ID: '.$layout->id);
+            if (!$layoutRecord) {
+                throw new Exception('Invalid field layout ID: ' . $layout->id);
             }
         } else {
             $layoutRecord = new FieldLayoutRecord;
@@ -956,7 +976,7 @@ final class Fields
         $layoutRecord->config = $layout->getConfig();
         $layoutRecord->uid = $layout->uid;
 
-        if (! $isNewLayout) {
+        if (!$isNewLayout) {
             $layoutRecord->id = $layout->id;
         }
 
@@ -995,12 +1015,13 @@ final class Fields
     /**
      * Deletes a field layout(s) by its ID.
      *
-     * @param  int|int[]  $layoutId  The field layout’s ID
+     * @param int|int[] $layoutId The field layout’s ID
+     *
      * @return bool Whether the field layout was deleted successfully
      */
     public function deleteLayoutById(array|int $layoutId): bool
     {
-        if (! $layoutId) {
+        if (!$layoutId) {
             return false;
         }
 
@@ -1016,7 +1037,8 @@ final class Fields
     /**
      * Deletes a field layout.
      *
-     * @param  FieldLayout  $layout  The field layout
+     * @param FieldLayout $layout The field layout
+     *
      * @return bool Whether the field layout was deleted successfully
      */
     public function deleteLayout(FieldLayout $layout): bool
@@ -1040,7 +1062,8 @@ final class Fields
     /**
      * Deletes field layouts associated with a given element type.
      *
-     * @param  class-string<ElementInterface>  $type  The element type
+     * @param class-string<ElementInterface> $type The element type
+     *
      * @return bool Whether the field layouts were deleted successfully
      */
     public function deleteLayoutsByType(string $type): bool
@@ -1052,13 +1075,14 @@ final class Fields
         // Clear caches
         $this->_layouts = null;
 
-        return (bool) $affectedRows;
+        return (bool)$affectedRows;
     }
 
     /**
      * Restores a field layout by its ID.
      *
-     * @param  int  $id  The field layout’s ID
+     * @param int $id The field layout’s ID
+     *
      * @return bool Whether the layout was restored successfully
      */
     public function restoreLayoutById(int $id): bool
@@ -1068,7 +1092,7 @@ final class Fields
         // Clear caches
         $this->_layouts = null;
 
-        return (bool) $affectedRows;
+        return (bool)$affectedRows;
     }
 
     /**
@@ -1079,7 +1103,7 @@ final class Fields
         $fieldVersion = Info::fetch()->fieldVersion;
 
         // If it doesn't start with `3@`, then it needs to be updated
-        if ($fieldVersion === null || ! str_starts_with($fieldVersion, '3@')) {
+        if ($fieldVersion === null || !str_starts_with($fieldVersion, '3@')) {
             return null;
         }
 
@@ -1097,7 +1121,7 @@ final class Fields
         class_exists(CustomFieldBehavior::class);
 
         Info::fetch()->update([
-            'fieldVersion' => '3@'.Str::random(10),
+            'fieldVersion' => '3@' . Str::random(10),
         ]);
     }
 
@@ -1106,10 +1130,10 @@ final class Fields
      */
     public function applyFieldSave(string $fieldUid, array $data, string $context): void
     {
-        $fieldRecord = $this->_getFieldRecord($fieldUid, true);
+        $fieldRecord = $this->_getFieldModel($fieldUid, true);
         $isNewField = $fieldRecord->getIsNewRecord();
         $oldSettings = $fieldRecord->getOldAttribute('settings');
-        $oldField = ! $isNewField ? $this->getFieldById($fieldRecord->id) : null;
+        $oldField = !$isNewField ? $this->getFieldById($fieldRecord->id) : null;
 
         // For control panel save requests, make sure we have all the custom data already saved on the object.
         $field = $this->_savingFields[$fieldUid] ?? null;
@@ -1123,14 +1147,14 @@ final class Fields
         try {
             // Track whether we should remove the field’s search indexes after save
             $searchable = $data['searchable'] ?? false;
-            $deleteSearchIndexes = ! $isNewField && ! $searchable && $fieldRecord->searchable;
+            $deleteSearchIndexes = !$isNewField && !$searchable && $fieldRecord->searchable;
 
             // Clear the translation key format if not using a custom translation method
             if ($data['translationMethod'] !== Field::TRANSLATION_METHOD_CUSTOM) {
                 $data['translationKeyFormat'] = null;
             }
 
-            if (! empty($data['settings']) && is_array($data['settings'])) {
+            if (!empty($data['settings']) && is_array($data['settings'])) {
                 $data['settings'] = ProjectConfigHelper::unpackAssociativeArrays($data['settings']);
             }
 
@@ -1149,7 +1173,7 @@ final class Fields
             if ($fieldRecord->dateDeleted) {
                 $fieldRecord->restore();
             } else {
-                $fieldRecord->save(false);
+                $fieldRecord->save();
             }
 
             DB::commit();
@@ -1220,7 +1244,7 @@ final class Fields
             /** @var Collection<class-string<FieldInterface>> $types */
             $types = Collection::make($this->getAllFieldTypes())
                 ->sortBy(
-                    fn (string $class) => $class::displayName(),
+                    fn(string $class) => $class::displayName(),
                     descending: $sortDir === 'desc',
                 );
 
@@ -1236,7 +1260,7 @@ final class Fields
 
         if ($searchTerm !== null && $searchTerm !== '') {
             $searchParams = $this->_getSearchParams($searchTerm);
-            if (! empty($searchParams)) {
+            if (!empty($searchParams)) {
                 $query->where(function (Builder $query) use ($searchParams) {
                     foreach ($searchParams as $param) {
                         $query->orWhere($param[0], $param[1], $param[2]);
@@ -1256,14 +1280,14 @@ final class Fields
         $usages = $this->allFieldUsages();
 
         foreach ($result as $item) {
-            $field = $this->createField((array) $item);
+            $field = $this->createField((array)$item);
 
             $tableData[] = [
                 'id' => $field->id,
                 'title' => Craft::t('site', $field->name),
                 'translatable' => $field->getIsTranslatable(null) ? ($field->getTranslationDescription(null) ?? Craft::t('app',
                     'This field is translatable.')) : false,
-                'searchable' => (bool) $field->searchable,
+                'searchable' => (bool)$field->searchable,
                 'url' => $field->getCpEditUrl(),
                 'handle' => $field->handle,
                 'type' => [
@@ -1297,7 +1321,7 @@ final class Fields
         }
 
         foreach ($searchParams as $param) {
-            $searchQueries[] = [$param, 'like', '%'.$term.'%'];
+            $searchQueries[] = [$param, 'like', '%' . $term . '%'];
         }
 
         return $searchQueries;
@@ -1338,21 +1362,17 @@ final class Fields
             ])
             ->unless(
                 $withTrashed,
-                fn (Builder $query) => $query->whereNull('dateDeleted')
+                fn(Builder $query) => $query->whereNull('dateDeleted'),
             );
     }
 
     /**
-     * Returns a field record for a given UID
+     * Returns a field model for a given UID
      */
-    private function _getFieldRecord(string $uid, bool $withTrashed = false): FieldRecord
+    private function _getFieldModel(string $uid, bool $withTrashed = false): Models\Field
     {
-        $query = $withTrashed ? FieldRecord::findWithTrashed() : FieldRecord::find();
-
-        $query->andWhere(['uid' => $uid]);
-
-        /** @noinspection PhpIncompatibleReturnTypeInspection */
-        /** @var FieldRecord */
-        return $query->one() ?? new FieldRecord;
+        return Models\Field::withTrashed($withTrashed)
+            ->where('uid', $uid)
+            ->first() ?? new Models\Field();
     }
 }
