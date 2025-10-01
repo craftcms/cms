@@ -10,7 +10,6 @@ namespace craft\services;
 use Craft;
 use craft\base\ElementContainerFieldInterface;
 use craft\base\ElementInterface;
-use CraftCms\Cms\Field\Contracts\FieldInterface;
 use craft\base\FieldLayoutElement;
 use craft\events\ApplyFieldSaveEvent;
 use craft\events\DefineCompatibleFieldTypesEvent;
@@ -18,11 +17,12 @@ use craft\events\FieldEvent;
 use craft\events\RegisterComponentTypesEvent;
 use craft\fields\BaseRelationField;
 use craft\models\FieldLayout;
+use CraftCms\Cms\Field\Contracts\FieldInterface;
 use CraftCms\Cms\Field\Events\ApplyingFieldDelete;
 use CraftCms\Cms\Field\Events\ApplyingFieldSave;
 use CraftCms\Cms\Field\Events\DefineCompatibleFieldTypes;
-use CraftCms\Cms\Field\Events\FieldDeleting;
 use CraftCms\Cms\Field\Events\FieldDeleted;
+use CraftCms\Cms\Field\Events\FieldDeleting;
 use CraftCms\Cms\Field\Events\FieldLayoutDeleted;
 use CraftCms\Cms\Field\Events\FieldLayoutDeleting;
 use CraftCms\Cms\Field\Events\FieldLayoutSaved;
@@ -147,7 +147,7 @@ class Fields extends Component
      */
     public string $fieldContext {
         get => app(\CraftCms\Cms\Field\Fields::class)->fieldContext;
-        set (string $value) {
+    set(string $value) {
             app(\CraftCms\Cms\Field\Fields::class)->fieldContext = $value;
         }
     }
@@ -730,7 +730,7 @@ class Fields extends Component
 
     public static function registerEvents(): void
     {
-        Event::listen(RegisterFieldTypes::class, function (RegisterFieldTypes $event) {
+        Event::listen(RegisterFieldTypes::class, function(RegisterFieldTypes $event) {
             if (Craft::$app->getFields()->hasEventHandlers(self::EVENT_REGISTER_FIELD_TYPES)) {
                 $yiiEvent = new RegisterComponentTypesEvent(['types' => $event->types->all()]);
                 Craft::$app->getFields()->trigger(self::EVENT_REGISTER_FIELD_TYPES, $yiiEvent);
@@ -738,7 +738,7 @@ class Fields extends Component
             }
         });
 
-        Event::listen(DefineCompatibleFieldTypes::class, function (DefineCompatibleFieldTypes $event) {
+        Event::listen(DefineCompatibleFieldTypes::class, function(DefineCompatibleFieldTypes $event) {
             if (Craft::$app->getFields()->hasEventHandlers(self::EVENT_DEFINE_COMPATIBLE_FIELD_TYPES)) {
                 $yiiEvent = new DefineCompatibleFieldTypesEvent(['field' => $event->field, 'compatibleTypes' => $event->compatibleTypes->all()]);
                 Craft::$app->getFields()->trigger(self::EVENT_DEFINE_COMPATIBLE_FIELD_TYPES, $yiiEvent);
@@ -746,7 +746,7 @@ class Fields extends Component
             }
         });
 
-        Event::listen(RegisterNestedEntryFieldTypes::class, function (RegisterNestedEntryFieldTypes $event) {
+        Event::listen(RegisterNestedEntryFieldTypes::class, function(RegisterNestedEntryFieldTypes $event) {
             if (Craft::$app->getFields()->hasEventHandlers(self::EVENT_DEFINE_COMPATIBLE_FIELD_TYPES)) {
                 $yiiEvent = new RegisterComponentTypesEvent(['types' => $event->types->all()]);
                 Craft::$app->getFields()->trigger(self::EVENT_DEFINE_COMPATIBLE_FIELD_TYPES, $yiiEvent);
@@ -754,7 +754,7 @@ class Fields extends Component
             }
         });
 
-        Event::listen(FieldSaving::class, function (FieldSaving $event) {
+        Event::listen(FieldSaving::class, function(FieldSaving $event) {
             if (Craft::$app->getFields()->hasEventHandlers(self::EVENT_BEFORE_SAVE_FIELD)) {
                 $yiiEvent = new FieldEvent(['field' => $event->field, 'isNew' => $event->isNew]);
                 Craft::$app->getFields()->trigger(self::EVENT_BEFORE_SAVE_FIELD, $yiiEvent);
@@ -762,7 +762,7 @@ class Fields extends Component
             }
         });
 
-        Event::listen(FieldDeleting::class, function (FieldDeleting $event) {
+        Event::listen(FieldDeleting::class, function(FieldDeleting $event) {
             if (Craft::$app->getFields()->hasEventHandlers(self::EVENT_BEFORE_DELETE_FIELD)) {
                 $yiiEvent = new FieldEvent(['field' => $event->field]);
                 Craft::$app->getFields()->trigger(self::EVENT_BEFORE_DELETE_FIELD, $yiiEvent);
@@ -770,7 +770,7 @@ class Fields extends Component
             }
         });
 
-        Event::listen(ApplyingFieldDelete::class, function (ApplyingFieldDelete $event) {
+        Event::listen(ApplyingFieldDelete::class, function(ApplyingFieldDelete $event) {
             if (Craft::$app->getFields()->hasEventHandlers(self::EVENT_BEFORE_APPLY_FIELD_DELETE)) {
                 $yiiEvent = new FieldEvent(['field' => $event->field]);
                 Craft::$app->getFields()->trigger(self::EVENT_BEFORE_APPLY_FIELD_DELETE, $yiiEvent);
@@ -778,49 +778,49 @@ class Fields extends Component
             }
         });
 
-        Event::listen(FieldDeleted::class, function (FieldDeleted $event) {
+        Event::listen(FieldDeleted::class, function(FieldDeleted $event) {
             if (Craft::$app->getFields()->hasEventHandlers(self::EVENT_AFTER_DELETE_FIELD)) {
                 $yiiEvent = new FieldEvent(['field' => $event->field]);
                 Craft::$app->getFields()->trigger(self::EVENT_AFTER_DELETE_FIELD, $yiiEvent);
             }
         });
 
-        Event::listen(FieldSaved::class, function (FieldSaved $event) {
+        Event::listen(FieldSaved::class, function(FieldSaved $event) {
             if (Craft::$app->getFields()->hasEventHandlers(self::EVENT_AFTER_SAVE_FIELD)) {
                 $yiiEvent = new FieldEvent(['field' => $event->field, 'isNew' => $event->isNew]);
                 Craft::$app->getFields()->trigger(self::EVENT_AFTER_SAVE_FIELD, $yiiEvent);
             }
         });
 
-        Event::listen(FieldLayoutSaving::class, function (FieldLayoutSaving $event) {
+        Event::listen(FieldLayoutSaving::class, function(FieldLayoutSaving $event) {
             if (Craft::$app->getFields()->hasEventHandlers(self::EVENT_BEFORE_SAVE_FIELD_LAYOUT)) {
                 $yiiEvent = new FieldEvent(['layout' => $event->layout, 'isNew' => $event->isNew]);
                 Craft::$app->getFields()->trigger(self::EVENT_BEFORE_SAVE_FIELD_LAYOUT, $yiiEvent);
             }
         });
 
-        Event::listen(FieldLayoutSaved::class, function (FieldLayoutSaved $event) {
+        Event::listen(FieldLayoutSaved::class, function(FieldLayoutSaved $event) {
             if (Craft::$app->getFields()->hasEventHandlers(self::EVENT_AFTER_SAVE_FIELD_LAYOUT)) {
                 $yiiEvent = new FieldEvent(['layout' => $event->layout, 'isNew' => $event->isNew]);
                 Craft::$app->getFields()->trigger(self::EVENT_AFTER_SAVE_FIELD_LAYOUT, $yiiEvent);
             }
         });
 
-        Event::listen(FieldLayoutDeleting::class, function (FieldLayoutDeleting $event) {
+        Event::listen(FieldLayoutDeleting::class, function(FieldLayoutDeleting $event) {
             if (Craft::$app->getFields()->hasEventHandlers(self::EVENT_BEFORE_DELETE_FIELD_LAYOUT)) {
                 $yiiEvent = new FieldEvent(['layout' => $event->layout]);
                 Craft::$app->getFields()->trigger(self::EVENT_BEFORE_DELETE_FIELD_LAYOUT, $yiiEvent);
             }
         });
 
-        Event::listen(FieldLayoutDeleted::class, function (FieldLayoutDeleted $event) {
+        Event::listen(FieldLayoutDeleted::class, function(FieldLayoutDeleted $event) {
             if (Craft::$app->getFields()->hasEventHandlers(self::EVENT_AFTER_DELETE_FIELD_LAYOUT)) {
                 $yiiEvent = new FieldEvent(['layout' => $event->layout]);
                 Craft::$app->getFields()->trigger(self::EVENT_AFTER_DELETE_FIELD_LAYOUT, $yiiEvent);
             }
         });
 
-        Event::listen(ApplyingFieldSave::class, function (ApplyingFieldSave $event) {
+        Event::listen(ApplyingFieldSave::class, function(ApplyingFieldSave $event) {
             if (Craft::$app->getFields()->hasEventHandlers(self::EVENT_BEFORE_APPLY_FIELD_SAVE)) {
                 Craft::$app->getFields()->trigger(self::EVENT_BEFORE_APPLY_FIELD_SAVE, new ApplyFieldSaveEvent([
                     'field' => $event->field,

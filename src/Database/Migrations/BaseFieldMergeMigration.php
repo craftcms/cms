@@ -2,11 +2,10 @@
 
 namespace CraftCms\Cms\Database\Migrations;
 
-use Craft;
-use CraftCms\Cms\Field\Contracts\FieldInterface;
 use craft\base\MergeableFieldInterface;
 use craft\fields\MissingField;
 use CraftCms\Cms\Database\Migration;
+use CraftCms\Cms\Field\Contracts\FieldInterface;
 use CraftCms\Cms\Field\Fields;
 use CraftCms\Cms\Field\Models\Field;
 use RuntimeException;

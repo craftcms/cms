@@ -7,7 +7,6 @@
 
 namespace crafttests\unit\behaviors;
 
-use Craft;
 use craft\behaviors\CustomFieldBehavior;
 use craft\fields\PlainText;
 use craft\test\TestCase;

@@ -7,7 +7,6 @@
 
 namespace craft\elements\db;
 
-use Craft;
 use craft\base\ElementContainerFieldInterface;
 use craft\base\ElementInterface;
 use craft\db\Query;

@@ -83,6 +83,7 @@ use craft\web\View;
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Enums\AttributeStatus;
+use CraftCms\Cms\Field\Contracts\FieldInterface;
 use CraftCms\Cms\Field\Fields;
 use CraftCms\Cms\Shared\Enums\Color;
 use CraftCms\Cms\Support\Arr;
@@ -115,7 +116,6 @@ use yii\validators\BooleanValidator;
 use yii\validators\RequiredValidator;
 use yii\validators\Validator;
 use yii\web\Response;
-use CraftCms\Cms\Field\Contracts\FieldInterface;
 
 /**
  * Element is the base class for classes representing elements in terms of objects.

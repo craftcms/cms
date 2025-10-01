@@ -111,7 +111,7 @@ class RelatedToConditionRule extends BaseElementSelectConditionRule implements E
      */
     private function _elementTypeOptions(): array
     {
-        return app(Fields::class)->getRelationalFieldTypes()->map(function (string $field) {
+        return app(Fields::class)->getRelationalFieldTypes()->map(function(string $field) {
             /** @var class-string<BaseRelationField> $field */
             $elementType = $field::elementType();
 

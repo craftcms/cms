@@ -9,12 +9,12 @@ namespace craft\elements\db;
 
 use Craft;
 use craft\base\ElementInterface;
-use CraftCms\Cms\Field\Contracts\FieldInterface;
 use craft\db\Query;
 use craft\db\Table;
 use craft\fields\BaseRelationField;
 use craft\fields\Matrix;
 use craft\models\Site;
+use CraftCms\Cms\Field\Contracts\FieldInterface;
 use CraftCms\Cms\Field\Fields;
 use CraftCms\Cms\Support\Arr;
 use Illuminate\Support\Collection;

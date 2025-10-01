@@ -9,9 +9,9 @@ namespace craft\fields;
 
 use craft\base\ElementInterface;
 use craft\base\Field;
-use CraftCms\Cms\Field\Contracts\FieldInterface;
 use craft\base\MissingComponentInterface;
 use craft\base\MissingComponentTrait;
+use CraftCms\Cms\Field\Contracts\FieldInterface;
 
 /**
  * MissingField represents a field with an invalid class.

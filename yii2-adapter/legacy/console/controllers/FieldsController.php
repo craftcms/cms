@@ -7,8 +7,6 @@
 
 namespace craft\console\controllers;
 
-use Craft;
-use CraftCms\Cms\Field\Contracts\FieldInterface;
 use craft\base\MergeableFieldInterface;
 use craft\console\Controller;
 use craft\errors\InvalidFieldException;
@@ -18,6 +16,7 @@ use craft\models\FieldLayout;
 use CraftCms\Aliases\Aliases;
 use CraftCms\Cms\Database\Migrator;
 use CraftCms\Cms\Database\Table;
+use CraftCms\Cms\Field\Contracts\FieldInterface;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\Support\Json;
 use Illuminate\Support\Collection;

@@ -26,6 +26,7 @@ use craft\validators\UniqueValidator;
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Enums\AttributeStatus;
+use CraftCms\Cms\Field\Contracts\FieldInterface;
 use CraftCms\Cms\Field\Fields;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Str;
@@ -39,7 +40,6 @@ use yii\base\InvalidArgumentException;
 use yii\base\NotSupportedException;
 use yii\db\ExpressionInterface;
 use yii\db\Schema;
-use CraftCms\Cms\Field\Contracts\FieldInterface;
 
 /**
  * Field is the base class for classes representing fields in terms of objects.

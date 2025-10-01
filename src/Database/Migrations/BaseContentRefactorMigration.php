@@ -3,12 +3,12 @@
 namespace CraftCms\Cms\Database\Migrations;
 
 use craft\base\ElementInterface;
-use CraftCms\Cms\Field\Contracts\FieldInterface;
 use craft\fieldlayoutelements\CustomField;
 use craft\fields\MissingField;
 use craft\models\FieldLayout;
 use CraftCms\Cms\Database\Migration;
 use CraftCms\Cms\Database\Table;
+use CraftCms\Cms\Field\Contracts\FieldInterface;
 use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Support\Str;
 use Illuminate\Database\Query\Builder;

@@ -9,13 +9,13 @@ namespace craft\test\fixtures;
 
 use Craft;
 use craft\base\Field;
-use CraftCms\Cms\Field\Contracts\FieldInterface;
 use craft\base\ModelInterface;
 use craft\fieldlayoutelements\CustomField;
 use craft\helpers\Component;
 use craft\models\FieldLayout;
 use craft\models\FieldLayoutTab;
 use craft\test\DbFixtureTrait;
+use CraftCms\Cms\Field\Contracts\FieldInterface;
 use CraftCms\Cms\Field\Fields;
 use CraftCms\Cms\Support\Arr;
 use Illuminate\Support\Facades\DB;

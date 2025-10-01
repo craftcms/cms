@@ -7,12 +7,11 @@
 
 namespace craft\behaviors;
 
-use Craft;
 use craft\base\ElementInterface;
-use CraftCms\Cms\Field\Contracts\FieldInterface;
 use craft\base\FieldLayoutProviderInterface;
 use craft\models\EntryType;
 use craft\models\FieldLayout;
+use CraftCms\Cms\Field\Contracts\FieldInterface;
 use CraftCms\Cms\Field\Fields;
 use yii\base\Behavior;
 use yii\base\InvalidConfigException;

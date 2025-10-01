@@ -9,7 +9,6 @@ namespace craft\services;
 
 use Craft;
 use craft\base\ElementInterface;
-use CraftCms\Cms\Field\Contracts\FieldInterface;
 use craft\base\MemoizableArray;
 use craft\db\Query;
 use craft\db\Table;
@@ -26,6 +25,7 @@ use craft\search\SearchQuery;
 use craft\search\SearchQueryTerm;
 use craft\search\SearchQueryTermGroup;
 use CraftCms\Cms\Config\GeneralConfig;
+use CraftCms\Cms\Field\Contracts\FieldInterface;
 use CraftCms\Cms\Field\Fields;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Str;

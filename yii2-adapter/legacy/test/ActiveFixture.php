@@ -7,7 +7,6 @@
 
 namespace craft\test;
 
-use Craft;
 use craft\elements\Entry;
 use craft\models\FieldLayout;
 use CraftCms\Cms\Field\Fields;

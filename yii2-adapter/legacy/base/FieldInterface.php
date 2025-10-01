@@ -2,8 +2,6 @@
 
 namespace craft\base;
 
-use CraftCms\Cms\Component\Contracts\SavableComponentInterface;
-
 /** @phpstan-ignore-next-line */
 if (false) {
     /**
@@ -21,7 +19,6 @@ if (false) {
      */
     interface FieldInterface extends \CraftCms\Cms\Field\Contracts\FieldInterface, ModelInterface
     {
-
     }
 }
 
