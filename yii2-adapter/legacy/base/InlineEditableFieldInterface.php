@@ -15,7 +15,7 @@ namespace craft\base;
  * @since 5.0.0
  * @mixin Field
  */
-interface InlineEditableFieldInterface extends PreviewableFieldInterface
+interface InlineEditableFieldInterface extends \CraftCms\Cms\Field\Contracts\PreviewableFieldInterface
 {
     /**
      * Returns the HTML that should be shown for this field’s inline inputs.

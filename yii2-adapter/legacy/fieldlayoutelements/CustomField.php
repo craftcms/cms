@@ -11,7 +11,7 @@ use Craft;
 use craft\base\Actionable;
 use craft\base\CrossSiteCopyableFieldInterface;
 use craft\base\ElementInterface;
-use craft\base\PreviewableFieldInterface;
+use CraftCms\Cms\Field\Contracts\PreviewableFieldInterface;
 use craft\base\ThumbableFieldInterface;
 use craft\elements\conditions\users\UserCondition;
 use craft\elements\User;

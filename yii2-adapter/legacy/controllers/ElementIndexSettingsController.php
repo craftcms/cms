@@ -9,7 +9,7 @@ namespace craft\controllers;
 
 use Craft;
 use craft\base\ElementInterface;
-use craft\base\PreviewableFieldInterface;
+use CraftCms\Cms\Field\Contracts\PreviewableFieldInterface;
 use craft\elements\conditions\ElementConditionInterface;
 use craft\helpers\Cp;
 use craft\models\UserGroup;

@@ -10,7 +10,7 @@ namespace craft\services;
 use Craft;
 use craft\base\conditions\ConditionInterface;
 use craft\base\ElementInterface;
-use craft\base\PreviewableFieldInterface;
+use CraftCms\Cms\Field\Contracts\PreviewableFieldInterface;
 use craft\base\SortableFieldInterface;
 use craft\db\CoalesceColumnsExpression;
 use craft\elements\conditions\ElementConditionInterface;

@@ -40,6 +40,7 @@ use yii\base\InvalidArgumentException;
 use yii\base\NotSupportedException;
 use yii\db\ExpressionInterface;
 use yii\db\Schema;
+use CraftCms\Cms\Field\Contracts\PreviewableFieldInterface;
 
 /**
  * Field is the base class for classes representing fields in terms of objects.

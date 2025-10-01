@@ -12,7 +12,7 @@ use craft\base\CrossSiteCopyableFieldInterface;
 use craft\base\ElementInterface;
 use craft\base\Field;
 use craft\base\MergeableFieldInterface;
-use craft\base\PreviewableFieldInterface;
+use CraftCms\Cms\Field\Contracts\PreviewableFieldInterface;
 use craft\db\QueryParam;
 use craft\events\DefineInputOptionsEvent;
 use craft\fields\conditions\OptionsFieldConditionRule;
