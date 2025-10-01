@@ -8,7 +8,7 @@
 namespace craft\fields;
 
 use Craft;
-use craft\base\CrossSiteCopyableFieldInterface;
+use CraftCms\Cms\Field\Contracts\CrossSiteCopyableFieldInterface;
 use craft\base\ElementInterface;
 use craft\base\Field;
 use CraftCms\Cms\Field\Contracts\InlineEditableFieldInterface;

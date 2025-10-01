@@ -9,7 +9,7 @@ namespace craft\fieldlayoutelements;
 
 use Craft;
 use craft\base\Actionable;
-use craft\base\CrossSiteCopyableFieldInterface;
+use CraftCms\Cms\Field\Contracts\CrossSiteCopyableFieldInterface;
 use craft\base\ElementInterface;
 use CraftCms\Cms\Field\Contracts\PreviewableFieldInterface;
 use craft\base\ThumbableFieldInterface;

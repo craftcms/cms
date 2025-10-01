@@ -1,0 +1,22 @@
+<?php
+
+namespace CraftCms\Cms\Field\Contracts;
+
+use craft\base\ElementInterface;
+
+/**
+ * CrossSiteCopyableFieldInterface defines the common interface to be implemented by field classes
+ * that wish to support copying their values between sites in a multisite installation.
+ *
+ * @since 6.0.0
+ */
+interface CrossSiteCopyableFieldInterface
+{
+    /**
+     * Copies the field’s value from one site to another.
+     *
+     * @param ElementInterface $from
+     * @param ElementInterface $to
+     */
+    public function copyCrossSiteValue(ElementInterface $from, ElementInterface $to): void;
+}
