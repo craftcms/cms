@@ -18,6 +18,7 @@
 - Fixed a bug where element queries weren’t handling generated field params properly, for generated fields with the same handle as custom fields. ([#17851](https://github.com/craftcms/cms/issues/17851), [#17855](https://github.com/craftcms/cms/issues/17855))
 - Fixed a bug where it wasn’t possible to choose autosuggest inputs’ suggestions via mouse click. ([#17869](https://github.com/craftcms/cms/pull/17869))
 - Fixed a bug where nested entries within Matrix fields weren’t getting a “Copy” action if the field was set to the inline-editable blocks view mode and Min/Max Entries were set to 1. ([#17878](https://github.com/craftcms/cms/issues/17878))
+- Fixed a bug where Categories fields weren’t showing inline search inputs when “Show the search input” was enabled. ([#17886](https://github.com/craftcms/cms/pull/17886))
 - Fixed a styling issue.
 
 ## 5.8.17 - 2025-09-05
