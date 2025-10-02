@@ -305,11 +305,7 @@ $('#' + $id).on('click', () => {
 });
 JS, [
                 $view->namespaceInputId($editId),
-                [
-                    'entryTypeId' => $this->id,
-                    'checkOverrides' => true,
-                    'overridesPattern' => '^types\\[.*\\]\\[entryTypes\\]\\[\\]|entryTypes\\[\\]',
-                ],
+                ['entryTypeId' => $this->id],
             ]);
         }
 

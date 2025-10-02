@@ -2576,12 +2576,7 @@ $.extend(Craft, {
     );
   },
 
-  refreshComponentInstances(
-    type,
-    id,
-    checkOverrides = false,
-    overridesPattern = false
-  ) {
+  refreshComponentInstances(type, id) {
     const $chips = $(
       `div.chip[data-type="${$.escapeSelector(
         type
@@ -2592,23 +2587,7 @@ $.extend(Craft, {
     }
     const instances = [];
     for (let i = 0; i < $chips.length; i++) {
-      let settings = $chips.eq(i).data('settings');
-
-      if (checkOverrides && overridesPattern) {
-        let inputs = $chips.eq(i).find('input,button').get();
-        let regex = new RegExp(overridesPattern);
-        for (let i = 0; i < inputs.length; i++) {
-          if (regex.test(inputs[i].name)) {
-            let overrides = inputs[i].value;
-            if (overrides.length) {
-              overrides = JSON.parse(overrides);
-              settings['overrides'] = overrides;
-            }
-          }
-        }
-      }
-
-      instances.push(settings);
+      instances.push($chips.eq(i).data('settings'));
     }
     const data = {
       components: [{type, id, instances}],
@@ -2626,16 +2605,18 @@ $.extend(Craft, {
             }
           }
           const $actions = $chip.find('.chip-actions').detach();
+          const $indicators = $chip.find('.chip-label .indicators').detach();
           const $inputs = $chip.find('input,button').detach();
           $chip.html($replacement.html());
           if ($actions.length) {
             $chip.find('.chip-actions').replaceWith($actions);
           }
+          if ($indicators.length) {
+            $chip.find('.chip-label').append($indicators);
+          }
           if ($inputs.length) {
             $inputs.appendTo($chip);
           }
-
-          Craft.initUiElements($chip);
         }
       }
     );
