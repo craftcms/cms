@@ -17,6 +17,13 @@
 - Fixed a bug where focus was moved to the top of the body after the final tag in a Tags field was removed. ([#17861](https://github.com/craftcms/cms/pull/17861))
 - Fixed a bug where element queries weren’t handling generated field params properly, for generated fields with the same handle as custom fields. ([#17851](https://github.com/craftcms/cms/issues/17851), [#17855](https://github.com/craftcms/cms/issues/17855))
 - Fixed a bug where it wasn’t possible to choose autosuggest inputs’ suggestions via mouse click. ([#17869](https://github.com/craftcms/cms/pull/17869))
+- Fixed a bug where nested entries within Matrix fields weren’t getting a “Copy” action if the field was set to the inline-editable blocks view mode and Min/Max Entries were set to 1. ([#17878](https://github.com/craftcms/cms/issues/17878))
+- Fixed a bug where Categories fields weren’t showing inline search inputs when “Show the search input” was enabled. ([#17886](https://github.com/craftcms/cms/pull/17886))
+- Fixed a bug where the “Entry type settings” action for nested entries could open the owner entry’s entry type settings. ([#17875](https://github.com/craftcms/cms/issues/17875))
+- Fixed a bug where entry type chips would lose their overridden name, handle, and description values when the entry type’s settings were saved. ([#17876](https://github.com/craftcms/cms/issues/17876))
+- Fixed a bug where Matrix entries still showed a “Duplicate” action when the Matrix field’s Max Entries setting was reached. ([#17902](https://github.com/craftcms/cms/pull/17902))
+- Fixed a bug where Matrix enttries’ “Duplicate” action was failing silently if the field’s Max Entries setting was reached for the canonical owner, but not the current draft. ([#17902](https://github.com/craftcms/cms/pull/17902))
+- Fixed a bug where Matrix fields set to the element index view mode weren’t showing the correct nested entries when viewing an owner’s revision. ([#17887](https://github.com/craftcms/cms/issues/17887))
 - Fixed a styling issue.
 
 ## 5.8.17 - 2025-09-05
