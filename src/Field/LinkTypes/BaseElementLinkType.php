@@ -72,7 +72,7 @@ abstract class BaseElementLinkType extends BaseLinkType
         parent::__construct($config);
     }
 
-    public function getSettingsHtml(): string
+    public function getSettingsHtml(): ?string
     {
         return $this->sourcesSettingHtml();
     }

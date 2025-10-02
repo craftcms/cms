@@ -106,7 +106,7 @@ class ElementCondition extends BaseCondition implements ElementConditionInterfac
             return Craft::$app->getElementSources()->getFieldLayoutsForSource($this->elementType, $this->sourceKey);
         }
 
-        return app(Fields::class)->getLayoutsByType($this->elementType);
+        return app(Fields::class)->getLayoutsByType($this->elementType)->all();
     }
 
     /**

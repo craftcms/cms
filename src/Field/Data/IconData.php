@@ -1,24 +1,13 @@
 <?php
 
-/**
- * @link https://craftcms.com/
- *
- * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license https://craftcms.github.io/license/
- */
-
 namespace CraftCms\Cms\Field\Data;
 
 use craft\base\Serializable;
 
 /**
- * Class IconData
- *
- * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- *
- * @since 5.8.0
+ * @since 6.0.0
  */
-class IconData implements Serializable
+final class IconData implements Serializable
 {
     /**
      * Constructor

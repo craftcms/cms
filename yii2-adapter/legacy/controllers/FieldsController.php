@@ -117,7 +117,6 @@ class FieldsController extends Controller
         // ---------------------------------------------------------------------
 
         $supportedTranslationMethods = [];
-        /** @var string[]|FieldInterface[] $allFieldTypes */
         $allFieldTypes = $fieldsService->getAllFieldTypes();
 
         foreach ($allFieldTypes as $class) {
@@ -135,7 +134,6 @@ class FieldsController extends Controller
             $compatibleFieldTypes = $fieldsService->getCompatibleFieldTypes($field, true);
         }
 
-        /** @var string[]|FieldInterface[] $compatibleFieldTypes */
         $fieldTypeOptions = [];
         $fieldTypeNames = [];
         $foundCurrent = false;
@@ -153,7 +151,7 @@ class FieldsController extends Controller
                     (!$multiInstanceTypesOnly || $class::isMultiInstance())
                 )
             ) {
-                $compatible = $isCurrent || in_array($class, $compatibleFieldTypes, true);
+                $compatible = $isCurrent || $compatibleFieldTypes->contains($class);
                 $name = $class::displayName();
                 $option = [
                     'icon' => $class::icon(),

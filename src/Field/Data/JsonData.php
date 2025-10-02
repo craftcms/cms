@@ -1,12 +1,5 @@
 <?php
 
-/**
- * @link https://craftcms.com/
- *
- * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license https://craftcms.github.io/license/
- */
-
 namespace CraftCms\Cms\Field\Data;
 
 use ArrayAccess;
@@ -14,24 +7,18 @@ use ArrayIterator;
 use craft\base\Serializable;
 use CraftCms\Cms\Support\Json;
 use IteratorAggregate;
+use Spatie\LaravelData\Dto;
 use Traversable;
-use yii\base\BaseObject;
 use yii\base\InvalidCallException;
 
 /**
- * JSON field data class.
- *
- * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- *
- * @since 5.7.0
+ * @since 6.0.0
  */
-class JsonData extends BaseObject implements ArrayAccess, IteratorAggregate, Serializable
+final class JsonData extends Dto implements ArrayAccess, IteratorAggregate, Serializable
 {
     public function __construct(
         private mixed $value,
-        array $config = [],
     ) {
-        parent::__construct($config);
     }
 
     public function __toString(): string

@@ -1,19 +1,10 @@
 <?php
 
-/**
- * @link https://craftcms.com/
- *
- * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license https://craftcms.github.io/license/
- */
-
 namespace CraftCms\Cms\Field\Data;
 
 use craft\base\Serializable;
 
 /**
- * Multi-select option field data class.
- *
  * @property string $hex
  * @property string $rgb
  * @property int $red
@@ -29,7 +20,7 @@ use craft\base\Serializable;
  *
  * @since 6.0.0
  */
-class ColorData implements Serializable
+final class ColorData implements Serializable
 {
     /**
      * @var string The color’s hex value

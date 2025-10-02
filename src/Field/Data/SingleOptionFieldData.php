@@ -1,26 +1,15 @@
 <?php
 
-/**
- * @link https://craftcms.com/
- *
- * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license https://craftcms.github.io/license/
- */
-
 namespace CraftCms\Cms\Field\Data;
 
 /**
  * Single-select option field data class.
  *
- * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- *
- * @since 3.0.0
+ * @since 6.0.0
  */
-class SingleOptionFieldData extends OptionData
+final class SingleOptionFieldData extends OptionData
 {
-    /**
-     * @var OptionData[]
-     */
+    /** @var OptionData[] */
     private array $_options = [];
 
     /**

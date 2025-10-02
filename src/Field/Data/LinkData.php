@@ -1,12 +1,5 @@
 <?php
 
-/**
- * @link https://craftcms.com/
- *
- * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license https://craftcms.github.io/license/
- */
-
 namespace CraftCms\Cms\Field\Data;
 
 use craft\base\ElementInterface;
@@ -16,8 +9,8 @@ use craft\helpers\Template;
 use CraftCms\Cms\Field\LinkTypes\BaseElementLinkType;
 use CraftCms\Cms\Field\LinkTypes\BaseLinkType;
 use CraftCms\Cms\Support\Html;
+use Spatie\LaravelData\Dto;
 use Twig\Markup;
-use yii\base\BaseObject;
 
 /**
  * Link field data class.
@@ -31,66 +24,32 @@ use yii\base\BaseObject;
  * @property-read string $value The link value
  * @property-read string|null $filename The download filename
  *
- * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- *
- * @since 5.3.0
+ * @since 6.0.0
  */
-class LinkData extends BaseObject implements Serializable
+final class LinkData extends Dto implements Serializable
 {
-    /**
-     * @var string|null The link’s URL suffix value.
-     *
-     * @since 5.6.0
-     */
+    /** @var string|null The link’s URL suffix value. */
     public ?string $urlSuffix = null;
 
-    /**
-     * @var string|null The link’s `target` attribute.
-     *
-     * @since 5.5.0
-     */
+    /** @var string|null The link’s `target` attribute. */
     public ?string $target = null;
 
-    /**
-     * @var string|null The link’s `title` attribute.
-     *
-     * @since 5.6.0
-     */
+    /** @var string|null The link’s `title` attribute. */
     public ?string $title = null;
 
-    /**
-     * @var string|null The link’s `class` attribute.
-     *
-     * @since 5.6.0
-     */
+    /** @var string|null The link’s `class` attribute. */
     public ?string $class = null;
 
-    /**
-     * @var string|null The link’s `id` attribute.
-     *
-     * @since 5.6.0
-     */
+    /** @var string|null The link’s `id` attribute. */
     public ?string $id = null;
 
-    /**
-     * @var string|null The link’s `rel` attribute.
-     *
-     * @since 5.6.0
-     */
+    /** @var string|null The link’s `rel` attribute. */
     public ?string $rel = null;
 
-    /**
-     * @var string|null The link’s `aria-label` attribute.
-     *
-     * @since 5.6.0
-     */
+    /** @var string|null The link’s `aria-label` attribute. */
     public ?string $ariaLabel = null;
 
-    /**
-     * @var bool Whether the link should have a `download` attribute.
-     *
-     * @since 5.7.0
-     */
+    /** @var bool Whether the link should have a `download` attribute. */
     public bool $download = false;
 
     private string $renderedValue;
@@ -102,9 +61,7 @@ class LinkData extends BaseObject implements Serializable
     public function __construct(
         private readonly string $value,
         private readonly BaseLinkType $linkType,
-        array $config = [],
     ) {
-        parent::__construct($config);
     }
 
     public function __toString(): string
@@ -134,8 +91,6 @@ class LinkData extends BaseObject implements Serializable
 
     /**
      * Returns the full link URL.
-     *
-     * @since 5.6.0
      */
     public function getUrl(): string
     {
@@ -158,8 +113,6 @@ class LinkData extends BaseObject implements Serializable
 
     /**
      * Sets the link label.
-     *
-     * @since 5.5.0
      */
     public function setLabel(?string $label): void
     {
@@ -170,8 +123,6 @@ class LinkData extends BaseObject implements Serializable
      * Returns the download filename.
      *
      * @param  bool  $custom  Whether to return the custom filename
-     *
-     * @since 5.7.0
      */
     public function getFilename(bool $custom = true): ?string
     {
@@ -180,8 +131,6 @@ class LinkData extends BaseObject implements Serializable
 
     /**
      * Sets the download filename.
-     *
-     * @since 5.7.0
      */
     public function setFilename(?string $filename): void
     {
@@ -216,8 +165,6 @@ class LinkData extends BaseObject implements Serializable
 
     /**
      * Returns an element query that will fetch the element linked by the field, if there is one.
-     *
-     * @since 5.6.0
      */
     public function getElementQuery(): ?ElementQueryInterface
     {
@@ -240,7 +187,7 @@ class LinkData extends BaseObject implements Serializable
         return $this->linkType->element($this->value);
     }
 
-    public function serialize(): mixed
+    public function serialize(): array
     {
         return array_filter([
             'value' => $this->value,

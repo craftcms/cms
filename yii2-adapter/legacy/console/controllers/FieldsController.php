@@ -17,6 +17,7 @@ use CraftCms\Cms\Database\Migrator;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Field\Contracts\FieldInterface;
 use CraftCms\Cms\Field\Contracts\MergeableFieldInterface;
+use CraftCms\Cms\Field\Fields;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\Support\Json;
 use Illuminate\Support\Collection;

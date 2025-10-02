@@ -1,12 +1,5 @@
 <?php
 
-/**
- * @link https://craftcms.com/
- *
- * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license https://craftcms.github.io/license/
- */
-
 namespace CraftCms\Cms\Field\Data;
 
 use ArrayObject;
@@ -14,20 +7,14 @@ use ArrayObject;
 /**
  * Multi-select option field data class.
  *
- * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- *
- * @since 3.0.0
+ * @since 6.0.0
  */
-class MultiOptionsFieldData extends ArrayObject
+final class MultiOptionsFieldData extends ArrayObject
 {
-    /**
-     * @var OptionData[]
-     */
+    /** @var OptionData[] */
     private array $_options = [];
 
     /**
-     * Returns the options.
-     *
      * @return OptionData[]
      */
     public function getOptions(): array
@@ -36,8 +23,6 @@ class MultiOptionsFieldData extends ArrayObject
     }
 
     /**
-     * Sets the options.
-     *
      * @param  OptionData[]  $options
      */
     public function setOptions(array $options): void

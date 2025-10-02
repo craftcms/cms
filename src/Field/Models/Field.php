@@ -7,6 +7,7 @@ use CraftCms\Cms\Shared\BaseModel;
 use CraftCms\Cms\Shared\Concerns\HasUid;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
+/** @since 6.0.0 */
 final class Field extends BaseModel
 {
     use HasUid;
@@ -15,6 +16,13 @@ final class Field extends BaseModel
     protected $table = Table::FIELDS;
 
     private ?string $oldHandle = null;
+
+    protected function casts(): array
+    {
+        return [
+            'settings' => 'json',
+        ];
+    }
 
     protected static function booted(): void
     {
