@@ -2178,13 +2178,15 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
             ];
 
             $view = Craft::$app->getView();
-            $view->registerJsWithVars(fn($id, $params) => <<<JS
+            $view->registerJsWithVars(fn($id, $params, $isNestedEntry) => <<<JS
 (() => {
   $('#' + $id).on('activate', function() {
     const params = $params;
-    const input = $(this).closest('.menu').data('disclosureMenu').\$trigger.closest('form').find('.entry-type-select').find('input');
-    if (input.length) {
-      params.entryTypeId = input.val();
+    if (!$isNestedEntry) {
+        const input = $(this).closest('.menu').data('disclosureMenu').\$trigger.closest('form').find('.entry-type-select').find('input');
+        if (input.length) {
+          params.entryTypeId = input.val();
+        }
     }
     new Craft.CpScreenSlideout('entry-types/edit', {params});
   });
@@ -2192,6 +2194,7 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
 JS, [
                 $view->namespaceInputId($entryTypeEditId),
                 ['entryTypeId' => $this->typeId],
+                isset($this->fieldId),
             ]);
 
             // Section settings

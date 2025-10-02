@@ -352,6 +352,7 @@ class Cp
             'showDescription' => false,
             'size' => self::CHIP_SIZE_SMALL,
             'sortable' => false,
+            'overrides' => [],
         ];
 
         $config['showActionMenu'] = $config['showActionMenu'] && $component instanceof Actionable;
@@ -388,6 +389,7 @@ class Cp
                     'showStatus' => $config['showStatus'],
                     'showThumb' => $config['showThumb'],
                     'showDescription' => $config['showDescription'],
+                    'overrides' => $config['overrides'],
                     'size' => $config['size'],
                     'ui' => 'chip',
                 ] : false,

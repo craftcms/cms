@@ -22,6 +22,7 @@ use craft\filters\UtilityAccess;
 use craft\helpers\Api;
 use craft\helpers\App;
 use craft\helpers\ArrayHelper;
+use craft\helpers\Component;
 use craft\helpers\Cp;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\ElementHelper;
@@ -858,6 +859,9 @@ class AppController extends Controller
             $component = $componentType::get($id);
             if ($component) {
                 foreach ($componentInfo['instances'] as $config) {
+                    if (!empty($config['overrides'])) {
+                        Craft::configure($component, Component::cleanseConfig($config['overrides']));
+                    }
                     $componentHtml[$componentType][$id][] = Cp::chipHtml($component, $config);
                 }
 
