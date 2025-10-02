@@ -2194,7 +2194,7 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
 JS, [
                 $view->namespaceInputId($entryTypeEditId),
                 ['entryTypeId' => $this->typeId],
-                $this->fieldId && !$this->sectionId,
+                isset($this->fieldId),
             ]);
 
             // Section settings
