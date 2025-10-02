@@ -24,6 +24,7 @@
 - Fixed a bug where Matrix entries still showed a “Duplicate” action when the Matrix field’s Max Entries setting was reached. ([#17902](https://github.com/craftcms/cms/pull/17902))
 - Fixed a bug where Matrix enttries’ “Duplicate” action was failing silently if the field’s Max Entries setting was reached for the canonical owner, but not the current draft. ([#17902](https://github.com/craftcms/cms/pull/17902))
 - Fixed a bug where Matrix fields set to the element index view mode weren’t showing the correct nested entries when viewing an owner’s revision. ([#17887](https://github.com/craftcms/cms/issues/17887))
+- Fixed a bug where RTL inputs were getting left-aligned text for users with an LTR language preference. ([#17904](https://github.com/craftcms/cms/issues/17904))
 - Fixed a styling issue.
 
 ## 5.8.17 - 2025-09-05
