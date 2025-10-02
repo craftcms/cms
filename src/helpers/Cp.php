@@ -352,6 +352,7 @@ class Cp
             'showDescription' => false,
             'size' => self::CHIP_SIZE_SMALL,
             'sortable' => false,
+            'overrides' => [],
         ];
 
         $config['showActionMenu'] = $config['showActionMenu'] && $component instanceof Actionable;
@@ -388,6 +389,7 @@ class Cp
                     'showStatus' => $config['showStatus'],
                     'showThumb' => $config['showThumb'],
                     'showDescription' => $config['showDescription'],
+                    'overrides' => $config['overrides'],
                     'size' => $config['size'],
                     'ui' => 'chip',
                 ] : false,
@@ -579,7 +581,10 @@ class Cp
             );
         }
 
-        if ($element->isProvisionalDraft && ($config['showProvisionalDraftLabel'] ?? $config['showLabel'])) {
+        if (
+            ($config['showProvisionalDraftLabel'] ?? $config['showLabel']) &&
+            ($element->isProvisionalDraft || $element->hasProvisionalChanges)
+        ) {
             $config['labelHtml'] = ($config['labelHtml'] ?? '') . self::changeStatusLabelHtml();
         }
 
@@ -724,7 +729,7 @@ JS, [
 
         $labels = array_filter([
             $element->showStatusIndicator() ? static::componentStatusLabelHtml($element) : null,
-            $element->isProvisionalDraft ? self::changeStatusLabelHtml() : null,
+            $element->isProvisionalDraft || $element->hasProvisionalChanges ? self::changeStatusLabelHtml() : null,
         ]);
 
         if (!empty($labels)) {
