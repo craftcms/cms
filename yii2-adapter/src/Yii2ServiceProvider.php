@@ -4,6 +4,7 @@ namespace CraftCms\Yii2Adapter;
 
 use craft\console\controllers\HelpController;
 use craft\events\EditionChangeEvent;
+use craft\services\Addresses;
 use craft\services\Dashboard;
 use craft\services\Plugins as LegacyPlugins;
 use craft\services\ProjectConfig;
@@ -301,6 +302,7 @@ class Yii2ServiceProvider extends ServiceProvider
         /**
          * Services
          */
+        Addresses::registerEvents();
         Utilities::registerEvents();
         Dashboard::registerEvents();
         LegacyPlugins::registerEvents();

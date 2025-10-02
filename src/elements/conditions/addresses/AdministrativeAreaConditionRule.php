@@ -11,6 +11,7 @@ use craft\elements\db\AddressQuery;
 use craft\elements\db\ElementQueryInterface;
 use craft\helpers\Cp;
 use craft\helpers\UrlHelper;
+use CraftCms\Cms\Addresses\Addresses;
 use CraftCms\Cms\Support\Html;
 
 /**
@@ -67,7 +68,7 @@ class AdministrativeAreaConditionRule extends BaseMultiSelectConditionRule imple
      */
     protected function options(): array
     {
-        $administrativeAreas = Craft::$app->getAddresses()->getSubdivisionRepository()->getList([$this->countryCode], Craft::$app->language);
+        $administrativeAreas = app(Addresses::class)->getSubdivisionRepository()->getList([$this->countryCode], Craft::$app->language);
         // Allow custom states that are currently in the administrative areas list to remain in the list.
         foreach ($this->getValues() as $val) {
             if (!in_array($val, $administrativeAreas, false)) {
@@ -101,7 +102,7 @@ class AdministrativeAreaConditionRule extends BaseMultiSelectConditionRule imple
         $countrySelect = Cp::selectFieldHtml([
             'id' => 'country-code',
             'name' => 'countryCode',
-            'options' => Craft::$app->getAddresses()->getCountryList(),
+            'options' => app(Addresses::class)->getCountryList(),
             'value' => $this->countryCode,
             'inputAttributes' => [
                 'hx' => [

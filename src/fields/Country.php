@@ -17,6 +17,7 @@ use craft\base\InlineEditableFieldInterface;
 use craft\base\MergeableFieldInterface;
 use craft\fields\conditions\CountryFieldConditionRule;
 use craft\helpers\Cp;
+use CraftCms\Cms\Addresses\Addresses;
 use yii\db\Schema;
 
 /**
@@ -73,7 +74,7 @@ class Country extends Field implements InlineEditableFieldInterface, MergeableFi
         }
 
         try {
-            return Craft::$app->getAddresses()->getCountryRepository()->get($value, Craft::$app->language);
+            return app(Addresses::class)->getCountryRepository()->get($value, Craft::$app->language);
         } catch (UnknownCountryException) {
             return null;
         }
@@ -84,7 +85,7 @@ class Country extends Field implements InlineEditableFieldInterface, MergeableFi
      */
     protected function inputHtml(mixed $value, ?ElementInterface $element, bool $inline): string
     {
-        $options = Craft::$app->getAddresses()->getCountryList(Craft::$app->language);
+        $options = app(Addresses::class)->getCountryList(Craft::$app->language);
         array_unshift($options, ['label' => ' ', 'value' => '__blank__']);
 
         return Cp::selectizeHtml([
@@ -127,7 +128,7 @@ class Country extends Field implements InlineEditableFieldInterface, MergeableFi
     public function previewPlaceholderHtml(mixed $value, ?ElementInterface $element): string
     {
         if (!$value) {
-            $countries = Craft::$app->getAddresses()->getCountryRepository()->getList(Craft::$app->language);
+            $countries = app(Addresses::class)->getCountryRepository()->getList(Craft::$app->language);
             $value = $countries[array_rand($countries)];
         } else {
             if ($value instanceof CountryModel) {

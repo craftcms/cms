@@ -32,6 +32,7 @@ use craft\models\TagGroup;
 use craft\models\Volume;
 use craft\queue\jobs\ResaveElements;
 use craft\services\Elements;
+use CraftCms\Cms\Addresses\Addresses;
 use CraftCms\Cms\Support\Str;
 use Illuminate\Support\Collection;
 use ReflectionClass;
@@ -454,7 +455,7 @@ class ResaveController extends Controller
         }
 
         if (!empty($this->withFields)) {
-            $fieldLayout = Craft::$app->getAddresses()->getFieldLayout();
+            $fieldLayout = app(Addresses::class)->getFieldLayout();
             if (!$this->hasTheFields($fieldLayout)) {
                 $this->output($this->markdownToAnsi('The address field layout doesn’t satisfy `--with-fields`.'));
                 return ExitCode::UNSPECIFIED_ERROR;

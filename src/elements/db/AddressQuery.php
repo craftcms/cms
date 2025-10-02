@@ -12,6 +12,7 @@ use craft\db\QueryAbortedException;
 use craft\db\Table;
 use craft\elements\Address;
 use craft\helpers\Db;
+use CraftCms\Cms\Addresses\Addresses;
 
 /**
  * AddressQuery represents a SELECT SQL statement for categories in a way that is independent of DBMS.
@@ -974,7 +975,7 @@ class AddressQuery extends ElementQuery implements NestedElementQueryInterface
     protected function fieldLayouts(): array
     {
         return [
-            Craft::$app->getAddresses()->getFieldLayout(),
+            app(Addresses::class)->getFieldLayout(),
         ];
     }
 }

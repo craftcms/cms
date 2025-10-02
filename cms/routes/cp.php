@@ -23,6 +23,10 @@ Route::middleware('auth')->group(function () {
     Route::get('utilities', [UtilitiesController::class, 'index']);
     Route::get('utilities/{id}', [UtilitiesController::class, 'show']);
 
+    Route::middleware(RequireAdmin::class)->group(function () {
+        Route::view('settings/addresses', 'craftcms::settings/addresses/_fields');
+    });
+
     /**
      * Routes that require admin, but do not require admin changes
      */

@@ -70,7 +70,7 @@ class Install extends Migration
      */
     public function createTables(): void
     {
-        Schema::create(Table::ADDRESSES, function (Blueprint $table) {
+        Schema::create('addresses', function (Blueprint $table) {
             $table->integer('id', true);
             $table->integer('primaryOwnerId')->nullable();
             $table->integer('fieldId')->nullable();

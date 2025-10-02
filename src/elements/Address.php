@@ -21,8 +21,9 @@ use craft\fieldlayoutelements\addresses\OrganizationTaxIdField;
 use craft\fieldlayoutelements\BaseNativeField;
 use craft\fieldlayoutelements\FullNameField;
 use craft\models\FieldLayout;
-use craft\records\Address as AddressRecord;
 use craft\validators\StringValidator;
+use CraftCms\Cms\Addresses\Addresses;
+use CraftCms\Cms\Addresses\Models\Address as AddressModel;
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Database\Table;
 use yii\base\InvalidConfigException;
@@ -227,7 +228,7 @@ class Address extends Element implements AddressInterface, NestedElementInterfac
             return null;
         }
         /** @phpstan-var AddressField::* $attribute */
-        return Craft::$app->getAddresses()->getFieldLabel($attribute, $countryCode);
+        return app(Addresses::class)->getFieldLabel($attribute, $countryCode);
     }
 
     /**
@@ -339,7 +340,7 @@ class Address extends Element implements AddressInterface, NestedElementInterfac
     {
         if (AddressField::exists($attribute)) {
             /** @phpstan-var AddressField::* $attribute */
-            return Craft::$app->getAddresses()->getFieldLabel($attribute, $this->countryCode);
+            return app(Addresses::class)->getFieldLabel($attribute, $this->countryCode);
         }
 
         return match ($attribute) {
@@ -466,7 +467,7 @@ class Address extends Element implements AddressInterface, NestedElementInterfac
      */
     public function getCountry(): Country
     {
-        return Craft::$app->getAddresses()->getCountryRepository()->get($this->countryCode, Craft::$app->language);
+        return app(Addresses::class)->getCountryRepository()->get($this->countryCode, Craft::$app->language);
     }
 
     /**
@@ -588,7 +589,7 @@ class Address extends Element implements AddressInterface, NestedElementInterfac
     public function beforeValidate(): bool
     {
         $usedFields = array_unique([
-            ...Craft::$app->getAddresses()->getUsedFields($this->countryCode),
+            ...app(Addresses::class)->getUsedFields($this->countryCode),
             'fullName',
             'latLong',
             'organizationTaxId',
@@ -638,7 +639,7 @@ class Address extends Element implements AddressInterface, NestedElementInterfac
         $rules[] = [$stringFields, 'trim', 'skipOnEmpty' => true];
         $rules[] = [$stringFields, StringValidator::class, 'max' => 255, 'disallowMb4' => true];
 
-        $addressesService = Craft::$app->getAddresses();
+        $addressesService = app(Addresses::class);
         $countryCodes = array_keys($addressesService->getCountryRepository()->getList());
         $rules[] = [['countryCode'], 'in', 'range' => $countryCodes];
 
@@ -748,40 +749,40 @@ class Address extends Element implements AddressInterface, NestedElementInterfac
     public function afterSave(bool $isNew): void
     {
         if (!$isNew) {
-            $record = AddressRecord::findOne($this->id);
+            $model = AddressModel::find($this->id);
 
-            if (!$record) {
+            if (!$model) {
                 throw new InvalidConfigException("Invalid address ID: $this->id");
             }
         } else {
-            $record = new AddressRecord();
-            $record->id = $this->id;
+            $model = new AddressModel();
+            $model->id = $this->id;
         }
 
         $this->prepareNamesForSave();
 
-        $record->fieldId = $this->fieldId;
-        $record->primaryOwnerId = $this->getPrimaryOwnerId();
-        $record->countryCode = $this->countryCode;
-        $record->administrativeArea = $this->administrativeArea;
-        $record->locality = $this->locality;
-        $record->dependentLocality = $this->dependentLocality;
-        $record->postalCode = $this->postalCode;
-        $record->sortingCode = $this->sortingCode;
-        $record->addressLine1 = $this->addressLine1;
-        $record->addressLine2 = $this->addressLine2;
-        $record->addressLine3 = $this->addressLine3;
-        $record->organization = $this->organization;
-        $record->organizationTaxId = $this->organizationTaxId;
-        $record->fullName = $this->fullName;
-        $record->firstName = $this->firstName;
-        $record->lastName = $this->lastName;
-        $record->latitude = $this->latitude;
-        $record->longitude = $this->longitude;
+        $model->fieldId = $this->fieldId;
+        $model->primaryOwnerId = $this->getPrimaryOwnerId();
+        $model->countryCode = $this->countryCode;
+        $model->administrativeArea = $this->administrativeArea;
+        $model->locality = $this->locality;
+        $model->dependentLocality = $this->dependentLocality;
+        $model->postalCode = $this->postalCode;
+        $model->sortingCode = $this->sortingCode;
+        $model->addressLine1 = $this->addressLine1;
+        $model->addressLine2 = $this->addressLine2;
+        $model->addressLine3 = $this->addressLine3;
+        $model->organization = $this->organization;
+        $model->organizationTaxId = $this->organizationTaxId;
+        $model->fullName = $this->fullName;
+        $model->firstName = $this->firstName;
+        $model->lastName = $this->lastName;
+        $model->latitude = $this->latitude;
+        $model->longitude = $this->longitude;
 
         // Capture the dirty attributes from the record
-        $dirtyAttributes = array_keys($record->getDirtyAttributes());
-        $record->save(false);
+        $dirtyAttributes = array_keys($model->getDirty());
+        $model->save();
         $this->setDirtyAttributes($dirtyAttributes);
 
         $this->saveOwnership($isNew, Table::ADDRESSES);
@@ -794,6 +795,6 @@ class Address extends Element implements AddressInterface, NestedElementInterfac
      */
     public function getFieldLayout(): ?FieldLayout
     {
-        return Craft::$app->getAddresses()->getFieldLayout();
+        return app(Addresses::class)->getFieldLayout();
     }
 }

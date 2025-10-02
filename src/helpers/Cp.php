@@ -37,6 +37,7 @@ use craft\models\Site;
 use craft\services\ElementSources;
 use craft\web\twig\TemplateLoaderException;
 use craft\web\View;
+use CraftCms\Cms\Addresses\Addresses;
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Element\Enums\AttributeStatus;
@@ -2488,7 +2489,7 @@ JS, [
             }
         }
 
-        $addressesService = Craft::$app->getAddresses();
+        $addressesService = app(Addresses::class);
         $visibleFields = array_flip(array_merge(
                 $addressesService->getUsedFields($address->countryCode),
                 $addressesService->getUsedSubdivisionFields($address->countryCode),
@@ -2660,7 +2661,7 @@ JS, [
         bool $static = false,
     ): string {
         $value = $address->$name;
-        $options = Craft::$app->getAddresses()->getSubdivisionRepository()->getList($parents, Craft::$app->language);
+        $options = app(Addresses::class)->getSubdivisionRepository()->getList($parents, Craft::$app->language);
 
         if ($options) {
             // Persist invalid values in the UI
