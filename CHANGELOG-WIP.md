@@ -31,12 +31,14 @@
 - Added `Craft.BaseElementIndex::asyncSelectSource()`.
 - Added `Craft.BaseElementIndex::asyncSelectSourceByKey()`.
 - Added `Craft.BaseElementIndex::ensureSourceAttributeInfo()`.
+- Added `craft\base\ElementTrait::$hasProvisionalChanges`. ([#17915](https://github.com/craftcms/cms/pull/17915))
 - Added `craft\fields\BaseRelationField::VIEW_MODE_CARDS_GRID`.
 - Added `craft\fields\BaseRelationField::VIEW_MODE_CARDS`.
 - Added `craft\fields\BaseRelationField::VIEW_MODE_LIST_INLINE`.
 - Added `craft\fields\BaseRelationField::VIEW_MODE_LIST`.
 - Added `craft\fields\BaseRelationField::VIEW_MODE_THUMBS`.
 - Added `craft\fields\Matrix::VIEW_MODE_CARDS_GRID`.
+- Added `craft\helpers\ElementHelper::loadProvisionalChanges()`. ([#17915](https://github.com/craftcms/cms/pull/17915))
 - Added `craft\web\GqlResponseFormatter`.
 - Added `craft\web\Response::FORMAT_GQL`.
 - Added `craft\web\twig\nodes\BaseNode`.
@@ -56,4 +58,5 @@
 - Global set queries no longer register cache tags.
 - Improved element index performance. ([#17557](https://github.com/craftcms/cms/pull/17557))
 - Improved element query performance. ([#17850](https://github.com/craftcms/cms/pull/17850))
+- Fixed a bug where elements with unsaved changes could show outdated attribute/field values within element index tables, chips, and cards throughout the control panel. ([#17915](https://github.com/craftcms/cms/pull/17915))
 - Updated Twig to 3.21. ([#17603](https://github.com/craftcms/cms/discussions/17603))

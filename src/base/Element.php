@@ -1363,8 +1363,8 @@ abstract class Element extends Component implements ElementInterface
             return '';
         }
 
-        // See if there are any provisional drafts we should swap these out with
-        ElementHelper::swapInProvisionalDrafts($elements);
+        // See if there are any provisional changes we should show
+        ElementHelper::loadProvisionalChanges($elements);
 
         if ($request->getParam('prevalidate')) {
             foreach ($elements as $element) {

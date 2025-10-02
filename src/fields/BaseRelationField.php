@@ -1503,7 +1503,7 @@ JS, [
             $value = [];
         }
 
-        ElementHelper::swapInProvisionalDrafts($value);
+        ElementHelper::loadProvisionalChanges($value);
 
         if ($this->validateRelatedElements && $element !== null) {
             // Pre-validate related elements
