@@ -130,6 +130,9 @@ class MatrixController extends Controller
                 throw new BadRequestHttpException("Invalid source element ID: $sourceId");
             }
 
+            // set owner so that the canDuplicateAsDraft checks the max entries on the right owner and not only the canonical
+            $source->setOwner($owner);
+
             if (!$elementsService->canDuplicateAsDraft($source, $user)) {
                 throw new ForbiddenHttpException('User not authorized to duplicate this element.');
             }
