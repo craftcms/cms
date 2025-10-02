@@ -17,6 +17,7 @@
 - Added the “Show ON/OFF labels in cards” setting to Lightswitch fields. ([#17743](https://github.com/craftcms/cms/discussions/17743))
 - Control panel-defined routes now have action menus with “Move up”/“Move down” actions. ([#17706](https://github.com/craftcms/cms/pull/17706))
 - “Generate image transform” jobs now include the asset’s filename in the job description. ([#17753](https://github.com/craftcms/cms/issues/17753))
+- “Field” and “Section” condition rules now show field/section handles for users with the “Show field handles in edit forms” preference enabled. ([#17909](https://github.com/craftcms/cms/pull/17909))
 
 ### Development
 - Reference tags now support fallback values when no attribute is specified. ([#17688](https://github.com/craftcms/cms/pull/17688))
@@ -32,6 +33,7 @@
 - Added `Craft.BaseElementIndex::asyncSelectSourceByKey()`.
 - Added `Craft.BaseElementIndex::ensureSourceAttributeInfo()`.
 - Added `craft\base\ElementTrait::$hasProvisionalChanges`. ([#17915](https://github.com/craftcms/cms/pull/17915))
+- Added `craft\elements\conditions\HintableConditionRuleTrait`. ([#17909](https://github.com/craftcms/cms/pull/17909))
 - Added `craft\fields\BaseRelationField::VIEW_MODE_CARDS_GRID`.
 - Added `craft\fields\BaseRelationField::VIEW_MODE_CARDS`.
 - Added `craft\fields\BaseRelationField::VIEW_MODE_LIST_INLINE`.
