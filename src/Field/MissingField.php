@@ -3,7 +3,6 @@
 namespace CraftCms\Cms\Field;
 
 use craft\base\ElementInterface;
-use craft\base\Field;
 use craft\base\MissingComponentInterface;
 use craft\base\MissingComponentTrait;
 use CraftCms\Cms\Field\Contracts\FieldInterface;

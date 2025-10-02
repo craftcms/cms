@@ -881,12 +881,12 @@ final class Assets extends BaseRelationField
         }
 
         // Fire a 'locateUploadedFiles' event
-        if ($this->hasEventHandlers(self::EVENT_LOCATE_UPLOADED_FILES)) {
+        if ($this->hasComponentListeners(self::EVENT_LOCATE_UPLOADED_FILES)) {
             $event = new LocateUploadedFilesEvent([
                 'element' => $element,
                 'files' => $files,
             ]);
-            $this->trigger(self::EVENT_LOCATE_UPLOADED_FILES, $event);
+            $this->dispatchComponentEvent(self::EVENT_LOCATE_UPLOADED_FILES, $event);
 
             return $event->files;
         }

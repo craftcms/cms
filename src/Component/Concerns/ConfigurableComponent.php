@@ -41,7 +41,7 @@ trait ConfigurableComponent
 
     public static function onDefineSettingsAttributes(callable $callback): void
     {
-        static::registerModelEvent(self::EVENT_DEFINE_SETTINGS_ATTRIBUTES, $callback);
+        static::listen(self::EVENT_DEFINE_SETTINGS_ATTRIBUTES, $callback);
     }
 
     public function getSettings(): array

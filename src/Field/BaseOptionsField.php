@@ -4,7 +4,6 @@ namespace CraftCms\Cms\Field;
 
 use Craft;
 use craft\base\ElementInterface;
-use craft\base\Field;
 use craft\db\QueryParam;
 use craft\events\DefineInputOptionsEvent;
 use craft\fields\conditions\OptionsFieldConditionRule;
@@ -679,13 +678,13 @@ abstract class BaseOptionsField extends Field implements CrossSiteCopyableFieldI
         $translatedOptions = [];
 
         // Fire a 'defineOptions' event
-        if ($this->hasEventHandlers(self::EVENT_DEFINE_OPTIONS)) {
+        if ($this->hasComponentListeners(self::EVENT_DEFINE_OPTIONS)) {
             $event = new DefineInputOptionsEvent([
                 'options' => $options,
                 'value' => $value,
                 'element' => $element,
             ]);
-            $this->trigger(self::EVENT_DEFINE_OPTIONS, $event);
+            $this->dispatchComponentEvent(self::EVENT_DEFINE_OPTIONS, $event);
             $options = $event->options;
         }
 

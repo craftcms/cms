@@ -5,7 +5,6 @@ namespace CraftCms\Cms\Field\Contracts;
 use craft\base\Chippable;
 use craft\base\CpEditable;
 use craft\base\ElementInterface;
-use craft\base\Field;
 use craft\base\Grippable;
 use craft\elements\db\ElementQueryInterface;
 use craft\fieldlayoutelements\CustomField;

@@ -5,7 +5,6 @@ namespace CraftCms\Cms\Field;
 use Craft;
 use craft\base\Element;
 use craft\base\ElementInterface;
-use craft\base\Field;
 use craft\base\GqlInlineFragmentFieldInterface;
 use craft\base\GqlInlineFragmentInterface;
 use craft\base\NestedElementInterface;
@@ -487,13 +486,13 @@ final class Matrix extends Field implements EagerLoadingFieldInterface, ElementC
         $entryTypes = $this->getEntryTypes();
 
         // Fire a 'defineEntryTypes' event
-        if ($this->hasEventHandlers(self::EVENT_DEFINE_ENTRY_TYPES)) {
+        if ($this->hasComponentListeners(self::EVENT_DEFINE_ENTRY_TYPES)) {
             $event = new DefineEntryTypesForFieldEvent([
                 'entryTypes' => $entryTypes,
                 'element' => $element,
                 'value' => $value,
             ]);
-            $this->trigger(self::EVENT_DEFINE_ENTRY_TYPES, $event);
+            $this->dispatchComponentEvent(self::EVENT_DEFINE_ENTRY_TYPES, $event);
             $entryTypes = $event->entryTypes;
         }
 

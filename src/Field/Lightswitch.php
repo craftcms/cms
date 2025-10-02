@@ -4,7 +4,6 @@ namespace CraftCms\Cms\Field;
 
 use Craft;
 use craft\base\ElementInterface;
-use craft\base\Field;
 use craft\elements\Entry;
 use craft\fields\conditions\LightswitchFieldConditionRule;
 use craft\helpers\Cp;
