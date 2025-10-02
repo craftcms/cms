@@ -32,7 +32,7 @@ trait HasComponentEvents
 
     public static function componentEventName(string $event, ?string $class = null): string
     {
-        return "component.{$event}: ". ($class ?? static::class);
+        return "component.{$event}: ".($class ?? static::class);
     }
 
     public function dispatchComponentEvent(string $event, mixed $payload): void
@@ -46,7 +46,7 @@ trait HasComponentEvents
         }
     }
 
-    private static function getClasses(): array
+    protected static function getClasses(): array
     {
         $class = static::class;
 

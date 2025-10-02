@@ -55,6 +55,8 @@ use GraphQL\Type\Definition\Type;
 use Illuminate\Database\Query\JoinClause;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\Rule;
+use Illuminate\Validation\Validator;
 use Tpetry\QueryExpressions\Language\Alias;
 use yii\base\InvalidArgumentException;
 use yii\base\InvalidConfigException;
@@ -339,14 +341,6 @@ final class Matrix extends Field implements EagerLoadingFieldInterface, ElementC
         $config['showCardsInGrid'] = ($config['viewMode'] ?? self::VIEW_MODE_CARDS) === self::VIEW_MODE_CARDS_GRID;
 
         parent::__construct($config);
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function init(): void
-    {
-        parent::init();
 
         foreach ($this->siteSettings as &$siteSettings) {
             if (($siteSettings['uriFormat'] ?? null) === '') {
@@ -369,6 +363,7 @@ final class Matrix extends Field implements EagerLoadingFieldInterface, ElementC
         if ($this->minEntries === 0) {
             $this->minEntries = null;
         }
+
         if ($this->maxEntries === 0) {
             $this->maxEntries = null;
         }
@@ -379,7 +374,7 @@ final class Matrix extends Field implements EagerLoadingFieldInterface, ElementC
      */
     public function settingsAttributes(): array
     {
-        return Arr::where(parent::settingsAttributes(), fn ($attribute) => $attribute !== 'localizeEntries');
+        return Arr::except(parent::settingsAttributes(), 'localizeEntries');
     }
 
     /**
@@ -396,26 +391,23 @@ final class Matrix extends Field implements EagerLoadingFieldInterface, ElementC
         return $settings;
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    protected function defineRules(): array
+    public static function getRules(): array
     {
-        $rules = parent::defineRules();
-        $rules[] = [['entryTypes'], ArrayValidator::class, 'min' => 1, 'skipOnEmpty' => false];
-        $rules[] = [['siteSettings'], fn () => $this->validateSiteSettings()];
-        $rules[] = [['minEntries', 'maxEntries'], 'integer', 'min' => 0];
-        $rules[] = [['viewMode'], 'in', 'range' => [
-            self::VIEW_MODE_CARDS,
-            self::VIEW_MODE_CARDS_GRID,
-            self::VIEW_MODE_INDEX,
-            self::VIEW_MODE_BLOCKS,
-        ]];
-
-        return $rules;
+        return array_merge(parent::getRules(), [
+            'entryTypes' => ['array', 'min:1'],
+            'siteSettings' => ['array'],
+            'minEntries' => ['nullable', 'integer', 'min:0'],
+            'maxEntries' => ['nullable', 'integer', 'min:0'],
+            'viewMode' => Rule::in([
+                self::VIEW_MODE_CARDS,
+                self::VIEW_MODE_CARDS_GRID,
+                self::VIEW_MODE_INDEX,
+                self::VIEW_MODE_BLOCKS,
+            ]),
+        ]);
     }
 
-    private function validateSiteSettings(): void
+    public function afterValidate(Validator $validator): void
     {
         foreach ($this->siteSettings as $uid => &$siteSettings) {
             unset($siteSettings['errors']);
@@ -427,7 +419,8 @@ final class Matrix extends Field implements EagerLoadingFieldInterface, ElementC
                 if (! (new UriFormatValidator)->validate($siteSettings['uriFormat'], $error)) {
                     $error = str_replace(Craft::t('yii', 'the input value'), Craft::t('app', 'Entry URI Format'), $error);
                     $siteSettings['errors']['uriFormat'][] = $error;
-                    $this->addError("siteSettings[$uid].uriFormat", $error);
+
+                    $validator->errors()->add("siteSettings[$uid].uriFormat", $error);
                 }
             }
 
@@ -435,7 +428,8 @@ final class Matrix extends Field implements EagerLoadingFieldInterface, ElementC
                 if (! (new StringValidator(['max' => 500]))->validate($siteSettings['template'], $error)) {
                     $error = str_replace(Craft::t('yii', 'the input value'), Craft::t('app', 'Template'), $error);
                     $siteSettings['errors']['template'][] = $error;
-                    $this->addError("siteSettings[$uid].template", $error);
+
+                    $validator->errors()->add("siteSettings[$uid].template", $error);
                 }
             }
         }

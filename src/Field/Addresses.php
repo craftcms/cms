@@ -36,6 +36,7 @@ use CraftCms\Cms\Support\Str;
 use GraphQL\Type\Definition\Type;
 use Illuminate\Database\Query\JoinClause;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\Rule;
 use Tpetry\QueryExpressions\Language\Alias;
 use yii\base\InvalidConfigException;
 use yii\db\Expression;
@@ -52,6 +53,11 @@ final class Addresses extends Field implements EagerLoadingFieldInterface, Eleme
     public const VIEW_MODE_CARDS = 'cards';
 
     public const VIEW_MODE_INDEX = 'index';
+
+    /**
+     * @var int|null The total entries to display per page within element indexes
+     */
+    public ?int $pageSize = null;
 
     /**
      * {@inheritdoc}
@@ -160,12 +166,9 @@ final class Addresses extends Field implements EagerLoadingFieldInterface, Eleme
      */
     private NestedElementManager $_addressManager;
 
-    /**
-     * {@inheritdoc}
-     */
-    public function init(): void
+    public function __construct($config = [])
     {
-        parent::init();
+        parent::__construct($config);
 
         if ($this->minAddresses === 0) {
             $this->minAddresses = null;
@@ -175,14 +178,13 @@ final class Addresses extends Field implements EagerLoadingFieldInterface, Eleme
         }
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    protected function defineRules(): array
+    public static function getRules(): array
     {
-        $rules = parent::defineRules();
-        $rules[] = [['minAddresses', 'maxAddresses'], 'integer', 'min' => 0];
-        $rules[] = [['viewMode'], 'in', 'range' => [self::VIEW_MODE_CARDS, self::VIEW_MODE_INDEX]];
+        $rules = parent::getRules();
+
+        $rules['minAddresses'] = ['nullable', 'integer', 'min:0'];
+        $rules['maxAddresses'] = ['nullable', 'integer', 'min:0'];
+        $rules['viewMode'] = [Rule::in([self::VIEW_MODE_CARDS, self::VIEW_MODE_INDEX])];
 
         return $rules;
     }

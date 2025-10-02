@@ -23,6 +23,7 @@ use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Support\Str;
 use GraphQL\Type\Definition\Type;
 use Illuminate\Support\Collection;
+use Illuminate\Validation\Validator;
 use yii\db\Schema;
 
 /**
@@ -166,27 +167,20 @@ abstract class BaseOptionsField extends Field implements CrossSiteCopyableFieldI
     public function settingsAttributes(): array
     {
         $attributes = parent::settingsAttributes();
-        $attributes[] = 'options';
-        $attributes[] = 'customOptions';
+        $attributes['options'] = $this->options;
+        $attributes['customOptions'] = $this->customOptions;
 
         return $attributes;
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    protected function defineRules(): array
+    public static function getRules(): array
     {
-        $rules = parent::defineRules();
-        $rules[] = ['options', 'validateOptions'];
-
-        return $rules;
+        return array_merge(parent::getRules(), [
+            'options' => ['array'],
+        ]);
     }
 
-    /**
-     * Validates the field options.
-     */
-    public function validateOptions(): void
+    public function afterValidate(Validator $validator): void
     {
         $labels = [];
         $values = [];
@@ -195,7 +189,7 @@ abstract class BaseOptionsField extends Field implements CrossSiteCopyableFieldI
         $hasInvalidColors = false;
         $optgroup = '__root__';
 
-        foreach ($this->options as &$option) {
+        foreach ($this->options as $option) {
             // Ignore optgroups
             if (array_key_exists('optgroup', $option)) {
                 $optgroup = $option['optgroup'];
@@ -205,6 +199,7 @@ abstract class BaseOptionsField extends Field implements CrossSiteCopyableFieldI
 
             $label = (string) $option['label'];
             $value = (string) $option['value'];
+
             if (isset($labels[$optgroup][$label])) {
                 $option['label'] = [
                     'value' => $label,
@@ -212,6 +207,7 @@ abstract class BaseOptionsField extends Field implements CrossSiteCopyableFieldI
                 ];
                 $hasDuplicateLabels = true;
             }
+
             if (isset($values[$value])) {
                 $option['value'] = [
                     'value' => $value,
@@ -219,6 +215,7 @@ abstract class BaseOptionsField extends Field implements CrossSiteCopyableFieldI
                 ];
                 $hasDuplicateValues = true;
             }
+
             $labels[$optgroup][$label] = $values[$value] = true;
 
             if (static::$optionColors && ! empty($option['color'])) {
@@ -235,13 +232,15 @@ abstract class BaseOptionsField extends Field implements CrossSiteCopyableFieldI
         }
 
         if ($hasDuplicateLabels) {
-            $this->addError('options', Craft::t('app', 'All option labels must be unique.'));
+            $validator->errors()->add('options', Craft::t('app', 'All option labels must be unique.'));
         }
+
         if ($hasDuplicateValues) {
-            $this->addError('options', Craft::t('app', 'All option values must be unique.'));
+            $validator->errors()->add('options', Craft::t('app', 'All option values must be unique.'));
         }
+
         if ($hasInvalidColors) {
-            $this->addError('options', Craft::t('app', 'All color values must be valid.'));
+            $validator->errors()->add('options', Craft::t('app', 'All color values must be valid.'));
         }
     }
 

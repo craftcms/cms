@@ -11,9 +11,9 @@ use CraftCms\Cms\Field\Contracts\CrossSiteCopyableFieldInterface;
 use CraftCms\Cms\Field\Contracts\InlineEditableFieldInterface;
 use CraftCms\Cms\Field\Contracts\MergeableFieldInterface;
 use CraftCms\Cms\Field\Data\ColorData;
+use CraftCms\Cms\Shared\Rules\ColorRule;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Html;
-use CraftCms\Cms\Support\Str;
 use Illuminate\Support\Collection;
 use yii\db\Schema;
 
@@ -213,29 +213,19 @@ final class Color extends Field implements CrossSiteCopyableFieldInterface, Inli
             ]);
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    protected function defineRules(): array
+    public static function getRules(): array
+    {
+        return array_merge(parent::getRules(), [
+            'allowCustomColors' => ['required', 'boolean'],
+            'palette' => ['nullable', 'required_if:allowCustomColors,true'],
+            'palette.*' => [new ColorRule],
+        ]);
+    }
+
+    public static function getMessages(): array
     {
         return [
-            ...parent::defineRules(),
-            [
-                ['palette'],
-                'required',
-                'when' => fn () => ! $this->allowCustomColors,
-                'message' => Craft::t('app', 'Palette cannot be blank if custom colors aren’t allowed.'),
-            ],
-            [['palette'], function () {
-                $validator = new ColorValidator;
-                foreach ($this->palette as $color) {
-                    if (! $validator->validate($color['color'], $error)) {
-                        $this->addError('palette', Craft::t('yii', '{attribute} is invalid.', [
-                            'attribute' => Str::start($color['color'] ?? '', '#'),
-                        ]));
-                    }
-                }
-            }],
+            'palette.required_if' => Craft::t('app', 'Palette cannot be blank if custom colors aren’t allowed.'),
         ];
     }
 

@@ -142,9 +142,7 @@ class Component
         // Typecast the properties
         Typecast::properties($class, $config);
 
-        // Instantiate and return
-        $config['class'] = $class;
-        return Craft::createObject(static::cleanseConfig($config));
+        return app()->make($class, ['config' => static::cleanseConfig($config)]);
     }
 
     /**

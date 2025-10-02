@@ -15,6 +15,5 @@ final class FieldElementEvent
         public FieldInterface $field,
         public ElementInterface $element,
         public readonly bool $isNew = false,
-    ) {
-    }
+    ) {}
 }

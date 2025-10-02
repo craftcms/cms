@@ -36,14 +36,14 @@ final class HandleRule implements ValidationRule
 
     public function __construct(
         public array $reservedWords = [],
-    ) {
-    }
+    ) {}
 
     #[\Override]
     public function validate(string $attribute, mixed $value, Closure $fail): void
     {
         if (! preg_match(sprintf('/^%s$/', self::$handlePattern), $value)) {
             $fail(Craft::t('app', '“{handle}” isn’t a valid handle.'));
+
             return;
         }
 

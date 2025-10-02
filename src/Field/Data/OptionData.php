@@ -12,8 +12,8 @@ use craft\base\Serializable;
 class OptionData implements Serializable
 {
     public function __construct(
-        public ?string $label = null,
-        public ?string $value = null,
+        public ?string $label,
+        public ?string $value,
         public bool $selected,
         public bool $valid = true,
         public ?string $icon = null,

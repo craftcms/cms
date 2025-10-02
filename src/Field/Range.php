@@ -107,22 +107,14 @@ final class Range extends Field implements InlineEditableFieldInterface, Mergeab
         parent::__construct($config);
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    protected function defineRules(): array
+    public static function getRules(): array
     {
-        $rules = parent::defineRules();
-        $rules[] = [['min', 'max', 'step', 'defaultValue'], 'number'];
-
-        $rules[] = [
-            ['max'],
-            'compare',
-            'compareAttribute' => 'min',
-            'operator' => '>',
-        ];
-
-        return $rules;
+        return array_merge(parent::getRules(), [
+            'min' => ['nullable', 'numeric'],
+            'max' => ['nullable', 'numeric', 'gte:min'],
+            'step' => ['nullable', 'numeric'],
+            'defaultValue' => ['nullable', 'numeric'],
+        ]);
     }
 
     /**

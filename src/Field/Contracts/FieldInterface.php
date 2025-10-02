@@ -50,7 +50,7 @@ interface FieldInterface extends Chippable, ConfigurableComponentInterface, CpEd
     /**
      * @var string The field’s translation method
      *
-     * @phpstan-var Field::TRANSLATION_METHOD_*
+     * @phpstan-var \CraftCms\Cms\Field\Field::TRANSLATION_METHOD_*
      */
     public string $translationMethod { get; set; }
 

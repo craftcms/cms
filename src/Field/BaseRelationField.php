@@ -436,25 +436,19 @@ abstract class BaseRelationField extends Field implements CrossSiteCopyableField
         parent::__construct($config);
     }
 
-    /**
-     * {@inheritdoc}
-     *
-     * @since 6.0.0
-     */
-    protected function defineRules(): array
+    public static function getRules(): array
     {
-        $rules = parent::defineRules();
-        $rules[] = [['minRelations', 'maxRelations', 'branchLimit'], 'number', 'integerOnly' => true];
-        $rules[] = [['source', 'sources'], 'validateSources'];
-
-        return $rules;
+        return array_merge(parent::getRules(), [
+            'minRelations' => ['nullable', 'integer'],
+            'maxRelations' => ['nullable', 'integer'],
+            'branchLimit' => ['nullable', 'integer'],
+        ]);
     }
 
     /**
      * Ensure only one structured source is selected when maintainHierarchy is true.
      *
-     *
-     * @since 6.0.0
+     * @todo This needs to be called from somewhere
      */
     public function validateSources(string $attribute): void
     {
@@ -498,20 +492,20 @@ abstract class BaseRelationField extends Field implements CrossSiteCopyableField
     public function settingsAttributes(): array
     {
         $attributes = parent::settingsAttributes();
-        $attributes[] = 'allowSelfRelations';
-        $attributes[] = 'branchLimit';
-        $attributes[] = 'defaultPlacement';
-        $attributes[] = 'maintainHierarchy';
-        $attributes[] = 'maxRelations';
-        $attributes[] = 'minRelations';
-        $attributes[] = 'selectionLabel';
-        $attributes[] = 'showSearchInput';
-        $attributes[] = 'showSiteMenu';
-        $attributes[] = 'source';
-        $attributes[] = 'sources';
-        $attributes[] = 'targetSiteId';
-        $attributes[] = 'validateRelatedElements';
-        $attributes[] = 'viewMode';
+        $attributes['allowSelfRelations'] = $this->allowSelfRelations;
+        $attributes['branchLimit'] = $this->branchLimit;
+        $attributes['defaultPlacement'] = $this->defaultPlacement;
+        $attributes['maintainHierarchy'] = $this->maintainHierarchy;
+        $attributes['maxRelations'] = $this->maxRelations;
+        $attributes['minRelations'] = $this->minRelations;
+        $attributes['selectionLabel'] = $this->selectionLabel;
+        $attributes['showSearchInput'] = $this->showSearchInput;
+        $attributes['showSiteMenu'] = $this->showSiteMenu;
+        $attributes['source'] = $this->source;
+        $attributes['sources'] = $this->sources;
+        $attributes['targetSiteId'] = $this->targetSiteId;
+        $attributes['validateRelatedElements'] = $this->validateRelatedElements;
+        $attributes['viewMode'] = $this->viewMode;
 
         return $attributes;
     }

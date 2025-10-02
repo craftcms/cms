@@ -14,7 +14,6 @@ use craft\gql\types\generators\LinkDataType;
 use craft\helpers\Component;
 use craft\helpers\Cp;
 use craft\helpers\Template;
-use craft\validators\ArrayValidator;
 use craft\validators\StringValidator;
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Field\Concerns\RelationalField;
@@ -239,28 +238,12 @@ final class Link extends Field implements CrossSiteCopyableFieldInterface, Inlin
         parent::__construct($config);
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function fields(): array
+    public static function getRules(): array
     {
-        $fields = parent::fields();
-        unset($fields['placeholder']);
-
-        return $fields;
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    protected function defineRules(): array
-    {
-        $rules = parent::defineRules();
-        $rules[] = [['types'], ArrayValidator::class];
-        $rules[] = [['types', 'maxLength'], 'required'];
-        $rules[] = [['maxLength'], 'number', 'integerOnly' => true, 'min' => 10];
-
-        return $rules;
+        return array_merge(parent::getRules(), [
+            'types' => ['required', 'array'],
+            'maxLength' => ['required', 'integer', 'min:10'],
+        ]);
     }
 
     /**
@@ -533,6 +516,9 @@ final class Link extends Field implements CrossSiteCopyableFieldInterface, Inlin
         }
 
         $linkTypes = $this->getLinkTypes();
+        $config = [
+            'value' => $value,
+        ];
 
         if (is_array($value)) {
             $typeId = $value['type'] ?? UrlType::id();
@@ -577,18 +563,17 @@ final class Link extends Field implements CrossSiteCopyableFieldInterface, Inlin
                 $linkType = Component::createComponent($type, BaseLinkType::class);
             }
 
-            $value = $linkType->normalizeValue($value);
+            $config['value'] = $linkType->normalizeValue($value);
         } else {
             if (! $value) {
                 return null;
             }
 
             $typeId = $this->resolveType($value);
-            $linkType = $linkTypes[$typeId] ?? Component::createComponent(self::types()[$typeId], BaseLinkType::class);
-            $config = [];
+            $config['linkType'] = $linkTypes[$typeId] ?? Component::createComponent(self::types()[$typeId], BaseLinkType::class);
         }
 
-        return new LinkData($value, $linkType, $config);
+        return LinkData::from($config);
     }
 
     /**
@@ -609,7 +594,7 @@ final class Link extends Field implements CrossSiteCopyableFieldInterface, Inlin
 
         /** @var LinkData|null $value */
         if ($value) {
-            $valueTypeId = $value->type;
+            $valueTypeId = $value->getType();
 
             if (! isset($linkTypes[$valueTypeId])) {
                 $type = self::types()[$valueTypeId] ?? null;
@@ -829,8 +814,8 @@ JS;
                     /** @var LinkData $value */
                     $value = $element->getFieldValue($this->handle);
                     $linkTypes = $this->getLinkTypes();
-                    if (! isset($linkTypes[$value->type])) {
-                        $type = self::types()[$value->type] ?? null;
+                    if (! isset($linkTypes[$value->getType()])) {
+                        $type = self::types()[$value->getType()] ?? null;
                         $element->addError("field:$this->handle", Craft::t('app', '{attribute} no longer allows {type} links.', [
                             'attribute' => $this->getUiLabel(),
                             'type' => is_subclass_of($type, BaseLinkType::class) ? $type::displayName() : $type,
@@ -838,7 +823,7 @@ JS;
 
                         return;
                     }
-                    $linkType = $linkTypes[$value->type];
+                    $linkType = $linkTypes[$value->getType()];
                     $value = $value->serialize()['value'];
                     $error = null;
                     if (! $linkType->validateValue($value, $error)) {
@@ -871,7 +856,7 @@ JS;
         /** @var LinkData $value */
         $value = $element->getFieldValue($this->handle);
         $linkTypes = $this->getLinkTypes();
-        $linkType = $linkTypes[$value->type];
+        $linkType = $linkTypes[$value->getType()];
         $value = $value->serialize()['value'];
 
         return $linkType->isValueEmpty($value);

@@ -33,6 +33,7 @@ use CraftCms\Cms\Support\Json as JsonHelper;
 use DateTime;
 use GraphQL\Type\Definition\Type;
 use Illuminate\Support\Collection;
+use Illuminate\Validation\Validator;
 use yii\base\InvalidArgumentException;
 use yii\base\InvalidConfigException;
 
@@ -49,25 +50,19 @@ final class ContentBlock extends Field implements ElementContainerFieldInterface
 
     private const VIEW_MODE_INLINE = 'inline';
 
-    /**
-     * {@inheritdoc}
-     */
+    /** {@inheritdoc} */
     public static function displayName(): string
     {
         return Craft::t('app', 'Content Block');
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    /** {@inheritdoc} */
     public static function icon(): string
     {
         return 'block';
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    /** {@inheritdoc} */
     public static function supportedTranslationMethods(): array
     {
         // Don't ever automatically propagate values to other sites.
@@ -76,17 +71,13 @@ final class ContentBlock extends Field implements ElementContainerFieldInterface
         ];
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    /** {@inheritdoc} */
     public static function phpType(): string
     {
         return sprintf('\\%s|null', ContentBlockElement::class);
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    /** {@inheritdoc} */
     public static function dbType(): array|string|null
     {
         return null;
@@ -128,9 +119,7 @@ final class ContentBlock extends Field implements ElementContainerFieldInterface
         return $this->_contentBlockManager;
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    /** {@inheritdoc} */
     public function getSettings(): array
     {
         $fieldLayout = $this->getFieldLayout();
@@ -143,27 +132,14 @@ final class ContentBlock extends Field implements ElementContainerFieldInterface
         ];
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    protected function defineRules(): array
-    {
-        return [
-            ...parent::defineRules(),
-            [['fieldLayout'], fn () => $this->validateFieldLayout()],
-        ];
-    }
-
-    private function validateFieldLayout(): void
+    public function afterValidate(Validator $validator): void
     {
         $fieldLayout = $this->getFieldLayout();
         $fieldLayout->validate();
 
         if (! $this->ensureNoRecursion($this)) {
-            $fieldLayout->addError('customFields', Craft::t('app', 'Including a Content Block field recursively is not allowed.'));
+            $validator->errors()->add('fieldLayout', Craft::t('app', 'Including a Content Block field recursively is not allowed.'));
         }
-
-        $this->addModelErrors($fieldLayout, 'fieldLayout');
     }
 
     private function ensureNoRecursion(self $field): bool
@@ -180,33 +156,25 @@ final class ContentBlock extends Field implements ElementContainerFieldInterface
         return true;
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    /** {@inheritdoc} */
     public function getFieldLayoutProviders(): array
     {
         return [$this];
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    /** {@inheritdoc} */
     public function getUriFormatForElement(NestedElementInterface $element): ?string
     {
         return null;
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    /** {@inheritdoc} */
     public function getRouteForElement(NestedElementInterface $element): mixed
     {
         return null;
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    /** {@inheritdoc} */
     public function getFieldLayout(): FieldLayout
     {
         if (! isset($this->_fieldLayout)) {
@@ -297,9 +265,7 @@ final class ContentBlock extends Field implements ElementContainerFieldInterface
         $this->_fieldLayout = $layout;
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    /** {@inheritdoc} */
     public function getSupportedSitesForElement(NestedElementInterface $element): array
     {
         try {
@@ -315,9 +281,7 @@ final class ContentBlock extends Field implements ElementContainerFieldInterface
         return $this->contentBlockManager()->getSupportedSiteIds($owner);
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    /** {@inheritdoc} */
     public function canViewElement(NestedElementInterface $element, User $user): bool
     {
         $owner = $element->getOwner();
@@ -325,9 +289,7 @@ final class ContentBlock extends Field implements ElementContainerFieldInterface
         return $owner && Craft::$app->getElements()->canView($owner, $user);
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    /** {@inheritdoc} */
     public function canSaveElement(NestedElementInterface $element, User $user): bool
     {
         $owner = $element->getOwner();
@@ -353,41 +315,31 @@ final class ContentBlock extends Field implements ElementContainerFieldInterface
         return false;
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    /** {@inheritdoc} */
     public function canDuplicateElement(NestedElementInterface $element, User $user): bool
     {
         return false;
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    /** {@inheritdoc} */
     public function canDeleteElement(NestedElementInterface $element, User $user): bool
     {
         return false;
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    /** {@inheritdoc} */
     public function canDeleteElementForSite(NestedElementInterface $element, User $user): bool
     {
         return false;
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    /** {@inheritdoc} */
     public function getSettingsHtml(): string
     {
         return $this->settingsHtml(false);
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    /** {@inheritdoc} */
     public function getReadOnlySettingsHtml(): string
     {
         return $this->settingsHtml(true);
@@ -404,17 +356,13 @@ final class ContentBlock extends Field implements ElementContainerFieldInterface
         ]);
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    /** {@inheritdoc} */
     public function normalizeValue(mixed $value, ?ElementInterface $element): mixed
     {
         return $this->_normalizeValueInternal($value, $element, false);
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    /** {@inheritdoc} */
     public function normalizeValueFromRequest(mixed $value, ?ElementInterface $element): mixed
     {
         return $this->_normalizeValueInternal($value, $element, true);
@@ -581,9 +529,7 @@ final class ContentBlock extends Field implements ElementContainerFieldInterface
         }
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    /** {@inheritdoc} */
     public function serializeValue(mixed $value, ?ElementInterface $element): mixed
     {
         /** @var ContentBlockElement $value */
@@ -596,9 +542,7 @@ final class ContentBlock extends Field implements ElementContainerFieldInterface
         ];
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    /** {@inheritdoc} */
     public function serializeValueForDb(mixed $value, ElementInterface $element): mixed
     {
         /** @var ContentBlockElement $value */
@@ -611,41 +555,31 @@ final class ContentBlock extends Field implements ElementContainerFieldInterface
         ];
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    /** {@inheritdoc} */
     public function copyValue(ElementInterface $from, ElementInterface $to): void
     {
         // We'll do it later from afterElementPropagate()
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    /** {@inheritdoc} */
     public function getIsTranslatable(?ElementInterface $element): bool
     {
         return $this->contentBlockManager()->getIsTranslatable($element);
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    /** {@inheritdoc} */
     public function showStatus(): bool
     {
         return false;
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    /** {@inheritdoc} */
     public function useFieldset(): bool
     {
         return $this->viewMode !== self::VIEW_MODE_INLINE;
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    /** {@inheritdoc} */
     protected function inputHtml(mixed $value, ?ElementInterface $element, bool $inline): string
     {
         if (! $element?->id) {
@@ -660,9 +594,7 @@ final class ContentBlock extends Field implements ElementContainerFieldInterface
         return $this->inputHtmlInternal($value, $element, false);
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    /** {@inheritdoc} */
     public function getStaticHtml(mixed $value, ElementInterface $element): string
     {
         return $this->inputHtmlInternal($value, $element, true);
@@ -725,9 +657,7 @@ JS, [
         ]);
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    /** {@inheritdoc} */
     public function getElementValidationRules(): array
     {
         return [
@@ -758,17 +688,13 @@ JS, [
         }
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    /** {@inheritdoc} */
     protected function searchKeywords(mixed $value, ElementInterface $element): string
     {
         return $this->contentBlockManager()->getSearchKeywords($element);
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    /** {@inheritdoc} */
     //    public function getEagerLoadingMap(array $sourceElements): array|null|false
     //    {
     //        // Get the source element IDs
@@ -801,9 +727,7 @@ JS, [
     //        ];
     //    }
 
-    /**
-     * {@inheritdoc}
-     */
+    /** {@inheritdoc} */
     public function getContentGqlType(): array
     {
         return [
@@ -814,9 +738,7 @@ JS, [
         ];
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    /** {@inheritdoc} */
     public function getContentGqlMutationArgumentType(): Type|array
     {
         return ContentBlockInputType::getType($this);
@@ -825,27 +747,21 @@ JS, [
     // Events
     // -------------------------------------------------------------------------
 
-    /**
-     * {@inheritdoc}
-     */
+    /** {@inheritdoc} */
     public function afterSave(bool $isNew): void
     {
         app(Fields::class)->saveLayout($this->getFieldLayout(), false);
         parent::afterSave($isNew);
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    /** {@inheritdoc} */
     public function afterElementPropagate(ElementInterface $element, bool $isNew): void
     {
         $this->contentBlockManager()->maintainNestedElements($element, $isNew);
         parent::afterElementPropagate($element, $isNew);
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    /** {@inheritdoc} */
     public function beforeElementDelete(ElementInterface $element): bool
     {
         if (! parent::beforeElementDelete($element)) {
@@ -858,9 +774,7 @@ JS, [
         return true;
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    /** {@inheritdoc} */
     public function beforeElementDeleteForSite(ElementInterface $element): bool
     {
         $elementsService = Craft::$app->getElements();
@@ -879,9 +793,7 @@ JS, [
         return true;
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    /** {@inheritdoc} */
     public function afterElementRestore(ElementInterface $element): void
     {
         // Also restore any entries for this element

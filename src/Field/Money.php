@@ -114,24 +114,15 @@ final class Money extends Field implements CrossSiteCopyableFieldInterface, Inli
         parent::__construct($config);
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    protected function defineRules(): array
+    public static function getRules(): array
     {
-        $rules = parent::defineRules();
-        $rules[] = [['defaultValue', 'min', 'max'], 'number'];
-        $rules[] = [['currency'], 'required'];
-        $rules[] = [['currency'], 'string', 'max' => 3];
-        $rules[] = [['size'], 'integer'];
-        $rules[] = [
-            ['max'],
-            'compare',
-            'compareAttribute' => 'min',
-            'operator' => '>=',
-        ];
-
-        return $rules;
+        return array_merge(parent::getRules(), [
+            'defaultValue' => ['nullable', 'numeric'],
+            'min' => ['nullable', 'numeric'],
+            'max' => ['nullable', 'numeric', 'gte:min'],
+            'size' => ['nullable', 'integer'],
+            'currency' => ['required', 'string', 'max:3'],
+        ]);
     }
 
     /**

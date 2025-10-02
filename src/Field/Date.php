@@ -140,14 +140,6 @@ final class Date extends Field implements CrossSiteCopyableFieldInterface, Inlin
         }
 
         parent::__construct($config);
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function init(): void
-    {
-        parent::init();
 
         // In case nothing is selected, default to the date.
         if (! $this->showDate && ! $this->showTime) {
@@ -170,17 +162,15 @@ final class Date extends Field implements CrossSiteCopyableFieldInterface, Inlin
         ];
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    protected function defineRules(): array
+    public static function getRules(): array
     {
-        $rules = parent::defineRules();
-        $rules[] = [['showDate', 'showTime'], 'boolean'];
-        $rules[] = [['minuteIncrement'], 'integer', 'min' => 1, 'max' => 60];
-        $rules[] = [['max'], DateTimeValidator::class, 'min' => $this->min];
-
-        return $rules;
+        return array_merge(parent::getRules(), [
+            'showDate' => 'boolean',
+            'showTime' => 'boolean',
+            'minuteIncrement' => ['integer', 'min:1', 'max:60'],
+            'min' => ['nullable', 'date', 'before_or_equal:max'],
+            'max' => ['nullable', 'date', 'after_or_equal:min'],
+        ]);
     }
 
     /**

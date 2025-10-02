@@ -92,14 +92,6 @@ final class PlainText extends Field implements CrossSiteCopyableFieldInterface, 
         unset($config['maxLengthUnit'], $config['columnType']);
 
         parent::__construct($config);
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function init(): void
-    {
-        parent::init();
 
         if (isset($this->placeholder)) {
             $this->placeholder = Str::shortcodesToEmoji($this->placeholder);
@@ -119,15 +111,13 @@ final class PlainText extends Field implements CrossSiteCopyableFieldInterface, 
         return $settings;
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    protected function defineRules(): array
+    public static function getRules(): array
     {
-        $rules = parent::defineRules();
-        $rules[] = [['initialRows', 'charLimit', 'byteLimit'], 'integer', 'min' => 1];
-
-        return $rules;
+        return array_merge(parent::getRules(), [
+            'initialRows' => ['nullable', 'integer', 'min:1'],
+            'charLimit' => ['nullable', 'integer', 'min:1'],
+            'byteLimit' => ['nullable', 'integer', 'min:1'],
+        ]);
     }
 
     /**

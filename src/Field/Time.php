@@ -14,6 +14,7 @@ use CraftCms\Cms\Field\Contracts\CrossSiteCopyableFieldInterface;
 use CraftCms\Cms\Field\Contracts\InlineEditableFieldInterface;
 use CraftCms\Cms\Field\Contracts\MergeableFieldInterface;
 use CraftCms\Cms\Field\Contracts\SortableFieldInterface;
+use CraftCms\Cms\Shared\Rules\TimeRule;
 use DateTime;
 use GraphQL\Type\Definition\Type;
 use yii\db\Schema;
@@ -101,16 +102,13 @@ final class Time extends Field implements CrossSiteCopyableFieldInterface, Inlin
         ];
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    protected function defineRules(): array
+    public static function getRules(): array
     {
-        $rules = parent::defineRules();
-        $rules[] = [['minuteIncrement'], 'integer', 'min' => 1, 'max' => 60];
-        $rules[] = [['max'], TimeValidator::class, 'min' => $this->min];
-
-        return $rules;
+        return array_merge(parent::getRules(), [
+            'minuteIncrement' => ['nullable', 'integer', 'min:1', 'max:60'],
+            'min' => ['nullable', new TimeRule],
+            'max' => ['nullable', new TimeRule(min: 'min')],
+        ]);
     }
 
     /**

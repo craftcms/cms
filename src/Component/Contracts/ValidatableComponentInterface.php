@@ -9,6 +9,8 @@ interface ValidatableComponentInterface
 {
     public static function getRules(): array;
 
+    public static function getMessages(): array;
+
     public function validate(string|array|null $attributeNames = null, bool $clearErrors = true): bool;
 
     public function hasErrors(?string $attribute = null): bool;

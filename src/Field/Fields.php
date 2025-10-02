@@ -57,6 +57,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Request;
+use Illuminate\Validation\ValidationException;
 use InvalidArgumentException;
 use Throwable;
 
@@ -449,9 +450,10 @@ final class Fields
     {
         if ($field instanceof MissingField) {
             $error = $field->errorMessage ?? "Unable to find component class '$field->expectedType'.";
-            $field->addError('type', $error);
 
-            return false;
+            throw ValidationException::withMessages([
+                'type' => $error,
+            ]);
         }
 
         $isNewField = $field->getIsNew();

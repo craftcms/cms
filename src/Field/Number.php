@@ -15,6 +15,7 @@ use CraftCms\Cms\Field\Contracts\InlineEditableFieldInterface;
 use CraftCms\Cms\Field\Contracts\MergeableFieldInterface;
 use CraftCms\Cms\Field\Contracts\SortableFieldInterface;
 use GraphQL\Type\Definition\Type;
+use Illuminate\Validation\Rule;
 use Throwable;
 use yii\base\InvalidArgumentException;
 use yii\db\Schema;
@@ -145,33 +146,26 @@ final class Number extends Field implements CrossSiteCopyableFieldInterface, Inl
         parent::__construct($config);
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    protected function defineRules(): array
+    public static function getRules(): array
     {
-        $rules = parent::defineRules();
-        $rules[] = [['min', 'max', 'step', 'defaultValue'], 'number'];
-        $rules[] = [['decimals', 'size'], 'integer'];
+        $conditionalInteger = Rule::when(fn ($input) => ! $input->decimals, 'integer', 'numeric');
 
-        $rules[] = [
-            ['max'],
-            'compare',
-            'compareAttribute' => 'min',
-            'operator' => '>=',
-        ];
-
-        if (! $this->decimals) {
-            $rules[] = [['defaultValue', 'min', 'max'], 'integer'];
-        }
-
-        $rules[] = [['previewFormat'], 'in', 'range' => [self::FORMAT_DECIMAL, self::FORMAT_CURRENCY, self::FORMAT_NONE]];
-        $rules[] = [
-            ['previewCurrency'], 'required', 'when' => fn (): bool => $this->previewFormat === self::FORMAT_CURRENCY,
-        ];
-        $rules[] = [['previewCurrency'], 'string', 'min' => 3, 'max' => 3, 'encoding' => '8bit'];
-
-        return $rules;
+        return array_merge(parent::getRules(), [
+            'min' => ['nullable', $conditionalInteger],
+            'max' => ['nullable', $conditionalInteger, 'gte:min'],
+            'step' => ['nullable', 'numeric'],
+            'defaultValue' => ['nullable', $conditionalInteger],
+            'decimals' => ['nullable', 'integer'],
+            'size' => ['nullable', 'integer'],
+            'previewFormat' => ['nullable', Rule::in([self::FORMAT_DECIMAL, self::FORMAT_CURRENCY, self::FORMAT_NONE])],
+            'previewCurrency' => [
+                'nullable',
+                'required_if:previewFormat,'.self::FORMAT_CURRENCY,
+                'string',
+                'min:3',
+                'max:3',
+            ],
+        ]);
     }
 
     /**

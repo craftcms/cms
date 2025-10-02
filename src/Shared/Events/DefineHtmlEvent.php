@@ -10,6 +10,5 @@ abstract class DefineHtmlEvent
 
         /** @var bool Whether the HTML should be static (non-interactive) */
         public bool $static = false,
-    ) {
-    }
+    ) {}
 }

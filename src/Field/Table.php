@@ -22,6 +22,8 @@ use CraftCms\Cms\Support\Str;
 use DateTime;
 use GraphQL\Type\Definition\InputObjectType;
 use GraphQL\Type\Definition\Type;
+use Illuminate\Validation\Rule;
+use Illuminate\Validation\Validator;
 use yii\db\Schema;
 use yii\validators\EmailValidator;
 
@@ -158,14 +160,6 @@ final class Table extends Field implements CrossSiteCopyableFieldInterface
         unset($config['columnType']);
 
         parent::__construct($config);
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function init(): void
-    {
-        parent::init();
 
         if (! isset($this->addRowLabel)) {
             $this->addRowLabel = Craft::t('app', 'Add a row');
@@ -177,46 +171,40 @@ final class Table extends Field implements CrossSiteCopyableFieldInterface
         }
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    protected function defineRules(): array
+    public static function getRules(): array
     {
-        $rules = parent::defineRules();
-        $rules[] = [['minRows'], 'compare', 'compareAttribute' => 'maxRows', 'operator' => '<=', 'type' => 'number', 'when' => [$this, 'hasMaxRows']];
-        $rules[] = [['maxRows'], 'compare', 'compareAttribute' => 'minRows', 'operator' => '>=', 'type' => 'number', 'when' => [$this, 'hasMinRows']];
-        $rules[] = [['minRows', 'maxRows'], 'integer', 'min' => 0];
-        $rules[] = [['columns'], 'validateColumns'];
-
-        return $rules;
+        return array_merge(parent::getRules(), [
+            'minRows' => ['nullable', Rule::when(fn ($input) => $input->maxRows > 0, ['lte:maxRows']), 'integer', 'min:0'],
+            'maxRows' => ['nullable', Rule::when(fn ($input) => $input->minRows > 0, ['gte:minRows']), 'integer', 'min:0'],
+        ]);
     }
 
-    /**
-     * Validates the column configs.
-     */
-    public function validateColumns(): void
+    public function afterValidate(Validator $validator): void
     {
         foreach ($this->columns as &$col) {
-            if ($col['handle']) {
-                $error = null;
+            if (! $col['handle']) {
+                continue;
+            }
 
-                if (! preg_match('/^'.HandleValidator::$handlePattern.'$/', $col['handle'])) {
-                    $error = Craft::t('app', '“{handle}” isn’t a valid handle.', [
-                        'handle' => $col['handle'],
-                    ]);
-                } elseif (preg_match('/^col\d+$/', $col['handle'])) {
-                    $error = Craft::t('app', 'Column handles can’t be in the format “{format}”.', [
-                        'format' => 'colX',
-                    ]);
-                }
+            $error = null;
 
-                if ($error) {
-                    $col['handle'] = [
-                        'value' => $col['handle'],
-                        'hasErrors' => true,
-                    ];
-                    $this->addError('columns', $error);
-                }
+            if (! preg_match('/^'.HandleValidator::$handlePattern.'$/', $col['handle'])) {
+                $error = Craft::t('app', '“{handle}” isn’t a valid handle.', [
+                    'handle' => $col['handle'],
+                ]);
+            } elseif (preg_match('/^col\d+$/', $col['handle'])) {
+                $error = Craft::t('app', 'Column handles can’t be in the format “{format}”.', [
+                    'format' => 'colX',
+                ]);
+            }
+
+            if ($error) {
+                $col['handle'] = [
+                    'value' => $col['handle'],
+                    'hasErrors' => true,
+                ];
+
+                $validator->errors()->add('columns', $error);
             }
         }
     }

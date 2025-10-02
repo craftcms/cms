@@ -18,8 +18,7 @@ final class JsonData extends Dto implements ArrayAccess, IteratorAggregate, Seri
 {
     public function __construct(
         private mixed $value,
-    ) {
-    }
+    ) {}
 
     public function __toString(): string
     {

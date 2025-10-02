@@ -387,7 +387,7 @@ abstract class Controller extends \yii\web\Controller
      * @since 4.0.0
      */
     public function asModelFailure(
-        Model|ModelInterface $model,
+        mixed $model,
         ?string $message = null,
         ?string $modelName = null,
         array $data = [],
@@ -420,7 +420,7 @@ abstract class Controller extends \yii\web\Controller
      * @since 4.0.0
      */
     public function asModelSuccess(
-        Model|ModelInterface $model,
+        mixed $model,
         ?string $message = null,
         ?string $modelName = null,
         array $data = [],

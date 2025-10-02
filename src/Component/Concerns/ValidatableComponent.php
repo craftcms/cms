@@ -19,15 +19,24 @@ trait ValidatableComponent
         return [];
     }
 
+    public static function getMessages(): array
+    {
+        return [];
+    }
+
     protected function getValidator(): Validator
     {
-        return $this->validator ??= ValidatorFacade::make($this->getAttributes(), static::getRules());
+        return $this->validator ??= ValidatorFacade::make($this->getAttributes(), static::getRules(), static::getMessages());
     }
 
     public function validate(array|string|null $attributeNames = null, bool $clearErrors = true): bool
     {
-        return $this->getValidator()->passes();
+        return $this->getValidator()
+            ->after(fn ($validator) => $this->afterValidate($validator))
+            ->passes();
     }
+
+    public function afterValidate(Validator $validator): void {}
 
     public function hasErrors(?string $attribute = null): bool
     {

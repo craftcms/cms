@@ -34,6 +34,7 @@ use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Html;
 use GraphQL\Type\Definition\Type;
 use Illuminate\Support\Collection;
+use Illuminate\Validation\Rule;
 use Twig\Error\RuntimeError;
 use yii\base\InvalidConfigException;
 
@@ -222,20 +223,13 @@ final class Assets extends BaseRelationField
         parent::__construct($config);
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    protected function defineRules(): array
+    public static function getRules(): array
     {
-        $rules = parent::defineRules();
-
-        $rules[] = [
-            ['allowedKinds'], 'required', 'when' => fn (self $field): bool => (bool) $field->restrictFiles,
-        ];
-
-        $rules[] = [['previewMode'], 'in', 'range' => [self::PREVIEW_MODE_FULL, self::PREVIEW_MODE_THUMBS], 'skipOnEmpty' => false];
-
-        return $rules;
+        return array_merge(parent::getRules(), [
+            'restrictFiles' => 'boolean',
+            'allowedKinds' => Rule::when(fn ($input) => $input->restrictFiles, ['required'], ['nullable']),
+            'previewMode' => Rule::in([self::PREVIEW_MODE_FULL, self::PREVIEW_MODE_THUMBS]),
+        ]);
     }
 
     /**

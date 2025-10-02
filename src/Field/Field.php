@@ -11,6 +11,7 @@ use craft\db\ExpressionInterface;
 use craft\elements\db\ElementQueryInterface;
 use craft\fieldlayoutelements\CustomField;
 use craft\gql\types\QueryArgument;
+use craft\helpers\Component;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\Db as DbHelper;
 use craft\helpers\ElementHelper;
@@ -38,6 +39,7 @@ use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Support\Typecast;
 use DateTime;
 use GraphQL\Type\Definition\Type;
+use Illuminate\Contracts\Support\Arrayable;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
@@ -47,20 +49,24 @@ use RuntimeException;
 use yii\db\Schema;
 
 /** @since 6.0.0 */
-abstract class Field implements FieldInterface, Iconic, Actionable
+abstract class Field implements Actionable, Arrayable, FieldInterface, Iconic
 {
-    use HasComponentEvents;
     use ConfigurableComponent;
-    use ValidatableComponent;
+    use HasComponentEvents;
     use SavableComponent;
+    use ValidatableComponent;
 
     // Translation methods
     // -------------------------------------------------------------------------
 
     public const string TRANSLATION_METHOD_NONE = 'none';
+
     public const string TRANSLATION_METHOD_SITE = 'site';
+
     public const string TRANSLATION_METHOD_SITE_GROUP = 'siteGroup';
+
     public const string TRANSLATION_METHOD_LANGUAGE = 'language';
+
     public const string TRANSLATION_METHOD_CUSTOM = 'custom';
 
     // Component events
@@ -103,12 +109,14 @@ abstract class Field implements FieldInterface, Iconic, Actionable
 
     /**
      * @event FieldEvent The event that is triggered after the field has been merged into another.
+     *
      * @see afterMergeInto()
      */
     public const string EVENT_AFTER_MERGE_INTO = 'afterMergeInto';
 
     /**
      * @event FieldEvent The event that is triggered after another field has been merged into this one.
+     *
      * @see afterMergeFrom()
      */
     public const string EVENT_AFTER_MERGE_FROM = 'afterMergeFrom';
@@ -186,12 +194,14 @@ abstract class Field implements FieldInterface, Iconic, Actionable
 
     /**
      * @var string|null The `aria-describedby` attribute value that should be set on the focusable input(s).
+     *
      * @see FieldInterface::getInputHtml()
      */
     public ?string $describedBy = null;
 
     /**
      * @var string The field’s translation method
+     *
      * @phpstan-var self::TRANSLATION_METHOD_*
      */
     public string $translationMethod = self::TRANSLATION_METHOD_NONE;
@@ -308,6 +318,7 @@ abstract class Field implements FieldInterface, Iconic, Actionable
 
     /**
      * @var bool|null Whether the field is fresh.
+     *
      * @see isFresh()
      * @see setIsFresh()
      */
@@ -315,6 +326,7 @@ abstract class Field implements FieldInterface, Iconic, Actionable
 
     /**
      * @var array<string,string|false>
+     *
      * @see getValueSql()
      */
     private array $_valueSql;
@@ -432,15 +444,14 @@ abstract class Field implements FieldInterface, Iconic, Actionable
     /**
      * Returns a coalescing value SQL expression for the given field instances.
      *
-     * @param static[] $instances
-     * @param string|null $key The data key to fetch, if this field stores multiple values
-     * @return string|null
+     * @param  static[]  $instances
+     * @param  string|null  $key  The data key to fetch, if this field stores multiple values
      */
     protected static function valueSql(array $instances, ?string $key = null): ?string
     {
         $valuesSql = array_filter(
-            array_map(fn(self $field) => $field->getValueSql($key), $instances),
-            fn(?string $valueSql) => $valueSql !== null,
+            array_map(fn (self $field) => $field->getValueSql($key), $instances),
+            fn (?string $valueSql) => $valueSql !== null,
         );
 
         if (empty($valuesSql)) {
@@ -456,8 +467,6 @@ abstract class Field implements FieldInterface, Iconic, Actionable
 
     /**
      * Use the translated field name as the string representation.
-     *
-     * @return string
      */
     public function __toString(): string
     {
@@ -467,7 +476,7 @@ abstract class Field implements FieldInterface, Iconic, Actionable
     public function attributes(): array
     {
         return Collection::make($this->settingsAttributes())
-            ->filter(fn($name) => !in_array($name, [
+            ->filter(fn ($value, $name) => ! in_array($name, [
                 'validateHandleUniqueness',
                 'layoutElement',
                 'static',
@@ -483,18 +492,13 @@ abstract class Field implements FieldInterface, Iconic, Actionable
         ];
     }
 
-    public static function getRules(?Field $field = null): array
+    public static function getRules(): array
     {
         return [
             'name' => ['required'],
             'handle' => [
                 'required',
                 new HandleRule(self::RESERVED_HANDLES),
-                Rule::when($field && $field->validateHandleUniqueness, [
-                    Rule::unique(\CraftCms\Cms\Database\Table::FIELDS, 'handle')
-                        ->where('context', $field->context)
-                        ->ignore($field->id)
-                ])
             ],
             'translationMethod' => [
                 'required',
@@ -506,7 +510,10 @@ abstract class Field implements FieldInterface, Iconic, Actionable
                     self::TRANSLATION_METHOD_CUSTOM,
                 ]),
             ],
-            'translationKeyFormat' => ['required_if:translationMethod,' . self::TRANSLATION_METHOD_CUSTOM],
+            'translationKeyFormat' => [
+                'nullable',
+                'required_if:translationMethod,'.self::TRANSLATION_METHOD_CUSTOM,
+            ],
         ];
     }
 
@@ -537,7 +544,7 @@ abstract class Field implements FieldInterface, Iconic, Actionable
     /** {@inheritdoc} */
     public function getCpEditUrl(): ?string
     {
-        if (!$this->id || !Craft::$app->getUser()->getIsAdmin()) {
+        if (! $this->id || ! Craft::$app->getUser()->getIsAdmin()) {
             return null;
         }
 
@@ -581,7 +588,7 @@ abstract class Field implements FieldInterface, Iconic, Actionable
                 'icon' => 'gear',
                 'label' => Craft::t('app', 'Field settings'),
             ];
-            $view->registerJsWithVars(fn($id, $params) => <<<JS
+            $view->registerJsWithVars(fn ($id, $params) => <<<JS
 (() => {
 $('#' + $id).on('activate', () => {
 new Craft.CpScreenSlideout('fields/edit-field', {
@@ -596,14 +603,14 @@ JS, [
         }
 
         // Copy field handle
-        if (!$userSessionService->getIdentity()->getPreference('showFieldHandles')) {
+        if (! $userSessionService->getIdentity()->getPreference('showFieldHandles')) {
             $copyId = sprintf('action-copy-handle-%s', mt_rand());
             $items[] = [
                 'id' => $copyId,
                 'icon' => 'clipboard',
                 'label' => Craft::t('app', 'Copy field handle'),
             ];
-            $view->registerJsWithVars(fn($id, $attribute) => <<<JS
+            $view->registerJsWithVars(fn ($id, $attribute) => <<<JS
 (() => {
 $('#' + $id).on('activate', () => {
 Craft.ui.createCopyTextPrompt({
@@ -624,11 +631,11 @@ JS, [
     /** {@inheritdoc} */
     public function getOrientation(?ElementInterface $element): string
     {
-        $locale = match(true) {
+        $locale = match (true) {
             // Only one site so use its language
-            !Craft::$app->getIsMultiSite() => Craft::$app->getSites()->getPrimarySite()->getLocale(),
+            ! Craft::$app->getIsMultiSite() => Craft::$app->getSites()->getPrimarySite()->getLocale(),
             // Not translatable, so use the user’s language
-            !$element || !$this->getIsTranslatable($element) => Craft::$app->getLocale(),
+            ! $element || ! $this->getIsTranslatable($element) => Craft::$app->getLocale(),
             // Use the site’s language
             default => $element->getSite()->getLocale(),
         };
@@ -763,11 +770,12 @@ JS, [
     /**
      * Returns the field’s input HTML.
      *
-     * @param mixed $value The field’s value. This will either be the [[normalizeValue()|normalized value]],
-     * raw POST data (i.e. if there was a validation error), or null
-     * @param ElementInterface|null $element The element the field is associated with, if there is one
-     * @param bool $inline Whether this is for an inline edit form.
+     * @param  mixed  $value  The field’s value. This will either be the [[normalizeValue()|normalized value]],
+     *                        raw POST data (i.e. if there was a validation error), or null
+     * @param  ElementInterface|null  $element  The element the field is associated with, if there is one
+     * @param  bool  $inline  Whether this is for an inline edit form.
      * @return string The input HTML.
+     *
      * @see getInputHtml()
      */
     protected function inputHtml(mixed $value, ?ElementInterface $element, bool $inline): string
@@ -780,7 +788,7 @@ JS, [
     public function getStaticHtml(mixed $value, ElementInterface $element): string
     {
         // Just return the input HTML with disabled inputs by default
-        return Html::disableInputs(fn() => $this->getInputHtml($value, $element));
+        return Html::disableInputs(fn () => $this->getInputHtml($value, $element));
     }
 
     /**
@@ -823,8 +831,8 @@ JS, [
      * The keywords can be separated by commas and/or whitespace; it doesn’t really matter. [[\craft\services\Search]]
      * will be able to find the individual keywords in whatever string is returned, and normalize them for you.
      *
-     * @param mixed $value The field’s value
-     * @param ElementInterface $element The element the field is associated with, if there is one
+     * @param  mixed  $value  The field’s value
+     * @param  ElementInterface  $element  The element the field is associated with, if there is one
      * @return string A string of search keywords.
      */
     protected function searchKeywords(mixed $value, ElementInterface $element): string
@@ -866,8 +874,8 @@ JS, [
     public function getSortOption(): array
     {
         $dbType = static::dbType();
-        if ($dbType === null || !isset($this->layoutElement)) {
-            throw new RuntimeException('getSortOption() not supported by ' . $this->name);
+        if ($dbType === null || ! isset($this->layoutElement)) {
+            throw new RuntimeException('getSortOption() not supported by '.$this->name);
         }
 
         $orderBy = $this->getValueSql();
@@ -948,7 +956,7 @@ JS, [
         }
 
         // If it's "arrayable", convert to array
-        if (method_exists($value, 'toArray')) {
+        if (is_object($value) && method_exists($value, 'toArray')) {
             return $value->toArray();
         }
 
@@ -1002,6 +1010,7 @@ JS, [
 
         $cacheKey = $key ?? '*';
         $this->_valueSql[$cacheKey] ??= $this->_valueSql($key) ?? false;
+
         return $this->_valueSql[$cacheKey] ?: null;
     }
 
@@ -1013,7 +1022,7 @@ JS, [
             return null;
         }
 
-        if ($key !== null && (!is_array($dbType) || !isset($dbType[$key]))) {
+        if ($key !== null && (! is_array($dbType) || ! isset($dbType[$key]))) {
             throw new InvalidArgumentException(sprintf('%s doesn’t store values under the key “%s”.', self::class, $key));
         }
 
@@ -1087,6 +1096,7 @@ JS, [
      * Returns the DB data type(s) that this field will store within the `elements_sites.content` column.
      *
      * @see dbType()
+     *
      * @return string|string[]|null The data type(s).
      */
     protected function dbTypeForValueSql(): array|string|null
@@ -1120,7 +1130,7 @@ JS, [
         return Type::string();
     }
 
-    /** @inheritdoc */
+    /** {@inheritdoc} */
     public function getContentGqlMutationArgumentType(): Type|array
     {
         return [
@@ -1130,7 +1140,7 @@ JS, [
         ];
     }
 
-    /** @inheritdoc */
+    /** {@inheritdoc} */
     public function getContentGqlQueryArgumentType(): Type|array
     {
         return [
@@ -1146,7 +1156,7 @@ JS, [
     public function beforeSave(bool $isNew): bool
     {
         // Set the field context if it’s not set
-        if (!$this->context) {
+        if (! $this->context) {
             $this->context = app(Fields::class)->fieldContext;
         }
 
@@ -1284,21 +1294,18 @@ JS, [
     /**
      * Returns the field’s param name on the request.
      *
-     * @param ElementInterface $element The element this field is associated with
+     * @param  ElementInterface  $element  The element this field is associated with
      * @return string|null The field’s param name on the request
      */
     protected function requestParamName(ElementInterface $element): ?string
     {
         $namespace = $element->getFieldParamNamespace();
 
-        return ($namespace ? $namespace . '.' : '') . $this->handle;
+        return ($namespace ? $namespace.'.' : '').$this->handle;
     }
 
     /**
      * Returns whether this is the first time the element’s content has been edited.
-     *
-     * @param ElementInterface|null $element
-     * @return bool
      */
     protected function isFresh(?ElementInterface $element = null): bool
     {
@@ -1313,8 +1320,25 @@ JS, [
         return true;
     }
 
+    /**
+     * Returns the display name of this class.
+     *
+     * @return string The display name of this class.
+     */
+    public static function displayName(): string
+    {
+        $classNameParts = explode('\\', static::class);
+
+        return array_pop($classNameParts);
+    }
+
     public static function isSelectable(): bool
     {
         return true;
+    }
+
+    public function toArray(): array
+    {
+        return $this->attributes();
     }
 }

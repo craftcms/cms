@@ -3101,7 +3101,7 @@ abstract class Element extends Component implements ElementInterface
 
         if (
             (!is_string($rule[1]) || !isset(Validator::$builtInValidators[$rule[1]])) &&
-            (is_callable($rule[1]) || $field->hasMethod($rule[1]))
+            (is_callable($rule[1]) || method_exists($field, $rule[1]))
         ) {
             // InlineValidator assumes that the closure is on the model being validated
             // so it won’t pass a reference to the element
