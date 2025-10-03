@@ -34,6 +34,7 @@
 - Added `Craft.BaseElementIndex::ensureSourceAttributeInfo()`.
 - Added `craft\base\ElementTrait::$hasProvisionalChanges`. ([#17915](https://github.com/craftcms/cms/pull/17915))
 - Added `craft\elements\conditions\HintableConditionRuleTrait`. ([#17909](https://github.com/craftcms/cms/pull/17909))
+- Added `craft\events\RegisterElementCardAttributesEvent::$fieldLayout`. ([#17920](https://github.com/craftcms/cms/pull/17920))
 - Added `craft\fields\BaseRelationField::VIEW_MODE_CARDS_GRID`.
 - Added `craft\fields\BaseRelationField::VIEW_MODE_CARDS`.
 - Added `craft\fields\BaseRelationField::VIEW_MODE_LIST_INLINE`.
@@ -44,6 +45,7 @@
 - Added `craft\web\GqlResponseFormatter`.
 - Added `craft\web\Response::FORMAT_GQL`.
 - Added `craft\web\twig\nodes\BaseNode`.
+- `craft\base\ElementInterface::cardAttributes()` now has a `$fieldLayout` argument. ([#17920](https://github.com/craftcms/cms/pull/17920))
 - `craft\helpers\FileHelper::writeToFile()` now throws an exception if the file path isn’t writable, or there isn’t sufficient free space on the disk. ([#17762](https://github.com/craftcms/cms/pull/17762))
 - `craft\helpers\UrlHelper` now encodes square brackets in generated URLs. ([#17840](https://github.com/craftcms/cms/pull/17840))
 - `craft\web\Request::accepts()` now accepts wildcard characters (`*`) in the `$contentType` argument, to check for a range of MIME types (e.g. `application/*+json`).

@@ -2749,7 +2749,7 @@ JS, [
             'disabled' => false,
         ];
 
-        $allOptions = $fieldLayout->type::cardAttributes();
+        $allOptions = $fieldLayout->type::cardAttributes($fieldLayout);
 
         foreach ($fieldLayout->getAllElements() as $layoutElement) {
             if ($layoutElement instanceof BaseField && $layoutElement->previewable()) {
