@@ -28,6 +28,7 @@
 - Fixed a bug where Matrix fields set to the element index view mode weren’t showing the correct nested entries when viewing an owner’s revision. ([#17887](https://github.com/craftcms/cms/issues/17887))
 - Fixed a bug where RTL inputs were getting left-aligned text for users with an LTR language preference. ([#17904](https://github.com/craftcms/cms/issues/17904))
 - Fixed a PHP error that could occur if `Craft::$app->getEdition()` was called early in the request. ([#16288](https://github.com/craftcms/cms/issues/16288))
+- Fixed a bug where field layout editability conditions weren’t getting enforced when no user was logged in. ([#17883](https://github.com/craftcms/cms/issues/17883))
 - Fixed a styling issue.
 
 ## 5.8.17 - 2025-09-05
