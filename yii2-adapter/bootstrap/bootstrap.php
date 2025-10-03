@@ -12,6 +12,8 @@ use craft\services\Config;
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Env;
+use CraftCms\Yii2Adapter\Container;
+use CraftCms\Yii2Adapter\Log\Logger;
 use Illuminate\Foundation\Application;
 use yii\base\ErrorException;
 
@@ -42,8 +44,13 @@ $configService->configDir = $app->configPath();
 $configService->appDefaultsDir = dirname(__DIR__) . DIRECTORY_SEPARATOR . 'src' . DIRECTORY_SEPARATOR . 'config' . DIRECTORY_SEPARATOR . 'defaults';
 $generalConfig = app(GeneralConfig::class);
 
+if (is_null($generalConfig)) {
+    $generalConfig = GeneralConfig::create();
+    app()->instance(GeneralConfig::class, $generalConfig);
+}
+
 // Log errors to storage/logs/phperrors.log or php://stderr
-if (\CraftCms\Cms\Support\Env::parseBoolean('$CRAFT_LOG_PHP_ERRORS') !== false) {
+if (Env::parseBoolean('$CRAFT_LOG_PHP_ERRORS') !== false) {
     ini_set('log_errors', '1');
 
     if (App::isStreamLog()) {
@@ -77,9 +84,9 @@ defined('CURLOPT_TIMEOUT_MS') || define('CURLOPT_TIMEOUT_MS', 155);
 defined('CURLOPT_CONNECTTIMEOUT_MS') || define('CURLOPT_CONNECTTIMEOUT_MS', 156);
 
 // Load the files
-$cmsPath = dirname(__DIR__ . '/../../src');
+$cmsPath = dirname(__DIR__);
 $libPath = $cmsPath . DIRECTORY_SEPARATOR . 'lib';
-$srcPath = $cmsPath . DIRECTORY_SEPARATOR . 'src';
+$srcPath = $cmsPath . DIRECTORY_SEPARATOR . 'legacy';
 require_once $libPath . DIRECTORY_SEPARATOR . 'yii2' . DIRECTORY_SEPARATOR . 'Yii.php';
 require_once $srcPath . DIRECTORY_SEPARATOR . 'Craft.php';
 
@@ -127,8 +134,8 @@ if (function_exists('craft_modify_app_config')) {
     craft_modify_app_config($config, $appType);
 }
 
-Craft::$container = new \CraftCms\Yii2Adapter\Container();
-Craft::setLogger(new \CraftCms\Yii2Adapter\Log\Logger());
+Craft::$container = new Container();
+Craft::setLogger(new Logger());
 
 // Initialize the application
 /** @var \craft\web\Application|craft\console\Application $app */

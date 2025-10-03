@@ -20,6 +20,7 @@ jobs:
       craft_version: '6'
       node_version: '20'
       jobs: '["ecs", "prettier", "phpstan", "tests", "rector"]'
+      working_directory: 'yii2-adapter'
       notify_slack: true
       slack_subteam: <!subteam^SGFL9NKNZ>
     secrets:

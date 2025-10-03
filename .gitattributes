@@ -34,6 +34,9 @@
 /tsconfig.json export-ignore
 /webpack.config.js export-ignore
 
+# Ignore exporting the adapter as it will be split off and released on its own.
+/yii2-adapter export-ignore
+
 # Identify generated files
 /src/translations/a*/app.php linguist-generated=true
 /src/translations/c*/app.php linguist-generated=true
