@@ -1,6 +1,6 @@
 # Release Notes for Craft CMS 4
 
-## Unreleased
+## 4.16.14 - 2025-10-06
 
 - `new` is now a reserved filesystem handle.
 - Fixed an error that could occur when running the `utils/fix-field-layout-uids` command. ([#17848](https://github.com/craftcms/cms/issues/17848))
