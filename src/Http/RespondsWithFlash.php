@@ -2,7 +2,9 @@
 
 namespace CraftCms\Cms\Http;
 
+use Craft;
 use craft\base\Identifiable;
+use craft\helpers\UrlHelper;
 use CraftCms\Cms\Component\Contracts\ValidatableComponentInterface;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Flash;
@@ -20,10 +22,10 @@ trait RespondsWithFlash
 
         Flash::fail($message);
 
-        return redirect()->back()->withErrors($data);
+        return redirect()->back()->with($data);
     }
 
-    public function asSuccess(?string $message = null, array $data = []): Response
+    public function asSuccess(?string $message = null, array $data = [], ?string $redirect = null): Response
     {
         if (request()->expectsJson()) {
             return response()->json($data + array_filter([
@@ -32,6 +34,12 @@ trait RespondsWithFlash
         }
 
         Flash::success($message);
+
+        $redirect ??= $this->getPostedRedirectUrl();
+
+        if ($redirect) {
+            return redirect($redirect)->with($data);
+        }
 
         return redirect()->back()->with($data);
     }
@@ -58,6 +66,7 @@ trait RespondsWithFlash
         ?string $message = null,
         ?string $modelName = null,
         array $data = [],
+        ?string $redirect = null,
     ): Response {
         $modelName ??= 'model';
         $data += [
@@ -70,6 +79,33 @@ trait RespondsWithFlash
             $data['modelId'] = $model->getId();
         }
 
-        return $this->asSuccess($message, $data);
+        $redirect ??= $this->getPostedRedirectUrl($model);
+
+        return $this->asSuccess($message, $data, $redirect);
+    }
+
+    protected function getPostedRedirectUrl(?object $object = null): ?string
+    {
+        $url = request('redirect');
+
+        if (! $url) {
+            return null;
+        }
+
+        $url = Craft::$app->getSecurity()->validateData($url);
+
+        if ($url === false) {
+            abort(400, 'Request contained an invalid body param');
+        }
+
+        if ($object) {
+            $url = Craft::$app->getView()->renderObjectTemplate($url, $object);
+        }
+
+        if (request()->isCpRequest()) {
+            return UrlHelper::cpUrl($url);
+        }
+
+        return $url;
     }
 }

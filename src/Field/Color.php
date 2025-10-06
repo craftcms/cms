@@ -218,7 +218,9 @@ final class Color extends Field implements CrossSiteCopyableFieldInterface, Inli
         return array_merge(parent::getRules(), [
             'allowCustomColors' => ['required', 'boolean'],
             'palette' => ['nullable', 'required_if:allowCustomColors,true'],
-            'palette.*' => [new ColorRule],
+            'palette.*.label' => ['string'],
+            'palette.*.default' => ['nullable', 'boolean'],
+            'palette.*.color' => [new ColorRule],
         ]);
     }
 

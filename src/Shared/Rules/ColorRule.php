@@ -4,7 +4,6 @@ namespace CraftCms\Cms\Shared\Rules;
 
 use Closure;
 use Craft;
-use CraftCms\Cms\Support\Str;
 use Illuminate\Contracts\Validation\ValidationRule;
 
 final class ColorRule implements ValidationRule
@@ -21,7 +20,7 @@ final class ColorRule implements ValidationRule
 
         if (! $valid) {
             $fail(Craft::t('app', '{attribute} is invalid.', [
-                'attribute' => Str::start($value ?? '', '#'),
+                'attribute' => $attribute,
             ]));
         }
     }

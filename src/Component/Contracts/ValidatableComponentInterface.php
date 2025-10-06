@@ -15,6 +15,10 @@ interface ValidatableComponentInterface
 
     public function hasErrors(?string $attribute = null): bool;
 
+    public function addErrors(array $errors): void;
+
+    public function clearErrors(?string $attribute = null): void;
+
     public function getErrors(?string $attribute = null): array;
 
     public function getFirstErrors(): array;

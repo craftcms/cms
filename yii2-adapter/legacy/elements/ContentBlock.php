@@ -111,7 +111,7 @@ class ContentBlock extends Element implements NestedElementInterface
     protected static function defineFieldLayouts(?string $source): array
     {
         /** @var ContentBlockField[] $fields */
-        $fields = app(Fields::class)->getFieldsByType(ContentBlockField::class);
+        $fields = app(Fields::class)->getFieldsByType(ContentBlockField::class)->all();
         return array_map(fn(ContentBlockField $field) => $field->getFieldLayout(), $fields);
     }
 

@@ -42,7 +42,7 @@ class MoneyFieldConditionRule extends BaseNumberConditionRule implements FieldCo
         parent::setAttributes($values, $safeOnly);
 
         $field = $this->field();
-        if (!$field instanceof Money) {
+        if (!$field instanceof Money && !$field instanceof \CraftCms\Cms\Field\Money) {
             throw new InvalidConfigException();
         }
 
@@ -67,7 +67,7 @@ class MoneyFieldConditionRule extends BaseNumberConditionRule implements FieldCo
     protected function inputHtml(): string
     {
         $field = $this->field();
-        if (!$field instanceof Money) {
+        if (!$field instanceof Money && !$field instanceof \CraftCms\Cms\Field\Money) {
             throw new InvalidConfigException();
         }
 

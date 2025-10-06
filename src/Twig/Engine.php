@@ -2,17 +2,15 @@
 
 namespace CraftCms\Cms\Twig;
 
+use Craft;
 use CraftCms\Cms\Support\Str;
 
 class Engine implements \Illuminate\Contracts\View\Engine
 {
-    public function get($path, array $data = [])
+    public function get($path, array $data = []): string
     {
-        /** @var \craft\web\Application $craft */
-        $craft = app('Craft');
-
         $template = Str::after($path, 'templates/');
 
-        return $craft->getView()->renderPageTemplate($template, $data);
+        return Craft::$app->getView()->renderPageTemplate($template, $data);
     }
 }

@@ -8,7 +8,7 @@ final class TwigServiceProvider extends ServiceProvider
 {
     public function register(): void
     {
-        $this->loadViewsFrom(dirname(__DIR__, 3).'/resources/templates', 'craftcms');
+        $this->loadViewsFrom(dirname(__DIR__, 2).'/resources/templates', 'craftcms');
 
         $this->app['view']->addExtension(
             'twig',

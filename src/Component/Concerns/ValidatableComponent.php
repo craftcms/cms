@@ -14,6 +14,8 @@ trait ValidatableComponent
 {
     private ?Validator $validator = null;
 
+    private bool $validated = false;
+
     public static function getRules(): array
     {
         return [];
@@ -31,15 +33,23 @@ trait ValidatableComponent
 
     public function validate(array|string|null $attributeNames = null, bool $clearErrors = true): bool
     {
-        return $this->getValidator()
+        $result = $this->getValidator()
             ->after(fn ($validator) => $this->afterValidate($validator))
             ->passes();
+
+        $this->validated = true;
+
+        return $result;
     }
 
     public function afterValidate(Validator $validator): void {}
 
     public function hasErrors(?string $attribute = null): bool
     {
+        if (! $this->validated) {
+            return false;
+        }
+
         if (! $attribute) {
             return $this->getValidator()->fails();
         }
@@ -47,10 +57,37 @@ trait ValidatableComponent
         return $this->getValidator()->errors()->has($attribute);
     }
 
+    public function addErrors(array $errors): void
+    {
+        foreach ($errors as $attribute => $message) {
+            $this->getValidator()->errors()->add($attribute, $message);
+        }
+    }
+
+    public function clearErrors(?string $attribute = null): void
+    {
+        if (is_null($attribute)) {
+            foreach ($this->getValidator()->errors()->all() as $attribute => $messages) {
+                $this->getValidator()->errors()->forget($attribute);
+            }
+
+            return;
+        }
+
+        $this->getValidator()->errors()->forget($attribute);
+    }
+
     public function getErrors(?string $attribute = null): array
     {
+        if (! $this->validated) {
+            return [];
+        }
+
         if (! $attribute) {
-            return $this->getValidator()->errors()->all();
+            return array_map(
+                fn (array $messages) => $messages[0],
+                $this->getValidator()->errors()->getMessages(),
+            );
         }
 
         return $this->getValidator()->errors()->get($attribute);
@@ -63,6 +100,10 @@ trait ValidatableComponent
 
     public function getFirstError(string $attribute): ?string
     {
+        if (! $this->validated) {
+            return null;
+        }
+
         return $this->getValidator()->errors()->first($attribute);
     }
 

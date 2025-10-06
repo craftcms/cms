@@ -168,8 +168,8 @@ final class Range extends Field implements InlineEditableFieldInterface, Mergeab
     private function _normalizeNumber(mixed $value): int|float|null
     {
         // Was this submitted with a locale ID?
-        if (isset($value['locale'], $value['value'])) {
-            $value = Localization::normalizeNumber($value['value'], $value['locale']);
+        if (isset($value['locale'])) {
+            $value = Localization::normalizeNumber($value['value'] ?? 0, $value['locale']);
         }
 
         if ($value === '') {
