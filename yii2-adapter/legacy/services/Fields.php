@@ -35,6 +35,7 @@ use CraftCms\Cms\Field\Events\RegisterFieldTypes;
 use CraftCms\Cms\Field\Events\RegisterNestedEntryFieldTypes;
 use CraftCms\Cms\ProjectConfig\Events\ConfigEvent;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
 use Throwable;
 use yii\base\Component;
@@ -408,6 +409,8 @@ class Fields extends Component
      */
     public function handleChangedField(ConfigEvent $event): void
     {
+        DB::reconnect();
+
         app(\CraftCms\Cms\Field\Fields::class)->handleChangedField($event);
     }
 

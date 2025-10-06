@@ -1130,17 +1130,17 @@ final class Fields
             $fieldRecord->context = $context;
             $fieldRecord->columnSuffix = $data['columnSuffix'] ?? null;
             $fieldRecord->instructions = $data['instructions'];
-            $fieldRecord->searchable = $searchable;
+            $fieldRecord->searchable = (bool) $searchable;
             $fieldRecord->translationMethod = $data['translationMethod'];
             $fieldRecord->translationKeyFormat = $data['translationKeyFormat'];
             $fieldRecord->type = $data['type'];
             $fieldRecord->settings = $data['settings'] ?? null;
 
             if ($fieldRecord->dateDeleted) {
-                $fieldRecord->restore();
-            } else {
-                $fieldRecord->save();
+                $fieldRecord->dateDeleted = null;
             }
+
+            $fieldRecord->save();
 
             DB::commit();
         } catch (Throwable $e) {
