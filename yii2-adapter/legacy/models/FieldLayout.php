@@ -81,7 +81,7 @@ class FieldLayout extends Model
      * ```php
      * use craft\models\FieldLayout;
      * use craft\events\DefineFieldLayoutFieldsEvent;
-     * use craft\fields\PlainText;
+     * use CraftCms\Cms\Field\PlainText;
      * use yii\base\Event;
      *
      * Event::on(

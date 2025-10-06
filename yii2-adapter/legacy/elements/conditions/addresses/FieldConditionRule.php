@@ -9,8 +9,8 @@ use craft\elements\Address;
 use craft\elements\conditions\ElementConditionRuleInterface;
 use craft\elements\db\AddressQuery;
 use craft\elements\db\ElementQueryInterface;
-use craft\fields\Addresses;
-use CraftCms\Cms\Field\Fields;
+use CraftCms\Cms\Field\Addresses;
+use CraftCms\Cms\Support\Facades\Fields;
 use Illuminate\Support\Collection;
 
 /**
@@ -64,8 +64,7 @@ class FieldConditionRule extends BaseMultiSelectConditionRule implements Element
         } elseif ($this->operator === self::OPERATOR_EMPTY) {
             $query->field(false);
         } else {
-            $fieldsService = app(Fields::class);
-            $query->fieldId($this->paramValue(fn($uid) => $fieldsService->getFieldByUid($uid)->id ?? null));
+            $query->fieldId($this->paramValue(fn($uid) => Fields::getFieldByUid($uid)->id ?? null));
         }
     }
 
@@ -87,6 +86,6 @@ class FieldConditionRule extends BaseMultiSelectConditionRule implements Element
      */
     private function addressFields(): Collection
     {
-        return app(Fields::class)->getFieldsByType(Addresses::class);
+        return Fields::getFieldsByType(Addresses::class);
     }
 }

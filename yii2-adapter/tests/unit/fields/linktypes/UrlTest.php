@@ -2,8 +2,8 @@
 
 namespace crafttests\unit\fields\linktypes;
 
-use craft\fields\linktypes\Url;
 use craft\test\TestCase;
+use CraftCms\Cms\Field\LinkTypes\Url;
 
 class UrlTest extends TestCase
 {

@@ -9,9 +9,9 @@ namespace craft\gql\arguments\elements;
 
 use Craft;
 use craft\elements\ContentBlock as ContentBlockElement;
-use craft\fields\ContentBlock as ContentBlockField;
 use craft\gql\base\ElementArguments;
 use craft\gql\types\QueryArgument;
+use CraftCms\Cms\Field\ContentBlock as ContentBlockField;
 use CraftCms\Cms\Field\Fields;
 use GraphQL\Type\Definition\Type;
 

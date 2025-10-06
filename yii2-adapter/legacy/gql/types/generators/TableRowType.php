@@ -8,12 +8,12 @@
 namespace craft\gql\types\generators;
 
 use Craft;
-use craft\fields\Table as TableField;
 use craft\gql\base\GeneratorInterface;
 use craft\gql\base\ObjectType;
 use craft\gql\base\SingleGeneratorInterface;
 use craft\gql\GqlEntityRegistry;
 use craft\gql\types\TableRow;
+use CraftCms\Cms\Field\Table as TableField;
 
 /**
  * Class TableRowType

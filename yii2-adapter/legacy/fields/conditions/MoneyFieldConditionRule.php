@@ -4,9 +4,9 @@ namespace craft\fields\conditions;
 
 use Craft;
 use craft\base\conditions\BaseNumberConditionRule;
-use craft\fields\Money;
 use craft\helpers\Cp;
 use craft\helpers\MoneyHelper;
+use CraftCms\Cms\Field\Money;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Html;
 use Money\Currency;
@@ -42,7 +42,7 @@ class MoneyFieldConditionRule extends BaseNumberConditionRule implements FieldCo
         parent::setAttributes($values, $safeOnly);
 
         $field = $this->field();
-        if (!$field instanceof Money && !$field instanceof \CraftCms\Cms\Field\Money) {
+        if (!$field instanceof Money) {
             throw new InvalidConfigException();
         }
 
@@ -67,7 +67,7 @@ class MoneyFieldConditionRule extends BaseNumberConditionRule implements FieldCo
     protected function inputHtml(): string
     {
         $field = $this->field();
-        if (!$field instanceof Money && !$field instanceof \CraftCms\Cms\Field\Money) {
+        if (!$field instanceof Money) {
             throw new InvalidConfigException();
         }
 

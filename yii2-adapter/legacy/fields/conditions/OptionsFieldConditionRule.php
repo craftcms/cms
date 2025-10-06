@@ -3,7 +3,7 @@
 namespace craft\fields\conditions;
 
 use craft\base\conditions\BaseMultiSelectConditionRule;
-use craft\fields\BaseOptionsField;
+use CraftCms\Cms\Field\BaseOptionsField;
 use CraftCms\Cms\Field\Data\MultiOptionsFieldData;
 use CraftCms\Cms\Field\Data\OptionData;
 use CraftCms\Cms\Field\Data\SingleOptionFieldData;

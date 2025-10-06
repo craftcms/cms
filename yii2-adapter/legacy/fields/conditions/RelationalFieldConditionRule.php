@@ -10,7 +10,7 @@ use craft\elements\db\ElementQueryInterface;
 use craft\elements\ElementCollection;
 use craft\fieldlayoutelements\BaseField;
 use craft\fieldlayoutelements\CustomField;
-use craft\fields\BaseRelationField;
+use CraftCms\Cms\Field\BaseRelationField;
 use yii\base\InvalidConfigException;
 
 /**

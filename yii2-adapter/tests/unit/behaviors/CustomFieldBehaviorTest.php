@@ -8,9 +8,9 @@
 namespace crafttests\unit\behaviors;
 
 use craft\behaviors\CustomFieldBehavior;
-use craft\fields\PlainText;
 use craft\test\TestCase;
 use CraftCms\Cms\Field\Fields;
+use CraftCms\Cms\Field\PlainText;
 use InvalidArgumentException;
 
 /**

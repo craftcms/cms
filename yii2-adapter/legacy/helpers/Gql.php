@@ -614,8 +614,8 @@ class Gql
         $fieldsService = app(Fields::class);
         /** @var ElementContainerFieldInterface[] $fields */
         $fields = array_merge(...array_map(
-            fn(string $type) => $fieldsService->getFieldsByType($type),
-            $fieldsService->getNestedEntryFieldTypes()
+            fn(string $type) => $fieldsService->getFieldsByType($type)->all(),
+            $fieldsService->getNestedEntryFieldTypes()->all()
         ));
         return array_filter($fields, fn(ElementContainerFieldInterface $field) =>
             static::isSchemaAwareOf("nestedentryfields.$field->uid", $schema));

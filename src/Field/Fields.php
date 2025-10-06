@@ -361,10 +361,12 @@ final class Fields
     /**
      * Returns all fields of a certain type.
      *
-     * @param  class-string<FieldInterface>  $type  The field type
+     * @template T of FieldInterface
+     *
+     * @param  class-string<T>  $type  The field type
      * @param  string|string[]|false|null  $context  The field context(s) to fetch fields from. Defaults to [[\craft\services\Fields::$fieldContext]].
      *                                               Set to `false` to get all fields regardless of context.
-     * @return Collection<FieldInterface> The fields
+     * @return Collection<T> The fields
      */
     public function getFieldsByType(string $type, mixed $context = null): Collection
     {

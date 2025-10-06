@@ -5,11 +5,11 @@
  * @license https://craftcms.github.io/license/
  */
 
-use craft\fields\Assets;
-use craft\fields\Entries;
-use craft\fields\Number;
-use craft\fields\PlainText;
-use craft\fields\Table;
+use CraftCms\Cms\Field\Assets;
+use CraftCms\Cms\Field\Entries;
+use CraftCms\Cms\Field\Number;
+use CraftCms\Cms\Field\PlainText;
+use CraftCms\Cms\Field\Table;
 
 return [
     [

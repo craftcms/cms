@@ -42,6 +42,7 @@ use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Element\Enums\AttributeStatus;
 use CraftCms\Cms\Element\Enums\MenuItemType;
+use CraftCms\Cms\Field\Contracts\PreviewableFieldInterface;
 use CraftCms\Cms\Field\Fields;
 use CraftCms\Cms\License\License;
 use CraftCms\Cms\Plugin\Plugins;
@@ -2974,7 +2975,9 @@ JS, [
                 } catch (FieldNotFoundException) {
                     continue;
                 }
-                $previewHtml .= Html::tag('div', $field->previewPlaceholderHtml(null, null));
+                if ($field instanceof PreviewableFieldInterface) {
+                    $previewHtml .= Html::tag('div', $field->previewPlaceholderHtml(null, null));
+                }
             } elseif ($cardElement instanceof BaseField) {
                 $previewHtml .= Html::tag('div', $cardElement->previewPlaceholderHtml(null, null));
             } elseif (is_array($cardElement) && isset($cardElement['html'])) {

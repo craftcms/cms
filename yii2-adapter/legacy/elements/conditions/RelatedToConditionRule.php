@@ -7,9 +7,9 @@ use craft\base\conditions\BaseElementSelectConditionRule;
 use craft\base\ElementInterface;
 use craft\elements\db\ElementQueryInterface;
 use craft\elements\Entry;
-use craft\fields\BaseRelationField;
 use craft\helpers\Cp;
 use craft\helpers\UrlHelper;
+use CraftCms\Cms\Field\BaseRelationField;
 use CraftCms\Cms\Field\Fields;
 use CraftCms\Cms\Support\Html;
 

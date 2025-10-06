@@ -4,7 +4,7 @@ namespace CraftCms\Cms\Field\LinkTypes;
 
 use Craft;
 use craft\elements\Asset as AssetElement;
-use craft\fields\Link;
+use CraftCms\Cms\Field\Link;
 use craft\fs\Temp;
 use craft\helpers\Assets as AssetsHelper;
 use craft\helpers\Cp;

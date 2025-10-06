@@ -9,12 +9,12 @@ namespace craft\console\controllers;
 
 use craft\console\Controller;
 use craft\errors\InvalidFieldException;
-use craft\fields\BaseRelationField;
 use craft\helpers\Console;
 use craft\models\FieldLayout;
 use CraftCms\Aliases\Aliases;
 use CraftCms\Cms\Database\Migrator;
 use CraftCms\Cms\Database\Table;
+use CraftCms\Cms\Field\BaseRelationField;
 use CraftCms\Cms\Field\Contracts\FieldInterface;
 use CraftCms\Cms\Field\Contracts\MergeableFieldInterface;
 use CraftCms\Cms\Field\Fields;
@@ -141,6 +141,10 @@ EOD,
         foreach ($fields as $fieldA) {
             foreach ($fields as $fieldB) {
                 $reason1 = $reason2 = null;
+                /**
+                 * @var MergeableFieldInterface $fieldA
+                 * @var MergeableFieldInterface $fieldB
+                 */
                 $canMerge = $fieldB->canMergeInto($fieldA, $reason1) && $fieldA->canMergeFrom($fieldB, $reason2);
                 $canMergeByField[$fieldA->handle] = $canMergeByField[$fieldA->handle] && $canMerge;
                 if (!$canMerge) {
@@ -409,7 +413,7 @@ MD, $infoByField->join("\n"))));
         return $fields[$mergeableFields->first()];
     }
 
-    private function usagesDescriptor(array $layouts): string
+    private function usagesDescriptor(array|Collection $layouts): string
     {
         return sprintf('%s %s', count($layouts), count($layouts) === 1 ? 'usage' : 'usages');
     }
@@ -435,7 +439,7 @@ MD, $infoByField->join("\n"))));
     private function mergeFields(
         FieldInterface $persistingField,
         FieldInterface $outgoingField,
-        array $outgoingLayouts,
+        array|Collection $outgoingLayouts,
         array &$migrationPaths,
     ): void {
         $fieldsService = app(Fields::class);

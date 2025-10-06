@@ -8,10 +8,10 @@
 namespace craft\test\fixtures;
 
 use Craft;
-use craft\fields\PlainText;
 use craft\records\Field;
 use craft\services\Fields;
 use craft\test\ActiveFixture;
+use CraftCms\Cms\Field\PlainText;
 use yii\base\InvalidArgumentException;
 
 /**

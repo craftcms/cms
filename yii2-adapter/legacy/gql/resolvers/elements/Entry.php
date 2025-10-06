@@ -48,7 +48,7 @@ class Entry extends ElementResolver
 
             if (isset($pairs['nestedentryfields'])) {
                 $fieldsService = app(Fields::class);
-                $types = array_flip($fieldsService->getNestedEntryFieldTypes());
+                $types = $fieldsService->getNestedEntryFieldTypes()->flip();
                 $fieldIds = array_filter(array_map(function(string $uid) use ($fieldsService, $types) {
                     $field = $fieldsService->getFieldByUid($uid);
                     return $field && isset($types[$field::class]) ? $field->id : null;

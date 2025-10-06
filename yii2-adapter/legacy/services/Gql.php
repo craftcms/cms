@@ -1687,8 +1687,8 @@ class Gql extends Component
         $fieldsService = app(Fields::class);
         /** @var ElementContainerFieldInterface[] $fields */
         $fields = array_merge(...array_map(
-            fn(string $type) => $fieldsService->getFieldsByType($type),
-            $fieldsService->getNestedEntryFieldTypes(),
+            fn(string $type) => $fieldsService->getFieldsByType($type)->all(),
+            $fieldsService->getNestedEntryFieldTypes()->all(),
         ));
         usort($fields, fn(
             ElementContainerFieldInterface $a,

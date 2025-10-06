@@ -1070,7 +1070,7 @@ abstract class Element extends Component implements ElementInterface
     protected static function defineFieldLayouts(?string $source): array
     {
         // Default to all the field layouts associated with this element type
-        return app(Fields::class)->getLayoutsByType(static::class);
+        return app(Fields::class)->getLayoutsByType(static::class)->all();
     }
 
     /**

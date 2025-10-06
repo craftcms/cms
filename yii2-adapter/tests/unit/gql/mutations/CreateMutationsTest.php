@@ -8,8 +8,6 @@
 namespace crafttests\unit\gql\mutations;
 
 use craft\elements\GlobalSet;
-use craft\fields\Number;
-use craft\fields\PlainText;
 use craft\gql\mutations\Asset as AssetMutations;
 use craft\gql\mutations\Category as CategoryMutations;
 use craft\gql\mutations\Entry as EntryMutations;
@@ -27,6 +25,8 @@ use craft\models\Section;
 use craft\models\TagGroup;
 use craft\models\Volume;
 use craft\test\TestCase;
+use CraftCms\Cms\Field\Number;
+use CraftCms\Cms\Field\PlainText;
 use Exception;
 use UnitTester;
 use yii\base\InvalidConfigException;

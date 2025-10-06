@@ -304,7 +304,7 @@ class ElementSources extends Component
             if (str_starts_with($sourceKey, 'custom:')) {
                 $source = $this->_sourceConfig($elementType, $sourceKey);
                 if (empty($source['condition'])) {
-                    return app(Fields::class)->getLayoutsByType($elementType);
+                    return app(Fields::class)->getLayoutsByType($elementType)->all();
                 }
                 /** @var ElementConditionInterface $condition */
                 $condition = Craft::$app->getConditions()->createCondition($source['condition']);

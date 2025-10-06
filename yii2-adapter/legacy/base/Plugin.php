@@ -252,7 +252,7 @@ class Plugin extends Module implements PluginInterface
     {
         // Fire an 'afterSaveSettings' event
         if ($this->hasEventHandlers(self::EVENT_AFTER_SAVE_SETTINGS)) {
-            $this->dispatchComponentEvent(self::EVENT_AFTER_SAVE_SETTINGS);
+            $this->trigger(self::EVENT_AFTER_SAVE_SETTINGS);
         }
     }
 

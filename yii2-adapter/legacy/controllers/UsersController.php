@@ -3083,7 +3083,7 @@ JS);
     }
 
     public function asModelSuccess(
-        ModelInterface|Model $model,
+        mixed $model,
         ?string $message = null,
         ?string $modelName = null,
         array $data = [],
@@ -3094,7 +3094,7 @@ JS);
     }
 
     public function asModelFailure(
-        ModelInterface|Model $model,
+        mixed $model,
         ?string $message = null,
         ?string $modelName = null,
         array $data = [],

@@ -11,8 +11,8 @@ use Codeception\Test\Unit;
 use Craft;
 use craft\base\ElementInterface;
 use craft\elements\Entry;
-use craft\fields\Money;
 use craft\test\TestCase;
+use CraftCms\Cms\Field\Money;
 use Money\Currency;
 
 /**

@@ -3,7 +3,7 @@
 namespace CraftCms\Cms\Field\LinkTypes;
 
 use Craft;
-use craft\fields\Link;
+use CraftCms\Cms\Field\Link;
 use yii\validators\EmailValidator;
 
 /**
