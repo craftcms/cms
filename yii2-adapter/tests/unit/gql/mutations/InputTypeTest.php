@@ -7,13 +7,13 @@
 
 namespace crafttests\unit\gql\mutations;
 
-use craft\base\Field;
 use craft\gql\GqlEntityRegistry;
 use craft\gql\types\input\File;
 use craft\gql\types\input\Matrix;
 use craft\test\TestCase;
 use CraftCms\Cms\Field\Checkboxes;
 use CraftCms\Cms\Field\Dropdown;
+use CraftCms\Cms\Field\Field;
 use CraftCms\Cms\Field\Matrix as MatrixField;
 use CraftCms\Cms\Field\MultiSelect;
 use CraftCms\Cms\Field\RadioButtons;
