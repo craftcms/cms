@@ -18,7 +18,6 @@ use craft\elements\Entry;
 use craft\enums\PropagationMethod;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Db;
-use craft\helpers\ProjectConfig as ProjectConfigHelper;
 use craft\helpers\StringHelper;
 use craft\helpers\UrlHelper;
 use craft\records\Section as SectionRecord;
@@ -439,7 +438,7 @@ class Section extends Model implements Chippable, CpEditable, Iconic
         ];
 
         if (!empty($this->previewTargets)) {
-            $config['previewTargets'] = ProjectConfigHelper::packAssociativeArray(array_values($this->previewTargets));
+            $config['previewTargets'] = array_values($this->previewTargets);
         }
 
         if ($this->type === self::TYPE_STRUCTURE) {
