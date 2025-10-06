@@ -524,12 +524,10 @@ img {
 .text,
 table.editable textarea {
   body.rtl .ltr & {
-    text-align: start !important;
     direction: ltr !important;
   }
 
   body.ltr .rtl & {
-    text-align: end !important;
     direction: rtl !important;
   }
 }
@@ -6591,7 +6589,7 @@ $min2ColWidth: 400px;
     position: relative;
     display: flex;
     gap: var(--s);
-    justify-content: space-between;
+    justify-content: flex-end;
     flex-wrap: wrap;
     margin-block: 0 -24px;
     margin-inline: var(--neg-padding);
@@ -6605,6 +6603,7 @@ $min2ColWidth: 400px;
     & > .so-notice {
       display: flex;
       align-items: center;
+      margin-inline-end: auto;
     }
 
     & > .so-extra {
@@ -7054,7 +7053,7 @@ $min2ColWidth: 400px;
       .sidebar {
         position: absolute;
         inset-block-start: 0;
-        margin-inline-start: -249px;
+        margin-inline-start: calc(-249rem / 16);
         height: 100%;
         overflow: auto;
         padding-block: var(--content-padding);
@@ -7705,6 +7704,7 @@ $min2ColWidth: 400px;
     }
 
     .chip {
+      display: flex;
       margin-block: -4px;
     }
   }

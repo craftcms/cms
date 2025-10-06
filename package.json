@@ -9,7 +9,7 @@
     "serve": "webpack-dev-server --node-env=development",
     "check-prettier": "prettier --check .",
     "fix-prettier": "prettier --write .",
-    "prepare": "husky install",
+    "prepare": "husky",
     "lint:styles": "stylelint \"src/**/*.scss\""
   },
   "workspaces": [
@@ -25,8 +25,8 @@
     "@craftcms/playwright": "file:packages/craftcms-playwright",
     "@craftcms/webpack": "file:packages/craftcms-webpack",
     "@playwright/test": "^1.19.2",
-    "husky": "^8.0.3",
-    "lint-staged": "^15.2.0",
+    "husky": "^9.1.7",
+    "lint-staged": "^16.1.6",
     "prettier": "3.1.1",
     "stylelint": "^16.6.1",
     "stylelint-config-standard": "^36.0.0",

@@ -2,8 +2,51 @@
 
 ## Unreleased
 
+- The `fields/auto-merge` command now writes updated project config YAML files after each merge. ([#16198](https://github.com/craftcms/cms/issues/16198))
+- `new` is now a reserved filesystem handle.
+- Added `craft\base\ApplicationTrait::ensureEdition()`.
+- Fixed an error that could occur when running the `utils/fix-field-layout-uids` command. ([#17848](https://github.com/craftcms/cms/issues/17848))
+- Fixed a bug where the `EVENT_DEFINE_EXTRA_FIELDS` event wasn’t getting triggered for elements. ([#17866](https://github.com/craftcms/cms/issues/17866))
+- Fixed a bug where `craft\services\Assets::EVENT_AFTER_REPLACE_ASSET` events weren’t getting triggered when replacing an asset file via GraphQL. ([#17005](https://github.com/craftcms/cms/issues/17005))
+- Fixed a bug where inline search wasn’t working for Users fields. ([#17838](https://github.com/craftcms/cms/issues/17838))
+- Fixed a bug where inline search wasn’t returning results ordered by search score.
+- Fixed a bug where “load more” buttons weren’t keyboard-accessible. ([#17797](https://github.com/craftcms/cms/pull/17797))
+- Fixed a bug where the skip link target wasn’t able to be focused after the right sidebar was closed. ([#17847](https://github.com/craftcms/cms/pull/17847))
+- Fixed a bug where focus was dropped after deleting a passkey. ([#17853](https://github.com/craftcms/cms/pull/17853))
+- Fixed a bug where `craft\helpers\Typecast` wasn’t typecasting `DateTimeInterface` property values.
+- Fixed a bug where nested elements could get duplicated when canonical changes were merged into a draft. ([#17740](https://github.com/craftcms/cms/issues/17740))
+- Fixed an error that could occur when executing GraphQL queries if the `lazyGqlTypes` config setting was enabled. ([#17858](https://github.com/craftcms/cms/issues/17858))
+- Fixed a bug where focus was moved to the top of the body after the final tag in a Tags field was removed. ([#17861](https://github.com/craftcms/cms/pull/17861))
+- Fixed a bug where element queries weren’t handling generated field params properly, for generated fields with the same handle as custom fields. ([#17851](https://github.com/craftcms/cms/issues/17851), [#17855](https://github.com/craftcms/cms/issues/17855))
+- Fixed a bug where it wasn’t possible to choose autosuggest inputs’ suggestions via mouse click. ([#17869](https://github.com/craftcms/cms/pull/17869))
+- Fixed a bug where nested entries within Matrix fields weren’t getting a “Copy” action if the field was set to the inline-editable blocks view mode and Min/Max Entries were set to 1. ([#17878](https://github.com/craftcms/cms/issues/17878))
+- Fixed a bug where Categories fields weren’t showing inline search inputs when “Show the search input” was enabled. ([#17886](https://github.com/craftcms/cms/pull/17886))
+- Fixed a bug where the “Entry type settings” action for nested entries could open the owner entry’s entry type settings. ([#17875](https://github.com/craftcms/cms/issues/17875))
+- Fixed a bug where entry type chips would lose their overridden name, handle, and description values when the entry type’s settings were saved. ([#17876](https://github.com/craftcms/cms/issues/17876))
+- Fixed a bug where Matrix entries still showed a “Duplicate” action when the Matrix field’s Max Entries setting was reached. ([#17902](https://github.com/craftcms/cms/pull/17902))
+- Fixed a bug where Matrix enttries’ “Duplicate” action was failing silently if the field’s Max Entries setting was reached for the canonical owner, but not the current draft. ([#17902](https://github.com/craftcms/cms/pull/17902))
+- Fixed a bug where Matrix fields set to the element index view mode weren’t showing the correct nested entries when viewing an owner’s revision. ([#17887](https://github.com/craftcms/cms/issues/17887))
+- Fixed a bug where RTL inputs were getting left-aligned text for users with an LTR language preference. ([#17904](https://github.com/craftcms/cms/issues/17904))
+- Fixed a PHP error that could occur if `Craft::$app->getEdition()` was called early in the request. ([#16288](https://github.com/craftcms/cms/issues/16288))
+- Fixed a bug where field layout editability conditions weren’t getting enforced when no user was logged in. ([#17883](https://github.com/craftcms/cms/issues/17883))
+- Fixed a PHP error that could occur when saving an element with a Link field, if the Link field no longer accepts the previously-selected link type. ([#16850](https://github.com/craftcms/cms/discussions/16850))
+- Fixed a styling issue.
+
+## 5.8.17 - 2025-09-05
+
+- Added `craft\base\NestedElementInterface::getOwners()`.
+- Added `craft\base\NestedElementTrait::getOwners()`.
 - Fixed a bug where entries’ and categories’ descendants’ URIs weren’t always getting updated after a parent’s URI changed. ([#17804](https://github.com/craftcms/cms/discussions/17804))
 - Fixed a bug where addresses weren’t saving `firstName`, `lastName`, and `fullName` values properly. ([#17807](https://github.com/craftcms/cms/issues/17807))
+- Fixed an n+1 query bug when working with Content Block fields. ([#17801](https://github.com/craftcms/cms/issues/17801))
+- Fixed a bug where element selector modals’ sidebars would go out of view if the browser had a custom font size. ([#17809](https://github.com/craftcms/cms/issues/17809))
+- Fixed a bug where relation field values weren’t getting updated properly when two elements were merged together. ([#17817](https://github.com/craftcms/cms/issues/17817))
+- Fixed an authorization error that could occur when editing a provisional draft of a nested element.
+- Fixed a bug where custom field values could be lost when changing an entry type. ([#17821](https://github.com/craftcms/cms/issues/17821))
+- Fixed a bug where non-admin users couldn’t edit recursively-nested elements if they didn’t have save permissions for the top-level element.
+- Fixed a bug where it was possible to select disabled elements within element select modals. ([#17824](https://github.com/craftcms/cms/issues/17824))
+- Fixed a bug where toast notifications weren’t always being dismissed automatically when they should have. ([#17825](https://github.com/craftcms/cms/issues/17825))
+- Fixed an error that could occur if a Content Block field was saved without any fields selected. ([#17829](https://github.com/craftcms/cms/issues/17829))
 - Fixed a styling issue.
 
 ## 5.8.16 - 2025-08-29
@@ -698,7 +741,7 @@
 
 ## 5.6.16 - 2025-04-08
 
-- Fixed a bug where `craft\services\Assets::EVENT_BEFORE_REPLACE_ASSET` and `EVENT_BEFORE_REPLACE_ASSET` events weren’t getting triggered when replacing an asset file via GraphQL. ([#17005](https://github.com/craftcms/cms/issues/17005))
+- Fixed a bug where `craft\services\Assets::EVENT_BEFORE_REPLACE_ASSET` events weren’t getting triggered when replacing an asset file via GraphQL. ([#17005](https://github.com/craftcms/cms/issues/17005))
 - Fixed a bug where replacing a file via GraphQL could result in two assets referring to the same file. ([#17031](https://github.com/craftcms/cms/pull/17031))
 - Fixed a bug where the window wasn’t automatically scrolling when dragging structure elements near its edges. ([#17036](https://github.com/craftcms/cms/issues/17036))
 - Fixed a bug where changes to multi-instance CKEditor fields weren’t persisting, if the first instance in the field layout hadn’t been modified. ([craftcms/ckeditor#391](https://github.com/craftcms/ckeditor/pull/391))

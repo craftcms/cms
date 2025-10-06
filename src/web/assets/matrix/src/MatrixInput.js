@@ -667,6 +667,7 @@
 
         if (!this.matrix.canAddMoreEntries()) {
           hideActions.push('add');
+          hideActions.push('duplicate');
         }
 
         const $buttons = this.$actionMenu.find('button[data-action]');
