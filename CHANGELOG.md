@@ -8,6 +8,7 @@
 - Fixed an error that could occur when running the `utils/fix-field-layout-uids` command. ([#17848](https://github.com/craftcms/cms/issues/17848))
 - Fixed a bug where the `EVENT_DEFINE_EXTRA_FIELDS` event wasn’t getting triggered for elements. ([#17866](https://github.com/craftcms/cms/issues/17866))
 - Fixed a bug where `craft\services\Assets::EVENT_AFTER_REPLACE_ASSET` events weren’t getting triggered when replacing an asset file via GraphQL. ([#17005](https://github.com/craftcms/cms/issues/17005))
+- Fixed a bug where sections’ preview targets weren’t getting stored in the project config properly. ([#17919](https://github.com/craftcms/cms/issues/17919))
 - Fixed a bug where inline search wasn’t working for Users fields. ([#17838](https://github.com/craftcms/cms/issues/17838))
 - Fixed a bug where inline search wasn’t returning results ordered by search score.
 - Fixed a bug where “load more” buttons weren’t keyboard-accessible. ([#17797](https://github.com/craftcms/cms/pull/17797))
