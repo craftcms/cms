@@ -12,7 +12,6 @@ use craft\elements\ElementCollection;
 use craft\errors\FsObjectNotFoundException;
 use craft\errors\InvalidFsException;
 use craft\errors\InvalidSubpathException;
-use craft\events\LocateUploadedFilesEvent;
 use craft\fs\Temp;
 use craft\gql\arguments\elements\Asset as AssetArguments;
 use craft\gql\interfaces\elements\Asset as AssetInterface;
@@ -30,6 +29,7 @@ use craft\services\ElementSources;
 use craft\services\Gql as GqlService;
 use craft\web\UploadedFile;
 use CraftCms\Cms\Config\GeneralConfig;
+use CraftCms\Cms\Field\Events\LocateUploadedFiles;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Html;
 use GraphQL\Type\Definition\Type;
@@ -45,15 +45,15 @@ use yii\base\InvalidConfigException;
  */
 final class Assets extends BaseRelationField
 {
-    public const PREVIEW_MODE_FULL = 'full';
+    public const string PREVIEW_MODE_FULL = 'full';
 
-    public const PREVIEW_MODE_THUMBS = 'thumbs';
+    public const string PREVIEW_MODE_THUMBS = 'thumbs';
 
     /**
-     * @event LocateUploadedFilesEvent The event that is triggered when identifying any uploaded files that
+     * @event {@see LocateUploadedFiles} The event that is triggered when identifying any uploaded files that
      * should be stored as assets and related by the field.
      */
-    public const EVENT_LOCATE_UPLOADED_FILES = 'locateUploadedFiles';
+    public const string EVENT_LOCATE_UPLOADED_FILES = 'locateUploadedFiles';
 
     /**
      * {@inheritdoc}
@@ -876,10 +876,12 @@ final class Assets extends BaseRelationField
 
         // Fire a 'locateUploadedFiles' event
         if ($this->hasComponentListeners(self::EVENT_LOCATE_UPLOADED_FILES)) {
-            $event = new LocateUploadedFilesEvent([
-                'element' => $element,
-                'files' => $files,
-            ]);
+            $event = new LocateUploadedFiles(
+                field: $this,
+                element: $element,
+                files: $files,
+            );
+
             $this->dispatchComponentEvent(self::EVENT_LOCATE_UPLOADED_FILES, $event);
 
             return $event->files;
@@ -931,19 +933,20 @@ final class Assets extends BaseRelationField
                 $renderedSubpath === '' ||
                 trim($renderedSubpath, '/') != $renderedSubpath ||
                 str_contains($renderedSubpath, '//') ||
-                Collection::make(explode('/', $renderedSubpath))
-                    ->contains(fn (string $segment) => ElementHelper::isTempSlug($segment))
+                str($renderedSubpath)->explode('/')->contains(fn (string $segment) => ElementHelper::isTempSlug($segment))
             ) {
                 throw new InvalidSubpathException($subpath);
             }
 
             // Sanitize the subpath
-            $segments = array_filter(explode('/', $renderedSubpath), fn (string $segment): bool => $segment !== ':ignore:');
             $generalConfig = app(GeneralConfig::class);
-            $segments = array_map(fn (string $segment): string => FileHelper::sanitizeFilename($segment, [
-                'asciiOnly' => $generalConfig->convertFilenamesToAscii,
-            ]), $segments);
-            $subpath = implode('/', $segments);
+            $subpath = str($renderedSubpath)
+                ->explode('/')
+                ->filter(fn (string $segment): bool => $segment !== ':ignore:')
+                ->map(fn (string $segment): string => FileHelper::sanitizeFilename($segment, [
+                    'asciiOnly' => $generalConfig->convertFilenamesToAscii,
+                ]))
+                ->implode('/');
         }
 
         $folder = $assetsService->findFolder([

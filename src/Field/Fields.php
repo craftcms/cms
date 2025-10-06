@@ -88,6 +88,16 @@ final class Fields
     // Fields
     // -------------------------------------------------------------------------
 
+    public function getFieldContext(): string
+    {
+        return $this->fieldContext;
+    }
+
+    public function setFieldContext(string $fieldContext): void
+    {
+        $this->fieldContext = $fieldContext;
+    }
+
     /**
      * Returns all available field type classes.
      *
@@ -390,10 +400,10 @@ final class Fields
      * ---
      *
      * ```php
-     * $body = app(Fields::class)->getFieldByHandle('body');
+     * $body = Fields::getFieldByHandle('body');
      * ```
      * ```twig
-     * {% set body = craft.app.fields.getFieldByHandle('body') %}
+     * {% set body = craft.fields.getFieldByHandle('body') %}
      * {{ body.instructions }}
      * ```
      *

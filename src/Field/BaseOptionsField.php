@@ -5,7 +5,6 @@ namespace CraftCms\Cms\Field;
 use Craft;
 use craft\base\ElementInterface;
 use craft\db\QueryParam;
-use craft\events\DefineInputOptionsEvent;
 use craft\fields\conditions\OptionsFieldConditionRule;
 use craft\gql\arguments\OptionField as OptionFieldArguments;
 use craft\gql\resolvers\OptionField as OptionFieldResolver;
@@ -17,6 +16,7 @@ use CraftCms\Cms\Field\Contracts\PreviewableFieldInterface;
 use CraftCms\Cms\Field\Data\MultiOptionsFieldData;
 use CraftCms\Cms\Field\Data\OptionData;
 use CraftCms\Cms\Field\Data\SingleOptionFieldData;
+use CraftCms\Cms\Field\Events\DefineInputOptions;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Json;
@@ -34,9 +34,9 @@ use yii\db\Schema;
 abstract class BaseOptionsField extends Field implements CrossSiteCopyableFieldInterface, MergeableFieldInterface, PreviewableFieldInterface
 {
     /**
-     * @event DefineInputOptionsEvent Event triggered when defining the options for the field's input.
+     * @event {@see DefineInputOptions} Event triggered when defining the options for the field's input.
      */
-    public const EVENT_DEFINE_OPTIONS = 'defineOptions';
+    public const string EVENT_DEFINE_OPTIONS = 'defineOptions';
 
     /**
      * @var bool Whether the field should support multiple selections
@@ -678,11 +678,12 @@ abstract class BaseOptionsField extends Field implements CrossSiteCopyableFieldI
 
         // Fire a 'defineOptions' event
         if ($this->hasComponentListeners(self::EVENT_DEFINE_OPTIONS)) {
-            $event = new DefineInputOptionsEvent([
-                'options' => $options,
-                'value' => $value,
-                'element' => $element,
-            ]);
+            $event = new DefineInputOptions(
+                field: $this,
+                options: $options,
+                value: $value,
+                element: $element,
+            );
             $this->dispatchComponentEvent(self::EVENT_DEFINE_OPTIONS, $event);
             $options = $event->options;
         }

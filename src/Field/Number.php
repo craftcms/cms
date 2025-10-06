@@ -27,11 +27,11 @@ use yii\db\Schema;
  */
 final class Number extends Field implements CrossSiteCopyableFieldInterface, InlineEditableFieldInterface, MergeableFieldInterface, SortableFieldInterface
 {
-    public const FORMAT_DECIMAL = 'decimal';
+    public const string FORMAT_DECIMAL = 'decimal';
 
-    public const FORMAT_CURRENCY = 'currency';
+    public const string FORMAT_CURRENCY = 'currency';
 
-    public const FORMAT_NONE = 'none';
+    public const string FORMAT_NONE = 'none';
 
     /**
      * {@inheritdoc}
@@ -228,7 +228,7 @@ final class Number extends Field implements CrossSiteCopyableFieldInterface, Inl
     /**
      * {@inheritdoc}
      */
-    public function serializeValue(mixed $value, ?ElementInterface $element): mixed
+    public function serializeValue(mixed $value, ?ElementInterface $element): int|null|float
     {
         if ($value === null) {
             return null;
@@ -364,7 +364,7 @@ JS;
         }
 
         if ($this->suffix) {
-            $formatted = $formatted.$this->suffix;
+            $formatted .= $this->suffix;
         }
 
         return $formatted;
@@ -381,9 +381,9 @@ JS;
                 $max = $this->max * (10 ^ $this->decimals);
                 if ($this->step) {
                     $step = $this->step * (10 ^ $this->decimals);
-                    $value = mt_rand($min / $step, $max / $step) * $step;
+                    $value = random_int($min / $step, $max / $step) * $step;
                 } else {
-                    $value = mt_rand($min, $max);
+                    $value = random_int($min, $max);
                 }
                 $value /= 10 ^ $this->decimals;
             } else {

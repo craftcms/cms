@@ -213,7 +213,7 @@ final class Entries extends BaseRelationField
     {
         $mockup = new Entry;
         $mockup->title = Craft::t('app', 'Related {type} Title', ['type' => $mockup->displayName()]);
-        if ($this->sources == '*') {
+        if ($this->sources === '*') {
             $section = Craft::$app->getEntries()->getAllSections()[0];
         } else {
             $section = Craft::$app->getEntries()->getSectionByUid(str_replace('section:', '', $this->sources[0]));

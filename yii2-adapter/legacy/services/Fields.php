@@ -13,6 +13,7 @@ use craft\base\FieldLayoutElement;
 use craft\events\ApplyFieldSaveEvent;
 use craft\events\DefineCompatibleFieldTypesEvent;
 use craft\events\FieldEvent;
+use craft\events\LocateUploadedFilesEvent;
 use craft\events\RegisterComponentTypesEvent;
 use craft\fields\BaseRelationField;
 use craft\models\FieldLayout;
@@ -29,6 +30,7 @@ use CraftCms\Cms\Field\Events\FieldLayoutSaved;
 use CraftCms\Cms\Field\Events\FieldLayoutSaving;
 use CraftCms\Cms\Field\Events\FieldSaved;
 use CraftCms\Cms\Field\Events\FieldSaving;
+use CraftCms\Cms\Field\Events\LocateUploadedFiles;
 use CraftCms\Cms\Field\Events\RegisterFieldTypes;
 use CraftCms\Cms\Field\Events\RegisterNestedEntryFieldTypes;
 use CraftCms\Cms\ProjectConfig\Events\ConfigEvent;
@@ -330,7 +332,7 @@ class Fields extends Component
      * $body = app(Fields::class)->getFieldByHandle('body');
      * ```
      * ```twig
-     * {% set body = craft.app.fields.getFieldByHandle('body') %}
+     * {% set body = craft.fields.getFieldByHandle('body') %}
      * {{ body.instructions }}
      * ```
      *
@@ -827,6 +829,20 @@ class Fields extends Component
                     'config' => $event->config,
                 ]));
             }
+        });
+
+        \CraftCms\Cms\Field\Assets::listen(\CraftCms\Cms\Field\Assets::EVENT_LOCATE_UPLOADED_FILES, function(LocateUploadedFiles $event) {
+            $yiiEvent = new LocateUploadedFilesEvent([
+                'element' => $event->element,
+                'files' => $event->files,
+                'sender' => $event->field,
+            ]);
+
+            \craft\base\Event::trigger(
+                \craft\fields\Assets::class,
+                \CraftCms\Cms\Field\Assets::EVENT_LOCATE_UPLOADED_FILES,
+                $yiiEvent,
+            );
         });
     }
 }

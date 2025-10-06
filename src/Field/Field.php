@@ -11,7 +11,6 @@ use craft\db\ExpressionInterface;
 use craft\elements\db\ElementQueryInterface;
 use craft\fieldlayoutelements\CustomField;
 use craft\gql\types\QueryArgument;
-use craft\helpers\Component;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\Db as DbHelper;
 use craft\helpers\ElementHelper;
@@ -34,6 +33,7 @@ use CraftCms\Cms\Field\Events\DefineFieldKeywords;
 use CraftCms\Cms\Field\Events\FieldElementEvent;
 use CraftCms\Cms\Field\Events\FieldEvent;
 use CraftCms\Cms\Shared\Rules\HandleRule;
+use CraftCms\Cms\Support\Facades\Fields;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Support\Typecast;
@@ -331,6 +331,9 @@ abstract class Field implements Actionable, Arrayable, FieldInterface, Iconic
      */
     private array $_valueSql;
 
+    /**
+     * Create a new field instance
+     */
     public function __construct($config = [])
     {
         Typecast::properties(static::class, $config);
@@ -358,7 +361,7 @@ abstract class Field implements Actionable, Arrayable, FieldInterface, Iconic
     public static function get(int|string $id): ?static
     {
         /** @var ?static $field */
-        $field = app(Fields::class)->getFieldById($id);
+        $field = Fields::getFieldById($id);
 
         return $field;
     }
@@ -904,7 +907,7 @@ JS, [
     public function canMergeInto(FieldInterface $persistingField, ?string &$reason): bool
     {
         // Go with whether the DB types are compatible by default
-        return app(Fields::class)->areFieldTypesCompatible(static::class, $persistingField::class);
+        return Fields::areFieldTypesCompatible(static::class, $persistingField::class);
     }
 
     /**
@@ -913,7 +916,7 @@ JS, [
     public function canMergeFrom(FieldInterface $outgoingField, ?string &$reason): bool
     {
         // Go with whether the DB types are compatible by default
-        return app(Fields::class)->areFieldTypesCompatible(static::class, $outgoingField::class);
+        return Fields::areFieldTypesCompatible(static::class, $outgoingField::class);
     }
 
     /**
@@ -1157,7 +1160,7 @@ JS, [
     {
         // Set the field context if it’s not set
         if (! $this->context) {
-            $this->context = app(Fields::class)->fieldContext;
+            $this->context = Fields::getFieldContext();
         }
 
         if ($this->hasComponentListeners(self::EVENT_BEFORE_SAVE)) {

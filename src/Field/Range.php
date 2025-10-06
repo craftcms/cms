@@ -152,7 +152,7 @@ final class Range extends Field implements InlineEditableFieldInterface, Mergeab
     /**
      * {@inheritdoc}
      */
-    public function normalizeValue(mixed $value, ?ElementInterface $element): mixed
+    public function normalizeValue(mixed $value, ?ElementInterface $element): int|null|float
     {
         if ($value === null) {
             if (isset($this->defaultValue) && $this->isFresh($element)) {
@@ -249,9 +249,9 @@ final class Range extends Field implements InlineEditableFieldInterface, Mergeab
         if (! $value) {
             if ($this->step === 0) {
                 // Zero is not really a valid HTML `step` attribute value, and we definitely can’t divide by it:
-                $value = mt_rand($this->min, $this->max);
+                $value = random_int($this->min, $this->max);
             } else {
-                $value = mt_rand($this->min / $this->step, $this->max / $this->step) * $this->step;
+                $value = random_int($this->min / $this->step, $this->max / $this->step) * $this->step;
             }
         }
 

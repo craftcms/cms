@@ -55,7 +55,7 @@ final class Json extends Field implements CrossSiteCopyableFieldInterface, Merge
     /**
      * {@inheritdoc}
      */
-    public function normalizeValue(mixed $value, ?ElementInterface $element): mixed
+    public function normalizeValue(mixed $value, ?ElementInterface $element): ?JsonData
     {
         if ($value === null || $value === '') {
             return null;
@@ -71,7 +71,7 @@ final class Json extends Field implements CrossSiteCopyableFieldInterface, Merge
     /**
      * {@inheritdoc}
      */
-    public function normalizeValueFromRequest(mixed $value, ?ElementInterface $element): mixed
+    public function normalizeValueFromRequest(mixed $value, ?ElementInterface $element): ?JsonData
     {
         if ($value === null || $value === '') {
             return null;

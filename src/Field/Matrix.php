@@ -46,6 +46,7 @@ use CraftCms\Cms\Field\Contracts\ElementContainerFieldInterface;
 use CraftCms\Cms\Field\Contracts\FieldInterface;
 use CraftCms\Cms\Field\Contracts\MergeableFieldInterface;
 use CraftCms\Cms\Field\Enums\ElementIndexViewMode;
+use CraftCms\Cms\Field\Events\DefineEntryTypesForField;
 use CraftCms\Cms\Shared\Enums\Color;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Html;
@@ -73,18 +74,16 @@ final class Matrix extends Field implements EagerLoadingFieldInterface, ElementC
 {
     /**
      * @event DefineEntryTypesForFieldEvent The event that is triggered when defining the available entry types.
-     *
-     * @since 6.0.0
      */
-    public const EVENT_DEFINE_ENTRY_TYPES = 'defineEntryTypes';
+    public const string EVENT_DEFINE_ENTRY_TYPES = 'defineEntryTypes';
 
-    public const VIEW_MODE_CARDS = 'cards';
+    public const string VIEW_MODE_CARDS = 'cards';
 
-    public const VIEW_MODE_CARDS_GRID = 'cards-grid';
+    public const string VIEW_MODE_CARDS_GRID = 'cards-grid';
 
-    public const VIEW_MODE_BLOCKS = 'blocks';
+    public const string VIEW_MODE_BLOCKS = 'blocks';
 
-    public const VIEW_MODE_INDEX = 'index';
+    public const string VIEW_MODE_INDEX = 'index';
 
     /**
      * {@inheritdoc}
@@ -175,8 +174,6 @@ final class Matrix extends Field implements EagerLoadingFieldInterface, ElementC
      * Returns the “Default Table Columns” options for the given entry types.
      *
      * @param  EntryType[]  $entryTypes
-     *
-     * @since 6.0.0
      */
     public static function defaultTableColumnOptions(array $entryTypes): array
     {
@@ -195,77 +192,42 @@ final class Matrix extends Field implements EagerLoadingFieldInterface, ElementC
         return $options;
     }
 
-    /**
-     * @var int|null Min entries
-     *
-     * @since 6.0.0
-     */
     public ?int $minEntries = null;
 
-    /**
-     * @var int|null Max entries
-     *
-     * @since 6.0.0
-     */
     public ?int $maxEntries = null;
 
-    /**
-     * @var bool Enable versioning
-     *
-     * @since 6.0.0
-     */
     public bool $enableVersioning = false;
 
     /**
      * @var string The view mode
      *
      * @phpstan-var self::VIEW_MODE_*
-     *
-     * @since 6.0.0
      */
     public string $viewMode = self::VIEW_MODE_CARDS;
 
     /**
-     * @var bool Whether cards should be shown in a multi-column grid
-     *
-     * @since 6.0.0
-     * @deprecated in 5.9.0
-     */
-    public bool $showCardsInGrid = false;
-
-    /**
      * @var bool Include table view in element indexes
-     *
-     * @since 6.0.0
      */
     public bool $includeTableView = false;
 
     /**
      * @var string[] The default table columns to show in table view
-     *
-     * @since 6.0.0
      */
     public array $defaultTableColumns = [];
 
     /**
      * @var string The default view mode that should be used
      *             if the field's view mode is set to element index and has "Include Table View" turned on.
-     *
-     * @since 6.0.0
      */
     public string $defaultIndexViewMode = 'cards';
 
     /**
      * @var int|null The total entries to display per page within element indexes
-     *
-     * @since 6.0.0
      */
     public ?int $pageSize = null;
 
     /**
      * @var string|null The “New entry” button label.
-     *
-     * @since 6.0.0
      */
     public ?string $createButtonLabel = null;
 
@@ -279,22 +241,16 @@ final class Matrix extends Field implements EagerLoadingFieldInterface, ElementC
      * - [[PropagationMethod::Language]] – Save entries to other sites with the same language
      * - [[PropagationMethod::Custom]] – Save entries to other sites based on a custom [[$propagationKeyFormat|propagation key format]]
      * - [[PropagationMethod::All]] – Save entries to all sites supported by the owner element
-     *
-     * @since 6.0.0
      */
     public PropagationMethod $propagationMethod = PropagationMethod::All;
 
     /**
      * @var string|null The field’s propagation key format, if [[propagationMethod]] is `custom`
-     *
-     * @since 6.0.0
      */
     public ?string $propagationKeyFormat = null;
 
     /**
      * @var array{uriFormat:string|null,template?:string|null,errors?:array}[] Site settings
-     *
-     * @since 6.0.0
      */
     public array $siteSettings = [];
 
@@ -472,8 +428,6 @@ final class Matrix extends Field implements EagerLoadingFieldInterface, ElementC
      *
      * @param  Entry[]  $value
      * @return EntryType[]
-     *
-     * @since 6.0.0
      */
     public function getEntryTypesForField(array $value, ?ElementInterface $element): array
     {
@@ -481,12 +435,12 @@ final class Matrix extends Field implements EagerLoadingFieldInterface, ElementC
 
         // Fire a 'defineEntryTypes' event
         if ($this->hasComponentListeners(self::EVENT_DEFINE_ENTRY_TYPES)) {
-            $event = new DefineEntryTypesForFieldEvent([
-                'entryTypes' => $entryTypes,
-                'element' => $element,
-                'value' => $value,
-            ]);
-            $this->dispatchComponentEvent(self::EVENT_DEFINE_ENTRY_TYPES, $event);
+            $this->dispatchComponentEvent(self::EVENT_DEFINE_ENTRY_TYPES, $event = new DefineEntryTypesForField(
+                field: $this,
+                entryTypes: $entryTypes,
+                element: $element,
+                value: $value,
+            ));
             $entryTypes = $event->entryTypes;
         }
 
@@ -811,7 +765,7 @@ final class Matrix extends Field implements EagerLoadingFieldInterface, ElementC
     /**
      * {@inheritdoc}
      */
-    public function serializeValue(mixed $value, ?ElementInterface $element): mixed
+    public function serializeValue(mixed $value, ?ElementInterface $element): array
     {
         /** @var EntryQuery|ElementCollection $value */
         $serialized = [];
@@ -836,7 +790,7 @@ final class Matrix extends Field implements EagerLoadingFieldInterface, ElementC
     /**
      * {@inheritdoc}
      */
-    public function serializeValueForDb(mixed $value, ElementInterface $element): mixed
+    public function serializeValueForDb(mixed $value, ElementInterface $element): array
     {
         /** @var EntryQuery|ElementCollection $value */
         $serialized = [];
@@ -1083,7 +1037,7 @@ JS, [
         );
         $staticEntries = (
             $createDefaultEntries &&
-            $this->minEntries == $this->maxEntries &&
+            $this->minEntries === $this->maxEntries &&
             $this->maxEntries >= count($value)
         );
 
@@ -1466,7 +1420,7 @@ JS;
     /**
      * {@inheritdoc}
      */
-    public function afterMergeFrom(FieldInterface $outgoingField)
+    public function afterMergeFrom(FieldInterface $outgoingField): void
     {
         DB::table(\CraftCms\Cms\Database\Table::ENTRIES)
             ->where('fieldId', $outgoingField->id)
@@ -1474,13 +1428,12 @@ JS;
                 'fieldId' => $this->id,
                 'dateUpdated' => now(),
             ]);
+
         parent::afterMergeFrom($outgoingField);
     }
 
     /**
      * {@inheritdoc}
-     *
-     * @since 6.0.0
      */
     public function getContentGqlType(): array
     {
@@ -1505,8 +1458,6 @@ JS;
 
     /**
      * {@inheritdoc}
-     *
-     * @since 6.0.0
      */
     public function getContentGqlMutationArgumentType(): Type|array
     {
@@ -1517,8 +1468,6 @@ JS;
      * {@inheritdoc}
      *
      * @throws InvalidArgumentException
-     *
-     * @since 6.0.0
      */
     public function getGqlFragmentEntityByName(string $fragmentName): GqlInlineFragmentInterface
     {
@@ -1601,8 +1550,6 @@ JS;
 
     /**
      * Handles nested entry saves.
-     *
-     * @since 6.0.0
      */
     public function afterSaveEntries(BulkElementsEvent $event): void
     {

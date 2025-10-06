@@ -1,7 +1,7 @@
 {% extends '_includes/forms/fld/field-settings.twig' %}
 {% import '_includes/forms' as forms %}
 
-{% set originalField = craft.app.fields.getFieldByUid(field.getField().uid) %}
+{% set originalField = craft.fields.getFieldByUid(field.getField().uid) %}
 
 {% block fieldSettings %}
   {% if originalField %}

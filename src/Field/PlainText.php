@@ -238,7 +238,7 @@ final class PlainText extends Field implements CrossSiteCopyableFieldInterface, 
     /**
      * {@inheritdoc}
      */
-    public function getPreviewHtml(mixed $value, ?ElementInterface $element = null): string
+    public function getPreviewHtml(mixed $value, ElementInterface $element): string
     {
         $previewHtml = parent::getPreviewHtml($value, $element);
 

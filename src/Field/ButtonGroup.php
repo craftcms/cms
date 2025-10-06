@@ -81,7 +81,6 @@ final class ButtonGroup extends BaseOptionsField implements SortableFieldInterfa
 
     private function _inputHtml(SingleOptionFieldData $value, ?ElementInterface $element, bool $static): string
     {
-        /** @var SingleOptionFieldData $value */
         if (! $value->valid) {
             Craft::$app->getView()->setInitialDeltaValue($this->handle, null);
         }

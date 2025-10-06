@@ -179,7 +179,7 @@ final class Money extends Field implements CrossSiteCopyableFieldInterface, Inli
     /**
      * {@inheritdoc}
      */
-    public function normalizeValue(mixed $value, ?ElementInterface $element): mixed
+    public function normalizeValue(mixed $value, ?ElementInterface $element): MoneyLibrary|null|false
     {
         if ($value instanceof MoneyLibrary) {
             return $value;
@@ -310,9 +310,6 @@ final class Money extends Field implements CrossSiteCopyableFieldInterface, Inli
         ]);
     }
 
-    /**
-     * @since 6.0.0
-     */
     public function currencyLabel(): string
     {
         return Craft::t('app', '({currencyCode}) {currencySymbol}', [

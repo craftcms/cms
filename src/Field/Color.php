@@ -369,7 +369,11 @@ final class Color extends Field implements CrossSiteCopyableFieldInterface, Inli
                     ] : null,
                 ]),
                 'withBlankOption' => $showBlankOption,
-                'value' => $isInPalette ? $value->getHex() : ($isCustom ? '__custom__' : '__blank__'),
+                'value' => match (true) {
+                    $isInPalette => $value->getHex(),
+                    $isCustom => '__custom__',
+                    default => '__blank__',
+                },
                 'toggle' => $this->allowCustomColors,
                 'targetPrefix' => $this->allowCustomColors ? "$id-custom-" : null,
             ]);
@@ -476,7 +480,7 @@ final class Color extends Field implements CrossSiteCopyableFieldInterface, Inli
     {
         if (! $value) {
             if (empty($this->palette)) {
-                $value = new ColorData(sprintf('#%06X', mt_rand(0, 0xFFFFFF)));
+                $value = new ColorData(sprintf('#%06X', random_int(0, 0xFFFFFF)));
             } else {
                 $example = $this->palette[array_rand($this->palette)];
                 $value = new ColorData($example['color']);

@@ -30,6 +30,7 @@ use craft\helpers\Queue;
 use craft\queue\jobs\LocalizeRelations;
 use craft\services\ElementSources;
 use craft\web\assets\cp\CpAsset;
+use CraftCms\Cms\Element\Events\DefineElementCriteria;
 use CraftCms\Cms\Field\Contracts\CrossSiteCopyableFieldInterface;
 use CraftCms\Cms\Field\Contracts\EagerLoadingFieldInterface;
 use CraftCms\Cms\Field\Contracts\InlineEditableFieldInterface;
@@ -58,8 +59,6 @@ abstract class BaseRelationField extends Field implements CrossSiteCopyableField
 {
     /**
      * @event ElementCriteriaEvent The event that is triggered when defining the selection criteria for this field.
-     *
-     * @since 6.0.0
      */
     public const EVENT_DEFINE_SELECTION_CRITERIA = 'defineSelectionCriteria';
 
@@ -88,8 +87,6 @@ abstract class BaseRelationField extends Field implements CrossSiteCopyableField
 
     /**
      * Returns whether the “Show the site menu” setting should be shown for the field.
-     *
-     * @since 6.0.0
      */
     protected static function canShowSiteMenu(): bool
     {
@@ -176,8 +173,6 @@ abstract class BaseRelationField extends Field implements CrossSiteCopyableField
      *
      * @param  self  $field  The relation field
      * @param  bool  $enabledOnly  Whether to only
-     *
-     * @since 6.0.0
      */
     public static function existsQueryCondition(
         self $field,
@@ -238,22 +233,16 @@ abstract class BaseRelationField extends Field implements CrossSiteCopyableField
 
     /**
      * @var bool Whether the site menu should be shown in element selector modals.
-     *
-     * @since 6.0.0
      */
     public bool $showSiteMenu = false;
 
     /**
      * @var bool Whether to automatically relate structural ancestors.
-     *
-     * @since 6.0.0
      */
     public bool $maintainHierarchy = false;
 
     /**
      * @var int|null Branch limit
-     *
-     * @since 6.0.0
      */
     public ?int $branchLimit = null;
 
@@ -261,8 +250,6 @@ abstract class BaseRelationField extends Field implements CrossSiteCopyableField
      * @var string Default placement
      *
      * @phpstan-var self::DEFAULT_PLACEMENT_*
-     *
-     * @since 6.0.0
      */
     public string $defaultPlacement = self::DEFAULT_PLACEMENT_END;
 
@@ -274,29 +261,22 @@ abstract class BaseRelationField extends Field implements CrossSiteCopyableField
     /**
      * @var bool Whether cards should be shown in a multi-column grid
      *
-     * @since 6.0.0
      * @deprecated in 5.9.0.
      */
     public bool $showCardsInGrid = false;
 
     /**
      * @var int|null The maximum number of relations this field can have (used if [[allowLimit]] is set to true).
-     *
-     * @since 6.0.0
      */
     public ?int $minRelations = null;
 
     /**
      * @var int|null The maximum number of relations this field can have (used if [[allowLimit]] is set to true).
-     *
-     * @since 6.0.0
      */
     public ?int $maxRelations = null;
 
     /**
      * @var bool Whether to show a search input.
-     *
-     * @since 6.0.0
      */
     public bool $showSearchInput = true;
 
@@ -329,8 +309,6 @@ abstract class BaseRelationField extends Field implements CrossSiteCopyableField
 
     /**
      * @var bool Whether elements should be allowed to relate themselves.
-     *
-     * @since 6.0.0
      */
     public bool $allowSelfRelations = false;
 
@@ -1027,9 +1005,6 @@ JS, [
 
     /**
      * Returns the HTML that should be shown for this field in table and card views.
-     *
-     *
-     * @since 6.0.0
      */
     protected function previewHtml(ElementCollection $elements): string
     {
@@ -1122,8 +1097,6 @@ JS, [
 
     /**
      * {@inheritdoc}
-     *
-     * @since 6.0.0
      */
     public function getContentGqlMutationArgumentType(): array
     {
@@ -1136,8 +1109,6 @@ JS, [
 
     /**
      * Returns the custom field arguments for the selected source(s).
-     *
-     * @since 6.0.0
      */
     protected function gqlFieldArguments(): array
     {
@@ -1445,8 +1416,6 @@ JS, [
 
     /**
      * Returns an array of variables that should be passed to the settings template.
-     *
-     * @since 6.0.0
      */
     protected function settingsTemplateVariables(): array
     {
@@ -1580,9 +1549,6 @@ JS, [
 
     /**
      * Returns whether the search input should be shown.
-     *
-     *
-     * @since 6.0.0
      */
     protected function showSearchInput(?ElementInterface $element): bool
     {
@@ -1616,8 +1582,10 @@ JS, [
     {
         // Fire a 'defineSelectionCriteria event
         if ($this->hasComponentListeners(self::EVENT_DEFINE_SELECTION_CRITERIA)) {
-            $event = new ElementCriteriaEvent;
-            $this->dispatchComponentEvent(self::EVENT_DEFINE_SELECTION_CRITERIA, $event);
+            $this->dispatchComponentEvent(
+                self::EVENT_DEFINE_SELECTION_CRITERIA,
+                $event = new DefineElementCriteria,
+            );
 
             return $event->criteria;
         }
@@ -1627,8 +1595,6 @@ JS, [
 
     /**
      * Returns the element condition that should be used to determine which elements are selectable by the field.
-     *
-     * @since 6.0.0
      */
     public function getSelectionCondition(): ?ElementConditionInterface
     {
@@ -1650,8 +1616,6 @@ JS, [
      * @param  ElementConditionInterface|string|array|null  $condition
      *
      * @phpstan-param ElementConditionInterface|string|array{class:string}|null $condition
-     *
-     * @since 6.0.0
      */
     public function setSelectionCondition(mixed $condition): void
     {
@@ -1668,8 +1632,6 @@ JS, [
      * Creates an element condition that should be used to determine which elements are selectable by the field.
      *
      * The condition’s `queryParams` property should be set to any element query params that are already covered by other field settings.
-     *
-     * @since 6.0.0
      */
     protected function createSelectionCondition(): ?ElementConditionInterface
     {
@@ -1678,8 +1640,6 @@ JS, [
 
     /**
      * Returns whether the field is configured with a selection condition.
-     *
-     * @since 6.0.0
      */
     protected function hasSelectionCondition(): bool
     {

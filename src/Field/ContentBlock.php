@@ -8,8 +8,6 @@ use craft\base\ElementInterface;
 use craft\base\FieldLayoutProviderInterface;
 use craft\base\NestedElementInterface;
 use craft\behaviors\EventBehavior;
-use craft\db\Query;
-use craft\db\Table as DbTable;
 use craft\elements\ContentBlock as ContentBlockElement;
 use craft\elements\db\ContentBlockQuery;
 use craft\elements\db\EagerLoadPlan;
@@ -28,6 +26,7 @@ use craft\models\FieldLayout;
 use craft\web\assets\cp\CpAsset;
 use CraftCms\Cms\Element\Enums\PropagationMethod;
 use CraftCms\Cms\Field\Contracts\ElementContainerFieldInterface;
+use CraftCms\Cms\Support\Facades\Fields;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Json as JsonHelper;
 use DateTime;
@@ -44,11 +43,11 @@ use yii\base\InvalidConfigException;
  */
 final class ContentBlock extends Field implements ElementContainerFieldInterface, FieldLayoutProviderInterface
 {
-    private const VIEW_MODE_GROUPED = 'grouped';
+    private const string VIEW_MODE_GROUPED = 'grouped';
 
-    private const VIEW_MODE_PANE = 'pane';
+    private const string VIEW_MODE_PANE = 'pane';
 
-    private const VIEW_MODE_INLINE = 'inline';
+    private const string VIEW_MODE_INLINE = 'inline';
 
     /** {@inheritdoc} */
     public static function displayName(): string
@@ -99,22 +98,20 @@ final class ContentBlock extends Field implements ElementContainerFieldInterface
 
     private function contentBlockManager(): NestedElementManager
     {
-        if (! isset($this->_contentBlockManager)) {
-            $this->_contentBlockManager = new NestedElementManager(
-                ContentBlockElement::class,
-                fn (ElementInterface $owner) => $this->createContentBlockQuery($owner),
-                [
-                    'field' => $this,
-                    'criteria' => [
-                        'fieldId' => $this->id,
-                    ],
-                    'propagationMethod' => PropagationMethod::All,
-                    'valueGetter' => fn (ElementInterface $owner) => ElementCollection::make([
-                        $owner->getFieldValue($this->handle),
-                    ]),
+        $this->_contentBlockManager ??= new NestedElementManager(
+            ContentBlockElement::class,
+            fn (ElementInterface $owner) => $this->createContentBlockQuery($owner),
+            [
+                'field' => $this,
+                'criteria' => [
+                    'fieldId' => $this->id,
                 ],
-            );
-        }
+                'propagationMethod' => PropagationMethod::All,
+                'valueGetter' => fn (ElementInterface $owner) => ElementCollection::make([
+                    $owner->getFieldValue($this->handle),
+                ]),
+            ],
+        );
 
         return $this->_contentBlockManager;
     }
@@ -177,12 +174,10 @@ final class ContentBlock extends Field implements ElementContainerFieldInterface
     /** {@inheritdoc} */
     public function getFieldLayout(): FieldLayout
     {
-        if (! isset($this->_fieldLayout)) {
-            $this->_fieldLayout = new FieldLayout([
-                'type' => ContentBlockElement::class,
-                'provider' => $this,
-            ]);
-        }
+        $this->_fieldLayout ??= new FieldLayout([
+            'type' => ContentBlockElement::class,
+            'provider' => $this,
+        ]);
 
         return $this->_fieldLayout;
     }
@@ -197,7 +192,7 @@ final class ContentBlock extends Field implements ElementContainerFieldInterface
         }
 
         if (is_array($layout)) {
-            $layout = app(Fields::class)->createLayout($layout);
+            $layout = Fields::createLayout($layout);
             $layout->type = ContentBlockElement::class;
 
             // Make sure all the elements have a dateAdded value set
@@ -218,7 +213,7 @@ final class ContentBlock extends Field implements ElementContainerFieldInterface
     public function setFieldLayouts(array $layouts): void
     {
         $config = reset($layouts);
-        $layout = app(Fields::class)->createLayout($config ?: []);
+        $layout = Fields::createLayout($config ?: []);
         $layout->uid = array_key_first($layouts);
         $layout->type = ContentBlockElement::class;
 
@@ -257,7 +252,7 @@ final class ContentBlock extends Field implements ElementContainerFieldInterface
      */
     public function setFieldLayoutUid(string $uid): void
     {
-        $layout = app(Fields::class)->getLayoutByUid($uid);
+        $layout = Fields::getLayoutByUid($uid);
         if (! $layout) {
             throw new InvalidArgumentException("Invalid field layout UUID: $uid");
         }
@@ -750,7 +745,7 @@ JS, [
     /** {@inheritdoc} */
     public function afterSave(bool $isNew): void
     {
-        app(Fields::class)->saveLayout($this->getFieldLayout(), false);
+        Fields::saveLayout($this->getFieldLayout(), false);
         parent::afterSave($isNew);
     }
 

@@ -6,7 +6,6 @@ use Craft;
 use craft\base\ElementInterface;
 use craft\elements\Entry;
 use craft\gql\types\generators\IconDataType;
-use craft\helpers\ArrayHelper;
 use craft\helpers\Cp;
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Field\Contracts\CrossSiteCopyableFieldInterface;
@@ -14,6 +13,7 @@ use CraftCms\Cms\Field\Contracts\InlineEditableFieldInterface;
 use CraftCms\Cms\Field\Contracts\MergeableFieldInterface;
 use CraftCms\Cms\Field\Contracts\ThumbableFieldInterface;
 use CraftCms\Cms\Field\Data\IconData;
+use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Html;
 use GraphQL\Type\Definition\Type;
 use yii\db\Schema;
@@ -100,7 +100,7 @@ final class Icon extends Field implements CrossSiteCopyableFieldInterface, Inlin
         }
 
         if (isset($config['graphqlMode'])) {
-            $config['fullGraphqlData'] = ArrayHelper::remove($config, 'graphqlMode') === 'full';
+            $config['fullGraphqlData'] = Arr::pull($config, 'graphqlMode') === 'full';
         }
 
         // Default fullGraphqlData to false for existing fields

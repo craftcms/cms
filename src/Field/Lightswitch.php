@@ -206,7 +206,7 @@ final class Lightswitch extends Field implements CrossSiteCopyableFieldInterface
     /**
      * {@inheritdoc}
      */
-    public function normalizeValue(mixed $value, ?ElementInterface $element): mixed
+    public function normalizeValue(mixed $value, ?ElementInterface $element): bool
     {
         // If this is a new entry, look for a default option
         if ($value === null) {

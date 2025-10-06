@@ -102,6 +102,7 @@ use CraftCms\Cms\Edition;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\Support\Composer;
 use CraftCms\Cms\Support\Env;
+use CraftCms\Cms\Support\Facades\Deprecator as DeprecatorFacade;
 use CraftCms\Cms\Updates\Updates;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
@@ -1027,6 +1028,8 @@ trait ApplicationTrait
      */
     public function getFields(): Fields
     {
+        DeprecatorFacade::log('Craft::$app->fields', 'Craft::$app->fields is deprecated. Use app(Fields::class) or craft.fields instead.');
+
         return $this->get('fields');
     }
 

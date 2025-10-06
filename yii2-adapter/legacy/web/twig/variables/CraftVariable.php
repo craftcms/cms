@@ -27,6 +27,7 @@ use craft\elements\User;
 use craft\events\DefineBehaviorsEvent;
 use craft\web\Application as WebApplication;
 use CraftCms\Cms\Edition;
+use CraftCms\Cms\Field\Fields;
 use CraftCms\Cms\Support\Facades\Deprecator;
 use Illuminate\Support\Facades\Config;
 use yii\di\ServiceLocator;
@@ -204,6 +205,16 @@ class CraftVariable extends ServiceLocator
         $query = Entry::find();
         Craft::configure($query, $criteria);
         return $query;
+    }
+
+    /**
+     * Returns the fields service.
+     *
+     * @return \CraftCms\Cms\Field\Fields
+     */
+    public function fields(): Fields
+    {
+        return app(Fields::class);
     }
 
     /**

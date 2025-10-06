@@ -4,10 +4,8 @@ namespace CraftCms\Cms\Field;
 
 use Craft;
 use craft\base\ElementInterface;
-use craft\base\Event;
 use craft\elements\db\ElementQueryInterface;
 use craft\elements\Entry as EntryElement;
-use craft\events\RegisterComponentTypesEvent;
 use craft\fields\conditions\LinkFieldConditionRule;
 use craft\gql\GqlEntityRegistry;
 use craft\gql\types\generators\LinkDataType;
@@ -22,6 +20,7 @@ use CraftCms\Cms\Field\Contracts\InlineEditableFieldInterface;
 use CraftCms\Cms\Field\Contracts\MergeableFieldInterface;
 use CraftCms\Cms\Field\Contracts\RelationalFieldInterface;
 use CraftCms\Cms\Field\Data\LinkData;
+use CraftCms\Cms\Field\Events\RegisterLinkTypes;
 use CraftCms\Cms\Field\LinkTypes\Asset;
 use CraftCms\Cms\Field\LinkTypes\BaseLinkType;
 use CraftCms\Cms\Field\LinkTypes\BaseTextLinkType;
@@ -37,6 +36,7 @@ use CraftCms\Cms\Support\Str;
 use GraphQL\Type\Definition\InputObjectType;
 use GraphQL\Type\Definition\Type;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Event;
 use yii\base\InvalidArgumentException;
 use yii\db\Schema;
 
@@ -48,22 +48,6 @@ use yii\db\Schema;
 final class Link extends Field implements CrossSiteCopyableFieldInterface, InlineEditableFieldInterface, MergeableFieldInterface, RelationalFieldInterface
 {
     use RelationalField;
-
-    /**
-     * @event RegisterComponentTypesEvent The event that is triggered when registering the link types for Link fields.
-     *
-     * @see types()
-     */
-    public const EVENT_REGISTER_LINK_TYPES = 'registerLinkTypes';
-
-    /** @deprecated in 5.3.0 */
-    public const TYPE_URL = 'url';
-
-    /** @deprecated in 5.3.0 */
-    public const TYPE_TEL = 'tel';
-
-    /** @deprecated in 5.3.0 */
-    public const TYPE_EMAIL = 'email';
 
     private static array $_types;
 
@@ -129,12 +113,10 @@ final class Link extends Field implements CrossSiteCopyableFieldInterface, Inlin
             ];
 
             // Fire a registerLinkTypes event
-            if (Event::hasHandlers(self::class, self::EVENT_REGISTER_LINK_TYPES)) {
-                $event = new RegisterComponentTypesEvent([
-                    'types' => $types,
-                ]);
-                Event::trigger(self::class, self::EVENT_REGISTER_LINK_TYPES, $event);
-                $types = $event->types;
+            if (Event::hasListeners(RegisterLinkTypes::class)) {
+                Event::dispatch($event = new RegisterLinkTypes($types));
+
+                return $event->types;
             }
 
             // URL *has* to be there
@@ -164,7 +146,7 @@ final class Link extends Field implements CrossSiteCopyableFieldInterface, Inlin
     /**
      * @var array<string,BaseLinkType>
      *
-     * @see getLinkTypes())
+     * @see getLinkTypes()
      */
     private array $_linkTypes;
 
@@ -244,24 +226,6 @@ final class Link extends Field implements CrossSiteCopyableFieldInterface, Inlin
             'types' => ['required', 'array'],
             'maxLength' => ['required', 'integer', 'min:10'],
         ]);
-    }
-
-    /**
-     * @deprecated in 5.6.0
-     */
-    public function getShowTargetField(): bool
-    {
-        return in_array('target', $this->advancedFields);
-    }
-
-    /**
-     * @deprecated in 5.6.0
-     */
-    public function setShowTargetField(bool $showTargetField): void
-    {
-        if (! $this->getShowTargetField()) {
-            $this->advancedFields[] = 'target';
-        }
     }
 
     /**
@@ -484,7 +448,7 @@ final class Link extends Field implements CrossSiteCopyableFieldInterface, Inlin
     /**
      * {@inheritdoc}
      */
-    public function normalizeValue(mixed $value, ?ElementInterface $element): mixed
+    public function normalizeValue(mixed $value, ?ElementInterface $element): ?LinkData
     {
         // if this was set due to propagateAll for a fresh element (as opposed to the translation method),
         // and an element is selected, swap it with the same element in the current site (if it exists)

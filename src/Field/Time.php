@@ -210,7 +210,7 @@ final class Time extends Field implements CrossSiteCopyableFieldInterface, Inlin
     /**
      * {@inheritdoc}
      */
-    public function normalizeValue(mixed $value, ?ElementInterface $element): mixed
+    public function normalizeValue(mixed $value, ?ElementInterface $element): ?DateTime
     {
         if (! $value) {
             return null;
@@ -234,7 +234,7 @@ final class Time extends Field implements CrossSiteCopyableFieldInterface, Inlin
     /**
      * {@inheritdoc}
      */
-    public function serializeValue(mixed $value, ?ElementInterface $element): mixed
+    public function serializeValue(mixed $value, ?ElementInterface $element): ?string
     {
         /** @var DateTime|null $value */
         return $value?->format('H:i:s');
