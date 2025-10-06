@@ -41,6 +41,7 @@ use DateTime;
 use GraphQL\Type\Definition\Type;
 use Illuminate\Contracts\Support\Arrayable;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Validation\Rule;
@@ -547,7 +548,7 @@ abstract class Field implements Actionable, Arrayable, FieldInterface, Iconic
     /** {@inheritdoc} */
     public function getCpEditUrl(): ?string
     {
-        if (! $this->id || ! Craft::$app->getUser()->getIsAdmin()) {
+        if (! $this->id || ! Auth::user()->isAdmin()) {
             return null;
         }
 
