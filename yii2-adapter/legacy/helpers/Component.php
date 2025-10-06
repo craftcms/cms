@@ -7,7 +7,6 @@
 
 namespace craft\helpers;
 
-use Craft;
 use craft\base\ElementInterface;
 use craft\base\Model;
 use craft\errors\MissingComponentException;

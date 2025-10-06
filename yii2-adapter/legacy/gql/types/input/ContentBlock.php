@@ -8,8 +8,8 @@
 namespace craft\gql\types\input;
 
 use craft\base\Field;
-use CraftCms\Cms\Field\ContentBlock as ContentBlockField;
 use craft\gql\GqlEntityRegistry;
+use CraftCms\Cms\Field\ContentBlock as ContentBlockField;
 use GraphQL\Type\Definition\InputObjectType;
 
 /**
