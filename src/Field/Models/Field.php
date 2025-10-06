@@ -21,6 +21,7 @@ final class Field extends BaseModel
     {
         return [
             'settings' => 'json',
+            'searchable' => 'boolean',
         ];
     }
 
