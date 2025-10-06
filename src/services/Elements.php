@@ -3877,7 +3877,8 @@ class Elements extends Component
 
                     // Set the attributes
                     $elementRecord->uid = $element->uid;
-                    $elementRecord->canonicalId = $element->getIsDerivative() ? $element->getCanonicalId() : null;
+                    $canonicalId = $element->getCanonicalId();
+                    $elementRecord->canonicalId = $canonicalId !== $element->id ? $canonicalId : null;
                     $elementRecord->draftId = (int)$element->draftId ?: null;
                     $elementRecord->revisionId = (int)$element->revisionId ?: null;
                     $elementRecord->fieldLayoutId = $element->fieldLayoutId = (int)($element->fieldLayoutId ?? $fieldLayout->id ?? 0) ?: null;

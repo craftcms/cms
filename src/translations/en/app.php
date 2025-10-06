@@ -172,6 +172,7 @@ return [
     'Are you sure you want to release the job “{description}”?' => 'Are you sure you want to release the job “{description}”?',
     'Are you sure you want to remove the page “{name}”?' => 'Are you sure you want to remove the page “{name}”?',
     'Are you sure you want to remove {name} verification?' => 'Are you sure you want to remove {name} verification?',
+    'Are you sure you want to remove {plugin}?' => 'Are you sure you want to remove {plugin}?',
     'Are you sure you want to restart the job “{description}”? Any progress could be lost.' => 'Are you sure you want to restart the job “{description}”? Any progress could be lost.',
     'Are you sure you want to transfer your license to this domain?' => 'Are you sure you want to transfer your license to this domain?',
     'Are you sure you want to undo the move?' => 'Are you sure you want to undo the move?',

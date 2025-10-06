@@ -524,12 +524,10 @@ img {
 .text,
 table.editable textarea {
   body.rtl .ltr & {
-    text-align: start !important;
     direction: ltr !important;
   }
 
   body.ltr .rtl & {
-    text-align: end !important;
     direction: rtl !important;
   }
 }
