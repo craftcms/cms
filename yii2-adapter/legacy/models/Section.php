@@ -20,7 +20,6 @@ use craft\validators\HandleValidator;
 use craft\validators\UniqueValidator;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Enums\PropagationMethod;
-use CraftCms\Cms\ProjectConfig\ProjectConfigHelper;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Str;
 use yii\db\Schema;
@@ -434,7 +433,7 @@ class Section extends Model implements Chippable, CpEditable, Iconic
         ];
 
         if (!empty($this->previewTargets)) {
-            $config['previewTargets'] = ProjectConfigHelper::packAssociativeArray(array_values($this->previewTargets));
+            $config['previewTargets'] = array_values($this->previewTargets);
         }
 
         if ($this->type === self::TYPE_STRUCTURE) {

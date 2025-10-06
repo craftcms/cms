@@ -1524,21 +1524,4 @@ trait ApplicationTrait
             }
         });
     }
-
-    /**
-     * Returns a proxy function for calling a component method, based on its ID.
-     *
-     * The component won’t be fetched until the method is called, avoiding unnecessary component instantiation, and ensuring the correct component
-     * is called if it happens to get swapped out (e.g. for a test).
-     *
-     * @param string $id The component ID
-     * @param string $method The method name
-     * @return callable
-     */
-    private function _proxy(string $id, string $method): callable
-    {
-        return function() use ($id, $method) {
-            return $this->get($id)->$method(...func_get_args());
-        };
-    }
 }

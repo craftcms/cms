@@ -1524,7 +1524,7 @@ JS, [
             $value = [];
         }
 
-        ElementHelper::swapInProvisionalDrafts($value);
+        ElementHelper::loadProvisionalChanges($value);
 
         if ($this->validateRelatedElements && $element !== null) {
             // Pre-validate related elements
@@ -1616,7 +1616,15 @@ JS, [
      */
     protected function showSearchInput(?ElementInterface $element): bool
     {
-        if (!$this->showSearchInput || $this->sources === '*') {
+        if (!$this->showSearchInput) {
+            return false;
+        }
+
+        if (!$this->allowMultipleSources) {
+            return true;
+        }
+
+        if ($this->sources === '*') {
             return false;
         }
 

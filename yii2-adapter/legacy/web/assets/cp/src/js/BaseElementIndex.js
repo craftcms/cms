@@ -1550,6 +1550,9 @@ Craft.BaseElementIndex = Garnish.Base.extend(
       const baseCriteria = Object.assign(
         {
           status: null,
+          drafts: this.settings.canHaveDrafts ? null : false,
+          draftOf: this.settings.canHaveDrafts && this.drafts ? null : false,
+          savedDraftsOnly: true,
         },
         this.baseCriteria,
         {
@@ -1558,19 +1561,13 @@ Craft.BaseElementIndex = Garnish.Base.extend(
       );
 
       // set drafts/draftOf/savedDraftsOnly params depending on the context
-      if (this.settings.context !== 'index') {
-        baseCriteria.drafts = this.settings.canHaveDrafts ? null : false;
-        baseCriteria.draftOf =
-          this.settings.canHaveDrafts && this.drafts ? null : false;
-        baseCriteria.savedDraftsOnly = true;
-      } else if (
+      if (
         this.settings.canHaveDrafts &&
-        (this.drafts || (this.settings.context === 'index' && !this.status))
+        (this.drafts || (this.settings.context === 'index' && this.status))
       ) {
-        baseCriteria.drafts = this.drafts || null;
+        baseCriteria.drafts = this.drafts ? null : false;
+        baseCriteria.draftOf = this.drafts ? null : false;
         baseCriteria.savedDraftsOnly = true;
-        baseCriteria.draftOf =
-          this.settings.canHaveDrafts && this.drafts ? null : false;
       }
 
       const criteria = {

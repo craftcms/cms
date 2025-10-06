@@ -1366,8 +1366,8 @@ abstract class Element extends Component implements ElementInterface
             return '';
         }
 
-        // See if there are any provisional drafts we should swap these out with
-        ElementHelper::swapInProvisionalDrafts($elements);
+        // See if there are any provisional changes we should show
+        ElementHelper::loadProvisionalChanges($elements);
 
         if ($request->getParam('prevalidate')) {
             foreach ($elements as $element) {
@@ -1631,13 +1631,13 @@ abstract class Element extends Component implements ElementInterface
     /**
      * @inheritdoc
      */
-    public static function cardAttributes(): array
+    public static function cardAttributes(?FieldLayout $fieldLayout = null): array
     {
         $cardAttributes = static::defineCardAttributes();
 
         // Fire a 'registerCardAttributes' event
         if (Event::hasHandlers(static::class, self::EVENT_REGISTER_CARD_ATTRIBUTES)) {
-            $event = new RegisterElementCardAttributesEvent(['cardAttributes' => $cardAttributes]);
+            $event = new RegisterElementCardAttributesEvent(['cardAttributes' => $cardAttributes, 'fieldLayout' => $fieldLayout]);
             Event::trigger(static::class, self::EVENT_REGISTER_CARD_ATTRIBUTES, $event);
             return $event->cardAttributes;
         }
@@ -2819,6 +2819,7 @@ abstract class Element extends Component implements ElementInterface
     public function extraFields(): array
     {
         return [
+            ...parent::extraFields(),
             'ancestors',
             'canonical',
             'canonicalUid',

@@ -9,6 +9,7 @@ namespace craft\filters;
 
 use Craft;
 use craft\models\Site;
+use CraftCms\Cms\Edition;
 use yii\base\InvalidArgumentException;
 
 /**
@@ -38,6 +39,12 @@ trait SiteFilterTrait
 
     protected function setSite(null|array|int|string|Site $value): void
     {
+        // if the app is not fully initialised, ensure Craft's edition is set
+        // @see https://github.com/craftcms/cms/issues/16288 for details on why this is needed
+        if (!Craft::$app->getIsInitialized()) {
+            Edition::get();
+        }
+
         $this->siteIds = match (true) {
             $value === null, $value === '*' => null,
             is_array($value) => array_map(fn($site) => $this->getSiteId($site), $value),

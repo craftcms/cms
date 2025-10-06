@@ -1046,7 +1046,7 @@ class FieldLayout extends Model
 
         // filter only the selected attributes
         $attributes = array_filter(
-            $this->type::cardAttributes(),
+            $this->type::cardAttributes($this),
             fn($cardAttribute, $key) => in_array($key, $cardViewValues),
             ARRAY_FILTER_USE_BOTH
         );

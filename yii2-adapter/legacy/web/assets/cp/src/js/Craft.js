@@ -2606,10 +2606,14 @@ $.extend(Craft, {
             }
           }
           const $actions = $chip.find('.chip-actions').detach();
+          const $indicators = $chip.find('.chip-label .indicators').detach();
           const $inputs = $chip.find('input,button').detach();
           $chip.html($replacement.html());
           if ($actions.length) {
             $chip.find('.chip-actions').replaceWith($actions);
+          }
+          if ($indicators.length) {
+            $chip.find('.chip-label').append($indicators);
           }
           if ($inputs.length) {
             $inputs.appendTo($chip);
