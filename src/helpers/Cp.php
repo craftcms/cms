@@ -338,7 +338,7 @@ class Cp
             'autoReload' => true,
             'id' => sprintf('chip-%s', mt_rand()),
             'class' => null,
-            'hyperlink' => true,
+            'hyperlink' => false,
             'inputName' => null,
             'inputValue' => null,
             'labelHtml' => null,
@@ -581,7 +581,10 @@ class Cp
             );
         }
 
-        if ($element->isProvisionalDraft && ($config['showProvisionalDraftLabel'] ?? $config['showLabel'])) {
+        if (
+            ($config['showProvisionalDraftLabel'] ?? $config['showLabel']) &&
+            ($element->isProvisionalDraft || $element->hasProvisionalChanges)
+        ) {
             $config['labelHtml'] = ($config['labelHtml'] ?? '') . self::changeStatusLabelHtml();
         }
 
@@ -631,7 +634,7 @@ class Cp
             'autoReload' => true,
             'context' => 'index',
             'id' => sprintf('card-%s', mt_rand()),
-            'hyperlink' => true,
+            'hyperlink' => false,
             'inputName' => null,
             'selectable' => false,
             'showEditButton' => true,
@@ -726,7 +729,7 @@ JS, [
 
         $labels = array_filter([
             $element->showStatusIndicator() ? static::componentStatusLabelHtml($element) : null,
-            $element->isProvisionalDraft ? self::changeStatusLabelHtml() : null,
+            $element->isProvisionalDraft || $element->hasProvisionalChanges ? self::changeStatusLabelHtml() : null,
         ]);
 
         if (!empty($labels)) {
@@ -1131,7 +1134,7 @@ JS, [
         // the inner span is needed for `text-overflow: ellipsis` (e.g. within breadcrumbs)
         if ($content !== '') {
             if (
-                ($config['hyperlink'] ?? true) &&
+                ($config['hyperlink'] ?? false) &&
                 !$element->trashed &&
                 $config['context'] !== 'modal' &&
                 ($url = $attributes['data']['cp-url'] ?? null)
@@ -2746,7 +2749,7 @@ JS, [
             'disabled' => false,
         ];
 
-        $allOptions = $fieldLayout->type::cardAttributes();
+        $allOptions = $fieldLayout->type::cardAttributes($fieldLayout);
 
         foreach ($fieldLayout->getAllElements() as $layoutElement) {
             if ($layoutElement instanceof BaseField && $layoutElement->previewable()) {

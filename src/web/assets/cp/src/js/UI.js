@@ -15,6 +15,9 @@ Craft.ui = {
     if (config.ariaLabel) {
       $btn.attr('aria-label', config.ariaLabel);
     }
+    if (config.ariaDescribedBy) {
+      $btn.attr('aria-describedby', config.ariaDescribedBy);
+    }
     if (config.role) {
       $btn.attr('role', config.role);
     }

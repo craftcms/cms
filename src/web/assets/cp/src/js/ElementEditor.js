@@ -590,8 +590,7 @@ Craft.ElementEditor = Garnish.Base.extend(
       // Are there additional sites that can be added?
       if (
         this.settings.additionalSites &&
-        this.settings.additionalSites.length &&
-        this.isFullPage
+        this.settings.additionalSites.length
       ) {
         this._createAddlSiteField();
       }
