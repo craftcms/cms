@@ -7,9 +7,6 @@ use Illuminate\Contracts\Support\Arrayable;
 use Illuminate\Support\Facades\Log;
 use ReflectionProperty;
 
-/**
- * @since 6.0.0
- */
 abstract class BaseConfig implements Arrayable, ArrayAccess
 {
     protected static array $renamedSettings = [];

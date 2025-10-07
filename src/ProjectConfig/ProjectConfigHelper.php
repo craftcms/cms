@@ -18,9 +18,6 @@ use StdClass;
 use yii\base\InvalidArgumentException;
 use yii\base\InvalidConfigException;
 
-/**
- * @since 6.0.0
- */
 final class ProjectConfigHelper
 {
     /**

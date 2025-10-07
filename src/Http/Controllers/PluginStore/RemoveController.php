@@ -7,8 +7,6 @@ use CraftCms\Cms\Http\Controllers\BaseUpdaterController;
 
 /**
  * @internal
- *
- * @since 6.0.0
  */
 final class RemoveController extends BaseUpdaterController
 {

@@ -4,9 +4,6 @@ namespace CraftCms\Cms\Utility;
 
 use CraftCms\Cms\Component\Contracts\ComponentInterface;
 
-/**
- * @since 6.0.0
- */
 abstract class Utility implements ComponentInterface
 {
     /**

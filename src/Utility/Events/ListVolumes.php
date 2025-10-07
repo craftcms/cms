@@ -6,8 +6,6 @@ use craft\models\Volume;
 
 /**
  * @event ListVolumes The event that is triggered when listing the available volumes to index.
- *
- * @since 6.0.0
  */
 final class ListVolumes
 {

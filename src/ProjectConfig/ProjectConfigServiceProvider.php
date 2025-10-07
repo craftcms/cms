@@ -14,9 +14,6 @@ use CraftCms\Cms\ProjectConfig\Commands\TouchCommand;
 use CraftCms\Cms\ProjectConfig\Commands\WriteCommand;
 use Illuminate\Support\ServiceProvider;
 
-/**
- * @since 6.0.0
- */
 final class ProjectConfigServiceProvider extends ServiceProvider
 {
     #[\Override]

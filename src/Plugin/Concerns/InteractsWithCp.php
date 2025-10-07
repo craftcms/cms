@@ -6,8 +6,6 @@ namespace CraftCms\Cms\Plugin\Concerns;
  * @mixin \CraftCms\Cms\Plugin\Plugin
  *
  * @internal
- *
- * @since 6.0.0
  */
 trait InteractsWithCp
 {

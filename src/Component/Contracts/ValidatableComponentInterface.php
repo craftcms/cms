@@ -2,9 +2,6 @@
 
 namespace CraftCms\Cms\Component\Contracts;
 
-/**
- * @since 6.0.0
- */
 interface ValidatableComponentInterface
 {
     public static function getRules(): array;

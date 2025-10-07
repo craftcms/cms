@@ -21,8 +21,6 @@ use Throwable;
 
 /**
  * @internal
- *
- * @since 6.0.0
  */
 #[Singleton]
 final class Updates

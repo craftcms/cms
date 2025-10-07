@@ -6,9 +6,6 @@ use CraftCms\Aliases\Aliases;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\Support\Env;
 
-/**
- * @since 6.0.0
- */
 trait SiteDefaults
 {
     protected function defaultSiteName(): ?string

@@ -6,8 +6,6 @@ use Illuminate\Console\Application as ConsoleApplication;
 use Symfony\Component\EventDispatcher\EventDispatcher;
 
 /**
- * @since 6.0.0
- *
  * @internal
  */
 final class Kernel extends \Illuminate\Foundation\Console\Kernel

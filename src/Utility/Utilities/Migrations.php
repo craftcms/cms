@@ -9,8 +9,6 @@ use CraftCms\Cms\Utility\Utility;
 
 /**
  * Migrations represents a Migrations utility.
- *
- * @since 6.0.0
  */
 final class Migrations extends Utility
 {

@@ -13,7 +13,6 @@ use CraftCms\Cms\Utility\Utilities\ClearCaches;
  * - `label` – A human-facing label for the cache tag option.
  *
  * @see ClearCaches::tagOptions()
- * @since 6.0.0
  */
 final class RegisterTagOptions
 {

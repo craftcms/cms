@@ -17,8 +17,6 @@ use InvalidArgumentException;
 
 /**
  * Edition defines all available Craft CMS editions
- *
- * @since 6.0.0
  */
 enum Edition: int
 {

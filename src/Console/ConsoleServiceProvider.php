@@ -22,8 +22,6 @@ use CraftCms\Cms\Console\Commands\Utils\UpdateUsernamesCommand;
 use Illuminate\Support\ServiceProvider;
 
 /**
- * @since 6.0.0
- *
  * @internal
  */
 final class ConsoleServiceProvider extends ServiceProvider

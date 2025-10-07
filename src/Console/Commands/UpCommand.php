@@ -11,9 +11,6 @@ use Illuminate\Console\Command;
 use Illuminate\Contracts\Console\Isolatable;
 use Throwable;
 
-/**
- * @since 6.0.0
- */
 final class UpCommand extends Command implements Isolatable
 {
     use CraftCommand;

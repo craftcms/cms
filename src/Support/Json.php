@@ -12,8 +12,6 @@ use Throwable;
  * Class Json
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- *
- * @since 6.0.0
  */
 class Json
 {

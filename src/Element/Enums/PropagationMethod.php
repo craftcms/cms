@@ -4,8 +4,6 @@ namespace CraftCms\Cms\Element\Enums;
 
 /**
  * PropagationMethod defines all possible site propagation methods for element values.
- *
- * @since 6.0.0
  */
 enum PropagationMethod: string
 {

@@ -9,8 +9,6 @@ use Illuminate\Console\Command;
  * @mixin Plugin
  *
  * @internal
- *
- * @since 6.0.0
  */
 trait HasCommands
 {

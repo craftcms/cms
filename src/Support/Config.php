@@ -5,9 +5,6 @@ namespace CraftCms\Cms\Support;
 use Carbon\CarbonInterval;
 use DateInterval;
 
-/**
- * @since 6.0.0
- */
 final class Config
 {
     /**

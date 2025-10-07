@@ -14,8 +14,6 @@ use Illuminate\Support\Facades\Event;
 
 /**
  * AssetIndexes represents a AssetIndexes dashboard widget.
- *
- * @since 6.0.0
  */
 final class AssetIndexes extends Utility
 {

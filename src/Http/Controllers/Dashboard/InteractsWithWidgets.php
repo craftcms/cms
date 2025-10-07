@@ -6,9 +6,6 @@ use craft\helpers\Cp;
 use craft\web\View;
 use CraftCms\Cms\Dashboard\Contracts\WidgetInterface;
 
-/**
- * @since 6.0.0
- */
 trait InteractsWithWidgets
 {
     protected readonly View $view;

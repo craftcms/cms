@@ -7,9 +7,6 @@ use CraftCms\Cms\Database\Table;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
 
-/**
- * @since 6.0.0
- */
 final class LogoutAllCommand extends Command
 {
     use CraftCommand;

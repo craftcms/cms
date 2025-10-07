@@ -6,9 +6,6 @@ use craft\console\Application;
 use Illuminate\Console\Command;
 use Illuminate\Container\Attributes\Give;
 
-/**
- * @since 6.0.0
- */
 final class InstallCheckCommand extends Command
 {
     protected $signature = 'craft:install:check';

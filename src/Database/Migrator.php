@@ -6,8 +6,6 @@ use CraftCms\Aliases\Aliases;
 
 /**
  * @internal
- *
- * @since 6.0.0
  */
 final class Migrator extends \Illuminate\Database\Migrations\Migrator
 {

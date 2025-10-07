@@ -26,8 +26,6 @@ use Throwable;
 
 /**
  * @internal
- *
- * @since 6.0.0
  */
 abstract class BaseUpdaterController
 {

@@ -19,8 +19,6 @@ use Illuminate\Contracts\Console\PromptsForMissingInput;
  * :::
  *
  * As with [set](#project-config-set), removing values only updates the root `dateModified` key when using the [`--update-timestamp` flag](#project-config-set-options). If you do not include this flag, you must run `project-config/touch` before changes will be detected or applied in other environments!
- *
- * @since 6.0.0
  */
 final class RemoveCommand extends Command implements PromptsForMissingInput
 {

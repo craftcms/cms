@@ -7,9 +7,6 @@ use DateTimeInterface;
 use Illuminate\Events\QueuedClosure;
 use Illuminate\Support\Facades\Event;
 
-/**
- * @since 6.0.0
- */
 trait SavableComponent
 {
     use HasComponentEvents;

@@ -16,9 +16,6 @@ use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 use yii\helpers\Markdown;
 
-/**
- * @since 6.0.0
- */
 #[Singleton]
 final readonly class Announcements
 {
@@ -52,8 +49,6 @@ final readonly class Announcements
 
     /**
      * Returns any announcements for the logged-in user.
-     *
-     * @since 6.0.0
      */
     public function get(): array
     {

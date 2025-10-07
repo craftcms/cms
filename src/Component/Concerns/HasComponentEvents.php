@@ -5,9 +5,6 @@ namespace CraftCms\Cms\Component\Concerns;
 use Illuminate\Events\QueuedClosure;
 use Illuminate\Support\Facades\Event;
 
-/**
- * @since 6.0.0
- */
 trait HasComponentEvents
 {
     /**

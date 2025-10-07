@@ -7,9 +7,6 @@ use CraftCms\Cms\Support\Utils;
 use Illuminate\Support\Facades\Validator as ValidatorFacade;
 use Illuminate\Validation\Validator;
 
-/**
- * @since 6.0.0
- */
 trait ValidatableComponent
 {
     private ?Validator $validator = null;

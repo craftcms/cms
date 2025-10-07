@@ -10,8 +10,6 @@ use Illuminate\Support\Facades\Event;
  * @mixin Plugin
  *
  * @internal
- *
- * @since 6.0.0
  */
 trait HasListeners
 {

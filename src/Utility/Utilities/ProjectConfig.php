@@ -10,9 +10,6 @@ use Symfony\Component\Yaml\Yaml;
 
 /**
  * ProjectConfig represents a ProjectConfig utility.
- *
-
- * @since 6.0.0
  */
 final class ProjectConfig extends Utility
 {

@@ -26,9 +26,6 @@ use Illuminate\Support\Facades\Event;
 
 /**
  * The Utilities service provides APIs for managing utilities.
- *
-
- * @since 6.0.0
  */
 #[Singleton]
 final readonly class Utilities

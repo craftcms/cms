@@ -19,8 +19,6 @@ use function CraftCms\Cms\normalizeVersion;
 
 /**
  * SystemReport represents a SystemReport dashboard widget.
- *
- * @since 6.0.0
  */
 final class SystemReport extends Utility
 {

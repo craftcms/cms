@@ -51,9 +51,6 @@ use Symfony\Component\HttpKernel\Exception\HttpException;
 use Throwable;
 use yii\base\Module;
 
-/**
- * @since 6.0.0
- */
 #[Singleton]
 final class Plugins
 {

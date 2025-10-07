@@ -12,9 +12,6 @@ use Illuminate\Support\Facades\DB;
 use RequirementsChecker;
 use RuntimeException;
 
-/**
- * @since 6.0.0
- */
 final readonly class CheckRequirements
 {
     public function __construct(

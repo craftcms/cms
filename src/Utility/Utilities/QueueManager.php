@@ -10,8 +10,6 @@ use CraftCms\Cms\Utility\Utility;
  * Queue manager is a utility used for managing jobs in the Queue.
  *
   @author Global Network Group | Giel Tettelaar <giel@yellowflash.net>
- *
- * @since 6.0.0
  */
 final class QueueManager extends Utility
 {

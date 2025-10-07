@@ -10,9 +10,6 @@ use CraftCms\Cms\Updates\Updates;
 use Illuminate\Http\Request;
 use RuntimeException;
 
-/**
- * @since 6.0.0
- */
 final readonly class CheckSchemaVersion
 {
     public function __construct(

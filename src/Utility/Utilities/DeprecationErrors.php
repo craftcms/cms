@@ -9,8 +9,6 @@ use CraftCms\Cms\Utility\Utility;
 
 /**
  * DeprecationErrors represents a DeprecationErrors dashboard widget.
- *
- * @since 6.0.0
  */
 final class DeprecationErrors extends Utility
 {

@@ -10,9 +10,6 @@ use CraftCms\Cms\Utility\Utility;
 
 /**
  * SystemMessages represents a System Messages utility.
- *
-
- * @since 6.0.0
  */
 final class SystemMessages extends Utility
 {

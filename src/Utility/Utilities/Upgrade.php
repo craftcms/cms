@@ -9,8 +9,6 @@ use CraftCms\Cms\Utility\Utility;
 
 /**
  * Upgrade utility
- *
- * @since 6.0.0
  */
 final class Upgrade extends Utility
 {

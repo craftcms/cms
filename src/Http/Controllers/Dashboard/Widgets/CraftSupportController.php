@@ -25,9 +25,6 @@ use ZipArchive;
 
 use function CraftCms\Cms\maxPowerCaptain;
 
-/**
- * @since 6.0.0
- */
 final readonly class CraftSupportController
 {
     public function __construct(

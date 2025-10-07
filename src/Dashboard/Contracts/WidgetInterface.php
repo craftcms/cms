@@ -10,8 +10,6 @@ use CraftCms\Cms\Dashboard\Widgets\Widget;
 /**
  * WidgetInterface defines the common interface to be implemented by dashboard widget classes.
  * A class implementing this interface should extend {@see Widget}.
- *
- * @since 6.0.0
  */
 interface WidgetInterface extends ConfigurableComponentInterface, SavableComponentInterface, ValidatableComponentInterface
 {

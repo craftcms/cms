@@ -15,9 +15,6 @@ use Illuminate\Database\Schema\Builder as SchemaBuilder;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\ServiceProvider;
 
-/**
- * @since 6.0.0
- */
 final class DatabaseServiceProvider extends ServiceProvider
 {
     #[\Override]

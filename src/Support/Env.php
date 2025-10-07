@@ -9,9 +9,6 @@ use Illuminate\Filesystem\Filesystem;
 use ReflectionProperty;
 use RuntimeException;
 
-/**
- * @since 6.0.0
- */
 final class Env extends \Illuminate\Support\Env
 {
     /**

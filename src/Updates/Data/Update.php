@@ -7,8 +7,6 @@ use Illuminate\Contracts\Support\Arrayable;
 
 /**
  * @internal
- *
- * @since 6.0.0
  */
 final readonly class Update implements Arrayable
 {

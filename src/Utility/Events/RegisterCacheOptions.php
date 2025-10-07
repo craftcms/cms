@@ -13,7 +13,6 @@ namespace CraftCms\Cms\Utility\Events;
  * - `info` _(optional)_ – A description of the cache option.
  *
  * @see \CraftCms\Cms\Utility\Utilities\ClearCaches::cacheOptions()
- * @since 6.0.0
  */
 final class RegisterCacheOptions
 {

@@ -33,7 +33,6 @@ use function CraftCms\Cms\normalizeVersion;
  *
  * An instance of the service is available via `app(\CraftCms\Cms\Support\Api::class)`.
  *
- * @since 6.0.0
  *
  * @internal
  */

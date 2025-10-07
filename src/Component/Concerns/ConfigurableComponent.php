@@ -11,9 +11,6 @@ use DateTimeInterface;
 use Illuminate\Support\Facades\Event;
 use ReflectionProperty;
 
-/**
- * @since 6.0.0
- */
 trait ConfigurableComponent
 {
     use HasComponentEvents;

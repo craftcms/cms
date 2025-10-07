@@ -15,7 +15,5 @@ namespace CraftCms\Cms\ProjectConfig\Events;
  *     // Ensure the item is also removed in the database...
  * });
  * ```
- *
- * @since 6.0.0
  */
 final class RemovingItem extends ConfigEvent {}

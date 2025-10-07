@@ -8,8 +8,6 @@ use Illuminate\Support\Facades\Event;
 
 /**
  * @internal
- *
- * @since 6.0.0
  */
 final readonly class UpdateRelease
 {

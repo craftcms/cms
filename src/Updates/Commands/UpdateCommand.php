@@ -29,9 +29,6 @@ use function Laravel\Prompts\confirm;
 use function Laravel\Prompts\spin;
 use function Laravel\Prompts\table;
 
-/**
- * @since 6.0.0
- */
 final class UpdateCommand extends Command
 {
     use BackupTrait;

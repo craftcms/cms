@@ -17,8 +17,6 @@ use Symfony\Component\Yaml\Yaml;
  * ```
  *
  * The “path” syntax used here may be composed of directory and filenames (within your `config/project` folder), YAML object keys (including UUIDs for many Craft resources), and integers (referencing numerically-indexed arrays), joined by a dot (`.`): `path.to.nested.array.0.property`.
- *
- * @since 6.0.0
  */
 final class GetCommand extends Command implements PromptsForMissingInput
 {

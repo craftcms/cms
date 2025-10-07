@@ -9,8 +9,6 @@ use Illuminate\Support\ServiceProvider;
 
 /**
  * @internal
- *
- * @since 6.0.0
  */
 final class UpdatesServiceProvider extends ServiceProvider
 {

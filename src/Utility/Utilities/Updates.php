@@ -9,8 +9,6 @@ use CraftCms\Cms\Utility\Utility;
 
 /**
  * Updates represents a Updates dashboard widget.
- *
- * @since 6.0.0
  */
 final class Updates extends Utility
 {

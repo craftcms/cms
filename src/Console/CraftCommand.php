@@ -8,8 +8,6 @@ use Illuminate\Console\Command;
 
 /**
  * @mixin Command
- *
- * @since 6.0.0
  */
 trait CraftCommand
 {
