@@ -24,11 +24,7 @@ test.describe('Create, edit, discard', () => {
   const matrixFieldLocator = '#fields-matrixCardsField-field';
   const firstCardLocator = matrixFieldLocator + firstChildLocator;
 
-  // create new entry that contains matrix field in cards view mode
-  // add nested entry to the matrix & save
-  // check the card was added and has the modified indicator
-  // check that the nested entry can be edited after being created
-  // save the root entry
+
   test('Create new root entry with card matrix field', async ({
     page,
     baseURL,
@@ -40,13 +36,13 @@ test.describe('Create, edit, discard', () => {
     // create new entry that contains matrix field in cards view mode
     await craftEntry.createEntryBySectionName(page, 'Test Matrix');
 
-    // set the title
+    // fill the title
     await craftEntry.fillField(page, page, titleFieldLocator, titleText, 50);
 
-    // add nested entry to the matrix,
+    // add nested entry to the matrix field
     await (craftMatrix.getNewNestedEntryBtn(page)).click();
 
-    // fill out the field
+    // fill out the plain text field
     await craftEntry.fillField(page, slideout, textFieldLocator, originalText);
 
     // check if the draft card was attached to the dom
@@ -68,21 +64,16 @@ test.describe('Create, edit, discard', () => {
         .getByTitle(craftEntry.fieldModifiedText)
     ).toBeVisible();
 
-    // check that the nested entry can be edited after being created
+    // check that the nested entry can be edited after being created and has the right text
     await (craftMatrix.getEditNestedEntryBtn(page, firstCardId)).click();
     await expect(slideout.locator(textFieldLocator)).toHaveValue(originalText);
     await page.getByRole('button', {name: 'Cancel'}).click();
 
     // and save the root entry
     await craftEntry.saveRootEntry(page);
-    //await page.getByRole('button', {name: 'Create entry'}).click();
   });
 
-  // edit entry from previous test
-  // check that the entry nested in a matrix can be edited
-  // update text field value & save
-  // check that the modified indicators show (for the matrix field and the card)
-  // save root entry and check if the change is there
+
   test('Edit nested entry, save and check if the value saved', async ({
     page,
     baseURL,
@@ -102,10 +93,12 @@ test.describe('Create, edit, discard', () => {
     // check that the entry nested in a matrix can be edited
     await (craftMatrix.getEditNestedEntryBtn(page, firstCardId)).click();
 
-    // update text field value in the nested entry
+    // update the text field value in the nested entry
     await slideout.locator(textFieldLocator).waitFor();
     await slideout.locator(textFieldLocator).clear();
     await craftEntry.fillField(page, slideout, textFieldLocator, editedText);
+
+    // save the nested entry
     await slideout.getByRole('button', {name: 'Save'}).click();
     await craftEntry.waitForAutosaveToComplete(page);
 
@@ -128,11 +121,6 @@ test.describe('Create, edit, discard', () => {
     await expect(page.locator('#' + firstCardId)).toContainText(editedText);
   });
 
-  // edit entry from previous test
-  // add a second nested entry to the matrix & save
-  // check the card was added and that the blue indicators are there (for the matrix field and the card)
-  // discard root entry changes
-  // check that there's no blue indicator for the matrix field and that there's only one card in the matrix field
   test('Check that added nested entry can be discarded', async ({
     page,
     baseURL,
@@ -164,7 +152,7 @@ test.describe('Create, edit, discard', () => {
     await craftEntry.waitForAutosaveToComplete(page);
     await lastCard.locator('.status-label-text:text-is("Live")').waitFor();
 
-    // check the card was added and that the blue indicators are there
+    // check the card was added and that the blue indicators are there and the field modified indicator has correct text
     await expect(lastCard).toContainText('card 2');
     await expect(
       matrixField.getByTitle(craftEntry.fieldModifiedText)
@@ -174,11 +162,7 @@ test.describe('Create, edit, discard', () => {
     ).toBeVisible();
 
     // discard root entry changes
-    page.on('dialog', async (dialog) => {
-      await dialog.accept();
-    });
-    await page.locator('#content .discard-changes-btn').click();
-    await page.waitForLoadState();
+    await craftEntry.discardElementChanges(page);
 
     // check that there's no blue indicators
     await expect(
@@ -196,7 +180,6 @@ test.describe('Static field', () => {
   const matrixFieldLocator = '#fields-staticMatrixCardsField-field';
   const firstCardLocator = matrixFieldLocator + firstChildLocator;
 
-  // check that when creating an entry with a static matrix field, adding max number of cards blocks adding more
   test('Check that when max entries limit is reached, you can’t add any more cards', async ({
     page,
     baseURL,
@@ -226,7 +209,7 @@ test.describe('Static field', () => {
     // fill out the field
     await craftEntry.fillField(page, slideout, textFieldLocator, originalText);
 
-    // wait for the draft card was attached to the dom
+    // wait for the draft card to be attached
     const firstCard = page.locator(firstCardLocator);
     await firstCard.waitFor({state: 'attached'});
     const firstCardId = await firstCard.getAttribute('id');
@@ -245,8 +228,7 @@ test.describe('Static field', () => {
     await expect(matrixField.locator('.cards .card')).toHaveCount(1);
 
     // save the root entry & continue editing
-    await page.keyboard.press('ControlOrMeta+S');
-    await page.waitForLoadState();
+    await craftEntry.saveRootEntryAndContinueEditing(page);
 
     // check that the new entry button for this static matrix field is still disabled
     await expect(newCardBtn).toContainClass('disabled');
@@ -255,14 +237,13 @@ test.describe('Static field', () => {
     await expect(matrixField.locator('.cards .card')).toHaveCount(1);
   });
 
-  // check that the "Copy" action is still available for "cards" inside a static matrix field,
-  // when the maxEntries limit was reached
   test('Check that the "Copy" action is available in static matrix', async ({
     page,
     baseURL,
     craftEntry,
     craftMatrix,
   }) => {
+    // edit entry from previous test
     await craftEntry.editEntryInElementIndexTableByTitle(page, titleText);
 
     const firstCard = page.locator(firstCardLocator);
@@ -271,9 +252,11 @@ test.describe('Static field', () => {
     const actionsMenuId = await craftMatrix.getCardActionMenuId(firstCard);
     await craftMatrix.openCardActionMenu(firstCard);
 
+    // check that we have one 'Copy' action in the card's actions menu
     await expect(
       craftMatrix.getElementActionElement(page, actionsMenuId, 'Copy')
     ).toHaveCount(1);
+    // check that the 'Copy' action is visible
     await expect(
       craftMatrix.getElementActionElement(page, actionsMenuId, 'Copy')
     ).toBeVisible();
@@ -345,17 +328,17 @@ test.describe('Max entries limit', () => {
       craftMatrix.getElementActionElement(page, actionsMenuId, 'Duplicate')
     ).toHaveCount(0);
 
+    // save the root entry & continue editing
     await craftEntry.saveRootEntryAndContinueEditing(page);
 
-    // delete the first block
+    // delete the first card
     actionsMenuId = await craftMatrix.getCardActionMenuId(firstCard);
     await craftMatrix.openCardActionMenu(firstCard);
-
-    // accept deleting
     page.on('dialog', async (dialog) => {
       await dialog.accept();
     });
     await (craftMatrix.getElementActionElement(page, actionsMenuId, 'Delete entry')).click();
+    // wait for the action to complete
     await page.waitForLoadState('networkidle');
     await craftEntry.waitForAutosaveToComplete(page);
 
@@ -366,6 +349,7 @@ test.describe('Max entries limit', () => {
       craftMatrix.getElementActionElement(page, actionsMenuId, 'Duplicate')
     ).toHaveCount(0);
 
+    // reload the page
     await page.reload();
     await page.waitForLoadState();
 

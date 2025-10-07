@@ -23,10 +23,6 @@ test.describe('Create, edit, discard', () => {
   const blockLocator = matrixFieldLocator + ' .blocks > .matrixblock';
   const firstBlockLocator = blockLocator + ':first-child';
 
-  // create new entry that contains matrix field in inline-editable blocks view mode
-  // add nested entry (block) to the matrix,
-  // check the block was added and that the matrix field and edited fields don't have the modified indicator
-  // and save the root entry
   test('Create new root entry with inline-editable blocks matrix field', async ({
     page,
     baseURL,
@@ -60,22 +56,16 @@ test.describe('Create, edit, discard', () => {
       originalText
     );
 
-    // check the block was added and the field has the modified indicator
+    // check the field has the modified indicator
     await expect(
       page.locator(matrixFieldLocator + ' > .status-badge')
     ).toBeVisible();
-    //await expect(firstBlock.getByTitle(craftEntry.fieldModifiedText)).not.toBeVisible();
 
     // and save the root entry
     await craftEntry.saveRootEntry(page);
-    //await page.getByRole('button', {name: 'Create entry'}).click();
   });
 
-  // edit entry from previous test
-  // check that the entry (block) nested in a matrix can be edited
-  // update text field value
-  // check that the modified indicators show (for both the matrix field and the edited text field)
-  // save root entry and check if the change is there
+
   test('Edit nested entry, save and check if the value saved', async ({
     page,
     baseURL,
@@ -92,7 +82,7 @@ test.describe('Create, edit, discard', () => {
     await firstBlock.locator(textFieldLocator).clear();
     await craftEntry.fillField(page, firstBlock, textFieldLocator, editedText);
 
-    // check that both modified indicators show
+    // check that both modified indicators show and that the field modified indicator has correct text
     await expect(
       page.locator(matrixFieldLocator + ' > .status-badge')
     ).toBeVisible();
@@ -107,15 +97,10 @@ test.describe('Create, edit, discard', () => {
     await page.keyboard.press('ControlOrMeta+s');
     await craftEntry.waitForAutosaveToComplete(page);
 
-    // and check if the change is there
+    // and check if the edited block text is there
     await expect(firstBlock.locator(textFieldLocator)).toHaveValue(editedText);
   });
 
-  // edit entry from previous test
-  // add a second nested entry (block) to the matrix
-  // check the block was added and that the blue indicator for the matrix field is there
-  // discard root entry changes
-  // check that there's no blue indicator and there's only one block in the matrix field
   test('Check that added nested entry can be discarded', async ({
     page,
     baseURL,
@@ -141,7 +126,7 @@ test.describe('Create, edit, discard', () => {
     await secondBlock.locator(textFieldLocator).focus();
     await craftEntry.fillField(page, secondBlock, textFieldLocator, 'card 2');
 
-    // check that the blue indicators are there
+    // check that the blue indicators are there and that the field indicator has correct text
     await expect(
       page.locator(matrixFieldLocator + ' > .status-badge')
     ).toBeVisible();
@@ -153,11 +138,7 @@ test.describe('Create, edit, discard', () => {
     ).not.toBeVisible();
 
     // discard root entry changes
-    page.on('dialog', async (dialog) => {
-      await dialog.accept();
-    });
-    await page.locator('#content .discard-changes-btn').click();
-    await page.waitForLoadState();
+    await craftEntry.discardElementChanges(page);
 
     // check that there's no blue indicators
     await expect(
@@ -206,12 +187,11 @@ test.describe('Static field', () => {
     // fill out the title
     await craftEntry.fillField(page, page, titleFieldLocator, titleText, 50);
 
-    // fill out the nested entry's plan text field
+    // fill out the nested entry's plain text field
     await craftEntry.fillField(page, firstBlock, textFieldLocator, originalText);
 
     // save the root entry & continue editing
     await craftEntry.saveRootEntryAndContinueEditing(page);
-    //await craftEntry.waitForAutosaveToComplete(page);
 
     // check that there's still no new block button for this static matrix field
     await expect(matrixField.locator(newBlockLocator)).toHaveCount(0);
@@ -222,14 +202,13 @@ test.describe('Static field', () => {
     );
   });
 
-  // check that the "Copy" action is still available for "blocks" inside a static matrix field,
-  // when the maxEntries limit was reached
   test('Check that the "Copy" action is available in static blocks', async ({
     page,
     baseURL,
     craftEntry,
     craftMatrix,
   }) => {
+    // edit entry from previous test
     await craftEntry.editEntryInElementIndexTableByTitle(page, titleText);
 
     const firstBlock = page.locator(firstBlockLocator);
@@ -237,9 +216,11 @@ test.describe('Static field', () => {
     const actionsMenuId = await craftMatrix.getBlockActionMenuId(firstBlock);
     await craftMatrix.openBlockActionMenu(firstBlock);
 
+    // check that we have one 'Copy' action in the block's actions menu
     await expect(
       craftMatrix.getElementActionElement(page, actionsMenuId, 'Copy')
     ).toHaveCount(1);
+    // check that the 'Copy' action is visible
     await expect(
       craftMatrix.getElementActionElement(page, actionsMenuId, 'Copy')
     ).toBeVisible();
@@ -284,7 +265,7 @@ test.describe('Max entries limit', () => {
       var block = page.locator(blockLocator + ':last-child');
       await block.waitFor({state: 'attached'});
 
-      // fill out the field
+      // fill out the plain text field
       await craftEntry.fillField(
         page,
         block,
@@ -299,18 +280,18 @@ test.describe('Max entries limit', () => {
     // check that "Duplicate" action is not available when you reach the limit
     let actionsMenuId = await craftMatrix.getBlockActionMenuId(firstBlock);
     await craftMatrix.openBlockActionMenu(firstBlock);
-
     await expect(
       craftMatrix.getElementActionElement(page, actionsMenuId, 'Duplicate')
     ).toHaveCount(0);
 
+    // save root entry and continue editing
     await craftEntry.saveRootEntryAndContinueEditing(page);
-    //await craftEntry.waitForAutosaveToComplete(page);
 
     // delete the first block
     actionsMenuId = await craftMatrix.getBlockActionMenuId(firstBlock);
     await craftMatrix.openBlockActionMenu(firstBlock);
     await (craftMatrix.getElementActionElement(page, actionsMenuId, 'Delete')).click();
+    // wait for the action to complete
     await page.waitForLoadState('networkidle');
     await craftEntry.waitForAutosaveToComplete(page);
 

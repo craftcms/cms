@@ -69,6 +69,14 @@ class Entry {
 
     return url.origin + pathnameSegments.join('/') + '?**';
   }
+
+  async discardElementChanges(page) {
+    page.on('dialog', async (dialog) => {
+      await dialog.accept();
+    });
+    await page.locator('#content .discard-changes-btn').click();
+    await page.waitForLoadState();
+  }
 }
 
 module.exports = {Entry};
