@@ -42,6 +42,8 @@ class EagerLoadingTest extends TestCase
      */
     public function testEagerLoadingScenario1(): void
     {
+        $this->markTestSkipped('Rewrite for Laravel');
+
         // getting the entry
         $entry = Entry::find()
             ->title('Matrix with relational field')

@@ -40,6 +40,7 @@ use craft\validators\UriFormatValidator;
 use craft\web\assets\cp\CpAsset;
 use craft\web\assets\matrix\MatrixAsset;
 use craft\web\View;
+use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Enums\PropagationMethod;
 use CraftCms\Cms\Field\Contracts\EagerLoadingFieldInterface;
 use CraftCms\Cms\Field\Contracts\ElementContainerFieldInterface;
@@ -1363,12 +1364,12 @@ JS;
         }
 
         // Return any relation data on these elements, defined with this field
-        $map = DB::table(\CraftCms\Cms\Database\Table::ENTRIES, 'entries')
+        $map = DB::table(Table::ENTRIES, 'entries')
             ->select([
                 'elements_owners.ownerId as source',
                 'entries.id as target',
             ])
-            ->join(new Alias(\CraftCms\Cms\Database\Table::ELEMENTS_OWNERS, 'elements_owners'), function (JoinClause $join) use ($sourceElementIds) {
+            ->join(new Alias(Table::ELEMENTS_OWNERS, 'elements_owners'), function (JoinClause $join) use ($sourceElementIds) {
                 $join->whereColumn('elements_owners.elementId', 'entries.id')
                     ->whereIn('elements_owners.ownerId', $sourceElementIds);
             })
@@ -1422,7 +1423,7 @@ JS;
      */
     public function afterMergeFrom(FieldInterface $outgoingField): void
     {
-        DB::table(\CraftCms\Cms\Database\Table::ENTRIES)
+        DB::table(Table::ENTRIES)
             ->where('fieldId', $outgoingField->id)
             ->update([
                 'fieldId' => $this->id,
@@ -1674,7 +1675,7 @@ JS;
                 ->keyBy(fn (Entry $entry) => $entry->getCanonicalId());
 
             if ($derivatives->isNotEmpty()) {
-                $canonicalUids = DB::table(\CraftCms\Cms\Database\Table::ELEMENTS)
+                $canonicalUids = DB::table(Table::ELEMENTS)
                     ->select(['id', 'uid'])
                     ->whereIn('id', $derivatives->keys())
                     ->pluck('uid', 'id');
