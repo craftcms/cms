@@ -820,7 +820,7 @@ JS;
         /** @var LinkData $value */
         $value = $element->getFieldValue($this->handle);
         $linkTypes = $this->getLinkTypes();
-        $linkType = $linkTypes[$value->getType()];
+        $linkType = $linkTypes[$value->getType()] ?? $linkTypes[UrlType::id()] ?? new UrlType;
         $value = $value->serialize()['value'];
 
         return $linkType->isValueEmpty($value);

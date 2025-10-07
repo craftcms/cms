@@ -266,7 +266,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
             new TwigFilter('firstWhere', [ArrayHelper::class, 'firstWhere']),
             new TwigFilter('flatten', [Arr::class, 'flatten']),
             new TwigFilter('group', [$this, 'groupFilter']),
-            new TwigFilter('hash', [$security, 'hashData']),
+            new TwigFilter('hash', [$this, 'hashFilter']),
             new TwigFilter('httpdate', [$this, 'httpdateFilter'], ['needs_environment' => true]),
             new TwigFilter('id', [Html::class, 'id']),
             new TwigFilter('index', [ArrayHelper::class, 'index']),
@@ -1226,6 +1226,22 @@ class Extension extends AbstractExtension implements GlobalsInterface
         return $groups;
     }
 
+    /**
+     * Hashes the given data
+     *
+     * @param string $data The data to be hashed
+     * @param string|null $algo The hashing algorithm to use, e.g. `md5` or `sha256`.
+     * @return string
+     * @since 5.9.0
+     */
+    public function hashFilter(string $data, ?string $algo = null): string
+    {
+        if ($algo === null) {
+            return Craft::$app->getSecurity()->hashData($data);
+        }
+
+        return hash($algo, $data);
+    }
 
     /**
      * Converts a date to the HTTP format (used by HTTP headers such as `Expires`).

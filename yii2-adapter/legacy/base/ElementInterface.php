@@ -549,10 +549,13 @@ interface ElementInterface extends
      * This method should return an array whose keys represent element attribute names, and whose values make
      * up the table’s column headers.
      *
+     * @param FieldLayout|null $fieldLayout
+     * @since 5.9.0
      * @return array The card attributes.
+     *
      * @since 5.5.0
      */
-    public static function cardAttributes(): array;
+    public static function cardAttributes(?FieldLayout $fieldLayout = null): array;
 
     /**
      * Returns the list of card attribute keys that should be shown by default, if the field layout hasn't been customised.

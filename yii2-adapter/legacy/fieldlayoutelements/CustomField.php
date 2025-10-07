@@ -568,7 +568,7 @@ class CustomField extends BaseField
 
         if ($editCondition) {
             $currentUser = Craft::$app->getUser()->getIdentity();
-            if ($currentUser && !$editCondition->matchElement($currentUser)) {
+            if (!$currentUser || !$editCondition->matchElement($currentUser)) {
                 return false;
             }
         }
