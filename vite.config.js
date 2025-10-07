@@ -10,6 +10,7 @@ export default defineConfig(({mode}) => {
   const server = url.hostname.includes('.ddev.site')
     ? {
       host,
+      cors: url.toString(),
       hmr: {host},
       https: {
         key: fs.readFileSync(env.VITE_SERVER_HTTPS_PATH_KEY),
