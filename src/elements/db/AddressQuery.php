@@ -1032,10 +1032,12 @@ class AddressQuery extends ElementQuery implements NestedElementQueryInterface
 
             if ($min) {
                 $this->query->andWhere(['>=', $distance, $min]);
+                $this->subQuery->andWhere(['>=', $distance, $min]);
             }
 
             if ($max) {
                 $this->query->andWhere(['<=', $distance, $max]);
+                $this->subQuery->andWhere(['<=', $distance, $max]);
             }
         }
 
