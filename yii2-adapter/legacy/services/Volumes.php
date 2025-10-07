@@ -8,7 +8,6 @@
 namespace craft\services;
 
 use Craft;
-use craft\base\Field;
 use craft\base\MemoizableArray;
 use craft\elements\Asset;
 use craft\events\VolumeEvent;
@@ -18,6 +17,7 @@ use craft\models\VolumeFolder;
 use craft\records\Volume as AssetVolumeRecord;
 use craft\records\VolumeFolder as VolumeFolderRecord;
 use CraftCms\Cms\Database\Table;
+use CraftCms\Cms\Field\Field;
 use CraftCms\Cms\Field\Fields;
 use CraftCms\Cms\ProjectConfig\Events\ConfigEvent;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;

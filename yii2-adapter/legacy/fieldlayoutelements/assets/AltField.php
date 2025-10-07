@@ -9,10 +9,10 @@ namespace craft\fieldlayoutelements\assets;
 
 use Craft;
 use craft\base\ElementInterface;
-use craft\base\Field;
 use craft\elements\Asset;
 use craft\fieldlayoutelements\TextareaField;
 use craft\helpers\ElementHelper;
+use CraftCms\Cms\Field\Field;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Html;
 use yii\base\InvalidArgumentException;

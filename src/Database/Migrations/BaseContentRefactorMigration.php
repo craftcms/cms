@@ -121,7 +121,7 @@ class BaseContentRefactorMigration extends Migration
                 $content = [];
 
                 foreach ($fieldColumns as $layoutElementUid => $column) {
-                    /** @var \craft\base\Field $field */
+                    /** @var \CraftCms\Cms\Field\Field $field */
                     $field = $fieldsByUid[$layoutElementUid];
 
                     if ($field instanceof MissingField) {

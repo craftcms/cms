@@ -28,7 +28,7 @@ trait MergesFields
         Fields $fieldsService,
         FieldInterface $persistingField,
         FieldInterface $outgoingField,
-        Collection $outgoingLayouts,
+        Collection|array $outgoingLayouts,
         array &$migrationPaths,
     ): void {
         $this->components->task("Updating usages for `$outgoingField->handle`", function () use (
@@ -106,5 +106,15 @@ trait MergesFields
         $this->components->task(" → Running content migration for `$outgoingField->handle` …", function () {
             app(Migrator::class)->track('content')->run();
         });
+    }
+
+    protected function layoutElementOverride(?string $persistingFieldValue, ?string $outgoingFieldValue, ?string $override): ?string
+    {
+        $persistingFieldValue = ($persistingFieldValue === '' ? null : $persistingFieldValue);
+        $outgoingFieldValue = ($outgoingFieldValue === '' ? null : $outgoingFieldValue);
+        $override = ($override === '' ? null : $override);
+        $expected = $override ?? $outgoingFieldValue;
+
+        return $persistingFieldValue !== $expected ? $expected : null;
     }
 }

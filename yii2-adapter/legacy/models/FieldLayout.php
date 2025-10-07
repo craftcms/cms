@@ -9,7 +9,6 @@ namespace craft\models;
 
 use Craft;
 use craft\base\ElementInterface;
-use craft\base\Field;
 use craft\base\FieldLayoutElement;
 use craft\base\FieldLayoutProviderInterface;
 use craft\base\Model;
@@ -29,6 +28,7 @@ use craft\fieldlayoutelements\Template;
 use craft\fieldlayoutelements\Tip;
 use craft\validators\HandleValidator;
 use CraftCms\Cms\Field\Contracts\FieldInterface;
+use CraftCms\Cms\Field\Field;
 use CraftCms\Cms\Field\Fields;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Html;

@@ -17,6 +17,7 @@ use CraftCms\Aliases\Aliases;
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Edition\Events\EditionChanged;
+use CraftCms\Cms\Field\Field;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Env;
 use CraftCms\Cms\Support\Facades\Deprecator;
@@ -42,6 +43,7 @@ class Yii2ServiceProvider extends ServiceProvider
     {
         $this->registerMultiEnvironmentConfigs();
         $this->registerConstants();
+        $this->registerMacros();
         $this->registerLegacyApp();
 
         $this->loadRoutesFrom(__DIR__ . '/../routes/web.php');
@@ -104,6 +106,19 @@ class Yii2ServiceProvider extends ServiceProvider
         } else {
             defined('CRAFT_TEMPLATES_PATH') || define('CRAFT_TEMPLATES_PATH', base_path('templates'));
         }
+    }
+
+    private function registerMacros(): void
+    {
+        Field::macro('trigger', function($name, mixed $event = null): void {
+            Deprecator::log('Field-trigger', 'Calling ->trigger on a Field is deprecated. Switch to component events instead.');
+
+            $event ??= new \yii\base\Event();
+
+            \yii\base\Event::trigger($this, $name, $event);
+
+            $this->dispatchComponentEvent($name, $event);
+        });
     }
 
     protected function registerLegacyApp(): void

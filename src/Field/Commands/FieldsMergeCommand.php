@@ -171,7 +171,7 @@ final class FieldsMergeCommand extends Command
             $this->warn('Merging relation fields should only be done after all elements using them have been resaved.');
 
             if (confirm('Resave them now?')) {
-                $this->info(sprintf('Running `resave:all --with-fields=%s`', implode(',', $handles)));
+                $this->info(sprintf('Running `resave:all --with-fields=%s`', $handles->implode(',')));
 
                 $this->call('craft:resave:all', [
                     '--with-fields' => $handles,
@@ -243,15 +243,5 @@ final class FieldsMergeCommand extends Command
         );
 
         return $fields[$choice];
-    }
-
-    private function layoutElementOverride(?string $persistingFieldValue, ?string $outgoingFieldValue, ?string $override): ?string
-    {
-        $persistingFieldValue = ($persistingFieldValue === '' ? null : $persistingFieldValue);
-        $outgoingFieldValue = ($outgoingFieldValue === '' ? null : $outgoingFieldValue);
-        $override = ($override === '' ? null : $override);
-        $expected = $override ?? $outgoingFieldValue;
-
-        return $persistingFieldValue !== $expected ? $expected : null;
     }
 }

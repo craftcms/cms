@@ -44,6 +44,7 @@ use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
+use Illuminate\Support\Traits\Macroable;
 use Illuminate\Validation\Rule;
 use InvalidArgumentException;
 use RuntimeException;
@@ -54,6 +55,7 @@ abstract class Field implements Actionable, Arrayable, FieldInterface, Iconic
 {
     use ConfigurableComponent;
     use HasComponentEvents;
+    use Macroable;
     use SavableComponent;
     use ValidatableComponent;
 

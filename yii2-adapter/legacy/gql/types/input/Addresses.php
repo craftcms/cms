@@ -8,8 +8,8 @@
 namespace craft\gql\types\input;
 
 use Craft;
-use craft\base\Field;
 use craft\gql\GqlEntityRegistry;
+use CraftCms\Cms\Field\Field;
 use CraftCms\Cms\Support\Arr;
 use GraphQL\Type\Definition\InputObjectType;
 use GraphQL\Type\Definition\Type;
