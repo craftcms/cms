@@ -34,7 +34,7 @@ test.describe('Create, edit, discard', () => {
   }) => {
     const matrixField = page.locator(matrixFieldLocator);
 
-    // create new entry that contains matrix field in cards view mode
+    // create new entry that contains matrix field in inline-editable blocks view mode
     await craftEntry.createEntryBySectionName(page, 'Test Matrix');
 
     // switch to the "With Matrix in Blocks mode" entry type
@@ -67,7 +67,8 @@ test.describe('Create, edit, discard', () => {
     //await expect(firstBlock.getByTitle(craftEntry.fieldModifiedText)).not.toBeVisible();
 
     // and save the root entry
-    await page.getByRole('button', {name: 'Create entry'}).click();
+    await craftEntry.saveRootEntry(page);
+    //await page.getByRole('button', {name: 'Create entry'}).click();
   });
 
   // edit entry from previous test
@@ -210,6 +211,7 @@ test.describe('Static field', () => {
 
     // save the root entry & continue editing
     await craftEntry.saveRootEntryAndContinueEditing(page);
+    //await craftEntry.waitForAutosaveToComplete(page);
 
     // check that there's still no new block button for this static matrix field
     await expect(matrixField.locator(newBlockLocator)).toHaveCount(0);
@@ -303,6 +305,7 @@ test.describe('Max entries limit', () => {
     ).toHaveCount(0);
 
     await craftEntry.saveRootEntryAndContinueEditing(page);
+    //await craftEntry.waitForAutosaveToComplete(page);
 
     // delete the first block
     actionsMenuId = await craftMatrix.getBlockActionMenuId(firstBlock);

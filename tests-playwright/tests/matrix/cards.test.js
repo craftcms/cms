@@ -69,16 +69,13 @@ test.describe('Create, edit, discard', () => {
     ).toBeVisible();
 
     // check that the nested entry can be edited after being created
-    await craftMatrix.openNestedEntryInSlideout(page, firstCardId);
-    // await page
-    //   .locator('#' + firstCardId)
-    //   .getByRole('button', {name: 'Edit entry'})
-    //   .click();
+    await (craftMatrix.getEditNestedEntryBtn(page, firstCardId)).click();
     await expect(slideout.locator(textFieldLocator)).toHaveValue(originalText);
     await page.getByRole('button', {name: 'Cancel'}).click();
 
     // and save the root entry
-    await page.getByRole('button', {name: 'Create entry'}).click();
+    await craftEntry.saveRootEntry(page);
+    //await page.getByRole('button', {name: 'Create entry'}).click();
   });
 
   // edit entry from previous test
@@ -103,11 +100,7 @@ test.describe('Create, edit, discard', () => {
     let firstCardId = await firstCard.getAttribute('id');
 
     // check that the entry nested in a matrix can be edited
-    await craftMatrix.openNestedEntryInSlideout(page, firstCardId);
-    // await page
-    //   .locator('#' + firstCardId)
-    //   .getByRole('button', {name: 'Edit entry'})
-    //   .click();
+    await (craftMatrix.getEditNestedEntryBtn(page, firstCardId)).click();
 
     // update text field value in the nested entry
     await slideout.locator(textFieldLocator).waitFor();

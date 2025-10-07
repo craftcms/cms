@@ -48,6 +48,7 @@ class Entry {
     await page.keyboard.press('Escape');
     await page.keyboard.press('ControlOrMeta+S');
     await page.waitForURL(url);
+    await this.waitForAutosaveToComplete(page);
   }
 
   async saveRootEntry(page) {

@@ -52,11 +52,10 @@ class Matrix {
       .getByRole('button', {name: 'New entry'});
   }
 
-  async openNestedEntryInSlideout(page, id) {
-    page
+  getEditNestedEntryBtn(page, id) {
+    return page
       .locator('#' + id)
-      .getByRole('button', {name: 'Edit entry'})
-      .click();
+      .getByRole('button', {name: 'Edit entry'});
   }
 
 }
