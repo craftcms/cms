@@ -514,7 +514,7 @@ JS, [
     {
         $request->validate([
             'fieldLayoutConfig' => ['required', 'array'],
-            'cardElements' => ['required', 'array'],
+            'cardElements' => ['nullable', 'array'],
             'showThumb' => ['nullable', 'boolean'],
             'thumbAlignment' => ['nullable', 'string'],
         ]);

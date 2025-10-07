@@ -753,9 +753,9 @@ class Fields extends Component
         });
 
         Event::listen(RegisterNestedEntryFieldTypes::class, function(RegisterNestedEntryFieldTypes $event) {
-            if (Craft::$app->getFields()->hasEventHandlers(self::EVENT_DEFINE_COMPATIBLE_FIELD_TYPES)) {
+            if (Craft::$app->getFields()->hasEventHandlers(self::EVENT_REGISTER_NESTED_ENTRY_FIELD_TYPES)) {
                 $yiiEvent = new RegisterComponentTypesEvent(['types' => $event->types->all()]);
-                Craft::$app->getFields()->trigger(self::EVENT_DEFINE_COMPATIBLE_FIELD_TYPES, $yiiEvent);
+                Craft::$app->getFields()->trigger(self::EVENT_REGISTER_NESTED_ENTRY_FIELD_TYPES, $yiiEvent);
                 $event->types = new Collection($yiiEvent->types);
             }
         });
