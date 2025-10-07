@@ -5,11 +5,10 @@
   "scripts": {
     "prebuild": "npm run fix-prettier",
     "build": "webpack --node-env=production --progress",
-    "dev": "webpack --node-env=dev --mode=development --progress",
+    "dev": "webpack --node-env=dev --mode=development --progress -w",
     "serve": "webpack-dev-server --node-env=development",
     "check-prettier": "prettier --check .",
     "fix-prettier": "prettier --write .",
-    "prepare": "husky",
     "lint:styles": "stylelint \"src/**/*.scss\""
   },
   "workspaces": [
@@ -24,8 +23,6 @@
   "devDependencies": {
     "@craftcms/webpack": "file:packages/craftcms-webpack",
     "@playwright/test": "^1.19.2",
-    "husky": "^9.1.7",
-    "lint-staged": "^16.1.6",
     "prettier": "3.1.1",
     "stylelint": "^16.6.1",
     "stylelint-config-standard": "^36.0.0",

@@ -2,15 +2,24 @@
   "name": "@craftcms/cms",
   "private": true,
   "main": "index.js",
-  "scripts": {},
+  "scripts": {
+    "legacy:build": "cd yii2-adapter && npm run build",
+    "legacy:dev": "cd yii2-adapter && npm run dev",
+    "legacy:serve": "cd yii2-adapter && npm run serve",
+    "prepare": "husky"
+  },
   "workspaces": [
     "packages/*"
   ],
   "engines": {
     "node": ">=20"
   },
-  "devDependencies": {},
-  "dependencies": {},
+  "devDependencies": {
+    "@playwright/test": "^1.56.0",
+    "husky": "^9.1.7",
+    "lint-staged": "^16.2.3",
+    "prettier": "3.6.2"
+  },
   "optionalDependencies": {
     "@awesome.me/kit-ddaed3f5c5": "^1.0.41"
   }
