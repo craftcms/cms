@@ -409,8 +409,6 @@ class Fields extends Component
      */
     public function handleChangedField(ConfigEvent $event): void
     {
-        DB::reconnect();
-
         app(\CraftCms\Cms\Field\Fields::class)->handleChangedField($event);
     }
 
