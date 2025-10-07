@@ -14,8 +14,6 @@ use CraftCms\Cms\Field\Data\SingleOptionFieldData;
 
 /**
  * Dropdown represents a Dropdown field.
- *
- * @since 6.0.0
  */
 final class Dropdown extends BaseOptionsField implements InlineEditableFieldInterface, SortableFieldInterface
 {

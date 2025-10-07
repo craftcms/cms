@@ -68,8 +68,6 @@ use yii\db\Expression;
  * Matrix field type
  *
  * @phpstan-import-type EagerLoadingMap from ElementInterface
- *
- * @since 6.0.0
  */
 final class Matrix extends Field implements EagerLoadingFieldInterface, ElementContainerFieldInterface, GqlInlineFragmentFieldInterface, MergeableFieldInterface
 {

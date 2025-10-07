@@ -9,8 +9,6 @@ use Illuminate\Support\Collection;
  * @event RegisterNestedEntryFieldTypes The event that is triggered when registering field types which manage nested entries.
  *
  * These field types must implement [[ElementContainerFieldInterface]].
- *
- * @since 6.0.0
  */
 final class RegisterNestedEntryFieldTypes
 {

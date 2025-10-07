@@ -5,8 +5,6 @@ namespace CraftCms\Cms\Field\Contracts;
 /**
  * MergeableFieldInterface defines the common interface to be implemented by field classes
  * that can be merged with other fields.
- *
- * @since 6.0.0
  */
 interface MergeableFieldInterface extends FieldInterface
 {

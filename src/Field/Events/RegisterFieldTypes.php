@@ -20,8 +20,6 @@ use Illuminate\Support\Collection;
  *     $event->types->add(MyFieldType::class);
  * });
  * ```
- *
- * @since 6.0.0
  */
 final class RegisterFieldTypes
 {

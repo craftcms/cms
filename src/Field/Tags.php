@@ -22,8 +22,6 @@ use Symfony\Component\DomCrawler\Crawler;
 
 /**
  * Tags represents a Tags field.
- *
- * @since 6.0.0
  */
 final class Tags extends BaseRelationField
 {

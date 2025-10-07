@@ -8,7 +8,6 @@ use CraftCms\Cms\Field\Contracts\FieldInterface;
 
 /**
  * @see \CraftCms\Cms\Field\Matrix::getEntryTypesForField()
- * @since 6.0.0
  */
 final class DefineEntryTypesForField
 {

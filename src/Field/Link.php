@@ -42,8 +42,6 @@ use yii\db\Schema;
 
 /**
  * Link represents a Link field.
- *
- * @since 6.0.0
  */
 final class Link extends Field implements CrossSiteCopyableFieldInterface, InlineEditableFieldInterface, MergeableFieldInterface, RelationalFieldInterface
 {

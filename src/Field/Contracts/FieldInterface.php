@@ -20,8 +20,6 @@ use yii\db\ExpressionInterface;
 /**
  * FieldInterface defines the common interface to be implemented by field classes.
  * A class implementing this interface should also use {@see \CraftCms\Cms\Component\Concerns\SavableComponent} and extend {@see \CraftCms\Cms\Field\Field}.
- *
- * @since 6.0.0
  */
 interface FieldInterface extends Chippable, ConfigurableComponentInterface, CpEditable, Grippable, SavableComponentInterface, ValidatableComponentInterface
 {

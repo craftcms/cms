@@ -20,8 +20,6 @@ use yii\db\Schema;
 
 /**
  * Icon represents an icon picker field.
- *
- * @since 6.0.0
  */
 final class Icon extends Field implements CrossSiteCopyableFieldInterface, InlineEditableFieldInterface, MergeableFieldInterface, ThumbableFieldInterface
 {

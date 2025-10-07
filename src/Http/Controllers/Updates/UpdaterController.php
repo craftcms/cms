@@ -22,8 +22,6 @@ use function CraftCms\Cms\normalizeVersion;
 
 /**
  * @internal
- *
- * @since 6.0.0
  */
 final class UpdaterController extends BaseUpdaterController
 {

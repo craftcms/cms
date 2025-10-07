@@ -24,8 +24,6 @@ use Illuminate\Support\Collection;
 
 /**
  * Entries represents an Entries field.
- *
- * @since 6.0.0
  */
 final class Entries extends BaseRelationField
 {

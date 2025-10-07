@@ -8,8 +8,6 @@ use Illuminate\Database\Schema\Blueprint;
 
 /**
  * @internal
- *
- * @since 6.0.0
  */
 final class MigrationRepository extends DatabaseMigrationRepository
 {

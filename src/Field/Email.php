@@ -17,8 +17,6 @@ use yii\db\Schema;
 
 /**
  * Email represents an Email field.
- *
- * @since 6.0.0
  */
 final class Email extends Field implements CrossSiteCopyableFieldInterface, InlineEditableFieldInterface, MergeableFieldInterface
 {

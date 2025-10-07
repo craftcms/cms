@@ -7,8 +7,6 @@ use craft\base\ElementInterface;
 /**
  * InlineEditableFieldInterface defines the common interface to be implemented by field classes
  * that wish to be editable via inline edit forms.
- *
- * @since 6.0.0
  */
 interface InlineEditableFieldInterface extends FieldInterface
 {

@@ -13,8 +13,6 @@ use Illuminate\Support\Collection;
 
 /**
  * Asset link type.
- *
- * @since 6.0.0
  */
 final class Asset extends BaseElementLinkType
 {

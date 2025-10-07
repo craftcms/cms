@@ -28,8 +28,6 @@ use yii\db\Schema;
 
 /**
  * BaseOptionsField is the base class for classes representing an options field.
- *
- * @since 6.0.0
  */
 abstract class BaseOptionsField extends Field implements CrossSiteCopyableFieldInterface, MergeableFieldInterface, PreviewableFieldInterface
 {

@@ -15,8 +15,6 @@ use Illuminate\Support\Facades\File;
 
 /**
  * @internal
- *
- * @since 6.0.0
  */
 trait MergesFields
 {

@@ -15,9 +15,6 @@ use Symfony\Component\HttpKernel\Exception\HttpException;
 use Symfony\Component\HttpKernel\Exception\ServiceUnavailableHttpException;
 use Throwable;
 
-/**
- * @since 6.0.0
- */
 final class MigrateController
 {
     /**

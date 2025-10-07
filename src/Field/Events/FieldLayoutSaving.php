@@ -6,8 +6,6 @@ use craft\models\FieldLayout;
 
 /**
  * @event FieldLayoutSaving The event that is triggered before a field layout is saved.
- *
- * @since 6.0.0
  */
 final class FieldLayoutSaving extends FieldLayoutEvent
 {

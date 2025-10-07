@@ -4,7 +4,6 @@ namespace CraftCms\Cms\Field\Events;
 
 /**
  * @see \CraftCms\Cms\Field\Link::types()
- * @since 6.0.0
  */
 final class RegisterLinkTypes
 {

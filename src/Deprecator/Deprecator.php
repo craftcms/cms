@@ -16,9 +16,6 @@ use Illuminate\Support\Facades\Log;
 use Throwable;
 use Twig\Template as TwigTemplate;
 
-/**
- * @since 6.0.0
- */
 #[Singleton]
 final class Deprecator
 {

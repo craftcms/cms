@@ -21,8 +21,6 @@ use yii\db\Schema;
  * Color represents a Color field.
  *
  * @property string|null $defaultColor
- *
- * @since 6.0.0
  */
 final class Color extends Field implements CrossSiteCopyableFieldInterface, InlineEditableFieldInterface, MergeableFieldInterface
 {

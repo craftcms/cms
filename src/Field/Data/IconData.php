@@ -4,9 +4,6 @@ namespace CraftCms\Cms\Field\Data;
 
 use craft\base\Serializable;
 
-/**
- * @since 6.0.0
- */
 final class IconData implements Serializable
 {
     /**

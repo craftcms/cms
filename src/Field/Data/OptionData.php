@@ -6,8 +6,6 @@ use craft\base\Serializable;
 
 /**
  * Class OptionData
- *
- * @since 6.0.0
  */
 class OptionData implements Serializable
 {

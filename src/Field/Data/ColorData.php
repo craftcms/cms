@@ -17,8 +17,6 @@ use craft\base\Serializable;
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @author Top Shelf Craft <michael@michaelrog.com>
- *
- * @since 6.0.0
  */
 final class ColorData implements Serializable
 {

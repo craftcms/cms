@@ -30,8 +30,6 @@ use yii\db\Schema;
  * @property-read null|string $settingsHtml
  * @property-read null $elementConditionRuleType
  * @property-read mixed $contentGqlType
- *
- * @since 6.0.0
  */
 final class Money extends Field implements CrossSiteCopyableFieldInterface, InlineEditableFieldInterface, MergeableFieldInterface, SortableFieldInterface
 {

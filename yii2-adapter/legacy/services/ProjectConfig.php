@@ -831,8 +831,7 @@ class ProjectConfig extends Component
      * Returns the cache dependency that should be used for project config caches.
      *
      * @return CallbackDependency
-     * @since 6.0.0
-     */
+    */
     public function getCacheDependency(): CallbackDependency
     {
         return app(\CraftCms\Cms\ProjectConfig\ProjectConfig::class)->getCacheDependency();

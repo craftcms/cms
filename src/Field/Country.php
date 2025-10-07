@@ -16,8 +16,6 @@ use yii\db\Schema;
 
 /**
  * Country represents a Country field.
- *
- * @since 6.0.0
  */
 final class Country extends Field implements CrossSiteCopyableFieldInterface, InlineEditableFieldInterface, MergeableFieldInterface
 {

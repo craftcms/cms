@@ -7,8 +7,6 @@ use craft\base\ElementInterface;
 /**
  * CrossSiteCopyableFieldInterface defines the common interface to be implemented by field classes
  * that wish to support copying their values between sites in a multisite installation.
- *
- * @since 6.0.0
  */
 interface CrossSiteCopyableFieldInterface
 {

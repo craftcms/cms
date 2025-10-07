@@ -11,9 +11,6 @@ use Spatie\LaravelData\Dto;
 use Traversable;
 use yii\base\InvalidCallException;
 
-/**
- * @since 6.0.0
- */
 final class JsonData extends Dto implements ArrayAccess, IteratorAggregate, Serializable
 {
     public function __construct(

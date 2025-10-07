@@ -9,8 +9,6 @@ use craft\elements\User;
 /**
  * ElementContainerFieldInterface defines the common interface to be implemented by field classes
  * that contain nested elements, which implement [[NestedElementInterface]].
- *
- * @since 6.0.0
  */
 interface ElementContainerFieldInterface extends FieldInterface
 {

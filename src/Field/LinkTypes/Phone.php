@@ -7,8 +7,6 @@ use CraftCms\Cms\Field\Link;
 
 /**
  * Phone number link type.
- *
- * @since 6.0.0
  */
 final class Phone extends BaseTextLinkType
 {

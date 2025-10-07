@@ -10,8 +10,6 @@ use Illuminate\Support\Collection;
 
 /**
  * MultiSelect represents a Multi-select field.
- *
- * @since 6.0.0
  */
 final class MultiSelect extends BaseOptionsField
 {

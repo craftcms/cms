@@ -6,8 +6,6 @@ use CraftCms\Cms\Field\Contracts\FieldInterface;
 
 /**
  * @event ApplyingFieldSave The event that is triggered before a field save is applied to the database.
- *
- * @since 6.0.0
  */
 final class ApplyingFieldSave
 {

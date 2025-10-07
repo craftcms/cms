@@ -22,8 +22,6 @@ use Illuminate\Support\Facades\Cache;
 
 /**
  * @internal
- *
- * @since 6.0.0
  */
 #[Singleton]
 final readonly class License

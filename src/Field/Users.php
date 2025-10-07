@@ -18,8 +18,6 @@ use GraphQL\Type\Definition\Type;
 
 /**
  * Users represents a Users field.
- *
- * @since 6.0.0
  */
 final class Users extends BaseRelationField
 {

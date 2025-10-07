@@ -25,8 +25,6 @@ use yii\db\Schema;
 
 /**
  * Date represents a Date/Time field.
- *
- * @since 6.0.0
  */
 final class Date extends Field implements CrossSiteCopyableFieldInterface, InlineEditableFieldInterface, MergeableFieldInterface, SortableFieldInterface
 {

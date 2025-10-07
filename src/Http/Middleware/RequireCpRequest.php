@@ -6,9 +6,6 @@ use Closure;
 use CraftCms\Cms\Config\GeneralConfig;
 use Illuminate\Http\Request;
 
-/**
- * @since 6.0.0
- */
 final readonly class RequireCpRequest
 {
     public function __construct(

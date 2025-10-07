@@ -8,9 +8,6 @@ use CraftCms\Cms\Utility\Utility;
 
 /**
  * FindAndReplace represents a FindAndReplace dashboard widget.
- *
-
- * @since 6.0.0
  */
 final class FindAndReplace extends Utility
 {

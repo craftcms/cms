@@ -4,8 +4,6 @@ namespace CraftCms\Cms\Field\LinkTypes;
 
 /**
  * Phone number link type.
- *
- * @since 6.0.0
  */
 final class Sms extends BaseTextLinkType
 {

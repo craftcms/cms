@@ -38,8 +38,6 @@ use yii\base\InvalidConfigException;
 
 /**
  * Content Block field type
- *
- * @since 6.0.0
  */
 final class ContentBlock extends Field implements ElementContainerFieldInterface, FieldLayoutProviderInterface
 {

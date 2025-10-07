@@ -4,8 +4,6 @@ namespace CraftCms\Cms\Shared\Enums;
 
 /**
  * PeriodType defines time period units.
- *
- * @since 6.0.0
  */
 enum TimePeriod: string
 {

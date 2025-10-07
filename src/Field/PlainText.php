@@ -15,8 +15,6 @@ use CraftCms\Cms\Support\Str;
 
 /**
  * PlainText represents a Plain Text field.
- *
- * @since 6.0.0
  */
 final class PlainText extends Field implements CrossSiteCopyableFieldInterface, InlineEditableFieldInterface, MergeableFieldInterface, SortableFieldInterface
 {

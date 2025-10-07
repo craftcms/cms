@@ -11,8 +11,6 @@ use CraftCms\Cms\Field\Contracts\FieldInterface;
  * MissingField represents a field with an invalid class.
  *
  * @property class-string<FieldInterface> $expectedType
- *
- * @since 6.0.0
  */
 final class MissingField extends Field implements MissingComponentInterface
 {

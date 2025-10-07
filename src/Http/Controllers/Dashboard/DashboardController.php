@@ -10,9 +10,6 @@ use CraftCms\Cms\Support\Json;
 use Illuminate\Container\Attributes\Give;
 use Illuminate\Support\Collection;
 
-/**
- * @since 6.0.0
- */
 final readonly class DashboardController
 {
     use InteractsWithWidgets;

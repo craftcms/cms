@@ -37,8 +37,6 @@ use Illuminate\Support\Collection;
  *    ->setTo($user)
  *    ->send();
  * ```
- *
- * @since 6.0.0
  */
 final class RegisterSystemMessages
 {

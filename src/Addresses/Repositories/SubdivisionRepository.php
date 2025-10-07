@@ -12,8 +12,6 @@ use CraftCms\Cms\Support\Json;
  * Craft's extension of the commerceguys/addressing SubdivisionRepository.
  * Its main purpose is to allow addition of data that's not returned by the commerceguys/addressing library,
  * like the GB counties data. It also triggers an event which allows developers to modify the subdivisions further.
- *
- * @since 6.0.0
  */
 class SubdivisionRepository extends BaseSubdivisionRepository
 {

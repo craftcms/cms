@@ -20,8 +20,6 @@ use GraphQL\Type\Definition\Type;
 
 /**
  * Categories represents a Categories field.
- *
- * @since 6.0.0
  */
 final class Categories extends BaseRelationField
 {

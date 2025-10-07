@@ -13,9 +13,6 @@ use Symfony\Component\Finder\SplFileInfo;
 use Twig\Cache\NullCache;
 use Twig\Error\Error;
 
-/**
- * @since 6.0.0
- */
 final class TwigCacheCommand extends Command
 {
     use CraftCommand;

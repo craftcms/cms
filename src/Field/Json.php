@@ -15,8 +15,6 @@ use yii\db\Schema;
 
 /**
  * Icon represents an icon picker field.
- *
- * @since 6.0.0
  */
 final class Json extends Field implements CrossSiteCopyableFieldInterface, MergeableFieldInterface
 {

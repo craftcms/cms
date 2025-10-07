@@ -7,8 +7,6 @@ use craft\base\ElementInterface;
 /**
  * ThumbableFieldInterface defines the common interface to be implemented by field classes
  * that can provide a thumbnail for element card views.
- *
- * @since 6.0.0
  */
 interface ThumbableFieldInterface extends FieldInterface
 {

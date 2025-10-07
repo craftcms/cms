@@ -10,8 +10,6 @@ use CraftCms\Cms\Field\Data\SingleOptionFieldData;
 
 /**
  * RadioButtons represents a Radio Buttons field.
- *
- * @since 6.0.0
  */
 final class ButtonGroup extends BaseOptionsField implements SortableFieldInterface
 {

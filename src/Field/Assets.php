@@ -40,8 +40,6 @@ use yii\base\InvalidConfigException;
 
 /**
  * Assets represents an Assets field.
- *
- * @since 6.0.0
  */
 final class Assets extends BaseRelationField
 {

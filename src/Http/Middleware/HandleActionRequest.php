@@ -8,9 +8,6 @@ use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
 use yii\web\NotFoundHttpException;
 
-/**
- * @since 6.0.0
- */
 final readonly class HandleActionRequest
 {
     public function __construct(

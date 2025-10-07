@@ -18,8 +18,6 @@ use yii\db\Schema;
 
 /**
  * Range represents a Range field, which provides a tactile UI around a numeric value.
- *
- * @since 6.0.0
  */
 final class Range extends Field implements InlineEditableFieldInterface, MergeableFieldInterface, SortableFieldInterface
 {

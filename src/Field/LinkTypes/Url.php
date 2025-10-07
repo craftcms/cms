@@ -9,8 +9,6 @@ use League\Uri\Uri;
 
 /**
  * URL link type.
- *
- * @since 6.0.0
  */
 final class Url extends BaseTextLinkType
 {

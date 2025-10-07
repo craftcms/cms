@@ -4,8 +4,6 @@ namespace CraftCms\Cms\Field\Data;
 
 /**
  * Single-select option field data class.
- *
- * @since 6.0.0
  */
 final class SingleOptionFieldData extends OptionData
 {

@@ -7,8 +7,6 @@ use craft\elements\Category as CategoryElement;
 
 /**
  * Category link type.
- *
- * @since 6.0.0
  */
 final class Category extends BaseElementLinkType
 {

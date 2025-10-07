@@ -8,9 +8,6 @@ use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use Illuminate\Container\Attributes\Give;
 use Illuminate\Http\Request;
 
-/**
- * @since 6.0.0
- */
 final readonly class FlushProjectConfig
 {
     public function __construct(

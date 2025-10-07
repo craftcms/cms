@@ -8,8 +8,6 @@ use craft\base\ElementInterface;
  * EagerLoadingFieldInterface defines the common interface to be implemented by field classes that support eager-loading.
  *
  * @phpstan-import-type EagerLoadingMap from ElementInterface
- *
- * @since 6.0.0
  */
 interface EagerLoadingFieldInterface
 {

@@ -10,8 +10,6 @@ use CraftCms\Cms\Plugin\Plugin;
  * @mixin Plugin
  *
  * @internal
- *
- * @since 6.0.0
  */
 trait HasRoutes
 {

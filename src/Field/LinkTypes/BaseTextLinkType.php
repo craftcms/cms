@@ -11,8 +11,6 @@ use CraftCms\Cms\Support\Str;
 
 /**
  * Base text link type.
- *
- * @since 6.0.0
  */
 abstract class BaseTextLinkType extends BaseLinkType
 {

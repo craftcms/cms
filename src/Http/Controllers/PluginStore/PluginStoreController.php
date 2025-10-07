@@ -20,8 +20,6 @@ use Symfony\Component\HttpFoundation\Response;
 
 /**
  * @internal
- *
- * @since 6.0.0
  */
 final readonly class PluginStoreController
 {

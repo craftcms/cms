@@ -58,9 +58,6 @@ use yii\base\InvalidConfigException;
 use yii\base\NotSupportedException;
 use yii\web\ServerErrorHttpException;
 
-/**
- * @since 6.0.0
- */
 #[Singleton]
 final class ProjectConfig
 {

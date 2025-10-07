@@ -19,8 +19,6 @@ use yii\base\InvalidConfigException;
 
 /**
  * General config class
- *
- * @since 6.0.0
  */
 class GeneralConfig extends BaseConfig
 {

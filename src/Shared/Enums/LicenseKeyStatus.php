@@ -4,8 +4,6 @@ namespace CraftCms\Cms\Shared\Enums;
 
 /**
  * LicenseKeyStatus defines all possible license key statuses for Craft and plugins.
- *
- * @since 6.0.0
  */
 enum LicenseKeyStatus: string
 {

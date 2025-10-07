@@ -16,8 +16,6 @@ use yii\base\InvalidArgumentException;
 
 /**
  * Base element link type.
- *
- * @since 6.0.0
  */
 abstract class BaseElementLinkType extends BaseLinkType
 {

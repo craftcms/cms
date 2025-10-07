@@ -29,8 +29,6 @@ use yii\validators\EmailValidator;
 
 /**
  * Table represents a Table field.
- *
- * @since 6.0.0
  */
 final class Table extends Field implements CrossSiteCopyableFieldInterface
 {

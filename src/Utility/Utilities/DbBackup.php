@@ -8,8 +8,6 @@ use CraftCms\Cms\Utility\Utility;
 
 /**
  * DbBackup represents a DbBackup dashboard widget.
- *
- * @since 6.0.0
  */
 final class DbBackup extends Utility
 {

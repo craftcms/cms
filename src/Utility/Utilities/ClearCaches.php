@@ -18,9 +18,6 @@ use Illuminate\Support\Facades\File;
 
 /**
  * ClearCaches represents a ClearCaches dashboard widget.
- *
-
- * @since 6.0.0
  */
 final class ClearCaches extends Utility
 {

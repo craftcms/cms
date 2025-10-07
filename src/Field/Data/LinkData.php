@@ -14,8 +14,6 @@ use Twig\Markup;
 
 /**
  * Link field data class.
- *
- * @since 6.0.0
  */
 final class LinkData extends Dto implements Serializable
 {

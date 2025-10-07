@@ -7,8 +7,6 @@ use craft\base\ElementInterface;
 /**
  * PreviewableFieldInterface defines the common interface to be implemented by field classes
  * that wish to be previewable in element table and card views.
- *
- * @since 6.0.0
  */
 interface PreviewableFieldInterface extends FieldInterface
 {

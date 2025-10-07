@@ -11,8 +11,6 @@ use Illuminate\Support\Collection;
 
 /**
  * Entry link type.
- *
- * @since 6.0.0
  */
 final class Entry extends BaseElementLinkType
 {

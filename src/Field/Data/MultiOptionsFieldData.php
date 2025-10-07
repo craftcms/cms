@@ -6,8 +6,6 @@ use ArrayObject;
 
 /**
  * Multi-select option field data class.
- *
- * @since 6.0.0
  */
 final class MultiOptionsFieldData extends ArrayObject
 {

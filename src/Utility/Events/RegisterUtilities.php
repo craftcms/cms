@@ -20,8 +20,6 @@ use Illuminate\Support\Collection;
  *     $event->types[] = MyUtilityType::class;
  * });
  * ```
- *
- * @since 6.0.0
  */
 final class RegisterUtilities
 {

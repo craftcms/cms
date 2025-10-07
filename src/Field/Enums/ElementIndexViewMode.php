@@ -4,8 +4,6 @@ namespace CraftCms\Cms\Field\Enums;
 
 /**
  * ElementIndexViewMode defines the element index view modes supported in core.
- *
- * @since 6.0.0
  */
 enum ElementIndexViewMode: string
 {

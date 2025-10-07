@@ -12,8 +12,6 @@ use function Laravel\Prompts\spin;
 
 /**
  * @internal
- *
- * @since 6.0.0
  */
 trait FetchesUpdates
 {

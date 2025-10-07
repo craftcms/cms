@@ -17,8 +17,6 @@ use Illuminate\Support\Facades\File;
  * @mixin Plugin
  *
  * @internal
- *
- * @since 6.0.0
  */
 trait HasFrontendAssets
 {

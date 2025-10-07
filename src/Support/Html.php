@@ -24,8 +24,6 @@ use Yiisoft\Html\Html as YiiHtml;
 use Yiisoft\Html\NoEncode;
 
 /**
- * @since 6.0.0
- *
  * @mixin YiiHtml
  */
 final class Html

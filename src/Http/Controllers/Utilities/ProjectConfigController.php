@@ -15,9 +15,6 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Yaml\Yaml;
 use ZipArchive;
 
-/**
- * @since 6.0.0
- */
 final class ProjectConfigController
 {
     use RespondsWithFlash;

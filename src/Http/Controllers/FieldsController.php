@@ -39,9 +39,6 @@ use ReflectionException;
 use ReflectionProperty;
 use Symfony\Component\HttpFoundation\Response;
 
-/**
- * @since 6.0.0
- */
 final class FieldsController
 {
     use RespondsWithFlash;

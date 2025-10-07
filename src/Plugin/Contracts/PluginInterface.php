@@ -9,8 +9,6 @@ use InvalidArgumentException;
 
 /**
  * PluginInterface defines the common interface to be implemented by plugin classes.
- *
- * @since 6.0.0
  */
 interface PluginInterface
 {

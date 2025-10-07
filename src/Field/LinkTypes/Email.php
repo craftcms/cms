@@ -8,8 +8,6 @@ use yii\validators\EmailValidator;
 
 /**
  * Email link type.
- *
- * @since 6.0.0
  */
 final class Email extends BaseTextLinkType
 {

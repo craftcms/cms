@@ -7,8 +7,6 @@ use CraftCms\Cms\Field\Link;
 
 /**
  * Base link type.
- *
- * @since 6.0.0
  */
 abstract class BaseLinkType extends ConfigurableComponent
 {

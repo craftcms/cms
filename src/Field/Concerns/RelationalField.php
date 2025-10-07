@@ -6,8 +6,6 @@ use craft\base\ElementInterface;
 
 /**
  * RelationalFieldTrait provides a base implementation for {@see \CraftCms\Cms\Field\Contracts\RelationalFieldInterface}.
- *
- * @since 6.0.0
  */
 trait RelationalField
 {

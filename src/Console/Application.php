@@ -9,8 +9,6 @@ use Illuminate\Contracts\Events\Dispatcher;
 use Symfony\Component\Console\Command\Command as SymfonyCommand;
 
 /**
- * @since 6.0.0
- *
  * @internal
  */
 final class Application extends \Illuminate\Console\Application

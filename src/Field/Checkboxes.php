@@ -9,8 +9,6 @@ use Illuminate\Support\Collection;
 
 /**
  * Checkboxes represents a Checkboxes field.
- *
- * @since 6.0.0
  */
 final class Checkboxes extends BaseOptionsField
 {

@@ -20,8 +20,6 @@ use yii\db\Schema;
 
 /**
  * Lightswitch represents a Lightswitch field.
- *
- * @since 6.0.0
  */
 final class Lightswitch extends Field implements CrossSiteCopyableFieldInterface, InlineEditableFieldInterface, MergeableFieldInterface, SortableFieldInterface
 {

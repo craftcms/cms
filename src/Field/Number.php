@@ -22,8 +22,6 @@ use yii\db\Schema;
 
 /**
  * Number represents a Number field.
- *
- * @since 6.0.0
  */
 final class Number extends Field implements CrossSiteCopyableFieldInterface, InlineEditableFieldInterface, MergeableFieldInterface, SortableFieldInterface
 {

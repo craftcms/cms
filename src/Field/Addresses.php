@@ -45,8 +45,6 @@ use yii\db\Expression;
  * Addresses field type.
  *
  * @phpstan-import-type EagerLoadingMap from ElementInterface
- *
- * @since 6.0.0
  */
 final class Addresses extends Field implements EagerLoadingFieldInterface, ElementContainerFieldInterface, MergeableFieldInterface
 {

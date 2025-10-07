@@ -19,8 +19,6 @@ use Illuminate\Support\Collection;
  *     $event->types->add(MyWidgetType::class);
  * });
  * ```
- *
- * @since 6.0.0
  */
 final class RegisterWidgetTypes
 {

@@ -8,7 +8,6 @@ use craft\helpers\Cp;
  * MenuItemType defines all possible disclosure menu item types.
  *
  * @see Cp::disclosureMenu()
- * @since 6.0.0
  */
 enum MenuItemType: string
 {

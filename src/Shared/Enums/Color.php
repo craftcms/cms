@@ -4,9 +4,6 @@ namespace CraftCms\Cms\Shared\Enums;
 
 use InvalidArgumentException;
 
-/**
- * @since 6.0.0
- */
 enum Color: string
 {
     case Red = 'red';

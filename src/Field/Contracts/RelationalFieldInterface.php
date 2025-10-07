@@ -7,8 +7,6 @@ use craft\base\ElementInterface;
 /**
  * RelationalFieldInterface defines the common interface to be implemented by field classes
  * which can store relation data.
- *
- * @since 6.0.0
  */
 interface RelationalFieldInterface extends FieldInterface
 {
