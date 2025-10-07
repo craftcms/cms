@@ -105,7 +105,7 @@ final class Fields
      */
     public function getAllFieldTypes(): Collection
     {
-        $fieldTypes = new Collection([
+        $fieldTypes = collect([
             AddressesField::class,
             AssetsField::class,
             ButtonGroup::class,
@@ -233,7 +233,7 @@ final class Fields
      */
     public function getNestedEntryFieldTypes(): Collection
     {
-        $fieldTypes = new Collection([
+        $fieldTypes = collect([
             MatrixField::class,
         ]);
 
@@ -329,7 +329,7 @@ final class Fields
      */
     public function getAllFields(mixed $context = null): Collection
     {
-        return new Collection($this->_fields($context)->all());
+        return collect($this->_fields($context)->all());
     }
 
     /**
@@ -762,7 +762,7 @@ final class Fields
      */
     public function getAllLayouts(): Collection
     {
-        return new Collection($this->_layouts()->all());
+        return collect($this->_layouts()->all());
     }
 
     /**
@@ -805,7 +805,7 @@ final class Fields
      */
     public function getLayoutsByIds(array $layoutIds): Collection
     {
-        return new Collection($this->_layouts()->whereIn('id', $layoutIds)->all());
+        return collect($this->_layouts()->whereIn('id', $layoutIds)->all());
     }
 
     /**
@@ -834,7 +834,7 @@ final class Fields
      */
     public function getLayoutsByType(string $type): Collection
     {
-        return new Collection($this->_layouts()->where('type', $type)->all());
+        return collect($this->_layouts()->where('type', $type)->all());
     }
 
     /**
@@ -1207,12 +1207,11 @@ final class Fields
         $sortDir = $sortDir === SORT_ASC ? 'asc' : 'desc';
 
         if ($orderBy === 'type') {
-            /** @var Collection<class-string<FieldInterface>> $types */
-            $types = Collection::make($this->getAllFieldTypes())
-                ->sortBy(
-                    fn (string $class) => $class::displayName(),
-                    descending: $sortDir === 'desc',
-                );
+            $types = $this->getAllFieldTypes()->sortBy(
+                /** @var class-string<FieldInterface> $class */
+                fn (string $class) => $class::displayName(),
+                descending: $sortDir === 'desc',
+            );
 
             $query->orderBy(new FixedOrderExpression('type', $types->all()))
                 ->orderBy('name', $sortDir)
