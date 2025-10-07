@@ -42,22 +42,19 @@ class Matrix {
       .getByRole('option', {name: actionName})
       .locator(
         matrixContainerLocator +
-        '-craft-elements-actions-' + actionName + '-actiontrigger'
-      )
+          '-craft-elements-actions-' +
+          actionName +
+          '-actiontrigger'
+      );
   }
 
   getNewNestedEntryBtn(page) {
-    return page
-      .locator('#content')
-      .getByRole('button', {name: 'New entry'});
+    return page.locator('#content').getByRole('button', {name: 'New entry'});
   }
 
   getEditNestedEntryBtn(page, id) {
-    return page
-      .locator('#' + id)
-      .getByRole('button', {name: 'Edit entry'});
+    return page.locator('#' + id).getByRole('button', {name: 'Edit entry'});
   }
-
 }
 
 module.exports = {Matrix};

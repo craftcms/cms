@@ -15,13 +15,13 @@ const titleFieldLocator = '#title';
 const slideoutLocator = '.slideout-container:not(.hidden)';
 const textFieldLocator = '.so-content input[name$="[fields][plainTextField6]"]';
 
-
 test.describe('Max entries limit', () => {
   const titleText = 'Entry with max 2 cards matrix';
   const originalText = 'card';
   const matrixContainerLocator = '#fields-matrixElementIndexFieldMax2';
   const matrixFieldLocator = matrixContainerLocator + '-field';
-  const firstCardLocator = matrixFieldLocator + ' .card-grid > li:first-child .card';
+  const firstCardLocator =
+    matrixFieldLocator + ' .card-grid > li:first-child .card';
   const lastCardLocator = ' .card-grid li:last-child .card';
   const cardLocator = matrixFieldLocator + ' .card-grid .card';
 
@@ -56,7 +56,12 @@ test.describe('Max entries limit', () => {
       await newCardBtn.click();
 
       // fill out the field
-      await craftEntry.fillField(page, slideout, textFieldLocator, originalText + ' ' + (i + 1));
+      await craftEntry.fillField(
+        page,
+        slideout,
+        textFieldLocator,
+        originalText + ' ' + (i + 1)
+      );
 
       // save nested entry
       await page.getByRole('button', {name: 'Create entry'}).click();
@@ -76,14 +81,25 @@ test.describe('Max entries limit', () => {
     firstCard.click();
 
     // activate actions btn
-    await craftMatrix.openNestedElementIndexActionMenu(page, matrixContainerLocator);
+    await craftMatrix.openNestedElementIndexActionMenu(
+      page,
+      matrixContainerLocator
+    );
 
     // check that "Duplicate" action is not available when you reach the limit
     await expect(
-      craftMatrix.getElementIndexActionElement(page, matrixContainerLocator, 'Duplicate')
+      craftMatrix.getElementIndexActionElement(
+        page,
+        matrixContainerLocator,
+        'Duplicate'
+      )
     ).toHaveCount(1);
     await expect(
-      craftMatrix.getElementIndexActionElement(page, matrixContainerLocator, 'Duplicate')
+      craftMatrix.getElementIndexActionElement(
+        page,
+        matrixContainerLocator,
+        'Duplicate'
+      )
     ).toContainClass('disabled');
 
     await craftEntry.saveRootEntryAndContinueEditing(page);
@@ -93,14 +109,19 @@ test.describe('Max entries limit', () => {
     firstCard.click();
 
     // activate actions btn
-    await craftMatrix.openNestedElementIndexActionMenu(page, matrixContainerLocator);
+    await craftMatrix.openNestedElementIndexActionMenu(
+      page,
+      matrixContainerLocator
+    );
 
     // accept deleting
     page.on('dialog', async (dialog) => {
       await dialog.accept();
     });
 
-    await (craftMatrix.getElementIndexActionElement(page, matrixContainerLocator, 'Delete')).click()
+    await craftMatrix
+      .getElementIndexActionElement(page, matrixContainerLocator, 'Delete')
+      .click();
     await page.waitForLoadState('networkidle');
     await craftEntry.waitForAutosaveToComplete(page);
 
@@ -109,13 +130,24 @@ test.describe('Max entries limit', () => {
     firstCard.click();
 
     // activate actions btn
-    await craftMatrix.openNestedElementIndexActionMenu(page, matrixContainerLocator);
+    await craftMatrix.openNestedElementIndexActionMenu(
+      page,
+      matrixContainerLocator
+    );
 
     await expect(
-      craftMatrix.getElementIndexActionElement(page, matrixContainerLocator, 'Duplicate')
+      craftMatrix.getElementIndexActionElement(
+        page,
+        matrixContainerLocator,
+        'Duplicate'
+      )
     ).toHaveCount(1);
     await expect(
-      craftMatrix.getElementIndexActionElement(page, matrixContainerLocator, 'Duplicate')
+      craftMatrix.getElementIndexActionElement(
+        page,
+        matrixContainerLocator,
+        'Duplicate'
+      )
     ).not.toContainClass('disabled');
 
     await page.reload();
@@ -128,13 +160,24 @@ test.describe('Max entries limit', () => {
     await firstCard.click();
 
     // activate actions btn
-    await craftMatrix.openNestedElementIndexActionMenu(page, matrixContainerLocator);
+    await craftMatrix.openNestedElementIndexActionMenu(
+      page,
+      matrixContainerLocator
+    );
 
     await expect(
-      craftMatrix.getElementIndexActionElement(page, matrixContainerLocator, 'Duplicate')
+      craftMatrix.getElementIndexActionElement(
+        page,
+        matrixContainerLocator,
+        'Duplicate'
+      )
     ).toHaveCount(1);
     await expect(
-      craftMatrix.getElementIndexActionElement(page, matrixContainerLocator, 'Duplicate')
+      craftMatrix.getElementIndexActionElement(
+        page,
+        matrixContainerLocator,
+        'Duplicate'
+      )
     ).not.toContainClass('disabled');
   });
 });

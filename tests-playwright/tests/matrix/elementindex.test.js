@@ -21,7 +21,8 @@ test.describe('Create, edit, discard', () => {
   const editedText = originalText + ' edited';
   const matrixContainerLocator = '#fields-matrixElementIndexField';
   const matrixFieldLocator = matrixContainerLocator + '-field';
-  const firstCardLocator = matrixFieldLocator + ' .card-grid > li:first-child .card';
+  const firstCardLocator =
+    matrixFieldLocator + ' .card-grid > li:first-child .card';
 
   test('Create new root entry with element index matrix field', async ({
     page,
@@ -45,7 +46,7 @@ test.describe('Create, edit, discard', () => {
     await craftEntry.fillField(page, page, titleFieldLocator, titleText, 50);
 
     // add nested entry to the matrix
-    await (craftMatrix.getNewNestedEntryBtn(page)).click();
+    await craftMatrix.getNewNestedEntryBtn(page).click();
     await craftEntry.waitForAutosaveToComplete(page);
 
     // fill out the plain text field
@@ -67,13 +68,11 @@ test.describe('Create, edit, discard', () => {
     // check the card was added and the field has the modified indicator
     await expect(page.locator('#' + firstCardId)).toContainText(originalText);
     await expect(
-      page
-        .locator(matrixFieldLocator)
-        .getByTitle(craftEntry.fieldModifiedText)
+      page.locator(matrixFieldLocator).getByTitle(craftEntry.fieldModifiedText)
     ).toBeVisible();
 
     // check that the nested entry can be edited after being created
-    await (craftMatrix.getEditNestedEntryBtn(page, firstCardId)).click();
+    await craftMatrix.getEditNestedEntryBtn(page, firstCardId).click();
     await expect(slideout.locator(textFieldLocator)).toHaveValue(originalText);
     await page.getByRole('button', {name: 'Cancel'}).click();
 
@@ -97,7 +96,7 @@ test.describe('Create, edit, discard', () => {
     let firstCardId = await firstCard.getAttribute('id');
 
     // check that the entry nested in a matrix can be edited
-    await (craftMatrix.getEditNestedEntryBtn(page, firstCardId)).click();
+    await craftMatrix.getEditNestedEntryBtn(page, firstCardId).click();
 
     // update text field value
     await slideout.locator(textFieldLocator).waitFor();
@@ -116,21 +115,18 @@ test.describe('Create, edit, discard', () => {
     ).toContainText('Edited');
 
     // open the slideout again, and save
-    await (craftMatrix.getEditNestedEntryBtn(page, firstCardId)).click();
+    await craftMatrix.getEditNestedEntryBtn(page, firstCardId).click();
     await slideout.getByRole('button', {name: 'Save'}).click();
     await craftEntry.waitForAutosaveToComplete(page);
 
     // check that the field modified indicator doesn't show and there's only one status pill
     await expect(
-      page
-        .locator(matrixFieldLocator)
-        .getByTitle(craftEntry.fieldModifiedText)
+      page.locator(matrixFieldLocator).getByTitle(craftEntry.fieldModifiedText)
     ).not.toBeVisible();
     await expect(firstCard.locator('.status-label')).toHaveCount(1);
 
     // save root entry
     await craftEntry.saveRootEntryAndContinueEditing(page);
-
 
     firstCardId = await firstCard.getAttribute('id');
 
@@ -173,9 +169,7 @@ test.describe('Create, edit, discard', () => {
     // check the card was added and that the blue indicators are there and the field modified indicator has correct text
     await expect(lastCard).toContainText('card 2');
     await expect(
-      page
-        .locator(matrixFieldLocator)
-        .getByTitle(craftEntry.fieldModifiedText)
+      page.locator(matrixFieldLocator).getByTitle(craftEntry.fieldModifiedText)
     ).toBeVisible();
     await expect(lastCard.getByTitle(craftEntry.newEntryText)).toBeVisible();
 
@@ -184,9 +178,7 @@ test.describe('Create, edit, discard', () => {
 
     // check that there's no blue indicators
     await expect(
-      page
-        .locator(matrixFieldLocator)
-        .getByTitle(craftEntry.fieldModifiedText)
+      page.locator(matrixFieldLocator).getByTitle(craftEntry.fieldModifiedText)
     ).not.toBeVisible();
 
     // and there's only one card in the matrix field
@@ -201,7 +193,8 @@ test.describe('Static field', () => {
   const originalText = 'card 1';
   const matrixContainerLocator = '#fields-staticMatrixElementIndexField';
   const matrixFieldLocator = matrixContainerLocator + '-field';
-  const firstCardLocator = matrixFieldLocator + ' .card-grid li:first-child .card';
+  const firstCardLocator =
+    matrixFieldLocator + ' .card-grid li:first-child .card';
 
   // check that when creating an entry with a static matrix field, adding max number of cards blocks adding more
   test('Check that when max entries limit is reached, you can’t add any more cards', async ({
@@ -211,9 +204,7 @@ test.describe('Static field', () => {
     craftMatrix,
   }) => {
     const slideout = page.locator(slideoutLocator);
-    const matrixField = page.locator(
-      matrixFieldLocator
-    );
+    const matrixField = page.locator(matrixFieldLocator);
     const newCardBtn = craftMatrix.getNewNestedEntryBtn(page);
 
     // create new entry that contains matrix field in element index view mode
@@ -263,7 +254,6 @@ test.describe('Static field', () => {
     await expect(matrixField.locator('.card-grid .card')).toHaveCount(1);
   });
 
-
   test('Check that the "Copy" action is available in static matrix', async ({
     page,
     baseURL,
@@ -282,15 +272,26 @@ test.describe('Static field', () => {
     firstCard.click();
 
     // activate actions btn
-    await craftMatrix.openNestedElementIndexActionMenu(page, matrixContainerLocator);
+    await craftMatrix.openNestedElementIndexActionMenu(
+      page,
+      matrixContainerLocator
+    );
 
     // check that we have one 'Copy' action in the card's actions menu
     await expect(
-      craftMatrix.getElementIndexActionElement(page, matrixContainerLocator, 'Copy')
+      craftMatrix.getElementIndexActionElement(
+        page,
+        matrixContainerLocator,
+        'Copy'
+      )
     ).toHaveCount(1);
     // check that the 'Copy' action is visible
     await expect(
-      craftMatrix.getElementIndexActionElement(page, matrixContainerLocator, 'Copy')
+      craftMatrix.getElementIndexActionElement(
+        page,
+        matrixContainerLocator,
+        'Copy'
+      )
     ).toBeVisible();
   });
 });
@@ -300,7 +301,8 @@ test.describe('Max entries limit', () => {
   const originalText = 'card';
   const matrixContainerLocator = '#fields-matrixElementIndexFieldMax2';
   const matrixFieldLocator = matrixContainerLocator + '-field';
-  const firstCardLocator = matrixFieldLocator + ' .card-grid > li:first-child .card';
+  const firstCardLocator =
+    matrixFieldLocator + ' .card-grid > li:first-child .card';
   const lastCardLocator = ' .card-grid li:last-child .card';
   const cardLocator = matrixFieldLocator + ' .card-grid .card';
 
@@ -335,7 +337,12 @@ test.describe('Max entries limit', () => {
       await newCardBtn.click();
 
       // fill out the plain text field
-      await craftEntry.fillField(page, slideout, textFieldLocator, originalText + ' ' + (i + 1));
+      await craftEntry.fillField(
+        page,
+        slideout,
+        textFieldLocator,
+        originalText + ' ' + (i + 1)
+      );
 
       // save nested entry
       await page.getByRole('button', {name: 'Create entry'}).click();
@@ -355,14 +362,25 @@ test.describe('Max entries limit', () => {
     firstCard.click();
 
     // activate actions btn
-    await craftMatrix.openNestedElementIndexActionMenu(page, matrixContainerLocator);
+    await craftMatrix.openNestedElementIndexActionMenu(
+      page,
+      matrixContainerLocator
+    );
 
     // check that "Duplicate" action is there but has a "disabled" class when you reach the limit
     await expect(
-      craftMatrix.getElementIndexActionElement(page, matrixContainerLocator, 'Duplicate')
+      craftMatrix.getElementIndexActionElement(
+        page,
+        matrixContainerLocator,
+        'Duplicate'
+      )
     ).toHaveCount(1);
     await expect(
-      craftMatrix.getElementIndexActionElement(page, matrixContainerLocator, 'Duplicate')
+      craftMatrix.getElementIndexActionElement(
+        page,
+        matrixContainerLocator,
+        'Duplicate'
+      )
     ).toContainClass('disabled');
 
     // save root entry
@@ -373,13 +391,18 @@ test.describe('Max entries limit', () => {
     firstCard.click();
 
     // activate actions btn
-    await craftMatrix.openNestedElementIndexActionMenu(page, matrixContainerLocator);
+    await craftMatrix.openNestedElementIndexActionMenu(
+      page,
+      matrixContainerLocator
+    );
 
     // delete the first card
     page.on('dialog', async (dialog) => {
       await dialog.accept();
     });
-    await (craftMatrix.getElementIndexActionElement(page, matrixContainerLocator, 'Delete')).click()
+    await craftMatrix
+      .getElementIndexActionElement(page, matrixContainerLocator, 'Delete')
+      .click();
     // wait for the action to complete
     await page.waitForLoadState('networkidle');
     await craftEntry.waitForAutosaveToComplete(page);
@@ -389,15 +412,26 @@ test.describe('Max entries limit', () => {
     firstCard.click();
 
     // activate actions btn
-    await craftMatrix.openNestedElementIndexActionMenu(page, matrixContainerLocator);
+    await craftMatrix.openNestedElementIndexActionMenu(
+      page,
+      matrixContainerLocator
+    );
 
     // check that "Duplicate" action is there
     await expect(
-      craftMatrix.getElementIndexActionElement(page, matrixContainerLocator, 'Duplicate')
+      craftMatrix.getElementIndexActionElement(
+        page,
+        matrixContainerLocator,
+        'Duplicate'
+      )
     ).toHaveCount(1);
     // and that it doesn't have a "disabled" class
     await expect(
-      craftMatrix.getElementIndexActionElement(page, matrixContainerLocator, 'Duplicate')
+      craftMatrix.getElementIndexActionElement(
+        page,
+        matrixContainerLocator,
+        'Duplicate'
+      )
     ).not.toContainClass('disabled');
 
     // reload the page
@@ -410,15 +444,26 @@ test.describe('Max entries limit', () => {
     await firstCard.click();
 
     // activate actions btn
-    await craftMatrix.openNestedElementIndexActionMenu(page, matrixContainerLocator);
+    await craftMatrix.openNestedElementIndexActionMenu(
+      page,
+      matrixContainerLocator
+    );
 
     // check that "Duplicate" action is available
     await expect(
-      craftMatrix.getElementIndexActionElement(page, matrixContainerLocator, 'Duplicate')
+      craftMatrix.getElementIndexActionElement(
+        page,
+        matrixContainerLocator,
+        'Duplicate'
+      )
     ).toHaveCount(1);
     // and it doesn't have a "disabled" class
     await expect(
-      craftMatrix.getElementIndexActionElement(page, matrixContainerLocator, 'Duplicate')
+      craftMatrix.getElementIndexActionElement(
+        page,
+        matrixContainerLocator,
+        'Duplicate'
+      )
     ).not.toContainClass('disabled');
   });
 });

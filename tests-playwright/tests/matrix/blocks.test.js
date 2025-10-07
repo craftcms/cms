@@ -65,7 +65,6 @@ test.describe('Create, edit, discard', () => {
     await craftEntry.saveRootEntry(page);
   });
 
-
   test('Edit nested entry, save and check if the value saved', async ({
     page,
     baseURL,
@@ -107,7 +106,8 @@ test.describe('Create, edit, discard', () => {
     craftEntry,
   }) => {
     const matrixField = page.locator(matrixFieldLocator);
-    const lastBlockLocator = matrixFieldLocator + ' .blocks > .matrixblock:last-child';
+    const lastBlockLocator =
+      matrixFieldLocator + ' .blocks > .matrixblock:last-child';
 
     // edit entry from previous test
     await craftEntry.editEntryInElementIndexTableByTitle(page, titleText);
@@ -141,14 +141,10 @@ test.describe('Create, edit, discard', () => {
     await craftEntry.discardElementChanges(page);
 
     // check that there's no blue indicators
-    await expect(
-      matrixField.locator(' > .status-badge')
-    ).not.toBeVisible();
+    await expect(matrixField.locator(' > .status-badge')).not.toBeVisible();
 
     // and there's only one card in the matrix field
-    await expect(matrixField.locator('.blocks .matrixblock')).toHaveCount(
-      1
-    );
+    await expect(matrixField.locator('.blocks .matrixblock')).toHaveCount(1);
   });
 });
 
@@ -171,7 +167,10 @@ test.describe('Static field', () => {
     await craftEntry.createEntryBySectionName(page, 'Test Matrix');
 
     // switch to the "With Static Matrix in Blocks mode" entry type
-    await craftEntry.switchEntryTypeByName(page, 'With Static Matrix in Blocks mode');
+    await craftEntry.switchEntryTypeByName(
+      page,
+      'With Static Matrix in Blocks mode'
+    );
     await page.locator(matrixFieldLocator).waitFor({state: 'visible'});
 
     // wait for the first block to get attached
@@ -188,7 +187,12 @@ test.describe('Static field', () => {
     await craftEntry.fillField(page, page, titleFieldLocator, titleText, 50);
 
     // fill out the nested entry's plain text field
-    await craftEntry.fillField(page, firstBlock, textFieldLocator, originalText);
+    await craftEntry.fillField(
+      page,
+      firstBlock,
+      textFieldLocator,
+      originalText
+    );
 
     // save the root entry & continue editing
     await craftEntry.saveRootEntryAndContinueEditing(page);
@@ -197,9 +201,7 @@ test.describe('Static field', () => {
     await expect(matrixField.locator(newBlockLocator)).toHaveCount(0);
 
     // check that there's still exactly one block in this static matrix field
-    await expect(matrixField.locator('.blocks .matrixblock')).toHaveCount(
-      1
-    );
+    await expect(matrixField.locator('.blocks .matrixblock')).toHaveCount(1);
   });
 
   test('Check that the "Copy" action is available in static blocks', async ({
@@ -247,7 +249,10 @@ test.describe('Max entries limit', () => {
     await craftEntry.createEntryBySectionName(page, 'Test Matrix');
 
     // switch to the "With Max 2 Matrix in Blocks mode" entry type
-    await craftEntry.switchEntryTypeByName(page, 'With Max 2 Matrix in Blocks mode');
+    await craftEntry.switchEntryTypeByName(
+      page,
+      'With Max 2 Matrix in Blocks mode'
+    );
     await page.locator(matrixFieldLocator).waitFor({state: 'visible'});
 
     // fill the title
@@ -290,7 +295,9 @@ test.describe('Max entries limit', () => {
     // delete the first block
     actionsMenuId = await craftMatrix.getBlockActionMenuId(firstBlock);
     await craftMatrix.openBlockActionMenu(firstBlock);
-    await (craftMatrix.getElementActionElement(page, actionsMenuId, 'Delete')).click();
+    await craftMatrix
+      .getElementActionElement(page, actionsMenuId, 'Delete')
+      .click();
     // wait for the action to complete
     await page.waitForLoadState('networkidle');
     await craftEntry.waitForAutosaveToComplete(page);

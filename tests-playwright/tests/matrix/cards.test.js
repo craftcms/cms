@@ -24,7 +24,6 @@ test.describe('Create, edit, discard', () => {
   const matrixFieldLocator = '#fields-matrixCardsField-field';
   const firstCardLocator = matrixFieldLocator + firstChildLocator;
 
-
   test('Create new root entry with card matrix field', async ({
     page,
     baseURL,
@@ -40,7 +39,7 @@ test.describe('Create, edit, discard', () => {
     await craftEntry.fillField(page, page, titleFieldLocator, titleText, 50);
 
     // add nested entry to the matrix field
-    await (craftMatrix.getNewNestedEntryBtn(page)).click();
+    await craftMatrix.getNewNestedEntryBtn(page).click();
 
     // fill out the plain text field
     await craftEntry.fillField(page, slideout, textFieldLocator, originalText);
@@ -59,20 +58,17 @@ test.describe('Create, edit, discard', () => {
     // check the card was added, has the right text, and the matrix field has the modified indicator
     await expect(page.locator('#' + firstCardId)).toContainText(originalText);
     await expect(
-      page
-        .locator(matrixFieldLocator)
-        .getByTitle(craftEntry.fieldModifiedText)
+      page.locator(matrixFieldLocator).getByTitle(craftEntry.fieldModifiedText)
     ).toBeVisible();
 
     // check that the nested entry can be edited after being created and has the right text
-    await (craftMatrix.getEditNestedEntryBtn(page, firstCardId)).click();
+    await craftMatrix.getEditNestedEntryBtn(page, firstCardId).click();
     await expect(slideout.locator(textFieldLocator)).toHaveValue(originalText);
     await page.getByRole('button', {name: 'Cancel'}).click();
 
     // and save the root entry
     await craftEntry.saveRootEntry(page);
   });
-
 
   test('Edit nested entry, save and check if the value saved', async ({
     page,
@@ -91,7 +87,7 @@ test.describe('Create, edit, discard', () => {
     let firstCardId = await firstCard.getAttribute('id');
 
     // check that the entry nested in a matrix can be edited
-    await (craftMatrix.getEditNestedEntryBtn(page, firstCardId)).click();
+    await craftMatrix.getEditNestedEntryBtn(page, firstCardId).click();
 
     // update the text field value in the nested entry
     await slideout.locator(textFieldLocator).waitFor();
@@ -104,9 +100,7 @@ test.describe('Create, edit, discard', () => {
 
     // check that both modified indicators show
     await expect(
-      page
-        .locator(matrixFieldLocator)
-        .getByTitle(craftEntry.fieldModifiedText)
+      page.locator(matrixFieldLocator).getByTitle(craftEntry.fieldModifiedText)
     ).toBeVisible();
     await expect(
       firstCard.getByTitle(craftEntry.editedEntryText)
@@ -157,9 +151,7 @@ test.describe('Create, edit, discard', () => {
     await expect(
       matrixField.getByTitle(craftEntry.fieldModifiedText)
     ).toBeVisible();
-    await expect(
-      matrixField.getByTitle(craftEntry.newEntryText)
-    ).toBeVisible();
+    await expect(matrixField.getByTitle(craftEntry.newEntryText)).toBeVisible();
 
     // discard root entry changes
     await craftEntry.discardElementChanges(page);
@@ -337,7 +329,9 @@ test.describe('Max entries limit', () => {
     page.on('dialog', async (dialog) => {
       await dialog.accept();
     });
-    await (craftMatrix.getElementActionElement(page, actionsMenuId, 'Delete entry')).click();
+    await craftMatrix
+      .getElementActionElement(page, actionsMenuId, 'Delete entry')
+      .click();
     // wait for the action to complete
     await page.waitForLoadState('networkidle');
     await craftEntry.waitForAutosaveToComplete(page);
