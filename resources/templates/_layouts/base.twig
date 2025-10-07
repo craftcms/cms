@@ -60,5 +60,7 @@
     {% include '_layouts/components/notifications' %}
     {% block foot %}{% endblock %}
     {{ endBody() }}
+
+    {{ vite(['cms/resources/js/cp.js', 'cms/resources/css/cp.css']) }}
 </body>
 </html>

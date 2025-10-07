@@ -85,6 +85,10 @@ final class AppServiceProvider extends ServiceProvider
         $this->bootMiddleware();
 
         $this->loadRoutesFrom("{$this->root}/routes/routes.php");
+
+        $this->publishes([
+            __DIR__.'/../../resources/build/' => public_path('vendor/craft'),
+        ], ['craftcms', 'craftcms-assets']);
     }
 
     private function registerMacros(): void
@@ -188,6 +192,7 @@ final class AppServiceProvider extends ServiceProvider
         Aliases::set('@root', Env::get('CRAFT_ROOT_PATH', $this->app->basePath()));
         Aliases::set('@craftcms', FileHelper::normalizePath($this->root));
         Aliases::set('@package', '@craftcms/src');
+        Aliases::set('@resources', '@craftcms/resources');
 
         if ($webUrl = Env::get('CRAFT_WEB_URL')) {
             Aliases::set('@web', $webUrl);

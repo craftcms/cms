@@ -6,7 +6,9 @@
     "legacy:build": "cd yii2-adapter && npm run build",
     "legacy:dev": "cd yii2-adapter && npm run dev",
     "legacy:serve": "cd yii2-adapter && npm run serve",
-    "prepare": "husky"
+    "prepare": "husky",
+    "build": "vite build",
+    "dev": "vite"
   },
   "workspaces": [
     "packages/*"
@@ -17,8 +19,10 @@
   "devDependencies": {
     "@playwright/test": "^1.56.0",
     "husky": "^9.1.7",
+    "laravel-vite-plugin": "^2.0.1",
     "lint-staged": "^16.2.3",
-    "prettier": "3.6.2"
+    "prettier": "3.6.2",
+    "vite": "^7.1.9"
   },
   "optionalDependencies": {
     "@awesome.me/kit-ddaed3f5c5": "^1.0.41"

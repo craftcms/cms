@@ -31,6 +31,8 @@ class TestCase extends Orchestra
     {
         parent::setUp();
 
+        $this->withoutVite();
+
         Edition::set(Edition::Solo);
 
         Cache::lock(ProjectConfig::MUTEX_NAME)->forceRelease();
