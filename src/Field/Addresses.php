@@ -50,9 +50,9 @@ use yii\db\Expression;
  */
 final class Addresses extends Field implements EagerLoadingFieldInterface, ElementContainerFieldInterface, MergeableFieldInterface
 {
-    public const VIEW_MODE_CARDS = 'cards';
+    public const string VIEW_MODE_CARDS = 'cards';
 
-    public const VIEW_MODE_INDEX = 'index';
+    public const string VIEW_MODE_INDEX = 'index';
 
     /**
      * @var int|null The total entries to display per page within element indexes
@@ -191,18 +191,16 @@ final class Addresses extends Field implements EagerLoadingFieldInterface, Eleme
 
     private function addressManager(): NestedElementManager
     {
-        if (! isset($this->_addressManager)) {
-            $this->_addressManager = new NestedElementManager(
-                Address::class,
-                fn (ElementInterface $owner) => $this->createAddressQuery($owner),
-                [
-                    'field' => $this,
-                    'criteria' => [
-                        'fieldId' => $this->id,
-                    ],
+        $this->_addressManager ??= new NestedElementManager(
+            Address::class,
+            fn (ElementInterface $owner) => $this->createAddressQuery($owner),
+            [
+                'field' => $this,
+                'criteria' => [
+                    'fieldId' => $this->id,
                 ],
-            );
-        }
+            ],
+        );
 
         return $this->_addressManager;
     }
