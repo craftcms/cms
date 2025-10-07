@@ -1276,6 +1276,7 @@ JS, [
         return Collection::make($this->availableSources())
             ->map(fn ($s) => [
                 'label' => $s['label'],
+                'value' => $s['key'],
                 'data' => [
                     'structure-id' => $s['structureId'] ?? null,
                 ],
