@@ -5,9 +5,9 @@ namespace CraftCms\Cms\Database\Migrations;
 use CraftCms\Cms\Database\Migration;
 use CraftCms\Cms\Field\Contracts\FieldInterface;
 use CraftCms\Cms\Field\Contracts\MergeableFieldInterface;
-use CraftCms\Cms\Field\Fields;
 use CraftCms\Cms\Field\MissingField;
 use CraftCms\Cms\Field\Models\Field;
+use CraftCms\Cms\Support\Facades\Fields;
 use RuntimeException;
 
 /**
@@ -71,8 +71,7 @@ class BaseFieldMergeMigration extends Migration
 
     private function field(string $uid): FieldInterface|false
     {
-        $fieldsService = app(Fields::class);
-        $field = $fieldsService->getFieldByUid($uid);
+        $field = Fields::getFieldByUid($uid);
 
         if (! $field) {
             // maybe it's soft-deleted
@@ -80,7 +79,7 @@ class BaseFieldMergeMigration extends Migration
                 ->where('uid', $uid)
                 ->firstOrFail();
 
-            $field = $fieldsService->createField($record->toArray());
+            $field = Fields::createField($record->toArray());
         }
 
         if ($field instanceof MissingField) {
