@@ -88,9 +88,9 @@ final class FieldsMergeCommand extends Command
             have an `id` or `uid`:
             EOD);
 
-            $this->components->bulletList($unsavableLayouts->map(function ($layout) {
-                return sprintf(' - %s', $this->layoutDescriptor($layout));
-            })->all());
+            $this->components->bulletList($unsavableLayouts->map(
+                fn ($layout) => sprintf(' - %s', $this->layoutDescriptor($layout))
+            )->all());
 
             return self::FAILURE;
         }
