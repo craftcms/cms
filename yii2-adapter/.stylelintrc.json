@@ -1,0 +1,49 @@
+{
+  "extends": ["stylelint-config-standard-scss"],
+  "plugins": ["stylelint-use-logical-spec", "stylelint-prettier"],
+  "rules": {
+    "at-rule-empty-line-before": null,
+    "custom-property-pattern": null,
+    "declaration-empty-line-before": null,
+    "no-descending-specificity": null,
+    "no-duplicate-selectors": null,
+    "no-invalid-position-at-import-rule": [
+      true,
+      {
+        "ignoreAtRules": ["tailwind", "use"]
+      }
+    ],
+    "selector-class-pattern": null,
+    "liberty/use-logical-spec": [
+      "always",
+      {
+        "except": [
+          "height",
+          "width",
+          "max-height",
+          "min-height",
+          "min-width",
+          "max-width"
+        ]
+      }
+    ],
+    "scss/at-rule-no-unknown": [
+      true,
+      {
+        "ignoreAtRules": [
+          "charset",
+          "tailwind",
+          "apply",
+          "variants",
+          "responsive",
+          "screen"
+        ]
+      }
+    ],
+    "scss/operator-no-newline-after": null,
+    "scss/operator-no-unspaced": null,
+    "scss/dollar-variable-pattern": null,
+    "scss/no-global-function-names": null,
+    "prettier/prettier": true
+  }
+}
