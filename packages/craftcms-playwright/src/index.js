@@ -4,6 +4,7 @@ const baseConfig = require('./playwright/config/config');
 const events = require('./playwright/events');
 const {Setup} = require('./playwright/fixtures/setup');
 const {Entry} = require('./playwright/fixtures/entry');
+const {Matrix} = require('./playwright/fixtures/matrix');
 const {Dashboard} = require('./playwright/fixtures/dashboard');
 const {PluginStore} = require('./playwright/fixtures/plugin-store');
 const logger = require('./playwright/logger');
@@ -24,6 +25,15 @@ const test = base.extend({
     async ({}, use) => {
       const entry = new Entry();
       await use(entry);
+    },
+    {scope: 'worker'},
+  ],
+
+  // Craft Matrix fixture
+  craftMatrix: [
+    async ({}, use) => {
+      const matrix = new Matrix();
+      await use(matrix);
     },
     {scope: 'worker'},
   ],

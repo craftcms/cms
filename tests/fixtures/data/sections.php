@@ -109,7 +109,7 @@ return [
         'enableVersioning' => false,
         'propagationMethod' => 'all',
         'uid' => 'section-1013---------------------uid',
-        'entryTypes' => ['1013', '1014', '1015'],
+        'entryTypes' => ['1013', '1014', '1015', '1018', '1019', '1020', '1021', '1022', '1023'],
     ],
     [
         'id' => '1014',

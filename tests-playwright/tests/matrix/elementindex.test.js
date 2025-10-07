@@ -11,19 +11,17 @@ test.beforeEach(async ({page}) => {
   await page.goto('./entries/testMatrix');
 });
 
-test.describe('Element index', () => {
+const titleFieldLocator = '#title';
+const slideoutLocator = '.slideout-container:not(.hidden)';
+const textFieldLocator = '.so-content input[name$="[fields][plainTextField6]"]';
+
+test.describe('Create, edit, discard', () => {
   const titleText = 'Entry with element index matrix';
   const originalText = 'card 1';
   const editedText = originalText + ' edited';
-  const titleFieldLocator = '#title';
-  const matrixElementIndexContainerLocator = '#fields-matrixElementIndexField';
-  const matrixElementIndexFieldLocator =
-    matrixElementIndexContainerLocator + '-field';
-  const firstCardLocator =
-    matrixElementIndexFieldLocator + ' .card-grid > li:first-child .card';
-  const slideoutLocator = '.slideout-container:not(.hidden)';
-  const textFieldLocator =
-    '.so-content input[name$="[fields][plainTextField6]"]';
+  const matrixContainerLocator = '#fields-matrixElementIndexField';
+  const matrixFieldLocator = matrixContainerLocator + '-field';
+  const firstCardLocator = matrixFieldLocator + ' .card-grid > li:first-child .card';
 
   // create new entry that contains matrix field in element index view mode
   // add nested entry to the matrix & save, check the card was added and has the modified indicator
@@ -33,42 +31,29 @@ test.describe('Element index', () => {
     page,
     baseURL,
     craftEntry,
+    craftMatrix,
   }) => {
     const slideout = page.locator(slideoutLocator);
 
     // create new entry that contains matrix field in cards view mode
-    await page.getByLabel('New entry in the Test Matrix').click();
-    await page.waitForLoadState();
+    await craftEntry.createEntryBySectionName(page, 'Test Matrix');
 
     // switch to the "With Matrix in Element Index mode" entry type
-    await page.locator('#entryType-button').click();
-    await page
-      .getByRole('button', {name: 'With Matrix in Element Index'})
-      .click();
-
-    // wait for the autosave to complete
-    await craftEntry.waitForAutosaveToComplete(page);
-    await page
-      .locator(matrixElementIndexContainerLocator)
-      .waitFor({state: 'visible'});
+    await craftEntry.switchEntryTypeByName(
+      page,
+      'With Matrix in Element Index'
+    );
+    await page.locator(matrixContainerLocator).waitFor({state: 'visible'});
 
     // set the title
-    await page
-      .locator(titleFieldLocator)
-      .pressSequentially(titleText, {delay: 50});
-    await craftEntry.waitForAutosaveToComplete(page);
+    await craftEntry.fillField(page, page, titleFieldLocator, titleText, 50);
 
     // add nested entry to the matrix
-    await page
-      .locator('#content')
-      .getByRole('button', {name: 'New entry'})
-      .click();
+    await (craftMatrix.getNewNestedEntryBtn(page)).click();
     await craftEntry.waitForAutosaveToComplete(page);
 
     // fill out the field
-    await slideout
-      .locator(textFieldLocator)
-      .pressSequentially(originalText, {delay: 100});
+    await craftEntry.fillField(page, slideout, textFieldLocator, originalText);
     //await craftEntry.waitForAutosaveToComplete(page);
 
     // check if the draft card was attached to the dom
@@ -88,11 +73,12 @@ test.describe('Element index', () => {
     await expect(page.locator('#' + firstCardId)).toContainText(originalText);
     await expect(
       page
-        .locator(matrixElementIndexFieldLocator)
+        .locator(matrixFieldLocator)
         .getByTitle(craftEntry.fieldModifiedText)
     ).toBeVisible();
 
     // check that the nested entry can be edited after being created
+    //await craftMatrix.openNestedEntryInSlideout(page, firstCardId); // this doesn't play nice here
     await page
       .locator('#' + firstCardId)
       .getByRole('button', {name: 'Edit entry'})
@@ -101,7 +87,7 @@ test.describe('Element index', () => {
     await page.getByRole('button', {name: 'Cancel'}).click();
 
     // and save the root entry
-    await page.getByRole('button', {name: 'Create entry'}).click();
+    await craftEntry.saveRootEntry(page);
   });
 
   // edit entry from previous test
@@ -113,17 +99,19 @@ test.describe('Element index', () => {
     page,
     baseURL,
     craftEntry,
+    craftMatrix,
   }) => {
     const slideout = page.locator(slideoutLocator);
 
     // edit entry from previous test
-    await craftEntry.editFirstEntryInElementIndexTable(page);
+    await craftEntry.editEntryInElementIndexTableByTitle(page, titleText);
 
     let firstCard = page.locator(firstCardLocator);
     await firstCard.waitFor();
     let firstCardId = await firstCard.getAttribute('id');
 
     // check that the entry nested in a matrix can be edited
+    // await craftMatrix.openNestedEntryInSlideout(page, firstCardId); // this doesn't play nice here
     await page
       .locator('#' + firstCardId)
       .getByRole('button', {name: 'Edit entry'})
@@ -132,9 +120,8 @@ test.describe('Element index', () => {
     // update text field value & save
     await slideout.locator(textFieldLocator).waitFor();
     await slideout.locator(textFieldLocator).clear();
-    await slideout
-      .locator(textFieldLocator)
-      .pressSequentially(editedText, {delay: 100});
+
+    await craftEntry.fillField(page, slideout, textFieldLocator, editedText);
 
     // if we close the slideout, check that the card has the Edited status pill
     await slideout.locator('.so-footer .discard-changes-btn').waitFor();
@@ -146,6 +133,7 @@ test.describe('Element index', () => {
     ).toContainText('Edited');
 
     // open the slideout again, and save
+    // await craftMatrix.openNestedEntryInSlideout(page, firstCardId); // this doesn't play nice here
     await page
       .locator('#' + firstCardId)
       .getByRole('button', {name: 'Edit entry'})
@@ -157,15 +145,16 @@ test.describe('Element index', () => {
     // check that the field modified indicator doesn't show and there's only one status pill
     await expect(
       page
-        .locator(matrixElementIndexFieldLocator)
+        .locator(matrixFieldLocator)
         .getByTitle(craftEntry.fieldModifiedText)
     ).not.toBeVisible();
     await expect(firstCard.locator('.status-label')).toHaveCount(1);
 
     // save root entry
-    await page.keyboard.press('ControlOrMeta+s');
+    await craftEntry.saveRootEntryAndContinueEditing(page);
     await craftEntry.waitForAutosaveToComplete(page);
-    //await firstCard.waitFor();
+
+
     firstCardId = await firstCard.getAttribute('id');
 
     // and check if the change is there
@@ -185,7 +174,7 @@ test.describe('Element index', () => {
     const slideout = page.locator(slideoutLocator);
 
     // edit entry from previous test
-    await craftEntry.editFirstEntryInElementIndexTable(page);
+    await craftEntry.editEntryInElementIndexTableByTitle(page, titleText);
 
     // we need to turn the root entry into a draft or the second nested entry won't save against a draft via playwright in headless mode
     await page.locator('#slug').pressSequentially('test', {delay: 100});
@@ -194,13 +183,11 @@ test.describe('Element index', () => {
     // add a second nested entry to the matrix,
     await page.getByRole('button', {name: 'New entry'}).click();
     await slideout.locator(textFieldLocator).waitFor();
-    await slideout
-      .locator(textFieldLocator)
-      .pressSequentially('card 2', {delay: 100});
+    await craftEntry.fillField(page, slideout, textFieldLocator, 'card 2');
 
     // wait for the draft card to be attached
     const lastCard = page.locator(
-      matrixElementIndexContainerLocator + ' .card-grid > li:last-child .card'
+      matrixContainerLocator + ' .card-grid > li:last-child .card'
     );
     await lastCard.waitFor({state: 'attached'});
 
@@ -215,7 +202,7 @@ test.describe('Element index', () => {
     await expect(lastCard).toContainText('card 2');
     await expect(
       page
-        .locator(matrixElementIndexFieldLocator)
+        .locator(matrixFieldLocator)
         .getByTitle(craftEntry.fieldModifiedText)
     ).toBeVisible();
     await expect(lastCard.getByTitle(craftEntry.newEntryText)).toBeVisible();
@@ -230,13 +217,233 @@ test.describe('Element index', () => {
     // check that there's no blue indicators
     await expect(
       page
-        .locator(matrixElementIndexFieldLocator)
+        .locator(matrixFieldLocator)
         .getByTitle(craftEntry.fieldModifiedText)
     ).not.toBeVisible();
 
     // and there's only one card in the matrix field
     await expect(
-      page.locator(matrixElementIndexContainerLocator + ' .card-grid .card')
+      page.locator(matrixContainerLocator + ' .card-grid .card')
     ).toHaveCount(1);
+  });
+});
+
+test.describe('Static field', () => {
+  const titleText = 'Entry with static element index matrix';
+  const originalText = 'card 1';
+  const matrixContainerLocator = '#fields-staticMatrixElementIndexField';
+  const matrixFieldLocator = matrixContainerLocator + '-field';
+  const firstCardLocator = matrixFieldLocator + ' .card-grid li:first-child .card';
+
+  // check that when creating an entry with a static matrix field, adding max number of cards blocks adding more
+  test('Check that when max entries limit is reached, you can’t add any more cards', async ({
+    page,
+    baseURL,
+    craftEntry,
+    craftMatrix,
+  }) => {
+    const slideout = page.locator(slideoutLocator);
+    const matrixField = page.locator(
+      matrixFieldLocator
+    );
+    const newCardBtn = craftMatrix.getNewNestedEntryBtn(page);
+
+    // create new entry that contains matrix field in element index view mode
+    await craftEntry.createEntryBySectionName(page, 'Test Matrix');
+
+    // switch to the "With Static Matrix in Element index mode" entry type
+    await craftEntry.switchEntryTypeByName(
+      page,
+      'With Static Matrix in Element Index mode'
+    );
+    await page.locator(matrixFieldLocator).waitFor({state: 'visible'});
+
+    // fill out the title
+    await craftEntry.fillField(page, page, titleFieldLocator, titleText, 100);
+
+    // add one nested entry to the matrix,
+    await newCardBtn.click();
+
+    // fill out the field
+    await craftEntry.fillField(page, slideout, textFieldLocator, originalText);
+
+    // wait for the draft card was attached to the dom
+    const firstCard = page.locator(firstCardLocator);
+    await firstCard.waitFor({state: 'attached'});
+    const firstCardId = await firstCard.getAttribute('id');
+
+    // save nested entry
+    await page.getByRole('button', {name: 'Create entry'}).click();
+
+    // wait for the status of the card to get updated
+    await firstCard.locator('.status-label-text:text-is("Live")').waitFor();
+
+    // check that the new entry button for this static matrix field is disabled
+    await expect(newCardBtn).toHaveCount(1);
+    await expect(newCardBtn).toContainClass('disabled');
+
+    // check that there's exactly one block in this static matrix field
+    await expect(matrixField.locator('.card-grid .card')).toHaveCount(1);
+
+    // save the root entry & continue editing
+    await craftEntry.saveRootEntryAndContinueEditing(page);
+
+    // check that the new entry button for this static matrix field is still disabled
+    await expect(newCardBtn).toContainClass('disabled');
+
+    // check that there's still exactly one card in this static matrix field
+    await expect(matrixField.locator('.card-grid .card')).toHaveCount(1);
+  });
+
+  // check that the "Copy" action is still available for "cards" inside a static matrix field,
+  // when the maxEntries limit was reached
+  test('Check that the "Copy" action is available in static matrix', async ({
+    page,
+    baseURL,
+    craftEntry,
+    craftMatrix,
+  }) => {
+    const matrixField = page.locator(matrixFieldLocator);
+
+    await craftEntry.editEntryInElementIndexTableByTitle(page, titleText);
+
+    const firstCard = page.locator(firstCardLocator);
+    await firstCard.waitFor({state: 'attached'});
+
+    // select the card
+    firstCard.click();
+
+    // activate actions btn
+    await craftMatrix.openNestedElementIndexActionMenu(page, matrixContainerLocator);
+
+    await expect(
+      craftMatrix.getElementIndexActionElement(page, matrixContainerLocator, 'Copy')
+    ).toHaveCount(1);
+    await expect(
+      craftMatrix.getElementIndexActionElement(page, matrixContainerLocator, 'Copy')
+    ).toBeVisible();
+  });
+});
+
+test.describe('Max entries limit', () => {
+  const titleText = 'Entry with max 2 cards matrix';
+  const originalText = 'card';
+  const matrixContainerLocator = '#fields-matrixElementIndexFieldMax2';
+  const matrixFieldLocator = matrixContainerLocator + '-field';
+  const firstCardLocator = matrixFieldLocator + ' .card-grid > li:first-child .card';
+  const lastCardLocator = ' .card-grid li:last-child .card';
+  const cardLocator = matrixFieldLocator + ' .card-grid .card';
+
+  test('Check "Duplicate" action and max entries limit', async ({
+    page,
+    baseURL,
+    craftEntry,
+    craftMatrix,
+  }) => {
+    const slideout = page.locator(slideoutLocator);
+    const matrixCardsField = page.locator(matrixFieldLocator);
+    const newCardBtn = craftMatrix.getNewNestedEntryBtn(page);
+
+    // create new entry that contains matrix field in cards view mode
+    await craftEntry.createEntryBySectionName(page, 'Test Matrix');
+
+    // switch to the "With Max 2 Matrix in Element Index mode" entry type
+    await craftEntry.switchEntryTypeByName(
+      page,
+      'With Max 2 Matrix in Element Index mode'
+    );
+    await page.locator(matrixFieldLocator).waitFor({state: 'visible'});
+
+    // fill the title
+    await craftEntry.fillField(page, page, titleFieldLocator, titleText, 50);
+
+    const firstCard = page.locator(firstCardLocator);
+
+    // create two cards so that we reach the limit
+    for (var i = 0; i < 2; i++) {
+      // add one nested entry to the matrix,
+      await newCardBtn.click();
+
+      // fill out the field
+      await craftEntry.fillField(page, slideout, textFieldLocator, originalText + ' ' + (i + 1));
+
+      // save nested entry
+      await page.getByRole('button', {name: 'Create entry'}).click();
+
+      const card = page.locator(matrixFieldLocator + lastCardLocator);
+      await card.waitFor({state: 'attached'});
+
+      // wait for the status of the card to get updated
+      await card.locator('.status-label-text:text-is("Live")').waitFor();
+    }
+
+    // check that the new entry button is disabled
+    await expect(newCardBtn).toContainClass('disabled');
+
+    // select the card
+    await firstCard.waitFor({state: 'attached'});
+    firstCard.click();
+
+    // activate actions btn
+    await craftMatrix.openNestedElementIndexActionMenu(page, matrixContainerLocator);
+
+    // check that "Duplicate" action is not available when you reach the limit
+    await expect(
+      craftMatrix.getElementIndexActionElement(page, matrixContainerLocator, 'Duplicate')
+    ).toHaveCount(1);
+    await expect(
+      craftMatrix.getElementIndexActionElement(page, matrixContainerLocator, 'Duplicate')
+    ).toContainClass('disabled');
+
+    await craftEntry.saveRootEntryAndContinueEditing(page);
+
+    // select the card
+    await firstCard.waitFor({state: 'attached'});
+    firstCard.click();
+
+    // activate actions btn
+    await craftMatrix.openNestedElementIndexActionMenu(page, matrixContainerLocator);
+
+    // accept deleting
+    page.on('dialog', async (dialog) => {
+      await dialog.accept();
+    });
+
+    await (craftMatrix.getElementIndexActionElement(page, matrixContainerLocator, 'Delete')).click()
+    await page.waitForLoadState('networkidle');
+    await craftEntry.waitForAutosaveToComplete(page);
+
+    // select the card
+    await firstCard.waitFor({state: 'attached'});
+    firstCard.click();
+
+    // activate actions btn
+    await craftMatrix.openNestedElementIndexActionMenu(page, matrixContainerLocator);
+
+    await expect(
+      craftMatrix.getElementIndexActionElement(page, matrixContainerLocator, 'Duplicate')
+    ).toHaveCount(1);
+    await expect(
+      craftMatrix.getElementIndexActionElement(page, matrixContainerLocator, 'Duplicate')
+    ).toBeEnabled();
+
+    await page.reload();
+    await page.waitForLoadState();
+    await craftEntry.waitForAutosaveToComplete(page);
+
+    // check that "Duplicate" action is now available
+    // select the card
+    await firstCard.waitFor({state: 'attached'});
+    await firstCard.click();
+
+    // activate actions btn
+    await craftMatrix.openNestedElementIndexActionMenu(page, matrixContainerLocator);
+
+    await expect(
+      craftMatrix.getElementIndexActionElement(page, matrixContainerLocator, 'Duplicate')
+    ).toHaveCount(1);
+    await expect(
+      craftMatrix.getElementIndexActionElement(page, matrixContainerLocator, 'Duplicate')
+    ).toBeEnabled();
   });
 });

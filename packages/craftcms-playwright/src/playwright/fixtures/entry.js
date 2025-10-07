@@ -17,6 +17,57 @@ class Entry {
     await page.locator('#elements').getByRole('link', {name: 'Entry'}).click();
     await page.waitForLoadState();
   }
+
+  async editEntryInElementIndexTableByTitle(page, text) {
+    await page.locator('#elements tr:first-child th .label-link').waitFor();
+    await page.locator('#elements').getByRole('link', {name: text}).click();
+    await page.waitForLoadState();
+  }
+
+  async switchEntryTypeByName(page, text) {
+    await page.locator('#entryType-button').click();
+    await page.getByRole('button', {name: text}).click();
+
+    // wait for the loader to disappear
+    await this.waitForAutosaveToComplete(page);
+  }
+
+  async createEntryBySectionName(page, sectionName) {
+    await page.getByLabel('New entry in the ' + sectionName).click();
+    await page.waitForLoadState();
+  }
+
+  async fillField(page, element, fieldLocator, text, delay = 100) {
+    await element.locator(fieldLocator).pressSequentially(text, {delay: delay});
+
+    await this.waitForAutosaveToComplete(page);
+  }
+
+  async saveRootEntryAndContinueEditing(page) {
+    const url = this.prepElementCreatedEditUrl(page.url());
+    await page.keyboard.press('Escape');
+    await page.keyboard.press('ControlOrMeta+S');
+    await page.waitForURL(url);
+  }
+
+  async saveRootEntry(page) {
+    const url = this.prepElementIndexUrl(page.url());
+    await page.getByRole('button', {name: 'Create entry'}).click();
+    await page.waitForURL(url);
+  }
+
+  prepElementCreatedEditUrl(link) {
+    let url = new URL(link);
+    return url.origin + url.pathname + '**';
+  }
+
+  prepElementIndexUrl(link) {
+    let url = new URL(link);
+    let pathnameSegments = url.pathname.split('/');
+    pathnameSegments.pop();
+
+    return url.origin + pathnameSegments.join('/') + '?**';
+  }
 }
 
 module.exports = {Entry};
