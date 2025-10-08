@@ -13,6 +13,7 @@ use craft\services\Utilities;
 use craft\utilities\AssetIndexes;
 use craft\utilities\ClearCaches;
 use CraftCms\Aliases\Aliases;
+use CraftCms\Cms\Config\BaseConfig;
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Edition\Events\EditionChanged;
@@ -60,6 +61,10 @@ class Yii2ServiceProvider extends ServiceProvider
         foreach ($files as $file) {
             $key = "craft.{$file->getFilenameWithoutExtension()}";
             $config = Config::get($key);
+
+            if ($config instanceof BaseConfig) {
+                continue;
+            }
 
             if (!is_array($config)) {
                 Config::set($key, []);
