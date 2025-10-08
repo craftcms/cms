@@ -1,5 +1,9 @@
 # Release Notes for Craft CMS 5
 
+## Unreleased
+
+- Icon pickers now return focus to the “Choose” button when the modal is closed without making a selection.
+
 ## 5.8.18 - 2025-10-06
 
 - The `fields/auto-merge` command now writes updated project config YAML files after each merge. ([#16198](https://github.com/craftcms/cms/issues/16198))
