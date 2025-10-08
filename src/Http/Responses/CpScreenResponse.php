@@ -17,7 +17,6 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Traits\Conditionable;
 use Symfony\Component\HttpFoundation\Response;
 
-/** @since 6.0.0 */
 final class CpScreenResponse implements Responsable
 {
     use Conditionable;

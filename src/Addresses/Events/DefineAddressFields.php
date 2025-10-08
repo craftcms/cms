@@ -2,7 +2,6 @@
 
 namespace CraftCms\Cms\Addresses\Events;
 
-/** @since 6.0.0 */
 abstract class DefineAddressFields
 {
     public function __construct(

@@ -4,7 +4,6 @@ namespace CraftCms\Cms\Support;
 
 use craft\web\Application;
 
-/** @since 6.0.0 */
 class Flash
 {
     public static function success(?string $default = null, array $settings = []): void

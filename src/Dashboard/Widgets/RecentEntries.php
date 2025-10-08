@@ -8,7 +8,6 @@ use craft\models\Section;
 use craft\web\assets\recententries\RecentEntriesAsset;
 use CraftCms\Cms\Support\Json;
 
-/** @since 6.0.0 */
 final class RecentEntries extends Widget
 {
     /**

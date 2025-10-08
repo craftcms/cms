@@ -9,7 +9,6 @@ use Illuminate\Database\Migrations\Migration as LaravelMigration;
 use Symfony\Component\Console\Input\ArrayInput;
 use Symfony\Component\Console\Output\ConsoleOutput;
 
-/** @since 6.0.0 */
 abstract class Migration extends LaravelMigration
 {
     use InteractsWithIO;

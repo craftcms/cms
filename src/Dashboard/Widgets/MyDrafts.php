@@ -8,7 +8,6 @@ use craft\helpers\Cp;
 use CraftCms\Cms\Support\Html;
 use Illuminate\Support\Facades\Session;
 
-/** @since 6.0.0 */
 final class MyDrafts extends Widget
 {
     /**

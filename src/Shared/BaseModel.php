@@ -4,7 +4,6 @@ namespace CraftCms\Cms\Shared;
 
 use Illuminate\Database\Eloquent\Model;
 
-/** @since 6.0.0 */
 class BaseModel extends Model
 {
     protected $guarded = [];

@@ -16,7 +16,6 @@ use ReflectionNamedType;
 use ReflectionProperty;
 use ReflectionUnionType;
 
-/** @since 6.0.0 */
 final class Typecast
 {
     private const string TYPE_BOOL = 'bool';

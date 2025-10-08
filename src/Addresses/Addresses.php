@@ -28,7 +28,6 @@ use CraftCms\Cms\ProjectConfig\ProjectConfigHelper;
 use Illuminate\Container\Attributes\Singleton;
 use Illuminate\Support\Facades\Event;
 
-/** @since 6.0.0 */
 #[Singleton]
 final class Addresses implements FieldLayoutProviderInterface
 {

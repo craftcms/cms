@@ -8,7 +8,6 @@ use craft\web\assets\newusers\NewUsersAsset;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Support\Json;
 
-/** @since 6.0.0 */
 final class NewUsers extends Widget
 {
     /**

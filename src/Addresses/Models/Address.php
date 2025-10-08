@@ -7,7 +7,6 @@ use CraftCms\Cms\Shared\BaseModel;
 use CraftCms\Cms\User\Models\User;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-/** @since 6.0.0 */
 final class Address extends BaseModel
 {
     protected $table = Table::ADDRESSES;

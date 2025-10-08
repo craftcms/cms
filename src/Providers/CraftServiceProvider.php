@@ -15,7 +15,6 @@ use CraftCms\Cms\Updates\UpdatesServiceProvider;
 use CraftCms\Cms\User\UserServiceProvider;
 use Illuminate\Support\AggregateServiceProvider;
 
-/** @since 6.0.0 */
 final class CraftServiceProvider extends AggregateServiceProvider
 {
     protected $providers = [

@@ -12,7 +12,6 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 
-/** @since 6.0.0 */
 final readonly class DeprecationErrorsController
 {
     public function __construct(

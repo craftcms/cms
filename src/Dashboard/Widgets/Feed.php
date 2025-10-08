@@ -7,7 +7,6 @@ use craft\web\assets\feed\FeedAsset;
 use CraftCms\Cms\Support\Json;
 use Illuminate\Support\Facades\Cache;
 
-/** @since 6.0.0 */
 final class Feed extends Widget
 {
     public ?string $url = null;

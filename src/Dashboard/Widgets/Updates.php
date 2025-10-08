@@ -7,7 +7,6 @@ use craft\web\assets\updateswidget\UpdatesWidgetAsset;
 use CraftCms\Cms\Updates\Updates as UpdatesService;
 use Illuminate\Support\Facades\Auth;
 
-/** @since 6.0.0 */
 final class Updates extends Widget
 {
     public function __construct(

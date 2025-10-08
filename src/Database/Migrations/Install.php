@@ -33,7 +33,6 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 use ReflectionClass;
 
-/** @since 6.0.0 */
 class Install extends Migration
 {
     public function __construct(

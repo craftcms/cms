@@ -5,7 +5,6 @@ namespace CraftCms\Cms\Database\Factories;
 use CraftCms\Cms\Plugin\Models\Plugin;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
-/** @since 6.0.0 */
 final class PluginFactory extends Factory
 {
     protected $model = Plugin::class;
