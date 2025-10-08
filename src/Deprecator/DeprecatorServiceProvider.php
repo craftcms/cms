@@ -2,7 +2,7 @@
 
 namespace CraftCms\Cms\Deprecator;
 
-use CraftCms\Cms\Deprecator\Commands\ClearDeprecations;
+use CraftCms\Cms\Deprecator\Commands\ClearDeprecationsCommand;
 use Illuminate\Support\ServiceProvider;
 
 final class DeprecatorServiceProvider extends ServiceProvider
@@ -12,7 +12,7 @@ final class DeprecatorServiceProvider extends ServiceProvider
         $this->app->terminating(fn () => $deprecator->storeLogs());
 
         $this->commands([
-            ClearDeprecations::class,
+            ClearDeprecationsCommand::class,
         ]);
     }
 }
