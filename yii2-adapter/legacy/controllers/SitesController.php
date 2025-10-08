@@ -261,7 +261,7 @@ class SitesController extends Controller
         foreach ($allGroups as $group) {
             $groupOptions[] = [
                 'value' => $group->id,
-                'label' => t($group->getName(, category: 'site')),
+                'label' => t($group->getName(), category: 'site'),
             ];
         }
 

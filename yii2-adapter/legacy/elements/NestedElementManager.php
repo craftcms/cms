@@ -283,12 +283,12 @@ class NestedElementManager extends Component
             case PropagationMethod::None:
                 return t('{type} will only be saved in the {site} site.', [
                     'type' => $this->elementType::pluralDisplayName(),
-                    'site' => t($owner->getSite(, category: 'site')->getName()),
+                    'site' => t($owner->getSite()->getName(), category: 'site'),
                 ]);
             case PropagationMethod::SiteGroup:
                 return t('{type} will be saved across all sites in the {group} site group.', [
                     'type' => $this->elementType::pluralDisplayName(),
-                    'group' => t($owner->getSite(, category: 'site')->getGroup()->getName()),
+                    'group' => t($owner->getSite()->getGroup()->getName(), category: 'site'),
                 ]);
             case PropagationMethod::Language:
                 $language = Craft::$app->getI18n()->getLocaleById($owner->getSite()->language)

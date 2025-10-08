@@ -468,7 +468,7 @@ class ElementSources extends Component
                         } else {
                             // The handle was overridden, so it gets its own table attribute
                             $attributes["fieldInstance:$layoutElement->uid"] = [
-                                'label' => t($layoutElement->label(, category: 'site')),
+                                'label' => t($layoutElement->label(), category: 'site'),
                             ];
                         }
                     }
