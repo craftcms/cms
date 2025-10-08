@@ -21,7 +21,7 @@ use CraftCms\Cms\Field\Field;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Env;
 use CraftCms\Cms\Support\Facades\Deprecator;
-use CraftCms\Cms\Support\Facades\Lang;
+use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Yii2Adapter\Console\LegacyCraftCommand;
 use CraftCms\Yii2Adapter\Console\MigrateMigrationTableCommand;

@@ -59,7 +59,7 @@ class Craft extends Yii
 
     public static function t($category, $message, $params = [], $language = null): string
     {
-        return \CraftCms\Cms\Support\Facades\Lang::translate($message, $params, $category, $language);
+        return \CraftCms\Cms\Support\Facades\I18N::translate($message, $params, $category, $language);
     }
 
     /**

@@ -73,24 +73,7 @@ class I18N extends \yii\i18n\I18N
      */
     public function getAllLocaleIds(): array
     {
-        if (!isset($this->_allLocaleIds)) {
-            $this->_allLocaleIds = ResourceBundle::getLocales('');
-
-            // Hyphens, not underscores
-            foreach ($this->_allLocaleIds as $i => $locale) {
-                $this->_allLocaleIds[$i] = str_replace('_', '-', $locale);
-            }
-
-            // Merge in any custom aliases
-            $generalConfig = app(GeneralConfig::class);
-            if (!empty($generalConfig->localeAliases)) {
-                $this->_allLocaleIds = array_merge($this->_allLocaleIds, array_keys($generalConfig->localeAliases));
-                $this->_allLocaleIds = array_unique($this->_allLocaleIds);
-                sort($this->_allLocaleIds);
-            }
-        }
-
-        return $this->_allLocaleIds;
+        return app(\CraftCms\Cms\Translation\I18N::class)->getAllLocaleIds()->all();
     }
 
     /**

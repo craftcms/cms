@@ -3,15 +3,14 @@
 namespace CraftCms\Cms\Support\Facades;
 
 use Illuminate\Support\Facades\Facade;
-use Yiisoft\Translator\Translator;
 
 /**
- * @see \Yiisoft\Translator\Translator
+ * @see \CraftCms\Cms\Translation\I18N
  */
-final class Lang extends Facade
+final class I18N extends Facade
 {
     protected static function getFacadeAccessor(): string
     {
-        return Translator::class;
+        return \CraftCms\Cms\Translation\I18N::class;
     }
 }
