@@ -1270,7 +1270,7 @@ class GeneralConfig extends BaseConfig
     public ?array $extraAllowedFileExtensions = null;
 
     /**
-     * @var string[]|null List of extra locale IDs that the application should support, and users should be able to select as their Preferred Language.
+     * @var string[] List of extra locale IDs that the application should support, and users should be able to select as their Preferred Language.
      *
      * ::: code
      * ```php Static Config
@@ -1283,7 +1283,7 @@ class GeneralConfig extends BaseConfig
      *
      * @group System
      */
-    public ?array $extraAppLocales = null;
+    public array $extraAppLocales = [];
 
     /**
      * @var array List of additional file kinds Craft should support. This array will get merged with the one defined in
@@ -4722,15 +4722,15 @@ class GeneralConfig extends BaseConfig
      *
      * @group System
      *
-     * @param  string[]|null  $value
+     * @param  string[]  $value
      *
      * @throws InvalidConfigException
      *
      * @see $extraAppLocales
      */
-    public function extraAppLocales(?array $value): self
+    public function extraAppLocales(array $value): self
     {
-        if (is_array($value) && class_exists(Craft::class, false)) {
+        if (class_exists(Craft::class, false)) {
             foreach ($value as &$localeId) {
                 try {
                     $localeId = Localization::normalizeLanguage($localeId);

@@ -34,6 +34,7 @@ use CraftCms\Cms\Edition;
 use CraftCms\Cms\License\License;
 use CraftCms\Cms\ProjectConfig\ProjectConfig as ProjectConfigService;
 use CraftCms\Cms\Support\Env;
+use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\PHP;
 use CraftCms\Cms\Support\Str;
 use yii\base\Event;
@@ -927,8 +928,6 @@ class App
      */
     public static function createFormattingLocale(): Locale
     {
-        $i18n = Craft::$app->getI18n();
-
         if (Craft::$app->getRequest()->getIsCpRequest() && !Craft::$app->getResponse()->isSent) {
             // Is someone logged in?
             if (
@@ -938,22 +937,22 @@ class App
                 // If they have a preferred locale, use it
                 $usersService = Craft::$app->getUsers();
                 if (($locale = $usersService->getUserPreference($id, 'locale')) !== null) {
-                    return $i18n->getLocaleById($locale);
+                    return I18N::getLocaleById($locale);
                 }
 
                 // Otherwise see if they have a preferred language
                 if (
                     ($language = $usersService->getUserPreference($id, 'language')) !== null &&
-                    $i18n->validateAppLocaleId($language)
+                    I18N::validateAppLocaleId($language)
                 ) {
-                    return $i18n->getLocaleById($language);
+                    return I18N::getLocaleById($language);
                 }
             }
 
             // If the defaultCpLocale setting is set, go with that
             $generalConfig = app(GeneralConfig::class);
             if ($generalConfig->defaultCpLocale) {
-                return $i18n->getLocaleById($generalConfig->defaultCpLocale);
+                return I18N::getLocaleById($generalConfig->defaultCpLocale);
             }
         }
 

@@ -9,6 +9,7 @@ namespace craft\helpers;
 
 use Craft;
 use craft\i18n\Locale;
+use CraftCms\Cms\Support\Facades\I18N;
 use yii\base\InvalidArgumentException;
 use yii\i18n\MissingTranslationEvent;
 
@@ -36,7 +37,7 @@ class Localization
     {
         $language = strtolower(str_replace('_', '-', $language));
 
-        $allLanguages = Craft::$app->getI18n()->getAllLocaleIds();
+        $allLanguages = I18N::getAllLocaleIds();
         $lcLanguages = array_map('strtolower', $allLanguages);
         $allLanguages = array_combine($lcLanguages, $allLanguages);
 
@@ -65,7 +66,7 @@ class Localization
             } elseif ($localeId === Craft::$app->language) {
                 $locale = Craft::$app->getLocale();
             } else {
-                $locale = Craft::$app->getI18n()->getLocaleById($localeId);
+                $locale = I18N::getLocaleById($localeId);
             }
 
             $decimalSymbol = $locale->getNumberSymbol(Locale::SYMBOL_DECIMAL_SEPARATOR);

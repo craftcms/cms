@@ -78,9 +78,9 @@ final class TimeRule implements DataAwareRule, ValidationRule
             }
 
             if ($value < $min) {
-                $fail(Craft::$app->getI18n()->format($this->tooEarly, [
+                $fail(t($this->tooEarly, [
                     'min' => Craft::$app->getFormatter()->asTime($min, Locale::LENGTH_SHORT),
-                ], Craft::$app->language));
+                ], locale: Craft::$app->language));
             }
         }
 
@@ -93,9 +93,9 @@ final class TimeRule implements DataAwareRule, ValidationRule
             }
 
             if ($value > $max) {
-                $fail(Craft::$app->getI18n()->format($this->tooLate, [
+                $fail(t($this->tooLate, [
                     'max' => Craft::$app->getFormatter()->asTime($max, Locale::LENGTH_SHORT),
-                ], Craft::$app->language));
+                ], locale: Craft::$app->language));
             }
         }
     }

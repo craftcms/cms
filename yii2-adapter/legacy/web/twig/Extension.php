@@ -63,6 +63,7 @@ use CraftCms\Cms\Plugin\Plugins;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Env;
 use CraftCms\Cms\Support\Facades\Deprecator;
+use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Support\Str;
@@ -1020,7 +1021,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
         }
 
         $date = $env->getExtension(CoreExtension::class)->convertDate($date, $timezone);
-        $formatter = $locale ? Craft::$app->getI18n()->getLocaleById($locale)->getFormatter() : Craft::$app->getFormatter();
+        $formatter = $locale ? I18N::getLocaleById($locale)->getFormatter() : Craft::$app->getFormatter();
         $fmtTimeZone = $formatter->timeZone;
         $formatter->timeZone = $timezone !== null ? $date->getTimezone()->getName() : $formatter->timeZone;
         $formatted = $formatter->asDate(DateTime::createFromInterface($date), $format);
@@ -1115,7 +1116,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
         }
 
         $date = $env->getExtension(CoreExtension::class)->convertDate($date, $timezone);
-        $formatter = $locale ? Craft::$app->getI18n()->getLocaleById($locale)->getFormatter() : Craft::$app->getFormatter();
+        $formatter = $locale ? I18N::getLocaleById($locale)->getFormatter() : Craft::$app->getFormatter();
         $fmtTimeZone = $formatter->timeZone;
         $formatter->timeZone = $timezone !== null ? $date->getTimezone()->getName() : $formatter->timeZone;
         $formatted = $formatter->asTime(DateTime::createFromInterface($date), $format);
@@ -1145,7 +1146,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
         }
 
         $date = $env->getExtension(CoreExtension::class)->convertDate($date, $timezone);
-        $formatter = $locale ? Craft::$app->getI18n()->getLocaleById($locale)->getFormatter() : Craft::$app->getFormatter();
+        $formatter = $locale ? I18N::getLocaleById($locale)->getFormatter() : Craft::$app->getFormatter();
         $fmtTimeZone = $formatter->timeZone;
         $formatter->timeZone = $timezone !== null ? $date->getTimezone()->getName() : $formatter->timeZone;
         $formatted = $formatter->asDatetime(DateTime::createFromInterface($date), $format);

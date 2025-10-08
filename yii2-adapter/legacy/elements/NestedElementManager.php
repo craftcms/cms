@@ -27,6 +27,7 @@ use CraftCms\Cms\Element\Enums\PropagationMethod;
 use CraftCms\Cms\Field\Contracts\FieldInterface;
 use CraftCms\Cms\Shared\Enums\Color;
 use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Str;
 use Generator;
@@ -291,7 +292,7 @@ class NestedElementManager extends Component
                     'group' => t($owner->getSite()->getGroup()->getName(), category: 'site'),
                 ]);
             case PropagationMethod::Language:
-                $language = Craft::$app->getI18n()->getLocaleById($owner->getSite()->language)
+                $language = I18N::getLocaleById($owner->getSite()->language)
                     ->getDisplayName(Craft::$app->language);
                 return t('{type} will be saved across all {language}-language sites.', [
                     'type' => $this->elementType::pluralDisplayName(),

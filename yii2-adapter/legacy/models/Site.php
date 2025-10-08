@@ -17,6 +17,7 @@ use craft\validators\UniqueValidator;
 use craft\validators\UrlValidator;
 use CraftCms\Cms\Shared\Contracts\Chippable;
 use CraftCms\Cms\Support\Env;
+use CraftCms\Cms\Support\Facades\I18N;
 use DateTime;
 use yii\base\InvalidConfigException;
 use function CraftCms\Cms\t;
@@ -322,7 +323,7 @@ class Site extends Model implements Chippable
             return Craft::$app->getLocale();
         }
 
-        return Craft::$app->getI18n()->getLocaleById($this->language);
+        return I18N::getLocaleById($this->language);
     }
 
     /**

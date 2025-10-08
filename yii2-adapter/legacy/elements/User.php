@@ -52,6 +52,7 @@ use CraftCms\Cms\Field\Fields;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\Shared\Enums\Color;
 use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Support\PHP;
@@ -536,8 +537,6 @@ class User extends Element implements IdentityInterface
      */
     protected static function defineCardAttributes(): array
     {
-        $i18n = Craft::$app->getI18n();
-
         return array_merge(parent::defineCardAttributes(), [
             'email' => [
                 'label' => t('Email'),
@@ -569,11 +568,11 @@ class User extends Element implements IdentityInterface
             ],
             'preferredLanguage' => [
                 'label' => t('Preferred Language'),
-                'placeholder' => fn() => $i18n->getLocaleById('en')->getDisplayName(Craft::$app->language),
+                'placeholder' => fn() => I18N::getLocaleById('en')->getDisplayName(Craft::$app->language),
             ],
             'preferredLocale' => [
                 'label' => t('Preferred Locale'),
-                'placeholder' => fn() => $i18n->getLocaleById('en-US')->getDisplayName(Craft::$app->language),
+                'placeholder' => fn() => I18N::getLocaleById('en-US')->getDisplayName(Craft::$app->language),
             ],
             'isCredentialed' => [
                 'label' => t('Credentialed'),
@@ -2292,8 +2291,11 @@ JS, [
      */
     private function _validateLocale(?string $locale, bool $checkAllLocales): ?string
     {
-        $locales = $checkAllLocales ? Craft::$app->getI18n()->getAllLocaleIds() : Craft::$app->getI18n()->getAppLocaleIds();
-        if ($locale && in_array($locale, $locales, true)) {
+        $locales = $checkAllLocales
+            ? I18N::getAllLocaleIds()
+            : I18N::getAppLocaleIds();
+
+        if ($locale && $locales->contains($locale)) {
             return $locale;
         }
 
@@ -2357,12 +2359,12 @@ JS, [
             case 'preferredLanguage':
                 $language = $this->getPreferredLanguage();
 
-                return $language ? Craft::$app->getI18n()->getLocaleById($language)->getDisplayName(Craft::$app->language) : '';
+                return $language ? I18N::getLocaleById($language)->getDisplayName(Craft::$app->language) : '';
 
             case 'preferredLocale':
                 $locale = $this->getPreferredLocale();
 
-                return $locale ? Craft::$app->getI18n()->getLocaleById($locale)->getDisplayName(Craft::$app->language) : '';
+                return $locale ? I18N::getLocaleById($locale)->getDisplayName(Craft::$app->language) : '';
 
             case 'is2faEnabled':
                 $enabled = Craft::$app->getAuth()->hasActiveMethod($this);

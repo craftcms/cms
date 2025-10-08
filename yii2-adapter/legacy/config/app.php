@@ -259,7 +259,7 @@ return [
 
         'formattingLocale' => fn() => App::createFormattingLocale(),
 
-        'locale' => fn() => Craft::$app->getI18n()->getLocaleById(Craft::$app->language),
+        'locale' => fn() => \CraftCms\Cms\Support\Facades\I18N::getLocaleById(Craft::$app->language),
 
         'mailer' => function() {
             $config = App::mailerConfig();

@@ -12,6 +12,7 @@ use craft\gql\base\Directive;
 use craft\gql\GqlEntityRegistry;
 use craft\i18n\Locale;
 use CraftCms\Cms\Config\GeneralConfig;
+use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\Str;
 use DateTime;
 use GraphQL\Language\DirectiveLocation;
@@ -93,7 +94,7 @@ class FormatDateTime extends Directive
             }
 
             if (!empty($arguments['locale'])) {
-                $formatter = Craft::$app->getI18n()->getLocaleById($arguments['locale'])->getFormatter();
+                $formatter = I18N::getLocaleById($arguments['locale'])->getFormatter();
             } else {
                 $formatter = Craft::$app->getFormatter();
             }

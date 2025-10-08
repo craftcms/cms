@@ -10,6 +10,7 @@ namespace craft\helpers;
 use Craft;
 use craft\i18n\Locale;
 use CraftCms\Cms\Config\GeneralConfig;
+use CraftCms\Cms\Support\Facades\I18N;
 use DateInterval;
 use DateTime;
 use DateTimeImmutable;
@@ -145,7 +146,7 @@ class DateTimeHelper
             // Did they specify a locale?
             $locale = Craft::$app->getFormattingLocale();
             if (!empty($value['locale']) && $value['locale'] !== $locale->id) {
-                $locale = Craft::$app->getI18n()->getLocaleById($value['locale']);
+                $locale = I18N::getLocaleById($value['locale']);
             }
 
             // Did they specify a timezone?
