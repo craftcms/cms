@@ -13,7 +13,7 @@ final class ColorRule implements ValidationRule
     public function validate(string $attribute, mixed $value, Closure $fail): void
     {
         if (is_string($value)) {
-            $value = $this->normalizeColor($value);
+            $value = self::normalizeColor($value);
         }
 
         $valid = ! is_array($value) && preg_match($this->pattern, $value);
@@ -25,7 +25,7 @@ final class ColorRule implements ValidationRule
         }
     }
 
-    private function normalizeColor(string $color): string
+    public static function normalizeColor(string $color): string
     {
         // lowercase
         $color = strtolower($color);

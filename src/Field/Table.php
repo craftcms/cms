@@ -10,22 +10,21 @@ use craft\gql\types\TableRow;
 use craft\helpers\Cp;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\Db;
-use craft\validators\ColorValidator;
 use craft\validators\HandleValidator;
-use craft\validators\UrlValidator;
 use craft\web\assets\tablesettings\TableSettingsAsset;
 use craft\web\assets\timepicker\TimepickerAsset;
 use CraftCms\Cms\Field\Contracts\CrossSiteCopyableFieldInterface;
 use CraftCms\Cms\Field\Data\ColorData;
+use CraftCms\Cms\Shared\Rules\ColorRule;
 use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Support\Str;
 use DateTime;
 use GraphQL\Type\Definition\InputObjectType;
 use GraphQL\Type\Definition\Type;
+use Illuminate\Support\Facades\Validator as ValidatorFacade;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\Validator;
 use yii\db\Schema;
-use yii\validators\EmailValidator;
 
 /**
  * Table represents a Table field.
@@ -701,21 +700,32 @@ final class Table extends Field implements CrossSiteCopyableFieldInterface
             case 'color':
                 /** @var ColorData $value */
                 $value = $value->getHex();
-                $validator = new ColorValidator;
+                $validator = ValidatorFacade::make(
+                    data: ['value' => $value],
+                    rules: ['value' => new ColorRule]
+                );
                 break;
             case 'url':
-                $validator = new UrlValidator;
+                $validator = ValidatorFacade::make(
+                    data: ['value' => $value],
+                    rules: ['value' => 'url'],
+                );
                 break;
             case 'email':
-                $validator = new EmailValidator;
+                $validator = ValidatorFacade::make(
+                    data: ['value' => $value],
+                    rules: ['value' => 'email'],
+                );
                 break;
             default:
                 return true;
         }
 
-        $validator->message = str_replace('{attribute}', '{value}', $validator->message);
+        if ($validator->fails()) {
+            $error = $validator->errors()->first();
+        }
 
-        return $validator->validate($value, $error);
+        return $validator->passes();
     }
 
     /**

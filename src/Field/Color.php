@@ -86,7 +86,7 @@ final class Color extends Field implements CrossSiteCopyableFieldInterface, Inli
         if (isset($config['palette'])) {
             $config['palette'] = array_map(
                 fn (array $color) => [
-                    'color' => $color['color'] ? ColorValidator::normalizeColor($color['color']) : null,
+                    'color' => $color['color'] ? ColorRule::normalizeColor($color['color']) : null,
                 ] + $color,
                 $config['palette'],
             );
@@ -118,7 +118,7 @@ final class Color extends Field implements CrossSiteCopyableFieldInterface, Inli
         $this->palette = Arr::map($this->palette, fn (array $color) => ['default' => false] + $color);
 
         if ($defaultColor) {
-            $defaultColor = ColorValidator::normalizeColor($defaultColor);
+            $defaultColor = ColorRule::normalizeColor($defaultColor);
             foreach ($this->palette as $color) {
                 if (($color['color'] ?? null) === $defaultColor) {
                     $color['default'] = true;
@@ -272,7 +272,7 @@ final class Color extends Field implements CrossSiteCopyableFieldInterface, Inli
             return null;
         }
 
-        $value = ColorValidator::normalizeColor($value);
+        $value = ColorRule::normalizeColor($value);
         $value = new ColorData($value);
 
         // set the label on the value too?

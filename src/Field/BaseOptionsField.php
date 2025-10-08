@@ -9,7 +9,6 @@ use craft\fields\conditions\OptionsFieldConditionRule;
 use craft\gql\arguments\OptionField as OptionFieldArguments;
 use craft\gql\resolvers\OptionField as OptionFieldResolver;
 use craft\helpers\Cp;
-use craft\validators\ColorValidator;
 use CraftCms\Cms\Field\Contracts\CrossSiteCopyableFieldInterface;
 use CraftCms\Cms\Field\Contracts\MergeableFieldInterface;
 use CraftCms\Cms\Field\Contracts\PreviewableFieldInterface;
@@ -17,12 +16,14 @@ use CraftCms\Cms\Field\Data\MultiOptionsFieldData;
 use CraftCms\Cms\Field\Data\OptionData;
 use CraftCms\Cms\Field\Data\SingleOptionFieldData;
 use CraftCms\Cms\Field\Events\DefineInputOptions;
+use CraftCms\Cms\Shared\Rules\ColorRule;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Support\Str;
 use GraphQL\Type\Definition\Type;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Validator as ValidatorFacade;
 use Illuminate\Validation\Validator;
 use yii\db\Schema;
 
@@ -217,9 +218,14 @@ abstract class BaseOptionsField extends Field implements CrossSiteCopyableFieldI
             $labels[$optgroup][$label] = $values[$value] = true;
 
             if (static::$optionColors && ! empty($option['color'])) {
-                $option['color'] = ColorValidator::normalizeColor($option['color']);
-                $validator = new ColorValidator;
-                if (! $validator->validate($option['color'])) {
+                $option['color'] = ColorRule::normalizeColor($option['color']);
+
+                $colorValidator = ValidatorFacade::make(
+                    data: ['color' => $option['color']],
+                    rules: ['color' => new ColorRule],
+                );
+
+                if ($colorValidator->fails()) {
                     $hasInvalidColors = true;
                     $option['color'] = [
                         'value' => $option['color'],
