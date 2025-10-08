@@ -436,6 +436,26 @@ final class Fields
      */
     public function createFieldConfig(FieldInterface $field): array
     {
+        /**
+         * Normalize the settings as some fields still define their
+         * attributes in a simple array instead of key => value.
+         */
+        $settings = collect($field->getSettings())->mapWithKeys(function ($value, $key) use ($field) {
+            if (! is_int($key)) {
+                return [$key => $value];
+            }
+
+            if (property_exists($field, $value)) {
+                return [$value => $field->$value];
+            }
+
+            if (method_exists($field, 'get'.ucfirst($value))) {
+                return [$value => $field->{'get'.ucfirst($value)}()];
+            }
+
+            return [$key => $value];
+        })->all();
+
         return [
             'name' => $field->name,
             'handle' => $field->handle,
@@ -445,7 +465,7 @@ final class Fields
             'translationMethod' => $field->translationMethod,
             'translationKeyFormat' => $field->translationKeyFormat,
             'type' => $field::class,
-            'settings' => ProjectConfigHelper::packAssociativeArrays($field->getSettings()),
+            'settings' => ProjectConfigHelper::packAssociativeArrays($settings),
         ];
     }
 
