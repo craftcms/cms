@@ -7,6 +7,7 @@
   "devDependencies": {
     "@craftcms/webpack": "file:../craftcms-webpack",
     "@playwright/test": "^1.19.2",
+    "pkg-dir": "^5.0.0",
     "tailwindcss": "^3.0.18",
     "vue-apexcharts": "^1.6.2"
   },
@@ -31,7 +32,7 @@
     "@simplewebauthn/browser": "^7.1.0",
     "@types/jquery": "^3.5.7",
     "accounting": "^0.4.1",
-    "axios": "^1.8.4",
+    "axios": "^1.12.2",
     "blueimp-file-upload": "^10.31.0",
     "codemirror": "^5.65.18",
     "d3": "^7.8.5",
