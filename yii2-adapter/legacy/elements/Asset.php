@@ -3077,11 +3077,11 @@ JS;
         if (!$isTemp) {
             $uri = "assets/$volume->handle";
             $items = [
-                Html::a(t(Html::encode($volume->name, category: 'site')), UrlHelper::cpUrl($uri)),
+                Html::a(t(Html::encode($volume->name), category: 'site'), UrlHelper::cpUrl($uri)),
             ];
         } else {
             $items = [
-                Html::tag('span', t(Html::encode($volume->name, category: 'site'))),
+                Html::tag('span', t(Html::encode($volume->name), category: 'site')),
             ];
         }
         if ($this->folderPath) {

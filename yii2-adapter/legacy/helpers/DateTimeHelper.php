@@ -840,7 +840,7 @@ class DateTimeHelper
             if (count($timeComponents) > 1) {
                 $string .= ',';
             }
-            $string .= ' ' . t('and', language: $language) . ' ';
+            $string .= ' ' . t('and', locale: $language) . ' ';
         } else {
             $string = '';
         }
