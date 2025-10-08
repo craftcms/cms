@@ -300,7 +300,7 @@ class ImageTransforms
                 $normalizedValue = ColorRule::normalizeColor($transform['fill']);
                 $colorValidator = Validator::make(
                     data: ['fill' => $normalizedValue],
-                    rules: ['fill' => new ColorRule],
+                    rules: ['fill' => new ColorRule()],
                 );
 
                 if ($colorValidator->passes()) {

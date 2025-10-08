@@ -8,7 +8,6 @@
 namespace craft\fieldlayoutelements;
 
 use Craft;
-use craft\base\Actionable;
 use craft\base\ElementInterface;
 use craft\elements\conditions\users\UserCondition;
 use craft\elements\User;
@@ -20,6 +19,7 @@ use CraftCms\Cms\Field\Contracts\FieldInterface;
 use CraftCms\Cms\Field\Contracts\PreviewableFieldInterface;
 use CraftCms\Cms\Field\Contracts\ThumbableFieldInterface;
 use CraftCms\Cms\Field\Fields;
+use CraftCms\Cms\Shared\Contracts\Actionable;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Str;

@@ -9,7 +9,6 @@ namespace craft\controllers;
 
 use Craft;
 use craft\base\ElementInterface;
-use craft\base\Iconic;
 use craft\elements\db\NestedElementQueryInterface;
 use craft\filters\UtilityAccess;
 use craft\helpers\Component;
@@ -25,6 +24,7 @@ use CraftCms\Cms\Edition;
 use CraftCms\Cms\License\License;
 use CraftCms\Cms\Plugin\Plugins;
 use CraftCms\Cms\Shared\Contracts\Chippable;
+use CraftCms\Cms\Shared\Contracts\Iconic;
 use CraftCms\Cms\Shared\Enums\LicenseKeyStatus;
 use CraftCms\Cms\Support\Api;
 use CraftCms\Cms\Support\Arr;

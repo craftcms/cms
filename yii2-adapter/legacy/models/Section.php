@@ -8,8 +8,6 @@
 namespace craft\models;
 
 use Craft;
-use craft\base\CpEditable;
-use craft\base\Iconic;
 use craft\base\Model;
 use craft\elements\Entry;
 use craft\helpers\Db;
@@ -20,6 +18,8 @@ use craft\validators\UniqueValidator;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Enums\PropagationMethod;
 use CraftCms\Cms\Shared\Contracts\Chippable;
+use CraftCms\Cms\Shared\Contracts\CpEditable;
+use CraftCms\Cms\Shared\Contracts\Iconic;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Str;
 use yii\db\Schema;

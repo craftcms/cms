@@ -41,10 +41,10 @@ interface ElementInterface extends
     ComponentInterface,
     ModelInterface,
     \CraftCms\Cms\Shared\Contracts\Chippable,
-    CpEditable,
+    \CraftCms\Cms\Shared\Contracts\CpEditable,
     Thumbable,
     Statusable,
-    Actionable
+    \CraftCms\Cms\Shared\Contracts\Actionable
 {
     /**
      * Returns the lowercase version of [[displayName()]].

@@ -8,13 +8,9 @@
 namespace craft\models;
 
 use Craft;
-use craft\base\Actionable;
-use craft\base\Colorable;
-use craft\base\CpEditable;
 use craft\base\Describable;
 use craft\base\FieldLayoutProviderInterface;
 use craft\base\GqlInlineFragmentInterface;
-use craft\base\Iconic;
 use craft\base\Indicative;
 use craft\base\Model;
 use craft\behaviors\FieldLayoutBehavior;
@@ -28,7 +24,11 @@ use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Field\Contracts\ElementContainerFieldInterface;
 use CraftCms\Cms\Field\Field;
 use CraftCms\Cms\Field\Fields;
+use CraftCms\Cms\Shared\Contracts\Actionable;
 use CraftCms\Cms\Shared\Contracts\Chippable;
+use CraftCms\Cms\Shared\Contracts\Colorable;
+use CraftCms\Cms\Shared\Contracts\CpEditable;
+use CraftCms\Cms\Shared\Contracts\Iconic;
 use CraftCms\Cms\Shared\Enums\Color;
 
 /**

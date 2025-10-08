@@ -3,13 +3,10 @@
 namespace CraftCms\Cms\Http\Controllers;
 
 use Craft;
-use craft\base\Colorable;
-use craft\base\CpEditable;
 use craft\base\ElementInterface;
 use craft\base\FieldLayoutComponent;
 use craft\base\FieldLayoutElement;
 use craft\base\FieldLayoutProviderInterface;
-use craft\base\Iconic;
 use craft\elements\GlobalSet;
 use craft\fieldlayoutelements\CustomField;
 use craft\helpers\Component;
@@ -27,6 +24,9 @@ use CraftCms\Cms\Field\PlainText;
 use CraftCms\Cms\Http\RespondsWithFlash;
 use CraftCms\Cms\Http\Responses\CpScreenResponse;
 use CraftCms\Cms\Shared\Contracts\Chippable;
+use CraftCms\Cms\Shared\Contracts\Colorable;
+use CraftCms\Cms\Shared\Contracts\CpEditable;
+use CraftCms\Cms\Shared\Contracts\Iconic;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Flash;
 use CraftCms\Cms\Support\Html;

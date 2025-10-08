@@ -8,11 +8,9 @@
 namespace craft\elements;
 
 use Craft;
-use craft\base\Colorable;
 use craft\base\Element;
 use craft\base\ElementInterface;
 use craft\base\ExpirableElementInterface;
-use craft\base\Iconic;
 use craft\base\NestedElementInterface;
 use craft\base\NestedElementTrait;
 use craft\behaviors\DraftBehavior;
@@ -65,6 +63,8 @@ use CraftCms\Cms\Field\Contracts\FieldInterface;
 use CraftCms\Cms\Field\Field;
 use CraftCms\Cms\Field\Fields;
 use CraftCms\Cms\Field\Matrix;
+use CraftCms\Cms\Shared\Contracts\Colorable;
+use CraftCms\Cms\Shared\Contracts\Iconic;
 use CraftCms\Cms\Shared\Enums\Color;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Html;

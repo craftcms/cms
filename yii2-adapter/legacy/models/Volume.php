@@ -9,7 +9,6 @@ namespace craft\models;
 
 use Craft;
 use craft\base\BaseFsInterface;
-use craft\base\CpEditable;
 use craft\base\FieldLayoutProviderInterface;
 use craft\base\FsInterface;
 use craft\base\Model;
@@ -23,6 +22,7 @@ use craft\validators\UniqueValidator;
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Field\Field;
 use CraftCms\Cms\Shared\Contracts\Chippable;
+use CraftCms\Cms\Shared\Contracts\CpEditable;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Env;
 use CraftCms\Cms\Support\Str;

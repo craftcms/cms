@@ -3,9 +3,7 @@
 namespace CraftCms\Cms\Field;
 
 use Craft;
-use craft\base\Actionable;
 use craft\base\ElementInterface;
-use craft\base\Iconic;
 use craft\base\Serializable;
 use craft\db\ExpressionInterface;
 use craft\elements\db\ElementQueryInterface;
@@ -32,6 +30,8 @@ use CraftCms\Cms\Field\Events\DefineFieldHtml;
 use CraftCms\Cms\Field\Events\DefineFieldKeywords;
 use CraftCms\Cms\Field\Events\FieldElementEvent;
 use CraftCms\Cms\Field\Events\FieldEvent;
+use CraftCms\Cms\Shared\Contracts\Actionable;
+use CraftCms\Cms\Shared\Contracts\Iconic;
 use CraftCms\Cms\Shared\Rules\HandleRule;
 use CraftCms\Cms\Support\Facades\Fields;
 use CraftCms\Cms\Support\Html;
