@@ -6,7 +6,7 @@
     "check-prettier": "prettier --check .",
     "fix-prettier": "prettier --write .",
     "prepare": "husky",
-    "lint:styles": "stylelint \"bundles/**/*.scss\"",
+    "lint:styles": "stylelint \"src/**/*.scss\"",
     "prebuild:bundles": "npm run fix-prettier",
     "build:bundles": "npm run build -w @craftcms/asset-bundles"
   },
