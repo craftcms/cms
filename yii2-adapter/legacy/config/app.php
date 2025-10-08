@@ -229,7 +229,7 @@ return [
                 'app' => [
                     'class' => PhpMessageSource::class,
                     'sourceLanguage' => 'en-US',
-                    'basePath' => '@app/translations',
+                    'basePath' => '@craftcms/resources/translations',
                     'forceTranslation' => true,
                     'allowOverrides' => true,
                 ],

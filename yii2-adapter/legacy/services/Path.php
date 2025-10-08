@@ -453,13 +453,13 @@ class Path extends Component
     }
 
     /**
-     * Returns the path to the `app/translations/` directory.
+     * Returns the path to the `resources/translations/` directory.
      *
      * @return string
      */
     public function getCpTranslationsPath(): string
     {
-        return Craft::$app->getBasePath() . DIRECTORY_SEPARATOR . 'translations';
+        return Aliases::get('@craftcms/resources/translations');
     }
 
     /**
