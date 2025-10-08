@@ -194,6 +194,8 @@ class ExtensionTest extends TestCase
 
     public function test_translate_filter(): void
     {
+        $this->markTestSkipped('Move test to Laravel');
+
         $this->testRenderResult(
             'Translated message',
             '{{ "Source message"|t("site") }}'
