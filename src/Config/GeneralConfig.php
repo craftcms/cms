@@ -14,6 +14,7 @@ use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken;
 use Illuminate\Http\Middleware\TrustProxies;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Config;
+use Illuminate\Support\Traits\Conditionable;
 use yii\base\InvalidArgumentException;
 use yii\base\InvalidConfigException;
 
@@ -24,6 +25,8 @@ use function CraftCms\Cms\t;
  */
 class GeneralConfig extends BaseConfig
 {
+    use Conditionable;
+
     public const IMAGE_DRIVER_AUTO = 'auto';
 
     public const IMAGE_DRIVER_GD = 'gd';

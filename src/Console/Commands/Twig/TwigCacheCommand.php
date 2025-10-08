@@ -2,10 +2,11 @@
 
 namespace CraftCms\Cms\Console\Commands\Twig;
 
-use craft\console\Application;
+use Craft;
+use craft\web\twig\TemplateLoaderException;
+use craft\web\View;
 use CraftCms\Cms\Console\CraftCommand;
 use Illuminate\Console\Command;
-use Illuminate\Container\Attributes\Give;
 use Illuminate\Support\Collection;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Finder\Finder;
@@ -31,9 +32,9 @@ final class TwigCacheCommand extends Command
      */
     protected $description = "Compile all of the application's Twig templates";
 
-    public function handle(#[Give('Craft')] Application $craft): void
+    public function handle(): void
     {
-        $originalCache = $craft->getView()->getTwig()->getCache();
+        $originalCache = Craft::$app->getView()->getTwig()->getCache();
 
         if ($originalCache instanceof NullCache) {
             // There's no point to warm up a cache that won't be used afterward
@@ -44,12 +45,18 @@ final class TwigCacheCommand extends Command
 
         $this->callSilent('craft:twig:clear');
 
-        $this->paths()->each(function ($path) use ($craft) {
+        $this->paths()->each(function ($path) {
             $prefix = $this->output->isVeryVerbose() ? '<fg=yellow;options=bold>DIR</> ' : '';
+
+            $files = $this->twigFilesIn([$path]);
+
+            if (! $files->count()) {
+                return;
+            }
 
             $this->components->task($prefix.$path, null, OutputInterface::VERBOSITY_VERBOSE);
 
-            $this->compileTemplates($craft, $this->twigFilesIn([$path]));
+            $this->compileTemplates($files);
         });
 
         $this->newLine();
@@ -60,14 +67,21 @@ final class TwigCacheCommand extends Command
     /**
      * Compile the given view files.
      */
-    protected function compileTemplates(Application $craft, Collection $views): void
+    protected function compileTemplates(Collection $views): void
     {
-        $views->map(function (SplFileInfo $file) use ($craft) {
+        $views->map(function (SplFileInfo $file) {
             $this->components->task('    '.$file->getRelativePathname(), null, OutputInterface::VERBOSITY_VERY_VERBOSE);
 
             try {
-                $craft->getView()->setTemplateMode('site');
-                $craft->getView()->getTwig()->load($file->getRelativePathname());
+                Craft::$app->getView()->setTemplateMode(View::TEMPLATE_MODE_SITE);
+                Craft::$app->getView()->getTwig()->load($file->getRelativePathname());
+            } catch (TemplateLoaderException) {
+                try {
+                    Craft::$app->getView()->setTemplateMode(View::TEMPLATE_MODE_CP);
+                    Craft::$app->getView()->getTwig()->load($file->getRelativePathname());
+                } catch (Error $e) {
+                    $this->error($e->getMessage());
+                }
             } catch (Error $e) {
                 $this->error($e->getMessage());
             }
