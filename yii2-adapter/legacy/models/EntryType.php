@@ -9,7 +9,6 @@ namespace craft\models;
 
 use Craft;
 use craft\base\Actionable;
-use craft\base\Chippable;
 use craft\base\Colorable;
 use craft\base\CpEditable;
 use craft\base\Describable;
@@ -29,6 +28,7 @@ use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Field\Contracts\ElementContainerFieldInterface;
 use CraftCms\Cms\Field\Field;
 use CraftCms\Cms\Field\Fields;
+use CraftCms\Cms\Shared\Contracts\Chippable;
 use CraftCms\Cms\Shared\Enums\Color;
 
 /**

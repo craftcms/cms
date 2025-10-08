@@ -2,7 +2,6 @@
 
 namespace CraftCms\Cms\Field\Contracts;
 
-use craft\base\Chippable;
 use craft\base\CpEditable;
 use craft\base\ElementInterface;
 use craft\base\Grippable;
@@ -13,6 +12,7 @@ use CraftCms\Cms\Component\Contracts\ConfigurableComponentInterface;
 use CraftCms\Cms\Component\Contracts\SavableComponentInterface;
 use CraftCms\Cms\Component\Contracts\ValidatableComponentInterface;
 use CraftCms\Cms\Element\Enums\AttributeStatus;
+use CraftCms\Cms\Shared\Contracts\Chippable;
 use DateTime;
 use GraphQL\Type\Definition\Type;
 use yii\db\ExpressionInterface;

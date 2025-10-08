@@ -8,7 +8,6 @@
 namespace craft\models;
 
 use Craft;
-use craft\base\Chippable;
 use craft\base\CpEditable;
 use craft\base\FieldLayoutProviderInterface;
 use craft\base\Model;
@@ -19,6 +18,7 @@ use craft\records\CategoryGroup as CategoryGroupRecord;
 use craft\validators\HandleValidator;
 use craft\validators\UniqueValidator;
 use CraftCms\Cms\Database\Table;
+use CraftCms\Cms\Shared\Contracts\Chippable;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Str;
 use DateTime;

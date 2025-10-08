@@ -3,7 +3,6 @@
 namespace CraftCms\Cms\Http\Controllers;
 
 use Craft;
-use craft\base\Chippable;
 use craft\base\Colorable;
 use craft\base\CpEditable;
 use craft\base\ElementInterface;
@@ -27,6 +26,7 @@ use CraftCms\Cms\Field\MissingField;
 use CraftCms\Cms\Field\PlainText;
 use CraftCms\Cms\Http\RespondsWithFlash;
 use CraftCms\Cms\Http\Responses\CpScreenResponse;
+use CraftCms\Cms\Shared\Contracts\Chippable;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Flash;
 use CraftCms\Cms\Support\Html;

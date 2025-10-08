@@ -8,14 +8,14 @@
 namespace craft\web;
 
 use Craft;
-use craft\base\Chippable;
-use craft\base\Identifiable;
 use craft\base\ModelInterface;
 use craft\elements\User;
 use craft\events\DefineBehaviorsEvent;
 use craft\helpers\Cp;
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
+use CraftCms\Cms\Shared\Contracts\Chippable;
+use CraftCms\Cms\Shared\Contracts\Identifiable;
 use yii\base\Action;
 use yii\base\InvalidArgumentException;
 use yii\base\InvalidConfigException;

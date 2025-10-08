@@ -40,7 +40,7 @@ use yii\web\Response;
 interface ElementInterface extends
     ComponentInterface,
     ModelInterface,
-    Chippable,
+    \CraftCms\Cms\Shared\Contracts\Chippable,
     CpEditable,
     Thumbable,
     Statusable,
