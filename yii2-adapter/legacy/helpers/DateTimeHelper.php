@@ -783,13 +783,13 @@ class DateTimeHelper
         if ($dateInterval->y) {
             $timeComponents[] = t('{num, number} {num, plural, =1{year} other{years}}', [
                 'num' => $dateInterval->y,
-            ], $language);
+            ], locale: $language);
         }
 
         if ($dateInterval->m) {
             $timeComponents[] = t('{num, number} {num, plural, =1{month} other{months}}', [
                 'num' => $dateInterval->m,
-            ], $language);
+            ], locale: $language);
         }
 
         if ($dateInterval->d) {
@@ -797,18 +797,18 @@ class DateTimeHelper
             if ($dateInterval->d % 7 === 0) {
                 $timeComponents[] = t('{num, number} {num, plural, =1{week} other{weeks}}', [
                     'num' => $dateInterval->d / 7,
-                ], $language);
+                ], locale: $language);
             } else {
                 $timeComponents[] = t('{num, number} {num, plural, =1{day} other{days}}', [
                     'num' => $dateInterval->d,
-                ], $language);
+                ], locale: $language);
             }
         }
 
         if ($dateInterval->h) {
             $timeComponents[] = t('{num, number} {num, plural, =1{hour} other{hours}}', [
                 'num' => $dateInterval->h,
-            ], $language);
+            ], locale: $language);
         }
 
         $minutes = $dateInterval->i;
@@ -825,13 +825,13 @@ class DateTimeHelper
         if ($minutes) {
             $timeComponents[] = t('{num, number} {num, plural, =1{minute} other{minutes}}', [
                 'num' => $minutes,
-            ], $language);
+            ], locale: $language);
         }
 
         if ($showSeconds && ($dateInterval->s || empty($timeComponents))) {
             $timeComponents[] = t('{num, number} {num, plural, =1{second} other{seconds}}', [
                 'num' => $dateInterval->s,
-            ], $language);
+            ], locale: $language);
         }
 
         $last = array_pop($timeComponents);

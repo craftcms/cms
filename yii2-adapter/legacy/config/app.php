@@ -48,7 +48,6 @@ use craft\services\Webpack;
 use craft\web\UrlManager;
 use craft\web\UrlRule;
 use CraftCms\Cms\Announcement\Announcements;
-use CraftCms\Yii2Adapter\Localization;
 use CraftCms\Yii2Adapter\Log\LogTarget;
 
 return [
@@ -210,11 +209,7 @@ return [
             'class' => Sso::class,
         ],
         'i18n' => [
-            'class' => Localization::class,
-            'laravelCategories' => [
-                'auth',
-                'validation',
-            ],
+            'class' => craft\i18n\I18N::class,
             'messageFormatter' => [
                 'class' => MessageFormatter::class,
             ],
