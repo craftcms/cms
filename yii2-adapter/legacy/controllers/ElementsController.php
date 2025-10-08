@@ -241,7 +241,7 @@ class ElementsController extends Controller
         ]);
 
         $response = $this->_asSuccess(t('{type} created.', [
-            'type' => Craft::t('app', 'Draft'),
+            'type' => t('Draft'),
         ]), $element, array_filter([
             'cpEditUrl' => $this->request->isCpRequest ? $editUrl : null,
         ]));
@@ -491,7 +491,7 @@ class ElementsController extends Controller
             } elseif ($isDraft) {
                 $response
                     ->submitButtonLabel(mb_ucfirst(t('Save {type}', [
-                        'type' => Craft::t('app', 'draft'),
+                        'type' => t('draft'),
                     ])))
                     ->action('elements/save-draft')
                     ->redirectUrl("{cpEditUrl}");
@@ -1363,8 +1363,7 @@ JS, [
                 'aria' => ['hidden' => 'true'],
                 'data' => ['icon' => 'lightbulb'],
             ]) .
-            Html::tag('p', Craft::t(
-                'app',
+            Html::tag('p', t(
                 'You’re viewing a revision. None of the {type}’s fields are editable.',
                 [
                     'type' => $elementType,
@@ -1963,7 +1962,7 @@ JS, [
             if (!$elementsService->saveElement($element, saveContent: $saveContent)) {
                 DbFacade::rollBack();
                 return $this->_asFailure($element, mb_ucfirst(t('Couldn’t save {type}.', [
-                    'type' => Craft::t('app', 'draft'),
+                    'type' => t('draft'),
                 ])));
             }
 
@@ -2012,7 +2011,7 @@ JS, [
         Craft::$app->getSession()->authorize("previewDraft:$element->draftId");
 
         return $this->_asSuccess(t('{type} saved.', [
-            'type' => Craft::t('app', 'Draft'),
+            'type' => t('Draft'),
         ]), $element, $data, true);
     }
 
@@ -2235,7 +2234,7 @@ JS, [
 
         if (!$elementsService->deleteElement($element, true)) {
             return $this->_asFailure($element, t('Couldn’t delete {type}.', [
-                'type' => Craft::t('app', 'draft'),
+                'type' => t('draft'),
             ]));
         }
 
@@ -2243,7 +2242,7 @@ JS, [
             $message = t('Changes discarded.');
         } else {
             $message = t('{type} deleted.', [
-                'type' => Craft::t('app', 'Draft'),
+                'type' => t('Draft'),
             ]);
         }
 

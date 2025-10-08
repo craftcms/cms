@@ -374,7 +374,7 @@ final class Matrix extends Field implements EagerLoadingFieldInterface, ElementC
                 $siteSettings['uriFormat'] = trim($siteSettings['uriFormat'], '/ ');
 
                 if (! (new UriFormatValidator)->validate($siteSettings['uriFormat'], $error)) {
-                    $error = str_replace(Craft::t('yii', 'the input value'), t('Entry URI Format'), $error);
+                    $error = str_replace(t('the input value'), t('Entry URI Format'), $error);
                     $siteSettings['errors']['uriFormat'][] = $error;
 
                     $validator->errors()->add("siteSettings[$uid].uriFormat", $error);
@@ -383,7 +383,7 @@ final class Matrix extends Field implements EagerLoadingFieldInterface, ElementC
 
             if (isset($siteSettings['template'])) {
                 if (! (new StringValidator(['max' => 500]))->validate($siteSettings['template'], $error)) {
-                    $error = str_replace(Craft::t('yii', 'the input value'), t('Template'), $error);
+                    $error = str_replace(t('the input value'), t('Template'), $error);
                     $siteSettings['errors']['template'][] = $error;
 
                     $validator->errors()->add("siteSettings[$uid].template", $error);

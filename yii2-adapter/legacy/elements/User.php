@@ -1210,7 +1210,7 @@ class User extends Element implements IdentityInterface
         }
 
         if ($query->exists()) {
-            $validator->addError($this, $attribute, Craft::t('yii', '{attribute} "{value}" has already been taken.'), $params);
+            $validator->addError($this, $attribute, t('{attribute} "{value}" has already been taken.'), $params);
         }
     }
 

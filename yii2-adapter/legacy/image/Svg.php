@@ -239,8 +239,7 @@ class Svg extends Image
         if (pathinfo($targetPath, PATHINFO_EXTENSION) === 'svg') {
             FileHelper::writeToFile($targetPath, $this->_svgContent);
         } else {
-            throw new ImageException(Craft::t('app',
-                'Manipulated SVG image rasterizing is unreliable. See \craft\services\Images::loadImage()'));
+            throw new ImageException(t('Manipulated SVG image rasterizing is unreliable. See \craft\services\Images::loadImage()'));
         }
 
         return true;

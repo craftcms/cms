@@ -1272,8 +1272,9 @@ final class Fields
             $tableData[] = [
                 'id' => $field->id,
                 'title' => t($field->name, category: 'site'),
-                'translatable' => $field->getIsTranslatable(null) ? ($field->getTranslationDescription(null) ?? Craft::t('app',
-                    'This field is translatable.')) : false,
+                'translatable' => $field->getIsTranslatable(null)
+                    ? ($field->getTranslationDescription(null) ?? t('This field is translatable.'))
+                    : false,
                 'searchable' => (bool) $field->searchable,
                 'url' => $field->getCpEditUrl(),
                 'handle' => $field->handle,

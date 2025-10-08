@@ -62,7 +62,7 @@ class GraphqlController extends Controller
     public function beforeAction($action): bool
     {
         if (!app(GeneralConfig::class)->enableGql) {
-            throw new NotFoundHttpException(Craft::t('yii', 'Page not found.'));
+            throw new NotFoundHttpException(t('Page not found.'));
         }
 
         if ($action->id === 'api') {

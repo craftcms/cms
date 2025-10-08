@@ -77,7 +77,7 @@ class Plugin extends Module implements PluginInterface
         $this->version = $this->getVersion();
 
         // Set some things early in case there are any settings, and the settings model's
-        // init() method needs to call Craft::t() or Plugin::getInstance().
+        // init() method needs to call t() or Plugin::getInstance().
 
         $this->t9nCategory = Arr::pull($config, 't9nCategory', $this->t9nCategory ?? $id);
         $this->sourceLanguage = Arr::pull($config, 'sourceLanguage', $this->sourceLanguage);

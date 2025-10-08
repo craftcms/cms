@@ -3946,10 +3946,7 @@ JS, [
                 'class' => 'cp-icon',
             ]) .
             Html::endTag('div') .
-            Html::tag('p', Craft::t(
-                'app',
-                'Changes to these settings aren’t permitted in this environment.',
-            )) .
+            Html::tag('p', t('Changes to these settings aren’t permitted in this environment.')) .
             Html::endTag('div');
     }
 

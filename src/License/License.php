@@ -240,7 +240,7 @@ final readonly class License
             // wrong Craft install
             return [
                 $licenseData->name,
-                Craft::t('app',
+                t(
                     'The {name} license is attached to a different Craft CMS license. You can <a class="go" href="{detachUrl}">detach it in Craft Console</a> or <a class="go" href="{buyUrl}">buy a new license</a>.',
                     [
                         'name' => $licenseData->name,
@@ -326,7 +326,7 @@ final readonly class License
     private function issueWrongEdition(LicenseData $licenseData): array
     {
         // wrong edition
-        $message = Craft::t('app',
+        $message = t(
             '{name} is licensed for the {licenseEdition} edition, but the {currentEdition} edition is installed.',
             [
                 'name' => $licenseData->name,

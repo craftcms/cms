@@ -19,15 +19,23 @@ final class TranslationServiceProvider extends ServiceProvider
                 defaultCategory: 'app',
             );
 
-            $messageSource = new MessageSource(dirname(__DIR__, 2).'/resources/translations');
+            $appMessageSource = new MessageSource(dirname(__DIR__, 2).'/resources/translations');
             $formatter = new IntlMessageFormatter;
-            $category = new CategorySource(
+            $appCategory = new CategorySource(
                 name: 'app',
-                reader: $messageSource,
+                reader: $appMessageSource,
                 formatter: $formatter
             );
 
-            $translator->addCategorySources($category);
+            $siteMessageSource = new MessageSource(lang_path());
+            $formatter = new IntlMessageFormatter;
+            $siteCategory = new CategorySource(
+                name: 'site',
+                reader: $siteMessageSource,
+                formatter: $formatter
+            );
+
+            $translator->addCategorySources($appCategory, $siteCategory);
 
             return $translator;
         });

@@ -568,13 +568,13 @@ JS, [
             $arrayValidator = new NumberValidator([
                 'min' => $this->minRelations,
                 'max' => $this->maxRelations,
-                'tooSmall' => $this->minRelations ? Craft::t('app',
+                'tooSmall' => $this->minRelations ? t(
                     '{attribute} should contain at least {min, number} {min, plural, one{selection} other{selections}}.',
                     [
                         'attribute' => t($this->name, category: 'site'),
                         'min' => $this->minRelations, // Need to pass this in now
                     ]) : null,
-                'tooBig' => $this->maxRelations ? Craft::t('app',
+                'tooBig' => $this->maxRelations ? t(
                     '{attribute} should contain at most {max, number} {max, plural, one{selection} other{selections}}.',
                     [
                         'attribute' => t($this->name, category: 'site'),
@@ -622,7 +622,7 @@ JS, [
 
         if ($errorCount) {
             $selectedCount = (int) $value->count();
-            $element->addError($this->handle, Craft::t('app',
+            $element->addError($this->handle, t(
                 'The selected {relatedType} {count, plural, =1{contains} other{contain}} validation errors, preventing this {type} from being saved. Edit the {relatedType} to fix them.',
                 [
                     'relatedType' => $selectedCount === 1
@@ -1334,7 +1334,7 @@ JS, [
                     [
                         'type' => $type,
                     ]),
-                'warning' => Craft::t('app',
+                'warning' => t(
                     'Relations don’t store the selected site, so this should only be enabled if some {type} aren’t propagated to all sites.',
                     [
                         'type' => $pluralType,
@@ -1435,10 +1435,9 @@ JS, [
                 'label' => t('Selectable {type} Condition', [
                     'type' => $elementType::pluralDisplayName(),
                 ]),
-                'instructions' => mb_ucfirst(Craft::t('app',
-                    'Only allow {type} to be selected if they match the following rules:', [
-                        'type' => $elementType::pluralLowerDisplayName(),
-                    ])),
+                'instructions' => mb_ucfirst(t('Only allow {type} to be selected if they match the following rules:', [
+                    'type' => $elementType::pluralLowerDisplayName(),
+                ])),
             ]);
         }
 

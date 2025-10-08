@@ -329,7 +329,7 @@ class FieldLayout extends Model
                     'handle' => $field->handle,
                 ]));
             } elseif (isset($handles[$field->handle])) {
-                $this->addError('customFields', Craft::t('yii', '{attribute} "{value}" has already been taken.', [
+                $this->addError('customFields', t('{attribute} "{value}" has already been taken.', [
                     'attribute' => t('Handle'),
                     'value' => $field->handle,
                 ]));
@@ -360,7 +360,7 @@ class FieldLayout extends Model
                 $error = null;
                 $validator->validate($field['handle'], $error);
                 if ($error === null && isset($handles[$field['handle']])) {
-                    $error = Craft::t('yii', '{attribute} "{value}" has already been taken.', [
+                    $error = t('{attribute} "{value}" has already been taken.', [
                         'attribute' => t('Handle'),
                         'value' => $field['handle'],
                     ]);

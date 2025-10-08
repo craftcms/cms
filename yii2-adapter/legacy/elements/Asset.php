@@ -2564,9 +2564,9 @@ JS,[
             'nFormatted' => Craft::$app->getFormatter()->asDecimal($this->size),
         ];
         if ($short) {
-            return Craft::t('yii', '{nFormatted} B', $params);
+            return t('{nFormatted} B', $params);
         }
-        return Craft::t('yii', '{nFormatted} {n, plural, =1{byte} other{bytes}}', $params);
+        return t('{nFormatted} {n, plural, =1{byte} other{bytes}}', $params);
     }
 
     /**

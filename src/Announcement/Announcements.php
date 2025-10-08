@@ -27,7 +27,7 @@ final readonly class Announcements
      * Pushes a new announcement out to all control panel users.
      *
      * ::: tip
-     * Run the heading and body through [[\craft\i18n\Translation::prep()]] rather than [[\yii\BaseYii::t()|Craft::t()]]
+     * Run the heading and body through [[\craft\i18n\Translation::prep()]] rather than [[\CraftCms\Cms\t()]]
      * so they can be lazy-translated for users’ preferred languages rather than the current app language.
      * :::
      *

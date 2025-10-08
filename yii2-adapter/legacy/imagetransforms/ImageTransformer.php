@@ -130,10 +130,9 @@ class ImageTransformer extends Component implements ImageTransformerInterface, E
             if ($index->inProgress) {
                 for ($try = 1; $try <= 30; $try++) {
                     if ($index->error) {
-                        throw new ImageTransformException(Craft::t('app',
-                            'Failed to generate transform with id of {id}.', [
-                                'id' => $index->id,
-                            ]));
+                        throw new ImageTransformException(t('Failed to generate transform with id of {id}.', [
+                            'id' => $index->id,
+                        ]));
                     }
 
                     // Wait a second and check again

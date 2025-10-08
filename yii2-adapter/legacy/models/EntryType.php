@@ -350,7 +350,7 @@ JS, [
                 UniqueValidator::class,
                 'targetClass' => EntryTypeRecord::class,
                 'targetAttribute' => 'handle',
-                'message' => Craft::t('yii', '{attribute} "{value}" has already been taken.'),
+                'message' => t('{attribute} "{value}" has already been taken.'),
             ];
         }
 

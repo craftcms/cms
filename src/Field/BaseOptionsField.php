@@ -496,7 +496,7 @@ abstract class BaseOptionsField extends Field implements CrossSiteCopyableFieldI
                     $value = $element->getFieldValue($this->handle);
                     $options = $value instanceof MultiOptionsFieldData ? $value : [$value];
                     if (Collection::make($options)->contains(fn (OptionData $option) => ! $option->valid)) {
-                        $element->addError($this->handle, Craft::t('yii', '{attribute} is invalid.', [
+                        $element->addError($this->handle, t('{attribute} is invalid.', [
                             'attribute' => t($this->name, category: 'site'),
                         ]));
                     }
@@ -675,7 +675,7 @@ abstract class BaseOptionsField extends Field implements CrossSiteCopyableFieldI
     }
 
     /**
-     * Returns the field options, with labels run through Craft::t().
+     * Returns the field options, with labels run through t().
      *
      * @param  bool  $encode  Whether the option values should be base64-encoded
      * @param  mixed  $value  The field’s value. This will either be the [[normalizeValue()|normalized value]],

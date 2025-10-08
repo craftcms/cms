@@ -293,8 +293,7 @@ abstract class BaseUpdaterController
     protected function noComposerJsonState(): array
     {
         return [
-            'error' => Craft::t('app',
-                'Your composer.json file could not be located. Try setting the CRAFT_COMPOSER_PATH constant in index.php to its location on the server.'),
+            'error' => t('Your composer.json file could not be located. Try setting the CRAFT_COMPOSER_PATH constant in index.php to its location on the server.'),
             'errorDetails' => 'define(\'CRAFT_COMPOSER_PATH\', \'path/to/composer.json\');',
             'options' => [
                 $this->actionOption(t('Try again'), self::ACTION_RECHECK_COMPOSER, ['submit' => true]),

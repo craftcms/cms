@@ -484,22 +484,19 @@ class EntriesController extends BaseEntriesController
 
         if (!empty($errors)) {
             if (count($errors) === count($entries)) {
-                return $this->asFailure(Craft::t(
-                    'app',
+                return $this->asFailure(t(
                     'Couldn’t move entries to the “{name}” section.',
                     ['name' => $section->name]
                 ));
             }
 
-            return $this->asSuccess(Craft::t(
-                'app',
+            return $this->asSuccess(t(
                 'Some entries have been moved to the “{name}” section.',
                 ['name' => $section->name]
             ));
         }
 
-        return $this->asSuccess(Craft::t(
-            'app',
+        return $this->asSuccess(t(
             'Entries have been moved to the “{name}” section.',
             ['name' => $section->name]
         ));

@@ -3980,7 +3980,7 @@ abstract class Element extends Component implements ElementInterface
             if ($canSaveCanonical && $isUnpublishedDraft) {
                 $altActions[] = [
                     'label' => mb_ucfirst(t('Save {type}', [
-                        'type' => Craft::t('app', 'draft'),
+                        'type' => t('draft'),
                     ])),
                     'action' => 'elements/save-draft',
                     'redirect' => sprintf('%s#', ElementHelper::postEditUrl($this)),
@@ -4230,7 +4230,7 @@ JS, [
                 $items[] = [
                     'icon' => 'remove',
                     'label' => mb_ucfirst(t('Delete {type} for this site', [
-                        'type' => $isUnpublishedDraft ? Craft::t('app', 'draft') : static::lowerDisplayName(),
+                        'type' => $isUnpublishedDraft ? t('draft') : static::lowerDisplayName(),
                     ])),
                     'action' => 'elements/delete-for-site',
                     'params' => [
@@ -4239,7 +4239,7 @@ JS, [
                     ],
                     'redirect' => "$redirectUrl#",
                     'confirm' => t('Are you sure you want to delete the {type} for this site?', [
-                        'type' => $isUnpublishedDraft ? Craft::t('app', 'draft') : static::lowerDisplayName(),
+                        'type' => $isUnpublishedDraft ? t('draft') : static::lowerDisplayName(),
                     ]),
                     'destructive' => true,
                 ];
@@ -4250,7 +4250,7 @@ JS, [
                 $items[] = [
                     'icon' => 'trash',
                     'label' => mb_ucfirst(t('Delete {type}', [
-                        'type' => $isUnpublishedDraft ? Craft::t('app', 'draft') : static::lowerDisplayName(),
+                        'type' => $isUnpublishedDraft ? t('draft') : static::lowerDisplayName(),
                     ])),
                     'action' => $isUnpublishedDraft ? 'elements/delete-draft' : 'elements/delete',
                     'params' => [
@@ -4259,7 +4259,7 @@ JS, [
                     ],
                     'redirect' => "$redirectUrl#",
                     'confirm' => t('Are you sure you want to delete this {type}?', [
-                        'type' => $isUnpublishedDraft ? Craft::t('app', 'draft') : static::lowerDisplayName(),
+                        'type' => $isUnpublishedDraft ? t('draft') : static::lowerDisplayName(),
                     ]),
                     'destructive' => true,
                 ];
@@ -4270,7 +4270,7 @@ JS, [
                 $items[] = [
                     'icon' => 'remove',
                     'label' => mb_ucfirst(t('Delete {type} for this site', [
-                        'type' => Craft::t('app', 'draft'),
+                        'type' => t('draft'),
                     ])),
                     'action' => 'elements/delete-for-site',
                     'params' => [
@@ -4290,7 +4290,7 @@ JS, [
             $items[] = [
                 'icon' => 'trash',
                 'label' => mb_ucfirst(t('Delete {type}', [
-                    'type' => Craft::t('app', 'draft'),
+                    'type' => t('draft'),
                 ])),
                 'action' => 'elements/delete-draft',
                 'params' => [
@@ -4300,7 +4300,7 @@ JS, [
                 ],
                 'redirect' => $canonical->getCpEditUrl(),
                 'confirm' => t('Are you sure you want to delete this {type}?', [
-                    'type' => Craft::t('app', 'draft'),
+                    'type' => t('draft'),
                 ]),
                 'destructive' => true,
             ];

@@ -792,7 +792,7 @@ JS;
                     $error = null;
                     if (! $linkType->validateValue($value, $error)) {
                         /** @var string|null $error */
-                        $element->addError("field:$this->handle", $error ?? Craft::t('yii', '{attribute} is invalid.', [
+                        $element->addError("field:$this->handle", $error ?? t('{attribute} is invalid.', [
                             'attribute' => $this->getUiLabel(),
                         ]));
 

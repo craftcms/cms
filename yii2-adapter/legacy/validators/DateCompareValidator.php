@@ -13,6 +13,7 @@ use DateTime;
 use yii\base\InvalidConfigException;
 use yii\base\InvalidValueException;
 use yii\validators\Validator;
+use function CraftCms\Cms\t;
 
 /**
  * Class DateCompareValidator.
@@ -69,12 +70,12 @@ class DateCompareValidator extends Validator
 
         if (!isset($this->message)) {
             $this->message = match ($this->operator) {
-                '==' => Craft::t('yii', '{attribute} must be equal to "{compareValueOrAttribute}".'),
-                '!=' => Craft::t('yii', '{attribute} must not be equal to "{compareValueOrAttribute}".'),
-                '>' => Craft::t('yii', '{attribute} must be greater than "{compareValueOrAttribute}".'),
-                '>=' => Craft::t('yii', '{attribute} must be greater than or equal to "{compareValueOrAttribute}".'),
-                '<' => Craft::t('yii', '{attribute} must be less than "{compareValueOrAttribute}".'),
-                '<=' => Craft::t('yii', '{attribute} must be less than or equal to "{compareValueOrAttribute}".'),
+                '==' => t('{attribute} must be equal to "{compareValueOrAttribute}".'),
+                '!=' => t('{attribute} must not be equal to "{compareValueOrAttribute}".'),
+                '>' => t('{attribute} must be greater than "{compareValueOrAttribute}".'),
+                '>=' => t('{attribute} must be greater than or equal to "{compareValueOrAttribute}".'),
+                '<' => t('{attribute} must be less than "{compareValueOrAttribute}".'),
+                '<=' => t('{attribute} must be less than or equal to "{compareValueOrAttribute}".'),
                 default => throw new InvalidConfigException("Unknown operator: $this->operator"),
             };
         }

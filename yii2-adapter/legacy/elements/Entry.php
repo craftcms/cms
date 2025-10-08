@@ -2582,14 +2582,8 @@ JS, [
      */
     private function _applyActionBtnEntryTypeCompatibility(): void
     {
-        $draftMessage = Craft::t(
-            'app',
-            'This draft’s entry type is no longer available. You can still view it, but not apply it.'
-        );
-        $revisionMessage = Craft::t(
-            'app',
-            'This revision’s entry type is no longer available. You can still view it, but not revert to it.'
-        );
+        $draftMessage = t('This draft’s entry type is no longer available. You can still view it, but not apply it.');
+        $revisionMessage = t('This revision’s entry type is no longer available. You can still view it, but not revert to it.');
 
         if (!$this->isEntryTypeCompatible()) {
             $js = <<<JS

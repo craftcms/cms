@@ -7,9 +7,9 @@
 
 namespace craft\i18n;
 
-use Craft;
 use CraftCms\Cms\Support\Json;
 use InvalidArgumentException;
+use function CraftCms\Cms\t;
 
 /**
  * Translation helper
@@ -52,6 +52,6 @@ abstract class Translation
             return $translation;
         }
 
-        return Craft::t(...$args);
+        return t(...$args);
     }
 }

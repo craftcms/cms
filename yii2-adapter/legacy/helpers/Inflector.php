@@ -7,8 +7,8 @@
 
 namespace craft\helpers;
 
-use Craft;
 use yii\helpers\Inflector as BaseInflector;
+use function CraftCms\Cms\t;
 
 /**
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
@@ -19,7 +19,7 @@ class Inflector extends BaseInflector
     public static function sentence(array $words, $twoWordsConnector = null, $lastWordConnector = null, $connector = ', ')
     {
         // In this house we use Oxford commas
-        $lastWordConnector ??= sprintf(',%s', Craft::t('yii', ' and '));
+        $lastWordConnector ??= sprintf(',%s', t(' and '));
         return parent::sentence($words, $twoWordsConnector, $lastWordConnector, $connector);
     }
 }

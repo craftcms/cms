@@ -110,7 +110,7 @@ class MailSettings extends Model
                 foreach (['fromEmail', 'replyToEmail'] as $key) {
                     if (isset($overrides[$key]) && !str_starts_with($overrides[$key], '$')) {
                         $validator = new EmailValidator([
-                            'message' => Craft::t('yii', '{attribute} is not a valid email address.', [
+                            'message' => t('{attribute} is not a valid email address.', [
                                 'attribute' => sprintf(
                                     '%s - %s',
                                     $sitesService->getSiteByUid($siteUid)->getUiLabel(),

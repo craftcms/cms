@@ -3084,7 +3084,7 @@ class GeneralConfig extends BaseConfig
 
     /**
      * @var bool Whether translated messages should be wrapped in special characters to help find any strings that are not being run through
-     *           `Craft::t()` or the `|translate` filter.
+     *           `t()` or the `|translate` filter.
      *
      * ::: code
      * ```php Static Config
@@ -6783,7 +6783,7 @@ class GeneralConfig extends BaseConfig
 
     /**
      * Whether translated messages should be wrapped in special characters to help find any strings that are not being run through
-     * `Craft::t()` or the `|translate` filter.
+     * `t()` or the `|translate` filter.
      *
      * ```php
      * ->translationDebugOutput(true)

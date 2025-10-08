@@ -163,8 +163,7 @@ class Raster extends Image
         }
 
         if (!$imageService->checkMemoryForImage($path)) {
-            throw new ImageException(Craft::t('app',
-                'Not enough memory available to perform this image operation.'));
+            throw new ImageException(t('Not enough memory available to perform this image operation.'));
         }
 
         // Make sure the image says it's an image

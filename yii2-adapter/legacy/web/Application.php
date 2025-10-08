@@ -610,7 +610,7 @@ class Application extends \yii\web\Application
             } catch (Throwable $e) {
                 $this->_unregisterDebugModule();
                 if ($e instanceof InvalidRouteException) {
-                    throw new NotFoundHttpException(Craft::t('yii', 'Page not found.'), $e->getCode(), $e);
+                    throw new NotFoundHttpException(t('Page not found.'), $e->getCode(), $e);
                 }
                 throw $e;
             }

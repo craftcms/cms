@@ -418,11 +418,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
             $params = [];
         }
 
-        try {
-            return Craft::t($category, (string)$message, $params, $language);
-        } catch (InvalidConfigException) {
-            return $message;
-        }
+        return t((string) $message, $params, $category, $language);
     }
 
     /**

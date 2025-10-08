@@ -234,9 +234,10 @@ class Assets extends Component
         ]);
 
         if ($existingFolder && (!$folder->id || $folder->id !== $existingFolder->id)) {
-            throw new FsObjectExistsException(Craft::t('app',
+            throw new FsObjectExistsException(t(
                 'A folder with the name “{folderName}” already exists in the volume.',
-                ['folderName' => $folder->name]));
+                ['folderName' => $folder->name]
+            ));
         }
 
         $volume = $parent->getVolume();

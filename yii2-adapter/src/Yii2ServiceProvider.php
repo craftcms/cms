@@ -21,6 +21,7 @@ use CraftCms\Cms\Field\Field;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Env;
 use CraftCms\Cms\Support\Facades\Deprecator;
+use CraftCms\Cms\Support\Facades\Lang;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Yii2Adapter\Console\LegacyCraftCommand;
 use CraftCms\Yii2Adapter\Console\MigrateMigrationTableCommand;
@@ -36,6 +37,10 @@ use Illuminate\Support\ServiceProvider;
 use RuntimeException;
 use Symfony\Component\Finder\Finder;
 use yii\BaseYii;
+use Yiisoft\Translator\CategorySource;
+use Yiisoft\Translator\IntlMessageFormatter;
+use Yiisoft\Translator\Message\Php\MessageSource;
+use Yiisoft\Translator\Translator;
 
 class Yii2ServiceProvider extends ServiceProvider
 {
@@ -198,6 +203,20 @@ class Yii2ServiceProvider extends ServiceProvider
          */
         $connection = Config::get('database.default');
         Config::set("database.connections.{$connection}.prefix", Env::get('DB_TABLE_PREFIX'));
+
+        /**
+         * Add fallback for when translations are still stored in `/translations`
+         */
+        if (is_dir(base_path('translations'))) {
+            Deprecator::log('translations-path', 'Storing site translations in `/translations` is deprecated. Rename the folder to `lang` instead.');
+
+            $translator = app(Translator::class);
+            $translator->addCategorySources(new CategorySource(
+                'site',
+                new MessageSource(base_path('translations')),
+                new IntlMessageFormatter(),
+            ));
+        }
 
         /**
          * Load Craft

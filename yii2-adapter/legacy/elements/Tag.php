@@ -237,7 +237,7 @@ class Tag extends Element
         }
 
         if ($query->exists()) {
-            $validator->addError($this, $attribute, Craft::t('yii', '{attribute} "{value}" has already been taken.'));
+            $validator->addError($this, $attribute, t('{attribute} "{value}" has already been taken.'));
         }
     }
 

@@ -51,6 +51,8 @@ use Symfony\Component\HttpKernel\Exception\HttpException;
 use Throwable;
 use yii\base\Module;
 
+use function CraftCms\Cms\t;
+
 #[Singleton]
 final class Plugins
 {
@@ -213,7 +215,7 @@ final class Plugins
                 ! str_ends_with($row['version'], '-dev') &&
                 version_compare($row['version'], $plugin->minVersionRequired, '<')
             ) {
-                throw new HttpException(200, Craft::t('app',
+                throw new HttpException(200, t(
                     'You need to be on at least {plugin} {version} before you can update to {plugin} {targetVersion}.',
                     [
                         'version' => $plugin->minVersionRequired,

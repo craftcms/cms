@@ -1583,7 +1583,7 @@ class View extends \yii\web\View
         $js = '';
 
         foreach ($messages as $message) {
-            $translation = Craft::t($category, $message);
+            $translation = t($message, category: $category);
             if ($translation !== $message) {
                 $jsMessage = Json::encode($message);
                 $jsTranslation = Json::encode($translation);
