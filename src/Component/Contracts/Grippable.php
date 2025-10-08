@@ -1,6 +1,6 @@
 <?php
 
-namespace CraftCms\Cms\Shared\Contracts;
+namespace CraftCms\Cms\Component\Contracts;
 
 /**
  * Grippable defines the common interface to be implemented by components that

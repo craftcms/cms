@@ -20,15 +20,15 @@ use craft\helpers\UrlHelper;
 use craft\records\EntryType as EntryTypeRecord;
 use craft\validators\HandleValidator;
 use craft\validators\UniqueValidator;
+use CraftCms\Cms\Component\Contracts\Actionable;
+use CraftCms\Cms\Component\Contracts\Chippable;
+use CraftCms\Cms\Component\Contracts\Colorable;
+use CraftCms\Cms\Component\Contracts\CpEditable;
+use CraftCms\Cms\Component\Contracts\Iconic;
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Field\Contracts\ElementContainerFieldInterface;
 use CraftCms\Cms\Field\Field;
 use CraftCms\Cms\Field\Fields;
-use CraftCms\Cms\Shared\Contracts\Actionable;
-use CraftCms\Cms\Shared\Contracts\Chippable;
-use CraftCms\Cms\Shared\Contracts\Colorable;
-use CraftCms\Cms\Shared\Contracts\CpEditable;
-use CraftCms\Cms\Shared\Contracts\Iconic;
 use CraftCms\Cms\Shared\Enums\Color;
 
 /**

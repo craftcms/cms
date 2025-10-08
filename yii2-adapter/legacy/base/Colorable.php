@@ -6,11 +6,11 @@ namespace craft\base;
 if (false) {
     /**
      * @since 5.0.0
-     * @deprecated 6.0.0 use {@see \CraftCms\Cms\Shared\Contracts\Colorable} instead.
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\Component\Contracts\Colorable} instead.
      */
     interface Colorable
     {
     }
 }
 
-class_alias(\CraftCms\Cms\Shared\Contracts\Colorable::class, Colorable::class);
+class_alias(\CraftCms\Cms\Component\Contracts\Colorable::class, Colorable::class);

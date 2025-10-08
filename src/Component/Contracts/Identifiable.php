@@ -1,6 +1,6 @@
 <?php
 
-namespace CraftCms\Cms\Shared\Contracts;
+namespace CraftCms\Cms\Component\Contracts;
 
 interface Identifiable
 {

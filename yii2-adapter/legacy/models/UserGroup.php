@@ -13,11 +13,11 @@ use craft\base\Model;
 use craft\records\UserGroup as UserGroupRecord;
 use craft\validators\HandleValidator;
 use craft\validators\UniqueValidator;
+use CraftCms\Cms\Component\Contracts\Actionable;
+use CraftCms\Cms\Component\Contracts\Chippable;
+use CraftCms\Cms\Component\Contracts\CpEditable;
+use CraftCms\Cms\Component\Contracts\Grippable;
 use CraftCms\Cms\Config\GeneralConfig;
-use CraftCms\Cms\Shared\Contracts\Actionable;
-use CraftCms\Cms\Shared\Contracts\Chippable;
-use CraftCms\Cms\Shared\Contracts\CpEditable;
-use CraftCms\Cms\Shared\Contracts\Grippable;
 
 /**
  * UserGroup model class.

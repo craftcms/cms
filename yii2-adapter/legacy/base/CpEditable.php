@@ -6,11 +6,11 @@ namespace craft\base;
 if (false) {
     /**
      * @since 5.0.0
-     * @deprecated 6.0.0 use {@see \CraftCms\Cms\Shared\Contracts\CpEditable} instead.
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\Component\Contracts\CpEditable} instead.
      */
     interface CpEditable
     {
     }
 }
 
-class_alias(\CraftCms\Cms\Shared\Contracts\CpEditable::class, CpEditable::class);
+class_alias(\CraftCms\Cms\Component\Contracts\CpEditable::class, CpEditable::class);
