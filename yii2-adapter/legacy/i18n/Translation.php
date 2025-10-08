@@ -52,6 +52,11 @@ abstract class Translation
             return $translation;
         }
 
-        return t(...$args);
+        $category = $args[0] ?? null;
+        $message = $args[1] ?? '';
+        $params = $args[2] ?? [];
+        $language = $args[3] ?? null;
+
+        return t($message, $params, $category, $language);
     }
 }
