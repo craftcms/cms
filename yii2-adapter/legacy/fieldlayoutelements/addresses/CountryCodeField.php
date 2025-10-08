@@ -16,6 +16,7 @@ use craft\helpers\Cp;
 use CraftCms\Cms\Addresses\Addresses;
 use CraftCms\Cms\Support\Html;
 use yii\base\InvalidArgumentException;
+use function CraftCms\Cms\t;
 
 /**
  * Class CountryCodeField.
@@ -85,7 +86,7 @@ class CountryCodeField extends BaseNativeField
      */
     public function defaultLabel(?ElementInterface $element = null, bool $static = false): ?string
     {
-        return Craft::t('app', 'Country');
+        return t('Country');
     }
 
     /**

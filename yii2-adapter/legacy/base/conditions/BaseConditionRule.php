@@ -2,12 +2,12 @@
 
 namespace craft\base\conditions;
 
-use Craft;
 use craft\base\Component;
 use craft\helpers\Cp;
 use craft\helpers\UrlHelper;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Str;
+use function CraftCms\Cms\t;
 
 /**
  * BaseConditionRule provides a base implementation for condition rules.
@@ -169,19 +169,19 @@ abstract class BaseConditionRule extends Component implements ConditionRuleInter
     protected function operatorLabel(string $operator): string
     {
         return match ($operator) {
-            self::OPERATOR_EQ => Craft::t('app', 'equals'),
-            self::OPERATOR_NE => Craft::t('app', 'does not equal'),
-            self::OPERATOR_LT => Craft::t('app', 'is less than'),
-            self::OPERATOR_LTE => Craft::t('app', 'is less than or equals'),
-            self::OPERATOR_GT => Craft::t('app', 'is greater than'),
-            self::OPERATOR_GTE => Craft::t('app', 'is greater than or equals'),
-            self::OPERATOR_BEGINS_WITH => Craft::t('app', 'begins with'),
-            self::OPERATOR_ENDS_WITH => Craft::t('app', 'ends with'),
-            self::OPERATOR_CONTAINS => Craft::t('app', 'contains'),
-            self::OPERATOR_IN => Craft::t('app', 'is one of'),
-            self::OPERATOR_NOT_IN => Craft::t('app', 'is not one of'),
-            self::OPERATOR_EMPTY => Craft::t('app', 'is empty'),
-            self::OPERATOR_NOT_EMPTY => Craft::t('app', 'has a value'),
+            self::OPERATOR_EQ => t('equals'),
+            self::OPERATOR_NE => t('does not equal'),
+            self::OPERATOR_LT => t('is less than'),
+            self::OPERATOR_LTE => t('is less than or equals'),
+            self::OPERATOR_GT => t('is greater than'),
+            self::OPERATOR_GTE => t('is greater than or equals'),
+            self::OPERATOR_BEGINS_WITH => t('begins with'),
+            self::OPERATOR_ENDS_WITH => t('ends with'),
+            self::OPERATOR_CONTAINS => t('contains'),
+            self::OPERATOR_IN => t('is one of'),
+            self::OPERATOR_NOT_IN => t('is not one of'),
+            self::OPERATOR_EMPTY => t('is empty'),
+            self::OPERATOR_NOT_EMPTY => t('has a value'),
             default => $operator,
         };
     }
@@ -199,7 +199,7 @@ abstract class BaseConditionRule extends Component implements ConditionRuleInter
             ]) .
             (count($operators) > 1
                 ? (
-                    Html::hiddenLabel(Craft::t('app', 'Operator'), 'operator') .
+                    Html::hiddenLabel(t('Operator'), 'operator') .
                     Cp::selectHtml([
                         'id' => 'operator',
                         'name' => 'operator',

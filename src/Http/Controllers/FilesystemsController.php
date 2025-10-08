@@ -14,6 +14,8 @@ use CraftCms\Cms\Support\Html;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
 
+use function CraftCms\Cms\t;
+
 final class FilesystemsController
 {
     use RespondsWithFlash;
@@ -81,15 +83,15 @@ final class FilesystemsController
         $fsOptions = Arr::sort($fsOptions, 'label');
 
         if ($handle && $fsService->getFilesystemByHandle($handle)) {
-            $title = trim($filesystem->name ?: Craft::t('app', 'Edit Filesystem'));
+            $title = trim($filesystem->name ?: t('Edit Filesystem'));
         } else {
-            $title = Craft::t('app', 'Create a new filesystem');
+            $title = t('Create a new filesystem');
         }
 
         return new CpScreenResponse()
             ->title($title)
-            ->addCrumb(Craft::t('app', 'Settings'), 'settings')
-            ->addCrumb(Craft::t('app', 'Filesystems'), 'settings/filesystems')
+            ->addCrumb(t('Settings'), 'settings')
+            ->addCrumb(t('Filesystems'), 'settings/filesystems')
             ->contentTemplate('settings/filesystems/_edit.twig', [
                 'oldHandle' => $handle,
                 'filesystem' => $filesystem,
@@ -104,7 +106,7 @@ final class FilesystemsController
                     $response
                         ->action('fs/save')
                         ->redirectUrl('settings/filesystems')
-                        ->addAltAction(Craft::t('app', 'Save and continue editing'), [
+                        ->addAltAction(t('Save and continue editing'), [
                             'redirect' => 'settings/filesystems/{handle}',
                             'shortcut' => true,
                             'retainScroll' => true,
@@ -131,10 +133,10 @@ final class FilesystemsController
         ]);
 
         if (! $fsService->saveFilesystem($fs)) {
-            return $this->asModelFailure($fs, Craft::t('app', 'Couldn’t save filesystem.'), 'filesystem');
+            return $this->asModelFailure($fs, t('Couldn’t save filesystem.'), 'filesystem');
         }
 
-        return $this->asModelSuccess($fs, Craft::t('app', 'Filesystem saved.'), 'filesystem');
+        return $this->asModelSuccess($fs, t('Filesystem saved.'), 'filesystem');
     }
 
     public function delete(Request $request): Response

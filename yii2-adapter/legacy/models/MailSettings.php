@@ -14,6 +14,7 @@ use craft\mail\transportadapters\Sendmail;
 use craft\mail\transportadapters\TransportAdapterInterface;
 use craft\validators\TemplateValidator;
 use yii\validators\EmailValidator;
+use function CraftCms\Cms\t;
 
 /**
  * MailSettings Model class.
@@ -84,12 +85,12 @@ class MailSettings extends Model
     public function attributeLabels(): array
     {
         return [
-            'fromEmail' => Craft::t('app', 'System Email Address'),
-            'replyToEmail' => Craft::t('app', 'Reply-To Address'),
-            'fromName' => Craft::t('app', 'Sender Name'),
-            'template' => Craft::t('app', 'HTML Email Template'),
-            'transportType' => Craft::t('app', 'Transport Type'),
-            'siteOverrides' => Craft::t('app', 'Site Overrides'),
+            'fromEmail' => t('System Email Address'),
+            'replyToEmail' => t('Reply-To Address'),
+            'fromName' => t('Sender Name'),
+            'template' => t('HTML Email Template'),
+            'transportType' => t('Transport Type'),
+            'siteOverrides' => t('Site Overrides'),
         ];
     }
 

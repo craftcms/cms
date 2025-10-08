@@ -20,6 +20,7 @@ use Illuminate\Support\Facades\DB;
 use Tpetry\QueryExpressions\Language\Alias;
 use yii\base\Exception;
 use yii\base\Response;
+use function CraftCms\Cms\t;
 
 /**
  * The ChartsController class is a controller that handles charts related operations such as preparing and returning data,
@@ -68,7 +69,7 @@ class ChartsController extends Controller
         // Get the chart data table
         $dataTable = ChartHelper::getRunChartDataFromQuery($query, $startDate, $endDate, 'users.dateCreated', 'count', '*', [
             'intervalUnit' => $intervalUnit,
-            'valueLabel' => Craft::t('app', 'New {type}', [
+            'valueLabel' => t('New {type}', [
                 'type' => User::pluralDisplayName(),
             ]),
         ]);

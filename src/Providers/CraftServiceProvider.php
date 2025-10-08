@@ -11,6 +11,7 @@ use CraftCms\Cms\Field\FieldsServiceProvider;
 use CraftCms\Cms\License\LicenseServiceProvider;
 use CraftCms\Cms\Plugin\PluginServiceProvider;
 use CraftCms\Cms\ProjectConfig\ProjectConfigServiceProvider;
+use CraftCms\Cms\Translation\TranslationServiceProvider;
 use CraftCms\Cms\Twig\TwigServiceProvider;
 use CraftCms\Cms\Updates\UpdatesServiceProvider;
 use CraftCms\Cms\User\UserServiceProvider;
@@ -21,6 +22,7 @@ final class CraftServiceProvider extends AggregateServiceProvider
     protected $providers = [
         ConfigServiceProvider::class,
         FilesystemServiceProvider::class,
+        TranslationServiceProvider::class,
         DatabaseServiceProvider::class,
         TwigServiceProvider::class,
         ProjectConfigServiceProvider::class,

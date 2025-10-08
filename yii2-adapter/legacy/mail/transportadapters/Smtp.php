@@ -11,6 +11,7 @@ use Craft;
 use craft\behaviors\EnvAttributeParserBehavior;
 use CraftCms\Cms\Support\Env;
 use Symfony\Component\Mailer\Transport\AbstractTransport;
+use function CraftCms\Cms\t;
 
 /**
  * Smtp implements a SMTP transport adapter into Craft’s mailer.
@@ -91,11 +92,11 @@ class Smtp extends BaseTransportAdapter
     public function attributeLabels(): array
     {
         return [
-            'host' => Craft::t('app', 'Hostname'),
-            'port' => Craft::t('app', 'Port'),
-            'useAuthentication' => Craft::t('app', 'Use authentication'),
-            'username' => Craft::t('app', 'Username'),
-            'password' => Craft::t('app', 'Password'),
+            'host' => t('Hostname'),
+            'port' => t('Port'),
+            'useAuthentication' => t('Use authentication'),
+            'username' => t('Username'),
+            'password' => t('Password'),
         ];
     }
 

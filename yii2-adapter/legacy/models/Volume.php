@@ -28,6 +28,7 @@ use CraftCms\Cms\Support\Env;
 use CraftCms\Cms\Support\Str;
 use Generator;
 use yii\base\InvalidConfigException;
+use function CraftCms\Cms\t;
 
 /**
  * Volume model class.
@@ -194,7 +195,7 @@ class Volume extends Model implements
      */
     public function getUiLabel(): string
     {
-        return Craft::t('site', $this->name);
+        return t($this->name, category: 'site');
     }
 
     /**
@@ -225,13 +226,13 @@ class Volume extends Model implements
     public function attributeLabels(): array
     {
         return [
-            'handle' => Craft::t('app', 'Handle'),
-            'name' => Craft::t('app', 'Name'),
-            'url' => Craft::t('app', 'URL'),
-            'fsHandle' => Craft::t('app', 'Asset Filesystem'),
-            'subpath' => Craft::t('app', 'Subpath'),
-            'transformFsHandle' => Craft::t('app', 'Transform Filesystem'),
-            'transformSubpath' => Craft::t('app', 'Transform Subpath'),
+            'handle' => t('Handle'),
+            'name' => t('Name'),
+            'url' => t('URL'),
+            'fsHandle' => t('Asset Filesystem'),
+            'subpath' => t('Subpath'),
+            'transformFsHandle' => t('Transform Filesystem'),
+            'transformSubpath' => t('Transform Subpath'),
         ];
     }
 
@@ -268,7 +269,7 @@ class Volume extends Model implements
                 'compareAttribute' => 'fsHandle',
                 'compareValue' => $tempAssetUploadFs,
                 'operator' => '!=',
-                'message' => Craft::t('app', 'This filesystem has been reserved for temporary asset uploads. Please choose a different one for your volume.'),
+                'message' => t('This filesystem has been reserved for temporary asset uploads. Please choose a different one for your volume.'),
             ];
             $rules[] = [
                 ['transformFsHandle'],
@@ -276,7 +277,7 @@ class Volume extends Model implements
                 'compareAttribute' => 'transformFsHandle',
                 'compareValue' => $tempAssetUploadFs,
                 'operator' => '!=',
-                'message' => Craft::t('app', 'This filesystem has been reserved for temporary asset uploads. Please choose a different one for your volume.'),
+                'message' => t('This filesystem has been reserved for temporary asset uploads. Please choose a different one for your volume.'),
             ];
         }
 
@@ -307,13 +308,13 @@ class Volume extends Model implements
         // if there are other volumes using the same FS
         // and this volume wants to have an empty subpath - add error
         if (!empty($records) && empty($this->$attribute)) {
-            $this->addError($attribute, Craft::t('app', 'A subpath is required for this filesystem.'));
+            $this->addError($attribute, t('A subpath is required for this filesystem.'));
         }
 
         // make sure subpath starts with a unique dir across all volumes that use this FS
         foreach ($records as $record) {
             if (strcmp(explode('/', $record[$attribute])[0], explode('/', $this->$attribute)[0]) === 0) {
-                $this->addError($attribute, Craft::t('app', 'The subpath cannot overlap with any other volumes sharing the same filesystem.'));
+                $this->addError($attribute, t('The subpath cannot overlap with any other volumes sharing the same filesystem.'));
             }
         }
     }

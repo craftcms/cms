@@ -13,6 +13,7 @@ use craft\i18n\Locale;
 use DateTime;
 use yii\base\InvalidConfigException;
 use yii\validators\Validator;
+use function CraftCms\Cms\t;
 
 /**
  * Class TimeValidator.
@@ -55,15 +56,15 @@ class TimeValidator extends Validator
         parent::init();
 
         if (!isset($this->message)) {
-            $this->message = Craft::t('app', '{attribute} must be a time.');
+            $this->message = t('{attribute} must be a time.');
         }
 
         if (isset($this->min) && !isset($this->tooEarly)) {
-            $this->tooEarly = Craft::t('app', '{attribute} must be no earlier than {min}.');
+            $this->tooEarly = t('{attribute} must be no earlier than {min}.');
         }
 
         if (isset($this->max) && !isset($this->tooLate)) {
-            $this->tooLate = Craft::t('app', '{attribute} must be no later than {max}.');
+            $this->tooLate = t('{attribute} must be no later than {max}.');
         }
     }
 

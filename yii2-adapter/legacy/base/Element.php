@@ -121,6 +121,7 @@ use yii\validators\BooleanValidator;
 use yii\validators\RequiredValidator;
 use yii\validators\Validator;
 use yii\web\Response;
+use function CraftCms\Cms\t;
 
 /**
  * Element is the base class for classes representing elements in terms of objects.
@@ -832,7 +833,7 @@ abstract class Element extends Component implements ElementInterface
      */
     public static function displayName(): string
     {
-        return Craft::t('app', 'Element');
+        return t('Element');
     }
 
     /**
@@ -848,7 +849,7 @@ abstract class Element extends Component implements ElementInterface
      */
     public static function pluralDisplayName(): string
     {
-        return Craft::t('app', 'Elements');
+        return t('Elements');
     }
 
     /**
@@ -929,8 +930,8 @@ abstract class Element extends Component implements ElementInterface
     public static function statuses(): array
     {
         return [
-            self::STATUS_ENABLED => Craft::t('app', 'Enabled'),
-            self::STATUS_DISABLED => Craft::t('app', 'Disabled'),
+            self::STATUS_ENABLED => t('Enabled'),
+            self::STATUS_DISABLED => t('Disabled'),
         ];
     }
 
@@ -1103,7 +1104,7 @@ abstract class Element extends Component implements ElementInterface
         if (!$hasActionType(Edit::class)) {
             $actions->prepend([
                 'type' => Edit::class,
-                'label' => mb_ucfirst(Craft::t('app', 'Edit {type}', [
+                'label' => mb_ucfirst(t('Edit {type}', [
                     'type' => static::lowerDisplayName(),
                 ])),
             ]);
@@ -1113,7 +1114,7 @@ abstract class Element extends Component implements ElementInterface
         if (static::hasUris() && !$hasActionType(ViewAction::class)) {
             $actions->prepend([
                 'type' => ViewAction::class,
-                'label' => mb_ucfirst(Craft::t('app', 'View {type}', [
+                'label' => mb_ucfirst(t('View {type}', [
                     'type' => static::lowerDisplayName(),
                 ])),
             ]);
@@ -1480,13 +1481,13 @@ abstract class Element extends Component implements ElementInterface
         $viewModes = [
             [
                 'mode' => 'structure',
-                'title' => Craft::t('app', 'Display in a structured table'),
+                'title' => t('Display in a structured table'),
                 'icon' => Craft::$app->getLocale()->getOrientation() === 'rtl' ? 'structurertl' : 'structure',
                 'structuresOnly' => true,
             ],
             [
                 'mode' => 'table',
-                'title' => Craft::t('app', 'Display in a table'),
+                'title' => t('Display in a table'),
                 'icon' => 'list',
                 'availableOnMobile' => false,
             ],
@@ -1495,14 +1496,14 @@ abstract class Element extends Component implements ElementInterface
         if (static::hasThumbs()) {
             $viewModes[] = [
                 'mode' => 'thumbs',
-                'title' => Craft::t('app', 'Display as thumbnails'),
+                'title' => t('Display as thumbnails'),
                 'icon' => 'grid',
             ];
         }
 
         $viewModes[] = [
             'mode' => 'cards',
-            'title' => Craft::t('app', 'Display as cards'),
+            'title' => t('Display as cards'),
             'icon' => 'element-cards',
         ];
 
@@ -1518,7 +1519,7 @@ abstract class Element extends Component implements ElementInterface
 
         // Make sure ID is listed first
         $sortOptions = [
-            'id' => Craft::t('app', 'ID'),
+            'id' => t('ID'),
             ...Arr::except($sortOptions, 'id'),
         ];
 
@@ -1577,21 +1578,21 @@ abstract class Element extends Component implements ElementInterface
     protected static function defineTableAttributes(): array
     {
         $attributes = [
-            'dateCreated' => ['label' => Craft::t('app', 'Date Created')],
-            'dateUpdated' => ['label' => Craft::t('app', 'Date Updated')],
-            'id' => ['label' => Craft::t('app', 'ID')],
-            'uid' => ['label' => Craft::t('app', 'UID')],
+            'dateCreated' => ['label' => t('Date Created')],
+            'dateUpdated' => ['label' => t('Date Updated')],
+            'id' => ['label' => t('ID')],
+            'uid' => ['label' => t('UID')],
         ];
 
         if (static::hasStatuses()) {
-            $attributes['status'] = ['label' => Craft::t('app', 'Status')];
+            $attributes['status'] = ['label' => t('Status')];
         }
 
         if (static::hasUris()) {
             $attributes = array_merge($attributes, [
-                'link' => ['label' => Craft::t('app', 'Link'), 'icon' => 'world'],
-                'slug' => ['label' => Craft::t('app', 'Slug')],
-                'uri' => ['label' => Craft::t('app', 'URI')],
+                'link' => ['label' => t('Link'), 'icon' => 'world'],
+                'slug' => ['label' => t('Slug')],
+                'uri' => ['label' => t('URI')],
             ]);
         }
 
@@ -1664,19 +1665,19 @@ abstract class Element extends Component implements ElementInterface
         // we're intentionally not including statuses as those already show in cards
         $attributes = [
             'dateCreated' => [
-                'label' => Craft::t('app', 'Date Created'),
+                'label' => t('Date Created'),
                 'placeholder' => fn() => (new DateTime())->sub(new DateInterval('P16D')),
             ],
             'dateUpdated' => [
-                'label' => Craft::t('app', 'Date Updated'),
+                'label' => t('Date Updated'),
                 'placeholder' => fn() => (new DateTime())->sub(new DateInterval('P15D')),
             ],
             'id' => [
-                'label' => Craft::t('app', 'ID'),
+                'label' => t('ID'),
                 'placeholder' => fn() => 4321,
             ],
             'uid' => [
-                'label' => Craft::t('app', 'UID'),
+                'label' => t('UID'),
                 'placeholder' => fn() => 'xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx',
             ],
         ];
@@ -1684,16 +1685,16 @@ abstract class Element extends Component implements ElementInterface
         if (static::hasUris()) {
             $attributes = array_merge($attributes, [
                 'link' => [
-                    'label' => Craft::t('app', 'Link'),
+                    'label' => t('Link'),
                     'placeholder' => fn() => ElementHelper::linkAttributeHtml('#'),
                 ],
                 'slug' => [
-                    'label' => Craft::t('app', 'Slug'),
-                    'placeholder' => fn() => Craft::t('app', 'Slug'),
+                    'label' => t('Slug'),
+                    'placeholder' => fn() => t('Slug'),
                 ],
                 'uri' => [
-                    'label' => Craft::t('app', 'URI'),
-                    'placeholder' => fn() => ElementHelper::uriAttributeHtml(Craft::t('app', 'link/to/something'), '#'),
+                    'label' => t('URI'),
+                    'placeholder' => fn() => ElementHelper::uriAttributeHtml(t('link/to/something'), '#'),
                 ],
             ]);
         }
@@ -2594,7 +2595,7 @@ abstract class Element extends Component implements ElementInterface
 
         try {
             if (!$this->id || $this->getIsUnpublishedDraft()) {
-                return Craft::t('app', 'New {type}', [
+                return t('New {type}', [
                     'type' => static::lowerDisplayName(),
                 ]);
             }
@@ -2885,13 +2886,13 @@ abstract class Element extends Component implements ElementInterface
     public function attributeLabels(): array
     {
         $labels = [
-            'dateCreated' => Craft::t('app', 'Date Created'),
-            'dateUpdated' => Craft::t('app', 'Date Updated'),
-            'id' => Craft::t('app', 'ID'),
-            'slug' => Craft::t('app', 'Slug'),
-            'title' => Craft::t('app', 'Title'),
-            'uid' => Craft::t('app', 'UID'),
-            'uri' => Craft::t('app', 'URI'),
+            'dateCreated' => t('Date Created'),
+            'dateUpdated' => t('Date Updated'),
+            'id' => t('ID'),
+            'slug' => t('Slug'),
+            'title' => t('Title'),
+            'uid' => t('UID'),
+            'uri' => t('URI'),
         ];
 
         if (Craft::$app->getIsInstalled()) {
@@ -3953,8 +3954,8 @@ abstract class Element extends Component implements ElementInterface
         $altActions = [
             [
                 'label' => $isUnpublishedDraft && $canSaveCanonical
-                    ? Craft::t('app', 'Create and continue editing')
-                    : Craft::t('app', 'Save and continue editing'),
+                    ? t('Create and continue editing')
+                    : t('Save and continue editing'),
                 'redirect' => '{cpEditUrl}',
                 'shortcut' => true,
                 'retainScroll' => true,
@@ -3967,8 +3968,8 @@ abstract class Element extends Component implements ElementInterface
             if ($newElement && $elementsService->canSave($newElement)) {
                 $altActions[] = [
                     'label' => $isUnpublishedDraft && $canSaveCanonical
-                        ? Craft::t('app', 'Create and add another')
-                        : Craft::t('app', 'Save and add another'),
+                        ? t('Create and add another')
+                        : t('Save and add another'),
                     'shortcut' => true,
                     'shift' => true,
                     'eventData' => ['autosave' => false],
@@ -3978,7 +3979,7 @@ abstract class Element extends Component implements ElementInterface
 
             if ($canSaveCanonical && $isUnpublishedDraft) {
                 $altActions[] = [
-                    'label' => mb_ucfirst(Craft::t('app', 'Save {type}', [
+                    'label' => mb_ucfirst(t('Save {type}', [
                         'type' => Craft::t('app', 'draft'),
                     ])),
                     'action' => 'elements/save-draft',
@@ -3989,7 +3990,7 @@ abstract class Element extends Component implements ElementInterface
 
             if (!$this->getIsRevision() && $elementsService->canDuplicateAsDraft($this)) {
                 $altActions[] = [
-                    'label' => Craft::t('app', 'Save as a new {type}', [
+                    'label' => t('Save as a new {type}', [
                         'type' => static::lowerDisplayName(),
                     ]),
                     'action' => 'elements/duplicate',
@@ -4061,7 +4062,7 @@ abstract class Element extends Component implements ElementInterface
             $items[] = [
                 'id' => $validateId,
                 'icon' => 'circle-check',
-                'label' => Craft::t('app', 'Validate {type}', [
+                'label' => t('Validate {type}', [
                     'type' => static::lowerDisplayName(),
                 ]),
             ];
@@ -4098,7 +4099,7 @@ JS, [
             $items[] = [
                 'id' => $viewId,
                 'icon' => 'share',
-                'label' => Craft::t('app', 'View in a new tab'),
+                'label' => t('View in a new tab'),
                 'url' => $url,
                 'attributes' => [
                     'target' => '_blank',
@@ -4115,7 +4116,7 @@ JS, [
             $items[] = [
                 'id' => $editId,
                 'icon' => 'edit',
-                'label' => mb_ucfirst(Craft::t('app', 'Edit {type}', [
+                'label' => mb_ucfirst(t('Edit {type}', [
                     'type' => static::lowerDisplayName(),
                 ])),
             ];
@@ -4143,7 +4144,7 @@ JS, [
                     'id' => $copyId,
                     'color' => Color::Fuchsia,
                     'icon' => 'clone-dashed',
-                    'label' => mb_ucfirst(Craft::t('app', 'Copy {type}', [
+                    'label' => mb_ucfirst(t('Copy {type}', [
                         'type' => static::lowerDisplayName(),
                     ])),
                 ];
@@ -4228,7 +4229,7 @@ JS, [
             if ($canDeleteForSite) {
                 $items[] = [
                     'icon' => 'remove',
-                    'label' => mb_ucfirst(Craft::t('app', 'Delete {type} for this site', [
+                    'label' => mb_ucfirst(t('Delete {type} for this site', [
                         'type' => $isUnpublishedDraft ? Craft::t('app', 'draft') : static::lowerDisplayName(),
                     ])),
                     'action' => 'elements/delete-for-site',
@@ -4237,7 +4238,7 @@ JS, [
                         'siteId' => $this->siteId,
                     ],
                     'redirect' => "$redirectUrl#",
-                    'confirm' => Craft::t('app', 'Are you sure you want to delete the {type} for this site?', [
+                    'confirm' => t('Are you sure you want to delete the {type} for this site?', [
                         'type' => $isUnpublishedDraft ? Craft::t('app', 'draft') : static::lowerDisplayName(),
                     ]),
                     'destructive' => true,
@@ -4248,7 +4249,7 @@ JS, [
             if ($canDeleteCanonical) {
                 $items[] = [
                     'icon' => 'trash',
-                    'label' => mb_ucfirst(Craft::t('app', 'Delete {type}', [
+                    'label' => mb_ucfirst(t('Delete {type}', [
                         'type' => $isUnpublishedDraft ? Craft::t('app', 'draft') : static::lowerDisplayName(),
                     ])),
                     'action' => $isUnpublishedDraft ? 'elements/delete-draft' : 'elements/delete',
@@ -4257,7 +4258,7 @@ JS, [
                         'siteId' => $this->siteId,
                     ],
                     'redirect' => "$redirectUrl#",
-                    'confirm' => Craft::t('app', 'Are you sure you want to delete this {type}?', [
+                    'confirm' => t('Are you sure you want to delete this {type}?', [
                         'type' => $isUnpublishedDraft ? Craft::t('app', 'draft') : static::lowerDisplayName(),
                     ]),
                     'destructive' => true,
@@ -4268,7 +4269,7 @@ JS, [
             if ($canDeleteForSite) {
                 $items[] = [
                     'icon' => 'remove',
-                    'label' => mb_ucfirst(Craft::t('app', 'Delete {type} for this site', [
+                    'label' => mb_ucfirst(t('Delete {type} for this site', [
                         'type' => Craft::t('app', 'draft'),
                     ])),
                     'action' => 'elements/delete-for-site',
@@ -4278,7 +4279,7 @@ JS, [
                         'draftId' => $this->draftId,
                     ],
                     'redirect' => "$redirectUrl#",
-                    'confirm' => Craft::t('app', 'Are you sure you want to delete the {type} for this site?', [
+                    'confirm' => t('Are you sure you want to delete the {type} for this site?', [
                         'type' => static::lowerDisplayName(),
                     ]),
                     'destructive' => true,
@@ -4288,7 +4289,7 @@ JS, [
             // Delete draft
             $items[] = [
                 'icon' => 'trash',
-                'label' => mb_ucfirst(Craft::t('app', 'Delete {type}', [
+                'label' => mb_ucfirst(t('Delete {type}', [
                     'type' => Craft::t('app', 'draft'),
                 ])),
                 'action' => 'elements/delete-draft',
@@ -4298,7 +4299,7 @@ JS, [
                     'draftId' => $this->draftId,
                 ],
                 'redirect' => $canonical->getCpEditUrl(),
-                'confirm' => Craft::t('app', 'Are you sure you want to delete this {type}?', [
+                'confirm' => t('Are you sure you want to delete this {type}?', [
                     'type' => Craft::t('app', 'draft'),
                 ]),
                 'destructive' => true,
@@ -4364,7 +4365,7 @@ JS, [
         $url = $this->getUrl();
         if ($url) {
             $previewTargets[] = [
-                'label' => Craft::t('app', 'Primary {type} page', [
+                'label' => t('Primary {type} page', [
                     'type' => static::lowerDisplayName(),
                 ]),
                 'url' => $url,
@@ -5038,14 +5039,14 @@ JS, [
         if ($this->isAttributeModified($attribute)) {
             return [
                 AttributeStatus::Modified,
-                Craft::t('app', 'This field has been modified.'),
+                t('This field has been modified.'),
             ];
         }
 
         if ($this->isAttributeOutdated($attribute)) {
             return [
                 AttributeStatus::Outdated,
-                Craft::t('app', 'This field was updated in the Current revision.'),
+                t('This field was updated in the Current revision.'),
             ];
         }
 
@@ -5974,7 +5975,7 @@ JS, [
                     if ($element->getIsHomepage()) {
                         $value = Html::tag('span', '', [
                             'data-icon' => 'home',
-                            'title' => Craft::t('app', 'Homepage'),
+                            'title' => t('Homepage'),
                         ]);
                     } else {
                         // Add some <wbr> tags in there so it doesn't all have to be on one line
@@ -6150,7 +6151,7 @@ JS, [
         $metaFieldsHtml = trim($this->metaFieldsHtml($static));
         if ($metaFieldsHtml !== '') {
             $components[] = Html::tag('div', $metaFieldsHtml, ['class' => 'meta']) .
-                Html::tag('h2', Craft::t('app', 'Metadata'), ['class' => 'visually-hidden']);
+                Html::tag('h2', t('Metadata'), ['class' => 'visually-hidden']);
         }
 
         if (!$static && static::hasStatuses() && $this->showStatusField()) {
@@ -6208,7 +6209,7 @@ JS, [
 
         return Cp::textFieldHtml([
             'status' => $this->getAttributeStatus('slug'),
-            'label' => Craft::t('app', 'Slug'),
+            'label' => t('Slug'),
             'siteId' => $this->siteId,
             'translatable' => $this->getIsSlugTranslatable(),
             'translationDescription' => $this->getSlugTranslationDescription(),
@@ -6258,16 +6259,16 @@ JS, [
                     'data' => [
                         'icon' => 'ellipsis',
                     ],
-                    'title' => Craft::t('app', 'Update status for individual sites'),
+                    'title' => t('Update status for individual sites'),
                     'aria' => [
                         'expanded' => 'false',
-                        'label' => Craft::t('app', 'Update status for individual sites'),
+                        'label' => t('Update status for individual sites'),
                     ],
                 ])
                 : '';
             $statusField = Cp::lightswitchFieldHtml([
                 'fieldClass' => "enabled-for-site-$this->siteId-field",
-                'label' => Craft::t('site', $this->getSite()->getName()),
+                'label' => t($this->getSite()->getName(), category: 'site'),
                 'headingSuffix' => $expandStatusBtn,
                 'name' => "enabledForSite[$this->siteId]",
                 'on' => $this->enabled && $this->getEnabledForSite(),
@@ -6276,7 +6277,7 @@ JS, [
         } else {
             $statusField = Cp::lightswitchFieldHtml([
                 'id' => 'enabled',
-                'label' => Craft::t('app', 'Enabled'),
+                'label' => t('Enabled'),
                 'name' => 'enabled',
                 'on' => $this->enabled,
                 'disabled' => $this->getIsRevision(),
@@ -6285,7 +6286,7 @@ JS, [
         }
 
         return Html::beginTag('fieldset') .
-            Html::tag('legend', Craft::t('app', 'Status'), ['class' => 'h6']) .
+            Html::tag('legend', t('Status'), ['class' => 'h6']) .
             Html::tag('div', $statusField, ['class' => 'meta']) .
             Html::endTag('fieldset');
     }
@@ -6304,7 +6305,7 @@ JS, [
          * @phpstan-ignore varTag.nativeType
          */
         return Cp::textareaFieldHtml([
-            'label' => Craft::t('app', 'Notes about your changes'),
+            'label' => t('Notes about your changes'),
             'labelClass' => 'h6',
             'class' => ['nicetext', 'notes'],
             'name' => 'notes',
@@ -6312,7 +6313,7 @@ JS, [
             'rows' => 1,
             'inputAttributes' => [
                 'aria' => [
-                    'label' => Craft::t('app', 'Notes about your changes'),
+                    'label' => t('Notes about your changes'),
                 ],
             ],
         ]);
@@ -6347,8 +6348,8 @@ JS, [
         $formatter = Craft::$app->getFormatter();
 
         return array_merge([
-            Craft::t('app', 'ID') => fn() => $this->id ?? false,
-            Craft::t('app', 'Status') => function() {
+            t('ID') => fn() => $this->id ?? false,
+            t('Status') => function() {
                 if (!static::hasStatuses()) {
                     return false;
                 }
@@ -6357,7 +6358,7 @@ JS, [
                         'data' => ['icon' => 'draft'],
                         'aria' => ['hidden' => 'true'],
                     ]);
-                    $label = Craft::t('app', 'Draft');
+                    $label = t('Draft');
                 } else {
                     $status = $this->getStatus();
                     $statusDef = static::statuses()[$status] ?? null;
@@ -6371,13 +6372,13 @@ JS, [
                 return $icon . Html::tag('span', $label);
             },
         ], $metadata, [
-            Craft::t('app', 'Created at') => $this->dateCreated && !$this->getIsUnpublishedDraft()
+            t('Created at') => $this->dateCreated && !$this->getIsUnpublishedDraft()
                 ? $formatter->asDatetime($this->dateCreated, Formatter::FORMAT_WIDTH_SHORT)
                 : false,
-            Craft::t('app', 'Updated at') => $this->dateUpdated && !$this->getIsUnpublishedDraft()
+            t('Updated at') => $this->dateUpdated && !$this->getIsUnpublishedDraft()
                 ? $formatter->asDatetime($this->dateUpdated, Formatter::FORMAT_WIDTH_SHORT)
                 : false,
-            Craft::t('app', 'Notes') => function() {
+            t('Notes') => function() {
                 if ($this->getIsRevision()) {
                     $revision = $this;
                 } elseif ($this->getIsCanonical() || $this->isProvisionalDraft) {

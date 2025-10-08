@@ -20,6 +20,7 @@ use CraftCms\Cms\Utility\Utilities\AssetIndexes;
 use Throwable;
 use yii\web\BadRequestHttpException;
 use yii\web\Response;
+use function CraftCms\Cms\t;
 
 /** @noinspection ClassOverridesFieldOfSuperClassInspection */
 
@@ -78,7 +79,7 @@ class AssetIndexesController extends Controller
         $volumeIds = array_intersect($volumeIds, $allowedVolumeIds);
 
         if (empty($volumeIds)) {
-            return $this->asFailure(Craft::t('app', 'No volumes specified.'));
+            return $this->asFailure(t('No volumes specified.'));
         }
 
         $indexingSession = Craft::$app->getAssetIndexer()->startIndexingSession($volumeIds, $cacheRemoteImages, $listEmptyFolders);
@@ -89,7 +90,7 @@ class AssetIndexesController extends Controller
 
         if ($indexingSession->totalEntries === 0 && !$indexingSession->processIfRootEmpty) {
             $data['stop'] = $indexingSession->id;
-            $error = Craft::t('app', 'The filesystem doesn’t contain any files.');
+            $error = t('The filesystem doesn’t contain any files.');
             Craft::$app->getAssetIndexer()->stopIndexingSession($indexingSession);
         }
 
@@ -110,7 +111,7 @@ class AssetIndexesController extends Controller
         $sessionId = (int)Craft::$app->getRequest()->getRequiredBodyParam('sessionId');
 
         if (empty($sessionId)) {
-            return $this->asFailure(Craft::t('app', 'No indexing session specified.'));
+            return $this->asFailure(t('No indexing session specified.'));
         }
 
         $session = Craft::$app->getAssetIndexer()->getIndexingSessionById($sessionId);
@@ -133,7 +134,7 @@ class AssetIndexesController extends Controller
         $sessionId = (int)Craft::$app->getRequest()->getRequiredBodyParam('sessionId');
 
         if (empty($sessionId)) {
-            return $this->asFailure(Craft::t('app', 'No indexing session specified.'));
+            return $this->asFailure(t('No indexing session specified.'));
         }
 
         $assetIndexer = Craft::$app->getAssetIndexer();
@@ -155,7 +156,7 @@ class AssetIndexesController extends Controller
                 $assetIndexer->stopIndexingSession($indexingSession);
                 return $this->asFailure(data: [
                     'stop' => $sessionId,
-                    'message' => Craft::t('app', 'There was a problem indexing assets.'),
+                    'message' => t('There was a problem indexing assets.'),
                 ]);
             }
 
@@ -195,14 +196,14 @@ class AssetIndexesController extends Controller
         $sessionId = (int)Craft::$app->getRequest()->getRequiredBodyParam('sessionId');
 
         if (empty($sessionId)) {
-            return $this->asFailure(Craft::t('app', 'No indexing session specified.'));
+            return $this->asFailure(t('No indexing session specified.'));
         }
 
         $assetIndexer = Craft::$app->getAssetIndexer();
         $indexingSession = $assetIndexer->getIndexingSessionById($sessionId);
 
         if (!$indexingSession || !$indexingSession->actionRequired) {
-            return $this->asFailure(Craft::t('app', 'Cannot find the indexing session, or there’s nothing to review.'));
+            return $this->asFailure(t('Cannot find the indexing session, or there’s nothing to review.'));
         }
 
         $indexingSession->skippedEntries = $assetIndexer->getSkippedItemsForSession($indexingSession);
@@ -223,7 +224,7 @@ class AssetIndexesController extends Controller
         $sessionId = (int)Craft::$app->getRequest()->getRequiredBodyParam('sessionId');
 
         if (empty($sessionId)) {
-            return $this->asFailure(Craft::t('app', 'No indexing session specified.'));
+            return $this->asFailure(t('No indexing session specified.'));
         }
 
         $session = Craft::$app->getAssetIndexer()->getIndexingSessionById($sessionId);

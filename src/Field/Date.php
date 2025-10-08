@@ -23,6 +23,8 @@ use DateTimeZone;
 use GraphQL\Type\Definition\ResolveInfo;
 use yii\db\Schema;
 
+use function CraftCms\Cms\t;
+
 /**
  * Date represents a Date/Time field.
  */
@@ -33,7 +35,7 @@ final class Date extends Field implements CrossSiteCopyableFieldInterface, Inlin
      */
     public static function displayName(): string
     {
-        return Craft::t('app', 'Date');
+        return t('Date');
     }
 
     /**
@@ -155,8 +157,8 @@ final class Date extends Field implements CrossSiteCopyableFieldInterface, Inlin
     public function attributeLabels(): array
     {
         return [
-            'min' => Craft::t('app', 'Min Date'),
-            'max' => Craft::t('app', 'Max Date'),
+            'min' => t('Min Date'),
+            'max' => t('Max Date'),
         ];
     }
 
@@ -202,7 +204,7 @@ final class Date extends Field implements CrossSiteCopyableFieldInterface, Inlin
 
         $options = [
             [
-                'label' => Craft::t('app', 'Show date'),
+                'label' => t('Show date'),
                 'value' => 'showDate',
             ],
         ];
@@ -210,13 +212,13 @@ final class Date extends Field implements CrossSiteCopyableFieldInterface, Inlin
         // Only allow the "Show date and time" option if it's already selected
         if ($dateTimeValue === 'showTime') {
             $options[] = [
-                'label' => Craft::t('app', 'Show time'),
+                'label' => t('Show time'),
                 'value' => 'showTime',
             ];
         }
 
         $options[] = [
-            'label' => Craft::t('app', 'Show date and time'),
+            'label' => t('Show date and time'),
             'value' => 'showBoth',
         ];
 

@@ -2,11 +2,11 @@
 
 namespace craft\elements\conditions;
 
-use Craft;
 use craft\base\conditions\BaseMultiSelectConditionRule;
 use craft\base\ElementInterface;
 use craft\elements\db\ElementQueryInterface;
 use yii\db\QueryInterface;
+use function CraftCms\Cms\t;
 
 /**
  * Element status condition rule.
@@ -21,7 +21,7 @@ class StatusConditionRule extends BaseMultiSelectConditionRule implements Elemen
      */
     public function getLabel(): string
     {
-        return Craft::t('app', 'Status');
+        return t('Status');
     }
 
     /**

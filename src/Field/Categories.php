@@ -18,6 +18,8 @@ use craft\services\ElementSources;
 use craft\services\Gql as GqlService;
 use GraphQL\Type\Definition\Type;
 
+use function CraftCms\Cms\t;
+
 /**
  * Categories represents a Categories field.
  */
@@ -28,7 +30,7 @@ final class Categories extends BaseRelationField
      */
     public static function displayName(): string
     {
-        return Craft::t('app', 'Categories');
+        return t('Categories');
     }
 
     /**
@@ -60,7 +62,7 @@ final class Categories extends BaseRelationField
      */
     public static function defaultSelectionLabel(): string
     {
-        return Craft::t('app', 'Add a category');
+        return t('Add a category');
     }
 
     /**
@@ -131,7 +133,7 @@ final class Categories extends BaseRelationField
         }
 
         if (empty($source)) {
-            return '<p class="error">'.Craft::t('app', 'This field is not set to a valid category group.').'</p>';
+            return '<p class="error">'.t('This field is not set to a valid category group.').'</p>';
         }
 
         return parent::inputHtml($value, $element, $inline);

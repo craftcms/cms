@@ -18,6 +18,8 @@ use CraftCms\Cms\Support\Html;
 use GraphQL\Type\Definition\Type;
 use yii\db\Schema;
 
+use function CraftCms\Cms\t;
+
 /**
  * Icon represents an icon picker field.
  */
@@ -35,7 +37,7 @@ final class Icon extends Field implements CrossSiteCopyableFieldInterface, Inlin
      */
     public static function displayName(): string
     {
-        return Craft::t('app', 'Icon');
+        return t('Icon');
     }
 
     /**
@@ -128,8 +130,8 @@ final class Icon extends Field implements CrossSiteCopyableFieldInterface, Inlin
     private function settingsHtml(bool $readOnly): string
     {
         $html = Cp::lightswitchFieldHtml([
-            'label' => Craft::t('app', 'Include Pro icons'),
-            'instructions' => Craft::t('app', 'Should icons that are exclusive to Font Awesome Pro be selectable? (<a href="{url}">View pricing</a>)', [
+            'label' => t('Include Pro icons'),
+            'instructions' => t('Should icons that are exclusive to Font Awesome Pro be selectable? (<a href="{url}">View pricing</a>)', [
                 'url' => 'https://fontawesome.com/plans',
             ]),
             'name' => 'includeProIcons',
@@ -139,7 +141,7 @@ final class Icon extends Field implements CrossSiteCopyableFieldInterface, Inlin
 
         if (app(GeneralConfig::class)->enableGql) {
             $html .= Html::tag('hr').
-            Html::button(Craft::t('app', 'Advanced'), attributes: [
+            Html::button(t('Advanced'), attributes: [
                 'class' => 'fieldtoggle',
                 'data' => ['target' => 'advanced'],
             ]).
@@ -150,12 +152,12 @@ final class Icon extends Field implements CrossSiteCopyableFieldInterface, Inlin
 
             $html .=
                 Cp::selectFieldHtml([
-                    'label' => Craft::t('app', 'GraphQL Mode'),
+                    'label' => t('GraphQL Mode'),
                     'id' => 'graphql-mode',
                     'name' => 'graphqlMode',
                     'options' => [
-                        ['label' => Craft::t('app', 'Full data'), 'value' => 'full'],
-                        ['label' => Craft::t('app', 'Name only'), 'value' => 'name'],
+                        ['label' => t('Full data'), 'value' => 'full'],
+                        ['label' => t('Name only'), 'value' => 'name'],
                     ],
                     'value' => $this->fullGraphqlData ? 'full' : 'name',
                     'disabled' => $readOnly,

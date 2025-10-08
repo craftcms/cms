@@ -25,6 +25,7 @@ use Illuminate\Support\Facades\DB;
 use Throwable;
 use yii\base\Exception;
 use yii\base\InvalidConfigException;
+use function CraftCms\Cms\t;
 
 /**
  * BaseExternalProvider provides a base implementation for external identity providers.
@@ -126,7 +127,7 @@ abstract class BaseExternalProvider extends BaseProvider
      */
     public function getSiteLoginHtml(?string $label = null, ?string $url = null): string
     {
-        return Html::a($label ?: Craft::t('app', 'Sign in with {name}', [
+        return Html::a($label ?: t('Sign in with {name}', [
             'name' => $this->name ?: static::displayName(),
         ]), $url ?: $this->getRequestUrl());
     }
@@ -136,7 +137,7 @@ abstract class BaseExternalProvider extends BaseProvider
      */
     public function getCpLoginHtml(?string $label = null, ?string $url = null): string
     {
-        return Html::a($label ?: Craft::t('app', 'Sign in with {name}', [
+        return Html::a($label ?: t('Sign in with {name}', [
             'name' => $this->name ?: static::displayName(),
         ]), $url ?: $this->getRequestUrl(), [
             'class' => 'btn',

@@ -18,6 +18,7 @@ use Illuminate\Support\Facades\DB;
 use yii\web\BadRequestHttpException;
 use yii\web\ForbiddenHttpException;
 use yii\web\Response;
+use function CraftCms\Cms\t;
 
 /**
  * Nested elements controller.
@@ -114,7 +115,7 @@ class NestedElementsController extends Controller
 
         Craft::$app->getElements()->invalidateCachesForElement($this->owner);
 
-        return $this->asSuccess(Craft::t('app', 'New {total, plural, =1{position} other{positions}} saved.', [
+        return $this->asSuccess(t('New {total, plural, =1{position} other{positions}} saved.', [
             'total' => count($ids),
         ]));
     }
@@ -166,12 +167,12 @@ class NestedElementsController extends Controller
         }
 
         if (!$success) {
-            return $this->asFailure(Craft::t('app', 'Couldn’t delete {type}.', [
+            return $this->asFailure(t('Couldn’t delete {type}.', [
                 'type' => $element::lowerDisplayName(),
             ]));
         }
 
-        return $this->asSuccess(Craft::t('app', '{type} deleted.', [
+        return $this->asSuccess(t('{type} deleted.', [
             'type' => $element::displayName(),
         ]));
     }

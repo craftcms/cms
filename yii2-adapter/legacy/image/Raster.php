@@ -31,6 +31,7 @@ use Imagine\Image\Point;
 use Imagine\Imagick\Imagine as ImagickImagine;
 use Throwable;
 use function CraftCms\Cms\maxPowerCaptain;
+use function CraftCms\Cms\t;
 
 /**
  * Raster class is used for raster image manipulations.
@@ -158,7 +159,7 @@ class Raster extends Image
 
         if (!is_file($path)) {
             Craft::error('Tried to load an image at ' . $path . ', but the file does not exist.', __METHOD__);
-            throw new ImageException(Craft::t('app', 'No file exists at the given path.'));
+            throw new ImageException(t('No file exists at the given path.'));
         }
 
         if (!$imageService->checkMemoryForImage($path)) {
@@ -170,7 +171,7 @@ class Raster extends Image
         $mimeType = FileHelper::getMimeType($path, null, false);
 
         if ($mimeType !== null && !str_starts_with($mimeType, 'image/') && !str_starts_with($mimeType, 'application/pdf')) {
-            throw new ImageException(Craft::t('app', 'The file “{name}” does not appear to be an image.', [
+            throw new ImageException(t('The file “{name}” does not appear to be an image.', [
                 'name' => basename($path),
             ]));
         }
@@ -184,7 +185,7 @@ class Raster extends Image
             if (($instanceException = $e->getPrevious()) !== null) {
                 Craft::warning($instanceException->getMessage(), $instanceException->getFile() . ':' . $instanceException->getLine());
             }
-            throw new ImageException(Craft::t('app', 'The file “{name}” does not appear to be an image.', [
+            throw new ImageException(t('The file “{name}” does not appear to be an image.', [
                 'name' => basename($path),
             ]), 0, $e);
         }
@@ -605,7 +606,7 @@ class Raster extends Image
             $options = $this->_getSaveOptions($quality, $extension);
             $this->_image->save($targetPath, $options);
         } catch (RuntimeException $e) {
-            throw new ImageException(Craft::t('app', 'Failed to save the image.'), $e->getCode(), $e);
+            throw new ImageException(t('Failed to save the image.'), $e->getCode(), $e);
         }
 
         return true;
@@ -628,7 +629,7 @@ class Raster extends Image
                 $svgContent = '<?xml version="1.0" encoding="UTF-8" standalone="no"?>' . $svgContent;
                 $this->_image = $this->_instance->load($svgContent);
             } catch (RuntimeException $e) {
-                throw new ImageException(Craft::t('app', 'Failed to load the SVG string.'), $e->getCode(), $e);
+                throw new ImageException(t('Failed to load the SVG string.'), $e->getCode(), $e);
             }
         }
 
@@ -703,7 +704,7 @@ class Raster extends Image
     public function getTextBox(string $text, int $angle = 0): BoxInterface
     {
         if (!isset($this->_font)) {
-            throw new ImageException(Craft::t('app', 'No font properties have been set. Call Raster::setFontProperties() first.'));
+            throw new ImageException(t('No font properties have been set. Call Raster::setFontProperties() first.'));
         }
 
         return $this->_font->box($text, $angle);
@@ -721,7 +722,7 @@ class Raster extends Image
     public function writeText(string $text, int $x, int $y, int $angle = 0): void
     {
         if (!isset($this->_font)) {
-            throw new ImageException(Craft::t('app', 'No font properties have been set. Call ImageHelper::setFontProperties() first.'));
+            throw new ImageException(t('No font properties have been set. Call ImageHelper::setFontProperties() first.'));
         }
 
         $point = new Point($x, $y);

@@ -7,9 +7,9 @@
 
 namespace craft\fieldlayoutelements\addresses;
 
-use Craft;
 use craft\base\ElementInterface;
 use craft\fieldlayoutelements\TitleField;
+use function CraftCms\Cms\t;
 
 /**
  * Class LabelField.
@@ -29,6 +29,6 @@ class LabelField extends TitleField
      */
     public function defaultLabel(?ElementInterface $element = null, bool $static = false): ?string
     {
-        return Craft::t('app', 'Label');
+        return t('Label');
     }
 }

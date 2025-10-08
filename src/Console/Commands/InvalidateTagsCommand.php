@@ -2,7 +2,6 @@
 
 namespace CraftCms\Cms\Console\Commands;
 
-use Craft;
 use CraftCms\Cms\Console\CraftCommand;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Str;
@@ -10,6 +9,7 @@ use CraftCms\Cms\Utility\Utilities\ClearCaches;
 use CraftCms\DependencyAwareCache\Dependency\TagDependency;
 use Illuminate\Console\Command;
 
+use function CraftCms\Cms\t;
 use function Laravel\Prompts\multiselect;
 use function Laravel\Prompts\table;
 
@@ -47,7 +47,7 @@ final class InvalidateTagsCommand extends Command
         $option = collect(ClearCaches::tagOptions())->firstWhere('tag', $tag);
 
         $this->components->task(
-            Craft::t('app', 'Invalidating:').' '.$option['label'],
+            t('Invalidating:').' '.$option['label'],
             function () use ($option) {
                 TagDependency::invalidate($option['tag']);
             }

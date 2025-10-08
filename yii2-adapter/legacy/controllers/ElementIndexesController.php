@@ -39,6 +39,7 @@ use yii\web\BadRequestHttpException;
 use yii\web\ForbiddenHttpException;
 use yii\web\Response;
 use yii\web\ServerErrorHttpException;
+use function CraftCms\Cms\t;
 
 /**
  * The ElementIndexesController class is a controller that handles various element index related actions.
@@ -469,7 +470,7 @@ class ElementIndexesController extends BaseElementsController
 
         $condition->mainTag = 'div';
         $condition->id = $id;
-        $condition->addRuleLabel = Craft::t('app', 'Add a filter');
+        $condition->addRuleLabel = t('Add a filter');
 
         // Filter out any condition rules that touch the same query params as the source criteria
         if ($this->source['type'] === ElementSources::TYPE_NATIVE) {
@@ -634,7 +635,7 @@ class ElementIndexesController extends BaseElementsController
             return [
                 'type' => ElementSources::TYPE_NATIVE,
                 'key' => '__IMP__',
-                'label' => Craft::t('app', 'All elements'),
+                'label' => t('All elements'),
                 'hasThumbs' => $this->elementType::hasThumbs(),
             ];
         }
@@ -869,7 +870,7 @@ class ElementIndexesController extends BaseElementsController
             $responseData['headHtml'] = $view->getHeadHtml();
             $responseData['bodyHtml'] = $view->getBodyHtml();
         } else {
-            $responseData['html'] = Html::tag('div', Craft::t('app', 'Nothing yet.'), [
+            $responseData['html'] = Html::tag('div', t('Nothing yet.'), [
                 'class' => ['zilch', 'small'],
             ]);
         }

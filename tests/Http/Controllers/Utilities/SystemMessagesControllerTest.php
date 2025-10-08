@@ -5,6 +5,7 @@ use CraftCms\Cms\Http\Controllers\Utilities\SystemMessagesController;
 use CraftCms\Cms\SystemMessage\Models\SystemMessage;
 use CraftCms\Cms\User\Models\User;
 
+use function CraftCms\Cms\t;
 use function Pest\Laravel\actingAs;
 use function Pest\Laravel\postJson;
 
@@ -40,7 +41,7 @@ it('can get a modal for a system message', function () {
         'key' => 'account_activation',
     ])
         ->assertOk()
-        ->assertSee(Craft::t('app', 'account_activation_subject'));
+        ->assertSee(t('account_activation_subject'));
 });
 
 it('can store a system message', function () {

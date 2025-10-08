@@ -52,6 +52,7 @@ use yii\base\Component;
 use yii\base\Exception;
 use yii\base\InvalidArgumentException;
 use yii\base\UserException;
+use function CraftCms\Cms\t;
 
 /**
  * The Users service provides APIs for managing users.
@@ -607,7 +608,7 @@ class Users extends Component
         $filename = AssetsHelper::prepareAssetName($filename ?? pathinfo($fileLocation, PATHINFO_BASENAME), true, true);
 
         if (!Image::canManipulateAsImage(pathinfo($fileLocation, PATHINFO_EXTENSION))) {
-            throw new ImageException(Craft::t('app', 'User photo must be an image that Craft can manipulate.'));
+            throw new ImageException(t('User photo must be an image that Craft can manipulate.'));
         }
 
         $assetsService = Craft::$app->getAssets();

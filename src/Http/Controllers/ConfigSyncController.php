@@ -2,7 +2,6 @@
 
 namespace CraftCms\Cms\Http\Controllers;
 
-use Craft;
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Plugin\Exceptions\InvalidPluginException;
 use CraftCms\Cms\Plugin\Plugins;
@@ -15,6 +14,8 @@ use CraftCms\Cms\Updates\Updates;
 use Illuminate\Http\Request;
 use RuntimeException;
 use Symfony\Component\HttpFoundation\Response;
+
+use function CraftCms\Cms\t;
 
 /**
  * @internal
@@ -65,8 +66,8 @@ final class ConfigSyncController extends BaseUpdaterController
             return $this->send([
                 'error' => $e->getMessage(),
                 'options' => [
-                    $this->finishedState(['label' => Craft::t('app', 'Cancel')]),
-                    $this->actionOption(Craft::t('app', 'Try again'), self::ACTION_RETRY, ['submit' => true]),
+                    $this->finishedState(['label' => t('Cancel')]),
+                    $this->actionOption(t('Try again'), self::ACTION_RETRY, ['submit' => true]),
                 ],
             ]);
         }
@@ -106,11 +107,11 @@ final class ConfigSyncController extends BaseUpdaterController
         $email = $info['developerEmail'] ?? 'support@craftcms.com';
 
         return $this->send([
-            'error' => Craft::t('app', 'An error occurred when installing {name}.', ['name' => $pluginName]),
+            'error' => t('An error occurred when installing {name}.', ['name' => $pluginName]),
             'errorDetails' => $errorDetails,
             'options' => [
                 [
-                    'label' => Craft::t('app', 'Send for help'),
+                    'label' => t('Send for help'),
                     'submit' => true,
                     'email' => $email,
                     'subject' => $pluginName.' update failure',
@@ -125,7 +126,7 @@ final class ConfigSyncController extends BaseUpdaterController
     #[\Override]
     protected function pageTitle(): string
     {
-        return Craft::t('app', 'Project Config Sync');
+        return t('Project Config Sync');
     }
 
     /**
@@ -189,19 +190,19 @@ final class ConfigSyncController extends BaseUpdaterController
         }
 
         if (! empty($incompatibilities)) {
-            $error = Craft::t('app', 'Your project config YAML files are expecting different versions to be installed for the following:').
+            $error = t('Your project config YAML files are expecting different versions to be installed for the following:').
                 ' '.implode(', ', $incompatibilities);
         } elseif (! empty($missingPlugins)) {
-            $error = Craft::t('app', 'Your project config YAML files are expecting the following plugins to be installed:').
+            $error = t('Your project config YAML files are expecting the following plugins to be installed:').
                 ' '.implode(', ', $missingPlugins);
         }
 
         if ($error) {
             return [
-                'error' => $error."\n\n".Craft::t('app', 'Try running `composer install` from your terminal to resolve.'),
+                'error' => $error."\n\n".t('Try running `composer install` from your terminal to resolve.'),
                 'options' => [
-                    $this->finishedState(['label' => Craft::t('app', 'Cancel')]),
-                    $this->actionOption(Craft::t('app', 'Try again'), self::ACTION_RETRY, ['submit' => true]),
+                    $this->finishedState(['label' => t('Cancel')]),
+                    $this->actionOption(t('Try again'), self::ACTION_RETRY, ['submit' => true]),
                 ],
             ];
         }
@@ -212,10 +213,10 @@ final class ConfigSyncController extends BaseUpdaterController
 
         if ($configModifiedTime > $yamlModifiedTime) {
             return [
-                'error' => Craft::t('app', 'The loaded project config has more recent changes than your project config YAML files.'),
+                'error' => t('The loaded project config has more recent changes than your project config YAML files.'),
                 'options' => [
-                    $this->actionOption(Craft::t('app', 'Use the loaded project config'), self::ACTION_REGENERATE_YAML, ['submit' => true]),
-                    $this->actionOption(Craft::t('app', 'Use YAML files'), $this->nextApplyYamlAction(), [
+                    $this->actionOption(t('Use the loaded project config'), self::ACTION_REGENERATE_YAML, ['submit' => true]),
+                    $this->actionOption(t('Use YAML files'), $this->nextApplyYamlAction(), [
                         'submit' => true,
                     ]),
                 ],
@@ -251,21 +252,21 @@ final class ConfigSyncController extends BaseUpdaterController
     {
         switch ($action) {
             case self::ACTION_RETRY:
-                return Craft::t('app', 'Trying again…');
+                return t('Trying again…');
             case self::ACTION_APPLY_YAML_CHANGES:
-                return Craft::t('app', 'Applying changes from the project config YAML files…');
+                return t('Applying changes from the project config YAML files…');
             case self::ACTION_REGENERATE_YAML:
-                return Craft::t('app', 'Regenerating project config YAML files from the loaded project config…');
+                return t('Regenerating project config YAML files from the loaded project config…');
             case self::ACTION_UNINSTALL_PLUGIN:
                 $handle = Arr::first($this->data['uninstallPlugins']);
 
-                return Craft::t('app', 'Uninstalling {name}', [
+                return t('Uninstalling {name}', [
                     'name' => $this->pluginName($handle),
                 ]);
             case self::ACTION_INSTALL_PLUGIN:
                 $handle = Arr::first($this->data['installPlugins']);
 
-                return Craft::t('app', 'Installing {name}', [
+                return t('Installing {name}', [
                     'name' => $this->pluginName($handle),
                 ]);
             default:

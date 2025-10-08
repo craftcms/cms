@@ -10,6 +10,7 @@ use craft\helpers\Cp;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Env;
 use stdClass;
+use function CraftCms\Cms\t;
 
 /**
  * BaseElementSelectConditionRule provides a base implementation for element query condition rules that are composed of an element select input.
@@ -194,11 +195,11 @@ abstract class BaseElementSelectConditionRule extends BaseConditionRule
                 'name' => 'elementIds',
                 'value' => $value,
                 'tip' => $this->allowMultiple()
-                    ? Craft::t('app', 'This can be set to an environment variable, or a Twig template that outputs comma-separated IDs.')
-                    : Craft::t('app', 'This can be set to an environment variable, or a Twig template that outputs an ID.'),
+                    ? t('This can be set to an environment variable, or a Twig template that outputs comma-separated IDs.')
+                    : t('This can be set to an environment variable, or a Twig template that outputs an ID.'),
                 'placeholder' => $this->allowMultiple()
-                    ? Craft::t('app', '{type} ID(s)', ['type' => $type])
-                    : Craft::t('app', '{type} ID', ['type' => $type]),
+                    ? t('{type} ID(s)', ['type' => $type])
+                    : t('{type} ID', ['type' => $type]),
             ]);
         }
 

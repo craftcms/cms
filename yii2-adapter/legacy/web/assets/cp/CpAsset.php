@@ -49,6 +49,7 @@ use CraftCms\Cms\Updates\Updates;
 use CraftCms\Cms\Utility\Utilities;
 use CraftCms\Cms\Utility\Utilities\QueueManager;
 use yii\web\JqueryAsset;
+use function CraftCms\Cms\t;
 
 /**
  * Asset bundle for the control panel
@@ -652,8 +653,8 @@ JS;
             'firstDay' => DateTimeHelper::firstWeekDay(),
             'monthNames' => $locale->getMonthNames(Locale::LENGTH_FULL),
             'monthNamesShort' => $locale->getMonthNames(Locale::LENGTH_ABBREVIATED),
-            'nextText' => Craft::t('app', 'Next'),
-            'prevText' => Craft::t('app', 'Prev'),
+            'nextText' => t('Next'),
+            'prevText' => t('Prev'),
             'yearRange' => 'c-100:c+100',
         ];
     }
@@ -677,7 +678,7 @@ JS;
             $groups[] = [
                 'handle' => $group->handle,
                 'id' => (int)$group->id,
-                'name' => Craft::t('site', $group->name),
+                'name' => t($group->name, category: 'site'),
                 'uid' => $group->uid,
             ];
         }
@@ -736,7 +737,7 @@ JS;
                     'entryTypes' => $this->_entryTypes($section),
                     'handle' => $section->handle,
                     'id' => (int)$section->id,
-                    'name' => Craft::t('site', $section->name),
+                    'name' => t($section->name, category: 'site'),
                     'sites' => $section->getSiteIds(),
                     'type' => $section->type,
                     'uid' => $section->uid,
@@ -756,7 +757,7 @@ JS;
             $types[] = [
                 'handle' => $type->handle,
                 'id' => (int)$type->id,
-                'name' => Craft::t('site', $type->name),
+                'name' => t($type->name, category: 'site'),
             ];
         }
 
@@ -772,7 +773,7 @@ JS;
                 'handle' => $site->handle,
                 'id' => (int)$site->id,
                 'uid' => (string)$site->uid,
-                'name' => Craft::t('site', $site->getName()),
+                'name' => t($site->getName(), category: 'site'),
             ];
         }
 

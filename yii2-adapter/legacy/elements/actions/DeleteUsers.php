@@ -13,6 +13,7 @@ use craft\elements\db\ElementQueryInterface;
 use craft\elements\User;
 use CraftCms\Cms\Edition;
 use yii\base\Exception;
+use function CraftCms\Cms\t;
 
 /**
  * DeleteUsers represents a Delete Users element action.
@@ -55,10 +56,10 @@ class DeleteUsers extends ElementAction implements DeleteActionInterface
     public function getTriggerLabel(): string
     {
         if ($this->hard) {
-            return Craft::t('app', 'Delete permanently');
+            return t('Delete permanently');
         }
 
-        return Craft::t('app', 'Delete…');
+        return t('Delete…');
     }
 
     /**
@@ -130,7 +131,7 @@ JS,
     public function getConfirmationMessage(): ?string
     {
         if ($this->hard) {
-            return Craft::t('app', 'Are you sure you want to permanently delete the selected {type}?', [
+            return t('Are you sure you want to permanently delete the selected {type}?', [
                 'type' => User::pluralLowerDisplayName(),
             ]);
         }
@@ -176,11 +177,11 @@ JS,
 
         if ($deletedCount !== count($users)) {
             if ($deletedCount === 0) {
-                $this->setMessage(Craft::t('app', 'Couldn’t delete {type}.', [
+                $this->setMessage(t('Couldn’t delete {type}.', [
                     'type' => User::pluralLowerDisplayName(),
                 ]));
             } else {
-                $this->setMessage(Craft::t('app', 'Couldn’t delete all {type}.', [
+                $this->setMessage(t('Couldn’t delete all {type}.', [
                     'type' => User::pluralLowerDisplayName(),
                 ]));
             }
@@ -188,7 +189,7 @@ JS,
             return false;
         }
 
-        $this->setMessage(Craft::t('app', '{type} deleted.', [
+        $this->setMessage(t('{type} deleted.', [
             'type' => User::pluralDisplayName(),
         ]));
 

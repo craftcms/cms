@@ -11,6 +11,8 @@ use Illuminate\Contracts\Validation\DataAwareRule;
 use Illuminate\Contracts\Validation\ValidationRule;
 use RuntimeException;
 
+use function CraftCms\Cms\t;
+
 final class TimeRule implements DataAwareRule, ValidationRule
 {
     /**
@@ -50,9 +52,9 @@ final class TimeRule implements DataAwareRule, ValidationRule
          */
         public ?string $message = null,
     ) {
-        $this->message ??= Craft::t('app', '{attribute} must be a time.');
-        $this->tooEarly ??= Craft::t('app', '{attribute} must be no earlier than {min}.');
-        $this->tooLate ??= Craft::t('app', '{attribute} must be no later than {max}.');
+        $this->message ??= t('{attribute} must be a time.');
+        $this->tooEarly ??= t('{attribute} must be no earlier than {min}.');
+        $this->tooLate ??= t('{attribute} must be no later than {max}.');
     }
 
     public function validate(string $attribute, mixed $value, Closure $fail): void

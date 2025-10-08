@@ -16,6 +16,7 @@ use Tpetry\QueryExpressions\Function\String\Lower;
 use Tpetry\QueryExpressions\Language\Alias;
 use yii\base\Exception;
 use yii\base\InvalidConfigException;
+use function CraftCms\Cms\t;
 
 /**
  * Will validate that the given attribute is a valid URI for a single section.
@@ -64,8 +65,8 @@ class SingleSectionUriValidator extends UriFormatValidator
                 $message = '{site} already has an element with the URI “{value}”.';
             }
 
-            $this->addError($model, $attribute, Craft::t('app', $message, [
-                'site' => Craft::t('site', $site->getName()),
+            $this->addError($model, $attribute, t($message, [
+                'site' => t($site->getName(), category: 'site'),
             ]));
         }
     }

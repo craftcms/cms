@@ -64,6 +64,8 @@ use yii\base\InvalidArgumentException;
 use yii\base\InvalidConfigException;
 use yii\db\Expression;
 
+use function CraftCms\Cms\t;
+
 /**
  * Matrix field type
  *
@@ -89,7 +91,7 @@ final class Matrix extends Field implements EagerLoadingFieldInterface, ElementC
      */
     public static function displayName(): string
     {
-        return Craft::t('app', 'Matrix');
+        return t('Matrix');
     }
 
     /**
@@ -372,7 +374,7 @@ final class Matrix extends Field implements EagerLoadingFieldInterface, ElementC
                 $siteSettings['uriFormat'] = trim($siteSettings['uriFormat'], '/ ');
 
                 if (! (new UriFormatValidator)->validate($siteSettings['uriFormat'], $error)) {
-                    $error = str_replace(Craft::t('yii', 'the input value'), Craft::t('app', 'Entry URI Format'), $error);
+                    $error = str_replace(Craft::t('yii', 'the input value'), t('Entry URI Format'), $error);
                     $siteSettings['errors']['uriFormat'][] = $error;
 
                     $validator->errors()->add("siteSettings[$uid].uriFormat", $error);
@@ -381,7 +383,7 @@ final class Matrix extends Field implements EagerLoadingFieldInterface, ElementC
 
             if (isset($siteSettings['template'])) {
                 if (! (new StringValidator(['max' => 500]))->validate($siteSettings['template'], $error)) {
-                    $error = str_replace(Craft::t('yii', 'the input value'), Craft::t('app', 'Template'), $error);
+                    $error = str_replace(Craft::t('yii', 'the input value'), t('Template'), $error);
                     $siteSettings['errors']['template'][] = $error;
 
                     $validator->errors()->add("siteSettings[$uid].template", $error);
@@ -850,14 +852,14 @@ final class Matrix extends Field implements EagerLoadingFieldInterface, ElementC
             $items[] = [
                 'id' => $expandAllId,
                 'icon' => 'expand',
-                'label' => mb_ucfirst(Craft::t('app', 'Expand all blocks', [
+                'label' => mb_ucfirst(t('Expand all blocks', [
                     'type' => Entry::pluralLowerDisplayName(),
                 ])),
             ];
             $items[] = [
                 'id' => $collapseAllId,
                 'icon' => 'collapse',
-                'label' => mb_ucfirst(Craft::t('app', 'Collapse all blocks', [
+                'label' => mb_ucfirst(t('Collapse all blocks', [
                     'type' => Entry::pluralLowerDisplayName(),
                 ])),
             ];
@@ -905,7 +907,7 @@ JS, [
                 'id' => $copyAllId,
                 'icon' => 'clone-dashed',
                 'color' => Color::Fuchsia,
-                'label' => mb_ucfirst(Craft::t('app', 'Copy all {type}', [
+                'label' => mb_ucfirst(t('Copy all {type}', [
                     'type' => Entry::pluralLowerDisplayName(),
                 ])),
             ];
@@ -997,9 +999,9 @@ JS, [
     private function blockInputHtml(EntryQuery|ElementCollection|null $value, ?ElementInterface $element): string
     {
         if (! $element?->id) {
-            $message = Craft::t('app', '{nestedType} can only be created after the {ownerType} has been saved.', [
+            $message = t('{nestedType} can only be created after the {ownerType} has been saved.', [
                 'nestedType' => Entry::pluralDisplayName(),
-                'ownerType' => $element ? $element::lowerDisplayName() : Craft::t('app', 'element'),
+                'ownerType' => $element ? $element::lowerDisplayName() : t('element'),
             ]);
 
             return Html::tag('div', $message, ['class' => 'pane no-border zilch small']);
@@ -1027,7 +1029,7 @@ JS, [
         $entryTypeInfo = array_map(fn (EntryType $entryType) => [
             'id' => $entryType->id,
             'handle' => $entryType->handle,
-            'name' => Craft::t('site', $entryType->name),
+            'name' => t($entryType->name, category: 'site'),
         ], $entryTypes);
         $createDefaultEntries = (
             $this->minEntries != 0 &&
@@ -1136,7 +1138,7 @@ JS,
                     'group' => $entryType->group,
                     'icon' => $entryType->icon,
                     'color' => $entryType->color,
-                    'label' => Craft::t('site', $entryType->name),
+                    'label' => t($entryType->name, category: 'site'),
                     'attributes' => [
                         'typeId' => $entryType->id,
                     ],
@@ -1182,7 +1184,7 @@ JS,
     private function createButtonLabel(): string
     {
         if (isset($this->createButtonLabel)) {
-            return Craft::t('site', $this->createButtonLabel);
+            return t($this->createButtonLabel, category: 'site');
         }
 
         return $this->defaultCreateButtonLabel();
@@ -1190,7 +1192,7 @@ JS,
 
     private function defaultCreateButtonLabel(): string
     {
-        return Craft::t('app', 'New {type}', [
+        return t('New {type}', [
             'type' => Entry::lowerDisplayName(),
         ]);
     }
@@ -1265,7 +1267,7 @@ JS,
                 if ($this->viewMode !== self::VIEW_MODE_BLOCKS) {
                     // in card/index modes, we want to show a top level error to let users know
                     // that there are validation errors in the nested entries
-                    $element->addError($this->handle, Craft::t('app', 'Validation errors found in {count, plural, =1{one nested entry} other{{count, spellout} nested entries}} within the *{fieldName}* field; please fix them.', [
+                    $element->addError($this->handle, t('Validation errors found in {count, plural, =1{one nested entry} other{{count, spellout} nested entries}} within the *{fieldName}* field; please fix them.', [
                         'count' => count($invalidEntryIds),
                         'fieldName' => $this->getUiLabel(),
                     ]));
@@ -1282,12 +1284,12 @@ JS,
             $arrayValidator = new ArrayValidator([
                 'min' => $this->minEntries ?: null,
                 'max' => $this->maxEntries ?: null,
-                'tooFew' => $this->minEntries ? Craft::t('app', '{attribute} should contain at least {min, number} {min, plural, one{entry} other{entries}}.', [
-                    'attribute' => Craft::t('site', $this->name),
+                'tooFew' => $this->minEntries ? t('{attribute} should contain at least {min, number} {min, plural, one{entry} other{entries}}.', [
+                    'attribute' => t($this->name, category: 'site'),
                     'min' => $this->minEntries, // Need to pass this in now
                 ]) : null,
-                'tooMany' => $this->maxEntries ? Craft::t('app', '{attribute} should contain at most {max, number} {max, plural, one{entry} other{entries}}.', [
-                    'attribute' => Craft::t('site', $this->name),
+                'tooMany' => $this->maxEntries ? t('{attribute} should contain at most {max, number} {max, plural, one{entry} other{entries}}.', [
+                    'attribute' => t($this->name, category: 'site'),
                     'max' => $this->maxEntries, // Need to pass this in now
                 ]) : null,
                 'skipOnEmpty' => false,
@@ -1320,7 +1322,7 @@ JS,
         $entries = $value->status(null)->all();
 
         if (empty($entries)) {
-            return '<p class="light">'.Craft::t('app', 'No entries.').'</p>';
+            return '<p class="light">'.t('No entries.').'</p>';
         }
 
         $view = Craft::$app->getView();

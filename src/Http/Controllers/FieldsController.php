@@ -39,6 +39,8 @@ use ReflectionException;
 use ReflectionProperty;
 use Symfony\Component\HttpFoundation\Response;
 
+use function CraftCms\Cms\t;
+
 final class FieldsController
 {
     use RespondsWithFlash;
@@ -153,15 +155,15 @@ final class FieldsController
         // ---------------------------------------------------------------------
 
         if ($fieldId !== null) {
-            $title = trim($field->name) ?: Craft::t('app', 'Edit Field');
+            $title = trim($field->name) ?: t('Edit Field');
         } else {
-            $title = Craft::t('app', 'Create a new field');
+            $title = t('Create a new field');
         }
 
         $response = new CpScreenResponse()
             ->title($title)
-            ->addCrumb(Craft::t('app', 'Settings'), 'settings')
-            ->addCrumb(Craft::t('app', 'Fields'), 'settings/fields')
+            ->addCrumb(t('Settings'), 'settings')
+            ->addCrumb(t('Fields'), 'settings/fields')
             ->contentTemplate('settings/fields/_edit.twig', [
                 'fieldId' => $fieldId,
                 'field' => $field,
@@ -175,12 +177,12 @@ final class FieldsController
             $response
                 ->action('fields/save-field')
                 ->redirectUrl('settings/fields')
-                ->addAltAction(Craft::t('app', 'Save and continue editing'), [
+                ->addAltAction(t('Save and continue editing'), [
                     'redirect' => 'settings/fields/edit/{id}',
                     'shortcut' => true,
                     'retainScroll' => true,
                 ])
-                ->addAltAction(Craft::t('app', 'Save and add another'), [
+                ->addAltAction(t('Save and add another'), [
                     'shortcut' => true,
                     'shift' => true,
                     'params' => ['addAnother' => 1],
@@ -197,7 +199,7 @@ final class FieldsController
                 $view->registerJsWithVars(fn ($typeId, $settingsId, $namespace) => <<<JS
 new Craft.FieldSettingsToggle('#' + $typeId, '#' + $settingsId, $namespace, {
   wrapWithTypeClassDiv: true
-});
+})
 JS, [
                     $view->namespaceInputId('type'),
                     $view->namespaceInputId('settings'),
@@ -208,23 +210,23 @@ JS, [
         if ($field->id) {
             if (! $this->readOnly) {
                 $response
-                    ->addAltAction(Craft::t('app', 'Delete'), [
+                    ->addAltAction(t('Delete'), [
                         'action' => 'fields/delete-field',
                         'redirect' => 'settings/fields',
                         'destructive' => true,
-                        'confirm' => Craft::t('app', 'Are you sure you want to delete “{name}”?', [
+                        'confirm' => t('Are you sure you want to delete “{name}”?', [
                             'name' => $field->name,
                         ]),
                     ]);
             }
             $response
                 ->metaSidebarHtml(Cp::metadataHtml([
-                    Craft::t('app', 'ID') => $field->id,
-                    Craft::t('app', 'Used by') => function () use ($field) {
+                    t('ID') => $field->id,
+                    t('Used by') => function () use ($field) {
                         $layouts = $this->fieldsService->findFieldUsages($field);
 
                         if ($layouts->isEmpty()) {
-                            return Html::tag('i', Craft::t('app', 'No usages'));
+                            return Html::tag('i', t('No usages'));
                         }
 
                         /** @var FieldLayout[][] $layoutsByType */
@@ -290,7 +292,7 @@ JS, [
                             // any remaining layouts for this type?
                             if (! empty($typeLayouts)) {
                                 /** @var class-string<ElementInterface> $type */
-                                $items[] = Craft::t('app', '{total, number} {type} {total, plural, =1{field layout} other{field layouts}}', [
+                                $items[] = t('{total, number} {type} {total, plural, =1{field layout} other{field layouts}}', [
                                     'total' => count($typeLayouts),
                                     'type' => $type::lowerDisplayName(),
                                 ]);
@@ -298,9 +300,9 @@ JS, [
                         }
 
                         if (! empty($unknownLayouts)) {
-                            $items[] = Craft::t('app', '{total, number} {type} {total, plural, =1{field layout} other{field layouts}}', [
+                            $items[] = t('{total, number} {type} {total, plural, =1{field layout} other{field layouts}}', [
                                 'total' => count($unknownLayouts),
-                                'type' => Craft::t('app', 'unknown'),
+                                'type' => t('unknown'),
                             ]);
                         }
 
@@ -402,7 +404,7 @@ JS, [
         ]);
 
         if (! $this->fieldsService->saveField($field)) {
-            Flash::fail(Craft::t('app', 'Couldn’t save field.'));
+            Flash::fail(t('Couldn’t save field.'));
 
             return $this->edit($request, $field, $field->id);
         }
@@ -415,7 +417,7 @@ JS, [
             $redirect = null;
         }
 
-        return $this->asModelSuccess($field, Craft::t('app', 'Field saved.'), 'field', [
+        return $this->asModelSuccess($field, t('Field saved.'), 'field', [
             'selectorHtml' => Cp::layoutElementSelectorHtml(new CustomField($field), true),
         ], $redirect);
     }
@@ -434,12 +436,12 @@ JS, [
         abort_if(is_null($field), 400, 'Invalid field ID: '.$fieldId);
 
         if (! $this->fieldsService->deleteField($field)) {
-            return $this->asModelFailure($field, Craft::t('app', 'Couldn’t delete “{name}”.', [
+            return $this->asModelFailure($field, t('Couldn’t delete “{name}”.', [
                 'name' => $field->name,
             ]));
         }
 
-        return $this->asModelSuccess($field, Craft::t('app', '“{name}” deleted.', [
+        return $this->asModelSuccess($field, t('“{name}” deleted.', [
             'name' => $field->name,
         ]));
     }
@@ -495,7 +497,7 @@ JS, [
                     $field->clearErrors('name');
                 }
 
-                return $this->asModelFailure($field, Craft::t('app', 'Couldn’t apply changes.'), 'field');
+                return $this->asModelFailure($field, t('Couldn’t apply changes.'), 'field');
             }
         }
 

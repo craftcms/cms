@@ -25,6 +25,7 @@ use yii\web\ForbiddenHttpException;
 use yii\web\NotFoundHttpException;
 use yii\web\Response;
 use yii\web\ServerErrorHttpException;
+use function CraftCms\Cms\t;
 
 /**
  * The CategoriesController class is a controller that handles various actions related to categories and category
@@ -89,11 +90,11 @@ class CategoriesController extends Controller
         // Breadcrumbs
         $variables['crumbs'] = [
             [
-                'label' => Craft::t('app', 'Settings'),
+                'label' => t('Settings'),
                 'url' => UrlHelper::url('settings'),
             ],
             [
-                'label' => Craft::t('app', 'Categories'),
+                'label' => t('Categories'),
                 'url' => UrlHelper::url('settings/categories'),
             ],
         ];
@@ -109,14 +110,14 @@ class CategoriesController extends Controller
                 }
             }
 
-            $variables['title'] = trim($categoryGroup->name) ?: Craft::t('app', 'Edit Category Group');
+            $variables['title'] = trim($categoryGroup->name) ?: t('Edit Category Group');
         } else {
             if ($categoryGroup === null) {
                 $categoryGroup = new CategoryGroup();
                 $variables['brandNewGroup'] = true;
             }
 
-            $variables['title'] = Craft::t('app', 'Create a new category group');
+            $variables['title'] = t('Create a new category group');
         }
 
         $variables['groupId'] = $groupId;
@@ -181,7 +182,7 @@ class CategoriesController extends Controller
 
         // Save it
         if (!$categoriesService->saveGroup($group)) {
-            $this->setFailFlash(Craft::t('app', 'Couldn’t save the category group.'));
+            $this->setFailFlash(t('Couldn’t save the category group.'));
 
             // Send the category group back to the template
             Craft::$app->getUrlManager()->setRouteParams([
@@ -191,7 +192,7 @@ class CategoriesController extends Controller
             return null;
         }
 
-        $this->setSuccessFlash(Craft::t('app', 'Category group saved.'));
+        $this->setSuccessFlash(t('Category group saved.'));
         return $this->redirectToPostedUrl($group);
     }
 
@@ -289,7 +290,7 @@ class CategoriesController extends Controller
         // Save it
         $category->setScenario(Element::SCENARIO_ESSENTIALS);
         if (!Craft::$app->getDrafts()->saveElementAsDraft($category, Craft::$app->getUser()->getId(), null, null, false)) {
-            return $this->asModelFailure($category, mb_ucfirst(Craft::t('app', 'Couldn’t create {type}.', [
+            return $this->asModelFailure($category, mb_ucfirst(t('Couldn’t create {type}.', [
                 'type' => Category::lowerDisplayName(),
             ])), 'category');
         }
@@ -309,7 +310,7 @@ class CategoriesController extends Controller
 
         $editUrl = $category->getCpEditUrl();
 
-        $response = $this->asModelSuccess($category, Craft::t('app', '{type} created.', [
+        $response = $this->asModelSuccess($category, t('{type} created.', [
             'type' => Category::displayName(),
         ]), 'category', array_filter([
             'cpEditUrl' => $this->request->isCpRequest ? $editUrl : null,
@@ -359,13 +360,13 @@ class CategoriesController extends Controller
 
                 return $this->asModelFailure(
                     $category,
-                    Craft::t('app', 'Couldn’t duplicate {type}.', [
+                    t('Couldn’t duplicate {type}.', [
                         'type' => Category::lowerDisplayName(),
                     ]),
                     'category'
                 );
             } catch (Throwable $e) {
-                throw new ServerErrorHttpException(Craft::t('app', 'An error occurred when duplicating the category.'), 0, $e);
+                throw new ServerErrorHttpException(t('An error occurred when duplicating the category.'), 0, $e);
             }
         }
 
@@ -380,7 +381,7 @@ class CategoriesController extends Controller
         if (!Craft::$app->getElements()->saveElement($category)) {
             return $this->asModelFailure(
                 $category,
-                mb_ucfirst(Craft::t('app', 'Couldn’t save {type}.', [
+                mb_ucfirst(t('Couldn’t save {type}.', [
                     'type' => Category::lowerDisplayName(),
                 ])),
                 $categoryVariable
@@ -389,7 +390,7 @@ class CategoriesController extends Controller
 
         return $this->asModelSuccess(
             $category,
-            Craft::t('app', '{type} saved.', [
+            t('{type} saved.', [
                 'type' => Category::displayName(),
             ]),
             data: [

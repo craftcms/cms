@@ -14,6 +14,7 @@ use craft\fieldlayoutelements\TextField;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use yii\base\InvalidArgumentException;
+use function CraftCms\Cms\t;
 
 /**
  * EmailField represents an Email field that can be included in the user field layout.
@@ -85,7 +86,7 @@ class EmailField extends TextField
      */
     public function defaultLabel(?ElementInterface $element = null, bool $static = false): ?string
     {
-        return Craft::t('app', 'Email');
+        return t('Email');
     }
 
     /**
@@ -100,7 +101,7 @@ class EmailField extends TextField
             !$element->getIsDraft() &&
             !Craft::$app->getUser()->checkPermission('administrateUsers')
         ) {
-            return Craft::t('app', 'New email addresses must be verified before taking effect.');
+            return t('New email addresses must be verified before taking effect.');
         }
 
         return null;

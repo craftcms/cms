@@ -11,6 +11,7 @@ use craft\elements\db\EntryQuery;
 use craft\elements\Entry;
 use craft\models\UserGroup;
 use CraftCms\Cms\Support\Arr;
+use function CraftCms\Cms\t;
 
 /**
  * Author group condition rule.
@@ -25,7 +26,7 @@ class AuthorGroupConditionRule extends BaseMultiSelectConditionRule implements E
      */
     public function getLabel(): string
     {
-        return Craft::t('app', 'Author Group');
+        return t('Author Group');
     }
 
     /**

@@ -22,6 +22,8 @@ use Money\Exception\ParserException;
 use Money\Money as MoneyLibrary;
 use yii\db\Schema;
 
+use function CraftCms\Cms\t;
+
 /**
  * Money field type
  *
@@ -38,7 +40,7 @@ final class Money extends Field implements CrossSiteCopyableFieldInterface, Inli
      */
     public static function displayName(): string
     {
-        return Craft::t('app', 'Money');
+        return t('Money');
     }
 
     /**
@@ -310,7 +312,7 @@ final class Money extends Field implements CrossSiteCopyableFieldInterface, Inli
 
     public function currencyLabel(): string
     {
-        return Craft::t('app', '({currencyCode}) {currencySymbol}', [
+        return t('({currencyCode}) {currencySymbol}', [
             'currencyCode' => $this->currency,
             'currencySymbol' => Craft::$app->getFormattingLocale()->getCurrencySymbol($this->currency),
         ]);

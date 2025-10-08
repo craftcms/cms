@@ -13,6 +13,7 @@ use craft\helpers\Queue as QueueHelper;
 use craft\i18n\Translation;
 use CraftCms\Cms\Support\PHP;
 use yii\queue\RetryableJobInterface;
+use function CraftCms\Cms\t;
 
 /**
  * BaseBatchedJob is the base class for large jobs that may need to spawn
@@ -238,7 +239,7 @@ abstract class BaseBatchedJob extends BaseJob
         if ($totalBatches <= 1) {
             return $description;
         }
-        return Craft::t('app', '{description} (batch {index, number} of {total, number})', [
+        return t('{description} (batch {index, number} of {total, number})', [
             'description' => Translation::translate($description),
             'index' => $this->batchIndex + 1,
             'total' => $totalBatches,

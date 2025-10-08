@@ -12,6 +12,7 @@ use craft\elements\User;
 use craft\models\UserGroup;
 use CraftCms\Cms\Support\Arr;
 use yii\base\InvalidConfigException;
+use function CraftCms\Cms\t;
 
 /**
  * User group condition rule.
@@ -26,7 +27,7 @@ class GroupConditionRule extends BaseMultiSelectConditionRule implements Element
      */
     public function getLabel(): string
     {
-        return Craft::t('app', 'User Group');
+        return t('User Group');
     }
 
     /**

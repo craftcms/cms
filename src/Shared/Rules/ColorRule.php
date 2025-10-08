@@ -3,8 +3,9 @@
 namespace CraftCms\Cms\Shared\Rules;
 
 use Closure;
-use Craft;
 use Illuminate\Contracts\Validation\ValidationRule;
+
+use function CraftCms\Cms\t;
 
 final class ColorRule implements ValidationRule
 {
@@ -19,7 +20,7 @@ final class ColorRule implements ValidationRule
         $valid = ! is_array($value) && preg_match($this->pattern, $value);
 
         if (! $valid) {
-            $fail(Craft::t('app', '{attribute} is invalid.', [
+            $fail(t('{attribute} is invalid.', [
                 'attribute' => $attribute,
             ]));
         }

@@ -7,10 +7,10 @@
 
 namespace craft\models;
 
-use Craft;
 use craft\base\FieldLayoutComponent;
 use craft\base\Model;
 use CraftCms\Cms\Support\Html;
+use function CraftCms\Cms\t;
 
 /**
  * FieldLayoutFormTab model class.
@@ -58,7 +58,7 @@ class FieldLayoutFormTab extends Model
             return '';
         }
 
-        return Craft::t('site', $this->layoutTab->name);
+        return t($this->layoutTab->name, category: 'site');
     }
 
     /**

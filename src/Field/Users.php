@@ -16,6 +16,8 @@ use craft\models\GqlSchema;
 use craft\services\Gql as GqlService;
 use GraphQL\Type\Definition\Type;
 
+use function CraftCms\Cms\t;
+
 /**
  * Users represents a Users field.
  */
@@ -26,7 +28,7 @@ final class Users extends BaseRelationField
      */
     public static function displayName(): string
     {
-        return Craft::t('app', 'Users');
+        return t('Users');
     }
 
     /**
@@ -50,7 +52,7 @@ final class Users extends BaseRelationField
      */
     public static function defaultSelectionLabel(): string
     {
-        return Craft::t('app', 'Add a user');
+        return t('Add a user');
     }
 
     /**

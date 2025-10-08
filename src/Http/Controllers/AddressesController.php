@@ -2,7 +2,6 @@
 
 namespace CraftCms\Cms\Http\Controllers;
 
-use Craft;
 use craft\elements\Address;
 use craft\helpers\Cp;
 use craft\web\Application;
@@ -13,6 +12,8 @@ use Illuminate\Container\Attributes\Give;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
+
+use function CraftCms\Cms\t;
 
 final readonly class AddressesController
 {
@@ -65,9 +66,9 @@ final readonly class AddressesController
         ];
 
         if (! $addresses->saveFieldLayout($fieldLayout)) {
-            return $this->asFailure(Craft::t('app', 'Couldn’t save address fields.'));
+            return $this->asFailure(t('Couldn’t save address fields.'));
         }
 
-        return $this->asSuccess(Craft::t('app', 'Address fields saved.'));
+        return $this->asSuccess(t('Address fields saved.'));
     }
 }

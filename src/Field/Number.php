@@ -20,6 +20,8 @@ use Throwable;
 use yii\base\InvalidArgumentException;
 use yii\db\Schema;
 
+use function CraftCms\Cms\t;
+
 /**
  * Number represents a Number field.
  */
@@ -36,7 +38,7 @@ final class Number extends Field implements CrossSiteCopyableFieldInterface, Inl
      */
     public static function displayName(): string
     {
-        return Craft::t('app', 'Number');
+        return t('Number');
     }
 
     /**

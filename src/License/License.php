@@ -2,6 +2,7 @@
 
 namespace CraftCms\Cms\License;
 
+use Craft;
 use craft\helpers\UrlHelper;
 use CraftCms\Aliases\Aliases;
 use CraftCms\Cms\Config\GeneralConfig;
@@ -19,6 +20,8 @@ use CraftCms\Cms\User\Models\User;
 use Illuminate\Auth\AuthManager;
 use Illuminate\Container\Attributes\Singleton;
 use Illuminate\Support\Facades\Cache;
+
+use function CraftCms\Cms\t;
 
 /**
  * @internal
@@ -205,7 +208,7 @@ final readonly class License
         // invalid license
         return [
             $licenseData->name,
-            \Craft::t('app', 'The {name} license is invalid.', ['name' => $licenseData->name]),
+            t('The {name} license is invalid.', ['name' => $licenseData->name]),
             null,
         ];
     }
@@ -215,7 +218,7 @@ final readonly class License
         // trial license
         return [
             $licenseData->isMultiEdition() ? sprintf('%s %s', $licenseData->name, $licenseData->currentEditionName) : $licenseData->name,
-            \Craft::t('app', '{name} requires purchase.', ['name' => $licenseData->name]),
+            t('{name} requires purchase.', ['name' => $licenseData->name]),
             array_filter([
                 'type' => $licenseData->isCraft ? 'cms-edition' : 'plugin-edition',
                 'plugin' => ! $licenseData->isCraft ? $licenseData->handle : null,
@@ -237,7 +240,7 @@ final readonly class License
             // wrong Craft install
             return [
                 $licenseData->name,
-                \Craft::t('app',
+                Craft::t('app',
                     'The {name} license is attached to a different Craft CMS license. You can <a class="go" href="{detachUrl}">detach it in Craft Console</a> or <a class="go" href="{buyUrl}">buy a new license</a>.',
                     [
                         'name' => $licenseData->name,
@@ -270,7 +273,7 @@ final readonly class License
         ]);
 
         if (defined('CRAFT_LICENSE_KEY')) {
-            $message = \Craft::t('app', 'The Craft CMS license key in use belongs to {domain}', [
+            $message = t('The Craft CMS license key in use belongs to {domain}', [
                 'domain' => $domainLink,
             ]);
         } else {
@@ -282,14 +285,14 @@ final readonly class License
                 $keyPath = substr($keyPath, strlen($rootPath) + 1);
             }
 
-            $message = \Craft::t('app', 'The Craft CMS license located at {file} belongs to {domain}.', [
+            $message = t('The Craft CMS license located at {file} belongs to {domain}.', [
                 'file' => $keyPath,
                 'domain' => $domainLink,
             ]);
         }
 
         $learnMoreLink = Html::a(
-            text: \Craft::t('app', 'Learn more'),
+            text: t('Learn more'),
             url: 'https://craftcms.com/support/resolving-mismatched-licenses',
             options: [
                 'class' => 'go',
@@ -308,7 +311,7 @@ final readonly class License
         // updated too far
         return [
             sprintf('%s %s', $licenseData->name, $licenseData->version),
-            \Craft::t('app', '{name} isn’t licensed to run version {version}.', [
+            t('{name} isn’t licensed to run version {version}.', [
                 'name' => $licenseData->name,
                 'version' => $licenseData->version,
             ]),
@@ -323,7 +326,7 @@ final readonly class License
     private function issueWrongEdition(LicenseData $licenseData): array
     {
         // wrong edition
-        $message = \Craft::t('app',
+        $message = Craft::t('app',
             '{name} is licensed for the {licenseEdition} edition, but the {currentEdition} edition is installed.',
             [
                 'name' => $licenseData->name,

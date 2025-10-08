@@ -12,6 +12,7 @@ use craft\base\Element;
 use craft\base\ElementAction;
 use craft\base\ElementInterface;
 use craft\elements\db\ElementQueryInterface;
+use function CraftCms\Cms\t;
 
 /**
  * Delete represents a “Delete for site” element action.
@@ -65,7 +66,7 @@ JS, [static::class]);
      */
     public function getTriggerLabel(): string
     {
-        return Craft::t('app', 'Delete for site');
+        return t('Delete for site');
     }
 
     /**
@@ -81,7 +82,7 @@ JS, [static::class]);
      */
     public function getConfirmationMessage(): ?string
     {
-        return $this->confirmationMessage ?? Craft::t('app', 'Are you sure you want to delete the selected {type} for this site?', [
+        return $this->confirmationMessage ?? t('Are you sure you want to delete the selected {type} for this site?', [
             'type' => $this->elementType::pluralLowerDisplayName(),
         ]);
     }
@@ -108,7 +109,7 @@ JS, [static::class]);
         if (isset($this->successMessage)) {
             $this->setMessage($this->successMessage);
         } else {
-            $this->setMessage(Craft::t('app', '{type} deleted for site.', [
+            $this->setMessage(t('{type} deleted for site.', [
                 'type' => $this->elementType::pluralDisplayName(),
             ]));
         }

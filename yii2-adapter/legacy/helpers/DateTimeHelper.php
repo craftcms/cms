@@ -19,6 +19,7 @@ use Exception;
 use Throwable;
 use yii\base\ErrorException;
 use yii\base\InvalidArgumentException;
+use function CraftCms\Cms\t;
 
 /**
  * Class DateTimeHelper
@@ -780,13 +781,13 @@ class DateTimeHelper
         $timeComponents = [];
 
         if ($dateInterval->y) {
-            $timeComponents[] = Craft::t('app', '{num, number} {num, plural, =1{year} other{years}}', [
+            $timeComponents[] = t('{num, number} {num, plural, =1{year} other{years}}', [
                 'num' => $dateInterval->y,
             ], $language);
         }
 
         if ($dateInterval->m) {
-            $timeComponents[] = Craft::t('app', '{num, number} {num, plural, =1{month} other{months}}', [
+            $timeComponents[] = t('{num, number} {num, plural, =1{month} other{months}}', [
                 'num' => $dateInterval->m,
             ], $language);
         }
@@ -794,18 +795,18 @@ class DateTimeHelper
         if ($dateInterval->d) {
             // Is it an exact number of weeks?
             if ($dateInterval->d % 7 === 0) {
-                $timeComponents[] = Craft::t('app', '{num, number} {num, plural, =1{week} other{weeks}}', [
+                $timeComponents[] = t('{num, number} {num, plural, =1{week} other{weeks}}', [
                     'num' => $dateInterval->d / 7,
                 ], $language);
             } else {
-                $timeComponents[] = Craft::t('app', '{num, number} {num, plural, =1{day} other{days}}', [
+                $timeComponents[] = t('{num, number} {num, plural, =1{day} other{days}}', [
                     'num' => $dateInterval->d,
                 ], $language);
             }
         }
 
         if ($dateInterval->h) {
-            $timeComponents[] = Craft::t('app', '{num, number} {num, plural, =1{hour} other{hours}}', [
+            $timeComponents[] = t('{num, number} {num, plural, =1{hour} other{hours}}', [
                 'num' => $dateInterval->h,
             ], $language);
         }
@@ -817,18 +818,18 @@ class DateTimeHelper
             if ($addlMinutes) {
                 $minutes += $addlMinutes;
             } elseif ($secondsOnly) {
-                return Craft::t('app', 'less than a minute');
+                return t('less than a minute');
             }
         }
 
         if ($minutes) {
-            $timeComponents[] = Craft::t('app', '{num, number} {num, plural, =1{minute} other{minutes}}', [
+            $timeComponents[] = t('{num, number} {num, plural, =1{minute} other{minutes}}', [
                 'num' => $minutes,
             ], $language);
         }
 
         if ($showSeconds && ($dateInterval->s || empty($timeComponents))) {
-            $timeComponents[] = Craft::t('app', '{num, number} {num, plural, =1{second} other{seconds}}', [
+            $timeComponents[] = t('{num, number} {num, plural, =1{second} other{seconds}}', [
                 'num' => $dateInterval->s,
             ], $language);
         }
@@ -839,7 +840,7 @@ class DateTimeHelper
             if (count($timeComponents) > 1) {
                 $string .= ',';
             }
-            $string .= ' ' . Craft::t('app', 'and', language: $language) . ' ';
+            $string .= ' ' . t('and', language: $language) . ' ';
         } else {
             $string = '';
         }

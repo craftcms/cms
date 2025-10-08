@@ -7,6 +7,8 @@ use craft\base\ElementInterface;
 use CraftCms\Cms\Field\Data\OptionData;
 use Illuminate\Support\Collection;
 
+use function CraftCms\Cms\t;
+
 /**
  * Checkboxes represents a Checkboxes field.
  */
@@ -37,7 +39,7 @@ final class Checkboxes extends BaseOptionsField
      */
     public static function displayName(): string
     {
-        return Craft::t('app', 'Checkboxes');
+        return t('Checkboxes');
     }
 
     /**
@@ -79,6 +81,6 @@ final class Checkboxes extends BaseOptionsField
      */
     protected function optionsSettingLabel(): string
     {
-        return Craft::t('app', 'Checkbox Options');
+        return t('Checkbox Options');
     }
 }

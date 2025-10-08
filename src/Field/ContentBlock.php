@@ -36,6 +36,8 @@ use Illuminate\Validation\Validator;
 use yii\base\InvalidArgumentException;
 use yii\base\InvalidConfigException;
 
+use function CraftCms\Cms\t;
+
 /**
  * Content Block field type
  */
@@ -50,7 +52,7 @@ final class ContentBlock extends Field implements ElementContainerFieldInterface
     /** {@inheritdoc} */
     public static function displayName(): string
     {
-        return Craft::t('app', 'Content Block');
+        return t('Content Block');
     }
 
     /** {@inheritdoc} */
@@ -133,7 +135,7 @@ final class ContentBlock extends Field implements ElementContainerFieldInterface
         $fieldLayout->validate();
 
         if (! $this->ensureNoRecursion($this)) {
-            $validator->errors()->add('fieldLayout', Craft::t('app', 'Including a Content Block field recursively is not allowed.'));
+            $validator->errors()->add('fieldLayout', t('Including a Content Block field recursively is not allowed.'));
         }
     }
 
@@ -576,9 +578,9 @@ final class ContentBlock extends Field implements ElementContainerFieldInterface
     protected function inputHtml(mixed $value, ?ElementInterface $element, bool $inline): string
     {
         if (! $element?->id) {
-            $message = Craft::t('app', '{nestedType} can only be created after the {ownerType} has been saved.', [
+            $message = t('{nestedType} can only be created after the {ownerType} has been saved.', [
                 'nestedType' => ContentBlockElement::pluralDisplayName(),
-                'ownerType' => $element ? $element::lowerDisplayName() : Craft::t('app', 'element'),
+                'ownerType' => $element ? $element::lowerDisplayName() : t('element'),
             ]);
 
             return Html::tag('div', $message, ['class' => 'pane no-border zilch small']);
@@ -624,7 +626,7 @@ final class ContentBlock extends Field implements ElementContainerFieldInterface
 
         $view->registerJsWithVars(fn ($id, $settings) => <<<JS
 (() => {
-  new Craft.ContentBlockEditor($('#' + $id), $settings);
+  new Craft.ContentBlockEditor($('#' + $id), $settings)
 })();
 JS, [
             $view->namespaceInputId($id),

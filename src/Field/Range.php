@@ -16,6 +16,8 @@ use CraftCms\Cms\Field\Contracts\SortableFieldInterface;
 use GraphQL\Type\Definition\Type;
 use yii\db\Schema;
 
+use function CraftCms\Cms\t;
+
 /**
  * Range represents a Range field, which provides a tactile UI around a numeric value.
  */
@@ -26,7 +28,7 @@ final class Range extends Field implements InlineEditableFieldInterface, Mergeab
      */
     public static function displayName(): string
     {
-        return Craft::t('app', 'Range');
+        return t('Range');
     }
 
     /**

@@ -9,6 +9,7 @@ namespace craft\elements\actions;
 
 use Craft;
 use craft\base\ElementAction;
+use function CraftCms\Cms\t;
 
 /**
  * Edit represents an Edit element action.
@@ -29,7 +30,7 @@ class Edit extends ElementAction
     public function init(): void
     {
         if (!isset($this->label)) {
-            $this->label = Craft::t('app', 'Edit');
+            $this->label = t('Edit');
         }
     }
 

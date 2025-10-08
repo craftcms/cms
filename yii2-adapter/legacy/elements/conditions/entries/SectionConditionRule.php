@@ -12,6 +12,7 @@ use craft\elements\db\EntryQuery;
 use craft\elements\Entry;
 use craft\models\Section;
 use Illuminate\Support\Collection;
+use function CraftCms\Cms\t;
 
 /**
  * Entry section condition rule.
@@ -33,7 +34,7 @@ class SectionConditionRule extends BaseMultiSelectConditionRule implements Eleme
      */
     public function getLabel(): string
     {
-        return Craft::t('app', 'Section');
+        return t('Section');
     }
 
     /**

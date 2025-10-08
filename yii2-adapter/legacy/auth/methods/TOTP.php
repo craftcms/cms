@@ -21,6 +21,7 @@ use PragmaRX\Google2FA\Exceptions\Google2FAException;
 use PragmaRX\Google2FA\Google2FA;
 use yii\base\Exception;
 use yii\web\ForbiddenHttpException;
+use function CraftCms\Cms\t;
 
 /**
  * Time-based one-time password authentication method.
@@ -41,7 +42,7 @@ class TOTP extends BaseAuthMethod
      */
     public static function displayName(): string
     {
-        return Craft::t('app', 'Authenticator App');
+        return t('Authenticator App');
     }
 
     /**
@@ -49,7 +50,7 @@ class TOTP extends BaseAuthMethod
      */
     public static function description(): string
     {
-        return Craft::t('app', 'Use an authenticator app to verify your identity.');
+        return t('Use an authenticator app to verify your identity.');
     }
 
     /**
@@ -211,7 +212,7 @@ JS, [
     {
         // Make sure they have an elevated session first
         if (!Craft::$app->getUser()->getHasElevatedSession()) {
-            throw new ForbiddenHttpException(Craft::t('app', 'This action may only be performed with an elevated session.'));
+            throw new ForbiddenHttpException(t('This action may only be performed with an elevated session.'));
         }
 
         /** @var AuthenticatorRecord|null $record */

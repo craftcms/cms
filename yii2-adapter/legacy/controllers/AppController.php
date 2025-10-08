@@ -43,6 +43,7 @@ use yii\base\InvalidConfigException;
 use yii\web\BadRequestHttpException;
 use yii\web\Cookie;
 use yii\web\Response;
+use function CraftCms\Cms\t;
 
 /**
  * The AppController class is a controller that handles various actions for Craft updates, control panel requests,
@@ -432,7 +433,7 @@ class AppController extends Controller
                         ];
                         if ($pluginLicenseInfo['expired']) {
                             $result[$handle]['renewalUrl'] = $pluginLicenseInfo['renewalUrl'];
-                            $result[$handle]['renewalText'] = Craft::t('app', 'Renew for {price}', [
+                            $result[$handle]['renewalText'] = t('Renew for {price}', [
                                 'price' => $formatter->asCurrency($pluginLicenseInfo['renewalPrice'], $pluginLicenseInfo['renewalCurrency']),
                             ]);
                         }

@@ -2,7 +2,6 @@
 
 namespace craft\elements\conditions\assets;
 
-use Craft;
 use craft\base\conditions\BaseNumberConditionRule;
 use craft\base\ElementInterface;
 use craft\elements\Asset;
@@ -12,6 +11,7 @@ use craft\elements\db\ElementQueryInterface;
 use craft\helpers\Cp;
 use CraftCms\Cms\Support\Html;
 use yii\base\InvalidValueException;
+use function CraftCms\Cms\t;
 
 /**
  * File Size condition rule.
@@ -37,7 +37,7 @@ class FileSizeConditionRule extends BaseNumberConditionRule implements ElementCo
      */
     public function getLabel(): string
     {
-        return Craft::t('app', 'File Size');
+        return t('File Size');
     }
 
     /**
@@ -48,7 +48,7 @@ class FileSizeConditionRule extends BaseNumberConditionRule implements ElementCo
         $unitId = 'unit';
         return Html::tag('div',
             parent::inputHtml() .
-            Html::hiddenLabel(Craft::t('app', 'Unit'), $unitId) .
+            Html::hiddenLabel(t('Unit'), $unitId) .
             Cp::selectHtml([
                 'name' => 'unit',
                 'id' => $unitId,

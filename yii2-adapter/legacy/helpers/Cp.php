@@ -65,6 +65,7 @@ use yii\base\InvalidArgumentException;
 use yii\base\InvalidConfigException;
 use yii\helpers\Markdown;
 use yii\validators\RequiredValidator;
+use function CraftCms\Cms\t;
 
 /**
  * Class Cp
@@ -173,8 +174,8 @@ class Cp
                 'items' => $resolvableLicenseItems,
             ]);
             array_unshift($alerts, [
-                'content' => Html::tag('h2', Craft::t('app', 'License purchase required.')) .
-                    Html::tag('p', Craft::t('app', 'The following licensing {total, plural, =1{issue} other{issues}} can be resolved with a single purchase on Craft Console:', [
+                'content' => Html::tag('h2', t('License purchase required.')) .
+                    Html::tag('p', t('The following licensing {total, plural, =1{issue} other{issues}} can be resolved with a single purchase on Craft Console:', [
                         'total' => count($resolvableLicenseAlerts),
                     ])) .
                     Html::ul()
@@ -184,7 +185,7 @@ class Cp
                     Html::beginTag('p', [
                         'class' => ['flex', 'flex-nowrap', 'resolvable-alert-buttons'],
                     ]) .
-                    sprintf('<a class="go" href="%s" target="_blank">%s</a>', $cartUrl, Craft::t('app', 'Resolve now')) .
+                    sprintf('<a class="go" href="%s" target="_blank">%s</a>', $cartUrl, t('Resolve now')) .
                     Html::endTag('p'),
                 'showIcon' => false,
             ]);
@@ -198,15 +199,15 @@ class Cp
             $utilitiesService->checkAuthorization(Updates::class) &&
             app(\CraftCms\Cms\Updates\Updates::class)->isCriticalUpdateAvailable()
         ) {
-            $alerts[] = Craft::t('app', 'A critical update is available.') .
-                ' <a class="go nowrap" href="' . UrlHelper::url('utilities/updates') . '">' . Craft::t('app', 'Go to Updates') . '</a>';
+            $alerts[] = t('A critical update is available.') .
+                ' <a class="go nowrap" href="' . UrlHelper::url('utilities/updates') . '">' . t('Go to Updates') . '</a>';
         }
 
         // Do any plugins require a higher edition?
         if (Edition::get() < Edition::Pro) {
             foreach (app(Plugins::class)->getAllPlugins() as $plugin) {
                 if ($plugin->minCmsEdition->value > Edition::get()->value) {
-                    $alerts[] = Craft::t('app', '{plugin} requires Craft CMS {edition} edition.', [
+                    $alerts[] = t('{plugin} requires Craft CMS {edition} edition.', [
                         'plugin' => $plugin->name,
                         'edition' => $plugin->minCmsEdition->name,
                     ]);
@@ -222,8 +223,8 @@ class Cp
             $projectConfig->areChangesPending() &&
             ($projectConfig->writeYamlAutomatically || $projectConfig->get('dateModified') <= $projectConfig->get('dateModified', true))
         ) {
-            $alerts[] = Craft::t('app', 'Your project config YAML files contain pending changes.') .
-                ' ' . '<a class="go" href="' . UrlHelper::url('utilities/project-config') . '">' . Craft::t('app', 'Review') . '</a>';
+            $alerts[] = t('Your project config YAML files contain pending changes.') .
+                ' ' . '<a class="go" href="' . UrlHelper::url('utilities/project-config') . '">' . t('Review') . '</a>';
         }
 
         // Display a warning if admin changes are allowed, and project.yaml is being used but not writable
@@ -232,7 +233,7 @@ class Cp
             $generalConfig->allowAdminChanges &&
             $projectConfig->getHadFileWriteIssues()
         ) {
-            $alerts[] = Craft::t('app', 'Your {folder} folder isn’t writable.', [
+            $alerts[] = t('Your {folder} folder isn’t writable.', [
                 'folder' => "config/$projectConfig->folderName/",
             ]);
         }
@@ -503,9 +504,9 @@ class Cp
                 'class' => ['chromeless', 'small', 'move-btn'],
                 'icon' => 'move',
                 'attributes' => [
-                    'title' => Craft::t('app', 'Reorder'),
+                    'title' => t('Reorder'),
                     'aria' => [
-                        'label' => Craft::t('app', 'Reorder'),
+                        'label' => t('Reorder'),
                     ],
                     'role' => 'none',
                     'tabindex' => '-1',
@@ -662,7 +663,7 @@ class Cp
             $view->registerJsWithVars(fn($id, $elementType, $settings, $cpEditUrl) => <<<JS
 $('#' + $id).on('activate', (ev) => {
   if ($cpEditUrl && Garnish.isCtrlKeyPressed(ev.originalEvent)) {
-    window.open($cpEditUrl);
+    window.open($cpEditUrl)
   } else {
     // focus on the button so that when the slideout is closed, it's returned to the button
     $(ev.currentTarget).focus();
@@ -673,7 +674,7 @@ $('#' + $id).on('activate', (ev) => {
     if (settings.draftId && !Garnish.hasAttr($(ev.currentTarget).parents('.card'), 'data-draft-id')) {
       delete settings.draftId;
     }
-    Craft.createElementEditor($elementType, settings);
+    Craft.createElementEditor($elementType, settings)
   }
 });
 JS, [
@@ -763,12 +764,12 @@ JS, [
         ) {
             if ($element->getIsCanonical()) {
                 // this element was created for the owner
-                $statusLabel = Craft::t('app', 'This is a new {type}.', [
+                $statusLabel = t('This is a new {type}.', [
                     'type' => $element::lowerDisplayName(),
                 ]);
             } else {
                 // this element is a derivative of another element owned by the canonical owner
-                $statusLabel = Craft::t('app', 'This {type} has been edited.', [
+                $statusLabel = t('This {type} has been edited.', [
                     'type' => $element::lowerDisplayName(),
                 ]);
             }
@@ -810,11 +811,11 @@ JS, [
                 'icon' => 'edit',
                 'attributes' => [
                     'id' => $editId,
-                    'title' => mb_ucfirst(Craft::t('app', 'Edit {type}', [
+                    'title' => mb_ucfirst(t('Edit {type}', [
                         'type' => $element::lowerDisplayName(),
                     ])),
                     'aria' => [
-                        'label' => mb_ucfirst(Craft::t('app', 'Edit {type}', [
+                        'label' => mb_ucfirst(t('Edit {type}', [
                             'type' => $element::lowerDisplayName(),
                         ])),
                     ],
@@ -825,9 +826,9 @@ JS, [
                 'class' => ['chromeless', 'small', 'move-btn'],
                 'icon' => 'move',
                 'attributes' => [
-                    'title' => Craft::t('app', 'Reorder'),
+                    'title' => t('Reorder'),
                     'aria' => [
-                        'label' => Craft::t('app', 'Reorder'),
+                        'label' => t('Reorder'),
                     ],
                     'role' => 'none',
                     'tabindex' => '-1',
@@ -902,8 +903,8 @@ JS, [
                 'role' => 'img',
                 'aria' => [
                     'label' => sprintf('%s %s',
-                        Craft::t('app', 'Status:'),
-                        $attributes['label'] ?? Craft::t('app', 'Draft'),
+                        t('Status:'),
+                        $attributes['label'] ?? t('Draft'),
                     ),
                 ],
             ]);
@@ -923,7 +924,7 @@ JS, [
 
         if ($attributes['label'] !== null) {
             $options['role'] = 'img';
-            $options['aria']['label'] = sprintf('%s %s', Craft::t('app', 'Status:'), $attributes['label']);
+            $options['aria']['label'] = sprintf('%s %s', t('Status:'), $attributes['label']);
         }
 
         return Html::tag('span', '', $options);
@@ -1005,7 +1006,7 @@ JS, [
         return static::statusLabelHtml([
             'color' => Color::Blue,
             'icon' => 'pen-circle',
-            'label' => Craft::t('app', 'Edited'),
+            'label' => t('Edited'),
         ]);
     }
 
@@ -1030,7 +1031,7 @@ JS, [
         }
         $config['color'] ??= Color::tryFromStatus($status) ?? Color::Gray;
         $config['label'] ??= match ($status) {
-            'draft' => Craft::t('app', 'Draft'),
+            'draft' => t('Draft'),
             default => ucfirst($status),
         };
         $config['indicatorClass'] = match ($status) {
@@ -1117,7 +1118,7 @@ JS, [
     {
         return Html::tag('div', options: [
             'class' => 'checkbox',
-            'title' => Craft::t('app', 'Select'),
+            'title' => t('Select'),
             'role' => 'checkbox',
             'tabindex' => '0',
             'aria' => [
@@ -1138,7 +1139,7 @@ JS, [
         // show the draft name?
         if (($config['showDraftName'] ?? true) && $element->getIsDraft() && !$element->isProvisionalDraft && !$element->getIsUnpublishedDraft()) {
             /** @var DraftBehavior&ElementInterface $element */
-            $content .= Html::tag('span', $element->draftName ?: Craft::t('app', 'Draft'), [
+            $content .= Html::tag('span', $element->draftName ?: t('Draft'), [
                 'class' => 'context-label',
             ]);
         }
@@ -1163,7 +1164,7 @@ JS, [
         if ($config['context'] === 'field' && $element->hasErrors()) {
             $content .= Html::tag('span', '', [
                 'data' => ['icon' => 'triangle-exclamation'],
-                'aria' => ['label' => Craft::t('app', 'Error')],
+                'aria' => ['label' => t('Error')],
                 'role' => 'img',
             ]);
         }
@@ -1200,7 +1201,7 @@ JS, [
                 }
 
                 return static::disclosureMenu($actionMenuItems, [
-                    'hiddenLabel' => Craft::t('app', 'Actions'),
+                    'hiddenLabel' => t('Actions'),
                     'buttonAttributes' => [
                         'class' => array_keys(array_filter([
                             'action-btn' => true,
@@ -1495,7 +1496,7 @@ JS, [
                 [
                     'type' => ElementSources::TYPE_NATIVE,
                     'key' => '__IMP__',
-                    'label' => Craft::t('app', 'All elements'),
+                    'label' => t('All elements'),
                     'hasThumbs' => $elementType::hasThumbs(),
                     'defaultSort' => $config['defaultSort'],
                     'defaultViewMode' => $config['defaultViewMode'],
@@ -1544,7 +1545,7 @@ JS, [
 
         if ($config['registerJs']) {
             $view->registerJsWithVars(fn($elementType, $id, $settings) => <<<JS
-Craft.createElementIndex($elementType, $('#' + $id), $settings);
+Craft.createElementIndex($elementType, $('#' + $id), $settings)
 JS, [
                 $elementType,
                 $view->namespaceInputId($config['id']),
@@ -1715,7 +1716,7 @@ JS, [
             ])
             : '';
 
-        $translationDescription = $config['translationDescription'] ?? Craft::t('app', 'This field is translatable.');
+        $translationDescription = $config['translationDescription'] ?? t('This field is translatable.');
         $translationIconHtml = Html::button('', [
             'class' => ['t9n-indicator', 'prevent-autofocus'],
             'data' => [
@@ -1736,7 +1737,7 @@ JS, [
         if ($label) {
             $labelHtml = $label . (
                     ($required
-                        ? Html::tag('span', Craft::t('app', 'Required'), [
+                        ? Html::tag('span', t('Required'), [
                             'class' => ['visually-hidden'],
                         ]) .
                         Html::tag('span', '', [
@@ -1793,7 +1794,7 @@ JS, [
                     ($showLabelExtra
                         ? Html::tag('div', '', ['class' => 'flex-grow']) .
                         ($showActionMenu ? static::disclosureMenu($config['actionMenuItems'], [
-                            'hiddenLabel' => Craft::t('app', 'Actions'),
+                            'hiddenLabel' => t('Actions'),
                             'buttonAttributes' => [
                                 'class' => ['action-btn', 'small', 'prevent-autofocus'],
                             ],
@@ -1822,8 +1823,8 @@ JS, [
                 $config['inputContainerAttributes'] ?? []
             )) .
             ($instructionsPosition === 'after' ? $instructionsHtml : '') .
-            self::_noticeHtml($tipId, 'notice', Craft::t('app', 'Tip:'), $tip) .
-            self::_noticeHtml($warningId, 'warning', Craft::t('app', 'Warning:'), $warning) .
+            self::_noticeHtml($tipId, 'notice', t('Tip:'), $tip) .
+            self::_noticeHtml($warningId, 'warning', t('Warning:'), $warning) .
             ($errors
                 ? static::renderTemplate('_includes/forms/errorList.twig', [
                     'id' => $errorsId,
@@ -2450,19 +2451,19 @@ JS, [
             $value = $config['value'] ?? '';
             if (!isset($config['tip']) && (!isset($value[0]) || !in_array($value[0], ['$', '@']))) {
                 if ($config['suggestAliases'] ?? false) {
-                    $config['tip'] = Craft::t('app', 'This can begin with an environment variable or alias.');
+                    $config['tip'] = t('This can begin with an environment variable or alias.');
                 } else {
-                    $config['tip'] = Craft::t('app', 'This can begin with an environment variable.');
+                    $config['tip'] = t('This can begin with an environment variable.');
                 }
                 $config['tip'] .= ' ' .
-                    Html::a(Craft::t('app', 'Learn more'), 'https://craftcms.com/docs/5.x/configure.html#control-panel-settings', [
+                    Html::a(t('Learn more'), 'https://craftcms.com/docs/5.x/configure.html#control-panel-settings', [
                         'class' => 'go',
                     ]);
             } elseif (
                 !isset($config['warning']) &&
                 ($value === '@web' || str_starts_with($value, '@web/'))
             ) {
-                $config['warning'] = Craft::t('app', 'The `@web` alias is not recommended.');
+                $config['warning'] = t('The `@web` alias is not recommended.');
             }
         }
 
@@ -2799,7 +2800,7 @@ JS, [
         usort($remainingOptions, fn(array $a, array $b) => $a['label'] <=> $b['label']);
 
         $checkboxSelect = self::checkboxSelectFieldHtml([
-            'label' => Craft::t('app', 'Card Attributes'),
+            'label' => t('Card Attributes'),
             'id' => $config['id'],
             'name' => 'cardView',
             'options' => [...$selectedOptions, ...$remainingOptions],
@@ -2816,17 +2817,17 @@ JS, [
                 'id' => $config['id'] . '-container',
                 'class' => 'card-view-designer',
             ]) .
-            Html::tag('h2', Craft::t('app', 'Card Layout Editor'), ['class' => 'visually-hidden']) .
+            Html::tag('h2', t('Card Layout Editor'), ['class' => 'visually-hidden']) .
             Html::beginTag('div', ['class' => 'cvd-container']) .
             Html::beginTag('div', ['class' => 'cvd-library']) .
             $checkboxSelect .
             Html::endTag('div') . // .cvd-library
             Html::beginTag('div', ['class' => 'cvd-preview-container']) .
             Html::beginTag('div', ['class' => 'cvd-preview']) .
-            Html::tag('h3', Craft::t('app', 'Card Layout Preview'), [
+            Html::tag('h3', t('Card Layout Preview'), [
                 'class' => 'visually-hidden',
             ]) .
-            Html::tag('p', Craft::t('app', 'The following content is for preview only.'), [
+            Html::tag('p', t('The following content is for preview only.'), [
                 'class' => 'visually-hidden',
             ]) .
             $previewHtml .
@@ -2853,11 +2854,11 @@ JS, [
 
         if ($fieldLayout->type::hasThumbs()) {
             $options = [
-                ['label' => Craft::t('app', 'Default'), 'value' => '__default__'],
+                ['label' => t('Default'), 'value' => '__default__'],
             ];
         } else {
             $options = [
-                ['label' => Craft::t('app', 'None'), 'value' => '__none__'],
+                ['label' => t('None'), 'value' => '__none__'],
             ];
         }
         $elementThumbnail = $fieldLayout->getThumbField()?->uid;
@@ -2873,12 +2874,12 @@ JS, [
         }
 
         $thumbHtml = Html::beginTag('div', ['class' => 'thumb-management']) .
-            Html::tag('h2', Craft::t('app', 'Manage element thumbnails'), ['class' => 'visually-hidden']) .
+            Html::tag('h2', t('Manage element thumbnails'), ['class' => 'visually-hidden']) .
             Html::beginTag('div', ['class' => ['flex', 'flex-nowrap', 'items-start']]);
 
         // dropdown field that contains all thumbable fields + 'None' option
         $thumbHtml .= self::selectFieldHtml([
-            'label' => Craft::t('app', 'Thumbnail Source'),
+            'label' => t('Thumbnail Source'),
             'id' => 'thumb-source',
             'name' => 'thumbSource',
             'options' => $options,
@@ -2889,7 +2890,7 @@ JS, [
         // radio button switch that lets you choose whether the thumb alignment should be start or end
         $orientation = Craft::$app->getLocale()->getOrientation();
         $thumbHtml .= self::buttonGroupFieldHtml([
-            'label' => Craft::t('app', 'Thumbnail Alignment'),
+            'label' => t('Thumbnail Alignment'),
             'id' => 'thumb-alignment',
             'fieldClass' => $elementThumbnail === null ? 'hidden' : false,
             'name' => 'thumbAlignment',
@@ -2898,9 +2899,9 @@ JS, [
                     'icon' => $orientation == 'ltr' ? 'slideout-left' : 'slideout-right',
                     'value' => 'start',
                     'attributes' => [
-                        'title' => $orientation == 'ltr' ? Craft::t('app', 'Left') : Craft::t('app', 'Right'),
+                        'title' => $orientation == 'ltr' ? t('Left') : t('Right'),
                         'aria' => [
-                            'label' => $orientation == 'ltr' ? Craft::t('app', 'Left') : Craft::t('app', 'Right'),
+                            'label' => $orientation == 'ltr' ? t('Left') : t('Right'),
                         ],
                     ],
                 ],
@@ -2908,9 +2909,9 @@ JS, [
                     'icon' => $orientation == 'ltr' ? 'slideout-right' : 'slideout-left',
                     'value' => 'end',
                     'attributes' => [
-                        'title' => $orientation == 'ltr' ? Craft::t('app', 'Right') : Craft::t('app', 'Left'),
+                        'title' => $orientation == 'ltr' ? t('Right') : t('Left'),
                         'aria' => [
-                            'label' => $orientation == 'ltr' ? Craft::t('app', 'Right') : Craft::t('app', 'Left'),
+                            'label' => $orientation == 'ltr' ? t('Right') : t('Left'),
                         ],
                     ],
                 ],
@@ -2941,7 +2942,7 @@ JS, [
 
         // get heading
         $heading = Html::tag('craft-element-label',
-            Html::tag('a', Html::tag('span', Craft::t('app', 'Title')), [
+            Html::tag('a', Html::tag('span', t('Title')), [
                 'class' => ['label-link'],
                 'href' => '#',
                 'aria-disabled' => 'true',
@@ -3049,7 +3050,7 @@ JS, [
                 'uid' => Str::uuid()->toString(),
                 'layout' => $fieldLayout,
             ]);
-            $tab->name = $config['pretendTabName'] ?? Craft::t('app', 'Content');
+            $tab->name = $config['pretendTabName'] ?? t('Content');
 
             // Any extra tabs?
             if (!empty($tabs)) {
@@ -3146,7 +3147,7 @@ JS;
             )) .
             Html::endTag('div') . // .fld-tabs
             ($config['customizableTabs']
-                ? Html::button(Craft::t('app', 'New Tab'), [
+                ? Html::button(t('New Tab'), [
                     'type' => 'button',
                     'class' => ['fld-new-tab-btn', 'btn', 'add', 'icon'],
                     'disabled' => $config['disabled'],
@@ -3157,16 +3158,16 @@ JS;
             ($config['customizableUi']
                 ? Html::beginTag('section', [
                     'class' => ['btngroup', 'btngroup--exclusive', 'small', 'fullwidth'],
-                    'aria' => ['label' => Craft::t('app', 'Layout element types')],
+                    'aria' => ['label' => t('Layout element types')],
                 ]) .
-                Html::button(Craft::t('app', 'Fields'), [
+                Html::button(t('Fields'), [
                     'type' => 'button',
                     'class' => ['btn', 'small', 'active'],
                     'aria' => ['pressed' => 'true'],
                     'data' => ['library' => 'field'],
                     'disabled' => $config['disabled'],
                 ]) .
-                Html::button(Craft::t('app', 'UI Elements'), [
+                Html::button(t('UI Elements'), [
                     'type' => 'button',
                     'class' => ['btn', 'small'],
                     'aria' => ['pressed' => 'false'],
@@ -3180,16 +3181,16 @@ JS;
             static::textHtml([
                 'class' => 'fullwidth',
                 'inputmode' => 'search',
-                'placeholder' => Craft::t('app', 'Search'),
+                'placeholder' => t('Search'),
                 'disabled' => $config['disabled'],
             ]) .
             Html::tag('div', '', [
                 'class' => ['clear-btn', 'hidden'],
-                'title' => Craft::t('app', 'Clear'),
-                'aria' => ['label' => Craft::t('app', 'Clear')],
+                'title' => t('Clear'),
+                'aria' => ['label' => t('Clear')],
             ]) .
             Html::endTag('div') . // .texticon
-            self::_fldFieldSelectorsHtml(Craft::t('app', 'Native Fields'), $availableNativeFields, $fieldLayout) .
+            self::_fldFieldSelectorsHtml(t('Native Fields'), $availableNativeFields, $fieldLayout) .
             implode('', array_map(fn(string $groupName) => self::_fldFieldSelectorsHtml($groupName, $availableCustomFields[$groupName], $fieldLayout), array_keys($availableCustomFields))) .
             Html::endTag('div') . // .fld-field-library
             ($config['customizableUi']
@@ -3243,7 +3244,7 @@ JS;
             Html::endTag('div') . // .tabs
             Html::beginTag('div', ['class' => 'fld-tabcontent']) .
             implode('', array_map(fn(FieldLayoutElement $element) => self::layoutElementSelectorHtml($element, false), $tab->getElements())) .
-            Html::button(Craft::t('app', 'Add'), [
+            Html::button(t('Add'), [
                 'class' => ['btn', 'add', 'icon', 'dashed', 'fullwidth', 'fld-add-btn'],
                 'disabled' => $disabled,
             ]) .
@@ -3378,18 +3379,18 @@ JS;
 
         $cols = [
             'name' => [
-                'heading' => Craft::t('app', 'Name'),
+                'heading' => t('Name'),
                 'type' => 'singleline',
                 'width' => '15%',
             ],
             'handle' => [
-                'heading' => Craft::t('app', 'Handle'),
+                'heading' => t('Handle'),
                 'type' => 'singleline',
                 'code' => true,
                 'width' => '15%',
             ],
             'template' => [
-                'heading' => Craft::t('app', 'Template'),
+                'heading' => t('Template'),
                 'type' => 'multiline',
                 'code' => true,
             ],
@@ -3428,7 +3429,7 @@ JS, [
             'name' => $name,
             'cols' => $cols,
             'rows' => $rows,
-            'addRowLabel' => Craft::t('app', 'Add a field'),
+            'addRowLabel' => t('Add a field'),
             'static' => $config['disabled'],
             'initJs' => false,
             ...$settings,
@@ -3677,7 +3678,7 @@ JS, [
 
             $groupSiteItems = array_map(fn(Site $site) => [
                 'status' => $sites[$site->id]['status'] ?? null,
-                'label' => Craft::t('site', $site->name),
+                'label' => t($site->name, category: 'site'),
                 'url' => UrlHelper::cpUrl($path, ['site' => $site->handle] + $params),
                 'hidden' => !isset($sites[$site->id]),
                 'selected' => $site->id === $selectedSite?->id,
@@ -3690,7 +3691,7 @@ JS, [
 
             if ($config['showSiteGroupHeadings']) {
                 $items[] = [
-                    'heading' => Craft::t('site', $siteGroup->name),
+                    'heading' => t($siteGroup->name, category: 'site'),
                     'items' => $groupSiteItems,
                     'hidden' => !Collection::make($groupSiteItems)->contains(fn(array $item) => !$item['hidden']),
                 ];

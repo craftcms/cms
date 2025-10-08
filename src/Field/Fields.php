@@ -61,6 +61,8 @@ use Illuminate\Validation\ValidationException;
 use InvalidArgumentException;
 use Throwable;
 
+use function CraftCms\Cms\t;
+
 #[Singleton]
 final class Fields
 {
@@ -1269,7 +1271,7 @@ final class Fields
 
             $tableData[] = [
                 'id' => $field->id,
-                'title' => Craft::t('site', $field->name),
+                'title' => t($field->name, category: 'site'),
                 'translatable' => $field->getIsTranslatable(null) ? ($field->getTranslationDescription(null) ?? Craft::t('app',
                     'This field is translatable.')) : false,
                 'searchable' => (bool) $field->searchable,
@@ -1281,7 +1283,7 @@ final class Fields
                     'icon' => Cp::iconSvg($field::icon()),
                 ],
                 'usages' => isset($usages[$field->id])
-                    ? Craft::t('app', '{count, number} {count, plural, =1{layout} other{layouts}}', [
+                    ? t('{count, number} {count, plural, =1{layout} other{layouts}}', [
                         'count' => count($usages[$field->id]),
                     ])
                     : null,

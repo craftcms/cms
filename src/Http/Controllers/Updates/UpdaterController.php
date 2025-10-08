@@ -19,6 +19,7 @@ use Symfony\Component\Process\Process;
 use Throwable;
 
 use function CraftCms\Cms\normalizeVersion;
+use function CraftCms\Cms\t;
 
 /**
  * @internal
@@ -62,20 +63,20 @@ final class UpdaterController extends BaseUpdaterController
             Log::error('Error backing up the database: '.$e->getMessage(), [__METHOD__]);
 
             if (! empty($this->data['install'])) {
-                $firstAction = $this->actionOption(Craft::t('app', 'Revert the update'), self::ACTION_REVERT);
+                $firstAction = $this->actionOption(t('Revert the update'), self::ACTION_REVERT);
             } else {
                 $firstAction = $this->finishedState([
-                    'label' => Craft::t('app', 'Abort the update'),
-                    'status' => Craft::t('app', 'Update aborted.'),
+                    'label' => t('Abort the update'),
+                    'status' => t('Update aborted.'),
                 ]);
             }
 
             return $this->send([
-                'error' => Craft::t('app', 'Couldn’t backup the database. How would you like to proceed?'),
+                'error' => t('Couldn’t backup the database. How would you like to proceed?'),
                 'options' => [
                     $firstAction,
-                    $this->actionOption(Craft::t('app', 'Try again'), self::ACTION_BACKUP),
-                    $this->actionOption(Craft::t('app', 'Continue anyway'), self::ACTION_MIGRATE),
+                    $this->actionOption(t('Try again'), self::ACTION_BACKUP),
+                    $this->actionOption(t('Continue anyway'), self::ACTION_MIGRATE),
                 ],
             ]);
         }
@@ -98,7 +99,7 @@ final class UpdaterController extends BaseUpdaterController
         } catch (Throwable $e) {
             Log::error('Error reverting Composer requirements: '.$e->getMessage()."\nOutput: $output", [__METHOD__]);
 
-            return $this->sendComposerError(Craft::t('app', 'Composer was unable to revert the updates.'), $e, $output);
+            return $this->sendComposerError(t('Composer was unable to revert the updates.'), $e, $output);
         }
 
         return $this->send($this->postComposerInstallState());
@@ -123,10 +124,10 @@ final class UpdaterController extends BaseUpdaterController
             Log::warning("The server doesn't meet Craft's new requirements:\n - ".implode("\n - ", $errors), [__METHOD__]);
 
             return $this->send([
-                'error' => Craft::t('app', 'The server doesn’t meet Craft’s new requirements:').' '.implode(', ', $errors),
+                'error' => t('The server doesn’t meet Craft’s new requirements:').' '.implode(', ', $errors),
                 'options' => [
-                    $this->actionOption(Craft::t('app', 'Revert update'), self::ACTION_REVERT),
-                    $this->actionOption(Craft::t('app', 'Check again'), self::ACTION_SERVER_CHECK),
+                    $this->actionOption(t('Revert update'), self::ACTION_REVERT),
+                    $this->actionOption(t('Check again'), self::ACTION_SERVER_CHECK),
                 ],
             ]);
         }
@@ -162,7 +163,7 @@ final class UpdaterController extends BaseUpdaterController
     #[\Override]
     protected function pageTitle(): string
     {
-        return Craft::t('app', 'Updater');
+        return t('Updater');
     }
 
     /**
@@ -231,7 +232,7 @@ final class UpdaterController extends BaseUpdaterController
         // Is there anything to install/update?
         if (empty($this->data['install']) && empty($this->data['migrate'])) {
             return $this->finishedState([
-                'status' => Craft::t('app', 'Nothing to update.'),
+                'status' => t('Nothing to update.'),
             ]);
         }
 
@@ -239,9 +240,9 @@ final class UpdaterController extends BaseUpdaterController
         if (! $force && Craft::$app->getIsInMaintenanceMode()) {
             // Bail if Craft is already in maintenance mode
             return [
-                'error' => str_replace(['<br>', '<br/>'], "\n\n", Craft::t('app', 'It looks like someone is currently performing a system update.<br>Only continue if you’re sure that’s not the case.')),
+                'error' => str_replace(['<br>', '<br/>'], "\n\n", t('It looks like someone is currently performing a system update.<br>Only continue if you’re sure that’s not the case.')),
                 'options' => [
-                    $this->actionOption(Craft::t('app', 'Continue'), self::ACTION_FORCE_UPDATE, ['submit' => true]),
+                    $this->actionOption(t('Continue'), self::ACTION_FORCE_UPDATE, ['submit' => true]),
                 ],
             ];
         }
@@ -273,7 +274,7 @@ final class UpdaterController extends BaseUpdaterController
         // Was this after a revert?
         if ($this->data['reverted']) {
             return $this->actionState(self::ACTION_FINISH, [
-                'status' => Craft::t('app', 'The update was reverted successfully.'),
+                'status' => t('The update was reverted successfully.'),
             ]);
         }
 
@@ -296,11 +297,11 @@ final class UpdaterController extends BaseUpdaterController
     protected function actionStatus(string $action): string
     {
         return match ($action) {
-            self::ACTION_FORCE_UPDATE => Craft::t('app', 'Updating…'),
-            self::ACTION_BACKUP => Craft::t('app', 'Backing-up database…'),
-            self::ACTION_MIGRATE => Craft::t('app', 'Updating database…'),
-            self::ACTION_REVERT => Craft::t('app', 'Reverting update (this may take a minute)…'),
-            self::ACTION_SERVER_CHECK => Craft::t('app', 'Checking server requirements…'),
+            self::ACTION_FORCE_UPDATE => t('Updating…'),
+            self::ACTION_BACKUP => t('Backing-up database…'),
+            self::ACTION_MIGRATE => t('Updating database…'),
+            self::ACTION_REVERT => t('Reverting update (this may take a minute)…'),
+            self::ACTION_SERVER_CHECK => t('Checking server requirements…'),
             default => parent::actionStatus($action),
         };
     }

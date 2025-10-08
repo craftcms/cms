@@ -8,6 +8,7 @@ use craft\base\ElementInterface;
 use craft\elements\db\ElementQueryInterface;
 use craft\i18n\Locale;
 use Illuminate\Support\Collection;
+use function CraftCms\Cms\t;
 
 /**
  * Language condition rule.
@@ -22,7 +23,7 @@ class LanguageConditionRule extends BaseMultiSelectConditionRule implements Elem
      */
     public function getLabel(): string
     {
-        return Craft::t('app', 'Language');
+        return t('Language');
     }
 
     /**

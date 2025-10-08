@@ -95,6 +95,7 @@ use yii\db\Exception;
 use yii\db\Expression;
 use yii\db\QueryInterface;
 use yii\helpers\Markdown;
+use function CraftCms\Cms\t;
 
 /**
  * Class Extension
@@ -1780,7 +1781,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
                 }
             }
 
-            $siteName = Craft::t('site', $currentSite->getName());
+            $siteName = t($currentSite->getName(), category: 'site');
             $siteUrl = $currentSite->getBaseUrl();
             $systemName = Craft::$app->getSystemName();
         } else {

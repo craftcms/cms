@@ -2,7 +2,6 @@
 
 namespace craft\elements\conditions\users;
 
-use Craft;
 use craft\base\conditions\BaseLightswitchConditionRule;
 use craft\base\ElementInterface;
 use craft\elements\conditions\ElementConditionRuleInterface;
@@ -10,6 +9,7 @@ use craft\elements\db\ElementQueryInterface;
 use craft\elements\db\UserQuery;
 use craft\elements\User;
 use CraftCms\Cms\Edition;
+use function CraftCms\Cms\t;
 
 /**
  * Admin condition rule.
@@ -24,7 +24,7 @@ class AdminConditionRule extends BaseLightswitchConditionRule implements Element
      */
     public function getLabel(): string
     {
-        return Craft::t('app', 'Admin');
+        return t('Admin');
     }
 
     /**

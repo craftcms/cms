@@ -18,6 +18,7 @@ use yii\web\BadRequestHttpException;
 use yii\web\ForbiddenHttpException;
 use yii\web\NotFoundHttpException;
 use yii\web\Response;
+use function CraftCms\Cms\t;
 
 /**
  * The GlobalsController class is a controller that handles various global and global set related tasks such as saving,
@@ -80,7 +81,7 @@ class GlobalsController extends Controller
 
         // Save it
         if (!Craft::$app->getGlobals()->saveSet($globalSet)) {
-            $this->setFailFlash(mb_ucfirst(Craft::t('app', 'Couldn’t save {type}.', [
+            $this->setFailFlash(mb_ucfirst(t('Couldn’t save {type}.', [
                 'type' => GlobalSet::lowerDisplayName(),
             ])));
 
@@ -92,7 +93,7 @@ class GlobalsController extends Controller
             return null;
         }
 
-        $this->setSuccessFlash(Craft::t('app', '{type} saved.', [
+        $this->setSuccessFlash(t('{type} saved.', [
             'type' => GlobalSet::displayName(),
         ]));
         return $this->redirectToPostedUrl($globalSet);
@@ -222,7 +223,7 @@ class GlobalsController extends Controller
         $globalSet->setScenario(Element::SCENARIO_LIVE);
 
         if (!Craft::$app->getElements()->saveElement($globalSet)) {
-            $this->setFailFlash(mb_ucfirst(Craft::t('app', 'Couldn’t save {type}.', [
+            $this->setFailFlash(mb_ucfirst(t('Couldn’t save {type}.', [
                 'type' => GlobalSet::lowerDisplayName(),
             ])));
 
@@ -234,7 +235,7 @@ class GlobalsController extends Controller
             return null;
         }
 
-        $this->setSuccessFlash(Craft::t('app', '{type} saved.', [
+        $this->setSuccessFlash(t('{type} saved.', [
             'type' => GlobalSet::displayName(),
         ]));
         return $this->redirectToPostedUrl();

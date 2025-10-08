@@ -59,6 +59,7 @@ use yii\base\Exception;
 use yii\base\InvalidArgumentException;
 use yii\base\InvalidConfigException;
 use yii\helpers\Markdown;
+use function CraftCms\Cms\t;
 
 /**
  * The Entries service provides APIs for managing entries in Craft.
@@ -1286,9 +1287,9 @@ class Entries extends Component
                 'url' => $section->getCpEditUrl(),
                 'handle' => $section->handle,
                 'type' => match ($section->type) {
-                    Section::TYPE_SINGLE => Craft::t('app', 'Single'),
-                    Section::TYPE_CHANNEL => Craft::t('app', 'Channel'),
-                    Section::TYPE_STRUCTURE => Craft::t('app', 'Structure'),
+                    Section::TYPE_SINGLE => t('Single'),
+                    Section::TYPE_CHANNEL => t('Channel'),
+                    Section::TYPE_STRUCTURE => t('Structure'),
                     null => null,
                 },
             ];

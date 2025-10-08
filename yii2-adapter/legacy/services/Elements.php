@@ -86,6 +86,7 @@ use yii\base\InvalidArgumentException;
 use yii\base\InvalidCallException;
 use yii\base\InvalidConfigException;
 use yii\web\ForbiddenHttpException;
+use function CraftCms\Cms\t;
 
 /**
  * The Elements service provides APIs for managing elements.
@@ -1896,7 +1897,7 @@ class Elements extends Component
             if ($element->getIsDerivative()) {
                 $draftBehavior->draftName = $draftsService->generateDraftName($element->getCanonicalId());
             } else {
-                $draftBehavior->draftName = Craft::t('app', 'First draft');
+                $draftBehavior->draftName = t('First draft');
             }
             $draftBehavior->draftNotes = null;
             $mainClone->setCanonicalId($element->getCanonicalId());
@@ -1917,7 +1918,7 @@ class Elements extends Component
             $draftBehavior = $mainClone->getBehavior('draft') ?? $mainClone->attachBehavior('draft',
                 new DraftBehavior());
             $draftsService = Craft::$app->getDrafts();
-            $draftBehavior->draftName = Craft::t('app', 'First draft');
+            $draftBehavior->draftName = t('First draft');
             $draftBehavior->draftNotes = null;
             $mainClone->setCanonicalId(null);
             $mainClone->draftId = $draftsService->insertDraftRow(
@@ -3843,7 +3844,7 @@ class Elements extends Component
             if ($element->hasErrors('title')) {
                 // Set a default title
                 if ($isNewElement) {
-                    $element->title = Craft::t('app', 'New {type}', ['type' => $element::displayName()]);
+                    $element->title = t('New {type}', ['type' => $element::displayName()]);
                 } else {
                     $element->title = $element::displayName() . ' ' . $element->id;
                 }
@@ -4507,7 +4508,7 @@ class Elements extends Component
         // get site we're propagating to
         $propagateToSite = Craft::$app->getSites()->getSiteById($siteElement->siteId);
         $user = Craft::$app->getUser()->getIdentity();
-        $message = Craft::t('app', 'Validation errors for site: “{siteName}“', [
+        $message = t('Validation errors for site: “{siteName}“', [
             'siteName' => $propagateToSite?->name,
         ]);
 
@@ -4527,7 +4528,7 @@ class Elements extends Component
                 $message .
                 Html::tag('span', '', [
                     'data-icon' => 'external',
-                    'aria-label' => Craft::t('app', 'Open in a new tab'),
+                    'aria-label' => t('Open in a new tab'),
                     'role' => 'img',
                 ]) .
                 Html::endTag('a');

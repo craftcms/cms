@@ -53,6 +53,7 @@ use yii\web\ForbiddenHttpException;
 use yii\web\NotFoundHttpException;
 use yii\web\Response as BaseResponse;
 use yii\web\UnauthorizedHttpException;
+use function CraftCms\Cms\t;
 
 /**
  * Craft Web Application class
@@ -578,7 +579,7 @@ class Application extends \yii\web\Application
                 $this->end();
             }
 
-            throw new ServiceUnavailableHttpException(Craft::t('app', 'Craft isn’t installed yet.'));
+            throw new ServiceUnavailableHttpException(t('Craft isn’t installed yet.'));
         }
 
         return null;

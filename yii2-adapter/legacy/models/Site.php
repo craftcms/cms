@@ -19,6 +19,7 @@ use CraftCms\Cms\Shared\Contracts\Chippable;
 use CraftCms\Cms\Support\Env;
 use DateTime;
 use yii\base\InvalidConfigException;
+use function CraftCms\Cms\t;
 
 /**
  * Site model class.
@@ -124,7 +125,7 @@ class Site extends Model implements Chippable
      */
     public function getUiLabel(): string
     {
-        return Craft::t('site', $this->getName());
+        return t($this->getName(), category: 'site');
     }
 
     /**
@@ -241,10 +242,10 @@ class Site extends Model implements Chippable
     public function attributeLabels(): array
     {
         return [
-            'baseUrl' => Craft::t('app', 'Base URL'),
-            'handle' => Craft::t('app', 'Handle'),
-            'language' => Craft::t('app', 'Language'),
-            'name' => Craft::t('app', 'Name'),
+            'baseUrl' => t('Base URL'),
+            'handle' => t('Handle'),
+            'language' => t('Language'),
+            'name' => t('Name'),
         ];
     }
 

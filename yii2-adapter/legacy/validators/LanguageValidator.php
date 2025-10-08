@@ -12,6 +12,7 @@ use craft\helpers\Localization;
 use yii\base\InvalidArgumentException;
 use yii\base\UnknownPropertyException;
 use yii\validators\Validator;
+use function CraftCms\Cms\t;
 
 /**
  * Will validate that the given attribute is a valid site language.
@@ -38,9 +39,9 @@ class LanguageValidator extends Validator
     {
         if (!isset($this->notAllowed)) {
             if ($this->onlySiteLanguages) {
-                $this->notAllowed = Craft::t('app', '{value} is not a valid site language.');
+                $this->notAllowed = t('{value} is not a valid site language.');
             } else {
-                $this->notAllowed = Craft::t('app', '{value} is not a valid language.');
+                $this->notAllowed = t('{value} is not a valid language.');
             }
         }
 

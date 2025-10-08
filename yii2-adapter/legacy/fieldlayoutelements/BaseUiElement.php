@@ -7,11 +7,11 @@
 
 namespace craft\fieldlayoutelements;
 
-use Craft;
 use craft\base\FieldLayoutElement;
 use craft\helpers\Cp;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Html;
+use function CraftCms\Cms\t;
 
 /**
  * BaseUiElement is the base class for UI elements that can be included in field layouts.
@@ -39,8 +39,8 @@ abstract class BaseUiElement extends FieldLayoutElement
 
         $indicatorHtml = $this->hasConditions() ? Html::tag('div', Cp::iconSvg('diamond'), [
             'class' => ['cp-icon', 'puny', 'orange'],
-            'title' => Craft::t('app', 'This element is conditional'),
-            'aria' => ['label' => Craft::t('app', 'This element is conditional')],
+            'title' => t('This element is conditional'),
+            'aria' => ['label' => t('This element is conditional')],
         ]) : '';
 
         return

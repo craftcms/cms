@@ -2,7 +2,6 @@
 
 namespace CraftCms\Cms\Http\Controllers\Utilities;
 
-use Craft;
 use CraftCms\Cms\Http\RespondsWithFlash;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\ProjectConfig\ProjectConfigHelper;
@@ -14,6 +13,8 @@ use RuntimeException;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Yaml\Yaml;
 use ZipArchive;
+
+use function CraftCms\Cms\t;
 
 final class ProjectConfigController
 {
@@ -37,7 +38,7 @@ final class ProjectConfigController
 
         $projectConfig->rebuild();
 
-        return $this->asSuccess(Craft::t('app', 'Project config rebuilt successfully.'));
+        return $this->asSuccess(t('Project config rebuilt successfully.'));
     }
 
     public function discard(ProjectConfig $projectConfig): Response
@@ -46,7 +47,7 @@ final class ProjectConfigController
 
         $projectConfig->regenerateExternalConfig();
 
-        return $this->asSuccess(Craft::t('app', 'External project config changes discarded.'));
+        return $this->asSuccess(t('External project config changes discarded.'));
     }
 
     public function download(ProjectConfig $projectConfig): Response

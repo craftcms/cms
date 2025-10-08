@@ -4,6 +4,7 @@ use CraftCms\Cms\Http\Controllers\Utilities\ProjectConfigController;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\User\Models\User;
 
+use function CraftCms\Cms\t;
 use function Pest\Laravel\actingAs;
 use function Pest\Laravel\getJson;
 use function Pest\Laravel\post;
@@ -37,7 +38,7 @@ it('can get a diff', function () {
 it('can rebuild the project config', function () {
     post(action([ProjectConfigController::class, 'rebuild']))
         ->assertRedirectBack()
-        ->assertSessionHas('success', Craft::t('app', 'Project config rebuilt successfully.'));
+        ->assertSessionHas('success', t('Project config rebuilt successfully.'));
 });
 
 it('cannot rebuild the project config if it is readonly', function () {
@@ -50,7 +51,7 @@ it('cannot rebuild the project config if it is readonly', function () {
 it('can discard the project config changes', function () {
     post(action([ProjectConfigController::class, 'discard']))
         ->assertRedirectBack()
-        ->assertSessionHas('success', Craft::t('app', 'External project config changes discarded.'));
+        ->assertSessionHas('success', t('External project config changes discarded.'));
 });
 
 it('cannot discard the project config changes if it is readonly', function () {

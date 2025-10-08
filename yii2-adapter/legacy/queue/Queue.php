@@ -33,6 +33,7 @@ use yii\mutex\Mutex;
 use yii\queue\ExecEvent;
 use yii\queue\Queue as BaseQueue;
 use yii\web\Response;
+use function CraftCms\Cms\t;
 
 /**
  * Craft Queue
@@ -552,7 +553,7 @@ class Queue extends \yii\queue\cli\Queue implements QueueInterface
 
         foreach ($results as $result) {
             if (!app()->hasDebugModeEnabled() && !Craft::$app->getUser()->getIsAdmin()) {
-                $result['error'] = Craft::t('app', 'A server error occurred.');
+                $result['error'] = t('A server error occurred.');
             }
 
             $info[] = [

@@ -26,6 +26,7 @@ use CraftCms\Cms\Support\Str;
 use Illuminate\Support\Facades\Validator;
 use Imagine\Image\Format;
 use yii\base\InvalidArgumentException;
+use function CraftCms\Cms\t;
 
 /**
  * Image Transforms helper.
@@ -96,7 +97,7 @@ class ImageTransforms
         }
 
         if ($asset->kind !== Asset::KIND_IMAGE) {
-            throw new AssetOperationException(Craft::t('app', 'Tried to detect the appropriate image format for a non-image!'));
+            throw new AssetOperationException(t('Tried to detect the appropriate image format for a non-image!'));
         }
 
         return 'jpg';
@@ -186,7 +187,7 @@ class ImageTransforms
                         if (is_file($tempFilePath) && !FileHelper::unlink($tempFilePath)) {
                             Craft::warning("Unable to delete the file \"$tempFilePath\".", __METHOD__);
                         }
-                        throw new FsException(Craft::t('app', 'Tried to download the source file for image “{file}”, but it was 0 bytes long.', [
+                        throw new FsException(t('Tried to download the source file for image “{file}”, but it was 0 bytes long.', [
                             'file' => $asset->getFilename(),
                         ]));
                     }
@@ -329,7 +330,7 @@ class ImageTransforms
 
             $transform = Str::chopStart($transform, '_');
             if (($transformModel = Craft::$app->getImageTransforms()->getTransformByHandle($transform)) === null) {
-                throw new ImageTransformException(Craft::t('app', 'Invalid transform handle: {handle}', ['handle' => $transform]));
+                throw new ImageTransformException(t('Invalid transform handle: {handle}', ['handle' => $transform]));
             }
 
             return $transformModel;

@@ -7,10 +7,10 @@
 
 namespace craft\validators;
 
-use Craft;
 use craft\helpers\ElementHelper;
 use CraftCms\Cms\Config\GeneralConfig;
 use yii\validators\Validator;
+use function CraftCms\Cms\t;
 
 /**
  * Will validate that the given attribute is a valid URI format.
@@ -52,7 +52,7 @@ class UriFormatValidator extends Validator
     protected function validateValue($value)
     {
         if ($this->requireSlug && !ElementHelper::doesUriFormatHaveSlugTag($value)) {
-            return [Craft::t('app', '{attribute} must contain “{slug}”'), []];
+            return [t('{attribute} must contain “{slug}”'), []];
         }
 
         if ($this->disallowTriggers) {
@@ -60,13 +60,15 @@ class UriFormatValidator extends Validator
             $firstSeg = explode('/', $value, 2)[0];
 
             if ($firstSeg === $generalConfig->actionTrigger) {
-                return [Craft::t('app', '{attribute} cannot start with the {setting} config setting.'), [
+                return [
+                    t('{attribute} cannot start with the {setting} config setting.'), [
                     'setting' => 'actionTrigger',
-                ]];
+                ], ];
             } elseif ($generalConfig->cpTrigger && $firstSeg === $generalConfig->cpTrigger) {
-                return [Craft::t('app', '{attribute} cannot start with the {setting} config setting.'), [
+                return [
+                    t('{attribute} cannot start with the {setting} config setting.'), [
                     'setting' => 'cpTrigger',
-                ]];
+                ], ];
             }
         }
 

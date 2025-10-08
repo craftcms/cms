@@ -11,6 +11,8 @@ use craft\models\Volume;
 use CraftCms\Cms\Field\Link;
 use Illuminate\Support\Collection;
 
+use function CraftCms\Cms\t;
+
 /**
  * Asset link type.
  */
@@ -54,7 +56,7 @@ final class Asset extends BaseElementLinkType
         return
             parent::getSettingsHtml().
             Cp::checkboxSelectFieldHtml([
-                'label' => Craft::t('app', 'Allowed File Types'),
+                'label' => t('Allowed File Types'),
                 'name' => 'allowedKinds',
                 'options' => Collection::make(AssetsHelper::getAllowedFileKinds())
                     ->map(fn (array $kind, string $value) => [
@@ -66,14 +68,14 @@ final class Asset extends BaseElementLinkType
                 'showAllOption' => true,
             ]).
             Cp::lightswitchFieldHtml([
-                'label' => Craft::t('app', 'Show unpermitted volumes'),
-                'instructions' => Craft::t('app', 'Whether to show volumes that the user doesn’t have permission to view.'),
+                'label' => t('Show unpermitted volumes'),
+                'instructions' => t('Whether to show volumes that the user doesn’t have permission to view.'),
                 'name' => 'showUnpermittedVolumes',
                 'on' => $this->showUnpermittedVolumes,
             ]).
             Cp::lightswitchFieldHtml([
-                'label' => Craft::t('app', 'Show unpermitted files'),
-                'instructions' => Craft::t('app', 'Whether to show files that the user doesn’t have permission to view, per the “View files uploaded by other users” permission.'),
+                'label' => t('Show unpermitted files'),
+                'instructions' => t('Whether to show files that the user doesn’t have permission to view, per the “View files uploaded by other users” permission.'),
                 'name' => 'showUnpermittedFiles',
                 'on' => $this->showUnpermittedFiles,
             ]);

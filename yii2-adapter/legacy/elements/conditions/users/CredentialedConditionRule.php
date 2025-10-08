@@ -2,13 +2,13 @@
 
 namespace craft\elements\conditions\users;
 
-use Craft;
 use craft\base\conditions\BaseLightswitchConditionRule;
 use craft\base\ElementInterface;
 use craft\elements\conditions\ElementConditionRuleInterface;
 use craft\elements\db\ElementQueryInterface;
 use craft\elements\db\UserQuery;
 use craft\elements\User;
+use function CraftCms\Cms\t;
 
 /**
  * Credentialed condition rule.
@@ -23,7 +23,7 @@ class CredentialedConditionRule extends BaseLightswitchConditionRule implements 
      */
     public function getLabel(): string
     {
-        return Craft::t('app', 'Credentialed');
+        return t('Credentialed');
     }
 
     /**

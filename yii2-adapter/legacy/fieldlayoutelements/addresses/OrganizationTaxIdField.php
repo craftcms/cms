@@ -7,9 +7,9 @@
 
 namespace craft\fieldlayoutelements\addresses;
 
-use Craft;
 use craft\base\ElementInterface;
 use craft\fieldlayoutelements\TextField;
+use function CraftCms\Cms\t;
 
 /**
  * Class OrganizationTaxIdField.
@@ -72,6 +72,6 @@ class OrganizationTaxIdField extends TextField
      */
     public function defaultLabel(?ElementInterface $element = null, bool $static = false): ?string
     {
-        return Craft::t('app', 'Organization Tax ID');
+        return t('Organization Tax ID');
     }
 }

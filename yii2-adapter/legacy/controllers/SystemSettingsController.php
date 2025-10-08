@@ -30,6 +30,7 @@ use yii\base\Exception;
 use yii\web\ForbiddenHttpException;
 use yii\web\NotFoundHttpException;
 use yii\web\Response;
+use function CraftCms\Cms\t;
 
 /**
  * The SystemSettingsController class is a controller that handles various control panel settings related tasks such as
@@ -108,7 +109,7 @@ class SystemSettingsController extends Controller
 
         $projectConfig->set('system', $systemSettings, 'Update system settings.');
 
-        $this->setSuccessFlash(Craft::t('app', 'General settings saved.'));
+        $this->setSuccessFlash(t('General settings saved.'));
         return $this->redirectToPostedUrl();
     }
 
@@ -131,7 +132,7 @@ class SystemSettingsController extends Controller
                 $adapter = MailerHelper::createTransportAdapter($settings->transportType, $settings->transportSettings);
             } catch (MissingComponentException) {
                 $adapter = new Sendmail();
-                $adapter->addError('type', Craft::t('app', 'The transport type “{type}” could not be found.', [
+                $adapter->addError('type', t('The transport type “{type}” could not be found.', [
                     'type' => $settings->transportType,
                 ]));
             }
@@ -197,7 +198,7 @@ class SystemSettingsController extends Controller
         $adapterIsValid = $adapter->validate();
 
         if (!$settingsAreValid || !$adapterIsValid) {
-            $this->setFailFlash(Craft::t('app', 'Couldn’t save email settings.'));
+            $this->setFailFlash(t('Couldn’t save email settings.'));
 
             // Send the settings back to the template
             Craft::$app->getUrlManager()->setRouteParams([
@@ -210,7 +211,7 @@ class SystemSettingsController extends Controller
 
         app(ProjectConfig::class)->set('email', $settings->toArray(), 'Update email settings.');
 
-        $this->setSuccessFlash(Craft::t('app', 'Email settings saved.'));
+        $this->setSuccessFlash(t('Email settings saved.'));
         return $this->redirectToPostedUrl();
     }
 
@@ -232,7 +233,7 @@ class SystemSettingsController extends Controller
             if ($settingsIsValid && $adapterIsValid) {
                 $mailer = Craft::createObject(App::mailerConfig($settings));
             } else {
-                $this->setFailFlash(Craft::t('app', 'Your email settings are invalid.'));
+                $this->setFailFlash(t('Your email settings are invalid.'));
             }
         } else {
             $mailer = Craft::$app->getMailer();
@@ -247,9 +248,9 @@ class SystemSettingsController extends Controller
                 ->setTo(static::currentUser());
 
             if ($message->send()) {
-                $this->setSuccessFlash(Craft::t('app', 'Email sent successfully! Check your inbox.'));
+                $this->setSuccessFlash(t('Email sent successfully! Check your inbox.'));
             } else {
-                $this->setFailFlash(Craft::t('app', 'There was an error testing your email settings.'));
+                $this->setFailFlash(t('There was an error testing your email settings.'));
             }
         }
 
@@ -276,15 +277,15 @@ class SystemSettingsController extends Controller
         ]);
 
         return $this->renderTemplate('settings/globals/_index.twig', [
-            'title' => Craft::t('app', 'Globals'),
+            'title' => t('Globals'),
             'crumbs' => [
                 [
-                    'label' => Craft::t('app', 'Settings'),
+                    'label' => t('Settings'),
                     'url' => UrlHelper::cpUrl('settings'),
                 ],
             ],
             'globalSets' => Craft::$app->getGlobals()->getAllSets(),
-            'buttonLabel' => mb_ucfirst(Craft::t('app', 'New {type}', [
+            'buttonLabel' => mb_ucfirst(t('New {type}', [
                 'type' => GlobalSet::lowerDisplayName(),
             ])),
             'readOnly' => $this->readOnly,
@@ -318,11 +319,11 @@ class SystemSettingsController extends Controller
         }
 
         if ($globalSet->id) {
-            $title = trim($globalSet->name) ?: Craft::t('app', 'Edit {type}', [
+            $title = trim($globalSet->name) ?: t('Edit {type}', [
                 'type' => GlobalSet::displayName(),
             ]);
         } else {
-            $title = Craft::t('app', 'Create a new {type}', [
+            $title = t('Create a new {type}', [
                 'type' => GlobalSet::lowerDisplayName(),
             ]);
         }
@@ -330,11 +331,11 @@ class SystemSettingsController extends Controller
         // Breadcrumbs
         $crumbs = [
             [
-                'label' => Craft::t('app', 'Settings'),
+                'label' => t('Settings'),
                 'url' => UrlHelper::url('settings'),
             ],
             [
-                'label' => Craft::t('app', 'Globals'),
+                'label' => t('Globals'),
                 'url' => UrlHelper::url('settings/globals'),
             ],
         ];

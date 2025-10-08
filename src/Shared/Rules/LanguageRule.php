@@ -6,6 +6,8 @@ use Closure;
 use Craft;
 use Illuminate\Contracts\Validation\ValidationRule;
 
+use function CraftCms\Cms\t;
+
 final readonly class LanguageRule implements ValidationRule
 {
     public function __construct(
@@ -21,11 +23,11 @@ final readonly class LanguageRule implements ValidationRule
         }
 
         if ($this->onlySiteLanguages && ! in_array($value, Craft::$app->getI18n()->getSiteLocaleIds(), true)) {
-            $fail($this->message ?? Craft::t('app', '{value} is not a valid site language.', compact('value')));
+            $fail($this->message ?? t('{value} is not a valid site language.', compact('value')));
         }
 
         if (! in_array($value, Craft::$app->getI18n()->getAllLocaleIds(), true)) {
-            $fail($this->message ?? Craft::t('app', '{value} is not a valid site language.', compact('value')));
+            $fail($this->message ?? t('{value} is not a valid site language.', compact('value')));
         }
     }
 }

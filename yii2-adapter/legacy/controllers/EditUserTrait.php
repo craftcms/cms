@@ -8,7 +8,6 @@
 
 namespace craft\controllers;
 
-use Craft;
 use craft\base\Event;
 use craft\elements\User;
 use craft\events\DefineEditUserScreensEvent;
@@ -19,6 +18,7 @@ use CraftCms\Cms\Edition;
 use yii\web\BadRequestHttpException;
 use yii\web\ForbiddenHttpException;
 use yii\web\Response;
+use function CraftCms\Cms\t;
 
 /**
  * Trait EditUserTrait
@@ -83,18 +83,18 @@ trait EditUserTrait
         $currentUser = static::currentUser();
 
         $screens = [
-            self::SCREEN_PROFILE => ['label' => Craft::t('app', 'Profile')],
+            self::SCREEN_PROFILE => ['label' => t('Profile')],
         ];
 
         if ($this->showPermissionsScreen()) {
-            $screens[self::SCREEN_PERMISSIONS] = ['label' => Craft::t('app', 'Permissions')];
+            $screens[self::SCREEN_PERMISSIONS] = ['label' => t('Permissions')];
         }
 
         if ($user->getIsCurrent()) {
-            $screens[self::SCREEN_PREFERENCES] = ['label' => Craft::t('app', 'Preferences')];
+            $screens[self::SCREEN_PREFERENCES] = ['label' => t('Preferences')];
         }
 
-        $screens[self::SCREEN_ADDRESSES] = ['label' => Craft::t('app', 'Addresses')];
+        $screens[self::SCREEN_ADDRESSES] = ['label' => t('Addresses')];
 
         // Fire a 'defineEditScreens' event
         if (Event::hasHandlers(UsersController::class, UsersController::EVENT_DEFINE_EDIT_SCREENS)) {
@@ -108,8 +108,8 @@ trait EditUserTrait
         }
 
         if ($user->getIsCurrent() && $user->getHasPassword()) {
-            $screens[self::SCREEN_PASSWORD] = ['label' => Craft::t('app', 'Password & Verification')];
-            $screens[self::SCREEN_PASSKEYS] = ['label' => Craft::t('app', 'Passkeys')];
+            $screens[self::SCREEN_PASSWORD] = ['label' => t('Password & Verification')];
+            $screens[self::SCREEN_PASSKEYS] = ['label' => t('Passkeys')];
         }
 
         if (!isset($screens[$screen])) {
@@ -119,7 +119,7 @@ trait EditUserTrait
         $pageName = $screens[$screen]["label"];
         $response = $this->asCpScreen();
         if ($user->getIsCurrent()) {
-            $response->title(Craft::t('app', 'My Account'));
+            $response->title(t('My Account'));
             $response->docTitle($pageName);
         } else {
             $username = $user->getUiLabel();
@@ -134,7 +134,7 @@ trait EditUserTrait
         foreach ($screens as $s => $screenInfo) {
             if ($s === self::SCREEN_PASSWORD) {
                 $navItem = [
-                    'heading' => Craft::t('app', 'Account Security'),
+                    'heading' => t('Account Security'),
                     'nested' => [],
                 ];
                 $navItems[] = &$navItem;
@@ -149,7 +149,7 @@ trait EditUserTrait
         }
 
         $response->pageSidebarTemplate('_includes/nav', [
-            'label' => Craft::t('app', 'Account'),
+            'label' => t('Account'),
             'items' => $navItems,
         ]);
 
@@ -165,7 +165,7 @@ trait EditUserTrait
                 ],
             ]);
 
-            $response->addAltAction(Craft::t('app', 'Save and continue editing'), [
+            $response->addAltAction(t('Save and continue editing'), [
                 'redirect' => $this->editUserScreenUrl($user, $screen),
                 'shortcut' => true,
                 'retainScroll' => true,

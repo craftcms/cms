@@ -105,6 +105,7 @@ use yii\base\Component;
 use yii\base\Exception;
 use yii\base\InvalidArgumentException;
 use yii\base\UnknownMethodException;
+use function CraftCms\Cms\t;
 
 /**
  * GraphQL service.
@@ -707,35 +708,35 @@ class Gql extends Component
         $mutations = [];
 
         // Sites
-        $label = Craft::t('app', 'Sites');
+        $label = t('Sites');
         [$queries[$label], $mutations[$label]] = $this->siteSchemaComponents();
 
         // Elements
-        $label = Craft::t('app', 'All elements');
+        $label = t('All elements');
         [$queries[$label], $mutations[$label]] = $this->elementSchemaComponents();
 
         // Entries
-        $label = Craft::t('app', 'Entries');
+        $label = t('Entries');
         [$queries[$label], $mutations[$label]] = $this->entrySchemaComponents();
 
         // Assets
-        $label = Craft::t('app', 'Assets');
+        $label = t('Assets');
         [$queries[$label], $mutations[$label]] = $this->assetSchemaComponents();
 
         // Global Sets
-        $label = Craft::t('app', 'Global Sets');
+        $label = t('Global Sets');
         [$queries[$label], $mutations[$label]] = $this->globalSetSchemaComponents();
 
         // Users
-        $label = Craft::t('app', 'Users');
+        $label = t('Users');
         [$queries[$label], $mutations[$label]] = $this->userSchemaComponents();
 
         // Categories
-        $label = Craft::t('app', 'Categories');
+        $label = t('Categories');
         [$queries[$label], $mutations[$label]] = $this->categorySchemaComponents();
 
         // Tags
-        $label = Craft::t('app', 'Tags');
+        $label = t('Tags');
         [$queries[$label], $mutations[$label]] = $this->tagSchemaComponents();
 
         // Fire a 'registerGqlSchemaComponents' event
@@ -1368,7 +1369,7 @@ class Gql extends Component
             } elseif (!$originException instanceof Error) {
                 // If devMode not enabled and the error seems to be originating from Craft, display a generic message
                 $error = new Error(
-                    Craft::t('app', 'Something went wrong when processing the GraphQL query.'),
+                    t('Something went wrong when processing the GraphQL query.'),
                 );
             }
 
@@ -1600,7 +1601,7 @@ class Gql extends Component
 
         foreach ($sites as $site) {
             $queryComponents["sites.{$site->uid}:read"] = [
-                'label' => Craft::t('app', 'Query for elements in the “{site}” site', [
+                'label' => t('Query for elements in the “{site}” site', [
                     'site' => $site->name,
                 ]),
             ];
@@ -1618,13 +1619,13 @@ class Gql extends Component
     {
         $queryComponents = [
             'elements.drafts:read' => [
-                'label' => Craft::t('app', 'Query for element drafts'),
+                'label' => t('Query for element drafts'),
             ],
             'elements.revisions:read' => [
-                'label' => Craft::t('app', 'Query for element revisions'),
+                'label' => t('Query for element revisions'),
             ],
             'elements.inactive:read' => [
-                'label' => Craft::t('app', 'Query for non-enabled elements'),
+                'label' => t('Query for non-enabled elements'),
             ],
         ];
 
@@ -1645,13 +1646,13 @@ class Gql extends Component
         $singles = $entriesService->getSectionsByType(Section::TYPE_SINGLE);
 
         foreach ($singles as $section) {
-            $name = Craft::t('site', $section->name);
+            $name = t($section->name, category: 'site');
             $prefix = "sections.$section->uid";
             $queryComponents["$prefix:read"] = [
-                'label' => Craft::t('app', 'Query for the “{name}” entry', ['name' => $name]),
+                'label' => t('Query for the “{name}” entry', ['name' => $name]),
             ];
             $mutationComponents["$prefix:save"] = [
-                'label' => Craft::t('app', 'Save the “{section}” entry', ['section' => $name]),
+                'label' => t('Save the “{section}” entry', ['section' => $name]),
             ];
         }
 
@@ -1660,24 +1661,24 @@ class Gql extends Component
                 continue;
             }
 
-            $name = Craft::t('site', $section->name);
+            $name = t($section->name, category: 'site');
             $prefix = "sections.$section->uid";
 
             $queryComponents["$prefix:read"] = [
-                'label' => Craft::t('app', 'Query for entries in the “{name}” section', ['name' => $name]),
+                'label' => t('Query for entries in the “{name}” section', ['name' => $name]),
             ];
 
             $mutationComponents["$prefix:edit"] = [
-                'label' => Craft::t('app', 'Edit entries in the “{name}” section', ['name' => $name]),
+                'label' => t('Edit entries in the “{name}” section', ['name' => $name]),
                 'nested' => [
                     "$prefix:create" => [
-                        'label' => Craft::t('app', 'Create entries in the “{section}” section', ['section' => $name]),
+                        'label' => t('Create entries in the “{section}” section', ['section' => $name]),
                     ],
                     "$prefix:save" => [
-                        'label' => Craft::t('app', 'Save entries in the “{section}” section', ['section' => $name]),
+                        'label' => t('Save entries in the “{section}” section', ['section' => $name]),
                     ],
                     "$prefix:delete" => [
-                        'label' => Craft::t('app', 'Delete entries in the “{section}” section', ['section' => $name]),
+                        'label' => t('Delete entries in the “{section}” section', ['section' => $name]),
                     ],
                 ],
             ];
@@ -1696,37 +1697,37 @@ class Gql extends Component
         ) => $a::displayName() <=> $b::displayName());
 
         foreach ($fields as $field) {
-            $name = Craft::t('site', $field->name);
+            $name = t($field->name, category: 'site');
             $type = $field::displayName();
             $prefix = "nestedentryfields.$field->uid";
 
             $queryComponents["$prefix:read"] = [
-                'label' => Craft::t('app', 'Query for entries in the “{name}” {type} field', [
+                'label' => t('Query for entries in the “{name}” {type} field', [
                     'name' => $name,
                     'type' => $type,
                 ]),
             ];
 
             $mutationComponents["$prefix:edit"] = [
-                'label' => Craft::t('app', 'Edit entries in the “{name}” {type} field', [
+                'label' => t('Edit entries in the “{name}” {type} field', [
                     'name' => $name,
                     'type' => $type,
                 ]),
                 'nested' => [
                     "$prefix:create" => [
-                        'label' => Craft::t('app', 'Create entries in the “{section}” {type} field', [
+                        'label' => t('Create entries in the “{section}” {type} field', [
                             'section' => $name, // todo: change to 'name'
                             'type' => $type,
                         ]),
                     ],
                     "$prefix:save" => [
-                        'label' => Craft::t('app', 'Save entries in the “{section}” {type} field', [
+                        'label' => t('Save entries in the “{section}” {type} field', [
                             'section' => $name, // todo: change to 'name'
                             'type' => $type,
                         ]),
                     ],
                     "$prefix:delete" => [
-                        'label' => Craft::t('app', 'Delete entries in the “{section}” {type} field', [
+                        'label' => t('Delete entries in the “{section}” {type} field', [
                             'section' => $name, // todo: change to 'name'
                             'type' => $type,
                         ]),
@@ -1752,22 +1753,22 @@ class Gql extends Component
 
         if (!empty($volumes)) {
             foreach ($volumes as $volume) {
-                $name = Craft::t('site', $volume->name);
+                $name = t($volume->name, category: 'site');
                 $prefix = "volumes.$volume->uid";
                 $queryComponents["$prefix:read"] = [
-                    'label' => Craft::t('app', 'Query for assets in the “{name}” volume', ['name' => $name]),
+                    'label' => t('Query for assets in the “{name}” volume', ['name' => $name]),
                 ];
                 $mutationComponents["$prefix:edit"] = [
-                    'label' => Craft::t('app', 'Edit assets in the “{volume}” volume', ['volume' => $name]),
+                    'label' => t('Edit assets in the “{volume}” volume', ['volume' => $name]),
                     'nested' => [
                         "$prefix:create" => [
-                            'label' => Craft::t('app', 'Create assets in the “{volume}” volume', ['volume' => $name]),
+                            'label' => t('Create assets in the “{volume}” volume', ['volume' => $name]),
                         ],
                         "$prefix:save" => [
-                            'label' => Craft::t('app', 'Modify assets in the “{volume}” volume', ['volume' => $name]),
+                            'label' => t('Modify assets in the “{volume}” volume', ['volume' => $name]),
                         ],
                         "$prefix:delete" => [
-                            'label' => Craft::t('app', 'Delete assets from the “{volume}” volume', ['volume' => $name]),
+                            'label' => t('Delete assets from the “{volume}” volume', ['volume' => $name]),
                         ],
                     ],
                 ];
@@ -1791,13 +1792,13 @@ class Gql extends Component
 
         if (!empty($globalSets)) {
             foreach ($globalSets as $globalSet) {
-                $name = Craft::t('site', $globalSet->name);
+                $name = t($globalSet->name, category: 'site');
                 $prefix = "globalsets.$globalSet->uid";
                 $queryComponents["$prefix:read"] = [
-                    'label' => Craft::t('app', 'Query for the “{name}” global set', ['name' => $name]),
+                    'label' => t('Query for the “{name}” global set', ['name' => $name]),
                 ];
                 $mutationComponents["$prefix:edit"] = [
-                    'label' => Craft::t('app', 'Edit the “{globalSet}” global set.', ['globalSet' => $name]),
+                    'label' => t('Edit the “{globalSet}” global set.', ['globalSet' => $name]),
                 ];
             }
         }
@@ -1816,20 +1817,20 @@ class Gql extends Component
 
         if (Edition::get() === Edition::Solo) {
             $queryComponents['usergroups.solo:read'] = [
-                'label' => Craft::t('app', 'View {type}', ['type' => User::lowerDisplayName()]),
+                'label' => t('View {type}', ['type' => User::lowerDisplayName()]),
             ];
         } else {
             $userGroups = Craft::$app->getUserGroups()->getAllGroups();
 
             $queryComponents['usergroups.everyone:read'] = [
-                'label' => Craft::t('app', 'Query for users'),
+                'label' => t('Query for users'),
             ];
 
             foreach ($userGroups as $userGroup) {
-                $name = Craft::t('site', $userGroup->name);
+                $name = t($userGroup->name, category: 'site');
                 $prefix = "usergroups.$userGroup->uid";
                 $queryComponents["$prefix:read"] = [
-                    'label' => Craft::t('app', 'Query for users in the “{name}” user group', ['name' => $name]),
+                    'label' => t('Query for users in the “{name}” user group', ['name' => $name]),
                 ];
             }
         }
@@ -1851,22 +1852,22 @@ class Gql extends Component
 
         if (!empty($categoryGroups)) {
             foreach ($categoryGroups as $categoryGroup) {
-                $name = Craft::t('site', $categoryGroup->name);
+                $name = t($categoryGroup->name, category: 'site');
                 $prefix = "categorygroups.$categoryGroup->uid";
                 $queryComponents["$prefix:read"] = [
-                    'label' => Craft::t('app', 'Query for categories in the “{name}” category group',
+                    'label' => t('Query for categories in the “{name}” category group',
                         ['name' => $name]),
                 ];
                 $mutationComponents["$prefix:edit"] = [
-                    'label' => Craft::t('app', 'Edit categories in the “{categoryGroup}” category group',
+                    'label' => t('Edit categories in the “{categoryGroup}” category group',
                         ['categoryGroup' => $name]),
                     'nested' => [
                         "$prefix:save" => [
-                            'label' => Craft::t('app', 'Save categories in the “{categoryGroup}” category group',
+                            'label' => t('Save categories in the “{categoryGroup}” category group',
                                 ['categoryGroup' => $name]),
                         ],
                         "$prefix:delete" => [
-                            'label' => Craft::t('app', 'Delete categories from the “{categoryGroup}” category group',
+                            'label' => t('Delete categories from the “{categoryGroup}” category group',
                                 ['categoryGroup' => $name]),
                         ],
                     ],
@@ -1891,20 +1892,20 @@ class Gql extends Component
 
         if (!empty($tagGroups)) {
             foreach ($tagGroups as $tagGroup) {
-                $name = Craft::t('site', $tagGroup->name);
+                $name = t($tagGroup->name, category: 'site');
                 $prefix = "taggroups.$tagGroup->uid";
                 $queryComponents["$prefix:read"] = [
-                    'label' => Craft::t('app', 'Query for tags in the “{name}” tag group', ['name' => $name]),
+                    'label' => t('Query for tags in the “{name}” tag group', ['name' => $name]),
                 ];
                 $mutationComponents["$prefix:edit"] = [
-                    'label' => Craft::t('app', 'Edit tags in the “{tagGroup}” tag group', ['tagGroup' => $name]),
+                    'label' => t('Edit tags in the “{tagGroup}” tag group', ['tagGroup' => $name]),
                     'nested' => [
                         "$prefix:save" => [
-                            'label' => Craft::t('app', 'Save tags in the “{tagGroup}” tag group',
+                            'label' => t('Save tags in the “{tagGroup}” tag group',
                                 ['tagGroup' => $name]),
                         ],
                         "$prefix:delete" => [
-                            'label' => Craft::t('app', 'Delete tags from the “{tagGroup}” tag group',
+                            'label' => t('Delete tags from the “{tagGroup}” tag group',
                                 ['tagGroup' => $name]),
                         ],
                     ],

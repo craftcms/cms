@@ -7,11 +7,11 @@
 
 namespace craft\fieldlayoutelements;
 
-use Craft;
 use craft\base\ElementInterface;
 use craft\helpers\Cp;
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Support\Html as HtmlHelper;
+use function CraftCms\Cms\t;
 
 /**
  * Class FullNameField.
@@ -88,7 +88,7 @@ class FullNameField extends TextField
                 'id' => 'firstName',
                 'status' => $status,
                 'fieldClass' => 'flex-grow',
-                'label' => Craft::t('app', 'First Name'),
+                'label' => t('First Name'),
                 'attribute' => 'firstName',
                 'showAttribute' => $this->showAttribute(),
                 'required' => $required,
@@ -105,7 +105,7 @@ class FullNameField extends TextField
                 'id' => 'lastName',
                 'status' => $status,
                 'fieldClass' => 'flex-grow',
-                'label' => Craft::t('app', 'Last Name'),
+                'label' => t('Last Name'),
                 'attribute' => 'lastName',
                 'showAttribute' => $this->showAttribute(),
                 'required' => $required,
@@ -139,6 +139,6 @@ class FullNameField extends TextField
      */
     protected function defaultLabel(?ElementInterface $element = null, bool $static = false): ?string
     {
-        return Craft::t('app', 'Full Name');
+        return t('Full Name');
     }
 }

@@ -35,6 +35,7 @@ use GraphQL\Type\Definition\Type;
 use Illuminate\Support\Facades\DB;
 use yii\base\Exception;
 use yii\base\InvalidConfigException;
+use function CraftCms\Cms\t;
 
 /**
  * Category represents a category element.
@@ -50,7 +51,7 @@ class Category extends Element
      */
     public static function displayName(): string
     {
-        return Craft::t('app', 'Category');
+        return t('Category');
     }
 
     /**
@@ -58,7 +59,7 @@ class Category extends Element
      */
     public static function lowerDisplayName(): string
     {
-        return Craft::t('app', 'category');
+        return t('category');
     }
 
     /**
@@ -66,7 +67,7 @@ class Category extends Element
      */
     public static function pluralDisplayName(): string
     {
-        return Craft::t('app', 'Categories');
+        return t('Categories');
     }
 
     /**
@@ -74,7 +75,7 @@ class Category extends Element
      */
     public static function pluralLowerDisplayName(): string
     {
-        return Craft::t('app', 'categories');
+        return t('categories');
     }
 
     /**
@@ -195,7 +196,7 @@ class Category extends Element
         foreach ($groups as $group) {
             $sources[] = [
                 'key' => 'group:' . $group->uid,
-                'label' => Craft::t('site', $group->name),
+                'label' => t($group->name, category: 'site'),
                 'data' => ['handle' => $group->handle],
                 'criteria' => ['groupId' => $group->id],
                 'structureId' => $group->structureId,
@@ -309,16 +310,16 @@ class Category extends Element
     protected static function defineSortOptions(): array
     {
         return [
-            'title' => Craft::t('app', 'Title'),
-            'slug' => Craft::t('app', 'Slug'),
-            'uri' => Craft::t('app', 'URI'),
+            'title' => t('Title'),
+            'slug' => t('Slug'),
+            'uri' => t('URI'),
             [
-                'label' => Craft::t('app', 'Date Created'),
+                'label' => t('Date Created'),
                 'orderBy' => 'dateCreated',
                 'defaultDir' => 'desc',
             ],
             [
-                'label' => Craft::t('app', 'Date Updated'),
+                'label' => t('Date Updated'),
                 'orderBy' => 'dateUpdated',
                 'defaultDir' => 'desc',
             ],
@@ -331,8 +332,8 @@ class Category extends Element
     protected static function defineTableAttributes(): array
     {
         return array_merge(parent::defineTableAttributes(), [
-            'ancestors' => ['label' => Craft::t('app', 'Ancestors')],
-            'parent' => ['label' => Craft::t('app', 'Parent')],
+            'ancestors' => ['label' => t('Ancestors')],
+            'parent' => ['label' => t('Parent')],
         ]);
     }
 
@@ -354,10 +355,10 @@ class Category extends Element
     {
         return array_merge(parent::defineCardAttributes(), [
             'parent' => [
-                'label' => Craft::t('app', 'Parent'),
+                'label' => t('Parent'),
                 'placeholder' => fn() => Html::tag(
                     'span',
-                    Craft::t('app', 'Parent {type} Title', ['type' => self::displayName()]),
+                    t('Parent {type} Title', ['type' => self::displayName()]),
                     ['class' => 'card-placeholder'],
                 ),
             ],
@@ -440,7 +441,7 @@ class Category extends Element
 
         if ($url = $this->getUrl()) {
             $previewTargets[] = [
-                'label' => Craft::t('app', 'Primary {type} page', [
+                'label' => t('Primary {type} page', [
                     'type' => self::lowerDisplayName(),
                 ]),
                 'url' => $url,
@@ -481,11 +482,11 @@ class Category extends Element
 
         $crumbs = [
             [
-                'label' => Craft::t('app', 'Categories'),
+                'label' => t('Categories'),
                 'url' => UrlHelper::url('categories'),
             ],
             [
-                'label' => Craft::t('site', $group->name),
+                'label' => t($group->name, category: 'site'),
                 'url' => UrlHelper::url('categories/' . $group->handle),
             ],
         ];
@@ -700,11 +701,11 @@ class Category extends Element
                 }
 
                 return Cp::elementSelectFieldHtml([
-                    'label' => Craft::t('app', 'Parent'),
+                    'label' => t('Parent'),
                     'id' => 'parentId',
                     'name' => 'parentId',
                     'elementType' => self::class,
-                    'selectionLabel' => Craft::t('app', 'Choose'),
+                    'selectionLabel' => t('Choose'),
                     'sources' => ["group:$group->uid"],
                     'criteria' => $this->_parentOptionCriteria($group),
                     'limit' => 1,

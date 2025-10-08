@@ -8,6 +8,8 @@ use craft\web\assets\newusers\NewUsersAsset;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Support\Json;
 
+use function CraftCms\Cms\t;
+
 final class NewUsers extends Widget
 {
     /**
@@ -16,7 +18,7 @@ final class NewUsers extends Widget
     #[\Override]
     public static function displayName(): string
     {
-        return Craft::t('app', 'New {type}', [
+        return t('New {type}', [
             'type' => User::pluralDisplayName(),
         ]);
     }
@@ -63,7 +65,7 @@ final class NewUsers extends Widget
                 return sprintf(
                     '%s – %s',
                     parent::getTitle(),
-                    Craft::t('site', $userGroup->name)
+                    t($userGroup->name, category: 'site'),
                 );
             }
         }

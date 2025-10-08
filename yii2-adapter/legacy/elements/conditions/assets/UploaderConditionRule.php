@@ -2,7 +2,6 @@
 
 namespace craft\elements\conditions\assets;
 
-use Craft;
 use craft\base\conditions\BaseElementSelectConditionRule;
 use craft\base\ElementInterface;
 use craft\elements\Asset;
@@ -10,6 +9,7 @@ use craft\elements\conditions\ElementConditionRuleInterface;
 use craft\elements\db\AssetQuery;
 use craft\elements\db\ElementQueryInterface;
 use craft\elements\User;
+use function CraftCms\Cms\t;
 
 /**
  * Uploader condition rule.
@@ -24,7 +24,7 @@ class UploaderConditionRule extends BaseElementSelectConditionRule implements El
      */
     public function getLabel(): string
     {
-        return Craft::t('app', 'Uploaded By');
+        return t('Uploaded By');
     }
 
     /**

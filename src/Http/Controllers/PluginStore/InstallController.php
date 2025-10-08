@@ -13,6 +13,8 @@ use Illuminate\Support\Facades\Log;
 use Symfony\Component\HttpFoundation\Response;
 use Throwable;
 
+use function CraftCms\Cms\t;
+
 /**
  * @internal
  */
@@ -50,15 +52,15 @@ final class InstallController extends BaseUpdaterController
         $pluginName = $info['name'] ?? $this->data['packageName'];
 
         return $this->send([
-            'error' => Craft::t('app', '{name} has been added, but an error occurred when installing it.', ['name' => $pluginName]),
+            'error' => t('{name} has been added, but an error occurred when installing it.', ['name' => $pluginName]),
             'errorDetails' => $errorDetails,
             'options' => [
                 $this->finishedState([
-                    'label' => Craft::t('app', 'Leave it uninstalled'),
+                    'label' => t('Leave it uninstalled'),
                 ]),
-                $this->actionOption(Craft::t('app', 'Remove it'), self::ACTION_COMPOSER_REMOVE),
+                $this->actionOption(t('Remove it'), self::ACTION_COMPOSER_REMOVE),
                 [
-                    'label' => Craft::t('app', 'Troubleshoot'),
+                    'label' => t('Troubleshoot'),
                     'url' => 'https://craftcms.com/knowledge-base/failed-updates',
                 ],
             ],
@@ -91,7 +93,7 @@ final class InstallController extends BaseUpdaterController
     #[\Override]
     protected function pageTitle(): string
     {
-        return Craft::t('app', 'Plugin Installer');
+        return t('Plugin Installer');
     }
 
     /**
@@ -140,9 +142,9 @@ final class InstallController extends BaseUpdaterController
     protected function actionStatus(string $action): string
     {
         return match ($action) {
-            self::ACTION_CRAFT_INSTALL => Craft::t('app', 'Installing the plugin…'),
-            self::ACTION_ENABLE => Craft::t('app', 'Enabling the plugin…'),
-            self::ACTION_MIGRATE => Craft::t('app', 'Updating the plugin…'),
+            self::ACTION_CRAFT_INSTALL => t('Installing the plugin…'),
+            self::ACTION_ENABLE => t('Enabling the plugin…'),
+            self::ACTION_MIGRATE => t('Updating the plugin…'),
             default => parent::actionStatus($action),
         };
     }
@@ -170,7 +172,7 @@ final class InstallController extends BaseUpdaterController
         // Was this after a remove?
         if ($this->data['removed']) {
             return $this->actionState(self::ACTION_FINISH, [
-                'status' => Craft::t('app', 'The plugin was removed successfully.'),
+                'status' => t('The plugin was removed successfully.'),
             ]);
         }
 

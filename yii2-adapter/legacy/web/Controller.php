@@ -26,6 +26,7 @@ use yii\web\JsonResponseFormatter;
 use yii\web\MethodNotAllowedHttpException;
 use yii\web\Response as YiiResponse;
 use yii\web\UnauthorizedHttpException;
+use function CraftCms\Cms\t;
 
 /**
  * Controller is a base class that all controllers in Craft extend.
@@ -224,8 +225,8 @@ abstract class Controller extends \yii\web\Controller
                 $permission = $this->request->getIsCpRequest() ? 'accessCpWhenSystemIsOff' : 'accessSiteWhenSystemIsOff';
                 if (!Craft::$app->getUser()->checkPermission($permission)) {
                     $error = $this->request->getIsCpRequest()
-                        ? Craft::t('app', 'Your account doesn’t have permission to access the control panel when the system is offline.')
-                        : Craft::t('app', 'Your account doesn’t have permission to access the site when the system is offline.');
+                        ? t('Your account doesn’t have permission to access the control panel when the system is offline.')
+                        : t('Your account doesn’t have permission to access the site when the system is offline.');
                     throw new ServiceUnavailableHttpException($error);
                 }
             }
@@ -534,7 +535,7 @@ abstract class Controller extends \yii\web\Controller
     public function requireElevatedSession(): void
     {
         if (!Craft::$app->getUser()->getHasElevatedSession()) {
-            throw new ForbiddenHttpException(Craft::t('app', 'This action may only be performed with an elevated session.'));
+            throw new ForbiddenHttpException(t('This action may only be performed with an elevated session.'));
         }
     }
 

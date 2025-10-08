@@ -10,6 +10,7 @@ use craft\elements\db\ElementQueryInterface;
 use craft\elements\db\UserQuery;
 use craft\elements\User;
 use craft\models\Site;
+use function CraftCms\Cms\t;
 
 /**
  * Site condition rule.
@@ -24,7 +25,7 @@ class AffiliatedSiteConditionRule extends BaseMultiSelectConditionRule implement
      */
     public function getLabel(): string
     {
-        return Craft::t('app', 'Affiliated Site');
+        return t('Affiliated Site');
     }
 
     /**

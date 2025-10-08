@@ -12,6 +12,7 @@ use craft\db\Query;
 use DateTime;
 use Illuminate\Database\Query\Builder;
 use yii\base\Exception;
+use function CraftCms\Cms\t;
 
 /**
  * Class ChartHelper
@@ -57,8 +58,8 @@ class ChartHelper
         // Setup
         $options = array_merge([
             'intervalUnit' => null,
-            'categoryLabel' => Craft::t('app', 'Date'),
-            'valueLabel' => Craft::t('app', 'Value'),
+            'categoryLabel' => t('Date'),
+            'valueLabel' => t('Value'),
             'valueType' => 'number',
         ], $options);
 
@@ -212,18 +213,18 @@ class ChartHelper
     {
         return [
             'd7' => [
-                'label' => Craft::t('app', 'Last {num, number} {num, plural, =1{day} other{days}}', ['num' => 7]),
+                'label' => t('Last {num, number} {num, plural, =1{day} other{days}}', ['num' => 7]),
                 'startDate' => '-7 days',
                 'endDate' => null,
             ],
             'd30' => [
-                'label' => Craft::t('app', 'Last {num, number} {num, plural, =1{day} other{days}}', ['num' => 30]),
+                'label' => t('Last {num, number} {num, plural, =1{day} other{days}}', ['num' => 30]),
                 'startDate' => '-30 days',
                 'endDate' => null,
             ],
-            'lastweek' => ['label' => Craft::t('app', 'Last Week'), 'startDate' => '-2 weeks', 'endDate' => '-1 week'],
+            'lastweek' => ['label' => t('Last Week'), 'startDate' => '-2 weeks', 'endDate' => '-1 week'],
             'lastmonth' => [
-                'label' => Craft::t('app', 'Last Month'),
+                'label' => t('Last Month'),
                 'startDate' => '-2 months',
                 'endDate' => '-1 month',
             ],

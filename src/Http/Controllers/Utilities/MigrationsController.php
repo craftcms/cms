@@ -2,7 +2,6 @@
 
 namespace CraftCms\Cms\Http\Controllers\Utilities;
 
-use Craft;
 use CraftCms\Cms\Database\Migrator;
 use CraftCms\Cms\Support\Flash;
 use CraftCms\Cms\Utility\Utilities;
@@ -11,6 +10,7 @@ use Illuminate\Http\Request;
 use Throwable;
 
 use function CraftCms\Cms\cp_redirect;
+use function CraftCms\Cms\t;
 
 final readonly class MigrationsController
 {
@@ -25,9 +25,9 @@ final readonly class MigrationsController
     {
         try {
             $migrator->track('content')->run();
-            Flash::success(Craft::t('app', 'Applied new migrations successfully.'));
+            Flash::success(t('Applied new migrations successfully.'));
         } catch (Throwable) {
-            Flash::fail(Craft::t('app', 'Couldn’t apply new migrations.'));
+            Flash::fail(t('Couldn’t apply new migrations.'));
         }
 
         return cp_redirect('utilities/migrations');

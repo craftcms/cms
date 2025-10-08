@@ -16,6 +16,7 @@ use ParagonIE\ConstantTime\Base64UrlSafe;
 use Webauthn\PublicKeyCredentialSource;
 use Webauthn\PublicKeyCredentialSourceRepository;
 use Webauthn\PublicKeyCredentialUserEntity;
+use function CraftCms\Cms\t;
 
 /**
  * Passkey credential repository.
@@ -72,7 +73,7 @@ class CredentialRepository implements PublicKeyCredentialSourceRepository
         if (!$record) {
             $record = new WebAuthn();
             $record->userId = Craft::$app->getUser()->getIdentity()?->id;
-            $record->credentialName = !empty($credentialName) ? $credentialName : Craft::t('app', 'Secure credential');
+            $record->credentialName = !empty($credentialName) ? $credentialName : t('Secure credential');
             $record->credentialId = Base64UrlSafe::encodeUnpadded($publicKeyCredentialId);
         }
 

@@ -17,6 +17,8 @@ use Illuminate\Support\Facades\Config;
 use yii\base\InvalidArgumentException;
 use yii\base\InvalidConfigException;
 
+use function CraftCms\Cms\t;
+
 /**
  * General config class
  */
@@ -7327,7 +7329,7 @@ class GeneralConfig extends BaseConfig
         if ($this->testToEmailAddress) {
             foreach ((array) $this->testToEmailAddress as $key => $value) {
                 if (is_numeric($key)) {
-                    $to[$value] = Craft::t('app', 'Test Recipient');
+                    $to[$value] = t('Test Recipient');
                 } else {
                     $to[$key] = $value;
                 }

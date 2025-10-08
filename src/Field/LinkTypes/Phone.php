@@ -2,8 +2,9 @@
 
 namespace CraftCms\Cms\Field\LinkTypes;
 
-use Craft;
 use CraftCms\Cms\Field\Link;
+
+use function CraftCms\Cms\t;
 
 /**
  * Phone number link type.
@@ -17,7 +18,7 @@ final class Phone extends BaseTextLinkType
 
     public static function displayName(): string
     {
-        return Craft::t('app', 'Phone');
+        return t('Phone');
     }
 
     protected function urlPrefix(): string

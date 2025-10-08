@@ -8,6 +8,8 @@ use craft\models\Section;
 use craft\web\assets\recententries\RecentEntriesAsset;
 use CraftCms\Cms\Support\Json;
 
+use function CraftCms\Cms\t;
+
 final class RecentEntries extends Widget
 {
     /**
@@ -16,7 +18,7 @@ final class RecentEntries extends Widget
     #[\Override]
     public static function displayName(): string
     {
-        return Craft::t('app', 'Recent Entries');
+        return t('Recent Entries');
     }
 
     /**
@@ -81,15 +83,15 @@ final class RecentEntries extends Widget
             $section = Craft::$app->getEntries()->getSectionById((int) $this->section);
 
             if ($section) {
-                $title = Craft::t('app', 'Recent {section} Entries', [
-                    'section' => Craft::t('site', $section->name),
+                $title = t('Recent {section} Entries', [
+                    'section' => t($section->name, category: 'site'),
                 ]);
             }
         }
 
         /** @noinspection UnSafeIsSetOverArrayInspection - FP */
         if (! isset($title)) {
-            $title = Craft::t('app', 'Recent Entries');
+            $title = t('Recent Entries');
         }
 
         // See if they are pulling entries from a different site
@@ -99,9 +101,9 @@ final class RecentEntries extends Widget
             $site = Craft::$app->getSites()->getSiteById($targetSiteId);
 
             if ($site) {
-                $title = Craft::t('app', '{title} ({site})', [
+                $title = t('{title} ({site})', [
                     'title' => $title,
-                    'site' => Craft::t('site', $site->getName()),
+                    'site' => t($site->getName(), category: 'site'),
                 ]);
             }
         }

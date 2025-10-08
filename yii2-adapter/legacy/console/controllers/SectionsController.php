@@ -25,6 +25,7 @@ use yii\base\InvalidConfigException;
 use yii\console\ExitCode;
 use yii\helpers\Console;
 use yii\helpers\Inflector;
+use function CraftCms\Cms\t;
 
 /**
  * Manages sections.
@@ -259,7 +260,7 @@ class SectionsController extends Controller
         if ($hasUrls) {
             $section->previewTargets = [
                 [
-                    'label' => Craft::t('app', 'Primary {type} page', [
+                    'label' => t('Primary {type} page', [
                         'type' => Entry::lowerDisplayName(),
                     ]),
                     'urlFormat' => '{url}',

@@ -40,6 +40,7 @@ use Throwable;
 use yii\base\InvalidConfigException;
 use yii\base\NotSupportedException;
 use function CraftCms\Cms\maxPowerCaptain;
+use function CraftCms\Cms\t;
 
 /**
  * ImageTransformer transforms image assets using GD or ImageMagick.
@@ -160,7 +161,7 @@ class ImageTransformer extends Component implements ImageTransformerInterface, E
                     $index->error = true;
                     $this->storeTransformIndexData($index);
 
-                    throw new ImageTransformException(Craft::t('app', 'Failed to generate transform with id of {id}.', [
+                    throw new ImageTransformException(t('Failed to generate transform with id of {id}.', [
                         'id' => $index->id,
                     ]), previous: $e);
                 }

@@ -13,6 +13,7 @@ use craft\helpers\Cp;
 use craft\helpers\UrlHelper;
 use CraftCms\Cms\Addresses\Addresses;
 use CraftCms\Cms\Support\Html;
+use function CraftCms\Cms\t;
 
 /**
  * Address Administrative Area condition rule.
@@ -52,7 +53,7 @@ class AdministrativeAreaConditionRule extends BaseMultiSelectConditionRule imple
      */
     public function getLabel(): string
     {
-        return Craft::t('app', 'Administrative Area');
+        return t('Administrative Area');
     }
 
     /**

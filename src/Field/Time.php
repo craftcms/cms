@@ -19,6 +19,8 @@ use DateTime;
 use GraphQL\Type\Definition\Type;
 use yii\db\Schema;
 
+use function CraftCms\Cms\t;
+
 /**
  * Date represents a Time field.
  */
@@ -29,7 +31,7 @@ final class Time extends Field implements CrossSiteCopyableFieldInterface, Inlin
      */
     public static function displayName(): string
     {
-        return Craft::t('app', 'Time');
+        return t('Time');
     }
 
     /**
@@ -95,8 +97,8 @@ final class Time extends Field implements CrossSiteCopyableFieldInterface, Inlin
     public function attributeLabels(): array
     {
         return [
-            'min' => Craft::t('app', 'Min Time'),
-            'max' => Craft::t('app', 'Max Time'),
+            'min' => t('Min Time'),
+            'max' => t('Max Time'),
         ];
     }
 

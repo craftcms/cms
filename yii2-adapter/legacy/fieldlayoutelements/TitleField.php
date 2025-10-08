@@ -10,6 +10,7 @@ namespace craft\fieldlayoutelements;
 use Craft;
 use craft\base\ElementInterface;
 use CraftCms\Cms\Support\Str;
+use function CraftCms\Cms\t;
 
 /**
  * TitleField represents a Title field that can be included in field layouts.
@@ -89,7 +90,7 @@ class TitleField extends TextField
      */
     public function defaultLabel(?ElementInterface $element = null, bool $static = false): ?string
     {
-        return Craft::t('app', 'Title');
+        return t('Title');
     }
 
     /**

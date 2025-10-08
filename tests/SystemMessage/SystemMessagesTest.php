@@ -5,6 +5,8 @@ use CraftCms\Cms\SystemMessage\Events\RegisterSystemMessages;
 use CraftCms\Cms\SystemMessage\Models\SystemMessage;
 use CraftCms\Cms\SystemMessage\SystemMessages;
 
+use function CraftCms\Cms\t;
+
 beforeEach(function () {
     $this->systemMessages = app(SystemMessages::class);
 });
@@ -43,8 +45,8 @@ it('can get messages including overrides', function () {
 
     expect($this->systemMessages->getAllMessages()->has('account_activation'))->toBeTrue();
 
-    expect($this->systemMessages->getAllMessages()['account_activation']->subject)->toBe(Craft::t('app', 'account_activation_subject'));
-    expect($this->systemMessages->getMessage('account_activation')->subject)->toBe(Craft::t('app', 'account_activation_subject'));
+    expect($this->systemMessages->getAllMessages()['account_activation']->subject)->toBe(t('account_activation_subject'));
+    expect($this->systemMessages->getMessage('account_activation')->subject)->toBe(t('account_activation_subject'));
 
     $this->systemMessages->saveMessage(new SystemMessage([
         'key' => 'account_activation',

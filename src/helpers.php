@@ -5,10 +5,17 @@ namespace CraftCms\Cms;
 use Closure;
 use craft\helpers\Number;
 use CraftCms\Cms\Config\GeneralConfig;
+use CraftCms\Cms\Support\Facades\Lang;
 use CraftCms\Cms\Support\PHP;
 use CraftCms\Cms\Support\Str;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Log;
+use Stringable;
+
+function t(string|Stringable $id, array $parameters = [], ?string $category = 'app', ?string $locale = null): string
+{
+    return Lang::translate($id, $parameters, $category, $locale);
+}
 
 function cp_url(string $url): string
 {

@@ -40,6 +40,8 @@ use Illuminate\Support\Facades\Event;
 use yii\base\InvalidArgumentException;
 use yii\db\Schema;
 
+use function CraftCms\Cms\t;
+
 /**
  * Link represents a Link field.
  */
@@ -54,7 +56,7 @@ final class Link extends Field implements CrossSiteCopyableFieldInterface, Inlin
      */
     public static function displayName(): string
     {
-        return Craft::t('app', 'Link');
+        return t('Link');
     }
 
     /**
@@ -336,7 +338,7 @@ final class Link extends Field implements CrossSiteCopyableFieldInterface, Inlin
         ])->all();
 
         $html = Cp::checkboxSelectFieldHtml([
-            'label' => Craft::t('app', 'Allowed Link Types'),
+            'label' => t('Allowed Link Types'),
             'id' => 'types',
             'fieldClass' => 'mb-0',
             'name' => 'types',
@@ -376,32 +378,32 @@ final class Link extends Field implements CrossSiteCopyableFieldInterface, Inlin
         $html .=
             Html::tag('hr').
             Cp::lightswitchFieldHtml([
-                'label' => Craft::t('app', 'Show the “Label” field'),
+                'label' => t('Show the “Label” field'),
                 'id' => 'show-label-field',
                 'name' => 'showLabelField',
                 'on' => $this->showLabelField,
                 'disabled' => $readOnly,
             ]).
             Cp::checkboxSelectFieldHtml([
-                'label' => Craft::t('app', 'Advanced Fields'),
+                'label' => t('Advanced Fields'),
                 'id' => 'attribute-fields',
                 'name' => 'advancedFields',
                 'options' => [
-                    ['label' => Craft::t('app', 'URL Suffix'), 'value' => 'urlSuffix'],
-                    ['label' => Craft::t('app', 'Target'), 'value' => 'target'],
-                    ['label' => Craft::t('app', 'Title Text'), 'value' => 'title'],
-                    ['label' => Craft::t('app', 'Class Name'), 'value' => 'class'],
-                    ['label' => Craft::t('app', 'ID'), 'value' => 'id'],
-                    ['label' => Template::raw(Craft::t('app', 'Relation ({ex})', ['ex' => '<code>rel</code>'])), 'value' => 'rel'],
-                    ['label' => Craft::t('app', 'ARIA Label'), 'value' => 'ariaLabel'],
-                    ['label' => Craft::t('app', 'Download'), 'value' => 'download'],
+                    ['label' => t('URL Suffix'), 'value' => 'urlSuffix'],
+                    ['label' => t('Target'), 'value' => 'target'],
+                    ['label' => t('Title Text'), 'value' => 'title'],
+                    ['label' => t('Class Name'), 'value' => 'class'],
+                    ['label' => t('ID'), 'value' => 'id'],
+                    ['label' => Template::raw(t('Relation ({ex})', ['ex' => '<code>rel</code>'])), 'value' => 'rel'],
+                    ['label' => t('ARIA Label'), 'value' => 'ariaLabel'],
+                    ['label' => t('Download'), 'value' => 'download'],
                 ],
                 'values' => $this->advancedFields,
                 'sortable' => true,
                 'disabled' => $readOnly,
             ]).
             Html::tag('hr').
-            Html::button(Craft::t('app', 'Advanced'), attributes: [
+            Html::button(t('Advanced'), attributes: [
                 'class' => 'fieldtoggle',
                 'data' => ['target' => 'advanced'],
             ]).
@@ -410,8 +412,8 @@ final class Link extends Field implements CrossSiteCopyableFieldInterface, Inlin
                 'class' => 'hidden',
             ]).
             Cp::textFieldHtml([
-                'label' => Craft::t('app', 'Max Length'),
-                'instructions' => Craft::t('app', 'The maximum length (in bytes) the field can hold.'),
+                'label' => t('Max Length'),
+                'instructions' => t('The maximum length (in bytes) the field can hold.'),
                 'id' => 'maxLength',
                 'name' => 'maxLength',
                 'type' => 'number',
@@ -426,12 +428,12 @@ final class Link extends Field implements CrossSiteCopyableFieldInterface, Inlin
         if (app(GeneralConfig::class)->enableGql) {
             $html .=
                 Cp::selectFieldHtml([
-                    'label' => Craft::t('app', 'GraphQL Mode'),
+                    'label' => t('GraphQL Mode'),
                     'id' => 'graphql-mode',
                     'name' => 'graphqlMode',
                     'options' => [
-                        ['label' => Craft::t('app', 'Full data'), 'value' => 'full'],
-                        ['label' => Craft::t('app', 'URL only'), 'value' => 'url'],
+                        ['label' => t('Full data'), 'value' => 'full'],
+                        ['label' => t('URL only'), 'value' => 'url'],
                     ],
                     'value' => $this->fullGraphqlData ? 'full' : 'url',
                     'disabled' => $readOnly,
@@ -608,7 +610,7 @@ JS;
                 'value' => $valueTypeId,
                 'inputAttributes' => [
                     'aria' => [
-                        'label' => Craft::t('app', 'URL type'),
+                        'label' => t('URL type'),
                     ],
                 ],
                 'toggle' => true,
@@ -660,7 +662,7 @@ JS;
                 'fieldAttributes' => [
                     'data' => ['label-field' => true],
                 ],
-                'label' => Craft::t('app', 'Label'),
+                'label' => t('Label'),
                 'id' => "$id-label",
                 'name' => "$this->handle[label]",
                 'value' => $value?->getLabel(true),
@@ -670,7 +672,7 @@ JS;
 
         if (! empty($this->advancedFields)) {
             $html .=
-                Html::button(Craft::t('app', 'Advanced'), attributes: [
+                Html::button(t('Advanced'), attributes: [
                     'class' => ['fieldtoggle', 'mb-0'],
                     'data' => ['target' => "$id-advanced"],
                 ]).
@@ -683,8 +685,8 @@ JS;
                 $html .= match ($field) {
                     'urlSuffix' => Cp::textFieldHtml([
                         'fieldClass' => 'info-icon-instructions',
-                        'label' => Craft::t('app', 'URL Suffix'),
-                        'instructions' => Craft::t('app', 'Query params (e.g. {ex1}) or a URI fragment (e.g. {ex2}) that should be appended to the URL.', [
+                        'label' => t('URL Suffix'),
+                        'instructions' => t('Query params (e.g. {ex1}) or a URI fragment (e.g. {ex2}) that should be appended to the URL.', [
                             'ex1' => '`?p1=foo&p2=bar`',
                             'ex2' => '`#anchor`',
                         ]),
@@ -693,14 +695,14 @@ JS;
                         'value' => $value?->urlSuffix,
                     ]),
                     'target' => Cp::lightswitchFieldHtml([
-                        'label' => Craft::t('app', 'Open in a new tab'),
+                        'label' => t('Open in a new tab'),
                         'id' => "$id-target",
                         'name' => "$this->handle[target]",
                         'on' => $value?->target,
                         'value' => '_blank',
                     ]),
                     'title' => Cp::textFieldHtml([
-                        'label' => Craft::t('app', 'Title Text'),
+                        'label' => t('Title Text'),
                         'id' => "$id-title",
                         'name' => "$this->handle[title]",
                         'value' => $value?->title,
@@ -708,15 +710,15 @@ JS;
                     'class' => Cp::textFieldHtml([
                         'fieldClass' => 'info-icon-instructions',
                         'class' => 'code',
-                        'label' => Craft::t('app', 'Class Name'),
-                        'instructions' => Craft::t('app', 'Separate multiple values with spaces.'),
+                        'label' => t('Class Name'),
+                        'instructions' => t('Separate multiple values with spaces.'),
                         'id' => "$id-class",
                         'name' => "$this->handle[class]",
                         'value' => $value?->class,
                     ]),
                     'id' => Cp::textFieldHtml([
                         'class' => 'code',
-                        'label' => Craft::t('app', 'ID'),
+                        'label' => t('ID'),
                         'id' => "$id-id",
                         'name' => "$this->handle[id]",
                         'value' => $value?->id,
@@ -724,20 +726,20 @@ JS;
                     'rel' => Cp::textfieldHtml([
                         'fieldClass' => 'info-icon-instructions',
                         'class' => 'code',
-                        'label' => Craft::t('app', 'Relation ({ex})', ['ex' => '<code>rel</code>']),
-                        'instructions' => Craft::t('app', 'Separate multiple values with spaces.'),
+                        'label' => t('Relation ({ex})', ['ex' => '<code>rel</code>']),
+                        'instructions' => t('Separate multiple values with spaces.'),
                         'id' => "$id-rel",
                         'name' => "$this->handle[rel]",
                         'value' => $value?->rel,
                     ]),
                     'ariaLabel' => Cp::textFieldHtml([
-                        'label' => Craft::t('app', 'ARIA Label'),
+                        'label' => t('ARIA Label'),
                         'id' => "$id-aria-label",
                         'name' => "$this->handle[ariaLabel]",
                         'value' => $value?->ariaLabel,
                     ]),
                     'download' => Cp::lightswitchFieldHtml([
-                        'label' => Craft::t('app', 'Download'),
+                        'label' => t('Download'),
                         'id' => "$id-download",
                         'name' => "$this->handle[download]",
                         'on' => $value?->download,
@@ -748,7 +750,7 @@ JS;
                             'fieldAttributes' => [
                                 'data' => ['filename-field' => true],
                             ],
-                            'label' => Craft::t('app', 'Filename'),
+                            'label' => t('Filename'),
                             'id' => "$id-filename",
                             'name' => "$this->handle[filename]",
                             'value' => $value?->getFilename(),
@@ -778,7 +780,7 @@ JS;
                     $linkTypes = $this->getLinkTypes();
                     if (! isset($linkTypes[$value->getType()])) {
                         $type = self::types()[$value->getType()] ?? null;
-                        $element->addError("field:$this->handle", Craft::t('app', '{attribute} no longer allows {type} links.', [
+                        $element->addError("field:$this->handle", t('{attribute} no longer allows {type} links.', [
                             'attribute' => $this->getUiLabel(),
                             'type' => is_subclass_of($type, BaseLinkType::class) ? $type::displayName() : $type,
                         ]));

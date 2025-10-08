@@ -13,6 +13,8 @@ use CraftCms\Cms\Support\Json as JsonHelper;
 use InvalidArgumentException;
 use yii\db\Schema;
 
+use function CraftCms\Cms\t;
+
 /**
  * Icon represents an icon picker field.
  */
@@ -111,7 +113,7 @@ final class Json extends Field implements CrossSiteCopyableFieldInterface, Merge
         $view->registerAssetBundle(CodeMirrorAsset::class);
         $view->registerJsWithVars(fn ($id, $static) => <<<JS
 (() => {
-  const textarea = document.getElementById($id);
+  const textarea = document.getElementById($id)
   const init = () => {
     const editor = CodeMirror.fromTextArea(textarea, {
       mode: {
@@ -124,7 +126,7 @@ final class Json extends Field implements CrossSiteCopyableFieldInterface, Merge
         'default',
         $static ? 'readonly' : null,
       ].filter(v => v).join(' '),
-    });
+    })
     editor.on('change', (editor) => {
       editor.save();
     });
@@ -162,7 +164,7 @@ JS, [
                     /** @var JsonData|null $value */
                     $value = $element->getFieldValue($this->handle);
                     if (isset($value['__ERROR__'])) {
-                        $element->addError("field:$this->handle", Craft::t('app', '{attribute} must be valid JSON.', [
+                        $element->addError("field:$this->handle", t('{attribute} must be valid JSON.', [
                             'attribute' => $this->getUiLabel(),
                         ]));
                     }

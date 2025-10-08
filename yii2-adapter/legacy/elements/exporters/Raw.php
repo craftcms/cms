@@ -7,9 +7,9 @@
 
 namespace craft\elements\exporters;
 
-use Craft;
 use craft\base\ElementExporter;
 use craft\elements\db\ElementQueryInterface;
+use function CraftCms\Cms\t;
 
 /**
  * Raw represents a "Raw data" element exporter.
@@ -24,7 +24,7 @@ class Raw extends ElementExporter
      */
     public static function displayName(): string
     {
-        return Craft::t('app', 'Raw data (fastest)');
+        return t('Raw data (fastest)');
     }
 
     /**

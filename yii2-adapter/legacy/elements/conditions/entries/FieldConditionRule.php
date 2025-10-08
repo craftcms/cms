@@ -2,7 +2,6 @@
 
 namespace craft\elements\conditions\entries;
 
-use Craft;
 use craft\base\conditions\BaseMultiSelectConditionRule;
 use craft\base\ElementInterface;
 use craft\elements\conditions\ElementConditionRuleInterface;
@@ -13,6 +12,7 @@ use craft\elements\Entry;
 use CraftCms\Cms\Field\Contracts\ElementContainerFieldInterface;
 use CraftCms\Cms\Field\Fields;
 use Illuminate\Support\Collection;
+use function CraftCms\Cms\t;
 
 /**
  * Field condition rule.
@@ -34,7 +34,7 @@ class FieldConditionRule extends BaseMultiSelectConditionRule implements Element
      */
     public function getLabel(): string
     {
-        return Craft::t('app', 'Field');
+        return t('Field');
     }
 
     /**

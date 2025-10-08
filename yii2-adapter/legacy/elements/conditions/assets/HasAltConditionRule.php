@@ -2,13 +2,13 @@
 
 namespace craft\elements\conditions\assets;
 
-use Craft;
 use craft\base\conditions\BaseLightswitchConditionRule;
 use craft\base\ElementInterface;
 use craft\elements\Asset;
 use craft\elements\conditions\ElementConditionRuleInterface;
 use craft\elements\db\AssetQuery;
 use craft\elements\db\ElementQueryInterface;
+use function CraftCms\Cms\t;
 
 /**
  * “Has alternative text” condition rule for assets.
@@ -23,7 +23,7 @@ class HasAltConditionRule extends BaseLightswitchConditionRule implements Elemen
      */
     public function getLabel(): string
     {
-        return Craft::t('app', 'Has alternative text');
+        return t('Has alternative text');
     }
 
     /**

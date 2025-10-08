@@ -30,6 +30,7 @@ use CraftCms\Cms\Shared\Contracts\Colorable;
 use CraftCms\Cms\Shared\Contracts\CpEditable;
 use CraftCms\Cms\Shared\Contracts\Iconic;
 use CraftCms\Cms\Shared\Enums\Color;
+use function CraftCms\Cms\t;
 
 /**
  * EntryType model class.
@@ -216,7 +217,7 @@ class EntryType extends Model implements
      */
     public function getUiLabel(): string
     {
-        return Craft::t('site', $this->name);
+        return t($this->name, category: 'site');
     }
 
     /**
@@ -252,13 +253,13 @@ class EntryType extends Model implements
 
         if (isset($this->original)) {
             $attributes = array_values(array_filter([
-                $this->name !== $this->original->name ? Craft::t('app', 'Name') : null,
-                $this->handle !== $this->original->handle ? Craft::t('app', 'Handle') : null,
-                $this->description !== $this->original->description ? Craft::t('app', 'Description') : null,
+                $this->name !== $this->original->name ? t('Name') : null,
+                $this->handle !== $this->original->handle ? t('Handle') : null,
+                $this->description !== $this->original->description ? t('Description') : null,
             ]));
             if (!empty($attributes)) {
                 array_unshift($indicators, [
-                    'label' => Craft::t('app', 'This entry type’s {attributes} {totalAttributes, plural, =1{has} other{have}} been overridden.', [
+                    'label' => t('This entry type’s {attributes} {totalAttributes, plural, =1{has} other{have}} been overridden.', [
                         'attributes' => mb_strtolower(Inflector::sentence($attributes)),
                         'totalAttributes' => count($attributes),
                     ]),
@@ -295,7 +296,7 @@ class EntryType extends Model implements
             $items[] = [
                 'id' => $editId,
                 'icon' => 'gear',
-                'label' => Craft::t('app', 'Entry type settings'),
+                'label' => t('Entry type settings'),
             ];
 
             $view = Craft::$app->getView();
@@ -303,7 +304,7 @@ class EntryType extends Model implements
 $('#' + $id).on('click', () => {
   new Craft.CpScreenSlideout('entry-types/edit', {
     params: $params,
-  });
+  })
 });
 JS, [
                 $view->namespaceInputId($editId),
@@ -320,11 +321,11 @@ JS, [
     public function attributeLabels(): array
     {
         return [
-            'handle' => Craft::t('app', 'Handle'),
-            'name' => Craft::t('app', 'Name'),
-            'titleFormat' => Craft::t('app', 'Default Title Format'),
-            'showStatusField' => Craft::t('app', 'Show the Status field'),
-            'showSlugField' => Craft::t('app', 'Show the Slug field'),
+            'handle' => t('Handle'),
+            'name' => t('Name'),
+            'titleFormat' => t('Default Title Format'),
+            'showStatusField' => t('Show the Status field'),
+            'showSlugField' => t('Show the Slug field'),
         ];
     }
 

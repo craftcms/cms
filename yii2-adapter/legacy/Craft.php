@@ -57,6 +57,11 @@ class Craft extends Yii
         return parent::getAlias($alias, $throwException);
     }
 
+    public static function t($category, $message, $params = [], $language = null): string
+    {
+        return \CraftCms\Cms\Support\Facades\Lang::translate($message, $params, $category, $language);
+    }
+
     /**
      * @inheritdoc
      * @template T

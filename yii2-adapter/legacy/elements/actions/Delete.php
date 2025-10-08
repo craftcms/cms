@@ -16,6 +16,7 @@ use craft\services\Elements;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Support\Html;
 use Illuminate\Support\Facades\DB;
+use function CraftCms\Cms\t;
 
 /**
  * Delete represents a Delete element action.
@@ -111,14 +112,14 @@ JS, [static::class]);
     public function getTriggerLabel(): string
     {
         if ($this->hard) {
-            return Craft::t('app', 'Delete permanently');
+            return t('Delete permanently');
         }
 
         if ($this->withDescendants) {
-            return Craft::t('app', 'Delete (with descendants)');
+            return t('Delete (with descendants)');
         }
 
-        return Craft::t('app', 'Delete');
+        return t('Delete');
     }
 
     /**
@@ -139,18 +140,18 @@ JS, [static::class]);
         }
 
         if ($this->hard) {
-            return Craft::t('app', 'Are you sure you want to permanently delete the selected {type}?', [
+            return t('Are you sure you want to permanently delete the selected {type}?', [
                 'type' => $this->elementType::pluralLowerDisplayName(),
             ]);
         }
 
         if ($this->withDescendants) {
-            return Craft::t('app', 'Are you sure you want to delete the selected {type} along with their descendants?', [
+            return t('Are you sure you want to delete the selected {type} along with their descendants?', [
                 'type' => $this->elementType::pluralLowerDisplayName(),
             ]);
         }
 
-        return Craft::t('app', 'Are you sure you want to delete the selected {type}?', [
+        return t('Are you sure you want to delete the selected {type}?', [
             'type' => $this->elementType::pluralLowerDisplayName(),
         ]);
     }
@@ -214,7 +215,7 @@ JS, [static::class]);
         if (isset($this->successMessage)) {
             $this->setMessage($this->successMessage);
         } else {
-            $this->setMessage(Craft::t('app', '{type} deleted.', [
+            $this->setMessage(t('{type} deleted.', [
                 'type' => $this->elementType::pluralDisplayName(),
             ]));
         }

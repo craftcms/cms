@@ -18,6 +18,7 @@ use Yii;
 use yii\base\InvalidArgumentException;
 use yii\base\InvalidConfigException;
 use yii\helpers\FormatConverter;
+use function CraftCms\Cms\t;
 
 /**
  * @inheritdoc
@@ -229,26 +230,26 @@ class Formatter extends \yii\i18n\Formatter
         if (!$hasDateInfo || DateTimeHelper::isToday($timestamp)) {
             if ($hasTimeInfo) {
                 $time = $this->asTime($timestamp, $format);
-                return $withPreposition ? Craft::t('app', 'at {time}', ['time' => $time]) : $time;
+                return $withPreposition ? t('at {time}', ['time' => $time]) : $time;
             }
-            return $withPreposition ? Craft::t('app', 'today') : Craft::t('app', 'Today');
+            return $withPreposition ? t('today') : t('Today');
         }
 
         // If it was yesterday, display 'Yesterday'
         if (DateTimeHelper::isYesterday($timestamp)) {
-            return $withPreposition ? Craft::t('app', 'yesterday') : Craft::t('app', 'Yesterday');
+            return $withPreposition ? t('yesterday') : t('Yesterday');
         }
 
         // If it were up to 7 days ago, display the weekday name.
         if (DateTimeHelper::isWithinLast($timestamp, '7 days')) {
             $day = (int)$timestamp->format('w');
             $dayName = Craft::$app->getLocale()->getWeekDayName($day);
-            return $withPreposition ? Craft::t('app', 'on {day}', ['day' => $dayName]) : $dayName;
+            return $withPreposition ? t('on {day}', ['day' => $dayName]) : $dayName;
         }
 
         // Otherwise, just return the local date.
         $date = $this->asDate($timestamp, $format);
-        return $withPreposition ? Craft::t('app', 'on {date}', ['date' => $date]) : $date;
+        return $withPreposition ? t('on {date}', ['date' => $date]) : $date;
     }
 
     /**

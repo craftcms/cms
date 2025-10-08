@@ -12,6 +12,7 @@ use craft\fieldlayoutelements\BaseField;
 use craft\fieldlayoutelements\CustomField;
 use CraftCms\Cms\Field\BaseRelationField;
 use yii\base\InvalidConfigException;
+use function CraftCms\Cms\t;
 
 /**
  * Relational field condition rule.
@@ -103,7 +104,7 @@ class RelationalFieldConditionRule extends BaseElementSelectConditionRule implem
     protected function operatorLabel(string $operator): string
     {
         return match ($operator) {
-            self::OPERATOR_RELATED_TO => Craft::t('app', 'is related to'),
+            self::OPERATOR_RELATED_TO => t('is related to'),
             default => parent::operatorLabel($operator),
         };
     }

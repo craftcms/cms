@@ -2,10 +2,10 @@
 
 namespace craft\elements\conditions;
 
-use Craft;
 use craft\base\conditions\BaseLightswitchConditionRule;
 use craft\base\ElementInterface;
 use craft\elements\db\ElementQueryInterface;
+use function CraftCms\Cms\t;
 
 /**
  * Element has descendants condition rule.
@@ -20,7 +20,7 @@ class HasDescendantsRule extends BaseLightswitchConditionRule implements Element
      */
     public function getLabel(): string
     {
-        return Craft::t('app', 'Has Descendants');
+        return t('Has Descendants');
     }
 
     /**

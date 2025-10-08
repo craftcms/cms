@@ -7,6 +7,7 @@ use craft\base\conditions\BaseMultiSelectConditionRule;
 use craft\base\ElementInterface;
 use craft\elements\db\ElementQueryInterface;
 use craft\models\Site;
+use function CraftCms\Cms\t;
 
 /**
  * Site condition rule.
@@ -21,7 +22,7 @@ class SiteConditionRule extends BaseMultiSelectConditionRule implements ElementC
      */
     public function getLabel(): string
     {
-        return Craft::t('app', 'Site');
+        return t('Site');
     }
 
     /**

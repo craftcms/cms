@@ -47,6 +47,7 @@ use yii\base\Exception;
 use yii\base\Model;
 use yii\base\NotSupportedException;
 use yii\web\AssetBundle as YiiAssetBundle;
+use function CraftCms\Cms\t;
 
 /**
  * @inheritdoc
@@ -2366,12 +2367,12 @@ JS;
     private function _validateTemplateName(string $name): void
     {
         if (str_contains($name, "\0")) {
-            throw new TwigLoaderError(Craft::t('app', 'A template name cannot contain NUL bytes.'));
+            throw new TwigLoaderError(t('A template name cannot contain NUL bytes.'));
         }
 
         if (Path::ensurePathIsContained($name) === false) {
             Craft::warning('Someone tried to load a template outside the templates folder: ' . $name);
-            throw new TwigLoaderError(Craft::t('app', 'Looks like you are trying to load a template outside the template folder.'));
+            throw new TwigLoaderError(t('Looks like you are trying to load a template outside the template folder.'));
         }
     }
 

@@ -24,6 +24,7 @@ use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Str;
 use yii\base\InvalidConfigException;
+use function CraftCms\Cms\t;
 
 /**
  * CustomField represents a custom field that can be included in field layouts.
@@ -409,7 +410,7 @@ class CustomField extends BaseField
     protected function defaultLabel(?ElementInterface $element = null, bool $static = false): ?string
     {
         if ($this->_originalName !== '' && $this->_originalName !== null && $this->_originalName !== '__blank__') {
-            return Craft::t('site', $this->_originalName);
+            return t($this->_originalName, category: 'site');
         }
         return null;
     }
@@ -453,12 +454,12 @@ class CustomField extends BaseField
 
         if (isset($this->label) || isset($this->instructions) || isset($this->handle)) {
             $attributes = array_values(array_filter([
-                isset($this->label) ? Craft::t('app', 'Name') : null,
-                isset($this->instructions) ? Craft::t('app', 'Instructions') : null,
-                isset($this->handle) ? Craft::t('app', 'Handle') : null,
+                isset($this->label) ? t('Name') : null,
+                isset($this->instructions) ? t('Instructions') : null,
+                isset($this->handle) ? t('Handle') : null,
             ]));
             array_unshift($indicators, [
-                'label' => Craft::t('app', 'This field’s {attributes} {totalAttributes, plural, =1{has} other{have}} been overridden.', [
+                'label' => t('This field’s {attributes} {totalAttributes, plural, =1{has} other{have}} been overridden.', [
                     'attributes' => mb_strtolower(Inflector::sentence($attributes)),
                     'totalAttributes' => count($attributes),
                 ]),
@@ -527,7 +528,7 @@ class CustomField extends BaseField
      */
     protected function defaultInstructions(?ElementInterface $element = null, bool $static = false): ?string
     {
-        return $this->_originalInstructions ? Craft::t('site', $this->_originalInstructions) : null;
+        return $this->_originalInstructions ? t($this->_originalInstructions, category: 'site') : null;
     }
 
     /**
@@ -544,11 +545,11 @@ class CustomField extends BaseField
         $editCondition->forProjectConfig = true;
 
         $html .= Html::beginTag('fieldset', ['class' => 'pane']) .
-            Html::tag('legend', Craft::t('app', 'Editability Conditions')) .
+            Html::tag('legend', t('Editability Conditions')) .
             Html::beginTag('div') .
             Cp::fieldHtml($editCondition->getBuilderHtml(), [
-                'label' => Craft::t('app', 'Current User Condition'),
-                'instructions' => Craft::t('app', 'Only make editable for users who match the following rules:'),
+                'label' => t('Current User Condition'),
+                'instructions' => t('Only make editable for users who match the following rules:'),
             ]) .
             Html::endTag('div') .
             Html::endTag('fieldset');

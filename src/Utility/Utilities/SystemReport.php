@@ -16,6 +16,7 @@ use RequirementsChecker;
 use yii\base\Module;
 
 use function CraftCms\Cms\normalizeVersion;
+use function CraftCms\Cms\t;
 
 /**
  * SystemReport represents a SystemReport dashboard widget.
@@ -28,7 +29,7 @@ final class SystemReport extends Utility
     #[\Override]
     public static function displayName(): string
     {
-        return Craft::t('app', 'System Report');
+        return t('System Report');
     }
 
     /**
@@ -73,7 +74,7 @@ final class SystemReport extends Utility
                     return $module['class'];
                 }
 
-                return Craft::t('app', 'Unknown type');
+                return t('Unknown type');
             })
             ->filter();
 

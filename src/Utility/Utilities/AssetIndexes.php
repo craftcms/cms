@@ -12,6 +12,8 @@ use CraftCms\Cms\Utility\Events\ListVolumes;
 use CraftCms\Cms\Utility\Utility;
 use Illuminate\Support\Facades\Event;
 
+use function CraftCms\Cms\t;
+
 /**
  * AssetIndexes represents a AssetIndexes dashboard widget.
  */
@@ -23,7 +25,7 @@ final class AssetIndexes extends Utility
     #[\Override]
     public static function displayName(): string
     {
-        return Craft::t('app', 'Asset Indexes');
+        return t('Asset Indexes');
     }
 
     /**

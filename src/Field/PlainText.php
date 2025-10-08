@@ -13,6 +13,8 @@ use CraftCms\Cms\Field\Contracts\SortableFieldInterface;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Str;
 
+use function CraftCms\Cms\t;
+
 /**
  * PlainText represents a Plain Text field.
  */
@@ -23,7 +25,7 @@ final class PlainText extends Field implements CrossSiteCopyableFieldInterface, 
      */
     public static function displayName(): string
     {
-        return Craft::t('app', 'Plain Text');
+        return t('Plain Text');
     }
 
     /**
@@ -190,7 +192,7 @@ final class PlainText extends Field implements CrossSiteCopyableFieldInterface, 
             'name' => $this->handle,
             'value' => $value,
             'field' => $this,
-            'placeholder' => $this->placeholder !== null ? Craft::t('site', Str::unescapeShortcodes($this->placeholder)) : null,
+            'placeholder' => $this->placeholder !== null ? t(Str::unescapeShortcodes($this->placeholder, category: 'site')) : null,
             'orientation' => $this->getOrientation($element),
             'disabled' => $static,
         ]);

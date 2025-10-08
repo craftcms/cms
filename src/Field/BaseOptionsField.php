@@ -27,6 +27,8 @@ use Illuminate\Support\Facades\Validator as ValidatorFacade;
 use Illuminate\Validation\Validator;
 use yii\db\Schema;
 
+use function CraftCms\Cms\t;
+
 /**
  * BaseOptionsField is the base class for classes representing an options field.
  */
@@ -236,15 +238,15 @@ abstract class BaseOptionsField extends Field implements CrossSiteCopyableFieldI
         }
 
         if ($hasDuplicateLabels) {
-            $validator->errors()->add('options', Craft::t('app', 'All option labels must be unique.'));
+            $validator->errors()->add('options', t('All option labels must be unique.'));
         }
 
         if ($hasDuplicateValues) {
-            $validator->errors()->add('options', Craft::t('app', 'All option values must be unique.'));
+            $validator->errors()->add('options', t('All option values must be unique.'));
         }
 
         if ($hasInvalidColors) {
-            $validator->errors()->add('options', Craft::t('app', 'All color values must be valid.'));
+            $validator->errors()->add('options', t('All color values must be valid.'));
         }
     }
 
@@ -261,37 +263,37 @@ abstract class BaseOptionsField extends Field implements CrossSiteCopyableFieldI
         $cols = [];
         if (static::$optgroups) {
             $cols['isOptgroup'] = [
-                'heading' => Craft::t('app', 'Optgroup?'),
+                'heading' => t('Optgroup?'),
                 'type' => 'checkbox',
                 'class' => 'thin',
                 'toggle' => ['!value', '!icon', '!color', '!default'],
             ];
         }
         $cols['label'] = [
-            'heading' => Craft::t('app', 'Option Label'),
+            'heading' => t('Option Label'),
             'type' => 'singleline',
             'autopopulate' => 'value',
         ];
         $cols['value'] = [
-            'heading' => Craft::t('app', 'Value'),
+            'heading' => t('Value'),
             'type' => 'singleline',
             'class' => 'code',
         ];
         if (static::$optionIcons) {
             $cols['icon'] = [
-                'heading' => Craft::t('app', 'Icon'),
+                'heading' => t('Icon'),
                 'type' => 'icon',
                 'class' => 'thin',
             ];
         }
         if (static::$optionColors) {
             $cols['color'] = [
-                'heading' => Craft::t('app', 'Color'),
+                'heading' => t('Color'),
                 'type' => 'color',
             ];
         }
         $cols['default'] = [
-            'heading' => Craft::t('app', 'Default?'),
+            'heading' => t('Default?'),
             'type' => 'checkbox',
             'radioMode' => ! static::$multi,
             'class' => 'thin',
@@ -308,10 +310,10 @@ abstract class BaseOptionsField extends Field implements CrossSiteCopyableFieldI
 
         $html = Cp::editableTableFieldHtml([
             'label' => $this->optionsSettingLabel(),
-            'instructions' => Craft::t('app', 'Define the available options.'),
+            'instructions' => t('Define the available options.'),
             'id' => 'options',
             'name' => 'options',
-            'addRowLabel' => Craft::t('app', 'Add an option'),
+            'addRowLabel' => t('Add an option'),
             'allowAdd' => true,
             'allowReorder' => true,
             'allowDelete' => true,
@@ -323,7 +325,7 @@ abstract class BaseOptionsField extends Field implements CrossSiteCopyableFieldI
 
         if (static::$allowCustomOptions) {
             $html .= Cp::lightswitchFieldHtml([
-                'label' => Craft::t('app', 'Allow custom options'),
+                'label' => t('Allow custom options'),
                 'id' => 'custom-options',
                 'name' => 'customOptions',
                 'on' => $this->customOptions,
@@ -495,7 +497,7 @@ abstract class BaseOptionsField extends Field implements CrossSiteCopyableFieldI
                     $options = $value instanceof MultiOptionsFieldData ? $value : [$value];
                     if (Collection::make($options)->contains(fn (OptionData $option) => ! $option->valid)) {
                         $element->addError($this->handle, Craft::t('yii', '{attribute} is invalid.', [
-                            'attribute' => Craft::t('site', $this->name),
+                            'attribute' => t($this->name, category: 'site'),
                         ]));
                     }
                 },
@@ -529,7 +531,9 @@ abstract class BaseOptionsField extends Field implements CrossSiteCopyableFieldI
                 /** @var OptionData $option */
                 if (! $this->isValueEmpty($option, $element)) {
                     // Custom values have no label
-                    $labels[] = $option->label ? Craft::t('site', (string) $option->label) : (string) $option->value;
+                    $labels[] = $option->label
+                        ? t((string) $option->label, category: 'site')
+                        : (string) $option->value;
                 }
             }
 
@@ -557,7 +561,10 @@ abstract class BaseOptionsField extends Field implements CrossSiteCopyableFieldI
                     Html::endTag('div');
             }
             // Custom values have no label
-            $parts[] = Html::tag('div', $value->label ? Craft::t('site', (string) $value->label) : (string) $value->value);
+            $parts[] = Html::tag('div', $value->label
+                ? t((string) $value->label, category: 'site')
+                : (string) $value->value
+            );
 
             return Html::beginTag('div', ['class' => ['flex', 'flex-inline', 'gap-xs']])
                 .implode('', $parts)
@@ -575,7 +582,7 @@ abstract class BaseOptionsField extends Field implements CrossSiteCopyableFieldI
         $options = array_values(array_filter($this->options, fn ($option) => ! empty($option['value'])));
 
         if (empty($options)) {
-            return Craft::t('app', 'Option Label');
+            return t('Option Label');
         }
 
         $labels[] = $options[0]['label'];
@@ -628,7 +635,7 @@ abstract class BaseOptionsField extends Field implements CrossSiteCopyableFieldI
             'type' => static::$multi ? Type::listOf(Type::string()) : Type::string(),
             'description' => implode("\n\n", array_filter([
                 $this->instructions,
-                Craft::t('app', 'The allowed values are [{values}]', ['values' => implode(', ', $values)]),
+                t('The allowed values are [{values}]', ['values' => implode(', ', $values)]),
             ])),
         ];
     }
@@ -638,7 +645,7 @@ abstract class BaseOptionsField extends Field implements CrossSiteCopyableFieldI
      */
     protected function optionsSettingLabel(): string
     {
-        return Craft::t('app', 'Options');
+        return t('Options');
     }
 
     /**
@@ -695,11 +702,11 @@ abstract class BaseOptionsField extends Field implements CrossSiteCopyableFieldI
         foreach ($options as $option) {
             if (isset($option['optgroup'])) {
                 $translatedOptions[] = [
-                    'optgroup' => Craft::t('site', $option['optgroup']),
+                    'optgroup' => t($option['optgroup'], category: 'site'),
                 ];
             } else {
                 $translatedOptions[] = [
-                    'label' => Craft::t('site', $option['label']),
+                    'label' => t($option['label'], category: 'site'),
                     'value' => $encode ? $this->encodeValue($option['value']) : $option['value'],
                     'color' => static::$optionColors && ! empty($option['color']) ? $option['color'] : null,
                     'icon' => static::$optionIcons && (! empty($option['icon']) || ($option['icon'] ?? null) === '0') ? $option['icon'] : null,

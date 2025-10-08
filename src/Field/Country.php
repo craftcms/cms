@@ -14,6 +14,8 @@ use CraftCms\Cms\Field\Contracts\InlineEditableFieldInterface;
 use CraftCms\Cms\Field\Contracts\MergeableFieldInterface;
 use yii\db\Schema;
 
+use function CraftCms\Cms\t;
+
 /**
  * Country represents a Country field.
  */
@@ -24,7 +26,7 @@ final class Country extends Field implements CrossSiteCopyableFieldInterface, In
      */
     public static function displayName(): string
     {
-        return Craft::t('app', 'Country');
+        return t('Country');
     }
 
     /**

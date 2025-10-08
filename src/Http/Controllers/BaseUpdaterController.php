@@ -24,6 +24,8 @@ use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 use Symfony\Component\Process\Process;
 use Throwable;
 
+use function CraftCms\Cms\t;
+
 /**
  * @internal
  */
@@ -60,7 +62,7 @@ abstract class BaseUpdaterController
 
             if ($data === false) {
                 throw ValidationException::withMessages([
-                    'data' => Craft::t('app', 'Invalid data.'),
+                    'data' => t('Invalid data.'),
                 ]);
             }
 
@@ -100,7 +102,7 @@ abstract class BaseUpdaterController
 
         $timeLimit = (int) trim(ini_get('max_execution_time'));
         if ($timeLimit !== 0 && $timeLimit < 120) {
-            $errors[] = Craft::t('app', '{name} should be at least {value}.', [
+            $errors[] = t('{name} should be at least {value}.', [
                 'name' => '`max_execution_time`',
                 'value' => '`120`',
             ]);
@@ -108,23 +110,23 @@ abstract class BaseUpdaterController
 
         $memoryLimit = PHP::configValueInBytes('memory_limit');
         if ($memoryLimit !== -1 && $memoryLimit < 1024 * 1024 * 256) {
-            $errors[] = Craft::t('app', '{name} should be at least {value}.', [
+            $errors[] = t('{name} should be at least {value}.', [
                 'name' => '`memory_limit`',
                 'value' => '`256M`',
             ]);
         }
 
         if (! empty($errors)) {
-            $error = Craft::t('app', 'Please fix the following in your {file} file before proceeding:',
+            $error = t('Please fix the following in your {file} file before proceeding:',
                 ['file' => '`php.ini`']).
                 "\n\n".implode("\n\n", $errors);
 
             return $this->send([
                 'error' => $error,
                 'options' => [
-                    ['label' => Craft::t('app', 'Learn how'), 'url' => 'https://craftcms.com/knowledge-base/php-ini'],
-                    $this->actionOption(Craft::t('app', 'Check again'), self::ACTION_PRECHECK),
-                    $this->actionOption(Craft::t('app', 'Continue anyway'), $postState['nextAction'], $postState),
+                    ['label' => t('Learn how'), 'url' => 'https://craftcms.com/knowledge-base/php-ini'],
+                    $this->actionOption(t('Check again'), self::ACTION_PRECHECK),
+                    $this->actionOption(t('Continue anyway'), $postState['nextAction'], $postState),
                 ],
             ]);
         }
@@ -154,9 +156,9 @@ abstract class BaseUpdaterController
             report($e);
 
             if (str_contains($output, 'Your requirements could not be resolved to an installable set of packages.')) {
-                $error = Craft::t('app', 'Composer was unable to install the updates due to a dependency conflict.');
+                $error = t('Composer was unable to install the updates due to a dependency conflict.');
             } else {
-                $error = Craft::t('app', 'Composer was unable to install the updates.');
+                $error = t('Composer was unable to install the updates.');
             }
 
             return $this->sendComposerError($error, $e, $output);
@@ -182,7 +184,7 @@ abstract class BaseUpdaterController
             Log::error('Error updating Composer requirements: '.$e->getMessage()."\nOutput: $output", [__METHOD__]);
             report($e);
 
-            return $this->sendComposerError(Craft::t('app', 'Composer was unable to remove the plugin.'), $e, $output);
+            return $this->sendComposerError(t('Composer was unable to remove the plugin.'), $e, $output);
         }
 
         return $this->send($this->postComposerInstallState());
@@ -295,7 +297,7 @@ abstract class BaseUpdaterController
                 'Your composer.json file could not be located. Try setting the CRAFT_COMPOSER_PATH constant in index.php to its location on the server.'),
             'errorDetails' => 'define(\'CRAFT_COMPOSER_PATH\', \'path/to/composer.json\');',
             'options' => [
-                $this->actionOption(Craft::t('app', 'Try again'), self::ACTION_RECHECK_COMPOSER, ['submit' => true]),
+                $this->actionOption(t('Try again'), self::ACTION_RECHECK_COMPOSER, ['submit' => true]),
             ],
         ];
     }
@@ -347,11 +349,11 @@ abstract class BaseUpdaterController
 
         $state['options'] = [
             [
-                'label' => Craft::t('app', 'Troubleshoot'),
+                'label' => t('Troubleshoot'),
                 'url' => 'https://craftcms.com/knowledge-base/failed-updates',
             ],
             [
-                'label' => Craft::t('app', 'Send for help'),
+                'label' => t('Send for help'),
                 'email' => 'support@craftcms.com',
                 'subject' => 'Composer error',
             ],
@@ -392,17 +394,17 @@ abstract class BaseUpdaterController
     protected function actionStatus(string $action): string
     {
         return match ($action) {
-            self::ACTION_PRECHECK => Craft::t('app', 'Checking environment…'),
-            self::ACTION_RECHECK_COMPOSER => Craft::t('app', 'Checking…'),
-            self::ACTION_COMPOSER_INSTALL => Craft::t('app', 'Updating Composer dependencies (this may take a minute)…',
+            self::ACTION_PRECHECK => t('Checking environment…'),
+            self::ACTION_RECHECK_COMPOSER => t('Checking…'),
+            self::ACTION_COMPOSER_INSTALL => t('Updating Composer dependencies (this may take a minute)…',
                 [
                     'command' => '`composer install`',
                 ]),
-            self::ACTION_COMPOSER_REMOVE => Craft::t('app', 'Updating Composer dependencies (this may take a minute)…',
+            self::ACTION_COMPOSER_REMOVE => t('Updating Composer dependencies (this may take a minute)…',
                 [
                     'command' => '`composer remove`',
                 ]),
-            self::ACTION_FINISH => Craft::t('app', 'Finishing up…'),
+            self::ACTION_FINISH => t('Finishing up…'),
             default => throw new RuntimeException('Invalid action: '.$action),
         };
     }
@@ -413,7 +415,7 @@ abstract class BaseUpdaterController
     protected function finishedState(array $state = []): array
     {
         if (! isset($state['status']) && ! isset($state['error'])) {
-            $state['status'] = Craft::t('app', 'All done!');
+            $state['status'] = t('All done!');
         }
 
         $state['finished'] = true;
@@ -444,7 +446,7 @@ abstract class BaseUpdaterController
 
             $options = [
                 [
-                    'label' => Craft::t('app', 'Troubleshoot'),
+                    'label' => t('Troubleshoot'),
                     'url' => 'https://craftcms.com/knowledge-base/failed-updates',
                 ],
             ];
@@ -456,13 +458,13 @@ abstract class BaseUpdaterController
             $email ??= 'support@craftcms.com';
 
             $options[] = [
-                'label' => Craft::t('app', 'Send for help'),
+                'label' => t('Send for help'),
                 'email' => $email,
                 'subject' => $ownerName.' update failure',
             ];
 
             return $this->send([
-                'error' => Craft::t('app', 'One of {name}’s migrations failed.', ['name' => $ownerName]),
+                'error' => t('One of {name}’s migrations failed.', ['name' => $ownerName]),
                 'errorDetails' => $e::class.': '.$e->getMessage(),
                 'options' => $options,
             ]);
@@ -515,12 +517,12 @@ abstract class BaseUpdaterController
 
         $message = trim($e->getMessage());
         if ($message && $message !== 'An error occurred') {
-            $details[] = Craft::t('app', 'Error:').' '.$message;
+            $details[] = t('Error:').' '.$message;
         }
 
         $output = trim(strip_tags($output));
         if ($output) {
-            $details[] = Craft::t('app', 'Composer output:').' '.$output;
+            $details[] = t('Composer output:').' '.$output;
         }
 
         if (empty($details)) {

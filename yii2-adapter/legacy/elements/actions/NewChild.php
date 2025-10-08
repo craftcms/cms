@@ -9,6 +9,7 @@ namespace craft\elements\actions;
 
 use Craft;
 use craft\base\ElementAction;
+use function CraftCms\Cms\t;
 
 /**
  * NewChild represents a New Child element action.
@@ -41,7 +42,7 @@ class NewChild extends ElementAction
         parent::setElementType($elementType);
 
         if (!isset($this->label)) {
-            $this->label = Craft::t('app', 'Create a new child {type}', [
+            $this->label = t('Create a new child {type}', [
                 'type' => $elementType::lowerDisplayName(),
             ]);
         }

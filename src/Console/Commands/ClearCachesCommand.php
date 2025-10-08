@@ -2,7 +2,6 @@
 
 namespace CraftCms\Cms\Console\Commands;
 
-use Craft;
 use CraftCms\Cms\Console\CraftCommand;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Str;
@@ -10,6 +9,7 @@ use CraftCms\Cms\Utility\Utilities\ClearCaches;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\File;
 
+use function CraftCms\Cms\t;
 use function Laravel\Prompts\multiselect;
 use function Laravel\Prompts\table;
 
@@ -47,7 +47,7 @@ final class ClearCachesCommand extends Command
         $option = collect(ClearCaches::cacheOptions())->firstWhere('key', $key);
 
         $this->components->task(
-            Craft::t('app', 'Clearing:').' '.$option['label'],
+            t('Clearing:').' '.$option['label'],
             function () use ($option) {
                 if (is_string($option['action'])) {
                     File::cleanDirectory($option['action']);

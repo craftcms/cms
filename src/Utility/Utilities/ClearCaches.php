@@ -16,6 +16,8 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\File;
 
+use function CraftCms\Cms\t;
+
 /**
  * ClearCaches represents a ClearCaches dashboard widget.
  */
@@ -27,7 +29,7 @@ final class ClearCaches extends Utility
     #[\Override]
     public static function displayName(): string
     {
-        return Craft::t('app', 'Caches');
+        return t('Caches');
     }
 
     /**
@@ -94,14 +96,14 @@ final class ClearCaches extends Utility
         $options = [
             [
                 'key' => 'data',
-                'label' => Craft::t('app', 'Data caches'),
-                'info' => Craft::t('app', 'Anything cached with `Cache::put`'),
+                'label' => t('Data caches'),
+                'info' => t('Anything cached with `Cache::put`'),
                 'action' => [Cache::getFacadeRoot(), 'clear'],
             ],
             [
                 'key' => 'asset',
-                'label' => Craft::t('app', 'Asset caches'),
-                'info' => Craft::t('app', 'Local copies of remote images, generated thumbnails'),
+                'label' => t('Asset caches'),
+                'info' => t('Local copies of remote images, generated thumbnails'),
                 'action' => function () use ($pathService) {
                     $dirs = [
                         $pathService->getAssetSourcesPath(false),
@@ -115,24 +117,24 @@ final class ClearCaches extends Utility
             ],
             [
                 'key' => 'compiled-templates',
-                'label' => Craft::t('app', 'Compiled templates'),
-                'info' => Craft::t('app', 'Contents of {path}', [
+                'label' => t('Compiled templates'),
+                'info' => t('Contents of {path}', [
                     'path' => '`storage/runtime/compiled_templates/`',
                 ]),
                 'action' => $pathService->getCompiledTemplatesPath(false),
             ],
             [
                 'key' => 'compiled-classes',
-                'label' => Craft::t('app', 'Compiled classes'),
-                'info' => Craft::t('app', 'Contents of {path}', [
+                'label' => t('Compiled classes'),
+                'info' => t('Contents of {path}', [
                     'path' => '`storage/runtime/compiled_classes/`',
                 ]),
                 'action' => $pathService->getCompiledClassesPath(false),
             ],
             [
                 'key' => 'cp-resources',
-                'label' => Craft::t('app', 'Control panel resources'),
-                'info' => Craft::t('app', 'Contents of {path}', [
+                'label' => t('Control panel resources'),
+                'info' => t('Contents of {path}', [
                     'path' => '`web/cpresources/`',
                 ]),
                 'action' => function () {
@@ -167,23 +169,23 @@ final class ClearCaches extends Utility
             ],
             [
                 'key' => 'temp-files',
-                'label' => Craft::t('app', 'Temp files'),
-                'info' => Craft::t('app', 'Contents of {path}', [
+                'label' => t('Temp files'),
+                'info' => t('Contents of {path}', [
                     'path' => '`storage/runtime/temp/`',
                 ]),
                 'action' => $pathService->getTempPath(),
             ],
             [
                 'key' => 'transform-indexes',
-                'label' => Craft::t('app', 'Asset transform index'),
-                'info' => Craft::t('app', 'Record of generated image transforms'),
+                'label' => t('Asset transform index'),
+                'info' => t('Record of generated image transforms'),
                 'action' => function () {
                     DB::table(Table::IMAGETRANSFORMINDEX)->truncate();
                 },
             ],
             [
                 'key' => 'asset-indexing-data',
-                'label' => Craft::t('app', 'Asset indexing data'),
+                'label' => t('Asset indexing data'),
                 'action' => function () {
                     DB::table(Table::ASSETINDEXDATA)->truncate();
                 },
@@ -206,14 +208,14 @@ final class ClearCaches extends Utility
         $options = [
             [
                 'tag' => 'template',
-                'label' => Craft::t('app', 'Template caches'),
+                'label' => t('Template caches'),
             ],
         ];
 
         if (app(GeneralConfig::class)->enableGql) {
             $options[] = [
                 'tag' => 'graphql',
-                'label' => Craft::t('app', 'GraphQL queries'),
+                'label' => t('GraphQL queries'),
             ];
         }
 

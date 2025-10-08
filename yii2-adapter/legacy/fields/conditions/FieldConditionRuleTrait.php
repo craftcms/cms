@@ -13,6 +13,7 @@ use craft\elements\conditions\ElementConditionInterface;
 use CraftCms\Cms\Field\Contracts\FieldInterface;
 use yii\base\InvalidConfigException;
 use yii\db\QueryInterface;
+use function CraftCms\Cms\t;
 
 /**
  * FieldConditionRuleTrait implements the common methods and properties for custom fields’ query condition rule classes.
@@ -45,7 +46,7 @@ trait FieldConditionRuleTrait
      */
     public function getGroupLabel(): ?string
     {
-        return Craft::t('app', 'Fields');
+        return t('Fields');
     }
 
     /**

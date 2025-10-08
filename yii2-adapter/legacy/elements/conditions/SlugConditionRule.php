@@ -2,11 +2,11 @@
 
 namespace craft\elements\conditions;
 
-use Craft;
 use craft\base\conditions\BaseTextConditionRule;
 use craft\base\ElementInterface;
 use craft\elements\db\ElementQueryInterface;
 use craft\helpers\ElementHelper;
+use function CraftCms\Cms\t;
 
 /**
  * Slug condition rule.
@@ -21,7 +21,7 @@ class SlugConditionRule extends BaseTextConditionRule implements ElementConditio
      */
     public function getLabel(): string
     {
-        return Craft::t('app', 'Slug');
+        return t('Slug');
     }
 
     /**

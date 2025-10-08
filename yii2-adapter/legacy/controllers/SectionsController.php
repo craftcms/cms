@@ -20,6 +20,7 @@ use yii\web\BadRequestHttpException;
 use yii\web\ForbiddenHttpException;
 use yii\web\NotFoundHttpException;
 use yii\web\Response;
+use function CraftCms\Cms\t;
 
 /**
  * SectionsController handles various section-related tasks.
@@ -101,20 +102,20 @@ class SectionsController extends Controller
                 }
             }
 
-            $title = trim($section->name) ?: Craft::t('app', 'Edit Section');
+            $title = trim($section->name) ?: t('Edit Section');
         } else {
             if ($section === null) {
                 $section = new Section();
                 $variables['brandNewSection'] = true;
             }
 
-            $title = Craft::t('app', 'Create a new section');
+            $title = t('Create a new section');
         }
 
         $typeOptions = [
-            Section::TYPE_SINGLE => Craft::t('app', 'Single'),
-            Section::TYPE_CHANNEL => Craft::t('app', 'Channel'),
-            Section::TYPE_STRUCTURE => Craft::t('app', 'Structure'),
+            Section::TYPE_SINGLE => t('Single'),
+            Section::TYPE_CHANNEL => t('Channel'),
+            Section::TYPE_STRUCTURE => t('Structure'),
         ];
 
         if (!$section->type) {
@@ -130,15 +131,15 @@ class SectionsController extends Controller
         $response = $this->asCpScreen()
             ->editUrl($section->getCpEditUrl())
             ->title($title)
-            ->addCrumb(Craft::t('app', 'Settings'), 'settings')
-            ->addCrumb(Craft::t('app', 'Sections'), 'settings/sections')
+            ->addCrumb(t('Settings'), 'settings')
+            ->addCrumb(t('Sections'), 'settings/sections')
             ->contentTemplate('settings/sections/_edit.twig', $variables);
 
         if (!$this->readOnly) {
             $response
                 ->action('sections/save-section')
                 ->redirectUrl('settings/sections')
-                ->addAltAction(Craft::t('app', 'Save and continue editing'), [
+                ->addAltAction(t('Save and continue editing'), [
                     'redirect' => 'settings/sections/{id}',
                     'shortcut' => true,
                     'retainScroll' => true,
@@ -222,10 +223,10 @@ class SectionsController extends Controller
 
         // Save it
         if (!$sectionsService->saveSection($section)) {
-            return $this->asModelFailure($section, Craft::t('app', 'Couldn’t save section.'), 'section');
+            return $this->asModelFailure($section, t('Couldn’t save section.'), 'section');
         }
 
-        return $this->asModelSuccess($section, Craft::t('app',  'Section saved.'), 'section');
+        return $this->asModelSuccess($section, t('Section saved.'), 'section');
     }
 
     /**

@@ -12,6 +12,7 @@ use craft\base\Element;
 use craft\base\ElementInterface;
 use CraftCms\Cms\Shared\Exceptions\OperationAbortedException;
 use yii\base\InvalidConfigException;
+use function CraftCms\Cms\t;
 
 /**
  * Class ElementUriValidator.
@@ -73,7 +74,7 @@ class ElementUriValidator extends UriValidator
                 $model->getEnabledForSite() &&
                 (!$model->getIsUnpublishedDraft() || $model->getScenario() === Element::SCENARIO_LIVE)
             ) {
-                $this->addError($model, $attribute, Craft::t('app', 'Could not generate a unique URI based on the URI format.'));
+                $this->addError($model, $attribute, t('Could not generate a unique URI based on the URI format.'));
                 return;
             }
         }

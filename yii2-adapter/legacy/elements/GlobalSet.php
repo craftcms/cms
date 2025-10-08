@@ -19,6 +19,7 @@ use craft\validators\HandleValidator;
 use craft\validators\UniqueValidator;
 use CraftCms\Cms\Field\Fields;
 use yii\base\InvalidConfigException;
+use function CraftCms\Cms\t;
 
 /**
  * GlobalSet represents a global set element.
@@ -39,7 +40,7 @@ class GlobalSet extends Element implements FieldLayoutProviderInterface
      */
     public static function displayName(): string
     {
-        return Craft::t('app', 'Global set');
+        return t('Global set');
     }
 
     /**
@@ -47,7 +48,7 @@ class GlobalSet extends Element implements FieldLayoutProviderInterface
      */
     public static function lowerDisplayName(): string
     {
-        return Craft::t('app', 'global set');
+        return t('global set');
     }
 
     /**
@@ -55,7 +56,7 @@ class GlobalSet extends Element implements FieldLayoutProviderInterface
      */
     public static function pluralDisplayName(): string
     {
-        return Craft::t('app', 'Global sets');
+        return t('Global sets');
     }
 
     /**
@@ -63,7 +64,7 @@ class GlobalSet extends Element implements FieldLayoutProviderInterface
      */
     public static function pluralLowerDisplayName(): string
     {
-        return Craft::t('app', 'global sets');
+        return t('global sets');
     }
 
     /**
@@ -199,8 +200,8 @@ class GlobalSet extends Element implements FieldLayoutProviderInterface
     public function attributeLabels(): array
     {
         return array_merge(parent::attributeLabels(), [
-            'handle' => Craft::t('app', 'Handle'),
-            'name' => Craft::t('app', 'Name'),
+            'handle' => t('Handle'),
+            'name' => t('Name'),
         ]);
     }
 

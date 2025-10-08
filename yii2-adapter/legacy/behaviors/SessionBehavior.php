@@ -14,6 +14,7 @@ use CraftCms\Cms\Support\Json;
 use yii\base\Behavior;
 use yii\base\Exception;
 use yii\web\AssetBundle;
+use function CraftCms\Cms\t;
 
 /**
  * Extends \yii\web\Session to add support for setting the session folder and creating it if it doesn’t exist.
@@ -62,7 +63,7 @@ class SessionBehavior extends Behavior
         if (Craft::$app->getRequest()->getIsCpRequest()) {
             $this->_setNotificationFlash('notice', $message, $settings + [
                     'icon' => 'info',
-                    'iconLabel' => Craft::t('app', 'Notice'),
+                    'iconLabel' => t('Notice'),
                 ]);
         } else {
             $this->owner->setFlash('notice', $message);
@@ -85,7 +86,7 @@ class SessionBehavior extends Behavior
         if (Craft::$app->getRequest()->getIsCpRequest()) {
             $this->_setNotificationFlash('success', $message, $settings + [
                     'icon' => 'check',
-                    'iconLabel' => Craft::t('app', 'Success'),
+                    'iconLabel' => t('Success'),
                 ]);
         } else {
             $this->owner->setFlash('success', $message);
@@ -107,7 +108,7 @@ class SessionBehavior extends Behavior
         if (Craft::$app->getRequest()->getIsCpRequest()) {
             $this->_setNotificationFlash('error', $message, $settings + [
                     'icon' => 'alert',
-                    'iconLabel' => Craft::t('app', 'Error'),
+                    'iconLabel' => t('Error'),
                 ]);
         } else {
             $this->owner->setFlash('error', $message);
@@ -249,7 +250,7 @@ class SessionBehavior extends Behavior
         $jsonMessage = Json::encode($message);
         $this->addJsFlash(<<<JS
 if (Craft?.broadcaster) {
-    Craft.broadcaster.postMessage($jsonMessage);
+    Craft.broadcaster.postMessage($jsonMessage)
 }
 JS
         );

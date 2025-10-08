@@ -14,6 +14,7 @@ use Money\Formatter\IntlMoneyFormatter;
 use Money\Money;
 use NumberFormatter;
 use yii\validators\Validator;
+use function CraftCms\Cms\t;
 
 /**
  * Class MoneyValidator.
@@ -52,7 +53,7 @@ class MoneyValidator extends Validator
             $max = new Money($this->max, $value->getCurrency());
 
             if ($value->greaterThan($max)) {
-                $this->addError($model, $attribute, Craft::t('app', '{attribute} must be no greater than {max}.', [
+                $this->addError($model, $attribute, t('{attribute} must be no greater than {max}.', [
                     'attribute' => $model->getAttributeLabel($attribute),
                     'max' => $moneyFormatter->format($max),
                 ]));
@@ -63,7 +64,7 @@ class MoneyValidator extends Validator
             $min = new Money($this->min, $value->getCurrency());
 
             if ($value->lessThan($min)) {
-                $this->addError($model, $attribute, Craft::t('app', '{attribute} must be no less than {min}.', [
+                $this->addError($model, $attribute, t('{attribute} must be no less than {min}.', [
                     'attribute' => $model->getAttributeLabel($attribute),
                     'min' => $moneyFormatter->format($min),
                 ]));

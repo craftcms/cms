@@ -8,6 +8,8 @@ use craft\helpers\Cp;
 use CraftCms\Cms\Field\Data\MultiOptionsFieldData;
 use Illuminate\Support\Collection;
 
+use function CraftCms\Cms\t;
+
 /**
  * MultiSelect represents a Multi-select field.
  */
@@ -38,7 +40,7 @@ final class MultiSelect extends BaseOptionsField
      */
     public static function displayName(): string
     {
-        return Craft::t('app', 'Multi-select');
+        return t('Multi-select');
     }
 
     /**
@@ -92,6 +94,6 @@ final class MultiSelect extends BaseOptionsField
      */
     protected function optionsSettingLabel(): string
     {
-        return Craft::t('app', 'Multi-select Options');
+        return t('Multi-select Options');
     }
 }

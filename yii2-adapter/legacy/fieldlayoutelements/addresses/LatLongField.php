@@ -7,13 +7,13 @@
 
 namespace craft\fieldlayoutelements\addresses;
 
-use Craft;
 use craft\base\ElementInterface;
 use craft\elements\Address;
 use craft\fieldlayoutelements\BaseNativeField;
 use craft\helpers\Cp;
 use CraftCms\Cms\Support\Html;
 use yii\base\InvalidArgumentException;
+use function CraftCms\Cms\t;
 
 /**
  * Class LatLongField.
@@ -102,7 +102,7 @@ class LatLongField extends BaseNativeField
     protected function defaultLabel(?ElementInterface $element = null, bool $static = false): ?string
     {
         // we need it for the card view designer
-        return Craft::t('app', 'Latitude/Longitude');
+        return t('Latitude/Longitude');
     }
 
     /**
@@ -110,7 +110,7 @@ class LatLongField extends BaseNativeField
      */
     protected function selectorLabel(): ?string
     {
-        return Craft::t('app', 'Latitude/Longitude');
+        return t('Latitude/Longitude');
     }
 
     /**
@@ -126,7 +126,7 @@ class LatLongField extends BaseNativeField
             Html::beginTag('div', ['class' => 'flex-fields']) .
             Cp::textFieldHtml([
                 'fieldClass' => 'width-50',
-                'label' => Craft::t('app', 'Latitude'),
+                'label' => t('Latitude'),
                 'id' => 'latitude',
                 'name' => 'latitude',
                 'value' => $element->latitude,
@@ -137,7 +137,7 @@ class LatLongField extends BaseNativeField
             ]) .
             Cp::textFieldHtml([
                 'fieldClass' => 'width-50',
-                'label' => Craft::t('app', 'Longitude'),
+                'label' => t('Longitude'),
                 'id' => 'longitude',
                 'name' => 'longitude',
                 'value' => $element->longitude,
