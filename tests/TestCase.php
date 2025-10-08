@@ -20,7 +20,6 @@ use Illuminate\Support\Facades\Schema;
 use Orchestra\Testbench\Concerns\WithWorkbench;
 use Orchestra\Testbench\TestCase as Orchestra;
 
-/** @since 6.0.0 */
 class TestCase extends Orchestra
 {
     use LazilyRefreshDatabase;

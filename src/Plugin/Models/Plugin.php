@@ -6,7 +6,6 @@ use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Shared\BaseModel;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 
-/** @since 6.0.0 */
 class Plugin extends BaseModel
 {
     use HasFactory;

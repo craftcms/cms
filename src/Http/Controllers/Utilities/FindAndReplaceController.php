@@ -8,7 +8,6 @@ use CraftCms\Cms\Utility\Utilities;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
-/** @since 6.0.0 */
 final readonly class FindAndReplaceController
 {
     public function __construct(Utilities $utilitiesService)

@@ -50,7 +50,6 @@ use InvalidArgumentException;
 use RuntimeException;
 use yii\db\Schema;
 
-/** @since 6.0.0 */
 abstract class Field implements Actionable, Arrayable, FieldInterface, Iconic
 {
     use ConfigurableComponent;

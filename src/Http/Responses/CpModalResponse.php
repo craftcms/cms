@@ -11,7 +11,6 @@ use Illuminate\Contracts\Support\Responsable;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Traits\Conditionable;
 
-/** @since 6.0.0 */
 final class CpModalResponse implements Responsable
 {
     use Conditionable;

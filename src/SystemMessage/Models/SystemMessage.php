@@ -6,7 +6,6 @@ use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Shared\BaseModel;
 use CraftCms\Cms\Shared\Concerns\HasUid;
 
-/** @since 6.0.0 */
 final class SystemMessage extends BaseModel
 {
     use HasUid;

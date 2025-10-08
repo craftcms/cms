@@ -32,7 +32,6 @@ use Illuminate\Support\ServiceProvider;
 use ReflectionClass;
 use RuntimeException;
 
-/** @since 6.0.0 */
 final class AppServiceProvider extends ServiceProvider
 {
     private string $root = __DIR__.'/../..';

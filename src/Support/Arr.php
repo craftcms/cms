@@ -7,7 +7,6 @@ use DateTimeInterface;
 use Illuminate\Contracts\Support\Arrayable;
 use Illuminate\Support\Collection;
 
-/** @since 6.0.0 */
 class Arr extends \Illuminate\Support\Arr
 {
     /**

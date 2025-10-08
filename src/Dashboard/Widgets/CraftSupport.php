@@ -13,7 +13,6 @@ use Illuminate\Support\Facades\Auth;
 
 use function CraftCms\Cms\normalizeVersion;
 
-/** @since 6.0.0 */
 final class CraftSupport extends Widget
 {
     public function __construct(

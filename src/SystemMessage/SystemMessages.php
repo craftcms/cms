@@ -18,7 +18,6 @@ use Tpetry\QueryExpressions\Language\CaseRule;
 use Tpetry\QueryExpressions\Operator\Comparison\Equal;
 use Tpetry\QueryExpressions\Value\Value;
 
-/** @since 6.0.0 */
 #[Singleton]
 final class SystemMessages
 {

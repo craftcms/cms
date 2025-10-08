@@ -6,7 +6,6 @@ use Closure;
 use Craft;
 use Illuminate\Contracts\Validation\ValidationRule;
 
-/** @since 6.0.0 */
 final class HandleRule implements ValidationRule
 {
     public static string $handlePattern = '[a-zA-Z][a-zA-Z0-9_]*';

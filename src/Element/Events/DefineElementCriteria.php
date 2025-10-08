@@ -2,7 +2,6 @@
 
 namespace CraftCms\Cms\Element\Events;
 
-/** @since 6.0.0 */
 final class DefineElementCriteria
 {
     public function __construct(

@@ -14,7 +14,6 @@ use Illuminate\Support\Collection;
 
 use function CraftCms\Cms\cp_redirect;
 
-/** @since 6.0.0 */
 final readonly class UtilitiesController
 {
     public function __construct(

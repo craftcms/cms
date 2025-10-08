@@ -10,7 +10,6 @@ use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Html;
 use Illuminate\Support\Facades\Auth;
 
-/** @since 6.0.0 */
 final class QuickPost extends Widget
 {
     /**

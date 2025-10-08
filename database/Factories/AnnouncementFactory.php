@@ -6,7 +6,6 @@ use CraftCms\Cms\Announcement\Models\Announcement;
 use CraftCms\Cms\User\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
-/** @since 6.0.0 */
 final class AnnouncementFactory extends Factory
 {
     protected $model = Announcement::class;

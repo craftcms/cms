@@ -6,7 +6,6 @@ use craft\base\ElementInterface;
 use CraftCms\Cms\Field\Contracts\FieldInterface;
 use CraftCms\Cms\Shared\Events\DefineHtmlEvent;
 
-/** @since 6.0.0 */
 final class DefineFieldHtml extends DefineHtmlEvent
 {
     public function __construct(
