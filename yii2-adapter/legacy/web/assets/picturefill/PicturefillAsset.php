@@ -21,7 +21,7 @@ class PicturefillAsset extends AssetBundle
      */
     public function init(): void
     {
-        $this->sourcePath = __DIR__ . '/dist';
+        $this->sourcePath = '@assetBundles/picturefill/dist';
 
         $this->js = [
             'picturefill.js',

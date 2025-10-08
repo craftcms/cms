@@ -18,7 +18,7 @@ class DeprecationErrorsAsset extends AssetBundle
     /**
      * @inheritdoc
      */
-    public $sourcePath = __DIR__ . '/dist';
+    public $sourcePath = __DIR__ . '@assetBundles/deprecationerrors/dist';
 
     /**
      * @inheritdoc

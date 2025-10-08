@@ -19,7 +19,7 @@ class XregexpAsset extends AssetBundle
      */
     public function init(): void
     {
-        $this->sourcePath = __dir__ . '/dist';
+        $this->sourcePath = '@assetBundles/xregexp/dist';
 
         $this->js = [
             'xregexp-all.js',

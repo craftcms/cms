@@ -38,7 +38,7 @@ class DatepickerI18nAsset extends AssetBundle
             $languages[] = $fallbacks[$languageId];
         }
 
-        $sourcePath = __DIR__ . '/dist';
+        $sourcePath = '@assetBundles/datepickeri18n/dist';
 
         foreach ($languages as $language) {
             $filename = "datepicker-$language.js";

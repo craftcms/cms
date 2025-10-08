@@ -18,7 +18,7 @@ class JqueryUiAsset extends AssetBundle
     /**
      * @inheritdoc
      */
-    public $sourcePath = __DIR__ . '/dist';
+    public $sourcePath = '@assetBundles/jqueryui/dist';
 
     /**
      * @inheritdoc

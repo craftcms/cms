@@ -23,7 +23,7 @@ class GarnishAsset extends AssetBundle
      */
     public function init(): void
     {
-        $this->sourcePath = __DIR__ . '/dist';
+        $this->sourcePath = '@assetBundles/garnish/dist';
         $this->depends = [
             ElementResizeDetectorAsset::class,
             JqueryAsset::class,

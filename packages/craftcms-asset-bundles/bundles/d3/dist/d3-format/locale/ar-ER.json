@@ -1,0 +1,7 @@
+{
+  "decimal": "٫",
+  "thousands": "٬",
+  "grouping": [3],
+  "currency": ["Nfk ", ""],
+  "numerals": ["٠", "١", "٢", "٣", "٤", "٥", "٦", "٧", "٨", "٩"]
+}

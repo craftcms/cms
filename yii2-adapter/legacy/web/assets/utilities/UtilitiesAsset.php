@@ -20,7 +20,7 @@ class UtilitiesAsset extends AssetBundle
      */
     public function init(): void
     {
-        $this->sourcePath = __DIR__ . '/dist';
+        $this->sourcePath = '@assetBundles/utilities/dist';
 
         $this->depends = [
             CpAsset::class,

@@ -24,7 +24,7 @@ class QueueManagerAsset extends AssetBundle
     /**
      * @inheritdoc
      */
-    public $sourcePath = __DIR__ . '/dist';
+    public $sourcePath = '@assetBundles/queuemanager/dist';
 
     /**
      * @inheritdoc

@@ -19,5 +19,5 @@ class FocusVisibleAsset extends AssetBundle
     /**
      * @inheritdoc
      */
-    public $sourcePath = __DIR__ . '/dist';
+    public $sourcePath = '@assetBundles/focusvisible/dist';
 }

@@ -1,7 +1,7 @@
 *.md
 *.php
 composer.lock
-packages/**/dist/*
+**/dist/*
 vendor/*
 .ddev/*
 yii2-adapter/cpresources/*

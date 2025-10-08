@@ -22,7 +22,7 @@ class PluginStoreAsset extends AssetBundle
      */
     public function init()
     {
-        $this->sourcePath = __DIR__ . '/dist';
+        $this->sourcePath = '@assetBundles/pluginstore/dist';
 
         $this->css = [
             'css/app.css',
