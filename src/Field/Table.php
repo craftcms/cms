@@ -10,12 +10,12 @@ use craft\gql\types\TableRow;
 use craft\helpers\Cp;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\Db;
-use craft\validators\HandleValidator;
 use craft\web\assets\tablesettings\TableSettingsAsset;
 use craft\web\assets\timepicker\TimepickerAsset;
 use CraftCms\Cms\Field\Contracts\CrossSiteCopyableFieldInterface;
 use CraftCms\Cms\Field\Data\ColorData;
 use CraftCms\Cms\Shared\Rules\ColorRule;
+use CraftCms\Cms\Shared\Rules\HandleRule;
 use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Support\Str;
 use DateTime;
@@ -185,7 +185,7 @@ final class Table extends Field implements CrossSiteCopyableFieldInterface
 
             $error = null;
 
-            if (! preg_match('/^'.HandleValidator::$handlePattern.'$/', $col['handle'])) {
+            if (! preg_match('/^'.HandleRule::$handlePattern.'$/', $col['handle'])) {
                 $error = Craft::t('app', '“{handle}” isn’t a valid handle.', [
                     'handle' => $col['handle'],
                 ]);

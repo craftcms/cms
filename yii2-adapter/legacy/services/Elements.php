@@ -59,12 +59,12 @@ use craft\queue\jobs\UpdateElementSlugsAndUris;
 use craft\records\Element as ElementRecord;
 use craft\records\Element_SiteSettings as Element_SiteSettingsRecord;
 use craft\records\StructureElement as StructureElementRecord;
-use craft\validators\HandleValidator;
 use craft\validators\SlugValidator;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Field\BaseRelationField;
 use CraftCms\Cms\Field\Contracts\FieldInterface;
 use CraftCms\Cms\Shared\Exceptions\OperationAbortedException;
+use CraftCms\Cms\Shared\Rules\HandleRule;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Json;
@@ -3298,7 +3298,7 @@ class Elements extends Component
             }
 
             // Get the handle & alias
-            if (preg_match('/^([a-zA-Z][a-zA-Z0-9_:]*)\s+as\s+(' . HandleValidator::$handlePattern . ')$/', $handle,
+            if (preg_match('/^([a-zA-Z][a-zA-Z0-9_:]*)\s+as\s+(' . HandleRule::$handlePattern . ')$/', $handle,
                 $match)) {
                 $handle = $match[1];
                 $alias = $match[2];
