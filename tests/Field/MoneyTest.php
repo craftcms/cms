@@ -50,18 +50,16 @@ test('normalizeValue', function (mixed $money, string $value, ?string $defaultVa
 
     expect($normalized)->toBeInstanceOf(\Money\Money::class);
     expect($normalized->getAmount())->toBe($value);
-})->with(function () {
-    return [
-        'money-object' => [new \Money\Money(100, new Currency('USD')), '100', null],
-        'default-value' => [null, '123', '123'],
-        'array-passed' => [
-            [
-                'value' => '1,23',
-                'locale' => 'nl',
-            ], '123', null,
-        ],
-    ];
-});
+})->with(fn () => [
+    'money-object' => [new \Money\Money(100, new Currency('USD')), '100', null],
+    'default-value' => [null, '123', '123'],
+    'array-passed' => [
+        [
+            'value' => '1,23',
+            'locale' => 'nl',
+        ], '123', null,
+    ],
+]);
 
 test('getTableAttributeHtml', function (mixed $value, string $expected, ?string $locale = null) {
     if ($locale) {
