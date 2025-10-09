@@ -18,7 +18,7 @@ use craft\db\pgsql\Schema as PgsqlSchema;
 use craft\elements\User;
 use craft\errors\MissingComponentException;
 use craft\helpers\Session as SessionHelper;
-use craft\i18n\Locale;
+use CraftCms\Cms\Translation\Locale;
 use craft\mail\Mailer;
 use craft\mail\Message;
 use craft\mail\transportadapters\Sendmail;

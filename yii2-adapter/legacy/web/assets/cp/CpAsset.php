@@ -14,7 +14,7 @@ use craft\helpers\Assets;
 use craft\helpers\Cp;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\UrlHelper;
-use craft\i18n\Locale;
+use CraftCms\Cms\Translation\Locale;
 use craft\models\Section;
 use craft\services\Sites;
 use craft\validators\UserPasswordValidator;

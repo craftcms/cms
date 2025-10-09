@@ -29,7 +29,7 @@ use craft\helpers\Cp;
 use craft\helpers\Db;
 use craft\helpers\ElementHelper;
 use craft\helpers\UrlHelper;
-use craft\i18n\Locale;
+use CraftCms\Cms\Translation\Locale;
 use craft\models\ElementActivity;
 use craft\models\FieldLayoutForm;
 use craft\services\Drafts;

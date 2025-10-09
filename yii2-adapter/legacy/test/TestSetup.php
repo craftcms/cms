@@ -15,7 +15,7 @@ use craft\console\Application as ConsoleApplication;
 use craft\db\Connection;
 use craft\helpers\Db;
 use craft\helpers\FileHelper;
-use craft\i18n\Locale;
+use CraftCms\Cms\Translation\Locale;
 use craft\mail\Mailer;
 use craft\models\Site;
 use craft\queue\Queue;

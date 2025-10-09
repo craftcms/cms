@@ -9,7 +9,7 @@ namespace craft\models;
 
 use Craft;
 use craft\base\Model;
-use craft\i18n\Locale;
+use CraftCms\Cms\Translation\Locale;
 use craft\records\Site as SiteRecord;
 use craft\validators\HandleValidator;
 use craft\validators\LanguageValidator;

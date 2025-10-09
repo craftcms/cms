@@ -10,7 +10,7 @@ namespace craft\controllers;
 use Craft;
 use craft\auth\methods\RecoveryCodes;
 use craft\auth\methods\TOTP;
-use craft\i18n\Locale;
+use CraftCms\Cms\Translation\Locale;
 use craft\web\Controller;
 use craft\web\View;
 use CraftCms\Cms\Config\GeneralConfig;

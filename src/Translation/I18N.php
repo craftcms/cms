@@ -3,7 +3,6 @@
 namespace CraftCms\Cms\Translation;
 
 use Craft;
-use craft\i18n\Locale;
 use craft\models\Site;
 use CraftCms\Cms\Config\GeneralConfig;
 use Illuminate\Container\Attributes\Singleton;
@@ -47,7 +46,9 @@ final readonly class I18N
      */
     public function getLocaleById(string $localeId): Locale
     {
-        return new Locale($localeId, $this->generalConfig->localeAliases[$localeId] ?? []);
+        return new Locale(...array_merge([
+            'id' => $localeId,
+        ], $this->generalConfig->localeAliases[$localeId] ?? []));
     }
 
     /**
@@ -110,7 +111,9 @@ final readonly class I18N
     public function getAppLocales(): Collection
     {
         return $this->appLocales ??= $this->getAppLocaleIds()->map(function (string $localeId) {
-            return new Locale($localeId, $this->generalConfig->localeAliases[$localeId] ?? []);
+            return new Locale(...array_merge([
+                'id' => $localeId,
+            ], $this->generalConfig->localeAliases[$localeId] ?? []));
         });
     }
 
@@ -147,7 +150,9 @@ final readonly class I18N
     public function getSiteLocales(): Collection
     {
         return $this->getSiteLocaleIds()->map(function (string $localeId) {
-            return new Locale($localeId, $this->generalConfig->localeAliases[$localeId] ?? []);
+            return new Locale(...array_merge([
+                'id' => $localeId,
+            ], $this->generalConfig->localeAliases[$localeId] ?? []));
         });
     }
 

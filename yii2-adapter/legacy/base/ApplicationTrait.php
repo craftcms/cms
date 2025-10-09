@@ -40,7 +40,7 @@ use craft\fieldlayoutelements\users\UsernameField;
 use craft\helpers\Session;
 use craft\i18n\Formatter;
 use craft\i18n\I18N;
-use craft\i18n\Locale;
+use CraftCms\Cms\Translation\Locale;
 use craft\log\Dispatcher;
 use craft\mail\Mailer;
 use craft\markdown\GithubMarkdown;

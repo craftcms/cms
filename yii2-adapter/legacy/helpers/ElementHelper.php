@@ -17,7 +17,7 @@ use craft\db\Table;
 use craft\elements\User as UserElement;
 use craft\errors\FieldNotFoundException;
 use craft\fieldlayoutelements\CustomField;
-use craft\i18n\Locale;
+use CraftCms\Cms\Translation\Locale;
 use craft\services\ElementSources;
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Field\Field;

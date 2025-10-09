@@ -10,7 +10,7 @@ namespace craft\gql\directives;
 use Craft;
 use craft\gql\base\Directive;
 use craft\gql\GqlEntityRegistry;
-use craft\i18n\Locale;
+use CraftCms\Cms\Translation\Locale;
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\Str;

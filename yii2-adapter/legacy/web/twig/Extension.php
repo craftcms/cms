@@ -26,7 +26,7 @@ use craft\helpers\MoneyHelper;
 use craft\helpers\Sequence;
 use craft\helpers\Template as TemplateHelper;
 use craft\helpers\UrlHelper;
-use craft\i18n\Locale;
+use CraftCms\Cms\Translation\Locale;
 use craft\models\EntryType;
 use craft\web\twig\nodes\expressions\binaries\HasEveryBinary;
 use craft\web\twig\nodes\expressions\binaries\HasSomeBinary;

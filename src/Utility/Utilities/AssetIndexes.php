@@ -4,10 +4,10 @@ namespace CraftCms\Cms\Utility\Utilities;
 
 use Craft;
 use craft\helpers\App;
-use craft\i18n\Locale;
 use craft\models\Volume;
 use craft\web\assets\assetindexes\AssetIndexesAsset;
 use CraftCms\Cms\Support\Html;
+use CraftCms\Cms\Translation\Locale;
 use CraftCms\Cms\Utility\Events\ListVolumes;
 use CraftCms\Cms\Utility\Utility;
 use Illuminate\Support\Facades\Event;

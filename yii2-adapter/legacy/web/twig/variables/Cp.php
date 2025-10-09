@@ -17,7 +17,7 @@ use craft\helpers\Assets;
 use craft\helpers\Cp as CpHelper;
 use craft\helpers\Inflector;
 use craft\helpers\UrlHelper;
-use craft\i18n\Locale;
+use CraftCms\Cms\Translation\Locale;
 use craft\models\FieldLayout;
 use craft\models\Site;
 use craft\models\Volume;

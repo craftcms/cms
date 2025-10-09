@@ -8,7 +8,7 @@
 namespace craft\helpers;
 
 use Craft;
-use craft\i18n\Locale;
+use CraftCms\Cms\Translation\Locale;
 use CraftCms\Cms\Support\Facades\I18N;
 use yii\base\InvalidArgumentException;
 use yii\i18n\MissingTranslationEvent;

@@ -11,7 +11,7 @@ use Craft;
 use craft\elements\Asset;
 use craft\errors\AssetException;
 use craft\filters\UtilityAccess;
-use craft\i18n\Locale;
+use CraftCms\Cms\Translation\Locale;
 use craft\models\AssetIndexingSession;
 use craft\models\Volume;
 use craft\web\Controller;

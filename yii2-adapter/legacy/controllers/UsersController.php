@@ -29,7 +29,7 @@ use craft\helpers\FileHelper;
 use craft\helpers\Image;
 use craft\helpers\UrlHelper;
 use craft\helpers\User as UserHelper;
-use craft\i18n\Locale;
+use CraftCms\Cms\Translation\Locale;
 use craft\models\UserGroup;
 use craft\records\WebAuthn as WebAuthnRecord;
 use craft\services\Users;

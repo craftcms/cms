@@ -8,7 +8,9 @@
 namespace craft\i18n;
 
 use Craft;
+use craft\i18n\Locale as LegacyLocale;
 use yii\base\Exception;
+use CraftCms\Cms\Translation\Locale;
 
 /**
  * @inheritdoc
@@ -33,11 +35,13 @@ class I18N extends \yii\i18n\I18N
      * Returns a locale by its ID.
      *
      * @param string $localeId
-     * @return Locale
+     * @return LegacyLocale
      */
-    public function getLocaleById(string $localeId): Locale
+    public function getLocaleById(string $localeId): LegacyLocale
     {
-        return app(\CraftCms\Cms\Translation\I18N::class)->getLocaleById($localeId);
+        $locale = app(\CraftCms\Cms\Translation\I18N::class)->getLocaleById($localeId);
+
+        return LegacyLocale::fromNewLocale($locale);
     }
 
     /**
@@ -54,12 +58,14 @@ class I18N extends \yii\i18n\I18N
     /**
      * Returns an array of all known locales.
      *
-     * @return Locale[] An array of [[Locale]] objects.
+     * @return LegacyLocale[] An array of [[Locale]] objects.
      * @see getAllLocaleIds()
      */
     public function getAllLocales(): array
     {
-        return app(\CraftCms\Cms\Translation\I18N::class)->getAllLocales()->all();
+        return app(\CraftCms\Cms\Translation\I18N::class)->getAllLocales()
+            ->map(fn (Locale $locale) => LegacyLocale::fromNewLocale($locale))
+            ->all();
     }
 
     // Application Locales
@@ -69,12 +75,14 @@ class I18N extends \yii\i18n\I18N
      * Returns an array of locales that Craft is translated into. The list of locales is based on whatever files exist
      * in `vendor/craftcms/cms/src/translations/`.
      *
-     * @return Locale[] An array of [[Locale]] objects.
+     * @return LegacyLocale[] An array of [[Locale]] objects.
      * @throws Exception in case of failure
      */
     public function getAppLocales(): array
     {
-        return app(\CraftCms\Cms\Translation\I18N::class)->getAppLocales()->all();
+        return app(\CraftCms\Cms\Translation\I18N::class)->getAppLocales()
+            ->map(fn (Locale $locale) => LegacyLocale::fromNewLocale($locale))
+            ->all();
     }
 
     /**
@@ -107,23 +115,26 @@ class I18N extends \yii\i18n\I18N
     /**
      * Returns an array of the site locales.
      *
-     * @return Locale[] An array of [[Locale]] objects.
+     * @return LegacyLocale[] An array of [[Locale]] objects.
      */
     public function getSiteLocales(): array
     {
-        return app(\CraftCms\Cms\Translation\I18N::class)->getSiteLocales()->all();
+        return app(\CraftCms\Cms\Translation\I18N::class)
+            ->getSiteLocales()
+            ->map(fn (Locale $locale) => LegacyLocale::fromNewLocale($locale))
+            ->all();
     }
 
     /**
      * Returns the site's primary locale. The primary locale is whatever is listed first in Settings > Locales in the
      * control panel.
      *
-     * @return Locale A [[Locale]] object representing the primary locale.
+     * @return LegacyLocale A [[Locale]] object representing the primary locale.
      * @deprecated in 5.0.0. [[\craft\models\Site::getLocale()]] should be used instead.
      */
-    public function getPrimarySiteLocale(): Locale
+    public function getPrimarySiteLocale(): LegacyLocale
     {
-        return Craft::$app->getSites()->getPrimarySite()->getLocale();
+        return LegacyLocale::fromNewLocale(Craft::$app->getSites()->getPrimarySite()->getLocale());
     }
 
     /**
@@ -155,7 +166,10 @@ class I18N extends \yii\i18n\I18N
      */
     public function getEditableLocales(): array
     {
-        return app(\CraftCms\Cms\Translation\I18N::class)->getEditableLocales()->all();
+        return app(\CraftCms\Cms\Translation\I18N::class)
+            ->getEditableLocales()
+            ->map(fn (Locale $locale) => LegacyLocale::fromNewLocale($locale))
+            ->all();
     }
 
     /**

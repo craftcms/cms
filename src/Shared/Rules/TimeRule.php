@@ -5,7 +5,7 @@ namespace CraftCms\Cms\Shared\Rules;
 use Closure;
 use Craft;
 use craft\helpers\DateTimeHelper;
-use craft\i18n\Locale;
+use CraftCms\Cms\Translation\Locale;
 use DateTime;
 use Illuminate\Contracts\Validation\DataAwareRule;
 use Illuminate\Contracts\Validation\ValidationRule;
