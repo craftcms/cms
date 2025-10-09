@@ -929,6 +929,9 @@ Craft.CustomizeSourcesModal.Page = Garnish.Base.extend(
       }
 
       this.$item.find('.label').text(name);
+      this.$item
+        .find('[data-icon-input]')
+        .attr('name', `pageSettings[${name}][icon]`);
 
       const $sourceContainer = this.getSourceContainer(false);
 
