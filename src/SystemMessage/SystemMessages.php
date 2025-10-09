@@ -5,6 +5,7 @@ namespace CraftCms\Cms\SystemMessage;
 use craft\console\Application as CraftConsoleApplication;
 use craft\web\Application as CraftWebApplication;
 use CraftCms\Cms\Edition;
+use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\SystemMessage\Events\RegisterSystemMessages;
 use CraftCms\Cms\SystemMessage\Models\SystemMessage;
 use Illuminate\Container\Attributes\Give;
@@ -43,8 +44,7 @@ final class SystemMessages
 
         // If the current language isn't one of the site's languages, switch to the primary site's language
         $language = $this->craft->language;
-        $i18n = $this->craft->getI18n();
-        if (! in_array($language, $i18n->getSiteLocaleIds())) {
+        if (! I18N::getSiteLocaleIds()->contains($language)) {
             $this->craft->language = $this->craft->getSites()->getPrimarySite()->language;
         }
 

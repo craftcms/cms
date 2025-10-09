@@ -12,9 +12,9 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Log;
 use Stringable;
 
-function t(string|Stringable $id, array $parameters = [], ?string $category = 'app', ?string $locale = null): string
+function t(string|Stringable|null $id, array $parameters = [], ?string $category = 'app', ?string $locale = null): string
 {
-    return I18N::translate($id, $parameters, $category, $locale);
+    return I18N::translate($id ?? '', $parameters, $category, $locale);
 }
 
 function cp_url(string $url): string

@@ -9,6 +9,7 @@ namespace craft\validators;
 
 use Craft;
 use craft\helpers\Localization;
+use CraftCms\Cms\Support\Facades\I18N;
 use yii\base\InvalidArgumentException;
 use yii\base\UnknownPropertyException;
 use yii\validators\Validator;
@@ -81,9 +82,9 @@ class LanguageValidator extends Validator
     public function validateValue($value): ?array
     {
         if ($this->onlySiteLanguages) {
-            $allowed = Craft::$app->getI18n()->getSiteLocaleIds();
+            $allowed = I18N::getSiteLocaleIds();
         } else {
-            $allowed = Craft::$app->getI18n()->getAllLocaleIds();
+            $allowed = I18N::getAllLocaleIds();
         }
 
         if ($value && !in_array($value, $allowed, true)) {

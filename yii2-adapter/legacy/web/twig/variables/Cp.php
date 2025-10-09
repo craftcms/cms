@@ -30,6 +30,7 @@ use CraftCms\Cms\Plugin\Plugins;
 use CraftCms\Cms\Support\Api;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Env;
+use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Utility\Utilities;
 use CraftCms\Cms\Utility\Utility;
@@ -753,9 +754,9 @@ class Cp extends Component
     {
         $options = [];
         if ($appOnly) {
-            $allLanguages = array_map(fn(Locale $locale) => $locale->id, Craft::$app->getI18n()->getAppLocales());
+            $allLanguages = I18N::getAppLocales()->map(fn(Locale $locale) => $locale->id);
         } else {
-            $allLanguages = array_map(fn(Locale $locale) => $locale->id, Craft::$app->getI18n()->getAllLocales());
+            $allLanguages = I18N::getAllLocales()->map(fn(Locale $locale) => $locale->id);
         }
 
         foreach (array_keys($_SERVER) as $var) {
@@ -878,12 +879,12 @@ class Cp extends Component
         $languageId = Craft::$app->getLocale()->getLanguageID();
 
         if ($appLocales) {
-            $allLocales = Craft::$app->getI18n()->getAppLocales();
+            $allLocales = I18N::getAppLocales();
         } else {
-            $allLocales = Craft::$app->getI18n()->getAllLocales();
+            $allLocales = I18N::getAllLocales();
         }
 
-        $allLocales = Arr::sort($allLocales, fn(Locale $locale) => $locale->getDisplayName());
+        $allLocales = $allLocales->sortBy(fn(Locale $locale) => $locale->getDisplayName());
 
         foreach ($allLocales as $locale) {
             $name = $locale->getLanguageID() !== $languageId ? $locale->getDisplayName() : '';

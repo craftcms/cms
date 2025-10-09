@@ -17,6 +17,7 @@ use CraftCms\Cms\Plugin\Concerns\HasEditions;
 use CraftCms\Cms\Plugin\Concerns\Installable;
 use CraftCms\Cms\Plugin\Contracts\PluginInterface;
 use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Yii2Adapter\Database\MigrationWrapper;
 use Illuminate\Database\Migrations\Migration;
@@ -25,6 +26,9 @@ use ReflectionMethod;
 use yii\base\Event;
 use yii\base\Module;
 use yii\web\Response;
+use Yiisoft\Translator\CategorySource;
+use Yiisoft\Translator\IntlMessageFormatter;
+use Yiisoft\Translator\Message\Php\MessageSource;
 
 /**
  * Plugin is the base class for classes representing plugins in terms of objects.
@@ -87,17 +91,15 @@ class Plugin extends Module implements PluginInterface
         }
 
         // Translation category
-        $i18n = Craft::$app->getI18n();
-        /** @noinspection UnSafeIsSetOverArrayInspection */
-        if (!isset($i18n->translations[$this->t9nCategory]) && !isset($i18n->translations[$this->t9nCategory . '*'])) {
-            $i18n->translations[$this->t9nCategory] = [
-                'class' => PhpMessageSource::class,
-                'sourceLanguage' => $this->sourceLanguage,
-                'basePath' => $this->getBasePath() . DIRECTORY_SEPARATOR . 'translations',
-                'forceTranslation' => true,
-                'allowOverrides' => true,
-            ];
-        }
+        $pluginMessageSource = new MessageSource($this->getBasePath() . DIRECTORY_SEPARATOR . 'translations');
+        $formatter = new IntlMessageFormatter;
+        $category = new CategorySource(
+            name: $this->t9nCategory,
+            reader: $pluginMessageSource,
+            formatter: $formatter,
+        );
+
+        I18N::addCategorySources($category);
 
         // Base template directory
         Event::on(View::class, View::EVENT_REGISTER_CP_TEMPLATE_ROOTS, function(RegisterTemplateRootsEvent $e) {

@@ -10,6 +10,7 @@ use Illuminate\Container\Attributes\Singleton;
 use Illuminate\Support\Collection;
 use ResourceBundle;
 use Stringable;
+use Yiisoft\Translator\CategorySource;
 use Yiisoft\Translator\Translator;
 
 #[Singleton]
@@ -17,18 +18,21 @@ final readonly class I18N
 {
     /**
      * @var Collection<string> All of the known locales
+     *
      * @see getAllLocales()
      */
     private Collection $allLocaleIds;
 
     /**
      * @var Collection<string, bool>
+     *
      * @see getAppLocaleIds()
      */
     private Collection $appLocaleIds;
 
     /**
      * @var Collection<Locale>
+     *
      * @see getAppLocales()
      */
     private Collection $appLocales;
@@ -36,8 +40,7 @@ final readonly class I18N
     public function __construct(
         private GeneralConfig $generalConfig,
         private Translator $translator,
-    ) {
-    }
+    ) {}
 
     /**
      * Returns a locale by its ID.
@@ -51,6 +54,7 @@ final readonly class I18N
      * Returns a collection of all known locale IDs, according to the Intl extension.
      *
      * @return Collection<string>
+     *
      * @link https://php.net/manual/en/resourcebundle.locales.php
      */
     public function getAllLocaleIds(): Collection
@@ -60,8 +64,8 @@ final readonly class I18N
                 return str_replace('_', '-', $locale);
             })
             ->when(
-                !empty($this->generalConfig->localeAliases),
-                fn(Collection $localeIds) => $localeIds
+                ! empty($this->generalConfig->localeAliases),
+                fn (Collection $localeIds) => $localeIds
                     ->merge(array_keys($this->generalConfig->localeAliases))
                     ->unique()
                     ->sort(),
@@ -72,6 +76,7 @@ final readonly class I18N
      * Returns a collection of all known locales.
      *
      * @return Collection<Locale> A collection of [[Locale]] objects.
+     *
      * @see getAllLocaleIds()
      */
     public function getAllLocales(): Collection
@@ -158,7 +163,7 @@ final readonly class I18N
         }
 
         return $this->getSiteLocales()->filter(function (Locale $locale) {
-            return Craft::$app->getUser()->checkPermission('editLocale:' . $locale->id);
+            return Craft::$app->getUser()->checkPermission('editLocale:'.$locale->id);
         });
     }
 
@@ -183,10 +188,15 @@ final readonly class I18N
                 default => '%',
             };
 
-            $translation = $char . $translation . $char;
+            $translation = $char.$translation.$char;
         }
 
         return $translation;
+    }
+
+    public function addCategorySources(CategorySource ...$categories): void
+    {
+        $this->translator->addCategorySources(...$categories);
     }
 
     private function defineAppLocales(): void

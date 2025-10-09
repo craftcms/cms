@@ -7,6 +7,7 @@ use craft\base\conditions\BaseMultiSelectConditionRule;
 use craft\base\ElementInterface;
 use craft\elements\db\ElementQueryInterface;
 use craft\i18n\Locale;
+use CraftCms\Cms\Support\Facades\I18N;
 use Illuminate\Support\Collection;
 use function CraftCms\Cms\t;
 
@@ -39,7 +40,7 @@ class LanguageConditionRule extends BaseMultiSelectConditionRule implements Elem
      */
     protected function options(): array
     {
-        return Collection::make(Craft::$app->getI18n()->getSiteLocales())
+        return I18N::getSiteLocales()
             ->keyBy('id')
             ->map(fn(Locale $locale) => $locale->getDisplayName(Craft::$app->language))
             ->all();

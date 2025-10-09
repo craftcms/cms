@@ -50,6 +50,7 @@ use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Env;
 use CraftCms\Cms\Support\Facades\Deprecator;
+use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Json;
 use DateTime;
@@ -1314,14 +1315,12 @@ class UsersController extends Controller
          */
         $response = $this->asEditUserScreen($user, self::SCREEN_PREFERENCES);
 
-        $i18n = Craft::$app->getI18n();
-
         // user language
         $userLanguage = $user->getPreferredLanguage();
 
         if (
             !$userLanguage ||
-            !Collection::make($i18n->getAppLocales())->contains(fn(Locale $locale) => $locale->id === Env::parse($userLanguage))
+            !I18N::getAppLocales()->contains(fn(Locale $locale) => $locale->id === Env::parse($userLanguage))
         ) {
             $userLanguage = Craft::$app->language;
         }
@@ -1331,7 +1330,7 @@ class UsersController extends Controller
 
         if (
             !$userLocale ||
-            !Collection::make($i18n->getAllLocales())->contains(fn(Locale $locale) => $locale->id === Env::parse($userLocale))
+            !I18N::getAllLocales()->contains(fn(Locale $locale) => $locale->id === Env::parse($userLocale))
         ) {
             $userLocale = app(GeneralConfig::class)->defaultCpLocale;
         }

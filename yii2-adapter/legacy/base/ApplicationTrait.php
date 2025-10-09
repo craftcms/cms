@@ -361,7 +361,7 @@ trait ApplicationTrait
             if (
                 $id &&
                 ($language = $this->getUsers()->getUserPreference($id, 'language')) !== null &&
-                Craft::$app->getI18n()->validateAppLocaleId($language)
+                \CraftCms\Cms\Support\Facades\I18N::validateAppLocaleId($language)
             ) {
                 return $language;
             }
@@ -1461,8 +1461,8 @@ trait ApplicationTrait
     {
         // See if we have the control panel translated in one of the user’s browsers preferred language(s)
         if ($this instanceof WebApplication) {
-            $languages = $this->getI18n()->getAppLocaleIds();
-            return $this->getRequest()->getPreferredLanguage($languages);
+            $languages = \CraftCms\Cms\Support\Facades\I18N::getAppLocaleIds();
+            return $this->getRequest()->getPreferredLanguage($languages->all());
         }
 
         // Default to the source language.

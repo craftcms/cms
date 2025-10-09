@@ -97,11 +97,6 @@ interface PluginInterface
     public ?string $t9nCategory { get; set; }
 
     /**
-     * @var string The language that the plugin’s messages were written in
-     */
-    public string $sourceLanguage { get; set; }
-
-    /**
      * @var bool Whether the plugin has a settings page in the control panel
      */
     public bool $hasCpSettings { get; set; }
