@@ -8,9 +8,9 @@
 namespace craft\helpers;
 
 use Craft;
-use CraftCms\Cms\Translation\Locale;
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Support\Facades\I18N;
+use CraftCms\Cms\Translation\Locale;
 use DateInterval;
 use DateTime;
 use DateTimeImmutable;

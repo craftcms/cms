@@ -6,9 +6,8 @@ use Craft;
 use craft\base\conditions\BaseMultiSelectConditionRule;
 use craft\base\ElementInterface;
 use craft\elements\db\ElementQueryInterface;
-use CraftCms\Cms\Translation\Locale;
 use CraftCms\Cms\Support\Facades\I18N;
-use Illuminate\Support\Collection;
+use CraftCms\Cms\Translation\Locale;
 use function CraftCms\Cms\t;
 
 /**

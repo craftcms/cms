@@ -7,7 +7,6 @@
 
 namespace craft\validators;
 
-use Craft;
 use craft\helpers\Localization;
 use CraftCms\Cms\Support\Facades\I18N;
 use yii\base\InvalidArgumentException;

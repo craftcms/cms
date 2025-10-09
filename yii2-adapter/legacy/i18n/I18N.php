@@ -9,8 +9,8 @@ namespace craft\i18n;
 
 use Craft;
 use craft\i18n\Locale as LegacyLocale;
-use yii\base\Exception;
 use CraftCms\Cms\Translation\Locale;
+use yii\base\Exception;
 
 /**
  * @inheritdoc
@@ -64,7 +64,7 @@ class I18N extends \yii\i18n\I18N
     public function getAllLocales(): array
     {
         return app(\CraftCms\Cms\Translation\I18N::class)->getAllLocales()
-            ->map(fn (Locale $locale) => LegacyLocale::fromNewLocale($locale))
+            ->map(fn(Locale $locale) => LegacyLocale::fromNewLocale($locale))
             ->all();
     }
 
@@ -81,7 +81,7 @@ class I18N extends \yii\i18n\I18N
     public function getAppLocales(): array
     {
         return app(\CraftCms\Cms\Translation\I18N::class)->getAppLocales()
-            ->map(fn (Locale $locale) => LegacyLocale::fromNewLocale($locale))
+            ->map(fn(Locale $locale) => LegacyLocale::fromNewLocale($locale))
             ->all();
     }
 
@@ -121,7 +121,7 @@ class I18N extends \yii\i18n\I18N
     {
         return app(\CraftCms\Cms\Translation\I18N::class)
             ->getSiteLocales()
-            ->map(fn (Locale $locale) => LegacyLocale::fromNewLocale($locale))
+            ->map(fn(Locale $locale) => LegacyLocale::fromNewLocale($locale))
             ->all();
     }
 
@@ -168,7 +168,7 @@ class I18N extends \yii\i18n\I18N
     {
         return app(\CraftCms\Cms\Translation\I18N::class)
             ->getEditableLocales()
-            ->map(fn (Locale $locale) => LegacyLocale::fromNewLocale($locale))
+            ->map(fn(Locale $locale) => LegacyLocale::fromNewLocale($locale))
             ->all();
     }
 

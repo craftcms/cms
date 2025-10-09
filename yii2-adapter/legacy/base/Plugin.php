@@ -91,7 +91,7 @@ class Plugin extends Module implements PluginInterface
 
         // Translation category
         $pluginMessageSource = new MessageSource($this->getBasePath() . DIRECTORY_SEPARATOR . 'translations');
-        $formatter = new IntlMessageFormatter;
+        $formatter = new IntlMessageFormatter();
         $category = new CategorySource(
             name: $this->t9nCategory,
             reader: $pluginMessageSource,

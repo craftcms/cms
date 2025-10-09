@@ -381,9 +381,7 @@ final class Locale implements Stringable
      */
     public function getMonthNames(?string $length = null, bool $standAlone = true): array
     {
-        return Collection::times(12)->map(function (int $month) use ($length, $standAlone): string {
-            return $this->getMonthName($month, $length, $standAlone);
-        })->all();
+        return Collection::times(12)->map(fn (int $month): string => $this->getMonthName($month, $length, $standAlone))->all();
     }
 
     /**
@@ -442,9 +440,7 @@ final class Locale implements Stringable
      */
     public function getWeekDayNames(?string $length = null, bool $standAlone = true): array
     {
-        return Collection::times(7)->map(function (int $day) use ($length, $standAlone): string {
-            return $this->getWeekDayName($day - 1, $length, $standAlone);
-        })->all();
+        return Collection::times(7)->map(fn (int $day): string => $this->getWeekDayName($day - 1, $length, $standAlone))->all();
     }
 
     /**
@@ -471,7 +467,7 @@ final class Locale implements Stringable
      *
      * @param  int  $attribute  The attribute to return. Values: Locale::
      */
-    public function getTextAttribute(int $attribute): ?string
+    public function getTextAttribute(int $attribute): string
     {
         return new NumberFormatter(
             locale: $this->aliasOf ?? $this->id,
@@ -484,9 +480,8 @@ final class Locale implements Stringable
      *
      * @param  int  $style  The pattern style to return.
      *                      Accepted values: Locale::STYLE_DECIMAL, ::STYLE_CURRENCY, ::STYLE_PERCENT, ::STYLE_SCIENTIFIC
-     * @return string|null The pattern
      */
-    public function getNumberPattern(int $style): ?string
+    public function getNumberPattern(int $style): string
     {
         return new NumberFormatter(
             locale: $this->aliasOf ?? $this->id,
@@ -502,9 +497,8 @@ final class Locale implements Stringable
      *                       ::SYMBOL_DIGIT, ::SYMBOL_MINUS_SIGN, ::SYMBOL_PLUS_SIGN, ::SYMBOL_CURRENCY, ::SYMBOL_INTL_CURRENCY,
      *                       ::SYMBOL_MONETARY_SEPARATOR, ::SYMBOL_EXPONENTIAL, ::SYMBOL_PERMILL, ::SYMBOL_PAD_ESCAPE,
      *                       ::SYMBOL_INFINITY, ::SYMBOL_NAN, ::SYMBOL_SIGNIFICANT_DIGIT, ::SYMBOL_MONETARY_GROUPING_SEPARATOR
-     * @return string|null The symbol.
      */
-    public function getNumberSymbol(int $symbol): ?string
+    public function getNumberSymbol(int $symbol): string
     {
         return new NumberFormatter(
             locale: $this->aliasOf ?? $this->id,

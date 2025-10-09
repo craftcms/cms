@@ -7,10 +7,6 @@
 
 namespace craft\i18n;
 
-use CraftCms\Cms\Support\Json;
-use InvalidArgumentException;
-use function CraftCms\Cms\t;
-
 /**
  * Translation helper
  *

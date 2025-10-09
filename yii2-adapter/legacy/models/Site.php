@@ -9,7 +9,6 @@ namespace craft\models;
 
 use Craft;
 use craft\base\Model;
-use CraftCms\Cms\Translation\Locale;
 use craft\records\Site as SiteRecord;
 use craft\validators\HandleValidator;
 use craft\validators\LanguageValidator;
@@ -18,6 +17,7 @@ use craft\validators\UrlValidator;
 use CraftCms\Cms\Component\Contracts\Chippable;
 use CraftCms\Cms\Support\Env;
 use CraftCms\Cms\Support\Facades\I18N;
+use CraftCms\Cms\Translation\Locale;
 use DateTime;
 use yii\base\InvalidConfigException;
 use function CraftCms\Cms\t;

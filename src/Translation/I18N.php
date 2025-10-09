@@ -14,32 +14,32 @@ use Yiisoft\Translator\CategorySource;
 use Yiisoft\Translator\Translator;
 
 #[Singleton]
-final readonly class I18N
+final class I18N
 {
     /**
      * @var Collection<string> All of the known locales
      *
      * @see getAllLocales()
      */
-    private Collection $allLocaleIds;
+    private ?Collection $allLocaleIds = null;
 
     /**
      * @var Collection<string, bool>
      *
      * @see getAppLocaleIds()
      */
-    private Collection $appLocaleIds;
+    private ?Collection $appLocaleIds = null;
 
     /**
      * @var Collection<Locale>
      *
      * @see getAppLocales()
      */
-    private Collection $appLocales;
+    private ?Collection $appLocales = null;
 
     public function __construct(
-        private GeneralConfig $generalConfig,
-        private Translator $translator,
+        private readonly GeneralConfig $generalConfig,
+        private readonly Translator $translator,
     ) {}
 
     /**
@@ -62,9 +62,7 @@ final readonly class I18N
     public function getAllLocaleIds(): Collection
     {
         return $this->allLocaleIds ??= collect(ResourceBundle::getLocales(''))
-            ->map(function (string $locale) {
-                return str_replace('_', '-', $locale);
-            })
+            ->map(fn (string $locale) => str_replace('_', '-', $locale))
             ->when(
                 ! empty($this->generalConfig->localeAliases),
                 fn (Collection $localeIds) => $localeIds
@@ -83,9 +81,7 @@ final readonly class I18N
      */
     public function getAllLocales(): Collection
     {
-        return $this->getAllLocaleIds()->map(function (string $localeId) {
-            return new Locale($localeId, $this->generalConfig->localeAliases[$localeId] ?? []);
-        });
+        return $this->getAllLocaleIds()->map(fn (string $localeId) => new Locale($localeId, $this->generalConfig->localeAliases[$localeId] ?? []));
     }
 
     /**
@@ -111,11 +107,9 @@ final readonly class I18N
      */
     public function getAppLocales(): Collection
     {
-        return $this->appLocales ??= $this->getAppLocaleIds()->map(function (string $localeId) {
-            return new Locale(...array_merge([
-                'id' => $localeId,
-            ], $this->generalConfig->localeAliases[$localeId] ?? []));
-        });
+        return $this->appLocales ??= $this->getAppLocaleIds()->map(fn (string $localeId) => new Locale(...array_merge([
+            'id' => $localeId,
+        ], $this->generalConfig->localeAliases[$localeId] ?? [])));
     }
 
     /**
@@ -136,9 +130,7 @@ final readonly class I18N
     public function getSiteLocaleIds(): Collection
     {
         return collect(Craft::$app->getSites()->getAllSites())
-            ->map(function (Site $site) {
-                return $site->language;
-            })
+            ->map(fn (Site $site) => $site->language)
             ->unique()
             ->values();
     }
@@ -150,11 +142,9 @@ final readonly class I18N
      */
     public function getSiteLocales(): Collection
     {
-        return $this->getSiteLocaleIds()->map(function (string $localeId) {
-            return new Locale(...array_merge([
-                'id' => $localeId,
-            ], $this->generalConfig->localeAliases[$localeId] ?? []));
-        });
+        return $this->getSiteLocaleIds()->map(fn (string $localeId) => new Locale(...array_merge([
+            'id' => $localeId,
+        ], $this->generalConfig->localeAliases[$localeId] ?? [])));
     }
 
     /**
@@ -168,9 +158,7 @@ final readonly class I18N
             return $this->getSiteLocales();
         }
 
-        return $this->getSiteLocales()->filter(function (Locale $locale) {
-            return Craft::$app->getUser()->checkPermission('editLocale:'.$locale->id);
-        });
+        return $this->getSiteLocales()->filter(fn (Locale $locale) => Craft::$app->getUser()->checkPermission('editLocale:'.$locale->id));
     }
 
     /**
