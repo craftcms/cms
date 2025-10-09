@@ -30,7 +30,6 @@ use craft\gql\types\input\Matrix as MatrixInputType;
 use craft\helpers\Cp;
 use craft\helpers\Gql;
 use craft\helpers\Queue;
-use craft\i18n\Translation;
 use craft\models\EntryType;
 use craft\queue\jobs\ApplyNewPropagationMethod;
 use craft\queue\jobs\ResaveElements;
@@ -50,6 +49,7 @@ use CraftCms\Cms\Field\Enums\ElementIndexViewMode;
 use CraftCms\Cms\Field\Events\DefineEntryTypesForField;
 use CraftCms\Cms\Shared\Enums\Color;
 use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Support\Str;
@@ -1498,7 +1498,7 @@ JS;
             $oldPropagationKeyFormat = $this->oldSettings['propagationKeyFormat'] ?? null;
             if ($this->propagationMethod !== $oldPropagationMethod || $this->propagationKeyFormat !== $oldPropagationKeyFormat) {
                 Queue::push(new ApplyNewPropagationMethod([
-                    'description' => Translation::prep('app', 'Applying new propagation method to {name} entries', [
+                    'description' => I18N::prep('Applying new propagation method to {name} entries', [
                         'name' => $this->name,
                     ]),
                     'elementType' => Entry::class,
@@ -1519,7 +1519,7 @@ JS;
 
                 if (! empty($resaveSiteIds)) {
                     Queue::push(new ResaveElements([
-                        'description' => Translation::prep('app', 'Resaving {name} entries', [
+                        'description' => I18N::prep('Resaving {name} entries', [
                             'name' => $this->name,
                         ]),
                         'elementType' => Entry::class,

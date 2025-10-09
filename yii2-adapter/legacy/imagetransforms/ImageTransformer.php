@@ -23,7 +23,6 @@ use craft\helpers\Image;
 use craft\helpers\ImageTransforms as TransformHelper;
 use craft\helpers\Queue;
 use craft\helpers\UrlHelper;
-use craft\i18n\Translation;
 use craft\image\Raster;
 use craft\models\ImageTransform;
 use craft\models\ImageTransformIndex;
@@ -31,6 +30,7 @@ use craft\queue\jobs\GenerateImageTransform;
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\Str;
 use Exception;
 use Illuminate\Database\Query\Builder;
@@ -110,7 +110,7 @@ class ImageTransformer extends Component implements ImageTransformerInterface, E
                 // Add a Generate Image Transform job to the queue, in case the temp URL never gets requested
                 Queue::push(new GenerateImageTransform([
                     'transformId' => $index->id,
-                    'description' => Translation::prep('app', 'Generating image transform for {file}', [
+                    'description' => I18N::prep('Generating image transform for {file}', [
                         'file' => $asset->getFilename(),
                     ]),
                 ]), 2048);

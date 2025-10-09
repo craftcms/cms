@@ -52,7 +52,6 @@ use craft\helpers\Db as DbHelper;
 use craft\helpers\ElementHelper;
 use craft\helpers\Queue;
 use craft\helpers\UrlHelper;
-use craft\i18n\Translation;
 use craft\models\ElementActivity;
 use craft\queue\jobs\FindAndReplace;
 use craft\queue\jobs\UpdateElementSlugsAndUris;
@@ -66,6 +65,7 @@ use CraftCms\Cms\Field\Contracts\FieldInterface;
 use CraftCms\Cms\Shared\Exceptions\OperationAbortedException;
 use CraftCms\Cms\Shared\Rules\HandleRule;
 use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Support\Str;
@@ -2391,13 +2391,13 @@ class Elements extends Component
                 $refTagPrefix = "\{$refHandle:";
 
                 Queue::push(new FindAndReplace([
-                    'description' => Translation::prep('app', 'Updating element references'),
+                    'description' => I18N::prep('Updating element references'),
                     'find' => $refTagPrefix . $mergedElement->id . ':',
                     'replace' => $refTagPrefix . $prevailingElement->id . ':',
                 ]));
 
                 Queue::push(new FindAndReplace([
-                    'description' => Translation::prep('app', 'Updating element references'),
+                    'description' => I18N::prep('Updating element references'),
                     'find' => $refTagPrefix . $mergedElement->id . '}',
                     'replace' => $refTagPrefix . $prevailingElement->id . '}',
                 ]));

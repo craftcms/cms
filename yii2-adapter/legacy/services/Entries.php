@@ -23,7 +23,6 @@ use craft\helpers\AdminTable;
 use craft\helpers\Cp;
 use craft\helpers\Db as DbHelper;
 use craft\helpers\Queue;
-use craft\i18n\Translation;
 use craft\models\EntryType;
 use craft\models\FieldLayout;
 use craft\models\Section;
@@ -44,6 +43,7 @@ use CraftCms\Cms\ProjectConfig\Events\ConfigEvent;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\ProjectConfig\ProjectConfigHelper;
 use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Support\Str;
@@ -810,7 +810,7 @@ class Entries extends Component
                 // If the propagation method just changed, we definitely need to update entries for that
                 if ($propagationMethodChanged) {
                     Queue::push(new ApplyNewPropagationMethod([
-                        'description' => Translation::prep('app', 'Applying new propagation method to {name} entries', [
+                        'description' => I18N::prep('Applying new propagation method to {name} entries', [
                             'name' => $sectionRecord->name,
                         ]),
                         'elementType' => Entry::class,
@@ -821,7 +821,7 @@ class Entries extends Component
                     ]));
                 } elseif ($this->autoResaveEntries) {
                     Queue::push(new ResaveElements([
-                        'description' => Translation::prep('app', 'Resaving {name} entries', [
+                        'description' => I18N::prep('Resaving {name} entries', [
                             'name' => $sectionRecord->name,
                         ]),
                         'elementType' => Entry::class,
@@ -1712,7 +1712,7 @@ class Entries extends Component
         if (!$isNewEntryType && $resaveEntries && $this->autoResaveEntries) {
             // Re-save the entries of this type
             Queue::push(new ResaveElements([
-                'description' => Translation::prep('app', 'Resaving {type} entries', [
+                'description' => I18N::prep('Resaving {type} entries', [
                     'type' => $entryType->name,
                 ]),
                 'elementType' => Entry::class,

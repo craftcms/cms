@@ -10,7 +10,7 @@ namespace craft\queue;
 use Craft;
 use craft\base\Batchable;
 use craft\helpers\Queue as QueueHelper;
-use craft\i18n\Translation;
+use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\PHP;
 use yii\queue\RetryableJobInterface;
 use function CraftCms\Cms\t;
@@ -144,7 +144,7 @@ abstract class BaseBatchedJob extends BaseJob
         foreach ($items as $item) {
             $step = $this->itemOffset + 1;
             $total = $this->totalItems();
-            $this->setProgress($queue, $step / $total, Translation::prep('app', '{step, number} of {total, number}', [
+            $this->setProgress($queue, $step / $total, I18N::prep('{step, number} of {total, number}', [
                 'step' => $step,
                 'total' => $total,
             ]));
@@ -240,7 +240,7 @@ abstract class BaseBatchedJob extends BaseJob
             return $description;
         }
         return t('{description} (batch {index, number} of {total, number})', [
-            'description' => Translation::translate($description),
+            'description' => t($description),
             'index' => $this->batchIndex + 1,
             'total' => $totalBatches,
         ]);

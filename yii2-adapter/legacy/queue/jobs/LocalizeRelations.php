@@ -8,9 +8,9 @@
 namespace craft\queue\jobs;
 
 use Craft;
-use craft\i18n\Translation;
 use craft\queue\BaseJob;
 use CraftCms\Cms\Database\Table;
+use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\Str;
 use Illuminate\Support\Facades\DB;
 
@@ -76,6 +76,6 @@ class LocalizeRelations extends BaseJob
      */
     protected function defaultDescription(): ?string
     {
-        return Translation::prep('app', 'Localizing relations');
+        return I18N::prep('Localizing relations');
     }
 }

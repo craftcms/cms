@@ -15,7 +15,6 @@ use craft\helpers\DateTimeHelper;
 use craft\helpers\Db;
 use craft\helpers\Queue as QueueHelper;
 use craft\helpers\UrlHelper;
-use craft\i18n\Translation;
 use craft\queue\jobs\Proxy;
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Support\Arr;
@@ -500,8 +499,8 @@ class Queue extends \yii\queue\cli\Queue implements QueueInterface
             'status' => $this->_status($result),
             'error' => $result['error'] ?? '',
             'progress' => $result['progress'],
-            'progressLabel' => Translation::translate((string)$result['progressLabel']) ?: null,
-            'description' => Translation::translate((string)$result['description']) ?: null,
+            'progressLabel' => t((string)$result['progressLabel']) ?: null,
+            'description' => t((string)$result['description']) ?: null,
             'job' => $job,
             'ttr' => (int)$result['ttr'],
             'Priority' => $result['priority'],
@@ -561,8 +560,8 @@ class Queue extends \yii\queue\cli\Queue implements QueueInterface
                 'delay' => max(0, $result['timePushed'] + $result['delay'] - time()),
                 'status' => $this->_status($result),
                 'progress' => (int)$result['progress'],
-                'progressLabel' => Translation::translate((string)$result['progressLabel']) ?: null,
-                'description' => Translation::translate((string)$result['description']) ?: null,
+                'progressLabel' => t((string)$result['progressLabel']) ?: null,
+                'description' => t((string)$result['description']) ?: null,
                 'error' => $result['error'],
             ];
         }

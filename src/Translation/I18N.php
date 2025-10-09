@@ -5,6 +5,7 @@ namespace CraftCms\Cms\Translation;
 use Craft;
 use craft\models\Site;
 use CraftCms\Cms\Config\GeneralConfig;
+use CraftCms\Cms\Support\Json;
 use Illuminate\Container\Attributes\Singleton;
 use Illuminate\Support\Collection;
 use ResourceBundle;
@@ -184,6 +185,12 @@ final readonly class I18N
 
     public function translate(string|Stringable $message, array $parameters = [], ?string $category = null, ?string $locale = null): string
     {
+        if (str_starts_with($message, 't9n:')) {
+            $args = Json::decode(substr($message, 4));
+
+            return $this->translate(...$args);
+        }
+
         $translation = $this->translator->translate($message, $parameters, $category, $locale);
 
         if ($this->generalConfig->translationDebugOutput) {
@@ -202,6 +209,21 @@ final readonly class I18N
     public function addCategorySources(CategorySource ...$categories): void
     {
         $this->translator->addCategorySources(...$categories);
+    }
+
+    /**
+     * Prepares a source translation to be lazy-translated with [[translate()]].
+     *
+     * @param  string  $message  The message to be translated.
+     * @param  array  $params  The parameters that will be used to replace the corresponding placeholders in the message.
+     * @param  ?string  $category  The message category.
+     * @param  ?string  $locale  The language code (e.g. `en-US`, `en`). If this is `null`, the current
+     *                           language will be used by default.
+     * @return string The translated message.
+     */
+    public function prep(string $message, array $params = [], ?string $category = null, ?string $locale = null): string
+    {
+        return 't9n:'.Json::encode(func_get_args());
     }
 
     private function defineAppLocales(): void

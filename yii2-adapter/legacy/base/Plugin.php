@@ -10,7 +10,6 @@ namespace craft\base;
 use Craft;
 use craft\events\ModelEvent;
 use craft\events\RegisterTemplateRootsEvent;
-use craft\i18n\PhpMessageSource;
 use craft\web\Controller;
 use craft\web\View;
 use CraftCms\Cms\Plugin\Concerns\HasEditions;

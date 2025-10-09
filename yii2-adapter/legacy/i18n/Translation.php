@@ -16,6 +16,7 @@ use function CraftCms\Cms\t;
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 4.0.0
+ * @deprecated 6.0.0 use {@see \CraftCms\Cms\Support\Facades\I18N} instead.
  */
 abstract class Translation
 {
@@ -31,7 +32,7 @@ abstract class Translation
      */
     public static function prep(string $category, string $message, array $params = [], ?string $language = null): string
     {
-        return 't9n:' . Json::encode(func_get_args());
+        return \CraftCms\Cms\Support\Facades\I18N::prep($message, $params, $category, $language);
     }
 
     /**
@@ -42,21 +43,6 @@ abstract class Translation
      */
     public static function translate(string $translation): string
     {
-        if (!str_starts_with($translation, 't9n:')) {
-            return $translation;
-        }
-
-        try {
-            $args = Json::decode(substr($translation, 4));
-        } catch (InvalidArgumentException) {
-            return $translation;
-        }
-
-        $category = $args[0] ?? null;
-        $message = $args[1] ?? '';
-        $params = $args[2] ?? [];
-        $language = $args[3] ?? null;
-
-        return t($message, $params, $category, $language);
+        return \CraftCms\Cms\Support\Facades\I18N::translate($translation);
     }
 }

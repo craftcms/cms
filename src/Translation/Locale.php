@@ -2,7 +2,6 @@
 
 namespace CraftCms\Cms\Translation;
 
-use craft\i18n\FormatConverter;
 use craft\i18n\Formatter;
 use DateTime;
 use Exception;
