@@ -220,9 +220,12 @@ class ElementIndexSettingsController extends BaseElementsController
             ])
             ->all();
 
+        $pageSettings = $sourcesService->getPageSettings($elementType);
+
         return $this->asJson([
             'multiPage' => $multiPage,
             'sources' => $sources,
+            'pageSettings' => $pageSettings,
             'viewModes' => $viewModes,
             'baseSortOptions' => $baseSortOptions,
             'defaultSortOptions' => $defaultSortOptions,
@@ -261,6 +264,7 @@ class ElementIndexSettingsController extends BaseElementsController
 
         if ($multiPage) {
             $sourcePages = $this->request->getBodyParam('sourcePages', []);
+            $pageSettings = $this->request->getBodyParam('pageSettings', []);
         }
 
         // Normalize to the way it's stored in the DB
@@ -333,7 +337,14 @@ class ElementIndexSettingsController extends BaseElementsController
             }
         }
 
-        $projectConfig->set(ProjectConfig::PATH_ELEMENT_SOURCES . ".$elementType", $newSourceConfigs);
+        $projectConfig->set(sprintf('%s.%s', ProjectConfig::PATH_ELEMENT_SOURCES, $elementType), $newSourceConfigs);
+
+        if ($multiPage) {
+            $projectConfig->set(
+                sprintf('%s.%s', ProjectConfig::PATH_ELEMENT_SOURCE_PAGES, $elementType),
+                array_map('array_filter', $pageSettings),
+            );
+        }
 
         Craft::$app->getSession()->setSuccess(Craft::t('app', 'Source settings saved'));
 

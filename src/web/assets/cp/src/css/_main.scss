@@ -1635,6 +1635,17 @@ td.right {
   border-radius: var(--radius-lg);
   overflow: hidden;
 
+  &.customize-sources-item__page-btn {
+    display: flex;
+    flex-direction: row;
+    gap: var(--s);
+    align-items: center;
+
+    .cp-icon:empty {
+      display: none;
+    }
+  }
+
   &:focus {
     position: relative;
     z-index: 1;
@@ -1811,6 +1822,10 @@ ul.icons {
 
   .centeralign & {
     justify-content: center;
+  }
+
+  &.rightalign {
+    justify-content: right;
   }
 }
 

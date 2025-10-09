@@ -235,12 +235,15 @@ class Cp extends Component
             $subNavItems = [];
             $elementSourcesService = Craft::$app->getElementSources();
             $entryPages = $elementSourcesService->getPages(Entry::class);
+
             if (!empty($entryPages)) {
+                $entryPageSettings = $elementSourcesService->getPageSettings(Entry::class);
                 foreach ($entryPages as $page) {
                     $pageNameId = $elementSourcesService->pageNameId($page);
                     $subNavItems[$pageNameId] = [
                         'label' => Craft::t('site', $page),
                         'url' => sprintf('content/%s', StringHelper::toKebabCase($page)),
+                        'icon' => $entryPageSettings[$page]['icon'] ?? null,
                     ];
                 }
             } else {

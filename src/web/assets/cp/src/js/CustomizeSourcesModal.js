@@ -11,6 +11,7 @@ Craft.CustomizeSourcesModal = Garnish.Modal.extend({
 
   $pagesSidebar: null,
   $pagesSidebarItems: null,
+  pageIconInputs: null,
 
   multiPage: false,
   pageDrag: null,
@@ -150,7 +151,7 @@ Craft.CustomizeSourcesModal = Garnish.Modal.extend({
     }
 
     if (this.multiPage) {
-      this.createPagesSidebar(response);
+      await this.createPagesSidebar(response);
     }
 
     // Create the source item sorter
@@ -227,7 +228,7 @@ Craft.CustomizeSourcesModal = Garnish.Modal.extend({
     }
   },
 
-  createPagesSidebar: function (response) {
+  createPagesSidebar: async function (response) {
     this.$pagesSidebar = $('<div class="cs-sidebar"/>')
       .insertBefore(this.$sourcesSidebar)
       .attr({
@@ -250,9 +251,12 @@ Craft.CustomizeSourcesModal = Garnish.Modal.extend({
     // create the pages
     this.pages = [];
     const pageNames = Craft.uniqueArray(response.sources.map((s) => s.page));
-    pageNames.forEach((name) => {
-      this.addPage(name);
-    });
+    for (const name of pageNames) {
+      const icon = response.pageSettings
+        ? response.pageSettings[name]?.icon
+        : null;
+      await this.addPage(name, icon);
+    }
     if (!this.selectedPage && this.pages.length) {
       this.pages[0].select();
     }
@@ -267,15 +271,18 @@ Craft.CustomizeSourcesModal = Garnish.Modal.extend({
     }).appendTo($menuBtnContainer);
 
     $pageBtn.on('activate', () => {
-      const name = prompt(Craft.t('app', 'Page Name'));
-      if (!name) {
-        return;
-      }
-      if (!this.isPageNameUnique(name)) {
-        alert(Craft.t('app', 'Another page already has that name.'));
-        return;
-      }
-      this.addPage(name, true);
+      new Craft.CustomizeSourcesModal.PageSettingsModal(this, {
+        triggerElement: $pageBtn,
+        validateName: (name) => {
+          if (!this.isPageNameUnique(name)) {
+            return Craft.t('app', 'Another page already has that name.');
+          }
+          return true;
+        },
+        onSave: async (name, icon) => {
+          await this.addPage(name, icon, true);
+        },
+      });
     });
   },
 
@@ -287,15 +294,20 @@ Craft.CustomizeSourcesModal = Garnish.Modal.extend({
     );
   },
 
-  addPage: function (name, isNew = false) {
+  addPage: async function (name, icon = null, isNew = false) {
     const $item = $('<div class="customize-sources-item"/>').appendTo(
       this.$pagesSidebarItems
     );
-    const $itemButton = $('<div class="customize-sources-item__btn"/>')
+    const $itemButton = $(
+      '<div class="customize-sources-item__btn customize-sources-item__page-btn"/>'
+    )
       .attr({
         tabindex: '0',
         role: 'button',
       })
+      .append(
+        $('<div class="cp-icon"/>').html(icon ? await Craft.ui.icon(icon) : '')
+      )
       .append($('<div class="label"/>').text(name))
       .appendTo($item);
 
@@ -306,11 +318,19 @@ Craft.CustomizeSourcesModal = Garnish.Modal.extend({
       )}" role="button"></a>`
     ).appendTo($item);
 
+    $('<input/>', {
+      type: 'hidden',
+      name: `pageSettings[${name}][icon]`,
+      value: icon || '',
+      'data-icon-input': 'true',
+    }).appendTo($item);
+
     const page = new Craft.CustomizeSourcesModal.Page(
       this,
       $item,
       $itemButton,
       name,
+      icon,
       isNew
     );
     this.pageDrag.addItems($item);
@@ -538,6 +558,92 @@ Craft.CustomizeSourcesModal = Garnish.Modal.extend({
   },
 });
 
+Craft.CustomizeSourcesModal.PageSettingsModal = Garnish.Modal.extend({
+  modal: null,
+  name: null,
+  icon: null,
+
+  init: function (modal, name, icon, settings) {
+    // (settings)
+    if (typeof name === 'object') {
+      settings = name;
+      name = null;
+    }
+
+    this.modal = modal;
+    this.name = name;
+    this.icon = icon;
+
+    const $container = $('<form class="modal fitted"/>').appendTo(Garnish.$bod);
+    const $body = $('<div class="body"/>').appendTo($container);
+    const $nameField = Craft.ui
+      .createTextField({
+        label: Craft.t('app', 'Page Name'),
+        value: this.name,
+      })
+      .appendTo($body);
+    const $iconField = Craft.ui
+      .createIconPickerField({
+        label: Craft.t('app', 'Icon'),
+        value: this.icon,
+      })
+      .appendTo($body);
+    const $footer = $(
+      '<div class="footer flex rightalign flex-nowrap"/>'
+    ).appendTo($container);
+    const $cancelBtn = Craft.ui
+      .createButton({
+        label: Craft.t('app', 'Cancel'),
+      })
+      .appendTo($footer);
+    Craft.ui
+      .createSubmitButton({
+        label: Craft.t('app', 'Save'),
+      })
+      .appendTo($footer);
+
+    const $nameInput = $nameField.find('.text');
+    $nameInput.on('input', () => {
+      this.name = $nameInput.val();
+    });
+
+    const iconPicker = $iconField.find('.icon-picker').data('iconpicker');
+    iconPicker.on('change', (ev) => {
+      this.icon = ev.iconName;
+    });
+
+    $cancelBtn.on('activate', () => {
+      this.hide();
+    });
+
+    $container.on('submit', (ev) => {
+      ev.preventDefault();
+
+      if (this.settings.validateName) {
+        const result = this.settings.validateName(this.name);
+        if (result !== true) {
+          Craft.ui.addErrorsToField($nameField, [result]);
+          this.updateSizeAndPosition();
+          return;
+        }
+
+        if (this.settings.onSave) {
+          this.settings.onSave(this.name, this.icon);
+        }
+
+        this.hide();
+      }
+    });
+
+    this.base($container, settings);
+  },
+
+  onFadeOut: function () {
+    this.base();
+    this.destroy();
+  },
+});
+
 Craft.CustomizeSourcesModal.SourceDrag = Garnish.DragSort.extend({
   modal: null,
   activePage: null,
@@ -636,18 +742,20 @@ Craft.CustomizeSourcesModal.Page = Garnish.Base.extend(
     $itemButton: null,
     $actionBtn: null,
     $actionMenu: null,
-    name: null,
+    _name: null,
+    _icon: null,
     isNew: null,
 
     moveUpBtn: null,
     moveDownBtn: null,
     removeBtn: null,
 
-    init: function (modal, $item, $itemButton, name, isNew) {
+    init: function (modal, $item, $itemButton, name, icon, isNew) {
       this.modal = modal;
       this.$item = $item;
       this.$itemButton = $itemButton;
-      this.name = name;
+      this._name = name;
+      this._icon = icon;
       this.isNew = isNew;
 
       this.$item.data('page', this);
@@ -697,17 +805,27 @@ Craft.CustomizeSourcesModal.Page = Garnish.Base.extend(
       });
 
       this.actionMenu.addItem({
-        icon: 'pencil',
-        label: Craft.t('app', 'Rename page'),
+        icon: 'gear',
+        label: Craft.t('app', 'Page settings'),
         onActivate: () => {
-          const name = prompt(Craft.t('app', 'Page Name'), this.name);
-          if (name && name !== this.name) {
-            if (!this.modal.isPageNameUnique(name, this)) {
-              alert(Craft.t('app', 'Another page already has that name.'));
-              return;
+          new Craft.CustomizeSourcesModal.PageSettingsModal(
+            this,
+            this.name,
+            this.icon,
+            {
+              triggerElement: this.$actionBtn,
+              validateName: (name) => {
+                if (!this.modal.isPageNameUnique(name, this)) {
+                  return Craft.t('app', 'Another page already has that name.');
+                }
+                return true;
+              },
+              onSave: (name, icon) => {
+                this.name = name;
+                this.icon = icon;
+              },
             }
-            this.rename(name);
-          }
+          );
         },
       });
 
@@ -738,8 +856,8 @@ Craft.CustomizeSourcesModal.Page = Garnish.Base.extend(
     },
 
     updateActionButton: function () {
-      this.actionMenu.toggleItem(this.moveUpBtn, this.getPrevPage());
-      this.actionMenu.toggleItem(this.moveDownBtn, this.getNextPage());
+      this.actionMenu.toggleItem(this.moveUpBtn, !!this.getPrevPage());
+      this.actionMenu.toggleItem(this.moveDownBtn, !!this.getNextPage());
       this.actionMenu.toggleItem(this.removeBtn, this.modal.pages.length > 1);
 
       if (this.actionMenu.hasVisibleItems()) {
@@ -805,7 +923,7 @@ Craft.CustomizeSourcesModal.Page = Garnish.Base.extend(
       this.modal.selectedPage = null;
     },
 
-    rename: function (name) {
+    set name(name) {
       if (name === this.name) {
         return;
       }
@@ -823,7 +941,35 @@ Craft.CustomizeSourcesModal.Page = Garnish.Base.extend(
         });
       }
 
-      this.name = name;
+      this._name = name;
+    },
+
+    get name() {
+      return this._name;
+    },
+
+    set icon(icon) {
+      if (icon === this.icon) {
+        return;
+      }
+
+      this.$item.find('[data-icon-input]').val(icon || '');
+
+      const $icon = this.$item.find('.cp-icon');
+
+      if (icon) {
+        Craft.ui.icon(icon).then((html) => {
+          $icon.html(html);
+        });
+      } else {
+        $icon.html('');
+      }
+
+      this._icon = icon;
+    },
+
+    get icon() {
+      return this._icon;
     },
 
     destroy: function () {

@@ -677,4 +677,18 @@ class ElementSources extends Component
         }
         return ArrayHelper::firstWhere($sourceConfigs, fn($s) => $s['type'] !== self::TYPE_HEADING && $s['key'] === $sourceKey);
     }
+
+    /**
+     * Returns the page settings for a given element type.
+     *
+     * @param class-string<ElementInterface> $elementType
+     * @return array
+     * @since 5.9.0
+     */
+    public function getPageSettings(string $elementType): array
+    {
+        return Craft::$app->getProjectConfig()->get(
+            sprintf('%s.%s', ProjectConfig::PATH_ELEMENT_SOURCE_PAGES, $elementType),
+        ) ?? [];
+    }
 }
