@@ -82,7 +82,9 @@ final class I18N
      */
     public function getAllLocales(): Collection
     {
-        return $this->getAllLocaleIds()->map(fn (string $localeId) => new Locale($localeId, $this->generalConfig->localeAliases[$localeId] ?? []));
+        return $this->getAllLocaleIds()->map(fn (string $localeId) => new Locale(...array_merge([
+            'id' => $localeId,
+        ], $this->generalConfig->localeAliases[$localeId] ?? [])));
     }
 
     /**
