@@ -6,11 +6,11 @@ namespace craft\base;
 if (false) {
     /**
      * @since 5.0.0
-     * @deprecated 6.0.0 use {@see \CraftCms\Cms\Shared\Contracts\Chippable} instead.
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\Component\Contracts\Chippable} instead.
      */
-    interface Chippable extends \CraftCms\Cms\Shared\Contracts\Identifiable
+    interface Chippable extends \CraftCms\Cms\Component\Contracts\Identifiable
     {
     }
 }
 
-class_alias(\CraftCms\Cms\Shared\Contracts\Chippable::class, Chippable::class);
+class_alias(\CraftCms\Cms\Component\Contracts\Chippable::class, Chippable::class);

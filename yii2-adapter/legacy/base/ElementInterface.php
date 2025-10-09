@@ -40,11 +40,11 @@ use yii\web\Response;
 interface ElementInterface extends
     ComponentInterface,
     ModelInterface,
-    \CraftCms\Cms\Shared\Contracts\Chippable,
-    \CraftCms\Cms\Shared\Contracts\CpEditable,
+    \CraftCms\Cms\Component\Contracts\Chippable,
+    \CraftCms\Cms\Component\Contracts\CpEditable,
     Thumbable,
     Statusable,
-    \CraftCms\Cms\Shared\Contracts\Actionable
+    \CraftCms\Cms\Component\Contracts\Actionable
 {
     /**
      * Returns the lowercase version of [[displayName()]].

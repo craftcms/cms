@@ -6,7 +6,7 @@ namespace craft\base;
 if (false) {
     /**
      * @since 5.0.0
-     * @deprecated 6.0.0 use {@see \CraftCms\Cms\Shared\Contracts\Identifiable} instead.
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\Component\Contracts\Identifiable} instead.
      */
     interface Identifiable
     {
@@ -19,4 +19,4 @@ if (false) {
     }
 }
 
-class_alias(\CraftCms\Cms\Shared\Contracts\Identifiable::class, Identifiable::class);
+class_alias(\CraftCms\Cms\Component\Contracts\Identifiable::class, Identifiable::class);

@@ -4,8 +4,8 @@ namespace CraftCms\Cms\Http;
 
 use Craft;
 use craft\helpers\UrlHelper;
+use CraftCms\Cms\Component\Contracts\Identifiable;
 use CraftCms\Cms\Component\Contracts\ValidatableComponentInterface;
-use CraftCms\Cms\Shared\Contracts\Identifiable;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Flash;
 use Symfony\Component\HttpFoundation\Response;

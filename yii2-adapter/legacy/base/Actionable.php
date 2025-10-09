@@ -6,11 +6,11 @@ namespace craft\base;
 if (false) {
     /**
      * @since 5.0.0
-     * @deprecated 6.0.0 use {@see \CraftCms\Cms\Shared\Contracts\Actionable} instead.
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\Component\Contracts\Actionable} instead.
      */
     interface Actionable
     {
     }
 }
 
-class_alias(\CraftCms\Cms\Shared\Contracts\Actionable::class, Actionable::class);
+class_alias(\CraftCms\Cms\Component\Contracts\Actionable::class, Actionable::class);

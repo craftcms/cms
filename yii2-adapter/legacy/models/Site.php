@@ -15,7 +15,7 @@ use craft\validators\HandleValidator;
 use craft\validators\LanguageValidator;
 use craft\validators\UniqueValidator;
 use craft\validators\UrlValidator;
-use CraftCms\Cms\Shared\Contracts\Chippable;
+use CraftCms\Cms\Component\Contracts\Chippable;
 use CraftCms\Cms\Support\Env;
 use CraftCms\Cms\Support\Facades\I18N;
 use DateTime;
