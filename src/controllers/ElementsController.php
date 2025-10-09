@@ -86,6 +86,7 @@ class ElementsController extends Controller
     private ?string $_context = null;
     private ?string $_thumbSize = null;
     private ?string $_viewMode = null;
+    private bool $_saveAsNew;
 
     /**
      * @inheritdoc
@@ -125,6 +126,7 @@ class ElementsController extends Controller
         $this->_context = $this->_param('context');
         $this->_thumbSize = $this->_param('thumbSize');
         $this->_viewMode = $this->_param('viewMode');
+        $this->_saveAsNew = (bool)$this->_param('saveAsNew');
 
         unset($this->_attributes['failMessage']);
         unset($this->_attributes['redirect']);
@@ -531,8 +533,9 @@ class ElementsController extends Controller
                         ]);
                     } elseif ($canDuplicateCanonical) {
                         $response->addAltAction(Craft::t('app', 'Save as a new {type}', compact('type')), [
-                            'action' => 'elements/duplicate', // todo
+                            'action' => 'elements/duplicate',
                             'redirect' => '{cpEditUrl}',
+                            'params' => ['saveAsNew' => true],
                         ]);
                     }
                 }
@@ -1221,10 +1224,21 @@ JS, [
             throw new ForbiddenHttpException('User not authorized to duplicate this element.');
         }
 
+        $newAttributes = [
+            'isProvisionalDraft' => false,
+        ];
+
+        if ($this->_saveAsNew &&
+            ($element->getIsCanonical() || $element->isProvisionalDraft) &&
+            $element->slug === $element->getCanonical()->slug
+        ) {
+            $newAttributes += [
+                'slug' => null,
+            ];
+        }
+
         try {
-            $newElement = $elementsService->duplicateElement($element, [
-                'isProvisionalDraft' => false,
-            ]);
+            $newElement = $elementsService->duplicateElement($element, $newAttributes);
         } catch (InvalidElementException $e) {
             return $this->_asFailure($e->element, Craft::t('app', 'Couldn’t duplicate {type}.', [
                 'type' => $element::lowerDisplayName(),
