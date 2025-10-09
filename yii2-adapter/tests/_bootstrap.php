@@ -2,6 +2,9 @@
 
 use craft\test\TestSetup;
 use CraftCms\Yii2Adapter\Tests\TestCase;
+use DG\BypassFinals;
+
+BypassFinals::enable();
 
 ini_set('date.timezone', 'UTC');
 date_default_timezone_set('UTC');
