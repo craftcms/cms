@@ -8,6 +8,7 @@ use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Support\Json;
 use Illuminate\Container\Attributes\Singleton;
 use Illuminate\Support\Collection;
+use InvalidArgumentException;
 use ResourceBundle;
 use Stringable;
 use Yiisoft\Translator\CategorySource;
@@ -120,6 +121,52 @@ final class I18N
         $this->defineAppLocales();
 
         return $this->appLocaleIds->has($localeId);
+    }
+
+    /**
+     * Normalizes a language into the correct format (e.g. `en-US`).
+     */
+    public function normalizeLanguage(string $language): string
+    {
+        $language = strtolower(str_replace('_', '-', $language));
+
+        $allLanguages = $this->getAllLocaleIds()->all();
+        $lcLanguages = array_map('strtolower', $allLanguages);
+        $allLanguages = array_combine($lcLanguages, $allLanguages);
+
+        if (! isset($allLanguages[$language])) {
+            throw new InvalidArgumentException('Invalid language: '.$language);
+        }
+
+        return $allLanguages[$language];
+    }
+
+    /**
+     * Normalizes a user-submitted number for use in code and/or to be saved into the database.
+     *
+     * Group symbols are removed (e.g. 1,000,000 => 1000000), and decimals are converted to a periods, if the current
+     * locale uses something else.
+     *
+     * @param  mixed  $number  The number that should be normalized.
+     * @param  string|null  $localeId  The locale ID that the number is set in
+     */
+    public function normalizeNumber(mixed $number, ?string $localeId = null): mixed
+    {
+        if (! is_string($number)) {
+            return $number;
+        }
+
+        $locale = match (true) {
+            $localeId === null => Craft::$app->getFormattingLocale(),
+            $localeId === Craft::$app->language => Craft::$app->getLocale(),
+            default => $this->getLocaleById($localeId),
+        };
+
+        $decimalSymbol = $locale->getNumberSymbol(Locale::SYMBOL_DECIMAL_SEPARATOR);
+        $groupSymbol = $locale->getNumberSymbol(Locale::SYMBOL_GROUPING_SEPARATOR);
+
+        // Remove any group symbols and use a period for the decimal symbol
+        return str_replace([$groupSymbol, $decimalSymbol], ['', '.'], $number);
     }
 
     /**

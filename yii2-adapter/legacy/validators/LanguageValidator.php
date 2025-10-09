@@ -7,9 +7,8 @@
 
 namespace craft\validators;
 
-use craft\helpers\Localization;
 use CraftCms\Cms\Support\Facades\I18N;
-use yii\base\InvalidArgumentException;
+use InvalidArgumentException;
 use yii\base\UnknownPropertyException;
 use yii\validators\Validator;
 use function CraftCms\Cms\t;
@@ -55,7 +54,7 @@ class LanguageValidator extends Validator
     {
         $original = $model->$attribute;
         try {
-            $value = Localization::normalizeLanguage($original);
+            $value = I18N::normalizeLanguage($original);
         } catch (InvalidArgumentException) {
             $this->addError($model, $attribute, $this->notAllowed);
             return;
@@ -86,7 +85,7 @@ class LanguageValidator extends Validator
             $allowed = I18N::getAllLocaleIds();
         }
 
-        if ($value && !in_array($value, $allowed, true)) {
+        if ($value && !$allowed->contains($value)) {
             return [$this->notAllowed, []];
         }
 

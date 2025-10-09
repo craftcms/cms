@@ -769,7 +769,7 @@ class Cp extends Component
             }
 
             $languageValue = null;
-            if (in_array($value, $allLanguages, true)) {
+            if ($allLanguages->contains($value)) {
                 $languageValue = $value;
             }
 

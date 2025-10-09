@@ -5,9 +5,9 @@ namespace CraftCms\Cms\Config;
 use Closure;
 use Craft;
 use craft\helpers\DateTimeHelper;
-use craft\helpers\Localization;
 use CraftCms\Cms\Support\Attributes\EnvName;
 use CraftCms\Cms\Support\Config as ConfigHelper;
+use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\PHP;
 use DateInterval;
 use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken;
@@ -4092,8 +4092,8 @@ class GeneralConfig extends BaseConfig
             isset(Craft::$app)
         ) {
             try {
-                $value = Localization::normalizeLanguage($value);
-            } catch (InvalidArgumentException $e) {
+                $value = I18N::normalizeLanguage($value);
+            } catch (\InvalidArgumentException $e) {
                 throw new InvalidConfigException($e->getMessage(), 0, $e);
             }
         }
@@ -4733,8 +4733,8 @@ class GeneralConfig extends BaseConfig
         if (class_exists(Craft::class, false)) {
             foreach ($value as &$localeId) {
                 try {
-                    $localeId = Localization::normalizeLanguage($localeId);
-                } catch (InvalidArgumentException $e) {
+                    $localeId = I18N::normalizeLanguage($localeId);
+                } catch (\InvalidArgumentException $e) {
                     throw new InvalidConfigException($e->getMessage(), 0, $e);
                 }
             }

@@ -3,7 +3,6 @@
 namespace CraftCms\Cms\Console\Commands\Install;
 
 use craft\console\Application;
-use craft\helpers\Localization;
 use craft\models\Site;
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Console\CraftCommand;
@@ -109,7 +108,7 @@ final class InstallCommand extends Command
                 default: $defaultSiteLanguage,
                 validate: function (string $value) use ($i18n) {
                     try {
-                        $value = Localization::normalizeLanguage($value);
+                        $value = $i18n->normalizeLanguage($value);
                     } catch (Throwable) {
                         return "$value is not a valid language.";
                     }
