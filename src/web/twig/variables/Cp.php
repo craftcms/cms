@@ -232,33 +232,25 @@ class Cp extends Component
         ];
 
         if (Craft::$app->getEntries()->getTotalEditableSections()) {
-            $subNavItems = [];
             $elementSourcesService = Craft::$app->getElementSources();
             $entryPages = $elementSourcesService->getPages(Entry::class);
 
             if (!empty($entryPages)) {
                 $entryPageSettings = $elementSourcesService->getPageSettings(Entry::class);
                 foreach ($entryPages as $page) {
-                    $pageNameId = $elementSourcesService->pageNameId($page);
-                    $subNavItems[$pageNameId] = [
+                    $navItems[] = [
                         'label' => Craft::t('site', $page),
                         'url' => sprintf('content/%s', StringHelper::toKebabCase($page)),
-                        'icon' => $entryPageSettings[$page]['icon'] ?? null,
+                        'icon' => $entryPageSettings[$page]['icon'] ?? 'newspaper',
                     ];
                 }
             } else {
-                $subNavItems['entries'] = [
+                $navItems[] = [
                     'label' => Craft::t('app', 'Entries'),
                     'url' => 'content/entries',
+                    'icon' => 'newspaper',
                 ];
             }
-
-            $navItems[] = [
-                'label' => Craft::t('app', 'Content'),
-                'url' => 'content',
-                'icon' => 'pen-nib',
-                'subnav' => $subNavItems,
-            ];
         }
 
         if (!empty(Craft::$app->getGlobals()->getEditableSets())) {
