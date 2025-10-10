@@ -281,6 +281,12 @@ class FieldLayoutTab extends FieldLayoutComponent
             if (is_array($layoutElement)) {
                 try {
                     $layoutElement = $fieldsService->createLayoutElement($layoutElement);
+                    if ($layoutElement instanceof CustomField) {
+                        // check if the underlying field exists
+                        // if not, it should be caught by FieldNotFoundException
+                        // and not added to the tab's elements
+                        $field = $layoutElement->getField();
+                    }
                 } catch (FieldNotFoundException) {
                     // Skip quietly
                     continue;
