@@ -1502,27 +1502,16 @@ td.right {
 
   & > .cs-sidebar {
     flex: 0 0 200px;
-    height: calc(100% + 44px);
+    height: 100%;
     border-inline-end: 1px solid var(--hairline-color);
-    margin-block-end: -44px;
 
     & > .cs-sidebar-items {
       padding: var(--m);
       border: none;
       width: 200px;
-      height: calc(100% - 88px);
+      height: calc(100% - 44px);
       box-sizing: border-box;
       overflow: auto;
-    }
-
-    & > .cs-sidebar-footer {
-      position: relative;
-      z-index: 2;
-      height: 44px;
-      display: flex;
-      gap: var(--xs);
-      align-items: center;
-      padding-inline: var(--m);
     }
   }
 
@@ -1577,6 +1566,10 @@ td.right {
     &:not(.customize-sources-item--heading) {
       margin-block-start: var(--2xs);
     }
+  }
+
+  &:last-child {
+    margin-block-end: var(--m);
   }
 
   &.sel,

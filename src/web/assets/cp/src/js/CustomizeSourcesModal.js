@@ -11,6 +11,7 @@ Craft.CustomizeSourcesModal = Garnish.Modal.extend({
 
   $pagesSidebar: null,
   $pagesSidebarItems: null,
+  $newPageBtn: null,
   pageIconInputs: null,
 
   multiPage: false,
@@ -170,23 +171,19 @@ Craft.CustomizeSourcesModal = Garnish.Modal.extend({
       this.sources[0].select();
     }
 
-    const $menuBtnContainer = $(
-      '<div class="cs-sidebar-footer" data-wrapper/>'
-    ).appendTo(this.$sourcesSidebar);
-
     const $menuBtn = $('<button/>', {
-      class: 'btn add icon menubtn',
+      class: 'btn add icon dashed menubtn',
       type: 'button',
       title: Craft.t('app', 'Source actions'),
       'aria-label': Craft.t('app', 'Source actions'),
       'aria-controls': 'cs-source-actions',
       'data-disclosure-trigger': 'true',
-    }).appendTo($menuBtnContainer);
+    }).appendTo(this.$sourcesSidebarItems);
 
     this.$sourceMenu = $('<div/>', {
       id: 'cs-source-actions',
       class: 'menu menu--disclosure',
-    }).appendTo($menuBtnContainer);
+    }).appendTo(this.$sourcesSidebarItems);
 
     this.sourceMenu = new Garnish.DisclosureMenu($menuBtn);
 
@@ -261,18 +258,15 @@ Craft.CustomizeSourcesModal = Garnish.Modal.extend({
       this.pages[0].select();
     }
 
-    const $menuBtnContainer = $(
-      '<div class="cs-sidebar-footer" data-wrapper/>'
-    ).appendTo(this.$pagesSidebar);
-    const $pageBtn = $('<button/>', {
-      class: 'btn add icon',
+    this.$newPageBtn = $('<button/>', {
+      class: 'btn add icon dashed mt-m',
       type: 'button',
       text: Craft.t('app', 'New page'),
-    }).appendTo($menuBtnContainer);
+    }).appendTo(this.$pagesSidebarItems);
 
-    $pageBtn.on('activate', () => {
+    this.$newPageBtn.on('activate', () => {
       new Craft.CustomizeSourcesModal.PageSettingsModal(this, {
-        triggerElement: $pageBtn,
+        triggerElement: this.$newPageBtn,
         validateName: (name) => {
           if (!this.isPageNameUnique(name)) {
             return Craft.t('app', 'Another page already has that name.');
@@ -295,9 +289,12 @@ Craft.CustomizeSourcesModal = Garnish.Modal.extend({
   },
 
   addPage: async function (name, icon = null, isNew = false) {
-    const $item = $('<div class="customize-sources-item"/>').appendTo(
-      this.$pagesSidebarItems
-    );
+    const $item = $('<div class="customize-sources-item"/>');
+    if (this.$newPageBtn) {
+      $item.insertBefore(this.$newPageBtn);
+    } else {
+      $item.appendTo(this.$pagesSidebarItems);
+    }
     const $itemButton = $(
       '<div class="customize-sources-item__btn customize-sources-item__page-btn"/>'
     )
