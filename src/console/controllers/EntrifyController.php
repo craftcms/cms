@@ -17,6 +17,7 @@ use craft\elements\Entry;
 use craft\elements\Tag;
 use craft\elements\User;
 use craft\events\SectionEvent;
+use craft\fields\BaseRelationField;
 use craft\fields\Categories;
 use craft\fields\Entries;
 use craft\fields\Tags;
@@ -413,6 +414,7 @@ class EntrifyController extends Controller
                         $this->do(sprintf('Converting %s', ($config['name'] ?? null) ? "“{$config['name']}”" : 'Tags filed'), function() use ($section, $projectConfigService, $path, $config) {
                             $config['type'] = Entries::class;
                             $config['settings']['sources'] = ["section:$section->uid"];
+                            $config['settings']['viewMode'] = BaseRelationField::VIEW_MODE_LIST_INLINE;
                             unset(
                                 $config['settings']['source'],
                                 $config['settings']['allowMultipleSources'],
