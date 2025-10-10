@@ -303,7 +303,11 @@ Craft.CustomizeSourcesModal = Garnish.Modal.extend({
       .append(
         $('<div class="cp-icon"/>').html(icon ? await Craft.ui.icon(icon) : '')
       )
-      .append($('<div class="label"/>').text(name))
+      .append($('<div/>', {
+        id: `cs-item-label-${Math.floor(Math.random() * 1000000)}`,
+        class: 'label',
+        text: name,
+      }))
       .appendTo($item);
 
     $(
@@ -383,7 +387,10 @@ Craft.CustomizeSourcesModal = Garnish.Modal.extend({
         tabindex: '0',
         role: 'button',
       })
-      .append($('<div class="label"/>'))
+      .append($('<div/>', {
+        id: `cs-item-label-${Math.floor(Math.random() * 1000000)}`,
+        class: 'label',
+      }))
       .append($('<div class="handle"/>'))
       .appendTo($item);
 
@@ -764,8 +771,9 @@ Craft.CustomizeSourcesModal.Page = Garnish.Base.extend(
       this.$actionBtn = $('<button/>', {
         class: 'btn action-btn',
         type: 'button',
-        title: Craft.t('app', 'Page actions'),
-        'aria-label': Craft.t('app', 'Page actions'),
+        title: Craft.t('app', 'Actions'),
+        'aria-label': Craft.t('app', 'Actions'),
+        'aria-describedby': this.$item.find('.label').attr('id'),
         'aria-controls': 'cs-source-actions',
         'data-disclosure-trigger': 'true',
       }).insertBefore(this.$item.find('.move'));
@@ -1055,16 +1063,12 @@ Craft.CustomizeSourcesModal.BaseSource = Garnish.Base.extend({
   },
 
   createActionMenu: function () {
-    const label = Craft.t(
-      'app',
-      this.isHeading() ? 'Heading actions' : 'Source actions'
-    );
-
     this.$actionBtn = $('<button/>', {
       class: 'btn action-btn',
       type: 'button',
-      title: label,
-      'aria-label': label,
+      title: Craft.t('app', 'Actions'),
+      'aria-label': Craft.t('app', 'Actions'),
+      'aria-describedby': this.$item.find('.label').attr('id'),
       'aria-controls': 'cs-source-actions',
       'data-disclosure-trigger': 'true',
     }).insertBefore(this.$item.find('.move'));
