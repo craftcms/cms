@@ -347,6 +347,10 @@ Craft.CustomizeSourcesModal = Garnish.Modal.extend({
     this.pages.push(page);
     this.updatePageActionButtons();
 
+    if (isNew) {
+      Craft.cp.announce(Craft.t('app', 'Success'));
+    }
+
     return page;
   },
 
@@ -472,6 +476,10 @@ Craft.CustomizeSourcesModal = Garnish.Modal.extend({
 
     this.sources.push(source);
     this.updateSourceActionButtons();
+
+    if (isNew) {
+      Craft.cp.announce(Craft.t('app', 'Success'));
+    }
 
     return source;
   },
