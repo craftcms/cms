@@ -10,6 +10,7 @@ Craft.CustomizeSourcesModal = Garnish.Modal.extend({
   elementIndex: null,
 
   $pagesSidebar: null,
+  $pagesSidebarContent: null,
   $pagesSidebarItems: null,
   $newPageBtn: null,
   pageIconInputs: null,
@@ -20,7 +21,7 @@ Craft.CustomizeSourcesModal = Garnish.Modal.extend({
   selectedPage: null,
 
   $sourcesSidebar: null,
-  $sourcesSidebarItems: null,
+  $sourcesSidebarContent: null,
   sourceContainers: null,
   $sourcesHeader: null,
   $sourceSettingsContainer: null,
@@ -69,7 +70,7 @@ Craft.CustomizeSourcesModal = Garnish.Modal.extend({
     $('<div class="cs-header"/>')
       .appendTo(this.$sourcesSidebar)
       .append($('<h2 class="h3"/>').text(Craft.t('app', 'Sources')));
-    this.$sourcesSidebarItems = $('<div class="cs-sidebar-items"/>').appendTo(
+    this.$sourcesSidebarContent = $('<div class="cs-sidebar-content"/>').appendTo(
       this.$sourcesSidebar
     );
     this.sourceContainers = [];
@@ -120,7 +121,7 @@ Craft.CustomizeSourcesModal = Garnish.Modal.extend({
       .then(async (response) => {
         this.$saveBtn.removeClass('disabled');
         await this.buildModal(response.data);
-        Garnish.setFocusWithin(this.$sourcesSidebarItems);
+        Garnish.setFocusWithin(this.$sourcesSidebarContent);
       })
       .finally(() => {
         this.$loadingSpinner.remove();
@@ -178,18 +179,18 @@ Craft.CustomizeSourcesModal = Garnish.Modal.extend({
       'aria-label': Craft.t('app', 'Source actions'),
       'aria-controls': 'cs-source-actions',
       'data-disclosure-trigger': 'true',
-    }).appendTo(this.$sourcesSidebarItems);
+    }).appendTo(this.$sourcesSidebarContent);
 
     this.$sourceMenu = $('<div/>', {
       id: 'cs-source-actions',
       class: 'menu menu--disclosure',
-    }).appendTo(this.$sourcesSidebarItems);
+    }).appendTo(this.$sourcesSidebarContent);
 
     this.sourceMenu = new Garnish.DisclosureMenu($menuBtn);
 
     const addSource = (sourceData) => {
       const source = this.addSource(sourceData, true);
-      Garnish.scrollContainerToElement(this.$sourcesSidebarItems, source.$item);
+      Garnish.scrollContainerToElement(this.$sourcesSidebarContent, source.$item);
       source.select();
       this.sourceMenu.hide();
     };
@@ -235,9 +236,11 @@ Craft.CustomizeSourcesModal = Garnish.Modal.extend({
       .appendTo(this.$pagesSidebar)
       .append($('<h2 class="h3"/>').text(Craft.t('app', 'Pages')));
 
-    this.$pagesSidebarItems = $('<div class="cs-sidebar-items"/>').appendTo(
+    this.$pagesSidebarContent = $('<div class="cs-sidebar-content"/>').appendTo(
       this.$pagesSidebar
     );
+
+    this.$pagesSidebarItems = $('<ol class="cs-sidebar-list"/>').appendTo(this.$pagesSidebarContent);
 
     // Create the page item sorter
     this.pageDrag = new Garnish.DragSort({
@@ -259,10 +262,10 @@ Craft.CustomizeSourcesModal = Garnish.Modal.extend({
     }
 
     this.$newPageBtn = $('<button/>', {
-      class: 'btn add icon dashed mt-m',
+      class: 'btn add icon dashed',
       type: 'button',
       text: Craft.t('app', 'New page'),
-    }).appendTo(this.$pagesSidebarItems);
+    }).appendTo(this.$pagesSidebarContent);
 
     this.$newPageBtn.on('activate', () => {
       new Craft.CustomizeSourcesModal.PageSettingsModal(this, {
@@ -289,12 +292,7 @@ Craft.CustomizeSourcesModal = Garnish.Modal.extend({
   },
 
   addPage: async function (name, icon = null, isNew = false) {
-    const $item = $('<div class="customize-sources-item"/>');
-    if (this.$newPageBtn) {
-      $item.insertBefore(this.$newPageBtn);
-    } else {
-      $item.appendTo(this.$pagesSidebarItems);
-    }
+    const $item = $('<li class="customize-sources-item"/>').appendTo(this.$pagesSidebarItems);
     const $itemButton = $(
       '<div class="customize-sources-item__btn customize-sources-item__page-btn"/>'
     )
@@ -360,8 +358,8 @@ Craft.CustomizeSourcesModal = Garnish.Modal.extend({
 
   getSourceContainer: function (pageName, create = true) {
     if (this.sourceContainers[pageName] === undefined && create) {
-      this.sourceContainers[pageName] = $('<div class="sources">').appendTo(
-        this.$sourcesSidebarItems
+      this.sourceContainers[pageName] = $('<ol class="cs-sidebar-list">').appendTo(
+        this.$sourcesSidebarContent
       );
       if (this.multiPage && pageName !== this.selectedPage.name) {
         this.sourceContainers[pageName].addClass('hidden');
@@ -377,7 +375,7 @@ Craft.CustomizeSourcesModal = Garnish.Modal.extend({
     const isHeading = sourceData.type === 'heading';
 
     const $sourceContainer = this.getSourceContainer(pageName);
-    const $item = $('<div class="customize-sources-item"/>').appendTo(
+    const $item = $('<li class="customize-sources-item"/>').appendTo(
       $sourceContainer
     );
     const $itemButton = $('<div class="customize-sources-item__btn"/>')

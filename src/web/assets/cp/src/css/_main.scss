@@ -1505,13 +1505,18 @@ td.right {
     height: 100%;
     border-inline-end: 1px solid var(--hairline-color);
 
-    & > .cs-sidebar-items {
+    & > .cs-sidebar-content {
       padding: var(--m);
       border: none;
       width: 200px;
       height: calc(100% - 44px);
       box-sizing: border-box;
       overflow: auto;
+
+      & > .cs-sidebar-list {
+        padding-inline-start: 0;
+        margin-block-end: var(--m);
+      }
     }
   }
 
@@ -1566,10 +1571,6 @@ td.right {
     &:not(.customize-sources-item--heading) {
       margin-block-start: var(--2xs);
     }
-  }
-
-  &:last-child {
-    margin-block-end: var(--m);
   }
 
   &.sel,
