@@ -58,7 +58,7 @@ Craft.CustomizeSourcesModal = Garnish.Modal.extend({
     this.elementIndex = elementIndex;
 
     const $container = $(
-      '<form class="modal customize-sources-modal"/>'
+      '<form class="modal cs-modal"/>'
     ).appendTo(Garnish.$bod);
 
     this.$sourcesSidebar = $('<div class="cs-sidebar"/>')
@@ -292,9 +292,9 @@ Craft.CustomizeSourcesModal = Garnish.Modal.extend({
   },
 
   addPage: async function (name, icon = null, isNew = false) {
-    const $item = $('<li class="customize-sources-item"/>').appendTo(this.$pagesSidebarItems);
+    const $item = $('<li class="cs-item"/>').appendTo(this.$pagesSidebarItems);
     const $itemButton = $(
-      '<div class="customize-sources-item__btn customize-sources-item__page-btn"/>'
+      '<div class="cs-item__btn cs-item__page-btn"/>'
     )
       .attr({
         tabindex: '0',
@@ -311,7 +311,7 @@ Craft.CustomizeSourcesModal = Garnish.Modal.extend({
       .appendTo($item);
 
     $(
-      `<a class="move icon customize-sources-item__move" title="${Craft.t(
+      `<a class="move icon cs-item__move" title="${Craft.t(
         'app',
         'Reorder'
       )}" role="button"></a>`
@@ -383,10 +383,10 @@ Craft.CustomizeSourcesModal = Garnish.Modal.extend({
     const isHeading = sourceData.type === 'heading';
 
     const $sourceContainer = this.getSourceContainer(pageName);
-    const $item = $('<li class="customize-sources-item"/>').appendTo(
+    const $item = $('<li class="cs-item"/>').appendTo(
       $sourceContainer
     );
-    const $itemButton = $('<div class="customize-sources-item__btn"/>')
+    const $itemButton = $('<div class="cs-item__btn"/>')
       .attr({
         tabindex: '0',
         role: 'button',
@@ -409,7 +409,7 @@ Craft.CustomizeSourcesModal = Garnish.Modal.extend({
       value: sourceData.key,
     }).appendTo($item);
     $(
-      `<a class="move icon customize-sources-item__move" title="${Craft.t(
+      `<a class="move icon cs-item__move" title="${Craft.t(
         'app',
         'Reorder'
       )}" role="button"></a>`
@@ -418,7 +418,7 @@ Craft.CustomizeSourcesModal = Garnish.Modal.extend({
     let source;
 
     if (isHeading) {
-      $item.addClass('customize-sources-item--heading');
+      $item.addClass('cs-item--heading');
 
       /**
        * We add this here so it will get sent in every POST request.
@@ -663,9 +663,9 @@ Craft.CustomizeSourcesModal.SourceDrag = Garnish.DragSort.extend({
 
     settings.filter = () => {
       // If a heading is being dragged, also include the following sources
-      if (this.$targetItem.hasClass('customize-sources-item--heading')) {
+      if (this.$targetItem.hasClass('cs-item--heading')) {
         return this.$targetItem.add(
-          this.$targetItem.nextUntil('.customize-sources-item--heading')
+          this.$targetItem.nextUntil('.cs-item--heading')
         );
       } else {
         return this.$targetItem;
@@ -879,11 +879,11 @@ Craft.CustomizeSourcesModal.Page = Garnish.Base.extend(
     },
 
     getPrevPage: function () {
-      return this.$item.prev('.customize-sources-item').data('page');
+      return this.$item.prev('.cs-item').data('page');
     },
 
     getNextPage: function () {
-      return this.$item.next('.customize-sources-item').data('page');
+      return this.$item.next('.cs-item').data('page');
     },
 
     getSourceContainer: function (create = true) {
@@ -950,7 +950,7 @@ Craft.CustomizeSourcesModal.Page = Garnish.Base.extend(
         this.modal.sourceContainers[name] = $sourceContainer;
         delete this.modal.sourceContainers[this.name];
 
-        $sourceContainer.find('.customize-sources-item').each((i, item) => {
+        $sourceContainer.find('.cs-item').each((i, item) => {
           $(item).data('source').$pageInput.val(name);
         });
       }
@@ -990,9 +990,9 @@ Craft.CustomizeSourcesModal.Page = Garnish.Base.extend(
       this.modal.pageDrag.removeItems(this.$item);
       this.modal.pages = this.modal.pages.filter((p) => p !== this);
 
-      let $closestItem = this.$item.prev('.customize-sources-item');
+      let $closestItem = this.$item.prev('.cs-item');
       if (!$closestItem.length) {
-        $closestItem = this.$item.next('.customize-sources-item');
+        $closestItem = this.$item.next('.cs-item');
       }
 
       const closestPage = $closestItem.data('page');
@@ -1130,11 +1130,11 @@ Craft.CustomizeSourcesModal.BaseSource = Garnish.Base.extend({
   },
 
   getPrevSource: function () {
-    return this.$item.prev('.customize-sources-item').data('source');
+    return this.$item.prev('.cs-item').data('source');
   },
 
   getNextSource: function () {
-    return this.$item.next('.customize-sources-item').data('source');
+    return this.$item.next('.cs-item').data('source');
   },
 
   updateActionButton: function () {
@@ -1234,9 +1234,9 @@ Craft.CustomizeSourcesModal.BaseSource = Garnish.Base.extend({
     if (this.isSelected()) {
       this.deselect();
 
-      let $closestItem = this.$item.prev('.customize-sources-item');
+      let $closestItem = this.$item.prev('.cs-item');
       if (!$closestItem.length) {
-        $closestItem = this.$item.next('.customize-sources-item');
+        $closestItem = this.$item.next('.cs-item');
       }
       if ($closestItem.length) {
         $closestItem.data('source').select();

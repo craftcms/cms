@@ -1487,7 +1487,7 @@ td.right {
   @include mixins.clearafter;
 }
 
-.customize-sources-modal {
+.cs-modal {
   display: flex !important;
   flex-flow: row nowrap;
   padding-block-end: 44px;
@@ -1548,7 +1548,7 @@ td.right {
   }
 }
 
-.customize-sources-item {
+.cs-item {
   --light-text-color: var(--gray-600);
   --selected-item-color: var(--white);
   display: flex;
@@ -1563,12 +1563,12 @@ td.right {
   user-select: none;
   cursor: default;
 
-  & + .customize-sources-item {
-    &.customize-sources-item--heading {
+  & + .cs-item {
+    &.cs-item--heading {
       margin-block-start: var(--m);
     }
 
-    &:not(.customize-sources-item--heading) {
+    &:not(.cs-item--heading) {
       margin-block-start: var(--2xs);
     }
   }
@@ -1598,7 +1598,7 @@ td.right {
     color: var(--fg-subtle);
   }
 
-  &.customize-sources-item--heading {
+  &.cs-item--heading {
     .label {
       text-transform: uppercase;
       color: var(--light-text-color);
@@ -1612,7 +1612,7 @@ td.right {
   }
 }
 
-.customize-sources-item__move {
+.cs-item__move {
   justify-content: center;
   align-items: center;
 
@@ -1622,14 +1622,14 @@ td.right {
   }
 }
 
-.customize-sources-item__btn {
+.cs-item__btn {
   flex: 1;
   padding-block: 6px;
   padding-inline-start: var(--m);
   border-radius: var(--radius-lg);
   overflow: hidden;
 
-  &.customize-sources-item__page-btn {
+  &.cs-item__page-btn {
     display: flex;
     flex-direction: row;
     gap: var(--s);
@@ -7145,7 +7145,7 @@ $min2ColWidth: 400px;
 
 /* element selector modals & customize sources modal */
 .elementselectormodal,
-.customize-sources-modal {
+.cs-modal {
   .main-header {
     display: flex;
     align-items: center;
