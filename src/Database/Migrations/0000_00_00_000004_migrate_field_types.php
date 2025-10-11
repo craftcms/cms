@@ -2,6 +2,7 @@
 
 use CraftCms\Cms\Database\Migration;
 use CraftCms\Cms\Database\Table;
+use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use Illuminate\Support\Facades\DB;
 
 return new class extends Migration
@@ -44,6 +45,21 @@ return new class extends Migration
                 ->where('type', $old)
                 ->update(['type' => $new]);
         }
+
+        $projectConfig = app(ProjectConfig::class);
+        $muteEvents = $projectConfig->muteEvents;
+        $projectConfig->muteEvents = true;
+
+        $fieldConfigs = $projectConfig->find(fn (array $item) => (
+            isset($item['type']) &&
+            isset($this->map[$item['type']])
+        ));
+
+        foreach ($fieldConfigs as $path => $config) {
+            $projectConfig->set("$path.type", $this->map[$config['type']]);
+        }
+
+        $projectConfig->muteEvents = $muteEvents;
     }
 
     public function down(): void
