@@ -18,7 +18,6 @@ use craft\errors\ElementNotFoundException;
 use craft\errors\FsException;
 use craft\errors\UploadFailedException;
 use craft\errors\VolumeException;
-use craft\fields\Assets as AssetsField;
 use craft\helpers\Assets;
 use craft\helpers\Db;
 use craft\helpers\FileHelper;
@@ -33,6 +32,8 @@ use craft\web\UploadedFile;
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Deprecator\Exceptions\DeprecationException;
+use CraftCms\Cms\Field\Assets as AssetsField;
+use CraftCms\Cms\Field\Fields;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\Deprecator;
 use CraftCms\Cms\Support\Str;
@@ -259,7 +260,7 @@ class AssetsController extends Controller
 
         if (empty($folderId)) {
             /** @var AssetsField|null $field */
-            $field = Craft::$app->getFields()->getFieldById((int)$fieldId);
+            $field = app(Fields::class)->getFieldById((int)$fieldId);
 
             if (!$field instanceof AssetsField) {
                 throw new BadRequestHttpException('The field provided is not an Assets field');

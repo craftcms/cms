@@ -9,16 +9,10 @@ namespace craft\helpers;
 
 use CommerceGuys\Addressing\Subdivision\SubdivisionRepository as BaseSubdivisionRepository;
 use Craft;
-use craft\base\Actionable;
-use craft\base\Chippable;
-use craft\base\Colorable;
-use craft\base\CpEditable;
 use craft\base\Describable;
 use craft\base\Element;
 use craft\base\ElementInterface;
 use craft\base\FieldLayoutElement;
-use craft\base\Grippable;
-use craft\base\Iconic;
 use craft\base\Indicative;
 use craft\base\NestedElementInterface;
 use craft\base\Statusable;
@@ -38,10 +32,18 @@ use craft\services\ElementSources;
 use craft\web\twig\TemplateLoaderException;
 use craft\web\View;
 use CraftCms\Cms\Addresses\Addresses;
+use CraftCms\Cms\Component\Contracts\Actionable;
+use CraftCms\Cms\Component\Contracts\Chippable;
+use CraftCms\Cms\Component\Contracts\Colorable;
+use CraftCms\Cms\Component\Contracts\CpEditable;
+use CraftCms\Cms\Component\Contracts\Grippable;
+use CraftCms\Cms\Component\Contracts\Iconic;
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Element\Enums\AttributeStatus;
 use CraftCms\Cms\Element\Enums\MenuItemType;
+use CraftCms\Cms\Field\Contracts\PreviewableFieldInterface;
+use CraftCms\Cms\Field\Fields;
 use CraftCms\Cms\License\License;
 use CraftCms\Cms\Plugin\Plugins;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
@@ -2978,7 +2980,9 @@ JS, [
                 } catch (FieldNotFoundException) {
                     continue;
                 }
-                $previewHtml .= Html::tag('div', $field->previewPlaceholderHtml(null, null));
+                if ($field instanceof PreviewableFieldInterface) {
+                    $previewHtml .= Html::tag('div', $field->previewPlaceholderHtml(null, null));
+                }
             } elseif ($cardElement instanceof BaseField) {
                 $previewHtml .= Html::tag('div', $cardElement->previewPlaceholderHtml(null, null));
             } elseif (is_array($cardElement) && isset($cardElement['html'])) {
@@ -3279,7 +3283,7 @@ JS;
         }
 
         if ($element instanceof CustomField) {
-            $originalField = Craft::$app->getFields()->getFieldByUid($element->getFieldUid());
+            $originalField = app(Fields::class)->getFieldByUid($element->getFieldUid());
             if ($originalField) {
                 $attributes['data']['default-handle'] = $originalField->handle;
             }

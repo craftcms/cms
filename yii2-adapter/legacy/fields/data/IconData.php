@@ -7,41 +7,15 @@
 
 namespace craft\fields\data;
 
-use craft\base\Serializable;
-
-/**
- * Class IconData
- *
- * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 5.8.0
- */
-class IconData implements Serializable
-{
+/** @phpstan-ignore-next-line **/
+if (false) {
     /**
-     * Constructor
-     *
-     * @param string $name The icon name
-     * @param string[] $styles The Font Awesome styles the icon is available in
+     * @since 5.8.0
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\Field\Data\IconData} instead.
      */
-    public function __construct(
-        public string $name,
-        public array $styles,
-    ) {
-    }
-
-    /**
-     * @return string
-     */
-    public function __toString(): string
+    class IconData
     {
-        return $this->name;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function serialize(): string
-    {
-        return $this->name;
     }
 }
+
+class_alias(\CraftCms\Cms\Field\Data\IconData::class, IconData::class);

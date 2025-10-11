@@ -8,6 +8,7 @@
 namespace craft\base;
 
 use craft\fieldlayoutelements\CustomField;
+use CraftCms\Cms\Field\Field;
 use DateTime;
 
 /**
@@ -15,6 +16,8 @@ use DateTime;
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
+ * @deprecated 6.0.0 extend {@see \CraftCms\Cms\Field\Field} instead.
+ * @phpstan-ignore-next-line
  */
 trait FieldTrait
 {

@@ -37,7 +37,7 @@ fields:
       placeholder: ''
     translationKeyFormat: null
     translationMethod: none
-    type: craft\fields\PlainText
+    type: CraftCms\Cms\Field\PlainText
 imageTransforms:
   b756da68-5290-4145-b7d9-180a1d869b5a:
     format: null

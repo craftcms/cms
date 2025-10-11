@@ -17,6 +17,7 @@ use craft\models\FieldLayout;
 use craft\records\GlobalSet as GlobalSetRecord;
 use craft\validators\HandleValidator;
 use craft\validators\UniqueValidator;
+use CraftCms\Cms\Field\Fields;
 use yii\base\InvalidConfigException;
 
 /**
@@ -310,7 +311,7 @@ class GlobalSet extends Element implements FieldLayoutProviderInterface
         }
 
         if ($fieldLayout !== null) {
-            Craft::$app->getFields()->deleteLayout($fieldLayout);
+            app(Fields::class)->deleteLayout($fieldLayout);
         }
 
         return true;
@@ -324,7 +325,7 @@ class GlobalSet extends Element implements FieldLayoutProviderInterface
         // Restore the field layout too
         if (
             $this->fieldLayoutId &&
-            !Craft::$app->getFields()->restoreLayoutById($this->fieldLayoutId)
+            !app(Fields::class)->restoreLayoutById($this->fieldLayoutId)
         ) {
             Craft::warning("Global set $this->id restored, but its field layout ($this->fieldLayoutId) was not.");
         }

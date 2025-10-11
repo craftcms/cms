@@ -8,9 +8,7 @@
 namespace craft\controllers;
 
 use Craft;
-use craft\base\Chippable;
 use craft\base\ElementInterface;
-use craft\base\Iconic;
 use craft\elements\db\NestedElementQueryInterface;
 use craft\filters\UtilityAccess;
 use craft\helpers\Component;
@@ -21,6 +19,8 @@ use craft\helpers\Search;
 use craft\helpers\Session;
 use craft\helpers\UrlHelper;
 use craft\web\Controller;
+use CraftCms\Cms\Component\Contracts\Chippable;
+use CraftCms\Cms\Component\Contracts\Iconic;
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\License\License;

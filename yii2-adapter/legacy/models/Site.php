@@ -8,7 +8,6 @@
 namespace craft\models;
 
 use Craft;
-use craft\base\Chippable;
 use craft\base\Model;
 use craft\i18n\Locale;
 use craft\records\Site as SiteRecord;
@@ -16,6 +15,7 @@ use craft\validators\HandleValidator;
 use craft\validators\LanguageValidator;
 use craft\validators\UniqueValidator;
 use craft\validators\UrlValidator;
+use CraftCms\Cms\Component\Contracts\Chippable;
 use CraftCms\Cms\Support\Env;
 use DateTime;
 use yii\base\InvalidConfigException;

@@ -12,11 +12,12 @@ use craft\base\Element;
 use craft\base\NestedElementInterface;
 use craft\base\NestedElementTrait;
 use craft\elements\db\ContentBlockQuery;
-use craft\fields\ContentBlock as ContentBlockField;
 use craft\gql\interfaces\elements\ContentBlock as ContentBlockInterface;
 use craft\models\FieldLayout;
 use craft\records\ContentBlock as ContentBlockRecord;
 use CraftCms\Cms\Database\Table;
+use CraftCms\Cms\Field\ContentBlock as ContentBlockField;
+use CraftCms\Cms\Field\Fields;
 use GraphQL\Type\Definition\Type;
 use yii\base\InvalidConfigException;
 
@@ -110,7 +111,7 @@ class ContentBlock extends Element implements NestedElementInterface
     protected static function defineFieldLayouts(?string $source): array
     {
         /** @var ContentBlockField[] $fields */
-        $fields = Craft::$app->getFields()->getFieldsByType(ContentBlockField::class);
+        $fields = app(Fields::class)->getFieldsByType(ContentBlockField::class)->all();
         return array_map(fn(ContentBlockField $field) => $field->getFieldLayout(), $fields);
     }
 

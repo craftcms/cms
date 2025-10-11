@@ -7,10 +7,10 @@
 
 namespace crafttests\unit\behaviors;
 
-use Craft;
 use craft\behaviors\CustomFieldBehavior;
-use craft\fields\PlainText;
 use craft\test\TestCase;
+use CraftCms\Cms\Field\Fields;
+use CraftCms\Cms\Field\PlainText;
 use InvalidArgumentException;
 
 /**
@@ -31,7 +31,7 @@ class CustomFieldBehaviorTest extends TestCase
         $field->name = 'testRetrofittingDontWork1';
         $field->handle = 'testRetrofittingDontWork1';
 
-        if (!Craft::$app->getFields()->saveField($field)) {
+        if (!app(Fields::class)->saveField($field)) {
             throw new InvalidArgumentException("Couldn't save field");
         }
 
@@ -40,7 +40,7 @@ class CustomFieldBehaviorTest extends TestCase
         self::assertArrayHasKey('testRetrofittingDontWork1', CustomFieldBehavior::$fieldHandles);
 
         // Cleanup and remove the column from the content table.
-        if (!Craft::$app->getFields()->deleteField($field)) {
+        if (!app(Fields::class)->deleteField($field)) {
             throw new InvalidArgumentException('Unable to delete field: ' . $field->name . '');
         }
     }

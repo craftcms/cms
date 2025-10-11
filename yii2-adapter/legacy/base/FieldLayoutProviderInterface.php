@@ -16,7 +16,7 @@ use craft\models\FieldLayout;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 4.5.0
  */
-interface FieldLayoutProviderInterface extends Grippable
+interface FieldLayoutProviderInterface extends \CraftCms\Cms\Component\Contracts\Grippable
 {
     /**
      * Returns the field layout defined by this component.

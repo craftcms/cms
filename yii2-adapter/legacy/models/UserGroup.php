@@ -8,15 +8,15 @@
 namespace craft\models;
 
 use Craft;
-use craft\base\Actionable;
-use craft\base\Chippable;
-use craft\base\CpEditable;
 use craft\base\Describable;
-use craft\base\Grippable;
 use craft\base\Model;
 use craft\records\UserGroup as UserGroupRecord;
 use craft\validators\HandleValidator;
 use craft\validators\UniqueValidator;
+use CraftCms\Cms\Component\Contracts\Actionable;
+use CraftCms\Cms\Component\Contracts\Chippable;
+use CraftCms\Cms\Component\Contracts\CpEditable;
+use CraftCms\Cms\Component\Contracts\Grippable;
 use CraftCms\Cms\Config\GeneralConfig;
 
 /**

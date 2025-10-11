@@ -18,4 +18,4 @@ if (false) {
     }
 }
 
-class_alias(Link::class, Url::class);
+class_alias(\CraftCms\Cms\Field\Link::class, Url::class);

@@ -9,11 +9,12 @@ namespace craft\controllers;
 
 use Craft;
 use craft\base\ElementInterface;
-use craft\base\PreviewableFieldInterface;
 use craft\elements\conditions\ElementConditionInterface;
 use craft\helpers\Cp;
 use craft\models\UserGroup;
 use craft\services\ElementSources;
+use CraftCms\Cms\Field\Contracts\PreviewableFieldInterface;
+use CraftCms\Cms\Field\Fields;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\Support\Arr;
 use Illuminate\Support\Collection;
@@ -188,7 +189,7 @@ class ElementIndexSettingsController extends BaseElementsController
         // Get previewable custom fields that should be available for all custom sources
         $customFieldAttributes = [];
 
-        foreach (Craft::$app->getFields()->getLayoutsByType($elementType) as $fieldLayout) {
+        foreach (app(Fields::class)->getLayoutsByType($elementType) as $fieldLayout) {
             foreach ($fieldLayout->getCustomFields() as $field) {
                 if ($field instanceof PreviewableFieldInterface) {
                     $customFieldAttributes[] = ["field:$field->uid", Craft::t('site', $field->name)];

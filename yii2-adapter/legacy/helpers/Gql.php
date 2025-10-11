@@ -8,7 +8,6 @@
 namespace craft\helpers;
 
 use Craft;
-use craft\base\ElementContainerFieldInterface;
 use craft\base\ElementInterface;
 use craft\errors\GqlException;
 use craft\gql\base\Directive;
@@ -19,6 +18,8 @@ use craft\models\GqlSchema;
 use craft\models\Section;
 use craft\models\Site;
 use craft\services\Gql as GqlService;
+use CraftCms\Cms\Field\Contracts\ElementContainerFieldInterface;
+use CraftCms\Cms\Field\Fields;
 use GraphQL\Language\AST\ListValueNode;
 use GraphQL\Language\AST\VariableNode;
 use GraphQL\Type\Definition\NonNull;
@@ -610,11 +611,11 @@ class Gql
      */
     public static function getSchemaContainedNestedEntryFields(?GqlSchema $schema = null): array
     {
-        $fieldsService = Craft::$app->getFields();
+        $fieldsService = app(Fields::class);
         /** @var ElementContainerFieldInterface[] $fields */
         $fields = array_merge(...array_map(
-            fn(string $type) => $fieldsService->getFieldsByType($type),
-            $fieldsService->getNestedEntryFieldTypes()
+            fn(string $type) => $fieldsService->getFieldsByType($type)->all(),
+            $fieldsService->getNestedEntryFieldTypes()->all()
         ));
         return array_filter($fields, fn(ElementContainerFieldInterface $field) =>
             static::isSchemaAwareOf("nestedentryfields.$field->uid", $schema));

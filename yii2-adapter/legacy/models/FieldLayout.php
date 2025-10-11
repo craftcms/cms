@@ -9,8 +9,6 @@ namespace craft\models;
 
 use Craft;
 use craft\base\ElementInterface;
-use craft\base\Field;
-use craft\base\FieldInterface;
 use craft\base\FieldLayoutElement;
 use craft\base\FieldLayoutProviderInterface;
 use craft\base\Model;
@@ -29,6 +27,9 @@ use craft\fieldlayoutelements\Markdown;
 use craft\fieldlayoutelements\Template;
 use craft\fieldlayoutelements\Tip;
 use craft\validators\HandleValidator;
+use CraftCms\Cms\Field\Contracts\FieldInterface;
+use CraftCms\Cms\Field\Field;
+use CraftCms\Cms\Field\Fields;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Str;
@@ -80,7 +81,7 @@ class FieldLayout extends Model
      * ```php
      * use craft\models\FieldLayout;
      * use craft\events\DefineFieldLayoutFieldsEvent;
-     * use craft\fields\PlainText;
+     * use CraftCms\Cms\Field\PlainText;
      * use yii\base\Event;
      *
      * Event::on(
@@ -577,7 +578,7 @@ class FieldLayout extends Model
         if (!isset($this->_availableCustomFields)) {
             $customFields = [];
 
-            foreach (Craft::$app->getFields()->getAllFields() as $field) {
+            foreach (app(Fields::class)->getAllFields() as $field) {
                 $customFields[] = Craft::createObject([
                     'class' => CustomField::class,
                     'layout' => $this,
@@ -1095,7 +1096,7 @@ class FieldLayout extends Model
                     if ($layoutElement === null) {
                         $fieldId = $cardElement['fieldId'];
                         if ($fieldId) {
-                            $field = Craft::$app->getFields()->getFieldById($fieldId);
+                            $field = app(Fields::class)->getFieldById($fieldId);
                             $layoutElement = new CustomField();
                             $layoutElement->setField($field);
                         } else {

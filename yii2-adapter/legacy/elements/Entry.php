@@ -8,14 +8,9 @@
 namespace craft\elements;
 
 use Craft;
-use craft\base\Colorable;
 use craft\base\Element;
-use craft\base\ElementContainerFieldInterface;
 use craft\base\ElementInterface;
 use craft\base\ExpirableElementInterface;
-use craft\base\Field;
-use craft\base\FieldInterface;
-use craft\base\Iconic;
 use craft\base\NestedElementInterface;
 use craft\base\NestedElementTrait;
 use craft\behaviors\DraftBehavior;
@@ -43,7 +38,6 @@ use craft\elements\db\EntryQuery;
 use craft\events\DefineEntryTypesEvent;
 use craft\events\ElementCriteriaEvent;
 use craft\fieldlayoutelements\entries\EntryTitleField;
-use craft\fields\Matrix;
 use craft\gql\interfaces\elements\Entry as EntryInterface;
 use craft\helpers\Cp;
 use craft\helpers\DateTimeHelper;
@@ -61,9 +55,16 @@ use craft\services\Structures;
 use craft\validators\ArrayValidator;
 use craft\validators\DateCompareValidator;
 use craft\validators\DateTimeValidator;
+use CraftCms\Cms\Component\Contracts\Colorable;
+use CraftCms\Cms\Component\Contracts\Iconic;
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Element\Enums\PropagationMethod;
+use CraftCms\Cms\Field\Contracts\ElementContainerFieldInterface;
+use CraftCms\Cms\Field\Contracts\FieldInterface;
+use CraftCms\Cms\Field\Field;
+use CraftCms\Cms\Field\Fields;
+use CraftCms\Cms\Field\Matrix;
 use CraftCms\Cms\Shared\Enums\Color;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Html;
@@ -3182,7 +3183,7 @@ JS;
 
         $newFields = $this->getType()->getFieldLayout()->getCustomFields();
         $oldFields = Arr::keyBy($oldLayout->getCustomFields(), fn(FieldInterface $field) => $field->handle);
-        $fieldsService = Craft::$app->getFields();
+        $fieldsService = app(Fields::class);
 
         foreach ($newFields as $newField) {
             if (isset($oldFields[$newField->handle])) {

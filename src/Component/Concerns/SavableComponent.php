@@ -53,7 +53,7 @@ trait SavableComponent
 
     public static function onBeforeSave(QueuedClosure|callable|array|string $callback): void
     {
-        static::registerModelEvent(self::EVENT_BEFORE_SAVE, $callback);
+        static::listen(self::EVENT_BEFORE_SAVE, $callback);
     }
 
     public function beforeSave(bool $isNew): bool
@@ -72,7 +72,7 @@ trait SavableComponent
 
     public static function onAfterSave(QueuedClosure|callable|array|string $callback): void
     {
-        static::registerModelEvent(self::EVENT_AFTER_SAVE, $callback);
+        static::listen(self::EVENT_AFTER_SAVE, $callback);
     }
 
     /**
@@ -89,7 +89,7 @@ trait SavableComponent
 
     public static function onBeforeDelete(QueuedClosure|callable|array|string $callback): void
     {
-        static::registerModelEvent(self::EVENT_BEFORE_DELETE, $callback);
+        static::listen(self::EVENT_BEFORE_DELETE, $callback);
     }
 
     /**
@@ -111,7 +111,7 @@ trait SavableComponent
 
     public static function onBeforeApplyDelete(QueuedClosure|callable|array|string $callback): void
     {
-        static::registerModelEvent(self::EVENT_BEFORE_APPLY_DELETE, $callback);
+        static::listen(self::EVENT_BEFORE_APPLY_DELETE, $callback);
     }
 
     /**
@@ -128,7 +128,7 @@ trait SavableComponent
 
     public static function onAfterDelete(QueuedClosure|callable|array|string $callback): void
     {
-        static::registerModelEvent(self::EVENT_AFTER_DELETE, $callback);
+        static::listen(self::EVENT_AFTER_DELETE, $callback);
     }
 
     /**

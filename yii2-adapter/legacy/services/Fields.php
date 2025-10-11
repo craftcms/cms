@@ -8,70 +8,36 @@
 namespace craft\services;
 
 use Craft;
-use craft\base\ElementContainerFieldInterface;
 use craft\base\ElementInterface;
-use craft\base\Field;
-use craft\base\FieldInterface;
 use craft\base\FieldLayoutElement;
-use craft\base\MemoizableArray;
-use craft\behaviors\CustomFieldBehavior;
-use craft\errors\MissingComponentException;
 use craft\events\ApplyFieldSaveEvent;
 use craft\events\DefineCompatibleFieldTypesEvent;
 use craft\events\FieldEvent;
-use craft\events\FieldLayoutEvent;
+use craft\events\LocateUploadedFilesEvent;
 use craft\events\RegisterComponentTypesEvent;
-use craft\fieldlayoutelements\BaseField;
-use craft\fieldlayoutelements\CustomField;
-use craft\fields\Addresses as AddressesField;
-use craft\fields\Assets as AssetsField;
-use craft\fields\BaseRelationField;
-use craft\fields\ButtonGroup;
-use craft\fields\Categories as CategoriesField;
-use craft\fields\Checkboxes;
-use craft\fields\Color;
-use craft\fields\ContentBlock;
-use craft\fields\Country;
-use craft\fields\Date;
-use craft\fields\Dropdown;
-use craft\fields\Email;
-use craft\fields\Entries as EntriesField;
-use craft\fields\Icon;
-use craft\fields\Json;
-use craft\fields\Lightswitch;
-use craft\fields\Link;
-use craft\fields\Matrix as MatrixField;
-use craft\fields\MissingField;
-use craft\fields\Money;
-use craft\fields\MultiSelect;
-use craft\fields\Number;
-use craft\fields\PlainText;
-use craft\fields\RadioButtons;
-use craft\fields\Range;
-use craft\fields\Table as TableField;
-use craft\fields\Tags as TagsField;
-use craft\fields\Time;
-use craft\fields\Users as UsersField;
-use craft\helpers\AdminTable;
-use craft\helpers\Component as ComponentHelper;
-use craft\helpers\Cp;
-use craft\helpers\Db;
 use craft\models\FieldLayout;
-use craft\records\Field as FieldRecord;
-use craft\records\FieldLayout as FieldLayoutRecord;
-use CraftCms\Cms\Database\Expressions\FixedOrderExpression;
-use CraftCms\Cms\Database\Table;
+use CraftCms\Cms\Field\BaseRelationField;
+use CraftCms\Cms\Field\Contracts\ElementContainerFieldInterface;
+use CraftCms\Cms\Field\Contracts\FieldInterface;
+use CraftCms\Cms\Field\Events\ApplyingFieldDelete;
+use CraftCms\Cms\Field\Events\ApplyingFieldSave;
+use CraftCms\Cms\Field\Events\DefineCompatibleFieldTypes;
+use CraftCms\Cms\Field\Events\FieldDeleted;
+use CraftCms\Cms\Field\Events\FieldDeleting;
+use CraftCms\Cms\Field\Events\FieldLayoutDeleted;
+use CraftCms\Cms\Field\Events\FieldLayoutDeleting;
+use CraftCms\Cms\Field\Events\FieldLayoutSaved;
+use CraftCms\Cms\Field\Events\FieldLayoutSaving;
+use CraftCms\Cms\Field\Events\FieldSaved;
+use CraftCms\Cms\Field\Events\FieldSaving;
+use CraftCms\Cms\Field\Events\LocateUploadedFiles;
+use CraftCms\Cms\Field\Events\RegisterFieldTypes;
+use CraftCms\Cms\Field\Events\RegisterNestedEntryFieldTypes;
 use CraftCms\Cms\ProjectConfig\Events\ConfigEvent;
-use CraftCms\Cms\ProjectConfig\ProjectConfig;
-use CraftCms\Cms\ProjectConfig\ProjectConfigHelper;
-use CraftCms\Cms\Shared\Models\Info;
-use CraftCms\Cms\Support\Arr;
-use CraftCms\Cms\Support\Json as JsonHelper;
-use CraftCms\Cms\Support\Str;
-use DateTime;
-use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Collection;
-use Illuminate\Support\Facades\Request;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Event;
+use PDO;
 use Throwable;
 use yii\base\Component;
 use yii\base\Exception;
@@ -85,6 +51,7 @@ use yii\web\BadRequestHttpException;
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
+ * @deprecated 6.0.0 use {@see \CraftCms\Cms\Field\Fields} instead.
  */
 class Fields extends Component
 {
@@ -182,35 +149,11 @@ class Fields extends Component
      * @var string The active field context
      * @since 5.0.0
      */
-    public string $fieldContext = 'global';
-
-    /**
-     * @var MemoizableArray<FieldInterface>|null
-     * @see _fields()
-     */
-    private ?MemoizableArray $_fields = null;
-
-    /**
-     * @var MemoizableArray<FieldLayout>|null
-     * @see _layouts()
-     */
-    private ?MemoizableArray $_layouts = null;
-
-    /**
-     * @var array
-     */
-    private array $_savingFields = [];
-
-    /**
-     * Serializer
-     *
-     * @since 3.5.14
-     */
-    public function __serialize()
-    {
-        $vars = get_object_vars($this);
-        unset($vars['_fields']);
-        return $vars;
+    public string $fieldContext {
+        get => app(\CraftCms\Cms\Field\Fields::class)->fieldContext;
+    set(string $value) {
+            app(\CraftCms\Cms\Field\Fields::class)->fieldContext = $value;
+        }
     }
 
     // Fields
@@ -224,44 +167,7 @@ class Fields extends Component
      */
     public function getAllFieldTypes(): array
     {
-        $fieldTypes = [
-            AddressesField::class,
-            AssetsField::class,
-            ButtonGroup::class,
-            CategoriesField::class,
-            Checkboxes::class,
-            Color::class,
-            ContentBlock::class,
-            Country::class,
-            Date::class,
-            Dropdown::class,
-            Email::class,
-            EntriesField::class,
-            Icon::class,
-            Json::class,
-            Lightswitch::class,
-            Link::class,
-            MatrixField::class,
-            Money::class,
-            MultiSelect::class,
-            Number::class,
-            PlainText::class,
-            RadioButtons::class,
-            Range::class,
-            TableField::class,
-            TagsField::class,
-            Time::class,
-            UsersField::class,
-        ];
-
-        // Fire a 'registerFieldTypes' event
-        if ($this->hasEventHandlers(self::EVENT_REGISTER_FIELD_TYPES)) {
-            $event = new RegisterComponentTypesEvent(['types' => $fieldTypes]);
-            $this->trigger(self::EVENT_REGISTER_FIELD_TYPES, $event);
-            return $event->types;
-        }
-
-        return $fieldTypes;
+        return app(\CraftCms\Cms\Field\Fields::class)->getAllFieldTypes()->all();
     }
 
     /**
@@ -272,11 +178,7 @@ class Fields extends Component
      */
     public function getFieldTypesWithContent(): array
     {
-        return Collection::make($this->getAllFieldTypes())
-            /** @var class-string<FieldInterface> $class */
-            ->filter(fn(string $class) => $class::dbType() !== null)
-            ->values()
-            ->all();
+        return app(\CraftCms\Cms\Field\Fields::class)->getFieldTypesWithContent()->all();
     }
 
     /**
@@ -290,43 +192,7 @@ class Fields extends Component
      */
     public function getCompatibleFieldTypes(FieldInterface $field, bool $includeCurrent = true): array
     {
-        // If the field has any validation errors and has an ID, swap it with the saved field
-        if (!$field->getIsNew() && $field->hasErrors()) {
-            $field = $this->getFieldById($field->id);
-        }
-
-        $types = [];
-        $dbType = $field::dbType();
-
-        if (is_string($dbType)) {
-            foreach ($this->getAllFieldTypes() as $class) {
-                /** @var class-string<FieldInterface> $class */
-                if (
-                    ($includeCurrent || $class !== $field::class) &&
-                    $this->areFieldTypesCompatible($field::class, $class)
-                ) {
-                    $types[] = $class;
-                }
-            }
-        }
-
-        // Make sure the current field class is in there if it's supposed to be
-        /** @var FieldInterface $field */
-        if ($includeCurrent && !in_array(get_class($field), $types, true)) {
-            $types[] = get_class($field);
-        }
-
-        // Fire a 'defineCompatibleFieldTypes' event
-        if ($this->hasEventHandlers(self::EVENT_DEFINE_COMPATIBLE_FIELD_TYPES)) {
-            $event = new DefineCompatibleFieldTypesEvent([
-                'field' => $field,
-                'compatibleTypes' => $types,
-            ]);
-            $this->trigger(self::EVENT_DEFINE_COMPATIBLE_FIELD_TYPES, $event);
-            return $event->compatibleTypes;
-        }
-
-        return $types;
+        return app(\CraftCms\Cms\Field\Fields::class)->getCompatibleFieldTypes($field, $includeCurrent)->all();
     }
 
     /**
@@ -340,21 +206,7 @@ class Fields extends Component
      */
     public function areFieldTypesCompatible(string $fieldA, string $fieldB): bool
     {
-        if ($fieldA === $fieldB) {
-            return true;
-        }
-
-        $dbTypeA = $fieldA::dbType();
-        if (!is_string($dbTypeA)) {
-            return false;
-        }
-
-        $dbTypeB = $fieldB::dbType();
-        if (!is_string($dbTypeB)) {
-            return false;
-        }
-
-        return Db::areColumnTypesCompatible($dbTypeA, $dbTypeB);
+        return app(\CraftCms\Cms\Field\Fields::class)->areFieldTypesCompatible($fieldA, $fieldB);
     }
 
     /**
@@ -365,18 +217,7 @@ class Fields extends Component
      */
     public function getNestedEntryFieldTypes(): array
     {
-        $fieldTypes = [
-            MatrixField::class,
-        ];
-
-        // Fire a 'registerNestedEntryFieldTypes' event
-        if ($this->hasEventHandlers(self::EVENT_REGISTER_NESTED_ENTRY_FIELD_TYPES)) {
-            $event = new RegisterComponentTypesEvent(['types' => $fieldTypes]);
-            $this->trigger(self::EVENT_REGISTER_NESTED_ENTRY_FIELD_TYPES, $event);
-            return $event->types;
-        }
-
-        return $fieldTypes;
+        return app(\CraftCms\Cms\Field\Fields::class)->getNestedEntryFieldTypes()->all();
     }
 
     /**
@@ -388,14 +229,7 @@ class Fields extends Component
      */
     public function getRelationalFieldTypes(): array
     {
-        $relationalFields = [];
-        foreach ($this->getAllFieldTypes() as $fieldClass) {
-            if (is_subclass_of($fieldClass, BaseRelationField::class)) {
-                $relationalFields[] = $fieldClass;
-            }
-        }
-
-        return $relationalFields;
+        return app(\CraftCms\Cms\Field\Fields::class)->getRelationalFieldTypes()->all();
     }
 
     /**
@@ -409,56 +243,7 @@ class Fields extends Component
      */
     public function createField(mixed $config): FieldInterface
     {
-        if (is_string($config)) {
-            $config = ['type' => $config];
-        }
-
-        if (!empty($config['id']) && empty($config['uid']) && is_numeric($config['id'])) {
-            $uid = \Illuminate\Support\Facades\DB::table(Table::FIELDS)->uidById($config['id']);
-            $config['uid'] = $uid;
-        }
-
-        try {
-            $field = ComponentHelper::createComponent($config, FieldInterface::class);
-        } catch (MissingComponentException $e) {
-            $config['errorMessage'] = $e->getMessage();
-            $config['expectedType'] = $config['type'];
-            unset($config['type']);
-
-            $field = new MissingField($config);
-        }
-
-        return $field;
-    }
-
-    /**
-     * Returns a memoizable array of fields.
-     *
-     * @param string|string[]|false|null $context The field context(s) to fetch fields from. Defaults to [[\craft\services\Fields::$fieldContext]].
-     * Set to `false` to get all fields regardless of context.
-     *
-     * @return MemoizableArray<FieldInterface>
-     */
-    private function _fields(mixed $context = null): MemoizableArray
-    {
-        $context ??= $this->fieldContext;
-
-        if (!isset($this->_fields)) {
-            $this->_fields = new MemoizableArray(
-                $this->_createFieldQuery()->get()->all(),
-                fn(object $config) => $this->createField((array) $config),
-            );
-        }
-
-        if ($context === false) {
-            return $this->_fields;
-        }
-
-        if (is_array($context)) {
-            return $this->_fields->whereIn('context', $context, true);
-        }
-
-        return $this->_fields->where('context', $context, true);
+        return app(\CraftCms\Cms\Field\Fields::class)->createField($config);
     }
 
     /**
@@ -471,7 +256,7 @@ class Fields extends Component
      */
     public function getAllFields(mixed $context = null): array
     {
-        return $this->_fields($context)->all();
+        return app(\CraftCms\Cms\Field\Fields::class)->getAllFields($context)->all();
     }
 
     /**
@@ -484,10 +269,7 @@ class Fields extends Component
      */
     public function getFieldsWithContent(mixed $context = null): array
     {
-        return Collection::make($this->getAllFields($context))
-            ->filter(fn(FieldInterface $field) => $field::dbType() !== null)
-            ->values()
-            ->all();
+        return app(\CraftCms\Cms\Field\Fields::class)->getFieldsWithContent($context)->values()->all();
     }
 
     /**
@@ -501,10 +283,7 @@ class Fields extends Component
      */
     public function getFieldsWithoutContent(mixed $context = null): array
     {
-        return Collection::make($this->getAllFields($context))
-            ->filter(fn(FieldInterface $field) => $field::dbType() === null)
-            ->values()
-            ->all();
+        return app(\CraftCms\Cms\Field\Fields::class)->getFieldsWithoutContent($context)->values()->all();
     }
 
     /**
@@ -519,10 +298,7 @@ class Fields extends Component
      */
     public function getFieldsByType(string $type, mixed $context = null): array
     {
-        return Collection::make($this->getAllFields($context))
-            ->filter(fn(FieldInterface $field) => $field instanceof $type)
-            ->values()
-            ->all();
+        return app(\CraftCms\Cms\Field\Fields::class)->getFieldsByType($type, $context)->values()->all();
     }
 
     /**
@@ -534,7 +310,7 @@ class Fields extends Component
      */
     public function getFieldById(int $fieldId): ?FieldInterface
     {
-        return $this->_fields(false)->firstWhere('id', $fieldId);
+        return app(\CraftCms\Cms\Field\Fields::class)->getFieldById($fieldId);
     }
 
     /**
@@ -546,7 +322,7 @@ class Fields extends Component
      */
     public function getFieldByUid(string $fieldUid): ?FieldInterface
     {
-        return $this->_fields(false)->firstWhere('uid', $fieldUid, true);
+        return app(\CraftCms\Cms\Field\Fields::class)->getFieldByUid($fieldUid);
     }
 
     /**
@@ -555,10 +331,10 @@ class Fields extends Component
      * ---
      *
      * ```php
-     * $body = Craft::$app->fields->getFieldByHandle('body');
+     * $body = app(Fields::class)->getFieldByHandle('body');
      * ```
      * ```twig
-     * {% set body = craft.app.fields.getFieldByHandle('body') %}
+     * {% set body = craft.fields.getFieldByHandle('body') %}
      * {{ body.instructions }}
      * ```
      *
@@ -570,7 +346,7 @@ class Fields extends Component
      */
     public function getFieldByHandle(string $handle, mixed $context = null): ?FieldInterface
     {
-        return $this->_fields($context)->firstWhere('handle', $handle, true);
+        return app(\CraftCms\Cms\Field\Fields::class)->getFieldByHandle($handle, $context);
     }
 
     /**
@@ -583,7 +359,7 @@ class Fields extends Component
      */
     public function doesFieldWithHandleExist(string $handle, ?string $context = null): bool
     {
-        return Collection::make($this->getAllFields($context))->contains('handle', '===', $handle);
+        return app(\CraftCms\Cms\Field\Fields::class)->doesFieldWithHandleExist($handle, $context);
     }
 
     /**
@@ -596,17 +372,7 @@ class Fields extends Component
      */
     public function createFieldConfig(FieldInterface $field): array
     {
-        return [
-            'name' => $field->name,
-            'handle' => $field->handle,
-            'columnSuffix' => $field->columnSuffix,
-            'instructions' => $field->instructions,
-            'searchable' => $field->searchable,
-            'translationMethod' => $field->translationMethod,
-            'translationKeyFormat' => $field->translationKeyFormat,
-            'type' => get_class($field),
-            'settings' => ProjectConfigHelper::packAssociativeArrays($field->getSettings()),
-        ];
+        return app(\CraftCms\Cms\Field\Fields::class)->createFieldConfig($field);
     }
 
     /**
@@ -620,52 +386,7 @@ class Fields extends Component
      */
     public function saveField(FieldInterface $field, bool $runValidation = true): bool
     {
-        if ($field instanceof MissingField) {
-            $error = $field->errorMessage ?? "Unable to find component class '$field->expectedType'.";
-            $field->addError('type', $error);
-            return false;
-        }
-
-        $isNewField = $field->getIsNew();
-
-        // Fire a 'beforeSaveField' event
-        if ($this->hasEventHandlers(self::EVENT_BEFORE_SAVE_FIELD)) {
-            $this->trigger(self::EVENT_BEFORE_SAVE_FIELD, new FieldEvent([
-                'field' => $field,
-                'isNew' => $isNewField,
-            ]));
-        }
-
-        if (!$field->beforeSave($isNewField)) {
-            return false;
-        }
-
-        if ($runValidation && !$field->validate()) {
-            Craft::info('Field not saved due to validation error.', __METHOD__);
-            return false;
-        }
-
-        $this->prepFieldForSave($field);
-        $configData = $this->createFieldConfig($field);
-        $appliedConfig = false;
-
-        // Only store field data in the project config for global context
-        if ($field->context === 'global') {
-            $configPath = ProjectConfig::PATH_FIELDS . '.' . $field->uid;
-            $appliedConfig = app(ProjectConfig::class)->set($configPath, $configData,
-                "Save field “{$field->handle}”");
-        }
-
-        if (!$appliedConfig) {
-            // If it’s not a global field, or there weren't any changes in the main field settings, apply the save to the DB + call afterSave()
-            $this->applyFieldSave($field->uid, $configData, $field->context);
-        }
-
-        if ($isNewField) {
-            $field->id = \Illuminate\Support\Facades\DB::table(Table::FIELDS)->idByUid($field->uid);
-        }
-
-        return true;
+        return app(\CraftCms\Cms\Field\Fields::class)->saveField($field, $runValidation);
     }
 
     /**
@@ -677,24 +398,7 @@ class Fields extends Component
      */
     public function prepFieldForSave(FieldInterface $field): void
     {
-        // Clear the translation key format if not using a custom translation method
-        if ($field->translationMethod !== Field::TRANSLATION_METHOD_CUSTOM) {
-            $field->translationKeyFormat = null;
-        }
-
-        $isNew = $field->getIsNew();
-
-        // Make sure it's got a UUID
-        if ($isNew) {
-            if (empty($field->uid)) {
-                $field->uid = Str::uuid()->toString();
-            }
-        } elseif (!$field->uid) {
-            $field->uid = \Illuminate\Support\Facades\DB::table(Table::FIELDS)->uidById($field->id);
-        }
-
-        // Store with all the populated data for future reference.
-        $this->_savingFields[$field->uid] = $field;
+        app(\CraftCms\Cms\Field\Fields::class)->prepFieldForSave($field);
     }
 
     /**
@@ -706,14 +410,9 @@ class Fields extends Component
      */
     public function handleChangedField(ConfigEvent $event): void
     {
-        $data = $event->newValue;
-        $fieldUid = $event->tokenMatches[0];
+        DB::connection()->getPdo()->setAttribute(PDO::ATTR_EMULATE_PREPARES, false);
 
-        if (!is_array($data)) {
-            return;
-        }
-
-        $this->applyFieldSave($fieldUid, $data, 'global');
+        app(\CraftCms\Cms\Field\Fields::class)->handleChangedField($event);
     }
 
     /**
@@ -725,13 +424,7 @@ class Fields extends Component
      */
     public function deleteFieldById(int $fieldId): bool
     {
-        $field = $this->getFieldById($fieldId);
-
-        if (!$field) {
-            return false;
-        }
-
-        return $this->deleteField($field);
+        return app(\CraftCms\Cms\Field\Fields::class)->deleteFieldById($fieldId);
     }
 
     /**
@@ -744,25 +437,7 @@ class Fields extends Component
      */
     public function deleteField(FieldInterface $field): bool
     {
-        // Fire a 'beforeDeleteField' event
-        if ($this->hasEventHandlers(self::EVENT_BEFORE_DELETE_FIELD)) {
-            $this->trigger(self::EVENT_BEFORE_DELETE_FIELD, new FieldEvent([
-                'field' => $field,
-            ]));
-        }
-
-        if (!$field->beforeDelete()) {
-            return false;
-        }
-
-        if ($field->context === 'global') {
-            app(ProjectConfig::class)->remove(ProjectConfig::PATH_FIELDS . '.' . $field->uid,
-                "Delete the “{$field->handle}” field");
-        } else {
-            $this->applyFieldDelete($field->uid);
-        }
-
-        return true;
+        return app(\CraftCms\Cms\Field\Fields::class)->deleteField($field);
     }
 
     /**
@@ -772,8 +447,7 @@ class Fields extends Component
      */
     public function handleDeletedField(ConfigEvent $event): void
     {
-        $fieldUid = $event->tokenMatches[0];
-        $this->applyFieldDelete($fieldUid);
+        app(\CraftCms\Cms\Field\Fields::class)->handleDeletedField($event);
     }
 
     /**
@@ -786,52 +460,7 @@ class Fields extends Component
      */
     public function applyFieldDelete(string $fieldUid): void
     {
-        $fieldRecord = $this->_getFieldRecord($fieldUid);
-
-        if (!$fieldRecord->id) {
-            return;
-        }
-
-        $field = $this->getFieldById($fieldRecord->id);
-
-        // Fire a 'beforeApplyFieldDelete' event
-        if ($this->hasEventHandlers(self::EVENT_BEFORE_APPLY_FIELD_DELETE)) {
-            $this->trigger(self::EVENT_BEFORE_APPLY_FIELD_DELETE, new FieldEvent([
-                'field' => $field,
-            ]));
-        }
-
-        \Illuminate\Support\Facades\DB::beginTransaction();
-
-        try {
-            $field->beforeApplyDelete();
-
-            // Soft-delete the row in `fields`
-            \Illuminate\Support\Facades\DB::table(Table::FIELDS)->softDelete($fieldRecord->id);
-
-            $field->afterDelete();
-
-            \Illuminate\Support\Facades\DB::commit();
-        } catch (Throwable $e) {
-            \Illuminate\Support\Facades\DB::rollBack();
-            throw $e;
-        }
-
-        // Clear caches
-        $this->_fields = null;
-
-        // Update the field version
-        $this->updateFieldVersion();
-
-        // Fire an 'afterDeleteField' event
-        if ($this->hasEventHandlers(self::EVENT_AFTER_DELETE_FIELD)) {
-            $this->trigger(self::EVENT_AFTER_DELETE_FIELD, new FieldEvent([
-                'field' => $field,
-            ]));
-        }
-
-        // Invalidate all element caches
-        Craft::$app->getElements()->invalidateAllCaches();
+        app(\CraftCms\Cms\Field\Fields::class)->applyFieldDelete($fieldUid);
     }
 
     /**
@@ -844,8 +473,7 @@ class Fields extends Component
      */
     public function refreshFields(): void
     {
-        $this->_fields = null;
-        $this->updateFieldVersion();
+        app(\CraftCms\Cms\Field\Fields::class)->refreshFields();
     }
 
     /**
@@ -858,81 +486,11 @@ class Fields extends Component
      */
     public function findFieldUsages(FieldInterface $field): array
     {
-        if (!isset($field->id)) {
-            return [];
-        }
-
-        $layouts = [];
-
-        foreach ($this->getAllLayouts() as $layout) {
-            if (
-                ComponentHelper::validateComponentClass($layout->type, ElementInterface::class) &&
-                $layout->isFieldIncluded(fn(BaseField $layoutField) => (
-                    $layoutField instanceof CustomField &&
-                    $layoutField->getFieldUid() === $field->uid
-                ))
-            ) {
-                $layouts[] = $layout;
-            }
-        }
-
-        return $layouts;
-    }
-
-    /**
-     * @return array<int,FieldLayout[]>
-     */
-    private function allFieldUsages(): array
-    {
-        $usages = [];
-
-        foreach ($this->getAllLayouts() as $layout) {
-            $uniqueFieldIds = [];
-            foreach ($layout->getCustomFields() as $field) {
-                $uniqueFieldIds[$field->id] = true;
-            }
-            foreach (array_keys($uniqueFieldIds) as $fieldId) {
-                $usages[$fieldId][] = $layout;
-            }
-        }
-
-        return $usages;
+        return app(\CraftCms\Cms\Field\Fields::class)->findFieldUsages($field)->all();
     }
 
     // Layouts
     // -------------------------------------------------------------------------
-
-    /**
-     * Returns a memoizable array of all field layouts.
-     *
-     * @return MemoizableArray<FieldLayout>
-     */
-    private function _layouts(): MemoizableArray
-    {
-        if (!isset($this->_layouts)) {
-            if (Craft::$app->getIsInstalled()) {
-                $layoutConfigs = $this->_createLayoutQuery()->get()->all();
-            } else {
-                $layoutConfigs = [];
-            }
-
-            $this->_layouts = new MemoizableArray($layoutConfigs,
-                fn(object $config) => $this->_layoutFromConfig((array) $config));
-        }
-
-        return $this->_layouts;
-    }
-
-    private function _layoutFromConfig(array $config): FieldLayout
-    {
-        $nestedConfig = Arr::pull($config, 'config');
-
-        if ($nestedConfig) {
-            $config += is_string($nestedConfig) ? JsonHelper::decode($nestedConfig) : $nestedConfig;
-        }
-
-        return $this->createLayout($config);
-    }
 
     /**
      * Returns all saved field layouts.
@@ -942,7 +500,7 @@ class Fields extends Component
      */
     public function getAllLayouts(): array
     {
-        return $this->_layouts()->all();
+        return app(\CraftCms\Cms\Field\Fields::class)->getAllLayouts()->all();
     }
 
     /**
@@ -955,16 +513,7 @@ class Fields extends Component
      */
     public function getLayoutById(int $layoutId, bool $withTrashed = false): ?FieldLayout
     {
-        $layout = $this->_layouts()->firstWhere('id', $layoutId);
-
-        if ($layout === null && $withTrashed) {
-            $config = $this->_createLayoutQuery(true)->where('id', $layoutId)->first();
-            if ($config) {
-                return $this->_layoutFromConfig((array) $config);
-            }
-        }
-
-        return $layout;
+        return app(\CraftCms\Cms\Field\Fields::class)->getLayoutById($layoutId, $withTrashed);
     }
 
     /**
@@ -976,7 +525,7 @@ class Fields extends Component
      */
     public function getLayoutByUid(string $uid): ?FieldLayout
     {
-        return $this->_layouts()->firstWhere('uid', $uid);
+        return app(\CraftCms\Cms\Field\Fields::class)->getLayoutByUid($uid);
     }
 
     /**
@@ -989,7 +538,7 @@ class Fields extends Component
      */
     public function getLayoutsByIds(array $layoutIds): array
     {
-        return $this->_layouts()->whereIn('id', $layoutIds)->all();
+        return app(\CraftCms\Cms\Field\Fields::class)->getLayoutsByIds($layoutIds)->all();
     }
 
     /**
@@ -1002,11 +551,7 @@ class Fields extends Component
      */
     public function getLayoutByType(string $type, bool $create = true): ?FieldLayout
     {
-        $layout = $this->_layouts()->firstWhere('type', $type);
-        if (!$layout && $create) {
-            return new FieldLayout(['type' => $type]);
-        }
-        return $layout;
+        return app(\CraftCms\Cms\Field\Fields::class)->getLayoutByType($type, $create);
     }
 
     /**
@@ -1019,7 +564,7 @@ class Fields extends Component
      */
     public function getLayoutsByType(string $type): array
     {
-        return $this->_layouts()->where('type', $type)->all();
+        return app(\CraftCms\Cms\Field\Fields::class)->getLayoutsByType($type)->all();
     }
 
     /**
@@ -1032,8 +577,7 @@ class Fields extends Component
      */
     public function createLayout(array $config): FieldLayout
     {
-        $config['class'] = FieldLayout::class;
-        return Craft::createObject($config);
+        return app(\CraftCms\Cms\Field\Fields::class)->createLayout($config);
     }
 
     /**
@@ -1049,15 +593,7 @@ class Fields extends Component
      */
     public function createLayoutElement(array $config): FieldLayoutElement
     {
-        $type = Arr::pull($config, 'type');
-
-        if (!$type || !is_subclass_of($type, FieldLayoutElement::class)) {
-            throw new InvalidArgumentException("Invalid field layout element class: $type");
-        }
-
-        $config['class'] = $type;
-        /** @noinspection PhpIncompatibleReturnTypeInspection */
-        return Craft::createObject($config);
+        return app(\CraftCms\Cms\Field\Fields::class)->createLayoutElement($config);
     }
 
     /**
@@ -1070,21 +606,7 @@ class Fields extends Component
      */
     public function assembleLayoutFromPost(?string $namespace = null): FieldLayout
     {
-        $paramPrefix = $namespace ? rtrim($namespace, '.') . '.' : '';
-        $config = JsonHelper::decode(Request::get("{$paramPrefix}fieldLayout"));
-        $config['generatedFields'] = Request::get("{$paramPrefix}generatedFields") ?: null;
-        $config['cardView'] = Request::get("{$paramPrefix}cardView") ?: null;
-        $config['cardThumbAlignment'] = Request::get($paramPrefix . 'thumbAlignment');
-        $layout = $this->createLayout($config);
-
-        // Make sure all the elements have a dateAdded value set
-        foreach ($layout->getTabs() as $tab) {
-            foreach ($tab->getElements() as $layoutElement) {
-                $layoutElement->dateAdded ??= new DateTime();
-            }
-        }
-
-        return $layout;
+        return app(\CraftCms\Cms\Field\Fields::class)->assembleLayoutFromPost($namespace);
     }
 
     /**
@@ -1098,83 +620,11 @@ class Fields extends Component
      */
     public function saveLayout(FieldLayout $layout, bool $runValidation = true): bool
     {
-        if (!$layout->id) {
-            // Maybe the ID just wasn't known
-            $layout->id = \Illuminate\Support\Facades\DB::table(Table::FIELDLAYOUTS)->idByUid($layout->uid);
+        try {
+            return app(\CraftCms\Cms\Field\Fields::class)->saveLayout($layout, $runValidation);
+        } catch (\Exception $e) {
+            throw new Exception($e->getMessage(), $e->getCode(), $e);
         }
-
-        $isNewLayout = !$layout->id;
-
-        // Fire a 'beforeSaveFieldLayout' event
-        if ($this->hasEventHandlers(self::EVENT_BEFORE_SAVE_FIELD_LAYOUT)) {
-            $this->trigger(self::EVENT_BEFORE_SAVE_FIELD_LAYOUT, new FieldLayoutEvent([
-                'layout' => $layout,
-                'isNew' => $isNewLayout,
-            ]));
-        }
-
-        if ($runValidation && !$layout->validate()) {
-            Craft::info('Field layout not saved due to validation error.', __METHOD__);
-            return false;
-        }
-
-        if (!$isNewLayout) {
-            // Get the current layout
-            /** @var FieldLayoutRecord|null $layoutRecord */
-            $layoutRecord = FieldLayoutRecord::findWithTrashed()
-                ->andWhere(['id' => $layout->id])
-                ->one();
-
-            if (!$layoutRecord) {
-                throw new Exception('Invalid field layout ID: ' . $layout->id);
-            }
-        } else {
-            $layoutRecord = new FieldLayoutRecord();
-        }
-
-        // Save the layout
-        $layoutRecord->type = $layout->type;
-        $layoutRecord->config = $layout->getConfig();
-        $layoutRecord->uid = $layout->uid;
-
-        if (!$isNewLayout) {
-            $layoutRecord->id = $layout->id;
-        }
-
-        if ($layoutRecord->dateDeleted) {
-            $layoutRecord->restore();
-        } else {
-            $layoutRecord->save(false);
-        }
-
-        if ($isNewLayout) {
-            $layout->id = $layoutRecord->id;
-        }
-
-        $layout->uid = $layoutRecord->uid;
-
-        // Fire an 'afterSaveFieldLayout' event
-        if ($this->hasEventHandlers(self::EVENT_AFTER_SAVE_FIELD_LAYOUT)) {
-            $this->trigger(self::EVENT_AFTER_SAVE_FIELD_LAYOUT, new FieldLayoutEvent([
-                'layout' => $layout,
-                'isNew' => $isNewLayout,
-            ]));
-        }
-
-        // Clear caches
-        $this->_layouts = null;
-
-        // Refresh CustomFieldBehavior in case any custom field handles were just added/removed
-        $this->updateFieldVersion();
-
-        // Tell the current CustomFieldBehavior class about the fields, since they might have custom handles
-        foreach ($layout->getCustomFieldElements() as $layoutElement) {
-            if (isset($layoutElement->handle)) {
-                CustomFieldBehavior::$fieldHandles[$layoutElement->handle] = true;
-            }
-        }
-
-        return true;
     }
 
     /**
@@ -1186,19 +636,7 @@ class Fields extends Component
      */
     public function deleteLayoutById(array|int $layoutId): bool
     {
-        if (!$layoutId) {
-            return false;
-        }
-
-        foreach ((array)$layoutId as $thisLayoutId) {
-            $layout = $this->getLayoutById($thisLayoutId);
-
-            if ($layout) {
-                $this->deleteLayout($layout);
-            }
-        }
-
-        return true;
+        return app(\CraftCms\Cms\Field\Fields::class)->deleteLayoutById($layoutId);
     }
 
     /**
@@ -1210,25 +648,7 @@ class Fields extends Component
      */
     public function deleteLayout(FieldLayout $layout): bool
     {
-        // Fire a 'beforeDeleteFieldLayout' event
-        if ($this->hasEventHandlers(self::EVENT_BEFORE_DELETE_FIELD_LAYOUT)) {
-            $this->trigger(self::EVENT_BEFORE_DELETE_FIELD_LAYOUT, new FieldLayoutEvent([
-                'layout' => $layout,
-            ]));
-        }
-
-        \Illuminate\Support\Facades\DB::table(Table::FIELDLAYOUTS)->softDelete($layout->id);
-
-        if ($this->hasEventHandlers(self::EVENT_AFTER_DELETE_FIELD_LAYOUT)) {
-            $this->trigger(self::EVENT_AFTER_DELETE_FIELD_LAYOUT, new FieldLayoutEvent([
-                'layout' => $layout,
-            ]));
-        }
-
-        // Clear caches
-        $this->_layouts = null;
-
-        return true;
+        return app(\CraftCms\Cms\Field\Fields::class)->deleteLayout($layout);
     }
 
     /**
@@ -1240,14 +660,7 @@ class Fields extends Component
      */
     public function deleteLayoutsByType(string $type): bool
     {
-        $affectedRows = \Illuminate\Support\Facades\DB::table(Table::FIELDLAYOUTS)
-            ->where('type', $type)
-            ->softDelete();
-
-        // Clear caches
-        $this->_layouts = null;
-
-        return (bool)$affectedRows;
+        return app(\CraftCms\Cms\Field\Fields::class)->deleteLayoutsByType($type);
     }
 
     /**
@@ -1260,12 +673,7 @@ class Fields extends Component
      */
     public function restoreLayoutById(int $id): bool
     {
-        $affectedRows = \Illuminate\Support\Facades\DB::table(Table::FIELDLAYOUTS)->restore($id);
-
-        // Clear caches
-        $this->_layouts = null;
-
-        return (bool)$affectedRows;
+        return app(\CraftCms\Cms\Field\Fields::class)->restoreLayoutById($id);
     }
 
     /**
@@ -1276,30 +684,16 @@ class Fields extends Component
      */
     public function getFieldVersion(): ?string
     {
-        $fieldVersion = Info::fetch()->fieldVersion;
-
-        // If it doesn't start with `3@`, then it needs to be updated
-        if ($fieldVersion === null || !str_starts_with($fieldVersion, '3@')) {
-            return null;
-        }
-
-        return $fieldVersion;
+        return app(\CraftCms\Cms\Field\Fields::class)->getFieldVersion();
     }
 
     /**
      * Sets a new field version, so the CustomFieldBehavior class
      * will get regenerated on the next request.
-     *
      */
     public function updateFieldVersion(): void
     {
-        // Make sure that CustomFieldBehavior has already been loaded,
-        // so the field version change won't be detected until the next request
-        class_exists(CustomFieldBehavior::class);
-
-        Info::fetch()->update([
-            'fieldVersion' => '3@' . Str::random(10),
-        ]);
+        app(\CraftCms\Cms\Field\Fields::class)->updateFieldVersion();
     }
 
     /**
@@ -1313,100 +707,7 @@ class Fields extends Component
      */
     public function applyFieldSave(string $fieldUid, array $data, string $context): void
     {
-        $fieldRecord = $this->_getFieldRecord($fieldUid, true);
-        $isNewField = $fieldRecord->getIsNewRecord();
-        $oldSettings = $fieldRecord->getOldAttribute('settings');
-        $oldField = !$isNewField ? $this->getFieldById($fieldRecord->id) : null;
-
-        // For control panel save requests, make sure we have all the custom data already saved on the object.
-        $field = $this->_savingFields[$fieldUid] ?? null;
-
-        // Fire a 'beforeApplyFieldSave' event
-        if ($this->hasEventHandlers(self::EVENT_BEFORE_APPLY_FIELD_SAVE)) {
-            $this->trigger(self::EVENT_BEFORE_APPLY_FIELD_SAVE, new ApplyFieldSaveEvent([
-                'field' => $oldField,
-                'config' => $data,
-            ]));
-        }
-
-        \Illuminate\Support\Facades\DB::beginTransaction();
-
-        try {
-            // Track whether we should remove the field’s search indexes after save
-            $searchable = $data['searchable'] ?? false;
-            $deleteSearchIndexes = !$isNewField && !$searchable && $fieldRecord->searchable;
-
-            // Clear the translation key format if not using a custom translation method
-            if ($data['translationMethod'] !== Field::TRANSLATION_METHOD_CUSTOM) {
-                $data['translationKeyFormat'] = null;
-            }
-
-            if (!empty($data['settings']) && is_array($data['settings'])) {
-                $data['settings'] = ProjectConfigHelper::unpackAssociativeArrays($data['settings']);
-            }
-
-            $fieldRecord->uid = $fieldUid;
-            $fieldRecord->name = $data['name'];
-            $fieldRecord->handle = $data['handle'];
-            $fieldRecord->context = $context;
-            $fieldRecord->columnSuffix = $data['columnSuffix'] ?? null;
-            $fieldRecord->instructions = $data['instructions'];
-            $fieldRecord->searchable = $searchable;
-            $fieldRecord->translationMethod = $data['translationMethod'];
-            $fieldRecord->translationKeyFormat = $data['translationKeyFormat'];
-            $fieldRecord->type = $data['type'];
-            $fieldRecord->settings = $data['settings'] ?? null;
-
-            if ($fieldRecord->dateDeleted) {
-                $fieldRecord->restore();
-            } else {
-                $fieldRecord->save(false);
-            }
-
-            \Illuminate\Support\Facades\DB::commit();
-        } catch (Throwable $e) {
-            \Illuminate\Support\Facades\DB::rollBack();
-            throw $e;
-        }
-
-        // Clear caches
-        $this->refreshFields();
-
-        // Tell the current CustomFieldBehavior class about the field
-        CustomFieldBehavior::$fieldHandles[$fieldRecord->handle] = true;
-
-        // Now get the field, if it's not a field save request
-        $field ??= $this->getFieldById($fieldRecord->id);
-        if ($isNewField) {
-            $field->id = $fieldRecord->id;
-        }
-
-        if (!$isNewField) {
-            // Set the old field handle and settings on the model in case the field type needs to do something with it
-            $field->oldHandle = $fieldRecord->getOldHandle();
-            $field->oldSettings = is_string($oldSettings) ? JsonHelper::decode($oldSettings) : null;
-        }
-
-        $field->afterSave($isNewField);
-
-        // Fire an 'afterSaveField' event
-        if ($this->hasEventHandlers(self::EVENT_AFTER_SAVE_FIELD)) {
-            $this->trigger(self::EVENT_AFTER_SAVE_FIELD, new FieldEvent([
-                'field' => $field,
-                'isNew' => $isNewField,
-            ]));
-        }
-
-        // If we just dropped `searchable`, delete the field’s search indexes immediately.
-        if ($deleteSearchIndexes) {
-            \Illuminate\Support\Facades\DB::table(Table::SEARCHINDEX)
-                ->where('attribute', 'field')
-                ->where('fieldId', $field->id)
-                ->delete();
-        }
-
-        // Invalidate all element caches
-        Craft::$app->getElements()->invalidateAllCaches();
+        app(\CraftCms\Cms\Field\Fields::class)->applyFieldSave($fieldUid, $data, $context);
     }
 
 
@@ -1430,156 +731,122 @@ class Fields extends Component
         string $orderBy = 'name',
         int $sortDir = SORT_ASC,
     ): array {
-        $searchTerm = $searchTerm ? trim($searchTerm) : $searchTerm;
-
-        $offset = ($page - 1) * $limit;
-        $query = $this->_createFieldQuery()
-            ->where('context', 'global');
-
-        $sortDir = $sortDir === SORT_ASC ? 'asc' : 'desc';
-
-        if ($orderBy === 'type') {
-            /** @var Collection<class-string<FieldInterface>> $types */
-            $types = Collection::make($this->getAllFieldTypes())
-                ->sortBy(
-                    fn(string $class) => $class::displayName(),
-                    descending: $sortDir === 'desc',
-                );
-
-            $query->orderBy(new FixedOrderExpression('type', $types->all()))
-                ->orderBy('name', $sortDir)
-                ->orderBy('handle', $sortDir);
-        } else {
-            $query->orderBy($orderBy, $sortDir);
-            if ($orderBy === 'name') {
-                $query->orderBy('handle', $sortDir);
-            }
-        }
-
-        if ($searchTerm !== null && $searchTerm !== '') {
-            $searchParams = $this->_getSearchParams($searchTerm);
-            if (!empty($searchParams)) {
-                $query->where(function(Builder $query) use ($searchParams) {
-                    foreach ($searchParams as $param) {
-                        $query->orWhere($param[0], $param[1], $param[2]);
-                    }
-                });
-            }
-        }
-
-        $total = $query->count();
-
-        $query->limit($limit);
-        $query->offset($offset);
-
-        $result = $query->get();
-
-        $tableData = [];
-        $usages = $this->allFieldUsages();
-
-        foreach ($result as $item) {
-            $field = $this->createField((array) $item);
-
-            $tableData[] = [
-                'id' => $field->id,
-                'title' => Craft::t('site', $field->name),
-                'translatable' => $field->getIsTranslatable(null) ? ($field->getTranslationDescription(null) ?? Craft::t('app',
-                    'This field is translatable.')) : false,
-                'searchable' => (bool)$field->searchable,
-                'url' => $field->getCpEditUrl(),
-                'handle' => $field->handle,
-                'type' => [
-                    'isMissing' => $field instanceof MissingField,
-                    'label' => $field instanceof MissingField ? $field->expectedType : $field->displayName(),
-                    'icon' => Cp::iconSvg($field::icon()),
-                ],
-                'usages' => isset($usages[$field->id])
-                    ? Craft::t('app', '{count, number} {count, plural, =1{layout} other{layouts}}', [
-                        'count' => count($usages[$field->id]),
-                    ])
-                    : null,
-            ];
-        }
-
-        $pagination = AdminTable::paginationLinks($page, $total, $limit);
-
-        return [$pagination, $tableData];
+        return app(\CraftCms\Cms\Field\Fields::class)->getTableData($page, $limit, $searchTerm, $orderBy, $sortDir);
     }
 
-    /**
-     * Returns the array of sql "like" params to be used in the 'where' param for the query.
-     *
-     * @param string $term
-     *
-     * @return array
-     */
-    private function _getSearchParams(string $term): array
+    public static function registerEvents(): void
     {
-        $searchParams = ['name', 'handle', 'instructions', 'type'];
-        $searchQueries = [];
-
-        if ($term !== '') {
-            foreach ($searchParams as $param) {
-                $searchQueries[] = [$param, 'like', '%' . $term . '%'];
+        Event::listen(RegisterFieldTypes::class, function(RegisterFieldTypes $event) {
+            if (Craft::$app->getFields()->hasEventHandlers(self::EVENT_REGISTER_FIELD_TYPES)) {
+                $yiiEvent = new RegisterComponentTypesEvent(['types' => $event->types->all()]);
+                Craft::$app->getFields()->trigger(self::EVENT_REGISTER_FIELD_TYPES, $yiiEvent);
+                $event->types = new Collection($yiiEvent->types);
             }
-        }
+        });
 
-        return $searchQueries;
-    }
+        Event::listen(DefineCompatibleFieldTypes::class, function(DefineCompatibleFieldTypes $event) {
+            if (Craft::$app->getFields()->hasEventHandlers(self::EVENT_DEFINE_COMPATIBLE_FIELD_TYPES)) {
+                $yiiEvent = new DefineCompatibleFieldTypesEvent(['field' => $event->field, 'compatibleTypes' => $event->compatibleTypes->all()]);
+                Craft::$app->getFields()->trigger(self::EVENT_DEFINE_COMPATIBLE_FIELD_TYPES, $yiiEvent);
+                $event->compatibleTypes = new Collection($yiiEvent->compatibleTypes);
+            }
+        });
 
-    private function _createFieldQuery(): Builder
-    {
-        return \Illuminate\Support\Facades\DB::table(Table::FIELDS)
-            ->select([
-                'fields.id',
-                'fields.dateCreated',
-                'fields.dateUpdated',
-                'fields.name',
-                'fields.handle',
-                'fields.context',
-                'fields.columnSuffix',
-                'fields.instructions',
-                'fields.searchable',
-                'fields.translationMethod',
-                'fields.translationKeyFormat',
-                'fields.type',
-                'fields.settings',
-                'fields.uid',
-            ])
-            ->orderBy('fields.name')
-            ->orderBy('fields.handle')
-            ->whereNull('fields.dateDeleted');
-    }
+        Event::listen(RegisterNestedEntryFieldTypes::class, function(RegisterNestedEntryFieldTypes $event) {
+            if (Craft::$app->getFields()->hasEventHandlers(self::EVENT_REGISTER_NESTED_ENTRY_FIELD_TYPES)) {
+                $yiiEvent = new RegisterComponentTypesEvent(['types' => $event->types->all()]);
+                Craft::$app->getFields()->trigger(self::EVENT_REGISTER_NESTED_ENTRY_FIELD_TYPES, $yiiEvent);
+                $event->types = new Collection($yiiEvent->types);
+            }
+        });
 
-    private function _createLayoutQuery(bool $withTrashed = false): Builder
-    {
-        return \Illuminate\Support\Facades\DB::table(Table::FIELDLAYOUTS)
-            ->select([
-                'id',
-                'type',
-                'config',
-                'uid',
-            ])
-            ->unless(
-                $withTrashed,
-                fn(Builder $query) => $query->whereNull('dateDeleted')
+        Event::listen(FieldSaving::class, function(FieldSaving $event) {
+            if (Craft::$app->getFields()->hasEventHandlers(self::EVENT_BEFORE_SAVE_FIELD)) {
+                $yiiEvent = new FieldEvent(['field' => $event->field, 'isNew' => $event->isNew]);
+                Craft::$app->getFields()->trigger(self::EVENT_BEFORE_SAVE_FIELD, $yiiEvent);
+                $event->field = $yiiEvent->field;
+            }
+        });
+
+        Event::listen(FieldDeleting::class, function(FieldDeleting $event) {
+            if (Craft::$app->getFields()->hasEventHandlers(self::EVENT_BEFORE_DELETE_FIELD)) {
+                $yiiEvent = new FieldEvent(['field' => $event->field]);
+                Craft::$app->getFields()->trigger(self::EVENT_BEFORE_DELETE_FIELD, $yiiEvent);
+                $event->field = $yiiEvent->field;
+            }
+        });
+
+        Event::listen(ApplyingFieldDelete::class, function(ApplyingFieldDelete $event) {
+            if (Craft::$app->getFields()->hasEventHandlers(self::EVENT_BEFORE_APPLY_FIELD_DELETE)) {
+                $yiiEvent = new FieldEvent(['field' => $event->field]);
+                Craft::$app->getFields()->trigger(self::EVENT_BEFORE_APPLY_FIELD_DELETE, $yiiEvent);
+                $event->field = $yiiEvent->field;
+            }
+        });
+
+        Event::listen(FieldDeleted::class, function(FieldDeleted $event) {
+            if (Craft::$app->getFields()->hasEventHandlers(self::EVENT_AFTER_DELETE_FIELD)) {
+                $yiiEvent = new FieldEvent(['field' => $event->field]);
+                Craft::$app->getFields()->trigger(self::EVENT_AFTER_DELETE_FIELD, $yiiEvent);
+            }
+        });
+
+        Event::listen(FieldSaved::class, function(FieldSaved $event) {
+            if (Craft::$app->getFields()->hasEventHandlers(self::EVENT_AFTER_SAVE_FIELD)) {
+                $yiiEvent = new FieldEvent(['field' => $event->field, 'isNew' => $event->isNew]);
+                Craft::$app->getFields()->trigger(self::EVENT_AFTER_SAVE_FIELD, $yiiEvent);
+            }
+        });
+
+        Event::listen(FieldLayoutSaving::class, function(FieldLayoutSaving $event) {
+            if (Craft::$app->getFields()->hasEventHandlers(self::EVENT_BEFORE_SAVE_FIELD_LAYOUT)) {
+                $yiiEvent = new FieldEvent(['layout' => $event->layout, 'isNew' => $event->isNew]);
+                Craft::$app->getFields()->trigger(self::EVENT_BEFORE_SAVE_FIELD_LAYOUT, $yiiEvent);
+            }
+        });
+
+        Event::listen(FieldLayoutSaved::class, function(FieldLayoutSaved $event) {
+            if (Craft::$app->getFields()->hasEventHandlers(self::EVENT_AFTER_SAVE_FIELD_LAYOUT)) {
+                $yiiEvent = new FieldEvent(['layout' => $event->layout, 'isNew' => $event->isNew]);
+                Craft::$app->getFields()->trigger(self::EVENT_AFTER_SAVE_FIELD_LAYOUT, $yiiEvent);
+            }
+        });
+
+        Event::listen(FieldLayoutDeleting::class, function(FieldLayoutDeleting $event) {
+            if (Craft::$app->getFields()->hasEventHandlers(self::EVENT_BEFORE_DELETE_FIELD_LAYOUT)) {
+                $yiiEvent = new FieldEvent(['layout' => $event->layout]);
+                Craft::$app->getFields()->trigger(self::EVENT_BEFORE_DELETE_FIELD_LAYOUT, $yiiEvent);
+            }
+        });
+
+        Event::listen(FieldLayoutDeleted::class, function(FieldLayoutDeleted $event) {
+            if (Craft::$app->getFields()->hasEventHandlers(self::EVENT_AFTER_DELETE_FIELD_LAYOUT)) {
+                $yiiEvent = new FieldEvent(['layout' => $event->layout]);
+                Craft::$app->getFields()->trigger(self::EVENT_AFTER_DELETE_FIELD_LAYOUT, $yiiEvent);
+            }
+        });
+
+        Event::listen(ApplyingFieldSave::class, function(ApplyingFieldSave $event) {
+            if (Craft::$app->getFields()->hasEventHandlers(self::EVENT_BEFORE_APPLY_FIELD_SAVE)) {
+                Craft::$app->getFields()->trigger(self::EVENT_BEFORE_APPLY_FIELD_SAVE, new ApplyFieldSaveEvent([
+                    'field' => $event->field,
+                    'config' => $event->config,
+                ]));
+            }
+        });
+
+        \CraftCms\Cms\Field\Assets::listen(\CraftCms\Cms\Field\Assets::EVENT_LOCATE_UPLOADED_FILES, function(LocateUploadedFiles $event) {
+            $yiiEvent = new LocateUploadedFilesEvent([
+                'element' => $event->element,
+                'files' => $event->files,
+                'sender' => $event->field,
+            ]);
+
+            \craft\base\Event::trigger(
+                \craft\fields\Assets::class,
+                \CraftCms\Cms\Field\Assets::EVENT_LOCATE_UPLOADED_FILES,
+                $yiiEvent,
             );
-    }
-
-    /**
-     * Returns a field record for a given UID
-     *
-     * @param string $uid
-     * @param bool $withTrashed
-     *
-     * @return FieldRecord
-     */
-    private function _getFieldRecord(string $uid, bool $withTrashed = false): FieldRecord
-    {
-        $query = $withTrashed ? FieldRecord::findWithTrashed() : FieldRecord::find();
-        $query->andWhere(['uid' => $uid]);
-        /** @noinspection PhpIncompatibleReturnTypeInspection */
-        /** @var FieldRecord */
-        return $query->one() ?? new FieldRecord();
+        });
     }
 }

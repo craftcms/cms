@@ -3,12 +3,12 @@
 namespace CraftCms\Cms\Database\Migrations;
 
 use craft\base\ElementInterface;
-use craft\base\FieldInterface;
 use craft\fieldlayoutelements\CustomField;
-use craft\fields\MissingField;
 use craft\models\FieldLayout;
 use CraftCms\Cms\Database\Migration;
 use CraftCms\Cms\Database\Table;
+use CraftCms\Cms\Field\Contracts\FieldInterface;
+use CraftCms\Cms\Field\MissingField;
 use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Support\Str;
 use Illuminate\Database\Query\Builder;
@@ -121,7 +121,7 @@ class BaseContentRefactorMigration extends Migration
                 $content = [];
 
                 foreach ($fieldColumns as $layoutElementUid => $column) {
-                    /** @var \craft\base\Field $field */
+                    /** @var \CraftCms\Cms\Field\Field $field */
                     $field = $fieldsByUid[$layoutElementUid];
 
                     if ($field instanceof MissingField) {
@@ -257,7 +257,7 @@ class BaseContentRefactorMigration extends Migration
             '%s%s%s',
             $fieldColumnPrefix,
             $field->handle,
-            ($field->columnSuffix ? "_$field->columnSuffix" : ''),
+            (property_exists($field, 'columnSuffix') && $field->columnSuffix ? "_$field->columnSuffix" : ''),
         );
 
         if (! Schema::hasColumn($contentTable, $primaryColumn)) {
@@ -269,7 +269,7 @@ class BaseContentRefactorMigration extends Migration
             $dbTypeKeys = array_keys($dbType);
             $extraColumns = array_map(
                 fn (string $key) => sprintf('%s%s_%s_%s', $fieldColumnPrefix, $field->handle, $key,
-                    $field->columnSuffix),
+                    property_exists($field, 'columnSuffix') ? $field->columnSuffix : ''),
                 array_slice($dbTypeKeys, 1),
             );
 

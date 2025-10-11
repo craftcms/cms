@@ -33,6 +33,7 @@ use craft\models\Volume;
 use craft\queue\jobs\ResaveElements;
 use craft\services\Elements;
 use CraftCms\Cms\Addresses\Addresses;
+use CraftCms\Cms\Field\Fields;
 use CraftCms\Cms\Support\Str;
 use Illuminate\Support\Collection;
 use ReflectionClass;
@@ -613,7 +614,7 @@ class ResaveController extends Controller
         }
 
         if (!empty($this->withFields)) {
-            $fieldLayout = Craft::$app->getFields()->getLayoutByType(User::class);
+            $fieldLayout = app(Fields::class)->getLayoutByType(User::class);
             if (!$this->hasTheFields($fieldLayout)) {
                 $this->output($this->markdownToAnsi('The user field layout doesn’t satisfy `--with-fields`.'));
                 return ExitCode::UNSPECIFIED_ERROR;
@@ -631,7 +632,7 @@ class ResaveController extends Controller
      */
     public function hasTheFields(FieldLayout $fieldLayout): bool
     {
-        $fieldsService = Craft::$app->getFields();
+        $fieldsService = app(Fields::class);
         foreach ($this->withFields as $handle) {
             $field = $fieldsService->getFieldByHandle($handle);
             if ($field && $fieldLayout->getFieldByUid($field->uid)) {

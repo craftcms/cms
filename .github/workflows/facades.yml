@@ -57,6 +57,7 @@ jobs:
           php -f vendor/bin/facade.php -- \
             CraftCms\\Cms\\Support\\Facades\\Announcements \
             CraftCms\\Cms\\Support\\Facades\\Deprecator \
+            CraftCms\\Cms\\Support\\Facades\\Fields \
             CraftCms\\Cms\\Support\\Facades\\ProjectConfig \
             CraftCms\\Cms\\Support\\Facades\\Updates
 

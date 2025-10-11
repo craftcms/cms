@@ -7,56 +7,15 @@
 
 namespace craft\fields\data;
 
-use ArrayObject;
-
-/**
- * Multi-select option field data class.
- *
- * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0.0
- */
-class MultiOptionsFieldData extends ArrayObject
-{
+/** @phpstan-ignore-next-line **/
+if (false) {
     /**
-     * @var OptionData[]
+     * @since 3.0.0
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\Field\Data\MultiOptionsFieldData} instead.
      */
-    private array $_options = [];
-
-    /**
-     * Returns the options.
-     *
-     * @return OptionData[]
-     */
-    public function getOptions(): array
+    class MultiOptionsFieldData
     {
-        return $this->_options;
-    }
-
-    /**
-     * Sets the options.
-     *
-     * @param OptionData[] $options
-     */
-    public function setOptions(array $options): void
-    {
-        $this->_options = $options;
-    }
-
-    /**
-     * @param mixed $value
-     * @return bool
-     */
-    public function contains(mixed $value): bool
-    {
-        $value = (string)$value;
-
-        foreach ($this as $selectedValue) {
-            /** @var OptionData $selectedValue */
-            if ($value === $selectedValue->value) {
-                return true;
-            }
-        }
-
-        return false;
     }
 }
+
+class_alias(\CraftCms\Cms\Field\Data\MultiOptionsFieldData::class, MultiOptionsFieldData::class);

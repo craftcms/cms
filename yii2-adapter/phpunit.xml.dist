@@ -12,6 +12,9 @@
             <directory>./tests-laravel</directory>
         </testsuite>
     </testsuites>
+    <extensions>
+        <bootstrap class="DG\BypassFinals\PHPUnitExtension"/>
+    </extensions>
     <php>
         <ini name="memory_limit" value="2048M" />
 

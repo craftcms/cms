@@ -8,7 +8,6 @@
 namespace craft\gql\mutations;
 
 use Craft;
-use craft\base\ElementContainerFieldInterface;
 use craft\gql\arguments\mutations\Draft as DraftMutationArguments;
 use craft\gql\arguments\mutations\Entry as EntryMutationArguments;
 use craft\gql\arguments\mutations\NestedEntry;
@@ -20,6 +19,8 @@ use craft\gql\types\generators\EntryType;
 use craft\helpers\Gql;
 use craft\models\EntryType as EntryTypeModel;
 use craft\models\Section;
+use CraftCms\Cms\Field\Contracts\ElementContainerFieldInterface;
+use CraftCms\Cms\Field\Fields;
 use GraphQL\Type\Definition\Type;
 use yii\base\InvalidConfigException;
 
@@ -64,7 +65,7 @@ class Entry extends Mutation
             }
         }
 
-        $fieldsService = Craft::$app->getFields();
+        $fieldsService = app(Fields::class);
         foreach ($fieldsService->getNestedEntryFieldTypes() as $type) {
             foreach ($fieldsService->getFieldsByType($type) as $field) {
                 /** @var ElementContainerFieldInterface $field */

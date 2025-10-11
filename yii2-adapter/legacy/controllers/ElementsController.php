@@ -623,7 +623,9 @@ JS, [
             throw new BadRequestHttpException("Invalid layout element UUID: $layoutElementUid");
         }
         if ($layoutElement instanceof CustomField) {
-            $layoutElement->getField()->copyCrossSiteValue($fromElement, $element);
+            /** @var \CraftCms\Cms\Field\Contracts\FieldInterface&\CraftCms\Cms\Field\Contracts\CrossSiteCopyableFieldInterface $field */
+            $field = $layoutElement->getField();
+            $field->copyCrossSiteValue($fromElement, $element);
         } else {
             $attribute = $layoutElement->attribute();
             $element->$attribute = $fromElement->$attribute;

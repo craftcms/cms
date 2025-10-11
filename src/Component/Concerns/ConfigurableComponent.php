@@ -24,8 +24,8 @@ trait ConfigurableComponent
     {
         $attributes = Utils::getPublicProperties($this, fn (ReflectionProperty $property) => $property->class === static::class);
 
-        if (Event::hasListeners(self::componentEventName(self::EVENT_DEFINE_SETTINGS_ATTRIBUTES))) {
-            Event::dispatch(self::componentEventName(self::EVENT_DEFINE_SETTINGS_ATTRIBUTES), $event = new DefineSettingsAttributes(
+        if ($this->hasComponentListeners(self::EVENT_DEFINE_SETTINGS_ATTRIBUTES)) {
+            $this->dispatchComponentEvent(self::EVENT_DEFINE_SETTINGS_ATTRIBUTES, $event = new DefineSettingsAttributes(
                 component: $this,
                 attributes: $attributes,
             ));
@@ -38,7 +38,7 @@ trait ConfigurableComponent
 
     public static function onDefineSettingsAttributes(callable $callback): void
     {
-        static::registerModelEvent(self::EVENT_DEFINE_SETTINGS_ATTRIBUTES, $callback);
+        static::listen(self::EVENT_DEFINE_SETTINGS_ATTRIBUTES, $callback);
     }
 
     public function getSettings(): array

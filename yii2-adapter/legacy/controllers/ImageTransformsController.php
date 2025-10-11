@@ -10,10 +10,10 @@ namespace craft\controllers;
 use Craft;
 use craft\helpers\Image;
 use craft\models\ImageTransform;
-use craft\validators\ColorValidator;
 use craft\web\assets\edittransform\EditTransformAsset;
 use craft\web\Controller;
 use CraftCms\Cms\Config\GeneralConfig;
+use CraftCms\Cms\Shared\Rules\ColorRule;
 use yii\web\ForbiddenHttpException;
 use yii\web\NotFoundHttpException;
 use yii\web\Response;
@@ -183,7 +183,7 @@ class ImageTransformsController extends Controller
         }
 
         if ($transform->mode === 'letterbox') {
-            $transform->fill = $transform->fill ? ColorValidator::normalizeColor($transform->fill) : 'transparent';
+            $transform->fill = $transform->fill ? ColorRule::normalizeColor($transform->fill) : 'transparent';
         }
 
         if (!$errors) {

@@ -7,6 +7,7 @@
 
 namespace craft\base;
 
+use CraftCms\Cms\Field\Contracts\ElementContainerFieldInterface;
 use yii\base\InvalidConfigException;
 
 /**

@@ -7,8 +7,8 @@
 
 namespace craft\gql\types;
 
-use craft\fields\data\IconData as FieldIconData;
 use craft\gql\base\ObjectType;
+use CraftCms\Cms\Field\Data\IconData as FieldIconData;
 use GraphQL\Type\Definition\ResolveInfo;
 
 /**

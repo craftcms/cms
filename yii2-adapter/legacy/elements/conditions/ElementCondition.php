@@ -11,6 +11,7 @@ use craft\errors\InvalidTypeException;
 use craft\fields\conditions\FieldConditionRuleInterface;
 use craft\fields\conditions\GeneratedFieldConditionRule;
 use craft\models\FieldLayout;
+use CraftCms\Cms\Field\Fields;
 use yii\base\InvalidConfigException;
 
 /**
@@ -105,7 +106,7 @@ class ElementCondition extends BaseCondition implements ElementConditionInterfac
             return Craft::$app->getElementSources()->getFieldLayoutsForSource($this->elementType, $this->sourceKey);
         }
 
-        return Craft::$app->getFields()->getLayoutsByType($this->elementType);
+        return app(Fields::class)->getLayoutsByType($this->elementType)->all();
     }
 
     /**
@@ -113,7 +114,7 @@ class ElementCondition extends BaseCondition implements ElementConditionInterfac
      */
     public function setFieldLayouts(array $fieldLayouts): void
     {
-        $fieldsService = Craft::$app->getFields();
+        $fieldsService = app(Fields::class);
         $this->_fieldLayouts = array_map(function(FieldLayout|array $fieldLayout) use ($fieldsService) {
             if (is_array($fieldLayout)) {
                 $fieldLayout['type'] = $this->elementType;

@@ -10,7 +10,8 @@ use craft\elements\conditions\ElementConditionRuleInterface;
 use craft\elements\conditions\HintableConditionRuleTrait;
 use craft\elements\db\AddressQuery;
 use craft\elements\db\ElementQueryInterface;
-use craft\fields\Addresses;
+use CraftCms\Cms\Field\Addresses;
+use CraftCms\Cms\Support\Facades\Fields;
 use Illuminate\Support\Collection;
 
 /**
@@ -49,7 +50,7 @@ class FieldConditionRule extends BaseMultiSelectConditionRule implements Element
      */
     protected function options(): array
     {
-        return Collection::make($this->addressFields())
+        return $this->addressFields()
             ->keyBy(fn(Addresses $field) => $field->uid)
             ->map(
                 fn(Addresses $field) =>
@@ -65,12 +66,11 @@ class FieldConditionRule extends BaseMultiSelectConditionRule implements Element
     {
         /** @var AddressQuery $query */
         if ($this->operator === self::OPERATOR_NOT_EMPTY) {
-            $query->field($this->addressFields());
+            $query->field($this->addressFields()->all());
         } elseif ($this->operator === self::OPERATOR_EMPTY) {
             $query->field(false);
         } else {
-            $fieldsService = Craft::$app->getFields();
-            $query->fieldId($this->paramValue(fn($uid) => $fieldsService->getFieldByUid($uid)->id ?? null));
+            $query->fieldId($this->paramValue(fn($uid) => Fields::getFieldByUid($uid)->id ?? null));
         }
     }
 
@@ -88,11 +88,10 @@ class FieldConditionRule extends BaseMultiSelectConditionRule implements Element
     }
 
     /**
-     * @return Addresses[]
+     * @return Collection<Addresses>
      */
-    private function addressFields(): array
+    private function addressFields(): Collection
     {
-        /** @phpstan-ignore-next-line */
-        return Craft::$app->getFields()->getFieldsByType(Addresses::class);
+        return Fields::getFieldsByType(Addresses::class);
     }
 }

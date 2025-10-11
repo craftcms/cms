@@ -7,26 +7,15 @@
 
 namespace craft\base;
 
-/**
- * SortableFieldInterface defines the common interface to be implemented by field classes that can be available as
- * sort options on element indexes.
- *
- * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.2.0
- */
-interface SortableFieldInterface
-{
+/** @phpstan-ignore-next-line */
+if (false) {
     /**
-     * Returns the field’s sort option definition.
-     *
-     * This should return an array with the following keys:
-     *
-     * - `label` – The sort option label
-     * - `orderBy` – An array or comma-delimited string of columns to order the query by
-     * - `attribute` – The table attribute name that this option is associated with
-     *   (required if `orderBy` is an array or more than one column name)
-     *
-     * @return array
+     * @since 3.2.0
+     * @deprecated 6.0.0 use {@see \CraftCms\Cms\Field\Contracts\SortableFieldInterface} instead.
      */
-    public function getSortOption(): array;
+    interface SortableFieldInterface
+    {
+    }
 }
+
+class_alias(\CraftCms\Cms\Field\Contracts\SortableFieldInterface::class, SortableFieldInterface::class);

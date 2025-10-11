@@ -15,6 +15,7 @@ use craft\helpers\UrlHelper;
 use craft\models\TagGroup;
 use craft\web\Controller;
 use CraftCms\Cms\Config\GeneralConfig;
+use CraftCms\Cms\Field\Fields;
 use yii\web\BadRequestHttpException;
 use yii\web\ForbiddenHttpException;
 use yii\web\NotFoundHttpException;
@@ -133,7 +134,7 @@ class TagsController extends Controller
         $group->handle = $this->request->getBodyParam('handle');
 
         // Set the field layout
-        $fieldLayout = Craft::$app->getFields()->assembleLayoutFromPost();
+        $fieldLayout = app(Fields::class)->assembleLayoutFromPost();
         $fieldLayout->type = Tag::class;
         $group->setFieldLayout($fieldLayout);
 

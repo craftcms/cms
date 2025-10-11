@@ -7,8 +7,8 @@
 
 namespace craft\web;
 
-use craft\validators\HandleValidator;
 use CraftCms\Cms\Config\GeneralConfig;
+use CraftCms\Cms\Shared\Rules\HandleRule;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Str;
 
@@ -34,7 +34,7 @@ class UrlRule extends \yii\web\UrlRule
         }
 
         return [
-            '{handle}' => sprintf('(?:%s)', HandleValidator::$handlePattern),
+            '{handle}' => sprintf('(?:%s)', HandleRule::$handlePattern),
             // Reference: http://www.regular-expressions.info/unicode.html
             '{slug}' => sprintf('(?:[\p{L}\p{N}\p{M}%s]+)', preg_quote(implode($slugChars), '/')),
             '{uid}' => sprintf('(?:%s)', Str::uuidPattern()),

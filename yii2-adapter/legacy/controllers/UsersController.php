@@ -45,6 +45,7 @@ use craft\web\View;
 use CraftCms\Cms\Announcement\Announcements;
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Edition;
+use CraftCms\Cms\Field\Fields;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Env;
@@ -2363,7 +2364,7 @@ JS);
         $this->requireAdmin();
 
         // Set the field layout
-        $fieldLayout = Craft::$app->getFields()->assembleLayoutFromPost();
+        $fieldLayout = app(Fields::class)->assembleLayoutFromPost();
         $fieldLayout->type = User::class;
         $fieldLayout->reservedFieldHandles = [
             'active',
@@ -3082,7 +3083,7 @@ JS);
     }
 
     public function asModelSuccess(
-        ModelInterface|Model $model,
+        mixed $model,
         ?string $message = null,
         ?string $modelName = null,
         array $data = [],
@@ -3093,7 +3094,7 @@ JS);
     }
 
     public function asModelFailure(
-        ModelInterface|Model $model,
+        mixed $model,
         ?string $message = null,
         ?string $modelName = null,
         array $data = [],

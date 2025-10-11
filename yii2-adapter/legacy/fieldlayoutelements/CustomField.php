@@ -8,17 +8,18 @@
 namespace craft\fieldlayoutelements;
 
 use Craft;
-use craft\base\Actionable;
-use craft\base\CrossSiteCopyableFieldInterface;
 use craft\base\ElementInterface;
-use craft\base\FieldInterface;
-use craft\base\PreviewableFieldInterface;
-use craft\base\ThumbableFieldInterface;
 use craft\elements\conditions\users\UserCondition;
 use craft\elements\User;
 use craft\errors\FieldNotFoundException;
 use craft\helpers\Cp;
 use craft\helpers\Inflector;
+use CraftCms\Cms\Component\Contracts\Actionable;
+use CraftCms\Cms\Field\Contracts\CrossSiteCopyableFieldInterface;
+use CraftCms\Cms\Field\Contracts\FieldInterface;
+use CraftCms\Cms\Field\Contracts\PreviewableFieldInterface;
+use CraftCms\Cms\Field\Contracts\ThumbableFieldInterface;
+use CraftCms\Cms\Field\Fields;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Str;
@@ -237,7 +238,7 @@ class CustomField extends BaseField
             if (!isset($this->_fieldUid)) {
                 throw new InvalidConfigException('No field UUID set.');
             }
-            if (($field = Craft::$app->getFields()->getFieldByUid($this->_fieldUid)) === null) {
+            if (($field = app(Fields::class)->getFieldByUid($this->_fieldUid)) === null) {
                 throw new FieldNotFoundException($this->_fieldUid);
             }
             $this->setField($field);
@@ -264,6 +265,7 @@ class CustomField extends BaseField
         $this->_field->name = $this->label ?? $this->_field->name;
         $this->_field->handle = $this->handle ?? $this->_field->handle;
         $this->_field->instructions = $this->instructions ?? $this->_field->instructions;
+        /** @phpstan-ignore-next-line */
         $this->_field->required = $this->required;
     }
 

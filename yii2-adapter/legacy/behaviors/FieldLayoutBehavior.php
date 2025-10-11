@@ -7,12 +7,12 @@
 
 namespace craft\behaviors;
 
-use Craft;
 use craft\base\ElementInterface;
-use craft\base\FieldInterface;
 use craft\base\FieldLayoutProviderInterface;
 use craft\models\EntryType;
 use craft\models\FieldLayout;
+use CraftCms\Cms\Field\Contracts\FieldInterface;
+use CraftCms\Cms\Field\Fields;
 use yii\base\Behavior;
 use yii\base\InvalidConfigException;
 use yii\base\Model;
@@ -120,7 +120,7 @@ class FieldLayoutBehavior extends Behavior
         }
 
         if ($id) {
-            $fieldLayout = Craft::$app->getFields()->getLayoutById($id, true);
+            $fieldLayout = app(Fields::class)->getLayoutById($id, true);
             if (!$fieldLayout) {
                 throw new InvalidConfigException('Invalid field layout ID: ' . $id);
             }

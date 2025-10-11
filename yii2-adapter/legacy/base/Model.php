@@ -406,6 +406,14 @@ abstract class Model extends \yii\base\Model implements ModelInterface, Validata
     /**
      * Legacy models are validated differently
      */
+    public static function getMessages(): array
+    {
+        return [];
+    }
+
+    /**
+     * Legacy models are validated differently
+     */
     public function getValidationData(): array
     {
         return [];

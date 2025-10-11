@@ -8,7 +8,6 @@
 namespace craft\controllers;
 
 use Craft;
-use craft\base\Field;
 use craft\base\FsInterface;
 use craft\elements\Asset;
 use craft\helpers\Assets;
@@ -17,6 +16,8 @@ use craft\helpers\FileHelper;
 use craft\models\Volume;
 use craft\web\Controller;
 use CraftCms\Cms\Config\GeneralConfig;
+use CraftCms\Cms\Field\Field;
+use CraftCms\Cms\Field\Fields;
 use CraftCms\Cms\Support\Json;
 use Illuminate\Support\Collection;
 use yii\web\BadRequestHttpException;
@@ -201,7 +202,7 @@ class VolumesController extends Controller
         ]);
 
         // Set the field layout
-        $fieldLayout = Craft::$app->getFields()->assembleLayoutFromPost();
+        $fieldLayout = app(Fields::class)->assembleLayoutFromPost();
         $fieldLayout->type = Asset::class;
         $volume->setFieldLayout($fieldLayout);
 

@@ -5,7 +5,6 @@
 namespace CraftCms\Cms\Database\Migrations;
 
 use Craft;
-use craft\base\Field;
 use craft\elements\Asset;
 use craft\elements\Entry;
 use craft\elements\User;
@@ -21,6 +20,7 @@ use CraftCms\Cms\Database\Migrator;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Element\Enums\PropagationMethod;
+use CraftCms\Cms\Field\Field;
 use CraftCms\Cms\Plugin\Exceptions\InvalidPluginException;
 use CraftCms\Cms\Plugin\Plugins;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
@@ -451,7 +451,7 @@ class Install extends Migration
             $table->char('uid', 36)->default('0');
         });
 
-        Schema::create(Table::FIELDS, function (Blueprint $table) {
+        Schema::create('fields', function (Blueprint $table) {
             $table->integer('id', true);
             $table->text('name');
             $table->string('handle', 64);

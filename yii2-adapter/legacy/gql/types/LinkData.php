@@ -7,8 +7,8 @@
 
 namespace craft\gql\types;
 
-use craft\fields\data\LinkData as FieldLinkData;
 use craft\gql\base\ObjectType;
+use CraftCms\Cms\Field\Data\LinkData as FieldLinkData;
 use GraphQL\Type\Definition\ResolveInfo;
 
 /**

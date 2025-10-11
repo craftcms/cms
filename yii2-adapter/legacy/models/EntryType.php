@@ -8,16 +8,9 @@
 namespace craft\models;
 
 use Craft;
-use craft\base\Actionable;
-use craft\base\Chippable;
-use craft\base\Colorable;
-use craft\base\CpEditable;
 use craft\base\Describable;
-use craft\base\ElementContainerFieldInterface;
-use craft\base\Field;
 use craft\base\FieldLayoutProviderInterface;
 use craft\base\GqlInlineFragmentInterface;
-use craft\base\Iconic;
 use craft\base\Indicative;
 use craft\base\Model;
 use craft\behaviors\FieldLayoutBehavior;
@@ -27,7 +20,15 @@ use craft\helpers\UrlHelper;
 use craft\records\EntryType as EntryTypeRecord;
 use craft\validators\HandleValidator;
 use craft\validators\UniqueValidator;
+use CraftCms\Cms\Component\Contracts\Actionable;
+use CraftCms\Cms\Component\Contracts\Chippable;
+use CraftCms\Cms\Component\Contracts\Colorable;
+use CraftCms\Cms\Component\Contracts\CpEditable;
+use CraftCms\Cms\Component\Contracts\Iconic;
 use CraftCms\Cms\Config\GeneralConfig;
+use CraftCms\Cms\Field\Contracts\ElementContainerFieldInterface;
+use CraftCms\Cms\Field\Field;
+use CraftCms\Cms\Field\Fields;
 use CraftCms\Cms\Shared\Enums\Color;
 
 /**
@@ -524,7 +525,7 @@ JS, [
         }
 
         // Fields
-        $fieldsService = Craft::$app->getFields();
+        $fieldsService = app(Fields::class);
         foreach ($fieldsService->getNestedEntryFieldTypes() as $type) {
             /** @var ElementContainerFieldInterface[] $fields */
             $fields = $fieldsService->getFieldsByType($type);

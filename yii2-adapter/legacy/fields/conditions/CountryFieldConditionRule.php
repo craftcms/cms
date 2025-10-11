@@ -4,8 +4,8 @@ namespace craft\fields\conditions;
 
 use Craft;
 use craft\base\conditions\BaseMultiSelectConditionRule;
-use craft\fields\Country;
 use CraftCms\Cms\Addresses\Addresses;
+use CraftCms\Cms\Field\Country;
 use yii\base\InvalidConfigException;
 
 /**

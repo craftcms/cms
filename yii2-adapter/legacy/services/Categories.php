@@ -21,6 +21,7 @@ use craft\records\CategoryGroup as CategoryGroupRecord;
 use craft\records\CategoryGroup_SiteSettings as CategoryGroup_SiteSettingsRecord;
 use craft\web\View;
 use CraftCms\Cms\Database\Table;
+use CraftCms\Cms\Field\Fields;
 use CraftCms\Cms\ProjectConfig\Events\ConfigEvent;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\ProjectConfig\ProjectConfigHelper;
@@ -356,11 +357,11 @@ class Categories extends Component
                 $layout->id = $groupRecord->fieldLayoutId;
                 $layout->type = Category::class;
                 $layout->uid = key($data['fieldLayouts']);
-                Craft::$app->getFields()->saveLayout($layout, false);
+                app(Fields::class)->saveLayout($layout, false);
                 $groupRecord->fieldLayoutId = $layout->id;
             } elseif ($groupRecord->fieldLayoutId) {
                 // Delete the field layout
-                Craft::$app->getFields()->deleteLayoutById($groupRecord->fieldLayoutId);
+                app(Fields::class)->deleteLayoutById($groupRecord->fieldLayoutId);
                 $groupRecord->fieldLayoutId = null;
             }
 
@@ -633,7 +634,7 @@ class Categories extends Component
 
             // Delete the field layout
             if ($categoryGroupRecord->fieldLayoutId) {
-                Craft::$app->getFields()->deleteLayoutById($categoryGroupRecord->fieldLayoutId);
+                app(Fields::class)->deleteLayoutById($categoryGroupRecord->fieldLayoutId);
             }
 
             // Delete the category group

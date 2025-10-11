@@ -7,9 +7,10 @@ use craft\base\conditions\BaseElementSelectConditionRule;
 use craft\base\ElementInterface;
 use craft\elements\db\ElementQueryInterface;
 use craft\elements\Entry;
-use craft\fields\BaseRelationField;
 use craft\helpers\Cp;
 use craft\helpers\UrlHelper;
+use CraftCms\Cms\Field\BaseRelationField;
+use CraftCms\Cms\Field\Fields;
 use CraftCms\Cms\Support\Html;
 
 /**
@@ -110,16 +111,15 @@ class RelatedToConditionRule extends BaseElementSelectConditionRule implements E
      */
     private function _elementTypeOptions(): array
     {
-        $options = [];
-        foreach (Craft::$app->getFields()->getRelationalFieldTypes() as $field) {
+        return app(Fields::class)->getRelationalFieldTypes()->map(function(string $field) {
             /** @var class-string<BaseRelationField> $field */
             $elementType = $field::elementType();
-            $options[] = [
+
+            return [
                 'value' => $elementType,
                 'label' => $elementType::displayName(),
             ];
-        }
-        return $options;
+        })->all();
     }
 
     /**

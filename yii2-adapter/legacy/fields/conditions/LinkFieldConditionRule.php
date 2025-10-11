@@ -4,10 +4,10 @@ namespace craft\fields\conditions;
 
 use Craft;
 use craft\db\CoalesceColumnsExpression;
-use craft\fields\data\LinkData;
-use craft\fields\Link;
-use craft\fields\linktypes\BaseLinkType;
 use craft\helpers\Cp;
+use CraftCms\Cms\Field\Data\LinkData;
+use CraftCms\Cms\Field\Link;
+use CraftCms\Cms\Field\LinkTypes\BaseLinkType;
 use yii\db\QueryInterface;
 
 /**

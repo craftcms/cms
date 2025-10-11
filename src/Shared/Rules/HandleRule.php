@@ -1,0 +1,56 @@
+<?php
+
+namespace CraftCms\Cms\Shared\Rules;
+
+use Closure;
+use Craft;
+use Illuminate\Contracts\Validation\ValidationRule;
+
+final class HandleRule implements ValidationRule
+{
+    public static string $handlePattern = '[a-zA-Z][a-zA-Z0-9_]*';
+
+    public static array $baseReservedWords = [
+        'attribute',
+        'attributeLabels',
+        'attributeNames',
+        'attributes',
+        'dateCreated',
+        'dateUpdated',
+        'errors',
+        'false',
+        'fields',
+        'handle',
+        'id',
+        'n',
+        'name',
+        'no',
+        'rules',
+        'this',
+        'true',
+        'uid',
+        'y',
+        'yes',
+    ];
+
+    public function __construct(
+        public array $reservedWords = [],
+    ) {}
+
+    #[\Override]
+    public function validate(string $attribute, mixed $value, Closure $fail): void
+    {
+        if (! preg_match(sprintf('/^%s$/', self::$handlePattern), $value)) {
+            $fail(Craft::t('app', '“{handle}” isn’t a valid handle.'));
+
+            return;
+        }
+
+        $reservedWords = array_merge($this->reservedWords, self::$baseReservedWords);
+        $reservedWords = array_map('strtolower', $reservedWords);
+
+        if (in_array(strtolower($value), $reservedWords, true)) {
+            $fail(Craft::t('app', '“{handle}” is a reserved word.'));
+        }
+    }
+}

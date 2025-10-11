@@ -8,12 +8,12 @@
 namespace craft\web;
 
 use Craft;
-use craft\base\Chippable;
-use craft\base\Identifiable;
 use craft\base\ModelInterface;
 use craft\elements\User;
 use craft\events\DefineBehaviorsEvent;
 use craft\helpers\Cp;
+use CraftCms\Cms\Component\Contracts\Chippable;
+use CraftCms\Cms\Component\Contracts\Identifiable;
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use yii\base\Action;
@@ -387,7 +387,7 @@ abstract class Controller extends \yii\web\Controller
      * @since 4.0.0
      */
     public function asModelFailure(
-        Model|ModelInterface $model,
+        mixed $model,
         ?string $message = null,
         ?string $modelName = null,
         array $data = [],
@@ -420,7 +420,7 @@ abstract class Controller extends \yii\web\Controller
      * @since 4.0.0
      */
     public function asModelSuccess(
-        Model|ModelInterface $model,
+        mixed $model,
         ?string $message = null,
         ?string $modelName = null,
         array $data = [],

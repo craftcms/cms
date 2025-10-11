@@ -7,9 +7,9 @@
 
 namespace craft\gql\types\input;
 
-use craft\base\Field;
-use craft\fields\ContentBlock as ContentBlockField;
 use craft\gql\GqlEntityRegistry;
+use CraftCms\Cms\Field\ContentBlock as ContentBlockField;
+use CraftCms\Cms\Field\Field;
 use GraphQL\Type\Definition\InputObjectType;
 
 /**

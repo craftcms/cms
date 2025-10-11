@@ -8,7 +8,6 @@
 namespace craft\gql\base;
 
 use Craft;
-use craft\base\EagerLoadingFieldInterface;
 use craft\base\ElementInterface;
 use craft\base\GqlInlineFragmentFieldInterface;
 use craft\elements\db\ElementQuery;
@@ -17,6 +16,8 @@ use craft\gql\ArgumentManager;
 use craft\gql\ElementQueryConditionBuilder;
 use craft\helpers\Gql as GqlHelper;
 use CraftCms\Cms\Config\GeneralConfig;
+use CraftCms\Cms\Field\Contracts\EagerLoadingFieldInterface;
+use CraftCms\Cms\Field\Fields;
 use CraftCms\Cms\Support\Arr;
 use GraphQL\Type\Definition\ResolveInfo;
 
@@ -105,7 +106,7 @@ abstract class ElementResolver extends Resolver
 
         if ($source instanceof ElementInterface) {
             $fieldContext = $source->getFieldContext();
-            $field = Craft::$app->getFields()->getFieldByHandle($fieldName, $fieldContext);
+            $field = app(Fields::class)->getFieldByHandle($fieldName, $fieldContext);
 
             // This will happen if something is either dynamically added or is inside an block element that didn't support eager-loading
             // and broke the eager-loading chain. In this case Craft has to provide the relevant context so the condition knows where it's at.

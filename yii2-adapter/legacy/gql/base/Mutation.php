@@ -7,7 +7,7 @@
 
 namespace craft\gql\base;
 
-use craft\base\FieldInterface;
+use CraftCms\Cms\Field\Contracts\FieldInterface;
 
 /**
  * Class Mutation

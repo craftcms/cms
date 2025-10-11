@@ -1,9 +1,5 @@
-{% requireAdmin false %}
-
 {% extends "_layouts/cp" %}
 {% set title = "Fields"|t('app') %}
-
-{% set readOnly = not app.config.craft.general.allowAdminChanges %}
 
 {% do view.registerAssetBundle('craft\\web\\assets\\admintable\\AdminTableAsset') -%}
 

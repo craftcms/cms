@@ -48,6 +48,7 @@ use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Element\Enums\MenuItemType;
 use CraftCms\Cms\Element\Enums\PropagationMethod;
+use CraftCms\Cms\Field\Fields;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\Shared\Enums\Color;
 use CraftCms\Cms\Support\Arr;
@@ -1230,7 +1231,7 @@ class User extends Element implements IdentityInterface
      */
     public function getFieldLayout(): ?FieldLayout
     {
-        return Craft::$app->getFields()->getLayoutByType(self::class);
+        return app(Fields::class)->getLayoutByType(self::class);
     }
 
     /**

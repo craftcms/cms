@@ -8,9 +8,7 @@
 namespace craft\services;
 
 use Craft;
-use craft\base\ElementContainerFieldInterface;
 use craft\base\ElementInterface as BaseElementInterface;
-use craft\base\FieldInterface;
 use craft\base\GqlInlineFragmentFieldInterface;
 use craft\behaviors\FieldLayoutBehavior;
 use craft\elements\User;
@@ -76,6 +74,9 @@ use craft\records\GqlToken as GqlTokenRecord;
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Edition;
+use CraftCms\Cms\Field\Contracts\ElementContainerFieldInterface;
+use CraftCms\Cms\Field\Contracts\FieldInterface;
+use CraftCms\Cms\Field\Fields;
 use CraftCms\Cms\ProjectConfig\Events\ConfigEvent;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\ProjectConfig\ProjectConfigHelper;
@@ -1683,11 +1684,11 @@ class Gql extends Component
         }
 
         // Add components for fields that manage nested entries
-        $fieldsService = Craft::$app->getFields();
+        $fieldsService = app(Fields::class);
         /** @var ElementContainerFieldInterface[] $fields */
         $fields = array_merge(...array_map(
-            fn(string $type) => $fieldsService->getFieldsByType($type),
-            $fieldsService->getNestedEntryFieldTypes(),
+            fn(string $type) => $fieldsService->getFieldsByType($type)->all(),
+            $fieldsService->getNestedEntryFieldTypes()->all(),
         ));
         usort($fields, fn(
             ElementContainerFieldInterface $a,

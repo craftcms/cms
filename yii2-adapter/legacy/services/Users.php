@@ -36,6 +36,7 @@ use craft\web\Request;
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Edition;
+use CraftCms\Cms\Field\Fields;
 use CraftCms\Cms\ProjectConfig\Events\ConfigEvent;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\ProjectConfig\ProjectConfigHelper;
@@ -1513,7 +1514,7 @@ class Users extends Component
     {
         $data = $event->newValue;
 
-        $fieldsService = Craft::$app->getFields();
+        $fieldsService = app(Fields::class);
 
         if (empty($data) || empty($config = reset($data))) {
             $fieldsService->deleteLayoutsByType(User::class);

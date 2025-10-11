@@ -3,7 +3,6 @@
 namespace CraftCms\Cms\ProjectConfig;
 
 use Craft;
-use craft\base\FieldInterface;
 use craft\base\FsInterface;
 use craft\elements\Address;
 use craft\elements\GlobalSet;
@@ -22,6 +21,7 @@ use craft\models\Volume;
 use craft\services\ElementSources;
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Database\Table;
+use CraftCms\Cms\Field\Contracts\FieldInterface;
 use CraftCms\Cms\Plugin\Plugins;
 use CraftCms\Cms\ProjectConfig\Data\ProjectConfigData;
 use CraftCms\Cms\ProjectConfig\Data\ReadOnlyProjectConfigData;
@@ -37,6 +37,7 @@ use CraftCms\Cms\ProjectConfig\Exceptions\ReadonlyException;
 use CraftCms\Cms\ProjectConfig\Exceptions\StaleResourceException;
 use CraftCms\Cms\Shared\Exceptions\OperationAbortedException;
 use CraftCms\Cms\Shared\Models\Info;
+use CraftCms\Cms\Support\Facades\Fields;
 use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Support\Str;
 use CraftCms\DependencyAwareCache\Dependency\CallbackDependency;
@@ -1817,10 +1818,8 @@ final class ProjectConfig
      */
     private function _getFieldData(): array
     {
-        $fieldsService = Craft::$app->getFields();
-
-        return collect($fieldsService->getAllFields('global'))
-            ->mapWithKeys(fn (FieldInterface $field) => [$field->uid => $fieldsService->createFieldConfig($field)])
+        return Fields::getAllFields('global')
+            ->mapWithKeys(fn (FieldInterface $field) => [$field->uid => Fields::createFieldConfig($field)])
             ->all();
     }
 
@@ -1839,7 +1838,7 @@ final class ProjectConfig
      */
     private function _getUserData(array $data): array
     {
-        $fieldLayout = Craft::$app->getFields()->getLayoutByType(User::class, false);
+        $fieldLayout = Fields::getLayoutByType(User::class, false);
         $fieldLayoutConfig = $fieldLayout?->getConfig();
 
         if ($fieldLayoutConfig) {
@@ -1865,7 +1864,7 @@ final class ProjectConfig
     private function _getAddressesData(): array
     {
         $data = [];
-        $fieldLayout = Craft::$app->getFields()->getLayoutByType(Address::class, false);
+        $fieldLayout = Fields::getLayoutByType(Address::class, false);
         $fieldLayoutConfig = $fieldLayout?->getConfig();
 
         if ($fieldLayoutConfig) {

@@ -8,7 +8,6 @@
 namespace craft\elements\exporters;
 
 use Craft;
-use craft\base\EagerLoadingFieldInterface;
 use craft\base\ElementExporter;
 use craft\base\ElementInterface;
 use craft\elements\db\ElementQuery;
@@ -16,6 +15,8 @@ use craft\elements\db\ElementQueryInterface;
 use craft\helpers\Component;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\Db;
+use CraftCms\Cms\Field\Contracts\EagerLoadingFieldInterface;
+use CraftCms\Cms\Field\Fields;
 
 /**
  * Expanded represents an "Expanded" element exporter.
@@ -40,7 +41,7 @@ class Expanded extends ElementExporter
     {
         // Eager-load as much as we can
         $eagerLoadableFields = [];
-        foreach (Craft::$app->getFields()->getAllFields() as $field) {
+        foreach (app(Fields::class)->getAllFields() as $field) {
             if ($field instanceof EagerLoadingFieldInterface) {
                 $eagerLoadableFields[] = [
                     'path' => $field->handle,

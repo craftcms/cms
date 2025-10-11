@@ -8,9 +8,6 @@
 namespace craft\models;
 
 use Craft;
-use craft\base\Chippable;
-use craft\base\CpEditable;
-use craft\base\Iconic;
 use craft\base\Model;
 use craft\elements\Entry;
 use craft\helpers\Db;
@@ -18,6 +15,9 @@ use craft\helpers\UrlHelper;
 use craft\records\Section as SectionRecord;
 use craft\validators\HandleValidator;
 use craft\validators\UniqueValidator;
+use CraftCms\Cms\Component\Contracts\Chippable;
+use CraftCms\Cms\Component\Contracts\CpEditable;
+use CraftCms\Cms\Component\Contracts\Iconic;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Enums\PropagationMethod;
 use CraftCms\Cms\Support\Arr;

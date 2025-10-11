@@ -19,10 +19,11 @@ use craft\errors\ImageException;
 use craft\errors\ImageTransformException;
 use craft\image\Raster;
 use craft\models\ImageTransform;
-use craft\validators\ColorValidator;
 use CraftCms\Cms\Config\GeneralConfig;
+use CraftCms\Cms\Shared\Rules\ColorRule;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Str;
+use Illuminate\Support\Facades\Validator;
 use Imagine\Image\Format;
 use yii\base\InvalidArgumentException;
 
@@ -63,7 +64,7 @@ class ImageTransforms
         }
 
         if (!empty($matches['fill'])) {
-            $fill = ColorValidator::normalizeColor($matches['fill']);
+            $fill = ColorRule::normalizeColor($matches['fill']);
         }
 
         return Craft::createObject([
@@ -296,8 +297,13 @@ class ImageTransforms
             }
 
             if (!empty($transform['fill'])) {
-                $normalizedValue = ColorValidator::normalizeColor($transform['fill']);
-                if ((new ColorValidator())->validate($normalizedValue)) {
+                $normalizedValue = ColorRule::normalizeColor($transform['fill']);
+                $colorValidator = Validator::make(
+                    data: ['fill' => $normalizedValue],
+                    rules: ['fill' => new ColorRule()],
+                );
+
+                if ($colorValidator->passes()) {
                     $transform['fill'] = $normalizedValue;
                 } else {
                     Craft::warning("Invalid transform fill: {$transform['fill']}", __METHOD__);

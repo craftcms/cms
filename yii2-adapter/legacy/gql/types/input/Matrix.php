@@ -7,10 +7,10 @@
 
 namespace craft\gql\types\input;
 
-use craft\base\Field;
-use craft\fields\Matrix as MatrixField;
 use craft\gql\GqlEntityRegistry;
 use craft\gql\types\QueryArgument;
+use CraftCms\Cms\Field\Field;
+use CraftCms\Cms\Field\Matrix as MatrixField;
 use CraftCms\Cms\Support\Arr;
 use GraphQL\Type\Definition\InputObjectType;
 use GraphQL\Type\Definition\Type;

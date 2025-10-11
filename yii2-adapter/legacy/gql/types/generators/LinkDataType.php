@@ -8,15 +8,15 @@
 namespace craft\gql\types\generators;
 
 use Craft;
-use craft\fields\data\LinkData as LinkFieldData;
-use craft\fields\Link;
-use craft\fields\linktypes\BaseElementLinkType;
 use craft\gql\base\GeneratorInterface;
 use craft\gql\base\ObjectType;
 use craft\gql\base\SingleGeneratorInterface;
 use craft\gql\GqlEntityRegistry;
 use craft\gql\interfaces\Element;
 use craft\gql\types\LinkData;
+use CraftCms\Cms\Field\Data\LinkData as LinkFieldData;
+use CraftCms\Cms\Field\Link;
+use CraftCms\Cms\Field\LinkTypes\BaseElementLinkType;
 use GraphQL\Type\Definition\Type;
 
 /**
