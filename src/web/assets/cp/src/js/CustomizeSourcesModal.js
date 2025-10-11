@@ -9,6 +9,8 @@ import $ from 'jquery';
 Craft.CustomizeSourcesModal = Garnish.Modal.extend({
   elementIndex: null,
 
+  $body: null,
+
   $pagesSidebar: null,
   $pagesSidebarContent: null,
   $pagesSidebarItems: null,
@@ -61,8 +63,10 @@ Craft.CustomizeSourcesModal = Garnish.Modal.extend({
       '<form class="modal cs-modal"/>'
     ).appendTo(Garnish.$bod);
 
+    this.$body = $('<div class="cs-body"/>').appendTo($container);
+
     this.$sourcesSidebar = $('<div class="cs-sidebar"/>')
-      .appendTo($container)
+      .appendTo(this.$body)
       .attr({
         role: 'navigation',
         'aria-label': Craft.t('app', 'Source'),
@@ -77,7 +81,7 @@ Craft.CustomizeSourcesModal = Garnish.Modal.extend({
 
     const $sourceSettingsOuterContainer = $(
       '<div class="cs-source-settings--outer"/>'
-    ).appendTo($container);
+    ).appendTo(this.$body);
     $('<div class="cs-header"/>')
       .appendTo($sourceSettingsOuterContainer)
       .append($('<h2 class="h3"/>').text(Craft.t('app', 'Settings')));

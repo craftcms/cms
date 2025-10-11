@@ -1489,61 +1489,65 @@ td.right {
 
 .cs-modal {
   display: flex !important;
-  flex-flow: row nowrap;
-  padding-block-end: 44px;
+  flex-direction: column;
 
-  .cs-header {
-    height: 44px;
-    border-block-end: 1px solid var(--hairline-color);
+  & > .cs-body {
+    flex: 1;
     display: flex;
-    align-items: center;
-    padding-inline: var(--m);
-  }
+    flex-flow: row nowrap;
+    height: calc(100% - 44px);
 
-  & > .cs-sidebar {
-    flex: 0 0 200px;
-    height: 100%;
-    border-inline-end: 1px solid var(--hairline-color);
+    .cs-header {
+      height: 44px;
+      border-block-end: 1px solid var(--hairline-color);
+      display: flex;
+      align-items: center;
+      padding-inline: var(--m);
+    }
 
-    & > .cs-sidebar-content {
-      padding: var(--m);
-      border: none;
-      width: 200px;
-      height: calc(100% - 44px);
-      box-sizing: border-box;
-      overflow: auto;
+    & > .cs-sidebar {
+      flex: 0 0 200px;
+      height: 100%;
+      border-inline-end: 1px solid var(--hairline-color);
 
-      & > .cs-sidebar-list {
-        padding-inline-start: 0;
-        margin-block-end: var(--m);
+      & > .cs-sidebar-content {
+        padding: var(--m);
+        border: none;
+        width: 200px;
+        height: calc(100% - 44px);
+        box-sizing: border-box;
+        overflow: auto;
+
+        & > .cs-sidebar-list {
+          padding-inline-start: 0;
+          margin-block-end: var(--m);
+        }
+      }
+    }
+
+    &.sidebar-hidden {
+      padding-inline-start: 0;
+
+      & > .cs-sidebar {
+        display: none;
+      }
+    }
+
+    & > .cs-source-settings--outer {
+      flex: 1;
+      height: 100%;
+
+      & > .cs-source-settings {
+        height: calc(100% - 44px);
+        position: relative;
+        padding: var(--m);
+        overflow: auto;
       }
     }
   }
 
-  &.sidebar-hidden {
-    padding-inline-start: 0;
-
-    & > .cs-sidebar {
-      display: none;
-    }
-  }
-
-  & > .cs-source-settings--outer {
-    flex: 1;
-    height: 100%;
-
-    & > .cs-source-settings {
-      height: calc(100% - 44px);
-      position: relative;
-      padding: var(--m);
-      overflow: auto;
-    }
-  }
-
   & > .footer {
-    position: absolute;
-    inset-block-end: 0;
-    inset-inline-start: 0;
+    flex: 0 0 44px;
     width: 100%;
   }
 }
