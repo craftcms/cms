@@ -12,6 +12,7 @@ use craft\helpers\DateTimeHelper;
 use DateTime;
 use DateTimeZone;
 use Exception;
+use Illuminate\Support\Facades\Date;
 use IntlTimeZone;
 use NumberFormatter;
 use Yii;
@@ -311,7 +312,48 @@ class Formatter extends \yii\i18n\Formatter
      */
     public function asShortSize($value, $decimals = null, $options = [], $textOptions = []): string
     {
-        return strtoupper(parent::asShortSize($value, $decimals, $options, $textOptions));
+        return strtoupper($this->_asShortSize($value, $decimals, $options, $textOptions));
+    }
+
+    private function _asShortSize($value, $decimals, $options, $textOptions): string
+    {
+        if ($value === null) {
+            return $this->nullDisplay;
+        }
+
+        list($params, $position) = $this->formatNumber($value, $decimals, 4, $this->sizeFormatBase, $options, $textOptions);
+
+        if ($this->sizeFormatBase == 1024) {
+            switch ($position) {
+                case 0:
+                    return t('{nFormatted} B', $params, locale: $this->language);
+                case 1:
+                    return t('{nFormatted} KiB', $params, locale: $this->language);
+                case 2:
+                    return t('{nFormatted} MiB', $params, locale: $this->language);
+                case 3:
+                    return t('{nFormatted} GiB', $params, locale: $this->language);
+                case 4:
+                    return t('{nFormatted} TiB', $params, locale: $this->language);
+                default:
+                    return t('{nFormatted} PiB', $params, locale: $this->language);
+            }
+        } else {
+            switch ($position) {
+                case 0:
+                    return t('{nFormatted} B', $params, locale: $this->language);
+                case 1:
+                    return t('{nFormatted} kB', $params, locale: $this->language);
+                case 2:
+                    return t('{nFormatted} MB', $params, locale: $this->language);
+                case 3:
+                    return t('{nFormatted} GB', $params, locale: $this->language);
+                case 4:
+                    return t('{nFormatted} TB', $params, locale: $this->language);
+                default:
+                    return t('{nFormatted} PB', $params, locale: $this->language);
+            }
+        }
     }
 
     /**
