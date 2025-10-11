@@ -407,9 +407,7 @@ Craft.CustomizeSourcesModal = Garnish.Modal.extend({
 
   getSourceContainer: function (pageName, create = true) {
     if (this.sourceContainers[pageName] === undefined && create) {
-      this.sourceContainers[pageName] = $(
-        '<ol class="cs-sidebar-list">'
-      );
+      this.sourceContainers[pageName] = $('<ol class="cs-sidebar-list">');
       if (this.$newSourceBtn) {
         this.sourceContainers[pageName].insertBefore(this.$newSourceBtn);
       } else {
