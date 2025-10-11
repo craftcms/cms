@@ -2,9 +2,6 @@
 
 return [
 
-
-
-
     ' and ' => '',
     '"{attribute}" does not support operator "{operator}".' => '',
     '(blank)' => '(tom)',
