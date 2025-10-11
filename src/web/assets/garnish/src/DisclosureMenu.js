@@ -899,7 +899,9 @@ export default Base.extend(
         const $nextVisibleItems = $el
           .nextUntil('h3,hr')
           .filter(':not(.hidden):not(.filtered)');
-        if (!$prevVisibleItems.length || !$nextVisibleItems.length) {
+        if ($prevVisibleItems.length && $nextVisibleItems.length) {
+          $el.removeClass('hidden');
+        } else {
           $el.addClass('hidden');
         }
       });
