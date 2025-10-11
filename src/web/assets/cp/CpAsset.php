@@ -280,6 +280,7 @@ JS;
             'Move to previous group',
             'Move to the left',
             'Move to the right',
+            'Move to {page}',
             'Move to',
             'Move up',
             'Move',

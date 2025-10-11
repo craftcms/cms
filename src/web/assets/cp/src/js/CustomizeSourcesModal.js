@@ -61,9 +61,9 @@ Craft.CustomizeSourcesModal = Garnish.Modal.extend({
 
     this.elementIndex = elementIndex;
 
-    const $container = $(
-      '<form class="modal cs-modal"/>'
-    ).appendTo(Garnish.$bod);
+    const $container = $('<form class="modal cs-modal"/>').appendTo(
+      Garnish.$bod
+    );
 
     this.$body = $('<div class="cs-body"/>').appendTo($container);
 
@@ -76,9 +76,9 @@ Craft.CustomizeSourcesModal = Garnish.Modal.extend({
     this.$sourcesHeader = $('<div class="cs-header"/>')
       .appendTo(this.$sourcesSidebar)
       .append($('<h2 class="h3"/>').text(Craft.t('app', 'Sources')));
-    this.$sourcesSidebarContent = $('<div class="cs-sidebar-content"/>').appendTo(
-      this.$sourcesSidebar
-    );
+    this.$sourcesSidebarContent = $(
+      '<div class="cs-sidebar-content"/>'
+    ).appendTo(this.$sourcesSidebar);
     this.sourceContainers = [];
 
     this.$sourceSettingsOuterContainer = $(
@@ -181,7 +181,9 @@ Craft.CustomizeSourcesModal = Garnish.Modal.extend({
         title: Craft.t('app', 'Back to pages'),
         'aria-label': Craft.t('app', 'Back to pages'),
       })
-        .append($('<div class="cp-icon"/>').html(await Craft.ui.icon('chevron-left')))
+        .append(
+          $('<div class="cp-icon"/>').html(await Craft.ui.icon('chevron-left'))
+        )
         .prependTo(this.$sourcesHeader)
         .on('activate', () => {
           this.setSelectedScreen(this.$pagesSidebar);
@@ -222,7 +224,10 @@ Craft.CustomizeSourcesModal = Garnish.Modal.extend({
 
     const addSource = (sourceData) => {
       const source = this.addSource(sourceData, true);
-      Garnish.scrollContainerToElement(this.$sourcesSidebarContent, source.$item);
+      Garnish.scrollContainerToElement(
+        this.$sourcesSidebarContent,
+        source.$item
+      );
       source.select();
       this.sourceMenu.hide();
     };
@@ -273,7 +278,9 @@ Craft.CustomizeSourcesModal = Garnish.Modal.extend({
       this.$pagesSidebar
     );
 
-    this.$pagesSidebarItems = $('<ol class="cs-sidebar-list"/>').appendTo(this.$pagesSidebarContent);
+    this.$pagesSidebarItems = $('<ol class="cs-sidebar-list"/>').appendTo(
+      this.$pagesSidebarContent
+    );
 
     // Create the page item sorter
     this.pageDrag = new Garnish.DragSort({
@@ -326,9 +333,7 @@ Craft.CustomizeSourcesModal = Garnish.Modal.extend({
 
   addPage: async function (name, icon = null, isNew = false) {
     const $item = $('<li class="cs-item"/>').appendTo(this.$pagesSidebarItems);
-    const $itemButton = $(
-      '<div class="cs-item__btn cs-item__page-btn"/>'
-    )
+    const $itemButton = $('<div class="cs-item__btn cs-item__page-btn"/>')
       .attr({
         tabindex: '0',
         role: 'button',
@@ -336,11 +341,13 @@ Craft.CustomizeSourcesModal = Garnish.Modal.extend({
       .append(
         $('<div class="cp-icon"/>').html(icon ? await Craft.ui.icon(icon) : '')
       )
-      .append($('<div/>', {
-        id: `cs-item-label-${Math.floor(Math.random() * 1000000)}`,
-        class: 'label',
-        text: name,
-      }))
+      .append(
+        $('<div/>', {
+          id: `cs-item-label-${Math.floor(Math.random() * 1000000)}`,
+          class: 'label',
+          text: name,
+        })
+      )
       .appendTo($item);
 
     $(
@@ -399,9 +406,9 @@ Craft.CustomizeSourcesModal = Garnish.Modal.extend({
 
   getSourceContainer: function (pageName, create = true) {
     if (this.sourceContainers[pageName] === undefined && create) {
-      this.sourceContainers[pageName] = $('<ol class="cs-sidebar-list">').appendTo(
-        this.$sourcesSidebarContent
-      );
+      this.sourceContainers[pageName] = $(
+        '<ol class="cs-sidebar-list">'
+      ).appendTo(this.$sourcesSidebarContent);
       if (this.multiPage && pageName !== this.selectedPage.name) {
         this.sourceContainers[pageName].addClass('hidden');
       }
@@ -416,18 +423,18 @@ Craft.CustomizeSourcesModal = Garnish.Modal.extend({
     const isHeading = sourceData.type === 'heading';
 
     const $sourceContainer = this.getSourceContainer(pageName);
-    const $item = $('<li class="cs-item"/>').appendTo(
-      $sourceContainer
-    );
+    const $item = $('<li class="cs-item"/>').appendTo($sourceContainer);
     const $itemButton = $('<div class="cs-item__btn"/>')
       .attr({
         tabindex: '0',
         role: 'button',
       })
-      .append($('<div/>', {
-        id: `cs-item-label-${Math.floor(Math.random() * 1000000)}`,
-        class: 'label',
-      }))
+      .append(
+        $('<div/>', {
+          id: `cs-item-label-${Math.floor(Math.random() * 1000000)}`,
+          class: 'label',
+        })
+      )
       .append($('<div class="handle"/>'))
       .appendTo($item);
 
@@ -529,7 +536,7 @@ Craft.CustomizeSourcesModal = Garnish.Modal.extend({
     }
   },
 
-  setSelectedScreen: function($screen) {
+  setSelectedScreen: function ($screen) {
     if (this.$body.width() >= 700) {
       return;
     }
@@ -1185,8 +1192,43 @@ Craft.CustomizeSourcesModal.BaseSource = Garnish.Base.extend({
   },
 
   updateActionButton: function () {
-    this.actionMenu.toggleItem(this.moveUpBtn, this.getPrevSource());
-    this.actionMenu.toggleItem(this.moveDownBtn, this.getNextSource());
+    this.actionMenu.toggleItem(this.moveUpBtn, !!this.getPrevSource());
+    this.actionMenu.toggleItem(this.moveDownBtn, !!this.getNextSource());
+
+    if (this.modal.multiPage) {
+      const currentPage = this.$pageInput.val();
+      let $ul = this.$actionMenu.find('[data-cs-multi-page-list]');
+      if (!$ul.length) {
+        this.actionMenu.addHr();
+        $ul = $(this.actionMenu.addList()).attr(
+          'data-cs-multi-page-list',
+          'true'
+        );
+      }
+      $ul.html('');
+      this.modal.pages.forEach((page) => {
+        if (page.name !== currentPage) {
+          const button = this.actionMenu.addItem(
+            {
+              icon: page.icon
+                ? async () => await Craft.ui.icon(page.icon)
+                : null,
+              label: Craft.t('app', 'Move to {page}', {
+                page: page.name,
+              }),
+            },
+            $ul[0]
+          );
+
+          $(button).on('activate', () => {
+            this.actionMenu.hide();
+            this.moveToPage(page);
+          });
+        }
+      });
+
+      this.$actionMenu.find('[cs-multi-page-action]').remove();
+    }
 
     if (this.actionMenu.hasVisibleItems()) {
       this.$actionBtn.removeClass('hidden');

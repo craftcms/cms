@@ -1055,6 +1055,7 @@ return [
     'Move to the next group' => 'Move to the next group',
     'Move to the previous group' => 'Move to the previous group',
     'Move to the right' => 'Move to the right',
+    'Move to {page}' => 'Move to {page}',
     'Move to' => 'Move to',
     'Move to…' => 'Move to…',
     'Move up' => 'Move up',
