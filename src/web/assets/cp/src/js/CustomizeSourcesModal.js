@@ -26,6 +26,7 @@ Craft.CustomizeSourcesModal = Garnish.Modal.extend({
   $sourcesSidebarContent: null,
   sourceContainers: null,
   $sourcesHeader: null,
+  $newSourceBtn: null,
 
   $sourceSettingsOuterContainer: null,
   $sourceSettingsContainer: null,
@@ -206,7 +207,7 @@ Craft.CustomizeSourcesModal = Garnish.Modal.extend({
       this.sources[0].select();
     }
 
-    const $menuBtn = $('<button/>', {
+    this.$newSourceBtn = $('<button/>', {
       class: 'btn add icon dashed menubtn',
       type: 'button',
       title: Craft.t('app', 'Source actions'),
@@ -220,7 +221,7 @@ Craft.CustomizeSourcesModal = Garnish.Modal.extend({
       class: 'menu menu--disclosure',
     }).appendTo(this.$sourcesSidebarContent);
 
-    this.sourceMenu = new Garnish.DisclosureMenu($menuBtn);
+    this.sourceMenu = new Garnish.DisclosureMenu(this.$newSourceBtn);
 
     const addSource = (sourceData) => {
       const source = this.addSource(sourceData, true);
@@ -408,7 +409,12 @@ Craft.CustomizeSourcesModal = Garnish.Modal.extend({
     if (this.sourceContainers[pageName] === undefined && create) {
       this.sourceContainers[pageName] = $(
         '<ol class="cs-sidebar-list">'
-      ).appendTo(this.$sourcesSidebarContent);
+      );
+      if (this.$newSourceBtn) {
+        this.sourceContainers[pageName].insertBefore(this.$newSourceBtn);
+      } else {
+        this.sourceContainers[pageName].appendTo(this.$sourcesSidebarContent);
+      }
       if (this.multiPage && pageName !== this.selectedPage.name) {
         this.sourceContainers[pageName].addClass('hidden');
       }
