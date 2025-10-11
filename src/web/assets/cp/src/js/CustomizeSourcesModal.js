@@ -26,6 +26,8 @@ Craft.CustomizeSourcesModal = Garnish.Modal.extend({
   $sourcesSidebarContent: null,
   sourceContainers: null,
   $sourcesHeader: null,
+
+  $sourceSettingsOuterContainer: null,
   $sourceSettingsContainer: null,
   $sourceSettingsHeader: null,
   $sourceMenu: null,
@@ -65,13 +67,13 @@ Craft.CustomizeSourcesModal = Garnish.Modal.extend({
 
     this.$body = $('<div class="cs-body"/>').appendTo($container);
 
-    this.$sourcesSidebar = $('<div class="cs-sidebar"/>')
+    this.$sourcesSidebar = $('<div class="cs-sidebar cs-selected-screen"/>')
       .appendTo(this.$body)
       .attr({
         role: 'navigation',
         'aria-label': Craft.t('app', 'Source'),
       });
-    $('<div class="cs-header"/>')
+    this.$sourcesHeader = $('<div class="cs-header"/>')
       .appendTo(this.$sourcesSidebar)
       .append($('<h2 class="h3"/>').text(Craft.t('app', 'Sources')));
     this.$sourcesSidebarContent = $('<div class="cs-sidebar-content"/>').appendTo(
@@ -79,15 +81,29 @@ Craft.CustomizeSourcesModal = Garnish.Modal.extend({
     );
     this.sourceContainers = [];
 
-    const $sourceSettingsOuterContainer = $(
+    this.$sourceSettingsOuterContainer = $(
       '<div class="cs-source-settings--outer"/>'
     ).appendTo(this.$body);
-    $('<div class="cs-header"/>')
-      .appendTo($sourceSettingsOuterContainer)
+    const $sourceSettingsHeader = $('<div class="cs-header"/>')
+      .appendTo(this.$sourceSettingsOuterContainer)
       .append($('<h2 class="h3"/>').text(Craft.t('app', 'Settings')));
+    const $backBtn = $('<button/>', {
+      type: 'button',
+      class: 'cs-back-btn',
+      title: Craft.t('app', 'Back to sources'),
+      'aria-label': Craft.t('app', 'Back to sources'),
+    })
+      .prependTo($sourceSettingsHeader)
+      .on('activate', () => {
+        this.setSelectedScreen(this.$sourcesSidebar);
+      });
+    Craft.ui.icon('chevron-left').then((html) => {
+      $backBtn.append($('<div class="cp-icon"/>').html(html));
+    });
+
     this.$sourceSettingsContainer = $(
       '<div class="cs-source-settings">'
-    ).appendTo($sourceSettingsOuterContainer);
+    ).appendTo(this.$sourceSettingsOuterContainer);
 
     this.$footer = $('<div class="footer"/>').appendTo($container);
     this.$footerBtnContainer = $('<div class="buttons right"/>').appendTo(
@@ -158,6 +174,18 @@ Craft.CustomizeSourcesModal = Garnish.Modal.extend({
 
     if (this.multiPage) {
       await this.createPagesSidebar(response);
+
+      $('<button/>', {
+        type: 'button',
+        class: 'cs-back-btn',
+        title: Craft.t('app', 'Back to pages'),
+        'aria-label': Craft.t('app', 'Back to pages'),
+      })
+        .append($('<div class="cp-icon"/>').html(await Craft.ui.icon('chevron-left')))
+        .prependTo(this.$sourcesHeader)
+        .on('activate', () => {
+          this.setSelectedScreen(this.$pagesSidebar);
+        });
     }
 
     // Create the source item sorter
@@ -231,7 +259,8 @@ Craft.CustomizeSourcesModal = Garnish.Modal.extend({
   },
 
   createPagesSidebar: async function (response) {
-    this.$pagesSidebar = $('<div class="cs-sidebar"/>')
+    this.$sourcesSidebar.removeClass('cs-selected-screen');
+    this.$pagesSidebar = $('<div class="cs-sidebar cs-selected-screen"/>')
       .insertBefore(this.$sourcesSidebar)
       .attr({
         role: 'navigation',
@@ -498,6 +527,18 @@ Craft.CustomizeSourcesModal = Garnish.Modal.extend({
     for (const source of this.sources) {
       source.updateActionButton();
     }
+  },
+
+  setSelectedScreen: function($screen) {
+    if (this.$body.width() >= 700) {
+      return;
+    }
+
+    this.$pagesSidebar?.removeClass('cs-selected-screen');
+    this.$sourcesSidebar.removeClass('cs-selected-screen');
+    this.$sourceSettingsOuterContainer.removeClass('cs-selected-screen');
+    $screen.addClass('cs-selected-screen');
+    Craft.setFocusWithin($screen);
   },
 
   save: function (ev) {
@@ -899,6 +940,8 @@ Craft.CustomizeSourcesModal.Page = Garnish.Base.extend(
     },
 
     select: function () {
+      this.modal.setSelectedScreen(this.modal.$sourcesSidebar);
+
       if (this.isSelected()) {
         return;
       }
@@ -1165,6 +1208,8 @@ Craft.CustomizeSourcesModal.BaseSource = Garnish.Base.extend({
   },
 
   select: function () {
+    this.modal.setSelectedScreen(this.modal.$sourceSettingsOuterContainer);
+
     if (this.isSelected()) {
       return;
     }

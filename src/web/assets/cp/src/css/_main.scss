@@ -1496,13 +1496,45 @@ td.right {
     display: flex;
     flex-flow: row nowrap;
     height: calc(100% - 44px);
+    container-type: inline-size;
+
+    @container (max-width: 699px) {
+      & > .cs-sidebar,
+      & > .cs-source-settings--outer {
+        &.cs-selected-screen {
+          flex: 1;
+        }
+
+        &:not(.cs-selected-screen) {
+          display: none;
+        }
+      }
+    }
 
     .cs-header {
       height: 44px;
       border-block-end: 1px solid var(--hairline-color);
       display: flex;
       align-items: center;
+      gap: var(--s);
       padding-inline: var(--m);
+
+      .cs-back-btn {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-inline-start: -6px;
+        width: var(--touch-target-size);
+        height: var(--touch-target-size);
+
+        @container (min-width: 700px) {
+          display: none;
+        }
+      }
+
+      h2 {
+        margin-block: 0;
+      }
     }
 
     & > .cs-sidebar {
@@ -1513,7 +1545,6 @@ td.right {
       & > .cs-sidebar-content {
         padding: var(--m);
         border: none;
-        width: 200px;
         height: calc(100% - 44px);
         box-sizing: border-box;
         overflow: auto;
@@ -1577,14 +1608,15 @@ td.right {
     }
   }
 
-  &.sel,
-  &.active {
-    --focus-ring: var(--focus-ring-outset);
-    --ui-control-color: var(--selected-item-color);
-    --text-color: var(--selected-item-color);
-    background-color: var(--bg-selection-dark);
-    color: var(--selected-item-color);
-    z-index: 1;
+  @container (min-width: 700px) {
+    &.sel,
+    &.active {
+      --focus-ring: var(--focus-ring-outset);
+      --ui-control-color: var(--selected-item-color);
+      --text-color: var(--selected-item-color);
+      background-color: var(--bg-selection-dark);
+      color: var(--selected-item-color);
+    }
   }
 
   .label,
@@ -1602,6 +1634,12 @@ td.right {
     color: var(--fg-subtle);
   }
 
+  @container (max-width: 699px) {
+    .handle {
+      color: var(--fg-subtle);
+    }
+  }
+
   &.cs-item--heading {
     .label {
       text-transform: uppercase;
@@ -1610,8 +1648,10 @@ td.right {
       font-weight: bold;
     }
 
-    &.sel .label {
-      color: var(--selected-item-color);
+    @container (min-width: 700px) {
+      &.sel .label {
+        color: var(--selected-item-color);
+      }
     }
   }
 }

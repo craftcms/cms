@@ -145,6 +145,8 @@ JS;
             'Ascending',
             'Assets',
             'Attributes',
+            'Back to pages',
+            'Back to sources',
             'Breadcrumbs',
             'Buy {name}',
             'Cancel',
