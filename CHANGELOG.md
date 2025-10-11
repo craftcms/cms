@@ -3,6 +3,7 @@
 ## Unreleased
 
 - Icon pickers now return focus to the “Choose” button when the modal is closed without making a selection.
+- Fixed a bug where disclosure menus could have unnecessary horizontal rules.
 
 ## 5.8.18 - 2025-10-06
 
