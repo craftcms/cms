@@ -5,6 +5,7 @@
 - Icon pickers now return focus to the “Choose” button when the modal is closed without making a selection.
 - Fixed a bug where disclosure menus could have unnecessary horizontal rules.
 - Fixed a bug where Content Block fields weren’t copying field values across all sites for freshly-created owner elements. ([#17927](https://github.com/craftcms/cms/issues/17927))
+- Fixed an error that could occur if the `_includes/field.twig` template was included without passing an `element` variable. ([#17926](https://github.com/craftcms/cms/issues/17926))
 
 ## 5.8.18 - 2025-10-06
 
