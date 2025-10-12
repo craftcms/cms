@@ -26,15 +26,14 @@ class RedirectTokenParser extends AbstractTokenParser
     public function parse(Token $token): RedirectNode
     {
         $lineno = $token->getLine();
-        $parser = $this->parser;
-        $stream = $parser->getStream();
+        $stream = $this->parser->getStream();
 
         $nodes = [
-            'path' => $parser->getExpressionParser()->parseExpression(),
+            'path' => $this->parser->parseExpression(),
         ];
 
         if ($stream->test(Token::NUMBER_TYPE)) {
-            $nodes['httpStatusCode'] = $parser->getExpressionParser()->parseExpression();
+            $nodes['httpStatusCode'] = $this->parser->parseExpression();
         } else {
             $nodes['httpStatusCode'] = new ConstantExpression(302, 1);
         }
@@ -43,12 +42,12 @@ class RedirectTokenParser extends AbstractTokenParser
         while ($stream->test(Token::NAME_TYPE, 'with')) {
             $stream->next();
             $type = $stream->expect(Token::NAME_TYPE, ['notice', 'error'])->getValue();
-            $nodes[$type] = $parser->getExpressionParser()->parseExpression();
+            $nodes[$type] = $this->parser->parseExpression();
         }
 
         $stream->expect(Token::BLOCK_END_TYPE);
 
-        return new RedirectNode($nodes, [], $lineno, $this->getTag());
+        return new RedirectNode($nodes, [], $lineno);
     }
 
     /**

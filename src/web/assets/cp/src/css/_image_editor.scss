@@ -254,41 +254,6 @@ html.noscroll body {
   .custom {
     padding-inline-start: calc(1rem + 5px);
   }
-
-  .orientation {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-
-    input {
-      appearance: none;
-      background-position: center center;
-      background-repeat: no-repeat;
-      margin-block: 0;
-      margin-inline: 4px;
-      cursor: pointer;
-
-      &[value='landscape'] {
-        width: 30px;
-        height: 20px;
-        background-image: url('../images/image-editor/orientation-landscape-unchecked.svg');
-
-        &:checked {
-          background-image: url('../images/image-editor/orientation-landscape-checked.svg');
-        }
-      }
-
-      &[value='portrait'] {
-        width: 20px;
-        height: 30px;
-        background-image: url('../images/image-editor/orientation-portrait-unchecked.svg');
-
-        &:checked {
-          background-image: url('../images/image-editor/orientation-portrait-checked.svg');
-        }
-      }
-    }
-  }
 }
 
 .modal.imageeditor.vertical .body .views .crop {

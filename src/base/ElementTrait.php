@@ -59,6 +59,12 @@ trait ElementTrait
     public bool $isProvisionalDraft = false;
 
     /**
+     * @var bool Whether provisional changes have been loaded onto this element.
+     * @since 5.9.0
+     */
+    public bool $hasProvisionalChanges = false;
+
+    /**
      * @var string|null The element’s UID
      */
     public ?string $uid = null;

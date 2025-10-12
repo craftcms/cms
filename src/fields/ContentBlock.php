@@ -35,6 +35,7 @@ use craft\helpers\Gql;
 use craft\helpers\Html;
 use craft\helpers\Json as JsonHelper;
 use craft\models\FieldLayout;
+use craft\web\assets\cp\CpAsset;
 use DateTime;
 use GraphQL\Type\Definition\Type;
 use Illuminate\Support\Collection;
@@ -408,9 +409,12 @@ class ContentBlock extends Field implements
 
     private function settingsHtml(bool $readOnly): string
     {
+        $bundle = Craft::$app->getView()->registerAssetBundle(CpAsset::class);
+
         return Craft::$app->getView()->renderTemplate('_components/fieldtypes/ContentBlock/settings.twig', [
             'field' => $this,
             'readOnly' => $readOnly,
+            'baseIconsUrl' => "$bundle->baseUrl/images/content-block",
         ]);
     }
 
@@ -951,6 +955,11 @@ JS, [
         // Set the content post location on the content block if we can
         if ($baseFieldNamespace) {
             $contentBlock->setFieldParamNamespace("$baseFieldNamespace.fields");
+        }
+
+        // if the owner is fresh, ensure the content block's content gets propagated to all sites
+        if ($element->getIsFresh()) {
+            $contentBlock->propagateAll = true;
         }
 
         if (isset($value['fields'])) {

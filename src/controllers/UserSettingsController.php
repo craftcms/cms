@@ -9,6 +9,7 @@ namespace craft\controllers;
 
 use Craft;
 use craft\enums\CmsEdition;
+use craft\helpers\Cp;
 use craft\models\UserGroup;
 use craft\web\Controller;
 use yii\web\BadRequestHttpException;
@@ -95,28 +96,44 @@ class UserSettingsController extends Controller
             ['label' => Craft::t('app', 'User Groups'), 'url' => 'settings/users'],
         ];
 
-        $formActions = [
-            [
-                'label' => Craft::t('app', 'Save and continue editing'),
-                'redirect' => Craft::$app->getSecurity()->hashData('settings/users/groups/{id}'),
-                'shortcut' => true,
-                'retainScroll' => true,
-            ],
-        ];
-
         if ($group->id) {
             $title = trim($group->name) ?: Craft::t('app', 'Edit User Group');
         } else {
             $title = Craft::t('app', 'Create a new user group');
         }
 
-        return $this->renderTemplate('settings/users/groups/_edit.twig', [
-            'group' => $group,
-            'crumbs' => $crumbs,
-            'formActions' => $formActions,
-            'title' => $title,
-            'readOnly' => $this->readOnly,
-        ]);
+        $response = $this->asCpScreen()
+            ->editUrl($group->getCpEditUrl())
+            ->title($title)
+            ->crumbs($crumbs)
+            ->addAltAction(Craft::t('app', 'Save and continue editing'), [
+                'redirect' => 'settings/users/groups/{id}',
+                'shortcut' => true,
+                'retainScroll' => true,
+            ])
+            ->action('user-settings/save-group')
+            ->redirectUrl('settings/users')
+            ->contentTemplate('settings/users/groups/_edit.twig', [
+                'group' => $group,
+                'readOnly' => $this->readOnly,
+            ])
+            ->prepareScreen(function(Response $response, string $containerId) use ($group) {
+                if ($group->id) {
+                    $this->view->registerJsWithVars(fn($containerId) => <<<JS
+new Craft.ElevatedSessionForm('#' + $containerId, [
+    '.user-permissions input[type="checkbox"]:not(:checked)'
+]);
+JS, [
+                        $containerId,
+                    ]);
+                }
+            });
+
+        if ($this->readOnly) {
+            $response->noticeHtml(Cp::readOnlyNoticeHtml());
+        }
+
+        return $response;
     }
 
     /**
@@ -152,14 +169,7 @@ class UserSettingsController extends Controller
 
         // Did it save?
         if (!Craft::$app->getUserGroups()->saveGroup($group)) {
-            $this->setFailFlash(Craft::t('app', 'Couldn’t save group.'));
-
-            // Send the group back to the template
-            Craft::$app->getUrlManager()->setRouteParams([
-                'group' => $group,
-            ]);
-
-            return null;
+            return $this->asModelFailure($group, Craft::t('app', 'Couldn’t save group.'), 'group');
         }
 
         // Save the new permissions
@@ -188,10 +198,11 @@ class UserSettingsController extends Controller
 
         Craft::$app->getUserPermissions()->saveGroupPermissions($group->id, $permissions);
 
-        $this->setSuccessFlash(Craft::$app->edition === CmsEdition::Team
+        $message = Craft::$app->edition === CmsEdition::Team
             ? Craft::t('app', 'Permissions saved.')
-            : Craft::t('app', 'Group saved.'));
-        return $this->redirectToPostedUrl($group);
+            : Craft::t('app', 'Group saved.');
+
+        return $this->asModelSuccess($group, $message, 'group');
     }
 
     /**
