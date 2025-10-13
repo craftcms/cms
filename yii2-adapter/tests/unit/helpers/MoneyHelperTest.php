@@ -10,7 +10,6 @@ namespace crafttests\unit\helpers;
 use Codeception\Test\Unit;
 use craft\helpers\MoneyHelper;
 use craft\test\TestCase;
-use CraftCms\Cms\Support\Facades\I18N;
 use Money\Currency;
 use Money\Money;
 
