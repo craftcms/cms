@@ -82,7 +82,7 @@ final class Formatter
             return $value;
         }
 
-        $format = $this->dateTimeFormats[$format]['time'] ?? $format;
+        $format = $this->dateTimeFormats[$format]['date'] ?? $format;
 
         if (isset($this->defaultDateFormats[$format])) {
             return new IntlDateFormatter(
@@ -109,7 +109,7 @@ final class Formatter
             return $value;
         }
 
-        $format = $this->dateTimeFormats[$format]['time'] ?? $format;
+        $format = $this->dateTimeFormats[$format]['datetime'] ?? $format;
 
         if (isset($this->defaultDateFormats[$format])) {
             return new IntlDateFormatter(
