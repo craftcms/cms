@@ -1,5 +1,5 @@
 {% import '_includes/forms.twig' as forms %}
-{% set orientation = craft.app.locale.getOrientation() -%}
+{% set orientation = craft.i18n.locale.getOrientation() -%}
 
 <div>
   <h2>{{ 'General'|t('app') }}</h2>
@@ -27,7 +27,7 @@
     label: 'Week Start Day'|t('app'),
     id: 'weekStartDay',
     name: 'weekStartDay',
-    options: craft.app.locale.getWeekDayNames(),
+    options: craft.i18n.locale.getWeekDayNames(),
     value: currentUser.getPreference('weekStartDay', app.config.craft.general.defaultWeekStartDay)
   }) }}
 </div>

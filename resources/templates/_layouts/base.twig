@@ -1,6 +1,6 @@
 {% set systemName = craft.app.getSystemName()|t('site') -%}
 {% set docTitle = docTitle is defined ? docTitle : title|striptags -%}
-{% set orientation = craft.app.locale.getOrientation() -%}
+{% set orientation = craft.i18n.locale.getOrientation() -%}
 {% set a11yDefaults = app.config.craft.general.accessibilityDefaults %}
 {% set requestedSite = craft.cp.requestedSite %}
 

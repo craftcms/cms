@@ -2,7 +2,7 @@
 
 {% macro numberField(config, decimals) %}
     {% from '_includes/forms' import textField %}
-    {{ hiddenInput("#{config.name}[locale]", craft.app.formattingLocale.id) }}
+    {{ hiddenInput("#{config.name}[locale]", craft.i18n.formattingLocale.id) }}
     {% set config = config|merge({
         name: "#{config.name}[value]",
         value: config.value is not same as(null) ? config.value|number(decimals) : '',

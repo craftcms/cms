@@ -8,7 +8,7 @@
 {%- set id = id ?? "text#{random()}" %}
 {%- set descriptionId = descriptionId ?? "#{id}-desc" %}
 
-{%- set orientation = orientation ?? inputAttributes.dir ?? craft.app.locale.getOrientation() %}
+{%- set orientation = orientation ?? inputAttributes.dir ?? craft.i18n.locale.getOrientation() %}
 {%- set expanded = expanded ?? ((role ?? false) == 'combobox' ? 'false' : false) %}
 
 {%- set suffix = suffix ?? unit ?? false %}

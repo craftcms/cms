@@ -1039,12 +1039,14 @@ trait ApplicationTrait
     /**
      * Returns the locale that should be used to define the formatter.
      *
-     * @return Locale
+     * @return \craft\i18n\Locale
      * @since 3.6.0
      * @deprecated 6.0.0 use {I18N::getFormattingLocale()} instead.
      */
-    public function getFormattingLocale(): Locale
+    public function getFormattingLocale(): \craft\i18n\Locale
     {
+        DeprecatorFacade::log('Craft::$app->getFormattingLocale()', 'Craft::$app->getFormattingLocale() is deprecated. Use I18N::getFormattingLocale() or craft.i18n.getFormattingLocale instead.');
+
         return $this->get('formattingLocale');
     }
 
@@ -1096,7 +1098,7 @@ trait ApplicationTrait
      */
     public function getLocale(): Locale
     {
-        \CraftCms\Cms\Support\Facades\Deprecator::log('Craft::$app->getLocale()', 'Craft::$app->getLocale() is deprecated. Use I18N::getLocale() instead.');
+        DeprecatorFacade::log('Craft::$app->getLocale()', 'Craft::$app->getLocale() is deprecated. Use I18N::getLocale() or craft.i18n.getLocale instead.');
 
         return $this->get('locale');
     }
