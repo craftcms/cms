@@ -131,7 +131,7 @@ final class Formatter
         )->format($value->toDateTime());
     }
 
-    public function asDecimal(mixed $value, int $decimals = 2, array $attributes = []): string
+    public function asDecimal(mixed $value, ?int $decimals = null, array $attributes = []): string
     {
         if (is_null($value)) {
             return '';
@@ -147,8 +147,11 @@ final class Formatter
             locale: $this->locale,
             style: NumberFormatter::DECIMAL,
         );
-        $formatter->setAttribute(NumberFormatter::MIN_FRACTION_DIGITS, $decimals);
-        $formatter->setAttribute(NumberFormatter::MAX_FRACTION_DIGITS, $decimals);
+
+        if ($decimals !== null) {
+            $formatter->setAttribute(NumberFormatter::MIN_FRACTION_DIGITS, $decimals);
+            $formatter->setAttribute(NumberFormatter::MAX_FRACTION_DIGITS, $decimals);
+        }
 
         foreach ($attributes as $attribute => $attributeValue) {
             $formatter->setAttribute($attribute, $attributeValue);
@@ -365,7 +368,7 @@ final class Formatter
         return $this->asDecimalFallback($multipliedValue, $decimals).'%';
     }
 
-    public function asSize(string|int|float|null $bytes, int $decimals = 3): string
+    public function asSize(string|int|float|null $bytes, ?int $decimals = null): string
     {
         if (is_null($bytes)) {
             return '';
@@ -373,7 +376,7 @@ final class Formatter
 
         $bytes = $this->normalizeNumericValue($bytes);
 
-        if ($bytes < 1024) {
+        if ($bytes < $this->sizeFormatBase) {
             return t('{nFormatted} {n, plural, =1{byte} other{bytes}}', [
                 'n' => $bytes,
                 'nFormatted' => $this->asDecimal($bytes, 0),
@@ -394,7 +397,7 @@ final class Formatter
         ], locale: $this->locale);
     }
 
-    public function asShortSize(string|int|float|null $bytes, int $decimals = 3): string
+    public function asShortSize(string|int|float|null $bytes, ?int $decimals = null): string
     {
         if (is_null($bytes)) {
             return '';
@@ -402,8 +405,10 @@ final class Formatter
 
         $bytes = $this->normalizeNumericValue($bytes);
 
-        if ($bytes < 1024) {
-            return $bytes.' B';
+        if ($bytes < $this->sizeFormatBase) {
+            return t('{nFormatted} B', [
+                'nFormatted' => $this->asDecimal($bytes, 0),
+            ], locale: $this->locale);
         }
 
         $units = $this->sizeFormatBase === 1024
@@ -413,7 +418,9 @@ final class Formatter
         $index = floor(log($bytes, $this->sizeFormatBase));
         $value = $bytes / ($this->sizeFormatBase ** $index);
 
-        return $this->asDecimal($value, $decimals).' '.$units[$index];
+        return t("{nFormatted} {$units[$index]}", [
+            'nFormatted' => $this->asDecimal($value, $decimals),
+        ], locale: $this->locale);
     }
 
     public function asTime(int|string|DateTimeInterface $value, ?string $format = null): string
