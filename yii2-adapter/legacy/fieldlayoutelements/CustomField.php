@@ -21,6 +21,7 @@ use CraftCms\Cms\Field\Contracts\PreviewableFieldInterface;
 use CraftCms\Cms\Field\Contracts\ThumbableFieldInterface;
 use CraftCms\Cms\Field\Fields;
 use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Str;
 use yii\base\InvalidConfigException;
@@ -679,7 +680,7 @@ class CustomField extends BaseField
         try {
             $field = $this->getField();
         } catch (FieldNotFoundException) {
-            return Craft::$app->getLocale()->getOrientation();
+            return I18N::getLocale()->getOrientation();
         }
 
         return $field->getOrientation($element);

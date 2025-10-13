@@ -15,6 +15,7 @@ use CraftCms\Cms\Field\Contracts\CrossSiteCopyableFieldInterface;
 use CraftCms\Cms\Field\Contracts\InlineEditableFieldInterface;
 use CraftCms\Cms\Field\Contracts\MergeableFieldInterface;
 use CraftCms\Cms\Field\Contracts\SortableFieldInterface;
+use CraftCms\Cms\Support\Facades\I18N;
 use GraphQL\Type\Definition\Type;
 use Money\Currencies\ISOCurrencies;
 use Money\Currency;
@@ -200,7 +201,7 @@ final class Money extends Field implements CrossSiteCopyableFieldInterface, Inli
             }
 
             $value += [
-                'locale' => Craft::$app->getFormattingLocale()->id,
+                'locale' => I18N::getFormattingLocale()->id,
                 'currency' => $this->currency,
             ];
 
@@ -276,7 +277,7 @@ final class Money extends Field implements CrossSiteCopyableFieldInterface, Inli
         if ($value === null) {
             // Override the initial value being set to null by _includes/forms/field
             $view->setInitialDeltaValue($this->handle, [
-                'locale' => Craft::$app->getFormattingLocale()->id,
+                'locale' => I18N::getFormattingLocale()->id,
                 'value' => '',
             ]);
         }
@@ -314,7 +315,7 @@ final class Money extends Field implements CrossSiteCopyableFieldInterface, Inli
     {
         return t('({currencyCode}) {currencySymbol}', [
             'currencyCode' => $this->currency,
-            'currencySymbol' => Craft::$app->getFormattingLocale()->getCurrencySymbol($this->currency),
+            'currencySymbol' => I18N::getFormattingLocale()->getCurrencySymbol($this->currency),
         ]);
     }
 

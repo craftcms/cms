@@ -13,6 +13,7 @@ use craft\helpers\ChartHelper;
 use craft\helpers\DateTimeHelper;
 use craft\web\Controller;
 use CraftCms\Cms\Database\Table;
+use CraftCms\Cms\Support\Facades\I18N;
 use DateTime;
 use DateTimeZone;
 use Illuminate\Database\Query\Builder;
@@ -52,7 +53,7 @@ class ChartsController extends Controller
         }
 
         // Start at midnight on the start date, end at midnight after the end date
-        $timeZone = new DateTimeZone(Craft::$app->getTimeZone());
+        $timeZone = new DateTimeZone(app()->getTimezone());
         $startDate = new DateTime($startDate->format('Y-m-d'), $timeZone);
         $endDate = new DateTime($endDate->modify('+1 day')->format('Y-m-d'), $timeZone);
 
@@ -87,7 +88,7 @@ class ChartsController extends Controller
             'total' => $total,
 
             'formats' => ChartHelper::formats(),
-            'orientation' => Craft::$app->getLocale()->getOrientation(),
+            'orientation' => I18N::getLocale()->getOrientation(),
             'scale' => $intervalUnit,
         ]);
     }

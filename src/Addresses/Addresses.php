@@ -85,7 +85,7 @@ final class Addresses implements FieldLayoutProviderInterface
      */
     public function getCountryList(?string $locale = null): array
     {
-        $locale ??= Craft::$app->language;
+        $locale ??= app()->getLocale();
         $countries = $this->getCountryRepository()->getList($locale);
 
         if (Event::hasListeners(DefineAddressCountries::class)) {
@@ -175,7 +175,7 @@ final class Addresses implements FieldLayoutProviderInterface
      */
     public function formatAddress(Address $address, array $options = [], ?FormatterInterface $formatter = null): string
     {
-        $options['locale'] ??= Craft::$app->language;
+        $options['locale'] ??= app()->getLocale();
         $formatter ??= $this->formatter;
 
         return $formatter->format($address, $options);

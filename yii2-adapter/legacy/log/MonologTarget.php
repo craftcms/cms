@@ -2,7 +2,6 @@
 
 namespace craft\log;
 
-use Craft;
 use craft\helpers\App;
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Support\Arr;
@@ -133,7 +132,7 @@ class MonologTarget extends PsrTarget
 
         /** @var Logger $logger */
         $logger = $this->logger;
-        $logger->setTimezone(new DateTimeZone(Craft::$app->getTimeZone()));
+        $logger->setTimezone(new DateTimeZone(app()->getTimezone()));
 
         parent::export();
 

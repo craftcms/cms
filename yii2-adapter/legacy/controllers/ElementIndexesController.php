@@ -392,7 +392,7 @@ class ElementIndexesController extends BaseElementsController
                     $this->response->formatters[Response::FORMAT_JSON]['prettyPrint'] = true;
                     break;
                 case Response::FORMAT_XML:
-                    Craft::$app->language = 'en-US';
+                    app()->setLocale('en-US');
                     $this->response->formatters[Response::FORMAT_XML]['rootTag'] = Str::camel($this->elementType::pluralLowerDisplayName());
                     break;
             }

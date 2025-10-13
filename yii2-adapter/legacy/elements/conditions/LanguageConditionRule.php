@@ -2,7 +2,6 @@
 
 namespace craft\elements\conditions;
 
-use Craft;
 use craft\base\conditions\BaseMultiSelectConditionRule;
 use craft\base\ElementInterface;
 use craft\elements\db\ElementQueryInterface;
@@ -41,7 +40,7 @@ class LanguageConditionRule extends BaseMultiSelectConditionRule implements Elem
     {
         return I18N::getSiteLocales()
             ->keyBy('id')
-            ->map(fn(Locale $locale) => $locale->getDisplayName(Craft::$app->language))
+            ->map(fn(Locale $locale) => $locale->getDisplayName(app()->getLocale()))
             ->all();
     }
 

@@ -17,7 +17,6 @@ use craft\db\mysql\Schema as MysqlSchema;
 use craft\db\pgsql\Schema as PgsqlSchema;
 use craft\elements\User;
 use craft\errors\MissingComponentException;
-use craft\helpers\Session as SessionHelper;
 use craft\mail\Mailer;
 use craft\mail\Message;
 use craft\mail\transportadapters\Sendmail;
@@ -925,39 +924,11 @@ class App
      *
      * @return Locale
      * @since 3.6.0
+     * @deprecated 6.0.0 use {I18N::getFormattingLocale()} instead.
      */
     public static function createFormattingLocale(): Locale
     {
-        if (Craft::$app->getRequest()->getIsCpRequest() && !Craft::$app->getResponse()->isSent) {
-            // Is someone logged in?
-            if (
-                Craft::$app->getIsInstalled() &&
-                ($id = SessionHelper::get(Craft::$app->getUser()->idParam))
-            ) {
-                // If they have a preferred locale, use it
-                $usersService = Craft::$app->getUsers();
-                if (($locale = $usersService->getUserPreference($id, 'locale')) !== null) {
-                    return I18N::getLocaleById($locale);
-                }
-
-                // Otherwise see if they have a preferred language
-                if (
-                    ($language = $usersService->getUserPreference($id, 'language')) !== null &&
-                    I18N::validateAppLocaleId($language)
-                ) {
-                    return I18N::getLocaleById($language);
-                }
-            }
-
-            // If the defaultCpLocale setting is set, go with that
-            $generalConfig = app(GeneralConfig::class);
-            if ($generalConfig->defaultCpLocale) {
-                return I18N::getLocaleById($generalConfig->defaultCpLocale);
-            }
-        }
-
-        // Default to the application locale
-        return Craft::$app->getLocale();
+        return I18N::getFormattingLocale();
     }
 
     /**

@@ -14,6 +14,7 @@ use craft\filters\UtilityAccess;
 use craft\models\AssetIndexingSession;
 use craft\models\Volume;
 use craft\web\Controller;
+use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Translation\Locale;
 use CraftCms\Cms\Utility\Utilities\AssetIndexes;
@@ -268,7 +269,7 @@ class AssetIndexesController extends Controller
     {
         $sessionData = $indexingSession->toArray();
         unset($sessionData['dateUpdated']);
-        $sessionData['dateCreated'] = $indexingSession->dateUpdated->format(Craft::$app->getLocale()->getDateTimeFormat('medium', Locale::FORMAT_PHP));
+        $sessionData['dateCreated'] = $indexingSession->dateUpdated->format(I18N::getLocale()->getDateTimeFormat('medium', Locale::FORMAT_PHP));
         $sessionData['indexedVolumes'] = Json::decodeIfJson($indexingSession->indexedVolumes);
         return $sessionData;
     }

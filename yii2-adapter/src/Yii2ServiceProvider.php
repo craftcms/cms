@@ -164,6 +164,10 @@ class Yii2ServiceProvider extends ServiceProvider
                 }
             }
 
+            /** @var \craft\web\Application|\craft\console\Application $app */
+            $app->setTimeZone(app()->getTimezone());
+            $app->language = app()->getLocale();
+
             \Craft::$app = $app;
 
             $this->bootEvents();

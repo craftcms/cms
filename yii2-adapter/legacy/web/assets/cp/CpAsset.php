@@ -41,6 +41,7 @@ use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Field\Fields;
 use CraftCms\Cms\Support\Api;
+use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Support\Str;
@@ -506,8 +507,8 @@ JS;
         $request = Craft::$app->getRequest();
         $generalConfig = app(GeneralConfig::class);
         $sitesService = Craft::$app->getSites();
-        $formattingLocale = Craft::$app->getFormattingLocale();
-        $locale = Craft::$app->getLocale();
+        $formattingLocale = I18N::getFormattingLocale();
+        $locale = I18N::getLocale();
         $orientation = $locale->getOrientation();
         $userSession = Craft::$app->getUser();
         $currentUser = $userSession->getIdentity();
@@ -520,7 +521,7 @@ JS;
             'Enterprise' => Edition::Enterprise->value,
             'actionTrigger' => $generalConfig->actionTrigger,
             'actionUrl' => UrlHelper::actionUrl(),
-            'asciiCharMap' => Str::asciiCharMap(true, Craft::$app->language),
+            'asciiCharMap' => Str::asciiCharMap(true, app()->getLocale()),
             'baseApiUrl' => Api::craftApiEndpoint(),
             'baseSiteUrl' => UrlHelper::siteUrl(),
             'baseUrl' => UrlHelper::url(),
@@ -528,7 +529,7 @@ JS;
             'datepickerOptions' => $this->_datepickerOptions($formattingLocale, $locale, $currentUser, $generalConfig),
             'defaultCookieOptions' => $this->_defaultCookieOptions(),
             'fileKinds' => Assets::getFileKinds(),
-            'language' => Craft::$app->language,
+            'language' => app()->getLocale(),
             'left' => $orientation === 'ltr' ? 'left' : 'right',
             'maxPasswordLength' => UserPasswordValidator::MAX_PASSWORD_LENGTH,
             'minPasswordLength' => UserPasswordValidator::MIN_PASSWORD_LENGTH,
@@ -545,7 +546,7 @@ JS;
             'scriptName' => basename($request->getScriptFile()),
             'systemUid' => Craft::$app->getSystemUid(),
             'timepickerOptions' => $this->_timepickerOptions($formattingLocale, $orientation),
-            'timezone' => Craft::$app->getTimeZone(),
+            'timezone' => app()->getTimezone(),
             'tokenParam' => $generalConfig->tokenParam,
             'translations' => ['' => ''], // force encode as JS object
             'useEmailAsUsername' => $generalConfig->useEmailAsUsername,

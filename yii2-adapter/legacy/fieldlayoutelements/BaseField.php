@@ -13,6 +13,7 @@ use craft\base\FieldLayoutElement;
 use craft\helpers\Cp;
 use craft\helpers\ElementHelper;
 use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Str;
 use function CraftCms\Cms\t;
@@ -796,7 +797,7 @@ abstract class BaseField extends FieldLayoutElement
             $locale = Craft::$app->getSites()->getPrimarySite()->getLocale();
         } elseif (!$element || !$this->translatable($element, $static)) {
             // Not translatable, so use the user’s language
-            $locale = Craft::$app->getLocale();
+            $locale = I18N::getLocale();
         } else {
             // Use the site’s language
             $locale = $element->getSite()->getLocale();

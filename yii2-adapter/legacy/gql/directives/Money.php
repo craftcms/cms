@@ -7,11 +7,11 @@
 
 namespace craft\gql\directives;
 
-use Craft;
 use craft\gql\base\Directive;
 use craft\gql\GqlEntityRegistry;
 use craft\helpers\MoneyHelper;
 use CraftCms\Cms\Config\GeneralConfig;
+use CraftCms\Cms\Support\Facades\I18N;
 use GraphQL\Language\DirectiveLocation;
 use GraphQL\Type\Definition\Directive as GqlDirective;
 use GraphQL\Type\Definition\FieldArgument;
@@ -84,7 +84,7 @@ class Money extends Directive
             /** @var \Money\Money $value */
             $format = (isset($arguments['format']) && in_array($arguments['format'], self::FORMATS, true)) ? $arguments['format'] : self::FORMAT_STRING;
 
-            $locale = $arguments['locale'] ?? Craft::$app->getFormattingLocale()->id;
+            $locale = $arguments['locale'] ?? I18N::getFormattingLocale()->id;
 
             switch ($format) {
                 case self::FORMAT_AMOUNT:
@@ -108,6 +108,6 @@ class Money extends Directive
      */
     public static function defaultTimeZone(): string
     {
-        return app(GeneralConfig::class)->setGraphqlDatesToSystemTimeZone ? Craft::$app->getTimeZone() : FormatDateTime::DEFAULT_TIMEZONE;
+        return app(GeneralConfig::class)->setGraphqlDatesToSystemTimeZone ? app()->getTimezone() : FormatDateTime::DEFAULT_TIMEZONE;
     }
 }

@@ -109,7 +109,7 @@ class Mailer extends \yii\symfonymailer\Mailer
         $sitesService = Craft::$app->getSites();
         $view = Craft::$app->getView();
         $currentSite = $messageSite = $twig = null;
-        $language = Craft::$app->language;
+        $language = app()->getLocale();
         $generateTransformsBeforePageLoad = $generalConfig->generateTransformsBeforePageLoad;
         $originalSettings = [];
 
@@ -157,13 +157,13 @@ class Mailer extends \yii\symfonymailer\Mailer
                     } else {
                         // Default to the current language
                         $message->language = Craft::$app->getRequest()->getIsSiteRequest()
-                            ? Craft::$app->language
+                            ? app()->getLocale()
                             : Craft::$app->getSites()->getPrimarySite()->language;
                     }
                 }
 
                 // Use the message language
-                Craft::$app->language = $message->language;
+                app()->setLocale($message->language);
 
                 // Temporarily disable lazy transform generation
                 $generalConfig->generateTransformsBeforePageLoad = true;
@@ -231,7 +231,7 @@ class Mailer extends \yii\symfonymailer\Mailer
             return parent::send($message);
         } finally {
             // Set things back to normal
-            Craft::$app->language = $language;
+            app()->setLocale($language);
             $generalConfig->generateTransformsBeforePageLoad = $generateTransformsBeforePageLoad;
 
             if ($currentSite && $messageSite) {

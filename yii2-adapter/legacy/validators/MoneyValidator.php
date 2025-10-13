@@ -7,7 +7,7 @@
 
 namespace craft\validators;
 
-use Craft;
+use CraftCms\Cms\Support\Facades\I18N;
 use Money\Currencies\ISOCurrencies;
 use Money\Currency;
 use Money\Formatter\IntlMoneyFormatter;
@@ -40,7 +40,7 @@ class MoneyValidator extends Validator
     public function validateAttribute($model, $attribute): void
     {
         $currencies = new ISOCurrencies();
-        $numberFormatter = new NumberFormatter(Craft::$app->getFormattingLocale()->id, NumberFormatter::CURRENCY);
+        $numberFormatter = new NumberFormatter(I18N::getFormattingLocale()->id, NumberFormatter::CURRENCY);
         $moneyFormatter = new IntlMoneyFormatter($numberFormatter, $currencies);
         $value = $model->$attribute;
 

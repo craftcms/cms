@@ -319,8 +319,8 @@ class Site extends Model implements Chippable
      */
     public function getLocale(): Locale
     {
-        if ($this->language === Craft::$app->language) {
-            return Craft::$app->getLocale();
+        if ($this->language === app()->getLocale()) {
+            return I18N::getLocale();
         }
 
         return I18N::getLocaleById($this->language);

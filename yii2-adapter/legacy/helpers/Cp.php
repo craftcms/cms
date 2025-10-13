@@ -1689,7 +1689,7 @@ JS, [
 
         $required = (bool)($config['required'] ?? false);
         $instructionsPosition = $config['instructionsPosition'] ?? 'before';
-        $orientation = $config['orientation'] ?? ($site ? $site->getLocale() : Craft::$app->getLocale())->getOrientation();
+        $orientation = $config['orientation'] ?? ($site ? $site->getLocale() : I18N::getLocale())->getOrientation();
         $translatable = Craft::$app->getIsMultiSite() ? ($config['translatable'] ?? ($site !== null)) : false;
 
         $fieldClass = array_merge(array_filter([
@@ -2670,7 +2670,7 @@ JS, [
         bool $static = false,
     ): string {
         $value = $address->$name;
-        $options = app(Addresses::class)->getSubdivisionRepository()->getList($parents, Craft::$app->language);
+        $options = app(Addresses::class)->getSubdivisionRepository()->getList($parents, app()->getLocale());
 
         if ($options) {
             // Persist invalid values in the UI
@@ -2889,7 +2889,7 @@ JS, [
         ]);
 
         // radio button switch that lets you choose whether the thumb alignment should be start or end
-        $orientation = Craft::$app->getLocale()->getOrientation();
+        $orientation = I18N::getLocale()->getOrientation();
         $thumbHtml .= self::buttonGroupFieldHtml([
             'label' => t('Thumbnail Alignment'),
             'id' => 'thumb-alignment',
@@ -3724,7 +3724,7 @@ JS, [
             return null;
         }
 
-        $locale = Craft::$app->getLocale();
+        $locale = I18N::getLocale();
         $orientation = $locale->getOrientation();
         $attributes = [
             'focusable' => 'false',
@@ -3879,7 +3879,7 @@ JS, [
      */
     public static function earthIcon(): string
     {
-        $tzGroup = explode('/', Craft::$app->getTimeZone(), 2)[0];
+        $tzGroup = explode('/', app()->getTimezone(), 2)[0];
         return match ($tzGroup) {
             'Africa' => 'earth-africa',
             'Asia' => 'earth-asia',

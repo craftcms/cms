@@ -9,6 +9,7 @@ namespace craft\helpers;
 
 use Craft;
 use craft\db\Query;
+use CraftCms\Cms\Support\Facades\I18N;
 use DateTime;
 use Illuminate\Database\Query\Builder;
 use yii\base\Exception;
@@ -157,7 +158,7 @@ class ChartHelper
      */
     public static function shortDateFormats(): array
     {
-        $format = Craft::$app->getFormattingLocale()->getDateFormat('short');
+        $format = I18N::getFormattingLocale()->getDateFormat('short');
 
         // Some of these are RTL versions
         $removals = [

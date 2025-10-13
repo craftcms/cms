@@ -133,7 +133,16 @@ class Application extends \yii\web\Application
     }
 
     /**
+     * @deprecated 6.0.0 use `app()->getTimezone()` instead.
+     */
+    public function getTimeZone(): string
+    {
+        return app()->getTimezone();
+    }
+
+    /**
      * @inheritdoc
+     * @deprecated 6.0.0
      */
     public function setTimeZone($value): void
     {
@@ -142,9 +151,7 @@ class Application extends \yii\web\Application
         if ($value !== 'UTC') {
             // Make sure that ICU supports this timezone
             try {
-                /** @noinspection PhpExpressionResultUnusedInspection */
-                /** @phpstan-ignore-next-line */
-                new IntlDateFormatter($this->language, IntlDateFormatter::NONE, IntlDateFormatter::NONE);
+                new IntlDateFormatter(app()->getLocale(), IntlDateFormatter::NONE, IntlDateFormatter::NONE);
             } catch (IntlException) {
                 Craft::warning("Time zone “{$value}” does not appear to be supported by ICU: " . intl_get_error_message());
                 parent::setTimeZone('UTC');

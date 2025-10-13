@@ -25,11 +25,11 @@ final class Formatter
     public const string FORMAT_WIDTH_LONG = 'long';
 
     public ?string $locale {
-        get => $this->locale ?? \Craft::$app->language;
+        get => $this->locale ?? app()->getLocale();
     }
 
     public string $timeZone {
-        get => $this->timeZone ?? \Craft::$app->getTimeZone();
+        get => $this->timeZone ?? app()->getTimezone();
     }
 
     public string $defaultDateFormat = 'medium';
@@ -612,6 +612,8 @@ final class Formatter
                     break;
                 } catch (Throwable) {
                 }
+
+                break;
             }
         }
 

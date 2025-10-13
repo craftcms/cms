@@ -5,9 +5,11 @@ namespace CraftCms\Cms\Translation;
 use Craft;
 use craft\models\Site;
 use CraftCms\Cms\Config\GeneralConfig;
+use CraftCms\Cms\Shared\Models\Info;
 use CraftCms\Cms\Support\Json;
 use Illuminate\Container\Attributes\Singleton;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Auth;
 use InvalidArgumentException;
 use ResourceBundle;
 use Stringable;
@@ -38,6 +40,8 @@ final class I18N
      */
     private ?Collection $appLocales = null;
 
+    private Locale $formattingLocale;
+
     public function __construct(
         private readonly GeneralConfig $generalConfig,
         private readonly Translator $translator,
@@ -48,9 +52,45 @@ final class I18N
         return $this->getFormattingLocale()->getFormatter();
     }
 
+    public function getLocale(): Locale
+    {
+        return $this->getLocaleById(app()->getLocale());
+    }
+
     public function getFormattingLocale(): Locale
     {
-        return Craft::$app->getFormattingLocale();
+        if (isset($this->formattingLocale)) {
+            return $this->formattingLocale;
+        }
+
+        if (app()->runningInConsole()) {
+            return $this->formattingLocale = $this->getLocale();
+        }
+
+        if (! request()->isCpRequest()) {
+            return $this->formattingLocale = $this->getLocale();
+        }
+
+        if (Info::isInstalled() && Auth::user()) {
+            // If they have a preferred locale, use it
+            $usersService = Craft::$app->getUsers();
+            if (($locale = $usersService->getUserPreference(Auth::user()->getAuthIdentifier(), 'locale')) !== null) {
+                return $this->formattingLocale = $this->getLocaleById($locale);
+            }
+
+            if (
+                ($language = $usersService->getUserPreference(Auth::user()->getAuthIdentifier(), 'language')) !== null &&
+                $this->validateAppLocaleId($language)
+            ) {
+                return $this->formattingLocale = $this->getLocaleById($language);
+            }
+        }
+
+        if ($this->generalConfig->defaultCpLocale) {
+            return $this->formattingLocale = $this->getLocaleById($this->generalConfig->defaultCpLocale);
+        }
+
+        return $this->formattingLocale = $this->getLocale();
     }
 
     /**
@@ -169,8 +209,8 @@ final class I18N
         }
 
         $locale = match (true) {
-            $localeId === null => Craft::$app->getFormattingLocale(),
-            $localeId === Craft::$app->language => Craft::$app->getLocale(),
+            $localeId === null => $this->getFormattingLocale(),
+            $localeId === app()->getLocale() => $this->getLocale(),
             default => $this->getLocaleById($localeId),
         };
 
@@ -238,7 +278,7 @@ final class I18N
             return $this->translate(...$args);
         }
 
-        $translation = $this->translator->translate($message, $parameters, $category, $locale);
+        $translation = $this->translator->translate($message, $parameters, $category, $locale ?? app()->getLocale());
 
         if ($this->generalConfig->translationDebugOutput) {
             $char = match ($category) {

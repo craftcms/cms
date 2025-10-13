@@ -15,6 +15,7 @@ use CraftCms\Cms\Http\Middleware\FlushProjectConfig;
 use CraftCms\Cms\Http\Middleware\HandleActionRequest;
 use CraftCms\Cms\Http\Middleware\RequireCpRequest;
 use CraftCms\Cms\Http\Middleware\SendPoweredByHeader;
+use CraftCms\Cms\Http\Middleware\UpdateLocale;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\Support\Env;
 use CraftCms\Cms\User\Models\User;
@@ -23,12 +24,17 @@ use Illuminate\Auth\Middleware\Authenticate;
 use Illuminate\Contracts\Http\Kernel as HttpKernel;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Console\AboutCommand;
+use Illuminate\Foundation\Events\LocaleUpdated;
 use Illuminate\Http\Client\Factory;
 use Illuminate\Http\Client\PendingRequest;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Router;
 use Illuminate\Support\Facades\Config;
+use Illuminate\Support\Facades\Event;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\ServiceProvider;
+use IntlDateFormatter;
+use IntlException;
 use ReflectionClass;
 use RuntimeException;
 
@@ -73,12 +79,22 @@ final class AppServiceProvider extends ServiceProvider
 
     public function boot(): void
     {
+        Event::listen(LocaleUpdated::class, function (LocaleUpdated $event) {
+            setlocale(
+                LC_COLLATE,
+                str_replace('-', '_', $event->locale), // target language
+                'C.UTF-8',  // libc >= 2.13
+                'C.utf8' // different spelling
+            );
+        });
+
         AboutCommand::add('Craft CMS', fn () => [
             'Edition' => Edition::get()->name,
             'Schema' => Craft::$app->schemaVersion,
             'Version' => Craft::$app->getVersion(),
         ]);
 
+        $this->setTimezone();
         $this->setNamespace();
         $this->bootAliases();
         $this->bootMiddleware();
@@ -95,6 +111,11 @@ final class AppServiceProvider extends ServiceProvider
 
             return Env::parseBoolean(app(ProjectConfig::class)->get('system.live')) ?? false;
         });
+
+        Application::macro(
+            'getTimezone',
+            fn (): string => $this['config']->get('app.timezone') ?? date_default_timezone_get(),
+        );
 
         Request::macro('isCpRequest', fn (): bool => $this->is(
             app(GeneralConfig::class)->cpTrigger, // /admin
@@ -151,6 +172,7 @@ final class AppServiceProvider extends ServiceProvider
         $router = $this->app->make(Router::class);
 
         collect([
+            UpdateLocale::class,
             CheckSchemaVersion::class,
             CheckForUpdates::class,
             SendPoweredByHeader::class,
@@ -165,6 +187,29 @@ final class AppServiceProvider extends ServiceProvider
         collect([
             'web',
         ])->each(fn ($middleware) => $router->pushMiddlewareToGroup('craft.web', $middleware));
+    }
+
+    private function setTimezone(): void
+    {
+        $timezone = app(GeneralConfig::class)->timezone
+            ?? app(ProjectConfig::class)->get('system.timeZone')
+            ?? $this->app['config']->get('app.timezone')
+            ?? 'UTC';
+
+        $timezone = Env::parse($timezone);
+
+        if ($timezone !== 'UTC') {
+            // Make sure that ICU supports this timezone
+            try {
+                new IntlDateFormatter($this->app->getLocale(), IntlDateFormatter::NONE, IntlDateFormatter::NONE);
+            } catch (IntlException) {
+                Log::warning("Time zone “{$timezone}” does not appear to be supported by ICU: ".intl_get_error_message());
+                $timezone = 'UTC';
+            }
+        }
+
+        $this->app['config']->set('app.timezone', $timezone);
+        date_default_timezone_set($timezone);
     }
 
     private function setNamespace(): void

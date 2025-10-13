@@ -106,10 +106,7 @@ use CraftCms\Cms\Translation\Locale;
 use CraftCms\Cms\Updates\Updates;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
-use Symfony\Component\VarDumper\Caster\ReflectionCaster;
-use Symfony\Component\VarDumper\Cloner\VarCloner;
 use Symfony\Component\VarDumper\Dumper\AbstractDumper;
-use Symfony\Component\VarDumper\VarDumper;
 use Yii;
 use yii\base\Application;
 use yii\base\ErrorHandler;
@@ -315,7 +312,7 @@ trait ApplicationTrait
             // We tried to get the language, but something went wrong. Use fallback to prevent infinite loop.
             $fallbackLanguage = $this->_getFallbackLanguage();
             $this->_gettingLanguage = false;
-            $this->language = $fallbackLanguage;
+            app()->setLocale($fallbackLanguage);
             return;
         }
 
@@ -325,13 +322,8 @@ trait ApplicationTrait
             $useUserLanguage = $this->getRequest()->getIsCpRequest();
         }
 
-        $this->language = $this->getTargetLanguage($useUserLanguage);
-        setlocale(
-            LC_COLLATE,
-            str_replace('-', '_', $this->language), // target language
-            'C.UTF-8',  // libc >= 2.13
-            'C.utf8' // different spelling
-        );
+        app()->setLocale($this->getTargetLanguage($useUserLanguage));
+
         $this->_gettingLanguage = false;
     }
 
@@ -1049,6 +1041,7 @@ trait ApplicationTrait
      *
      * @return Locale
      * @since 3.6.0
+     * @deprecated 6.0.0 use {I18N::getFormattingLocale()} instead.
      */
     public function getFormattingLocale(): Locale
     {
@@ -1103,6 +1096,8 @@ trait ApplicationTrait
      */
     public function getLocale(): Locale
     {
+        \CraftCms\Cms\Support\Facades\Deprecator::log('Craft::$app->getLocale()', 'Craft::$app->getLocale() is deprecated. Use I18N::getLocale() instead.');
+
         return $this->get('locale');
     }
 
@@ -1369,19 +1364,6 @@ trait ApplicationTrait
         $this->getRequest();
         $this->getLog();
 
-        // Set the timezone
-        $this->_setTimeZone();
-
-        // Set the language
-        $this->updateTargetLanguage();
-
-        // Register the variable dumper
-        VarDumper::setHandler(function($var) {
-            $cloner = new VarCloner();
-            $cloner->addCasters(ReflectionCaster::UNSET_CLOSURE_FILE_INFO);
-            $this->getDumper()->dump($cloner->cloneVar($var));
-        });
-
         // Use our own Markdown parser classes
         $flavors = [
             'original' => Markdown::class,
@@ -1419,18 +1401,6 @@ trait ApplicationTrait
         if ($this->getIsInstalled() && !app(Updates::class)->isCraftUpdatePending()) {
             // Possibly run garbage collection
             $this->getGc()->run();
-        }
-    }
-
-    /**
-     * Sets the system timezone.
-     */
-    private function _setTimeZone(): void
-    {
-        $timeZone = app(GeneralConfig::class)->timezone ?? app(ProjectConfig::class)->get('system.timeZone');
-
-        if ($timeZone) {
-            $this->setTimeZone(Env::parse($timeZone));
         }
     }
 

@@ -7,7 +7,6 @@
 
 namespace craft\web\assets\d3;
 
-use Craft;
 use craft\helpers\ChartHelper;
 use craft\web\AssetBundle;
 use craft\web\View;
@@ -44,7 +43,7 @@ class D3Asset extends AssetBundle
         parent::registerAssetFiles($view);
 
         // Add locale definition JS variables
-        $locale = Craft::$app->getFormattingLocale();
+        $locale = I18N::getFormattingLocale();
         $formatter = I18N::getFormatter();
 
         // https://github.com/d3/d3-format#formatLocale
@@ -85,7 +84,7 @@ class D3Asset extends AssetBundle
      */
     public function formatDef(string $dir): string
     {
-        $locale = Craft::$app->getFormattingLocale();
+        $locale = I18N::getFormattingLocale();
 
         // Do we have locale data for that exact formatting locale?
         if (($def = $this->_def($dir, $locale->id)) !== null) {

@@ -3,7 +3,6 @@
 namespace CraftCms\Cms\Shared\Rules;
 
 use Closure;
-use Craft;
 use craft\helpers\DateTimeHelper;
 use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Translation\Locale;
@@ -81,7 +80,7 @@ final class TimeRule implements DataAwareRule, ValidationRule
             if ($value < $min) {
                 $fail(t($this->tooEarly, [
                     'min' => I18N::getFormatter()->asTime($min, Locale::LENGTH_SHORT),
-                ], locale: Craft::$app->language));
+                ], locale: app()->getLocale()));
             }
         }
 
@@ -96,7 +95,7 @@ final class TimeRule implements DataAwareRule, ValidationRule
             if ($value > $max) {
                 $fail(t($this->tooLate, [
                     'max' => I18N::getFormatter()->asTime($max, Locale::LENGTH_SHORT),
-                ], locale: Craft::$app->language));
+                ], locale: app()->getLocale()));
             }
         }
     }

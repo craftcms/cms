@@ -48,6 +48,7 @@ use craft\services\Webpack;
 use craft\web\UrlManager;
 use craft\web\UrlRule;
 use CraftCms\Cms\Announcement\Announcements;
+use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Yii2Adapter\Log\LogTarget;
 
 return [
@@ -256,12 +257,12 @@ return [
         },
 
         'formatter' => function() {
-            return \craft\i18n\Locale::fromNewLocale(Craft::$app->getFormattingLocale())->getFormatter();
+            return \craft\i18n\Locale::fromNewLocale(I18N::getFormattingLocale())->getFormatter();
         },
 
-        'formattingLocale' => fn() => App::createFormattingLocale(),
+        'formattingLocale' => fn() => \craft\i18n\Locale::fromNewLocale(I18N::getFormattingLocale()),
 
-        'locale' => fn() => \CraftCms\Cms\Support\Facades\I18N::getLocaleById(Craft::$app->language),
+        'locale' => fn() => \craft\i18n\Locale::fromNewLocale(I18N::getLocale()),
 
         'mailer' => function() {
             $config = App::mailerConfig();

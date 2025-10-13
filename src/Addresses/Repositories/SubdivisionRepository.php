@@ -19,11 +19,11 @@ class SubdivisionRepository extends BaseSubdivisionRepository
     public function getList(array $parents, $locale = null): array
     {
         // get the list of subdivisions from commerceguys/addressing
-        $options = parent::getList($parents, Craft::$app->language);
+        $options = parent::getList($parents, app()->getLocale());
 
         // if the list is empty (like in case of GB), get the extra options from our files
         if (empty($options)) {
-            $options = $this->getExtraOptions($parents, Craft::$app->language);
+            $options = $this->getExtraOptions($parents, app()->getLocale());
         }
 
         // trigger the event to give devs a chance to modify further, and return the list

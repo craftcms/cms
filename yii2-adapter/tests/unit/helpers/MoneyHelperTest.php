@@ -8,9 +8,9 @@
 namespace crafttests\unit\helpers;
 
 use Codeception\Test\Unit;
-use Craft;
 use craft\helpers\MoneyHelper;
 use craft\test\TestCase;
+use CraftCms\Cms\Support\Facades\I18N;
 use Money\Currency;
 use Money\Money;
 
@@ -53,14 +53,14 @@ class MoneyHelperTest extends TestCase
     public function testToNumber(mixed $value, mixed $expected, ?string $locale = null): void
     {
         if ($locale) {
-            $oldLocale = Craft::$app->getFormattingLocale()->id;
-            Craft::$app->getFormattingLocale()->id = $locale;
+            $oldLocale = I18N::getFormattingLocale()->id;
+            I18N::getFormattingLocale()->id = $locale;
         }
 
         self::assertEquals($expected, MoneyHelper::toNumber($value));
 
         if ($locale) {
-            Craft::$app->getFormattingLocale()->id = $oldLocale;
+            I18N::getFormattingLocale()->id = $oldLocale;
         }
     }
 

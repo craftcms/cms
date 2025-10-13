@@ -876,7 +876,7 @@ class Cp extends Component
     ): array {
         $options = [];
 
-        $languageId = Craft::$app->getLocale()->getLanguageID();
+        $languageId = I18N::getLocale()->getLanguageID();
 
         if ($appLocales) {
             $allLocales = I18N::getAppLocales();
@@ -889,7 +889,7 @@ class Cp extends Component
         foreach ($allLocales as $locale) {
             $name = $locale->getLanguageID() !== $languageId ? $locale->getDisplayName() : '';
             $option = [
-                'label' => $locale->getDisplayName(Craft::$app->language),
+                'label' => $locale->getDisplayName(app()->getLocale()),
                 'value' => $locale->id,
                 'data' => [
                     'data' => [
@@ -960,7 +960,7 @@ class Cp extends Component
      */
     public function getAsciiCharMap(string $language): ?array
     {
-        if ($language === Craft::$app->language) {
+        if ($language === app()->getLocale()) {
             return null;
         }
 

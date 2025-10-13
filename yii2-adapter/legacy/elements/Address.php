@@ -468,7 +468,7 @@ class Address extends Element implements AddressInterface, NestedElementInterfac
      */
     public function getCountry(): Country
     {
-        return app(Addresses::class)->getCountryRepository()->get($this->countryCode, Craft::$app->language);
+        return app(Addresses::class)->getCountryRepository()->get($this->countryCode, app()->getLocale());
     }
 
     /**
@@ -572,7 +572,7 @@ class Address extends Element implements AddressInterface, NestedElementInterfac
      */
     public function getLocale(): string
     {
-        return Craft::$app->language;
+        return app()->getLocale();
     }
 
     /**

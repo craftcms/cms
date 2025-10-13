@@ -454,7 +454,7 @@ class View extends \yii\web\View
         // Set our timezone
         /** @var CoreExtension $core */
         $core = $twig->getExtension(CoreExtension::class);
-        $core->setTimezone(Craft::$app->getTimeZone());
+        $core->setTimezone(app()->getTimezone());
 
         // Fire an 'afterCreateTwig' event
         if ($this->hasEventHandlers(self::EVENT_AFTER_CREATE_TWIG)) {

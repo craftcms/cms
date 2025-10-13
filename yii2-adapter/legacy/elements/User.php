@@ -568,11 +568,11 @@ class User extends Element implements IdentityInterface
             ],
             'preferredLanguage' => [
                 'label' => t('Preferred Language'),
-                'placeholder' => fn() => I18N::getLocaleById('en')->getDisplayName(Craft::$app->language),
+                'placeholder' => fn() => I18N::getLocaleById('en')->getDisplayName(app()->getLocale()),
             ],
             'preferredLocale' => [
                 'label' => t('Preferred Locale'),
-                'placeholder' => fn() => I18N::getLocaleById('en-US')->getDisplayName(Craft::$app->language),
+                'placeholder' => fn() => I18N::getLocaleById('en-US')->getDisplayName(app()->getLocale()),
             ],
             'isCredentialed' => [
                 'label' => t('Credentialed'),
@@ -2359,12 +2359,12 @@ JS, [
             case 'preferredLanguage':
                 $language = $this->getPreferredLanguage();
 
-                return $language ? I18N::getLocaleById($language)->getDisplayName(Craft::$app->language) : '';
+                return $language ? I18N::getLocaleById($language)->getDisplayName(app()->getLocale()) : '';
 
             case 'preferredLocale':
                 $locale = $this->getPreferredLocale();
 
-                return $locale ? I18N::getLocaleById($locale)->getDisplayName(Craft::$app->language) : '';
+                return $locale ? I18N::getLocaleById($locale)->getDisplayName(app()->getLocale()) : '';
 
             case 'is2faEnabled':
                 $enabled = Craft::$app->getAuth()->hasActiveMethod($this);

@@ -2693,21 +2693,20 @@ JS;
         }
 
         // Make sure that the locale has been loaded in case the title format has any Date/Time fields
-        Craft::$app->getLocale();
         // Set Craft to the entry’s site’s language, in case the title format has any static translations
-        $language = Craft::$app->language;
-        $locale = Craft::$app->getLocale();
-        $formattingLocale = Craft::$app->getFormattingLocale();
+        $language = app()->getLocale();
+        $locale = I18N::getLocale();
+        $formattingLocale = I18N::getFormattingLocale();
         $site = $this->getSite();
         $tempLocale = I18N::getLocaleById($site->language);
-        Craft::$app->language = $site->language;
+        app()->setLocale($site->language);
         Craft::$app->set('locale', $tempLocale);
         Craft::$app->set('formattingLocale', $tempLocale);
         $title = Craft::$app->getView()->renderObjectTemplate($entryType->titleFormat, $this);
         if ($title !== '') {
             $this->title = $title;
         }
-        Craft::$app->language = $language;
+        app()->setLocale($language);
         Craft::$app->set('locale', $locale);
         Craft::$app->set('formattingLocale', $formattingLocale);
     }

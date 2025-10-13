@@ -8,7 +8,6 @@
 namespace craft\fieldlayoutelements\addresses;
 
 use CommerceGuys\Addressing\Country\Country;
-use Craft;
 use craft\base\ElementInterface;
 use craft\elements\Address;
 use craft\fieldlayoutelements\BaseNativeField;
@@ -105,7 +104,7 @@ class CountryCodeField extends BaseNativeField
             Cp::selectizeHtml([
                 'id' => 'countryCode',
                 'name' => 'countryCode',
-                'options' => app(Addresses::class)->getCountryList(Craft::$app->language),
+                'options' => app(Addresses::class)->getCountryList(app()->getLocale()),
                 'value' => $element->countryCode,
                 'autocomplete' => $element->getBelongsToCurrentUser() ? 'country' : 'off',
                 'disabled' => $static,
@@ -123,7 +122,7 @@ class CountryCodeField extends BaseNativeField
     public function previewPlaceholderHtml(mixed $value, ?ElementInterface $element): string
     {
         if (!$value) {
-            $countries = app(Addresses::class)->getCountryRepository()->getList(Craft::$app->language);
+            $countries = app(Addresses::class)->getCountryRepository()->getList(app()->getLocale());
             $value = $countries['US'];
         } else {
             if ($value instanceof Country) {

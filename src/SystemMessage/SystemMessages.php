@@ -43,9 +43,9 @@ final class SystemMessages
         }
 
         // If the current language isn't one of the site's languages, switch to the primary site's language
-        $language = $this->craft->language;
+        $language = app()->getLocale();
         if (! I18N::getSiteLocaleIds()->contains($language)) {
-            $this->craft->language = $this->craft->getSites()->getPrimarySite()->language;
+            app()->setLocale($this->craft->getSites()->getPrimarySite()->language);
         }
 
         $messages = collect([
@@ -93,7 +93,7 @@ final class SystemMessages
         }
 
         // Put the original language back
-        $this->craft->language = $language;
+        app()->setLocale($language);
 
         return $this->defaultMessages = $messages;
     }

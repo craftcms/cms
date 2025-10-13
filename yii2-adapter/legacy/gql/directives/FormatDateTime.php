@@ -7,7 +7,6 @@
 
 namespace craft\gql\directives;
 
-use Craft;
 use craft\gql\base\Directive;
 use craft\gql\GqlEntityRegistry;
 use CraftCms\Cms\Config\GeneralConfig;
@@ -121,6 +120,6 @@ class FormatDateTime extends Directive
      */
     public static function defaultTimeZone(): string
     {
-        return app(GeneralConfig::class)->setGraphqlDatesToSystemTimeZone ? Craft::$app->getTimeZone() : self::DEFAULT_TIMEZONE;
+        return app(GeneralConfig::class)->setGraphqlDatesToSystemTimeZone ? app()->getTimezone() : self::DEFAULT_TIMEZONE;
     }
 }

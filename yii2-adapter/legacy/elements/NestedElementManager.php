@@ -293,7 +293,7 @@ class NestedElementManager extends Component
                 ]);
             case PropagationMethod::Language:
                 $language = I18N::getLocaleById($owner->getSite()->language)
-                    ->getDisplayName(Craft::$app->language);
+                    ->getDisplayName(app()->getLocale());
                 return t('{type} will be saved across all {language}-language sites.', [
                     'type' => $this->elementType::pluralDisplayName(),
                     'language' => $language,

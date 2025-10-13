@@ -14,7 +14,7 @@ final class TranslationServiceProvider extends ServiceProvider
     {
         $this->app->singleton(Translator::class, function () {
             $translator = new Translator(
-                locale: $this->app['config']->get('app.locale'),
+                locale: app()->getLocale(),
                 fallbackLocale: $this->app['config']->get('app.fallback_locale'),
                 defaultCategory: 'app',
             );

@@ -1321,7 +1321,7 @@ class UsersController extends Controller
             !$userLanguage ||
             !I18N::getAppLocales()->contains(fn(Locale $locale) => $locale->id === Env::parse($userLanguage))
         ) {
-            $userLanguage = Craft::$app->language;
+            $userLanguage = app()->getLocale();
         }
 
         // user locale
@@ -1381,7 +1381,7 @@ class UsersController extends Controller
         }
 
         Craft::$app->getUsers()->saveUserPreferences($user, $preferences);
-        Craft::$app->updateTargetLanguage();
+        //Craft::$app->updateTargetLanguage();
 
         return $this->asSuccess(t('Preferences saved.'));
     }

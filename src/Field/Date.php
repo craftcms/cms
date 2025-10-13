@@ -247,7 +247,7 @@ final class Date extends Field implements CrossSiteCopyableFieldInterface, Inlin
     {
         /** @var DateTime|null $value */
         $view = Craft::$app->getView();
-        $timezone = $this->showTimeZone && $value ? $value->getTimezone()->getName() : Craft::$app->getTimeZone();
+        $timezone = $this->showTimeZone && $value ? $value->getTimezone()->getName() : app()->getTimezone();
 
         if ($value === null) {
             // Override the initial value being set to null by CustomField::inputHtml()

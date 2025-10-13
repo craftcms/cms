@@ -136,7 +136,7 @@ class DateTimeHelper
             return false;
         }
 
-        $defaultTimeZone = ($assumeSystemTimeZone ? Craft::$app->getTimeZone() : 'UTC');
+        $defaultTimeZone = ($assumeSystemTimeZone ? app()->getTimezone() : 'UTC');
 
         if (is_array($value)) {
             if (empty($value['datetime']) && empty($value['date']) && empty($value['time'])) {
@@ -144,7 +144,7 @@ class DateTimeHelper
             }
 
             // Did they specify a locale?
-            $locale = Craft::$app->getFormattingLocale();
+            $locale = I18N::getFormattingLocale();
             if (!empty($value['locale']) && $value['locale'] !== $locale->id) {
                 $locale = I18N::getLocaleById($value['locale']);
             }
@@ -196,7 +196,7 @@ class DateTimeHelper
         }
 
         if ($setToSystemTimeZone) {
-            $dt->setTimezone(new DateTimeZone(Craft::$app->getTimeZone()));
+            $dt->setTimezone(new DateTimeZone(app()->getTimezone()));
         }
 
         return $dt;
@@ -347,7 +347,7 @@ class DateTimeHelper
         // Is time paused?
         if (!empty(self::$_now)) {
             $date = clone self::$_now[0];
-            $date->setTimezone($timeZone ?? new DateTimeZone(Craft::$app->getTimeZone()));
+            $date->setTimezone($timeZone ?? new DateTimeZone(app()->getTimezone()));
             return $date;
         }
 

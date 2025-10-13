@@ -1,6 +1,7 @@
 <?php
 
 use CraftCms\Cms\Field\Money;
+use CraftCms\Cms\Support\Facades\I18N;
 use Money\Currency;
 
 beforeEach(function () {
@@ -63,8 +64,8 @@ test('normalizeValue', function (mixed $money, string $value, ?string $defaultVa
 
 test('getTableAttributeHtml', function (mixed $value, string $expected, ?string $locale = null) {
     if ($locale) {
-        $oldLocaleId = Craft::$app->getFormattingLocale()->id;
-        Craft::$app->getFormattingLocale()->id = $locale;
+        $oldLocaleId = I18N::getFormattingLocale()->id;
+        I18N::getFormattingLocale()->id = $locale;
     }
 
     $html = $this->field->getPreviewHtml($value, new \craft\elements\Entry);
@@ -72,7 +73,7 @@ test('getTableAttributeHtml', function (mixed $value, string $expected, ?string 
     expect($html)->toBe($expected);
 
     if ($locale) {
-        Craft::$app->getFormattingLocale()->id = $oldLocaleId;
+        I18N::getFormattingLocale()->id = $oldLocaleId;
     }
 })->with([
     [new \Money\Money('100', new Currency('USD')), '$1.00', null],

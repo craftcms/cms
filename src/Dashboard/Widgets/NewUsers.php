@@ -6,6 +6,7 @@ use Craft;
 use craft\elements\User;
 use craft\web\assets\newusers\NewUsersAsset;
 use CraftCms\Cms\Edition;
+use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\Json;
 
 use function CraftCms\Cms\t;
@@ -84,7 +85,7 @@ final class NewUsers extends Widget
         }
 
         $options = $this->getSettings();
-        $options['orientation'] = Craft::$app->getLocale()->getOrientation();
+        $options['orientation'] = I18N::getLocale()->getOrientation();
 
         $view = Craft::$app->getView();
         $view->registerAssetBundle(NewUsersAsset::class);
