@@ -7,6 +7,8 @@
 
 namespace craft\i18n;
 
+use CraftCms\Cms\Support\Facades\I18N;
+
 /**
  * Translation helper
  *
@@ -28,7 +30,7 @@ abstract class Translation
      */
     public static function prep(string $category, string $message, array $params = [], ?string $language = null): string
     {
-        return \CraftCms\Cms\Support\Facades\I18N::prep($message, $params, $category, $language);
+        return I18N::prep($message, $params, $category, $language);
     }
 
     /**
@@ -39,6 +41,6 @@ abstract class Translation
      */
     public static function translate(string $translation): string
     {
-        return \CraftCms\Cms\Support\Facades\I18N::translate($translation);
+        return I18N::translate($translation);
     }
 }

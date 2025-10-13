@@ -9,6 +9,7 @@ namespace craft\i18n;
 
 use Craft;
 use craft\i18n\Locale as LegacyLocale;
+use CraftCms\Cms\Support\Facades\I18N as I18NFacade;
 use CraftCms\Cms\Translation\Locale;
 use yii\base\Exception;
 
@@ -39,7 +40,7 @@ class I18N extends \yii\i18n\I18N
      */
     public function getLocaleById(string $localeId): LegacyLocale
     {
-        $locale = app(\CraftCms\Cms\Translation\I18N::class)->getLocaleById($localeId);
+        $locale = I18NFacade::getLocaleById($localeId);
 
         return LegacyLocale::fromNewLocale($locale);
     }
@@ -52,7 +53,7 @@ class I18N extends \yii\i18n\I18N
      */
     public function getAllLocaleIds(): array
     {
-        return app(\CraftCms\Cms\Translation\I18N::class)->getAllLocaleIds()->all();
+        return I18NFacade::getAllLocaleIds()->all();
     }
 
     /**
@@ -63,7 +64,7 @@ class I18N extends \yii\i18n\I18N
      */
     public function getAllLocales(): array
     {
-        return app(\CraftCms\Cms\Translation\I18N::class)->getAllLocales()
+        return I18NFacade::getAllLocales()
             ->map(fn(Locale $locale) => LegacyLocale::fromNewLocale($locale))
             ->all();
     }
@@ -80,7 +81,7 @@ class I18N extends \yii\i18n\I18N
      */
     public function getAppLocales(): array
     {
-        return app(\CraftCms\Cms\Translation\I18N::class)->getAppLocales()
+        return I18NFacade::getAppLocales()
             ->map(fn(Locale $locale) => LegacyLocale::fromNewLocale($locale))
             ->all();
     }
@@ -94,7 +95,7 @@ class I18N extends \yii\i18n\I18N
      */
     public function getAppLocaleIds(): array
     {
-        return app(\CraftCms\Cms\Translation\I18N::class)->getAppLocaleIds()->all();
+        return I18NFacade::getAppLocaleIds()->all();
     }
 
     /**
@@ -106,7 +107,7 @@ class I18N extends \yii\i18n\I18N
      */
     public function validateAppLocaleId(string $localeId): bool
     {
-        return app(\CraftCms\Cms\Translation\I18N::class)->validateAppLocaleId($localeId);
+        return I18NFacade::validateAppLocaleId($localeId);
     }
 
     // Site Locales
@@ -156,7 +157,7 @@ class I18N extends \yii\i18n\I18N
      */
     public function getSiteLocaleIds(): array
     {
-        return app(\CraftCms\Cms\Translation\I18N::class)->getSiteLocaleIds()->all();
+        return I18NFacade::getSiteLocaleIds()->all();
     }
 
     /**
@@ -179,7 +180,7 @@ class I18N extends \yii\i18n\I18N
      */
     public function getEditableLocaleIds(): array
     {
-        return app(\CraftCms\Cms\Translation\I18N::class)->getEditableLocaleIds()->all();
+        return I18NFacade::getEditableLocaleIds()->all();
     }
 
     /**
@@ -187,6 +188,6 @@ class I18N extends \yii\i18n\I18N
      */
     public function translate($category, $message, $params, $language): ?string
     {
-        return app(\CraftCms\Cms\Translation\I18N::class)->translate($message, $params, $category, $language);
+        return I18NFacade::translate($message, $params, $category, $language);
     }
 }
