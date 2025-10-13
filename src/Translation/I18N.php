@@ -278,7 +278,9 @@ final class I18N
             return $this->translate(...$args);
         }
 
-        $translation = $this->translator->translate($message, $parameters, $category, $locale ?? app()->getLocale());
+        $locale ??= str_replace('_', '-', app()->getLocale());
+
+        $translation = $this->translator->translate($message, $parameters, $category, $locale);
 
         if ($this->generalConfig->translationDebugOutput) {
             $char = match ($category) {

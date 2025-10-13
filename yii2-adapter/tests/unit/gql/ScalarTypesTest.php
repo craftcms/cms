@@ -7,7 +7,6 @@
 
 namespace crafttests\unit\gql;
 
-use Craft as Craft;
 use craft\elements\Entry;
 use craft\errors\GqlException;
 use craft\gql\directives\FormatDateTime;
@@ -114,7 +113,7 @@ class ScalarTypesTest extends TestCase
     {
         $this->markTestSkipped('Mocking fields no longer works.');
 
-        Config::set('app.timezone', 'America/New_York')
+        Config::set('app.timezone', 'America/New_York');
 
         $dateTime = new \DateTime('now', new DateTimeZone('UTC'));
         $dateField = $this->make(Date::class, [
