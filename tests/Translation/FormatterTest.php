@@ -49,6 +49,8 @@ test('asCurrency', function (mixed $input, string $output, ?string $currency = n
 })->with([
     ['', '$0.00', 'USD'],
     ['10', '$10.00', 'USD'],
+    [299, '$299.00'],
+    [299, '€ 299,00', null, 'nl-BE'],
     ['10', '€10.00', 'EUR'],
     ['10', '€ 10,00', 'EUR', 'nl'],
     ['10', '€ 10', 'EUR', 'nl', true],

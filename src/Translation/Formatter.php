@@ -25,7 +25,7 @@ final class Formatter
     public const string FORMAT_WIDTH_LONG = 'long';
 
     public ?string $locale {
-        get => $this->locale ?? \Craft::$app->getLocale()->id;
+        get => $this->locale ?? \Craft::$app->language;
     }
 
     public string $timeZone {
@@ -54,7 +54,7 @@ final class Formatter
         'full' => IntlDateFormatter::FULL,
     ];
 
-    public function asCurrency(mixed $value, string $currency, bool $stripZeros = false): string
+    public function asCurrency(mixed $value, ?string $currency = null, bool $stripZeros = false): string
     {
         $value = $this->normalizeNumericValue($value);
 
@@ -68,6 +68,10 @@ final class Formatter
         if ($omitDecimals) {
             $formatter->setAttribute(NumberFormatter::MIN_FRACTION_DIGITS, 0);
             $formatter->setAttribute(NumberFormatter::MAX_FRACTION_DIGITS, 0);
+        }
+
+        if (! $currency) {
+            return $formatter->format($value);
         }
 
         return $formatter->formatCurrency($value, $currency);
