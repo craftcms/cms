@@ -2,12 +2,12 @@
 
 namespace CraftCms\Cms\Http\Controllers\Updates;
 
-use Craft;
 use craft\helpers\UrlHelper;
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Plugin\Exceptions\InvalidPluginException;
 use CraftCms\Cms\Plugin\Plugins;
+use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\PHP;
 use CraftCms\Cms\Updates\Data\Update;
@@ -110,7 +110,7 @@ final readonly class UpdatesController
             ]);
 
             $arr['ctaText'] = t('Renew for {price}', [
-                'price' => Craft::$app->getFormatter()->asCurrency($update->renewalPrice, $update->renewalCurrency),
+                'price' => I18N::getFormatter()->asCurrency($update->renewalPrice, $update->renewalCurrency),
             ]);
 
             $arr['ctaUrl'] = UrlHelper::url($update->renewalUrl);

@@ -22,6 +22,7 @@ use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Field\Field;
 use CraftCms\Cms\Shared\Exceptions\OperationAbortedException;
 use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Translation\Locale;
@@ -836,7 +837,7 @@ class ElementHelper
     public static function attributeHtml(mixed $value): string
     {
         if ($value instanceof DateTime) {
-            $formatter = Craft::$app->getFormatter();
+            $formatter = I18N::getFormatter();
             return Html::tag('span', $formatter->asTimestamp($value, Locale::LENGTH_SHORT), [
                 'title' => $formatter->asDatetime($value, Locale::LENGTH_SHORT),
             ]);

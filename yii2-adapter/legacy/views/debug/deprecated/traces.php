@@ -1,6 +1,7 @@
 <?php
 
 use CraftCms\Cms\Deprecator\Models\DeprecationError;
+use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\Html;
 use yii\helpers\Markdown;
 use function CraftCms\Cms\t;
@@ -25,7 +26,7 @@ echo $this->render('../table', [
         ],
         [
             t('Last Occurrence'),
-            Craft::$app->getFormatter()->asDatetime($log->lastOccurrence, 'short'),
+            I18N::getFormatter()->asDatetime($log->lastOccurrence, 'short'),
         ],
     ],
 ]);

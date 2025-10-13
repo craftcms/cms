@@ -51,6 +51,7 @@ use CraftCms\Cms\Shared\Enums\Color;
 use CraftCms\Cms\Support\Api;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Exceptions\InvalidHtmlTagException;
+use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Json as JsonHelper;
 use CraftCms\Cms\Support\Str;
@@ -1326,7 +1327,7 @@ JS, [
                     'size' => $size,
                 ]);
             }
-            $html .= Html::tag('span', '+' . Craft::$app->getFormatter()->asInteger(count($elements)), [
+            $html .= Html::tag('span', '+' . I18N::getFormatter()->asInteger(count($elements)), [
                 'title' => implode(', ', array_map(fn(ElementInterface $element) => $element->id, $elements)),
                 'class' => 'btn small',
                 'role' => 'button',
@@ -1367,7 +1368,7 @@ JS, [
             foreach ($components as $other) {
                 $otherHtml .= static::chipHtml($other, $chipConfig);
             }
-            $html .= Html::tag('span', '+' . Craft::$app->getFormatter()->asInteger(count($components)), [
+            $html .= Html::tag('span', '+' . I18N::getFormatter()->asInteger(count($components)), [
                 'title' => implode(', ', array_map(fn(Chippable $component) => $component->getId(), $components)),
                 'class' => 'btn small',
                 'role' => 'button',

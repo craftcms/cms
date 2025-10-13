@@ -23,7 +23,6 @@ use craft\helpers\Db;
 use craft\helpers\FileHelper;
 use craft\helpers\ImageTransforms;
 use craft\helpers\UrlHelper;
-use craft\i18n\Formatter;
 use craft\imagetransforms\ImageTransformer;
 use craft\models\ImageTransform;
 use craft\models\VolumeFolder;
@@ -36,7 +35,9 @@ use CraftCms\Cms\Field\Assets as AssetsField;
 use CraftCms\Cms\Field\Fields;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\Deprecator;
+use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\Str;
+use CraftCms\Cms\Translation\Formatter;
 use Throwable;
 use Twig\Error\LoaderError;
 use Twig\Error\RuntimeError;
@@ -465,7 +466,7 @@ class AssetsController extends Controller
             'filename' => $resultingAsset->getFilename(),
             'formattedSize' => $resultingAsset->getFormattedSize(0),
             'formattedSizeInBytes' => $resultingAsset->getFormattedSizeInBytes(false),
-            'formattedDateUpdated' => Craft::$app->getFormatter()->asDatetime($resultingAsset->dateUpdated, Formatter::FORMAT_WIDTH_SHORT),
+            'formattedDateUpdated' => I18N::getFormatter()->asDatetime($resultingAsset->dateUpdated, Formatter::FORMAT_WIDTH_SHORT),
             'dimensions' => $resultingAsset->getDimensions(),
             'updatedTimestamp' => $resultingAsset->dateUpdated->getTimestamp(),
             'resultingUrl' => $resultingAsset->getUrl(),

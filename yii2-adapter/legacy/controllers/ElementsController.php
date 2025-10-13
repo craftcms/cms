@@ -40,6 +40,7 @@ use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Enums\MenuItemType;
 use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Support\Str;
@@ -835,7 +836,7 @@ JS, [
             return [];
         }
 
-        $formatter = Craft::$app->getFormatter();
+        $formatter = I18N::getFormatter();
 
         $baseParams = $this->request->getQueryParams();
         unset($baseParams['draftId'], $baseParams['revisionId'], $baseParams['siteId'], $baseParams['fresh']);
@@ -1980,7 +1981,7 @@ JS, [
             'canonicalId' => $element->getCanonicalId(),
             'elementId' => $element->id,
             'draftId' => $element->draftId,
-            'timestamp' => Craft::$app->getFormatter()->asTimestamp($element->dateUpdated, 'short', true),
+            'timestamp' => I18N::getFormatter()->asTimestamp($element->dateUpdated, 'short', true),
             'creator' => $creator?->getName(),
             'draftName' => $element->draftName,
             'draftNotes' => $element->draftNotes,

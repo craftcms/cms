@@ -32,7 +32,6 @@ use craft\helpers\DateTimeHelper;
 use craft\helpers\Db;
 use craft\helpers\Template;
 use craft\helpers\UrlHelper;
-use craft\i18n\Formatter;
 use craft\models\FieldLayout;
 use craft\models\Site;
 use craft\models\UserGroup;
@@ -57,6 +56,7 @@ use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Support\PHP;
 use CraftCms\Cms\Support\Str;
+use CraftCms\Cms\Translation\Formatter;
 use DateInterval;
 use DateTime;
 use DateTimeZone;
@@ -2432,7 +2432,7 @@ JS, [
      */
     protected function metadata(): array
     {
-        $formatter = Craft::$app->getFormatter();
+        $formatter = I18N::getFormatter();
 
         return [
             t('Email') => Html::a($this->email, "mailto:$this->email"),

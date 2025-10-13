@@ -9,6 +9,7 @@ namespace craft\validators;
 
 use Craft;
 use craft\helpers\DateTimeHelper;
+use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Translation\Locale;
 use DateTime;
 use yii\base\InvalidConfigException;
@@ -91,7 +92,7 @@ class TimeValidator extends Validator
             }
             if ($value < $min) {
                 $this->addError($model, $attribute, $this->tooEarly, [
-                    'min' => Craft::$app->getFormatter()->asTime($min, Locale::LENGTH_SHORT),
+                    'min' => I18N::getFormatter()->asTime($min, Locale::LENGTH_SHORT),
                 ]);
             }
         }
@@ -103,7 +104,7 @@ class TimeValidator extends Validator
             }
             if ($value > $max) {
                 $this->addError($model, $attribute, $this->tooLate, [
-                    'max' => Craft::$app->getFormatter()->asTime($max, Locale::LENGTH_SHORT),
+                    'max' => I18N::getFormatter()->asTime($max, Locale::LENGTH_SHORT),
                 ]);
             }
         }

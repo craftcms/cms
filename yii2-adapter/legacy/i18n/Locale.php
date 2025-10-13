@@ -77,6 +77,8 @@ class Locale extends BaseObject
      */
     private ?Formatter $_formatter = null;
 
+    private ?\CraftCms\Cms\Translation\Formatter $newFormatter = null;
+
     private \CraftCms\Cms\Translation\Locale $newLocale;
 
     /**
@@ -101,7 +103,6 @@ class Locale extends BaseObject
             id: $id,
             aliasOf: $this->aliasOf,
             displayName: $this->_displayName,
-            formatter: $this->_formatter,
         );
     }
 
@@ -125,9 +126,25 @@ class Locale extends BaseObject
         $legacy = new self($locale->id);
 
         $legacy->aliasOf = $locale->aliasOf;
-        $legacy->_formatter = $locale->getFormatter();
         $legacy->_displayName = $locale->displayName;
+        $legacy->newFormatter = $locale->getFormatter();
 
         return $legacy;
+    }
+
+    public function getFormatter(): Formatter
+    {
+        if (isset($this->_formatter)) {
+            return $this->_formatter;
+        }
+
+        $this->_formatter = \Craft::createObject([
+            'class' => Formatter::class,
+            'locale' => $this->aliasOf ?? $this->id,
+            'sizeFormatBase' => $this->newFormatter->sizeFormatBase,
+            'dateTimeFormats' => $this->newFormatter->dateTimeFormats,
+        ]);
+
+        return $this->_formatter;
     }
 }

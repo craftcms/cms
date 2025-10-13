@@ -43,6 +43,16 @@ final class I18N
         private readonly Translator $translator,
     ) {}
 
+    public function getFormatter(): Formatter
+    {
+        return $this->getFormattingLocale()->getFormatter();
+    }
+
+    public function getFormattingLocale(): Locale
+    {
+        return Craft::$app->getFormattingLocale();
+    }
+
     /**
      * Returns a locale by its ID.
      */

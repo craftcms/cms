@@ -255,7 +255,9 @@ return [
             return Craft::createObject($config);
         },
 
-        'formatter' => fn() => Craft::$app->getFormattingLocale()->getFormatter(),
+        'formatter' => function() {
+            return \craft\i18n\Locale::fromNewLocale(Craft::$app->getFormattingLocale())->getFormatter();
+        },
 
         'formattingLocale' => fn() => App::createFormattingLocale(),
 

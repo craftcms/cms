@@ -11,6 +11,7 @@ use Craft;
 use craft\helpers\ChartHelper;
 use craft\web\AssetBundle;
 use craft\web\View;
+use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Translation\Locale;
 
@@ -44,7 +45,7 @@ class D3Asset extends AssetBundle
 
         // Add locale definition JS variables
         $locale = Craft::$app->getFormattingLocale();
-        $formatter = Craft::$app->getFormatter();
+        $formatter = I18N::getFormatter();
 
         // https://github.com/d3/d3-format#formatLocale
         $localeDef = [

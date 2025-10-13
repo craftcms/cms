@@ -14,6 +14,7 @@ use CraftCms\Cms\Field\Contracts\InlineEditableFieldInterface;
 use CraftCms\Cms\Field\Contracts\MergeableFieldInterface;
 use CraftCms\Cms\Field\Contracts\SortableFieldInterface;
 use CraftCms\Cms\Shared\Rules\TimeRule;
+use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Translation\Locale;
 use DateTime;
 use GraphQL\Type\Definition\Type;
@@ -192,7 +193,7 @@ final class Time extends Field implements CrossSiteCopyableFieldInterface, Inlin
             return '';
         }
 
-        return Craft::$app->getFormatter()->asTime($value, Locale::LENGTH_SHORT);
+        return I18N::getFormatter()->asTime($value, Locale::LENGTH_SHORT);
     }
 
     /**

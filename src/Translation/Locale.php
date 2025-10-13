@@ -2,7 +2,6 @@
 
 namespace CraftCms\Cms\Translation;
 
-use craft\i18n\Formatter;
 use DateTime;
 use Exception;
 use Illuminate\Support\Collection;
@@ -240,48 +239,39 @@ final class Locale implements Stringable
         return 'ltr';
     }
 
-    /**
-     * Returns a [[Formatter]] for this locale.
-     *
-     * @return Formatter A formatter for this locale.
-     */
     public function getFormatter(): Formatter
     {
         if (isset($this->formatter)) {
             return $this->formatter;
         }
 
-        $config = [
-            'class' => Formatter::class,
-            'locale' => $this->aliasOf ?? $this->id,
-            'sizeFormatBase' => 1000,
-            'dateTimeFormats' => [
-                self::LENGTH_SHORT => [
-                    'date' => $this->getDateFormat(self::LENGTH_SHORT),
-                    'time' => $this->getTimeFormat(self::LENGTH_SHORT),
-                    'datetime' => $this->getDateTimeFormat(self::LENGTH_SHORT),
-                ],
-                self::LENGTH_MEDIUM => [
-                    'date' => $this->getDateFormat(self::LENGTH_MEDIUM),
-                    'time' => $this->getTimeFormat(self::LENGTH_MEDIUM),
-                    'datetime' => $this->getDateTimeFormat(self::LENGTH_MEDIUM),
-                ],
-                self::LENGTH_LONG => [
-                    'date' => $this->getDateFormat(self::LENGTH_LONG),
-                    'time' => $this->getTimeFormat(self::LENGTH_LONG),
-                    'datetime' => $this->getDateTimeFormat(self::LENGTH_LONG),
-                ],
-                self::LENGTH_FULL => [
-                    'date' => $this->getDateFormat(self::LENGTH_FULL),
-                    'time' => $this->getTimeFormat(self::LENGTH_FULL),
-                    'datetime' => $this->getDateTimeFormat(self::LENGTH_FULL),
-                ],
+        $formatter = new Formatter;
+        $formatter->locale = $this->aliasOf ?? $this->id;
+        $formatter->sizeFormatBase = 1000;
+        $formatter->dateTimeFormats = [
+            self::LENGTH_SHORT => [
+                'date' => $this->getDateFormat(self::LENGTH_SHORT),
+                'time' => $this->getTimeFormat(self::LENGTH_SHORT),
+                'datetime' => $this->getDateTimeFormat(self::LENGTH_SHORT),
+            ],
+            self::LENGTH_MEDIUM => [
+                'date' => $this->getDateFormat(self::LENGTH_MEDIUM),
+                'time' => $this->getTimeFormat(self::LENGTH_MEDIUM),
+                'datetime' => $this->getDateTimeFormat(self::LENGTH_MEDIUM),
+            ],
+            self::LENGTH_LONG => [
+                'date' => $this->getDateFormat(self::LENGTH_LONG),
+                'time' => $this->getTimeFormat(self::LENGTH_LONG),
+                'datetime' => $this->getDateTimeFormat(self::LENGTH_LONG),
+            ],
+            self::LENGTH_FULL => [
+                'date' => $this->getDateFormat(self::LENGTH_FULL),
+                'time' => $this->getTimeFormat(self::LENGTH_FULL),
+                'datetime' => $this->getDateTimeFormat(self::LENGTH_FULL),
             ],
         ];
 
-        $this->formatter = \Craft::createObject($config);
-
-        return $this->formatter;
+        return $this->formatter = $formatter;
     }
 
     // Date/Time Formatting
@@ -296,7 +286,7 @@ final class Locale implements Stringable
      */
     public function getDateFormat(?string $length = null, string $format = self::FORMAT_ICU): string
     {
-        return $this->_getDateTimeFormat(
+        return $this->getDateTimeFormatInternal(
             length: $length,
             withDate: true,
             withTime: false,
@@ -313,7 +303,7 @@ final class Locale implements Stringable
      */
     public function getTimeFormat(?string $length = null, string $format = self::FORMAT_ICU): string
     {
-        return $this->_getDateTimeFormat(
+        return $this->getDateTimeFormatInternal(
             length: $length,
             withDate: false,
             withTime: true,
@@ -330,7 +320,7 @@ final class Locale implements Stringable
      */
     public function getDateTimeFormat(?string $length = null, string $format = self::FORMAT_ICU): string
     {
-        return $this->_getDateTimeFormat(
+        return $this->getDateTimeFormatInternal(
             length: $length,
             withDate: true,
             withTime: true,
@@ -381,7 +371,9 @@ final class Locale implements Stringable
      */
     public function getMonthNames(?string $length = null, bool $standAlone = true): array
     {
-        return Collection::times(12)->map(fn (int $month): string => $this->getMonthName($month, $length, $standAlone))->all();
+        return Collection::times(12)
+            ->map(fn (int $month): string => $this->getMonthName($month, $length, $standAlone))
+            ->all();
     }
 
     /**
@@ -440,7 +432,9 @@ final class Locale implements Stringable
      */
     public function getWeekDayNames(?string $length = null, bool $standAlone = true): array
     {
-        return Collection::times(7)->map(fn (int $day): string => $this->getWeekDayName($day - 1, $length, $standAlone))->all();
+        return Collection::times(7)
+            ->map(fn (int $day): string => $this->getWeekDayName($day - 1, $length, $standAlone))
+            ->all();
     }
 
     /**
@@ -532,7 +526,7 @@ final class Locale implements Stringable
      * @param  string  $format  The format type that should be returned. Values: Locale::FORMAT_ICU (default), ::FORMAT_PHP, ::FORMAT_JUI, ::FORMAT_HUMAN
      * @return string The date/time format
      */
-    private function _getDateTimeFormat(string $length, bool $withDate, bool $withTime, string $format): string
+    private function getDateTimeFormatInternal(string $length, bool $withDate, bool $withTime, string $format): string
     {
         $icuFormat = $this->_getDateTimeIcuFormat($length, $withDate, $withTime);
 

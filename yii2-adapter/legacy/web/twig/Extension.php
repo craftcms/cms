@@ -605,8 +605,8 @@ class Extension extends AbstractExtension implements GlobalsInterface
         }
 
         try {
-            return Craft::$app->getFormatter()->asCurrency($value, $currency, $options, $textOptions, $stripZeros);
-        } catch (InvalidArgumentException) {
+            return I18N::getFormatter()->asCurrency($value, $currency, $stripZeros);
+        } catch (Throwable) {
             return $value;
         }
     }
@@ -628,8 +628,8 @@ class Extension extends AbstractExtension implements GlobalsInterface
         }
 
         try {
-            return Craft::$app->getFormatter()->asShortSize($value, $decimals, $options, $textOptions);
-        } catch (InvalidArgumentException) {
+            return I18N::getFormatter()->asShortSize($value, $decimals);
+        } catch (Throwable) {
             return $value;
         }
     }
@@ -651,8 +651,8 @@ class Extension extends AbstractExtension implements GlobalsInterface
         }
 
         try {
-            return Craft::$app->getFormatter()->asDecimal($value, $decimals, $options, $textOptions);
-        } catch (InvalidArgumentException) {
+            return I18N::getFormatter()->asDecimal($value, $decimals, $options);
+        } catch (Throwable) {
             return $value;
         }
     }
@@ -674,8 +674,8 @@ class Extension extends AbstractExtension implements GlobalsInterface
         }
 
         try {
-            return Craft::$app->getFormatter()->asPercent($value, $decimals, $options, $textOptions);
-        } catch (InvalidArgumentException) {
+            return I18N::getFormatter()->asPercent($value, $decimals);
+        } catch (Throwable) {
             return $value;
         }
     }
@@ -696,8 +696,8 @@ class Extension extends AbstractExtension implements GlobalsInterface
         }
 
         try {
-            return Craft::$app->getFormatter()->asTimestamp($value, $format, $withPreposition);
-        } catch (InvalidArgumentException) {
+            return I18N::getFormatter()->asTimestamp($value, $format, $withPreposition);
+        } catch (Throwable) {
             return $value;
         }
     }
@@ -1021,7 +1021,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
         }
 
         $date = $env->getExtension(CoreExtension::class)->convertDate($date, $timezone);
-        $formatter = $locale ? I18N::getLocaleById($locale)->getFormatter() : Craft::$app->getFormatter();
+        $formatter = $locale ? I18N::getLocaleById($locale)->getFormatter() : I18N::getFormatter();
         $fmtTimeZone = $formatter->timeZone;
         $formatter->timeZone = $timezone !== null ? $date->getTimezone()->getName() : $formatter->timeZone;
         $formatted = $formatter->asDate(DateTime::createFromInterface($date), $format);
@@ -1116,7 +1116,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
         }
 
         $date = $env->getExtension(CoreExtension::class)->convertDate($date, $timezone);
-        $formatter = $locale ? I18N::getLocaleById($locale)->getFormatter() : Craft::$app->getFormatter();
+        $formatter = $locale ? I18N::getLocaleById($locale)->getFormatter() : I18N::getFormatter();
         $fmtTimeZone = $formatter->timeZone;
         $formatter->timeZone = $timezone !== null ? $date->getTimezone()->getName() : $formatter->timeZone;
         $formatted = $formatter->asTime(DateTime::createFromInterface($date), $format);
@@ -1146,7 +1146,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
         }
 
         $date = $env->getExtension(CoreExtension::class)->convertDate($date, $timezone);
-        $formatter = $locale ? I18N::getLocaleById($locale)->getFormatter() : Craft::$app->getFormatter();
+        $formatter = $locale ? I18N::getLocaleById($locale)->getFormatter() : I18N::getFormatter();
         $fmtTimeZone = $formatter->timeZone;
         $formatter->timeZone = $timezone !== null ? $date->getTimezone()->getName() : $formatter->timeZone;
         $formatted = $formatter->asDatetime(DateTime::createFromInterface($date), $format);

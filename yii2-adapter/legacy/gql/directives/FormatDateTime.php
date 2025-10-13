@@ -96,10 +96,8 @@ class FormatDateTime extends Directive
             if (!empty($arguments['locale'])) {
                 $formatter = I18N::getLocaleById($arguments['locale'])->getFormatter();
             } else {
-                $formatter = Craft::$app->getFormatter();
+                $formatter = I18N::getFormatter();
             }
-
-            $formatter->datetimeFormat = $format;
 
             // Leave timezone alone, unless directed to modify with arguments.
             if (!empty($arguments['timezone'])) {

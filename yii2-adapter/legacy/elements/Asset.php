@@ -70,6 +70,7 @@ use CraftCms\Cms\Edition;
 use CraftCms\Cms\Element\Enums\MenuItemType;
 use CraftCms\Cms\Field\Field;
 use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Support\Str;
@@ -2541,10 +2542,12 @@ JS,[
         if (!isset($this->size)) {
             return null;
         }
+
         if ($short) {
-            return Craft::$app->getFormatter()->asShortSize($this->size, $decimals);
+            return I18N::getFormatter()->asShortSize($this->size, $decimals);
         }
-        return Craft::$app->getFormatter()->asSize($this->size, $decimals);
+
+        return I18N::getFormatter()->asSize($this->size, $decimals);
     }
 
     /**
@@ -2561,7 +2564,7 @@ JS,[
         }
         $params = [
             'n' => $this->size,
-            'nFormatted' => Craft::$app->getFormatter()->asDecimal($this->size),
+            'nFormatted' => I18N::getFormatter()->asDecimal($this->size),
         ];
         if ($short) {
             return t('{nFormatted} B', $params);

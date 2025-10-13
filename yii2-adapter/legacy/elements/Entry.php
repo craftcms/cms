@@ -2757,7 +2757,7 @@ JS;
                     Craft::$app->getRevisions()->createRevision(
                         $current,
                         $current->getAuthorId(),
-                        sprintf('Revision from %s', Craft::$app->getFormatter()->asDatetime($current->dateUpdated)),
+                        sprintf('Revision from %s', I18N::getFormatter()->asDatetime($current->dateUpdated)),
                     );
                 }
             }

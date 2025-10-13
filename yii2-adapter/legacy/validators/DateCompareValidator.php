@@ -7,8 +7,8 @@
 
 namespace craft\validators;
 
-use Craft;
-use craft\i18n\Formatter;
+use CraftCms\Cms\Support\Facades\I18N;
+use CraftCms\Cms\Translation\Formatter;
 use DateTime;
 use yii\base\InvalidConfigException;
 use yii\base\InvalidValueException;
@@ -107,7 +107,7 @@ class DateCompareValidator extends Validator
         }
 
         if (!$this->compareValues($this->operator, $value, $compareValue)) {
-            $formattedCompareValue = Craft::$app->getFormatter()->asDatetime($compareValue, Formatter::FORMAT_WIDTH_SHORT);
+            $formattedCompareValue = I18N::getFormatter()->asDatetime($compareValue, Formatter::FORMAT_WIDTH_SHORT);
             $this->addError($model, $attribute, $this->message, [
                 'compareAttribute' => $compareLabel ?? $formattedCompareValue,
                 'compareValue' => $formattedCompareValue,
@@ -134,7 +134,7 @@ class DateCompareValidator extends Validator
         }
 
         if (!$this->compareValues($this->operator, $value, $this->compareValue)) {
-            $formattedCompareValue = Craft::$app->getFormatter()->asDatetime($this->compareValue, Formatter::FORMAT_WIDTH_SHORT);
+            $formattedCompareValue = I18N::getFormatter()->asDatetime($this->compareValue, Formatter::FORMAT_WIDTH_SHORT);
             return [
                 $this->message, [
                     'compareAttribute' => $formattedCompareValue,

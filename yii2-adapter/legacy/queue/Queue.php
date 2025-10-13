@@ -18,6 +18,7 @@ use craft\helpers\UrlHelper;
 use craft\queue\jobs\Proxy;
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Support\Str;
 use DateTime;
@@ -490,7 +491,7 @@ class Queue extends \yii\queue\cli\Queue implements QueueInterface
             throw new InvalidArgumentException("Invalid job ID: $id");
         }
 
-        $formatter = Craft::$app->getFormatter();
+        $formatter = I18N::getFormatter();
         $job = $this->serializer->unserialize($this->_jobData($result['job']));
 
         return Arr::whereNotEmpty([

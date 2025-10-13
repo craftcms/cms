@@ -14,6 +14,7 @@ use craft\helpers\Console;
 use craft\helpers\Db;
 use craft\helpers\FileHelper;
 use CraftCms\Cms\Database\Table;
+use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\Str;
 use Illuminate\Support\Facades\DB as DbFacade;
 use Throwable;
@@ -312,7 +313,7 @@ class DbController extends Controller
         if (is_dir($path)) {
             $this->stdout("Backup directory: $path" . PHP_EOL);
         } else {
-            $size = Craft::$app->getFormatter()->asShortSize(filesize($path));
+            $size = I18N::getFormatter()->asShortSize(filesize($path));
             $this->stdout("Backup file: $path ($size)" . PHP_EOL);
         }
 

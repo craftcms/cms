@@ -29,6 +29,7 @@ use CraftCms\Cms\Shared\Enums\LicenseKeyStatus;
 use CraftCms\Cms\Support\Api;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Env;
+use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Utility\Utilities;
@@ -401,7 +402,7 @@ class AppController extends Controller
         // Update our records & use all licensed plugins as a starting point
         if (!empty($pluginLicenses)) {
             $defaultIconUrl = Craft::$app->getAssetManager()->getPublishedUrl('@appicons/default-plugin.svg', true);
-            $formatter = Craft::$app->getFormatter();
+            $formatter = I18N::getFormatter();
             foreach ($pluginLicenses as $pluginLicenseInfo) {
                 if (isset($pluginLicenseInfo['plugin'])) {
                     $pluginInfo = $pluginLicenseInfo['plugin'];

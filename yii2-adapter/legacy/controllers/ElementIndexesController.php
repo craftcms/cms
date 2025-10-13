@@ -29,6 +29,7 @@ use craft\helpers\ElementHelper;
 use craft\models\FieldLayout;
 use craft\services\ElementSources;
 use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Str;
 use Illuminate\Support\Collection;
@@ -322,7 +323,7 @@ class ElementIndexesController extends BaseElementsController
         $responseData = $this->elementResponseData(true, true);
 
         // Send updated badge counts
-        $formatter = Craft::$app->getFormatter();
+        $formatter = I18N::getFormatter();
         foreach (Craft::$app->getElementSources()->getSources($this->elementType, $this->context) as $source) {
             if (isset($source['key'])) {
                 if (isset($source['badgeCount'])) {

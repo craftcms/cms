@@ -70,7 +70,6 @@ use craft\helpers\Cp;
 use craft\helpers\ElementHelper;
 use craft\helpers\Template;
 use craft\helpers\UrlHelper;
-use craft\i18n\Formatter;
 use craft\models\FieldLayout;
 use craft\models\Site;
 use craft\validators\DateTimeValidator;
@@ -94,8 +93,10 @@ use CraftCms\Cms\Shared\Enums\Color;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Env;
 use CraftCms\Cms\Support\Facades\Deprecator;
+use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Str;
+use CraftCms\Cms\Translation\Formatter;
 use DateInterval;
 use DateTime;
 use GraphQL\Type\Definition\Type;
@@ -6345,7 +6346,7 @@ JS, [
             $metadata = $event->metadata;
         }
 
-        $formatter = Craft::$app->getFormatter();
+        $formatter = I18N::getFormatter();
 
         return array_merge([
             t('ID') => fn() => $this->id ?? false,

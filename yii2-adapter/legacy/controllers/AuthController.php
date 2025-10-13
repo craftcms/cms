@@ -13,6 +13,7 @@ use craft\auth\methods\TOTP;
 use craft\web\Controller;
 use craft\web\View;
 use CraftCms\Cms\Config\GeneralConfig;
+use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Translation\Locale;
 use Throwable;
@@ -310,7 +311,7 @@ class AuthController extends Controller
         $generalConfig = app(GeneralConfig::class);
         $username = !$generalConfig->useEmailAsUsername && $user->username ? $user->username : null;
         $account = $username ? sprintf('%s (%s)', $username, $user->email) : $user->email;
-        $generated = Craft::$app->getFormatter()->asDate($dateCreated, Locale::LENGTH_SHORT);
+        $generated = I18N::getFormatter()->asDate($dateCreated, Locale::LENGTH_SHORT);
         $codeContent = implode('', array_map(
             fn(string $code) => $code ? "- $code\n" : "- ~~~~~~~~~~~~~\n",
             $codes,
