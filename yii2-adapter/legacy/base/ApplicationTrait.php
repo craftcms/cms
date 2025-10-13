@@ -1366,6 +1366,10 @@ trait ApplicationTrait
         $this->getRequest();
         $this->getLog();
 
+        $this->language = app()->getLocale();
+        $this->setTimeZone(app()->getTimezone());
+        date_default_timezone_set(app()->getTimezone());
+
         // Use our own Markdown parser classes
         $flavors = [
             'original' => Markdown::class,
