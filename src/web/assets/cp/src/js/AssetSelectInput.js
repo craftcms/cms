@@ -226,6 +226,7 @@ Craft.AssetSelectInput = Craft.BaseElementSelectInput.extend({
                   ? 'chip'
                   : 'card',
                 size: this.settings.viewMode === 'large' ? 'large' : 'small',
+                showActionMenu: this.settings.showActionMenu,
               },
             ],
           },
