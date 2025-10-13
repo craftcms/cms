@@ -40,8 +40,6 @@ final class I18N
      */
     private ?Collection $appLocales = null;
 
-    private Locale $formattingLocale;
-
     public function __construct(
         private readonly GeneralConfig $generalConfig,
         private readonly Translator $translator,
@@ -59,38 +57,34 @@ final class I18N
 
     public function getFormattingLocale(): Locale
     {
-        if (isset($this->formattingLocale)) {
-            return $this->formattingLocale;
-        }
-
         if (app()->runningInConsole()) {
-            return $this->formattingLocale = $this->getLocale();
+            return $this->getLocale();
         }
 
         if (! request()->isCpRequest()) {
-            return $this->formattingLocale = $this->getLocale();
+            return $this->getLocale();
         }
 
         if (Info::isInstalled() && Auth::user()) {
             // If they have a preferred locale, use it
             $usersService = Craft::$app->getUsers();
             if (($locale = $usersService->getUserPreference(Auth::user()->getAuthIdentifier(), 'locale')) !== null) {
-                return $this->formattingLocale = $this->getLocaleById($locale);
+                return $this->getLocaleById($locale);
             }
 
             if (
                 ($language = $usersService->getUserPreference(Auth::user()->getAuthIdentifier(), 'language')) !== null &&
                 $this->validateAppLocaleId($language)
             ) {
-                return $this->formattingLocale = $this->getLocaleById($language);
+                return $this->getLocaleById($language);
             }
         }
 
         if ($this->generalConfig->defaultCpLocale) {
-            return $this->formattingLocale = $this->getLocaleById($this->generalConfig->defaultCpLocale);
+            return $this->getLocaleById($this->generalConfig->defaultCpLocale);
         }
 
-        return $this->formattingLocale = $this->getLocale();
+        return $this->getLocale();
     }
 
     /**

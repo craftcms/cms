@@ -224,6 +224,8 @@ class MailerTest extends TestCase
         ]));
 
         self::assertSame($desiredLang, $this->tester->grabLastSentEmail()->language);
+
+        Craft::$app->getSites()->getPrimarySite()->language = 'en-US';
     }
 
     /**

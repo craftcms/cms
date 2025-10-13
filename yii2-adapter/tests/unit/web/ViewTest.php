@@ -250,6 +250,8 @@ class ViewTest extends TestCase
         $js = $this->_generateTranslationJs('app', ['Save' => 'Bewaren', 'Cancel' => 'Afbreken']);
         $this->_assertRegisterJsInputValues($js, View::POS_BEGIN);
         $this->view->registerTranslations('app', ['Save', 'Cancel']);
+
+        app()->setLocale('en-US');
     }
 
     /**

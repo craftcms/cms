@@ -53,14 +53,14 @@ class MoneyHelperTest extends TestCase
     public function testToNumber(mixed $value, mixed $expected, ?string $locale = null): void
     {
         if ($locale) {
-            $oldLocale = I18N::getFormattingLocale()->id;
-            I18N::getFormattingLocale()->id = $locale;
+            $oldLocale = app()->getLocale();
+            app()->setLocale($locale);
         }
 
         self::assertEquals($expected, MoneyHelper::toNumber($value));
 
         if ($locale) {
-            I18N::getFormattingLocale()->id = $oldLocale;
+            app()->setLocale($oldLocale);
         }
     }
 
