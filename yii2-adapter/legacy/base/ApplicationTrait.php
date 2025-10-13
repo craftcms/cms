@@ -1094,9 +1094,9 @@ trait ApplicationTrait
     /**
      * Returns a Locale object for the target language.
      *
-     * @return Locale The Locale object for the target language
+     * @return \craft\i18n\Locale The Locale object for the target language
      */
-    public function getLocale(): Locale
+    public function getLocale(): \craft\i18n\Locale
     {
         DeprecatorFacade::log('Craft::$app->getLocale()', 'Craft::$app->getLocale() is deprecated. Use I18N::getLocale() or craft.i18n.getLocale instead.');
 
