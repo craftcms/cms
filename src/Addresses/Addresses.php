@@ -29,6 +29,8 @@ use CraftCms\Cms\ProjectConfig\ProjectConfigHelper;
 use Illuminate\Container\Attributes\Singleton;
 use Illuminate\Support\Facades\Event;
 
+use function CraftCms\Cms\t;
+
 #[Singleton]
 final class Addresses implements FieldLayoutProviderInterface
 {
@@ -83,7 +85,7 @@ final class Addresses implements FieldLayoutProviderInterface
      */
     public function getCountryList(?string $locale = null): array
     {
-        $locale ??= Craft::$app->language;
+        $locale ??= app()->getLocale();
         $countries = $this->getCountryRepository()->getList($locale);
 
         if (Event::hasListeners(DefineAddressCountries::class)) {
@@ -149,14 +151,14 @@ final class Addresses implements FieldLayoutProviderInterface
             AddressField::LOCALITY => $this->getLocalityTypeLabel($this->getAddressFormatRepository()->get($countryCode)->getLocalityType()),
             AddressField::DEPENDENT_LOCALITY => $this->getDependentLocalityTypeLabel($this->getAddressFormatRepository()->get($countryCode)->getDependentLocalityType()),
             AddressField::POSTAL_CODE => $this->getPostalCodeTypeLabel($this->getAddressFormatRepository()->get($countryCode)->getPostalCodeType()),
-            AddressField::SORTING_CODE => Craft::t('app', 'Sorting Code'),
-            AddressField::ADDRESS_LINE1 => Craft::t('app', 'Address Line 1'),
-            AddressField::ADDRESS_LINE2 => Craft::t('app', 'Address Line 2'),
-            AddressField::ADDRESS_LINE3 => Craft::t('app', 'Address Line 3'),
-            AddressField::ORGANIZATION => Craft::t('app', 'Organization'),
-            AddressField::GIVEN_NAME => Craft::t('app', 'First Name'),
+            AddressField::SORTING_CODE => t('Sorting Code'),
+            AddressField::ADDRESS_LINE1 => t('Address Line 1'),
+            AddressField::ADDRESS_LINE2 => t('Address Line 2'),
+            AddressField::ADDRESS_LINE3 => t('Address Line 3'),
+            AddressField::ORGANIZATION => t('Organization'),
+            AddressField::GIVEN_NAME => t('First Name'),
             AddressField::ADDITIONAL_NAME => 'Additional Name', // Unused in Craft
-            AddressField::FAMILY_NAME => Craft::t('app', 'Last Name'),
+            AddressField::FAMILY_NAME => t('Last Name'),
         };
 
         if (Event::hasListeners(DefineAddressFieldLabel::class)) {
@@ -173,7 +175,7 @@ final class Addresses implements FieldLayoutProviderInterface
      */
     public function formatAddress(Address $address, array $options = [], ?FormatterInterface $formatter = null): string
     {
-        $options['locale'] ??= Craft::$app->language;
+        $options['locale'] ??= app()->getLocale();
         $formatter ??= $this->formatter;
 
         return $formatter->format($address, $options);
@@ -182,51 +184,51 @@ final class Addresses implements FieldLayoutProviderInterface
     public function getLocalityTypeLabel(?string $type): string
     {
         return match ($type) {
-            LocalityType::DISTRICT => Craft::t('app', 'District'),
-            LocalityType::POST_TOWN => Craft::t('app', 'Post Town'),
-            LocalityType::SUBURB => Craft::t('app', 'Suburb'),
-            LocalityType::TOWN_CITY => Craft::t('app', 'City/Town'),
-            default => Craft::t('app', 'City'),
+            LocalityType::DISTRICT => t('District'),
+            LocalityType::POST_TOWN => t('Post Town'),
+            LocalityType::SUBURB => t('Suburb'),
+            LocalityType::TOWN_CITY => t('City/Town'),
+            default => t('City'),
         };
     }
 
     public function getDependentLocalityTypeLabel(?string $type): string
     {
         return match ($type) {
-            DependentLocalityType::DISTRICT => Craft::t('app', 'District'),
-            DependentLocalityType::NEIGHBORHOOD => Craft::t('app', 'Neighborhood'),
-            DependentLocalityType::TOWNLAND => Craft::t('app', 'Townland'),
-            DependentLocalityType::VILLAGE_TOWNSHIP => Craft::t('app', 'Village/Township'),
-            default => Craft::t('app', 'Suburb'),
+            DependentLocalityType::DISTRICT => t('District'),
+            DependentLocalityType::NEIGHBORHOOD => t('Neighborhood'),
+            DependentLocalityType::TOWNLAND => t('Townland'),
+            DependentLocalityType::VILLAGE_TOWNSHIP => t('Village/Township'),
+            default => t('Suburb'),
         };
     }
 
     public function getPostalCodeTypeLabel(?string $type): string
     {
         return match ($type) {
-            PostalCodeType::EIR => Craft::t('app', 'Eircode'),
-            PostalCodeType::PIN => Craft::t('app', 'Pin'),
-            PostalCodeType::ZIP => Craft::t('app', 'Zip Code'),
-            default => Craft::t('app', 'Postal Code'),
+            PostalCodeType::EIR => t('Eircode'),
+            PostalCodeType::PIN => t('Pin'),
+            PostalCodeType::ZIP => t('Zip Code'),
+            default => t('Postal Code'),
         };
     }
 
     public function getAdministrativeAreaTypeLabel(?string $type): string
     {
         return match ($type) {
-            AdministrativeAreaType::AREA => Craft::t('app', 'Area'),
-            AdministrativeAreaType::CANTON => Craft::t('app', 'Canton'),
-            AdministrativeAreaType::COUNTY => Craft::t('app', 'County'),
-            AdministrativeAreaType::DEPARTMENT => Craft::t('app', 'Department'),
-            AdministrativeAreaType::DISTRICT => Craft::t('app', 'District'),
-            AdministrativeAreaType::DO_SI => Craft::t('app', 'Do Si'),
-            AdministrativeAreaType::EMIRATE => Craft::t('app', 'Emirate'),
-            AdministrativeAreaType::ISLAND => Craft::t('app', 'Island'),
-            AdministrativeAreaType::PARISH => Craft::t('app', 'Parish'),
-            AdministrativeAreaType::PREFECTURE => Craft::t('app', 'Prefecture'),
-            AdministrativeAreaType::REGION => Craft::t('app', 'Region'),
-            AdministrativeAreaType::STATE => Craft::t('app', 'State'),
-            default => Craft::t('app', 'Province'),
+            AdministrativeAreaType::AREA => t('Area'),
+            AdministrativeAreaType::CANTON => t('Canton'),
+            AdministrativeAreaType::COUNTY => t('County'),
+            AdministrativeAreaType::DEPARTMENT => t('Department'),
+            AdministrativeAreaType::DISTRICT => t('District'),
+            AdministrativeAreaType::DO_SI => t('Do Si'),
+            AdministrativeAreaType::EMIRATE => t('Emirate'),
+            AdministrativeAreaType::ISLAND => t('Island'),
+            AdministrativeAreaType::PARISH => t('Parish'),
+            AdministrativeAreaType::PREFECTURE => t('Prefecture'),
+            AdministrativeAreaType::REGION => t('Region'),
+            AdministrativeAreaType::STATE => t('State'),
+            default => t('Province'),
         };
     }
 
@@ -251,7 +253,7 @@ final class Addresses implements FieldLayoutProviderInterface
         if (! $firstTab) {
             $firstTab = new FieldLayoutTab([
                 'layout' => $fieldLayout,
-                'name' => Craft::t('app', 'Content'),
+                'name' => t('Content'),
             ]);
             $fieldLayout->setTabs([$firstTab]);
         }

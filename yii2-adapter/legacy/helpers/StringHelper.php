@@ -1260,7 +1260,7 @@ class StringHelper extends \yii\helpers\StringHelper
      */
     public static function slugify(string $str, string $replacement = '-', ?string $language = null): string
     {
-        $language ??= Craft::$app->language;
+        $language ??= app()->getLocale();
 
         /** @var ASCII::*_LANGUAGE_CODE $language */
         return (string)BaseStringy::create($str)->slugify($replacement, $language);
@@ -1486,7 +1486,7 @@ class StringHelper extends \yii\helpers\StringHelper
         // Normalize NFD chars to NFC
         $str = Normalizer::normalize($str, Normalizer::FORM_C);
 
-        $language ??= Craft::$app->language;
+        $language ??= app()->getLocale();
 
         /** @var ASCII::*_LANGUAGE_CODE $language */
         return (string)BaseStringy::create($str)->toAscii($language);

@@ -29,6 +29,7 @@ use CraftCms\Cms\Shared\Enums\LicenseKeyStatus;
 use CraftCms\Cms\Support\Api;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Env;
+use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Utility\Utilities;
@@ -43,6 +44,7 @@ use yii\base\InvalidConfigException;
 use yii\web\BadRequestHttpException;
 use yii\web\Cookie;
 use yii\web\Response;
+use function CraftCms\Cms\t;
 
 /**
  * The AppController class is a controller that handles various actions for Craft updates, control panel requests,
@@ -400,7 +402,7 @@ class AppController extends Controller
         // Update our records & use all licensed plugins as a starting point
         if (!empty($pluginLicenses)) {
             $defaultIconUrl = Craft::$app->getAssetManager()->getPublishedUrl('@appicons/default-plugin.svg', true);
-            $formatter = Craft::$app->getFormatter();
+            $formatter = I18N::getFormatter();
             foreach ($pluginLicenses as $pluginLicenseInfo) {
                 if (isset($pluginLicenseInfo['plugin'])) {
                     $pluginInfo = $pluginLicenseInfo['plugin'];
@@ -432,7 +434,7 @@ class AppController extends Controller
                         ];
                         if ($pluginLicenseInfo['expired']) {
                             $result[$handle]['renewalUrl'] = $pluginLicenseInfo['renewalUrl'];
-                            $result[$handle]['renewalText'] = Craft::t('app', 'Renew for {price}', [
+                            $result[$handle]['renewalText'] = t('Renew for {price}', [
                                 'price' => $formatter->asCurrency($pluginLicenseInfo['renewalPrice'], $pluginLicenseInfo['renewalCurrency']),
                             ]);
                         }

@@ -22,6 +22,8 @@ use craft\services\Gql as GqlService;
 use GraphQL\Type\Definition\Type;
 use Illuminate\Support\Collection;
 
+use function CraftCms\Cms\t;
+
 /**
  * Entries represents an Entries field.
  */
@@ -53,7 +55,7 @@ final class Entries extends BaseRelationField
      */
     public static function displayName(): string
     {
-        return Craft::t('app', 'Entries');
+        return t('Entries');
     }
 
     /**
@@ -77,7 +79,7 @@ final class Entries extends BaseRelationField
      */
     public static function defaultSelectionLabel(): string
     {
-        return Craft::t('app', 'Add an entry');
+        return t('Add an entry');
     }
 
     /**
@@ -210,7 +212,7 @@ final class Entries extends BaseRelationField
     public function previewPlaceholderHtml(mixed $value, ?ElementInterface $element): string
     {
         $mockup = new Entry;
-        $mockup->title = Craft::t('app', 'Related {type} Title', ['type' => $mockup->displayName()]);
+        $mockup->title = t('Related {type} Title', ['type' => $mockup->displayName()]);
         if ($this->sources === '*') {
             $section = Craft::$app->getEntries()->getAllSections()[0];
         } else {
@@ -219,7 +221,7 @@ final class Entries extends BaseRelationField
 
         if (! $section) {
             // if we don't have a section, let's return a string, cause chipHtml will complain about not being able to get a type
-            return $mockup->title.' - '.Craft::t('app', 'placeholder');
+            return $mockup->title.' - '.t('placeholder');
         }
 
         $mockup->sectionId = $section->id;

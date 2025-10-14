@@ -9,6 +9,7 @@ namespace craft\elements\actions;
 
 use Craft;
 use craft\base\ElementAction;
+use function CraftCms\Cms\t;
 
 /**
  * CopyUrl represents a Copy URL element action.
@@ -26,7 +27,7 @@ class CopyUrl extends ElementAction
      */
     public function getTriggerLabel(): string
     {
-        return Craft::t('app', 'Copy URL');
+        return t('Copy URL');
     }
 
     /**
@@ -46,7 +47,7 @@ class CopyUrl extends ElementAction
                 value: selectedItems.find('.element').data('url'),
             });
         },
-    });
+    })
 })();
 JS, [static::class]);
 

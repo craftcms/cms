@@ -48,7 +48,7 @@ use craft\services\Webpack;
 use craft\web\UrlManager;
 use craft\web\UrlRule;
 use CraftCms\Cms\Announcement\Announcements;
-use CraftCms\Yii2Adapter\Localization;
+use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Yii2Adapter\Log\LogTarget;
 
 return [
@@ -210,11 +210,7 @@ return [
             'class' => Sso::class,
         ],
         'i18n' => [
-            'class' => Localization::class,
-            'laravelCategories' => [
-                'auth',
-                'validation',
-            ],
+            'class' => craft\i18n\I18N::class,
             'messageFormatter' => [
                 'class' => MessageFormatter::class,
             ],
@@ -229,7 +225,7 @@ return [
                 'app' => [
                     'class' => PhpMessageSource::class,
                     'sourceLanguage' => 'en-US',
-                    'basePath' => '@app/translations',
+                    'basePath' => '@craftcms/resources/translations',
                     'forceTranslation' => true,
                     'allowOverrides' => true,
                 ],
@@ -260,11 +256,13 @@ return [
             return Craft::createObject($config);
         },
 
-        'formatter' => fn() => Craft::$app->getFormattingLocale()->getFormatter(),
+        'formatter' => function() {
+            return \craft\i18n\Locale::fromNewLocale(I18N::getFormattingLocale())->getFormatter();
+        },
 
-        'formattingLocale' => fn() => App::createFormattingLocale(),
+        'formattingLocale' => fn() => \craft\i18n\Locale::fromNewLocale(I18N::getFormattingLocale()),
 
-        'locale' => fn() => Craft::$app->getI18n()->getLocaleById(Craft::$app->language),
+        'locale' => fn() => \craft\i18n\Locale::fromNewLocale(I18N::getLocale()),
 
         'mailer' => function() {
             $config = App::mailerConfig();

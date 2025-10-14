@@ -2,9 +2,9 @@
 
 namespace craft\elements\conditions;
 
-use Craft;
 use craft\base\ElementInterface;
 use craft\elements\db\ElementQueryInterface;
+use function CraftCms\Cms\t;
 
 /**
  * Not Relation condition rule.
@@ -20,7 +20,7 @@ class NotRelatedToConditionRule extends RelatedToConditionRule
      */
     public function getLabel(): string
     {
-        return Craft::t('app', 'Not Related To');
+        return t('Not Related To');
     }
 
     /**

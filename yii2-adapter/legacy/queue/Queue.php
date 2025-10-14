@@ -15,10 +15,10 @@ use craft\helpers\DateTimeHelper;
 use craft\helpers\Db;
 use craft\helpers\Queue as QueueHelper;
 use craft\helpers\UrlHelper;
-use craft\i18n\Translation;
 use craft\queue\jobs\Proxy;
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Support\Str;
 use DateTime;
@@ -33,6 +33,7 @@ use yii\mutex\Mutex;
 use yii\queue\ExecEvent;
 use yii\queue\Queue as BaseQueue;
 use yii\web\Response;
+use function CraftCms\Cms\t;
 
 /**
  * Craft Queue
@@ -490,7 +491,7 @@ class Queue extends \yii\queue\cli\Queue implements QueueInterface
             throw new InvalidArgumentException("Invalid job ID: $id");
         }
 
-        $formatter = Craft::$app->getFormatter();
+        $formatter = I18N::getFormatter();
         $job = $this->serializer->unserialize($this->_jobData($result['job']));
 
         return Arr::whereNotEmpty([
@@ -499,8 +500,8 @@ class Queue extends \yii\queue\cli\Queue implements QueueInterface
             'status' => $this->_status($result),
             'error' => $result['error'] ?? '',
             'progress' => $result['progress'],
-            'progressLabel' => Translation::translate((string)$result['progressLabel']) ?: null,
-            'description' => Translation::translate((string)$result['description']) ?: null,
+            'progressLabel' => t((string)$result['progressLabel']) ?: null,
+            'description' => t((string)$result['description']) ?: null,
             'job' => $job,
             'ttr' => (int)$result['ttr'],
             'Priority' => $result['priority'],
@@ -552,7 +553,7 @@ class Queue extends \yii\queue\cli\Queue implements QueueInterface
 
         foreach ($results as $result) {
             if (!app()->hasDebugModeEnabled() && !Craft::$app->getUser()->getIsAdmin()) {
-                $result['error'] = Craft::t('app', 'A server error occurred.');
+                $result['error'] = t('A server error occurred.');
             }
 
             $info[] = [
@@ -560,8 +561,8 @@ class Queue extends \yii\queue\cli\Queue implements QueueInterface
                 'delay' => max(0, $result['timePushed'] + $result['delay'] - time()),
                 'status' => $this->_status($result),
                 'progress' => (int)$result['progress'],
-                'progressLabel' => Translation::translate((string)$result['progressLabel']) ?: null,
-                'description' => Translation::translate((string)$result['description']) ?: null,
+                'progressLabel' => t((string)$result['progressLabel']) ?: null,
+                'description' => t((string)$result['description']) ?: null,
                 'error' => $result['error'],
             ];
         }

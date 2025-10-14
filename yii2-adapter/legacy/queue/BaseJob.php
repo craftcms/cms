@@ -22,7 +22,7 @@ abstract class BaseJob extends BaseObject implements JobInterface
      * @var string|null The configured job description.
      *
      * ::: tip
-     * Run the description through [[\craft\i18n\Translation::prep()]] rather than [[\yii\BaseYii::t()|Craft::t()]]
+     * Run the description through [[\craft\i18n\Translation::prep()]] rather than [[\CraftCms\Cms\t()]]
      * so it can be lazy-translated for users’ preferred languages rather that the current app language.
      * :::
      */
@@ -67,7 +67,7 @@ abstract class BaseJob extends BaseObject implements JobInterface
      * Returns a default description for [[getDescription()]].
      *
      * ::: tip
-     * Run the description through [[\craft\i18n\Translation::prep()]] rather than [[\yii\BaseYii::t()|Craft::t()]]
+     * Run the description through [[\craft\i18n\Translation::prep()]] rather than [[\CraftCms\Cms\t()]]
      * so it can be lazy-translated for users’ preferred languages rather that the current app language.
      * :::
      *
@@ -82,7 +82,7 @@ abstract class BaseJob extends BaseObject implements JobInterface
      * Sets the job progress on the queue.
      *
      * ::: tip
-     * Run the label through [[\craft\i18n\Translation::prep()]] rather than [[\yii\BaseYii::t()|Craft::t()]]
+     * Run the label through [[\craft\i18n\Translation::prep()]] rather than [[\CraftCms\Cms\t()]]
      * so it can be lazy-translated for users’ preferred languages rather that the current app language.
      * :::
      *

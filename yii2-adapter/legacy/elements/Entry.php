@@ -67,6 +67,7 @@ use CraftCms\Cms\Field\Fields;
 use CraftCms\Cms\Field\Matrix;
 use CraftCms\Cms\Shared\Enums\Color;
 use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\Html;
 use DateInterval;
 use DateTime;
@@ -78,6 +79,7 @@ use yii\base\Exception;
 use yii\base\InvalidArgumentException;
 use yii\base\InvalidConfigException;
 use yii\db\Expression;
+use function CraftCms\Cms\t;
 
 /**
  * Entry represents an entry element.
@@ -124,7 +126,7 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
      */
     public static function displayName(): string
     {
-        return Craft::t('app', 'Entry');
+        return t('Entry');
     }
 
     /**
@@ -132,7 +134,7 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
      */
     public static function lowerDisplayName(): string
     {
-        return Craft::t('app', 'entry');
+        return t('entry');
     }
 
     /**
@@ -140,7 +142,7 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
      */
     public static function pluralDisplayName(): string
     {
-        return Craft::t('app', 'Entries');
+        return t('Entries');
     }
 
     /**
@@ -148,7 +150,7 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
      */
     public static function pluralLowerDisplayName(): string
     {
-        return Craft::t('app', 'entries');
+        return t('entries');
     }
 
     /**
@@ -213,10 +215,10 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
     public static function statuses(): array
     {
         return [
-            self::STATUS_LIVE => Craft::t('app', 'Live'),
-            self::STATUS_PENDING => Craft::t('app', 'Pending'),
-            self::STATUS_EXPIRED => Craft::t('app', 'Expired'),
-            self::STATUS_DISABLED => Craft::t('app', 'Disabled'),
+            self::STATUS_LIVE => t('Live'),
+            self::STATUS_PENDING => t('Pending'),
+            self::STATUS_EXPIRED => t('Expired'),
+            self::STATUS_DISABLED => t('Disabled'),
         ];
     }
 
@@ -268,7 +270,7 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
         $sources = [
             [
                 'key' => '*',
-                'label' => Craft::t('app', 'All entries'),
+                'label' => t('All entries'),
                 'criteria' => [
                     'sectionId' => $sectionIds,
                     'editable' => $editable,
@@ -280,7 +282,7 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
         if (!empty($singleSectionIds)) {
             $sources[] = [
                 'key' => 'singles',
-                'label' => Craft::t('app', 'Singles'),
+                'label' => t('Singles'),
                 'criteria' => [
                     'sectionId' => $singleSectionIds,
                     'editable' => $editable,
@@ -290,8 +292,8 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
         }
 
         $sectionTypes = [
-            Section::TYPE_CHANNEL => Craft::t('app', 'Channels'),
-            Section::TYPE_STRUCTURE => Craft::t('app', 'Structures'),
+            Section::TYPE_CHANNEL => t('Channels'),
+            Section::TYPE_STRUCTURE => t('Structures'),
         ];
 
         $user = Craft::$app->getUser()->getIdentity();
@@ -304,7 +306,7 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
                     /** @var Section $section */
                     $source = [
                         'key' => 'section:' . $section->uid,
-                        'label' => Craft::t('site', $section->name),
+                        'label' => t($section->name, category: 'site'),
                         'sites' => $section->getSiteIds(),
                         'data' => [
                             'type' => $type,
@@ -554,11 +556,11 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
     protected static function defineSortOptions(): array
     {
         return [
-            'title' => Craft::t('app', 'Title'),
-            'slug' => Craft::t('app', 'Slug'),
-            'uri' => Craft::t('app', 'URI'),
+            'title' => t('Title'),
+            'slug' => t('Slug'),
+            'uri' => t('URI'),
             [
-                'label' => Craft::t('app', 'Section'),
+                'label' => t('Section'),
                 'orderBy' => function(int $dir, Connection $db) {
                     $sectionIds = Collection::make(Craft::$app->getEntries()->getAllSections())
                         ->sort(fn(Section $a, Section $b) => $dir === SORT_ASC
@@ -571,7 +573,7 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
                 'attribute' => 'section',
             ],
             [
-                'label' => Craft::t('app', 'Entry Type'),
+                'label' => t('Entry Type'),
                 'orderBy' => function(int $dir, Connection $db) {
                     $entryTypeIds = Collection::make(Craft::$app->getEntries()->getAllEntryTypes())
                         ->sort(fn(EntryType $a, EntryType $b) => $dir === SORT_ASC
@@ -584,7 +586,7 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
                 'attribute' => 'type',
             ],
             [
-                'label' => Craft::t('app', 'Post Date'),
+                'label' => t('Post Date'),
                 'orderBy' => function(int $dir) {
                     if ($dir === SORT_ASC) {
                         if (Craft::$app->getDb()->getIsMysql()) {
@@ -603,17 +605,17 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
                 'defaultDir' => 'desc',
             ],
             [
-                'label' => Craft::t('app', 'Expiry Date'),
+                'label' => t('Expiry Date'),
                 'orderBy' => 'expiryDate',
                 'defaultDir' => 'desc',
             ],
             [
-                'label' => Craft::t('app', 'Date Created'),
+                'label' => t('Date Created'),
                 'orderBy' => 'dateCreated',
                 'defaultDir' => 'desc',
             ],
             [
-                'label' => Craft::t('app', 'Date Updated'),
+                'label' => t('Date Updated'),
                 'orderBy' => 'dateUpdated',
                 'defaultDir' => 'desc',
             ],
@@ -626,16 +628,16 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
     protected static function defineTableAttributes(): array
     {
         $attributes = array_merge(parent::defineTableAttributes(), [
-            'section' => ['label' => Craft::t('app', 'Section')],
-            'type' => ['label' => Craft::t('app', 'Entry Type')],
-            'authors' => ['label' => Craft::t('app', 'Authors')],
-            'ancestors' => ['label' => Craft::t('app', 'Ancestors')],
-            'parent' => ['label' => Craft::t('app', 'Parent')],
-            'postDate' => ['label' => Craft::t('app', 'Post Date')],
-            'expiryDate' => ['label' => Craft::t('app', 'Expiry Date')],
-            'revisionNotes' => ['label' => Craft::t('app', 'Revision Notes')],
-            'revisionCreator' => ['label' => Craft::t('app', 'Last Edited By')],
-            'drafts' => ['label' => Craft::t('app', 'Drafts')],
+            'section' => ['label' => t('Section')],
+            'type' => ['label' => t('Entry Type')],
+            'authors' => ['label' => t('Authors')],
+            'ancestors' => ['label' => t('Ancestors')],
+            'parent' => ['label' => t('Parent')],
+            'postDate' => ['label' => t('Post Date')],
+            'expiryDate' => ['label' => t('Expiry Date')],
+            'revisionNotes' => ['label' => t('Revision Notes')],
+            'revisionCreator' => ['label' => t('Last Edited By')],
+            'drafts' => ['label' => t('Drafts')],
         ]);
 
         // Hide Author & Last Edited By from Craft Solo
@@ -677,46 +679,46 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
 
         $attributes = array_merge(parent::defineCardAttributes(), [
             'section' => [
-                'label' => Craft::t('app', 'Section'),
-                'placeholder' => fn() => Craft::t('app', 'Section'),
+                'label' => t('Section'),
+                'placeholder' => fn() => t('Section'),
             ],
             'type' => [
-                'label' => Craft::t('app', 'Entry Type'),
-                'placeholder' => fn() => Craft::t('app', 'Entry Type'),
+                'label' => t('Entry Type'),
+                'placeholder' => fn() => t('Entry Type'),
             ],
             'authors' => [
-                'label' => Craft::t('app', 'Authors'),
+                'label' => t('Authors'),
                 'placeholder' => fn() => $currentUser ? Cp::elementChipHtml($currentUser) : '',
             ],
             'parent' => [
-                'label' => Craft::t('app', 'Parent'),
+                'label' => t('Parent'),
                 'placeholder' => fn() => Html::tag(
                     'span',
-                    Craft::t('app', 'Parent {type} Title', ['type' => self::displayName()]),
+                    t('Parent {type} Title', ['type' => self::displayName()]),
                     ['class' => 'card-placeholder'],
                 ),
             ],
             'postDate' => [
-                'label' => Craft::t('app', 'Post Date'),
+                'label' => t('Post Date'),
                 'placeholder' => fn() => (new DateTime())->sub(new DateInterval('P15D')),
             ],
             'expiryDate' => [
-                'label' => Craft::t('app', 'Expiry Date'),
+                'label' => t('Expiry Date'),
                 'placeholder' => fn() => (new DateTime())->add(new DateInterval('P15D')),
             ],
             'revisionNotes' => [
-                'label' => Craft::t('app', 'Revision Notes'),
-                'placeholder' => fn() => Craft::t('app', 'Revision Notes'),
+                'label' => t('Revision Notes'),
+                'placeholder' => fn() => t('Revision Notes'),
             ],
             'revisionCreator' => [
-                'label' => Craft::t('app', 'Last Edited By'),
+                'label' => t('Last Edited By'),
                 'placeholder' => fn() => $currentUser ? Cp::elementChipHtml($currentUser) : '',
             ],
             'drafts' => [
-                'label' => Craft::t('app', 'Drafts'),
+                'label' => t('Drafts'),
                 'placeholder' => fn() => Html::tag(
                     'span',
-                    Craft::t('app', 'Draft {num}', ['num' => 1]),
+                    t('Draft {num}', ['num' => 1]),
                     ['class' => 'card-placeholder'],
                 ),
             ],
@@ -981,11 +983,11 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
     public function attributeLabels(): array
     {
         return array_merge(parent::attributeLabels(), [
-            'authorIds' => Craft::t('app', '{max, plural, =1{Author} other {Authors}}', [
+            'authorIds' => t('{max, plural, =1{Author} other {Authors}}', [
                 'max' => $this->getSection()->maxAuthors ?? PHP_INT_MAX,
             ]),
-            'postDate' => Craft::t('app', 'Post Date'),
-            'expiryDate' => Craft::t('app', 'Expiry Date'),
+            'postDate' => t('Post Date'),
+            'expiryDate' => t('Expiry Date'),
         ]);
     }
 
@@ -1007,7 +1009,7 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
             ['typeId'],
             function(string $attribute) {
                 if (!$this->isEntryTypeAllowed()) {
-                    $this->addError($attribute, Craft::t('app', '{type} entries are no longer allowed in this section. Please choose a different entry type.', [
+                    $this->addError($attribute, t('{type} entries are no longer allowed in this section. Please choose a different entry type.', [
                         'type' => $this->getType()->getUiLabel(),
                     ]));
                 }
@@ -1018,7 +1020,7 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
         ];
         $rules[] = [['fieldId'], function(string $attribute) {
             if (isset($this->sectionId)) {
-                $this->addError($attribute, Craft::t('app', '`sectionId` and `fieldId` cannot both be set on an entry.'));
+                $this->addError($attribute, t('`sectionId` and `fieldId` cannot both be set on an entry.'));
             }
         }];
         $rules[] = [['postDate', 'expiryDate'], DateTimeValidator::class];
@@ -1040,7 +1042,7 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
                     ['authorIds'],
                     ArrayValidator::class,
                     'max' => $section->maxAuthors,
-                    'tooMany' => Craft::t('app', '{num, plural, =1{Only one author is} other{Up to {num, number} authors are}} allowed.', [
+                    'tooMany' => t('{num, plural, =1{Only one author is} other{Up to {num, number} authors are}} allowed.', [
                         'num' => $section->maxAuthors,
                     ]),
                 ];
@@ -1279,7 +1281,7 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
 
         $crumbs = [
             [
-                'label' => Craft::t('app', 'Entries'),
+                'label' => t('Entries'),
                 'url' => 'entries',
             ],
         ];
@@ -1296,14 +1298,14 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
             $sectionOptions = $sections
                 ->filter(fn(Section $s) => $s->type !== Section::TYPE_SINGLE)
                 ->map(fn(Section $s) => [
-                    'label' => Craft::t('site', $s->name),
+                    'label' => t($s->name, category: 'site'),
                     'url' => "entries/$s->handle",
                     'selected' => $s->id === $section->id,
                 ]);
 
             if ($sections->contains(fn(Section $s) => $s->type === Section::TYPE_SINGLE)) {
                 $sectionOptions->prepend([
-                    'label' => Craft::t('app', 'Singles'),
+                    'label' => t('Singles'),
                     'url' => 'entries/singles',
                     'selected' => $section->type === Section::TYPE_SINGLE,
                 ]);
@@ -1311,13 +1313,13 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
 
             $crumbs[] = [
                 'menu' => [
-                    'label' => Craft::t('app', 'Select section'),
+                    'label' => t('Select section'),
                     'items' => $sectionOptions->all(),
                 ],
             ];
         } else {
             $crumbs[] = [
-                'label' => Craft::t('site', $section->name),
+                'label' => t($section->name, category: 'site'),
             ];
         }
 
@@ -1367,7 +1369,7 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
             if ($section?->type === Section::TYPE_SINGLE) {
                 return $section->getUiLabel();
             }
-            return Craft::t('app', 'Untitled {type}', [
+            return t('Untitled {type}', [
                 'type' => self::lowerDisplayName(),
             ]);
         }
@@ -1385,7 +1387,7 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
             return $html;
         }
 
-        return Html::tag('em', Craft::t('site', $this->getType()->name), [
+        return Html::tag('em', t($this->getType()->name, category: 'site'), [
             'class' => 'light',
         ]);
     }
@@ -1416,7 +1418,7 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
         }
 
         return array_map(function($previewTarget) {
-            $previewTarget['label'] = Craft::t('site', $previewTarget['label']);
+            $previewTarget['label'] = t($previewTarget['label'], category: 'site');
             return $previewTarget;
         }, $this->getSection()->previewTargets ?? []);
     }
@@ -2176,7 +2178,7 @@ class Entry extends Element implements NestedElementInterface, ExpirableElementI
             $actions[] = [
                 'id' => $entryTypeEditId,
                 'icon' => 'gear',
-                'label' => Craft::t('app', 'Entry type settings'),
+                'label' => t('Entry type settings'),
             ];
 
             $view = Craft::$app->getView();
@@ -2205,14 +2207,14 @@ JS, [
                 $actions[] = [
                     'id' => $sectionEditId,
                     'icon' => 'gear',
-                    'label' => Craft::t('app', 'Section settings'),
+                    'label' => t('Section settings'),
                 ];
 
                 $view = Craft::$app->getView();
                 $view->registerJsWithVars(fn($id, $params) => <<<JS
     (() => {
       $('#' + $id).on('activate', function() {
-        new Craft.CpScreenSlideout('sections/edit-section', {params: $params});
+        new Craft.CpScreenSlideout('sections/edit-section', {params: $params})
       });
     })();
     JS, [
@@ -2284,7 +2286,7 @@ JS, [
                         'showThumb' => $this->viewMode !== 'cards',
                     ]);
                 } catch (InvalidConfigException) {
-                    return Craft::t('app', 'Unknown');
+                    return t('Unknown');
                 }
             default:
                 return parent::attributeHtml($attribute);
@@ -2317,13 +2319,13 @@ JS, [
                 $section = $this->getSection();
                 return Cp::elementSelectHtml([
                     'status' => $this->getAttributeStatus('authorIds'),
-                    'label' => Craft::t('app', '{max, plural, =1{Author} other {Authors}}', [
+                    'label' => t('{max, plural, =1{Author} other {Authors}}', [
                         'max' => $section->maxAuthors ?? PHP_INT_MAX,
                     ]),
                     'id' => 'authorIds',
                     'name' => 'authorIds',
                     'elementType' => User::class,
-                    'selectionLabel' => Craft::t('app', 'Choose'),
+                    'selectionLabel' => t('Choose'),
                     'criteria' => [
                         'can' => "viewEntries:$section->uid",
                     ],
@@ -2448,14 +2450,14 @@ JS, [
             return Cp::customSelectFieldHtml([
                 'fieldClass' => 'entry-type-select',
                 'status' => $this->getAttributeStatus('typeId'),
-                'label' => Craft::t('app', 'Entry Type'),
+                'label' => t('Entry Type'),
                 'id' => 'entryType',
                 'name' => 'typeId',
                 'value' => $this->getType()->id,
                 'options' => array_map(fn(EntryType $et) => [
                     'icon' => $et->icon,
                     'iconColor' => $et->color,
-                    'label' => Craft::t('site', $et->name),
+                    'label' => t($et->name, category: 'site'),
                     'value' => $et->id,
                 ], $entryTypes),
                 'disabled' => $static,
@@ -2491,11 +2493,11 @@ JS, [
                 }
 
                 return Cp::elementSelectFieldHtml([
-                    'label' => Craft::t('app', 'Parent'),
+                    'label' => t('Parent'),
                     'id' => 'parentId',
                     'name' => 'parentId',
                     'elementType' => self::class,
-                    'selectionLabel' => Craft::t('app', 'Choose'),
+                    'selectionLabel' => t('Choose'),
                     'sources' => ["section:$section->uid"],
                     'criteria' => $this->_parentOptionCriteria($section),
                     'limit' => 1,
@@ -2518,13 +2520,13 @@ JS, [
                     $authors = $this->getAuthors();
                     $html = Cp::elementSelectFieldHtml([
                         'status' => $this->getAttributeStatus('authorIds'),
-                        'label' => Craft::t('app', '{max, plural, =1{Author} other {Authors}}', [
+                        'label' => t('{max, plural, =1{Author} other {Authors}}', [
                             'max' => $section->maxAuthors ?? PHP_INT_MAX,
                         ]),
                         'id' => 'authorIds',
                         'name' => 'authorIds',
                         'elementType' => User::class,
-                        'selectionLabel' => Craft::t('app', 'Choose'),
+                        'selectionLabel' => t('Choose'),
                         'criteria' => [
                             'can' => "viewEntries:$section->uid",
                         ],
@@ -2547,7 +2549,7 @@ JS, [
             // Post Date
             $fields[] = Cp::dateTimeFieldHtml([
                 'status' => $this->getAttributeStatus('postDate'),
-                'label' => Craft::t('app', 'Post Date'),
+                'label' => t('Post Date'),
                 'id' => 'postDate',
                 'name' => 'postDate',
                 'value' => $this->_userPostDate(),
@@ -2558,7 +2560,7 @@ JS, [
             // Expiry Date
             $fields[] = Cp::dateTimeFieldHtml([
                 'status' => $this->getAttributeStatus('expiryDate'),
-                'label' => Craft::t('app', 'Expiry Date'),
+                'label' => t('Expiry Date'),
                 'id' => 'expiryDate',
                 'name' => 'expiryDate',
                 'value' => $this->expiryDate,
@@ -2581,14 +2583,8 @@ JS, [
      */
     private function _applyActionBtnEntryTypeCompatibility(): void
     {
-        $draftMessage = Craft::t(
-            'app',
-            'This draft’s entry type is no longer available. You can still view it, but not apply it.'
-        );
-        $revisionMessage = Craft::t(
-            'app',
-            'This revision’s entry type is no longer available. You can still view it, but not revert to it.'
-        );
+        $draftMessage = t('This draft’s entry type is no longer available. You can still view it, but not apply it.');
+        $revisionMessage = t('This revision’s entry type is no longer available. You can still view it, but not revert to it.');
 
         if (!$this->isEntryTypeCompatible()) {
             $js = <<<JS
@@ -2697,21 +2693,20 @@ JS;
         }
 
         // Make sure that the locale has been loaded in case the title format has any Date/Time fields
-        Craft::$app->getLocale();
         // Set Craft to the entry’s site’s language, in case the title format has any static translations
-        $language = Craft::$app->language;
-        $locale = Craft::$app->getLocale();
-        $formattingLocale = Craft::$app->getFormattingLocale();
+        $language = app()->getLocale();
+        $locale = I18N::getLocale();
+        $formattingLocale = I18N::getFormattingLocale();
         $site = $this->getSite();
-        $tempLocale = Craft::$app->getI18n()->getLocaleById($site->language);
-        Craft::$app->language = $site->language;
+        $tempLocale = I18N::getLocaleById($site->language);
+        app()->setLocale($site->language);
         Craft::$app->set('locale', $tempLocale);
         Craft::$app->set('formattingLocale', $tempLocale);
         $title = Craft::$app->getView()->renderObjectTemplate($entryType->titleFormat, $this);
         if ($title !== '') {
             $this->title = $title;
         }
-        Craft::$app->language = $language;
+        app()->setLocale($language);
         Craft::$app->set('locale', $locale);
         Craft::$app->set('formattingLocale', $formattingLocale);
     }
@@ -2761,7 +2756,7 @@ JS;
                     Craft::$app->getRevisions()->createRevision(
                         $current,
                         $current->getAuthorId(),
-                        sprintf('Revision from %s', Craft::$app->getFormatter()->asDatetime($current->dateUpdated)),
+                        sprintf('Revision from %s', I18N::getFormatter()->asDatetime($current->dateUpdated)),
                     );
                 }
             }

@@ -2,10 +2,10 @@
 
 namespace CraftCms\Cms\SystemMessage;
 
-use Craft;
 use craft\console\Application as CraftConsoleApplication;
 use craft\web\Application as CraftWebApplication;
 use CraftCms\Cms\Edition;
+use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\SystemMessage\Events\RegisterSystemMessages;
 use CraftCms\Cms\SystemMessage\Models\SystemMessage;
 use Illuminate\Container\Attributes\Give;
@@ -17,6 +17,8 @@ use Tpetry\QueryExpressions\Language\CaseGroup;
 use Tpetry\QueryExpressions\Language\CaseRule;
 use Tpetry\QueryExpressions\Operator\Comparison\Equal;
 use Tpetry\QueryExpressions\Value\Value;
+
+use function CraftCms\Cms\t;
 
 #[Singleton]
 final class SystemMessages
@@ -41,36 +43,35 @@ final class SystemMessages
         }
 
         // If the current language isn't one of the site's languages, switch to the primary site's language
-        $language = $this->craft->language;
-        $i18n = $this->craft->getI18n();
-        if (! in_array($language, $i18n->getSiteLocaleIds())) {
-            $this->craft->language = $this->craft->getSites()->getPrimarySite()->language;
+        $language = app()->getLocale();
+        if (! I18N::getSiteLocaleIds()->contains($language)) {
+            app()->setLocale($this->craft->getSites()->getPrimarySite()->language);
         }
 
         $messages = collect([
             new SystemMessage([
                 'key' => 'account_activation',
-                'heading' => Craft::t('app', 'account_activation_heading'),
-                'subject' => Craft::t('app', 'account_activation_subject'),
-                'body' => Craft::t('app', 'account_activation_body'),
+                'heading' => t('account_activation_heading'),
+                'subject' => t('account_activation_subject'),
+                'body' => t('account_activation_body'),
             ]),
             new SystemMessage([
                 'key' => 'verify_new_email',
-                'heading' => Craft::t('app', 'verify_new_email_heading'),
-                'subject' => Craft::t('app', 'verify_new_email_subject'),
-                'body' => Craft::t('app', 'verify_new_email_body'),
+                'heading' => t('verify_new_email_heading'),
+                'subject' => t('verify_new_email_subject'),
+                'body' => t('verify_new_email_body'),
             ]),
             new SystemMessage([
                 'key' => 'forgot_password',
-                'heading' => Craft::t('app', 'forgot_password_heading'),
-                'subject' => Craft::t('app', 'forgot_password_subject'),
-                'body' => Craft::t('app', 'forgot_password_body'),
+                'heading' => t('forgot_password_heading'),
+                'subject' => t('forgot_password_subject'),
+                'body' => t('forgot_password_body'),
             ]),
             new SystemMessage([
                 'key' => 'test_email',
-                'heading' => Craft::t('app', 'test_email_heading'),
-                'subject' => Craft::t('app', 'test_email_subject'),
-                'body' => Craft::t('app', 'test_email_body'),
+                'heading' => t('test_email_heading'),
+                'subject' => t('test_email_subject'),
+                'body' => t('test_email_body'),
             ]),
         ]);
 
@@ -92,7 +93,7 @@ final class SystemMessages
         }
 
         // Put the original language back
-        $this->craft->language = $language;
+        app()->setLocale($language);
 
         return $this->defaultMessages = $messages;
     }

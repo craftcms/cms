@@ -278,7 +278,7 @@ class FileHelper extends \yii\helpers\FileHelper
                 // to ASCII consistently regardless of who is logged in.
                 $language = Craft::$app->getSites()->getPrimarySite()->language;
             } catch (SiteNotFoundException $e) {
-                $language = Craft::$app->language;
+                $language = app()->getLocale();
             }
 
             $filename = Str::ascii($filename, $language);

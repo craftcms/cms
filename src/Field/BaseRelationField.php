@@ -50,6 +50,8 @@ use yii\db\Expression;
 use yii\db\Schema;
 use yii\validators\NumberValidator;
 
+use function CraftCms\Cms\t;
+
 /**
  * BaseRelationField is the base class for classes representing a relational field.
  */
@@ -98,7 +100,7 @@ abstract class BaseRelationField extends Field implements CrossSiteCopyableField
      */
     public static function defaultSelectionLabel(): string
     {
-        return Craft::t('app', 'Choose');
+        return t('Choose');
     }
 
     /**
@@ -517,7 +519,7 @@ abstract class BaseRelationField extends Field implements CrossSiteCopyableField
         $view = Craft::$app->getView();
 
         $view->registerJsWithVars(fn ($args) => <<<JS
-new Craft.ElementFieldSettings(...$args);
+new Craft.ElementFieldSettings(...$args)
 JS, [
             [
                 $this->allowMultipleSources,
@@ -566,16 +568,16 @@ JS, [
             $arrayValidator = new NumberValidator([
                 'min' => $this->minRelations,
                 'max' => $this->maxRelations,
-                'tooSmall' => $this->minRelations ? Craft::t('app',
+                'tooSmall' => $this->minRelations ? t(
                     '{attribute} should contain at least {min, number} {min, plural, one{selection} other{selections}}.',
                     [
-                        'attribute' => Craft::t('site', $this->name),
+                        'attribute' => t($this->name, category: 'site'),
                         'min' => $this->minRelations, // Need to pass this in now
                     ]) : null,
-                'tooBig' => $this->maxRelations ? Craft::t('app',
+                'tooBig' => $this->maxRelations ? t(
                     '{attribute} should contain at most {max, number} {max, plural, one{selection} other{selections}}.',
                     [
-                        'attribute' => Craft::t('site', $this->name),
+                        'attribute' => t($this->name, category: 'site'),
                         'max' => $this->maxRelations, // Need to pass this in now
                     ]) : null,
                 'skipOnEmpty' => false,
@@ -620,7 +622,7 @@ JS, [
 
         if ($errorCount) {
             $selectedCount = (int) $value->count();
-            $element->addError($this->handle, Craft::t('app',
+            $element->addError($this->handle, t(
                 'The selected {relatedType} {count, plural, =1{contains} other{contain}} validation errors, preventing this {type} from being saved. Edit the {relatedType} to fix them.',
                 [
                     'relatedType' => $selectedCount === 1
@@ -996,7 +998,7 @@ JS, [
     public function previewPlaceholderHtml(mixed $value, ?ElementInterface $element): string
     {
         $mockup = new (static::elementType());
-        $mockup->title = Craft::t('app', 'Related {type} Title', ['type' => $mockup->displayName()]);
+        $mockup->title = t('Related {type} Title', ['type' => $mockup->displayName()]);
 
         return Cp::chipHtml($mockup);
     }
@@ -1301,14 +1303,14 @@ JS, [
 
         foreach (Craft::$app->getSites()->getAllSites() as $site) {
             $siteOptions[] = [
-                'label' => Craft::t('site', $site->getName()),
+                'label' => t($site->getName(), category: 'site'),
                 'value' => $site->uid,
             ];
         }
 
         $html =
             Cp::checkboxFieldHtml([
-                'checkboxLabel' => Craft::t('app', 'Relate {type} from a specific site?', ['type' => $pluralType]),
+                'checkboxLabel' => t('Relate {type} from a specific site?', ['type' => $pluralType]),
                 'name' => 'useTargetSite',
                 'checked' => $showTargetSite,
                 'toggle' => 'target-site-field',
@@ -1316,7 +1318,7 @@ JS, [
             ]).
             Cp::selectFieldHtml([
                 'fieldClass' => ! $showTargetSite ? ['hidden'] : null,
-                'label' => Craft::t('app', 'Which site should {type} be related from?', ['type' => $pluralType]),
+                'label' => t('Which site should {type} be related from?', ['type' => $pluralType]),
                 'id' => 'target-site',
                 'name' => 'targetSiteId',
                 'options' => $siteOptions,
@@ -1327,12 +1329,12 @@ JS, [
             $html .= Cp::checkboxFieldHtml([
                 'fieldset' => true,
                 'fieldClass' => $showTargetSite ? ['hidden'] : null,
-                'checkboxLabel' => Craft::t('app', 'Show the site menu'),
-                'instructions' => Craft::t('app', 'Whether the site menu should be shown for {type} selection modals.',
+                'checkboxLabel' => t('Show the site menu'),
+                'instructions' => t('Whether the site menu should be shown for {type} selection modals.',
                     [
                         'type' => $type,
                     ]),
-                'warning' => Craft::t('app',
+                'warning' => t(
                     'Relations don’t store the selected site, so this should only be enabled if some {type} aren’t propagated to all sites.',
                     [
                         'type' => $pluralType,
@@ -1399,8 +1401,8 @@ JS, [
         }
 
         return Cp::fieldHtml($html, [
-            'label' => Craft::t('app', 'View Mode'),
-            'instructions' => Craft::t('app', 'Choose how the field should look for authors.'),
+            'label' => t('View Mode'),
+            'instructions' => t('Choose how the field should look for authors.'),
             'id' => 'viewMode',
         ]);
     }
@@ -1430,13 +1432,12 @@ JS, [
             $selectionCondition->queryParams[] = 'status';
 
             $selectionConditionHtml = Cp::fieldHtml($selectionCondition->getBuilderHtml(), [
-                'label' => Craft::t('app', 'Selectable {type} Condition', [
+                'label' => t('Selectable {type} Condition', [
                     'type' => $elementType::pluralDisplayName(),
                 ]),
-                'instructions' => mb_ucfirst(Craft::t('app',
-                    'Only allow {type} to be selected if they match the following rules:', [
-                        'type' => $elementType::pluralLowerDisplayName(),
-                    ])),
+                'instructions' => mb_ucfirst(t('Only allow {type} to be selected if they match the following rules:', [
+                    'type' => $elementType::pluralLowerDisplayName(),
+                ])),
             ]);
         }
 
@@ -1537,7 +1538,7 @@ JS, [
             'limit' => $this->allowLimit ? $this->maxRelations : null,
             'defaultPlacement' => $this->defaultPlacement,
             'viewMode' => $this->viewMode(),
-            'selectionLabel' => $this->selectionLabel ? Craft::t('site', $this->selectionLabel) : static::defaultSelectionLabel(),
+            'selectionLabel' => $this->selectionLabel ? t($this->selectionLabel, category: 'site') : static::defaultSelectionLabel(),
             'sortable' => $this->sortable && ! $this->maintainHierarchy,
             'prevalidate' => $this->validateRelatedElements,
             'modalSettings' => [
@@ -1689,16 +1690,16 @@ JS, [
     protected function supportedViewModes(): array
     {
         $viewModes = [
-            self::VIEW_MODE_LIST => Craft::t('app', 'List'),
-            self::VIEW_MODE_LIST_INLINE => Craft::t('app', 'Inline list'),
+            self::VIEW_MODE_LIST => t('List'),
+            self::VIEW_MODE_LIST_INLINE => t('Inline list'),
         ];
 
         if ($this->allowLargeThumbsView) {
-            $viewModes[self::VIEW_MODE_THUMBS] = Craft::t('app', 'Thumbs');
+            $viewModes[self::VIEW_MODE_THUMBS] = t('Thumbs');
         }
 
-        $viewModes[self::VIEW_MODE_CARDS] = Craft::t('app', 'Cards');
-        $viewModes[self::VIEW_MODE_CARDS_GRID] = Craft::t('app', 'Card grid');
+        $viewModes[self::VIEW_MODE_CARDS] = t('Cards');
+        $viewModes[self::VIEW_MODE_CARDS_GRID] = t('Card grid');
 
         return $viewModes;
     }

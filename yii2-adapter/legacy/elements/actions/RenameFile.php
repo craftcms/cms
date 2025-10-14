@@ -9,6 +9,7 @@ namespace craft\elements\actions;
 
 use Craft;
 use craft\base\ElementAction;
+use function CraftCms\Cms\t;
 
 /**
  * RenameFile represents a Rename File element action.
@@ -23,7 +24,7 @@ class RenameFile extends ElementAction
      */
     public function getTriggerLabel(): string
     {
-        return Craft::t('app', 'Rename file');
+        return t('Rename file');
     }
 
     /**
@@ -91,7 +92,7 @@ class RenameFile extends ElementAction
 JS,
             [
                 static::class,
-                Craft::t('app', 'Enter the new filename'),
+                t('Enter the new filename'),
             ]);
 
         return null;

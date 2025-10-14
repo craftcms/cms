@@ -34,6 +34,7 @@ use CraftCms\Cms\Field\Events\FieldElementEvent;
 use CraftCms\Cms\Field\Events\FieldEvent;
 use CraftCms\Cms\Shared\Rules\HandleRule;
 use CraftCms\Cms\Support\Facades\Fields;
+use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Str;
 use CraftCms\Cms\Support\Typecast;
@@ -49,6 +50,8 @@ use Illuminate\Validation\Rule;
 use InvalidArgumentException;
 use RuntimeException;
 use yii\db\Schema;
+
+use function CraftCms\Cms\t;
 
 abstract class Field implements Actionable, Arrayable, FieldInterface, Iconic
 {
@@ -475,7 +478,7 @@ abstract class Field implements Actionable, Arrayable, FieldInterface, Iconic
      */
     public function __toString(): string
     {
-        return Craft::t('site', $this->name) ?: static::class;
+        return t($this->name, category: 'site') ?: static::class;
     }
 
     public function attributes(): array
@@ -492,8 +495,8 @@ abstract class Field implements Actionable, Arrayable, FieldInterface, Iconic
     public function attributeLabels(): array
     {
         return [
-            'handle' => Craft::t('app', 'Handle'),
-            'name' => Craft::t('app', 'Name'),
+            'handle' => t('Handle'),
+            'name' => t('Name'),
         ];
     }
 
@@ -531,7 +534,7 @@ abstract class Field implements Actionable, Arrayable, FieldInterface, Iconic
     /** {@inheritdoc} */
     public function getUiLabel(): string
     {
-        return Craft::t('site', $this->name);
+        return t($this->name, category: 'site');
     }
 
     /** {@inheritdoc} */
@@ -591,14 +594,14 @@ abstract class Field implements Actionable, Arrayable, FieldInterface, Iconic
             $items[] = [
                 'id' => $editId,
                 'icon' => 'gear',
-                'label' => Craft::t('app', 'Field settings'),
+                'label' => t('Field settings'),
             ];
             $view->registerJsWithVars(fn ($id, $params) => <<<JS
 (() => {
 $('#' + $id).on('activate', () => {
 new Craft.CpScreenSlideout('fields/edit-field', {
   params: $params,
-});
+})
 });
 })();
 JS, [
@@ -613,7 +616,7 @@ JS, [
             $items[] = [
                 'id' => $copyId,
                 'icon' => 'clipboard',
-                'label' => Craft::t('app', 'Copy field handle'),
+                'label' => t('Copy field handle'),
             ];
             $view->registerJsWithVars(fn ($id, $attribute) => <<<JS
 (() => {
@@ -621,7 +624,7 @@ $('#' + $id).on('activate', () => {
 Craft.ui.createCopyTextPrompt({
   label: Craft.t('app', 'Field Handle'),
   value: $attribute,
-});
+})
 });
 })();
 JS, [
@@ -640,7 +643,7 @@ JS, [
             // Only one site so use its language
             ! Craft::$app->getIsMultiSite() => Craft::$app->getSites()->getPrimarySite()->getLocale(),
             // Not translatable, so use the user’s language
-            ! $element || ! $this->getIsTranslatable($element) => Craft::$app->getLocale(),
+            ! $element || ! $this->getIsTranslatable($element) => I18N::getLocale(),
             // Use the site’s language
             default => $element->getSite()->getLocale(),
         };
@@ -686,14 +689,14 @@ JS, [
         if ($element->isFieldModified($this->handle)) {
             return [
                 AttributeStatus::Modified,
-                Craft::t('app', 'This field has been modified.'),
+                t('This field has been modified.'),
             ];
         }
 
         if ($element->isFieldOutdated($this->handle)) {
             return [
                 AttributeStatus::Outdated,
-                Craft::t('app', 'This field was updated in the Current revision.'),
+                t('This field was updated in the Current revision.'),
             ];
         }
 
@@ -895,7 +898,7 @@ JS, [
         // The attribute name should match the table attribute name,
         // per ElementSources::getTableAttributesForFieldLayouts()
         return [
-            'label' => Craft::t('site', $this->name),
+            'label' => t($this->name, category: 'site'),
             'orderBy' => $orderBy,
             'attribute' => isset($this->layoutElement->handle)
                 ? "fieldInstance:{$this->layoutElement->uid}"

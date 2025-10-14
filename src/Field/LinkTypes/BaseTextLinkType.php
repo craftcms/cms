@@ -9,6 +9,8 @@ use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Str;
 
+use function CraftCms\Cms\t;
+
 /**
  * Base text link type.
  */
@@ -66,7 +68,7 @@ abstract class BaseTextLinkType extends BaseLinkType
             'class' => ['fullwidth', 'text-link-input'],
             'inputAttributes' => [
                 'aria' => [
-                    'label' => Craft::t('site', $field->name),
+                    'label' => t($field->name, category: 'site'),
                 ],
             ],
         ], $this->inputAttributes());
@@ -74,7 +76,7 @@ abstract class BaseTextLinkType extends BaseLinkType
         $view = Craft::$app->getView();
         $view->registerJsWithVars(fn ($id, $settings) => <<<JS
 (() => {
-  new Craft.LinkInput('#' + $id, $settings);
+  new Craft.LinkInput('#' + $id, $settings)
 })();
 JS, [
             $containerId,
@@ -103,7 +105,7 @@ JS, [
                 ]).
                 Cp::disclosureMenu([], [
                     'omitIfEmpty' => false,
-                    'hiddenLabel' => Craft::t('app', 'Actions'),
+                    'hiddenLabel' => t('Actions'),
                     'buttonAttributes' => [
                         'class' => ['action-btn'],
                         'removeClass' => 'menubtn',

@@ -7,7 +7,6 @@
 
 namespace craft\elements\exporters;
 
-use Craft;
 use craft\base\ElementExporter;
 use craft\base\ElementInterface;
 use craft\elements\db\ElementQuery;
@@ -17,6 +16,7 @@ use craft\helpers\DateTimeHelper;
 use craft\helpers\Db;
 use CraftCms\Cms\Field\Contracts\EagerLoadingFieldInterface;
 use CraftCms\Cms\Field\Fields;
+use function CraftCms\Cms\t;
 
 /**
  * Expanded represents an "Expanded" element exporter.
@@ -31,7 +31,7 @@ class Expanded extends ElementExporter
      */
     public static function displayName(): string
     {
-        return Craft::t('app', 'Expanded');
+        return t('Expanded');
     }
 
     /**

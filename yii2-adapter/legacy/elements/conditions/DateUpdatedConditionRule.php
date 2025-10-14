@@ -2,10 +2,10 @@
 
 namespace craft\elements\conditions;
 
-use Craft;
 use craft\base\conditions\BaseDateRangeConditionRule;
 use craft\base\ElementInterface;
 use craft\elements\db\ElementQueryInterface;
+use function CraftCms\Cms\t;
 
 /**
  * Date updated condition rule.
@@ -20,7 +20,7 @@ class DateUpdatedConditionRule extends BaseDateRangeConditionRule implements Ele
      */
     public function getLabel(): string
     {
-        return Craft::t('app', 'Date Updated');
+        return t('Date Updated');
     }
 
     /**

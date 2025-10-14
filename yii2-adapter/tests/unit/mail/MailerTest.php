@@ -216,7 +216,7 @@ class MailerTest extends TestCase
         $this->setInaccessibleProperty(Craft::$app->getRequest(), '_isCpRequest', $isCpRequest);
 
         Craft::$app->getSites()->getPrimarySite()->language = 'nl';
-        Craft::$app->language = 'en-US';
+        app()->setLocale('en-US');
 
         $this->mailer->send($this->mailer->composeFromKey('account_activation', [
             'user' => new User(),
@@ -224,6 +224,8 @@ class MailerTest extends TestCase
         ]));
 
         self::assertSame($desiredLang, $this->tester->grabLastSentEmail()->language);
+
+        Craft::$app->getSites()->getPrimarySite()->language = 'en-US';
     }
 
     /**

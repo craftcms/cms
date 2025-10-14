@@ -7,9 +7,9 @@
 
 namespace craft\base;
 
-use Craft;
 use craft\validators\HandleValidator;
 use CraftCms\Cms\Support\Env;
+use function CraftCms\Cms\t;
 
 /**
  * Field is the base class for classes representing filesystems in terms of objects.
@@ -52,9 +52,9 @@ abstract class Fs extends SavableComponent implements FsInterface
     public function attributeLabels(): array
     {
         return [
-            'handle' => Craft::t('app', 'Handle'),
-            'name' => Craft::t('app', 'Name'),
-            'url' => Craft::t('app', 'Base URL'),
+            'handle' => t('Handle'),
+            'name' => t('Name'),
+            'url' => t('Base URL'),
         ];
     }
 

@@ -2,7 +2,6 @@
 
 namespace craft\fields\conditions;
 
-use Craft;
 use craft\base\conditions\BaseNumberConditionRule;
 use craft\helpers\Cp;
 use craft\helpers\MoneyHelper;
@@ -12,6 +11,7 @@ use CraftCms\Cms\Support\Html;
 use Money\Currency;
 use Money\Money as MoneyLibrary;
 use yii\base\InvalidConfigException;
+use function CraftCms\Cms\t;
 
 /**
  * Money field condition rule.
@@ -80,17 +80,17 @@ class MoneyFieldConditionRule extends BaseNumberConditionRule implements FieldCo
             $maxValue = is_numeric($this->maxValue) ? MoneyHelper::toNumber(MoneyHelper::toMoney(['value' => $this->maxValue, 'currency' => $field->currency])) : $this->maxValue;
 
             return Html::tag('div',
-                Html::hiddenLabel(Craft::t('app', 'Min Value'), 'min') .
+                Html::hiddenLabel(t('Min Value'), 'min') .
                 // Min value (value) input
                 Cp::moneyInputHtml($this->inputOptions()) .
-                Html::tag('span', Craft::t('app', 'and')) .
-                Html::hiddenLabel(Craft::t('app', 'Max Value'), 'max') .
+                Html::tag('span', t('and')) .
+                Html::hiddenLabel(t('Max Value'), 'max') .
                 // Max value input
                 Cp::moneyInputHtml(array_merge(
                     $this->inputOptions(),
                     ['id' => 'maxValue', 'name' => 'maxValue', 'value' => $maxValue]
                 )) .
-                Html::tag('span', Craft::t('app', 'The values are matched inclusively.'), ['class' => 'info']),
+                Html::tag('span', t('The values are matched inclusively.'), ['class' => 'info']),
                 ['class' => 'flex flex-center']
             );
         }

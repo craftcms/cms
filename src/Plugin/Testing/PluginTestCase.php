@@ -4,6 +4,8 @@ namespace CraftCms\Cms\Plugin\Testing;
 
 use craft\models\Site;
 use CraftCms\Cms\Database\Migrations\Install;
+use CraftCms\Cms\Providers\CraftServiceProvider;
+use CraftCms\Yii2Adapter\Yii2ServiceProvider;
 use Illuminate\Foundation\Testing\LazilyRefreshDatabase;
 use Illuminate\Support\Facades\Schema;
 use Orchestra\Testbench\TestCase as BaseTestCase;
@@ -45,8 +47,8 @@ abstract class PluginTestCase extends BaseTestCase
     protected function getPackageProviders($app): array
     {
         return [
-            \CraftCms\Cms\Providers\CraftServiceProvider::class,
-            \CraftCms\Yii2Adapter\Yii2ServiceProvider::class,
+            CraftServiceProvider::class,
+            Yii2ServiceProvider::class,
         ];
     }
 }

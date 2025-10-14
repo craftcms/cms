@@ -23,6 +23,7 @@ use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Str;
 use DateTime;
 use Illuminate\Support\Facades\DB;
+use function CraftCms\Cms\t;
 
 /**
  * CategoryGroup model.
@@ -130,7 +131,7 @@ class CategoryGroup extends Model implements
      */
     public function getUiLabel(): string
     {
-        return Craft::t('site', $this->name);
+        return t($this->name, category: 'site');
     }
 
     /**
@@ -150,8 +151,8 @@ class CategoryGroup extends Model implements
     public function attributeLabels(): array
     {
         return [
-            'handle' => Craft::t('app', 'Handle'),
-            'name' => Craft::t('app', 'Name'),
+            'handle' => t('Handle'),
+            'name' => t('Name'),
         ];
     }
 
@@ -208,7 +209,7 @@ class CategoryGroup extends Model implements
      */
     public function __toString(): string
     {
-        return Craft::t('site', $this->name) ?: static::class;
+        return t($this->name, category: 'site') ?: static::class;
     }
 
     /**

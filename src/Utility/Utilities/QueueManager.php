@@ -6,6 +6,8 @@ use Craft;
 use craft\web\assets\queuemanager\QueueManagerAsset;
 use CraftCms\Cms\Utility\Utility;
 
+use function CraftCms\Cms\t;
+
 /**
  * Queue manager is a utility used for managing jobs in the Queue.
  *
@@ -19,7 +21,7 @@ final class QueueManager extends Utility
     #[\Override]
     public static function displayName(): string
     {
-        return Craft::t('app', 'Queue Manager');
+        return t('Queue Manager');
     }
 
     /**

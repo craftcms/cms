@@ -2,9 +2,10 @@
 
 namespace CraftCms\Cms\Field\LinkTypes;
 
-use Craft;
 use CraftCms\Cms\Field\Link;
 use yii\validators\EmailValidator;
+
+use function CraftCms\Cms\t;
 
 /**
  * Email link type.
@@ -18,7 +19,7 @@ final class Email extends BaseTextLinkType
 
     public static function displayName(): string
     {
-        return Craft::t('app', 'Email');
+        return t('Email');
     }
 
     protected function urlPrefix(): string

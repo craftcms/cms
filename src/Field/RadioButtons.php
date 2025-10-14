@@ -7,6 +7,8 @@ use craft\base\ElementInterface;
 use CraftCms\Cms\Field\Contracts\SortableFieldInterface;
 use CraftCms\Cms\Field\Data\SingleOptionFieldData;
 
+use function CraftCms\Cms\t;
+
 /**
  * RadioButtons represents a Radio Buttons field.
  */
@@ -32,7 +34,7 @@ final class RadioButtons extends BaseOptionsField implements SortableFieldInterf
      */
     public static function displayName(): string
     {
-        return Craft::t('app', 'Radio Buttons');
+        return t('Radio Buttons');
     }
 
     /**
@@ -84,6 +86,6 @@ final class RadioButtons extends BaseOptionsField implements SortableFieldInterf
      */
     protected function optionsSettingLabel(): string
     {
-        return Craft::t('app', 'Radio Button Options');
+        return t('Radio Button Options');
     }
 }

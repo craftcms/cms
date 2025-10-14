@@ -7,9 +7,9 @@
 
 namespace craft\errors;
 
-use Craft;
 use craft\base\ElementInterface;
 use CraftCms\Cms\Support\Arr;
+use function CraftCms\Cms\t;
 
 /**
  * InvalidElementException represents an exception caused by setting an invalid element.
@@ -28,7 +28,7 @@ class InvalidElementException extends ElementException
             $error = Arr::first($element->getFirstErrors());
             $message = $error
                 ? str_replace('*', '', $error)
-                : Craft::t('app', 'The {type} is invalid.', [
+                : t('The {type} is invalid.', [
                     'type' => $element::lowerDisplayName(),
                 ]);
         }

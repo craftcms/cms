@@ -8,16 +8,19 @@ use craft\elements\Entry;
 use craft\fields\conditions\EmptyFieldConditionRule;
 use craft\gql\types\DateTime as DateTimeType;
 use craft\helpers\DateTimeHelper;
-use craft\i18n\Locale;
 use craft\validators\TimeValidator;
 use CraftCms\Cms\Field\Contracts\CrossSiteCopyableFieldInterface;
 use CraftCms\Cms\Field\Contracts\InlineEditableFieldInterface;
 use CraftCms\Cms\Field\Contracts\MergeableFieldInterface;
 use CraftCms\Cms\Field\Contracts\SortableFieldInterface;
 use CraftCms\Cms\Shared\Rules\TimeRule;
+use CraftCms\Cms\Support\Facades\I18N;
+use CraftCms\Cms\Translation\Locale;
 use DateTime;
 use GraphQL\Type\Definition\Type;
 use yii\db\Schema;
+
+use function CraftCms\Cms\t;
 
 /**
  * Date represents a Time field.
@@ -29,7 +32,7 @@ final class Time extends Field implements CrossSiteCopyableFieldInterface, Inlin
      */
     public static function displayName(): string
     {
-        return Craft::t('app', 'Time');
+        return t('Time');
     }
 
     /**
@@ -95,8 +98,8 @@ final class Time extends Field implements CrossSiteCopyableFieldInterface, Inlin
     public function attributeLabels(): array
     {
         return [
-            'min' => Craft::t('app', 'Min Time'),
-            'max' => Craft::t('app', 'Max Time'),
+            'min' => t('Min Time'),
+            'max' => t('Max Time'),
         ];
     }
 
@@ -190,7 +193,7 @@ final class Time extends Field implements CrossSiteCopyableFieldInterface, Inlin
             return '';
         }
 
-        return Craft::$app->getFormatter()->asTime($value, Locale::LENGTH_SHORT);
+        return I18N::getFormatter()->asTime($value, Locale::LENGTH_SHORT);
     }
 
     /**

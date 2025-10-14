@@ -12,6 +12,7 @@ use craft\base\Image;
 use craft\errors\ImageException;
 use craft\helpers\FileHelper;
 use craft\helpers\Image as ImageHelper;
+use function CraftCms\Cms\t;
 
 /**
  * Svg class is used for SVG file manipulations.
@@ -75,14 +76,14 @@ class Svg extends Image
     {
         if (!is_file($path)) {
             Craft::error('Tried to load an image at ' . $path . ', but the file does not exist.', __METHOD__);
-            throw new ImageException(Craft::t('app', 'No file exists at the given path.'));
+            throw new ImageException(t('No file exists at the given path.'));
         }
 
         $svg = file_get_contents($path);
 
         if ($svg === false) {
             Craft::error('Tried to read the SVG contents at ' . $path . ', but could not.', __METHOD__);
-            throw new ImageException(Craft::t('app', 'Could not read SVG contents.'));
+            throw new ImageException(t('Could not read SVG contents.'));
         }
 
         [$width, $height] = ImageHelper::parseSvgSize($svg);
@@ -238,8 +239,7 @@ class Svg extends Image
         if (pathinfo($targetPath, PATHINFO_EXTENSION) === 'svg') {
             FileHelper::writeToFile($targetPath, $this->_svgContent);
         } else {
-            throw new ImageException(Craft::t('app',
-                'Manipulated SVG image rasterizing is unreliable. See \craft\services\Images::loadImage()'));
+            throw new ImageException(t('Manipulated SVG image rasterizing is unreliable. See \craft\services\Images::loadImage()'));
         }
 
         return true;

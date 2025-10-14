@@ -16,6 +16,7 @@ use craft\events\DefineShowFieldLayoutComponentInFormEvent;
 use craft\helpers\Cp;
 use craft\models\FieldLayout;
 use CraftCms\Cms\Support\Html;
+use function CraftCms\Cms\t;
 
 /**
  * FieldLayoutComponent is the base class for classes representing field layout components (tabs or elements) in terms of objects.
@@ -281,7 +282,7 @@ abstract class FieldLayoutComponent extends Model
         }
 
         $html = Html::beginTag('fieldset', ['class' => 'pane']) .
-            Html::tag('legend', Craft::t('app', 'Visibility Conditions')) .
+            Html::tag('legend', t('Visibility Conditions')) .
             Html::beginTag('div');
 
         $userCondition = $this->getUserCondition() ?? self::defaultUserCondition();
@@ -291,8 +292,8 @@ abstract class FieldLayoutComponent extends Model
         $userCondition->forProjectConfig = true;
 
         $html .= Cp::fieldHtml($userCondition->getBuilderHtml(), [
-            'label' => Craft::t('app', 'Current User Condition'),
-            'instructions' => Craft::t('app', 'Only show for users who match the following rules:'),
+            'label' => t('Current User Condition'),
+            'instructions' => t('Only show for users who match the following rules:'),
         ]);
 
         // Do we know the element type?
@@ -311,10 +312,10 @@ abstract class FieldLayoutComponent extends Model
             $elementCondition->forProjectConfig = true;
 
             $html .= Cp::fieldHtml($elementCondition->getBuilderHtml(), [
-                'label' => Craft::t('app', '{type} Condition', [
+                'label' => t('{type} Condition', [
                     'type' => $elementType::displayName(),
                 ]),
-                'instructions' => Craft::t('app', 'Only show when editing {type} that match the following rules:', [
+                'instructions' => t('Only show when editing {type} that match the following rules:', [
                     'type' => $elementType::pluralLowerDisplayName(),
                 ]),
             ]);

@@ -18,6 +18,7 @@ use craft\validators\HandleValidator;
 use craft\validators\UniqueValidator;
 use CraftCms\Cms\Config\GeneralConfig;
 use DateTime;
+use function CraftCms\Cms\t;
 
 /**
  * The ImageTransform model class.
@@ -155,16 +156,16 @@ class ImageTransform extends Model
     public function attributeLabels(): array
     {
         return [
-            'handle' => Craft::t('app', 'Handle'),
-            'height' => Craft::t('app', 'Height'),
-            'mode' => Craft::t('app', 'Mode'),
-            'name' => Craft::t('app', 'Name'),
-            'position' => Craft::t('app', 'Position'),
-            'quality' => Craft::t('app', 'Quality'),
-            'width' => Craft::t('app', 'Width'),
-            'fill' => Craft::t('app', 'Fill Color'),
-            'upscale' => Craft::t('app', 'Allow Upscaling'),
-            'transformer' => Craft::t('app', 'Image transformer'),
+            'handle' => t('Handle'),
+            'height' => t('Height'),
+            'mode' => t('Mode'),
+            'name' => t('Name'),
+            'position' => t('Position'),
+            'quality' => t('Quality'),
+            'width' => t('Width'),
+            'fill' => t('Fill Color'),
+            'upscale' => t('Allow Upscaling'),
+            'transformer' => t('Image transformer'),
         ];
     }
 
@@ -263,10 +264,10 @@ class ImageTransform extends Model
     public static function modes(): array
     {
         return [
-            'crop' => Craft::t('app', 'Scale and crop'),
-            'fit' => Craft::t('app', 'Scale to fit'),
-            'stretch' => Craft::t('app', 'Stretch to fit'),
-            'letterbox' => Craft::t('app', 'Letterbox'),
+            'crop' => t('Scale and crop'),
+            'fit' => t('Scale to fit'),
+            'stretch' => t('Stretch to fit'),
+            'letterbox' => t('Letterbox'),
         ];
     }
 

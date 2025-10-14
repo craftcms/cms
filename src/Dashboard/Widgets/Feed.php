@@ -7,6 +7,8 @@ use craft\web\assets\feed\FeedAsset;
 use CraftCms\Cms\Support\Json;
 use Illuminate\Support\Facades\Cache;
 
+use function CraftCms\Cms\t;
+
 final class Feed extends Widget
 {
     public ?string $url = null;
@@ -21,7 +23,7 @@ final class Feed extends Widget
     #[\Override]
     public static function displayName(): string
     {
-        return Craft::t('app', 'Feed');
+        return t('Feed');
     }
 
     /**

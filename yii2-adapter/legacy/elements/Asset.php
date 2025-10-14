@@ -70,6 +70,7 @@ use CraftCms\Cms\Edition;
 use CraftCms\Cms\Element\Enums\MenuItemType;
 use CraftCms\Cms\Field\Field;
 use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Support\Str;
@@ -88,6 +89,7 @@ use yii\base\InvalidConfigException;
 use yii\base\NotSupportedException;
 use yii\base\UnknownPropertyException;
 use yii\validators\RequiredValidator;
+use function CraftCms\Cms\t;
 
 /**
  * Asset represents an asset element.
@@ -218,9 +220,9 @@ class Asset extends Element
     {
         if (!isset(self::$_displayName)) {
             if (self::isFolderIndex()) {
-                self::$_displayName = Craft::t('app', 'Folder');
+                self::$_displayName = t('Folder');
             } else {
-                self::$_displayName = Craft::t('app', 'Asset');
+                self::$_displayName = t('Asset');
             }
         }
 
@@ -232,7 +234,7 @@ class Asset extends Element
      */
     public static function lowerDisplayName(): string
     {
-        return Craft::t('app', 'asset');
+        return t('asset');
     }
 
     /**
@@ -240,7 +242,7 @@ class Asset extends Element
      */
     public static function pluralDisplayName(): string
     {
-        return Craft::t('app', 'Assets');
+        return t('Assets');
     }
 
     /**
@@ -248,7 +250,7 @@ class Asset extends Element
      */
     public static function pluralLowerDisplayName(): string
     {
-        return Craft::t('app', 'assets');
+        return t('assets');
     }
 
     /**
@@ -400,7 +402,7 @@ class Asset extends Element
             $temporaryUploadFs = Craft::$app->getAssets()->getTempAssetUploadFs();
             $sources[] = [
                 'key' => 'temp',
-                'label' => Craft::t('app', 'Temporary Uploads'),
+                'label' => t('Temporary Uploads'),
                 'hasThumbs' => true,
                 'criteria' => ['folderId' => $temporaryUploadFolder->id],
                 'defaultSort' => ['dateCreated', 'desc'],
@@ -494,7 +496,7 @@ class Asset extends Element
 
             $actions[] = [
                 'type' => PreviewAsset::class,
-                'label' => Craft::t('app', 'Preview file'),
+                'label' => t('Preview file'),
             ];
 
             // Download
@@ -565,7 +567,7 @@ class Asset extends Element
     {
         if (self::isFolderIndex()) {
             return [
-                'title' => Craft::t('app', 'Folder'),
+                'title' => t('Folder'),
             ];
         }
 
@@ -578,27 +580,27 @@ class Asset extends Element
     protected static function defineSortOptions(): array
     {
         return [
-            'title' => Craft::t('app', 'Title'),
-            'filename' => Craft::t('app', 'Filename'),
-            'size' => Craft::t('app', 'File Size'),
-            'kind' => Craft::t('app', 'File Kind'),
+            'title' => t('Title'),
+            'filename' => t('Filename'),
+            'size' => t('File Size'),
+            'kind' => t('File Kind'),
             [
-                'label' => Craft::t('app', 'File Modification Date'),
+                'label' => t('File Modification Date'),
                 'orderBy' => 'dateModified',
                 'defaultDir' => 'desc',
             ],
             [
-                'label' => Craft::t('app', 'Date Uploaded'),
+                'label' => t('Date Uploaded'),
                 'orderBy' => 'dateCreated',
                 'defaultDir' => 'desc',
             ],
             [
-                'label' => Craft::t('app', 'Date Updated'),
+                'label' => t('Date Updated'),
                 'orderBy' => 'dateUpdated',
                 'defaultDir' => 'desc',
             ],
-            'width' => Craft::t('app', 'Width'),
-            'height' => Craft::t('app', 'Height'),
+            'width' => t('Width'),
+            'height' => t('Height'),
         ];
     }
 
@@ -620,18 +622,18 @@ class Asset extends Element
     protected static function defineTableAttributes(): array
     {
         $attributes = array_merge(parent::defineTableAttributes(), [
-            'dateCreated' => ['label' => Craft::t('app', 'Date Uploaded')],
-            'filename' => ['label' => Craft::t('app', 'Filename')],
-            'size' => ['label' => Craft::t('app', 'File Size')],
-            'kind' => ['label' => Craft::t('app', 'File Kind')],
-            'imageSize' => ['label' => Craft::t('app', 'Dimensions')],
-            'width' => ['label' => Craft::t('app', 'Image Width')],
-            'height' => ['label' => Craft::t('app', 'Image Height')],
-            'alt' => ['label' => Craft::t('app', 'Alternative Text')],
-            'location' => ['label' => Craft::t('app', 'Location')],
-            'link' => ['label' => Craft::t('app', 'Link'), 'icon' => 'world'],
-            'dateModified' => ['label' => Craft::t('app', 'File Modified Date')],
-            'uploader' => ['label' => Craft::t('app', 'Uploaded By')],
+            'dateCreated' => ['label' => t('Date Uploaded')],
+            'filename' => ['label' => t('Filename')],
+            'size' => ['label' => t('File Size')],
+            'kind' => ['label' => t('File Kind')],
+            'imageSize' => ['label' => t('Dimensions')],
+            'width' => ['label' => t('Image Width')],
+            'height' => ['label' => t('Image Height')],
+            'alt' => ['label' => t('Alternative Text')],
+            'location' => ['label' => t('Location')],
+            'link' => ['label' => t('Link'), 'icon' => 'world'],
+            'dateModified' => ['label' => t('File Modified Date')],
+            'uploader' => ['label' => t('Uploaded By')],
         ]);
 
         // Hide Author from Craft Solo
@@ -675,48 +677,48 @@ class Asset extends Element
     {
         $attributes = array_merge(parent::defineCardAttributes(), [
             'dateCreated' => [
-                'label' => Craft::t('app', 'Date Uploaded'),
+                'label' => t('Date Uploaded'),
                 // placeholder will be merged from parent
             ],
             'filename' => [
-                'label' => Craft::t('app', 'Filename'),
-                'placeholder' => fn() => Craft::t('app', 'placeholder') . '.png',
+                'label' => t('Filename'),
+                'placeholder' => fn() => t('placeholder') . '.png',
             ],
             'size' => [
-                'label' => Craft::t('app', 'File Size'),
+                'label' => t('File Size'),
                 'placeholder' => fn() => '2KB',
             ],
             'kind' => [
-                'label' => Craft::t('app', 'File Kind'),
-                'placeholder' => fn() => Craft::t('app', 'Image'),
+                'label' => t('File Kind'),
+                'placeholder' => fn() => t('Image'),
 
             ],
             'imageSize' => [
-                'label' => Craft::t('app', 'Dimensions'),
+                'label' => t('Dimensions'),
                 'placeholder' => fn() => '700x500',
             ],
             'width' => [
-                'label' => Craft::t('app', 'Image Width'),
+                'label' => t('Image Width'),
                 'placeholder' => fn() => '700px',
             ],
             'height' => [
-                'label' => Craft::t('app', 'Image Height'),
+                'label' => t('Image Height'),
                 'placeholder' => fn() => '500px',
             ],
             'location' => [
-                'label' => Craft::t('app', 'Location'),
-                'placeholder' => fn() => Craft::t('app', 'Volume'),
+                'label' => t('Location'),
+                'placeholder' => fn() => t('Volume'),
             ],
             'link' => [
-                'label' => Craft::t('app', 'Link'),
+                'label' => t('Link'),
                 'placeholder' => fn() => ElementHelper::linkAttributeHtml(null),
             ],
             'dateModified' => [
-                'label' => Craft::t('app', 'File Modified Date'),
+                'label' => t('File Modified Date'),
                 'placeholder' => fn() => (new DateTime())->sub(new DateInterval('P14D')),
             ],
             'uploader' => [
-                'label' => Craft::t('app', 'Uploaded By'),
+                'label' => t('Uploaded By'),
                 'placeholder' => fn() => ($uploader = Craft::$app->getUser()->getIdentity()) ? Cp::elementChipHtml($uploader) : '',
             ],
         ]);
@@ -1008,7 +1010,7 @@ class Asset extends Element
 
         $source = [
             'key' => $folder->parentId ? "folder:$folder->uid" : "volume:$volume->uid",
-            'label' => $folder->parentId ? $folder->name : Craft::t('site', $folder->name),
+            'label' => $folder->parentId ? $folder->name : t($folder->name, category: 'site'),
             'hasThumbs' => true,
             'criteria' => ['folderId' => $folder->id],
             'defaultSort' => ['dateCreated', 'desc'],
@@ -1428,15 +1430,15 @@ class Asset extends Element
 
         $crumbs = [
             [
-                'label' => Craft::t('app', 'Assets'),
+                'label' => t('Assets'),
                 'url' => UrlHelper::cpUrl('assets'),
             ],
             [
                 'menu' => [
-                    'label' => Craft::t('app', 'Select volume'),
+                    'label' => t('Select volume'),
                     'items' => Collection::make(Craft::$app->getVolumes()->getViewableVolumes())
                         ->map(fn(Volume $v) => [
-                            'label' => Craft::t('site', $v->name),
+                            'label' => t($v->name, category: 'site'),
                             'url' => "assets/$v->handle",
                             'selected' => $v->id === $volume->id,
                         ])
@@ -1591,7 +1593,7 @@ class Asset extends Element
                 'type' => MenuItemType::Button,
                 'id' => $previewId,
                 'icon' => 'view',
-                'label' => Craft::t('app', 'Preview file'),
+                'label' => t('Preview file'),
             ];
 
             $view->registerJsWithVars(fn($id, $assetId, $settings) => <<<JS
@@ -1614,7 +1616,7 @@ JS, [
             'type' => MenuItemType::Button,
             'id' => $downloadId,
             'icon' => 'download',
-            'label' => Craft::t('app', 'Download'),
+            'label' => t('Download'),
         ];
 
         $view->registerJsWithVars(fn($id, $assetId) => <<<JS
@@ -1637,7 +1639,7 @@ JS, [
             $viewItems[] = [
                 'type' => MenuItemType::Link,
                 'icon' => 'magnifying-glass',
-                'label' => Craft::t('app', 'Show in folder'),
+                'label' => t('Show in folder'),
                 'url' => UrlHelper::actionUrl('assets/show-in-folder', [
                     'assetId' => $this->id,
                 ]),
@@ -1659,7 +1661,7 @@ JS, [
                 'type' => MenuItemType::Button,
                 'id' => $replaceId,
                 'icon' => 'upload',
-                'label' => Craft::t('app', 'Replace file'),
+                'label' => t('Replace file'),
                 'showInChips' => false,
             ];
 
@@ -1788,7 +1790,7 @@ JS, [
                 $view->getNamespace(),
                 $this->id,
                 $this->fs::class,
-                Craft::t('app', 'Dimensions'),
+                t('Dimensions'),
             ]);
         }
 
@@ -1803,7 +1805,7 @@ JS, [
                 'type' => MenuItemType::Button,
                 'id' => $editImageId,
                 'icon' => 'edit',
-                'label' => Craft::t('app', 'Open in Image Editor'),
+                'label' => t('Open in Image Editor'),
             ];
 
             $view->registerJsWithVars(fn($id, $assetId) => <<<JS
@@ -2540,10 +2542,12 @@ JS,[
         if (!isset($this->size)) {
             return null;
         }
+
         if ($short) {
-            return Craft::$app->getFormatter()->asShortSize($this->size, $decimals);
+            return I18N::getFormatter()->asShortSize($this->size, $decimals);
         }
-        return Craft::$app->getFormatter()->asSize($this->size, $decimals);
+
+        return I18N::getFormatter()->asSize($this->size, $decimals);
     }
 
     /**
@@ -2560,12 +2564,12 @@ JS,[
         }
         $params = [
             'n' => $this->size,
-            'nFormatted' => Craft::$app->getFormatter()->asDecimal($this->size),
+            'nFormatted' => I18N::getFormatter()->asDecimal($this->size),
         ];
         if ($short) {
-            return Craft::t('yii', '{nFormatted} B', $params);
+            return t('{nFormatted} B', $params);
         }
-        return Craft::t('yii', '{nFormatted} {n, plural, =1{byte} other{bytes}}', $params);
+        return t('{nFormatted} {n, plural, =1{byte} other{bytes}}', $params);
     }
 
     /**
@@ -2907,10 +2911,10 @@ JS,[
                 $view = Craft::$app->getView();
 
                 if ($previewable) {
-                    $imageButtonHtml .= Html::button(Craft::t('app', 'Preview'), [
+                    $imageButtonHtml .= Html::button(t('Preview'), [
                         'id' => 'preview-btn',
                         'class' => ['btn', 'preview-btn'],
-                        'aria-label' => Craft::t('app', 'Preview'),
+                        'aria-label' => t('Preview'),
                     ]);
 
                     $previewBtnId = $view->namespaceInputId('preview-btn');
@@ -2931,7 +2935,7 @@ JS;
                 }
 
                 if ($editable) {
-                    $imageButtonHtml .= Html::button(Craft::t('app', 'Edit Image'), [
+                    $imageButtonHtml .= Html::button(t('Edit Image'), [
                         'id' => 'edit-btn',
                         'class' => ['btn', 'edit-btn'],
                     ]);
@@ -3019,7 +3023,7 @@ JS;
     {
         return implode("\n", [
             Cp::textFieldHtml([
-                'label' => Craft::t('app', 'Filename'),
+                'label' => t('Filename'),
                 'attribute' => 'newLocation',
                 'id' => 'new-filename',
                 'name' => 'newFilename',
@@ -3040,8 +3044,8 @@ JS;
     protected function metadata(): array
     {
         return [
-            Craft::t('app', 'Location') => fn() => $this->locationHtml(),
-            Craft::t('app', 'File size') => function() {
+            t('Location') => fn() => $this->locationHtml(),
+            t('File size') => function() {
                 $size = $this->getFormattedSize(0);
                 if (!$size) {
                     return false;
@@ -3052,11 +3056,11 @@ JS;
                     'title' => $inBytes,
                 ]);
             },
-            Craft::t('app', 'Uploaded by') => function() {
+            t('Uploaded by') => function() {
                 $uploader = $this->getUploader();
                 return $uploader ? Cp::elementChipHtml($uploader) : false;
             },
-            Craft::t('app', 'Dimensions') => function() {
+            t('Dimensions') => function() {
                 $dimensions = $this->getDimensions();
                 if (!$dimensions) {
                     return false;
@@ -3076,11 +3080,11 @@ JS;
         if (!$isTemp) {
             $uri = "assets/$volume->handle";
             $items = [
-                Html::a(Craft::t('site', Html::encode($volume->name)), UrlHelper::cpUrl($uri)),
+                Html::a(t(Html::encode($volume->name), category: 'site'), UrlHelper::cpUrl($uri)),
             ];
         } else {
             $items = [
-                Html::tag('span', Craft::t('site', Html::encode($volume->name))),
+                Html::tag('span', t(Html::encode($volume->name), category: 'site')),
             ];
         }
         if ($this->folderPath) {
@@ -3575,7 +3579,7 @@ JS;
             if (isset($this->tempFilePath)) {
                 if (!$this->_validateTempFilePath()) {
                     Craft::warning("Prevented saving $this->tempFilePath as an asset. It must be located within a temp directory or the project root (excluding system directories).");
-                    throw new FileException(Craft::t('app', "There was an error relocating the file."));
+                    throw new FileException(t("There was an error relocating the file."));
                 }
 
                 $tempPath = $this->tempFilePath;
@@ -3590,7 +3594,7 @@ JS;
                 if (file_exists($tempPath)) {
                     FileHelper::unlink($tempPath);
                 }
-                throw new FileException(Craft::t('app', 'Could not open file for streaming at {path}', ['path' => $tempPath]));
+                throw new FileException(t('Could not open file for streaming at {path}', ['path' => $tempPath]));
             }
 
             // Upload the file to the new location

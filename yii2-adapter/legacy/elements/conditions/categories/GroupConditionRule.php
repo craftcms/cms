@@ -10,6 +10,7 @@ use craft\elements\conditions\ElementConditionRuleInterface;
 use craft\elements\db\CategoryQuery;
 use craft\elements\db\ElementQueryInterface;
 use CraftCms\Cms\Support\Arr;
+use function CraftCms\Cms\t;
 
 /**
  * Category group condition rule.
@@ -24,7 +25,7 @@ class GroupConditionRule extends BaseMultiSelectConditionRule implements Element
      */
     public function getLabel(): string
     {
-        return Craft::t('app', 'Category Group');
+        return t('Category Group');
     }
 
     /**

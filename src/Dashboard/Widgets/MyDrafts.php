@@ -8,6 +8,8 @@ use craft\helpers\Cp;
 use CraftCms\Cms\Support\Html;
 use Illuminate\Support\Facades\Session;
 
+use function CraftCms\Cms\t;
+
 final class MyDrafts extends Widget
 {
     /**
@@ -16,7 +18,7 @@ final class MyDrafts extends Widget
     #[\Override]
     public static function displayName(): string
     {
-        return Craft::t('app', 'My Drafts');
+        return t('My Drafts');
     }
 
     /**
@@ -57,7 +59,7 @@ final class MyDrafts extends Widget
     public function getSettingsHtml(): string
     {
         return Cp::textFieldHtml([
-            'label' => Craft::t('app', 'Limit'),
+            'label' => t('Limit'),
             'id' => 'limit',
             'name' => 'limit',
             'value' => $this->limit,
@@ -85,7 +87,7 @@ final class MyDrafts extends Widget
             ->all();
 
         if (empty($drafts)) {
-            return Html::tag('div', Craft::t('app', 'You don’t have any active drafts.'), [
+            return Html::tag('div', t('You don’t have any active drafts.'), [
                 'class' => ['zilch', 'small'],
             ]);
         }

@@ -11,17 +11,20 @@ use craft\gql\types\DateTime as DateTimeType;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\Db;
 use craft\helpers\Gql;
-use craft\i18n\Locale;
 use craft\validators\DateTimeValidator;
 use CraftCms\Cms\Field\Contracts\CrossSiteCopyableFieldInterface;
 use CraftCms\Cms\Field\Contracts\InlineEditableFieldInterface;
 use CraftCms\Cms\Field\Contracts\MergeableFieldInterface;
 use CraftCms\Cms\Field\Contracts\SortableFieldInterface;
+use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\Html;
+use CraftCms\Cms\Translation\Locale;
 use DateTime;
 use DateTimeZone;
 use GraphQL\Type\Definition\ResolveInfo;
 use yii\db\Schema;
+
+use function CraftCms\Cms\t;
 
 /**
  * Date represents a Date/Time field.
@@ -33,7 +36,7 @@ final class Date extends Field implements CrossSiteCopyableFieldInterface, Inlin
      */
     public static function displayName(): string
     {
-        return Craft::t('app', 'Date');
+        return t('Date');
     }
 
     /**
@@ -155,8 +158,8 @@ final class Date extends Field implements CrossSiteCopyableFieldInterface, Inlin
     public function attributeLabels(): array
     {
         return [
-            'min' => Craft::t('app', 'Min Date'),
-            'max' => Craft::t('app', 'Max Date'),
+            'min' => t('Min Date'),
+            'max' => t('Max Date'),
         ];
     }
 
@@ -202,7 +205,7 @@ final class Date extends Field implements CrossSiteCopyableFieldInterface, Inlin
 
         $options = [
             [
-                'label' => Craft::t('app', 'Show date'),
+                'label' => t('Show date'),
                 'value' => 'showDate',
             ],
         ];
@@ -210,13 +213,13 @@ final class Date extends Field implements CrossSiteCopyableFieldInterface, Inlin
         // Only allow the "Show date and time" option if it's already selected
         if ($dateTimeValue === 'showTime') {
             $options[] = [
-                'label' => Craft::t('app', 'Show time'),
+                'label' => t('Show time'),
                 'value' => 'showTime',
             ];
         }
 
         $options[] = [
-            'label' => Craft::t('app', 'Show date and time'),
+            'label' => t('Show date and time'),
             'value' => 'showBoth',
         ];
 
@@ -244,7 +247,7 @@ final class Date extends Field implements CrossSiteCopyableFieldInterface, Inlin
     {
         /** @var DateTime|null $value */
         $view = Craft::$app->getView();
-        $timezone = $this->showTimeZone && $value ? $value->getTimezone()->getName() : Craft::$app->getTimeZone();
+        $timezone = $this->showTimeZone && $value ? $value->getTimezone()->getName() : app()->getTimezone();
 
         if ($value === null) {
             // Override the initial value being set to null by CustomField::inputHtml()
@@ -329,7 +332,7 @@ final class Date extends Field implements CrossSiteCopyableFieldInterface, Inlin
             return '';
         }
 
-        $formatter = Craft::$app->getFormatter();
+        $formatter = I18N::getFormatter();
 
         if ($this->showDate && $this->showTime) {
             if ($this->showTimeZone) {

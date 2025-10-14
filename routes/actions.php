@@ -15,6 +15,7 @@ use CraftCms\Cms\Http\Controllers\PluginsController;
 use CraftCms\Cms\Http\Controllers\PluginStore\InstallController as PluginStoreInstallController;
 use CraftCms\Cms\Http\Controllers\PluginStore\PluginStoreController;
 use CraftCms\Cms\Http\Controllers\PluginStore\RemoveController;
+use CraftCms\Cms\Http\Controllers\Settings\GeneralSettingsController;
 use CraftCms\Cms\Http\Controllers\Updates\UpdaterController;
 use CraftCms\Cms\Http\Controllers\Updates\UpdatesController;
 use CraftCms\Cms\Http\Controllers\Utilities\ClearCachesController;
@@ -154,6 +155,13 @@ Route::prefix(implode('/', [
         // SystemMessages
         Route::post('system-messages/get-message-modal', [SystemMessagesController::class, 'show']);
         Route::post('system-messages/save-message', [SystemMessagesController::class, 'store']);
+
+        // System settings
+        Route::middleware([
+            RequireAdmin::class,
+        ])->group(function () {
+            Route::post('system-settings/save-general-settings', [GeneralSettingsController::class, 'store']);
+        });
 
         // Updates
         Route::post('app/check-for-updates', [UpdatesController::class, 'check']);

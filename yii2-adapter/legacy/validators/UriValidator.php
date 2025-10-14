@@ -7,8 +7,8 @@
 
 namespace craft\validators;
 
-use Craft;
 use yii\validators\Validator;
+use function CraftCms\Cms\t;
 
 /**
  * Will validate that the given attribute is a valid URI.
@@ -29,7 +29,7 @@ class UriValidator extends Validator
     protected function validateValue($value): ?array
     {
         if ($value === null || !preg_match($this->pattern, $value)) {
-            return [Craft::t('app', '{attribute} is not a valid URI'), []];
+            return [t('{attribute} is not a valid URI'), []];
         }
 
         return null;

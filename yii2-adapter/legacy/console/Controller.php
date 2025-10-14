@@ -20,7 +20,6 @@ use Throwable;
 use yii\base\Action;
 use yii\base\InvalidConfigException;
 use yii\console\Controller as YiiController;
-use yii\helpers\Inflector;
 
 /**
  * Base console controller
@@ -301,7 +300,7 @@ class Controller extends YiiController
 
         if (isset($this->_actions[$action->id]['options'])) {
             foreach ($this->_actions[$action->id]['options'] as $name => $value) {
-                $options[Inflector::camel2id($name, '-', true)] = [
+                $options[str($name)->slug()->lower()->value()] = [
                     'type' => $value === null ? 'string|null' : gettype($value),
                     'default' => $value,
                     'comment' => $this->_actions[$action->id]['optionsHelp'][$name] ?? null,

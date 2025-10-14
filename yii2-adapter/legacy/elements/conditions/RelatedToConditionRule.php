@@ -2,7 +2,6 @@
 
 namespace craft\elements\conditions;
 
-use Craft;
 use craft\base\conditions\BaseElementSelectConditionRule;
 use craft\base\ElementInterface;
 use craft\elements\db\ElementQueryInterface;
@@ -12,6 +11,7 @@ use craft\helpers\UrlHelper;
 use CraftCms\Cms\Field\BaseRelationField;
 use CraftCms\Cms\Field\Fields;
 use CraftCms\Cms\Support\Html;
+use function CraftCms\Cms\t;
 
 /**
  * Relation condition rule.
@@ -32,7 +32,7 @@ class RelatedToConditionRule extends BaseElementSelectConditionRule implements E
      */
     public function getLabel(): string
     {
-        return Craft::t('app', 'Related To');
+        return t('Related To');
     }
 
     /**

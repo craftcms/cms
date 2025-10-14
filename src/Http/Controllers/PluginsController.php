@@ -2,7 +2,6 @@
 
 namespace CraftCms\Cms\Http\Controllers;
 
-use Craft;
 use craft\web\Application;
 use craft\web\assets\plugins\PluginsAsset;
 use CraftCms\Cms\Config\GeneralConfig;
@@ -12,6 +11,8 @@ use CraftCms\Cms\Plugin\Plugins;
 use Illuminate\Container\Attributes\Give;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
+
+use function CraftCms\Cms\t;
 
 /* @since 6.0.0 */
 final readonly class PluginsController
@@ -57,8 +58,8 @@ final readonly class PluginsController
         );
 
         return $success
-            ? $this->asSuccess(Craft::t('app', 'Plugin installed.'))
-            : $this->asFailure(Craft::t('app', 'Couldn’t install plugin.'));
+            ? $this->asSuccess(t('Plugin installed.'))
+            : $this->asFailure(t('Couldn’t install plugin.'));
     }
 
     public function switchEdition(Request $request): Response
@@ -70,7 +71,7 @@ final readonly class PluginsController
 
         $this->plugins->switchEdition($request->string('pluginHandle'), $request->get('edition'));
 
-        return $this->asSuccess(Craft::t('app', 'Plugin edition changed.'));
+        return $this->asSuccess(t('Plugin edition changed.'));
     }
 
     public function uninstall(Request $request): Response
@@ -82,8 +83,8 @@ final readonly class PluginsController
         $success = $this->plugins->uninstallPlugin($request->string('pluginHandle'));
 
         return $success ?
-            $this->asSuccess(Craft::t('app', 'Plugin uninstalled.')) :
-            $this->asFailure(Craft::t('app', 'Couldn’t uninstall plugin.'));
+            $this->asSuccess(t('Plugin uninstalled.')) :
+            $this->asFailure(t('Couldn’t uninstall plugin.'));
     }
 
     public function enable(Request $request): Response
@@ -95,8 +96,8 @@ final readonly class PluginsController
         $success = $this->plugins->enablePlugin($pluginHandle);
 
         return $success ?
-            $this->asSuccess(Craft::t('app', 'Plugin enabled.')) :
-            $this->asFailure(Craft::t('app', 'Couldn’t enable plugin.'));
+            $this->asSuccess(t('Plugin enabled.')) :
+            $this->asFailure(t('Couldn’t enable plugin.'));
     }
 
     public function disable(Request $request): Response
@@ -108,8 +109,8 @@ final readonly class PluginsController
         $success = $this->plugins->disablePlugin($request->string('pluginHandle'));
 
         return $success ?
-            $this->asSuccess(Craft::t('app', 'Plugin disabled.')) :
-            $this->asFailure(Craft::t('app', 'Couldn’t disable plugin.'));
+            $this->asSuccess(t('Plugin disabled.')) :
+            $this->asFailure(t('Couldn’t disable plugin.'));
     }
 
     public function editSettings(string $handle, ?PluginInterface $plugin = null): mixed
@@ -150,7 +151,7 @@ final readonly class PluginsController
         $success = $this->plugins->savePluginSettings($plugin, $request->get('settings', []));
 
         return $success
-            ? $this->asSuccess(Craft::t('app', 'Plugin settings saved.'))
+            ? $this->asSuccess(t('Plugin settings saved.'))
             : $this->editSettings($request->string('pluginHandle'), $plugin);
     }
 }

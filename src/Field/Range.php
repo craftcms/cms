@@ -13,8 +13,11 @@ use craft\helpers\Localization;
 use CraftCms\Cms\Field\Contracts\InlineEditableFieldInterface;
 use CraftCms\Cms\Field\Contracts\MergeableFieldInterface;
 use CraftCms\Cms\Field\Contracts\SortableFieldInterface;
+use CraftCms\Cms\Support\Facades\I18N;
 use GraphQL\Type\Definition\Type;
 use yii\db\Schema;
+
+use function CraftCms\Cms\t;
 
 /**
  * Range represents a Range field, which provides a tactile UI around a numeric value.
@@ -26,7 +29,7 @@ final class Range extends Field implements InlineEditableFieldInterface, Mergeab
      */
     public static function displayName(): string
     {
-        return Craft::t('app', 'Range');
+        return t('Range');
     }
 
     /**
@@ -230,7 +233,7 @@ final class Range extends Field implements InlineEditableFieldInterface, Mergeab
             return '';
         }
 
-        $formatted = Craft::$app->getFormatter()->asDecimal($value);
+        $formatted = I18N::getFormatter()->asDecimal($value);
 
         if ($this->suffix) {
             $formatted = $formatted.$this->suffix;

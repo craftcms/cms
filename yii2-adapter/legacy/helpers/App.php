@@ -17,8 +17,6 @@ use craft\db\mysql\Schema as MysqlSchema;
 use craft\db\pgsql\Schema as PgsqlSchema;
 use craft\elements\User;
 use craft\errors\MissingComponentException;
-use craft\helpers\Session as SessionHelper;
-use craft\i18n\Locale;
 use craft\mail\Mailer;
 use craft\mail\Message;
 use craft\mail\transportadapters\Sendmail;
@@ -34,8 +32,10 @@ use CraftCms\Cms\Edition;
 use CraftCms\Cms\License\License;
 use CraftCms\Cms\ProjectConfig\ProjectConfig as ProjectConfigService;
 use CraftCms\Cms\Support\Env;
+use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\PHP;
 use CraftCms\Cms\Support\Str;
+use CraftCms\Cms\Translation\Locale;
 use yii\base\Event;
 use yii\base\Exception;
 use yii\base\InvalidArgumentException;
@@ -924,41 +924,11 @@ class App
      *
      * @return Locale
      * @since 3.6.0
+     * @deprecated 6.0.0 use {I18N::getFormattingLocale()} instead.
      */
     public static function createFormattingLocale(): Locale
     {
-        $i18n = Craft::$app->getI18n();
-
-        if (Craft::$app->getRequest()->getIsCpRequest() && !Craft::$app->getResponse()->isSent) {
-            // Is someone logged in?
-            if (
-                Craft::$app->getIsInstalled() &&
-                ($id = SessionHelper::get(Craft::$app->getUser()->idParam))
-            ) {
-                // If they have a preferred locale, use it
-                $usersService = Craft::$app->getUsers();
-                if (($locale = $usersService->getUserPreference($id, 'locale')) !== null) {
-                    return $i18n->getLocaleById($locale);
-                }
-
-                // Otherwise see if they have a preferred language
-                if (
-                    ($language = $usersService->getUserPreference($id, 'language')) !== null &&
-                    $i18n->validateAppLocaleId($language)
-                ) {
-                    return $i18n->getLocaleById($language);
-                }
-            }
-
-            // If the defaultCpLocale setting is set, go with that
-            $generalConfig = app(GeneralConfig::class);
-            if ($generalConfig->defaultCpLocale) {
-                return $i18n->getLocaleById($generalConfig->defaultCpLocale);
-            }
-        }
-
-        // Default to the application locale
-        return Craft::$app->getLocale();
+        return I18N::getFormattingLocale();
     }
 
     /**

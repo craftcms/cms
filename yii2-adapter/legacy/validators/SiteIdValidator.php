@@ -9,6 +9,7 @@ namespace craft\validators;
 
 use Craft;
 use yii\validators\Validator;
+use function CraftCms\Cms\t;
 
 /**
  * Will validate that the given attribute is a valid site ID.
@@ -32,7 +33,7 @@ class SiteIdValidator extends Validator
         $siteId = $model->$attribute;
 
         if ($siteId && !in_array($siteId, Craft::$app->getSites()->getAllSiteIds($this->allowDisabled), false)) {
-            $message = Craft::t('app', 'Your system isn’t set up to save content for the site “{site}”.', ['site' => $siteId]);
+            $message = t('Your system isn’t set up to save content for the site “{site}”.', ['site' => $siteId]);
             $this->addError($model, $attribute, $message);
         }
     }

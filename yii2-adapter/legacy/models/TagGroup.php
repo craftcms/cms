@@ -7,7 +7,6 @@
 
 namespace craft\models;
 
-use Craft;
 use craft\base\FieldLayoutProviderInterface;
 use craft\base\Model;
 use craft\behaviors\FieldLayoutBehavior;
@@ -16,6 +15,7 @@ use craft\records\TagGroup as TagGroupRecord;
 use craft\validators\HandleValidator;
 use craft\validators\UniqueValidator;
 use DateTime;
+use function CraftCms\Cms\t;
 
 /**
  * TagGroup model.
@@ -76,8 +76,8 @@ class TagGroup extends Model implements FieldLayoutProviderInterface
     public function attributeLabels(): array
     {
         return [
-            'handle' => Craft::t('app', 'Handle'),
-            'name' => Craft::t('app', 'Name'),
+            'handle' => t('Handle'),
+            'name' => t('Name'),
         ];
     }
 
@@ -120,7 +120,7 @@ class TagGroup extends Model implements FieldLayoutProviderInterface
      */
     public function __toString(): string
     {
-        return Craft::t('site', $this->name) ?: static::class;
+        return t($this->name, category: 'site') ?: static::class;
     }
 
     /**

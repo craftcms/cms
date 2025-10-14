@@ -363,6 +363,7 @@ final readonly class Dashboard
 
         return Models\Widget::query()
             ->where('userId', $user->id)
+            ->where('enabled', true)
             ->orderBy('sortOrder')
             ->get()
             ->map(fn (Models\Widget $widget) => Widget::fromConfig($widget));

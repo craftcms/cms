@@ -244,12 +244,14 @@ class ViewTest extends TestCase
      */
     public function testRegisterTranslations(): void
     {
-        Craft::$app->language = 'nl';
+        app()->setLocale('nl');
 
         // Basic test that register translations gets rendered
         $js = $this->_generateTranslationJs('app', ['Save' => 'Bewaren', 'Cancel' => 'Afbreken']);
         $this->_assertRegisterJsInputValues($js, View::POS_BEGIN);
         $this->view->registerTranslations('app', ['Save', 'Cancel']);
+
+        app()->setLocale('en-US');
     }
 
     /**

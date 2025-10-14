@@ -7,11 +7,11 @@
 
 namespace craft\fieldlayoutelements;
 
-use Craft;
 use craft\base\ElementInterface;
 use craft\base\FieldLayoutElement;
 use craft\helpers\Cp;
 use CraftCms\Cms\Support\Html;
+use function CraftCms\Cms\t;
 
 /**
  * LineBreak represents a line break UI element can be included in field layouts.
@@ -34,11 +34,11 @@ class LineBreak extends FieldLayoutElement
      */
     public function selectorHtml(): string
     {
-        $label = Craft::t('app', 'Line Break');
+        $label = t('Line Break');
         $indicatorHtml = $this->hasConditions() ? Html::tag('div', Cp::iconSvg('diamond'), [
             'class' => ['cp-icon', 'puny', 'orange'],
-            'title' => Craft::t('app', 'This element is conditional'),
-            'aria' => ['label' => Craft::t('app', 'This element is conditional')],
+            'title' => t('This element is conditional'),
+            'aria' => ['label' => t('This element is conditional')],
         ]) : '';
 
         return <<<HTML

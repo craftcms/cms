@@ -17,6 +17,7 @@ use Throwable;
 use yii\web\BadRequestHttpException;
 use yii\web\Response;
 use yii\web\ServerErrorHttpException;
+use function CraftCms\Cms\t;
 
 /**
  * Preview controller.
@@ -85,7 +86,7 @@ class PreviewController extends Controller
         ], null, $token);
 
         if (!$token) {
-            throw new ServerErrorHttpException(Craft::t('app', 'Could not create a preview token.'));
+            throw new ServerErrorHttpException(t('Could not create a preview token.'));
         }
 
         if ($redirect) {

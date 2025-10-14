@@ -14,6 +14,8 @@ use GraphQL\Type\Definition\Type;
 use Illuminate\Support\Collection;
 use yii\base\InvalidArgumentException;
 
+use function CraftCms\Cms\t;
+
 /**
  * Base element link type.
  */
@@ -89,7 +91,7 @@ abstract class BaseElementLinkType extends BaseLinkType
         }
 
         return Cp::checkboxSelectFieldHtml([
-            'label' => Craft::t('app', '{type} Sources', [
+            'label' => t('{type} Sources', [
                 'type' => static::elementType()::displayName(),
             ]),
             'name' => 'sources',

@@ -9,6 +9,7 @@ namespace craft\validators;
 
 use Craft;
 use yii\validators\StringValidator;
+use function CraftCms\Cms\t;
 
 /**
  * Class UserPasswordValidator.
@@ -69,7 +70,7 @@ class UserPasswordValidator extends StringValidator
         parent::init();
 
         if ($this->forceDifferent && !isset($this->sameAsCurrent)) {
-            $this->sameAsCurrent = Craft::t('app', '{attribute} must be set to a new password.');
+            $this->sameAsCurrent = t('{attribute} must be set to a new password.');
         }
     }
 

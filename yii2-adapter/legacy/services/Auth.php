@@ -43,6 +43,7 @@ use Webauthn\PublicKeyCredentialSource;
 use Webauthn\PublicKeyCredentialUserEntity;
 use yii\base\Component;
 use yii\base\InvalidArgumentException;
+use function CraftCms\Cms\t;
 
 /**
  * User authentication service.
@@ -249,7 +250,7 @@ class Auth extends Component
                 return $defaultMessage;
             }
 
-            return Craft::t('app', 'Invalid verification code.');
+            return t('Invalid verification code.');
         }
 
         [, $message] = UserHelper::getLoginFailureInfo($authError, $user);

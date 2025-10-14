@@ -15,11 +15,11 @@ use craft\helpers\DateTimeHelper;
 use craft\helpers\Gql;
 use craft\models\GqlSchema;
 use craft\models\GqlToken;
+use CraftCms\Cms\Support\Str;
 use GraphQL\Utils\SchemaPrinter;
 use yii\base\Exception;
 use yii\base\InvalidArgumentException;
 use yii\console\ExitCode;
-use yii\helpers\Inflector;
 use yii\web\BadRequestHttpException;
 
 /**
@@ -145,7 +145,7 @@ class GraphqlController extends Controller
 
         $schemaDef = $gqlService->getSchemaDef($schema, true);
         // Output the schema
-        $filename = Inflector::slug($schema->name, '_') . self::GQL_SCHEMA_EXTENSION;
+        $filename = Str::slug($schema->name, '_') . self::GQL_SCHEMA_EXTENSION;
         $schemaDump = SchemaPrinter::doPrint($schemaDef);
         $this->stdout("Dumping GraphQL schema to $filename ... ", Console::FG_YELLOW);
         file_put_contents($filename, $schemaDump);

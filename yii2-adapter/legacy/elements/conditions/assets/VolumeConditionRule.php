@@ -10,6 +10,7 @@ use craft\elements\conditions\ElementConditionRuleInterface;
 use craft\elements\db\AssetQuery;
 use craft\elements\db\ElementQueryInterface;
 use CraftCms\Cms\Support\Arr;
+use function CraftCms\Cms\t;
 
 /**
  * Asset volume condition rule.
@@ -24,7 +25,7 @@ class VolumeConditionRule extends BaseMultiSelectConditionRule implements Elemen
      */
     public function getLabel(): string
     {
-        return Craft::t('app', 'Volume');
+        return t('Volume');
     }
 
     /**

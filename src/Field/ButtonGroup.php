@@ -8,6 +8,8 @@ use craft\helpers\Cp;
 use CraftCms\Cms\Field\Contracts\SortableFieldInterface;
 use CraftCms\Cms\Field\Data\SingleOptionFieldData;
 
+use function CraftCms\Cms\t;
+
 /**
  * RadioButtons represents a Radio Buttons field.
  */
@@ -23,7 +25,7 @@ final class ButtonGroup extends BaseOptionsField implements SortableFieldInterfa
      */
     public static function displayName(): string
     {
-        return Craft::t('app', 'Button Group');
+        return t('Button Group');
     }
 
     /**
@@ -46,8 +48,8 @@ final class ButtonGroup extends BaseOptionsField implements SortableFieldInterfa
     {
         return parent::getSettingsHtml().
             Cp::lightswitchFieldHtml([
-                'label' => Craft::t('app', 'Icons only'),
-                'instructions' => Craft::t('app', 'Whether buttons should only show their icons, hiding their text labels.'),
+                'label' => t('Icons only'),
+                'instructions' => t('Whether buttons should only show their icons, hiding their text labels.'),
                 'name' => 'iconsOnly',
                 'on' => $this->iconsOnly,
             ]);

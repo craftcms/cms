@@ -2,12 +2,12 @@
 
 namespace craft\elements\conditions;
 
-use Craft;
 use craft\base\conditions\BaseMultiSelectConditionRule;
 use craft\base\ElementInterface;
 use craft\elements\db\ElementQueryInterface;
-use craft\i18n\Locale;
-use Illuminate\Support\Collection;
+use CraftCms\Cms\Support\Facades\I18N;
+use CraftCms\Cms\Translation\Locale;
+use function CraftCms\Cms\t;
 
 /**
  * Language condition rule.
@@ -22,7 +22,7 @@ class LanguageConditionRule extends BaseMultiSelectConditionRule implements Elem
      */
     public function getLabel(): string
     {
-        return Craft::t('app', 'Language');
+        return t('Language');
     }
 
     /**
@@ -38,9 +38,9 @@ class LanguageConditionRule extends BaseMultiSelectConditionRule implements Elem
      */
     protected function options(): array
     {
-        return Collection::make(Craft::$app->getI18n()->getSiteLocales())
+        return I18N::getSiteLocales()
             ->keyBy('id')
-            ->map(fn(Locale $locale) => $locale->getDisplayName(Craft::$app->language))
+            ->map(fn(Locale $locale) => $locale->getDisplayName(app()->getLocale()))
             ->all();
     }
 

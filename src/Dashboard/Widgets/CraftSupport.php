@@ -12,6 +12,7 @@ use CraftCms\Cms\Support\PHP;
 use Illuminate\Support\Facades\Auth;
 
 use function CraftCms\Cms\normalizeVersion;
+use function CraftCms\Cms\t;
 
 final class CraftSupport extends Widget
 {
@@ -29,7 +30,7 @@ final class CraftSupport extends Widget
     #[\Override]
     public static function displayName(): string
     {
-        return Craft::t('app', 'Craft Support');
+        return t('Craft Support');
     }
 
     /**

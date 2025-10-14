@@ -17,6 +17,8 @@ use CraftCms\Cms\Support\Html;
 use Illuminate\Support\Collection;
 use yii\db\Schema;
 
+use function CraftCms\Cms\t;
+
 /**
  * Color represents a Color field.
  *
@@ -29,7 +31,7 @@ final class Color extends Field implements CrossSiteCopyableFieldInterface, Inli
      */
     public static function displayName(): string
     {
-        return Craft::t('app', 'Color');
+        return t('Color');
     }
 
     /**
@@ -175,21 +177,21 @@ final class Color extends Field implements CrossSiteCopyableFieldInterface, Inli
     {
         return
             Cp::editableTableFieldHtml([
-                'label' => Craft::t('app', 'Palette'),
+                'label' => t('Palette'),
                 'name' => 'palette',
-                'instructions' => Craft::t('app', 'Define the available colors to choose from.'),
+                'instructions' => t('Define the available colors to choose from.'),
                 'cols' => [
                     'color' => [
                         'type' => 'color',
-                        'heading' => Craft::t('app', 'Color'),
+                        'heading' => t('Color'),
                     ],
                     'label' => [
                         'type' => 'singleline',
-                        'heading' => Craft::t('app', 'Label'),
+                        'heading' => t('Label'),
                     ],
                     'default' => [
                         'type' => 'checkbox',
-                        'heading' => Craft::t('app', 'Default'),
+                        'heading' => t('Default'),
                         'radioMode' => true,
                     ],
                 ],
@@ -197,13 +199,13 @@ final class Color extends Field implements CrossSiteCopyableFieldInterface, Inli
                 'allowAdd' => true,
                 'allowReorder' => true,
                 'allowDelete' => true,
-                'addRowLabel' => Craft::t('app', 'Add a color'),
+                'addRowLabel' => t('Add a color'),
                 'errors' => $this->getErrors('palette'),
                 'data' => ['error-key' => 'palette'],
                 'static' => $readOnly,
             ]).
             Cp::lightswitchFieldHtml([
-                'label' => Craft::t('app', 'Allow custom colors'),
+                'label' => t('Allow custom colors'),
                 'id' => 'allow-custom-colors',
                 'name' => 'allowCustomColors',
                 'on' => $this->allowCustomColors,
@@ -225,7 +227,7 @@ final class Color extends Field implements CrossSiteCopyableFieldInterface, Inli
     public static function getMessages(): array
     {
         return [
-            'palette.required_if' => Craft::t('app', 'Palette cannot be blank if custom colors aren’t allowed.'),
+            'palette.required_if' => t('Palette cannot be blank if custom colors aren’t allowed.'),
         ];
     }
 
@@ -297,7 +299,7 @@ final class Color extends Field implements CrossSiteCopyableFieldInterface, Inli
                         /** @var ColorData $value */
                         $value = $element->getFieldValue($this->handle);
                         if (! Collection::make($this->palette)->contains(fn (array $color) => $color['color'] === $value->getHex())) {
-                            $element->addError("field:$this->handle", Craft::t('yii', '{attribute} is invalid.', [
+                            $element->addError("field:$this->handle", t('{attribute} is invalid.', [
                                 'attribute' => $this->getUiLabel(),
                             ]));
                         }
@@ -357,14 +359,14 @@ final class Color extends Field implements CrossSiteCopyableFieldInterface, Inli
                     ...array_map(
                         fn (array $color) => [
                             'label' => isset($color['label']) && $color['label'] !== ''
-                                ? Craft::t('site', $color['label'])
+                                ? t($color['label'], category: 'site')
                                 : $color['color'],
                             'value' => $color['color'],
                         ],
                         $this->palette,
                     ),
                     $this->allowCustomColors ? [
-                        'label' => Craft::t('app', 'Custom…'),
+                        'label' => t('Custom…'),
                         'value' => '__custom__',
                     ] : null,
                 ]),
@@ -398,7 +400,7 @@ final class Color extends Field implements CrossSiteCopyableFieldInterface, Inli
                         'padding-inline' => '9px',
                     ],
                 ]).
-                Html::label(Craft::t('app', 'Custom color:'), "$id-custom-input")
+                Html::label(t('Custom color:'), "$id-custom-input")
                     ->id($customLabelId).
                 Cp::colorHtml([
                     'id' => "$id-custom-input",

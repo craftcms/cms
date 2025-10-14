@@ -9,6 +9,7 @@ use craft\elements\db\ElementQueryInterface;
 use craft\models\Site;
 use craft\models\SiteGroup;
 use Illuminate\Support\Collection;
+use function CraftCms\Cms\t;
 
 /**
  * Site Group condition rule.
@@ -23,7 +24,7 @@ class SiteGroupConditionRule extends BaseMultiSelectConditionRule implements Ele
      */
     public function getLabel(): string
     {
-        return Craft::t('app', 'Site Group');
+        return t('Site Group');
     }
 
     /**

@@ -8,6 +8,7 @@
 namespace craft\fs;
 
 use Craft;
+use function CraftCms\Cms\t;
 
 /**
  * Temp represents a temporary filesystem.
@@ -40,7 +41,7 @@ class Temp extends Local
             $config['path'] = Craft::$app->getPath()->getTempAssetUploadsPath();
         }
         if (!isset($config['name'])) {
-            $config['name'] = Craft::t('app', 'Temporary Uploads');
+            $config['name'] = t('Temporary Uploads');
         }
 
         parent::__construct($config);

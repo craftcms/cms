@@ -37,6 +37,7 @@ use yii\base\Exception;
 use yii\base\InvalidConfigException;
 use yii\base\NotSupportedException;
 use yii\web\ServerErrorHttpException;
+use function CraftCms\Cms\t;
 
 /**
  * Unit tests for the Various functions in the Extension class.
@@ -193,6 +194,8 @@ class ExtensionTest extends TestCase
 
     public function test_translate_filter(): void
     {
+        $this->markTestSkipped('Move test to Laravel');
+
         $this->testRenderResult(
             'Translated message',
             '{{ "Source message"|t("site") }}'
@@ -225,7 +228,7 @@ class ExtensionTest extends TestCase
         );
 
         $this->expectException(InvalidConfigException::class);
-        Craft::t('invalidCategory', 'Source message');
+        t('Source message', category: 'invalidCategory');
         $this->view->renderString('{{ "Source message"|t("invalidCategory") }}');
     }
 

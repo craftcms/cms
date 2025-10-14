@@ -29,7 +29,6 @@ use craft\helpers\FileHelper;
 use craft\helpers\Image;
 use craft\helpers\UrlHelper;
 use craft\helpers\User as UserHelper;
-use craft\i18n\Locale;
 use craft\models\UserGroup;
 use craft\records\WebAuthn as WebAuthnRecord;
 use craft\services\Users;
@@ -50,10 +49,11 @@ use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Env;
 use CraftCms\Cms\Support\Facades\Deprecator;
+use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Json;
+use CraftCms\Cms\Translation\Locale;
 use DateTime;
-use Illuminate\Support\Collection;
 use Throwable;
 use yii\base\Exception;
 use yii\base\InvalidArgumentException;
@@ -65,6 +65,7 @@ use yii\web\HttpException;
 use yii\web\NotFoundHttpException;
 use yii\web\Response;
 use yii\web\ServerErrorHttpException;
+use function CraftCms\Cms\t;
 
 /** @noinspection ClassOverridesFieldOfSuperClassInspection */
 
@@ -303,7 +304,7 @@ class UsersController extends Controller
         $credential = WebAuthnRecord::findOne(['credentialId' => Json::decode($response)['id']]);
 
         if ($credential === null) {
-            return $this->asFailure(Craft::t('app', 'Passkey authentication failed.'));
+            return $this->asFailure(t('Passkey authentication failed.'));
         }
 
         $user = User::findOne(['id' => $credential['userId']]);
@@ -414,7 +415,7 @@ class UsersController extends Controller
 
         if (!$userSession->loginByUserId($userId)) {
             $userSession->setImpersonatorId(null);
-            $this->setFailFlash(Craft::t('app', 'There was a problem impersonating this user.'));
+            $this->setFailFlash(t('There was a problem impersonating this user.'));
             Craft::error($userSession->getIdentity()->username . ' tried to impersonate userId: ' . $userId . ' but something went wrong.', __METHOD__);
             return null;
         }
@@ -493,7 +494,7 @@ class UsersController extends Controller
         }
 
         if (!$success) {
-            $this->setFailFlash(Craft::t('app', 'There was a problem impersonating this user.'));
+            $this->setFailFlash(t('There was a problem impersonating this user.'));
             Craft::error(sprintf('%s tried to impersonate userId: %s but something went wrong.',
                 $userSession->getIdentity()->username, $userId), __METHOD__);
             return null;
@@ -664,8 +665,8 @@ class UsersController extends Controller
             if (!$loginName) {
                 // If they didn't even enter a username/email, just bail now.
                 $errors[] = app(GeneralConfig::class)->useEmailAsUsername
-                    ? Craft::t('app', 'Email is required.')
-                    : Craft::t('app', 'Username or email is required.');
+                    ? t('Email is required.')
+                    : t('Username or email is required.');
 
                 return $this->_handleSendPasswordResetError($errors);
             }
@@ -677,8 +678,8 @@ class UsersController extends Controller
                 (!$user->getHasPassword() && $user->getHasSsoIdentity())
             ) {
                 $errors[] = app(GeneralConfig::class)->useEmailAsUsername
-                    ? Craft::t('app', 'Invalid email.')
-                    : Craft::t('app', 'Invalid username or email.');
+                    ? t('Invalid email.')
+                    : t('Invalid username or email.');
             }
         }
 
@@ -691,7 +692,7 @@ class UsersController extends Controller
                 throw new Exception();
             }
         } catch (Exception) {
-            $errors[] = Craft::t('app', 'There was a problem sending the password reset email.');
+            $errors[] = t('There was a problem sending the password reset email.');
         }
 
         if (app(GeneralConfig::class)->preventUserEnumeration) {
@@ -706,7 +707,7 @@ class UsersController extends Controller
         }
 
         if (empty($errors)) {
-            return $this->asSuccess(Craft::t('app', 'Password reset email sent.'));
+            return $this->asSuccess(t('Password reset email sent.'));
         }
 
         // Handle the errors.
@@ -738,11 +739,11 @@ class UsersController extends Controller
             $url = Craft::$app->getUsers()->getPasswordResetUrl($user);
         } catch (InvalidElementException $e) {
             if (in_array($user->getStatus(), [User::STATUS_INACTIVE, User::STATUS_PENDING])) {
-                $message = Craft::t('app', 'Couldn’t generate an activation URL: {error}', [
+                $message = t('Couldn’t generate an activation URL: {error}', [
                     'error' => $e->getMessage(),
                 ]);
             } else {
-                $message = Craft::t('app', 'Couldn’t generate a password reset URL: {error}', [
+                $message = t('Couldn’t generate a password reset URL: {error}', [
                     'error' => $e->getMessage(),
                 ]);
             }
@@ -774,12 +775,12 @@ class UsersController extends Controller
         $user->passwordResetRequired = true;
 
         if (!Craft::$app->getElements()->saveElement($user, false)) {
-            return $this->asFailure(mb_ucfirst(Craft::t('app', 'Couldn’t save {type}.', [
+            return $this->asFailure(mb_ucfirst(t('Couldn’t save {type}.', [
                 'type' => User::lowerDisplayName(),
             ])));
         }
 
-        return $this->asSuccess(Craft::t('app', '{type} saved.', [
+        return $this->asSuccess(t('{type} saved.', [
             'type' => User::displayName(),
         ]));
     }
@@ -804,12 +805,12 @@ class UsersController extends Controller
         $user->passwordResetRequired = false;
 
         if (!Craft::$app->getElements()->saveElement($user, false)) {
-            return $this->asFailure(mb_ucfirst(Craft::t('app', 'Couldn’t save {type}.', [
+            return $this->asFailure(mb_ucfirst(t('Couldn’t save {type}.', [
                 'type' => User::lowerDisplayName(),
             ])));
         }
 
-        return $this->asSuccess(Craft::t('app', '{type} saved.', [
+        return $this->asSuccess(t('{type} saved.', [
             'type' => User::displayName(),
         ]));
     }
@@ -870,7 +871,7 @@ class UsersController extends Controller
 
         if (!Craft::$app->getElements()->saveElement($user)) {
             return $this->asFailure(
-                Craft::t('app', 'Couldn’t update password.'),
+                t('Couldn’t update password.'),
                 $user->getErrors('newPassword'),
             ) ?? $this->_renderSetPasswordTemplate([
                 'errors' => $user->getErrors('newPassword'),
@@ -979,7 +980,7 @@ class UsersController extends Controller
 
         // If they're logged in, give them a success notice
         if (!Craft::$app->getUser()->getIsGuest()) {
-            $this->setSuccessFlash(Craft::t('app', 'Email verified'));
+            $this->setSuccessFlash(t('Email verified'));
         }
 
         // Were they just activated?
@@ -1018,12 +1019,12 @@ class UsersController extends Controller
         $user->archived = false;
 
         if (!$elementsService->saveElement($user, false)) {
-            return $this->asFailure(mb_ucfirst(Craft::t('app', 'Couldn’t save {type}.', [
+            return $this->asFailure(mb_ucfirst(t('Couldn’t save {type}.', [
                 'type' => User::lowerDisplayName(),
             ])));
         }
 
-        return $this->asSuccess(Craft::t('app', '{type} saved.', [
+        return $this->asSuccess(t('{type} saved.', [
             'type' => User::displayName(),
         ]));
     }
@@ -1051,7 +1052,7 @@ class UsersController extends Controller
         } catch (InvalidElementException $e) {
             return $this->asModelFailure(
                 $user,
-                Craft::t('app', 'There was a problem activating the user: {error}', [
+                t('There was a problem activating the user: {error}', [
                     'error' => $e->getMessage(),
                 ]),
                 $userVariable,
@@ -1060,7 +1061,7 @@ class UsersController extends Controller
 
         return $this->asModelSuccess(
             $user,
-            Craft::t('app', 'Successfully activated the user.'),
+            t('Successfully activated the user.'),
             $userVariable,
         );
     }
@@ -1076,8 +1077,8 @@ class UsersController extends Controller
     {
         $this->requirePermission('viewUsers');
         return $this->renderTemplate('users/_index.twig', [
-            'title' => Craft::t('app', 'Users'),
-            'buttonLabel' => mb_ucfirst(Craft::t('app', 'New {type}', [
+            'title' => t('Users'),
+            'buttonLabel' => mb_ucfirst(t('New {type}', [
                 'type' => User::lowerDisplayName(),
             ])),
             'source' => $source,
@@ -1103,7 +1104,7 @@ class UsersController extends Controller
 
         $user->setScenario(Element::SCENARIO_ESSENTIALS);
         if (!Craft::$app->getDrafts()->saveElementAsDraft($user, Craft::$app->getUser()->getId(), null, null, false)) {
-            $response = $this->asModelFailure($user, mb_ucfirst(Craft::t('app', 'Couldn’t create {type}.', [
+            $response = $this->asModelFailure($user, mb_ucfirst(t('Couldn’t create {type}.', [
                 'type' => User::lowerDisplayName(),
             ])), 'user');
             if ($response === null) {
@@ -1114,7 +1115,7 @@ class UsersController extends Controller
 
         $editUrl = $user->getCpEditUrl();
 
-        $response = $this->asModelSuccess($user, Craft::t('app', '{type} created.', [
+        $response = $this->asModelSuccess($user, t('{type} created.', [
             'type' => User::displayName(),
         ]), 'user', array_filter([
             'cpEditUrl' => $this->request->getIsCpRequest() ? $editUrl : null,
@@ -1150,7 +1151,7 @@ class UsersController extends Controller
 
         if ($element->getIsUnpublishedDraft() && $this->showPermissionsScreen()) {
             $this->response
-                ->submitButtonLabel(Craft::t('app', 'Create and set permissions'))
+                ->submitButtonLabel(t('Create and set permissions'))
                 ->redirectUrl($this->editUserScreenUrl($element, self::SCREEN_PERMISSIONS));
         }
 
@@ -1187,7 +1188,7 @@ class UsersController extends Controller
                 return $user->getAddressManager()->getIndexHtml($user, $config);
             }
 
-            return Html::tag('h2', Craft::t('app', 'Addresses')) .
+            return Html::tag('h2', t('Addresses')) .
                 $user->getAddressManager()->getCardsHtml($user, $config);
         });
 
@@ -1219,7 +1220,7 @@ class UsersController extends Controller
 
         if (!$user->getIsCredentialed() && $user->username && static::currentUser()->can('moderateUsers')) {
             $response->additionalButtonsHtml(
-                Html::button(Craft::t('app', 'Save and send activation email'), [
+                Html::button(t('Save and send activation email'), [
                     'class' => ['btn', 'secondary', 'formsubmit'],
                     'data' => [
                         'param' => 'sendActivationEmail',
@@ -1285,16 +1286,16 @@ class UsersController extends Controller
         ) {
             try {
                 if (!Craft::$app->getUsers()->sendActivationEmail($user)) {
-                    $this->setFailFlash(Craft::t('app', 'Couldn’t send activation email. Check your email settings.'));
+                    $this->setFailFlash(t('Couldn’t send activation email. Check your email settings.'));
                 }
             } catch (InvalidElementException $e) {
-                $this->setFailFlash(Craft::t('app', 'Couldn’t send the activation email: {error}', [
+                $this->setFailFlash(t('Couldn’t send the activation email: {error}', [
                     'error' => $e->getMessage(),
                 ]));
             }
         }
 
-        return $this->asSuccess(Craft::t('app', 'Permissions saved.'));
+        return $this->asSuccess(t('Permissions saved.'));
     }
 
     /**
@@ -1313,16 +1314,14 @@ class UsersController extends Controller
          */
         $response = $this->asEditUserScreen($user, self::SCREEN_PREFERENCES);
 
-        $i18n = Craft::$app->getI18n();
-
         // user language
         $userLanguage = $user->getPreferredLanguage();
 
         if (
             !$userLanguage ||
-            !Collection::make($i18n->getAppLocales())->contains(fn(Locale $locale) => $locale->id === Env::parse($userLanguage))
+            !I18N::getAppLocales()->contains(fn(Locale $locale) => $locale->id === Env::parse($userLanguage))
         ) {
-            $userLanguage = Craft::$app->language;
+            $userLanguage = app()->getLocale();
         }
 
         // user locale
@@ -1330,7 +1329,7 @@ class UsersController extends Controller
 
         if (
             !$userLocale ||
-            !Collection::make($i18n->getAllLocales())->contains(fn(Locale $locale) => $locale->id === Env::parse($userLocale))
+            !I18N::getAllLocales()->contains(fn(Locale $locale) => $locale->id === Env::parse($userLocale))
         ) {
             $userLocale = app(GeneralConfig::class)->defaultCpLocale;
         }
@@ -1382,9 +1381,9 @@ class UsersController extends Controller
         }
 
         Craft::$app->getUsers()->saveUserPreferences($user, $preferences);
-        Craft::$app->updateTargetLanguage();
+        //Craft::$app->updateTargetLanguage();
 
-        return $this->asSuccess(Craft::t('app', 'Preferences saved.'));
+        return $this->asSuccess(t('Preferences saved.'));
     }
 
     /**
@@ -1443,13 +1442,13 @@ class UsersController extends Controller
 
         if (!Craft::$app->getElements()->saveElement($user)) {
             return $this->asFailure(
-                Craft::t('app', 'Couldn’t save password.'),
+                t('Couldn’t save password.'),
                 $user->getErrors('newPassword'),
                 ['user' => $user],
             );
         }
 
-        return $this->asSuccess(Craft::t('app', 'Password saved.'));
+        return $this->asSuccess(t('Password saved.'));
     }
 
     /**
@@ -1667,7 +1666,7 @@ JS);
             !$this->_verifyElevatedSession()
         ) {
             Craft::warning('Tried to change the email or password for userId: ' . $user->id . ', but the current password does not match what the user supplied.', __METHOD__);
-            $user->addError('currentPassword', Craft::t('app', 'Incorrect current password.'));
+            $user->addError('currentPassword', t('Incorrect current password.'));
         }
 
         // Handle the rest of the user properties
@@ -1715,7 +1714,7 @@ JS);
         $photo = UploadedFile::getInstanceByName('photo');
 
         if ($photo && !Image::canManipulateAsImage($photo->getExtension())) {
-            $user->addError('photo', Craft::t('app', 'The user photo provided is not an image.'));
+            $user->addError('photo', t('The user photo provided is not an image.'));
         }
 
         // Don't validate required custom fields if it's public registration
@@ -1745,7 +1744,7 @@ JS);
 
             return $this->asModelFailure(
                 $user,
-                mb_ucfirst(Craft::t('app', 'Couldn’t save {type}.', [
+                mb_ucfirst(t('Couldn’t save {type}.', [
                     'type' => User::lowerDisplayName(),
                 ])),
                 $userVariable
@@ -1804,7 +1803,7 @@ JS);
         if ($this->request->getAcceptsJson()) {
             return $this->asModelSuccess(
                 $user,
-                Craft::t('app', '{type} saved.', ['type' => User::displayName()]),
+                t('{type} saved.', ['type' => User::displayName()]),
                 $userVariable,
                 array_filter([
                     'id' => $user->id, // todo: remove
@@ -1820,11 +1819,11 @@ JS);
                 $default = Html::encode($message);
                 Deprecator::log('userRegisteredNotice', 'The `userRegisteredNotice` param has been deprecated for `users/save-user` requests. Use a hashed `successMessage` param instead.');
             } else {
-                $default = Craft::t('app', 'User registered.');
+                $default = t('User registered.');
             }
             $this->setSuccessFlash($default);
         } else {
-            $this->setSuccessFlash(Craft::t('app', '{type} saved.', [
+            $this->setSuccessFlash(t('{type} saved.', [
                 'type' => User::displayName(),
             ]));
         }
@@ -1905,7 +1904,7 @@ JS);
 
             Craft::error('There was an error uploading the photo: ' . $exception->getMessage(), __METHOD__);
 
-            return $this->asFailure(Craft::t('app', 'There was an error uploading your photo: {error}', [
+            return $this->asFailure(t('There was an error uploading your photo: {error}', [
                 'error' => $exception->getMessage(),
             ]));
         }
@@ -1980,7 +1979,7 @@ JS);
         } catch (InvalidElementException $e) {
             return $this->asModelFailure(
                 $user,
-                Craft::t('app', 'Couldn’t send the activation email: {error}', [
+                t('Couldn’t send the activation email: {error}', [
                     'error' => $e->getMessage(),
                 ]),
                 $userVariable,
@@ -1988,8 +1987,8 @@ JS);
         }
 
         return $emailSent ?
-            $this->asSuccess(Craft::t('app', 'Activation email sent.')) :
-            $this->asFailure(Craft::t('app', 'Couldn’t send activation email. Check your email settings.'));
+            $this->asSuccess(t('Activation email sent.')) :
+            $this->asFailure(t('Couldn’t send activation email. Check your email settings.'));
     }
 
     /**
@@ -2025,7 +2024,7 @@ JS);
 
         Craft::$app->getUsers()->unlockUser($user);
 
-        $this->setSuccessFlash(Craft::t('app', 'User unlocked.'));
+        $this->setSuccessFlash(t('User unlocked.'));
         return $this->redirectToPostedUrl();
     }
 
@@ -2051,18 +2050,18 @@ JS);
         $currentUser = static::currentUser();
 
         if (!$usersService->canSuspend($currentUser, $user)) {
-            $this->setFailFlash(Craft::t('app', 'Couldn’t suspend user.'));
+            $this->setFailFlash(t('Couldn’t suspend user.'));
             return null;
         }
 
         try {
             $usersService->suspendUser($user);
         } catch (InvalidElementException) {
-            $this->setFailFlash(Craft::t('app', 'Couldn’t suspend user.'));
+            $this->setFailFlash(t('Couldn’t suspend user.'));
             return null;
         }
 
-        $this->setSuccessFlash(Craft::t('app', 'User suspended.'));
+        $this->setSuccessFlash(t('User suspended.'));
         return $this->redirectToPostedUrl();
     }
 
@@ -2100,9 +2099,9 @@ JS);
                 ->count();
 
             if ($entryCount) {
-                $summary[] = Craft::t('app', '{num, number} {section} {num, plural, =1{entry} other{entries}}', [
+                $summary[] = t('{num, number} {section} {num, plural, =1{entry} other{entries}}', [
                     'num' => $entryCount,
-                    'section' => Craft::t('site', $section->name),
+                    'section' => t($section->name, category: 'site'),
                 ]);
             }
         }
@@ -2149,9 +2148,9 @@ JS);
         // Deactivate the user
         try {
             Craft::$app->getUsers()->deactivateUser($user);
-            $this->setSuccessFlash(Craft::t('app', 'Successfully deactivated the user.'));
+            $this->setSuccessFlash(t('Successfully deactivated the user.'));
         } catch (InvalidElementException) {
-            $this->setFailFlash(Craft::t('app', 'There was a problem deactivating the user.'));
+            $this->setFailFlash(t('There was a problem deactivating the user.'));
         }
 
         return $this->redirectToPostedUrl();
@@ -2203,13 +2202,13 @@ JS);
         $user->inheritorOnDelete = $transferContentTo;
 
         if (!Craft::$app->getElements()->deleteElement($user)) {
-            $this->setFailFlash(Craft::t('app', 'Couldn’t delete {type}.', [
+            $this->setFailFlash(t('Couldn’t delete {type}.', [
                 'type' => User::lowerDisplayName(),
             ]));
             return null;
         }
 
-        $this->setSuccessFlash(Craft::t('app', '{type} deleted.', [
+        $this->setSuccessFlash(t('{type} deleted.', [
             'type' => User::displayName(),
         ]));
         return $this->redirectToPostedUrl();
@@ -2238,18 +2237,18 @@ JS);
         $currentUser = static::currentUser();
 
         if (!$usersService->canSuspend($currentUser, $user)) {
-            $this->setFailFlash(Craft::t('app', 'Couldn’t unsuspend user.'));
+            $this->setFailFlash(t('Couldn’t unsuspend user.'));
             return null;
         }
 
         try {
             $usersService->unsuspendUser($user);
         } catch (InvalidElementException) {
-            $this->setFailFlash(Craft::t('app', 'Couldn’t unsuspend user.'));
+            $this->setFailFlash(t('Couldn’t unsuspend user.'));
             return null;
         }
 
-        $this->setSuccessFlash(Craft::t('app', 'User unsuspended.'));
+        $this->setSuccessFlash(t('User unsuspended.'));
         return $this->redirectToPostedUrl();
     }
 
@@ -2311,12 +2310,12 @@ JS);
         $address->setFieldValuesFromRequest($fieldsLocation);
 
         if (!$elementsService->saveElement($address)) {
-            return $this->asModelFailure($address, mb_ucfirst(Craft::t('app', 'Couldn’t save {type}.', [
+            return $this->asModelFailure($address, mb_ucfirst(t('Couldn’t save {type}.', [
                 'type' => Address::lowerDisplayName(),
             ])), 'address');
         }
 
-        return $this->asModelSuccess($address, Craft::t('app', '{type} saved.', [
+        return $this->asModelSuccess($address, t('{type} saved.', [
             'type' => Address::displayName(),
         ]));
     }
@@ -2343,12 +2342,12 @@ JS);
         }
 
         if (!$elementsService->deleteElement($address)) {
-            return $this->asModelFailure($address, Craft::t('app', 'Couldn’t delete {type}.', [
+            return $this->asModelFailure($address, t('Couldn’t delete {type}.', [
                 'type' => Address::lowerDisplayName(),
             ]), 'address');
         }
 
-        return $this->asModelSuccess($address, Craft::t('app', '{type} deleted.', [
+        return $this->asModelSuccess($address, t('{type} deleted.', [
             'type' => Address::displayName(),
         ]));
     }
@@ -2392,11 +2391,11 @@ JS);
                     'fieldLayout' => $fieldLayout,
                 ],
             ]);
-            $this->setFailFlash(Craft::t('app', 'Couldn’t save user fields.'));
+            $this->setFailFlash(t('Couldn’t save user fields.'));
             return null;
         }
 
-        $this->setSuccessFlash(Craft::t('app', 'User fields saved.'));
+        $this->setSuccessFlash(t('User fields saved.'));
         return $this->redirectToPostedUrl();
     }
 
@@ -2413,7 +2412,7 @@ JS);
             return $this->asSuccess();
         }
 
-        return $this->asFailure(Craft::t('app', 'Invalid password.'));
+        return $this->asFailure(t('Invalid password.'));
     }
 
     /**

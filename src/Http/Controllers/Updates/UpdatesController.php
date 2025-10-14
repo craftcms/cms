@@ -2,12 +2,12 @@
 
 namespace CraftCms\Cms\Http\Controllers\Updates;
 
-use Craft;
 use craft\helpers\UrlHelper;
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Plugin\Exceptions\InvalidPluginException;
 use CraftCms\Cms\Plugin\Plugins;
+use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\PHP;
 use CraftCms\Cms\Updates\Data\Update;
@@ -17,6 +17,8 @@ use CraftCms\Cms\Updates\Updates;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+
+use function CraftCms\Cms\t;
 
 /**
  * @internal
@@ -103,29 +105,29 @@ final readonly class UpdatesController
         }
 
         if ($update->status === UpdateStatus::EXPIRED) {
-            $arr['statusText'] = Craft::t('app', '<strong>Your license has expired!</strong> Renew your {name} license for another year of amazing updates.', [
+            $arr['statusText'] = t('<strong>Your license has expired!</strong> Renew your {name} license for another year of amazing updates.', [
                 'name' => $name,
             ]);
 
-            $arr['ctaText'] = Craft::t('app', 'Renew for {price}', [
-                'price' => Craft::$app->getFormatter()->asCurrency($update->renewalPrice, $update->renewalCurrency),
+            $arr['ctaText'] = t('Renew for {price}', [
+                'price' => I18N::getFormatter()->asCurrency($update->renewalPrice, $update->renewalCurrency),
             ]);
 
             $arr['ctaUrl'] = UrlHelper::url($update->renewalUrl);
 
             if ($allowUpdates && Edition::canTest()) {
-                $arr['altCtaText'] = Craft::t('app', 'Update anyway');
+                $arr['altCtaText'] = t('Update anyway');
             }
 
             return $arr;
         }
 
         if ($allowUpdates) {
-            $arr['ctaText'] = Craft::t('app', 'Update');
+            $arr['ctaText'] = t('Update');
         }
 
         if ($update->abandoned) {
-            $arr['statusText'] = Html::tag('strong', Craft::t('app', 'This plugin is no longer maintained.'));
+            $arr['statusText'] = Html::tag('strong', t('This plugin is no longer maintained.'));
 
             if ($update->replacementName) {
                 if (Auth::user()->isAdmin() && $this->generalConfig->allowAdminChanges) {
@@ -134,7 +136,7 @@ final readonly class UpdatesController
                     $replacementUrl = $update->replacementUrl;
                 }
                 $arr['statusText'] .= ' '.
-                    Craft::t('app', 'The developer recommends using <a href="{url}">{name}</a> instead.', [
+                    t('The developer recommends using <a href="{url}">{name}</a> instead.', [
                         'url' => $replacementUrl,
                         'name' => $update->replacementName,
                     ]);
@@ -144,7 +146,7 @@ final readonly class UpdatesController
         }
 
         if ($update->status === UpdateStatus::BREAKPOINT) {
-            $arr['statusText'] = Craft::t('app', '<strong>You’ve reached a breakpoint!</strong> More updates will become available after you install {update}.', [
+            $arr['statusText'] = t('<strong>You’ve reached a breakpoint!</strong> More updates will become available after you install {update}.', [
                 'update' => $name.' '.($update->latest()->version ?? ''),
             ]);
         }

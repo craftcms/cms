@@ -9,6 +9,7 @@ use craft\elements\conditions\ElementConditionRuleInterface;
 use craft\elements\db\ElementQueryInterface;
 use craft\elements\db\EntryQuery;
 use craft\elements\Entry;
+use function CraftCms\Cms\t;
 
 /**
  * Entry savable condition rule.
@@ -23,7 +24,7 @@ class SavableConditionRule extends BaseLightswitchConditionRule implements Eleme
      */
     public function getLabel(): string
     {
-        return Craft::t('app', 'Savable');
+        return t('Savable');
     }
 
     /**

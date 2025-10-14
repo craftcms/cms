@@ -2,13 +2,13 @@
 
 namespace craft\elements\conditions\assets;
 
-use Craft;
 use craft\base\conditions\BaseTextConditionRule;
 use craft\base\ElementInterface;
 use craft\elements\Asset;
 use craft\elements\conditions\ElementConditionRuleInterface;
 use craft\elements\db\AssetQuery;
 use craft\elements\db\ElementQueryInterface;
+use function CraftCms\Cms\t;
 
 /**
  * Filename condition rule.
@@ -23,7 +23,7 @@ class FilenameConditionRule extends BaseTextConditionRule implements ElementCond
      */
     public function getLabel(): string
     {
-        return Craft::t('app', 'Filename');
+        return t('Filename');
     }
 
     /**

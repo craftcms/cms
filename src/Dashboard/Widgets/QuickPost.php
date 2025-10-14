@@ -10,6 +10,8 @@ use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Html;
 use Illuminate\Support\Facades\Auth;
 
+use function CraftCms\Cms\t;
+
 final class QuickPost extends Widget
 {
     /**
@@ -18,7 +20,7 @@ final class QuickPost extends Widget
     #[\Override]
     public static function displayName(): string
     {
-        return Craft::t('app', 'Quick Post');
+        return t('Quick Post');
     }
 
     /**
@@ -125,7 +127,7 @@ final class QuickPost extends Widget
     public function getTitle(): string
     {
         if (isset($this->customTitle)) {
-            return Craft::t('site', $this->customTitle);
+            return t($this->customTitle, category: 'site');
         }
 
         $entryType = $this->entryType();
@@ -133,8 +135,8 @@ final class QuickPost extends Widget
             return self::displayName();
         }
 
-        return Craft::t('app', 'Create a new {section} entry', [
-            'section' => Craft::t('site', $this->section()?->name),
+        return t('Create a new {section} entry', [
+            'section' => t($this->section()?->name, category: 'site'),
         ]);
     }
 
@@ -146,17 +148,17 @@ final class QuickPost extends Widget
     {
         $section = $this->section();
         if (! $section) {
-            return Html::tag('p', Craft::t('app', 'No section has been selected yet.'));
+            return Html::tag('p', t('No section has been selected yet.'));
         }
 
         $entryType = $this->entryType();
         if (! $entryType) {
-            return Html::tag('p', Craft::t('app', 'No entry types exist for this section.'));
+            return Html::tag('p', t('No entry types exist for this section.'));
         }
 
         $siteId = $this->siteId();
         if (! $siteId) {
-            return Html::tag('p', Craft::t('app', 'You’re not permitted to edit any of this section’s sites.'));
+            return Html::tag('p', t('You’re not permitted to edit any of this section’s sites.'));
         }
 
         $buttonId = sprintf('quickpost%s', mt_rand());
@@ -218,7 +220,7 @@ JS, [
         return $view->renderTemplate('_includes/forms/button.twig', [
             'id' => $buttonId,
             'class' => ['huge', 'icon', 'add', 'dashed', 'fullwidth'],
-            'label' => mb_ucfirst(Craft::t('app', 'Create {type}', [
+            'label' => mb_ucfirst(t('Create {type}', [
                 'type' => Entry::lowerDisplayName(),
             ])),
             'spinner' => true,

@@ -27,6 +27,7 @@ use yii\web\HttpException;
 use yii\web\NotFoundHttpException;
 use yii\web\Response;
 use yii\web\ServerErrorHttpException;
+use function CraftCms\Cms\t;
 
 /** @noinspection ClassOverridesFieldOfSuperClassInspection */
 
@@ -163,7 +164,7 @@ class TemplatesController extends Controller
                     }
                 }
 
-                throw new ServerErrorHttpException(Craft::t('app', 'The update can’t be installed :( {message}', ['message' => $message]));
+                throw new ServerErrorHttpException(t('The update can’t be installed :( {message}', ['message' => $message]));
             }
 
             return $this->renderTemplate('_special/cantrun.twig', [
@@ -195,7 +196,7 @@ class TemplatesController extends Controller
         }
 
         if (!$exception instanceof UserException) {
-            $message = Craft::t('app', 'Server Error');
+            $message = t('Server Error');
         } else {
             $message = $exception->getMessage();
         }

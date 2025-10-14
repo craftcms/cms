@@ -14,8 +14,8 @@ use craft\base\ElementInterface;
 use craft\console\controllers\ResaveController;
 use craft\db\QueryBatcher;
 use craft\helpers\ElementHelper;
-use craft\i18n\Translation;
 use craft\queue\BaseBatchedElementJob;
+use CraftCms\Cms\Support\Facades\I18N;
 use Throwable;
 
 /**
@@ -130,7 +130,7 @@ class ResaveElements extends BaseBatchedElementJob
      */
     protected function defaultDescription(): ?string
     {
-        return Translation::prep('app', 'Resaving {type}', [
+        return I18N::prep('Resaving {type}', [
             'type' => $this->elementType::pluralLowerDisplayName(),
         ]);
     }

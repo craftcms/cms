@@ -793,7 +793,7 @@ class DbHelperTest extends TestCase
      */
     protected function _before(): void
     {
-        $this->systemTimezone = new DateTimeZone(Craft::$app->getTimeZone());
+        $this->systemTimezone = new DateTimeZone(app()->getTimezone());
         $this->utcTimezone = new DateTimeZone('UTC');
         $this->asiaTokyoTimezone = new DateTimeZone('Asia/Tokyo');
         $this->isMysql = Craft::$app->getDb()->getIsMysql();

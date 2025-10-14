@@ -25,6 +25,7 @@ use RecursiveDirectoryIterator;
 use RecursiveIteratorIterator;
 use UnexpectedValueException;
 use yii\validators\InlineValidator;
+use function CraftCms\Cms\t;
 
 /**
  * Local represents a local filesystem.
@@ -60,7 +61,7 @@ class Local extends Fs implements LocalFsInterface
      */
     public static function displayName(): string
     {
-        return Craft::t('app', 'Local Folder');
+        return t('Local Folder');
     }
 
     /**
@@ -108,7 +109,7 @@ class Local extends Fs implements LocalFsInterface
     public function attributeLabels(): array
     {
         return array_merge(parent::attributeLabels(), [
-            'path' => Craft::t('app', 'Base Path'),
+            'path' => t('Base Path'),
         ]);
     }
 
@@ -133,7 +134,7 @@ class Local extends Fs implements LocalFsInterface
     public function validatePath(string $attribute, ?array $params, InlineValidator $validator): void
     {
         if (Craft::$app->getSecurity()->isSystemDir($this->getRootPath())) {
-            $validator->addError($this, $attribute, Craft::t('app', 'Local filesystems cannot be located within or above system directories.'));
+            $validator->addError($this, $attribute, t('Local filesystems cannot be located within or above system directories.'));
         }
     }
 

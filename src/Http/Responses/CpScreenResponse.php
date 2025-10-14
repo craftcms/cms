@@ -17,6 +17,8 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Traits\Conditionable;
 use Symfony\Component\HttpFoundation\Response;
 
+use function CraftCms\Cms\t;
+
 final class CpScreenResponse implements Responsable
 {
     use Conditionable;
@@ -676,7 +678,7 @@ final class CpScreenResponse implements Responsable
     }
 
     /** {@inheritdoc} */
-    public function toResponse($request): \Symfony\Component\HttpFoundation\Response
+    public function toResponse($request): Response
     {
         if ($request->wantsJson()) {
             return $this->jsonResponse($request);
@@ -773,9 +775,9 @@ final class CpScreenResponse implements Responsable
             array_unshift($crumbs, [
                 'id' => 'site-crumb',
                 'icon' => Cp::earthIcon(),
-                'label' => Craft::t('site', $this->site->name),
+                'label' => t($this->site->name, category: 'site'),
                 'menu' => [
-                    'label' => Craft::t('app', 'Select site'),
+                    'label' => t('Select site'),
                     'items' => ! empty($this->selectableSites)
                         ? Cp::siteMenuItems($this->selectableSites, $this->site, [
                             'includeOmittedSites' => true,
@@ -824,11 +826,11 @@ final class CpScreenResponse implements Responsable
                 'contextMenu' => $this->contextMenu(),
                 'toolbar' => $toolbar,
                 'actionMenu' => $this->actionMenu(config: [
-                    'hiddenLabel' => Craft::t('app', 'Actions'),
+                    'hiddenLabel' => t('Actions'),
                     'buttonAttributes' => [
                         'id' => 'action-btn',
                         'class' => ['action-btn', 'hairline-dark', 'm'],
-                        'title' => Craft::t('app', 'Actions'),
+                        'title' => t('Actions'),
                     ],
                 ]),
                 'submitButtonLabel' => $this->submitButtonLabel,
@@ -861,7 +863,7 @@ final class CpScreenResponse implements Responsable
             'id' => 'context-menu',
             'class' => 'padded',
             'autoLabel' => true,
-            'hiddenLabel' => Craft::t('app', 'Select context'),
+            'hiddenLabel' => t('Select context'),
         ], $namespace);
     }
 

@@ -9,8 +9,8 @@ namespace craft\queue\jobs;
 
 use Craft;
 use craft\base\ElementInterface;
-use craft\i18n\Translation;
 use craft\queue\BaseJob;
+use CraftCms\Cms\Support\Facades\I18N;
 use yii\base\InvalidConfigException;
 
 /**
@@ -83,6 +83,6 @@ class UpdateSearchIndex extends BaseJob
      */
     protected function defaultDescription(): ?string
     {
-        return Translation::prep('app', 'Updating search indexes');
+        return I18N::prep('Updating search indexes');
     }
 }

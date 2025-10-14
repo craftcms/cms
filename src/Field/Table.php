@@ -26,6 +26,8 @@ use Illuminate\Validation\Rule;
 use Illuminate\Validation\Validator;
 use yii\db\Schema;
 
+use function CraftCms\Cms\t;
+
 /**
  * Table represents a Table field.
  */
@@ -36,7 +38,7 @@ final class Table extends Field implements CrossSiteCopyableFieldInterface
      */
     public static function displayName(): string
     {
-        return Craft::t('app', 'Table');
+        return t('Table');
     }
 
     /**
@@ -159,7 +161,7 @@ final class Table extends Field implements CrossSiteCopyableFieldInterface
         parent::__construct($config);
 
         if (! isset($this->addRowLabel)) {
-            $this->addRowLabel = Craft::t('app', 'Add a row');
+            $this->addRowLabel = t('Add a row');
         }
 
         if ($this->staticRows) {
@@ -186,11 +188,11 @@ final class Table extends Field implements CrossSiteCopyableFieldInterface
             $error = null;
 
             if (! preg_match('/^'.HandleRule::$handlePattern.'$/', $col['handle'])) {
-                $error = Craft::t('app', '“{handle}” isn’t a valid handle.', [
+                $error = t('“{handle}” isn’t a valid handle.', [
                     'handle' => $col['handle'],
                 ]);
             } elseif (preg_match('/^col\d+$/', $col['handle'])) {
-                $error = Craft::t('app', 'Column handles can’t be in the format “{format}”.', [
+                $error = t('Column handles can’t be in the format “{format}”.', [
                     'format' => 'colX',
                 ]);
             }
@@ -241,18 +243,18 @@ final class Table extends Field implements CrossSiteCopyableFieldInterface
     private function settingsHtml(bool $readOnly): string
     {
         $typeOptions = [
-            'checkbox' => Craft::t('app', 'Checkbox'),
-            'color' => Craft::t('app', 'Color'),
-            'date' => Craft::t('app', 'Date'),
-            'select' => Craft::t('app', 'Dropdown'),
-            'email' => Craft::t('app', 'Email'),
-            'heading' => Craft::t('app', 'Row heading'),
-            'lightswitch' => Craft::t('app', 'Lightswitch'),
-            'multiline' => Craft::t('app', 'Multi-line text'),
-            'number' => Craft::t('app', 'Number'),
-            'singleline' => Craft::t('app', 'Single-line text'),
-            'time' => Craft::t('app', 'Time'),
-            'url' => Craft::t('app', 'URL'),
+            'checkbox' => t('Checkbox'),
+            'color' => t('Color'),
+            'date' => t('Date'),
+            'select' => t('Dropdown'),
+            'email' => t('Email'),
+            'heading' => t('Row heading'),
+            'lightswitch' => t('Lightswitch'),
+            'multiline' => t('Multi-line text'),
+            'number' => t('Number'),
+            'singleline' => t('Single-line text'),
+            'time' => t('Time'),
+            'url' => t('URL'),
         ];
 
         // Make sure they are sorted alphabetically (post-translation)
@@ -260,23 +262,23 @@ final class Table extends Field implements CrossSiteCopyableFieldInterface
 
         $columnSettings = [
             'heading' => [
-                'heading' => Craft::t('app', 'Column Heading'),
+                'heading' => t('Column Heading'),
                 'type' => 'singleline',
                 'autopopulate' => 'handle',
             ],
             'handle' => [
-                'heading' => Craft::t('app', 'Handle'),
+                'heading' => t('Handle'),
                 'code' => true,
                 'type' => 'singleline',
             ],
             'width' => [
-                'heading' => Craft::t('app', 'Width'),
+                'heading' => t('Width'),
                 'code' => true,
                 'type' => 'singleline',
                 'width' => 50,
             ],
             'type' => [
-                'heading' => Craft::t('app', 'Type'),
+                'heading' => t('Type'),
                 'class' => 'thin',
                 'type' => 'select',
                 'options' => $typeOptions,
@@ -285,18 +287,18 @@ final class Table extends Field implements CrossSiteCopyableFieldInterface
 
         $dropdownSettingsCols = [
             'label' => [
-                'heading' => Craft::t('app', 'Option Label'),
+                'heading' => t('Option Label'),
                 'type' => 'singleline',
                 'autopopulate' => 'value',
                 'class' => 'option-label',
             ],
             'value' => [
-                'heading' => Craft::t('app', 'Value'),
+                'heading' => t('Value'),
                 'type' => 'singleline',
                 'class' => 'option-value code',
             ],
             'default' => [
-                'heading' => Craft::t('app', 'Default?'),
+                'heading' => t('Default?'),
                 'type' => 'checkbox',
                 'radioMode' => true,
                 'class' => 'option-default thin',
@@ -304,11 +306,11 @@ final class Table extends Field implements CrossSiteCopyableFieldInterface
         ];
 
         $dropdownSettingsHtml = Cp::editableTableFieldHtml([
-            'label' => Craft::t('app', 'Dropdown Options'),
-            'instructions' => Craft::t('app', 'Define the available options.'),
+            'label' => t('Dropdown Options'),
+            'instructions' => t('Define the available options.'),
             'id' => '__ID__',
             'name' => '__NAME__',
-            'addRowLabel' => Craft::t('app', 'Add an option'),
+            'addRowLabel' => t('Add an option'),
             'allowAdd' => true,
             'allowReorder' => true,
             'allowDelete' => true,
@@ -348,8 +350,8 @@ final class Table extends Field implements CrossSiteCopyableFieldInterface
         ]);
 
         $defaultsField = Cp::editableTableFieldHtml([
-            'label' => Craft::t('app', 'Default Values'),
-            'instructions' => Craft::t('app', 'Define the default values for the field.'),
+            'label' => t('Default Values'),
+            'instructions' => t('Define the default values for the field.'),
             'id' => 'defaults',
             'name' => 'defaults',
             'allowAdd' => true,
@@ -446,7 +448,7 @@ final class Table extends Field implements CrossSiteCopyableFieldInterface
         foreach ($defaults as &$row) {
             foreach ($this->columns as $colId => $col) {
                 if ($col['type'] === 'heading' && isset($row[$colId])) {
-                    $row[$colId] = Craft::t('site', $row[$colId]);
+                    $row[$colId] = t($row[$colId], category: 'site');
                 }
             }
         }
@@ -740,11 +742,11 @@ final class Table extends Field implements CrossSiteCopyableFieldInterface
         // Translate the column headings and dropdown option labels
         foreach ($this->columns as &$column) {
             if (! empty($column['heading'])) {
-                $column['heading'] = Craft::t('site', $column['heading']);
+                $column['heading'] = t($column['heading'], category: 'site');
             }
             if (! empty($column['options'])) {
                 array_walk($column['options'], function (&$option) {
-                    $option['label'] = Craft::t('site', $option['label']);
+                    $option['label'] = t($option['label'], category: 'site');
                 });
             }
         }
@@ -788,7 +790,7 @@ final class Table extends Field implements CrossSiteCopyableFieldInterface
             'allowAdd' => true,
             'allowDelete' => true,
             'allowReorder' => true,
-            'addRowLabel' => Craft::t('site', $this->addRowLabel),
+            'addRowLabel' => t($this->addRowLabel, category: 'site'),
             'describedBy' => $this->describedBy,
         ]);
     }

@@ -5,9 +5,10 @@ namespace CraftCms\Cms\Config;
 use Closure;
 use Craft;
 use craft\helpers\DateTimeHelper;
-use craft\helpers\Localization;
 use CraftCms\Cms\Support\Attributes\EnvName;
 use CraftCms\Cms\Support\Config as ConfigHelper;
+use CraftCms\Cms\Support\Facades\Deprecator;
+use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\PHP;
 use DateInterval;
 use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken;
@@ -17,6 +18,8 @@ use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Traits\Conditionable;
 use yii\base\InvalidArgumentException;
 use yii\base\InvalidConfigException;
+
+use function CraftCms\Cms\t;
 
 /**
  * General config class
@@ -1268,7 +1271,7 @@ class GeneralConfig extends BaseConfig
     public ?array $extraAllowedFileExtensions = null;
 
     /**
-     * @var string[]|null List of extra locale IDs that the application should support, and users should be able to select as their Preferred Language.
+     * @var string[] List of extra locale IDs that the application should support, and users should be able to select as their Preferred Language.
      *
      * ::: code
      * ```php Static Config
@@ -1281,7 +1284,7 @@ class GeneralConfig extends BaseConfig
      *
      * @group System
      */
-    public ?array $extraAppLocales = null;
+    public array $extraAppLocales = [];
 
     /**
      * @var array List of additional file kinds Craft should support. This array will get merged with the one defined in
@@ -3048,6 +3051,8 @@ class GeneralConfig extends BaseConfig
      * :::
      *
      * @group System
+     *
+     * @deprecated in 6.0.0. Laravel's `app.timezone` config variable should be used instead.
      */
     public ?string $timezone = null;
 
@@ -3085,7 +3090,7 @@ class GeneralConfig extends BaseConfig
 
     /**
      * @var bool Whether translated messages should be wrapped in special characters to help find any strings that are not being run through
-     *           `Craft::t()` or the `|translate` filter.
+     *           `t()` or the `|translate` filter.
      *
      * ::: code
      * ```php Static Config
@@ -4090,8 +4095,8 @@ class GeneralConfig extends BaseConfig
             isset(Craft::$app)
         ) {
             try {
-                $value = Localization::normalizeLanguage($value);
-            } catch (InvalidArgumentException $e) {
+                $value = I18N::normalizeLanguage($value);
+            } catch (\InvalidArgumentException $e) {
                 throw new InvalidConfigException($e->getMessage(), 0, $e);
             }
         }
@@ -4720,19 +4725,19 @@ class GeneralConfig extends BaseConfig
      *
      * @group System
      *
-     * @param  string[]|null  $value
+     * @param  string[]  $value
      *
      * @throws InvalidConfigException
      *
      * @see $extraAppLocales
      */
-    public function extraAppLocales(?array $value): self
+    public function extraAppLocales(array $value): self
     {
-        if (is_array($value) && class_exists(Craft::class, false)) {
+        if (class_exists(Craft::class, false)) {
             foreach ($value as &$localeId) {
                 try {
-                    $localeId = Localization::normalizeLanguage($localeId);
-                } catch (InvalidArgumentException $e) {
+                    $localeId = I18N::normalizeLanguage($localeId);
+                } catch (\InvalidArgumentException $e) {
                     throw new InvalidConfigException($e->getMessage(), 0, $e);
                 }
             }
@@ -6737,10 +6742,15 @@ class GeneralConfig extends BaseConfig
      *
      * @group System
      *
+     * @deprecated in 6.0.0. Laravel's `app.timezone` config variable should be used instead.
      * @see $timezone
      */
     public function timezone(?string $value): self
     {
+        Config::set('app.timezone', $value);
+
+        Deprecator::log('generalConfig.timezone', 'Calling timezone() is deprecated. Laravel\'s `app.timezone` config variable should be used instead.');
+
         $this->timezone = $value;
 
         return $this;
@@ -6784,7 +6794,7 @@ class GeneralConfig extends BaseConfig
 
     /**
      * Whether translated messages should be wrapped in special characters to help find any strings that are not being run through
-     * `Craft::t()` or the `|translate` filter.
+     * `t()` or the `|translate` filter.
      *
      * ```php
      * ->translationDebugOutput(true)
@@ -7330,7 +7340,7 @@ class GeneralConfig extends BaseConfig
         if ($this->testToEmailAddress) {
             foreach ((array) $this->testToEmailAddress as $key => $value) {
                 if (is_numeric($key)) {
-                    $to[$value] = Craft::t('app', 'Test Recipient');
+                    $to[$value] = t('Test Recipient');
                 } else {
                     $to[$key] = $value;
                 }

@@ -12,10 +12,10 @@ use craft\base\ElementInterface;
 use craft\elements\db\ElementQuery;
 use craft\elements\db\ElementQueryInterface;
 use craft\helpers\Db;
-use craft\i18n\Translation;
 use craft\queue\BaseJob;
 use craft\queue\QueueInterface;
 use CraftCms\Cms\Shared\Exceptions\OperationAbortedException;
+use CraftCms\Cms\Support\Facades\I18N;
 use yii\queue\Queue;
 
 /**
@@ -80,7 +80,7 @@ class UpdateElementSlugsAndUris extends BaseJob
      */
     protected function defaultDescription(): ?string
     {
-        return Translation::prep('app', 'Updating element slugs and URIs');
+        return I18N::prep('Updating element slugs and URIs');
     }
 
     /**

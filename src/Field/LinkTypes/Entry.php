@@ -9,6 +9,8 @@ use craft\models\Section;
 use craft\services\ElementSources;
 use Illuminate\Support\Collection;
 
+use function CraftCms\Cms\t;
+
 /**
  * Entry link type.
  */
@@ -50,15 +52,15 @@ final class Entry extends BaseElementLinkType
         return
             parent::getSettingsHtml().
             Cp::lightswitchFieldHtml([
-                'label' => Craft::t('app', 'Show unpermitted sections'),
-                'instructions' => Craft::t('app', 'Whether to show sections that the user doesn’t have permission to view.'),
+                'label' => t('Show unpermitted sections'),
+                'instructions' => t('Whether to show sections that the user doesn’t have permission to view.'),
                 'id' => 'showUnpermittedSections',
                 'name' => 'showUnpermittedSections',
                 'on' => $this->showUnpermittedSections,
             ]).
             Cp::lightswitchFieldHtml([
-                'label' => Craft::t('app', 'Show unpermitted entries'),
-                'instructions' => Craft::t('app', 'Whether to show entries that the user doesn’t have permission to view, per the “View other users’ entries” permission.'),
+                'label' => t('Show unpermitted entries'),
+                'instructions' => t('Whether to show entries that the user doesn’t have permission to view, per the “View other users’ entries” permission.'),
                 'id' => 'showUnpermittedEntries',
                 'name' => 'showUnpermittedEntries',
                 'on' => $this->showUnpermittedEntries,

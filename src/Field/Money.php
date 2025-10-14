@@ -15,12 +15,15 @@ use CraftCms\Cms\Field\Contracts\CrossSiteCopyableFieldInterface;
 use CraftCms\Cms\Field\Contracts\InlineEditableFieldInterface;
 use CraftCms\Cms\Field\Contracts\MergeableFieldInterface;
 use CraftCms\Cms\Field\Contracts\SortableFieldInterface;
+use CraftCms\Cms\Support\Facades\I18N;
 use GraphQL\Type\Definition\Type;
 use Money\Currencies\ISOCurrencies;
 use Money\Currency;
 use Money\Exception\ParserException;
 use Money\Money as MoneyLibrary;
 use yii\db\Schema;
+
+use function CraftCms\Cms\t;
 
 /**
  * Money field type
@@ -38,7 +41,7 @@ final class Money extends Field implements CrossSiteCopyableFieldInterface, Inli
      */
     public static function displayName(): string
     {
-        return Craft::t('app', 'Money');
+        return t('Money');
     }
 
     /**
@@ -198,7 +201,7 @@ final class Money extends Field implements CrossSiteCopyableFieldInterface, Inli
             }
 
             $value += [
-                'locale' => Craft::$app->getFormattingLocale()->id,
+                'locale' => I18N::getFormattingLocale()->id,
                 'currency' => $this->currency,
             ];
 
@@ -274,7 +277,7 @@ final class Money extends Field implements CrossSiteCopyableFieldInterface, Inli
         if ($value === null) {
             // Override the initial value being set to null by _includes/forms/field
             $view->setInitialDeltaValue($this->handle, [
-                'locale' => Craft::$app->getFormattingLocale()->id,
+                'locale' => I18N::getFormattingLocale()->id,
                 'value' => '',
             ]);
         }
@@ -310,9 +313,9 @@ final class Money extends Field implements CrossSiteCopyableFieldInterface, Inli
 
     public function currencyLabel(): string
     {
-        return Craft::t('app', '({currencyCode}) {currencySymbol}', [
+        return t('({currencyCode}) {currencySymbol}', [
             'currencyCode' => $this->currency,
-            'currencySymbol' => Craft::$app->getFormattingLocale()->getCurrencySymbol($this->currency),
+            'currencySymbol' => I18N::getFormattingLocale()->getCurrencySymbol($this->currency),
         ]);
     }
 

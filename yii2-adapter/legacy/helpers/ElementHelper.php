@@ -17,14 +17,15 @@ use craft\db\Table;
 use craft\elements\User as UserElement;
 use craft\errors\FieldNotFoundException;
 use craft\fieldlayoutelements\CustomField;
-use craft\i18n\Locale;
 use craft\services\ElementSources;
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Field\Field;
 use CraftCms\Cms\Shared\Exceptions\OperationAbortedException;
 use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Str;
+use CraftCms\Cms\Translation\Locale;
 use DateTime;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Facades\DB;
@@ -34,6 +35,7 @@ use Twig\Markup;
 use yii\base\Exception;
 use yii\base\InvalidConfigException;
 use yii\base\NotSupportedException;
+use function CraftCms\Cms\t;
 
 /**
  * Class ElementHelper
@@ -752,9 +754,9 @@ class ElementHelper
     public static function translationDescription(string $translationMethod): ?string
     {
         return match ($translationMethod) {
-            Field::TRANSLATION_METHOD_SITE => Craft::t('app', 'This field is translated for each site.'),
-            Field::TRANSLATION_METHOD_SITE_GROUP => Craft::t('app', 'This field is translated for each site group.'),
-            Field::TRANSLATION_METHOD_LANGUAGE => Craft::t('app', 'This field is translated for each language.'),
+            Field::TRANSLATION_METHOD_SITE => t('This field is translated for each site.'),
+            Field::TRANSLATION_METHOD_SITE_GROUP => t('This field is translated for each site group.'),
+            Field::TRANSLATION_METHOD_LANGUAGE => t('This field is translated for each language.'),
             default => null,
         };
     }
@@ -835,7 +837,7 @@ class ElementHelper
     public static function attributeHtml(mixed $value): string
     {
         if ($value instanceof DateTime) {
-            $formatter = Craft::$app->getFormatter();
+            $formatter = I18N::getFormatter();
             return Html::tag('span', $formatter->asTimestamp($value, Locale::LENGTH_SHORT), [
                 'title' => $formatter->asDatetime($value, Locale::LENGTH_SHORT),
             ]);
@@ -849,9 +851,9 @@ class ElementHelper
             return Html::tag('span', '', [
                 'class' => 'checkbox-icon',
                 'role' => 'img',
-                'title' => Craft::t('app', 'Enabled'),
+                'title' => t('Enabled'),
                 'aria' => [
-                    'label' => Craft::t('app', 'Enabled'),
+                    'label' => t('Enabled'),
                 ],
             ]);
         }
@@ -883,8 +885,8 @@ class ElementHelper
                 'href' => $url,
                 'rel' => 'noopener',
                 'target' => '_blank',
-                'title' => Craft::t('app', 'Visit webpage'),
-                'aria-label' => Craft::t('app', 'View'),
+                'title' => t('Visit webpage'),
+                'aria-label' => t('View'),
             ]) .
             Html::tag('span', Cp::iconSvg('world'), [
                 'class' => ['cp-icon', 'small', 'inline-flex'],
@@ -908,7 +910,7 @@ class ElementHelper
             'rel' => 'noopener',
             'target' => '_blank',
             'class' => 'go',
-            'title' => Craft::t('app', 'Visit webpage'),
+            'title' => t('Visit webpage'),
         ]);
     }
 

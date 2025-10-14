@@ -41,6 +41,8 @@ use Tpetry\QueryExpressions\Language\Alias;
 use yii\base\InvalidConfigException;
 use yii\db\Expression;
 
+use function CraftCms\Cms\t;
+
 /**
  * Addresses field type.
  *
@@ -62,7 +64,7 @@ final class Addresses extends Field implements EagerLoadingFieldInterface, Eleme
      */
     public static function displayName(): string
     {
-        return Craft::t('app', 'Addresses');
+        return t('Addresses');
     }
 
     /**
@@ -739,7 +741,7 @@ final class Addresses extends Field implements EagerLoadingFieldInterface, Eleme
                 $element->addInvalidNestedElementIds($invalidAddressIds);
 
                 // show a top level error to let users know that there are validation errors in the nested entries
-                $element->addError($this->handle, Craft::t('app', 'Validation errors found in {count, plural, =1{one address} other{{count, spellout} addresses}} within the *{fieldName}* field; please fix them.', [
+                $element->addError($this->handle, t('Validation errors found in {count, plural, =1{one address} other{{count, spellout} addresses}} within the *{fieldName}* field; please fix them.', [
                     'count' => count($invalidAddressIds),
                     'fieldName' => $this->getUiLabel(),
                 ]));
@@ -755,12 +757,12 @@ final class Addresses extends Field implements EagerLoadingFieldInterface, Eleme
             $arrayValidator = new ArrayValidator([
                 'min' => $this->minAddresses ?: null,
                 'max' => $this->maxAddresses ?: null,
-                'tooFew' => $this->minAddresses ? Craft::t('app', '{attribute} should contain at least {min, number} {min, plural, one{address} other{addresses}}.', [
-                    'attribute' => Craft::t('site', $this->name),
+                'tooFew' => $this->minAddresses ? t('{attribute} should contain at least {min, number} {min, plural, one{address} other{addresses}}.', [
+                    'attribute' => t($this->name, category: 'site'),
                     'min' => $this->minAddresses, // Need to pass this in now
                 ]) : null,
-                'tooMany' => $this->maxAddresses ? Craft::t('app', '{attribute} should contain at most {max, number} {max, plural, one{address} other{addresses}}.', [
-                    'attribute' => Craft::t('site', $this->name),
+                'tooMany' => $this->maxAddresses ? t('{attribute} should contain at most {max, number} {max, plural, one{address} other{addresses}}.', [
+                    'attribute' => t($this->name, category: 'site'),
                     'max' => $this->maxAddresses, // Need to pass this in now
                 ]) : null,
                 'skipOnEmpty' => false,

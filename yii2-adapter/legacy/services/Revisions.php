@@ -25,6 +25,7 @@ use Throwable;
 use Tpetry\QueryExpressions\Language\Alias;
 use yii\base\Component;
 use yii\base\InvalidArgumentException;
+use function CraftCms\Cms\t;
 
 /**
  * Revisions service.
@@ -236,7 +237,7 @@ class Revisions extends Component
         // "Duplicate" the revision with the source element’s ID and UID
         $newSource = Craft::$app->getElements()->updateCanonicalElement($revision, [
             'revisionCreatorId' => $creatorId,
-            'revisionNotes' => Craft::t('app', 'Reverted content from revision {num}.', ['num' => $revision->revisionNum]),
+            'revisionNotes' => t('Reverted content from revision {num}.', ['num' => $revision->revisionNum]),
         ]);
 
         // Fire an 'afterRevertToRevision' event

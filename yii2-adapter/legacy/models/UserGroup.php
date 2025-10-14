@@ -19,6 +19,8 @@ use CraftCms\Cms\Component\Contracts\CpEditable;
 use CraftCms\Cms\Component\Contracts\Grippable;
 use CraftCms\Cms\Config\GeneralConfig;
 
+use function CraftCms\Cms\t;
+
 /**
  * UserGroup model class.
  *
@@ -67,7 +69,7 @@ class UserGroup extends Model implements Chippable, Grippable, Describable, CpEd
      */
     public function getUiLabel(): string
     {
-        return Craft::t('site', $this->name);
+        return t($this->name, category: 'site');
     }
 
     /**
@@ -122,7 +124,7 @@ class UserGroup extends Model implements Chippable, Grippable, Describable, CpEd
             $items[] = [
                 'id' => $editId,
                 'icon' => 'gear',
-                'label' => Craft::t('app', 'User group settings'),
+                'label' => t('User group settings'),
             ];
 
             $view = Craft::$app->getView();
@@ -130,7 +132,7 @@ class UserGroup extends Model implements Chippable, Grippable, Describable, CpEd
 $('#' + $id).on('click', () => {
   new Craft.CpScreenSlideout('user-settings/edit-group', {
     params: $params,
-  });
+  })
 });
 JS, [
                 $view->namespaceInputId($editId),
@@ -147,8 +149,8 @@ JS, [
     public function attributeLabels(): array
     {
         return [
-            'handle' => Craft::t('app', 'Handle'),
-            'name' => Craft::t('app', 'Name'),
+            'handle' => t('Handle'),
+            'name' => t('Name'),
         ];
     }
 
@@ -188,7 +190,7 @@ JS, [
      */
     public function __toString(): string
     {
-        return Craft::t('site', $this->name) ?: static::class;
+        return t($this->name, category: 'site') ?: static::class;
     }
 
     /**

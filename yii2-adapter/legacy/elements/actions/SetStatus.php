@@ -12,6 +12,7 @@ use craft\base\Element;
 use craft\base\ElementAction;
 use craft\base\ElementInterface;
 use craft\elements\db\ElementQueryInterface;
+use function CraftCms\Cms\t;
 
 /**
  * SetStatus represents a Set Status element action.
@@ -37,7 +38,7 @@ class SetStatus extends ElementAction
      */
     public function getTriggerLabel(): string
     {
-        return Craft::t('app', 'Set Status');
+        return t('Set Status');
     }
 
     /**
@@ -92,7 +93,7 @@ JS, [static::class]);
         // Make sure the user has permission to edit each of the elements
         foreach ($elements as $element) {
             if (!$elementsService->canSave($element)) {
-                $this->setMessage(Craft::t('app', 'Couldn’t save {type}.', [
+                $this->setMessage(t('Couldn’t save {type}.', [
                     'type' => count($elements) === 1 ? $elementType::lowerDisplayName() : $elementType::pluralLowerDisplayName(),
                 ]));
                 return false;
@@ -139,21 +140,21 @@ JS, [static::class]);
         // Did all of them fail?
         if ($failCount === count($elements)) {
             if (count($elements) === 1) {
-                $this->setMessage(Craft::t('app', 'Could not update status due to a validation error.'));
+                $this->setMessage(t('Could not update status due to a validation error.'));
             } else {
-                $this->setMessage(Craft::t('app', 'Could not update statuses due to validation errors.'));
+                $this->setMessage(t('Could not update statuses due to validation errors.'));
             }
 
             return false;
         }
 
         if ($failCount !== 0) {
-            $this->setMessage(Craft::t('app', 'Status updated, with some failures due to validation errors.'));
+            $this->setMessage(t('Status updated, with some failures due to validation errors.'));
         } else {
             if (count($elements) === 1) {
-                $this->setMessage(Craft::t('app', 'Status updated.'));
+                $this->setMessage(t('Status updated.'));
             } else {
-                $this->setMessage(Craft::t('app', 'Statuses updated.'));
+                $this->setMessage(t('Statuses updated.'));
             }
         }
 

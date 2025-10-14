@@ -1,23 +1,32 @@
 <?php
 
 use CraftCms\Cms\Shared\Rules\LanguageRule;
+use CraftCms\Cms\Support\Facades\I18N;
 
-it('validates', function (bool $expected, string $value, bool $onlySiteLangs = true) {
+it('validates', function (?string $errorMessage, string $value, bool $onlySiteLangs = true) {
+    I18N::shouldReceive('getSiteLocaleIds')
+        ->andReturn(collect(['nl', 'en-US']))
+        ->shouldReceive('translate')
+        ->andReturnUsing(fn ($message) => $message)
+        ->shouldReceive('getAllLocaleIds')
+        ->andReturn(collect(['nl', 'en-US', 'de']));
+
     $rule = new LanguageRule($onlySiteLangs);
 
-    $failed = false;
+    $error = null;
 
-    $rule->validate('language', $value, function () use (&$failed) {
-        $failed = true;
+    $rule->validate('language', $value, function (string $message) use (&$error) {
+        $error = $message;
     });
 
-    expect($failed)->toBe($expected);
+    expect($error)->toBe($errorMessage);
 })->with([
-    [true, 'nolang'],
-    [false, 'en-US'],
-    [true, 'de'],
-    [false, 'de', false],
-    [true, 'nolang', false],
+    ['{value} is not a valid site language.', 'nolang'],
+    [null, 'en-US'],
+    [null, 'nl'],
+    ['{value} is not a valid site language.', 'de'],
+    [null, 'de', false],
+    ['{value} is not a valid site language.', 'nolang', false],
 ]);
 
 it('can pass a custom message', function () {

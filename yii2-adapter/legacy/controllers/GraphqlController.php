@@ -35,6 +35,7 @@ use yii\web\BadRequestHttpException;
 use yii\web\ForbiddenHttpException;
 use yii\web\NotFoundHttpException;
 use yii\web\Response as YiiResponse;
+use function CraftCms\Cms\t;
 
 /**
  * The GqlController class is a controller that handles various GraphQL related tasks.
@@ -61,7 +62,7 @@ class GraphqlController extends Controller
     public function beforeAction($action): bool
     {
         if (!app(GeneralConfig::class)->enableGql) {
-            throw new NotFoundHttpException(Craft::t('yii', 'Page not found.'));
+            throw new NotFoundHttpException(t('Page not found.'));
         }
 
         if ($action->id === 'api') {
@@ -213,7 +214,7 @@ class GraphqlController extends Controller
                     'errors' => [
                         $errorHandler->showExceptionDetails()
                             ? $errorHandler->exceptionAsArray($e)
-                            : ['message' => Craft::t('app', 'Something went wrong when processing the GraphQL query.')],
+                            : ['message' => t('Something went wrong when processing the GraphQL query.')],
                     ],
                 ];
             }
@@ -400,7 +401,7 @@ class GraphqlController extends Controller
 
         $schemas = [
             [
-                'label' => Craft::t('app', 'Full Schema'),
+                'label' => t('Full Schema'),
                 'value' => '*',
             ],
         ];
@@ -482,11 +483,11 @@ class GraphqlController extends Controller
                 throw new NotFoundHttpException('Token not found');
             }
 
-            $title = trim($token->name ?? '') ?: Craft::t('app', 'Edit GraphQL Token');
+            $title = trim($token->name ?? '') ?: t('Edit GraphQL Token');
         } else {
             $token = new GqlToken();
             $accessToken = $this->_generateToken();
-            $title = trim($token->name ?? '') ?: Craft::t('app', 'Create a new GraphQL token');
+            $title = trim($token->name ?? '') ?: t('Create a new GraphQL token');
         }
 
         $schemas = $gqlService->getSchemas();
@@ -559,14 +560,14 @@ class GraphqlController extends Controller
 
         if (!$gqlService->saveToken($token)) {
             return $this->asFailure(
-                Craft::t('app', 'Couldn’t save token.'),
+                t('Couldn’t save token.'),
                 routeParams: [
                     'token' => $token,
                 ]
             );
         }
 
-        return $this->asSuccess(Craft::t('app', 'Schema saved.'));
+        return $this->asSuccess(t('Schema saved.'));
     }
 
     /**
@@ -622,10 +623,10 @@ class GraphqlController extends Controller
                 throw new NotFoundHttpException('Schema not found');
             }
 
-            $title = trim($schema->name) ?: Craft::t('app', 'Edit GraphQL Schema');
+            $title = trim($schema->name) ?: t('Edit GraphQL Schema');
         } else {
             $schema = new GqlSchema();
-            $title = trim($schema->name) ?: Craft::t('app', 'Create a new GraphQL Schema');
+            $title = trim($schema->name) ?: t('Create a new GraphQL Schema');
         }
 
         return $this->renderTemplate('graphql/schemas/_edit.twig', compact(
@@ -652,7 +653,7 @@ class GraphqlController extends Controller
         }
 
         $token = $gqlService->getPublicToken();
-        $title = Craft::t('app', 'Edit the public GraphQL schema');
+        $title = t('Edit the public GraphQL schema');
 
         return $this->renderTemplate('graphql/schemas/_edit.twig', compact(
             'schema',
@@ -678,7 +679,7 @@ class GraphqlController extends Controller
         $schema->scope = $this->request->getBodyParam('permissions') ?? [];
 
         if (!$gqlService->saveSchema($schema)) {
-            $this->setFailFlash(Craft::t('app', 'Couldn’t save schema.'));
+            $this->setFailFlash(t('Couldn’t save schema.'));
 
             // Send the schema back to the template
             Craft::$app->getUrlManager()->setRouteParams([
@@ -696,12 +697,12 @@ class GraphqlController extends Controller
         }
 
         if (!$gqlService->saveToken($token)) {
-            $this->setFailFlash(Craft::t('app', 'Couldn’t save public schema settings.'));
+            $this->setFailFlash(t('Couldn’t save public schema settings.'));
 
             return null;
         }
 
-        $this->setSuccessFlash(Craft::t('app', 'Schema saved.'));
+        $this->setSuccessFlash(t('Schema saved.'));
         return $this->redirectToPostedUrl();
     }
 
@@ -737,7 +738,7 @@ class GraphqlController extends Controller
         $schema->scope = $this->request->getBodyParam('permissions') ?? [];
 
         if (!$gqlService->saveSchema($schema)) {
-            $this->setFailFlash(Craft::t('app', 'Couldn’t save schema.'));
+            $this->setFailFlash(t('Couldn’t save schema.'));
 
             // Send the schema back to the template
             Craft::$app->getUrlManager()->setRouteParams([
@@ -747,7 +748,7 @@ class GraphqlController extends Controller
             return null;
         }
 
-        $this->setSuccessFlash(Craft::t('app', 'Schema saved.'));
+        $this->setSuccessFlash(t('Schema saved.'));
         return $this->redirectToPostedUrl($schema);
     }
 

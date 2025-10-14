@@ -18,6 +18,8 @@ use CraftCms\Cms\Support\Html;
 use GraphQL\Type\Definition\Type;
 use yii\db\Schema;
 
+use function CraftCms\Cms\t;
+
 /**
  * Lightswitch represents a Lightswitch field.
  */
@@ -28,7 +30,7 @@ final class Lightswitch extends Field implements CrossSiteCopyableFieldInterface
      */
     public static function displayName(): string
     {
-        return Craft::t('app', 'Lightswitch');
+        return t('Lightswitch');
     }
 
     /**
@@ -134,31 +136,31 @@ final class Lightswitch extends Field implements CrossSiteCopyableFieldInterface
     {
         return
             Cp::lightswitchFieldHtml([
-                'label' => Craft::t('app', 'Default Value'),
+                'label' => t('Default Value'),
                 'id' => 'default',
                 'name' => 'default',
                 'on' => $this->default,
                 'disabled' => $readOnly,
             ]).
             Cp::textFieldHtml([
-                'label' => Craft::t('app', 'OFF Label'),
-                'instructions' => Craft::t('app', 'The label text to display beside the lightswitch’s disabled state.'),
+                'label' => t('OFF Label'),
+                'instructions' => t('The label text to display beside the lightswitch’s disabled state.'),
                 'id' => 'off-label',
                 'name' => 'offLabel',
                 'value' => $this->offLabel,
                 'disabled' => $readOnly,
             ]).
             Cp::textFieldHtml([
-                'label' => Craft::t('app', 'ON Label'),
-                'instructions' => Craft::t('app', 'The label text to display beside the lightswitch’s enabled state.'),
+                'label' => t('ON Label'),
+                'instructions' => t('The label text to display beside the lightswitch’s enabled state.'),
                 'id' => 'on-label',
                 'name' => 'onLabel',
                 'value' => $this->onLabel,
                 'disabled' => $readOnly,
             ]).
             Cp::lightswitchFieldHtml([
-                'label' => Craft::t('app', 'Show ON/OFF labels in cards'),
-                'instructions' => Craft::t('app', 'Whether card views which include this field should show the custom ON/OFF labels, rather than the field name.'),
+                'label' => t('Show ON/OFF labels in cards'),
+                'instructions' => t('Whether card views which include this field should show the custom ON/OFF labels, rather than the field name.'),
                 'id' => 'show-labels-in-cards',
                 'name' => 'showLabelsInCards',
                 'on' => $this->showLabelsInCards,
@@ -195,8 +197,8 @@ final class Lightswitch extends Field implements CrossSiteCopyableFieldInterface
             'describedBy' => $this->describedBy,
             'name' => $this->handle,
             'on' => (bool) $value,
-            'onLabel' => Craft::t('site', $this->onLabel),
-            'offLabel' => Craft::t('site', $this->offLabel),
+            'onLabel' => t($this->onLabel, category: 'site'),
+            'offLabel' => t($this->offLabel, category: 'site'),
             'disabled' => $static,
         ]);
     }
@@ -274,7 +276,7 @@ final class Lightswitch extends Field implements CrossSiteCopyableFieldInterface
         if (($value && $this->onLabel) || (! $value && $this->offLabel)) {
             return Cp::statusLabelHtml([
                 'color' => $value ? ColorEnum::Teal : ColorEnum::Gray,
-                'label' => Craft::t('site', $value ? $this->onLabel : $this->offLabel),
+                'label' => t($value ? $this->onLabel : $this->offLabel, category: 'site'),
                 'icon' => $value ? 'check' : 'xmark',
             ]);
         }
@@ -283,7 +285,7 @@ final class Lightswitch extends Field implements CrossSiteCopyableFieldInterface
             return '';
         }
 
-        $label = $this->onLabel ? Craft::t('site', $this->onLabel) : Craft::t('app', 'Enabled');
+        $label = $this->onLabel ? t($this->onLabel, category: 'site') : t('Enabled');
 
         return
             Html::tag('span', '', [

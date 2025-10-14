@@ -9,6 +9,7 @@ use craft\elements\conditions\ElementConditionRuleInterface;
 use craft\elements\db\ElementQueryInterface;
 use craft\elements\db\EntryQuery;
 use craft\elements\Entry;
+use function CraftCms\Cms\t;
 
 /**
  * Entry type condition rule.
@@ -23,7 +24,7 @@ class TypeConditionRule extends BaseMultiSelectConditionRule implements ElementC
      */
     public function getLabel(): string
     {
-        return Craft::t('app', 'Entry Type');
+        return t('Entry Type');
     }
 
     /**

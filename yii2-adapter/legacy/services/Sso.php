@@ -21,6 +21,7 @@ use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Edition;
 use yii\base\Component;
 use yii\base\InvalidConfigException;
+use function CraftCms\Cms\t;
 
 /**
  * SSO service.
@@ -294,7 +295,7 @@ class Sso extends Component
 
         // Try logging them in
         if (!$userSession->login($user, $sessionDuration)) {
-            throw new SsoFailedException($provider, $user, Craft::t('auth', "Unable to login"));
+            throw new SsoFailedException($provider, $user, t("Unable to login", category: 'auth'));
         }
 
         return true;

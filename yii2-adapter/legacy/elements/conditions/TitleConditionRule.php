@@ -2,10 +2,10 @@
 
 namespace craft\elements\conditions;
 
-use Craft;
 use craft\base\conditions\BaseTextConditionRule;
 use craft\base\ElementInterface;
 use craft\elements\db\ElementQueryInterface;
+use function CraftCms\Cms\t;
 
 /**
  * Title condition rule.
@@ -20,7 +20,7 @@ class TitleConditionRule extends BaseTextConditionRule implements ElementConditi
      */
     public function getLabel(): string
     {
-        return Craft::t('app', 'Title');
+        return t('Title');
     }
 
     /**

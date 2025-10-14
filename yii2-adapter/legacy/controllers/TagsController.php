@@ -20,6 +20,7 @@ use yii\web\BadRequestHttpException;
 use yii\web\ForbiddenHttpException;
 use yii\web\NotFoundHttpException;
 use yii\web\Response;
+use function CraftCms\Cms\t;
 
 /**
  * The TagsController class is a controller that handles various tag and tag group related tasks such as displaying,
@@ -76,23 +77,23 @@ class TagsController extends Controller
                 }
             }
 
-            $title = trim($tagGroup->name) ?: Craft::t('app', 'Edit Tag Group');
+            $title = trim($tagGroup->name) ?: t('Edit Tag Group');
         } else {
             if ($tagGroup === null) {
                 $tagGroup = new TagGroup();
             }
 
-            $title = Craft::t('app', 'Create a new tag group');
+            $title = t('Create a new tag group');
         }
 
         // Breadcrumbs
         $crumbs = [
             [
-                'label' => Craft::t('app', 'Settings'),
+                'label' => t('Settings'),
                 'url' => UrlHelper::url('settings'),
             ],
             [
-                'label' => Craft::t('app', 'Tags'),
+                'label' => t('Tags'),
                 'url' => UrlHelper::url('settings/tags'),
             ],
         ];
@@ -140,7 +141,7 @@ class TagsController extends Controller
 
         // Save it
         if (!Craft::$app->getTags()->saveTagGroup($group)) {
-            $this->setFailFlash(Craft::t('app', 'Couldn’t save the tag group.'));
+            $this->setFailFlash(t('Couldn’t save the tag group.'));
 
             // Send the tag group back to the template
             Craft::$app->getUrlManager()->setRouteParams([
@@ -150,7 +151,7 @@ class TagsController extends Controller
             return null;
         }
 
-        $this->setSuccessFlash(Craft::t('app', 'Tag group saved.'));
+        $this->setSuccessFlash(t('Tag group saved.'));
         return $this->redirectToPostedUrl($group);
     }
 

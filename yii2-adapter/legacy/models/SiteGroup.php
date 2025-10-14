@@ -12,6 +12,7 @@ use craft\base\Model;
 use craft\records\SiteGroup as SiteGroupRecord;
 use craft\validators\UniqueValidator;
 use CraftCms\Cms\Support\Env;
+use function CraftCms\Cms\t;
 
 /**
  * SiteGroup model class.
@@ -76,7 +77,7 @@ class SiteGroup extends Model
     public function attributeLabels(): array
     {
         return [
-            'name' => Craft::t('app', 'Name'),
+            'name' => t('Name'),
         ];
     }
 

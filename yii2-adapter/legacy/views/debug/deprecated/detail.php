@@ -4,6 +4,7 @@ use craft\helpers\UrlHelper;
 use CraftCms\Cms\Deprecator\Models\DeprecationError;
 use CraftCms\Cms\Support\Html;
 use yii\helpers\Markdown;
+use function CraftCms\Cms\t;
 
 /** @var craft\debug\DeprecatedPanel $panel */
 ?>
@@ -27,9 +28,9 @@ $logs = $panel->data;
                style="table-layout: fixed;">
             <thead>
             <tr>
-                <th style="nowrap"><?= Craft::t('app', 'Message') ?></th>
-                <th><?= Craft::t('app', 'Origin') ?></th>
-                <th><?= Craft::t('app', 'Stack Trace') ?></th>
+                <th style="nowrap"><?= t('Message') ?></th>
+                <th><?= t('Origin') ?></th>
+                <th><?= t('Stack Trace') ?></th>
             </tr>
             </thead>
             <tbody>
@@ -39,7 +40,7 @@ $logs = $panel->data;
                     <td><code><?= str_replace('/', '/<wbr>', Html::encode($log->file)) . ($log->line ? ':' . $log->line : '') ?></code>
                     </td>
                     <td><?php if ($log->id): ?><a
-                            href="<?= $panel->getUrl() . '&trace=' . $log->id ?>"><?= Craft::t('app', 'Stack Trace') ?></a><?php else: ?><?= Craft::t('app', 'See logs') ?><?php endif; ?>
+                            href="<?= $panel->getUrl() . '&trace=' . $log->id ?>"><?= t('Stack Trace') ?></a><?php else: ?><?= t('See logs') ?><?php endif; ?>
                     </td>
                 </tr>
             <?php endforeach; ?>

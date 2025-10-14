@@ -26,6 +26,7 @@ use yii\base\Exception;
 use yii\base\UserException;
 use yii\web\HttpException;
 use yii\web\NotFoundHttpException;
+use function CraftCms\Cms\t;
 
 /**
  * Class ErrorHandler
@@ -169,7 +170,7 @@ class ErrorHandler extends \yii\web\ErrorHandler
             $includeFullInfo = $this->showExceptionDetails();
             $message = ($includeFullInfo || $exception instanceof UserException)
                 ? $exception->getMessage()
-                : Craft::t('app', 'A server error occurred.');
+                : t('A server error occurred.');
             $response->data = [
                 'name' => ($exception instanceof Exception || $exception instanceof ErrorException) ? $exception->getName() : 'Exception',
                 'message' => $message,

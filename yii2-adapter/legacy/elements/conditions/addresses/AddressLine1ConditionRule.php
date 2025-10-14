@@ -2,13 +2,13 @@
 
 namespace craft\elements\conditions\addresses;
 
-use Craft;
 use craft\base\conditions\BaseTextConditionRule;
 use craft\base\ElementInterface;
 use craft\elements\Address;
 use craft\elements\conditions\ElementConditionRuleInterface;
 use craft\elements\db\AddressQuery;
 use craft\elements\db\ElementQueryInterface;
+use function CraftCms\Cms\t;
 
 /**
  * Address address line 1 condition rule.
@@ -23,7 +23,7 @@ class AddressLine1ConditionRule extends BaseTextConditionRule implements Element
      */
     public function getLabel(): string
     {
-        return Craft::t('app', 'Address Line 1');
+        return t('Address Line 1');
     }
 
     /**

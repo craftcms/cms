@@ -2,7 +2,6 @@
 
 namespace craft\elements\conditions\addresses;
 
-use Craft;
 use craft\base\conditions\BaseMultiSelectConditionRule;
 use craft\base\ElementInterface;
 use craft\elements\Address;
@@ -13,6 +12,7 @@ use craft\helpers\Cp;
 use craft\helpers\UrlHelper;
 use CraftCms\Cms\Addresses\Addresses;
 use CraftCms\Cms\Support\Html;
+use function CraftCms\Cms\t;
 
 /**
  * Address Administrative Area condition rule.
@@ -52,7 +52,7 @@ class AdministrativeAreaConditionRule extends BaseMultiSelectConditionRule imple
      */
     public function getLabel(): string
     {
-        return Craft::t('app', 'Administrative Area');
+        return t('Administrative Area');
     }
 
     /**
@@ -68,7 +68,7 @@ class AdministrativeAreaConditionRule extends BaseMultiSelectConditionRule imple
      */
     protected function options(): array
     {
-        $administrativeAreas = app(Addresses::class)->getSubdivisionRepository()->getList([$this->countryCode], Craft::$app->language);
+        $administrativeAreas = app(Addresses::class)->getSubdivisionRepository()->getList([$this->countryCode], app()->getLocale());
         // Allow custom states that are currently in the administrative areas list to remain in the list.
         foreach ($this->getValues() as $val) {
             if (!in_array($val, $administrativeAreas, false)) {

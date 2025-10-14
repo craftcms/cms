@@ -23,6 +23,7 @@ use CraftCms\Cms\Element\Enums\PropagationMethod;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Str;
 use yii\db\Schema;
+use function CraftCms\Cms\t;
 
 /**
  * Section model class.
@@ -151,7 +152,7 @@ class Section extends Model implements Chippable, CpEditable, Iconic
         if (!isset($this->previewTargets)) {
             $this->previewTargets = [
                 [
-                    'label' => Craft::t('app', 'Primary {type} page', [
+                    'label' => t('Primary {type} page', [
                         'type' => Entry::lowerDisplayName(),
                     ]),
                     'urlFormat' => '{url}',
@@ -167,7 +168,7 @@ class Section extends Model implements Chippable, CpEditable, Iconic
      */
     public function getUiLabel(): string
     {
-        return Craft::t('site', $this->name);
+        return t($this->name, category: 'site');
     }
 
     /**
@@ -184,12 +185,12 @@ class Section extends Model implements Chippable, CpEditable, Iconic
     public function attributeLabels(): array
     {
         return [
-            'handle' => Craft::t('app', 'Handle'),
-            'name' => Craft::t('app', 'Name'),
-            'type' => Craft::t('app', 'Section Type'),
+            'handle' => t('Handle'),
+            'name' => t('Name'),
+            'type' => t('Section Type'),
             'entryTypes' => $this->type === self::TYPE_SINGLE
-                ? Craft::t('app', 'Entry Type')
-                : Craft::t('app', 'Entry Types'),
+                ? t('Entry Type')
+                : t('Entry Types'),
         ];
     }
 
@@ -238,7 +239,7 @@ class Section extends Model implements Chippable, CpEditable, Iconic
                 ->all();
 
             if (empty(array_intersect($currentSiteIds, array_keys($this->getSiteSettings())))) {
-                $this->addError('siteSettings', Craft::t('app', 'At least one currently-enabled site must remain enabled.'));
+                $this->addError('siteSettings', t('At least one currently-enabled site must remain enabled.'));
             }
         }
 
@@ -268,7 +269,7 @@ class Section extends Model implements Chippable, CpEditable, Iconic
         unset($target);
 
         if ($hasErrors) {
-            $this->addError('previewTargets', Craft::t('app', 'All targets must have a label.'));
+            $this->addError('previewTargets', t('All targets must have a label.'));
         }
     }
 
@@ -279,7 +280,7 @@ class Section extends Model implements Chippable, CpEditable, Iconic
      */
     public function __toString(): string
     {
-        return Craft::t('site', $this->name) ?: static::class;
+        return t($this->name, category: 'site') ?: static::class;
     }
 
     /**

@@ -15,6 +15,7 @@ use CraftCms\Cms\Config\GeneralConfig;
 use yii\base\InvalidConfigException;
 use yii\base\Model;
 use yii\validators\Validator;
+use function CraftCms\Cms\t;
 
 /**
  * Class AssetLocationValidator.
@@ -81,11 +82,11 @@ class AssetLocationValidator extends Validator
         }
 
         if (!isset($this->disallowedExtension)) {
-            $this->disallowedExtension = Craft::t('app', '“{extension}” is not an allowed file extension.');
+            $this->disallowedExtension = t('“{extension}” is not an allowed file extension.');
         }
 
         if (!isset($this->filenameConflict)) {
-            $this->filenameConflict = Craft::t('app', 'A file with the name “{filename}” already exists.');
+            $this->filenameConflict = t('A file with the name “{filename}” already exists.');
         }
     }
 

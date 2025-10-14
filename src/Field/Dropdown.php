@@ -12,6 +12,8 @@ use CraftCms\Cms\Field\Data\MultiOptionsFieldData;
 use CraftCms\Cms\Field\Data\OptionData;
 use CraftCms\Cms\Field\Data\SingleOptionFieldData;
 
+use function CraftCms\Cms\t;
+
 /**
  * Dropdown represents a Dropdown field.
  */
@@ -37,7 +39,7 @@ final class Dropdown extends BaseOptionsField implements InlineEditableFieldInte
      */
     public static function displayName(): string
     {
-        return Craft::t('app', 'Dropdown');
+        return t('Dropdown');
     }
 
     /**
@@ -61,7 +63,7 @@ final class Dropdown extends BaseOptionsField implements InlineEditableFieldInte
         if (! $value->valid && $this->defaultValue() !== null) {
             return [
                 AttributeStatus::Modified,
-                Craft::t('app', 'This field has been modified.'),
+                t('This field has been modified.'),
             ];
         }
 
@@ -140,7 +142,7 @@ final class Dropdown extends BaseOptionsField implements InlineEditableFieldInte
      */
     protected function optionsSettingLabel(): string
     {
-        return Craft::t('app', 'Dropdown Options');
+        return t('Dropdown Options');
     }
 
     /**

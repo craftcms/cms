@@ -10,6 +10,7 @@ namespace craft\elements\actions;
 use Craft;
 use craft\base\ElementAction;
 use craft\base\ElementInterface;
+use function CraftCms\Cms\t;
 
 /**
  * Updates the sort order for the selected element
@@ -38,7 +39,7 @@ class MoveDown extends ElementAction
      */
     public function getTriggerLabel(): string
     {
-        return Craft::t('app', 'Move backward'); //down
+        return t('Move backward'); //down
     }
 
     /**

@@ -2,10 +2,10 @@
 
 namespace craft\base\conditions;
 
-use Craft;
 use craft\helpers\Cp;
 use craft\helpers\Db;
 use CraftCms\Cms\Support\Html;
+use function CraftCms\Cms\t;
 
 /**
  * BaseNumberConditionRule provides a base implementation for condition rules that are composed of a number input.
@@ -67,7 +67,7 @@ abstract class BaseNumberConditionRule extends BaseTextConditionRule
     protected function operatorLabel(string $operator): string
     {
         if ($operator === self::OPERATOR_BETWEEN) {
-            return Craft::t('app', 'is between…');
+            return t('is between…');
         }
 
         return parent::operatorLabel($operator);
@@ -98,7 +98,7 @@ abstract class BaseNumberConditionRule extends BaseTextConditionRule
     {
         if ($this->operator === self::OPERATOR_BETWEEN) {
             return Html::tag('div',
-                Html::hiddenLabel(Craft::t('app', 'Min Value'), 'min') .
+                Html::hiddenLabel(t('Min Value'), 'min') .
                 Cp::textHtml([
                     'type' => $this->inputType(),
                     'id' => 'min',
@@ -107,8 +107,8 @@ abstract class BaseNumberConditionRule extends BaseTextConditionRule
                     'autocomplete' => false,
                     'class' => 'flex-grow flex-shrink',
                 ]) .
-                Html::tag('span', Craft::t('app', 'and')) .
-                Html::hiddenLabel(Craft::t('app', 'Max Value'), 'max') .
+                Html::tag('span', t('and')) .
+                Html::hiddenLabel(t('Max Value'), 'max') .
                 Cp::textHtml([
                     'type' => $this->inputType(),
                     'id' => 'max',
@@ -117,7 +117,7 @@ abstract class BaseNumberConditionRule extends BaseTextConditionRule
                     'autocomplete' => false,
                     'class' => 'flex-grow flex-shrink',
                 ]) .
-                Html::tag('span', Craft::t('app', 'The values are matched inclusively.'), ['class' => 'info']),
+                Html::tag('span', t('The values are matched inclusively.'), ['class' => 'info']),
                 ['class' => 'flex flex-center']
             );
         }

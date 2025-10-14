@@ -32,7 +32,6 @@ use craft\helpers\DateTimeHelper;
 use craft\helpers\Db;
 use craft\helpers\Template;
 use craft\helpers\UrlHelper;
-use craft\i18n\Formatter;
 use craft\models\FieldLayout;
 use craft\models\Site;
 use craft\models\UserGroup;
@@ -52,10 +51,12 @@ use CraftCms\Cms\Field\Fields;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\Shared\Enums\Color;
 use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Support\PHP;
 use CraftCms\Cms\Support\Str;
+use CraftCms\Cms\Translation\Formatter;
 use DateInterval;
 use DateTime;
 use DateTimeZone;
@@ -73,6 +74,7 @@ use yii\validators\RequiredValidator;
 use yii\validators\Validator;
 use yii\web\BadRequestHttpException;
 use yii\web\IdentityInterface;
+use function CraftCms\Cms\t;
 
 /**
  * User represents a user element.
@@ -211,7 +213,7 @@ class User extends Element implements IdentityInterface
      */
     public static function displayName(): string
     {
-        return Craft::t('app', 'User');
+        return t('User');
     }
 
     /**
@@ -219,7 +221,7 @@ class User extends Element implements IdentityInterface
      */
     public static function lowerDisplayName(): string
     {
-        return Craft::t('app', 'user');
+        return t('user');
     }
 
     /**
@@ -227,7 +229,7 @@ class User extends Element implements IdentityInterface
      */
     public static function pluralDisplayName(): string
     {
-        return Craft::t('app', 'Users');
+        return t('Users');
     }
 
     /**
@@ -235,7 +237,7 @@ class User extends Element implements IdentityInterface
      */
     public static function pluralLowerDisplayName(): string
     {
-        return Craft::t('app', 'users');
+        return t('users');
     }
 
     /**
@@ -277,22 +279,22 @@ class User extends Element implements IdentityInterface
     {
         return [
             self::STATUS_ACTIVE => [
-                'label' => Craft::t('app', 'Active'),
+                'label' => t('Active'),
             ],
             self::STATUS_PENDING => [
-                'label' => Craft::t('app', 'Pending'),
+                'label' => t('Pending'),
                 'color' => Color::Orange,
             ],
             self::STATUS_SUSPENDED => [
-                'label' => Craft::t('app', 'Suspended'),
+                'label' => t('Suspended'),
                 'color' => Color::Red,
             ],
             self::STATUS_LOCKED => [
-                'label' => Craft::t('app', 'Locked'),
+                'label' => t('Locked'),
                 'color' => Color::Red,
             ],
             self::STATUS_INACTIVE => [
-                'label' => Craft::t('app', 'Inactive'),
+                'label' => t('Inactive'),
             ],
         ];
     }
@@ -325,7 +327,7 @@ class User extends Element implements IdentityInterface
         $sources = [
             [
                 'key' => '*',
-                'label' => Craft::t('app', 'All users'),
+                'label' => t('All users'),
                 'hasThumbs' => true,
                 'data' => [
                     'slug' => 'all',
@@ -337,7 +339,7 @@ class User extends Element implements IdentityInterface
             $sources = array_merge($sources, [
                 [
                     'key' => 'admins',
-                    'label' => Craft::t('app', 'Admins'),
+                    'label' => t('Admins'),
                     'criteria' => ['admin' => true],
                     'hasThumbs' => true,
                     'data' => [
@@ -345,11 +347,11 @@ class User extends Element implements IdentityInterface
                     ],
                 ],
                 [
-                    'heading' => Craft::t('app', 'Account Type'),
+                    'heading' => t('Account Type'),
                 ],
                 [
                     'key' => 'credentialed',
-                    'label' => Craft::t('app', 'Credentialed'),
+                    'label' => t('Credentialed'),
                     'criteria' => [
                         'status' => UserQuery::STATUS_CREDENTIALED,
                     ],
@@ -360,7 +362,7 @@ class User extends Element implements IdentityInterface
                 ],
                 [
                     'key' => 'inactive',
-                    'label' => Craft::t('app', 'Inactive'),
+                    'label' => t('Inactive'),
                     'criteria' => [
                         'status' => self::STATUS_INACTIVE,
                     ],
@@ -374,12 +376,12 @@ class User extends Element implements IdentityInterface
             $groups = Craft::$app->getUserGroups()->getAllGroups();
 
             if (!empty($groups)) {
-                $sources[] = ['heading' => Craft::t('app', 'Groups')];
+                $sources[] = ['heading' => t('Groups')];
 
                 foreach ($groups as $group) {
                     $sources[] = [
                         'key' => 'group:' . $group->uid,
-                        'label' => Craft::t('site', $group->name),
+                        'label' => t($group->name, category: 'site'),
                         'criteria' => ['groupId' => $group->id],
                         'hasThumbs' => true,
                         'data' => [
@@ -434,45 +436,45 @@ class User extends Element implements IdentityInterface
     {
         if (app(GeneralConfig::class)->useEmailAsUsername) {
             $attributes = [
-                'email' => Craft::t('app', 'Email'),
-                'fullName' => Craft::t('app', 'Full Name'),
-                'firstName' => Craft::t('app', 'First Name'),
-                'lastName' => Craft::t('app', 'Last Name'),
+                'email' => t('Email'),
+                'fullName' => t('Full Name'),
+                'firstName' => t('First Name'),
+                'lastName' => t('Last Name'),
                 [
-                    'label' => Craft::t('app', 'Last Login'),
+                    'label' => t('Last Login'),
                     'orderBy' => 'lastLoginDate',
                     'defaultDir' => 'desc',
                 ],
                 [
-                    'label' => Craft::t('app', 'Date Created'),
+                    'label' => t('Date Created'),
                     'orderBy' => 'dateCreated',
                     'defaultDir' => 'desc',
                 ],
                 [
-                    'label' => Craft::t('app', 'Date Updated'),
+                    'label' => t('Date Updated'),
                     'orderBy' => 'dateUpdated',
                     'defaultDir' => 'desc',
                 ],
             ];
         } else {
             $attributes = [
-                'username' => Craft::t('app', 'Username'),
-                'fullName' => Craft::t('app', 'Full Name'),
-                'firstName' => Craft::t('app', 'First Name'),
-                'lastName' => Craft::t('app', 'Last Name'),
-                'email' => Craft::t('app', 'Email'),
+                'username' => t('Username'),
+                'fullName' => t('Full Name'),
+                'firstName' => t('First Name'),
+                'lastName' => t('Last Name'),
+                'email' => t('Email'),
                 [
-                    'label' => Craft::t('app', 'Last Login'),
+                    'label' => t('Last Login'),
                     'orderBy' => 'lastLoginDate',
                     'defaultDir' => 'desc',
                 ],
                 [
-                    'label' => Craft::t('app', 'Date Created'),
+                    'label' => t('Date Created'),
                     'orderBy' => 'dateCreated',
                     'defaultDir' => 'desc',
                 ],
                 [
-                    'label' => Craft::t('app', 'Date Updated'),
+                    'label' => t('Date Updated'),
                     'orderBy' => 'dateUpdated',
                     'defaultDir' => 'desc',
                 ],
@@ -488,18 +490,18 @@ class User extends Element implements IdentityInterface
     protected static function defineTableAttributes(): array
     {
         return array_merge(parent::defineTableAttributes(), array_filter([
-            'email' => ['label' => Craft::t('app', 'Email')],
-            'username' => ['label' => Craft::t('app', 'Username')],
-            'fullName' => ['label' => Craft::t('app', 'Full Name')],
-            'firstName' => ['label' => Craft::t('app', 'First Name')],
-            'lastName' => ['label' => Craft::t('app', 'Last Name')],
-            'groups' => ['label' => Craft::t('app', 'Groups')],
-            'affiliatedSite' => Craft::$app->getIsMultiSite() ? ['label' => Craft::t('app', 'Affiliated Site')] : null,
-            'preferredLanguage' => ['label' => Craft::t('app', 'Preferred Language')],
-            'preferredLocale' => ['label' => Craft::t('app', 'Preferred Locale')],
-            'lastLoginDate' => ['label' => Craft::t('app', 'Last Login')],
-            'isCredentialed' => ['label' => Craft::t('app', 'Credentialed')],
-            'is2faEnabled' => ['label' => Craft::t('app', 'Two-Step Verification')],
+            'email' => ['label' => t('Email')],
+            'username' => ['label' => t('Username')],
+            'fullName' => ['label' => t('Full Name')],
+            'firstName' => ['label' => t('First Name')],
+            'lastName' => ['label' => t('Last Name')],
+            'groups' => ['label' => t('Groups')],
+            'affiliatedSite' => Craft::$app->getIsMultiSite() ? ['label' => t('Affiliated Site')] : null,
+            'preferredLanguage' => ['label' => t('Preferred Language')],
+            'preferredLocale' => ['label' => t('Preferred Locale')],
+            'lastLoginDate' => ['label' => t('Last Login')],
+            'isCredentialed' => ['label' => t('Credentialed')],
+            'is2faEnabled' => ['label' => t('Two-Step Verification')],
         ]));
     }
 
@@ -535,62 +537,60 @@ class User extends Element implements IdentityInterface
      */
     protected static function defineCardAttributes(): array
     {
-        $i18n = Craft::$app->getI18n();
-
         return array_merge(parent::defineCardAttributes(), [
             'email' => [
-                'label' => Craft::t('app', 'Email'),
+                'label' => t('Email'),
                 'placeholder' => fn() => 'test@example.com',
             ],
             'username' => [
-                'label' => Craft::t('app', 'Username'),
-                'placeholder' => fn() => Craft::t('app', 'Username'),
+                'label' => t('Username'),
+                'placeholder' => fn() => t('Username'),
             ],
             'firstName' => [
-                'label' => Craft::t('app', 'First Name'),
-                'placeholder' => fn() => Craft::t('app', 'First Name'),
+                'label' => t('First Name'),
+                'placeholder' => fn() => t('First Name'),
             ],
             'lastName' => [
-                'label' => Craft::t('app', 'Last Name'),
-                'placeholder' => fn() => Craft::t('app', 'Last Name'),
+                'label' => t('Last Name'),
+                'placeholder' => fn() => t('Last Name'),
             ],
             'fullName' => [
-                'label' => Craft::t('app', 'Full Name'),
-                'placeholder' => Craft::t('app', 'Full Name'),
+                'label' => t('Full Name'),
+                'placeholder' => t('Full Name'),
             ],
             'groups' => [
-                'label' => Craft::t('app', 'Groups'),
-                'placeholder' => fn() => Craft::t('app', 'Group Name'),
+                'label' => t('Groups'),
+                'placeholder' => fn() => t('Group Name'),
             ],
             'affiliatedSite' => [
-                'label' => Craft::t('app', 'Affiliated Site'),
-                'placeholder' => fn() => Craft::t('app', 'Site Name'),
+                'label' => t('Affiliated Site'),
+                'placeholder' => fn() => t('Site Name'),
             ],
             'preferredLanguage' => [
-                'label' => Craft::t('app', 'Preferred Language'),
-                'placeholder' => fn() => $i18n->getLocaleById('en')->getDisplayName(Craft::$app->language),
+                'label' => t('Preferred Language'),
+                'placeholder' => fn() => I18N::getLocaleById('en')->getDisplayName(app()->getLocale()),
             ],
             'preferredLocale' => [
-                'label' => Craft::t('app', 'Preferred Locale'),
-                'placeholder' => fn() => $i18n->getLocaleById('en-US')->getDisplayName(Craft::$app->language),
+                'label' => t('Preferred Locale'),
+                'placeholder' => fn() => I18N::getLocaleById('en-US')->getDisplayName(app()->getLocale()),
             ],
             'isCredentialed' => [
-                'label' => Craft::t('app', 'Credentialed'),
+                'label' => t('Credentialed'),
                 'placeholder' => fn() => Template::raw(Cp::statusLabelHtml([
                     'color' => Color::Teal,
-                    'label' => Craft::t('app', 'Credentialed'),
+                    'label' => t('Credentialed'),
                     'icon' => 'check',
                 ])),
             ],
             'lastLoginDate' => [
-                'label' => Craft::t('app', 'Last Login'),
+                'label' => t('Last Login'),
                 'placeholder' => fn() => (new DateTime())->sub(new DateInterval('P14D')),
             ],
             'is2faEnabled' => [
-                'label' => Craft::t('app', 'Two-Step Verification'),
+                'label' => t('Two-Step Verification'),
                 'placeholder' => fn() => Template::raw(Cp::statusLabelHtml([
                     'color' => Color::Teal,
-                    'label' => Craft::t('app', 'Two-Step Verification'),
+                    'label' => t('Two-Step Verification'),
                     'icon' => 'check',
                 ])),
             ],
@@ -924,7 +924,7 @@ class User extends Element implements IdentityInterface
 
         return [
             [
-                'label' => Craft::t('app', 'Users'),
+                'label' => t('Users'),
                 'url' => 'users',
             ],
         ];
@@ -975,15 +975,15 @@ class User extends Element implements IdentityInterface
     public function attributeLabels(): array
     {
         $labels = parent::attributeLabels();
-        $labels['currentPassword'] = Craft::t('app', 'Current Password');
-        $labels['email'] = Craft::t('app', 'Email');
-        $labels['fullName'] = Craft::t('app', 'Full Name');
-        $labels['firstName'] = Craft::t('app', 'First Name');
-        $labels['lastName'] = Craft::t('app', 'Last Name');
-        $labels['newPassword'] = Craft::t('app', 'New Password');
-        $labels['password'] = Craft::t('app', 'Password');
-        $labels['unverifiedEmail'] = Craft::t('app', 'Email');
-        $labels['username'] = Craft::t('app', 'Username');
+        $labels['currentPassword'] = t('Current Password');
+        $labels['email'] = t('Email');
+        $labels['fullName'] = t('Full Name');
+        $labels['firstName'] = t('First Name');
+        $labels['lastName'] = t('Last Name');
+        $labels['newPassword'] = t('New Password');
+        $labels['password'] = t('Password');
+        $labels['unverifiedEmail'] = t('Email');
+        $labels['username'] = t('Username');
 
         return $labels;
     }
@@ -1078,7 +1078,7 @@ class User extends Element implements IdentityInterface
         $rules[] = [
             ['fullName', 'firstName', 'lastName', 'username'], function($attribute, $params, Validator $validator) {
                 if (str_contains($this->$attribute, '://')) {
-                    $validator->addError($this, $attribute, Craft::t('app', 'Invalid value “{value}”.'));
+                    $validator->addError($this, $attribute, t('Invalid value “{value}”.'));
                 }
             },
         ];
@@ -1104,7 +1104,7 @@ class User extends Element implements IdentityInterface
             // make sure they have an elevated session
             $userSession = Craft::$app->getUser();
             if (!$userSession->getHasElevatedSession()) {
-                throw new BadRequestHttpException(Craft::t('app', 'An elevated session is required to change a user’s email.'));
+                throw new BadRequestHttpException(t('An elevated session is required to change a user’s email.'));
             }
 
             if ($this->email !== null) {
@@ -1209,7 +1209,7 @@ class User extends Element implements IdentityInterface
         }
 
         if ($query->exists()) {
-            $validator->addError($this, $attribute, Craft::t('yii', '{attribute} "{value}" has already been taken.'), $params);
+            $validator->addError($this, $attribute, t('{attribute} "{value}" has already been taken.'), $params);
         }
     }
 
@@ -1941,7 +1941,7 @@ XML;
                 case Element::STATUS_DISABLED:
                     if (Craft::$app->getElements()->canSave($this)) {
                         $statusItems[] = [
-                            'label' => Craft::t('app', 'Enable'),
+                            'label' => t('Enable'),
                             'action' => 'users/enable-user',
                             'params' => [
                                 'userId' => $this->id,
@@ -1956,7 +1956,7 @@ XML;
                         if ($this->pending || $canModerateUsers) {
                             $statusItems[] = [
                                 'icon' => 'paperplane',
-                                'label' => Craft::t('app', 'Send activation email'),
+                                'label' => t('Send activation email'),
                                 'action' => 'users/send-activation-email',
                                 'params' => [
                                     'userId' => $this->id,
@@ -1966,11 +1966,11 @@ XML;
                         if ($canAdministrateUsers) {
                             // Only need to show the "Copy activation URL" option if they don't have a password
                             if (!$this->password) {
-                                $statusItems[] = $this->_copyPasswordResetUrlActionItem(Craft::t('app', 'Copy activation URL…'), $view);
+                                $statusItems[] = $this->_copyPasswordResetUrlActionItem(t('Copy activation URL…'), $view);
                             }
                             $statusItems[] = [
                                 'icon' => 'enabled',
-                                'label' => Craft::t('app', 'Activate account'),
+                                'label' => t('Activate account'),
                                 'action' => 'users/activate-user',
                                 'params' => [
                                     'userId' => $this->id,
@@ -1983,7 +1983,7 @@ XML;
                     if ($usersService->canSuspend($currentUser, $this)) {
                         $statusItems[] = [
                             'icon' => 'enabled',
-                            'label' => Craft::t('app', 'Unsuspend'),
+                            'label' => t('Unsuspend'),
                             'action' => 'users/unsuspend-user',
                             'params' => [
                                 'userId' => $this->id,
@@ -2003,7 +2003,7 @@ XML;
                             )
                         ) {
                             $statusItems[] = [
-                                'label' => Craft::t('app', 'Unlock'),
+                                'label' => t('Unlock'),
                                 'action' => 'users/unlock-user',
                                 'params' => [
                                     'userId' => $this->id,
@@ -2015,14 +2015,14 @@ XML;
                     if (!$isCurrentUser && $userSession->checkPermission('editUsers')) {
                         $statusItems[] = [
                             'icon' => 'paperplane',
-                            'label' => Craft::t('app', 'Send password reset email'),
+                            'label' => t('Send password reset email'),
                             'action' => 'users/send-password-reset-email',
                             'params' => [
                                 'userId' => $this->id,
                             ],
                         ];
                         if ($canAdministrateUsers) {
-                            $statusItems[] = $this->_copyPasswordResetUrlActionItem(Craft::t('app', 'Copy password reset URL…'), $view);
+                            $statusItems[] = $this->_copyPasswordResetUrlActionItem(t('Copy password reset URL…'), $view);
                         }
                     }
                     break;
@@ -2037,7 +2037,7 @@ XML;
                     $statusItems[] = [
                         'icon' => 'asterisk-slash',
                         'iconColor' => 'gray',
-                        'label' => Craft::t('app', 'Don’t require a password reset on next login'),
+                        'label' => t('Don’t require a password reset on next login'),
                         'action' => 'users/remove-password-reset-requirement',
                         'params' => [
                             'userId' => $this->id,
@@ -2046,7 +2046,7 @@ XML;
                 } else {
                     $statusItems[] = [
                         'icon' => 'asterisk',
-                        'label' => Craft::t('app', 'Require a password reset on next login'),
+                        'label' => t('Require a password reset on next login'),
                         'action' => 'users/require-password-reset',
                         'params' => [
                             'userId' => $this->id,
@@ -2060,8 +2060,8 @@ XML;
                     $sessionItems[] = [
                         'icon' => 'key',
                         'label' => trim($this->getName())
-                            ? Craft::t('app', 'Sign in as {user}', ['user' => $this->getName()])
-                            : Craft::t('app', 'Sign in as user'),
+                            ? t('Sign in as {user}', ['user' => $this->getName()])
+                            : t('Sign in as user'),
                         'action' => 'users/impersonate',
                         'params' => [
                             'userId' => $this->id,
@@ -2073,7 +2073,7 @@ XML;
                     $sessionItems[] = [
                         'id' => $copyImpersonationUrlId,
                         'icon' => 'clipboard',
-                        'label' => Craft::t('app', 'Copy impersonation URL…'),
+                        'label' => t('Copy impersonation URL…'),
                     ];
 
                     $view->registerJsWithVars(fn($id, $userId, $message) => <<<JS
@@ -2085,14 +2085,14 @@ $('#' + $id).on('activate', () => {
         Craft.ui.createCopyTextPrompt({
           label: $message,
           value: response.data.url,
-        });
+        })
       });
   });
 });
 JS, [
                         $view->namespaceInputId($copyImpersonationUrlId),
                         $this->id,
-                        Craft::t('app', 'Copy the impersonation URL, and open it in a new private window.'),
+                        t('Copy the impersonation URL, and open it in a new private window.'),
                     ]);
                 }
             }
@@ -2135,7 +2135,7 @@ JS, [
                 if ($usersService->canSuspend($currentUser, $this) && $this->active && !$this->suspended) {
                     $items[] = [
                         'icon' => 'ban',
-                        'label' => Craft::t('app', 'Suspend'),
+                        'label' => t('Suspend'),
                         'action' => 'users/suspend-user',
                         'params' => [
                             'userId' => $this->id,
@@ -2149,12 +2149,12 @@ JS, [
                 if (($isCurrentUser || $canAdministrateUsers) && ($this->active || $this->pending)) {
                     $items[] = [
                         'icon' => 'disabled',
-                        'label' => Craft::t('app', 'Deactivate'),
+                        'label' => t('Deactivate'),
                         'action' => 'users/deactivate-user',
                         'params' => [
                             'userId' => $this->id,
                         ],
-                        'confirm' => Craft::t('app', 'Deactivating a user revokes their ability to sign in. Are you sure you want to continue?'),
+                        'confirm' => t('Deactivating a user revokes their ability to sign in. Are you sure you want to continue?'),
                     ];
                 }
 
@@ -2164,7 +2164,7 @@ JS, [
                     $items[] = [
                         'id' => $deleteId,
                         'icon' => 'trash',
-                        'label' => mb_ucfirst(Craft::t('app', 'Delete {type}', [
+                        'label' => mb_ucfirst(t('Delete {type}', [
                             'type' => static::lowerDisplayName(),
                         ])),
                     ];
@@ -2177,7 +2177,7 @@ $('#' + $id).on('activate', () => {
     new Craft.DeleteUserModal($userId, {
       contentSummary: response.data,
       redirect: $redirect,
-    });
+    })
   });
 });
 JS,
@@ -2207,7 +2207,7 @@ $('#' + $id).on('activate', () => {
       Craft.ui.createCopyTextPrompt({
         label: $message,
         value: response.data.url,
-      });
+      })
     }).catch(({response}) => {
       Craft.cp.displayError(response.data.message);
     });
@@ -2216,7 +2216,7 @@ $('#' + $id).on('activate', () => {
 JS, [
             $view->namespaceInputId($id),
             $this->id,
-            Craft::t('app', 'Copy the activation URL'),
+            t('Copy the activation URL'),
         ]);
 
         return [
@@ -2291,8 +2291,11 @@ JS, [
      */
     private function _validateLocale(?string $locale, bool $checkAllLocales): ?string
     {
-        $locales = $checkAllLocales ? Craft::$app->getI18n()->getAllLocaleIds() : Craft::$app->getI18n()->getAppLocaleIds();
-        if ($locale && in_array($locale, $locales, true)) {
+        $locales = $checkAllLocales
+            ? I18N::getAllLocaleIds()
+            : I18N::getAppLocaleIds();
+
+        if ($locale && $locales->contains($locale)) {
             return $locale;
         }
 
@@ -2351,24 +2354,24 @@ JS, [
                 return $this->email ? Html::mailto(Html::encode($this->email)) : '';
 
             case 'groups':
-                return implode(', ', array_map(fn(UserGroup $group) => Html::encode(Craft::t('site', $group->name)), $this->getGroups()));
+                return implode(', ', array_map(fn(UserGroup $group) => Html::encode(t($group->name, category: 'site')), $this->getGroups()));
 
             case 'preferredLanguage':
                 $language = $this->getPreferredLanguage();
 
-                return $language ? Craft::$app->getI18n()->getLocaleById($language)->getDisplayName(Craft::$app->language) : '';
+                return $language ? I18N::getLocaleById($language)->getDisplayName(app()->getLocale()) : '';
 
             case 'preferredLocale':
                 $locale = $this->getPreferredLocale();
 
-                return $locale ? Craft::$app->getI18n()->getLocaleById($locale)->getDisplayName(Craft::$app->language) : '';
+                return $locale ? I18N::getLocaleById($locale)->getDisplayName(app()->getLocale()) : '';
 
             case 'is2faEnabled':
                 $enabled = Craft::$app->getAuth()->hasActiveMethod($this);
                 if ($this->viewMode === 'cards') {
                     return Cp::statusLabelHtml([
                         'color' => $enabled ? Color::Teal : Color::Gray,
-                        'label' => Craft::t('app', 'Two-Step Verification'),
+                        'label' => t('Two-Step Verification'),
                         'icon' => $enabled ? 'check' : 'xmark',
                     ]);
                 } else {
@@ -2379,9 +2382,9 @@ JS, [
                     return Html::tag('span', '', [
                         'class' => 'checkbox-icon',
                         'role' => 'img',
-                        'title' => Craft::t('app', 'Enabled'),
+                        'title' => t('Enabled'),
                         'aria' => [
-                            'label' => Craft::t('app', 'Enabled'),
+                            'label' => t('Enabled'),
                         ],
                     ]);
                 }
@@ -2392,7 +2395,7 @@ JS, [
                 if ($this->viewMode === 'cards') {
                     return Cp::statusLabelHtml([
                         'color' => $value ? Color::Teal : Color::Gray,
-                        'label' => Craft::t('app', 'Credentialed'),
+                        'label' => t('Credentialed'),
                         'icon' => $value ? 'check' : 'xmark',
                     ]);
                 }
@@ -2429,11 +2432,11 @@ JS, [
      */
     protected function metadata(): array
     {
-        $formatter = Craft::$app->getFormatter();
+        $formatter = I18N::getFormatter();
 
         return [
-            Craft::t('app', 'Email') => Html::a($this->email, "mailto:$this->email"),
-            Craft::t('app', 'Cooldown Time Remaining') => function() use ($formatter) {
+            t('Email') => Html::a($this->email, "mailto:$this->email"),
+            t('Cooldown Time Remaining') => function() use ($formatter) {
                 if (
                     !$this->locked ||
                     !app(GeneralConfig::class)->cooldownDuration ||
@@ -2444,25 +2447,25 @@ JS, [
 
                 return $formatter->asDuration($duration);
             },
-            Craft::t('app', 'Created at') => $formatter->asDatetime($this->dateCreated, Formatter::FORMAT_WIDTH_SHORT),
-            Craft::t('app', 'Last login') => function() use ($formatter) {
+            t('Created at') => $formatter->asDatetime($this->dateCreated, Formatter::FORMAT_WIDTH_SHORT),
+            t('Last login') => function() use ($formatter) {
                 if ($this->pending) {
                     return false;
                 }
                 if (!$this->lastLoginDate) {
-                    return Craft::t('app', 'Never');
+                    return t('Never');
                 }
 
                 return $formatter->asDatetime($this->lastLoginDate, Formatter::FORMAT_WIDTH_SHORT);
             },
-            Craft::t('app', 'Last login fail') => function() use ($formatter) {
+            t('Last login fail') => function() use ($formatter) {
                 if (!$this->locked || !$this->lastInvalidLoginDate) {
                     return false;
                 }
 
                 return $formatter->asDatetime($this->lastInvalidLoginDate, Formatter::FORMAT_WIDTH_SHORT);
             },
-            Craft::t('app', 'Login fail count') => function() use ($formatter) {
+            t('Login fail count') => function() use ($formatter) {
                 if (!$this->locked) {
                     return false;
                 }

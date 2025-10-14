@@ -27,6 +27,7 @@ use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Str;
 use Illuminate\Support\Collection;
 use yii\base\Component;
+use function CraftCms\Cms\t;
 
 /**
  * The Element Sources service provides APIs for managing element indexes.
@@ -467,7 +468,7 @@ class ElementSources extends Component
                         } else {
                             // The handle was overridden, so it gets its own table attribute
                             $attributes["fieldInstance:$layoutElement->uid"] = [
-                                'label' => Craft::t('site', $layoutElement->label()),
+                                'label' => t($layoutElement->label(), category: 'site'),
                             ];
                         }
                     }
@@ -479,7 +480,7 @@ class ElementSources extends Component
             $field = $fieldElements[0]->getField();
             $labels = array_unique(array_map(fn(CustomField $layoutElement) => $layoutElement->label(), $fieldElements));
             $attributes["field:$field->uid"] = [
-                'label' => count($labels) === 1 ? $labels[0] : Craft::t('site', $field->name),
+                'label' => count($labels) === 1 ? $labels[0] : t($field->name, category: 'site'),
             ];
         }
 

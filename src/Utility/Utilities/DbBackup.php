@@ -6,6 +6,8 @@ use Craft;
 use craft\web\assets\dbbackup\DbBackupAsset;
 use CraftCms\Cms\Utility\Utility;
 
+use function CraftCms\Cms\t;
+
 /**
  * DbBackup represents a DbBackup dashboard widget.
  */
@@ -17,7 +19,7 @@ final class DbBackup extends Utility
     #[\Override]
     public static function displayName(): string
     {
-        return Craft::t('app', 'Database Backup');
+        return t('Database Backup');
     }
 
     /**

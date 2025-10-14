@@ -15,6 +15,7 @@ use Illuminate\Support\Collection;
 use Throwable;
 use yii\base\InvalidArgumentException;
 use yii\base\InvalidConfigException;
+use function CraftCms\Cms\t;
 
 /**
  * BaseCondition provides a base implementation for conditions.
@@ -90,7 +91,7 @@ abstract class BaseCondition extends Component implements ConditionInterface
         }
 
         if (!isset($this->addRuleLabel)) {
-            $this->addRuleLabel = Craft::t('app', 'Add a rule');
+            $this->addRuleLabel = t('Add a rule');
         }
 
         if (!isset($this->_conditionRules)) {
@@ -306,7 +307,7 @@ JS, [$view->namespaceInputId($this->id)]);
                 try {
                     $allRulesHtml .= $view->namespaceInputs(function() use ($rule, $ruleNum, $selectableRules) {
                         $ruleHtml =
-                            Html::tag('legend', Craft::t('app', 'Condition {num, number}', [
+                            Html::tag('legend', t('Condition {num, number}', [
                                 'num' => $ruleNum,
                             ]), [
                                 'class' => 'visually-hidden',
@@ -331,7 +332,7 @@ JS, [$view->namespaceInputId($this->id)]);
                         $ruleHtml .=
                             // Rule type selector
                             Html::beginTag('div', ['class' => 'rule-switcher']) .
-                            Html::hiddenLabel(Craft::t('app', 'Rule Type'), 'type', [
+                            Html::hiddenLabel(t('Rule Type'), 'type', [
                                 'id' => $labelId,
                             ]) .
                             $this->_ruleTypeMenu($selectableRules, $rule, $ruleValue, [
@@ -350,9 +351,9 @@ JS, [$view->namespaceInputId($this->id)]);
                             ]) .
                             Html::button('', [
                                 'class' => ['delete', 'icon'],
-                                'title' => Craft::t('app', 'Remove'),
+                                'title' => t('Remove'),
                                 'aria' => [
-                                  'label' => Craft::t('app', 'Remove'),
+                                  'label' => t('Remove'),
                                 ],
                                 'hx' => [
                                     'vals' => ['uid' => $rule->uid],
@@ -434,8 +435,8 @@ JS, [$view->namespaceInputId($this->id)]);
             } else {
                 $view->registerJsWithVars(
                     fn($containerSelector) => <<<JS
-htmx.process(htmx.find($containerSelector));
-htmx.trigger(htmx.find($containerSelector), 'htmx:load');
+htmx.process(htmx.find($containerSelector))
+htmx.trigger(htmx.find($containerSelector), 'htmx:load')
 JS,
                     [sprintf('#%s', $namespacedId)]
                 );

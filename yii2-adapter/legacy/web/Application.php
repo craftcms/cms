@@ -53,6 +53,7 @@ use yii\web\ForbiddenHttpException;
 use yii\web\NotFoundHttpException;
 use yii\web\Response as BaseResponse;
 use yii\web\UnauthorizedHttpException;
+use function CraftCms\Cms\t;
 
 /**
  * Craft Web Application class
@@ -132,7 +133,16 @@ class Application extends \yii\web\Application
     }
 
     /**
+     * @deprecated 6.0.0 use `app()->getTimezone()` instead.
+     */
+    public function getTimeZone(): string
+    {
+        return app()->getTimezone();
+    }
+
+    /**
      * @inheritdoc
+     * @deprecated 6.0.0
      */
     public function setTimeZone($value): void
     {
@@ -141,9 +151,7 @@ class Application extends \yii\web\Application
         if ($value !== 'UTC') {
             // Make sure that ICU supports this timezone
             try {
-                /** @noinspection PhpExpressionResultUnusedInspection */
-                /** @phpstan-ignore-next-line */
-                new IntlDateFormatter($this->language, IntlDateFormatter::NONE, IntlDateFormatter::NONE);
+                new IntlDateFormatter(app()->getLocale(), IntlDateFormatter::NONE, IntlDateFormatter::NONE);
             } catch (IntlException) {
                 Craft::warning("Time zone “{$value}” does not appear to be supported by ICU: " . intl_get_error_message());
                 parent::setTimeZone('UTC');
@@ -578,7 +586,7 @@ class Application extends \yii\web\Application
                 $this->end();
             }
 
-            throw new ServiceUnavailableHttpException(Craft::t('app', 'Craft isn’t installed yet.'));
+            throw new ServiceUnavailableHttpException(t('Craft isn’t installed yet.'));
         }
 
         return null;
@@ -609,7 +617,7 @@ class Application extends \yii\web\Application
             } catch (Throwable $e) {
                 $this->_unregisterDebugModule();
                 if ($e instanceof InvalidRouteException) {
-                    throw new NotFoundHttpException(Craft::t('yii', 'Page not found.'), $e->getCode(), $e);
+                    throw new NotFoundHttpException(t('Page not found.'), $e->getCode(), $e);
                 }
                 throw $e;
             }

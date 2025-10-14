@@ -31,6 +31,7 @@ use Throwable;
 use yii\base\Component;
 use yii\base\InvalidArgumentException;
 use yii\base\InvalidConfigException;
+use function CraftCms\Cms\t;
 
 /**
  * Volumes service.
@@ -204,7 +205,7 @@ class Volumes extends Component
     public function getTemporaryVolume(): Volume
     {
         $volume = new Volume([
-            'name' => Craft::t('app', 'Temporary Uploads'),
+            'name' => t('Temporary Uploads'),
         ]);
 
         $fs = Craft::$app->getAssets()->getTempAssetUploadFs();

@@ -9,16 +9,19 @@ use craft\fields\conditions\NumberFieldConditionRule;
 use craft\gql\types\Number as NumberType;
 use craft\helpers\Db;
 use craft\helpers\Localization;
-use craft\i18n\Locale;
 use CraftCms\Cms\Field\Contracts\CrossSiteCopyableFieldInterface;
 use CraftCms\Cms\Field\Contracts\InlineEditableFieldInterface;
 use CraftCms\Cms\Field\Contracts\MergeableFieldInterface;
 use CraftCms\Cms\Field\Contracts\SortableFieldInterface;
+use CraftCms\Cms\Support\Facades\I18N;
+use CraftCms\Cms\Translation\Locale;
 use GraphQL\Type\Definition\Type;
 use Illuminate\Validation\Rule;
 use Throwable;
 use yii\base\InvalidArgumentException;
 use yii\db\Schema;
+
+use function CraftCms\Cms\t;
 
 /**
  * Number represents a Number field.
@@ -36,7 +39,7 @@ final class Number extends Field implements CrossSiteCopyableFieldInterface, Inl
      */
     public static function displayName(): string
     {
-        return Craft::t('app', 'Number');
+        return t('Number');
     }
 
     /**
@@ -245,7 +248,7 @@ final class Number extends Field implements CrossSiteCopyableFieldInterface, Inl
     protected function inputHtml(mixed $value, ?ElementInterface $element, bool $inline): string
     {
         $view = Craft::$app->getView();
-        $formatter = Craft::$app->getFormatter();
+        $formatter = I18N::getFormatter();
 
         try {
             $formatNumber = ! $this->step && ! $formatter->willBeMisrepresented($value);
@@ -257,12 +260,12 @@ final class Number extends Field implements CrossSiteCopyableFieldInterface, Inl
             if ($value !== null) {
                 if ($this->previewFormat !== self::FORMAT_NONE) {
                     try {
-                        $value = Craft::$app->getFormatter()->asDecimal($value, $this->decimals);
+                        $value = $formatter->asDecimal($value, $this->decimals);
                     } catch (InvalidArgumentException) {
                     }
                 } elseif ($this->decimals !== 0) {
                     // Just make sure we're using the right decimal symbol
-                    $decimalSeparator = Craft::$app->getFormattingLocale()->getNumberSymbol(Locale::SYMBOL_DECIMAL_SEPARATOR);
+                    $decimalSeparator = I18N::getFormattingLocale()->getNumberSymbol(Locale::SYMBOL_DECIMAL_SEPARATOR);
                     try {
                         $value = number_format($value, $this->decimals, $decimalSeparator, '');
                     } catch (Throwable) {
@@ -272,7 +275,7 @@ final class Number extends Field implements CrossSiteCopyableFieldInterface, Inl
             } else {
                 // Override the initial value being set to null by CustomField::inputHtml()
                 $view->setInitialDeltaValue($this->handle, [
-                    'locale' => Craft::$app->getFormattingLocale()->id,
+                    'locale' => I18N::getFormattingLocale()->id,
                     'value' => '',
                 ]);
             }
@@ -352,8 +355,8 @@ JS;
         }
 
         $formatted = match ($this->previewFormat) {
-            self::FORMAT_DECIMAL => Craft::$app->getFormatter()->asDecimal($value, $this->decimals),
-            self::FORMAT_CURRENCY => Craft::$app->getFormatter()->asCurrency($value, $this->previewCurrency, [], [], ! $this->decimals),
+            self::FORMAT_DECIMAL => I18N::getFormatter()->asDecimal($value, $this->decimals),
+            self::FORMAT_CURRENCY => I18N::getFormatter()->asCurrency($value, $this->previewCurrency, ! $this->decimals),
             default => $value,
         };
 

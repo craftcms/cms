@@ -3,13 +3,15 @@
 namespace CraftCms\Cms\Shared\Rules;
 
 use Closure;
-use Craft;
 use craft\helpers\DateTimeHelper;
-use craft\i18n\Locale;
+use CraftCms\Cms\Support\Facades\I18N;
+use CraftCms\Cms\Translation\Locale;
 use DateTime;
 use Illuminate\Contracts\Validation\DataAwareRule;
 use Illuminate\Contracts\Validation\ValidationRule;
 use RuntimeException;
+
+use function CraftCms\Cms\t;
 
 final class TimeRule implements DataAwareRule, ValidationRule
 {
@@ -50,9 +52,9 @@ final class TimeRule implements DataAwareRule, ValidationRule
          */
         public ?string $message = null,
     ) {
-        $this->message ??= Craft::t('app', '{attribute} must be a time.');
-        $this->tooEarly ??= Craft::t('app', '{attribute} must be no earlier than {min}.');
-        $this->tooLate ??= Craft::t('app', '{attribute} must be no later than {max}.');
+        $this->message ??= t('{attribute} must be a time.');
+        $this->tooEarly ??= t('{attribute} must be no earlier than {min}.');
+        $this->tooLate ??= t('{attribute} must be no later than {max}.');
     }
 
     public function validate(string $attribute, mixed $value, Closure $fail): void
@@ -76,9 +78,9 @@ final class TimeRule implements DataAwareRule, ValidationRule
             }
 
             if ($value < $min) {
-                $fail(Craft::$app->getI18n()->format($this->tooEarly, [
-                    'min' => Craft::$app->getFormatter()->asTime($min, Locale::LENGTH_SHORT),
-                ], Craft::$app->language));
+                $fail(t($this->tooEarly, [
+                    'min' => I18N::getFormatter()->asTime($min, Locale::LENGTH_SHORT),
+                ], locale: app()->getLocale()));
             }
         }
 
@@ -91,9 +93,9 @@ final class TimeRule implements DataAwareRule, ValidationRule
             }
 
             if ($value > $max) {
-                $fail(Craft::$app->getI18n()->format($this->tooLate, [
-                    'max' => Craft::$app->getFormatter()->asTime($max, Locale::LENGTH_SHORT),
-                ], Craft::$app->language));
+                $fail(t($this->tooLate, [
+                    'max' => I18N::getFormatter()->asTime($max, Locale::LENGTH_SHORT),
+                ], locale: app()->getLocale()));
             }
         }
     }

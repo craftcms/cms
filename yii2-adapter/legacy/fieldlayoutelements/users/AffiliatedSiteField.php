@@ -14,6 +14,7 @@ use craft\fieldlayoutelements\BaseNativeField;
 use craft\helpers\Cp;
 use craft\models\Site;
 use yii\base\InvalidArgumentException;
+use function CraftCms\Cms\t;
 
 /**
  * AffiliatedSiteField represents the Affiliated Site field that can be included in the user field layout.
@@ -66,7 +67,7 @@ class AffiliatedSiteField extends BaseNativeField
      */
     public function defaultLabel(?ElementInterface $element = null, bool $static = false): ?string
     {
-        return Craft::t('app', 'Affiliated Site');
+        return t('Affiliated Site');
     }
 
     /**
@@ -74,7 +75,7 @@ class AffiliatedSiteField extends BaseNativeField
      */
     protected function instructions(ElementInterface $element = null, bool $static = false): ?string
     {
-        return Craft::t('app', 'Determines which site the user will receive emails from, when sent via the control panel.');
+        return t('Determines which site the user will receive emails from, when sent via the control panel.');
     }
 
     /**
@@ -94,7 +95,7 @@ class AffiliatedSiteField extends BaseNativeField
             'name' => 'affiliatedSiteId',
             'id' => 'affiliated-site',
             'options' => [
-                ['label' => Craft::t('app', 'None'), 'value' => ''],
+                ['label' => t('None'), 'value' => ''],
                 ...array_map(fn(Site $site) => [
                     'label' => $site->getUiLabel(),
                     'value' => $site->id,

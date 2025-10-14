@@ -20,6 +20,7 @@ use Exception;
 use Throwable;
 use yii\web\HttpException;
 use yii\web\Response;
+use function CraftCms\Cms\t;
 
 /**
  * SSO controller
@@ -105,7 +106,7 @@ class SsoController extends Controller
     protected function handleFailedRequest(?string $message = null): ?Response
     {
         return $this->asFailure(
-            $message ?? Craft::t('app', 'Unable to initiate an auth request.')
+            $message ?? t('Unable to initiate an auth request.')
         );
     }
 
@@ -156,7 +157,7 @@ class SsoController extends Controller
         usleep(random_int(0, 1500000));
 
         $user = null;
-        $message = Craft::t('app', 'Auth error');
+        $message = t('Auth error');
 
         if ($exception instanceof SsoFailedException) {
             $user = $exception->identity;

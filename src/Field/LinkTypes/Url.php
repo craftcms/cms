@@ -2,10 +2,11 @@
 
 namespace CraftCms\Cms\Field\LinkTypes;
 
-use Craft;
 use craft\helpers\Cp;
 use Exception;
 use League\Uri\Uri;
+
+use function CraftCms\Cms\t;
 
 /**
  * URL link type.
@@ -19,7 +20,7 @@ final class Url extends BaseTextLinkType
 
     public static function displayName(): string
     {
-        return Craft::t('app', 'URL');
+        return t('URL');
     }
 
     public function supports(string $value): bool
@@ -64,17 +65,17 @@ final class Url extends BaseTextLinkType
     {
         return
             Cp::lightswitchFieldHtml([
-                'label' => Craft::t('app', 'Allow root-relative URLs'),
+                'label' => t('Allow root-relative URLs'),
                 'name' => 'allowRootRelativeUrls',
                 'on' => $this->allowRootRelativeUrls,
             ]).
             Cp::lightswitchFieldHtml([
-                'label' => Craft::t('app', 'Allow anchors'),
+                'label' => t('Allow anchors'),
                 'name' => 'allowAnchors',
                 'on' => $this->allowAnchors,
             ]).
             Cp::lightswitchFieldHtml([
-                'label' => Craft::t('app', 'Allow custom URL schemes'),
+                'label' => t('Allow custom URL schemes'),
                 'name' => 'allowCustomSchemes',
                 'on' => $this->allowCustomSchemes,
             ]);

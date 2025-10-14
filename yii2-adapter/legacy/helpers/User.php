@@ -10,6 +10,7 @@ namespace craft\helpers;
 use Craft;
 use craft\elements\User as UserElement;
 use CraftCms\Cms\Config\GeneralConfig;
+use function CraftCms\Cms\t;
 
 /**
  * Class User
@@ -77,26 +78,26 @@ class User
     {
         switch ($user->authError ?? "") {
             case UserElement::AUTH_PENDING_VERIFICATION:
-                return Craft::t('app', 'Account has not been activated.');
+                return t('Account has not been activated.');
             case UserElement::AUTH_ACCOUNT_LOCKED:
-                return Craft::t('app', 'Account locked.');
+                return t('Account locked.');
             case UserElement::AUTH_ACCOUNT_COOLDOWN:
                 $timeRemaining = $user?->getRemainingCooldownTime();
 
                 if ($timeRemaining) {
-                    return Craft::t('app', 'Account locked. Try again in {time}.', ['time' => DateTimeHelper::humanDuration($timeRemaining)]);
+                    return t('Account locked. Try again in {time}.', ['time' => DateTimeHelper::humanDuration($timeRemaining)]);
                 }
-                return Craft::t('app', 'Account locked.');
+                return t('Account locked.');
             case UserElement::AUTH_PASSWORD_RESET_REQUIRED:
-                return Craft::t('app', 'You need to reset your password.');
+                return t('You need to reset your password.');
             case UserElement::AUTH_ACCOUNT_SUSPENDED:
-                return Craft::t('app', 'Account suspended.');
+                return t('Account suspended.');
             case UserElement::AUTH_NO_CP_ACCESS:
-                return Craft::t('app', 'You cannot access the control panel with that account.');
+                return t('You cannot access the control panel with that account.');
             case UserElement::AUTH_NO_CP_OFFLINE_ACCESS:
-                return Craft::t('app', 'You cannot access the control panel while the system is offline with that account.');
+                return t('You cannot access the control panel while the system is offline with that account.');
             case UserElement::AUTH_NO_SITE_OFFLINE_ACCESS:
-                return Craft::t('app', 'You cannot access the site while the system is offline with that account.');
+                return t('You cannot access the site while the system is offline with that account.');
         }
 
         return null;
@@ -133,44 +134,44 @@ class User
     {
         switch ($authError) {
             case UserElement::AUTH_PENDING_VERIFICATION:
-                $message = Craft::t('app', 'Account has not been activated.');
+                $message = t('Account has not been activated.');
                 break;
             case UserElement::AUTH_ACCOUNT_LOCKED:
-                $message = Craft::t('app', 'Account locked.');
+                $message = t('Account locked.');
                 break;
             case UserElement::AUTH_ACCOUNT_COOLDOWN:
                 $timeRemaining = $user?->getRemainingCooldownTime();
 
                 if ($timeRemaining) {
-                    $message = Craft::t('app', 'Account locked. Try again in {time}.', ['time' => DateTimeHelper::humanDuration($timeRemaining)]);
+                    $message = t('Account locked. Try again in {time}.', ['time' => DateTimeHelper::humanDuration($timeRemaining)]);
                 } else {
-                    $message = Craft::t('app', 'Account locked.');
+                    $message = t('Account locked.');
                 }
                 break;
             case UserElement::AUTH_PASSWORD_RESET_REQUIRED:
                 if (Craft::$app->getUsers()->sendPasswordResetEmail($user)) {
-                    $message = Craft::t('app', 'You need to reset your password. Check your email for instructions.');
+                    $message = t('You need to reset your password. Check your email for instructions.');
                 } else {
-                    $message = Craft::t('app', 'You need to reset your password, but an error was encountered when sending the password reset email.');
+                    $message = t('You need to reset your password, but an error was encountered when sending the password reset email.');
                 }
                 break;
             case UserElement::AUTH_ACCOUNT_SUSPENDED:
-                $message = Craft::t('app', 'Account suspended.');
+                $message = t('Account suspended.');
                 break;
             case UserElement::AUTH_NO_CP_ACCESS:
-                $message = Craft::t('app', 'You cannot access the control panel with that account.');
+                $message = t('You cannot access the control panel with that account.');
                 break;
             case UserElement::AUTH_NO_CP_OFFLINE_ACCESS:
-                $message = Craft::t('app', 'You cannot access the control panel while the system is offline with that account.');
+                $message = t('You cannot access the control panel while the system is offline with that account.');
                 break;
             case UserElement::AUTH_NO_SITE_OFFLINE_ACCESS:
-                $message = Craft::t('app', 'You cannot access the site while the system is offline with that account.');
+                $message = t('You cannot access the site while the system is offline with that account.');
                 break;
             default:
                 if (app(GeneralConfig::class)->useEmailAsUsername) {
-                    $message = Craft::t('app', 'Invalid email or password.');
+                    $message = t('Invalid email or password.');
                 } else {
-                    $message = Craft::t('app', 'Invalid username or password.');
+                    $message = t('Invalid username or password.');
                 }
         }
 

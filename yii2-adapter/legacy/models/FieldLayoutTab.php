@@ -23,6 +23,7 @@ use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Support\Str;
 use yii\base\InvalidArgumentException;
 use yii\base\InvalidConfigException;
+use function CraftCms\Cms\t;
 
 /**
  * FieldLayoutTab model class.
@@ -61,8 +62,8 @@ class FieldLayoutTab extends FieldLayoutComponent
             ]) .
             ($this->hasConditions() ? Html::tag('div', Cp::iconSvg('diamond'), [
                 'class' => array_filter(array_merge(['cp-icon', 'puny', 'orange'])),
-                'title' => Craft::t('app', 'This tab is conditional'),
-                'aria' => ['label' => Craft::t('app', 'This tab is conditional')],
+                'title' => t('This tab is conditional'),
+                'aria' => ['label' => t('This tab is conditional')],
             ]) : '');
     }
 
@@ -180,7 +181,7 @@ class FieldLayoutTab extends FieldLayoutComponent
     protected function settingsHtml(): ?string
     {
         return Cp::textFieldHtml([
-            'label' => Craft::t('app', 'Name'),
+            'label' => t('Name'),
             'name' => 'name',
             'value' => $this->name,
             'required' => true,

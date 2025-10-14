@@ -17,6 +17,7 @@ use DateTime;
 use DateTimeImmutable;
 use DateTimeZone;
 use Exception;
+use Illuminate\Support\Facades\Config;
 use UnitTester;
 
 /**
@@ -520,7 +521,7 @@ class DateTimeHelperTest extends TestCase
      */
     public function testIsInThePast(): void
     {
-        $systemTz = new DateTimeZone(Craft::$app->getTimeZone());
+        $systemTz = new DateTimeZone(app()->getTimezone());
         $dateTime = new DateTime('now', $systemTz);
         $dateTime->modify('-5 seconds');
         self::assertTrue(DateTimeHelper::isInThePast($dateTime));
@@ -708,7 +709,7 @@ class DateTimeHelperTest extends TestCase
     {
         $dt = function() {
             $dt = new DateTime('2018-08-09 20:00:00', new DateTimeZone('Asia/Tokyo'));
-            $dt->setTimezone(new DateTimeZone(Craft::$app->getTimeZone()));
+            $dt->setTimezone(new DateTimeZone(app()->getTimezone()));
 
             return $dt;
         };
@@ -761,7 +762,7 @@ class DateTimeHelperTest extends TestCase
     {
         // Because we dont have access to Craft::$app here we smuggle this in via callback and call it in the test function. Which does have access to Craft::$app.
         $dt = function($dateParam = '2018-08-09 20:00:00') {
-            $systemTimezone = new DateTimezone(Craft::$app->getTimeZone());
+            $systemTimezone = new DateTimezone(app()->getTimezone());
             $utcTz = new DateTimeZone('UTC');
 
             // Crafts toDateTime sets the input time as utc. Then converts to system tz unless overridden by variables $assumeSystemTimeZone and $setToSystemTimeZone.
@@ -971,8 +972,8 @@ class DateTimeHelperTest extends TestCase
      */
     protected function _before(): void
     {
-        Craft::$app->setTimeZone('America/Los_Angeles');
-        $this->systemTimezone = new DateTimeZone(Craft::$app->getTimeZone());
+        Config::set('app.timezone', 'America/Los_Angeles');
+        $this->systemTimezone = new DateTimeZone(app()->getTimezone());
         $this->utcTimezone = new DateTimeZone('UTC');
         $this->asiaTokyoTimezone = new DateTimeZone('Asia/Tokyo');
     }

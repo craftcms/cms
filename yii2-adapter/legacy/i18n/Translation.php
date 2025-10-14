@@ -7,15 +7,14 @@
 
 namespace craft\i18n;
 
-use Craft;
-use CraftCms\Cms\Support\Json;
-use InvalidArgumentException;
+use CraftCms\Cms\Support\Facades\I18N;
 
 /**
  * Translation helper
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 4.0.0
+ * @deprecated 6.0.0 use {@see \CraftCms\Cms\Support\Facades\I18N} instead.
  */
 abstract class Translation
 {
@@ -31,7 +30,7 @@ abstract class Translation
      */
     public static function prep(string $category, string $message, array $params = [], ?string $language = null): string
     {
-        return 't9n:' . Json::encode(func_get_args());
+        return I18N::prep($message, $params, $category, $language);
     }
 
     /**
@@ -42,16 +41,6 @@ abstract class Translation
      */
     public static function translate(string $translation): string
     {
-        if (!str_starts_with($translation, 't9n:')) {
-            return $translation;
-        }
-
-        try {
-            $args = Json::decode(substr($translation, 4));
-        } catch (InvalidArgumentException) {
-            return $translation;
-        }
-
-        return Craft::t(...$args);
+        return I18N::translate($translation);
     }
 }

@@ -2,7 +2,6 @@
 
 namespace craft\fields\conditions;
 
-use Craft;
 use craft\base\conditions\BaseMultiSelectConditionRule;
 use CraftCms\Cms\Addresses\Addresses;
 use CraftCms\Cms\Field\Country;
@@ -23,7 +22,7 @@ class CountryFieldConditionRule extends BaseMultiSelectConditionRule implements 
      */
     protected function options(): array
     {
-        return app(Addresses::class)->getCountryList(Craft::$app->language);
+        return app(Addresses::class)->getCountryList(app()->getLocale());
     }
 
     /**

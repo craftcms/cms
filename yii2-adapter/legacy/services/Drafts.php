@@ -27,6 +27,7 @@ use yii\base\Exception;
 use yii\base\InvalidArgumentException;
 use yii\db\Exception as DbException;
 use yii\di\Instance;
+use function CraftCms\Cms\t;
 
 /**
  * Drafts service.
@@ -216,7 +217,7 @@ class Drafts extends Component
         // Find one that isn't taken
         $num = count($draftNames);
         do {
-            $name = Craft::t('app', 'Draft {num}', ['num' => ++$num]);
+            $name = t('Draft {num}', ['num' => ++$num]);
         } while (isset($draftNames[$name]));
 
         return $name;
@@ -236,7 +237,7 @@ class Drafts extends Component
     public function saveElementAsDraft(ElementInterface $element, ?int $creatorId = null, ?string $name = null, ?string $notes = null, bool $markAsSaved = true): bool
     {
         if ($name === null) {
-            $name = Craft::t('app', 'First draft');
+            $name = t('First draft');
         }
 
         // Create the draft row
@@ -313,7 +314,7 @@ class Drafts extends Component
 
                 // "Duplicate" the draft with the canonical element’s ID and UID
                 $newCanonical = $elementsService->updateCanonicalElement($draft, array_merge($newAttributes, [
-                    'revisionNotes' => $draftNotes ?: Craft::t('app', 'Applied “{name}”', ['name' => $draft->draftName]),
+                    'revisionNotes' => $draftNotes ?: t('Applied “{name}”', ['name' => $draft->draftName]),
                 ]));
 
                 // Move the new canonical element after the draft?

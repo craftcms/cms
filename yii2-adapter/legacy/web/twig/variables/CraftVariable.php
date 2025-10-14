@@ -29,6 +29,7 @@ use craft\web\Application as WebApplication;
 use CraftCms\Cms\Edition;
 use CraftCms\Cms\Field\Fields;
 use CraftCms\Cms\Support\Facades\Deprecator;
+use CraftCms\Cms\Translation\I18N;
 use Illuminate\Support\Facades\Config;
 use yii\di\ServiceLocator;
 
@@ -229,6 +230,11 @@ class CraftVariable extends ServiceLocator
         $query = GlobalSet::find();
         Craft::configure($query, $criteria);
         return $query;
+    }
+
+    public function i18n(): I18N
+    {
+        return app(I18N::class);
     }
 
     /**

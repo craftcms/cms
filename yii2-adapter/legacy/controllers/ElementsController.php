@@ -29,7 +29,6 @@ use craft\helpers\Cp;
 use craft\helpers\Db;
 use craft\helpers\ElementHelper;
 use craft\helpers\UrlHelper;
-use craft\i18n\Locale;
 use craft\models\ElementActivity;
 use craft\models\FieldLayoutForm;
 use craft\services\Drafts;
@@ -41,9 +40,11 @@ use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\Element\Enums\MenuItemType;
 use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Support\Str;
+use CraftCms\Cms\Translation\Locale;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB as DbFacade;
@@ -53,6 +54,7 @@ use yii\web\BadRequestHttpException;
 use yii\web\ForbiddenHttpException;
 use yii\web\Response;
 use yii\web\ServerErrorHttpException;
+use function CraftCms\Cms\t;
 
 /**
  * Elements controller.
@@ -228,7 +230,7 @@ class ElementsController extends Controller
         // Save it
         $element->setScenario(Element::SCENARIO_ESSENTIALS);
         if (!Craft::$app->getDrafts()->saveElementAsDraft($element, $user->id, null, null, false)) {
-            return $this->_asFailure($element, mb_ucfirst(Craft::t('app', 'Couldn’t create {type}.', [
+            return $this->_asFailure($element, mb_ucfirst(t('Couldn’t create {type}.', [
                 'type' => $element::lowerDisplayName(),
             ])));
         }
@@ -239,8 +241,8 @@ class ElementsController extends Controller
             'siteId' => $element->siteId,
         ]);
 
-        $response = $this->_asSuccess(Craft::t('app', '{type} created.', [
-            'type' => Craft::t('app', 'Draft'),
+        $response = $this->_asSuccess(t('{type} created.', [
+            'type' => t('Draft'),
         ]), $element, array_filter([
             'cpEditUrl' => $this->request->isCpRequest ? $editUrl : null,
         ]));
@@ -473,7 +475,7 @@ class ElementsController extends Controller
             if ($isUnpublishedDraft) {
                 if ($canSaveCanonical) {
                     $response
-                        ->submitButtonLabel(mb_ucfirst(Craft::t('app', 'Create {type}', [
+                        ->submitButtonLabel(mb_ucfirst(t('Create {type}', [
                             'type' => $element::lowerDisplayName(),
                         ])))
                         ->action('elements/apply-draft')
@@ -489,8 +491,8 @@ class ElementsController extends Controller
                     ->redirectUrl("$redirectUrl#");
             } elseif ($isDraft) {
                 $response
-                    ->submitButtonLabel(mb_ucfirst(Craft::t('app', 'Save {type}', [
-                        'type' => Craft::t('app', 'draft'),
+                    ->submitButtonLabel(mb_ucfirst(t('Save {type}', [
+                        'type' => t('draft'),
                     ])))
                     ->action('elements/save-draft')
                     ->redirectUrl("{cpEditUrl}");
@@ -555,7 +557,7 @@ class ElementsController extends Controller
     siteId: $siteId,
     standaloneMode: true,
     redirectUrl: $redirectUrl,
-  });
+  })
   preview.open();
 })();
 JS, [
@@ -642,7 +644,7 @@ JS, [
             ]);
         }
 
-        return $this->_asSuccess(Craft::t('app', 'Field value copied.'), $element, [
+        return $this->_asSuccess(t('Field value copied.'), $element, [
             'fieldHtml' => $html,
             'headHtml' => $view->getHeadHtml(),
             'bodyHtml' => $view->getBodyHtml(),
@@ -682,13 +684,13 @@ JS, [
         }
 
         return $this->asCpScreen()
-            ->title(Craft::t('app', 'Revisions for “{title}”', [
+            ->title(t('Revisions for “{title}”', [
                 'title' => $element->getUiLabel(),
             ]))
             ->crumbs([
                 ...$this->_crumbs($element, false),
                 [
-                    'label' => Craft::t('app', 'Revisions'),
+                    'label' => t('Revisions'),
                     'current' => true,
                 ],
             ])
@@ -717,7 +719,7 @@ JS, [
         if ($element::hasTitles() && $element->title !== null && $element->title !== '') {
             $title = $element->title;
         } elseif (!$element->id || $element->getIsUnpublishedDraft()) {
-            $title = Craft::t('app', 'Create a new {type}', [
+            $title = t('Create a new {type}', [
                 'type' => $element::lowerDisplayName(),
             ]);
         } else {
@@ -729,7 +731,7 @@ JS, [
         if ($element->getIsDraft() && !$element->getIsUnpublishedDraft()) {
             /** @var ElementInterface&DraftBehavior $element */
             if ($element->isProvisionalDraft) {
-                $docTitle .= ' — ' . Craft::t('app', 'Edited');
+                $docTitle .= ' — ' . t('Edited');
             } else {
                 $docTitle .= " ($element->draftName)";
             }
@@ -834,7 +836,7 @@ JS, [
             return [];
         }
 
-        $formatter = Craft::$app->getFormatter();
+        $formatter = I18N::getFormatter();
 
         $baseParams = $this->request->getQueryParams();
         unset($baseParams['draftId'], $baseParams['revisionId'], $baseParams['siteId'], $baseParams['fresh']);
@@ -856,19 +858,19 @@ JS, [
 
         $items = [
             [
-                'heading' => Craft::t('app', 'Context'),
+                'heading' => t('Context'),
                 'headingTag' => 'h2',
                 'headingAttributes' => ['class' => ['visually-hidden']],
                 'listAttributes' => ['class' => ['revision-group-current']],
                 'items' => [
                     [
-                        'label' => Craft::t('app', 'Current'),
+                        'label' => t('Current'),
                         'description' => $creator
-                            ? Craft::t('app', 'Saved {timestamp} by {creator}', [
+                            ? t('Saved {timestamp} by {creator}', [
                                 'timestamp' => $timestamp,
                                 'creator' => $creator->name,
                             ])
-                            : Craft::t('app', 'Last saved {timestamp}', [
+                            : t('Last saved {timestamp}', [
                                 'timestamp' => $timestamp,
                             ]),
                         'url' => $cpEditUrl,
@@ -880,7 +882,7 @@ JS, [
 
         if (!empty($drafts)) {
             $items[] = [
-                'heading' => Craft::t('app', 'Drafts'),
+                'heading' => t('Drafts'),
                 'listAttributes' => ['class' => ['revision-group-drafts']],
                 'items' => array_map(function($draft) use ($element, $formatter, $cpEditUrl, $baseParams) {
                     /** @var ElementInterface&DraftBehavior $draft */
@@ -890,11 +892,11 @@ JS, [
                     return [
                         'label' => $draft->draftName,
                         'description' => $creator
-                            ? Craft::t('app', 'Saved {timestamp} by {creator}', [
+                            ? t('Saved {timestamp} by {creator}', [
                                 'timestamp' => $timestamp,
                                 'creator' => $creator->name,
                             ])
-                            : Craft::t('app', 'Last saved {timestamp}', [
+                            : t('Last saved {timestamp}', [
                                 'timestamp' => $timestamp,
                             ]),
                         'url' => UrlHelper::urlWithParams($cpEditUrl, array_merge($baseParams, [
@@ -908,7 +910,7 @@ JS, [
 
         if (!empty($revisions)) {
             $items[] = [
-                'heading' => Craft::t('app', 'Recent Revisions'),
+                'heading' => t('Recent Revisions'),
                 'listAttributes' => ['class' => ['revision-group-revisions']],
                 'items' => array_map(function($revision) use ($element, $formatter, $cpEditUrl, $baseParams) {
                     /** @var ElementInterface&RevisionBehavior $revision */
@@ -918,11 +920,11 @@ JS, [
                     return [
                         'label' => $revision->getRevisionLabel(),
                         'description' => $creator
-                            ? Craft::t('app', 'Saved {timestamp} by {creator}', [
+                            ? t('Saved {timestamp} by {creator}', [
                                 'timestamp' => $timestamp,
                                 'creator' => $creator->name,
                             ])
-                            : Craft::t('app', 'Saved {timestamp}', [
+                            : t('Saved {timestamp}', [
                                 'timestamp' => $timestamp,
                             ]),
                         'url' => UrlHelper::urlWithParams($cpEditUrl, array_merge($baseParams, [
@@ -937,7 +939,7 @@ JS, [
         if ($hasMoreRevisions) {
             $items[] = ['type' => MenuItemType::HR];
             $items[] = [
-                'label' => Craft::t('app', 'View all revisions'),
+                'label' => t('View all revisions'),
                 'url' => $revisionsPageUrl,
                 'attributes' => [
                     'class' => ['go'],
@@ -975,10 +977,10 @@ JS, [
                         'type' => 'button',
                         'class' => ['preview-btn', 'btn'],
                         'aria' => [
-                            'label' => Craft::t('app', 'Preview'),
+                            'label' => t('Preview'),
                         ],
                     ]) .
-                    Html::tag('span', Craft::t('app', 'Preview'), ['class' => 'label']) .
+                    Html::tag('span', t('Preview'), ['class' => 'label']) .
                     Html::endTag('button')
                     : '') .
                 Html::endTag('div');
@@ -987,7 +989,7 @@ JS, [
         // Create a draft
         if ($isCurrent && !$isUnpublishedDraft && $canCreateDrafts) {
             if ($canSave) {
-                $components[] = Html::button(Craft::t('app', 'Create a draft'), [
+                $components[] = Html::button(t('Create a draft'), [
                     'class' => ['btn', 'formsubmit'],
                     'data' => [
                         'action' => 'elements/save-draft',
@@ -1000,7 +1002,7 @@ JS, [
                     Html::actionInput('elements/save-draft') .
                     Html::redirectInput('{cpEditUrl}') .
                     Html::hiddenInput('elementId', (string)$canonical->id) .
-                    Html::button(Craft::t('app', 'Create a draft'), [
+                    Html::button(t('Create a draft'), [
                         'class' => ['btn', 'formsubmit'],
                     ]) .
                     Html::endForm();
@@ -1014,7 +1016,7 @@ JS, [
                 Html::redirectInput('{cpEditUrl}') .
                 Html::hiddenInput('elementId', (string)$canonical->id) .
                 Html::hiddenInput('asUnpublishedDraft', '1') .
-                Html::button(Craft::t('app', 'Save as a new {type}', ['type' => $element::lowerDisplayName()]), [
+                Html::button(t('Save as a new {type}', ['type' => $element::lowerDisplayName()]), [
                     'class' => ['btn', 'formsubmit'],
                 ]) .
                 Html::endForm();
@@ -1022,7 +1024,7 @@ JS, [
 
         // Apply draft
         if ($isDraft && !$isCurrent && $canSave && $canSaveCanonical) {
-            $components[] = Html::button(Craft::t('app', 'Apply draft'), [
+            $components[] = Html::button(t('Apply draft'), [
                 'class' => ['btn', 'secondary', 'formsubmit', 'tooltip-draft-btn'],
                 'data' => [
                     'action' => 'elements/apply-draft',
@@ -1038,7 +1040,7 @@ JS, [
                 Html::redirectInput('{cpEditUrl}') .
                 Html::hiddenInput('elementId', (string)$canonical->id) .
                 Html::hiddenInput('revisionId', (string)$element->revisionId) .
-                Html::button(Craft::t('app', 'Revert content from this revision'), [
+                Html::button(t('Revert content from this revision'), [
                     'class' => ['btn', 'formsubmit', 'revision-draft-btn'],
                 ]) .
                 Html::endForm();
@@ -1115,13 +1117,13 @@ JS, [
 
         if ($this->_isSlideout()) {
             $this->view->registerJsWithVars(fn($settings) => <<<JS
-$('#$containerId').data('elementEditorSettings', $settings);
+$('#$containerId').data('elementEditorSettings', $settings)
 JS, [
                 $settings,
             ]);
         } else {
             $this->view->registerJsWithVars(fn($settings) => <<<JS
-new Craft.ElementEditor($('#$containerId'), $settings);
+new Craft.ElementEditor($('#$containerId'), $settings)
 JS, [
                 $settings,
             ]);
@@ -1217,7 +1219,7 @@ JS, [
                         if ($error !== null) {
                             $error = Markdown::processParagraph(htmlspecialchars($error));
                             $errorItem = Html::beginTag('li');
-                            $errorItem .= Html::a(Craft::t('app', $error), '#', [
+                            $errorItem .= Html::a(t($error), '#', [
                                 'data' => [
                                     'field-error-key' => $key,
                                     'layout-tab' => $tabUid,
@@ -1234,7 +1236,7 @@ JS, [
             }
 
             if (!empty($errorsList)) {
-                $heading = Craft::t('app', 'Found {num, number} {num, plural, =1{error} other{errors}}', [
+                $heading = t('Found {num, number} {num, plural, =1{error} other{errors}}', [
                     'num' => count($errorsList),
                 ]);
 
@@ -1246,7 +1248,7 @@ JS, [
                     Html::tag('span', '', [
                         'class' => 'notification-icon',
                         'data-icon' => 'alert',
-                        'aria-label' => Craft::t('app', 'Error'),
+                        'aria-label' => t('Error'),
                         'role' => 'img',
                     ]) .
                     Html::tag('h2', $heading) .
@@ -1275,7 +1277,7 @@ JS, [
                 Html::beginTag('div', [
                     'class' => ['meta', 'warning'],
                 ]) .
-                Html::tag('p', Craft::t('app', 'Recent changes to the Current revision have been merged into this draft.')) .
+                Html::tag('p', t('Recent changes to the Current revision have been merged into this draft.')) .
                 Html::endTag('div');
         }
 
@@ -1344,8 +1346,8 @@ JS, [
                 'aria' => ['hidden' => 'true'],
                 'data' => ['icon' => 'edit'],
             ]) .
-            Html::tag('p', Craft::t('app', 'Showing your unsaved changes.')) .
-            Html::button(Craft::t('app', 'Discard'), [
+            Html::tag('p', t('Showing your unsaved changes.')) .
+            Html::button(t('Discard'), [
                 'class' => ['discard-changes-btn', 'btn'],
             ]) .
             Html::endTag('div');
@@ -1362,8 +1364,7 @@ JS, [
                 'aria' => ['hidden' => 'true'],
                 'data' => ['icon' => 'lightbulb'],
             ]) .
-            Html::tag('p', Craft::t(
-                'app',
+            Html::tag('p', t(
                 'You’re viewing a revision. None of the {type}’s fields are editable.',
                 [
                     'type' => $elementType,
@@ -1444,7 +1445,7 @@ JS, [
         }
 
         if (!$success) {
-            return $this->_asFailure($element, mb_ucfirst(Craft::t('app', 'Couldn’t save {type}.', [
+            return $this->_asFailure($element, mb_ucfirst(t('Couldn’t save {type}.', [
                 'type' => $element::lowerDisplayName(),
             ])));
         }
@@ -1472,7 +1473,7 @@ JS, [
             ]);
         }
 
-        return $this->_asSuccess(Craft::t('app', '{type} saved.', [
+        return $this->_asSuccess(t('{type} saved.', [
             'type' => $element::displayName(),
         ]), $element, supportsAddAnother: true);
     }
@@ -1580,7 +1581,7 @@ JS, [
 
             if (!$success) {
                 DbFacade::rollBack();
-                return $this->_asFailure($element, mb_ucfirst(Craft::t('app', 'Couldn’t save {type}.', [
+                return $this->_asFailure($element, mb_ucfirst(t('Couldn’t save {type}.', [
                     'type' => $element::lowerDisplayName(),
                 ])));
             }
@@ -1595,7 +1596,7 @@ JS, [
             throw $e;
         }
 
-        return $this->_asSuccess(Craft::t('app', '{type} saved.', [
+        return $this->_asSuccess(t('{type} saved.', [
             'type' => $element::displayName(),
         ]), $element);
     }
@@ -1657,7 +1658,7 @@ JS, [
                 asUnpublishedDraft: $asUnpublishedDraft,
             );
         } catch (InvalidElementException $e) {
-            return $this->_asFailure($e->element, Craft::t('app', 'Couldn’t duplicate {type}.', [
+            return $this->_asFailure($e->element, t('Couldn’t duplicate {type}.', [
                 'type' => $element::lowerDisplayName(),
             ]));
         } catch (Throwable $e) {
@@ -1670,7 +1671,7 @@ JS, [
             Craft::$app->getElements()->deleteElement($element);
         }
 
-        return $this->_asSuccess(Craft::t('app', '{type} duplicated.', [
+        return $this->_asSuccess(t('{type} duplicated.', [
             'type' => $element::displayName(),
         ]), $newElement);
     }
@@ -1713,7 +1714,7 @@ JS, [
                             checkAuthorization: true,
                         );
                     } catch (InvalidElementException $e) {
-                        return $this->_asFailure($e->element, Craft::t('app', 'Couldn’t duplicate {type}.', [
+                        return $this->_asFailure($e->element, t('Couldn’t duplicate {type}.', [
                             'type' => $element::lowerDisplayName(),
                         ]));
                     } catch (ForbiddenHttpException $e) {
@@ -1729,7 +1730,7 @@ JS, [
 
         /** @var class-string<ElementInterface> $elementType */
         $elementType = $elementInfo[0]['type'];
-        return $this->asSuccess(mb_ucfirst(Craft::t('app', '{type} duplicated.', [
+        return $this->asSuccess(mb_ucfirst(t('{type} duplicated.', [
             'type' => count($elementInfo) === 1 ? $elementType::displayName() : $elementType::pluralDisplayName(),
         ])), [
             'newElements' => $newElementInfo,
@@ -1770,12 +1771,12 @@ JS, [
         }
 
         if (!$elementsService->deleteElement($element)) {
-            return $this->_asFailure($element, Craft::t('app', 'Couldn’t delete {type}.', [
+            return $this->_asFailure($element, t('Couldn’t delete {type}.', [
                 'type' => $element::lowerDisplayName(),
             ]));
         }
 
-        return $this->_asSuccess(Craft::t('app', '{type} deleted.', [
+        return $this->_asSuccess(t('{type} deleted.', [
             'type' => $element::displayName(),
         ]), $element);
     }
@@ -1818,8 +1819,8 @@ JS, [
             }
         }
 
-        return $this->_asSuccess(Craft::t('app', '{type} deleted for site.', [
-            'type' => $element->getIsDraft() && !$element->isProvisionalDraft ? Craft::t('app', 'Draft') : $element::displayName(),
+        return $this->_asSuccess(t('{type} deleted for site.', [
+            'type' => $element->getIsDraft() && !$element->isProvisionalDraft ? t('Draft') : $element::displayName(),
         ]), $element);
     }
 
@@ -1852,12 +1853,12 @@ JS, [
         $element->setScenario(Element::SCENARIO_LIVE);
 
         if (!$element->validate()) {
-            return $this->_asFailure($element, Craft::t('app', '{type} validation failed.', [
+            return $this->_asFailure($element, t('{type} validation failed.', [
                 'type' => $element::displayName(),
             ]));
         }
 
-        return $this->_asSuccess(Craft::t('app', '{type} validation successful.', [
+        return $this->_asSuccess(t('{type} validation successful.', [
             'type' => $element::displayName(),
         ]), $element);
     }
@@ -1961,8 +1962,8 @@ JS, [
 
             if (!$elementsService->saveElement($element, saveContent: $saveContent)) {
                 DbFacade::rollBack();
-                return $this->_asFailure($element, mb_ucfirst(Craft::t('app', 'Couldn’t save {type}.', [
-                    'type' => Craft::t('app', 'draft'),
+                return $this->_asFailure($element, mb_ucfirst(t('Couldn’t save {type}.', [
+                    'type' => t('draft'),
                 ])));
             }
 
@@ -1980,7 +1981,7 @@ JS, [
             'canonicalId' => $element->getCanonicalId(),
             'elementId' => $element->id,
             'draftId' => $element->draftId,
-            'timestamp' => Craft::$app->getFormatter()->asTimestamp($element->dateUpdated, 'short', true),
+            'timestamp' => I18N::getFormatter()->asTimestamp($element->dateUpdated, 'short', true),
             'creator' => $creator?->getName(),
             'draftName' => $element->draftName,
             'draftNotes' => $element->draftNotes,
@@ -2010,8 +2011,8 @@ JS, [
         // Make sure the user is authorized to preview the draft
         Craft::$app->getSession()->authorize("previewDraft:$element->draftId");
 
-        return $this->_asSuccess(Craft::t('app', '{type} saved.', [
-            'type' => Craft::t('app', 'Draft'),
+        return $this->_asSuccess(t('{type} saved.', [
+            'type' => t('Draft'),
         ]), $element, $data, true);
     }
 
@@ -2170,15 +2171,15 @@ JS, [
         }
 
         if ($isUnpublishedDraft) {
-            $message = Craft::t('app', '{type} created.', [
+            $message = t('{type} created.', [
                 'type' => $element::displayName(),
             ]);
         } elseif ($element->isProvisionalDraft) {
-            $message = Craft::t('app', '{type} saved.', [
+            $message = t('{type} saved.', [
                 'type' => $element::displayName(),
             ]);
         } else {
-            $message = Craft::t('app', 'Draft applied.');
+            $message = t('Draft applied.');
         }
 
         return $this->_asSuccess($message, $canonical, supportsAddAnother: true);
@@ -2187,15 +2188,15 @@ JS, [
     private function _asAppyDraftFailure(ElementInterface $element): ?Response
     {
         if ($element->getIsUnpublishedDraft()) {
-            $message = mb_ucfirst(Craft::t('app', 'Couldn’t create {type}.', [
+            $message = mb_ucfirst(t('Couldn’t create {type}.', [
                 'type' => $element::lowerDisplayName(),
             ]));
         } elseif ($element->isProvisionalDraft) {
-            $message = mb_ucfirst(Craft::t('app', 'Couldn’t save {type}.', [
+            $message = mb_ucfirst(t('Couldn’t save {type}.', [
                 'type' => $element::lowerDisplayName(),
             ]));
         } else {
-            $message = Craft::t('app', 'Couldn’t apply draft.');
+            $message = t('Couldn’t apply draft.');
         }
 
         return $this->_asFailure($element, $message);
@@ -2233,16 +2234,16 @@ JS, [
         }
 
         if (!$elementsService->deleteElement($element, true)) {
-            return $this->_asFailure($element, Craft::t('app', 'Couldn’t delete {type}.', [
-                'type' => Craft::t('app', 'draft'),
+            return $this->_asFailure($element, t('Couldn’t delete {type}.', [
+                'type' => t('draft'),
             ]));
         }
 
         if ($element->isProvisionalDraft) {
-            $message = Craft::t('app', 'Changes discarded.');
+            $message = t('Changes discarded.');
         } else {
-            $message = Craft::t('app', '{type} deleted.', [
-                'type' => Craft::t('app', 'Draft'),
+            $message = t('{type} deleted.', [
+                'type' => t('Draft'),
             ]);
         }
 
@@ -2291,7 +2292,7 @@ JS, [
         $canonical = Craft::$app->getRevisions()->revertToRevision($element, $user->id);
         Craft::$app->getElements()->trackActivity($canonical, ElementActivity::TYPE_SAVE);
 
-        return $this->_asSuccess(Craft::t('app', '{type} reverted to past revision.', [
+        return $this->_asSuccess(t('{type} reverted to past revision.', [
             'type' => $element::displayName(),
         ]), $canonical);
     }
@@ -2447,11 +2448,11 @@ JS, [
                 if ($isSameOrUpstream) {
                     $messageParams = [
                         'user' => $record->user->getName(),
-                        'type' => $recordIsCanonicalAndPublished ? $element::lowerDisplayName() : Craft::t('app', 'draft'),
+                        'type' => $recordIsCanonicalAndPublished ? $element::lowerDisplayName() : t('draft'),
                     ];
                     $message = match ($record->type) {
-                        ElementActivity::TYPE_VIEW => Craft::t('app', '{user} is viewing this {type}.', $messageParams),
-                        ElementActivity::TYPE_EDIT, ElementActivity::TYPE_SAVE => Craft::t('app', '{user} is editing this {type}.', $messageParams),
+                        ElementActivity::TYPE_VIEW => t('{user} is viewing this {type}.', $messageParams),
+                        ElementActivity::TYPE_EDIT, ElementActivity::TYPE_SAVE => t('{user} is editing this {type}.', $messageParams),
                     };
                 } else {
                     $messageParams = [
@@ -2459,8 +2460,8 @@ JS, [
                         'type' => $element::lowerDisplayName(),
                     ];
                     $message = match ($record->type) {
-                        ElementActivity::TYPE_VIEW => Craft::t('app', '{user} is viewing a draft of this {type}.', $messageParams),
-                        ElementActivity::TYPE_EDIT, ElementActivity::TYPE_SAVE => Craft::t('app', '{user} is editing a draft of this {type}.', $messageParams),
+                        ElementActivity::TYPE_VIEW => t('{user} is viewing a draft of this {type}.', $messageParams),
+                        ElementActivity::TYPE_EDIT, ElementActivity::TYPE_SAVE => t('{user} is editing a draft of this {type}.', $messageParams),
                     };
                 }
 

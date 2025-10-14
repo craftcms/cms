@@ -2,13 +2,13 @@
 
 namespace craft\elements\conditions\entries;
 
-use Craft;
 use craft\base\conditions\BaseDateRangeConditionRule;
 use craft\base\ElementInterface;
 use craft\elements\conditions\ElementConditionRuleInterface;
 use craft\elements\db\ElementQueryInterface;
 use craft\elements\db\EntryQuery;
 use craft\elements\Entry;
+use function CraftCms\Cms\t;
 
 /**
  * Element expiry date condition rule.
@@ -23,7 +23,7 @@ class ExpiryDateConditionRule extends BaseDateRangeConditionRule implements Elem
      */
     public function getLabel(): string
     {
-        return Craft::t('app', 'Expiry Date');
+        return t('Expiry Date');
     }
 
     /**

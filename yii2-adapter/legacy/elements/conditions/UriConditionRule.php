@@ -2,10 +2,10 @@
 
 namespace craft\elements\conditions;
 
-use Craft;
 use craft\base\conditions\BaseTextConditionRule;
 use craft\base\ElementInterface;
 use craft\elements\db\ElementQueryInterface;
+use function CraftCms\Cms\t;
 
 /**
  * ID condition rule.
@@ -20,7 +20,7 @@ class UriConditionRule extends BaseTextConditionRule implements ElementCondition
      */
     public function getLabel(): string
     {
-        return Craft::t('app', 'URI');
+        return t('URI');
     }
 
     /**

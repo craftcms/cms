@@ -38,6 +38,8 @@ use Illuminate\Validation\Rule;
 use Twig\Error\RuntimeError;
 use yii\base\InvalidConfigException;
 
+use function CraftCms\Cms\t;
+
 /**
  * Assets represents an Assets field.
  */
@@ -58,7 +60,7 @@ final class Assets extends BaseRelationField
      */
     public static function displayName(): string
     {
-        return Craft::t('app', 'Assets');
+        return t('Assets');
     }
 
     /**
@@ -90,7 +92,7 @@ final class Assets extends BaseRelationField
      */
     public static function defaultSelectionLabel(): string
     {
-        return Craft::t('app', 'Add an asset');
+        return t('Add an asset');
     }
 
     /**
@@ -271,7 +273,7 @@ final class Assets extends BaseRelationField
         try {
             return parent::inputHtml($value, $element, $inline);
         } catch (InvalidSubpathException) {
-            return Html::tag('p', Craft::t('app', 'This field’s target subfolder path is invalid: {path}', [
+            return Html::tag('p', t('This field’s target subfolder path is invalid: {path}', [
                 'path' => '<code>'.$this->restrictedLocationSubpath.'</code>',
             ]), [
                 'class' => ['warning', 'with-icon'],
@@ -325,7 +327,7 @@ final class Assets extends BaseRelationField
         $allowedExtensions = $this->_getAllowedExtensions();
         foreach ($filenames as $filename) {
             if (! in_array(mb_strtolower(pathinfo($filename, PATHINFO_EXTENSION)), $allowedExtensions, true)) {
-                $element->addError($this->handle, Craft::t('app', '“{filename}” is not allowed in this field.', [
+                $element->addError($this->handle, t('“{filename}” is not allowed in this field.', [
                     'filename' => $filename,
                 ]));
             }
@@ -360,7 +362,7 @@ final class Assets extends BaseRelationField
         }
 
         foreach ($filenames as $filename) {
-            $element->addError($this->handle, Craft::t('app', '“{filename}” is too large.', [
+            $element->addError($this->handle, t('“{filename}” is too large.', [
                 'filename' => $filename,
             ]));
         }
@@ -459,7 +461,7 @@ final class Assets extends BaseRelationField
     public function previewPlaceholderHtml(mixed $value, ?ElementInterface $element): string
     {
         $asset = new Asset;
-        $asset->title = Craft::t('app', 'Related {type} Title', ['type' => $asset->displayName()]);
+        $asset->title = t('Related {type} Title', ['type' => $asset->displayName()]);
 
         if ($this->restrictFiles) {
             $extensions = $this->_getAllowedExtensions();
@@ -1008,14 +1010,14 @@ final class Assets extends BaseRelationField
                     $subpath ?? '',
                     $this->restrictedDefaultUploadSubpath ?? '',
                 ])));
-                $settingName = fn () => Craft::t('app', 'Default Upload Location');
+                $settingName = fn () => t('Default Upload Location');
             } else {
-                $settingName = fn () => Craft::t('app', 'Asset Location');
+                $settingName = fn () => t('Asset Location');
             }
         } else {
             $uploadVolume = $this->defaultUploadLocationSource;
             $subpath = $this->defaultUploadLocationSubpath;
-            $settingName = fn () => Craft::t('app', 'Default Upload Location');
+            $settingName = fn () => t('Default Upload Location');
         }
 
         $assetsService = Craft::$app->getAssets();
@@ -1027,7 +1029,7 @@ final class Assets extends BaseRelationField
 
             return $this->_findFolder($uploadVolume, $subpath, $element, $createDynamicFolders);
         } catch (InvalidFsException $e) {
-            throw new InvalidFsException(Craft::t('app', 'The {field} field’s {setting} setting is set to an invalid volume.', [
+            throw new InvalidFsException(t('The {field} field’s {setting} setting is set to an invalid volume.', [
                 'field' => $this->name,
                 'setting' => $settingName(),
             ]), 0, $e);
@@ -1045,7 +1047,7 @@ final class Assets extends BaseRelationField
             }
 
             // Existing element, so this is just a bad subpath
-            throw new InvalidSubpathException($e->subpath, Craft::t('app', 'The {field} field’s {setting} setting has an invalid subpath (“{subpath}”).', [
+            throw new InvalidSubpathException($e->subpath, t('The {field} field’s {setting} setting has an invalid subpath (“{subpath}”).', [
                 'field' => $this->name,
                 'setting' => $settingName(),
                 'subpath' => $e->subpath,

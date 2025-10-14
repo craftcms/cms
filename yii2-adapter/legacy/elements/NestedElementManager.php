@@ -27,6 +27,7 @@ use CraftCms\Cms\Element\Enums\PropagationMethod;
 use CraftCms\Cms\Field\Contracts\FieldInterface;
 use CraftCms\Cms\Shared\Enums\Color;
 use CraftCms\Cms\Support\Arr;
+use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Str;
 use Generator;
@@ -34,6 +35,7 @@ use Illuminate\Support\Facades\DB;
 use Throwable;
 use yii\base\Component;
 use yii\base\InvalidConfigException;
+use function CraftCms\Cms\t;
 
 /**
  * Nested Element Manager
@@ -280,19 +282,19 @@ class NestedElementManager extends Component
 
         switch ($this->propagationMethod) {
             case PropagationMethod::None:
-                return Craft::t('app', '{type} will only be saved in the {site} site.', [
+                return t('{type} will only be saved in the {site} site.', [
                     'type' => $this->elementType::pluralDisplayName(),
-                    'site' => Craft::t('site', $owner->getSite()->getName()),
+                    'site' => t($owner->getSite()->getName(), category: 'site'),
                 ]);
             case PropagationMethod::SiteGroup:
-                return Craft::t('app', '{type} will be saved across all sites in the {group} site group.', [
+                return t('{type} will be saved across all sites in the {group} site group.', [
                     'type' => $this->elementType::pluralDisplayName(),
-                    'group' => Craft::t('site', $owner->getSite()->getGroup()->getName()),
+                    'group' => t($owner->getSite()->getGroup()->getName(), category: 'site'),
                 ]);
             case PropagationMethod::Language:
-                $language = Craft::$app->getI18n()->getLocaleById($owner->getSite()->language)
-                    ->getDisplayName(Craft::$app->language);
-                return Craft::t('app', '{type} will be saved across all {language}-language sites.', [
+                $language = I18N::getLocaleById($owner->getSite()->language)
+                    ->getDisplayName(app()->getLocale());
+                return t('{type} will be saved across all {language}-language sites.', [
                     'type' => $this->elementType::pluralDisplayName(),
                     'language' => $language,
                 ]);
@@ -377,10 +379,10 @@ class NestedElementManager extends Component
             self::VIEW_MODE_CARDS,
             function(string $id, array $config, $attribute, &$settings) use ($owner) {
                 $settings += [
-                    'deleteLabel' => mb_ucfirst(Craft::t('app', 'Delete {type}', [
+                    'deleteLabel' => mb_ucfirst(t('Delete {type}', [
                         'type' => $this->elementType::lowerDisplayName(),
                     ])),
-                    'deleteConfirmationMessage' => Craft::t('app', 'Are you sure you want to delete the selected {type}?', [
+                    'deleteConfirmationMessage' => t('Are you sure you want to delete the selected {type}?', [
                         'type' => $this->elementType::lowerDisplayName(),
                     ]),
                     'showInGrid' => $config['showInGrid'],
@@ -435,7 +437,7 @@ class NestedElementManager extends Component
                 }
 
                 $html .=
-                    Html::tag('div', Craft::t('app', 'Nothing yet.'), [
+                    Html::tag('div', t('Nothing yet.'), [
                         'class' => array_keys(array_filter([
                             'pane' => true,
                             'no-border' => true,
@@ -555,9 +557,9 @@ class NestedElementManager extends Component
     private function createView(?ElementInterface $owner, array $config, string $mode, callable $renderHtml): string
     {
         if (!$owner?->id) {
-            $message = Craft::t('app', '{nestedType} can only be created after the {ownerType} has been saved.', [
+            $message = t('{nestedType} can only be created after the {ownerType} has been saved.', [
                 'nestedType' => $this->elementType::pluralDisplayName(),
-                'ownerType' => $owner ? $owner::lowerDisplayName() : Craft::t('app', 'element'),
+                'ownerType' => $owner ? $owner::lowerDisplayName() : t('element'),
             ]);
             return Html::tag('div', $message, ['class' => 'pane no-border zilch small']);
         }
@@ -573,7 +575,7 @@ class NestedElementManager extends Component
         ];
 
         if ($config['createButtonLabel'] === null) {
-            $config['createButtonLabel'] = Craft::t('app', 'New {type}', [
+            $config['createButtonLabel'] = t('New {type}', [
                 'type' => $this->elementType::lowerDisplayName(),
             ]);
         }

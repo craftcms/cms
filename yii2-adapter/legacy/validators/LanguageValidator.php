@@ -7,11 +7,11 @@
 
 namespace craft\validators;
 
-use Craft;
-use craft\helpers\Localization;
-use yii\base\InvalidArgumentException;
+use CraftCms\Cms\Support\Facades\I18N;
+use InvalidArgumentException;
 use yii\base\UnknownPropertyException;
 use yii\validators\Validator;
+use function CraftCms\Cms\t;
 
 /**
  * Will validate that the given attribute is a valid site language.
@@ -38,9 +38,9 @@ class LanguageValidator extends Validator
     {
         if (!isset($this->notAllowed)) {
             if ($this->onlySiteLanguages) {
-                $this->notAllowed = Craft::t('app', '{value} is not a valid site language.');
+                $this->notAllowed = t('{value} is not a valid site language.');
             } else {
-                $this->notAllowed = Craft::t('app', '{value} is not a valid language.');
+                $this->notAllowed = t('{value} is not a valid language.');
             }
         }
 
@@ -54,7 +54,7 @@ class LanguageValidator extends Validator
     {
         $original = $model->$attribute;
         try {
-            $value = Localization::normalizeLanguage($original);
+            $value = I18N::normalizeLanguage($original);
         } catch (InvalidArgumentException) {
             $this->addError($model, $attribute, $this->notAllowed);
             return;
@@ -80,12 +80,12 @@ class LanguageValidator extends Validator
     public function validateValue($value): ?array
     {
         if ($this->onlySiteLanguages) {
-            $allowed = Craft::$app->getI18n()->getSiteLocaleIds();
+            $allowed = I18N::getSiteLocaleIds();
         } else {
-            $allowed = Craft::$app->getI18n()->getAllLocaleIds();
+            $allowed = I18N::getAllLocaleIds();
         }
 
-        if ($value && !in_array($value, $allowed, true)) {
+        if ($value && !$allowed->contains($value)) {
             return [$this->notAllowed, []];
         }
 

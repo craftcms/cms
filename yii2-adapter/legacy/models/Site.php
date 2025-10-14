@@ -9,7 +9,6 @@ namespace craft\models;
 
 use Craft;
 use craft\base\Model;
-use craft\i18n\Locale;
 use craft\records\Site as SiteRecord;
 use craft\validators\HandleValidator;
 use craft\validators\LanguageValidator;
@@ -17,8 +16,11 @@ use craft\validators\UniqueValidator;
 use craft\validators\UrlValidator;
 use CraftCms\Cms\Component\Contracts\Chippable;
 use CraftCms\Cms\Support\Env;
+use CraftCms\Cms\Support\Facades\I18N;
+use CraftCms\Cms\Translation\Locale;
 use DateTime;
 use yii\base\InvalidConfigException;
+use function CraftCms\Cms\t;
 
 /**
  * Site model class.
@@ -124,7 +126,7 @@ class Site extends Model implements Chippable
      */
     public function getUiLabel(): string
     {
-        return Craft::t('site', $this->getName());
+        return t($this->getName(), category: 'site');
     }
 
     /**
@@ -241,10 +243,10 @@ class Site extends Model implements Chippable
     public function attributeLabels(): array
     {
         return [
-            'baseUrl' => Craft::t('app', 'Base URL'),
-            'handle' => Craft::t('app', 'Handle'),
-            'language' => Craft::t('app', 'Language'),
-            'name' => Craft::t('app', 'Name'),
+            'baseUrl' => t('Base URL'),
+            'handle' => t('Handle'),
+            'language' => t('Language'),
+            'name' => t('Name'),
         ];
     }
 
@@ -317,11 +319,11 @@ class Site extends Model implements Chippable
      */
     public function getLocale(): Locale
     {
-        if ($this->language === Craft::$app->language) {
-            return Craft::$app->getLocale();
+        if ($this->language === app()->getLocale()) {
+            return I18N::getLocale();
         }
 
-        return Craft::$app->getI18n()->getLocaleById($this->language);
+        return I18N::getLocaleById($this->language);
     }
 
     /**

@@ -13,6 +13,7 @@ use craft\validators\SingleSectionUriValidator;
 use craft\validators\SiteIdValidator;
 use craft\validators\UriFormatValidator;
 use yii\base\InvalidConfigException;
+use function CraftCms\Cms\t;
 
 /**
  * Section_SiteSettings model class.
@@ -120,13 +121,13 @@ class Section_SiteSettings extends Model
     public function attributeLabels(): array
     {
         $labels = [
-            'template' => Craft::t('app', 'Template'),
+            'template' => t('Template'),
         ];
 
         if ($this->getSection()->type == Section::TYPE_SINGLE) {
-            $labels['uriFormat'] = Craft::t('app', 'URI');
+            $labels['uriFormat'] = t('URI');
         } else {
-            $labels['uriFormat'] = Craft::t('app', 'Entry URI Format');
+            $labels['uriFormat'] = t('Entry URI Format');
         }
 
         return $labels;

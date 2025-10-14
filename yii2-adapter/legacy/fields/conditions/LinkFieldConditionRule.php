@@ -2,13 +2,13 @@
 
 namespace craft\fields\conditions;
 
-use Craft;
 use craft\db\CoalesceColumnsExpression;
 use craft\helpers\Cp;
 use CraftCms\Cms\Field\Data\LinkData;
 use CraftCms\Cms\Field\Link;
 use CraftCms\Cms\Field\LinkTypes\BaseLinkType;
 use yii\db\QueryInterface;
+use function CraftCms\Cms\t;
 
 /**
  * Options field condition rule.
@@ -44,7 +44,7 @@ class LinkFieldConditionRule extends TextFieldConditionRule
     protected function operatorLabel(string $operator): string
     {
         return match ($operator) {
-            self::OPERATOR_TYPE => Craft::t('app', 'is of type'),
+            self::OPERATOR_TYPE => t('is of type'),
             default => parent::operatorLabel($operator),
         };
     }

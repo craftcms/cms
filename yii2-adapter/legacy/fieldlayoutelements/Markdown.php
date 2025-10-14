@@ -7,12 +7,12 @@
 
 namespace craft\fieldlayoutelements;
 
-use Craft;
 use craft\base\ElementInterface;
 use craft\helpers\Cp;
 use CraftCms\Cms\Support\Html;
 use CraftCms\Cms\Support\Str;
 use yii\helpers\Markdown as MarkdownHelper;
+use function CraftCms\Cms\t;
 
 /**
  * Markdown represents a UI element based on Markdown content can be included in field layouts.
@@ -83,14 +83,14 @@ class Markdown extends BaseUiElement
     {
         return
             Cp::textareaFieldHtml([
-                'label' => Craft::t('app', 'Content'),
+                'label' => t('Content'),
                 'class' => ['code', 'nicetext'],
                 'id' => 'content',
                 'name' => 'content',
                 'value' => $this->content,
             ]) .
             Cp::lightswitchFieldHtml([
-                'label' => Craft::t('app', 'Display content in a pane'),
+                'label' => t('Display content in a pane'),
                 'id' => 'display-in-pane',
                 'name' => 'displayInPane',
                 'on' => $this->displayInPane,

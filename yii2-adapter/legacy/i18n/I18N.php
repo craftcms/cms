@@ -8,40 +8,19 @@
 namespace craft\i18n;
 
 use Craft;
-use CraftCms\Cms\Config\GeneralConfig;
-use ResourceBundle;
+use craft\i18n\Locale as LegacyLocale;
+use CraftCms\Cms\Support\Facades\I18N as I18NFacade;
+use CraftCms\Cms\Translation\Locale;
 use yii\base\Exception;
 
 /**
  * @inheritdoc
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
+ * @deprecated 6.0.0 use {@see \CraftCms\Cms\Translation\I18N} instead.
  */
 class I18N extends \yii\i18n\I18N
 {
-    /**
-     * @var array|null All of the known locales
-     * @see getAllLocales()
-     */
-    private ?array $_allLocaleIds = null;
-
-    /**
-     * @var bool[]
-     * @see getAppLocaleIds()
-     */
-    private array $_appLocaleIds;
-
-    /**
-     * @var Locale[]
-     * @see getAppLocales()
-     */
-    private array $_appLocales;
-
-    /**
-     * @var bool|null Whether [[translate()]] should wrap translations with `@` characters
-     */
-    private ?bool $_translationDebugOutput = null;
-
     /**
      * Returns whether the [Intl extension](https://php.net/manual/en/book.intl.php) is loaded.
      *
@@ -57,12 +36,13 @@ class I18N extends \yii\i18n\I18N
      * Returns a locale by its ID.
      *
      * @param string $localeId
-     * @return Locale
+     * @return LegacyLocale
      */
-    public function getLocaleById(string $localeId): Locale
+    public function getLocaleById(string $localeId): LegacyLocale
     {
-        $generalConfig = app(GeneralConfig::class);
-        return new Locale($localeId, $generalConfig->localeAliases[$localeId] ?? []);
+        $locale = I18NFacade::getLocaleById($localeId);
+
+        return LegacyLocale::fromNewLocale($locale);
     }
 
     /**
@@ -73,43 +53,20 @@ class I18N extends \yii\i18n\I18N
      */
     public function getAllLocaleIds(): array
     {
-        if (!isset($this->_allLocaleIds)) {
-            $this->_allLocaleIds = ResourceBundle::getLocales('');
-
-            // Hyphens, not underscores
-            foreach ($this->_allLocaleIds as $i => $locale) {
-                $this->_allLocaleIds[$i] = str_replace('_', '-', $locale);
-            }
-
-            // Merge in any custom aliases
-            $generalConfig = app(GeneralConfig::class);
-            if (!empty($generalConfig->localeAliases)) {
-                $this->_allLocaleIds = array_merge($this->_allLocaleIds, array_keys($generalConfig->localeAliases));
-                $this->_allLocaleIds = array_unique($this->_allLocaleIds);
-                sort($this->_allLocaleIds);
-            }
-        }
-
-        return $this->_allLocaleIds;
+        return I18NFacade::getAllLocaleIds()->all();
     }
 
     /**
      * Returns an array of all known locales.
      *
-     * @return Locale[] An array of [[Locale]] objects.
+     * @return LegacyLocale[] An array of [[Locale]] objects.
      * @see getAllLocaleIds()
      */
     public function getAllLocales(): array
     {
-        $locales = [];
-        $localeIds = $this->getAllLocaleIds();
-        $generalConfig = app(GeneralConfig::class);
-
-        foreach ($localeIds as $localeId) {
-            $locales[] = new Locale($localeId, $generalConfig->localeAliases[$localeId] ?? []);
-        }
-
-        return $locales;
+        return I18NFacade::getAllLocales()
+            ->map(fn(Locale $locale) => LegacyLocale::fromNewLocale($locale))
+            ->all();
     }
 
     // Application Locales
@@ -119,23 +76,14 @@ class I18N extends \yii\i18n\I18N
      * Returns an array of locales that Craft is translated into. The list of locales is based on whatever files exist
      * in `vendor/craftcms/cms/src/translations/`.
      *
-     * @return Locale[] An array of [[Locale]] objects.
+     * @return LegacyLocale[] An array of [[Locale]] objects.
      * @throws Exception in case of failure
      */
     public function getAppLocales(): array
     {
-        if (isset($this->_appLocales)) {
-            return $this->_appLocales;
-        }
-
-        $this->_appLocales = [];
-        $generalConfig = app(GeneralConfig::class);
-
-        foreach ($this->getAppLocaleIds() as $localeId) {
-            $this->_appLocales[] = new Locale($localeId, $generalConfig->localeAliases[$localeId] ?? []);
-        }
-
-        return $this->_appLocales;
+        return I18NFacade::getAppLocales()
+            ->map(fn(Locale $locale) => LegacyLocale::fromNewLocale($locale))
+            ->all();
     }
 
     /**
@@ -147,63 +95,7 @@ class I18N extends \yii\i18n\I18N
      */
     public function getAppLocaleIds(): array
     {
-        $this->_defineAppLocales();
-        return array_keys($this->_appLocaleIds);
-    }
-
-    /**
-     * Defines the list of supported app locale IDs.
-     *
-     */
-    private function _defineAppLocales(): void
-    {
-        if (isset($this->_appLocaleIds)) {
-            return;
-        }
-
-        $this->_appLocaleIds = [
-            'en-US' => true,
-            'ar' => true,
-            'cs' => true,
-            'da' => true,
-            'de' => true,
-            'de-CH' => true,
-            'en' => true,
-            'en-GB' => true,
-            'es' => true,
-            'fa' => true,
-            'fr' => true,
-            'fr-CA' => true,
-            'he' => true,
-            'hu' => true,
-            'is' => true,
-            'it' => true,
-            'ja' => true,
-            'ko' => true,
-            'nb' => true,
-            'nl' => true,
-            'nn' => true,
-            'pl' => true,
-            'pt' => true,
-            'ru' => true,
-            'sk' => true,
-            'sv' => true,
-            'th' => true,
-            'tr' => true,
-            'uk' => true,
-            'zh' => true,
-        ];
-
-        // Add in any extra locales defined by the config
-        $generalConfig = app(GeneralConfig::class);
-        if (!empty($generalConfig->extraAppLocales)) {
-            foreach ($generalConfig->extraAppLocales as $localeId) {
-                $this->_appLocaleIds[$localeId] = true;
-            }
-        }
-        if ($generalConfig->defaultCpLanguage) {
-            $this->_appLocaleIds[$generalConfig->defaultCpLanguage] = true;
-        }
+        return I18NFacade::getAppLocaleIds()->all();
     }
 
     /**
@@ -215,8 +107,7 @@ class I18N extends \yii\i18n\I18N
      */
     public function validateAppLocaleId(string $localeId): bool
     {
-        $this->_defineAppLocales();
-        return isset($this->_appLocaleIds[$localeId]);
+        return I18NFacade::validateAppLocaleId($localeId);
     }
 
     // Site Locales
@@ -225,30 +116,26 @@ class I18N extends \yii\i18n\I18N
     /**
      * Returns an array of the site locales.
      *
-     * @return Locale[] An array of [[Locale]] objects.
+     * @return LegacyLocale[] An array of [[Locale]] objects.
      */
     public function getSiteLocales(): array
     {
-        $locales = [];
-        $generalConfig = app(GeneralConfig::class);
-
-        foreach ($this->getSiteLocaleIds() as $localeId) {
-            $locales[] = new Locale($localeId, $generalConfig->localeAliases[$localeId] ?? []);
-        }
-
-        return $locales;
+        return app(\CraftCms\Cms\Translation\I18N::class)
+            ->getSiteLocales()
+            ->map(fn(Locale $locale) => LegacyLocale::fromNewLocale($locale))
+            ->all();
     }
 
     /**
      * Returns the site's primary locale. The primary locale is whatever is listed first in Settings > Locales in the
      * control panel.
      *
-     * @return Locale A [[Locale]] object representing the primary locale.
+     * @return LegacyLocale A [[Locale]] object representing the primary locale.
      * @deprecated in 5.0.0. [[\craft\models\Site::getLocale()]] should be used instead.
      */
-    public function getPrimarySiteLocale(): Locale
+    public function getPrimarySiteLocale(): LegacyLocale
     {
-        return Craft::$app->getSites()->getPrimarySite()->getLocale();
+        return LegacyLocale::fromNewLocale(Craft::$app->getSites()->getPrimarySite()->getLocale());
     }
 
     /**
@@ -270,16 +157,7 @@ class I18N extends \yii\i18n\I18N
      */
     public function getSiteLocaleIds(): array
     {
-        $localeIds = [];
-
-        foreach (Craft::$app->getSites()->getAllSites() as $site) {
-            // Make sure it's unique
-            if (!in_array($site->language, $localeIds, true)) {
-                $localeIds[] = $site->language;
-            }
-        }
-
-        return $localeIds;
+        return I18NFacade::getSiteLocaleIds()->all();
     }
 
     /**
@@ -289,20 +167,10 @@ class I18N extends \yii\i18n\I18N
      */
     public function getEditableLocales(): array
     {
-        if (Craft::$app->getIsMultiSite()) {
-            $locales = $this->getSiteLocales();
-            $editableLocales = [];
-
-            foreach ($locales as $locale) {
-                if (Craft::$app->getUser()->checkPermission('editLocale:' . $locale->id)) {
-                    $editableLocales[] = $locale;
-                }
-            }
-
-            return $editableLocales;
-        }
-
-        return $this->getSiteLocales();
+        return app(\CraftCms\Cms\Translation\I18N::class)
+            ->getEditableLocales()
+            ->map(fn(Locale $locale) => LegacyLocale::fromNewLocale($locale))
+            ->all();
     }
 
     /**
@@ -312,14 +180,7 @@ class I18N extends \yii\i18n\I18N
      */
     public function getEditableLocaleIds(): array
     {
-        $locales = $this->getEditableLocales();
-        $localeIds = [];
-
-        foreach ($locales as $locale) {
-            $localeIds[] = $locale->id;
-        }
-
-        return $localeIds;
+        return I18NFacade::getEditableLocaleIds()->all();
     }
 
     /**
@@ -327,41 +188,6 @@ class I18N extends \yii\i18n\I18N
      */
     public function translate($category, $message, $params, $language): ?string
     {
-        $translation = parent::translate($category, $message, $params, $language);
-
-        // If $message is a key and came back identical to the input, translate it into the source language
-        if ($translation === $message && !in_array($category, ['yii', 'site'], true)) {
-            $messageSource = $this->getMessageSource($category);
-            if ($messageSource->sourceLanguage !== $language) {
-                $translation = parent::translate($category, $message, $params, $messageSource->sourceLanguage);
-            }
-        }
-
-        if ($this->_shouldAddTranslationDebugOutput()) {
-            $char = match ($category) {
-                'site' => '$',
-                'app' => '@',
-                default => '%',
-            };
-
-            $translation = $char . $translation . $char;
-        }
-
-        return $translation;
-    }
-
-    /**
-     * Returns whether [[translate()]] should wrap translations with `@` characters,
-     * per the `translationDebugOutput` config setting.
-     *
-     * @return bool
-     */
-    private function _shouldAddTranslationDebugOutput(): bool
-    {
-        if (!isset($this->_translationDebugOutput)) {
-            $this->_translationDebugOutput = app(GeneralConfig::class)->translationDebugOutput;
-        }
-
-        return $this->_translationDebugOutput;
+        return I18NFacade::translate($message, $params, $category, $language);
     }
 }

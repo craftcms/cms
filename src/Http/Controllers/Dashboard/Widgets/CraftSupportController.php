@@ -24,6 +24,7 @@ use Throwable;
 use ZipArchive;
 
 use function CraftCms\Cms\maxPowerCaptain;
+use function CraftCms\Cms\t;
 
 final readonly class CraftSupportController
 {
@@ -132,7 +133,7 @@ final readonly class CraftSupportController
                 'success' => false,
                 'errors' => [
                     'Support' => [
-                        Craft::t('app', 'A server error occurred.'),
+                        t('A server error occurred.'),
                     ],
                 ],
             ]);

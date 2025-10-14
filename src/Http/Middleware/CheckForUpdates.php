@@ -9,6 +9,9 @@ use CraftCms\Cms\Updates\Updates;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Log;
+use RuntimeException;
+
+use function CraftCms\Cms\t;
 
 final readonly class CheckForUpdates
 {
@@ -46,7 +49,7 @@ final readonly class CheckForUpdates
     {
         if ($request->isCpRequest() && (! $request->isActionRequest() || str_contains($request->path(), 'users/login'))) {
             if ($this->updates->wasCraftBreakpointSkipped()) {
-                throw new \RuntimeException(Craft::t('app', 'You need to be on at least Craft CMS {version} before you can manually update to Craft CMS {targetVersion}.', [
+                throw new RuntimeException(t('You need to be on at least Craft CMS {version} before you can manually update to Craft CMS {targetVersion}.', [
                     'version' => Craft::$app->minVersionRequired,
                     'targetVersion' => Craft::$app->getVersion(),
                 ]));

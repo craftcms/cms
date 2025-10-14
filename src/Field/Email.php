@@ -15,6 +15,8 @@ use CraftCms\Cms\Support\PHP;
 use CraftCms\Cms\Support\Str;
 use yii\db\Schema;
 
+use function CraftCms\Cms\t;
+
 /**
  * Email represents an Email field.
  */
@@ -25,7 +27,7 @@ final class Email extends Field implements CrossSiteCopyableFieldInterface, Inli
      */
     public static function displayName(): string
     {
-        return Craft::t('app', 'Email');
+        return t('Email');
     }
 
     /**
@@ -87,8 +89,8 @@ final class Email extends Field implements CrossSiteCopyableFieldInterface, Inli
     private function settingsHtml(bool $readOnly): string
     {
         return Cp::textFieldHtml([
-            'label' => Craft::t('app', 'Placeholder Text'),
-            'instructions' => Craft::t('app', 'The text that will be shown if the field doesn’t have a value.'),
+            'label' => t('Placeholder Text'),
+            'instructions' => t('The text that will be shown if the field doesn’t have a value.'),
             'id' => 'placeholder',
             'name' => 'placeholder',
             'value' => $this->placeholder,
@@ -124,7 +126,7 @@ final class Email extends Field implements CrossSiteCopyableFieldInterface, Inli
             'describedBy' => $this->describedBy,
             'name' => $this->handle,
             'inputmode' => 'email',
-            'placeholder' => Craft::t('site', $this->placeholder),
+            'placeholder' => t($this->placeholder, category: 'site'),
             'value' => $value,
         ]);
     }

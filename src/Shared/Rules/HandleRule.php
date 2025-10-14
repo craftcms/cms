@@ -3,8 +3,9 @@
 namespace CraftCms\Cms\Shared\Rules;
 
 use Closure;
-use Craft;
 use Illuminate\Contracts\Validation\ValidationRule;
+
+use function CraftCms\Cms\t;
 
 final class HandleRule implements ValidationRule
 {
@@ -41,7 +42,7 @@ final class HandleRule implements ValidationRule
     public function validate(string $attribute, mixed $value, Closure $fail): void
     {
         if (! preg_match(sprintf('/^%s$/', self::$handlePattern), $value)) {
-            $fail(Craft::t('app', '“{handle}” isn’t a valid handle.'));
+            $fail(t('“{handle}” isn’t a valid handle.'));
 
             return;
         }
@@ -50,7 +51,7 @@ final class HandleRule implements ValidationRule
         $reservedWords = array_map('strtolower', $reservedWords);
 
         if (in_array(strtolower($value), $reservedWords, true)) {
-            $fail(Craft::t('app', '“{handle}” is a reserved word.'));
+            $fail(t('“{handle}” is a reserved word.'));
         }
     }
 }

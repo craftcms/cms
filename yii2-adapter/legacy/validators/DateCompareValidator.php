@@ -7,12 +7,13 @@
 
 namespace craft\validators;
 
-use Craft;
-use craft\i18n\Formatter;
+use CraftCms\Cms\Support\Facades\I18N;
+use CraftCms\Cms\Translation\Formatter;
 use DateTime;
 use yii\base\InvalidConfigException;
 use yii\base\InvalidValueException;
 use yii\validators\Validator;
+use function CraftCms\Cms\t;
 
 /**
  * Class DateCompareValidator.
@@ -69,12 +70,12 @@ class DateCompareValidator extends Validator
 
         if (!isset($this->message)) {
             $this->message = match ($this->operator) {
-                '==' => Craft::t('yii', '{attribute} must be equal to "{compareValueOrAttribute}".'),
-                '!=' => Craft::t('yii', '{attribute} must not be equal to "{compareValueOrAttribute}".'),
-                '>' => Craft::t('yii', '{attribute} must be greater than "{compareValueOrAttribute}".'),
-                '>=' => Craft::t('yii', '{attribute} must be greater than or equal to "{compareValueOrAttribute}".'),
-                '<' => Craft::t('yii', '{attribute} must be less than "{compareValueOrAttribute}".'),
-                '<=' => Craft::t('yii', '{attribute} must be less than or equal to "{compareValueOrAttribute}".'),
+                '==' => t('{attribute} must be equal to "{compareValueOrAttribute}".'),
+                '!=' => t('{attribute} must not be equal to "{compareValueOrAttribute}".'),
+                '>' => t('{attribute} must be greater than "{compareValueOrAttribute}".'),
+                '>=' => t('{attribute} must be greater than or equal to "{compareValueOrAttribute}".'),
+                '<' => t('{attribute} must be less than "{compareValueOrAttribute}".'),
+                '<=' => t('{attribute} must be less than or equal to "{compareValueOrAttribute}".'),
                 default => throw new InvalidConfigException("Unknown operator: $this->operator"),
             };
         }
@@ -106,7 +107,7 @@ class DateCompareValidator extends Validator
         }
 
         if (!$this->compareValues($this->operator, $value, $compareValue)) {
-            $formattedCompareValue = Craft::$app->getFormatter()->asDatetime($compareValue, Formatter::FORMAT_WIDTH_SHORT);
+            $formattedCompareValue = I18N::getFormatter()->asDatetime($compareValue, Formatter::FORMAT_WIDTH_SHORT);
             $this->addError($model, $attribute, $this->message, [
                 'compareAttribute' => $compareLabel ?? $formattedCompareValue,
                 'compareValue' => $formattedCompareValue,
@@ -133,7 +134,7 @@ class DateCompareValidator extends Validator
         }
 
         if (!$this->compareValues($this->operator, $value, $this->compareValue)) {
-            $formattedCompareValue = Craft::$app->getFormatter()->asDatetime($this->compareValue, Formatter::FORMAT_WIDTH_SHORT);
+            $formattedCompareValue = I18N::getFormatter()->asDatetime($this->compareValue, Formatter::FORMAT_WIDTH_SHORT);
             return [
                 $this->message, [
                     'compareAttribute' => $formattedCompareValue,

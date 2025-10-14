@@ -9,6 +9,7 @@ namespace craft\elements\actions;
 
 use Craft;
 use craft\base\ElementAction;
+use function CraftCms\Cms\t;
 
 /**
  * DownloadAssetFile represents a Download Asset element action.
@@ -23,7 +24,7 @@ class DownloadAssetFile extends ElementAction
      */
     public function getTriggerLabel(): string
     {
-        return Craft::t('app', 'Download');
+        return t('Download');
     }
 
     /**

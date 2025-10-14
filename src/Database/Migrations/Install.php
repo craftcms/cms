@@ -1193,7 +1193,7 @@ class Install extends Migration
             $sitesService->saveSite($site);
         }
 
-        Craft::$app->language = $this->site->language;
+        app()->setLocale($this->site->language);
 
         $this->components->task('Saving the first user', function () use ($generalConfig) {
             $user = new User([

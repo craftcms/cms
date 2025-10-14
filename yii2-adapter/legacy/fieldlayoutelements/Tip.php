@@ -12,6 +12,7 @@ use craft\base\ElementInterface;
 use craft\helpers\Cp;
 use CraftCms\Cms\Support\Html;
 use yii\helpers\Markdown;
+use function CraftCms\Cms\t;
 
 /**
  * Tip represents an author tip UI element that can be included in field layouts.
@@ -50,7 +51,7 @@ class Tip extends BaseUiElement
         if ($tip !== '') {
             return $this->tip;
         }
-        return $this->_isTip() ? Craft::t('app', 'Tip') : Craft::t('app', 'Warning');
+        return $this->_isTip() ? t('Tip') : t('Warning');
     }
 
     /**
@@ -76,16 +77,16 @@ class Tip extends BaseUiElement
     {
         return
             Cp::textareaFieldHtml([
-                'label' => $this->_isTip() ? Craft::t('app', 'Tip') : Craft::t('app', 'Warning'),
-                'instructions' => Craft::t('app', 'Can contain Markdown formatting.'),
+                'label' => $this->_isTip() ? t('Tip') : t('Warning'),
+                'instructions' => t('Can contain Markdown formatting.'),
                 'class' => ['nicetext'],
                 'id' => 'tip',
                 'name' => 'tip',
                 'value' => $this->tip,
             ]) .
             Cp::lightswitchFieldHtml([
-                'label' => Craft::t('app', 'Can be dismissed?'),
-                'instructions' => Craft::t('app', 'Whether this can be dismissed by a user and not shown again.'),
+                'label' => t('Can be dismissed?'),
+                'instructions' => t('Whether this can be dismissed by a user and not shown again.'),
                 'id' => 'dismissible',
                 'name' => 'dismissible',
                 'on' => $this->dismissible,
@@ -115,13 +116,13 @@ class Tip extends BaseUiElement
             $classes[] = 'dismissible';
         }
 
-        $tip = Markdown::process(Html::encode(Craft::t('site', $this->tip)), 'pre-encoded');
+        $tip = Markdown::process(Html::encode(t($this->tip, category: 'site')), 'pre-encoded');
         $closeBtn = $this->dismissible
             ? Html::button('', [
                 'class' => 'tip-dismiss-btn',
-                'title' => Craft::t('app', 'Dismiss'),
+                'title' => t('Dismiss'),
                 'aria' => [
-                    'label' => Craft::t('app', 'Dismiss'),
+                    'label' => t('Dismiss'),
                 ],
                 'data' => [
                     'icon' => 'remove',

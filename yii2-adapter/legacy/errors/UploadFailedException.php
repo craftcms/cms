@@ -7,8 +7,8 @@
 
 namespace craft\errors;
 
-use Craft;
 use Throwable;
+use function CraftCms\Cms\t;
 
 /**
  * Class UploadFailedException
@@ -36,11 +36,11 @@ class UploadFailedException extends FileException
 
         if ($message === null) {
             $message = match ($errorCode) {
-                UPLOAD_ERR_INI_SIZE, UPLOAD_ERR_FORM_SIZE => Craft::t('app', 'The uploaded file exceeds the maximum allowed size.'),
-                UPLOAD_ERR_PARTIAL, UPLOAD_ERR_NO_FILE => Craft::t('app', 'The file failed to upload to the server properly.'),
-                UPLOAD_ERR_NO_TMP_DIR => Craft::t('app', 'Could not write to the temporary upload folder.'),
-                UPLOAD_ERR_CANT_WRITE => Craft::t('app', 'There was a problem with writing the file to the disk.'),
-                default => Craft::t('app', 'There was a problem with uploading the file.'),
+                UPLOAD_ERR_INI_SIZE, UPLOAD_ERR_FORM_SIZE => t('The uploaded file exceeds the maximum allowed size.'),
+                UPLOAD_ERR_PARTIAL, UPLOAD_ERR_NO_FILE => t('The file failed to upload to the server properly.'),
+                UPLOAD_ERR_NO_TMP_DIR => t('Could not write to the temporary upload folder.'),
+                UPLOAD_ERR_CANT_WRITE => t('There was a problem with writing the file to the disk.'),
+                default => t('There was a problem with uploading the file.'),
             };
         }
 

@@ -47,6 +47,7 @@ use yii\base\Exception;
 use yii\base\Model;
 use yii\base\NotSupportedException;
 use yii\web\AssetBundle as YiiAssetBundle;
+use function CraftCms\Cms\t;
 
 /**
  * @inheritdoc
@@ -453,7 +454,7 @@ class View extends \yii\web\View
         // Set our timezone
         /** @var CoreExtension $core */
         $core = $twig->getExtension(CoreExtension::class);
-        $core->setTimezone(Craft::$app->getTimeZone());
+        $core->setTimezone(app()->getTimezone());
 
         // Fire an 'afterCreateTwig' event
         if ($this->hasEventHandlers(self::EVENT_AFTER_CREATE_TWIG)) {
@@ -1582,7 +1583,7 @@ class View extends \yii\web\View
         $js = '';
 
         foreach ($messages as $message) {
-            $translation = Craft::t($category, $message);
+            $translation = t($message, category: $category);
             if ($translation !== $message) {
                 $jsMessage = Json::encode($message);
                 $jsTranslation = Json::encode($translation);
@@ -2366,12 +2367,12 @@ JS;
     private function _validateTemplateName(string $name): void
     {
         if (str_contains($name, "\0")) {
-            throw new TwigLoaderError(Craft::t('app', 'A template name cannot contain NUL bytes.'));
+            throw new TwigLoaderError(t('A template name cannot contain NUL bytes.'));
         }
 
         if (Path::ensurePathIsContained($name) === false) {
             Craft::warning('Someone tried to load a template outside the templates folder: ' . $name);
-            throw new TwigLoaderError(Craft::t('app', 'Looks like you are trying to load a template outside the template folder.'));
+            throw new TwigLoaderError(t('Looks like you are trying to load a template outside the template folder.'));
         }
     }
 

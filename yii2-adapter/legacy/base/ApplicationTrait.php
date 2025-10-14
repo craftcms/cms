@@ -40,7 +40,6 @@ use craft\fieldlayoutelements\users\UsernameField;
 use craft\helpers\Session;
 use craft\i18n\Formatter;
 use craft\i18n\I18N;
-use craft\i18n\Locale;
 use craft\log\Dispatcher;
 use craft\mail\Mailer;
 use craft\markdown\GithubMarkdown;
@@ -103,13 +102,11 @@ use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\Support\Composer;
 use CraftCms\Cms\Support\Env;
 use CraftCms\Cms\Support\Facades\Deprecator as DeprecatorFacade;
+use CraftCms\Cms\Translation\Locale;
 use CraftCms\Cms\Updates\Updates;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
-use Symfony\Component\VarDumper\Caster\ReflectionCaster;
-use Symfony\Component\VarDumper\Cloner\VarCloner;
 use Symfony\Component\VarDumper\Dumper\AbstractDumper;
-use Symfony\Component\VarDumper\VarDumper;
 use Yii;
 use yii\base\Application;
 use yii\base\ErrorHandler;
@@ -315,7 +312,7 @@ trait ApplicationTrait
             // We tried to get the language, but something went wrong. Use fallback to prevent infinite loop.
             $fallbackLanguage = $this->_getFallbackLanguage();
             $this->_gettingLanguage = false;
-            $this->language = $fallbackLanguage;
+            app()->setLocale($fallbackLanguage);
             return;
         }
 
@@ -325,13 +322,8 @@ trait ApplicationTrait
             $useUserLanguage = $this->getRequest()->getIsCpRequest();
         }
 
-        $this->language = $this->getTargetLanguage($useUserLanguage);
-        setlocale(
-            LC_COLLATE,
-            str_replace('-', '_', $this->language), // target language
-            'C.UTF-8',  // libc >= 2.13
-            'C.utf8' // different spelling
-        );
+        app()->setLocale($this->getTargetLanguage($useUserLanguage));
+
         $this->_gettingLanguage = false;
     }
 
@@ -361,7 +353,7 @@ trait ApplicationTrait
             if (
                 $id &&
                 ($language = $this->getUsers()->getUserPreference($id, 'language')) !== null &&
-                Craft::$app->getI18n()->validateAppLocaleId($language)
+                \CraftCms\Cms\Support\Facades\I18N::validateAppLocaleId($language)
             ) {
                 return $language;
             }
@@ -1047,11 +1039,14 @@ trait ApplicationTrait
     /**
      * Returns the locale that should be used to define the formatter.
      *
-     * @return Locale
+     * @return \craft\i18n\Locale
      * @since 3.6.0
+     * @deprecated 6.0.0 use {I18N::getFormattingLocale()} instead.
      */
-    public function getFormattingLocale(): Locale
+    public function getFormattingLocale(): \craft\i18n\Locale
     {
+        DeprecatorFacade::log('Craft::$app->getFormattingLocale()', 'Craft::$app->getFormattingLocale() is deprecated. Use I18N::getFormattingLocale() or craft.i18n.getFormattingLocale instead.');
+
         return $this->get('formattingLocale');
     }
 
@@ -1099,10 +1094,12 @@ trait ApplicationTrait
     /**
      * Returns a Locale object for the target language.
      *
-     * @return Locale The Locale object for the target language
+     * @return \craft\i18n\Locale The Locale object for the target language
      */
-    public function getLocale(): Locale
+    public function getLocale(): \craft\i18n\Locale
     {
+        DeprecatorFacade::log('Craft::$app->getLocale()', 'Craft::$app->getLocale() is deprecated. Use I18N::getLocale() or craft.i18n.getLocale instead.');
+
         return $this->get('locale');
     }
 
@@ -1369,18 +1366,9 @@ trait ApplicationTrait
         $this->getRequest();
         $this->getLog();
 
-        // Set the timezone
-        $this->_setTimeZone();
-
-        // Set the language
-        $this->updateTargetLanguage();
-
-        // Register the variable dumper
-        VarDumper::setHandler(function($var) {
-            $cloner = new VarCloner();
-            $cloner->addCasters(ReflectionCaster::UNSET_CLOSURE_FILE_INFO);
-            $this->getDumper()->dump($cloner->cloneVar($var));
-        });
+        $this->language = app()->getLocale();
+        $this->setTimeZone(app()->getTimezone());
+        date_default_timezone_set(app()->getTimezone());
 
         // Use our own Markdown parser classes
         $flavors = [
@@ -1423,18 +1411,6 @@ trait ApplicationTrait
     }
 
     /**
-     * Sets the system timezone.
-     */
-    private function _setTimeZone(): void
-    {
-        $timeZone = app(GeneralConfig::class)->timezone ?? app(ProjectConfig::class)->get('system.timeZone');
-
-        if ($timeZone) {
-            $this->setTimeZone(Env::parse($timeZone));
-        }
-    }
-
-    /**
      * Enables or disables Maintenance Mode
      *
      * @param bool $value
@@ -1461,8 +1437,8 @@ trait ApplicationTrait
     {
         // See if we have the control panel translated in one of the user’s browsers preferred language(s)
         if ($this instanceof WebApplication) {
-            $languages = $this->getI18n()->getAppLocaleIds();
-            return $this->getRequest()->getPreferredLanguage($languages);
+            $languages = \CraftCms\Cms\Support\Facades\I18N::getAppLocaleIds();
+            return $this->getRequest()->getPreferredLanguage($languages->all());
         }
 
         // Default to the source language.

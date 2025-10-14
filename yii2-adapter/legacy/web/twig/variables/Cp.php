@@ -15,9 +15,7 @@ use craft\events\RegisterCpSettingsEvent;
 use craft\helpers\App;
 use craft\helpers\Assets;
 use craft\helpers\Cp as CpHelper;
-use craft\helpers\Inflector;
 use craft\helpers\UrlHelper;
-use craft\i18n\Locale;
 use craft\models\FieldLayout;
 use craft\models\Site;
 use craft\models\Volume;
@@ -30,7 +28,9 @@ use CraftCms\Cms\Plugin\Plugins;
 use CraftCms\Cms\Support\Api;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Env;
+use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\Str;
+use CraftCms\Cms\Translation\Locale;
 use CraftCms\Cms\Utility\Utilities;
 use CraftCms\Cms\Utility\Utility;
 use DateTime;
@@ -44,6 +44,7 @@ use SplFileInfo;
 use yii\base\Component;
 use yii\base\InvalidArgumentException;
 use yii\base\InvalidConfigException;
+use function CraftCms\Cms\t;
 
 /**
  * Control panel functions
@@ -131,7 +132,7 @@ class Cp extends Component
      *     Cp::class,
      *     Cp::EVENT_REGISTER_CP_SETTINGS,
      *     function(RegisterCpSettingsEvent $e) {
-     *         $e->settings[Craft::t('app', 'Modules')][] = [
+     *         $e->settings[\CraftCms\Cms\t('Modules')][] = [
      *             'label' => 'Item Label',
      *             'url' => 'my-module',
      *             'icon' => '/path/to/icon.svg',
@@ -231,7 +232,7 @@ class Cp extends Component
 
         $navItems = [
             [
-                'label' => Craft::t('app', 'Dashboard'),
+                'label' => t('Dashboard'),
                 'url' => 'dashboard',
                 'icon' => 'gauge',
             ],
@@ -239,7 +240,7 @@ class Cp extends Component
 
         if (Craft::$app->getEntries()->getTotalEditableSections()) {
             $navItems[] = [
-                'label' => Craft::t('app', 'Entries'),
+                'label' => t('Entries'),
                 'url' => 'entries',
                 'icon' => 'newspaper',
             ];
@@ -247,7 +248,7 @@ class Cp extends Component
 
         if (!empty(Craft::$app->getGlobals()->getEditableSets())) {
             $navItems[] = [
-                'label' => Craft::t('app', 'Globals'),
+                'label' => t('Globals'),
                 'url' => 'globals',
                 'icon' => 'globe',
             ];
@@ -255,7 +256,7 @@ class Cp extends Component
 
         if (Craft::$app->getCategories()->getEditableGroupIds()) {
             $navItems[] = [
-                'label' => Craft::t('app', 'Categories'),
+                'label' => t('Categories'),
                 'url' => 'categories',
                 'icon' => 'sitemap',
             ];
@@ -263,7 +264,7 @@ class Cp extends Component
 
         if (Craft::$app->getVolumes()->getTotalViewableVolumes()) {
             $navItems[] = [
-                'label' => Craft::t('app', 'Assets'),
+                'label' => t('Assets'),
                 'url' => 'assets',
                 'icon' => 'image',
             ];
@@ -274,7 +275,7 @@ class Cp extends Component
             Craft::$app->getUser()->checkPermission('viewUsers')
         ) {
             $navItems[] = [
-                'label' => Craft::t('app', 'Users'),
+                'label' => t('Users'),
                 'url' => 'users',
                 'icon' => 'user-group',
             ];
@@ -299,13 +300,13 @@ class Cp extends Component
 
                 if ($generalConfig->allowAdminChanges) {
                     $subNavItems['schemas'] = [
-                        'label' => Craft::t('app', 'Schemas'),
+                        'label' => t('Schemas'),
                         'url' => 'graphql/schemas',
                     ];
                 }
 
                 $subNavItems['tokens'] = [
-                    'label' => Craft::t('app', 'Tokens'),
+                    'label' => t('Tokens'),
                     'url' => 'graphql/tokens',
                 ];
 
@@ -336,7 +337,7 @@ class Cp extends Component
 
             $navItems[] = [
                 'url' => 'utilities',
-                'label' => Craft::t('app', 'Utilities'),
+                'label' => t('Utilities'),
                 'icon' => 'wrench',
                 'badgeCount' => $badgeCount,
             ];
@@ -345,13 +346,13 @@ class Cp extends Component
         if ($isAdmin) {
             $navItems[] = [
                 'url' => 'settings',
-                'label' => Craft::t('app', 'Settings'),
+                'label' => t('Settings'),
                 'icon' => app(GeneralConfig::class)->allowAdminChanges ? 'gear' : 'gear-slash',
             ];
 
             $navItems[] = [
                 'url' => 'plugin-store',
-                'label' => Craft::t('app', 'Plugin Store'),
+                'label' => t('Plugin Store'),
                 'icon' => 'plug',
             ];
         }
@@ -417,82 +418,82 @@ class Cp extends Component
         $readOnly = !app(GeneralConfig::class)->allowAdminChanges;
         $settings = [];
 
-        $label = Craft::t('app', 'System');
+        $label = t('System');
 
         $settings[$label]['general'] = [
             'iconMask' => '@craftcms/resources/icons/light/sliders.svg',
-            'label' => Craft::t('app', 'General'),
+            'label' => t('General'),
         ];
         $settings[$label]['sites'] = [
             'iconMask' => sprintf('@craftcms/resources/icons/light/%s.svg', CpHelper::earthIcon()),
-            'label' => Craft::t('app', 'Sites'),
+            'label' => t('Sites'),
         ];
 
         if (!app(GeneralConfig::class)->headlessMode) {
             $settings[$label]['routes'] = [
                 'iconMask' => '@craftcms/resources/icons/light/signs-post.svg',
-                'label' => Craft::t('app', 'Routes'),
+                'label' => t('Routes'),
             ];
         }
 
         $settings[$label]['users'] = [
             'iconMask' => '@craftcms/resources/icons/light/user-group.svg',
-            'label' => Craft::t('app', 'Users'),
+            'label' => t('Users'),
         ];
         if (app(GeneralConfig::class)->allowAdminChanges) {
             $settings[$label]['addresses'] = [
                 'iconMask' => '@craftcms/resources/icons/light/map-location.svg',
-                'label' => Craft::t('app', 'Addresses'),
+                'label' => t('Addresses'),
             ];
         }
         $settings[$label]['email'] = [
             'iconMask' => '@craftcms/resources/icons/light/envelope.svg',
-            'label' => Craft::t('app', 'Email'),
+            'label' => t('Email'),
         ];
         $settings[$label]['plugins'] = [
             'iconMask' => '@craftcms/resources/icons/light/plug.svg',
-            'label' => Craft::t('app', 'Plugins'),
+            'label' => t('Plugins'),
         ];
 
-        $label = Craft::t('app', 'Content');
+        $label = t('Content');
 
         $settings[$label]['sections'] = [
             'iconMask' => '@craftcms/resources/icons/light/newspaper.svg',
-            'label' => Craft::t('app', 'Sections'),
+            'label' => t('Sections'),
         ];
         $settings[$label]['entry-types'] = [
             'iconMask' => '@craftcms/resources/icons/light/files.svg',
-            'label' => Craft::t('app', 'Entry Types'),
+            'label' => t('Entry Types'),
         ];
         $settings[$label]['fields'] = [
             'iconMask' => '@craftcms/resources/icons/light/pen-to-square.svg',
-            'label' => Craft::t('app', 'Fields'),
+            'label' => t('Fields'),
         ];
         $settings[$label]['globals'] = [
             'iconMask' => '@craftcms/resources/icons/light/globe.svg',
-            'label' => Craft::t('app', 'Globals'),
+            'label' => t('Globals'),
         ];
         $settings[$label]['categories'] = [
             'iconMask' => '@craftcms/resources/icons/light/sitemap.svg',
-            'label' => Craft::t('app', 'Categories'),
+            'label' => t('Categories'),
         ];
         $settings[$label]['tags'] = [
             'iconMask' => '@craftcms/resources/icons/light/tags.svg',
-            'label' => Craft::t('app', 'Tags'),
+            'label' => t('Tags'),
         ];
 
-        $label = Craft::t('app', 'Media');
+        $label = t('Media');
 
         $settings[$label]['assets'] = [
             'iconMask' => '@craftcms/resources/icons/light/image.svg',
-            'label' => Craft::t('app', 'Assets'),
+            'label' => t('Assets'),
         ];
         $settings[$label]['filesystems'] = [
             'iconMask' => '@craftcms/resources/icons/light/folder-open.svg',
-            'label' => Craft::t('app', 'Filesystems'),
+            'label' => t('Filesystems'),
         ];
 
-        $label = Craft::t('app', 'Plugins');
+        $label = t('Plugins');
 
         $pluginsService = app(Plugins::class);
 
@@ -564,11 +565,11 @@ class Cp extends Component
                 $names[] = $group->first()[0];
             } elseif ($count !== 0) {
                 if ($group->first()[2]['type'] === 'plugin-edition') {
-                    $name = Craft::t('app', '{count, spellout} {count, plural, =1{plugin} other{plugins}}', [
+                    $name = t('{count, spellout} {count, plural, =1{plugin} other{plugins}}', [
                         'count' => $count,
                     ]);
                 } else {
-                    $name = Craft::t('app', '{count, spellout} plugin {count, plural, =1{update} other{updates}}', [
+                    $name = t('{count, spellout} plugin {count, plural, =1{update} other{updates}}', [
                         'count' => $count,
                     ]);
                 }
@@ -579,8 +580,8 @@ class Cp extends Component
             }
         }
 
-        $message = Craft::t('app', '{names} {total, plural, =1{is installed as a trial} other{are installed as trials}}.', [
-            'names' => Inflector::sentence($names),
+        $message = t('{names} {total, plural, =1{is installed as a trial} other{are installed as trials}}.', [
+            'names' => collect($names)->sentence(),
             'total' => $issues->count(),
         ]);
 
@@ -627,7 +628,7 @@ class Cp extends Component
             }
         }
         $suggestions[] = [
-            'label' => Craft::t('app', 'Environment Variables'),
+            'label' => t('Environment Variables'),
             'data' => array_values(Arr::sort($envSuggestions, 'name')),
         ];
 
@@ -657,7 +658,7 @@ class Cp extends Component
                 }
             }
             $suggestions[] = [
-                'label' => Craft::t('app', 'Aliases'),
+                'label' => t('Aliases'),
                 'data' => array_values(Arr::sort($aliasSuggestions, 'name')),
             ];
         }
@@ -752,9 +753,9 @@ class Cp extends Component
     {
         $options = [];
         if ($appOnly) {
-            $allLanguages = array_map(fn(Locale $locale) => $locale->id, Craft::$app->getI18n()->getAppLocales());
+            $allLanguages = I18N::getAppLocales()->map(fn(Locale $locale) => $locale->id);
         } else {
-            $allLanguages = array_map(fn(Locale $locale) => $locale->id, Craft::$app->getI18n()->getAllLocales());
+            $allLanguages = I18N::getAllLocales()->map(fn(Locale $locale) => $locale->id);
         }
 
         foreach (array_keys($_SERVER) as $var) {
@@ -767,7 +768,7 @@ class Cp extends Component
             }
 
             $languageValue = null;
-            if (in_array($value, $allLanguages, true)) {
+            if ($allLanguages->contains($value)) {
                 $languageValue = $value;
             }
 
@@ -794,7 +795,7 @@ class Cp extends Component
         return Collection::make($options)
             ->sortBy('value')
             ->prepend([
-                'optgroup' => Craft::t('app', 'Environment Variables'),
+                'optgroup' => t('Environment Variables'),
             ])
             ->all();
     }
@@ -874,20 +875,20 @@ class Cp extends Component
     ): array {
         $options = [];
 
-        $languageId = Craft::$app->getLocale()->getLanguageID();
+        $languageId = I18N::getLocale()->getLanguageID();
 
         if ($appLocales) {
-            $allLocales = Craft::$app->getI18n()->getAppLocales();
+            $allLocales = I18N::getAppLocales();
         } else {
-            $allLocales = Craft::$app->getI18n()->getAllLocales();
+            $allLocales = I18N::getAllLocales();
         }
 
-        $allLocales = Arr::sort($allLocales, fn(Locale $locale) => $locale->getDisplayName());
+        $allLocales = $allLocales->sortBy(fn(Locale $locale) => $locale->getDisplayName());
 
         foreach ($allLocales as $locale) {
             $name = $locale->getLanguageID() !== $languageId ? $locale->getDisplayName() : '';
             $option = [
-                'label' => $locale->getDisplayName(Craft::$app->language),
+                'label' => $locale->getDisplayName(app()->getLocale()),
                 'value' => $locale->id,
                 'data' => [
                     'data' => [
@@ -925,7 +926,7 @@ class Cp extends Component
         return Collection::make(Craft::$app->getFs()->getAllFilesystems())
             ->filter(fn(FsInterface $fs) => !Assets::isTempUploadFs($fs))
             ->map(fn(FsInterface $fs) => [
-                'label' => Craft::t('site', $fs->name),
+                'label' => t($fs->name, category: 'site'),
                 'value' => $fs->handle,
             ])
             ->sortBy(fn(array $option) => $option['label'])
@@ -958,7 +959,7 @@ class Cp extends Component
      */
     public function getAsciiCharMap(string $language): ?array
     {
-        if ($language === Craft::$app->language) {
+        if ($language === app()->getLocale()) {
             return null;
         }
 
@@ -984,7 +985,7 @@ class Cp extends Component
         $sites = [];
 
         foreach (Craft::$app->getSites()->getAllSites() as $site) {
-            $sites[$site->handle] = Craft::t('site', $site->getName());
+            $sites[$site->handle] = t($site->getName(), category: 'site');
         }
 
         foreach ($roots as $root => $basePaths) {
@@ -1054,7 +1055,7 @@ class Cp extends Component
 
         return [
             [
-                'label' => Craft::t('app', 'Templates'),
+                'label' => t('Templates'),
                 'data' => array_values(Arr::sort($suggestions, 'name')),
             ],
         ];

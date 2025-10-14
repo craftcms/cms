@@ -4,7 +4,6 @@ namespace CraftCms\Cms\Field;
 
 use CommerceGuys\Addressing\Country\Country as CountryModel;
 use CommerceGuys\Addressing\Exception\UnknownCountryException;
-use Craft;
 use craft\base\ElementInterface;
 use craft\fields\conditions\CountryFieldConditionRule;
 use craft\helpers\Cp;
@@ -13,6 +12,8 @@ use CraftCms\Cms\Field\Contracts\CrossSiteCopyableFieldInterface;
 use CraftCms\Cms\Field\Contracts\InlineEditableFieldInterface;
 use CraftCms\Cms\Field\Contracts\MergeableFieldInterface;
 use yii\db\Schema;
+
+use function CraftCms\Cms\t;
 
 /**
  * Country represents a Country field.
@@ -24,7 +25,7 @@ final class Country extends Field implements CrossSiteCopyableFieldInterface, In
      */
     public static function displayName(): string
     {
-        return Craft::t('app', 'Country');
+        return t('Country');
     }
 
     /**
@@ -65,7 +66,7 @@ final class Country extends Field implements CrossSiteCopyableFieldInterface, In
         }
 
         try {
-            return app(Addresses::class)->getCountryRepository()->get($value, Craft::$app->language);
+            return app(Addresses::class)->getCountryRepository()->get($value, app()->getLocale());
         } catch (UnknownCountryException) {
             return null;
         }
@@ -76,7 +77,7 @@ final class Country extends Field implements CrossSiteCopyableFieldInterface, In
      */
     protected function inputHtml(mixed $value, ?ElementInterface $element, bool $inline): string
     {
-        $options = app(Addresses::class)->getCountryList(Craft::$app->language);
+        $options = app(Addresses::class)->getCountryList(app()->getLocale());
         array_unshift($options, ['label' => ' ', 'value' => '__blank__']);
 
         return Cp::selectizeHtml([
@@ -119,7 +120,7 @@ final class Country extends Field implements CrossSiteCopyableFieldInterface, In
     public function previewPlaceholderHtml(mixed $value, ?ElementInterface $element): string
     {
         if (! $value) {
-            $countries = app(Addresses::class)->getCountryRepository()->getList(Craft::$app->language);
+            $countries = app(Addresses::class)->getCountryRepository()->getList(app()->getLocale());
             $value = $countries[array_rand($countries)];
         } else {
             if ($value instanceof CountryModel) {

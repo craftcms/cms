@@ -23,7 +23,6 @@ use craft\helpers\Db;
 use craft\helpers\FileHelper;
 use craft\helpers\ImageTransforms;
 use craft\helpers\UrlHelper;
-use craft\i18n\Formatter;
 use craft\imagetransforms\ImageTransformer;
 use craft\models\ImageTransform;
 use craft\models\VolumeFolder;
@@ -36,7 +35,9 @@ use CraftCms\Cms\Field\Assets as AssetsField;
 use CraftCms\Cms\Field\Fields;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Facades\Deprecator;
+use CraftCms\Cms\Support\Facades\I18N;
 use CraftCms\Cms\Support\Str;
+use CraftCms\Cms\Translation\Formatter;
 use Throwable;
 use Twig\Error\LoaderError;
 use Twig\Error\RuntimeError;
@@ -56,6 +57,7 @@ use yii\web\Response;
 use yii\web\ServerErrorHttpException;
 use ZipArchive;
 use function CraftCms\Cms\maxPowerCaptain;
+use function CraftCms\Cms\t;
 
 /** @noinspection ClassOverridesFieldOfSuperClassInspection */
 
@@ -208,7 +210,7 @@ class AssetsController extends Controller
         if (!Craft::$app->getElements()->saveElement($asset)) {
             return $this->asModelFailure(
                 $asset,
-                mb_ucfirst(Craft::t('app', 'Couldn’t save {type}.', [
+                mb_ucfirst(t('Couldn’t save {type}.', [
                     'type' => Asset::lowerDisplayName(),
                 ])),
                 $assetVariable
@@ -217,7 +219,7 @@ class AssetsController extends Controller
 
         return $this->asModelSuccess(
             $asset,
-            Craft::t('app', '{type} saved.', [
+            t('{type} saved.', [
                 'type' => Asset::displayName(),
             ]),
             data: [
@@ -333,7 +335,7 @@ class AssetsController extends Controller
             if (!$selectionCondition->matchElement($asset)) {
                 // delete and reject it
                 $elementsService->deleteElement($asset, true);
-                return $this->asFailure(Craft::t('app', '{filename} isn’t selectable for this field.', [
+                return $this->asFailure(t('{filename} isn’t selectable for this field.', [
                     'filename' => $uploadedFile->name,
                 ]));
             }
@@ -354,7 +356,7 @@ class AssetsController extends Controller
             $conflictingAsset = Asset::findOne(['folderId' => $folder->id, 'filename' => $asset->conflictingFilename]);
 
             return $this->asJson([
-                'conflict' => Craft::t('app', 'A file with the name “{filename}” already exists.', ['filename' => $asset->conflictingFilename]),
+                'conflict' => t('A file with the name “{filename}” already exists.', ['filename' => $asset->conflictingFilename]),
                 'assetId' => $asset->id,
                 'filename' => $asset->conflictingFilename,
                 'conflictingAssetId' => $conflictingAsset->id ?? null,
@@ -464,7 +466,7 @@ class AssetsController extends Controller
             'filename' => $resultingAsset->getFilename(),
             'formattedSize' => $resultingAsset->getFormattedSize(0),
             'formattedSizeInBytes' => $resultingAsset->getFormattedSizeInBytes(false),
-            'formattedDateUpdated' => Craft::$app->getFormatter()->asDatetime($resultingAsset->dateUpdated, Formatter::FORMAT_WIDTH_SHORT),
+            'formattedDateUpdated' => I18N::getFormatter()->asDatetime($resultingAsset->dateUpdated, Formatter::FORMAT_WIDTH_SHORT),
             'dimensions' => $resultingAsset->getDimensions(),
             'updatedTimestamp' => $resultingAsset->dateUpdated->getTimestamp(),
             'resultingUrl' => $resultingAsset->getUrl(),
@@ -571,7 +573,7 @@ class AssetsController extends Controller
         if (!$success) {
             return $this->asModelFailure(
                 $asset,
-                Craft::t('app', 'Couldn’t delete {type}.', [
+                t('Couldn’t delete {type}.', [
                     'type' => Asset::lowerDisplayName(),
                 ]),
                 'asset'
@@ -580,7 +582,7 @@ class AssetsController extends Controller
 
         return $this->asModelSuccess(
             $asset,
-            Craft::t('app', '{type} deleted.', [
+            t('{type} deleted.', [
                 'type' => Asset::displayName(),
             ]),
             'asset',
@@ -748,7 +750,7 @@ class AssetsController extends Controller
         if ($existingFolder && !$force && !$merge) {
             // Throw a prompt
             return $this->asJson([
-                'conflict' => Craft::t('app', 'Folder “{folder}” already exists at target location', ['folder' => $folderToMove->name]),
+                'conflict' => t('Folder “{folder}” already exists at target location', ['folder' => $folderToMove->name]),
                 'folderId' => $folderBeingMovedId,
                 'parentId' => $newParentFolderId,
             ]);
@@ -779,7 +781,7 @@ class AssetsController extends Controller
                         $assets->deleteFoldersByIds($existingFolder->id);
                     } catch (VolumeException $exception) {
                         Craft::$app->getErrorHandler()->logException($exception);
-                        return $this->asFailure(Craft::t('app', 'Directories cannot be deleted while moving assets.'));
+                        return $this->asFailure(t('Directories cannot be deleted while moving assets.'));
                     }
                 } else {
                     // Or build a map of existing folders for file move
@@ -835,7 +837,7 @@ class AssetsController extends Controller
         $asset = Craft::$app->getAssets()->getAssetById($assetId);
 
         if (!$asset) {
-            throw new BadRequestHttpException(Craft::t('app', 'The asset you’re trying to edit does not exist.'));
+            throw new BadRequestHttpException(t('The asset you’re trying to edit does not exist.'));
         }
 
         $focal = $asset->getHasFocalPoint() ? $asset->getFocalPoint() : null;
@@ -1050,7 +1052,7 @@ class AssetsController extends Controller
             ->all();
 
         if (empty($assets)) {
-            throw new BadRequestHttpException(Craft::t('app', 'The asset you’re trying to download does not exist.'));
+            throw new BadRequestHttpException(t('The asset you’re trying to download does not exist.'));
         }
 
         foreach ($assets as $asset) {
@@ -1180,7 +1182,7 @@ class AssetsController extends Controller
         $asset = Asset::find()->id($assetId)->one();
 
         if (!$asset) {
-            return $this->asFailure(Craft::t('app', 'Asset not found with that id'));
+            return $this->asFailure(t('Asset not found with that id'));
         }
 
         $previewHtml = null;

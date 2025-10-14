@@ -5,7 +5,7 @@
     {% from '_includes/forms' import textField %}
     {# Only format the value if it isn’t going to be misrepresented #}
     {% if not craft.app.formatter.willBeMisrepresented(config.value) %}
-        {{ hiddenInput("#{config.name}[locale]", craft.app.formattingLocale.id) }}
+        {{ hiddenInput("#{config.name}[locale]", craft.i18n.formattingLocale.id) }}
         {% set config = config|merge({
             name: "#{config.name}[value]",
             value: config.value|number(decimals),

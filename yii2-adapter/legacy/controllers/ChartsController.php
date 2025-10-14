@@ -13,6 +13,7 @@ use craft\helpers\ChartHelper;
 use craft\helpers\DateTimeHelper;
 use craft\web\Controller;
 use CraftCms\Cms\Database\Table;
+use CraftCms\Cms\Support\Facades\I18N;
 use DateTime;
 use DateTimeZone;
 use Illuminate\Database\Query\Builder;
@@ -20,6 +21,7 @@ use Illuminate\Support\Facades\DB;
 use Tpetry\QueryExpressions\Language\Alias;
 use yii\base\Exception;
 use yii\base\Response;
+use function CraftCms\Cms\t;
 
 /**
  * The ChartsController class is a controller that handles charts related operations such as preparing and returning data,
@@ -51,7 +53,7 @@ class ChartsController extends Controller
         }
 
         // Start at midnight on the start date, end at midnight after the end date
-        $timeZone = new DateTimeZone(Craft::$app->getTimeZone());
+        $timeZone = new DateTimeZone(app()->getTimezone());
         $startDate = new DateTime($startDate->format('Y-m-d'), $timeZone);
         $endDate = new DateTime($endDate->modify('+1 day')->format('Y-m-d'), $timeZone);
 
@@ -68,7 +70,7 @@ class ChartsController extends Controller
         // Get the chart data table
         $dataTable = ChartHelper::getRunChartDataFromQuery($query, $startDate, $endDate, 'users.dateCreated', 'count', '*', [
             'intervalUnit' => $intervalUnit,
-            'valueLabel' => Craft::t('app', 'New {type}', [
+            'valueLabel' => t('New {type}', [
                 'type' => User::pluralDisplayName(),
             ]),
         ]);
@@ -86,7 +88,7 @@ class ChartsController extends Controller
             'total' => $total,
 
             'formats' => ChartHelper::formats(),
-            'orientation' => Craft::$app->getLocale()->getOrientation(),
+            'orientation' => I18N::getLocale()->getOrientation(),
             'scale' => $intervalUnit,
         ]);
     }

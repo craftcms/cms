@@ -2,7 +2,6 @@
 
 namespace craft\elements\conditions\addresses;
 
-use Craft;
 use craft\base\conditions\BaseMultiSelectConditionRule;
 use craft\base\ElementInterface;
 use craft\elements\Address;
@@ -10,6 +9,7 @@ use craft\elements\conditions\ElementConditionRuleInterface;
 use craft\elements\db\AddressQuery;
 use craft\elements\db\ElementQueryInterface;
 use CraftCms\Cms\Addresses\Addresses;
+use function CraftCms\Cms\t;
 
 /**
  * Address country condition rule.
@@ -24,7 +24,7 @@ class CountryConditionRule extends BaseMultiSelectConditionRule implements Eleme
      */
     public function getLabel(): string
     {
-        return Craft::t('app', 'Country');
+        return t('Country');
     }
 
     /**

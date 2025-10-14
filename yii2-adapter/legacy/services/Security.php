@@ -10,10 +10,10 @@ namespace craft\services;
 use Craft;
 use craft\helpers\FileHelper;
 use CraftCms\Cms\Config\GeneralConfig;
+use CraftCms\Cms\Support\Str;
 use yii\base\Exception;
 use yii\base\InvalidArgumentException;
 use yii\base\InvalidConfigException;
-use yii\helpers\Inflector;
 
 /**
  * Security service.
@@ -47,7 +47,7 @@ class Security extends \yii\base\Security
 
         // normalize the sensitive keywords
         $this->sensitiveKeywords = array_map(
-            fn(string $word) => Inflector::camel2words($word, false),
+            fn(string $word) => Str::camel2words($word, false),
             $this->sensitiveKeywords,
         );
     }
@@ -176,7 +176,7 @@ class Security extends \yii\base\Security
      */
     public function isSensitive(string $key): bool
     {
-        return preg_match('/\b(' . implode('|', $this->sensitiveKeywords) . ')\b/', Inflector::camel2words($key, false));
+        return preg_match('/\b(' . implode('|', $this->sensitiveKeywords) . ')\b/', Str::camel2words($key, false));
     }
 
     /**

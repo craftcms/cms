@@ -20,6 +20,8 @@ use DOMElement;
 use GraphQL\Type\Definition\Type;
 use Symfony\Component\DomCrawler\Crawler;
 
+use function CraftCms\Cms\t;
+
 /**
  * Tags represents a Tags field.
  */
@@ -30,7 +32,7 @@ final class Tags extends BaseRelationField
      */
     public static function displayName(): string
     {
-        return Craft::t('app', 'Tags');
+        return t('Tags');
     }
 
     /**
@@ -54,7 +56,7 @@ final class Tags extends BaseRelationField
      */
     public static function defaultSelectionLabel(): string
     {
-        return Craft::t('app', 'Add a tag');
+        return t('Add a tag');
     }
 
     /**
@@ -127,13 +129,13 @@ final class Tags extends BaseRelationField
                     'tagGroupId' => $tagGroup->id,
                     'targetSiteId' => $this->targetSiteId($element),
                     'sourceElementId' => $element?->id,
-                    'selectionLabel' => $this->selectionLabel ? Craft::t('site', $this->selectionLabel) : self::defaultSelectionLabel(),
+                    'selectionLabel' => $this->selectionLabel ? t($this->selectionLabel, category: 'site') : self::defaultSelectionLabel(),
                     'allowSelfRelations' => (bool) $this->allowSelfRelations,
                     'defaultPlacement' => $this->defaultPlacement,
                 ]);
         }
 
-        return '<p class="error">'.Craft::t('app', 'This field is not set to a valid source.').'</p>';
+        return '<p class="error">'.t('This field is not set to a valid source.').'</p>';
     }
 
     /**
@@ -142,7 +144,7 @@ final class Tags extends BaseRelationField
     protected function supportedViewModes(): array
     {
         return [
-            'list' => Craft::t('app', 'List'),
+            'list' => t('List'),
         ];
     }
 

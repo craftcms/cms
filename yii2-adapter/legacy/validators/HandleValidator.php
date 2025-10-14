@@ -7,8 +7,8 @@
 
 namespace craft\validators;
 
-use Craft;
 use yii\validators\Validator;
+use function CraftCms\Cms\t;
 
 /**
  * Class HandleValidator.
@@ -62,12 +62,12 @@ class HandleValidator extends Validator
         $message = null;
 
         if (!preg_match(sprintf('/^%s$/', static::$handlePattern), $value)) {
-            $message = $this->message ?? Craft::t('app', '“{handle}” isn’t a valid handle.');
+            $message = $this->message ?? t('“{handle}” isn’t a valid handle.');
         } else {
             $reservedWords = array_merge($this->reservedWords, static::$baseReservedWords);
             $reservedWords = array_map('strtolower', $reservedWords);
             if (in_array(strtolower($value), $reservedWords, true)) {
-                $message = Craft::t('app', '“{handle}” is a reserved word.');
+                $message = t('“{handle}” is a reserved word.');
             }
         }
 

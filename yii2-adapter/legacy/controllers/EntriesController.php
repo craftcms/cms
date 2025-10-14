@@ -33,6 +33,7 @@ use yii\web\ForbiddenHttpException;
 use yii\web\NotFoundHttpException;
 use yii\web\Response;
 use yii\web\ServerErrorHttpException;
+use function CraftCms\Cms\t;
 
 /**
  * The EntriesController class is a controller that handles various entry related tasks such as retrieving, saving,
@@ -188,7 +189,7 @@ class EntriesController extends BaseEntriesController
         DateTimeHelper::resume();
 
         if (!$success) {
-            return $this->asModelFailure($entry, mb_ucfirst(Craft::t('app', 'Couldn’t create {type}.', [
+            return $this->asModelFailure($entry, mb_ucfirst(t('Couldn’t create {type}.', [
                 'type' => Entry::lowerDisplayName(),
             ])), 'entry');
         }
@@ -210,7 +211,7 @@ class EntriesController extends BaseEntriesController
 
         $editUrl = $entry->getCpEditUrl();
 
-        $response = $this->asModelSuccess($entry, Craft::t('app', '{type} created.', [
+        $response = $this->asModelSuccess($entry, t('{type} created.', [
             'type' => Entry::displayName(),
         ]), 'entry', array_filter([
             'cpEditUrl' => $this->request->getIsCpRequest() ? $editUrl : null,
@@ -269,13 +270,13 @@ class EntriesController extends BaseEntriesController
 
                 return $this->asModelFailure(
                     $entry,
-                    Craft::t('app', 'Couldn’t duplicate {type}.', [
+                    t('Couldn’t duplicate {type}.', [
                         'type' => Entry::lowerDisplayName(),
                     ]),
                     'entry'
                 );
             } catch (Throwable $e) {
-                throw new ServerErrorHttpException(Craft::t('app', 'An error occurred when duplicating the entry.'), 0, $e);
+                throw new ServerErrorHttpException(t('An error occurred when duplicating the entry.'), 0, $e);
             }
         }
 
@@ -314,7 +315,7 @@ class EntriesController extends BaseEntriesController
         if (!$success) {
             return $this->asModelFailure(
                 $entry,
-                Craft::t('app', 'Couldn’t save entry.'),
+                t('Couldn’t save entry.'),
                 $entryVariable
             );
         }
@@ -359,7 +360,7 @@ class EntriesController extends BaseEntriesController
 
         return $this->asModelSuccess(
             $entry,
-            Craft::t('app', '{type} saved.', ['type' => Entry::displayName()]),
+            t('{type} saved.', ['type' => Entry::displayName()]),
             data: $data,
         );
     }
@@ -423,7 +424,7 @@ class EntriesController extends BaseEntriesController
         if (empty($compatibleSections)) {
             $listHtml = Html::tag(
                 'p',
-                Craft::t('app', 'Couldn’t find any sections that all selected elements could be moved to.'),
+                t('Couldn’t find any sections that all selected elements could be moved to.'),
                 ['class' => 'zilch']
             );
         } else {
@@ -483,22 +484,19 @@ class EntriesController extends BaseEntriesController
 
         if (!empty($errors)) {
             if (count($errors) === count($entries)) {
-                return $this->asFailure(Craft::t(
-                    'app',
+                return $this->asFailure(t(
                     'Couldn’t move entries to the “{name}” section.',
                     ['name' => $section->name]
                 ));
             }
 
-            return $this->asSuccess(Craft::t(
-                'app',
+            return $this->asSuccess(t(
                 'Some entries have been moved to the “{name}” section.',
                 ['name' => $section->name]
             ));
         }
 
-        return $this->asSuccess(Craft::t(
-            'app',
+        return $this->asSuccess(t(
             'Entries have been moved to the “{name}” section.',
             ['name' => $section->name]
         ));

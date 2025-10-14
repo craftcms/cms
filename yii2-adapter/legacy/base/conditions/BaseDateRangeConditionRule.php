@@ -11,6 +11,7 @@ use CraftCms\Cms\Shared\Enums\TimePeriod;
 use CraftCms\Cms\Support\Html;
 use DateTime;
 use Exception;
+use function CraftCms\Cms\t;
 
 /**
  * BaseDateRangeConditionRule provides a base implementation for condition rules that are composed of date range inputs.
@@ -189,7 +190,7 @@ JS,
                 'class' => ['btn', 'menubtn'],
                 'autofocus' => false,
                 'aria' => [
-                    'label' => Craft::t('app', 'Date Range'),
+                    'label' => t('Date Range'),
                 ],
             ]) .
             Html::tag('div', $rangeTypeOptionsHtml, [
@@ -207,7 +208,7 @@ JS,
             $html .= Html::tag(
                     'div',
                     options: ['class' => ['flex', 'flex-nowrap']],
-                    content: Html::label(Craft::t('app', 'From'), 'start-date-date') .
+                    content: Html::label(t('From'), 'start-date-date') .
                     Html::tag('div',
                         Cp::dateHtml([
                             'id' => 'start-date',
@@ -219,7 +220,7 @@ JS,
                 Html::tag(
                     'div',
                     options: ['class' => ['flex', 'flex-nowrap']],
-                    content: Html::label(Craft::t('app', 'To'), 'end-date-date') .
+                    content: Html::label(t('To'), 'end-date-date') .
                     Html::tag('div',
                         Cp::dateHtml([
                             'id' => 'end-date',
@@ -232,7 +233,7 @@ JS,
             $periodValueId = 'period-value';
             $periodTypeId = 'period-type';
 
-            $html .= Html::hiddenLabel(Craft::t('app', 'Period Value'), $periodValueId) .
+            $html .= Html::hiddenLabel(t('Period Value'), $periodValueId) .
                 Html::tag(
                     'div',
                     options: ['class' => ['flex', 'flex-nowrap']],
@@ -242,7 +243,7 @@ JS,
                         'value' => $this->periodValue,
                         'size' => '5',
                     ]) .
-                    Html::hiddenLabel(Craft::t('app', 'Period Type'), $periodTypeId) .
+                    Html::hiddenLabel(t('Period Type'), $periodTypeId) .
                     Cp::selectHtml([
                         'id' => $periodTypeId,
                         'name' => 'periodType',
@@ -263,19 +264,19 @@ JS,
     protected function rangeTypeOptions(): array
     {
         return [
-            DateRange::TYPE_TODAY => Craft::t('app', 'Today'),
-            DateRange::TYPE_THIS_WEEK => Craft::t('app', 'This week'),
-            DateRange::TYPE_THIS_MONTH => Craft::t('app', 'This month'),
-            DateRange::TYPE_THIS_YEAR => Craft::t('app', 'This year'),
-            DateRange::TYPE_PAST_7_DAYS => Craft::t('app', 'Past {num} days', ['num' => 7]),
-            DateRange::TYPE_PAST_30_DAYS => Craft::t('app', 'Past {num} days', ['num' => 30]),
-            DateRange::TYPE_PAST_90_DAYS => Craft::t('app', 'Past {num} days', ['num' => 90]),
-            DateRange::TYPE_PAST_YEAR => Craft::t('app', 'Past year'),
-            DateRange::TYPE_BEFORE => Craft::t('app', 'Before…'),
-            DateRange::TYPE_AFTER => Craft::t('app', 'After…'),
-            DateRange::TYPE_RANGE => Craft::t('app', 'Range…'),
-            self::OPERATOR_NOT_EMPTY => Craft::t('app', 'has a value'),
-            self::OPERATOR_EMPTY => Craft::t('app', 'is empty'),
+            DateRange::TYPE_TODAY => t('Today'),
+            DateRange::TYPE_THIS_WEEK => t('This week'),
+            DateRange::TYPE_THIS_MONTH => t('This month'),
+            DateRange::TYPE_THIS_YEAR => t('This year'),
+            DateRange::TYPE_PAST_7_DAYS => t('Past {num} days', ['num' => 7]),
+            DateRange::TYPE_PAST_30_DAYS => t('Past {num} days', ['num' => 30]),
+            DateRange::TYPE_PAST_90_DAYS => t('Past {num} days', ['num' => 90]),
+            DateRange::TYPE_PAST_YEAR => t('Past year'),
+            DateRange::TYPE_BEFORE => t('Before…'),
+            DateRange::TYPE_AFTER => t('After…'),
+            DateRange::TYPE_RANGE => t('Range…'),
+            self::OPERATOR_NOT_EMPTY => t('has a value'),
+            self::OPERATOR_EMPTY => t('is empty'),
         ];
     }
 
@@ -287,12 +288,12 @@ JS,
     protected function periodTypeOptions(): array
     {
         return [
-            DateRange::PERIOD_MINUTES_AGO => Craft::t('app', 'minutes ago'),
-            DateRange::PERIOD_HOURS_AGO => Craft::t('app', 'hours ago'),
-            DateRange::PERIOD_DAYS_AGO => Craft::t('app', 'days ago'),
-            DateRange::PERIOD_MINUTES_FROM_NOW => Craft::t('app', 'minutes from now'),
-            DateRange::PERIOD_HOURS_FROM_NOW => Craft::t('app', 'hours from now'),
-            DateRange::PERIOD_DAYS_FROM_NOW => Craft::t('app', 'days from now'),
+            DateRange::PERIOD_MINUTES_AGO => t('minutes ago'),
+            DateRange::PERIOD_HOURS_AGO => t('hours ago'),
+            DateRange::PERIOD_DAYS_AGO => t('days ago'),
+            DateRange::PERIOD_MINUTES_FROM_NOW => t('minutes from now'),
+            DateRange::PERIOD_HOURS_FROM_NOW => t('hours from now'),
+            DateRange::PERIOD_DAYS_FROM_NOW => t('days from now'),
         ];
     }
 

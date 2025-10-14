@@ -12,6 +12,7 @@ use ReflectionFunction;
 use ReflectionMethod;
 use yii\base\Action;
 use yii\console\Exception;
+use function CraftCms\Cms\t;
 
 /**
  * Class CallableAction
@@ -75,7 +76,7 @@ class CallableAction extends Action
         }
 
         if (!empty($missing)) {
-            throw new Exception(Craft::t('yii', 'Missing required arguments: {params}', ['params' => implode(', ', $missing)]));
+            throw new Exception(t('Missing required arguments: {params}', ['params' => implode(', ', $missing)]));
         }
 
         return $args;

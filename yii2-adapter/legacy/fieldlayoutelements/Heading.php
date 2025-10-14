@@ -7,10 +7,10 @@
 
 namespace craft\fieldlayoutelements;
 
-use Craft;
 use craft\base\ElementInterface;
 use craft\helpers\Cp;
 use CraftCms\Cms\Support\Html;
+use function CraftCms\Cms\t;
 
 /**
  * Heading represents an `<h2>` UI element that can be included in field layouts.
@@ -30,7 +30,7 @@ class Heading extends BaseUiElement
      */
     protected function selectorLabel(): string
     {
-        return $this->heading ?: Craft::t('app', 'Heading');
+        return $this->heading ?: t('Heading');
     }
 
     /**
@@ -55,7 +55,7 @@ class Heading extends BaseUiElement
     protected function settingsHtml(): ?string
     {
         return Cp::textFieldHtml([
-            'label' => Craft::t('app', 'Heading'),
+            'label' => t('Heading'),
             'id' => 'heading',
             'name' => 'heading',
             'value' => $this->heading,
@@ -67,6 +67,6 @@ class Heading extends BaseUiElement
      */
     public function formHtml(?ElementInterface $element = null, bool $static = false): ?string
     {
-        return Html::tag('h2', Html::encode(Craft::t('site', $this->heading)));
+        return Html::tag('h2', Html::encode(t($this->heading, category: 'site')));
     }
 }
