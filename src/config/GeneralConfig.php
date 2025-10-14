@@ -3213,6 +3213,31 @@ class GeneralConfig extends BaseConfig
     public bool $useEmailAsUsername = false;
 
     /**
+     * @var bool Whether nontransitional processing should be used when using [idn_to_utf8()](https://www.php.net/manual/en/function.idn-to-utf8.php).
+     *
+     * When your system supports IDNA ASCII strings, the domain name is converted from IDNA ASCII to Unicode using INTL_IDNA_VARIANT_UTS46 by default.
+     * INTL_IDNA_VARIANT_UTS46 uses UTS 46 algorithm which is consistent with the requirements of the IDNA2008 protocol and mostly compatible with IDNA2003 (which was deprecated in php 7.2.0).
+     *
+     * There are a handful of characters which result in different resolution of IDNs between IDNA2008 and IDNA2003, unless explicit action is taken.
+     * Those characters are: German eszett, Greek final sigma, joiner characters (ZWJ and ZWNJ). [More info](https://unicode.org/reports/tr46/#Deviations))
+     *
+     * For example, by default, `ß` will be translated to `ss` by the `idn_to_utf8` method. If you'd like to preseve it as `ß`, you need to set the `useIdnaNontransitionalToUnicode` to `true`.
+     *
+     * ::: code
+     * ```php Static Config
+     * ->useIdnaNontransitionalToUnicode(true)
+     * ```
+     * ```shell Environment Override
+     * CRAFT_USE_IDNA_NONTRANSITIONAL_TO_UNICODE=true
+     * ```
+     * :::
+     *
+     * @group System
+     * @since 5.9.0
+     */
+    public bool $useIdnaNontransitionalToUnicode = false;
+
+    /**
      * @var bool Whether [iFrame Resizer options](http://davidjbradshaw.github.io/iframe-resizer/#options) should be used for Live Preview.
      *
      * Using iFrame Resizer makes it possible for Craft to retain the preview’s scroll position between page loads, for cross-origin web pages.
@@ -6959,6 +6984,33 @@ class GeneralConfig extends BaseConfig
     public function useEmailAsUsername(bool $value = true): self
     {
         $this->useEmailAsUsername = $value;
+        return $this;
+    }
+
+    /**
+     * Whether nontransitional processing should be used when using [idn_to_utf8()](https://www.php.net/manual/en/function.idn-to-utf8.php).
+     *
+     * When your system supports IDNA ASCII strings, the domain name is converted from IDNA ASCII to Unicode using INTL_IDNA_VARIANT_UTS46 by default.
+     * INTL_IDNA_VARIANT_UTS46 uses UTS 46 algorithm which is consistent with the requirements of the IDNA2008 protocol and mostly compatible with IDNA2003 (which was deprecated in php 7.2.0).
+     *
+     * There are a handful of characters which result in different resolution of IDNs between IDNA2008 and IDNA2003, unless explicit action is taken.
+     * Those characters are: German eszett, Greek final sigma, joiner characters (ZWJ and ZWNJ). [More info](https://unicode.org/reports/tr46/#Deviations))
+     *
+     * For example, by default, `ß` will be translated to `ss` by the `idn_to_utf8` method. If you'd like to preseve it as `ß`, you need to set the `useIdnaNontransitionalToUnicode` to `true`.
+     *
+     * ```php
+     * ->useIdnaNontransitionalToUnicode(true)
+     * ```
+     *
+     * @group System
+     * @param bool $value
+     * @return self
+     * @see $useIdnaNontransitionalToUnicode
+     * @since 5.9.0
+     */
+    public function useIdnaNontransitionalToUnicode(bool $value = false): self
+    {
+        $this->useIdnaNontransitionalToUnicode = $value;
         return $this;
     }
 
