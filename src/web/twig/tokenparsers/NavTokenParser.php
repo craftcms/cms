@@ -7,9 +7,9 @@
 
 namespace craft\web\twig\tokenparsers;
 
+use craft\web\twig\nodes\BaseNode;
 use craft\web\twig\nodes\NavNode;
-use Twig\Node\Expression\AssignNameExpression;
-use Twig\Node\Node;
+use Twig\Node\Expression\Variable\AssignContextVariable;
 use Twig\Token;
 use Twig\TokenParser\AbstractTokenParser;
 
@@ -35,18 +35,17 @@ class NavTokenParser extends AbstractTokenParser
     public function parse(Token $token): NavNode
     {
         $lineno = $token->getLine();
-        $parser = $this->parser;
-        $stream = $parser->getStream();
+        $stream = $this->parser->getStream();
 
-        $targets = $parser->getExpressionParser()->parseAssignmentExpression();
+        $targets = $this->parseAssignmentExpression();
         $stream->expect(Token::OPERATOR_TYPE, 'in');
-        $seq = $parser->getExpressionParser()->parseExpression();
+        $seq = $this->parser->parseExpression();
         $stream->expect(Token::BLOCK_END_TYPE);
 
-        $upperBody = $parser->subparse([$this, 'decideNavFork']);
-        $lowerBody = new Node();
-        $indent = new Node();
-        $outdent = new Node();
+        $upperBody = $this->parser->subparse([$this, 'decideNavFork']);
+        $lowerBody = new BaseNode();
+        $indent = new BaseNode();
+        $outdent = new BaseNode();
 
         $nextValue = $stream->next()->getValue();
 
@@ -54,35 +53,35 @@ class NavTokenParser extends AbstractTokenParser
             $stream->expect(Token::BLOCK_END_TYPE);
 
             if ($nextValue === 'ifchildren') {
-                $indent = $parser->subparse([
+                $indent = $this->parser->subparse([
                     $this,
                     'decideChildrenFork',
                 ], true);
                 $stream->expect(Token::BLOCK_END_TYPE);
-                $outdent = $parser->subparse([
+                $outdent = $this->parser->subparse([
                     $this,
                     'decideChildrenEnd',
                 ], true);
                 $stream->expect(Token::BLOCK_END_TYPE);
             }
 
-            $lowerBody = $parser->subparse([$this, 'decideNavEnd'], true);
+            $lowerBody = $this->parser->subparse([$this, 'decideNavEnd'], true);
         }
 
         $stream->expect(Token::BLOCK_END_TYPE);
 
         if (count($targets) > 1) {
-            $keyTarget = $targets->getNode(0);
-            $keyTarget = new AssignNameExpression($keyTarget->getAttribute('name'), $keyTarget->getTemplateLine());
-            $valueTarget = $targets->getNode(1);
-            $valueTarget = new AssignNameExpression($valueTarget->getAttribute('name'), $valueTarget->getTemplateLine());
+            $keyTarget = $targets->getNode('0');
+            $keyTarget = new AssignContextVariable($keyTarget->getAttribute('name'), $keyTarget->getTemplateLine());
+            $valueTarget = $targets->getNode('1');
+            $valueTarget = new AssignContextVariable($valueTarget->getAttribute('name'), $valueTarget->getTemplateLine());
         } else {
-            $keyTarget = new AssignNameExpression('_key', $lineno);
-            $valueTarget = $targets->getNode(0);
-            $valueTarget = new AssignNameExpression($valueTarget->getAttribute('name'), $valueTarget->getTemplateLine());
+            $keyTarget = new AssignContextVariable('_key', $lineno);
+            $valueTarget = $targets->getNode('0');
+            $valueTarget = new AssignContextVariable($valueTarget->getAttribute('name'), $valueTarget->getTemplateLine());
         }
 
-        return new NavNode($keyTarget, $valueTarget, $seq, $upperBody, $lowerBody, $indent, $outdent, $lineno, $this->getTag());
+        return new NavNode($keyTarget, $valueTarget, $seq, $upperBody, $lowerBody, $indent, $outdent, $lineno);
     }
 
     /**

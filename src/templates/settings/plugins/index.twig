@@ -68,6 +68,9 @@
                 action: 'pluginstore/remove',
                 params: {packageName: config.packageName},
                 destructive: true,
+                confirm: 'Are you sure you want to remove {plugin}?'|t('app', {
+                  plugin: config.name,
+                }),
               },
             ) %}
           {% else %}
