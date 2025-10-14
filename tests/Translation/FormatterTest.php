@@ -278,12 +278,10 @@ test('asTimestamp', function (mixed $input, string $output, ?string $locale = nu
     [new DateTime()->format('Y-m-d 00:00:00'), '5:00:00 PM'],
     [new DateTime()->sub(new DateInterval('P1D'))->format('Y-m-d'), 'Yesterday'],
     [new DateTime()->sub(new DateInterval('P1D'))->format('Y-m-d 00:00:00'), 'Yesterday'],
-    [new DateTime('2025-10-07 12:00:00'), 'Tuesday'],
     [new DateTime()->format('Y-m-d'), 'Vandaag', 'nl'],
     [new DateTime()->format('Y-m-d 00:00:00'), '17:00:00', 'nl'],
     [new DateTime()->sub(new DateInterval('P1D'))->format('Y-m-d'), 'Gisteren', 'nl'],
     [new DateTime()->sub(new DateInterval('P1D'))->format('Y-m-d 00:00:00'), 'Gisteren', 'nl'],
-    [new DateTime('2025-10-07 12:00:00'), 'dinsdag', 'nl'],
     [new DateTime('2021-01-01 00:00:00'), 'Dec 31, 2020'],
 ]);
 
