@@ -7,8 +7,10 @@
 
 namespace craft\web\twig;
 
+use Craft;
 use craft\helpers\Cp;
 use CraftCms\Cms\Edition;
+use Illuminate\Support\Facades\Vite;
 use Twig\Extension\AbstractExtension;
 use Twig\Extension\GlobalsInterface;
 use Twig\TwigFilter;
@@ -57,7 +59,16 @@ class CpExtension extends AbstractExtension implements GlobalsInterface
             new TwigFunction('siteMenuItems', [Cp::class, 'siteMenuItems']),
             new TwigFunction('statusIndicator', [Cp::class, 'statusIndicatorHtml'], ['is_safe' => ['html']]),
             new TwigFunction('readOnlyNotice', [Cp::class, 'readOnlyNoticeHtml'], ['is_safe' => ['html']]),
+            new TwigFunction('vite', [$this, 'vite'], ['is_safe' => ['html']]),
         ];
+    }
+
+    public function vite(array $entryPoints, string $buildDirectory = 'vendor/craft'): string
+    {
+        return Vite::useHotFile(Craft::getAlias('@resources/hot'))
+            ->withEntryPoints($entryPoints)
+            ->useBuildDirectory($buildDirectory)
+            ->toHtml();
     }
 
     /**
