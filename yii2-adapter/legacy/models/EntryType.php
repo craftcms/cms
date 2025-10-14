@@ -15,7 +15,6 @@ use craft\base\Indicative;
 use craft\base\Model;
 use craft\behaviors\FieldLayoutBehavior;
 use craft\elements\Entry;
-use craft\helpers\Inflector;
 use craft\helpers\UrlHelper;
 use craft\records\EntryType as EntryTypeRecord;
 use craft\validators\HandleValidator;
@@ -260,7 +259,7 @@ class EntryType extends Model implements
             if (!empty($attributes)) {
                 array_unshift($indicators, [
                     'label' => t('This entry type’s {attributes} {totalAttributes, plural, =1{has} other{have}} been overridden.', [
-                        'attributes' => mb_strtolower(Inflector::sentence($attributes)),
+                        'attributes' => mb_strtolower(collect($attributes)->sentence()),
                         'totalAttributes' => count($attributes),
                     ]),
                     'icon' => 'pencil',

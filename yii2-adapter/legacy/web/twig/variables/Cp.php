@@ -15,7 +15,6 @@ use craft\events\RegisterCpSettingsEvent;
 use craft\helpers\App;
 use craft\helpers\Assets;
 use craft\helpers\Cp as CpHelper;
-use craft\helpers\Inflector;
 use craft\helpers\UrlHelper;
 use craft\models\FieldLayout;
 use craft\models\Site;
@@ -582,7 +581,7 @@ class Cp extends Component
         }
 
         $message = t('{names} {total, plural, =1{is installed as a trial} other{are installed as trials}}.', [
-            'names' => Inflector::sentence($names),
+            'names' => collect($names)->sentence(),
             'total' => $issues->count(),
         ]);
 

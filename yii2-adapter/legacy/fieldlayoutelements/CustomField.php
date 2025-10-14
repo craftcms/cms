@@ -13,7 +13,6 @@ use craft\elements\conditions\users\UserCondition;
 use craft\elements\User;
 use craft\errors\FieldNotFoundException;
 use craft\helpers\Cp;
-use craft\helpers\Inflector;
 use CraftCms\Cms\Component\Contracts\Actionable;
 use CraftCms\Cms\Field\Contracts\CrossSiteCopyableFieldInterface;
 use CraftCms\Cms\Field\Contracts\FieldInterface;
@@ -461,7 +460,7 @@ class CustomField extends BaseField
             ]));
             array_unshift($indicators, [
                 'label' => t('This field’s {attributes} {totalAttributes, plural, =1{has} other{have}} been overridden.', [
-                    'attributes' => mb_strtolower(Inflector::sentence($attributes)),
+                    'attributes' => mb_strtolower(collect($attributes)->sentence()),
                     'totalAttributes' => count($attributes),
                 ]),
                 'icon' => 'pencil',

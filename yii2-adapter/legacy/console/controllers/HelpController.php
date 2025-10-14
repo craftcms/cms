@@ -18,7 +18,6 @@ use yii\console\Controller;
 use yii\console\controllers\HelpController as BaseHelpController;
 use yii\console\Exception;
 use yii\console\ExitCode;
-use yii\helpers\Inflector;
 
 /**
  * Provides help information about console commands.
@@ -160,7 +159,7 @@ class HelpController extends BaseHelpController
             // Index the option aliases by option name
             $optionAliases = [];
             foreach ($controller->optionAliases() as $alias => $name) {
-                $name = Inflector::camel2id($name);
+                $name = str($name)->slug()->lower()->value();
                 $optionAliases[$name][] = "-$alias";
             }
 

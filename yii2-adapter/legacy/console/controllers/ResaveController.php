@@ -23,7 +23,6 @@ use craft\errors\InvalidElementException;
 use craft\events\MultiElementActionEvent;
 use craft\helpers\Console;
 use craft\helpers\ElementHelper;
-use craft\helpers\Inflector;
 use craft\helpers\Queue;
 use craft\models\CategoryGroup;
 use craft\models\EntryType;
@@ -411,7 +410,7 @@ class ResaveController extends Controller
                 $this->output(' ' . $this->markdownToAnsi(sprintf(
                     '- `resave/%s` doesn’t support %s',
                     $id,
-                    Inflector::sentence($invalidParams)
+                    collect($invalidParams)->sentence(),
                 )));
             }
             Console::outdent();

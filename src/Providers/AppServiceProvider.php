@@ -29,6 +29,7 @@ use Illuminate\Http\Client\Factory;
 use Illuminate\Http\Client\PendingRequest;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Router;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Log;
@@ -37,6 +38,8 @@ use IntlDateFormatter;
 use IntlException;
 use ReflectionClass;
 use RuntimeException;
+
+use function CraftCms\Cms\t;
 
 final class AppServiceProvider extends ServiceProvider
 {
@@ -115,6 +118,11 @@ final class AppServiceProvider extends ServiceProvider
         Application::macro(
             'getTimezone',
             fn (): string => $this['config']->get('app.timezone') ?? date_default_timezone_get(),
+        );
+
+        Collection::macro(
+            'sentence',
+            fn (?string $glue = null): string => $this->join($glue ?? ', ', sprintf(',%s', t(' and '))),
         );
 
         Request::macro('isCpRequest', fn (): bool => $this->is(
