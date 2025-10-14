@@ -20,7 +20,6 @@
     "node": ">=22"
   },
   "devDependencies": {
-    "@craftcms/cp": "file:../npm-packages/packages/cp",
     "@tailwindcss/vite": "^4.1.14",
     "@total-typescript/tsconfig": "^1.0.4",
     "@vitejs/plugin-vue": "^6.0.1",
