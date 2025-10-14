@@ -57,6 +57,9 @@ class Craft extends Yii
         return parent::getAlias($alias, $throwException);
     }
 
+    /**
+     * @deprecated 6.0.0. use {@see \CraftCms\Cms\t()} instead.
+     */
     public static function t($category, $message, $params = [], $language = null): string
     {
         return \CraftCms\Cms\Support\Facades\I18N::translate($message, $params, $category, $language);
