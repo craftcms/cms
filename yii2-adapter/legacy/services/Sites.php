@@ -21,7 +21,6 @@ use craft\events\DeleteSiteEvent;
 use craft\events\ReorderSitesEvent;
 use craft\events\SiteEvent;
 use craft\events\SiteGroupEvent;
-use craft\helpers\App;
 use craft\helpers\Queue;
 use craft\models\Site;
 use craft\models\SiteGroup;
@@ -32,18 +31,24 @@ use CraftCms\Cms\Database\Table;
 use CraftCms\Cms\ProjectConfig\Events\ConfigEvent;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
 use CraftCms\Cms\Shared\Models\Info;
+use CraftCms\Cms\Site\Events\DeletedSiteGroup;
+use CraftCms\Cms\Site\Events\ApplyingSiteGroupDelete;
+use CraftCms\Cms\Site\Events\DeletingSiteGroup;
+use CraftCms\Cms\Site\Events\SavedSiteGroup;
+use CraftCms\Cms\Site\Events\SavingSiteGroup;
+use CraftCms\Cms\Site\SiteGroups;
 use CraftCms\Cms\Support\Arr;
 use CraftCms\Cms\Support\Str;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Event;
 use Throwable;
 use Tpetry\QueryExpressions\Language\Alias;
 use yii\base\Component;
 use yii\base\Exception;
 use yii\base\InvalidArgumentException;
 use yii\base\NotSupportedException;
-
 use yii\db\Exception as DbException;
 use function CraftCms\Cms\maxPowerCaptain;
 
@@ -241,7 +246,10 @@ class Sites extends Component
      */
     public function getAllGroups(): array
     {
-        return $this->_groups()->all();
+        return app(SiteGroups::class)
+            ->getAllGroups()
+            ->map(fn (\CraftCms\Cms\Site\Data\SiteGroup $group) => self::siteGroupFromNewSiteGroup($group))
+            ->all();
     }
 
     /**
@@ -252,7 +260,13 @@ class Sites extends Component
      */
     public function getGroupById(int $groupId): ?SiteGroup
     {
-        return $this->_groups()->firstWhere('id', $groupId);
+        $group = app(SiteGroups::class)->getGroupById($groupId);
+
+        if (! $group) {
+            return null;
+        }
+
+        return self::siteGroupFromNewSiteGroup($group);
     }
 
     /**
@@ -265,7 +279,13 @@ class Sites extends Component
      */
     public function getGroupByUid(string $uid): ?SiteGroup
     {
-        return $this->_groups()->firstWhere('uid', $uid, true);
+        $group = app(SiteGroups::class)->getGroupByUid($uid);
+
+        if (! $group) {
+            return null;
+        }
+
+        return self::siteGroupFromNewSiteGroup($group);
     }
 
     /**
@@ -277,39 +297,14 @@ class Sites extends Component
      */
     public function saveGroup(SiteGroup $group, bool $runValidation = true): bool
     {
-        $isNewGroup = !$group->id;
+        $newGroup = \CraftCms\Cms\Site\Data\SiteGroup::from([
+            'id' => $group->id,
+            'uid' => $group->uid,
+        ]);
 
-        // Fire a 'beforeSaveSiteGroup' event
-        if ($this->hasEventHandlers(self::EVENT_BEFORE_SAVE_SITE_GROUP)) {
-            $this->trigger(self::EVENT_BEFORE_SAVE_SITE_GROUP, new SiteGroupEvent([
-                'group' => $group,
-                'isNew' => $isNewGroup,
-            ]));
-        }
+        $newGroup->setName($group->getName(false));
 
-        if ($runValidation && !$group->validate()) {
-            Craft::info('Site group not saved due to validation error.', __METHOD__);
-
-            return false;
-        }
-
-        if ($isNewGroup) {
-            $group->uid = Str::uuid()->toString();
-        } elseif (!$group->uid) {
-            $group->uid = DB::table(Table::SITEGROUPS)->uidById($group->id);
-        }
-
-        $configPath = ProjectConfig::PATH_SITE_GROUPS . '.' . $group->uid;
-        $configData = $group->getConfig();
-        app(ProjectConfig::class)->set($configPath, $configData,
-            "Save the “{$group->getName(false)}” site group");
-
-        // Now that we have an ID, save it on the model
-        if ($isNewGroup) {
-            $group->id = DB::table(Table::SITEGROUPS)->idByUid($group->uid);
-        }
-
-        return true;
+        return app(SiteGroups::class)->saveGroup($newGroup, $runValidation);
     }
 
     /**
@@ -317,35 +312,7 @@ class Sites extends Component
      */
     public function handleChangedGroup(ConfigEvent $event): void
     {
-        $data = $event->newValue;
-        $uid = $event->tokenMatches[0];
-
-        $groupRecord = $this->_getGroupRecord($uid, true);
-        $isNewGroup = $groupRecord->getIsNewRecord();
-
-        // If this is a new group, set the UID we want.
-        if (!$groupRecord->id) {
-            $groupRecord->uid = $uid;
-        }
-
-        $groupRecord->name = $data['name'];
-
-        if ($groupRecord->dateDeleted) {
-            $groupRecord->restore();
-        } else {
-            $groupRecord->save(false);
-        }
-
-        // Clear caches
-        $this->_groups = null;
-
-        // Fire an 'afterSaveSiteGroup' event
-        if ($this->hasEventHandlers(self::EVENT_AFTER_SAVE_SITE_GROUP)) {
-            $this->trigger(self::EVENT_AFTER_SAVE_SITE_GROUP, new SiteGroupEvent([
-                'group' => $this->getGroupById($groupRecord->id),
-                'isNew' => $isNewGroup,
-            ]));
-        }
+        app(SiteGroups::class)->handleChangedGroup($event);
     }
 
     /**
@@ -353,33 +320,7 @@ class Sites extends Component
      */
     public function handleDeletedGroup(ConfigEvent $event): void
     {
-        $uid = $event->tokenMatches[0];
-        $groupRecord = $this->_getGroupRecord($uid);
-
-        if (!$groupRecord->id) {
-            return;
-        }
-
-        $group = $this->getGroupById($groupRecord->id);
-
-        // Fire a 'beforeApplyGroupDelete' event
-        if ($this->hasEventHandlers(self::EVENT_BEFORE_APPLY_GROUP_DELETE)) {
-            $this->trigger(self::EVENT_BEFORE_APPLY_GROUP_DELETE, new SiteGroupEvent([
-                'group' => $group,
-            ]));
-        }
-
-        $groupRecord->softDelete();
-
-        // Clear caches
-        $this->_groups = null;
-
-        // Fire an 'afterDeleteSiteGroup' event
-        if ($this->hasEventHandlers(self::EVENT_AFTER_DELETE_SITE_GROUP)) {
-            $this->trigger(self::EVENT_AFTER_DELETE_SITE_GROUP, new SiteGroupEvent([
-                'group' => $group,
-            ]));
-        }
+        app(SiteGroups::class)->handleDeletedGroup($event);
     }
 
     /**
@@ -390,13 +331,7 @@ class Sites extends Component
      */
     public function deleteGroupById(int $groupId): bool
     {
-        $group = $this->getGroupById($groupId);
-
-        if (!$group) {
-            return false;
-        }
-
-        return $this->deleteGroup($group);
+        return app(SiteGroups::class)->deleteGroupById($groupId);
     }
 
     /**
@@ -407,32 +342,14 @@ class Sites extends Component
      */
     public function deleteGroup(SiteGroup $group): bool
     {
-        if ($this->getSitesByGroupId($group->id)) {
-            Craft::warning('Attempted to delete a site group that still had sites assigned to it.', __METHOD__);
+        $newGroup = \CraftCms\Cms\Site\Data\SiteGroup::from([
+            'id' => $group->id,
+            'uid' => $group->uid,
+        ]);
 
-            return false;
-        }
+        $newGroup->setName($group->getName(false));
 
-        /** @var SiteGroupRecord|null $groupRecord */
-        $groupRecord = SiteGroupRecord::find()
-            ->where(['id' => $group->id])
-            ->one();
-
-        if (!$groupRecord) {
-            return false;
-        }
-
-        // Fire a 'beforeDeleteSiteGroup' event
-        if ($this->hasEventHandlers(self::EVENT_BEFORE_DELETE_SITE_GROUP)) {
-            $this->trigger(self::EVENT_BEFORE_DELETE_SITE_GROUP, new SiteGroupEvent([
-                'group' => $group,
-            ]));
-        }
-
-        app(ProjectConfig::class)->remove(ProjectConfig::PATH_SITE_GROUPS . '.' . $group->uid,
-            "Delete the “{$group->getName(false)}” site group");
-
-        return true;
+        return app(SiteGroups::class)->deleteGroup($newGroup);
     }
 
     // Sites
@@ -1390,5 +1307,62 @@ class Sites extends Component
                 'site' => $this->_primarySite,
             ]));
         }
+    }
+
+    public static function registerEvents(): void
+    {
+        Event::listen(SavingSiteGroup::class, function (SavingSiteGroup $event) {
+            if (Craft::$app->getSites()->hasEventHandlers(self::EVENT_BEFORE_SAVE_SITE_GROUP)) {
+                Craft::$app->getSites()->trigger(self::EVENT_BEFORE_SAVE_SITE_GROUP, new SiteGroupEvent([
+                    'group' => self::siteGroupFromNewSiteGroup($event->siteGroup),
+                    'isNew' => $event->isNew,
+                ]));
+            }
+        });
+
+        Event::listen(SavedSiteGroup::class, function (SavedSiteGroup $event) {
+            if (Craft::$app->getSites()->hasEventHandlers(self::EVENT_AFTER_SAVE_SITE_GROUP)) {
+                Craft::$app->getSites()->trigger(self::EVENT_AFTER_SAVE_SITE_GROUP, new SiteGroupEvent([
+                    'group' => self::siteGroupFromNewSiteGroup($event->siteGroup),
+                    'isNew' => $event->isNew,
+                ]));
+            }
+        });
+
+        Event::listen(ApplyingSiteGroupDelete::class, function (ApplyingSiteGroupDelete $event) {
+            if (Craft::$app->getSites()->hasEventHandlers(self::EVENT_BEFORE_APPLY_GROUP_DELETE)) {
+                Craft::$app->getSites()->trigger(self::EVENT_BEFORE_APPLY_GROUP_DELETE, new SiteGroupEvent([
+                    'group' => self::siteGroupFromNewSiteGroup($event->siteGroup),
+                ]));
+            }
+        });
+
+        Event::listen(DeletingSiteGroup::class, function (DeletingSiteGroup $event) {
+            if (Craft::$app->getSites()->hasEventHandlers(self::EVENT_BEFORE_DELETE_SITE_GROUP)) {
+                Craft::$app->getSites()->trigger(self::EVENT_BEFORE_DELETE_SITE_GROUP, new SiteGroupEvent([
+                    'group' => self::siteGroupFromNewSiteGroup($event->siteGroup),
+                ]));
+            }
+        });
+
+        Event::listen(DeletedSiteGroup::class, function (DeletedSiteGroup $event) {
+            if (Craft::$app->getSites()->hasEventHandlers(self::EVENT_AFTER_DELETE_SITE_GROUP)) {
+                Craft::$app->getSites()->trigger(self::EVENT_AFTER_DELETE_SITE_GROUP, new SiteGroupEvent([
+                    'group' => self::siteGroupFromNewSiteGroup($event->siteGroup),
+                ]));
+            }
+        });
+    }
+
+    private static function siteGroupFromNewSiteGroup(\CraftCms\Cms\Site\Data\SiteGroup $siteGroup): SiteGroup
+    {
+        $group = new SiteGroup([
+            'id' => $siteGroup->id,
+            'uid' => $siteGroup->uid,
+        ]);
+
+        $group->setName($siteGroup->getName(false));
+
+        return $group;
     }
 }

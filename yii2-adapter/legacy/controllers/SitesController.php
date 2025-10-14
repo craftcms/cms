@@ -15,8 +15,10 @@ use craft\models\SiteGroup;
 use craft\web\assets\sites\SitesAsset;
 use craft\web\Controller;
 use CraftCms\Cms\Config\GeneralConfig;
+use CraftCms\Cms\Site\SiteGroups;
 use CraftCms\Cms\Support\Json;
 use CraftCms\Cms\Support\Str;
+use Illuminate\Validation\ValidationException;
 use yii\web\BadRequestHttpException;
 use yii\web\ForbiddenHttpException;
 use yii\web\NotFoundHttpException;
@@ -147,27 +149,30 @@ class SitesController extends Controller
         $this->requirePostRequest();
         $this->requireAcceptsJson();
 
-        $sitesService = Craft::$app->getSites();
         $groupId = $this->request->getBodyParam('id');
 
         if ($groupId) {
-            $group = $sitesService->getGroupById($groupId);
+            $group = app(SiteGroups::class)->getGroupById($groupId);
             if (!$group) {
                 throw new BadRequestHttpException("Invalid site group ID: $groupId");
             }
         } else {
-            $group = new SiteGroup();
+            $group = new \CraftCms\Cms\Site\Data\SiteGroup();
         }
 
         $group->setName($this->request->getRequiredBodyParam('name'));
 
-        if (!Craft::$app->getSites()->saveGroup($group)) {
+        try {
+            $group->validate($this->request->getBodyParams());
+        } catch (ValidationException $e) {
             return $this->asFailure(data: [
-                'errors' => $group->getFirstErrors(),
+                'errors' => array_values(array_map(fn ($errors) => reset($errors), $e->errors())),
             ]);
         }
 
-        $attr = $group->getAttributes();
+        app(SiteGroups::class)->saveGroup($group);
+
+        $attr = $group->toArray();
         $attr['name'] = t($attr['name'], category: 'site');
 
         return $this->asSuccess(data: [
