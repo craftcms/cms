@@ -47,7 +47,7 @@ class Security extends \yii\base\Security
 
         // normalize the sensitive keywords
         $this->sensitiveKeywords = array_map(
-            fn(string $word) => implode(' ', Str::toWords($word, true)),
+            fn(string $word) => Str::camel2words($word, false),
             $this->sensitiveKeywords,
         );
     }
@@ -176,7 +176,7 @@ class Security extends \yii\base\Security
      */
     public function isSensitive(string $key): bool
     {
-        return preg_match('/\b(' . implode('|', $this->sensitiveKeywords) . ')\b/', implode(' ', Str::toWords($key, true)));
+        return preg_match('/\b(' . implode('|', $this->sensitiveKeywords) . ')\b/', Str::camel2words($key, false));
     }
 
     /**

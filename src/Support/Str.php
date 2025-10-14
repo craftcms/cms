@@ -63,6 +63,29 @@ class Str extends \Illuminate\Support\Str
     }
 
     /**
+     * Converts a CamelCase name into space-separated words.
+     * For example, 'PostTag' will be converted to 'Post Tag'.
+     *
+     * @param  ?string  $name  the string to be converted
+     * @param  bool  $ucwords  whether to capitalize the first letter in each word
+     * @return string the resulting words
+     */
+    public static function camel2words(?string $name, bool $ucwords = true): string
+    {
+        if (empty($name)) {
+            return (string) $name;
+        }
+
+        // Add a space before any uppercase letter preceded by a lowercase letter (xY => x Y)
+        // and any uppercase letter preceded by an uppercase letter and followed by a lowercase letter (XYz => X Yz)
+        $label = preg_replace('/(?<=\p{Ll})\p{Lu}|(?<=\p{L})\p{Lu}(?=\p{Ll})/u', ' \0', $name);
+
+        $label = mb_strtolower(trim(str_replace(['-', '_', '.'], ' ', $label)));
+
+        return $ucwords ? ucwords($label) : $label;
+    }
+
+    /**
      * Detects whether the given string has any 4-byte UTF-8 characters.
      *
      * @param  string  $str  The string to process.
