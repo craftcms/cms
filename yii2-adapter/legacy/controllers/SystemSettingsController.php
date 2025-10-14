@@ -19,7 +19,6 @@ use craft\mail\transportadapters\Sendmail;
 use craft\mail\transportadapters\TransportAdapterInterface;
 use craft\models\MailSettings;
 use craft\web\assets\admintable\AdminTableAsset;
-use craft\web\assets\generalsettings\GeneralSettingsAsset;
 use craft\web\Controller;
 use CraftCms\Cms\Config\GeneralConfig;
 use CraftCms\Cms\ProjectConfig\ProjectConfig;
@@ -56,7 +55,6 @@ class SystemSettingsController extends Controller
         if (in_array($action->id, [
             'edit-email-settings',
             'edit-global-set',
-            'general-settings',
             'global-set-index',
             'test-email-settings',
         ])) {
@@ -70,47 +68,6 @@ class SystemSettingsController extends Controller
         $this->readOnly = !app(GeneralConfig::class)->allowAdminChanges;
 
         return true;
-    }
-
-    /**
-     * Shows the general settings form.
-     *
-     * @return Response
-     */
-    public function actionGeneralSettings(): Response
-    {
-        $this->getView()->registerAssetBundle(GeneralSettingsAsset::class);
-
-        return $this->renderTemplate('settings/general/_index.twig', [
-            'system' => app(ProjectConfig::class)->get('system') ?? [],
-            'readOnly' => $this->readOnly,
-        ]);
-    }
-
-    /**
-     * Saves the general settings.
-     *
-     * @return Response|null
-     */
-    public function actionSaveGeneralSettings(): ?Response
-    {
-        $this->requirePostRequest();
-
-        $projectConfig = app(ProjectConfig::class);
-        $systemSettings = $projectConfig->get('system');
-        $systemSettings['name'] = $this->request->getBodyParam('name');
-        $systemSettings['live'] = $this->request->getBodyParam('live');
-        $systemSettings['retryDuration'] = (int)$this->request->getBodyParam('retryDuration') ?: null;
-        $systemSettings['timeZone'] = $this->request->getBodyParam('timeZone');
-
-        if (!str_starts_with($systemSettings['live'], '$')) {
-            $systemSettings['live'] = (bool)$systemSettings['live'];
-        }
-
-        $projectConfig->set('system', $systemSettings, 'Update system settings.');
-
-        $this->setSuccessFlash(t('General settings saved.'));
-        return $this->redirectToPostedUrl();
     }
 
     /**
