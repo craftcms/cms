@@ -3213,7 +3213,7 @@ class GeneralConfig extends BaseConfig
     public bool $useEmailAsUsername = false;
 
     /**
-     * @var bool Whether nontransitional processing should be used when using [idn_to_utf8()](https://www.php.net/manual/en/function.idn-to-utf8.php).
+     * @var bool Whether [nontransitional processing](https://www.php.net/manual/en/intl.constants.php#constant.idna-nontransitional-to-unicode) should be used when using [idn_to_utf8()](https://www.php.net/manual/en/function.idn-to-utf8.php).
      *
      * When your system supports IDNA ASCII strings, the domain name is converted from IDNA ASCII to Unicode using INTL_IDNA_VARIANT_UTS46 by default.
      * INTL_IDNA_VARIANT_UTS46 uses UTS 46 algorithm which is consistent with the requirements of the IDNA2008 protocol and mostly compatible with IDNA2003 (which was deprecated in php 7.2.0).
@@ -6988,7 +6988,7 @@ class GeneralConfig extends BaseConfig
     }
 
     /**
-     * Whether nontransitional processing should be used when using [idn_to_utf8()](https://www.php.net/manual/en/function.idn-to-utf8.php).
+     * Whether [nontransitional processing](https://www.php.net/manual/en/intl.constants.php#constant.idna-nontransitional-to-unicode) should be used when using [idn_to_utf8()](https://www.php.net/manual/en/function.idn-to-utf8.php).
      *
      * When your system supports IDNA ASCII strings, the domain name is converted from IDNA ASCII to Unicode using INTL_IDNA_VARIANT_UTS46 by default.
      * INTL_IDNA_VARIANT_UTS46 uses UTS 46 algorithm which is consistent with the requirements of the IDNA2008 protocol and mostly compatible with IDNA2003 (which was deprecated in php 7.2.0).
